@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.32 2000-03-09 14:42:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.33 2000-04-11 17:06:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -81,6 +81,29 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
+
+
+
+;***********************************************************************;
+; function : tofloat                                                    ;
+;                x:numeric                                              ;
+;***********************************************************************;
+function tofloat(x:numeric)
+local xf
+begin
+  if(typeof(x).eq."double")
+    xf = doubletofloat(x)
+  else
+    if(isatt(x,"_FillValue"))
+      xf = new(dimsizes(x),float,x@_FillValue)
+    else
+      xf = new(dimsizes(x),float)
+      delete(xf@_FillValue)
+    end if
+    xf = x
+  end if
+  return(xf)
+end
 
 ;***********************************************************************;
 ; Procedure : set_attr                                                  ;
@@ -919,7 +942,8 @@ begin
 
     wks@name = res_file
     wks@app = appid 
-local i, gsid, attnames, plot_object, res, gs_res_index, res2
+local i, gsid, attnames, plot_object, res, gs_res_index, res2, \
+end
 
 ;***********************************************************************;
 ; Procedure : gsn_polygon                                               ;
@@ -935,11 +959,14 @@ local i, gsid, attnames, plot_object, res, gs_res_index, res2
 ; variable returned from a previous call to "gsn_open_wks") in the same ;
 ; data space as the data in "plotid" (returned from a previous call to  ;
 ; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolygon(plotid,gsid,x,y)
+; locations of each point in the polygon, and should be in the same data;
+; space as the data from "plotid". "resources" is an optional list of   ;
+; resources.                                                            ;
+;***********************************************************************;
+procedure gsn_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                       y[*]:numeric,resources:logical)
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+local i, gsid, plot_object, res, gs_res_index, res2, \
+xf, yf, x2, y2
 begin
 
 ; Retrieve graphic style object.
@@ -960,7 +987,7 @@ begin
 
 ; move the plot, the polygon will stay with the plot.                   ;
 ;***********************************************************************;
-local i, gsid, attnames, plot_object, res, gs_res_index
+local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
                          y[*]:numeric,resources:logical)
 begin
   return(gsn_add_primitive(wks,plotid,x,y,"polygon",resources))
@@ -987,11 +1014,14 @@ procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 begin
 
 ; Retrieve graphic style object.
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolygon(canvas,gsid,x,y)
+
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+    end getvalues
+
 ;
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+; Create a LogLinPlot that covers the entire NDC space
+; to use as a drawing canvas
 ;
     canvas = create "canvas" logLinPlotClass wks
       "vpXF"      : 0.0
@@ -1028,20 +1058,27 @@ end
       attsetvalues(gsid,gsres)
 local i, gsid, plot_object, res, gs_res_index
 begin
+
+; Make sure data is converted to a float, since NhlDataPolyline
+; only takes floats.
+
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+
 ; Draw a polyline.
 
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolyline(plotid,gsid,x,y)
+    gmres = False
+;
 ; If we end up with a line with just one point, then we draw it with
+      x2 = xf
+      y2 = xf
 ;
 ; Since the data contains missing values, leave gaps where the missing
 ; values are located.
 ;
-      x2 = new(dimsizes(x),typeof(x))
-      y2 = new(dimsizes(x),typeof(y))
       j = 0
-      do i = 0,dimsizes(x)-1
-        if(ismissing(x(i)).or.ismissing(y(i)))
+      do i = 0,dimsizes(x2)-1
+        if(ismissing(x2(i)).or.ismissing(y2(i)))
           if(j.eq.1)    ; only one value, so draw a marker
             NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
           end if
@@ -1050,8 +1087,8 @@ begin
           end if
           j = 0
         else
-          x2(j) = x(i)   ; Neither point is missing, so store in
-          y2(j) = y(i)   ; separate arrays to draw later.
+          x2(j) = xf(i)   ; Neither point is missing, so store in
+          y2(j) = yf(i)   ; separate arrays to draw later.
           j = j + 1
 ; Since NhlDataPolyline doesn't accept missing values, this routine steps
 ; a single point is surrounded by missing values, then a marker is drawn.
@@ -1081,7 +1118,7 @@ begin
 
 ; the plot, the line will stay with the plot.                           ;
 ;***********************************************************************;
-local i, gsid, attnames, plot_object, res, gs_res_index
+local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
                            y[*]:numeric,resources:logical)
 begin
   return(gsn_add_primitive(wks,plotid,x,y,"polyline",resources))
@@ -1105,20 +1142,23 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
       attsetvalues(gsid,gsres)
     end if
 
-; Draw a polyline.
+; Convert to float.
+; Retrieve graphic style object.
 
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolyline(canvas,gsid,x,y)
+
+; Draw a polyline.
+; to use as a drawing canvas
+;
     canvas = create "canvas" logLinPlotClass wks
       "vpXF"      : 0.0
 ; Since the data contains missing values, leave gaps where the missing
 ; values are located.
       "vpHeightF" : 1.0
-      x2 = new(dimsizes(x),typeof(x))
-      y2 = new(dimsizes(y),typeof(y))
+      x2 = new(dimsizes(x),float)
+      y2 = new(dimsizes(y),float)
       j = 0
-      do i = 0,dimsizes(x)-1
-        if(ismissing(x(i)).or.ismissing(y(i)))
+      do i = 0,dimsizes(xf)-1
+        if(ismissing(xf(i)).or.ismissing(yf(i)))
           if(j.eq.1)    ; only one value, so draw a marker
             NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
           end if
@@ -1127,8 +1167,8 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
           end if
           j = 0
         else
-          x2(j) = x(i)   ; Neither point is missing, so store in
-          y2(j) = y(i)   ; separate arrays to draw later.
+          x2(j) = xf(i)   ; Neither point is missing, so store in
+          y2(j) = yf(i)   ; separate arrays to draw later.
           j = j + 1
 ;
 ; through all the points, and only draws the ones that aren't missing. If
@@ -1161,7 +1201,7 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 
         end if
         i = i + 1
-local i, gsid, attnames, plot_object, res, gs_res_index
+local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
     end if
 end
 
@@ -1175,13 +1215,16 @@ end
       attsetvalues(gsid,gsres)
     end if
 
-; Draw some polymarkers.
+; Make sure data is float.
+; data space as the data in "plotid" (returned from a previous call to  ;
+; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
 
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolymarker(plotid,gsid,x,y)
+; Draw some polymarkers.
+                         y[*]:numeric,resources:logical)
+local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+
+; Retrieve graphic style object.
 
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
@@ -1201,7 +1244,7 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                          resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
+local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
 begin
 ; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
 ; Retrieve graphic style object.
@@ -1226,13 +1269,16 @@ funccode, res2, calldraw, callframe
       attsetvalues(gsid,gsres)
     end if
 
+; Make sure data is float.
+    xf = tofloat(x)
+    yf = tofloat(y)
+
 ; Draw some polymarkers.
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
+      NhlNDCPolymarker(canvas,gsid,xf,yf)
 
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolymarker(canvas,gsid,x,y)
-
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlNDCPolymarker(canvas,gsid,x2,y2)
     delete(xf)
 end
@@ -2270,12 +2316,23 @@ begin
 
 procedure gsn_text(wks:graphic, plotid:graphic, text:string, x:numeric, \
                    y:numeric, resources:logical )
-local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, funccode
+local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, xf, yf, \
+funccode
 begin
+;
+; datatondc can't accept doubles, so have to demote doubles if they
+; come in.
+;
+    xf = tofloat(x)
+    yf = tofloat(y)
 
     x2 = new(dimsizes(x),float)
     y2 = new(dimsizes(y),float)
-    datatondc(plotid,x,y,x2,y2)
+
+    datatondc(plotid,xf,yf,x2,y2)
+
+    delete(xf)
+    delete(yf)
 ;
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.37 2000-04-10 14:31:25 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.38 2000-04-11 17:06:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1269,28 +1269,26 @@ end
     end if
   end do
   return(plot)
+end
 
-  xstart_lon = ((min_lon/lon_spcng)-1)*lon_spcng
-  xend_lon   = ((max_lon/lon_spcng)+1)*lon_spcng
 
-  if(typeof(xstart_lon).eq."float")
-    start_lon = floattointeger(xstart_lon)
-    end_lon   = floattointeger(xend_lon)
-  else
-    if(typeof(xstart_lon).eq."double")
-      start_lon = doubletointeger(xstart_lon)
-      end_lon   = doubletointeger(xend_lon)
-    else
-      start_lon = new(1,integer)
-      end_lon   = new(1,integer)
-      start_lon = xstart_lon
-      end_lon   = xend_lon
-    end if
-  end if 
+;***********************************************************************;
+; Function : get_lon_values                                             ;
+;             min_lon: numeric                                          ;
+;             max_lon: numeric                                          ;
+;         lon_spacing: numeric                                          ;
+;        mlon_spacing: numeric                                          ;
+;                                                                       ;
+; Calculate "nice" longitude values to use for placing longitude labels ;
+; an axis. min_lon and max_lon are the min/max longitude values, and    ;
+; lon_spacing and mlon_spacing are the spacings to use for major and    ;
+; minor tickmarks.                                                      ;
+;***********************************************************************;
+
 function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
-  lon_values@minor = ispan(min(lon_values),max(lon_values),mlon_spcng)
+local lon_range, lcheck_arr, lspcng_arr, mlspcng_arr, lon_spcng, mlon_spcng, \
 start_lon, end_lon, xstart_lon, xend_lon
 begin
 
@@ -1310,7 +1308,7 @@ begin
   end if
 
   if(all(mlonspacing_array.eq.0))
-start_lat, end_lat, xstart_lat, xend_lat
+    mlspcng_arr = (/ 1,  2,  5, 10/)  ; spacings for minor ticks
   else
     mlspcng_arr = mlonspacing_array
   end if
@@ -1356,27 +1354,26 @@ start_lat, end_lat, xstart_lat, xend_lat
    do while(lon.le.end_lon.and..not.found)
      if((lon % lon_spcng).eq.0)
        start_lon = lon
-  xstart_lat = ((min_lat/lat_spcng)-1)*lat_spcng
-  xend_lat   = ((max_lat/lat_spcng)+1)*lat_spcng
+       found = True
+     end if
+     lon = lon + 1
+  end do
 
-  if(typeof(xstart_lat).eq."float")
-    start_lat = floattointeger(xstart_lat)
-    end_lat   = floattointeger(xend_lat)
-  else
-    if(typeof(xstart_lat).eq."double")
-      start_lat = doubletointeger(xstart_lat)
-      end_lat   = doubletointeger(xend_lat)
-    else
-      start_lat = new(1,integer)
-      end_lat   = new(1,integer)
-      start_lat = xstart_lat
-      end_lat   = xend_lat
-    end if
-  end if 
+; Calculate values for major and minor lon tickmark locations.
+  lon_values       = ispan(start_lon,end_lon,lon_spcng)
+  lon_values@minor = ispan(min(lon_values)-lon_spcng,max(lon_values)+lon_spcng,mlon_spcng)
+  return(lon_values)
+end
+
+;***********************************************************************;
+; Function : get_lat_values                                             ;
+;             min_lat: numeric                                          ;
+;             max_lat: numeric                                          ;
+;         lat_spacing: numeric                                          ;
 ;        mlat_spacing: numeric                                          ;
 ;                                                                       ;
 ; Calculate "nice" latitude values to use for placing latitude labels   ;
-  lat_values@minor = ispan(min(lat_values),max(lat_values),mlat_spcng)
+; an axis. min_lat and max_lat are the min/max latitude values, and     ;
 ; lat_spacing and mlat_spacing are the spacings to use for major and    ;
 ; minor tickmarks.                                                      ;
 ;***********************************************************************;
@@ -1671,7 +1668,8 @@ begin
     latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
 
 ; Create labels for lat/lon tick marks.
-local dims, newdata, ny, mx, mx1
+
+    latlabels  = get_lat_labels(latvalues)
     lonlabels  = get_lon_labels(lonvalues)
 
 ; Create a TickMark object to label lat/lon grid.
@@ -1683,6 +1681,17 @@ local dims, newdata, ny, mx, mx1
        "vpWidthF"        : vpwf       ; the map.
        "vpHeightF"       : vphf
 
+    first_val  = newdata&$newdata!1$(0)
+    second_val = newdata&$newdata!1$(1)
+    last_val   = newdata&$newdata!1$(mx-1)
+    delta      = second_val - first_val
+    range      = last_val - first_val
+
+    if((range+delta).lt.359.)
+      print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
+      print("You may want to set gsnAddCyclic to False to avoid a warning")
+      print("message from the Spline function.")
+    end if
        "tmYLDataBottomF" : min_lat    ; Use the lat/lon limits
         newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
        "tmYLMinorValues"  : latvalues@minor
