@@ -17,7 +17,7 @@ You can draw a limb line by calling MAPLMB.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 example: 
-mppex07.
+mpex07.
 .SH ACCESS
 To use MAPLMB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_maplmb, load the 
