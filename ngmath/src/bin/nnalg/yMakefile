@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.6 1997-03-12 18:14:50 fred Exp $
+#       $Id: yMakefile,v 1.7 2001-10-10 02:27:37 haley Exp $
 #
 
 MYNAME  = nnalg
@@ -11,6 +11,6 @@ FCPP_OBJS       = nadisp.f
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
-SYS_LIBS = $(XLIB) -lm
+SYS_LIBS = $(XLIB)
 
 FortranProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
