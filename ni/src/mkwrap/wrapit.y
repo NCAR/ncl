@@ -44,11 +44,17 @@ extern void DoDimsizes(NclSymbol*);
 int FType(char *fname) {
 	switch(fname[0]) {
 	case 'i':
+	case 'I':
 	case 'j':
+	case 'J':
 	case 'k':
+	case 'K':
 	case 'l':
+	case 'L':
 	case 'm':
+	case 'M':
 	case 'n':
+	case 'N':
 		return(NCL_int);
 	default:
 		return(NCL_float);
