@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.93 2002-09-11 13:43:44 haley Exp $
+;      $Id: gsn_code.ncl,v 1.94 2002-09-21 13:55:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3030,7 +3030,7 @@ begin
 ;
 ; Get and set resource values for figure strings on the plots.
 ;
-    justs  = (/"bottomright", "topright", "topleft", "bottomleft"/)
+    justs = (/"bottomright", "topright", "topleft", "bottomleft"/)
     paras = (/     1.0,           1.0,      -1.0,       -1.0/)
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
 
@@ -3133,35 +3133,24 @@ begin
     end if
   end if
 ;
-; We assume all plots are the same size. Eventually we might
-; want to allow different sized plots, so this code will eventually
-; allow for that case.
+; We assume all plots are the same size, so if we get the size of
+; the first one, this should be the size of all of them.
 ;
-  if(nplots.eq.1) then
-    bb = new((/1,4/),float)
-    bb(0,:) = NhlGetBB(plot)   ; Get bounding box of each plot with
-  else
-    bb = NhlGetBB(plot)   ; Get bounding box of each plot with
-  end if
-  top    = bb(:,0)       ; all of its annotations.
-  bottom = bb(:,1)
-  left   = bb(:,2)
-  right  = bb(:,3)
+  bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
+  top    = bb(0)           ; all of its annotations.
+  bottom = bb(1)
+  left   = bb(2)
+  right  = bb(3)
   delete(bb)
 ;
-; plot_width  : total width of plots with all of their annotations
-; plot_height : total height of plots with all of their annotations
+; plot_width  : total width of plot with all of its annotations
+; plot_height : total height of plot with all of its annotations
 ; total_width : plot_width plus white space on both sides
 ; total_height: plot_height plus white space on top and bottom
 ;
-  plot_widths  = right - left     ; Calculate total width of each plot.
-  plot_heights = top - bottom     ; Calculate total height of each plot.
+  plot_width  = right - left     ; Calculate total width of plot.
+  plot_height = top - bottom     ; Calculate total height of plot.
 
-  iw = maxind(right-left)    ; Get index where width is the widest.
-  ih = maxind(top-bottom)    ; Get index where height is the highest. 
-
-  plot_width  = right(iw) - left(iw) ; Calculate total width of widest plot
-  plot_height = top(ih) - bottom(ih) ; Calculate total height of tallest plot.
   xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
   ywsp = ywsp_perc/100. * plot_height ; width and height.
 
@@ -3248,14 +3237,14 @@ begin
     "vpHeightF" : vph
   end getvalues
 
-  dxl = scale * (vpx-left(iw))       ; Distance from plot's left
+  dxl = scale * (vpx-left)           ; Distance from plot's left
                                      ; position to its leftmost annotation
-  dxr = scale * (right(iw)-(vpx+vpw)); Distance from plot's right
+  dxr = scale * (right-(vpx+vpw))    ; Distance from plot's right
                                      ; position to its rightmost annotation
-  dyt = scale * (top(ih)-vpy)        ; Distance from plot's top
+  dyt = scale * (top-vpy)            ; Distance from plot's top
                                      ; position to its topmost annotation.
-  dyb = scale * ((vpy-vph)-bottom(ih)) ; Distance from plot's bottom
-                                       ; position to its bottommost annotation.
+  dyb = scale * ((vpy-vph)-bottom)   ; Distance from plot's bottom
+                                     ; position to its bottommost annotation.
 
   ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
   delete(top)
