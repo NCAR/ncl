@@ -1469,7 +1469,7 @@ NhlErrorTypes esccr_W( void )
  * various
  */
   double *xx, *yy;
-  int i, j, index_x, index_y, index_ccr;
+  int i, j, k, index_x, index_y, index_ccr;
   int total_size_x1, total_size_x, total_size_y1, total_size_y;
   int total_size_ccr;
   int ier = 0, ier_count, npts, mpts, dimsizes_same;
@@ -1745,8 +1745,8 @@ NhlErrorTypes esccr_W( void )
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccr != NCL_double) {
-          for(j = 0; j < mxlag1; j++) {
-            ((float*)ccr)[index_ccr+j] = (float)(tmp_ccr[j]);
+          for(k = 0; k < mxlag1; k++) {
+            ((float*)ccr)[index_ccr+k] = (float)(tmp_ccr[k]);
           }
         }
         index_y   += npts;
@@ -1812,7 +1812,7 @@ NhlErrorTypes esccv_W( void )
 /*
  * various
  */
-  int i, j, index_x, index_y, index_ccv;
+  int i, j, k, index_x, index_y, index_ccv;
   int total_size_x1, total_size_x, total_size_y1, total_size_y;
   int total_size_ccv;
   int ier = 0, ier_count, npts, dimsizes_same;
@@ -2067,8 +2067,8 @@ NhlErrorTypes esccv_W( void )
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccv != NCL_double) {
-          for(j = 0; j < mxlag1; j++) {
-            ((float*)ccv)[index_ccv+j] = (float)(tmp_ccv[j]);
+          for(k = 0; k < mxlag1; k++) {
+            ((float*)ccv)[index_ccv+k] = (float)(tmp_ccv[k]);
           }
         }
         index_y   += npts;
