@@ -1,5 +1,5 @@
 C
-C     $Id: cn01f.f,v 1.3 1995-04-07 10:53:54 boote Exp $
+C     $Id: cn01f.f,v 1.4 1995-04-18 17:09:39 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -169,8 +169,7 @@ C
 C  Retrieves bounding box information from tick mark object so 
 C  title object can be correctly configured.
 C  
-      call NhlFGetBB(pid,top,bottom,left,right) 
-      
+      call NhlFGetBB(pid,top,bottom,left,right,ierr)
       call NhlFRLClear(rlist)
       call NhlFRLSetfloat(rlist,'vpXF',left,ierr)
       call NhlFRLSetfloat(rlist,'vpYF',top,ierr)
