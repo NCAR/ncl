@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.48 1996-01-18 22:14:17 ethan Exp $
+ *      $Id: Execute.c,v 1.49 1996-01-18 23:30:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3500,11 +3500,13 @@ NclExecuteReturnStatus _NclExecute
 * if it is then the _NclAssignVarToVar is used which is different then the normal assignment provided
 * by the ASSIGN_VAR_OP operator.
 */
-					if((estatus != NhlFATAL)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
+					if(rhs_nsubs == 0) {
+						rhs_sel_ptr = NULL;
+					} else if((estatus != NhlFATAL)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(rhs_nsubs);
-					} else if(rhs_nsubs!=0) {
+					} else {
 						rhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
 						rhs_sel_ptr->n_entries = rhs_nsubs;
 				
@@ -3536,14 +3538,14 @@ NclExecuteReturnStatus _NclExecute
 								break;
 							}
 						} 
-					} else {
-						rhs_sel_ptr = NULL;
-					}
-					if((estatus != NhlFATAL)&&(lhs_nsubs != lhs_var->u.data_var->var.n_dims)) {
+					} 
+					if((lhs_nsubs ==0)&&(estatus != NhlFATAL)){
+						lhs_sel_ptr = NULL;
+					} else if((estatus != NhlFATAL)&&(lhs_nsubs != lhs_var->u.data_var->var.n_dims)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on lhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",lhs_nsubs,lhs_var->u.data_var->var.n_dims);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(lhs_nsubs);
-					} else if((lhs_nsubs !=0)&&(estatus != NhlFATAL)) {
+					} else if (estatus != NhlFATAL) {
 						lhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
 						lhs_sel_ptr->n_entries = lhs_nsubs;
 						for(i=0;i<lhs_nsubs;i++) {
@@ -3574,9 +3576,7 @@ NclExecuteReturnStatus _NclExecute
 								break;
 							}
 						} 
-					} else {
-						lhs_sel_ptr = NULL;
-					}
+					} 
 					if(estatus != NhlFATAL) {
 						ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
 						if(lhs_sel_ptr != NULL) {
