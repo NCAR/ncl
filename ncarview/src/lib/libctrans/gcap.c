@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.24 1992-07-30 00:47:39 clyne Exp $
+ *	$Id: gcap.c,v 1.25 1992-08-26 18:28:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -76,6 +76,7 @@ static	struct	GCapOpts_	{
 	char	*window;
 	char	*viewport;
 	boolean	sim_bg;
+	char	*outfile;
 	} gcap_opts;
 
 static	Option	options[] = {
@@ -87,6 +88,9 @@ static	Option	options[] = {
 	},
 	{"simulatebg", NCARGCvtToBoolean,
 		(Voidptr) &gcap_opts.sim_bg, sizeof (gcap_opts.sim_bg)
+	},
+	{"outfile", NCARGCvtToString,
+		(Voidptr) &gcap_opts.outfile, sizeof (gcap_opts.outfile)
 	},
 	{
 	NULL
@@ -128,6 +132,14 @@ CGMC *c;
 		ESprintf(
 			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
 			optionDesc, ErrGetMsg()
+		);
+		return(-1);
+	}
+
+	if (GcapOpenBuffer(gcap_opts.outfile) < 0) {
+		ESprintf(
+			E_UNKNOWN,"Opening output file(%s,) [ %s ]",
+			gcap_opts.outfile, ErrGetMsg()
 		);
 		return(-1);
 	}

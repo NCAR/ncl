@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.15 1992-07-30 00:47:47 clyne Exp $
+ *	$Id: rast.c,v 1.16 1992-08-26 18:28:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,6 +41,7 @@ static	struct	Opts {
 	boolean	rle;
 	boolean	compress;
 	boolean	direct;
+	char	*outfile;
 	} rast_opts;
 
 static	Option	raster_opts[] = {
@@ -61,6 +62,8 @@ static	Option	raster_opts[] = {
 	{"compress",NCARGCvtToBoolean,(Voidptr) &rast_opts.compress,					sizeof (rast_opts.compress)
 	},
 	{"direct",NCARGCvtToBoolean,(Voidptr) &rast_opts.direct,					sizeof (rast_opts.direct)
+	},
+	{"outfile",NCARGCvtToString,(Voidptr) &rast_opts.outfile,					sizeof (rast_opts.outfile)
 	},
 	{
 	NULL
@@ -215,7 +218,7 @@ CGMC *c;
 	 * create the raster buffer
 	 */
 	encoding = rasIsDirect ? RAS_DIRECT : RAS_INDEXED;
-	if ((rastGrid = (RasterOpenWrite("stdout", width, height,
+	if ((rastGrid = (RasterOpenWrite(rast_opts.outfile, width, height,
 		VERSION,encoding,devices[currdev].name))) == NULL) {
 
 		ESprintf(E_UNKNOWN, "RasterOpenWrite(,,,,,)");

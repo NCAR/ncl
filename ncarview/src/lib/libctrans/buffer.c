@@ -1,5 +1,5 @@
 /*
- *	$Id: buffer.c,v 1.4 1992-04-16 17:29:55 clyne Exp $
+ *	$Id: buffer.c,v 1.5 1992-08-26 18:28:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,9 +19,12 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
 #include "ctrandef.h"
 
-static	int	out = 1;		/* fd for output init to stdout */
+static	int	outFD = -1;		/* fd for output init to stdout */
 
 /* 
  * 	The output buffer
@@ -30,12 +33,32 @@ static	int	out = 1;		/* fd for output init to stdout */
 static char 	outbuf[OUTPUT_BUF_SIZE];
 static int	outbufnum  = 0;
 
+int	GcapOpenBuffer(file)
+	char	*file;
+{
+#ifdef	cray
+	int     w_mask = O_TRUNC | O_CREAT | O_WRONLY | O_RAW;
+#else
+	int     w_mask = O_TRUNC | O_CREAT | O_WRONLY;
+#endif
+	if (strcmp(file, "stdout") == 0) {
+		outFD = fileno(stdout);
+		return (1);
+	}
+
+	if ((outFD = open(file, w_mask, 0666)) < 0) {
+		ESprintf(errno, "open(%s, %d, 0666)", file, w_mask);
+		return(-1);
+	}
+	return(1);
+}
+
 /*
  *	Flushes out the output buffer. Called at the end of a picture.
  */
 flush()
 {
-	(void)write(out,outbuf,outbufnum);
+	(void)write(outFD,outbuf,outbufnum);
 	outbufnum = 0;
 }
 
@@ -52,7 +75,7 @@ buffer(str,count)
 	while ((tmp = OUTPUT_BUF_SIZE - outbufnum) < count) {
 
 		bcopy(str,&outbuf[outbufnum],tmp);
-		(void)write(out,outbuf,OUTPUT_BUF_SIZE);
+		(void)write(outFD,outbuf,OUTPUT_BUF_SIZE);
 		outbufnum = 0; 
 
 		count -= tmp;

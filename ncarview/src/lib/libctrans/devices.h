@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.11 1992-08-10 22:06:34 clyne Exp $
+ *	$Id: devices.h,v 1.12 1992-08-26 18:28:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -96,6 +96,7 @@ static	OptDescRec	gcap_opts[] = {
 	{"window", 1, NULL, "Specify window transform - llx:lly:urx:ury"},
 	{"viewport", 1, NULL, "Specify viewport transform - llx:lly:urx:ury"},
 	{"simulatebg", 0, NULL, "Simulate background color with a big polygon"},
+	{"outfile", 1,"stdout","Write output to file 'arg0'"},
 	{NULL}
 	};
 
@@ -108,6 +109,7 @@ static	OptDescRec	raster_opts[] = {
 	{"rle", 0, NULL, "Do run length encode output (if supported)"},
 	{"dpi", 1, "75", "Dots per inch - (HPLJ only)"},
 	{"direct", 0,NULL,"Do output direct encoded imagery (default indexed)"},
+	{"outfile", 1,"stdout","Write output to file 'arg0'"},
 	{NULL}
 	};
 
