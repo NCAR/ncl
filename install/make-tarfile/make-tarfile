@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.7 1995-06-06 18:22:55 haley Exp $
+#      $Id: make-tarfile,v 1.8 1995-06-09 14:20:21 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -84,7 +84,7 @@ if (@ARGV < 1) {
 $firstarg = $ARGV[0];
 if ($firstarg == "-doc") {
   @tars = ("HTML.TAR", "PS.TAR");	
-  $platform = "doc";
+  $platform = "NGDOC";
 }
 else {
   @tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
