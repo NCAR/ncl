@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.4 1993-12-13 22:21:48 boote Exp $
+#      $Id: ymkmf,v 1.5 1994-04-11 22:48:09 boote Exp $
 #
 #########################################################################
 #									#
@@ -48,15 +48,16 @@ while ($#argv)
 
 	switch ("$argv[1]")
 
+	case	-D*
 	case	-local
-		set defines = ($defines -local)
+		set defines = ($defines "$argv[1]")
 
 		breaksw
 
 	default:
 		# make sure "topname" is last arg
 		if ($#argv != 1) then
-			echo "$0 : Usage `basename $0` [-local] topname"
+			echo "$0 : Usage `basename $0` [-local] [-D ...] topname"
 			exit 1
 		endif
 
