@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.19 1997-04-21 21:13:37 haley Exp $
+#	$Id: yMakefile,v 1.20 1998-03-13 22:10:26 dbrown Exp $
 #
 
 MYNAME	= awi
@@ -35,7 +35,7 @@ gzckst.f  gzckwk.f  gzclli.f  gzclpo.f  gzcpwk.f  gzfmwk.f  \
 gzgte1.f  gzgte2.f  gzines.f  gzinsl.f  gziqwk.f  gzn2wx.f  \
 gzn2wy.f  gzname.f  gznume.f  gzputr.f  gzputs.f  gzreop.f  \
 gzroi.f   gzsrat.f  gzusat.f  gztowk.f  gzw2gk.f  gzw2nx.f  \
-gzw2ny.f  gzxid.f
+gzw2ny.f  gzxid.f   gzacwk.f  gzclwk.f  gzclrwk.f gzdawk.f  gzopwk.f
 
 GENERIC_OBJS = \
 gactm.o   gacwk.o   gaspar.o  gatelm.o  gca.o     gcelcd.o  \
@@ -68,7 +68,7 @@ gzckst.o  gzckwk.o  gzclli.o  gzclpo.o  gzcpwk.o  gzfmwk.o  \
 gzgte1.o  gzgte2.o  gzines.o  gzinsl.o  gziqwk.o  gzn2wx.o  \
 gzn2wy.o  gzname.o  gznume.o  gzputr.o  gzputs.o  gzreop.o  \
 gzroi.o   gzsrat.o  gzusat.o  gztowk.o  gzw2gk.o  gzw2nx.o  \
-gzw2ny.o  gzxid.o
+gzw2ny.o  gzxid.o   gzacwk.o  gzclwk.o  gzclrwk.o gzdawk.o  gzopwk.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
