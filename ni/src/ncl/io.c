@@ -56,6 +56,12 @@ extern char *readline();
 extern void add_history();
 
 NclInputBuffer ncl_input_buffer;
+static int child_status = -1; 
+
+static void child_stat_notify(int tmp)
+{
+	child_status = 0;
+} 
 
 void InitializeReadLine
 #if	NhlNeedProto
@@ -245,28 +251,35 @@ int _nclfprintf_pager
 	int n;
 	int id,status;
 
+	if(child_status) {
 #if     defined(SunOS) && (MAJOR == 4)
-	vsprintf(buffer,fmt,ap);
-	n = strlen(buffer) + 1;
+		vsprintf(buffer,fmt,ap);
+		n = strlen(buffer) + 1;
 #else
-	n = vsprintf(buffer,fmt,ap);
+		n = vsprintf(buffer,fmt,ap);
 #endif
 
-	ret = write(fileno(fp),(void*)buffer,n);
+		ret = write(fileno(fp),(void*)buffer,n);
+	} else {
+		ret = -1;
+	}
 	if(ret < 0) {
 		_NclSetPrintFunc(vfprintf);
-		signal(SIGPIPE,SIG_DFL);
+/*		signal(SIGPIPE,SIG_DFL);*/
 		if(pager_id != -1) {
 			while(( id = wait(&status)) != pager_id) {
 				if(errno == ECHILD) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Pager failed0");
 					pager_id = -1;
 					break;
 				}
 			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Pager failed1");
 		}
 		close(fileno(stdout_fp));
 		stdout_fp = stdout;
-	}
+	} 
 	return(ret);
 }
 
@@ -283,6 +296,7 @@ void _NclEndCmdLinePager
 	_NclSetPrintFunc(vfprintf);
 	close(fileno(stdout_fp));
 	signal(SIGPIPE,SIG_DFL);
+	signal(SIGCHLD,SIG_DFL);
 	if(pager_id != -1) {
 		while(( id = wait(&status)) != pager_id);
 	}
@@ -305,6 +319,7 @@ void _NclStartCmdLinePager
 	char *pager =NULL;
 	char *arg0 = NULL;
 	int tmp = 1;
+	FILE *fp;
 
 #ifndef DONTUSEPAGER
 	ret = pipe(fildes);
@@ -333,11 +348,18 @@ void _NclStartCmdLinePager
 /*
 		while(tmp == 1);
 */
-		execlp(pager,arg0,NULL);
+		tmp = execlp(pager,arg0,NULL);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Error Forking pager check PAGER environment variable and restart, continuing using \"more\"");
+		pager = "more";
+		arg0 = "more";
+		tmp = execlp(pager,arg0,NULL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error Forking pager again, check PATH environment variable, can't continue");
 		close(new_pipe_fd);
-		exit(0);
+		exit(1);
 	} else {
-		signal(SIGPIPE,SIG_IGN);
+		child_status = 1;
+		signal(SIGPIPE,child_stat_notify);
+		signal(SIGCHLD,child_stat_notify);
 		close(fildes[0]);
 		stdout_fp = fdopen(fildes[1],"w");
 		if(stdout_fp == NULL) {

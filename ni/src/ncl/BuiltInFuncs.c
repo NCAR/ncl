@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.83 1997-09-09 01:13:22 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.84 1997-09-11 00:52:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,7 @@ extern "C" {
 #include "TypeSupport.h"
 #include "NclBuiltInSupport.h"
 #include "FileSupport.h"
+#include <signal.h>
 
 extern int cmd_line;
 
@@ -771,7 +772,7 @@ NhlErrorTypes _NclINhlNDCToData
 	}
 }
 
-NhlErrorTypes _Nclsystem
+NhlErrorTypes _Nclsystemfunc
 #if     NhlNeedProto
 (void)
 #else
@@ -782,7 +783,24 @@ NhlErrorTypes _Nclsystem
         NclMultiDValData tmp_md = NULL;
         logical *lval;
         int dimsize = 1;
-	Const char* command;
+	char* command;
+	char *pager;
+	int fildes[2],new_pipe_fd;
+        int ret;
+	int id;
+	int tmp_id;
+	int n;
+	int status;
+	FILE *tmp_fp;
+	int current_buf_size = 512;
+	int current_qbuf_size = 512;
+	char *buffer_ptr;
+	char *buffer;
+	NclQuark *qbuffer;
+	NclQuark *qbuffer_ptr;
+	long off;
+	int nelem = 0;
+
 
         val = _NclGetArg(0,1,DONT_CARE);
 /*
@@ -799,11 +817,127 @@ NhlErrorTypes _Nclsystem
                 return(NhlFATAL);
         }
 	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
-		command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val);
-		if(!system(command)) {
-			return(NhlNOERROR);
+		ret = pipe(fildes);
+		id = fork();
+		if(id == 0) {
+			close(fildes[0]);
+			close(fileno(stdout));
+			new_pipe_fd = dup(fildes[1]);
+			close(fildes[1]);
+			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
+			if(!system(command)) {
+				exit(0);
+			} else {
+				exit(1);
+			}
 		} else {
-                	return(NhlWARNING);
+			buffer = NclMalloc(current_buf_size);
+			buffer_ptr = buffer;
+			qbuffer = NclMalloc(current_qbuf_size*sizeof(NclQuark));
+			qbuffer_ptr = qbuffer;
+			signal(SIGPIPE,SIG_DFL);
+			signal(SIGCHLD,SIG_DFL);
+			close(fildes[1]);
+			tmp_fp = fopen("tmp.txt","w");
+			n = 0;
+			nelem = 0;
+			while(read(fildes[0],buffer_ptr,1) > 0) {
+				if(*buffer_ptr == '\n') {
+					*buffer_ptr++ = '\0';
+					*qbuffer_ptr++ = NrmStringToQuark(buffer);
+					buffer_ptr = buffer;
+					nelem++;
+					if((qbuffer_ptr - qbuffer) >= current_qbuf_size){
+						off =  qbuffer_ptr - qbuffer;
+						qbuffer = NhlRealloc(qbuffer,sizeof(NclQuark)*current_qbuf_size*2);
+						qbuffer_ptr = qbuffer + off;
+						current_qbuf_size *=2;
+					}
+				} else {
+					buffer_ptr++;
+				}
+				if((buffer_ptr  - buffer) >= current_buf_size)  {
+					off = buffer_ptr - buffer;
+					buffer = NhlRealloc(buffer,current_buf_size*2);
+					buffer_ptr = buffer + off;
+					current_buf_size *=2;
+				}
+				n++;
+			}
+			while(( tmp_id = wait(&status)) != id);
+			NclFree(buffer);
+			
+		}
+		if(nelem < 1) {
+			data.kind = NclStk_VAL;
+			data.u.data_obj = _NclCreateMissing();
+			_NclPlaceReturn(data);
+		} else {
+			data.kind = NclStk_VAL;
+			data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)qbuffer,NULL,1,&nelem,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+			_NclPlaceReturn(data);
+		}
+		return(NhlNOERROR);
+	} else {
+                return(NhlFATAL);
+	}
+}
+
+NhlErrorTypes _Nclsystem
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NclStackEntry val,data;
+        NclMultiDValData tmp_md = NULL;
+        logical *lval;
+        int dimsize = 1;
+	char* command;
+	char *pager;
+
+        val = _NclGetArg(0,1,DONT_CARE);
+/*
+* Should be constrained to be a SCALAR md
+*/
+        switch(val.kind) {
+        case NclStk_VAL:
+                tmp_md = val.u.data_obj;
+                break;
+        case NclStk_VAR:
+                tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+                break;
+        default:
+                return(NhlFATAL);
+        }
+	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
+		if(cmd_line == 1) {
+			pager = getenv("PAGER");
+			if(pager == NULL) {
+				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ strlen(" | more"));
+				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+				strcat(command," | more");
+			} else {
+				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ strlen(pager) + strlen(" | ")+1);
+				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+				strcat(command," | ");
+				strcat(command,pager);
+			}
+			if(!system(command)) {
+				NhlFree(command);
+				return(NhlNOERROR);
+			} else {
+				NhlFree(command);
+                		return(NhlWARNING);
+			}
+		} else {
+			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
+			if(!system(command)) {
+				return(NhlNOERROR);
+			} else {
+                		return(NhlWARNING);
+			}
 		}
 	} else {
                 return(NhlFATAL);
