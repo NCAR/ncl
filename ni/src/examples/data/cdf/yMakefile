@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.17 2004-10-03 02:06:29 fred Exp $
+#   $Id: yMakefile,v 1.18 2004-10-14 13:37:12 haley Exp $
 #
 #   Makefile for netCDF data files for examples.
 #
@@ -15,7 +15,7 @@ DATA = 941110_P.cdf 941110_UV.cdf 95031800_sao.cdf 95031801_sao.cdf \
 	95031822_sao.cdf 95031823_sao.cdf 950318_sao.cdf Pstorm.cdf \
 	Tstorm.cdf U500storm.cdf Ustorm.cdf V500storm.cdf Vstorm.cdf \
 	ced1.lf00.t00z.eta.nc climdiv_polygons.nc cn10n.cdf color.nc \
-	contour.cdf ctcbay.nc ex01B1_uv300.hs.nc fice.nc landsea.nc \
+	contour.cdf ctnccl.nc ctcbay.nc ex01B1_uv300.hs.nc fice.nc landsea.nc \
 	meccatemp.cdf sst30e_netcdf.nc hswm_d000000p000.g2.nc seam.nc \
 	sstdata_netcdf.nc traj_data.nc trinidad.nc meteo_data.nc scatter1.nc
 
