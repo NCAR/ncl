@@ -64,7 +64,7 @@ typedef	struct	{
  *	structure for reading in a raw cgm instruction
  */
 typedef	struct {
-	unsigned int	class;		/* CGM class (0-7)	*/
+	unsigned int	cgmclass;		/* CGM class (0-7)	*/
 	unsigned int	id;		/* CGM element id	*/
 	unsigned char	buf[32767 * 2];	/* CGM element data	*/
 	unsigned char	*data;		/* pointer to begining of data in
@@ -312,13 +312,13 @@ extern	Directory	*CGM_editFrame(
 
 extern	const char	*CGM_ClassLookup(
 #ifdef	NeedFuncProto
-	unsigned	int class
+	unsigned	int cgmclass
 #endif
 );
 
 extern	const char	*CGM_ElementLookup(
 #ifdef	NeedFuncProto
-	unsigned	int class,
+	unsigned	int cgmclass,
 	unsigned	int id
 #endif
 );

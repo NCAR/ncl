@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.25 1994-04-11 15:20:58 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.26 1995-03-16 21:03:25 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -842,9 +842,9 @@ Directory	*CGM_directory(cgm_fd, fp)
 					return((Directory *) NULL);
 				}
 
-				bcopy((char *) cptr, 
-					dir->d[dir->num_frames].text,
-					(int) data_len-1);
+				memmove((void *)dir->d[dir->num_frames].text,
+					(const void *) cptr, 
+					(size_t) data_len-1);
 
 				dir->d[dir->num_frames].text[data_len-1] = '\0';
 			}
@@ -1066,7 +1066,7 @@ static	fetch_input(cgm_fd, pg)
  *	cgm_fd		: file descriptor for the metafile opened for reading
  * on exit
  *	*instr		: contains a CGM instruction if EOF has not been reached
- *		class	: CGM class
+ *		cgmclass: CGM class
  *		id	: the cgm element id
  *		buf	: the data buffer
  *		data	: pointer to begining of buf
@@ -1095,8 +1095,8 @@ int	CGM_getInstr(cgm_fd, instr)
 	 */
 	errno = 0;
 	if (pg->over_flow) {
-		(void) bcopy((char *) (instr->data + MAX_CGM_INS_LEN),
-				(char *) instr->data, (int) pg->over_flow);
+		(void) memmove((void *) instr->data,
+				(const void *)(instr->data + MAX_CGM_INS_LEN),(size_t) pg->over_flow);
 
 		instr->data += pg->over_flow;
 	}
@@ -1114,7 +1114,7 @@ int	CGM_getInstr(cgm_fd, instr)
 				return(pg->byte_count);
 		}
 		tmp = pg->buf_ptr[0] << 8 | pg->buf_ptr[1];
-		instr->class = GETBITS(tmp, CLASS_POSS, CLASS_BITS);
+		instr->cgmclass = GETBITS(tmp, CLASS_POSS, CLASS_BITS);
 		instr->id = GETBITS(tmp, ID_POSS, ID_BITS);
 		instr->data_length = GETBITS(tmp, PARM_POSS, PARM_BITS);
 
@@ -1174,8 +1174,8 @@ int	CGM_getInstr(cgm_fd, instr)
 		num_copy = MIN(num_need, pg->byte_count);
 
 		/* copy data to instr*/
-		(void) bcopy((char *) pg->buf_ptr, 
-				(char *) instr->data, num_copy);
+		(void) memmove((void *) instr->data,
+				(const void *) pg->buf_ptr, (size_t)num_copy);
 
 		instr->data += num_copy;		/* update data pointer*/
 		num_need -= num_copy;			/* dec need count     */
@@ -1295,7 +1295,7 @@ static	put_output(cgm_fd, pg, numbytes )
  * on entry
  *	cgm_fd		: CGM file descriptor for the metafile opened 
  *	*instr		: contains a valid CGM instruction 
- *		class	: identifies the class of the cgm element
+ *		cgmclass: identifies the class of the cgm element
  *		id	: identifies the id of the cgm element
  *		buf	: contains the cgm element data
  *		data	: points to the begining of the data in buf,
@@ -1340,11 +1340,11 @@ int	CGM_putInstr(cgm_fd, instr)
 		 * beg pic/end mf is the first element in a record
 		 */
 		if ((free_count < COMM_SIZE) || (
-			(instr->class == DEL_ELEMENT && instr->id == BEG_PIC_ID)
+			(instr->cgmclass == DEL_ELEMENT && instr->id == BEG_PIC_ID)
 			&&
 			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE
 			) || (
-			(instr->class == DEL_ELEMENT && instr->id == END_MF_ID)
+			(instr->cgmclass == DEL_ELEMENT && instr->id == END_MF_ID)
 			&&
 			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)
 			){
@@ -1362,7 +1362,7 @@ int	CGM_putInstr(cgm_fd, instr)
 		 *	insert command class, id and data length
 		 */
 		tmp = 0;
-		PUTBITS(tmp, CLASS_POSS, CLASS_BITS, instr->class);
+		PUTBITS(tmp, CLASS_POSS, CLASS_BITS, instr->cgmclass);
 		PUTBITS(tmp, ID_POSS, ID_BITS, instr->id);
 		if (! instr->more && instr->data_length < LONGFORM)  {
 			PUTBITS(tmp, PARM_POSS, PARM_BITS, instr->data_length);
@@ -1387,7 +1387,7 @@ int	CGM_putInstr(cgm_fd, instr)
 		/*
 		 * record status of frame bits for NCAR CGM header
 		 */
-		if (instr->class == DEL_ELEMENT) {
+		if (instr->cgmclass == DEL_ELEMENT) {
 			pg->beg_meta = (pg->beg_meta || instr->id == BEG_MF_ID);
 			pg->end_meta = (pg->end_meta || instr->id == END_MF_ID);
 			pg->new_frame =(pg->new_frame || instr->id == BEG_PIC_ID);
@@ -1448,8 +1448,8 @@ int	CGM_putInstr(cgm_fd, instr)
 		}
 
 		num_copy = MIN(num_need, free_count);
-		(void) bcopy((char *) instr->data, 
-				(char *) pg->buf_ptr, num_copy);
+		(void) memmove((void *) pg->buf_ptr, 
+				(const void *) instr->data, (size_t)num_copy);
 
 		free_count -= num_copy;
 		num_need -= num_copy;

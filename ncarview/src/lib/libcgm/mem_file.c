@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.9 1993-02-01 21:20:20 clyne Exp $
+ *	$Id: mem_file.c,v 1.10 1995-03-16 21:03:27 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -177,7 +177,7 @@ int	CGM_readMemFile(fd, buf)
 	}
 	else {
 
-		bcopy((char *) cgm_iobuf[fd]._ptr, (char *) buf, r);
+		memmove((void *) buf, (const void *) cgm_iobuf[fd]._ptr, r);
 		cgm_iobuf[fd]._ptr += r;
 		return(r);
 	}
@@ -217,7 +217,7 @@ int	CGM_writeMemFile(fd, buf)
 	/*
 	 * write to file
 	 */
-	bcopy((char *) buf, (char *) cgm_iobuf[fd]._ptr, r);
+	memmove((void *) cgm_iobuf[fd]._ptr, (const void *) buf, r);
 	cgm_iobuf[fd]._ptr += r;
 
 	/*

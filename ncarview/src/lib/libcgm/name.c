@@ -1,5 +1,5 @@
 /*
- *      $Id: name.c,v 1.1 1993-07-19 22:28:14 clyne Exp $
+ *      $Id: name.c,v 1.2 1995-03-16 21:03:29 haley Exp $
  */
 /************************************************************************
 *									*
@@ -175,7 +175,7 @@ static	char	*externalElements[] = {
  * Description:	Map a CGM element class into the textual name for that class
  *
  * In Args:	
- *	class	: the class index
+ *	cgmclass	: the class index
  *
  * Out Args:	
  *
@@ -184,12 +184,12 @@ static	char	*externalElements[] = {
  *		string naming CGM class $class is returned
  * Side Effect:	
  */
-const	char	*CGM_ClassLookup(class)
-	unsigned int	class;
+const	char	*CGM_ClassLookup(cgmclass)
+	unsigned int	cgmclass;
 {
-	if (class >= CLASS_SIZE) return(NULL);
+	if (cgmclass >= CLASS_SIZE) return(NULL);
 
-	return(elementClasses[class]);
+	return(elementClasses[cgmclass]);
 }
 
 /*
@@ -198,7 +198,7 @@ const	char	*CGM_ClassLookup(class)
  * Description:	Map a CGM element into the textual name for that element
  *
  * In Args:	
- * 	class	: the class index
+ * 	cgmclass	: the class index
  * 	id	: the element id index
  *
  * Out Args:	
@@ -208,15 +208,15 @@ const	char	*CGM_ClassLookup(class)
  *		string naming CGM element  ($class,$id) is returned
  * Side Effect:	
  */
-const	char	*CGM_ElementLookup(class, id)
-	unsigned int	class;
+const	char	*CGM_ElementLookup(cgmclass, id)
+	unsigned int	cgmclass;
 	unsigned int	id;
 {
 	char	*s;
 
-	if (class >= CLASS_SIZE) return(NULL);
+	if (cgmclass >= CLASS_SIZE) return(NULL);
 
-	switch (class) {
+	switch (cgmclass) {
 	case	(int) DEL_ELEMENT:
 		if (id >= DEL_ELEMENT_SIZE) s = NULL;
 		else s = delimiterElements[id];

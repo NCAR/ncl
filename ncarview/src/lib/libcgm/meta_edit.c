@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.20 1994-03-03 17:38:37 haley Exp $
+ *	$Id: meta_edit.c,v 1.21 1995-03-16 21:03:28 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1469,7 +1469,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			(void) CGM_close(t_fd);
 			return(ERR);
 		}
-		if (instr.class == DEL_ELEMENT && instr.id == END_PIC_ID)
+		if (instr.cgmclass == DEL_ELEMENT && instr.id == END_PIC_ID)
 			break;
 
 		if ((i = CGM_putInstr(workingList.tmp_fd, &instr)) < 0) {
@@ -1488,7 +1488,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			(void) CGM_close(t_fd);
 			return(ERR);
 		}
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == BEG_PIC_B_ID)));
+	} while (!((instr.cgmclass == DEL_ELEMENT) && (instr.id == BEG_PIC_B_ID)));
 
 	/* 
 	 * copy elements from "top" frame to tmp file until after an
@@ -1505,7 +1505,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 		}
 		frame_size += i;
 		
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
+	} while (!((instr.cgmclass == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
 	(void) CGM_flushOutputInstr(workingList.tmp_fd);
 	frame_size++;
 	(void) CGM_close(t_fd);
@@ -1622,7 +1622,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
  		 * instruction with new. not if num_occur was negative on 
 		 * entry we will replace all occurences
 		 */	
-		if (instr.class == edit_instr->class 
+		if (instr.cgmclass == edit_instr->cgmclass 
 			&& instr.id == edit_instr->id 
 			&& num_occur !=0) {
 
@@ -1642,7 +1642,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 			}
 		}
 		frame_size += i; /* keep track of num of recordss in frame */
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
+	} while (!((instr.cgmclass == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
 		
 	/*
 	 * flusth the output buffer to the tmp file
@@ -1674,7 +1674,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 * to update the working directory textual description of that
 	 * frame. The textual description comes from the BEG PIC data.
 	 */
-	if (edit_instr->class == DEL_ELEMENT && edit_instr->id == BEG_PIC_ID) {
+	if (edit_instr->cgmclass == DEL_ELEMENT && edit_instr->id == BEG_PIC_ID) {
 		if (workingDir->d[frame].text != NULL) {
 			(void) free ((Voidptr) workingDir->d[frame].text);
 		}
@@ -1683,7 +1683,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 		if (! workingDir->d[frame].text) {
 			return((Directory *) NULL);
 		}
-		bcopy((char *) &edit_instr->buf[1], workingDir->d[frame].text, 
+		memmove((void *)workingDir->d[frame].text,(const void *) &edit_instr->buf[1], 
 			(int) edit_instr->data_length-1);
 
 		workingDir->d[frame].text[edit_instr->data_length] = '\0';
