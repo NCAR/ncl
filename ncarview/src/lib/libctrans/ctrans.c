@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.10 1991-10-04 15:18:57 clyne Exp $
+ *	$Id: ctrans.c,v 1.11 1991-12-19 10:56:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.10 1991-10-04 15:18:57 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.11 1991-12-19 10:56:31 clyne Exp $";
 #endif
 
 
@@ -273,7 +273,7 @@ int	init_metafile(record, cgm_fd)
 	}
 
 	/*
-	 *	make sure first element is a BEGIN METAFILE
+	 *	Make sure firs elements is a BEGIN METAFILE
 	 */
 	if ((status = Instr_Dec(&command)) < 1) {
 		if (status < 0) {	/* else eof	*/
@@ -281,8 +281,10 @@ int	init_metafile(record, cgm_fd)
 		}
 		return(status);
 	}
-	if (command.class == DEL_ELEMENT && command.command == BEG_MF) 
+	DoEscapes(&command);
+	if (command.class == DEL_ELEMENT && command.command == BEG_MF) {
 		Process(&command);
+	}
 	else {
 		ct_error(T_FRE, "missing CGM BEGIN METAFILE element");
 		return(-1);
@@ -372,6 +374,7 @@ Ct_err	ctrans(record)
 		}
 	}
 
+	DoEscapes(&command);
 	/*
 	 * see if we've reached the end of the file
 	 */
@@ -425,7 +428,7 @@ Ct_err	ctrans(record)
 
 	/*
 	 * get the next instruction. It should be either a Begin Pic or 
-	 * an End MF
+	 * an End MF or an escape
 	 */
 	if (Instr_Dec(&command) < 1) {
 		ct_error(T_FRE, "metafile");
@@ -706,6 +709,19 @@ CGMC	*c;
 #endif
 }
 
+/*
+ *	if the cgmc contains a escape element process it and fetch the
+ *	next element into the cgmc and repeat
+ */
+DoEscapes(cgmc)
+	CGMC	*cgmc;
+{
+	while (cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) {
+		Process(cgmc);
+
+		Instr_Dec(cgmc);
+	}
+}
 
 /*
  *	The number of each type in the cgmc to allocate space for.
@@ -909,3 +925,4 @@ static	clear_device()
 	temp_cgmc.command = CLEAR_DEVICE;
 	Process(&temp_cgmc);
 }
+

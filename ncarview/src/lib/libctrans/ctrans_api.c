@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.4 1991-10-09 15:14:09 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.5 1991-12-19 10:56:35 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -270,6 +270,7 @@ CtransSetMetafile(metafile)
 		return(status);
 	}
 
+	DoEscapes(&cgmc);
 	/*
 	 * make sure the first element is a Begin Metafile element
 	 */
@@ -337,6 +338,7 @@ CtransPlotFrame()
 		return(-1);
 	}
 
+	DoEscapes(&cgmc);
 	/*
 	 * See if we've reached the end of the file
 	 */
