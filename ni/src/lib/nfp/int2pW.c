@@ -33,7 +33,7 @@ NhlErrorTypes int2p_W( void )
  */
   void *xout;
   double *tmp_xout;
-  int size_pout, size_leftmost;
+  int size_xout, size_leftmost, *dsizes_xout;
   NclBasicDataTypes type_xout;
 /*
  * Declare various variables for random purposes.
@@ -97,41 +97,60 @@ NhlErrorTypes int2p_W( void )
           2);
 
 /*
- * Check number of dimensions and/or dimension sizes for arguments pin,
- * xin, and pout.
+ * Check dimension sizes for pin and xin. If any of them are multiple
+ * dimensions, then all but the last (rightmost) dimension must be the same.
  */
-  if (ndims_pin != ndims_xin) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The two input arrays must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  if (ndims_pout != ndims_pin) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: 'pout' must have the same number of dimensions as 'pin'");
-    return(NhlFATAL);
-  }
+  npin = dsizes_pin[ndims_pin-1];
 
-  for( i = 0; i < ndims_pin; i++ ) {
-    if (dsizes_pin[i] != dsizes_xin[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The two input arrays must have the same dimensions");
-      return(NhlFATAL);
-    }
-  }
-
-  size_leftmost = 1;
-  for( i = 0; i < ndims_pout-1; i++ ) {
-    if (dsizes_pout[i] != dsizes_pin[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The 'pout' array must have the same leftmost dimensions as the 'pin' array");
-      return(NhlFATAL);
-    }
-    size_leftmost *= dsizes_pout[i];
-  }
-  npin  = dsizes_pin[ndims_pin-1];
-  npout = dsizes_pout[ndims_pout-1];
   if (npin < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The right-most dimension of 'pin' must be at least two");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The rightmost dimension of pin must be at least two");
     return(NhlFATAL);
   }
 
-  size_pout = size_leftmost * npout;
+  if(ndims_pin != ndims_xin && ndims_pin != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: pin must either be a 1-dimensional array or an array the same size as xin");
+    return(NhlFATAL);
+  }
+
+  if(ndims_pin == ndims_xin) {
+    for( i = 0; i < ndims_pin; i++ ) {
+      if (dsizes_pin[i] != dsizes_xin[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: If xin and pin have the same number of dimensions, then they must be the same dimension sizes");
+        return(NhlFATAL);
+      }
+    }
+  }
+  else {
+    if (dsizes_xin[ndims_xin-1] != npin) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: If pin is a one-dimensional array, then it must be the same size as the righmost dimension of xin");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Check dimension sizes for pout. If it is multi-dimensional, then
+ * it must have the same rightmost dimensions as xin.
+ */
+  npout = dsizes_pout[ndims_pout-1];
+
+  if(ndims_pout != ndims_xin && ndims_pout != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: pout must either be a 1-dimensional array or an array with the same number of dimensions as xin");
+    return(NhlFATAL);
+  }
+
+  if(ndims_pout > 1) {
+    for( i = 0; i < ndims_pout-1; i++ ) {
+      if (dsizes_pout[i] != dsizes_xin[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: If xin and pout have the same number of dimensions, then all but their last dimension must be the same size");
+        return(NhlFATAL);
+      }
+    }
+  }
+/*
+ * Calculate the size of the leftmost dimensions of xin (if any).
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_xin-1; i++ ) size_leftmost *= dsizes_xin[i];
 
 /*
  * Check for missing values.
@@ -155,7 +174,7 @@ NhlErrorTypes int2p_W( void )
     missing_dx.doubleval = 1.e36;
   }
 /*
- * Coerce data to double if necessary.
+ * Create temporary arrays to coerce input to double, if necessary.
  */
   if(type_xin != NCL_double) {
     tmp_xin = (double*)calloc(npin,sizeof(double));
@@ -164,29 +183,51 @@ NhlErrorTypes int2p_W( void )
       return(NhlFATAL);
     }
   }
-  if(type_pin != NCL_double) {
-    tmp_pin = (double*)calloc(npin,sizeof(double));
-    if( tmp_pin == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for coercing pin array to double precision");
-      return(NhlFATAL);
+  if(ndims_pin == 1) {
+    tmp_pin = coerce_input_double(pin,type_pin,npin,0,NULL,NULL);
+  }
+  else {
+    if(type_pin != NCL_double) {
+      tmp_pin = (double*)calloc(npin,sizeof(double));
+      if( tmp_pin == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for coercing pin array to double precision");
+        return(NhlFATAL);
+      }
     }
   }
-  if(type_pout != NCL_double) {
-    tmp_pout = (double*)calloc(npout,sizeof(double));
-    if( tmp_pout == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for coercing pout array to double precision");
-      return(NhlFATAL);
+  if(ndims_pout == 1) {
+    tmp_pout = coerce_input_double(pout,type_pout,npout,0,NULL,NULL);
+  }
+  else {
+    if(type_pout != NCL_double) {
+      tmp_pout = (double*)calloc(npout,sizeof(double));
+      if( tmp_pout == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for coercing pout array to double precision");
+        return(NhlFATAL);
+      }
     }
   }
 /*
  * Allocate space for output.
  */
+  dsizes_xout = (int*)calloc(ndims_xin,sizeof(int));
+  if(dsizes_xout == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_xin-1; i++ ) {
+    dsizes_xout[i] = dsizes_xin[i];
+  }
+  dsizes_xout[ndims_xin-1] = npout;
+
+  size_xout   = size_leftmost * npout;
+
   if(type_xin  != NCL_double && type_pin != NCL_double &&
      type_pout != NCL_double) {
 
     type_xout = NCL_float;
 
-    xout     = (void*)calloc(size_pout,sizeof(float));
+    xout     = (void*)calloc(size_xout,sizeof(float));
     tmp_xout = (double*)calloc(npout,sizeof(double));
     if(xout == NULL || tmp_xout == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for output array");
@@ -195,7 +236,7 @@ NhlErrorTypes int2p_W( void )
   }
   else {
     type_xout = NCL_double;
-    xout = (void*)calloc(size_pout,sizeof(double));
+    xout = (void*)calloc(size_xout,sizeof(double));
     if( xout == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -217,18 +258,20 @@ NhlErrorTypes int2p_W( void )
  */
   index_in = index_out = 0;
   for( i = 0; i < size_leftmost; i++ ) {
-    if(type_pin != NCL_double) {
+    if(ndims_pin > 1) {
+      if(type_pin != NCL_double) {
 /*
  * Coerce npin subsection of pin (tmp_pin) to double.
  */
-      coerce_subset_input_double(pin,tmp_pin,index_in,type_pin,npin,
-                                 0,NULL,NULL);
-    }
-    else {
+        coerce_subset_input_double(pin,tmp_pin,index_in,type_pin,npin,
+                                   0,NULL,NULL);
+      }
+      else {
 /*
  * Point tmp_pin to appropriate location in pin.
  */
-      tmp_pin = &((double*)pin)[index_in];
+        tmp_pin = &((double*)pin)[index_in];
+      }
     }
     if(type_xin != NCL_double) {
 /*
@@ -243,18 +286,20 @@ NhlErrorTypes int2p_W( void )
  */
       tmp_xin = &((double*)xin)[index_in];
     }
-    if(type_pout != NCL_double) {
+    if(ndims_pout > 1) {
+      if(type_pout != NCL_double) {
 /*
  * Coerce npout subsection of pout (tmp_pout) to double.
  */
-      coerce_subset_input_double(pout,tmp_pout,index_out,type_pout,npout,
-                                 0,NULL,NULL);
-    }
-    else {
+        coerce_subset_input_double(pout,tmp_pout,index_out,type_pout,npout,
+                                   0,NULL,NULL);
+      }
+      else {
 /*
  * Point tmp_pout to appropriate location in pout.
  */
-      tmp_pout = &((double*)pout)[index_out];
+        tmp_pout = &((double*)pout)[index_out];
+      }
     }
 
     if(type_xout == NCL_double) tmp_xout = &((double*)xout)[index_out];
@@ -267,16 +312,16 @@ NhlErrorTypes int2p_W( void )
       if (ier >= 1000) nmiss++;
       else             nmono++;
       set_subset_output_missing(xout,index_out,type_xout,npout,
-				missing_dx.doubleval);
+                                missing_dx.doubleval);
     }
     else {
 /*
  * Copy output values from temporary tmp_xout to xout.
  */
       if(type_xout != NCL_double) {
-	for(j = 0; j < npout; j++) {
-	  ((float*)xout)[index_out+j] = (float)(tmp_xout[j]);
-	}
+        for(j = 0; j < npout; j++) {
+          ((float*)xout)[index_out+j] = (float)(tmp_xout[j]);
+        }
       }
     }
     index_in  += npin;
@@ -305,14 +350,14 @@ NhlErrorTypes int2p_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(xout,ndims_pout,dsizes_pout,&missing_rx,
+    return(NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_rx,
                           NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(xout,ndims_pout,dsizes_pout,&missing_dx,
+    return(NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_dx,
                           NCL_double,0));
   }
 }
