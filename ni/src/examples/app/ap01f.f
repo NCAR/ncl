@@ -24,15 +24,17 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFTextItemClass
 
       integer appid,workid,textid
       integer rlist,ierr
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       NCGM=0
       X11=1
       PS= 0
+      PDF=0
 
 C
 C Initialize the HLU library.
@@ -91,6 +93,14 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./ap01f.ps',ierr)
          call NhlFCreate(workid,'x',
      &        NhlFPSWorkstationClass,0,rlist,ierr)
+      elseif (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./ap01f.pdf',ierr)
+         call NhlFCreate(workid,'x',
+     &        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 
 C

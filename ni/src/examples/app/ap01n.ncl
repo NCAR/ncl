@@ -1,5 +1,5 @@
 ;
-;      $Id: ap01n.ncl,v 1.2 1997-09-30 16:26:39 haley Exp $
+;      $Id: ap01n.ncl,v 1.3 2003-02-28 21:05:49 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -50,6 +50,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -74,6 +75,15 @@ else
       workid = create "x" psWorkstationClass defaultapp
         "wkPSFileName" : "ap01n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDF workstation object.
+;
+        workid = create "x" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "ap01n.pdf"
+        end create
+      end if
     end if
   end if
 end if

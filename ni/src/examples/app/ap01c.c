@@ -2,6 +2,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
@@ -9,7 +10,7 @@ main()
 {
     int appid, workid, textid;
     int rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
     /*
      * Initialize the HLU library.
@@ -67,6 +68,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./ap01c.ps");
         NhlCreate(&workid,"x",NhlpsWorkstationClass,NhlDEFAULT_APP,
+				  rlist);
+    }
+    else if (PDF) {
+        /*
+         * Create a PDF workstation.
+         */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./ap01c.pdf");
+        NhlCreate(&workid,"x",NhlpdfWorkstationClass,NhlDEFAULT_APP,
 				  rlist);
     }
 
