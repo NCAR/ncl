@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.55 1995-03-21 22:36:52 dbrown Exp $
+ *      $Id: Contour.c,v 1.56 1995-03-28 04:43:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1216,6 +1216,7 @@ static NhlErrorTypes    SetupLevelsExplicit(
 #if	NhlNeedProto
 	NhlContourLayer	cnew, 
 	NhlContourLayer	cold,
+	NhlBoolean	init,
 	float		**levels,
 	char		*entry_name
 #endif
@@ -1521,6 +1522,7 @@ static NrmQuark	Qconst_f_label_format = NrmNULLQUARK;
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK; 
 
 #define NhlDASHBUFSIZE	128
+#define cnNODATA_STRING "NO CONTOUR DATA"
 
 static NhlContourLayer	Cnl;
 static NhlContourLayerPart	*Cnp;
@@ -2800,7 +2802,8 @@ static NhlErrorTypes ContourGetBB
 	if (cntp->overlay_status == _tfCurrentOverlayMember)
 		return ret;
 
-	if (cnp->info_anno_id != NhlNULLOBJID && ! cnp->display_constf) {
+	if (cnp->info_anno_id != NhlNULLOBJID && cnp->info_lbl.on &&
+	    ! cnp->display_constf) {
 		subret = NhlVAGetValues(cnp->info_anno_id,
 					NhlNvpXF,&x,
 					NhlNvpYF,&y,
@@ -3157,8 +3160,6 @@ static NhlErrorTypes ContourPostDraw
 
 	Cnp = cnp;
 	Cnl = cnl;
-
-	if (! cnp->data_init) return NhlNOERROR;
 
 	if (cnp->display_constf) {
 		if (tfp->overlay_status == _tfNotInOverlay) {
@@ -5659,12 +5660,8 @@ static NhlErrorTypes ManageInfoLabel
 					  &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
+
 	if (init || cnp->info_lbl_rec.id == NhlNULLOBJID) {
-		if (pos_changed) {
-			NhlSetSArg(&targs[(targc)++],NhlNtxPosXF,ilp->x_pos);
-			NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,ilp->y_pos);
-			NhlSetSArg(&targs[(targc)++],NhlNtxJust,ilp->just);
-		}
 		NhlSetSArg(&targs[(targc)++],NhlNtxString,
 			   (NhlString)ilp->text);
 		NhlSetSArg(&targs[(targc)++],NhlNtxFontHeightF,ilp->height);
@@ -5701,13 +5698,21 @@ static NhlErrorTypes ManageInfoLabel
 			return NhlFATAL;
 		}
 		cnp->info_lbl_rec.id = tmpid;
-		if (tfp->overlay_status != _tfNotInOverlay) {
-			subret = ManageAnnotation(cnnew,ocnp,init,_cnINFO);
-			ret = MIN(ret,subret);
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			targc = 0;
+			/* go on so that text position can be set */
 		}
-		return ret;
+		else {
+			subret = ManageAnnotation(cnnew,ocnp,init,_cnINFO);
+			return MIN(ret,subret);
+		}
 	}
 
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		subret = SetTextPosition(cnnew,ocnp,
+					 _cnINFO,&pos_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
 	if (pos_changed) {
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosXF,ilp->x_pos);
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,ilp->y_pos);
@@ -5762,12 +5767,7 @@ static NhlErrorTypes ManageInfoLabel
 		return NhlFATAL;
 	}
 
-	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,_cnINFO,
-					 &pos_changed,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	}
-	else {
+	if (tfp->overlay_status != _tfNotInOverlay) {
 		subret = ManageAnnotation(cnnew,ocnp,init,_cnINFO);
 		ret = MIN(ret,subret);
 	}
@@ -5831,8 +5831,8 @@ static NhlErrorTypes ManageConstFLabel
 
 /*
  * The constant field label resource must be turned on AND a constant
- * field condition must exist for the constant field annotation to 
- * created and/or displayed.
+ * field condition must exist for the constant field annotation  
+ * to be displayed.
  */
 
 	if (init || cnp->constf_string != ocnp->constf_string) {
@@ -5854,16 +5854,16 @@ static NhlErrorTypes ManageConstFLabel
 			NhlFree(ocnp->constf_string);
 	}
 
-	cnp->display_constf = cflp->on && cnp->const_field;
+	cnp->display_constf = cflp->on && 
+		(cnp->const_field || ! cnp->data_init);
 
-#if 0
-	if (! cnp->display_constf && 
-	    (cnp->display_constf == ocnp->display_constf))
-		return NhlNOERROR;
-#endif
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
 				  &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+	if (! cnp->data_init) {
+		cflp->text = (void *) cnNODATA_STRING;
+	}
 
 	if (init || cnp->constf_lbl_rec.id == NhlNULLOBJID) {
 		if (pos_changed) {
@@ -5908,13 +5908,21 @@ static NhlErrorTypes ManageConstFLabel
 		}
 		cnp->constf_lbl_rec.id = tmpid;
 
-		if (tfp->overlay_status != _tfNotInOverlay) {
-			subret = ManageAnnotation(cnnew,ocnp,init,_cnCONSTF);
-			ret = MIN(ret,subret);
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			targc = 0; 
+			/* go on so text position can be set */
 		}
-		return ret;
+		else {
+			subret = ManageAnnotation(cnnew,ocnp,init,_cnCONSTF);
+			return MIN(ret,subret);
+		}
 	}
 
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		subret = SetTextPosition(cnnew,ocnp,_cnCONSTF,
+					 &pos_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
 	if (pos_changed) {
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosXF,cflp->x_pos);
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,cflp->y_pos);
@@ -5969,12 +5977,7 @@ static NhlErrorTypes ManageConstFLabel
 		return NhlFATAL;
 	}
 
-	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,_cnCONSTF,
-					 &pos_changed,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	}
-	else {
+	if (tfp->overlay_status != _tfNotInOverlay) {
 		subret = ManageAnnotation(cnnew,ocnp,init,_cnCONSTF);
 		ret = MIN(ret,subret);
 	}
@@ -6031,13 +6034,13 @@ static NhlErrorTypes ManageAnnotation
 		rec = &cnp->info_lbl_rec;
 		orec = &ocnp->info_lbl_rec;
 		idp = &cnp->info_anno_id;
-		rec->on = cnp->info_lbl.on && ! cnp->const_field;
+		rec->on = cnp->info_lbl.on && ! cnp->display_constf;
 	}
 	else {
 		rec = &cnp->constf_lbl_rec;
 		orec = &ocnp->constf_lbl_rec;
 		idp = &cnp->constf_anno_id;
-		rec->on = cnp->constf_lbl.on && cnp->const_field;
+		rec->on = cnp->constf_lbl.on && cnp->display_constf;
 	}
 
 	if (*idp <= NhlNULLOBJID) {
@@ -6081,10 +6084,6 @@ static NhlErrorTypes ManageAnnotation
 	}
 	if (rec->on != orec->on) 
 		NhlSetSArg(&sargs[(nargs)++],NhlNanOn,rec->on);
-#if 0
-	if (rec->id != orec->id) 
-		NhlSetSArg(&sargs[(nargs)++],NhlNanViewId,rec->id);
-#endif
 	if (rec->zone != orec->zone) 
 		NhlSetSArg(&sargs[(nargs)++],NhlNanZone,rec->zone);
 	if (rec->side != orec->side) 
@@ -6593,6 +6592,8 @@ static NhlErrorTypes SetTextPosition
 	NhlcnLabelAttrs		*olap;
 	char			*res_prefix;
 	float			width_vp, height_vp;
+	float			x_start, y_start;
+	int			sign;
 
 	if (atype == _cnINFO) {
 		anno_rec = &cnp->info_lbl_rec;
@@ -6616,29 +6617,34 @@ static NhlErrorTypes SetTextPosition
 		return ret;
 	}
 
+	x_start = anno_rec->zone != 0 ? cnnew->view.x :
+		cnnew->view.x + 0.5 * cnnew->view.width; 
+	y_start = anno_rec->zone != 0 ? cnnew->view.y - cnnew->view.height :
+		cnnew->view.y - 0.5 * cnnew->view.height;
+	sign = anno_rec->zone == 1 ? 1.0 : - 1.0;
+
+
 	switch (anno_rec->side) {
 	case NhlBOTTOM:
-		lap->x_pos = cnnew->view.x + 
-			anno_rec->para_pos * cnnew->view.width;
-		lap->y_pos = cnnew->view.y - cnnew->view.height - 
-			anno_rec->ortho_pos * cnnew->view.height;
+		lap->x_pos = x_start + anno_rec->para_pos * cnnew->view.width;
+		lap->y_pos = y_start - 
+			sign * anno_rec->ortho_pos * cnnew->view.height;
 		break;
 	case NhlTOP:
-		lap->x_pos = cnnew->view.x + 
-			anno_rec->para_pos * cnnew->view.width;
-		lap->y_pos = cnnew->view.y + 
-			anno_rec->ortho_pos * cnnew->view.height;
+		lap->x_pos = x_start + anno_rec->para_pos * cnnew->view.width;
+		lap->y_pos = y_start + 
+			sign * anno_rec->ortho_pos * cnnew->view.height;
 		break;
 	case NhlLEFT:
-		lap->x_pos = cnnew->view.x - 
-			anno_rec->ortho_pos * cnnew->view.width;
-		lap->y_pos = cnnew->view.y - cnnew->view.height +
+		lap->x_pos = x_start - 
+			sign * anno_rec->ortho_pos * cnnew->view.width;
+		lap->y_pos = y_start +
 			anno_rec->para_pos * cnnew->view.height;
 		break;
 	case NhlRIGHT:
-		lap->x_pos = cnnew->view.x + cnnew->view.width + 
-			anno_rec->ortho_pos * cnnew->view.width;
-		lap->y_pos = cnnew->view.y - cnnew->view.height +
+		lap->x_pos = x_start + cnnew->view.width + 
+			sign * anno_rec->ortho_pos * cnnew->view.width;
+		lap->y_pos = y_start +
 			anno_rec->para_pos * cnnew->view.height;
 		break;
 	default:
@@ -6651,45 +6657,17 @@ static NhlErrorTypes SetTextPosition
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
 	}
+
 	if (anno_rec->zone > 0)
 		lap->just = ConstrainJustification(anno_rec);
+	else 
+		lap->just = anno_rec->just;
 
-/*
- * Adjust the annotation position based on the justification value
- */
-	switch (lap->just) {
-	case NhlTOPLEFT:
-		break;
-	case NhlTOPCENTER:
-		lap->x_pos = lap->x_pos - width_vp / 2.0;
-		break;
-	case NhlTOPRIGHT:
-		lap->x_pos = lap->x_pos - width_vp;
-		break;
-	case NhlCENTERLEFT:
-		lap->y_pos = lap->y_pos + height_vp / 2.0;
-		break;
-	case NhlCENTERCENTER:
-		lap->x_pos = lap->x_pos - width_vp / 2.0;
-		lap->y_pos = lap->y_pos + height_vp / 2.0;
-		break;
-	case NhlCENTERRIGHT:
-		lap->x_pos = lap->x_pos - width_vp;
-		lap->y_pos = lap->y_pos + height_vp / 2.0;
-		break;
-	case NhlBOTTOMLEFT:
-		lap->y_pos = lap->y_pos + height_vp;
-		break;
-	case NhlBOTTOMCENTER:
-		lap->x_pos = lap->x_pos - width_vp / 2.0;
-		lap->y_pos = lap->y_pos + height_vp;
-		break;
-	case NhlBOTTOMRIGHT:
-		lap->y_pos = lap->y_pos + height_vp;
-		lap->x_pos = lap->x_pos - width_vp;
-		break;
+	if (lap->x_pos != olap->x_pos ||
+	    lap->y_pos != olap->y_pos ||
+	    lap->just != olap->just) {
+		*pos_changed = True;
 	}
-
 	return ret;
 }
 
@@ -6931,8 +6909,6 @@ static NhlErrorTypes    CopyTextAttrs
 
 	return NhlNOERROR;
 }
-			
-
 
 /*
  * Function:  AdjustText
@@ -8099,7 +8075,7 @@ static NhlErrorTypes    SetupLevels
 						      levels,entry_name);
 		}
 		else {
-			subret = SetupLevelsExplicit(cnew,cold,
+			subret = SetupLevelsExplicit(cnew,cold,init,
 						     levels,entry_name);
 		}
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -8187,6 +8163,13 @@ static NhlErrorTypes    SetupLevelsManual
 	else
 		count =	(lmax - lmin) / cnp->level_spacing + 1.5;
 
+	if (count <= 0) {
+		e_text = 
+	  "%s: cnLevelSpacingF value exceeds or equals data range: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+		return MIN(NhlWARNING,ret);
+	}
 	if (count >  Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
@@ -8327,7 +8310,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	if (cnp->level_spacing_set) {
 		spacing = cnp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
-		lmax = floor(lmax / spacing) * spacing;
+		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
 		count =	(lmax - lmin) / cnp->level_spacing + 1.5;
 		if (_NhlCmpFAny(lmin,cnp->zmin,6) == 0.0) {
 			lmin += spacing;
@@ -8337,7 +8320,15 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			lmax -= spacing;
 			count--;
 		}
-		if (count >  Nhl_cnMAX_LEVELS) {
+		if (count <= 0) {
+			ret = MIN(NhlWARNING,ret);
+			lmin = cnp->zmin;
+			lmax = cnp->zmax;
+			e_text = 
+	  "%s: cnLevelSpacingF value exceeds or equals data range: defaulting";
+			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		}
+		else if (count >  Nhl_cnMAX_LEVELS) {
 			ret = MIN(NhlWARNING,ret);
 			e_text = 
  "%s: cnLevelSpacingF value causes level count to exceed maximum: defaulting";
@@ -8406,12 +8397,14 @@ static NhlErrorTypes    SetupLevelsExplicit
 #if	NhlNeedProto
 	(NhlContourLayer	cnew, 
 	 NhlContourLayer	cold,
+	 NhlBoolean		init,
 	 float			**levels,
 	 char			*entry_name)
 #else
 (cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
 	NhlContourLayer	cold;
+	NhlBoolean	init;
 	float		**levels;
 	char		*entry_name;
 
@@ -8433,7 +8426,7 @@ static NhlErrorTypes    SetupLevelsExplicit
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNcnLevels);
 		return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
 	}
-	if (cnp->levels != ocnp->levels)
+	if (init || cnp->levels != ocnp->levels)
 		count = cnp->levels->num_elements;
 	else 
 		count = cnp->level_count;
@@ -9110,6 +9103,7 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
 #endif
 
 {
+	int status;
 
         if (*imap == 0) {
                 if ((int) *xinp == NhlcnMAPVAL)
@@ -9121,11 +9115,22 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
                 *xotp = *xinp;
                 *yotp = *yinp;
         }
-        else if (*imap > 0)
-                _NhlovCpMapXY(xinp,yinp,xotp,yotp);
-        else
-                _NhlovCpInvMapXY(xinp,yinp,xotp,yotp);
-                
+	else if (Cnl->trans.overlay_status == _tfCurrentOverlayMember) { 
+		if (*imap > 0)
+			_NhlovCpMapXY(xinp,yinp,xotp,yotp);
+		else
+			_NhlovCpInvMapXY(xinp,yinp,xotp,yotp);
+	}
+	else {
+		if (*imap > 0)
+			_NhlCompcToWin((NhlLayer)Cnp->trans_obj,(NhlLayer)Cnl,
+				       xinp,yinp,1,xotp,yotp,
+				       &status,NULL,NULL);
+		else
+			_NhlWinToCompc((NhlLayer)Cnp->trans_obj,(NhlLayer)Cnl,
+				       xinp,yinp,1,xotp,yotp,
+				       &status,NULL,NULL);
+	}
 	return;
 }
 

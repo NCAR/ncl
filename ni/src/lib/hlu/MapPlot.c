@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.27 1995-03-15 11:48:35 boote Exp $
+ *      $Id: MapPlot.c,v 1.28 1995-03-28 04:43:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1995,7 +1995,8 @@ static NhlGenArray mpGenArraySubsetCopy
 /*
  * Function:	MapPlotDestroy
  *
- * Description:
+ * Description: Destroys MapPlot instance. No need to check for 
+ *		Overlay Member Plot status. MapPlot cannot be a Member Plot.
  *
  * In Args:	inst		instance record pointer
  *

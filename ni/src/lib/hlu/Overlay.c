@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.36 1995-03-21 22:36:56 dbrown Exp $
+ *      $Id: Overlay.c,v 1.37 1995-03-28 04:43:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1737,7 +1737,8 @@ static NhlErrorTypes OverlayPostDraw
 		}
 
 		for ( ; anlp != NULL; anlp = anlp->next) {
-				
+
+			NhlLayer view;
 			if (anlp->status <= NhlNEVER)
 				continue;
 			else if (anlp->status == NhlCONDITIONAL) {
@@ -1763,7 +1764,8 @@ static NhlErrorTypes OverlayPostDraw
 				continue;
 			if (anlp->plot_id == NhlNULLOBJID)
 				continue;
-			subret = NhlDraw(anlp->plot_id);
+			view = _NhlGetLayer(anlp->plot_id);
+			subret = _NhlOverlayDraw(view);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				e_text = "%s: error drawing annotation";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -2758,6 +2760,13 @@ SetAnnotations
 				e_text = "%s: invalid View object id";
 				NhlPError(NhlFATAL,
 					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			if (_NhlIsOverlayMember(idp[i])) {
+				e_text = 
+				 "%s: plot ID %d is already an overlay member";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  entry_name,idp[i]);
 				return NhlFATAL;
 			}
 			if ((anno_id = _NhlAddAnnotation((NhlLayer)ovl,
@@ -4681,8 +4690,9 @@ NhlErrorTypes NhlAddToOverlay
 	}
 
 /*
- * If the plot is already an overlay member (but not a base plot) it cannot
- * be part of another overlay (even the same overlay).
+ * If the plot is already an overlay member (an annotation or an
+ * overlay member plot) it cannot be part of another overlay.
+ * (even the same overlay).
  * If the plot is an overlay base already, any overlays it has acquired 
  * become part of the overlay it has been added to. Get the record 
  * containing the list of overlays plots plus their associated overlay objs.
@@ -4692,7 +4702,7 @@ NhlErrorTypes NhlAddToOverlay
  * allocate and fill in a single overlay record for it.
  */
 
-	if (plot_tfp->overlay_status == _tfCurrentOverlayMember) {
+	if (_NhlIsOverlayMember(plot_id)) {
 		e_text = "%s: plot ID %d is already an overlay member";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,plot_id);
 		return NhlFATAL;
@@ -5208,6 +5218,16 @@ int NhlAddAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+/*
+ * Ensure that the annotation view is not a current Overlay Member
+ */
+
+	if (_NhlIsOverlayMember(anno_view_id)) {
+		e_text = "%s: plot ID %d is already an overlay member";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
+		return NhlFATAL;
+	}
+
 	return (_NhlAddAnnotation(plot_overlay,anno_view,entry_name));
 
 
@@ -5253,7 +5273,9 @@ _NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
 /*
  * Function:	_NhlAddAnnotation
  *
- * Description:	
+ * Description:	Private interface for adding an annotation.
+ *		Assumes that anno_view and the overlay have already
+ *		been checked for validity
  *
  * In Args:	overlay		Overlay object layer
  *		anno_view	View object layer
@@ -5288,20 +5310,6 @@ int _NhlAddAnnotation
 	int			anno_id;
 
 	if (entry_name == NULL) entry_name = "_NhlAddAnnotation";
-
-	subret = NhlVAGetValues(anno_view->base.id,
-				NhlNvpAnnotationId,&anno_id,NULL);
-	if ((ret = MIN(ret,subret)) < NhlINFO) {
-		e_text = "%s: error getting values";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return (int) ret;
-	}
-
-	if (anno_id != NhlNULLOBJID) {
-		e_text = "%s: View object is already an annotation";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		return (int) NhlWARNING;
-	}
 		
 /*
  * Make sure there are enough elements in the anno_view and annotation

@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.8 1994-12-16 20:04:11 boote Exp $
+ *      $Id: Draw.c,v 1.9 1995-03-28 04:43:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -168,19 +168,17 @@ CallPostDraw
 	return(MIN(superclassret,localret));
 }
 
+
 /*
- * Function:	NhlDraw
+ * Function:	_NhlOverlayDraw
  *
- * Description:	This function first checks the overlay status of a plot.
- *		If it is the base of an overlay, it substitutes the 
- *		overlay layer for the plot layer.
- *		If it is part of an overlay other than the overlay base, 
- *		it returns an error.
- *		Then it calls the pre-draw, draw, and post-draw 
- *		methods for the plot.
+ * Description:	This function checks to see if an object is an Overlay
+ *		Base; if so the Overlay layer is substituted so that the
+ *		Overlay can manage the drawing.
+ *		Then it calls the pre-draw, draw, and post-draw methods.
  *
  * In Args:	
- *		int	id	id of object to draw
+ *		NhlLayer layer
  *
  * Out Args:	
  *
@@ -188,27 +186,26 @@ CallPostDraw
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlDOCTAG(NhlDraw)
-NhlErrorTypes
-NhlDraw
+
+NhlErrorTypes _NhlOverlayDraw
 #if	NhlNeedProto
 (
-	int	id	/* id of object to draw	*/
+	NhlLayer	layer
 )
 #else
-(id)
-	int id;
+(layer)
+	NhlLayer	layer;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "_NhlOverlayDraw";
 	char			*e_text;
-	char			*entry_name = "NhlDraw";
-	NhlLayer		layer = _NhlGetLayer(id);
 	NhlTransformLayerPart	*tfp;
 	
-	if((layer == NULL) || !_NhlIsBase(layer)){
+	if((layer == NULL) || !_NhlIsView(layer)){
 		e_text = "%s: Invalid plot ID: %d";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,id);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  e_text,entry_name,layer->base.id);
 		return(NhlFATAL);
 	}
 
@@ -216,21 +213,14 @@ NhlDraw
 
 		tfp = & ((NhlTransformLayer) layer)->trans;
 
-		if (tfp->overlay_status == _tfCurrentOverlayMember) {
-
-			e_text = 
-		  "%s: cannot draw overlay member plot, ID %d, independently";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
-			return(NhlWARNING);
-		}
-		else if (tfp->overlay_status == _tfCurrentOverlayBase) {
+		if (tfp->overlay_status == _tfCurrentOverlayBase) {
 
 			layer = tfp->overlay_object;
 			if (layer == NULL || ! _NhlIsTransform(layer)) {
 				e_text = 
 				 "%s: invalid overlay object for plot, ID %d";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name,id);
+					  e_text,entry_name,layer->base.id);
 				return(NhlFATAL);
 			}
 		}
@@ -260,6 +250,48 @@ NhlDraw
 	}
 
 	return ret;
+
+}
+
+/*
+ * Function:	NhlDraw
+ *
+ * Description:	This function first checks the overlay status of a plot.
+ *		Attempts to draw Overlay Members return a WARNING. 
+ *		It then calls _NhlOverlayDraw
+ *
+ * In Args:	
+ *		int	id	id of object to draw
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlDOCTAG(NhlDraw)
+NhlErrorTypes
+NhlDraw
+#if	NhlNeedProto
+(
+	int	id	/* id of object to draw	*/
+)
+#else
+(id)
+	int id;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "NhlDraw";
+	
+	if (_NhlIsOverlayMember(id)) {
+		e_text =
+		       "%s: cannot draw Overlay Member, ID %d, independently";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
+		return(NhlWARNING);
+	}
+
+	return _NhlOverlayDraw(_NhlGetLayer(id));
 
 }
 
@@ -321,7 +353,7 @@ _NhlPreDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsBase(layer)){
+	if((layer == NULL) || !_NhlIsView(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlPreDraw");
 		return(NhlFATAL);
@@ -357,7 +389,7 @@ _NhlDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsBase(layer)){
+	if((layer == NULL) || !_NhlIsView(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlDraw");
 		return(NhlFATAL);
@@ -394,7 +426,7 @@ _NhlPostDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsBase(layer)){
+	if((layer == NULL) || !_NhlIsView(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Invalid layer passed to _NhlPostDraw");
 		return(NhlFATAL);
