@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.51 1996-11-20 23:02:24 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.52 1996-11-21 00:00:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3159,21 +3159,38 @@ NhlErrorTypes _NclIgetenv
 	if(str != NULL) {
 		tmp = getenv(str);
 		if(tmp == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"getenv : (%s) is not a defined environment parameter",str);
 			outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			return(NclReturnValue(
+				&outval,
+				1,
+				&dimsize,
+				&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+				NCL_string,
+				1
+			));
 		} else {
-			outval = NrmStringToQuark(getenv(str));
+			outval = NrmStringToQuark(tmp);
+			return(NclReturnValue(
+				&outval,
+				1,
+				&dimsize,
+				NULL,
+				NCL_string,
+				1
+			));
 		}
 	} else {
 		outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+		return(NclReturnValue(
+			&outval,
+			1,
+			&dimsize,
+			&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+			NCL_string,
+			1
+		));
 	}
-	return(NclReturnValue(
-		&outval,
-		1,
-		&dimsize,
-		&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
-		NCL_string,
-		1
-	));
 	
 }
 

@@ -217,13 +217,17 @@ int operation;
 				_NclDestroyObj((NclObj)lhs.u.data_var);
 			}
 		} else {
-			if((lhs.u.data_var->obj.status != PERMANENT)&&(result->u.data_obj->obj.ref_count ==1)) {
-				lhs.u.data_var->var.thevalue_id = -1;
-				_NclDestroyObj((NclObj)lhs.u.data_var);
-				result->u.data_obj->obj.status = TEMPORARY;
-				result->u.data_obj->obj.ref_count = 0;
-				NclFree(result->u.data_obj->obj.parents);
-				result->u.data_obj->obj.parents = NULL;
+			if(lhs.u.data_var->obj.status != PERMANENT) {
+				if(result->u.data_obj->obj.id == lhs.u.data_var->var.thevalue_id) {
+					lhs.u.data_var->var.thevalue_id = -1;
+					_NclDestroyObj((NclObj)lhs.u.data_var);
+					result->u.data_obj->obj.status = TEMPORARY;
+					result->u.data_obj->obj.ref_count = 0;
+					NclFree(result->u.data_obj->obj.parents);
+					result->u.data_obj->obj.parents = NULL;
+				} else {
+					_NclDestroyObj((NclObj)lhs.u.data_var);
+				}
 			}
 		}
         } 
@@ -247,15 +251,18 @@ int operation;
 				_NclDestroyObj((NclObj)rhs.u.data_var);
 			}
 		} else {
-			if((rhs.u.data_var->obj.status != PERMANENT)&&(result->u.data_obj->obj.ref_count ==1)) {
-				rhs.u.data_var->var.thevalue_id = -1;
-				_NclDestroyObj((NclObj)rhs.u.data_var);
-				result->u.data_obj->obj.status = TEMPORARY;
-				result->u.data_obj->obj.ref_count = 0;
-				NclFree(result->u.data_obj->obj.parents);
-				result->u.data_obj->obj.parents = NULL;
+			if(rhs.u.data_var->obj.status != PERMANENT) {
+				if(result->u.data_obj->obj.id == rhs.u.data_var->var.thevalue_id) {
+					rhs.u.data_var->var.thevalue_id = -1;
+					_NclDestroyObj((NclObj)rhs.u.data_var);
+					result->u.data_obj->obj.status = TEMPORARY;
+					result->u.data_obj->obj.ref_count = 0;
+					NclFree(result->u.data_obj->obj.parents);
+					result->u.data_obj->obj.parents = NULL;
+				} else {
+					_NclDestroyObj((NclObj)rhs.u.data_var);
+				}
 			}
-
 		}
         } 
 

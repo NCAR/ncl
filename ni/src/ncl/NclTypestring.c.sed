@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.9 1996-05-02 23:30:52 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.10 1996-11-21 00:00:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "Symbol.h"
 #include <errno.h>
@@ -121,7 +122,7 @@ static NhlErrorTypes Ncl_Type_string_InitClass
 		CvtNhlTStringGenArrayToNclData,NULL,0,False,NULL);
         NhlRegisterConverter(NhlbaseClass,NhlTString,NhlTNclData,
 		CvtNhlTStringToNclData,NULL,0,False,NULL);
-	nclTypestringClassRec.type_class.default_mis.stringval = -1;
+	nclTypestringClassRec.type_class.default_mis.stringval = NrmStringToQuark("missing");
 	return(NhlNOERROR);
 }
 
