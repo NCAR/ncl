@@ -1,9 +1,8 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.14 1992-02-27 22:08:57 clyne Exp $
+#	$Id: yMakefile,v 1.15 1992-06-25 21:47:37 clyne Exp $
 #
 
-LOCINCDIR	= ../../include
 
 MYNAME		= ctrans
 
@@ -44,7 +43,7 @@ LIBS		= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
 
 
 GENLIBS 	= -lm 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= 
 
 DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
 

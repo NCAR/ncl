@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1992-04-02 21:30:08 clyne Exp $
+#	$Id: yMakefile,v 1.2 1992-06-25 21:48:09 clyne Exp $
 #
 #
 #	Makefile for rasstat
@@ -13,12 +13,11 @@ BINDIR_LOCAL = ../../../bin
 MYNAME	= rasstat
 
 LOCLIBDIR	= ../../../lib
-LOCINCDIR	= ../../include
 
 LIBS		= $(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a \
 		$(LIBDIR)/libncarv.a -lm
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= 
 
 OBJS		= rasstat.o
 SRCS		= rasstat.c

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.9 1992-02-14 16:58:41 clyne Exp $
+.\"	$Id: ctrans.m,v 1.10 1992-06-25 21:46:54 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"

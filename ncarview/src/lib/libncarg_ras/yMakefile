@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.21 1992-06-24 21:07:23 clyne Exp $
+#	$Id: yMakefile,v 1.22 1992-06-25 21:49:12 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -32,7 +32,6 @@
 
 
 NCARG		= ../../../..
-LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
@@ -78,8 +77,7 @@ AVS_SRCS =	avsraster.c
 AVS_DEFS =	-DBuildRasterAVS
 #endif
 
-CDEFINES =	-I$(LOCINCDIR) \
-		$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
+CDEFINES =	$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS)
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
@@ -106,6 +104,7 @@ SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)
 
 EQUALHACK	= =
 
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
 Library($(MYNAME),$(OBJS))
 
 dither.o:	ncarg_ras.h
@@ -138,8 +137,5 @@ saber_obj: $(OBJS)
 rasinfo: rasinfo.o
 	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
 
-all::
-	@$(INSTALL) $(INCLUDES) $(LOCINCDIR)
-
 lint:
-	lint -I$(LOCINCDIR) $(SRCS) 1> lint.out 2>&1
+	lint -I$(CINC) $(SRCS) 1> lint.out 2>&1

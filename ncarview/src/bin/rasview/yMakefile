@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.4 1992-03-26 22:13:10 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-06-25 21:48:13 clyne Exp $
 #
 #	Makefile for rasview
 #
@@ -8,7 +8,7 @@ NCARG		= ../../../..
 BINDIR_LOCAL	= ../../../bin
 
 
-LOCINCDIR	= ../../include
+
 MYNAME		= rasview
 
 LOCLIB		= $(LIBDIR)/libncarv.a  $(LIBDIR)/libncarg_ras.a \
@@ -26,7 +26,7 @@ X11LIBS		= -lXt -lX11
 
 LIBS		= $(LOCLIB) $(X11LIBS) -lm
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= 
 
 all::	$(MYNAME)
 

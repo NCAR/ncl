@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasview.m,v 1.2 1992-02-14 11:38:42 clyne Exp $
+.\"	$Id: rasview.m,v 1.3 1992-06-25 21:47:20 clyne Exp $
 .\"
 .TH XTOHDF 1-local "March 1991" NCAR "NCAR Local Command"
 .SH NAME

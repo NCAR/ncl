@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgm.m,v 1.2 1991-01-09 10:46:45 clyne Exp $
+.\"	$Id: cgm.m,v 1.3 1992-06-25 21:46:39 clyne Exp $
 .\"
 .\" NCAR View cgm.man 3.00 9/13/89 Clyne
 .TH CGM_TOOLS 1NCARV "September 1989" NCAR "NCAR View 3.01"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcaps.m,v 1.4 1992-02-14 16:58:47 clyne Exp $
+.\"	$Id: gcaps.m,v 1.5 1992-06-25 21:46:59 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GCAPS 1NCARV "JUNE 1990" NCAR "NCAR View 3.01"

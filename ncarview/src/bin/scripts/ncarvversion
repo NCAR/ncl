@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncarvversion,v 1.9 1992-06-24 20:51:43 clyne Exp $
+#	$Id: ncarvversion,v 1.10 1992-06-25 21:48:29 clyne Exp $
 #
 
 set date = `date`

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.7 1992-02-25 14:29:48 clyne Exp $
+.\"	$Id: idt.m,v 1.8 1992-06-25 21:47:05 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne

@@ -1,9 +1,8 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.9 1992-06-24 21:07:05 clyne Exp $
+#	$Id: yMakefile,v 1.10 1992-06-25 21:49:05 clyne Exp $
 #
 
-LOCINCDIR	= ../../include
 LOCLIBDIR	= ../../../lib
 
 MYNAME1		= $(LIBDIR)/libictrans.o
@@ -16,7 +15,7 @@ SPOOL_TRANS	= ctrans
 
 EQUALHACK	= =
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	=
 
 EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
 

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1992-06-24 21:02:27 clyne Exp $
+#	$Id: yMakefile,v 1.2 1992-06-25 21:47:54 clyne Exp $
 #
 #	Makefile for ncgmstat
 #
@@ -12,11 +12,10 @@ BINDIR_LOCAL = ../../../bin
 MYNAME	= ncgmstat
 
 LOCLIBDIR	= ../../../lib
-LOCINCDIR	= ../../include
 
 LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	=
 
 OBJS		= ncgmstat.o
 SRCS		= ncgmstat.c

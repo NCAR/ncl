@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.4 1992-02-14 11:38:40 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.5 1992-06-25 21:47:18 clyne Exp $
 .\"
 .TH NRIFTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
 .SH NAME

@@ -1,9 +1,8 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.9 1992-02-29 00:14:05 clyne Exp $
+#	$Id: yMakefile,v 1.10 1992-06-25 21:48:47 clyne Exp $
 #
 
-LOCINCDIR	= ../../include
 
 MYNAME		= $(LIBDIR)/libctrans.o
 
@@ -110,13 +109,12 @@ DCTXTSRCS = clear_text.c
 
 DCTXTOBJS = clear_text.o
 
-CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include  $(DDEFINES)
+CDEFINES	= $(DDEFINES)
 
 all::
 	@$(CAT) Copyright
 
-all::
-	@$(CP) $(INCLUDES) $(LOCINCDIR)
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
 
 all::	$(MYNAME)
 

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.4 1992-03-30 17:27:16 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-06-25 21:48:02 clyne Exp $
 #
 #
 #	Makefile for rascat
@@ -13,12 +13,11 @@ BINDIR_LOCAL = ../../../bin
 MYNAME	= rascat
 
 LOCLIBDIR	= ../../../lib
-LOCINCDIR	= ../../include
 
 LIBS		= $(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a \
 		$(LIBDIR)/libncarv.a -lm
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= 
 
 OBJS		= rascat.o
 SRCS		= rascat.c

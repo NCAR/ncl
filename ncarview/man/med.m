@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.6 1992-02-14 17:03:20 clyne Exp $
+.\"	$Id: med.m,v 1.7 1992-06-25 21:47:09 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##

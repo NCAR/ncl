@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.3 1991-08-15 17:12:29 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.4 1992-06-25 21:47:13 clyne Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH ncarv_spool 1NCARV "26 June 1990" NCAR "NCAR View 3.01"

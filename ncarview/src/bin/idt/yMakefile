@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.9 1992-04-03 23:21:45 clyne Exp $
+#	$Id: yMakefile,v 1.10 1992-06-25 21:47:45 clyne Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -13,7 +13,6 @@ BINDIR_LOCAL = ../../../bin
 MYNAME	= idt
 
 LOCLIBDIR	= ../../../lib
-LOCINCDIR	= ../../include
 
 TRANSLATOR	= ictrans
 
@@ -28,12 +27,12 @@ XAPPDIR_DEFAULT	= /usr/lib/X11/app-defaults
 BINDIR_DEFAULT	= $(BINDIR)
 
 #ifdef  sgi
-CDEFINES	= -I$(LOCINCDIR) -I/usr/include/bsd
+CDEFINES	= -I/usr/include/bsd
 #else
 #ifdef	sun
-CDEFINES	= -I$(LOCINCDIR) -Bstatic
+CDEFINES	= -Bstatic
 #else
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= 
 #endif
 #endif
 
@@ -96,7 +95,7 @@ xt_env.o:     Makefile
 								-c $*.c
 
 lint:	$(HDR) $(SRCS)
-	lint  -I$(LOCINCDIR) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
+	lint  -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
 		-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' \
 		-DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
 		$(LINTLIBS) $(SRCS)  1> lint.out 2>&1

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.6 1992-04-10 00:56:10 clyne Exp $
+#	$Id: yMakefile,v 1.7 1992-06-25 21:49:20 clyne Exp $
 #
 #
 #	Makefile for libncarv -- NCAR View library of general routines
@@ -8,11 +8,10 @@
 #
 
 NCARG		= ../../../..
-LOCINCDIR	= ../../include
 
 MYNAME		= libncarv.a
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	=
 
 #ifdef	VMS
 VMSOBJS		= vms-unix.o
@@ -27,8 +26,7 @@ OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o \
 
 EQUALHACK	= =
 
-all::
-	@$(CP) $(INCLUDES) $(LOCINCDIR)
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
 
 Library($(MYNAME),$(OBJECTS))
 
@@ -44,5 +42,5 @@ clean::
 
 
 lint:
-	$(LINT) -I$(LOCINCDIR) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' \
+	$(LINT) -I$(CINC) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' \
 		$(SRCS) 1> lint.out 2>&1
