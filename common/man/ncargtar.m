@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: ncargtar.m,v 1.1.1.1 1992-04-17 22:30:08 ncargd Exp $
+.\"	$Id: ncargtar.m,v 1.2 1992-12-01 23:25:10 clyne Exp $
 .\"
-.TH NCARGTAR 1NCARG "JUNE 1991" NCAR "NCAR GRAPHICS"
+.TH NCARGTAR 8NCARG "JUNE 1991" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargtar \- Create tar file for NCAR Graphics.
 .SH SYNOPSIS

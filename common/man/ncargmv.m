@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: ncargmv.m,v 1.1.1.1 1992-04-17 22:30:07 ncargd Exp $
+.\"	$Id: ncargmv.m,v 1.2 1992-12-01 23:25:08 clyne Exp $
 .\"
-.TH NCARGMV 1NCARG "JUNE 1991" NCAR "NCAR GRAPHICS"
+.TH NCARGMV 8NCARG "JUNE 1991" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargmv \- Move an installed version of NCAR Graphics.
 .SH SYNOPSIS

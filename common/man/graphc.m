@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphc.m,v 1.1.1.1 1992-04-17 22:30:07 ncargd Exp $
+.\"	$Id: graphc.m,v 1.2 1992-12-01 23:25:05 clyne Exp $
 .\"
 .TH GRAPHC 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -21,4 +21,4 @@ Binary encoded graphcaps
 system dependent and should not be assumed to be portable across
 different system architectures.
 .SH SEE ALSO
-cgmtrans(1), ctrans(1), plt(1), graphcap(5)
+cgmtrans(1NCARG), ctrans(1NCARG), plt(1NCARG), graphcap(5NCARG)

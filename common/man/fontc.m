@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fontc.m,v 1.1.1.1 1992-04-17 22:30:06 ncargd Exp $
+.\"	$Id: fontc.m,v 1.2 1992-12-01 23:25:02 clyne Exp $
 .\"
 .TH FONTC 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -21,4 +21,4 @@ Binary encoded fontcaps
 system dependent and should not be assumed to be portable across
 different system architectures.
 .SH SEE ALSO
-cgmtrans(1), ctrans(1), plt(1), fontcap(5)
+cgmtrans(1NCARG), ctrans(1NCARG), plt(1NCARG), fontcap(5NCARG)
