@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.11 1992-03-12 22:14:41 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.12 1992-03-18 02:06:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -129,6 +129,13 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 	int	fildes[2];	/* file descriptor for a pipe	*/
 	Cgm_fd	index;		/* index into the cgmTab	*/
 
+#ifdef	SYSV
+	int	fd;
+	FILE	*fp;
+	int	w_mask = O_WRONLY | O_CREAT;
+	int	rw_mask = O_RDWR | O_CREAT;
+#endif
+
 	if (numOpen >= MAX_FILE) {
 		errno = ENOENT;
 		return(-1);
@@ -225,10 +232,28 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 	 */
 
 		cgmTab[index].mtype = File;
+#ifdef	SYSV
+		if (! strncmp(type, "a")) {
+			if ((fd = open(metafile,w_mask)) < 0) return(-1);
+			if (! (fp = fdopen(fd, "a"))) return(-1);
+		}
+		else if (! strncmp(type, "a+")) {
+			if ((fd = open(metafile, rw_mask)) < 0) return(-1);
+			if (!(fp = fdopen(fd, "a+"))) return(-1);
+		}
+		else {
+			if (!(fp = fopen(metafile, type))) return(-1);
+			if ((fd = fileno(fp)) < 0)  return(-1);
+		}
+
+		cgmTab[index].fp = fp;
+		cgmTab[index].fd = fd;
+#else
 		if ((cgmTab[index].fp = fopen(metafile, type)) == NULL) {
 			return(-1);
 		}
 		cgmTab[index].fd = fileno(cgmTab[index].fp);
+#endif
 
 		cgmTab[index].write = stream_write;
 		cgmTab[index].read = stream_read;
