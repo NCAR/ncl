@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.6 2002-07-02 01:26:40 dbrown Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.7 2002-07-18 19:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,8 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 	NhlGridType     grid_type;
+	NhlBoolean	xc_is_bounds;
+	NhlBoolean	yc_is_bounds;
 
 	NhlBoolean	missing_value_set;
 	float		missing_value;

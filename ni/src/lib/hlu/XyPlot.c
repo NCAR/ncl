@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.87 2000-03-02 01:30:19 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.88 2002-07-18 19:28:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1650,6 +1650,10 @@ static NhlBoolean NewDrawArgs
 		NhlNvpWidthF,
 		NhlNvpHeightF,
                 NhlNvpOn,
+		NhlNtfBaseXF,
+		NhlNtfBaseYF,
+		NhlNtfBaseWidthF,
+		NhlNtfBaseHeightF,
 		NhlNpmLegendDisplayMode,
 		NhlNpmTickMarkDisplayMode,
 		NhlNpmTitleDisplayMode

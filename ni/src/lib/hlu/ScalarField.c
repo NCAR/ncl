@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.37 2002-07-12 22:41:29 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.38 2002-07-18 19:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -112,7 +112,7 @@ static NhlResource resources[] = {
 		 Oset(x_actual_end),NhlTString,
 		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
 	{NhlNsfXCElementCount,NhlCsfXCElementCount,NhlTInteger,sizeof(int),
-		 Oset(x_el_count),NhlTImmediate,
+		 Oset(xc_el_count),NhlTImmediate,
          	 _NhlUSET(0),_NhlRES_GONLY,NULL},
 	{NhlNsfYCActualStartF,NhlCsfYCActualStartF,NhlTFloat,sizeof(float),
 		 Oset(y_actual_start),NhlTString,
@@ -121,7 +121,7 @@ static NhlResource resources[] = {
 		 Oset(y_actual_end),NhlTString,
          	_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
 	{NhlNsfYCElementCount,NhlCsfYCElementCount,NhlTInteger,sizeof(int),
-		 Oset(y_el_count),NhlTImmediate,
+		 Oset(yc_el_count),NhlTImmediate,
          	_NhlUSET(0),_NhlRES_GONLY,NULL},
 
 /* End-documented-resources */
@@ -300,10 +300,10 @@ static	NrmQuark	Qy_index_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_index_end  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_end  = NrmNULLQUARK;
-static	NrmQuark	Qx_el_count  = NrmNULLQUARK;
+static	NrmQuark	Qxc_el_count  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_end  = NrmNULLQUARK;
-static	NrmQuark	Qy_el_count  = NrmNULLQUARK;
+static	NrmQuark	Qyc_el_count  = NrmNULLQUARK;
 
 typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
 
@@ -475,9 +475,11 @@ DataToFloatArray
 	int		inlen_1;
 	float		tmp;
 	int		ixstart = sfp->ix_start;
-	int		ixend = sfp->ix_end;
 	int		iystart = sfp->iy_start;
-	int		iyend = sfp->iy_end;
+	int		ixend = sfp->xc_is_bounds ? 
+				sfp->ix_end - 1 : sfp->ix_end;
+	int		iyend = sfp->yc_is_bounds ? 
+				sfp->iy_end - 1 : sfp->iy_end;
 	int		valid_data_count = 0;
 
 /*
@@ -681,9 +683,11 @@ DataToFloatArrayExchDim
 	float		tmp;
 	NhlBoolean	overwrite_ok = False;
 	int		ixstart = sfp->ix_start;
-	int		ixend = sfp->ix_end;
 	int		iystart = sfp->iy_start;
-	int		iyend = sfp->iy_end;
+	int		ixend = sfp->xc_is_bounds ? 
+				sfp->ix_end - 1 : sfp->ix_end;
+	int		iyend = sfp->yc_is_bounds ? 
+				sfp->iy_end - 1 : sfp->iy_end;
 	int		x_stride = sfp->x_stride;
 	int		y_stride = sfp->y_stride;
 	int		valid_data_count = 0;
@@ -919,15 +923,8 @@ ValidCoordArray
 	char *e_text;
 	int len_dim;
 	char *name;
+	NhlBoolean error = False;
 
-	if (ctype == sfXCOORD) {
-		len_dim = sfp->x_el_count;
-		name = NhlNsfXArray;
-	}
-	else {
-		len_dim = sfp->y_el_count;
-		name = NhlNsfYArray;
-	}
 
 	if (ga->num_dimensions > 2 || ga->num_dimensions < 1) {
 		e_text = 
@@ -936,8 +933,27 @@ ValidCoordArray
 		return False;
 	}
 	else if (ga->num_dimensions == 2) {
-		if (ga->len_dimensions[0] != sfp->y_el_count ||
-		    ga->len_dimensions[1] != sfp->x_el_count) {
+		sfp->xc_is_bounds = False;
+		sfp->yc_is_bounds = False;
+		sfp->yc_el_count = ga->len_dimensions[0];
+		sfp->xc_el_count = ga->len_dimensions[1];
+		if (ctype == sfXCOORD) {
+			name = NhlNsfXArray;
+		}
+		else {
+			name = NhlNsfYArray;
+		}
+
+		if (sfp->yc_el_count == sfp->yd_el_count + 1 &&
+		    sfp->xc_el_count == sfp->xd_el_count + 1) {
+			/* in 2D bounds case assume both dimensions must
+			 * be cell boundaries 
+			 */
+			sfp->xc_is_bounds = True;
+			sfp->yc_is_bounds = True;
+		}
+		else if (sfp->yc_el_count != sfp->yd_el_count ||
+			 sfp->xc_el_count != sfp->xd_el_count) {
 			e_text = 
    "%s: 2d coordinate array %s has an incorrect dimension size: defaulting %s";
 			NhlPError(NhlWARNING,
@@ -945,13 +961,19 @@ ValidCoordArray
 			return False;
 		}
 		if ((ctype == sfXCOORD && 
-		     !(sfp->y_arr && sfp->y_arr->num_dimensions == 2)) ||
+		     !(sfp->y_arr && sfp->y_arr->num_dimensions == 2 &&
+		       sfp->y_arr->len_dimensions[0] == sfp->yc_el_count &&
+		       sfp->y_arr->len_dimensions[1] == sfp->xc_el_count)) ||
 		    (ctype == sfYCOORD && 
-		     !(sfp->x_arr && sfp->x_arr->num_dimensions == 2))) {
+		     !(sfp->x_arr && sfp->x_arr->num_dimensions == 2 &&
+		       sfp->x_arr->len_dimensions[0] == sfp->yc_el_count &&
+		       sfp->x_arr->len_dimensions[1] == sfp->xc_el_count))) {
 			e_text = 
     "%s: 2d X and Y coordinate arrays must have matching shape: defaulting %s";
 			NhlPError(NhlWARNING,
 				  NhlEUNKNOWN,e_text,entry_name,name);
+			sfp->yc_el_count = sfp->yd_el_count;
+			sfp->xc_el_count = sfp->xd_el_count;
 			return False;
 		}
 			
@@ -961,7 +983,29 @@ ValidCoordArray
 
 	/* 1d case */
 
-	if (ga->len_dimensions[0] != len_dim) {
+	if (ctype == sfXCOORD) {
+		name = NhlNsfXArray;
+		sfp->xc_is_bounds = False;
+		sfp->xc_el_count = ga->len_dimensions[0];
+		if (sfp->xc_el_count == sfp->xd_el_count + 1)
+			sfp->xc_is_bounds = True;
+		else if (sfp->xc_el_count != sfp->xd_el_count) {
+			sfp->xc_el_count = sfp->xd_el_count;
+			error = True;
+		}
+	}
+	else {
+		name = NhlNsfYArray;
+		sfp->yc_is_bounds = False;
+		sfp->yc_el_count = ga->len_dimensions[0];
+		if (sfp->yc_el_count == sfp->yd_el_count + 1)
+			sfp->yc_is_bounds = True;
+		else if (sfp->yc_el_count != sfp->yd_el_count) {
+			sfp->yc_el_count = sfp->yd_el_count;
+			error = True;
+		}
+	}
+	if (error) {
 		e_text = 
 		  "%s: coordinate array %s requires %d elements: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1043,7 +1087,8 @@ GetDataBounds
 			}
 		}
 		else 
-			*cend = sfp->x_el_count - 1;
+			*cend = sfp->xc_is_bounds ? 
+				sfp->xd_el_count : sfp->xd_el_count - 1;
 	}
 	else {
 		if (sfp->y_start != NULL) {
@@ -1070,7 +1115,8 @@ GetDataBounds
 			}
 		}
 		else 
-			*cend = sfp->y_el_count - 1;
+			*cend = sfp->yc_is_bounds ? 
+				sfp->yd_el_count : sfp->yd_el_count - 1;
 	}
 	
 	return ret;
@@ -1117,7 +1163,8 @@ GetIndexBounds
 			
 	if (ctype == sfXCOORD) {
 
-		max_index = sfp->x_el_count - 1;
+		max_index = sfp->xc_is_bounds ? 
+			sfp->xd_el_count : sfp->xd_el_count - 1;
 
 		*icstart = (sfp->x_index_start < 0) ? 
 			0 : MIN(sfp->x_index_start,max_index);
@@ -1143,7 +1190,8 @@ GetIndexBounds
 	}
 	else {
 
-		max_index = sfp->y_el_count - 1;
+		max_index = sfp->yc_is_bounds ? 
+			sfp->yd_el_count : sfp->yd_el_count - 1;
 
 		*icstart = (sfp->y_index_start < 0) ? 
 			0 : MIN(sfp->y_index_start,max_index); 
@@ -1237,7 +1285,8 @@ GetSubsetBounds
 	int		stride,rem;
 
 	if (ctype == sfXCOORD) {
-		range = sfp->x_el_count - 1;
+		range = sfp->xc_is_bounds ? 
+			sfp->xd_el_count : sfp->xd_el_count - 1;
 		subset_start = &sfp->x_subset_start;
 		subset_end = &sfp->x_subset_end;
 		stride = sfp->x_stride;
@@ -1246,7 +1295,8 @@ GetSubsetBounds
 		c_name = "X coordinate";
 	}
 	else {
-		range = sfp->y_el_count - 1;
+		range = sfp->yc_is_bounds ? 
+			sfp->yd_el_count : sfp->yd_el_count - 1;
 		subset_start = &sfp->y_subset_start;
 		subset_end = &sfp->y_subset_end;
 		stride = sfp->y_stride;
@@ -1472,9 +1522,9 @@ GetSubsetBounds2D
 	min = FLT_MAX;
 	max = -FLT_MAX;
 	yimin = yimax = ximin = ximax = 0;
-	for (yi = 0; yi < sfp->y_el_count; yi++) {
-		for (xi = 0; xi < sfp->x_el_count; xi++) {
-			float val = *(fp + yi * sfp->x_el_count + xi);
+	for (yi = 0; yi < sfp->yc_el_count; yi++) {
+		for (xi = 0; xi < sfp->xc_el_count; xi++) {
+			float val = *(fp + yi * sfp->xc_el_count + xi);
 			if (val < min) {
 				min = val;
 				yimin = yi;
@@ -1496,14 +1546,14 @@ GetSubsetBounds2D
 		if (rev) {
 			*cstart = max;
 			*cend = min;
-			sfp->xc_start_el = yimax * sfp->x_el_count + ximax; 
-			sfp->xc_end_el = yimin * sfp->x_el_count + ximin; 
+			sfp->xc_start_el = yimax * sfp->xc_el_count + ximax; 
+			sfp->xc_end_el = yimin * sfp->xc_el_count + ximin; 
 		}
 		else {
 			*cstart = min;
 			*cend = max;
-			sfp->xc_start_el = yimin * sfp->x_el_count + ximin; 
-			sfp->xc_end_el = yimax * sfp->x_el_count + ximax; 
+			sfp->xc_start_el = yimin * sfp->xc_el_count + ximin; 
+			sfp->xc_end_el = yimax * sfp->xc_el_count + ximax; 
 		}
 	}
 	else {
@@ -1515,19 +1565,19 @@ GetSubsetBounds2D
 		if (rev) {
 			*cstart = max;
 			*cend = min;
-			sfp->yc_start_el = yimax * sfp->x_el_count + ximax; 
-			sfp->yc_end_el = yimin * sfp->x_el_count + ximin; 
+			sfp->yc_start_el = yimax * sfp->xc_el_count + ximax; 
+			sfp->yc_end_el = yimin * sfp->xc_el_count + ximin; 
 		}
 		else {
 			*cstart = min;
 			*cend = max;
-			sfp->yc_start_el = yimin * sfp->x_el_count + ximin; 
-			sfp->yc_end_el = yimax * sfp->x_el_count + ximax; 
+			sfp->yc_start_el = yimin * sfp->xc_el_count + ximin; 
+			sfp->yc_end_el = yimax * sfp->xc_el_count + ximax; 
 		}
 	}
 
 	if (xistart > 0 || yistart > 0 || 
-	    xiend < sfp->x_el_count - 1 || yiend < sfp->y_el_count - 1 ||
+	    xiend < sfp->xc_el_count - 1 || yiend < sfp->yc_el_count - 1 ||
 	    sfp->x_stride > 1 || sfp->y_stride > 1)
 		do_subset = True;
 
@@ -1541,7 +1591,7 @@ GetSubsetBounds2D
 	yimin = yimax = ximin = ximax = 0;
 	for (yi = yistart; yi <= yiend; yi++) {
 		for (xi = xistart; xi <= xiend; xi++) {
-			float val = *(fp + yi * sfp->x_el_count + xi);
+			float val = *(fp + yi * sfp->xc_el_count + xi);
 			if (val < min) {
 				min = val;
 				yimin = yi;
@@ -1579,7 +1629,7 @@ GetSubsetBounds2D
 	for (yi = 0; yi < out_len[0]; yi++) {
 		for (xi = 0; xi < out_len[1]; xi++) {
 			*(nfp+(yi * out_len[1] + xi)) = 
-				*(fp + sfp->x_el_count * (yistart+yi) +
+				*(fp + sfp->xc_el_count * (yistart+yi) +
 				  xistart+xi);
 		}
 	}
@@ -2278,6 +2328,7 @@ CvtGenSFObjToFloatSFObj
 	}
 	sffp->ix_start = sfp->ix_start = ixstart;
 	sffp->ix_end = sfp->ix_end = ixend;
+	sffp->xc_is_bounds = sfp->xc_is_bounds;
 	sfp->x_actual_start = sxstart;
 	sfp->x_actual_end = sxend;
 	
@@ -2337,6 +2388,7 @@ CvtGenSFObjToFloatSFObj
 	}
 	sffp->iy_start = sfp->iy_start = iystart;
 	sffp->iy_end = sfp->iy_end = iyend;
+	sffp->yc_is_bounds = sfp->yc_is_bounds;
 	sfp->y_actual_start = systart;
 	sfp->y_actual_end = syend;
         if (! sfp->subset_by_index) {
@@ -2380,6 +2432,12 @@ CvtGenSFObjToFloatSFObj
 		sffp->x_end = sfp->x_actual_end;
 		sffp->y_start = sfp->y_actual_start;
 		sffp->y_end = sfp->y_actual_end;
+		sffp->ix_start = sfp->ix_start;
+		sffp->ix_end = sfp->ix_end;
+		sffp->xc_is_bounds = sfp->xc_is_bounds;
+		sffp->iy_start = sfp->iy_start;
+		sffp->iy_end = sfp->iy_end;
+		sffp->yc_is_bounds = sfp->yc_is_bounds;
 		if (xirr)
 			sffp->x_arr = x_arr;
 		if (yirr)
@@ -2398,6 +2456,12 @@ CvtGenSFObjToFloatSFObj
 		sffp->x_end = sfp->y_actual_end;
 		sffp->y_start = sfp->x_actual_start;
 		sffp->y_end = sfp->x_actual_end;
+		sffp->ix_start = sfp->iy_start;
+		sffp->ix_end = sfp->iy_end;
+		sffp->xc_is_bounds = sfp->yc_is_bounds;
+		sffp->iy_start = sfp->ix_start;
+		sffp->iy_end = sfp->ix_end;
+		sffp->yc_is_bounds = sfp->xc_is_bounds;
 		if (xirr)
 			sffp->y_arr = x_arr;
 		if (yirr)
@@ -2414,8 +2478,10 @@ CvtGenSFObjToFloatSFObj
 	if (! new_data) {
 		sffp->begin = iystart * d_arr->len_dimensions[1] + ixstart;
 		sffp->fast_dim = d_arr->len_dimensions[1];
-		sffp->fast_len = ixend - ixstart + 1;
-		sffp->slow_len = iyend - iystart + 1;
+		sffp->fast_len = sfp->xc_is_bounds ? 
+			 ixend - ixstart : ixend - ixstart + 1;
+		sffp->slow_len = sfp->yc_is_bounds ? 
+			 iyend - iystart : iyend - iystart + 1;
 	}
 	else {
 		sffp->begin = 0;
@@ -2526,10 +2592,10 @@ ScalarFieldClassInitialize
 	Qy_index_end  = NrmStringToQuark(NhlNsfYCEndIndex);
 	Qx_actual_start  = NrmStringToQuark(NhlNsfXCActualStartF);
 	Qx_actual_end  = NrmStringToQuark(NhlNsfXCActualEndF);
-	Qx_el_count  = NrmStringToQuark(NhlNsfXCElementCount);
+	Qxc_el_count  = NrmStringToQuark(NhlNsfXCElementCount);
 	Qy_actual_start  = NrmStringToQuark(NhlNsfYCActualStartF);
 	Qy_actual_end  = NrmStringToQuark(NhlNsfYCActualEndF);
-	Qy_el_count  = NrmStringToQuark(NhlNsfYCElementCount);
+	Qyc_el_count  = NrmStringToQuark(NhlNsfYCElementCount);
 
 	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlscalarFieldClass->base_class.class_name,
@@ -2683,6 +2749,8 @@ ScalarFieldInitialize
         sfp->xend_byindex = False;
         sfp->ystart_byindex = False;
         sfp->yend_byindex = False;
+	sfp->xc_is_bounds = False;
+	sfp->yc_is_bounds = False;
         
 	if (sfp->d_arr == NULL) {
 		e_text = 
@@ -2698,10 +2766,10 @@ ScalarFieldInitialize
 		return NhlFATAL;
 	}
 	sfp->changed |= _NhlsfDARR_CHANGED;
-	sfp->x_el_count = sfp->d_arr->len_dimensions[1];
-	sfp->y_el_count = sfp->d_arr->len_dimensions[0];
+	sfp->xd_el_count = sfp->d_arr->len_dimensions[1];
+	sfp->yd_el_count = sfp->d_arr->len_dimensions[0];
 
-	if (sfp->x_el_count < 2 || sfp->y_el_count < 2) {
+	if (sfp->xd_el_count < 2 || sfp->yd_el_count < 2) {
 		e_text = "%s: Insufficient number of elements in %s",
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNsfDataArray);
@@ -3002,30 +3070,14 @@ ScalarFieldSetValues
 			sfp->d_arr = ga;
 			NhlFreeGenArray(osfp->d_arr);
 			status = True;
-			if (sfp->d_arr->len_dimensions[1] != sfp->x_el_count)
+			if (sfp->d_arr->len_dimensions[1] != sfp->xd_el_count)
 				x_dim_changed = True;
-			if (sfp->d_arr->len_dimensions[0] != sfp->y_el_count)
+			if (sfp->d_arr->len_dimensions[0] != sfp->yd_el_count)
 				y_dim_changed = True;
-			sfp->x_el_count = sfp->d_arr->len_dimensions[1];
-			sfp->y_el_count = sfp->d_arr->len_dimensions[0];
+			sfp->xd_el_count = sfp->d_arr->len_dimensions[1];
+			sfp->yd_el_count = sfp->d_arr->len_dimensions[0];
 			sfp->changed |= _NhlsfDARR_CHANGED;
 		}
-	}
-/*
- * If dimension lengths have changed then subsetting returns to default
- */
-	if (x_dim_changed) {
-		if (! _NhlArgIsSet(args,nargs,NhlNsfXCStartIndex))
-			sfp->x_index_start = -1;
-		if (! _NhlArgIsSet(args,nargs,NhlNsfXCEndIndex))
-			sfp->x_index_end = -1;
-	}
-	
-	if (y_dim_changed) {
-		if (! _NhlArgIsSet(args,nargs,NhlNsfYCStartIndex))
-			sfp->y_index_start = -1;
-		if (! _NhlArgIsSet(args,nargs,NhlNsfYCEndIndex))
-			sfp->y_index_end = -1;
 	}
 
 
@@ -3074,6 +3126,10 @@ ScalarFieldSetValues
                         status = True;
                 }
 	}
+	if (sfp->xc_is_bounds != osfp->xc_is_bounds)
+		x_dim_changed = True;
+
+
 	if (!sfp->y_arr && (sfp->y_arr != osfp->y_arr)) {
                 NhlFreeGenArray(osfp->y_arr);
                 y_arr_changed = True;
@@ -3117,6 +3173,24 @@ ScalarFieldSetValues
 			sfp->changed |= _NhlsfYARR_CHANGED;
                         status = True;
                 }
+	}
+	if (sfp->yc_is_bounds != osfp->yc_is_bounds)
+		y_dim_changed = True;
+/*
+ * If dimension lengths have changed then subsetting returns to default
+ */
+	if (x_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNsfXCStartIndex))
+			sfp->x_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNsfXCEndIndex))
+			sfp->x_index_end = -1;
+	}
+	
+	if (y_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNsfYCStartIndex))
+			sfp->y_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNsfYCEndIndex))
+			sfp->y_index_end = -1;
 	}
 
 	if (sfp->missing_value != osfp->missing_value) {
@@ -3759,7 +3833,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->x_end->size;
 			}
 			else {
-				tmp = (float)sfp->x_el_count - 1;
+				tmp = (float)sfp->xc_el_count - 1;
 				if ((data = CreateVData((NhlPointer)&tmp,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
@@ -3820,7 +3894,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->y_end->size;
 			}
 			else {
-				tmp = sfp->y_el_count - 1;
+				tmp = sfp->yc_el_count - 1;
 				if ((data = CreateVData((NhlPointer)&tmp,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
@@ -3970,8 +4044,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].size_ret = sizeof(float);
 			*args[i].free_func = NULL;
                 }
-                else if (resQ == Qx_el_count) {
-                        ival = sfp->x_el_count;
+                else if (resQ == Qxc_el_count) {
+                        ival = sfp->xc_el_count;
 			*(int*)args[i].value.ptrval = ival;
 			*args[i].type_ret = Qint;
 			*args[i].size_ret = sizeof(int);
@@ -3991,8 +4065,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].size_ret = sizeof(float);
 			*args[i].free_func = NULL;
                 }
-                else if (resQ == Qy_el_count) {
-                        ival = sfp->y_el_count;
+                else if (resQ == Qyc_el_count) {
+                        ival = sfp->yc_el_count;
 			*(int*)args[i].value.ptrval = ival;
 			*args[i].type_ret = Qint;
 			*args[i].size_ret = sizeof(int);

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.86 2002-06-03 22:24:42 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.87 2002-07-18 19:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1324,7 +1324,50 @@ static NhlBoolean NewDrawArgs
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
-                NhlNvpOn
+                NhlNvpOn,
+		NhlNtfBaseXF,
+		NhlNtfBaseYF,
+		NhlNtfBaseWidthF,
+		NhlNtfBaseHeightF,
+		NhlNpmTickMarkDisplayMode,
+		NhlNtmEqualizeXYSizes,
+		NhlNtmLabelAutoStride,
+		NhlNtmXBOn,
+		NhlNtmXBLabelsOn,
+		NhlNtmXBMode,
+		NhlNtmXBValues,
+		NhlNtmXBLabels,
+		NhlNtmXBLabelFuncCode,
+		NhlNtmXBLabelFontHeightF,
+		NhlNtmXBMajorLengthF,
+		NhlNtmXBMajorOutwardLengthF,
+		NhlNtmXTOn,
+		NhlNtmXTLabelsOn,
+		NhlNtmXTMode,
+		NhlNtmXTValues,
+		NhlNtmXTLabels,
+		NhlNtmXTLabelFuncCode,
+		NhlNtmXTLabelFontHeightF,
+		NhlNtmXTMajorLengthF,
+		NhlNtmXTMajorOutwardLengthF,
+		NhlNtmYLOn,
+		NhlNtmYLLabelsOn,
+		NhlNtmYLMode,
+		NhlNtmYLValues,
+		NhlNtmYLLabels,
+		NhlNtmYLLabelFuncCode,
+		NhlNtmYLLabelFontHeightF,
+		NhlNtmYLMajorLengthF,
+		NhlNtmYLMajorOutwardLengthF,
+		NhlNtmYROn,
+		NhlNtmYRLabelsOn,
+		NhlNtmYRMode,
+		NhlNtmYRValues,
+		NhlNtmYRLabels,
+		NhlNtmYRLabelFuncCode,
+		NhlNtmYRLabelFontHeightF,
+		NhlNtmYRMajorLengthF,
+		NhlNtmYRMajorOutwardLengthF
 	};
 	int i,pass_count = 0;
 

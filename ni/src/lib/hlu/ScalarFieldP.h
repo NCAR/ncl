@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.10 2002-07-02 01:26:40 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.11 2002-07-18 19:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,10 +66,12 @@ typedef struct _NhlScalarFieldLayerPart{
 
 	float		x_actual_start;
 	float		x_actual_end;
-        int		x_el_count;
+	int             xc_el_count;  /* x/y array x dim len */
+        int		xd_el_count;  /* data array x dim len */
 	float		y_actual_start;
 	float		y_actual_end;
-        int		y_el_count;
+	int             yc_el_count;  /* x/y array y dim len */
+        int		yd_el_count;  /* data array y dim len */
 
 	/* private fields */
 
@@ -77,8 +79,9 @@ typedef struct _NhlScalarFieldLayerPart{
 	int		ix_end;
 	int		iy_start;
 	int		iy_end;
-	int		xc_start_el;
-	int		xc_end_el;
+
+	int		xc_start_el; /* 1D: same as ix_start/ix_end */
+	int		xc_end_el;   /* 2D: element # of flattened array */
 	int		yc_start_el;
 	int		yc_end_el;
         
@@ -86,6 +89,9 @@ typedef struct _NhlScalarFieldLayerPart{
         NhlBoolean	xend_byindex;
         NhlBoolean	ystart_byindex;
         NhlBoolean	yend_byindex;
+
+	NhlBoolean	xc_is_bounds;
+	NhlBoolean	yc_is_bounds;
 
         NhlBoolean	up_to_date;
 	NhlScalarFieldFloatLayer	sffloat;

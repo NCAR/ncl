@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.111 2002-07-02 01:26:39 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.112 2002-07-18 19:28:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2252,6 +2252,10 @@ static NhlBoolean NewDrawArgs
 		NhlNvpWidthF,
 		NhlNvpHeightF,
                 NhlNvpOn,
+		NhlNtfBaseXF,
+		NhlNtfBaseYF,
+		NhlNtfBaseWidthF,
+		NhlNtfBaseHeightF,
 		NhlNcnExplicitLabelBarLabelsOn,
 		NhlNcnLabelBarEndLabelsOn,
 		NhlNcnExplicitLegendLabelsOn,
@@ -3256,8 +3260,14 @@ static void GetCellInfo
  * data window is equal to or larger than the data being show, the offset
  * is half a cell. Under other conditions it may be more or less.
  */
-	*xsoff = *ysoff = 0.5;
-	*xeoff = *yeoff = 0.5;
+	if (cnp->sfp->xc_is_bounds)
+		*xsoff = *xeoff = 0.0;
+	else 
+		*xsoff = *xeoff = 0.5;
+	if (cnp->sfp->yc_is_bounds)
+		*ysoff = *yeoff = 0.0;
+	else 
+		*ysoff = *yeoff = 0.5;
 	*xexact_count = *mcount - 1;
 	*yexact_count = *ncount - 1;
 
@@ -3267,10 +3277,10 @@ static void GetCellInfo
 		ddiff = xmax - xmin;
 		stepsize = ddiff / (cnp->sfp->fast_len - 1);
 		offset = cxd[0] - xmin;
-		*xsoff = 0.5 + modf(offset/stepsize,&pint);
+		*xsoff += modf(offset/stepsize,&pint);
 		*xsoff = (*xsoff >= 1.0) ? *xsoff - 1 : *xsoff;
 		offset = xmax - cxd[1];
-		*xeoff = 0.5 + modf(offset/stepsize,&pint);
+		*xeoff += modf(offset/stepsize,&pint);
 		*xeoff = (*xeoff >= 1.0) ? *xeoff - 1 : *xeoff;
 		*xexact_count = (cxd[1] - cxd[0]) / stepsize;
 		*mcount = (int) (0.5 + *xexact_count + *xsoff + *xeoff);
@@ -3282,10 +3292,10 @@ static void GetCellInfo
 		ddiff = ymax - ymin;
 		stepsize = ddiff / (cnp->sfp->slow_len - 1);
 		offset = cyd[0] - ymin;
-		*ysoff = 0.5 + modf(offset/stepsize,&pint);
+		*ysoff += modf(offset/stepsize,&pint);
 		*ysoff = (*ysoff >= 1.0) ? *ysoff - 1 : *ysoff;
 		offset = ymax - cyd[1];
-		*yeoff = 0.5 + modf(offset/stepsize,&pint);
+		*yeoff += modf(offset/stepsize,&pint);
 		*yeoff = (*yeoff >= 1.0) ? *yeoff - 1 : *yeoff;
 		*yexact_count = (cyd[1] - cyd[0]) / stepsize;
 		*ncount = (int) (0.5 + *yexact_count + *ysoff + *yeoff);
@@ -11474,6 +11484,7 @@ NhlErrorTypes _NhlRasterFill
         float		*levels;
 	float		cxstep,cystep,dxstep,dystep;
 	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	NhlBoolean      x_isbound,y_isbound;
 
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -11504,14 +11515,18 @@ NhlErrorTypes _NhlRasterFill
         map = -map;
 	cxstep = (xcqf-xcpf)/(float)icam;
 	cystep = (ycqf-ycpf)/(float)ican;
-	dxstep = (xcm-xc1) / (float)(izdm-1);
-	dystep = (ycn-yc1) / (float)(izdn-1);
 	xoff = .5;
 	xsoff = Xsoff + .5 * (1.0 - Xsoff);
 	xeoff = Xeoff + .5 * (1.0 - Xeoff);
 	yoff = .5;
 	ysoff = Ysoff + .5 * (1.0 - Ysoff);
 	yeoff = Yeoff + .5 * (1.0 - Yeoff);
+ 	x_isbound = Cnp->sfp->xc_is_bounds;
+ 	y_isbound = Cnp->sfp->yc_is_bounds;
+	dxstep = x_isbound ? 
+		(xcm-xc1) / (float)(izdm) : (xcm-xc1) / (float)(izdm-1);
+	dystep = y_isbound ?
+		(ycn-yc1) / (float)(izdn) : (ycn-yc1) / (float)(izdn-1);
 
 	for (i = 0; i < icam; i++) {
 		int iplus = i+1;
@@ -11543,8 +11558,10 @@ NhlErrorTypes _NhlRasterFill
 			else {
 				xcci =(xccd-xc1) / dxstep;
 				ycci =(yccd-yc1)/ dystep;
-				indx = (int)(xcci + 0.5);
-				indy = (int)(ycci + 0.5);
+				indx = x_isbound ? 
+					(int) xcci : (int)(xcci + 0.5);
+				indy = y_isbound ? 
+					(int) ycci : (int)(ycci + 0.5);
 				if (indx < 0 || indx > izdm-1 ||
 				    indy < 0 || indy > izdn-1)
 					iaid = 97;

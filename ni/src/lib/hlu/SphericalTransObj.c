@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalTransObj.c,v 1.2 2002-07-12 22:44:38 dbrown Exp $
+ *      $Id: SphericalTransObj.c,v 1.3 2002-07-18 19:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1484,8 +1484,11 @@ static NhlErrorTypes SpDataToCompc
 	for(i=0; i< n;i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))
 			||((ymissing != NULL)&&(*ymissing == y[i]))
+#if 0
+/* will this work? */
 			||(x[i] < spp->x_min)	
 			||(x[i] > spp->x_max)
+#endif
 			||(y[i] < spp->y_min)
 			||(y[i] > spp->y_max)) {
 		
