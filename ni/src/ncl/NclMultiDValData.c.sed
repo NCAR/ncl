@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.32 2001-07-16 19:48:21 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.33 2003-02-01 01:55:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,6 +65,9 @@ static struct _NclDataRec *MultiDValReadSection
 	int done = 0;
 	int inc_done = 0;
 	int el_size = 0;
+	int rem_count;
+	int cpy_count = 1;
+	int last = 0;
 
 /*
 * Pre Conditions: 	number entries in selection record == n_dims
@@ -217,27 +220,57 @@ static struct _NclDataRec *MultiDValReadSection
 * index >= 0 into the integer vector array.
 */
 
+/*
+ * Now determine the amount of continguous data that may be copied in a single 
+ * call to memcpy. Conditions are as follows:
+ * Testing proceeds from right to left (fastest dimension to slowest);
+ * If a dimension is a proper subset, dimensions to the left must be handled individually ('last' test)
+ * For each dimension, its elements must not be reversed (positive stride + compare_sel[i] == -2 ensures this)
+ * For each dimension stride must be 1 (strider[i] == 1)
+ * The dimension cannot be reordered (its dim_num should equal its position)
+ * The dimension cannot be a vector subscript (compare_sel[i] should not be positive)
+ * Any dimension that does not meet these requirements ensures that dimensions to the left cannot be contiguous either. 
+ */
+	for (i = n_dims_input - 1; i >= 0; i--) {
+		if (last || compare_sel[i] != -2 || strider[i] != 1 || (i != sel_ptr[i].dim_num))
+			break;
+		if (output_dim_sizes[i] < self_md->multidval.dim_sizes[sel_ptr[i].dim_num])
+			last = 1;
+		cpy_count *= output_dim_sizes[i];
+	}
+	
 	el_size = self_md->multidval.type->type_class.size;
 	val = (void*)NclMalloc(total_elements * el_size);
 	to = 0;
 	while(!done) {
+		rem_count = cpy_count;
 		from = 0;
 		for(i = 0; i < n_dims_input;i++) {
 			from = from + (current_index[i] * multiplier[i]);
 		}
-		memcpy((void*)((char*)val + to * el_size),(void*)((char*)self_md->multidval.val + from * el_size),el_size);
+		memcpy((void*)((char*)val + to * el_size),(void*)((char*)self_md->multidval.val + from * el_size),el_size * cpy_count);
 
-		if(compare_sel[n_dims_input-1] <0) {
+		if (rem_count > 1) {
+			current_index[n_dims_input -1 ] += output_dim_sizes[n_dims_input -1];
+			rem_count /= output_dim_sizes[n_dims_input -1];
+		}
+		else if (compare_sel[n_dims_input-1] <0) {
 			current_index[n_dims_input -1 ] += strider[n_dims_input-1];
-		} else {
+		} 
+		else {
 			compare_sel[n_dims_input-1]++;
 		}
+		
 		for(k = n_dims_input-1; k >0; k--) {
 			switch(compare_sel[k]) {
 			case -2: 
 				if(current_index[k] > sel_ptr[k].u.sub.finish) {
 					current_index[k] = sel_ptr[k].u.sub.start;
-					if(compare_sel[k-1] < 0) {
+					if (rem_count > 1) {
+						current_index[k -1 ] += output_dim_sizes[k -1];
+						rem_count /= output_dim_sizes[k -1];
+					}
+					else if(compare_sel[k-1] < 0) {
 						current_index[k-1] += strider[k-1];
 					} else {
 						compare_sel[k-1]++;
@@ -301,7 +334,7 @@ static struct _NclDataRec *MultiDValReadSection
 			}
 			break;
 		}
-		to++;
+		to +=cpy_count;
 	}
 	i =0;
 	while(i < n_dims_input) {
@@ -392,6 +425,9 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	int chckmiss = 0;
 	logical tmpe;
 	int el_size;
+	int rem_count;
+	int cpy_count = 1;
+	int last = 0;
 
 /*
 * preconditions:
@@ -589,17 +625,36 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 * index >= 0 into the integer vector array.
 */
 
+/*
+ * Now determine the amount of continguous data that may be copied in a single 
+ * call to memcpy
+ */
+	for (i = n_dims_target - 1; i >= 0; i--) {
+		if (last || compare_sel[i] != -2 || strider[i] != 1 || (i != sel_ptr[i].dim_num))
+			break;
+		if (output_dim_sizes[i] < target_md->multidval.dim_sizes[sel_ptr[i].dim_num])
+			last = 1;
+		cpy_count *= output_dim_sizes[i];
+	}
+
 	val = value_md->multidval.val;
 	from = 0;
 	while(!done) {
+		rem_count = cpy_count;
 		to = 0;
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
-		memcpy((void*)((char*)target_md->multidval.val + (to * el_size)),(void*)((char*)val + (from * el_size)),el_size);
-		if(compare_sel[n_dims_target-1] <0) {
+		memcpy((void*)((char*)target_md->multidval.val + (to * el_size)),
+		       (void*)((char*)val + (from * el_size)),el_size * cpy_count);
+		if (rem_count > 1) {
+			current_index[n_dims_target -1 ] += output_dim_sizes[n_dims_target -1];
+			rem_count /= output_dim_sizes[n_dims_target -1];
+		}
+		else if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
-		} else {
+		} 
+		else {
 			compare_sel[n_dims_target-1]++;
 		}
 		for(k = n_dims_target-1; k >0; k--) {
@@ -607,9 +662,14 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 			case -2: 
 				if(current_index[k] > sel_ptr[k].u.sub.finish) {
 					current_index[k] = sel_ptr[k].u.sub.start;
-					if(compare_sel[k-1] < 0) {
+					if (rem_count > 1) {
+						current_index[k -1 ] += output_dim_sizes[k -1];
+						rem_count /= output_dim_sizes[k -1];
+					}
+					else if(compare_sel[k-1] < 0) {
 						current_index[k-1] += strider[k-1];
-					} else {
+					} 
+					else {
 						compare_sel[k-1]++;
 					}
 				} else {
@@ -671,8 +731,9 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 			}
 			break;
 		}
-		from++;
+		from += cpy_count;
 	}
+
 	if(chckmiss) {
 		_Nclreset_mis(target_md->multidval.type,target_md->multidval.val,&value_md->multidval.missing_value.value,&target_md->multidval.missing_value.value,target_md->multidval.totalelements);
 	} else if(value_md->multidval.missing_value.has_missing && !chckmiss) {
@@ -714,6 +775,11 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 	int chckmiss = 0;
 	int el_size;
 	logical tmpe;
+	int rem_count;
+	int cpy_count = 1;
+	int last = 0;
+	int first = 1;
+	char *savep;
 
 /*
 * preconditions:
@@ -742,6 +808,11 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 	if(sel != NULL) {
 		sel_ptr = sel->selection;
 	} else {
+		/*
+		 * DIB -- this seems wrong: if the value_md has only one element it can't possible work.
+		 * The totalsizes will not in general be equal, so it will return a FATAL.
+		 * I suppose this branch never gets taken.
+		 */
 		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
 			memcpy(target_md->multidval.val,value_md->multidval.val,value_md->multidval.totalsize);
                         if(chckmiss) {
@@ -901,15 +972,49 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 		target_md->multidval.missing_value.value = value_md->multidval.missing_value.value;
 		
 	}
+	for (i = n_dims_target - 1; i >= 0; i--) {
+		if (last || compare_sel[i] != -2 || strider[i] != 1 || (i != sel_ptr[i].dim_num))
+			break;
+		if (output_dim_sizes[i] < target_md->multidval.dim_sizes[sel_ptr[i].dim_num])
+			last = 1;
+		cpy_count *= output_dim_sizes[i];
+	}
 	while(!done) {
+		char *tp;
+		rem_count = cpy_count;
 		to = 0;
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
-		memcpy((void*)((char*)target_md->multidval.val+ (to * el_size)),val,el_size);
-		if(compare_sel[n_dims_target-1] <0) {
+		tp = ((char*)target_md->multidval.val + (to * el_size));
+		/*
+		 * Propagate the scalar value to contiguous elements of the array
+		 */
+		if (first) {
+			i = 1;
+			memcpy(tp,val,el_size);
+			while (i <= cpy_count / 2) {
+				memcpy(tp+i*el_size,tp,el_size * i);
+				i *= 2;
+			}
+			if (cpy_count - i > 0) {
+				memcpy(tp+i*el_size,tp,el_size * (cpy_count - i));
+			}
+			savep = tp;
+			first = 0;
+		}
+		else {
+			memcpy(tp,savep,el_size * cpy_count);
+		}
+
+		if (rem_count > 1) {
+			current_index[n_dims_target -1 ] += output_dim_sizes[n_dims_target -1];
+			rem_count /= output_dim_sizes[n_dims_target -1];
+		}
+		else if (compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
-		} else {
+		} 
+		else {
 			compare_sel[n_dims_target-1]++;
 		}
 		for(k = n_dims_target-1; k >0; k--) {
@@ -917,7 +1022,11 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 			case -2: 
 				if(current_index[k] > sel_ptr[k].u.sub.finish) {
 					current_index[k] = sel_ptr[k].u.sub.start;
-					if(compare_sel[k-1] < 0) {
+					if (rem_count > 1) {
+						current_index[k -1 ] += output_dim_sizes[k -1];
+						rem_count /= output_dim_sizes[k -1];
+					}
+					else if(compare_sel[k-1] < 0) {
 						current_index[k-1] += strider[k-1];
 					} else {
 						compare_sel[k-1]++;
@@ -1018,7 +1127,6 @@ NclSelectionRecord *from_selection;
 	long to_compare_sel[NCL_MAX_DIMENSIONS];
 	long to_strider[NCL_MAX_DIMENSIONS];
 	int to_output_dim_sizes[NCL_MAX_DIMENSIONS];
-
 	long from_current_index[NCL_MAX_DIMENSIONS];
 	long from_multiplier[NCL_MAX_DIMENSIONS];
 	long from_compare_sel[NCL_MAX_DIMENSIONS];
@@ -1026,11 +1134,9 @@ NclSelectionRecord *from_selection;
 	int from_output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	int n_dims_value = 0;
-	int n_dims_value_orig = 0;
 	int total_elements_value = 1;
 	int total_elements_target = 1;
 	int n_dims_target = 0;
-	int n_dims_target_orig=0;
 	int n_elem_target=0;
 	int n_elem_value=0;
 
@@ -1039,6 +1145,12 @@ NclSelectionRecord *from_selection;
 	int chckmiss = 0;
 	int el_size;
 	logical tmpe =0 ;
+	int to_rem_count,from_rem_count;
+	int from_cpy_count = 1,cpy_count = 1;
+	int last = 0;
+	int from_dim_count, to_dim_count;
+	int from_left_dim, to_left_dim, jstart;
+	int scalar;
 	
 	for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
 		to_current_index[i] = 0;
@@ -1057,8 +1169,8 @@ NclSelectionRecord *from_selection;
 		return(NhlFATAL);
 	}
 
-	n_dims_value_orig = n_dims_value = value_md->multidval.n_dims;
-	n_dims_target_orig = n_dims_target = target_md->multidval.n_dims;
+	n_dims_value = value_md->multidval.n_dims;
+	n_dims_target = target_md->multidval.n_dims;
 	
 	
 
@@ -1206,7 +1318,7 @@ NclSelectionRecord *from_selection;
 		} else {
 			to_multiplier[i] = 1;
 		}
-		to_output_dim_sizes[i] = n_elem_target;
+		to_output_dim_sizes[i] = n_elem_target < 1 ? 1 : n_elem_target;
 		total_elements_target = total_elements_target * n_elem_target;
 		to_sel_ptr++;
 	}
@@ -1321,65 +1433,121 @@ NclSelectionRecord *from_selection;
 		} else {
 			from_multiplier[i] = 1;
 		}
-		from_output_dim_sizes[i] = n_elem_value;
+		from_output_dim_sizes[i] = n_elem_value < 1 ? 1 : n_elem_value;
 		total_elements_value =total_elements_value * n_elem_value;
 		from_sel_ptr++;
-	}
-	i = 0;
-	while(i < n_dims_value) {
-		if(from_output_dim_sizes[i] == 1) {
-			for(j = i; j  < n_dims_value; j++) {
-				from_output_dim_sizes[j] = from_output_dim_sizes[j+1];
-			}
-			n_dims_value--;
-		} else {
-			i++;
-		}
-	}
-	if(n_dims_value == 0) {
-		n_dims_value = 1;
-		from_output_dim_sizes[0] = 1;
-	}
-	i = 0;
-	while( i < n_dims_target ) {
-		if(to_output_dim_sizes[i] == 1) {
-			for(j = i; j  < n_dims_target; j++) {
-				to_output_dim_sizes[j] = to_output_dim_sizes[j+1];
-			}
-			n_dims_target--;
-		} else {
-			i++;
-		}
-	}
-	if(n_dims_target == 0) {
-		n_dims_target = 1;
-		to_output_dim_sizes[0] = 1;
-	}
-
-	if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {	
-		if(n_dims_target != n_dims_value) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
-			return(NhlFATAL);
-		}
-		for(i = 0; i< n_dims_target; i++) {
-			if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",i);
-				return(NhlFATAL);
-			}
-		}
 	}
 
 	to_sel_ptr = to_selection->selection;
 	from_sel_ptr = from_selection->selection;
 	to_val = target_md->multidval.val;
 	from_val = value_md->multidval.val;
+
+/*
+ * find the dim count after subscripting and the left most non-unitary dimension
+ */
+
+
+	from_dim_count = 0;
+	from_left_dim = -1;
+	for (i = 0; i < n_dims_value; i++) {
+		if (from_output_dim_sizes[i] > 1) {
+			if (from_left_dim == -1) {
+				from_left_dim = i;
+			}
+			from_dim_count++;
+		}
+	}
+	if (from_dim_count == 0) {
+		from_dim_count = 1;
+		from_left_dim = 0;
+	}
+
+	to_dim_count = 0;
+	to_left_dim = -1;
+	for (i = 0; i < n_dims_target; i++) {
+		if (to_output_dim_sizes[i] > 1) {
+			if (to_left_dim == -1) {
+				to_left_dim = i;
+			}
+			to_dim_count++;
+		}
+	}
+	if (to_dim_count == 0) {
+		to_dim_count = 1;
+		to_left_dim = 0;
+	}
+/*
+ * if from_dim_count == 1 and 	from_output_dim_sizes[from_left_dim] == 1, it turns into a 
+ * scalar assignment
+ */
+	scalar = from_dim_count == 1 && from_output_dim_sizes[from_left_dim] == 1;
+
+/*
+ * if not scalar then check that the number of dimensions after subscripting is equal,
+ * and that the non-unitary dimensions match in number of elements proceeding left to right.
+ */   
+
+	if (! scalar) {	
+		if(to_dim_count != from_dim_count) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",from_dim_count,to_dim_count);
+			return(NhlFATAL);
+		}
+
+		k = 0; /* counts dims after subscripting */
+		jstart = from_left_dim;
+		for (i = to_left_dim; i <  n_dims_target; i++) {
+			if (to_output_dim_sizes[i] <= 1) /* should never be less than 1 */
+				continue;
+			for (j = jstart; j < n_dims_value; j++) {
+				if (from_output_dim_sizes[j] <= 1)
+					continue;
+				if (to_output_dim_sizes[i] == from_output_dim_sizes[j]) {
+					jstart = j+1;
+					k++;
+					break;
+				}
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",k);
+				return(NhlFATAL);
+			}
+		}
+	}
+
+/*
+ * Now determine the amount of continguous data that may be copied in a single 
+ * call to memcpy
+ */
+	if (! chckmiss) {
+		last = 0;
+		for (i = n_dims_value - 1; i >= 0; i--) {
+			if (last || from_compare_sel[i] != -2 || from_strider[i] != 1 || (i != from_sel_ptr[i].dim_num))
+				break;
+			if (from_output_dim_sizes[i] < value_md->multidval.dim_sizes[from_sel_ptr[i].dim_num])
+				last = 1;
+			from_cpy_count *= from_output_dim_sizes[i];
+		}
+		last = 0;
+		for (i = n_dims_target - 1; i >= 0; i--) {
+			if (last || to_compare_sel[i] != -2 || to_strider[i] != 1 || (i != to_sel_ptr[i].dim_num))
+				break;
+			if (to_output_dim_sizes[i] < target_md->multidval.dim_sizes[to_sel_ptr[i].dim_num])
+				last = 1;
+			cpy_count *= to_output_dim_sizes[i];
+		}
+		cpy_count = cpy_count > from_cpy_count ? from_cpy_count : cpy_count;
+	}
+/*
+ * copy the data
+ */
+
 	while(!done) {
+		to_rem_count = from_rem_count = cpy_count;
 		to = 0;
 		from = 0;
-		for(i = 0; i < n_dims_target_orig;i++) {
+		for(i = 0; i < n_dims_target;i++) {
 			to = to + (to_current_index[i] * to_multiplier[i]);
 		}
-		for(i = 0; i < n_dims_value_orig;i++) {
+		for(i = 0; i < n_dims_value;i++) {
 			from = from + (from_current_index[i] * from_multiplier[i]);
 		}
 		if(chckmiss) {
@@ -1391,26 +1559,38 @@ NclSelectionRecord *from_selection;
 				memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
 			}
 		} else {
-			memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
+			memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size * cpy_count);
 		}
-		if(to_compare_sel[n_dims_target_orig-1] <0) {
-			to_current_index[n_dims_target_orig -1 ] += to_strider[n_dims_target_orig-1];
+		if (to_rem_count > 1) {
+			to_current_index[n_dims_target -1 ] += to_output_dim_sizes[n_dims_target -1];
+			to_rem_count /= to_output_dim_sizes[n_dims_target -1];
+		}
+		else if (to_compare_sel[n_dims_target-1] <0) {
+			to_current_index[n_dims_target -1 ] += to_strider[n_dims_target-1];
 		} else {
-			to_compare_sel[n_dims_target_orig-1]++;
+			to_compare_sel[n_dims_target-1]++;
 		}
-		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
-			if(from_compare_sel[n_dims_value_orig -1] <0) {
-				from_current_index[n_dims_value_orig -1 ] += from_strider[n_dims_value_orig-1];
+		if (! scalar) {
+			if (from_rem_count > 1) {
+				from_current_index[n_dims_value -1 ] += from_output_dim_sizes[n_dims_value -1];
+				from_rem_count /= from_output_dim_sizes[n_dims_value -1];
+			}
+			else if (from_compare_sel[n_dims_value -1] <0) {
+				from_current_index[n_dims_value -1 ] += from_strider[n_dims_value-1];
 			} else {
-				from_compare_sel[n_dims_value_orig-1]++;
+				from_compare_sel[n_dims_value-1]++;
 			}
 		}
-		for(k = n_dims_target_orig-1; k >0; k--) {
+		for(k = n_dims_target-1; k >0; k--) {
 			switch(to_compare_sel[k]) {
 			case -2: 
 				if(to_current_index[k] > to_sel_ptr[k].u.sub.finish) {
 					to_current_index[k] = to_sel_ptr[k].u.sub.start;
-					if(to_compare_sel[k-1] < 0) {
+					if (to_rem_count > 1) {
+						to_current_index[k -1 ] += to_output_dim_sizes[k -1];
+						to_rem_count /= to_output_dim_sizes[k -1];
+					}
+					else if(to_compare_sel[k-1] < 0) {
 						to_current_index[k-1] += to_strider[k-1];
 					} else {
 						to_compare_sel[k-1]++;
@@ -1470,13 +1650,17 @@ NclSelectionRecord *from_selection;
 			}
 			break;
 		}
-		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
-			for(k = n_dims_value_orig -1; k >0; k--) {
+		if (! scalar) {
+			for(k = n_dims_value -1; k >0; k--) {
 				switch(from_compare_sel[k]) {
 				case -2: 
 					if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
 						from_current_index[k] = from_sel_ptr[k].u.sub.start;
-						if(from_compare_sel[k-1] < 0) {
+						if (from_rem_count > 1) {
+							from_current_index[k -1 ] += from_output_dim_sizes[k -1];
+							from_rem_count /= from_output_dim_sizes[k -1];
+						}
+						else if(from_compare_sel[k-1] < 0) {
 							from_current_index[k-1] += from_strider[k-1];
 						} else {
 							from_compare_sel[k-1]++;

@@ -1951,7 +1951,9 @@ NclStackEntry missing_expr;
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
 	long *dim_size_list,total;
 	int i,j;
+	char *tp;
 	NclTypeClass typec = NULL;
+	int tsize;
 	
 
 	the_type = _NclKeywordToDataType(data_type);
@@ -2053,10 +2055,28 @@ NclStackEntry missing_expr;
 			j = 1;
 		}
 		tmp_val = (void*)NclMalloc((unsigned int)total*_NclSizeOf(the_type));
+		if (! tmp_val) {
+			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
+			return(NhlFATAL);
+		}
+		tp = (char *) tmp_val;
+		i = 1;
+		tsize = _NclSizeOf(the_type);
+		memcpy((void*)tp,(void*)&missing_val,tsize);
+		while (i <= total / 2) {
+			memcpy(tp+i*tsize,tp,tsize * i);
+			i *= 2;
+		}
+		if (total - i > 0) {
+			memcpy(tp+i*tsize,tp,tsize * (total - i));
+		}
+
+#if 0
 		for(i = 0; i< total*_NclSizeOf(the_type); i+=_NclSizeOf(the_type)) {
 			memcpy((void*)&(((char*)tmp_val)[i]),(void*)&missing_val,_NclSizeOf(the_type));
 			
 		}
+#endif
 		tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ? Ncl_MultiDValData:the_obj_type),0,tmp_val,&missing_val,j,dim_sizes,TEMPORARY,NULL,(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?_NclTypeEnumToTypeClass(the_obj_type):NULL));
 		if((tmp1_md != size_md)&&(tmp1_md->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)tmp1_md);
