@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: nhlex.man,v 1.5 1995-01-12 22:10:57 haley Exp $
+.\"	$Id: nhlex.man,v 1.6 1995-01-17 23:20:38 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -30,7 +30,6 @@ nhlex \- NCAR Graphics High Level Utilities Example Programs
 \fBnhlex\fP 
 [\fI\-A\fP]
 [\fI\-clean\fP]
-[\fI\-list\fP]
 [\fI\-n\fP]
 \fIname ...\fP
 .SH DESCRIPTION
@@ -62,8 +61,6 @@ and their examples will be ported to other systems.
 Copy and execute all available examples.
 .IP \-\fIclean\fP 1i
 Remove everything but the ".ncgm" file.
-.IP \-\fIlist\fP 1i
-Lists all the examples.  Must be used with the "-A" option.
 .IP \-\fIn\fP 1i
 Specifies that the example should just be copied over, and not
 linked or executed.
