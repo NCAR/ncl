@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
@@ -343,7 +344,7 @@ NhlErrorTypes wmbarb_W( void )
 {
   int grlist,gkswid,i;
   int *nwid,nid,ezf;
-  float xt,yt,xtn,ytn;
+  float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
   int itrn;
   float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
@@ -417,9 +418,22 @@ NhlErrorTypes wmbarb_W( void )
   if (ezf != -1) {
     for (i = 0; i < dsizes_x[0]; i++) {
       c_getset(&x1,&x2,&y1,&y2,&xx1,&xx2,&yy1,&yy2,&itrn);
-      c_maptrn(x[i],y[i],&xt,&yt);
+/*
+ * Find a small vector *on the map* in the direction of the wind barb.
+ * The cos term is introduced to accommodate for the latitude of the
+ * barb - as you approach the poles, a given spacial distance in latitude 
+ * in degrees is less than the same spacial distance in degrees
+ * longitude.
+ */
+      ang1 = atan2(u[i],v[i]);
+      c_maptrn(x[i], y[i], &xt, &yt);
       if (xt != 1.e12) {
-        c_wmbarb(xt, yt, *(u+i), *(v+i));
+        c_maptrn(x[i]+0.1*cos(ang1),y[i]+0.1*sin(ang1)/cos(d2r*x[i]),&xtn,&ytn);
+        ang2 = atan2(ytn-yt,xtn-xt);
+        vlen = sqrt(u[i]*u[i]+v[i]*v[i]);
+        utmp = vlen*cos(ang2);
+        vtmp = vlen*sin(ang2);
+        c_wmbarb(xt, yt, utmp,vtmp);
       }
     }
   }
