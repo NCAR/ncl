@@ -10,7 +10,7 @@ INCLUDES	= cgm_tools.h cgmdef.h
 SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c name.c
 OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o name.o
 
-EXTRA_DEFINES	= -DNGTMPDIR='"$(NGTMPDIR)"' -DDEFAULT_GKS_BUFSIZE='"$(GKS_BUFFER_SIZE))"'
+EXTRA_DEFINES	= -DNGTMPDIR='"$(NGTMPDIR)"' -DDEFAULT_GKS_BUFSIZE='$(GKS_BUFFER_SIZE)'
 
 LibraryTarget($(MYNAME),$(OBJECTS))
 BuildSharedFromArch(libNGcgm,libcgm.a,1,0,$(NCARGCLIB) -lc)
