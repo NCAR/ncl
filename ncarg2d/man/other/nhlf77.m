@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nhlf77.m,v 1.1 1995-04-26 18:21:25 haley Exp $
+.\"	$Id: nhlf77.m,v 1.2 1995-05-17 17:16:34 haley Exp $
 .\"
 .TH NHLF77 1NCARG "April 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -7,8 +7,8 @@ nhlf77 \- Command for compiling Fortran code that uses the NCAR Graphics
 high-level utilities.
 .SH SYNOPSIS
 \fBnhlf77\fP 
-[\fB\-libnetcdf\fR]
-[\fB\-libhdf\fR] ...
+[\fB\-netcdf\fR]
+[\fB\-hdf\fR] ...
 .SH DESCRIPTION
 \fInhlf77\fP is a script that invokes the FORTRAN 77 compiler/linker
 with the proper NCAR Graphics LLU (low-level utility) and HLU
@@ -32,12 +32,12 @@ addition to the ones automatically referenced by \fInhlf77\fR, all the
 libraries must have been created in a similar fashion.
 .sp
 .I OPTIONS
-.IP "\-libnetcdf"
+.IP "\-netcdf"
 Links in the netCDF library.  This library is not part of NCAR Graphics,
 so check with your system administrator if you need it installed.  You
 can obtain a copy of it by doing an anonymous ftp to unidata.ucar.edu.
 .sp
-.IP "\-libhdf"
+.IP "\-hdf"
 Links in the HDF library.  This library is not part of NCAR Graphics,
 so check with your system administrator if you need it installed.  You
 can obtain a copy of it by doing an anonymous ftp to ftp.ncsa.uiuc.edu.
