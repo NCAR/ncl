@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.29 1997-01-03 01:37:30 boote Exp $
+ *      $Id: Create.c,v 1.30 1997-01-12 21:56:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <unistd.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ResListP.h>
