@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.31 1995-01-28 01:50:48 ethan Exp $
+ *      $Id: Execute.c,v 1.32 1995-01-28 23:51:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2680,8 +2680,8 @@ NclExecuteReturnStatus _NclExecute
 				nsubs = *ptr;
 				file_ptr = _NclRetrieveRec(file_sym,WRITE_IT);
 				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)) {
-					if(_NclGetVarRepValue(file_ptr->u.data_var) == Ncl_MultiDValnclfileData) {
-						value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+					if(value->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						if(value != NULL)
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
@@ -2737,6 +2737,9 @@ NclExecuteReturnStatus _NclExecute
 				
 								} else if(rhs.kind == NclStk_VAR) {
 									estatus = _NclFileWriteVarVar(file,var,sel_ptr,rhs.u.data_var,NULL);
+									if(rhs.u.data_var->obj.status != PERMANENT) {
+										_NclDestroyObj((NclObj)rhs.u.data_var);
+									}
 								} else {	
 
 									estatus = NhlFATAL;

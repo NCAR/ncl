@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.7 1995-01-28 01:51:37 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.8 1995-01-28 23:52:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
 #include "TypeSupport.h"
 #include "DataSupport.h"
 #include <math.h>
+#include "NclTypestring.h"
+#include "NclTypechar.h"
 
 INSERTHERE
 
@@ -1626,6 +1628,10 @@ NclScalar *new_missing;
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclMultiDValData output_md = NULL;
 	void *result_val = NULL;
+	int limit = 1,from = 0;
+	int n_dims = 0;
+	int step = 0,i;
+	int dimsizes[NCL_MAX_DIMENSIONS];
 
 	if((self_md != NULL)&&(self_md->multidval.type != NULL)) {
 		from_type = self_md->multidval.type;
@@ -1636,17 +1642,33 @@ NclScalar *new_missing;
 			return(self);
 		} else {
 			if(to_type != (NclTypeClass)nclTypeClass) {
-				result_val = (void*)NclMalloc(to_type->type_class.size*self_md->multidval.totalelements);
-				if(result_val != NULL) {
-					if(_Nclcoerce(
-						to_type,
-						result_val,
-						self_md->multidval.val,
-						self_md->multidval.totalelements,
-						(self_md->multidval.missing_value.has_missing?&self_md->multidval.missing_value.value:NULL),
-						new_missing,
-						from_type) != NhlFATAL) {
-						
+				if((from_type == (NclTypeClass)nclTypecharClass)&&(to_type == (NclTypeClass)nclTypestringClass)){
+					for(i = 0; i < self_md->multidval.n_dims - 1; i++) {
+						limit *= self_md->multidval.dim_sizes[i];
+						dimsizes[i] = self_md->multidval.dim_sizes[i];
+					}
+					n_dims = self_md->multidval.n_dims - 1;
+					if(n_dims == 0) {
+						n_dims = 1;
+						dimsizes[i] = 1;
+					}
+					step = self_md->multidval.dim_sizes[self_md->multidval.n_dims - 1];
+					result_val = (void*)NclMalloc(to_type->type_class.size*limit);
+					if(result_val != NULL) {
+						for(i = 0; i < limit; i++) {
+							if(_Nclcoerce(
+								to_type,
+								(void*)&((NclQuark*)result_val)[i],
+								(void*)&((char*)self_md->multidval.val)[from],
+								self_md->multidval.totalelements,
+								(self_md->multidval.missing_value.has_missing?&self_md->multidval.missing_value.value:NULL),
+								new_missing,
+								from_type) == NhlFATAL) {
+								
+								NclFree(result_val);
+							}
+							from += step;
+						}
 						output_md = _NclCreateVal(
 							NULL,
 							NULL,
@@ -1654,15 +1676,43 @@ NclScalar *new_missing;
 							self_md->obj.obj_type_mask,
 							result_val,
 							new_missing,
-							self_md->multidval.n_dims,
-							self_md->multidval.dim_sizes,
+							n_dims,
+							(int*)dimsizes,
 							TEMPORARY,
 							NULL,
 							(NclObjClass)to_type
 							);
 						return((NclData)output_md);
-					} else {
-						NclFree(result_val);
+					}
+				} else {
+					result_val = (void*)NclMalloc(to_type->type_class.size*self_md->multidval.totalelements);
+					if(result_val != NULL) {
+						if(_Nclcoerce(
+							to_type,
+							result_val,
+							self_md->multidval.val,
+							self_md->multidval.totalelements,
+							(self_md->multidval.missing_value.has_missing?&self_md->multidval.missing_value.value:NULL),
+							new_missing,
+							from_type) != NhlFATAL) {
+							
+							output_md = _NclCreateVal(
+								NULL,
+								NULL,
+								self_md->obj.obj_type,
+								self_md->obj.obj_type_mask,
+								result_val,
+								new_missing,
+								self_md->multidval.n_dims,
+								self_md->multidval.dim_sizes,
+								TEMPORARY,
+								NULL,
+								(NclObjClass)to_type
+								);
+							return((NclData)output_md);
+						} else {
+							NclFree(result_val);
+						}
 					}
 				}
 			}

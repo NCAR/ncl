@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.9 1995-01-28 01:52:33 ethan Exp $
+ *      $Id: NclVar.c,v 1.10 1995-01-28 23:52:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -614,7 +614,7 @@ struct _NclObjRec*	self;
 	_NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
 
 	
-	if((value != NULL)&&(value->obj.class_ptr->obj_class.destroy != NULL)) {
+	if(value != NULL) {
 		_NclDelParent(value,self);
 	}
 	NclFree(self_var);

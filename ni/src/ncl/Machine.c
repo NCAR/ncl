@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.31 1995-01-28 01:50:58 ethan Exp $
+ *      $Id: Machine.c,v 1.32 1995-01-28 23:51:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1155,7 +1155,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr),fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d",*ptr);
+				fprintf(fp,"\t%d\n",*ptr);
 				break;
 			case VAR_READ_OP :
 			case ASSIGN_VAR_OP :

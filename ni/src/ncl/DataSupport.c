@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.10 1995-01-28 01:50:42 ethan Exp $
+ *      $Id: DataSupport.c,v 1.11 1995-01-28 23:51:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1173,7 +1173,7 @@ struct _NclDataRec *value;
         f_selection = (int)((NclMultiDValData)value)->multidval.kind;
         while((NclObjClass)oc != nclObjClass) {
                 if( oc->data_class.w_subsection[f_selection] != NULL) {
-                        return((NclMultiDValData)((*oc->data_class.w_subsection[f_selection])(self, selection, value)));
+                        return(((*oc->data_class.w_subsection[f_selection])(self, selection, value)));
                 } else {
                         oc = (NclDataClass)oc->obj_class.super_class;
                 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.7 1995-01-28 01:53:23 ethan Exp $
+ *      $Id: VarSupport.c,v 1.8 1995-01-28 23:52:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -245,7 +245,13 @@ NhlErrorTypes  _NclBuildCoordVSelection
 			tmp_md = _NclCoerceData(vect_md,the_type,NULL);
 			if(tmp_md == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
-			return(NhlFATAL);
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
+				return(NhlFATAL);
 			} 
 		} else {
 			tmp_md = vect_md;
@@ -258,6 +264,12 @@ NhlErrorTypes  _NclBuildCoordVSelection
 		sel->u.vec.n_ind = tmp_md->multidval.totalelements;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(_NclGetCoordClosestIndex(coord_md,(void*)((char*)tmp_md->multidval.val + i * tmp_md->multidval.type->type_class.size),&(thevector[i])) == NhlFATAL) {
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
 				return(NhlFATAL);
 			}
 		}
@@ -274,6 +286,12 @@ NhlErrorTypes  _NclBuildCoordVSelection
 		}
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)tmp_md);
+		}
+		if(coord_md->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)coord_md);
+		}
+		if(cvar->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)cvar);
 		}
 		return(NhlNOERROR);
 	} else {
@@ -362,16 +380,28 @@ NhlErrorTypes _NclBuildCoordRSelection
 				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
 				if(tmp_md == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
+					if(cvar->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar);
+					}
 					return(NhlFATAL);
 				} else {
 					if(range->finish->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->finish);
-						range->finish = tmp_md;
 					}
+					range->finish = tmp_md;
 				}
 			}
 			if(_NclGetCoordRange(coord_md,NULL,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
 				return(NhlFATAL);
 			}
 
@@ -394,16 +424,28 @@ NhlErrorTypes _NclBuildCoordRSelection
 				tmp_md = _NclCoerceData(range->start,the_type,NULL);
 				if(tmp_md == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
+					if(cvar->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar);
+					}
 					return(NhlFATAL);
 				} else {
 					if(range->start->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->start);
-						range->start = tmp_md;
 					}
+					range->start = tmp_md;
 				}
 			}
 			if(_NclGetCoordRange(coord_md,range->start->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
 				return(NhlFATAL);
 			}
 
@@ -421,6 +463,12 @@ NhlErrorTypes _NclBuildCoordRSelection
 				tmp_md = _NclCoerceData(range->start,the_type,NULL);
 				if(tmp_md == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
+					if(cvar->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar);
+					}
 					return(NhlFATAL);
 				} else {
 					if(range->start->obj.status != PERMANENT) {
@@ -428,8 +476,8 @@ NhlErrorTypes _NclBuildCoordRSelection
 							range->finish = tmp_md;
 						}
 						_NclDestroyObj((NclObj)range->start);
-						range->start = tmp_md;
 					}
+					range->start = tmp_md;
 				}
 			}
 			tmp_md = NULL;
@@ -437,17 +485,29 @@ NhlErrorTypes _NclBuildCoordRSelection
 				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
 				if(tmp_md == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
+					if(cvar->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar);
+					}
 					return(NhlFATAL);
 				} else {
 					if(range->finish->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->finish);
-						range->finish = tmp_md;
 					}
+					range->finish = tmp_md;
 				}
 			}
 
 			if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
 				return(NhlFATAL);
 			}
 
@@ -464,11 +524,23 @@ NhlErrorTypes _NclBuildCoordRSelection
 				range->stride->multidval.data_type,
 				&(sel->u.sub.stride),NCL_long)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+				if(coord_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)coord_md);
+				}
+				if(cvar->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)cvar);
+				}
 				return(NhlFATAL);
 			}
 
 		} 
 	} 
+	if(coord_md->obj.status != PERMANENT) {
+		_NclDestroyObj((NclObj)coord_md);
+	}
+	if(cvar->obj.status != PERMANENT) {
+		_NclDestroyObj((NclObj)cvar);
+	}
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclBuildRSelection
