@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.6 2000-05-16 01:35:45 dbrown Exp $
+ *      $Id: hluutil.h,v 1.7 2000-08-22 00:16:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 
 #include <ncarg/c.h>
 #include <ncarg/gks.h>
+#include <ncarg/hlu/hlu.h>
 
 #ifndef	NhlNeedProto
 #ifdef	__STDC__
@@ -151,6 +152,18 @@ extern float	_NhlCmpFAny2(
 	float b, 
 	int sig_dig,
 	float min_nonzero
+#endif
+);
+
+extern NhlErrorTypes _NhlGetEndpointsAndStepSize(
+#if	NhlNeedProto
+	float		min,
+	float   	max,
+	int		max_steps,
+	NhlBoolean	outside,
+	float		*min_out,
+	float		*max_out,
+	float		*step_size
 #endif
 );
 

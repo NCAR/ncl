@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.66 2000-06-28 19:04:06 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.67 2000-08-22 00:16:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7818,8 +7818,9 @@ static NhlErrorTypes    SetupLevelsAutomatic
                 count = MAX(count,1);
 	}
 	if (choose_spacing) {
-		subret = ChooseSpacingLin(&lmin,&lmax,&spacing,NhlvcPRECISION,
-					  vcp->max_level_count,entry_name);
+		subret = _NhlGetEndpointsAndStepSize
+			(lmin,lmax,vcp->max_level_count,False,
+			 &lmin,&lmax,&spacing);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			e_text = "%s: error choosing spacing";
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
@@ -8014,85 +8015,6 @@ static NhlErrorTypes    SetupLevelsExplicit
                 ret = MIN(ret,subret);
         }
 	return ret;
-}
-
-/*
- * Function:	ChooseSpacingLin
- *
- * Description: Ethan's tick mark spacing code adapted to choosing 'nice'
- *		VectorPlot values; adapted by exchanging the ciel and floor
- *		functions - since the max and min vector values must be
- *		within the data space rather than just outside it as is 
- *		appropriate for tick marks. (Eventually should probably
- *		generalize the code with another parameter to handle either
- *		situation.)
- *
- * In Args:	tstart	requested tick starting location
- *		tend	requested tick ending location
- *		convert_precision  precision used to compare with
- *		max_ticks the maximum number of ticks to be choosen
- * Out Args:
- *		tstart  new start
- *		tend	new end
- *		spacing new spacing
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */
-static NhlErrorTypes ChooseSpacingLin
-#if	NhlNeedProto
-(
-	float *tstart,
-	float *tend,
-	float *spacing,
-	int convert_precision,
-	int max_ticks,
-	NhlString entry_name)
-#else
-(tstart,tend,spacing,convert_precision,max_ticks,entry_name)
-	float *tstart;
-	float *tend;
-	float *spacing;
-	int	convert_precision;
-	int	max_ticks;
-#endif
-{
-	double	table[] = 
-	{ 1.0,2.0,2.5,4.0,5.0,
-		  10.0,20.0,25.0,40.0,50.0,
-		  100.0,200.0,250.0,400.0,500.0 };
-	double	d,u,t,am1,ax1;
-	double	am2=0.0,ax2=0.0;
-	int	npts = 15;
-	int	i;
-	char	*e_text;
-
-	if(_NhlCmpFAny2(*tend,*tstart,NhlvcPRECISION,_NhlMIN_NONZERO)<=0.0) {
-		e_text = "%s: Scalar level extent is near 0.0";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-		
-	d = pow(10.0,floor(log10(*tend-*tstart)) - 2.0);
-	u = *spacing = FLT_MAX;
-	for(i=0;i<npts; i++) {
-		t = table[i] * d;
-		am1 = ceil(*tstart/t) *t;
-		ax1 = floor(*tend/t) * t;
-		if(((i>=npts-1)&&(*spacing == u))||
-		   ((t <= *spacing)&&
-		    (_NhlCmpFAny2((ax1-am1)/t,(double)max_ticks,
-				 convert_precision,_NhlMIN_NONZERO) <= 0.0))){
-			*spacing = t;
-			ax2 = ax1;
-			am2 = am1;
-		}
-	}
-	*tstart = am2;
-	*tend = ax2;
-	return(NhlNOERROR);
-	
 }
 
 /*

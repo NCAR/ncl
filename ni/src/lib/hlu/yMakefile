@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.50 2000-06-28 19:04:08 dbrown Exp $
+#      $Id: yMakefile,v 1.51 2000-08-22 00:16:57 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -69,7 +69,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		StreamlinePlot.c Style.c GraphicStyle.c SubStyles.c \
 		Callbacks.c MapDataHandler.c MapV40DataHandler.c \
 		MapV41DataHandler.c Primitive.c \
-		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
+		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
+		cmpf.c nicevals.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -87,7 +88,8 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		StreamlinePlot.o Style.o GraphicStyle.o SubStyles.o \
 		Callbacks.o MapDataHandler.o MapV40DataHandler.o \
 		MapV41DataHandler.o Primitive.o \
-		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
+		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
+		cmpf.o nicevals.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f \
