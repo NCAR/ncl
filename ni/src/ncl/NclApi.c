@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.42 1997-05-09 21:37:57 ethan Exp $
+ *      $Id: NclApi.c,v 1.43 1997-05-12 15:48:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,7 @@ int id;
 NclHLUStruct *ptr;
 #endif
 {
-	NclHLULookUpTableNode* tmp;
+	NclHLULookUpTable* tmp;
 
 	tmp = _NclGetHLURefInfo(id);
 
