@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.1 1993-10-06 22:54:34 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.2 1993-10-18 16:10:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,8 @@
 #ifndef _NCProcFuncs_h
 #define _NCProcFuncs_h
 
+#define ANYDIMSIZE = -1
+
 typedef struct _NclProcFuncInfo {
 	int nargs;
 	struct _NclArgTemplate *theargs;
@@ -36,5 +38,31 @@ typedef struct _NclArgTemplate {
 	struct _NclSymbol *arg_data_type; /* use symbol table keyword entries */
 	int is_dimsizes;
 } NclArgTemplate;
+
+typedef void (*NclBuiltInProcWrapper)(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+typedef struct _NclBuiltInProcInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	NclBuiltInProcWrapper theproc;
+} NclBuiltInProcInfo;
+
+typedef void (*NclBuiltInFuncWrapper)(
+#if	NhlNeedProto
+	NclStackEntry * /*return_data*/
+#endif
+);
+
+typedef struct _NclBuiltInFuncInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	NclBuiltInFuncWrapper thefunc;
+} NclBuiltInFuncInfo;
 
 #endif	/* _NCProcFuncs_h */

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.3 1993-10-14 18:33:22 ethan Exp $
+ *      $Id: Machine.c,v 1.4 1993-10-18 16:10:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -143,6 +143,51 @@ static SetUpOpsStrings() {
 	ops_strings[WRITE_FILE_DIMNAME_OP] = "WRITE_FILE_DIMNAME_OP";
 	ops_strings[WRITE_FILE_ATT_OP] = "WRITE_FILE_ATT_OP";
 	ops_strings[WRITE_SUBSCRIPTED_FILE_ATT_OP] = "WRITE_SUBSCRIPTED_FILE_ATT_OP";
+	ops_strings[PARAM_SUBSCRIPTED_VAR_OP] = "PARAM_SUBSCRIPTED_VAR_OP";
+	ops_strings[PARAM_PUSH_VAR_OP] = "PARAM_PUSH_VAR_OP";
+	ops_strings[PARAM_VAR_DIMNUM_OP] = "PARAM_VAR_DIMNUM_OP";
+	ops_strings[PARAM_SUBSCRIPTED_VARATT_OP] = "PARAM_SUBSCRIPTED_VARATT_OP";
+	ops_strings[PARAM_VARATT_OP] = "PARAM_VARATT_OP";
+	ops_strings[PARAM_VAR_DIMNAME_OP] = "PARAM_VAR_DIMNAME_OP";
+	ops_strings[PARAM_SUBSCRIPTED_VAR_COORD_OP] = "PARAM_SUBSCRIPTED_VAR_COORD_OP";
+	ops_strings[PARAM_VAR_COORD_OP] = "PARAM_VAR_COORD_OP";
+	ops_strings[PARAM_PUSH_FILE_OP] = "PARAM_PUSH_FILE_OP";
+	ops_strings[PARAM_SUBSCRIPTED_FILE_VAR_OP] = "PARAM_SUBSCRIPTED_FILE_VAR_OP";
+	ops_strings[PARAM_PUSH_FILE_VAR_OP] = "PARAM_PUSH_FILE_VAR_OP";
+	ops_strings[PARAM_FILE_DIMNUM_OP] = "PARAM_FILE_DIMNUM_OP";
+	ops_strings[PARAM_FILE_DIMNAME_OP] = "PARAM_FILE_DIMNAME_OP";
+	ops_strings[PARAM_FILE_ATT_OP] = "PARAM_FILE_ATT_OP";
+	ops_strings[PARAM_SUBSCRIPTED_FILE_ATT_OP] = "PARAM_SUBSCRIPTED_FILE_ATT_OP";
+}
+
+extern NclValue *_NclGetCurrentMachine
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(mstk->themachine);
+}
+
+extern int *_NclGetCurrentLineRec
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(mstk->thelines);
+}
+
+extern char **_NclGetCurrentFileNameRec
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(mstk->thefiles);
 }
 
 void _NclNewMachine
@@ -565,6 +610,7 @@ int _NclPrintMachine
 				break;
 			case PUSH_VAR_OP :
 			case WRITE_PUSH_VAR_OP :
+			case PARAM_PUSH_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -607,6 +653,7 @@ int _NclPrintMachine
 				break;
 			case VAR_COORD_OP:
 			case WRITE_VAR_COORD_OP:
+			case PARAM_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -616,6 +663,7 @@ int _NclPrintMachine
 				break;
 			case SUBSCRIPTED_VAR_COORD_OP:
 			case WRITE_SUBSCRIPTED_VAR_COORD_OP:
+			case PARAM_SUBSCRIPTED_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -627,6 +675,7 @@ int _NclPrintMachine
 				break;
 			case VAR_DIMNAME_OP:
 			case WRITE_VAR_DIMNAME_OP:
+			case PARAM_VAR_DIMNAME_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -636,6 +685,7 @@ int _NclPrintMachine
 				break;
 			case VAR_DIMNUM_OP:
 			case WRITE_VAR_DIMNUM_OP:
+			case PARAM_VAR_DIMNUM_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -645,6 +695,7 @@ int _NclPrintMachine
 				break;
 			case VARATT_OP:
 			case WRITE_VARATT_OP:
+			case PARAM_VARATT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -654,6 +705,7 @@ int _NclPrintMachine
 				break;
 			case SUBSCRIPTED_VARATT_OP:
 			case WRITE_SUBSCRIPTED_VARATT_OP:
+			case PARAM_SUBSCRIPTED_VARATT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -665,6 +717,7 @@ int _NclPrintMachine
 				break;
 			case SUBSCRIPTED_FILE_VAR_OP :
 			case WRITE_SUBSCRIPTED_FILE_VAR_OP :
+			case PARAM_SUBSCRIPTED_FILE_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -677,6 +730,7 @@ int _NclPrintMachine
 				break;
 			case PUSH_FILE_OP :
 			case WRITE_PUSH_FILE_OP :
+			case PARAM_PUSH_FILE_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -684,6 +738,7 @@ int _NclPrintMachine
 				break;
 			case SUBSCRIPTED_VAR_OP :
 			case WRITE_SUBSCRIPTED_VAR_OP :
+			case PARAM_SUBSCRIPTED_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -693,6 +748,7 @@ int _NclPrintMachine
 				break;
 			case PUSH_FILE_VAR_OP :
 			case WRITE_PUSH_FILE_VAR_OP :
+			case PARAM_PUSH_FILE_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -703,6 +759,7 @@ int _NclPrintMachine
 				break;
 			case FILE_DIMNUM_OP :
 			case WRITE_FILE_DIMNUM_OP :
+			case PARAM_FILE_DIMNUM_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -712,6 +769,7 @@ int _NclPrintMachine
 				break;
 			case FILE_DIMNAME_OP :
 			case WRITE_FILE_DIMNAME_OP :
+			case PARAM_FILE_DIMNAME_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -721,6 +779,7 @@ int _NclPrintMachine
 				break;
 			case FILE_ATT_OP :
 			case WRITE_FILE_ATT_OP :
+			case PARAM_FILE_ATT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -729,7 +788,7 @@ int _NclPrintMachine
 				fprintf(fp,"\t%s\n",(char*)*ptr);
 				break;
 			case SUBSCRIPTED_FILE_ATT_OP:
-			case WRITE_SUBSCRIPTED_FILE_ATT_OP:
+			case PARAM_SUBSCRIPTED_FILE_ATT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");

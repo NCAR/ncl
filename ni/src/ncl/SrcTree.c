@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.3 1993-10-14 18:33:34 ethan Exp $
+ *      $Id: SrcTree.c,v 1.4 1993-10-18 16:10:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2434,7 +2434,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[vardim->ref_type]);
 			_NclPrintSymbol(vardim->sym,fp);
 			putspace(i,fp);
-			fprintf(fp,"dim#: %d",vardim->u.dimnum);
+			fprintf(fp,"dim#: %d\n",vardim->u.dimnum);
 			i--;
 		}
 			break;

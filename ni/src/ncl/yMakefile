@@ -1,6 +1,6 @@
 
 #
-#      $Id: yMakefile,v 1.3 1993-10-14 18:33:58 ethan Exp $
+#      $Id: yMakefile,v 1.4 1993-10-18 16:11:21 ethan Exp $
 #
 #########################################################################
 #									#
@@ -45,7 +45,7 @@ EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS)
 
 HDRS	= Files.h ProcFuncs.h Graphics.h Keywords.h Literal.h Machine.h \
 	NclApi.h OpsList.h SrcTree.h Symbol.h Variable.h \
-	defs.h y.tab.h
+	defs.h y.tab.h Execute.h
 
 API_SRCS	= NclApi.c
 EXE_SRCS	= Ncl.c
@@ -55,13 +55,13 @@ EXESRCS		= $(EXE_SRCS) $(SRCS)
 ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
 
 SRCS	= Machine.c Memory.c Printtoken.c SrcTree.c Symbol.c Translate.c \
-	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c
+	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c Execute.c AddBuiltIns.c
 
 API_OBJS	= NclApi.o
 EXE_OBJS	= Ncl.o
 
 OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
-	lex.yy.o y.tab.o yywrap.o
+	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)

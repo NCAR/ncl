@@ -103,7 +103,11 @@ statement_list :  statement eoln			{
 								if(($1 != NULL)&&!(is_error)) {
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
+									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
+/*
+									_NclExecute(strt);
+*/
 									_NclResetNewSymStack();
 									_NclFreeTree($1,is_error);
 #ifdef MAKEAPI
@@ -126,7 +130,11 @@ statement_list :  statement eoln			{
 								if(($2 != NULL) && !(is_error)) {
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
+									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
+/*
+									_NclExecute(strt);
+*/
 									_NclResetNewSymStack();
 									_NclFreeTree($2,is_error);
 #ifdef MAKEAPI

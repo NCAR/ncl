@@ -309,7 +309,7 @@ digit	[0-9]
        	return s->type;
 }
 [!]{digit}+ {
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(&(yytext[1]),"%d",&(yylval.integer));
 	printtoken(DIMNUM,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);

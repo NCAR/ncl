@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Variable.h,v 1.2 1993-10-14 18:33:48 ethan Exp $
+ *      $Id: Variable.h,v 1.3 1993-10-18 16:11:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,19 +37,21 @@ typedef struct _NclVarInfo {
 typedef struct _NclVarRec {
 	int kind;
 	char *name;	/* not variables name but what type of object */ 
-	struct _NclSymbol  *sym_ent;
-	int	datatype;
 	void	*val;
-	struct _NclVarDimRec *dims;
-	struct _NclVarCoordRec *coords;
-	struct _NclVarAttRec *atts;
+	int n_dims;
+	unsigned int	dim_sizes[NCL_MAX_DIMENSIONS];
+	int	datatype;
+	struct _NclVarDimRec *diminfo;
+	struct _NclVarCoordRec *coordinfo;
+	struct _NclVarAttRec *attinfo;
+	struct _NclSymbol  *sym_ent;
 }NclVarRec;
 
 typedef struct _NclVarDimRec{
 	int kind;
 	int	ndims;
-	unsigned int	dim_sizes[NCL_MAX_DIMENSIONS];
 	char	*dim_names[NCL_MAX_DIMENSIONS];
+	int     dim_nums[NCL_MAX_DIMENSIONS];
 }NclDimRec;
 
 typedef struct _NclVarAttRec{

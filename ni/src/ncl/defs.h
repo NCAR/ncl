@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.3 1993-10-14 18:33:50 ethan Exp $
+ *      $Id: defs.h,v 1.4 1993-10-18 16:11:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -102,6 +102,11 @@ extern int _NclTranslate(
 #ifdef NhlNeedProto
 void* 	/*root*/,
 FILE*   /*fp*/
+#endif
+);
+extern void _NclTransTerminate(
+#ifdef NhlNeedProto
+void
 #endif
 );
 

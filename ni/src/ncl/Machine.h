@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.3 1993-10-14 18:33:24 ethan Exp $
+ *      $Id: Machine.h,v 1.4 1993-10-18 16:10:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -135,6 +135,24 @@ extern int _NclPrintMachine(
 int /*from */,
 int /*to*/,
 FILE * /* fp*/
+#endif
+);
+
+extern NclValue *_NclGetCurrentMachine(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern int *_NclGetCurrentLineRec(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern char **_NclGetCurrentFileNameRec(
+#ifdef NhlNeedProto
+void
 #endif
 );
 

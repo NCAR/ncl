@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.3 1993-10-14 18:33:40 ethan Exp $
+ *      $Id: Symbol.c,v 1.4 1993-10-18 16:11:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -101,12 +101,77 @@ int _NclInitSymbol
 			
 		}
 	}
+	_NclAddBuiltIns();
 /*
 * After keywords are defined a new scope must be created. The Zero
 * level scope is just for keywords and does not need any memory on the
 * stack.
 */
 	return(_NclNewScope());
+}
+
+
+void _NclRegisterBuiltInFunc
+#if  __STDC__
+(NclBuiltInFuncWrapper thefuncptr,NclArgTemplate *args,char* fname,int nargs)
+#else 
+(thefuncptr,args, fname,nargs)
+	NclBuiltInFuncWrapper thefuncptr;
+	NclArgTemplate	*args;
+	char *fname;
+	int nargs;
+#endif
+{
+	NclSymbol *s;
+
+	s = _NclLookUp(fname);
+	if(s != NULL) {
+		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltInFunc: %s is already a defined symbol can't add it as built-in ",fname);
+		return;
+	} else {
+		s = _NclAddSym(fname,FUNC);
+		s->u.bfunc = NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
+		if(s->u.bfunc == NULL)  {
+			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
+			return;
+		}
+		s->u.bfunc->nargs = nargs;
+		s->u.bfunc->theargs = args;
+		s->u.bfunc->thesym = s;
+		s->u.bfunc->thefunc = thefuncptr;
+		return;
+	}
+}
+void _NclRegisterBuiltInProc
+#if  __STDC__
+(NclBuiltInProcWrapper theprocptr,NclArgTemplate *args,char* fname,int nargs)
+#else 
+(theprocptr,args, fname,nargs)
+	NclBuiltInProcWrapper theprocptr;
+	NclArgTemplate	*args;
+	char *fname;
+	int nargs;
+#endif
+{
+	NclSymbol *s;
+
+	s = _NclLookUp(fname);
+	if(s != NULL) {
+		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltInProc: %s is already a defined symbol can't add it as built-in ",fname);
+		return;
+	} else {
+		s = _NclAddSym(fname,PROC);
+		s->u.bfunc = NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
+		if(s->u.bproc == NULL)  {
+			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
+			return;
+		}
+		s->u.bproc->nargs = nargs;
+		s->u.bproc->theargs = args;
+		s->u.bproc->thesym = s;
+		s->u.bproc->theproc = theprocptr;
+		return;
+	}
 }
 
 
