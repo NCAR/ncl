@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.7 1994-03-03 17:24:10 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.8 1994-03-03 17:27:18 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -123,10 +123,12 @@ NCARG_ROOT or the NCARG_BIN, NCARG_LIB, and NCARG_INCLUDE environment
 variables in order to run \fBncargcc\fP.  See "man ncargintro" for more 
 information.
 .sp
-If you do not wish to use
-\fBncargcc\fP, then you can just run it with no arguments to see what
-the necessary libraries are, and then put this information in your
-Makefile or whatever else you are using to compile and link your program.
+If you do not wish to use \fBncargcc\fP, then you can just run it with
+no arguments to see what the necessary libraries are, and then put this
+information in your Makefile or whatever else you are using to compile
+and link your program.  Note:  if you have an ANSI C compiler, it is
+important that you define the macro \fBNeedFuncProto\fP on the compile line
+so that function prototyping is included.
 .SH EXAMPLES
 A few examples of C programs that call the NCAR Graphics C-bindings
 have been provided for your convenience.  You may be familiar with the
