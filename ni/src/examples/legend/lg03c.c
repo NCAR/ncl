@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.9 1995-03-22 17:29:01 haley Exp $
+ *  $Id: lg03c.c,v 1.10 1995-03-29 21:12:42 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -120,7 +120,7 @@ main()
     NhlRLSetInteger(rlist,NhlNlgMonoLineThickness,True);
     NhlRLSetFloat(rlist,NhlNlgLineThicknessF,lnthik);
 
-    NhlRLSetIntegerArray(rlist,NhlNlgLineLabelColors,colors,5);
+    NhlRLSetIntegerArray(rlist,NhlNlgLineLabelFontColors,colors,5);
     NhlRLSetFloat(rlist,NhlNlgLineLabelFontHeightF,.03);
 
     NhlCreate(&pid,"Legend",NhllegendLayerClass,wid,rlist);
