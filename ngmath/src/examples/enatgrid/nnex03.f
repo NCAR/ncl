@@ -99,7 +99,7 @@ C
 C
 C  Plot the slopes as a contour plot.
 C
-      CALL DRWCON(NUMXOUT,NUMYOUT,XI,YI,RTMP,IWORK)
+      CALL DRWCON(NUMXOUT,NUMYOUT,XI,YI,RTMP)
 C
 C Close GKS.
 C
