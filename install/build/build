@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.13 1995-04-20 16:22:00 haley Exp $
+#      $Id: build,v 1.14 1995-05-12 20:40:20 haley Exp $
 #
 #########################################################################
 #									#
@@ -444,22 +444,20 @@ else {
 	print "been compiled and installed to $build_dir\n\n";
 }
 
+#
+#	Calculate the disk space required for the directories 
+#	bin, include, lib and man
+#
+#@dirs = ("bin", "include", "lib", "man");	# all the installed dirs
+@dirs = ("bin", "include", "lib");		# all the installed dirs
+do disk_space("$build_dir/$sizesFile", $build_dir, "bin","include","lib","man");
 
 #
 #	rename the top-level installed files and directories to 
 #	whatever.$Version and generate an file which can be sourced to
 #	create symbolic links from whatever to whatever.$version.
 #
-#@dirs = ("bin", "include", "lib", "man");	# all the installed dirs
-@dirs = ("bin", "include", "lib");		# all the installed dirs
 do rename_files($Version, $build_dir, @dirs);
-
-#
-#	Calculate the disk space required for the directories 
-#	bin, include, lib and man
-#
-do disk_space("$build_dir/$sizesFile", $build_dir, "bin","include","lib","man");
-
 
 #
 #	tar up the installables
