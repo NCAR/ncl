@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.4 1995-05-23 21:38:42 haley Exp $
+.\"	$Id: ncargpath.m,v 1.5 1995-05-23 21:44:49 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -23,8 +23,7 @@ Directory where NCAR Graphics binaries are installed.
 .IP "config" 18
 Directory where NCAR Graphics configuration files are installed.
 .IP "data" 18
-Directory where NCAR Graphics HLU and NCL example data files are installed
-(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where NCAR Graphics HLU and NCL example data files are installed.
 .IP "database" 18
 Directory where NCAR Graphics databases (like the Ezmap database) 
 are installed.
@@ -43,8 +42,7 @@ environment variable GRAPHCAP is set.
 .IP "graphcaps" 18
 Directory where NCAR Graphics graphcaps are installed.
 .IP "hluex" 18
-Directory where NCAR Graphics HLU Fortran and C examples are installed
-(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where NCAR Graphics HLU Fortran and C examples are installed.
 .IP "include" 18
 Directory where NCAR Graphics include files are installed.
 .IP "lib" 18
@@ -55,19 +53,16 @@ Directory where NCAR Graphics man pages are installed.
 Root directory where NCAR Graphics examples, databases, resource files, etc.
 are installed.
 .IP "nclex" 18
-Directory where NCAR Graphics NCL examples are installed (only on SGIs
-running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where NCAR Graphics NCL examples are installed.
 .IP "resfiles" 18
-Directory where resource files for the NCL and HLU examples are installed
-(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where resource files for the NCL and HLU examples are installed.
 .IP "root" 18
 Parent directory where NCAR Graphics is installed.
 .IP "sysappres" 18
 Directory where the NCAR Graphics systems application resource file is
-installed (only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+installed.
 .IP "sysresfile" 18
-Directory where the NCAR Graphics system resource file is installed (only
-on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where the NCAR Graphics system resource file is installed.
 .IP "tests" 18
 Directory where NCAR Graphics LLU Fortran and C test examples are installed.
 .IP "tmp" 18
@@ -76,16 +71,15 @@ Directory where NCAR Graphics temporary files will be written.
 Directory where NCAR Graphics LLU tutorial C and Fortran examples are
 installed.
 .IP "usrresfile" 18
-Directory where the NCAR Graphics user resource file is installed
-(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
+Directory where the NCAR Graphics user resource file is installed.
 .IP "xapp" 18
 Directory where NCAR Graphics X application default files are installed.
 .SH SEE ALSO
 Online:
-.BR ncarg_gks(3NCARG), ncargintro(5NCARG)
+.BR ncarg_env(5NCARG), ncarg_gks(3NCARG), ncargintro(5NCARG)
 .sp
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993, 1994, 1995 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
