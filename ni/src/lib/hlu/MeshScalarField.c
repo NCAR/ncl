@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.4 2004-08-13 22:19:01 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.5 2004-08-30 21:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -705,14 +705,14 @@ ValidCoordArray
 (
  	NhlMeshScalarFieldLayerPart *sfp,
 	NhlGenArray		ga,
-	NhlString               name,
+	NrmQuark                qname,
 	NhlString		entry_name
 )
 #else
-(sfp,ga,coord_name,entry_name)
+(sfp,ga,name,entry_name)
  	NhlMeshScalarFieldLayerPart *sfp;
 	NhlGenArray		ga;
-	NhlString               name;
+	NrmQuark                qname;
 	NhlString		entry_name;
 #endif
 {
@@ -720,7 +720,7 @@ ValidCoordArray
 	NhlBoolean error = False;
 
 
-	if (name == NhlNsfXCellBounds || name == NhlNsfYCellBounds) {
+	if (qname == Qx_cell_bounds || qname == Qy_cell_bounds) {
 		if (ga->num_dimensions != 2){
 			e_text = 
 			 "%s: coordinate array %s has invalid dimensionality";
@@ -745,7 +745,8 @@ ValidCoordArray
 		}
 	}
 	if (error) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NrmQuarkToString(qname));
 		return False;
 	}
 
@@ -1705,7 +1706,7 @@ MeshScalarFieldInitialize
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_arr = NULL;
                 else if (! ValidCoordArray
-			 (sfp,fltga,NhlNsfXArray,entry_name)) {
+			 (sfp,fltga,Qx_arr,entry_name)) {
                         sfp->x_arr = NULL;
                 }
                 else {
@@ -1741,7 +1742,7 @@ MeshScalarFieldInitialize
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_arr = NULL;
                 else if (! ValidCoordArray
-			 (sfp,fltga,NhlNsfYArray,entry_name)) {
+			 (sfp,fltga,Qy_arr,entry_name)) {
                         sfp->y_arr = NULL;
                 }
                 else {
@@ -1804,7 +1805,7 @@ MeshScalarFieldInitialize
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_cell_bounds = NULL;
                 else if (! ValidCoordArray
-			 (sfp,fltga,NhlNsfXCellBounds,entry_name)) {
+			 (sfp,fltga,Qx_cell_bounds,entry_name)) {
                         sfp->x_cell_bounds = NULL;
                 }
                 else {
@@ -1831,7 +1832,7 @@ MeshScalarFieldInitialize
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_cell_bounds = NULL;
                 else if (! ValidCoordArray
-			 (sfp,fltga,NhlNsfYCellBounds,entry_name)) {
+			 (sfp,fltga,Qy_cell_bounds,entry_name)) {
                         sfp->y_cell_bounds = NULL;
                 }
                 else {
@@ -2131,7 +2132,7 @@ MeshScalarFieldSetValues
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_arr = osfp->x_arr;
                 else if (! ValidCoordArray(
-				 sfp,fltga,NhlNsfXArray,entry_name)) {
+				 sfp,fltga,Qx_arr,entry_name)) {
                         sfp->x_arr = osfp->x_arr;
                 }
                 else {
@@ -2177,7 +2178,7 @@ MeshScalarFieldSetValues
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_arr = osfp->y_arr;
                 else if (! ValidCoordArray
-			 (sfp,fltga,NhlNsfYArray,entry_name)) {
+			 (sfp,fltga,Qy_arr,entry_name)) {
                         sfp->y_arr = osfp->y_arr;
                 }
                 else {
@@ -2287,11 +2288,12 @@ MeshScalarFieldSetValues
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_cell_bounds = osfp->x_cell_bounds;
                 else if (! ValidCoordArray(
-				 sfp,fltga,NhlNsfXCellBounds,entry_name)) {
+				 sfp,fltga,Qx_cell_bounds,entry_name)) {
                         sfp->x_cell_bounds = osfp->x_cell_bounds;
                 }
                 else {
 		        if (dim_changed || 
+			    ! osfp->x_cell_bounds ||
 			    sfp->x_cell_bounds->size != 
 			    osfp->x_cell_bounds->size ||
 			    sfp->x_cell_bounds->typeQ != 
@@ -2334,11 +2336,12 @@ MeshScalarFieldSetValues
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_cell_bounds = osfp->y_cell_bounds;
                 else if (! ValidCoordArray(
-				 sfp,fltga,NhlNsfYCellBounds,entry_name)) {
+				 sfp,fltga,Qy_cell_bounds,entry_name)) {
                         sfp->y_cell_bounds = osfp->y_cell_bounds;
                 }
                 else {
 		        if (dim_changed || 
+			    ! osfp->y_cell_bounds ||
 			    sfp->y_cell_bounds->size != 
 			    osfp->y_cell_bounds->size ||
 			    sfp->y_cell_bounds->typeQ != 
