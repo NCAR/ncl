@@ -1,5 +1,5 @@
 /*
- *      $Id: cn17c.c,v 1.3 2003-02-28 22:19:25 grubin Exp $
+ *      $Id: cn17c.c,v 1.4 2004-08-01 17:18:50 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -70,7 +70,7 @@
 
 struct common1 {
   float pang, plat, plon;
-} NGCALLF(pcmp04,PCMP04);
+} NGCALLC(pcmp04,PCMP04);
 
 /*
  * Define the state-labelling data.
@@ -383,11 +383,11 @@ main()
  */
     c_pcseti ("MAP",4);
     c_pcsetr ("ORV",1.e12);
-    NGCALLF(pcmp04,PCMP04).pang = 45.;
+    NGCALLC(pcmp04,PCMP04).pang = 45.;
 
     for( i = 0; i < NDIM; i++ ) {
-      NGCALLF(pcmp04,PCMP04).plat = anno_list[i].lat;
-      NGCALLF(pcmp04,PCMP04).plon = anno_list[i].lon;
+      NGCALLC(pcmp04,PCMP04).plat = anno_list[i].lat;
+      NGCALLC(pcmp04,PCMP04).plon = anno_list[i].lon;
       c_plchhq (0.,0.,anno_list[i].name,.5,0.,0.);
     }
     gdeactivate_ws(gkswid);
