@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.22 1993-06-25 21:12:56 clyne Exp $
+ *	$Id: default.c,v 1.23 1994-03-04 21:44:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -135,6 +135,20 @@ InitDefault()
 	isInit = TRUE;
 }
 
+/*
+ *	Call this routine if after InitDefault has been called if no
+ *	default ctrans-supplied color map is desired
+ */
+void	_CtDefNoColorDefault()
+{
+	int	i;
+
+	for (i=0; i<defaultCmapSize; i++) {
+		colorLUTable.ce[i].damage = FALSE;
+		colorLUTable.ce[i].defined = FALSE;
+	}
+}
+
 SetInPic(value)
 boolean		value;
 {
@@ -162,6 +176,7 @@ boolean		value;
 		for(i=0; i < clut->size; i++) {
 			picColorDefaultTable[i] = colorDefaultTable[i];
 
+#ifdef	DEAD
 			/*
 			 * this probably isn't necessary since there won't
 			 * be any "undamaging" until drawing begins
@@ -170,6 +185,7 @@ boolean		value;
 				picColorDefaultTable[i].damage = TRUE;
 				clut->total_damage++;
 			}
+#endif
 		}
 		COLOUR_TABLE_ACCESS = TRUE;
 		clut->ce = picColorDefaultTable;

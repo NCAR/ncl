@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.40 1993-11-29 22:37:44 clyne Exp $
+ *	$Id: gcap.c,v 1.41 1994-03-04 21:45:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -110,7 +110,7 @@ int	load_gcap_default_pal()
 	int		status = 0;
 
 
-	if (! MAP_AVAIL) return;
+	if (! MAP_AVAIL) return (0);
 
 
 	if (! MAP_INDIVIDUAL) {
@@ -346,6 +346,18 @@ CGMC *c;
 
 
 
+	if (MAP_INDEX_DEFINED > 0) {
+
+		/*
+		 * The graphcap has supplied its own colormap so load 
+		 * it and tell ctrans not to try and supply its own default
+		 * colormap.
+ 		 */
+		(void) load_gcap_default_pal();
+		_CtDefNoColorDefault();
+
+	}
+
 
 	deviceIsInit = TRUE;
 	return (status);
@@ -380,20 +392,6 @@ int	BegPic(c)
 CGMC *c;
 {
 	int	status = 0;
-	static	int	first = TRUE;
-
-	if (MAP_INDEX_DEFINED > 0 && first) {
-		/*
-		 * Force the default colormap to be loaded now. Then 
-		 * override the ctrans default colormap with the 
-		 * graphcap-defined default colormap.
-		 */
-		(void) gcap_update_color_table();
-
-		if (load_gcap_default_pal() < 0) return(-1);
-		first = FALSE;
-	}
-
 
 	SetInPic((boolean)TRUE);
 
