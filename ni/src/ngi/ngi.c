@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.10 1998-09-18 23:50:07 boote Exp $
+ *      $Id: ngi.c,v 1.11 1999-02-23 04:01:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -132,8 +132,16 @@ main
 	 */
 	NhlVACreate(&mn,"main",NgmWinClass,appid,
 		NULL);
+	NgGOCreateWindow(mn);
 
-	NgGOPopup(mn);
+/*
+ * We're not popping up the main window anymore. Just the browser. Eventually
+ * the View tree in the main window will appear as a browser page. Or 
+ * possibly, as Jeff was suggesting, as a component of the workstation
+ * window.
+ */
+	NgGOPopup(browse);
+
 
 	/*
 	 * Now, let the application run.
