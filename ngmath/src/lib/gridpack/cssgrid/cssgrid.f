@@ -1,5 +1,5 @@
 C
-C	$Id: cssgrid.f,v 1.9 2000-09-13 17:21:22 fred Exp $
+C	$Id: cssgrid.f,v 1.10 2002-09-03 22:02:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,7 @@ C USA.
 C
       SUBROUTINE CSSGRID(N,RLATI,RLONI,F,NI,NJ,RLATO,RLONO,FF,
      +                     IWK,WK,IER)
-      DOUBLE PRECISION UN,RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
+      DOUBLE PRECISION RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
       INTEGER N,NI,NJ,IWK(*),IER
       REAL RLATI(N),RLONI(N),F(N),RLATO(NI),RLONO(NJ),FF(NI,NJ)
 C
@@ -126,7 +126,6 @@ C  Use pre-calculated estimated gradients.
 C
       PARAMETER (IFLGG=1)
 C
-      INTEGER CSJRAND
       INTEGER I,J,IERR,IST,NN,NST,NX,NY
       DATA NST/1/
       DATA IX,IY,IZ/1,2,3/
@@ -139,6 +138,15 @@ C IST =   Parameter for CSINTRC1
 C NN =    Local copy of N
 C NST =   Initial value for IST
 C NX,NY = Local copies of NI and NJ
+C
+C  Zero out the workspaces.
+C
+      DO 11 I=1,27*N
+        IWK(I) = 0
+   11 CONTINUE
+      DO 12 I=1,13*N
+        WK(I) = 0.D0
+   12 CONTINUE
 C
       IF (N .LT. 4) GO TO 110
       NN = N
@@ -163,30 +171,6 @@ C
 C  Then convert to Cartesian coordinates.
 C
       CALL CSTRANSD(NN,WK(4*N+1),WK(5*N+1),WK(N+1),WK(2*N+1),WK(3*N+1))        
-C
-C  Introduce a random perturbation in the 5th decimal place
-C  to avoid duplicate input points.  The original input points
-C  are copied into the double precision  workspace so that 
-C  they will not be tampered with.
-C
-      DO 300 I = 1,N
-          WK(  N+I) = DBLE(WK(  N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
-          WK(2*N+I) = DBLE(WK(2*N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
-          WK(3*N+I) = DBLE(WK(3*N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
-C
-C  Renormalize the vector so that it is still a unit vector.
-C
-          UN = WK(N+I)**2
-          UN = UN + WK(2*N+I)**2
-          UN = UN + WK(3*N+I)**2
-          UN = SQRT(UN)
-          WK(  N+I) = 0.99999*WK(  N+I)/UN
-          WK(2*N+I) = 0.99999*WK(2*N+I)/UN
-          WK(3*N+I) = 0.99999*WK(3*N+I)/UN
-  300 CONTINUE
 C
       IST = NST
 C
