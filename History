@@ -816,3 +816,10 @@
 
 	In LABELBAR, made it possible for user to turn off drawing of
 	box outlines by the routine LBLBAR.
+08/25/92 - Added programmer documents (in PostScript form) to distribution.
+	This required making a new directory "$NCARG/ncarg2d/doc".
+09/04/92 - Added RCS identifiers to numerous files.
+09/09/92 - In EZMAP, fixed code to force it to use double preiciosion rather 
+	than single precision
+09/17/92 - In CONPACK, modified CPSP1A and CPSP2A to handle special values
+	on the edge of the sparse grid correctly.
