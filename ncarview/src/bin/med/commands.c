@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.5 1992-07-31 21:07:29 clyne Exp $
+ *	$Id: commands.c,v 1.6 1992-08-12 22:58:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,6 @@
 #include	<ctype.h>
 #include	<cgm_tools.h>
 #include	"med.h"
-#include	"bsd-sysv.h"
 
 #ifndef	DEBUG
 /* 

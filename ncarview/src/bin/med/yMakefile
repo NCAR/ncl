@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.4 1992-06-25 21:47:50 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-08-12 22:58:55 clyne Exp $
 #
 
 MYNAME	= med
@@ -10,10 +10,10 @@ EQUALHACK	= =
 LOCLIB	= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a 
 
 SRCS	= \
-	cmd_tab.c commands.c error.c med.c bsd-sysv.c
+	cmd_tab.c commands.c error.c med.c 
 
 OBJS	= \
-	cmd_tab.o commands.o error.o med.o bsd-sysv.o
+	cmd_tab.o commands.o error.o med.o
 
 #if defined(CRAY)
 BSDLIBS = -lbsd

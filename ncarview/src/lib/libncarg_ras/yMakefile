@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.22 1992-06-25 21:49:12 clyne Exp $
+#	$Id: yMakefile,v 1.23 1992-08-12 23:00:09 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -94,13 +94,8 @@ GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 		dither.c resample.c composite.c ntsc.c color.c \
 		$(DEVICE_SRCS)
 			
-#ifdef CRAY
-OTHER_OBJS	= bsd-sysv.o
-OTHER_SRCS	= bsd-sysv.c
-#endif
-
-OBJS		= $(GENERIC_OBJS) $(OTHER_OBJS)
-SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)
+OBJS		= $(GENERIC_OBJS)
+SRCS		= $(GENERIC_SRCS)
 
 EQUALHACK	= =
 
