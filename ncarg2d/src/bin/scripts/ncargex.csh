@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.94 1996-02-29 18:03:46 kennison Exp $
+#   $Id: ncargex.csh,v 1.95 1996-03-20 20:40:40 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -302,7 +302,8 @@ set c_list = ($c_list $gks_clist)
 #                        #
 #************************#
 set gridall_ftst  = (tgrida)
-set gridall_flist = ($gridall_ftst)
+set gridall_ffnd  = (ccpga)
+set gridall_flist = ($gridall_ffnd $gridall_ftst)
 
 set gridall_ctst  = (c_tgrida)
 set gridall_clist = ($gridall_ctst)
@@ -641,9 +642,9 @@ set list_fttr = ($areas_fttr $conpack_fttr $ezmap_fttr $class_fttr)
 set list_cttr = ($conpack_cttr)
 
 set list_ffnd = ($autograph_ffnd $colconv_ffnd $dashline_ffnd $field_ffnd \
-                $gks_ffnd $isosurface_ffnd $labelbar_ffnd $ngmisc_ffnd \
-                $plotchar_ffnd ${scrlld_title_ffnd} $softfill_ffnd $spps_ffnd \
-                $surface_ffnd $threed_ffnd)
+                $gks_ffnd $gridall_ffnd $isosurface_ffnd $labelbar_ffnd \
+                $ngmisc_ffnd $plotchar_ffnd ${scrlld_title_ffnd} \
+                $softfill_ffnd $spps_ffnd $surface_ffnd $threed_ffnd)
 
 set list_cfnd = ($dashline_cfnd $field_cfnd $ngmisc_cfnd $spps_cfnd \
                  $threed_cfnd)
