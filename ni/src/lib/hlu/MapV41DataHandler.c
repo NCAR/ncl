@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.11 1999-01-26 20:11:48 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.12 1999-08-19 21:44:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1067,7 +1067,7 @@ static NhlErrorTypes MapV41DHSetValues
 }
 
 /*
- * Function:	mdhGetNewGenArray
+ * Function:	BuildAreaNamesGenArray
  *
  * Description:	
  *
@@ -2370,8 +2370,10 @@ static NhlErrorTypes mpSetUpFillDrawList
                     break;
             case NhlUSSTATES:
             case NhlGEOPHYSICALANDUSSTATES:
-            case NhlALLBOUNDARIES:
                     Level = 4;
+                    break;
+            case NhlALLBOUNDARIES:
+                    Level = 5;
                     break;
         }
         mv41p->min_fill_level = MAX(Level,mv41p->min_fill_level);
@@ -2833,8 +2835,10 @@ static NhlErrorTypes mpOutline
                     break;
             case NhlUSSTATES:
             case NhlGEOPHYSICALANDUSSTATES:
-            case NhlALLBOUNDARIES:
                     Level = 4;
+                    break;
+            case NhlALLBOUNDARIES:
+                    Level = 5;
                     break;
         }
         mv41p->min_outline_level = MAX(Level,mv41p->min_outline_level);
@@ -3026,6 +3030,7 @@ static void SetLineAttrs
         switch (type) {
             case 1:
             case 2:
+	    default:
                     color = Mpp->geophysical.gks_color;
                     dash_pattern = Mpp->geophysical.dash_pat;
                     dash_seglen = Mpp->geophysical.dash_seglen;
