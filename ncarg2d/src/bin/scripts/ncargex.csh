@@ -1,7 +1,15 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.16 1993-01-27 17:49:19 haley Exp $
+#   $Id: ncargex.csh,v 1.17 1993-02-03 21:55:04 haley Exp $
 #
+
+if ($#argv < 1) then
+echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]"
+echo "               [-alltutorial,-U] [-clean] [-n] [-onebyone] names"
+echo "                                                              "
+echo "See <man ncargex>                                             "
+exit
+endif
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
 if ($status != 0) then
@@ -74,14 +82,6 @@ dashsupr ezmap ezmapa gflash gridal hafton histgr isosrf isosrfhr \
 labelbar plotchar pwritx pwrity pwrzi pwrtz pwrzs pwrzt softfill \
 srface stitle strmln threed velvct)
 
-if ($#argv < 1) then
-echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]"
-echo "               [-alltutorial,-U] [-clean] [-n] [-onebyone] names"
-echo "                                                              "
-echo "See <man ncargex>                                             "
-exit
-endif
-
 set X11_option = ""
 set names
 
@@ -138,6 +138,11 @@ while ($#argv > 0)
             set X11_option = "-noX11"
             breaksw
 
+        case "-list"
+            shift
+            set List
+            breaksw
+
         case "-*":
             echo "$0 : Unknown option <$1>"
             exit 1
@@ -179,6 +184,11 @@ foreach known ($alias_list)
         set type="TestAlias"
     endif
 end
+
+if ($?List) then
+   echo $names
+   exit
+endif
 
 ################################################################
 #

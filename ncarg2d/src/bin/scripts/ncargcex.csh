@@ -1,7 +1,14 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.2 1993-01-28 21:10:45 haley Exp $
+#	$Id: ncargcex.csh,v 1.3 1993-02-03 21:55:02 haley Exp $
 #
+
+if ($#argv < 1) then
+echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
+echo "                                                                     "
+echo "See <man ncargcex>                                                   "
+exit
+endif
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
 if ($status != 0) then
@@ -16,13 +23,6 @@ endif
 set example_list=(\
 c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
 c_slex01 c_sfex02)
-
-if ($#argv < 1) then
-echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
-echo "                                                                     "
-echo "See <man ncargcex>                                                   "
-exit
-endif
 
 set X11_option = ""
 
@@ -58,6 +58,11 @@ while ($#argv > 0)
             set Unique
             breaksw
 
+        case "-list"
+            shift
+            set List
+            breaksw
+
         case "-*":
             echo "$0 : Unknown option <$1>"
             exit 1
@@ -87,11 +92,21 @@ foreach known ($example_list)
     endif
 end
 
+if ($?List) then
+   echo $names
+   exit
+endif
+
 ################################################################
 #
 # Code for handling examples
 #
 ################################################################
+
+if ($?List) then
+   echo $name
+   goto theend
+endif
 
 echo ""
 echo "NCAR Graphics C Example <$name>"

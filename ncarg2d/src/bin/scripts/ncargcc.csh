@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.16 1993-01-26 16:50:10 haley Exp $
+#	$Id: ncargcc.csh,v 1.17 1993-02-03 21:55:01 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -127,6 +127,7 @@ foreach arg ($argv)
 		breaksw
 
 	case "-dashquick":
+	case "-dashline":
 		echo "Quick Dash"
 		set libs = "$libs $ro/libdashline.o"
 		breaksw
@@ -135,6 +136,10 @@ foreach arg ($argv)
 		echo "Super Dash"
 		set libs = "$libs $ro/libdashsupr.o"
 		breaksw
+
+    case "-dashchar":
+        echo "Normal Dash"
+        breaksw
 
 	case "-ictrans"
 		echo "Output to ictrans"
