@@ -20,7 +20,8 @@
 
 # Build the Parallax video frame buffer driver only for local systems.
 
-#if	defined(hostlonecone) || defined(gulebra) || defined(hostsalida)
+#if	defined(hostlonecone) || defined(hostgulebra) \
+				|| defined(hostsalida) || defined (hostsunlight)
 #define BuildRasterParallax
 #endif
 
