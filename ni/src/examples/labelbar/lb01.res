@@ -198,14 +198,7 @@
 !
 ! *lb01Work.LabelBar.lbTitleFont            : 1
 !
-!     Color indices are taken from the default HLU colormap.  Choices are:
-!
-!     Index   Color     Index   Color    Index  Color       Index   Color
-!
-!       1-4   white      5-18  yellows   19-21  tans        22-24   oranges
-!     29-32   magentas     34  lavender  40-50  reds           57   gray
-!     60-66   cyans     70-80  greens    81-90  dark grns  91-100   blues
-!   106-114   blacks
+!     Color indices are taken from the default HLU colormap.
 !
 ! *lb01Work.LabelBar.lbTitleFontColor       : FOREGROUND
 !

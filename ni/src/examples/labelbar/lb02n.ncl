@@ -16,7 +16,7 @@
 ;
 ;      Description:    Demonstrates the LabelBar Object
 ;                      Creates color bars with every 6th index of the
-;                      131 different colors in the default colormap.
+;                      32 different colors in the default colormap.
 ;
 
 ;
@@ -27,17 +27,19 @@ begin
 ;
 ; Initialize data values
 ;
-colors = (/ 1,7,13,19,25,31,37,43,49,55,61,67,73,79,85,91,97, \
-            103,109,115,121,127/)
+colors = new(16,integer)
+colors = (/ 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31/)
 
-line_labels = (/"Color Index 1 ","Color Index 7 ","Color Index 13", \
-            "Color Index 19","Color Index 25","Color Index 31", \
-            "Color Index 37","Color Index 43","Color Index 49", \
-            "Color Index 55","Color Index 61","Color Index 67", \
-            "Color Index 73","Color Index 79","Color Index 85", \
-            "Color Index 91","Color Index 97","Color Index 103", \
-            "Color Index 109","Color Index 115","Color Index 121",\
-            "Color Index 127"/)
+line_labels = new(16,string)
+line_labels = (/"Color Index 1 ","Color Index 3 ", \
+     "Color Index 5  ","Color Index 7  ", \
+     "Color Index 9  ","Color Index 11 ", \
+     "Color Index 13 ","Color Index 15 ", \
+     "Color Index 17 ","Color Index 19 ", \
+     "Color Index 21 ","Color Index 23 ", \
+     "Color Index 25 ","Color Index 27 ", \
+     "Color Index 29 ","Color Index 31 "/)
+
 ;
 ; Create an application context. Set the app dir to the current directory
 ; so the application looks for a resource file in the working directory.
@@ -70,7 +72,7 @@ else
 end if
 
 ;
-; Create a plot with 22 color indices (Every 6th one of the default
+; Create a plot with 16 color indices (Every other one of the default
 ; workstation colormap.
 ;
 pid = create "LabelBar" labelBarClass wid
