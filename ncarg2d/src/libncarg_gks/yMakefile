@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-01-09 01:56:56 fred Exp $
+#	$Id: yMakefile,v 1.4 1993-01-10 00:35:25 clyne Exp $
 #
 #
 #	Makefile for the NCAR GKS library
@@ -7,7 +7,7 @@
 
 NCARG	= ../../..
 
-SUBDIRS = awi bwi wiss
+SUBDIRS = awi bwi wiss X11
 
 #ifdef  BuildNCARGSourceLibrary
 all::
