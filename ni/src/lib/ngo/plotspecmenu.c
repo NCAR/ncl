@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.1 1997-10-03 20:08:14 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.2 1998-01-08 22:45:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,7 +144,10 @@ static void CreateCB
         NgPageId	page_id;
         NgHluPage	*hlu_page;
         
-        printf("in create cb\n");
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"in create cb\n");
+#endif
+
         XtVaGetValues(w,
                       XmNuserData,&sink,
                       NULL);
@@ -171,19 +174,22 @@ static void CreateCB
                 qname = NrmStringToQuark(vartext);
                 page_id = NgOpenPage(priv->go->base.id,_brHLUVAR,&qname,1);
                 if (page_id <= NgNoPage) {
-                        printf("unable to open hlu page\n");
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "unable to open hlu page"));
                         return;
                 }
                 hlu_page = (NgHluPage *)NgPageData(priv->go->base.id,page_id);
                 if (! hlu_page) {
-                        printf("unable to get public page data\n");
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "unable to get public page data"));
                         return;
                 }
                 hlu_page->class_name = sink->class_name;
                 hlu_page->data_info = sink;
 
                 if (NgUpdatePage(priv->go->base.id,page_id) < NhlWARNING) {
-                        printf("error updating hlu page\n");
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "error updating hlu page"));
                         return;
                 }
                 (*pub->output_notify)(pub->pdata,page_id);
@@ -212,8 +218,9 @@ static void CreateDialog
                 sprintf(buf,"Create %sPlot",sink->name);
         
         xmname = NgXAppCreateXmString(priv->go->go.appmgr,buf);
-        printf("%s\n",buf);
-
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"%s\n",buf);
+#endif
         nargs = 0;
 	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
 	XtSetArg(args[nargs],XmNuserData,sink);nargs++;
@@ -268,7 +275,9 @@ static void CreateDialogCB
         NgMenuRec	*plot = &priv->plot;
         NgDataSinkRec	*sink;
 
-        printf("in plot create cb\n");
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"in plot create cb\n");
+#endif
 
         XtVaGetValues(w,
                       XmNuserData,&sink,
@@ -290,8 +299,9 @@ static void PlotMenuCB
         NgMenuRec	*plot = &priv->plot;
         int		i;
 
-        printf("in plot menu cb\n");
-
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"in plot menu cb\n");
+#endif
         if (plot->count == 0) {
                 plot->count = ngSCATTERXY + 1;
                 plot->buttons = NhlMalloc(plot->count * sizeof(Widget));

@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.15 1998-01-08 01:19:21 dbrown Exp $
+ *      $Id: browse.c,v 1.16 1998-01-08 22:45:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -600,7 +600,6 @@ CreateFolder
                  NULL);
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"folder %x pane %x\n", pane->folder,pane);
-#endif
         XtVaGetValues(pane->form,
                       XmNchildren,&children,
                       XmNnumChildren,&num_children,
@@ -608,6 +607,7 @@ CreateFolder
         for (i = 0; i < num_children; i++) {
                 fprintf(stderr,"Form child %s\n",XtName(children[i]));
         }
+#endif
         
         XtAddCallback(pane->folder,XmNactivateCallback,ActiveTabCB,pane);
 
@@ -2464,7 +2464,10 @@ extern NhlErrorTypes NgPageSetVisible(
                       XmNpageIncrement,&page_inc,
                       NULL);
 
-        printf("min %d max %d ssize %d value %d\n",min,max,ssize,value);
+#if	DEBUG_DEBUG_DATABROWSER
+        fprintf(stderr,
+		"min %d max %d ssize %d value %d\n",min,max,ssize,value);
+#endif
         if (rvis_rect.height > pvis_rect.height ||
             rvis_rect.y < pvis_rect.y) {
                 value = min + ((float)rvis_rect.y)/pane_height *
@@ -2481,7 +2484,9 @@ extern NhlErrorTypes NgPageSetVisible(
                 XmScrollBarSetValues
                         (pane->vsb,value,ssize,inc,page_inc,True);
         }
-        printf("new value %d\n",value);
+#if	DEBUG_DATABROWSER
+        fprintf(stderr,"new value %d\n",value);
+#endif
         
 
         return NhlNOERROR;

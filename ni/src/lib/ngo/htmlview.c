@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.1 1998-01-08 01:19:26 dbrown Exp $
+ *      $Id: htmlview.c,v 1.2 1998-01-08 22:45:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -283,6 +283,12 @@ static String GetContent(
 			return NULL;
 		}
 		fp = fopen(sbuf,"r");
+		if (! fp) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "Error opening %s doc\n",
+				   Nrmquarktostring(locator)));
+			return NULL;
+		}
 		html_len = statbuf.st_size;
 	}
         content = NhlMalloc(html_len +1);
@@ -295,9 +301,9 @@ static String GetContent(
         content[html_len] = '\0';
 
 	if (count < html_len) {
-#if DEBUG_HTML        
-		fprintf(stderr,"retrieved only %d bytes\n",count);
-#endif
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Incomplete retrieval of %s doc\n",
+			   Nrmquarktostring(locator)));
                 NhlFree(content);
                 return NULL;
         }
@@ -500,9 +506,14 @@ _NgSetHtmlContent(
                       NULL);
 
         if (end) {
+#if 0                
                 height = form_height - scroll_height +
                         end->y + 6- begin->y - begin->height;
                 work_height = end->y + 6 - begin->y - begin->height;
+#endif                
+                height = -10 + form_height - scroll_height +
+                        end->y - begin->y - begin->height;
+                work_height = 5 + end->y - begin->y - begin->height;
         }
 #if 0        
         else if (hr_end) {
@@ -543,6 +554,7 @@ _NgSetHtmlContent(
         XtVaSetValues(hvp->scrwin,
                       XmNleftOffset,-begin->next->ident,
                       XmNtopOffset,-5,
+                      XmNbottomOffset,-15,
                       NULL);
 
         {

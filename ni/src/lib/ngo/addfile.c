@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.16 1998-01-08 01:19:20 dbrown Exp $
+ *      $Id: addfile.c,v 1.17 1998-01-08 22:45:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2616,8 +2616,10 @@ AddFileCreateWin
 		      XmNpageIncrement,&pinc,
                       NULL);
         
-        printf("dirlist max %d, ssize %d, inc %d, pageinc %d\n",
+#if	DEBUG_ADDFILE
+        fprintf(stderr,"dirlist max %d, ssize %d, inc %d, pageinc %d\n",
                max,ssize,inc,pinc);
+#endif
         XtVaSetValues(hscroll,
 		      XmNpageIncrement,40,
                       NULL);
@@ -2630,8 +2632,10 @@ AddFileCreateWin
 		      XmNincrement,&inc,
 		      XmNpageIncrement,&pinc,
                       NULL);
-        printf("filelist max %d, ssize %d, inc %d, pageinc %d\n",
+#if	DEBUG_ADDFILE
+        fprintf(stderr,"filelist max %d, ssize %d, inc %d, pageinc %d\n",
                max,ssize,inc,pinc);
+#endif
         XtVaGetValues(XtParent(np->vlist),
                       XmNhorizontalScrollBar,&hscroll,
                       NULL);
@@ -2642,8 +2646,10 @@ AddFileCreateWin
 		      XmNpageIncrement,&pinc,
                       NULL);
         
-        printf("vlist max %d, ssize %d, inc %d, pageinc %d\n",
+#if	DEBUG_ADDFILE
+        fprintf(stderr,"vlist max %d, ssize %d, inc %d, pageinc %d\n",
                max,ssize,inc,pinc);
+#endif
 /* end debug */
         }
         XSync(go->go.x->dpy,False);

@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.8 1998-01-08 01:19:28 dbrown Exp $
+ *      $Id: restree.c,v 1.9 1998-01-08 22:45:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -410,7 +410,10 @@ static int AddRowSpan(
         }
 
         span_rows = height / rh + (height % rh > 0 ? 1 : 0);
-        
+#if 0        
+        if (height - span_rows * rh < 2)
+                span_rows++;
+#endif        
         rowdefs = NhlMalloc(span_rows * sizeof(XmLTreeRowDefinition));
         if (!ndata->subcount)
                 subdata = NhlMalloc(span_rows * sizeof(rtNodeData));
@@ -471,7 +474,7 @@ static int AddRowSpan(
         fprintf(stderr,"span rows %d html height %d span row height %d\n",
                span_rows, height, span_rows * Row_Height);
 #endif
-        height = span_rows * Row_Height;
+        height = span_rows * rh;
 
         return span_rows;
 }

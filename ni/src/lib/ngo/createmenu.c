@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.3 1998-01-08 01:19:23 dbrown Exp $
+ *      $Id: createmenu.c,v 1.4 1998-01-08 22:45:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -87,7 +87,10 @@ static void CreateCB
                 browse = (NgGO) _NhlGetLayer(browse_id);
         }
         
-        printf("in create cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in create cb\n");
+#endif
+
         XtVaGetValues(priv->dialog_text,
                       XmNvalue,&vartext,
                       NULL);
@@ -105,19 +108,20 @@ static void CreateCB
         qname = NrmStringToQuark(vartext);
         page_id = NgOpenPage(browse_id,_brHLUVAR,&qname,1);
         if (page_id <= NgNoPage) {
-                printf("unable to open hlu page\n");
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unable to open hlu page"));
                 return;
         }
         hlu_page = (NgHluPage *)NgPageData(browse_id,page_id);
         if (! hlu_page) {
-                printf("unable to get public page data\n");
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "unable to get public page data"));
                 return;
         }
         hlu_page->class_name = priv->create_class->base_class.class_name;
         hlu_page->data_info = NULL;
                 
         if (NgUpdatePage(browse_id,page_id) < NhlWARNING) {
-                printf("error updating hlu page\n");
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"error updating hlu page"));
                 return;
         }
         if (! browse->go.up)
@@ -349,7 +353,9 @@ static void CreateHluDialogCB
         NgMenuRec	*plot = &priv->plot;
         NhlClass	class;
 
-        printf("in plot create cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in plot create cb\n");
+#endif
 
         XtVaGetValues(w,
                       XmNuserData,&class,
@@ -376,7 +382,9 @@ static void DataMenuCB
         int		i,count,data_count = 0;
         NhlClass	*classes,data_classes[20];
 
-        printf("in data menu cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in data menu cb\n");
+#endif
 
         NhlVAGetValues(priv->go->go.nclstate,
                        NgNnsHluClassCount,&count,
@@ -423,7 +431,10 @@ static void WorkstationMenuCB
         int		i,count,wks_count = 0;
         NhlClass	*classes,wks_classes[20];
 
-        printf("in workstation menu cb %s\n",NhlName(priv->go->go.nclstate));
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in workstation menu cb %s\n",
+		NhlName(priv->go->go.nclstate));
+#endif
 
         NhlVAGetValues(priv->go->go.nclstate,
                        NgNnsHluClassCount,&count,
@@ -468,7 +479,9 @@ static void PlotMenuCB
         int		i,count,plot_count = 0;
         NhlClass	*classes,plot_classes[20];
 
-        printf("in plot menu cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in plot menu cb\n");
+#endif
 
         NhlVAGetValues(priv->go->go.nclstate,
                        NgNnsHluClassCount,&count,
@@ -514,7 +527,9 @@ static void AnnoMenuCB
         int		i,count,anno_count = 0;
         NhlClass	*classes,anno_classes[20];
 
-        printf("in anno menu cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in anno menu cb\n");
+#endif
 
         NhlVAGetValues(priv->go->go.nclstate,
                        NgNnsHluClassCount,&count,
@@ -561,7 +576,9 @@ static void OtherMenuCB
         int		i,count,other_count = 0;
         NhlClass	*classes,other_classes[20];
 
-        printf("in other menu cb\n");
+#if	DEBUG_CREATEMENU
+        fprintf(stderr,"in other menu cb\n");
+#endif
 
         NhlVAGetValues(priv->go->go.nclstate,
                        NgNnsHluClassCount,&count,

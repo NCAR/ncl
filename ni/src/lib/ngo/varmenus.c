@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.5 1998-01-08 01:19:30 dbrown Exp $
+ *      $Id: varmenus.c,v 1.6 1998-01-08 22:45:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -326,7 +326,9 @@ static void VarMenuCB
 		vrec->qvars = NclGetFileSymNames(&count);
 		break;
 	}
-	printf("count %d\n",count);
+#if DEBUG_VAR_MENUS        
+	fprintf(stderr,"symbol count %d\n",count);
+#endif        
         NgSortQuarkList(vrec->qvars,count,False);
         
         if (count > vrec->alloced) {
@@ -408,7 +410,9 @@ static void VarMenuCB
                 XmString xmname;
                 char *name = NrmQuarkToString(vrec->qvars[i]);
 
-		printf("name %s\n",name);
+#if DEBUG_VAR_MENUS        
+		fprintf(stderr,"symbol name %s\n",name);
+#endif        
                 if (strncmp(name,"_Ng",3) == 0)
                         continue;
                 
