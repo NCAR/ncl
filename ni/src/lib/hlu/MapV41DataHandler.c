@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.10 1998-11-13 02:11:34 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.11 1999-01-26 20:11:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1556,17 +1556,17 @@ static NhlErrorTypes    MapV41DHDestroy
 	if (mv41p->aws_id > 0)
 		_NhlFreeWorkspace(mv41p->aws_id);
 
-	if (Mv41p->entity_recs &&
-	    Mv41p->entity_recs != Mv41cp->entity_recs) {
-		NhlFree(Mv41p->entity_recs);
+	if (mv41p->entity_recs &&
+	    mv41p->entity_recs != Mv41cp->entity_recs) {
+		NhlFree(mv41p->entity_recs);
 	}
-	if (Mv41p->alpha_recs &&
-	    Mv41p->alpha_recs != Mv41cp->alpha_recs) {
-		NhlFree(Mv41p->alpha_recs);
+	if (mv41p->alpha_recs &&
+	    mv41p->alpha_recs != Mv41cp->alpha_recs) {
+		NhlFree(mv41p->alpha_recs);
 	}
-	if (Mv41p->long_alpha_recs &&
-	    Mv41p->long_alpha_recs != Mv41cp->long_alpha_recs) {
-		NhlFree(Mv41p->long_alpha_recs);
+	if (mv41p->long_alpha_recs &&
+	    mv41p->long_alpha_recs != Mv41cp->long_alpha_recs) {
+		NhlFree(mv41p->long_alpha_recs);
 	}
 
         return NhlNOERROR;
@@ -2926,6 +2926,10 @@ static NhlErrorTypes MapV41DHDrawMapList
             case mpDRAWGRID:
                     return mpGrid(mv41l,mpl,entry_name);
         }
+
+	Mpp = NULL;
+	Mpl = NULL;
+	Mv41p = NULL;
 
         return ret;
 }
