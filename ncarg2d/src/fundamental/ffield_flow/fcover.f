@@ -1,4 +1,4 @@
-C	$Id: fcover.f,v 1.1 1993-04-30 23:57:47 dbrown Exp $
+C	$Id: fcover.f,v 1.2 1993-10-01 19:37:48 dbrown Exp $
 C
       PROGRAM FCOVER
 C
@@ -266,7 +266,7 @@ C
 C
 C Adjust vector rendering options
 C
-            CALL VVSETR('AMN -- Arrow Minimum Size',0.025)
+            CALL VVSETR('AMN -- Arrow Minimum Size',0.007)
             CALL VVSETR('LWD -- Vector Line Width',3.00*RLWFAC)
             CALL VVGETR('VMN -- Minimum Vector',VMN)
             CALL VVGETR('VMX -- Maximum Vector',VMX)

@@ -1,4 +1,4 @@
-C	$Id: ffex02.f,v 1.2 1993-06-23 17:16:05 dbrown Exp $
+C	$Id: ffex02.f,v 1.3 1993-10-01 19:37:50 dbrown Exp $
 C
       PROGRAM FFEX02
 C
@@ -97,7 +97,7 @@ C
 C Adjust vector rendering options
 C
          IF (IFRMNO .EQ. 3) THEN
-            CALL VVSETR('AMN -- Arrow Minimum Size',0.025)
+            CALL VVSETR('AMN -- Arrow Minimum Size',0.007)
             CALL VVSETR('LWD -- Vector Line Width',1.75)
             CALL VVGETR('VMN -- Minimum Vector',VMN)
             CALL VVGETR('VMX -- Maximum Vector',VMX)
