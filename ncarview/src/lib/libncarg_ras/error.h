@@ -1,5 +1,5 @@
 /*
- *	$Id: error.h,v 1.4 1992-09-10 21:25:26 don Exp $
+ *	$Id: error.h,v 1.5 1993-01-13 20:16:39 don Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,7 @@ static const char *hdf_errlist[] = {
 	"File not found",
 	"Access to file denied",
 	"File already open",
-	"Too many DF's or files open",
+	"Too Many DF's or files open",
 	"Bad file name on open",
 	"Bad file access mode",
 	"Other open error",
@@ -74,7 +74,7 @@ static const char *hdf_errlist[] = {
 	"This is not a DF file and it is not 0 length",
 	"The DD list already seeded: internal error",
 	"Malloc failed",
-	"There is no such tag in the file: search failed",
+	"No such tag in the file: search failed",
 	"There was a read error",
 	"There was a write error",
 	"There was a seek error",
@@ -84,7 +84,7 @@ static const char *hdf_errlist[] = {
 	"The DF is read only",
 	"Calls in wrong order",
 	"NULL ptr argument",
-	"negative len specified",
+	"Invalid len specified",
 	"Attempt to seek past end of element",
 	"No (more) DDs which match specified tag/ref",
 	"Warning: Set contained unknown tag: ignored",
@@ -94,12 +94,29 @@ static const char *hdf_errlist[] = {
 	"No dimension record associated with image",
 	"space provided insufficient for size of data",
 	"Values not available",
-	"File is corrupted OR Don't know how to convert data type",
-	"The file contained an illegal floating point no",
+	"File is corrupted",
+	"File contained an illegal floating point num",
 	"no more reference numbers are available",
 	"unknown or unavailable data type specified",
 	"unknown or unavailable machine type specified",
 	"unknown or unavailable number type specified",
 	"unknown or illegal array order specified",
-	"This feature not yet implemented"
+	"bad arguments to routine",
+	"serious internal error",
+	"the new tag/ref is already used",
+	"old element not exist, cannot modify",
+	"improper range for attempted acess",
+	"the nsdg table is wrong  ",
+	"error processing an sdg   ",
+	"error processing an ndg    ",
+	"Bad fields string passed to Vset routine",
+	"Too late to modify this value",
+	"Counldn't find VS in file",
+	"Too many elements in VGroup",
+	"Attempt to merge objs in diff files",
+	"Elmt not in vtab[]",
+	"Got a bogus aid",
+	"There are still active AIDs",
+	"Don't know how to convert data type",
+	"Generic application-level error"
 };
