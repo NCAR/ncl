@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.67 2001-04-16 13:34:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.68 2001-05-16 15:24:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -632,6 +632,30 @@ end
 ; Function : get_allowed_pres_units_mb                                  ;
 ;                                                                       ;
 ; Get list of names allowed for pressure units in millibars.            ; 
+; Function : get_allowed_latunits                                       ;
+;***********************************************************************;
+function get_allowed_pres_units_mb()
+begin
+  return((/"mb","Mb","MB","millibars","MILLIBARS"/))
+end
+function get_allowed_latunits()
+;***********************************************************************;
+  return((/"degrees_north","degree_north","degrees north"/))
+;                                                                       ;
+; Get list of names allowed for pressure units.                         ; 
+;                                                                       ;
+; Function : get_allowed_lonunits                                       ;
+function get_allowed_pres_units()
+begin
+  mb  = get_allowed_pres_units_mb()
+  pa  = get_allowed_pres_units_pa()
+  hpa = get_allowed_pres_units_hpa()
+function get_allowed_lonunits()
+  npa  = dimsizes(pa)
+  return((/"degrees_east","degree_east","degrees east"/))
+  all_pres = new(nmb+npa+nhpa,string)
+  all_pres(0:nmb-1)       = mb
+  all_pres(nmb:nmb+npa-1) = pa
   all_pres(nmb+npa:)      = hpa
   return(all_pres)
 end
@@ -643,10 +667,13 @@ end
 ; coordinate array.                                                     ; 
 ;                                                                       ;
 ;***********************************************************************;
-      if(isatt(data&$data!1$,"units").and. \
-        (data&$data!1$@units.eq."degrees_north".or.\
-         data&$data!1$@units.eq."degrees north"))
-        return(True)
+function get_allowed_lat_units()
+        if(any(data&$data!1$@units.eq.get_allowed_latunits))
+  return((/"degrees_north","degree_north","degrees north","degrees_N"/))
+end
+
+          return(False)
+; Function : get_allowed_lon_units                                      ;
 ;                                                                       ;
 ; Get list of names allowed for the units attribute of a longitude      ;
 ; coordinate array.                                                     ; 
@@ -672,10 +699,13 @@ begin
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lat_units))
           return(True)
-      if(isatt(data&$data!1$,"units").and. \
-        (data&$data!1$@units.eq."degrees_east".or.\
-         data&$data!1$@units.eq."degrees east"))
-        return(True)
+        else
+        if(any(data&$data!1$@units.eq.get_allowed_lonunits))
+          return(True)
+        end if
+      else
+          return(False)
+        end  if
       end if
     else
       if(any(data!1.eq.get_allowed_latnames_without_units()))
@@ -701,10 +731,13 @@ begin
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lon_units))
           return(True)
-      if(isatt(data&$data!0$,"units").and. \
-        (data&$data!0$@units.eq."degrees_north".or.\
-         data&$data!0$@units.eq."degrees north"))
-        return(True)
+        else
+        if(any(data&$data!0$@units.eq.get_allowed_latunits))
+          return(True)
+        end if
+      else
+          return(False)
+        end  if
       end if
     else
       if(any(data!1.eq.get_allowed_lonnames_without_units()))
@@ -744,18 +777,20 @@ begin
       end if
     end if
   end if
-  nsa = 52
+  return(False)
 end
 
 ;***********************************************************************;
-  zsa = (/  0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, \
+; Procedure : gsn_geop_hgt                                              ;
+            0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, \
             5.0,  5.5,  6.0,  6.5,  7.0,  7.5,  8.0,  8.5,  9.0,  9.5, \
            10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, \
            20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, \
            84.8, 87.7, 90.6, 93.3, 96.1, 97.5,100.4,104.9,110.0,114.2, \
           116.7,119.7/)
 ;                                                                       ;
-  psa = (/ 1013.25, 954.61, 898.76, 845.59, 795.01, 746.91, 701.21,    \
+; Values above 85km were obtained from the COSPAR International         ;
+; Reference Atmosphere: 1986 QB495 .A38 v.10 No.12  [FL]                ;
 ;                                                                       ;
 ;***********************************************************************;
  
@@ -843,8 +878,7 @@ end
 procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
-  print("check_for_y_lat_coord: Warning: Data either does not contain a")
-  print("valid latitude coordinate array or doesn't contain one at all")
+  print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all")
   if(type.eq."vector")
     array_name = "vfYArray"
     start_name = "vfYCStartV"
@@ -893,8 +927,7 @@ end
 ;                data: numeric                                          ;
 ;                 res: logical                                          ;
 ;                type: string                                           ;
-  print("check_for_x_lat_coord: Warning: Data either does not contain an")
-  print("known latitude coordinate array or doesn't contain one at all")
+;                                                                       ;
 ; This procedure checks if the data contains a coordinate variable in   ;
 ; dimension 1 of an allowable list of latnames                          ;
 ;                                                                       ;
@@ -942,8 +975,7 @@ begin
        .not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data@lat2d)
       return
-  print("check_for_lon_coord: Warning: Data either does not contain an")
-  print("known longitude coordinate array or doesn't contain one at all")
+  print("check_for_lon_coord: Warning: Data either does not contain an known longitude coordinate array or doesn't contain one at all")
 
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
   return
