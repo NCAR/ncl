@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.14 1992-09-24 22:55:37 don Exp $
+ *	$Id: sunraster.c,v 1.15 1992-10-09 20:50:32 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -359,6 +359,8 @@ SunRead(ras)
 			return(RAS_ERROR);
 		}
 
+		ras->nx		= dep->ras_width;
+		ras->ny		= dep->ras_height;
 		ras->ncolor	= 0;
 		ras->type	= RAS_DIRECT;
 		ras->length	= ras->nx * ras->ny * 3;
