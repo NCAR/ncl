@@ -1,5 +1,5 @@
 /*
- *	$Id: c_thstmv.c,v 1.1 1994-05-23 20:20:48 haley Exp $
+ *	$Id: c_thstmv.c,v 1.2 2003-03-03 16:16:24 haley Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -9,6 +9,9 @@
 #define  NDIM   320
 #define  NCLS   17
 #define  NWRK   374
+
+#define IWTYPE 1
+#define WKID   1
 
 main()
 {
@@ -57,7 +60,12 @@ main()
 	int i, j, l, iflag, nclass, npts;
 	char ifc[2];
 
-	c_opngks();
+/*
+ * Open GKS.
+ */
+    gopen_gks ("stdout",0);
+    gopen_ws (WKID, NULL, IWTYPE);
+    gactivate_ws(WKID);
 /*
  * Change the Plotchar special character code from a : to a @
  */
@@ -232,5 +240,10 @@ main()
 	c_histgr((float *)dat1, NDIM, npts, iflag, class, nclass, work, NWRK);
 
 	printf( "HISTGR TEST SUCCESSFUL\nSEE PLOT TO VERIFY PERFORMANCE\n");
-	c_clsgks();
+/*
+ * Close GKS.
+ */
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
