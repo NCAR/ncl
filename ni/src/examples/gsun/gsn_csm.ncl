@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.83 2001-10-14 19:39:32 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.84 2001-10-23 01:49:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7702,7 +7702,7 @@ begin
 
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
 
-function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
+    add_latlon_labels(contour_plot,datanew,res2)
 
     getvalues contour_plot
       "vpWidthF"             : width
@@ -7787,7 +7787,7 @@ end
 ;                                                                       ;
 ; This function creates and draws a titled Hovmueller plot to the       ;
 ; workstation "wks" (the variable returned from a previous call to      ;
-function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
+; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
 ; Id of the contour plot is returned.                                   ;
 ;                                                                       ;
 ; This function behaves differently from gsn_csm_contour in that it     ;
@@ -7859,7 +7859,7 @@ begin
     draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
 
 ; Return contour plot object.
-function gsn_csm_time_lat(wks:graphic,data:numeric,resources:logical)
+
     return(contour_object)
 end
 
@@ -7932,7 +7932,7 @@ begin
 ; Return contour plot object.
 
     return(contour_object)
-function gsn_csm_pres_hgt(wks:graphic,data:numeric,resources:logical)
+end
 
 
 ;***********************************************************************;

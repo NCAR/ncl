@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.76 2001-10-04 04:12:10 haley Exp $
+;      $Id: gsn_code.ncl,v 1.77 2001-10-23 01:49:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -738,15 +738,16 @@ end
 procedure fix_zero_contour(levels)
 begin
   nlevels = dimsizes(levels)
-  delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
-  if(delta_levels.ge.1e-5)
-    do n=1,nlevels-2
-      if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
-        levels(n) = 0.0
-      end if
-    end do
-  end if
-
+  if(nlevels.gt.1) then
+    delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
+    if(delta_levels.ge.1e-5)
+      do n=1,nlevels-2
+        if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
+          levels(n) = 0.0
+        end if
+      end do
+    end if
+  end if  
   return
 end
 
