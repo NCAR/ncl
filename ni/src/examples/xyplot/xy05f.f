@@ -1,5 +1,5 @@
 C     
-C      $Id: xy05f.f,v 1.1 1995-02-10 15:18:48 haley Exp $
+C      $Id: xy05f.f,v 1.2 1995-02-16 14:53:35 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -17,22 +17,23 @@ C          PO 3000, Boulder, Colorado
 C
 C  Date:       Thu Feb  9 15:17:35 MST 1995
 C
-C  Description:    This example shows how to create an XY plot object with
-C                  multiple lines using the CoordArrays and multiple Data
-C                  objects.  Using multiple Data objects allows you 
-C                  to have a different number of points in each line.
+C  Description:    This example shows how to create an XyPlot object
+C                  with multiple lines using the CoordArrays and
+C                  multiple Data objects.  Using multiple Data
+C                  objects allows you to have a different number of
+C                  points in each line.
 C
-C                  Some of the XY marker resources are tweaked in the
-C                  resource file to show how to change the appearance of
-C                  these multiple lines.  This example also shows you how to
-C                  use the xyYIrregularPoints resource to define your own Y
-C                  axis values.
+C                  Some of the XyPlot marker resources are tweaked in
+C                  the resource file to show how to change the
+C                  appearance of these multiple lines.  This example
+C                  also shows you how to use the xyYIrregularPoints
+C                  resource to define your own Y axis values.
 C
 C                  The "CoordArrays" object is used to set up the data,
-C                  and the "DataDep" object is used to describe attributes
-C                  of the data being plotted, like the marker styles and
-C                  sizes.
-
+C                  and the "DataDep" object is used to describe
+C                  attributes of the data being plotted, like the
+C                  marker styles and sizes.
+C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlfcoordarrayslayerclass
@@ -50,7 +51,7 @@ C                  sizes.
       real ydra(NPTS,NCURVE), theta
       data len/500,200,400,300/
 C
-C Initialize some data for the XY plot
+C Initialize some data for the XyPlot object.
 C
       do 20 j = 1,NCURVE
          do 10 i = 1,len(j)
@@ -70,17 +71,17 @@ C
       call nhlfinitialize
       call nhlfrlcreate(rlist,'setrl')
 C
-C Create application and X workstation object.  The application name
-C is used to determine the name of the resource file, which will be
-C 'xy05.res' in this case.
+C Create Application and XWorkstation objects.  The Application
+C object name is used to determine the name of the resource file,
+C which is "xy05.res" in this case.
 C
       call nhlfcreate(appid,'xy05',nhlfapplayerclass,0,0,ierr)
       call nhlfcreate(xworkid,'xy05Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
-C Define the data objects.  Since only the Y values are specified here,
+C Define the Data objects.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id for
-C each object will then later be used as a value for a Data Dep
+C each object will then later be used as a value for a DataDep
 C resource, "dsDataItem".
 C
       do 40 i=1,NCURVE
@@ -89,24 +90,28 @@ C
      +        ierr)
          write(datastr,50)i
          call nhlfcreate(dataid(i),datastr,nhlfcoordarrayslayerclass,
-     +        0,rlist,ierr)
+     +        appid,rlist,ierr)
  40   continue
- 50   format('xyCoord',i1)
+ 50   format('xyData',i1)
 C
-C Define Data Dependent resources and tweak some resources in the
-C resource file.
+C Create DataDep objects each as a child of the XWorkstation object.
+C DataDep resources are used for defining things like the marker
+C colors, styles, and sizes for each line.  The array of ids from
+C these objects will become the value for the XyPlot resource
+C "xyCurveData".
 C
       do 60 i=1,NCURVE
          call nhlfrlclear(rlist)
          call nhlfrlsetinteger(rlist,'dsDataItem',dataid(i),ierr)
          write(datastr,70)i
-         call nhlfcreate(datadepid(i),datastr,nhlfxydatadeplayerclass,0,
-     +    rlist,ierr)
+         call nhlfcreate(datadepid(i),datastr,nhlfxydatadeplayerclass,
+     +        xworkid,rlist,ierr)
  60   continue
- 70   format('xyDep',i1)
+ 70   format('xyDataDep',i1)
 C
-C This array of Data Dependent objects is now the resource value for
-C xyCurveData.  Tweak some more XYPlot resources in the resource file
+C Create the XyPlot object which is created as a child of the
+C XWorkstation object.  The resources that are being changed are done
+C in the "xy05.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'xyYIrregularPoints',
@@ -116,13 +121,13 @@ C
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot (to its parent XWorkstation).
 C
       call nhlfdraw(plotid,ierr)
       call nhlfframe(xworkid,ierr)
 C
 C NhlDestroy destroys the given id and all of its children
-C so destroying 'xworkid' will also destroy plotid.
+C so destroying "xworkid" will also destroy "plotid".
 C
       call nhlfrldestroy(rlist)
       call nhlfdestroy(xworkid,ierr)

@@ -1,13 +1,13 @@
 /*
-**      $Id: xy02c.c,v 1.6 1995-02-09 23:07:15 haley Exp $
+**      $Id: xy02c.c,v 1.7 1995-02-16 14:53:23 haley Exp $
 */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
 **  File:       xy02c.c
 **
@@ -17,15 +17,15 @@
 **
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
-**  Description:    This program shows how to create an XY plot object with
-**                  some of the XY Plot axis resources tweaked.  A resource
-**                  file is used to change the resources except in those
-**                  cases where a resource has to be changed programmatically,
-**                  like array resources.
+** Description:    This program shows how to create an XyPlot object
+**                 and how to tweak some of the XyPlot resources to
+**                 change the appearance of the plot.  A resource file
+**                 is used to change the resources except in those
+**                 cases where a resource is an array and can only be
+**                 changed programmatically.
 **
-**                  The "CoordArrays" object is used to set up the data.
+**                 The "CoordArrays" object is used to set up the data.
 */
-
 
 #include <stdio.h>
 #include <math.h>
@@ -46,7 +46,7 @@ main()
     int     i, j;
     float   ydra[NPTS], theta;
 /*
- * Initialize some data for the XY plot
+ * Initialize some data for the XyPlot object.
  */
     for( i = 0; i < NPTS; i++ ) {
         theta = PI100*(float)(i);
@@ -58,37 +58,39 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create application and X workstation object.  The application name
- * is used to determine the name of the resource file, which will be
+ * Create Application and XWorkstation objects.  The Application object
+ * name is used to determine the name of the resource file, which is
  * "xy02.res" in this case.
  */
     NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
-    NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,
+              NhlDEFAULT_APP,0);
 /*
- * Define the data object.  Since only the Y values are specified here, each
- * Y value will be paired with its integer array index.  The id for this
- * object will later be used as the value for the XYPlot data resource,
- * "xyCurveData".
+ * Define the data object.  Since only the Y values are specified here,
+ * each Y value will be paired with its integer array index.  The id
+ * for this object will later be used as the value for the XyPlot object
+ * resource, "xyCurveData".
  */
     NhlRLClear(rlist);
     NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,
+              NhlDEFAULT_APP,rlist);
 /*
- * Create the Plot object which is created as a child of the X workstation
- * object.  The resources that are being changed are done in the "xy02.res"
- * file, and they affect this Plot object.
+ * Create the XyPlot object which is created as a child of the
+ * XWorkstation object.  The resources that are being changed are done
+ * in the "xy02.res" file, and they will affect this XyPlot object.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
     NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
- * Draw the plot (to its parent X Workstation).
+ * Draw the plot (to its parent XWorkstation).
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "xworkid" will also destroy plotid.
+ * so destroying "xworkid" will also destroy plotid".
  */
     NhlRLDestroy(rlist);
     NhlDestroy(xworkid);

@@ -1,13 +1,13 @@
 ;
-;      $Id: xy01n.ncl,v 1.1 1995-02-09 14:57:49 haley Exp $
+;      $Id: xy01n.ncl,v 1.2 1995-02-16 14:53:21 haley Exp $
 ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                                                       ;
-;                Copyright (C)  1995                                    ;
-;        University Corporation for Atmospheric Research                ;
-;                All Rights Reserved                                    ;
-;                                                                       ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                      ;
+;                Copyright (C)  1995                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;;  File:       xy01n.ncl
 ;;
@@ -17,15 +17,17 @@
 ;;
 ;;  Date:       Thu Feb  9 07:46:58 MST 1995
 ;;
-;;  Description:    This NCL script shows how to create an XY plot object with
-;;                  all the default resources being used, with the exception 
-;;                  of the data resource.  There's no "default data", so we
-;;                  need to create some.  A resource file is included with
-;;                  this example, but only to show what all the XY
-;;                  resources are and what their defaults are set to.
-;;                  The whole resource file is commented out.
+;;  Description:    This program shows how to create an XyPlot object
+;;                 with all the default resources being used, with the
+;;                 exception of the data resource.  There's no "default
+;;                 data", so we need to create some.  A resource file
+;;                 is included with this example, but only to show what
+;;                 all the XyPlot resources are and what their defaults
+;;                 are set to. The whole resource file is commented out.
 ;;
-;;                  The "CoordArrays" object is used to set up the data.
+;;                 The "CoordArrays" object is used to set up the data.
+;;
+
 
 procedure assigndata(
     y[*]:float,
@@ -42,45 +44,44 @@ begin
 end
 
 ;
-; Create variable to contain data
+; Create variable to contain data.
 ;
 npts = 500
 ydra = new(npts, float)
 
 ;
-; Initialize some data for the XY plot
+; Initialize some data for the XyPlot object.
 ; 
 assigndata(ydra,npts)
 
 ;
-; Create application and X workstation object.  The application name
-; is used to determine the name of the resource file, which will be
+; Create Application and XWorkstation objects.  The Application object
+; name is used to determine the name of the resource file, which is
 ; "xy01.res" in this case.
 ; 
 appid = create "xy01" appLayerClass noparent end create
+xworkid = create "xy01Work" xWorkstationLayerClass noparent end create
 
 ;
-; Create an x workstation
-;
-xworkid = create "x" xWorkstationLayerClass noparent end create
-
-;
-; Define data object
+; Define the data object.  Since only the Y values are specified here,
+; each Y value will be paired with its integer array index.  The id
+; for this object will later be used as the value for the XyPlot
+; object resource, "xyCurveData".
 ;
 dataid = create "xyData" coordArraysLayerClass noparent
     "caYArray": ydra
 end create
 
 ;
-; Create the Plot object which is created as a child of the X workstation
-; object.
+; Create the XyPlot object which is created as a child of the
+; XWorkstation object.
 ; 
 plotid = create "xyPlot" xyPlotLayerClass xworkid
     "xyCurveData": dataid
 end create
 
 ;
-; Draw the plot (to its parent X Workstation)
+; Draw the plot (to its parent XWorkstation).
 ; 
 draw(plotid)
 frame(xworkid)

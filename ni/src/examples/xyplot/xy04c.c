@@ -1,13 +1,13 @@
 /*
-**      $Id: xy04c.c,v 1.2 1995-02-09 23:07:21 haley Exp $
+**      $Id: xy04c.c,v 1.3 1995-02-16 14:53:30 haley Exp $
 */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
 **  File:       xy04c.c
 **
@@ -17,16 +17,18 @@
 **
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
-**  Description:    This program shows one way on how to create an XY plot
-**                  object with multiple lines in the plot using the
-**                  CoordArrays object.  Some of the XY line resources
-**                  are tweaked in the resource file to show how to change the
-**                  appearance of these multiple lines.
+** Description:    This program shows one way on how to create an XyPlot
+**                 object with multiple lines in the plot using
+**                 the CoordArrays object.  Some of the XyPlot line
+**                 resources are tweaked in the resource file to
+**                 show how to change the appearance of these multiple
+**                 lines.
 **
-**                  The "CoordArrays" object is used to set up the data,
-**                  and the "DataDep" object is used to describe attributes
-**                  of the data being plotted, like the line color and the
-**                  dash patterns.
+**                 The "CoordArrays" object is used to set up the data,
+**                 and the "DataDep" object is used to describe
+**                 attributes of the data being plotted, like the
+**                 line color and the dash patterns.
+**
 */
 
 #include <stdio.h>
@@ -59,7 +61,7 @@ main()
     int     i, j;
     float   theta;
 /*
- * Initialize XY data.
+ * Initialize data for the XyPlot object.
  */
     for( j = 0; j < NCURVE; j++ ) {
         for( i = 0; i < NPTS; i++ ) {
@@ -73,10 +75,13 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create application and X workstation object.
+ * Create Application and XWorkstation objects.  The Application
+ * object name is used to determine the name of the resource file,
+ * which is "xy04.res" in this case.
  */
     NhlCreate(&appid,"xy04",NhlappLayerClass,NhlDEFAULT_APP,0);
-    NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,appid,0);
+    NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,
+              NhlDEFAULT_APP,0);
 /*
  * Define the "CoordArrays" object.  Since only the Y values are
  * specified here, each Y value will be paired with its integer
@@ -85,33 +90,39 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&ydra[0][0],2,len);
-    NhlCreate(&dataid,"XYCoord",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
               rlist);
 /*
- * Define Data Dependent resources.  Here's where you specify the resources
- * for defining the color, label, and dash pattern of each line.
+ * Create a DataDep object as a child of the XWorkstation object.
+ * DataDep resources are used for defining things like the color, label,
+ * and dash pattern of each line.  The id from this object will become
+ * the value for the XyPlot resource "xyCurveData".
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
     NhlRLSetIntegerArray(rlist,NhlNxyColors,colors,NhlNumber(colors));
-    NhlRLSetIntegerArray(rlist,NhlNxyDashPatterns,xydash,NhlNumber(xydash));
-    NhlRLSetStringArray(rlist,NhlNxyExplicitLabels,explabs,NhlNumber(explabs));
-    NhlCreate(&datadepid,"XYDep",NhlxyDataDepLayerClass,NhlDEFAULT_APP,rlist);
+    NhlRLSetIntegerArray(rlist,NhlNxyDashPatterns,xydash,
+                         NhlNumber(xydash));
+    NhlRLSetStringArray(rlist,NhlNxyExplicitLabels,explabs,
+                        NhlNumber(explabs));
+    NhlCreate(&datadepid,"xyDataDep",NhlxyDataDepLayerClass,xworkid,
+              rlist);
 /*
- * This new Data Dependent object is now the resource value for xyCurveData.
- * Tweak some XYPlot resources as well (in the resource file).
+ * Create the XyPlot object which is created as a child of the
+ * XWorkstation object.  The resources that are being changed are done
+ * in the "xy04.res" file, and they will affect this XyPlot object.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCurveData,datadepid);
-    NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
- * Draw the plot (to its parent X Workstation).
+ * Draw the plot (to its parent XWorkstation).
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "xworkid" will also destroy plotid.
+ * so destroying "xworkid" will also destroy "plotid".
  */
     NhlRLDestroy(rlist);
     NhlDestroy(xworkid);

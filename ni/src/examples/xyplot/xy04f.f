@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.1 1995-02-09 23:07:22 haley Exp $
+C      $Id: xy04f.f,v 1.2 1995-02-16 14:53:31 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -17,9 +17,9 @@ C          PO 3000, Boulder, Colorado
 C
 C  Date:       Thu Feb  9 10:00:38 MST 1995
 C
-C  Description:    This program shows one way on how to create an XY
-C                  plot object with multiple lines in the plot using
-C                  the CoordArrays object.  Some of the XY line
+C  Description:    This program shows one way on how to create an XyPlot
+C                  object with multiple lines in the plot using
+C                  the CoordArrays object.  Some of the XyPlot line
 C                  resources are tweaked in the resource file to
 C                  show how to change the appearance of these multiple
 C                  lines.
@@ -51,7 +51,7 @@ C
       character*7 explabs(NCURVE)
       data explabs/'Curve 1','Curve 2','Curve 3', 'Curve 4'/
 C
-C Initialize some data for the XY plot
+C Initialize data for the XyPlot object.
 C
       do 20 j = 1,NCURVE
          do 10 i = 1,NPTS
@@ -65,24 +65,28 @@ C
       call nhlfinitialize
       call nhlfrlcreate(rlist,'setrl')
 C
-C Create application and X workstation object.  The application name
-C is used to determine the name of the resource file, which will be
-C 'xy04.res' in this case.
+C Create Application and XWorkstation objects.  The Application
+C object name is used to determine the name of the resource file,
+C which is "xy04.res" in this case.
 C
       call nhlfcreate(appid,'xy04',nhlfapplayerclass,0,0,ierr)
       call nhlfcreate(xworkid,'xy04Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
-C Define the data object.  The id for this object will later be used
-C as the value for the XYPlot data resource, 'xyCurveData'.
+C Define the "CoordArrays" object.  Since only the Y values are
+C specified here, each Y value will be paired with its integer
+C array index.  The id for this object will then later be used as
+C the value for the Data Dep resource, "dsDataItem".
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetmdfloatarray(rlist,'caYArray',ydra,2,len,ierr)
       call nhlfcreate(dataid,'xyData',nhlfcoordarrayslayerclass,
      +                0,rlist,ierr)
 C
-C Define Data Dependent resources.  Here's where you specify the arrays
-C for defining the color, label, and dash pattern of each line, 
+C Create a DataDep object as a child of the XWorkstation object.
+C DataDep resources are used for defining things like the color, label,
+C and dash pattern of each line.  The id from this object will become
+C the value for the XyPlot resource "xyCurveData".
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'dsDataItem',dataid,ierr)
@@ -91,25 +95,25 @@ C
      +                          ierr)
       call nhlfrlsetstringarray(rlist,'xyExplicitLabels',explabs,NCURVE,
      +                          ierr)
-      call nhlfcreate(datadepid,'XYDep',nhlfxydatadeplayerclass,0,rlist,
-     +                ierr)
+      call nhlfcreate(datadepid,'xyDataDep',nhlfxydatadeplayerclass,
+     +     xworkid,rlist,ierr)
 C
-C This new Data Dependent object is now the resource value for
-C xyCurveData.  Tweak some XYPlot resources as well (in the resource
-C file).
+C Create the XyPlot object which is created as a child of the
+C XWorkstation object.  The resources that are being changed are done
+C in the "xy04.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'xyCurveData',datadepid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot (to its parent XWorkstation).
 C
       call nhlfdraw(plotid,ierr)
       call nhlfframe(xworkid,ierr)
 C
 C NhlDestroy destroys the given id and all of its children
-C so destroying 'xworkid' will also destroy plotid.
+C so destroying "xworkid" will also destroy "plotid".
 C
       call nhlfrldestroy(rlist)
       call nhlfdestroy(xworkid,ierr)
@@ -120,4 +124,3 @@ C
       call nhlfclose
       stop
       end
-

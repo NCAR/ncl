@@ -1,5 +1,5 @@
 C
-C      $Id: xy02f.f,v 1.2 1995-02-09 23:07:16 haley Exp $
+C      $Id: xy02f.f,v 1.3 1995-02-16 14:53:24 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -17,13 +17,12 @@ C          PO 3000, Boulder, Colorado
 C
 C  Date:       Wed Feb  8 11:44:39 MST 1995
 C
-C  Description:    This program shows how to create an XY plot object
-C                  with all the default resources being used, with the
-C                  exception of the data resource.  There's no "default
-C                  data", so we need to create some.  A resource file
-C                  is used to change the resources except in those cases
-C                  where a resource has to be changed programmatically,
-C                  like array resources.
+C  Description:    This program shows how to create an XyPlot object
+C                  and how to tweak some of the XyPlot resources to
+C                  change the appearance of the plot.  A resource file
+C                  is used to change the resources except in those
+C                  cases where a resource is an array and can only be
+C                  changed programmatically.
 C
 C                  The "CoordArrays" object is used to set up the data.
 C
@@ -39,7 +38,7 @@ C
       integer rlist, i, j
       real   ydra(NPTS), theta
 C
-C Initialize some data for the XY plot
+C Initialize some data for the XyPlot object.
 C
       do 10 i = 1,NPTS
          theta = PI100*real(i-1)
@@ -51,8 +50,8 @@ C
       call nhlfinitialize
       call nhlfrlcreate(rlist,'setrl')
 C
-C Create application and X workstation object.  The application name
-C is used to determine the name of the resource file, which will be
+C Create Application and XWorkstation objects.  The Application object
+C name is used to determine the name of the resource file, which is
 C "xy02.res" in this case.
 C
       call nhlfcreate(appid,'xy02',nhlfapplayerclass,0,0,ierr)
@@ -61,30 +60,30 @@ C
 C
 C Define the data object.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id
-C for this object will later be used as the value for the XYPlot data
-C resource, 'xyCurveData'.
+C for this object will later be used as the value for the XyPlot object
+C resource, "xyCurveData".
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
       call nhlfcreate(dataid,'xyData',nhlfcoordarrayslayerclass,
      +                0,rlist,ierr)
 C
-C Create the Plot object which is created as a child of the X 
-C workstation object.  The resources that are being changed are done 
-C in the "xy02.res" file, and they affect this Plot object.
+C Create the XyPlot object which is created as a child of the
+C XWorkstation object.  The resources that are being changed are done
+C in the "xy02.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'xyCurveData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot (to its parent XWorkstation).
 C
       call nhlfdraw(plotid,ierr)
       call nhlfframe(xworkid,ierr)
 C
 C NhlDestroy destroys the given id and all of its children
-C so destroying 'xworkid' will also destroy plotid.
+C so destroying "xworkid" will also destroy plotid".
 C
       call nhlfrldestroy(rlist)
       call nhlfdestroy(xworkid,ierr)
