@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.65 1997-09-23 00:02:43 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.66 1997-09-23 21:54:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8204,7 +8204,12 @@ static NhlErrorTypes    ManageData
 			cnp->zmax = MAX(1.0,fabs(cnp->zmin*10.0));
 		return MIN(NhlWARNING,ret);
 	}
-
+        if (cnp->sfp->missing_value_set && cnp->sfp->missing_value == 0.0) {
+		e_text =
+  "%s: 0.0 not currently supported as a missing value; expect inaccurate plot";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+        }
+        
 	cnp->zmin = cnp->sfp->data_min;
 	cnp->zmax = cnp->sfp->data_max;
 	cnp->const_field = _NhlCmpFAny(cnp->zmax,cnp->zmin,8) <= 0.0 ?
