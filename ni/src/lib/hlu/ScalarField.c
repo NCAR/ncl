@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.40 2004-07-23 21:24:55 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.41 2004-08-11 23:52:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2275,8 +2275,8 @@ CvtGenSFObjToFloatSFObj
 	sffp = &sffl->sfieldfloat;
 	sfp->sffloat = sffl;
 	sffp->element_nodes = NULL;
-	sffp->x_bounds = NULL;
-	sffp->y_bounds = NULL;
+	sffp->x_cell_bounds = NULL;
+	sffp->y_cell_bounds = NULL;
 
 /*
  * Convert, validate, and set the X and Y irregular coordinate arrays,
@@ -2745,6 +2745,14 @@ ScalarFieldInitialize
 	NhlGenArray		ga;
         _NhlConvertContext	context = NULL;
 	NhlBoolean		has_2d_coords = False;
+
+	/*
+	 * subclasses of ScalarField completely override it.
+	 */
+
+	if (sfl->base.layer_class->base_class.class_name != 
+	    NhlscalarFieldClass->base_class.class_name)
+		return ret;
 	
 
 	sfp->changed = 0;
@@ -3050,6 +3058,15 @@ ScalarFieldSetValues
         NhlBoolean		x_start_changed = False, x_end_changed = False;
         NhlBoolean		y_start_changed = False, y_end_changed = False;
 	NhlBoolean		has_2d_coords = False;
+
+
+	/*
+	 * subclasses of ScalarField completely override it.
+	 */
+
+	if (sfl->base.layer_class->base_class.class_name != 
+	    NhlscalarFieldClass->base_class.class_name)
+		return ret;
 
 /*
  * The changed bit field records changes to the X and Y coordinate array
@@ -3652,6 +3669,14 @@ static NhlErrorTypes    ScalarFieldGetValues
 	float		fval;
 	float		*farray;
 		
+	/*
+	 * subclasses of ScalarField completely override it.
+	 */
+
+	if (sfl->base.layer_class->base_class.class_name != 
+	    NhlscalarFieldClass->base_class.class_name)
+		return ret;
+
 	if (sfp->d_arr == NULL) {
 		e_text = "%s: internal inconsistency";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -4148,6 +4173,14 @@ ScalarFieldDestroy
  */
 	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)l;
 	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
+
+	/*
+	 * subclasses of ScalarField completely override it.
+	 */
+
+	if (sfl->base.layer_class->base_class.class_name != 
+	    NhlscalarFieldClass->base_class.class_name)
+		return;
 
 	NhlFreeGenArray(sfp->d_arr);
 	NhlFreeGenArray(sfp->x_arr);

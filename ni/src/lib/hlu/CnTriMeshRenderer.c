@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.2 2004-07-23 21:24:54 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.3 2004-08-11 23:52:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -369,7 +369,7 @@ static NhlErrorTypes BuildTriangularMesh
 	}
 	
 	missing_val = cnp->sfp->missing_value_set ?
-		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
+		cnp->sfp->missing_value : -FLT_MAX;
 
 	if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
 		if (! cnp->sfp->xc_is_bounds) {
@@ -490,7 +490,6 @@ static NhlErrorTypes BuildNativeMesh
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	float missing_val;
 	int coords_alloced = 0;
 	int mnot  = cnp->sfp->element_nodes->len_dimensions[0];
 	int mnop = cnp->sfp->fast_len;
@@ -534,9 +533,6 @@ static NhlErrorTypes BuildNativeMesh
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	    
-	missing_val = cnp->sfp->missing_value_set ?
-		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
 	    
 	rlat = (float*)cnp->sfp->y_arr->data;
 	rlon = (float*)cnp->sfp->x_arr->data;
@@ -603,7 +599,13 @@ static NhlErrorTypes BuildNativeMesh
 			tbuf[nbuf][10] = 0.0;
 			tbuf[nbuf][11] = rdat[e2];
 		}			
-		nbuf++;
+		if (! cnp->sfp->missing_value_set)
+			nbuf++;
+		else if (tbuf[nbuf][3] != cnp->sfp->missing_value && 
+			 tbuf[nbuf][7] != cnp->sfp->missing_value &&
+			 tbuf[nbuf][11] != cnp->sfp->missing_value) {
+			nbuf++;
+		}
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
@@ -846,7 +848,6 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	float missing_val;
 	int coords_alloced = 0;
 	int mnot;
 	int mtri;
@@ -881,7 +882,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 		NhlFree(tmp->itri);
 
 	el = GetTriangleNodes(cnp->sfp->x_arr,cnp->sfp->y_arr,
-			      cnp->sfp->x_bounds,cnp->sfp->y_bounds,
+			      cnp->sfp->x_cell_bounds,cnp->sfp->y_cell_bounds,
 			      tmp->ezmap,&mnot);
 	mtri = mnot * Lotn;
 	mnoe = 3 * mnot;
@@ -897,9 +898,6 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	    
-	missing_val = cnp->sfp->missing_value_set ?
-		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
 	    
 	rlat = (float*)cnp->sfp->y_arr->data;
 	rlon = (float*)cnp->sfp->x_arr->data;
@@ -964,7 +962,13 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 			tbuf[nbuf][10] = 0.0;
 			tbuf[nbuf][11] = rdat[e2];
 		}			
-		nbuf++;
+		if (! cnp->sfp->missing_value_set)
+			nbuf++;
+		else if (tbuf[nbuf][3] != cnp->sfp->missing_value && 
+			 tbuf[nbuf][7] != cnp->sfp->missing_value &&
+			 tbuf[nbuf][11] != cnp->sfp->missing_value) {
+			nbuf++;
+		}
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
@@ -1012,7 +1016,6 @@ static NhlErrorTypes BuildDelaunayMesh
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	float missing_val;
 	int coords_alloced = 0;
 	int mnop = cnp->sfp->fast_len;
 	int mpnt = mnop * Lopn;
@@ -1027,7 +1030,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	int npnt,nedg;
 	float *rlat,*rlon,*rdat;
 	double *points;
-	double *ddat;
+	float *dat;
 	int pcount;
 	float tbuf[5021][12];
 	int kbuf = 173;
@@ -1056,7 +1059,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	rlon = (float*)cnp->sfp->x_arr->data;
 	rdat = (float*)cnp->sfp->d_arr->data;
 	points = (double *)NhlMalloc(2 * mnop * sizeof(double));
-	ddat = (double *) NhlMalloc(mnop * sizeof(double));
+	dat = (float *) NhlMalloc(mnop * sizeof(float));
 	pcount = 0;
 	if (dyp->ezmap) { /* transform points into projection space
 			   throwing away points outside the map limits */ 
@@ -1068,7 +1071,7 @@ static NhlErrorTypes BuildDelaunayMesh
 				continue;
 			points[j] = (double)xt;
 			points[j+1] = (double)yt;
-			ddat[pcount] = (double)rdat[i];
+			dat[pcount] = rdat[i];
 			pcount++;
 		}
 	}
@@ -1077,22 +1080,16 @@ static NhlErrorTypes BuildDelaunayMesh
 			j = pcount * 2;
 			points[j] = (double)rlon[i];
 			points[j+1] = (double)rlat[i];
-			ddat[pcount] = (double)rdat[i];
+			dat[pcount] = rdat[i];
 			pcount++;
 		}
 	}
 	memset(&in,0,sizeof(struct triangulateio));
 	memset(&out,0,sizeof(struct triangulateio));
 	in.pointlist = points;
-	in.pointattributelist = ddat;
-	in.trianglelist = NULL;
 	in.numberofpoints = pcount;
-	in.numberofpointattributes = 1;
+	in.numberofpointattributes = 0;
 	in.numberoftriangles = 0;
-
-	out.pointlist = NULL;
-	out.pointattributelist = NULL;
-	out.trianglelist = NULL;
 
 	if (cnp->verbose_triangle_info) {
 		flags = "IBzV";
@@ -1103,7 +1100,6 @@ static NhlErrorTypes BuildDelaunayMesh
 	triangulate(flags,&in,&out,NULL);
 
 	points = out.pointlist;
-	ddat = out.pointattributelist;
 	el = out.trianglelist;
 	mnop = out.numberofpoints;
 	mnot = out.numberoftriangles;
@@ -1122,8 +1118,6 @@ static NhlErrorTypes BuildDelaunayMesh
 		return NhlFATAL;
 	}
 	    
-	missing_val = cnp->sfp->missing_value_set ?
-		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
 	for (i = 0; i < mnot; i++) {
 		int *ep;
 		int e0,e1,e2;
@@ -1149,18 +1143,25 @@ static NhlErrorTypes BuildDelaunayMesh
 		tbuf[nbuf][0] = (float)points[2*e0];
 		tbuf[nbuf][1] = (float)points[2*e0+1];
 		tbuf[nbuf][2] = 0.0;
-		tbuf[nbuf][3] = (float)ddat[e0];
+		tbuf[nbuf][3] = (float)dat[e0];
 
 		tbuf[nbuf][4] = points[2*e1];
 		tbuf[nbuf][5] = points[2*e1+1];
 		tbuf[nbuf][6] = 0.0;
-		tbuf[nbuf][7] = ddat[e1];
+		tbuf[nbuf][7] = dat[e1];
 
 		tbuf[nbuf][8] = points[2*e2];
 		tbuf[nbuf][9] = points[2*e2+1];
 		tbuf[nbuf][10] = 0.0;
-		tbuf[nbuf][11] = ddat[e2];
-		nbuf++;
+		tbuf[nbuf][11] = dat[e2];
+		
+		if (! cnp->sfp->missing_value_set)
+			nbuf++;
+		else if (tbuf[nbuf][3] != cnp->sfp->missing_value && 
+			 tbuf[nbuf][7] != cnp->sfp->missing_value &&
+			 tbuf[nbuf][11] != cnp->sfp->missing_value) {
+			nbuf++;
+		}
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
@@ -1188,7 +1189,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	NhlFree(ippp);
 	NhlFree(ippe);
 	NhlFree(points);
-	NhlFree(ddat);
+	NhlFree(dat);
 
 	return NhlNOERROR;
 
@@ -2973,7 +2974,8 @@ static NhlErrorTypes InitMesh
 			if (cnp->sfp->element_nodes) {
 				ret = BuildNativeMesh(tmp,cnl,entry_name);
 			}
-			else if (cnp->sfp->x_bounds && cnp->sfp->y_bounds) {
+			else if (cnp->sfp->x_cell_bounds && 
+				 cnp->sfp->y_cell_bounds) {
 				ret = BuildNativeMeshFromBounds
 					(tmp,cnl,entry_name);
 			}				
@@ -3047,7 +3049,7 @@ static NhlErrorTypes CnTriMeshRender
 		tmp->ezmap = 1;
 		if (cnp->sfp->d_arr->num_dimensions == 1 &&
 		    ! (cnp->sfp->element_nodes ||
-		       (cnp->sfp->x_bounds && cnp->sfp->y_bounds))) {
+		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
 			c_ctseti("MAP",0);
 			tmp->update_mode = TRIMESH_NEWMESH;
 		}

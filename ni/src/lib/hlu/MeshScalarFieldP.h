@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarFieldP.h,v 1.1 2004-07-23 21:24:55 dbrown Exp $
+ *      $Id: MeshScalarFieldP.h,v 1.2 2004-08-11 23:52:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,8 +35,8 @@ typedef struct _NhlMeshScalarFieldLayerPart{
 	NhlGenArray	y_arr;
 	NhlGenArray     element_nodes;
 	NhlGenArray     node_indexes;
-	NhlGenArray     x_bounds;
-	NhlGenArray     y_bounds;
+	NhlGenArray     x_cell_bounds;
+	NhlGenArray     y_cell_bounds;
 	int		first_node_index;		
 	NhldiGridType   grid_type;
 

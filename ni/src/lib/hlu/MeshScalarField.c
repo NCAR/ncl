@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.1 2004-07-23 21:24:55 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.2 2004-08-11 23:52:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -56,10 +56,10 @@ static NhlResource resources[] = {
 	{NhlNsfFirstNodeIndex,NhlCsfFirstNodeIndex,NhlTInteger,sizeof(int),
 	 Oset(first_node_index),NhlTImmediate,_NhlUSET(0),0,NULL},
 	{NhlNsfXCellBounds,NhlCsfXCellBounds,NhlTGenArray,sizeof(NhlGenArray),
-	 Oset(x_bounds),NhlTImmediate,
+	 Oset(x_cell_bounds),NhlTImmediate,
 	 _NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfYCellBounds,NhlCsfYCellBounds,NhlTGenArray,sizeof(NhlGenArray),
-	 Oset(y_bounds),NhlTImmediate,
+	 Oset(y_cell_bounds),NhlTImmediate,
 	 _NhlUSET((NhlPointer)NULL),0,NULL},
 
 	{NhlNsfMissingValueV,NhlCsfMissingValueV,NhlTVariable,
@@ -358,8 +358,8 @@ static	NrmQuark	Qfloat_gen_array  = NrmNULLQUARK;
 static	NrmQuark	Qd_arr  = NrmNULLQUARK;
 static	NrmQuark	Qx_arr  = NrmNULLQUARK;
 static	NrmQuark	Qy_arr  = NrmNULLQUARK;
-static	NrmQuark	Qx_bounds  = NrmNULLQUARK;
-static	NrmQuark	Qy_bounds  = NrmNULLQUARK;
+static	NrmQuark	Qx_cell_bounds  = NrmNULLQUARK;
+static	NrmQuark	Qy_cell_bounds  = NrmNULLQUARK;
 static  NrmQuark        Qelement_nodes = NrmNULLQUARK;
 static  NrmQuark        Qnode_indexes = NrmNULLQUARK;
 static	NrmQuark	Qmissing_value  = NrmNULLQUARK;
@@ -1189,7 +1189,7 @@ CvtGenSFObjToFloatSFObj
 	NhlSArg			sargs[30];
 	int			nargs=0;
 	NhlGenArray		d_arr = NULL, x_arr = NULL, y_arr = NULL;
-	NhlGenArray             x_bounds = NULL, y_bounds = NULL;
+	NhlGenArray             x_cell_bounds = NULL, y_cell_bounds = NULL;
 	int                     istart,iend;
 	float                   xmin,xmax,ymin,ymax;
 	float			xstart,xend,ystart,yend;
@@ -1260,18 +1260,20 @@ CvtGenSFObjToFloatSFObj
 		return(NhlFATAL);
 	}
 
-	sffp->x_bounds = NULL;
-	if (sfp->x_bounds) {
-		if ((x_bounds = GenToFloatGenArray(sfp->x_bounds)) == NULL) {
+	sffp->x_cell_bounds = NULL;
+	if (sfp->x_cell_bounds) {
+		if ((x_cell_bounds = 
+		     GenToFloatGenArray(sfp->x_cell_bounds)) == NULL) {
 			e_text = "%s: error converting %s to float";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  e_text,entry_name,NhlNsfXCellBounds);
 			return(NhlFATAL);
 		}
 	}
-	sffp->y_bounds = NULL;
-	if (sfp->y_bounds) {
-		if ((y_bounds = GenToFloatGenArray(sfp->y_bounds)) == NULL) {
+	sffp->y_cell_bounds = NULL;
+	if (sfp->y_cell_bounds) {
+		if ((y_cell_bounds =
+		     GenToFloatGenArray(sfp->y_cell_bounds)) == NULL) {
 			e_text = "%s: error converting %s to float";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  e_text,entry_name,NhlNsfYCellBounds);
@@ -1349,8 +1351,8 @@ CvtGenSFObjToFloatSFObj
 	sffp->x_arr = x_arr;
 	sffp->y_arr = y_arr;
 	sffp->d_arr = d_arr;
-	sffp->x_bounds = x_bounds;
-	sffp->y_bounds = y_bounds;
+	sffp->x_cell_bounds = x_cell_bounds;
+	sffp->y_cell_bounds = y_cell_bounds;
 	sffp->element_nodes = sfp->element_nodes;
 
 
@@ -1458,8 +1460,8 @@ MeshScalarFieldClassInitialize
 	Qd_arr  = NrmStringToQuark(NhlNsfDataArray);
 	Qx_arr  = NrmStringToQuark(NhlNsfXArray);
 	Qy_arr  = NrmStringToQuark(NhlNsfYArray);
-	Qx_bounds  = NrmStringToQuark(NhlNsfXCellBounds);
-	Qy_bounds  = NrmStringToQuark(NhlNsfYCellBounds);
+	Qx_cell_bounds  = NrmStringToQuark(NhlNsfXCellBounds);
+	Qy_cell_bounds  = NrmStringToQuark(NhlNsfYCellBounds);
 	Qelement_nodes = NrmStringToQuark(NhlNsfElementNodes);
 	Qnode_indexes = NrmStringToQuark(NhlNsfNodeIndexes);
 	Qmissing_value  = NrmStringToQuark(NhlNsfMissingValueV);
@@ -1521,14 +1523,6 @@ MeshScalarFieldClassPartInitialize
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMeshScalarFieldClass msfc = (NhlMeshScalarFieldClass) lc;
 	NhlScalarFieldClass     sfc = (NhlScalarFieldClass) msfc->base_class.superclass;
-
-	/*
-	 * override the superclass create, setvalues, getvalues, and destroy
-	 */
-	sfc->base_class.layer_initialize = NULL;
-	sfc->base_class.layer_set_values = NULL;
-	sfc->base_class.layer_get_values = NULL;
-	sfc->base_class.layer_destroy = NULL;
 
 	return ret;
 }
@@ -1753,7 +1747,7 @@ MeshScalarFieldInitialize
 	}
 #if 0
 	if (sfp->element_nodes == NULL && 
-		! (sfp->x_bounds && sfp->y_bounds)) {
+		! (sfp->x_cell_bounds && sfp->y_cell_bounds)) {
 		e_text = 
 	 "%s:Either %s or %s and %s  must be specified to create a %s object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -1778,24 +1772,24 @@ MeshScalarFieldInitialize
 			return NhlFATAL;
 		}
 	}
-	if (sfp->x_bounds) {
+	if (sfp->x_cell_bounds) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
                 from.size = sizeof(NhlGenArray);
-                from.data.ptrval = sfp->x_bounds;
+                from.data.ptrval = sfp->x_cell_bounds;
                 to.size = sizeof(NhlGenArray);
                 to.data.ptrval = &fltga;
                 subret = _NhlConvertData(context,Qgen_array,
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
-                        sfp->x_bounds = NULL;
+                        sfp->x_cell_bounds = NULL;
                 else if (! ValidCoordArray
 			 (sfp,fltga,NhlNsfXCellBounds,entry_name)) {
-                        sfp->x_bounds = NULL;
+                        sfp->x_cell_bounds = NULL;
                 }
                 else {
-                        if ((sfp->x_bounds = _NhlCopyGenArray
+                        if ((sfp->x_cell_bounds = _NhlCopyGenArray
                              (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
@@ -1805,24 +1799,24 @@ MeshScalarFieldInitialize
 			sfp->changed |= _NhlsfXARR_CHANGED;
                 }
 	}
-	if (sfp->y_bounds) {
+	if (sfp->y_cell_bounds) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
                 from.size = sizeof(NhlGenArray);
-                from.data.ptrval = sfp->y_bounds;
+                from.data.ptrval = sfp->y_cell_bounds;
                 to.size = sizeof(NhlGenArray);
                 to.data.ptrval = &fltga;
                 subret = _NhlConvertData(context,Qgen_array,
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
-                        sfp->y_bounds = NULL;
+                        sfp->y_cell_bounds = NULL;
                 else if (! ValidCoordArray
 			 (sfp,fltga,NhlNsfYCellBounds,entry_name)) {
-                        sfp->y_bounds = NULL;
+                        sfp->y_cell_bounds = NULL;
                 }
                 else {
-                        if ((sfp->y_bounds = _NhlCopyGenArray
+                        if ((sfp->y_cell_bounds = _NhlCopyGenArray
                              (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
@@ -1832,8 +1826,8 @@ MeshScalarFieldInitialize
 			sfp->changed |= _NhlsfYARR_CHANGED;
                 }
 	}
-	if ((sfp->x_bounds && ! sfp->y_bounds) ||
-	    sfp->y_bounds && ! sfp->x_bounds) {
+	if ((sfp->x_cell_bounds && ! sfp->y_cell_bounds) ||
+	    sfp->y_cell_bounds && ! sfp->x_cell_bounds) {
 		e_text = 
        "%s:If either %s or %s is specified, both must be specified and valid";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -2242,99 +2236,106 @@ MeshScalarFieldSetValues
 		status = True;
 	}
 
-	if ((sfp->x_bounds && ! sfp->y_bounds) ||
-	    sfp->y_bounds && ! sfp->x_bounds) {
-		sfp->x_bounds = osfp->x_bounds;
-		sfp->y_bounds = osfp->y_bounds;
+	if ((sfp->x_cell_bounds && ! sfp->y_cell_bounds) ||
+	    sfp->y_cell_bounds && ! sfp->x_cell_bounds) {
+		sfp->x_cell_bounds = osfp->x_cell_bounds;
+		sfp->y_cell_bounds = osfp->y_cell_bounds;
 		e_text = 
       "%s:If either %s or %s is specified, both must be specified and valid: restoring previous values";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNsfXCellBounds, NhlNsfYCellBounds);
 		return NhlWARNING;
 	}
-	if (! sfp->x_bounds) {
-		if (osfp->x_bounds) {
-			NhlFreeGenArray(osfp->x_bounds);
+	if (! sfp->x_cell_bounds) {
+		if (osfp->x_cell_bounds) {
+			NhlFreeGenArray(osfp->x_cell_bounds);
 			status = True;
 		}
 	}
-        else if (sfp->x_bounds && sfp->x_bounds != osfp->x_bounds) {
+        else if (sfp->x_cell_bounds && 
+		 sfp->x_cell_bounds != osfp->x_cell_bounds) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
                 from.size = sizeof(NhlGenArray);
-                from.data.ptrval = sfp->x_bounds;
+                from.data.ptrval = sfp->x_cell_bounds;
                 to.size = sizeof(NhlGenArray);
                 to.data.ptrval = &fltga;
                 subret = _NhlConvertData(context,Qgen_array,
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
-                        sfp->x_bounds = osfp->x_bounds;
+                        sfp->x_cell_bounds = osfp->x_cell_bounds;
                 else if (! ValidCoordArray(
 				 sfp,fltga,NhlNsfXCellBounds,entry_name)) {
-                        sfp->x_bounds = osfp->x_bounds;
+                        sfp->x_cell_bounds = osfp->x_cell_bounds;
                 }
                 else {
 		        if (dim_changed || 
-			    sfp->x_bounds->size != osfp->x_bounds->size ||
-			    sfp->x_bounds->typeQ != osfp->x_bounds->typeQ ||
-			    memcmp(sfp->x_bounds->data,osfp->x_bounds->data,
-				   sfp->x_bounds->size 
-				   * sfp->x_bounds->num_elements) )
+			    sfp->x_cell_bounds->size != 
+			    osfp->x_cell_bounds->size ||
+			    sfp->x_cell_bounds->typeQ != 
+			    osfp->x_cell_bounds->typeQ ||
+			    memcmp(sfp->x_cell_bounds->data,
+				   osfp->x_cell_bounds->data,
+				   sfp->x_cell_bounds->size 
+				   * sfp->x_cell_bounds->num_elements) )
 				x_arr_changed = True;
 
-                        if ((sfp->x_bounds = _NhlCopyGenArray
+                        if ((sfp->x_cell_bounds = _NhlCopyGenArray
                              (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
-                        NhlFreeGenArray(osfp->x_bounds);
+                        NhlFreeGenArray(osfp->x_cell_bounds);
 			sfp->changed |= _NhlsfXARR_CHANGED;
                         status = True;
                 }
 	}
 
-	if (! sfp->y_bounds) {
-		if (osfp->y_bounds) {
-			NhlFreeGenArray(osfp->y_bounds);
+	if (! sfp->y_cell_bounds) {
+		if (osfp->y_cell_bounds) {
+			NhlFreeGenArray(osfp->y_cell_bounds);
 			status = True;
 		}
 	}
-        if (sfp->y_bounds && sfp->y_bounds != osfp->y_bounds) {
+        if (sfp->y_cell_bounds && sfp->y_cell_bounds != osfp->y_cell_bounds) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
                 from.size = sizeof(NhlGenArray);
-                from.data.ptrval = sfp->y_bounds;
+                from.data.ptrval = sfp->y_cell_bounds;
                 to.size = sizeof(NhlGenArray);
                 to.data.ptrval = &fltga;
                 subret = _NhlConvertData(context,Qgen_array,
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
-                        sfp->y_bounds = osfp->y_bounds;
+                        sfp->y_cell_bounds = osfp->y_cell_bounds;
                 else if (! ValidCoordArray(
 				 sfp,fltga,NhlNsfYCellBounds,entry_name)) {
-                        sfp->y_bounds = osfp->y_bounds;
+                        sfp->y_cell_bounds = osfp->y_cell_bounds;
                 }
                 else {
 		        if (dim_changed || 
-			    sfp->y_bounds->size != osfp->y_bounds->size ||
-			    sfp->y_bounds->typeQ != osfp->y_bounds->typeQ ||
-			    memcmp(sfp->y_bounds->data,osfp->y_bounds->data,
-				   sfp->y_bounds->size 
-				   * sfp->y_bounds->num_elements) )
+			    sfp->y_cell_bounds->size != 
+			    osfp->y_cell_bounds->size ||
+			    sfp->y_cell_bounds->typeQ != 
+			    osfp->y_cell_bounds->typeQ ||
+			    memcmp(sfp->y_cell_bounds->data,
+				   osfp->y_cell_bounds->data,
+				   sfp->y_cell_bounds->size 
+				   * sfp->y_cell_bounds->num_elements) )
 				y_arr_changed = True;
 
-                        if ((sfp->y_bounds = _NhlCopyGenArray
+                        if ((sfp->y_cell_bounds = _NhlCopyGenArray
                              (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
-                        NhlFreeGenArray(osfp->y_bounds);
+                        NhlFreeGenArray(osfp->y_cell_bounds);
 			sfp->changed |= _NhlsfYARR_CHANGED;
                         status = True;
                 }
@@ -2840,47 +2841,47 @@ static NhlErrorTypes    MeshScalarFieldGetValues
                         typeQ = sfp->y_arr->typeQ;
                         size = sfp->y_arr->size;
                 }
-                else if (resQ == Qx_bounds && sfp->x_bounds) {
+                else if (resQ == Qx_cell_bounds && sfp->x_cell_bounds) {
                         do_genarray = True;
 			ndim = 2;
-			dlen[0] = sfp->x_bounds->len_dimensions[0];
-			dlen[1] = sfp->x_bounds->len_dimensions[1];
+			dlen[0] = sfp->x_cell_bounds->len_dimensions[0];
+			dlen[1] = sfp->x_cell_bounds->len_dimensions[1];
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData
-				     (sfp->x_bounds,resQ)) == NULL)
+				     (sfp->x_cell_bounds,resQ)) == NULL)
                                         return NhlFATAL;
                         }
                         else {
                                 nocopy = True;
                                 data = sfp->y_arr->data;
                         }
-                        typeQ = sfp->x_bounds->typeQ;
-                        size = sfp->x_bounds->size;
+                        typeQ = sfp->x_cell_bounds->typeQ;
+                        size = sfp->x_cell_bounds->size;
                 }
-		else if (resQ == Qx_bounds) {
+		else if (resQ == Qx_cell_bounds) {
 			*(NhlGenArray *)args[i].value.ptrval = NULL;
 			*args[i].type_ret = Qgen_array;
 			*args[i].size_ret = sizeof(NhlGenArray);
 			*args[i].free_func = NULL;
                 }
-                else if (resQ == Qy_bounds && sfp->y_bounds) {
+                else if (resQ == Qy_cell_bounds && sfp->y_cell_bounds) {
                         do_genarray = True;
 			ndim = 2;
-			dlen[0] = sfp->y_bounds->len_dimensions[0];
-			dlen[1] = sfp->y_bounds->len_dimensions[1];
+			dlen[0] = sfp->y_cell_bounds->len_dimensions[0];
+			dlen[1] = sfp->y_cell_bounds->len_dimensions[1];
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData
-				     (sfp->y_bounds,resQ)) == NULL)
+				     (sfp->y_cell_bounds,resQ)) == NULL)
                                         return NhlFATAL;
                         }
                         else {
                                 nocopy = True;
                                 data = sfp->y_arr->data;
                         }
-                        typeQ = sfp->y_bounds->typeQ;
-                        size = sfp->y_bounds->size;
+                        typeQ = sfp->y_cell_bounds->typeQ;
+                        size = sfp->y_cell_bounds->size;
                 }
-		else if (resQ == Qy_bounds) {
+		else if (resQ == Qy_cell_bounds) {
 			*(NhlGenArray *)args[i].value.ptrval = NULL;
 			*args[i].type_ret = Qgen_array;
 			*args[i].size_ret = sizeof(NhlGenArray);
@@ -3341,6 +3342,14 @@ MeshScalarFieldDestroy
 	NhlFreeGenArray(sfp->d_arr);
 	NhlFreeGenArray(sfp->x_arr);
 	NhlFreeGenArray(sfp->y_arr);
+	if (sfp->element_nodes)
+		NhlFreeGenArray(sfp->element_nodes);
+	if (sfp->node_indexes)
+		NhlFreeGenArray(sfp->node_indexes);
+	if (sfp->x_cell_bounds)
+		NhlFreeGenArray(sfp->x_cell_bounds);
+	if (sfp->y_cell_bounds)
+		NhlFreeGenArray(sfp->y_cell_bounds);
 	NhlFreeGenArray(sfp->missing_value);
 	NhlFreeGenArray(sfp->data_min);
 	NhlFreeGenArray(sfp->data_max);
