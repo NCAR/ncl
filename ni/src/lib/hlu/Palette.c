@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.5 1997-06-11 20:46:58 boote Exp $
+ *      $Id: Palette.c,v 1.6 1998-10-22 17:35:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -878,7 +878,7 @@ PaletteClassInitialize
 }
 
 /*
- * Function:	NhlCvtStringToCmap
+ * Function:	CvtStringToCmap
  *
  * Description:	
  *
@@ -891,7 +891,7 @@ PaletteClassInitialize
  * Side Effect:	
  */
 static NhlErrorTypes
-NhlCvtStringToCmap
+CvtStringToCmap
 #if	NhlNeedProto
 (
 	NrmValue		*from,
@@ -907,7 +907,7 @@ NhlCvtStringToCmap
 	int			nargs;
 #endif
 {
-	char			func[]="NhlCvtStringToCmap";
+	char			func[]="CvtStringToCmap";
 	NhlString		s1 = from->data.strval;
 	NhlGenArray		gen = NULL;
 	NrmValue		val;
@@ -924,7 +924,9 @@ NhlCvtStringToCmap
 	pl = (NhlPaletteLayer)_NhlGetLayer(wc->work_class.pal);
 	cmaps = pl->pal.cmaps;
 
-	gen = _NhlStringToStringGenArray(s1);
+	gen = _NhlStringToColorDefStringGenArray(wc,s1,False);
+	if(!gen)
+		gen = _NhlStringToStringGenArray(s1);
 	if(gen){
 		val.size = sizeof(NhlGenArray);
 		val.data.ptrval = gen;
@@ -951,7 +953,7 @@ NhlCvtStringToCmap
 }
 
 /*
- * Function:	NhlCvtGenArrayToCmap
+ * Function:	CvtGenArrayToCmap
  *
  * Description:	
  *
@@ -964,7 +966,7 @@ NhlCvtStringToCmap
  * Side Effect:	
  */
 static NhlErrorTypes
-NhlCvtGenArrayToCmap
+CvtGenArrayToCmap
 #if	NhlNeedProto
 (
 	NrmValue		*from,
@@ -980,7 +982,7 @@ NhlCvtGenArrayToCmap
 	int			nargs;
 #endif
 {
-	char		func[]="NhlCvtGenArrayToCmap";
+	char		func[]="CvtGenArrayToCmap";
 	NhlGenArray	gen = from->data.ptrval;
 	NhlErrorTypes	ret = NhlNOERROR;
 
@@ -1003,11 +1005,119 @@ NhlCvtGenArrayToCmap
 		return NhlFATAL;
 	}
 
-	if(gen->typeQ == fltQ){
-		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	return _NhlReConvertData(from->typeQ,fltgenQ,from,to);
+}
+
+/*
+ * Function:	CvtStringGenArrayToCmap
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringGenArrayToCmap
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char			func[]="CvtStringGenArrayToCmap";
+	NhlWorkstationClass	wc;
+	NhlGenArray		fgen = from->data.ptrval;
+	NhlGenArray		tgen;
+	NhlString		*sptr;
+	float			*fptr;
+	int			dimlen[2] = {0,3};
+	int			i;
+	NhlErrorTypes		ret = NhlNOERROR;
+
+	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Invalid args?",func);
+		return NhlFATAL;
+	}
+	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+
+	if(!fgen){
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
 	}
 
-	return _NhlReConvertData(from->typeQ,fltgenQ,from,to);
+	if(fgen->num_elements == 1){
+		if((fgen->size <= sizeof(NhlArgVal)) && (fgen->size > 0)){
+			NrmValue	val;
+
+			memcpy((char*)&val.data,(char*)fgen->data,fgen->size);
+			val.size = fgen->size;
+
+			return _NhlReConvertData(fgen->typeQ,to->typeQ,&val,to);
+		}
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:From array has wrong dimensionality",func);
+		return NhlFATAL;
+	}
+
+	if((fgen->num_dimensions == 2) || (fgen->len_dimensions[1] == 3)){
+		return _NhlReConvertData(from->typeQ,fltgenQ,from,to);
+	}
+
+	if(fgen->num_dimensions != 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:From array has wrong dimensionality",func);
+		return NhlFATAL;
+	}
+
+	dimlen[0] = fgen->num_elements;
+	tgen = _NhlConvertCreateGenArray(NULL,NhlTFloat,sizeof(float),2,dimlen);
+	if(!tgen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	fptr = NhlConvertMalloc(sizeof(float) * fgen->num_elements * 3);
+	if(!fptr){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	tgen->data = fptr;
+	sptr = fgen->data;
+	for(i=0;i<fgen->num_elements;i++){
+		NGRGB	rgb;
+		if(!_NhlLookupColor(wc,sptr[i],&rgb)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Unable to find rgb of \"%s\", using white",
+				func,sptr[i]);
+			/* set to white */
+			rgb.red = rgb.green = rgb.blue = 65535;
+		}
+		if(rgb.red == 65535)
+			*(fptr+(3*i)) = 1.0;
+		else
+			*(fptr+(3*i)) = (float)rgb.red / 65535.0;
+		if(rgb.green == 65535)
+			*(fptr+(3*i)+1) = 1.0;
+		else
+			*(fptr+(3*i)+1) = (float)rgb.green / 65535.0;
+		if(rgb.blue == 65535)
+			*(fptr+(3*i)+2) = 1.0;
+		else
+			*(fptr+(3*i)+2) = (float)rgb.blue / 65535.0;
+	}
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /*
@@ -1083,11 +1193,13 @@ PaletteInitialize
 	(void)_NhlRegSymConv(pp->work_class,NhlTQuarkGenArray,NhlTColorMap,
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)NhlRegisterConverter(pp->work_class,NhlTString,NhlTColorMap,
-					NhlCvtStringToCmap,&arg,1,False,NULL);
+					CvtStringToCmap,&arg,1,False,NULL);
 	(void)_NhlRegSymConv(pp->work_class,NhlTQuark,NhlTColorMap,
 							NhlTQuark,NhlTScalar);
 	(void)NhlRegisterConverter(pp->work_class,NhlTGenArray,
-			NhlTColorMap,NhlCvtGenArrayToCmap,NULL,0,False,NULL);
+			NhlTColorMap,CvtGenArrayToCmap,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(pp->work_class,NhlTStringGenArray,
+			NhlTColorMap,CvtStringGenArrayToCmap,&arg,1,False,NULL);
 
 	return NhlNOERROR;
 }

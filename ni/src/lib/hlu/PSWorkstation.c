@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.12 1998-03-11 18:35:48 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.13 1998-10-22 17:35:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -162,6 +162,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* gks_wks_recs		*/	NhlInheritGksWksRecs, 
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{1.0,1.0,1.0},
+/* rgb_dbm		*/	NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	PSWorkstationOpen,
 /* close_work		*/	NhlInheritClose,

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.21 1998-10-05 19:13:51 boote Exp $
+ *      $Id: WorkstationP.h,v 1.22 1998-10-22 17:35:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #ifndef _NWorkstationP_h
 #define	_NWorkstationP_h
 
+#include	<ncarg/c.h>
 #include	<ncarg/hlu/BaseP.h>
 #include	<ncarg/hlu/TextItem.h>
 #include 	<ncarg/hlu/WorkstationI.h>
@@ -220,6 +221,7 @@ typedef struct _NhlWorkstationClassPart{
 	wkGksWksRec			*gks_wks_recs;
         NhlBoolean			*hlu_wks_flag;
 	NhlColor			def_background;
+	NGDBM				*rgb_dbm;
 	int				pal;
 	NhlWorkstationProc		open_work;
 	NhlWorkstationProc		close_work;
@@ -258,6 +260,22 @@ extern	NhlErrorTypes _NhlUpdateGksWksRecs(
 extern	NhlErrorTypes _NhlAllocateColors(
 #if	NhlNeedProto
 	NhlWorkstationLayer	wl
+#endif
+);
+
+extern NhlGenArray _NhlStringToColorDefStringGenArray(
+#if	NhlNeedProto
+	NhlWorkstationClass	wc,
+	Const char		*str,
+	NhlBoolean		doerror
+#endif
+);
+
+extern NhlBoolean _NhlLookupColor(
+#if	NhlNeedProto
+	NhlWorkstationClass	wc,
+	Const char		*name,
+	NGRGB			*rgb
 #endif
 );
 

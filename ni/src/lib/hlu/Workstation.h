@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.25 1998-10-05 19:13:50 boote Exp $
+ *      $Id: Workstation.h,v 1.26 1998-10-22 17:35:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -128,6 +128,8 @@ typedef	int	NhlColorIndex;
 #define NhlFOREGROUND 1
 #define NhlTRANSPARENT -1
 #define NhlNULLCOLOR   -1
+
+#define NhlTColorDefinitionGenArray	"ColorDefinitionGenArray"
 
 typedef float NhlColor[3];
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.83 1998-10-05 19:13:49 boote Exp $
+ *      $Id: Workstation.c,v 1.84 1998-10-22 17:35:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <ctype.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
@@ -164,7 +166,9 @@ static int fill_table_len;
 static int dash_table_len;
 
 static NrmQuark intQ;
+static NrmQuark scalarQ;
 static NrmQuark intgenQ;
+static NrmQuark strgenQ;
 static NrmQuark colormap_name;
 static NrmQuark bkgnd_name;
 static NrmQuark foregnd_name;
@@ -183,10 +187,12 @@ static NhlResource resources[] = {
 	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
 		Oset(color_map_len),NhlTImmediate,
 		_NhlUSET(0),_NhlRES_GONLY,NULL},
-	{NhlNwkBackgroundColor,NhlCwkBackgroundColor,NhlTFloatGenArray,
+	{NhlNwkBackgroundColor,NhlCwkBackgroundColor,
+		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(bkgnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkForegroundColor,NhlCwkForegroundColor,NhlTFloatGenArray,
+	{NhlNwkForegroundColor,NhlCwkForegroundColor,
+		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(foregnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),
@@ -613,6 +619,7 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* gks_wks_recs		*/	Gks_Wks_Recs,
 /* hlu_wks_flag		*/	&Hlu_Wks_Flag,                                
 /* def_background	*/	{0.0,0.0,0.0},
+/* rgb_dbm		*/	NULL,
 /* pal			*/	NhlDEFAULT_APP,
 /* open_work		*/	WorkstationOpen,
 /* close_work		*/	WorkstationClose,
@@ -629,6 +636,1191 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 };
 
 NhlClass NhlworkstationClass = (NhlClass)&NhlworkstationClassRec;
+
+/*
+ * Function:	_NhlLookupColor
+ *
+ * Description:	This function is taken largely from the X11R5 distribution
+ *		from MIT.  I combined the client and server sides of the
+ *		named color codes in X to create this.  The MIT copyright
+ *		follows:
+ *
+****************************************************************************
+	Copyright    Massachusetts Institute of Technology    1985
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+****************************************************************************
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlLookupColor
+#if	NhlNeedProto
+(
+	NhlWorkstationClass	wc,
+	Const char		*name,
+	NGRGB			*rgb
+)
+#else
+(wc,name,rgb)
+	NhlWorkstationClass	wc;
+	Const char		*name;
+	NGRGB			*rgb;
+#endif
+{
+	register int	len,i;
+	char		c;
+	char		lname_buff[64];
+	char		*lname;
+	char		*s;
+	NGdatum		rgbdata;
+	int		r,g,b;
+	float		rf,gf,bf;
+
+	if(!name)
+		return False;
+
+	len = strlen(name);
+
+	if(sscanf(name," (/ %f , %f , %f /) ",&rf,&gf,&bf) == 3){
+		rgb->red = rf * 65535;
+		rgb->green = gf * 65535;
+		rgb->blue = bf * 65535;
+		return True;
+	}
+	/*
+	 * look for a colorspec string
+	 */
+	else if(*name == '#'){
+		/*
+		 * Hex RGB's
+		 */
+		name++;
+		len--;
+		if((len != 3) && (len != 6) && (len != 9) && (len != 12))
+			return False;
+		len /= 3;
+		g = b = 0;
+		do {
+			r = g;
+			g = b;
+			b = 0;
+			for(i = len; --i >= 0;){
+				c = tolower(*name++);
+				b <<= 4;
+				if(c >= '0' && c <= '9')
+					b |= c - '0';
+				else if(c >= 'a' && c <= 'f')
+					b |= c - ('a' - 10);
+				else
+					return False;
+			}
+		} while(*name != '\0');
+		len <<=2;
+		len = 16 - len;
+		rgb->red = r << len;
+		rgb->green = g << len;
+		rgb->blue = b << len;
+	}
+	else{
+
+		/*
+		 * Look in database
+		 */
+		if(!wc->work_class.rgb_dbm)
+			return False;
+
+		lname = (len >= sizeof(lname_buff))?
+					NhlMalloc((unsigned)len+1):lname_buff;
+		s = lname;
+		strcpy(lname,name);
+		while(*s){
+			if(isupper(*s))
+				*s = tolower(*s);
+			s++;
+		}
+
+		rgbdata.dptr = lname;
+		rgbdata.dsize = len;	/* don't include \0 */
+
+		rgbdata = NGdbm_fetch(wc->work_class.rgb_dbm,rgbdata);
+
+		if(lname != lname_buff)
+			NhlFree(lname);
+
+		if(!rgbdata.dptr)
+			return False;
+
+		memcpy(rgb,rgbdata.dptr,sizeof(NGRGB));
+	}
+
+	return True;
+}
+
+static NhlBoolean
+FindCIMatch
+#if	NhlNeedProto
+(
+	NhlWorkstationLayer	wl,
+	NGRGB			rgb,
+	int			*ci
+)
+#else
+(wl,rgb,ci)
+	NhlWorkstationLayer	wl;
+	NGRGB			rgb;
+	int			*ci;
+#endif
+{
+	char		func[]="FindCIMatch";
+	int		i;
+	float		t,cerr,err;
+	NhlPrivateColor	*pcmap = wl->work.private_color_map;
+
+	if(pcmap[0].cstat != _NhlCOLSET){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:Color Matching cannot happen before colormap initialization",func);
+		return False;
+	}
+
+	*ci = 0;
+	t = (pcmap[0].red*65535) - rgb.red;
+	cerr = t*t;
+	t = (pcmap[0].green*65535) - rgb.green;
+	cerr += (t*t);
+	t = (pcmap[0].blue*65535) - rgb.blue;
+	cerr += (t*t);
+
+	for ( i = 1; i < _NhlMAX_COLOR_MAP; i++) {
+		if(pcmap[i].cstat != _NhlCOLSET) continue;
+		t = (pcmap[i].red*65535) - rgb.red;
+		err = t*t;
+		t = (pcmap[i].green*65535) - rgb.green;
+		err += (t*t);
+		t = (pcmap[i].blue*65535) - rgb.blue;
+		err += (t*t);
+		if(err < cerr){
+			cerr = err;
+			*ci = i;
+		}
+	}
+
+	return True;
+}
+
+/*
+ * Function:	CvtStringToColorIndex
+ *
+ * Description:	This is a type converter to convert string's to enumerations
+ *		defined by the args. If the string is not found in the args,
+ *		the string is checked to see if it is a valid colorname, and
+ *		the rgb database is checked.
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringToColorIndex
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char			func[] = "CvtStringToColorIndex";
+	NhlLayer		l;
+	NhlWorkstationLayer	wl;
+	int			i, tmp=0;
+	NhlBoolean		set = False;
+	NhlString		s1 = from->data.strval;
+	NhlString		t2 = NULL;
+	NrmValue		val;
+	NhlGenArray		sgen;
+	NGRGB			rgb;
+	NhlErrorTypes		ret = NhlNOERROR;
+
+	if(nargs < 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	l = *(NhlLayer*)args[0].data.ptrval;
+	if(_NhlIsObj(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:%s resources are not valid for Obj sub-classes",
+			func,NrmQuarkToString(to->typeQ));
+		to->size = 0;
+		return NhlFATAL;
+	}
+	wl = (NhlWorkstationLayer)l->base.wkptr;
+
+	if(isdigit((int)*s1) || (*s1 == '-')){
+		tmp = (int)strtol(s1,&t2,10);
+		if(!tmp && (s1 == t2)){
+			NhlPError(NhlINFO,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,s1);
+			to->size = 0;
+			return NhlFATAL;
+		}
+		val.size = sizeof(int);
+		val.data.intval = tmp;
+
+		return _NhlReConvertData(intQ,to->typeQ,&val,to);
+	}
+
+	for(i=1;i<nargs;i++){
+		if(_NhlCmpString(args[i].data.strval,s1) == 0){
+			tmp = args[i].size;
+			set = True;
+			break;
+		}
+	}
+
+	if(!set &&
+		_NhlLookupColor((NhlWorkstationClass)wl->base.layer_class,
+								s1,&rgb) &&
+		FindCIMatch(wl,rgb,&tmp))
+			set = True;
+
+	if(!set){
+		sgen = _NhlStringToStringGenArray(s1);
+		if(sgen){
+			val.size = sizeof(NhlGenArray);
+			val.data.ptrval = sgen;
+
+			return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+		}
+
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s: Unable to convert string \"%s\" to requested type",
+								func,s1);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	_NhlSetVal(int,sizeof(int),tmp);
+}
+
+/*
+ * Function:	CvtStringGenArrayToColorIndexGenArray
+ *
+ * Description:
+ *
+ * In Args:
+ *		
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringGenArrayToColorIndexGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char		func[] = "CvtStringGenArrayToColorIndexGenArray";
+	NhlLayer		l;
+	NhlWorkstationLayer	wl;
+	int			i,j,tmp=0;
+	NhlBoolean		set = False;
+	NhlString		*sdata;
+	NhlString		s1,s2;
+	NhlGenArray		sgen = from->data.ptrval;
+	NhlGenArray		tgen;
+	int			*tint;
+	NhlErrorTypes		ret = NhlNOERROR,lret = NhlNOERROR;
+	char			enum_name[_NhlMAXRESNAMLEN];
+	NrmQuark		enumQ;
+	NrmValue		ival,eval;
+
+	if(nargs < 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+	l = *(NhlLayer*)args[0].data.ptrval;
+	if(_NhlIsObj(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:%s resources are not valid for Obj sub-classes",
+			func,NrmQuarkToString(to->typeQ));
+		to->size = 0;
+		return NhlFATAL;
+	}
+	wl = (NhlWorkstationLayer)l->base.wkptr;
+
+	if(!sgen){
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
+	}
+	sdata = sgen->data;
+
+	/*
+	 * What is the name for a single element of the to GenArray?
+	 */
+	s1 = NrmQuarkToString(to->typeQ);
+	strcpy(enum_name,s1);
+	s1 = strstr(enum_name,NhlTGenArray);
+	if(!s1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*s1 = '\0';
+	enumQ = NrmStringToQuark(enum_name);
+
+	tgen = _NhlConvertCreateGenArray(NULL,enum_name,sizeof(int),
+				sgen->num_dimensions,sgen->len_dimensions);
+	if(!tgen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	tint = NhlConvertMalloc(sizeof(int) * sgen->num_elements);
+	if(!tint){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+
+	tgen->data = tint;
+
+	for(i=0;i < sgen->num_elements;i++){
+		s1 = sdata[i];
+		set = False;
+
+		if(isdigit((int)*s1) || (*s1 == '-')){
+			tmp = (int)strtol(s1,&s2,10);
+			ival.size = sizeof(int);
+			ival.data.intval = tmp;
+			eval.size = sizeof(int);
+			eval.data.ptrval = &tint[i];
+
+			if(tmp || (s1 != s2)){
+				lret =_NhlReConvertData(intQ,enumQ,&ival,&eval);
+				if(lret == NhlNOERROR)
+					set = True;
+			}
+		}
+		else{
+			NGRGB	rgb;
+
+			for(j=0;j<nargs;j++){
+				if(_NhlCmpString(args[j].data.strval,s1) == 0){
+					tint[i] = args[j].size;
+					set = True;
+					break;
+				}
+			}
+			if(!set &&
+				_NhlLookupColor((NhlWorkstationClass)
+						wl->base.layer_class,s1,&rgb) &&
+				FindCIMatch(wl,rgb,&tint[i]))
+					set = True;
+		}
+
+		if(!set){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s: Unable to convert string \"%s\" to requested type",
+								func,s1);
+			to->size = 0;
+			return NhlFATAL;
+		}
+	}
+
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+}
+
+typedef enum {LP,RP,SPACE,CHAR,COMMA,ENDOFSTRING} _NhlCITokens;
+
+static _NhlCITokens
+NextCIToken
+#if	NhlNeedProto
+(
+	Const char	*str,
+	int		*index
+)
+#else
+(str,index)
+	Const char	*str;
+	int		*index;
+#endif
+{
+	(*index)++;
+	switch(str[*index-1]){
+	case '(':
+		if(str[*index] == '/') {
+			(*index)++;
+			return(LP);
+		} else {
+			return(CHAR);
+		}
+	case '/':
+		if(str[*index] == ')') {
+			(*index)++;
+			return(RP);
+		} else {
+			return(CHAR);
+		}
+	case ' ':
+	case '\t':
+		return(SPACE);
+	case ',':
+		return(COMMA);
+	case '\0':
+		return(ENDOFSTRING);
+	default:
+		return(CHAR);
+	}
+}
+
+NhlGenArray
+_NhlStringToColorDefStringGenArray
+#if	NhlNeedProto
+(
+	NhlWorkstationClass	wc,
+	Const char*		str,
+	NhlBoolean		doerror
+)
+#else
+(wc,str,doerror)
+	NhlWorkstationClass	wc;
+	Const char*		str;
+	NhlBoolean		doerror;
+#endif
+{
+	int		done = 0;
+	int		state = 1;
+	_NhlCITokens	token;
+	char		**ptr;
+	char		*data;
+	int		ptri=0;
+	int		datai=0;
+	int		stri = 0;
+	
+
+	if(str == NULL) return(NULL);	
+	while(!done) {
+		token = NextCIToken(str,&stri);
+		switch(state) {
+		case 0:
+			done = 1;
+			break;
+		case 1:
+			switch(token) {
+			case LP:
+				data = NhlConvertMalloc(strlen(str) + 1);
+				ptr = NhlConvertMalloc(sizeof(char*) *
+								strlen(str));
+				memset((char*)ptr,0,sizeof(char*)*strlen(str));
+				state = 2;
+				break;
+			case SPACE:
+				break;
+			default:
+				return NULL;
+			}
+			break;
+		case 2:
+			switch(token) {
+			case SPACE:
+				break;
+			case CHAR:
+				ptr[ptri++] = &(data[datai]);
+				data[datai++] = str[stri-1];
+				state = 11;
+				break;
+			case LP:
+				ptr[ptri++] = &(data[datai]);
+				data[datai++] = str[stri-2];
+				data[datai++] = str[stri-1];
+				state = 3;
+				break;
+			default:
+				state = 0;
+				break;
+			}
+			break;
+		case 3:
+			switch(token) {
+			case SPACE:
+				break;
+			case CHAR:
+				data[datai++] = str[stri-1];
+				state = 13;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 4:
+			switch(token) {
+			case SPACE:
+				break;
+			case COMMA:
+				data[datai++] = str[stri-1];
+				state = 5;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 5:
+			switch(token) {
+			case SPACE:
+				break;
+			case CHAR:
+				data[datai++] = str[stri-1];
+				state = 14;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 6:
+			switch(token) {
+			case SPACE:
+				break;
+			case COMMA:
+				data[datai++] = str[stri-1];
+				state = 7;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 7:
+			switch(token) {
+			case SPACE:
+				break;
+			case CHAR:
+				data[datai++] = str[stri-1];
+				state = 8;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 8:
+			switch(token) {
+			case RP:
+				data[datai++] = str[stri-2];
+				data[datai++] = str[stri-1];
+				state=10;
+				break;
+			case CHAR:
+				data[datai++] = str[stri-1];
+				break;
+			case SPACE:
+				state=9;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 9:
+			switch(token) {
+			case RP:
+				data[datai++] = str[stri-2];
+				data[datai++] = str[stri-1];
+				state=10;
+				break;
+			case SPACE:
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 10:
+			switch(token) {
+			case RP:
+				data[datai++] = '\0';
+				state=12;
+				done=1;
+				break;
+			case COMMA:
+				data[datai++] = '\0';
+				state=2;
+				break;
+			case SPACE:
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 11:
+			switch(token) {
+			case RP:
+			case COMMA:
+				/*
+				 * remove trailing whitespace before
+				 * terminating string.
+				 */
+				datai--;
+				while(isspace(data[datai]))
+					datai--;
+				datai++;
+				data[datai++] = '\0';
+				if(token == RP){
+					state=12;
+					done=1;
+				}
+				else
+					state=2;
+				break;
+			case CHAR:
+			case SPACE:
+				data[datai++] = str[stri-1];
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 12:
+			done = 1;
+			break;
+		case 13:
+			switch(token) {
+			case CHAR:
+				data[datai++] = str[stri-1];
+				break;
+			case COMMA:
+				data[datai++] = str[stri-1];
+				state=5;
+				break;
+			case SPACE:
+				state=4;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 14:
+			switch(token) {
+			case CHAR:
+				data[datai++] = str[stri-1];
+				break;
+			case COMMA:
+				data[datai++] = str[stri-1];
+				state=7;
+				break;
+			case SPACE:
+				state=6;
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		default:
+			state = 0;
+			done = 1;
+			break;
+		}
+	}
+
+	if(state != 12){
+		if(doerror)
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Syntax error parsing resource file array");
+		return NULL;
+	}
+
+	return _NhlConvertCreateGenArray(ptr,NhlTString,sizeof(char*),1,&ptri);
+}
+
+/*
+ * Function:	CvtStringToColorIndexGenArray
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringToColorIndexGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char			func[] = "CvtStringToColorIndexGenArray";
+	NhlLayer		l;
+	NhlWorkstationLayer	wl;
+	NhlString		s1 = from->data.strval;
+	NrmValue		val;
+	NhlGenArray		sgen;
+	NhlErrorTypes		ret = NhlNOERROR;
+
+	if(nargs != 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	l = *(NhlLayer*)args[0].data.ptrval;
+	if(_NhlIsObj(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:%s resources are not valid for Obj sub-classes",
+			func,NrmQuarkToString(to->typeQ));
+		to->size = 0;
+		return NhlFATAL;
+	}
+	wl = (NhlWorkstationLayer)l->base.wkptr;
+
+	sgen = _NhlStringToColorDefStringGenArray(
+			(NhlWorkstationClass)wl->base.layer_class,s1,True);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+	}
+
+	return _NhlReConvertData(scalarQ,to->typeQ,from,to);
+}
+
+/*
+ * Function:	CvtColorDefinitionGenArrayToColorIndexGenArray
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtColorDefinitionGenArrayToColorIndexGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char	func[] = "CvtColorDefinitionGenArrayToColorIndexGenArray";
+	NhlLayer		l;
+	NhlWorkstationLayer	wl;
+	NrmValue		val;
+	char			enum_name[_NhlMAXRESNAMLEN];
+	NhlString		s1;
+	NrmQuark		enumQ;
+	NhlGenArray		fgen = from->data.ptrval;
+	NhlGenArray		tgen;
+	NhlErrorTypes		ret = NhlNOERROR;
+	float			*fptr;
+	int			*iptr;
+	int			i;
+
+	if(nargs != 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	l = *(NhlLayer*)args[0].data.ptrval;
+	if(_NhlIsObj(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:%s resources are not valid for Obj sub-classes",
+			func,NrmQuarkToString(to->typeQ));
+		to->size = 0;
+		return NhlFATAL;
+	}
+	wl = (NhlWorkstationLayer)l->base.wkptr;
+
+	if(!fgen){
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
+	}
+
+	if((fgen->num_dimensions != 2) || (fgen->len_dimensions[1] != 3)){
+		if((fgen->num_elements == 1) &&
+			(fgen->size <= sizeof(NhlArgVal)) && (fgen->size > 0)){
+
+			memcpy((char*)&val.data,(char*)fgen->data,fgen->size);
+			val.size = fgen->size;
+
+			return _NhlReConvertData(fgen->typeQ,to->typeQ,&val,to);
+		}
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:array has wrong dimensionality",func);
+		return NhlFATAL;
+	}
+
+	val.size = sizeof(NhlGenArray);
+	val.data.ptrval = &fgen;
+	if(_NhlReConvertData(from->typeQ,NrmStringToQuark(NhlTFloatGenArray),
+						from,&val) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert from %s to %s",func,
+			NrmQuarkToString(from->typeQ),NhlTFloatGenArray);
+		return NhlFATAL;
+	}
+
+	/*
+	 * We now have a 2 dimensional float array - need to turn it into
+	 * a 1-d array of ColorIndex Type - need to generate the actual
+	 * name for the ColorIndex Type since there are multiples.
+	 */
+	s1 = NrmQuarkToString(to->typeQ);
+	strcpy(enum_name,s1);
+	s1 = strstr(enum_name,NhlTGenArray);
+	if(!s1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*s1 = '\0';
+	enumQ = NrmStringToQuark(enum_name);
+	tgen = _NhlConvertCreateGenArray(NULL,enum_name,sizeof(int),
+			1,fgen->len_dimensions);
+	if(!tgen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	iptr = NhlConvertMalloc(sizeof(int) * fgen->len_dimensions[0]);
+	if(!iptr){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	tgen->data = iptr;
+	fptr = fgen->data;
+
+	for(i=0;i < fgen->len_dimensions[0];i++){
+		NGRGB	rgb;
+
+		rgb.red = *(fptr+(3*i)) * 65535;
+		rgb.green = *(fptr+(3*i)+1) * 65535;
+		rgb.blue = *(fptr+(3*i)+2) * 65535;
+		if(!FindCIMatch(wl,rgb,&iptr[i])){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to find color match",func);
+			return NhlFATAL;
+		}
+	}
+
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+}
+
+/*
+ * Function:	CvtColorDefinitionGenArrayToColorIndex
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtColorDefinitionGenArrayToColorIndex
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char	func[] = "CvtColorDefinitionGenArrayToColorIndex";
+	NhlLayer		l;
+	NhlWorkstationLayer	wl;
+	NrmValue		val;
+	NhlGenArray		fgen = from->data.ptrval;
+	NhlErrorTypes		ret = NhlNOERROR;
+	float			*fptr;
+	int			tint;
+	NGRGB			rgb;
+
+	if(nargs != 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	l = *(NhlLayer*)args[0].data.ptrval;
+	if(_NhlIsObj(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:%s resources are not valid for Obj sub-classes",
+			func,NrmQuarkToString(to->typeQ));
+		to->size = 0;
+		return NhlFATAL;
+	}
+	wl = (NhlWorkstationLayer)l->base.wkptr;
+
+	if(!fgen){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:%s to %s with a NULL array",
+			func,NrmQuarkToString(from->typeQ),
+			NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+
+	if((fgen->num_dimensions != 1) || (fgen->len_dimensions[0] != 3)){
+		if((fgen->num_elements == 1) &&
+			(fgen->size <= sizeof(NhlArgVal)) && (fgen->size > 0)){
+
+			memcpy((char*)&val.data,(char*)fgen->data,fgen->size);
+			val.size = fgen->size;
+
+			return _NhlReConvertData(fgen->typeQ,to->typeQ,&val,to);
+		}
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:array has wrong dimensionality",func);
+		return NhlFATAL;
+	}
+
+	val.size = sizeof(NhlGenArray);
+	val.data.ptrval = &fgen;
+	if(_NhlReConvertData(from->typeQ,NrmStringToQuark(NhlTFloatGenArray),
+						from,&val) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert from %s to %s",func,
+			NrmQuarkToString(from->typeQ),NhlTFloatGenArray);
+		return NhlFATAL;
+	}
+
+	/*
+	 * We now have a 2 dimensional float array - need to turn it into
+	 * a ColorIndex Type
+	 */
+	fptr = fgen->data;
+
+	rgb.red = *(fptr) * 65535;
+	rgb.green = *(fptr+1) * 65535;
+	rgb.blue = *(fptr+2) * 65535;
+	if(!FindCIMatch(wl,rgb,&tint)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to find color match",func);
+		return NhlFATAL;
+	}
+
+	_NhlSetVal(int,sizeof(int),tint);
+}
+
+/*
+ * Function:	CvtStringToColorDefinitionGenArray
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringToColorDefinitionGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char	func[] = "CvtStringToColorDefinitionGenArray";
+	NhlWorkstationClass	wc;
+	NhlString		s1 = from->data.strval;
+	NhlErrorTypes		ret = NhlNOERROR;
+	NGRGB			rgb;
+
+	if((nargs != 1) && (args[0].addressmode != NhlLAYEROFFSET)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
+		return NhlFATAL;
+	}
+	wc = *(NhlWorkstationClass*)args[0].data.ptrval;
+
+	if(_NhlLookupColor(wc,s1,&rgb)){
+		NhlGenArray	tgen;
+		int		tint=3;
+		float		*fptr;
+
+		tgen = _NhlConvertCreateGenArray(NULL,NhlTFloat,sizeof(float),
+								1,&tint);
+		fptr = NhlConvertMalloc(sizeof(float) * 3);
+		if(!tgen || !fptr){
+			NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",
+									func);
+			return NhlFATAL;
+		}
+		tgen->data = fptr;
+
+		if(rgb.red == 65535)
+			fptr[0] = 1.0;
+		else
+			fptr[0] = (float)rgb.red / 65535.0;
+		if(rgb.green == 65535)
+			fptr[1] = 1.0;
+		else
+			fptr[1] = (float)rgb.green / 65535.0;
+		if(rgb.blue == 65535)
+			fptr[2] = 1.0;
+		else
+			fptr[2] = (float)rgb.blue / 65535.0;
+
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	}
+
+	return _NhlReConvertData(from->typeQ,
+			NrmStringToQuark(NhlTFloatGenArray),from,to);
+}
+
+/*
+ * Function:	CvtStringGenArrayToColorDefinitionGenArray
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:
+ * Returns:
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CvtStringGenArrayToColorDefinitionGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char	func[] = "CvtStringGenArrayToColorDefinitionGenArray";
+	NhlGenArray	fgen = from->data.ptrval;
+	NhlString	*sptr;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
+		return NhlFATAL;
+	}
+
+	sptr = fgen->data;
+
+	if((fgen->num_elements == 1) && (sptr[0] != NULL)){
+		NrmValue	val;
+
+		val.data.strval = sptr[0];
+		val.size = strlen(sptr[0]);
+
+		return _NhlReConvertData(NrmStringToQuark(NhlTString),to->typeQ,
+								&val,to);
+	}
+
+	return _NhlReConvertData(from->typeQ,
+			NrmStringToQuark(NhlTFloatGenArray),from,to);
+}
 
 /*
  * Function:	WorkstationClassInitialize
@@ -656,6 +1848,8 @@ WorkstationClassInitialize
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR;
+	char		rgbfile[_NhlMAXFNAMELEN];
+	Const char	*dbdir;
 	Gop_st status;
 	int status1,dummy = 6;
 	int i;
@@ -704,6 +1898,7 @@ WorkstationClassInitialize
 		{NhlBACKGROUND,		"Background"},
 		{NhlFOREGROUND,		"Foreground"}
 	};
+	NhlConvertArg	namedcolorargs[NhlNumber(colorvals)+1];
 	NhlConvertArg	colorargsfullenum[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-2)}
@@ -806,10 +2001,6 @@ WorkstationClassInitialize
 		_NhlCvtScalarToIndex,
                  dashargsfullenum,NhlNumber(dashargsfullenum),False,NULL);
 	(void)NhlRegisterConverter
-                (NhlobjClass,NhlTScalar,NhlTColorIndexFullEnum,
-		_NhlCvtScalarToIndex,
-                 colorargsfullenum,NhlNumber(colorargsfullenum),False,NULL);
-	(void)NhlRegisterConverter
                 (NhlobjClass,NhlTScalar,NhlTFillIndexFullEnum,
 		_NhlCvtScalarToIndex,
                  fillargsfullenum,NhlNumber(fillargsfullenum),False,NULL);
@@ -818,9 +2009,6 @@ WorkstationClassInitialize
                 (NhlobjClass,NhlTScalar,NhlTDashIndex,_NhlCvtScalarToIndex,
                  dashargs,NhlNumber(dashargs),False,NULL);
 	(void)NhlRegisterConverter
-                (NhlobjClass,NhlTScalar,NhlTColorIndex,_NhlCvtScalarToIndex,
-                 colorargs,NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter
                 (NhlobjClass,NhlTScalar,NhlTFillIndex,_NhlCvtScalarToIndex,
                  fillargs,NhlNumber(fillargs),False,NULL);
         
@@ -828,10 +2016,6 @@ WorkstationClassInitialize
                 (NhlobjClass,NhlTGenArray,NhlTDashIndexFullEnumGenArray,
                  _NhlCvtGenArrayToIndexGenArray,dashargsfullenum,
                  NhlNumber(dashargsfullenum),False,NULL);
-	(void)NhlRegisterConverter
-                (NhlobjClass,NhlTGenArray,NhlTColorIndexFullEnumGenArray,
-                 _NhlCvtGenArrayToIndexGenArray,colorargsfullenum,
-                 NhlNumber(colorargsfullenum),False,NULL);
 	(void)NhlRegisterConverter
                 (NhlobjClass,NhlTGenArray,NhlTFillIndexFullEnumGenArray,
                  _NhlCvtGenArrayToIndexGenArray,fillargsfullenum,
@@ -842,16 +2026,143 @@ WorkstationClassInitialize
                  _NhlCvtGenArrayToIndexGenArray,dashargs,
                  NhlNumber(dashargs),False,NULL);
 	(void)NhlRegisterConverter
-                (NhlobjClass,NhlTGenArray,NhlTColorIndexGenArray,
-                 _NhlCvtGenArrayToIndexGenArray,colorargs,
-                 NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter
                 (NhlobjClass,NhlTGenArray,NhlTFillIndexGenArray,
                  _NhlCvtGenArrayToIndexGenArray,fillargs,
                  NhlNumber(fillargs),False,NULL);
 
+	/*
+	 * LOTS of color stuff....
+	 */
+	(void)_NhlRegisterTypes(NhlTFloatGenArray,
+					NhlTColorDefinitionGenArray,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTColorIndexFullEnum,
+		_NhlCvtScalarToIndex,
+                 colorargsfullenum,NhlNumber(colorargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTColorIndex,_NhlCvtScalarToIndex,
+                 colorargs,NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTColorIndexFullEnumGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,colorargsfullenum,
+                 NhlNumber(colorargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTColorIndexGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,colorargs,
+                 NhlNumber(colorargs),False,NULL);
+
+	namedcolorargs[0].addressmode = NhlLAYEROFFSET;
+	namedcolorargs[0].size = sizeof(NhlPointer);
+	namedcolorargs[0].data.ptrval = (NhlPointer)
+					NhlOffset(NhlLayerRec,base.self);
+	for(i=1;i<NhlNumber(namedcolorargs);i++){
+		namedcolorargs[i].addressmode = NhlSTRENUM;
+		namedcolorargs[i].size = colorvals[i-1].value;
+		namedcolorargs[i].data.strval = colorvals[i-1].name;
+	}
+
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTString,NhlTColorIndexFullEnum,
+		CvtStringToColorIndex,namedcolorargs,NhlNumber(namedcolorargs),
+		False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTStringGenArray,NhlTColorIndexFullEnumGenArray,
+		CvtStringGenArrayToColorIndexGenArray,
+		namedcolorargs,NhlNumber(namedcolorargs),
+		False,NULL);
+
+	for(i=1;i<NhlNumber(namedcolorargs)-2;i++){
+		namedcolorargs[i].addressmode = NhlSTRENUM;
+		namedcolorargs[i].size = colorvals[i+1].value;
+		namedcolorargs[i].data.strval = colorvals[i+1].name;
+	}
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTString,NhlTColorIndex,
+		CvtStringToColorIndex,namedcolorargs,
+		NhlNumber(namedcolorargs)-2,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTStringGenArray,NhlTColorIndexGenArray,
+		CvtStringGenArrayToColorIndexGenArray,namedcolorargs,
+		NhlNumber(namedcolorargs)-2,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTString,NhlTColorIndexFullEnumGenArray,
+		CvtStringToColorIndexGenArray,namedcolorargs,1,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTString,NhlTColorIndexGenArray,
+		CvtStringToColorIndexGenArray,namedcolorargs,1,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTColorDefinitionGenArray,
+		NhlTColorIndexFullEnumGenArray,
+		CvtColorDefinitionGenArrayToColorIndexGenArray,
+		namedcolorargs,1,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTColorDefinitionGenArray,NhlTColorIndexGenArray,
+		CvtColorDefinitionGenArrayToColorIndexGenArray,
+		namedcolorargs,1,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTColorDefinitionGenArray,NhlTColorIndexFullEnum,
+		CvtColorDefinitionGenArrayToColorIndex,
+		namedcolorargs,1,False,NULL);
+	(void)NhlRegisterConverter
+		(NhlobjClass,NhlTColorDefinitionGenArray,NhlTColorIndex,
+		CvtColorDefinitionGenArrayToColorIndex,
+		namedcolorargs,1,False,NULL);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTFloatGenArray,NhlTColorIndexFullEnumGenArray,
+		NhlTColorDefinitionGenArray,NhlTColorIndexFullEnumGenArray);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTDoubleGenArray,NhlTColorIndexFullEnumGenArray,
+		NhlTColorDefinitionGenArray,NhlTColorIndexFullEnumGenArray);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTFloatGenArray,NhlTColorIndexGenArray,
+		NhlTColorDefinitionGenArray,NhlTColorIndexGenArray);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTDoubleGenArray,NhlTColorIndexGenArray,
+		NhlTColorDefinitionGenArray,NhlTColorIndexGenArray);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTFloatGenArray,NhlTColorIndexFullEnum,
+		NhlTColorDefinitionGenArray,NhlTColorIndexFullEnum);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTDoubleGenArray,NhlTColorIndexFullEnum,
+		NhlTColorDefinitionGenArray,NhlTColorIndexFullEnum);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTFloatGenArray,NhlTColorIndex,
+		NhlTColorDefinitionGenArray,NhlTColorIndex);
+	(void)_NhlRegSymConv(NhlobjClass,
+		NhlTDoubleGenArray,NhlTColorIndex,
+		NhlTColorDefinitionGenArray,NhlTColorIndex);
+
+	/*
+	 * These converters are used to allow "named" colors to set
+	 * foreground/background resources.
+	 */
+	namedcolorargs[0].addressmode = NhlLAYEROFFSET;
+	namedcolorargs[0].size = sizeof(NhlPointer);
+	namedcolorargs[0].data.ptrval = (NhlPointer)
+					NhlOffset(NhlLayerRec,base.layer_class);
+	(void)NhlRegisterConverter
+		(NhlworkstationClass,NhlTString,NhlTColorDefinitionGenArray,
+		CvtStringToColorDefinitionGenArray,
+		namedcolorargs,1,False,NULL);
+	(void)_NhlRegSymConv(NhlworkstationClass,
+		NhlTScalar,NhlTColorDefinitionGenArray,
+		NhlTScalar,NhlTFloatGenArray);
+	(void)NhlRegisterConverter
+		(NhlworkstationClass,NhlTStringGenArray,
+		NhlTColorDefinitionGenArray,
+		CvtStringGenArrayToColorDefinitionGenArray,
+		NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlworkstationClass,
+		NhlTGenArray,NhlTColorDefinitionGenArray,
+		NhlTGenArray,NhlTFloatGenArray);
+	(void)_NhlRegSymConv(NhlworkstationClass,
+		NhlTQuarkGenArray,NhlTColorDefinitionGenArray,
+		NhlTQuarkGenArray,NhlTGenArray);
+
 	intQ = NrmStringToQuark(NhlTInteger);
+	scalarQ = NrmStringToQuark(NhlTScalar);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
+	strgenQ = NrmStringToQuark(NhlTStringGenArray);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
 	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);
 	foregnd_name = NrmStringToQuark(NhlNwkForegroundColor);
@@ -908,6 +2219,18 @@ WorkstationClassInitialize
 		marker_table[i] = &marker_specs[i];
 	}
 
+	dbdir = _NGGetNCARGEnv("database");
+	if(dbdir){
+		strcpy(rgbfile,dbdir);
+		strcat(rgbfile,_NhlPATHDELIMITER);
+		strcat(rgbfile,"rgb");
+		NhlworkstationClassRec.work_class.rgb_dbm =
+							NGdbm_open(rgbfile,0,0);
+	}
+	if(!NhlworkstationClassRec.work_class.rgb_dbm){
+		NhlPError(NhlWARNING,errno,
+			"WorkstationClassInitialize:Unable to access rgb color database - named colors unsupported");
+	}
 	ret = NhlVACreate(&NhlworkstationClassRec.work_class.pal,"pal",
 					NhlpaletteClass,_NhlGetDefaultApp(),
 		_NhlNpalWorkClass,	NhlworkstationClass,
@@ -1058,6 +2381,9 @@ WorkstationClassPartInitialize
 
         if (lc->work_class.gks_wks_recs[0].gks_id == -1) 
                 InitializeGksWksRecs(&lc->work_class);
+
+	if(lc->work_class.rgb_dbm == (NGDBM*)NULL)
+		lc->work_class.rgb_dbm = sc->work_class.rgb_dbm;
 
 	return NhlNOERROR;
 }

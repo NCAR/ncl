@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.49 1998-05-27 22:50:12 dbrown Exp $
+ *      $Id: Converters.c,v 1.50 1998-10-22 17:35:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -308,42 +308,6 @@ _NhlStringToStringGenArray
 	} else {
 		return(NULL);
 	}
-}
-
-/*
- * This macro is used because most of the converters end the same way.
- */
-#define	_NhlSetVal(type,sz,value)				\
-{								\
-	if((to->size > 0) && (to->data.ptrval != NULL)){	\
-								\
-		/* caller provided space */			\
-								\
-		if(to->size < sz){				\
-			/* Not large enough */			\
-			to->size = (unsigned int)sz;		\
-			return(NhlFATAL);			\
-		}						\
-								\
-		/* give caller copy */				\
-								\
-		to->size = (unsigned int)sz;			\
-		*((type *)(to->data.ptrval)) = value;		\
-		return(ret);					\
-	}							\
-	else{							\
-								\
-	/* caller didn't provide space - give pointer	*/	\
-	/* into static data - if they modify it they	*/	\
-	/* may die.					*/	\
-								\
-		static type val;				\
-								\
-		to->size = sz;					\
-		val = value;					\
-		to->data.ptrval = &val;				\
-		return(ret);					\
-	}							\
 }
 
 /*
@@ -1246,6 +1210,19 @@ _NhlCvtGenArrayToIndexGenArray
 				"%s:Called with improper args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	tgen = from->data.ptrval;
+	if(!tgen){
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	}
+
+	if(tgen->typeQ == stringQ){
+		return _NhlReConvertData(strgenQ,to->typeQ,from,to);
+	}
+
+	if(tgen->typeQ == quarkQ){
+		return _NhlReConvertData(quarkgenQ,to->typeQ,from,to);
 	}
 
 	ival.size = sizeof(NhlGenArray);

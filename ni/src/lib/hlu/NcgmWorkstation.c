@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.38 1998-10-05 19:13:48 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.39 1998-10-22 17:35:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -186,6 +186,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* wks_hlu_ids		*/	NhlInheritGksWksRecs,
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{0.0,0.0,0.0},
+/* rgb_dbm		*/	NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
 /* close_work		*/	NcgmWorkstationClose,

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.32 1998-10-05 19:13:51 boote Exp $
+ *      $Id: XWorkstation.c,v 1.33 1998-10-22 17:35:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -178,6 +178,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* gks_wks_recs		*/	NhlInheritGksWksRecs,
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{0.0,0.0,0.0},
+/* rgb_dbm		*/	NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	XWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
