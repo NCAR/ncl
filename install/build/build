@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.20 1996-04-19 16:56:44 haley Exp $
+#      $Id: build,v 1.21 1996-07-09 19:46:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -243,8 +243,7 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'IRIX_IP',          'SGI4D',
     'IRIX64_IP',        'SGIR8',
     'OSF1_alpha',       'AlphaOSF1',
-    'LINUX_i486',       'LINUX',
-    'LINUX_i586',       'LINUX',
+    'LINUX_PC',         'LINUX',
     'UNICOS_YMP',       'Cray',
     'UNICOS_J90',       'Cray',
     'UNICOS_C90',       'Cray'
