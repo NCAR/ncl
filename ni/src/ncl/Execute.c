@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.16 1994-07-08 21:31:33 ethan Exp $
+ *      $Id: Execute.c,v 1.17 1994-07-08 23:59:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1871,7 +1871,7 @@ NclExecuteReturnStatus _NclExecute
 				NclQuark var_name;
 				NclStackEntry dim_expr;
 				NclMultiDValData tmp_md,tmp1_md,file_md;
-				NclStackEntry *file_ptr;
+				NclStackEntry *file_ptr,data;
 				NclFile file_obj;
 				ptr++;lptr++;fptr++;
 				file = (NclSymbol*)*ptr;
@@ -1879,7 +1879,7 @@ NclExecuteReturnStatus _NclExecute
 				var_name = (NclQuark)(*ptr);
 				dim_expr = _NclPop();
 				file_ptr = _NclRetrieveRec(file,READ_IT);
-				if((file_ptr == NULL) || (file_ptr->u.data_var != NULL)) {
+				if((file_ptr == NULL) || (file_ptr->u.data_var == NULL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) is undefined",file->name);
 					estatus = NhlFATAL;
 				} else {
@@ -1914,7 +1914,11 @@ NclExecuteReturnStatus _NclExecute
 						}
 						if(tmp_md->multidval.kind == SCALAR) {
 							tmp1_md = _NclFileVarReadDim(file_obj,var_name,(NclQuark)-1,*(long*)tmp_md->multidval.val);
-							
+							if(tmp1_md != NULL) {
+								data.kind = NclStk_VAL;
+								data.u.data_obj = tmp1_md;
+								_NclPush(data);
+							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension references must be scalar");
 						}
