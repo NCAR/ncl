@@ -19,71 +19,63 @@
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 
-extern void NGCALLF(smth9,SMTH9)(float *,float *,int *,int *,float *,float *,
-                                 float *,int *,int *);
+extern void NGCALLF(dsmth9,DSMTH9)(double *,double *,int *,int *,double *,
+				   double *,double *,int *,int *);
 
 NhlErrorTypes smth9_W( void )
 {
 /*
  * Input variables
  */
-  float *x, *xout, *p, *q, xmsg, *work;
+  void *x, *p, *q;
+  double *dx, *dp, *dq;
+  float *rx;
   logical *lwrap;
-  int has_missing_x, ni, nj, lwork, i, j, nt, ier;
+  int has_missing_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  NclScalar missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
+  NclBasicDataTypes type_x, type_p, type_q;
+/*
+ * Output variables
+ */
+  double *work;
+/*
+ * Various
+ */
+  int total_size_x, ni, nj, lwork, i, j, nt, ier;
 /*
  * Retrieve parameters
  *
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
           0,
           4,
           &ndims_x,
           dsizes_x,
           &missing_x,
           &has_missing_x,
-          NULL,
+          &type_x,
           2);
-/*
- * The grid coming in must be at least 2-dimensional.
- */
-  if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: The input array must be at least 2-dimensional");
-    return(NhlFATAL);
-  }
-  else {
-	nj = dsizes_x[ndims_x-2];
-	ni = dsizes_x[ndims_x-1];
-/*
- * Compute the total number of elements in our array.
- */
-	nt = 1;
-	for(i = 0; i < ndims_x-2; i++) {
-	  nt *= dsizes_x[i];
-	}
-  }
-
-  p = (float*)NclGetArgValue(
+  p = (void*)NclGetArgValue(
           1,
           4,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_p,
           2);
 
-  q = (float*)NclGetArgValue(
+  q = (void*)NclGetArgValue(
           2,
           4,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_q,
           2);
 
   lwrap = (logical*)NclGetArgValue(
@@ -96,54 +88,198 @@ NhlErrorTypes smth9_W( void )
           NULL,
           2);
 /*
- * Check that src_array has a missing value set.
+ * The grid coming in must be at least 2-dimensional.
  */
-  if(!has_missing_x) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"smth9: No missing values are being set.\nDefault missing values will be used.\nBe careful of results.");
-    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+  if( ndims_x < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: The input array must be at least 2-dimensional");
+    return(NhlFATAL);
   }
   else {
-    xmsg = missing_x.floatval;
+    nj = dsizes_x[ndims_x-2];
+    ni = dsizes_x[ndims_x-1];
+/*
+ * Compute the total number of elements in our array.
+ */
+    nt = 1;
+    for(i = 0; i < ndims_x-2; i++) {
+      nt *= dsizes_x[i];
+    }
+    total_size_x = nt * ni * nj;
+  }
+
+/*
+ * Check that input array has a missing value set.
+ */
+  if(!has_missing_x) {
+/*
+ * Print a warning.
+ */
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"smth9: No missing values are being set.\nDefault missing values will be used.\nBe careful of results.");
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx.doubleval = (double)missing_rx.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+  else {
+/*
+ * Coerce missing value to double.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+/*
+ * Coerce data to double no matter what, because we need to make a copy of
+ * the input array to keep it from getting modified.
+ */
+  dx = (double*)NclMalloc(sizeof(double)*total_size_x);
+  if( dx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for coercing x array to double precision");
+    return(NhlFATAL);
+  }
+  if(has_missing_x) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+	       dx,
+	       x,
+	       total_size_x,
+	       &missing_dx,
+	       &missing_x,
+	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+	       dx,
+	       x,
+	       total_size_x,
+	       NULL,
+	       NULL,
+	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+
+/*
+ * Coerce p to double.
+ */
+  if(type_p != NCL_double) {
+    dp = (double*)NclMalloc(sizeof(double));
+    if( dp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for coercing p to double precision");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+	       dp,
+	       p,
+	       1,
+	       NULL,
+	       NULL,
+	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
+  }
+  else {
+/*
+ * Input is already double.
+ */
+    dp = (double*)p;
+  }
+
+/*
+ * Coerce q to double.
+ */
+  if(type_q != NCL_double) {
+    dq = (double*)NclMalloc(sizeof(double));
+    if( dq == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for coercing q to double precision");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+	       dq,
+	       q,
+	       1,
+	       NULL,
+	       NULL,
+	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_q)));
+  }
+  else {
+/*
+ * Input is already double.
+ */
+    dq = (double*)q;
   }
 
 /*
  * Allocate space for work array.
  */
   lwork = ni*nj;
-  work  = (float*)calloc(lwork*sizeof(float),1);
+  work  = (double*)calloc(lwork*sizeof(double),1);
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
 
 /*
- * Allocate space for output array.
- */
-  xout = (float*)calloc(nt*lwork*sizeof(float),1);
-  if( xout == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-  memcpy(&xout[0],&x[0],nt*lwork*sizeof(float));
-
-/*
  * Call Fortran routine.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-	NGCALLF(smth9,SMTH9)(&xout[j],work,&ni,&nj,p,q,&xmsg,lwrap,&ier);
+    NGCALLF(dsmth9,DSMTH9)(&dx[j],work,&ni,&nj,dp,dq,&missing_dx.doubleval,
+			   lwrap,&ier);
     j += lwork;
   }
 
-  free(work);
 /*
- * Return
+ * free memory.
  */
-  if( has_missing_x ) {
-    return(NclReturnValue((void*)xout,ndims_x,dsizes_x,&missing_x,NCL_float,0));
+  free(work);
+  if((void*)dp != p) {
+    NclFree(dp);
+  }
+  if((void*)dq != q) {
+    NclFree(dq);
+  }
+
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double && type_q != NCL_double && type_p != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    rx = (float*)NclMalloc(sizeof(float)*total_size_x);
+    if( rx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_x; i++ ) {
+      rx[i] = (float)dx[i];
+    }
+    free(dx);
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)rx,ndims_x,dsizes_x,&missing_rx,
+			  NCL_float,0));
   }
   else {
-    return(NclReturnValue((void*)xout,ndims_x,dsizes_x,NULL,NCL_float,0));
+    return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_dx,
+			  NCL_double,0));
   }
 }
 
