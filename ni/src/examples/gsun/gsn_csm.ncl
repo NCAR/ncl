@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.156 2004-02-09 16:47:24 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.157 2004-02-09 17:03:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -113,7 +113,7 @@ undef("gsn_csm_streamline_contour_map")
 undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
 undef("gsn_csm_y")
-undef("plot_xy2y2")
+undef("plot_x2y2")
 undef("plot_xy2")
 undef("plot_x2y")
 undef("gsn_csm_xy2")
@@ -8898,12 +8898,19 @@ end
 function plot_x2y2 (wks:graphic, w:numeric, z1:numeric, z2:numeric, \
                     resLB:logical, resRT:logical, axis:string, \
                     plot_type:string)
-local locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW 
+local locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, calldraw, callframe, \
+      maxbb 
 begin
     locResLB = True
     if (resLB) then
         locResLB = resLB           ; copy input to local resources
     end if
+
+    calldraw  = get_res_value(locResLB,"gsnDraw", True)
+    callframe = get_res_value(locResLB,"gsnFrame",True)
+    maxbb     = get_bb_res(locResLB)
+
+
     AttsLB  = getvaratts(locResLB) ; input attributes
                                    ; The following section is not
                                    ; needed. it justs prevents
@@ -9037,6 +9044,7 @@ begin
 
     locResRT@gsnFrame           = False
     locResRT@gsnDraw            = False 
+    locResRT@gsnMaximize        = False 
 
     if(axis.eq."y") then
         if(plot_type.eq."csm") then
@@ -9079,22 +9087,7 @@ begin
     end setvalues
 ;    overlay (xyLB,xyRT)
 
-    FRAME = True
-    if (resLB .and. isatt(resLB,"gsnFrame") .and. .not.resLB@gsnFrame) then
-        FRAME = False
-    end if
-
-    DRAW = True
-    if (resLB .and. isatt(resLB,"gsnDraw") .and. .not.resLB@gsnDraw) then
-        DRAW = False
-    end if
-
-    if (DRAW) then  
-        draw (xyLB)
-    end if 
-    if (FRAME) then
-        frame (wks)
-    end if 
+    draw_and_frame(wks,xyLB,calldraw,callframe,0,maxbb)
 
     return ( xyLB )
  end
