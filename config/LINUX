@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.8 1998-02-26 21:15:03 haley Exp $
+ *      $Id: LINUX,v 1.9 1999-03-24 21:29:59 haley Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 #define	Cdynamic -Wl,-Bdynamic
 #define	CCompiler	gcc
 #define	FCompiler	g77
-#define	CtoFLibraries	-Wl,-Bstatic -lf2c -Wl,-Bdynamic -lm
+#define	CtoFLibraries	-Wl,-Bstatic '-L/usr/lib/gcc-lib/i386-redhat-linux/egcs-2.90.27' -lf2c -Wl,-Bdynamic -lm
 #define CcOptions       -ansi
 #define FcOptions
 #define COptimizeFlag   
