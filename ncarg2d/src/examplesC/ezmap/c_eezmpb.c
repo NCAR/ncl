@@ -1,5 +1,5 @@
 /*
- *  $Id: c_eezmpa.c,v 1.5 1998-05-24 01:06:20 kennison Exp $
+ *  $Id: c_eezmpb.c,v 1.1 1998-05-24 01:06:21 kennison Exp $
  */
 
 #include <stdio.h>
@@ -12,12 +12,16 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#include "ezmapb.h"
+
 #define max(x,y)   ((x) > (y) ? (x) : (y) )
 
-int iam[25000];
+int iam[100000];
 
 #define IWTYPE 1
 #define WKID   1
+
+
 
 main()
 {
@@ -110,7 +114,6 @@ main()
     p4[0]= 30.;
     p1[1]=p2[1]=p3[1]=p4[1]=0.;
 
-    c_mapstc("OU","PO");
     c_maproj("ME",0.,0.,0.);
     c_mapset("CO",p1,p2,p3,p4);
 /*
@@ -134,11 +137,11 @@ main()
 /*
  * Initialize the area map.
  */
-    c_arinam(iam,25000);
+    c_arinam(iam,100000);
 /*
  * Add edges to the area map.
  */
-    c_mapbla(iam);
+    c_mplnam("Earth..1",3,iam);
 /*
  * Pre-process the area map.
  */
@@ -166,7 +169,7 @@ main()
     c_mapsti("LA",0);
     c_maplbl();
 
-    c_maplot();
+    c_mplndr("Earth..1",3);
 /*
  * Draw lines of latitude and longitude over water.  They will be in
  * black because of the gset_line_colr_ind call above.
@@ -183,6 +186,8 @@ main()
     gclose_ws(WKID);
     gclose_gks();
 }
+
+
 
 #ifdef __STDC__
 int colram(
@@ -219,7 +224,7 @@ colram (xcs,ycs,ncs,iai,iag,nai)
 /*
  * Set area fill color index.
  */
-            gset_fill_colr_ind(c_mapaci(itm));
+            gset_fill_colr_ind(c_mpisci(itm));
 /*
  * Create structure to pass to gfill_area.
  */
@@ -243,6 +248,8 @@ colram (xcs,ycs,ncs,iai,iag,nai)
     }
     return(1);
 }
+
+
 
 #ifdef __STDC__
 int colrln(
@@ -275,7 +282,7 @@ int colrln(xcs,ycs,ncs,iai,iag,nai)
 
     if (iai[0] >= 0 && iai[1] >= 0) {
         itm=max(iai[0],iai[1]);
-        if (c_mapaci(itm) == 1) {
+        if (c_mpisci(itm) == 1) {
 /*
  * Create structure to pass to gfill_area.
  */

@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.6 1997-04-11 18:50:00 haley Exp $
+#	$Id: yMakefile,v 1.7 1998-05-24 01:06:21 kennison Exp $
 #
 
-SRCS = c_eezmpa.c c_mpex05.c
-OBJS = c_eezmpa.o c_mpex05.o
+SRCS = c_eezmpa.c c_eezmpb.c c_mpex05.c
+OBJS = c_eezmpa.o c_eezmpb.o c_mpex05.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
@@ -12,4 +12,5 @@ EXTRA_LIBS		= $(XLIB)
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 CExampleTarget(c_eezmpa,c_eezmpa.o)
+CExampleTarget(c_eezmpb,c_eezmpb.o)
 CExampleTarget(c_mpex05,c_mpex05.o)
