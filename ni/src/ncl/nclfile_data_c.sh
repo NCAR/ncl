@@ -13,6 +13,7 @@ sed \
 -e 's/DATATYPE/nclfile/g' \
 -e 's/HLUTYPEREP/NULL/g' \
 -e 's/HLUGENTYPEREP/NULL/g' \
+-e 's/DEFAULT_FORMAT/%d/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValnclfileData.c.specific' \

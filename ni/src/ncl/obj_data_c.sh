@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#      $Id: obj_data_c.sh,v 1.4 1995-02-17 20:52:45 ethan Exp $
+#      $Id: obj_data_c.sh,v 1.5 1995-04-19 00:02:13 ethan Exp $
 #
 #########################################################################
 #									#
@@ -43,6 +43,7 @@ sed \
 -e 's/HLUTYPEREP/NULL/g' \
 -e 's/HLUGENTYPEREP/NULL/g' \
 -e 's/DEFAULT_MISS/-1/g' \
+-e 's/DEFAULT_FORMAT/%d/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeobj.c.specific' \

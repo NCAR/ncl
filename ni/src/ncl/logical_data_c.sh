@@ -14,6 +14,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTBoolean/g' \
 -e 's/HLUGENTYPEREP/NhlTBooleanGenArray/g' \
 -e 's/DEFAULT_MISS/-1/g' \
+-e 's/DEFAULT_MISS/%d/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypelogical.c.specific' \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.2 1995-02-24 00:24:47 ethan Exp $
+ *      $Id: NclType.c,v 1.3 1995-04-19 00:01:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ NclTypeClassRec nclTypeClassRec = {
 /* int size;				*/ 0,
 /* char* hlu_rep_type[2];		*/ {NULL,NULL},
 /* NclScalar default_mis;		*/ {0},
+/* char* format		;	*/ NULL,
 /* NclTypePrint            print;	*/ NULL,
 /* NclTypeResetMissing reset_mis; 	*/ NULL,
 /* NclTypeCoerceFunction coerce; 	*/ NULL,

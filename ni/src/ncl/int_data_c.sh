@@ -13,6 +13,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTInteger/g' \
 -e 's/HLUGENTYPEREP/NhlTIntegerGenArray/g' \
 -e 's/DEFAULT_MISS/-9999/g' \
+-e 's/DEFAULT_FORMAT/%d/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeint.c.specific' \

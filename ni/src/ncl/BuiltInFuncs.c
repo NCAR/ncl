@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.11 1995-04-14 22:02:07 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.12 1995-04-19 00:01:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1890,33 +1890,426 @@ NhlErrorTypes _NclIfbinread
 	} 
 	return(NhlFATAL);
 }
-
-
-NhlErrorTypes _NclIasciread
+NhlErrorTypes _NclIasciiwrite
 #if	NhlNeedProto
 (void)
 #else
 ()
 #endif
 {
-	NclStackEntry args;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry value;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	FILE *fd = NULL;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
+	int is_stdout = 0;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
+	fpath = _NclGetArg(0,2,DONT_CARE);
+	value = _NclGetArg(1,2,DONT_CARE);
+
+	switch(fpath.kind) {
 	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
+		tmp_md = fpath.u.data_obj;
 		break;
 	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	if(tmp_md != NULL) {
+		if((*(NclQuark*)tmp_md->multidval.val)==NrmStringToQuark("stdout")) {
+			is_stdout = 1;
+		} else {
+
+			path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+			if(path_string == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiwrite: An error in the file path was detected could not resolve file path");
+				return(NhlFATAL);
+			}
+		}
+	}
+	tmp_md = NULL;
+	switch(value.kind){
+	case NclStk_VAL:
+		tmp_md = value.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		tmp_ptr = tmp_md->multidval.val;
+		thetype = tmp_md->multidval.type;
+		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+	}
+	if(is_stdout) {
+		fd = stdout;
+	} else {
+		fd = fopen(path_string,"w+");
+	}
+	step = (char*)tmp_md->multidval.val;
+	for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		_Nclprint(tmp_md->multidval.type,fd,(void*)step);
+		fprintf(fd,"\n");
+		step = step + tmp_md->multidval.type->type_class.size;
+	}
+	return(NhlNOERROR);
+}
+
+
+void asciinumeric
+#if NhlNeedProto
+(FILE *fp, char* format,void *retvalue)
+#else
+()
+#endif
+{
+	char buffer[256];
+	char *step;
+	int state = 1;
+	char cc;
+
+	step = buffer;
+	while(!feof(fp)&& (state != 9)) {
+		cc = fgetc(fp);
+		switch(state) {
+		case 0:
+		case 1:
+			switch(cc) {
+			case '+':
+			case '-':
+				*step++ = cc;
+				state = 2;		
+				break;
+			case '.':
+				*step++ = cc;
+				state = 4;
+				break;
+			default:
+				if(isdigit(cc)) {
+					*step++ = cc;
+					state = 3;
+				} else {
+					step = buffer;
+					state = 0;
+				}
+			}
+			break;
+		case 2:
+			switch(cc) {
+			case '.':
+				*step++ = cc;
+				state = 4;
+				break;
+			default:
+				if(isdigit(cc)) {
+					*step++ = cc;
+					state = 3;
+				} else {
+					ungetc(cc,fp);
+					step = buffer;
+					state = 0;
+				}
+			}
+			break;
+		case 3:
+			if(isdigit(cc)) {
+				*step++ = cc;
+			} else {
+				switch(cc) {
+				case '.':
+					*step++ = cc;
+					state = 4;
+					break;
+				default:
+/*
+* ACCEPT INTEGER
+*/
+					ungetc(cc,fp);
+					state = 9;
+					*step++ = '\0';
+				}
+			}
+			break;
+		case 4:
+			if(isdigit(cc)) {
+				*step++ = cc;
+				state = 5;
+			} else {
+				ungetc(cc,fp);
+				step = buffer;
+				state = 0;
+			}
+			break;
+		case 5:
+			if(isdigit(cc)) {
+				*step++ = cc;
+			} else {
+				switch(cc) {
+				case 'E':
+				case 'e':
+					*step++ = cc;
+					state = 6;
+					break;
+				default:
+/*
+* ACCEPT INTEGER
+*/
+					ungetc(cc,fp);
+					state = 9;
+					*step++ = '\0';
+				}
+			}
+			break;
+		case 6:
+			if(isdigit(cc)) {
+				*step++ = cc;
+				state = 8;
+			} else {
+				switch(cc) {
+				case '+':
+				case '-':
+					*step++ = cc;
+					state = 7;
+					break;
+				default:
+					ungetc(cc,fp);
+					step = buffer;
+					state = 0;
+				}
+			}
+			break;
+		case 7:
+			if(isdigit(cc)) {
+				*step++=  cc;
+                                state = 8;
+                        } else {
+				ungetc(cc,fp);
+				step = buffer;
+				state = 0;
+			}
+			break;
+		case 8:
+			if(isdigit(cc)) {
+                                *step++=  cc;
+                                state = 8;
+                        } else {
+/*
+* ACCEPT INTEGER
+*/
+					ungetc(cc,fp);
+					state = 9;
+					*step++ = '\0';
+			}
+			break;
+		}	
+	}
+	if((step != buffer)&&(!feof(fp))) {
+		sscanf(buffer,format,retvalue);
+	}
+	return;
+}
+NhlErrorTypes _NclIasciiread
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry dimensions;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
+	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i,j;
+	void *tmp_ptr;
+	struct stat buf;
+	FILE *fd = NULL;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
+
+
+	fpath = _NclGetArg(0,3,DONT_CARE);
+	dimensions = _NclGetArg(1,3,DONT_CARE);
+	type = _NclGetArg(2,3,DONT_CARE);
+	switch(fpath.kind) {
+	case NclStk_VAL:
+		tmp_md = fpath.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+		if(stat(path_string,&buf) == -1) {
+			NhlPError(NhlFATAL, NhlEUNKNOWN,"asciiread: Unable to open input file (%s)",path_string);
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(dimensions.kind){
+	case NclStk_VAL:
+		tmp_md = dimensions.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		n_dimensions = tmp_md->multidval.totalelements;
+		dimsizes = (int*)tmp_md->multidval.val;
+	}
+	for(i = 0; i < n_dimensions; i++) {
+		size *= dimsizes[i];
+	}
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+
+	totalsize = size*thetype->type_class.size;
+	
+	tmp_ptr = NclMalloc(size*thetype->type_class.size);
+	fd = fopen(path_string,"r");
+	if((tmp_ptr != NULL)&&(fd != NULL)) {
+		
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			tmp_ptr,
+			&(thetype->type_class.default_mis),
+			n_dimensions,
+			dimsizes,
+			TEMPORARY,
+			NULL,
+			thetype);
+		if(tmp_md == NULL) 
+			return(NhlFATAL);
+
+		if(thetype->type_class.type & NCL_VAL_TYPE_MASK) {
+			for(i = 0; i < totalsize; i++) {
+				if(!feof(fd)) {
+					asciinumeric(fd,thetype->type_class.format,tmp_ptr);
+					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+				} else {
+					memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
+					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+				}
+			
+			}
+		} else if(thetype->type_class.type==Ncl_Typechar) {
+			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+				*(char*)tmp_ptr = fgetc(fd);
+			}
+			if(i < totalsize) {	
+				for(;i<totalsize;i++) {
+					*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
+					tmp_ptr = (void*)((char*)tmp_ptr+1);
+				}
+			}
+		} else if(thetype->type_class.type==Ncl_Typestring) {
+			char buffer[NCL_MAX_STRING+1];
+			char *step;
+
+			step =buffer;
+			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+				for(j = 0; j < NCL_MAX_STRING; j++) {
+					if(!feof(fd)) {
+						*step = fgetc(fd);
+						if(*step == '\n') {
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+
+							break;
+						} else {
+							step++;
+						}
+					} else {
+						break;
+					}
+				}
+				if(j >= NCL_MAX_STRING) {
+					buffer[NCL_MAX_STRING] = '\0';
+					while(!feof(fd)&&(fgetc(fd) != '\n'));
+					*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+				} 
+			}
+			if( i < totalsize ) {
+				for(;i<totalsize;i++) {
+					*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
+                                        tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+
+				}
+			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
+			return(NhlFATAL);
+		}
+
+
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = tmp_md;
+		_NclPlaceReturn(data_out);
+		fclose(fd);
+		return(ret);
+	} else if (fd == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
+	}
 	return(NhlFATAL);
 }
+
+
 NhlErrorTypes _NclIchngdir
 #if	NhlNeedProto
 (void)
@@ -2236,6 +2629,25 @@ NhlErrorTypes _NclIabs
 			));
 	}
 	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIncargversion
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	Const char *tmp = NULL;
+	char *tmp2 = NULL;
+
+	tmp = GetNCARGPath("bin");
+
+	tmp2 = NclMalloc(strlen(tmp) + strlen("/ncargversion") + 1);
+	strcpy(tmp2,tmp);
+	strcat(tmp2,"/ncargversion");
+	system(tmp2);	
+	NclFree(tmp2);
 }
 NhlErrorTypes _NclIncargpath
 #if	NhlNeedProto

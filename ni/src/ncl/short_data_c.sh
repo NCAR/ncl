@@ -13,6 +13,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTShort/g' \
 -e 's/HLUGENTYPEREP/NhlTShortGenArray/g' \
 -e 's/DEFAULT_MISS/0/g' \
+-e 's/DEFAULT_FORMAT/%hd/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeshort.c.specific' \

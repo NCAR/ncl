@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.15 1995-04-14 22:02:05 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.16 1995-04-19 00:01:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -182,7 +182,12 @@ NhlErrorTypes _NclIfbinread(
 void
 #endif
 );
-NhlErrorTypes _NclIasciread(
+NhlErrorTypes _NclIasciiwrite(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIasciiread(
 #if     NhlNeedProto
 void
 #endif
@@ -233,6 +238,11 @@ void
 #endif
 );
 NhlErrorTypes _NclIncargpath(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIncargversion(
 #if     NhlNeedProto
 void
 #endif
@@ -466,7 +476,7 @@ void _NclAddIntrinsics
 	args[2].n_dims = 1;
 	_NclRegisterFunc(_NclIfbinread,args,"fbinread",3,IFUNC);
 
-	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
@@ -474,7 +484,10 @@ void _NclAddIntrinsics
 	args[1].arg_data_type = _NclLookUp("integer");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
-	_NclRegisterFunc(_NclIasciread,args,"asciread",1,IFUNC);
+	args[2].arg_data_type = _NclLookUp("string");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	_NclRegisterFunc(_NclIasciiread,args,"asciiread",3,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
@@ -491,6 +504,15 @@ void _NclAddIntrinsics
 	args[1].arg_data_type = NULL;
 	args[1].is_dimsizes = 0;
 	_NclRegisterProc(_NclIcbinwrite,args,"cbinwrite",2,IPROC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = NULL;
+	args[1].is_dimsizes = 0;
+	_NclRegisterProc(_NclIasciiwrite,args,"asciiwrite",2,IPROC);
 
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
@@ -530,6 +552,8 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
 	_NclRegisterFunc(_NclIncargpath,args,"ncargpath",1,IFUNC);
+
+	_NclRegisterProc(_NclIncargversion,NULL,"ncargversion",0,IPROC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");

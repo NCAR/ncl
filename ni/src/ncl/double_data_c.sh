@@ -12,6 +12,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTDouble/g' \
 -e 's/HLUGENTYPEREP/NhlTDoubleGenArray/g' \
 -e 's/DEFAULT_MISS/-9999.0/g' \
+-e 's/DEFAULT_FORMAT/%lf/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypedouble.c.specific' \

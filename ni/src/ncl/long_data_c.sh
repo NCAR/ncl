@@ -13,6 +13,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTLong/g' \
 -e 's/HLUGENTYPEREP/NhlTLongGenArray/g' \
 -e 's/DEFAULT_MISS/-9999/g' \
+-e 's/DEFAULT_FORMAT/%ld/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypelong.c.specific' \

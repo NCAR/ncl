@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.3 1995-03-28 00:05:03 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.4 1995-04-19 00:01:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -586,6 +586,7 @@ NclTypestringClassRec nclTypestringClassRec = {
 /* int size 				*/ sizeof(string),
 /* char *hlu_rep_type			*/ {NhlTQuark,NhlTQuarkGenArray},
 /* NclScalar 				*/ {(string)0},
+/* char *format ; 			*/ "%s",
 /* NclTypePrint print ; 		*/ Ncl_Type_string_print,
 /* NclTypeResetMissing reset_mis; 	*/ Ncl_Type_string_reset_mis,
 /* NclTypeCoerceFunction coerce; 	*/ Ncl_Type_string_coerce,

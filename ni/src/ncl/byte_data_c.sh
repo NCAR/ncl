@@ -13,6 +13,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTByte/g' \
 -e 's/HLUGENTYPEREP/NhlTByteGenArray/g' \
 -e "s/DEFAULT_MISS/0/g" \
+-e "s/DEFAULT_FORMAT/%c/g" \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypebyte.c.specific' \

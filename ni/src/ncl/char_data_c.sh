@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: char_data_c.sh,v 1.4 1995-02-17 01:01:22 ethan Exp $
+#      $Id: char_data_c.sh,v 1.5 1995-04-19 00:02:01 ethan Exp $
 #
 #########################################################################
 #									#
@@ -42,6 +42,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTCharacter/g' \
 -e 's/HLUGENTYPEREP/NhlTCharacterGenArray/g' \
 -e 's/DEFAULT_MISS/'\0'/g' \
+-e 's/DEFAULT_FORMAT/%c/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypechar.c.specific' \
