@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.16 2000-12-22 19:01:52 fred Exp $
+C	$Id: ngseti.f,v 1.17 2001-02-06 21:17:48 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -143,6 +143,22 @@ C
         ISUP = IVP
         WRITE(IDR(1:5), 500) ISUP
         CALL GESC(-1524,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PL - indicate portrait/landscape mode for PS output.
+C
+      ELSE IF (CNP(1:2).EQ.'PL' .OR. CNP(1:2).EQ.'pl' .OR.
+     +         CNP(1:2).EQ.'Pl') THEN
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting PL'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        IPTLD = IVP
+        WRITE(IDR(6:10), 500) IPTLD
+        CALL GESC(-1525,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  IG - Flag for indicating whether clipping rectangles in segments
@@ -388,7 +404,7 @@ C
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  UY - Upper right X coordinate on PostScript output page.
+C  UY - Upper right Y coordinate on PostScript output page.
 C
       ELSE IF (CNP(1:2).EQ.'UY' .OR. CNP(1:2).EQ.'uy' .OR.
      +         CNP(1:2).EQ.'Uy') THEN
@@ -406,6 +422,106 @@ C
         WRITE(IDR(22:30), 530) IURX
         WRITE(IDR(32:40), 530) IURY
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PX - Lower left X coordinate on PostScript output page, used to
+C       change coordinates between pictures, or mid picture.
+C
+      ELSE IF (CNP(1:2).EQ.'PX' .OR. CNP(1:2).EQ.'px' .OR.
+     +         CNP(1:2).EQ.'Px') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - PX value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting PX'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        NLLX = IVP
+        WRITE(IDR( 6:14), 530) NLLX
+        WRITE(IDR(15:23), 530) NLLY
+        WRITE(IDR(24:32), 530) NURX
+        WRITE(IDR(33:41), 530) NURY
+        CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PY - Lower left Y coordinate on PostScript output page, used to
+C       change coordinates between pictures, or mid picture.
+C
+      ELSE IF (CNP(1:2).EQ.'PY' .OR. CNP(1:2).EQ.'py' .OR.
+     +         CNP(1:2).EQ.'Py') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - PY value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting PY'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        NLLY = IVP
+        WRITE(IDR( 6:14), 530) NLLX
+        WRITE(IDR(15:23), 530) NLLY
+        WRITE(IDR(24:32), 530) NURX
+        WRITE(IDR(33:41), 530) NURY
+        CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  QX - Upper right X coordinate on PostScript output page, used to
+C       change coordinates between pictures, or mid picture.
+C
+      ELSE IF (CNP(1:2).EQ.'QX' .OR. CNP(1:2).EQ.'qx' .OR.
+     +         CNP(1:2).EQ.'Qx') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - QX value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting QX'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        NURX = IVP
+        WRITE(IDR( 6:14), 530) NLLX
+        WRITE(IDR(15:23), 530) NLLY
+        WRITE(IDR(24:32), 530) NURX
+        WRITE(IDR(33:41), 530) NURY
+        CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  QY - Upper right Y coordinate on PostScript output page, used to
+C       change coordinates between pictures, or mid picture.
+C
+      ELSE IF (CNP(1:2).EQ.'QY' .OR. CNP(1:2).EQ.'qy' .OR.
+     +         CNP(1:2).EQ.'Qy') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - QY value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting QY'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        NURY = IVP
+        WRITE(IDR( 6:14), 530) NLLX
+        WRITE(IDR(15:23), 530) NLLY
+        WRITE(IDR(24:32), 530) NURX
+        WRITE(IDR(33:41), 530) NURY
+        CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  CO - Scale factor for PostScript coordinates.

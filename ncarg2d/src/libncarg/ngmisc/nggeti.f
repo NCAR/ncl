@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.12 2000-12-21 22:30:31 fred Exp $
+C	$Id: nggeti.f,v 1.13 2001-02-06 21:17:48 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,6 +76,10 @@ C
      +    CNP(1:2).EQ.'Su') THEN
         IVP = ISUP
         GO TO 110
+      ELSE IF (CNP(1:2).EQ.'PL' .OR. CNP(1:2).EQ.'pl' .OR. 
+     +    CNP(1:2).EQ.'Pl') THEN
+        IVP = IPTLD
+        GO TO 110
       ELSE IF (CNP(1:2).EQ.'FU' .OR. CNP(1:2).EQ.'fu' .OR. 
      +    CNP(1:2).EQ.'Fu') THEN
         IVP = IFULLB
@@ -143,6 +147,22 @@ C
       ELSE IF (CNP(1:2).EQ.'UY' .OR. CNP(1:2).EQ.'uy' .OR. 
      +    CNP(1:2).EQ.'Uy') THEN
         IVP = IURY
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'PX' .OR. CNP(1:2).EQ.'px' .OR. 
+     +    CNP(1:2).EQ.'Px') THEN
+        IVP = NLLX
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'PY' .OR. CNP(1:2).EQ.'py' .OR. 
+     +    CNP(1:2).EQ.'Py') THEN
+        IVP = NLLY
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'QX' .OR. CNP(1:2).EQ.'qx' .OR. 
+     +    CNP(1:2).EQ.'Qx') THEN
+        IVP = NURX
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'QY' .OR. CNP(1:2).EQ.'qy' .OR. 
+     +    CNP(1:2).EQ.'Qy') THEN
+        IVP = NURY
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'CO' .OR. CNP(1:2).EQ.'co' .OR. 
      +    CNP(1:2).EQ.'Co') THEN

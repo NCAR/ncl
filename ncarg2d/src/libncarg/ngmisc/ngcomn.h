@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.13 2000-12-21 22:30:31 fred Exp $
+C $Id: ngcomn.h,v 1.14 2001-02-06 21:17:47 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,6 +36,10 @@ C      ILLX  -  Lower left X coordinate for PostScript page position.
 C      ILLY  -  Lower left Y coordinate for PostScript page position.
 C      IURX  -  Upper right X coordinate for PostScript page position.
 C      IURY  -  Upper right Y coordinate for PostScript page position.
+C      NLLX  -  Lower left X coordinate for PostScript page position.
+C      NLLY  -  Lower left Y coordinate for PostScript page position.
+C      NURX  -  Upper right X coordinate for PostScript page position.
+C      NURY  -  Upper right Y coordinate for PostScript page position.
 C    FILSPC  -  Spacing between fill lines in PostScript.
 C    HATSPC  -  Spacing between hatch fill lines in PostScript
 C    RNLSCL  -  Nominal linewidth scale factor for PostScript lines.
@@ -57,10 +61,10 @@ C      ISUP  -  Suppress bkg. and/or bounding box for PS (0=neither;
 C               1=suppress both; 2= suppress bkg.; 3=suppress bb.
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
-     +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
+     +                ILJOIN, ILCAP,    ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
      +                RMITER, IERRMX, IGKSCP, IPERCX,  IPSCM,
      +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX,
-     +                  ISUP
+     +                  ISUP, NLLX,     NLLY,   NURX,   NURY
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

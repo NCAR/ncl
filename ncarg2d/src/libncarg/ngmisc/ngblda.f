@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.11 2000-12-21 22:30:31 fred Exp $
+C	$Id: ngblda.f,v 1.12 2001-02-06 21:17:47 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -49,6 +49,11 @@ C
 C  Page coordinates, in default PostScript coordinate system.
 C
       DATA ILLX, ILLY, IURX, IURY/ 36, 126, 576, 666/      
+C
+C  Page coordinates, in default PostScript coordinate system,
+C  used for escape -1526.
+C
+      DATA NLLX, NLLY, NURX, NURY/ 36, 126, 576, 666/      
 C
 C  Fill and hatch spacings.
 C
