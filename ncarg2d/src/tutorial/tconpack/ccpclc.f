@@ -59,7 +59,7 @@ C Close frame and close GKS
 
 	SUBROUTINE COLOR
 
-	CALL GSCR (1,0,0.,0.,0.)
+	CALL GSCR (1,0,1.,1.,1.)
 	CALL GSCR (1,1,1.,0.,0.)
 	CALL GSCR (1,2,0.,1.,0.)
 	CALL GSCR (1,3,0.,0.,1.)
