@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: config.perl,v 1.3 1993-02-11 00:30:35 clyne Exp $
+#      $Id: config.perl,v 1.4 1993-02-11 23:59:51 clyne Exp $
 #
 #########################################################################
 #									#
@@ -73,7 +73,7 @@ sub	get_system {
 
 	local($line, @result, $system, $defines);
 
-	$line = `uname -M -s`;
+	$line = `./uname -M -s`;
 	@result = split(/\s+/,$line);
 
 	#	get arch type and os
