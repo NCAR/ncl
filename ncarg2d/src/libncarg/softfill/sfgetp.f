@@ -1,6 +1,6 @@
 C
-C $Id: sfgetp.f,v 1.4 2000-08-22 15:05:59 haley Exp $
-C                                                                      
+C $Id: sfgetp.f,v 1.5 2003-05-20 20:52:12 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -28,7 +28,7 @@ C
 C
 C Declare the labeled common block.
 C
-      COMMON /SFCOMN/ AID,DBL,ITY,LPA,LCH,LDP(8,8)
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
 C Declare the block data routine external to force its loading.
 C

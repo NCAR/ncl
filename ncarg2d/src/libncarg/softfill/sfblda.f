@@ -1,6 +1,6 @@
 C
-C $Id: sfblda.f,v 1.6 2000-08-22 15:05:59 haley Exp $
-C                                                                      
+C $Id: sfblda.f,v 1.7 2003-05-20 20:52:12 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -26,7 +26,7 @@ C Specify default values for the internal parameters.
 C
 C Declare the labeled common block.
 C
-      COMMON /SFCOMN/ AID,DBL,ITY,LPA,LCH,LDP(8,8)
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
 C AID is the angle at which fill lines are to be drawn - a real value,
 C in degrees.
@@ -46,9 +46,14 @@ C
 C
 C LPA is the pattern selector - the value 0 means that solid lines are
 C to be used, the value 1 that dotted lines are to be used (the dots to
-C be arranged according to the pattern specified by "LDP").
+C be arranged according to the pattern specified by "LDP") and the dots
+C are to be drawn using calls to the SPPS routine POINTS, and the value
+C -1 means the same as 1, except that the dotted lines are to be drawn
+C using calls to the routine NGDOTS, in which case RDS specifies the
+C diameter of each dot and IDC specifies the color of each dot (a color
+C index value).
 C
-      DATA LPA / 0 /
+      DATA LPA,RDS,IDC / 0 , .01 , 1 /
 C
 C If LCH is 0, the dots in a dotted line will be actual dots.  If LCH
 C is non-zero, the character specified by LCH will be used instead of

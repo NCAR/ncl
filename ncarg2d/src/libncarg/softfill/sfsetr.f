@@ -1,6 +1,6 @@
 C
-C $Id: sfsetr.f,v 1.6 2000-08-22 15:06:00 haley Exp $
-C                                                                      
+C $Id: sfsetr.f,v 1.7 2003-05-20 20:52:12 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -34,7 +34,7 @@ C
 C
 C Declare the labeled common block.
 C
-      COMMON /SFCOMN/ AID,DBL,ITY,LPA,LCH,LDP(8,8)
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
 C Declare the block data routine external to force its loading.
 C
@@ -67,18 +67,26 @@ C
       LCH=INT(RVP)
       GO TO 10003
 10004 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')) GO TO 10005
-      LPA=INT(RVP)
+      IF (.NOT.(CNP(1:2).EQ.'DC'.OR.CNP(1:2).EQ.'dc')) GO TO 10005
+      IDC=MAX(0,MIN(255,INT(RVP)))
       GO TO 10003
 10005 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'SP'.OR.CNP(1:2).EQ.'sp')) GO TO 10006
-      DBL=RVP
+      IF (.NOT.(CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')) GO TO 10006
+      LPA=INT(RVP)
       GO TO 10003
 10006 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')) GO TO 10007
-      ITY=MAX(-4,MIN(2,INT(RVP)))
+      IF (.NOT.(CNP(1:2).EQ.'DS'.OR.CNP(1:2).EQ.'ds')) GO TO 10007
+      RDS=MAX(.001,MIN(.1,RVP))
       GO TO 10003
 10007 CONTINUE
+      IF (.NOT.(CNP(1:2).EQ.'SP'.OR.CNP(1:2).EQ.'sp')) GO TO 10008
+      DBL=RVP
+      GO TO 10003
+10008 CONTINUE
+      IF (.NOT.(CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')) GO TO 10009
+      ITY=MAX(-4,MIN(2,INT(RVP)))
+      GO TO 10003
+10009 CONTINUE
       CTM(1:36)='SFSETR - PARAMETER NAME NOT KNOWN - '
       CTM(37:38)=CNP(1:2)
       CALL SETER (CTM(1:38),3,1)
