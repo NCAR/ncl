@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.5 1991-06-18 14:49:10 clyne Exp $
+ *	$Id: file.c,v 1.6 1992-01-27 12:10:23 clyne Exp $
  */
 /*
  *	file.c
@@ -58,6 +58,7 @@ char	*GetFiles(file_filter, longest)
 
 	if (buf) cfree(buf);
 	if (pathBuf) cfree(pathBuf);
+	*longest = 10;
 
 	/* 
 	 * perform globing using the file filter
