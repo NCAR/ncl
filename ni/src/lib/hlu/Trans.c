@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.17 2000-06-28 19:04:01 dbrown Exp $
+ *      $Id: Trans.c,v 1.18 2000-06-29 01:45:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -647,7 +647,7 @@ NhlErrorTypes NhlNDCPolyline
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
 		if (ret < NhlWARNING)
@@ -728,9 +728,9 @@ NhlErrorTypes NhlDataPolygon
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkGraphicStyle,	gsid,
-			NULL);
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
+				     _NhlNwkGraphicStyle,	gsid,
+				     NULL);
 		if (ret < NhlWARNING)
 			return ret;
 
@@ -814,9 +814,9 @@ NhlErrorTypes NhlNDCPolygon
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkGraphicStyle,	gsid,
-			NULL);
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
+				     _NhlNwkGraphicStyle,	gsid,
+				     NULL);
 		if (ret < NhlWARNING)
 			return ret;
 
@@ -895,9 +895,9 @@ NhlErrorTypes NhlDataPolymarker
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkGraphicStyle,	gsid,
-			NULL);
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
+				     _NhlNwkGraphicStyle,	gsid,
+				     NULL);
 		if (ret < NhlWARNING)
 			return ret;
 
@@ -982,9 +982,9 @@ NhlErrorTypes NhlNDCPolymarker
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkGraphicStyle,	gsid,
-			NULL);
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
+				     _NhlNwkGraphicStyle,	gsid,
+				     NULL);
 		if (ret < NhlWARNING)
 			return ret;
 
