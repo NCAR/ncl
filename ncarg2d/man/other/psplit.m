@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: psplit.m,v 1.1 1999-01-14 19:12:55 fred Exp $
+.\"     $Id: psplit.m,v 1.2 1999-03-12 19:08:01 fred Exp $
 .\"
 .TH psplit 1NCARG "January 1999" UNIX "NCAR GRAPHICS"
 .na
@@ -23,5 +23,5 @@ Document Structuring Conventions (DSC).
 .sp
 By default the output files are named in sequence as "pict0001.eps",
 "pict0001.eps", and so forth.  If you want to specify a different
-root name for the output files (i.e. a name different from "pist"),
+root name for the output files (i.e. a name different from "pict"),
 you can specify that by entering the optional second argument.
