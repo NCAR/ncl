@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.31 1997-04-14 22:25:45 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.32 1997-06-06 20:58:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -636,10 +636,18 @@ static NhlErrorTypes SetUpTrans
 	if(c_or_s == SET) {
 		error_lead = "IrTransSetValues";
 		call_spline_create = 0;
+		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints)) {
+			irp->x_min_set = False;
+			irp->x_max_set = False;
+		}
 		if (_NhlArgIsSet(args,nargs,NhlNtrXMinF))
 			irp->x_min_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrXMaxF))
 			irp->x_max_set = True;
+		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints)) {
+			irp->y_min_set = False;
+			irp->y_max_set = False;
+		}
 		if (_NhlArgIsSet(args,nargs,NhlNtrYMinF))
 			irp->y_min_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrYMaxF))
@@ -1040,9 +1048,6 @@ static NhlErrorTypes SetUpTrans
 	irp->ut_save = irp->ut;
 	irp->ub_save = irp->ub;
 	irp->log_lin_value = 1;
-
-	irp->x_min_set = irp->y_min_set = 
-		irp->x_max_set = irp->y_max_set = False;
 
 	if (c_or_s == CREATE) {
 		if ((irp->xmin_dat = _NhlCmpFSetup(irp->x_min,5)) == NULL) {
