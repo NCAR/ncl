@@ -1,5 +1,5 @@
 C
-C      $Id: xy07f.f,v 1.2 1995-04-25 22:15:49 haley Exp $
+C      $Id: xy07f.f,v 1.3 1995-05-16 15:50:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -141,7 +141,7 @@ C
 C
 C Restores state.
 C
-      call NhlFDestroy(appid)
+      call NhlFDestroy(appid,ierr)
       call NhlFClose
 
       stop
