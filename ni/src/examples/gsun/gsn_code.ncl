@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.38 2000-06-20 15:09:59 haley Exp $
+;      $Id: gsn_code.ncl,v 1.39 2000-06-20 16:21:56 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1381,29 +1381,6 @@ begin
     xcols = dims(1)
     res = resources              ; Make copy of resources
     end do
-; Get and set resource values for possible figure strings
-; on the plots.
-;
-    justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
-    ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
-    paras = (/     0.5,           0.5,      -0.5,       -0.5/)
-    orths = (/     0.5,          -0.5,      -0.5,        0.5/)
-
-    txres = get_res_eq(res,"tx")
-    amres = get_res_eq(res,"am")
-    perim = get_res_value(txres,"txPerimOn",True)
-    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
-    just  = get_res_value(amres,"amJust","BottomRight")
-
-    fig_index = ind(just.eq.justs.or.just.eq.ljusts)
-    if(ismissing(fig_index))
-      fig_index = 0
-      just      = justs(fig_index)
-    end if
-
-    para  = get_res_value(amres,"amParallelPosF",  paras(fig_index))
-    orth  = get_res_value(amres,"amOrthogonalPosF",orths(fig_index));
-;
   else
     if(ddims.ne.2)
     panel_center   = get_res_value(res,"gsnPanelCenter",True)
@@ -1419,6 +1396,20 @@ begin
     if(isatt(res,"gsnPanelFigureStrings"))
       is_figure_strings = True
       panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
+
+  newplots = new(nnewplots,graphic)   ; Create array to save these plots
+                                      ; objects.
+      justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
+      ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
+      ujusts = (/"BOTTOMRIGHT", "TOPRIGHT", "TOPLEFT", "BOTTOMLEFT"/)
+      paras = (/     1.0,           1.0,      -1.0,       -1.0/)
+      orths = (/     1.0,          -1.0,      -1.0,        1.0/)
+; Get and set resource values for figure strings on the plots.
+      txres = get_res_eq(res,"tx")
+      amres = get_res_eq(res,"am")
+      perim = get_res_value(txres,"txPerimOn",True)
+      bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
+      just  = get_res_value(amres,"amJust","BottomRight")
     else
       is_figure_strings = False
     end if
@@ -1598,8 +1589,10 @@ begin
     ysp = yrange - new_total_height*rows  ; left in both X and Y directions.
 
     getvalues plot(0)
-      "vpXF" : vpx
-      "vpYF" : vpy
+      "vpXF"      : vpx
+      "vpYF"      : vpy
+      "vpWidthF"  : vpw
+      "vpHeightF" : vph
     end getvalues
     xrange = xrange - scale * labelbar_width
     dx = scale * (vpx - left) ; Calculate distance from plot's left position
@@ -1611,6 +1604,31 @@ begin
     ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
 
   ywsp = ywsp_perc/100. * new_plot_height
+
+  new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
+  new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
+    if(is_figure_strings) then
+      fig_index = ind(just.eq.justs.or.just.eq.ljusts.or.just.eq.ujusts)
+      if(ismissing(fig_index))
+        fig_index = 0
+        just      = justs(fig_index)
+      end if
+    "vpYF"      : vpy
+      len_pct = 0.025           ; Percentage of width/height of plot
+    "vpHeightF" : vph
+      if(vpw .lt. vph) then
+        wsp_hpct = (len_pct * vpw) / vph
+        wsp_wpct = len_pct
+      else
+        wsp_hpct = len_pct
+        wsp_wpct = (len_pct * vph) / vpw
+      end if
+      para  = get_res_value(amres,"amParallelPosF",  paras(fig_index) * \
+                                                     (0.5 - wsp_wpct))
+      orth  = get_res_value(amres,"amOrthogonalPosF", orths(fig_index) * \
+                                                      (0.5 - wsp_hpct))
+    end if
+  if(is_figure_strings) then
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
     do i = 0,rows-1
@@ -3807,9 +3825,6 @@ begin
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
-
-
-
       gsnp_shape_plot(plot_object)
     end if
 
