@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.4 1994-02-08 20:15:11 boote Exp $
+ *      $Id: Convert.c,v 1.5 1994-02-18 02:53:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,9 @@ _NhlFreeConvertContext
 {
 	int	i;
 
+	if(context == NULL)
+		return;
+
 	if(context->next != NULL)
 		_NhlFreeConvertContext(context->next);
 
@@ -155,15 +158,15 @@ CreateConvArgs
 		switch(args[i].addressmode){
 
 			case NhlIMMEDIATE:
-				newargs[i].addr = args[i].addr;
+				newargs[i].data = args[i].data;
 				newargs[i].size = args[i].size;
 
 				break;
 
 			case NhlADDR:
-				newargs[i].addr = NhlMalloc(args[i].size);
-				memcpy((void *)(newargs[i].addr),
-					(void *)(args[i].addr),args[i].size);
+				newargs[i].data.ptrval= NhlMalloc(args[i].size);
+				memcpy(newargs[i].data.ptrval,
+					args[i].data.ptrval,args[i].size);
 				newargs[i].size = args[i].size;
 
 				break;
@@ -180,11 +183,11 @@ CreateConvArgs
 				 * doing a strlen, and then just set the
 				 * value of size to the size part.
 				 */
-				newargs[i].addr = NhlMalloc(
-						strlen((char*)args[i].addr)+1);
+				newargs[i].data.strval = NhlMalloc(
+						strlen(args[i].data.strval)+1);
 
-				strcpy((char*)newargs[i].addr,
-							(char*)args[i].addr);
+				strcpy(newargs[i].data.strval,
+							args[i].data.strval);
 
 				newargs[i].size = args[i].size;
 
@@ -470,7 +473,7 @@ FreeConverter
 	 */
 	for(i=0;i < ptr->nargs;i++)
 		if(ptr->args[i].addressmode == NhlADDR)
-			(void)NhlFree((void *)(ptr->args[i].addr));
+			(void)NhlFree(ptr->args[i].data.ptrval);
 
 	(void)NhlFree(ptr->args);
 
@@ -730,7 +733,7 @@ NhlReRegisterConverter
 }
 
 /*
- * Function:	_NhlConverterExists
+ * Function:	ConverterExists
  *
  * Description:	This function returns a boolean value indicating the existance
  *		of a converter of the requested type.
@@ -740,12 +743,12 @@ NhlReRegisterConverter
  *
  * Out Args:	
  *
- * Scope:	Global Private
+ * Scope:	static
  * Returns:	True if Converter is present False otherwise
  * Side Effect:	
  */
-NhlBoolean
-_NhlConverterExists
+static NhlBoolean
+ConverterExists
 #if     __STDC__
 ( 
 	NrmQuark		from,		/* from type		*/
@@ -772,6 +775,70 @@ _NhlConverterExists
 		return(False);
 	else
 		return(True);
+}
+
+/*
+ * Function:	_NhlConverterExists
+ *
+ * Description:	This function returns a boolean value indicating the existance
+ *		of a converter of the requested type.
+ *
+ * In Args:	NrmQuark		from		from type
+ *		NrmQuark		to		to type
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	True if Converter is present False otherwise
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlConverterExists
+#if     __STDC__
+( 
+	NrmQuark	from,		/* from type		*/
+	NrmQuark	to		/* to type		*/
+)
+#else
+(from,to)
+	NrmQuark	from;		/* from type		*/
+	NrmQuark	to;		/* to type		*/
+#endif 
+{
+	return ConverterExists(from,to,NrmNULLQUARK);
+}
+
+/*
+ * Function:	_NhlExtConverterExists
+ *
+ * Description:	This function returns a boolean value indicating the existance
+ *		of a converter of the requested type.
+ *
+ * In Args:	NrmQuark		from		from type
+ *		NrmQuark		to		to type
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	True if Converter is present False otherwise
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlExtConverterExists
+#if     __STDC__
+( 
+	NrmQuark	from,		/* from type		*/
+	NrmQuark	to,		/* to type		*/
+	NrmQuark	conv_type	/* conv type		*/
+)
+#else
+(from,to,conv_type)
+	NrmQuark	from;		/* from type		*/
+	NrmQuark	to;		/* to type		*/
+	NrmQuark	conv_type;	/* conv type		*/
+#endif 
+{
+	return ConverterExists(from,to,conv_type);
 }
 
 /*
@@ -802,7 +869,8 @@ NhlConverterExists
 	NhlString	to;		/* to type		*/
 #endif 
 {
-	return(_NhlConverterExists(NrmStringToName(from),NrmStringToName(to),NrmNULLQUARK));
+	return ConverterExists(NrmStringToName(from),NrmStringToName(to),
+								NrmNULLQUARK);
 }
 
 /*
@@ -839,7 +907,8 @@ RetrieveCache
 
 		if(from->size != node->from.size)
 			continue;
-		if(memcmp((from->addr),(node->from.addr),from->size) == 0)
+		if(memcmp((from->data.ptrval),(node->from.data.ptrval),
+							from->size) == 0)
 			return(node);
 		node = node->next;
 	}
@@ -881,7 +950,7 @@ SetConvertVal
 	NrmValue	*to;	/* place to put data	*/
 #endif
 {
-	if((to->size > 0) && (to->addr != NULL)){
+	if((to->size > 0) && (to->data.ptrval != NULL)){
 
 		/* caller provided space */
 
@@ -895,7 +964,7 @@ SetConvertVal
 		/* give caller copy */
 
 		to->size = from.size;
-		memcpy(to->addr,from.addr,to->size);
+		memcpy(to->data.ptrval,from.data.ptrval,to->size);
 		return(NhlNOERROR);
 	}
 
@@ -905,7 +974,7 @@ SetConvertVal
 	 */
 
 	to->size = from.size;
-	to->addr = from.addr;
+	to->data = from.data;
 
 	return(NhlNOERROR);
 }
@@ -947,13 +1016,13 @@ InsertInCache
 
 
 	newnode->from.size = from->size;
-	newnode->from.addr = NhlMalloc(from->size);
-	memcpy(newnode->from.addr,from->addr,from->size);
+	newnode->from.data.ptrval = NhlMalloc(from->size);
+	memcpy(newnode->from.data.ptrval,from->data.ptrval,from->size);
 
 
 	newnode->to.size = to->size;
-	newnode->to.addr = NhlMalloc(to->size);
-	memcpy(newnode->from.addr,from->addr,from->size);
+	newnode->to.data.ptrval = NhlMalloc(to->size);
+	memcpy(newnode->from.data.ptrval,from->data.ptrval,from->size);
 
 	newnode->next = conv->cache;
 	conv->cache = newnode;
@@ -1053,6 +1122,12 @@ ConvertData
 	CachePtr	cache=NULL;
 	_NhlCtxtStack	ctxt = NULL;
 	NhlErrorTypes	ret=NhlNOERROR;
+
+	if(context == NULL){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"ConvertData:Invalid Convert Context value"));
+		return NhlFATAL;
+	}
 
 	ctxt = (_NhlCtxtStack)NhlMalloc(sizeof(_NhlCtxtStackRec));
 	if(ctxt == NULL){
@@ -1246,6 +1321,48 @@ NhlConvertData
 }
 
 /*
+ * Function:	_NhlReConvertData
+ *
+ * Description:	This function should be used by converters that need to
+ *		call a converter.  This allows the lower level converter
+ *		to use the same convert context.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public (only used in "Converter" functions)
+ * Returns:	NhlPointer
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlReConvertData
+#if	__STDC__
+(
+	NrmQuark		fname,	/* from type			*/
+	NrmQuark		tname,	/* to type			*/
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to	/* ptr to to data		*/
+)
+#else
+(fname,tname,from,to,args,nargs)
+	NrmQuark		fname;	/* from type			*/
+	NrmQuark		tname;	/* to type			*/
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+#endif
+{
+	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"_NhlReConvertData:Context not active");
+		return NhlFATAL;
+	}
+
+	return ConvertData(ctxt_stack->context,NrmNULLQUARK,fname,tname,
+								from,to);
+}
+
+/*
  * Function:	NhlReConvertData
  *
  * Description:	This function should be used by converters that need to
@@ -1267,9 +1384,7 @@ NhlReConvertData
 	NhlString		fname,	/* from type			*/
 	NhlString		tname,	/* to type			*/
 	NrmValue		*from,	/* ptr to from data		*/
-	NrmValue		*to,	/* ptr to to data		*/
- 	NhlConvertArgList	args,	/* add'n args for conversion	*/
-	int			nargs	/* number of args		*/
+	NrmValue		*to	/* ptr to to data		*/
 )
 #else
 (fname,tname,from,to,args,nargs)
@@ -1277,18 +1392,10 @@ NhlReConvertData
 	NhlString		tname;	/* to type			*/
 	NrmValue		*from;	/* ptr to from data		*/
 	NrmValue		*to;	/* ptr to to data		*/
- 	NhlConvertArgList	args;	/* add'n args for conversion	*/
-	int			nargs;	/* number of args		*/
 #endif
 {
-	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"NhlReConvertData:Context not active");
-		return NhlFATAL;
-	}
-
-	return ConvertData(ctxt_stack->context,NrmNULLQUARK,
-		NrmStringToQuark(fname),NrmStringToQuark(tname),from,to);
+	return _NhlReConvertData(NrmStringToQuark(fname),
+					NrmStringToQuark(tname),from,to);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.9 1994-02-08 20:16:23 boote Exp $
+ *      $Id: hlu.c,v 1.10 1994-02-18 02:55:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@
  */
 void
 *NhlMalloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	unsigned int	size	/* size of memory requested	*/
 )
@@ -95,7 +95,7 @@ void
  */
 void
 *NhlCalloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	unsigned int	num,	/* number of elements		*/
 	unsigned int	size	/* size of each element		*/
@@ -138,7 +138,7 @@ void
  */
 void
 *NhlRealloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void		*ptr,	/* pointer to old memory	*/
 	unsigned int	size	/* size of memory requested	*/
@@ -181,7 +181,7 @@ void
  */
 NhlErrorTypes
 NhlFree
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void		*ptr	/* pointer to memory to free	*/
 )
@@ -242,7 +242,7 @@ static int table_len = 0;
  */
 NhlLayer
 _NhlGetLayer
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id	/* The layer id of the requested layer	*/
 )
@@ -275,7 +275,7 @@ _NhlGetLayer
  */
 int
 _NhlAddLayer
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* The layer to enter into the table	*/
 )
@@ -334,7 +334,7 @@ _NhlAddLayer
  */
 NhlErrorTypes
 _NhlRemoveLayer
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* The layer to remove from the table	*/
 )
@@ -368,6 +368,46 @@ _NhlRemoveLayer
 }
 
 /*
+ * Function:	DestroyLayerTree
+ *
+ * Description:	This function takes a layer id, and traverses to the top
+ *		level parent of that object and destroys it.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+static void
+DestroyLayerTree
+#if	NhlNeedProto
+(
+	int	id
+)
+#else
+(id)
+	int	id;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(id);
+
+	if(l == NULL)
+		return;
+
+	if(l->base.parent != NULL){
+		DestroyLayerTree(l->base.parent->base.id);
+		return;
+	}
+
+	(void)NhlDestroy(id);
+
+	return;
+}
+
+/*
  * Function:	_NhlDestroyLayerTable
  *
  * Description:	This function is used to clean the LayerTable for close.
@@ -382,7 +422,7 @@ _NhlRemoveLayer
  */
 void
 _NhlDestroyLayerTable
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -392,9 +432,13 @@ _NhlDestroyLayerTable
 {
 	int i;
 
-	for(i=0;i < table_len && num_layers > 0;i++)
+	for(i=0;i < table_len && num_layers > 0;i++){
 		if(LayerTable[i] != NULL)
-			NhlDestroy(i);
+			DestroyLayerTree(i);
+		if(LayerTable[i] != NULL)
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"Unable to destroy layer %d ???",i);
+	}
 
 	if (num_layers > 0)
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all Layers destroyed?");
@@ -430,7 +474,7 @@ _NhlDestroyLayerTable
  */
 Const char *
 NhlName
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	pid	/* id of a plot	*/
 )
@@ -465,7 +509,7 @@ NhlName
  */
 Const char *
 NhlClassName
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int pid
 )
@@ -494,7 +538,7 @@ int pid;
  */
 Const char *
 _NhlClassName
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class struct	*/
 )
@@ -521,7 +565,7 @@ _NhlClassName
  */
 NhlLayerClass
 _NhlClass
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer l		/* Instance pointer */
 )
@@ -549,7 +593,7 @@ _NhlClass
  */
 NhlBoolean
 _NhlIsFloatRes
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString	res_name	/* resource name	*/
 )
@@ -584,7 +628,7 @@ _NhlIsFloatRes
  */
 Const char
 *_NhlResolvePath
-#if	__STDC__
+#if	NhlNeedProto
 (
 	Const char	*rawfname	/* fname as provided	*/
 )
@@ -685,7 +729,7 @@ Const char
  */
 Const char
 *_NhlGetSysResFile
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void	/* No args	*/
 )
@@ -736,7 +780,7 @@ Const char
  */
 Const char 
 *_NhlGetUsrResFile
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void	/* No args	*/
 )
@@ -800,10 +844,10 @@ NhlSetSArg
 	VA_START(ap,resname);
 	if(_NhlIsFloatRes(resname)){
 		tmp = va_arg(ap,double);
-		*(float *)&(arg->value) = (float)tmp;
+		arg->value.fltval = (float)tmp;
 	}
 	else
-		arg->value = va_arg(ap,_NhlArgVal);
+		arg->value.lngval = va_arg(ap,long);
 
 	va_end(ap);
 }
@@ -824,15 +868,15 @@ NhlSetSArg
  */
 void
 _NhlSArgToSetArgList
-#if	__STDC__
+#if	NhlNeedProto
 (
-	_NhlExtArgList	args,	/* arglist return	*/
+	_NhlArgList	args,	/* arglist return	*/
 	NhlSArgList	sargs,	/* public arglist	*/
 	int		nargs	/* num args		*/
 )
 #else
 (args,sargs,nargs)
-	_NhlExtArgList	args;	/* arglist return	*/
+	_NhlArgList	args;	/* arglist return	*/
 	NhlSArgList	sargs;	/* public arglist	*/
 	int		nargs;	/* num args		*/
 #endif
@@ -882,48 +926,8 @@ NhlSetGArg
 	arg->resname = resname;
 
 	VA_START(ap,resname);
-	arg->value = va_arg(ap,_NhlArgVal);
+	arg->value.ptrval = va_arg(ap,NhlPointer);
 	va_end(ap);
-}
-
-/*
- * Function:	_NhlGArgToGetArgList
- *
- * Description:	This function is used to allocate a _NhlArgList given an
- *		NhlGArgList.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	global private
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-void
-_NhlGArgToGetArgList
-#if	__STDC__
-(
-	_NhlExtArgList	args,	/* arglist return	*/
-	NhlGArgList	gargs,	/* public arglist	*/
-	int		nargs	/* num args		*/
-)
-#else
-(args,gargs,nargs)
-	_NhlExtArgList	args;	/* arglist return	*/
-	NhlGArgList	gargs;	/* public arglist	*/
-	int		nargs;	/* num args		*/
-#endif
-{
-	register int	i;
-
-	for(i=0;i < nargs; i++){
-		args[i].quark = NrmStringToQuark(gargs[i].resname);
-		args[i].value = gargs[i].value;
-		args[i].type = NrmNULLQUARK;
-	}
-
-	return;
 }
 
 /*
@@ -944,7 +948,7 @@ _NhlGArgToGetArgList
  */
 void
 _NhlInherit
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -956,7 +960,6 @@ _NhlInherit
 				"_NhlInherit- Inheritance resolved improperly");
 	return;
 }
-
 
 /*
  * Function:	_NhlArgIsSet
@@ -973,7 +976,7 @@ _NhlInherit
  * Side Effect:	
  */
 NhlBoolean _NhlArgIsSet
-#if     __STDC__
+#if     NhlNeedProto
 (
         _NhlArgList args,
         int     num_args,
@@ -1014,7 +1017,7 @@ NhlBoolean _NhlArgIsSet
  */
 NhlGenArray
 _NhlCreateGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlPointer	data,		/* data array		*/
 	NhlString	type,		/* type of each element	*/
@@ -1033,15 +1036,12 @@ _NhlCreateGenArray
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 #endif
 {
-	static NhlBoolean	first_time = True;
-	static NrmQuark		QString;
+	static NrmQuark		QString = NrmNULLQUARK;
 	NhlGenArray		gen = NULL;
 	int			i;
 
-	if(first_time){
+	if(QString == NrmNULLQUARK)
 		QString = NrmStringToQuark(NhlTString);
-		first_time = False;
-	}
 
 	if((num_dimensions < 1) && (num_dimensions != -1111)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -1142,7 +1142,7 @@ _NhlCreateGenArray
  */
 NhlGenArray
 NhlCreateGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlPointer	data,		/* data array		*/
 	NhlString	type,		/* type of each element	*/
@@ -1183,7 +1183,7 @@ NhlCreateGenArray
  */
 NhlGenArray
 _NhlCopyGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray	gen,		/* generic array pointer	*/
 	NhlBoolean	copy_data	/* copy data?			*/
@@ -1216,7 +1216,7 @@ _NhlCopyGenArray
  */
 void
 NhlFreeGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray	gen	/* gen array to free	*/
 )
@@ -1309,7 +1309,7 @@ NhlFreeGenArray
  */
 
 NhlErrorTypes _NhlValidatedGenArrayCopy
-#if __STDC__
+#if NhlNeedProto
 	(NhlGenArray	*gto, 
 	 NhlGenArray	gfrom,
 	 int		max_el,

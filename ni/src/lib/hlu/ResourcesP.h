@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.3 1994-01-27 21:25:42 boote Exp $
+ *      $Id: ResourcesP.h,v 1.4 1994-02-18 02:54:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ typedef struct _NrmResource {
 	unsigned int	nrm_size;
 	unsigned int	nrm_offset;
 	NrmQuark	nrm_default_type;
-	NhlPointer	nrm_default_addr;
+	_NhlArgVal	nrm_default_val;
 } NrmResource, *NrmResourceList;
 
 typedef NhlErrorTypes (*NrmResourceDefaultProc)(
@@ -50,7 +50,7 @@ extern NhlErrorTypes _NhlGetResources(
 #if	NhlNeedProto
 	_NhlConvertContext	ctxt,	/* convert context		*/
 	NhlLayer		l,	/* layer to set resources of	*/
-	_NhlExtArgList		args,	/* args to override res defaults*/
+	_NhlArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* layer is auto-managed chld	*/
 #endif
@@ -93,11 +93,11 @@ extern void _NhlCopyToArg(
 
 extern void _NhlMergeArgLists(
 #if	NhlNeedProto
-	_NhlExtArgList	ret_args,	/* return args		*/
+	_NhlArgList	ret_args,	/* return args		*/
 	int		*num_ret_args,	/* num ret_args		*/
-	_NhlExtArgList	oargs,		/* over-ride args	*/
+	_NhlArgList	oargs,		/* over-ride args	*/
 	int		num_oargs,	/* num oargs		*/
-	_NhlExtArgList	args,		/* args			*/
+	_NhlArgList	args,		/* args			*/
 	int		num_args	/* num args		*/
 #endif
 );
@@ -105,9 +105,9 @@ extern void _NhlMergeArgLists(
 extern NhlErrorTypes _NhlSortChildArgs(
 #if	NhlNeedProto
 	NhlLayer		l,		/* layer		*/
-	_NhlExtArgList		args_in,	/* args to sort		*/
+	_NhlArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
-	_NhlExtArgList		*args_out,	/* args not forwarded	*/
+	_NhlArgList		*args_out,	/* args not forwarded	*/
 	int			*nargs_out,	/* num args_out		*/
 	_NhlChildArgList	*forw_list,	/* list of args to frwd	*/
 	NhlBoolean		*args_used,	/* args used		*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.h,v 1.3 1993-10-19 17:53:05 boote Exp $
+ *      $Id: VarArg.h,v 1.4 1994-02-18 02:55:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,31 +34,10 @@
 #define VA_START(ap,last)       va_start(ap) 
 #endif
 
-extern int _NhlCountSetVarList(
-#ifdef	NhlNeedProto
-	va_list	/* var arg list to be counted	*/
-#endif
-);
-
-extern int _NhlCountGetVarList(
-#ifdef	NhlNeedProto
-	va_list	/* var arg list to be counted	*/
-#endif
-);
-
-extern void _NhlVarToSetArgList(
+extern int _NhlVarToSetArgList(
 #ifdef	NhlNeedProto
 	va_list		ap,		/* vararg list			*/ 
-	_NhlExtArgList	args,		/* pointer to return arglist in	*/ 
-	int		num_vargs	/* number of arg pairs in ap	*/ 
-#endif
-);
-
-extern void _NhlVarToGetArgList(
-#ifdef	NhlNeedProto
-	va_list		ap,		/* vararg list			*/ 
-	_NhlExtArgList	args,		/* pointer to return arglist in	*/ 
-	int		num_vargs	/* number of arg pairs in ap	*/ 
+	_NhlArgList	args		/* pointer to return arglist in	*/ 
 #endif
 );
 

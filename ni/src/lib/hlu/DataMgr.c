@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.4 1994-02-01 18:22:37 boote Exp $
+ *      $Id: DataMgr.c,v 1.5 1994-02-18 02:54:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -416,7 +416,7 @@ _NhlInitDataConnection
 
 	type = type_req;
 	while(*type != NrmNULLQUARK){
-		if(_NhlConverterExists(from,*type,NrmNULLQUARK))
+		if(_NhlConverterExists(from,*type))
 			break;
 		type++;
 	}
@@ -558,9 +558,9 @@ CreateCache
 	}
 
 	fromdata.size = sizeof(int);
-	fromdata.addr = &mgr->base.parent->base.id;
+	fromdata.data.intval = mgr->base.parent->base.id;
 	todata.size = sizeof(int);
-	todata.addr = &dataset_id;
+	todata.data.ptrval = &dataset_id;
 
 	ret = _NhlConvertData(new->cvt_context,fromQ,type,&fromdata,&todata);
 	new->dataset = _NhlGetLayer(dataset_id);

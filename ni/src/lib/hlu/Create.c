@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.5 1994-02-08 20:15:24 boote Exp $
+ *      $Id: Create.c,v 1.6 1994-02-18 02:54:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
+#include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/WorkstationI.h>
@@ -288,7 +289,7 @@ _NhlCreate
 	Const char	*name,		/* name to identify instance	*/
 	NhlLayerClass	lc,		/* class of instance to create	*/
 	int		parentid,	/* id# of parent		*/
-	_NhlExtArgList	args,		/* resources to set in instance	*/
+	_NhlArgList	args,		/* resources to set in instance	*/
 	int		nargs,		/* number of args		*/
 	NrmQuarkList	child		/* used to create managed child	*/
 )
@@ -298,7 +299,7 @@ _NhlCreate
 	Const char	*name;		/* name to identify instance	*/
 	NhlLayerClass	lc;		/* class of instance to create	*/
 	int		parentid;	/* id# of parent		*/
-	_NhlExtArgList	args;		/* resources to set in instance	*/
+	_NhlArgList	args;		/* resources to set in instance	*/
 	int		nargs;		/* number of args		*/
 	NrmQuarkList	child;		/* used to create managed child	*/
 #endif
@@ -307,13 +308,11 @@ _NhlCreate
 	NhlLayer		layer;
 	NhlLayer		request;
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
-	_NhlExtArg		stackargs[_NhlMAXARGLIST];
-	_NhlExtArgList		largs=stackargs;
-	_NhlArg			init_args[_NhlMAXARGLIST];
+	_NhlArg			stackargs[_NhlMAXARGLIST];
+	_NhlArgList		largs=stackargs;
 	int			nlargs;
 	_NhlChildArgList	chld_args=NULL;
 	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
-	int			i;
 	_NhlConvertContext	context=NULL;
 
 	if((parent != NULL) && _NhlIsObj(parent)){
@@ -335,9 +334,6 @@ _NhlCreate
 		return(NhlFATAL);
 	}
 
-#ifdef	NoMore
-	(void)memset((char*)layer,(int)~(0x01),(int)lc->base_class.layer_size);
-#endif
 /*
  * Set things that are identical in Obj's and NhlLayer's.
  */
@@ -484,11 +480,7 @@ _NhlCreate
 		ret = MIN(lret,ret);
 	}
 
-	for(i=0;i<nlargs;i++){
-		init_args[i].quark = largs[i].quark;
-		init_args[i].value = largs[i].value;
-	}
-	lret = CallInitialize(lc,request,layer,init_args,nlargs); 
+	lret = CallInitialize(lc,request,layer,largs,nlargs); 
 	if(lret < NhlWARNING){
 		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to initialize layer-Can't Create");
@@ -584,7 +576,7 @@ NhlVACreate
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name of instance		*/
-	NhlLayerClass	lc,		/* NhlLayerClass to create		*/
+	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
 	int		parentid,	/* id of parent			*/
 	...				/* resource name/value pairs	*/
 )
@@ -592,34 +584,24 @@ NhlVACreate
 (pid, name, lc, parentid, va_alist)
 	int		*pid;		/* return plot id		*/
 	Const char	*name;		/* name of instance		*/
-	NhlLayerClass	lc;		/* NhlLayerClass to create		*/
+	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
 	int		parentid;	/* id of parent			*/
 	va_dcl				/* resource name/value pairs	*/
 #endif	/* NeedVarArgProto */
 {
 	va_list		ap;
 	int		num_args;
-	_NhlExtArg	args[_NhlMAXARGLIST];
+	_NhlArg		args[_NhlMAXARGLIST];
 	NhlErrorTypes	ret;
 
 	if(pid == NULL){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlCreate:arg pid must not be NULL");
-		return NhlFATAL;
-	}
-
-	VA_START(ap,parentid);
-	num_args = _NhlCountSetVarList(ap);
-	va_end(ap);
-
-	if(num_args > _NhlMAXARGLIST){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"NhlVACreate:Only %d args can be passed in at a time",
-								_NhlMAXARGLIST);
+					"NhlCreate:arg pid must not be NULL");
 		return NhlFATAL;
 	}
 
 	VA_START(ap,parentid); 
-	_NhlVarToSetArgList(ap,args,num_args);
+	num_args = _NhlVarToSetArgList(ap,args);
 	va_end(ap);
 
 /*
@@ -670,9 +652,8 @@ NhlCreate
 	int		rlid;		/* RL list of resources		*/
 #endif
 {
-	_NhlExtArg	args[_NhlMAXARGLIST];
+	_NhlArg		args[_NhlMAXARGLIST];
 	int		nargs;
-	NhlErrorTypes	ret;
 
 	if(pid == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -691,9 +672,7 @@ NhlCreate
  */
 	*pid = NhlNULL_LAYER;
 
-	ret = _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
-
-	return(ret);
+	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
 
 /*
@@ -720,25 +699,24 @@ NhlErrorTypes
 NhlALCreate
 #if	__STDC__
 (
-	int		*pid,		/* plot id <return>	*/
-	Const char	*name,		/* name of instance	*/
+	int		*pid,		/* plot id <return>		*/
+	Const char	*name,		/* name of instance		*/
 	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
-	int		parentid,	/* parent's id		*/
-	NhlSArgList	args_in,	/* resource name/values	*/
-	int		nargs		/* number of resources	*/
+	int		parentid,	/* parent's id			*/
+	NhlSArgList	args_in,	/* resource name/values		*/
+	int		nargs		/* number of resources		*/
 )
 #else
 (pid, name, lc, parentid, args_in, nargs)
-	int		*pid;		/* plot id <return>	*/
-	Const char	*name;		/* name of instance	*/
+	int		*pid;		/* plot id <return>		*/
+	Const char	*name;		/* name of instance		*/
 	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
-	int		parentid;	/* parent's id		*/
-	NhlSArgList	args_in;	/* resource name/values	*/
-	int		nargs;		/* number of resources	*/
+	int		parentid;	/* parent's id			*/
+	NhlSArgList	args_in;	/* resource name/values		*/
+	int		nargs;		/* number of resources		*/
 #endif	/* NeedVarArgProto */
 {
-	_NhlExtArg	args[_NhlMAXARGLIST];
-	NhlErrorTypes	ret;
+	_NhlArg		args[_NhlMAXARGLIST];
 
 	if(pid == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -760,9 +738,7 @@ NhlALCreate
  */
 	*pid = NhlNULL_LAYER;
 
-	ret = _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
-
-	return(ret);
+	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
 
 /*
@@ -1058,8 +1034,8 @@ CreateChild
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
 	NhlLayerClass	class,		/* class to create	*/
-	NhlLayer		parent,		/* parent of child	*/
-	_NhlExtArgList	sargs,		/* resources to set	*/
+	NhlLayer	parent,		/* parent of child	*/
+	_NhlArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
 )
 #else
@@ -1067,16 +1043,16 @@ CreateChild
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
 	NhlLayerClass	class;		/* class to create	*/
-	NhlLayer		parent;		/* parent of child	*/
-	_NhlExtArgList	sargs;		/* resources to set	*/
+	NhlLayer	parent;		/* parent of child	*/
+	_NhlArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
 #endif
 {
 	int			i;
 	int			num_pargs=0;
-	_NhlExtArgList		pargs = NULL;
+	_NhlArgList		pargs = NULL;
 	int			num_args=0;
-	_NhlExtArg		args[_NhlMAXARGLIST];
+	_NhlArg			args[_NhlMAXARGLIST];
 	NrmQuarkList		child=NULL;
 	NhlLayerClass		plc = _NhlClass(parent);
 	_NhlChildResList	tresnode=NULL;
@@ -1119,7 +1095,7 @@ CreateChild
 
 	if(child == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s NhlLayerClass is not a registered child class of %s",
+		"%s NhlLayerClass is not a registered child class of %s",
 				_NhlClassName(class),_NhlClassName(class));
 		return NhlFATAL;
 	}
@@ -1217,7 +1193,7 @@ _NhlCreateChild
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
 	NhlLayerClass	class,	/* class to create	*/
-	NhlLayer		parent,	/* parent of child	*/
+	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 )
 #else
@@ -1225,24 +1201,20 @@ _NhlCreateChild
 	int		*pid;	/* pid return		*/
 	Const char	*name;	/* name of child	*/
 	NhlLayerClass	class;	/* class to create	*/
-	NhlLayer		parent;	/* parent of child	*/
+	NhlLayer	parent;	/* parent of child	*/
 	va_dcl
 #endif
 {
 	va_list			ap;
 	int			num_vargs;
-	_NhlExtArg		vargs[_NhlMAXARGLIST];
+	_NhlArg			vargs[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	/*
 	 * retrieve the var arg list
 	 */
 	VA_START(ap,parent);
-	num_vargs = _NhlCountSetVarList(ap);
-	va_end(ap);
-
-	VA_START(ap,parent);
-	_NhlVarToSetArgList(ap,vargs,num_vargs);
+	num_vargs = _NhlVarToSetArgList(ap,vargs);
 	va_end(ap);
 
 	/*
@@ -1269,7 +1241,7 @@ _NhlCreateChild
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
  *		NhlLayerClass	class,		class to create
- *		NhlLayer		parent,		parent of child
+ *		NhlLayer	parent,		parent of child
  *		NhlSArgList	args_in,	args in
  *		int		nargs		number args
  *
@@ -1287,7 +1259,7 @@ _NhlALCreateChild
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
 	NhlLayerClass	class,		/* class to create	*/
-	NhlLayer		parent,		/* parent of child	*/
+	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
 )
@@ -1296,12 +1268,12 @@ _NhlALCreateChild
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
 	NhlLayerClass	class;		/* class to create	*/
-	NhlLayer		parent;		/* parent of child	*/
+	NhlLayer	parent;		/* parent of child	*/
 	NhlSArgList	args_in;	/* args in		*/
 	int		nargs;		/* number args		*/
 #endif
 {
-	_NhlExtArg		args[_NhlMAXARGLIST];
+	_NhlArg			args[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	_NhlSArgToSetArgList(args,args_in,nargs);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.4 1994-02-08 20:15:15 boote Exp $
+ *      $Id: Convert.h,v 1.5 1994-02-18 02:53:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 
 /* used to set args for converters during registration */
 typedef enum _NhlConvertAddrModes{
-	NhlIMMEDIATE,	/* values that fit in an NhlPointer only! */
+	NhlIMMEDIATE,	/* values that fit in an NhlArgVal only! */
 	NhlADDR,
 	NhlSTRENUM	/* a hack - the size parameter is data	*/
 } NhlConvertAddrModes;
@@ -35,7 +35,7 @@ typedef enum _NhlConvertAddrModes{
 typedef struct _NhlConvertArg{
 	NhlConvertAddrModes	addressmode;
 	int			size;
-	NhlPointer		addr;
+	NhlArgVal		data;
 } NhlConvertArg, *NhlConvertArgList;
 
 /* opaque type for un-re registering */
@@ -134,9 +134,7 @@ NhlErrorTypes NhlReConvertData(
 	NhlString		fname,	/* from type			*/
 	NhlString		tname,	/* to type			*/
 	NrmValue		*from,	/* ptr to from data		*/
-	NrmValue		*to,	/* ptr to to data		*/
- 	NhlConvertArgList	args,	/* add'n args for conversion	*/
-	int			nargs	/* number of args		*/
+	NrmValue		*to	/* ptr to to data		*/
 #endif
 );
 

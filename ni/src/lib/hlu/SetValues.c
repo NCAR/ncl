@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.5 1994-02-08 20:15:43 boote Exp $
+ *      $Id: SetValues.c,v 1.6 1994-02-18 02:54:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
+#include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
 
@@ -165,7 +166,7 @@ SetValues
 	char*			base,	/* base address to write values to*/
 	NrmResourceList		resources,/* resource list with offsets	*/
 	int			num_res,/* number of resources		*/
-	_NhlExtArgList		args,	/* names and values of resources*/
+	_NhlArgList		args,	/* names and values of resources*/
 	int			nargs	/* number of args		*/
 )
 #else
@@ -174,7 +175,7 @@ SetValues
 	char*			base;	/* base address to write values to*/
 	NrmResourceList		resources;/* resource list with offsets	*/
 	int			num_res;/* number of resources		*/
-	_NhlExtArgList		args;	/* names and values of resources*/
+	_NhlArgList		args;	/* names and values of resources*/
 	int			nargs;	/* number of args		*/
 #endif
 {
@@ -202,24 +203,25 @@ SetValues
 					resources[j].nrm_size);
 				}
 				else if(_NhlConverterExists(args[i].type,
-					resources[j].nrm_type,NrmNULLQUARK)){
+							resources[j].nrm_type)){
 					/* 
 					 * call converter
 					 */
 					NrmValue	from, to;
 
-					from.size = sizeof(NhlPointer);
-					from.addr = (void*)args[i].value;
+					from.size = sizeof(_NhlArgVal);
+					from.data = args[i].value;
 					to.size = resources[j].nrm_size;
-					to.addr =(void *)((char*)base +
+					to.data.ptrval = ((char*)base +
 						resources[j].nrm_offset);
 
-					if(NhlNOERROR != _NhlConvertData(context,
+					if(NhlNOERROR!=_NhlConvertData(context,
 							args[i].type,
 							resources[j].nrm_type,
 							&from, &to)){
 					
-						NhlPError(NhlWARNING,NhlEUNKNOWN,
+						NhlPError(NhlWARNING,
+							NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
 					NrmNameToString(resources[i].nrm_name));
 						ret = MIN(NhlWARNING,ret);
@@ -268,13 +270,13 @@ _NhlSetValues
 #if	__STDC__
 (
 	NhlLayer	l,		/* layer instance	*/
-	_NhlExtArgList	args,		/* args to change	*/
+	_NhlArgList	args,		/* args to change	*/
 	int		nargs		/* number of args	*/
 )
 #else
 (l,args,nargs)
 	NhlLayer	l;		/* layer instance	*/
-	_NhlExtArgList	args;		/* args to change	*/
+	_NhlArgList	args;		/* args to change	*/
 	int		nargs;		/* number of args	*/
 #endif
 {
@@ -282,12 +284,11 @@ _NhlSetValues
 	NhlLayer		oldl, reql;
 	NhlLayerClass		lc = _NhlClass(l);
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
-	_NhlExtArg		stackargs[_NhlMAXARGLIST];
-	_NhlExtArgList		largs=stackargs;
+	_NhlArg			stackargs[_NhlMAXARGLIST];
+	_NhlArgList		largs=stackargs;
 	int			nlargs;
 	_NhlChildArgList	child_args=NULL;
 	NhlBoolean		child_args_used[_NhlMAXARGLIST];
-	_NhlArg			sval_args[_NhlMAXARGLIST];
 	_NhlChildArgList	targnode=NULL;
 	_NhlChildList		tchldnode=NULL;
 	_NhlConvertContext	context;
@@ -416,14 +417,10 @@ _NhlSetValues
 
 	memcpy((char*)reql,(char*)l,(int)lc->base_class.layer_size);
 
-	for(i=0;i<nlargs;i++){
-		sval_args[i].quark = largs[i].quark;
-		sval_args[i].value = largs[i].value;
-	}
-	lret = CallSetValues(lc,oldl,reql,l,sval_args,nlargs);
+	lret = CallSetValues(lc,oldl,reql,l,largs,nlargs);
 	ret = MIN(lret,ret);
 
-	lret = CallSetValuesHook(lc,oldl,reql,l,sval_args,nlargs);
+	lret = CallSetValuesHook(lc,oldl,reql,l,largs,nlargs);
 	ret = MIN(lret,ret);
 
 	/*
@@ -503,18 +500,13 @@ NhlVASetValues
 {
         va_list         ap; 
 	int             num_args; 
-	_NhlExtArg	args[_NhlMAXARGLIST];
+	_NhlArg		args[_NhlMAXARGLIST];
 	NhlErrorTypes	ret;
-	NhlLayer		l = NULL;
-
-	/* count the variable args */
-	VA_START(ap,id); 
-	num_args = _NhlCountSetVarList(ap); 
-	va_end(ap); 
+	NhlLayer	l = NULL;
 
 	/* create an arglist from the varargs */
 	VA_START(ap,id); 
-	_NhlVarToSetArgList(ap,args,num_args); 
+	num_args = _NhlVarToSetArgList(ap,args); 
 	va_end(ap); 
 
 	l = _NhlGetLayer(id);
@@ -560,7 +552,7 @@ NhlALSetValues
 	int		nargs;		/* num SArg's		*/
 #endif
 {
-	_NhlExtArg	args[_NhlMAXARGLIST];
+	_NhlArg		args[_NhlMAXARGLIST];
 	NhlErrorTypes	ret;
 	NhlLayer		l = NULL;
 
@@ -608,7 +600,7 @@ NhlSetValues
 	int		rlid;		/* RL id		*/
 #endif
 {
-	_NhlExtArg	args[_NhlMAXARGLIST];
+	_NhlArg		args[_NhlMAXARGLIST];
 	int		nargs;
 	NhlLayer	l = _NhlGetLayer(id);
 
@@ -654,22 +646,22 @@ SetValuesChild
 (
 	int		pid,		/* pid			*/
 	NhlLayer	parent,		/* parent of child	*/
-	_NhlExtArgList	sargs,		/* resources to set	*/
+	_NhlArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
 )
 #else
 (pid,parent,sargs,num_sargs)
 	int		pid;		/* pid			*/
 	NhlLayer	parent;		/* parent of child	*/
-	_NhlExtArgList	sargs;		/* resources to set	*/
+	_NhlArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
 #endif
 {
 	int			i;
 	int			num_pargs=0;
-	_NhlExtArgList		pargs = NULL;
+	_NhlArgList		pargs = NULL;
 	int			num_args=0;
-	_NhlExtArg		args[_NhlMAXARGLIST];
+	_NhlArg			args[_NhlMAXARGLIST];
 	_NhlChildArgList	targnode=NULL;
 	NhlErrorTypes		ret=NhlNOERROR;
 	_NhlChildList		tchldnode=NULL;
@@ -795,18 +787,14 @@ _NhlSetValuesChild
 {
 	va_list			ap;
 	int			num_vargs;
-	_NhlExtArg		vargs[_NhlMAXARGLIST];
+	_NhlArg			vargs[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	/*
 	 * retrieve the var arg list
 	 */
 	VA_START(ap,parent);
-	num_vargs = _NhlCountSetVarList(ap);
-	va_end(ap);
-
-	VA_START(ap,parent);
-	_NhlVarToSetArgList(ap,vargs,num_vargs);
+	num_vargs = _NhlVarToSetArgList(ap,vargs);
 	va_end(ap);
 
 	ret = SetValuesChild(pid,parent,vargs,num_vargs);
@@ -860,7 +848,7 @@ _NhlALSetValuesChild
 	int		nargs;		/* number args		*/
 #endif
 {
-	_NhlExtArg		args[_NhlMAXARGLIST];
+	_NhlArg			args[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	_NhlSArgToSetArgList(args,args_in,nargs);

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.2 1993-10-19 17:53:03 boote Exp $
+ *      $Id: VarArg.c,v 1.3 1994-02-18 02:54:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,84 +24,6 @@
 #include <ncarg/hlu/VarArg.h>
 
 /*
- * Function:	_NhlCountSetVarList
- *
- * Description:	This function is used to count the number of resources that
- *		are being referenced in the given var arg list.
- *
- * In Args:	va_list	list	The variable argument list
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	int - the number of resources to set
- * Side Effect:	
- */
-int
-_NhlCountSetVarList
-#if	__STDC__
-(
-	va_list	list	/* The variable argument list	*/
-)
-#else
-(list)
-	va_list	list;	/* The variable argument list	*/
-#endif
-{
-	NhlString	name = NULL;
-	int		count = 0;
-
-	for(name = (NhlString)(va_arg(list, NhlString)); name != NULL;
-				name = (NhlString)(va_arg(list, NhlString))){
-		if(_NhlIsFloatRes(name))
-			(void)va_arg(list, double);
-		else
-			/*SUPPRESS 112*/
-			(void)va_arg(list, _NhlArgVal);
-		count++;
-	}
-
-	return(count);
-}
-
-/*
- * Function:	_NhlCountGetVarList
- *
- * Description:	This function is used to count the number of resources that
- *		are being referenced in the given var arg list.
- *
- * In Args:	va_list	list	The variable argument list
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	int - the number of resources to set
- * Side Effect:	
- */
-int
-_NhlCountGetVarList
-#if	__STDC__
-(
-	va_list	list	/* The variable argument list	*/
-)
-#else
-(list)
-	va_list	list;	/* The variable argument list	*/
-#endif
-{
-	NhlString	name = NULL;
-	int		count = 0;
-
-	for(name = va_arg(list, NhlString); name != NULL;
-						name = va_arg(list, NhlString)){
-		(void)va_arg(list, _NhlArgVal);
-		count++;
-	}
-
-	return(count);
-}
-
-/*
  * Function:	_NhlVarToSetArgList
  *
  * Description:	This function is used to take a vararg list with resource
@@ -114,89 +36,44 @@ _NhlCountGetVarList
  * Out Args:    _NhlArgList     *args   pointer to return arglist in 
  * 
  * Scope:       Global Private
- * Returns:     NULL 
+ * Returns:     int	number of args filled in. 
  * Side Effect: 
  */ 
-void 
+int 
 _NhlVarToSetArgList 
 #if     __STDC__ 
 ( 
-	va_list		ap,		/* vararg list  */ 
-	_NhlExtArgList	args,		/* pointer to return arglist in */ 
-	int		num_vargs	/* number of arg pairs in ap    */ 
+	va_list		list,		/* vararg list  */ 
+	_NhlArgList	args		/* pointer to return arglist in */ 
 ) 
 #else 
-(ap,args,num_vargs) 
-	va_list		ap;		/* vararg list  */ 
-	_NhlExtArgList	args;		/* pointer to return arglist in */ 
-	int		num_vargs;	/* number of arg pairs in ap    */ 
+(ap,args) 
+	va_list		list;		/* vararg list  */ 
+	_NhlArgList	args;		/* pointer to return arglist in */ 
 #endif 
 { 
-	register int	i;
-	double		tmp;
+	register int	i=0;
 	NhlString	name=NULL;
 
-	if(num_vargs == 0){
-		return;
-	}
+	for(name = va_arg(list,NhlString); name != NULL;
+						name = va_arg(list,NhlString)){
 
-	for(i=0; i < num_vargs; i++){
-		name = (NhlString)va_arg(ap,NhlString); 
-		args[i].quark = NrmStringToQuark(name);
-
-		if(_NhlIsFloatRes(name)){
-			tmp = va_arg(ap,double);
-			*(float *)&(args[i].value) =(float)tmp;
+		if(i >= _NhlMAXARGLIST){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"_NhlVarToSetArgList:Only %d args can be passed in-Ignoring the rest",
+								_NhlMAXARGLIST);
+			break;
 		}
+
+		if(_NhlIsFloatRes(name))
+			args[i].value.fltval = (float)va_arg(list,double);
 		else
-			args[i].value = (_NhlArgVal)va_arg(ap,_NhlArgVal);
+			args[i].value.lngval = va_arg(list,long);
 
-		args[i].type = NrmNULLQUARK;
-	}
-
-	return;
-}
-
-/*
- * Function:	_NhlVarToGetArgList
- *
- * Description:	This function is used to take a vararg list with resource
- *		names and addresses and convert it into an arglist that will
- *		be used to retrieve the named resources into the given addresses
- *
- * In Args:     va_list ap              vararg list 
- *              int     num_vargs       number of argument pairs in ap 
- * 
- * Out Args:    _NhlArgList     *args   pointer to return arglist in 
- * 
- * Scope:       Global Private
- * Returns:     NULL 
- * Side Effect: 
- */ 
-void 
-_NhlVarToGetArgList 
-#if     __STDC__ 
-( 
-	va_list		ap,		/* vararg list			*/ 
-	_NhlExtArgList	args,		/* pointer to return arglist in	*/ 
-	int		num_vargs	/* number of arg pairs in ap	*/ 
-) 
-#else 
-(ap,args,num_vargs) 
-	va_list		ap;		/* vararg list			*/ 
-	_NhlExtArgList	args;		/* pointer to return arglist in	*/ 
-	int		num_vargs;	/* number of arg pairs in ap	*/ 
-#endif 
-{ 
-	register int	i;
-	NhlString	name=NULL;
-
-	for(i=0; i < num_vargs; i++){
-		name = va_arg(ap,NhlString); 
 		args[i].quark = NrmStringToQuark(name);
-		args[i].value = va_arg(ap,_NhlArgVal);
 		args[i].type = NrmNULLQUARK;
+		i++;
 	}
 
-	return;
+	return i;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.6 1994-01-27 21:23:37 boote Exp $
+ *      $Id: LabelBar.c,v 1.7 1994-02-18 02:54:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3686,7 +3686,7 @@ static NhlErrorTypes	LabelBarGetValues
 					  "LabelBarGetValues",type);
 				return NhlFATAL;
 			}
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 	}
 

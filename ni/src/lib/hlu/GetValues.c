@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.4 1994-01-27 21:23:04 boote Exp $
+ *      $Id: GetValues.c,v 1.5 1994-02-18 02:54:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,12 @@
 #include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
+#include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
+
+static	NrmQuark	stringQ;
+static	NrmQuark	genQ;
 
 /*
  * Function:	GetValues
@@ -54,7 +58,7 @@ GetValues
  	char*		base,		/* base address to copy vals from */
 	NrmResourceList	resources,	/* resource list with offsets	*/
 	int		num_res,	/* number of resources		*/
-	_NhlExtArgList	args,		/* names of resources to retrieve*/
+	_NhlArgList	args,		/* names of resources to retrieve*/
 	int		nargs		/* number of args		*/
 )
 #else
@@ -62,7 +66,7 @@ GetValues
  	char*		base;		/* base address to copy vals from */
 	NrmResourceList	resources;	/* resource list with offsets	*/
 	int		num_res;	/* number of resources		*/
-	_NhlExtArgList	args;		/* names of resources to retrieve*/
+	_NhlArgList	args;		/* names of resources to retrieve*/
 	int		nargs;		/* number of args		*/
 #endif
 {
@@ -83,12 +87,19 @@ GetValues
 		for(j=0; j < num_res; j++){
 			if(args[i].quark == resources[j].nrm_name){
 				if(args[i].type != NrmNULLQUARK){
-					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-						"Unimplimented Feature"));
-					break;
+					*args[i].type_ret=resources[j].nrm_type;
+					*args[i].size_ret=resources[j].nrm_size;
+					if(*args[i].type_ret == stringQ){
+						*args[i].free_func =
+							(_NhlFreeFunc)NhlFree;
+					}
+					else if((*args[i].type_ret == genQ){
+						*args[i].free_func =
+						(_NhlFreeFunc)NhlFreeGenArray;
+					}
 				}
-				_NhlCopyToArg(
-					(char*)(base + resources[j].nrm_offset),
+				_NhlCopyToArg((NhlPointer)
+					(base + resources[j].nrm_offset),
 					&args[i].value,
 					resources[j].nrm_size);
 				argfound[i] = True;
@@ -181,26 +192,25 @@ _NhlGetValues
 #if	__STDC__
 (
 	NhlLayer	l,		/* layer instance	*/
-	_NhlExtArgList	args,		/* args to retrieve	*/
+	_NhlArgList	args,		/* args to retrieve	*/
 	int		nargs		/* number of args	*/
 )
 #else
 (l,args,nargs)
 	NhlLayer	l;		/* layer instance	*/
-	_NhlExtArgList	args;		/* args to retrieve	*/
+	_NhlArgList	args;		/* args to retrieve	*/
 	int		nargs;		/* number of args	*/
 #endif
 {
 	int			i;
 	NhlLayerClass		lc = _NhlClass(l);
-	_NhlExtArg		stackargs[_NhlMAXARGLIST];
-	_NhlExtArgList		largs=stackargs;
+	_NhlArg		stackargs[_NhlMAXARGLIST];
+	_NhlArgList		largs=stackargs;
 	int			nlargs;
 	_NhlChildArgList	targnode=NULL;
 	_NhlChildArgList	chld_args=NULL;
 	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
 	_NhlChildList		tchldnode=NULL;
-	_NhlArg			get_args[_NhlMAXARGLIST];
 	NhlErrorTypes		ret= NhlNOERROR, lret = NhlNOERROR;
 
 	if(l == NULL){
@@ -290,16 +300,167 @@ _NhlGetValues
 				lc->base_class.num_resources, largs, nlargs);
 
 	if(lret != NhlFATAL) {
-		int i;
-		for(i=0;i<nargs;i++){
-			get_args[i].quark = args[i].quark;
-			get_args[i].value = args[i].value;
-		}
 		ret = MIN(ret,lret);
-		lret = CallGetValues(lc,l,get_args,nargs);
+		lret = CallGetValues(lc,l,args,nargs);
 	}
 
 	return MIN(ret,lret);
+}
+
+/*
+ * Function:	NhlGetValues
+ *
+ * Description:	This function retrieves the resources specified by the
+ *		resource name/addr pairs given in the RL.  It retrieves
+ *		the given resource from the layer specified and puts the
+ *		value in the space pointed to by the addr
+ *
+ * In Args:	int		pid;	id for layer to get values from
+ *		...			name part of resource name/addr pairs
+ *
+ * Out Args:	...			*addr of resource name/addr pairs
+ *
+ * Scope:	Global Public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlDOCTAG(NhlGetValues)
+/*VARARGS1*/
+NhlErrorTypes
+NhlGetValues
+#if	__STDC__
+(
+	int		pid,		/* id for layer instance	*/
+	int		rlid		/* RL id			*/
+)
+#else
+(pid,rlid)
+	int		pid;		/* id for layer instance	*/
+	int		rlid;		/* RL id			*/
+#endif
+{
+	_NhlArg			args[_NhlMAXARGLIST];
+	_NhlArg			gargs[_NhlMAXARGLIST];
+	_NhlGArgExtra		gextra[_NhlMAXARGLIST];
+	int			nargs,i;
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlErrorTypes		ret = NhlNOERROR;
+	_NhlConvertContext	context=NULL;
+
+	if(l == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlGetValues:PID #%d is invalid",pid);
+		return NhlFATAL;
+	}
+
+	if(!_NhlRLToArgList(rlid,NhlGETRL,args,&nargs)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlGetValues:Invalid RL id %d",
+									rlid);
+		return NhlFATAL;
+	}
+
+	/*
+	 * Add indirection information for free_func and type_ret.
+	 */
+	for(i=0;i<nargs;i++){
+		gargs[i].quark = args[i].quark;
+		gargs[i].value.ptrval = &gextra[i].value_ret;
+		gargs[i].type = args[i].type;
+		gextra[i].type_ret = NrmNULLQUARK;
+		gextra[i].free_func = NULL;
+		gargs[i].type_ret = &gextra[i].type_ret;
+		gargs[i].size_ret = &gextra[i].size_ret;
+		gargs[i].free_func = &gextra[i].free_func;
+	}
+
+	ret = _NhlGetValues(l,gargs,nargs);
+
+	if(ret < NhlWARNING)
+		return ret;
+
+	/*
+	 * Convert data. Freeing objects data if necessary.
+	 */
+	for(i=0;i<nargs;i++){
+		/*
+		 * if type is NrmNULLQUARK then don't do conversion stuff.
+		 */
+		if((gargs[i].type == NrmNULLQUARK) ||
+					(gargs[i].type == gextra[i].type_ret)){
+			_NhlCopyFromArg(gextra[i].value_ret,
+				args[i].value.ptrval,gextra[i].size_ret);
+		}
+		else if(_NhlConverterExists(gextra[i].type_ret,args[i].type)){
+			/*
+			 * Call Converter
+			 */
+			NrmValue	from, to;
+
+			from.size = gextra[i].size_ret;
+			from.data = gextra[i].value_ret;
+			/*
+			 * This size is kind of bogus - I really don't know
+			 * how large the space is that the users pointer
+			 * is addressing.  In practice it isn't so bad since
+			 * the user told us the "Name" of the type they are
+			 * pointing at, and the converter function should
+			 * know what type it is pointing at.  _NhlArgVal
+			 * should be the "largest" size supported - and it
+			 * is since it's a union of all the supported types.
+			 */
+			to.size = sizeof(_NhlArgVal);
+			to.data = args[i].value;
+
+			if(context == NULL)
+				context = _NhlCreateConvertContext();
+
+			if(NhlNOERROR != _NhlConvertData(context,
+				gextra[i].type_ret,args[i].type,&from,&to)){
+
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"NhlGetValues:Error retrieving %s",
+					NrmQuarkToString(args[i].quark));
+
+				ret = MIN(ret,NhlWARNING);
+			}
+
+			/*
+			 * if converted to a string - copy memory.
+			 */
+			if(args[i].type == stringQ){
+				NhlString	tstr =
+					*(NhlString *)args[i].value.ptrval;
+				*(NhlString *)args[i].value.ptrval =
+						NhlMalloc(strlen(tstr) + 1);
+				if(*(NhlString *)args[i].value.ptrval == NULL){
+					NhlPError(NhlWARNING,ENOMEM,
+					"NhlGetValues:Unable to retrieve %s",
+					NrmQuarkToString(args[i].quark));
+					ret = MIN(ret,NhlWARNING);
+				}
+				else
+					strcpy(
+					*(NhlString*)args[i].value.ptrval,
+									tstr);
+			}
+
+			if(gextra[i].free_func != NULL)
+				(*(gextra[i].free_func))
+					(gextra[i].value_ret.ptrval);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"NhlGetValues:%s unretrievable: Can't convert a \"%s\" to a \"%s\"",
+					NrmQuarkToString(args[i].quark),
+					NrmQuarkToString(gextra[i].type_ret),
+						NrmQuarkToString(args[i].type));
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	_NhlFreeConvertContext(context);
+
+	return ret;
 }
 
 /*
@@ -335,30 +496,43 @@ NhlVAGetValues
 	va_dcl				/* res/addr pairs	*/
 #endif	/* NeedVarArgProto */
 {
-	va_list         ap; 
-	int             num_args; 
-	_NhlExtArg	args[_NhlMAXARGLIST];
-	NhlErrorTypes	ret;
-	NhlLayer	l = NULL;
+	va_list         ap;
+	NhlString	name;
+	int             i = 0;
+	_NhlArg		args[_NhlMAXARGLIST];
+	NhlLayer	l = _NhlGetLayer(pid);
+	NrmQuark	type_ret;
+	_NhlFreeFunc	free_func;
+	unsigned int	size_ret;
 
-	/* count var args */
-	VA_START(ap,pid); 
-	num_args = _NhlCountGetVarList(ap); 
-	va_end(ap); 
-
-	/* create an arglist from varargs */
-	VA_START(ap,pid); 
-	_NhlVarToGetArgList(ap,args,num_args); 
-	va_end(ap); 
-
-	l = _NhlGetLayer(pid);
 	if(l == NULL){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to access plot w/PID %d",pid);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlVAGetValues:Unable to access object w/ID %d",pid);
 		return(NhlFATAL);
 	}
-	ret = _NhlGetValues(l,args,num_args);
 
-	return(ret);
+	VA_START(ap,pid); 
+	for(name = va_arg(ap,NhlString); name != NULL;
+						name = va_arg(ap,NhlString)){
+
+		if(i >= _NhlMAXARGLIST){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlVAGetValues:Only %d args can be passed in-Ignoring rest",
+								_NhlMAXARGLIST);
+			break;
+		}
+
+		args[i].quark = NrmStringToQuark(name);
+		args[i].value.ptrval = va_arg(ap,NhlPointer);
+		args[i].type_ret = &type_ret;
+		args[i].size_ret = &size_ret;
+		args[i].free_func = &free_func;
+		args[i].type = NrmNULLQUARK;
+		i++;
+	}
+	va_end(ap); 
+
+	return _NhlGetValues(l,args,i);
 }
 
 /*
@@ -396,20 +570,57 @@ NhlALGetValues
 	int		nargs;		/* num of GArg's		*/
 #endif
 {
-	_NhlExtArg	args[_NhlMAXARGLIST];
-	NhlErrorTypes	ret;
-	NhlLayer	l = NULL;
+	_NhlArg		args[_NhlMAXARGLIST];
+	NhlLayer	l = _NhlGetLayer(pid);
+	int		i;
+	NrmQuark	type_ret;
+	unsigned int	size_ret;
+	_NhlFreeFunc	free_func;
 
-	/* create an arglist from gargs */
-	_NhlGArgToGetArgList(args,gargs,nargs); 
-
-	l = _NhlGetLayer(pid);
 	if(l == NULL){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to access plot w/PID %d",
-									pid);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlALGetValues:Unable to access object w/ID %d",pid);
 		return(NhlFATAL);
 	}
-	ret = _NhlGetValues(l,args,nargs);
 
-	return(ret);
+	for(i=0;i<nargs;i++){
+		args[i].quark = NrmStringToQuark(gargs[i].resname);
+		args[i].value = gargs[i].value;
+		args[i].type_ret = &type_ret;
+		args[i].size_ret = &size_ret;
+		args[i].free_func = &free_func;
+		args[i].type = NrmNULLQUARK;
+	}
+
+
+	return _NhlGetValues(l,args,nargs);
+}
+
+/*
+ * Function:	_NhlInitGetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlInitGetValues
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	stringQ = NrmStringToQuark(NhlTString);
+	genQ = NrmStringToQuark(NhlTGenArray);
+
+	return;
 }

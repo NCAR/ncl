@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.6 1994-01-27 21:23:54 boote Exp $
+ *      $Id: Legend.c,v 1.7 1994-02-18 02:54:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -4057,7 +4057,7 @@ static NhlErrorTypes	LegendGetValues
 					  "LegendGetValues",type);
 				return NhlFATAL;
 			}
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 	}
 

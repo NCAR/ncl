@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.10 1994-02-08 20:15:28 boote Exp $
+ *      $Id: DataComm.c,v 1.11 1994-02-18 02:54:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,14 @@ static NhlErrorTypes DataCommSetValuesHook(
 #endif
 );
 
+static NhlErrorTypes DataCommGetValues(
+#if	NhlNeedProto
+	NhlLayer	l,	/* NhlLayer	*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+#endif
+);
+
 static NhlErrorTypes DataCommDestroy(
 #if	NhlNeedProto
 	NhlLayer	l	/* layer to destroy	*/
@@ -120,7 +128,7 @@ NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 /* layer_initialize		*/	DataCommInitialize,
 /* layer_set_values		*/	DataCommSetValues,
 /* layer_set_values_hook	*/	DataCommSetValuesHook,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	DataCommGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	DataCommDestroy,
 
@@ -270,7 +278,7 @@ AddData
 	int			i;
 	NhlGenArray		gen=NULL,newgen=NULL;
 	_NhlInternDataList	dlistold=NULL,dlistnew=NULL;
-	NhlLayer			dil = _NhlGetLayer((int)from->addr);
+	NhlLayer		dil = _NhlGetLayer(from->data.intval);
 	NhlErrorTypes		ret=NhlNOERROR;
 
 	if(nargs != 0){
@@ -280,11 +288,11 @@ AddData
 
 	if((dil == NULL) || !(_NhlIsDataItem(dil) || _NhlIsDataSpec(dil))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"AddData:invalid Data Object %d",
-							(int)from->addr);
+							from->data.intval);
 		return NhlFATAL;
 	}
 
-	gen = *(NhlGenArray*)(to->addr);
+	gen = *(NhlGenArray*)(to->data.ptrval);
 
 	if((gen == NULL) || (gen->data == NULL)){
 		int	*tintptr;
@@ -301,7 +309,7 @@ AddData
 		newgen->num_elements = 1;
 		newgen->typeQ = NrmStringToQuark(NhlTInteger);
 		newgen->size = sizeof(int);
-		*tintptr = (int)from->addr;
+		*tintptr = from->data.intval;
 		newgen->data = tintptr;
 		newgen->my_data = False; /* doesn't matter - will be free'd from
 					convert context. */
@@ -373,7 +381,7 @@ AddData
 		dlistnew->extra = dnode;
 	}
 
-	*(NhlGenArray *)(to->addr) = newgen;
+	*(NhlGenArray *)(to->data.ptrval) = newgen;
 
 	return ret;
 }
@@ -414,7 +422,7 @@ RemoveData
 	int			i;
 	NhlGenArray		gen=NULL,newgen=NULL;
 	_NhlInternDataList	dlistold=NULL,dlistnew=NULL;
-	NhlLayer			dil = _NhlGetLayer((int)from->addr);
+	NhlLayer		dil = _NhlGetLayer(from->data.intval);
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"RemoveData:called incorrectly???");
@@ -422,12 +430,12 @@ RemoveData
 	}
 
 	if((dil == NULL) || !(_NhlIsDataItem(dil) || _NhlIsDataSpec(dil))){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"RemoveData:invalid Data Object %d",
-							(int)from->addr));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			"RemoveData:invalid Data Object %d",from->data.intval));
 		return NhlFATAL;
 	}
 
-	gen = *(NhlGenArray*)(to->addr);
+	gen = *(NhlGenArray*)(to->data.ptrval);
 	if((gen == NULL) || (gen->data == NULL)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"RemoveData:Data Object \"%s\" isn't in DataList",
@@ -487,7 +495,7 @@ RemoveData
 
 	dlistold->extra = dnode;
 
-	*(NhlGenArray*)(to->addr) = newgen;
+	*(NhlGenArray*)(to->data.ptrval) = newgen;
 
 	return NhlNOERROR;
 }
@@ -530,7 +538,7 @@ CvtGenToData
 		return NhlFATAL;
 	}
 
-	*(NhlGenArray*)(to->addr) = (NhlGenArray)from->addr;
+	*(NhlGenArray*)(to->data.ptrval) = (NhlGenArray)from->data.ptrval;
 
 	return NhlNOERROR;
 }
@@ -572,7 +580,7 @@ CvtIntToData
 		return NhlFATAL;
 	}
 
-	return NhlReConvertData(NhlTInteger,NhlTGenArray,from,to,args,nargs);
+	return NhlReConvertData(NhlTInteger,NhlTGenArray,from,to);
 }
 
 
@@ -622,6 +630,7 @@ DataCommClassPartInitialize
 }
 
 static NrmQuark	QListCompiled = NrmNULLQUARK;
+static NrmQuark	QGenArray = NrmNULLQUARK;
 
 /*
  * Function:	DataCommClassInitialize
@@ -649,6 +658,7 @@ DataCommClassInitialize
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
 	QListCompiled = NrmStringToQuark(_NhlTDListCompiled);
+	QGenArray = NrmStringToQuark(NhlTGenArray);
 
 	ret = NhlRegisterConverter(_NhlTAddData,_NhlTDataList,AddData,NULL,0,
 								False,NULL);
@@ -1029,6 +1039,95 @@ DataCommSetValues
 	}
 
 	return ret;
+}
+
+/*
+ * Function:	DataCommGetValues
+ *
+ * Description:	This is the getvalues method def for the DataComm class.
+ *		It takes any data resources the user retrieves. It turns
+ *		the compiled data list into a gen array.
+ *		
+ *
+ * In Args:	
+ *		NhlLayer	old,	old
+ *		NhlLayer	req,	requested
+ *		NhlLayer	new,	new
+ *		_NhlArgList	args,	args
+ *		int		nargs	nargs
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+DataCommGetValues
+#if	__STDC__
+(
+	NhlLayer	l,	/* layer	*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+)
+#else
+(l,args,nargs)
+	NhlLayer	l;	/* layer	*/
+	_NhlArgList	args;	/* args		*/
+	int		nargs;	/* nargs	*/
+#endif
+{
+	NhlDataCommLayerClass	cc = (NhlDataCommLayerClass)
+							l->base.layer_class;
+	_NhlDataOffset		oset;
+	_NhlInternDataList	ilist;
+	NhlGenArray		gen;
+	int			i,j, *iarray;
+	int			len;
+
+	for(i=0;i < nargs; i++){
+		for(oset = cc->datacomm_class.data_offsets;
+					oset != NULL; oset = oset->next)
+			if(args[i].quark == oset->res_name)
+				break;
+
+		if(oset == NULL)
+			continue;
+
+		gen = *(NhlGenArray*)((char*)l + oset->offset);
+		if(gen == NULL){
+			len = 0;
+			iarray = NULL;
+		}
+		else{
+			ilist = (_NhlInternDataList)gen->data;
+			len = ilist->num_items;
+			iarray = NhlMalloc(sizeof(int)*len);
+			if(iarray == NULL){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+
+			for(j=0;j < len;j++)
+				iarray[j] = ilist->list[j]->id;
+		}
+
+		gen = _NhlCreateGenArray(iarray,NhlTInteger,sizeof(int),1,&len,
+									False);
+		if(gen == NULL){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		gen->my_data = True;
+
+		*(NhlGenArray *)args[i].value.ptrval = gen;
+		*args[i].type_ret = QGenArray;
+		*args[i].size_ret = sizeof(NhlGenArray);
+		*args[i].free_func = (_NhlFreeFunc)NhlFreeGenArray;
+	}
+
+	return NhlNOERROR;
 }
 
 /*
@@ -1910,8 +2009,8 @@ NhlAddData
 	int		ditemid;	/* id of data to add		*/
 #endif
 {
-	_NhlExtArg	larg;
-	NhlLayer		dcl = _NhlGetLayer(dcommid);
+	_NhlArg		larg;
+	NhlLayer	dcl = _NhlGetLayer(dcommid);
 
 	if((dcl == NULL) || !_NhlIsDataComm(dcl)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1920,7 +2019,7 @@ NhlAddData
 	}
 
 	larg.quark = NrmStringToQuark(res_name);
-	larg.value = ditemid;
+	larg.value.intval = ditemid;
 	larg.type = NrmStringToQuark(_NhlTAddData);
 
 	return _NhlSetValues(dcl,&larg,1);
@@ -1958,8 +2057,8 @@ NhlRemoveData
 	int		ditemid;	/* id of data to rm		*/
 #endif
 {
-	_NhlExtArg	larg;
-	NhlLayer		dcl = _NhlGetLayer(dcommid);
+	_NhlArg		larg;
+	NhlLayer	dcl = _NhlGetLayer(dcommid);
 
 	if((dcl == NULL) || !_NhlIsDataComm(dcl)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1968,7 +2067,7 @@ NhlRemoveData
 	}
 
 	larg.quark = NrmStringToQuark(res_name);
-	larg.value = ditemid;
+	larg.value.intval = ditemid;
 	larg.type = NrmStringToQuark(_NhlTRemoveData);
 
 	return _NhlSetValues(dcl,&larg,1);

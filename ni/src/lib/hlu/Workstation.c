@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.6 1994-01-27 21:27:20 boote Exp $
+ *      $Id: Workstation.c,v 1.7 1994-02-18 02:55:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1907,7 +1907,7 @@ static NhlErrorTypes	WorkstationGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		} else if (args[i].quark == bkgnd_name) {
 
 			tmp = (NhlColor*) NhlMalloc(sizeof(NhlColor));
@@ -1927,7 +1927,7 @@ static NhlErrorTypes	WorkstationGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 
 		} else if (args[i].quark == foregnd_name) {
 
@@ -1948,7 +1948,7 @@ static NhlErrorTypes	WorkstationGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 
 		} else if (args[i].quark == marker_tbl_strings_name) {
 			if ((s_p = (NhlString *) 
@@ -1981,7 +1981,7 @@ static NhlErrorTypes	WorkstationGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 
 		} else if (args[i].quark == marker_tbl_params_name) {
 			if ((mtp_p = (NhlMarkerTableParams *)
@@ -2012,8 +2012,7 @@ static NhlErrorTypes	WorkstationGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
-
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 	}
 	return(NhlNOERROR);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.6 1994-01-27 21:25:19 boote Exp $
+ *      $Id: Overlay.c,v 1.7 1994-02-18 02:54:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -913,7 +913,7 @@ static NhlErrorTypes	OverlayGetValues
 				return NhlFATAL;
 			}
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 		else if (args[i].quark == Overlay_Recs) {
 				
@@ -952,7 +952,7 @@ static NhlErrorTypes	OverlayGetValues
 			}
 
 			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 			
 	}

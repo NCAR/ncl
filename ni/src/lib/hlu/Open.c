@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.2 1994-02-08 20:15:35 boote Exp $
+ *      $Id: Open.c,v 1.3 1994-02-18 02:54:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  *			initialize the hlu library.
  */
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>

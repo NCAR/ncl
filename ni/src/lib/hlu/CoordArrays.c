@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.8 1994-02-01 18:22:26 boote Exp $
+ *      $Id: CoordArrays.c,v 1.9 1994-02-18 02:54:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -945,7 +945,7 @@ CvtCArraysObjToFloatObj
 		return NhlFATAL;
 	}
 
-	carrl = (NhlCoordArraysLayer)_NhlGetLayer(*(int*)(from->addr));
+	carrl = (NhlCoordArraysLayer)_NhlGetLayer(from->data.intval);
 	if((carrl == NULL)||
 			(carrl->base.layer_class != NhlcoordArraysLayerClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1042,7 +1042,7 @@ CvtCArraysObjToFloatObj
 
 	NhlSetSArg(&sargs[nargs++],NhlNctCopyTables,False);
 
-	ret = NhlALCreate((int*)to->addr,"no.name",
+	ret = NhlALCreate(to->data.ptrval,"no.name",
 		NhlcoordArrTableFloatLayerClass,carrl->base.id,sargs,nargs);
 
 	NhlFreeGenArray(xtbl);

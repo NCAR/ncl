@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.h,v 1.2 1994-02-08 20:15:21 boote Exp $
+ *      $Id: Converters.h,v 1.3 1994-02-18 02:53:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,33 @@ extern NhlErrorTypes NhlCvtIntToEnum(
 );
 
 extern NhlErrorTypes NhlCvtFloatToEnum(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCvtEnumToString(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCvtEnumToInt(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCvtEnumToFloat(
 #ifdef	NhlNeedProto
 	NrmValue		*from,	/* ptr to from data	*/
 	NrmValue		*to,	/* ptr to to data	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.4 1994-01-27 21:27:58 boote Exp $
+ *      $Id: defs.h,v 1.5 1994-02-18 02:55:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,19 +50,22 @@
 #define NhlDEFUSRRESFNAME	"~/.hluresfile"
 #endif
 
+/* max characters in a "line" */
+#define _NhlMAXLINELEN (256)
+
 /* max characters in a filename */
 #define _NhlMAXFNAMELEN	(256)
 
 /* path delimiter - "/" in unix "\" in dos and I'm sure there are others */
 #define _NhlPATHDELIMITER	"/"
 
-/* maximuim depth of parent -> sub-parent -> child */
+/* max depth of parent -> sub-parent -> child */
 #define	_NhlMAXTREEDEPTH	(128)
 
-/* maximuin number of arguments that can be set in a single call*/
+/* max number of arguments that can be set in a single call*/
 /* The actual number is one less than this because the last one */
 /* gets filled with null to determine the length		*/
-#define	_NhlMAXARGLIST	(128)
+#define	_NhlMAXARGLIST	(256)
 
 /* maximuim number of resources a single object can have */
 #define	_NhlMAXRESLIST	(1024)

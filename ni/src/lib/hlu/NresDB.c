@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.2 1993-10-19 17:52:01 boote Exp $
+ *      $Id: NresDB.c,v 1.3 1994-02-18 02:54:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -924,7 +924,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 		    if (!entry->string)
 			RepType(entry) = type;
 		    /* identical size, just overwrite value */
-		    memcpy(RawValue(entry),value->addr,value->size);
+		    memcpy(RawValue(entry),value->data.ptrval,value->size);
 		    return;
 		}
 		/* splice out and free old entry */
@@ -978,7 +978,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	RepType(entry) = type;
     }
     /* save a copy of the value */
-    memcpy(RawValue(entry),value->addr,value->size);
+    memcpy(RawValue(entry),value->data.ptrval,value->size);
     (*pprev)->entries++;
     /* this is a new leaf, need to remember it for search lists */
     if (q > maxResourceQuark) {
@@ -1053,7 +1053,7 @@ void NrmQPutStringResource(pdb, bindings, quarks, str)
     NrmValue	value;
 
     if (!*pdb) *pdb = NewDatabase();
-    value.addr = (NhlPointer) str;
+    value.data.ptrval = (NhlPointer) str;
     value.size = strlen(str)+1;
     PutEntry(*pdb, bindings, quarks, NrmQString, &value);
 }
@@ -1472,7 +1472,7 @@ static void GetDatabase(db, permstr, filename, doall)
 
 	/* Store it in database */
 	value.size = ptr - value_str;
-	value.addr = (NhlPointer) value_str;
+	value.data.ptrval = (NhlPointer) value_str;
 	
 	PutEntry(db, bindings, quarks, NrmQString, &value);
     }
@@ -1507,7 +1507,7 @@ NrmPutStringRes
 
 	if (!*pdb) *pdb = NewDatabase();
 	NrmStringToBindingQuarkList(specifier, bindings, quarks);
-	value.addr = (NhlPointer) str;
+	value.data.ptrval = (NhlPointer) str;
 	value.size = strlen(str)+1;
 	PutEntry(*pdb, bindings, quarks, NrmQString, &value);
 }
@@ -1705,10 +1705,10 @@ static NhlBoolean EnumLTable(table, names, classes, level, closure)
 	    value.size = entry->size;
 	    if (entry->string) {
 		type = NrmQString;
-		value.addr = StringValue(entry);
+		value.data.ptrval = StringValue(entry);
 	    } else {
 		type = RepType(entry);
-		value.addr = DataValue(entry);
+		value.data.ptrval = DataValue(entry);
 	    }
 	    if ((*closure->proc)(&closure->db, closure->bindings+1,
 				 closure->quarks+1, &type, &value,
@@ -1980,7 +1980,7 @@ static NhlBoolean DumpEntry(db, bindings, quarks, type, value, data)
     if (*type != NrmQString)
 	(void) putc('!', stream);
     PrintBindingQuarkList(bindings, quarks, stream);
-    s = value->addr;
+    s = value->data.ptrval;
     i = value->size;
     if (*type == NrmQString) {
 	(void) fputs(":\t", stream);
@@ -2325,16 +2325,16 @@ NrmGetQResFromList
 	/* found a match */
 	if (entry->string) {
 	    *pType = NrmQString;
-	    pValue->addr = StringValue(entry);
+	    pValue->data.ptrval = StringValue(entry);
 	} else {
 	    *pType = RepType(entry);
-	    pValue->addr = DataValue(entry);
+	    pValue->data.ptrval = DataValue(entry);
 	}
 	pValue->size = entry->size;
 	return True;
     }
     *pType = NrmNULLQUARK;
-    pValue->addr = (NhlPointer)NULL;
+    pValue->data.ptrval = (NhlPointer)NULL;
     pValue->size = 0;
     return False;
 
@@ -2368,10 +2368,10 @@ static NhlBoolean GetVEntry(table, names, classes, closure)
     }
     if (entry->string) {
 	*closure->type = NrmQString;
-	closure->value->addr = StringValue(entry);
+	closure->value->data.ptrval = StringValue(entry);
     } else {
 	*closure->type = RepType(entry);
-	closure->value->addr = DataValue(entry);
+	closure->value->data.ptrval = DataValue(entry);
     }
     closure->value->size = entry->size;
     return True;
@@ -2408,10 +2408,10 @@ static NhlBoolean GetLooseVEntry(table, names, classes, closure)
     }
     if (entry->string) {
 	*closure->type = NrmQString;
-	closure->value->addr = StringValue(entry);
+	closure->value->data.ptrval = StringValue(entry);
     } else {
 	*closure->type = RepType(entry);
-	closure->value->addr = DataValue(entry);
+	closure->value->data.ptrval = DataValue(entry);
     }
     closure->value->size = entry->size;
     return True;
@@ -2517,7 +2517,7 @@ NhlBoolean NrmQGetResource(db, names, classes, pType, pValue)
 	}
     }
     *pType = NrmNULLQUARK;
-    pValue->addr = (NhlPointer)NULL;
+    pValue->data.ptrval = (NhlPointer)NULL;
     pValue->size = 0;
     return False;
 }

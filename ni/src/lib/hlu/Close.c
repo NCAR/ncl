@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.3 1994-02-08 20:15:08 boote Exp $
+ *      $Id: Close.c,v 1.4 1994-02-18 02:53:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.9 1994-02-08 20:16:30 boote Exp $
+ *      $Id: hluP.h,v 1.10 1994-02-18 02:55:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -98,53 +98,35 @@ typedef struct _NhlLayerRec *NhlLayer;
 
 typedef	NhlArgVal	_NhlArgVal;
 
-typedef struct _NhlArgRec{
-	NrmQuark	quark;
-	_NhlArgVal	value;
-} _NhlArg, *_NhlArgList;
-
-typedef struct _NhlExtArgRec{
-	NrmQuark	quark;
-	_NhlArgVal	value;
-	NrmQuark	type;
-} _NhlExtArg, *_NhlExtArgList;
-
-typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
-  
-struct _NhlChildArgRec{ 
-	NhlLayerClass		class; 
-	NhlBoolean		autosetval;
-	_NhlExtArgList		args; 
-	int			nargs; 
-	NhlBoolean		**args_used;
-	_NhlChildArgList	next; 
-}; 
-
-/*
- * these types are used by the RL interface
- */
-typedef struct _NhlRLNode_ _NhlRLNodeRec, *_NhlRLNode;
-typedef struct _NhlRLHead_ _NhlRLHeadRec, *_NhlRLHead;
 typedef void (*_NhlFreeFunc)(
 #if	NhlNeedProto
 	NhlPointer	ptr
 #endif
 );
 
-struct _NhlRLNode_ {
-	NrmQuark	nameQ;
-	NrmQuark	typeQ;
-	_NhlArgVal	value;
-	_NhlFreeFunc	free_func;
-	_NhlRLNode	left;
-	_NhlRLNode	right;
-};
+/*
+ * type_ret, size_ret and free_func are for the get_values method to use - they
+ * are not valid fields for set_values or create.
+ */
+typedef struct _NhlArgRec{
+	NrmQuark		quark;		/* resname Q		*/
+	_NhlArgVal		value;		/* val or ptr		*/
+	NrmQuark		type;		/* type of *value	*/
+	NrmQuark		*type_ret;
+	unsigned int		*size_ret;
+	_NhlFreeFunc		*free_func;
+} _NhlArg, *_NhlArgList;
 
-struct _NhlRLHead_ {
-	int		num;
-	NhlRLType	list_type;
-	_NhlRLNode	list;
-};
+typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
+  
+struct _NhlChildArgRec{ 
+	NhlLayerClass		class; 
+	NhlBoolean		autosetval;
+	_NhlArgList		args; 
+	int			nargs; 
+	NhlBoolean		**args_used;
+	_NhlChildArgList	next; 
+}; 
 
 /*
  * The len_dimensions member of the following struct points to an array
@@ -208,49 +190,9 @@ extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 
 extern void _NhlSArgToSetArgList(
 #if	NhlNeedProto
-	_NhlExtArgList	args,	/* args <return>	*/
+	_NhlArgList	args,	/* args <return>	*/
 	NhlSArgList	sargs,	/* args to set		*/
 	int		nargs	/* number of args	*/
-#endif
-);
-
-extern void _NhlGArgToGetArgList(
-#if	NhlNeedProto
-	_NhlExtArgList	args,	/* args <return>	*/
-	NhlGArgList	gargs,	/* args to retrieve	*/
-	int		nargs	/* number of args	*/
-#endif
-);
-
-extern NhlBoolean _NhlRLToArgList(
-#if	NhlNeedProto
-	int		id,	/* RL list			*/
-	NhlRLType	action,	/* type of RL action		*/
-	_NhlExtArgList	args,	/* args <return>		*/
-	int		*nargs	/* number of args <return>	*/
-#endif
-);
-
-extern void _NhlInitRLList(
-#if	NhlNeedProto
-	void
-#endif
-);
-
-extern void _NhlDestroyRLList(
-#if	NhlNeedProto
-	void
-#endif
-);
-
-extern NhlBoolean _NhlRLInsert(
-#if	NhlNeedProto
-	int		id,
-	NhlRLType	type_action,
-	int		nameQ,
-	int		typeQ,
-	_NhlArgVal	value,
-	_NhlFreeFunc	free_func
 #endif
 );
 
@@ -356,8 +298,8 @@ extern void _NhlDestroyLayerTable(
 
 extern NhlErrorTypes _NhlSetValues(
 #if	NhlNeedProto
-	NhlLayer		l,		/* layer instance	*/
-	_NhlExtArgList	args,		/* args to change	*/
+	NhlLayer	l,		/* layer instance	*/
+	_NhlArgList	args,		/* args to change	*/
 	int		nargs		/* number of args	*/
 #endif
 );

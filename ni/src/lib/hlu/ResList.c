@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.1 1994-02-08 20:15:37 boote Exp $
+ *      $Id: ResList.c,v 1.2 1994-02-18 02:54:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,13 +21,19 @@
  *			impliment the RL interface to the hlu libarary.
  */
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ResListP.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/VarArg.h>
 
 static _NhlRLHead *ListTable = NULL;
 static int num_lists = 0;
 static int table_len = 0;
 static NrmQuark	floatQ;
+static NrmQuark	intQ;
+static NrmQuark	stringQ;
 static NrmQuark	genQ;
+static NrmQuark	expMDQ;
+static NrmQuark	expMDTypeQ;
 
 /*
  * Function:	GetHead
@@ -44,7 +50,7 @@ static NrmQuark	genQ;
  */
 static _NhlRLHead*
 GetHead
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id
 )
@@ -76,7 +82,7 @@ GetHead
  */
 static _NhlRLNode
 CreateNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		nameQ,
 	int		typeQ,
@@ -121,7 +127,7 @@ CreateNode
  */
 static _NhlRLNode*
 GetNodePtr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlRLNode	*head,
 	int		nameQ
@@ -159,7 +165,7 @@ GetNodePtr
  */
 static void
 CleanNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlRLNode	node
 )
@@ -172,7 +178,7 @@ CleanNode
 		return;
 
 	if(node->free_func)
-		(*(node->free_func))((NhlPointer)node->value);
+		(*(node->free_func))((NhlPointer)node->value.ptrval);
 
 	return;
 }
@@ -192,7 +198,7 @@ CleanNode
  */
 NhlBoolean
 _NhlRLInsert
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		id,
 	NhlRLType	type_action,
@@ -270,7 +276,7 @@ _NhlRLInsert
  */
 int
 NhlRLCreate
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlRLType	list_type
 )
@@ -340,7 +346,7 @@ NhlRLCreate
  */
 static void
 FreeRLNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlRLNode	node
 )
@@ -361,7 +367,6 @@ FreeRLNode
 	return;
 }
 
-
 /*
  * Function:	NhlRLDestroy
  *
@@ -377,7 +382,7 @@ FreeRLNode
  */
 void
 NhlRLDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id
 )
@@ -405,75 +410,6 @@ NhlRLDestroy
 }
 
 /*
- * Function:	_NhlInitRLList
- *
- * Description:	This function is used to initialize the RL interface.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	global private
- * Returns:	void
- * Side Effect:	
- */
-void
-_NhlInitRLList
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	floatQ = NrmStringToQuark(NhlTFloat);
-	genQ = NrmStringToQuark(NhlTGenArray);
-
-	return;
-}
-
-/*
- * Function:	_NhlDestroyRLList
- *
- * Description:	This function is used to free the ListTable.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	global
- * Returns:	void
- * Side Effect:	
- */
-void
-_NhlDestroyRLList
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	int i;
-
-	for(i=0;i < table_len && num_lists > 0;i++)
-		if(ListTable[i] != NULL)
-			NhlRLDestroy(i+1);
-
-	if(num_lists > 0)
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all RL lists destroyed?");
-
-	table_len = 0;
-	num_lists = 0;
-	(void)NhlFree(ListTable);
-	ListTable = NULL;
-
-	return;
-}
-
-/*
  * Function:	NhlRLClear
  *
  * Description:	Clear out all the resource specifications in a given RL list.
@@ -488,7 +424,7 @@ _NhlDestroyRLList
  */
 void
 NhlRLClear
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id
 )
@@ -529,7 +465,7 @@ NhlRLClear
  */
 void
 NhlRLUnSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id,
 	char	*name
@@ -588,7 +524,7 @@ NhlRLUnSet
  */
 NhlBoolean
 NhlRLIsSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id,
 	char	*name
@@ -650,17 +586,14 @@ NhlRLSet
 #endif
 {
 	va_list		ap;
-	double		tmp;
 	_NhlArgVal	value;
 	NrmQuark	typeQ = NrmStringToQuark(type);
 
 	VA_START(ap,type);
-	if(typeQ == floatQ){
-		tmp = va_arg(ap,double);
-		*(float*)&value = (float)tmp;
-	}
+	if(typeQ == floatQ)
+		value.fltval = (float)va_arg(ap,double);
 	else
-		value = va_arg(ap,_NhlArgVal);
+		value.lngval = va_arg(ap,long);
 
 	va_end(ap);
 
@@ -686,7 +619,7 @@ NhlRLSet
  */
 NhlErrorTypes
 NhlRLSetInt
-#if	NeedVarArgProto
+#if	NhlNeedProto
 (
 	int		id,
 	NhlString	name,
@@ -718,7 +651,7 @@ NhlRLSetInt
  */
 NhlErrorTypes
 NhlRLSetFloat
-#if	NeedVarArgProto
+#if	NhlNeedProto
 (
 	int		id,
 	NhlString	name,
@@ -750,7 +683,7 @@ NhlRLSetFloat
  */
 NhlErrorTypes
 NhlRLSetString
-#if	NeedVarArgProto
+#if	NhlNeedProto
 (
 	int		id,
 	NhlString	name,
@@ -803,16 +736,16 @@ NhlRLSetMDArray
 	int		*len_dimensions;
 #endif
 {
-	NhlGenArray	gen = NULL;
-
-	gen = _NhlCreateGenArray(data,type,size,num_dimensions,len_dimensions,
-									False);
-	if(gen == NULL){
+	_NhlArgVal	gen;
+	
+	gen.ptrval = _NhlCreateGenArray(data,type,size,num_dimensions,
+							len_dimensions,False);
+	if(gen.ptrval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NhlFATAL;
 	}
 
-	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),genQ,(_NhlArgVal)gen,
+	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),genQ,gen,
 						(_NhlFreeFunc)NhlFreeGenArray))
 		return NhlNOERROR;
 	else
@@ -1037,9 +970,713 @@ NhlRLSetStringArray
 }
 
 /*
+ * Function:	NhlRLGet
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified. The "..." field must be a Pointer to the type
+ *		specified or there will probably be a seg-fault.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGet
+#if	NeedVarArgProto
+(
+	int		id,
+	NhlString	name,
+	NhlString	type,
+	...
+)
+#else
+(id,name,type,va_alist)
+	int		id;
+	NhlString	name;
+	NhlString	type;
+	va_dcl
+#endif
+{
+	va_list		ap;
+	_NhlArgVal	value;
+
+	VA_START(ap,type);
+	value.ptrval = va_arg(ap,NhlPointer);
+	va_end(ap);
+
+	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),
+					NrmStringToQuark(type),value,NULL))
+		return NhlNOERROR;
+	else
+		return NhlFATAL;
+}
+
+/*
+ * Function:	NhlRLGetInt
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetInt
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	int		*value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	int		*value;
+#endif
+{
+	return NhlRLGet(id,name,NhlTInteger,value);
+}
+
+/*
+ * Function:	NhlRLGetFloat
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetFloat
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	float		*value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	float		*value;
+#endif
+{
+	return NhlRLGet(id,name,NhlTFloat,value);
+}
+
+/*
+ * Function:	NhlRLGetString
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetString
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlString	*value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	NhlString	*value;
+#endif
+{
+	return NhlRLGet(id,name,NhlTString,value);
+}
+
+/*
+ * Function:	CvtGenToExpMDArray
+ *
+ * Description:	This function is used to convert a "gen" array to an "exp"
+ *		array.  This is how the addresses the user passed in actually
+ *		get set with the data in the "gen" array.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtGenToExpMDArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	NhlGenArray	gen;
+	_NhlExpArray	exp;
+	NhlString	type;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"CvtGenToExpArray:Called w/improper number of args");
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = (NhlGenArray)from->data.ptrval;
+	exp = (_NhlExpArray)to->data.ptrval;
+
+	if(gen->len_dimensions == &gen->num_elements){
+		*exp->len_dimensions = NhlMalloc(sizeof(int));
+		if(*exp->len_dimensions == NULL){
+			NhlPError(NhlFATAL,ENOMEM,NULL);
+			to->size = 0;
+			return NhlFATAL;
+		}
+		**exp->len_dimensions = gen->num_elements;
+	}
+	else{
+		*exp->len_dimensions = gen->len_dimensions;
+		/* give ownership to exp */
+		gen->len_dimensions = &gen->num_elements;
+	}
+	*exp->num_dimensions = gen->num_dimensions;
+	type = NrmQuarkToString(gen->typeQ);
+	*exp->type = NhlMalloc(strlen(type) + 1);
+	strcpy(*exp->type,type);
+	*exp->size = gen->size;
+	*exp->data = gen->data;
+	if(!gen->my_data){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"CvtGenToExpArray:Returning Pointer to Internal Data - Bad Things!");
+		ret = NhlWARNING;
+	}
+	/* give ownership to exp */
+	gen->my_data = False;
+
+	return ret;
+}
+
+/*
+ * Function:	NhlRLGetMDArray
+ *
+ * Description:	This function is used to retrieve an array resource into the
+ *		address specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetMDArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlPointer	*data,
+	NhlString	*type,
+	unsigned int	*size,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,data,type,size,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	NhlPointer	*data;
+	NhlString	*type;
+	unsigned int	*size;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	_NhlExpArray	exp = NULL;
+	_NhlArgVal	expval;
+	
+	exp = NhlMalloc(sizeof(_NhlExpArrayRec));
+	if(exp == NULL){
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NhlFATAL;
+	}
+
+	exp->num_dimensions = num_dimensions;
+	exp->len_dimensions = len_dimensions;
+	exp->type = type;
+	exp->size = size;
+	exp->data = data;
+
+	expval.ptrval = exp;
+
+	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expMDQ,expval,
+							(_NhlFreeFunc)NhlFree))
+		return NhlNOERROR;
+	else
+		return NhlFATAL;
+}
+
+/*
+ * Function:	CvtGenToExpTypeMDArray
+ *
+ * Description:	This function is used to convert a "gen" array to an "exp"
+ *		array.  This is how the addresses the user passed in actually
+ *		get set with the data in the "gen" array.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtGenToExpTypeMDArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	NhlGenArray	gen;
+	_NhlExpArray	exp;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"CvtGenToExpTypeMDArray:Called w/improper number of args");
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = (NhlGenArray)from->data.ptrval;
+	exp = (_NhlExpArray)to->data.ptrval;
+
+	/* get data if possible */
+	if(exp->type_req == gen->typeQ){
+		*exp->data = gen->data;
+		if(!gen->my_data){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+"CvtGenToExpTypeMDArray:Returning Pointer to Internal Data - Bad Things!");
+			ret = NhlWARNING;
+		}
+		/* give ownership to exp */
+		gen->my_data = False;
+	}
+	else if(_NhlConverterExists(gen->typeQ,exp->type_req)){
+		int		i;
+		NrmValue	fromval, toval;
+		char		*fromdata,*todata;
+
+		*exp->data = NhlMalloc(exp->size_req * gen->num_elements);
+		if(*exp->data == NULL){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			to->size =  0;
+			return NhlFATAL;
+		}
+
+		todata = *exp->data;
+		fromdata = gen->data;
+
+		for(i=0;i < gen->num_elements;i++){
+			fromval.data.ptrval = *(NhlPointer*)
+						(fromdata + (gen->size * i));
+			fromval.size = gen->size;
+			toval.data.ptrval = (NhlPointer)
+						(todata + (exp->size_req * i));
+			toval.size = exp->size_req;
+			if(NhlNOERROR != _NhlReConvertData(gen->typeQ,
+						exp->type_req,&fromval,&toval)){
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	"CvtGenToExpTypeMDArray:Unable to preform Element Conversion"));
+				NhlFree(*exp->data);
+				*exp->data = NULL;
+				to->size = 0;
+				return NhlFATAL;
+			}
+		}
+		if(exp->type_req == stringQ){
+			NhlString	*starr = *exp->data;
+			NhlString	tstring;
+			/*
+			 * Need to allocate memory for each element as well.
+			 * The memory is currently owned by the "context".
+			 * or points to "args" in the converter function.
+			 */
+			for(i=0;i < gen->num_elements;i++){
+				tstring = starr[i];
+				starr[i] = NhlMalloc(strlen(tstring)+1);
+				if(starr[i] == NULL){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					to->size = 0;
+					return NhlFATAL;
+				}
+				strcpy(starr[i],tstring);
+			}
+		}
+	}
+	else{
+		/* Everything fails */
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"CvtGenToExpTypeMDArray:Unable to convert \"%s\" to \"%s\"",
+		NrmQuarkToString(gen->typeQ),NrmQuarkToString(exp->type_req));
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->len_dimensions == &gen->num_elements){
+		*exp->len_dimensions = NhlMalloc(sizeof(int));
+		if(*exp->len_dimensions == NULL){
+			NhlPError(NhlFATAL,ENOMEM,NULL);
+			to->size = 0;
+			return NhlFATAL;
+		}
+		**exp->len_dimensions = gen->num_elements;
+	}
+	else{
+		*exp->len_dimensions = gen->len_dimensions;
+		/* give ownership to exp */
+		gen->len_dimensions = &gen->num_elements;
+	}
+	*exp->num_dimensions = gen->num_dimensions;
+
+	return ret;
+}
+
+/*
+ * Function:	NhlRLGetMDTypeArray
+ *
+ * Description:	This function is used to retrieve the resource given as an
+ *		array of the type specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NhlRLGetMDTypeArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NrmQuark	type,
+	unsigned int	size,
+	void		**data,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,type,size,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	NrmQuark	type;
+	unsigned int	size;
+	void		**data;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	_NhlExpArray	exp = NULL;
+	_NhlArgVal	expval;
+	
+	exp = NhlMalloc(sizeof(_NhlExpArrayRec));
+	if(exp == NULL){
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NhlFATAL;
+	}
+
+	exp->num_dimensions = num_dimensions;
+	exp->len_dimensions = len_dimensions;
+	exp->type = NULL;
+	exp->size = NULL;
+	exp->data = data;
+
+	exp->type_req = type;
+	exp->size_req = size;
+
+	expval.ptrval = exp;
+
+	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expMDTypeQ,expval,
+							(_NhlFreeFunc)NhlFree))
+		return NhlNOERROR;
+	else
+		return NhlFATAL;
+}
+
+/*
+ * Function:	NhlRLGetMDIntArray
+ *
+ * Description:	This function is used to retrieve the resource given as an
+ *		array of the type specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetMDIntArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	int		**data,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	int		**data;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	return NhlRLGetMDTypeArray(id,name,intQ,sizeof(int),(NhlPointer*)data,
+						num_dimensions,len_dimensions);
+}
+
+/*
+ * Function:	NhlRLGetMDFloatArray
+ *
+ * Description:	This function is used to retrieve the resource given as an
+ *		array of the type specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetMDFloatArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	float		**data,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	float		**data;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	return NhlRLGetMDTypeArray(id,name,floatQ,sizeof(float),
+			(NhlPointer*)data,num_dimensions,len_dimensions);
+}
+
+#ifdef	NOTYET
+/*
+ * Function:	NhlRLGetArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlPointer	data,
+	NhlString	type,
+	unsigned int	size,
+	int		num_elements
+)
+#else
+(id,name,data,type,size,num_elements)
+	int		id;
+	NhlString	name;
+	NhlPointer	data;
+	NhlString	type;
+	unsigned int	size;
+	int		num_elements;
+#endif
+{
+	return NhlRLGetMDArray(id,name,data,type,size,1,&num_elements);
+}
+
+/*
+ * Function:	NhlRLGetIntArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetIntArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	int		*data,
+	int		num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	int		*data;
+	int		num_elements;
+#endif
+{
+	return NhlRLGetMDArray(id,name,data,NhlTInteger,sizeof(int),1,
+								&num_elements);
+}
+
+/*
+ * Function:	NhlRLGetFloatArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetFloatArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	float		*data,
+	int		num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	float		*data;
+	int		num_elements;
+#endif
+{
+	return NhlRLGetMDArray(id,name,data,NhlTFloat,sizeof(float),1,
+								&num_elements);
+}
+
+/*
+ * Function:	NhlRLGetStringArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetStringArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlString	*data,
+	int		num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	NhlString	*data;
+	int		num_elements;
+#endif
+{
+	return NhlRLGetMDArray(id,name,data,NhlTString,sizeof(NhlString),1,
+								&num_elements);
+}
+
+#endif
+
+/*
  * Function:	CopyNodeToArgList
  *
- * Description:	append the current node to the ExtArgList
+ * Description:	append the current node to the ArgList
  *
  * In Args:	
  *
@@ -1051,16 +1688,16 @@ NhlRLSetStringArray
  */
 static void
 CopyNodeToArgList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlRLNode	node,
-	_NhlExtArgList	args,
+	_NhlArgList	args,
 	int		*nargs
 )
 #else
 (node,args,nargs)
 	_NhlRLNode	node;
-	_NhlExtArgList	args;
+	_NhlArgList	args;
 	int		*nargs;
 #endif
 {
@@ -1082,7 +1719,7 @@ CopyNodeToArgList
 /*
  * Function:	_NhlRLToArgList
  *
- * Description:	Converts an RL list to an _NhlExtArg list for the method
+ * Description:	Converts an RL list to an _NhlArg list for the method
  *		functions.
  *
  * In Args:	
@@ -1095,18 +1732,18 @@ CopyNodeToArgList
  */
 NhlBoolean
 _NhlRLToArgList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		id,
 	NhlRLType	action,
-	_NhlExtArgList	args,
+	_NhlArgList	args,
 	int		*nargs
 )
 #else
 (id,action,args,nargs)
 	int		id;
 	NhlRLType	action;
-	_NhlExtArgList	args;
+	_NhlArgList	args;
 	int		*nargs;
 #endif
 {
@@ -1133,4 +1770,81 @@ _NhlRLToArgList
 	CopyNodeToArgList((*head)->list,args,nargs);
 
 	return True;
+}
+
+/*
+ * Function:	_NhlInitRLList
+ *
+ * Description:	This function is used to initialize the RL interface.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlInitRLList
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	floatQ = NrmStringToQuark(NhlTFloat);
+	intQ = NrmStringToQuark(NhlTInteger);
+	stringQ = NrmStringToQuark(NhlTString);
+	genQ = NrmStringToQuark(NhlTGenArray);
+	expMDQ = NrmStringToQuark(_NhlTExpMDArray);
+	expMDTypeQ = NrmStringToQuark(_NhlTExpMDTypeArray);
+
+	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDArray,
+					CvtGenToExpMDArray,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDTypeArray,
+				CvtGenToExpTypeMDArray,NULL,0,False,NULL);
+	return;
+}
+
+/*
+ * Function:	_NhlDestroyRLList
+ *
+ * Description:	This function is used to free the ListTable.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlDestroyRLList
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	int i;
+
+	for(i=0;i < table_len && num_lists > 0;i++)
+		if(ListTable[i] != NULL)
+			NhlRLDestroy(i+1);
+
+	if(num_lists > 0)
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all RL lists destroyed?");
+
+	table_len = 0;
+	num_lists = 0;
+	(void)NhlFree(ListTable);
+	ListTable = NULL;
+
+	return;
 }

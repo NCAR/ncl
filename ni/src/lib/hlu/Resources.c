@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.5 1994-02-08 20:15:40 boote Exp $
+ *      $Id: Resources.c,v 1.6 1994-02-18 02:54:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -87,12 +87,12 @@ _NhlCopyFromArg
 #endif
 {
 
-    if      (size == sizeof(long))	*(long *)dst = (long)src;
-    else if (size == sizeof(short))	*(short *)dst = (short)src;
+    if      (size == sizeof(long))	*(long *)dst = src.lngval;
+    else if (size == sizeof(short))	*(short *)dst = src.shrtval;
     else if (size == sizeof(NhlPointer))
-					*(NhlPointer *)dst = (NhlPointer)src;
-    else if (size == sizeof(char))	*(char *)dst = (char)src;
-    else if (size == sizeof(char*))	*(char **)dst = (char*)src;
+					*(NhlPointer *)dst = src.ptrval;
+    else if (size == sizeof(char))	*(char *)dst = src.charval;
+    else if (size == sizeof(char*))	*(char **)dst = src.strval;
     else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
     else
         memcpy((void*)dst,(void*)&src,size);
@@ -132,14 +132,14 @@ _NhlCopyToArg
 #endif
 {
 
-    if      (size == sizeof(long)) *((long *)*dst) = *(long*)src;
-    else if (size == sizeof(short)) *((short *)*dst) = *(short*)src;
-    else if (size == sizeof(NhlPointer)) *((NhlPointer*)*dst) =
+    if      (size == sizeof(long)) *(long *)dst->ptrval = *(long*)src;
+    else if (size == sizeof(short)) *(short *)dst->ptrval = *(short*)src;
+    else if (size == sizeof(NhlPointer)) *(NhlPointer*)dst->ptrval =
 							*(NhlPointer*)src;
-    else if (size == sizeof(char))	*((char *)*dst) = *(char*)src;
-    else if (size == sizeof(char*))	*((char **)*dst) = *(char**)src;
+    else if (size == sizeof(char))	*(char *)dst->ptrval = *(char*)src;
+    else if (size == sizeof(char*))	*(char **)dst->ptrval = *(char**)src;
     else if (size == sizeof(_NhlArgVal))
-				*((_NhlArgVal *)*dst) = *(_NhlArgVal*)src;
+			*(_NhlArgVal *)dst->ptrval = *(_NhlArgVal*)src;
     else
         memcpy((char*)dst,(char*)&src,size);
 }
@@ -245,7 +245,7 @@ GetResources
 	NrmQuarkList		classQ,	/* Qlist of classes in instance	*/
 	NrmResourceList		resources,/* list of resources		*/
 	int			num_res,/* number of resources		*/
-	_NhlExtArgList		args,	/* args to override defaults	*/
+	_NhlArgList		args,	/* args to override defaults	*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* look at parent's DB level too*/
 )
@@ -257,7 +257,7 @@ GetResources
 	NrmQuarkList		classQ;	/* Qlist of classes in instance	*/
 	NrmResourceList		resources;/* list of resources		*/
 	int			num_res;/* number of resources		*/
-	_NhlExtArgList		args;	/* args to override defaults	*/
+	_NhlArgList		args;	/* args to override defaults	*/
 	int			num_args;/* number of args		*/
 	NrmQuarkList		child;	/* look at parent's DB level too*/
 #endif
@@ -294,16 +294,16 @@ GetResources
 					resfound[j] = True;
 				}
 				else if(_NhlConverterExists(args[i].type,
-					resources[j].nrm_type,NrmNULLQUARK)){
+							resources[j].nrm_type)){
 					/* 
 					 * call converter
 					 */
 					NrmValue	from, to;
 
 					from.size = sizeof(NhlPointer);
-					from.addr = (void*)args[i].value;
+					from.data = args[i].value;
 					to.size = resources[j].nrm_size;
-					to.addr =(void *)(base +
+					to.data.ptrval =(NhlPointer)(base +
 						resources[j].nrm_offset);
 
 					lret = _NhlConvertData(context,
@@ -389,9 +389,6 @@ GetResources
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
-			from.size = to.size = 0;
-			from.addr = to.addr = (unsigned int)NULL;
-
 			if(NrmGetQResFromList(slist,
 					resources[i].nrm_name,
 					resources[i].nrm_class,&rdbtype,&from)){
@@ -399,7 +396,7 @@ GetResources
 				if(rdbtype != resources[i].nrm_type){
 
 					to.size = resources[i].nrm_size;
-					to.addr =(void *)(base +
+					to.data.ptrval =(void *)(base +
 						resources[i].nrm_offset);
 
 					lret = _NhlConvertData(context,rdbtype,
@@ -427,14 +424,14 @@ GetResources
 				/* no type conversion needed */
 
 					if(rdbtype == QString){
-						*(unsigned int *)
+						*(NhlString *)
 						(base+resources[i].nrm_offset)=
-						(unsigned int)from.addr;
+							from.data.strval;
 					}
 					else{
 						memcpy(base +
 							resources[i].nrm_offset,
-							from.addr,
+							from.data.ptrval,
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
@@ -451,9 +448,6 @@ GetResources
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
-			from.size = to.size = 0;
-			from.addr = to.addr = (unsigned int)NULL;
-
 			if(NrmGetQResFromList(Pslist,
 					resources[i].nrm_name,
 					resources[i].nrm_class,&rdbtype,&from)){
@@ -461,7 +455,7 @@ GetResources
 				if(rdbtype != resources[i].nrm_type){
 
 					to.size = resources[i].nrm_size;
-					to.addr =(void*)(base +
+					to.data.ptrval =(NhlPointer)(base +
 						resources[i].nrm_offset);
 
 					lret = _NhlConvertData(context,rdbtype,
@@ -489,14 +483,14 @@ GetResources
 				/* no type conversion needed */
 
 					if(rdbtype == QString){
-						*(NhlPointer *)
+						*(NhlString *)
 						(base+resources[i].nrm_offset)=
-						from.addr;
+						from.data.strval;
 					}
 					else{
 						memcpy(
 						base + resources[i].nrm_offset,
-						from.addr,
+						from.data.ptrval,
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
@@ -545,20 +539,28 @@ GetResources
 		{
 			NrmValue	from, to;
 
-			from.size = to.size = 0;
-			from.addr = to.addr = (unsigned int)NULL;
+			to.size = 0;
+			to.data.ptrval = NULL;
 
 			if(resources[i].nrm_default_type == QImmediate){
 
 				/* step #1 */
 
 				if(resources[i].nrm_type == QString){
-					to.addr = resources[i].nrm_default_addr;
-					if(to.addr != NULL)
-					to.size=strlen((Const char*)to.addr)+1;
+					to.data.strval =
+					resources[i].nrm_default_val.strval;
+					if(to.data.strval != NULL)
+					to.size= strlen(to.data.strval) + 1;
 				}
 				else{
-					to.addr =&resources[i].nrm_default_addr;
+					to.data.ptrval =
+						&resources[i].nrm_default_val;
+					/*
+					 * size is size of first element of
+					 * _NhlArgVal union.  Should be
+					 * NhlPointer so func's and strings
+					 * work correctly.
+					 */
 					to.size = sizeof(NhlPointer);
 				}
 			}
@@ -567,7 +569,7 @@ GetResources
 
 				NrmResourceDefaultProc	def_proc =
 					(NrmResourceDefaultProc)
-						resources[i].nrm_default_addr;
+					resources[i].nrm_default_val.ptrval;
 
 				/* step #2 */
 
@@ -583,7 +585,7 @@ GetResources
 				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"Unable to set %s to default value - Using NULL",
 				NrmNameToString(resources[i].nrm_name)));
-				to.addr = NULL;
+				to.data.ptrval = NULL;
 				ret = MIN(ret,NhlWARNING);
 			}
 
@@ -592,7 +594,7 @@ GetResources
 
 				/* step #3 */
 
-				to.addr = resources[i].nrm_default_addr;
+				to.data = resources[i].nrm_default_val;
 				to.size = resources[i].nrm_size;
 			}
 
@@ -600,7 +602,7 @@ GetResources
 				/* step #4 */
 
 				from.size = 0;
-				from.addr = resources[i].nrm_default_addr;
+				from.data = resources[i].nrm_default_val;
 
 				lret = _NhlConvertData(context,
 					resources[i].nrm_default_type,
@@ -615,7 +617,7 @@ GetResources
 					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"Unable to set %s to default value - Using NULL",
 				NrmNameToString(resources[i].nrm_name)));
-					to.addr = NULL;
+					to.data.ptrval = NULL;
 					ret = MIN(ret,NhlWARNING);
 				}
 
@@ -624,14 +626,14 @@ GetResources
 			/* copy resulting "to" into resource */
 
 			if(resources[i].nrm_type == QString)
-				*(NhlPointer *)
-				(base+resources[i].nrm_offset) = to.addr;
-			else if(to.addr == NULL)
+				*(NhlString *)
+				(base+resources[i].nrm_offset) = to.data.strval;
+			else if(to.data.ptrval == NULL)
 				memset(base + resources[i].nrm_offset,0,
 							resources[i].nrm_size);
 			else
 				memcpy((base+resources[i].nrm_offset),
-							to.addr,to.size);
+							to.data.ptrval,to.size);
 			resfound[i] = True;
 		}
 	}
@@ -663,7 +665,7 @@ _NhlGetResources
 (
 	_NhlConvertContext	context,
 	NhlLayer		l,	/* layer to set resources of	*/
-	_NhlExtArgList		args,	/* args to override res defaults*/
+	_NhlArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* layer is auto-managed chld	*/
 )
@@ -671,7 +673,7 @@ _NhlGetResources
 (context,l,args,num_args,child)
 	_NhlConvertContext	context;
 	NhlLayer		l;	/* layer to set resources of	*/
-	_NhlExtArgList		args;	/* args to override res defaults*/
+	_NhlArgList		args;	/* args to override res defaults*/
 	int			num_args;/* number of args		*/
 	NrmQuarkList		child;	/* layer is auto-managed chld	*/
 #endif
@@ -993,13 +995,13 @@ _NhlDestroyResDatabase
  *		the args.
  *
  * In Args:	
- *		_NhlExtArgList	oargs,		over-ride args
+ *		_NhlArgList	oargs,		over-ride args
  *		int		num_oargs,	num oargs
- *		_NhlExtArgList	args,		args
+ *		_NhlArgList	args,		args
  *		int		num_args	num args
  *
  * Out Args:	
- *		_NhlExtArgList	*ret_args,	return args
+ *		_NhlArgList	*ret_args,	return args
  *		int		*num_ret_args,	num ret_args
  *
  * Scope:	Private Global
@@ -1010,20 +1012,20 @@ void
 _NhlMergeArgLists
 #if	__STDC__
 (
-	_NhlExtArgList	ret_args,	/* return args		*/
+	_NhlArgList	ret_args,	/* return args		*/
 	int		*num_ret_args,	/* num ret_args		*/
-	_NhlExtArgList	oargs,		/* over-ride args	*/
+	_NhlArgList	oargs,		/* over-ride args	*/
 	int		num_oargs,	/* num oargs		*/
-	_NhlExtArgList	args,		/* args			*/
+	_NhlArgList	args,		/* args			*/
 	int		num_args	/* num args		*/
 )
 #else
 (ret_args,num_ret_args,oargs,num_oargs,args,num_args)
-	_NhlExtArgList	ret_args;	/* return args		*/
+	_NhlArgList	ret_args;	/* return args		*/
 	int		*num_ret_args;	/* num ret_args		*/
-	_NhlExtArgList	oargs;		/* over-ride args	*/
+	_NhlArgList	oargs;		/* over-ride args	*/
 	int		num_oargs;	/* num oargs		*/
-	_NhlExtArgList	args;		/* args			*/
+	_NhlArgList	args;		/* args			*/
 	int		num_args;	/* num args		*/
 #endif
 {
@@ -1138,10 +1140,10 @@ NhlErrorTypes
 _NhlSortChildArgs
 #if	__STDC__
 (
-	NhlLayer			l,		/* layer		*/
-	_NhlExtArgList		args_in,	/* args to sort		*/
+	NhlLayer		l,		/* layer		*/
+	_NhlArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
-	_NhlExtArgList		*args_out,	/* args not forwarded	*/
+	_NhlArgList		*args_out,	/* args not forwarded	*/
 	int			*nargs_out,	/* num args_out		*/
 	_NhlChildArgList	*forw_list,	/* list of args to frwd	*/
 	NhlBoolean		*args_used,	/* args used		*/
@@ -1149,10 +1151,10 @@ _NhlSortChildArgs
 )
 #else
 (l,args_in,nargs_in,args_out,nargs_out,forw_list,args_used,getvalues)
-	NhlLayer			l;		/* layer		*/
-	_NhlExtArgList		args_in;	/* args to sort		*/
+	NhlLayer		l;		/* layer		*/
+	_NhlArgList		args_in;	/* args to sort		*/
 	int			nargs_in;	/* number args to sort	*/
-	_NhlExtArgList		*args_out;	/* args not forwarded	*/
+	_NhlArgList		*args_out;	/* args not forwarded	*/
 	int			*nargs_out;	/* num args_out		*/
 	_NhlChildArgList	*forw_list;	/* list of args to frwd	*/
 	NhlBoolean		*args_used;	/* args used		*/
@@ -1205,7 +1207,7 @@ _NhlSortChildArgs
 		arglist->autosetval = reslist->autosetval;
 		arglist->next = NULL;
 		arglist->nargs = 0;
-		arglist->args = NhlMalloc(nargs_in * sizeof(_NhlExtArg));
+		arglist->args = NhlMalloc(nargs_in * sizeof(_NhlArg));
 		arglist->args_used = (NhlBoolean**)NhlMalloc(nargs_in *
 							sizeof(NhlBoolean*));
 		if((arglist->args == NULL) || (arglist->args_used == NULL)){
@@ -1245,9 +1247,7 @@ _NhlSortChildArgs
 		 * parents arg list and no other.
 		 */
 		if(_NhlResInClass(lc,args_in[i].quark)){
-			(*args_out)[*nargs_out].quark = args_in[i].quark;
-			(*args_out)[*nargs_out].value = args_in[i].value;
-			(*args_out)[*nargs_out].type = args_in[i].type;
+			(*args_out)[*nargs_out] = args_in[i];
 			(*nargs_out)++;
 			args_used[i] = True;
 			argfound = True;
@@ -1266,22 +1266,42 @@ _NhlSortChildArgs
 
 				if(NrmQinQList(reslist->resources,
 							args_in[i].quark)){
-					arglist->args[arglist->nargs].quark =
-							args_in[i].quark;
-					arglist->args[arglist->nargs].value =
-							args_in[i].value;
-					arglist->args[arglist->nargs].type =
-								args_in[i].type;
+					/*
+					 * If called from get_values make
+					 * sure there is an instance of the
+					 * class to retrieve from.
+					 * If no instance, then continue on
+					 * to next class type.
+					 */
+					if(getvalues){
+						_NhlChildList	chld_node =
+							l->base.children;
+
+						while(chld_node != NULL){
+				if(chld_node->class == reslist->class)
+								break;
+							chld_node =
+								chld_node->next;
+						}
+						if(chld_node == NULL){
+							arglist = arglist->next;
+							reslist = reslist->next;
+							continue;
+						}
+					}
+					arglist->args[arglist->nargs] =
+								args_in[i];
 					arglist->args_used[arglist->nargs] =
 								&args_used[i];
 					(arglist->nargs)++;
 					argfound = True;
+
 					/*
-					 * If called from get values break out
-					 * so arg is only added to one of the
-					 * layer's lists.
+					 * Only add resoure to one list for
+					 * getvalues.
 					 */
-					if(getvalues) break;
+					if(getvalues)
+						break;
 				}
 
 				arglist = arglist->next;

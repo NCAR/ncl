@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.h,v 1.1 1993-04-30 17:23:38 boote Exp $
+ *      $Id: NresDB.h,v 1.2 1994-02-18 02:54:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -191,8 +191,8 @@ typedef NrmQuark     NrmRepresentation;
 #define	NrmRepresentationToString(type)   NrmQuarkToString(type)
 
 typedef struct _NrmValue{
-    unsigned int    size;
-    NhlPointer	    addr;
+    unsigned int	size;
+    NhlArgVal		data;
 } NrmValue, *NrmValuePtr;
 
 

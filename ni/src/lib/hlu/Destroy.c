@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.4 1994-01-27 21:22:51 boote Exp $
+ *      $Id: Destroy.c,v 1.5 1994-02-18 02:54:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,7 +45,7 @@
  */
 static NhlErrorTypes
 CallDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* NhlLayer to destroy		*/
 	NhlLayerClass	lc	/* class or superclass of l	*/
@@ -93,7 +93,7 @@ CallDestroy
 NhlDOCTAG(NhlDestroy)
 NhlErrorTypes
 NhlDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	pid	/* id associated with the object to delete	*/
 )
@@ -170,7 +170,7 @@ NhlDestroy
 NhlDOCTAG(_NhlDestroyChild)
 NhlErrorTypes
 _NhlDestroyChild
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		pid,		/* pid of layer to destroy	*/
 	NhlLayer	parent		/* parent of layer to destroy	*/

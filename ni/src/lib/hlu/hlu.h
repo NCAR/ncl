@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.11 1994-02-08 20:16:26 boote Exp $
+ *      $Id: hlu.h,v 1.12 1994-02-18 02:55:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -120,8 +120,18 @@ typedef enum _NhlErrType{
         ((unsigned int) (((char *) (&(((p_type*)NULL)->field))) - ((char *) NULL)))
 #define NhlNumber(arr)           ((unsigned int) (sizeof(arr) / sizeof(arr[0])))
 
-/* This must be the longest int type on the architecture */
-typedef	long	NhlArgVal;
+union _NhlType_ {
+	NhlPointer	ptrval;
+	char		charval;
+	short		shrtval;
+	int		intval;
+	long		lngval;
+	float		fltval;
+	NhlString	strval;
+	double		dblval;
+};
+
+typedef	union _NhlType_	NhlArgVal;
 
 NhlDOCTAG(NhlSArg)
 typedef struct NhlSArgRec{
@@ -144,18 +154,19 @@ typedef struct _NhlResource {
 	unsigned int	resource_offset;
 	/* stuff for dealling with defaults */
 	NhlString	default_type;
-	NhlPointer	default_addr;
+	NhlArgVal	default_val;
 } NhlResource, *NhlResourceList;
 
 typedef struct _NhlLayerClassRec *NhlLayerClass;
 
-/* This is here because it needs defs from above. */
+/* These are here because they needs defs from above. */
 #include <ncarg/hlu/Error.h>
-
 /*
- * This type is used when allocating an RL list.
+ * Put this in AFTER Development so whole lib doesn't recompile for changes
  */
-typedef enum NhlRLType_ { NhlSETRL, NhlGETRL } NhlRLType;
+#ifdef	NOTYET
+#include <ncarg/hlu/ResList.h>
+#endif
 
 /*
  * These functions are used to create and destroy NhlGenArray description
@@ -267,142 +278,6 @@ extern NhlErrorTypes NhlALCreate(
 	int,			/* parent's id		*/
 	NhlSArgList,		/* setarg list		*/
 	int			/* number of Sarg's	*/
-#endif
-);
-
-extern int NhlRLCreate(
-#if	NhlNeedProto
-	NhlRLType	type	/* type of RL list to create */
-#endif
-);
-
-extern void NhlRLDestroy(
-#if	NhlNeedProto
-	int	id	/* RL list to destroy	*/
-#endif
-);
-
-extern void NhlRLClear(
-#if	NhlNeedProto
-	int	id	/* RL list to destroy	*/
-#endif
-);
-
-extern void NhlRLUnSet(
-#if	NhlNeedProto
-	int		id,	/* RL list 		*/
-	NhlString	name	/* resname to unset	*/
-#endif
-);
-
-extern NhlBoolean NhlRLIsSet(
-#if	NhlNeedProto
-	int		id,	/* RL list		*/
-	NhlString	name	/* resname to unset	*/
-#endif
-);
-
-/*VARARGS3*/
-extern NhlErrorTypes NhlRLSet(
-#if	NeedVarArgProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlString	type,		/* type of value		*/
-	...				/* value to set resname to	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetInt(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	int		value		/* value to set resname to	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetFloat(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		value		/* value to set resname to	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetString(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlString	value		/* value to set resname to	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetMDArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlPointer	data,		/* array			*/
-	NhlString	type,		/* type of elements of array	*/
-	unsigned int	size,		/* size of elements of array	*/
-	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetMDIntArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	int		*data,		/* array			*/
-	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetMDFloatArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		*data,		/* array			*/
-	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlPointer	data,		/* array			*/
-	NhlString	type,		/* type of elements of array	*/
-	unsigned int	size,		/* size of elements of array	*/
-	int		num_elements	/* number elements in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetIntArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	int		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetFloatArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetStringArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlString	*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
 #endif
 );
 

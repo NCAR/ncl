@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.2 1993-10-19 17:49:59 boote Exp $
+ *      $Id: ConvertP.h,v 1.3 1994-02-18 02:53:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,13 @@ extern NhlErrorTypes _NhlUnRegisterConverter(
 extern NhlBoolean _NhlConverterExists(
 #if	NhlNeedProto
 	NrmQuark		from,		/* from type	*/
+	NrmQuark		to		/* to type	*/
+#endif
+);
+
+extern NhlBoolean _NhlExtConverterExists(
+#if	NhlNeedProto
+	NrmQuark		from,		/* from type	*/
 	NrmQuark		to,		/* to type	*/
 	NrmQuark		conv_type	/* conv type	*/
 #endif
@@ -131,6 +138,15 @@ extern NhlErrorTypes _NhlExtConvertData(
 #if	NhlNeedProto
 	_NhlConvertContext	context,	/* context		*/
 	NrmQuark		typeQ,		/* conv type		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
+#endif
+);
+
+extern NhlErrorTypes _NhlReConvertData(
+#if	NhlNeedProto
 	NrmQuark		fromQ,		/* from type		*/
 	NrmQuark		toQ,		/* to type		*/
 	NrmValue		*fromdata,	/* from type		*/

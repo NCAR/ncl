@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.11 1994-02-01 18:22:20 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.12 1994-02-18 02:53:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -625,7 +625,7 @@ CvtGenObjToFloatObj
 		return NhlFATAL;
 	}
 
-	catl = (NhlCoordArrTableLayer)_NhlGetLayer(*(int*)(from->addr));
+	catl = (NhlCoordArrTableLayer)_NhlGetLayer(from->data.intval);
 	if((catl == NULL)||(catl->base.layer_class != NhlcoordArrTableLayerClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"CvtGenObjToFloatObj:Called w/ improper \"from\" object");
@@ -737,8 +737,8 @@ CvtGenObjToFloatObj
 
 	NhlSetSArg(&sargs[nargs++],NhlNctCopyTables,False);
 
-	ret = NhlALCreate((int*)to->addr,"no.name",
-			NhlcoordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
+	ret = NhlALCreate(to->data.ptrval,"no.name",
+		NhlcoordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
 
 	NhlFreeGenArray(xtbl);
 	NhlFreeGenArray(ytbl);

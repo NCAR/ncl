@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.8 1994-02-08 20:16:33 boote Exp $
+#      $Id: yMakefile,v 1.9 1994-02-18 02:55:15 boote Exp $
 #
 #########################################################################
 #									#
@@ -38,7 +38,7 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		CoordArraysP.h CoordArraysFloatP.h CoordArraysIntP.h Contour.h \
 		ContourP.h Overlay.h OverlayI.h OverlayP.h LogLinPlot.h \
 		LogLinPlotP.h IrregularPlot.h IrregularPlotP.h MapPlot.h \
-		MapPlotP.h 
+		MapPlotP.h ResList.h ResListP.h
 
 SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
