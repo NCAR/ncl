@@ -1,5 +1,5 @@
 C
-C      $Id: cn17f.f,v 1.1 1997-04-25 22:25:18 haley Exp $
+C      $Id: cn17f.f,v 1.2 1998-05-29 16:14:53 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -451,6 +451,7 @@ C
          plon=slon(i)
          call plchhq (0.,0.,smne(i),.5,0.,0.)
       end do
+      call gdawk(gkswid)
 C
 C Advance the frame.
 C

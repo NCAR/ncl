@@ -1,5 +1,5 @@
 /*
- *      $Id: cn17c.c,v 1.1 1997-04-25 22:25:18 haley Exp $
+ *      $Id: cn17c.c,v 1.2 1998-05-29 16:14:52 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -380,6 +380,7 @@ main()
       NGCALLF(pcmp04,PCMP04).plon = anno_list[i].lon;
       c_plchhq (0.,0.,anno_list[i].name,.5,0.,0.);
     }
+    gdeactivate_ws(gkswid);
 /*
  * Advance the frame.
  */
