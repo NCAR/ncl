@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.18 1993-01-16 01:10:41 clyne Exp $
+ *	$Id: w_display.c,v 1.19 1993-03-11 19:31:24 clyne Exp $
  */
 /*
  *	w_display.c
@@ -1026,6 +1026,9 @@ void	CreateDisplayPopup(button, metafile)
 	XtPopup(wd->popup, XtGrabNone);
 
 	if (! App_Data.oldidt) {
+                unsigned long mask = CWBackingStore;
+                XSetWindowAttributes xswa;
+
 		/*
 		 * enable button click events in the drawing canvas so the 
 		 * rubber-banding code in ZoomCoords() can get events from
@@ -1033,6 +1036,14 @@ void	CreateDisplayPopup(button, metafile)
 		 */
 		win = (Window) XtWindow(canvas);
 		XSelectInput(XtDisplay(canvas), win, ButtonPressMask);
+
+		/*
+		 * turn on backing store for drawing canvas. Wish we
+		 * could do this from an Xt resource.
+		 */
+                xswa.backing_store = WhenMapped;
+                XChangeWindowAttributes(wd->dpy, win, mask, &xswa);
+
 	}
 	else {
 		win = (Window) -1;
