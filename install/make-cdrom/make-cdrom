@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.12 1996-08-21 14:57:13 haley Exp $
+#      $Id: make-cdrom,v 1.13 1996-11-20 16:01:34 haley Exp $
 #
 #########################################################################
 #									#
@@ -78,6 +78,8 @@ $do_doc = 0;		# do we record the distribution doc to cd-rom
 	'IRIX_IP',		'IRIX_IP',
 	'IRIX64_IP',		'IRIX64',
 	'UNICOS_YMP',		'UCOS_YMP',
+	'UNICOS_C90',		'UCOS_C90',
+	'LINUX_PC',		'LINUX',
 	'src',			'UNUSED',
 	'doc',			'UNUSED'
 );
