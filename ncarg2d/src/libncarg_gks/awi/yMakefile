@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-09 23:58:35 fred Exp $
+#	$Id: yMakefile,v 1.5 1993-01-26 18:34:31 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -64,7 +64,16 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
+ROBJ_SRC = ggkwdr_stub.c
+ROBJ_OBJ = ggkwdr_stub.o
+ROBJ     = $(ROBJPATH)/$(ROBJ_OBJ)
+
 FCPP_OBJS	= gopwk.f
+
+all::  $(ROBJ)
+
+$(ROBJ): $(ROBJ_OBJ)
+	$(LD_REL) -r -o $(ROBJ) $(ROBJ_OBJ)
 
 PartialLibrary(libncarg_gks.a,$(OBJECTS))
 
@@ -102,8 +111,13 @@ gztowk.o: gztowk.f
 	$(CFT) $(FFLAGS) -o off gztowk.f
 #endif
 
+# A file containing C functions called from Fortran
+
+ggkwdr_stub.c: ggkwdr_stub.c.sed Makefile
+	@$(CALLCONV) $(SYSTEM_INCLUDE) ggkwdr_stub.c ggkwdr_stub
+
 clean::
-	@-$(RM) $(FCPP_OBJS)
+	@-$(RM) $(FCPP_OBJS) $(ROBJ_SRC)
 
 gactm.o : gactm.f 
  
