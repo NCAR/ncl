@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.28 1996-09-14 17:07:32 boote Exp $
+ *      $Id: Transform.c,v 1.29 1996-10-08 23:36:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1311,6 +1311,7 @@ extern NhlErrorTypes _NhltfDrawSegment
 	NhlViewLayer	vl = (NhlViewLayer)plot;
 	NhlSegTransList	steptrans = vl->view.plot_segments_list;
 	NhlString	e_text;
+	int		save_ig;
 
 	if (transdat == NULL)
 		return NhlNOERROR;
@@ -1349,6 +1350,8 @@ extern NhlErrorTypes _NhltfDrawSegment
 		return NhlFATAL;
 	}
 
+	c_nggeti("IG",&save_ig);
+	c_ngseti("IG",1);
 	_NhlComputeSegTrans(steptrans->seg_trans_dat,steptrans->seg_trans,x,y);
 	_NhlSetSegTrans( steptrans->seg_trans_dat,steptrans->seg_trans);
 
@@ -1359,6 +1362,7 @@ extern NhlErrorTypes _NhltfDrawSegment
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	subret = _NhlDeactivateWorkstation(plot->base.wkptr);
+	c_ngseti("IG",save_ig);
 
 	return MIN(subret,ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.18 1996-09-14 17:07:14 boote Exp $
+ *      $Id: StreamlinePlot.c,v 1.19 1996-10-08 23:36:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4973,6 +4973,19 @@ static NhlErrorTypes    ManageVectorData
 
 	entry_name = (init) ? InitName : SetValuesName;
 
+	if (stp->vfp != NULL && stp->ovfp == NULL) {
+		stp->ovfp = NhlMalloc(sizeof(NhlVectorFieldFloatLayerPart));
+		if (stp->ovfp == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (stp->vfp != NULL) {
+		memcpy(stp->ovfp,
+		       stp->vfp,sizeof(NhlVectorFieldFloatLayerPart));	
+	}
+
 	if (! stp->data_changed && 
 	    ! _NhlArgIsSet(args,num_args,NhlNstVectorFieldData))
 		return NhlNOERROR;
@@ -5001,19 +5014,6 @@ static NhlErrorTypes    ManageVectorData
 		e_text = "%s: internal error retrieving data info";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
-	}
-
-	if (stp->vfp != NULL && stp->ovfp == NULL) {
-		stp->ovfp = NhlMalloc(sizeof(NhlVectorFieldFloatLayerPart));
-		if (stp->ovfp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if (stp->vfp != NULL) {
-		memcpy(stp->ovfp,
-		       stp->vfp,sizeof(NhlVectorFieldFloatLayerPart));	
 	}
 
  	vfl = (NhlVectorFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);

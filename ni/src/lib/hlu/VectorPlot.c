@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.25 1996-09-14 17:07:39 boote Exp $
+ *      $Id: VectorPlot.c,v 1.26 1996-10-08 23:37:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2019,14 +2019,12 @@ static NhlBoolean NewDrawArgs
 #endif
 {
 	NhlString pass_args[] = {
-#if 0 
-		/* until clipping problem is solved VectorPlot must
-		   redraw if viewport changes */
+
 		NhlNvpXF,
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
-#endif
+
 		NhlNpmTickMarkDisplayMode,
 		NhlNpmTitleDisplayMode,
 		NhlNpmLegendDisplayMode,
@@ -6554,6 +6552,19 @@ static NhlErrorTypes    ManageVectorData
 
 	entry_name = (init) ? InitName : SetValuesName;
 
+	if (vcp->vfp != NULL && vcp->ovfp == NULL) {
+		vcp->ovfp = NhlMalloc(sizeof(NhlVectorFieldFloatLayerPart));
+		if (vcp->ovfp == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (vcp->vfp != NULL) {
+		memcpy(vcp->ovfp,
+		       vcp->vfp,sizeof(NhlVectorFieldFloatLayerPart));	
+	}
+
 	if (! vcp->data_changed && 
 	    ! _NhlArgIsSet(args,num_args,NhlNvcVectorFieldData))
 		return NhlNOERROR;
@@ -6570,7 +6581,7 @@ static NhlErrorTypes    ManageVectorData
 		if (vcp->max_level_set) 
 			vcp->a_params.uvmx = vcp->mag_scale.max_val = 
 				vcp->zmax = vcp->max_level_val;
-		else
+		else 
 			vcp->a_params.uvmx = vcp->mag_scale.max_val = 
 				vcp->zmax = MAX(1.0,vcp->zmin*10.0);
 		vcp->data_init = False;
@@ -6582,19 +6593,6 @@ static NhlErrorTypes    ManageVectorData
 		e_text = "%s: internal error retrieving data info";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
-	}
-
-	if (vcp->vfp != NULL && vcp->ovfp == NULL) {
-		vcp->ovfp = NhlMalloc(sizeof(NhlVectorFieldFloatLayerPart));
-		if (vcp->ovfp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if (vcp->vfp != NULL) {
-		memcpy(vcp->ovfp,
-		       vcp->vfp,sizeof(NhlVectorFieldFloatLayerPart));	
 	}
 
  	vfl = (NhlVectorFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
