@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.13 1998-05-29 19:45:31 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.14 1998-06-08 22:29:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@ int nargs;
 #endif
 {
         NhlGenArray gen;
-        char func[] = "CvtNhlTFloatGenArrayToNclData";
+        char func[] = "CvtNhlTStringGenArrayToNclData";
         NclQuark *val;
         NclMultiDValData tmp_md;
         int len_dimensions = 1;
