@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-03-24 21:23:51 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= fisosurface
+
+GENERIC_SRCS = fiseziso.f fisissrf.f fispwrzi.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
