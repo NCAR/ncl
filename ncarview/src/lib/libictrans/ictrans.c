@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.6 1991-08-20 15:57:31 clyne Exp $
+ *	$Id: ictrans.c,v 1.7 1991-10-07 14:18:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -113,6 +113,7 @@ ICTrans(argc, argv, mem_cgm)
 
 	char	*fcap,			/* path to font			*/
 		*gcap;			/* path to device		*/
+	boolean	batch = FALSE;
 
 					/*
 					 * list of metafiles to process
@@ -218,6 +219,7 @@ ICTrans(argc, argv, mem_cgm)
 				i++;
 				if (i >= argc) ct_error(T_NSO, "");
 				(void) AppendString(argv[i]);
+				batch = TRUE;
 			}
 			else {
 				ct_error(T_NSO, "");
@@ -259,6 +261,15 @@ ICTrans(argc, argv, mem_cgm)
 	else {		/* CGM on disk		*/
 		icommand.cmd.name = "file";
 		icommand.cmd.data = meta_files[0];
+		ex_command(&icommand);
+	}
+
+	/*
+	 * if in batch mode don't prompt user for input
+	 */
+	if (batch) {
+		icommand.cmd.name = "movie";
+		icommand.cmd.data = NULL;
 		ex_command(&icommand);
 	}
 
