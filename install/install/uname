@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.2 1994-02-18 22:46:36 haley Exp $
+#      $Id: uname,v 1.3 1994-02-22 16:17:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -232,6 +232,10 @@ while($#argv)
 				endsw
 				breaksw
 	
+			case   "CRAY-2":
+				set arch = cray2
+				breaksw
+
 			case   "cray-3":
 				set arch = cray3
 				breaksw
