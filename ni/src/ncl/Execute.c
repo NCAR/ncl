@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.91 1997-05-20 15:52:11 ethan Exp $
+ *      $Id: Execute.c,v 1.92 1997-05-23 20:47:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2024,8 +2024,6 @@ NclExecuteReturnStatus _NclExecute
 				case NPROC:
 					pfinfo = (NclGenProcFuncInfo*)thesym->u.procfunc;
 					break;
-				case EFUNC:
-				case EPROC:
 				default:
 					pfinfo = NULL;
 					break;

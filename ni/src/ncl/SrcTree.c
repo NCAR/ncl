@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.31 1997-02-18 20:03:06 ethan Exp $
+ *      $Id: SrcTree.c,v 1.32 1997-05-23 20:47:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2152,9 +2152,6 @@ void _NclPrintSymbol
 	case PROC:
 		fprintf(fp,"%s\t","PROC");
 		break;
-	case EPROC:
-		fprintf(fp,"%s\t","EPROC");
-		break;
 	case NPROC:
 		fprintf(fp,"%s\t","NPROC");
 		break;
@@ -2167,8 +2164,8 @@ void _NclPrintSymbol
 	case FUNC:
 		fprintf(fp,"%s\t","FUNC");
 		break;
-	case EFUNC:
-		fprintf(fp,"%s\t","EFUNC");
+	case DLIB:
+		fprintf(fp,"%s\t","DLIB");
 		break;
 	case NFUNC:
 		fprintf(fp,"%s\t","NFUNC");

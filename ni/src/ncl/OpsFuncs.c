@@ -1498,8 +1498,10 @@ NclStackEntry missing_expr;
 				if(dim_size_list[i] < 1) {	
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
 					return(NhlFATAL);
+/*
 				} else if(dim_size_list[i] == 1) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"New: NCL values can not have dimension sizes of 1 unless they are scalar, ignoring dimension and continueing");
+*/
 				} else {
 					total *= dim_size_list[i];
 					dim_sizes[j] = (int)dim_size_list[i];

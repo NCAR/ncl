@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.45 1997-04-10 22:59:52 ethan Exp $
+ *      $Id: Symbol.c,v 1.46 1997-05-23 20:47:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -142,12 +142,6 @@ NhlErrorTypes _NclWalkSymTable
 						break;
 					case IFUNC: 
 						fprintf(stdout,"IFUNC: %s\n",s->name);
-						break;
-					case EPROC:
-						fprintf(stdout,"EPROC: %s\n",s->name);
-						break;
-					case EFUNC:
-						fprintf(stdout,"EFUNC: %s\n",s->name);
 						break;
 					}
 					s = s->symnext;
@@ -324,10 +318,7 @@ void _NclRegisterFunc
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
-	if((s != NULL)&&(s->type != UNDEF)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
-		return;
-	} else {
+	if((s == NULL)||((s->type == UNDEF)||(_NclGetCurrentScopeLevel() > s->level))) {
 		s = _NclAddSym(fname,ftype);
 		s->u.bfunc = (NclBuiltInFuncInfo*)NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
 		if(s->u.bfunc == NULL)  {
@@ -339,6 +330,9 @@ void _NclRegisterFunc
 		s->u.bfunc->thesym = s;
 		s->u.bfunc->thefunc = thefuncptr;
 		s->u.bfunc->thescope = NULL;
+		return;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	}
 }
@@ -371,10 +365,7 @@ void _NclRegisterProc
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
-	if((s != NULL)&&(s->type != UNDEF)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
-		return;
-	} else {
+	if((s == NULL)||((s->type == UNDEF)||(_NclGetCurrentScopeLevel() > s->level))) {
 		s = _NclAddSym(fname,ftype);
 		s->u.bproc = (NclBuiltInProcInfo*)NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
 		if(s->u.bproc == NULL)  {
@@ -386,6 +377,9 @@ void _NclRegisterProc
 		s->u.bproc->thesym = s;
 		s->u.bproc->theproc = theprocptr;
 		s->u.bproc->thescope = NULL;
+		return;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	}
 }
@@ -837,10 +831,8 @@ void _NclDeleteSym
 	case PROC:
 	case UNDEFFILEVAR:
 	case FILEVAR:
-	case EPROC:
 	case NPROC:
 	case FUNC:
-	case EFUNC:
 	case NFUNC:
 	case VBLKNAME:
 	default:
@@ -1450,8 +1442,6 @@ int     *num_names;
 						(*num_names)++;
 						break;
 					}
-					case EPROC:
-					case EFUNC:
 					default:
 
 						break;
@@ -1919,8 +1909,6 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 						tmpargs = s->u.bfunc->theargs;
 						break;
 					}
-					case EPROC:
-					case EFUNC:
 					default:
 
 						break;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.22 1996-09-04 22:00:28 ethan Exp $
+ *      $Id: Symbol.h,v 1.23 1997-05-23 20:47:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,11 @@ typedef struct _NclVarInfo {
 	int datatype;
 	unsigned int offset;
 }NclVarInfo; 
+
+typedef struct _NclSharedLibraryInfo {
+	struct _NclScopeRec* scope;
+	void *so_handle;
+}NclSharedLibraryInfo;
 
 
 #define ANYDIMSIZE = -1
@@ -126,6 +131,7 @@ typedef struct _NclSymbol {
 		struct _NclProcFuncInfo		*procfunc;
 		struct _NclBuiltInFuncInfo	*bfunc;
 		struct _NclBuiltInProcInfo 	*bproc;
+		struct _NclSharedLibraryInfo		*package;
 		struct _NhlClassRec 	*obj_class_ptr;
 	} u;
 	struct _NclSymbol *symnext;

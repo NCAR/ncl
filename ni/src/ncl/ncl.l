@@ -444,6 +444,9 @@ digit	[0-9]
 	if((rec == 1)&&(s->type == QUIT)) {
 		fclose(recfp);
 	}
+	if(s->type == DLIB) {
+		fprintf(stdout,"Returning DLIB\n");
+	}
        	return s->type;
 }
 [!] {
@@ -515,6 +518,17 @@ digit	[0-9]
 	strncpy(yylval.str,tmp,strlen(tmp)+1);
 	printtoken(STRING,yylval.str);
 	return STRING;
+}
+"::"{alnum}+ {
+	char *tmp;
+
+	tmp = yytext + 2;
+
+	strcpy(yylval.str,tmp);
+	printtoken(CCFP,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	fprintf(stdout,"Returning CCFP\n");
+	return CCFP;
 }
 \: { 
 	printtoken(yytext[0],(char*)NULL); 
