@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.20 1994-04-08 18:37:24 boote Exp $
+ *      $Id: Template,v 1.21 1994-04-08 20:26:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -276,9 +276,17 @@ NGCOMM########################################################################
 #define	CLoader	CCompiler
 #endif	/* CLoader */
 
+#ifndef	ArchRecLibSearch
+#define	ArchRecLibSearch	/**/
+#endif
+
 #ifndef	LibSearch
 #define LibSearch	ArchRecLibSearch
 #endif	/* LibSearch */
+
+#ifndef	ArchRecIncSearch
+#define	ArchRecIncSearch	/**/
+#endif
 
 #ifndef	IncSearch
 #define IncSearch	ArchRecIncSearch
