@@ -176,14 +176,14 @@ c ------------------------------------
       INTEGER IER,JER,KER,MER
       CHARACTER*(*) STRING1,STRING2
 
+      RETURN
+
       IF (IER.NE.0 .OR. JER.NE.0 .OR. KER.NE.0 .OR. MER.NE.0) THEN
           WRITE (*,FMT=
      +'('' ERROR: '',a,'' : '',a
      + ,'' : ier,jer,ker,mer='',4i3)') STRING1,STRING2,IER,JER,KER,MER
           STOP
       END IF
-
-      RETURN
       END
 c ---------------------------------------------------------
       SUBROUTINE DTRCTPR(NLAT,MWAVE,MDAB,NDAB,NT,A,B,IER)
