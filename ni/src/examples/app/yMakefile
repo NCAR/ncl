@@ -1,0 +1,44 @@
+#
+#      $Id: yMakefile,v 1.1 1995-03-24 11:15:56 boote Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1995				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		yMakefile
+#
+#	Author:		Jeff W. Boote
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Mar 23 17:06:52 MST 1995
+#
+#	Description:	
+MYNAME      = app
+
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XLIB)
+SYS_LIBS    =   $(CTOFLIBS) -lm
+
+CSRCS     = ap01c.c
+FSRCS     =
+NSRCS     =
+COBJS     = ap01c.o
+FOBJS     =
+SRCS      = $(CSRCS) $(FSRCS)
+OBJS      = $(COBJS) $(FOBJS)
+NCGMS     =
+RESFILES  = ap01.res
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+
+HLUCExampleTarget(ap01c,ap01c.o)
+
+CleanFilesTarget($(OBJS) $(NCGMS))
+DependTarget($(CSRCS))
