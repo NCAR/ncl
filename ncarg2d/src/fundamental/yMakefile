@@ -1,0 +1,12 @@
+#
+#	$Id: yMakefile,v 1.1 1993-03-24 21:21:20 haley Exp $
+#
+NCARG	= ../../..
+
+SUBDIRS = \
+	fdashline fgks fisosurface fngmisc fplotchar fsoftfill fspps fsurface
+
+MakeSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))
