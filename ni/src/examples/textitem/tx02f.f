@@ -15,7 +15,8 @@ c
 c      Date:           Fri Jan 06 18:31:18 mdt 1995
 c
 c      Description:    Demonstrates the textitem object
-c                      defaults.
+c                      writing "NCAR Graphics" in a filled
+c                      colored font.  Turn on the bounding box.
 c
 
         external nhlfhlulayerclass

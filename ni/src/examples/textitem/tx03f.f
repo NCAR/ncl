@@ -14,9 +14,9 @@ c          PO 3000, Boulder, Colorado
 c
 c      Date:           Fri Jan 06 18:31:18 mdt 1995
 c
-c      Description:    Demonstrates the textitem object
-c                      writing "NCAR Graphics" in a filled
-c                      colored font.  Turn on the bounding box.
+c      Description:    Demonstrates the TextItem Object
+c                      Writes "NCAR Graphics" in a series of
+c                      114 different colors. (The default colormap.)
 c
 
         external nhlfhlulayerclass
@@ -28,6 +28,9 @@ c
 		
 	integer appid, wid, pid
 	integer rlist, ierr
+	integer m,i
+
+	parameter(m=114)
 
 c
 c Initialize the high level utility library
@@ -52,21 +55,23 @@ c
 	call nhlfrlsetinteger(rlist,'wkPause',true,ierr)
 	call nhlfcreate(wid,'tx03Work',nhlfxworkstationlayerclass,
      $       0,rlist,ierr)
-c
-c Specify the viewport extent of the object.
-c
+/*
+ * Create 114 plots varying the fill color of the text bounding box
+ * to all entries of the default workstation color map.
+ */
 
-        call nhlfrlclear(rlist)
-	call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
-	call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
-	call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
-	call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
+	do 10, i=1,m
+		call nhlfrlclear(rlist)
+		call nhlfrlsetinteger(rlist,'txBackgroundFillColor',
+     $               i,ierr)
 
-	call nhlfcreate(pid,'TextItems',nhlftextitemlayerclass,
-     $       wid,rlist,ierr)
+		call nhlfcreate(pid,'TextItems',nhlftextitemlayerclass,
+     $               wid,rlist,ierr)
 
-	call nhlfdraw(pid,ierr)
-	call nhlfframe(wid,ierr)
+		call nhlfdraw(pid,ierr)
+		call nhlfframe(wid,ierr)
+ 10    	continue
+
 	call nhlfdestroy(pid,ierr)
 	call nhlfdestroy(wid,ierr)
 	call nhlfdestroy(appid,ierr)

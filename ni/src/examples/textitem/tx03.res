@@ -159,7 +159,7 @@
 !
 !       The color of the text to be written
 !                                         default = 1
-*tx03Work.TextItems.txFontColor           : 1
+*tx03Work.TextItems.txFontColor           : 2
 !
 !       The character height in NDCs of the text to be written
 ! *tx03Work.TextItems.txFontHeightF         : .05

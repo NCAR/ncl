@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.4 1995-01-31 16:41:00 stautler Exp $
+#   $Id: yMakefile,v 1.5 1995-02-03 15:57:44 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -12,7 +12,7 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = tx01c.c tx02c.c tx03c.c tx04c.c tx01f.f tx02f.f tx03f.f tx04f.f
-RES	    = tx02.res tx03.res tx04.res
+RES         = tx01.res tx02.res tx03.res
 EXFILES     = $(SRCS) $(RES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))

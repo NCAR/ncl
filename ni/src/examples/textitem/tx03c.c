@@ -16,8 +16,8 @@
  *      Date:           Fri Jan 06 18:31:18 MDT 1995
  *
  *      Description:    Demonstrates the TextItem Object
- *                      writing "NCAR Graphics" in a filled
- *                      colored font.  Turn on the bounding box.
+ *                      Writes "NCAR Graphics" in a series of
+ *                      114 different colors. (The default colormap.)
  */
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
@@ -30,6 +30,8 @@ main()
 {
 	int appid, wid, pid;
 	int rlist;
+	int M = 114;
+	int i;
 
 /*
  * Initialize the high level utility library
@@ -55,20 +57,20 @@ main()
 	NhlCreate(&wid,"tx03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 /*
- * Specify the viewport extent of the object.
+ * Create 114 plots varying the fill color of the text bounding box
+ * to all entries of the default workstation color map.
  */
 
+for( i = 1; i <= M; i++ ) {
         NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpXF,.2);
-	NhlRLSetFloat(rlist,NhlNvpYF,.8);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,.6);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,.6);
+	NhlRLSetInteger(rlist,NhlNtxBackgroundFillColor,i);
 
 	NhlCreate(&pid,"TextItems",
 		  NhltextItemLayerClass,wid,rlist);
 
 	NhlDraw(pid);
 	NhlFrame(wid);
+}
 	NhlDestroy(pid);
 	NhlDestroy(wid);
 	NhlDestroy(appid);

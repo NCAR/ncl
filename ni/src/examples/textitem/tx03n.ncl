@@ -1,0 +1,51 @@
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                       ;
+;                Copyright (C)  1995                                    ;
+;        University Corporation for Atmospheric Research                ;
+;                All Rights Reserved                                    ;
+;                                                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;      File:           tx03c.c
+;
+;      Author:         Bob Lackman
+;          National Center for Atmospheric Research
+;          PO 3000, Boulder, Colorado
+;
+;      Date:           Fri Jan 06 18:31:18 MDT 1995
+;
+;      Description:    Demonstrates the TextItem Object
+;                      Writes "NCAR Graphics" in a series of
+;                      114 different colors. (The default colormap.)
+;
+
+;
+; Create an application context. Set the app dir to the current directory
+; so the application looks for a resource file in the working directory.
+; In this example the resource file supplies the plot title only.
+;
+appid = create "tx03" appLayerClass noparent
+	"appUsrDir" : "./"
+end create
+
+;
+; Create an XWorkstation object.
+;
+wid = create "tx03Work" xWorkstationLayerClass noparent
+	"wkPause" : "True"
+end create
+
+;
+; Create 114 plots varying the fill color of the text bounding box
+; to all entries of the default workstation color map.
+;
+
+do i=1,114
+	pid = create "TextItems" textItemLayerClass wid
+		"txBackgroundFillColor" : i
+	end create
+
+	draw(pid);
+	frame(wid);
+end do

@@ -16,7 +16,8 @@
  *      Date:           Fri Jan 06 18:31:18 MDT 1995
  *
  *      Description:    Demonstrates the TextItem Object
- *                      defaults.
+ *                      writing "NCAR Graphics" in a filled
+ *                      colored font.  Turn on the bounding box.
  */
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
