@@ -1,5 +1,5 @@
 C
-C       $Id: velvct.f,v 1.11 1993-12-03 21:27:13 kennison Exp $
+C       $Id: velvct.f,v 1.12 1994-03-08 01:01:24 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -220,8 +220,6 @@ C XP              - X coordinate position
 C YP              - Y coordinate position
 C TSZ             - text size
 C
-      DATA IDM / 0 /
-C
 C Saved values of internal parameters (Note that these do not follow
 C the usually observed rule of using 3 characters or less for local
 C variables):
@@ -236,6 +234,10 @@ C This is an empirically derived factor for converting from the
 C WTSTR text size to PLCHHQ text
 C
       PARAMETER (PHQCVT = 0.8)
+C
+C Dummy variable
+C
+      DATA IDM / 0 /
 C
 C -------------------------------------------------------------------
 C
