@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.14 2003-05-20 16:19:18 shea Exp $
+;      $Id: contributed.ncl,v 1.15 2003-07-01 17:02:45 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5196,3 +5196,34 @@ begin
   res@cnMaxLevelValF       = mnmxint(1)
   res@cnLevelSpacingF      = mnmxint(2)
 end
+
+undef ("getSubString")
+function getSubString (s[*]:string, iStrt:integer, iLast:integer)
+;*************************************************************************
+; D. Shea
+;     extract a sub-string from one or more strings 
+;     a = "0850-0899"
+;     a1= getSubString(a, 0, 3)  ; ==> a1 = "0850"
+;     a2= getSubString(a, 5, 8)  ; ==> a2 = "0899"
+;
+;     A = (/ "vorticity", "flux", "divergence" /)
+;     As= getSubString(A, 0, 4)  ; ==> As = (/"vort","flux","dive"/)
+
+local N, sChr, sSub, n
+begin
+  N   = dimsizes(s)
+  if (N.eq.1) then
+      sChr = stringtochar(s)
+      return( chartostring((/sChr(iStrt:iLast)/)) ) 
+  else
+      sSub = new ( N, "string")
+      delete(sSub@_FillValue)
+      do n=0,N-1
+         sChr = stringtochar(s(n))
+         sSub(n) = stringtochar( (/sChr(iStrt:iLast)/) )
+         delete(sChr)   ; size may change
+      end do
+      return (sSub)
+  end if
+end
+
