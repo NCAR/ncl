@@ -1,7 +1,7 @@
-; $Id: basic05n.ncl,v 1.6 1995-04-27 19:08:13 scheitln Exp $
+; $Id: basic05n.ncl,v 1.7 1995-04-27 19:15:45 scheitln Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
-;                Copyright (C)  1993                                    ;
+;                Copyright (C)  1995                                    ;
 ;        University Corporation for Atmospheric Research                ;
 ;                All Rights Reserved                                    ;
 ;                                                                       ;
