@@ -163,8 +163,14 @@ C .   XBAR SHOULD BE ZERO TO MACHINE ACCURACY SUBTRACT IT OUT ANYWAY
       RETURN
       END
 c -------------------------------------------------------------
-      SUBROUTINE DDTRNDMSG(X,Y,NPTS,XMSG,YMSG,IOPT,YDT,SLOPE,YINT,IER)
+C NCLFORTSTART
+      SUBROUTINE DDTRNDMSG(X,Y,NPTS,XMSG,YMSG,IOPT
+     *                    ,YDT,SLOPE,YINT,IER)
       IMPLICIT NONE
+      INTEGER NPTS,IOPT,IER
+      DOUBLE PRECISION X(NPTS),Y(NPTS),SLOPE,YINT,YDT(NPTS)
+      DOUBLE PRECISION XMSG,YMSG
+C NCLEND
 
 c NCL:   yNew = dtrend_msg (x[*]:numeric, y:numeric
 c                          ,remove_mean:logical, return_info:logical)
@@ -183,23 +189,20 @@ c .   npts     - length of vectors x and y
 c .   x/ymsg   - missing code: if no msg values set to some number
 c .                            which will not be encountered.
 c .              ymsg will be used to fill missing values
-c .   iopt     - remove the mean of y prior to detrending
-c .              this does not affect the slope but does affect 
-c .              the y-intercept
+c .   iopt     - =1: (True)  Return YDT with the mean removed        
+c .              =0: (Flase) do not remove the mean
 c .   ydt      - detrended series
 c .              this could be "y" if original series not needed
 c .   slope    - slope (trend ... regression coef)
-c .   yint     - y-intercept
+c .   yint     - y-intercept of the INPUT series
 c .   ier      - if (ier.ne.0) an error has occurred
 
-      INTEGER NPTS,IOPT,IER
-      DOUBLE PRECISION X(1:NPTS),Y(1:NPTS),SLOPE,YINT,YDT(1:NPTS)
-      DOUBLE PRECISION XMSG,YMSG
-
+c                                      local
       INTEGER N
+      DOUBLE PRECISION XDT(1:NPTS)
       DOUBLE PRECISION XYN,XSUM,YSUM,X2SUM,Y2SUM,XYSUM
       DOUBLE PRECISION XBAR,YBAR,XVAR,YVAR,XYVAR
-
+      DOUBLE PRECISION XAVE,YAVE,XTOT,YTOT,YDTINT
 
       IER = 0
       SLOPE = YMSG
@@ -207,78 +210,90 @@ c .   ier      - if (ier.ne.0) an error has occurred
 
       IF (NPTS.LT.2) IER = 1
       IF (IER.NE.0) RETURN
-
+c                               copy original series
       DO N = 1,NPTS
-          YDT(N) = Y(N)
+         XDT(N) = X(N)
+         YDT(N) = Y(N)
       END DO
-c                         this was added after the original code
-      IF (IOPT.NE.0) THEN
-          XYN = 0.0D0
-          YSUM = 0.0D0
-          DO N = 1,NPTS
-              IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
-                  YSUM = YSUM + YDT(N)
-                  XYN = XYN + 1.D0
-              END IF
-          END DO
-c                               all msg values
-          IF (XYN.LT.1.D0) THEN
-              IER = 5
-              RETURN
-          END IF
-
-          YBAR = YSUM/XYN
-          DO N = 1,NPTS
-              IF (YDT(N).NE.YMSG) THEN
-                  YDT(N) = YDT(N) - YBAR
-              END IF
-          END DO
-      END IF
-
-
-      XYN = 0.0D0
+c                               loop to calculate sums
+      XYN  = 0.0D0
       XSUM = 0.0D0
       YSUM = 0.0D0
+      DO N = 1,NPTS
+         IF (XDT(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+             YSUM = YSUM + YDT(N)
+             XSUM = XSUM + XDT(N)
+             XYN  = XYN  + 1.D0
+         END IF
+      END DO
+c                               all msg values
+      IF (XYN.LT.1.D0) THEN
+          IER = 5
+          RETURN
+      END IF
+c                               calculate mean of X and Y
+      XBAR = XSUM/XYN
+      YBAR = YSUM/XYN
+C      print *,"                            "
+C      print *," -------------------------- "
+C      print *,"XBAR=",XBAR,"  YBAR=",YBAR 
+c                               remove the X and Y means 
+c                               This shifts the data: minimize
+c                               roundoff for big X and/or Y numbers
+      DO N = 1,NPTS
+         IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+             XDT(N) = X(N) - XBAR
+             YDT(N) = Y(N) - YBAR
+C             print *,"N=",N,"  XDT(N)="+XDT(N),"  YDT(N)="+YDT(N)
+C     *                     ,"  Y(N)="+Y(N)
+         END IF
+      END DO
+c                               stats for shifted series 
+      XTOT  = 0.0D0
+      YTOT  = 0.0D0
       X2SUM = 0.0D0
       Y2SUM = 0.0D0
       XYSUM = 0.0D0
-      DO N = 1,NPTS
-          IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
-              XSUM = XSUM + X(N)
-              YSUM = YSUM + YDT(N)
-              X2SUM = X2SUM + X(N)*X(N)
-              Y2SUM = Y2SUM + Y(N)*YDT(N)
-              XYSUM = XYSUM + X(N)*YDT(N)
-              XYN = XYN + 1.D0
-          END IF
+      DO N=1,NPTS
+         IF (XDT(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+             XTOT  = XTOT  + XDT(N)
+             YTOT  = YTOT  + YDT(N)
+             X2SUM = X2SUM + XDT(N)*XDT(N)
+             Y2SUM = Y2SUM + YDT(N)*YDT(N)
+             XYSUM = XYSUM + XDT(N)*YDT(N)
+         END IF
       END DO
-
-      IF (XYN.LT.1.D0) THEN
-C all msg values
-          IER = 5
-          RETURN
-      ELSE IF (XYN.LT.3.D0) THEN
-C not enough data
-          IER = 6
-          RETURN
-      END IF
-
-      XBAR = XSUM/XYN
-      YBAR = YSUM/XYN
-      XVAR = X2SUM - XSUM*XSUM/XYN
-      YVAR = Y2SUM - YSUM*YSUM/XYN
-      XYVAR = XYSUM - XSUM*YSUM/XYN
-
+c                               XAVE/YAVE should be 0.0
+      XAVE  = XTOT/XYN
+      YAVE  = YTOT/XYN
+      XVAR  = X2SUM - XTOT*XTOT/XYN
+      YVAR  = Y2SUM - YTOT*YTOT/XYN
+      XYVAR = XYSUM - XTOT*YTOT/XYN
+ 
+c                               slope and y-intercept: shifted series
       SLOPE = XYVAR/XVAR
-      YINT = YBAR - SLOPE*XBAR
+      YDTINT= YAVE - SLOPE*XAVE
+C      print *,"SLOPE=",SLOPE,"  YDTINT=",YDTINT, "  XAVE=",XAVE 
+C     *                      ,"  YAVE=",YAVE 
 
+c                               detrend the (mean removed) series
       DO N = 1,NPTS
-          IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
-              YDT(N) = YDT(N) - (SLOPE*X(N)+YINT)
+          IF (XDT(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+              YDT(N) = YDT(N) - (SLOPE*XDT(N)+YDTINT)
           ELSE
               YDT(N) = YMSG
           END IF
       END DO
+ 
+c                               return mean ?
+      YINT = YBAR - SLOPE*XBAR
+      IF (IOPT.EQ.0) THEN
+          DO N = 1,NPTS
+             IF (YDT(N).NE.YMSG) THEN
+                 YDT(N) = YDT(N) + YBAR
+             END IF
+          END DO
+      END IF
 
       RETURN
       END

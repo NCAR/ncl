@@ -412,6 +412,7 @@ NhlErrorTypes dtrend_msg_W( void )
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope, *remove_mean;
+  int iremove_mean;
   NclBasicDataTypes type_y, type_x, type_dtrend_y;
 /*
  * Output array variables
@@ -461,6 +462,13 @@ NhlErrorTypes dtrend_msg_W( void )
           NULL,
           NULL,
           2);
+
+  if(*remove_mean) {
+    iremove_mean = 1;
+  }
+  else {
+    iremove_mean = 0;
+  }
 
   return_slope = (logical*)NclGetArgValue(
           3,
@@ -564,7 +572,7 @@ NhlErrorTypes dtrend_msg_W( void )
     }
 
     NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,remove_mean,ydt,
+                                 &missing_dy.doubleval,&iremove_mean,ydt,
                                  &slpe,&yint,&ier);
 
     if(type_dtrend_y == NCL_float) {
