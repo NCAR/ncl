@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.3 1993-12-13 23:34:58 ethan Exp $
+ *      $Id: Trans.c,v 1.4 1993-12-14 23:31:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -200,7 +200,7 @@ NhlErrorTypes 	_NhlCompcToData
 				ret = (*i_class->trobj_class.compc_to_data)(
 					instance, parent, x,y,n,xout,yout,
 					xmissing,ymissing,istrans);
-				*istrans = 1;
+				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
 						i_class->base_class.superclass;
