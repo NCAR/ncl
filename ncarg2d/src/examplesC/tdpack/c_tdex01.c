@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdex01.c,v 1.3 1997-12-02 16:44:40 haley Exp $
+ *      $Id: c_tdex01.c,v 1.4 2004-07-23 01:00:33 kennison Exp $
  */
 
 /*
@@ -17,7 +17,7 @@
 /*
  * Define the workstation type and identifier.
  */
-#define WKTP 1
+#define IWTYPE 1
 #define WKID 1
 
 /*
@@ -176,7 +176,7 @@ main()
  * Initialize GKS.
  */
     gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WKTP);
+    gopen_ws(WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 
 /*
