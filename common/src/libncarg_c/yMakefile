@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.36 2000-08-21 03:20:22 haley Exp $
+#	$Id: yMakefile,v 1.37 2000-08-21 21:05:37 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -35,14 +35,14 @@ EXOBJS  = sbytes.o gbytes.o logic32.o
 EXCSRCS = bcopyswap.c gsbytes.c logic32.c
 EXOBJS  = bcopyswap.o gsbytes.o logic32.o
 SHLIBSRCS = g77.c
-SHLIBOBJS = g77.o
+SHLIBOBJS = g77.o 
 
 #endif
 
 
-FCPP_SRCS = i1mach.F r1mach.F d1mach.F argget.F
-FCPP_FSRCS = i1mach.f r1mach.f d1mach.f argget.f
-FCPP_OBJS = i1mach.o r1mach.o d1mach.o argget.o
+FCPP_SRCS = i1mach.F r1mach.F argget.F
+FCPP_FSRCS = i1mach.f r1mach.f argget.f
+FCPP_OBJS = i1mach.o r1mach.o argget.o
 
 HDRS		= c.h 
 CSRCS		= $(EXCSRCS) options.c misc.c ncarg_path.c version.c \
