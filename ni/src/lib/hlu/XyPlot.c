@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.74 1997-09-23 00:03:21 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.75 1997-12-17 23:41:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2405,14 +2405,18 @@ SetUpDataSpec
 					label = buffer;
 				}
 			}
+			if(label) {
 
-			lg_label_strings[index] = NhlMalloc(sizeof(char)*
-							(strlen(label)+1));
-			if(!lg_label_strings[index]){
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return NhlFATAL;
+				lg_label_strings[index] = NhlMalloc(sizeof(char)*
+								(strlen(label)+1));
+				if(!lg_label_strings[index]){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return NhlFATAL;
+				}
+				strcpy(lg_label_strings[index],label);
+			} else {
+				lg_label_strings[index] = NULL;
 			}
-			strcpy(lg_label_strings[index],label);
 
 			llabel_fheights[index] = 
 				dsp->llabel_fheight * xlp->vp_average;
