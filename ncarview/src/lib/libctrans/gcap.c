@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.39 1993-06-25 21:13:03 clyne Exp $
+ *	$Id: gcap.c,v 1.40 1993-11-29 22:37:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -91,10 +91,138 @@ static	Option	options[] = {
 extern	boolean	*softFill;
 boolean	doSimulateBG = FALSE;	/* simulate background color changes ?	*/
 
+
 /*
- * defines for the markers in the strings
+ * 	load the default color palette supplied by the graphcap. 
+ *
+ *	N.B.
+ *	It would be nice to simply convert the graphcap-supplied color palette
+ *	into a CGM instruction - as we do with the -pal command-line
+ *	option - however the graphcap-supplied color palette is already
+ *	in a format relative to the color model supported by the device.
  */
 #define MAD	-6	/* Colour Index */
+int	load_gcap_default_pal()
+{
+	int	i,j,k;
+	long	data[3];
+	SignedChar	s_char_;
+	int		status = 0;
+
+
+	if (! MAP_AVAIL) return;
+
+
+	if (! MAP_INDIVIDUAL) {
+		for (i=0;i<MAP_START_SIZE;i++) { 
+
+			s_char_ = (SignedChar) MAP_START[i];
+
+			switch ((int) s_char_) {
+			case MAD:
+				(void)
+				formatindex((CItype)MAP_INIT_INDEXS[0], FALSE);
+
+				break;
+			default: 
+				buffer(&s_char_,1);
+				break;
+			}
+		}
+	}
+
+	for(i=0,j=0;j<MAP_INDEX_DEFINED;j++) {
+
+		if (MAP_INDIVIDUAL) {
+			for (k=0;k<MAP_START_SIZE;k++) {
+				s_char_ = (SignedChar) MAP_START[k];
+				switch ((int) s_char_) {
+				case MAD:
+					(void) formatindex(
+						(CItype)MAP_INIT_INDEXS[j],
+						FALSE
+					);
+						break;
+				default: 
+					buffer(&s_char_,1);
+					break;
+				}
+			}
+		}
+
+		switch (MAP_MODEL) {
+		case	0:	/* gray scale	*/
+			data[0] = MAP_INIT[i];
+			i += 1;
+			break;
+
+		case	1:	/* rgb	*/
+		case	2:	/* bgr	*/
+		case	3:	/* hls	*/
+			data[0] = MAP_INIT[i];
+			data[1] = MAP_INIT[i+1];
+			data[2] = MAP_INIT[i+2];
+			i += 3;
+			break;
+
+		default:
+			ESprintf(
+				E_UNKNOWN,"Invalid graphcap color model"
+			);
+			status = -1;
+			break;
+		}
+
+		(void)formatintensity(data, MAP_MODEL == 0 ? 1 : 3);
+
+		if (MAP_INDIVIDUAL) buffer(MAP_TERM,MAP_TERM_SIZE);
+	}
+
+	if (! MAP_INDIVIDUAL) buffer(MAP_TERM,MAP_TERM_SIZE);
+
+	return(status);
+}
+
+
+int	gcap_graphics_mode_(on_off)
+	boolean	on_off;
+{
+	static	boolean	first = TRUE;
+
+	if (on_off) {       /* put device in graphics mode  */
+
+		/*
+		 * put the device in graphics mode. If the device is 
+		 * a batch device we only put it in graphics mode once
+		 * and we don't clear it when we do.
+		 */
+		if (!BATCH || first) {
+			(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
+			first = FALSE;
+		}
+		if (!BATCH) {   /* don't clear batch devices */
+			(void)buffer(ERASE, ERASE_SIZE);
+		}
+	}
+
+	else {  /* put device in text mode      */
+
+		/*
+		 * batch devices don't get cleared and only 
+		 * get put into text mode at the end of the 
+		 * metafile
+		 */
+		if (!BATCH) {
+			(void)buffer(ERASE, ERASE_SIZE);
+			(void)buffer(TEXT_INIT, TEXT_INIT_SIZE);
+		}
+
+	}
+	(void) flush(); /* send instruction to device   */
+
+	return(0);
+}
+
 
 
 /*
@@ -202,13 +330,7 @@ CGMC *c;
 	 * to the controlling program to initialize the device for graphics
 	 */
 	if (!Batch) {
-		buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
-		/*
-		 * clear the display
-		 */
-		if (!BATCH) {	/* don't clear batch devices to start */
-			(void)buffer(ERASE, ERASE_SIZE);
-		}
+		gcap_graphics_mode_(1);
 	}
 
 	/*
@@ -222,19 +344,6 @@ CGMC *c;
 		}
 	}
 
-	/*
-	 * this is a nasty hack to make sure that if the graphcap for 
-	 * this device defines a default colormap that it is not
-	 * overwritten later by the common default color map that
-	 * ctrans supplies
-	 */
-	if (MAP_INDEX_DEFINED > 0) {
-		/*
-		 * load the common default color NOW. Later, the 
-		 * graphcap-defined default colormap will override this one
-		 */
-		(void) gcap_update_color_table();
-	}
 
 
 
@@ -270,78 +379,21 @@ CGMC *c;
 int	BegPic(c)
 CGMC *c;
 {
-	int	i,j,k;		/* loop var */
-	long	data[3];
-	SignedChar	s_char_;
-	int		status = 0;
+	int	status = 0;
+	static	int	first = TRUE;
 
+	if (MAP_INDEX_DEFINED > 0 && first) {
+		/*
+		 * Force the default colormap to be loaded now. Then 
+		 * override the ctrans default colormap with the 
+		 * graphcap-defined default colormap.
+		 */
+		(void) gcap_update_color_table();
 
-	/*
-	 * 	init the colour map
-	 */
-	if (MAP_AVAIL) {
-
-		if (!MAP_INDIVIDUAL)
-			for (i=0;i<MAP_START_SIZE;i++) { 
-				s_char_ = (SignedChar) MAP_START[i];
-				switch ((int) s_char_) {
-				case MAD:
-					(void)formatindex((CItype)MAP_INIT_INDEXS[0],
-							  FALSE);
-					break;
-				default: 
-					buffer(&s_char_,1);
-					break;
-				}
-			}
-
-		for(i=0,j=0;j<MAP_INDEX_DEFINED;j++) {
-
-			if (MAP_INDIVIDUAL)
-				for (k=0;k<MAP_START_SIZE;k++) {
-					s_char_ = (SignedChar) MAP_START[k];
-					switch ((int) s_char_) {
-					case MAD:
-						(void)formatindex(
-							(CItype)MAP_INIT_INDEXS[j],
-							FALSE);
-						break;
-					default: 
-						buffer(&s_char_,1);
-						break;
-					}
-				}
-
-			switch (MAP_MODEL) {
-			case	0:	/* gray scale	*/
-				data[0] = MAP_INIT[i];
-				i += 1;
-				break;
-			case	1:	/* rgb	*/
-			case	2:	/* bgr	*/
-			case	3:	/* hls	*/
-				data[0] = MAP_INIT[i];
-				data[1] = MAP_INIT[i+1];
-				data[2] = MAP_INIT[i+2];
-				i += 3;
-				break;
-			default:
-				ESprintf(
-					E_UNKNOWN,"Invalid graphca color model"
-				);
-				status = -1;
-				break;
-			}
-
-			(void)formatintensity(data, MAP_MODEL == 0 ? 1 : 3);
-
-			if (MAP_INDIVIDUAL)
-				buffer(MAP_TERM,MAP_TERM_SIZE);
-		}
-
-		if (!MAP_INDIVIDUAL)
-			buffer(MAP_TERM,MAP_TERM_SIZE);
+		if (load_gcap_default_pal() < 0) return(-1);
+		first = FALSE;
 	}
+
 
 	SetInPic((boolean)TRUE);
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.34 1993-07-19 22:29:37 clyne Exp $
+ *	$Id: ctrans.c,v 1.35 1993-11-29 22:37:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -917,28 +917,17 @@ void	GraphicsMode(on)
 	boolean	on;
 {
 
+	extern	int	gcap_graphics_mode_();
+
 	/*
 	 * do nothing if init_ctrans has not been called or if not a
-	 * graphcap device
+	 * graphcap device. Ugh. This really ought to call a device-specific
+	 * routine instead of hard-coding the gcap version.
 	 */
 	if (! ctransIsInit || ! devices[currdev].usegcap)
 		return;
 
-	if (on)	{	/* put device in graphics mode	*/
-		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
-		if (!BATCH) {	/* don't clear batch devices */
-			(void)buffer(ERASE, ERASE_SIZE);
-		}
-	}
-	else {	/* put device in text mode	*/
-		if (!BATCH) {	/* don't clear batch devices */
-			(void)buffer(ERASE, ERASE_SIZE);
-		}
-		(void) buffer(TEXT_INIT, TEXT_INIT_SIZE);
-		deviceIsInit = FALSE;
-	}
-
-	(void) flush();	/* send instruction to device	*/
+	(void) gcap_graphics_mode_(on);
 }
 
 /*
