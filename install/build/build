@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.16 1995-10-05 22:03:51 haley Exp $
+#      $Id: build,v 1.17 1995-10-20 14:46:57 haley Exp $
 #
 #########################################################################
 #									#
@@ -172,7 +172,7 @@ sub create_tars {
 
     local($cmd, $dir, $tar, $DIR, $format);
 
-    if ($system eq "UNICOS_YMP") {
+    if ($system eq "UNICOS_YMP" || $system eq "UNICOS_J90" || $system eq "UNICOS_C90") {
         $format = "/bin/tar -cfb %s 20 %s";
     }
     else {
@@ -227,7 +227,7 @@ require 'config.pl';
 #
 $progName = $& if ($0 =~ /\w+$/);
 $doDebug = 0;               # do operate in debug mode
-$buildDirRoot = "/cyclone/ncargd/dist/binaries";    # default build repository
+$buildDirRoot = "/cyclone/X/ncarg/binaries";    # default build repository
 $configFile;                # NCAR G config file
 $Version;               # NCAR G version number
 $sizesFile;                 # path to size requirements file
@@ -241,8 +241,11 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'Solaris_sun4',     'Sun4Solaris',
     'ULTRIX_RISC',      'DECRISC',
     'IRIX_IP',          'SGI4D',
+    'IRIX64_IP',        'SGI64',
     'OSF1_alpha',       'AlphaOSF1',
-    'UNICOS_YMP',       'Cray'
+    'UNICOS_YMP',       'Cray',
+    'UNICOS_J90',       'Cray',
+    'UNICOS_C90',       'Cray'
     );
 
 $SIG{'INT'} = 'sigint_handler';
