@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.132 2002-05-24 20:18:51 haley Exp $
+#   $Id: ncargex.csh,v 1.133 2002-05-30 16:33:45 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1541,14 +1541,7 @@ switch ($name)
     breaksw
 
     case cpex16:
-        echo ""
-        echo "You must have the netCDF library installed on your system"
-        echo "in order to compile this example. You will need to include"
-        echo "the path to the netCDF library and include files in order for"
-        echo "this example to compile."
-        echo ""
-        set comp_flags = ($comp_flags "-netcdf")
-        set data_files = (cpex16.dat.nc)
+	set data_files = (cpex16.dat)
     breaksw
 
     case fcover:
