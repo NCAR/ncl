@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.10 1993-11-06 00:31:33 boote Exp $
+ *      $Id: ncarg_path.c,v 1.11 1994-02-07 22:25:43 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -124,19 +124,22 @@ static	const char *dir_2_path(dir)
 
 	if ((s = getenv(ROOT_ENV))) {
 		strcpy(buf, s);
-		/*
-		 * root is another special case
-		 */
-		if (strcmp("root", dir) == 0){
-			return(buf);
-		}
-		strcat(buf, "/");
-		strcat(buf, dir);
+	}
+	else {
+		ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
+		(void) fprintf(stderr, "Assuming /usr/local as the parent directory.\n" );
+		setenv(ROOT_ENV, "/usr/local", 0);
+		strcpy(buf, "/usr/local");
+	}
+	/*
+	 * root is another special case
+	 */
+	if (strcmp("root", dir) == 0){
 		return(buf);
 	}
-
-	ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
-	return(NULL);
+	strcat(buf, "/");
+	strcat(buf, dir);
+	return(buf);
 }
 
 /*
