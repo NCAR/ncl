@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates the Legend Object defaults.
 C
 
-      external nhlfapplayerclass
-      external nhlflegendlayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxworkstationlayerclass
+      external NhlFAppLayerClass
+      external NhlFLegendLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFXWorkstationLayerClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -33,53 +33,53 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
 C working directory.
 C In this example the resource file supplies the plot title only.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid,'lg01',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'lg01',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./lg01f.ncgm',ierr)
-         call nhlfcreate(wid,'lg01Work',
-     1        nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./lg01f.ncgm',ierr)
+         call NhlFCreate(wid,'lg01Work',
+     1        NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
       else 
 C
 C Create an X Workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
-         call nhlfcreate(wid,'lg01Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
+         call NhlFCreate(wid,'lg01Work',NhlFXWorkstationLayerClass,0,
      1        rlist,ierr)
       endif
 C     
 C Specify the viewport extent of the object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloat(rlist,'vpXF',0.,ierr)
-      call nhlfrlsetfloat(rlist,'vpYF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpWidthF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',1.,ierr)
-      call nhlfcreate(pid,'Legend',nhlflegendlayerclass,wid,rlist,
+      call NhlFRLClear(rlist)
+      call NhlFRLSetfloat(rlist,'vpXF',0.,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',1.,ierr)
+      call NhlFCreate(pid,'Legend',NhlFLegendLayerClass,wid,rlist,
      1      ierr)
 
-      call nhlfdraw(pid,ierr)
-      call nhlfframe(wid,ierr)
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDraw(pid,ierr)
+      call NhlFFrame(wid,ierr)
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end

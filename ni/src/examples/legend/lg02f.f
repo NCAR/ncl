@@ -16,10 +16,10 @@ C      Date:           Fri Jan 13 18:31:18 MDT 1995
 C
 C      Description:    Demonstrates a Legend of 5 markers.
 C
-      external nhlfapplayerclass
-      external nhlflegendlayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
+      external NhlFAppLayerClass
+      external NhlFLegendLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -49,69 +49,69 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context.  By default the application looks
 C for a resource file in the working directory.
 C In this example the resource file supplies the plot title only.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid,'lg02',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'lg02',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./lg02f.ncgm',ierr)
-         call nhlfcreate(wid,'lg02Work',
-     1       nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./lg02f.ncgm',ierr)
+         call NhlFCreate(wid,'lg02Work',
+     1       NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
       else 
 C
 C Create an X Workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
-         call nhlfcreate(wid,'lg02Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
+         call NhlFCreate(wid,'lg02Work',NhlFXWorkstationLayerClass,0,
      1        rlist,ierr)
       endif
 C
 C Specify the viewport extent of the object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloat(rlist,'vpXF',0.,ierr)
-      call nhlfrlsetfloat(rlist,'vpYF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpWidthF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',1.,ierr)
+      call NhlFRLClear(rlist)
+      call NhlFRLSetfloat(rlist,'vpXF',0.,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',1.,ierr)
 C
 C Specify the type of markers for the legend.
 C
-      call nhlfrlsetinteger(rlist,'lgItemCount',5,ierr)
-      call nhlfrlsetfloat(rlist,'lgLabelFontHeightF',.03,ierr)
-      call nhlfrlsetstringarray(rlist,'lgLabelStrings',labels,
+      call NhlFRLSetinteger(rlist,'lgItemCount',5,ierr)
+      call NhlFRLSetfloat(rlist,'lgLabelFontHeightF',.03,ierr)
+      call NhlFRLSetstringarray(rlist,'lgLabelStrings',labels,
      1      5,ierr)
-      call nhlfrlsetinteger(rlist,'lgMonoItemType',1,ierr)
-      call nhlfrlsetinteger(rlist,'lgItemType',1,ierr)
-      call nhlfrlsetintegerarray(rlist,'lgMarkerColors',colors,
+      call NhlFRLSetinteger(rlist,'lgMonoItemType',1,ierr)
+      call NhlFRLSetinteger(rlist,'lgItemType',1,ierr)
+      call NhlFRLSetintegerarray(rlist,'lgMarkerColors',colors,
      1      5,ierr)
-      call nhlfrlsetintegerarray(rlist,'lgMarkerIndexes',item_ind,
+      call NhlFRLSetintegerarray(rlist,'lgMarkerIndexes',item_ind,
      1      5,ierr)
-      call nhlfrlsetinteger(rlist,'lgMonoMarkerThickness',0,ierr)
-      call nhlfrlsetfloatarray(rlist,'lgMarkerThicknesses',mkthik,
+      call NhlFRLSetinteger(rlist,'lgMonoMarkerThickness',0,ierr)
+      call NhlFRLSetfloatarray(rlist,'lgMarkerThicknesses',mkthik,
      1      5,ierr)
-      call nhlfrlsetfloat(rlist,'lgMarkerSizeF',.05,ierr)
-      call nhlfcreate(pid,'Legend',nhlflegendlayerclass,wid,rlist,
+      call NhlFRLSetfloat(rlist,'lgMarkerSizeF',.05,ierr)
+      call NhlFCreate(pid,'Legend',NhlFLegendLayerClass,wid,rlist,
      1      ierr)
 
-      call nhlfdraw(pid,ierr)
-      call nhlfframe(wid,ierr)
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDraw(pid,ierr)
+      call NhlFFrame(wid,ierr)
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end
