@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.12 1995-04-11 19:14:24 haley Exp $
+ *      $Id: Sun4Solaris,v 1.13 1995-05-05 14:04:24 haley Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #define	FCppCommand	/usr/ccs/lib/cpp
 #define	DoesRanlib	NO
 #define	LintCommand	alint
+#define StdDefines      -DSYSV
 
 #define	ArchRecLibSearch	-L/usr/local/lib -L/usr/openwin/lib
 #define	ArchRecIncSearch	-I/usr/local/include -I/usr/openwin/include
