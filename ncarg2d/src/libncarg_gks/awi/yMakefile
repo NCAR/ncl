@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.22 1998-03-19 06:41:21 fred Exp $
+#	$Id: yMakefile,v 1.23 1999-03-25 03:03:32 haley Exp $
 #
 
 MYNAME	= awi
@@ -121,7 +121,7 @@ ggtitm.o : gkscom.h
 giitm.o : gkscom.h 
 ginst.o : ginst.f 
 gksbd.o : gkscom.h 
-gmarat.o : trinst.h trstat.h trpars.h trcode.h 
+gmarat.o : gkscom.h trinst.h trstat.h trpars.h trcode.h 
 gninst.o : trpars.h trinst.h trbufr.h 
 gnpart.o : trpars.h trinst.h trbufr.h 
 gopdec.o : trbufr.h 
@@ -361,6 +361,21 @@ gxmdef.o : gxmdef.f \
  
 gxopdf.o : gxopdf.f \
    trpars.h 
+
+gzacwk.o : gzacwk.f \
+   gkscom.h 
+
+gzclwk.o : gzclwk.f \
+   gkscom.h 
+
+gzclrwk.o : gzclrwk.f \
+   gkscom.h 
+
+gzdawk.o : gzdawk.f \
+   gkscom.h 
+
+gzname.o : gzname.f \
+   gkscom.h 
  
 gzckst.o : gzckst.f \
    gkscom.h 
@@ -404,6 +419,9 @@ gzputr.o : gzputr.f \
 gzputs.o : gzputs.f \
    gkscom.h 
  
+gzreop.o : gzreop.f \
+   gkscom.h 
+ 
 gzroi.o : gzroi.f \
    gkscom.h 
  
@@ -411,6 +429,9 @@ gzsrat.o : gzsrat.f \
    gkscom.h 
  
 gztowk.o : gztowk.f \
+   gkscom.h 
+ 
+gzusat.o : gzusat.f \
    gkscom.h 
  
 gzw2gk.o : gzw2gk.f \
