@@ -1,6 +1,7 @@
 /*
- *      $Id: Project,v 1.55 2003-05-25 17:25:50 haley Exp $
+ *      $Id: Project,v 1.56 2003-11-26 22:01:41 grubin Exp $
  */
+
 /************************************************************************
 *									*
 *			     Copyright (C)  1993			*
@@ -8,6 +9,7 @@
 *			     All Rights Reserved			*
 *									*
 ************************************************************************/
+
 /*
  *	File:		Project
  *
@@ -15,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Apr 30 15:39:20 MDT 1993
+ *	$Date: 2003-11-26 22:01:41 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -39,6 +41,14 @@
 #undef	BuildUdunits
 #endif
 #endif	/* BuildUdunits */
+
+# ifndef    BuildV5D
+# define    BuildV5D
+# else
+# if    !BuildV5D
+# undef BuildV5D
+# endif
+# endif /* BuildV5D */
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -141,6 +151,10 @@
 #ifndef	UdUnitslib
 #define	UdUnitslib	-ludunits
 #endif	/* UdUnitslib */
+
+# ifndef    V5Dlib
+# define    V5Dlib  -lv5d
+# endif /* V5Dlib */
 
 #ifndef	XdrLibrary
 #define	XdrLibrary	/**/
@@ -416,6 +430,7 @@ NCDFLIBS	= NetCDFlib
 HDFLIB		= HDFlib
 HDFEOSLIB	= HDFEOSlib
 UDUNITSLIB	= UdUnitslib
+V5DLIB      = V5Dlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DVERSION='"$(VERSION)"'
