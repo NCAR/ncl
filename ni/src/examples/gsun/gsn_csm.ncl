@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.53 2000-11-16 18:02:45 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.54 2000-12-12 16:57:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,6 +42,8 @@ undef("set_left_subtitle")
 undef("set_xaxis_string")
 undef("set_yaxis_string")
 undef("set_subtitles_res")
+undef("is_valid_xcoord")
+undef("is_valid_ycoord")
 undef("check_for_coord_arrays")
 undef("get_allowed_latnames")
 undef("get_allowed_lonnames")
@@ -49,9 +51,9 @@ undef("get_allowed_pres_units_mb")
 undef("get_allowed_pres_units_pa")
 undef("get_allowed_pres_units_hpa")
 undef("get_allowed_pres_units")
-undef("is_xcoord_valid_lat")
-undef("is_xcoord_valid_lon")
-undef("is_ycoord_valid_lat")
+undef("is_valid_lat_xcoord")
+undef("is_valid_lon_xcoord")
+undef("is_valid_lat_ycoord")
 undef("gsn_geop_hgt")
 undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
@@ -443,6 +445,48 @@ begin
 end
 
 ;***********************************************************************;
+; Function : is_valid_xcoord                                            ;
+;                                                                       ;
+; Checks if the X coordinate variable exist and if it is 1-dimensional. ; 
+;                                                                       ;
+;***********************************************************************;
+function is_valid_xcoord(data:numeric)
+local dims1
+begin
+  if(.not.ismissing(data!1).and.iscoord(data,data!1))
+    dims1 = dimsizes(dimsizes(data&$data!1$))
+    if(dims1.eq.1) then
+      return(True)
+    else
+      return(False)
+    end if
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function : is_valid_ycoord                                            ;
+;                                                                       ;
+; Checks if the Y coordinate variable exist and if it is 1-dimensional. ; 
+;                                                                       ;
+;***********************************************************************;
+function is_valid_ycoord(data:numeric)
+local dims0
+begin
+  if(.not.ismissing(data!0).and.iscoord(data,data!0))
+    dims0 = dimsizes(dimsizes(data&$data!0$))
+    if(dims0.eq.1) then
+      return(True)
+    else
+      return(False)
+    end if
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
 ; Procedure : check_for_coord_arrays                                    ;
 ;                data: numeric                                          ;
 ;                 res: logical                                          ;
@@ -462,13 +506,13 @@ procedure check_for_coord_arrays(data[*][*]:numeric,res:logical,type:string)
 local prefix
 begin 
   if(type.eq."vector")
-  if(.not.ismissing(data!1).and.iscoord(data,data!1))
+    prefix = "vf"
   else
     prefix = "sf"
   end if
 
   if(is_valid_xcoord(data))
-  if(.not.ismissing(data!0).and.iscoord(data,data!0))
+    if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
       set_attr(res,prefix+"XArray",data&$data!1$)
     end if
   else
@@ -485,7 +529,7 @@ end
 ; Procedure : check_class_name                                          ;
 ;                  plot: graphic                                        ;
 ;             plot_type: string                                         ;
-           "lat_u","lat_t"/))
+;                                                                       ;
 ; This procedure checks what type "plot" is, and returns the plot from  ;
 ; it (for example, if "plot" is an overlay, and you want the contour    ;
 ; part of it, it will return the contour plot.                          ;
@@ -497,7 +541,7 @@ end
 ; Function : get_allowed_latnames                                       ;
 ;                                                                       ;
 ; Get list of names allowed for a latitude coordinate array.            ; 
-           "long","lon_u","lon_t"/))
+;                                                                       ;
 ;***********************************************************************;
 function get_allowed_latnames()
 begin
@@ -555,20 +599,19 @@ end
 ; Function : get_allowed_pres_units_mb                                  ;
 ;                                                                       ;
 ; Get list of names allowed for pressure units in millibars.            ; 
-; Function : is_xcoord_valid_lat                                        ;
+  all_pres(nmb+npa:)      = hpa
   return(all_pres)
 end
 
 ;***********************************************************************;
 ; Function : get_allowed_lat_units                                      ;
 ;                                                                       ;
-function is_xcoord_valid_lat(data:numeric)
+; Get list of names allowed for the units attribute of a latitude       ;
 ; coordinate array.                                                     ; 
-  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-     any(data!1.eq.get_allowed_latnames()).and.\
-     (isatt(data&$data!1$,"units").and. \
-      (data&$data!1$@units.eq."degrees_north".or.\
-       data&$data!1$@units.eq."degrees north")))
+  if(is_valid_xcoord(data).and.any(data!1.eq.get_allowed_latnames()).and.\
+    (isatt(data&$data!1$,"units").and. \
+    (data&$data!1$@units.eq."degrees_north".or.\
+     data&$data!1$@units.eq."degrees north")))
     return(True)
   else
     return(False)
@@ -576,20 +619,19 @@ function is_xcoord_valid_lat(data:numeric)
 ; Function : is_valid_lat_xcoord                                        ;
 ;                                                                       ;
 ; Checks if the X coordinate variable contains real lat values, and not ;
-; Function : is_xcoord_valid_lon                                        ;
+; just indices. This is determined by the "units" attribute, which must ;
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
 function is_valid_lat_xcoord(data:numeric)
 begin
   if(is_valid_xcoord(data)) then
-function is_xcoord_valid_lon(data:numeric)
+    if(any(data!1.eq.get_allowed_latnames()))
       if(isatt(data&$data!1$,"units"))
-  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-     any(data!1.eq.get_allowed_lonnames()).and.\
-     (isatt(data&$data!1$,"units").and. \
-      (data&$data!1$@units.eq."degrees_east".or.\
-       data&$data!1$@units.eq."degrees east")))
+  if(is_valid_xcoord(data).and.any(data!1.eq.get_allowed_lonnames()).and.\
+    (isatt(data&$data!1$,"units").and. \
+    (data&$data!1$@units.eq."degrees_east".or.\
+     data&$data!1$@units.eq."degrees east")))
     return(True)
   else
     return(False)
@@ -597,20 +639,19 @@ function is_xcoord_valid_lon(data:numeric)
 ; Function : is_valid_lon_xcoord                                        ;
 ;                                                                       ;
 ; Checks if the X coordinate variable contains real lon values, and not ;
-; Function : is_ycoord_valid_lat                                        ;
+; just indices. This is determined by the "units" attribute, which must ;
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
 function is_valid_lon_xcoord(data:numeric)
 begin
   if(is_valid_xcoord(data))
-function is_ycoord_valid_lat(data:numeric)
+    if(any(data!1.eq.get_allowed_lonnames()))
       if(isatt(data&$data!1$,"units"))
-  if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
-     any(data!0.eq.get_allowed_latnames()).and.\
-     (isatt(data&$data!0$,"units").and. \
-      (data&$data!0$@units.eq."degrees_north".or.\
-       data&$data!0$@units.eq."degrees north")))
+  if(is_valid_ycoord(data).and.any(data!0.eq.get_allowed_latnames()).and.\
+    (isatt(data&$data!0$,"units").and. \
+    (data&$data!0$@units.eq."degrees_north".or.\
+     data&$data!0$@units.eq."degrees north")))
     return(True)
   else
     return(False)
@@ -727,18 +768,18 @@ end
 ;                 res: logical                                          ;
 ;                type: string                                           ;
 ;                                                                       ;
-; lat names
+; This procedure checks if the data contains a coordinate variable in   ;
+; dimension 0 of an allowable list of latnames                          ;
 ;                                                                       ;
 ; If so, then it sets sf/vfYArray (depending on if type equals          ;
-    if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
-        any(data!0.eq.allowed_latnames))
+    if(is_valid_ycoord(data).and.any(data!0.eq.allowed_latnames))
 ;                                                                       ;
-    else
-      print("check_for_y_lat_coord: Warning: Data either does not contain an")
-      print("known latitude coordinate array or doesn't contain one at all")
+;***********************************************************************;
 procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
+  print("check_for_y_lat_coord: Warning: Data either does not contain a")
+  print("valid latitude coordinate array or doesn't contain one at all")
   if(type.eq."vector")
     array_name = "vfYArray"
     start_name = "vfYCStartV"
@@ -782,18 +823,18 @@ allowed_latnames
   end if 
 
   print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
-; lat names
+  print("Valid latitude names include: ")
+  print("    " + cat_strings(get_allowed_latnames))
   return
 end
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       any(data!1.eq.allowed_latnames))
+    if(is_valid_xcoord(data).and.any(data!1.eq.allowed_latnames))
 ;***********************************************************************;
-    else
-      print("check_for_x_lat_coord: Warning: Data either does not contain an")
-      print("known latitude coordinate array or doesn't contain one at all")
+; Procedure : check_for_x_lat_coord                                     ;
 ;                data: numeric                                          ;
 ;                 res: logical                                          ;
 ;                type: string                                           ;
+  print("check_for_x_lat_coord: Warning: Data either does not contain an")
+  print("known latitude coordinate array or doesn't contain one at all")
 ; This procedure checks if the data contains a coordinate variable in   ;
 ; dimension 1 of an allowable list of latnames                          ;
 ;                                                                       ;
@@ -840,15 +881,15 @@ allowed_lonnames
       set_attr(res,array_name,data&$data!1$)
       return
     end if
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       any(data!1.eq.allowed_lonnames))
+    if(is_valid_xcoord(data).and.any(data!1.eq.allowed_lonnames))
     if(isatt(data,"lat2d").and. \
-    else
-      print("check_for_lon_coord: Warning: Data either does not contain an")
-      print("known longitude coordinate array or doesn't contain one at all")
+       all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
        .not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data@lat2d)
       return
+  print("check_for_lon_coord: Warning: Data either does not contain an")
+  print("known longitude coordinate array or doesn't contain one at all")
+
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
   return
 end
@@ -2052,7 +2093,7 @@ end
     if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
   res2 = res
 
-  if(is_xcoord_valid_lat(data)) then
+  if(is_valid_lat_xcoord(data)) then
 ;                 res: logical                                          ;
 ;                                                                       ;
 ; Add "nice" latitude labels ("90S", "30N", etc) to the Y axis in       ;
@@ -2063,7 +2104,7 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res2)
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
-  if(is_ycoord_valid_lat(data)) then
+  if(is_valid_lat_ycoord(data)) then
     latlabels    = get_lat_labels(latvalues)
 
     tmres = True
@@ -2075,7 +2116,7 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res2)
     attsetvalues(plot,tmres)
   end if
-  if(is_xcoord_valid_lon(data)) then
+  if(is_valid_lon_xcoord(data)) then
 ;***********************************************************************;
 ; Procedure : add_latlon_labels                                         ;
 ;               plot: graphic                                           ;
@@ -5671,9 +5712,14 @@ begin
     res2@gsnXYPlot = True
     res2@gsnXAxis = True
 
+    add_latlon_labels(xy_object,x,res2)
+    delete(res2@gsnXAxis)
+    res2@gsnYAxis = True
+      end getvalues	
+    delete(res2@gsnYAxis)
     delete(res2@gsnXYPlot)
 
-      yline = (/min(yinterp),max(yinterp)/)
+; Fill above/below Y reference line.
 
     if(yref_fill_on.and..not.bar_chart)
 ;
@@ -5693,8 +5739,14 @@ begin
         if(dimsizes(yref_line_above).gt.1)
           fill_above = yref_line_above(i)
         end if
+        if(dimsizes(yref_line_below).gt.1)
+          fill_below = yref_line_below(i)
+        end if
+      end getvalues	
+        xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
                                      xinterp(i,0:new_npts(i)-1), \
-      xline = (/min(xinterp),max(xinterp)/)
+                                     yinterp(i,0:new_npts(i)-1),\
+                                     yref_line(i),fill_above,fill_below)
       end do
     end if
 
@@ -6000,10 +6052,9 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
                                           ; X/Y axis labels.
 
 ; If the plot is close to square in size, then make the 
-    if(.not.ismissing(data!1).and.iscoord(data,data!1))
-      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-        set_attr(res2,"sfXArray",data&$data!1$)
-      end if
+; three top titles and the tick marks smaller.
+
+    font_scale = (/1.0,0.8,0.8/)
     ratios     = (/0.5,0.75,1.0/)
 
     ratio = height/width
@@ -6014,7 +6065,7 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
-    if(is_xcoord_valid_lon(data)) then
+
     if(popgrid.ne."") then
       pop_latlon_grid(wks,contour_object,popgrid)  ; Add a POP grid.
     else
@@ -6233,7 +6284,7 @@ local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
 begin
 
-    if(.not.ismissing(data!0).and.iscoord(data,data!0))
+; Initialize.
     res2         = get_resources(resources)
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
@@ -6320,7 +6371,7 @@ begin
 
     if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
-    if(is_xcoord_valid_lat(data)) then
+    end if
 
 ;
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
@@ -6573,18 +6624,25 @@ begin
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
 
     add_latlon_labels(vector_object,unew,res2)
-local cnres, vcres, calldraw, callframe
+
 ; Get some information from vector plot that was created.
   res2 = resources
     vector_plot = check_class_name(vector_object,"vector")
 
     getvalues vector_plot
-  lbar_zone = get_res_value(res2,"pmLabelBarZone",4)
       "vpHeightF"            : height
   
-  lbar_orth = get_res_value(res2,"pmLabelBarOrthogonalPosF",0.05)
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
+  
+      "tmYLMajorLengthF"     : ylength
+      "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+
+    font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
+                                          ; function of the size of the
                                           ; X/Y axis labels.
   cnres = get_res_ne(res2,(/"vc","vf"/))
   vcres = get_res_eq(res2,(/"vc","vf"/))
@@ -6616,9 +6674,19 @@ local cnres, vcres, calldraw, callframe
                                  major_length,minor_length)
 ; Create a labelbar.
 
-; Create vector plot.
+    if (lbar_on)
+      lbres = get_res_eq(res2,(/"lb","pm"/))
       add_labelbar(wks,vector_object,3,font_height,"vector",lbres)
-  vector = gsn_csm_vector(wks,u,v,vcres)
+    end if
+  
+; Set up three subtitles at top, if they exist.
+    subres = get_res_eq(res2,(/"am","tx"/))  ; Get textitem resources
+    subres                  = True
+    set_attr(subres,"txFontHeightF",font_height)
+    add_subtitles(wks,vector_object,left_string,center_string,\
+                  right_string,subres)
+
+; Draw all this stuff: vector plot and subtitles.
     draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
 
 ; Return vector plot object.
