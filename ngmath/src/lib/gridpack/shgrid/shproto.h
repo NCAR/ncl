@@ -1,5 +1,5 @@
 /*
- * $Id: shproto.h,v 1.4 2000-08-22 03:34:58 haley Exp $
+ * $Id: shproto.h,v 1.5 2000-09-19 23:58:16 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,6 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
+#include <stddef.h>
 #include <stdio.h>
  
 /*
@@ -57,4 +58,17 @@ int c_shgeti(char *);
 #endif  /* __STDC__ */
 #endif  /* UNICOS else ... */
 #endif  /* NGCALLF */
+
+/*
+ *  prototypes for Fortran calls.
+ */
+void NGCALLF(shgrid,SHGRID)(int *, float *, float *, float *, float *, 
+                            int *, int *, int *, float *, float *, 
+                            float *, float *, int *, float *, int *);
+void NGCALLF(shgetnp,SHGETNP)(float *, float *, float *, int *, float *, 
+                              float *, float *, int *, int *, float *, 
+                              int *, int *);
+void NGCALLF(shseti,SHSETI)(char *, int *, size_t);
+void NGCALLF(shgeti,SHGETI)(char *, int *, size_t);
+
 

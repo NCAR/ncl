@@ -1,5 +1,5 @@
 /*
- * $Id: c_shuser.c,v 1.5 2000-08-22 15:19:44 haley Exp $
+ * $Id: c_shuser.c,v 1.6 2000-09-19 23:58:16 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,6 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -75,7 +76,7 @@ float *c_shgrid(int n, float x[], float y[], float z[], float f[],
     *ier = 301;
     return((float *)NULL);
   }
-  iwk = (int *) calloc(2*n, sizeof(float));
+  iwk = (int *) calloc(2*n, sizeof(int));
   if (iwk == NULL) {
     printf("Unable to allocate int work space in c_shgrid\n");
     *ier = 302;
@@ -128,7 +129,7 @@ int c_shgetnp(float px, float py, float pz, int n,
       *ier = 304;
       return((int) NULL);
     }
-    iwk = (int *) calloc(2*n, sizeof(float));
+    iwk = (int *) calloc(2*n, sizeof(int));
     if (iwk == NULL) {
       printf("Unable to allocate int work space in c_shgetnp\n");
       *ier = 305;
