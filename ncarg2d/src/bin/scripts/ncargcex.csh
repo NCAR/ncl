@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.27 1994-12-16 18:24:05 haley Exp $
+#	$Id: ncargcex.csh,v 1.28 1995-01-30 04:30:25 haley Exp $
 #
 
 #**************************#
@@ -18,7 +18,7 @@ if ($#argv < 1) then
   echo ""
   echo " To invoke various utilities:"
   echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]  "
-  echo "   [-dashline] [dashpack] [-ezmap] [-field_flow]         "
+  echo "   [-dashline] [-dashpack] [-ezmap] [-field_flow]        "
   echo "   [-gflash] [-gks] [-gridall] [-histogram] [-isosurface]"
   echo "   [-labelbar] [-ngmisc] [-plotchar] [polypack]          "
   echo "   [-scrolled_title] [-softfill] [-spps] [-streamlines]  "
