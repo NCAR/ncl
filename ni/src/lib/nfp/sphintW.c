@@ -48,7 +48,7 @@ NhlErrorTypes g2gsh_W( void )
  * Workspace variables
  */
   int lsave, lsvmin, lwork, ldwork, lwkmin, ker = 0;
-  int klat, klon, k1, k2, lwa, lwb, ier = 0;
+  int klat, klon, k1, k2, lwa, lwb, ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
 /*
  * Retrieve parameters
@@ -204,12 +204,12 @@ NhlErrorTypes g2gsh_W( void )
     found_missing = contains_missing(tmp_Ta,nlatanlona,has_missing_Ta,
                                      missing_dTa.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(Tb,index_Tb,type_Ta,nlatbnlonb,
                                 missing_dTa.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -247,6 +247,13 @@ NhlErrorTypes g2gsh_W( void )
     }
     index_Ta += nlatanlona;
     index_Tb += nlatbnlonb;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -309,7 +316,7 @@ NhlErrorTypes f2gsh_W( void )
  * Workspace variables
  */
   int lsave, lsvmin, lwork, ldwork, lwkmin, ker = 0;
-  int klat, klon, k1, k2, lwa, lwb, ier = 0;
+  int klat, klon, k1, k2, lwa, lwb, ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
 /*
  * Retrieve parameters
@@ -465,12 +472,12 @@ NhlErrorTypes f2gsh_W( void )
     found_missing = contains_missing(tmp_Ta,nlatanlona,has_missing_Ta,
                                      missing_dTa.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(Tb,index_Tb,type_Ta,nlatbnlonb,
                                 missing_dTa.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -508,6 +515,13 @@ NhlErrorTypes f2gsh_W( void )
     }
     index_Ta += nlatanlona;
     index_Tb += nlatbnlonb;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -570,7 +584,7 @@ NhlErrorTypes g2fsh_W( void )
  * Workspace variables
  */
   int lsave, lsvmin, lwork, ldwork, lwkmin, ker = 0;
-  int klat, klon, k1, k2, lwa, lwb, ier = 0;
+  int klat, klon, k1, k2, lwa, lwb, ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
 /*
  * Retrieve parameters
@@ -714,12 +728,12 @@ NhlErrorTypes g2fsh_W( void )
     found_missing = contains_missing(tmp_Ta,nlatanlona,has_missing_Ta,
                                      missing_dTa.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(Tb,index_Tb,type_Ta,nlatbnlonb,
                                 missing_dTa.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -742,6 +756,13 @@ NhlErrorTypes g2fsh_W( void )
     }
     index_Ta += nlatanlona;
     index_Tb += nlatbnlonb;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -805,7 +826,7 @@ NhlErrorTypes f2fsh_W( void )
  * Workspace variables
  */
   int lsave, lsvmin, lwork, ldwork, lwkmin, ker = 0;
-  int klat, klon, k1, k2, lwa, lwb, ier = 0;
+  int klat, klon, k1, k2, lwa, lwb, ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
 /*
  * Retrieve parameters
@@ -948,12 +969,12 @@ NhlErrorTypes f2fsh_W( void )
     found_missing = contains_missing(tmp_Ta,nlatanlona,has_missing_Ta,
                                      missing_dTa.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(Tb,index_Tb,type_Ta,nlatbnlonb,
                                 missing_dTa.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -976,6 +997,13 @@ NhlErrorTypes f2fsh_W( void )
     }
     index_Ta += nlatanlona;
     index_Tb += nlatbnlonb;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -1036,7 +1064,7 @@ NhlErrorTypes fo2fsh_W( void )
 /*
  * error code, various
  */
-  int i, j, index_goff, index_greg, ioff, ier = 0;
+  int i, j, index_goff, index_greg, ioff, ier = 0, kmiss = 0;
   int total_size_leftmost, jlatilon, jlat1ilon;
   int total_size_goff, total_size_greg;
 /*
@@ -1157,12 +1185,12 @@ NhlErrorTypes fo2fsh_W( void )
     found_missing = contains_missing(tmp_goff,jlatilon,has_missing_goff,
                                      missing_dgoff.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(greg,index_greg,type_goff,jlat1ilon,
                                 missing_dgoff.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fsh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -1184,6 +1212,13 @@ NhlErrorTypes fo2fsh_W( void )
     }
     index_goff += jlatilon;
     index_greg += jlat1ilon;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -1239,7 +1274,7 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * error code, various
  */
-  int i, j, index_greg, index_goff, ioff, ier = 0;
+  int i, j, index_greg, index_goff, ioff, ier = 0, kmiss = 0;
   int total_size_leftmost, jlat1ilon, jlatilon;
   int total_size_greg, total_size_goff;
 /*
@@ -1358,12 +1393,12 @@ NhlErrorTypes f2fosh_W( void )
     found_missing = contains_missing(tmp_greg,jlat1ilon,has_missing_greg,
                                      missing_dgreg.doubleval);
     if(found_missing) {
+      kmiss++;
 /*
  * Set all elements of this 2D grid to a missing value.
  */
       set_subset_output_missing(goff,index_goff,type_greg,jlatilon,
                                 missing_dgreg.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: A 2-dimensional input array contains missing values. No interpolation performed on this 2d array.");
     }
     else {
 /*
@@ -1385,6 +1420,13 @@ NhlErrorTypes f2fosh_W( void )
     }
     index_greg += jlat1ilon;
     index_goff += jlatilon;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(kmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.

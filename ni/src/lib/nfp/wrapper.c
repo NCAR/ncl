@@ -1803,12 +1803,12 @@ void NclAddUserFuncs(void)
         nargs = 0;
         args = NewArgs(4);
 
-		dimsizes[0] = 3;
+                dimsizes[0] = 3;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
-		dimsizes[0] = 1;
+                dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
         NclRegisterProc(tdinit_W,args,"tdinit",nargs);
@@ -1818,7 +1818,7 @@ void NclAddUserFuncs(void)
         nargs = 0;
         args = NewArgs(3);
 
-		dimsizes[0] = 3;
+                dimsizes[0] = 3;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
@@ -3709,8 +3709,8 @@ NclScalar         *missing_rx)
  * Coerce missing value to double.
  */
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               missing_dx,
-               missing_x,
+               (void*)missing_dx,
+               (void*)missing_x,
                1,
                NULL,
                NULL,
@@ -3718,8 +3718,8 @@ NclScalar         *missing_rx)
 
     if(type_x != NCL_double && missing_rx != NULL) {
       _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 missing_rx,
-                 missing_x,
+                 (void*)missing_rx,
+                 (void*)missing_x,
                  1,
                  NULL,
                  NULL,
@@ -3768,8 +3768,8 @@ NclScalar         *missing_dx)
                  (void*)dx,
                  x,
                  size_x,
-                 missing_dx,
                  missing_x,
+                 missing_dx,
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
     }
     else {
@@ -3822,8 +3822,8 @@ NclScalar         *missing_dx
                tmp_x,
                (void*)((char*)x+index_x*(typeclass_x->type_class.size)),
                size_x,
-               missing_dx,
                missing_x,
+               missing_dx,
                typeclass_x);
   }
   else {
@@ -4092,23 +4092,23 @@ NclBasicDataTypes type_x
   double xmin, xmax;
   int i;
   if(type_x != NCL_double) {
-	xmin = xmax = (double)((float*)x)[0];
+        xmin = xmax = (double)((float*)x)[0];
   }
   else {
-	xmin = xmax = ((double*)x)[0];
+        xmin = xmax = ((double*)x)[0];
   }
   
   if(type_x != NCL_double) {
-	for( i = 1; i < size_x; i++ ) {
-	  xmin = min(xmin,(double)((float*)x)[i]);
-	  xmax = max(xmax,(double)((float*)x)[i]);
-	}
+        for( i = 1; i < size_x; i++ ) {
+          xmin = min(xmin,(double)((float*)x)[i]);
+          xmax = max(xmax,(double)((float*)x)[i]);
+        }
   }
   else {
-	for( i = 1; i < size_x; i++ ) {
-	  xmin = min(xmin,((double*)x)[i]);
-	  xmax = max(xmax,((double*)x)[i]);
-	}
+        for( i = 1; i < size_x; i++ ) {
+          xmin = min(xmin,((double*)x)[i]);
+          xmax = max(xmax,((double*)x)[i]);
+        }
   }
   printf("xmin = %g xmax = %g\n", xmin, xmax );
 }
