@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.145 2004-06-01 22:55:43 haley Exp $
+;      $Id: gsn_code.ncl,v 1.146 2004-06-05 02:57:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2445,15 +2445,6 @@ function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
                            resources:logical)
 local res2, gsid, gsres, prim_object, dummy
 begin
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(x)).or.all(ismissing(y))) then
-    dummy = new(1,graphic)
-    print("gsn_add_primitive: one or more input datasets contain all missing values; no " + polytype + " generated.")
-    return(dummy)
-  end if
-
   res2 = get_resources(resources)
 
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
@@ -2653,14 +2644,6 @@ local res2, gsid, gsres, gmres, canvas, xf, yf, x2, y2
 begin
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     print("Warning: gsn_primitive: Do not recognize primitive type '"+ polytype + "'.")
-    return
-  end if
-
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(x)).or.all(ismissing(y))) then
-    print("gsn_primitive: one or more input datasets contain all missing values; no " + polytype + " generated.")
     return
   end if
 
@@ -3093,8 +3076,8 @@ end
 ; Function : gsn_text_ndc_return                                        ;
 ;                   wks: workstation object                             ;
 ;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x ndc positions         ;
-;                     y: 1-dimensional array of y ndc positions         ;
+;                     x: n-dimensional array of x ndc positions         ;
+;                     y: n-dimensional array of y ndc positions         ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function draws text strings on the workstation "wks" (the        ;
@@ -3103,33 +3086,30 @@ end
 ; specified in NDC space. "resources" is an optional list of resources. ;
 ; This function returns the text string created.                        ;
 ;***********************************************************************;
-function gsn_text_ndc_return(wks:graphic, text[*]:string, x[*]:numeric, \
-                             y[*]:numeric, resources:logical )
+function gsn_text_ndc_return(wks:graphic, textt:string, xx:numeric, \
+                             yy:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(text)).or.all(ismissing(x)).or.all(ismissing(y))) then
+  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
+    print("Error: gsn_text_ndc: x and y must have the same dimension sizes.")
     dummy = new(1,graphic)
-    print("gsn_text_ndc: one or more input datasets contain all missing values; no text generated.")
     return(dummy)
   end if
+  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
+    print("Error: gsn_text_ndc: text must be a single string or the same dimension sizes as x and y.")
+    dummy = new(1,graphic)
+    return(dummy)
+  end if
+;
+; Convert to 1-dimensional arrays.
+;
+  x    = ndtooned(xx)
+  y    = ndtooned(yy)
+  text = ndtooned(textt)
 
-;
-; Test the lengths of text, x, and y. x and y must be the same length,
-; and text can either be the same length or one.
-;
   xlen = dimsizes(x)
-  ylen = dimsizes(y)
   tlen = dimsizes(text)
-
-  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
-    print("Error: gsn_text_ndc: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
-    dummy = new(1,graphic)
-    return(dummy)
-  end if
 
   if(tlen.eq.1.and.xlen.ne.1) then
     newtext = new (xlen, string)
@@ -3193,8 +3173,8 @@ end
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x data positions        ;
-;                     y: 1-dimensional array of y data positions        ;
+;                     x: n-dimensional array of x data positions        ;
+;                     y: n-dimensional array of y data positions        ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws text strings on the workstation "wks" (the       ;
@@ -3203,32 +3183,29 @@ end
 ; specified in the same data space as the data space of "plotid".       ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
-procedure gsn_text(wks:graphic,plotid:graphic,text[*]:string,x[*]:numeric, \
-                   y[*]:numeric, resources:logical )
+procedure gsn_text(wks:graphic,plotid:graphic,textt:string,xx:numeric, \
+                   yy:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(text)).or.all(ismissing(x)).or.all(ismissing(y))) then
-    print("gsn_text: one or more input datasets contain all missing values; no text generated.")
-    return
-  end if
-
-;
-; Test the lengths of text, x, and y. x and y must be the same length,
-; and text can either be the same length or one.
-;
-  xlen = dimsizes(x)
-  ylen = dimsizes(y)
-  tlen = dimsizes(text)
-
-  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
-    print("Error: gsn_text: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
+  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
+    print("Error: gsn_text: x and y must have the same dimension sizes.")
     dummy = new(1,graphic)
     return(dummy)
   end if
+  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
+    print("Error: gsn_text: text must be a single string or the same dimension sizes as x and y.")
+    dummy = new(1,graphic)
+    return(dummy)
+  end if
+;
+; Convert to 1-dimensional arrays.
+;
+  x    = ndtooned(xx)
+  y    = ndtooned(yy)
+  text = ndtooned(textt)
+  xlen = dimsizes(x)
+  tlen = dimsizes(text)
 
   if(tlen.eq.1.and.xlen.ne.1) then
     newtext = new (xlen, string)
@@ -3293,8 +3270,8 @@ end
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x data positions        ;
-;                     y: 1-dimensional array of y data positions        ;
+;                     x: n-dimensional array of x data positions        ;
+;                     y: n-dimensional array of y data positions        ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds text strings to the plot "plotid". "x" and "y" are ;
@@ -3306,32 +3283,28 @@ end
 ; the text to the plot. This means that if you resize or move the plot, ;
 ; the text will stay with the plot.                                     ;
 ;***********************************************************************;
-function gsn_add_text(wks:graphic,plotid:graphic,text[*]:string, \
-                      x[*]:numeric,y[*]:numeric, resources:logical )
+function gsn_add_text(wks:graphic,plotid:graphic,textt:string, \
+                      xx:numeric,yy:numeric, resources:logical )
 local txid, txres, amres, just, res2, wksname, am_ids
 begin
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(text)).or.all(ismissing(x)).or.all(ismissing(y))) then
+  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
+    print("Error: gsn_add_text: x and y must have the same dimension sizes.")
     dummy = new(1,graphic)
-    print("gsn_add_text: one or more input datasets contain all missing values; no text generated.")
     return(dummy)
   end if
-
+  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
+    print("Error: gsn_add_text: text must be a single string or the same dimension sizes as x and y.")
+    dummy = new(1,graphic)
+    return(dummy)
+  end if
 ;
-; Test the lengths of text, x, and y. x and y must be the same length,
-; and text can either be the same length or one.
+; Convert to 1-dimensional arrays.
 ;
+  x    = ndtooned(xx)
+  y    = ndtooned(yy)
+  text = ndtooned(textt)
   xlen = dimsizes(x)
-  ylen = dimsizes(y)
   tlen = dimsizes(text)
-
-  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
-    print("Error: gsn_add_text: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
-    dummy = new(1,graphic)
-    return(dummy)
-  end if
 
   if(tlen.eq.1.and.xlen.ne.1) then
     newtext = new (xlen, string)
@@ -3412,7 +3385,7 @@ begin
   amres = get_res_eq(res2,"am")           ; Get annomanager resources.
   attsetvalues_check(am_ids(0),amres)     ; Set annomanager resources.
 
-  return(am_ids(0:tlen-1))
+  return(onedtond(am_ids(0:tlen-1),dimsizes(xx)))
 end
 
 ;***********************************************************************;
@@ -4412,15 +4385,6 @@ local anno, width1, width2, height1, height2, font_height1, font_height2, \
 mj_length1, mj_length2, mjo_length1, mjo_length2, mno_length1, mno_length2, \
 mno_length1, mno_length2, total_width1, total_width2, scale1, scale2, scale
 begin
-;
-; If all the data are missing, don't continue.
-;
-  if(all(ismissing(oldbaseplot)).or.all(ismissing(oldplots))) then
-    dummy = new(1,graphic)
-    print("gsn_attach_plots: one or more input datasets contain all missing values; no plots attached.")
-    return(dummy)
-  end if
-
   res1  = get_resources(plotres1)
   res2  = get_resources(plotres2)
   base  = oldbaseplot
@@ -5747,11 +5711,7 @@ local res2, calldraw, callframe, maxbb, ispercent, bins, nbars, \
       setdiscrete, setinterval,top, botton, left, right, lenc, tmp, \
       colors, locs, lbs
 begin
-  if(all(ismissing(xdata))) then
-    dummy = new(1,graphic)
-    print("gsn_histogram: all the data are missing, no plot generated.")
-    return(dummy)
-  end if
+  dummy = new(1,graphic)      ; Dummy graphic to return if things go wrong.
 ;
 ; 1. Retrieve special resources.
 ;
@@ -6316,15 +6276,6 @@ datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_contour: all the data are missing, no plot generated.")
-      return(dummy)
-    end if
-
     cnres     = False
     llres     = False
     res2      = get_resources(resources)
@@ -6479,15 +6430,6 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 local i, data_object, contour_object, res, sf_res_index, \
 cn_res_index, mp_res_index, map_object, res2, scale, shape, sprdcols
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_contour_map: all the data are missing, no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 
 ; Create the data object.
@@ -6668,15 +6610,6 @@ local i, data_object,plot_object,res,vf_res_index,st_res_index, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2, scale, shape
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v))) then
-      dummy = new(1,graphic)
-      print("gsn_streamline: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     llres = False
     res2  = get_resources(resources)
 
@@ -6795,15 +6728,6 @@ function gsn_streamline_map(wks:graphic,u[*][*]:numeric,\
 local i, data_object, contour_object, res, vf_res_index, \
 st_res_index, mp_res_index, map_object, res2
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v))) then
-      dummy = new(1,graphic)
-      print("gsn_streamline_map: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 
 ; Create the data object.
@@ -7194,15 +7118,6 @@ local i,data_object,plot_object,res,vf_res_index,vc_res_index, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, sprdcols, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v))) then
-      dummy = new(1,graphic)
-      print("gsn_vector: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     llres = False
     res2  = get_resources(resources)
 
@@ -7335,15 +7250,6 @@ function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, res2
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_vector_contour: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 
 ;
@@ -7480,15 +7386,6 @@ function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, st_res_index, sf_res_index, res2
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_streamline_contour: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 ;
 ; Create the streamline field object.
@@ -7620,15 +7517,6 @@ function gsn_vector_contour_map(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_vector_contour_map: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 ;
 ; Create the vector field object.
@@ -7769,15 +7657,6 @@ function gsn_vector_map(wks:graphic, u[*][*]:numeric, v[*][*]:numeric, \
 local i, data_object, contour_object, res, vf_res_index, \
 vc_res_index, mp_res_index, map_object, res2, sprdcols
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v))) then
-      dummy = new(1,graphic)
-      print("gsn_vector_map: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 
 ; Create the data object.
@@ -7887,15 +7766,6 @@ force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
 vc_res_index, sf_res_index, res2, sprdcols
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_vector_scalar: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     llres = False
     res2  = get_resources(resources)
 
@@ -8050,15 +7920,6 @@ local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2, \
 sprdcols
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
-      dummy = new(1,graphic)
-      print("gsn_vector_scalar_map: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     res2 = get_resources(resources)
 ;
 ; Create the vector field object.
@@ -8182,15 +8043,6 @@ function gsn_xy(wks:graphic, x:numeric, y:numeric, resources:logical )
 local i, attnames, data_object, plot_object, res, ca_res_index, \
 xy_res_index, xydp_res_index, dspec, res2, set_dash
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(x)).or.all(ismissing(y))) then
-      dummy = new(1,graphic)
-      print("gsn_xy: one or more input datasets contain all missing values; no plot generated.")
-      return(dummy)
-    end if
-
     set_dash = True       ; Default is to set some dash patterns.
     res2     = get_resources(resources)
 
@@ -8398,15 +8250,6 @@ end
 function gsn_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
-;
-; If all the data are missing, don't continue.
-;
-    if(all(ismissing(y))) then
-      dummy = new(1,graphic)
-      print("gsn_y: all the data are missing, no plot generated.")
-      return(dummy)
-    end if
-
   res2 = get_resources(resources)
 
 ;
