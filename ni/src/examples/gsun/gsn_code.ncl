@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.98 2002-10-24 14:26:02 haley Exp $
+;      $Id: gsn_code.ncl,v 1.99 2002-11-10 15:58:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2627,16 +2627,24 @@ local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
 ;
-; Test the lengths of text, x, and y, which must be the same.
+; Test the lengths of text, x, and y. x and y must be the same length,
+; and text can either be the same length or one.
 ;
   xlen = dimsizes(x)
   ylen = dimsizes(y)
   tlen = dimsizes(text)
-  if(xlen.ne.ylen.or.xlen.ne.tlen) then
-    print("Error: gsn_text_ndc: you must have the same number of X and Y positions as you have text strings")
+
+  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
+    print("Error: gsn_text_ndc: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
     dummy = new(1,graphic)
     return(dummy)
   end if
+
+  if(tlen.eq.1.and.xlen.ne.1) then
+    newtext = new (xlen, string)
+    tlen    = xlen
+  end if  
+  newtext = text
 
   res2 = get_resources(resources)
 
@@ -2652,7 +2660,7 @@ begin
   if((res2).and.isatt(res2,"txFuncCode")) then
     do i=0,tlen-1
       txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : text(i)
+        "txString" : newtext(i)
         "txPosXF"  : x(i)
         "txPosYF"  : y(i)
         "txFuncCode" : res2@txFuncCode
@@ -2663,7 +2671,7 @@ begin
   else
     do i=0,tlen-1
       txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : text(i)
+        "txString" : newtext(i)
         "txPosXF"  : x(i)
         "txPosYF"  : y(i)
       end create
@@ -2710,16 +2718,24 @@ local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
 ;
-; Test the lengths of text, x, and y, which must be the same.
+; Test the lengths of text, x, and y. x and y must be the same length,
+; and text can either be the same length or one.
 ;
   xlen = dimsizes(x)
   ylen = dimsizes(y)
   tlen = dimsizes(text)
-  if(xlen.ne.ylen.or.xlen.ne.tlen) then
-    print("Error: gsn_text: you must have the same number of X and Y positions as you have text strings")
+
+  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
+    print("Error: gsn_text: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
     dummy = new(1,graphic)
     return(dummy)
   end if
+
+  if(tlen.eq.1.and.xlen.ne.1) then
+    newtext = new (xlen, string)
+    tlen    = xlen
+  end if  
+  newtext = text
 
   res2 = get_resources(resources)
 
@@ -2752,7 +2768,7 @@ begin
   if(res2.and.isatt(res2,"txFuncCode")) then
     do i=0,tlen-1
       txid = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
+        "txString"   : newtext(i)
         "txPosXF"    : x2(i)
         "txPosYF"    : y2(i)
         "txFuncCode" : res2@txFuncCode
@@ -2763,7 +2779,7 @@ begin
   else 
     do i=0,tlen-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
+        "txString"   : newtext(i)
         "txPosXF"    : x2(i)
         "txPosYF"    : y2(i)
       end create
@@ -2796,17 +2812,24 @@ function gsn_add_text(wks:graphic,plotid:graphic,text[*]:string, \
 local txid, txres, amres, just, res2, wksname, am_ids
 begin
 ;
-; Test the lengths of text, x, and y, which must be the same.
+; Test the lengths of text, x, and y. x and y must be the same length,
+; and text can either be the same length or one.
 ;
   xlen = dimsizes(x)
   ylen = dimsizes(y)
   tlen = dimsizes(text)
 
-  if(xlen.ne.ylen.or.xlen.ne.tlen) then
-    print("Error: gsn_add_text: you must have the same number of X and Y positions as you have text strings")
+  if(xlen.ne.ylen.or.(tlen.ne.xlen.and.tlen.ne.1)) then
+    print("Error: gsn_add_text: you must have the same number of X and Y positions, and either the same number of text strings or just one text string")
     dummy = new(1,graphic)
     return(dummy)
   end if
+
+  if(tlen.eq.1.and.xlen.ne.1) then
+    newtext = new (xlen, string)
+    tlen    = xlen
+  end if  
+  newtext = text
 
   res2 = get_resources(resources)
 ;
@@ -2821,7 +2844,7 @@ begin
   if(res2.and.isatt(res2,"txFuncCode")) then
     do i=0,tlen-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
+        "txString"   : newtext(i)
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
@@ -2829,7 +2852,7 @@ begin
   else
     do i=0,tlen-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString" : text(i)
+        "txString" : newtext(i)
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
     end do
