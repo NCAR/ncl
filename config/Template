@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.40 2003-10-09 21:07:16 haley Exp $
+ *      $Id: Template,v 1.41 2003-10-31 00:34:04 haley Exp $
  */
 /************************************************************************
 *									*
@@ -826,7 +826,7 @@ NGCOMM After Including Rules file
 NGCOMM
 NGCOMM########################################################################
 
-#if	defined(AIX) || defined(IRIX) || defined(HPUX) || defined(Linux) || defined(IRIX64) || defined(alpha) || defined(Darwin)
+#if	defined(AIX) || defined(IRIX) || defined(HPUX) || defined(Linux) || defined(IRIX64) || defined(alpha)
 .SUFFIXES: .F
 
 .F.o:
