@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.13 1994-07-28 22:11:49 boote Exp $
+ *      $Id: CoordArrays.c,v 1.14 1994-08-08 22:51:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -511,8 +511,8 @@ GetMinMax
 (array,oarray,cast,ocast,miss,min,max)
 	NhlGenArray	array;
 	NhlGenArray	oarray;
-	NhlcaCastMode	cast,
-	NhlcaCastMode	ocast,
+	NhlcaCastMode	cast;
+	NhlcaCastMode	ocast;
 	NhlGenArray	miss;
 	float		*min;
 	float		*max;
@@ -595,7 +595,7 @@ FlushObj
 #else
 (dim,cap)
 	_NhlcaDType			dim;
-	NhlCoordArraysLayerPart		*cap
+	NhlCoordArraysLayerPart		*cap;
 #endif
 {
 	char		func[] = "FlushObj";
