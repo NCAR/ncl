@@ -45,7 +45,7 @@ end do
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "cn02" appLayerClass noparent
+appid = create "cn02" appClass noparent
     "appUsrDir" : "./"
         "appDefaultParent" : "True"
 end create
@@ -59,14 +59,14 @@ if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "cn02Work" ncgmWorkstationLayerClass appid
+  wid = create "cn02Work" ncgmWorkstationClass appid
     "wkMetaName" : "./cn02n.ncgm"
   end create
 else
 ;
 ; Create an X workstation.
 ;
-  wid = create "cn02Work" xWorkstationLayerClass noparent
+  wid = create "cn02Work" xWorkstationClass noparent
     "wkPause" : "True"
   end create
 end if
@@ -79,14 +79,14 @@ end if
 len_dims(0) = N
 len_dims(1) = M
 
-dataid = create "bullseye" scalarFieldLayerClass appid
+dataid = create "bullseye" scalarFieldClass appid
         "sfDataArray" : T
 end create
 
 ;
 ; Create a ContourPlot object, supplying the ScalarField object as data
 ;
-cnid = create "ContourPlot1" contourPlotLayerClass wid
+cnid = create "ContourPlot1" contourPlotClass wid
     "cnScalarFieldData" : dataid
 end create
 

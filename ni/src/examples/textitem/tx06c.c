@@ -1,5 +1,5 @@
 /*
- *  $Id: tx06c.c,v 1.2 1995-03-22 21:45:59 haley Exp $
+ *  $Id: tx06c.c,v 1.3 1995-04-07 10:54:42 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,7 +55,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./tx06c.ncgm");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-        NhlCreate(&wid,"tx06Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&wid,"tx06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -66,7 +66,7 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx06Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
 /*
  * Create a TextItem object.
@@ -75,7 +75,7 @@ main()
     NhlSetColor(wid,2,1.0, 0.0, 0.0);
     NhlSetColor(wid,3,0.4, 0.0, 0.4);
 
-    NhlCreate(&pid,"TextItem",NhltextItemLayerClass,wid,0);
+    NhlCreate(&pid,"TextItem",NhltextItemClass,wid,0);
 
 /*
  *  Run through the text justifications.

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx07n.ncl,v 1.2 1995-03-22 21:46:02 haley Exp $
+;   $Id: tx07n.ncl,v 1.3 1995-04-07 10:54:44 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,7 +40,7 @@ cmap(2,:) = (/1.0, 0.0, 0.0/)
 NCGM=0
 
 if (NCGM .eq. 1) then
-    workstation_id = create "tx07Work"  ncgmWorkstationLayerClass defaultapp
+    workstation_id = create "tx07Work"  ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx07n.ncgm"
       "wkColorMap"         : cmap
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
@@ -49,7 +49,7 @@ else
 ;
 ; Create an XWorkstation object.
 ;
-  workstation_id = create "tx07Work"  xWorkstationLayerClass defaultapp
+  workstation_id = create "tx07Work"  xWorkstationClass defaultapp
     "wkPause"            : True
     "wkColorMap"         : cmap
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
@@ -60,9 +60,9 @@ end if
 ; Create two TextItem objects to be used for the example string
 ; and for the label for the example sting.
 ;
-example_id = create "Example string" textItemLayerClass workstation_id
+example_id = create "Example string" textItemClass workstation_id
 end create
-label_id = create "Label" textItemLayerClass workstation_id
+label_id = create "Label" textItemClass workstation_id
 end create
 
 cspacings = (/ "0.0"  ,"1.5" , "0.6" /)

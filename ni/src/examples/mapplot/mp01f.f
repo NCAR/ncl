@@ -1,5 +1,5 @@
 C
-C     $Id: mp01f.f,v 1.6 1995-04-01 23:10:04 dbrown Exp $
+C     $Id: mp01f.f,v 1.7 1995-04-07 10:54:20 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -20,10 +20,10 @@ C      Date:            Tue Jan 24 10:08:49 MST 1995
 C
 C      Description:     Demonstrates basic MapPlot capabilities.
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFMapPlotLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFMapPlotClass
       integer appid,wid,mapid
       integer rlist
       integer NCGM
@@ -44,7 +44,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'mp01',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'mp01',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -52,7 +52,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./mp01f.ncgm',ierr)
-         call NhlFCreate(wid,'mp01Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'mp01Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
       else 
 C
@@ -60,7 +60,7 @@ C Create an X workstation
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'mp01Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'mp01Work',NhlFXWorkstationClass,0,
      1     rlist,ierr)
       endif
 C
@@ -69,7 +69,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'pmTitleDisplayMode','always',ierr)
       call NhlFRLSetstring(rlist,'tiMainString','mp01f - Frame 1',ierr)
-      call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
+      call NhlFCreate(mapid,'Map0',NhlFMapPlotClass,wid,rlist,ierr)
       call NhlFDraw(mapid,ierr)
       call NhlFFrame(wid,ierr)
 C

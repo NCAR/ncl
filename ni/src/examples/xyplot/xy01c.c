@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.12 1995-04-06 14:43:23 haley Exp $
+**      $Id: xy01c.c,v 1.13 1995-04-07 10:55:03 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -71,7 +71,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"xy01",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -79,7 +79,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy01c.ncgm");
-        NhlCreate(&xworkid,"xy01Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy01Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -88,7 +88,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy01Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
 /*
@@ -99,7 +99,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,NhlDEFAULT_APP,
               rlist);
 /*
  * Create the XyPlot object which is created as a child of the
@@ -107,7 +107,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */

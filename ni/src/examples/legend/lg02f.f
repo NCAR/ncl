@@ -16,10 +16,10 @@ C      Date:           Fri Jan 13 18:31:18 MDT 1995
 C
 C      Description:    Demonstrates a Legend of 5 markers.
 C
-      external NhlFAppLayerClass
-      external NhlFLegendLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
+      external NhlFAppClass
+      external NhlFLegendClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -59,7 +59,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'lg02',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'lg02',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -68,14 +68,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./lg02f.ncgm',ierr)
          call NhlFCreate(wid,'lg02Work',
-     1       NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
+     1       NhlFNcgmWorkstationClass,0,rlist,ierr) 
       else 
 C
 C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'lg02Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'lg02Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
       endif
 C
@@ -103,7 +103,7 @@ C
       call NhlFRLSetfloatarray(rlist,'lgMarkerThicknesses',mkthik,
      1      5,ierr)
       call NhlFRLSetfloat(rlist,'lgMarkerSizeF',.05,ierr)
-      call NhlFCreate(pid,'Legend',NhlFLegendLayerClass,wid,rlist,
+      call NhlFCreate(pid,'Legend',NhlFLegendClass,wid,rlist,
      1      ierr)
 
       call NhlFDraw(pid,ierr)

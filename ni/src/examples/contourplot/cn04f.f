@@ -1,5 +1,5 @@
 C
-C     $Id: cn04f.f,v 1.3 1995-04-03 05:11:49 haley Exp $
+C     $Id: cn04f.f,v 1.4 1995-04-07 10:54:00 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -20,12 +20,12 @@ C
 C      Description:      Emulates the output of the Conpack example
 C                       'cpex02.f' using the HLU library.
 C
-      external NhlFTextItemLayerClass
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external nhlfscalarfieldlayerclass
-      external nhlfcontourplotlayerclass
+      external NhlFTextItemClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external nhlfscalarfieldclass
+      external nhlfcontourplotclass
 
       integer appid,wid,dataid,cnid,txid
       integer rlist,grlist
@@ -70,7 +70,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'cn04',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'cn04',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -78,7 +78,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./cn04f.ncgm',ierr)
-         call NhlFCreate(wid,'cn04Work',NhlFNcgmWorkstationLayerClass,
+         call NhlFCreate(wid,'cn04Work',NhlFNcgmWorkstationClass,
      1     0,rlist,ierr) 
       else 
 C
@@ -86,7 +86,7 @@ C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'cn04Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'cn04Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
       endif
 C
@@ -99,7 +99,7 @@ C
       len_dims(2) = M
       call gendat (z,M,M,N,mlow,mhigh,dlow,dhigh)
       call NhlFRLSetmdfloatarray(rlist,'sfDataArray',z,2,len_dims,ierr)
-      call NhlFCreate(dataid,'Gendat',nhlfscalarfieldlayerclass,appid,
+      call NhlFCreate(dataid,'Gendat',nhlfscalarfieldclass,appid,
      1                rlist,ierr)
 C
 C Create a ContourPlot object, supplying the ScalarField object as data,
@@ -110,7 +110,7 @@ C
       call NhlFRLSetstring(rlist,'tiMainString','EXAMPLE 2-1',ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',0.4625,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',0.4625,ierr)
-      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotclass,
      1   wid,rlist,ierr)
 C
 C In order to set the contour array resources of interest, you must 
@@ -240,7 +240,7 @@ C
 C Label the plot as an emulation
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(txid,'TextItem1',NhlFTextItemLayerClass,wid,
+      call NhlFCreate(txid,'TextItem1',NhlFTextItemClass,wid,
      1         rlist,ierr)
       call NhlFDraw(txid,ierr)
       call NhlFFrame(wid,ierr)

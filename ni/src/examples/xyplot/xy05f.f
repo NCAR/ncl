@@ -1,5 +1,5 @@
 C
-C      $Id: xy05f.f,v 1.9 1995-04-06 14:43:38 haley Exp $
+C      $Id: xy05f.f,v 1.10 1995-04-07 10:55:14 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -28,11 +28,11 @@ C                  (The C version uses the "CoordArrTable" object which
 C                  is not available in Fortran or NCL.)
 C
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFCoordArraysLayerClass
-      external NhlFXyPlotLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFCoordArraysClass
+      external NhlFXyPlotClass
 
       parameter(NPTS=100,NCURVE=10,PI=3.14159)
 C
@@ -62,7 +62,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'xy05',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'xy05',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -71,14 +71,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy05f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy05Work',
-     +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
+     +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
 C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(xworkid,'xy05Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(xworkid,'xy05Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
       endif
 C
@@ -100,7 +100,7 @@ C
          call NhlFRLSetFloatArray(rlist,'caYArray',y(1,i),
      +        length(i),ierr)
          write(datastr,40)i-1
-         call NhlFCreate(dataid(i),datastr,NhlFCoordArraysLayerClass,
+         call NhlFCreate(dataid(i),datastr,NhlFCoordArraysClass,
      +                0,rlist,ierr)
  30   continue
  40   format('xyData',i1)
@@ -111,7 +111,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetIntegerArray(rlist,'xyCoordData',dataid,NCURVE,
      +     ierr)
-      call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
+      call NhlFCreate(plotid,'xyPlot',NhlFXyPlotClass,xworkid,
      +     rlist,ierr)
 C
 C Draw the plot.

@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates the Legend Object defaults.
 C
 
-      external NhlFAppLayerClass
-      external NhlFLegendLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
+      external NhlFAppClass
+      external NhlFLegendClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -44,7 +44,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'lg01',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'lg01',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -53,14 +53,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./lg01f.ncgm',ierr)
          call NhlFCreate(wid,'lg01Work',
-     1        NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
+     1        NhlFNcgmWorkstationClass,0,rlist,ierr) 
       else 
 C
 C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'lg01Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'lg01Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
       endif
 C     
@@ -71,7 +71,7 @@ C
       call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',1.,ierr)
-      call NhlFCreate(pid,'Legend',NhlFLegendLayerClass,wid,rlist,
+      call NhlFCreate(pid,'Legend',NhlFLegendClass,wid,rlist,
      1      ierr)
 
       call NhlFDraw(pid,ierr)

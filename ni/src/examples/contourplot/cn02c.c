@@ -1,5 +1,5 @@
 /*
- *      $Id: cn02c.c,v 1.2 1995-04-01 22:20:39 dbrown Exp $
+ *      $Id: cn02c.c,v 1.3 1995-04-07 10:53:55 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -74,7 +74,7 @@ main(int argc, char *argv[])
     srlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(srlist);
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"cn02",NhlappLayerClass,NhlDEFAULT_APP,srlist);
+    NhlCreate(&appid,"cn02",NhlappClass,NhlDEFAULT_APP,srlist);
 
     if (NCGM) {
 /*
@@ -83,7 +83,7 @@ main(int argc, char *argv[])
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkMetaName,"./cn02c.ncgm");
         NhlCreate(&wid,"cn02Work",
-                  NhlncgmWorkstationLayerClass,appid,srlist);
+                  NhlncgmWorkstationClass,appid,srlist);
     }
     else {
 /*
@@ -91,7 +91,7 @@ main(int argc, char *argv[])
  */
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNwkPause,True);
-        NhlCreate(&wid,"cn02Work",NhlxWorkstationLayerClass,appid,srlist);
+        NhlCreate(&wid,"cn02Work",NhlxWorkstationClass,appid,srlist);
     }
 /*
  * Create a ScalarField data object using the data set defined above.
@@ -103,14 +103,14 @@ main(int argc, char *argv[])
     len_dims[0] = N;
     len_dims[1] = M;
     NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,T,2,len_dims);
-    NhlCreate(&dataid,"bullseye",NhlscalarFieldLayerClass,appid,
+    NhlCreate(&dataid,"bullseye",NhlscalarFieldClass,appid,
               srlist);
 /*
  * Create a ContourPlot object, supplying the ScalarField object as data
  */
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
-    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotLayerClass,wid,srlist);
+    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotClass,wid,srlist);
 
 /*
  * Draw the plot; notice that it illustrates the basic default behavior of

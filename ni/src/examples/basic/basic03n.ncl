@@ -1,4 +1,4 @@
-; $Id: basic03n.ncl,v 1.4 1995-04-03 04:43:09 haley Exp $
+; $Id: basic03n.ncl,v 1.5 1995-04-07 10:53:46 boote Exp $
 ;
 ; This example demonstrates how to:
 ;   1. Create a scalar field data object and assign it to a plot.
@@ -17,7 +17,7 @@ begin
 
 ; Choose the type of output you want to create. 
 
-wks = create "wks" xWorkstationLayerClass defaultapp 
+wks = create "wks" xWorkstationClass defaultapp 
 end create
 
 ; Create a 5x5 integer variable. 
@@ -36,14 +36,14 @@ data1=(/(/3,4,4,5,5/), \
 ; contour object.  The sfDataArray resource is used to assign a data
 ; array to a scalar field data object.
 
-field1 = create "field1" scalarFieldLayerClass defaultapp
+field1 = create "field1" scalarFieldClass defaultapp
 	"sfDataArray" : data1
 end create
 
 ; Create a contour plot object and assign the data using the
 ; cnScalarFieldData resource.
 
-con1 = create "con1" contourPlotLayerClass wks
+con1 = create "con1" contourPlotClass wks
 	"cnScalarFieldData" : field1
 end create
 
@@ -66,7 +66,7 @@ frame(wks)
 ; The resource file contains resource assignments that control the
 ; characteristics of a plot.
 
-appid = create "basic03" appLayerClass defaultapp
+appid = create "basic03" appClass defaultapp
 end create
 
 ; Create another workstation window and make it a child of the
@@ -75,14 +75,14 @@ end create
 ; object, the resources that are set in the basic03.res resource
 ; file will apply to this object and its children.
 
-wks2 = create "wks2" xWorkstationLayerClass appid
+wks2 = create "wks2" xWorkstationClass appid
 end create
 
 ; Create another contour plot object and assign the data.
 ; Notice that the parent id is wks2, making the contour object
 ; a child of the new workstation.
 
-con2 = create "con2" contourPlotLayerClass wks2
+con2 = create "con2" contourPlotClass wks2
 	"cnScalarFieldData" : field1
 end create
 
@@ -105,7 +105,7 @@ frame(wks2)
 ; a resource and its value.  In this example contour line labels are turned
 ; off by setting the "cnLineLabelsOn" resource to "False".
 
-con3 = create "con3" contourPlotLayerClass wks2
+con3 = create "con3" contourPlotClass wks2
 	"cnScalarFieldData" : field1
 	"cnLineLabelsOn"    : "False"
 end create

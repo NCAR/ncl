@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.8 1995-04-06 14:43:45 haley Exp $
+ *      $Id: xy13c.c,v 1.9 1995-04-07 10:55:20 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -630,7 +630,7 @@ main
 
     srlist = NhlRLCreate(NhlSETRL);
     grlist = NhlRLCreate(NhlGETRL);
-    NhlCreate(&appid,"xy13",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&appid,"xy13",NhlappClass,NhlDEFAULT_APP,0);
 
     /*
      * Create GUI interface and retrieve the window to display the graphics
@@ -645,7 +645,7 @@ main
      */
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNwkWindowId,graphicsWin);
-    NhlCreate(&xworkid,"xy13Work",NhlxWorkstationLayerClass,appid,srlist);
+    NhlCreate(&xworkid,"xy13Work",NhlxWorkstationClass,appid,srlist);
 
     NhlRLClear(srlist);
 
@@ -656,7 +656,7 @@ main
     NhlRLSetString(srlist,NhlNctYTableType,NhlTFloat);
     NhlRLSetArray(srlist,NhlNctYTable,ydata,NhlTPointer,sizeof(float*),31);
     NhlRLSetIntegerArray(srlist,NhlNctYTableLengths,lengths,31);
-    NhlCreate(&dataid,"dataid",NhlcoordArrTableLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"dataid",NhlcoordArrTableClass,NhlDEFAULT_APP,
                                 srlist);
 
     NhlRLClear(srlist);
@@ -665,7 +665,7 @@ main
     NhlRLSetFloatArray(srlist,NhlNxyYIrregularPoints,dry_zeroP,
                     (sizeof(dry_zeroP)/sizeof(float)));
 
-    NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,srlist);
+    NhlCreate(&xyplotid,"xy_plot",NhlxyPlotClass,xworkid,srlist);
 
     XtAddEventHandler(graphics,ButtonPressMask,False,
                 (XtEventHandler)SelectionEH,(XtPointer)NULL);

@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.3 1995-04-03 04:43:03 haley Exp $
+ * $Id: basic02c.c,v 1.4 1995-04-07 10:53:41 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,7 +47,7 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
 
         NhlRLClear(rlist);
-        NhlCreate(&appid,"basic01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
 
 /*
  * ###########
@@ -58,7 +58,7 @@ main()
  * This example writes to an X Workstation.
  */
         NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create a plot object.  In this example, we will create a contour plot.
@@ -76,7 +76,7 @@ main()
 	NhlRLSetFloat(rlist,"vpYF",0.95); 
 	NhlRLSetFloat(rlist,"vpWidthF",0.4); 
 	NhlRLSetFloat(rlist,"vpHeightF",0.4); 
-        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 
 /*
  * Draw the plot. 

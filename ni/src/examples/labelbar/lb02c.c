@@ -95,7 +95,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-    NhlCreate(&appid,"lb02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"lb02",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -103,7 +103,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./lb02c.ncgm");
-        NhlCreate(&wid,"lb02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lb02Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
     else {
@@ -112,7 +112,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lb02Work",NhlxWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*
@@ -126,7 +126,7 @@ main()
     NhlRLSetFloat(rlist,NhlNvpYF,1.);
     NhlRLSetFloat(rlist,NhlNvpWidthF,1.);
     NhlRLSetFloat(rlist,NhlNvpHeightF,1.);
-    NhlCreate(&pid,"LabelBar",NhllabelBarLayerClass,wid,rlist);
+    NhlCreate(&pid,"LabelBar",NhllabelBarClass,wid,rlist);
 
     NhlDraw(pid);
     NhlFrame(wid);

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx01n.ncl,v 1.5 1995-03-22 21:45:47 haley Exp $
+;   $Id: tx01n.ncl,v 1.6 1995-04-07 10:54:32 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -31,7 +31,7 @@ begin
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "tx01" appLayerClass defaultapp
+appid = create "tx01" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -45,14 +45,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  wid = create "tx01Work" ncgmWorkstationLayerClass defaultapp
+  wid = create "tx01Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx01n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tx01Work" xWorkstationLayerClass defaultapp
+  wid = create "tx01Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
@@ -60,7 +60,7 @@ end if
 ;
 ; Specify the viewport extent of the object.
 ;
-pid = create "TextItems" textItemLayerClass wid
+pid = create "TextItems" textItemClass wid
     "vpXF" : .2
     "vpYF" : .8
     "vpWidthF" : .6

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.9 1995-04-06 14:43:39 haley Exp $
+;      $Id: xy05n.ncl,v 1.10 1995-04-07 10:55:15 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -75,7 +75,7 @@ assigndata(y,length,npts,ncurve)
 ; determine the name of the resource file, which is "xy05.res" in this
 ; case.
 ; 
-appid = create "xy05" appLayerClass defaultapp
+appid = create "xy05" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -89,14 +89,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  xworkid = create "xy05Work" ncgmWorkstationLayerClass defaultapp
+  xworkid = create "xy05Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy05n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  xworkid = create "xy05Work" xWorkstationLayerClass defaultapp
+  xworkid = create "xy05Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
@@ -107,7 +107,7 @@ end if
 ; resource, "xyCoordData".
 ;
 do i=0,ncurve-1
-  dataid(i) = create "xyData"+i coordArraysLayerClass defaultapp
+  dataid(i) = create "xyData"+i coordArraysClass defaultapp
     "caYArray": y(i,0:length(i)-1)
   end create
 end do
@@ -116,7 +116,7 @@ end do
 ; Create the XyPlot object and tweak some of the tickmark, title and
 ; view port resources (some in the "xy05.res" resource file).
 ;
-plotid = create "xyPlot" xyPlotLayerClass xworkid
+plotid = create "xyPlot" xyPlotClass xworkid
     "xyCoordData": dataid
 end create
 

@@ -43,7 +43,7 @@ line_labels = (/"Color Index 1 ","Color Index 6 ","Color Index 11", \
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lb02" appLayerClass defaultapp
+appid = create "lb02" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -57,14 +57,14 @@ if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "lb02Work" ncgmWorkstationLayerClass appid
+  wid = create "lb02Work" ncgmWorkstationClass appid
     "wkMetaName" : "./lb02n.ncgm"
   end create
 else
 ;
 ; Create an X Workstation object.
 ;
-  wid = create "lb02Work" xWorkstationLayerClass defaultapp
+  wid = create "lb02Work" xWorkstationClass defaultapp
     "wkPause" : "True"
   end create
 end if
@@ -73,7 +73,7 @@ end if
 ; Create a plot with 22 color indices (Every 5th one of the default
 ; workstation colormap.
 ;
-pid = create "LabelBar" labelBarLayerClass wid
+pid = create "LabelBar" labelBarClass wid
     "lbFillColors" : colors
     "lbLabelStrings" : line_labels
     "vpXF" : 0.

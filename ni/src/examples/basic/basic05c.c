@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.2 1995-03-20 18:41:22 haley Exp $
+ * $Id: basic05c.c,v 1.3 1995-04-07 10:53:49 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -70,12 +70,12 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
 
         NhlRLClear(rlist);
-        NhlCreate(&appid,"appid",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid,"appid",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * Create an XWorkstation object.
  */
         NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * Create a labelbar object. 
  */
@@ -117,7 +117,7 @@ main()
         NhlRLSetFloat(rlist,"vpHeightF",1.0);
         NhlRLSetFloat(rlist,"vpWidthF",1.0);
 
-        NhlCreate(&lbar,"lbar",NhllabelBarLayerClass,wks,rlist);
+        NhlCreate(&lbar,"lbar",NhllabelBarClass,wks,rlist);
 
 /*
  * Draw and frame the labelbar

@@ -38,7 +38,7 @@ begin
 ; The resource file sets most of the Contour resources that remain fixed
 ; throughout the life of the Contour object.
 ;
-    appid = create "mp02" appLayerClass noparent
+    appid = create "mp02" appClass noparent
         "appUsrDir" : "./"
         "appDefaultParent" : "True"
     end create
@@ -51,14 +51,14 @@ begin
 ;
 ; Create an ncgmWorkstation object.
 ;
-        wid = create "mp02Work" ncgmWorkstationLayerClass noparent
+        wid = create "mp02Work" ncgmWorkstationClass noparent
             "wkMetaName" : "./mp02n.ncgm"
         end create
     else
 ;
 ; Create an XWorkstation object.
 ;
-        wid = create "mp02Work" xWorkstationLayerClass defaultapp
+        wid = create "mp02Work" xWorkstationClass defaultapp
             "wkPause" : "True"
         end create
     end if
@@ -68,7 +68,7 @@ begin
 ; Outlines are on by default, turn fill on.
 ; By default the geophysical boundary set is used both for outline and fill.
 ;
-    mapid = create "Map0" mapPlotLayerClass wid
+    mapid = create "Map0" mapPlotClass wid
         "pmTitleDisplayMode" : "Always"
         "tiMainString" : "mp02n - Frame 1"
         "mpFillOn" : "True"

@@ -16,11 +16,11 @@ C      Date:            Tue Jan 24 10:28:20 MST 1995
 C
 C      Description:     Demonstrates TextItem object.
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFMapPlotLayerClass
-      external NhlFTextItemLayerClass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external NhlFMapPlotClass
+      external NhlFTextItemClass
       
       integer i,appid,text_item_id,wid,rlist,ierr
       integer NCGM
@@ -41,7 +41,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid, 'tx04',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid, 'tx04',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -49,7 +49,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./tx04f.ncgm',ierr)
-         call NhlFCreate(wid,'tx04Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tx04Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
       else
 C
@@ -57,7 +57,7 @@ C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'tx04Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tx04Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
       endif
 C  
@@ -72,7 +72,7 @@ C
       call NhlFRLSetfloat(rlist,'txPosXF',.5,ierr)
       call NhlFRLSetfloat(rlist,'txPosYF',.95,ierr)
       call NhlFCreate(text_item_id,'Nhl05TextItem',
-     1     NhlFTextItemLayerClass,wid,rlist,ierr)
+     1     NhlFTextItemClass,wid,rlist,ierr)
       
       call NhlFDraw(text_item_id,ierr)
       

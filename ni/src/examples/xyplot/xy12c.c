@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.8 1995-04-06 15:21:25 haley Exp $
+ *      $Id: xy12c.c,v 1.9 1995-04-07 10:55:19 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -267,7 +267,7 @@ NextFrameCB
         NhlRLSetArray(rlist,NhlNctYTable,&pvalptr,NhlTPointer,
                             sizeof(NhlPointer),1);
         NhlRLSetFloat(rlist,NhlNctYMissingV,-9999.0);
-        NhlCreate(&dataid,"xy_data",NhlcoordArrTableLayerClass,
+        NhlCreate(&dataid,"xy_data",NhlcoordArrTableClass,
                             NhlDEFAULT_APP,rlist);
 
         NhlRLClear(rlist);
@@ -294,7 +294,7 @@ NextFrameCB
         NhlRLSetString(rlist,NhlNtiYAxisString,
                         "Sealevel Pressure (mb)");
 
-        NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,
+        NhlCreate(&xyplotid,"xy_plot",NhlxyPlotClass,xworkid,
                                     rlist);
         grlist = NhlRLCreate(NhlGETRL);
         NhlRLClear(grlist);
@@ -749,7 +749,7 @@ main
      * Call this before X calls so I can use NhlPError stuff
      */
     NhlInitialize();
-    NhlCreate(&appid,"xy12",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&appid,"xy12",NhlappClass,NhlDEFAULT_APP,0);
 
     /*
      * Create GUI interface and retrieve the window to display the graphics
@@ -760,12 +760,12 @@ main
     /*
      * Create the Workstation Class objects
      */
-    NhlVACreate(&xworkid,"xy12xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+    NhlVACreate(&xworkid,"xy12xWork",NhlxWorkstationClass,NhlDEFAULT_APP,
         NhlNwkWindowId,     graphicsWin,
         NhlNwkPause,        False,
         NULL);
 
-    NhlVACreate(&ncgmwid,"xy12ncgmWork",NhlncgmWorkstationLayerClass,
+    NhlVACreate(&ncgmwid,"xy12ncgmWork",NhlncgmWorkstationClass,
                                 NhlDEFAULT_APP,
         NhlNwkMetaName,     "xy12c.ncgm",
         NULL);

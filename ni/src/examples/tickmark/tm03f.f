@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates the TickMark Object
 C                      with reversed and log y axis.
 C
-      external NhlFAppLayerClass
-      external NhlFTickMarkLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
+      external NhlFAppClass
+      external NhlFTickMarkClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
 
       real level(10)
       data level / 1000, 850, 700, 500, 400, 300, 250, 200, 150, 100 / 
@@ -59,7 +59,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid,'tm03',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'tm03',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -67,7 +67,7 @@ C Create an NCGM workstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./tm03f.ncgm',ierr)
-         call NhlFCreate(wid,'tm03Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tm03Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
       else
 C
@@ -75,7 +75,7 @@ C Create an XWorkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'tm03Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tm03Work',NhlFXWorkstationClass,0,
      $        rlist,ierr)
       endif
 C
@@ -109,7 +109,7 @@ C
      $     7,ierr)
       call NhlFRLSetfloatarray(rlist,'tmYLIrregularPoints',level,
      $     10,ierr)
-      call NhlFCreate(pid,'TickMarks',NhlFTickMarkLayerClass,wid,
+      call NhlFCreate(pid,'TickMarks',NhlFTickMarkClass,wid,
      $     rlist,ierr)
 
       call NhlFDraw(pid,ierr)

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx06n.ncl,v 1.3 1995-03-27 21:53:36 fred Exp $
+;   $Id: tx06n.ncl,v 1.4 1995-04-07 10:54:43 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -41,7 +41,7 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  workstation_id = create "tx06Work" ncgmWorkstationLayerClass defaultapp
+  workstation_id = create "tx06Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx06n.ncgm"
       "wkColorMap"         : cmap
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
@@ -50,7 +50,7 @@ else
 ;
 ; Create an XWorkstation object.
 ;
-  workstation_id = create "tx06Work"  xWorkstationLayerClass defaultapp
+  workstation_id = create "tx06Work"  xWorkstationClass defaultapp
     "wkPause"            : True
     "wkColorMap"         : cmap
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
@@ -60,7 +60,7 @@ end if
 ;
 ; Create a TextItem object.
 ;
-text_item_id = create "tx06TextItem" textItemLayerClass workstation_id
+text_item_id = create "tx06TextItem" textItemClass workstation_id
 end create
 
 labels = (/                                                  \

@@ -1,5 +1,5 @@
 ;
-;;      $Id: tx04n.ncl,v 1.4 1995-03-22 21:45:56 haley Exp $
+;;      $Id: tx04n.ncl,v 1.5 1995-04-07 10:54:39 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -30,7 +30,7 @@ begin
 ; so the application looks for the resource file the directory it executes
 ; from. 
 ;
-app_id = create "tx04" appLayerClass defaultapp
+app_id = create "tx04" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -44,14 +44,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-    workstation_id = create "tx04Work"  ncgmWorkstationLayerClass defaultapp
+    workstation_id = create "tx04Work"  ncgmWorkstationClass defaultapp
       "wkMetaName" : "tx04n.ncgm"
     end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  workstation_id = create "tx04Work"  xWorkstationLayerClass defaultapp
+  workstation_id = create "tx04Work"  xWorkstationClass defaultapp
     "wkPause"            : True
   end create
 end if
@@ -59,7 +59,7 @@ end if
 ;
 ; This is the only creation of a text object for this entire program.
 ;
-text_item_id = create "tx04TextItem" textItemLayerClass workstation_id
+text_item_id = create "tx04TextItem" textItemClass workstation_id
     "txJust" : 4
     "txFont" : 25
     "txFontHeightF" : .03

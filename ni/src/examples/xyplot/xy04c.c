@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.9 1995-04-06 14:43:34 haley Exp $
+**      $Id: xy04c.c,v 1.10 1995-04-07 10:55:11 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -80,7 +80,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"xy04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"xy04",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -88,7 +88,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy04c.ncgm");
-        NhlCreate(&xworkid,"xy04Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy04Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -97,7 +97,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy04Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*
@@ -108,7 +108,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&ydra[0][0],2,len);
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,NhlDEFAULT_APP,
               rlist);
 /*
  * This new DataItem object is now the resource value for xyCoordData.
@@ -126,7 +126,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */

@@ -1,5 +1,5 @@
 /*
- *      $Id: mp01c.c,v 1.6 1995-04-01 23:10:03 dbrown Exp $
+ *      $Id: mp01c.c,v 1.7 1995-04-07 10:54:19 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -48,7 +48,7 @@ main(int argc, char *argv[])
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"mp01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"mp01",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if(NCGM==1) {
 /*
@@ -57,7 +57,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp01c.ncgm");
         NhlCreate(&wid,"mp01Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
     else {
 /*
@@ -65,7 +65,7 @@ main(int argc, char *argv[])
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"mp01Work",NhlxWorkstationLayerClass,appid,rlist);
+        NhlCreate(&wid,"mp01Work",NhlxWorkstationClass,appid,rlist);
     }
 /*
  * Draw the default MapPlot object
@@ -73,7 +73,7 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNpmTitleDisplayMode,"always");
     NhlRLSetString(rlist,NhlNtiMainString,"mp01c - Frame 1");
-    NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
+    NhlCreate(&mapid,"Map0",NhlmapPlotClass,wid,rlist);
     NhlDraw(mapid);
     NhlFrame(wid);
 

@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.11 1995-04-06 14:43:31 haley Exp $
+C      $Id: xy03f.f,v 1.12 1995-04-07 10:55:09 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -26,11 +26,11 @@ C                  axis are specified, changing the look of the plot.
 C 
 C                  The "CoordArrays" object is used to set up the data.
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXyPlotLayerClass
-      external NhlFCoordArraysLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXyPlotClass
+      external NhlFCoordArraysClass
 C
 C Define the number of points in the curve.
 C
@@ -66,7 +66,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'xy03',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'xy03',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -75,14 +75,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy03f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy03Work',
-     +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
+     +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
 C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(xworkid,'xy03Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(xworkid,'xy03Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
       endif
 C
@@ -92,7 +92,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetFloatArray(rlist,'caXArray',xdra,NPTS,ierr)
       call NhlFRLSetFloatArray(rlist,'caYArray',ydra,NPTS,ierr)
-      call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,
+      call NhlFCreate(dataid,'xyData',NhlFCoordArraysClass,
      +                0,rlist,ierr)
 C
 C Create the XyPlot object which is created as a child of the
@@ -101,7 +101,7 @@ C in the "xy03.res" file.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
-      call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
+      call NhlFCreate(plotid,'xyPlot',NhlFXyPlotClass,xworkid,
      +                rlist,ierr)
 C
 C Draw the plot.

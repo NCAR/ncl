@@ -1,5 +1,5 @@
 /*
- *  $Id: tx07c.c,v 1.3 1995-03-22 21:46:01 haley Exp $
+ *  $Id: tx07c.c,v 1.4 1995-04-07 10:54:44 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -51,7 +51,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./tx07c.ncgm");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-        NhlCreate(&wid,"tx07Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&wid,"tx07Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -62,7 +62,7 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx07Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
 /*
  * Create two TextItem objects.
@@ -71,8 +71,8 @@ main()
     NhlSetColor(wid,2,0.4, 0.0, 0.4);
     NhlSetColor(wid,3,1.0, 0.0, 0.0);
 
-    NhlCreate(&exid,"Example String",NhltextItemLayerClass,wid,0);
-    NhlCreate(&labid,"Label",NhltextItemLayerClass,wid,0);
+    NhlCreate(&exid,"Example String",NhltextItemClass,wid,0);
+    NhlCreate(&labid,"Label",NhltextItemClass,wid,0);
 
 /*
  *  Set up example string.

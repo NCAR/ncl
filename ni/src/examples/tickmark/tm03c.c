@@ -56,7 +56,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-    NhlCreate(&appid,"tm03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"tm03",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -64,7 +64,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./tm03c.ncgm");
-        NhlCreate(&wid,"tm03Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&wid,"tm03Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -73,7 +73,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"tm03Work",NhlxWorkstationLayerClass,
+        NhlCreate(&wid,"tm03Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     NhlRLClear(rlist);
@@ -105,7 +105,7 @@ main()
     NhlRLSetFloatArray(rlist,
                NhlNtmYLIrregularPoints,level,NhlNumber(level));
 
-    NhlCreate(&pid,"TickMarks",NhltickMarkLayerClass,wid,rlist);
+    NhlCreate(&pid,"TickMarks",NhltickMarkClass,wid,rlist);
 
     NhlDraw(pid);
     NhlFrame(wid);

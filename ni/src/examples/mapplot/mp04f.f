@@ -16,11 +16,11 @@ C      Date:            Tue Jan 24 10:49:54 MST 1995
 C
 C     Description:      Illustrates use of AnnoManager objects.    
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFMapPlotLayerClass
-      external NhlFtextitemLayerClass
-      external nhlfannomanagerlayerclass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFMapPlotClass
+      external NhlFtextitemClass
+      external nhlfannomanagerclass
 C
 C Define enough frames for a fairly smooth animation.
 C
@@ -71,14 +71,14 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid,'mp04',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'mp04',NhlFAppClass,0,rlist,ierr)
       if( NCGM.eq.1 ) then
 C
 C Create a meta file workstation
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./mp04f.ncgm',ierr)
-         call NhlFCreate(wid,'mp04Work',NhlFNcgmWorkstationLayerClass,
+         call NhlFCreate(wid,'mp04Work',NhlFNcgmWorkstationClass,
      1        0,rlist,ierr)
       else
 C
@@ -86,7 +86,7 @@ C Create an X workstation
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'mp04Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'mp04Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
       endif
 C
@@ -103,7 +103,7 @@ C
       do 10 i = 1,NDIM
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'txString',name(i),ierr)
-         call NhlFCreate(text_ids(i),name(i),NhlFtextitemLayerClass,wid,
+         call NhlFCreate(text_ids(i),name(i),NhlFtextitemClass,wid,
      1    rlist,ierr)
  10   continue
 C
@@ -113,7 +113,7 @@ C the pmAnnoViews resource with the array of TextItem ids.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetintegerarray(rlist,'pmAnnoViews',text_ids,NDIM,ierr)
-      call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
+      call NhlFCreate(mapid,'Map0',NhlFMapPlotClass,wid,rlist,ierr)
 C
 C Retrieve the ids of the AnnoManager objects created by the PlotManager
 C and then set their location in data coordinate space. The AnnoManager

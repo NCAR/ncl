@@ -1,5 +1,5 @@
 /*
- *      $Id: cn01c.c,v 1.2 1995-04-01 22:20:37 dbrown Exp $
+ *      $Id: cn01c.c,v 1.3 1995-04-07 10:53:53 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -63,7 +63,7 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"cn01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"cn01",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -72,7 +72,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./cn01c.ncgm");
         NhlCreate(&wid,"cn01Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
     else {
 /*
@@ -81,7 +81,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn01Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
 * Retrieve GKS workstation id from the workstation object
@@ -147,7 +147,7 @@ main()
                NhlNtmYLIrregularPoints,level,NhlNumber(level));
 
     NhlCreate(&pid,"TickMarksForContour",
-          NhltickMarkLayerClass,wid,rlist);
+          NhltickMarkClass,wid,rlist);
 
 /*
 * Retrieves bounding box information from tick mark object so Title object
@@ -168,7 +168,7 @@ main()
     NhlRLSetFloat(rlist,NhlNtiXAxisOffsetXF,(.2 - thebox.l)/2.0);
     NhlRLSetFloat(rlist,NhlNtiYAxisOffsetYF,(.2 - thebox.b)/2.0);
 
-    NhlCreate(&pid1,"TitlesForContour",NhltitleLayerClass,wid,rlist);
+    NhlCreate(&pid1,"TitlesForContour",NhltitleClass,wid,rlist);
 
     NhlDraw(pid);
     NhlDraw(pid1);

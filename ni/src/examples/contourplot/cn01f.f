@@ -1,5 +1,5 @@
 C
-C     $Id: cn01f.f,v 1.2 1995-04-01 22:20:37 dbrown Exp $
+C     $Id: cn01f.f,v 1.3 1995-04-07 10:53:54 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -21,11 +21,11 @@ C
 C      Description:     Demonstrates how to mix NCARG3.2 calls and
 C                       HLU calls.
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external nhlftickmarklayerclass
-      external NhlFTitleLayerClass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external nhlftickmarkclass
+      external NhlFTitleClass
 C  
 C  define label strings for explicit mode tick mark placement
 C  
@@ -82,7 +82,7 @@ C
       call NhlFRLCreate(rlist,'setrl')
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'cn01',NhlFAppLayerClass,
+      call NhlFCreate(appid,'cn01',NhlFAppClass,
      1      0,rlist,ierr)
 
       if (NCGM.eq.1) then
@@ -92,14 +92,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./cn01f.ncgm',ierr)
          call NhlFCreate(wid,'cn01Work',
-     1        NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
+     1        NhlFNcgmWorkstationClass,0,rlist,ierr) 
       else 
 C
 C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'cn01Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'cn01Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
       endif
 C  
@@ -164,7 +164,7 @@ C
       call NhlFRLSetfloatarray(rlist,'tmYLIrregularPoints',
      1      level,10,ierr)
       call NhlFCreate(pid,'TickMarksForContour',
-     1      nhlftickmarklayerclass,wid,rlist,ierr)
+     1      nhlftickmarkclass,wid,rlist,ierr)
 C  
 C  Retrieves bounding box information from tick mark object so 
 C  title object can be correctly configured.
@@ -188,7 +188,7 @@ C
       call NhlFRLSetfloat(rlist,'tiYAxisOffsetYF',
      1      (.2 - bottom)/2.0,ierr)
       
-      call NhlFCreate(pid1,'TitlesForContour',NhlFTitleLayerClass,
+      call NhlFCreate(pid1,'TitlesForContour',NhlFTitleClass,
      1      wid,rlist,ierr)
       
       call NhlFDraw(pid,ierr)

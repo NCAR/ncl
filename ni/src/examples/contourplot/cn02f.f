@@ -1,5 +1,5 @@
 C
-C     $Id: cn02f.f,v 1.2 1995-04-01 22:20:40 dbrown Exp $
+C     $Id: cn02f.f,v 1.3 1995-04-07 10:53:56 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -22,11 +22,11 @@ C
 C
 C Extern declarations for Types of objects that will be used
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external nhlfscalarfieldlayerclass
-      external nhlfcontourplotlayerclass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external nhlfscalarfieldclass
+      external nhlfcontourplotclass
 
       parameter(M=25,N=25)
       parameter(PI=3.14159)
@@ -69,7 +69,7 @@ C
       call NhlFRLCreate(srlist,'SETRL')
       call NhlFRLClear(srlist)
       call NhlFRLSetstring(srlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'cn02',NhlFAppLayerClass,0,srlist,ierr)
+      call NhlFCreate(appid,'cn02',NhlFAppClass,0,srlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -77,7 +77,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkMetaName','./cn02f.ncgm',ierr)
-         call NhlFCreate(wid,'cn02Work',NhlFNcgmWorkstationLayerClass,
+         call NhlFCreate(wid,'cn02Work',NhlFNcgmWorkstationClass,
      1     0,srlist,ierr)
       else
 C
@@ -85,7 +85,7 @@ C Create an X workstation.
 C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'cn02Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'cn02Work',NhlFXWorkstationClass,
      1        0,srlist,ierr) 
       endif
 C
@@ -97,14 +97,14 @@ C
       len_dims(1) = N
       len_dims(2) = M
       call NhlFRLSetmdfloatarray(srlist,'sfDataArray',t,2,len_dims,ierr)
-      call NhlFCreate(dataid,'bullseye',nhlfscalarfieldlayerclass,
+      call NhlFCreate(dataid,'bullseye',nhlfscalarfieldclass,
      1      appid, srlist,ierr)
 C
 C Create a ContourPlot object, supplying the ScalarField object as data
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetinteger(srlist,'cnScalarFieldData',dataid,ierr)
-      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotclass,
      1      wid,srlist,ierr)
 C
 C Draw the plot.  Notice that it illustrates the basic default behavior

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.5 1995-04-06 14:43:41 haley Exp $
+**      $Id: xy06c.c,v 1.6 1995-04-07 10:55:16 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -113,7 +113,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"xy06",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"xy06",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -121,7 +121,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy06c.ncgm");
-        NhlCreate(&xworkid,"xy06Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -130,7 +130,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&xworkid,"xy06Work",NhlxWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy06Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
     }
 /*
@@ -150,7 +150,7 @@ main()
     length[0] = NSTATIONS;  length[1] = NHOURS;
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&temp[0][0],2,length);
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,
                   NhlDEFAULT_APP,rlist);
 /*
  * The id from this dummy Data object will now become the resource
@@ -158,7 +158,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot1",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot1",NhlxyPlotClass,xworkid,rlist);
 /*
  * Get the DataSpec object id.
  */
@@ -280,7 +280,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&temp[0][0],2,length);
     NhlRLSetFloat(rlist,NhlNcaYMissingV,special_value);
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,
                   NhlDEFAULT_APP,rlist);
 /*
  * The id for this Data object is now the resource value for
@@ -289,7 +289,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot1",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot1",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */
@@ -321,7 +321,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot2",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot2",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */

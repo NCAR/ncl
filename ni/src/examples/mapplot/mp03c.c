@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.6 1995-04-01 23:10:07 dbrown Exp $
+ *      $Id: mp03c.c,v 1.7 1995-04-07 10:54:24 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"mp03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"mp03",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if(NCGM==1) {
 /*
@@ -70,7 +70,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp03c.ncgm");
         NhlCreate(&wid,"mp03Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
     else {
 /*
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"mp03Work",NhlxWorkstationLayerClass,appid,rlist);
+        NhlCreate(&wid,"mp03Work",NhlxWorkstationClass,appid,rlist);
     }
 
 /*
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
     NhlRLSetInteger(rlist,NhlNsfXCEndV,180);
     NhlRLSetInteger(rlist,NhlNsfYCStartV,-90);
     NhlRLSetInteger(rlist,NhlNsfYCEndV,90);
-    NhlCreate(&dataid,"Gendat",NhlscalarFieldLayerClass,appid,rlist);
+    NhlCreate(&dataid,"Gendat",NhlscalarFieldClass,appid,rlist);
 /*
  * Create a Contour object, supplying the ScalarField object as data,
  * and setting the size of the viewport.
@@ -106,7 +106,7 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
     NhlRLSetString(rlist,NhlNcnLabelDrawOrder,"postdraw");
-    NhlCreate(&cnid,"Contour1",NhlcontourPlotLayerClass,wid,rlist);
+    NhlCreate(&cnid,"Contour1",NhlcontourPlotClass,wid,rlist);
 
 /*
  * Create a MapPlot object, setting the fill to draw over the main draw,
@@ -121,7 +121,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"true");
     NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,
                 mask_specs,NhlNumber(mask_specs));
-    NhlCreate(&mapid,"Map1",NhlmapPlotLayerClass,wid,rlist);
+    NhlCreate(&mapid,"Map1",NhlmapPlotClass,wid,rlist);
 
 /*
  * Overlay the Contour object on the MapPlot object

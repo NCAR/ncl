@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.3 1995-04-03 04:43:10 haley Exp $
+ * $Id: basic04c.c,v 1.4 1995-04-07 10:53:47 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -62,7 +62,7 @@ main ()
         rlist = NhlRLCreate(NhlSETRL);
 
         NhlRLClear(rlist);
-        NhlCreate(&appid,"appid",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid,"appid",NhlappClass,NhlDEFAULT_APP,rlist);
 
 /*
  * ##########
@@ -72,8 +72,8 @@ main ()
  *
  * The first argument, "&xwks", is a variable that identifies the object.
  * The second argument, '"xwks"', to the create call sets the name of the 
- * object being created. The third argument, "NhlxWorkstationLayerClass", or 
- * "NhlncgmWorkstationLayerClass" identifies the type or class of the object 
+ * object being created. The third argument, "NhlxWorkstationClass", or 
+ * "NhlncgmWorkstationClass" identifies the type or class of the object 
  * to create. In this case an X workstation or an NCGM workstation.
  * The fourth argument, "NhlDEFAULT_APP", specifies the id of the objects 
  * parent.  In this case, the object has no parent, so the constant 
@@ -81,7 +81,7 @@ main ()
  * list modifiers to be used when creating the object.
  */
         NhlRLClear(rlist);
-        NhlCreate(&xwks,"xwks",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&xwks,"xwks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * The resource, wkMetaName, lets you specify the name of the output NCGM
  * file.  In this example, it is called basic04.ncgm.  If omitted, the 
@@ -89,7 +89,7 @@ main ()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,"wkMetaName","basic04.ncgm");
-        NhlCreate(&nwks,"nwks",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&nwks,"nwks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
 /*
  * Create a scalar field object that will be used as a data set for a
@@ -98,7 +98,7 @@ main ()
  */
         NhlRLClear(rlist);
         NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
-        NhlCreate(&field1,"field1",NhlscalarFieldLayerClass,
+        NhlCreate(&field1,"field1",NhlscalarFieldClass,
                   NhlDEFAULT_APP,rlist);
 
 /*
@@ -112,14 +112,14 @@ main ()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&xcon,"xcon",NhlcontourPlotLayerClass,xwks,rlist);
+        NhlCreate(&xcon,"xcon",NhlcontourPlotClass,xwks,rlist);
 /*
  * Create an empty contour object to draw into the ncgm workstation.
  * Assign data using the cnScalarFieldData resource.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&ncon,"ncon",NhlcontourPlotLayerClass,nwks,rlist);
+        NhlCreate(&ncon,"ncon",NhlcontourPlotClass,nwks,rlist);
 
 /*
  * ##########

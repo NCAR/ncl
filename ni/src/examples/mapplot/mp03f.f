@@ -1,5 +1,5 @@
 C
-C     $Id: mp03f.f,v 1.5 1995-04-01 23:10:08 dbrown Exp $
+C     $Id: mp03f.f,v 1.6 1995-04-07 10:54:25 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -20,12 +20,12 @@ C
 C   Description:    Demonstrates MapPlot masking; loosely emulates the
 C           LLU example 'colcon'
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFMapPlotLayerClass
-      external NhlFScalarFieldLayerClass
-      external NhlFContourPlotLayerClass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external NhlFMapPlotClass
+      external NhlFScalarFieldClass
+      external NhlFContourPlotClass
 
       integer appid,wid,mapid,dataid,cnid
       integer rlist
@@ -58,7 +58,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'mp03',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'mp03',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -66,7 +66,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
-         call NhlFCreate(wid,'mp03Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'mp03Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
       else 
 C
@@ -74,7 +74,7 @@ C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'mp03Work',NhlFXWorkstationLayerClass,0,
+         call NhlFCreate(wid,'mp03Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
       endif
 C
@@ -92,7 +92,7 @@ C globe.
       call NhlFRLSetinteger(rlist,'sfXCEndV',180,ierr)
       call NhlFRLSetinteger(rlist,'sfYCStartV',-90,ierr)
       call NhlFRLSetinteger(rlist,'sfYCEndV',90,ierr)
-      call NhlFCreate(dataid,'Gendat',NhlFScalarFieldLayerClass,appid,
+      call NhlFCreate(dataid,'Gendat',NhlFScalarFieldClass,appid,
      1     rlist,ierr)
 
 C
@@ -102,7 +102,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetinteger(rlist,'cnScalarFieldData',dataid,ierr)
       call NhlFRLSetstring(rlist,'cnLabelDrawOrder','postdraw',ierr)
-      call NhlFCreate(cnid,'Contour1',NhlFContourPlotLayerClass,
+      call NhlFCreate(cnid,'Contour1',NhlFContourPlotClass,
      1     wid,rlist,ierr)
 C
 C Create a MapPlot object, setting the fill to draw over the main draw,
@@ -118,7 +118,7 @@ C
       call NhlFRLSetstring(rlist,'mpAreaMaskingOn','true',ierr)
       call NhlFRLSetstringarray(rlist,'mpMaskAreaSpecifiers',mask_specs,
      1     1,ierr)
-      call NhlFCreate(mapid,'Map1',NhlFMapPlotLayerClass,wid,rlist,ierr)
+      call NhlFCreate(mapid,'Map1',NhlFMapPlotClass,wid,rlist,ierr)
 C
 C Overlay the ContourPlot on the MapPlot
 C

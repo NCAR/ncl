@@ -1,5 +1,5 @@
 /*
- *  $Id: tx05c.c,v 1.3 1995-03-22 21:45:57 haley Exp $
+ *  $Id: tx05c.c,v 1.4 1995-04-07 10:54:40 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -52,7 +52,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./tx05c.ncgm");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-        NhlCreate(&wid,"tx05Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&wid,"tx05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -63,7 +63,7 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx05Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
 /*
  *  Create a TextItem object.
@@ -71,7 +71,7 @@ main()
     NhlSetColor(wid,1, 0.0, 0.0, 1.0);
     NhlSetColor(wid,2, 0.4, 0.0, 0.4);
 
-    NhlCreate(&pid,"TextItems",NhltextItemLayerClass,wid,0);
+    NhlCreate(&pid,"TextItems",NhltextItemClass,wid,0);
 
 /*
  *  Set text font and string.

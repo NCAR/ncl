@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.3 1995-04-03 04:42:58 haley Exp $
+ * $Id: basic01c.c,v 1.4 1995-04-07 10:53:39 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,7 +55,7 @@ main()
  *
  * The first argument, "&appid", is a variable that identifies the object.
  * The second argument, "basic01", sets the name of the object being created.
- * The third argument, "NhlappLayerClass", identifies the type or class 
+ * The third argument, "NhlappClass", identifies the type or class 
  * of the created object. 
  * The fourth argument, "NhlDEFAULT_APP", specifies the id of the objects 
  * parent.  In this case, the object has no parent, so the constant 
@@ -71,7 +71,7 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
 
         NhlRLClear(rlist);
-        NhlCreate(&appid,"basic01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
 
 /*
  * ##########
@@ -86,7 +86,7 @@ main()
  *
  * The first argument, "&wks", is a variable that identifies the object.
  * The second argument, '"wks"', sets the name of the object being created.
- * The third argument, "xWorkstationLayerClass", identifies the type or class 
+ * The third argument, "xWorkstationClass", identifies the type or class 
  * of the object to create.  In this case an X workstation.
  * The fourth argument, "NhlDEFAULT_APP", specifies the id of the objects 
  * parent.  In this case, the object has no parent, so the constant 
@@ -97,7 +97,7 @@ main()
  */
 
         NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 
 /*
  * ##########
@@ -111,7 +111,7 @@ main()
  * The second create call argument, '"con1"', sets the name of the object.
  * This is an arbitrary name and does not have to match the variable object
  * identifier used in the first parameter.
- * The third argument, "contourPlotLayerClass", identifies the type or class
+ * The third argument, "contourPlotClass", identifies the type or class
  * of the object to create.  In this case, the type is a contour plot. 
  * The third argument, "wks", specifies the id of the object's parent.  By 
  * specifying the id of the X workstation created earlier, the plot will
@@ -122,7 +122,7 @@ main()
  */
 
         NhlRLClear(rlist);
-        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 
 /*
  * ##########

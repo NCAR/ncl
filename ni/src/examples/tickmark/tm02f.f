@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates the TickMark Object
 C                      defaults.
 C
-      external NhlFAppLayerClass
-      external NhlFTickMarkLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
+      external NhlFAppClass
+      external NhlFTickMarkClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -43,7 +43,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid,'tm02',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'tm02',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -51,7 +51,7 @@ C Create an NCGM workstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./tm02f.ncgm',ierr)
-         call NhlFCreate(wid,'tm02Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tm02Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
       else
 C
@@ -59,7 +59,7 @@ C Create an XWorkstation object.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
-      call NhlFCreate(wid,'tm02Work',NhlFXWorkstationLayerClass,0,
+      call NhlFCreate(wid,'tm02Work',NhlFXWorkstationClass,0,
      1      rlist,ierr)
       endif
 C
@@ -71,7 +71,7 @@ C
       call NhlFRLSetfloat(rlist,'vpWidthF',.6,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
 
-      call NhlFCreate(pid,'TickMarks',NhlFTickMarkLayerClass,wid,
+      call NhlFCreate(pid,'TickMarks',NhlFTickMarkClass,wid,
      1      rlist,ierr)
 
       call NhlFDraw(pid,ierr)

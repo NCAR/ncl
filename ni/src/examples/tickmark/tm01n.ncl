@@ -29,7 +29,7 @@ begin
 ; directory. In this example the resource file supplies the plot title
 ; only.
 ;
-appid = create "tm01" appLayerClass defaultapp
+appid = create "tm01" appClass defaultapp
     "appUsrDir" : "./"
     "appDefaultParent" : "True"
 end create
@@ -43,14 +43,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  wid = create "tm01Work" ncgmWorkstationLayerClass defaultapp
+  wid = create "tm01Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "tm01n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tm01Work" xWorkstationLayerClass defaultapp
+  wid = create "tm01Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
@@ -58,7 +58,7 @@ end if
 ;
 ; Specify the viewport extent of the object.
 ;
-pid = create "TickMarks" tickMarkLayerClass wid
+pid = create "TickMarks" tickMarkClass wid
     "vpXF" : .2
     "vpYF" : .8
     "vpWidthF" : .6

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx02n.ncl,v 1.6 1995-04-06 15:09:35 haley Exp $
+;   $Id: tx02n.ncl,v 1.7 1995-04-07 10:54:34 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -32,7 +32,7 @@ begin
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "tx02" appLayerClass defaultapp
+appid = create "tx02" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -46,14 +46,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  wid = create "tx02Work" ncgmWorkstationLayerClass defaultapp
+  wid = create "tx02Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx02n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tx02Work" xWorkstationLayerClass defaultapp
+  wid = create "tx02Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
@@ -61,7 +61,7 @@ end if
 ;
 ; Create TextItem object.
 ;
-pid = create "TextItems" textItemLayerClass wid end create
+pid = create "TextItems" textItemClass wid end create
 
 draw(pid)
 frame(wid)

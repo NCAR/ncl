@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates Title Object resource changes.
 C
 
-      external NhlFAppLayerClass
-      external NhlFTitleLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
+      external NhlFAppClass
+      external NhlFTitleClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
 
       integer appid, wid, pid
       integer rlist, ierr
@@ -43,7 +43,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'ti03',NhlFAppLayerClass,
+      call NhlFCreate(appid,'ti03',NhlFAppClass,
      $       0,rlist,ierr)
 
       if (NCGM.eq.1) then
@@ -52,7 +52,7 @@ C Create an NCGM workstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./ti03f.ncgm',ierr)
-         call NhlFCreate(wid,'ti03Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'ti03Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
       else
 C
@@ -60,7 +60,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'ti03Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'ti03Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
       endif
 C
@@ -74,7 +74,7 @@ C
       call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
 
       call NhlFCreate(pid,'Titles',
-     $       NhlFTitleLayerClass,wid,rlist,ierr)
+     $       NhlFTitleClass,wid,rlist,ierr)
 
       call NhlFDraw(pid,ierr)
       call NhlFFrame(wid,ierr)

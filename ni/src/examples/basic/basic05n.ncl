@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.4 1995-02-27 18:11:34 scheitln Exp $
+; $Id: basic05n.ncl,v 1.5 1995-04-07 10:53:51 boote Exp $
 ;
 ; This example demonstrates how to read and manipulate colormaps.
 
@@ -24,12 +24,12 @@ end do
 
 ; Create an XWorkstation object.
 
-wks = create "wks" xWorkstationLayerClass defaultapp
+wks = create "wks" xWorkstationClass defaultapp
 end create
 
 ; Create a labelbar object. 
 
-lbar = create "LabelBar" labelBarLayerClass wks
+lbar = create "LabelBar" labelBarClass wks
 	"lbLabelStrings" : colorindices       ; Assign the labels
 	"lbLabelStride" : 17                  ; Label every 17th entry
 	"lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.9 1995-04-06 14:43:25 haley Exp $
+;      $Id: xy01n.ncl,v 1.10 1995-04-07 10:55:05 boote Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -66,7 +66,7 @@ assigndata(ydra,npts)
 ; determine the name of the resource file, which is "xy01.res" in this
 ; case.
 ; 
-appid = create "xy01" appLayerClass defaultapp
+appid = create "xy01" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -80,14 +80,14 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  xworkid = create "xy01Work" ncgmWorkstationLayerClass defaultapp
+  xworkid = create "xy01Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy01n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  xworkid = create "xy01Work" xWorkstationLayerClass defaultapp
+  xworkid = create "xy01Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
@@ -98,7 +98,7 @@ end if
 ; for this object will later be used as the value for the XyPlot
 ; object resource, "xyCoordData".
 ;
-dataid = create "xyData" coordArraysLayerClass defaultapp
+dataid = create "xyData" coordArraysClass defaultapp
     "caYArray": ydra
 end create
 
@@ -106,7 +106,7 @@ end create
 ; Create the XyPlot object which is created as a child of the
 ; XWorkstation object.
 ; 
-plotid = create "xyPlot" xyPlotLayerClass xworkid
+plotid = create "xyPlot" xyPlotClass xworkid
     "xyCoordData": dataid
 end create
 

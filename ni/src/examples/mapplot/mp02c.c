@@ -1,5 +1,5 @@
 /*
- *      $Id: mp02c.c,v 1.7 1995-04-01 23:10:05 dbrown Exp $
+ *      $Id: mp02c.c,v 1.8 1995-04-07 10:54:22 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -63,7 +63,7 @@ main(int argc, char *argv[])
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"mp02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"mp02",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if(NCGM==1) {
 /*
@@ -73,7 +73,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp02c.ncgm");
         NhlCreate(&wid,"mp02Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
     else {
 /*
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"mp02Work",NhlxWorkstationLayerClass,appid,rlist);
+        NhlCreate(&wid,"mp02Work",NhlxWorkstationClass,appid,rlist);
     }
 /*
  * Create a plot focusing on North and South America;
@@ -111,7 +111,7 @@ main(int argc, char *argv[])
     NhlRLSetStringArray(rlist,NhlNmpFillAreaSpecifiers,
                 fill_specs,NhlNumber(fill_specs));
 
-    NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
+    NhlCreate(&mapid,"Map0",NhlmapPlotClass,wid,rlist);
     NhlDraw(mapid);
     NhlFrame(wid);
 

@@ -93,7 +93,7 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-    NhlCreate(&appid,"mp04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"mp04",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -102,7 +102,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp04c.ncgm");
         NhlCreate(&wid,"mp04Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
     else {
 /*
@@ -111,7 +111,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"mp04Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 
 /*
@@ -130,7 +130,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNtxString,anno_list[i].name);
         NhlCreate(&text_ids[i],anno_list[i].name,
-              NhltextItemLayerClass,wid,rlist);
+              NhltextItemClass,wid,rlist);
     }
 
 /* 
@@ -140,7 +140,7 @@ main(int argc, char *argv[])
  */
     NhlRLClear(rlist);
     NhlRLSetIntegerArray(rlist,NhlNpmAnnoViews,text_ids,NhlNumber(text_ids));
-    NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
+    NhlCreate(&mapid,"Map0",NhlmapPlotClass,wid,rlist);
 
 /*
  * Retrieve the ids of the AnnoManager objects created by the PlotManager and

@@ -41,7 +41,7 @@ labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 /)
 ; directory. In this example the resource file supplies the plot title
 ; only.
 ;
-appid = create "tm03" appLayerClass defaultapp
+appid = create "tm03" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -55,19 +55,19 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  wid = create "tm03Work" ncgmWorkstationLayerClass defaultapp
+  wid = create "tm03Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "tm03n.ncgm"
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tm03Work" xWorkstationLayerClass defaultapp
+  wid = create "tm03Work" xWorkstationClass defaultapp
       "wkPause" : "True"
   end create
 end if
 
-pid = create "TickMarks" tickMarkLayerClass wid
+pid = create "TickMarks" tickMarkClass wid
     "vpXF" : .2
     "vpYF" : .8
     "vpWidthF" : .6

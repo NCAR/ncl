@@ -35,7 +35,7 @@ item_ind = (/ 2, 3, 4, 5, 6 /)
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lg02" appLayerClass defaultapp
+appid = create "lg02" appClass defaultapp
         "appDefaultParent" : "True"
         "appUsrDir" : "./"
 end create
@@ -49,14 +49,14 @@ if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "lg02Work" ncgmWorkstationLayerClass appid
+  wid = create "lg02Work" ncgmWorkstationClass appid
     "wkMetaName" : "./lg02n.ncgm"
   end create
 else
 ;
 ; Create an X Workstation.
 ;
-  wid = create "lg02Work" xWorkstationLayerClass defaultapp
+  wid = create "lg02Work" xWorkstationClass defaultapp
         "wkPause" : "True"
   end create
 end if
@@ -64,7 +64,7 @@ end if
 ;
 ; Specify the viewport extent of the object.
 ;
-pid = create "Legend" legendLayerClass wid
+pid = create "Legend" legendClass wid
         "vpXF" : 0.0
         "vpYF" : 1.0
         "vpWidthF" : 1.0

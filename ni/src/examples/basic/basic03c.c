@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.3 1995-04-03 04:43:06 haley Exp $
+ * $Id: basic03c.c,v 1.4 1995-04-07 10:53:44 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,7 +54,7 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
 
         NhlRLClear(rlist);
-        NhlCreate(&appid1,"appid1",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid1,"appid1",NhlappClass,NhlDEFAULT_APP,rlist);
 
 /*
  * ###########
@@ -65,7 +65,7 @@ main()
  * Choose the type of output you want to create. 
  */
         NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create a scalar field object that will be used as a data set for a 
@@ -74,7 +74,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
-        NhlCreate(&field1,"field1",NhlscalarFieldLayerClass,
+        NhlCreate(&field1,"field1",NhlscalarFieldClass,
                   NhlDEFAULT_APP,rlist);
 
 /*
@@ -83,7 +83,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 /*
  * Draw the plot. 
  */
@@ -106,7 +106,7 @@ main()
  * characteristics of a plot.
  */
         NhlRLClear(rlist);
-        NhlCreate(&appid2,"basic03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&appid2,"basic03",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * Create another workstation window and make it a child of the
  * new application object by using the appid2 variable as the argument
@@ -115,7 +115,7 @@ main()
  * file will apply to this object and its children.
  */
         NhlRLClear(rlist);
-        NhlCreate(&wks2,"wks2",NhlxWorkstationLayerClass,appid2,rlist);
+        NhlCreate(&wks2,"wks2",NhlxWorkstationClass,appid2,rlist);
 /*
  * Create another contour plot object and assign the data.
  * Notice that the parent id is wks2, making the contour object
@@ -123,7 +123,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con2,"con2",NhlcontourPlotLayerClass,wks2,rlist);
+        NhlCreate(&con2,"con2",NhlcontourPlotClass,wks2,rlist);
 /*
  * The contour object is drawn with filled contours because there is
  * a resource in basic03.res that specifies that contour fill is on.
@@ -148,7 +148,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
         NhlRLSetString(rlist,"cnLineLabelsOn","False");
-        NhlCreate(&con3,"con3",NhlcontourPlotLayerClass,wks2,rlist);
+        NhlCreate(&con3,"con3",NhlcontourPlotClass,wks2,rlist);
 /*
  * Draw the contour object.
  */

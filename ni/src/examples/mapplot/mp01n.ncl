@@ -27,7 +27,7 @@ begin
 ; The resource file sets most of the Contour resources that remain fixed
 ; throughout the life of the Contour object.
 ;
-    appid = create "mp01" appLayerClass noparent
+    appid = create "mp01" appClass noparent
         "appUsrDir" : "."
         "appDefaultParent" : "True"
     end create
@@ -40,14 +40,14 @@ begin
 ;
 ; Create an ncgmWorkstation object.
 ;
-        wid = create "mp01Work" ncgmWorkstationLayerClass noparent
+        wid = create "mp01Work" ncgmWorkstationClass noparent
             "wkMetaName" : "mp01n.ncgm"
         end create
     else
 ;
 ; Create an XWorkstation object.
 ;
-        wid = create "mp01Work" xWorkstationLayerClass defaultapp
+        wid = create "mp01Work" xWorkstationClass defaultapp
             "wkPause" : "True"
         end create
     end if
@@ -55,7 +55,7 @@ begin
 ;
 ; Draw the default MapPlot object
 ;
-    mapid = create "Map0" mapPlotLayerClass wid
+    mapid = create "Map0" mapPlotClass wid
         "pmTitleDisplayMode" : "always"
         "tiMainString" : "mp01n - Frame 1"
     end create

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn03c.c,v 1.2 1995-04-01 22:20:41 dbrown Exp $
+ *      $Id: cn03c.c,v 1.3 1995-04-07 10:53:57 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -85,7 +85,7 @@ main()
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"cn03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"cn03",NhlappClass,NhlDEFAULT_APP,rlist);
     
     if (NCGM) {
 /*
@@ -94,7 +94,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./cn03c.ncgm");
         NhlCreate(&wid,"cn03Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
     else {
 /*
@@ -103,7 +103,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn03Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create a scalar field data object with a linear X dimension representing
@@ -119,7 +119,7 @@ main()
     NhlRLSetFloat(rlist,NhlNsfXCEndV,90.0);
     NhlRLSetFloat(rlist,NhlNsfYCStartV,1000.0);
     NhlRLSetFloat(rlist,NhlNsfYCEndV,100.0);
-    NhlCreate(&dataid,"mydata",NhlscalarFieldLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"mydata",NhlscalarFieldClass,NhlDEFAULT_APP,
               rlist);
 /*
  * Create a ContourPlot object. Since ContourPlot contains a TickMark object by
@@ -141,7 +141,7 @@ main()
                        NhlNtmXBValues,labellocs,NhlNumber(labellocs));
     NhlRLSetStringArray(rlist,
                         NhlNtmXBLabels,labels,NhlNumber(labels));
-    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotLayerClass,wid,rlist);
+    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotClass,wid,rlist);
 
     NhlDraw(cnid);
     NhlFrame(wid);
@@ -215,7 +215,7 @@ main()
     NhlRLSetFloat(rlist,NhlNtrYMaxF,1000.0);
     NhlRLSetFloat(rlist,NhlNtrYMinF,100.0);
     NhlRLSetString(rlist,NhlNtrYReverse,"True");
-    NhlCreate(&llid,"LogLin1",NhllogLinPlotLayerClass,wid,rlist);
+    NhlCreate(&llid,"LogLin1",NhllogLinPlotClass,wid,rlist);
 
 /*
  * The LogLinPlot becomes the Base Plot, since it controls the coordinate

@@ -18,10 +18,10 @@ C      Description:    Demonstrates the textitem object
 C                      writing "NCAR Graphics" in a filled
 C                      colored font.  Turn on the bounding box.
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFTextItemLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFTextItemClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -44,7 +44,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'tx02',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'tx02',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -52,7 +52,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./tx02f.ncgm',ierr)
-         call NhlFCreate(wid,'tx02Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tx02Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
       else
 C
@@ -60,13 +60,13 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'tx02Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'tx02Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
       endif
 C
 C Create a TextItem object.
 C
-      call NhlFCreate(pid,'TextItems',NhlFTextItemLayerClass,wid,0,ierr)
+      call NhlFCreate(pid,'TextItems',NhlFTextItemClass,wid,0,ierr)
 
       call NhlFDraw(pid,ierr)
       call NhlFFrame(wid,ierr)

@@ -16,10 +16,10 @@ C      Date:           Fri Jan 13 18:31:18 mdt 1995
 C
 C      Description:    Demonstrates the LabelBar object defaults.
 C
-      external NhlFLabelBarLayerClass
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
+      external NhlFLabelBarClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
 
       integer appid, wid, pid
       integer rlist, ierr
@@ -42,7 +42,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid,'lb01',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'lb01',NhlFAppClass,0,rlist,ierr)
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
@@ -50,14 +50,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./lb01f.ncgm',ierr)
          call NhlFCreate(wid,'lb01Work',
-     $        NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
+     $        NhlFNcgmWorkstationClass,0,rlist,ierr) 
       else 
 C
 C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'lb01Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'lb01Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
       endif
 C
@@ -68,7 +68,7 @@ C
       call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',1.,ierr)
-      call NhlFCreate(pid,'LabelBar',NhlFLabelBarLayerClass,
+      call NhlFCreate(pid,'LabelBar',NhlFLabelBarClass,
      $     wid,rlist,ierr)
 
       call NhlFDraw(pid,ierr)

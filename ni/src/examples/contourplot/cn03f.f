@@ -1,5 +1,5 @@
 C
-C     $Id: cn03f.f,v 1.2 1995-04-01 22:20:42 dbrown Exp $
+C     $Id: cn03f.f,v 1.3 1995-04-07 10:53:58 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,12 +23,12 @@ C                   drawn in cn01c using low-level NCARG calls.
 C
 C External functions
 C
-      external NhlFAppLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external nhlfscalarfieldlayerclass
-      external nhlfcontourplotlayerclass
-      external nhlfloglinplotlayerclass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external nhlfscalarfieldclass
+      external nhlfcontourplotclass
+      external nhlfloglinplotclass
 C
 C Data array
 C     
@@ -84,14 +84,14 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'cn03',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'cn03',NhlFAppClass,0,rlist,ierr)
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./cn03f.ncgm',ierr)
-         call NhlFCreate(wid,'cn03Work',NhlFNcgmWorkstationLayerClass,
+         call NhlFCreate(wid,'cn03Work',NhlFNcgmWorkstationClass,
      1        0,rlist,ierr)
       else
 C
@@ -99,7 +99,7 @@ C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'cn03Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'cn03Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
       endif
 C
@@ -117,7 +117,7 @@ C
       call NhlFRLSetfloat(rlist,'sfXCEndV',90.0,ierr)
       call NhlFRLSetfloat(rlist,'sfYCStartV',1000.0,ierr)
       call NhlFRLSetfloat(rlist,'sfYCEndV',100.0,ierr)
-      call NhlFCreate(dataid,'mydata',nhlfscalarfieldlayerclass,0,rlist,
+      call NhlFCreate(dataid,'mydata',nhlfscalarfieldclass,0,rlist,
      1      ierr)
 C
 C Create a ContourPlot object. Since ContourPlot contains a TickMark 
@@ -137,7 +137,7 @@ C
       call NhlFRLSetstring(rlist,'tmXBMinorOn','FALSE',ierr)
       call NhlFRLSetfloatarray(rlist,'tmXBValues',labellocs,7,ierr)
       call NhlFRLSetstringarray(rlist,'tmXBLabels',labels,7,ierr)
-      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotclass,
      1      wid,rlist,ierr)
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
@@ -208,7 +208,7 @@ C
       call NhlFRLSetfloat(rlist,'trYMaxF',1000.0,ierr)
       call NhlFRLSetfloat(rlist,'trYMinF',100.0,ierr)
       call NhlFRLSetstring(rlist,'trYReverse','True',ierr)
-      call NhlFCreate(llid,'LogLin1',nhlfloglinplotlayerclass,wid,
+      call NhlFCreate(llid,'LogLin1',nhlfloglinplotclass,wid,
      1      rlist,ierr)
 
 

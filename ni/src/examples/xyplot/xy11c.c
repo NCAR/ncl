@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.7 1995-03-23 16:31:31 haley Exp $
+ *      $Id: xy11c.c,v 1.8 1995-04-07 10:55:18 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -106,25 +106,25 @@ main()
 
     rlist = NhlRLCreate(NhlSETRL);
 
-    NhlCreate(&appid,"xy11",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&appid,"xy11",NhlappClass,NhlDEFAULT_APP,0);
 
     /*
      * Create the Workstation objects.
      * (Setting the color information.)
      */
     NhlRLClear(rlist);
-    NhlCreate(&xworkid,"xy11xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&xworkid,"xy11xWork",NhlxWorkstationClass,NhlDEFAULT_APP,
                                     rlist);
 
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNwkMetaName,"xy11c.ncgm");
-    NhlCreate(&ncgmwid,"xy11ncgmWork",NhlncgmWorkstationLayerClass,
+    NhlCreate(&ncgmwid,"xy11ncgmWork",NhlncgmWorkstationClass,
                             NhlDEFAULT_APP,rlist);
 
     NhlRLClear(rlist);
     NhlRLSetFloatArray(rlist,NhlNcaXArray,Temp,NhlNumber(Temp));
     NhlRLSetFloatArray(rlist,NhlNcaYArray,Pressure,NhlNumber(Pressure));
-    NhlCreate(&dataid,"mydata",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"mydata",NhlcoordArraysClass,NhlDEFAULT_APP,
                                     rlist);
 
 
@@ -144,7 +144,7 @@ main()
     NhlRLSetInteger(rlist,NhlNtiXAxisOn,True);
     NhlRLSetInteger(rlist,NhlNtiYAxisOn,True);
 
-    NhlCreate(&plotid,"xy_plot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xy_plot",NhlxyPlotClass,xworkid,rlist);
 
     NhlRLDestroy(rlist);
 

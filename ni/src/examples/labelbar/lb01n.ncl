@@ -27,7 +27,7 @@ begin
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lb01" appLayerClass defaultapp
+appid = create "lb01" appClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
@@ -41,14 +41,14 @@ if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "lb01Work" ncgmWorkstationLayerClass appid
+  wid = create "lb01Work" ncgmWorkstationClass appid
     "wkMetaName" : "./lb01n.ncgm"
   end create
 else
 ;
 ; Create an X workstation.
 ;
-  wid = create "lb01Work" xWorkstationLayerClass defaultapp
+  wid = create "lb01Work" xWorkstationClass defaultapp
     "wkPause" : "True"
   end create
 end if
@@ -56,7 +56,7 @@ end if
 ;
 ; Specify the viewport extent of the object.
 ;
-pid = create "LabelBar" labelBarLayerClass wid
+pid = create "LabelBar" labelBarClass wid
     "vpXF" : 0.
     "vpYF" : 1.
     "vpWidthF" : 1.

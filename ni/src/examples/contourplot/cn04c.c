@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.3 1995-04-07 00:42:16 dbrown Exp $
+ *      $Id: cn04c.c,v 1.4 1995-04-07 10:53:59 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,7 +82,7 @@ main(int argc, char *argv[])
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"cn04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"cn04",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -91,7 +91,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./cn04c.ncgm");
         NhlCreate(&wid,"cn04Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
     else {
 /*
@@ -100,7 +100,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn04Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Call the Fortran routine 'GENDAT' to create the first array of contour
@@ -112,7 +112,7 @@ main(int argc, char *argv[])
     len_dims[1] = M;
     gendat(z,M,M,N,mlow,mhigh,dlow,dhigh);
     NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,z,2,len_dims);
-    NhlCreate(&dataid,"Gendat",NhlscalarFieldLayerClass,appid,rlist);
+    NhlCreate(&dataid,"Gendat",NhlscalarFieldClass,appid,rlist);
 /*
  * Create a ContourPlot object, supplying the ScalarField object as data,
  * and setting the size of the viewport.
@@ -122,7 +122,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNtiMainString,"EXAMPLE 2-1");
     NhlRLSetFloat(rlist,NhlNvpWidthF,0.4625);
     NhlRLSetFloat(rlist,NhlNvpHeightF,0.4625);
-    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotLayerClass,wid,rlist);
+    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotClass,wid,rlist);
 /*
  * In order to set the contour array resources of interest, you must 
  * allocate memory for the arrays and fill in the correct value for each
@@ -245,7 +245,7 @@ main(int argc, char *argv[])
  * Label the plot as an emulation
  */
     NhlRLClear(rlist);
-    NhlCreate(&txid,"TextItem1",NhltextItemLayerClass,wid,rlist);
+    NhlCreate(&txid,"TextItem1",NhltextItemClass,wid,rlist);
     NhlDraw(txid);
 
     NhlFrame(wid);

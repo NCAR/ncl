@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.5 1995-04-03 04:43:01 haley Exp $
+C $Id: basic01f.f,v 1.6 1995-04-07 10:53:40 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -35,9 +35,9 @@ C
       program basic01f
       implicit none
 
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFContourPlotLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
 C
@@ -52,7 +52,7 @@ C
 C The first argument, appid, is a variable that identifies the object.
 C The second argument, '"basic01"', sets the name of the object being
 C created.
-C The third argument, "NhlFAppLayerClass", identifies the type or class 
+C The third argument, "NhlFAppClass", identifies the type or class 
 C of the created object. 
 C The fourth argument, "0", specifies the id of the objects parent.
 C In this case, the object has no parent, so the value 0 is used. 
@@ -68,7 +68,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid,"basic01",NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,"basic01",NhlFAppClass,0,rlist,ierr)
 C
 C ##########
 C # STEP 2 #
@@ -82,7 +82,7 @@ C write your ouput into  a PostScript file.
 C
 C The first argument, wks, is a variable that identifies the object.
 C The second argument, '"wks"', sets the name of the object being
-C created. The third argument, "NhlFXWorkstationLayerClass",
+C created. The third argument, "NhlFXWorkstationClass",
 C identifies the type  or class of the object to create.  In this case
 C an X workstation. The fourth argument, "0", specifies the id of the
 C objects parent. In this case, the object has no parent, so the
@@ -92,7 +92,7 @@ C example, no modifications are made to default values.
 C The sixth argument, "ierr", is used to return an error code.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks,"wks",NhlFXWorkstationLayerClass,0,
+      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
      1      rlist,ierr)
 C
 C ##########
@@ -106,7 +106,7 @@ C The first argument, con1, is a variable that identifies the object.
 C The second create call argument, '"con1"', sets the name of the object.
 C This is an arbitrary name and does not have to match the variable
 C object identifier used in the first parameter.
-C The third argument, "NhlFContourPlotLayerClass", identifies the type or
+C The third argument, "NhlFContourPlotClass", identifies the type or
 C class of the object to create.  In this case, the type is a contour
 C plot.  The third argument, "wks", specifies the id of the object's
 C parent.  By  specifying the id of the X workstation created earlier,
@@ -117,7 +117,7 @@ C made to default values.
 C The sixth argument, "ierr", is used to return an error code.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(con1,"con1",NhlFContourPlotLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourPlotClass,wks,
      1      rlist,ierr)
 C
 C ##########

@@ -1,5 +1,5 @@
 C
-C $Id: basic03f.f,v 1.5 1995-04-03 04:43:07 haley Exp $
+C $Id: basic03f.f,v 1.6 1995-04-07 10:53:45 boote Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -27,10 +27,10 @@ C
       program basic03f
       implicit none
 
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFContourPlotLayerClass
-      external NhlFScalarFieldLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFContourPlotClass
+      external NhlFScalarFieldClass
 
       integer appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist,ierr
 
@@ -53,7 +53,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid1,"appid1",NhlFAppLayerClass,0,
+      call NhlFCreate(appid1,"appid1",NhlFAppClass,0,
      1      rlist,ierr)
 C
 C ###########
@@ -64,7 +64,7 @@ C plot.
 C Choose the type of output you want to create. 
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks,"wks",NhlFXWorkstationLayerClass,0,
+      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
      1      rlist,ierr)
 C
 C Create a scalar field object that will be used as a data set for a 
@@ -74,7 +74,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetMDIntegerArray(rlist,"sfDataArray",data1,2,
      1      dims,ierr)
-      call NhlFCreate(field1,"field1",NhlFScalarFieldLayerClass,0,
+      call NhlFCreate(field1,"field1",NhlFScalarFieldClass,0,
      1      rlist,ierr)
 C
 C Create a contour plot object and assign the data using the
@@ -82,7 +82,7 @@ C cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-      call NhlFCreate(con1,"con1",NhlFContourPlotLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourPlotClass,wks,
      1      rlist,ierr)
 C
 C Draw the plot. 
@@ -105,7 +105,7 @@ C The resource file contains resource assignments that control the
 C characteristics of a plot.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid2,"basic03",NhlFAppLayerClass,0,
+      call NhlFCreate(appid2,"basic03",NhlFAppClass,0,
      1      rlist,ierr)
 C
 C Create another workstation window and make it a child of the
@@ -115,7 +115,7 @@ C object, the resources that are set in the basic03.res resource
 C file will apply to this object and its children.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks2,"wks2",NhlFXWorkstationLayerClass,
+      call NhlFCreate(wks2,"wks2",NhlFXWorkstationClass,
      1      appid2,rlist,ierr)
 C
 C Create another contour plot object and assign the data.
@@ -124,7 +124,7 @@ C a child of the new workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-      call NhlFCreate(con2,"con2",NhlFContourPlotLayerClass,wks2,
+      call NhlFCreate(con2,"con2",NhlFContourPlotClass,wks2,
      1      rlist,ierr)
 C
 C The contour object is drawn with filled contours because there is
@@ -149,7 +149,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
       call NhlFRLSetString(rlist,"cnLineLabelsOn","False",ierr)
-      call NhlFCreate(con3,"con3",NhlFContourPlotLayerClass,wks2,
+      call NhlFCreate(con3,"con3",NhlFContourPlotClass,wks2,
      1      rlist,ierr)
 C
 C Draw the contour object.

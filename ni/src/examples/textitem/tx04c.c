@@ -47,7 +47,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&app_id,"tx04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&app_id,"tx04",NhlappClass,NhlDEFAULT_APP,rlist);
     
     if (NCGM) {
 /*
@@ -56,7 +56,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./tx04c.ncgm");
         NhlCreate(&workstation_id,"tx04Work",
-                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
+                  NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
     else {
 /*
@@ -65,7 +65,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&workstation_id,"tx04Work",
-                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+                  NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
 /*
  * This is the only creation of a text object for this entire program.
@@ -78,7 +78,7 @@ main()
                    "TextItem - VARIOUS CAPABILITIES");
     NhlRLSetFloat(rlist,NhlNtxPosXF,.5);
     NhlRLSetFloat(rlist,NhlNtxPosYF,.95);
-    NhlCreate(&text_item_id,"tx04TextItem",NhltextItemLayerClass,
+    NhlCreate(&text_item_id,"tx04TextItem",NhltextItemClass,
           workstation_id,rlist);
 
     NhlDraw(text_item_id);

@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.3 1995-04-06 17:30:50 haley Exp $
+C      $Id: xy06f.f,v 1.4 1995-04-07 10:55:17 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -35,11 +35,11 @@ C                 This example requires that you have the netCDF
 C                 library built on your system!  It's available via
 C                 anonymous ftp to unidata.ucar.edu.
 C
-      external NhlFAppLayerClass 
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFXyPlotLayerClass
-      external NhlFCoordArraysLayerClass
+      external NhlFAppClass 
+      external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
+      external NhlFXyPlotClass
+      external NhlFCoordArraysClass
 C
 C Define the maximum number of weather stations and hours in a day.
 C The actual stations you want to get temperature values for should
@@ -101,7 +101,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
-      call NhlFCreate(appid,'xy06',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'xy06',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -110,14 +110,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy06f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy06Work',
-     +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
+     +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
 C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(xworkid,'xy06Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(xworkid,'xy06Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
       endif
 C
@@ -136,7 +136,7 @@ C get the names of the stations we want temperature values for.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'caYArray',temp,2,length,ierr)
-      call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,0,
+      call NhlFCreate(dataid,'xyData',NhlFCoordArraysClass,0,
      1     rlist,ierr)
 C
 C The id for this dummy Data object will now become the resource
@@ -144,7 +144,7 @@ C value for "xyCoordData".
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
-      call NhlFCreate(plotid,'xyPlot1',NhlFXyPlotLayerClass,xworkid,
+      call NhlFCreate(plotid,'xyPlot1',NhlFXyPlotClass,xworkid,
      +                rlist,ierr)
 C
 C Get the DataSpec object id.
@@ -282,7 +282,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'caYArray',temp,2,length,ierr)
       call NhlFRLSetFloat(rlist,'caYMissingV',special_value,ierr)
-      call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,0,
+      call NhlFCreate(dataid,'xyData',NhlFCoordArraysClass,0,
      1     rlist,ierr)
 C
 C The id for this Data object is now the resource value for
@@ -291,7 +291,7 @@ C ("xy06.res").
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
-      call NhlFCreate(plotid,'xyPlot1',NhlFXyPlotLayerClass,xworkid,
+      call NhlFCreate(plotid,'xyPlot1',NhlFXyPlotClass,xworkid,
      +                rlist,ierr)
 C
 C Draw the plot.
@@ -324,7 +324,7 @@ C differently.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
-      call NhlFCreate(plotid,'xyPlot2',NhlFXyPlotLayerClass,xworkid,
+      call NhlFCreate(plotid,'xyPlot2',NhlFXyPlotClass,xworkid,
      +                rlist,ierr)
 C
 C Draw the plot.

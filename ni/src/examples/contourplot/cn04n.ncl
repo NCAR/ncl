@@ -192,7 +192,7 @@ len_dims = new((/2/),integer)
 ; The resource file sets most of the ContourPlot resources that remain fixed
 ; throughout the life of the ContourPlot object.
 ;
-appid = create "cn04" appLayerClass noparent
+appid = create "cn04" appClass noparent
     "appUsrDir" : "./"
     "appDefaultParent" : "True"
 end create
@@ -206,14 +206,14 @@ if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "cn04Work" ncgmWorkstationLayerClass noparent
+  wid = create "cn04Work" ncgmWorkstationClass noparent
     "wkMetaName" : "./cn04n.ncgm"
   end create
 else
 ;
 ; Create an X workstation.
 ;
-  wid = create "cn04Work" xWorkstationLayerClass noparent
+  wid = create "cn04Work" xWorkstationClass noparent
     "wkPause" : "True"
   end create
 end if
@@ -227,7 +227,7 @@ len_dims(0) = N
 len_dims(1) = M
 gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
 
-dataid = create "Gendat" scalarFieldLayerClass appid
+dataid = create "Gendat" scalarFieldClass appid
         "sfDataArray" : z
 end create
 
@@ -235,7 +235,7 @@ end create
 ; Create a ContourPlot object, supplying the ScalarField object as data,
 ; and setting the size of the viewport.
 ;
-cnid = create "ContourPlot1" contourPlotLayerClass wid
+cnid = create "ContourPlot1" contourPlotClass wid
     "cnScalarFieldData" : dataid
     "tiMainString" : "EXAMPLE 2-1"
     "vpWidthF" : 0.4625
@@ -357,7 +357,7 @@ draw(cnid)
 ;
 ; Label the plot as an emulation
 ;
-txid = create "TextItem1" textItemLayerClass wid
+txid = create "TextItem1" textItemClass wid
        end create
 
 draw(txid)

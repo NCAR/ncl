@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.10 1995-04-06 14:43:37 haley Exp $
+**      $Id: xy05c.c,v 1.11 1995-04-07 10:55:13 boote Exp $
 */
 /**********************************************************************
 *                                                                     *
@@ -69,7 +69,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"xy05",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"xy05",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -77,7 +77,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy05c.ncgm");
-        NhlCreate(&xworkid,"xy05Work",NhlncgmWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     else {
@@ -86,7 +86,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,
+        NhlCreate(&xworkid,"xy05Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*
@@ -113,7 +113,7 @@ main()
     NhlRLSetIntegerArray(rlist,NhlNctYTableLengths,length,NCURVE);
     NhlRLSetArray(rlist,NhlNctYTable,y,NhlTPointer,sizeof(NhlPointer),
                   NCURVE);
-    NhlCreate(&dataid,"xyData",NhlcoordArrTableLayerClass,
+    NhlCreate(&dataid,"xyData",NhlcoordArrTableClass,
               NhlDEFAULT_APP,rlist);
 /*
  * Create the XyPlot object and tweak some of the tickmark, title and
@@ -121,7 +121,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */

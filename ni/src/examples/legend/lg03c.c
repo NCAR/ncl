@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.10 1995-03-29 21:12:42 dbrown Exp $
+ *  $Id: lg03c.c,v 1.11 1995-04-07 10:54:15 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -71,7 +71,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-    NhlCreate(&appid,"lg03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"lg03",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -79,7 +79,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./lg03c.ncgm");
-        NhlCreate(&wid,"lg03Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lg03Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
     else {
@@ -88,7 +88,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"lg03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lg03Work",NhlxWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*
@@ -123,7 +123,7 @@ main()
     NhlRLSetIntegerArray(rlist,NhlNlgLineLabelFontColors,colors,5);
     NhlRLSetFloat(rlist,NhlNlgLineLabelFontHeightF,.03);
 
-    NhlCreate(&pid,"Legend",NhllegendLayerClass,wid,rlist);
+    NhlCreate(&pid,"Legend",NhllegendClass,wid,rlist);
 
     NhlDraw(pid);
     NhlFrame(wid);

@@ -31,7 +31,7 @@ main()
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNappDefaultParent,True);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"ap01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+	NhlCreate(&appid,"ap01",NhlappClass,NhlDEFAULT_APP,rlist);
 
 	/*
 	 * Destroy the ResList.
@@ -46,7 +46,7 @@ main()
 	 * "ap01", we can use either the constant NhlDEFAULT_APP or
 	 * appid as the Parent id.  They mean the same thing.
 	 */
-	NhlCreate(&workid,"x",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create a TextItem.  I am not programatically setting any of
@@ -54,7 +54,7 @@ main()
 	 * the resource files read-in by the "ap01" App object is specifying
 	 * all the attributes to the TextItem.
 	 */
-	NhlCreate(&textid,"tx1",NhltextItemLayerClass,workid,0);
+	NhlCreate(&textid,"tx1",NhltextItemClass,workid,0);
 
 	/*
 	 * Call draw on the Workstation Object.  This will cause all of the

@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.9 1995-04-06 14:43:43 haley Exp $
+C     $Id: xy11f.f,v 1.10 1995-04-07 10:55:18 boote Exp $
 C
 C****************************************************************
 C                                                               *
@@ -24,11 +24,11 @@ C
 C
 C Extern declarations for Types of objects that will be used
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFXyPlotLayerClass
-      external NhlFCoordArraysLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFXyPlotClass
+      external NhlFCoordArraysClass
 
 C
 C Create data arrays to be plotted
@@ -65,7 +65,7 @@ C
 C   Initialize the HLU library
 C
       call NhlFInitialize
-      call NhlFCreate(appid,'xy11',NhlFAppLayerClass,0,0,ierr)
+      call NhlFCreate(appid,'xy11',NhlFAppClass,0,0,ierr)
 
 C
 C   Create a ResList - This is filled with resource "Names" and
@@ -79,7 +79,7 @@ C   object - then create the X Workstation object.
 C
       call NhlFRLClear(list)
       call NhlFRLSetInteger(list,'wkPause',1,ierr)
-      call NhlFCreate(ixwork,'myxwork',NhlFXWorkstationLayerClass,0,
+      call NhlFCreate(ixwork,'myxwork',NhlFXWorkstationClass,0,
      %  list,ierr)
 
 C
@@ -89,7 +89,7 @@ C
       call NhlFRLClear(list)
       call NhlFRLSetString(list,'wkMetaName','xy11f.ncgm',ierr)
       call NhlFCreate(incgmwork,'myncgmwork',
-     %  NhlFNcgmWorkstationLayerClass,0,list,ierr)
+     %  NhlFNcgmWorkstationClass,0,list,ierr)
 
 C
 C   Fill the ResList with the resources for the CoordArrays
@@ -99,7 +99,7 @@ C
       call NhlFRLClear(list)
       call NhlFRLSetFloatArray(list,'caXArray',Temp,28,ierr)
       call NhlFRLSetFloatArray(list,'caYArray',Pressure,28,ierr)
-      call NhlFCreate(idata,'mydata',NhlFCoordArraysLayerClass,0,list,
+      call NhlFCreate(idata,'mydata',NhlFCoordArraysClass,0,list,
      %  ierr)
 
 
@@ -120,7 +120,7 @@ C
       call NhlFRLSetInteger(list,'tiXAxisOn',1,ierr)
       call NhlFRLSetInteger(list,'tiYAxisOn',1,ierr)
 
-      call NhlFCreate(ixyplot,'myxyplot',NhlFXyPlotLayerClass,ixwork,
+      call NhlFCreate(ixyplot,'myxyplot',NhlFXyPlotClass,ixwork,
      %  list,ierr)
 
 C

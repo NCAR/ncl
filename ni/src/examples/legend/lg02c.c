@@ -72,7 +72,7 @@ main()
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"lg02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"lg02",NhlappClass,NhlDEFAULT_APP,rlist);
 
     if (NCGM) {
 /*
@@ -80,7 +80,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./lg02c.ncgm");
-        NhlCreate(&wid,"lg02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lg02Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
     else {
@@ -89,7 +89,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"lg02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+        NhlCreate(&wid,"lg02Work",NhlxWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*
@@ -113,7 +113,7 @@ main()
     NhlRLSetString(rlist,NhlNlgMonoMarkerThickness,"False");
     NhlRLSetFloatArray(rlist,NhlNlgMarkerThicknesses,mkthik,5);
     NhlRLSetFloat(rlist,NhlNlgMarkerSizeF,.05);
-    NhlCreate(&pid,"Legend",NhllegendLayerClass,wid,rlist);
+    NhlCreate(&pid,"Legend",NhllegendClass,wid,rlist);
 
     NhlDraw(pid);
     NhlFrame(wid);

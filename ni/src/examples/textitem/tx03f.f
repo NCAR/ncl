@@ -18,10 +18,10 @@ C      Description:    Demonstrates the TextItem Object
 C                      Writes "NCAR Graphics" in a series of
 C                      114 different colors. (The default colormap.)
 C
-      external NhlFAppLayerClass
-      external NhlFXWorkstationLayerClass
-      external NhlFNcgmWorkstationLayerClass
-      external NhlFTextItemLayerClass
+      external NhlFAppClass
+      external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
+      external NhlFTextItemClass
 
       integer appid, wid, pid
       integer rlist, ierr
@@ -47,7 +47,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFCreate(appid,'tx03',NhlFAppLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'tx03',NhlFAppClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
@@ -55,7 +55,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./tx03f.ncgm',ierr)
-         call NhlFCreate(wid,'tx03Work',NhlFNcgmWorkstationLayerClass,0,
+         call NhlFCreate(wid,'tx03Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
       else
 C
@@ -63,7 +63,7 @@ C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'tx03Work',NhlFXWorkstationLayerClass,
+         call NhlFCreate(wid,'tx03Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
       endif
 C
@@ -74,7 +74,7 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'txBackgroundFillColor',
      $        i,ierr)
-         call NhlFCreate(pid,'TextItems',NhlFTextItemLayerClass,
+         call NhlFCreate(pid,'TextItems',NhlFTextItemClass,
      $        wid,rlist,ierr)
 
          call NhlFDraw(pid,ierr)

@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.5 1995-04-03 04:43:05 haley Exp $
+; $Id: basic02n.ncl,v 1.6 1995-04-07 10:53:43 boote Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -19,7 +19,7 @@ begin
 ; output to an NCGM, file, X workstation window, or a PostScript file. 
 ; This example writes to an X Workstation.
 
-wks = create "wks" xWorkstationLayerClass defaultapp 
+wks = create "wks" xWorkstationClass defaultapp 
       end create
 
 ; Create a plot object.  In this example, we will create a contour plot.
@@ -32,7 +32,7 @@ wks = create "wks" xWorkstationLayerClass defaultapp
 ; system (0,0) specifies the lower-left corner and (1,1) specifies the 
 ; uper-right corner of a plot.
 
-con1 = create "con1" contourPlotLayerClass wks 
+con1 = create "con1" contourPlotClass wks 
 	"vpXF"       : 0.05   ;The left edge of the viewport bounding box
  	"vpYF"       : 0.95   ;The top edge of the viewport bounding box
  	"vpWidthF"   : 0.4    ;The width of the viewport bounding box
