@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.28 1995-03-03 02:56:23 boote Exp $
+ *      $Id: Converters.c,v 1.29 1995-03-08 21:28:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -123,8 +123,6 @@ _NhlStringToStringGenArray
 			break;
 		case 1:
 			switch(token) {
-			case CHAR:
-				return(NULL);
 			case LP:
 				for(i = 0; i < MAX_DIMENSIONS; i++) {
 					dimsizes[i] = -1;
@@ -144,7 +142,7 @@ _NhlStringToStringGenArray
 				}
 				break;
 			default:
-				state = 0;
+				return(NULL);
 				break;
 			}
 			break;
