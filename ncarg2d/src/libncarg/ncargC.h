@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.3 1997-07-02 22:27:55 kennison Exp $
+ *  $Id: ncargC.h,v 1.4 1998-05-11 21:26:29 kennison Exp $
  */
 
 #ifndef _ncargC_h
@@ -1188,6 +1188,13 @@ extern void c_mapvec(
 #endif
 );
 
+extern char *c_mpfnme(
+#ifdef NeedFuncProto
+    int iain,
+    int ilvl
+#endif    
+);
+
 extern void c_mpgetc(
 #ifdef  NeedFuncProto
     char *whch,
@@ -1215,6 +1222,112 @@ extern void c_mpgetr(
     char *whch,
     float *rval
 #endif
+);
+
+extern void c_mpglty(
+#ifdef NeedFuncProto
+    int *ilty
+#endif
+);
+        
+extern int c_mpiaty(
+#ifdef NeedFuncProto
+    int iain
+#endif    
+);
+        
+extern int c_mpifnb(
+#ifdef NeedFuncProto
+    char* chrs
+#endif    
+);
+        
+extern int c_mpilnb(
+#ifdef NeedFuncProto
+    char* chrs
+#endif    
+);
+
+extern int c_mpioar(
+#ifdef NeedFuncProto
+    int iaid,
+    int ilvl
+#endif    
+);
+
+extern int c_mpipai(
+#ifdef NeedFuncProto
+    int iain,
+    int iaip
+#endif    
+);
+
+extern int c_mpipan(
+#ifdef NeedFuncProto
+    int iain,
+    char *anme
+#endif    
+);
+        
+extern int c_mpipar(
+#ifdef NeedFuncProto
+    int iain
+#endif    
+);
+        
+extern int c_mpisci(
+#ifdef NeedFuncProto
+    int iain
+#endif    
+);
+
+extern void c_mplnam(
+#ifdef NeedFuncProto
+    char *flnm,
+    int  ilvl,
+    int  *iama
+#endif    
+);
+
+extern void c_mplndm(
+#ifdef NeedFuncProto
+    char *flnm,
+    int  ilvl,
+    int  *iama,
+    float *xcra,
+    float *ycra,
+    int mcra,
+    int *iaai,
+    int *iagi,
+    int mnog,
+    int (*ulpr_)(
+        float *xcra,
+        float *ycra,
+        int *ncra,
+        int *iaai,
+        int *iagi,
+        int *ngpsi
+		)
+#endif    
+);
+
+extern void c_mplndr(
+#ifdef NeedFuncProto
+    char *flnm,
+    int  ilvl
+#endif    
+);
+
+extern void c_mplnri(
+#ifdef NeedFuncProto
+    char *flnm
+#endif
+);
+
+extern char *c_mpname(
+#ifdef NeedFuncProto
+    int iain
+#endif    
 );
 
 extern void c_mprset(
