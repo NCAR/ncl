@@ -8,7 +8,7 @@
 #include <math.h>
 
 extern void NGCALLF(vors,VORS)(int *, int *, double *, double *, double *, 
-                               double *, int *, double *);
+                               double *, int *);
 
 NhlErrorTypes eof_varimax_W( void )
 {
@@ -44,10 +44,14 @@ NhlErrorTypes eof_varimax_W( void )
            &type_evec,
            2);
 
+/*
+ * Check dimensions.
+ */
   if( ndims_evec < 2 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
+
 /*
  * Calculate size of output array.
  */
@@ -80,6 +84,15 @@ NhlErrorTypes eof_varimax_W( void )
   coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
                              has_missing_evec,&missing_evec,&missing_devec);
 /*
+ * Check for a missing value.
+ */
+  if(contains_missing(devec,total_size_evec,has_missing_evec,
+                      missing_devec.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array contains missing values.");
+    return(NhlFATAL);
+  }
+
+/*
  * Allocate space for output array.
  */
   if(type_evec != NCL_double) {
@@ -107,8 +120,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'vors' with the full argument list.
  */
-  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec, 
-                     &missing_devec.doubleval);
+  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec);
 
 /*
  * Free unneeded memory.
@@ -121,13 +133,7 @@ NhlErrorTypes eof_varimax_W( void )
     coerce_output_float_only(evec_out,devec,total_size_evec,0);
     NclFree(devec);
   }
-  if(has_missing_evec) {
-    return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,&missing_evec,
-                          type_evec_out,0));
-  }
-  else {
-    return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,NULL,
-                          type_evec_out,0));
-  }
-                        
+
+  return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,NULL,
+                        type_evec_out,0));
 }
