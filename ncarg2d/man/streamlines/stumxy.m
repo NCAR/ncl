@@ -86,13 +86,15 @@ To use STUMXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
-streamlines,
-streamlines_params,
+stgetc,
 stgeti,
 stgetr,
 stinit,
 stream,
+streamlines,
+streamlines_params,
 strset,
+stsetc,
 stseti,
 stsetr,
 stuixy,

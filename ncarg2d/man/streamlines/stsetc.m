@@ -1,48 +1,43 @@
-.TH STSETI 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
+.TH STSETC 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-STSETI - 
-Sets the value of an internal parameter of
-type INTEGER.
+STSETC - 
+Sets the value of a Streamlines parameter of
+type CHARACTER.
 .SH SYNOPSIS
-CALL STSETI (CNM,IVL) 
+CALL STSETC (CNM,CVL) 
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stseti(char *cnm, int ivl)
+void c_stsetc (char *cnm, char *cvl)
 .SH DESCRIPTION 
 .IP CNM 12
 (CHARACTER, input) is the name of a parameter to be
-given an integer value. Only the first three characters of
-CNM are examined. The three characters must either be
+given a character value. Only the first three characters of
+CNM are examined. The three characters may either be
 entirely upper or entirely lower case; mixed case is not
 recognized. It is recommended that the rest of the
 character string be used to improve the readability of the
-code. For example, instead of \'CKP\', use \'CKP - Check
-Progress Iteration Count\'.
-.IP IVL 12
-(INTEGER, input) is an expression, the value of which
+code. For example, instead of \'ZFT\', use \'ZFT - Zero Field
+Text String\'.
+.IP CVL 12
+(CHARACTER, input) is an expression, the value of which
 is to be given to the parameter specified by CNM.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
-This routine allows you to set the current value of Streamlines
-parameters of type INTEGER. For a complete list of parameters
-available in this utility, see the streamlines_params man page.
+This routine allows you to set the current value of Streamlines parameters
+of type CHARACTER.  For a complete list of parameters available in
+this utility, see the streamlines_params man page.
 .SH EXAMPLES
-Use the ncargex command to see the following relevant
-examples:
-ffex00,
-ffex03,
-ffex04,
-stex01,
-stex02,
-stex03.
+Use the ncargex command to see the following relevant examples:
+fcover,
+ffex00.
 .SH ACCESS
-To use STSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_stseti, load the 
+To use STSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  To use c_stsetc, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH MESSAGES
@@ -58,7 +53,7 @@ stream,
 streamlines,
 streamlines_params,
 strset,
-stsetc,
+stseti,
 stsetr,
 stuixy,
 stumsl,

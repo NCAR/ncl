@@ -150,12 +150,14 @@ a value outside the range allowed by the Streamlines
 utility.
 .SH SEE ALSO
 Online:
-streamlines_params,
+stgetc,
 stgeti,
 stgetr,
 stinit,
 stream,
+streamlines_params,
 strset,
+stsetc,
 stseti,
 stsetr,
 stuixy,
@@ -163,14 +165,8 @@ stumsl,
 stumta,
 stumxy,
 ncarg_cbind.
-<<<<<<< streamlines
-.sp
-Hardcopy:
-NCAR Graphics Fundamentals, UNIX Version
-=======
 .sp
 Hardcopy: NCAR Graphics Fundamentals, UNIX Version
->>>>>>> 1.3
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br

@@ -25,12 +25,14 @@ NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
-streamlines,
-streamlines_params,
+stgetc,
 stgeti,
 stgetr,
 stinit,
 stream,
+streamlines,
+streamlines_params,
+stsetc,
 stseti,
 stsetr,
 stuixy,

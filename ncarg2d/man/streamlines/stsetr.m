@@ -50,13 +50,15 @@ See the streamlines man page for a description of all Streamlines error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-streamlines,
-streamlines_params,
+stgetc,
 stgeti,
 stgetr,
 stinit,
 stream,
+streamlines,
+streamlines_params,
 strset,
+stsetc,
 stseti,
 stuixy,
 stumsl,

@@ -1,5 +1,5 @@
 '\" t
-.TH Streamlines_params 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
+.TH Streamlines_params 3NCARG "March 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -27,10 +27,25 @@ arrowheads should be more or less uniform over the field
 flow plot. However, if there is a non-linearity anywhere in
 the pipeline, the arrowheads will probably be more crowded
 in some areas than in others. The default value of AGD is 2.
+.IP "AMD - Arrow Head Minimum Distance - Real"
+AMD allows you to specify, as a fraction of the viewport width, a
+minimum distance between adjacent directional arrowheads along a
+single streamline. If the data grid is transformed in such a way that
+adjacent grid cells become very close in NDC space, as for instance in
+many map projections near the poles, you can use this parameter to
+help reduce the otherwise cluttered appearance of these regions of the
+plot. Note that currently, whenever AMD has a positive value, the
+first arrowhead that would otherwise be drawn for each streamline is
+always eliminated. If AMD is less than or equal to 0.0, then no
+arrowheads are eliminated. The default value of AMD is 0.0.
 .IP "ARL - Arrow Head Length - Real"
-ARL defines the length of each of the two lines used to
-create the directional arrow head as a fraction of the
-viewport width. It has a default value of 0.012.
+ARL defines the length of each of the two lines used to create the
+directional arrow head. If the parameter GBS is set to 0, ARL has
+units "fraction of viewport width"; if GBS is set to 1, ARL has
+the units "fraction of grid box width".  The default value of ARL is
+0.012 when GBS has the value 0 and 0.33 when GBS has the value
+1. Setting GBS causes ARL to be reset to its appropriate default
+value.
 .IP "CDS - Critical Displacement Multiplier - Real"
 CDS specifies the minimum amount the streamline must grow
 as a multiple of the basic differential step size each time
@@ -146,18 +161,34 @@ of the STINIT/STREAM interface. See the
 strmln man page for more detailed emulation information.
 .IP "DFM - Streamline Differential Magnitude"
 DFM specifies the length of the differential magnitude step size used
-by Streamlines, as a fraction of the viewport width. When the Version
-3.2 mapping routines are used, it directly affects the processing time
-and the resulting plot precision. In general, smaller values of DFM
-cause Streamlines to take more, smaller steps in the construction of a
-streamline, resulting, within the limits of the processor\'s floating
-point resolution, in longer execution times and a more precise plot.
-Process memory requirements are not affected. If the compatibility
-mode parameter is set such that the older mapping routines, FX and FY,
-are invoked instead, DFM no longer has any effect on the plot, since
-in this case the step size is determined by the setting of the
-parameter VNL as a fraction of a grid box in the grid coordinate
-system. The default value of DFM is 0.02.
+by Streamlines. If the parameter GBS is set to 0 DFM has units
+"fraction of viewport width"; if GBS is set to 1, DFM has the units
+"fraction of grid box width". When the Version 3.2 mapping routines
+are used, DFM directly affects processing time and the resulting plot
+precision. In general, smaller values of DFM cause Streamlines to take
+more, smaller steps in the construction of a streamline, resulting,
+within the limits of the processor\'s floating point resolution, in
+longer execution times and a more precise plot.  Process memory
+requirements are not affected. If the compatibility mode parameter is
+set such that the older mapping routines, FX and FY, are invoked
+instead, DFM no longer has any effect on the plot, since in this case
+the step size is determined by the setting of the parameter VNL as a
+fraction of the grid box width. The default value of DFM is 0.02 when
+GBS has the value 0 and 0.33 when GBS has the value 1. Setting GBS
+causes DFM to be reset to its appropriate default value.
+.IP "GBS - Grid-Based Spacing - Real"
+The parameter GBS controls the interpretation of several parameters
+that play a critical role in the appearance of the streamline
+plot. These parameters are DFM, SSP, and ARL. When GBS has the value
+0, the values of these parameters are treated as having units of
+"fraction of viewport width". If GBS has the value 1, the values are
+treated as having the units of "fraction of grid box width". Whenever
+you set GBS, the three affected parameters are reset to default values
+appropriate to the units; therefore you must set GBS prior to setting
+any non-default values for DFM, SSP, or ARL. You may find that using
+the grid-based spacing method causes Streamlines to adapt more
+gracefully to variations in the density of the data grid. Currently, the
+default value of GBS is 0; however, in the next release this may change.
 .IP "LWD - Streamline Linewidth - Real"
 LWD controls the linewidth used to draw the streamlines.  Note that
 since the linewidth in NCAR Graphics is always calculated relative to
@@ -306,17 +337,21 @@ enhancements to the Streamlines utility are expected to address this
 issue, and also perhaps to provide options for intentional non-uniform
 spacing based on flow intensity. The default value of SGD is 2.
 .IP "SSP - Streamline Spacing Value - Real"
-The streamline spacing parameter establishes the minimum distance (as
-a fraction of the viewport width) a streamline in progress is allowed
-to approach existing streamlines before being terminated. In general,
-giving this value a larger number increases the distance between
-streamlines, and has a tendency to create more, but shorter stream
+The streamline spacing parameter establishes the minimum distance a
+streamline in progress is allowed to approach existing streamlines
+before being terminated. If the parameter GBS is set to 0, SSP has
+units "fraction of viewport width"; if GBS is set to 1, SSP has the
+units "fraction of grid box width". In general, within either system of
+units, larger values of SSP increase the distance between
+streamlines, and have a tendency to create more, but shorter stream
 lines. The spacing is only checked at intervals, so streamlines
 sometimes approach closer than the specified distance. The checking
 frequency is adjustable using the streamline crossover checking
 parameter, CKX. The streamline starting grid increment parameter, SGD,
 also affects the overall streamline density. The default value of SSP
-is 0.015.
+is 0.015 when GBS has the value 0 and 0.5 when GBS has the value
+1. Setting GBS causes SSP to be reset to its appropriate default
+value.
 .IP "SST - Streamline Statistics Output Flag - Integer"
 If SST is set to one, STREAM writes a summary of its
 operations to the default logical output unit, including
@@ -649,16 +684,94 @@ mapping from grid coordinate space to data coordinate space. If YC1 is
 equal to YCN, the value of N, converted to a real, will be used. You
 must initialize Streamlines with a call to STINIT after modifying this
 parameter.  The default value of YCN is 0.0
+.IP "ZFC - Zero Field Text Block Color - Integer"
+If ZFC is greater or equal to zero, it specifies the GKS
+color index to use to color the Zero Field text block.
+Otherwise the Zero Field text block is colored using the
+current GKS text color index. The default value of ZFC is -1.
+.IP "ZFP - Zero Field Text Block Positioning Mode - Integer"
+The ZFP parameter allows you to justify, using any of
+the 9 standard justification modes, the Zero Field text
+block unit with respect to the position established by the
+parameters, ZFX and ZFY The position modes are supported as
+follows:
+.RS
+.IP Mode 15
+Justification
+.IP -4 15
+The lower left corner of the text block is
+positioned at ZFX, ZFY.
+.IP -3 15
+The center of the bottom edge is
+positioned at ZFX, ZFY.
+.IP -2 15
+The lower right corner is positioned at
+ZFX, ZFY.
+.IP -1 15
+The center of the left edge is positioned
+at ZFX, ZFY.
+.IP "0 (default)" 15
+The text block is centered along both axes
+at ZFX, ZFY.
+.IP 1 15
+The center of the right edge is positioned
+at ZFX, ZFY.
+.IP 2 15
+The top left corner is positioned at ZFX,
+ZFY.
+.IP 3 15
+The center of the top edge is positioned
+at ZFX, ZFY.
+.IP 4 15
+The top right corner is positioned at ZFX,
+ZFY.
+.RE
+.IP "ZFS - Zero Field Text Block Character Size - Real"
+ZFS specifies the size of the characters used in the Zero
+Field graphics text block as a fraction of the viewport
+width. The default value is 0.033.
+.IP "ZFT - Zero Field Text String - Character* 36"
+Use ZFT to modify the text of the Zero Field text block.
+The Zero Field text block may appear whenever the U and V
+vector component arrays contain data such that all the grid
+points otherwise eligible for plotting contain zero
+magnitude vectors. Currently the string length is limited
+to 36 characters. Set ZFT to a single space (\' \') to
+prevent the text from being displayed. The default value
+for the text is \'Zero Field\'.
+.IP "ZFX - Zero Field Text Block X Coordinate - Real"
+ZFX establishes the X coordinate of the Zero Field graphics
+text block as a fraction of the viewport width. Values less
+than 0.0 or greater than 1.0 are permissible and
+respectively represent regions to the left or right of the
+viewport. The actual position of the block relative to ZFX
+depends on the value assigned to the Zero Field Positioning
+Mode parameter, ZFP. The default value is 0.5.
+.IP "ZFY - Zero Field Text Block Y Coordinate - Real"
+ZFY establishes the Y coordinate of the minimum vector
+graphics text block as a fraction of the viewport height.
+Values less than 0.0 or greater than 1.0 are permissible
+and respectively represent regions below and above the
+viewport. The actual position of the block relative to ZFY
+depends on the value assigned to the Zero Field Positioning
+Mode parameter, ZFP. The default value is 0.5.
 .SH SEE ALSO
 Online:
-streamlines,
+stgetc,
 stgeti,
 stgetr,
 stinit,
 stream,
+streamlines,
 strset,
+stsetc,
 stseti,
-stsetr.
+stsetr,
+stuixy,
+stumsl,
+stumta,
+stumxy,
+ncarg_cbind.
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
