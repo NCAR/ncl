@@ -116,6 +116,10 @@ C End of loop through the values of 'LS'.
 C
  103  CONTINUE
 C
+C Advance the frame.
+C
+      CALL FRAME
+C
 C Deactivate and close workstation, close GKS.
 C
       CALL GDAWK (IWKID)

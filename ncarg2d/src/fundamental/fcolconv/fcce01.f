@@ -66,6 +66,10 @@ C
       CALL GSPMCI(2)
       CALL GPM(1,.5,.75)
 C
+C Advance the frame.
+C
+      CALL FRAME
+C
 C  Terminate the picture, deactivate and close the CGM workstation, 
 C  close GKS.
 C
