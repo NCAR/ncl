@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1994-06-20 21:52:56 kennison Exp $
+#	$Id: yMakefile,v 1.9 1994-08-24 17:12:53 kennison Exp $
 #
 
 MYNAME	= tests
@@ -7,10 +7,10 @@ MYNAME	= tests
 TESTS = \
 	tagupw.f tareas.f tautog.f tcnqck.f tcnsmt.f tcnsup.f tcolcv.f \
 	tconan.f tconaq.f tconas.f tconpa.f tconre.f tdashc.f tdashl.f \
-	tdashp.f tdashs.f tezmap.f tezmpa.f tgflas.f tgrida.f thafto.f \
-	thstgr.f thstmv.f tisohr.f tisosr.f tlblba.f tpltch.f tppack.f \
-	tpwrtx.f tpwry.f  tpwrzi.f tpwrzs.f tpwrzt.f tseter.f tsoftf.f \
-	tsrfac.f tstitl.f tstrml.f tthree.f tvelvc.f
+	tdashp.f tdashs.f tdshpk.f tezmap.f tezmpa.f tgflas.f tgrida.f \
+	thafto.f thstgr.f thstmv.f tisohr.f tisosr.f tlblba.f tpltch.f \
+	tppack.f tpwrtx.f tpwry.f  tpwrzi.f tpwrzs.f tpwrzt.f tseter.f \
+	tsoftf.f tsrfac.f tstitl.f tstrml.f tthree.f tvelvc.f
 
 InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
 
