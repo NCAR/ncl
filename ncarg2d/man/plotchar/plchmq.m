@@ -14,7 +14,7 @@ translator may or may not have.
 .sp
 PLCHMQ is an alternate name for the routine PCMEQU.
 .SH SYNOPSIS
-CALL PCMEQU (XPOS, YPOS, CHRS, SIZE, ANGD, CNTR)
+CALL PCMEQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -22,8 +22,8 @@ void c_pcmequ (float xpos, float ypos, char *chrs, \\
 .br
 float size, float angd, float cntr)
 .SH DESCRIPTION 
-.IP "XPOS and YPOS" 12 
-(input values of type REAL) specify
+.IP "XPOS,YPOS" 12
+(input expressions of type REAL) specify
 positioning coordinates for the characters to be drawn. If
 the internal parameter \'MA\' has the value 0, these are
 given in the current user coordinate system; otherwise,
@@ -36,7 +36,7 @@ The argument CNTR (described below) specifies how the
 characters are to be positioned relative to the point
 (XPOS,YPOS).
 .IP CHRS 12
-(type CHARACTER) contains a character string
+(an input constant or variable of type CHARACTER) contains a character string
 to be drawn. The number of characters in CHRS is taken to
 be LEN(CHRS); to use characters "m" through "n" from a
 character variable CHRS, use the FORTRAN-77 substring
@@ -52,6 +52,7 @@ curly bracket, vertical bar, right curly bracket, and
 tilde. Function codes, like those in calls to PCHIQU, may
 not be used.
 .IP SIZE 12
+(an input expression of type REAL)
 specifies the desired character size. If the internal
 parameter \'MA\' is zero, then the following comments apply:
 .RS
@@ -71,7 +72,7 @@ by default or by a user\'s call to the SPPS routine SETI.
 Note that use of the routine SETI is now discouraged.
 .RE
 .IP "" 12
-If \'MA\' is non-zero, then SIZE is the desired width of a
+If \'MA\' is nonzero, then SIZE is the desired width of a
 blank as a value in the X/Y coordinate system in which XPOS
 and YPOS are given.
 .sp
@@ -93,10 +94,12 @@ zero and one has reset the PCHIQU internal parameter \'PW\'
 to something other than 16, the difference in the output of
 the two routines will be greater.
 .IP ANGD 12
+(an input expression of type REAL)
 is the angle, in degrees counterclockwise from the
 positive X axis, at which the character string is to be
 written.
 .IP CNTR 12
+(an input expression of type REAL)
 is the centering option, as follows:
 .RS
 .IP \(bu
@@ -125,9 +128,9 @@ epltch,
 tpltch.
 .SH ACCESS
 To use PCMEQU, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcmequ, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcmequ, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,

@@ -2,8 +2,8 @@
 .na
 .nh
 .SH NAME
-Plotchar_params - This document briefly describes all Plotchar 
-internal parameters.
+Plotchar_params - This document briefly describes all the
+internal parameters of Plotchar.
 .SH DESCRIPTION 
 The following shows all of the internal parameters
 that affect the behavior of PCHIQU. Each entry includes the
@@ -12,7 +12,7 @@ a short description of the parameter.
 .IP "Internal Parameters of PCHIQU"
 .RS
 .IP "\'AS\'   -   Real   -    0."
-When this parameter is non-zero,
+When this parameter is nonzero,
 it forces extra space between
 characters. A negative value is
 interpreted in digitization
@@ -38,7 +38,7 @@ access element 2, use \'BC(2)\';
 etc. The name \'BC\' by itself
 refers to element 1.
 .IP "\'BF\'   -   Integer   -   0"
-When this parameter is non-zero,
+When this parameter is nonzero,
 it requests a box around each
 string of characters written by
 PCHIQU. The value is interpreted
@@ -61,7 +61,7 @@ than zero, it specifies the line
 width to be used while drawing
 the box around a character
 string. A value less than or
-equal to zero says means
+equal to zero means
 "unspecified".
 .IP "\'BM\'   -   Real   -   .15"
 The width of box margins (the
@@ -126,7 +126,7 @@ Constant-spacing flag. The
 high-quality character sets normally
 have variable spacing when
 written "across" the frame. When
-this parameter is set non-zero,
+this parameter is set nonzero,
 it forces the centers of the
 characters to be spaced a
 constant distance apart. If a
@@ -164,8 +164,8 @@ system.
 The drawing order for the
 characters. If the value is
 positive, characters are drawn
-in the order they appear in the
-input character string,
+in the order in which they appear
+in the input character string;
 otherwise, they are drawn in the
 opposite order. If the absolute
 value is a 1, all shadows are
@@ -199,11 +199,8 @@ fonts. The value specifies how
 close the interpolated curve
 should be to the actual Bezier
 curve and is specified as a
-fraction of the maximum screen
-height (the maximum Y extent in
-user space that can be mapped
-onto the unit interval in NDC
-space).
+fraction of the height of the
+plotter frame.
 .IP "\'FC\'   -   Character   -   \':'\ (a colon)"
 Function-code character.
 .IP "\'FN\'   -   Character or Integer   -   0"
@@ -211,11 +208,14 @@ Font number. The default value,
 0, implies the use of the PWRITX
 database. Use a positive value
 "n" to force the use of fontcap
-database "n". Use a character
-string, as shown in table 2,
-below, in a call to PCSETC; a
+database "n". Use a character-string
+font name, as shown in table 2 in
+the programmer document for
+PLOTCHAR, in a call to PCSETC; a
 call to PCGETC will return one
-of these character strings.
+of these font names.
+The list of font names is also
+reproduced later in this man page.
 .IP "\'IH\'   -   Real   -   13."
 Digitized indexical height.
 .IP "\'IS\'   -   Real   -   7."
@@ -231,7 +231,7 @@ Digitized indexical width.
 .IP "\'MA\'   -   Integer   -   0"
 The mapping flag. The value zero
 says that no mapping is to
-occur; non-zero values say that
+occur; nonzero values say that
 PCMPXY is to be called and
 select particular mappings.
 .IP "\'OC\'   -   Integer   -   1"
@@ -243,7 +243,7 @@ particular color index.
 .IP "\'OF\'   -   Integer   -   0"
 The outline flag. The value 0
 says that outlines are not to be
-drawn; a non-zero value says
+drawn; a nonzero value says
 that outlines are to be drawn.
 .IP "\'OL\'   -   Real   -   0."
 The outline line width. A value
@@ -304,7 +304,7 @@ particular color index.
 .IP "\'SF\'   -   Integer   -   0"
 The shadow flag. The value 0
 says that shadows are not to be
-drawn; a non-zero value says
+drawn; a nonzero value says
 that shadows are to be drawn.
 .IP "\'SL\'   -   Real   -   0."
 The shadow line width. A value
@@ -315,7 +315,7 @@ than zero is the desired line
 width, as a fraction of "normal".
 .IP "\'SS\'   -   Real   -   0."
 Subtract-space flag. When this
-parameter is non-zero, it
+parameter is nonzero, it
 reduces the space between
 characters. If a negative value
 is used, it is interpreted in
@@ -342,9 +342,9 @@ direction ANGD+90.
 .IP "\'TE\'   -   Integer   -   0"
 The text-extent computation
 flag. Zero means do not compute
-text-extent quantities, non-zero
+text-extent quantities, nonzero
 means do compute them. If \'TE\'
-is non-zero and the value of the
+is nonzero and the value of the
 argument ANGD, in a call to
 PCHIQU, is exactly 360. instead
 of 0., no characters are drawn,
@@ -384,7 +384,9 @@ position at the end of the last
 string written by PCHIQU, in the
 fractional system.
 .RE
+.sp
 .IP "Internal Parameters of PCMEQU" 
+.sp
 The internal parameter \'HW\' specifies the desired ratio of
 the character height (the height of a capital) to the
 character width (excluding white space). The default value
@@ -396,13 +398,15 @@ ratio, but, in addition, PCHIQU will be prohibited from
 changing \'HW\' (which it otherwise does when the quality
 flag \'QU\' is set to 1).
 .sp
-PCMEQU reacts properly to non-zero values of \'MA\' and \'OR\',
+PCMEQU reacts properly to nonzero values of \'MA\' and \'OR\',
 which are used to request mapping of characters through the
 routine PCMPXY, as described for PCHIQU, above. Characters
 that are partly visible and partly invisible are clipped at
 the visible/invisible boundary.
+.sp
 .IP "Internal Parameters of PCLOQU" 
-PCLOQU reacts to non-zero values of \'MA\' and \'OR\', which
+.sp
+PCLOQU reacts to nonzero values of \'MA\' and \'OR\', which
 are used to request mapping of characters through the
 routine PCMPXY, as described for PCHIQU, above. However, it
 doesn\'t react in quite the same way: Mapping will affect
@@ -415,6 +419,54 @@ calling the GKS routine GTX instead of GPL). If the point
 is considered to be visible; otherwise, the whole string is
 considered to be invisible. The results can be pretty
 crude; for that reason, mapping is not recommended.
+.sp
+.IP "A List of Font Names for Use in Calls to PCSETC That Set \'FN\'"
+.sp
+.nf
+      0    'PWRITX DATABASE   '
+      1    'DEFAULT           '
+      2    'CARTOGRAPHIC_ROMAN'
+      3    'CARTOGRAPHIC_GREEK'
+      4    'SIMPLEX_ROMAN     '
+      5    'SIMPLEX_GREEK     '
+      6    'SIMPLEX_SCRIPT    '
+      7    'COMPLEX_ROMAN     '
+      8    'COMPLEX_GREEK     '
+      9    'COMPLEX_SCRIPT    '
+     10    'COMPLEX_ITALIC    '
+     11    'COMPLEX_CYRILLIC  '
+     12    'DUPLEX_ROMAN      '
+     13    'TRIPLEX_ROMAN     '
+     14    'TRIPLEX_ITALIC    '
+     15    'GOTHIC_GERMAN     '
+     16    'GOTHIC_ENGLISH    '
+     17    'GOTHIC_ITALIAN    '
+     18    'MATH_SYMBOLS      '
+     19    'SYMBOL_SET1       '
+     20    'SYMBOL_SET2       '
+     21    'HELVETICA         '
+     22    'HELVETICA-BOLD    '
+     25    'TIMES-ROMAN       '
+     26    'TIMES-BOLD        '
+     29    'COURIER           '
+     30    'COURIER-BOLD      '
+     33    'GREEK             '
+     34    'MATH-SYMBOLS      '
+     35    'TEXT-SYMBOLS      '
+     36    'WEATHER1          '
+     37    'WEATHER2          '
+    121    'O_HELVETICA       '
+    122    'O_HELVETICA-BOLD  '
+    125    'O_TIMES-ROMAN     '
+    126    'O_TIMES-BOLD      '
+    129    'O_COURIER         '
+    130    'O_COURIER-BOLD    '
+    133    'O_GREEK           '
+    134    'O_MATH-SYMBOLS    '
+    135    'O_TEXT-SYMBOLS    '
+    136    'O_WEATHER1        '
+    137    'O_WEATHER2        '
+.fi
 .SH SEE ALSO
 Online:
 pcdlsc,

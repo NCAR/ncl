@@ -2,9 +2,8 @@
 .na
 .nh
 .SH NAME
-PCGETI -  
-Retrieves the value of a specified internal parameter
-of type INTEGER.
+PCGETI - Retrieves the integral value of an internal parameter of type
+INTEGER or REAL.
 .SH SYNOPSIS
 CALL PCGETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +12,7 @@ CALL PCGETI (PNAM,IVAL)
 void c_pcgeti (char *pnam, int *ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the name of the
+(an input constant or variable of type CHARACTER) specifies the name of the
 parameter to get. The name must appear as the first two
 characters of the string. If the internal parameter is one
 of the two (\'BC\' and \'CC\') that are arrays, the index of
@@ -27,6 +26,10 @@ retrieved; for example, instead of just \'MA\', one can use
 (an output variable of type INTEGER) is the name of the variable
 into which the value of the internal parameter specified by PNAM
 is to be retrieved.
+If the internal parameter is a value "i" of type INTEGER, the value returned
+is "i".
+If the internal parameter is a value "r" of type REAL, the value returned is
+"INT(r)".
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -40,9 +43,9 @@ example:
 cpexcc.
 .SH ACCESS
 To use PCGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcgeti, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcgeti, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,

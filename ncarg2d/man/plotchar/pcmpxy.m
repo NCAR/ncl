@@ -4,15 +4,15 @@
 .SH NAME
 PCMPXY - 
 This routine is normally not called directly by the user
-(though it can be). It is called by PCHIQU and by PCMEQU
-when the user has set the mapping flag \'MA\' non-zero to
+(though it can be). It is called by each of the routines PCHIQU, PCMEQU,
+and PCLOQU when the user has set the mapping flag \'MA\' nonzero to
 request mapping of characters from one X/Y coordinate
 system to another.
 .SH SYNOPSIS
 CALL PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 .SH DESCRIPTION 
 .IP IMAP 12
-(input expression of type INTEGER) specifies
+(an input expression of type INTEGER) specifies
 which mapping is to be done. Whenever Plotchar routines
 call PCMPXY, IMAP = \'MA\'. The default version of PCMPXY
 recognizes the following values of IMAP:
@@ -72,7 +72,7 @@ degrees.
 Latitude, in
 degrees.
 .RE
-.IP "IMAP = 1"
+.IP "IMAP = 2"
 .RS
 .IP "Type of mapping" 3
 Rho/theta
@@ -191,7 +191,7 @@ If the point is not visible under the mapping selected (as,
 for example, when the orthographic projection of Ezmap is
 being used and the point to be mapped is on the other side
 of the globe), PCMPXY must return, as a signal that this is
-the case, whatever special non-zero value has been given to
+the case, whatever special nonzero value has been given to
 the internal parameter \'OR\', so that the calling routine
 can take appropriate action (to properly clip the character
 being drawn, for example).
@@ -201,8 +201,8 @@ currently happen, but may someday be possible), XOTP and
 YOTP are used differently, as shown in the table above.
 .SH USAGE
 This routine is normally not called directly by the user
-(though it can be). It is called by PCHIQU and by PCMEQU
-when the user has set the mapping flag \'MA\' non-zero to
+(though it can be). It is called by each of the routines PCHIQU, PCMEQU, and
+PCLOQU when the user has set the mapping flag \'MA\' nonzero to
 request mapping of characters from one X/Y coordinate
 system to another. A call to PCMPXY has the following form:
 .sp
@@ -214,7 +214,7 @@ The default version of PCMPXY does several useful mappings;
 a user version may be supplied to do others.
 .SH ACCESS
 To use PCMPXY, load the NCAR Graphics libraries @@@ ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 plotchar,

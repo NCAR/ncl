@@ -3,8 +3,7 @@
 .nh
 .SH NAME
 PCGETC -  
-Retrieves the value of a specified internal parameter
-of type CHARACTER.
+Retrieves the current character value of an internal parameter.
 .SH SYNOPSIS
 CALL PCGETC (PNAM,CVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +12,7 @@ CALL PCGETC (PNAM,CVAL)
 void c_pcgetc (char *pnam, char *cval, int len)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the name of the
+(an input constant or variable of type CHARACTER) specifies the name of the
 parameter to get. The name must appear as the first two
 characters of the string. If the internal parameter is one
 of the two (\'BC\' and \'CC\') that are arrays, the index of
@@ -38,9 +37,9 @@ Plotchar parameters.  For a complete list of parameters available
 in this utility, see the plotchar_params man page.
 .SH ACCESS
 To use PCGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcgetc, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcgetc, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.

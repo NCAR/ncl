@@ -2,9 +2,8 @@
 .na
 .nh
 .SH NAME
-PCGETR - 
-Retrieves the value of a specified internal parameter
-of type REAL.
+PCGETR - Retrieves the real value of an internal parameter of type REAL or
+INTEGER.
 .SH SYNOPSIS
 CALL PCGETR (PNAM,RVAL)
 .SH C-BINDING SYNOPSIS
@@ -27,6 +26,10 @@ retrieved; for example, instead of just \'MA\', one can use
 (an output variable of type REAL) is the name of the variable
 into which the value of the internal parameter specified by PNAM
 is to be retrieved.
+If the internal parameter is a value "r" of type REAL, the value returned
+is "r".
+If the internal parameter is a value "i" of type INTEGER, the value returned
+is "REAL(i)".
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -41,9 +44,9 @@ cpexcc,
 epltch.
 .SH ACCESS
 To use PCGETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcgetr, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcgetr, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.

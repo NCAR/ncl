@@ -11,7 +11,7 @@ many more capabilities than PWRITX.
 .sp
 PLCHHQ is an alternate name for the routine PCHIQU.
 .SH SYNOPSIS
-CALL PCHIQU (XPOS, YPOS, CHRS, SIZE, ANGD, CNTR)
+CALL PCHIQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -19,8 +19,8 @@ void c_pchiqu (float xpos, float ypos, char *chrs, \\
 .br
 float size, float angd, float cntr)
 .SH DESCRIPTION 
-.IP "XPOS and YPOS" 12 
-(input values of type REAL) specify
+.IP "XPOS,YPOS" 12
+(input expressions of type REAL) specify
 positioning coordinates for the characters to be drawn. If
 the internal parameter \'MA\' has the value 0, these are
 given in the current user coordinate system; otherwise,
@@ -33,12 +33,17 @@ The argument CNTR (described below) specifies how the
 characters are to be positioned relative to the point
 (XPOS,YPOS).
 .IP "CHRS" 12 
-(type CHARACTER) specifies the number of characters in CHRS
+(an input constant or variable of type CHARACTER) specifies
+the characters to be drawn.  The number of characters in CHRS
 is taken to be LEN(CHRS); to use characters "m" through "n"
 from a character variable CHRV, use the FORTRAN-77
 substring notation "CHRV(m:n)". CHRS may contain characters
-to be drawn and function codes.
+to be drawn and "function codes", which are used for various
+purposes.  The possible function codes are completely
+described in the programmer document for Plotchar and are
+summarized in a later section of this man page.
 .IP "SIZE" 12
+(an input expression of type REAL)
 specifies the desired character size. If the internal
 parameter \'MA\' is zero, then the following comments apply:
 .RS
@@ -81,7 +86,7 @@ three characters, each of which is about 13/1024 of the
 plotter frame in width.
 .RE
 .IP "" 12
-If \'MA\' is non-zero, then SIZE is the desired approximate
+If \'MA\' is nonzero, then SIZE is the desired approximate
 width of a principal-size capital as a value in the X/Y
 coordinate system in which XPOS and YPOS are given.
 .sp
@@ -127,9 +132,10 @@ consistent with the character height.) Note that, if one
 changes the value of \'PW\', \'IW\', or \'CW\', the meaning of a
 negative value of the argument SIZE may thereby be changed.
 .IP ANGD 12
+(an input expression of type REAL)
 is the angle, in degrees counterclockwise from the
 positive X axis, at which the character string is to be
-written. If the internal parameter \'TE\' is non-zero (by
+written. If the internal parameter \'TE\' is nonzero (by
 default, it is zero) and if ANGD is exactly 360., then no
 characters are drawn by PCHIQU; it just computes the
 distances, in the fractional coordinate system, from the
@@ -139,6 +145,7 @@ string. These are stored as the values of the parameters
 \'DL\', \'DR\', \'DB\', and \'DT\' and may be retrieved by calls to
 PCGETR.
 .IP CNTR 12
+(an input expression of type REAL)
 is the centering option. If the internal parameter
 \'CE\' is zero (the default), then
 .RS
@@ -164,7 +171,7 @@ second with the value +1.). The value "0." gives the
 midpoint of the line.
 .RE
 .IP "" 12
-If \'CE\' is non-zero, then the value of CNTR is ignored.
+If \'CE\' is nonzero, then the value of CNTR is ignored.
 Text-extent quantities are computed and used to exactly
 center the output on the point (XPOS,YPOS). This is useful,
 among other things, for labeling each of a number of
@@ -175,6 +182,122 @@ Upon return from PCHIQU, all arguments are unchanged.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH FUNCTION CODES
+The function codes that may be used for various purposes in the input
+character string CHRS are described completely in the programmer document
+for Plotchar.  The material that follows will principally be of use as
+a memory aid to someone who is already familiar with the use of function
+codes.
+.sp
+As the characters of CHRS are scanned from left to right, the scanner is
+always in one of two states: either it is looking for characters to be
+drawn or it is looking for characters to be interpreted as function codes.
+Each occurrence of the function-code signal character (defined by the
+internal parameter \'FC\' - a colon by default) flips the state of the
+scanner.  Thus, in the character string \'ABC:L:DEF\', "A", "B", and "C"
+will be treated as characters to be drawn, "L" will be treated as a
+function code, and "D", "E", and "F" will be treated as characters to be
+drawn.  (In this particular example, since the function code "L" requests
+lower case, what would be drawn is "ABCdef".)  Occasionally, function
+codes may need to be separated by commas or blanks; this is necessary only
+when there would otherwise be a syntactical problem.
+.IP "F" 12
+Switch to using the database specified by the value of \'FN\'.
+.IP "F0" 12
+Switch to using the PWRITX database.
+.IP "Fn" 12
+Switch to using fontcap-defined font "n".
+.IP "R" 12
+Switch to the "Roman" part of the PWRITX database.
+If characters are currently being used from a fontcap-defined font, this
+function code will have no effect.
+.IP "G" 12
+Switch to the "Greek" part of the PWRITX database.
+If characters are currently being used from a fontcap-defined font, this
+function code will have no effect.
+.IP "P" 12
+Use characters of principal size from the PWRITX database.
+If characters are currently being used from a fontcap-defined font, there
+will be an appropriate shift in size.
+.IP "I" 12
+Use characters of indexical size from the PWRITX database.
+If characters are currently being used from a fontcap-defined font, there
+will be an appropriate shift in size.
+.IP "K" 12
+Use characters of cartographic size from the PWRITX database.
+If characters are currently being used from a fontcap-defined font, there
+will be an appropriate shift in size.
+.IP "U" 12
+Switch to using upper case letters from the PWRITX database.
+If characters are currently being used from a fontcap-defined font, this
+function code will have no effect.
+.IP "Un" 12
+For the next "n" characters, switch to using upper case letters from the
+PWRITX database and then switch to lower case.
+If characters are currently being used from a fontcap-defined font, this
+function code will have no effect.
+.IP "L" 12
+Switch to using lower case letters from the PWRITX database.
+If characters are currently being used from a fontcap-defined font, this
+function code will force the use of lower case letters from it.
+.IP "Ln" 12
+For the next "n" characters, switch to using lower case letters from the
+PWRITX database and then switch to upper case.
+If characters are currently being used from a fontcap-defined font, this
+function code will force the use of lower case letters from it.
+.IP "A" 12
+Switch to writing "across" the frame, in the direction ANGD.  This is the
+normal mode.
+.IP "D" 12
+Switch to writing "down" the frame, in the direction ANGD-90.  This causes
+each character to be written beneath the previous one.
+.IP "B" 12
+Switch to subscript level.
+.IP "Bn" 12
+For the next "n" characters, use subscript level and then revert to normal
+level.
+.IP "S" 12
+Switch to superscript level.
+.IP "Sn" 12
+For the next "n" characters, use superscript level and then revert to normal
+level.
+.IP "E" 12
+Switch to normal level in such a way as to allow for another sub- or
+superscript on the base character.
+.IP "N" 12
+Switch to normal level in such a way as not to allow for another sub- or
+superscript on the base character.
+.IP "Hn" 12
+Offset by "n" digitization units in the direction ANGD.
+.IP "HnQ" 12
+Offset by "n" blank widths in the direction ANGD.
+.IP "Vn" 12
+Offset by "n" digitization units in the direction ANGD+90.
+.IP "VnQ" 12
+Offset by "n" blank heights in the direction ANGD+90.
+.IP "C" 12
+Do a "carriage return".
+.IP "Xn or XnQ" 12
+Zoom character width to "n" percent of normal.
+.IP "Yn" 12
+Zoom character height to "n" percent of normal.
+.IP "YnQ" 12
+Zoom character height to "n" percent of normal and introduce a shift in the
+direction ANGD+90 sufficient to keep the bases of characters properly
+aligned.
+.IP "Zn" 12
+Same as "XnYn".
+.IP "ZnQ" 12
+Same as "XnQYnQ".
+.IP "nnnn" 12
+An octal number may be used as a function code to select a particular
+character from the PWRITX database.  The octal number for a given character
+is the sum of a font index (0 for Roman or 600 for Greek), a size index
+(0 for Principal, 200 for Indexical, or 400 for Cartographic), a case
+index (0 for Upper or 100 for Lower), and the octal equivalent of a
+character index (1-32 for A through Z, 33-44 for 0 through 9, or 45-57
+for the individual characters, +, -, *, /, (, ), $, =, blank, comma, or
+period).
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
@@ -193,9 +316,9 @@ srex01,
 tpltch.
 .SH ACCESS
 To use PCHIQU, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pchiqu, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pchiqu, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,

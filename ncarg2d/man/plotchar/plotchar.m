@@ -5,48 +5,14 @@
 Plotchar - Allows a user to draw characters of high, medium,
 or low quality.  
 .SH SYNOPSIS
-PCDLSC -
-Defines the default list of "special colors" used by
-PCHIQU in drawing certain characters from the filled fonts.
-Such a call will define color indices IFCI, IFCI+1, IFCI+2,
-\&. . . , IFCI+15 and it will set all elements of the
-internal parameter array \'CC\' corresponding to indices 1
-through 16. At the moment, though such a call does define a
-set of sixteen colors (ranging from blue to red) and set
-the elements of \'CC\', it\'s a bit pointless, since there are
-no characters for which the special colors are used. In the
-future, there will be a few such (like the state highway
-symbol, which is normally drawn in a particular pair of
-colors); at that time, the routine will be of more use.
-.sp
-PCGETC -
-Retrieves the value of a specified internal parameter
-of type CHARACTER.
-.sp
-PCGETI -
-Retrieves the value of a specified internal parameter
-of type INTEGER.
-.sp
-PCGETR -
-Retrieves the value of a specified internal parameter
-of type REAL.
-.sp
-PCHIQU -
+PCHIQU (or PLCHHQ) -
 Draws high quality characters. By default, it uses
 the same database as the old NCAR Graphics routine PWRITX,
 but it can also use characters from any of the fontcap-defined
 databases, it has an improved interface, and it has
 many more capabilities than PWRITX.
 .sp
-PCLOQU -
-Draws characters of "low quality" by calling the GKS
-character-drawing routines. No function codes may be used.
-Using PCLOQU to draw a given string of characters will
-create a smaller metafile than if PCHIQU or PCMEQU were
-used; the results will depend on capabilities of the
-translator.
-.sp
-PCMEQU -
+PCMEQU (or PLCHMQ) -
 Draws characters of "medium quality". It does this
 by drawing lines, just as PCHIQU does, but it does not
 produce quite such fancy characters. No function codes may
@@ -56,30 +22,64 @@ which may be a disadvantage. However, it may also be more
 dependable, in that it does not depend on capabilities the
 translator may or may not have.
 .sp
-PCPNWI -
-Is a character function.
+PCLOQU (or PLCHLQ) -
+Draws characters of "low quality" by calling the GKS
+character-drawing routines. No function codes may be used.
+Using PCLOQU to draw a given string of characters will
+create a smaller metafile than if PCHIQU or PCMEQU were
+used; the results will depend on capabilities of the
+translator.
+.sp
+PCGETC -
+Retrieves the character value of a specified internal parameter.
+.sp
+PCGETI -
+Retrieves the integer value of a specified internal parameter.
+.sp
+PCGETR -
+Retrieves the real value of a specified internal parameter.
 .sp
 PCSETC -
-Gives a new value to a specified internal parameter
-of type CHARACTER.
+Gives a new character value to a specified internal parameter.
 .sp
 PCSETI -
-Gives a new value to a specified internal parameter
-of type INTEGER.
+Gives a new integer value to a specified internal parameter.
 .sp
 PCSETR -
-Gives a new value to a specified internal parameter
-of type REAL.
+Gives a new real value to a specified internal parameter.
 .sp
-PLCHHQ - Is an alternate name for the routine PCHIQU.
+PCPNWI -
+A function of type CHARACTER*16 that, given the name of an internal
+parameter array and an index, has as its value the name of the specified
+element of the internal parameter array.
 .sp
-PLCHLQ - Is an alternate name for the routine PCLOQU.
+PCDLSC -
+Defines the default list of "special colors" used by
+PCHIQU in drawing certain characters from the filled fonts.
+Such a call will define color indices IFCI, IFCI+1, IFCI+2,
+\&. . . , IFCI+15 and it will set all elements of the
+internal parameter array \'CC\' corresponding to indices 1
+through 16. At the moment, although such a call does define a
+set of sixteen colors (ranging from blue to red) and set
+the elements of \'CC\', it\'s a bit pointless, since there are
+no characters for which the special colors are used. In the
+future, there will be a few such (like the state highway
+symbol, which is normally drawn in a particular pair of
+colors); at that time, the routine will be of more use.
 .sp
-PLCHMQ - Is an alternate name for the routine PCMEQU.
+PLCHHQ - An alternate name for the routine PCHIQU.
+.sp
+PLCHMQ - An alternate name for the routine PCMEQU.
+.sp
+PLCHLQ - An alternate name for the routine PCLOQU.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-c_pcdlsc
+c_pchiqu
+.br
+c_pcmequ
+.br
+c_pcloqu
 .br
 c_pcgetc
 .br
@@ -87,36 +87,33 @@ c_pcgeti
 .br
 c_pcgetr
 .br
-c_pchiqu
-.br
-c_pcloqu
-.br
-c_pcmequ
-.br
-c_pcpnwi
-.br
 c_pcsetc
 .br
 c_pcseti
 .br
 c_pcsetr
 .br
+c_pcpnwi
+.br
+c_pcdlsc
+.br
 c_plchhq
 .br
-c_plchlq
-.br
 c_plchmq
+.br
+c_plchlq
 .SH USER-MODIFIABLE INTERNAL ROUTINES
 PCMPXY - This routine is normally not called directly by the user
 (though it can be). It is called by PCHIQU and by PCMEQU
-when the user has set the mapping flag \'MA\' non-zero to
+when the user has set the mapping flag \'MA\' nonzero to
 request mapping of characters from one X/Y coordinate
 system to another.
 .SH ACCESS 
-To use Plotchar, routines load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use the Plotchar
+To use Plotchar routines, load the NCAR Graphics libraries ncarg,
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use
+the Plotchar
 C-binding routines load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 The following error messages may be written by Plotchar.
 They are written by means of a call to the error-handling

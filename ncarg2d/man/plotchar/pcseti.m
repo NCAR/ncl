@@ -2,9 +2,7 @@
 .na
 .nh
 .SH NAME
-PCSETI -  
-Gives a new value to a specified internal parameter
-of type INTEGER.
+PCSETI - Sets the value of an internal parameter of type INTEGER or REAL.
 .SH SYNOPSIS
 CALL PCSETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +11,7 @@ CALL PCSETI (PNAM,IVAL)
 void c_pcseti (char *pnam, int ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the name of the
+(an input constant or variable of type CHARACTER) specifies the name of the
 parameter to be set. The name must appear as the first two
 characters of the string. If the internal parameter is one
 of the two (\'BC\' and \'CC\') that are arrays, the index of
@@ -27,6 +25,9 @@ retrieved; for example, instead of just \'MA\', one can use
 (an input expression of type INTEGER)
 is the value to be assigned to the
 internal parameter specified by PNAM.
+If the internal parameter is of type INTEGER, the value given to it is IVAL.
+If the internal parameter is of type REAL, the value given to it is
+REAL(IVAL).
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -46,9 +47,9 @@ epltch,
 srex01.
 .SH ACCESS
 To use PCSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcseti, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcseti, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,

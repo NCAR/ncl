@@ -2,9 +2,7 @@
 .na
 .nh
 .SH NAME
-PCSETR -  
-Gives a new value to a specified internal parameter
-of type REAL.
+PCSETR - Sets the value of an internal parameter of type REAL or INTEGER.
 .SH SYNOPSIS
 CALL PCSETR (PNAM,RVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +11,7 @@ CALL PCSETR (PNAM,RVAL)
 void c_pcsetr (char *pnam, float rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the name of the
+(an input constant or variable of type CHARACTER) specifies the name of the
 parameter to be set. The name must appear as the first two
 characters of the string. If the internal parameter is one
 of the two (\'BC\' and \'CC\') that are arrays, the index of
@@ -27,6 +25,9 @@ retrieved; for example, instead of just \'MA\', one can use
 (an input expression of type REAL)
 is the value to be assigned to the
 internal parameter specified by PNAM.
+If the internal parameter is of type REAL, the value given to it is RVAL.
+If the internal parameter is of type INTEGER, the value given to it is
+INT(RVAL).
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -44,9 +45,9 @@ tconpa,
 tlblba.
 .SH ACCESS
 To use PCSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcsetr, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcsetr, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.

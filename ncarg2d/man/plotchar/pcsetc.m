@@ -3,8 +3,7 @@
 .nh
 .SH NAME
 PCSETC -  
-Gives a new value to a specified internal parameter
-of type CHARACTER.
+Gives a new character value to a specified internal parameter.
 .SH SYNOPSIS
 CALL PCSETC (PNAM,CVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +12,7 @@ CALL PCSETC (PNAM,CVAL)
 void c_pcsetc (char *pnam, char *cval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the name of the
+(an input constant or variable of type CHARACTER) specifies the name of the
 parameter to be set. The name must appear as the first two
 characters of the string. If the internal parameter is one
 of the two (\'BC\' and \'CC\') that are arrays, the index of
@@ -24,7 +23,7 @@ retrieved; for example, instead of just \'MA\', one can use
 \'MA - MAPPING FLAG\' and, instead of \'CC(10)\', one can use
 \'CC(10) - SPECIAL COLOR 10\'.
 .IP CVAL 12 
-(an input expression of type CHARACTER)
+(an input constant or variable of type CHARACTER)
 is the value to be assigned to the
 internal parameter specified by PNAM. 
 .SH C-BINDING DESCRIPTION
@@ -40,9 +39,9 @@ example:
 epltch.
 .SH ACCESS
 To use PCSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcsetc, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcsetc, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.

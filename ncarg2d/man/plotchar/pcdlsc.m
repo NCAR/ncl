@@ -5,10 +5,11 @@
 PCDLSC - 
 Defines the default list of "special colors" used by
 PCHIQU in drawing certain characters from the filled fonts.
-Such a call will define color indices IFCI, IFCI+1, IFCI+2,
-\&. . . , IFCI+15 and it will set all elements of the
+Calling PCDLSC with the argument IFCI will define color
+indices IFCI, IFCI+1, IFCI+2,
+\&..., IFCI+15 and it will set all elements of the
 internal parameter array \'CC\' corresponding to indices 1
-through 16. At the moment, though such a call does define a
+through 16. At the moment, although such a call does define a
 set of sixteen colors (ranging from blue to red) and set
 the elements of \'CC\', it\'s a bit pointless, since there are
 no characters for which the special colors are used. In the
@@ -23,7 +24,7 @@ CALL PCDLSC (IFCI)
 void c_pcdlsc (int ifci)
 .SH DESCRIPTION 
 .IP IFCI 12
-(integer expression) specifies the first of a set
+(an input expression of type INTEGER) specifies the first of a set
 of sixteen color indices that may be defined by PCDLSC.
 Make sure that these color indices are not already used.
 .SH C-BINDING DESCRIPTION
@@ -35,9 +36,9 @@ parameters. For a complete list of parameters available in this utility,
 see the plotchar_params man page.
 .SH ACCESS
 To use PCDLSC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcdlsc, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcdlsc, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.
