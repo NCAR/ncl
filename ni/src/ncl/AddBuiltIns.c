@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.37 1997-10-01 18:19:20 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.38 1997-12-18 01:12:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,13 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+
+extern NhlErrorTypes sprintf_W(
+#if NhlNeedProto
+void
+#endif
+);
+
 
 extern NhlErrorTypes _NclIFileVarDef(
 #if NhlNeedProto
@@ -1360,6 +1367,14 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,2,NclANY,NclANY,NclANY);nargs++;
 	NclRegisterProc(_NclIFileVarAttDef,args,"filevarattdef",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    NclRegisterFunc(sprintf_W,args,"sprintf",nargs);
+
 /*
 	nargs = 0;
 	args = NewArgs(1);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.88 1997-11-20 00:30:45 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.89 1997-12-18 01:12:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11526,6 +11526,65 @@ NhlErrorTypes _NclIFileVarAttDef
 
 	return(ret0);
 }
+
+NhlErrorTypes sprintf_W( void )
+{
+/*
+ * Input array variables
+ */
+  float *input_var;
+  string *format_string;
+  int ndims_input_var, dsizes_input_var[NCL_MAX_DIMENSIONS], nlata, nlona, igrida[2];
+  NclScalar missing_input_var;
+  int has_missing_input_var, total_elements,i;
+  char buffer[80];
+/*
+ * Output array variables
+ */
+  string *output_var;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+
+  format_string = (string*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           2);
+
+  input_var = (float*)NclGetArgValue(
+           1,
+           2,
+           &ndims_input_var, 
+           dsizes_input_var,
+	   &missing_input_var,
+	   &has_missing_input_var,
+           NULL,
+           2);
+  /*
+  * compute total number of elements
+  */
+  total_elements = 1;
+  for(i = 0; i < ndims_input_var; i++) {
+	total_elements *= dsizes_input_var[i];
+  }
+  output_var = (string*)malloc(sizeof(string)*total_elements);
+
+  for(i = 0; i < total_elements; i++) {
+	sprintf(buffer,NrmQuarkToString(*format_string),input_var[i]);
+	output_var[i] = NrmStringToQuark(buffer);
+  }
+  
+  return(NclReturnValue((void*)output_var,ndims_input_var,dsizes_input_var,NULL,NCL_string,0));
+}
+
 #ifdef __cplusplus
 }
 #endif
