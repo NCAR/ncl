@@ -539,8 +539,8 @@ NhlErrorTypes triple2grid2d_W( void )
   ngx = dsizes_gridx[0];
   ngy = dsizes_gridx[1];
 
-  if(dsizes_y[0] != ngx || dsizes_y[1] != ngy) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two output grids must be the same size");
+  if(dsizes_gridy[0] != ngx || dsizes_gridy[1] != ngy) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two 2-dimensional arrays that define the output grid must be the same size");
     return(NhlFATAL);
   }
 

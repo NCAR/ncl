@@ -1587,13 +1587,20 @@ NhlErrorTypes reg_multlin_W( void )
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y;
 /*
+ * Attribute variables
+ */
+  int att_id, dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
  * Various
  */
-  double *cnorm, *resid, con;
+  double *cnorm, *resid, *tmp_constant;
 /*
  * Output variables
  */
-  void *coef;
+  void *coef, *constant;
   double *tmp_coef;
   int dsizes_coef[1];
   NclBasicDataTypes type_coef;
@@ -1677,10 +1684,11 @@ NhlErrorTypes reg_multlin_W( void )
 /*
  * Allocate space for other variables.
  */
-  cnorm = (double*)calloc(mpts,sizeof(double));
-  resid = (double*)calloc(npts,sizeof(double));
+  cnorm        = (double*)calloc(mpts,sizeof(double));
+  resid        = (double*)calloc(npts,sizeof(double));
+  tmp_constant = (double*)calloc(1,sizeof(double));
 
-  if(cnorm == NULL || resid == NULL) {
+  if(cnorm == NULL || resid == NULL || tmp_constant == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for input arrays");
     return(NhlFATAL);
   }
@@ -1691,37 +1699,127 @@ NhlErrorTypes reg_multlin_W( void )
   if(type_x == NCL_double || type_y == NCL_double) {
     type_coef = NCL_double;
     coef      = (double *)calloc(mpts,sizeof(double));
+    constant  = (double *)calloc(1,sizeof(double));
   }
   else {
     type_coef = NCL_float;
     coef      = (float *)calloc(mpts,sizeof(float));
+    constant  = (float *)calloc(1,sizeof(float));
   }
   tmp_coef = coerce_output_double(coef,type_coef,mpts);
-  if(coef == NULL || tmp_coef == NULL) {
+  if(coef == NULL || tmp_coef == NULL || constant == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for output variable");
     return(NhlFATAL);
   }
 
   NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
-                           &missing_dx.doubleval,tmp_coef,resid,&con,cnorm);
+                           &missing_dx.doubleval,tmp_coef,resid,tmp_constant,
+                           cnorm);
 
+/*
+ * Coerce tmp_constant scalar to appropriate type.
+ */
+  coerce_output_float_or_double(constant,tmp_constant,type_coef,1,0);
+
+/*
+ * Free up memory.
+ */
   if(type_x != NCL_double) NclFree(tmp_x);
   if(type_y != NCL_double) NclFree(tmp_y);
   NclFree(cnorm);
   NclFree(resid);
+  NclFree(tmp_constant);
 
-  if(type_coef != NCL_double) {
+/*
+ * Get ready to return the data and add a "constant" attribute.
+ */
+  if(type_coef == NCL_float) {
     coerce_output_float_only(coef,tmp_coef,mpts,0);
     NclFree(tmp_coef);
+
 /*
- * Return float values with missing value set.
+ * Set up return structure.
  */
-    return(NclReturnValue(coef,1,dsizes_coef,&missing_ry,NCL_float,0));
+    return_md = _NclCreateVal(
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      coef,
+                      &missing_ry,
+                      1,
+                      dsizes_coef,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypefloatClass
+                      );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   constant,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "constant",
+               att_md,
+               NULL
+               );
   }
   else {
 /*
- * Return double values with missing value set.
+ * Set up return structure.
  */
-    return(NclReturnValue(coef,1,dsizes_coef,&missing_dy,NCL_double,0));
+    return_md = _NclCreateVal(
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      coef,
+                      &missing_dy,
+                      1,
+                      dsizes_coef,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypedoubleClass
+                      );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   constant,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "constant",
+               att_md,
+               NULL
+               );
   }
 }
