@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_src,v 1.3 1993-05-19 22:03:43 clyne Exp $
+#      $Id: select_src,v 1.4 1995-04-08 16:24:44 haley Exp $
 #
 #########################################################################
 #									#
@@ -42,7 +42,7 @@ cat <<EOF > /dev/tty
 
 				NCAR Graphics
 			        Version $VERSION
-			     Copyright (C)  1993
+			     Copyright (C)  1995
 		University Corporation for Atmospheric Research
 			     All Rights Reserved
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.5 1994-05-16 16:36:19 haley Exp $
+#      $Id: install_soft,v 1.6 1995-04-08 16:24:43 haley Exp $
 #
 #########################################################################
 #									#
@@ -86,7 +86,7 @@ cat <<EOF
 
 				NCAR Graphics
 			        Version $VERSION
-			     Copyright (C)  1993
+			     Copyright (C)  1995
 		University Corporation for Atmospheric Research
 			     All Rights Reserved
 
