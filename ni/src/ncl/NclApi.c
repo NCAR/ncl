@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.20 1995-06-01 23:26:17 ethan Exp $
+ *      $Id: NclApi.c,v 1.21 1995-06-03 00:45:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,10 +36,25 @@ extern "C" {
 #include "NclApi.h"
 #include <errno.h>
 #include <netcdf.h>
+#include "DataSupport.h"
+#include "NclCallBacksI.h"
 
 int force_reset = 0;
 int start_state = 0;
 
+NhlErrorTypes NclApiRegisterCallback
+#if	NhlNeedProto
+(NclApiObjTypes obj_type,unsigned int type, void* callback_function, void* user_data)
+#else
+(obj_type,type, callback_function, user_data)
+NclApiObjTypes obj_type;
+unsigned int type;
+void* callback_function;
+void* user_data;
+#endif
+{
+	return(_NclRegisterCallback((NclObjTypes)obj_type,type,callback_function,user_data));
+}
 
 FILE *the_err_file;
 #if     defined(SunOS) && (MAJOR == 4)
@@ -120,8 +135,7 @@ int NclInitServer
 	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 
-	start_state = NclSubmitBlock1("begin\nend",strlen("begin\nend"));
-	the_input_buffer = "begin\nend\n"
+	the_input_buffer = "begin\nend\n";
 	the_input_buffer_ptr = the_input_buffer;
 	the_input_buffer_size = strlen("begin\nend\n");
 #if     defined(SunOS) && (MAJOR == 4)

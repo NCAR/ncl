@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.5 1995-05-23 15:53:27 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.6 1995-06-03 00:45:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,11 @@
 #include "NclCoordVar.h"
 #include "NclOneDValCoordData.h"
 
-
+static NhlErrorTypes InitializeCoordVarClass(
+#if NhlNeedProto
+void
+#endif
+);
 NclCoordVarClassRec nclCoordVarClassRec = {
 	{
 		"NclCoordVarClass",
@@ -41,13 +45,14 @@ NclCoordVarClassRec nclCoordVarClassRec = {
 		(NclGenericFunction)NULL,
 		(NclSetStatusFunction)NULL /*VarSetStatus*/,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeCoordVarClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 /* NclPrintFunction print */	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,
@@ -80,7 +85,19 @@ NclCoordVarClassRec nclCoordVarClassRec = {
 
 NclObjClass nclCoordVarClass = (NclObjClass)&nclCoordVarClassRec;
 
-
+static NhlErrorTypes InitializeCoordVarClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_CoordVar,
+		(NclObjClass)&nclCoordVarClassRec
+	);
+	return(NhlNOERROR);
+}
 
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.7 1995-05-23 15:53:24 ethan Exp $
+ *      $Id: NclAtt.c,v 1.8 1995-06-03 00:45:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -416,6 +416,11 @@ struct _NclAttRec * storage;
 	return(tmp);
 	
 }
+static NhlErrorTypes InitializeAttClass(
+#if NhlNeedProto
+	void
+#endif
+);
 NclAttClassRec nclAttClassRec = {
 	{
 		"NclAttClass",
@@ -425,13 +430,14 @@ NclAttClassRec nclAttClassRec = {
 		(NclGenericFunction)AttDestroyObj,
 		(NclSetStatusFunction)NULL,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeAttClass,
 /* NclAddParentFunction add_parent */	AttAddParent,
 /* NclDelParentFunction del_parent */	AttDelParent,
 /* NclAttPrintFunction print */		AttPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclAddAttFunction add_att */		AttAddFunction,
@@ -443,6 +449,20 @@ NclAttClassRec nclAttClassRec = {
 };
 
 NclObjClass nclAttClass = (NclObjClass)&nclAttClassRec;
+
+static NhlErrorTypes InitializeAttClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_Att,
+		(NclObjClass)&nclAttClassRec
+	);
+	return(NhlNOERROR);
+}
 
 int _NclAttCreate
 #if	NhlNeedProto

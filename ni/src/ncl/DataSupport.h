@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.6 1995-04-01 00:54:40 ethan Exp $
+ *      $Id: DataSupport.h,v 1.7 1995-06-03 00:45:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,30 @@
  */
 #ifndef _DataSupport_h
 #define _DataSupport_h
+
+extern NhlErrorTypes _NclRegisterCallback(
+#if	NhlNeedProto
+NclObjTypes /* class_type */, 
+unsigned int  /* callback_type */,
+void * /* callback_function */,
+void * /* call_backdata */
+#endif
+);
+
+extern NhlErrorTypes _NclCallCallBacks(
+#if	NhlNeedProto
+NclObj	/* obj */,
+unsigned int  /* type*/
+#endif
+);
+
+extern void * _NclObtainCallData(
+#if	NhlNeedProto
+NclObj /* obj */,
+unsigned int /* type */
+#endif
+);
+
 
 extern void _NclInitDataClasses(
 #if	NhlNeedProto
@@ -196,6 +220,17 @@ NclQuark /*obj_type*/
 
 extern  long _NclObjTypeToName(
 #if  NhlNeedProto
+NclObjTypes /*obj_type*/
+#endif
+);
+
+extern void _NclRegisterClassPointer(
+NclObjTypes /*obj_type*/,
+NclObjClass /*obj_calss*/
+);
+
+extern NclObjClass  _NclObjTypeToPointer(
+#if NhlNeedProto
 NclObjTypes /*obj_type*/
 #endif
 );

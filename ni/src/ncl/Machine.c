@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.39 1995-05-02 23:51:35 ethan Exp $
+ *      $Id: Machine.c,v 1.40 1995-06-03 00:45:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -199,6 +199,7 @@ static NhlErrorTypes IncreaseStackSize
 		return(NhlNOERROR);
 	}
 }
+
 NclValue *_NclGetCurrentMachine
 #if	NhlNeedProto
 (void)
@@ -490,7 +491,75 @@ NclStackEntry *_NclGetLevel1Var
 	}
 }
 
+NhlErrorTypes _NclPutRec
+#if NhlNeedProto
+(NclSymbol *thesym, NclStackEntry* therec)
+#else
+(thesym, therec)
+NclSymbol *thesym;
+NclStackEntry* therec;
+#endif
+{
+	int i;
+	NclFrame *previous;
 
+
+	i = current_scope_level;
+	
+
+	if(thesym->level == 1) {
+		return(_NclPutLevel1Var(thesym->offset,therec));
+	} else if(thesym->level != 0){
+		previous = (NclFrame*)(thestack + fp);
+		while(i != thesym->level) {
+			i--;
+			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
+		}
+
+/*
+* increment over stack frame stuff to base of actual scope
+*/
+		previous++;
+		*(NclStackEntry*)((NclStackEntry*)previous + thesym->offset) = *therec;
+		return(NhlNOERROR);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference keyword (%s) as variable",thesym->name);
+		return(NhlFATAL);
+	}
+}
+
+int _NclIsParam
+#if NhlNeedProto
+(NclSymbol* thesym)
+#else
+(thesym)
+NclSymbol* thesym;
+#endif
+{
+	int i;
+	NclFrame *previous;
+	NclParamRecList *the_list;
+	if((thesym->level == 1)||(thesym->level == 0)) {
+		return(0);
+	} else {
+		i = current_scope_level;
+		previous = (NclFrame*)(thestack + fp);
+		while(i != thesym->level) {
+			i--;
+			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
+		}
+		if(previous->parameter_map.kind == NclStk_PARAMLIST) {
+			the_list = previous->parameter_map.u.the_list;
+			if(thesym->offset < the_list->n_elements) {
+				return(1);
+			} else {
+				return(0);
+			}
+		} else {
+			return(0);
+		}
+	}
+}
 NclStackEntry *_NclRetrieveRec
 #if	NhlNeedProto
 (NclSymbol* the_sym,int access_type)
@@ -1346,8 +1415,9 @@ void _NclRemapIntrParameters
 if(the_list != NULL) {
 	for (i = nargs -1 ; i > -1; i--) {
 		data = _NclPop();
-		if((the_list->the_elements[i].p_type == VAR_P)&&(data.u.data_var != NULL)) {
-			if((the_list->the_elements[i].var_sym != NULL)&&(the_list->the_elements[i].rec != NULL)) {
+		if(the_list->the_elements[i].p_type == VAR_P){
+			if(data.u.data_var != NULL) {
+				if((the_list->the_elements[i].var_sym != NULL)&&(the_list->the_elements[i].rec != NULL)) {
 
 /* 
 * Key thing to think about here: if there is a subscript record or no variable 
@@ -1364,125 +1434,125 @@ if(the_list != NULL) {
 * variable. So only coordinate variables, type and actual data array values 
 * must bew remapped.
 */
-				for(j = 0; j< the_list->the_elements[i].rec->n_entries; j ++) {
-					if(the_list->the_elements[i].rec->selection[j].sel_type == Ncl_VECSUBSCR) {
-						contains_vec = 1;
-					}
-				}
-				if(the_list->the_elements[i].is_modified) {
-					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
-				} else {
-					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
-				}
-				anst_var = data_ptr->u.data_var;
-				if(data.u.data_var != NULL ) {
-					var_rep_type = _NclGetVarRepValue(data.u.data_var);
-					param_rep_type = _NclGetVarRepValue(anst_var);
-					if((var_rep_type != param_rep_type)&&(!contains_vec)) {
-/*
-* Try reverse coercion which in many cases will
-* just fail.
-*/
-/*
-						tmp_var = _NclCoerceVar(data.u.data_var,param_rep_type,NULL);
-*/
-						tmp_var = NULL;
-						if(tmp_var == NULL) { 
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRemapParameters: Argument (%d) to function or procedure was coerced before calling and can not be coerced back, arguments value remains unchanged",i);
-						} else {
-							_NclDestroyObj((NclObj)data.u.data_var);
-							data.u.data_var = tmp_var;
+					for(j = 0; j< the_list->the_elements[i].rec->n_entries; j ++) {
+						if(the_list->the_elements[i].rec->selection[j].sel_type == Ncl_VECSUBSCR) {
+							contains_vec = 1;
 						}
+					}
+					if(the_list->the_elements[i].is_modified) {
+						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
 					} else {
-						if((!contains_vec) &&(the_list->the_elements[i].is_modified)) {
-							_NclAssignVarToVar(anst_var,the_list->the_elements[i].rec,data.u.data_var,NULL);
-
-/* 
-* When the selection record for the initial parameter has been subselected dimension sizes 
-* may be different between the parameter and the internal parameter
-*/
-							if(the_list->the_elements[i].rec == NULL) {
-								for(j = 0; j < anst_var->var.n_dims; j++) {
-									anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-									if((anst_var->var.coord_vars[j] >0) &&
-										(data.u.data_var->var.coord_vars[j]>0)) { 
-										tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-										tmp_md = _NclVarValueRead(
-											tmp_var1,
-											NULL,
-											NULL);
-										if(tmp_md != NULL) {
-											_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
-										}
-									} else if(data.u.data_var->var.coord_vars[j]>0){
-										if(data.u.data_var->obj.id != anst_var->obj.id) {
-											tmp_var = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-											if(tmp_var != NULL) {
-												tmp_md = _NclVarValueRead(
-													tmp_var,
-													NULL,
-													NULL);
-											}
-											if((tmp_md != NULL)&&(data.u.data_var->var.dim_info[j].dim_quark!= -1)) {
-												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(data.u.data_var->var.dim_info[j].dim_quark),NULL);
-											}
-										} 
-									}
-								}
+						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
+					}
+					anst_var = data_ptr->u.data_var;
+					if(data.u.data_var != NULL ) {
+						var_rep_type = _NclGetVarRepValue(data.u.data_var);
+						param_rep_type = _NclGetVarRepValue(anst_var);
+						if((var_rep_type != param_rep_type)&&(!contains_vec)) {
+	/*
+	* Try reverse coercion which in many cases will
+	* just fail.
+	*/
+	/*
+							tmp_var = _NclCoerceVar(data.u.data_var,param_rep_type,NULL);
+	*/
+							tmp_var = NULL;
+							if(tmp_var == NULL) { 
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRemapParameters: Argument (%d) to function or procedure was coerced before calling and can not be coerced back, arguments value remains unchanged",i);
 							} else {
-								k = 0;
+								_NclDestroyObj((NclObj)data.u.data_var);
+								data.u.data_var = tmp_var;
+							}
+						} else {
+							if((!contains_vec) &&(the_list->the_elements[i].is_modified)) {
+								_NclAssignVarToVar(anst_var,the_list->the_elements[i].rec,data.u.data_var,NULL);
+	
+	/* 
+	* When the selection record for the initial parameter has been subselected dimension sizes 
+	* may be different between the parameter and the internal parameter
+	*/
+								if(the_list->the_elements[i].rec == NULL) {
+									for(j = 0; j < anst_var->var.n_dims; j++) {
+										anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
+										if((anst_var->var.coord_vars[j] >0) &&
+											(data.u.data_var->var.coord_vars[j]>0)) { 
+											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
+											tmp_md = _NclVarValueRead(
+												tmp_var1,
+												NULL,
+												NULL);
+											if(tmp_md != NULL) {
+												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
+											}
+										} else if(data.u.data_var->var.coord_vars[j]>0){
+											if(data.u.data_var->obj.id != anst_var->obj.id) {
+												tmp_var = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
+												if(tmp_var != NULL) {
+													tmp_md = _NclVarValueRead(
+														tmp_var,
+														NULL,
+														NULL);
+												}
+												if((tmp_md != NULL)&&(data.u.data_var->var.dim_info[j].dim_quark!= -1)) {
+													_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(data.u.data_var->var.dim_info[j].dim_quark),NULL);
+												}
+											} 
+										}
+									}
+								} else {
+									k = 0;
 /*
 * Should not be any vector subscripts here see contains_vec variable. Therefore
 * 
 */
-								for(j = 0; j < the_list->the_elements[i].rec->n_entries; j++) {
-									tmp_elem = (int)(((float) (the_list->the_elements[i].rec->selection[j].u.sub.start - the_list->the_elements[i].rec->selection[j].u.sub.finish)) /(float)fabs(((float)the_list->the_elements[i].rec->selection[j].u.sub.stride))) + 1;
-									if((tmp_elem != 1)&&(data.u.data_var->var.coord_vars[k]>0)){
-										if((anst_var->var.coord_vars[j] >0)||(tmp_elem == anst_var->var.dim_info[j].dim_size)) {
-											anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-											tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-											if(tmp_md != NULL) {
-												tmp_selection.n_entries = 1;
-												tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),&tmp_selection);
-											}
-										} else {
+									for(j = 0; j < the_list->the_elements[i].rec->n_entries; j++) {
+										tmp_elem = (int)(((float) (the_list->the_elements[i].rec->selection[j].u.sub.start - the_list->the_elements[i].rec->selection[j].u.sub.finish)) /(float)fabs(((float)the_list->the_elements[i].rec->selection[j].u.sub.stride))) + 1;
+										if((tmp_elem != 1)&&(data.u.data_var->var.coord_vars[k]>0)){
+											if((anst_var->var.coord_vars[j] >0)||(tmp_elem == anst_var->var.dim_info[j].dim_size)) {
+												anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
+												tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
+												tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
+												if(tmp_md != NULL) {
+													tmp_selection.n_entries = 1;
+													tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
+													_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),&tmp_selection);
+												}
+											} else {
 /*
 * Case where missing values must be filled in
 */
-											anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-											tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-											tmp_ptr =  (void*)NclMalloc((unsigned)tmp_md->multidval.type->type_class.size*anst_var->var.dim_info[j].dim_size);
-											step = (char*)tmp_ptr;
-											for(m = 0; m < tmp_elem; m++) {
-												memcpy((void*)step,(void*)&tmp_md->multidval.type->type_class.default_mis,tmp_md->multidval.type->type_class.size);
-												step = step + tmp_md->multidval.type->type_class.size;
-											}
-											tmp2_md = _NclCreateMultiDVal(
-												NULL,
-												NULL,
-												Ncl_MultiDValData,
-												0,
-												tmp_ptr,
-												&tmp_md->multidval.type->type_class.default_mis,
-												1,
-												&anst_var->var.dim_info[j].dim_size,
-												TEMPORARY,
-												NULL,
-												tmp_md->multidval.type);
-											tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-											_NclWriteSubSection((NclData)tmp2_md,&tmp_selection,(NclData)tmp_md);
-											 _NclWriteCoordVar(anst_var,tmp2_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
+												anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
+												tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
+												tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
+												tmp_ptr =  (void*)NclMalloc((unsigned)tmp_md->multidval.type->type_class.size*anst_var->var.dim_info[j].dim_size);
+												step = (char*)tmp_ptr;
+												for(m = 0; m < tmp_elem; m++) {
+													memcpy((void*)step,(void*)&tmp_md->multidval.type->type_class.default_mis,tmp_md->multidval.type->type_class.size);
+													step = step + tmp_md->multidval.type->type_class.size;
+												}
+												tmp2_md = _NclCreateMultiDVal(
+													NULL,
+													NULL,
+													Ncl_MultiDValData,
+													0,
+													tmp_ptr,
+													&tmp_md->multidval.type->type_class.default_mis,
+													1,
+													&anst_var->var.dim_info[j].dim_size,
+													TEMPORARY,
+													NULL,
+													tmp_md->multidval.type);
+												tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
+												_NclWriteSubSection((NclData)tmp2_md,&tmp_selection,(NclData)tmp_md);
+											 	_NclWriteCoordVar(anst_var,tmp2_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
 
 										}
-										k++;
-									}
+											k++;
+										}
+										}
 								}
 							}
 						}
-					}
 /* 
 * 5/17/94 Is this really a problem to deal with here? shouldn't AssignVarToVar take care of copying these?
 * ------->
@@ -1497,12 +1567,118 @@ if(the_list != NULL) {
 					}
 */
 
-					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+						value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
 
-					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+						if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
 
+								tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+								tmp_var = _NclVarNclCreate(
+									NULL,
+									tmp_var1->obj.class_ptr,
+									tmp_var1->obj.obj_type,
+									tmp_var1->obj.obj_type_mask,
+									NULL,
+									(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+									tmp_var1->var.dim_info,
+									tmp_var1->var.att_id,
+									tmp_var1->var.coord_vars,
+									RETURNVAR,
+									NULL,
+									TEMPORARY
+									);
+								_NclDestroyObj((NclObj)tmp_var1);
+								tmp_fp->func_ret_value.u.data_var = tmp_var;
+								check_ret_status = 0;
+						} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+							if(tmp_var1->var.att_id != -1) 
+								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+							for(j = 0; j< tmp_var1->var.n_dims; j++) {
+								if(tmp_var1->var.coord_vars[j] != -1) {
+									tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
+									coord_ids[j] = tmp_coord_var->obj.id;
+								} else {
+									coord_ids[j] = -1;
+								}
+							}
+							tmp_var = _NclVarNclCreate(
+								NULL,
+								tmp_var1->obj.class_ptr,
+								tmp_var1->obj.obj_type,
+								tmp_var1->obj.obj_type_mask,
+								NULL,
+								_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+								tmp_var1->var.dim_info,
+								(tmp_att == NULL ? -1:tmp_att->obj.id),
+								coord_ids,
+								RETURNVAR,
+								NULL,
+								TEMPORARY
+								);
+							_NclDestroyObj((NclObj)tmp_var1);
+							tmp_fp->func_ret_value.u.data_var = tmp_var;
+							check_ret_status = 0;
+						} else {
+							_NclDestroyObj((NclObj)data.u.data_var);
+						}
+					} else {
+						if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						}
+					}
+				} else if(the_list->the_elements[i].var_sym != NULL){
+/*
+* -----------> Not really sure about DONT_CARE <------------
+*/
+					if(the_list->the_elements[i].is_modified) {
+						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
+					} else {
+						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
+					}
+					anst_var = data_ptr->u.data_var;
+					if(the_list->the_elements[i].is_modified) {
+						if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
+							anst_var->var.att_id = data.u.data_var->var.att_id;
+							_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+						} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
+	
+							_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+							anst_var->var.att_id = -1;
+						} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
+							_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+							anst_var->var.att_id = data.u.data_var->var.att_id;
+							_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+						}
+						for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
+							if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+								_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+								anst_var->var.coord_vars[j] = -1;
+							
+						
+							} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+								anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+								_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+					
+							} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
+								_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+								anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+								_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+							} 
+							anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
+						}
+	
+/*
+* AssignVarVar only assigns values not atts, coords or dimensions
+*/
+						_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
+					}
+					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+
+					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+	/* data better be a variable otherwise something is majorly hosed */
+	/* Here the object is available to be forced into a temporary variable */
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							tmp_var = _NclVarNclCreate(
 								NULL,
@@ -1521,214 +1697,109 @@ if(the_list != NULL) {
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
 							check_ret_status = 0;
+							
 					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
-						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						if(tmp_var1->var.att_id != -1) 
-							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(j = 0; j< tmp_var1->var.n_dims; j++) {
-							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
-								coord_ids[j] = tmp_coord_var->obj.id;
-							} else {
-								coord_ids[j] = -1;
+							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+							if(tmp_var1->var.att_id != -1) 
+								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+							for(j = 0; j< tmp_var1->var.n_dims; j++) {
+								if(tmp_var1->var.coord_vars[j] != -1) {
+									tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+									coord_ids[j] = tmp_coord_var->obj.id;
+								} else {
+									coord_ids[j] = -1;
+								}
 							}
-						}
-						tmp_var = _NclVarNclCreate(
-							NULL,
-							tmp_var1->obj.class_ptr,
-							tmp_var1->obj.obj_type,
-							tmp_var1->obj.obj_type_mask,
-							NULL,
-							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
-							tmp_var1->var.dim_info,
-							(tmp_att == NULL ? -1:tmp_att->obj.id),
-							coord_ids,
-							RETURNVAR,
-							NULL,
-							TEMPORARY
-							);
-						_NclDestroyObj((NclObj)tmp_var1);
-						tmp_fp->func_ret_value.u.data_var = tmp_var;
-						check_ret_status = 0;
+							tmp_var = _NclVarNclCreate(
+								NULL,
+								tmp_var1->obj.class_ptr,
+								tmp_var1->obj.obj_type,
+								tmp_var1->obj.obj_type_mask,
+								NULL,
+								_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+								tmp_var1->var.dim_info,
+								(tmp_att == NULL ? -1:tmp_att->obj.id),
+								coord_ids,
+								RETURNVAR,
+								NULL,
+								TEMPORARY
+								);
+							_NclDestroyObj((NclObj)tmp_var1);
+							tmp_fp->func_ret_value.u.data_var = tmp_var;
+							check_ret_status = 0;
 					} else {
-						_NclDestroyObj((NclObj)data.u.data_var);
-					}
-				} else {
-					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
-					}
-				}
-			} else if(the_list->the_elements[i].var_sym != NULL){
-/*
-* -----------> Not really sure about DONT_CARE <------------
-*/
-				if(the_list->the_elements[i].is_modified) {
-					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
-				} else {
-					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
-				}
-				anst_var = data_ptr->u.data_var;
-				if(the_list->the_elements[i].is_modified) {
-					if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
-						anst_var->var.att_id = data.u.data_var->var.att_id;
-						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
-
-						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						anst_var->var.att_id = -1;
-					} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
-						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						anst_var->var.att_id = data.u.data_var->var.att_id;
-						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					}
-					for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
-						if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-							anst_var->var.coord_vars[j] = -1;
-						
-						
-						} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-				
-						} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
-							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-						} 
-						anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-					}
-
-/*
-* AssignVarVar only assigns values not atts, coords or dimensions
-*/
-					_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
-				}
-				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
-
-				if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
-/* data better be a variable otherwise something is majorly hosed */
-/* Here the object is available to be forced into a temporary variable */
-						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						tmp_var = _NclVarNclCreate(
-							NULL,
-							tmp_var1->obj.class_ptr,
-							tmp_var1->obj.obj_type,
-							tmp_var1->obj.obj_type_mask,
-							NULL,
-							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
-							tmp_var1->var.dim_info,
-							tmp_var1->var.att_id,
-							tmp_var1->var.coord_vars,
-							RETURNVAR,
-							NULL,
-							TEMPORARY
-							);
-						_NclDestroyObj((NclObj)tmp_var1);
-						tmp_fp->func_ret_value.u.data_var = tmp_var;
-						check_ret_status = 0;
-						
-				} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
-						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						if(tmp_var1->var.att_id != -1) 
-							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(j = 0; j< tmp_var1->var.n_dims; j++) {
-							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
-								coord_ids[j] = tmp_coord_var->obj.id;
-							} else {
-								coord_ids[j] = -1;
-							}
-						}
-						tmp_var = _NclVarNclCreate(
-							NULL,
-							tmp_var1->obj.class_ptr,
-							tmp_var1->obj.obj_type,
-							tmp_var1->obj.obj_type_mask,
-							NULL,
-							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
-							tmp_var1->var.dim_info,
-							(tmp_att == NULL ? -1:tmp_att->obj.id),
-							coord_ids,
-							RETURNVAR,
-							NULL,
-							TEMPORARY
-							);
-						_NclDestroyObj((NclObj)tmp_var1);
-						tmp_fp->func_ret_value.u.data_var = tmp_var;
-						check_ret_status = 0;
-				} else {
 /*
 * Since convert to local doesn't create a new symbol a status
 * check is required here
 */
-					if(data.u.data_var->obj.status != PERMANENT) {
-						_NclDestroyObj((NclObj)data.u.data_var);
+						if(data.u.data_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)data.u.data_var);
+						}
 					}
-				}
-			} else {
+				} else {
 /*
 * In this situation the variable is a return value which isn't attached to a symbol
 */
-				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
 
-				if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
-						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						tmp_var = _NclVarNclCreate(
-							NULL,
-							tmp_var1->obj.class_ptr,
-							tmp_var1->obj.obj_type,
-							tmp_var1->obj.obj_type_mask,
-							NULL,
-							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
-							tmp_var1->var.dim_info,
-							tmp_var1->var.att_id,
-							tmp_var1->var.coord_vars,
-							RETURNVAR,
-							NULL,
-							TEMPORARY
-							);
-						_NclDestroyObj((NclObj)tmp_var1);
-						tmp_fp->func_ret_value.u.data_var = tmp_var;
-						check_ret_status = 0;
-						
-				} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
-						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						if(tmp_var1->var.att_id != -1) 
-							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(j = 0; j< tmp_var1->var.n_dims; j++) {
-							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
-								coord_ids[j] = tmp_coord_var->obj.id;
-							} else {
-								coord_ids[j] = -1;
+							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+							tmp_var = _NclVarNclCreate(
+								NULL,
+								tmp_var1->obj.class_ptr,
+								tmp_var1->obj.obj_type,
+								tmp_var1->obj.obj_type_mask,
+								NULL,
+								(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+								tmp_var1->var.dim_info,
+								tmp_var1->var.att_id,
+								tmp_var1->var.coord_vars,
+								RETURNVAR,
+								NULL,
+								TEMPORARY
+								);
+							_NclDestroyObj((NclObj)tmp_var1);
+							tmp_fp->func_ret_value.u.data_var = tmp_var;
+							check_ret_status = 0;
+							
+					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+							if(tmp_var1->var.att_id != -1) 
+								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+							for(j = 0; j< tmp_var1->var.n_dims; j++) {
+								if(tmp_var1->var.coord_vars[j] != -1) {
+									tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
+									coord_ids[j] = tmp_coord_var->obj.id;
+								} else {
+									coord_ids[j] = -1;
+								}
 							}
+							tmp_var = _NclVarNclCreate(
+								NULL,
+								tmp_var1->obj.class_ptr,
+								tmp_var1->obj.obj_type,
+								tmp_var1->obj.obj_type_mask,
+								NULL,
+								_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+								tmp_var1->var.dim_info,
+								(tmp_att == NULL ? -1:tmp_att->obj.id),
+								coord_ids,
+								RETURNVAR,
+								NULL,
+								TEMPORARY
+								);
+							_NclDestroyObj((NclObj)tmp_var1);
+							tmp_fp->func_ret_value.u.data_var = tmp_var;
+							check_ret_status = 0;
+					} else {
+						if(data.u.data_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)data.u.data_var);
 						}
-						tmp_var = _NclVarNclCreate(
-							NULL,
-							tmp_var1->obj.class_ptr,
-							tmp_var1->obj.obj_type,
-							tmp_var1->obj.obj_type_mask,
-							NULL,
-							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
-							tmp_var1->var.dim_info,
-							(tmp_att == NULL ? -1:tmp_att->obj.id),
-							coord_ids,
-							RETURNVAR,
-							NULL,
-							TEMPORARY
-							);
-						_NclDestroyObj((NclObj)tmp_var1);
-						tmp_fp->func_ret_value.u.data_var = tmp_var;
-						check_ret_status = 0;
-				} else {
-					if(data.u.data_var->obj.status != PERMANENT) {
-						_NclDestroyObj((NclObj)data.u.data_var);
 					}
 				}
-			}
+			} 
 		} else if((the_list->the_elements[i].p_type == VALUE_P)&&(data.u.data_obj != NULL)) {
 			if(data.kind == NclStk_VAR) { 
 /*

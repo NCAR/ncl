@@ -18,6 +18,7 @@
 #include "FileSupport.h"
 #include "NclMdInc.h"
 #include "NclCoordVar.h"
+#include "NclCallBacksI.h"
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -346,8 +347,32 @@ struct _NclObjRec *parent;
         return(NhlWARNING);
 
 }
+static NhlErrorTypes InitializeFileClass(
+#if NhlNeedProto
+void
+#endif
+);
 
+static void * FileObtainCallData
+#if NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+	NclFileClassInfo *tmp = NclMalloc(sizeof(NclFileClassInfo));
+	NclFile file = (NclFile)obj;
+	
+	tmp->obj.obj_id = obj->obj.id;
+	tmp->obj.obj_type = NCLFile;
+	tmp->file.fname = file->file.fname;
+	tmp->file.fpath = file->file.fpath;
+	tmp->file.wr_status = file->file.wr_status;
+	return((void*)tmp);
 
+}
 
 NclFileClassRec nclFileClassRec = {
 	{	
@@ -358,13 +383,14 @@ NclFileClassRec nclFileClassRec = {
 		(NclGenericFunction)FileDestroy,
 		(NclSetStatusFunction)NULL,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeFileClass,
 		(NclAddParentFunction)FileAddParent,
 		(NclDelParentFunction)FileDelParent,
 		(NclPrintFunction) FilePrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   FileObtainCallData
 	},
 	{
 		FileVarRepValue,
@@ -392,6 +418,20 @@ NclFileClassRec nclFileClassRec = {
 };
 
 NclObjClass nclFileClass = (NclObjClass)&nclFileClassRec;
+
+static NhlErrorTypes InitializeFileClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_File,
+		(NclObjClass)&nclFileClassRec
+	);
+	return(NhlNOERROR);
+}
 
 static void AddAttInfoToList
 #if	NhlNeedProto
@@ -1746,6 +1786,9 @@ int rw_status;
 		NclFree((void*)name_list);
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not get attribute names for file (%s), no attributes added ",NrmQuarkToString(path));
+	}
+	if(theclass == NULL) {
+		_NclCallCallBacks((NclObj)file_out,CREATED);
 	}
 	return(file_out);
 }

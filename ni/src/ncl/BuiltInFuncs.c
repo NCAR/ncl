@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.16 1995-05-23 15:53:04 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.17 1995-06-03 00:45:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1328,10 +1328,12 @@ NhlErrorTypes _NclIDelete
 				case FILEVARSUBSEL:
 					sub_sel = 1;
 					break;
+				case PARAM:
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Deletion of parameters to functions and procedures is not allowed in NCL");
+					return(NhlFATAL);
 				case NORMAL:
 				case COORD:
 				case FILEVAR: 
-				case PARAM:
 				case RETURNVAR:
 				case HLUOBJ :
 				default:
@@ -1348,6 +1350,9 @@ NhlErrorTypes _NclIDelete
 * sequence. Changing it to UNDEF should do the trick though
 */
 				_NclChangeSymbolType(thesym,UNDEF);
+				data.kind = NclStk_NOVAL;
+				data.u.data_obj = NULL;
+				_NclPutRec(thesym,&data);
 			}
 		} else {
 			var = NULL;
@@ -1364,7 +1369,6 @@ NhlErrorTypes _NclIDelete
 	data.kind = NclStk_NOVAL;
 	data.u.data_obj = NULL;
 	return(_NclPutArg(data,0,1));
-	
 }
 
 

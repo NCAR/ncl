@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.2 1995-05-23 15:54:07 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.3 1995-06-03 00:45:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1439,7 +1439,11 @@ NclScalar *new_missing;
                 NULL));
 }
 
-
+static NhlErrorTypes InitializenclfileDataClass(
+#if NhlNeedProto
+void
+#endif
+);
 
 NclMultiDValnclfileDataClassRec nclMultiDValnclfileDataClassRec = {
 	{
@@ -1450,13 +1454,14 @@ NclMultiDValnclfileDataClassRec nclMultiDValnclfileDataClassRec = {
 /* NclGenericFunction destroy; 	*/	MultiDVal_nclfile_Destroy,
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	InitializenclfileDataClass,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 	/* NclPrintFunction print; 	*/	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclMultiDValhluDup,
@@ -1500,6 +1505,20 @@ NclMultiDValnclfileDataClassRec nclMultiDValnclfileDataClassRec = {
 };
 
 NclObjClass nclMultiDValnclfileDataClass = (NclObjClass)&nclMultiDValnclfileDataClassRec;
+
+static NhlErrorTypes InitializenclfileDataClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_MultiDValnclfileData,
+		(NclObjClass)&nclMultiDValnclfileDataClassRec
+	);
+	return(NhlNOERROR);
+}
 
 
 struct _NclMultiDValDataRec * _NclMultiDValnclfileDataCreate

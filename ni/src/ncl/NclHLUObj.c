@@ -7,6 +7,8 @@
 #include <errno.h>
 #include "NclHLUObj.h"
 #include "HLUSupport.h"
+#include "NclCallBacksI.h"
+
 #ifdef MAKEAPI
 extern void _NclAddToDelList(
 #if	NhlNeedProto
@@ -201,6 +203,35 @@ FILE * fp;
 	nclfprintf(fp,"%s\t%s\t%d", name,cname,hlu_ptr->hlu.hlu_id);
 }
 
+static NhlErrorTypes InitializeHLUObjClass(
+#if	NhlNeedProto
+void
+#endif
+);
+
+
+static void *HLUObjObtainCallData
+#if NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+	NclHLUObjClassInfo *tmp = NclMalloc(sizeof(NclHLUObjClassInfo));
+	NclHLUObj hlu = (NclHLUObj)obj;
+
+	tmp->obj.obj_id = obj->obj.id;
+	tmp->obj.obj_type = NCLHLUObj;
+	tmp->hluobj.hlu_id = hlu->hlu.hlu_id;
+	tmp->hluobj.parent_hluobj_id = hlu->hlu.parent_hluobj_id;
+	tmp->hluobj.class_ptr = hlu->hlu.class_ptr;
+	tmp->hluobj.hlu_name = NrmStringToQuark(NhlName(hlu->hlu.hlu_id));
+
+	return((void*)tmp);
+	
+}
 
 
 NclHLUObjClassRec nclHLUObjClassRec = {
@@ -212,13 +243,14 @@ NclHLUObjClassRec nclHLUObjClassRec = {
 /* NclGenericFunction destroy; 	*/	HLUObjDestroy,
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	InitializeHLUObjClass,
 		(NclAddParentFunction)HLUObjAddParent,
                 (NclDelParentFunction)HLUObjDelParent,
 	/* NclPrintFunction print; 	*/	HLUObjPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   HLUObjObtainCallData
 	},
 	{
 /* foo; 	*/	DelHLUChild,
@@ -228,7 +260,19 @@ NclHLUObjClassRec nclHLUObjClassRec = {
 
 NclObjClass nclHLUObjClass = (NclObjClass)&nclHLUObjClassRec;
 
-
+static NhlErrorTypes InitializeHLUObjClass
+#if  NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_HLUObj,
+		(NclObjClass)&nclHLUObjClassRec		
+	);
+	return(NhlNOERROR);
+}
 struct _NclHLUObjRec * _NclHLUObjCreate
 #if	NhlNeedProto
 (NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlClass class_ptr)
@@ -262,6 +306,9 @@ NhlClass class_ptr;
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);
+	}
+	if(theclass == NULL) {
+		_NclCallCallBacks((NclObj)tmp,CREATED);
 	}
 	return(tmp);
 }

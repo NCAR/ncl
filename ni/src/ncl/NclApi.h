@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.8 1995-05-23 15:53:23 ethan Exp $
+ *      $Id: NclApi.h,v 1.9 1995-06-03 00:45:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -134,11 +134,25 @@ NclApiDataList* /*tmp;*/
 #endif
 );
 
+typedef union _NclApiScalar {
+        double  doubleval;
+        float   floatval;
+        int     intval;
+        long    longval;
+        short   shortval;
+        char    charval;
+        string  stringval;
+        byte    byteval;
+        logical logicalval;
+        obj     objval;
+}NclApiScalar;
+
+
 struct _NclExtValueRec {
 	int type;
 	int constant;
 	void *value;
-	NclScalar missing;
+	NclApiScalar missing;
 	int elem_size;
 	int totalelements;
 	int n_dims;

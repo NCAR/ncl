@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.15 1995-05-23 15:54:23 ethan Exp $
+ *      $Id: NclVar.c,v 1.16 1995-06-03 00:46:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,8 @@
 #include "AttSupport.h"
 #include "VarSupport.h"
 #include "NclCoordVar.h"
+#include "NclCallBacksI.h"
+
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto
 	struct _NclVarRec * /* self */,
@@ -191,7 +193,18 @@ struct _NclVarRec * /*storage*/
 #endif
 );
 
+static NhlErrorTypes InitializeVarClass(
+#if NhlNeedProto
+void
+#endif
+);
 
+static void * VarObtainCallData(
+#if NhlNeedProto
+NclObj /*obj*/,
+unsigned int /* type */
+#endif
+);
 NclVarClassRec nclVarClassRec = {
 	{
 		"NclVarClass",
@@ -201,13 +214,14 @@ NclVarClassRec nclVarClassRec = {
 		(NclGenericFunction)VarDestroy,
 		(NclSetStatusFunction)NULL /*VarSetStatus*/,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeVarClass,
 		(NclAddParentFunction)VarAddParent,
                 (NclDelParentFunction)VarDelParent,
 /* NclPrintFunction print */	VarPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   VarObtainCallData
 	},
 	{
 /* NclRepValueFunc rep_val */		VarValRep,
@@ -237,6 +251,43 @@ NclVarClassRec nclVarClassRec = {
 
 NclObjClass nclVarClass = (NclObjClass)&nclVarClassRec;
 
+static void *VarObtainCallData
+#if NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+	NclVarClassInfo  *tmp = NclMalloc(sizeof(NclVarClassInfo));
+	NclVar var = (NclVar)obj;
+	int i;
+	
+	tmp->obj.obj_id = obj->obj.id;
+	tmp->obj.obj_type = NCLVar;
+	tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+	tmp->var.var_quark = var->var.var_quark;
+	tmp->var.n_dims = var->var.n_dims;
+	for ( i = 0; i < var->var.n_dims; i++) {
+		tmp->var.dim_sizes[i] = var->var.dim_info[i].dim_size;
+		tmp->var.dim_quarks[i] = var->var.dim_info[i].dim_quark;
+	}
+	return((void*)tmp);
+}
+static NhlErrorTypes InitializeVarClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_Var,
+		(NclObjClass)&nclVarClassRec
+	);
+	return(NhlNOERROR);
+}
 
 
 static struct _NclDataRec *	VarValRead
@@ -591,6 +642,10 @@ NclStatus status)
 		}
 	}
 	_NclAddParent(_NclGetObj(var_out->var.thevalue_id),(NclObj)var_out);
+	if(class_ptr == nclVarClass) {
+		_NclCallCallBacks((NclObj)var_out,CREATED);
+	}
+	
 	return(var_out);
 }
 

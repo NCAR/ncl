@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.41 1995-05-23 15:53:12 ethan Exp $
+ *      $Id: Execute.c,v 1.42 1995-06-03 00:45:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3560,9 +3560,9 @@ NclExecuteReturnStatus _NclExecute
 		}
 		if(estatus < NhlINFO) {
 			if(*fptr == NULL) {
-				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occured at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
+				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
 			} else {
-				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occured at or near line %d in file %s\n", *lptr, *fptr);
+				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d in file %s\n", *lptr, *fptr);
 			}
 			if(estatus < NhlWARNING) {
 /*

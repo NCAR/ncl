@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.14 1995-04-01 00:54:38 ethan Exp $
+ *      $Id: DataSupport.c,v 1.15 1995-06-03 00:45:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,167 @@
 #include "NclMdInc.h"
 #include "parser.h"
 #include "OpsList.h"
+#include "DataSupport.h"
 
-extern NhlErrorTypes _NclGetCoordClosestIndex
+
+typedef struct _ClassPointerList {
+	NclObjTypes obj_type;
+	NclObjClass obj_class;	
+	struct _ClassPointerList *next;
+}ClassPointerList;
+
+ClassPointerList *clist = NULL;
+
+void _NclRegisterClassPointer
+#if NhlNeedProto
+(NclObjTypes obj_type, NclObjClass obj_class)
+#else
+(obj_type, obj_class)
+NclObjTypes obj_type;
+NclObjClass obj_class;
+#endif
+{
+	ClassPointerList *tmp;
+
+	tmp = NclMalloc(sizeof(ClassPointerList));
+
+	tmp->obj_type = obj_type;
+	tmp->obj_class = obj_class;
+	if(clist == NULL) {
+		tmp->next = NULL;
+		clist = tmp;
+	} else {
+		tmp->next = clist;
+		clist = tmp;
+	}
+	return;
+}
+
+NclObjClass _NclObjTypeToPointer
+#if NhlNeedProto
+(NclObjTypes obj_type)
+#else
+(obj_type)
+NclObjTypes obj_type;
+#endif
+{
+	ClassPointerList *step;
+
+	step = clist;
+
+	while(step != NULL) {
+		if(step->obj_type == obj_type) {
+			return(step->obj_class);
+		} else {
+			step = step->next;
+		}
+	}
+	return(NULL);
+}
+
+NhlErrorTypes _NclRegisterCallback
+#if     NhlNeedProto
+(NclObjTypes class_type, unsigned int callback_type, void *callback_function,void *call_backdata)
+#else
+(class_type, callback_type, callback_function,call_backdata)
+NclObjTypes class_type;
+unsigned int callback_type;
+void *callback_function;
+void *call_backdata;
+#endif
+{
+	NclObjClass  oc = NULL;
+	NclCallBackList *cl = NULL;
+
+	oc = _NclObjTypeToPointer(class_type);
+	if(oc != NULL) {
+		cl = NclMalloc(sizeof(NclCallBackList));
+		switch(callback_type) {
+		case CREATED:
+			cl->next = oc->obj_class.create_callback;
+			oc->obj_class.create_callback = cl;
+			break;
+		case DESTROYED:
+			cl->next = oc->obj_class.delete_callback;
+			oc->obj_class.delete_callback = cl;
+			break;
+		case MODIFIED:
+			cl->next = oc->obj_class.modify_callback;
+			oc->obj_class.modify_callback = cl;
+			break;
+		default:
+			return(NhlFATAL);
+		}
+		cl->func = (NclCallBack)callback_function;
+		cl->user_data = call_backdata;
+		return(NhlNOERROR);
+	} else {
+		return(NhlFATAL);
+	}
+}
+
+void * _NclObtainCallData
+#if     NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+	NclObjClass oc = NULL;
+
+	oc = obj->obj.class_ptr;
+
+	if(oc->obj_class.obtain_calldata != NULL) {
+		return((*oc->obj_class.obtain_calldata)(obj,type));
+	} else {
+		return(NULL);
+	}
+}
+
+
+NhlErrorTypes _NclCallCallBacks
+#if     NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+	NclCallBackList *cl = NULL;
+	NclObjClass oc = NULL;
+	void *call_data;
+	NhlErrorTypes ret = NhlNOERROR,ret1;
+
+	oc = obj->obj.class_ptr;	
+	switch(type) {
+	case CREATED:
+		call_data  = _NclObtainCallData(obj,CREATED);
+		cl = oc->obj_class.create_callback;
+		break;
+	case MODIFIED:
+		call_data  = _NclObtainCallData(obj,MODIFIED);
+		cl = oc->obj_class.modify_callback;
+		break;
+	case DESTROYED:
+		call_data  = _NclObtainCallData(obj,DESTROYED);
+		cl = oc->obj_class.delete_callback;
+		break;
+	}
+	while(cl != NULL) {
+		ret1 = (*(NclCallBack*)cl->func)(call_data,cl->user_data);
+		if(ret1 < ret) {	
+			ret = ret1;
+		}
+		cl = cl->next;
+	}
+	return(ret);
+}
+
+
+NhlErrorTypes _NclGetCoordClosestIndex
 #if     NhlNeedProto
 (NclMultiDValData coord_md, void * ind_val, long* ind)
 #else
@@ -92,7 +251,7 @@ long* finish;
 }
 
 
-extern void _NclInitDataClasses
+void _NclInitDataClasses
 #if     NhlNeedProto
 (void)
 #else
@@ -474,6 +633,7 @@ void _NclDestroyObj
 #endif
 {
 	NclObjClass oc;
+	_NclCallCallBacks(obj,DESTROYED);
 
 	if(obj == NULL)  {
 		return;
@@ -1049,7 +1209,7 @@ struct _NclObjRec* parent;
 }
 
 
-extern int _NclGetObjRefCount
+int _NclGetObjRefCount
 #if	NhlNeedProto
 (int the_id)
 #else
@@ -1068,7 +1228,7 @@ extern int _NclGetObjRefCount
 }
 
 
-extern char* _NclBasicDataTypeToName
+char* _NclBasicDataTypeToName
 #if	NhlNeedProto
 (NclBasicDataTypes dt)
 #else
@@ -1118,7 +1278,7 @@ NclBasicDataTypes dt;
 	return(NULL);
 }
 
-extern NclBasicDataTypes _NclPromoteType
+NclBasicDataTypes _NclPromoteType
 #if	NhlNeedProto
 (NclBasicDataTypes dt)
 #else

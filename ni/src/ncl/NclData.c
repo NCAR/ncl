@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.6 1995-05-23 15:53:29 ethan Exp $
+ *      $Id: NclData.c,v 1.7 1995-06-03 00:45:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,12 @@ NclStatus /* requested */
 #endif
 );
 
+static NhlErrorTypes InitializeObjClass(
+#if NhlNeedProto
+void
+#endif
+);
+
 NclObjClassRec nclObjClassRec = {
 	{
 		"NclObjClass",
@@ -43,19 +49,38 @@ NclObjClassRec nclObjClassRec = {
 		(NclGenericFunction)NULL,
 		(NclSetStatusFunction)ObjSetStatus,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeObjClass,
 		(NclAddParentFunction)NULL,
 		(NclDelParentFunction)NULL,
 /* NclPrintFunction      print; 	*/ 	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	}
 };
 
 NclObjClass nclObjClass = (NclObjClass)&nclObjClassRec;
 
+static NhlErrorTypes InitializeObjClass
+#if  NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_Obj,
+		(NclObjClass)&nclObjClassRec
+	);
+	return(NhlNOERROR);
+}
 
+static NhlErrorTypes NclDataInitializeClass(
+#if	NhlNeedProto
+void
+#endif
+);
 static NhlErrorTypes NclDataInitializePart(
 #if	NhlNeedProto
 NclObjClass	/*self*/
@@ -71,10 +96,14 @@ NclDataClassRec nclDataClassRec = {
 		(NclGenericFunction)NULL,
 		(NclSetStatusFunction)NULL,
 		NclDataInitializePart,
-		NULL,
+		NclDataInitializeClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
                 (NclPrintFunction)NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclCopyFunction      dup; 	 	*/ 	NULL,
@@ -109,6 +138,19 @@ NclDataClassRec nclDataClassRec = {
 
 NclObjClass nclDataClass = (NclObjClass)&nclDataClassRec;
 
+static NhlErrorTypes NclDataInitializeClass
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_Data,
+		(NclObjClass)&nclDataClassRec
+	);
+	return(NhlNOERROR);
+}
 static NhlErrorTypes NclDataInitializePart
 #if	NhlNeedProto
 (NclObjClass self)

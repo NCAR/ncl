@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.13 1995-05-23 15:53:55 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.14 1995-06-03 00:45:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1859,6 +1859,11 @@ static void MultiDValDestroy
         return;
 }
 
+static NhlErrorTypes MultiDValClassInitialize(
+#if NhlNeedProto
+void
+#endif
+);
 
 NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 	{
@@ -1869,13 +1874,14 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 /* NclGenericFunction destroy; 	*/	MultiDValDestroy,
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	MultiDValClassInitialize,
 		(NclAddParentFunction)MultiDValAddParent,
                 (NclDelParentFunction)MultiDValDelParent,
 	/* NclPrintFunction print; 	*/	MultiDValPrint	,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCallData  obtain_calldata*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	MultiDValDup,
@@ -2014,6 +2020,22 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 };
 
 NclObjClass nclMultiDValDataClass = (NclObjClass)&nclMultiDValDataClassRec;
+
+static NhlErrorTypes MultiDValClassInitialize
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_MultiDValData,
+		(NclObjClass)&nclMultiDValDataClassRec
+	);
+	return(NhlNOERROR);
+}
+
+
 
 
 struct _NclMultiDValDataRec * _NclCreateMultiDVal

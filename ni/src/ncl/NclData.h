@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.6 1995-05-23 15:53:31 ethan Exp $
+ *      $Id: NclData.h,v 1.7 1995-06-03 00:45:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -102,9 +102,9 @@ typedef struct _NclDataRec *(*NclCopyFunction)(
 #endif
 );
 
-typedef void *(*NclCallBack)(
+typedef NhlErrorTypes (*NclCallBack)(
 #if	NhlNeedProto
-void* 	/*obj_ref*/, /* This is really a pointer to NclApiDataList*  */
+void* 	/*obj_ref*/, /*   */
 void*	/*user_data*/
 #endif
 );
@@ -115,13 +115,18 @@ typedef struct _NclCallBackList {
 	struct _NclCallBackList *next;
 }NclCallBackList;
 
+typedef void *(*NclObtainCallDataFunc)(
+#if NhlNeedProto
+NclObj	/* obj */,
+unsigned int /* type */
+#endif
+);
+
 typedef struct _NclObjClassPart {	
 	char 	*class_name;
 	unsigned int obj_size;
 	struct _NclObjClassRec *super_class;
 	int	inited;
-	
-
 	
 	NclGenericFunction	destroy;
 	NclSetStatusFunction	set_status;
@@ -134,6 +139,7 @@ typedef struct _NclObjClassPart {
 	NclCallBackList		*create_callback;
 	NclCallBackList		*delete_callback;
 	NclCallBackList		*modify_callback;
+	NclObtainCallDataFunc	obtain_calldata;
 }NclObjClassPart;
 
 typedef struct _NclObjClassRec{

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.34 1995-04-05 16:18:12 haley Exp $
+#      $Id: yMakefile,v 1.35 1995-06-03 00:46:02 ethan Exp $
 #
 #########################################################################
 #									#
@@ -53,7 +53,7 @@ DEPLIBS		=
 #else
 DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
 #endif
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB)
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB) 
 SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
@@ -72,7 +72,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h
+			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
+			NclCallBacksI.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclBuiltInSupport.h
@@ -104,7 +105,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c
+			HLUFunctions.c 
 
 FSRCS		=	fortranio.f
 FOBJS		=	fortranio.o
@@ -137,7 +138,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o
+			HLUFunctions.o 
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
@@ -156,6 +157,7 @@ CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
 #
 # yacc and lex dependancies
 #
+
 
 ioapi.o : io.c
 	$(CC) -c $(API_DEFS) $(CFLAGS) io.c -o ioapi.o
@@ -267,3 +269,4 @@ NclTypeRule(string,$(STR_OP_TMPL))
 NclTypeRule(obj,$(NUM_OP_TMPL))
 NclTypeRule(char,$(NUM_OP_TMPL))
 NclTypeRule(byte,$(NUM_OP_TMPL))
+

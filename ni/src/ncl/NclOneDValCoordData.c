@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.2 1995-05-23 15:54:11 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.3 1995-06-03 00:45:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -463,7 +463,11 @@ NclScalar *new_missing;
 	return((NclData)output_md);
 }
 
-
+static NhlErrorTypes InitializeOneDClass(
+#if NhlNeedProto
+void
+#endif
+);
 
 NclOneDValCoordDataClassRec nclOneDValCoordDataClassRec = {
 	{
@@ -474,13 +478,14 @@ NclOneDValCoordDataClassRec nclOneDValCoordDataClassRec = {
 /* NclGenericFunction destroy; 	*/	NULL,
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	InitializeOneDClass,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 	/* NclPrintFunction print; 	*/	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclOneDValCoordDup,
@@ -523,6 +528,19 @@ NclOneDValCoordDataClassRec nclOneDValCoordDataClassRec = {
 
 NclObjClass nclOneDValCoordDataClass = (NclObjClass)&nclOneDValCoordDataClassRec;
 
+static NhlErrorTypes InitializeOneDClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_OneDValCoordData,
+		(NclObjClass)&nclOneDValCoordDataClassRec
+	);
+	return(NhlNOERROR);
+}
 
 struct _NclMultiDValDataRec * _NclOneDValCoordDataCreate
 #if	NhlNeedProto

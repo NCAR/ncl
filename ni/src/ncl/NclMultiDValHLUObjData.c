@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.7 1995-05-23 15:54:02 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.8 1995-06-03 00:45:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1539,7 +1539,11 @@ NclScalar *new_missing;
                 NULL));
 }
 
-
+static NhlErrorTypes InitializeHLUObjDataClass(
+#if NhlNeedProto
+void
+#endif
+);
 
 NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 	{
@@ -1550,13 +1554,14 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 /* NclGenericFunction destroy; 	*/	MultiDVal_HLUObj_Destroy,
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	InitializeHLUObjDataClass,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 	/* NclPrintFunction print; 	*/	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclMultiDValhluDup,
@@ -1600,6 +1605,20 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 };
 
 NclObjClass nclMultiDValHLUObjDataClass = (NclObjClass)&nclMultiDValHLUObjDataClassRec;
+
+static NhlErrorTypes InitializeHLUObjDataClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_MultiDValHLUObjData,
+		(NclObjClass)&nclMultiDValHLUObjDataClassRec
+	);
+	return(NhlNOERROR);
+}
 
 
 struct _NclMultiDValDataRec * _NclMultiDValHLUObjDataCreate

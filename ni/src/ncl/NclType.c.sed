@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c.sed,v 1.6 1995-05-23 15:54:18 ethan Exp $
+ *      $Id: NclType.c.sed,v 1.7 1995-06-03 00:45:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,8 @@ NclTypeDATATYPEClassRec nclTypeDATATYPEClassRec = {
 		NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclObjTypes type 			*/ Ncl_TypeDATATYPE,

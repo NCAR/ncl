@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.4 1995-05-23 15:53:51 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.5 1995-06-03 00:45:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,20 @@
 #include "Machine.h"
 #include "DataSupport.h"
 #include "NclHLUVar.h"
+#include "NclCallBacksI.h"
 
+static NhlErrorTypes InitializeHLUVarClass(
+#if  NhlNeedProto
+void
+#endif
+);
+
+static void * HLUVarObtainCallData(
+#if NhlNeedProto
+NclObj /* obj */, 
+unsigned int /* type */
+#endif
+);
 
 NclHLUVarClassRec nclHLUVarClassRec = {
 	{
@@ -40,13 +53,14 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 		(NclGenericFunction)NULL,
 		(NclSetStatusFunction)NULL /*VarSetStatus*/,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeHLUVarClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 /* NclPrintFunction print */	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   HLUVarObtainCallData
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,
@@ -79,8 +93,45 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 
 NclObjClass nclHLUVarClass = (NclObjClass)&nclHLUVarClassRec;
 
+static void *HLUVarObtainCallData
+#if NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+        NclHLUVarClassInfo  *tmp = NclMalloc(sizeof(NclHLUVarClassInfo));
+        NclHLUVar var = (NclHLUVar)obj;
+        int i;
+        
+        tmp->obj.obj_id = obj->obj.id;
+        tmp->obj.obj_type = NCLHLUVar;
+        tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+        tmp->var.var_quark = var->var.var_quark;
+        tmp->var.n_dims = var->var.n_dims;
+        for ( i = 0; i < var->var.n_dims; i++) {
+                tmp->var.dim_sizes[i] = var->var.dim_info[i].dim_size;
+                tmp->var.dim_quarks[i] = var->var.dim_info[i].dim_quark;
+        }
+	tmp->hlu.foo = 0;
+        return((void*)tmp);
+}
 
 
+static NhlErrorTypes InitializeHLUVarClass
+#if NhlNeedProto
+(void)
+#else 
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_HLUVar,
+		(NclObjClass)&nclHLUVarClassRec
+	);
+}
 
 
 struct _NclVarRec *_NclHLUVarCreate
@@ -124,6 +175,9 @@ NclStatus status)
 		_NclVarCreate((NclVar)hvar,theclass,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	} else {
 		_NclVarCreate((NclVar)hvar,(NclObjClass)&nclHLUVarClassRec,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
+	}
+	if(theclass == NULL) {
+		_NclCallCallBacks((NclObj)hvar,CREATED);
 	}
 	return((NclVar)hvar);
 }

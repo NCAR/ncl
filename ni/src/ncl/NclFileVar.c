@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.7 1995-05-23 15:53:43 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.8 1995-06-03 00:45:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #include "DataSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
+#include "NclCallBacksI.h"
 
 static int FileVarIsACoord(
 #if NhlNeedProto
@@ -154,6 +155,16 @@ FILE *fp;
 	return;
 }
 
+static NhlErrorTypes InitializeFileVarClass(
+#if	NhlNeedProto
+void
+#endif
+);
+static void *FileVarObtainCallData(
+#if NhlNeedProto
+NclObj /* obj */, unsigned int /*type*/
+#endif
+);
 NclFileVarClassRec nclFileVarClassRec = {
 	{
 		"NclFileVarClass",
@@ -163,13 +174,14 @@ NclFileVarClassRec nclFileVarClassRec = {
 		(NclGenericFunction)FileVarDestroy,
 		(NclSetStatusFunction)NULL /*VarSetStatus*/,
 		(NclInitPartFunction)NULL,
-		(NclInitClassFunction)NULL,
+		(NclInitClassFunction)InitializeFileVarClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 /* NclPrintFunction print */	FileVarPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
-/* NclCallBackList* modify_callback*/   NULL
+/* NclCallBackList* modify_callback*/   NULL,
+/* NclObtainCall obtain_calldata*/   NULL
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,
@@ -202,6 +214,46 @@ NclFileVarClassRec nclFileVarClassRec = {
 
 NclObjClass nclFileVarClass = (NclObjClass)&nclFileVarClassRec;
 
+static void *FileVarObtainCallData
+#if NhlNeedProto
+(NclObj obj, unsigned int type)
+#else
+(obj, type)
+NclObj obj;
+unsigned int type;
+#endif
+{
+        NclFileVarClassInfo  *tmp = NclMalloc(sizeof(NclFileVarClassInfo));
+        NclFileVar var = (NclFileVar)obj;
+        int i;
+
+        tmp->obj.obj_id = obj->obj.id;
+        tmp->obj.obj_type = NCLFileVar;
+        tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+        tmp->var.var_quark = var->var.var_quark;
+        tmp->var.n_dims = var->var.n_dims;
+        for ( i = 0; i < var->var.n_dims; i++) {
+                tmp->var.dim_sizes[i] = var->var.dim_info[i].dim_size;
+                tmp->var.dim_quarks[i] = var->var.dim_info[i].dim_quark;
+        }
+        tmp->file.foo = 0;
+        return((void*)tmp);
+}
+
+
+static NhlErrorTypes InitializeFileVarClass
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclRegisterClassPointer(
+		Ncl_FileVar,
+		(NclObjClass)&nclFileVarClassRec
+	);
+	return(NhlNOERROR);
+}
 
 
 
@@ -250,6 +302,9 @@ char *var_name,NclStatus status)
 		_NclVarCreate((NclVar)fvar,(NclObjClass)&nclFileVarClassRec,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	}
 	_NclAddParent((NclObj)thefile,(NclObj)fvar);
+	if(theclass == NULL) {
+		_NclCallCallBacks((NclObj)fvar,CREATED);
+	}
 	return((NclVar)fvar);
 }
 
