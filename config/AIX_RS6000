@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.9 1995-02-23 16:05:16 haley Exp $
+ *      $Id: AIX_RS6000,v 1.10 1996-05-16 21:59:55 haley Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #define	FCompiler	xlf
 #define Cstatic		-bnso
 #define Cdynamic	-bso
-#define	CtoFLibraries	-lm -lxlf
+#define	CtoFLibraries	-lm -lxlf90
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
