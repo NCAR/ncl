@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.18 1998-11-20 21:51:28 dbrown Exp $
+ *      $Id: hlupage.c,v 1.19 1998-12-16 23:51:35 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/xinteract.h>
+#include <ncarg/ngo/stringutil.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -31,10 +32,207 @@
 #include <Xm/ToggleBG.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/hlu/View.h>
-#include <ncarg/hlu/DataItem.h>
+#include <ncarg/hlu/DataComm.h>
+#include <ncarg/hlu/CoordArrays.h>
+#include <ncarg/hlu/ScalarField.h>
+#include <ncarg/hlu/VectorField.h>
+
 
 static NrmQuark QFillValue = NrmNULLQUARK;
+static NrmQuark QString = NrmNULLQUARK;
+static NrmQuark QGenArray = NrmNULLQUARK;
+static NrmQuark QInteger = NrmNULLQUARK;
+
+typedef struct _ResData {
+	int  res_count;
+	char **res;
+	NhlPointer values[16];
+	NrmQuark types[16];
+} ResData;
+
+
+static NhlBoolean
+CoordItem(
+       NgDataProfileRec *profile,
+       int index
+)
+{
+	int i;
+	for (i = 0; i < profile->n_coords; i++) {
+		if (profile->coord_ix[i] == index)
+			return True;
+	}
+	return False;
+}
+
+static NhlBoolean SetVarData
+(
+       brHluPageRec	*rec,
+       NgVarData	in_var
+)
+{
+	int		i,j,cix,var_dim_count = 0;
+	NhlBoolean	dims_supplied[32];
+	int 		primary_data_item = 0;
+	int		last_dim = -1;
+	int		max_dims;
+	NclApiDataList          *dl;
+	NclApiVarInfoRec	*vinfo = NULL;	
+
+	if (in_var->qfile)
+		dl = NclGetFileVarInfo(in_var->qfile,in_var->qvar);
+	else	
+                dl = NclGetVarInfo(in_var->qvar);
+
+	if (dl)
+		vinfo = dl->u.var;
+
+	if (! vinfo) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "invalid file %s or variable %s",
+			   NrmQuarkToString(in_var->qfile),
+			   NrmQuarkToString(in_var->qvar)));
+                rec->has_input_data = False;
+		return False;
+	}
+	if (! rec->data_profile) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "internal error: data profile not set"));
+                rec->has_input_data = False;
+		return False;
+	}
+	primary_data_item = rec->data_profile->master_data_ix;
+			  
+	if (rec->data_profile->n_dataitems > rec->var_data_alloced) {
+		for (i = rec->var_data_alloced;
+		     i < rec->data_profile->n_dataitems; i++) {
+			rec->var_data[i] = NhlMalloc(sizeof(NgVarDataRec));
+			rec->var_data[i]->dims_alloced = 0;
+			rec->var_data[i]->start = NULL;
+			rec->var_data[i]->finish = NULL;
+			rec->var_data[i]->stride = NULL;
+			rec->var_data[i]->dl = NULL;
+		}
+		rec->var_data_alloced = rec->data_profile->n_dataitems;
+	}
+	for (i = 0; i < rec->data_profile->n_dataitems; i++) {
+		if (rec->var_data[i]->dl) {
+			NclFreeDataList(rec->var_data[i]->dl);
+			rec->var_data[i]->dl = NULL;
+		}
+		rec->var_data[i]->ndims = 0;
+		rec->var_data[i]->qfile = NrmNULLQUARK;
+		rec->var_data[i]->qvar = NrmNULLQUARK;
+		rec->var_data[i]->data_ix = i;
+	}
+	for (i = 0; i < vinfo->n_dims; i++) {
+		if (abs((in_var->finish[i] - in_var->start[i]) /
+		    in_var->stride[i]) > 0) {
+			dims_supplied[i] = True;
+			var_dim_count++;
+			last_dim = i;
+		}
+		else {
+			dims_supplied[i] = False;
+		}
+	}
+	max_dims = abs(rec->data_profile->n_datadims[primary_data_item]);
+	if (rec->data_profile->n_datadims[primary_data_item] == 0)
+		;
+	else if (var_dim_count < 
+		 rec->data_profile->n_datadims[primary_data_item]) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "insufficient dimensionality for %s",
+			   rec->data_profile->data_names[0]));
+                rec->has_input_data = False;
+                return False;
+	}
+	else if (var_dim_count > max_dims) {
+		int dims_used = 0;
+		for (i = vinfo->n_dims - 1; i >= 0; i--) {
+			if (dims_supplied[i]) {
+				if (dims_used < max_dims)
+					dims_used++;
+				else 
+					dims_supplied[i] = False;
+			}
+		}
+		var_dim_count = dims_used;
+	}
+	for (i = 0; i < rec->data_profile->n_dataitems; i++) {
+		NgVarData vdata = rec->var_data[i];
+		if (rec->data_profile->qvars[i] == NrmNULLQUARK)
+			continue;
+		if (i == rec->data_profile->master_data_ix ||
+		    ! CoordItem(rec->data_profile,i)) {
+			if (vinfo->n_dims > vdata->dims_alloced) {
+				int size = vinfo->n_dims * sizeof(int);
+				vdata->start = NhlRealloc(vdata->start,size);
+				vdata->finish = NhlRealloc(vdata->finish,size);
+				vdata->stride = NhlRealloc(vdata->stride,size);
+				vdata->dims_alloced = var_dim_count;
+			}
+			vdata->ndims = vinfo->n_dims;
+			for (j = 0; j < vinfo->n_dims; j++) {
+				if (! dims_supplied[j]) {
+					vdata->finish[j] = vdata->start[j] =
+						in_var->start[j];
+					vdata->stride[j] = 1;
+					continue;
+				}
+				vdata->start[j] = in_var->start[j];
+				vdata->finish[j] = in_var->finish[j];
+				vdata->stride[j] = in_var->stride[j];
+			}
+			vdata->qfile = rec->data_profile->qfiles[i];
+			vdata->qvar = rec->data_profile->qvars[i];
+			vdata->data_ix = i;
+			if (i == primary_data_item)
+				vdata->dl = dl;
+			vdata->type = vdata->qfile ? FILEVAR : NORMAL;
+			continue;
+		}
+		if (last_dim < 0 ||
+		    vinfo->coordnames[last_dim] <= NrmNULLQUARK)
+			continue;
+		var_dim_count = 1;
+		if (var_dim_count > vdata->dims_alloced) {
+			int size = var_dim_count * sizeof(int);
+			vdata->start = NhlRealloc(vdata->start,size);
+			vdata->finish = NhlRealloc(vdata->finish,size);
+			vdata->stride = NhlRealloc(vdata->stride,size);
+			vdata->dims_alloced = var_dim_count;
+		}
+		vdata->ndims = 1;
+		vdata->start[0] = in_var->start[last_dim];
+		vdata->finish[0] = in_var->finish[last_dim];
+		vdata->stride[0] = in_var->stride[last_dim];
+		if (in_var->qfile) {
+			vdata->qfile = in_var->qfile;
+			vdata->qvar = vinfo->coordnames[last_dim];
+			vdata->type = FILEVAR;
+		}
+		else {
+			/* 
+			 * cheating here: for reading var coordinates,
+			 * use qfile for the variable name, qvar for the
+			 * coordinate variable
+			 */
+			vdata->qfile = in_var->qvar;
+			vdata->qvar = vinfo->coordnames[last_dim];
+			vdata->type = COORD;
+		}
+		vdata->data_ix = i;
+		last_dim--;
+		while (last_dim > -1) {
+			if (dims_supplied[last_dim])
+				break;
+			last_dim--;
+		}
+	}
+        rec->has_input_data = True;
+	return True;
+}
 
 static void HluPageFocusNotify (
         brPage *page,
@@ -97,243 +295,420 @@ DestroyCB
         return;
 }
 
-static NhlErrorTypes
-ManageScalarField
+static void GetDataValue
+(
+	NgVarData 	vdata,
+	NhlPointer 	*value,
+	NrmQuark 	*type,
+	NhlBoolean 	preview
+)
+{
+	int i;
+	NclApiVarInfoRec *vinfo;
+	NclExtValueRec *val = NULL;
+	NhlString type_str;
+
+
+	*value = NULL;
+	*type = NrmNULLQUARK;
+
+	if (! (vdata && vdata->qvar))
+		return;
+
+	if (! preview) {
+		char buf[1024];
+
+		switch (vdata->type) {
+		case FILEVAR:
+			sprintf(buf,"%s->%s(",
+				NrmQuarkToString(vdata->qfile),
+				NrmQuarkToString(vdata->qvar));
+			break;
+		case COORD:
+			sprintf(buf,"%s&%s(",
+				NrmQuarkToString(vdata->qfile),
+				NrmQuarkToString(vdata->qvar));
+			break;
+		case NORMAL:
+			sprintf(buf,"%s(",
+				NrmQuarkToString(vdata->qvar));
+			break;
+		default:
+			fprintf(stderr,"invalid var type\n");
+			return;
+		}
+		for (i = 0; i < vdata->ndims; i++) {
+			if (abs((vdata->finish[i] - vdata->start[i]) /
+				vdata->stride[i]) < 1) {
+				sprintf(&buf[strlen(buf)],"%d,",
+					vdata->start[i]);
+				continue;
+			}
+	                sprintf(&buf[strlen(buf)],"%d:%d:%d,",
+                        vdata->start[i],vdata->finish[i],vdata->stride[i]);
+		}
+		/* backing up 1 to get rid of last comma */
+		sprintf(&buf[strlen(buf)-1],")");
+		*value = NhlMalloc(strlen(buf) + 1);
+		strcpy((char *)*value,buf);
+		*type = QString;
+		return;
+	}
+        switch (vdata->type) {
+            case FILEVAR:
+                    val = NclReadFileVar
+                            (vdata->qfile,vdata->qvar,
+                             vdata->start,vdata->finish,vdata->stride);
+                    break;
+            case COORD:
+                    val = NclReadVarCoord
+                            (vdata->qfile,vdata->qvar,
+                             vdata->start,vdata->finish,vdata->stride);
+                    break;
+            case NORMAL:
+                    val = NclReadVar
+                            (vdata->qvar,
+                             vdata->start,vdata->finish,vdata->stride);
+                    break;
+            default:
+                    fprintf(stderr,"invalid var type\n");
+		    return;
+        }
+	if (! val)
+		return;
+
+	type_str = NgHLUTypeString(val->type);
+	*value = _NhlCreateGenArray(val->value,type_str,val->elem_size,
+				   val->n_dims,val->dim_sizes,!val->constant);
+	NclFreeExtValue(val);
+	*type = QGenArray;
+
+	return;
+}
+	
+
+static void GetFillValue
+(
+	brHluPageRec	*rec,
+	int		index,
+	NhlPointer *value
+)
+{
+	int i;
+	NclApiVarInfoRec *vinfo;
+	NclApiDataList   *dl = NULL;
+        static NrmQuark QFillValue = NrmNULLQUARK;
+	NclExtValueRec *val = NULL;
+	char *lvalue;
+	NrmQuark qfile,qvar;
+
+	qfile = rec->data_profile->qfiles[index];
+	qvar = rec->data_profile->qvars[index];
+        if (QFillValue == NrmNULLQUARK) {
+                QFillValue = NrmStringToQuark("_FillValue"); 
+        }
+	if (rec->var_data[index]->dl) {
+		vinfo = rec->var_data[index]->dl->u.var;
+	}
+	else {
+		if (qfile > NrmNULLQUARK)
+			dl = NclGetFileVarInfo(qfile,qvar);
+		else	
+			dl = NclGetVarInfo(qvar);
+		vinfo = dl->u.var;
+	}
+
+	*value = NULL;
+	for (i = 0; i < vinfo->n_atts; i++) {
+                if (vinfo->attnames[i] == QFillValue)
+                        break;
+        }
+	if (i == vinfo->n_atts)
+		return;
+
+	if (qfile >  NrmNULLQUARK)
+                val = NclReadFileVarAtt(qfile,qvar,QFillValue);
+        else 
+                val = NclReadVarAtt(qvar,QFillValue);
+
+        if (val) {
+                lvalue = (NhlPointer) NclTypeToString(val->value,val->type);
+	        *value = NhlMalloc(strlen(lvalue)+1);
+		strcpy(*value,lvalue);
+                if (val->constant != 0)
+                        NclFree(val->value);
+                NclFreeExtValue(val);
+        }
+	if (dl)
+		 NclFreeDataList(dl);
+	return;
+}
+ 
+static void PreviewResList
+(
+        int		setrl_id,
+        NhlPointer	data
+        )
+{
+	ResData *res_data = (ResData *) data;
+	int i;
+
+	for (i = 0; i < res_data->res_count; i++) {
+		if (! res_data->values[i])
+			continue;
+		NhlRLSet(setrl_id,res_data->res[i],
+			 NrmQuarkToString(res_data->types[i]),
+			 res_data->values[i]);
+	}
+	return;
+}
+
+static void AddResList
+(
+        int		nclstate,
+        NhlPointer	data,
+        int		block_id
+        )
+{
+	ResData *res_data = (ResData *) data;
+	NhlBoolean quote[16];
+	int i,lcount = 0;
+	NhlString res[16],values[16];
+
+	for (i = 0; i < res_data->res_count; i++) {
+		if (res_data->values[i]) {
+			res[lcount] = res_data->res[i];
+			values[lcount] = (NhlString) res_data->values[i];
+			quote[lcount] = False;
+			lcount++;
+		}
+	}
+
+        NgNclVisBlockAddResList(nclstate,block_id,lcount,res,values,quote);
+
+	return;
+}
+
+static Boolean ManageDataObj
 (
         brPage	*page,
-	char	*sfname,
- 	NhlBoolean create,
-	char	*fillvalue
+	NgClassType type,
+        int	data_ix
 )
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	char buf[256];
-	char *fillvaluestring = "";
-        char sfbuf[256];
-        int i,dimcount = 0;
-        NgVarPageOutput *ditem = rec->var_data[0];
-        int block_id;
-        NhlString res_names[] =
-        { "sfDataArray", "sfMissingValueV" };
-        NhlString values[2];
-        NhlBoolean quote[2] = { False, False };
-        int res_count = 1;
+	int *order;
+	int def_order[] = { -1,-1,-1,-1,-1,-1,-1,-1 };
+	int i, res_count = 0;
+	NhlBoolean preview = rec->state == _hluNOTCREATED;
+	int hlu_id;
+	char *class_name;
+	NhlErrorTypes ret = NhlNOERROR;
+	ResData res_data;
+	NgSetResProc	resproc; 
+	NhlPointer	resdata;
+	char *suffix;
 
-/*
- * Start vis block
- */
-	if (create) {
-                block_id = NgNclVisBlockBegin
-                        (rec->nclstate,_NgCREATE,sfname,"defaultapp",
-                         "scalarFieldClass");
-	}
-        else if (!rec->new_data)
-                return NhlNOERROR;
-	else {
-                block_id = NgNclVisBlockBegin
-                        (rec->nclstate,_NgSETVAL,sfname,NULL,NULL);
-	}
-/*
- * Set up res list
- */
-        if (ditem->qfile > NrmNULLQUARK)
-                sprintf(sfbuf,"%s->%s(",
-                        NrmQuarkToString(ditem->qfile),
-                        NrmQuarkToString(ditem->qvar));
-                else
-                        sprintf(sfbuf,"%s(",NrmQuarkToString(ditem->qvar));
-        for (i=ditem->ndims-1; i>=0;i--) {
-                if (abs((ditem->finish[i] - ditem->start[i])
-                        /ditem->stride[i])< 1)
-                        continue;
-                dimcount++;
-        }
-        if (dimcount < 2) {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "insufficient dimensionality"));
-                return NhlFATAL;
-        }
-        for (i = 0; i < ditem->ndims; i++) {
-                if ((ditem->finish[i] - ditem->start[i])
-                    /ditem->stride[i] == 0) {
-                        sprintf(&sfbuf[strlen(sfbuf)],"%d,",
-                                ditem->start[i]);
-                        continue;
-                }
-                else if (dimcount > 2) {
-                        sprintf(&sfbuf[strlen(sfbuf)],"%d,",
-                                ditem->start[i]);
-                        dimcount--;
-                        continue;
-                }
-                sprintf(&sfbuf[strlen(sfbuf)],"%d:%d:%d,",
-                        ditem->start[i],ditem->finish[i],ditem->stride[i]);
-        }
-	/* backing up 1 to get rid of last comma */
-        sprintf(&sfbuf[strlen(sfbuf)-1],")");
-        values[0] = sfbuf;
-
-	if (fillvalue) {
-                res_count = 2;
-                values[1] = fillvalue;
-	}
-        NgNclVisBlockAddResList(rec->nclstate,block_id,res_count,
-                                res_names,values,quote);
+	char *sfres[] = {
+		"sfDataArray",
+		"sfXArray",
+		"sfYArray",
+		"sfMissingValueV",
+		NULL
+	};
+	int sforder[] = { 0,1,2,0,-1 };  
+	int vc_sforder[] = { 2,-1,-1,2,-1 }; 
         
-        NgNclVisBlockEnd(rec->nclstate,block_id);
+	char *vfres[] = {
+		"vfUDataArray",
+		"vfVDataArray",
+		"vfXArray",
+		"vfYArray",
+		"vfMissingUValueV",
+		"vfMissingVValueV",
+		NULL
+	};
+	int vforder[] = { 0,1,2,3,0,1 };
+	int vc_vforder[] = { 0,1,3,4,0,1 }; 
 
-	return NhlNOERROR;
+	char *cares[] = {
+		"caYArray",
+		"caXArray",
+		"caYMissingV",
+		"caXMissingV",
+		NULL
+	};
+	int caorder[] = { 0,1,0,1 } ;
+
+	memset(res_data.values,0,16 * sizeof(NhlPointer));
+	memset(res_data.types,0,16 * sizeof(NrmQuark));
+	order = def_order;
+		
+	switch (type) {
+	case _NgSCALARFIELD:
+		res_data.res = sfres;
+		switch (rec->data_profile->type) {
+		case _NgCONTOURPLOT:
+		case _NgSCALARFIELD:
+			order = sforder;
+			break;
+		case _NgVECTORPLOT:
+			order = vc_sforder;
+			break;
+		}
+		class_name = "scalarFieldClass";
+		suffix = "sf";
+		break;
+	case _NgVECTORFIELD:
+		res_data.res = vfres;
+		switch (rec->data_profile->type) {
+		case _NgVECTORPLOT:
+			order = vc_vforder;
+			break;
+		case _NgSTREAMLINEPLOT:
+		case _NgVECTORFIELD:
+			order = vforder;
+			break;
+		}
+		class_name = "vectorFieldClass";
+		suffix = "vf";
+		break;
+	case _NgCOORDARRAY:
+		res_data.res = cares;
+		order = caorder;
+		class_name = "coordArraysClass";
+		suffix = "ca";
+		break;
+	}
+
+	for (i=0; res_data.res[i] != NULL; i++) {
+		NgVarData vdata;
+		if (order[i] < 0)
+			continue;
+		vdata = rec->var_data[order[i]];
+		if (vdata->qvar <= NrmNULLQUARK)
+			continue;
+		if (strstr(res_data.res[i],"Missing")) {
+			GetFillValue(rec,order[i],&res_data.values[i]);
+			res_data.types[i] = QString;
+			continue;
+		}
+		GetDataValue(vdata,
+			     &res_data.values[i],&res_data.types[i],preview);
+	}
+	res_data.res_count = i;
+
+	if (preview) {
+		NgPreviewResProc	resproc;
+		char buf[256];
+                char *name;
+
+		sprintf(buf,"%s_%s",NrmQuarkToString(page->qvar),suffix);
+                name = NgNclGetSymName(rec->nclstate,buf,True);
+                
+                    /* create the NCL graphic variable using this name now
+                       in order that it won't be "stolen" before the hlu
+                       object actually gets created */
+                
+                sprintf(buf,"%s = new(1,graphic)\n",name);
+                (void)NgNclSubmitBlock(rec->nclstate,buf);
+
+		resproc = PreviewResList;
+		resdata = (NhlPointer) &res_data;
+			
+		ret = NgCreatePreviewGraphic
+			(rec->go->base.id,&hlu_id,name,NULL,
+			 class_name,1,&resproc,&resdata);
+		if (! hlu_id || ret < NhlWARNING)
+			return False;
+		rec->data_objects[data_ix] = NrmStringToQuark(name);
+		rec->data_ids[data_ix] = hlu_id;
+
+                for (i = 0; i< res_data.res_count; i++) {
+                        if (res_data.values[i]) {
+				if (res_data.types[i] == QGenArray)
+					NhlFreeGenArray(res_data.values[i]);
+				else
+					NhlFree(res_data.values[i]);
+			}
+                }
+		return True;
+	}
+	
+	resproc = AddResList;
+	resdata = (NhlPointer) &res_data;
+        if (rec->state == _hluPREVIEW) {
+		ret = NgCreateGraphic
+			(rec->go->base.id,&hlu_id,
+			 NrmQuarkToString(rec->data_objects[data_ix]),NULL,
+			 class_name,1,&resproc,&resdata);
+#if DEBUG_HLUPAGE
+		fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
+#endif        
+		if (! hlu_id || ret < NhlWARNING) {
+			char buf[512];
+			sprintf(buf,"%s = %s@_FillValue\n",
+				NrmQuarkToString(page->qvar),
+				NrmQuarkToString(page->qvar));
+			(void)NgNclSubmitBlock(rec->nclstate,buf);
+			return ret;
+		}
+		rec->data_ids[data_ix] = hlu_id;
+        }
+        else {
+		ret = NgUpdateGraphic
+			(rec->go->base.id,
+			 NrmQuarkToString(rec->data_objects[data_ix]),
+			 1,&resproc,&resdata);
+		if (ret < NhlWARNING)
+			return False;
+	}
+        for (i = 0; i< res_data.res_count; i++) {
+                if (res_data.values[i]) {
+                            /* these values should all be malloced strings */
+                        NhlFree(res_data.values[i]);
+                }
+        }
+        
+	return True;
 }
 
-/*
- * this routine is temporary: note that creates preview objects using the
- * the ncl interface. Wrong!!! 
- */
-static Boolean ManagePlotObj
+
+static NhlBoolean ManagePlotObj
 (
         brPage	*page,
-	char 	**dataitemlist,
-	int	dataitemcount,
         int	wk_id
 )
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-        NgDataSinkRec *dsp = rec->public.data_info;
-	char buf[512];
-	char *cp = buf;
-	char title[] = 
-		"\"tiMainString\" : \"%s\"\n";
-        int wid;
-        Dimension h,w;
-	char cellsizestring[16];
-        int block_id;
-        int res_count = 0;
-	NhlLayer wl;
-	NgWksObj	wks;
+	ResData 	res_data,app_res_data;
+	NhlBoolean preview = rec->state == _hluNOTCREATED;
+	NhlString		parent = NULL;
+	int hlu_id,i;
+        NgSetResProc	setresproc[2];
+        NhlPointer	setresdata[2],appresdata;
+	NhlErrorTypes		ret;
+	int app_id;
+	char plotstyledir[512];
         
-	char *cnlineres[] = {
+	char *cnres[] = {
 		"cnScalarFieldData",
 		NULL 
-	};
-	char *cnlinevalues[] = { 
-		NULL,
-		NULL
-	};
-
-	char *cnfillres[] = {
-		"cnScalarFieldData",
-		"cnLinesOn",
-		"cnLineLabelsOn",
-		"cnFillOn",
-		"pmLabelBarDisplayMode",
-		"vpXF",
-		NULL
-	};
-	char *cnfillvalues[] = {
-		NULL,
-		"False",
-		"False",
-		"True",
-		"\"Conditional\"",
-		"\"0.12\"",
-		NULL
-	};
-
-	char *cnrasterres[] = {
-		"cnScalarFieldData",
-		"cnLinesOn",
-		"cnLineLabelsOn",
-		"cnRasterModeOn",
-                "cnRasterSmoothingOn",
-		"pmLabelBarDisplayMode",
-		"vpXF",
-		NULL
-	};
-	char *cnrastervalues[] = {
-		NULL,
-		"False",
-		"False",
-		"True",
-                "False",
-		"\"Conditional\"",
-		"\"0.12\"",
-		NULL
-	};
-
-	char *cninterpolatedrasterres[] = {
-		"cnScalarFieldData",
-		"cnLinesOn",
-		"cnLineLabelsOn",
-		"cnRasterModeOn",
-                "cnRasterSmoothingOn",
-		"pmLabelBarDisplayMode",
-		"vpXF",
-		NULL
-	};
-	char *cninterpolatedrastervalues[] = {
-		NULL,
-		"False",
-		"False",
-		"True",
-                "True",
-		"\"Conditional\"",
-		"\"0.12\"",
-		NULL
 	};
         
 	char *stres[] = {
 		"stVectorFieldData",
 		NULL
 	};
-	char *stvalues[] = {
-		NULL,
-		NULL
-	};
 
-	char *vclineres[] = {
+	char *vcres[] = {
 		"vcVectorFieldData",
 		"vcScalarFieldData",
-		"vcMonoLineArrowColor",
-		"vcUseScalarArray",
-		"pmLabelBarDisplayMode",
-		"vpXF",
 		NULL
 	};
-	char *vclinevalues[] = {
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL
-	};
-	
-	char *vcfillres[] = {
-		"vcVectorFieldData",
-		"vcScalarFieldData",
-		"vcMonoFillArrowFillColor",
-		"vcUseScalarArray",
-		"pmLabelBarDisplayMode",
-		"vpXF",
-		"vcFillArrowsOn",
-		NULL
-	};
-	
-	char *vcfillvalues[] = {
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		"True",
-		NULL
-	};
-
-	char *xylineres[] = {
+	char *xyres[] = {
 		"xyCoordData",
 		"xyXIrregularPoints",
 		"xyYIrregularPoints",
@@ -341,266 +716,161 @@ static Boolean ManagePlotObj
 		"xyYStyle",
 		NULL
 	};
-	
-	char *xylinevalues[] = {
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL
+	char *appres[] = {
+		"appUsrDir",
+		NULL 
 	};
 	
-	char **res;
-	char **values;
-	char *copy_res[16];
-        NhlBoolean quote[16];
-        
-	int i;
-	int sv_res_count[16] = { 1, 1, 1, 1, 2, 2, 3, 3 };
 
-	switch (dsp->type) {
- 	case (int)ngLINECONTOUR:
-		res = cnlineres;
-		values = cnlinevalues;
+	memset(res_data.values,0,16 * sizeof(NhlPointer));
+	memset(res_data.types,0,16 * sizeof(NrmQuark));
+
+	switch (rec->data_profile->type) {
+	case _NgCONTOURPLOT:
+		res_data.res = cnres;
+		res_data.res_count = 1;
 		break;
-	case (int)ngFILLCONTOUR:
-		res = cnfillres;
-		values = cnfillvalues;
+	case _NgSTREAMLINEPLOT:
+		res_data.res = stres;
+		res_data.res_count = 1;
 		break;
- 	case (int)ngRASTERCONTOUR:
-		res = cnrasterres;
-		values = cnrastervalues;
+	case _NgVECTORPLOT:
+		res_data.res = vcres;
+		res_data.res_count = 2;
 		break;
- 	case (int)ngINTERPOLATEDRASTERCONTOUR:
-                res = cninterpolatedrasterres;
-		values = cninterpolatedrastervalues;
+	case _NgXYPLOT:
+		res_data.res = xyres;
+		res_data.res_count = 1;
 		break;
- 	case (int)ngSTREAMLINE:
-		res = stres;
-		values = stvalues;
-		break;
- 	case (int)ngLINEVECTOR:
-		res = vclineres;
-		values = vclinevalues;
-		break;
- 	case (int)ngFILLVECTOR:
-		res = vcfillres;
-		values = vcfillvalues;
-		break;
- 	case (int)ngLINEXY:
- 	case (int)ngSCATTERXY:
-		res = xylineres;
-		values = xylinevalues;
-		break;
-	default:
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"not supported yet"));
-		return False;
+	}
+	if (rec->public.plot_style) {
+
+#if DEBUG_HLUPAGE
+                fprintf(stderr,"plot style %s\n",rec->public.plot_style);
+#endif
+		app_res_data.res_count = 1;
+		app_res_data.res = appres;
+                if (rec->public.plot_style_dir) {
+                        strcpy(plotstyledir,"\"");
+                        strcat(plotstyledir,rec->public.plot_style_dir);
+                        strcat(plotstyledir,"\"");
+                        app_res_data.values[0] =
+                                (NhlPointer) plotstyledir;
+                }
+		else	
+			app_res_data.values[0] = 
+				(NhlPointer) "\"./plot_styles\"";
+		app_res_data.types[0] = QString;
 	}
 
-	for (i = 0; i < dataitemcount; i++) {
-		values[i] = dataitemlist[i];
+	if (preview) { 
+		NgPreviewResProc	resproc[2];
+		NhlPointer		resdata[2];
+
+		for (i = 0; i < res_data.res_count; i++) {
+			res_data.values[i] = (NhlPointer) rec->data_ids[i];
+			res_data.types[i] = QInteger;
+		}
+		if (rec->public.plot_style) {
+			NgPreviewResProc	resproc;
+
+			resproc = PreviewResList;
+			appresdata = &app_res_data;
+			ret = NgCreatePreviewGraphic
+				(rec->go->base.id,&app_id,
+				 rec->public.plot_style,NULL,"appClass",
+				 1,&resproc,&appresdata);
+			if (! app_id || ret < NhlWARNING)
+				return False;
+			res_data.res[res_data.res_count] = "objAppObj";
+			res_data.values[res_data.res_count] =
+				(NhlPointer)app_id;
+			res_data.types[res_data.res_count] = QInteger;
+			res_data.res_count++;
+		}
+		resproc[0] = PreviewResList;
+		resdata[0] = &res_data;
+		resproc[1] = NgResTreePreviewResList;
+		resdata[1] = (NhlPointer)rec->res_tree;
+
+		if (wk_id != NhlNULLOBJID)
+			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
+		ret = NgCreatePreviewGraphic
+			(rec->go->base.id,&hlu_id,
+			 NrmQuarkToString(page->qvar),parent,
+			 rec->public.class_name,2,resproc,resdata);
+		if (! hlu_id || ret < NhlWARNING)
+			return False;
+		rec->hlu_id = hlu_id;
+		if (rec->public.plot_style)
+			NgDestroyPreviewGraphic(rec->go->base.id,app_id);
+		return True;
 	}
 
-        if (rec->state == _hluNOTCREATED) {
-		char buf[512] = "_NgPreview_";
-		strcat(buf,NrmQuarkToString(page->qvar));
-                block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
-					      buf,
-                                              (NhlString)NhlName(wk_id),
-                                              rec->public.class_name);
-		for (i=0; res[i] != NULL; i++){
-                        res_count++;
-                        quote[i] = False;
-                }
-        }
-        else if (rec->state == _hluPREVIEW) {
-                block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
-                                              NrmQuarkToString(page->qvar),
-                                              (NhlString)NhlName(wk_id),
-                                              rec->public.class_name);
-		for (i=0; res[i] != NULL; i++){
-                        res_count++;
-                        quote[i] = False;
-                }
+	for (i = 0; i < res_data.res_count; i++) {
+		res_data.values[i] = 
+			(NhlPointer) NrmQuarkToString(rec->data_objects[i]);
+		res_data.types[i] = QString;
+	}
+        setresproc[0] = AddResList;
+	setresdata[0] = (NhlPointer)&res_data;
+        setresproc[1] = NgResTreeAddResList;
+        setresdata[1] = (NhlPointer)rec->res_tree;
+	
+        if (rec->state == _hluPREVIEW) {
+		if (rec->public.plot_style) {
+			NgSetResProc	resproc;
+
+			resproc = AddResList;
+			appresdata = &app_res_data;
+			ret = NgCreateGraphic
+				(rec->go->base.id,&app_id,
+				 rec->public.plot_style,NULL,"appClass",
+				 1,&resproc,&appresdata);
+			if (! app_id || ret < NhlWARNING)
+				return False;
+
+			res_data.res[res_data.res_count] = "objAppObj";
+			res_data.values[res_data.res_count] =
+				(NhlPointer)rec->public.plot_style;
+			res_data.types[res_data.res_count] = QString;
+			res_data.res_count++;
+		}
+		if (wk_id != NhlNULLOBJID)
+			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
+
+		ret = NgCreateGraphic
+			(rec->go->base.id,&hlu_id,
+			 NrmQuarkToString(page->qvar),parent,
+			 rec->public.class_name,2,setresproc,setresdata);
+#if DEBUG_HLUPAGE
+		fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
+#endif        
+		if (! hlu_id || ret < NhlWARNING) {
+			char buf[512];
+			sprintf(buf,"%s = %s@_FillValue\n",
+				NrmQuarkToString(page->qvar),
+				NrmQuarkToString(page->qvar));
+			(void)NgNclSubmitBlock(rec->nclstate,buf);
+			return ret;
+		}
+		rec->hlu_id = hlu_id;
+
+		if (app_id) 
+			NgDestroyGraphic(rec->go->base.id,
+					 rec->public.plot_style);
         }
         else {
-		NgViewObj	vobj;
-		NhlLayer	l = _NhlGetLayer(rec->hlu_id);
-
-		if (! l)	
+		ret = NgUpdateGraphic
+			(rec->go->base.id,NrmQuarkToString(page->qvar),
+			 2,setresproc,setresdata);
+		if (ret < NhlWARNING)
 			return False;
-	
-
-                block_id = NgNclVisBlockBegin(rec->nclstate,_NgSETVAL,
-                                              NrmQuarkToString(page->qvar),
-                                              NULL,NULL);
-#if 0                
-		for (i=0; i < sv_res_count[dsp->type]; i++) {
-                        res_count++;
-                        quote[i] = False;
-                }
-#endif                
-        }
-        NgNclVisBlockAddResList(rec->nclstate,block_id,res_count,
-                                res,values,quote);
-        NgResTreeAddResList(rec->nclstate,(NhlPointer)rec->res_tree,block_id);
-        
-        NgNclVisBlockEnd(rec->nclstate,block_id);
+	}
 
 	return True;
 }
 
-static void
-ContourCreateUpdate
-(
-        brPage		*page,
-        int		wk_id
-)
-{
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-        NgDataSinkRec *dsp = rec->public.data_info;
-	char *dataitemlist[2];
-	char *fillvalue = NULL;
-	NclApiDataList		*dl;
-	NclExtValueRec *val = NULL;
-	char *sval;
-        int i;
-        static NrmQuark QFillValue = NrmNULLQUARK;
-        NhlErrorTypes ret;
-        XmString xmstring;
-        NhlBoolean create,already_created = False;
-	char buf[512],buf1[512];
-	NhlLayer	wl = _NhlGetLayer(wk_id);
-        
-        if (QFillValue == NrmNULLQUARK) {
-                QFillValue = NrmStringToQuark("_FillValue"); 
-        }
-        rec->do_setval_cb = False;
-        
-	create = False;
-	if (rec->data_objects[0] <= NrmNULLQUARK) {
-                char *name;
-		sprintf(buf,"%s_%s",NrmQuarkToString(page->qvar),"sf");
-                name = NgNclGetSymName(rec->nclstate,buf,True);
-                
-		rec->data_objects[0] = NrmStringToQuark(name);
-		create = True;
-	}
-        
-	dataitemlist[0] = NrmQuarkToString(rec->data_objects[0]);
-        if (rec->var_data[0]->qfile > NrmNULLQUARK)
-                dl = NclGetFileVarInfo(rec->var_data[0]->qfile,
-                                       rec->var_data[0]->qvar);
-        else
-                dl = NclGetVarInfo(rec->var_data[0]->qvar);
-        for (i = 0; i < dl->u.var->n_atts; i++) {
-                if (dl->u.var->attnames[i] == QFillValue)
-                        break;
-        }
-        if (i == dl->u.var->n_atts)
-                fillvalue = NULL;
-        else if (rec->var_data[0]->qfile > NrmNULLQUARK)
-                val = NclReadFileVarAtt
-                        (rec->var_data[0]->qfile,rec->var_data[0]->qvar,
-                         dl->u.var->attnames[i]);
-        else 
-                val = NclReadVarAtt
-                        (rec->var_data[0]->qvar,dl->u.var->attnames[i]);
-        if (val) {
-                fillvalue = NclTypeToString(val->value,val->type);
-                if (val->constant != 0)
-                        NclFree(val->value);
-                NclFreeExtValue(val);
-        }
-	NclFreeDataList(dl);
-	
-	ret = ManageScalarField(page,dataitemlist[0],create,fillvalue);
-	if (fillvalue)
-		NclFree(fillvalue);
-        
-        if (ret < NhlWARNING)
-                return;
-
-        if (rec->state == _hluPREVIEW) {
-		strcpy(buf1,"_NgPreview_");
-		strcat(buf1,NrmQuarkToString(page->qvar));
-                sprintf(buf,"destroy(%s)\n",buf1);
-                (void)NgNclSubmitBlock(rec->nclstate,buf);
-        }
-        if  (! ManagePlotObj(page,dataitemlist,1,wk_id))
-                return;
-
-        switch (rec->state) {
-            case _hluNOTCREATED:
-                    rec->state = _hluPREVIEW;
-		    rec->res_tree->preview_instance = True;
-		    strcpy(buf,"_NgPreview_");
-		    strcat(buf,NrmQuarkToString(page->qvar));
-                    break;
-            case _hluPREVIEW:
-                    rec->state = _hluCREATED;
-                    rec->res_tree->preview_instance = False;
-                    
-                    xmstring = NgXAppCreateXmString
-                            (rec->go->go.appmgr,"Update");
-                    XtVaSetValues(rec->create_update,
-                                  XmNlabelString,xmstring,
-                                  NULL);
-                    NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
-		    strcpy(buf,NrmQuarkToString(page->qvar));
-                    break;
-            case _hluCREATED:
-                    already_created = True;
-                    break;
-        }
-        if (! already_created) {
-                NhlArgVal sel,user_data;
-                
-                val = NclGetHLUObjId(buf);
-                if (val->totalelements > 1)
-			NHLPERROR((NhlINFO,NhlEUNKNOWN,
-				   "var references hlu object array"));
-                rec->hlu_id = ((int*)val->value)[0];
-                NclFreeExtValue(val);
-                NhlINITVAR(sel);
-                NhlINITVAR(user_data);
-                sel.lngval = 0;
-		rec->setval_info.pid = page->id;
-		rec->setval_info.goid = page->go->base.id;
-                user_data.ptrval = &rec->setval_info;
-                rec->setval_cb = _NhlAddObjCallback
-                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjValueSet,
-                         sel,SetValCB,user_data);
-                rec->destroy_cb = _NhlAddObjCallback
-                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjDestroy,
-                         sel,DestroyCB,user_data);
-        }
-        NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
-
-        if (already_created) {
-                NgDrawGraphic(rec->go->base.id,
-                              NrmQuarkToString(page->qvar),True);
-                rec->new_data = False;
-        }
-	if (already_created &&
-	    NhlClassIsSubclass(rec->class,NhlviewClass) &&
-	    _NhlIsClass(wl,NhlxWorkstationClass)) {
-		NgWksObj	wks = NULL;
-		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
-		if (wl && draw_id) {
-			wks = (NgWksObj) wl->base.gui_data2;
-		}
-		if (wks && wks->auto_refresh) {
-			NgDrawXwkView(wks->wks_wrap_id,draw_id,True);
-		}
-	}
-
-        rec->do_setval_cb = True;
-        
-	return;
-}
 static int
 CreatePreviewInstance
 (
@@ -616,19 +886,52 @@ CreatePreviewInstance
         XtPointer	resdata[2];
         NhlString	parent = NULL;
 
-        resproc[0] = NgResTreePreviewResList;
-        resdata[0] = (NhlPointer)rec->res_tree;
-        if (wk_id != NhlNULLOBJID)
-                parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
-        
-        ret = NgCreatePreviewGraphic
-                (rec->go->base.id,&hlu_id,
-                 NrmQuarkToString(page->qvar),parent,
-                 rec->public.class_name,1,resproc,resdata);
-        if (ret > NhlFATAL)
-                return hlu_id;
+        if (rec->data_profile && rec->has_input_data) {
+		NgClassType type;
 
-        return ret;
+		switch (rec->data_profile->type) {
+		case _NgCONTOURPLOT:
+		case _NgSCALARFIELD:
+			type = _NgSCALARFIELD;
+			break;	
+		case _NgSTREAMLINEPLOT:
+		case _NgVECTORPLOT:
+		case _NgVECTORFIELD:
+			type = _NgVECTORFIELD;
+			break;	
+		case _NgXYPLOT:
+		case _NgCOORDARRAY:
+			type = _NgCOORDARRAY;
+			break;	
+		}
+		if (! ManageDataObj(page,type,0))
+			return NhlFATAL;
+		rec->data_object_count++;
+		
+		if (rec->data_profile->type == _NgVECTORPLOT &&
+			rec->var_data[2]->qvar != NrmNULLQUARK) {
+			type = _NgSCALARFIELD;
+			if (! ManageDataObj(page,type,1))
+				return NhlFATAL;
+			rec->data_object_count++;
+		}
+		if (! ManagePlotObj(page,wk_id))
+			return NhlFATAL;
+		return rec->hlu_id;
+	}
+
+	resproc[0] = NgResTreePreviewResList;
+	resdata[0] = (NhlPointer)rec->res_tree;
+	if (wk_id != NhlNULLOBJID)
+		parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
+	ret = NgCreatePreviewGraphic
+		(rec->go->base.id,&hlu_id,
+		 NrmQuarkToString(page->qvar),parent,
+		 rec->public.class_name,1,resproc,resdata);
+        if (ret > NhlFATAL && hlu_id > NhlNULLOBJID)
+                return hlu_id;
+	else
+		return NhlFATAL;
 }
 
 static int
@@ -647,6 +950,39 @@ CreateInstance
         NhlString	parent = NULL;
 	NgWksObj	wks = NULL;
 
+        if (rec->data_profile && rec->has_input_data) {
+		NgClassType type;
+
+		switch (rec->data_profile->type) {
+		case _NgCONTOURPLOT:
+		case _NgSCALARFIELD:
+			type = _NgSCALARFIELD;
+			break;	
+		case _NgSTREAMLINEPLOT:
+		case _NgVECTORPLOT:
+		case _NgVECTORFIELD:
+			type = _NgVECTORFIELD;
+			break;	
+		case _NgXYPLOT:
+		case _NgCOORDARRAY:
+			type = _NgCOORDARRAY;
+			break;	
+		}
+		if (! ManageDataObj(page,type,0))
+			return NhlFATAL;
+		rec->data_object_count++;
+		
+		if (rec->data_profile->type == _NgVECTORPLOT &&
+			rec->var_data[2]->qvar != NrmNULLQUARK) {
+			type = _NgSCALARFIELD;
+			if (! ManageDataObj(page,type,1))
+				return NhlFATAL;
+			rec->data_object_count++;
+		}
+		if (! ManagePlotObj(page,wk_id))
+			return NhlFATAL;
+		return rec->hlu_id;
+	}
         setresproc[0] = NgResTreeAddResList;
         setresdata[0] = (NhlPointer)rec->res_tree;
 
@@ -669,6 +1005,11 @@ CreateInstance
                 return ret;
         }
         return hlu_id;
+
+/*
+ * No explicit draw on create because it is handled automatically by
+ * the ViewTree (mwin) create CB.
+ */
 }
 
 static NhlErrorTypes
@@ -678,7 +1019,7 @@ UpdateInstance
         int	wk_id
 )
 {
-        NhlErrorTypes	ret;
+        NhlErrorTypes	ret = NhlNOERROR;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         NgSetResProc	setresproc[2];
@@ -689,13 +1030,48 @@ UpdateInstance
 	if (! l)	
 		return NhlFATAL;
 
-        setresproc[0] = NgResTreeAddResList;
-        setresdata[0] = (XtPointer)rec->res_tree;
-        
-        ret = NgUpdateGraphic
-                (rec->go->base.id,NrmQuarkToString(page->qvar),
-                 1,setresproc,setresdata);
+        if (rec->data_profile && rec->has_input_data) {
+		NgClassType type;
 
+		switch (rec->data_profile->type) {
+		case _NgCONTOURPLOT:
+		case _NgSCALARFIELD:
+			type = _NgSCALARFIELD;
+			break;	
+		case _NgSTREAMLINEPLOT:
+		case _NgVECTORPLOT:
+		case _NgVECTORFIELD:
+			type = _NgVECTORFIELD;
+			break;	
+		case _NgXYPLOT:
+		case _NgCOORDARRAY:
+			type = _NgCOORDARRAY;
+			break;	
+		}
+		if (! ManageDataObj(page,type,0))
+			return NhlFATAL;
+		
+		if (rec->data_profile->type == _NgVECTORPLOT &&
+			rec->var_data[2]->qvar != NrmNULLQUARK) {
+			type = _NgSCALARFIELD;
+			if (! ManageDataObj(page,type,1))
+				return NhlFATAL;
+		}
+		if (! ManagePlotObj(page,wk_id))
+			return NhlFATAL;
+	}
+        else {
+                setresproc[0] = NgResTreeAddResList;
+                setresdata[0] = (XtPointer)rec->res_tree;
+        
+                ret = NgUpdateGraphic
+                        (rec->go->base.id,NrmQuarkToString(page->qvar),
+                         1,setresproc,setresdata);
+        }
+/*
+ * There is no auto callback for setvalues yet, so for updates the draw
+ * must occur here
+ */
 	if (NhlClassIsSubclass(rec->class,NhlviewClass) &&
 	    _NhlIsClass(wl,NhlxWorkstationClass)) {
 		NgWksObj	wks = NULL;
@@ -722,8 +1098,8 @@ CreateUpdate
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         NhlBoolean 	already_created = False;
-        int		hlu_id;
-        
+        int		i,hlu_id;
+
         rec->do_setval_cb = False;
         if (rec->state == _hluNOTCREATED) {
 		if (! rec->class) {
@@ -754,6 +1130,12 @@ CreateUpdate
                 
                 if (rec->hlu_id > NhlNULLOBJID)
                         NgDestroyPreviewGraphic(rec->go->base.id,rec->hlu_id);
+		for (i = 0; i < rec->data_object_count; i++) {
+			if (rec->data_ids[i])
+				NgDestroyPreviewGraphic
+					(rec->go->base.id,rec->data_ids[i]);
+		}
+		rec->data_object_count = 0;
                 hlu_id = CreateInstance(page,wk_id);
                 if (hlu_id <= NhlNULLOBJID) {
                         rec->hlu_id = NhlNULLOBJID;
@@ -841,13 +1223,8 @@ static void CreateUpdateCB
 #endif
         
         wk_id = GetWorkstation(page,&work_created);
-        if (pub->data_info &&
-            !strcmp(rec->public.class_name,"contourPlotClass")) {
-                ContourCreateUpdate(page,wk_id);
-        }
-        else {
-                CreateUpdate(page,wk_id);
-        }
+	CreateUpdate(page,wk_id);
+
         return;
 }
 
@@ -878,8 +1255,8 @@ static void AutoUpdateCB
 static void
 CopyVarData
 (
-        NgVarPageOutput **to_data,
-        NgVarPageOutput *from_data
+        NgVarDataRec **to_data,
+        NgVarDataRec *from_data
         )
 {
         if (! from_data) {
@@ -896,24 +1273,41 @@ CopyVarData
                 return;
         }
         if (! *to_data) {
-                (*to_data) = NhlMalloc(sizeof(NgVarPageOutput));
-                (*to_data)->ndims = 0;
+                (*to_data) = NhlMalloc(sizeof(NgVarDataRec));
+                (*to_data)->ndims = (*to_data)->dims_alloced = 0;
                 (*to_data)->start = NULL;
                 (*to_data)->finish = NULL;
                 (*to_data)->stride = NULL;
         }
-        if (from_data->ndims > (*to_data)->ndims) {
+        if (from_data->ndims > (*to_data)->dims_alloced) {
                 (*to_data)->start = NhlRealloc
                         ((*to_data)->start,from_data->ndims * sizeof(long));
                 (*to_data)->finish = NhlRealloc
                         ((*to_data)->finish,from_data->ndims * sizeof(long));
                 (*to_data)->stride = NhlRealloc
                         ((*to_data)->stride,from_data->ndims * sizeof(long));
+		(*to_data)->dims_alloced = from_data->ndims;
         }
+	
+	(*to_data)->type = from_data->type;
         (*to_data)->qfile = from_data->qfile;
         (*to_data)->qvar = from_data->qvar;
         (*to_data)->ndims = from_data->ndims;
         (*to_data)->data_ix = from_data->data_ix;
+
+	if (! from_data->dl) {
+		(*to_data)->dl = NULL;
+	}
+	else {
+		NclApiDataList          *dl;
+		if (from_data->qfile)
+			dl = NclGetFileVarInfo(from_data->qfile,
+					       from_data->qvar);
+		else	
+			dl = NclGetVarInfo(from_data->qvar);
+		(*to_data)->dl = dl;
+	}
+
         memcpy((*to_data)->start,
                from_data->start,(*to_data)->ndims * sizeof(long));
         memcpy((*to_data)->finish,
@@ -922,43 +1316,6 @@ CopyVarData
                from_data->stride,(*to_data)->ndims * sizeof(long));
 
         return;
-}
-
-static NhlBoolean
-UpdateVarData
-(
-        brHluPageRec	*rec,
-        int 		var_ix,
-        NgVarPageOutput *var_data
-        )
-{
-        NgVarPageOutput *lvar_data;
-        NhlBoolean update = False;
-        int i;
-
-        if (! rec->var_data[var_ix] ||
-            var_data->ndims != rec->var_data[var_ix]->ndims ||
-            var_data->qfile != rec->var_data[var_ix]->qfile ||
-            var_data->qvar != rec->var_data[var_ix]->qvar) {
-                CopyVarData(&rec->var_data[var_ix],var_data);
-                return True;
-        }
-        
-        lvar_data = rec->var_data[var_ix];
-        
-        for (i = 0; i < lvar_data->ndims; i++) {
-                if (lvar_data->start[i] != var_data->start[i] ||
-                    lvar_data->finish[i] != var_data->finish[i] ||
-                    lvar_data->stride[i] != var_data->stride[i]) {
-                        update = True;
-                        break;
-                }
-        }
-        if (update) {
-                CopyVarData(&rec->var_data[var_ix],var_data);
-                return True;
-        }
-        return False;
 }
 
 static void HluPageInputNotify (
@@ -970,25 +1327,26 @@ static void HluPageInputNotify (
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
-        NgVarPageOutput	*var_data = (NgVarPageOutput *)output_data;
+        NgVarDataRec	*var_data = (NgVarDataRec *)output_data;
         int		wk_id;
         NhlBoolean 	work_created,non_contour = False;
         
-                
+        
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in hlu page input notify\n");
 #endif
-
         switch (output_page_type) {
             case _brNULL:
                     non_contour = True;
                     break;
             case _brREGVAR:
             case _brFILEVAR:
-                    if (! UpdateVarData(rec,var_data->data_ix,var_data))
-                            return;
-                    NgUpdateDataSinkGrid
-                            (rec->data_sink_grid,page->qvar,pub->data_info);
+		    if (! SetVarData(rec,var_data))
+			    return;
+                    NgUpdateDataSourceGrid
+                            (rec->data_source_grid,
+			     page->qvar,rec->data_profile);
+		    rec->has_input_data = True;
                     rec->new_data = True;
                     break;
             default:
@@ -1000,10 +1358,8 @@ static void HluPageInputNotify (
                 
                 wk_id = GetWorkstation(page,&work_created);
                 
-                if (non_contour)
-                        CreateUpdate(page,wk_id);
-                else
-                        ContourCreateUpdate(page,wk_id);
+		CreateUpdate(page,wk_id);
+
         }
         
         return;
@@ -1055,18 +1411,52 @@ DeactivateHluPage
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
 
+        if (rec->setval_cb) {
+               _NhlCBDelete(rec->setval_cb);
+               rec->setval_cb = NULL;
+        }
+        if (rec->destroy_cb) {
+               _NhlCBDelete(rec->destroy_cb);
+               rec->destroy_cb = NULL;
+        }
+        
         rec->state = _hluNOTCREATED;
         rec->hlu_id = NhlNULLOBJID;
         rec->do_auto_update = False;
-        rec->public.data_info = NULL;
+        rec->public.data_prof.name = NULL;
         rec->public.class_name = NULL;
+        rec->public.plot_style = NULL;
+	rec->public.plot_style_dir = NULL;
         rec->new_data = True;
+        rec->has_input_data = False;
 
-	if (rec->res_tree)
+	if (rec->res_tree) {
 		XtUnmanageChild(rec->res_tree->tree);
+	}
         
-        for (i=0; i <  8; i++)
+        for (i=0; i <  8; i++) {
                 rec->data_objects[i] = NrmNULLQUARK;
+		rec->data_ids[i] = NhlNULLOBJID;
+	}
+        for (i = 0; i < rec->var_data_alloced; i++) {
+                if (rec->var_data[i]) {
+                        NgVarDataRec *vdata = rec->var_data[i];
+                        if (vdata->start)
+                                NhlFree(vdata->start);
+                        if (vdata->finish)
+                                NhlFree(vdata->finish);
+                        if (vdata->stride)
+                                NhlFree(vdata->stride);
+			if (vdata->dl) {
+				NclFreeDataList(vdata->dl);
+			}
+                        NhlFree(vdata);
+                }
+		rec->var_data[i] = NULL;
+        }
+	rec->data_profile = NULL;
+	rec->var_data_alloced = 0;
+	rec->data_object_count = 0;
         rec->activated = False;
 }
 
@@ -1078,26 +1468,28 @@ static void DestroyHluPage
 	brHluPageRec	*hlu_rec = (brHluPageRec *)data;
         int i,j;
 
-        NgDestroyDataSinkGrid(hlu_rec->data_sink_grid);
+        NgDestroyDataSourceGrid(hlu_rec->data_source_grid);
 
         if (! hlu_rec->var_data) {
                 NhlFree(data);
                 return;
         }
         
-        for (i = 0; i < hlu_rec->var_data_count; i++) {
+        for (i = 0; i < hlu_rec->var_data_alloced; i++) {
                 if (hlu_rec->var_data[i]) {
-                        NgVarPageOutput *vdata = hlu_rec->var_data[i];
+                        NgVarDataRec *vdata = hlu_rec->var_data[i];
                         if (vdata->start)
                                 NhlFree(vdata->start);
                         if (vdata->finish)
                                 NhlFree(vdata->finish);
                         if (vdata->stride)
                                 NhlFree(vdata->stride);
+			if (vdata->dl) {
+				NclFreeDataList(vdata->dl);
+			}
                         NhlFree(vdata);
                 }
         }
-        NhlFree(hlu_rec->var_data);
 
         if (hlu_rec->setval_cb) {
                _NhlCBDelete(hlu_rec->setval_cb);
@@ -1132,8 +1524,9 @@ AdjustHluPageGeometry
         w = 0;
         y = 0;
         h = 0;
-        if (rec->data_sink_grid) {
-                XtVaGetValues(rec->data_sink_grid->grid,
+        if (rec->data_source_grid && 
+	    XtIsManaged(rec->data_source_grid->grid)) {
+                XtVaGetValues(rec->data_source_grid->grid,
                               XmNwidth,&w,
                               XmNy,&y,
                               XmNheight,&h,
@@ -1165,7 +1558,7 @@ static NhlErrorTypes UpdateHluPage
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
-	int		hlu_id;
+	int		hlu_id,i;
         
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in updata hlu page\n");
@@ -1195,22 +1588,31 @@ static NhlErrorTypes UpdateHluPage
                 return NhlFATAL;
         }
 
-        if (pub->data_info) {
-		if (pub->data_info->n_dataitems > rec->var_data_count) {
-                	int i;
-                
-			rec->var_data = NhlRealloc
-				(rec->var_data,pub->data_info->n_dataitems *
-				 sizeof(NgVarPageOutput *));
-			for (i = rec->var_data_count;
-			     i < pub->data_info->n_dataitems; i++)
-				rec->var_data[i] = NULL;
+	if (! (NhlClassIsSubclass(rec->class,NhldataCommClass) ||
+		NhlClassIsSubclass(rec->class,NhldataItemClass))) {
+		if (XtIsManaged(rec->data_source_grid->grid))
+			XtUnmanageChild(rec->data_source_grid->grid);
+	}
+	else if (! rec->data_profile) {
+		if (pub->data_prof.name)
+			rec->data_profile = &pub->data_prof;
+	}		
+        if (rec->data_profile) {
+		if (rec->data_profile->n_dataitems > rec->var_data_alloced) {
+			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
+				rec->var_data[i] = 
+					NhlMalloc(sizeof(NgVarDataRec));
+				memset(rec->var_data[i],
+				       (char)0,sizeof(NgVarDataRec));
+			}
 		}
-		rec->var_data_count = pub->data_info->n_dataitems;
-        
-		rec->data_sink_grid->dataitems = rec->var_data;
-		NgUpdateDataSinkGrid
-			(rec->data_sink_grid,page->qvar,pub->data_info);
+		rec->var_data_alloced = rec->data_profile->n_dataitems;
+		rec->data_source_grid->dataitems = rec->var_data;
+
+		NgUpdateDataSourceGrid
+			(rec->data_source_grid,page->qvar,rec->data_profile);
+		if (! XtIsManaged(rec->data_source_grid->grid))
+			XtManageChild(rec->data_source_grid->grid);
 	}
 
 /* ResTree */
@@ -1231,9 +1633,9 @@ static NhlErrorTypes UpdateHluPage
         else {
                 rec->res_tree->preview_instance =
                         rec->state == _hluCREATED ? False : True;
+		XtManageChild(rec->res_tree->tree);
                 NgUpdateResTree
                         (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
-		XtManageChild(rec->res_tree->tree);
         }
         XtVaGetValues(pdp->pane->scroller,
                       XmNhorizontalScrollBar,&rec->res_tree->h_scroll,
@@ -1282,25 +1684,32 @@ NewHluPage
                        NgNappNclState,	&rec->nclstate,
                        NULL);
         
-        rec->data_sink_grid = NULL;
+        rec->data_source_grid = NULL;
         rec->res_tree = NULL;
         rec->create_update = NULL;
         rec->auto_update = NULL;
-        rec->var_data_count = 0;
+        rec->var_data_alloced = 0;
         rec->new_data = True;
-        rec->var_data = NULL;
+        rec->has_input_data = False;
         rec->state = _hluNOTCREATED;
         rec->do_auto_update = False;
-        rec->public.data_info = NULL;
+        rec->public.data_prof.name = NULL;
         rec->public.class_name = NULL;
+        rec->public.plot_style = NULL;
+        rec->public.plot_style_dir = NULL;
         rec->class = NULL;
         rec->hlu_id = NhlNULLOBJID;
         rec->setval_cb = NULL;
         rec->destroy_cb = NULL;
         rec->do_setval_cb = False;
+	rec->data_profile = NULL;
         
-        for (i=0; i <  8; i++)
+        for (i=0; i <  8; i++) {
+		rec->var_data[i] = NULL;
                 rec->data_objects[i] = NrmNULLQUARK;
+		rec->data_ids[i] = NhlNULLOBJID;
+	}
+	rec->data_object_count = 0;
         
 	pdp->form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,pane->folder,
@@ -1318,9 +1727,9 @@ NewHluPage
         pdp->page_focus_notify = HluPageFocusNotify;
         pdp->pane = pane;
         
-        rec->data_sink_grid = NgCreateDataSinkGrid
-                (pdp->form,page->qvar,rec->public.data_info);
-        XtVaSetValues(rec->data_sink_grid->grid,
+        rec->data_source_grid = NgCreateDataSourceGrid
+                (pdp->form,page->qvar,rec->data_profile);
+        XtVaSetValues(rec->data_source_grid->grid,
                       XmNbottomAttachment,XmATTACH_NONE,
                       XmNrightAttachment,XmATTACH_NONE,
                       NULL);
@@ -1328,7 +1737,7 @@ NewHluPage
         rec->create_update = XtVaCreateManagedWidget
                 ("Create/Update",xmPushButtonGadgetClass,pdp->form,
                  XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_sink_grid->grid,
+                 XmNtopWidget,rec->data_source_grid->grid,
                  XmNrightAttachment,XmATTACH_NONE,
                  XmNbottomAttachment,XmATTACH_NONE,
                  NULL);
@@ -1336,7 +1745,7 @@ NewHluPage
         rec->auto_update = XtVaCreateManagedWidget
                 ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
                  XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_sink_grid->grid,
+                 XmNtopWidget,rec->data_source_grid->grid,
                  XmNleftAttachment,XmATTACH_WIDGET,
                  XmNleftWidget,rec->create_update,
                  XmNrightAttachment,XmATTACH_NONE,
@@ -1370,6 +1779,9 @@ NgGetHluPage
 
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
+		QString = NrmStringToQuark(NhlTString);
+		QGenArray = NrmStringToQuark(NhlTGenArray);
+		QInteger = NrmStringToQuark(NhlTInteger);
         }
 
 	NhlVAGetValues(go->go.appmgr,
@@ -1454,18 +1866,24 @@ NgGetHluPage
                         UpdateHluPage(page);
                 return pdp;
         }
-        rec->public.data_info = copy_rec->public.data_info;
+        memcpy(&rec->public.data_prof,&copy_rec->public.data_prof,
+	       sizeof(NgDataProfileRec));
+	if (rec->public.data_prof.name) {
+		rec->data_profile = &rec->public.data_prof;
+	}
         rec->class = copy_rec->class;
         rec->public.class_name = copy_rec->public.class_name;
+        rec->public.plot_style = copy_rec->public.plot_style;
+        rec->public.plot_style_dir = copy_rec->public.plot_style_dir;
         rec->hlu_id = copy_rec->hlu_id;
         rec->state = copy_rec->state;
         
 /* ResTree */
         
         if (rec->res_tree) {
-                 NgDupResTree(page->go,pdp->form,page->qvar,
-                              copy_rec->class,copy_rec->hlu_id,
-                              rec->res_tree,copy_rec->res_tree);
+		NgDupResTree(page->go,pdp->form,page->qvar,
+			     copy_rec->class,copy_rec->hlu_id,
+			     rec->res_tree,copy_rec->res_tree);
         }
         else {
                 rec->res_tree = NgDupResTree
@@ -1494,26 +1912,42 @@ NgGetHluPage
                 XtVaSetValues(rec->auto_update,
                               XmNset,True,
                               NULL);
-        for (i = 0; i < 8; i++)
-                rec->data_objects[i] = copy_rec->data_objects[i];
-        if (copy_rec->var_data_count > 0) {
-                rec->var_data = NhlRealloc
-                        (rec->var_data,
-                         copy_rec->var_data_count * sizeof(NgVarPageOutput *));
-                for (i = rec->var_data_count; i<copy_rec->var_data_count; i++)
-                        rec->var_data[i] = NULL;
-                rec->var_data_count = copy_rec->var_data_count;
-                for (i = 0; i < rec->var_data_count; i++) {
-                        CopyVarData(&rec->var_data[i],
-                                    copy_rec->var_data[i]);
-                }
-                rec->data_sink_grid->dataitems = rec->var_data;
-                NgUpdateDataSinkGrid
-                        (rec->data_sink_grid,page->qvar,rec->public.data_info);
-        }
-#if 0        
-        if (rec->hlu_id > NhlNULLOBJID)
-                UpdateHluPage(page);
-#endif        
+	if (! (rec->class && 
+	       (NhlClassIsSubclass(rec->class,NhldataCommClass) ||
+		NhlClassIsSubclass(rec->class,NhldataItemClass)))) {
+		if (XtIsManaged(rec->data_source_grid->grid))
+			XtUnmanageChild(rec->data_source_grid->grid);
+	}
+	else {
+		for (i = 0; i < copy_rec->data_object_count; i++)
+			rec->data_objects[i] = copy_rec->data_objects[i];
+		if (rec->data_profile) {
+			for (i = rec->var_data_alloced; 
+			     i < rec->data_profile->n_dataitems; i++) {
+				rec->var_data[i] = NULL;
+			}
+			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
+				CopyVarData(&rec->var_data[i],
+					    copy_rec->var_data[i]);
+			}
+			rec->var_data_alloced = 
+				MAX(rec->var_data_alloced,
+				    rec->data_profile->n_dataitems);
+			rec->data_source_grid->dataitems = rec->var_data;
+			NgUpdateDataSourceGrid
+				(rec->data_source_grid,
+				 page->qvar,rec->data_profile);
+			if (! XtIsManaged(rec->data_source_grid->grid))
+				XtManageChild(rec->data_source_grid->grid);
+		}
+		if (copy_rec->data_object_count) {
+			for (i = 0; i < rec->data_object_count; i++) {
+				rec->data_objects[i] = 
+					copy_rec->data_objects[i];
+				rec->data_ids[i] = copy_rec->data_ids[i];
+			}
+			rec->data_object_count = copy_rec->data_object_count;
+		}
+	}
         return pdp;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.7 1998-11-20 04:11:02 dbrown Exp $
+ *      $Id: graphic.c,v 1.8 1998-12-16 23:51:35 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -96,9 +96,15 @@ NhlErrorTypes NgCreatePreviewGraphic
         else {
                 NhlRLClear(srlist);
         }
-	if (class == NhlxWorkstationClass) {
+	if(NhlClassIsSubclass(class,NhlworkstationClass) ||
+	   NhlClassIsSubclass(class,NhlviewClass)) {
 		strcpy(namebuf,"_NgPreview_");	
 		strcat(namebuf,ncl_graphic);
+	}
+	else {
+		strcpy(namebuf,ncl_graphic);
+	}
+	if (class == NhlxWorkstationClass) {
 		NhlRLSetString(srlist,NhlNwkIconTitle,ncl_graphic);
 		NhlRLSetString(srlist,NhlNwkTitle,ncl_graphic);
 	}

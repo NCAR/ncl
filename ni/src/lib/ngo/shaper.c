@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.10 1998-09-17 02:25:19 dbrown Exp $
+ *      $Id: shaper.c,v 1.11 1998-12-16 23:51:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -172,7 +172,8 @@ UpdateCoordDataGrid
 static void
 UpdateShaperCoord
 (
-	NgShaper	*si
+	NgShaper	*si,
+	NhlBoolean	output_notify
 )
 {
 	NgShaperRec *shaper = si->shaper;
@@ -298,7 +299,7 @@ UpdateShaperCoord
 
 	shaper->new_coord = False;
 
-        if (si->pdata)
+        if (output_notify && si->pdata)
                 (*si->output_notify)(si->pdata,NgNoPage);
         
 	return;
@@ -308,7 +309,8 @@ UpdateShaperCoord
 static void
 UpdateShape
 (
-	NgShaper	*si
+	NgShaper	*si,
+	NhlBoolean	output_notify
 )
 {
 
@@ -358,7 +360,7 @@ UpdateShape
 	dim_ix = si->tgl_coord;
 
 	if (si->tgl_coord > -1) {
-		UpdateShaperCoord(si);
+		UpdateShaperCoord(si,output_notify);
 	}
 	si->new_data = False;
 
@@ -390,7 +392,7 @@ DimSelectNotify
         
         si->tgl_coord = si->shapeinfogrid->selected_dim;
         shaper->new_coord = True;
-	UpdateShaperCoord(si);
+	UpdateShaperCoord(si,False);
 
         if (si->start[si->tgl_coord] == si->finish[si->tgl_coord]) {
                 shaper->synchro_step_set =
@@ -421,7 +423,7 @@ ShapeNotify
 {
 	NgShaper	*si = (NgShaper *) data;
 
-        UpdateShaperCoord(si);
+        UpdateShaperCoord(si,True);
         if (si->pdata)
                 (*si->geo_notify)(si->pdata);
         return;
@@ -486,7 +488,7 @@ ShaperCB
 #if	DEBUG_SHAPER
         fprintf(stderr,"in ShaperCB\n");
 #endif
-	UpdateShape(si);
+	UpdateShape(si,False);
 
 #if 0
 	if (si->new_shape) {
@@ -524,7 +526,7 @@ ToggleShaperCoordCB
 	NgShaperRec *shaper = si->shaper;
 	Boolean set;
 
-	UpdateShape(si);
+	UpdateShape(si,False);
         if (si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
@@ -548,7 +550,7 @@ ShaperReverseCoordsCB
 	shaper->new_rev_val = True;
 	shaper->reverse_set = set;
 
-	UpdateShape(si);
+	UpdateShape(si,True);
         if (si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
@@ -601,7 +603,7 @@ SelectedElementsOnlyCB
 		shaper->coords_selected_only_set[si->tgl_coord] = set;
 	if (shaper->selected_only_set != set) {
 		shaper->selected_only_set = set;
-		UpdateShaperCoord(si);
+		UpdateShaperCoord(si,False);
 	}
 
 	return;
@@ -1161,7 +1163,7 @@ void NgDoShaper
 		if (si->tgl_coord == -1) {
 			si->tgl_coord = si->vinfo->n_dims - 1;
 		}
-		UpdateShape(si);
+		UpdateShape(si,False);
 		si->restore = False;
 	}
 	
@@ -1190,7 +1192,7 @@ ShaperAction
 	XtSetArg(args[nargs],XmNuserData,(void*)&si);nargs++;
 	XtGetValues(w,args,nargs);
 
-	UpdateShape(si);
+	UpdateShape(si,False);
 #if 0
 	if (si->new_shape) {
                 if (si->pdata)

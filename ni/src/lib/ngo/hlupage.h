@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.4 1997-10-03 20:08:05 dbrown Exp $
+ *      $Id: hlupage.h,v 1.5 1998-12-16 23:51:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #define	_NG_HLUPAGE_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/ngo/plotspecmenu.h>
+#include <ncarg/ngo/datasourcegrid.h>
 #include <ncarg/ngo/restree.h>
 
 #ifndef _NCL_H_
@@ -34,10 +34,14 @@
 #define _NCL_H_
 #endif
 
+#include <ncarg/ngo/datasourcegrid.h>
+
 typedef struct _NgHluPage
 {
         NhlString class_name;
-        NgDataSinkRec	*data_info;
+        NgDataProfileRec data_prof;
+	NhlString plot_style;
+	NhlString plot_style_dir;
 } NgHluPage;
         
 #endif	/* _NG_HLUPAGE_H */

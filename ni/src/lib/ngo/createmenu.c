@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.7 1998-09-18 23:47:38 boote Exp $
+ *      $Id: createmenu.c,v 1.8 1998-12-16 23:51:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -117,7 +117,6 @@ static void CreateCB
                 return;
         }
         hlu_page->class_name = priv->create_class->base_class.class_name;
-        hlu_page->data_info = NULL;
                 
         if (NgUpdatePage(browse_id,page_id) < NhlWARNING) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"error updating hlu page"));

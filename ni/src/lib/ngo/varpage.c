@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.7 1998-01-08 01:19:30 dbrown Exp $
+ *      $Id: varpage.c,v 1.8 1998-12-16 23:51:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,7 @@ static void VarPageOutputNotify
         int ndims = pdp->dl->u.var->n_dims;
         int i,size = ndims * sizeof(long);
         brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
+	NhlBoolean notify_req = False;
 
         if (page_id > NgNoPage) {
                 rec->receiver_pages = NhlRealloc
@@ -47,30 +48,47 @@ static void VarPageOutputNotify
                 rec->receiver_pages[rec->receiver_count-1].page_id = page_id;
                 rec->receiver_pages[rec->receiver_count-1].page_data =
                         (NhlPointer) NgPageData(page->go->base.id,page_id);
+		rec->receiver_pages[rec->receiver_count-1].notify_req = True;
         }
         if (! rec->output) {
-                rec->output = NhlMalloc(sizeof(NgVarPageOutput));
+                rec->output = NhlMalloc(sizeof(NgVarDataRec));
                 rec->output->ndims = 0;
+		rec->output->dims_alloced = 0;
                 rec->output->data_ix = 0;
                 rec->output->start =
                         rec->output->finish = rec->output->stride = NULL;
+		rec->output->dl = NULL;
         }
-        if (ndims > rec->output->ndims) {
-                rec->output->ndims = ndims;
+        if (ndims > rec->output->dims_alloced) {
+		notify_req = True;
                 rec->output->start = NhlRealloc(rec->output->start,size);
                 rec->output->finish = NhlRealloc(rec->output->finish,size);
                 rec->output->stride = NhlRealloc(rec->output->stride,size);
+		rec->output->dims_alloced = ndims;
         }
-        memcpy(rec->output->start,rec->start,size);
-        memcpy(rec->output->finish,rec->finish,size);
-        memcpy(rec->output->stride,rec->stride,size);
-        rec->output->qfile = page->qfile;
-        rec->output->qvar = pdp->dl->u.var->name;
+	rec->output->ndims = ndims;
+	if (memcmp(rec->output->start,rec->start,size) ||
+	    memcmp(rec->output->finish,rec->finish,size) ||
+	    memcmp(rec->output->stride,rec->stride,size) ) {
+		notify_req = True;
+		memcpy(rec->output->start,rec->start,size);
+		memcpy(rec->output->finish,rec->finish,size);
+		memcpy(rec->output->stride,rec->stride,size);
+	}
+	if (rec->output->qfile != page->qfile ||
+	    rec->output->qvar != pdp->dl->u.var->name) {
+		notify_req = True;
+		rec->output->qfile = page->qfile;
+		rec->output->qvar = pdp->dl->u.var->name;
+	}
         
         for (i = 0; i < rec->receiver_count; i++) {
-                NgPageOutputNotify
-                        (page->go->base.id,
-                         rec->receiver_pages[i].page_id,ptype,rec->output);
+		if (notify_req || rec->receiver_pages[i].notify_req)
+			NgPageOutputNotify
+				(page->go->base.id,
+				 rec->receiver_pages[i].page_id,
+				 ptype,rec->output);
+		rec->receiver_pages[i].notify_req = False;
         }
         return;
 }

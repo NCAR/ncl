@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.23 1998-11-18 19:45:24 dbrown Exp $
+#      $Id: yMakefile,v 1.24 1998-12-16 23:51:44 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -52,7 +52,7 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		vartree.h vartreeP.h datagrid.h datagridP.h stringutil.h \
 		filepageP.h varpage.h varpageP.h shaper.h shaperP.h \
 		shapeinfogrid.h shapeinfogridP.h createmenu.h createmenuP.h \
-		hlupage.h hlupageP.h datasinkgrid.h datasinkgridP.h \
+		hlupage.h hlupageP.h datasourcegrid.h datasourcegridP.h \
 		restree.h restreeP.h MegaB.h MegaBP.h graphic.h \
 		plotspecmenu.h plotspecmenuP.h Folder.h FolderP.h \
 		Grid.h GridP.h Tree.h TreeP.h XmL.h htmlview.h htmlviewI.h \
@@ -63,7 +63,7 @@ XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
 		varmenus.c filetree.c sort.c vartree.c datagrid.c MegaB.c \
 		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c \
-		createmenu.c hlupage.c datasinkgrid.c restree.c graphic.c \
+		createmenu.c hlupage.c datasourcegrid.c restree.c graphic.c \
 		plotspecmenu.c Folder.c Grid.c Tree.c XmL.c htmlview.c \
 		print.c colormap.c xinteract.c
 
@@ -71,7 +71,7 @@ XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o browse.o \
 		varmenus.o filetree.o sort.o vartree.o datagrid.o MegaB.o \
 		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o \
-		createmenu.o hlupage.o datasinkgrid.o restree.o graphic.o \
+		createmenu.o hlupage.o datasourcegrid.o restree.o graphic.o \
 		plotspecmenu.o Folder.o Grid.o Tree.o XmL.o htmlview.o \
 		print.o	colormap.o xinteract.o
 

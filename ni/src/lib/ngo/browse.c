@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.22 1998-11-18 19:45:15 dbrown Exp $
+ *      $Id: browse.c,v 1.23 1998-12-16 23:51:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -591,6 +591,8 @@ CreateFolder
         WidgetList	children;
         int		i,num_children;
         
+	XtManageChild(pane->form);
+
         pane->folder = XtVaCreateManagedWidget
                 ("Folder",xmlFolderWidgetClass,
                  pane->form,
@@ -715,13 +717,14 @@ InitPane
                  XmNscrollBarDisplayPolicy,	XmAS_NEEDED,
                  XmNscrollingPolicy,		XmAUTOMATIC,
                  NULL);
+
         XtVaGetValues(pane->scroller,
                       XmNclipWindow,&pane->clip_window,
                       XmNhorizontalScrollBar,&pane->hsb,
                       XmNverticalScrollBar,&pane->vsb,
                       NULL);
-        
-        pane->form = XtVaCreateManagedWidget
+
+        pane->form = XtVaCreateWidget
                 ("form", xmFormWidgetClass,pane->scroller,
                  XmNinsertPosition,FolderFirstProc,
                  NULL);
@@ -753,14 +756,14 @@ MapFirstPaneEH
 	Boolean		*cont
 )
 {
-	Widget		form = (Widget)udata;
+	brPane		*pane = (brPane *) udata;
 	Dimension	height;
 
 	if(event->type != MapNotify)
 		return;
 
 	XtRemoveEventHandler(w,StructureNotifyMask,False,MapFirstPaneEH,NULL);
-	XtManageChild(form);
+	XtManageChild(pane->topform);
 
 	return;
 }
@@ -815,7 +818,7 @@ AddPane
         	XtManageChild(pane->topform);
 	else{
 		XtAddEventHandler(np->paned_window,StructureNotifyMask,
-			False,MapFirstPaneEH,pane->topform);
+			False,MapFirstPaneEH,pane);
 	}
         pane->managed = True;
 
@@ -1577,6 +1580,7 @@ UpdatePanes
 		if (! page_found) {
                 	page = AddPage
                                 (go,CurrentPane(go),type,qvar,qfile,copy_page);
+			XSync(go->go.x->dpy,False);
         	}
                 if (delete_pane)
                         DeletePage(go,delete_pane,copy_page);
@@ -1623,6 +1627,7 @@ static void BrowseTimeoutCB
                     UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,False);
                     break;
         }
+	XSync(go->go.x->dpy,False);
         return;
 
 }
@@ -2223,6 +2228,7 @@ extern void _NgGetPaneVisibleArea(
                       XmNx,&form_x,
                       XmNy,&form_y,
                       NULL);
+		
         XtVaGetValues(pane->clip_window,
                       XmNx,&clip_x,
                       XmNy,&clip_y,

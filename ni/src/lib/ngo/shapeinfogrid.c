@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.10 1998-03-23 22:48:44 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.11 1998-12-16 23:51:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -768,7 +768,8 @@ UpdateState
 (
         NgShapeInfoGrid *sip,
         int		row,
-        int		col
+        int		col,
+	NhlBoolean	notify_req
         )
 {
         NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) sip;
@@ -801,8 +802,9 @@ UpdateState
                               XmNcellBackground,XmRString,"#d0d0d0",8,
                               NULL);
         }
-        
-        (*sip->shape_notify)(sip->notify_data);
+
+        if (notify_req)
+		(*sip->shape_notify)(sip->notify_data);
         return;
         
 }
@@ -903,7 +905,7 @@ DimEditCB
                 return;
         }
         else if (cb->reason == XmCR_EDIT_COMPLETE) {
-		UpdateState(sip,cb->row,cb->column);
+		UpdateState(sip,cb->row,cb->column,True);
         }
 	sip->edit_row = -1;
         
@@ -1125,7 +1127,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
                       NULL);
 
         if (synchro_mode_update && how != NG_MIN_VAL && how != NG_MAX_VAL) {
-                UpdateState(shape_info_grid,row,col);
+                UpdateState(shape_info_grid,row,col,True);
                 return NhlNOERROR;
         }
         if (! sip->synchro_step || row == STRIDE_ROW) {
@@ -1169,7 +1171,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
         }
 
         if (how == NG_MIN_VAL || how == NG_MAX_VAL) {
-                UpdateState(shape_info_grid,row,col);
+                UpdateState(shape_info_grid,row,col,True);
         }
         return NhlNOERROR;
 }
@@ -1200,7 +1202,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCellComplete
 	if (sirp->manual_edit_started)
 		XmLGridEditComplete(sip->grid);
 
-        UpdateState(shape_info_grid,sip->edit_row,sip->selected_dim);
+        UpdateState(shape_info_grid,sip->edit_row,sip->selected_dim,True);
         if (! sip->synchro_step)
                 sip->edit_row = -1;
         
@@ -1268,7 +1270,8 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
                               XtVaTypedArg,XmNcellBackground,
                               XmRString,"lightsalmon",12,
                               NULL);
-		UpdateState(shape_info_grid,sip->edit_row,sip->selected_dim);
+		UpdateState(shape_info_grid,
+			    sip->edit_row,sip->selected_dim,False);
         }
         return NhlNOERROR;
 }

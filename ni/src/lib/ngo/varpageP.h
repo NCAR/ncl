@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.6 1998-01-08 01:19:31 dbrown Exp $
+ *      $Id: varpageP.h,v 1.7 1998-12-16 23:51:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ typedef struct _vpReceiverPage
 {
         NgPageId	page_id;
         NhlPointer	page_data;
+	NhlBoolean      notify_req;
 } vpReceiverPage;
 
 typedef struct _brVarPageRec 
@@ -59,7 +60,7 @@ typedef struct _brVarPageRec
         long		*stride;
         int		receiver_count;
         vpReceiverPage  *receiver_pages;
-        NgVarPageOutput *output;
+        NgVarDataRec	*output;
 } brVarPageRec;
 
 extern brPageData *

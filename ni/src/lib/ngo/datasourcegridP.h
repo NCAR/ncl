@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgridP.h,v 1.1 1997-06-23 21:08:25 dbrown Exp $
+ *      $Id: datasourcegridP.h,v 1.1 1998-12-16 23:51:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		datasinkgridP.h
+ *	File:		datasourcegridP.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,38 +19,37 @@
  *
  *	Description:	
  */
-#ifndef	_NG_DATASINKGRIDP_H_
-#define	_NG_DATASINKGRIDP_H_
+#ifndef	_NG_DATASOURCEGRIDP_H_
+#define	_NG_DATASOURCEGRIDP_H_
 
 #include <ncarg/ngo/goP.h>
 
-#include <ncarg/ngo/datasinkgrid.h>
+#include <ncarg/ngo/datasourcegrid.h>
 
  
-#define DEBUG_DATA_SINK_GRID 0
+#define DEBUG_DATA_SOURCE_GRID 0
 #define BUFINC 256
 #define MAX_LINE_LENGTH 81
 
 
 /*
- * Any field in the public structure NgDataSinkGrid, defined in
- * datasinkgrid.h, must appear in the same order at the beginning
- * of the NgDataSinkGridRec definition. 
+ * Any field in the public structure NgDataSourceGrid, defined in
+ * datasourcegrid.h, must appear in the same order at the beginning
+ * of the NgDataSourceGridRec definition. 
  */
 
-typedef struct _NgDataSinkGridRec 
+typedef struct _NgDataSourceGridRec 
 {
-        NgDataSinkGrid		public;
+        NgDataSourceGrid		public;
         
             /* private fields */
         NrmQuark		qname;
-        NgDataSinkRec		*data_sink;
+        NgDataProfileRec	*data_profile;
  	NclApiDataList		*dlist;        
         int			cwidths[2];
-        short			*too_long;
-        short			*last_too_long;
         int			c_alloc;
-} NgDataSinkGridRec;
+	NhlBoolean		created;
+} NgDataSourceGridRec;
 
 
-#endif	/* _NG_DATASINKGRIDP_H_ */
+#endif	/* _NG_DATASOURCEGRIDP_H_ */

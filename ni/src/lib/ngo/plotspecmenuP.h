@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenuP.h,v 1.1 1997-10-03 20:08:17 dbrown Exp $
+ *      $Id: plotspecmenuP.h,v 1.2 1998-12-16 23:51:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,8 @@
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/browse.h>
-#include <ncarg/ngo/varpage.h>
-#include <ncarg/ngo/hlupage.h>
 #include <ncarg/ngo/plotspecmenu.h>
+#include <ncarg/ngo/datasourcegrid.h>
 
 #define DEBUG_ENTRY 1
 #define DEBUG_MENUS 1 << 1
@@ -53,6 +52,10 @@ typedef struct _PlotSpecMenuRec
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;
+	int		master_data_ix;
+	NgVarData	var_data[8];
+	int		var_data_alloced;
+	NgDataSourceGrid	*data_source_grid;
 } PlotSpecMenuRec;
 
 #endif	/* _NG_PLOTSPECMENUP_H_ */

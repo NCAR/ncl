@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.6 1998-01-08 01:19:24 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.1 1998-12-16 23:51:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		datasinkgrid.c
+ *	File:		datasourcegrid.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -20,7 +20,7 @@
  *	Description:	
  */
 
-#include <ncarg/ngo/datasinkgridP.h>
+#include <ncarg/ngo/datasourcegridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
 
@@ -37,7 +37,7 @@ static Dimension  Row_Height;
 static char *
 ColumnWidths
 (
-	NgDataSinkGridRec *dsp
+	NgDataSourceGridRec *dsp
 )
 {
 	int	i;
@@ -54,7 +54,7 @@ ColumnWidths
 		strcat(Buffer,sizestr);
 	}
         Buffer[strlen(Buffer)-1] = '\0';
-#if DEBUG_DATA_SINK_GRID      
+#if DEBUG_DATA_SOURCE_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
@@ -63,20 +63,20 @@ ColumnWidths
 static char *
 TitleText
 (
-	NgDataSinkGridRec	*dsp
+	NgDataSourceGridRec	*dsp
 )
 {
-        NgDataSinkGrid data_sink_grid = dsp->public;
+        NgDataSourceGrid data_source_grid = dsp->public;
         int len;
         
         
-        sprintf(Buffer,"%s|",dsp->data_sink->class_name);
+        sprintf(Buffer,"%s|",dsp->data_profile->class_name);
         len = dsp->cwidths[0] = strlen(Buffer);
         
         sprintf(&Buffer[len],"%s","Data Variables");
         dsp->cwidths[1] = strlen(Buffer) - len;
         
-#if DEBUG_DATA_SINK_GRID      
+#if DEBUG_DATA_SOURCE_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
 
@@ -86,15 +86,15 @@ TitleText
 static char *
 DataText
 (
-	NgDataSinkGridRec	*dsp,
+	NgDataSourceGridRec	*dsp,
         int			dataix
 )
 {
         int cwidth0,cwidth1,len;
         char buf[128];
-        NgDataSinkGrid *pub = &dsp->public;
+        NgDataSourceGrid *pub = &dsp->public;
         
-        sprintf(Buffer,"%s|",dsp->data_sink->data_names[dataix]);
+        sprintf(Buffer,"%s|",dsp->data_profile->data_names[dataix]);
         cwidth0 = strlen(Buffer);
         dsp->cwidths[0] = MAX(dsp->cwidths[0],cwidth0-1);
         if (! pub->dataitems)
@@ -102,15 +102,21 @@ DataText
         
         if (pub->dataitems[dataix]) {
                 int i;
-                NgVarPageOutput *ditem = pub->dataitems[dataix];
+                NgVarDataRec *ditem = pub->dataitems[dataix];
 
-                if (ditem->qfile)
+                if (ditem->qfile && ditem->qvar)
                         sprintf(&Buffer[cwidth0],"%s->%s(",
                                 NrmQuarkToString(ditem->qfile),
                                 NrmQuarkToString(ditem->qvar));
-                else
+                else if (ditem->qvar)
                         sprintf(&Buffer[cwidth0],"%s(",
                                 NrmQuarkToString(ditem->qvar));
+		else {
+			sprintf(&Buffer[cwidth0],"null");
+			dsp->cwidths[1] = MAX(dsp->cwidths[1],
+					      strlen(Buffer)-cwidth0-1);
+			return Buffer;
+		}
                 for (i=0; i< ditem->ndims; i++) {
                         if ((ditem->finish[i] - ditem->start[i])
                             /ditem->stride[i] == 0) {
@@ -132,71 +138,78 @@ DataText
         return Buffer;
 }
 
-NhlErrorTypes NgUpdateDataSinkGrid
+NhlErrorTypes NgUpdateDataSourceGrid
 (
-        NgDataSinkGrid		*data_sink_grid,
+        NgDataSourceGrid		*data_source_grid,
         NrmQuark		qname,
-        NgDataSinkRec		*data_sink_rec
+        NgDataProfileRec		*data_profile_rec
        )
 {
         NhlErrorTypes ret;
-        NgDataSinkGridRec *dsp;
+        NgDataSourceGridRec *dsp;
         int	nattrs,i;
         Dimension	height;
         NhlBoolean	first = True;
         
         
-        dsp = (NgDataSinkGridRec *) data_sink_grid;
+        dsp = (NgDataSourceGridRec *) data_source_grid;
         if (!dsp) return NhlFATAL;
         if (first) {
                 int		root_w;
                 short		cw,ch;
                 XmFontList      fontlist;
                 
-                XtVaGetValues(data_sink_grid->grid,
+                XtVaGetValues(data_source_grid->grid,
                               XmNfontList,&fontlist,
                               NULL);
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-                root_w = WidthOfScreen(XtScreen(data_sink_grid->grid));
+                root_w = WidthOfScreen(XtScreen(data_source_grid->grid));
                 Max_Width = root_w / cw - cw;
                 Row_Height = ch + 2;
                 first = False;
         }
-        dsp->data_sink = data_sink_rec;
+        dsp->data_profile = data_profile_rec;
         dsp->qname = qname;
-        XtVaSetValues(data_sink_grid->grid,
-                      XmNrows,data_sink_rec->n_dataitems,
+        XtVaSetValues(data_source_grid->grid,
+                      XmNrows,data_profile_rec->n_dataitems,
                       NULL);
 
         for (i = 0; i < 2; i++)
                 dsp->cwidths[i] = 0;
         
-        XmLGridSetStringsPos(data_sink_grid->grid,XmHEADING,0,XmCONTENT,0,
+        XmLGridSetStringsPos(data_source_grid->grid,XmHEADING,0,XmCONTENT,0,
                              TitleText(dsp));
-        for (i = 0; i < data_sink_rec->n_dataitems; i++) {
+        for (i = 0; i < data_profile_rec->n_dataitems; i++) {
                 XmLGridSetStringsPos
-                        (data_sink_grid->grid,XmCONTENT,i,XmCONTENT,0,
+                        (data_source_grid->grid,XmCONTENT,i,XmCONTENT,0,
                          DataText(dsp,i));
         }
-        XtVaSetValues(data_sink_grid->grid,
+        XtVaSetValues(data_source_grid->grid,
                       XmNsimpleWidths,ColumnWidths(dsp),
                       NULL);
         
-        XmLGridSelectRow(data_sink_grid->grid,0,False);
+        XmLGridSelectRow(data_source_grid->grid,0,False);
+
+	if (! dsp->created) {
+		dsp->created = True;
+		XtVaSetValues(data_source_grid->grid,
+			      XmNimmediateDraw,False,
+			      NULL);
+	}
 
         return NhlNOERROR;
 }
 
-NgDataSinkGrid *NgCreateDataSinkGrid
+NgDataSourceGrid *NgCreateDataSourceGrid
 (
         Widget			parent,
         NrmQuark		qname,
-        NgDataSinkRec		*data_sink_rec
+        NgDataProfileRec		*data_profile_rec
         )
 {
         NhlErrorTypes ret;
-        NgDataSinkGridRec *dsp;
-        NgDataSinkGrid *data_sink_grid;
+        NgDataSourceGridRec *dsp;
+        NgDataSourceGrid *data_source_grid;
         int nattrs;
         static NhlBoolean first = True;
 
@@ -206,35 +219,37 @@ NgDataSinkGrid *NgCreateDataSinkGrid
                 first = False;
         }
         
-        dsp = NhlMalloc(sizeof(NgDataSinkGridRec));
+        dsp = NhlMalloc(sizeof(NgDataSourceGridRec));
         if (!dsp) return NULL;
-        data_sink_grid = &dsp->public;
-        dsp->data_sink = data_sink_rec;
+        data_source_grid = &dsp->public;
+        dsp->data_profile = data_profile_rec;
         dsp->qname = qname;
-        data_sink_grid->dataitems = NULL;
+	dsp->created = False;
+        data_source_grid->dataitems = NULL;
         
-        data_sink_grid->grid = XtVaCreateManagedWidget
-                ("DataSinkGrid",
+        data_source_grid->grid = XtVaCreateManagedWidget
+                ("DataSourceGrid",
                  xmlGridWidgetClass,parent,
                  XmNverticalSizePolicy,XmVARIABLE,
                  XmNhorizontalSizePolicy,XmVARIABLE,
                  XmNcolumns,2,
-                 XmNrows,2,
+                 XmNrows,0,
+		 XmNimmediateDraw,True,
                  NULL);
-        XmLGridAddRows(data_sink_grid->grid,XmHEADING,0,1);
+        XmLGridAddRows(data_source_grid->grid,XmHEADING,0,1);
         
-        return data_sink_grid;
+        return data_source_grid;
 }
 
         
-void NgDestroyDataSinkGrid
+void NgDestroyDataSourceGrid
 (
-        NgDataSinkGrid		*data_sink_grid
+        NgDataSourceGrid		*data_source_grid
         )
 {
-        NgDataSinkGridRec *dsp;
+        NgDataSourceGridRec *dsp;
         
-        dsp = (NgDataSinkGridRec *) data_sink_grid;
+        dsp = (NgDataSourceGridRec *) data_source_grid;
         if (!dsp) return;
 
         NhlFree(dsp);

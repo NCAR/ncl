@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.16 1998-11-18 19:45:21 dbrown Exp $
+ *      $Id: restree.c,v 1.17 1998-12-16 23:51:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3187,24 +3187,6 @@ void NgResTreePreviewResList
                 }
                 
         }
-#if 0                
-        for (i = 0; i < rtp->NhlNumber(CntrlRes ); i++) {
-                	rtCntrlRes *srv = &CntrlRes[i];
-			rtSResState *srs = &rtp->sres_state[i];
-                        if (! srs->res_data)
-                                continue;
-                        else if (srs->dbres_value && 
-                                 srs->dbres_value !=
-                                 srs->res_data->res->nrm_default_val.ptrval)
-                                continue;
-                        else if (srv->hide_val !=
-                                 srs->res_data->res->nrm_default_val.ptrval)
-                                continue;
-                        NhlRLSet(setrl_id,srv->res_name,
-                                 NhlTString,srv->fake_val);
-                        srs->faked = True;
-	}
-#endif
         return;
 }
 
@@ -3379,6 +3361,12 @@ NgResTree *NgDupResTree
                 return NULL;
 
 	if (to_res_tree) {
+		if (! XtIsManaged(to_res_tree->tree))
+			XtManageChild(to_res_tree->tree);
+
+		XtVaSetValues(to_res_tree->tree,
+			      XmNimmediateDraw,True,
+			      NULL);
 		NgUpdateResTree(to_res_tree,qhlu,class,hlu_id);
 		tortp = (NgResTreeRec *) to_res_tree;
 	}
@@ -3437,7 +3425,7 @@ NhlErrorTypes NgUpdateResTree
         if (rtp->htmlview_count) {
                 XmLArrayFree(rtp->htmlview_list);
         }
-        
+
         rtp->htmlview_list = NULL;
         rtp->htmlview_count = 0;
 
@@ -3553,11 +3541,21 @@ NhlErrorTypes NgUpdateResTree
 
         
         rtp->c2_width = MAX(width,14);
-        XtVaSetValues(pub_rtp->tree,
-                      XmNcolumn,2,
-                      XmNcolumnWidth,rtp->c2_width,
-                      NULL);
-        rtp->created = True;
+	if (! rtp->created) {
+		XtVaSetValues(pub_rtp->tree,
+			      XmNcolumn,2,
+			      XmNcolumnWidth,rtp->c2_width,
+			      NULL);
+		rtp->created = True;
+	}
+	else {
+		XtVaSetValues(pub_rtp->tree,
+			      XmNimmediateDraw,False,
+			      XmNcolumn,2,
+			      XmNcolumnWidth,rtp->c2_width,
+			      NULL);
+	}
+
         rtp->expand_called = False;
         NhlFree(rowdefs);
 
@@ -3686,8 +3684,8 @@ NgResTree *NgCreateResTree
         rtp->duping_data_list = False;
                 
         pub_rtp->tree = XtVaCreateManagedWidget
-                ("ResTree",
-                 xmlTreeWidgetClass,parent,
+                ("ResTree",xmlTreeWidgetClass,parent,
+		 XmNimmediateDraw,True,
                  XmNselectionPolicy,XmSELECT_NONE,
                  XmNverticalSizePolicy,XmVARIABLE,
                  XmNhorizontalSizePolicy,XmVARIABLE,

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.19 1998-11-20 04:11:03 dbrown Exp $
+ *      $Id: mwin.c,v 1.20 1998-12-16 23:51:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1899,7 +1899,16 @@ AddViewNode
 
 	vwnode->id = hlu->id;
 	name = NgNclGetHLURef(otree->nsid,vwnode->id);
-	vwnode->xmname = NgXAppCreateXmString(otree->appmgr,name);
+	if (name) {
+		vwnode->xmname = NgXAppCreateXmString(otree->appmgr,name);
+	}
+	else if (hlu->name) {
+		vwnode->xmname = 
+			NgXAppCreateXmString(otree->appmgr,(char*)hlu->name);
+	}
+	else {
+		vwnode->xmname = NgXAppCreateXmString(otree->appmgr,"no name");
+	}
 	vwo->name = hlu->name;
 	vwo->parent_id = hlu->parent_id;
 

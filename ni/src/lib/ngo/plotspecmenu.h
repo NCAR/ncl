@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.h,v 1.1 1997-10-03 20:08:15 dbrown Exp $
+ *      $Id: plotspecmenu.h,v 1.2 1998-12-16 23:51:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,49 +36,6 @@
 /*
  * Public api
  */
-
-#define NgLineContour   "Line Contour"
-#define NgFillContour   "Fill Contour"
-#define NgRasterContour "Raster Contour"
-#define NgInterpolatedRasterContour "Interpolated Raster Contour"
-#define NgStreamline    "Streamline"
-#define NgLineVector    "Line Vector"
-#define NgFillVector    "Fill Vector"
-#define NgLineXy        "Line Xy"
-#define NgScatterXy     "Scatter Xy"
-#define NgCoordArray    "CoordArray"
-#define NgScalarField   "ScalarField"
-#define NgVectorField   "VectorField"
-#define NgNclVariable   "NclVariable"
-
-typedef enum _NgDataSinkType {
-        ngLINECONTOUR,
-        ngFILLCONTOUR,
-        ngRASTERCONTOUR,
-        ngINTERPOLATEDRASTERCONTOUR,
-        ngSTREAMLINE,
-        ngLINEVECTOR,
-        ngFILLVECTOR,
-        ngLINEXY,
-        ngSCATTERXY,
-        ngCOORDARRAY,
-        ngSCALARFIELD,
-        ngVECTORFIELD,
-        ngNCLVARIABLE
-} NgDataSinkType;
-
-typedef struct _NgDataSinkRec
-{
-        NhlString	name;
-        NgDataSinkType	type;
-        NhlString	def_name;
-        NhlString	class_name;
-        int		n_dataitems;
-        int		n_datadims[8];
-        NhlString	data_names[8];
-        NrmQuark	data_resnames[8];
-        int		coord_ix[3];
-} NgDataSinkRec;
         
 typedef struct _NgPlotSpecMenu
 {

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.h,v 1.2 1997-06-23 21:06:30 dbrown Exp $
+ *      $Id: varpage.h,v 1.3 1998-12-16 23:51:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,16 +31,5 @@
 #include <ncarg/ncl/NclApi.h>
 #define _NCL_H_
 #endif
-
-typedef struct _NgVarPageOutput 
-{
-        NrmQuark qfile;
-        NrmQuark qvar;
-        int	ndims;
-        long	*start;
-        long	*finish;
-        long	*stride;
-        int	data_ix;
-} NgVarPageOutput;
         
 #endif	/* _NG_VARPAGE_H */
