@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 2002-03-29 16:04:43 haley Exp $
+#	$Id: yMakefile,v 1.3 2002-09-16 20:52:01 haley Exp $
 #
 
 #ifdef	BuildWithF90
@@ -69,6 +69,7 @@ FormatManPages($(MAN1),.m,.p)
 #if !defined(CRAY)
 ng4ex: ng4ex.csh Makefile
 	@sed \
+        -e 's+SED_EXE_SUFFIX+$(EXE_SUFFIX)+' \
 	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
 	-e 's+SED_NCLEXDIR+$(NCLEXDIR)+' \
 	-e 's+SED_RESDIR+$(RESDIR)+' \
@@ -78,6 +79,7 @@ ng4ex: ng4ex.csh Makefile
 #else
 ng4ex: ng4ex.cry.csh Makefile
 	@sed \
+        -e 's+SED_EXE_SUFFIX+$(EXE_SUFFIX)+' \
 	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
 	-e 's+SED_RESDIR+$(RESDIR)+' \
 	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.3 2002-03-04 21:58:18 haley Exp $
+#   $Id: ng4ex.csh,v 1.4 2002-09-16 20:52:01 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -873,7 +873,7 @@ switch($name)
     case vc09f:
         echo ""
         echo "You must have the netCDF library installed on your system"
-        echo "in order to run this example."
+        echo "in order to compile this example."
         echo ""
         set comp_flags = "-netcdf"
     breaksw
@@ -1076,7 +1076,7 @@ end
 #********************************#
 set rmfiles = ($src_file $res_file $inc_file $ascdata_file $bindata_file)
 if (! $?nprog) then
-  set rmfiles = ($name $name.o $rmfiles)
+  set rmfiles = ($name.o $nameSED_EXE_SUFFIX $rmfiles)
 endif
 
 #******************************#
