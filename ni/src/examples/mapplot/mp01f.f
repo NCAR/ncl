@@ -1,5 +1,5 @@
 C
-C     $Id: mp01f.f,v 1.1 1995-01-24 23:27:36 haley Exp $
+C     $Id: mp01f.f,v 1.2 1995-01-25 22:07:24 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -20,7 +20,7 @@ C
 C      Description:    	Demonstrates basic MapPlot capabilities.
 C
       external nhlfapplayerclass
-      external nhlfncgmworkstationlayerclass
+      external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       integer appid,wid,mapid
       integer rlist
@@ -39,12 +39,10 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp01',nhlfapplayerclass,0,rlist,ierr)
 C
-C Create a meta file workstation
+C Create an X workstation
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkMetaName','./mp01f.ncgm',ierr)
-      call nhlfcreate(wid,'mp01Work',nhlfncgmworkstationlayerclass,0,
-     1    rlist,ierr)
+      call nhlfcreate(wid,'mp01Work',nhlfxworkstationlayerclass,0,
+     1     0,ierr)
 C
 C Draw the default MapPlot object
 C >>> Note that currently the MapPlot object does not have any means to

@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.1 1995-01-24 23:27:39 haley Exp $
+C     $Id: mp02f.f,v 1.2 1995-01-25 22:07:25 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -20,7 +20,7 @@ C
 C      Description:    	Demonstrates individual control of MapPlot areas
 C
       external nhlfapplayerclass
-      external nhlfncgmworkstationlayerclass
+      external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       integer appid,wid,mapid
       integer rlist,grlist
@@ -54,12 +54,10 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp02',nhlfapplayerclass,0,rlist,ierr)
 C
-C Create a meta file workstation
+C Create an X workstation
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkMetaName','./mp02f.ncgm',ierr)
-      call nhlfcreate(wid,'mp02Work',nhlfncgmworkstationlayerclass,0,
-     1     rlist,ierr)
+      call nhlfcreate(wid,'mp02Work',nhlfxworkstationlayerclass,0,
+     1     0,ierr)
 C
 C Create a plot focusing on North and South America
 C Outlines are on by default turn fill on.
