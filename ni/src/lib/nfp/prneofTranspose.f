@@ -1,38 +1,8 @@
-C NCLFORTSTART
-      SUBROUTINE TDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
-     +                   TEOF,IWORK,LIWORK,IFAIL,IER)
-      IMPLICIT NONE
-
-c this operates on the TRANSPOSE of the array "x"
-c .   It results in [sometimes, MUCH] faster execution
-
-      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IER
-      DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 TRACE,XMSG
-      REAL PCVAR(NEVAL)
-      INTEGER*8 LCSSM
-      INTEGER LWORK,LIWORK,LIFAIL
-      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROBS,NEVAL)
-      INTEGER IWORK(LIWORK),IFAIL(NROBS)
-C NCLEND
-
-c WRAPIT -L /usr/lib64 -l complib.sgimath_mp prneofTranspose.f
-
-C      LCSSM = NROBS* (NROBS+1)/2
-C      LWORK = 8*NROBS
-C      LIWORK = 5*NROBS
-
-      CALL DRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,PCVAR,
-     +             TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,
-     +             IFAIL,TEOF,IER)
-
-      RETURN
-      END
-c ---------------------------------------------------------
       SUBROUTINE DRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
      +                   PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
-     +                   IWORK,LIWORK,IFAIL,TEOF,IER)
+     +                   IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
+
+      IMPLICIT NONE
       DOUBLE PRECISION XMSG
       DOUBLE PRECISION TRACE
       DOUBLE PRECISION TOL
@@ -61,7 +31,6 @@ c .      are used to derive the corresponding values
 c .      associated with the original matrix.
 
 c .       USES LAPACK/BLAS ROUTINES
-c .       USES AUTOMATIC ARRAYS SO USE WITH F90 (or Cray f77)
 
 c nomenclature :
 c .   x         - matrix containing the data.  it contains n observations
@@ -91,17 +60,21 @@ c .   jopt      - =  0 : use var-covar matrix in prncmp
 c .                  1 : use correlation matrix in prncmp
 c .   ier       - error code
 
+      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IER
       DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL)
       REAL             PCVAR(NEVAL)
 
 c temporary arrays (automatic or passed in via interface)
 
+      INTEGER LWORK, LIWORK, LIFAIL
       INTEGER*8 LCSSM
       DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROBS,NEVAL)
+      DOUBLE PRECISION WEVAL(LIFAIL)
       INTEGER IWORK(LIWORK),IFAIL(NROBS)
       CHARACTER*16 LABEL
-C*PT*WARNING* Already double-precision
       DOUBLE PRECISION TEMP
+      INTEGER NA, N, NN, NR, NC, MEVAL, ILOW, IUP
+      INTEGER MEVOUT, INFO, IPR, IPRFLG, KNTX
 
       DATA IPR/6/
       DATA IPRFLG/1/
@@ -168,8 +141,9 @@ c not used
       ILOW = MAX(NROBS-MEVAL+1,1)
       IUP = NROBS
       MEVOUT = 0
+
       CALL DSPEVX('V','I','U',NROBS,CSSM,VLOW,VUP,ILOW,IUP,TOL,MEVOUT,
-     +            EVAL,TEOF,NROW,WORK,IWORK,IFAIL,INFO)
+     +            WEVAL,TEOF,NROW,WORK,IWORK,IFAIL,INFO)
 
       IF (INFO.NE.0) THEN
           IER = IER + INFO
@@ -186,7 +160,7 @@ c .   largest eigenvalues/vectors are first.
 
 c eigenvalues
       DO N = 1,MEVAL
-          WORK(N) = EVAL(N)
+          WORK(N) = WEVAL(N)
       END DO
 
       DO N = 1,MEVAL
@@ -324,8 +298,8 @@ C NCLFORTSTART
       SUBROUTINE TCRMSSM(X,NROW,NCOL,NRT,NCS,XMSG,CRM,LCRM,IER)
       IMPLICIT NONE
 
-      INTEGER*8 LCRM
       INTEGER NROW,NCOL,NRT,NCS,IER
+      INTEGER*8 LCRM
       DOUBLE PRECISION X(NROW,NCOL),CRM(LCRM),XMSG
 C NCLEND
 
@@ -396,10 +370,11 @@ c calculate the var-cov between columns (stations)
 
       RETURN
       END
-C NCLFORTSTART
+
       SUBROUTINE TNCLEOF(XX,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,X,EVECX,TEOF,CSSM,
-     +                   WORK,IWORK,IFAIL,LCSSM,LWORK,LIWORK,IER)
+     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,X,EVECX,TEOF,
+     +                   WEVAL,CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,
+     +                   IFAIL,LIFAIL,IER)
 
       IMPLICIT NONE
 
@@ -407,75 +382,12 @@ C NCLFORTSTART
       DOUBLE PRECISION XX(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
      +                 PCRIT,XMSG,TRACE
       REAL             PCVAR(NEVAL)
-C NCL: eofcovT_msg (data,neval,pcmsg)    [jopt=0]
-C      eofcorT_msg (data,neval,pcmsg)    [jopt=1]
-C
-C The original routine allocated these work arrays using f90 constructs.
-C
-C      real,    allocatable, dimension(:,:) :: x, evecx, teof
-C      real,    allocatable, dimension(:)   :: cssm, work
-C      integer, allocatable, dimension(:)   :: iwork, ifail
-      INTEGER LWORK,LIWORK
+      INTEGER LWORK,LIWORK,LIFAIL
       INTEGER*8 LCSSM
 
       DOUBLE PRECISION X(NROW,NCOL),EVECX(NCOL,NEVAL),TEOF(NOBS,NEVAL)
-      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK)
-      INTEGER IWORK(LIWORK),IFAIL(NOBS)
-C NCLEND
-
-
-c allocate local space to be used. Some of these
-c     are made larger than they need to be
-C
-C      LCSSM   = nobs*(nobs+1)/2
-C      lwork  = 8*nobs
-C      liwork = 5*nobs
-C
-C      allocate (x(nrow,ncol), evecx(ncol,neval), teof(nobs,neval)
-C     *         ,cssm(LCSSM), work(lwork), iwork(liwork),ifail(nobs)
-C     *         ,stat=ier)
-C
-C      if (ier.ne.0) then
-C          print *,' sub tncleof: allocate failed: ier=', ier
-C          return
-C      endif
-
-c NCL should call the following routine
-C
-C      write (*,'(//'' sub ncleof:nrow,ncol,nobs,nsta = ''
-C     1              ,4i3)') nrow,ncol,nobs,nsta
-
-      CALL TNCLDRV(XX,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,PCVAR,
-     +             TRACE,IOPT,JOPT,PCRIT,X,EVECX,CSSM,LCSSM,WORK,LWORK,
-     +             IWORK,LIWORK,IFAIL,TEOF,IER)
-
-c deallocate
-C
-C      deallocate (x,evecx,teof,cssm,work,iwork,ifail)
-
-      RETURN
-      END
-c     ----------------------------
-      SUBROUTINE TNCLDRV(XX,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,X,EVECX,CSSM,LCSSM,
-     +                   WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,IER)
-      IMPLICIT NONE
-
-c f90 compiler must be used [automatic arrays and array syntax used]
-
-      INTEGER NROW,NCOL,NOBS,NSTA,NEVAL,IOPT,JOPT,LWORK,LIWORK,IER
-      INTEGER*8 LCSSM
-
-      DOUBLE PRECISION XX(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 PCRIT,XMSG,TRACE,X(NROW,NCOL),
-     +                 EVECX(NCOL,NEVAL),CSSM(LCSSM),WORK(LWORK),
-     +                 TEOF(NOBS,NEVAL)
-      REAL             PCVAR(NEVAL)
-      INTEGER IWORK(LIWORK),IFAIL(NOBS)
-
-      CHARACTER*16 LABEL
-C*PT*WARNING* Already double-precision
-      DOUBLE PRECISION TEMP
+      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),WEVAL(LIFAIL)
+      INTEGER IWORK(LIWORK),IFAIL(LIFAIL)
       INTEGER IPR,IPRFLG,MSTA,KNT,NR,NC,NE
       DOUBLE PRECISION PCRITX
 
@@ -511,9 +423,11 @@ C             x(:,msta) = xx(:,nc)
 
 C      write (*,'(//'' sub tncldrv: nrow,ncol,nobs,msta= ''
 C     1              ,4i3)') nrow,ncol,nobs,msta
-      CALL DRVEOFT(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVAL,EVECX,PCVAR,
-     +             TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,
-     +             IFAIL,TEOF,IER)
+
+
+      CALL DRVEOFT(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVAL,EVECX,
+     +             PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
+     +             IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
 
 c before returning put the evecs in the correct location
 

@@ -128,7 +128,6 @@ c calculate the amplitude time series
           END DO
           CALL DSTAT2(EVECTS(1,K),NOBS,XMSG,EVTSAV(K),XVAR,XSTD,KNTX,
      +                IER)
-C      print *, "test=",k, evtsav(k)
           IF (IFLAG.EQ.0 .AND. EVTSAV(K).NE.XMSG) THEN
               DO N = 1,NOBS
                   IF (EVECTS(N,K).NE.XMSG) THEN

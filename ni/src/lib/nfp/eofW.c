@@ -5,13 +5,13 @@
 extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      double *,int *,double *, double *,
                                      float*,double *,int *,int *,double*,
-                                     long int*, double *,int *,double *,
+                                     long long int *, double *,int *,double *,
                                      int *,int *,int *,int *,int *);
 
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
-                                     double *,double *,long int*,double *, 
+                                     double *,double *,long long int *,double *, 
                                      int *,double *,int *,int *,int *,int *,
                                      int*);
 
@@ -46,7 +46,7 @@ NhlErrorTypes eofcov_W( void )
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long int lcssm;
+  long long int lcssm;
 /*
  * Attribute variables
  */
@@ -140,7 +140,7 @@ NhlErrorTypes eofcov_W( void )
  * Allocate memory for attributes.
  */
   trace = (double *)calloc(1,sizeof(double));
-  eval =  (double *)calloc(*neval,sizeof(double));
+  eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
   if( trace == NULL || pcvar == NULL || eval == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: Unable to allocate memory for attribute arrays");
@@ -151,7 +151,7 @@ NhlErrorTypes eofcov_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = (long)msta*((long)msta+1)/2;
+  lcssm  = msta*(msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -160,7 +160,7 @@ NhlErrorTypes eofcov_W( void )
   weval  = (double *)calloc(lifail,sizeof(double));
   iwork  =   (int *)calloc(liwork,sizeof(int));
   ifail  =   (int *)calloc(lifail,sizeof(int));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL ||
       ifail == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -470,7 +470,7 @@ NhlErrorTypes eofcor_W( void )
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long int lcssm;
+  long long int lcssm;
 /*
  * Attribute variables
  */
@@ -564,7 +564,7 @@ NhlErrorTypes eofcor_W( void )
  * Allocate memory for attributes.
  */
   trace = (double *)calloc(1,sizeof(double));
-  eval =  (double *)calloc(*neval,sizeof(double));
+  eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
   if( trace == NULL || pcvar == NULL || eval == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor: Unable to allocate memory for attribute arrays");
@@ -575,7 +575,7 @@ NhlErrorTypes eofcor_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = (long)msta*((long)msta+1)/2;
+  lcssm  = msta*(msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -824,6 +824,7 @@ NhlErrorTypes eofcor_W( void )
                NULL
                );
   }
+
 /*
  * eof_function is returned to indicate which function was used.
  */
@@ -894,7 +895,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long int lcssm, total_mem;
+  long long int lcssm, total_mem;
 /*
  * Attribute variables
  */
@@ -1001,6 +1002,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: pcmsg must be between 0 and 100 inclusive");
     return(NhlFATAL);
   }
+
 /*
  * Allocate memory for return variable.
  */
@@ -1009,18 +1011,19 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 
   total_size_evec = *neval * ncol;
 
-  evec  = (double *)calloc(total_size_evec,sizeof(double));
-  if( evec == NULL) {
+  evec = (double *)calloc(total_size_evec,sizeof(double));
+  if(evec == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+
 /*
  * Allocate memory for attributes.
  */
   trace = (double *)calloc(1,sizeof(double));
-  eval  =  (double *)calloc(*neval,sizeof(double));
-  pcvar = (float *)calloc(*neval,sizeof(float));
-  if( trace == NULL || pcvar == NULL || eval == NULL) {
+  eval  = (double *)calloc(*neval,sizeof(double));
+  pcvar =  (float *)calloc(*neval,sizeof(float));
+  if(trace == NULL || pcvar == NULL || eval == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
   }
@@ -1029,7 +1032,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = (long)msta*((long)msta+1)/2;
+  lcssm  = msta*(msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -1040,10 +1043,12 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
   evecx  =  (double *)calloc(total_size_evec,sizeof(double));
-  total_mem = 8*(lcssm+(long)lwork+(long)lifail+(long)total_size_x+(long)total_size_evec)+4*((long)liwork+(long)lifail);
+  total_mem = 8*(lcssm+lwork+lifail+total_size_x+total_size_evec) +
+              4*(liwork+lifail);
+
   if(  cssm == NULL ||  work == NULL || weval == NULL || iwork == NULL || 
       ifail == NULL || tmp_x == NULL || evecx == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays. A total of %d bytes need to be allocated",total_mem);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays. A total of %lld bytes need to be allocated",total_mem);
     return(NhlFATAL);
   }
 /*
@@ -1073,7 +1078,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * Free unneeded memory.
  */
-  if((void*)dx     != x)     NclFree(dx);
+  if((void*)dx != x) NclFree(dx);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
@@ -1081,6 +1086,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   NclFree(ifail);
   NclFree(tmp_x);
   NclFree(evecx);
+
 /*
  * Return values. 
  */
@@ -1178,6 +1184,11 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
     rtrace = (float *)calloc(1,sizeof(float));
     *rtrace = (float)(*trace);
+/*
+ * Free double precision trace.
+ */
+    NclFree(trace);
+
     dsizes[0] = 1;
     att_md = _NclCreateVal(
                            NULL,
@@ -1402,7 +1413,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int    *iwork, *ifail;
   int lwork, liwork, lifail;
-  long int lcssm, total_mem;
+  long long int lcssm, total_mem;
 /*
  * Attribute variables
  */
@@ -1537,7 +1548,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = (long)msta*((long)msta+1)/2;
+  lcssm  = msta*(msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -1548,10 +1559,11 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
   evecx  =  (double *)calloc(total_size_evec,sizeof(double));
-  total_mem = 8*(lcssm+lwork+lifail+total_size_x+total_size_evec)+4*(liwork+lifail);
+  total_mem = 8*(lcssm+lwork+lifail+total_size_x+total_size_evec) +
+              4*(liwork+lifail);
   if(  cssm == NULL ||  work == NULL || weval == NULL || iwork == NULL || 
       ifail == NULL || tmp_x == NULL || evecx == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for work arrays. A total of %d bytes need to be allocated",total_mem);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for work arrays. A total of %lld bytes need to be allocated",total_mem);
     return(NhlFATAL);
   }
 /*
