@@ -1,24 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include
- */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-
-/*
- *  Declare externals.
- */
-int c_shgetnp(float, float, float, int, float *, float *, float *,
-              int, int *);
-float *c_shgrid(int, float [], float [], float [], float [],
-                int, int, int, float [], float [], float [], int*);
-void c_shseti(char *, int);
-int c_shgeti(char *);
+#include "wrapper.h"
+#include <ncarg/ngmath.h>
 
 char shmsg[61];
 
@@ -27,19 +10,19 @@ NhlErrorTypes shgrid_W(void)
   int ier = 0;
 
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[NCL_MAX_DIMENSIONS];
   float *fval;
-  int ndims_fval, dsizes_fval[NCL_MAX_DIMENSIONS];
+  int dsizes_fval[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
   float *zo;
-  int ndims_zo, dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[NCL_MAX_DIMENSIONS];
 
   int       has_missing_xi, has_missing_yi, has_missing_zi, has_missing_fval;
   int       has_missing_xo, has_missing_yo, has_missing_zo;
@@ -55,7 +38,7 @@ NhlErrorTypes shgrid_W(void)
   xi = (float *) NclGetArgValue(
        0,
        7,
-       &ndims_xi,
+       NULL,
        dsizes_xi,
        &missing_xi,
        &has_missing_xi,
@@ -67,7 +50,7 @@ NhlErrorTypes shgrid_W(void)
   yi = (float *) NclGetArgValue(
        1,
        7,
-       &ndims_yi,
+       NULL,
        dsizes_yi,
        &missing_yi,
        &has_missing_yi,
@@ -79,7 +62,7 @@ NhlErrorTypes shgrid_W(void)
   zi = (float *) NclGetArgValue(
        2,
        7,
-       &ndims_zi,
+       NULL,
        dsizes_zi,
        &missing_zi,
        &has_missing_zi,
@@ -91,7 +74,7 @@ NhlErrorTypes shgrid_W(void)
   fval = (float *) NclGetArgValue(
          3,
          7,
-         &ndims_fval,
+         NULL,
          dsizes_fval,
          &missing_fval,
          &has_missing_fval,
@@ -103,7 +86,7 @@ NhlErrorTypes shgrid_W(void)
   xo = (float *) NclGetArgValue(
        4,
        7,
-       &ndims_xo,
+           NULL,
        dsizes_xo,
        &missing_xo,
        &has_missing_xo,
@@ -115,7 +98,7 @@ NhlErrorTypes shgrid_W(void)
   yo = (float *) NclGetArgValue(
        5,
        7,
-       &ndims_yo,
+           NULL,
        dsizes_yo,
        &missing_yo,
        &has_missing_yo,
@@ -127,7 +110,7 @@ NhlErrorTypes shgrid_W(void)
   zo = (float *) NclGetArgValue(
        6,
        7,
-       &ndims_zo,
+           NULL,
        dsizes_zo,
        &missing_zo,
        &has_missing_zo,
@@ -317,21 +300,21 @@ NhlErrorTypes shgetnp_W(void)
   int i, j, ier = 0, num_missing, num_points, *k, ll;
 
   float *px;
-  int ndims_px, dsizes_px[NCL_MAX_DIMENSIONS];
+  int dsizes_px[NCL_MAX_DIMENSIONS];
   float *py;
-  int ndims_py, dsizes_py[NCL_MAX_DIMENSIONS];
+  int dsizes_py[NCL_MAX_DIMENSIONS];
   float *pz;
-  int ndims_pz, dsizes_pz[NCL_MAX_DIMENSIONS];
+  int dsizes_pz[NCL_MAX_DIMENSIONS];
 
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[NCL_MAX_DIMENSIONS];
  
   int *flag;
-  int ndims_flag, dsizes_flag[NCL_MAX_DIMENSIONS];
+  int dsizes_flag[NCL_MAX_DIMENSIONS];
 
   int       has_missing_px, has_missing_py, has_missing_pz;
   NclScalar missing_px, missing_py, missing_pz;
@@ -346,7 +329,7 @@ NhlErrorTypes shgetnp_W(void)
   px = (float *) NclGetArgValue(
        0,
        7,
-       &ndims_px,
+       NULL,
        dsizes_px,
        &missing_px,
        &has_missing_px,
@@ -358,7 +341,7 @@ NhlErrorTypes shgetnp_W(void)
   py = (float *) NclGetArgValue(
        1,
        7,
-       &ndims_py,
+       NULL,
        dsizes_py,
        &missing_py,
        &has_missing_py,
@@ -370,7 +353,7 @@ NhlErrorTypes shgetnp_W(void)
   pz = (float *) NclGetArgValue(
        2,
        7,
-       &ndims_pz,
+       NULL,
        dsizes_pz,
        &missing_pz,
        &has_missing_pz,
@@ -382,7 +365,7 @@ NhlErrorTypes shgetnp_W(void)
   xi = (float *) NclGetArgValue(
        3,
        7,
-       &ndims_xi,
+       NULL,
        dsizes_xi,
        &missing_xi,
        &has_missing_xi,
@@ -394,7 +377,7 @@ NhlErrorTypes shgetnp_W(void)
   yi = (float *) NclGetArgValue(
        4,
        7,
-       &ndims_yi,
+       NULL,
        dsizes_yi,
        &missing_yi,
        &has_missing_yi,
@@ -406,7 +389,7 @@ NhlErrorTypes shgetnp_W(void)
   zi = (float *) NclGetArgValue(
        5,
        7,
-       &ndims_zi,
+       NULL,
        dsizes_zi,
        &missing_zi,
        &has_missing_zi,
@@ -418,7 +401,7 @@ NhlErrorTypes shgetnp_W(void)
   flag = (int *) NclGetArgValue(
          6,
          7,
-         &ndims_flag,
+         NULL,
          dsizes_flag,
          NULL,
          NULL,
@@ -555,9 +538,9 @@ NhlErrorTypes shsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -566,21 +549,13 @@ NhlErrorTypes shsetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           2,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
           &type_pname,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "shsetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
  
 /*
@@ -601,7 +576,7 @@ NhlErrorTypes shsetp_W(void)
 OK_NAME: pvalue = (void *) NclGetArgValue(
            1,
            2,
-           &ndims_pvalue,
+           NULL,
            dsizes_pvalue,
            NULL,
            NULL,
@@ -649,7 +624,7 @@ NhlErrorTypes shgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float *fval;
   int *ival;
@@ -661,21 +636,13 @@ NhlErrorTypes shgetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           1,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
           &type_pname,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "shgetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
 
 /*

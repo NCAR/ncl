@@ -1719,8 +1719,8 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
@@ -1737,8 +1737,8 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
@@ -2251,7 +2251,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(3);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurv_W, args, "ftcurv", nargs);
 
@@ -2261,7 +2261,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(3);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvd_W, args, "ftcurvd", nargs);
 
@@ -2274,7 +2274,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     NclRegisterFunc(ftcurvi_W, args, "ftcurvi", nargs);
 
 /*
@@ -2283,7 +2283,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
@@ -2299,7 +2299,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     NclRegisterFunc(ftcurvpi_W, args, "ftcurvpi", nargs);
 
 /*
@@ -2308,7 +2308,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvs_W, args, "ftcurvs", nargs);
@@ -2319,7 +2319,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(5);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
@@ -2426,8 +2426,8 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(6);
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
   dimsizes[0] = 2;
   SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
@@ -2440,10 +2440,10 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(9);
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
 
   dimsizes[0] = 2;
   SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
@@ -2461,8 +2461,8 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(6);
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
 
   dimsizes[0] = 2;
@@ -2477,10 +2477,10 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(9);
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
 
   dimsizes[0] = 2;
   SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
@@ -2498,9 +2498,9 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(8);
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
 
   dimsizes[0] = 3;
@@ -2516,11 +2516,11 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(11);
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
 
   dimsizes[0] = 3;
   SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
@@ -2539,9 +2539,9 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(8);
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
 
   dimsizes[0] = 3;
@@ -2557,11 +2557,11 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(11);
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
 
   dimsizes[0] = 3;
   SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
@@ -2586,8 +2586,8 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
@@ -2606,8 +2606,8 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
@@ -2626,9 +2626,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
@@ -2648,9 +2648,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;

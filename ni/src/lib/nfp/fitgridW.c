@@ -1,45 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-
-/*
- * The following are required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
-
-/*
- *  Declare the required C functions.
- */
-extern int c_ftsetr(char *, float);
-extern int c_ftseti(char *, int);
-extern int c_ftsetc(char *, char *);
-extern int c_ftgetr(char *, float *);
-extern int c_ftgeti(char *, int *);
-extern int c_ftgetc(char *, char *);
-extern int c_ftsetfa(char *, int, float *);
-extern int c_ftgetfa_size(char *);
-extern float *c_ftgetfa_data(char *);
-extern int c_ftcurv(int, float [], float [], int, float [], float []);
-extern int c_ftcurvd(int, float [], float [], int, float [], float []);
-extern int c_ftcurvi(float, float, int, float [], float [], float *);
-extern int c_ftcurvp(int, float [], float [], float, int, float [], float yo[]);
-extern int c_ftcurvpi(float, float, float, int, float [], float [], float *);
-extern int c_ftcurvs(int, float [], float [], int, float [], int, 
-                     float [], float []);
-extern int c_ftcurvps(int, float [], float [], float, int, float [],
-                      int, float [], float []);
-extern int c_ftkurv(int, float [], float [], int, float [], float [], float []);
-extern int c_ftkurvd(int, float [], float [], int, float [], float [], 
-                     float [], float [], float [], float [], float []);
-extern int c_ftkurvp(int, float [], float [], int, float [], float [], 
-                     float []);
-extern float *c_ftsurf(int, int, float *, float *, float *,
-                     int, int, float *, float *, int *);
+#include "wrapper.h"
+#include <ncarg/ngmath.h>
 
 int  fterr;
 char ftmsg[61];
@@ -67,9 +29,9 @@ NhlErrorTypes ftsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -78,21 +40,13 @@ NhlErrorTypes ftsetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           2,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
           &type_pname,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
 
 /*
@@ -125,7 +79,7 @@ NhlErrorTypes ftsetp_W(void)
 OK_NAME:  pvalue = (void *) NclGetArgValue(
            1,
            2,
-           &ndims_pvalue,
+           NULL,
            dsizes_pvalue,
            NULL,
            NULL,
@@ -213,11 +167,11 @@ NhlErrorTypes ftgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float *fval;
   int *ival;
-  int ret_size = 1;	
+  int ret_size = 1;
 
 /*
  * Retrieve argument #1
@@ -225,22 +179,13 @@ NhlErrorTypes ftgetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           1,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
           &type_pname,
           2);
 
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftgetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
 
 /*
@@ -317,13 +262,20 @@ NhlErrorTypes ftcurv_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
+/*
+ * Output variables.
+ */
   float *yo;
-  NclBasicDataTypes type_xi, type_yi, type_xo;
+  int *dsizes_yo;
+/*
+ * Various
+ */
+  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
 
 /*
  * Retrieve argument #1
@@ -331,30 +283,14 @@ NhlErrorTypes ftcurv_W(void)
   xi = (float *) NclGetArgValue(
           0,
           3,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurv: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurv: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2
@@ -366,26 +302,17 @@ NhlErrorTypes ftcurv_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check last dimension of argument #1.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurv: Argument #2 has the wrong number of dimensions.");
+              "ftcurv: The last dimension of argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurv: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3
@@ -393,50 +320,52 @@ NhlErrorTypes ftcurv_W(void)
   xo = (float *) NclGetArgValue(
           2,
           3,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurv: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  nxo = dsizes_xo[0];
 
 /*
- * Check the argument type for argument #3.
+ * Compute the total size of the leftmost dimension.
  */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurv: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  *  Acquire space for the return value.
  */
-  yo = (float *) calloc(dsizes_xo[0], sizeof(float)); 
-  fterr = c_ftcurv(dsizes_xi[0], xi, yi, dsizes_xo[0], xo, yo);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurv: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+  yo        = (float *) calloc(size_leftmost*nxo, sizeof(float));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+
+  if(yo == NULL || dsizes_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurv: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
-  return(NclReturnValue( 
-                         (void *) yo, 
-                         1,
-                         dsizes_xo,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
+
+/*
+ *  Call the C procedure.
+ */
+
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurv(npts, xi, &yi[index_in], nxo, xo, &yo[index_out]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurv: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nxo;
+  }
+
+  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,NCL_float,0 ));
 }
 
 NhlErrorTypes ftcurvd_W(void)
@@ -446,13 +375,20 @@ NhlErrorTypes ftcurvd_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
+/*
+ * Output variables.
+ */
   float *yo;
-  NclBasicDataTypes type_xi, type_yi, type_xo;
+  int *dsizes_yo;
+/*
+ * Various
+ */
+  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
 
 /*
  * Retrieve argument #1
@@ -460,30 +396,14 @@ NhlErrorTypes ftcurvd_W(void)
   xi = (float *) NclGetArgValue(
           0,
           3,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvd: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvd: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2
@@ -495,26 +415,17 @@ NhlErrorTypes ftcurvd_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check last dimension of argument #1.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvd: Argument #2 has the wrong number of dimensions.");
+              "ftcurvd: The last dimension of argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvd: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3
@@ -522,50 +433,51 @@ NhlErrorTypes ftcurvd_W(void)
   xo = (float *) NclGetArgValue(
           2,
           3,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvd: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  nxo = dsizes_xo[0];
 
 /*
- * Check the argument type for argument #3.
+ * Compute the total size of the leftmost dimension.
  */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvd: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  *  Acquire space for the return value.
  */
-  yo = (float *) calloc(dsizes_xo[0], sizeof(float)); 
-  fterr = c_ftcurvd(dsizes_xi[0], xi, yi, dsizes_xo[0], xo, yo);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvd: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+  yo        = (float *) calloc(size_leftmost*nxo, sizeof(float));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+
+  if(yo == NULL || dsizes_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvd: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
-  return(NclReturnValue( 
-                         (void *) yo, 
-                         1,
-                         dsizes_xo,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
+
+/*
+ *  Call the C procedure.
+ */
+
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvd(npts, xi, &yi[index_in], nxo, xo, &yo[index_out]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvd: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nxo;
+  }
+  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,NCL_float,0 ));
 }
 
 NhlErrorTypes ftcurvi_W(void)
@@ -575,16 +487,21 @@ NhlErrorTypes ftcurvi_W(void)
  * Input variables.
  */
   float *xl;
-  int ndims_xl, dsizes_xl[NCL_MAX_DIMENSIONS];
   float *xr;
-  int ndims_xr, dsizes_xr[NCL_MAX_DIMENSIONS];
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+/*
+ * Output variables.
+ */
   float *integral;
-  NclBasicDataTypes type_xl, type_xr, type_xi, type_yi;
-  int ret_size = 1;
+  int *dsizes_int, ndims_int;
+
+/*
+ * Various
+ */
+  int i, npts, size_leftmost, index_in = 0;
 
 /*
  * Retrieve argument #1
@@ -592,30 +509,12 @@ NhlErrorTypes ftcurvi_W(void)
   xl = (float *) NclGetArgValue(
           0,
           4,
-          &ndims_xl,
-          dsizes_xl,
           NULL,
           NULL,
-          &type_xl,
+          NULL,
+          NULL,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xl != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvi: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xl != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvi: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #2
@@ -623,60 +522,27 @@ NhlErrorTypes ftcurvi_W(void)
   xr = (float *) NclGetArgValue(
           1,
           4,
-          &ndims_xr,
-          dsizes_xr,
           NULL,
           NULL,
-          &type_xr,
+          NULL,
+          NULL,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #2.
- */
-  if(ndims_xr != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvi: Argument #2 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_xr != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvi: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 /*
  * Retrieve argument #3
  */
   xi = (float *) NclGetArgValue(
           2,
           4,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvi: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvi: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #4
@@ -688,46 +554,59 @@ NhlErrorTypes ftcurvi_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #4.
+ * Check last dimension of argument #4.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvi: Argument #4 has the wrong number of dimensions.");
+              "ftcurvi: The last dimension of argument #4 must be the same length as argument #3");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #4.
+ * Compute the total size of the leftmost dimension.
  */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvi: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
- *  Return the integral value.
+ *  Acquire space for the return value.
  */
-  integral = (float *) calloc(1,sizeof(float));
-  fterr = c_ftcurvi(*xl, *xr, dsizes_xi[0], xi, yi, integral);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvi: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+  ndims_int  = max(1,ndims_yi-1);
+  integral   = (float *) calloc(size_leftmost,sizeof(float));
+  dsizes_int = (int *) calloc(ndims_int,sizeof(int));
+
+  if(integral == NULL || dsizes_int == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvi: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
-  return(NclReturnValue( 
-                         (void *) integral, 
-                         1,
-                         &ret_size,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+
+  if(ndims_int == 1) {
+    dsizes_int[0] = 1;
+  }
+  else {
+    for( i = 0; i < ndims_yi-1; i++ ) dsizes_int[i] = dsizes_yi[i];
+  }
+
+/*
+ *  Calculate the integral values.
+ */
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvi(*xl, *xr, npts, xi, &yi[index_in], &integral[i]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvi: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in += npts;
+  }
+
+  return(NclReturnValue((void *) integral, ndims_int, dsizes_int, NULL,
+                        NCL_float, 0));
 }
 
 NhlErrorTypes ftcurvp_W(void)
@@ -737,15 +616,23 @@ NhlErrorTypes ftcurvp_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  int dsizes_p[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
+/*
+ * Output variables.
+ */
   float *yo;
-  NclBasicDataTypes type_xi, type_yi, type_p, type_xo;
+  int *dsizes_yo;
+
+/*
+ * Various
+ */
+  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
 
 /*
  * Retrieve argument #1 (X coordinate input values)
@@ -753,30 +640,14 @@ NhlErrorTypes ftcurvp_W(void)
   xi = (float *) NclGetArgValue(
           0,
           4,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvp: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (Y coordinate input values)
@@ -788,26 +659,18 @@ NhlErrorTypes ftcurvp_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check last dimension of argument #4.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvp: Argument #2 has the wrong number of dimensions.");
+              "ftcurvp: The last dimension of argument #4 must be the same length as argument #3");
     return(NhlFATAL);
   }
 
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvp: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3 (The period)
@@ -815,30 +678,12 @@ NhlErrorTypes ftcurvp_W(void)
   p = (float *) NclGetArgValue(
           2,
           4,
-          &ndims_p,
-          dsizes_p,
           NULL,
           NULL,
-          &type_p,
+          NULL,
+          NULL,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_p != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvp: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_p != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvp: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #4
@@ -846,50 +691,53 @@ NhlErrorTypes ftcurvp_W(void)
   xo = (float *) NclGetArgValue(
           3,
           4,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvp: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  nxo = dsizes_xo[0];
 
 /*
- * Check the argument type for argument #4.
+ * Compute the total size of the leftmost dimension.
  */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvp: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  *  Acquire space for the return value.
  */
-  yo = (float *) calloc(dsizes_xo[0], sizeof(float)); 
-  fterr = c_ftcurvp(dsizes_xi[0], xi, yi, *p, dsizes_xo[0], xo, yo);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvp: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+  yo        = (float *) calloc(size_leftmost*nxo, sizeof(float)); 
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  if(yo == NULL || dsizes_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvp: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
-  return(NclReturnValue( 
-                         (void *) yo, 
-                         1,
-                         dsizes_xo,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
+
+/*
+ *  Call the C procedure.
+ */
+
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvp(npts, xi, &yi[index_in], *p, nxo, xo, &yo[index_out]);
+
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvp: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+
+    index_in  += npts;
+    index_out += nxo;
+  }
+  return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
+                        NCL_float, 0));
 }
 
 NhlErrorTypes ftcurvpi_W(void)
@@ -899,18 +747,23 @@ NhlErrorTypes ftcurvpi_W(void)
  * Input variables.
  */
   float *xl;
-  int ndims_xl, dsizes_xl[NCL_MAX_DIMENSIONS];
   float *xr;
-  int ndims_xr, dsizes_xr[NCL_MAX_DIMENSIONS];
   float *p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+
+/*
+ * Output variables.
+ */
   float *integral;
-  NclBasicDataTypes type_xl, type_xr, type_xi, type_yi, type_p;
-  int ret_size = 1;	
+  int *dsizes_int, ndims_int;
+
+/*
+ * Various
+ */
+  int i, npts, size_leftmost, index_in = 0;
 
 /*
  * Retrieve argument #1 (left integral limit).
@@ -918,30 +771,12 @@ NhlErrorTypes ftcurvpi_W(void)
   xl = (float *) NclGetArgValue(
           0,
           5,
-          &ndims_xl,
-          dsizes_xl,
           NULL,
           NULL,
-          &type_xl,
+          NULL,
+          NULL,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xl != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xl != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvpi: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #2 (right integral limit).
@@ -949,30 +784,12 @@ NhlErrorTypes ftcurvpi_W(void)
   xr = (float *) NclGetArgValue(
           1,
           5,
-          &ndims_xr,
-          dsizes_xr,
           NULL,
           NULL,
-          &type_xr,
+          NULL,
+          NULL,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #2.
- */
-  if(ndims_xr != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: Argument #2 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_xr != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvpi: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3 (The period)
@@ -980,30 +797,12 @@ NhlErrorTypes ftcurvpi_W(void)
   p = (float *) NclGetArgValue(
           2,
           5,
-          &ndims_p,
-          dsizes_p,
           NULL,
           NULL,
-          &type_p,
+          NULL,
+          NULL,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_p != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_p != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvpi: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #4 (the X coordinate input values).
@@ -1011,30 +810,14 @@ NhlErrorTypes ftcurvpi_W(void)
   xi = (float *) NclGetArgValue(
           3,
           5,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvpi: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #5 (the Y coordinate input values).
@@ -1046,46 +829,58 @@ NhlErrorTypes ftcurvpi_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #5.
+ * Check last dimension of argument #4.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: Argument #4 has the wrong number of dimensions.");
+              "ftcurvpi: The last dimension of argument #4 must be the same length as argument #3");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #5.
+ * Compute the total size of the leftmost dimension.
  */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvpi: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
+
+/*
+ *  Acquire space for the return value.
+ */
+  ndims_int  = max(1,ndims_yi-1);
+  integral   = (float *) calloc(size_leftmost,sizeof(float));
+  dsizes_int = (int *) calloc(ndims_int,sizeof(int));
+
+  if(integral == NULL || dsizes_int == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvpi: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+
+  if(ndims_int == 1) {
+    dsizes_int[0] = 1;
+  }
+  else {
+    for( i = 0; i < ndims_yi-1; i++ ) dsizes_int[i] = dsizes_yi[i];
+  }
 
 /*
  *  Return the integral value.
  */
-  integral = (float *) calloc(1,sizeof(float));
-  fterr = c_ftcurvpi(*xl, *xr, *p, dsizes_xi[0], xi, yi, integral);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvpi: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
-    return(NhlFATAL);
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvpi(*xl, *xr, *p, npts, xi, &yi[index_in], &integral[i]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvpi: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in += npts;
   }
-  return(NclReturnValue( 
-                         (void *) integral, 
-                         1,
-                         &ret_size,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+  return(NclReturnValue((void *) integral, ndims_int, dsizes_int, NULL,
+                        NCL_float, 0));
 }
 
 NhlErrorTypes ftcurvs_W(void)
@@ -1095,16 +890,24 @@ NhlErrorTypes ftcurvs_W(void)
  * Input variables.
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *d;
-  int ndims_d, dsizes_d[NCL_MAX_DIMENSIONS];
+  int dsizes_d[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
+/*
+ * Output variables.
+ */
   float *yo;
+  int *dsizes_yo;
+
+/*
+ * Various
+ */
+  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
   int isw;
-  NclBasicDataTypes type_xi, type_yi, type_d, type_xo;
 
 /*
  * Retrieve argument #1 (X coordinate input points).
@@ -1112,30 +915,14 @@ NhlErrorTypes ftcurvs_W(void)
   xi = (float *) NclGetArgValue(
           0,
           4,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvs: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (Y coordinate input values).
@@ -1147,110 +934,84 @@ NhlErrorTypes ftcurvs_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check last dimension of argument #1.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: Argument #2 has the wrong number of dimensions.");
+              "ftcurvs: The last dimension of argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvs: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #3 (The observation weights).
+ * Retrieve argument #2 (The observation weights).
  */
   d = (float *) NclGetArgValue(
           2,
           4,
-          &ndims_d,
+          NULL,
           dsizes_d,
           NULL,
           NULL,
-          &type_d,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_d != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_d != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvs: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #4 (the X coordinate output values).
+ * Retrieve argument #3 (the X coordinate output values).
  */
   xo = (float *) NclGetArgValue(
           3,
           4,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
+  nxo = dsizes_xo[0];
+
 /*
- * Check number of dimensions for argument #4.
+ * Compute the total size of the leftmost dimension.
  */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: Argument #4 has the wrong number of dimensions.");
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
+
+/*
+ * Allocate space for output variables.
+ */
+  yo        = (float *) calloc(size_leftmost*nxo, sizeof(float)); 
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  if(yo == NULL || dsizes_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvs: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvs: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Return the interpolated smooth curve.
  */
-  yo = (float *) calloc(dsizes_xo[0], sizeof(float)); 
-  isw = 1;
   if (dsizes_d[0] > 1) isw = 0;
-  fterr = c_ftcurvs(dsizes_xi[0], xi, yi, isw, d, dsizes_xo[0], xo, yo);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvs: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
-    return(NhlFATAL);
+  isw = 1;
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvs(npts, xi, &yi[index_in], isw, d, nxo, xo, 
+                      &yo[index_out]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvs: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nxo;
   }
-  return(NclReturnValue( 
-                         (void *) yo, 
-                         1,
-                         dsizes_xo,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+  return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
+                        NCL_float, 0));
 }
 
 NhlErrorTypes ftcurvps_W(void)
@@ -1260,52 +1021,44 @@ NhlErrorTypes ftcurvps_W(void)
  * Input variables.
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   float *d;
-  int ndims_d, dsizes_d[NCL_MAX_DIMENSIONS];
+  int dsizes_d[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
-  float *yo;
-  int isw;
-  NclBasicDataTypes type_xi, type_yi, type_p, type_d, type_xo;
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
 
 /*
- * Retrieve argument #1 (X coordinate input points).
+ * Output variables.
+ */
+  float *yo;
+  int *dsizes_yo;
+
+/*
+ * Various
+ */
+  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int isw;
+
+/*
+ * Retrieve argument #0 (X coordinate input points).
  */
   xi = (float *) NclGetArgValue(
           0,
           5,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  npts = dsizes_xi[0];
 
 /*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvps: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #2 (Y coordinate input values).
+ * Retrieve argument #1 (Y coordinate input values).
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -1314,159 +1067,115 @@ NhlErrorTypes ftcurvps_W(void)
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check last dimension of argument #1.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: Argument #2 has the wrong number of dimensions.");
+              "ftcurvps: The last dimension of argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvps: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #3 (The period).
+ * Retrieve argument #2 (The period).
  */
   p = (float *) NclGetArgValue(
           2,
           5,
-          &ndims_p,
-          dsizes_p,
           NULL,
           NULL,
-          &type_p,
+          NULL,
+          NULL,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_p != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_p != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvps: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
-/*
- * Retrieve argument #4 (The observation weights).
+ * Retrieve argument #3 (The observation weights).
  */
   d = (float *) NclGetArgValue(
           3,
           5,
-          &ndims_d,
+          NULL,
           dsizes_d,
           NULL,
           NULL,
-          &type_d,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_d != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_d != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvps: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #5 (the X coordinate output values).
+ * Retrieve argument #4 (the X coordinate output values).
  */
   xo = (float *) NclGetArgValue(
           4,
           5,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
+  nxo = dsizes_xo[0];
+
 /*
- * Check number of dimensions for argument #5.
+ * Compute the total size of the leftmost dimension.
  */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: Argument #4 has the wrong number of dimensions.");
+  size_leftmost = 1;
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
+
+/*
+ * Allocate space for output variables.
+ */
+  yo        = (float *) calloc(size_leftmost*nxo, sizeof(float)); 
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  if(yo == NULL || dsizes_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "ftcurvps: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 
-/*
- * Check the argument type for argument #5.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftcurvps: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Return the interpolated smooth curve.
  */
-  yo = (float *) calloc(dsizes_xo[0], sizeof(float)); 
   isw = 1;
   if (dsizes_d[0] > 1) isw = 0;
-  fterr = c_ftcurvps(dsizes_xi[0], xi, yi, *p, isw, d, dsizes_xo[0], xo, yo);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftcurvps: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
-    return(NhlFATAL);
+  for( i = 0; i < size_leftmost; i++ ) {
+    fterr = c_ftcurvps(npts, xi, &yi[index_in], *p, isw, d, nxo, xo,
+                       &yo[index_out]);
+    if (fterr != 0) {
+      sprintf(ftmsg, "ftcurvps: Error number %d.", fterr);
+      NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nxo;
   }
-  return(NclReturnValue( 
-                         (void *) yo, 
-                         1,
-                         dsizes_xo,
-                         NULL,
-                         NCL_float,
-                         0 
-                       )
-        );
+  return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
+                        NCL_float, 0));
 }
 
 NhlErrorTypes ftkurv_W(void)
 {
-
 /*
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *ti;
-  int ndims_ti, dsizes_ti[NCL_MAX_DIMENSIONS];
+  int dsizes_ti[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_xi, type_yi, type_ti, type_xo, type_yo;
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int npts, mpts;
 
 /*
  * Retrieve argument #1
@@ -1474,30 +1183,14 @@ NhlErrorTypes ftkurv_W(void)
   xi = (float *) NclGetArgValue(
           0,
           5,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurv: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurv: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2
@@ -1505,30 +1198,21 @@ NhlErrorTypes ftkurv_W(void)
   yi = (float *) NclGetArgValue(
           1,
           5,
-          &ndims_yi,
+          NULL,
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check dimension of argument #4.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[0] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurv: Argument #2 has the wrong number of dimensions.");
+              "ftkurv: Argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurv: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3
@@ -1536,30 +1220,14 @@ NhlErrorTypes ftkurv_W(void)
   ti = (float *) NclGetArgValue(
           2,
           5,
-          &ndims_ti,
+          NULL,
           dsizes_ti,
           NULL,
           NULL,
-          &type_ti,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_ti != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurv: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_ti != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurv: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  mpts = dsizes_ti[0];
 
 /*
  * Retrieve argument #4
@@ -1567,30 +1235,12 @@ NhlErrorTypes ftkurv_W(void)
   xo = (float *) NclGetArgValue(
           3,
           5,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurv: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurv: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #5
@@ -1598,35 +1248,26 @@ NhlErrorTypes ftkurv_W(void)
   yo = (float *) NclGetArgValue(
           4,
           5,
-          &ndims_yo,
+          NULL,
           dsizes_yo,
           NULL,
           NULL,
-          &type_yo,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #5.
+ * Check dimension of arguments #2, 3, and #4.
  */
-  if(ndims_yo != 1) {
+  if(dsizes_xo[0] != mpts || dsizes_yo[0] != mpts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurv: Argument #5 has the wrong number of dimensions.");
+              "ftkurv: Arguments #2, 3, and #4 must be the same length");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #5.
- */
-      if (type_yo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurv: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
  *  Invoke the C function.
  */
-  fterr = c_ftkurv(dsizes_xi[0], xi, yi, dsizes_xo[0], ti, xo, yo);
+  fterr = c_ftkurv(npts, xi, yi, mpts, ti, xo, yo);
   if (fterr != 0) {
     sprintf(ftmsg, "ftkurv: Error number %d.", fterr);
     NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
@@ -1642,176 +1283,109 @@ NhlErrorTypes ftkurvp_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *ti;
-  int ndims_ti, dsizes_ti[NCL_MAX_DIMENSIONS];
+  int dsizes_ti[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_xi, type_yi, type_ti, type_xo, type_yo;
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
+
+  int npts, mpts;
 
 /*
- * Retrieve argument #1
+ * Retrieve argument #0
  */
   xi = (float *) NclGetArgValue(
           0,
           5,
-          &ndims_xi,
+          NULL,
           dsizes_xi,
           NULL,
           NULL,
-          &type_xi,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  npts = dsizes_xi[0];
 
 /*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvp: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #2
+ * Retrieve argument #1
  */
   yi = (float *) NclGetArgValue(
           1,
           5,
-          &ndims_yi,
+          NULL,
           dsizes_yi,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #2.
+ * Check dimension of argument #4.
  */
-  if(ndims_yi != 1) {
+  if(dsizes_yi[0] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvp: Argument #2 has the wrong number of dimensions.");
+              "ftkurvp: Argument #1 must be the same length as argument #0");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvp: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #3
+ * Retrieve argument #2
  */
   ti = (float *) NclGetArgValue(
           2,
           5,
-          &ndims_ti,
+          NULL,
           dsizes_ti,
           NULL,
           NULL,
-          &type_ti,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_ti != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvp: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
+  mpts = dsizes_ti[0];
 
 /*
- * Check the argument type for argument #3.
- */
-      if (type_ti != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvp: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #4
+ * Retrieve argument #3
  */
   xo = (float *) NclGetArgValue(
           3,
           5,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvp: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvp: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #5
+ * Retrieve argument #4
  */
   yo = (float *) NclGetArgValue(
           4,
           5,
-          &ndims_yo,
+          NULL,
           dsizes_yo,
           NULL,
           NULL,
-          &type_yo,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #5.
+ * Check dimension of arguments #2, 3, and #4.
  */
-  if(ndims_yo != 1) {
+  if(dsizes_xo[0] != mpts || dsizes_yo[0] != mpts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvp: Argument #5 has the wrong number of dimensions.");
+              "ftkurvp: Arguments #2, 3, and #4 must be the same length");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #5.
- */
-      if (type_yo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvp: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
  *  Invoke the C function.
  */
-  fterr = c_ftkurvp(dsizes_xi[0], xi, yi, dsizes_xo[0], ti, xo, yo);
+  fterr = c_ftkurvp(npts, xi, yi, mpts, ti, xo, yo);
   if (fterr != 0) {
     sprintf(ftmsg, "ftkurvp: Error number %d.", fterr);
     NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
@@ -1827,234 +1401,98 @@ NhlErrorTypes ftkurvd_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *ti;
-  int ndims_ti, dsizes_ti[NCL_MAX_DIMENSIONS];
+  int dsizes_ti[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
   float *xd;
-  int ndims_xd, dsizes_xd[NCL_MAX_DIMENSIONS];
+  int dsizes_xd[NCL_MAX_DIMENSIONS];
   float *yd;
-  int ndims_yd, dsizes_yd[NCL_MAX_DIMENSIONS];
+  int dsizes_yd[NCL_MAX_DIMENSIONS];
   float *xdd;
-  int ndims_xdd, dsizes_xdd[NCL_MAX_DIMENSIONS];
+  int dsizes_xdd[NCL_MAX_DIMENSIONS];
   float *ydd;
-  int ndims_ydd, dsizes_ydd[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_xi, type_yi, type_ti, type_xo, type_yo,
-                    type_xd, type_yd, type_xdd, type_ydd;
+  int dsizes_ydd[NCL_MAX_DIMENSIONS];
+
+/*
+ * Retrieve argument #0
+ */
+  xi = (float *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,NULL,2);
 
 /*
  * Retrieve argument #1
  */
-  xi = (float *) NclGetArgValue(0,9,&ndims_xi,dsizes_xi,NULL,NULL,&type_xi,2);
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  yi = (float *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,NULL,2);
 
 /*
  * Retrieve argument #2
  */
-  yi = (float *) NclGetArgValue(
-          1,
+  ti = (float *) NclGetArgValue(
+          2,
           9,
-          &ndims_yi,
-          dsizes_yi,
+          NULL,
+          dsizes_ti,
           NULL,
           NULL,
-          &type_yi,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #2.
- */
-  if(ndims_yi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #2 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #3
  */
-  ti = (float *) NclGetArgValue(
-          2,
+  xo = (float *) NclGetArgValue(
+          3,
           9,
-          &ndims_ti,
-          dsizes_ti,
+          NULL,
+          dsizes_xo,
           NULL,
           NULL,
-          &type_ti,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_ti != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_ti != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #4
  */
-  xo = (float *) NclGetArgValue(
-          3,
-          9,
-          &ndims_xo,
-          dsizes_xo,
-          NULL,
-          NULL,
-          &type_xo,
-          2);
-
-/*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #5
- */
   yo = (float *) NclGetArgValue(
           4,
           9,
-          &ndims_yo,
+          NULL,
           dsizes_yo,
           NULL,
           NULL,
-          &type_yo,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #5.
- */
-  if(ndims_yo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #5 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #5.
- */
-      if (type_yo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #6 - xd
+ * Retrieve argument #5 - xd
  */
   xd = (float *) NclGetArgValue(
           5,
           9,
-          &ndims_xd,
+          NULL,
           dsizes_xd,
           NULL,
           NULL,
-          &type_xd,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #6.
- */
-  if(ndims_xd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #6 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #6.
- */
-      if (type_xd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #6 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #7 - yd
+ * Retrieve argument #6 - yd
  */
   yd = (float *) NclGetArgValue(
           6,
           9,
-          &ndims_yd,
+          NULL,
           dsizes_yd,
           NULL,
           NULL,
-          &type_yd,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #7.
- */
-  if(ndims_yd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #7 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #7.
- */
-      if (type_yd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #6 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #8 - xdd
@@ -2062,30 +1500,12 @@ NhlErrorTypes ftkurvd_W(void)
   xdd = (float *) NclGetArgValue(
           7,
           9,
-          &ndims_xdd,
+          NULL,
           dsizes_xdd,
           NULL,
           NULL,
-          &type_xdd,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #8.
- */
-  if(ndims_xdd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #8 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #8.
- */
-      if (type_xdd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #8 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #9 - ydd
@@ -2093,30 +1513,12 @@ NhlErrorTypes ftkurvd_W(void)
   ydd = (float *) NclGetArgValue(
           8,
           9,
-          &ndims_ydd,
+          NULL,
           dsizes_ydd,
           NULL,
           NULL,
-          &type_ydd,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #9.
- */
-  if(ndims_ydd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvd: Argument #9 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #9.
- */
-      if (type_ydd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvd: Argument #9 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  *  Invoke the C function.
@@ -2138,79 +1540,33 @@ NhlErrorTypes ftkurvpd_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *ti;
-  int ndims_ti, dsizes_ti[NCL_MAX_DIMENSIONS];
+  int dsizes_ti[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
   float *xd;
-  int ndims_xd, dsizes_xd[NCL_MAX_DIMENSIONS];
+  int dsizes_xd[NCL_MAX_DIMENSIONS];
   float *yd;
-  int ndims_yd, dsizes_yd[NCL_MAX_DIMENSIONS];
+  int dsizes_yd[NCL_MAX_DIMENSIONS];
   float *xdd;
-  int ndims_xdd, dsizes_xdd[NCL_MAX_DIMENSIONS];
+  int dsizes_xdd[NCL_MAX_DIMENSIONS];
   float *ydd;
-  int ndims_ydd, dsizes_ydd[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_xi, type_yi, type_ti, type_xo, type_yo,
-                    type_xd, type_yd, type_xdd, type_ydd;
+  int dsizes_ydd[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve argument #1
  */
-  xi = (float *) NclGetArgValue(0,9,&ndims_xi,dsizes_xi,NULL,NULL,&type_xi,2);
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  xi = (float *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,NULL,2);
 
 /*
  * Retrieve argument #2
  */
-  yi = (float *) NclGetArgValue(
-          1,
-          9,
-          &ndims_yi,
-          dsizes_yi,
-          NULL,
-          NULL,
-          &type_yi,
-          2);
-
-/*
- * Check number of dimensions for argument #2.
- */
-  if(ndims_yi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #2 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  yi = (float *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,NULL,2);
 
 /*
  * Retrieve argument #3
@@ -2218,30 +1574,12 @@ NhlErrorTypes ftkurvpd_W(void)
   ti = (float *) NclGetArgValue(
           2,
           9,
-          &ndims_ti,
+          NULL,
           dsizes_ti,
           NULL,
           NULL,
-          &type_ti,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #3.
- */
-  if(ndims_ti != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #3 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #3.
- */
-      if (type_ti != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #4
@@ -2249,30 +1587,12 @@ NhlErrorTypes ftkurvpd_W(void)
   xo = (float *) NclGetArgValue(
           3,
           9,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #5
@@ -2280,30 +1600,12 @@ NhlErrorTypes ftkurvpd_W(void)
   yo = (float *) NclGetArgValue(
           4,
           9,
-          &ndims_yo,
+          NULL,
           dsizes_yo,
           NULL,
           NULL,
-          &type_yo,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #5.
- */
-  if(ndims_yo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #5 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #5.
- */
-      if (type_yo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #6 - xd
@@ -2311,30 +1613,12 @@ NhlErrorTypes ftkurvpd_W(void)
   xd = (float *) NclGetArgValue(
           5,
           9,
-          &ndims_xd,
+          NULL,
           dsizes_xd,
           NULL,
           NULL,
-          &type_xd,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #6.
- */
-  if(ndims_xd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #6 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #6.
- */
-      if (type_xd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #6 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Retrieve argument #7 - yd
@@ -2342,92 +1626,38 @@ NhlErrorTypes ftkurvpd_W(void)
   yd = (float *) NclGetArgValue(
           6,
           9,
-          &ndims_yd,
+          NULL,
           dsizes_yd,
           NULL,
           NULL,
-          &type_yd,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #7.
- */
-  if(ndims_yd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #7 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #7.
- */
-      if (type_yd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #6 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #8 - xdd
+ * Retrieve argument #7 - xdd
  */
   xdd = (float *) NclGetArgValue(
           7,
           9,
-          &ndims_xdd,
+          NULL,
           dsizes_xdd,
           NULL,
           NULL,
-          &type_xdd,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #8.
- */
-  if(ndims_xdd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #8 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #8.
- */
-      if (type_xdd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #8 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #9 - ydd
+ * Retrieve argument #8 - ydd
  */
   ydd = (float *) NclGetArgValue(
           8,
           9,
-          &ndims_ydd,
+          NULL,
           dsizes_ydd,
           NULL,
           NULL,
-          &type_ydd,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #9.
- */
-  if(ndims_ydd != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftkurvpd: Argument #9 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #9.
- */
-      if (type_ydd != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftkurvpd: Argument #9 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  *  Invoke the C function.
@@ -2449,171 +1679,72 @@ NhlErrorTypes ftsurf_W(void)
  * Input array variables
  */
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   float *xo;
-  int ndims_xo, dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int ndims_yo, dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[NCL_MAX_DIMENSIONS];
   float *zo;
   int ndims_zo, dsizes_zo[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo, type_zo;
 
   int i,ji,jo,k,nxi,nyi,nxo,nyo,nt;
   float *ztmp;
 
 /*
+ * Retrieve argument #0
+ */
+  xi = (float *) NclGetArgValue(0,5,NULL,dsizes_xi,NULL,NULL,NULL,2);
+
+/*
  * Retrieve argument #1
  */
-  xi = (float *) NclGetArgValue(0,5,&ndims_xi,dsizes_xi,NULL,NULL,&type_xi,2);
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_xi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #1.
- */
-      if (type_xi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftsurf: Argument #1 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  yi = (float *) NclGetArgValue(1,5,NULL,dsizes_yi,NULL,NULL,NULL,2);
 
 /*
  * Retrieve argument #2
  */
-  yi = (float *) NclGetArgValue(
-          1,
-          5,
-          &ndims_yi,
-          dsizes_yi,
-          NULL,
-          NULL,
-          &type_yi,
-          2);
+  zi = (float *) NclGetArgValue(2,5,&ndims_zi,dsizes_zi,NULL,NULL,NULL,2);
 
 /*
- * Check number of dimensions for argument #2.
- */
-  if(ndims_yi != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #2 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #2.
- */
-      if (type_yi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftsurf: Argument #2 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #3
- */
-  zi = (float *) NclGetArgValue(
-          2,
-          5,
-          &ndims_zi,
-          dsizes_zi,
-          NULL,
-          NULL,
-          &type_zi,
-          2);
-
-/*
- * Check number of dimensions for argument #3.  This argument must
+ * Check number of dimensions for argument #2.  This argument must
  * have at least two dimensions, but can have more.
  *
  */
   if(ndims_zi < 2) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #3 has less than two dimensions.");
+              "ftsurf: Argument #2 has less than two dimensions.");
     return(NhlFATAL);
   }
 
 /*
- * Check the argument type for argument #3.
- */
-  if (type_zi != NCL_float) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, 
-            "ftsurf: Argument #3 has an incorrect type.");
-    return(NhlFATAL);
-  }
-
-
-/*
- * Retrieve argument #4
+ * Retrieve argument #3
  */
   xo = (float *) NclGetArgValue(
           3,
           5,
-          &ndims_xo,
+          NULL,
           dsizes_xo,
           NULL,
           NULL,
-          &type_xo,
+          NULL,
           2);
 
 /*
- * Check number of dimensions for argument #4.
- */
-  if(ndims_xo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #4 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #4.
- */
-      if (type_xo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftsurf: Argument #4 has an incorrect type.");
-        return(NhlFATAL);
-      }
-
-/*
- * Retrieve argument #5
+ * Retrieve argument #4
  */
   yo = (float *) NclGetArgValue(
           4,
           5,
-          &ndims_yo,
+          NULL,
           dsizes_yo,
           NULL,
           NULL,
-          &type_yo,
+          NULL,
           2);
-
-/*
- * Check number of dimensions for argument #5.
- */
-  if(ndims_yo != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #5 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
-
-/*
- * Check the argument type for argument #5.
- */
-      if (type_yo != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftsurf: Argument #5 has an incorrect type.");
-        return(NhlFATAL);
-      }
 
 /*
  * Save the sizes of the last two dimensions of the output array.

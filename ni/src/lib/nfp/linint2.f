@@ -48,7 +48,7 @@ c                              automatic temporary/work arrays
       DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1)
 
 c                              local
-      INTEGER NX,NY
+      INTEGER NX
       DOUBLE PRECISION DX
 c                              error checking
       IER = 0
@@ -320,6 +320,10 @@ c .   nxyo    - number of xo,yo coordinate pairs
 c .   xo,yo   - coordinate pairs
 c .   fo      - functional output values [interpolated]
 c .   xmsg    - missing code
+c .   nopt    - option for how to handle case when not all values
+c .              present
+c .              >= 0 means set the interpolated point to xmsg
+c .              =-1 try some sort of weighted average
 c .   ier     - error code
 c .             =0;   no error
 c .             =1;   not enough points in input/output array
@@ -330,7 +334,9 @@ c                              automatic temporary/work arrays
       DOUBLE PRECISION DX
 
 c                              local
-      INTEGER NX,NY
+      INTEGER NX,NY,NOPT
+c                              this could be made an argument
+      NOPT = -1
 c                              error checking
       IER = 0
       IF (NXI.LT.2 .OR. NYI.LT.2) THEN
@@ -344,7 +350,7 @@ c                              error mono increasing ?
       IF (IER.NE.0) RETURN
 c                               is the input array cyclic in x
       IF (ICYCX.EQ.0) THEN
-          CALL DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,IER)
+          CALL DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
       ELSE
 c                               must be cyclic in x
 c                               create cyclic "x" coordinates
@@ -362,17 +368,19 @@ c                               create cyclic "x" coordinates
               FIXW(0,NY) = FI(NXI,NY)
               FIXW(NXI+1,NY) = FI(1,NY)
           END DO
-          CALL DLINT2XY(NXI+2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,IER)
+          CALL DLINT2XY(NXI+2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,NOPT,
+     +                  IER)
       END IF
 
 
       RETURN
       END
+
 c -----------------------------------------------------------
 c                           could be improved with f90 cycle/continue
-      SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,IER)
+      SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
       IMPLICIT NONE
-      INTEGER NXI,NYI,NXYO,IER
+      INTEGER NXI,NYI,NXYO,NOPT,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI),XMSG
       DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO)
 c                               local
@@ -402,25 +410,75 @@ c                               local
               IF (XO(NXY).EQ.XI(NN) .AND. YO(NXY).EQ.YI(MM)) THEN
 c                               exact location [no interpolation]
                   FO(NXY) = FI(NN,MM)
-              ELSE
-c                               must interpolate
-                  IF (FI(NN,MM).NE.XMSG .AND. FI(NN+1,MM).NE.XMSG .AND.
-     +                FI(NN,MM+1).NE.XMSG .AND.
-     +                FI(NN+1,MM+1).NE.XMSG) THEN
-c                               slopes
-                      SLPX = (XO(NXY)-XI(NN))/ (XI(NN+1)-XI(NN))
-                      SLPY = (YO(NXY)-YI(MM))/ (YI(MM+1)-YI(MM))
+              ELSE IF (FI(NN,MM).NE.XMSG .AND. FI(NN+1,MM).NE.XMSG .AND.
+     +                 FI(NN,MM+1).NE.XMSG .AND.
+     +                 FI(NN+1,MM+1).NE.XMSG) THEN
+c                               must interpolate: calculate slopes
+                  SLPX = (XO(NXY)-XI(NN))/ (XI(NN+1)-XI(NN))
+                  SLPY = (YO(NXY)-YI(MM))/ (YI(MM+1)-YI(MM))
 c                               interpolate in "x" first
-                      TMP1 = FI(NN,MM) + SLPX* (FI(NN+1,MM)-FI(NN,MM))
-                      TMP2 = FI(NN,MM+1) + SLPX*
-     +                       (FI(NN+1,MM+1)-FI(NN,MM+1))
+                  TMP1 = FI(NN,MM) + SLPX* (FI(NN+1,MM)-FI(NN,MM))
+                  TMP2 = FI(NN,MM+1) + SLPX* (FI(NN+1,MM+1)-FI(NN,MM+1))
 c                               interpolate in "y"
-                      FO(NXY) = TMP1 + SLPY* (TMP2-TMP1)
-                  END IF
+                  FO(NXY) = TMP1 + SLPY* (TMP2-TMP1)
+              ELSE IF (NOPT.EQ.-1) THEN
+                  CALL ESTFOW(FI(NN,MM),FI(NN+1,MM),FI(NN,MM+1),
+     +                        FI(NN+1,MM+1),XI(NN),XI(NN+1),YI(MM),
+     +                        YI(MM+1),FO(NXY),XO(NXY),YO(NXY),XMSG)
               END IF
           END IF
 
       END DO
+
+      RETURN
+      END
+c ---------------------------------------------
+      SUBROUTINE ESTFOW(F1,F2,F3,F4,X1,X2,Y1,Y2,F0,X0,Y0,XMSG)
+      IMPLICIT NONE
+      DOUBLE PRECISION F1,F2,F3,F4,X1,X2,Y1,Y2,F0,X0,Y0,XMSG
+c local
+      DOUBLE PRECISION FI(2,2),W(2,2),SUM,SWT
+      INTEGER N,M
+
+c     f3(x1,y2)+++++++++++f4(x2,y2)
+c        f0(x0,y0)         someplace within the surrounding 4 pts
+c     f3(x1,y1)+++++++++++f4(x2,y1)
+
+c if all msg return
+
+      F0 = XMSG
+      IF (F1.EQ.XMSG .AND. F2.EQ.XMSG .AND. F3.EQ.XMSG .AND.
+     +    F4.EQ.XMSG) RETURN
+
+c compute 'distance wgted average
+c .   make assumption that dx/dy are small and
+c .   pythag theorem is good enough
+
+c inverse distance wgts
+      W(1,1) = 1.D0/SQRT((X1-X0)**2+ (Y1-Y0)**2)
+      W(2,1) = 1.D0/SQRT((X2-X0)**2+ (Y1-Y0)**2)
+      W(1,2) = 1.D0/SQRT((X1-X0)**2+ (Y2-Y0)**2)
+      W(2,2) = 1.D0/SQRT((X2-X0)**2+ (Y2-Y0)**2)
+
+      FI(1,1) = F1
+      FI(2,1) = F2
+      FI(1,2) = F3
+      FI(2,2) = F4
+
+      SUM = 0.D0
+      SWT = 0.D0
+      DO M = 1,2
+          DO N = 1,2
+              IF (FI(N,M).NE.XMSG) THEN
+                  SUM = SUM + FI(N,M)*W(N,M)
+                  SWT = SWT + W(N,M)
+              END IF
+          END DO
+      END DO
+c                               wgted average
+      IF (SWT.GT.0.D0) THEN
+          F0 = SUM/SWT
+      END IF
 
       RETURN
       END

@@ -14,9 +14,9 @@ NhlErrorTypes natgrids_W( void )
 {
   int ier = 0;
   float *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   float *y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   float *z;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   float *xo;
@@ -40,7 +40,7 @@ NhlErrorTypes natgrids_W( void )
   x = (float*)NclGetArgValue(
                              0,
                              5,
-                             &ndims_x,
+                             NULL,
                              dsizes_x,
                              &missing_x,
                              &has_missing_x,
@@ -49,12 +49,25 @@ NhlErrorTypes natgrids_W( void )
   y = (float*)NclGetArgValue(
                              1,
                              5,
-                             &ndims_y,
+                             NULL,
                              dsizes_y,
                              &missing_y,
                              &has_missing_y,
                              NULL,
                              2);
+/*
+ * Check dimension sizes for x and y.
+ */
+  if(dsizes_x[0] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: x and y must be the same length");
+    return(NhlFATAL);
+  }
+
+  npts = dsizes_x[0];
+
+/*
+ * Get z.
+ */
   z = (float*)NclGetArgValue(
                              2,
                              5,
@@ -66,26 +79,19 @@ NhlErrorTypes natgrids_W( void )
                              2);
   
 /*
- * Check dimension sizes for x, y and z.
+ * Check rightmost dimension size for z.
  */
-  if(ndims_x != ndims_y || ndims_x != ndims_z) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the dimension sizes of parameters x, y and z must be identical");
+  if(dsizes_z[ndims_z-1] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the last (rightmost) dimension of z must be the same length as x and y");
     return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_x; i++) {
-    if(dsizes_x[i] != dsizes_y[i] || dsizes_x[i] != dsizes_z[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the dimension sizes of parameters x, y and z must be identical");
-      return(NhlFATAL);
-    }
   }
 
 /*
  * Compute the total size of the input and the leftmost dimensions.
  */
-  npts = dsizes_x[ndims_x-1];
 
   size_leftmost = 1;
-  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
+  for( i = 0; i < ndims_z-1; i++ ) size_leftmost *= dsizes_z[i];
   size_input = size_leftmost * npts;
 
 /*
@@ -117,11 +123,11 @@ NhlErrorTypes natgrids_W( void )
 /*
  * Check for missing values. 
  */
-  if(contains_missing_float(x,size_input,has_missing_x,missing_x.floatval)) {
+  if(contains_missing_float(x,npts,has_missing_x,missing_x.floatval)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: x cannot contain any missing values" );
     return(NhlFATAL);
   }
-  if(contains_missing_float(y,size_input,has_missing_y,missing_y.floatval)) {
+  if(contains_missing_float(y,npts,has_missing_y,missing_y.floatval)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: y cannot contain any missing values" );
     return(NhlFATAL);
   }
@@ -141,7 +147,7 @@ NhlErrorTypes natgrids_W( void )
 /*
  * Calculate space for output array and its dimension sizes.
  */
-  ndims_zo    = ndims_x + 1;
+  ndims_zo    = ndims_z + 1;
   size_output = size_leftmost * nzo;
   zo          = (float *) calloc(size_output, sizeof(float));
   dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
@@ -152,7 +158,7 @@ NhlErrorTypes natgrids_W( void )
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_x[i];
+  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_z[i];
   dsizes_zo[ndims_zo-2] = nxo;
   dsizes_zo[ndims_zo-1] = nyo;
 
@@ -161,8 +167,7 @@ NhlErrorTypes natgrids_W( void )
  * the c_natgrids function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    zo_tmp = c_natgrids (npts,&x[index_in],&y[index_in],&z[index_in],
-                         nxo,nyo,xo,yo,&ier);
+    zo_tmp = c_natgrids (npts,x,y,&z[index_in],nxo,nyo,xo,yo,&ier);
 
     if(!ier || (ier >= 4 && ier <= 6)) {
       if(ier) {
@@ -188,9 +193,9 @@ NhlErrorTypes natgridd_W( void )
 {
   int ier = 0;
   double *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   double *y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   double *z;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   double *xo;
@@ -214,7 +219,7 @@ NhlErrorTypes natgridd_W( void )
   x = (double*)NclGetArgValue(
                               0,
                               5,
-                              &ndims_x,
+                              NULL,
                               dsizes_x,
                               &missing_x,
                               &has_missing_x,
@@ -223,12 +228,25 @@ NhlErrorTypes natgridd_W( void )
   y = (double*)NclGetArgValue(
                               1,
                               5,
-                              &ndims_y,
+                              NULL,
                               dsizes_y,
                               &missing_y,
                               &has_missing_y,
                               NULL,
                               2);
+/*
+ * Check dimension sizes for x and y.
+ */
+  if(dsizes_x[0] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: x and y must be the same length");
+    return(NhlFATAL);
+  }
+
+  npts = dsizes_x[0];
+
+/*
+ * Get z.
+ */
   z = (double*)NclGetArgValue(
                               2,
                               5,
@@ -240,26 +258,19 @@ NhlErrorTypes natgridd_W( void )
                               2);
 
 /*
- * Check dimension sizes for x, y and z.
+ * Check rightmost dimension size for z.
  */
-  if(ndims_x != ndims_y || ndims_x != ndims_z) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the dimension sizes of parameters x, y and z must be identical");
+  if(dsizes_z[ndims_z-1] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the last (rightmost) dimension of z must be the same length as x and y");
     return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_x; i++) {
-    if(dsizes_x[i] != dsizes_y[i] || dsizes_x[i] != dsizes_z[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the dimension sizes of parameters x, y and z must be identical");
-      return(NhlFATAL);
-    }
   }
 
 /*
  * Compute the total size of the input and the leftmost dimensions.
  */
-  npts = dsizes_x[ndims_x-1];
 
   size_leftmost = 1;
-  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
+  for( i = 0; i < ndims_z-1; i++ ) size_leftmost *= dsizes_z[i];
   size_input = size_leftmost * npts;
 
 /*
@@ -291,11 +302,11 @@ NhlErrorTypes natgridd_W( void )
 /*
  * Check for missing values. 
  */
-  if(contains_missing(x,size_input,has_missing_x,missing_x.doubleval)) {
+  if(contains_missing(x,npts,has_missing_x,missing_x.doubleval)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: x cannot contain any missing values" );
     return(NhlFATAL);
   }
-  if(contains_missing(y,size_input,has_missing_y,missing_y.doubleval)) {
+  if(contains_missing(y,npts,has_missing_y,missing_y.doubleval)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: y cannot contain any missing values" );
     return(NhlFATAL);
   }
@@ -315,7 +326,7 @@ NhlErrorTypes natgridd_W( void )
 /*
  * Calculate space for output array and its dimension sizes.
  */
-  ndims_zo    = ndims_x + 1;
+  ndims_zo    = ndims_z + 1;
   size_output = size_leftmost * nzo;
   zo          = (double *) calloc(size_output, sizeof(double));
   dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
@@ -326,7 +337,7 @@ NhlErrorTypes natgridd_W( void )
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_x[i];
+  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_z[i];
   dsizes_zo[ndims_zo-2] = nxo;
   dsizes_zo[ndims_zo-1] = nyo;
 
@@ -335,8 +346,7 @@ NhlErrorTypes natgridd_W( void )
  * the c_natgridd function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    zo_tmp = c_natgridd (npts,&x[index_in],&y[index_in],&z[index_in],
-                         nxo,nyo,xo,yo,&ier);
+    zo_tmp = c_natgridd (npts,x,y,&z[index_in],nxo,nyo,xo,yo,&ier);
 
     if(!ier || (ier >= 4 && ier <= 6)) {
       if(ier) {
