@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.148 2004-07-01 14:34:27 haley Exp $
+;      $Id: gsn_code.ncl,v 1.149 2004-08-06 23:34:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -63,7 +63,11 @@ undef("spread_colors")
 undef("check_for_irreg2loglin")
 undef("overlay_irregular")
 undef("get_plot_not_loglin")
+undef("get_overlay_plot")
+undef("get_contour_levels")
 undef("fix_zero_contour")
+undef("set_zero_line_thickness")
+undef("set_neg_line_pattern")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
@@ -934,7 +938,79 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : fix_zero_contour                                          ;
+; Function : get_overlay_plot                                           ;
+;                  plot  : graphic                                      ;
+;             class_name : string                                       ;
+;             plot_index : integer                                      ;
+;                                                                       ;
+; Get a specified overlaid plot id. This function is based on Dennis'   ;
+; original GetOverlayPlot function.                                     ;
+;***********************************************************************;
+function get_overlay_plot(plot:graphic,class_name:string,plot_index:integer)
+begin
+;
+; Retrieve objects that have been overlaid on "plot".
+; 
+  getvalues plot
+    "pmOverlaySequenceIds" : overlay_ids
+  end getvalues
+;
+; Loop through these objects and check if any of them are a
+; match.
+;
+  if(.not.any(ismissing(overlay_ids))) then
+    num_instances = 0
+    do i=0,dimsizes(overlay_ids)-1
+      if(NhlClassName(overlay_ids(i)).eq.class_name)
+        if(num_instances.eq.plot_index) then
+          return(overlay_ids(i))
+        end if
+        num_instances = num_instances + 1
+      end if
+    end do
+  end if
+;
+; If no match found, then check the plot itself.
+;
+  if(NhlClassName(plot).eq.class_name) then
+    return(plot)
+  end if
+;
+; No match found, so return a missing object.
+;
+  print("get_overlay_plot: Error: no plot found matching conditions")
+  print("                  Returning a missing value.")
+  dum = new(1,graphic)
+  return(dum)
+end
+
+;***********************************************************************;
+; Function : get_contour_levels                                         ;
+;               plot: graphic                                           ;
+;                                                                       ;
+; Get contour levels associated with "plot".                            ;
+;                                                                       ;
+;***********************************************************************;
+function get_contour_levels(plot:graphic)
+local overlay_plot
+begin
+  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
+
+  if(.not.ismissing(overlay_plot)) then
+    getvalues overlay_plot
+      "cnLevels" : levels
+    end getvalues
+    return(levels)
+  end if
+;
+; Return missing if no plot was found.
+;
+  dum = new(1,float)
+  return(dum)
+end
+
+;***********************************************************************;
+; Function : fix_zero_contour                                           ;
 ;              levels:numeric                                           ;
 ;                                                                       ;
 ; Make sure the 0th contour (if it exists) really is "0" and not        ;
@@ -943,7 +1019,7 @@ end
 ; and not a "0". Don't even bother with checking if the minimum         ;
 ; difference between the levels is less than 1e-5.                      ;
 ;***********************************************************************;
-procedure fix_zero_contour(levels)
+function fix_zero_contour(levels)
 begin
   nlevels = dimsizes(levels)
   if(nlevels.gt.1) then
@@ -956,7 +1032,91 @@ begin
       end do
     end if
   end if  
-  return
+  return(levels)
+end
+
+;***********************************************************************;
+; Function : set_zero_line_thickness                                    ;
+;                plot : graphic                                         ;
+;           thickness : numeric                                         ;
+;                                                                       ;
+; Make the 0-th contour line the given thickness.                       ;
+;                                                                       ;
+; Note that this function also sets the rest of the line thicknesses to ;
+; 1, because it assumes if the user wants to set the thickness of other ;
+; lines, he/she can do so with the cnLineThicknesses resource.          ;
+;                                                                       ;
+;***********************************************************************;
+function set_zero_line_thickness(plot:graphic,thickness)
+begin
+  levels  = get_contour_levels (plot)
+  nlevels = dimsizes(levels)
+
+  if (ismissing(nlevels) .or. nlevels.le.0) then
+    print ("set_zero_line_thickness: invalid contour levels, returning...")
+    return (plot)
+  end if
+
+  levels      = fix_zero_contour (levels)
+  thicknesses = new(dimsizes(levels), float)
+  thicknesses = 1.
+
+  do n=0,dimsizes(thicknesses)-1
+    if (levels(n).eq.0.) then
+      thicknesses(n) = thickness
+    end if
+  end do
+  
+  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
+  setvalues overlay_plot
+    "cnMonoLineThickness" : False
+    "cnLineThicknesses"   : thicknesses
+  end setvalues
+
+  return (plot)
+end
+
+;***********************************************************************;
+; Function : set_neg_line_pattern                                       ;
+;                plot : graphic                                         ;
+;             pattern : numeric                                         ;
+;                                                                       ;
+; Set the dash pattern of negative contour lines.                       ;
+;                                                                       ;
+; Note that this function also sets the rest of the line patterns to 0  ;
+; because it assumes if the user wants to set the patterns of the other ;
+; lines, he/she can do so with the cnLineDashPatterns resource.         ;
+;                                                                       ;
+;***********************************************************************;
+function set_neg_line_pattern(plot:graphic,pattern)
+begin
+  levels  = get_contour_levels (plot)
+  nlevels = dimsizes(levels)
+
+  if (ismissing(nlevels) .or. nlevels.le.0) then
+    print ("set_neg_line_pattern: invalid contour levels, returning...")
+    return (plot)
+  end if
+
+  levels   = fix_zero_contour (levels)
+  patterns = new(dimsizes(levels),integer)
+  patterns = 0
+
+  if(.not.any(ismissing(patterns))) then
+    do n=0,dimsizes(patterns)-1
+      if (levels(n).lt.0.) then
+        patterns(n) = pattern
+      end if
+    end do
+  end if
+
+  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
+  setvalues overlay_plot
+    "cnMonoLineDashPattern" : False
+    "cnLineDashPatterns"    : patterns
+  end setvalues
+
+  return (plot)
 end
 
 ;***********************************************************************;
@@ -4201,7 +4361,7 @@ begin
 ; contour level with a value like 1e-8 is not really supposed to be
 ; a value of 0.
 ;
-      fix_zero_contour(levels)
+      levels = fix_zero_contour(levels)
       newplots(nplot) = create_labelbar(wks,dimsizes(colors),colors, \
                                         levels,lbres)
       nplot = nplot + 1
@@ -6419,6 +6579,16 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
+    if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
+      zthickness = res2@gsnContourZeroLineThicknessF
+      delete(res2@gsnContourZeroLineThicknessF)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
+      npattern = res2@gsnContourNegLineDashPattern
+      delete(res2@gsnContourNegLineDashPattern)
+    end if
+
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
     check_for_tickmarks_off(res2)
@@ -6426,6 +6596,16 @@ begin
     cnres = get_res_ne(res2,"sf")
 
     attsetvalues_check(plot_object,cnres)
+
+    if(isvar("zthickness")) then
+      plot_object = set_zero_line_thickness(plot_object,zthickness)
+      delete(zthickness)
+    end if
+
+    if(isvar("npattern")) then
+      plot_object = set_neg_line_pattern(plot_object,npattern)
+      delete(npattern)
+    end if
 
     if(sprdcols)
       cnres2 = True

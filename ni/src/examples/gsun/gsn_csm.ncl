@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.170 2004-08-06 14:50:45 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.171 2004-08-06 23:34:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1939,7 +1939,7 @@ begin
   end if
   delete(lbstrings)
 
-  fix_zero_contour(levels)
+  levels = fix_zero_contour(levels)
 
   labelbar_object = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
 
