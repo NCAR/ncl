@@ -189,7 +189,8 @@ getvalues cnid
     "cnFillColors" : colors
 end getvalues
 
-do i= 0,count/2
+count = dimsizes(colors)
+do i= 0,count/2-1
     itmp = colors(i)
     colors(i) = colors(count - 1 - i)
     colors(count - 1 - i) = itmp
