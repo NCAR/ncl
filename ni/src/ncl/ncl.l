@@ -279,7 +279,10 @@ digit	[0-9]
 	cur_line_text_pos = &(cur_line_text[0]);
         if(cmd_line) {
                _NclCallPromptFunc(cur_line_number);
-        }
+        } else {
+		IncLine();
+	}
+	/*inc_line = 1;*/
 }
 [\\][^\n]*[\n] {
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
@@ -293,7 +296,10 @@ digit	[0-9]
 	cur_line_text_pos = &(cur_line_text[0]);
         if(cmd_line) {
                _NclCallPromptFunc(cur_line_number);
-        }
+        } else { 
+		IncLine();
+	}
+	/*inc_line = 1;*/
 
 }
 \;[^\n]*[\n] { 
