@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.22 1994-05-05 21:43:38 boote Exp $
+ *	$Id: Rules,v 1.23 1994-07-11 15:41:54 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -666,7 +666,7 @@ install-local::]\
 	@for name in appfiles; do \ ]\
 	if (test -f $(XAPPPATH)/$$name) then \ ]\
 		echo "Warning - replacing $(XAPPPATH)/$$name"; \ ]\
-		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; else continue; fi; \ ]\
+		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; fi; \ ]\
 	(echo "Installing $$name.ad"; \ ]\
 	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \ ]\
 	done]
