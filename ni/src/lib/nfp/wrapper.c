@@ -4740,7 +4740,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;

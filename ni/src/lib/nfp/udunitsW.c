@@ -329,7 +329,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * Input array variables
  */
   int *year, *month, *day, *hour, *minute;
-  double *second;
+  void *second;
+  double *tmp_second;
   string *sspec;
   int *option;
   char *cspec;
@@ -345,6 +346,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   NclScalar missing_hour;
   NclScalar missing_minute;
   NclScalar missing_second;
+  NclBasicDataTypes type_second;
 /*
  * Variables for Udunits package.
  */
@@ -420,14 +422,14 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &has_missing_minute,
            NULL,
            2);
-  second = (double*)NclGetArgValue(
+  second = (void*)NclGetArgValue(
            5,
            8,
            &ndims_second, 
            dsizes_second,
            &missing_second,
            &has_missing_second,
-           NULL,
+           &type_second,
            2);
 
   if(ndims_year != ndims_month || ndims_year != ndims_day    || 
@@ -512,11 +514,33 @@ NhlErrorTypes ut_inv_calendar_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+/*
+ * Create tmp array for coercing second to double if necessary.
+ */
+  if(type_second != NCL_double) {
+    tmp_second = (double*)calloc(1,sizeof(double));
+    if(tmp_second == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for coercing second array to double precision");
+      return(NhlFATAL);
+    }
+  }
 
 /* 
  * Loop through each data value, and call Udunits routine.
  */ 
   for( i = 0; i < total_size_input; i++ ) {
+/*
+ * Coerce "second" to double, since this is what the original Udunits
+ * routine is expecting. 
+ */
+    if(type_second != NCL_double) {
+      coerce_subset_input_double(second,tmp_second,i,type_second,1,
+				 has_missing_second,&missing_second,NULL);
+    }
+    else {
+      tmp_second = &((double*)second)[i];
+    }
+
     if((!has_missing_year   ||
         (has_missing_year  && year[i]    != missing_year.intval))   &&
        (!has_missing_month  ||
@@ -528,10 +552,10 @@ NhlErrorTypes ut_inv_calendar_W( void )
        (!has_missing_minute ||
          (has_missing_minute&& minute[i] != missing_minute.intval)) &&
        (!has_missing_second ||
-        (has_missing_second&& second[i]  != missing_second.doubleval)) ) {
+        (has_missing_second&& *tmp_second != missing_second.doubleval)) ) {
 
        (void)utInvCalendar(year[i],month[i],day[i],hour[i],minute[i],
-                           second[i],&unit,&x[i]);
+                           *tmp_second,&unit,&x[i]);
     }
     else {
       x[i]  = missing_x.doubleval;
