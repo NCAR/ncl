@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.11 1994-02-22 16:21:27 haley Exp $
+#	$Id: ymake,v 1.12 1994-02-22 17:09:46 haley Exp $
 #
 ######################################################################
 #
@@ -387,7 +387,7 @@ case	HP-UX:
 case	UNICOS:
 	set os = $opsys
 
-	switch ("$mach")
+	switch ("$mach[1]")
 	case   CRAY:
 		switch ("$mach[2]")
 		case	Y*:
