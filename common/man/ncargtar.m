@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargtar.m,v 1.6 1994-05-04 15:34:29 haley Exp $
+.\"	$Id: ncargtar.m,v 1.7 1995-10-13 15:10:45 haley Exp $
 .\"
 .TH NCARGTAR 8NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -24,7 +24,8 @@ directory (for example, "/tmp/ncargfx", the directory hierarchy is
 created and the files in it may be checked for correctness without
 overwriting the current working version of NCAR Graphics.
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasview.m,v 1.11 1994-05-04 15:16:19 haley Exp $
+.\"	$Id: rasview.m,v 1.12 1995-10-13 15:12:46 haley Exp $
 .\"
 .TH RASVIEW 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -120,7 +120,8 @@ NCAR Graphics Fundamentals, UNIX Version
 .B rasview 
 does not respond to redraw events.
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
