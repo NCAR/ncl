@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.5 1998-04-23 22:19:46 ethan Exp $
+; $Id: basic09n.ncl,v 1.6 1998-06-01 16:00:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -136,7 +136,7 @@ do j = 1,div
 ;
 ; Loop over each font
 ;
-  do i=(j-1)*num_lines,min(num_fonts-1,j*num_lines-1)
+  do i=(j-1)*num_lines,min((/num_fonts-1,j*num_lines-1/))
 ;
 ; Font number and name
 ;
