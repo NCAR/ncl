@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.3 1992-02-21 12:49:35 clyne Exp $
+ *	$Id: resample.c,v 1.4 1992-02-27 22:50:07 don Exp $
  */
 #include	<stdio.h>
 #include	<string.h>
@@ -117,7 +117,7 @@ RasScaleBilinear(src, nx, ny, verbose)
 	float		p11, p12, p21, p22;
 	unsigned char	*rgbptr11, *rgbptr12, *rgbptr21, *rgbptr22;
 
-	if (nx == src->nx || ny == src->ny) return(src);
+	if (nx == src->nx && ny == src->ny) return(src);
 
 	/*
 	Interpolation is in color space so output image will an
