@@ -1,5 +1,5 @@
 C
-C $Id: PLOTMANAGER.f,v 1.1 1995-04-01 00:04:09 dbrown Exp $
+C $Id: PLOTMANAGER.f,v 1.2 1995-06-09 19:19:56 dbrown Exp $
 C
 C****************************************************************
 C								*
@@ -27,16 +27,12 @@ C
       	call nhlf_removeoverlay(id_base,id_plot,irestore,ierr)
       end
 C
-      subroutine nhlfaddannotation(id_overlay_plot,
-     +     id_anno_view,id_anno,ierr)
-      	call nhlf_addannotation(id_overlay_plot,
-     +     id_anno_view,id_anno,ierr)
+      subroutine nhlfaddannotation(plot_id,view_id,anno_manager_id)
+      	call nhlf_addannotation(plot_id,view_id,anno_manager_id)
       end
 C
-      subroutine nhlfremoveannotation(id_overlay_plot,
-     +     id_anno,ierr)
-      	call nhlf_removeannotation(id_overlay_plot,
-     +     id_anno,ierr)
+      subroutine nhlfremoveannotation(plot_id,anno_manager_id,ierr)
+      	call nhlf_removeannotation(plot_id,anno_manager_id,ierr)
       end
 C
 

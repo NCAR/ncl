@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.12 1995-06-05 19:09:02 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.13 1995-06-09 19:19:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5187,21 +5187,18 @@ void
 _NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
 #if	NhlNeedProto
 (
-	int	*plot,
-	int	*anno_view,
-	int	*anno_manager_id,
-	int	*err
+	int	*plot_id,
+	int	*view_id,
+	int	*anno_manager_id
 )
 #else
-(plot,anno_view,anno_id,err)
-	int	*overlay_plot;
-	int	*anno_view;
+(plot_id,view_id,anno_manager_id)
+	int	*plot_id;
+	int	*view_id;
 	int	*anno_manager_id;
-	int	*err;
 #endif
 {
-	*anno_manager_id = NhlAddAnnotation(*plot,*anno_view);
-	*err = (*anno_manager_id < 0) ? *anno_manager_id : NhlNOERROR;
+	*anno_manager_id = NhlAddAnnotation(*plot_id,*view_id);
 
 	return;
 }
