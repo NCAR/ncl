@@ -1,5 +1,5 @@
 /*
- *      $Id: AddHLUObjs.c,v 1.18 2003-02-27 18:15:27 grubin Exp $
+ *      $Id: AddHLUObjs.c,v 1.19 2004-03-20 00:17:14 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -38,6 +38,7 @@ struct _NhlClassRec * /* the_ptr */
 extern NhlClass NhltickMarkClass;
 extern NhlClass NhltitleClass;
 extern NhlClass NhlxWorkstationClass;
+extern NhlClass NhlimageWorkstationClass;
 extern NhlClass NhlncgmWorkstationClass;
 extern NhlClass NhlcontourPlotClass;
 extern NhlClass NhltextItemClass;
@@ -70,6 +71,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhltickMarkClass->base_class.class_name,NhltickMarkClass);
 	_NclAddSingleObj(NhltitleClass->base_class.class_name,NhltitleClass);
 	_NclAddSingleObj(NhlxWorkstationClass->base_class.class_name,NhlxWorkstationClass);
+	_NclAddSingleObj(NhlimageWorkstationClass->base_class.class_name,NhlimageWorkstationClass);
 	_NclAddSingleObj(NhlncgmWorkstationClass->base_class.class_name,NhlncgmWorkstationClass);
 	_NclAddSingleObj(NhlcontourPlotClass->base_class.class_name,NhlcontourPlotClass);
 	_NclAddSingleObj(NhltextItemClass->base_class.class_name,NhltextItemClass);
