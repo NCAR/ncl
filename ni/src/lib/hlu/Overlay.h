@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.12 1995-01-24 01:25:14 boote Exp $
+ *      $Id: Overlay.h,v 1.13 1995-01-25 01:15:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,8 +52,8 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNovLegendDisplayMode	"ovLegendDisplayMode"
 #define NhlNovLegendZone	"ovLegendZone"
 
-#define NhlNovLabelBarWidthF	"ovLabelBarWidth"
-#define NhlNovLabelBarHeightF	"ovLabelBarHeight"
+#define NhlNovLabelBarWidthF	"ovLabelBarWidthF"
+#define NhlNovLabelBarHeightF	"ovLabelBarHeightF"
 #define NhlNovLabelBarSide	"ovLabelBarSide"
 #define NhlNovLabelBarParallelPosF	"ovLabelBarParallelPosF"
 #define NhlNovLabelBarOrthogonalPosF	"ovLabelBarOrthogonalPosF"
@@ -61,8 +61,8 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNovLabelBarXOffsetF	"ovLabelBarXOffset"
 #define NhlNovLabelBarYOffsetF	"ovLabelBarYOffset"
 #define NhlNovLabelBarPosition	"ovLabelBarPosition"
-#define NhlNovLegendWidthF	"ovLegendWidth"
-#define NhlNovLegendHeightF	"ovLegendHeight"
+#define NhlNovLegendWidthF	"ovLegendWidthF"
+#define NhlNovLegendHeightF	"ovLegendHeightF"
 #define NhlNovLegendSide	"ovLegendSide"
 #define NhlNovLegendParallelPosF	"ovLegendParallelPosF"
 #define NhlNovLegendOrthogonalPosF	"ovLegendOrthogonalPosF"

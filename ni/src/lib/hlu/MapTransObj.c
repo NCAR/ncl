@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.13 1994-12-16 20:04:27 boote Exp $
+*      $Id: MapTransObj.c,v 1.14 1995-01-25 01:15:42 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -575,6 +575,7 @@ NhlLayer parent;
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			c_mapset("MA",rl1,rl2,rl3,rl4);
+			c_mapint();
 			c_nerro(&nerr);
 			if (nerr > 0) {	
 				e_msg = c_semess(0);
