@@ -1,12 +1,20 @@
 #
-#       $Id: yMakefile,v 1.2 2003-08-18 20:42:44 kennison Exp $
+#       $Id: yMakefile,v 1.3 2003-09-18 17:29:21 kennison Exp $
 #
 
 MYNAME  = econpt
 
-SRCS = ctex01.f ctex02.f
+SRCS =  \
+	ctex01.f ctex02.f ctfite.f ctgaus.f ctgeo1.f ctgeo2.f ctiscp.f \
+	ctllg1.f ctllg2.f ctllg3.f ctorca.f ctpopg.f ctswth.f ctwng1.f \
+	ctwng2.f \
+	ctfite.dat ctgaus.dat ctiscp.dat ctorca.dat ctpopg.dat ctswth.dat \
+	ctwng1.dat ctwng2.dat
 
-OBJS = ctex01.o ctex02.o
+OBJS =  \
+	ctex01.o ctex02.o ctfite.o ctgaus.o ctgeo1.o ctgeo2.o ctiscp.o \
+	ctllg1.o ctllg2.o ctllg3.o ctorca.o ctpopg.o ctswth.o ctwng1.o \
+	ctwng2.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -16,3 +24,16 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 FExampleTarget(ctex01,ctex01.o)
 FExampleTarget(ctex02,ctex02.o)
+FExampleTarget(ctfite,ctfite.o)
+FExampleTarget(ctgaus,ctgaus.o)
+FExampleTarget(ctgeo1,ctgeo1.o)
+FExampleTarget(ctgeo2,ctgeo2.o)
+FExampleTarget(ctiscp,ctiscp.o)
+FExampleTarget(ctllg1,ctllg1.o)
+FExampleTarget(ctllg2,ctllg2.o)
+FExampleTarget(ctllg3,ctllg3.o)
+FExampleTarget(ctorca,ctorca.o)
+FExampleTarget(ctpopg,ctpopg.o)
+FExampleTarget(ctswth,ctswth.o)
+FExampleTarget(ctwng1,ctwng1.o)
+FExampleTarget(ctwng2,ctwng2.o)
