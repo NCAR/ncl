@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetc.f,v 1.1 1992-10-12 15:31:06 dbrown Exp $
+C	$Id: vvgetc.f,v 1.2 1992-12-03 00:22:19 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -16,69 +16,120 @@ C
 C CVAL is a character variable in which the desired value is to be
 C returned by VVGETC.
 C
-C Declare all of the VELVCT common blocks.
+C *********************************************************************
+C
+C Declare the VV common blocks.
 C
       PARAMETER (IPLVLS = 64)
 C
-      COMMON /VEC1/   ASH        ,EXT        ,ICTRFG     ,ILAB       ,
-     +                IOFFD      ,IOFFM      ,ISX        ,ISY        ,
-     +                RMN        ,RMX        ,SIDE       ,SIZE       ,
-     +                XLT        ,YBT        ,ZMN        ,ZMX        ,
+C Integer and real common block variables
+C
+C
+      COMMON /VVCOM/
+     +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
+     +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
+     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
+     +                ISVF       ,UUSV       ,UVSV       ,
+     +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
+     +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
+     +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
+     +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                ISPC       ,ITHN       ,IPLR       ,
+     +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
-      COMMON /VEC2/   BIG        ,INCX       ,INCY
+C Arrow size/shape parameters
+C
+	COMMON / VVARO /
+     +                HDSZ       ,HINF       ,HANG       ,
+     +	              HSIN       ,HCOS       ,FAMN       ,FAMX
+
+C
+C Text related parameters
+C
+	COMMON /VVTXP /
+     +                FCWM    ,ICSZ    ,
+     +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
+     +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
+     +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FLBS    ,ILBC
+
 C
 C Character variable declartions
 C
-      CHARACTER*140 CSTR
+      CHARACTER*160 CSTR
+      PARAMETER (IPCHSZ=36)
+      CHARACTER*(IPCHSZ)  CMNT,CMXT,CZFT,CLBT,CILT
 C
-      COMMON /VVCHAR/ CSTR
-C 
-      SAVE /VEC1/, /VEC2/, /VVCHAR/
+C Text string parameters
+C
+      COMMON /VVCHAR/ CSTR,CMNT,CMXT,CZFT,CLBT,CILT
+C
+      SAVE /VVCOM/, /VVARO/, /VVTXP/, /VVCHAR/
+C
+C The mapping common block: made available to user mapping routines
+C
+      COMMON /VVMAP/
+     +                IMAP       ,
+     +                XVPL       ,XVPR       ,YVPB       ,YVPT       ,
+     +                WXMN       ,WXMX       ,WYMN       ,WYMX       ,
+     +                XLOV       ,XHIV       ,YLOV       ,YHIV       ,
+     +                SXDC       ,SYDC       ,NXCT       ,NYCT       ,
+     +                RLEN       ,LNLG       ,INVX       ,INVY       ,
+     +                ITRT       ,IWCT       ,FW2W       ,FH2H       ,
+     +                DVMN       ,DVMX       ,RBIG       ,IBIG
+C
+      SAVE /VVMAP/
+C
+C Math constants
+C
+      PARAMETER (PDTOR  = 0.017453292519943,
+     +           PRTOD  = 57.2957795130823,
+     +           P1XPI  = 3.14159265358979,
+     +           P2XPI  = 6.28318530717959,
+     +           P1D2PI = 1.57079632679489,
+     +           P5D2PI = 7.85398163397448) 
+C
+C --------------------------------------------------------------------
 C
 C Check for a parameter name that is too short.
 C
-C Note that there are no character parameters in the VELVCT routine
-C currently. This functionality is put in place for future use.
-C
-C Check for incorrect use of the index parameter.
-C
-C      IF (WHCH(1:3).EQ.'XXX'.OR.WHCH(1:3).EQ.'xxx') THEN
-C        IF (IPAI.LT.1.OR.IPAI.GT.NCLV) THEN
-C           CSTR(1:36)='VVGETC - GETTING XXX - PAI INCORRECT'
-C           CSTR(18:20)=WHCH(1:3)
-C           CALL SETER (CSTR(1:36),2,2)
-C           STOP
-C        END IF
-C      END IF
-C
-C Get the proper parameter. (There are none yet.)
-C
-C      IF (WHCH(1:3).EQ.'XXX'.OR.WHCH(1:3).EQ.'xxx') THEN
-C         CONTINUE
-C      ELSE
-C
-      CSTR(1:36)='VVGETC - PARAMETER NAME NOT KNOWN - '
-      CSTR(37:39)=WHCH(1:3)
-      CALL SETER (CSTR(1:39),3,2)
+      IF (LEN(WHCH).LT.3) THEN
+        CSTR(1:36)='VVGETC - PARAMETER NAME TOO SHORT - '
+        CSTR(37:36+LEN(WHCH))=WHCH
+        CALL SETER (CSTR(1:36+LEN(WHCH)),1,2)
       STOP
+      END IF
 C
-C      END IF
+C Get the proper parameter.
 C
-C      GOTO 9900
+      IF (WHCH(1:3).EQ.'MNT'.OR.WHCH(1:3).EQ.'mnt') THEN
+         CALL VVTXLN(CMNT,IPCHSZ,IB,IE)
+         CVAL=CMNT(IB:IE)
+      ELSE IF (WHCH(1:3).EQ.'MXT'.OR.WHCH(1:3).EQ.'mxt') THEN
+         CALL VVTXLN(CMXT,IPCHSZ,IB,IE)
+         CVAL=CMXT(IB:IE)
+      ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft') THEN
+         CALL VVTXLN(CZFT,IPCHSZ,IB,IE)
+         CVAL=CZFT(IB:IE)
+      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
+         CALL VVTXLN(CILT,IPCHSZ,IB,IE)
+         CVAL=CILT(IB:IE)
+      ELSE
 C
-C 9800 CONTINUE
+         CSTR(1:36)='VVGETC - PARAMETER NAME NOT KNOWN - '
+         CSTR(37:39)=WHCH(1:3)
+         CALL SETER (CSTR(1:39),3,2)
+         STOP
 C
-C      CSTR(1:46)='VVGETC - PARAMETER VALUE OUT OF RANGE - '
-C      CSTR(40:42)=WHCH(1:3)
-C      CALL SETER (CSTR(1:40),3,2)
-C      STOP
-C      
-C 9900 CONTINUE
+      END IF
+C
 C
 C Done.
 C
-C      RETURN
+      RETURN
 C
       END
