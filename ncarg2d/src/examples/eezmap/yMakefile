@@ -1,13 +1,14 @@
 #
-#	$Id: yMakefile,v 1.8 1998-05-26 16:13:16 kennison Exp $
+#	$Id: yMakefile,v 1.9 2001-08-17 22:57:16 kennison Exp $
 #
 MYNAME	= eezmap
 
-SRCS = mpexcc.f mpex01.f mpex02.f mpex03.f mpex04.f mpex05.f mpex06.f \
-	mpex07.f mpex08.f mpex09.f mpex10.f mpex11.f mpex12.f mpexfi.f \
-	mpexfi.dat
-OBJS = mpexcc.o mpex01.o mpex02.o mpex03.o mpex04.o mpex05.o mpex06.o \
-	mpex07.o mpex08.o mpex09.o mpex10.o mpex11.o mpex12.o mpexfi.o
+SRCS =  mpexcc.f mpex01.f mpex02.f mpex03.f mpex04.f mpex05.f mpex06.f \
+	mpex07.f mpex08.f mpex09.f mpex10.f mpex11.f mpex12.f mpex13.f \
+	mpexfi.f mpexfi.dat
+OBJS =  mpexcc.o mpex01.o mpex02.o mpex03.o mpex04.o mpex05.o mpex06.o \
+	mpex07.o mpex08.o mpex09.o mpex10.o mpex11.o mpex12.o mpex13.o \
+	mpexfi.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -27,4 +28,5 @@ FExampleTarget(mpex09,mpex09.o)
 FExampleTarget(mpex10,mpex10.o)
 FExampleTarget(mpex11,mpex11.o)
 FExampleTarget(mpex12,mpex12.o)
+FExampleTarget(mpex13,mpex12.o)
 FExampleTarget(mpexfi,mpexfi.o)
