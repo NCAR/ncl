@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.24 1997-10-23 02:11:01 dbrown Exp $
+ *	$Id: c.h,v 1.25 1998-10-22 17:01:01 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -442,6 +442,126 @@ extern	char *getGcapname(
 	const char	*device
 #endif
 );
+
+/*
+**	R G B Database Support
+**
+*/
+
+typedef struct _NGRGB{
+	unsigned short red,green,blue;
+} NGRGB;
+
+/*
+ * sdbm - ndbm work-alike hashed database library
+ * based on Per-Aake Larson's Dynamic Hashing algorithms.
+ * BIT 18 (1978).
+ *
+ * Copyright (c) 1991 by Ozan S. Yigit (oz@nexus.yorku.ca)
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * This file is provided AS IS with no warranties of any kind.  The author
+ * shall have no liability with respect to the infringement of copyrights,
+ * trade secrets or any patents by this file or any part thereof.  In no
+ * event will the author be liable for any lost revenue or profits or
+ * other special, indirect and consequential damages.
+ */
+
+#define NGDBLKSIZ 4096
+#define NGPBLKSIZ 1024
+#define NGPAIRMAX 1008			/* arbitrary on PBLKSIZ-N */
+#define NGSPLTMAX	10			/* maximum allowed splits */
+					/* for a single insertion */
+#define NGDIRFEXT	".dir"
+#define NGPAGFEXT	".pag"
+
+typedef struct {
+	int dirf;		       /* directory file descriptor */
+	int pagf;		       /* page file descriptor */
+	int flags;		       /* status/error flags, see below */
+	long maxbno;		       /* size of dirfile in bits */
+	long curbit;		       /* current bit number */
+	long hmask;		       /* current hash mask */
+	long blkptr;		       /* current block for nextkey */
+	int keyptr;		       /* current key for nextkey */
+	long blkno;		       /* current page to read/write */
+	long pagbno;		       /* current page in pagbuf */
+	char pagbuf[NGPBLKSIZ];	       /* page file block buffer */
+	long dirbno;		       /* current block in dirbuf */
+	char dirbuf[NGDBLKSIZ];	       /* directory file block buffer */
+} NGDBM;
+
+#define NGDBM_RDONLY	0x1	       /* data base open read-only */
+#define NGDBM_IOERR	0x2	       /* data base I/O error */
+
+/*
+ * utility macros
+ */
+#define NGdbm_rdonly(db)		((db)->flags & NGDBM_RDONLY)
+#define NGdbm_error(db)		((db)->flags & NGDBM_IOERR)
+
+#define NGdbm_clearerr(db)	((db)->flags &= ~NGDBM_IOERR)  /* ouch */
+
+#define NGdbm_dirfno(db)	((db)->dirf)
+#define NGdbm_pagfno(db)	((db)->pagf)
+
+typedef struct {
+	char *dptr;
+	int dsize;
+} NGdatum;
+
+extern NGdatum nullitem;
+
+#ifdef __STDC__
+#define proto(p) p
+#else
+#define proto(p) ()
+#endif
+
+/*
+ * flags to dbm_store
+ */
+#define NGDBM_INSERT	0
+#define NGDBM_REPLACE	1
+
+/*
+ * ndbm interface
+ */
+extern NGDBM *NGdbm_open proto((char *, int, int));
+extern void NGdbm_close proto((NGDBM *));
+extern NGdatum NGdbm_fetch proto((NGDBM *, NGdatum));
+extern int NGdbm_delete proto((NGDBM *, NGdatum));
+extern int NGdbm_store proto((NGDBM *, NGdatum, NGdatum, int));
+extern NGdatum NGdbm_firstkey proto((NGDBM *));
+extern NGdatum NGdbm_nextkey proto((NGDBM *));
+
+/*
+ * other
+ */
+extern NGDBM *NGdbm_prep proto((char *, char *, int, int));
+extern long NGdbm_hash proto((char *, int));
+
+#ifdef SVID
+#include <unistd.h>
+#endif
+
+/*
+ * important tuning parms (hah)
+ */
+
+#define NGBYTESIZ	(8)
+#define NGSEEDUPS			/* always detect duplicates */
+#define NGBADMESS			/* generate a message for worst case:
+				   cannot make room after SPLTMAX splits */
+/*
+ * misc
+ */
+#define debug(x)
 
 /*
 **
