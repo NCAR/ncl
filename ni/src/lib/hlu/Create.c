@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.27 1996-12-03 04:41:14 boote Exp $
+ *      $Id: Create.c,v 1.28 1996-12-03 17:29:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -936,6 +936,7 @@ InitAllResources
 	 * Initialize list
 	 */
 	memset((char*)list,0,sizeof(list));
+	memset((char*)tlist,0,sizeof(list));
 
 	/*
 	 * If the class uses children add their resources to the list
