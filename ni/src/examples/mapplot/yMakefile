@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.19 1999-12-14 00:07:32 haley Exp $
+#   $Id: yMakefile,v 1.20 2002-03-04 21:57:13 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -10,11 +10,12 @@ PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-CSRCS    = mp01c.c mp02c.c mp03c.c mp04c.c mp05c.c mp06c.c
-NSRCS    = mp01n.ncl mp02n.ncl mp03n.ncl mp04n.ncl mp05n.ncl mp06n.ncl
-FSRCS    = mp01f.f mp02f.f mp03f.f mp04f.f mp05f.f mp06f.f
-COBJS    = mp01c.o mp02c.o mp03c.o mp04c.o mp05c.o mp06c.o
-FOBJS    = mp01f.o mp02f.o mp03f.o mp04f.o mp05f.o mp06f.o
+CSRCS    = mp01c.c mp02c.c mp03c.c mp04c.c mp05c.c mp06c.c mp07c.c
+NSRCS    = mp01n.ncl mp02n.ncl mp03n.ncl mp04n.ncl mp05n.ncl mp06n.ncl \
+		mp07n.ncl
+FSRCS    = mp01f.f mp02f.f mp03f.f mp04f.f mp05f.f mp06f.f mp07f.f
+COBJS    = mp01c.o mp02c.o mp03c.o mp04c.o mp05c.o mp06c.o mp07c.o
+FOBJS    = mp01f.o mp02f.o mp03f.o mp04f.o mp05f.o mp06f.o mp07f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
 ASCDATA  = mp03n.asc
@@ -33,12 +34,14 @@ CExampleTarget(mp03c,mp03c.o)
 CExampleTarget(mp04c,mp04c.o)
 CExampleTarget(mp05c,mp05c.o)
 CExampleTarget(mp06c,mp06c.o)
+CExampleTarget(mp07c,mp07c.o)
 FExampleTarget(mp01f,mp01f.o)
 FExampleTarget(mp02f,mp02f.o)
 FExampleTarget(mp03f,mp03f.o)
 FExampleTarget(mp04f,mp04f.o)
 FExampleTarget(mp05f,mp05f.o)
 FExampleTarget(mp06f,mp06f.o)
+FExampleTarget(mp07f,mp07f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))
