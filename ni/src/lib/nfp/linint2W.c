@@ -7,17 +7,19 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dlinint1,DLININT1)(int *,double *,double *,int *,int *,
-                                       double *,double *,double *,int *);
+                                       double *,double *,double *,double *,
+                                       int *,double *,int *);
 
 extern void NGCALLF(dlinint2,DLININT2)(int *,double *,int *,double *,
                                        double *,int *,int *,double *,int *,
-                                       double *,double *,double *,int *);
+                                       double *,double *,double *, double *,
+                                       int *,double *,int *);
 
 
 extern void NGCALLF(dlinint2pts,DLININT2PTS)(int *,double *,int *,double *,
                                              double *,int *,int *,double *,
                                              double *,double *,double *,
-                                             int *);
+                                             double *,int *,double *,int *);
 
 NhlErrorTypes linint1_W( void )
 {
@@ -40,7 +42,8 @@ NhlErrorTypes linint1_W( void )
 /*
  * Other variables
  */
-  int nxi, nfi, nxo, nfo, size_leftmost, size_fo;
+  double *xiw, *fixw;
+  int nxi, nxi2, nfi, nxo, nfo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
 /*
  * Retrieve parameters
@@ -102,6 +105,7 @@ NhlErrorTypes linint1_W( void )
  */
   nxi = dsizes_xi[0];
   nxo = dsizes_xo[0];
+  nxi2 = nxi+2;
   nfi = nxi;
   nfo = nxo;
 
@@ -155,6 +159,15 @@ NhlErrorTypes linint1_W( void )
   dsizes_fo[ndims_fi-1] = nxo;
 
 /*
+ * Allocate space for work arrays.
+ */
+  xiw  = (double*)calloc(nxi2,sizeof(double));
+  fixw = (double*)calloc(nxi2,sizeof(double));
+  if(xiw == NULL || fixw == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
  * Coerce input arrays to double if necessary.
  */
   tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
@@ -185,7 +198,7 @@ NhlErrorTypes linint1_W( void )
     }
 
     NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,
-                               &missing_dfi.doubleval,&ier);
+                               xiw,fixw,&nxi2,&missing_dfi.doubleval,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1: xi and xo must be monotonically increasing");
@@ -255,7 +268,8 @@ NhlErrorTypes linint2_W( void )
 /*
  * Other variables
  */
-  int nxi, nyi, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
+  double *xiw, *fixw;
+  int nxi, nxi2, nyi, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
 /*
  * Retrieve parameters
@@ -335,12 +349,13 @@ NhlErrorTypes linint2_W( void )
 /*
  * Compute the total number of elements in our arrays.
  */
-  nxi = dsizes_xi[0];
-  nyi = dsizes_yi[0];
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nfi = nxi * nyi;
-  nfo = nxo * nyo;
+  nxi  = dsizes_xi[0];
+  nxi2 = nxi+2;
+  nyi  = dsizes_yi[0];
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  nfi  = nxi * nyi;
+  nfo  = nxo * nyo;
   if(nxi <= 2 || nyi <= 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of xi and yi must be greater than 2");
     return(NhlFATAL);
@@ -390,6 +405,15 @@ NhlErrorTypes linint2_W( void )
   for(i = 0; i < ndims_fi-2; i++) dsizes_fo[i] = dsizes_fi[i];
   dsizes_fo[ndims_fi-2] = nyo;
   dsizes_fo[ndims_fi-1] = nxo;
+/*
+ * Allocate space for work arrays.
+ */
+  xiw  = (double*)calloc(nxi2,sizeof(double));
+  fixw = (double*)calloc(nxi2,sizeof(double));
+  if(xiw == NULL || fixw == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
 
 /*
  * Coerce input arrays to double if necessary.
@@ -424,7 +448,7 @@ NhlErrorTypes linint2_W( void )
     }
 
     NGCALLF(dlinint2,DLININT2)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,&nxo,
-                               tmp_xo,&nyo,tmp_yo,tmp_fo,
+                               tmp_xo,&nyo,tmp_yo,tmp_fo,xiw,fixw,&nxi2,
                                &missing_dfi.doubleval,&ier);
 
     if(ier) {
@@ -497,7 +521,8 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Other variables
  */
-  int nxi, nyi, nfi, nxyo, size_leftmost, size_fo;
+  double *xiw, *fixw;
+  int nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
 /*
  * Retrieve parameters
@@ -580,6 +605,7 @@ NhlErrorTypes linint2_points_W( void )
   nxi  = dsizes_xi[0];
   nyi  = dsizes_yi[0];
   nxyo = dsizes_xo[0];
+  nxi2 = nxi+2;
   if(dsizes_yo[0] != nxyo) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimension of xo and yo must be the same");
     return(NhlFATAL);
@@ -634,6 +660,16 @@ NhlErrorTypes linint2_points_W( void )
   dsizes_fo[ndims_fi-2] = nxyo;
 
 /*
+ * Allocate space for work arrays.
+ */
+  xiw  = (double*)calloc(nxi2,sizeof(double));
+  fixw = (double*)calloc(nyi*nxi2,sizeof(double));
+  if(xiw == NULL || fixw == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
  * Coerce input arrays to double if necessary.
  */
   tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
@@ -667,8 +703,8 @@ NhlErrorTypes linint2_points_W( void )
     }
 
     NGCALLF(dlinint2pts,DLININT2PTS)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,
-                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,
-                                     &missing_dfi.doubleval,&ier);
+                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,xiw,fixw,
+                                     &nxi2,&missing_dfi.doubleval,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2_points: xi and yi must be monotonically increasing");

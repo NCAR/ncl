@@ -1,10 +1,12 @@
 c -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XMSG,IER)
+      SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FIXW,NXI2,
+     +                    XMSG,IER)
       IMPLICIT NONE
-      INTEGER NXI,NXO,ICYCX,IER
+      INTEGER NXI,NXO,ICYCX,NXI2,IER
       DOUBLE PRECISION XI(NXI),FI(NXI)
-      DOUBLE PRECISION XO(NXO),FO(NXO),XMSG
+      DOUBLE PRECISION XO(NXO),FO(NXO)
+      DOUBLE PRECISION XIW(NXI2),FIXW(NXI2),XMSG
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
@@ -44,9 +46,6 @@ c .             =1;   not enough points in input/output array
 c .             =2;   xi are not monotonically increasing
 c .             =4;   xo yo are not monotonically increasing
 c
-c                              automatic temporary/work arrays
-      DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1)
-
 c                              local
       INTEGER NX
       DOUBLE PRECISION DX
@@ -68,16 +67,16 @@ c                               is the input array cyclic in x
 c                               must be cyclic in x
 c                               create cyclic "x" coordinates
           DO NX = 1,NXI
-              XIW(NX) = XI(NX)
-              FIXW(NX) = FI(NX)
+              XIW(NX+1)  = XI(NX)
+              FIXW(NX+1) = FI(NX)
           END DO
           DX = XI(2) - XI(1)
-          XIW(0) = XI(1) - DX
-          XIW(NXI+1) = XI(NXI) + DX
-          FIXW(0) = FI(NXI)
-          FIXW(NXI+1) = FI(1)
+          XIW(1)     = XI(1) - DX
+          XIW(NXI2)  = XI(NXI) + DX
+          FIXW(1)    = FI(NXI)
+          FIXW(NXI2) = FI(1)
 
-          CALL DLIN2INT1(NXI+2,XIW,FIXW,NXO,XO,FO,XMSG)
+          CALL DLIN2INT1(NXI2,XIW,FIXW,NXO,XO,FO,XMSG)
       END IF
 
 
@@ -86,12 +85,13 @@ c                               create cyclic "x" coordinates
 
 c -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XMSG,
-     +                   IER)
+      SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,
+     +                    XIW,FIXW,NXI2,XMSG,IER)
       IMPLICIT NONE
-      INTEGER NXI,NYI,NXO,NYO,ICYCX,IER
+      INTEGER NXI,NYI,NXO,NYO,ICYCX,NXI2,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI)
-      DOUBLE PRECISION XO(NXO),YO(NYO),FO(NXO,NYO),XMSG
+      DOUBLE PRECISION XO(NXO),YO(NYO),FO(NXO,NYO)
+      DOUBLE PRECISION XIW(NXI2),FIXW(NXI2),XMSG
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
@@ -136,7 +136,7 @@ c .             =2/3; xi or yi are not monotonically increasing
 c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              automatic temporary/work arrays
-      DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1),FIYW(NYI),FOYW(NYO)
+      DOUBLE PRECISION FIYW(NYI),FOYW(NYO)
       DOUBLE PRECISION FTMP(NXO,NYI),DX
 
 c                              local
@@ -181,19 +181,19 @@ c      PRINT *," LININT2: ICYCX=",ICYCX
 c                               must be cyclic in x
 c                               create cyclic "x" coordinates
           DO NX = 1,NXI
-              XIW(NX) = XI(NX)
+              XIW(NX+1) = XI(NX)
           END DO
           DX = XI(2) - XI(1)
-          XIW(0) = XI(1) - DX
-          XIW(NXI+1) = XI(NXI) + DX
+          XIW(1)    = XI(1) - DX
+          XIW(NXI2) = XI(NXI) + DX
 
           DO NY = 1,NYI
               DO NX = 1,NXI
-                  FIXW(NX) = FI(NX,NY)
+                  FIXW(NX+1) = FI(NX,NY)
               END DO
-              FIXW(0) = FI(NXI,NY)
-              FIXW(NXI+1) = FI(1,NY)
-              CALL DLIN2INT1(NXI+2,XIW,FIXW,NXO,XO,FTMP(1,NY),XMSG)
+              FIXW(1)    = FI(NXI,NY)
+              FIXW(NXI2) = FI(1,NY)
+              CALL DLIN2INT1(NXI2,XIW,FIXW,NXO,XO,FTMP(1,NY),XMSG)
           END DO
 c                               interpolate in the y direction
           DO NX = 1,NXO
@@ -281,11 +281,12 @@ c                          local
 c -----------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,
-     +                       XMSG,IER)
+     +                       XIW,FIXW,NXI2,XMSG,IER)
       IMPLICIT NONE
-      INTEGER NXI,NYI,NXYO,ICYCX,IER
+      INTEGER NXI,NYI,NXYO,ICYCX,NXI2,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI)
-      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO),XMSG
+      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO)
+      DOUBLE PRECISION XIW(NXI2),FIXW(NXI2,NYI),XMSG
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
@@ -331,7 +332,6 @@ c .             =1;   not enough points in input/output array
 c .             =2/3; xi or yi are not monotonically increasing
 c
 c                              automatic temporary/work arrays
-      DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1,NYI)
       DOUBLE PRECISION DX
 
 c                              local
@@ -356,20 +356,20 @@ c                               is the input array cyclic in x
 c                               must be cyclic in x
 c                               create cyclic "x" coordinates
           DO NX = 1,NXI
-              XIW(NX) = XI(NX)
+              XIW(NX+1) = XI(NX)
           END DO
           DX = XI(2) - XI(1)
-          XIW(0) = XI(1) - DX
-          XIW(NXI+1) = XI(NXI) + DX
+          XIW(1)    = XI(1) - DX
+          XIW(NXI2) = XI(NXI) + DX
 
           DO NY = 1,NYI
               DO NX = 1,NXI
-                  FIXW(NX,NY) = FI(NX,NY)
+                  FIXW(NX+1,NY) = FI(NX,NY)
               END DO
-              FIXW(0,NY) = FI(NXI,NY)
-              FIXW(NXI+1,NY) = FI(1,NY)
+              FIXW(1,NY)    = FI(NXI,NY)
+              FIXW(NXI2,NY) = FI(1,NY)
           END DO
-          CALL DLINT2XY(NXI+2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,NOPT,
+          CALL DLINT2XY(NXI2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,NOPT,
      +                  IER)
       END IF
 

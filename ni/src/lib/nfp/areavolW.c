@@ -28,9 +28,9 @@ extern void NGCALLF(dwgtvolrmse,DWGTVOLRMSE)(double*,double*,double*,
                                              double*);
 
 extern void NGCALLF(dwgtvolrmseccm,DWGTVOLRMSECCM)(double*,double*,double*,
-						   double*,double*,double*,
-						   int*,int*,int*,double*,
-						   double*,int*,double*);
+                                                   double*,double*,double*,
+                                                   int*,int*,int*,double*,
+                                                   double*,int*,double*);
 
 NhlErrorTypes wgt_areaave_W( void )
 {
@@ -209,9 +209,6 @@ NhlErrorTypes wgt_areaave_W( void )
                                      &missing_dx.doubleval,iflag,tmp_ave);
     if(type_x != NCL_double) {
       ((float*)ave)[i] = (float)*tmp_ave;
-    }
-    else {
-      ((double*)ave)[i] = *tmp_ave;
     }
 
     index_x += nxny;
@@ -435,9 +432,6 @@ NhlErrorTypes wgt_volave_W( void )
                                    &nz,&missing_dx.doubleval,iflag,tmp_ave);
     if(type_x != NCL_double) {
       ((float*)ave)[i] = (float)*tmp_ave;
-    }
-    else {
-      ((double*)ave)[i] = *tmp_ave;
     }
 
     index_x += nxnynz;
@@ -691,9 +685,6 @@ NhlErrorTypes wgt_volave_ccm_W( void )
     if(type_x != NCL_double) {
       ((float*)ave)[i] = (float)*tmp_ave;
     }
-    else {
-      ((double*)ave)[i] = *tmp_ave;
-    }
 
     index_x += nxnynz;
   }
@@ -816,7 +807,7 @@ NhlErrorTypes wgt_arearmse_W( void )
   for(i = 0; i < ndims_q; i++ ) {
     if(dsizes_q[i] != dsizes_r[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: the first two input arrays must be the same size");
-	return(NhlFATAL);
+        return(NhlFATAL);
     }
   }
   nlat = dsizes_q[ndims_q-2];
@@ -946,9 +937,6 @@ NhlErrorTypes wgt_arearmse_W( void )
                                        &missing_dq.doubleval,iflag,tmp_rmse);
     if(type_rmse != NCL_double) {
       ((float*)rmse)[i] = (float)*tmp_rmse;
-    }
-    else {
-      ((double*)rmse)[i] = *tmp_rmse;
     }
 
     index_q += nlatnlon;
@@ -1082,7 +1070,7 @@ NhlErrorTypes wgt_volrmse_W( void )
   for(i = 0; i < ndims_q; i++ ) {
     if(dsizes_q[i] != dsizes_r[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: the first two input arrays must be the same size");
-	return(NhlFATAL);
+        return(NhlFATAL);
     }
   }
   nlon = dsizes_q[ndims_q-1];
@@ -1220,9 +1208,6 @@ NhlErrorTypes wgt_volrmse_W( void )
                                      &missing_dq.doubleval,iflag,tmp_rmse);
     if(type_rmse != NCL_double) {
       ((float*)rmse)[i] = (float)*tmp_rmse;
-    }
-    else {
-      ((double*)rmse)[i] = *tmp_rmse;
     }
 
     index_q += klevnlatnlon;
@@ -1371,7 +1356,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
     if(dsizes_q[i] != dsizes_wgtq[i] || dsizes_q[i] != dsizes_wgtr[i] ||
        dsizes_q[i] != dsizes_r[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: the first four input arrays must be the same size");
-	return(NhlFATAL);
+        return(NhlFATAL);
     }
   }
 
@@ -1518,7 +1503,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Coerce subsection of wgtq (tmp_wgtq) to double.
  */
       coerce_subset_input_double(wgtq,tmp_wgtq,index_q,type_wgtq,
-				 klevnlatnlon,0,NULL,NULL);
+                                 klevnlatnlon,0,NULL,NULL);
     }
     else {
       tmp_wgtq = &((double*)wgtq)[index_q];
@@ -1529,7 +1514,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Coerce subsection of wgtr (tmp_wgtr) to double.
  */
       coerce_subset_input_double(wgtr,tmp_wgtr,index_q,type_wgtr,
-				 klevnlatnlon,0,NULL,NULL);
+                                 klevnlatnlon,0,NULL,NULL);
     }
     else {
       tmp_wgtr = &((double*)wgtr)[index_q];
@@ -1538,15 +1523,12 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
     if(type_rmse == NCL_double) tmp_rmse = &((double*)rmse)[i];
 
     NGCALLF(dwgtvolrmseccm,DWGTVOLRMSECCM)(tmp_r,tmp_q,tmp_wgtr,tmp_wgtq,
-					   tmp_wgty,tmp_wgtx,&nlon,&nlat,
-					   &klev,&missing_dr.doubleval,
-					   &missing_dq.doubleval,iflag,
-					   tmp_rmse);
+                                           tmp_wgty,tmp_wgtx,&nlon,&nlat,
+                                           &klev,&missing_dr.doubleval,
+                                           &missing_dq.doubleval,iflag,
+                                           tmp_rmse);
     if(type_rmse != NCL_double) {
       ((float*)rmse)[i] = (float)*tmp_rmse;
-    }
-    else {
-      ((double*)rmse)[i] = *tmp_rmse;
     }
     index_q += klevnlatnlon;
   }
@@ -1578,5 +1560,4 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
                           NCL_double,0));
   }
 }
-
 
