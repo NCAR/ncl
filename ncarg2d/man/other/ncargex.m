@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.26 1995-06-08 20:33:53 kennison Exp $
+.\"	$Id: ncargex.m,v 1.27 1995-08-01 15:34:34 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -434,7 +434,7 @@ tpwrtx tpwry
 .sp
 .I "SCROLLED TITLE Examples:"
 .sp
-fslfont slex01 tstitl c_slex01
+fslfont slex01 slex02 tstitl c_slex01
 .sp
 .I "SETER Examples:"
 .sp
