@@ -1,17 +1,37 @@
 C
-C $Id: tdex01.f,v 1.4 2000-02-16 23:40:16 kennison Exp $
+C $Id: tdex04.f,v 1.1 2000-02-16 23:40:17 kennison Exp $
 C
-      PROGRAM XMPL01
+      PROGRAM XMPL04
+C
+C This is a modified version of the TDPACK example "tdex01".  The two
+C surfaces have been modified to illustrate new capabilities.  The
+C color of the simple surface ranges from blue at the bottom to red at
+C the top, while the lumpy doughnut that intersects it is shown in
+C yellow.  In addition, cyan lines are used to indicate selected planes
+C of constant U, V, or W.
 C
 C Create parameters specifying the maximum sizes of the arrays defining
 C data and the arrays required for dealing with the list of triangles.
 C
-        PARAMETER (IMAX=41,JMAX=41,KMAX=41,MTRI=200000)
+        PARAMETER (IMAX=81,JMAX=81,KMAX=81,MTRI=400000)
+C
+C Set the desired values of the dimensions of the data arrays.  Note
+C that IDIM must not exceed IMAX, that JDIM must not exceed JMAX, and
+C that KDIM must not exceed KMAX.  NLYR is the number of vertical
+C layers to be used in rendering the simple surface.  There is an
+C inverse relationship between the number of layers you use for the
+C surface (which determines how many different colors will be used)
+C and the number of shades of those colors that you can generate.
+C (The shades are used to give a visual sense of the angle between
+C the line of sight and the normal to the surface.)
+C
+        PARAMETER (IDIM=81,JDIM=81,KDIM=81,NLYR=10)
 C
 C Declare local dimensioned variables to hold data defining a simple
 C surface and an isosurface.
 C
         DIMENSION U(IMAX),V(JMAX),W(KMAX),S(IMAX,JMAX),F(IMAX,JMAX,KMAX)
+        DIMENSION Q(IMAX,JMAX,2)
 C
 C Declare a local array to hold the triangle list and a couple of
 C temporary variables to be used in sorting the list.
@@ -26,12 +46,6 @@ C Set the desired minimum and maximum values of U, V, and W.
 C
         DATA UMIN,VMIN,WMIN,UMAX,VMAX,WMAX / -1.,-1.,-1.,1.,1.,1. /
 C
-C Set the desired values of the dimensions of the data arrays.  Note
-C that IDIM must not exceed IMAX, that JDIM must not exceed JMAX, and
-C that KDIM must not exceed KMAX.
-C
-        DATA IDIM,JDIM,KDIM / 31,31,31 /
-C
 C Set the desired values of parameters determining the eye position.
 C ANG1 is a bearing angle, ANG2 is an elevation angle, and RMUL is a
 C multiplier of the length of the diagonal of the data box, specifying
@@ -43,7 +57,7 @@ C ISTE is a flag that says whether to do a simple image (ISTE=0),
 C a one-frame stereo image (ISTE=-1), or a two-frame stereo image
 C (ISTE=+1).
 C
-        DATA ISTE / -1 /
+	DATA ISTE / -1 /
 C
 C ASTE is the desired angle (in degrees) between the lines of sight for
 C a pair of stereo views.
@@ -64,23 +78,6 @@ C scheme will be white on black (IBOW=0) or black on white (IBOW=1).
 C
         DATA IBOW / 1 /
 C
-C Set the desired value of the flag that says whether shading of the
-C surfaces will be done using gray scales (ICLR=0) or colors (ICLR=1).
-C
-        DATA ICLR / 1 /
-C
-C Set the desired values of the shading parameters.  Values of SHDE
-C near 0 give brighter colors and values near 1 give pastel shades.
-C Values of SHDR near 0 give a narrow range of shades and values near
-C 1 give a wide range of shades.
-C
-        DATA SHDE,SHDR / .1 , .8 /
-C
-C Set the desired values of the rendering-style indices for the
-C isosurface and the simple surface, respectively.
-C
-        DATA IIRS,ISRS / 2,3 /
-C
 C Define the conversion constant from degrees to radians.
 C
         DATA DTOR / .017453292519943 /
@@ -95,6 +92,17 @@ C
         DATA VILB / 'V Coordinate Values' /
         DATA WILB / 'W Coordinate Values' /
 C
+C Define the limits for the cyan stripes indicating certain values of
+C U, V, or W.
+C
+C       DATA USMN,USMX /  .44 ,  .46 /
+C       DATA VSMN,VSMX / -.56 , -.54 /
+C       DATA WSMN,WSMX / -.16 , -.14 /
+C
+        DATA USMN,USMX / -.01 , +.01 /
+        DATA VSMN,VSMX / -.01 , +.01 /
+        DATA WSMN,WSMX / -.01 , +.01 /
+C
 C Open GKS.
 C
         CALL OPNGKS
@@ -107,9 +115,72 @@ C Double the line width.
 C
         CALL GSLWSC (2.)
 C
-C Define colors to use.
+C Define the background color and the basic foreground color.
 C
-        CALL TDCLRS (1,IBOW,SHDE,SHDR,11,42,4)
+        IF (IBOW.EQ.0) THEN
+          CALL GSCR (1,0,0.,0.,0.)  !  black
+          CALL GSCR (1,1,1.,1.,1.)  !  white
+        ELSE
+          CALL GSCR (1,0,1.,1.,1.)  !  white
+          CALL GSCR (1,1,0.,0.,0.)  !  black
+        END IF
+C
+C Define the primary colors.
+C
+        CALL GSCR   (1,2,1.,0.,0.)  !  red
+        CALL GSCR   (1,3,0.,1.,0.)  !  green
+        CALL GSCR   (1,4,0.,0.,1.)  !  blue
+        CALL GSCR   (1,5,0.,1.,1.)  !  cyan
+        CALL GSCR   (1,6,1.,0.,1.)  !  magenta
+        CALL GSCR   (1,7,1.,1.,0.)  !  yellow
+C
+C Now we need a bunch more colors.  Each of the NLYR layers of the
+C simple surface is to be a different color and the isosurface is
+C to be made yet another color.  Additionally, we want to vary the
+C shading of each surface layer and of the isosurface as implied by
+C the angle between the line of sight and the local normal.  As we
+C define the colors required, we define the required rendering styles
+C for TDPACK.  ILCU is the index of the last color used so far.
+C
+        ILCU=7
+C
+C NSHD is the largest number of shades of each color that we can
+C generate.  (Note the trade-off between the number of levels and
+C the number of shades at each level.  With 31 levels, we get about
+C 7 shades of each color, which is not really enough.)
+C
+        NSHD=(256-(ILCU+1))/(NLYR+1)
+C
+C Generate NSHD shades of each of NLYR+1 colors and use them to
+C create NLYR+1 different rendering styles.  Note that I have set
+C up the shades to run from the brightest shade down to .2 times
+C the brightest shade.  This looks pretty good to my eye, but
+C others may prefer something different.
+C
+        DO 101 I=1,NLYR+1
+          IF (I.LE.NLYR) THEN
+            R=REAL(I-1)/REAL(NLYR-1)  !  From blue to red.
+            G=0.
+            B=1.-R
+          ELSE IF (I.EQ.NLYR+1) THEN
+            R=1.                      !  Yellow.
+            G=1.
+            B=0.
+          END IF
+          CALL TDSTRS (I,1,1,ILCU+1,ILCU+NSHD,-1,-1,0,0.,0.,0.)
+          DO 100 J=1,NSHD
+            ILCU=ILCU+1
+            P=REAL(NSHD-J+1)/REAL(NSHD)  !  P in range (0,1].
+            CALL GSCR (1,ILCU,.2+.8*P*R,.2+.8*P*G,.2+.8*P*B)
+  100     CONTINUE
+  101   CONTINUE
+C
+C Define one more rendering style, for the stripes that will be used
+C to mark selected planes of constant U, V, or W.  This involves only
+C a single color (cyan, color index 5) because we want the stripes to
+C really stand out.
+C
+        CALL TDSTRS (NLYR+2,1,1,5,5,-1,-1,0,0.,0.,0.)
 C
 C Fill data arrays defining a simple surface and an isosurface.  The
 C simple surface is defined by the equation "w=s(u,v)"; the function
@@ -136,7 +207,9 @@ C
           DO 106 J=1,JDIM
             S(I,J)=2.*EXP(-2.*(U(I)**2+V(J)**2))-1.
             DO 105 K=1,KDIM
-              F(I,J,K)=1.25*U(I)**2+1.25*V(J)**2+5.*W(K)**2
+              F(I,J,K)=1.25*U(I)**2+1.25*V(J)**2+1.25*W(K)**2
+              F(I,J,K)=F(I,J,K)*(1.75+.85*
+     +                           SIN(90.*DTOR+5.*ATAN2(V(J),U(I))))
   105       CONTINUE
   106     CONTINUE
   107   CONTINUE
@@ -153,51 +226,78 @@ C Make TDPACK characters a bit bigger.
 C
         CALL TDSETR ('CS1',1.25)
 C
-C Define TDPACK rendering styles 1 through 7, using black-and-white
-C shading or colored shading, whichever is selected.  The indices
-C 1-7 can then be used as arguments in calls to TDITRI, TDSTRI, and
-C TDMTRI.
-C
-        IF (ICLR.EQ.0) THEN
-          CALL TDSTRS (1,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (2,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (3,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (4,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (5,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (6,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (7,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-        ELSE
-          CALL TDSTRS (1,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (2,43,74, 75,106,-1,-1,1,0.,0.,0.) ! gray/red
-          CALL TDSTRS (3,43,74,107,138,-1,-1,1,0.,0.,0.) ! gray/green
-          CALL TDSTRS (4,43,74,139,170,-1,-1,1,0.,0.,0.) ! gray/blue
-          CALL TDSTRS (5,43,74,171,202,-1,-1,1,0.,0.,0.) ! gray/cyan
-          CALL TDSTRS (6,43,74,203,234,-1,-1,1,0.,0.,0.) ! gray/magenta
-          CALL TDSTRS (7,43,74,235,266,-1,-1,1,0.,0.,0.) ! gray/yellow
-        END IF
-C
 C Initialize the count of triangles in the triangle list.
 C
         NTRI=0
 C
-C Add to the triangle list triangles representing a simple surface.
+C Add to the triangle list triangles representing a simple surface;
+C initially, use rendering style 1; later, we will examine all the
+C triangles and make the rendering style for each a function of W.
 C
-        CALL TDSTRI (U,IDIM,V,JDIM,S,IMAX,RTRI,MTRI,NTRI,ISRS)
+        CALL TDSTRI (U,IDIM,V,JDIM,S,IMAX,RTRI,MTRI,NTRI,1)
 C
         IF (NTRI.EQ.MTRI) THEN
           PRINT * , 'TRIANGLE LIST OVERFLOW IN TDSTRI'
           STOP
         END IF
 C
-C Add to the triangle list triangles representing an isosurface.
+C Cut all the triangles generated so far into pieces, using planes that
+C cut the data box into NLYR slices perpendicular to the vertical axis.
+C
+        ULYR=(UMAX-UMIN)/REAL(NLYR)
+        VLYR=(VMAX-VMIN)/REAL(NLYR)
+        WLYR=(WMAX-WMIN)/REAL(NLYR)
+C
+        DO 108 I=1,NLYR-1
+          CALL TDCTRI (RTRI,MTRI,NTRI,3,WMIN+REAL(I)*WLYR)
+  108   CONTINUE
+C
+C Now, add to the triangle list triangles representing an isosurface;
+C use rendering style NLYR+1.
 C
         CALL TDITRI (U,IDIM,V,JDIM,W,KDIM,F,IMAX,JMAX,1.,
-     +                               RTRI,MTRI,NTRI,IIRS)
+     +                             RTRI,MTRI,NTRI,NLYR+1)
 C
         IF (NTRI.EQ.MTRI) THEN
           PRINT * , 'TRIANGLE LIST OVERFLOW IN TDITRI'
           STOP
         END IF
+C
+C Put some more slices through the triangles, so that we can put some
+C cyan stripes on the surfaces for certain values of U, V, and W.
+C
+        IF (USMN.LT.USMX) THEN
+          CALL TDCTRI (RTRI,MTRI,NTRI,1,USMN)
+          CALL TDCTRI (RTRI,MTRI,NTRI,1,USMX)
+        END IF
+C
+        IF (VSMN.LT.VSMX) THEN
+          CALL TDCTRI (RTRI,MTRI,NTRI,2,VSMN)
+          CALL TDCTRI (RTRI,MTRI,NTRI,2,VSMX)
+        END IF
+C
+        IF (WSMN.LT.WSMX) THEN
+          CALL TDCTRI (RTRI,MTRI,NTRI,3,WSMN)
+          CALL TDCTRI (RTRI,MTRI,NTRI,3,WSMX)
+        END IF
+C
+C Now, examine the triangles; change all those that have a rendering
+C style of 1 to instead have a rendering style that increases with
+C the third coordinate of the triangle.  However, if the values of
+C U, V, or W are in the ranges where we want a cyan stripe, we use
+C rendering style NLYR+2.
+C
+        DO 109 I=1,NTRI
+          UPOS=(RTRI(1,I)+RTRI(4,I)+RTRI(7,I))/3.
+          VPOS=(RTRI(2,I)+RTRI(5,I)+RTRI(8,I))/3.
+          WPOS=(RTRI(3,I)+RTRI(6,I)+RTRI(9,I))/3.
+          IF (RTRI(10,I).EQ.1.) THEN
+            RTRI(10,I)=REAL(MAX(1,MIN(NLYR,1+INT((WPOS-WMIN)/WLYR))))
+          END IF
+          IF ((UPOS.GE.USMN.AND.UPOS.LE.USMX).OR.
+     +        (VPOS.GE.VSMN.AND.VPOS.LE.VSMX).OR.
+     +        (WPOS.GE.WSMN.AND.WPOS.LE.WSMX)) RTRI(10,I)=REAL(NLYR+2)
+  109   CONTINUE
 C
 C Find the midpoint of the data box (to be used as the point looked at).
 C
@@ -225,7 +325,7 @@ C
 C
 C Initialize TDPACK.
 C
-  108   CALL TDINIT (UEYE,VEYE,WEYE,UMID,VMID,WMID,
+  110   CALL TDINIT (UEYE,VEYE,WEYE,UMID,VMID,WMID,
      +                              UMID,VMID,WMID+R,OTEP)
 C
 C If stereo views are being done, do the requested thing, either by
@@ -281,7 +381,7 @@ C If a left-eye view has just been done, loop back for a right-eye view.
 C
         IF (OTEP.LT.0.) THEN
           OTEP=-OTEP
-          GO TO 108
+          GO TO 110
         END IF
 C
 C Advance the frame.

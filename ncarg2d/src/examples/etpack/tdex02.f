@@ -1,4 +1,6 @@
-
+C
+C $Id: tdex02.f,v 1.3 2000-02-16 23:40:17 kennison Exp $
+C
       PROGRAM XMPL02
 C
 C Declare the size of the triangle array.
