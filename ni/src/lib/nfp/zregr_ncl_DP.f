@@ -1,38 +1,57 @@
 C NCLFORTSTART
-      SUBROUTINE ZREGR1(N,M,X,XMSG,Y,YMSG,C,RESID)
+      SUBROUTINE DZREGR1(N,M,Y,YMSG,X,XMSG,C,RESID,CON,CNORM)
       IMPLICIT NONE
-      INTEGER N,M
-      DOUBLE PRECISION X(N),Y(N,M),C(M),RESID(N),XMSG,YMSG
+      INTEGER  N,M
+      DOUBLE PRECISION Y(N),X(N,M),C(M),CNORM(M),RESID(N),XMSG,YMSG,CON 
 C NCLEND
 
-C NCL:    C = reg_linmult (x[*], y[*][*], opt)
+C NCL:    C = reg_multlin (y[*], x[*][*], opt)
+
+C Nomenclature:
+C .   C      - the raw partial correlation coef
+C .   CNORM  - the standardized partial correlation coef
 
 C ADJUSTABLE ARRAYS (LOCAL)
-      INTEGER I,J,IERROR
-      DOUBLE PRECISION XX(N),COV(M,M)
+      INTEGER I,J,IERROR,NPTUSED,IER
+      DOUBLE PRECISION YY(N),COV(M,M),VAR,XSD(M),YSD,XMEAN(M),YMEAN
+      DATA   IERROR /1/
 
-C If any Y has a missing values then set the corresponding X to XMSG
-c .   This eliminates any X/Y missing values from the computations.
-      DO I = 1,N
-          XX(I) = X(I)
-          DO J = 1,M
-              IF (Y(I,J).EQ.YMSG) THEN
-                  XX(I) = XMSG
-                  GO TO 10
-              END IF
-          END DO
-   10     CONTINUE
+C IF ANY X HAS A MISSING VALUES THEN SET THE CORRESPONDING Y to YMSG
+C .   THIS ELIMINATES ANY X/Y MISSING VALUES FROM THE COMPUTATIONS.
+
+      DO I=1,N
+         YY(I) = Y(I)
+        DO J=1,M
+           IF (X(I,J).EQ.XMSG) THEN
+               YY(I) = YMSG
+               GO TO 10
+           END IF
+        END DO
+   10    CONTINUE
       END DO
 
-      IERROR = 1
-      CALL ZREGR2(IERROR,N,M,XX,XMSG,Y,C,RESID,COV)
+C RESID ARE CALCULATED USING THE RAW PARTIAL REGRESSION COEF
+
+      CALL DZREGR2(IERROR,N,M,YY,YMSG,X,C,RESID,COV)
+
+C CALCULATE THE CONSTANT TERM
+C .   CON = YMEAN - c(1)*XMEAN_1 - c(2)*XMEAN_2 - ... -c(J)*XMEAN_J
+      
+      CALL DSTAT2(YY,N,YMSG,YMEAN,VAR,YSD,NPTUSED,IER)
+
+      CON  = YMEAN
+      DO J = 1,M
+          CALL DSTAT2(X(1,J),N,XMSG,XMEAN(J),VAR,XSD(J),NPTUSED,IER)
+          CON       = CON - C(J)*XMEAN(J)
+          CNORM(J)  = C(J)*XSD(J)/YSD  
+      END DO
 
       RETURN
       END
-
-      SUBROUTINE ZREGR2(IERROR,N,M,T,TMSG,F,C,RESID,COV)
+C --------------------------------------------------------
+      SUBROUTINE DZREGR2(IERROR,N,M,T,TMSG,F,C,RESID,COV)
       IMPLICIT NONE
-      INTEGER IERROR,N,M
+      INTEGER  IERROR,N,M
       DOUBLE PRECISION T(N),F(N,M),C(M),RESID(N),COV(M,M),TMSG
 
 C The modelled regession time series T(I) (I=1,2,...,N) is given by
