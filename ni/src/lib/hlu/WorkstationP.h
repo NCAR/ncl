@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.11 1996-02-26 21:46:19 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.12 1996-04-05 21:15:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -88,6 +88,7 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 /*
  * This is used as the Inheritance constant
  */
+#define NhlInheritPalette ((int)_NhlInherit)
 #define NhlInheritOpen ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritActivate ((NhlWorkstationProc)_NhlInherit)
@@ -166,6 +167,7 @@ typedef struct _NhlWorkstationLayerRec{
 
 typedef struct _NhlWorkstationClassPart{
 	NhlColor		def_background;
+	int			pal;
 	NhlWorkstationProc	open_work;
 	NhlWorkstationProc	close_work;
 	NhlWorkstationProc	activate_work;
@@ -196,5 +198,59 @@ extern	NhlErrorTypes _NhlAllocateColors(
 	NhlLayer	wl
 #endif
 );
+
+/*
+ * Palette obj declarations.  I am putting all the palette declarations
+ * in the Workstation files because the palette object is essentially
+ * just a worker object for the Workstation class.
+ */
+
+typedef struct _NhlPalCmapRec{
+	NhlString	name;
+	NhlColor	*cmap;
+	int		cmap_size;
+} _NhlPalCmap;
+
+typedef struct _NhlPalListRec NhlPalListRec, *NhlPalList;
+struct _NhlPalListRec{
+	NrmQuark	quark;
+	NhlGenArray	gen;
+	NhlPalList	next;
+};
+
+typedef struct _NhlPaletteLayerPart{
+	/* User settable resource fields */
+
+	/* Private settable resource fields */
+	NhlClass	work_class;
+
+	/* Private internal fields */
+	NhlPalList	cmaps;
+
+} NhlPaletteLayerPart;
+
+typedef struct _NhlPaletteLayerRec{
+	NhlObjLayerPart		base;
+	NhlPaletteLayerPart	pal;
+} NhlPaletteLayerRec, *NhlPaletteLayer;
+
+typedef struct _NhlPaletteClassPart{
+	_NhlPalCmap		*default_maps;
+} NhlPaletteClassPart;
+
+typedef struct _NhlPaletteClassRec{
+	NhlObjClassPart			base_class;
+	NhlPaletteClassPart		pal_class;
+} NhlPaletteClassRec, *NhlPaletteClass;
+	
+extern NhlPaletteClassRec NhlpaletteClassRec;	
+
+/* Resource Names */
+
+#define	_NhlNpalWorkClass	"pal.WorkClass"
+#define	_NhlCpalWorkClass	"Pal.WorkClass"
+
+extern NhlClass NhlpaletteClass;
+
 
 #endif	/* _NWorkstationP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.7 1995-12-19 20:38:58 boote Exp $
+ *      $Id: ConvertP.h,v 1.8 1996-04-05 21:15:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,6 +121,7 @@ struct _NhlConvertRec{
 	NrmQuark		fromtype;
 	NrmQuark		totype;
 	NhlTypeConverter	converter;
+	NhlBoolean		computed_args;
 	NhlConvertArgList	args;
 	int			nargs;
 	NhlBoolean		cacheit;

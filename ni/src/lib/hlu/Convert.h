@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.10 1995-12-19 20:38:58 boote Exp $
+ *      $Id: Convert.h,v 1.11 1996-04-05 21:15:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,8 @@
 typedef enum _NhlConvertAddrModes{
 	NhlIMMEDIATE,	/* values that fit in an NhlArgVal only! */
 	NhlADDR,
-	NhlSTRENUM	/* a hack - the size parameter is data	*/
+	NhlSTRENUM,	/* a hack - the size parameter is data	*/
+	NhlLAYEROFFSET
 } NhlConvertAddrModes;
 
 typedef struct _NhlConvertArg{

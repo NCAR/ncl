@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.30 1995-06-17 00:09:41 boote Exp $
+ *      $Id: hlu.h,v 1.31 1996-04-05 21:15:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -249,6 +249,12 @@ extern NhlBoolean NhlIsClass(
 #if	NhlNeedProto
 	int		id,
 	NhlClass	cl
+#endif
+);
+
+extern NhlClass NhlClassOfObject(
+#if	NhlNeedProto
+	int		id
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.48 1996-03-16 21:37:45 boote Exp $
+ *      $Id: Workstation.c,v 1.49 1996-04-05 21:15:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,9 +41,9 @@
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ConvertersP.h>
-#include <ncarg/hlu/PalettesP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
+#include <ncarg/hlu/AppI.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
@@ -554,6 +554,7 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
         },
 	{
 /* def_background	*/	{0.0,0.0,0.0},
+/* pal			*/	NhlDEFAULT_APP,
 /* open_work		*/	WorkstationOpen,
 /* close_work		*/	WorkstationClose,
 /* activate_work	*/	WorkstationActivate,
@@ -594,6 +595,7 @@ WorkstationClassInitialize
 ()
 #endif
 {
+	NhlErrorTypes	ret = NhlNOERROR;
 	Gop_st status;
 	int status1,dummy = 6;
 	int i;
@@ -683,8 +685,6 @@ WorkstationClassInitialize
 		NhlTFillIndexGenArray,_NhlCvtGenArrayToIndexGenArray,fillargs,
 		NhlNumber(fillargs),False,NULL);
 
-	(void)_NhlInitPalettes();
-
 	intQ = NrmStringToQuark(NhlTInteger);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
@@ -742,8 +742,12 @@ WorkstationClassInitialize
 	for (i = 0; i < marker_table_len; i++) {
 		marker_table[i] = &marker_specs[i];
 	}
-	
-	return(NhlNOERROR);
+
+	ret = NhlVACreate(&NhlworkstationClassRec.work_class.pal,"pal",
+					NhlpaletteClass,_NhlGetDefaultApp(),
+		_NhlNpalWorkClass,	NhlworkstationClass,
+		NULL);
+	return ret;
 }
 
 /*
@@ -775,6 +779,9 @@ WorkstationClassPartInitialize
 					(NhlWorkstationClass)layerclass;
 	NhlWorkstationClass	sc = (NhlWorkstationClass)
 						lc->base_class.superclass;
+
+	if(lc->work_class.pal == NhlInheritPalette)
+		lc->work_class.pal = sc->work_class.pal;
 
 	if(lc->work_class.open_work == NhlInheritOpen)
 		lc->work_class.open_work = sc->work_class.open_work;

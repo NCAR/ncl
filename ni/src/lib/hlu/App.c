@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.20 1996-01-15 17:22:42 boote Exp $
+ *      $Id: App.c,v 1.21 1996-04-05 21:15:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1036,6 +1036,32 @@ AppLayerDestroy
 /*
  * Private API
  */
+
+/*
+ * Function:	_NhlGetDefaultApp
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+_NhlGetDefaultApp
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlappClassRec.app_class.default_app->base.id;
+}
 
 /*
  * Function:	_NhlGetCurrentApp

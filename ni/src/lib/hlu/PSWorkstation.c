@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.5 1995-12-19 20:39:20 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.6 1996-04-05 21:15:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -157,6 +157,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
         },
         {
 /* def_background	*/	{1.0,1.0,1.0},
+/* pal			*/	NhlInheritPalette,
 /* open_work		*/	PSWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.19 1995-12-19 20:39:19 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.20 1996-04-05 21:15:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -134,6 +134,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         },
         {
 /* def_background	*/	{0.0,0.0,0.0},
+/* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,

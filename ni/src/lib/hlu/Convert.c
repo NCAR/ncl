@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.13 1996-01-16 21:22:30 haley Exp $
+ *      $Id: Convert.c,v 1.14 1996-04-05 21:15:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -550,6 +550,8 @@ CreateConvArgs
 	register int		i;
 	NhlConvertArgList	newargs=NULL;
 
+	cvtr->computed_args = False;
+
 	if(nargs < 1){
 		cvtr->args = NULL;
 		cvtr->nargs = 0;
@@ -598,6 +600,18 @@ CreateConvArgs
 				strcpy(newargs[i].data.strval,
 							args[i].data.strval);
 
+				newargs[i].size = args[i].size;
+
+				break;
+
+			case NhlLAYEROFFSET:
+				/*
+				 * data is an offset into a Layer.  This
+				 * offset should be used to compute a value
+				 * when the actual converter is called.
+				 */
+				cvtr->computed_args = True;
+				newargs[i].data.ptrval = args[i].data.ptrval;
 				newargs[i].size = args[i].size;
 
 				break;
@@ -1818,55 +1832,66 @@ InsertInCache
 }
 
 /*
- * Function:	Convert
+ * Function:	ComputeArgs
  *
- * Description:	This function calls a converter on a piece of data and
- *		returns it to the caller in the todata structure.  If
- *		data from the specified converter is supposed to be cached
- *		the data is also copied into the cache.
+ * Description:	
  *
- * In Args:	NhlConvertPtr	conv		ptr to converter
- *		NrmValue	*fromdata,	data to convert
+ * In Args:	
  *
- * Out Args:
- *		NrmValue	*todata		return converted data
+ * Out Args:	
  *
- * Scope:	static
- * Returns:	NhlErrorTypes
- *
- * Side Effect:	The cache member of conv may get an additional node added
- *		to it if conv->cachit is True.
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
  */
-static NhlErrorTypes
-Convert
+static NhlConvertArgList
+ComputeArgs
 #if	NhlNeedProto
 (
-	NhlConvertPtr		conv,		/* ptr to converter	*/
-	NrmValue		*fromdata,	/* data to convert	*/
-	NrmValue		*todata		/* return converted data*/
+	NhlConvertPtr		conv,
+	NhlLayer		ref,
+	NhlConvertArgList	sargs,
+	int			nsargs
 )
 #else
-(conv,fromdata,todata)
-	NhlConvertPtr		conv;		/* ptr to converter	*/
-	NrmValue		*fromdata;	/* data to convert	*/
-	NrmValue		*todata;	/* return converted data*/
+(conv,ref,sargs,nsargs)
+	NhlConvertPtr		conv;
+	NhlLayer		ref;
+	NhlConvertArgList	sargs;
+	int			nsargs;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
+	int			i;
+	NhlConvertArgList	args;
 
-	ret = (*conv->converter)(fromdata,todata,conv->args,conv->nargs);
+	if(!ref){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	"Unable to compute an NhlLAYEROFFSET - invalid reference object."));
+		return NULL;
+	}
 
-	if(ret < NhlWARNING)
-		return(ret);
-
-#ifdef	NOTUSED
-	if(conv->cacheit){
-		lret = InsertInCache(conv,fromdata,todata);
-		return MIN(lret,ret);
+	if(conv->nargs > nsargs){
+		args = NhlMalloc(sizeof(NhlConvertArg)*conv->nargs);
+		if(!args){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NULL;
+		}
 	}
 	else
-#endif
-		return(ret);
+		args = sargs;
+
+	for(i=0;i<conv->nargs;i++){
+		args[i].addressmode = conv->args[i].addressmode;
+		args[i].size = conv->args[i].size;
+		if(conv->args[i].addressmode == NhlLAYEROFFSET){
+			args[i].data.ptrval = (char*)ref +
+					(unsigned int)conv->args[i].data.ptrval;
+		}
+		else
+			args[i].data = conv->args[i].data;
+	}
+
+	return args;
 }
 
 /*
@@ -1911,6 +1936,8 @@ ConvertData
 	NhlErrorTypes		ret=NhlNOERROR;
 	NrmQuark		from,to;
 	NhlClass		ref_class;
+	NhlConvertArg		stack_args[10];
+	NhlConvertArgList	args;
 
 	if(context == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -1935,7 +1962,8 @@ ConvertData
 	if(ptr == NULL){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"No Converter for %s to %s",
 				NrmNameToString(from),NrmNameToString(to));
-		return(NhlFATAL);
+		ret = NhlFATAL;
+		goto DONE;
 	}
 
 #ifdef	NOT
@@ -1944,8 +1972,33 @@ ConvertData
 			return(SetConvertVal(cache->to, todata));
 #endif
 
-	ret = Convert(ptr,fromdata,todata);
+	if(ptr->computed_args){
+		args = ComputeArgs(ptr,context->ref,stack_args,
+							NhlNumber(stack_args));
+		if(!args){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"Unable to parse computed args???"));
+			ret = NhlFATAL;
+			goto DONE;
+		}
 
+		ret = (*ptr->converter)(fromdata,todata,args,ptr->nargs);
+
+		if(args != stack_args)
+			NhlFree(args);
+	}
+	else
+		ret =(*ptr->converter)(fromdata,todata,ptr->args,ptr->nargs);
+
+#ifdef	NOTUSED
+	if(ptr->cacheit){
+		lret = InsertInCache(ptr,fromdata,todata);
+		return MIN(lret,ret);
+	}
+	else
+#endif
+
+DONE:
 	ctxt_stack = ctxt.next;
 
 	return ret;

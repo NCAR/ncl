@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.19 1996-03-16 21:37:46 boote Exp $
+ *      $Id: Workstation.h,v 1.20 1996-04-05 21:15:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -276,5 +276,44 @@ extern NhlBoolean NhlIsWorkstation(
 );
 
 extern NhlClass NhlworkstationClass;
+
+/*
+ * Palette declarations
+ */
+/*
+ * New Types
+ */
+
+#define	NhlTColorMap	"ColorMap"
+
+
+/*
+ * Global API
+ */
+
+extern int NhlPalGetDefined(
+#if	NhlNeedProto
+	NhlClass	wc,
+	NhlString	**names
+#endif
+);
+
+extern NhlErrorTypes NhlPalGetColormap(
+#if	NhlNeedProto
+	NhlClass	wc,
+	NhlString	name,
+	NhlColor	**map,
+	int		*len
+#endif
+);
+
+extern NhlErrorTypes NhlPalSetColormap(
+#if	NhlNeedProto
+	NhlClass	wc,
+	NhlString	name,
+	NhlColor	*map,
+	int		len
+#endif
+);
 
 #endif	/* _NWorkstation_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.3 1995-04-22 01:01:25 boote Exp $
+ *      $Id: AppI.h,v 1.4 1996-04-05 21:15:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,12 @@
 #define	_NhlCdefApp	"Def.App"
 
 extern	NhlLayer _NhlGetCurrentApp(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern	int _NhlGetDefaultApp(
 #if	NhlNeedProto
 	void
 #endif

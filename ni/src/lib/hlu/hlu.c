@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.32 1995-06-17 00:09:40 boote Exp $
+ *      $Id: hlu.c,v 1.33 1996-04-05 21:15:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1679,4 +1679,36 @@ NhlIsClass
 		return False;
 
 	return _NhlIsClass(l,cl);
+}
+
+/*
+ * Function:	NhlClassOfObject
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlClass
+NhlClassOfObject
+#if	NhlNeedProto
+(
+	int	id
+)
+#else
+(id)
+	int	id;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(id);
+
+	if(!l)
+		return NULL;
+
+	return _NhlClass(l);
 }
