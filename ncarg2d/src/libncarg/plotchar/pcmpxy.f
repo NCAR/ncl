@@ -1,5 +1,5 @@
 C
-C $Id: pcmpxy.f,v 1.3 1993-01-12 02:41:23 kennison Exp $
+C $Id: pcmpxy.f,v 1.4 1993-01-13 23:07:41 kennison Exp $
 C
       SUBROUTINE PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
@@ -17,7 +17,7 @@ C selects the polar coordinate transformations, and 'MAP' = 3 selects
 C a perspective transformation.  The user of PLOTCHAR may replace this
 C routine as desired to transform the characters being drawn.
 C
-C In this version of PCMPXY, 'MAP' = 99 selects the identity mapping,
+C In this version of PCMPXY, 'MAP' = 100 selects the identity mapping,
 C but a check is made to see whether the point (XINP,YINP) is outside
 C the rectangle specified by the values of the variables XVPL, XVPR,
 C YVPB, and YVPT, in the common block PCSTCM; if so, the value 1.E12
@@ -71,6 +71,8 @@ C
             YINP=3.
           ELSE IF (INT(XINP).EQ.3) THEN
             YINP=3.
+          ELSE IF (INT(XINP).EQ.100) THEN
+            YINP=3.
           ELSE
             YINP=3.
           END IF
@@ -109,7 +111,7 @@ C
 C
 C ... the special STITLE case ...
 C
-        ELSE IF (ABS(IMAP).EQ.99) THEN
+        ELSE IF (ABS(IMAP).EQ.100) THEN
 C
           IF (XINP.LT.XVPL.OR.XINP.GT.XVPR.OR.
      +        YINP.LT.YVPB.OR.YINP.GT.YVPT) THEN
