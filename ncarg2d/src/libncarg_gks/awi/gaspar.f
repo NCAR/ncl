@@ -1,5 +1,5 @@
 C
-C	$Id: gaspar.f,v 1.1 1993-01-09 01:57:42 fred Exp $
+C	$Id: gaspar.f,v 1.2 1993-03-19 01:27:36 fred Exp $
 C
       SUBROUTINE GASPAR(IOS,STATUS)
 C
@@ -18,12 +18,14 @@ C  Compute the number of aspect source flags defined.
 C
       ASFCNT = (LEN / (MENCPR/BYTSIZ)) / 2
 C
-C  Extract the ASF pointer and value.
+C  Extract the ASF pointer and value (since the ASFs are stored in
+C  the segments as CGM elements, the values are reversed, so 
+C  complement them here).
 C
       DO 10 II = 1,ASFCNT
         CALL GOPDEC(TMPASF,MENCPR,2,IOS,STATUS)
         IF (TMPASF(1).GE.0 .AND. TMPASF(1).LT.ASFMAX) THEN
-          IF(II .LE. ICVMAX) GASFSF(ICONV(II)) = TMPASF(2)
+          IF(II .LE. ICVMAX) GASFSF(ICONV(II)) = 1-TMPASF(2)
         END IF
  10   CONTINUE
       CALL GSASF(GASFSF)

@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.3 1993-01-12 18:40:49 fred Exp $
+C	$Id: gztowk.f,v 1.4 1993-03-19 01:27:43 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -8,7 +8,8 @@ C  on the current GKS operating state.
 C
       include 'gkscom.h'
 C
-      INTEGER FCODEO,CONTO,XID,ADESTR(128)
+      INTEGER FCODEO,CONTO,XID,ADESTR(128),ICNTX(31)
+      REAL    RCNTX(19)
       SAVE
 C
       CALL GQOPS(IST)
@@ -52,7 +53,8 @@ C
 C
             RETURN
           ELSE IF (ID(3) .EQ. GWSS) THEN
-            CALL GWIWDR
+            CALL GZSRAT(3,ICNTX,RCNTX)
+            CALL GWIWDR(ICNTX,RCNTX)
             RETURN
           ENDIF
         ENDIF
@@ -141,7 +143,8 @@ C
               ENDIF
             ELSE IF (SWKTP(I).EQ.GWSS .AND. FCODE.EQ.0) THEN
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10 
-              CALL GWIWDR
+              CALL GZSRAT(3,ICNTX,RCNTX)
+              CALL GWIWDR(ICNTX,RCNTX)
             ENDIF
           ENDIF
    10   CONTINUE
@@ -211,7 +214,8 @@ C  Open segment name if create segment (GKS was put in state GSGOP
 C  by GCRSG before the interface call); flush and close if close segment.      
 C
         IF (FCODE.EQ.80 .OR. FCODE.EQ.81) THEN
-          CALL GWIWDR
+          CALL GZSRAT(3,ICNTX,RCNTX)
+          CALL GWIWDR(ICNTX,RCNTX)
           RETURN
         ENDIF
 C
@@ -221,7 +225,8 @@ C
           IF (SWKTP(I) .EQ. GWSS) THEN
             IF (FCODE.EQ. 6 .OR.  FCODE.EQ.61 .OR.
      +         (FCODE.GE.21 .AND. FCODE.LE.43)) THEN          
-              CALL GWIWDR
+              CALL GZSRAT(3,ICNTX,RCNTX)
+              CALL GWIWDR(ICNTX,RCNTX)
               RETURN
             ENDIF
           ENDIF
@@ -241,7 +246,8 @@ C
 C
           IF (ITYP .EQ. GWSS) THEN
             IF (FCODE.GE.11 .AND. FCODE.LE.16) THEN
-              CALL GWIWDR
+              CALL GZSRAT(3,ICNTX,RCNTX)
+              CALL GWIWDR(ICNTX,RCNTX)
               RETURN
             ENDIF
           ENDIF

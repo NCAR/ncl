@@ -1,5 +1,5 @@
 C
-C	$Id: gzcpwk.f,v 1.1 1993-01-09 02:04:08 fred Exp $
+C	$Id: gzcpwk.f,v 1.2 1993-03-19 01:27:38 fred Exp $
 C
       SUBROUTINE GZCPWK(WKID)
 C
@@ -39,6 +39,8 @@ C
       include 'gkscom.h'
 C
       INTEGER WKID
+      INTEGER ICNTX(31)
+      REAL    RCNTX(19)
 C
       PARAMETER (MXCOL=256)
 C
@@ -61,7 +63,7 @@ C
 C
 C  Save the GKS attribute context.
 C
-      CALL GZSRAT(0)
+      CALL GZSRAT(0,ICNTX,RCNTX)
 C
 C  Activate WKID if it is not active so that the output primitives
 C  will be written to it.
@@ -80,7 +82,7 @@ C
 C
 C  Restore the attribute context.
 C
-      CALL GZSRAT(1)
+      CALL GZSRAT(1,ICNTX,RCNTX)
 C
 C  Close the input segment.
 C
