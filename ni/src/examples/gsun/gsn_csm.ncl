@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.96 2002-06-10 22:47:20 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.97 2002-06-14 22:52:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -269,7 +269,6 @@ begin
 ;
   if(isatt(res2,"gsnXYBarChartBarWidth"))
     bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
-    delete(res2@gsnXYBarChartBarWidth)
     nwidths   = dimsizes(dimsizes(bar_width))
     if(.not.(nwidths.eq.1.or.nwidths.eq.ncurves))
       print("get_bar_widths: Fatal: You must either select one constant bar width, or the same number of bar widths as you have curves.")
@@ -3107,7 +3106,7 @@ begin
       tmres = True
       gsnp_turn_off_tickmarks(tmres)
     end if
-    mpres = get_res_ne(res2,(/"tm","tx","am"/))  ; Get rest of resources
+    mpres = get_res_ne(res2,(/"tx","am"/))  ; Get rest of resources
     attsetvalues_check(map_object,mpres)
 ;
 ; Add tickmark object, even if the tickmarks have been turned off, because
@@ -3634,7 +3633,7 @@ begin
 
 ; This section tests for regular resources.
 
-    mpres = get_res_ne(res2,(/"tm","tx"/))  ; Get rest of resources
+    mpres = get_res_ne(res2,"tx")  ; Get rest of resources
     attsetvalues_check(map_object,mpres)
 
 ; Make sure axes labels (if any) are the same size.
@@ -3994,7 +3993,7 @@ begin
           zmeans2 = dim_avg(datanew)
           if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
             nmeans = dimsizes(zmeans2)
-            zmeans = new((/2,nmeans/),float)
+            zmeans = new((/2,nmeans/),typeof(zmeans2))
             zmeans(0,:) = zmeans2
             zmeans(1,:) = fspan(0.,0.,nmeans)
           else
@@ -7224,6 +7223,9 @@ end
 ; The resource gsnXYBarChartBarWidth can be used to specify the width   ;
 ; of each bar. The smallest dx is used by default.                      ;
 ;                                                                       ;
+; The resource gsnAbove/BelowYRefLineBarcolors can be used to specify   ;
+; an array of bar colors.                                               ;
+;                                                                       ;
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
 ; If the user sets lgLabelFontHeightF to change the size of the legend  ;
@@ -7468,6 +7470,22 @@ begin
             return
           end if
 ;
+; Check if gsnAbove/BelowYRefLineBarColors is set. If so, then values
+; in these arrays will be used to color each above/below bar.
+;
+          mlt_above_bar_colors = False
+          mlt_below_bar_colors = False
+          if(isatt(res2,"gsnAboveYRefLineBarColors")) then
+            yref_fill_on         = True
+            mlt_above_bar_colors = True
+            bar_colors_above = get_res_value(res2,"gsnAboveYRefLineBarColors",1)
+          end if  
+          if(isatt(res2,"gsnBelowYRefLineBarColors")) then
+            yref_fill_on         = True
+            mlt_below_bar_colors = True
+            bar_colors_below = get_res_value(res2,"gsnBelowYRefLineBarColors",1)
+          end if
+;
 ; Loop across curves and figure out which points are above and
 ; below references lines.  First create arrays to hold points
 ; above and below reference lines.
@@ -7488,7 +7506,7 @@ begin
                       yref_line,bar_widths)
 ;
 ; Combine the above/below arrays into one X/Y array so that we can pass
-; to gsn_xy routine. Make the 5h point missing, since the 5th point
+; to gsn_xy routine. Make the 5th point missing, since the 5th point
 ; closes the polygon, and we only want an outline here.
 ;
           na_max  = max(nabove)
@@ -7592,7 +7610,8 @@ begin
       end do
     end if
 
-; Fill bar charts.
+; Fill bars with either a single color for above and below, or with
+; individual colors.
 
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
@@ -7600,31 +7619,63 @@ begin
 ;
 ; Fill above reference line.
 ;
-        gsres@gsFillColor = yref_line_above(0)
-
         if(nabove(i).gt.0)
-          if(dimsizes(yref_line_above).gt.1)
-            gsres@gsFillColor = yref_line_above(i)
+;
+; Single bar color for each above and below bars.
+;
+          if(.not.mlt_above_bar_colors)
+            gsres@gsFillColor = yref_line_above(0)
+            if(dimsizes(yref_line_above).gt.1)
+              gsres@gsFillColor = yref_line_above(i)
+            end if
           end if
-          var_string = systemfunc("echo polygons$$")
-          xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
-                                                   xabove(i,:), \
-                                                   yabove(i,:),gsres)
+;
+; Multiple bar colors.
+;
+          if(mlt_above_bar_colors) then
+            nca = dimsizes(bar_colors_above)
+            do ii = 0,npts-1
+              gsres@gsFillColor = bar_colors_above(ii%nca)
+              var_string = systemfunc("echo polygons$$") + ii
+              xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                     xabove(i,ii*5:ii*5+4), \
+                                                     yabove(i,ii*5:ii*5+4), \
+                                                     gsres)
+            end do
+          else
+            var_string = systemfunc("echo polygons$$")
+            xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                     xabove(i,:), \
+                                                     yabove(i,:),gsres)
+          end if
         end if
 ;
 ; Fill below reference line.
 ;
-        gsres@gsFillColor = yref_line_below(0)
-
-        if(dimsizes(yref_line_below).gt.1)
-          gsres@gsFillColor = yref_line_below(i)
-        end if
-
         if(nbelow(i).gt.0)
-          var_string = systemfunc("echo polygons$$")
-          xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
-                                                   xbelow(i,:), \
-                                                   ybelow(i,:), gsres)
+          if(.not.mlt_above_bar_colors)
+            gsres@gsFillColor = yref_line_below(0)
+            if(dimsizes(yref_line_below).gt.1)
+              gsres@gsFillColor = yref_line_below(i)
+            end if
+          end if
+
+          if(mlt_below_bar_colors) then
+            ncb = dimsizes(bar_colors_below)
+            do ii = 0,npts-1
+              gsres@gsFillColor = bar_colors_below(ii%ncb)
+              var_string = systemfunc("echo polygons$$") + ii
+              xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                     xbelow(i,ii*5:ii*5+4), \
+                                                     ybelow(i,ii*5:ii*5+4), \
+                                                     gsres)
+            end do
+          else
+            var_string = systemfunc("echo polygons$$")
+            xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                     xbelow(i,:), \
+                                                     ybelow(i,:), gsres)
+          end if
         end if
       end do
 ;

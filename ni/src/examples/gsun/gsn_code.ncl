@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.85 2002-05-07 00:55:45 haley Exp $
+;      $Id: gsn_code.ncl,v 1.86 2002-06-14 22:52:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2968,23 +2968,30 @@ begin
     end if
   end if
 ;
-; We assume all plots are the same size, so if we get the size of
-; the first one, this should be the size of all of them.
+; We used to assume all plots were the same size. Now, we figure out
+; what the largest width and height are, and scale the plots based
+; on this size.
 ;
-  bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
-  top    = bb(0)           ; all of its annotations.
-  bottom = bb(1)
-  left   = bb(2)
-  right  = bb(3)
+  bb  = NhlGetBB(plot)   ; Get bounding box of each plot with
+  top    = bb(:,0)       ; all of its annotations.
+  bottom = bb(:,1)
+  left   = bb(:,2)
+  right  = bb(:,3)
+  delete(bb)
 ;
-; plot_width  : total width of plot with all of its annotations
-; plot_height : total height of plot with all of its annotations
+; plot_width  : total width of plots with all of its annotations
+; plot_height : total height of plots with all of its annotations
 ; total_width : plot_width plus white space on both sides
 ; total_height: plot_height plus white space on top and bottom
 ;
-  plot_width  = right - left     ; Calculate total width of plot.
-  plot_height = top - bottom     ; Calculate total height of plot.
+  plot_widths  = right - left     ; Calculate total width of each plot.
+  plot_heights = top - bottom     ; Calculate total height of each plot.
 
+  iw = maxind(right-left)    ; Get index where width is the widest.
+  ih = maxind(top-bottom)    ; Get index where height is the highest. 
+
+  plot_width  = right(iw) - left(iw) ; Calculate total width of widest plot
+  plot_height = top(ih) - bottom(ih) ; Calculate total height of tallest plot.
   xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
   ywsp = ywsp_perc/100. * plot_height ; width and height.
 
@@ -3071,16 +3078,20 @@ begin
     "vpHeightF" : vph
   end getvalues
 
-  dxl = scale * (vpx-left)           ; Distance from plot's left
+  dxl = scale * (vpx-left(iw))       ; Distance from plot's left
                                      ; position to its leftmost annotation
-  dxr = scale * (right-(vpx+vpw))    ; Distance from plot's right
+  dxr = scale * (right(iw)-(vpx+vpw)); Distance from plot's right
                                      ; position to its rightmost annotation
-  dyt = scale * (top-vpy)            ; Distance from plot's top
+  dyt = scale * (top(ih)-vpy)        ; Distance from plot's top
                                      ; position to its topmost annotation.
-  dyb = scale * ((vpy-vph)-bottom)   ; Distance from plot's bottom
-                                     ; position to its bottommost annotation.
+  dyb = scale * ((vpy-vph)-bottom(ih)) ; Distance from plot's bottom
+                                       ; position to its bottommost annotation.
 
   ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
+  delete(top)
+  delete(bottom)
+  delete(right)
+  delete(left)
 ;
 ; If we have figure strings, then determine white spacing around 
 ; the text box.
@@ -4226,7 +4237,7 @@ begin
   rgb_values = new((/ncolors,3/),float,-999)
 
   do i=0,ncolors-1
-    index = ind(named_colors(i).eq.names)
+    index = ind(lower_case(named_colors(i)).eq.names)
     if(.not.ismissing(index))
       rgb_values(i,0) = red(index)
       rgb_values(i,1) = green(index)
