@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1998-05-07 23:00:19 kennison Exp $
+#	$Id: yMakefile,v 1.8 1998-05-26 16:13:16 kennison Exp $
 #
 MYNAME	= eezmap
 
@@ -25,6 +25,6 @@ FExampleTarget(mpex07,mpex07.o)
 FExampleTarget(mpex08,mpex08.o)
 FExampleTarget(mpex09,mpex09.o)
 FExampleTarget(mpex10,mpex10.o)
-FExampleTarget(mpex11,mpex10.o)
-FExampleTarget(mpex12,mpex10.o)
+FExampleTarget(mpex11,mpex11.o)
+FExampleTarget(mpex12,mpex12.o)
 FExampleTarget(mpexfi,mpexfi.o)
