@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.23 1996-01-31 23:53:39 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.24 1996-02-22 21:49:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2494,7 +2494,7 @@ NhlErrorTypes _NclIasciiread
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
 
-		if(thetype->type_class.type & NCL_VAL_TYPE_MASK) {
+		if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
 			for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
 				if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
 					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
@@ -2514,6 +2514,7 @@ NhlErrorTypes _NclIasciiread
 		} else if(thetype->type_class.type==Ncl_Typechar) {
 			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
 				*(char*)tmp_ptr = fgetc(fd);
+				tmp_ptr = (void*)((char*)tmp_ptr+1);
 			}
 			if(i < totalsize) {	
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
@@ -2534,6 +2535,7 @@ NhlErrorTypes _NclIasciiread
 						if(*step == '\n') {
 							*step = '\0';
 							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
 							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 
 							break;
