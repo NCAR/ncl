@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.9 1997-02-24 22:12:32 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.10 1997-07-31 18:00:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -535,8 +535,10 @@ PSWorkstationOpen
 	NhlLayer	l;
 #endif
 {
+	NhlWorkstationLayer		work = (NhlWorkstationLayer)l;
 	NhlPSWorkstationLayerPart	*pp = &((NhlPSWorkstationLayer)l)->ps;
 	NhlErrorTypes			ret;
+	int				d,w,h;
 
 	c_ngsetc("me",pp->filename);
 	c_ngseti("co",(pp->resolution/72 + 1));
@@ -549,6 +551,11 @@ PSWorkstationOpen
 
 	c_ngseti("wo",_NhlWorkstationId(l));
 	c_ngseti("fu",pp->full_background);
+
+	w = pp->upper_x - pp->lower_x;
+	h = pp->upper_y - pp->lower_y;
+	d = MAX(w,h);
+	work->work.vswidth_dev_units = d/72*pp->resolution;
 
 	return ret;
 }

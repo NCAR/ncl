@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.24 1997-07-25 21:13:02 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.25 1997-07-31 18:00:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,8 +23,6 @@
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/XWorkstationP.h>
 #include <ncarg/hlu/ConvertersP.h>
-
-static NrmQuark Qvswidth_dev_units;
 
 #define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
@@ -80,14 +78,6 @@ static NhlErrorTypes XWorkstationSetValues(
 #endif
 );
 
-static NhlErrorTypes 	XWorkstationGetValues(
-#if	NhlNeedProto
-	NhlLayer,	/* l */
-	_NhlArgList, 	/* args */
-	int		/* num_args */
-#endif
-);
-
 static NhlErrorTypes XWorkstationOpen(
 #if	NhlNeedProto
 	NhlLayer	l
@@ -129,7 +119,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_initialize		*/	XWorkstationInitialize,
 /* layer_set_values		*/	XWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	XWorkstationGetValues,
+/* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL,
 
@@ -223,7 +213,6 @@ XWorkstationClassInitialize
 	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,
 		NhlNumber(cmvals));
 
-	Qvswidth_dev_units = NrmStringToQuark(NhlNwkVSWidthDevUnits);
 	return NhlNOERROR;
 }
 
@@ -381,45 +370,6 @@ static NhlErrorTypes XWorkstationSetValues
 	return ret;
 }
 
-
-/*
- * Function:	XWorkstationGetValues
- *
- * Description:	
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- */
-static NhlErrorTypes
-XWorkstationGetValues
-#if NhlNeedProto
-(
-	NhlLayer	l,
-	_NhlArgList	args,
-	int		num_args
-)
-#else
-(l,args,num_args)
-	NhlLayer	l;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-        int i;
-        
-	for ( i = 0; i< num_args; i++ ) {
-		if (args[i].quark == Qvswidth_dev_units) {
-			
-			*(int*)args[i].value.ptrval = 500;
-		}
-	}
-	return NhlNOERROR;
-        
-}
 /*
  * Function:	XWorkstationClear
  *
@@ -465,6 +415,26 @@ XWorkstationClear
 	return (*(lc->work_class.clear_work))(l);
 }
 
+static void
+GetSizeProc
+#if	NhlNeedProto
+(
+	void		*closure,
+	unsigned long	size
+)
+#else
+(closure,size)
+	void		*closure;
+	unsigned long	size;
+#endif
+{
+	int	*vsdev = (int*)closure;
+
+	*vsdev = (int)size;
+
+	return;
+}
+
 /*
  * Function:	XWorkstationOpen
  *
@@ -493,6 +463,8 @@ XWorkstationOpen
 	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
 	NhlXWorkstationLayerPart	*xp = &xl->xwork;
 	int				i=2;
+	_NGCXGetSizeChg			xgsc;
+	Gescape_in_data			gesc_in_xgsc;
 
 	if(xl->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
@@ -530,6 +502,13 @@ XWorkstationOpen
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
 		return NhlFATAL;
 	}
+	gesc_in_xgsc.escape_r1.data = &xgsc;
+	gesc_in_xgsc.escape_r1.size = 0;
+	xgsc.type = NGC_XSIZECHG;
+	xgsc.work_id = xl->work.gkswksid;
+	xgsc.xget_size = GetSizeProc;
+	xgsc.closure = &xl->work.vswidth_dev_units;
+	gescape(NGESC_CNATIVE,&gesc_in_xgsc,NULL,NULL);
 
 	return _NhlAllocateColors(l);
 }
