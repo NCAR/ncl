@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.9 1994-01-25 00:24:09 ethan Exp $
+ *      $Id: Machine.c,v 1.10 1994-03-03 21:54:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,8 @@ static void SetUpOpsStrings() {
 	ops_strings[NEW_FRAME_OP] = "NEW_FRAME_OP";
 	ops_strings[BPROC_CALL_OP] = "BPROC_CALL_OP";
 	ops_strings[FUNC_CALL_OP] = "FUNC_CALL_OP";
+	ops_strings[INTRINSIC_FUNC_CALL] = "INTRINSIC_FUNC_CALL";
+	ops_strings[INTRINSIC_PROC_CALL] = "INTRINSIC_PROC_CALL";
 	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
 	ops_strings[JMP] = "JMP";
 	ops_strings[JMPFALSE] = "JMPFALSE";
@@ -151,6 +153,7 @@ static void SetUpOpsStrings() {
 	ops_strings[VAR_DIM_OP]= "VAR_DIM_OP";
 	ops_strings[ASSIGN_VAR_DIM_OP]= "ASSIGN_VAR_DIM_OP";
 	ops_strings[PARAM_VAR_DIM_OP]= "PARAM_VAR_DIM_OP";
+	ops_strings[ASSIGN_VAR_VAR_OP]= "ASSIGN_VAR_VAR_OP";
 }
 
 NclValue *_NclGetCurrentMachine
@@ -172,6 +175,24 @@ NclStackEntry *_NclPeek
 #endif
 {
 	return((NclStackEntry*)(sb - (offset + 1)));
+}
+
+void _NclPutArg
+#if  __STDC__
+(NclStackEntry data, int arg_num,int total_args)
+#else
+(data,arg_num,total_args)
+NclStackEntry data;
+int arg_num;
+int total_args;
+#endif
+{
+	NclStackEntry *ptr;
+
+	ptr = ((NclStackEntry*)(sb - total_args)) + arg_num;
+	*ptr = data;
+ 
+	return;
 }
 
 NclStackEntry _NclGetArg
@@ -789,6 +810,15 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				break;
+			case INTRINSIC_FUNC_CALL:
+			case INTRINSIC_PROC_CALL:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d",(int)*ptr);
+				break;
 			case DO_FROM_TO_OP :
 			case DO_FROM_TO_STRIDE_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -878,6 +908,19 @@ void _NclPrintMachine
 			case ASSIGN_VAR_OP :
 			case PARAM_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",*ptr);
+				break;
+			case ASSIGN_VAR_VAR_OP :
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);

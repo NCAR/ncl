@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.5 1993-12-21 19:18:14 ethan Exp $
+ *      $Id: Symbol.h,v 1.6 1994-03-03 21:54:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -160,27 +160,35 @@ void
 #endif
 );
 
+void _NclAddIntrinsics(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
 void _NclAddBuiltIns(
 #ifdef NhlNeedProto
 void
 #endif
 );
 
-void _NclRegisterBuiltInFunc(
+void _NclRegisterFunc(
 #ifdef NhlNeedProto
 NclBuiltInFuncWrapper /* thefunctptr */,
 NclArgTemplate *      /* args */,
 char *                /* fname */,
-int                   /* nargs */
+int                   /* nargs */,
+int 		      /* ftype */
 #endif
 );
 
-void _NclRegisterBuiltInProc(
+void _NclRegisterProc(
 #ifdef NhlNeedProto
 NclBuiltInProcWrapper /* theproctptr */,
 NclArgTemplate *      /* args */,
 char *                /* fname */,
-int                   /* nargs */
+int                   /* nargs */,
+int                   /* ftype */
 #endif
 );
 

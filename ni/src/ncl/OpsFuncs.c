@@ -18,9 +18,10 @@ extern "C" {
 #include <OpsFuncs.h>
 #include <data_objs/NclVar.h>
 #include <data_objs/DataSupport.h>
+#include <y.tab.h>
 
 
-void _NclPrint
+void _NclIPrint
 #if  __STDC__
 (void)
 #else
@@ -48,6 +49,53 @@ void _NclPrint
 	return;
 }
 
+void _NclIDelete
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclStackEntry* var;
+	NclSymbol *thesym;
+	
+
+	data = _NclGetArg(0,1);
+
+	switch(data.kind) {
+	case NclStk_VAL:
+		_NclDestroyObj((NclObj)data.u.data_obj);
+		break;
+	case NclStk_VAR:
+		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)) {
+			var = _NclRetrieveRec(data.u.data_var->var.thesym);
+			thesym = data.u.data_var->var.thesym;
+			if(data.u.data_var->var.var_type == NORMAL) {
+/*
+* Can't destroy symbol since it may be referenced from the instruction
+* sequence. Changing it to UNDEF should do the trick though
+*/
+				_NclChangeSymbolType(thesym,UNDEF);
+			}
+		} else {
+			var = NULL;
+		}
+		_NclDestroyObj((NclObj)data.u.data_var);
+		if(var != NULL) {
+			var->u.data_var = NULL;
+			var->kind = NclStk_NOVAL;
+		}
+		break;
+	default:
+		break;
+	}
+	data.kind = NclStk_NOVAL;
+	data.u.data_obj = NULL;
+	_NclPutArg(data,0,1);
+	
+	return;
+}
 NhlErrorTypes _NclDualOp
 #if  __STDC__
 (NclStackEntry lhs, NclStackEntry rhs,NclStackEntry *result,int operation)

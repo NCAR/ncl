@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.5 1993-12-21 19:18:12 ethan Exp $
+ *      $Id: Symbol.c,v 1.6 1994-03-03 21:54:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -105,6 +105,7 @@ int _NclInitSymbol
 			
 		}
 	}
+	_NclAddIntrinsics();
 	_NclAddBuiltIns();
 /*
 * After keywords are defined a new scope must be created. The Zero
@@ -115,28 +116,29 @@ int _NclInitSymbol
 }
 
 
-void _NclRegisterBuiltInFunc
+void _NclRegisterFunc
 #if  __STDC__
-(NclBuiltInFuncWrapper thefuncptr,NclArgTemplate *args,char* fname,int nargs)
+(NclBuiltInFuncWrapper thefuncptr,NclArgTemplate *args,char* fname,int nargs,int ftype)
 #else 
-(thefuncptr,args, fname,nargs)
+(thefuncptr,args, fname,nargs,ftype)
 	NclBuiltInFuncWrapper thefuncptr;
 	NclArgTemplate	*args;
 	char *fname;
 	int nargs;
+	int ftype;
 #endif
 {
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
 	if(s != NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltInFunc: %s is already a defined symbol can't add it as built-in ",fname);
+		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
-		s = _NclAddSym(fname,FUNC);
+		s = _NclAddSym(fname,ftype);
 		s->u.bfunc = (NclBuiltInFuncInfo*)NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
 		if(s->u.bfunc == NULL)  {
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
+			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterFunc: Memory allocation error can't add %s",fname);
 			return;
 		}
 		s->u.bfunc->nargs = nargs;
@@ -146,28 +148,29 @@ void _NclRegisterBuiltInFunc
 		return;
 	}
 }
-void _NclRegisterBuiltInProc
+void _NclRegisterProc
 #if  __STDC__
-(NclBuiltInProcWrapper theprocptr,NclArgTemplate *args,char* fname,int nargs)
+(NclBuiltInProcWrapper theprocptr,NclArgTemplate *args,char* fname,int nargs,int ftype)
 #else 
-(theprocptr,args, fname,nargs)
-	NclBuiltInProcWrapper theprocptr;
+(theprocptr,args, fname,nargs,ftype)
+	NclIntrinsicProcWrapper theprocptr;
 	NclArgTemplate	*args;
 	char *fname;
 	int nargs;
+	int ftype;
 #endif
 {
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
 	if(s != NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltInProc: %s is already a defined symbol can't add it as built-in ",fname);
+		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
-		s = _NclAddSym(fname,PROC);
+		s = _NclAddSym(fname,ftype);
 		s->u.bproc = (NclBuiltInProcInfo*)NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
 		if(s->u.bproc == NULL)  {
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
+			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterProc: Memory allocation error can't add %s",fname);
 			return;
 		}
 		s->u.bproc->nargs = nargs;

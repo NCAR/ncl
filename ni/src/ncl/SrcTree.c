@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.7 1994-01-21 02:49:09 ethan Exp $
+ *      $Id: SrcTree.c,v 1.8 1994-03-03 21:54:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@ int cur_node_list_size = NCL_SRC_TREE_NODE_LIST_SIZE;
 char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_IFTHENELSE", "Ncl_VISBLKSET", "Ncl_VISBLKGET",
 			"Ncl_VISBLKCREATE", "Ncl_DOFROMTO",
-                        "Ncl_DOFROMTOSTRIDE", "Ncl_BUILTINPROCCALL",
+                        "Ncl_DOFROMTOSTRIDE", "Ncl_BUILTINPROCCALL", "Ncl_INTRINSICPROCCALL",
                         "Ncl_EXTERNALPROCCALL", "Ncl_PROCCALL", "Ncl_FUNCDEF",
                         "Ncl_EXTERNFUNCDEF",    "Ncl_LOCALVARDEC",
                         "Ncl_DIMSIZELISTNODE","Ncl_PROCDEF","Ncl_EXTERNPROCDEF",
@@ -60,7 +60,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_MATMULEXPR", "Ncl_DIVEXPR", "Ncl_EXPEXPR",
                         "Ncl_LEEXPR", "Ncl_GEEXPR", "Ncl_GTEXPR", "Ncl_LTEXPR",
                         "Ncl_EQEXPR", "Ncl_NEEXPR", "Ncl_REAL", "Ncl_INT",
-                        "Ncl_STRING", "Ncl_BUILTINFUNCCALL",
+                        "Ncl_STRING", "Ncl_BUILTINFUNCCALL", "Ncl_INTRINSICFUNCCALL",
                         "Ncl_EXTERNFUNCCALL", "Ncl_FUNCCALL", "Ncl_ARRAY",
                         "Ncl_ROWLIST","Ncl_ROWCOLUMNNODE","Ncl_DOWHILE",
 			"Ncl_VAR", "Ncl_VARDIM", "Ncl_VARATT",
@@ -2094,6 +2094,7 @@ if(groot != NULL) {
 		}
 			break;
 		case Ncl_BUILTINPROCCALL:
+		case Ncl_INTRINSICPROCCALL:
 		case Ncl_EXTERNALPROCCALL:
 		case Ncl_PROCCALL:
 		{	
@@ -2404,6 +2405,7 @@ if(groot != NULL) {
 		}
 			break;
 		case Ncl_BUILTINFUNCCALL:
+		case Ncl_INTRINSICFUNCCALL:
 		case Ncl_EXTERNFUNCCALL:
 		case Ncl_FUNCCALL:
 		{	

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.3 1993-12-21 19:18:02 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.4 1994-03-03 21:54:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,11 @@ typedef struct _NclArgTemplate {
 typedef void (*NclBuiltInProcWrapper)(
 #if	NhlNeedProto
 	void
+#endif
+);
+typedef void (*NclIntrinsicProcWrapper)(
+#if	NhlNeedProto
+	int
 #endif
 );
 

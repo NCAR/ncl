@@ -283,7 +283,7 @@ if(groot != NULL) {
 		{
 			NclAssign *assign = (NclAssign*)root;
 			NclIdnExpr *idnexpr = NULL;
-			int nsubs = 0;
+			int nsubs = 0,nsubs_lhs = 0;
 		
 /*
 * OK why is all this need? Assigment from one variable to another is
@@ -295,16 +295,30 @@ if(groot != NULL) {
 * All other references just get the value of the variable and
 * not the rest of the info.
 */
-
 			if(((NclGenericNode*)assign->right_side)->kind == Ncl_IDNEXPR) {
+				off1 = -1;
+				off2 = -1;
+				off3 = -1;
 				idnexpr = (NclIdnExpr*)assign->right_side;
 				switch(((NclGenericNode*)idnexpr->idn_ref_node)->kind) {
 				case Ncl_VAR: {
 					NclVar *var = (NclVar*)(idnexpr->idn_ref_node);
+					NclVar *lhs_var = (NclVar*)(assign->left_side);
 					
+					if(lhs_var->subscript_list != NULL) {
+						step = lhs_var->subscript_list;
+						off1 = _NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs_lhs = 1;
+						while(step != NULL) {
+							(void)_NclTranslate(step->node,fp);
+							step = step->next;
+							nsubs_lhs++;
+						}
+					}
 					if(var->subscript_list != NULL) {
 						step = var->subscript_list;
-						off1 = _NclTranslate(step->node,fp);
+						off2 = _NclTranslate(step->node,fp);
 						step = step->next;
 						nsubs = 1;
 						while(step != NULL) {
@@ -312,18 +326,19 @@ if(groot != NULL) {
 							step = step->next;
 							nsubs++;
 						}
-						_NclPutInstr(VAR_READ_OP,var->line,var->file);
-					} else {
-/*
-* There are only two situations where the VAR_READ_OP is needed
-* one is when a var is being assign to another var and
-* the other is when the variable is aparameter to afuction
-* The same applies to file variables
-*/
-						off1= _NclPutInstr(VAR_READ_OP,var->line,var->file);
 					}
+					off3 = _NclPutInstr((NclValue)ASSIGN_VAR_VAR_OP,var->line,var->file);
 					_NclPutInstr((NclValue)var->sym,var->line,var->file);
 					_NclPutInstr((NclValue)nsubs,var->line,var->file);
+					_NclPutInstr((NclValue)lhs_var->sym,lhs_var->line,lhs_var->file);
+					_NclPutInstr((NclValue)nsubs_lhs,var->line,var->file);
+					if(off1 == -1) {
+						if(off2 == -1) {
+							off1 = off3;
+						} else {
+							off1 = off2;
+						}
+					} 
 				}
 				break;
 				case Ncl_VARCOORD: {
@@ -344,18 +359,20 @@ if(groot != NULL) {
 					_NclPutInstr((NclValue)coord->sym,coord->line,coord->file);
 					_NclPutInstr((NclValue)coord->coord_name,coord->line,coord->file);
 					_NclPutInstr((NclValue)nsubs,coord->line,coord->file);
+					_NclTranslate(assign->left_side,fp);
 				}
 				break;
 				case Ncl_FILEVARCOORD: 
 				case Ncl_FILEVAR: 
 				default:
 					off1 = _NclTranslate(assign->right_side,fp);
+					_NclTranslate(assign->left_side,fp);
 					break;
 				}
 			} else {
 				off1 = _NclTranslate(assign->right_side,fp);
+				_NclTranslate(assign->left_side,fp);
 			}
-			_NclTranslate(assign->left_side,fp);
 			break;
 		}
 		case Ncl_INTSUBSCRIPT:	
@@ -640,6 +657,30 @@ Unneeded translations
 			off1 = _NclPutInstr(NOOP,externprocdef->line,externprocdef->file);
 			break;
 		}
+		case Ncl_INTRINSICPROCCALL:
+		{
+			NclProcCall *proccall = (NclProcCall*)root;	
+			int i = 0;
+
+
+			step = proccall->arg_list;
+			if(step != NULL) {
+				off1 = _NclTranslate(step->node,fp);
+				step= step->next;
+				i = 1;
+				while(step != NULL) {
+					_NclTranslate(step->node,fp);
+					step= step->next;
+					i++;
+				}
+				_NclPutInstr(INTRINSIC_PROC_CALL,proccall->line,proccall->file);
+			} else {
+				off1 = _NclPutInstr(INTRINSIC_PROC_CALL,proccall->line,proccall->file);
+			}
+			_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
+			_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+			break;
+		}
 		case Ncl_BUILTINPROCCALL:
 		{	
 			NclProcCall *proccall = (NclProcCall*)root;	
@@ -741,6 +782,30 @@ Unneeded translations
 
 			_NclPutInstrAt(off2,_NclGetCurrentOffset(),proccall->line,proccall->file);
 			
+			break;
+		}
+		case Ncl_INTRINSICFUNCCALL:
+		{
+			NclProcCall *proccall = (NclProcCall*)root;	
+			int i = 0;
+
+
+			step = proccall->arg_list;
+			if(step != NULL) {
+				off1 = _NclTranslate(step->node,fp);
+				step= step->next;
+				i = 1;
+				while(step != NULL) {
+					_NclTranslate(step->node,fp);
+					step= step->next;
+					i++;
+				}
+				_NclPutInstr(INTRINSIC_FUNC_CALL,proccall->line,proccall->file);
+			} else {
+				off1 = _NclPutInstr(INTRINSIC_FUNC_CALL,proccall->line,proccall->file);
+			}
+			_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
+			_NclPutInstr((NclValue)i,proccall->line,proccall->file);
 			break;
 		}
 		case Ncl_BUILTINFUNCCALL:

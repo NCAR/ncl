@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.2 1993-12-30 00:44:18 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.3 1994-03-03 21:54:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,11 +31,6 @@ extern "C" {
 #include <Symbol.h>
 #include <ProcFuncs.h>
 
-extern void _NclPrint(
-#ifdef NhlNeedProto
-void
-#endif 
-);
 
 void _NclAddBuiltIns
 #if  __STDC__
@@ -44,12 +39,7 @@ void _NclAddBuiltIns
 ()
 #endif
 {
-	NclArgTemplate *args;
-
-	args = NclCalloc(1,sizeof(NclArgTemplate));
-	args[0].arg_data_type = NULL;
-	args[0].is_dimsizes = 0;
-	_NclRegisterBuiltInProc(_NclPrint,args,"print",1);
+	return;
 }
 
 

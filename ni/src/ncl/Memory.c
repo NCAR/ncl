@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.3 1993-12-21 19:17:44 ethan Exp $
+ *      $Id: Memory.c,v 1.4 1994-03-03 21:54:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -165,7 +165,7 @@ void
 	void *tptr;
 
 	if(ptr == NULL)
-		return NhlMalloc(size);
+		return NclMalloc(size);
 	else{
 		tptr = (void *)realloc(ptr,size);
 
@@ -175,6 +175,50 @@ void
 		return(tptr);
 	}
 }
+
+
+void _NclFreeSubRec 
+#if __STDC__
+(struct _NclSubRec * sub_rec)
+#else 
+(sub_rec)
+struct _NclSubRec * sub_rec;
+#endif
+{
+	if(sub_rec->name != NULL) {
+		NclFree(sub_rec->name);
+	}
+	switch(sub_rec->sub_type) {
+	case COORD_VECT:
+	case INT_VECT:
+		if(sub_rec->u.vec->vec != NULL) {
+			_NclDestroyObj((NclObj)sub_rec->u.vec->vec);
+		}
+		break;
+	case COORD_RANGE:
+	case INT_RANGE:
+/*
+* This might happen when single indices are used
+*/
+		if(sub_rec->u.range->start == sub_rec->u.range->finish) {
+			sub_rec->u.range->finish = NULL;
+		}
+		if(sub_rec->u.range->start != NULL) {
+			_NclDestroyObj((NclObj)sub_rec->u.range->start);
+		} 
+		if(sub_rec->u.range->finish != NULL) {
+			_NclDestroyObj((NclObj)sub_rec->u.range->finish);
+		}
+		if(sub_rec->u.range->stride != NULL) {
+			_NclDestroyObj((NclObj)sub_rec->u.range->stride);
+		}
+		break;
+	default:
+		break;
+	}
+	NclFree(sub_rec);
+}
+
 
 #ifdef __cplusplus
 }

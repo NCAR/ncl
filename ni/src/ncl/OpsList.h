@@ -77,4 +77,7 @@
 #define PARAM_VAR_COORD_OP			77
 #define VAR_READ_OP				78
 #define VAR_READ_COORD_OP			79
-#define NUM_OPERATORS			80
+#define INTRINSIC_FUNC_CALL			80
+#define INTRINSIC_PROC_CALL			81
+#define ASSIGN_VAR_VAR_OP			82
+#define NUM_OPERATORS				83

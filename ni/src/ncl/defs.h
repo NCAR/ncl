@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.9 1994-01-25 00:24:17 ethan Exp $
+ *      $Id: defs.h,v 1.10 1994-03-03 21:54:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,6 +67,12 @@ unsigned int	/* size */
 extern NhlErrorTypes NclFree(
 #ifdef NhlFuncProto
 void * /* size */
+#endif
+);
+
+extern void _NclFreeSubRec(
+#ifdef NhlFuncProto
+struct _NclSubRec	* /*sub_rec*/;
 #endif
 );
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.6 1994-01-21 02:49:12 ethan Exp $
+ *      $Id: SrcTree.h,v 1.7 1994-03-03 21:54:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ extern "C" {
 typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_VISBLKSET, Ncl_VISBLKGET, Ncl_VISBLKCREATE, 
 			Ncl_DOFROMTO, Ncl_DOFROMTOSTRIDE, 
-			Ncl_BUILTINPROCCALL, Ncl_EXTERNALPROCCALL, 
+			Ncl_BUILTINPROCCALL,Ncl_INTRINSICPROCCALL, Ncl_EXTERNALPROCCALL, 
 			Ncl_PROCCALL, Ncl_FUNCDEF, Ncl_EXTERNFUNCDEF,	
 			Ncl_LOCALVARDEC, Ncl_DIMSIZELISTNODE, Ncl_PROCDEF,
 			Ncl_EXTERNPROCDEF, Ncl_ASSIGN, Ncl_IDNREF,
@@ -42,7 +42,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_MULEXPR, Ncl_MATMULEXPR, Ncl_DIVEXPR,
 			Ncl_EXPEXPR, Ncl_LEEXPR, Ncl_GEEXPR, Ncl_GTEXPR,
 			Ncl_LTEXPR, Ncl_EQEXPR, Ncl_NEEXPR, Ncl_REAL,
-			Ncl_INT, Ncl_STRING, Ncl_BUILTINFUNCCALL, 
+			Ncl_INT, Ncl_STRING, Ncl_BUILTINFUNCCALL, Ncl_INTRINSICFUNCCALL,
 			Ncl_EXTERNFUNCCALL, Ncl_FUNCCALL, Ncl_ARRAY,
 			Ncl_ROWLIST,Ncl_ROWCOLUMNNODE, Ncl_DOWHILE,
 			Ncl_VAR, Ncl_VARDIM, Ncl_VARATT,

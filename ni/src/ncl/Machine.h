@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.6 1993-12-30 00:44:26 ethan Exp $
+ *      $Id: Machine.h,v 1.7 1994-03-03 21:54:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -161,6 +161,14 @@ void
 
 extern NclStackEntry _NclGetArg(
 #ifdef NhlNeedProto
+int  /*arg_num*/,
+int  /*total_arg*/
+#endif
+);
+
+extern void _NclPutArg(
+#ifdef NhlNeedProto
+NclStackEntry /* data */,
 int  /*arg_num*/,
 int  /*total_arg*/
 #endif

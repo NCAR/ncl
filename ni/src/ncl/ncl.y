@@ -52,8 +52,8 @@ char *cur_load_file = NULL;
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER NUMERIC FILETYPE SHORT
-%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC UNDEFFILEVAR BREAK
-%token <sym> BGIN END FUNC EFUNC NFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
+%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK
+%token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD
 %token <sym> OBJNAME OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
 %token '='
@@ -703,7 +703,24 @@ block : BGIN block_statement_list END	{ $$ = _NclMakeBlock($2); }
 				}
 ;
 
-procedure : PROC opt_arg_list	{ 
+procedure : IPROC opt_arg_list    {
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
+						}
+				}
+	| PROC opt_arg_list	{ 
 						NclSrcListNode *step;
 						int count = 0;
 					
@@ -722,6 +739,9 @@ procedure : PROC opt_arg_list	{
 				}
 	| EPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_EXTERNALPROCCALL); }
 	| NPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); }
+	| IPROC 			{ 
+					$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+				}
 	| PROC 			{ 
 					$$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); 
 				}
@@ -957,7 +977,10 @@ declaration : vname		{
 				}
 ;
 
-pfname : NFUNC		{		
+pfname : IFUNC		{
+				$$ = $1;
+			}
+	| NFUNC		{		
 				$$ = $1;
 			}
 	| EFUNC		{
@@ -1355,6 +1378,23 @@ function: FUNC opt_arg_list		{
 							$$ = _NclMakeFuncCall($1,$2,Ncl_BUILTINFUNCCALL);
 						}
 					}
+	| IFUNC opt_arg_list		{
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,$2,Ncl_INTRINSICFUNCCALL);
+						}
+					}
 	| EFUNC opt_arg_list		{
 						NclSrcListNode *step;
 						int count = 0;
@@ -1387,6 +1427,15 @@ function: FUNC opt_arg_list		{
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
+						}
+					}
+	| IFUNC 				{
+						if($1->u.procfunc->nargs != 0) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,NULL,Ncl_INTRINSICFUNCCALL);
 						}
 					}
 	| FUNC 				{
