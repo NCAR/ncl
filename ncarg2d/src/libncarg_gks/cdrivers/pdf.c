@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.9 2003-02-28 17:33:12 fred Exp $
+ *      $Id: pdf.c,v 1.10 2003-02-28 19:11:09 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2564,7 +2564,7 @@ PDFFillArea(GKSC *gksc)
       }
     }
     bump_page_lines();
-    sprintf(page_lines[num_page_lines],"B*\n");
+    sprintf(page_lines[num_page_lines],"f*\n");
     stream_size += 3;
     break;
   case PATTERN_FILL:  /* currently not implemented, issue polyline */
@@ -3781,7 +3781,7 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   stream_size += 80;
 
   bump_page_lines();
-  sprintf(page_lines[num_page_lines],"B*\n");
+  sprintf(page_lines[num_page_lines],"f*\n");
   stream_size += 3;
 
   r = psa->color_map[3*current_color  ];
