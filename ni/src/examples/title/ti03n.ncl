@@ -1,3 +1,6 @@
+;
+;   $Id: ti03n.ncl,v 1.5 1995-03-23 14:48:34 haley Exp $
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
@@ -33,11 +36,25 @@ appid = create "ti03" appLayerClass defaultapp
 end create
 
 ;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "ti03Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName"         : "ti03n.ncgm"
+  end create
+else
+;
 ; Create an XWorkstation object.
 ;
-wid = create "ti03Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+  wid = create "ti03Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Specify the viewport extent of the object.
