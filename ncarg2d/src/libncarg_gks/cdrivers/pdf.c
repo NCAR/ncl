@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.6 2003-02-26 23:20:46 fred Exp $
+ *      $Id: pdf.c,v 1.7 2003-02-27 17:13:27 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1495,7 +1495,7 @@ char *PDFGetFileName(int wkid, char *file_name)
  *  A setting of the environment variable NCARG_GKS_PDFOUTPUT
  *  takes precedence over everything.
  */
-  tch = getenv("NCARG_GKS_PDFFOUTPUT");
+  tch = getenv("NCARG_GKS_PDFOUTPUT");
   if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
     return (tch);
   }
