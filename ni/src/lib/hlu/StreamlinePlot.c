@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.53 1999-04-02 23:51:12 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.54 2000-01-27 17:31:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3235,6 +3235,11 @@ static NhlErrorTypes ManageZeroFLabel
 		}
 		strcpy(lstring,tstring);
 		stp->zerof_lbl.string1 = lstring;
+		if (! init) {
+			if (ostp->zerof_lbl.string1)
+				NhlFree(ostp->zerof_lbl.string1);
+			ostp->zerof_lbl.string1 = NULL;
+		}
 	}
 	if (init || ! stp->zerof_lbl.string2 ||
 	    stp->zerof_lbl.string2 != ostp->zerof_lbl.string2) {
@@ -3248,6 +3253,11 @@ static NhlErrorTypes ManageZeroFLabel
 		}
 		strcpy(lstring,tstring);
 		stp->zerof_lbl.string2 = lstring;
+		if (! init) {
+			if (ostp->zerof_lbl.string2)
+				NhlFree(ostp->zerof_lbl.string2);
+			ostp->zerof_lbl.string2 = NULL;
+		}
 	}
 	if (! stp->data_init)
 		stp->zerof_no_data_string = stp->zerof_lbl.string2;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.62 1999-05-22 00:43:14 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.63 2000-01-27 17:31:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5091,7 +5091,7 @@ static NhlErrorTypes PrepareAnnoString
 	float			value,
 	float			old_value,
 	NhlString		*new_string,
-	NhlString		old_string,
+	NhlString		*old_string,
 	NhlString		def_string,
 	NhlString		*formatted_string,
 	char			func_code,
@@ -5107,7 +5107,7 @@ static NhlErrorTypes PrepareAnnoString
 	float			value;
 	float			old_value;
 	NhlString		*new_string;
-	NhlString		old_string;
+	NhlString		*old_string;
 	NhlString		def_string;
 	NhlString		*formatted_string;
 	char			func_code;
@@ -5132,12 +5132,12 @@ static NhlErrorTypes PrepareAnnoString
 	if (! vcp->data_changed && ! init && 
 	    (vcp->levels == ovcp->levels) &&
 	    (value == old_value) &&
-	    (*new_string == old_string)) {
+	    (*new_string == *old_string)) {
 		return NhlNOERROR;
 	}
 
 	if (init || ! *new_string ||
-	    *new_string != old_string) {
+	    *new_string != *old_string) {
 		int strsize = *new_string == NULL ? 
 			strlen(def_string) + 1 : strlen(*new_string) + 1;
 		if ((lstring = NhlMalloc(strsize)) == NULL) {
@@ -5150,9 +5150,9 @@ static NhlErrorTypes PrepareAnnoString
 		else
 			strcpy(lstring,*new_string);
 		*new_string = lstring;
-		if (!init && old_string != NULL) {
-			NhlFree(old_string);
-			old_string = NULL;
+		if (!init && *old_string != NULL) {
+			NhlFree(*old_string);
+			*old_string = NULL;
 		}
 	}
 	strcpy(buffer,*new_string);
@@ -5315,7 +5315,7 @@ static NhlErrorTypes ManageVecAnno
 	subret = PrepareAnnoString(vcp,ovcp,init,
 				   ilp->aap->real_vec_mag,
 				   oilp->aap->real_vec_mag,
-				   &ilp->string1,oilp->string1,
+				   &ilp->string1,&oilp->string1,
 				   def_string1,&ilp->text1,
 				   ilp->fcode[0],
 				   &text_changed,entry_name);
@@ -5325,7 +5325,7 @@ static NhlErrorTypes ManageVecAnno
 	subret = PrepareAnnoString(vcp,ovcp,init,
 				   ilp->aap->real_vec_mag,
 				   oilp->aap->real_vec_mag,
-				   &ilp->string2,oilp->string2,
+				   &ilp->string2,&oilp->string2,
 				   def_string2,&ilp->text2,
 				   ilp->fcode[0],
 				   &text_changed,entry_name);
@@ -5688,6 +5688,11 @@ static NhlErrorTypes ManageZeroFLabel
 		}
 		strcpy(lstring,tstring);
 		vcp->zerof_lbl.string1 = lstring;
+		if (! init) {
+			if (ovcp->zerof_lbl.string1)
+				NhlFree(ovcp->zerof_lbl.string1);
+			ovcp->zerof_lbl.string1 = NULL;
+		}
 	}
 	if (init || ! vcp->zerof_lbl.string2 ||
 	    vcp->zerof_lbl.string2 != ovcp->zerof_lbl.string2) {
@@ -5701,6 +5706,11 @@ static NhlErrorTypes ManageZeroFLabel
 		}
 		strcpy(lstring,tstring);
 		vcp->zerof_lbl.string2 = lstring;
+		if (! init) {
+			if (ovcp->zerof_lbl.string2)
+				NhlFree(ovcp->zerof_lbl.string2);
+			ovcp->zerof_lbl.string2 = NULL;
+		}
 	}
 	if (! vcp->data_init)
 		vcp->zerof_no_data_string = vcp->zerof_lbl.string2;
@@ -7486,8 +7496,13 @@ static NhlErrorTypes    SetupLevels
 	if (init ||
 	    vcp->level_count != ovcp->level_count ||
 	    memcmp((*levels),vcp->levels->data,
-		   vcp->levels->size * vcp->level_count))
+		   vcp->levels->size * vcp->level_count)) {
 		*modified = True;
+	}
+	else if (*levels) {
+		NhlFree(*levels);
+		*levels = NULL;
+	}
 
 	vcp->min_level_set = True;
 	vcp->max_level_set = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.92 1999-11-19 19:31:38 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.93 2000-01-27 17:31:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5606,18 +5606,26 @@ static NhlErrorTypes ManageLabels
 		cnp->low_lbls.text = (NhlPointer) tcp;
 	}
 	else {
-
-		subret = SetLabelString((NhlString *)&ocnp->high_lbls.text,
-					(NhlString)cnp->high_lbls.text,
-					NhlcnDEF_HIGH_LABEL,
-					cnp->high_lbls.fcode[0],entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
-		subret = SetLabelString((NhlString *)&ocnp->low_lbls.text,
-					(NhlString)cnp->low_lbls.text,
-					NhlcnDEF_LOW_LABEL,
-					cnp->low_lbls.fcode[0],entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (cnp->high_lbls.text != ocnp->high_lbls.text) { 
+			subret = SetLabelString
+				((NhlString *)&ocnp->high_lbls.text,
+				 (NhlString)cnp->high_lbls.text,
+				 NhlcnDEF_HIGH_LABEL,
+				 cnp->high_lbls.fcode[0],entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+			cnp->high_lbls.text = ocnp->high_lbls.text;
+			ocnp->high_lbls.text = NULL;
+		}
+		if (cnp->low_lbls.text != ocnp->low_lbls.text) { 
+			subret = SetLabelString
+				((NhlString *)&ocnp->low_lbls.text,
+				 (NhlString)cnp->low_lbls.text,
+				 NhlcnDEF_LOW_LABEL,
+				 cnp->low_lbls.fcode[0],entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+			cnp->low_lbls.text = ocnp->low_lbls.text;
+			ocnp->low_lbls.text = NULL;
+		}
 	}
 
 /* Manage constant field label */
@@ -6955,8 +6963,10 @@ static NhlErrorTypes ManageInfoLabel
 		else
 			strcpy(lstring,cnp->info_string);
 		cnp->info_string = lstring;
-		if (!init && ocnp->info_string != NULL) 
+		if (!init && ocnp->info_string != NULL) {
 			NhlFree(ocnp->info_string);
+			ocnp->info_string = NULL;
+		}
 	}
 	if (! ilp->on && (init || ! oilp->on))
 		return NhlNOERROR;
@@ -7169,6 +7179,11 @@ static NhlErrorTypes ManageConstFLabel
 		}
 		strcpy(lstring,tstring);
 		cnp->constf_string = lstring;
+		if (! init) {
+			if (ocnp->constf_string)
+				NhlFree(ocnp->constf_string);
+			ocnp->constf_string = NULL;
+		}
 	}
 	if (init || ! cnp->no_data_string || 
 	    cnp->no_data_string != ocnp->no_data_string) {
@@ -7182,6 +7197,11 @@ static NhlErrorTypes ManageConstFLabel
 		}
 		strcpy(lstring,tstring);
 		cnp->no_data_string = lstring;
+		if (! init) {
+			if (ocnp->no_data_string)
+				NhlFree(ocnp->no_data_string);
+			ocnp->no_data_string = NULL;
+		}
 	}
 	if (! cnp->data_init)
 		cnp->constf_no_data_string = cnp->no_data_string;
@@ -9489,11 +9509,20 @@ static NhlErrorTypes    SetupLevels
 	if (init ||  
 	    cnp->level_count != ocnp->level_count ||
 	    memcmp((*levels),cnp->levels->data,
-		   cnp->levels->size * cnp->level_count))
+		   cnp->levels->size * cnp->level_count)) {
 		*modified = True;
-
+	}
+	/*
+	 * to do:
+	 * we might be able to elminate this call if *modified is False
+	 */
 	subret = cnComputeRefLevel(cnp,*levels,entry_name);
 	ret = MIN(subret,ret);
+
+	if (*levels && ! *modified) {
+		NhlFree(*levels);
+		*levels = NULL;
+	}
 
 	cnp->min_level_set = True;
 	cnp->max_level_set = True;
