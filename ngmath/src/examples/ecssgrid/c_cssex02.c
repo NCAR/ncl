@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex02.c,v 1.6 1999-06-29 17:40:39 fred Exp $
+ *      $Id: c_cssex02.c,v 1.7 1999-09-23 17:38:51 fred Exp $
  */
 
 #include <stdlib.h>
@@ -296,7 +296,7 @@ main()
   gset_line_colr_ind(3);
   gset_text_colr_ind(3);
   fandp.font = -13;
-  fandp.prec = prec;
+  fandp.prec = GPREC_STROKE;
   gset_text_font_prec(&fandp);
   c_cpseti("SET",0);
   c_cpsetr("DPS",0.02);
@@ -619,4 +619,5 @@ int csdraw(float *xcs, float *ycs, int *ncs, int *iai, int *iag, int *nai)
     if (iai[i] < 0) idr = 0;
   }
   if (idr != 0) c_curved(xcs,ycs,*ncs);
+  return(0);
 }
