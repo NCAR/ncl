@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.48 1996-05-03 23:51:22 dbrown Exp $
+ *      $Id: Legend.c,v 1.49 1996-05-11 03:32:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -932,10 +932,7 @@ static NhlErrorTypes LegendSetValues
 	float			lxtr,rxtr,bxtr,txtr;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
-		tnew->view.use_segments = told->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		lg_p->new_draw_req = True;
 	}
 	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;

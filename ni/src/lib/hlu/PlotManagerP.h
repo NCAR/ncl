@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.5 1995-07-28 22:51:45 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.6 1996-05-11 03:32:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,13 +28,13 @@
 
 #define NhlOV_ALLOC_UNIT	8
 #define NhlOV_IRR_COUNT		16
-#define NhlOV_STD_VIEW_WIDTH	0.5
-#define NhlOV_STD_VIEW_HEIGHT	0.5
+#define NhlOV_STD_VIEW_WIDTH	0.6
+#define NhlOV_STD_VIEW_HEIGHT	0.6
 #define NhlOV_DEF_TICKMARK_ZONE 2
 #define NhlOV_DEF_TITLE_ZONE	4
 #define NhlOV_DEF_LABELBAR_ZONE 6
 #define NhlOV_DEF_LEGEND_ZONE	7
-#define NhlOV_DEF_TITLE_HEIGHT  0.02
+#define NhlOV_DEF_TITLE_HEIGHT  0.025
 
 /* private resources */
 

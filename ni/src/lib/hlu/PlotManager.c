@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.23 1996-05-08 01:12:26 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.24 1996-05-11 03:32:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -808,13 +808,13 @@ PlotManagerInitialize
  */
 
 	if (! ovp->lbar_width_set)
-		ovp->lbar_width = 0.2;
+		ovp->lbar_width = 0.15;
 	if (! ovp->lbar_height_set)
-		ovp->lbar_height = 0.5;
+		ovp->lbar_height = 0.6;
 	if (! ovp->lgnd_width_set)
-		ovp->lgnd_width = 0.45;
+		ovp->lgnd_width = 0.55;
 	if (! ovp->lgnd_height_set)
-		ovp->lgnd_height = 0.175;
+		ovp->lgnd_height = 0.18;
 
 /*
  * Make sure the transformation supplied is valid
@@ -988,13 +988,6 @@ static NhlErrorTypes PlotManagerSetValues
 		ovp->ti_x_axis_font_height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtiYAxisFontHeightF))
 		ovp->ti_y_axis_font_height_set = True;
-
-	if (ovnew->view.use_segments != ovold->view.use_segments) {
-		ovnew->view.use_segments = ovold->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-	}
 
 	subret = NhlVAGetValues(ovnew->trans.overlay_trans_obj->base.id,
 				NhlNtrChangeCount,&trans_change_count,

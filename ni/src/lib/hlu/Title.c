@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.25 1996-03-12 00:59:59 dbrown Exp $
+ *      $Id: Title.c,v 1.26 1996-05-11 03:32:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -976,12 +976,8 @@ static NhlErrorTypes    TitleSetValues
 	char *e_text;
 	int		view_args = 0;
 
-	if (tnew->view.use_segments != told->view.use_segments) {
-		tnew->view.use_segments = told->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	    "TitleSetValues: attempt to set create-only resource overridden");
-	}
+	if (tnew->view.use_segments != told->view.use_segments)
+		tnew->title.new_draw_req = True;
 
 	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;

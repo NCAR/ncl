@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.11 1996-01-19 18:06:28 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.12 1996-05-11 03:32:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,8 +39,8 @@
 #define Nhl_cnDEF_LINE_LABEL_STRING	"LL_"
 #define Nhl_cnINT_WKSPACE	1000
 #define Nhl_cnFLOAT_WKSPACE	5000
-#define Nhl_cnSTD_VIEW_WIDTH	0.5
-#define Nhl_cnSTD_VIEW_HEIGHT	0.5
+#define Nhl_cnSTD_VIEW_WIDTH	0.6
+#define Nhl_cnSTD_VIEW_HEIGHT	0.6
 #define NhlcnMAPVAL		99
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
 #define NhlcnDEF_NODATA_LABEL	"NO CONTOUR DATA"

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.49 1996-05-10 03:22:27 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.50 1996-05-11 03:32:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1597,7 +1597,8 @@ static NhlErrorTypes MapPlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
 
-	if (num_args > view_args)
+	if (num_args > view_args ||
+	    Mpl->view.use_segments != Ompl->view.use_segments)
 		Mpp->new_draw_req = True;
 
 	Mpp->limb.on = Mpp->grid.on;
@@ -1627,6 +1628,20 @@ static NhlErrorTypes MapPlotSetValues
 		Mpp->inland_water.pattern_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpInlandWaterFillScaleF))
 		Mpp->inland_water.scale_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpGeophysicalLineDashSegLenF))
+		Mpp->geophysical.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF))
+		Mpp->us_state.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpNationalLineDashSegLenF))
+		Mpp->national.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpGridLineDashSegLenF))
+		Mpp->grid.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpLimbLineDashSegLenF))
+		Mpp->limb.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpPerimLineDashSegLenF))
+		Mpp->perim.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpLabelFontHeightF))
+		Mpp->labels.height_set = True;
 
 /* Set up the Map transformation */
 

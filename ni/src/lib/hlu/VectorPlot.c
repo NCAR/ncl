@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.17 1996-05-10 03:22:30 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.18 1996-05-11 03:32:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2058,12 +2058,8 @@ static NhlErrorTypes VectorPlotSetValues
 	NhlSArg			sargs[128];
 	int			nargs = 0;
 
-	if (vcnew->view.use_segments != vcold->view.use_segments) {
-		vcnew->view.use_segments = vcold->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-	}
+	if (vcnew->view.use_segments != vcold->view.use_segments)
+		vcp->new_draw_req = True;
 
 	if (_NhlArgIsSet(args,num_args,NhlNvcLevelSpacingF))
 		vcp->level_spacing_set = True;
@@ -4752,7 +4748,6 @@ static NhlErrorTypes ManageOverlay
 
 	/* 1 arg */
 	if (vcp->update_req) {
-		vcp->new_draw_req = True;
 		NhlSetSArg(&sargs[(*nargs)++],NhlNpmUpdateReq,True);
 	}
 		

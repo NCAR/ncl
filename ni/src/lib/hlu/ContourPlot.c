@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.37 1996-05-10 03:22:25 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.38 1996-05-11 03:32:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2103,15 +2103,15 @@ ContourPlotInitialize
 		cnp->cell_size = 0.001;
 
 	if (! cnp->line_lbls.height_set) 
-		cnp->line_lbls.height = 0.010;
+		cnp->line_lbls.height = 0.012;
 	if (! cnp->high_lbls.height_set) 
-		cnp->high_lbls.height = 0.010;
+		cnp->high_lbls.height = 0.012;
 	if (! cnp->low_lbls.height_set) 
-		cnp->low_lbls.height = 0.0010;
+		cnp->low_lbls.height = 0.0012;
 	if (! cnp->info_lbl.height_set) 
-		cnp->info_lbl.height = 0.01;
+		cnp->info_lbl.height = 0.012;
 	if (! cnp->constf_lbl.height_set) 
-		cnp->constf_lbl.height = 0.01;
+		cnp->constf_lbl.height = 0.012;
 	if (! cnp->x_min_set)
 		cnp->x_min = 0.0;
 	if (! cnp->x_max_set)
@@ -2314,10 +2314,7 @@ static NhlErrorTypes ContourPlotSetValues
 	int			nargs = 0;
 
 	if (cnew->view.use_segments != cold->view.use_segments) {
-		cnew->view.use_segments = cold->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->new_draw_req = True;
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNcnLevelSpacingF))
@@ -5812,7 +5809,9 @@ static NhlErrorTypes ManageOverlay
 
 	/* 1 arg */
 	if (cnp->update_req) {
+#if 0
 		cnp->new_draw_req = True;
+#endif
 		NhlSetSArg(&sargs[(*nargs)++],NhlNpmUpdateReq,True);
 	}
 		

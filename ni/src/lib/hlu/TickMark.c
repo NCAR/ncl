@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.46 1996-05-08 01:12:27 dbrown Exp $
+ *      $Id: TickMark.c,v 1.47 1996-05-11 03:32:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1323,12 +1323,9 @@ static NhlErrorTypes	TickMarkSetValues
 	NhlErrorTypes realret = NhlNOERROR;
 	int		view_args = 0;
 
-	if (tnew->view.use_segments != told->view.use_segments) {
-		tnew->view.use_segments = told->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	 "TickMarkSetValues: attempt to set create-only resource overridden");
-	}
+	if (tnew->view.use_segments != told->view.use_segments)
+		tnew->tick.new_draw_req = True;
+
 	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;

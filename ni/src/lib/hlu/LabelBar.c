@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.47 1996-05-09 23:16:17 ethan Exp $
+ *      $Id: LabelBar.c,v 1.48 1996-05-11 03:32:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -803,10 +803,7 @@ static NhlErrorTypes LabelBarSetValues
 	float			lxtr,rxtr,bxtr,txtr;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
-		tnew->view.use_segments = told->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		lb_p->new_draw_req = True;
 	}
 	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) {
 		view_args++;

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.10 1996-05-10 03:22:29 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.11 1996-05-11 03:32:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1641,10 +1641,7 @@ static NhlErrorTypes StreamlinePlotSetValues
 	int			nargs = 0;
 
 	if (stnew->view.use_segments != stold->view.use_segments) {
-		stnew->view.use_segments = stold->view.use_segments;
-		ret = MIN(ret,NhlWARNING);
-		e_text = "%s: attempt to set create-only resource overridden";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		stp->new_draw_req = True;
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNstArrowLengthF))
@@ -3829,7 +3826,6 @@ static NhlErrorTypes ManageOverlay
 
 	/* 1 arg */
 	if (stp->update_req) {
-		stp->new_draw_req = True;
 		NhlSetSArg(&sargs[(*nargs)++],NhlNpmUpdateReq,True);
 	}
 		
