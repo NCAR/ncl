@@ -27,7 +27,7 @@ NhlErrorTypes wmsetp_W(void)
                       "rc4", "rc5", "rev", "rfc", "rls", "ros",
                       "sc1", "sc2", "sc3", "sc4", "slf", "sty",
                       "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
-                      "smf", "loc", "wdf",
+                      "smf", "loc", "wdf", "unt",
                       "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
                       "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
                       "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
@@ -36,7 +36,7 @@ NhlErrorTypes wmsetp_W(void)
                       "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
                       "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
                       "T1C", "T2C", "WBF", "WFC", "WTY", "EZF",
-                      "SMF", "LOC", "WDF"
+                      "SMF", "LOC", "WDF", "UNT"
                      };
 
   char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
