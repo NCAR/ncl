@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.12 1999-07-30 03:20:57 dbrown Exp $
+ *      $Id: nclstate.h,v 1.13 1999-11-04 17:36:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,8 @@
 #include <ncarg/ngo/ngo.h>
 
 extern NhlClass NgnclStateClass;
+
+#define _NgTMP_VAR "_NgTMP_VAR" /* base name for temporary ncl variables */
 
 /*
  * Resources

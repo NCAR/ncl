@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.25 1999-10-22 00:58:11 dbrown Exp $
+ *      $Id: xwk.c,v 1.26 1999-11-04 17:36:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -316,9 +316,9 @@ static NhlBoolean TestColorWPCB(
 	}
 
 	if (xp->last_colormap) {
-		if (colormap->num_elements == xp->last_colormap->num_elements &
-		    ! memcmp(colormap->data,xp->last_colormap->data,
-			     colormap->num_elements * sizeof(float))) {
+		if (colormap->num_elements == xp->last_colormap->num_elements 
+		    && ! memcmp(colormap->data,xp->last_colormap->data,
+				colormap->num_elements * sizeof(float))) {
 			NhlFreeGenArray(colormap);
 			return False;
 		}
@@ -368,7 +368,7 @@ SetUpWorkColorCBs
 			 _NhlCBworkColorIndexChange,sel,ColorCB,udata);
 		NgCBWPAdd(xwk->go.appmgr,TestColorWPCB,NULL,
 			  (NhlLayer)xp->xwork,
-			  _NhlCBworkColorIndexChange,sel,ColorWPCB,udata);
+			  _NhlCBworkColorMapChange,sel,ColorWPCB,udata);
 		sel.lngval = 1;
 		_NhlAddObjCallback
 			((NhlLayer)xp->xwork,
@@ -943,8 +943,6 @@ ExchangeForeBackCB
 	XtPointer	cbdata
 )
 {
-	XmPushButtonCallbackStruct	*xmcb = 
-		(XmPushButtonCallbackStruct*)cbdata;
 	NgXWk			xwk = (NgXWk)udata;
 	NhlGenArray		back_gen,fore_gen;
 

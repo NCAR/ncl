@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.8 1999-10-18 22:12:29 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.9 1999-11-04 17:36:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
 #include <ncarg/ngo/XmL.h>
 #include <ncarg/ngo/nclstate.h>
 
-#define _NgTMP_VAR "_NgTMP_VAR"
 
 typedef struct _TmpVarRec {
 	struct _TmpVarRec	*next;

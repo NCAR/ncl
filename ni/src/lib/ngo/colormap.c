@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.10 1999-10-18 22:12:27 dbrown Exp $
+ *      $Id: colormap.c,v 1.11 1999-11-04 17:36:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -681,10 +681,12 @@ SetWorkstationCmap
 	NgColorMapPart	*cp = &cm->colormap;
 	int		i,min,max,num_chg;
 	int		chgs[NhlwkMAX_COLORS];
-	char		buffer[NCL_MAX_STRING];
+	char		buffer[8704];
 	char		wkbuff[NCL_MAX_STRING];
 	char		*wkname;
+	char		*ch;
 	_NgColorStatus	status;
+	NhlString 	tmp_var;
 
 	wkname = NgNclGetHLURef(cm->go.nclstate,cp->work);
 	if(!wkname){
@@ -707,8 +709,33 @@ SetWorkstationCmap
 		}
 	}
 
-	if(num_chg)
-		NgNclSubmitLine(cm->go.nclstate,"begin\n",True);
+	if(! num_chg)
+		return;
+
+	tmp_var = NgNclGetSymName(cm->go.nclstate,_NgTMP_VAR,True);
+
+	sprintf(buffer,"%s = (/\\\n",tmp_var);
+	for (i=0; i < cp->edit_cmap_len; i++) {
+		sprintf(&buffer[strlen(buffer)],"(/%.6f,%.6f,%.6f/),\\\n",
+			(float)cp->edit_cmap[i].red /(float)_NgCM_MAX_CVAL,
+			(float)cp->edit_cmap[i].green /(float)_NgCM_MAX_CVAL,
+			(float)cp->edit_cmap[i].blue /(float)_NgCM_MAX_CVAL);
+	}
+	ch = strrchr(buffer,',');
+	sprintf(ch,"/)\n");
+	(void)NgNclSubmitBlock(cm->go.nclstate,buffer);
+
+	sprintf(buffer,"setvalues %s\\\n",wkbuff);
+	sprintf(&buffer[strlen(buffer)],
+		"\"wkColorMap\" : %s\\\nend setvalues\n",
+		tmp_var);
+	(void)NgNclSubmitBlock(cm->go.nclstate,buffer);
+
+	sprintf(buffer,"delete(%s)\n",tmp_var);
+	(void)NgNclSubmitBlock(cm->go.nclstate,buffer);
+	
+#if 0
+	NgNclSubmitLine(cm->go.nclstate,"begin\n",True);
 
 	for(i=0;i<num_chg;i++){
 		if(cp->cmap_status[chgs[i]] == _NgCM_EDITED)
@@ -728,14 +755,13 @@ SetWorkstationCmap
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
 	}
 	if(num_chg){
-#if 0
 		sprintf(buffer,"clear(%s)\n",wkbuff);
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
 		sprintf(buffer,"draw(%s)\n",wkbuff);
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
-#endif
 		NgNclSubmitLine(cm->go.nclstate,"end\n",False);
 	}
+#endif
 }
 
 static NhlBoolean
