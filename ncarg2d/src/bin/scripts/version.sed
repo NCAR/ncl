@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.12 2000-01-19 16:38:04 haley Exp $
+#	$Id: version.sed,v 1.13 2000-03-22 00:31:46 haley Exp $
 #
 
 set year = "2000"
@@ -8,7 +8,7 @@ set sitefile = `ncargpath NCARGDIR`/NCARGSITEFILE
 if (-f $sitefile) then
   set sitenum = `head -1 $sitefile`
 else
-  set sitenum = "Site ID Number undefined for support. Please contact your Site Installer."
+  set sitenum = "Site ID Number undefined for support."
 endif  
 
 if ($#argv > 0) then

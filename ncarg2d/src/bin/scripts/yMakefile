@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.41 1998-02-04 17:11:27 haley Exp $
+#	$Id: yMakefile,v 1.42 2000-03-22 00:31:46 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -14,7 +14,7 @@ NGF_SCRIPT	=	ncargf77
 NHF_SCRIPT	=	nhlf77
 #endif
 
-SCRIPTS = ncargfile ncargcc nhlcc  ncargversion ncargrun ncargex ncargcex \
+SCRIPTS = ncargfile ncargcc nhlcc  ncargversion ncargrun ncargex \
 	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPT) $(NHF_SCRIPT)
 
 FILES = ngurl
@@ -22,7 +22,7 @@ FILES = ngurl
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
-CleanFilesTarget($(NGF_SCRIPT) $(NHF_SCRIPT) ncargcc nhlcc ncargex ncargcex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget($(NGF_SCRIPT) $(NHF_SCRIPT) ncargcc nhlcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
 
 ncargversion:	version.sed
 	@sed \
@@ -109,13 +109,6 @@ ncargfile: ncargfile.csh Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<ncargfile.csh >ncargfile
-
-ncargcex: ncargcex.csh Makefile
-	@sed \
-	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
-	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
-	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
-	<ncargcex.csh >ncargcex
 
 #ifdef	BuildNCARGSourceLibrary
 ncargsrc: ncargsrc.csh Makefile
