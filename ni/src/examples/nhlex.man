@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: nhlex.man,v 1.4 1995-01-06 18:32:31 haley Exp $
+.\"	$Id: nhlex.man,v 1.5 1995-01-12 22:10:57 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -79,6 +79,9 @@ copy it to a meta file.
 Demonstrates how to incorporate the HLU library with a GUI.
 It uses an X/Motif interface, and also allows the user to copy frames from
 the X Window to a meta file.
+.IP nhl03 1i
+Shows how to interactively retrieve data values from a plot by pointing
+and clicking on the plot.
 .IP nhl05,nhlf05 1i
 Shows how to use the TextItem object of the HLU library.
 .IP nhl06,nhlf06 1i
@@ -102,7 +105,7 @@ Illustrates the use of Annotation objects.
 .SH SEE ALSO
 ncargex(1NCARG),  ncargcex(1NCARG)
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993, 1994 1995 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993, 1994, 1995 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
