@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.76 1999-06-11 22:14:57 ethan Exp $
+ *      $Id: Machine.c,v 1.77 1999-08-17 18:17:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1630,7 +1630,9 @@ if(the_list != NULL) {
 						if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
+/*
 
+Code not neede for intrinsic function calls. 8/17/99
 								tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 								tmp_var = _NclVarNclCreate(
 									NULL,
@@ -1648,8 +1650,15 @@ if(the_list != NULL) {
 									);
 								_NclDestroyObj((NclObj)tmp_var1);
 								tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 								check_ret_status = 0;
 						} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+
+
+/* Code not neede for intrinsic function calls
+
+CONVERT_TO_LOCAL just pushes vars for parameters
+
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							if(tmp_var1->var.att_id != -1) 
 								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
@@ -1677,6 +1686,7 @@ if(the_list != NULL) {
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 							check_ret_status = 0;
 						} else {
 							_NclDestroyObj((NclObj)data.u.data_var);
@@ -1701,6 +1711,7 @@ if(the_list != NULL) {
 					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
 	/* data better be a variable otherwise something is majorly hosed */
 	/* Here the object is available to be forced into a temporary variable */
+/* Again not needed for intrinsic function calls
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							tmp_var = _NclVarNclCreate(
 								NULL,
@@ -1718,9 +1729,11 @@ if(the_list != NULL) {
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 							check_ret_status = 0;
 							
 					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+/*
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							if(tmp_var1->var.att_id != -1) 
 								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
@@ -1748,6 +1761,7 @@ if(the_list != NULL) {
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 							check_ret_status = 0;
 					} else {
 /*
@@ -1767,6 +1781,8 @@ if(the_list != NULL) {
 					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
+/*
+Not needed for Intrisic functions
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							tmp_var = _NclVarNclCreate(
 								NULL,
@@ -1784,9 +1800,11 @@ if(the_list != NULL) {
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 							check_ret_status = 0;
 							
 					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+/* Not needed for intrinsic functions
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 							if(tmp_var1->var.att_id != -1) 
 								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
@@ -1814,6 +1832,7 @@ if(the_list != NULL) {
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
+*/
 							check_ret_status = 0;
 					} else {
 						if(data.u.data_var->obj.status != PERMANENT) {
