@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.29 1997-06-12 15:08:26 haley Exp $
+ *      $Id: Cray,v 1.30 1998-04-14 18:46:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -34,4 +34,6 @@
 #define DoesRanlib	NO
 #define GksBufferSize	1024
 #define UseCatDirs	YES
+
+#define XToolLibrary      -lXt -lSM -lICE
 
