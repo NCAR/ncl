@@ -1,5 +1,5 @@
 C
-C       $Id: cmpita.f,v 1.1 1993-01-13 17:59:56 haley Exp $
+C	$Id: cmpita.f,v 1.2 1993-01-13 23:16:30 haley Exp $
 C
 C
 C Declare fill routine external, or crash program
@@ -108,8 +108,10 @@ C
 C
 C Put the label at the top of the plot.
 C
+      CALL GETSET (VPL,VPR,VPB,VPT,WL,WR,WB,WT,LOG)
       CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
-      CALL PLCHHQ (.5,.85,'Filling Gridded Data over Landmasses',
+      CALL GSLWSC(2.)
+      CALL PLCHHQ (.5,VPT+.02,'Filling Gridded Data over Landmasses',
      +          .017,0.,0.)
 C
 C Advance the frame.

@@ -1,5 +1,5 @@
 C
-C	$Id: cmpdrw.f,v 1.1 1993-01-13 17:59:38 haley Exp $
+C	$Id: cmpdrw.f,v 1.2 1993-01-13 23:16:26 haley Exp $
 C
 C
 C Open GKS, Turn Clipping off
@@ -89,17 +89,17 @@ C
       SUBROUTINE COLOR
 C
 C     BACKGROUND COLOR
-C     BLACK
-      CALL GSCR(1,0,0.,0.,0.)
+C The background is white here for better visibility on paper
+      CALL GSCR(1,0,1.,1.,1.)
 C
 C     FORGROUND COLORS
-	CALL GSCR(1,1,1.,1.,1.)
-	CALL GSCR(1,2,0.,1.,0.)
-	CALL GSCR(1,3,1.,1.,0.)
-	CALL GSCR(1,4,.3,.3,1.)
-	CALL GSCR(1,5,1.,0.,1.)
-	CALL GSCR(1,6,0.,1.,1.)
-	CALL GSCR(1,7,1.,0.,0.)
+	CALL GSCR(1,1,.7,0.,0.)
+	CALL GSCR(1,2,0.,.7,0.)
+	CALL GSCR(1,3,.7,.4,0.)
+	CALL GSCR(1,4,.3,.3,.7)
+	CALL GSCR(1,5,.7,0.,.7)
+	CALL GSCR(1,6,0.,.7,.7)
+	CALL GSCR(1,7,0.,0.,0.)
 
 	RETURN
 	END

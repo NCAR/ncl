@@ -1,5 +1,5 @@
 C
-C	$Id: cmpdd.f,v 1.1 1993-01-13 17:59:35 haley Exp $
+C	$Id: cmpdd.f,v 1.2 1993-01-13 23:16:24 haley Exp $
 C
 C
 C Open GKS, and turn off clipping.
@@ -79,12 +79,12 @@ C
       SUBROUTINE COLOR
 C
 C     BACKGROUND COLOR
-C     BLACK
-      CALL GSCR(1,0,0.,0.,0.)
+C     White
+      CALL GSCR(1,0,1.,1.,1.)
 C
 C     FORGROUND COLORS
-	CALL GSCR(1,1,1.,1.,1.)
-	CALL GSCR(1,2,0.,1.,0.)
+	CALL GSCR(1,1,0.,0.,0.)
+	CALL GSCR(1,2,0.,.7,0.)
 	CALL GSCR(1,3,1.,1.,0.)
 	CALL GSCR(1,4,.3,.3,1.)
 	CALL GSCR(1,5,1.,0.,1.)
