@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.7 1994-08-11 21:36:55 boote Exp $
+ *      $Id: Close.c,v 1.8 1994-10-28 03:13:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,13 +54,14 @@ static void _NhlClose
 #endif
 {
 	/*
-	 * Destroy all remaining RL lists.
-	 */
-	_NhlDestroyRLList();
-	/*
 	 * Destroy all remaining layer objects.
 	 */
 	_NhlDestroyLayerTable();
+
+	/*
+	 * Destroy all remaining RL lists.
+	 */
+	_NhlDestroyRLList();
 
 	return;
 }

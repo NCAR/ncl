@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.20 1994-09-06 21:51:31 boote Exp $
+ *      $Id: hlu.c,v 1.21 1994-10-28 03:13:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -272,11 +272,12 @@ _NhlAddLayer
 #endif
 {
 	register int i;
+	static int last_alloc = 0;
 
 	/*
 	 * Increase size of table if needed
 	 */
-	if(table_len < num_layers + 1){
+	if(table_len < num_layers + 11){
 		LayerTable = NhlRealloc(LayerTable,
 		(unsigned)((table_len + _NhlLAYERLISTINC) * sizeof(NhlLayer)));
 		if(LayerTable == NULL){
@@ -290,11 +291,27 @@ _NhlAddLayer
 		table_len += _NhlLAYERLISTINC;
 	}
 
-	for(i=0; i < table_len; i++){
+	for(i=last_alloc; i < table_len; i++){
 		if(LayerTable[i] == (NhlLayer)NULL){
 			LayerTable[i] = l;
 			num_layers++;
 			l->base.id = i+1;
+			last_alloc = i;
+			return(i+1);
+		}
+	}
+	/*
+	 * If we fall threw to here, it means there wasn't any free space
+	 * at the end of the list.  We need to start searching again
+	 * from the begining of the list since there should be at least
+	 * 10 free spaces.
+	 */
+	for(i=0;i < last_alloc; i++){
+		if(LayerTable[i] == (NhlLayer)NULL){
+			LayerTable[i] = l;
+			num_layers++;
+			l->base.id = i+1;
+			last_alloc = i;
 			return(i+1);
 		}
 	}
@@ -387,6 +404,11 @@ DestroyLayerTree
 	if(l == NULL)
 		return;
 
+	/*
+	 * 1 should be the id of the default app_class object, so we really
+	 * don't want to destroy it until last, so we don't follow the
+	 * parent tree all the way to the top.
+	 */
 	if(l->base.parent != NULL){
 		DestroyLayerTree(l->base.parent->base.id);
 		return;
@@ -422,7 +444,7 @@ _NhlDestroyLayerTable
 {
 	int i;
 
-	for(i=0;i < table_len && num_layers > 0;i++){
+	for(i=table_len-1;i >= 0 && num_layers > 0;i--){
 		if(LayerTable[i] != NULL)
 			DestroyLayerTree(i+1);
 		if(LayerTable[i] != NULL)

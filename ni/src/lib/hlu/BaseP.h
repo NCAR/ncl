@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.5 1994-08-11 21:36:54 boote Exp $
+ *      $Id: BaseP.h,v 1.6 1994-10-28 03:13:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,7 @@ typedef struct _NhlObjLayerPart {
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
+	_NhlAllChildList	all_children;
 } NhlObjLayerPart;
 
 
@@ -82,11 +83,11 @@ typedef struct _NhlBaseLayerPart {
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
+	_NhlAllChildList	all_children;
 
 /* NOTHING CAN BE ADDED BEFORE HERE UNLESS IT IS ALSO ADDED IN ObjLayerPart */
 
 	NhlBoolean		in_init;	/* NhlCreateChild valid call */
-	_NhlAllChildList	all_children;
 	_NhlChildList		children;
 	_NhlChildArgList	child_args;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.5 1994-06-03 16:37:54 ethan Exp $
+ *      $Id: Base.c,v 1.6 1994-10-28 03:13:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,12 @@
 static NhlErrorTypes BaseLayerClassPartInitialize(
 #if	NhlNeedProto
 	NhlLayerClass
+#endif
+);
+
+static NhlErrorTypes ObjLayerDestroy(
+#if	NhlNeedProto
+	NhlLayer
 #endif
 );
 
@@ -65,7 +71,7 @@ NhlObjLayerClassRec NhlobjLayerClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	ObjLayerDestroy
 	}
 };
 
@@ -268,6 +274,46 @@ BaseLayerReparent
 }
 
 /*
+ * Function:	ObjLayerDestroy
+ *
+ * Description:	This function is used to clean up any memory that has
+ *		been allocated in the base part of the layer. It is called
+ *		from the NhlDestroy method.
+ *
+ * In Args:	
+ *		NhlLayer	l	layer to destroy
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+ObjLayerDestroy
+#if	__STDC__
+(
+	NhlLayer	l	/* layer to destroy	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* layer to destroy	*/
+#endif
+{
+	NhlErrorTypes	ret=NhlNOERROR,lret=NhlNOERROR;
+
+	/*
+	 * Now free any children that are still around
+	 */
+	while(l->base.all_children != NULL){
+		lret = NhlDestroy(l->base.all_children->pid);
+		ret = MIN(ret,lret);
+	}
+
+	return ret;
+}
+
+/*
  * Function:	BaseLayerDestroy
  *
  * Description:	This function is used to clean up any memory that has
@@ -301,14 +347,11 @@ BaseLayerDestroy
 	ret = FreeAndDestroyChildList(l->base.children);
 
 	/*
-	 * Now free any children that are still around
+	 * Now do regular destroy stuff
 	 */
-	while(l->base.all_children != NULL){
-		lret = NhlDestroy(l->base.all_children->pid);
-		ret = MIN(ret,lret);
-	}
+	lret = ObjLayerDestroy(l);
 
-	return ret;
+	return MIN(ret,lret);
 }
 
 /*

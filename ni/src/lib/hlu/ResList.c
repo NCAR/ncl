@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.8 1994-08-11 21:37:05 boote Exp $
+ *      $Id: ResList.c,v 1.9 1994-10-28 03:13:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -410,6 +410,9 @@ NhlRLDestroy
 #endif
 {
 	_NhlRLHead	*head;
+
+	if(!id)
+		return;
 
 	head = GetHead(id);
 

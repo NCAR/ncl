@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.11 1994-10-04 01:02:05 boote Exp $
+ *      $Id: Create.c,v 1.12 1994-10-28 03:13:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -338,9 +338,12 @@ _NhlCreate
 				"%s:Invalid Parent id #%d",func,parentid);
 			return NhlFATAL;
 		}
-		if(_NhlIsObj(parent)){
+		if(_NhlIsObj(parent) &&
+			!(lc->base_class.class_inited & _NhlObjLayerClassFlag)){
+
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:NhlObjLayer sub-classes cannot have children",func);
+		"%s:NhlObjLayer classes can only have NhlObjLayer children",
+									func);
 			return NhlFATAL;
 		}
 	}
@@ -365,6 +368,8 @@ _NhlCreate
 		layer->base.appobj = layer;
 	else
 		layer->base.appobj = parent->base.appobj;
+
+	layer->base.all_children = NULL;
 
 /*
  * context is a structure that remembers the memory that is allocated
@@ -405,7 +410,6 @@ _NhlCreate
 	else {
 
 		layer->base.in_init = True;
-		layer->base.all_children = NULL;
 		layer->base.children = NULL;
 
 /*
