@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.25 1996-03-07 17:25:57 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.26 1996-04-03 00:20:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -543,12 +543,16 @@ NhlErrorTypes _NclINhlDataToNDC
 {
 	NclStackEntry args[5];
 	NclMultiDValData tmp_mds[5];
+	NclVar tmp_vars[5];
 	int i;
 	int ncl_id;
+	int tmp_dimsizes = 1;
 	NclHLUObj hlu_ptr;
 	int status;
-	NclScalar* missing;
+	NclScalar* missing, *missing1;
 	NclScalar tmp_mis;
+	NclMultiDValData tmp_miss_md3,tmp_miss_md4;
+	
 
 	for(i = 0 ; i < 5; i++) {
 		if(i < 3) {
@@ -559,10 +563,12 @@ NhlErrorTypes _NclINhlDataToNDC
 		switch(args[i].kind) {
 		case NclStk_VAL:
 			tmp_mds[i] = args[i].u.data_obj;
+			tmp_vars[i] = NULL;
 			break;
 		case NclStk_VAR:
 			tmp_mds[i] = _NclVarValueRead(args[i].u.data_var,
 					NULL,NULL);
+			tmp_vars[i] = args[i].u.data_var;
 			break;
 		default:
 			return(NhlFATAL);
@@ -611,8 +617,22 @@ NhlErrorTypes _NclINhlDataToNDC
 			&status,
 			(float*)missing);
 		if(status) {
-			_NclResetMissingValue(tmp_mds[3],missing);
-			_NclResetMissingValue(tmp_mds[4],missing);
+			if(tmp_vars[3] != NULL) {
+				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
+				*missing1 = *missing;
+				tmp_miss_md3 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL,(NclObjClass) tmp_mds[3]->multidval.type);
+				_NclWriteAtt(tmp_vars[3],NCL_MISSING_VALUE_ATT,tmp_miss_md3,NULL);
+			} else {
+				_NclResetMissingValue(tmp_mds[3],missing);
+			}
+			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
+				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
+				*missing1 = *missing;
+				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
+				_NclWriteAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT,tmp_miss_md4,NULL);
+			} else {
+				_NclResetMissingValue(tmp_mds[4],missing);
+			}
 		}
 		return(NhlEUNKNOWN);	
 	} else {
@@ -629,12 +649,15 @@ NhlErrorTypes _NclINhlNDCToData
 {
 	NclStackEntry args[5];
 	NclMultiDValData tmp_mds[5];
+	NclVar tmp_vars[5];
 	int i;
 	int ncl_id;
+	int tmp_dimsizes = 1;
 	NclHLUObj hlu_ptr;
 	int status;
-	NclScalar* missing;
+	NclScalar* missing, *missing1;
 	NclScalar tmp_mis;
+	NclMultiDValData tmp_miss_md3,tmp_miss_md4;
 
 	for(i = 0 ; i < 5; i++) {
 		if(i < 3) {
@@ -697,8 +720,22 @@ NhlErrorTypes _NclINhlNDCToData
 			&status,
 			(float*)missing);
 		if(status) {
-			_NclResetMissingValue(tmp_mds[3],missing);
-			_NclResetMissingValue(tmp_mds[4],missing);
+			if(tmp_vars[3] != NULL) {
+				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
+				*missing1 = *missing;
+				tmp_miss_md3 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL,(NclObjClass) tmp_mds[3]->multidval.type);
+				_NclWriteAtt(tmp_vars[3],NCL_MISSING_VALUE_ATT,tmp_miss_md3,NULL);
+			} else {
+				_NclResetMissingValue(tmp_mds[3],missing);
+			}
+			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
+				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
+				*missing1 = *missing;
+				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
+				_NclWriteAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT,tmp_miss_md4,NULL);
+			} else {
+				_NclResetMissingValue(tmp_mds[4],missing);
+			}
 		}
 		return(NhlEUNKNOWN);	
 	} else {
