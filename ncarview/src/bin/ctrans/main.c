@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.9 1991-09-27 14:24:35 clyne Exp $
+ *	$Id: main.c,v 1.10 1991-10-01 10:56:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -279,7 +279,7 @@ char	**argv;
 		 *	multible metafiles to reside in a single file. This 
 		 *	driver will only process the first.
 		 */
-		if ((status = init_metafile(0, cgm_fd)) < 1) {
+		if ((status = init_metafile(NEXT, cgm_fd)) < 1) {
 			meta_files++;
 			continue;
 		}
