@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.16 1997-02-24 22:12:17 boote Exp $
+ *      $Id: BaseP.h,v 1.17 1997-08-11 23:16:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -304,7 +304,7 @@ extern NhlClassRec NhllayerClassRec;
 
 #define NhlbaseClassRec NhllayerClassRec
 
-#define _NhlName(instance) (((NhlLayer)instance)->base.name)
+#define _NhlName(instance) ((instance!=NULL)?(((NhlLayer)instance)->base.name):"(null)")
 
 extern void _NhlBaseAppDestroyCB(
 #if	NhlNeedProto

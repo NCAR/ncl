@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.42 1997-05-05 21:45:42 boote Exp $
+ *      $Id: hlu.c,v 1.43 1997-08-11 23:16:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -457,7 +457,7 @@ NhlName
 	if(tmp == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to access object with id:%d",pid);
-		return NULL;
+		return ("(null)");
 	}
 
 	return tmp->base.name;
