@@ -1,7 +1,8 @@
 #
-#	$Id: yMakefile,v 1.5 1994-05-27 16:53:38 haley Exp $
+#	$Id: yMakefile,v 1.6 1997-06-19 23:06:45 kennison Exp $
 #
 
 #define IHaveSubdirs
 
-SUBDIRS = scripts impltest ncargworld ncargsrcx findg psfltrs pre2ncgm
+SUBDIRS = scripts impltest ncargworld ncargsrcx findg psfltrs pre2ncgm \
+	  tdpackdemo
