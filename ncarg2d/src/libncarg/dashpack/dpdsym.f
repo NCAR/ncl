@@ -1,5 +1,5 @@
 C
-C $Id: dpdsym.f,v 1.1 2004-11-16 21:30:32 kennison Exp $
+C $Id: dpdsym.f,v 1.2 2004-11-17 18:09:25 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,14 +20,14 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE DPDSYM (XPMW,YPMW,CSYM,WCHW,ANGD)
+      SUBROUTINE DPDSYM (XPSW,YPSW,CSYM,WOSW,ANGD)
 C
         CHARACTER*1 CSYM
 C
 C This routine is called by DPDRAW to draw a symbol at the point
-C (XPMW,YPMW) in the world coordinate system.  The symbol to be
+C (XPSW,YPSW) in the world coordinate system.  The symbol to be
 C drawn is the one associated with the character CSYM.  Its width
-C is to be WCHW, in the world coordinate system, and it is to be
+C is to be WOSW, in the world coordinate system, and it is to be
 C written at the angle ANGD, in degrees measured counterclockwise
 C from a horizontal vector pointing to the right.
 C
@@ -47,8 +47,8 @@ C
 C
           DO 101 I=1,37
             ANGR=DTOR*(REAL(I-1)*10.)
-            XCRA(I)=XPMW+(WCHW/2.)*COS(ANGR)
-            YCRA(I)=YPMW+(WCHW/2.)*SIN(ANGR)
+            XCRA(I)=XPSW+(WOSW/2.)*COS(ANGR)
+            YCRA(I)=YPSW+(WOSW/2.)*SIN(ANGR)
   101     CONTINUE
 C
           NCRA=37
@@ -57,8 +57,8 @@ C
 C
           DO 102 I=1,5
             ANGR=DTOR*(ANGD+45.+REAL(I-1)*90.)
-            XCRA(I)=XPMW+1.25331*(WCHW/2.)*COS(ANGR)
-            YCRA(I)=YPMW+1.25331*(WCHW/2.)*SIN(ANGR)
+            XCRA(I)=XPSW+1.25331*(WOSW/2.)*COS(ANGR)
+            YCRA(I)=YPSW+1.25331*(WOSW/2.)*SIN(ANGR)
   102     CONTINUE
 C
           NCRA=5
@@ -67,8 +67,8 @@ C
 C
           DO 103 I=1,4
             ANGR=DTOR*(ANGD+90.+REAL(I-1)*120.)
-            XCRA(I)=XPMW+1.55512*(WCHW/2.)*COS(ANGR)
-            YCRA(I)=YPMW+1.55512*(WCHW/2.)*SIN(ANGR)
+            XCRA(I)=XPSW+1.55512*(WOSW/2.)*COS(ANGR)
+            YCRA(I)=YPSW+1.55512*(WOSW/2.)*SIN(ANGR)
   103     CONTINUE
 C
           NCRA=4
@@ -77,8 +77,8 @@ C
 C
           DO 104 I=1,5
             ANGR=DTOR*(ANGD+REAL(I-1)*90.)
-            XCRA(I)=XPMW+1.25331*(WCHW/2.)*COS(ANGR)
-            YCRA(I)=YPMW+1.25331*(WCHW/2.)*SIN(ANGR)
+            XCRA(I)=XPSW+1.25331*(WOSW/2.)*COS(ANGR)
+            YCRA(I)=YPSW+1.25331*(WOSW/2.)*SIN(ANGR)
   104     CONTINUE
 C
           NCRA=5
@@ -92,8 +92,8 @@ C
             ELSE
               RADI=1.
             END IF
-            XCRA(I)=XPMW+1.67289*RADI*(WCHW/2.)*COS(ANGR)
-            YCRA(I)=YPMW+1.67289*RADI*(WCHW/2.)*SIN(ANGR)
+            XCRA(I)=XPSW+1.67289*RADI*(WOSW/2.)*COS(ANGR)
+            YCRA(I)=YPSW+1.67289*RADI*(WOSW/2.)*SIN(ANGR)
   105     CONTINUE
 C
           NCRA=11
@@ -104,7 +104,7 @@ C Fill or outline the mark.
 C
         IF (CSYM.GE.'0'.AND.CSYM.LE.'4') THEN
           CALL GFA (NCRA,XCRA,YCRA)
-        ELSE
+        ELSE IF (CSYM.GE.'5'.AND.CSYM.LE.'9') THEN
           CALL GPL (NCRA,XCRA,YCRA)
         END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: dpdpws.f,v 1.1 2004-11-16 21:30:32 kennison Exp $
+C $Id: dpdpws.f,v 1.2 2004-11-17 18:09:25 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,23 +27,23 @@ C
 C This routine is called with three character strings of the same
 C length: the input string DPCH is a basic dash pattern, to be used
 C with DASHPACK, containing some characters that are to be treated
-C as symbol generators; the input string DSYM contains non-blanks
-C in the positions corresponding to characters of DPCH that are to
-C be treated as symbol generators; and the output string DPAT is
-C the appropriate character string to be input to DASHPACK by a
-C call to DPSETC.
+C as symbol generators; the input string DSYM contains characters
+C other than blanks or minus signs in the positions corresponding to
+C characters of DPCH that are to be treated as symbol generators; and
+C the output string DPAT is the appropriate character string to be
+C input to DASHPACK by a call to DPSETC.
 C
 C For example, to get a dash pattern specifying alternate solid-line
 C segments and filled circles, use this:
 C
 C   DPCH: '$0'  !  (The '$' means "solid"; the '0' selects a symbol.)
-C   DSYM: ' #'  !  (Use any non-blank character in place of '#'.)
+C   DSYM: ' #'  !  (Use any character but ' ' or '-' in lieu of '#'.)
 C
 C To get a dash pattern specifying a solid section, the characters
 C "I=1", another solid section, and a hollow-circle symbol, use this:
 C
-C   DPCH: '$$$I|=|1$$$5'
-C   DSYM: '           #'
+C   DPCH: '$$$I|=|1$$$5'  !  (A final '5' selects the desired symbol.)
+C   DSYM: '-----------+'  !  (A plus sign marks the symbol position.)
 C
 C (Note the use of break characters - '|' - in the character string to
 C allow the string to be written bending with a curve being drawn.)
@@ -63,7 +63,7 @@ C
         LPAT=LEN(DPAT)
 C
         DO 101 I=1,LPAT
-          IF (DSYM(I:I).EQ.' ') THEN
+          IF (DSYM(I:I).EQ.' '.OR.DSYM(I:I).EQ.'-') THEN
             DPAT(I:I)=DPCH(I:I)
           ELSE
             DPAT(I:I)=CHAR(IOR(ICHAR(DPCH(I:I)),128))
