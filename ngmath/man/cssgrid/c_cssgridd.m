@@ -1,22 +1,22 @@
 .\"
-.\"	$Id: c_cssgrid.m,v 1.2 2000-05-15 23:48:39 fred Exp $
+.\"	$Id: c_cssgridd.m,v 1.1 2000-05-15 23:48:39 fred Exp $
 .\"
-.TH c_cssgrid 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
+.TH c_cssgridd 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .SH NAME
-c_cssgrid - tension spline interpolation on a sphere
+c_cssgridd - tension spline interpolation on a sphere
 .SH FUNCTION PROTOTYPE
 .nf
 .cs R 24
-float *c_cssgrid(int, float [], float [], float [],
+double *c_cssgridd(int, double [], double [], double [],
 .br
-                 int, int, float [], float [], int *);
+                 int, int, double [], double [], int *);
 .fi
 .cs R
 .sp
 .SH SYNOPSIS
 .nf
 .cs R 24
-float *c_cssgrid (n, rlat, rlon, f, ni, nj, plat, plon, ier)
+double *c_cssgridd (n, rlat, rlon, f, ni, nj, plat, plon, ier)
 .fi
 .cs R
 .sp
@@ -53,10 +53,11 @@ returned as 0, then no errors were
 detected. If *ier is non-zero, then refer to the error list in
 cssgrid_errors for details.
 .SH USAGE
-c_cssgrid is called to find an interpolating tension spline for 
-randomly positioned data on a unit sphere.
+c_cssgridd is called to find an interpolating tension spline for 
+randomly positioned data on a unit sphere. c_cssgridd is a double
+precision version of c_cssgrid.
 .SH RETURN VALUE
-c_cssgrid returns a pointer to a linear array of data that 
+c_cssgridd returns a pointer to a linear array of data that 
 contains interpolated values at
 user-specified lat/lon pairs. The returned array stores 
 its values as if they were a
@@ -66,7 +67,7 @@ dimension. That is, if out is declared as
 .sp
 .nf
 .cs R 24
-  float *out;
+  double *out;
 .fi
 .cs R
 .sp
@@ -74,18 +75,19 @@ and we set:
 .sp
 .nf
 .cs R 24
-  out = c_cssgrid(n, rlat, rlon, f, nlat, nlon, plat, plon, &ier);
+  out = c_cssgridd(n, rlat, rlon, f, nlat, nlon, plat, plon, &ier);
 .fi
 .cs R
 .sp
 then out[i*nlon+j] is the interpolated function value at 
 coordinate point (plat[i], plon[j])
 for 0 <= i < nlat and 0 <= j < nlon. The space for out 
-is allocated internal to c_cssgrid and
-is nlat * nlon floats in size. 
+is allocated internal to c_cssgridd and
+is nlat * nlon doubles in size. 
 .SH ACCESS
-To use c_cssgrid, load the NCAR Graphics library ngmath.
+To use c_cssgridd, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
+c_cssgrid,
 css_overview,
 cssgrid_errors
 .sp

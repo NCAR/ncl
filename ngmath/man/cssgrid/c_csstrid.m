@@ -1,20 +1,20 @@
 .\"
-.\"	$Id: c_csstri.m,v 1.2 2000-05-15 23:48:39 fred Exp $
+.\"	$Id: c_csstrid.m,v 1.1 2000-05-15 23:48:39 fred Exp $
 .\"
-.TH c_csstri 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
+.TH c_csstrid 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .SH NAME
-c_csstri - calculates a Delaunay triangulation for data on a sphere
+c_csstrid - calculates a Delaunay triangulation for data on a sphere
 .SH FUNCTION PROTOTYPE
 .nf
 .cs R 24
-    int *c_csstri(int, float [], float [], int *, int *);
+    int *c_csstrid(int, double [], double [], int *, int *);
 .fi
 .cs R
 .sp
 .SH SYNOPSIS
 .nf
 .cs R 24
-    int *c_csstri(n, rlat, rlon, nt, ier);
+    int *c_csstrid(n, rlat, rlon, nt, ier);
 .fi
 .cs R
 .sp
@@ -43,10 +43,11 @@ returned as 0, then no errors were
 detected. If *ier is non-zero, then refer to the error list in
 cssgrid_errors for details.
 .SH USAGE
-c_csstri is called to find a Delaunay triangulation of data 
-randomly positioned on the surface of a sphere. 
+c_csstrid is called to find a Delaunay triangulation of data 
+randomly positioned on the surface of a sphere. c_csstrid is
+a double precision version of c_csstri.
 .SH RETURN VALUE
-c_csstri returns a pointer to a linear array that 
+c_csstrid returns a pointer to a linear array that 
 contains a sequence of integer triples. The
 elements of a triple are indices of vertices of 
 a triangle. Each index references an original
@@ -56,10 +57,11 @@ triple <5,0,2> were in the list of triples, then (rlat[5],rlon[5]),
 (rlat[0],rlon[0]), and (rlat[2],rlon[2]) would be vertices of 
 a triangle in the Delaunay triangulation. 
 .SH ACCESS
-To use c_csstri, load the NCAR Graphics library ngmath.
+To use c_csstrid, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
 css_overview,
 c_cssgrid,
+c_csstri,
 cssgrid_errors
 .sp
 Complete documentation for Cssgrid is available at URL

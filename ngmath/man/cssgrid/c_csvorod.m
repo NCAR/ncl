@@ -1,15 +1,15 @@
 .\"
-.\"	$Id: c_csvoro.m,v 1.2 2000-05-15 23:48:40 fred Exp $
+.\"	$Id: c_csvorod.m,v 1.1 2000-05-15 23:48:40 fred Exp $
 .\"
-.TH c_csvoro 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
+.TH c_csvorod 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .SH NAME
-c_csvoro - calculate Voronoi polygons for points on a sphere.
+c_csvorod - calculate Voronoi polygons for points on a sphere.
 .SH FUNCTION PROTOTYPE
 .nf
 .cs R 24
-void   c_csvoro(int, float [], float [], 
+void   c_csvorod(int, double [], double [], 
 .br
-                int, int, float [], float [], float [], 
+                int, int, double [], double [], double [], 
 .br
                 int *, int *, int [], int *);
 .fi
@@ -18,7 +18,7 @@ void   c_csvoro(int, float [], float [],
 .SH SYNOPSIS
 .nf
 .cs R 24
-void *c_csvoro (n, rlat, rlon, ni, nf, plat, plon, rc,
+void *c_csvorod (n, rlat, rlon, ni, nf, plat, plon, rc,
 .br
                 nca, numv, nv, ier);
 .fi
@@ -39,7 +39,7 @@ expressed in degrees.
 The index of the input coordinate for which you 
 want to determine the Voronoi polygon (0 <= ni < n).
 .IP nf 12
-Flag indicating if this is the first call to c_csvoro to 
+Flag indicating if this is the first call to c_csvorod to 
 retrieve Voronoi polygons for this
 dataset (1=yes, 0=no). Calls subsequent to the 
 first call for a given dataset are much
@@ -83,17 +83,18 @@ An error return value. If *ier is returned as 0,
 then no errors were detected. If *ier is non-zero,
 then refer to the error list in the error table for details. 
 .SH USAGE
-c_csvoro is called if you want to determine the
+c_csvorod is called if you want to determine the
 Voronoi polygons for data randomly positioned on a
-sphere. Each call to c_csvoro calculates the vertices
+sphere. Each call to c_csvorod calculates the vertices
 for the Voronoi polygon surrounding a specified input
-point. 
+point.  c_csvorod is a double precision version of c_csvoro.
 .SH ACCESS
-To use c_csvoro, load the NCAR Graphics library ngmath.
+To use c_csvorod, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
 css_overview,
 c_cssgrid,
-cssgrid_errors
+c_csvoro,
+cssgrid_errors.
 .sp
 Complete documentation for Cssgrid is available at URL
 .br

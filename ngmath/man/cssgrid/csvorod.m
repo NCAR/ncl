@@ -1,11 +1,11 @@
 .\"
-.\"	$Id: csvoro.m,v 1.2 2000-05-15 23:48:44 fred Exp $
+.\"	$Id: csvorod.m,v 1.1 2000-05-15 23:48:44 fred Exp $
 .\"
-.TH CSVORO 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
+.TH CSVOROD 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .SH NAME
-CSVORO - calculate Voronoi polygons for data on a sphere.
+CSVOROD - calculate Voronoi polygons for data on a sphere.
 .SH SYNOPSIS
-CALL CSVORO (NPTS, RLATI, RLONI, NI, NF, IWK, RWK, 
+CALL CSVOROD (NPTS, RLATI, RLONI, NI, NF, IWK, RWK, 
 .br
              NC, RLATO, RLONO, RC, 
 .br
@@ -14,19 +14,19 @@ CALL CSVORO (NPTS, RLATI, RLONI, NI, NF, IWK, RWK,
 .IP NPTS 12
 (integer,input) The number of input data points (NPTS > 3). 
 .IP RLATI 12
-(real, input) An array containing the latitudes
+(double precision, input) An array containing the latitudes
 of the input data, expressed in degrees.
 The first three points must not be collinear
 (lie on a common great circle).
 .IP RLONI 12
-(real, input) An array containing the longitudes of the input data,
+(double precision, input) An array containing the longitudes of the input data,
 expressed in degrees.
 .IP NI 12
 (integer, input) The index of the input coordinate for which you 
 want to determine the Voronoi polygon (1 .LE. NI .LE. NPTS). 
 .IP NF 12
 (integer, input) Flag indicating if this is the first call to 
-CSVORO to retrieve Voronoi polygons for this dataset (1=yes, 0=no). 
+CSVOROD to retrieve Voronoi polygons for this dataset (1=yes, 0=no). 
 Calls subsequent to the first call for a given dataset are
 much faster than the first call. 
 .IP IWK 12 
@@ -38,15 +38,15 @@ for 9*NPTS.  Note that RWK must be typed DOUBLE PRECISION.
 (integer, input) The maximum size of the output arrays 
 RLATO, RLONO, and RC. NC should be 2*NPTS.
 .IP RLATO 12
-(real, output) The latitudes for the vertices of the Voronoi polygons.
+(double precision, output) The latitudes for the vertices of the Voronoi polygons.
 These are circumcenters of circles passing through the Delaunay 
 triangles. If a coordinate is a boundary point, then the circle 
 may pass through certain "pseudo points" that have been added to the
 original dataset in order to complete the Voronoi polygon. 
 .IP RLONO 12
-(real, output) The longitudes for the vertices of the Voronoi polygons.
+(double precision, output) The longitudes for the vertices of the Voronoi polygons.
 .IP RC 12
-(real, output) Array containing circumradii (arc lengths in degrees 
+(double precision, output) Array containing circumradii (arc lengths in degrees 
 of the angle between a circumcenter and its associated triangle vertices). 
 .IP NCA 12
 (integer, output) The actual number of circumcenters returned in 
@@ -73,16 +73,17 @@ in NV list out the vertices of the Voronoi polygon in counter-clockwise order.
 no errors were detected. If IER is non-zero, then refer to the man
 page for cssgrid_errors for details.
 .SH USAGE
-CSVORO is called if you want to determine the Voronoi polygons 
-for data randomly positioned on a sphere. Each call to CSVORO 
+CSVOROD is called if you want to determine the Voronoi polygons 
+for data randomly positioned on a sphere. Each call to CSVOROD
 calculates the vertices for the Voronoi polygon surrounding a 
-specified input point. 
+specified input point.  CSVOROD is a double precision version of
+CSVORO.
 .SH ACCESS
-To use CSVORO, load the NCAR Graphics library ngmath.
+To use CSVOROD, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
 css_overview,
-csstri,
-cssgrid.
+csstrid,
+cssgridd.
 .sp
 Complete documentation for Cssgrid is available at URL
 .br

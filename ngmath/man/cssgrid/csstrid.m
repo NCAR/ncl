@@ -1,21 +1,21 @@
 .\"
-.\"	$Id: csstri.m,v 1.2 2000-05-15 23:48:43 fred Exp $
+.\"	$Id: csstrid.m,v 1.1 2000-05-15 23:48:43 fred Exp $
 .\"
-.TH CSSTRI 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
+.TH CSSTRID 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .SH NAME
-CSSTRI - calculates a Delaunay triangulation for data on a sphere
+CSSTRID - calculates a Delaunay triangulation for data on a sphere
 .SH SYNOPSIS
-CALL CSSTRI (N, RLAT, RLON, NT, NTRI, IWK, RWK, IER)
+CALL CSSTRID (N, RLAT, RLON, NT, NTRI, IWK, RWK, IER)
 .SH DESCRIPTION
 .IP N 12
 (integer,input) The number of input data points (N > 2). 
 .IP RLAT 12
-(real, input) An array containing the latitudes
+(double precision, input) An array containing the latitudes
 of the input data, expressed in degrees.
 The first three points must not be collinear 
 (lie on a common great circle). 
 .IP RLON 12
-(real, input) An array containing the longitudes of the input data,
+(double precision, input) An array containing the longitudes of the input data,
 expressed in degrees.
 .IP NT 12
 (integer, output) The number of triangles in the triangulation, 
@@ -41,13 +41,15 @@ that this work array must be typed DOUBLE PRECISION.
 no errors were detected. If IER is non-zero, then refer to the man
 page for cssgrid_errors for details.
 .SH USAGE
-CSSTRI is called to find a Delaunay triangulation of data randomly 
-positioned on the surface of a sphere. 
+CSSTRID is called to find a Delaunay triangulation of data randomly 
+positioned on the surface of a sphere. CSSTRID is a double precision
+version of CSSTRI.
 .SH ACCESS
-To use CSSTRI, load the NCAR Graphics library ngmath.
+To use CSSTRID, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
 css_overview,
 cssgrid,
+csstri,
 csvoro.
 .sp
 Complete documentation for Cssgrid is available at URL

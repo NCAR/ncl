@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: cssgrid_errors.m,v 1.1 1999-06-29 00:23:03 fred Exp $
+.\"     $Id: cssgrid_errors.m,v 1.2 2000-05-15 23:48:42 fred Exp $
 .\"
-.TH cssgrid_errors 3NCARG "June 1999" UNIX "NCAR GRAPHICS"
+.TH cssgrid_errors 3NCARG "May 2000" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -55,7 +55,7 @@ Complete documentation for Cssgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/cssgrid/csshome.html
 .SH COPYRIGHT
-Copyright (C) 1997-1999
+Copyright (C) 1997-2000
 .br
 University Corporation for Atmospheric Research
 .br
