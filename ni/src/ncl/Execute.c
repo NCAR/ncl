@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.79 1997-01-16 19:44:02 ethan Exp $
+ *      $Id: Execute.c,v 1.80 1997-01-16 19:46:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -119,7 +119,7 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				if(estatus != NhlFATAL) {
-					if(*ptr == INT_SUBSCRIPT_OP) {
+					if(*(int*)ptr == INT_SUBSCRIPT_OP) {
 						data1.u.sub_rec.name = NULL;
 					} else {
 						data = _NclPop();
@@ -364,7 +364,7 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 					}
 				}
-				if(*ptr == COORD_SUBSCRIPT_OP) {
+				if(*(int*)ptr == COORD_SUBSCRIPT_OP) {
 					data1.u.sub_rec.name = NULL;
 				} else {
 					data = _NclPop();
