@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.8 1995-04-01 23:10:05 dbrown Exp $
+C     $Id: mp02f.f,v 1.9 1995-04-06 22:56:38 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -160,10 +160,11 @@ C
       fill_specs(2) = 'us'
       call NhlFRLClear(rlist)  
       call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 4',ierr)
-      call NhlFRLSetstring(rlist,'mpFillBoundarySets','noBoundaries',
+      call NhlFRLSetstring(rlist,'mpFillBoundarySets','NoBoundaries',
      1    ierr)
       call NhlFRLSetstringarray(rlist,'mpFillAreaSpecifiers',
      1     fill_specs,7,ierr)
+      call NhlFRLSetString(rlist,'mpAreaMaskingOn','True',ierr)
       call NhlFRLSetstringarray(rlist,'mpMaskAreaSpecifiers',
      1        mask_specs,7,ierr)
       call NhlFSetValues(mapid,rlist,ierr)
