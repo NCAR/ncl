@@ -1,19 +1,24 @@
 .\"
-.\"     $Id: psplit.m,v 1.4 2000-08-22 04:16:28 haley Exp $
+.\"     $Id: psplit.m,v 1.5 2001-07-30 20:18:43 fred Exp $
 .\"
-.TH psplit 1NCARG "January 1999" UNIX "NCAR GRAPHICS"
+.TH psplit 1NCARG "August 2001" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-psplit - a tool for splitting PostScript files into Encapsulated PostScript files
+psplit - a tool for splitting PostScript files with multiple frames into 
+individual PostScript files
 .SH SYNOPSIS
 usage: psplit input_file [output_file_root]
 .SH DESCRIPTION 
 "psplit" takes a PostScript file as input (that may have
-multiple pictures) and splits it into Encapsulated PostScript (EPS)
-files.  By definition EPS files have a single picture in them, so
-"psplit" produces a single EPS file for each picture in the original
-file.
+multiple pictures) and splits it into individual PostScript
+files having a single frame each.  If the original file has a
+%%BoundingBox comment in it, then that comment will be inserted
+into each output file and the output files will be EPS (encapsulated
+PostScript) conforming.  If the original file does not have a
+%%BoundingBox comment, then then output files will not have one
+either.  In that case, if you want the output files to be EPS files,
+then use the "ps2epsi" utility that is based on GhostScript.
 .sp
 "psplit" is primarily intended to be used with PostScript files
 that have been produced directly by NCAR Graphics, or produced from
@@ -21,8 +26,8 @@ NCAR Graphics by running "ctrans" with a PostScript graphcap.  However,
 "psplit" will also work on most PostScript files adhering to PostScript 
 Document Structuring Conventions (DSC).
 .sp
-By default the output files are named in sequence as "pict0001.eps",
-"pict0001.eps", and so forth.  If you want to specify a different
+By default the output files are named in sequence as "pict0001.ps",
+"pict0001.ps", and so forth.  If you want to specify a different
 root name for the output files (i.e. a name different from "pict"),
 you can specify that by entering the optional second argument.
 .SH COPYRIGHT
