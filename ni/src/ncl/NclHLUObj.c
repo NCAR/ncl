@@ -109,9 +109,9 @@ static void HLUObjDestroy
 */
 		if(hlu_obj->hlu.c_list != NULL) {
 			tmp1 = hlu_obj->hlu.c_list;
-			hlu_obj->hlu.c_list == NULL;
+			hlu_obj->hlu.c_list = NULL;
 			while(tmp1 != NULL) {
-				tmp_obj = _NclGetObj(hlu_obj->hlu.c_list->child_id);
+				tmp_obj = _NclGetObj(tmp1->child_id);
 				tmp2 = tmp1;
 				tmp1 = tmp1->next;
 				if(tmp_obj != NULL){
