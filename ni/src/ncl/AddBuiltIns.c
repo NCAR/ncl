@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.52 2000-09-21 20:34:55 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.53 2000-10-17 19:55:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -628,6 +628,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclINewList(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIListGetType(
 #if     NhlNeedProto
 void
 #endif
@@ -1510,6 +1515,12 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"list",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,NclANY,NclANY,NclANY);nargs++;
     NclRegisterProc(_NclIPush,args,"ListPush",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"list",1,dimsizes);nargs++;
+    NclRegisterFunc(_NclIListGetType,args,"ListGetType",nargs);
 
     nargs = 0;
     args = NewArgs(2);

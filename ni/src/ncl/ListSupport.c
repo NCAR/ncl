@@ -79,7 +79,23 @@ NhlErrorTypes _NclListSetType(NclObj thelist, int new_type)
 	}
 	return(NhlFATAL);
 }
-
+int _NclListGetType(NclObj thelist)
+{
+	NclListClass lc;
+	if(thelist == NULL) {
+		return(NhlFATAL);
+	} else {
+		lc = (NclListClass)thelist->obj.class_ptr;
+	}
+	while((NclObjClass)lc != nclObjClass) {
+		if(lc->list_class.set_type!= NULL) {
+			return((*lc->list_class.get_type)(thelist));
+		} else {
+			lc = (NclListClass)lc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
 NclList _NclListSelect(NclList thelist, NclSelection* sel_ptr)
 {
 	NclListClass lc;

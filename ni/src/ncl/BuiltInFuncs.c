@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.127 2000-09-29 17:53:14 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.128 2000-10-17 19:55:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11571,7 +11571,54 @@ NhlErrorTypes _NclIAddFiles( void )
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
 }
+NhlErrorTypes _NclIListGetType(void)
+{
+	obj *obj_id,*list_id;
+	NclObj thelist = NULL;
+	string *ret_val;
+	int dimsize = 2;
+        NclStackEntry data;
+	int i;
+	int list_type;
 
+	
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           1,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+	data= _NclGetArg(1,2,DONT_CARE);
+	thelist = _NclGetObj(*list_id);
+	list_type = _NclListGetType(thelist);
+	i = 0;
+	ret_val = (string*)NclMalloc(sizeof(string));
+	if(list_type & NCL_JOIN)  {
+		ret_val[i++] = NrmStringToQuark("join");
+	} else {
+		ret_val[i++] = NrmStringToQuark("cat");
+	}
+	if(list_type & NCL_FIFO) {
+		ret_val[i++] = NrmStringToQuark("fifo");
+	} else {
+		ret_val[i++] = NrmStringToQuark("lifo");
+	}
+	
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_string,
+		0
+	));
+
+	return(NhlNOERROR);
+}
 NhlErrorTypes _NclIListSetType(void)
 {
 	obj *obj_id,*list_id;

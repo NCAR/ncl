@@ -266,6 +266,22 @@ NclObj list;
 		return(NULL);
 	}
 }
+static int ListGetType
+#if     NhlNeedProto
+(NclObj list)
+#else
+(list)
+NclObj list;
+#endif
+{
+	NclList thelist = (NclList)list;
+	if(list!=NULL) {
+		return(thelist->list.list_type);
+	} else {
+		return(-1);
+	}
+	
+}
 
 static NhlErrorTypes ListSetType
 #if     NhlNeedProto
@@ -634,6 +650,7 @@ NclListClassRec nclListClassRec = {
 	},
 	{
 /* NclListSetTypeFunction  set_type;*/ ListSetType,
+/* NclListGetTypeFunction  get_type;*/ ListGetType,
 /* NclListPushFunction     push;*/ ListPush,
 /* NclListPopFunction      pop;*/ ListPop,
 /* NclListSelectFunction   select;*/ ListSelect,

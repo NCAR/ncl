@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclList.h,v 1.1 1999-11-12 18:36:41 ethan Exp $
+ *      $Id: NclList.h,v 1.2 2000-10-17 19:55:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -65,6 +65,11 @@ NclObj /*thelistobj*/,
 int	/*new_type*/
 #endif
 );
+typedef int (*NclListGetTypeFunction)(
+#if     NhlNeedProto
+NclObj /*thelistobj*/
+#endif
+);
 
 typedef int (*NclListGetNextFunction)(
 #if	NhlNeedProto
@@ -77,6 +82,7 @@ NclObj /*thelistobj*/
 
 typedef struct _NclListClassPart {
 	NclListSetTypeFunction	set_type;
+	NclListGetTypeFunction	get_type;
 	NclListPushFunction	push;
 	NclListPopFunction	pop;
 	NclListSelectFunction	select;
