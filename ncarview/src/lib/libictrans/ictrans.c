@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.25 1996-08-27 00:06:51 clyne Exp $
+ *	$Id: ictrans.c,v 1.26 1997-01-23 22:37:59 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -321,26 +321,6 @@ ICTrans(argc, argv, mem_cgm)
 
 	if (init_icommand(&icommand) < 0) return(-1);
 
-	/*
-	 * establish communication path (one way) with invokee
-	 */
-	if (opt.fd != -1) {
-		if ((fp = fdopen(opt.fd, "w")) == NULL) {
-			fprintf(stderr, "fdopen(%d, w)\n", opt.fd);
-			return(-1);
-		}
-		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
-		icommand.force_prompt = TRUE;
-	}
-	else {
-		if ((fp = fopen(dev_tty, "w")) == NULL) {
-			fprintf(stderr, "fopen(%s, w)\n", dev_tty);
-			return(-1);
-		}
-		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
-		icommand.force_prompt = FALSE;
-	}
-	icommand.fp = fp;
 	icommand.quiet = opt.quiet;
 
 	/*
@@ -353,6 +333,32 @@ ICTrans(argc, argv, mem_cgm)
 	}
 
 	icommand.batch = batch;
+
+	/*
+	 * establish communication path (one way) with invokee
+	 */
+	if (opt.fd != -1) {
+		if ((fp = fdopen(opt.fd, "w")) == NULL) {
+			fprintf(stderr, "fdopen(%d, w)\n", opt.fd);
+			return(-1);
+		}
+		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
+		icommand.force_prompt = TRUE;
+	}
+	else {
+		if((fp = fopen(dev_tty, "w")) == NULL) {
+			if(batch){
+				fp = stderr;
+			}
+			else{
+				fprintf(stderr, "fopen(%s, w)\n", dev_tty);
+				return(-1);
+			}
+		}
+		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
+		icommand.force_prompt = FALSE;
+	}
+	icommand.fp = fp;
 
 	/*
 	 * prime the system by executing a file() command
