@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.h,v 1.3 1997-08-25 20:19:24 boote Exp $
+ *	$Id: gks_device.h,v 1.4 1997-09-02 14:56:25 haley Exp $
  */
 /*
  *      File:		gks_device.h
@@ -17,6 +17,7 @@
  *	definition because it uses negative numbers which are a pain to 
  *	use as indexes into arrays.
  */
+#include <stddef.h>
 #define	OPEN_WORKSTATION			0
 #define	ACTIVATE_WORKSTATION			1
 #define	CLOSE_WORKSTATION			2
