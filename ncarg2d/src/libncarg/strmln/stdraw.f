@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.4 1993-01-21 23:50:38 dbrown Exp $
+C	$Id: stdraw.f,v 1.5 1993-02-02 23:30:42 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -147,8 +147,11 @@ C
 C IPZERO, IPONE, IPTWO - the numbers 0,1,2
 C PRZERO - the number 0.0
 C PTHREE - the number 3.0
+C PSMALL - a small floating point number, large enough to be 
+C          detectable by any standard processor
 C
       PARAMETER (IPZERO=0, IPONE=1, IPTWO=2, PRZERO=0.0, PTHREE=3.0)
+      PARAMETER (PSMALL=0.000001)
 C
 C Local variables
 C
@@ -514,6 +517,12 @@ C
 C
             X=(XWO-XLOV)/XGDS+1.0
             Y=(YWO-YLOV)/YGDS+1.0
+C
+C If on the top or right edge of the grid space, decrease the X and/or
+C Y value by a small amount so the interpolation routine still works.
+C
+            IF (IFIX(X).GE.IXDM) X=FLOAT(IXDM)-PSMALL
+            IF (IFIX(Y).GE.IYDN) Y=FLOAT(IYDN)-PSMALL
 C
          END IF
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stdudv.f,v 1.3 1993-01-21 23:50:41 dbrown Exp $
+C	$Id: stdudv.f,v 1.4 1993-02-02 23:30:45 dbrown Exp $
 C
       SUBROUTINE STDUDV (UX,VY,I,J,X,Y,DU,DV)
 C
@@ -118,7 +118,14 @@ C
 C Determine which interpolation formula to use 
 C depending on I,J location or the special flags
 C
-      IF(ISVF.NE.0 .OR. ITRP.NE.0) THEN
+      IF (I.GE.IXDM .OR. J.GE.IYDN) THEN
+C
+C This branch should never be taken if STDRAW is correct, but is 
+C included for safety
+C
+         RETURN
+C
+      ELSE IF(ISVF.NE.0 .OR. ITRP.NE.0) THEN
          ITF = 1
       ELSE IF (J.GT.IYD1 .AND. J.LT.IYM1 
      +        .AND. I.GT.IXD1 .AND. I.LT.IXM1) THEN

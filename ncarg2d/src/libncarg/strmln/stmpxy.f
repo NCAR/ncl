@@ -1,5 +1,5 @@
 C
-C	$Id: stmpxy.f,v 1.1 1993-01-15 23:53:33 dbrown Exp $
+C	$Id: stmpxy.f,v 1.2 1993-02-02 23:30:48 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -190,11 +190,21 @@ C --------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
 C
+C Local parameters:
+C
+C PRCFAC - Precision factor used to resolve float equality within
+C            the precision of a 4 byte REAL
+C PVFRAC - Initial fraction of the vector magnitude used to
+C            determine the differential increment
+C IPMXCT - Number of times to allow the differential to increase
+C PDUVML - Multiplier when the differential is increased
+C PCSTST - Test value for closeness to 90 degree latitude
+C
       PARAMETER (PRCFAC=1E5,
      +           PVFRAC=0.1,
-     +           PFOVFL=1E12,
      +           IPMXCT=40,
-     +           PDUVML=2.0)
+     +           PDUVML=2.0,
+     +           PCSTST=PRCFAC*90.0)
 C
 C Local variables:
 C
@@ -287,7 +297,7 @@ C
 C X is longitude, Y is latitude
 C If Y is 90 degrees, can't compute a direction
 C
-         IF (IFIX(ABS(YWO)*PRCFAC) .GE. IFIX(90.*PRCFAC)) THEN
+         IF (IFIX(ABS(YWO)*PRCFAC+0.5) .GE. IFIX(PCSTST)) THEN
             IST=-1
             RETURN
          END IF
@@ -315,7 +325,7 @@ C Calculate the incremental end points, then check to see if
 C they take us out of the user coordinate boundaries. If they
 C do, try incrementing in the other direction
 C
-         CALL MAPTRN(YWO+SGN*DNY,XWO+SGN*DNX,XT,YT)
+         CALL MAPTRA(YWO+SGN*DNY,XWO+SGN*DNX,XT,YT)
 C
          IF (XT .LT. WXMN .OR. XT .GT. WXMX .OR.
      +        YT .LT. WYMN .OR. YT .GT. WYMX) THEN
