@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.15 1992-07-28 22:31:33 clyne Exp $
+ *	$Id: X11_class0.c,v 1.16 1992-08-10 22:06:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -69,6 +69,7 @@ static	struct	{
 	char	*foreground;
 	char	*background;
 	boolean	reverse;
+	int	wid;
 	} x11_opts;
 
 static	Option	options[] =  {
@@ -95,6 +96,10 @@ static	Option	options[] =  {
 	{
 	"reverse", NCARGCvtToBoolean, 
 		(Voidptr) &x11_opts.reverse, sizeof (x11_opts.reverse )
+	},
+	{
+	"wid", NCARGCvtToInt, 
+		(Voidptr) &x11_opts.wid, sizeof (x11_opts.wid )
 	},
 	{
 	NULL
@@ -173,39 +178,31 @@ CGMC *c;
 	}
 
 
+
 	/*
-	 *	in stand_alone mode the X driver is responcible for
-	 *	making the connection to the X server and opening a window.
-	 *	Otherwise, the interface must provide these things. "dpy"
-	 *	and "win" must be set by the interface in this case
+	 *      parse X11 specific command line args
+	 *      (currently only geometry accepted       )
 	 */
-	if (stand_Alone) {
+	if (GetOptions(optionDesc, options) < 0) {
+		ESprintf(
+			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+			optionDesc, ErrGetMsg()
+		);
+		return(-1);
+	}
 
-		/*
-		 *      parse X11 specific command line args
-		 *      (currently only geometry accepted       )
-		 */
-		if (GetOptions(optionDesc, options) < 0) {
-			ESprintf(
-				E_UNKNOWN,"GetOptions(%d,) [ %s ]",
-				optionDesc, ErrGetMsg()
-			);
-			return(-1);
-		}
-
-		/*
-		 *	establish connection to sever
-		 */
-		if ((dpy_name = getenv(dpy_env)) == NULL) {
-			ESprintf(E_UNKNOWN,"%s env. variable not set", dpy_env);
-			return(-1);
-		}
+	/*
+	 *	establish connection to sever
+	 */
+	if ((dpy_name = getenv(dpy_env)) == NULL) {
+		ESprintf(E_UNKNOWN,"%s env. variable not set", dpy_env);
+		return(-1);
+	}
 
 
-		if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
-			ESprintf(E_UNKNOWN,"XOpenDisplay(%s)", dpy_name);
-			return (-1);
-		}
+	if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
+		ESprintf(E_UNKNOWN,"XOpenDisplay(%s)", dpy_name);
+		return (-1);
 	}
 
 
@@ -254,37 +251,36 @@ CGMC *c;
 	}
 
 
-	if (stand_Alone) {
 
+
+
+
+	/*
+	 * Create the Window with the information in the XSizeHints, the
+	 * border width, and the border & background pixels. See 
+	 * Section 3.3.
+	 */
+	if (x11_opts.wid == -1) {
 		/*
 		 *      Initialize the Resource manager. See 10.11
 		 */
 		XrmInitialize();
-
 		/*
 		 *      provide window with intial size and possition. Fill out
 		 *      XSizeHints struct to inform window manager. See section
 		 *      9.1.6 and 10.3
 		 */
 		do_geometry(x11_opts.Geometry, &xsh);
-
-
-		/*
-		 * Create the Window with the information in the XSizeHints, the
-		 * border width, and the border & background pixels. See 
-		 * Section 3.3.
-		 */
 		drawable = XCreateSimpleWindow(dpy, 
-				RootWindow(dpy,DefaultScreen(dpy)),
-				xsh.x, xsh.y, xsh.width, xsh.height,
-				bw, bd, bg);
-		win = drawable;
+			RootWindow(dpy,DefaultScreen(dpy)),
+			xsh.x, xsh.y, xsh.width, xsh.height,
+			bw, bd, bg);
 
 		/*
 		 *	read in pixmap for icon
 		 */
 	       icon.pmap = XCreateBitmapFromData(dpy, drawable, ctrans_bits,
-				icon.width, icon.height);
+			icon.width, icon.height);
   
 		/*
 		 * Set the standard properties for the window managers. 
@@ -292,19 +288,21 @@ CGMC *c;
 		 */
 		prog_name = (
 			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
-		);
-		XSetStandardProperties(dpy, win, prog_name,
-				prog_name, icon.pmap, Argv, Argc, &xsh);
+			);
+
+		XSetStandardProperties(dpy, drawable, prog_name,
+			prog_name, icon.pmap, Argv, Argc, &xsh);
 
 		xwmh.icon_pixmap = icon.pmap;
 		xwmh.flags |= IconPixmapHint;
-		XSetWMHints(dpy, win, &xwmh);
+		XSetWMHints(dpy, drawable, &xwmh);
 
-	}	/* if stand_Alone	*/
-
-	else {
-		win = drawable;
 	}
+	else {	/* else use window provided on command line	*/
+		drawable = x11_opts.wid;
+	}
+	win = drawable;
+
 
 	/*
 	 *		intitialize color map if available
@@ -379,7 +377,11 @@ CGMC *c;
 
 	deviceIsInit = TRUE;
 
-	if (stand_Alone) {
+	/*
+	 * if we created out own window we need to map it and wait for 
+	 * it to become exposed
+	 */
+	if (x11_opts.wid == -1) {
 		/* 
 		 * Select notification of Expose event that is generated when
 		 * the window is first mapped (becomes visible) to the screen.
@@ -416,8 +418,10 @@ CGMC *c;
 				break;
 			}
 		}
+	}
 
 
+	if (stand_Alone) {
 
 		/*
 		 *	Select events for which we want future notification.
@@ -501,8 +505,7 @@ CGMC *c;
 		free_colors();
 	}
 
-	if (stand_Alone)
-		XCloseDisplay(dpy);
+	XCloseDisplay(dpy);
 
 	deviceIsInit = FALSE;
 	return (0);
@@ -636,7 +639,7 @@ CGMC *c;
 	/*
 	 * if not stand alone do not interact with user. Let interface do it
 	 */
-	if (!stand_Alone) {
+	if (! stand_Alone) {
 		XFlush(dpy);
 		free_colors();
 		return(0);
