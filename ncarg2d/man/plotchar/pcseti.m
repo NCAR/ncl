@@ -44,7 +44,14 @@ cpexcc,
 coex02,
 coex03,
 epltch,
-srex01.
+srex01,
+vvexcc.
+fcell0,
+fgkgpm,
+fgpm01,
+fngwsym,
+fpcfonts,
+fpchiqu.
 .SH ACCESS
 To use PCSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcseti, load 

@@ -42,7 +42,9 @@ elblba,
 cbex01,
 epltch,
 tconpa,
-tlblba.
+tlblba,
+fpcfonts,
+fpchiqu.
 .SH ACCESS
 To use PCSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcsetr, load 

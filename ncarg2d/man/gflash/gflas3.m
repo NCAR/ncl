@@ -23,8 +23,10 @@ The C-binding argument description is the same as the FORTRAN
 argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tgflas.
+examples:
+ccpmovi,
+tgflas,
+fgke02.
 .SH ACCESS
 To use GFLAS3, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_gflas3, load 

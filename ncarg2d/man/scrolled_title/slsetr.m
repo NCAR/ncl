@@ -31,6 +31,10 @@ argument descriptions.
 This routine allows you to set the current value of
 Scrolled_title parameters.  For a complete list of parameters available
 in this utility, see the scrolled_title_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example:
+slex01.
 .SH ACCESS
 To use SLSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.  To use c_slsetr, load the 

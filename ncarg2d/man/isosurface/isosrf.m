@@ -122,12 +122,14 @@ possible by calling the routine PWRZI.
 Use the ncargex command to see the following relevant
 examples: 
 tisosr,
-tpwrzi.
+tpwrzi,
+ffisissrf,
+fispwrzi.
 .SH ACCESS
 To use ISOSRF load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_isosrf load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_isosrf load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 isosurface, isosurface_params, ezisos, 

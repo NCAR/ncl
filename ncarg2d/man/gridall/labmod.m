@@ -130,8 +130,11 @@ Gridall parameters.  For a complete list of parameters available
 in this utility, see the gridall_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tgrida.
+examples: 
+bnchmk,
+tgrida,
+ccpga,
+ccpmpxy.
 .SH ACCESS
 To use LABMOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_labmod, load

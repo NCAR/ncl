@@ -70,12 +70,13 @@ Softfill's dot pattern. For a description of Softfill's dot
 pattern parameter, see the softfill_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples:
-sfex01 and tsoftf.
+sfex01, 
+tsoftf.
 .SH ACCESS
 To use SFSETP, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.  To use
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use
 c_sfsetp, load the NCAR Graphics libraries ncargC, 
-ncarg_gksC, ncarg, ncarg_gks, and ncarg_loc, preferably in 
+ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in 
 that order.
 .SH SEE ALSO
 Online: 

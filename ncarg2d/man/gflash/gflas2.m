@@ -16,8 +16,10 @@ void c_gflas2()
 None.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tgflas.
+examples:
+ccpmovi,
+tgflas,
+fgke02.
 .SH ACCESS
 To use GFLAS2, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_gflas2, load 

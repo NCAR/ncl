@@ -134,7 +134,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncarg command to see the following relevant examples: 
-cpex05, cpex07, cpex08, elblba, tconpa, and tlblba.
+colcon, cpex05, cpex07, cpex08, elblba, tconpa, and tlblba.
 .SH ACCESS
 To use LBLBAR, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_lblbar, load 

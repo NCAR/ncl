@@ -63,6 +63,8 @@ CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,0,0,5,0.,0.)
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples:
+caredg,
+ccpset,
 cpex01,
 tgrida,
 tstrml.

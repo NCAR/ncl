@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-PWRZI - a character-plotting routine for plotting characters in
+PWRZI - A character-plotting routine for plotting characters in
 three-space when using Isosurface.  For a large class of possible
 positions, the hidden character problem is solved.
 .SH SYNOPSIS
@@ -72,13 +72,14 @@ argument descriptions.
 Call PWRZI after calling ISOSRF and before calling FRAME.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tpwrzi.
+examples: 
+tpwrzi,
+fsrpwrzs.
 .SH ACCESS
 To use PWRZI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pwrzi, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pwrzi, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 isosurface, isosurface_params, ezisos, 

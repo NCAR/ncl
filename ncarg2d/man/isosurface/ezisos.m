@@ -66,12 +66,13 @@ is drawn.  If any of these conditions is not met, use ISOSRF instead.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 example: 
-tisosr.
+tisosr,
+fisissrf.
 .SH ACCESS
 To use EZISOS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_ezisos, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezisos, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 isosurface, isosurface_params, 

@@ -96,10 +96,10 @@ index ISRFMJ (defaulted to 1 in BLOCKDATA).
 Use the ncargex command to see the following relevant
 examples: 
 srex01,
-fsrpwrzs,
-fsrsrfac,
 tpwrzs,
-tsrfac.
+tsrfac,
+fsrpwrzs,
+fsrsrfac.
 .SH ACCESS
 To use SRFACE, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_srface, load 

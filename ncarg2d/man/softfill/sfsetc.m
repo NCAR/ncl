@@ -28,12 +28,13 @@ parameters. For a complete list of parameters available in
 this utility, see the softfill_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples:
-sfex01 and tsoftf.
+sfex01,
+tsoftf.
 .SH ACCESS
 To use SFSETC, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.  To use
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use
 c_sfsetc, load the NCAR Graphics libraries ncargC, ncarg_gksC,
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the softfill man page for a description of all Softfill
 error messages and/or informational messages.

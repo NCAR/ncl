@@ -43,7 +43,7 @@ arrays U and V
 (INTEGER, input) Assumed size of the second dimension
 of arrays U and V.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
 .sp
 .IP imax 12
@@ -52,7 +52,7 @@ The second dimension of u and v in the calling program.
 The first dimension of u and v in the calling program.
 .SH ACCESS
 To use EZSTRM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,

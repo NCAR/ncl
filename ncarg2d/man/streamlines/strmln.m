@@ -74,7 +74,7 @@ the data is found not to be cyclic, STRMLN will still
 process the data using non-cyclic interpolation formulas,
 but returns the value of -1 in IER.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions, with the following exceptions:
 .sp
 .IP imax 12
@@ -92,7 +92,7 @@ stex02,
 tstrml.
 .SH ACCESS
 To use STRMLN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,

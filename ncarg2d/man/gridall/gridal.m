@@ -109,13 +109,15 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tgrida.
+examples: 
+tgrida,
+ccpga,
+ccpmpxy.
 .SH ACCESS
 To use GRIDAL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_gridal, load
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_gridal, load
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the gridall man page for a description of all Gridall error
 messages and/or informational messages.

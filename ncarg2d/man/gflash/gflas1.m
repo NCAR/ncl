@@ -34,8 +34,10 @@ files are all created using FORTRAN logical unit IC as
 specified in the GOPWK call.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tgflas.
+examples: 
+ccpmovi,
+tgflas,
+fgke02.
 .SH ACCESS
 To use GFLAS1, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_gflas1, load 
