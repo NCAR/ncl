@@ -81,6 +81,10 @@ extern NhlErrorTypes shaeC_W(void);
 extern NhlErrorTypes shagC_W(void);
 extern NhlErrorTypes shseC_W(void);
 extern NhlErrorTypes shsgC_W(void);
+extern NhlErrorTypes rhomb_trunc_W(void);
+extern NhlErrorTypes rhomb_trunC_W(void);
+extern NhlErrorTypes tri_trunc_W(void);
+extern NhlErrorTypes tri_trunC_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -1145,6 +1149,60 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
+
+/*
+ * Register "rhomb_trunC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(rhomb_trunC_W,args,"rhomb_trunC",nargs);
+
+/*
+ * Register "rhomb_trunc".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(rhomb_trunc_W,args,"rhomb_trunc",nargs);
+
+/*
+ * Register "tri_trunC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(tri_trunC_W,args,"tri_trunC",nargs);
+
+/*
+ * Register "tri_trunc".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1; 
+	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(tri_trunc_W,args,"tri_trunc",nargs);
 
 /*
  *  Register nggcog.

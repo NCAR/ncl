@@ -10534,7 +10534,7 @@ NhlErrorTypes shseC_W( void )
  */
   g = (float *)calloc(*nlon*nlat*nt*sizeof(float),1);
   if( g == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate memory for ouput array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -10684,7 +10684,7 @@ NhlErrorTypes shsgC_W( void )
  */
   g = (float *)calloc(*nlon*nlat*nt*sizeof(float),1);
   if( g == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate memory for ouput array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -10777,14 +10777,14 @@ NhlErrorTypes shaeC_W( void )
  * implies you don't care about its value.
  */
   g = (float*)NclGetArgValue(
-			     0,
-           1,
-           &ndims_g,
-           dsizes_g,
-			     NULL,
-			     NULL,
-           NULL,
-           2);
+	     0,
+		 1,
+		 &ndims_g,
+		 dsizes_g,
+		 NULL,
+		 NULL,
+		 NULL,
+		 2);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
