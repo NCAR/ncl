@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.7 1991-04-09 17:34:15 clyne Exp $
+ *	$Id: w_idt.c,v 1.8 1991-04-10 12:53:55 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -43,6 +43,10 @@ static  XtResource      resources[] = {
         {
 	XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
                 XtOffset(AppDataPtr, x_font), XtRString, "Fixed" 
+	},
+        {
+	"fileSelectAction", "FileSelectAction", XtRString, sizeof(XFontStruct*),
+                XtOffset(AppDataPtr, select_action), XtRString, NULL 
 	},
         {
 	"translatorFont", "TranslatorFont", XtRString, sizeof (char *),
@@ -108,6 +112,7 @@ static	String fallback_resources[] = {
 	"*scrollbar*orientation:	horizontal",
 	"*scrollbar*length:		100",
 	"*iconPixmap:	/usr/include/X11/bitmaps/ncarv_idt.bits",
+	"*fileSelectAction:	display",
 	NULL
 	};
 
@@ -140,6 +145,7 @@ static	XrmOptionDescRec 	options[] = {
 
 static	void create_main_panel(), Syntax();
 static	void Select_file(), Display_(), Quit();
+static	Widget	displayButton;
 
 extern	void	CreateFileSelectPopup(), CreateDisplayPopoup();
 extern	void	InitDisplayModule(), CloseDisplayModule();
@@ -157,6 +163,9 @@ main(argc, argv)
 
 	char	**get_trans_commandline();
 	void 	SetFileSelection();
+	void	(*select_action)() = NULL;
+	void	action_display();
+	char	*meta_fname = NULL;
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);
@@ -167,10 +176,24 @@ main(argc, argv)
 	XtGetApplicationResources(toplevel, &App_Data, resources, 
 		XtNumber(resources), NULL, 0);
 
+	if (App_Data.select_action) {
+		if (! strcmp("display", App_Data.select_action)) {
+			select_action = action_display;
+		}
+		else {
+			fprintf(stderr, "Warning - unknown select action:%s\n",
+					App_Data.select_action);
+		}
+	}
+	/*
+	 * build the command line for the translator including any
+	 * translator options that may have been passed on the idt command
+	 * line
+	 */
 	targv = get_trans_commandline(&targc, &App_Data);
 
 	if (argc == 2) {
-		SetFileSelection(argv[1]);
+		meta_fname = argv[1];
 		argc--;
 	}
 
@@ -188,9 +211,12 @@ main(argc, argv)
 	/*
 	 * the main control panel
 	 */
-	create_main_panel(toplevel);
+	create_main_panel(toplevel, select_action);
 
 	XtRealizeWidget(toplevel);
+	if (meta_fname) {
+		SetFileSelection(meta_fname, select_action);
+	}
 
 	XtAppMainLoop(app_con);
 }
@@ -203,13 +229,15 @@ main(argc, argv)
  *
  * on entry
  *	parent		: the parent widget of the control panel
+ *	select_action	: action to be executed on a file selection
  */
 
 static void
-create_main_panel(parent)
+create_main_panel(parent, select_action)
 	Widget parent;
+	void	(*select_action)();
 {
-	Widget paned, form, text, select_file, display, quit;
+	Widget paned, form, text, select_file, quit;
 	Cardinal n;
 	Arg args[10];
 
@@ -289,16 +317,17 @@ create_main_panel(parent)
 	select_file = XtCreateManagedWidget("select file", 
 		commandWidgetClass, form ,args,n);
 
-	XtAddCallback(select_file, XtNcallback, Select_file, (XtPointer) NULL);
+	XtAddCallback(select_file, XtNcallback, Select_file, 
+					(XtPointer) select_action);
 
 	n = 0;
 	XtSetArg(args[n], XtNfromHoriz, select_file); n++;
-	display = XtCreateManagedWidget("display", 
+	displayButton = XtCreateManagedWidget("display", 
 		commandWidgetClass, form ,args,n);
 
-	XtAddCallback(display, XtNcallback, Display_, (XtPointer) NULL);
+	XtAddCallback(displayButton, XtNcallback, Display_, (XtPointer) NULL);
 	n = 0;
-	XtSetArg(args[n], XtNfromHoriz, display); n++;
+	XtSetArg(args[n], XtNfromHoriz, displayButton); n++;
 	quit = XtCreateManagedWidget("quit", 
 		commandWidgetClass, form ,args,n);
 
@@ -434,6 +463,11 @@ static	char	**get_trans_commandline(targc, app_data)
 	return(targv);
 }
 
+void	action_display()
+{
+	XtCallCallbacks(displayButton, XtNcallback, (XtPointer) NULL);
+}
+
 /*
  *	The Callbacks
  */
@@ -445,13 +479,14 @@ static	char	**get_trans_commandline(targc, app_data)
  *	creates a file selection box popup
  */
 /*ARGSUSED*/
-static	void Select_file(widget, closure, call_data)
+static	void Select_file(widget, client_data, call_data)
 	Widget	widget;
-	XtPointer	closure;	/* unused	*/
-	XtPointer	call_data;	/* unused	*/
+	XtPointer	client_data;	/* select action	*/
+	XtPointer	call_data;	/* unused		*/
 {
+	void	(*select_action)() = (void *) client_data;
 
-	CreateFileSelectPopup(widget);
+	CreateFileSelectPopup(widget, select_action);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.3 1991-01-24 11:54:34 clyne Exp $
+ *	$Id: file.c,v 1.4 1991-04-10 12:53:51 clyne Exp $
  */
 /*
  *	file.c
@@ -118,8 +118,9 @@ char	*GetFiles(file_filter, longest)
  *	*file		: the selection
  */
 void
-SetFileSelection(file)
+SetFileSelection(file, select_action)
 	char	*file;
+	void	(*select_action)();
 {
 
 	if (currentFileSelection) cfree (currentFileSelection);
@@ -138,6 +139,9 @@ SetFileSelection(file)
 
 		currentFileSelection = icMalloc((unsigned) (strlen (file) +1));
 		(void) strcat(currentFileSelection, file);
+		if (select_action) {
+			select_action();
+		}
 		return;
 	}
 
@@ -149,6 +153,10 @@ SetFileSelection(file)
 
 	(void) strcpy(currentFileSelection, currentPath);
 	(void) strcat(currentFileSelection, file);
+
+	if (select_action) {
+		select_action();
+	}
 }
 	
 /*

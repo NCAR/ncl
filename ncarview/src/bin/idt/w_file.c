@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.3 1991-02-06 15:10:42 clyne Exp $
+ *	$Id: w_file.c,v 1.4 1991-04-10 12:53:53 clyne Exp $
  */
 /*
  *	w_file.c
@@ -38,6 +38,8 @@ Widget	dialogFinder;		/* this should be made static	*/
 
 static	char	*fileFinder = NULL;	/* current file finder	*/
 
+static	void	(*selectAction)();
+
 extern	char	*GetFiles();
 extern	AppData	App_Data;
 
@@ -53,9 +55,11 @@ extern	AppData	App_Data;
  *
  * on entry
  *	button		: widget that determines position of popup
+ *	select_action	: function to be invoked when a file is selected
  */
-void	CreateFileSelectPopup(button)
+void	CreateFileSelectPopup(button, select_action)
 	Widget	button;
+	void	(*select_action)();
 {
 
 	Arg		args[10];
@@ -73,6 +77,8 @@ void	CreateFileSelectPopup(button)
 	int	ascent, descent;
 	String	files;
 	int	longest;
+
+	selectAction = select_action;
 
 	/*
 	* This will position the upper left hand corner of the popup at the
@@ -217,7 +223,7 @@ static	void	OkFile(widget, client_data, call_data)
 	 */
 	file = XawDialogGetValueString(dialogSelection);
 
-	(void) SetFileSelection(file);
+	(void) SetFileSelection(file, selectAction);
 
 	/*
 	 * popdown the popup. We're done
