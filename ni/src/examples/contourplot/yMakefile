@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.20 1995-10-18 22:27:34 haley Exp $
+#   $Id: yMakefile,v 1.21 1995-11-27 21:38:15 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -11,13 +11,13 @@ EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 
 CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c cn05c.c cn07c.c cn08c.c cn09c.c \
-			cn10c.c cn11c.c cn12c.c
+			cn10c.c cn11c.c cn12c.c cn13c.c
 FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f cn05f.f cn07f.f cn08f.f cn09f.f \
 			cn10f.f cn11f.f cn12f.f
 NSRCS       = cn01n.ncl cn02n.ncl cn03n.ncl cn04n.ncl cn05n.ncl cn06n.ncl \
 			cn07n.ncl cn08n.ncl cn09n.ncl cn10n.ncl cn12n.ncl
 COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o cn05c.o cn07c.o cn08c.o cn09c.o \
-			cn10c.o cn11c.o cn12c.o 
+			cn10c.o cn11c.o cn12c.o cn13c.o
 FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o cn05f.o cn07f.o cn08f.o cn09f.o \
 			cn10f.o cn11f.o cn12f.o
 SRCS        = $(CSRCS) $(FSRCS)
@@ -43,6 +43,7 @@ CExampleTarget(cn08c,cn08c.o)
 CExampleTarget(cn10c,cn10c.o)
 CExampleTarget(cn11c,cn11c.o)
 CExampleTarget(cn12c,cn12c.o)
+CExampleTarget(cn13c,cn13c.o)
 FExampleTarget(cn01f,cn01f.o)
 FExampleTarget(cn02f,cn02f.o)
 FExampleTarget(cn03f,cn03f.o)
