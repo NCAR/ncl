@@ -364,5 +364,5 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	zunml2.o zunmlq.o zunmql.o zunmqr.o zunmr2.o zunmr3.o zunmrq.o \
 	zunmrz.o zunmtr.o zupgtr.o zupmtr.o
 
-LibraryTarget($(MYLIB),$(OBJS))  
+BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
  
