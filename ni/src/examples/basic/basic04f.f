@@ -1,5 +1,5 @@
 C
-C $Id: basic04f.f,v 1.8 1995-06-14 17:16:55 stautler Exp $
+C $Id: basic04f.f,v 1.9 1995-06-29 00:06:53 scheitln Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,10 +24,13 @@ C                       window using the following steps.
 C
 C                       1. Create output workstation objects.
 C                       2. Create the data for the plots.
-C                       3. Create the contour objects.
-C                       4. Draw the contour objects.
+C                       3. Create the contour object.
+C                       4. Draw the contour object.
 C                       5. Call frame.
-C                       6. Clean up memory.
+C                       6. Change workstations.
+C                       7. Draw the contour object.
+C                       8. Call frame.
+C                       9. Clean up memory.
 C
       program basic04f
       implicit none
@@ -38,7 +41,7 @@ C
       external NhlFContourPlotClass
       external NhlFScalarFieldClass
 
-      integer appid,nwks,xwks,ncon,xcon,field1,rlist,ierr
+      integer appid,nwks,xwks,xcon,field1,rlist,ierr
 
       integer data1(5,5)
       data data1 / 3,4,4,5,5,
@@ -116,21 +119,12 @@ C
       call NhlFCreate(xcon,'xcon',NhlFContourPlotClass,xwks,
      $     rlist,ierr)
 C
-C Create an empty contour object to draw into the ncgm workstation.
-C Assign data using the cnScalarFieldData resource.
-C
-      call NhlFRLClear(rlist)
-      call NhlFRLSetInteger(rlist,'cnScalarFieldData',field1,ierr)
-      call NhlFCreate(ncon,'ncon',NhlFContourPlotClass,nwks,
-     $     rlist,ierr)
-C
 C ##########
 C # STEP 4 #
 C ##########
-C Draw the objects
+C Draw the object
 C
       call NhlFDraw(xcon,ierr)
-      call NhlFDraw(ncon,ierr)
 C
 C ##########
 C # STEP 5 #
@@ -138,10 +132,27 @@ C ##########
 C Call frame to update and clear the workstations
 C
       call NhlFFrame(xwks,ierr)
-      call NhlFFrame(nwks,ierr)
 C
 C ##########
 C # STEP 6 #
+C ##########
+C Change workstations.
+      call NhlFChangeWorkstation(xcon, nwks, ierr)
+C
+C ##########
+C # STEP 7 #
+C ##########
+C Draw the object.
+      call NhlFDraw(xcon,ierr)
+C
+C ##########
+C # STEP 8 #
+C ##########
+C Call frame.
+      call NhlFFrame(nwks,ierr)
+C
+C ##########
+C # STEP 9 #
 C ##########
 C Clean up memory.
 C

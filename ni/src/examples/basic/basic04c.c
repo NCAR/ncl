@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.6 1995-06-14 17:16:54 stautler Exp $
+ * $Id: basic04c.c,v 1.7 1995-06-29 00:06:52 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,10 +24,13 @@
 *
 *                       1. Create output workstation objects.
 *                       2. Create the data for the plots.
-*                       3. Create the contour objects.
-*                       4. Draw the contour objects.
+*                       3. Create the contour object.
+*                       4. Draw the contour object.
 *                       5. Call frame.
-*                       6. Clean up memory.
+*                       6. Change workstations.
+*                       7. Draw the contour object.
+*                       8. Call frame.
+*                       9. Clean up memory.
 */
 
 #include <ncarg/hlu/App.h>
@@ -40,7 +43,7 @@
 
 main ()
 {
-        int appid,nwks,xwks,ncon,xcon,field1,rlist;
+        int appid,nwks,xwks,xcon,field1,rlist;
 
         int data1[5][5] = { {3,4,4,5,5},
                             {2,3,5,5,4},
@@ -75,7 +78,7 @@ main ()
  * object being created. The third argument, "NhlxWorkstationClass", or 
  * "NhlncgmWorkstationClass" identifies the type or class of the object 
  * to create. In this case an X workstation or an NCGM workstation.
- * The fourth argument, "NhlDEFAULT_APP", specifies the id of the objects 
+ * The fourth argument, "NhlDEFAULT_APP", specifies the id of the object's 
  * parent.  In this case, the object has no parent, so the constant 
  * "NhlDEFAULT_APP" is used.  The fifth argument, "rlist", is the resource 
  * list modifiers to be used when creating the object.
@@ -105,30 +108,22 @@ main ()
  * ##########
  * # STEP 3 #
  * ##########
- * Create the object(s) you want to draw.
+ * Create the object you want to draw.
  *
- * Create a contour object to draw into the X workstation.
- * Assign data using the cnScalarFieldData resource.
+ * Create a contour object and
+ * assign data using the cnScalarFieldData resource.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
         NhlCreate(&xcon,"xcon",NhlcontourPlotClass,xwks,rlist);
-/*
- * Create an empty contour object to draw into the ncgm workstation.
- * Assign data using the cnScalarFieldData resource.
- */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&ncon,"ncon",NhlcontourPlotClass,nwks,rlist);
 
 /*
  * ##########
  * # STEP 4 #
  * ##########
- * Draw the objects
+ * Draw the object
  */
-	NhlDraw(xcon);
-	NhlDraw(ncon);
+	NhlDraw(xwks);
 
 /*
  * ##########
@@ -137,6 +132,30 @@ main ()
  * Call frame to update and clear the workstations
  */
 	NhlFrame(xwks);
+
+/*
+ * ##########
+ * # STEP 6 #
+ * ##########
+ * Change workstations
+ */
+
+	NhlChangeWorkstation(xcon,nwks);
+
+/*
+ * ##########
+ * # STEP 7 #
+ * ##########
+ * Draw the object
+ */
+	NhlDraw(nwks);
+
+/*
+ * ##########
+ * # STEP 8 #
+ * ##########
+ * Call frame to update and clear the workstations
+ */
 	NhlFrame(nwks);
 
 /*
