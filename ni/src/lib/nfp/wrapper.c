@@ -27,6 +27,7 @@
 /*
  * Declare wrapper function
  */
+extern NhlErrorTypes vinth2p_W(void);
 
 extern NhlErrorTypes g2gsh_W(void);
 extern NhlErrorTypes f2gsh_W(void);
@@ -249,6 +250,26 @@ void NclAddUserFuncs(void)
     void *args;
     int dimsizes[NCL_MAX_DIMENSIONS];
     int nargs;
+/*
+ * Register "vinth2p".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(9);
+        SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,1,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,4,"numeric",NclANY,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,5,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,6,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,7,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,8,"logical",1,dimsizes);nargs++;
+        NclRegisterFunc(vinth2p_W,args,"vinth2p",nargs);
+
 /*
  * Register "g2gsh".
  *
