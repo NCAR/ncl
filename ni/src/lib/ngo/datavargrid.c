@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.11 2000-01-24 20:56:17 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.12 2000-01-27 17:44:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -388,8 +388,6 @@ static void PopupShaperAction
 			    NULL);
 	}
 	else {
-		NclApiDataList	*dl;
-
 		shape_go = (NgGO)_NhlGetLayer(dvp->shape_tool_id);
 		if (! shape_go) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -399,7 +397,18 @@ static void PopupShaperAction
 		XtVaSetValues(shape_go->go.shell,
 			      XmNtitle,buf,
 			      NULL);
-		dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
+
+		/*
+		 * if it's another data var force a reinitialization. 
+		 * Note that it could be the same data var, just a 
+		 * different element.
+		 */
+		if (dvp->shaper->start != vdata->start) {
+			dvp->shaper->vinfo = NULL;
+			dvp->shaper->start = NULL;
+			dvp->shaper->finish = NULL;
+			dvp->shaper->stride = NULL;
+		}
 		NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
 			       vdata->start,vdata->finish,vdata->stride);
 		dvp->shaper->pdata = dvp;
@@ -1197,7 +1206,6 @@ QualifyAndInsertVariable
 	NgVarData vdata;
 	NhlBoolean explicit;
 	NgVarData last_vdata = NgNewVarData();
-	NgVarData new_vdata = NgNewVarData();
 	NhlString message = SYSTEM_ERROR;
 	NgVarDataSetState var_state = _NgVAR_UNSET;
 	char buf[256];
@@ -1499,14 +1507,12 @@ EditCB
 			NgXAppFreeXmString(dvp->go->go.appmgr,xmstr);
 		}
 		if (dvp->shaper && dvp->data_ix > -1) {
-			NclApiDataList *dl;
 
 			NgVarData vdata = 
 				dvp->public.plotdata[dvp->data_ix].vdata;
 			
 			if (! (vdata && vdata->qvar))
 				goto ret;
-			dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
 			/*
 			 * this is a kludgy trick to force an update
 			 */

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.8 2000-01-20 03:38:24 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.9 2000-01-27 17:44:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -254,6 +254,7 @@ static void ProcessDirInfoFile
 		}
 		sprintf(dirpath,"%s/%s",path->dirpath,path->name);
 		fp = OpenResFile(dirpath,_NgDIRINFOFILE_NAME);
+		NhlFree(dirpath);
 	}
 	if (! fp)
 		return;
@@ -1082,6 +1083,7 @@ static void AddXwksButtons
 			      XmNmenuHistory,selected,
 			      NULL);
 	}
+	NclFree(qvars);
 	return;
 
 }

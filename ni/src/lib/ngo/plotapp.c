@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.20 2000-01-24 20:56:19 dbrown Exp $
+ *      $Id: plotapp.c,v 1.21 2000-01-27 17:44:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1850,9 +1850,11 @@ static void RecordAndLoadFunctions
 
 	context = StringResToStringArray(func_file_array,
 					 &func_file_count,&func_files,NULL);
+	NhlFree(func_file_array);
 	if (func_dir_array) {
 		context = StringResToStringArray
 			(func_dir_array,&func_dir_count,&func_dirs,context);
+		NhlFree(func_dir_array);
 	}
 	/*
 	 * Eventually we'll also look through directories specified by
@@ -5014,6 +5016,8 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 		NgPlotData pdata = &dprof->plotdata[i];
 
 		dt->appdata = appdata;
+		if (! pdata->vdata->qvar)
+			continue;
 		GetInfo(dt,pdata->vdata);
 		MatchDimensions(dt->appdata,dt,pdata->vdata);
 		TransferVarData(dt,pdata->vdata);

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.28 1999-11-19 02:10:02 dbrown Exp $
+ *      $Id: addfile.c,v 1.29 2000-01-27 17:44:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -308,7 +308,7 @@ AddFileScript
 	char		func[] = "AddFileScript";
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
-	char		*vname,*vname1;
+	char		*vname,*vname1,*ch;
 	Widget		rtype;
 	char		*rw = "r";
         NhlBoolean	writable;
@@ -326,7 +326,22 @@ AddFileScript
 		XtFree(vname);
 		return;
 	}
-        vname1 = NgNclGetSymName(go->go.nclstate,vname,False);
+	ch = &vname[strlen(vname)-1];
+	while (isspace(*ch)) {
+		*(ch) = '\0';
+		ch--;
+	}
+	ch = vname;
+	while (isspace(*ch))
+	       ch++;
+
+	if (! ch) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			"%s:empty symbol name",func));
+		XtFree(vname);
+		return;
+	}
+        vname1 = NgNclGetSymName(go->go.nclstate,ch,False);
 
 	/*
 	 * Make sure dirstr and vname aren't so long they blow out the
