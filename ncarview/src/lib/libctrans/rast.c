@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.21 1993-01-07 00:33:00 clyne Exp $
+ *	$Id: rast.c,v 1.22 1993-01-16 03:45:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -450,6 +450,13 @@ CGMC *c;
 		);
 		return(-1);
 
+	}
+
+	/*
+	 * a hack to make sure abekas a60 files are direct encoded.
+	 */
+	if (strcmp(devices[currdev].name, "a60") == 0) {
+		rast_opts.direct = TRUE;
 	}
 	rasIsDirect = rast_opts.direct;
 

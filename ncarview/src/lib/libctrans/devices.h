@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.15 1993-01-12 22:05:52 clyne Exp $
+ *	$Id: devices.h,v 1.16 1993-01-16 03:45:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -155,6 +155,8 @@ struct device{
 	OptDescRec	*opt;	/* command line options for the device	*/
 } devices[] = {
         {"gcap",GCAP_I,TRUE,TRUE,"", TRUE, gcap_opts}
+        ,{"a60",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"hplj",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"xwd",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"nrif",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"hdf",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
