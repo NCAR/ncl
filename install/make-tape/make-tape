@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.3 1993-03-22 18:21:52 clyne Exp $
+#      $Id: make-tape,v 1.4 1993-04-29 18:15:47 clyne Exp $
 #
 #########################################################################
 #									#
@@ -53,14 +53,15 @@
 #
 $doDebug = 0;
 @Archs = (
-	'HPUX_HP9000_7xx',
-	'AIX_RS6000',
 	'SunOS_sun4',
-	'SunOS_sun3',
 	'Solaris_sun4',
+	'AIX_RS6000',
 	'ULTRIX_RISC',
 	'IRIX_IP',
-	'UNICOS_YMP'
+	'HPUX_HP9000_7xx',
+	'SunOS_sun3',
+	'UNICOS_YMP',
+	'src'
 );
 
 
@@ -198,6 +199,7 @@ $nrdevice = "/dev/nrst8";	# no rewind tape device
 $rhost = "windom";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
+$do_src = 0;			# do we record the distribution src to tape
 $build_root = "/ncargbin";	
 $install_dir = "INSTALL";
 $rsh;				# remote shell command (undefine if local)
@@ -264,6 +266,9 @@ if (! defined (@archs)) {
 }
 print "archs=@archs\n";
 
+$do_src = grep(/^src$/, @archs);	# Do we record the src?
+@archs = grep(!/^src$/, @archs);	# remove 'src' from @archs if exists
+
 #
 # generate table of contents inside of install script directory. We need
 # to do this before we tar up the directory.
@@ -273,10 +278,16 @@ open(FP, "> $toc_file") || die "Can't open file <$toc_file> : $!\n";
 print FP "$index INSTALL\n";
 $index++;
 
+if ($do_src) {
+	print FP "$index SRC\n";
+	$index++;
+}
+
 foreach $arch (@archs) {
 	print FP "$index $arch\n";
 	$index += @tars;
 }
+
 close(FP);
 
 print "Place tape in device and hit <RETURN> when ready. Ctrl-C to abort ";
@@ -302,7 +313,14 @@ do rewind($rsh, $nrdevice);
 #
 print "\n\nWriting install script to $rhost:$nrdevice...\n";
 do write ($rsh, $nrdevice, "$build_root", "INSTALL.TAR");
-$index++;
+
+#
+#	write the distribution source if it was requested
+#
+if ($do_src) {
+	print "\n\nWriting distribution source to $rhost:$nrdevice...\n";
+	do write ($rsh, $nrdevice, "$build_root", "SRC.TAR");
+}
 
 	
 chdir $build_root;
@@ -310,6 +328,7 @@ foreach $arch (@archs) {
 	print "\n\nWriting $arch binaries to $rhost:$nrdevice...\n";
 	do write ($rsh, $nrdevice, $arch, @tars);
 }
+
 
 #
 #	rewind the tape
