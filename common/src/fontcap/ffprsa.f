@@ -1,5 +1,5 @@
 C
-C	$Id: ffprsa.f,v 1.3 2000-08-22 03:53:13 haley Exp $
+C	$Id: ffprsa.f,v 1.4 2000-09-13 15:50:09 haley Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
@@ -27,9 +27,9 @@ C  Parse the ASCII fontcap.
 C
       include 'fntcom.h'
 C
-      DATA IFRST/0/
       PARAMETER (NLEN=40)
       INTEGER ITMP(NLEN)
+      DATA IFRST/0/
 C
 C  Retrieve the font name.
 C
