@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.34 1997-06-20 22:46:29 ethan Exp $
+ *      $Id: VectorPlot.c,v 1.35 1997-07-16 23:27:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7185,24 +7185,6 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	entry_name =  init ? InitName : SetValuesName;
 
-/* 
- * If constant field don't bother setting up the arrays: they will not
- * be used -- but the label scaling still needs to be set up for the
- * benefit of the constant field label
- */
-
-	if (vcp->zero_field) {
-		subret = SetScale(vcnew,vcold,
-				  &vcp->mag_scale,&ovcp->mag_scale,
-				  False,init);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting up label scaling";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-		return NhlNOERROR;
-	}
-
 /* Determine the vector level state */
 
 	subret = SetupLevels(new,old,init,&levels,&levels_modified);
@@ -7287,6 +7269,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlNvcLevelColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
+        if (init || vcp->level_count > ovcp->level_count)
+                need_check = True;
 	ovcp->level_colors = changed ? NULL : vcp->level_colors;
 	vcp->level_colors = ga;
 
@@ -7665,7 +7649,10 @@ static NhlErrorTypes	CheckColorArray
 /*
  * Function:  SetupLevels
  *
- * Description:
+ * Description: Depending on the setting of the LevelCount resource,
+ *		decides whether to allow Conpack to determine the 
+ *		number of VectorPlot levels. If so, makes the appropriate
+ *		VectorPlot calls.
  *
  *
  * In Args:
@@ -7705,7 +7692,7 @@ static NhlErrorTypes    SetupLevels
 	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	float			min,max;
 
-	entry_name = init ? InitName : SetValuesName;
+	entry_name = init ? "VectorPlotInitialize" : "VectorPlotSetValues";
 	*modified = False;
 
 	if ((! init) && 
@@ -7717,18 +7704,18 @@ static NhlErrorTypes    SetupLevels
 	    (vcp->min_level_val == ovcp->min_level_val) &&
 	    (vcp->max_level_val == ovcp->max_level_val) &&
 	    (vcp->zero_field == ovcp->zero_field) &&
-	    (vcp->use_scalar_array == ovcp->use_scalar_array))
+            (vcp->use_scalar_array == ovcp->use_scalar_array))
 		return ret;
 
-	vcp->new_draw_req = True;
+        vcp->new_draw_req = True;
 	if (vcp->level_spacing_set && vcp->level_spacing <= 0.0) {
 		e_text = 
 			"%s: Invalid level spacing value set: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
 		vcp->level_spacing = 5.0;
+                vcp->level_spacing_set = False;
 	}
-	
 	if (vcp->max_level_count < 1) {
 		e_text = 
 			"%s: %s must be greater than 0: defaulting";
@@ -7737,7 +7724,7 @@ static NhlErrorTypes    SetupLevels
 		ret = MIN(ret,NhlWARNING);
 		vcp->max_level_count = 16.0;
 	}
-
+	
 	if (! vcp->use_scalar_array) {
 		min = vcp->zmin;
 		max = vcp->zmax;
@@ -7754,91 +7741,38 @@ static NhlErrorTypes    SetupLevels
 		min = vcp->scalar_min;
 		max = vcp->scalar_max;
 	}
-		
-	if ((vcp->min_level_val > vcp->max_level_val) ||
-            (vcp->level_count > 1 &&
-             vcp->min_level_val == vcp->max_level_val)) {
-		e_text =
-		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		vcp->min_level_val = min;
-		vcp->max_level_val = max;
-		vcp->level_selection_mode = NhlAUTOMATICLEVELS;
-	}
-	if (max <= vcp->min_level_val || min >=  vcp->max_level_val) {
-		e_text =
-	   "%s: Data values and min/max levels are disjoint sets: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		vcp->min_level_val = min;
-		vcp->max_level_val = max;
-	}
-	
+
 	switch (vcp->level_selection_mode) {
 
 	case NhlMANUALLEVELS:
-
-		if (! vcp->min_level_set) {
-			subret = SetupLevelsAutomatic(vcnew,vcold,levels,
-						      min,max,entry_name);
-		}
-		else {
-			subret = SetupLevelsManual(vcnew,vcold,levels,
-						   min,max,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+                subret = SetupLevelsManual(vcnew,vcold,
+                                           levels,min,max,entry_name);
 		break;
-
 	case NhlEQUALSPACEDLEVELS:
-
-		subret = SetupLevelsEqual(vcnew,vcold,levels,
-					  min,max,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+		subret = SetupLevelsEqual(vcnew,vcold,
+                                          levels,min,max,entry_name);
 		break;
-
 	case NhlAUTOMATICLEVELS:
-
-		subret = SetupLevelsAutomatic(vcnew,vcold,levels,
-					      min,max,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+		subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
 		break;
-			
 	case NhlEXPLICITLEVELS:
-
-		if (init && vcp->levels == NULL) {
-			subret = SetupLevelsAutomatic(vcnew,vcold,levels,
-						      min,max,entry_name);
-		}
-		else {
-			subret = SetupLevelsExplicit(vcnew,vcold,init,levels,
-						     max,min,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+                subret = SetupLevelsExplicit(vcnew,vcold,init,
+                                             levels,min,max,entry_name);
 		break;
-
 	default:
 		ret = NhlFATAL;
 		e_text = "%s: Invalid level selection mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+        if ((ret = MIN(subret,ret)) < NhlWARNING) {
+                return ret;
+        }
+        *modified = True;
 
 	vcp->min_level_set = True;
 	vcp->max_level_set = True;
-
 		
 	return ret;
 
@@ -7864,29 +7798,62 @@ static NhlErrorTypes    SetupLevelsManual
 #if	NhlNeedProto
 	(NhlVectorPlotLayer	vcnew, 
 	 NhlVectorPlotLayer	vcold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
+	 float			**levels,
+         float			min,
+         float			max,
+	 char			*entry_name)
 #else
-(vcnew,vcold,levels,entry_name)
+(vcnew,vcold,levels,min,max,entry_name)
 	NhlVectorPlotLayer	vcnew;
 	NhlVectorPlotLayer	vcold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
+	float			**levels;
+        float			min;
+	float			max;
+	char			*entry_name;
 
 #endif
 
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	int			i, count;
 	float			lmin,lmax,rem,spacing;
 	float			*fp;
-
+        NhlBoolean		do_automatic = False;
+        
+        
+	if ((vcp->min_level_val > vcp->max_level_val) ||
+            (vcp->level_count > 1 &&
+             vcp->min_level_val == vcp->max_level_val)) {
+		e_text =
+		"%s: Invalid level values set: using AUTOMATICLEVELS mode ";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		do_automatic = True;
+	}
+			
+	if (max <= vcp->min_level_val || min > vcp->max_level_val) {
+		e_text =
+          "%s: Data values out of range of levels set by MANUALLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                ret = MIN(ret,NhlWARNING);
+	}
+	if (! vcp->min_level_set) {
+		do_automatic = True;
+	}
+                
+	if (vcp->level_spacing <= 0.0) {
+	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		do_automatic = True;
+        }
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
+                return (MIN(ret,subret));
+        }
 	spacing = vcp->level_spacing;
 	if (vcp->min_level_set) {
 		lmin = vcp->min_level_val;
@@ -7894,9 +7861,12 @@ static NhlErrorTypes    SetupLevelsManual
 	else {
 		lmin = min;
 	}
-	
+
 	if (vcp->max_level_set) {
 		lmax = vcp->max_level_val;
+	}
+        else if (vcp->zero_field) {
+                lmax = vcp->min_level_val;
 	}
 	else {
 		lmax = floor(((max - lmin) / spacing) * spacing + lmin);
@@ -7906,34 +7876,40 @@ static NhlErrorTypes    SetupLevelsManual
 		vcp->max_level_val = lmax;
 	}
 
-	count = (lmax - lmin) / vcp->level_spacing;
-	rem = lmax - lmin - vcp->level_spacing * count; 
-	if (_NhlCmpFAny(rem,0.0,6) != 0.0)
-		count += 2;
-	else
-		count += 1;
+	if (vcp->zero_field) {
+		count = 1;
+	}
+	else {
+		count = (lmax - lmin) / vcp->level_spacing;
+		rem = lmax - lmin - vcp->level_spacing * count; 
+		if (_NhlCmpFAny(rem,0.0,6) != 0.0)
+		  count += 2;
+		else
+		  count += 1;
+	}
 
-	if (count <= 0) {
+	if (count <= 1) {
 		e_text = 
-	  "%s: vcLevelSpacingF value exceeds or equals data range: defaulting";
+		  "%s: vcLevelSpacingF value equals or exceeds data range";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = SetupLevelsAutomatic(vcnew,vcold,levels,
-					   min,max,entry_name);
-		return MIN(NhlWARNING,ret);
+                ret = MIN(ret,NhlWARNING);
 	}
 	if (count >  Nhl_vcMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
- "%s: vcLevelSpacingF value causes level count to exceed maximum: defaulting";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		vcp->level_spacing = (lmax - lmin) / 
-			(vcp->max_level_count - 1);
-		count = vcp->max_level_count;
+ "%s: vcLevelSpacingF value causes level count to exceed maximum: using AUTOMATICLEVELS mode";
+		do_automatic = True;
 	}
 	else {
 		vcp->max_level_count = MAX(vcp->max_level_count, count);
 	}
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
 
+                return (MIN(ret,subret));
+        }
+	
 	if ((*levels = (float *) 
 	     NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
@@ -7970,18 +7946,18 @@ static NhlErrorTypes    SetupLevelsEqual
 #if	NhlNeedProto
 	(NhlVectorPlotLayer	vcnew,
 	 NhlVectorPlotLayer	vcold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
+	 float			**levels,
+         float			min,
+         float			max,
+	 char			*entry_name)
 #else
-(vcnew,vcold,levels,entry_name)
+(vcnew,vcold,levels,min,max,entry_name)
 	NhlVectorPlotLayer	vcnew;
 	NhlVectorPlotLayer	vcold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
+	float			**levels;
+        float			min;
+        float			max;
+	char			*entry_name;
 
 #endif
 
@@ -7994,9 +7970,15 @@ static NhlErrorTypes    SetupLevelsEqual
 
 	lmin = min;
 	lmax = max;
-	size = (lmax - lmin) / (vcp->max_level_count + 1);
 
-	vcp->level_count = vcp->max_level_count;
+        if (! vcp->zero_field) {
+                size = (lmax - lmin) / (vcp->max_level_count + 1);
+                vcp->level_count = vcp->max_level_count;
+        }
+        else {
+                vcp->level_count = 1;
+                size = vcp->level_spacing;
+        }
 	if ((*levels = (float *) 
 	     NhlMalloc(vcp->level_count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
@@ -8034,18 +8016,18 @@ static NhlErrorTypes    SetupLevelsAutomatic
 #if	NhlNeedProto
 	(NhlVectorPlotLayer	vcnew, 
 	 NhlVectorPlotLayer	vcold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
+	 float			**levels,
+         float			min,
+         float			max,
+	 char			*entry_name)
 #else
-(vcnew,vcold,levels,entry_name)
+(vcnew,vcold,levels,min,max,entry_name)
 	NhlVectorPlotLayer	vcnew;
 	NhlVectorPlotLayer	vcold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
+	float			**levels;
+        float			min;
+        float			max;
+	char			*entry_name;
 
 #endif
 
@@ -8062,16 +8044,22 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	lmin = min;
 	lmax = max;
 
+        if (vcp->zero_field) {
+                choose_spacing = False;
+                count = 1;
+                spacing = vcp->level_spacing;
+        }
+        
 	if (vcp->level_spacing_set) {
 		spacing = vcp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
 		count =	(int)((lmax - lmin) / vcp->level_spacing + 1.5);
-		if (_NhlCmpFAny(lmin,min,6) == 0.0) {
+		if (_NhlCmpFAny(lmin,vcp->zmin,6) == 0.0) {
 			lmin += spacing;
 			count--;
 		}
-		if (_NhlCmpFAny(lmax,max,6) == 0.0) {
+		if (_NhlCmpFAny(lmax,vcp->zmax,6) == 0.0) {
 			lmax -= spacing;
 			count--;
 		}
@@ -8114,16 +8102,11 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			ftmp = lmin + count * spacing;
 		}
 	}
-	if (count == 0) {
-		e_text = "%s: error setting automatic levels";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
 
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
+		return(NhlFATAL);
 	}
 	for (i =  0; i <  count; i++)
 		(*levels)[i] = lmin + i * spacing;
@@ -8158,38 +8141,47 @@ static NhlErrorTypes    SetupLevelsExplicit
 	 NhlVectorPlotLayer	vcold,
 	 NhlBoolean		init,
 	 float			**levels,
-	 float			min,
-	 float			max,
+         float			min,
+         float			max,
 	 char			*entry_name)
 #else
-(vcnew,vcold,levels,entry_name)
+(vcnew,vcold,init,levels,min,max,entry_name)
 	NhlVectorPlotLayer	vcnew;
 	NhlVectorPlotLayer	vcold;
-	NhlBoolean	init;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
+	NhlBoolean		init;
+	float			**levels;
+        float			min;
+        float			max;
+	char			*entry_name;
 
 #endif
 
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;
-
+        NhlBoolean		do_automatic = False;
+        
+        if (init && vcp->levels == NULL) {
+                do_automatic = True;
+        }
 	if (vcp->levels == NULL || vcp->levels->num_elements < 1) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
-	      "%s: %s is NULL: defaulting to Automatic level selection mode";
+	      "%s: %s is NULL: using AUTOMATICLEVELS mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNvcLevels);
-		return SetupLevelsAutomatic(vcnew,vcold,levels,
-					    min,max,entry_name);
+                do_automatic = True;
 	}
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
+                return MIN(ret,subret);
+        }
+                
 	if (init || vcp->levels != ovcp->levels)
 		count = vcp->levels->num_elements;
 	else 
@@ -8198,10 +8190,11 @@ static NhlErrorTypes    SetupLevelsExplicit
 	if (count > Nhl_vcMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
-  "%s: Explicit level array count exceeds max level count: defaulting to Automatic level selection mode";
+"%s: Explicit level array count exceeds max level count: using AUTOMATICLEVELS mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return SetupLevelsAutomatic(vcnew,vcold,levels,
-					    min,max,entry_name);
+		subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
+                return MIN(ret,subret);
 	}
 /*
  * Allocate space for the levels
@@ -8242,24 +8235,38 @@ static NhlErrorTypes    SetupLevelsExplicit
                 vcp->level_spacing = ftmp / (count - 1);
         }
         else {
-                float min,max;
-                if (vcp->use_scalar_array && vcp->scalar_data_init) {
-                        min = vcp->scalar_min;
-                        max = vcp->scalar_max;
-                }
-                else {
-                        min = vcp->zmin;
-                        max = vcp->zmax;
-                }
                 vcp->level_spacing =
                         (fabs(fp[0] - min) + fabs(max - fp[0]))
                         / 2.0;
         }
- 	vcp->min_level_val = fp[0];
+        
+	vcp->min_level_val = fp[0];
 	vcp->max_level_val = fp[count - 1];
 
 	vcp->level_count = count;
 
+	if ((vcp->min_level_val > vcp->max_level_val) ||
+            (vcp->level_count > 1 &&
+             vcp->min_level_val == vcp->max_level_val)) {
+		e_text =
+		"%s: Invalid level values set: using AUTOMATICLEVELS mode ";
+                do_automatic = True;
+	}
+			
+	if (max <= vcp->min_level_val || 
+	    min > vcp->max_level_val) {
+		e_text =
+          "%s: Data values out of range of levels set by EXPLICITLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                ret = MIN(ret,NhlWARNING);
+	}
+        if (do_automatic) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                NhlFree(*levels);
+		subret = SetupLevelsAutomatic(vcnew,vcold,
+                                              levels,min,max,entry_name);
+                ret = MIN(ret,subret);
+        }
 	return ret;
 }
 

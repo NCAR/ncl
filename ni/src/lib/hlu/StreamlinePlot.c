@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.28 1997-06-20 22:46:26 ethan Exp $
+ *      $Id: StreamlinePlot.c,v 1.29 1997-07-16 23:27:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,28 +103,15 @@ static NhlResource resources[] = {
 		 sizeof(NhlGenArray),
 		 Oset(vector_field_data),NhlTImmediate,_NhlUSET(NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNstScalarFieldData,NhlCstScalarFieldData,_NhlTDataList,
-		 sizeof(NhlGenArray),
-		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL),0,
-						(NhlFreeFunc)NhlFreeGenArray},
+ 	{NhlNstStreamlineDrawOrder,NhlCstStreamlineDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(streamline_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
 	{NhlNstMapDirection,NhlCstMapDirection,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(map_direction),NhlTImmediate,
 		  _NhlUSET((NhlPointer) True),0,NULL},
 
-	{NhlNstLineThicknessF,NhlCstLineThicknessF,
-		  NhlTFloat,sizeof(float),Oset(line_thickness),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
-	{NhlNstLineColor, NhlCstLineColor, NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(line_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(arrow_length_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNstArrowLengthF,NhlCstArrowLengthF,
-		  NhlTFloat,sizeof(float),Oset(arrow_length),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(step_size_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
@@ -132,23 +119,10 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),Oset(step_size),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(min_line_length_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNstMinLineLengthF,NhlCstMinLineLengthF,
-		  NhlTFloat,sizeof(float),Oset(min_line_length),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_line_spacing_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNstMinLineSpacingF,NhlCstMinLineSpacingF,
 		  NhlTFloat,sizeof(float),Oset(min_line_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(min_arrow_spacing_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNstMinArrowSpacingF,NhlCstMinArrowSpacingF,
-		  NhlTFloat,sizeof(float),
-                 Oset(min_arrow_spacing),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNstMinStepFactorF,NhlCstMinStepFactorF,NhlTFloat,sizeof(float),
 		  Oset(min_step_factor),NhlTString,
@@ -166,72 +140,25 @@ static NhlResource resources[] = {
 	{NhlNstArrowStride,NhlCstArrowStride,NhlTInteger,
 		 sizeof(int),Oset(arrow_stride),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 2),0,NULL},
-
-/* Level resources */
-
-	{NhlNstLevels, NhlCstLevels,  NhlTFloatGenArray,
-		 sizeof(NhlPointer),Oset(levels),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNstLevelCount,NhlCstLevelCount,NhlTInteger,sizeof(int),
-		  Oset(level_count),NhlTImmediate,
-		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
-	{ NhlNstLevelSelectionMode,NhlCstLevelSelectionMode,
-		  NhlTLevelSelectionMode,sizeof(NhlLevelSelectionMode),
-		  Oset(level_selection_mode),
-		  NhlTImmediate,
-		  _NhlUSET((NhlPointer) NhlAUTOMATICLEVELS),0,NULL},
-	{ NhlNstMaxLevelCount,NhlCstMaxLevelCount,NhlTInteger,sizeof(int),
-		  Oset(max_level_count),NhlTImmediate,
-		  _NhlUSET((NhlPointer) 16),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(level_spacing_set),NhlTImmediate,
+		 Oset(arrow_length_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNstLevelSpacingF,NhlCstLevelSpacingF,NhlTFloat,sizeof(float),
-		  Oset(level_spacing),NhlTProcedure,
+	{NhlNstArrowLengthF,NhlCstArrowLengthF,
+		  NhlTFloat,sizeof(float),Oset(arrow_length),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(min_level_set),NhlTImmediate,
+		 Oset(min_arrow_spacing_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNstMinLevelValF,NhlCstMinLevelValF,NhlTFloat,sizeof(float),
-		  Oset(min_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(max_level_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNstMaxLevelValF,NhlCstMaxLevelValF,NhlTFloat,sizeof(float),
-		  Oset(max_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-
-	{NhlNstUseScalarArray,NhlCstUseScalarArray,
-		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(use_scalar_array),NhlTImmediate,
-		  _NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNstMonoStreamlineLineColor,NhlCstMonoStreamlineLineColor,
-		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(mono_streamline_line_color),NhlTImmediate,
-		  _NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNstStreamlineLineColor, NhlCstStreamlineLineColor, NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(streamline_line_color),
+	{NhlNstMinArrowSpacingF,NhlCstMinArrowSpacingF,
+		  NhlTFloat,sizeof(float),
+                 Oset(min_arrow_spacing),NhlTProcedure,
+		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{NhlNstLineThicknessF,NhlCstLineThicknessF,
+		  NhlTFloat,sizeof(float),Oset(line_thickness),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+	{NhlNstLineColor, NhlCstLineColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNstMonoStreamlineFillColor,NhlCstMonoStreamlineFillColor,
-		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(mono_streamline_fill_color),NhlTImmediate,
-		  _NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNstStreamlineFillColor, NhlCstStreamlineFillColor, NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(streamline_fill_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNstStreamlineColors, NhlCstStreamlineColors,NhlTColorIndexGenArray,
-		 sizeof(NhlGenArray),Oset(streamline_colors),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNstScalarMissingValColor,NhlCstScalarMissingValColor, 
-		 NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(scalar_mval_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
- 	{NhlNstStreamlineDrawOrder,NhlCstStreamlineDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(streamline_order),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
 
 	{NhlNstNoDataLabelOn,NhlCstNoDataLabelOn,NhlTBoolean,
@@ -319,6 +246,147 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(zerof_lbl_rec.ortho_pos),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
+/* End-documented-resources */
+
+	{NhlNstDataChanged,NhlCstDataChanged,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(data_changed),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+
+/* Intercepted resources */
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
+		 Oset(x_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
+		 Oset(x_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(x_reverse),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
+		Oset(y_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
+		Oset(y_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(y_reverse),
+		NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+
+	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
+		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
+		 Oset(display_labelbar),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
+	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
+		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
+		  Oset(display_legend),
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
+	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
+		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
+		  Oset(display_tickmarks),
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
+	{NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,
+		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
+		  Oset(display_titles),
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
+	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
+		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+        
+/* unused resources
+ * These are resources that may be used when streamlines is enhanced to
+ * do colored and/or variable width streamlines
+ */
+
+/* Level resources */
+#if 0
+	{NhlNstScalarFieldData,NhlCstScalarFieldData,_NhlTDataList,
+		 sizeof(NhlGenArray),
+		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL),0,
+						(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNstLevels, NhlCstLevels,  NhlTFloatGenArray,
+		 sizeof(NhlPointer),Oset(levels),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{ NhlNstLevelCount,NhlCstLevelCount,NhlTInteger,sizeof(int),
+		  Oset(level_count),NhlTImmediate,
+		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
+	{ NhlNstLevelSelectionMode,NhlCstLevelSelectionMode,
+		  NhlTLevelSelectionMode,sizeof(NhlLevelSelectionMode),
+		  Oset(level_selection_mode),
+		  NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlAUTOMATICLEVELS),0,NULL},
+	{ NhlNstMaxLevelCount,NhlCstMaxLevelCount,NhlTInteger,sizeof(int),
+		  Oset(max_level_count),NhlTImmediate,
+		  _NhlUSET((NhlPointer) 16),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(level_spacing_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNstLevelSpacingF,NhlCstLevelSpacingF,NhlTFloat,sizeof(float),
+		  Oset(level_spacing),NhlTProcedure,
+		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(min_level_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNstMinLevelValF,NhlCstMinLevelValF,NhlTFloat,sizeof(float),
+		  Oset(min_level_val),
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(max_level_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNstMaxLevelValF,NhlCstMaxLevelValF,NhlTFloat,sizeof(float),
+		  Oset(max_level_val),
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+
+	{NhlNstUseScalarArray,NhlCstUseScalarArray,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(use_scalar_array),NhlTImmediate,
+		  _NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNstMonoStreamlineLineColor,NhlCstMonoStreamlineLineColor,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(mono_streamline_line_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNstStreamlineLineColor, NhlCstStreamlineLineColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(streamline_line_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNstMonoStreamlineFillColor,NhlCstMonoStreamlineFillColor,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(mono_streamline_fill_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNstStreamlineFillColor, NhlCstStreamlineFillColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(streamline_fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNstStreamlineColors, NhlCstStreamlineColors,NhlTColorIndexGenArray,
+		 sizeof(NhlGenArray),Oset(streamline_colors),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNstScalarMissingValColor,NhlCstScalarMissingValColor, 
+		 NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(scalar_mval_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(min_line_length_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNstMinLineLengthF,NhlCstMinLineLengthF,
+		  NhlTFloat,sizeof(float),Oset(min_line_length),NhlTProcedure,
+		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+
 /* General numerical string format option */
 
 	{NhlNstMagnitudeScalingMode,NhlCstMagnitudeScalingMode,
@@ -378,81 +446,7 @@ static NhlResource resources[] = {
         {NhlNstLabelFontHeightF,NhlCstLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(lbls.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-
-/* End-documented-resources */
-
-	{NhlNstDataChanged,NhlCstDataChanged,NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(data_changed),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-
-/* Intercepted resources */
-
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),
-		NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-
-	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
-		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
-		 Oset(display_labelbar),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
-	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(lbar_labels_res),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNlbLabelFuncCode, NhlClbLabelFuncCode, NhlTCharacter,
-		 sizeof(char),Oset(lbar_func_code),
-		 NhlTString,_NhlUSET(":"),0,NULL },
-	{NhlNlbLabelAlignment,NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
-		 sizeof(NhllbLabelAlignmentMode), 
-		 Oset(lbar_alignment),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlINTERIOREDGES),0,NULL},
-		
-	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
-		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
-		  Oset(display_legend),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
-	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
-		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
-		  Oset(display_tickmarks),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
-	{NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,
-		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
-		  Oset(display_titles),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
-	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+#endif        
 };
 #undef Oset
 
@@ -619,16 +613,6 @@ static NhlErrorTypes ManageLabels(
 #endif
 );
 
-static NhlErrorTypes SetScale(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew,
-	NhlStreamlinePlotLayer	stold,
-	NhlstScaleInfo		*sip,
-	NhlstScaleInfo		*osip,
-	NhlBoolean		do_levels,
-	NhlBoolean		init
-#endif
-);
 
 static NhlErrorTypes ManageOverlay(
 #if	NhlNeedProto
@@ -652,17 +636,6 @@ static NhlErrorTypes ManageTickMarks(
 
 
 static NhlErrorTypes ManageTitles(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew,
-	NhlStreamlinePlotLayer	stold,
-	NhlBoolean	init,
-	NhlSArg		*sargs,
-	int		*nargs
-#endif
-);
-
-
-static NhlErrorTypes ManageLabelBar(
 #if	NhlNeedProto
 	NhlStreamlinePlotLayer	stnew,
 	NhlStreamlinePlotLayer	stold,
@@ -723,83 +696,7 @@ static NhlErrorTypes SetFormatRec(
 #endif
 );
 
-static NhlErrorTypes    SetupLevels(
-#if	NhlNeedProto
-	NhlLayer	new,
-	NhlLayer	old,
-        NhlBoolean	init,					    
-	float		**levels,
-	NhlBoolean	*modified				    
-#endif
-);
-
-static NhlErrorTypes    SetupLevelsManual(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	float			**levels,
-        float			min,
-	float			max,
-	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes    SetupLevelsEqual(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	float			**levels,
-        float			min,
-	float			max,
-	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes    SetupLevelsAutomatic(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	float			**levels,
-        float			min,
-	float			max,
-	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes    SetupLevelsExplicit(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	NhlBoolean		init,
-	float			**levels,
-        float			min,
-	float			max,
-	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes ChooseSpacingLin(
-#if	NhlNeedProto
-	float		*tstart,
-	float		*tend,
-	float		*spacing,
-	int		convert_precision,
-	int		max_ticks,
-	NhlString	entry_name
-#endif
-);
-
 static NhlErrorTypes    ManageVectorData(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args
-#endif
-);
-
-static NhlErrorTypes    ManageScalarData(
 #if	NhlNeedProto
 	NhlStreamlinePlotLayer	stnew, 
 	NhlStreamlinePlotLayer	stold,
@@ -825,52 +722,6 @@ static NhlErrorTypes    AdjustText(
 	NhlStreamlinePlotLayer	new, 
 	NhlStreamlinePlotLayer	old,
 	NhlBoolean	init
-#endif
-);
-
-static NhlErrorTypes    ManageDynamicArrays(
-#if	NhlNeedProto
-	NhlLayer	new,
-	NhlLayer	old,
-        NhlBoolean	init,					    
-	_NhlArgList	args,
-	int		num_args
-#endif
-);
-
-static NhlErrorTypes    ManageGenArray(
-#if	NhlNeedProto
-	NhlGenArray	*ga,
-	int		count,
-	NhlGenArray	copy_ga,
-	NrmQuark	type,
-	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
-	NhlBoolean	*need_check,
-	NhlBoolean	*changed,				       
-	NhlString	resource_name,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes	CheckColorArray(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	cl,
-	NhlGenArray	ga,
-	int		count,
-	int		init_count,
-	int		last_count,
-	int		**gks_colors,
-	NhlString	resource_name,
-	NhlString	entry_name
-#endif
-);
-
-static NhlGenArray GenArraySubsetCopy(
-#if	NhlNeedProto
-        NhlGenArray     ga,
-        int             length
 #endif
 );
 
@@ -1079,13 +930,8 @@ static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qcolorindex = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
-static NrmQuark	Qlevels = NrmNULLQUARK; 
-static NrmQuark	Qstreamline_colors = NrmNULLQUARK; 
-static NrmQuark	Qmax_magnitude_format = NrmNULLQUARK; 
-static NrmQuark	Qmax_svalue_format = NrmNULLQUARK; 
 static NrmQuark	Qno_data_label_string = NrmNULLQUARK; 
 static NrmQuark	Qzerof_label_string = NrmNULLQUARK; 
-static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
 
 static char *InitName = "StreamlinePlotInitialize";
 static char *SetValuesName = "StreamlinePlotSetValues";
@@ -1268,13 +1114,8 @@ StreamlinePlotClassInitialize
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qcolorindex = NrmStringToQuark(NhlTColorIndex);
-	Qlevels = NrmStringToQuark(NhlNstLevels);
-	Qstreamline_colors = NrmStringToQuark(NhlNstStreamlineColors);
-	Qmax_magnitude_format = NrmStringToQuark(NhlNstMagnitudeFormat);
-	Qmax_svalue_format = NrmStringToQuark(NhlNstScalarValueFormat);
 	Qzerof_label_string = NrmStringToQuark(NhlNstZeroFLabelString);
 	Qno_data_label_string = NrmStringToQuark(NhlNstNoDataLabelString);
-	Qlb_label_strings = NrmStringToQuark(NhlNlbLabelStrings);
 
 	return NhlNOERROR;
 }
@@ -1320,19 +1161,6 @@ StreamlinePlotClassPartInitialize
 					NhlNpmLabelBarDisplayMode,
 					NhlNpmTickMarkDisplayMode,
 					NhlNpmTitleDisplayMode,
-					NhlNlbBoxCount,
-					NhlNlbLabelAlignment,
-					NhlNlbLabelStrings,
-					NhlNlbLabelFuncCode,
-					NhlNlbMonoFillColor,
-					NhlNlbFillColor,
-					NhlNlbFillColors,
-					NhlNlbMonoFillPattern,
-					NhlNlbFillPattern,
-					NhlNlbFillPatterns,
-					NhlNlbMonoFillScale,
-					NhlNlbFillScaleF,
-					NhlNlbFillScales,
 					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1352,24 +1180,10 @@ StreamlinePlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering data resource %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlcoordArrTableFloatClass");
+			  "NhlvectorFieldFloatClass");
 		return(NhlFATAL);
 	}
 
-
-	subret = _NhlRegisterDataRes((NhlDataCommClass)lc,
-				     NhlNstScalarFieldData,
-				     NULL,
-				     NhlstreamlinePlotDataDepClass,
-				     NhlscalarFieldFloatClass,
-				     NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering data resource %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlcoordArrTableFloatClass");
-		return(NhlFATAL);
-	}
 
 	return ret;
 }
@@ -1434,12 +1248,6 @@ StreamlinePlotInitialize
 	if (! stp->min_arrow_spacing_set) stp->min_arrow_spacing = 0.0;
 	if (! stp->min_line_length_set) stp->min_line_length = 0.0;
 	       
-	if (! stp->level_spacing_set) stp->level_spacing = 5.0;
-	if (! stp->min_level_set) stp->min_level_val = -FLT_MAX;
-	if (! stp->max_level_set) stp->max_level_val = FLT_MAX;
-
-	if (! stp->lbls.height_set) 
-		stp->lbls.height = 0.010;
 	if (! stp->zerof_lbl.height_set) 
 		stp->zerof_lbl.height = 0.01;
 	if (! stp->x_min_set)
@@ -1453,8 +1261,6 @@ StreamlinePlotInitialize
 
 /* Initialize private members */
 
-	stp->lbls.fcode[1] = '\0';
-	stp->zerof_lbl.fcode[1] = '\0';
 	stp->new_draw_req = True;
 	stp->predraw_dat = NULL;
 	stp->draw_dat = NULL;
@@ -1463,16 +1269,10 @@ StreamlinePlotInitialize
 	stp->overlay_object = NULL;
 	stp->data_changed = True;
 	stp->data_init = False;
-	stp->scalar_data_init = False;
 	stp->use_irr_trans = False;
 	stp->zero_field = False;
-	stp->lbar_labels_set = False;
-	stp->lbar_labels = NULL;
-	stp->lbar_labels_res_set = stp->lbar_labels_res ? True : False;
 	stp->vfp = NULL;
 	stp->ovfp = NULL;
-	stp->sfp = NULL;
-	stp->osfp = NULL;
 	stp->fws_id = NhlNULLOBJID;
 
 /*
@@ -1485,15 +1285,6 @@ StreamlinePlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
-#if 0
-	subret = ManageScalarData(stnew,(NhlStreamlinePlotLayer) req,
-				  True,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error setting view dependent resources";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-#endif
  
 	subret = InitCoordBounds(stp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
@@ -1516,21 +1307,13 @@ StreamlinePlotInitialize
 		return(ret);
 	}
 
-/* Set up the dynamic arrays (line label array is handled here) */
-
-	subret = ManageDynamicArrays(new,req,True,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error initializing dynamic arrays";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
 /* 
  * Set up the labels (except for the line label array) 
  * Note: may add arguments to the PlotManager argument list.
  */
 
-	subret = ManageLabels(stnew,(NhlStreamlinePlotLayer)req,True,sargs,&nargs);
+	subret = ManageLabels(stnew,(NhlStreamlinePlotLayer)req,
+			      True,sargs,&nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error initializing labels";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1542,7 +1325,8 @@ StreamlinePlotInitialize
 
 	stp->do_low_level_log = False;
 	if (stp->use_irr_trans) {
-		subret = SetUpIrrTransObj(stnew,(NhlStreamlinePlotLayer) req,True);
+		subret = SetUpIrrTransObj(stnew,
+					  (NhlStreamlinePlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1550,7 +1334,8 @@ StreamlinePlotInitialize
 		}
 	}
 	else {
-		subret = SetUpLLTransObj(stnew,(NhlStreamlinePlotLayer) req,True);
+		subret = SetUpLLTransObj(stnew,
+					 (NhlStreamlinePlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1580,10 +1365,7 @@ StreamlinePlotInitialize
 	}
 
 	stp->data_changed = False;
-	stp->level_spacing_set = False;
-	stp->lbls.height_set = False;
 	stp->zerof_lbl.height_set = False;
-	stp->lbar_labels_res_set = False;
 	stp->arrow_length_set = False;
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
@@ -1718,11 +1500,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNstMinLineLengthF))
 		stp->min_line_length_set = True;
 
-	if (_NhlArgIsSet(args,num_args,NhlNstLevelSpacingF))
-		stp->level_spacing_set = True;
-
-	if (_NhlArgIsSet(args,num_args,NhlNstLabelFontHeightF))
-		stp->lbls.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNstZeroFLabelFontHeightF))
 		stp->zerof_lbl.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
@@ -1733,22 +1510,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 		stp->y_min_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
 		stp->y_max_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNlbLabelStrings))
-		stp->lbar_labels_res_set = True;
-
-	if (_NhlArgIsSet(args,num_args,NhlNstMinLevelValF))
-		stp->min_level_set = True;
-	else if (stp->use_scalar_array != ostp->use_scalar_array) {
-		stp->min_level_val = -FLT_MAX;
-		stp->min_level_set = False;
-	}
-
-	if (_NhlArgIsSet(args,num_args,NhlNstMaxLevelValF))
-		stp->max_level_set = True;
-	else if (stp->use_scalar_array != ostp->use_scalar_array) {
-		stp->max_level_val = FLT_MAX;
-		stp->max_level_set = False;
-	}
 
 /* Manage the data */
 
@@ -1758,14 +1519,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-#if 0
-	subret = ManageScalarData(stnew,stold,False,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error setting view dependent resources";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-#endif
 
 	subret = InitCoordBounds(stp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
@@ -1785,16 +1538,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 	subret = SetFormat(stnew,stold,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting label formats";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-
-/* Manage the dynamic arrays  (line labels handled here) */
-
-	subret = ManageDynamicArrays(new,old,False,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error initializing dynamic arrays";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
@@ -1825,7 +1568,8 @@ static NhlErrorTypes StreamlinePlotSetValues
 		}
 	}
 	else {
-		subret = SetUpLLTransObj(stnew,(NhlStreamlinePlotLayer) old,False);
+		subret = SetUpLLTransObj(stnew,
+					 (NhlStreamlinePlotLayer) old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1842,10 +1586,7 @@ static NhlErrorTypes StreamlinePlotSetValues
 
 	stp->update_req = False;
 	stp->data_changed = False;
-	stp->level_spacing_set = False;
-	stp->lbls.height_set = False;
 	stp->zerof_lbl.height_set = False;
-	stp->lbar_labels_res_set = False;
 	stp->arrow_length_set = False;
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
@@ -1900,39 +1641,8 @@ static NhlErrorTypes    StreamlinePlotGetValues
         char *type = "";
 
         for( i = 0; i< num_args; i++ ) {
-
-                ga = NULL;
-                if(args[i].quark == Qlevels) {
-                        ga = stp->levels;
-                        count = stp->level_count;
-                        type = NhlNstLevels;
-                }
-                else if (args[i].quark == Qstreamline_colors) {
-                        ga = stp->streamline_colors;
-                        count = stp->level_count + 1;
-                        type = NhlNstStreamlineColors;
-                }
-                if (ga != NULL) {
-                        if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
-                                e_text = "%s: error copying %s GenArray";
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-                                          "StreamlinePlotGetValues",type);
-                                return NhlFATAL;
-                        }
-                        *((NhlGenArray *)(args[i].value.ptrval)) = ga;
-			continue;
-                }
-
 		ts = NULL;
-		if (args[i].quark == Qmax_magnitude_format){
-			ts = stp->mag_scale.format.fstring;
-		}
-#if 0
-		else if (args[i].quark == Qmax_svalue_format){
-			ts = stp->svalue_scale.format.fstring;
-		}
-#endif
-		else if(args[i].quark == Qno_data_label_string){
+		if(args[i].quark == Qno_data_label_string){
 			ts = stp->zerof_lbl.string2;
 		}
 		else if(args[i].quark == Qzerof_label_string){
@@ -1950,13 +1660,6 @@ static NhlErrorTypes    StreamlinePlotGetValues
 			strcpy(*((NhlString*)(args[i].value.ptrval)),ts);
 			continue;
                 }
-		ga = NULL;
-		if (args[i].quark == Qlb_label_strings){
-			if (stp->overlay_object != NULL)
-				NhlVAGetValues(stp->overlay_object->base.id,
-					       NhlNlbLabelStrings,&ga,NULL);
-                        *((NhlGenArray *)(args[i].value.ptrval)) = ga;
-		}
         }
 
         return(NhlNOERROR);
@@ -2072,70 +1775,6 @@ static NhlErrorTypes InitCoordBounds
 }
 
 /*
- * Function:  GenArraySubsetCopy
- *
- * Description: Since the internal GenArrays maintained by StreamlinePlot 
- *      may be bigger than the size currently in use, this function allows
- *      a copy of only a portion of the array to be created. This is for
- *      use by the GetValues routine when returning GenArray resources to
- *      the user level. The array is assumed to be valid. The only pointer
- *      type arrays that the routine can handle are NhlString arrays.
- *      Note: this might be another candidate for inclusion as a global
- *      routine.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-
-static NhlGenArray GenArraySubsetCopy
-#if	NhlNeedProto
-        (NhlGenArray    ga,
-        int             length)
-#else
-(ga,length)
-        NhlGenArray     ga;
-        int             length;
-#endif
-{
-        NhlGenArray gto;
-
-        if (length > ga->num_elements)
-                return NULL;
-
-        if ((gto = _NhlCopyGenArray(ga,False)) == NULL) {
-                return NULL;
-        }
-        if ((gto->data = (NhlPointer) NhlMalloc(length * ga->size)) == NULL) {
-                return NULL;
-        }
-        if (ga->typeQ != Qstring) {
-                memcpy((void *)gto->data, (Const void *) ga->data,
-                       length * ga->size);
-        }
-        else {
-                NhlString *cfrom = (NhlString *) ga->data;
-                NhlString *cto = (NhlString *) gto->data;
-                int i;
-                for (i=0; i<length; i++) {
-                        if ((*cto = (char *)
-                             NhlMalloc(strlen(*cfrom)+1)) == NULL) {
-                                return NULL;
-                        }
-                        strcpy(*cto++,*cfrom++);
-                }
-        }
-        gto->num_elements = length;
-	gto->my_data = True;
-        return gto;
-}
-
-
-/*
  * Function:	StreamlinePlotDestroy
  *
  * Description:
@@ -2198,33 +1837,6 @@ NhlLayer inst;
 	if (stp->zerof_lbl_rec.id != NhlNULLOBJID) {
  		(void) NhlDestroy(stp->zerof_lbl_rec.id);
 	}
-
-	NhlFreeGenArray(stp->levels);
-	NhlFreeGenArray(stp->streamline_colors);
-	NhlFree(stp->gks_streamline_colors);
-	if (stp->ovfp != NULL)
-		NhlFree(stp->ovfp);
-	if (stp->osfp != NULL)
-		NhlFree(stp->osfp);
-
-	if (stp->lbar_labels != NULL) {
-		NhlFreeGenArray(stp->lbar_labels);
-	}
-	if (stp->level_strings != NULL) {
-		int i;
-		for (i = 0; i < stp->level_count; i++) {
-			if (stp->level_strings[i] != NULL)
-				NhlFree(stp->level_strings[i]);
-		}
-		NhlFree(stp->level_strings);
-	}
-	
-        if (stp->mag_scale.format.fstring != NULL)
-                NhlFree(stp->mag_scale.format.fstring);
-#if 0
-        if (stp->svalue_scale.format.fstring != NULL)
-                NhlFree(stp->svalue_scale.format.fstring);
-#endif
         
         if (stp->zerof_lbl.string2 != NULL)
                 NhlFree(stp->zerof_lbl.string2);
@@ -2857,7 +2469,7 @@ static NhlErrorTypes stDraw
 		c_stsetr("YCN",(float)stp->ycn);
 	}
         c_stseti("SET",0);
-        c_vvseti("MAP",NhlstMAPVAL);
+        c_stseti("MAP",NhlstMAPVAL);
 
 	if (stp->map_direction)
 		c_stseti("TRT",1);
@@ -2893,48 +2505,24 @@ static NhlErrorTypes stDraw
 	u_data = &((float *) stp->vfp->u_arr->data)[stp->vfp->begin]; 
 	v_data = &((float *) stp->vfp->v_arr->data)[stp->vfp->begin];
 
-	if (stp->scalar_data_init) {
-		p_data = &((float *) stp->sfp->d_arr->data)[stp->sfp->begin];
-		subret = _NhlStinit(u_data,stp->vfp->fast_dim,
-				    v_data,stp->vfp->fast_dim,
-				    p_data,stp->sfp->fast_dim,
-				    stp->vfp->fast_len,stp->vfp->slow_len,
-				    stp->fws,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error drawing streamlines";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			StreamlineAbortDraw(stl);
-			return(ret);
- 		}
-		subret = _NhlStream(u_data,v_data,p_data,
-				    NULL,NULL,stp->fws,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error drawing streamlines";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			StreamlineAbortDraw(stl);
-			return(ret);
- 		}
+	subret = _NhlStinit(u_data,stp->vfp->fast_dim,
+			    v_data,stp->vfp->fast_dim,
+			    NULL,0,
+			    stp->vfp->fast_len,stp->vfp->slow_len,
+			    stp->fws,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error drawing streamlines";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		StreamlineAbortDraw(stl);
+		return(ret);
 	}
-	else {
-		subret = _NhlStinit(u_data,stp->vfp->fast_dim,
-				    v_data,stp->vfp->fast_dim,
-				    NULL,0,
-				    stp->vfp->fast_len,stp->vfp->slow_len,
-				    stp->fws,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error drawing streamlines";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			StreamlineAbortDraw(stl);
-			return(ret);
- 		}
-		subret = _NhlStream(u_data,v_data,NULL,
-				    NULL,NULL,stp->fws,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error drawing streamlines";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			StreamlineAbortDraw(stl);
-			return(ret);
- 		}
+	subret = _NhlStream(u_data,v_data,NULL,
+			    NULL,NULL,stp->fws,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error drawing streamlines";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		StreamlineAbortDraw(stl);
+		return(ret);
 	}
 
 	if (stl->view.use_segments) {
@@ -3583,38 +3171,6 @@ static NhlErrorTypes SetFormat
 			  e_text,entry_name,NhlNstZeroFLabelConstantSpacingF);
 		ret = MIN(NhlWARNING,ret);
 	}
-
-	if (init) {
-		subret = SetFormatRec(&stp->mag_scale.format,
-				      NhlNstMagnitudeFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-#if 0
-		subret = SetFormatRec(&stp->svalue_scale.format,
-				      NhlNstScalarValueFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-#endif	
-		return ret;
-	}
-	if (stp->mag_scale.format.fstring != 
-	    ostp->mag_scale.format.fstring) {
-		subret = SetFormatRec(&stp->mag_scale.format,
-				      NhlNstMagnitudeFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (ostp->mag_scale.format.fstring != NULL)
-			NhlFree(ostp->mag_scale.format.fstring);
-		ostp->mag_scale.format.fstring = NULL;
-	}
-#if 0
-	if (stp->svalue_scale.format.fstring != 
-	    ostp->svalue_scale.format.fstring) {
-		subret = SetFormatRec(&stp->svalue_scale.format,
-				      NhlNstScalarValueFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (ostp->svalue_scale.format.fstring != NULL)
-			NhlFree(ostp->svalue_scale.format.fstring);
-		ostp->svalue_scale.format.fstring = NULL;
-	}
-#endif
 	return ret;
 }
 
@@ -3678,180 +3234,6 @@ static NhlErrorTypes ManageLabels
 }
 
 /*
- * Function:	SetScale
- *
- * Description: Determines the label scale factor based on the label
- *		scale mode and the label scale value resources. Note that
- *		the scale factor is the amount by which the label values
- *		are multiplied to arrive at the true values in the streamline
- *		field data. Therefore the data values are divided by the
- *		scale factor to get the label values.
- *
- * In Args:	stnew	new instance record
- *		stold	old instance record if not initializing
- *		init	true if initialization
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	
- */
-static NhlErrorTypes SetScale
-#if	NhlNeedProto
-(
-	NhlStreamlinePlotLayer	stnew,
-	NhlStreamlinePlotLayer	stold,
-	NhlstScaleInfo		*sip,
-	NhlstScaleInfo		*osip,
-	NhlBoolean		do_levels,
-	NhlBoolean		init
-)
-#else 
-(stnew,stold,sip,osip,init)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	NhlstScaleInfo		*sip;
-	NhlstScaleInfo		*osip;
-	NhlBoolean		do_levels;
-	NhlBoolean		init;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
-	NhlString entry_name, e_text;
-	float sigval,t;
-	int power,i,count;
-	int divpwr,sig_digits;
-	float *fp;
-	int max_digit = 0;
-	float test_high,test_low,max_fac = 1.0;
-
-	if (! init &&
-	    (stp->levels == ostp->levels) &&
-	    (sip->mode == osip->mode) &&
-	    (sip->scale_value == osip->scale_value) &&
-	    (sip->min_val == osip->min_val) &&
-	    (sip->max_val == osip->max_val))
-		return ret;
-
-	entry_name =  init ? InitName : SetValuesName;
-
-	sigval = MAX(fabs(sip->max_val),fabs(sip->min_val));
-	subret = _NhlGetScaleInfo(sigval,&divpwr,&sig_digits,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		return NhlFATAL;
-	}
-	sip->left_sig_digit = divpwr - 1;
-	sip->sig_digits = 4;
-	sig_digits = (sip->format.sig_digits_flag == NhlffUNSPECED) ?
-		sip->sig_digits : sip->format.sig_digits;
-
-	switch (sip->mode) {
-	case NhlSCALEFACTOR:
-		if (sip->scale_value <= 0.0) {
-			e_text = 
-			     "%s: invalid value for scale value: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
-			ret = MIN(ret,NhlWARNING);
-			sip->scale_value = 1.0;
-		}
-		sip->scale_factor = sip->scale_value;
-		break;
-	case NhlCONFINETORANGE:
-		if (sip->scale_value <= 0.0) {
-			e_text = 
-			     "%s: invalid value for scale value: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
-			ret = MIN(ret,NhlWARNING);
-			sip->scale_value = 1.0;
-		}
-		power = 1;
-		if (sigval >= sip->scale_value) {
-			for (t = sigval/10.0;
-			     t >=sip->scale_value; t /= 10.0) {
-				power++;
-			}
-			sip->scale_factor = pow(10.0,-(double)power);
-		}
-		else {
-			for (t = sigval * 10;
-			     t < sip->scale_value; t *= 10.0) {
-				power++;
-			}
-			power--;
-			sip->scale_factor = pow(10.0,(double)power);
-		}
-		break;
-	case NhlTRIMZEROS:
-		if (divpwr < 0) 
-			power = divpwr;
-		else
-			power = MAX(0,divpwr - sig_digits);
-		sip->scale_factor = pow(10.0,-(double)power);
-		break;
-	case NhlMAXSIGDIGITSLEFT:
-		power = divpwr - sig_digits;
-		sip->scale_factor = pow(10.0,-(double)power);
-		break;
-	case NhlINTEGERLINELABELS:
-		if (! do_levels) {
-			fp = &sigval;
-			count = 1;
-		}
-		else {
-			fp = (float *) stp->levels->data;
-			count = stp->level_count;
-		}
-		test_high = pow(10.0,sig_digits);
-		test_low  = pow(10.0,sig_digits - 1);
-
-		for (i = 0; i < count; i++) {
-			int	j;
-			float	test_fac = 1.0;
-			char	buf[32];
-
-			t = fabs(fp[i]);
-			if (t == 0.0) 
-				continue;
-			if (fabs(fp[i]) < test_low) {
-				while (t < test_low) {
-					t *= 10.0;
-					test_fac *= 10.0;
-				}
-			}
-			else if (fabs(fp[i]) >= test_high) {
-				while (t >= test_high) {
-					t /= 10.0;
-					test_fac /= 10.0;
-				}
-			}
-			t = (float) (int) (t + 0.5);
-
-			sprintf(buf,"%f",t);
-			j = strcspn(buf,"0.");
-			if (j > max_digit) {
-				max_digit = j;
-				max_fac = test_fac;
-			}
-		}
-		while ((t = sig_digits) > max_digit) {
-			max_fac /= 10.0;
-			t--;
-		}
-	
-		sip->scale_factor = max_fac;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(ret);
-	}
-
-	return ret;
-}
-/*
  * Function:	ManageOverlay
  *
  * Description: Sets up arguments for annotations handled internally by
@@ -3908,16 +3290,6 @@ static NhlErrorTypes ManageOverlay
 	subret = ManageTitles(stnew,stold,init,sargs,nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error managing Titles";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-
-/* Manage LabelBar object */
-
-	subret = ManageLabelBar(stnew,stold,init,sargs,nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing LabelBar";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
@@ -3997,8 +3369,8 @@ static NhlErrorTypes ManageTickMarks
 /*
  * Function:	ManageTitles
  *
- * Description: If the StreamlinePlot object has an overlay object attached, and
- *		the Titles are activated, manages the Title resources 
+ * Description: If the StreamlinePlot object has an overlay object 
+  *		and the Titles are activated, manages the Title resources 
  *		relevant to the StreamlinePlot object.
  *
  * In Args:	stnew	new instance record
@@ -4050,249 +3422,6 @@ static NhlErrorTypes ManageTitles
 
 	return ret;
 }
-
-
-/*
- * Function:	ManageLabelBar
- *
- * Description: If the StreamlinePlot object has an overlay object attached, and
- *		the LabelBar is activated, manages the LabelBar resources 
- *		relevant to the StreamlinePlot object.
- *
- * In Args:	stnew	new instance record
- *		stold	old instance record if not initializing
- *		init	true if initialization
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	Objects created and destroyed.
- */
-static NhlErrorTypes ManageLabelBar
-#if	NhlNeedProto
-(
-	NhlStreamlinePlotLayer	stnew,
-	NhlStreamlinePlotLayer	stold,
-	NhlBoolean	init,
-	NhlSArg		*sargs,
-	int		*nargs
-)
-#else 
-(stnew,stold, init, sargs, nargs)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	NhlBoolean	init;
-	NhlSArg		*sargs;
-	int		*nargs;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
-	char			*entry_name;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
-	NhlTransformLayerPart	*tfp = &(stnew->trans);
-	NhlBoolean		redo_level_strings = False;
-	NhlBoolean		set_all = False;
-
-	entry_name = (init) ? InitName : SetValuesName;
-
- 	if (! tfp->plot_manager_on ||
-	    stp->display_labelbar == NhlNOCREATE) 
-		return NhlNOERROR;
-
-	if (init || 
-	    stp->display_labelbar != ostp->display_labelbar ||
-	    stp->zero_field != ostp->zero_field ||
-	    stp->data_init != ostp->data_init) {
-
-		if ( stp->zero_field) {
-			e_text = "%s: zero field: turning Labelbar off";
-			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlINFO);
-			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNpmLabelBarDisplayMode,NhlNEVER);
-			return ret;
-		}
-		else {
-			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNpmLabelBarDisplayMode,
-				   stp->display_labelbar);
-			if (init || stp->zero_field != ostp->zero_field) 
-				set_all = True;
-		}
-	}
-
-	if (stp->zero_field) return ret;
-
-	if (! stp->explicit_lbar_labels_on) {
-		stp->lbar_labels_set = False;
-		if (init || set_all ||
-		    stp->lbar_end_labels_on != ostp->lbar_end_labels_on ||
-		    stp->explicit_lbar_labels_on 
-		    			!= ostp->explicit_lbar_labels_on ||
-		    stp->level_strings != ostp->level_strings) {
-			redo_level_strings = True;
-		}
-		if (stp->lbar_end_labels_on)
-			stp->lbar_alignment = NhlEXTERNALEDGES;
-		else
-			stp->lbar_alignment = NhlINTERIOREDGES;
-	}
-	else {
-		if (stp->lbar_labels_res_set) {
-			NhlGenArray ga;
-			if (stp->lbar_labels != NULL) 
-				NhlFreeGenArray(stp->lbar_labels);
-
-			if ((ga = _NhlCopyGenArray(stp->lbar_labels_res,
-						   True)) == NULL) {
-				e_text = "%s: error copying GenArray";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			stp->lbar_labels = ga;
-			ostp->lbar_labels = NULL;
-		}
-		else if (! stp->lbar_labels_set) {
-			redo_level_strings = True;
-			if (stp->lbar_end_labels_on)
-				stp->lbar_alignment = NhlEXTERNALEDGES;
-			else
-				stp->lbar_alignment = NhlINTERIOREDGES;
-		}
-		stp->lbar_labels_set = True;
-	}
-
-	if (redo_level_strings) {
-		NhlGenArray ga;
-		NhlString *to_sp, *from_sp;
-		NhlString s;
-		int i, count;
-		NhlBoolean copy = False;
-
-		from_sp = (NhlString *) stp->level_strings;
-		if (stp->lbar_labels != NULL) 
-			NhlFreeGenArray(stp->lbar_labels);
-
-		if (! stp->lbar_end_labels_on) {
-			/* level_strings is used for lbar_labels data */
-			count = stp->level_count;
-			to_sp = from_sp;
-		}
-		else {
-			float fval;
-			NhlFormatRec *frec;
-			NhlstScaleInfo	*sip;
-
-#if 0
-			sip=(stp->use_scalar_array && stp->scalar_data_init) ?
-				   &stp->svalue_scale : &stp->mag_scale;
-#endif
-                        sip = &stp->mag_scale;
-			frec = &sip->format;
-			copy = True;
-			count = stp->level_count + 2;
-			to_sp = NhlMalloc(sizeof(NhlString) * count);
-			if (to_sp == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-
-			fval = sip->min_val * sip->scale_factor;
-			s = _NhlFormatFloat(frec,fval,NULL,
-					    &sip->sig_digits,
-					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,
-					    stp->lbar_func_code,
-					    entry_name);
-			if (s == NULL) return NhlFATAL;
-			to_sp[0] = NhlMalloc(strlen(s) + 1);
-			if (to_sp[0] == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			strcpy(to_sp[0],s);
-			for (i = 1; i < count - 1; i++) {
-				to_sp[i] = NhlMalloc(strlen(from_sp[i-1]) + 1);
-				if (to_sp[i] == NULL) {
-					e_text = 
-					"%s: dynamic memory allocation error";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text,entry_name);
-					return NhlFATAL;
-				}
-				strcpy(to_sp[i],from_sp[i-1]);
-			}
-			fval = sip->max_val * sip->scale_factor;
-			s = _NhlFormatFloat(frec,fval,NULL,
-					    &sip->sig_digits,
-					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,
-					    stp->lbar_func_code,
-					    entry_name);
-			if (s == NULL) return NhlFATAL;
-			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);
-			if (to_sp[count - 1] == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			strcpy(to_sp[count - 1],s);
-		}
-		ga = NhlCreateGenArray((NhlPointer)to_sp,NhlTString,
-				       sizeof(NhlString),1,&count);
-		if (ga == NULL) {
-			e_text = "%s: error creating GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		ga->my_data = copy ? True : False;
-		stp->lbar_labels = ga;
-		ostp->lbar_labels = NULL;
-	}
-	if (init || set_all) {
-
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbBoxCount,stp->level_count + 1);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelAlignment,stp->lbar_alignment);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelStrings,stp->lbar_labels);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbMonoFillColor,False);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColors,stp->streamline_colors);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbMonoFillPattern,True);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbMonoFillScale,True);
-		return ret;
-	}
-
-	if (stp->level_count != ostp->level_count)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbBoxCount,stp->level_count + 1);
-	if (stp->lbar_alignment != ostp->lbar_alignment)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelAlignment,stp->lbar_alignment);
-	if (stp->lbar_labels != ostp->lbar_labels)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelStrings,stp->lbar_labels);
-	if (stp->streamline_colors != ostp->streamline_colors)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColors,stp->streamline_colors);
-	return ret;
-}
-
-
 /*
  * Function:	ManageZeroFLabel
  *
@@ -4703,79 +3832,6 @@ static NhlErrorTypes ReplaceSubstitutionChars
 
 	return ret;
 }
-
-/*
- * Function:	SetFormatRec
- *
- * Description: sets up the format record for a label type
- *
- * In Args:	NhlFormatRec *format -> to the format record
- *		NhlString    resource    the format resource - for error.
- *		NhlString    entry_name  the caller
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects: 
- */
-static NhlErrorTypes SetFormatRec
-#if	NhlNeedProto
-(
-	NhlFormatRec	*format,
-	NhlString	resource,
-	NhlString	entry_name
-)
-#else 
-(format,resource,entry_name)
-	NhlFormatRec	*format;
-	NhlString	resource;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	NhlFormatRec	*frec;
-
-
-	if (format->fstring == NULL || format->fstring[0] == '\0') {
-		e_text = "%s: empty format string supplied for %s; defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,resource);
-		ret = NhlWARNING;
-		format->fstring = NhlstDEF_FORMAT;
-	}
-	if ((frec = _NhlScanFString(format->fstring,entry_name)) == NULL) {
-		e_text = "%s: error in format string for %s: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,resource);
-		ret = NhlWARNING;
-		format->fstring = NhlstDEF_FORMAT;
-		if ((frec = _NhlScanFString(format->fstring,
-					    entry_name)) == NULL) {
-			e_text = "%s: internal error getting format";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(NhlFATAL);
-		}
-	}
-	memcpy((void *)format,(Const void *)frec,sizeof(NhlFormatRec));
-
-/* 
- * Since at this point the format string itself is not owned by the 
- * StreamlinePlot object, make a copy.
- */
-	if (format->fstring != NULL) {
-		char *cp;
-		if ((cp = NhlMalloc(strlen(format->fstring)+1)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		strcpy(cp,format->fstring);
-		format->fstring = cp;
-	}
-
-	return ret;
-}
-
 /*
  * Function:	ConstrainJustification
  *
@@ -5049,18 +4105,8 @@ static NhlErrorTypes    ManageVectorData
 	if (stp->vector_field_data != NULL)
 		ndata = _NhlGetDataInfo(stp->vector_field_data,&dlist);
 	if (ndata <= 0) {
-		if (stp->min_level_set)
-			stp->mag_scale.min_val = 
-				stp->zmin = stp->min_level_val;
-		else
-			stp->mag_scale.min_val = stp->zmin = 0.01;
-		if (stp->max_level_set)
-			stp->mag_scale.max_val = 
-				stp->zmax = stp->max_level_val;
-		else
-			/* ensure max > min */
-			stp->mag_scale.max_val = stp->zmax = 
-				MAX(1.0,stp->zmin * 10.0);
+		stp->zmin = 0.01;
+		stp->zmax = MAX(1.0,stp->zmin * 10.0);
 		stp->data_init = False;
 		stp->vfp = NULL;
 		return NhlNOERROR;
@@ -5095,18 +4141,8 @@ static NhlErrorTypes    ManageVectorData
 			e_text = 
           "%s: no valid values in vector field; StreamlinePlot not possible";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			if (stp->min_level_set)
-				stp->mag_scale.min_val = 
-					stp->zmin = stp->min_level_val;
-			else
-				stp->mag_scale.min_val = stp->zmin = 0.01;
-			if (stp->max_level_set)
-				stp->mag_scale.max_val = 
-					stp->zmax = stp->max_level_val;
-			else
-				/* ensure max > min */
-				stp->mag_scale.max_val = stp->zmax =
-					MAX(1.0,stp->zmin * 10.0);
+			stp->zmin = 0.01;
+			stp->zmax = MAX(1.0,stp->zmin * 10.0);
 			stp->data_changed = True;
 			ret = MIN(NhlWARNING,ret);
 			return ret;
@@ -5116,8 +4152,6 @@ static NhlErrorTypes    ManageVectorData
 	stp->zmin = stp->vfp->mag_min;
 	stp->zmax = stp->vfp->mag_max;
 
-	stp->mag_scale.max_val = stp->zmax;
-	stp->mag_scale.min_val = stp->zmin;
 
 	stp->zero_field = _NhlCmpFAny(stp->zmax,stp->zmin,8) <= 0.0 ?
 		True : False;
@@ -5140,122 +4174,6 @@ static NhlErrorTypes    ManageVectorData
 
 	return ret;
 }
-
-#if 0
-/*
- * Function:  ManageScalarData
- *
- * Description: Handles updating of the scalar data
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    ManageScalarData
-#if	NhlNeedProto
-(
-	NhlStreamlinePlotLayer	stnew, 
-	NhlStreamlinePlotLayer	stold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args
-)
-#else
-(stnew,stold,init,args,num_args)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	NhlBoolean	init;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*entry_name;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &stnew->streamlineplot;
-	NhlScalarFieldFloatLayer	sfl;
-	_NhlDataNodePtr			*dlist = NULL;
-	NhlBoolean			new;
-	int				ndata = 0;
-
-
-	entry_name = (init) ? InitName : SetValuesName;
-
-	if (! stp->data_changed && 
-	    ! _NhlArgIsSet(args,num_args,NhlNstScalarFieldData))
-		return NhlNOERROR;
-
-	if (stp->scalar_field_data != NULL)
-		ndata = _NhlGetDataInfo(stp->scalar_field_data,&dlist);
-	if (ndata != 1) {
-		stp->svalue_scale.min_val = stp->scalar_min = 0.0;
-		stp->svalue_scale.max_val = stp->scalar_max = 1.0;
-		stp->scalar_data_init = False;
-		stp->sfp = NULL;
-		if (ndata > 1) {
-			e_text = "%s: internal error retrieving data info";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		else  {
-			return NhlNOERROR;
-		}
-	}
-
-	if (stp->sfp != NULL && stp->osfp == NULL) {
-		stp->osfp = NhlMalloc(sizeof(NhlScalarFieldFloatLayerPart));
-		if (stp->osfp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if (stp->sfp != NULL) {
-		memcpy(stp->osfp,
-		       stp->sfp,sizeof(NhlScalarFieldFloatLayerPart));	
-	}
-
- 	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
-	if (sfl == NULL) {
-		stp->scalar_data_init = False;
-		e_text = "%s: internal error retrieving data set";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	
-	stp->sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
-
-	if (stp->data_init && 
-	    (stp->sfp->fast_len != stp->vfp->fast_len ||
-	     stp->sfp->slow_len != stp->vfp->slow_len)) {
-		e_text = "%s: ignoring %s: size does not match %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNstScalarFieldData,NhlNstVectorFieldData);
-		ret = NhlWARNING;
-		stp->scalar_data_init = False;
-		stp->sfp = NULL;
-		stp->svalue_scale.min_val = stp->scalar_min = 0.0;
-		stp->svalue_scale.max_val = stp->scalar_max = 1.0;
-	}
-	else {
-		stp->svalue_scale.min_val = 
-			stp->scalar_min = stp->sfp->data_min;
-		stp->svalue_scale.max_val = 
-			stp->scalar_max = stp->sfp->data_max;
-		stp->scalar_data_init = True;
-		stp->data_changed = True;
-	}
-	return ret;
-}
-
-#endif
 /*
  * Function:  ManageViewDepResources
  *
@@ -5366,10 +4284,6 @@ static NhlErrorTypes    ManageViewDepResources
 		}
 	}
 
-	stp->lbls.aspect = 1.325;
-	subret = AdjustText(&stp->lbls,stnew,stold,init);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
 	subret = AdjustText(&stp->zerof_lbl,stnew,stold,init);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -5455,1193 +4369,6 @@ static NhlErrorTypes    AdjustText
 
 	return ret;
 }
-/*
- * Function:  ManageDynamicArrays
- *
- * Description: Creates and manages internal copies of each of the 
- *	StreamlinePlot GenArrays. Populates the copies with the values specified 
- *	via StreamlinePlotCreate or StreamlinePlotSetValues calls. Assigns default 
- *	values and sizes to any array resource not set by the caller.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    ManageDynamicArrays
-#if	NhlNeedProto
-	(NhlLayer		new, 
-	NhlLayer		old,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args)
-#else
-(new,old,init,args,num_args)
-	NhlLayer		new;
-	NhlLayer		old;
-	NhlBoolean	init;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-
-{
-	NhlStreamlinePlotLayer	stnew = (NhlStreamlinePlotLayer) new;
-	NhlStreamlinePlotLayerPart *stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayer	stold = (NhlStreamlinePlotLayer) old;
-	NhlStreamlinePlotLayerPart *ostp = &(stold->streamlineplot);
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
-	NhlGenArray ga;
-	char *entry_name;
-	char *e_text;
-	int	init_count;
-	NhlBoolean need_check,changed;
-	int old_count;
-	float *levels = NULL;
-	NhlBoolean levels_modified = False;
-	NhlstScaleInfo 		*sip,*osip;
-	NhlBoolean		scalar_labels, mag_labels;
-
-	entry_name =  init ? InitName : SetValuesName;
-
-/* 
- * If constant field don't bother setting up the arrays: they will not
- * be used -- but the label scaling still needs to be set up for the
- * benefit of the constant field label
- */
-
-	if (stp->zero_field) {
-		subret = SetScale(stnew,stold,
-				  &stp->mag_scale,&ostp->mag_scale,
-				  False,init);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting up label scaling";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-		return NhlNOERROR;
-	}
-
-/* Determine the streamline level state */
-
-	subret = SetupLevels(new,old,init,&levels,&levels_modified);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error getting streamline level information";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-	count = stp->level_count;
-
-/*=======================================================================*/
-
-/* 
- * The levels array 
- */
-	ga = init ? NULL : ostp->levels;
-	subret = ManageGenArray(&ga,count,stp->levels,Qfloat,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNstLevels,entry_name);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-
-	ostp->levels = changed || levels_modified ? NULL : stp->levels;
-	stp->levels = ga;
-	if (levels_modified) {
-		if (levels == NULL) {
-			e_text = "%s: internal error getting levels";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		NhlFree(stp->levels->data);
-		stp->levels->data = (NhlPointer) levels;
-                stp->levels->num_elements = count;
-#if 0
-		printf("no of levels: %d\n", stp->level_count);
-		for (i= 0; i < stp->level_count; i++)
-			printf("level %d: %f\n", i, levels[i]);
-#endif
-	}
-
-
-/* Set up label scaling - the levels must have been set */
-
-#if 0        
-	if (stp->use_scalar_array && stp->scalar_data_init) {
-		sip = &stp->svalue_scale;
-		osip = &ostp->svalue_scale;
-		scalar_labels = True;
-		mag_labels = False;
-	}
-	else {
-		sip = &stp->mag_scale;
-		osip = &ostp->mag_scale;
-		scalar_labels = False;
-		mag_labels = True;
-	}
-#endif
-        sip = &stp->mag_scale;
-        osip = &ostp->mag_scale;
-	subret = SetScale(stnew,stold,sip,osip,True,init);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error setting up label scaling";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-#if 0
-	subret = SetScale(stnew,stold,&stp->svalue_scale,
-			  &ostp->svalue_scale,scalar_labels,init);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error setting up label scaling";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-#endif
-        
-/*=======================================================================*/
-	
-/*
- * Streamline colors
- */
-	ga = init ? NULL : ostp->streamline_colors;
-	count = stp->level_count + 1;
-	subret = ManageGenArray(&ga,count,stp->streamline_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNstStreamlineColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-	ostp->streamline_colors = changed ? NULL : stp->streamline_colors;
-	stp->streamline_colors = ga;
-
-		
-	if (need_check) {
-		subret = CheckColorArray(stnew,ga,count,init_count,old_count,
-					 &stp->gks_streamline_colors,
-					 NhlNstStreamlineColors,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-			return ret;
-	}
-/*=======================================================================*/
-	
-/*
- * Level String Values
- */
-	count = stp->level_count;
-	if (init) stp->level_strings = NULL;
-
-	if (init || levels_modified || 
-	    sip->format.fstring != osip->format.fstring ||
-	    sip->mode != osip->mode ||
-	    sip->scale_value != osip->scale_value ||
-	    sip->scale_factor != osip->scale_factor) {
-		NhlBoolean modified = False;
-		NhlString cp;
-		float *fp = (float *) stp->levels->data;
-		NhlString *sp = stp->level_strings;
-
-		if (sp != NULL) {
-			int i;
-			for (i = 0; i < ostp->level_count; i++) {
-				if (sp[i] != NULL)
-					NhlFree(sp[i]);
-			}
-			NhlFree(sp);
-		}
-		if ((sp = (NhlString *) 
-		     NhlMalloc(count * sizeof(NhlString))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		for (i=0; i<count; i++) {
-			float fval = fp[i] * sip->scale_factor;
-			NhlFormatRec *frec = &sip->format;
-
-			cp = _NhlFormatFloat(frec,fval,NULL,
-					     &sip->sig_digits,
-					     &sip->left_sig_digit,
-                                             NULL,NULL,NULL,
-					     stp->lbar_func_code,
-					     entry_name);
-			if (cp == NULL) return NhlFATAL;
-			if ((sp[i] = (char *) 
-			     NhlMalloc(strlen(cp)+1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			strcpy(sp[i],cp);
-			modified = True;
-		}
-		stp->level_strings = sp;
-		ostp->level_strings = NULL;
-	}
-				
-
-	return ret;
-}
-
-/*
- * Function:    ManageGenArray
- *
- * Description:	Handles details of managing a GenArray
- *
- * In Args:	count		number of elements to create in the GenArray
- *		copy_ga 	GenArray to copy values from - if
- *				NULL it is ignored.
- *		type		type of GenArray to create - int,float,string
- *		*init_val	if non-null an initialization value to use -
- *				strings have the array index appended
- *		resource_name	name of the GenArray resource 		
- *		entry_name	name of the high level caller of the routine 
- *
- * Out Args:	*ga		If non-NULL on input, contains a previously
- *				allocated GenArray, whose data will be 
- *				replaced if necessary.
- *				Out: An allocated GenArray with allocated data
- *		*old_count	the previous count in the old gen array
- *		*init_count	number of values initialized - if init_val is
- *				non-NULL, will contain count; if init_val is
- *				NULL will contain MIN(count,number of 
- *				elements in copy_ga); if copy_ga is also NULL
- *				will contain 0.
- *		*need_check     True if a GenArray copy occurs or the number
- *				of elements increases and no initialization
- *				value is supplied. False otherwise.
- *		*changed	True if the data has been modified in any way.
- *
- *
- * Return Values:
- *
- * Side Effects: The internal copy of each GenArray is modified to reflect
- *	changes requested via StreamlinePlotSetValues
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    ManageGenArray
-#if	NhlNeedProto
-	(NhlGenArray	*ga,
-	 int		count,
-	 NhlGenArray	copy_ga,
-	 NrmQuark	type,
-	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
-	 NhlBoolean	*need_check,
-	 NhlBoolean	*changed,
-	 NhlString	resource_name,
-	 NhlString	entry_name)
-#else
-(ga,count,copy_ga,type,init_val,old_count,init_count,
- need_check,changed,resource_name,entry_name)
-	NhlGenArray	*ga;
-	int		count;
-	NhlGenArray	copy_ga;
-	NrmQuark	type;
-	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
-	NhlBoolean	*need_check;
-	NhlBoolean	*changed;
-	NhlString	resource_name;
-	NhlString	entry_name;
-#endif
-{
-	char		*str_type;
-	NhlErrorTypes	ret = NhlNOERROR;
-	int		i, size;
-	NhlPointer	datap;
-	char		*e_text;
-
-	*init_count = 0;
-	*need_check = False;
-	*changed = False;
-	*old_count = 0;
-
-	if (type == Qint) {
-		str_type = NhlTInteger;
-		size = sizeof(int);
-	}
-	else if (type == Qcolorindex) {
-		str_type = NhlTColorIndex;
-		size = sizeof(NhlColorIndex);
-	}
-	else if (type == Qfloat) {
-		str_type = NhlTFloat;
-		size = sizeof(float);
-	}
-	else if (type == Qstring) {
-		str_type = NhlTString;
-		size = sizeof(NhlString);
-	}
-	else {
-		e_text = "%s: internal error; unsupported type for %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  resource_name);
-		return NhlFATAL;
-	}
-
-	if (*ga != NULL) {
-		datap = (*ga)->data;
-		*old_count = (*ga)->num_elements;
-		*init_count = *old_count;
-
-		if (count > (*ga)->num_elements) {
-			if ((datap = (NhlPointer)
-			     NhlRealloc(datap, count * size)) == NULL) {
-				e_text = "%s: error reallocating %s data";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,resource_name);
-				return NhlFATAL;
-			}
-			(*ga)->data = datap;
-			(*ga)->num_elements = count;
-			*changed = True;
-		}
-		else if (*ga == copy_ga) {
-			*init_count = (*ga)->num_elements;
-			return ret;
-		}
-	}
-	else {
-		if ((datap = (NhlPointer) NhlMalloc(count * size)) == NULL) {
-			e_text = "%s: error creating %s array";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  resource_name);
-			return NhlFATAL;
-		}
-
-		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
-					     size,1,&count)) == NULL) {
-			e_text = "%s: error creating %s GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  resource_name);
-			return NhlFATAL;
-		}
-		(*ga)->my_data = True;
-		*changed = True;
-	}
-
-/* 
- * If there is a GenArray to copy, copy it; then initialize all remaining
- * uninitialized elements if an initialization value has been passed in.
- */
-
-	if (copy_ga != NULL && copy_ga != *ga) {
-
-		*need_check = True;
-		ret = _NhlValidatedGenArrayCopy(ga,copy_ga,Nhl_stMAX_LEVELS+1,
-						True,False,resource_name, 
-						entry_name);
-		if (ret < NhlWARNING) {
-			e_text = "%s: error copying %s GenArray";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,
-				  resource_name);
-			return ret;
-		}
-		*init_count = copy_ga->num_elements;
-		*changed = True;
-	}
-
-	if (*init_count < count) {
-
-		if (init_val == NULL) {
-			if (type == Qstring) {
-				NhlString *sp = (NhlString *) datap;
-				for (i = *init_count; i< count; i++) {
-					if (i < *old_count) NhlFree(sp[i]);
-					sp[i] = NULL;
-				}
-			}
-			*need_check = True;
-			return ret;
-		}
-		else if (type == Qint)
-			for (i = *init_count; i< count; i++)
-				((int *)datap)[i] = *((int *)init_val);
-		else if (type == Qcolorindex)
-			for (i = *init_count; i< count; i++)
-				((NhlColorIndex *)datap)[i] =
-						*((NhlColorIndex *)init_val);
-		else if (type == Qfloat)
-			for (i = *init_count; i< count; i++)
-				((float *)datap)[i] = *((float *)init_val);
-		else if (type == Qstring) {
-			char *sp;
-			char *init_str = (char *) init_val;
-			char numstr[10];
-			for (i = *init_count; i< count; i++) {
-				sprintf(numstr,"%d",i);
-				if ((sp = (char *) 
-				     NhlMalloc(sizeof(init_str)+
-					       sizeof(numstr)+1)) == NULL) {
-					e_text = "%s: error creating %s array";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-						  entry_name,resource_name);
-					return NhlFATAL;
-				}
-				((char **)datap)[i] = sp;
-				strcpy(sp,init_str);
-				strcat(sp,numstr);
-			}
-		}
-		*init_count = count;
-		*changed = True;
-	}
-
-	return ret;
-}
-
-
-/*
- * Function:    CheckColorArray
- *
- * Description:	Checks color array values for validity, initializing any
- *		currently uninitialized values and keeps the GKS index
- *		arrays up-to-date.
- *
- * In Args:	count		number of elements to create in the GenArray
- *		resource_name	name of the GenArray resource 		
- *		entry_name	name of the high level caller of the routine 
- *
- * Out Args:	*ga		If non-NULL on input, contains a previously
- *				allocated GenArray, whose data will be 
- *				replaced if necessary.
- *				Out: An allocated GenArray with allocated data
- *		*init_count	number of values initialized - if init_val is
- *				non-NULL, will contain count; if init_val is
- *				NULL will contain MIN(count,number of 
- *				elements in copy_ga); if copy_ga is also NULL
- *				will contain 0.
- *
- * Return Values:
- *
- * Side Effects: The internal copy of each GenArray is modified to reflect
- *	changes requested via StreamlinePlotSetValues
- */
-
-/*ARGSUSED*/
-
-static NhlErrorTypes	CheckColorArray
-#if	NhlNeedProto
-	(NhlStreamlinePlotLayer	cl,
-	NhlGenArray	ga,
-	int		count,
-	int		init_count,
-	int		last_count,
-	int		**gks_colors,
-	NhlString	resource_name,
-	NhlString	entry_name)
-#else
-(cl,ga,count,init_count,last_count,gks_colors,resource_name,entry_name)
-	NhlStreamlinePlotLayer	cl;
-	NhlGenArray	ga;
-	int		count;
-	int		init_count;
-	int		last_count;
-	int		**gks_colors;
-	NhlString	resource_name;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR;
-	char *e_text;
-	int *ip;
-	int i;
-	
-
-	ip = (int *) ga->data;
-
-	for (i=init_count; i < count; i++) {
-		ip[i] = 1 + i;
-	}
-
-	if (last_count == 0) {
-		if ((*gks_colors = 
-		     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	else if (count > last_count) {
-		if ((*gks_colors = 
-		     (int *) NhlRealloc(*gks_colors,
-					count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-
-	for (i=0; i<count; i++) {
-                if (ip[i] == NhlTRANSPARENT)
-                        (*gks_colors)[i] = NhlTRANSPARENT;
-                else
-                        (*gks_colors)[i] =
-                                _NhlGetGksCi(cl->base.wkptr,ip[i]);
-	}
-	return ret;
-}
-
-
-/*
- * Function:  SetupLevels
- *
- * Description:
- *
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetupLevels
-#if	NhlNeedProto
-	(NhlLayer	new, 
-	 NhlLayer	old,
-	 NhlBoolean	init,
-	 float		**levels,
-	 NhlBoolean	*modified)
-#else
-(new,old,init,levels,modified)
-	NhlLayer		new;
-	NhlLayer		old;
-	NhlBoolean	init;
-	float		**levels;
-	NhlBoolean	*modified;
-
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	char			*entry_name;
-	NhlStreamlinePlotLayer		stnew = (NhlStreamlinePlotLayer) new;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayer		stold = (NhlStreamlinePlotLayer) old;
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
-	float			min,max;
-
-	entry_name = init ? InitName : SetValuesName;
-	*modified = False;
-
-	if ((! init) && 
-	    (! stp->data_changed) &&
-	    (! stp->level_spacing_set) && 
-	    (stp->levels == ostp->levels) &&
-	    (stp->level_selection_mode == ostp->level_selection_mode) &&
-	    (stp->max_level_count == ostp->max_level_count) &&
-	    (stp->min_level_val == ostp->min_level_val) &&
-	    (stp->max_level_val == ostp->max_level_val) &&
-	    (stp->zero_field == ostp->zero_field))
-		return ret;
-
-	if (stp->level_spacing_set && stp->level_spacing <= 0.0) {
-		e_text = 
-			"%s: Invalid level spacing value set: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		stp->level_spacing = 5.0;
-	}
-	
-
-	if (! stp->use_scalar_array) {
-		min = stp->zmin;
-		max = stp->zmax;
-	}
-	else if (! stp->scalar_data_init) {
-		e_text = 
-		      "%s: No scalar data: using streamline magnitude for levels";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		min = stp->zmin;
-		max = stp->zmax;
-	}
-	else {
-		min = stp->scalar_min;
-		max = stp->scalar_max;
-	}
-		
-	if (stp->min_level_val >= stp->max_level_val) {
-		e_text =
-		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		stp->min_level_val = min;
-		stp->max_level_val = max;
-		stp->level_selection_mode = NhlAUTOMATICLEVELS;
-	}
-	if (max <= stp->min_level_val || min >=  stp->max_level_val) {
-		e_text =
-	   "%s: Data values and min/max levels are disjoint sets: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		stp->min_level_val = min;
-		stp->max_level_val = max;
-	}
-	
-	switch (stp->level_selection_mode) {
-
-	case NhlMANUALLEVELS:
-
-		if (! stp->min_level_set) {
-			subret = SetupLevelsAutomatic(stnew,stold,levels,
-						      min,max,entry_name);
-		}
-		else {
-			subret = SetupLevelsManual(stnew,stold,levels,
-						   min,max,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
-		break;
-
-	case NhlEQUALSPACEDLEVELS:
-
-		subret = SetupLevelsEqual(stnew,stold,levels,
-					  min,max,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
-		break;
-
-	case NhlAUTOMATICLEVELS:
-
-		subret = SetupLevelsAutomatic(stnew,stold,levels,
-					      min,max,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
-		break;
-			
-	case NhlEXPLICITLEVELS:
-
-		if (init && stp->levels == NULL) {
-			subret = SetupLevelsAutomatic(stnew,stold,levels,
-						      min,max,entry_name);
-		}
-		else {
-			subret = SetupLevelsExplicit(stnew,stold,init,levels,
-						     max,min,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
-		break;
-
-	default:
-		ret = NhlFATAL;
-		e_text = "%s: Invalid level selection mode";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	stp->min_level_set = True;
-	stp->max_level_set = True;
-
-		
-	return ret;
-
-}
-
-/*
- * Function:  SetupLevelsManual
- *
- * Description: Sets up Manual mode levels
- *
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetupLevelsManual
-#if	NhlNeedProto
-	(NhlStreamlinePlotLayer	stnew, 
-	 NhlStreamlinePlotLayer	stold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
-#else
-(stnew,stold,levels,entry_name)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
-
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	int			i, count;
-	float			lmin,lmax,spacing;
-	float			*fp;
-
-	spacing = stp->level_spacing;
-	if (stp->min_level_set) {
-		lmin = stp->min_level_val;
-	}
-	else {
-		lmin = min;
-	}
-	
-	if (stp->max_level_set) {
-		lmax = stp->max_level_val;
-	}
-	else {
-		lmax = floor(((max - lmin) / spacing) * spacing + lmin);
-		if (_NhlCmpFAny(lmax,stp->zmax,6) == 0.0) {
-			lmax -= spacing;
-		}
-		stp->max_level_val = lmax;
-	}
-
-	if (fmod((lmax - lmin), stp->level_spacing) > 0.0)
-		count =	(lmax - lmin) / stp->level_spacing + 2.0;
-	else
-		count =	(lmax - lmin) / stp->level_spacing + 1.5;
-
-	if (count <= 0) {
-		e_text = 
-	  "%s: stLevelSpacingF value exceeds or equals data range: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = SetupLevelsAutomatic(stnew,stold,levels,
-					   min,max,entry_name);
-		return MIN(NhlWARNING,ret);
-	}
-	if (count >  Nhl_stMAX_LEVELS) {
-		ret = MIN(NhlWARNING,ret);
-		e_text = 
- "%s: stLevelSpacingF value causes level count to exceed maximum: defaulting";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		stp->level_spacing = (lmax - lmin) / 
-			(stp->max_level_count - 1);
-		count = stp->max_level_count;
-	}
-	else {
-		stp->max_level_count = MAX(stp->max_level_count, count);
-	}
-
-	if ((*levels = (float *) 
-	     NhlMalloc(count * sizeof(float))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-	for (i=0, fp = *levels; i < count - 1; i++) {
-		*(fp++) = lmin + i * stp->level_spacing;
-	}
-	*fp = lmax;
-
-	stp->level_count = count;
-
-	return ret;
-}
-
-/*
- * Function:  SetupLevelsEqual
- *
- * Description: Sets up Equally spaced levels
- *
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetupLevelsEqual
-#if	NhlNeedProto
-	(NhlStreamlinePlotLayer	stnew,
-	 NhlStreamlinePlotLayer	stold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
-#else
-(stnew,stold,levels,entry_name)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
-
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	int			i;
-	float			lmin,lmax,size;
-
-	lmin = min;
-	lmax = max;
-	size = (lmax - lmin) / (stp->max_level_count + 1);
-
-	stp->level_count = stp->max_level_count;
-	if ((*levels = (float *) 
-	     NhlMalloc(stp->level_count * sizeof(float))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-	for (i=0; i < stp->level_count; i++) {
-		(*levels)[i] = stp->zmin + (i+1) * size;
-	}
-	
-	stp->min_level_val = (*levels)[0];
-	stp->max_level_val = (*levels)[stp->level_count - 1];
-	stp->level_spacing = size;
-
-	return ret;
-}
-
-/*
- * Function:  SetupLevelsAutomatic
- *
- * Description: Sets up Automatic mode levels
- *
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetupLevelsAutomatic
-#if	NhlNeedProto
-	(NhlStreamlinePlotLayer	stnew, 
-	 NhlStreamlinePlotLayer	stold,
-	 float		**levels,
-        float		min,
-	float		max,
-	 char		*entry_name)
-#else
-(stnew,stold,levels,entry_name)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
-
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	int			i,count = 0;
-
-	float			lmin,lmax,ftmp,ftest;
-	float			spacing;
-	NhlBoolean		choose_spacing = True;
-
-	lmin = min;
-	lmax = max;
-
-	if (stp->level_spacing_set) {
-		spacing = stp->level_spacing;
-		lmin = ceil(lmin / spacing) * spacing;
-		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
-		count =	(int)((lmax - lmin) / stp->level_spacing + 1.5);
-		if (_NhlCmpFAny(lmin,min,6) == 0.0) {
-			lmin += spacing;
-			count--;
-		}
-		if (_NhlCmpFAny(lmax,max,6) == 0.0) {
-			lmax -= spacing;
-			count--;
-		}
-		if (count <= 0) {
-			ret = MIN(NhlWARNING,ret);
-			lmin = min;
-			lmax = max;
-			e_text = 
-	  "%s: stLevelSpacingF value exceeds or equals data range: defaulting";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		}
-		else if (count >  Nhl_stMAX_LEVELS) {
-			ret = MIN(NhlWARNING,ret);
-			e_text = 
- "%s: stLevelSpacingF value causes level count to exceed maximum: defaulting";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		}
-		else {
-			stp->max_level_count = 
-				MAX(stp->max_level_count, count);
-			choose_spacing = False;
-		}
-	}
-	if (choose_spacing) {
-		subret = ChooseSpacingLin(&lmin,&lmax,&spacing,7,
-					  stp->max_level_count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			e_text = "%s: error choosing spacing";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			return ret;
-		}
-		if (_NhlCmpFAny(lmin,min,6) == 0.0) {
-			lmin += spacing;
-		}
-		ftmp = lmin;
-		ftest = max;
-		count = 0;
-		while (_NhlCmpFAny(ftmp,ftest,6) < 0.0) {
-			count++;
-			ftmp = lmin + count * spacing;
-		}
-	}
-	if (count == 0) {
-		e_text = "%s: error setting automatic levels";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-	for (i =  0; i <  count; i++)
-		(*levels)[i] = lmin + i * spacing;
-
-	stp->level_spacing = spacing;
-	stp->level_count = count;
-	stp->min_level_val = lmin;
-	stp->max_level_val = (*levels)[count - 1];
-
-	return ret;
-}
-
-/*
- * Function:  SetupLevelsExplicit
- *
- * Description: Sets up Explicit mode levels
- *
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetupLevelsExplicit
-#if	NhlNeedProto
-	(NhlStreamlinePlotLayer	stnew, 
-	 NhlStreamlinePlotLayer	stold,
-	 NhlBoolean		init,
-	 float			**levels,
-	 float			min,
-	 float			max,
-	 char			*entry_name)
-#else
-(stnew,stold,levels,entry_name)
-	NhlStreamlinePlotLayer	stnew;
-	NhlStreamlinePlotLayer	stold;
-	NhlBoolean	init;
-	float		**levels;
-        float		min,
-	float		max,
-	char		*entry_name;
-
-#endif
-
-{
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
-	int			i,j,count;
-	float			*fp;
-	float			ftmp;
-
-	if (stp->levels == NULL || stp->levels->num_elements < 1) {
-		ret = MIN(NhlWARNING,ret);
-		e_text = 
-	      "%s: %s is NULL: defaulting to Automatic level selection mode";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNstLevels);
-		return SetupLevelsAutomatic(stnew,stold,levels,
-					    min,max,entry_name);
-	}
-	if (init || stp->levels != ostp->levels)
-		count = stp->levels->num_elements;
-	else 
-		count = stp->level_count;
-
-	if (count > Nhl_stMAX_LEVELS) {
-		ret = MIN(NhlWARNING,ret);
-		e_text = 
-  "%s: Explicit level array count exceeds max level count: defaulting to Automatic level selection mode";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return SetupLevelsAutomatic(stnew,stold,levels,
-					    min,max,entry_name);
-	}
-/*
- * Allocate space for the levels
- */
-	fp = (float *) stp->levels->data;
-	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-	for (i = 0; i < count; i++)
-		(*levels)[i] = fp[i];
-
-	fp = *levels;
-		
-/*
- * Sort the array into ascending order
- */
-	for (i = 0; i < count; i++) {
-		int min = i;
-		for (j = i + 1; j < count; j++)
-			if (fp[j] < fp[min])
-				min = j;
-		if (min != i) {
-			ftmp = fp[min];
-			fp[min] = fp[i];
-			fp[i] = ftmp;
-		}
-	}
-/*
- * Find the average spacing
- */
-	ftmp = 0;
-	for (i = 1; i < count; i++) {
-		ftmp += fp[i] - fp[i-1];
-	}
-
-	stp->level_spacing = ftmp / (count - 1);
-	stp->min_level_val = fp[0];
-	stp->max_level_val = fp[count - 1];
-
-	stp->level_count = count;
-
-	return ret;
-}
-
-/*
- * Function:	ChooseSpacingLin
- *
- * Description: Ethan's tick mark spacing code adapted to choosing 'nice'
- *		StreamlinePlot values; adapted by exchanging the ciel and floor
- *		functions - since the max and min streamline values must be
- *		within the data space rather than just outside it as is 
- *		appropriate for tick marks. (Eventually should probably
- *		generalize the code with another parameter to handle either
- *		situation.)
- *
- * In Args:	tstart	requested tick starting location
- *		tend	requested tick ending location
- *		convert_precision  precision used to compare with
- *		max_ticks the maximum number of ticks to be choosen
- * Out Args:
- *		tstart  new start
- *		tend	new end
- *		spacing new spacing
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */
-static NhlErrorTypes ChooseSpacingLin
-#if	NhlNeedProto
-(
-	float *tstart,
-	float *tend,
-	float *spacing,
-	int convert_precision,
-	int max_ticks,
-	NhlString entry_name)
-#else
-(tstart,tend,spacing,convert_precision,max_ticks,entry_name)
-	float *tstart;
-	float *tend;
-	float *spacing;
-	int	convert_precision;
-	int	max_ticks;
-#endif
-{
-	double	table[] = 
-	{ 1.0,2.0,2.5,4.0,5.0,
-		  10.0,20.0,25.0,40.0,50.0,
-		  100.0,200.0,250.0,400.0,500.0 };
-	double	d,u,t,am1,ax1;
-	double	am2=0.0,ax2=0.0;
-	int	npts = 15;
-	int	i;
-	char	*e_text;
-
-	if(_NhlCmpFAny(*tend,*tstart,8)<=0.0) {
-		e_text = "%s: Streamline field is constant";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-		
-	d = pow(10.0,floor(log10(*tend-*tstart)) - 2.0);
-	u = *spacing = FLT_MAX;
-	for(i=0;i<npts; i++) {
-		t = table[i] * d;
-		am1 = ceil(*tstart/t) *t;
-		ax1 = floor(*tend/t) * t;
-		if(((i>=npts-1)&&(*spacing == u))||
-		   ((t <= *spacing)&&
-		    (_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,
-				 convert_precision) <= 0.0))){
-			*spacing = t;
-			ax2 = ax1;
-			am2 = am1;
-		}
-	}
-	*tstart = am2;
-	*tend = ax2;
-	return(NhlNOERROR);
-	
-}
-
 
 /*
  * Function:  hlustmpxy

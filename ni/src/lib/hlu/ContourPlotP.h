@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.14 1997-07-14 18:36:26 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.15 1997-07-16 23:27:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -267,7 +267,6 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	display_constf_no_data;
 	NhlString	constf_no_data_string;
 	int		fill_count;
-	int		line_count;
 	NhlGenArray	ll_strings;
 	int		*label_amap;
 	int		iws_id;

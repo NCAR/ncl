@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.4 1996-04-26 01:11:37 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.5 1997-07-16 23:27:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -116,6 +116,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 
 	NhlGenArray		vector_field_data;
 	NhlGenArray		scalar_field_data;
+	NhlDrawOrder		streamline_order;
 	NhlBoolean		map_direction;
 
 	float			line_thickness;
@@ -135,39 +136,11 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	int			crossover_check_count;
 	int			line_start_stride;
 	int			arrow_stride;
-	
-	NhlGenArray		levels;
-	int			level_count;
-	NhlLevelSelectionMode	level_selection_mode;
-	int			max_level_count;
-	NhlBoolean		level_spacing_set;
-	float			level_spacing;
-	NhlBoolean		min_level_set;
-	float			min_level_val;
-	NhlBoolean		max_level_set;
-	float			max_level_val;
 
-	NhlBoolean		use_scalar_array;
-	NhlBoolean		mono_streamline_line_color;
-	NhlColorIndex		streamline_line_color;
-	NhlBoolean		mono_streamline_fill_color;
-	NhlColorIndex		streamline_fill_color;
-	NhlGenArray		streamline_colors;
-	NhlColorIndex		scalar_mval_color;
-	NhlDrawOrder		streamline_order;
 
 	NhlString		zerof_string; /* before substitution */
 	NhlstLabelAttrs 	zerof_lbl;
 	NhlAnnotationRec	zerof_lbl_rec;
-
-	NhlstScaleInfo		mag_scale;
-	NhlstScaleInfo		svalue_scale;
-
-	NhlstLabelAttrs 	lbls;
-	NhlBoolean		labels_use_vec_color;
-
-	NhlBoolean		explicit_lbar_labels_on;
-	NhlBoolean		lbar_end_labels_on;
 
 
 /* intercepted resources */
@@ -188,15 +161,11 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
-	NhlGenArray	lbar_labels_res;
-	char		lbar_func_code;
-	NhllbLabelAlignmentMode lbar_alignment;
 
 	/* private resource */
 
 	NhlBoolean	dump_area_map;
 	int		amap_crange;
-	NhlGenArray	conpack_params;
 	NhlBoolean	update_req;
 	NhlBoolean	data_changed;
 
@@ -215,33 +184,19 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float		zmin;
 	float		zmax;
 	float		umin,umax,vmin,vmax;
-	NhlBoolean	scalar_data_init;
-	NhlScalarFieldFloatLayerPart	*sfp;
-	NhlScalarFieldFloatLayerPart	*osfp;
-	float		scalar_min, scalar_max;
 	NhlBoolean	zero_field;
 	NhlBoolean	display_zerof_no_data;
 	NhlString	zerof_no_data_string;
 	NhlBoolean	use_irr_trans;
-	float		xc1,xcm,yc1,ycn; /* data bounds for vvinit/vvectr */
+	float		xc1,xcm,yc1,ycn; /* data bounds for stinit/stream */
 	float		xlb,xub,ylb,yub; /* window boundaries */
-	int		refvec_anno_id;
-	int		minvec_anno_id;
 	int		zerof_anno_id;
-	NhlColorIndex	*gks_streamline_colors;
 	float		real_ref_length;
 
 	NhlLayer	trans_obj;
 	NhlBoolean	wk_active;
 	NhlBoolean	seg_open;
 	NhlBoolean	do_low_level_log;
-	NhlString	*level_strings;
-
-	/* labelbar stuff */
-
-	NhlBoolean	lbar_labels_res_set;
-	NhlBoolean	lbar_labels_set;
-	NhlGenArray	lbar_labels;
 
 	/* workspace */
 

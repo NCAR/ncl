@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.55 1997-07-14 18:36:19 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.56 1997-07-16 23:27:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -193,7 +193,7 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNcnRasterSmoothingOn,NhlCcnRasterSmoothingOn,
          	NhlTBoolean,sizeof(NhlBoolean),Oset(raster_smoothing_on),
-         	NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+         	NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnRasterSampleFactorF,NhlCcnRasterSampleFactorF,
          	NhlTFloat,sizeof(float),Oset(raster_sample_factor),
          	NhlTString,_NhlUSET("1.0"),0,NULL},
@@ -2093,7 +2093,7 @@ ContourPlotInitialize
 	if (! cnp->llabel_interval_set) cnp->llabel_interval = 2;
 	if (! cnp->line_dash_seglen_set) 
 		cnp->line_dash_seglen = 0.15;
-	if (! cnp->cell_size_set || cnp->cell_size == 0.0) {
+	if (! cnp->cell_size_set || cnp->cell_size <= 0.0) {
 		cnp->cell_size = 0.0;
                 cnp->sticky_cell_size_set = False;
         }
@@ -2421,7 +2421,7 @@ static NhlErrorTypes ContourPlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNcnLineDashSegLenF))
 		cnp->line_dash_seglen_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNcnRasterCellSizeF)) {
-                if (cnp->cell_size == 0.0) {
+                if (cnp->cell_size <= 0.0) {
                         cnp->cell_size_set = False;
                         cnp->sticky_cell_size_set = False;
                 }
@@ -3433,31 +3433,38 @@ static NhlErrorTypes cnInitCellArray
                                 NULL);
         dwidth = dunits * (bbox->r - bbox->l);
         dheight = dunits * (bbox->t - bbox->b);
-        
+
+        if (cnp->sticky_cell_size_set) {
+                if ((bbox->r - bbox->l) / cnp->cell_size <= 1.0 ||
+                    (bbox->t - bbox->b) / cnp->cell_size <= 1.0) {
+                        e_text = 
+                                "%s: invalid value for %s: defaulting";
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNcnRasterCellSizeF);
+                        ret = NhlWARNING;
+                        cnp->sticky_cell_size_set = False;
+                }
+        }
+                
 	if (cnp->sticky_cell_size_set) {
 		*msize = (int) ((bbox->r - bbox->l) / cnp->cell_size + 0.5);
 		*nsize = (int) ((bbox->t - bbox->b) / cnp->cell_size + 0.5);
 	}
-        else if (cnp->raster_smoothing_on) {
-                if (! linear || cnp->raster_sample_factor < 1.0) {
-                        *msize = dwidth * cnp->raster_sample_factor;
-                        *nsize = dheight * cnp->raster_sample_factor;
-                }
-                else {
-                        *msize = dwidth;
-                        *nsize = dheight;
-                }
+        else if (cnp->raster_sample_factor <= 0.0) {
+                *msize = cnp->sfp->fast_len;
+                *nsize = cnp->sfp->slow_len;
         }
-        else if (linear) {
-                *msize = MIN(dwidth,
-                             cnp->sfp->fast_len * cnp->raster_sample_factor);
-                *nsize = MIN(dheight,
-                             cnp->sfp->slow_len * cnp->raster_sample_factor);
+        else if (cnp->raster_smoothing_on || !linear) {
+                *msize = dwidth * cnp->raster_sample_factor;
+                *nsize = dheight * cnp->raster_sample_factor;
         }
         else {
-                *msize = cnp->sfp->fast_len * cnp->raster_sample_factor;
-                *nsize = cnp->sfp->slow_len * cnp->raster_sample_factor;
+                *msize = MIN(dwidth,cnp->sfp->fast_len) 
+                        * cnp->raster_sample_factor;
+                *nsize = MIN(dheight,cnp->sfp->slow_len)
+                        * cnp->raster_sample_factor;
         }
+        
         if (!cnp->sticky_cell_size_set) {
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
         }
@@ -8507,24 +8514,6 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
-#if 0                
-/* 
- * If constant field don't bother setting up the arrays: they will not
- * be used -- but the label scaling still needs to be set up for the
- * benefit of the constant field label
- */
-
-	if (cnp->const_field) {
-		subret = SetLabelScale(cnew,cold,init);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting up label scaling";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-		return NhlNOERROR;
-	}
-#endif                
-
 /* Determine the contour level state */
 
 	subret = SetupLevels(new,old,init,&levels,&levels_modified);
@@ -8670,6 +8659,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
 
+        if (init || cnp->fill_count > ocnp->fill_count)
+                need_check = True;
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
@@ -8768,6 +8759,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlNcnLineColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
+        if (init || cnp->level_count > ocnp->level_count)
+                need_check = True;
 	ocnp->line_colors = changed ? NULL : cnp->line_colors;
 	cnp->line_colors = ga;
 
@@ -8995,6 +8988,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlNcnLineLabelFontColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
+        if (init || cnp->level_count > ocnp->level_count)
+                need_check = True;
 	ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
 	cnp->llabel_colors = ga;
 
@@ -9686,7 +9681,6 @@ static NhlErrorTypes    SetupLevelsManual
 
 	cnp->level_count = count;
 	cnp->fill_count = count + 1;
-	cnp->line_count = count;
 
 	return ret;
 }
@@ -9754,7 +9748,6 @@ static NhlErrorTypes    SetupLevelsEqual
 	cnp->max_level_val = (*levels)[cnp->level_count - 1];
 	cnp->level_spacing = size;
 	cnp->fill_count = cnp->level_count + 1;
-	cnp->line_count = cnp->level_count;
 
 	return ret;
 }
@@ -9996,7 +9989,6 @@ static NhlErrorTypes    SetupLevelsExplicit
 	cnp->max_level_val = fp[count - 1];
 
 	cnp->level_count = count;
-	cnp->line_count = count;
 	cnp->fill_count = count + 1;
 
 	if ((cnp->min_level_val > cnp->max_level_val) ||
