@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.10 1994-07-08 21:32:06 ethan Exp $
+#      $Id: yMakefile,v 1.11 1994-07-15 17:08:21 ethan Exp $
 #
 #########################################################################
 #									#
@@ -36,18 +36,22 @@ SYS_LIBS        =       $(CTOFLIBS) -lm
 
 #define IHaveSubdirs
 
-SUBDIRS = data_objs
 
 
 MYNAME = ncl
 
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS) \
-		data_objs/libncl_data.a
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS) 
 
-HDRS	= Files.h ProcFuncs.h Graphics.h Keywords.h Literal.h Machine.h \
-	NclApi.h OpsList.h SrcTree.h Symbol.h Variable.h \
-	defs.h y.tab.h Execute.h OpsFuncs.h
+HDRS	= AttSupport.h NclMultiDValfloatData.h DataSupport.h \
+	NclMultiDValintData.h FileSupport.h NclMultiDVallogicalData.h \
+	Keywords.h NclMultiDVallongData.h Machine.h NclMultiDValnclfileData.h \
+	NclApi.h NclMultiDValshortData.h NclAtt.h NclMultiDValstringData.h \
+	NclData.h NclVar.h NclDataDefs.h OpsFuncs.h NclFile.h OpsList.h \
+	NclFileInterfaces.h SrcTree.h NclHLUObj.h Symbol.h NclMdInc.h \
+	VarSupport.h NclMultiDValData.h defs.h NclMultiDValHLUObjData.h \
+	y.tab.h NclMultiDValdoubleData.h
+
 
 API_SRCS	= NclApi.c
 EXE_SRCS	= Ncl.c
@@ -56,16 +60,29 @@ APISRCS		= $(API_SRCS) $(SRCS)
 EXESRCS		= $(EXE_SRCS) $(SRCS)
 ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
 
-SRCS	= Machine.c Memory.c Printtoken.c SrcTree.c Symbol.c Translate.c \
-	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c Execute.c AddBuiltIns.c \
-	OpsFuncs.c AddIntrinsics.c AddHLUObjs.c AddFileFormats.c
+SRCS	= AddBuiltIns.c AddFileFormats.c AddHLUObjs.c AddIntrinsics.c \
+	AttSupport.c DataSupport.c Execute.c FileSupport.c Formats.c \
+	InitData.c Machine.c Memory.c NclAtt.c NclData.c \
+	NclFile.c NclHLUObj.c NclMultiDValData.c NclMultiDValHLUObjData.c \
+	NclMultiDValdoubleData.c NclMultiDValfloatData.c NclMultiDValintData.c \
+	NclMultiDVallogicalData.c NclMultiDVallongData.c \
+	NclMultiDValnclfileData.c NclMultiDValshortData.c \
+	NclMultiDValstringData.c NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c \
+	SrcTree.c Symbol.c Translate.c VarSupport.c lex.yy.c y.tab.c yywrap.c
+
 
 API_OBJS	= NclApi.o
 EXE_OBJS	= Ncl.o
 
-OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
-	y.tab.o lex.yy.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o \
-	AddIntrinsics.o AddHLUObjs.o AddFileFormats.o
+OBJS	= AddBuiltIns.o AddFileFormats.o AddHLUObjs.o AddIntrinsics.o \
+	AttSupport.o DataSupport.o Execute.o FileSupport.o Formats.o \
+	InitData.o Machine.o Memory.o NclAtt.o NclData.o \
+	NclFile.o NclHLUObj.o NclMultiDValData.o NclMultiDValHLUObjData.o \
+	NclMultiDValdoubleData.o NclMultiDValfloatData.o NclMultiDValintData.o \
+	NclMultiDVallogicalData.o NclMultiDVallongData.o \
+	NclMultiDValnclfileData.o NclMultiDValshortData.o \
+	NclMultiDValstringData.o NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o \
+	SrcTree.o Symbol.o Translate.o VarSupport.o lex.yy.o y.tab.o yywrap.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)
@@ -73,7 +90,7 @@ ALLOBJS = $(API_OBJS) $(OBJS) $(EXE_OBJS)
 
 InstallTarget(ncl,$(INSTALL_INC),$(XAPPPATH))
 InstallTarget(libncl.a,$(INSTALL_LIB),$(LIBPATH))
-DependTarget($(ALLSRCS))
+DependTarget($(EXESRCS))
 
 ncl:: $(EXEOBJS) $(DEPLIBS)
 	$(CC_LD) $(CC_LDOPTIONS) -o ncl $(EXEOBJS) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)

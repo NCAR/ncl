@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.c,v 1.3 1994-07-08 21:31:42 ethan Exp $
+ *      $Id: NclApi.c,v 1.4 1994-07-15 17:08:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,9 +28,9 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <data_objs/NclData.h>
-#include <defs.h>
-#include <Symbol.h>
+#include "defs.h"
+#include "NclData.h"
+#include "Symbol.h"
 #include <errno.h>
 
 FILE *the_err_file;

@@ -747,6 +747,7 @@ int vtype;
 							inc_done = 1;
 						}
 						current_finish[index_map[i]] = current_index[index_map[i]];
+						break;
 					default:
 						if(compare_sel[index_map[i]] >= sel[index_map[i]].u.vec.n_ind) {
 							compare_sel[index_map[i]] = 0;
@@ -1499,12 +1500,14 @@ struct _NclSelectionRecord * sel_ptr;
 					i++;
 				}
 			}
-			for(i = 0; i< n_dims_selection; i++) {
-				if(selection_dim_sizes[index_map[i]] != value->multidval.dim_sizes[i]) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side");
-					return(NhlFATAL);
+			if(value->multidval.kind != SCALAR) {
+				for(i = 0; i< n_dims_selection; i++) {
+					if(selection_dim_sizes[index_map[i]] != value->multidval.dim_sizes[i]) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side");
+						return(NhlFATAL);
+					}
 				}
-			}
+			} 
 			lhs_type = _NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type);
 	
 			rhs_type = value->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
@@ -1551,24 +1554,30 @@ struct _NclSelectionRecord * sel_ptr;
 				return(NhlFATAL);
 			}
 			if(thefile->file.format_funcs->write_var != NULL ) {
-				if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
+				if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(value->multidval.kind != SCALAR)) {
 					ret = (*thefile->file.format_funcs->write_var)(
-						thefile->file.private_rec,
-						var,
-						tmp_md->multidval.val,
-						start,
-						finish,	
-						stride);
-					return(ret);
+							thefile->file.private_rec,
+							var,
+							tmp_md->multidval.val,
+							start,
+							finish,	
+							stride);
+						return(ret);
 				} else {
-					val = tmp_md->multidval.val;
-					from = 0;
-					block_write_limit = n_dims_target -1;
-					for(i = n_dims_target - 1; i >= 0; i--) {
-						if((compare_sel[index_map[i]] != -2)||(index_map[i] != i)) {
-							block_write_limit = i;
-							break;
+					if(value->multidval.kind != SCALAR) {
+						val = tmp_md->multidval.val;
+						from = 0;
+						block_write_limit = n_dims_target -1;
+						for(i = n_dims_target - 1; i >= 0; i--) {
+							if((compare_sel[index_map[i]] != -2)||(index_map[i] != i)) {
+								block_write_limit = i;
+								break;
+							}
 						}
+					} else {
+						block_write_limit = n_dims_target -1;
+						val = tmp_md->multidval.val;
+						from = 0;
 					}
 					n_elem_block = 1;
 					for(i = 0; i < n_dims_target; i++) {
@@ -1587,13 +1596,15 @@ struct _NclSelectionRecord * sel_ptr;
 							thefile->file.private_rec,
 							var,
 							(void*)&(((char*)val)[from]),
-							start,
-							finish,
-							stride);
+							current_index,
+							current_finish,
+							real_stride);
 						if(ret < NhlWARNING) {
 							return(ret);
 						}
-						from += n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type);
+						if(value->multidval.kind != SCALAR) {
+							from += n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type);
+						}
 						if(compare_sel[index_map[block_write_limit]] < 0) {
 							current_index[index_map[block_write_limit]] += stride[n_dims_target-1];
 							current_finish[index_map[block_write_limit]] = current_index[index_map[block_write_limit]];
