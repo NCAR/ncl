@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.7 1993-11-23 18:14:10 kennison Exp $
+C $Id: ardbpa.f,v 1.8 1993-12-12 20:47:08 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
@@ -37,13 +37,23 @@ C
 C Save the current polyline color index and text color index.
 C
       CALL GQPLCI (IERR,IPCI)
+      IF (.NOT.(IERR.NE.0)) GO TO 10002
+        CALL SETER ('ARDBPA - ERROR EXIT FROM GQPLCI',2,1)
+        RETURN
+10002 CONTINUE
       CALL GQTXCI (IERR,ITCI)
+      IF (.NOT.(IERR.NE.0)) GO TO 10003
+        CALL SETER ('ARDBPA - ERROR EXIT FROM GQTXCI',3,1)
+        RETURN
+10003 CONTINUE
 C
 C Save the current state of the SET call and switch to the fractional
 C coordinate system.
 C
       CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('ARDBPA',4).NE.0) RETURN
       CALL    SET (  0.,  1.,  0.,  1.,  0.,  1.,  0.,  1.,   1)
+      IF (ICFELL('ARDBPA',5).NE.0) RETURN
 C
 C Define colors to use for different kinds of edges, as follows:
 C
@@ -66,6 +76,7 @@ C
 C Switch to white initially.
 C
       CALL PLOTIF (0.,0.,2)
+      IF (ICFELL('ARDBPA',6).NE.0) RETURN
       CALL GSPLCI (IDC+4)
       CALL GSTXCI (IDC+4)
       ICLO=IDC+4
@@ -73,6 +84,7 @@ C
 C Put a label at the top of the plot.
 C
       CALL PLCHLQ (.5,.98,LABL,.015,0.,0.)
+      IF (ICFELL('ARDBPA',7).NE.0) RETURN
 C
 C Trace the edges in the area map, drawing arrows as we go.
 C
@@ -85,66 +97,70 @@ C
       RYCO=RYCN
 C
       IF (.NOT.(INDX.LT.8.OR.INDX.GT.IAMA(5).OR.MOD(INDX-8,10).NE.0))
-     +GO TO 10002
-        CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',2,1)
-        GO TO 102
-10002 CONTINUE
+     +GO TO 10004
+        CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',8,1)
+        RETURN
+10004 CONTINUE
 C
       RXCN=REAL(IAMA(INDX+1))/RLC
       RYCN=REAL(IAMA(INDX+2))/RLC
 C
-      IF (.NOT.(IAMA(INDX+7).NE.0)) GO TO 10003
+      IF (.NOT.(IAMA(INDX+7).NE.0)) GO TO 10005
         IGID=ABS(IAMA(INDX+7))
-        IF (.NOT.(IGID.LT.IAMA(6))) GO TO 10004
+        IF (.NOT.(IGID.LT.IAMA(6))) GO TO 10006
           IGID=IAMA(IAMA(1)-IGID)/2
-        GO TO 10005
-10004   CONTINUE
+        GO TO 10007
+10006   CONTINUE
           IGID=IAMA(IGID)/2
-10005   CONTINUE
-        IF (.NOT.(IGID.EQ.IGIP)) GO TO 10006
+10007   CONTINUE
+        IF (.NOT.(IGID.EQ.IGIP)) GO TO 10008
           IAIL=IAMA(INDX+8)
           IF (IAIL.GT.0) IAIL=IAMA(IAIL)/2
           IAIR=IAMA(INDX+9)
           IF (IAIR.GT.0) IAIR=IAMA(IAIR)/2
-          IF (.NOT.(IAMA(INDX+7).GT.0)) GO TO 10007
+          IF (.NOT.(IAMA(INDX+7).GT.0)) GO TO 10009
             IF (IAIL.LE.0.AND.IAIR.LE.0) ICLN=IDC+1
             IF (IAIL.LE.0.AND.IAIR.GT.0) ICLN=IDC+2
             IF (IAIL.GT.0.AND.IAIR.LE.0) ICLN=IDC+3
             IF (IAIL.GT.0.AND.IAIR.GT.0) ICLN=IDC+4
-          GO TO 10008
-10007     CONTINUE
+          GO TO 10010
+10009     CONTINUE
             ICLN=IDC+5
-10008     CONTINUE
-          IF (.NOT.(ICLN.NE.ICLO)) GO TO 10009
+10010     CONTINUE
+          IF (.NOT.(ICLN.NE.ICLO)) GO TO 10011
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('ARDBPA',9).NE.0) RETURN
             CALL GSPLCI (ICLN)
             CALL GSTXCI (ICLN)
             ICLO=ICLN
-10009     CONTINUE
+10011     CONTINUE
           CALL ARDBDA (RXCO,RYCO,RXCN,RYCN,IAIL,IAIR)
-10006   CONTINUE
-      GO TO 10010
-10003 CONTINUE
+          IF (ICFELL('ARDBPA',10).NE.0) RETURN
+10008   CONTINUE
+      GO TO 10012
+10005 CONTINUE
         DT=0.
-10010 CONTINUE
+10012 CONTINUE
 C
-      IF (.NOT.(IAMA(INDX+3).NE.0)) GO TO 10011
+      IF (.NOT.(IAMA(INDX+3).NE.0)) GO TO 10013
         INDX=IAMA(INDX+3)
         GO TO 101
-10011 CONTINUE
+10013 CONTINUE
 C
-C Restore the original SET call.
+C Advance the frame.
 C
-  102 CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      CALL FRAME
+      IF (ICFELL('ARDBPA',11).NE.0) RETURN
 C
 C Restore the polyline color index and the text color index.
 C
       CALL GSPLCI (IPCI)
       CALL GSTXCI (ITCI)
 C
-C Advance the frame.
+C Restore the original SET call.
 C
-      CALL FRAME
+      CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('ARDBPA',12).NE.0) RETURN
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: armvam.f,v 1.2 1993-11-23 18:14:32 kennison Exp $
+C $Id: armvam.f,v 1.3 1993-12-12 20:47:30 kennison Exp $
 C
       SUBROUTINE ARMVAM (IAM,IAN,LAN)
 C

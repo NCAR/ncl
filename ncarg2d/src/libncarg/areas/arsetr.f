@@ -1,5 +1,5 @@
 C
-C $Id: arsetr.f,v 1.3 1993-11-23 18:14:47 kennison Exp $
+C $Id: arsetr.f,v 1.4 1993-12-12 20:47:44 kennison Exp $
 C
       SUBROUTINE ARSETR (IPN,RVL)
 C
