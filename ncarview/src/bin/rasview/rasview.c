@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.11 1992-09-14 23:11:55 don Exp $
+ *	$Id: rasview.c,v 1.12 1993-03-25 17:23:20 clyne Exp $
  */
 /*
  *	rasview.c
@@ -222,7 +222,8 @@ main(argc, argv)
 		}
 		else {
 			(void) fprintf (
-				stderr, "%s: Reading palette file(%s) [ %s ]\n",
+				stderr, 
+				"%s: Couldn't read palette file(%s) [ %s ]\n",
 				progName, pal_name, ErrGetMsg()
 			);
 			
@@ -271,7 +272,8 @@ main(argc, argv)
 
 		if (status == RAS_ERROR) {
 			(void) fprintf(
-				stderr, "%s: Reading input file(%s) [ %s ]\n",
+				stderr, 
+				"%s: Couldn't read rasterfile(%s) [ %s ]\n",
 				progName, *argv, ErrGetMsg()
 			);
 			exit_status++;
