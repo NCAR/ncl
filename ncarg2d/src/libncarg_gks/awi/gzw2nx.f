@@ -1,5 +1,5 @@
 C
-C	$Id: gzw2nx.f,v 1.2 1993-01-09 02:04:39 fred Exp $
+C	$Id: gzw2nx.f,v 1.3 1995-03-30 22:01:24 fred Exp $
 C
       SUBROUTINE GZW2NX(N,P,Q)
 C
@@ -18,10 +18,16 @@ C
       TMP2 = NTWN(ICNT,2)
       TMP3 = NTVP(ICNT,1)
       TMP4 = NTVP(ICNT,2)
-      SCALE = (TMP4-TMP3)/(TMP2-TMP1)
-      DO 200 I=1,N
-        Q(I) = TMP3+(P(I)-TMP1)*SCALE
-  200 CONTINUE
+      IF ((TMP3.EQ.TMP1) .AND. (TMP4.EQ.TMP2)) THEN
+        DO 210 I=1,N
+          Q(I) = P(I)
+  210   CONTINUE
+      ELSE
+        SCALE = (TMP4-TMP3)/(TMP2-TMP1)
+        DO 200 I=1,N
+          Q(I) = TMP3+(P(I)-TMP1)*SCALE
+  200   CONTINUE
+      ENDIF
 C
       RETURN
       END
