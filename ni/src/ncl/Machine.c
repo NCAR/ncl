@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.78 1999-11-12 18:36:39 ethan Exp $
+ *      $Id: Machine.c,v 1.79 2000-08-15 20:57:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ extern "C" {
 #include "VarSupport.h"
 #include "AttSupport.h"
 #include "DataSupport.h"
+#include "parser.h"
 
 /*
 * This is done so stack size and machine size can be configured at 
@@ -2052,6 +2053,9 @@ void _NclRemapParameters
 				_NclDestroyObj((NclObj)data.u.data_obj);
 				break;
 			case NclStk_VAR:
+				if(data.u.data_var->var.thesym != NULL) {
+					data.u.data_var->var.thesym->type = UNDEF;
+				}
 				_NclDestroyObj((NclObj)data.u.data_var);
 			default:
 				break;
