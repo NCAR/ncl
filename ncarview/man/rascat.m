@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.10 1993-05-04 22:04:13 haley Exp $
+.\"	$Id: rascat.m,v 1.11 1994-05-04 15:16:09 haley Exp $
 .\"
 .TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -239,7 +239,7 @@ Not all formats support both 8-bit and 24-bit encodings.
 .LP
 Indexed and direct color encodings cannot be mixed.
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

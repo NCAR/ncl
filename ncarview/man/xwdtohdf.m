@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: xwdtohdf.m,v 1.8 1993-05-04 22:04:27 haley Exp $
+.\"	$Id: xwdtohdf.m,v 1.9 1994-05-04 15:16:21 haley Exp $
 .\"
 .TH XWDTOHDF 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -53,7 +53,7 @@ does it accept color tables with greater than 256 entries.
 is an obsolete utility which simply calls 
 .BR rascat(1NCARG).
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
