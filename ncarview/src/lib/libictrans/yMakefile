@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.20 1996-11-01 15:42:16 boote Exp $
+#	$Id: yMakefile,v 1.21 2000-09-12 22:51:24 haley Exp $
 #
 
 MYNAME1		= libictrans.o
@@ -17,13 +17,20 @@ EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
 
 EXTENSION_SRCS	= ictrans_mem.c ictrans_wks.c 
 
-GENERIC_OBJS	= lex.yy.o commands.o cmd_tab.o get_cmd.o \
+GENERIC_OBJS	= commands.o cmd_tab.o get_cmd.o \
 		glob.o spooler.o ictrans.o lex_stuff.o input.o
+
+#if defined(linux)
+LEX_OBJS = lex.yy_linux.o
+#else
+LEX_OBJS = lex.yy.o
+#endif
+
 
 GENERIC_SRCS	= commands.c cmd_tab.c get_cmd.c \
 		glob.c spooler.c ictrans.c input.c
 
-OBJS	= $(GENERIC_OBJS) $(EXTENSION_OBJS)
+OBJS	= $(GENERIC_OBJS) $(LEX_OBJS) $(EXTENSION_OBJS)
 SRCS	= $(GENERIC_SRCS) $(EXTENSION_SRCS)
 
 RelocatableTarget($(MYNAME1),$(OBJS))
@@ -31,6 +38,9 @@ BuildSharedLibTarget(libNGictrans,$(GENERIC_OBJS),1,0,$(CTRANSLIB) $(CGMLIB) $(N
 DependTarget($(SRCS))
 CleanFilesTarget(lex.yy.c lex.yy.c.sed sedscript)
 
+#if defined(linux)
+lex.yy_linux.o: lex.yy_linux.c
+#else
 lex.yy.c: lex.l Makefile
 	@echo '1a\' > sedscript
 	@echo '#include "input.h"' >>  sedscript
@@ -41,6 +51,7 @@ lex.yy.c: lex.l Makefile
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
+#endif
 
 lint: $(SRCS)
 	lint $(CFLAGS) 1> lint.out 2>&1
