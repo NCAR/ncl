@@ -1,5 +1,5 @@
 /*
- *	$Id: hppcl.h,v 1.1 1993-01-19 19:36:58 clyne Exp $
+ *	$Id: hppcl.h,v 1.2 1993-01-20 00:52:03 clyne Exp $
  */
 #ifndef	_hppcl_
 #define	_hppcl_
@@ -16,8 +16,14 @@
 #define	HPPCL_RESOLUTION	"*t%dR"
 
 
+#ifdef	DEAD
 #define	HPPCL_PAPER_WIDTH	8.5
 #define	HPPCL_PAPER_HEIGHT	11.0
+#endif
+
+#define	HPPCL_PAPER_WIDTH	8.0
+#define	HPPCL_PAPER_HEIGHT	10.0
+
 #define	HPPCL_MAX_RES		300	/* default resolution 300dpi	*/
 
 typedef	struct	HPPCL_Info	{
