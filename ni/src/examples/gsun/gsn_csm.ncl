@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.78 2001-08-22 14:29:34 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.79 2001-08-23 20:59:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1214,7 +1214,7 @@ begin
   lbres = True   ; hold labelbar resources
   amres = True   ; hold annomanager resources 
 
-    width  = get_res_value(res,"pmLabelBarWidthF",def_lpwf*width)
+  parallel = get_res_value(res,"pmLabelBarParallelPosF",0.5)
 
 ; Check for annotation/labelbar resources
 
