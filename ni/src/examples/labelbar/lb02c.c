@@ -95,14 +95,14 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"lb02",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"lb02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlNULL_LAYER,
+	NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 /*
  * Create a plot with 22 color indices (Every 5th one of the default
