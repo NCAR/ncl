@@ -1610,7 +1610,7 @@ int	wr_status;
 		fclose(fd);
 			NclFree(vbuf);
 		return(therec);
-	} else if(fd <= 0) {
+	} else if(fd == NULL) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Could not open (%s) check permissions",NrmQuarkToString(path));
 			NclFree(vbuf);
         }
