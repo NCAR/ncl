@@ -1,5 +1,5 @@
 C
-C	$Id: cssgridd.f,v 1.4 2000-09-13 17:21:23 fred Exp $
+C	$Id: cssgridd.f,v 1.5 2002-09-05 04:49:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -137,6 +137,15 @@ C NN =    Local copy of N
 C NST =   Initial value for IST
 C NX,NY = Local copies of NI and NJ
 C
+C  Zero out the workspaces.
+C
+      DO 11 I=1,27*N
+        IWK(I) = 0
+   11 CONTINUE
+      DO 12 I=1,13*N
+        WK(I) = 0.D0
+   12 CONTINUE
+C
       IF (N .LT. 4) GO TO 110
       NN = N
       NNEW = N
@@ -160,30 +169,6 @@ C
 C  Then convert to Cartesian coordinates.
 C
       CALL CSTRANSD(NN,WK(4*N+1),WK(5*N+1),WK(N+1),WK(2*N+1),WK(3*N+1))        
-C
-C  Introduce a random perturbation in the 5th decimal place
-C  to avoid duplicate input points.  The original input points
-C  are copied into the double precision  workspace so that 
-C  they will not be tampered with.
-C
-      DO 300 I = 1,N
-          WK(  N+I) = DBLE(WK(  N+I) + EPSILON* (0.5-
-     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
-          WK(2*N+I) = DBLE(WK(2*N+I) + EPSILON* (0.5-
-     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
-          WK(3*N+I) = DBLE(WK(3*N+I) + EPSILON* (0.5-
-     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
-C
-C  Renormalize the vector so that it is still a unit vector.
-C
-          UN = WK(N+I)**2
-          UN = UN + WK(2*N+I)**2
-          UN = UN + WK(3*N+I)**2
-          UN = SQRT(UN)
-          WK(  N+I) = 0.99999*WK(  N+I)/UN
-          WK(2*N+I) = 0.99999*WK(2*N+I)/UN
-          WK(3*N+I) = 0.99999*WK(3*N+I)/UN
-  300 CONTINUE
 C
       IST = NST
 C
