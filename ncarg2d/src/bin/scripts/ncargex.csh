@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.43 1993-04-20 19:20:53 haley Exp $
+#   $Id: ncargex.csh,v 1.44 1993-04-29 17:57:34 haley Exp $
 #
 
 #********************#
@@ -330,7 +330,7 @@ set field_list = ($ex_field $tst_field $fnd_field)
 #                  #
 #******************#
 set fnd_gks    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
-                  fgklnclr fgklnwth)
+                  fgklnclr fgklnwth fcirc)
 set fnd_intgks = (fgke01 fgke04)
 set pdc_gks    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
