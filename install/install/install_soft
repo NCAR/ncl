@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.11 1996-04-19 16:53:59 haley Exp $
+#      $Id: install_soft,v 1.12 1996-04-19 20:03:32 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -48,6 +48,39 @@ onintr cleanup
 source $LOCALDIR/env.cf
 if (-e "$LOCALDIR/config/env.$SYSTEM") then
         source $LOCALDIR/config/env.$SYSTEM
+endif
+
+#
+# Get site ID number
+#
+getsiteid:
+clear
+
+cat <<EOF
+
+    Please enter the 4-digit site ID number that can be found in
+    the top right corner of the cover of the NCAR Graphics Installer's
+    Guide. This number is the one that the NCAR Graphics consulting office
+    will ask for when the site rep or site installer calls for help. If
+    you don't have the Installer's Guide, or you don't see a number, just
+    hit return twice and you will be given instructions later on what to do.
+
+EOF
+
+echo -n "    Site ID number: " > /dev/tty
+set answer1 =  $<
+
+echo -n "    Please enter it again to verify: " > /dev/tty
+set answer2 =  $<
+
+if ("$answer1" != "$answer2") then
+  echo "" > /dev/tty
+  echo "    Sorry, please enter the number again." > /dev/tty
+  echo "" > /dev/tty
+  $LOCALDIR/pause
+  goto getsiteid
+else
+  setenv NCARG_SITE_ID $answer1
 endif
 
 #
@@ -174,6 +207,7 @@ EOF
         echo "" > /dev/tty
         echo "" > /dev/tty
         echo "" > /dev/tty
+        echo "  Site ID Number:        $NCARG_SITE_ID" > /dev/tty
         echo "  Installation source:   $INSTALL_SOURCE" > /dev/tty
         echo "  Source device:         $device" > /dev/tty
         echo "  Installation type:     $INSTALL_TYPE" > /dev/tty

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.8 1994-03-15 14:43:20 haley Exp $
+#      $Id: perf_install,v 1.9 1996-04-19 20:03:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -243,6 +243,29 @@ default:
 	echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
 	exit 1
 endsw
+
+#
+# Need to install site file to $lib_path/ncarg/$NCARG_SITE_FILE
+#
+
+if ("$lib_path" != "/dev/null") then
+  if (-f $lib_path/ncarg/$NCARG_SITE_FILE) then
+    /bin/rm $lib_path/ncarg/$NCARG_SITE_FILE
+  endif
+  echo $NCARG_SITE_ID >> $lib_path/ncarg/$NCARG_SITE_FILE
+else
+cat <<EOF > /dev/tty
+
+   For consulting purposes, it would help to create the file
+   \$NCARG_ROOT/lib/ncarg/$NCARG_SITE_FILE and enter in your
+   4-digit NCAR Graphics Site ID number.  This number can be found
+   on the upper right corner of the NCAR Graphics Installer's Guide.
+   If you don't see any such number, you can call (303) 497-1201
+   to get that information.
+
+EOF
+   
+endif
 
 echo ""> /dev/tty
 echo ""> /dev/tty
