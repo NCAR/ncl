@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.53 1996-04-09 22:06:25 ethan Exp $
+ *      $Id: Execute.c,v 1.54 1996-04-12 23:35:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2692,7 +2692,7 @@ NclExecuteReturnStatus _NclExecute
 					
 						if(thevalue != NULL) {
 							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
-							if(estatus < ret){
+							if(ret<estatus){
 								estatus = ret;
 							}
 						} else {

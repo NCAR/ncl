@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.28 1996-04-09 22:06:21 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.29 1996-04-12 23:35:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1876,6 +1876,7 @@ NhlErrorTypes _NclIqsort
 	long *index;
 	int i;
 	NclSelectionRecord * sel_ptr = NULL;
+	NhlErrorTypes ret;
 
 
 	args  = _NclGetArg(0,1,WRITE_IT);
@@ -1911,10 +1912,6 @@ NhlErrorTypes _NclIqsort
 	sel_ptr->selection[0].dim_num = 0;
 
 	switch(args.kind) {
-	case NclStk_VAL:
-		tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp_md,sel_ptr,NULL);
-		_NclWriteSubSection((NclData)tmp_md,NULL,(NclData)tmp_md2);
-		break;
 	case NclStk_VAR:
 		tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp_md,sel_ptr,NULL);
 		_NclAssignToVar(args.u.data_var,tmp_md2,NULL);
@@ -1922,6 +1919,7 @@ NhlErrorTypes _NclIqsort
 			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),sel_ptr);
 			_NclWriteCoordVar(args.u.data_var,(NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
 		}
+		return(NhlNOERROR);
 		break;
 	default:
 		return(NhlFATAL);

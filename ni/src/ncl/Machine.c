@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.45 1996-03-30 00:24:32 ethan Exp $
+ *      $Id: Machine.c,v 1.46 1996-04-12 23:35:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1491,100 +1491,19 @@ if(the_list != NULL) {
 	* When the selection record for the initial parameter has been subselected dimension sizes 
 	* may be different between the parameter and the internal parameter
 	*/
-								if(the_list->the_elements[i].rec == NULL) {
-									for(j = 0; j < anst_var->var.n_dims; j++) {
-										anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-										if((anst_var->var.coord_vars[j] >0) &&
-											(data.u.data_var->var.coord_vars[j]>0)) { 
-											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-											tmp_md = _NclVarValueRead(
-												tmp_var1,
-												NULL,
-												NULL);
-											if(tmp_md != NULL) {
-												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
-											}
-										} else if(data.u.data_var->var.coord_vars[j]>0){
-											if(data.u.data_var->obj.id != anst_var->obj.id) {
-												tmp_var = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-												if(tmp_var != NULL) {
-													tmp_md = _NclVarValueRead(
-														tmp_var,
-														NULL,
-														NULL);
-												}
-												if((tmp_md != NULL)&&(data.u.data_var->var.dim_info[j].dim_quark!= -1)) {
-													_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(data.u.data_var->var.dim_info[j].dim_quark),NULL);
-												}
-											} 
-										}
-									}
-								} else {
-									k = 0;
-/*
-* Should not be any vector subscripts here see contains_vec variable. Therefore
-* 
-*/
-									for(j = 0; j < the_list->the_elements[i].rec->n_entries; j++) {
-										tmp_elem = (int)(((float) (the_list->the_elements[i].rec->selection[j].u.sub.start - the_list->the_elements[i].rec->selection[j].u.sub.finish)) /(float)fabs(((float)the_list->the_elements[i].rec->selection[j].u.sub.stride))) + 1;
-										if((tmp_elem != 1)&&(data.u.data_var->var.coord_vars[k]>0)){
-											if((anst_var->var.coord_vars[j] >0)||(tmp_elem == anst_var->var.dim_info[j].dim_size)) {
-												anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-												tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-												tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-												if(tmp_md != NULL) {
-													tmp_selection.n_entries = 1;
-													tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-													_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),&tmp_selection);
-												}
-											} else {
-/*
-* Case where missing values must be filled in
-*/
-												anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-												tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-												tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-												tmp_ptr =  (void*)NclMalloc((unsigned)tmp_md->multidval.type->type_class.size*anst_var->var.dim_info[j].dim_size);
-												step = (char*)tmp_ptr;
-												for(m = 0; m < tmp_elem; m++) {
-													memcpy((void*)step,(void*)&tmp_md->multidval.type->type_class.default_mis,tmp_md->multidval.type->type_class.size);
-													step = step + tmp_md->multidval.type->type_class.size;
-												}
-												tmp2_md = _NclCreateMultiDVal(
-													NULL,
-													NULL,
-													Ncl_MultiDValData,
-													0,
-													tmp_ptr,
-													&tmp_md->multidval.type->type_class.default_mis,
-													1,
-													&anst_var->var.dim_info[j].dim_size,
-													TEMPORARY,
-													NULL,
-													tmp_md->multidval.type);
-												tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-												_NclWriteSubSection((NclData)tmp2_md,&tmp_selection,(NclData)tmp_md);
-											 	_NclWriteCoordVar(anst_var,tmp2_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
 
-										}
-											k++;
-										}
-										}
-								}
 							}
 						}
 /* 
+* 4/10/96 Changed AssignVarToVar to handle this and removed code from here.
+*
+*
 * 5/17/94 Is this really a problem to deal with here? shouldn't AssignVarToVar take care of copying these?
 * ------->
 * Need to deal with mapping coordinates, attributes and dim_info. THis is
 * not trivial since remapping can cause coord arrays to expand to the
 * size of target dimension and be partially filled in with missing values 
 * <-------
-*/
-/*	
-					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
-					}
 */
 
 						value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
@@ -1649,9 +1568,6 @@ if(the_list != NULL) {
 						}
 					}
 				} else if((the_list->the_elements[i].var_sym != NULL)&&(data.u.data_obj->obj.obj_type & Ncl_Var)){
-/*
-* -----------> Not really sure about DONT_CARE <------------
-*/
 					if(the_list->the_elements[i].is_modified) {
 						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
 					} else {
@@ -1659,39 +1575,6 @@ if(the_list != NULL) {
 					}
 					anst_var = data_ptr->u.data_var;
 					if(the_list->the_elements[i].is_modified) {
-						if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
-							anst_var->var.att_id = data.u.data_var->var.att_id;
-							_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
-	
-							_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-							anst_var->var.att_id = -1;
-						} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
-							_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-							anst_var->var.att_id = data.u.data_var->var.att_id;
-							_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						}
-						for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
-							if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-								_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-								anst_var->var.coord_vars[j] = -1;
-							
-						
-							} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-								anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-								_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-					
-							} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
-								_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-								anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-								_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-							} 
-							anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-						}
-	
-/*
-* AssignVarVar only assigns values not atts, coords or dimensions
-*/
 						_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
 					}
 					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
@@ -2053,89 +1936,12 @@ if(the_list != NULL) {
 * When the selection record for the initial parameter has been subselected dimension sizes 
 * may be different between the parameter and the internal parameter
 */
-							if(the_list->the_elements[i].rec == NULL) {
-								for(j = 0; j < anst_var->var.n_dims; j++) {
-									anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-									if((anst_var->var.coord_vars[j] >0) &&
-										(data.u.data_var->var.coord_vars[j]>0)) { 
-										tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-										tmp_md = _NclVarValueRead(
-											tmp_var1,
-											NULL,
-											NULL);
-										if(tmp_md != NULL) {
-											_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
-										}
-									} else if(data.u.data_var->var.coord_vars[j]>0){
-										if(data.u.data_var->obj.id != anst_var->obj.id) {
-											tmp_var = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[j]);
-											if(tmp_var != NULL) {
-												tmp_md = _NclVarValueRead(
-													tmp_var,
-													NULL,
-													NULL);
-											}
-											if((tmp_md != NULL)&&(data.u.data_var->var.dim_info[j].dim_quark!= -1)) {
-												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(data.u.data_var->var.dim_info[j].dim_quark),NULL);
-											}
-										} 
-									}
-								}
-							} else {
-								k = 0;
-/*
-* Should not be any vector subscripts here see contains_vec variable. Therefore
-* 
-*/
-								for(j = 0; j < the_list->the_elements[i].rec->n_entries; j++) {
-									tmp_elem = (int)(((float) (the_list->the_elements[i].rec->selection[j].u.sub.start - the_list->the_elements[i].rec->selection[j].u.sub.finish)) /(float)fabs(((float)the_list->the_elements[i].rec->selection[j].u.sub.stride))) + 1;
-									if((tmp_elem != 1)&&(data.u.data_var->var.coord_vars[k]>0)){
-										if((anst_var->var.coord_vars[j] >0)||(tmp_elem == anst_var->var.dim_info[j].dim_size)) {
-											anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-											tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-											if(tmp_md != NULL) {
-												tmp_selection.n_entries = 1;
-												tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-												_NclWriteCoordVar(anst_var,tmp_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),&tmp_selection);
-											}
-										} else {
-/*
-* Case where missing values must be filled in
-*/
-											anst_var->var.dim_info[j].dim_quark = data.u.data_var->var.dim_info[k].dim_quark;
-											tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->var.coord_vars[k]);
-											tmp_md = _NclVarValueRead(tmp_var1, NULL, NULL);
-											tmp_ptr =  (void*)NclMalloc((unsigned)tmp_md->multidval.type->type_class.size*anst_var->var.dim_info[j].dim_size);
-											step = (char*)tmp_ptr;
-											for(m = 0; m < anst_var->var.dim_info[j].dim_size; m++) {
-												memcpy((void*)step,(void*)&tmp_md->multidval.type->type_class.default_mis,tmp_md->multidval.type->type_class.size);
-												step = step + tmp_md->multidval.type->type_class.size;
-											}
-											tmp2_md = _NclCreateMultiDVal(
-												NULL,
-												NULL,
-												Ncl_MultiDValData,
-												0,
-												tmp_ptr,
-												&tmp_md->multidval.type->type_class.default_mis,
-												1,
-												&anst_var->var.dim_info[j].dim_size,
-												TEMPORARY,
-												NULL,
-												tmp_md->multidval.type);
-											tmp_selection.selection[0] = the_list->the_elements[i].rec->selection[j];
-											_NclWriteSubSection((NclData)tmp2_md,&tmp_selection,(NclData)tmp_md);
-											 _NclWriteCoordVar(anst_var,tmp2_md,NrmQuarkToString(anst_var->var.dim_info[j].dim_quark),NULL);
-
-										}
-										k++;
-									}
-								}
-							}
 						}
 					}
 /* 
+* 4/10/96 AssignVarToVar now handles this
+*
+*
 * 5/17/94 Is this really a problem to deal with here? shouldn't AssignVarToVar take care of copying these?
 * ------->
 * Need to deal with mapping coordinates, attributes and dim_info. THis is
@@ -2220,38 +2026,8 @@ if(the_list != NULL) {
 				}
 				anst_var = data_ptr->u.data_var;
 				if(the_list->the_elements[i].is_modified) {
-					if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
-						anst_var->var.att_id = data.u.data_var->var.att_id;
-						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
-
-						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						anst_var->var.att_id = -1;
-					} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
-						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-						anst_var->var.att_id = data.u.data_var->var.att_id;
-						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					}
-					for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
-						if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-							anst_var->var.coord_vars[j] = -1;
-						
-						
-						} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-				
-						} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
-							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-						} 
-						anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
-					}
-
 /*
-* AssignVarVar only assigns values not atts, coords or dimensions
+* AssignVarVar assigns values atts, coords and dimensions
 */
 					_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
 				}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.21 1996-04-10 18:03:41 ethan Exp $
+ *      $Id: NclVar.c,v 1.22 1996-04-12 23:35:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
+#include <math.h>
 
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto
@@ -1370,14 +1371,19 @@ struct  _NclSelectionRecord *sel_ptr;
 		if((self->var.coord_vars[index] != -1)&&(_NclGetObj(self->var.coord_vars[index]) != NULL)) {
 			return(_NclAssignToVar((NclVar)_NclGetObj(self->var.coord_vars[index]),value,sel_ptr));
 		} else {
-			tmp.dim_quark = NrmStringToQuark(coord_name);
-			tmp_obj = (NclObj)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,value,&tmp,-1,NULL,COORD,coord_name,PERMANENT);
-			_NclAddParent(tmp_obj,(NclObj)self);
-			self->var.coord_vars[index] = tmp_obj->obj.id;
-			if(self->var.coord_vars[index] == -1) {
-				return(NhlFATAL);
+			if(value->multidval.dim_sizes[0] == self->var.dim_info[index].dim_size) {
+				tmp.dim_quark = NrmStringToQuark(coord_name);
+				tmp_obj = (NclObj)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,value,&tmp,-1,NULL,COORD,coord_name,PERMANENT);
+				_NclAddParent(tmp_obj,(NclObj)self);
+				self->var.coord_vars[index] = tmp_obj->obj.id;
+				if(self->var.coord_vars[index] == -1) {
+					return(NhlFATAL);
+				} else {
+					return(NhlNOERROR);
+				}
 			} else {
-				return(NhlNOERROR);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables must be the same dimension as their dimension");
+				return(NhlFATAL);
 			}
 		}
 	} else {
@@ -1655,10 +1661,23 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	NclMultiDValData rhs_md = NULL;
 	NclObjTypes lhs_type,rhs_type;
 	NhlErrorTypes ret = NhlNOERROR;
+	NclSelectionRecord tmp_sel;
+	NclMultiDValData val_md = NULL;
+	int i,j,done,m;
+	int lhs_n_elem,rhs_n_elem;
+	void *tmp_coord;
+	char *tmp_ptr;
+	NclMultiDValData *tmp_coord_array;
+	NclQuark *tmp_name_array;
+	NclAtt tmp_att;
+	NclAttList *att_list;
 
 
 	rhs_type = _NclGetVarRepValue(rhs);
 	lhs_type = _NclGetVarRepValue(lhs);
+	tmp_sel.selected_from_sym=NULL;
+	tmp_sel.selected_from_var = NULL;
+	tmp_sel.n_entries = 1;
 	
 	lhs_md = (NclMultiDValData)_NclGetObj(lhs->var.thevalue_id);
 	if((rhs_type != lhs_type)||((rhs_type == lhs_type)&&(rhs_type == Ncl_Obj))){
@@ -1684,52 +1703,440 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	if((lhs_md == NULL)||(rhs_md == NULL) ) {
 		return(NhlFATAL);
 	}
+	if((rhs_sel_ptr == NULL)&&(lhs_sel_ptr == NULL)&&(lhs->obj.id == rhs->obj.id)&&(lhs->var.thevalue_id == rhs->var.thevalue_id)&&(lhs->var.att_id == rhs->var.att_id)) { 
+		return(NhlNOERROR);
+	}
+	
+	if(lhs->obj.id == rhs->obj.id) { 
 /*
-* Unless the following is true nothing needs to be done
+* Same Variable
 */
-	if((lhs->obj.id !=rhs->obj.id)||(lhs->var.thevalue_id != rhs->var.thevalue_id)) {
-		if((lhs->obj.id == rhs->obj.id)||(lhs->var.thevalue_id == rhs->var.thevalue_id)) {
-	/*
-	* Situation where left and right hand side share same value or are identical. A situation where
-	* they could have different id's but share the same value is when a global and a function parameter
-	* reference the same data value.
-	*/
-			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-			if(rhs_md == NULL) {
-				return(NhlFATAL);
-			}
+		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+		if(rhs_md == NULL) {
+			return(NhlFATAL);
+		}
 
-		
-			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-
-			if(rhs_md->obj.status != PERMANENT) {
-				_NclDestroyObj((NclObj)rhs_md);
-			}
-			if(ret < NhlWARNING) {
-				return(ret);
-			}
-			return(ret);
-		} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr != NULL)) {
-			_NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
-
-		} else if(rhs_sel_ptr == NULL) {
-			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-			if(ret < NhlWARNING){
-				return(ret);
-			} 
-			return(ret);
-		} else {
-	/*
-	* lhs_sel_ptr == NULL &&  rhs_sel_ptr != NULL
-	*/
-			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-
-			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-			if(ret < NhlWARNING) {
-				return(ret);
-			}
+	
+		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+		if(rhs_md->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)rhs_md);
+		}
+		if(ret < NhlWARNING) {
 			return(ret);
 		}
+/*
+* When var is the same special care must be taken to not overwrite coordinate information
+* This would happend in named subscripting case. Essentially have to loop through and read
+* coord values out the loop again and write them.
+*/
+		if((lhs_sel_ptr !=NULL) &&(rhs_sel_ptr == NULL)) {
+			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
+			for(i = 0; i< lhs->var.n_dims; i++) {
+				tmp_name_array[i] = rhs->var.dim_info[i].dim_quark;
+				if(rhs->var.coord_vars[i] != -1) {
+/*
+* Have to copy it since _NclWriteCoord uses WriteVar which would destroy value pointer causing
+* free memory reads when dimension reordering occurs.
+*/
+					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL),NULL);
+					
+				} else {
+					tmp_coord_array[i] = NULL;
+				}
+			} 
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				_NclWriteDim(lhs,lhs_sel_ptr->selection[i].dim_num,NrmQuarkToString(tmp_name_array[i]));
+			}
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				tmp_sel.selection[0] = lhs_sel_ptr->selection[i];
+				tmp_sel.selection[0].dim_num = 0;
+				if(tmp_coord_array[i] != NULL) {
+                                	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),&tmp_sel);
+				}
+			}
+				
+			NclFree(tmp_coord_array);
+			NclFree(tmp_name_array);
+		} else if((lhs_sel_ptr == NULL)&&(rhs_sel_ptr != NULL)) {
+			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
+			for(i = 0; i< lhs->var.n_dims; i++) {
+				tmp_name_array[i] = rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark;
+				if(rhs->var.coord_vars[rhs_sel_ptr->selection[i].dim_num] != -1) {
+/*
+* Have to copy it since _NclWriteCoord uses WriteVar which would destroy value pointer causing
+* free memory reads when dimension reordering occurs.
+*/
+					tmp_sel.selection[0] = rhs_sel_ptr->selection[i];
+					tmp_sel.selection[0].dim_num = 0;
+					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),&tmp_sel),NULL,NULL),NULL);
+					
+				} else {
+					tmp_coord_array[i] = NULL;
+				}
+			} 
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				_NclWriteDim(lhs,i,NrmQuarkToString(tmp_name_array[i]));
+			}
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				if(tmp_coord_array[i] != NULL) {
+                                	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
+				}
+			}
+			NclFree(tmp_name_array);
+			NclFree(tmp_coord_array);
+
+		} else if((lhs_sel_ptr != NULL) &&(rhs_sel_ptr != NULL)) {
+			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
+			for(i = 0; i< lhs->var.n_dims; i++) {
+				tmp_name_array[i] = rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark;
+				if(rhs->var.coord_vars[rhs_sel_ptr->selection[i].dim_num] != -1) {
+/*
+* Have to copy it since _NclWriteCoord uses WriteVar which would destroy value pointer causing
+* free memory reads when dimension reordering occurs.
+*/
+					tmp_sel.selection[0] = rhs_sel_ptr->selection[i];
+					tmp_sel.selection[0].dim_num = 0;
+					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),&tmp_sel),NULL,NULL),NULL);
+					
+				} else {
+					tmp_coord_array[i] = NULL;
+				}
+			} 
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				_NclWriteDim(lhs,lhs_sel_ptr->selection[i].dim_num,NrmQuarkToString(tmp_name_array[i]));
+			}
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				if(tmp_coord_array[i] != NULL) {
+                        		_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
+				}
+			}
+			NclFree(tmp_name_array);
+			NclFree(tmp_coord_array);
+
+		}
+/*
+* lhs_sel_ptr == NULL and rhs_sel_ptr == NULL is a don't care case
+*/
+		return(ret);
+	} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr != NULL)) {
+/*
+* Taking advatage that the following call fills in the extents for each selection
+*/
+		ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+		if(ret < NhlINFO) {
+			return(ret);
+		}
+		j = 0;
+		i = 0;
+		done = 0;
+		while(!done) {
+			switch(rhs_sel_ptr->selection[j].sel_type) {
+			case Ncl_VECSUBSCR:
+				rhs_n_elem = rhs_sel_ptr->selection[j].u.vec.n_ind;
+				break;
+			default:
+				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
+					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.start
+                                        	- rhs_sel_ptr->selection[j].u.sub.finish))
+                                        	/(float)fabs(((float)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
+				} else {
+					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.finish
+                                        	- rhs_sel_ptr->selection[j].u.sub.start))
+                                        	/((float)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
+				}
+				break;
+			}
+			switch(lhs_sel_ptr->selection[i].sel_type) {
+			case Ncl_VECSUBSCR:
+				lhs_n_elem = lhs_sel_ptr->selection[i].u.vec.n_ind;
+				break;
+			default:
+				if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
+					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.start
+                                        	- lhs_sel_ptr->selection[i].u.sub.finish))
+                                        	/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+				} else {
+					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.finish
+                                        	- lhs_sel_ptr->selection[i].u.sub.start))
+                                        	/((float)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
+				}
+				break;
+			}
+			if((lhs_n_elem != 1)&&(rhs_n_elem != 1)) {
+				if((rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0)&&(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_quark != rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark)){
+					_NclWriteDim(lhs,lhs_sel_ptr->selection[i].dim_num,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark));
+					if(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1) {
+/*
+* Destroy it and give warning
+*/
+
+					} 
+					if(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1) {
+                                                tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
+                                                tmp_sel.selection[0].dim_num = 0;
+                                                val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+                                                tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
+                                                tmp_sel.selection[0].dim_num = 0;
+						if(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size) {
+                                                	_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+						} else {
+/*
+* Missing values need to be filled in
+*/
+							tmp_coord = NclMalloc(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size*val_md->multidval.type->type_class.size);
+							tmp_ptr = (char*)tmp_coord;
+							for(m = 0; m < lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size; m++) {
+								memcpy((void*)tmp_ptr,(void*)&(val_md->multidval.type->type_class.default_mis),val_md->multidval.type->type_class.size);
+								tmp_ptr = tmp_ptr + val_md->multidval.type->type_class.size;
+
+							}
+							_NclWriteCoordVar(lhs,_NclCreateMultiDVal( NULL, NULL, Ncl_MultiDValData, 0, tmp_coord, &val_md->multidval.type->type_class.default_mis, 1, &lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size, TEMPORARY, NULL, val_md->multidval.type),NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
+                                                	_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							
+						}
+                                        }
+				} else if((rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0)&&(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
+					tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
+					tmp_sel.selection[0].dim_num = 0;
+					val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+					tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
+                                        tmp_sel.selection[0].dim_num = 0;
+					_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+				} else if((rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0)&&(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] == -1) &&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
+					tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
+					tmp_sel.selection[0].dim_num = 0;
+					val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+					tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
+                                        tmp_sel.selection[0].dim_num = 0;
+					if(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size) {
+						_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+					} else {
+/*
+* Missing values need to be filled in
+*/
+						tmp_coord = NclMalloc(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size*val_md->multidval.type->type_class.size);
+						tmp_ptr = (char*)tmp_coord;
+						for(m = 0; m < lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size; m++) {
+							memcpy((void*)tmp_ptr,(void*)&(val_md->multidval.type->type_class.default_mis),val_md->multidval.type->type_class.size);
+							tmp_ptr = tmp_ptr + val_md->multidval.type->type_class.size;
+
+						}
+						_NclWriteCoordVar(
+							lhs,
+							_NclCreateMultiDVal( 
+								NULL, 
+								NULL, 
+								Ncl_MultiDValData, 
+								0, 
+								tmp_coord, 
+								&val_md->multidval.type->type_class.default_mis, 
+								1, 
+								&lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size, 
+								TEMPORARY, 
+								NULL, 
+								val_md->multidval.type),
+							NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
+							NULL);
+                                               	_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+					}
+				}
+				i++;
+				j++;	
+			} else {
+				if(lhs_n_elem == 1){
+					i++;
+				}
+				if(rhs_n_elem == 1){
+					j++;
+				}
+			}
+			if((i == lhs->var.n_dims)||(j == rhs->var.n_dims)) {
+				done = 1;
+			}
+		}
+	} else if(rhs_sel_ptr == NULL) {
+		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+		if(ret < NhlWARNING){
+			return(ret);
+		} 
+		if(lhs_sel_ptr == NULL) {
+/*
+* Loop through all dimensions check dimension name. if unequal change name
+* then if coord_var exists write to that coordinate variable
+* When lhs_sel_ptr is null all dims are same size this simplifies things alot
+*/
+			for(i = 0; i < lhs->var.n_dims; i++) {
+				if((rhs->var.dim_info[i].dim_quark>0)&&(lhs->var.dim_info[i].dim_quark != rhs->var.dim_info[i].dim_quark)) {
+					_NclWriteDim(lhs,i,NrmQuarkToString(rhs->var.dim_info[i].dim_quark));
+				}
+				if(rhs->var.coord_vars[i] != -1) {
+					val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL);
+					_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+				}  
+			}
+		} else {
+			j = 0;
+			i = 0;
+			done = 0;
+			while(!done) {
+				switch(lhs_sel_ptr->selection[i].sel_type) {
+				case Ncl_VECSUBSCR:
+					lhs_n_elem = lhs_sel_ptr->selection[i].u.vec.n_ind;
+					break;
+				default:
+					if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
+						lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.start
+							- lhs_sel_ptr->selection[i].u.sub.finish))
+							/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+					} else {
+						lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.finish
+							- lhs_sel_ptr->selection[i].u.sub.start))
+							/((float)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
+					}
+					break;
+				}
+				if(lhs_n_elem != 1) {
+					if((rhs->var.dim_info[j].dim_quark > 0)&&(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_quark != rhs->var.dim_info[j].dim_quark)){
+						_NclWriteDim(lhs,i,NrmQuarkToString(rhs->var.dim_info[j].dim_quark));
+						if(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1) {
+/*
+* Destroy it and give warning
+*/
+						}
+						if(rhs->var.coord_vars[j] != -1) {
+							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),NULL,NULL);
+							tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
+							tmp_sel.selection[0].dim_num = 0;
+							if(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size) {
+								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+							} else {
+								tmp_coord = NclMalloc(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size*val_md->multidval.type->type_class.size);
+								tmp_ptr = (char*)tmp_coord;
+								for(m = 0; m < lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size; m++) {
+									memcpy((void*)tmp_ptr,(void*)&(val_md->multidval.type->type_class.default_mis),val_md->multidval.type->type_class.size);
+									tmp_ptr = tmp_ptr + val_md->multidval.type->type_class.size;
+								}
+								_NclWriteCoordVar(
+									lhs,
+									_NclCreateMultiDVal( 
+										NULL, 
+										NULL, 
+										Ncl_MultiDValData, 
+										0, 
+										tmp_coord, 
+										&val_md->multidval.type->type_class.default_mis, 
+										1, 
+										&lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size, 
+										TEMPORARY, 
+										NULL, 
+										val_md->multidval.type),
+									NrmQuarkToString(rhs->var.dim_info[j].dim_quark),
+									NULL);
+                                                        	_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+
+							}
+                                                }
+					}
+					i++;
+					j++;
+				} else {
+					i++;
+				}
+				if(i==lhs->var.n_dims) {
+					done =1;
+				}
+			}
+			
+		}
+	} else {
+/*
+* lhs_sel_ptr == NULL &&  rhs_sel_ptr != NULL
+*/
+		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+
+		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+		if(ret < NhlWARNING) {
+			return(ret);
+		}
+		j=0;
+		i= 0;
+		done = 0;
+		while(!done) {
+			switch(rhs_sel_ptr->selection[j].sel_type) {
+			case Ncl_VECSUBSCR:
+				rhs_n_elem = rhs_sel_ptr->selection[j].u.vec.n_ind;
+				break;
+			default:
+				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
+					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.start
+						- rhs_sel_ptr->selection[i].u.sub.finish))
+						/(float)fabs(((float)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
+				} else {
+					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.finish
+						- rhs_sel_ptr->selection[j].u.sub.start))
+						/((float)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
+				}
+				break;
+			}
+
+			if(rhs_n_elem != 1) {
+				if((rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0)&&(lhs->var.dim_info[i].dim_quark != rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark)){
+					_NclWriteDim(lhs,i,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark));
+					if(lhs->var.coord_vars[i] != -1) {
+/*
+* Destroy it and give warning
+*/
+					}
+					if(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1) {
+						tmp_sel.selection[0]= rhs_sel_ptr->selection[j];
+						tmp_sel.selection[0].dim_num = 0;
+						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+						_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
+                                       }
+				}
+				i++;
+				j++;
+			} else {
+				j++;
+			}
+			if(j==lhs->var.n_dims) {
+				done =1;
+			}
+		}
+	}
+
+	if((rhs->var.att_id != -1)&&(lhs->var.att_id != -1)&&(lhs->var.att_id != rhs->var.att_id)) {
+/*
+* Need to merge lists
+*/
+		tmp_att = (NclAtt)_NclGetObj(rhs->var.att_id);
+		att_list = tmp_att->att.att_list;
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			if(_NclIsAtt(lhs->var.att_id,att_list->attname)) {
+				_NclDeleteAtt(lhs->var.att_id,att_list->attname);
+				_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			} else {
+				_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			}
+		}
+	}if((rhs->var.att_id != -1)&&(lhs->var.att_id == -1)) {
+/*
+* Simple case just copy atts
+*/
+		lhs->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)lhs);
+		
+		tmp_att = (NclAtt)_NclGetObj(rhs->var.att_id);
+		att_list = tmp_att->att.att_list;		
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
+			att_list = att_list->next;
+		}
+		
 	}
 	return(NhlNOERROR);
 }
