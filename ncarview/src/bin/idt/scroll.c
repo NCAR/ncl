@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.9 1992-12-14 22:05:11 clyne Exp $
+ *	$Id: scroll.c,v 1.10 1992-12-14 23:08:19 clyne Exp $
  */
 /*
  *	scroll.c
@@ -30,9 +30,7 @@
  *	wd->stop_segment	: the ending segment frame number
  *	percent			: percent of scroll bar thumb wheel was moved to
  */
-void	ScrollTo(wd, percent)
-	WidgetData	*wd;
-	float		percent;
+void	ScrollTo(WidgetData *wd, float percent)
 {
 	int	start, stop;
 	int	frame;
