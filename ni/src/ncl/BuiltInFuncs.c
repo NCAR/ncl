@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.131 2000-12-05 16:43:10 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.132 2001-01-02 16:30:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -333,14 +333,14 @@ NhlErrorTypes _NclIListFuncs
 						}
 					}
 				}
-				if(step->u.func->theargs[i].arg_data_type >= 0) {
+				if(step->u.func->theargs[i].arg_data_type > 0) {
 					ret = nclfprintf(fp,": %s,\n",NrmQuarkToString(step->u.func->theargs[i].arg_data_type));
 					if(ret < 0) {
 						_NclFreeApiDataList((void*)tmp);
         					return(NhlWARNING);
 					}
 				} else {
-					ret = nclfprintf(fp,",\n");
+					ret = nclfprintf(fp,": any type,\n");
 					if(ret < 0) {
 						_NclFreeApiDataList((void*)tmp);
         					return(NhlWARNING);
@@ -376,14 +376,14 @@ NhlErrorTypes _NclIListFuncs
 					}
 				}
 			}
-			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type >= 0) {
+			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type > 0) {
 				ret = nclfprintf(fp,": %s\n",NrmQuarkToString(step->u.func->theargs[step->u.func->nparams-1].arg_data_type));
 				if(ret < 0) {
 					_NclFreeApiDataList((void*)tmp);
         				return(NhlWARNING);
 				}
 			} else {
-				ret = nclfprintf(fp,"\n");
+				ret = nclfprintf(fp,": any type\n");
 				if(ret < 0) {
 					_NclFreeApiDataList((void*)tmp);
         				return(NhlWARNING);
