@@ -62,7 +62,7 @@ double *c_dsgrid2d(int n, double x[], double y[], double u[],
   
   z = (double *) calloc(n, sizeof(double));
   if (z == NULL) {
-    DSErrorHnd(13, "c_dsgrid2d", ds_filee, "\n");
+    DSErrorHnd(13, "c_dsgrid2d", stderr, "\n");
     *ier = ds_error_status;
     return(&perror);
   }

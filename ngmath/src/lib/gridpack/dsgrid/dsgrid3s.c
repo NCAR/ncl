@@ -129,31 +129,31 @@ void dsgetmem_s(int n, int nx, int ny, int nz, int *ier)
 {
   ds_input_points_s     = (DSpoints3 *) calloc(n, sizeof(DSpoints3));
   if (ds_input_points_s == NULL) {
-    DSErrorHnd(6, "dsgetmem_s", ds_filee, "\n");
+    DSErrorHnd(6, "dsgetmem_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
   ds_distances_s        = (float *) calloc(n, sizeof(float));
   if (ds_distances_s == NULL) {
-    DSErrorHnd(9, "dsgetmem_s", ds_filee, "\n");
+    DSErrorHnd(9, "dsgetmem_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
   ds_weights_s          = (float *) calloc(n, sizeof(float));
   if (ds_weights_s == NULL) {
-    DSErrorHnd(10, "dsgetmem", ds_filee, "\n");
+    DSErrorHnd(10, "dsgetmem", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
   ds_permutation_vector = (int *) calloc(n, sizeof(int));
   if (ds_permutation_vector == NULL) {
-    DSErrorHnd(11, "dsgetmem_s", ds_filee, "\n");
+    DSErrorHnd(11, "dsgetmem_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
   ds_output_s           = (float *) calloc(nx*ny*nz, sizeof(float));
   if (ds_output_s == NULL) {
-    DSErrorHnd(12, "dsgetmem_s", ds_filee, "\n");
+    DSErrorHnd(12, "dsgetmem_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
@@ -182,13 +182,13 @@ void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[],
   if (ds_set_maxpts == 0) ds_maxpoints = n;
 
   if (n < 3) {
-    DSErrorHnd(2, "dsinit_s", ds_filee, "\n");
+    DSErrorHnd(2, "dsinit_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
 
   if ((nx <= 0) || (ny <=0) || (nz <= 0)) {
-    DSErrorHnd(3, "dsinit_s", ds_filee, "\n");
+    DSErrorHnd(3, "dsinit_s", stderr, "\n");
     *ier = ds_error_status;
     return;
   }
@@ -275,7 +275,7 @@ float ivalue_s(int num_points, float *values,
     weight_sum += ds_weights_s[iw];
   }
   if (weight_sum == 0.) {
-    DSErrorHnd(14, "ivalue_s", ds_filee, "\n");
+    DSErrorHnd(14, "ivalue_s", stderr, "\n");
     return( (float) ds_missing_value);
   }
   normalization_factor = 1./weight_sum;
@@ -320,7 +320,7 @@ float svalue_s(int num_points, float *values,
     weight_sum += ds_weights_s[iw];
   }
   if (weight_sum == 0.) {
-    DSErrorHnd(14, "svalue_s", ds_filee, "\n");
+    DSErrorHnd(14, "svalue_s", stderr, "\n");
     return( (float) ds_missing_value);
   }
   normalization_factor = 1./weight_sum;

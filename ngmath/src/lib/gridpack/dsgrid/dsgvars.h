@@ -30,11 +30,6 @@ double    ds_missing_value = -99999., ds_exponent = 3., ds_scale = 1.,
 int       ds_error_status = 0, ds_set_maxpts = 0, ds_maxpoints, 
           ds_first_call = 1, ds_shadowing = 0, ds_set_max_dist = 0;
 
-#ifdef __linux__
-FILE      *ds_filee = _IO_stderr;
-#else
-FILE      *ds_filee = stderr;
-#endif
 char      ds_error_file[256] = {"stderr"}, ds_emsg[256];
 
 int       *ds_permutation_vector;

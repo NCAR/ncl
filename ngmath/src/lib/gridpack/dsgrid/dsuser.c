@@ -36,7 +36,7 @@ void c_dsgetc(char *pnam, char *vnam)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dsgetc", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dsgetc", stderr, ds_emsg);
       return;
    }
    for ( ;  *s != '\0'; ++s, ++vnam) {
@@ -55,7 +55,7 @@ void c_dsgeti(char *pnam, int *ival)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dsgeti", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dsgeti", stderr, ds_emsg);
    }
 }
 
@@ -73,27 +73,9 @@ void c_dssetc(char *pnam, char *vnam)
       }
          *s = '\0';
    }
-   else if (!strncmp(pnam,"erf",3) || !strncmp(pnam,"ERF",3)) {
-      if (!strncmp(vnam,"stderr",6)) {
-         ds_filee = stderr;
-         strcpy(ds_error_file,"stderr");
-      }
-      else if (!strncmp(vnam,"stdout",6)) {
-         ds_filee = stdout;
-         strcpy(ds_error_file,"stdout");
-      }
-      else {
-         if ((ds_filee = fopen(vnam,"w")) == (FILE *) NULL)
-         {
-            DSErrorHnd(5, "c_dssetc", stderr, "\n");
-            return;
-         }
-         strcpy(ds_error_file,vnam);
-      }
-   }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dssetc", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dssetc", stderr, ds_emsg);
    }
 }
 
@@ -109,7 +91,7 @@ void c_dsseti(char *pnam, int ival)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dsseti", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dsseti", stderr, ds_emsg);
    }
 }
 

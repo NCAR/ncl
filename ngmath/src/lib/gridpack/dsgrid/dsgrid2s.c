@@ -37,7 +37,7 @@ float *c_dsgrid2s(int n, float x[], float y[], float u[],
   
   z = (float *) calloc(n, sizeof(float));
   if (z == NULL) {
-    DSErrorHnd(13, "c_dsgrid2s", ds_filee, "\n");
+    DSErrorHnd(13, "c_dsgrid2s", stderr, "\n");
     *ier = ds_error_status;
     return(&perror);
   }

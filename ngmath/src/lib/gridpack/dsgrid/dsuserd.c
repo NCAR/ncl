@@ -41,7 +41,7 @@ void c_dsgetrd(char *pnam, double *dval)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dsgetrd", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dsgetrd", stderr, ds_emsg);
    }
 }
 
@@ -62,14 +62,14 @@ void c_dssetrd(char *pnam, double dval)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dssetrd", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dssetrd", stderr, ds_emsg);
    }
 }
 
 #ifdef UNICOS
 void NGCALLF(dssetrd,DSSETRD) (char *pnam, double *rval)
 {
-   DSErrorHnd(7, "dssetrd", ds_filee, "\n");
+   DSErrorHnd(7, "dssetrd", stderr, "\n");
 }
 #else
 void NGCALLF(dssetrd,DSSETRD) (char *pnam, double *rval)
@@ -81,7 +81,7 @@ void NGCALLF(dssetrd,DSSETRD) (char *pnam, double *rval)
 #ifdef UNICOS
 void NGCALLF(dsgetrd,DSGETRD) (char *pnam, double *rval)
 {
-   DSErrorHnd(7, "dsgetrd", ds_filee, "\n");
+   DSErrorHnd(7, "dsgetrd", stderr, "\n");
 }
 #else
 void NGCALLF(dsgetrd,DSGETRD) (char *pnam, double *rval)
@@ -95,7 +95,7 @@ void NGCALLF(dsgrid3d,DSGRID3D) (int *n, double *x, double *y, double *z,
                 double *u, int *nxg, int *nyg, int *nzg, 
                 double *xg, double *yg, double *zg, double *out, int *ier)
 {
-   DSErrorHnd(7, "dsgrid3d", ds_filee, "\n");
+   DSErrorHnd(7, "dsgrid3d", stderr, "\n");
    *ier = ds_error_status;   
    return;
 }
@@ -130,7 +130,7 @@ void NGCALLF(dspnt3d,DSPNT3D) (int *n, double *x, double *y, double *z,
                 double *u, int *m,
                 double *xo, double *yo, double *zo, double *uo, int *ier)
 {
-   DSErrorHnd(7, "dsgrid3d", ds_filee, "\n");
+   DSErrorHnd(7, "dsgrid3d", stderr, "\n");
    *ier = ds_error_status;
    return;
 }
@@ -147,7 +147,7 @@ void NGCALLF(dspnt3d,DSPNT3D) (int *n, double *x, double *y, double *z,
 void NGCALLF(dspnt2d,DSPNT2D) (int *n, double *x, double *y, double *z, int *m,
                 double *xo, double *yo, double *zo, int *ier)
 {
-   DSErrorHnd(7, "dspnt2d", ds_filee, "\n");
+   DSErrorHnd(7, "dspnt2d", stderr, "\n");
    *ier = ds_error_status;
    return;
 }
@@ -163,7 +163,7 @@ void NGCALLF(dspnt2d,DSPNT2D) (int *n, double *x, double *y, double *z, int *m,
 void NGCALLF(dsgrid2d,DSGRID2D) (int *n, double * x, double * y, double * u,
                int *nx, int *ny, double *xo, double *yo, double *out, int *ier)
 {
-   DSErrorHnd(7, "dsgrid2d", ds_filee, "\n");
+   DSErrorHnd(7, "dsgrid2d", stderr, "\n");
    *ier = ds_error_status;
    return;
 }
