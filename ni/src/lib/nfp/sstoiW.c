@@ -9,7 +9,6 @@ NhlErrorTypes rdsstoi_W( void )
  * Input array variables
  */
     int *nyrstrt, *nyrlast, *mlon, *nlat, *info;
-    int ndims_info, dsizes_info[NCL_MAX_DIMENSIONS];
 /*
  * Output array variables
  */
@@ -60,19 +59,12 @@ NhlErrorTypes rdsstoi_W( void )
     info = (int*)NclGetArgValue(
                                4,
                                5,
-                               &ndims_info, 
-                               dsizes_info,
+                               NULL,
+                               NULL,
                                NULL,
                                NULL,
                                NULL,
                                1);
-/*
- * "info" must be an array of 9 elements. 
- */
-    if( ndims_info != 1 && dsizes_info[0] != 9 ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"rdsstoi: The 'info' array must be an integer array of nine elements");
-    return(NhlFATAL);
-  }
 /*
  * Allocate space for output array.
  */
