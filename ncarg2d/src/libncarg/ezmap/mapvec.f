@@ -1,6 +1,6 @@
 C
-C $Id: mapvec.f,v 1.9 2000-08-22 15:03:38 haley Exp $
-C                                                                      
+C $Id: mapvec.f,v 1.10 2001-08-16 23:09:25 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,8 +21,9 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MAPVEC (XLAT,XLON)
-      IF (ICFELL('MAPVEC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPIT (XLAT,XLON,1)
-      IF (ICFELL('MAPVEC',2).NE.0) RETURN
-      RETURN
+        REAL XLAT,XLON
+        IF (ICFELL('MAPVEC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDPIT (DBLE(XLAT),DBLE(XLON),1)
+        IF (ICFELL('MAPVEC',2).NE.0) RETURN
+        RETURN
       END

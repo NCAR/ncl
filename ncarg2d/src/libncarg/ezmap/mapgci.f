@@ -1,6 +1,6 @@
 C
-C $Id: mapgci.f,v 1.10 2000-08-22 15:03:32 haley Exp $
-C                                                                      
+C $Id: mapgci.f,v 1.11 2001-08-16 23:09:17 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -22,7 +22,8 @@ C USA.
 C
       SUBROUTINE MAPGCI (ALAT,ALON,BLAT,BLON,NOPI,RLTI,RLNI)
 C
-        DIMENSION RLTI(*),RLNI(*)
+        INTEGER NOPI
+        REAL    ALAT,ALON,BLAT,BLON,RLTI(*),RLNI(*)
 C
 C This routine, given the latitudes and longitudes of two points A and
 C B on the surface of the globe, interpolates NOPI points along the
@@ -61,6 +62,15 @@ C
 C A positive value of "a" represents rotation in the direction from the
 C U axis to the V axis.
 C
+C Declare local variables.
+C
+        INTEGER          IOPI
+C
+        REAL             ALPH,BETA,CALN,CALP,CALT,CBLN,CBLT,DTOR,GAMA,
+     +                   RTOD,SALN,SALP,SALT,SBLN,SBLT,UCPA,UCPB,UCPD,
+     +                   UCPF,UCPG,UCPH,UCPO,UCPP,UCPQ,VCPA,VCPB,VCPD,
+     +                   VCPF,VCPG,VCPH,VCPO,VCPP,VCPQ,WCPA,WCPB,WCPD,
+     +                   WCPF,WCPG,WCPH,WCPO,WCPP,WCPQ
 C
 C Define the constants used to convert from degrees to radians and
 C vice-versa.

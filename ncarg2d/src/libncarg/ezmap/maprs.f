@@ -1,6 +1,6 @@
 C
-C $Id: maprs.f,v 1.9 2000-08-22 15:03:35 haley Exp $
-C                                                                      
+C $Id: maprs.f,v 1.10 2001-08-16 23:09:22 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,28 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MAPRS
-C
-C Declare required common blocks.  See MAPBD for descriptions of these
-C common blocks and the variables in them.
-C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
-     +                BLOM,SLOM,ISSL,PEPS
-      SAVE   /MAPCM2/
-C
-      COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
-      SAVE   /MAPCM7/
-C
-C Check for an uncleared prior error.
-C
-      IF (ICFELL('MAPRS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-C
-C Restore the SET call.
-C
-      CALL SET (ULOW,UROW,VBOW,VTOW,UMIN,UMAX,VMIN,VMAX,1)
-      IF (ICFELL('MAPRS',2).NE.0) RETURN
-C
-C Done.
-C
-      RETURN
-C
+        IF (ICFELL('MAPRS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDPRS
+        RETURN
       END

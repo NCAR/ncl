@@ -1,6 +1,6 @@
 C
-C $Id: mapfst.f,v 1.9 2000-08-22 15:03:31 haley Exp $
-C                                                                      
+C $Id: mapfst.f,v 1.10 2001-08-16 23:09:16 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,8 +21,9 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MAPFST (XLAT,XLON)
-      IF (ICFELL('MAPFST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPIT (XLAT,XLON,0)
-      IF (ICFELL('MAPFST',2).NE.0) RETURN
-      RETURN
+        REAL XLAT,XLON
+        IF (ICFELL('MAPFST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDPIT (DBLE(XLAT),DBLE(XLON),0)
+        IF (ICFELL('MAPFST',2).NE.0) RETURN
+        RETURN
       END

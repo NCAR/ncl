@@ -1,6 +1,6 @@
 C
-C $Id: hlumapusr.f,v 1.5 2000-08-22 15:03:30 haley Exp $
-C                                                                      
+C $Id: hlumapusr.f,v 1.6 2001-08-16 23:09:14 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,6 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE HLUMAPUSR (IPRT)
-      CALL MAPUSR (IPRT)
-      RETURN
+        INTEGER IPRT
+        CALL MAPUSR (IPRT)
+        RETURN
       END

@@ -1,6 +1,6 @@
 C
-C $Id: mpgetc.f,v 1.10 2000-08-22 15:03:39 haley Exp $
-C                                                                      
+C $Id: mpgetc.f,v 1.11 2001-08-16 23:09:40 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,9 +21,10 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MPGETC (WHCH,CVAL)
-      CHARACTER*(*) WHCH,CVAL
-      IF (ICFELL('MPGETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPGTC (WHCH,CVAL)
-      IF (ICFELL('MPGETC',2).NE.0) RETURN
-      RETURN
+        CHARACTER*(*) WHCH
+        CHARACTER*(*) CVAL
+        IF (ICFELL('MPGETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDGETC (WHCH,CVAL)
+        IF (ICFELL('MPGETC',2).NE.0) RETURN
+        RETURN
       END

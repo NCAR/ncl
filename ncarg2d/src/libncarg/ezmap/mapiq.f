@@ -1,6 +1,6 @@
 C
-C $Id: mapiq.f,v 1.9 2000-08-22 15:03:34 haley Exp $
-C                                                                      
+C $Id: mapiq.f,v 1.10 2001-08-16 23:09:20 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,32 +21,8 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MAPIQ
-C
-C Declare required common blocks.  See MAPBD for descriptions of these
-C common blocks and the variables in them.
-C
-      COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
-      SAVE   /MAPCMP/
-C
-C Check for an uncleared prior error.
-C
-      IF (ICFELL('MAPIQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-C
-C Flush the points buffer.
-C
-      IF (NPTB.GT.0) THEN
-        CALL POINTS (XPTB,YPTB,NPTB,0,0)
+        IF (ICFELL('MAPIQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDPIQ
         IF (ICFELL('MAPIQ',2).NE.0) RETURN
-        NPTB=0
-      END IF
-C
-C Flush PLOTIT's buffer, too.
-C
-      CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('MAPIQ',3).NE.0) RETURN
-C
-C Done.
-C
-      RETURN
-C
+        RETURN
       END

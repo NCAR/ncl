@@ -1,6 +1,6 @@
 C
-C $Id: mpsetl.f,v 1.10 2000-08-22 15:03:40 haley Exp $
-C                                                                      
+C $Id: mpsetl.f,v 1.11 2001-08-16 23:09:45 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,10 +21,10 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MPSETL (WHCH,LVAL)
-      CHARACTER*(*) WHCH
-      LOGICAL LVAL
-      IF (ICFELL('MPSETL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPSTL (WHCH,LVAL)
-      IF (ICFELL('MPSETL',2).NE.0) RETURN
-      RETURN
+        CHARACTER*(*) WHCH
+        LOGICAL       LVAL
+        IF (ICFELL('MPSETL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDSETL (WHCH,LVAL)
+        IF (ICFELL('MPSETL',2).NE.0) RETURN
+        RETURN
       END

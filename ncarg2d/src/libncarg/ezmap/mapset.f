@@ -1,6 +1,6 @@
 C
-C $Id: mapset.f,v 1.13 2000-08-22 15:03:36 haley Exp $
-C                                                                      
+C $Id: mapset.f,v 1.14 2001-08-16 23:09:22 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,58 +21,18 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
-C
-      CHARACTER*(*) ARG1
-      DIMENSION ARG2(2),ARG3(2),ARG4(2),ARG5(2)
-C
-C Declare required common blocks.  See MAPBD for descriptions of these
-C common blocks and the variables in them.
-C
-      COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
-     +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
-     +                GRLO,GRPO
-      LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE   /MAPCM4/
-C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),PDCL(12)
-      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
-      SAVE   /MAPCM5/
-C
-C Check for an uncleared prior error.
-C
-      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-C
-C Transfer the parameters defining the map limits.
-C
-      I=IDICTL(ARG1,LDCT,6)
-      IF (I.EQ.0) I=IDICTL(ARG1,LDCL,6)
-      IF (I.EQ.0) GO TO 901
-      ILTS=I
-C
-      PLA1=ARG2(1)
-      PLA2=ARG3(1)
-      PLA3=ARG4(1)
-      PLA4=ARG5(1)
-C
-      IF (I.EQ.3) THEN
-        PLB1=ARG2(2)
-        PLB2=ARG3(2)
-        PLB3=ARG4(2)
-        PLB4=ARG5(2)
-      END IF
-C
-C Set the flag to indicate that initialization is now required.
-C
-      INTF=.TRUE.
-C
-C Done.
-C
-      RETURN
-C
-C Error exit.
-C
-  901 CALL MAPCEM ('MAPSET - UNKNOWN MAP AREA SPECIFIER ',ARG1,2,1)
-      RETURN
-C
+        CHARACTER*(*) ARG1
+        REAL          ARG2(2),ARG3(2),ARG4(2),ARG5(2)
+        DOUBLE PRECISION DRG2(2),DRG3(2),DRG4(2),DRG5(2)
+        DRG2(1)=DBLE(ARG2(1))
+        DRG2(2)=DBLE(ARG2(2))
+        DRG3(1)=DBLE(ARG3(1))
+        DRG3(2)=DBLE(ARG3(2))
+        DRG4(1)=DBLE(ARG4(1))
+        DRG4(2)=DBLE(ARG4(2))
+        DRG5(1)=DBLE(ARG5(1))
+        DRG5(2)=DBLE(ARG5(2))
+        CALL MDPSET (ARG1,DRG2,DRG3,DRG4,DRG5)
+        IF (ICFELL('MAPSET',2).NE.0) RETURN
+        RETURN
       END

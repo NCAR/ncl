@@ -1,6 +1,6 @@
 C
-C $Id: mpgeti.f,v 1.10 2000-08-22 15:03:39 haley Exp $
-C                                                                      
+C $Id: mpgeti.f,v 1.11 2001-08-16 23:09:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,9 +21,10 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MPGETI (WHCH,IVAL)
-      CHARACTER*(*) WHCH
-      IF (ICFELL('MPGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPGTI (WHCH,IVAL)
-      IF (ICFELL('MPGETI',2).NE.0) RETURN
-      RETURN
+        CHARACTER*(*) WHCH
+        INTEGER       IVAL
+        IF (ICFELL('MPGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDGETI (WHCH,IVAL)
+        IF (ICFELL('MPGETI',2).NE.0) RETURN
+        RETURN
       END

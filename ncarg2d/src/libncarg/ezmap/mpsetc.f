@@ -1,6 +1,6 @@
 C
-C $Id: mpsetc.f,v 1.10 2000-08-22 15:03:40 haley Exp $
-C                                                                      
+C $Id: mpsetc.f,v 1.11 2001-08-16 23:09:44 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,9 +21,10 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MPSETC (WHCH,CVAL)
-      CHARACTER*(*) WHCH,CVAL
-      IF (ICFELL('MPSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-      CALL MAPSTC (WHCH,CVAL)
-      IF (ICFELL('MPSETC',2).NE.0) RETURN
-      RETURN
+        CHARACTER*(*) WHCH
+        CHARACTER*(*) CVAL
+        IF (ICFELL('MPSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDSETC (WHCH,CVAL)
+        IF (ICFELL('MPSETC',2).NE.0) RETURN
+        RETURN
       END
