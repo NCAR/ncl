@@ -1,5 +1,5 @@
 C
-C	$Id: point.f,v 1.1.1.1 1992-04-17 22:32:31 ncargd Exp $
+C $Id: point.f,v 1.2 1993-03-02 17:50:18 kennison Exp $
 C
       SUBROUTINE POINT (PX,PY)
 C
@@ -12,5 +12,6 @@ C
       CALL PLOTIF (QX+.0005,QY+.0005,1)
       CALL PLOTIF (QX-.0005,QY+.0005,0)
       CALL PLOTIF (QX+.0005,QY-.0005,1)
+      CALL PLOTIF (0.,0.,2)
       RETURN
       END
