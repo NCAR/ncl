@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.8 1995-06-14 13:59:09 haley Exp $
+#	$Id: yMakefile,v 1.9 1997-04-11 18:49:55 haley Exp $
 #
 
 SRCS = c_coex02.c
 OBJS = c_coex02.o
 
-PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
 

@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-19 20:02:21 haley Exp $
+#	$Id: yMakefile,v 1.6 1997-04-11 18:50:00 haley Exp $
 #
 
 SRCS = c_eezmpa.c c_mpex05.c
 OBJS = c_eezmpa.o c_mpex05.o
 
-PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
 

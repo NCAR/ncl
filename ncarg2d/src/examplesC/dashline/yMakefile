@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.9 1995-06-14 13:59:15 haley Exp $
+#	$Id: yMakefile,v 1.10 1997-04-11 18:49:58 haley Exp $
 #
 
 SRCS = c_fdldashc.c
 OBJS = c_fdldashc.o
 
-PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
 

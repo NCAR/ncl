@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.4 1995-06-14 13:59:34 haley Exp $
+#	$Id: yMakefile,v 1.5 1997-04-11 18:50:05 haley Exp $
 #
 
 SRCS = c_tgrida.c
 OBJS = c_tgrida.o
 
 
-PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
 
