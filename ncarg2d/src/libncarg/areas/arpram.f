@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.11 1995-04-28 19:41:08 kennison Exp $
+C $Id: arpram.f,v 1.12 1995-05-02 21:39:23 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -1748,43 +1748,48 @@ C If the new way of reconciling contradictory area-identifier info was
 C requested, set IAI accordingly, using the counts that were generated
 C while tracing the boundary of the area.
 C
-        IF (.NOT.(JRC.NE.0)) GO TO 10305
-          IF (.NOT.(ICN.GT.IAX)) GO TO 10306
+        IF (.NOT.(JRC.LT.0.AND.ICN.GT.0)) GO TO 10305
+          IAI=-1
+        GO TO 10306
+10305   CONTINUE
+        IF (.NOT.(JRC.NE.0)) GO TO 10307
+          IF (.NOT.(ICN.GT.0)) GO TO 10308
             IAI=-1
             IAX=ICN
-10306     CONTINUE
-          IF (.NOT.(ICZ.GT.IAX.AND.JRC.EQ.2)) GO TO 10307
-            IAI= 0
+10308     CONTINUE
+          IF (.NOT.(ICZ.GT.IAX.AND.ABS(JRC).EQ.2)) GO TO 10309
+            IAI=0
             IAX=ICZ
-10307     CONTINUE
-          DO 10308 ITM=IAM(6),LAM-1
-            IF (.NOT.(IAM(ITM-IOS).GT.IAX)) GO TO 10309
+10309     CONTINUE
+          DO 10310 ITM=IAM(6),LAM-1
+            IF (.NOT.(IAM(ITM-IOS).GT.IAX)) GO TO 10311
               IAI=ITM
               IAX=IAM(ITM-IOS)
-10309       CONTINUE
-10308     CONTINUE
-10305   CONTINUE
+10311       CONTINUE
+10310     CONTINUE
+10306   CONTINUE
+10307   CONTINUE
 C
 C Go through the chain of area identifiers, updating them.
 C
-10310   CONTINUE
-        IF (.NOT.(IAP.NE.0)) GO TO 10311
+10312   CONTINUE
+        IF (.NOT.(IAP.NE.0)) GO TO 10313
           IAQ=IAM(IAP)
           IAM(IAP)=IAI
           IAP=IAQ
-        GO TO 10310
-10311   CONTINUE
+        GO TO 10312
+10313   CONTINUE
 C
 C If a zero identifier was selected for the area, see if the search for
 C holes was suppressed and, if so, re-do it.
 C
-        IF (.NOT.(IAI.EQ.0.AND.KF3.NE.0)) GO TO 10312
-          DO 10313 IPT=8,IAM(5)-9,10
+        IF (.NOT.(IAI.EQ.0.AND.KF3.NE.0)) GO TO 10314
+          DO 10315 IPT=8,IAM(5)-9,10
             IAM(IPT)=4*(IAM(IPT)/4)
-10313     CONTINUE
+10315     CONTINUE
           KF3=0
           GO TO 104
-10312   CONTINUE
+10314   CONTINUE
 C
       GO TO 10240
 10243 CONTINUE
@@ -1793,23 +1798,23 @@ C Delete the nodes used to put in the temporary connecting lines.
 C
       IPT=IAM(5)-9
 C
-10314 CONTINUE
-      IF (.NOT.(IPT.GT.ILW)) GO TO 10315
+10316 CONTINUE
+      IF (.NOT.(IPT.GT.ILW)) GO TO 10317
         IAM(IAM(IPT+4)+3)=IAM(IPT+3)
         IAM(IAM(IPT+3)+4)=IAM(IPT+4)
         IAM(IAM(IPT+6)+5)=IAM(IPT+5)
         IAM(IAM(IPT+5)+6)=IAM(IPT+6)
         IPT=IPT-10
-      GO TO 10314
-10315 CONTINUE
+      GO TO 10316
+10317 CONTINUE
 C
       IAM(5)=ILW
 C
 C Zero the markers in all the remaining nodes.
 C
-      DO 10316 IPT=8,IAM(5)-9,10
+      DO 10318 IPT=8,IAM(5)-9,10
         IAM(IPT)=0
-10316 CONTINUE
+10318 CONTINUE
 C
 C Update the map state.
 C
@@ -1817,10 +1822,10 @@ C
 C
 C If debugging is turned on, produce a plot.
 C
-      IF (.NOT.(IDB.NE.0)) GO TO 10317
+      IF (.NOT.(IDB.NE.0)) GO TO 10319
         CALL ARDBPA (IAM,IDB,'AFTER UPDATING AREA IDENTIFIERS')
         IF (ICFELL('ARPRAM',14).NE.0) RETURN
-10317 CONTINUE
+10319 CONTINUE
 C
 C
 C Done.
@@ -1834,10 +1839,10 @@ C coordinate order); this is important.
 C
 10017 CONTINUE
         IPN=IAM(5)+1
-        IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10318
+        IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10320
           CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',15,1)
           GO TO 10008
-10318   CONTINUE
+10320   CONTINUE
         IAM(5)=IAM(5)+10
         IAM(IPN)=IAM(IPI)
         IAM(IPN+1)=IX0
@@ -1846,40 +1851,40 @@ C
         IAM(IPN+4)=IAM(IPI+4)
         IAM(IAM(IPI+4)+3)=IPN
         IAM(IPI+4)=IPN
-10320   CONTINUE
-          IF (.NOT.(IAM(IPN+1).LT.IAM(IPX+1))) GO TO 10321
+10322   CONTINUE
+          IF (.NOT.(IAM(IPN+1).LT.IAM(IPX+1))) GO TO 10323
             IPX=IAM(IPX+6)
-          GO TO 10322
-10321     CONTINUE
-          IF (.NOT.(IAM(IPN+1).GT.IAM(IAM(IPX+5)+1))) GO TO 10323
-            IPX=IAM(IPX+5)
-          GO TO 10322
+          GO TO 10324
 10323     CONTINUE
-10324       CONTINUE
+          IF (.NOT.(IAM(IPN+1).GT.IAM(IAM(IPX+5)+1))) GO TO 10325
+            IPX=IAM(IPX+5)
+          GO TO 10324
+10325     CONTINUE
+10326       CONTINUE
               IF (.NOT.(IAM(IPN+1).EQ.IAM(IPX+1).AND.IAM(IPN+2).LT.IAM(I
-     +PX+2))) GO TO 10325
+     +PX+2))) GO TO 10327
                 IPX=IAM(IPX+6)
-              GO TO 10326
-10325         CONTINUE
-              IF (.NOT.(IAM(IPN+1).EQ.IAM(IAM(IPX+5)+1).AND.IAM(IPN+2).G
-     +T.IAM(IAM(IPX+5)+2))) GO TO 10327
-                IPX=IAM(IPX+5)
-              GO TO 10326
+              GO TO 10328
 10327         CONTINUE
-10328           CONTINUE
+              IF (.NOT.(IAM(IPN+1).EQ.IAM(IAM(IPX+5)+1).AND.IAM(IPN+2).G
+     +T.IAM(IAM(IPX+5)+2))) GO TO 10329
+                IPX=IAM(IPX+5)
+              GO TO 10328
+10329         CONTINUE
+10330           CONTINUE
                 IF (.NOT.(IAM(IAM(IPX+5)+1).EQ.IAM(IPN+1).AND.IAM(IAM(IP
-     +X+5)+2).EQ.IAM(IPN+2))) GO TO 10329
+     +X+5)+2).EQ.IAM(IPN+2))) GO TO 10331
                   IPX=IAM(IPX+5)
-                GO TO 10328
-10329           CONTINUE
                 GO TO 10330
-10326         CONTINUE
-            GO TO 10324
-10330       CONTINUE
-            GO TO 10331
-10322     CONTINUE
-        GO TO 10320
-10331   CONTINUE
+10331           CONTINUE
+                GO TO 10332
+10328         CONTINUE
+            GO TO 10326
+10332       CONTINUE
+            GO TO 10333
+10324     CONTINUE
+        GO TO 10322
+10333   CONTINUE
         IAM(IPN+5)=IAM(IPX+5)
         IAM(IPN+6)=IAM(IAM(IPX+5)+6)
         IAM(IAM(IPX+5)+6)=IPN
@@ -1907,23 +1912,23 @@ C Delete new nodes from the area map.
 C
         IPT=IAM(5)-9
 C
-10333   CONTINUE
-        IF (.NOT.(IPT.GT.ILW)) GO TO 10334
+10335   CONTINUE
+        IF (.NOT.(IPT.GT.ILW)) GO TO 10336
           IAM(IAM(IPT+4)+3)=IAM(IPT+3)
           IAM(IAM(IPT+3)+4)=IAM(IPT+4)
           IAM(IAM(IPT+6)+5)=IAM(IPT+5)
           IAM(IAM(IPT+5)+6)=IAM(IPT+6)
           IPT=IPT-10
-        GO TO 10333
-10334   CONTINUE
+        GO TO 10335
+10336   CONTINUE
 C
         IAM(5)=ILW
 C
 C Zero the low-order bits of the markers in all the remaining nodes.
 C
-        DO 10335 IPT=8,IAM(5)-9,10
+        DO 10337 IPT=8,IAM(5)-9,10
           IAM(IPT)=4*(IAM(IPT)/4)
-10335   CONTINUE
+10337   CONTINUE
 C
 C If appropriate, delete space temporarily used at the upper end of
 C the area map array.

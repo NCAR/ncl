@@ -1,5 +1,5 @@
 C
-C $Id: arsetr.f,v 1.8 1995-04-28 19:41:11 kennison Exp $
+C $Id: arsetr.f,v 1.9 1995-05-02 21:39:24 kennison Exp $
 C
       SUBROUTINE ARSETR (IPN,RVL)
 C
@@ -83,12 +83,12 @@ C
         CALL ARGPAI (IPN,3,IPI)
         IF (.NOT.(IPI.EQ.0)) GO TO 10012
           DO 101 I=1,16
-          IRC(I)=MAX(0,MIN(2,INT(RVL)))
+          IRC(I)=MAX(-2,MIN(2,INT(RVL)))
   101     CONTINUE
         GO TO 10013
 10012   CONTINUE
         IF (.NOT.(IPI.GE.1.AND.IPI.LE.16)) GO TO 10014
-          IRC(IPI)=MAX(0,MIN(2,INT(RVL)))
+          IRC(IPI)=MAX(-2,MIN(2,INT(RVL)))
         GO TO 10013
 10014   CONTINUE
           CALL SETER ('ARSETR - ''RC'' INDEX IS OUT OF RANGE',3,1)

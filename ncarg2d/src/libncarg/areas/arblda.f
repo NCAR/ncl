@@ -1,5 +1,5 @@
 C
-C $Id: arblda.f,v 1.12 1995-04-28 19:40:55 kennison Exp $
+C $Id: arblda.f,v 1.13 1995-05-02 21:39:22 kennison Exp $
 C
       BLOCK DATA ARBLDA
 C
@@ -70,9 +70,12 @@ C how to reconcile contradictory area-identifier information for group
 C IGI.  (Groups with group identifiers greater than 16 are affected by
 C IRC(16).)  The default value of IRC(IGI) is zero, which says to do it
 C the original way, using the most recently-provided information for a
-C given area; the value 1 says to do it a new way, using that area
-C identifier seen most frequently for the area, but to ignore zeroes;
-C the value 2 says to do it the new way, but not to ignore zeroes.
+C given area.  The value 1 says to do it a new way, using that area
+C identifier seen most frequently, but ignoring zeroes; the value 2
+C says to do it the new way, but not to ignore zeroes.  The values -1
+C and -2 mean the same as 1 and 2, respectively, except that, if there
+C are any negative values among the set of possible area identifiers
+C for a given area, then a -1 is used for the area.
 C
       DATA IRC / 16*0 /
 C
