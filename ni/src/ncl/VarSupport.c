@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.8 1995-01-28 23:52:09 ethan Exp $
+ *      $Id: VarSupport.c,v 1.9 1995-02-04 01:41:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1093,8 +1093,8 @@ struct _NclVarRec* _NclCopyVar
 		vc = (NclVarClass)var->obj.class_ptr;
 	}
 	while((NclObjClass)vc != nclObjClass) {
-		if((var!= NULL)&&(((NclVarClass)var->obj.class_ptr)->var_class.copy_var) != NULL) {
-			return((NclVar)(*((NclVarClass)var->obj.class_ptr)->var_class.copy_var)(var,new_missing,storage));
+		if(vc->var_class.copy_var != NULL) {
+			return((NclVar)((*vc->var_class.copy_var)(var,new_missing,storage)));
 		} else {
 			vc = (NclVarClass)vc->obj_class.super_class;
 		}

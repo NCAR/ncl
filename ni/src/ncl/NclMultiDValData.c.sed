@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.8 1995-01-28 23:52:03 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.9 1995-02-04 01:41:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1732,11 +1732,19 @@ NclScalar * missing;
 {
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	
-	if((self_md == NULL)||(!self_md->multidval.missing_value.has_missing)||(missing == NULL)) return;
+	if((self_md == NULL)||(missing == NULL)) return;
+
+	if(!self_md->multidval.missing_value.has_missing) {
+		self_md->multidval.missing_value.has_missing = 1;
+		self_md->multidval.missing_value.value = *missing;
+		return;
+	}
 
 	if(self_md->multidval.type == NULL) return;
 
-	_Nclreset_mis(self_md->multidval.type,self_md->multidval.val,&(self_md->multidval.missing_value.value),missing,self_md->multidval.totalelements);
+	if(_Nclreset_mis(self_md->multidval.type,self_md->multidval.val,&(self_md->multidval.missing_value.value),missing,self_md->multidval.totalelements) != NhlFATAL) {
+		self_md->multidval.missing_value.value = *missing;
+	}
 	return;
 }
 

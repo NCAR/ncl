@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.19 1995-01-31 22:26:07 ethan Exp $
+ *      $Id: Symbol.c,v 1.20 1995-02-04 01:41:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -250,7 +250,8 @@ int n_dims;
 int *dimsizes;
 #endif
 {
-	NclArgTemplate* the_args = (NclArgTemplate*) args;
+	NclArgTemplate* the_args = (NclArgTemplate*) &(((NclArgTemplate*)args)[arg_num]);
+	int i;
 	if(the_args == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function NULL arg record passed");
 		return;
@@ -261,6 +262,9 @@ int *dimsizes;
 		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(int)*n_dims);
 	} else {
 		the_args->is_dimsizes = 0;
+		for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
+			the_args->dim_sizes[i] = -1;
+		}
 	}
 	
 	the_args->arg_data_type = _NclLookUp(type_name);

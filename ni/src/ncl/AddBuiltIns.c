@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.8 1995-02-01 00:44:09 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.9 1995-02-04 01:41:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,12 @@ extern "C" {
 #include "MathFuncs.h"
 
 extern NhlErrorTypes _Nclsystem(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclidsfft(
 #if NhlNeedProto
 void
 #endif
@@ -126,6 +132,17 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
 	NclRegisterProc(_Nclsystem,args,"system",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	dimsizes[0] = 2;
+	SetArgTemplate(args,3,"integer",1,dimsizes);nargs++;
+	NclRegisterFunc(_Nclidsfft,args,"idsfft",nargs);
+
+	
 /*
 	nargs = 0;
 	args = NewArgs(1);

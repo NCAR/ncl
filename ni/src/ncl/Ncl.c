@@ -78,9 +78,9 @@ main() {
 #endif
 #ifdef NCLDEBUG
 	fclose(thefptr);
-	fclose(theoptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
-	_NclPrintUnfreedObjs(stdout);
+	_NclPrintUnfreedObjs(theoptr);
+	fclose(theoptr);
 	_NclObjsSize(stdout);
 	_NclNumGetObjCals(stdout);
 #endif

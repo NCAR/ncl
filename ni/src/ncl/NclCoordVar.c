@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.3 1995-01-28 01:51:12 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.4 1995-02-04 01:41:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -153,6 +153,6 @@ NclStatus status)
 		tmp_md = value;
 	}
 
-	return(_NclVarCreate(inst,theclass,obj_type,(obj_type_mask | Ncl_CoordVar),thesym,tmp_md,dim_info,att_id,coords,var_type,var_name,status));
+	return(_NclVarCreate((void*)tmp_var,the_class,obj_type,(obj_type_mask | Ncl_CoordVar),thesym,tmp_md,dim_info,att_id,coords,var_type,var_name,status));
 }
 

@@ -5,6 +5,7 @@ extern "C" {
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Overlay.h>
+#include <ncarg/ncargC.h>
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
@@ -12,6 +13,7 @@ extern "C" {
 #include "Machine.h"
 #include "NclFile.h"
 #include "NclVar.h"
+#include "NclCoordVar.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
 #include "NclMdInc.h"
@@ -20,6 +22,7 @@ extern "C" {
 #include "OpsList.h"
 #include "ApiRecords.h"
 #include "TypeSupport.h"
+#include "NclBuiltInSupport.h"
 
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto
@@ -1713,7 +1716,6 @@ NhlErrorTypes _NclBuildArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: Arrays of files are not yet supported");
 		result->kind = NclStk_NOVAL;
 		result->u.data_obj = NULL; 
-		NclFree(value);
 		_NclCleanUpStack(items_left);
 		return(NhlFATAL);
 	}
@@ -2553,6 +2555,123 @@ NclStackEntry missing_expr;
 	}
 }
 
+
+NhlErrorTypes _Nclidsfft
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	float *arg[3];
+	int i;
+	int *dims;
+	int  dimsizes,dimsizes1,dimsizes2;
+	int has_missing,has_missing1,has_missing2;
+	NclScalar missing,missing1,missing2;
+	NclBasicDataTypes type0,type1,type2;
+	int m,n;
+	float *tmp;
+	float *x_coord;
+	float *y_coord;
+	int *iwrk;
+	float *fwrk;
+	NclMultiDValData tmp_md;
+	NclVar	tmp_var;
+	NclMultiDValData x_coord_md;
+	NclVar x_coord_var;
+	NclMultiDValData y_coord_md;
+	NclVar y_coord_var;
+	int ids[2];
+	NclDimRec dim_info[2];
+	NclStackEntry data;
+	float spacing,xmax,xmin,ymax,ymin;
+
+
+	arg[0] = (float*)NclGetArgValue( 0, 4, NULL, &dimsizes, &missing, &has_missing, &type0);
+	arg[1] = (float*)NclGetArgValue( 1, 4, NULL, &dimsizes1, &missing1, &has_missing1, &type1);
+	arg[2] = (float*)NclGetArgValue( 2, 4, NULL, &dimsizes2, &missing2, &has_missing2, &type2);
+	dims = (int*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, NULL);
+
+	if((dimsizes == dimsizes1)&&(dimsizes = dimsizes2)){
+		xmax = (arg[0])[0];
+		xmin = (arg[0])[0];
+		ymax = (arg[1])[0];
+		ymin = (arg[1])[0];
+		for(i = 0; i < dimsizes; i++) {
+			if(has_missing) {
+				if((arg[0])[i] == missing.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					return(NhlFATAL);
+				} else if((arg[0])[i] > xmax) {
+					xmax = (arg[0])[i];
+				} else if((arg[0])[i] < xmin) {
+					xmin = (arg[0])[i];
+				}
+			}
+			if(has_missing1) {
+				if((arg[1])[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					return(NhlFATAL);
+				} else if((arg[1])[i] > ymax) {
+					ymax = (arg[1])[i];
+				} else if((arg[1])[i] < ymin) {
+					ymin = (arg[1])[i];
+				}
+			}
+			if(has_missing2) {
+				if((arg[2])[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					return(NhlFATAL);
+				}
+			}
+		}
+		m = dims[0];
+		n = dims[1];
+		tmp = (float*)NclMalloc(m * n * sizeof(float));
+		for(i = 0; i < m*n; i++) tmp[i] = 0.0;
+		x_coord = (float*)NclMalloc(m * sizeof(float));
+		spacing = (xmax - xmin)/(m-1);
+		for(i = 0; i < m; i++) {
+			x_coord[i] = xmin + i * spacing;
+		}
+		y_coord = (float*)NclMalloc(n * sizeof(float));
+		spacing = (ymax - ymin)/(m-1);
+		for(i = 0; i < n; i++) {
+			y_coord[i] = ymin + i * spacing;
+		}
+		iwrk = (int*)NclMalloc((31 * dimsizes + m * n)*sizeof(int));
+		fwrk = (float*)NclMalloc(6*dimsizes*sizeof(float));
+		c_idsfft(1,dimsizes,arg[1],arg[0],arg[2],n,m,n,y_coord,x_coord,tmp,iwrk,fwrk);
+		NclFree(iwrk);
+		NclFree(fwrk);
+		dim_info[0].dim_quark = NrmStringToQuark("ncl0");
+		dim_info[0].dim_num= 0 ; 
+		dim_info[0].dim_size = m ; 
+		dim_info[1].dim_quark = NrmStringToQuark("ncl1");
+		dim_info[1].dim_size = n ; 
+		dim_info[1].dim_num= 1 ; 
+
+		tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,tmp,NULL,2,dims,TEMPORARY,NULL,(NclTypeClass)nclTypefloatClass);
+		x_coord_md = _NclCreateMultiDVal(NULL,NULL,Ncl_OneDValCoordData,0,x_coord,NULL,1,&(dims[0]),TEMPORARY,NULL,(NclTypeClass)nclTypefloatClass);
+		y_coord_md = _NclCreateMultiDVal(NULL,NULL,Ncl_OneDValCoordData,0,y_coord,NULL,1,&(dims[1]),TEMPORARY,NULL,(NclTypeClass)nclTypefloatClass);
+
+		x_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,x_coord_md,&(dim_info[0]),NULL,NULL,COORD,"x",TEMPORARY);
+		y_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,y_coord_md,&(dim_info[1]),NULL,NULL,COORD,"y",TEMPORARY);
+		ids[0] = x_coord_var->obj.id;
+		ids[1] = y_coord_var->obj.id;
+		tmp_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,dim_info,-1,ids,RETURNVAR,NULL,TEMPORARY);
+		data.kind = NclStk_VAR;
+		data.u.data_var = tmp_var;
+		_NclPlaceReturn(data);
+		return(NhlNOERROR);
+	} else {
+/*
+* Place bogus data in return
+*/
+		return(NhlFATAL);
+	}
+}
 
 #ifdef __cplusplus
 }

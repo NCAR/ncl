@@ -1037,7 +1037,7 @@ struct _NclSelectionRecord* sel_ptr;
 	int coords[NCL_MAX_DIMENSIONS];
 	NclSelection *sel = NULL;
 	NclObj  att_obj = NULL;
-	int single;
+	int single = 0;
 /*
 * By the the time it gets here the file suport routines in that build the selection
 * record have made sure var_name is valid and all the demensions in sel_ptr

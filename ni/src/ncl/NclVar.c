@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.10 1995-01-28 23:52:06 ethan Exp $
+ *      $Id: NclVar.c,v 1.11 1995-02-04 01:41:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1425,7 +1425,7 @@ struct _NclVarRec *storage;
 	struct _NclVarRec *tmp_var = NULL;
 	NclObj tmp_obj = NULL;
 	int i;
-
+/*
 	if(thevar == NULL)
 		return(NULL);
 
@@ -1471,6 +1471,9 @@ struct _NclVarRec *storage;
 			}
 		}
 	}
+*/
+	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
+	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,NULL,TEMPORARY);
 	
 
 	return(tmp_var);

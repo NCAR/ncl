@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.32 1995-01-28 23:51:57 ethan Exp $
+ *      $Id: Machine.c,v 1.33 1995-02-04 01:41:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -675,7 +675,7 @@ NhlErrorTypes _NclPushFrame
 	NclFrame *previous; 
 	int i;
 	int nargs =  the_sym->u.procfunc->nargs; 
-	int new_scope_level = 1;
+	int new_scope_level = 2;
 	int new_scope_cur_off= 0;
 
 
