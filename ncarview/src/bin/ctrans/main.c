@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.24 1992-09-16 14:18:40 clyne Exp $
+ *	$Id: main.c,v 1.25 1992-09-21 21:26:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -455,8 +455,10 @@ char	**argv;
 		 *	open the metafile
 		 */
 		if ((cgm_fd = CGM_open(*meta_files, NCAR_REC_SIZE, "r")) < 0) {
-			ESprintf(errno, "Can't open metafile(%s)",*meta_files);
-			fprintf(logFP, "%s: %s\n", progName, ErrGetMsg());
+			fprintf(
+				logFP, "%s: Can't open metafile(%s) [ %s ]\n",
+				progName, *meta_files, ErrGetMsg()
+			);
 			continue;
 		}
 
