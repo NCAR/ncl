@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: fcaps,v 1.11 1992-06-25 21:48:24 clyne Exp $
+#	$Id: fcaps,v 1.12 1992-07-31 21:08:10 clyne Exp $
 #
 #
 #	Name		fcaps
@@ -13,7 +13,7 @@
 #			directory.
 # 
 
-set version = 3.2alpha1.0
+set version = 3.2alpha1.1
 set dir = `ncargpar FONTCAPDIR`
 if ($status != 0) then
 	exit 1

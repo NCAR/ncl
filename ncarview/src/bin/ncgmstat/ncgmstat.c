@@ -1,5 +1,5 @@
 /*
- *      $Id: ncgmstat.c,v 1.1 1992-06-24 21:02:25 clyne Exp $
+ *      $Id: ncgmstat.c,v 1.2 1992-07-31 21:07:45 clyne Exp $
  */
 /*
  *	File:		ncgmstat.c
@@ -115,7 +115,7 @@ main(argc, argv)
 		exit(2);
 	}
 
-	if ((dir = CGM_directory(cgm_fd, FALSE)) == (Directory *) NULL) {
+	if ((dir = CGM_directory(cgm_fd, NULL)) == (Directory *) NULL) {
 		perror(argv[1]);
 		exit(2);
 	}

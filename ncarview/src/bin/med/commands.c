@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.4 1992-04-20 22:01:59 clyne Exp $
+ *	$Id: commands.c,v 1.5 1992-07-31 21:07:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -241,7 +241,7 @@ medEdit(med_data)
 	/*
 	 * execute the command
 	 */
-	if ((toc = CGM_initMetaEdit(c_data->file,1440,localTmp,TRUE)) == NULL) {
+	if ((toc = CGM_initMetaEdit(c_data->file,1440,localTmp,stderr)) == NULL) {
 		command_error_message (
 				med_data, errno, 0, (char *) NULL, MED_WARN);
 		return;
@@ -306,7 +306,7 @@ medLabel(med_data)
 	 */
 	(void) strcpy((char *) &e_instr.buf[1], c_data->file);
 	e_instr.class = DEL_ELEMENT;
-	e_instr.id = BEG_PIC;
+	e_instr.id = BEG_PIC_ID;
 	e_instr.buf[0] = (unsigned char) strlen(c_data->file);
 	e_instr.data_length = strlen(c_data->file) + 1;
 	e_instr.data = e_instr.buf;

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: gcaps,v 1.13 1992-06-25 21:48:26 clyne Exp $
+#	$Id: gcaps,v 1.14 1992-07-31 21:08:14 clyne Exp $
 #
 #
 #	Name		gcaps
@@ -13,7 +13,7 @@
 #			directory.
 # 
 
-set version = 3.2alpha1.0
+set version = 3.2alpha1.1
 set dir = `ncargpar GRAPHCAPDIR`
 if ($status != 0) then
 	exit 1
@@ -43,6 +43,6 @@ end
 
 echo ""
 echo "The following device specifiers are also valid:"
-foreach device ("" sun xwd nrif hdf CTXT   sunview sunraster X11 xbfr)
+foreach device ("" sun xwd nrif hdf CTXT    X11 xbfr)
 	echo "	$device"
 end

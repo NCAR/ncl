@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.20 1992-06-24 20:59:57 clyne Exp $
+ *	$Id: main.c,v 1.21 1992-07-31 21:06:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,31 +27,16 @@
 
 #include	<stdio.h>
 #include	<ctype.h>
+#include	<errno.h>
 #include	<sys/types.h>
 #include	<fcntl.h>
-
-#ifdef	SYSV
+#include	<signal.h>
 #include        <string.h>
-#else
-#include        <strings.h>
-#endif
-
-#include	<cgm_tools.h>
-#include        <ncarv.h>
-#include	<cterror.h>
+#include        <ctrans.h>
 #include	"main.h"
 
 #define	NCAR_REC_SIZE	1440
 
-extern	char	*getFcapname();
-extern	char	*getGcapname();
-extern	Ct_err	init_ctrans();
-extern	Ct_err	ctrans();
-
-extern	char	*strrchr();
-extern	char	*malloc();
-
-char	*ProgramName;
 
 /*
  *	a global structure that contains values of command line options
@@ -129,10 +114,159 @@ static	Option	get_options[] = {
 	}
 };
 
+/*
+ *	module globals for error reporting
+ */
+static  char    logFile[80];		/* temp log file name		*/
+static	FILE	*logFP = stderr;	/* log file pointer		*/
+static	boolean	doLogToFile = FALSE;	/* log messags to a temp file?	*/
+
+static	int	eStatus;		/* exit status			*/
+static	char	*progName;
+
 extern	boolean *softFill;
 extern	boolean *deBug;
 extern	boolean *doBell;
 	
+
+usage(od, progName, msg)
+	int	od;
+	char	*progName;
+	char	*msg;
+{
+	char	*usage = "-d device [-f font] [options] [device options]";
+
+	if (msg) fprintf(logFP, "%s: %s\n", progName, msg);
+
+	fprintf(logFP, "Usage: %s %s\n", progName, usage);
+	PrintOptionHelp(od, logFP);
+
+}
+
+
+static	void	open_log()
+{
+	(void) strcpy(logFile, TMPDIR);
+	(void) strcat(logFile, TMPFILE);
+
+	(void) mktemp(logFile);
+
+	if ((logFP = fopen(logFile,"w")) == NULL) {
+		logFP = stderr;	/* use stderr instead	*/
+		fprintf(logFP, "%s: fopen(%s, w)\n", progName, logFile);
+	}
+	else {
+		doLogToFile = TRUE;
+	}
+	setbuf(logFP, NULL);  /* turn off buffered i/o        */
+}
+
+static	void	close_log()
+{
+	int	c;
+
+	if (doLogToFile) {
+		(void) fclose(logFP);
+		if ((logFP = fopen(logFile,"r")) == NULL) {
+			logFP = stderr;	/* use stderr instead	*/
+			fprintf(logFP, "%s: fopen(%s, r)\n", progName, logFile);
+			return;
+		}
+	}
+
+	while ((c = getc(logFP)) != EOF) {
+		putc(c, stderr);
+	}
+	(void) close(logFP);
+
+	doLogToFile = FALSE;
+	logFP = stderr;
+	(void) unlink(logFile);
+	
+}
+
+static	void	log_ct(err)
+	CtransRC	err;
+{
+	char	*s;
+
+	while (s = ReadCtransMsg()) {
+		fprintf(
+			logFP, "%s: %s - %s\n", progName, 
+			(err == FATAL ? "FATAL" : "WARNING"), s
+		);
+	}
+}
+
+static	void	cleanup(err)
+	int	err;
+{
+	close_log();
+	exit(err);
+}
+
+int	process(record, batch, sleep_time, verbose, do_all)
+	int		record;
+	boolean		batch;
+	unsigned	sleep_time;
+	boolean		verbose;
+	boolean		do_all;
+{
+	CtransRC	ctrc;
+	static		int	frame_count = 1;
+	int		status = 0;
+
+	do {
+		ctrc = ctrans(record);
+
+		switch ((int) ctrc) {
+		case	FATAL:
+			log_ct(FATAL);
+			return(-1);
+
+		case	WARN:
+			log_ct(WARN);
+			break;
+
+		case	OK:
+			break;
+
+		case	EOM:
+			do_all = FALSE;
+			break;
+		}
+	
+		if (verbose) {
+			fprintf( logFP, "plotted %d frames\n", frame_count++);
+		}
+
+		if (batch) {
+			if (sleep_time>0) sleep(sleep_time);
+		}
+	
+	} while (do_all);
+
+	return(status);
+}
+
+/*
+ *      sigint_handler
+ *
+ *              interupt signal handler
+ */
+static	void    sigint_handler()
+{
+	close_metafile();
+	close_ctrans();
+	cleanup(eStatus);
+}
+
+/*
+**
+**	M A I N   P R O G R A M
+**
+*/
+
 main(argc,argv)
 int	argc;
 char	**argv;
@@ -140,7 +274,6 @@ char	**argv;
 
 	char	*fcap,			/* path to font			*/
 		*gcap;			/* path to device		*/
-	char	*program_name;
 	Cgm_fd	cgm_fd;			/* CGM file descriptor		*/
 	boolean batch = FALSE;		/* device library should interact
 					 * with the user. Else main module
@@ -154,18 +287,14 @@ char	**argv;
 					/*
 					 * list of metafiles to process
 					 */
+
 	char	**meta_files = (char **) 
 			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
-	int	frame_count = 1;
 	int	od;
+	CtransRC	ctrc;
 
-	extern	void	SetDefaultPalette();
-
-	/* put the program name in a global variable */
-
-	program_name = (program_name = strrchr(argv[0], '/')) ?
-						++program_name : *argv;
+	progName = (progName = strrchr(argv[0], '/')) ? ++progName : *argv;
 
 	/*
 	 *	parse command line argument. Separate ctrans specific
@@ -177,10 +306,10 @@ char	**argv;
 	od = OpenOptionTbl();
 	if (ParseOptionTable(od, &argc, argv, set_options) < 0) {
 		fprintf(
-			stderr, "%s : Error parsing options [ %s ]\n", 
-			program_name, ErrGetMsg()
+			logFP, "%s : Error parsing options [ %s ]\n", 
+			progName, ErrGetMsg()
 		);
-		exit(1);
+		cleanup(1);
 	}
 
 	/*
@@ -188,28 +317,23 @@ char	**argv;
 	 */
 	if (GetOptions(od, get_options) < 0) {
 		fprintf(
-			stderr, "%s : Error getting options [ %s ]\n", 
-			program_name, ErrGetMsg()
+			logFP, "%s : Error getting options [ %s ]\n", 
+			progName, ErrGetMsg()
 		);
-		PrintOptionHelp(od, stderr);
-		exit(1);
+		PrintOptionHelp(od, logFP);
+		cleanup(1);
 	}
-
-	/*
-	 * 	init ctrans' error module so we can use it
-	 */
-	init_ct_error(program_name, TRUE);
 
 	batch = opt.movie != -1;
 	sleep_time = opt.movie;
 
 	if (opt.version) {
-		PrintVersion(program_name);
-		exit(0);
+		PrintVersion(progName);
+		cleanup(0);
 	}
 	if (opt.help) {
-		usage(od, program_name, NULL);
-		exit(0);
+		usage(od, progName, NULL);
+		cleanup(0);
 	}
 
 	/*
@@ -229,8 +353,10 @@ char	**argv;
 	 *	not a graphcap then a path will still be built to it but
 	 *	it will have no meaning.
          */
-        if ((gcap = getGcapname( opt.device )) == NULL )
-		ct_error(T_MD,"");
+        if ((gcap = getGcapname( opt.device )) == NULL ) {
+		usage(od, progName, "Graphics device not specified");
+		cleanup(1);
+	}
 
 
         /*
@@ -241,10 +367,10 @@ char	**argv;
         if ((fcap = getFcapname( opt.font )) == NULL) {
 
 		/*
-		 *	use default font
+		 *	try to use default font
 		 */
 		if ((fcap = getFcapname( DEFAULTFONT )) == NULL) {
-			ct_error(T_MF,"");
+			fprintf(logFP,"%s: Warning - no known font",progName);
 		}
         }
 
@@ -256,12 +382,22 @@ char	**argv;
 		SetDefaultPalette(opt.pal);
 	}
 
+	if (!batch) (void)signal(SIGINT,sigint_handler);
+
+
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc,argv,program_name,gcap,fcap,TRUE,batch) != OK) {
-		close_ctrans();
-		exit(1);
+	if (init_ctrans(&argc, argv, gcap, fcap, TRUE, batch) != OK) {
+		log_ct(FATAL);
+		cleanup(1);
+	}
+	/*
+	 * if graphical output is going to a tty log error messages to 
+	 * a file that can be catted out later.
+	 */
+	if (IsOutputToTty()) {
+		open_log();
 	}
 
 	/*
@@ -289,9 +425,8 @@ char	**argv;
 	meta_files[0] = NULL;
 	for (j = 0 ; i < argc; i++, j++) {
 		if (*argv[i] == '-') {
-			usage(od, program_name, NULL);
-			ct_error(T_NSO, "");
-			break;
+			usage(od, progName, NULL);
+			cleanup(1);
 		} 
 		else {
 			meta_files[j] = argv[i];
@@ -308,14 +443,15 @@ char	**argv;
 	}
 
 
-	while (*meta_files) {
+	for ( ; *meta_files; meta_files++) {
 
 		/*
 		 *	open the metafile
 		 */
 		if ((cgm_fd = CGM_open(*meta_files, NCAR_REC_SIZE, "r")) < 0) {
-			ct_error(T_FOE, *meta_files);
-			exit(1);
+			ESprintf(errno, "Can't open metafile(%s)",*meta_files);
+			fprintf(logFP, "%s: %s\n", progName, ErrGetMsg());
+			continue;
 		}
 
 
@@ -324,9 +460,14 @@ char	**argv;
 		 *	multible metafiles to reside in a single file. This 
 		 *	driver will only process the first.
 		 */
-		if (init_metafile(NEXT, cgm_fd) < 1) {
-			meta_files++;
+		ctrc = init_metafile(NEXT, cgm_fd);
+		if (ctrc == FATAL) {
+			(void) CGM_close(cgm_fd);
+			log_ct(FATAL);
 			continue;	/* skip to next metafile	*/
+		}
+		else if (ctrc == WARN) {
+			log_ct(WARN);
 		}
 
 	
@@ -335,16 +476,9 @@ char	**argv;
 			 *	process frames until the end of the file or an 
 			 *	unrecoverable error occurs
 			 */
-			while (ctrans(NEXT) == OK) {
-				if (opt.verbose) {
-					fprintf(
-						stderr, 
-						"plotted %d frames\n", 
-						frame_count++
-					);
-				}
-				if (batch)
-					if (sleep_time>0) sleep(sleep_time);
+			if (process(NEXT, batch, 
+					sleep_time, opt.verbose,TRUE) < 0) {
+				eStatus = 1;
 			}
 		}
 		else {
@@ -353,23 +487,17 @@ char	**argv;
 			 */
 			i = 0;
 			while (record[i] != -1) {
-				(void) ctrans(record[i++]);
-				if (opt.verbose) {
-					fprintf(
-						stderr, 
-						"plotted %d frames\n", 
-						frame_count++
-					);
+				if (process(record[i++], batch, 
+					sleep_time, opt.verbose,FALSE) < 0) {
+
+					eStatus = 1;
 				}
-				if (batch)
-					if (sleep_time>0) sleep(sleep_time);
 			}
 		}
 
-
+		close_metafile();
 		(void) CGM_close(cgm_fd);
 
-		meta_files++;
 	}	/* while	*/
 
 	/*
@@ -377,19 +505,5 @@ char	**argv;
 	 */
 	(void) close_ctrans();
 
-	exit(0);
-}
-
-usage(od, prog_name, msg)
-	int	od;
-	char	*prog_name;
-	char	*msg;
-{
-	char	*usage = "-d device [-f font] [options] [device options]";
-
-	if (msg) fprintf(stderr, "%s: %s\n", prog_name, msg);
-
-	fprintf(stderr, "Usage: %s %s\n", prog_name, usage);
-	PrintOptionHelp(od, stderr);
-
+	cleanup(eStatus);
 }
