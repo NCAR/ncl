@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqfaf.c,v 1.4 2000-08-22 15:08:55 haley Exp $
+ *  $Id: s_gqfaf.c,v 1.5 2003-10-08 21:18:36 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -58,6 +58,7 @@ void ginq_fill_facs
 {
     int num, ni = 0, i, nhs = 0;
     int idum1, idum2, hatch_end_pos;
+    Gfill_int_style idum3;
 
     NGCALLF(gqfaf,GQFAF)(&ws_type,&ni,&hatch_start_pos,err_ind,
                          &fill_facs->num_int_styles,
@@ -78,7 +79,7 @@ void ginq_fill_facs
         nhs++;
         for( i = hatch_start_pos + 1; i <= hatch_end_pos; i++ ) {
             NGCALLF(gqfaf,GQFAF)(&ws_type,&idum1,&i,err_ind,
-                                 &fill_facs->num_int_styles,&idum2,
+                                 &fill_facs->num_int_styles,&idum3,
                                  act_hatch_length,
                                  &fill_facs->hatch_styles.ints[nhs++],
                                  &fill_facs->num_pred_inds);
