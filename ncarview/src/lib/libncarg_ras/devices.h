@@ -1,8 +1,9 @@
 /*
- *	$Id: devices.h,v 1.7 1992-04-03 00:03:40 don Exp $
+ *	$Id: devices.h,v 1.8 1992-09-10 21:40:33 don Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
+	char			*description;
 	struct RasterStruct	*(*Open)();
 	struct RasterStruct	*(*OpenWrite)();
 	int			(*Read)();
@@ -91,60 +92,131 @@ extern int	AVSClose();
 extern int	AVSPrintInfo();
 #endif
 
+#ifdef BuildRasterSGI
+extern Raster	*SGIOpen();
+extern Raster	*SGIOpenWrite();
+extern int	SGIRead();
+extern int	SGIWrite();
+extern int	SGIClose();
+extern int	SGIPrintInfo();
+#endif
+
+#ifdef BuildRasterAbekas
+extern Raster	*AbekasOpen();
+extern Raster	*AbekasOpenWrite();
+extern int	AbekasRead();
+extern int	AbekasWrite();
+extern int	AbekasClose();
+extern int	AbekasPrintInfo();
+#endif
+
+#ifdef BuildRasterNetcdf
+extern Raster	*NetcdfOpen();
+extern Raster	*NetcdfOpenWrite();
+extern int	NetcdfRead();
+extern int	NetcdfWrite();
+extern int	NetcdfClose();
+extern int	NetcdfPrintInfo();
+#endif
+
 static RasterDevice rasdevices[] = {
 {
-	"cleartext", ClearTextOpen, ClearTextOpenWrite,
+	"cleartext", "Clear Text (output only)",
+	ClearTextOpen, ClearTextOpenWrite,
 	ClearTextRead, ClearTextWrite, ClearTextClose, ClearTextPrintInfo,
 	ImageCount_
 },
 #ifdef BuildRasterNrif
 {
-	"nrif", NrifOpen, NrifOpenWrite, 
+	"nrif", "NCAR Raster Interchange Format",
+	NrifOpen, NrifOpenWrite, 
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo,
 	ImageCount_
 },
 #endif
 #ifdef BuildRasterXWD
 {
-	"xwd", XWDOpen, XWDOpenWrite, 
+	"xwd", "X Window System Dump",
+	XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo,
 	ImageCount_
 },
 #endif
 #ifdef BuildRasterHDF
 {
-	"hdf", HDFOpen, HDFOpenWrite, 
+	"hdf", "NCSA Hierarchical Data Format",
+	HDFOpen, HDFOpenWrite, 
 	HDFRead, HDFWrite, HDFClose, HDFPrintInfo,
 	ImageCount_
 },
 #endif
 #ifdef BuildRasterSun
 {
-	"sun", SunOpen, SunOpenWrite, 
+	"sun", "Sun Microsystems Rasterfile",
+	SunOpen, SunOpenWrite, 
 	SunRead, SunWrite, SunClose, SunPrintInfo,
 	ImageCount_
 },
 #endif
-#ifdef BuildRasterHPLJ
+#ifdef BuildRasterHPLaser
 {
-	"hplj", HPLJOpen, HPLJOpenWrite, 
+	"hplj", "Hewlett-Packard Laser Jet (output only)",
+	HPLJOpen, HPLJOpenWrite, 
 	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo,
 	ImageCount_
 },
 #endif
 #ifdef BuildRasterParallax
 {
-	"parallax", ParallaxOpen, ParallaxOpenWrite, 
+	"parallax", "Parallax VideoView VME video framebuffer",
+	ParallaxOpen, ParallaxOpenWrite, 
 	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo,
 	ImageCount_
 },
 #endif
 #ifdef BuildRasterAVS
 {
-	"avs", AVSOpen, AVSOpenWrite, 
+	"avs", "Application Visualization System Rasterfile",
+	AVSOpen, AVSOpenWrite, 
 	AVSRead, AVSWrite, AVSClose, AVSPrintInfo,
 	ImageCount_
 },
+#endif
+#ifdef BuildRasterSGI
+{
+	"sgi", "Silicon Graphics Rasterfile",
+	SGIOpen, SGIOpenWrite, 
+	SGIRead, SGIWrite, SGIClose, SGIPrintInfo,
+	ImageCount_
+},
+{
+	"rgb", "Silicon Graphics Rasterfile",
+	SGIOpen, SGIOpenWrite, 
+	SGIRead, SGIWrite, SGIClose, SGIPrintInfo,
+	ImageCount_
+},
+#endif
+#ifdef BuildRasterAbekas
+{
+	"a60", "Abekas A60 Rasterfile",
+	AbekasOpen, AbekasOpenWrite, 
+	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
+	ImageCount_
+},
+{
+	"yuv", "Abekas A60 Rasterfile",
+	AbekasOpen, AbekasOpenWrite, 
+	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
+	ImageCount_
+},
+#endif
+#ifdef BuildRasterNetcdf
+{
+	"cdf", "Netcdf GOES image file",
+	NetcdfOpen, NetcdfOpenWrite, 
+	NetcdfRead, NetcdfWrite, NetcdfClose, NetcdfPrintInfo,
+	ImageCount_
+}
 #endif
 };
 
