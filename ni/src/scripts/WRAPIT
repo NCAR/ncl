@@ -1,0 +1,371 @@
+#!/bin/csh
+set version = 030128    # YYMMDD
+if ($argv[1]:q == "-h") then
+echo " " 
+echo "WRAPIT Version: "$version 
+echo written by Mark Stevens, NCAR/CGD/Climate Modeling Section
+echo e-mail: stevens@ucar.edu
+echo "---------------------------------------------------------------------"
+echo "WRAPIT works on SunOS, IRIX64 (Sgi), AIX (IBM), OSF1 (alpha), MacOSX,"
+echo HP-UX, and Linux operating systems. WRAPIT can handle both f77 and f90 
+echo files. The f77 files must have a suffix of ".f", and the f90 files a 
+echo sufix of ".f90", on all of the operating systems. All "f90" files must 
+echo have a corresponding "stub" file which contains the declartion of the 
+echo f90 subroutine in fortran77 syntax, for example in "file1.stub" we 
+echo might have the following:
+echo C NCLFORTSTART
+echo "     subroutine DOIT (x, y, z)"
+echo "     real x, y"
+echo "     integer z"
+echo C NCLEND
+echo "The two comment lines C NCLFORTSTART and C NCLEND (called"
+echo "delimiters) are REQUIRED. The C NCLFORTSTART appears before the"
+echo subroutine statement. The NCLEND is place after all the declaration
+echo statements pertaining to the arguments passed from NCL.
+echo These delimiters can be upper or lower case, or mixed case.
+echo All user fortran77 subroutines invoked from NCL must contain these 
+echo delimiters. User f77 subroutines do not require a separate "stub" 
+echo file. User supplied f90 subroutines invoked from NCL and 
+echo "subroutines invoked from external libraries (eg: IMSL, NAG, ..)"
+echo require stub files.
+echo " "
+echo "-------------------- Command Line Options --------------------------"
+echo The six available options must appear on the command line before
+echo the fortran file names. 
+echo "OPTION: -d displays debug information and prevents file cleanup." 
+echo "OPTION: -h displays information comments and usage examples."
+echo "OPTION: -l <libname> passes a library name to the linker."
+echo "OPTION: -L <libpath> passes a directory path to the linker."
+echo "  Use of the -L and -l options may require the user to specify"
+echo "  more than the specific path(s) and libraries. For example, one"
+echo "  might encounter the message '.so not found, etc'. In this case,"
+echo "  the may have to set the environment variable LD_LIBRARY_PATH"
+echo "  to assorted paths to ensure that appropriate directory paths"
+echo "  are searched by the system at runtime. For example:"
+echo "  setenv LD_LIBRARY_PATH /usr/local/nag/lib:/contrib/lib"
+echo "OPTION: -n <so name> assigns a name to the created shared object, if"
+echo "  this option is not used then the name for the created shared object"
+echo "  is derived from the first fortran filename on the command line."
+echo "OPTION: -r8 is used to promote floats of real*4 to real*8."
+echo " "
+echo "------------------------ Linux Compilers ---------------------------"
+echo WRAPIT works with the Portland Group f90 and the Lahey/Fujitsu f95
+echo compilers. 
+echo " " 
+echo "-------------------- Some Usage Examples ---------------------------"
+echo One argument
+echo "WRAPIT file1.f"                         
+echo "WRAPIT subdir/file1.f"                         
+echo " "
+echo Two arguments
+echo "WRAPIT file1.f file2.f                  # no options"
+echo "WRAPIT -r8 file1.f                      # -r8 option"
+echo "WRAPIT -d -r8 file1.f                   # -d and -r8 options"
+echo "WRAPIT -r8 subdir/file1.f               # -r8 option"
+echo "WRAPIT file1.stub file1.f90"
+echo "WRAPIT subdir/file1.stub subdir/file1.f90"
+echo " " 
+echo Three arguments
+echo "WRAPIT file1.f file2.f file3.f          # no options"       
+echo "WRAPIT file1.stub file1.f90 file2.f"
+echo "WRAPIT file1.f file2.stub file2.f90"
+echo "WRAPIT -r8 file1.f file2.f              # -r8 only"
+echo "WRAPIT -r8 file1.stub file1.f90"
+echo "WRAPIT -n foo file1.f                   # -n <so name> only"
+echo "WRAPIT -l imsl_mp file1.f               # -l <libname> only"
+echo " "
+echo Four arguments
+echo "WRAPIT file1.f file2.f file3.f file4.f      # no options"
+echo "WRAPIT -r8 file1.f file2.f file3.f          # -r8 only"
+echo "WRAPIT -r8 file1.f file2.stub file2.f90"
+echo "WRAPIT -r8 -n foo file1.f                   # -r8 -n <so name>"
+echo "WRAPIT -r8 -l imsl_mp file1.f               # -r8 -l <libname>" 
+echo "WRAPIT -n foo file1.f file2.f               # -n <so name> only"
+echo "WRAPIT -n foo -r8 file1.f                   # -n <so name> -r8"
+echo "WRAPIT -l imsl_mp file1.stub file1.f90      # -l <libname> only"
+echo "WRAPIT -l imsl_mp -r8 file1.f               # -l <libname> -r8"
+echo " "
+echo Many arguments
+echo "WRAPIT -l blas_mp -L /usr/local/lib64/r4i4 -l imsl_mp file1.f"
+echo " "
+exit
+endif
+#---------------------------------------------------------------------- 
+if ($#argv == 0) then                  # check for arguments
+  echo ERROR: NO ARGUMENTS
+  exit
+else
+  set OS = `uname`
+  if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "AIX" && $OS != "Linux" \
+      && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX") then
+    echo WRAPIT IS NOT SUPPORTED ON THE $OS OPERATING SYSTEM 
+    exit
+  endif
+  if (-e WRAPIT.c) then
+    'rm' -f WRAPIT.c
+  endif
+  if (-e WRAPIT.o) then
+    'rm' -f WRAPIT.o
+  endif
+  if (-e WRAPIT.stub) then
+    'rm' -f WRAPIT.stub
+  endif
+endif
+#echo ARGUMENTS: $argv 
+
+# set the initial compiler options
+if ($OS == "Linux") then            # determine Linux compiler 
+  which pgf90                       # Portland Group compiler
+  if ($status) then                 # no pgf90 compiler (status=1)
+    which lf95                      # Lahey/Fujitsu compiler
+    if ($status) then               # no lf95 compiler (status=1)
+      echo "NO f90/f95 COMPILER FOUND. CHECKING FOR f77 (or g77) COMPILER." 
+      which f77
+      if ($status) then             # no f77 compiler found (status=1)
+        which g77
+        if ($status) then           # no g77 compiler found (status=1)
+          echo "ERROR: NO f77 or g77 COMPILER FOUND, PLEASE CHECK YOUR PATH." 
+          exit
+        else
+          set f90c = g77            # use g77 (has to be there!)
+        endif
+      else
+        set f90c = f77              # f77
+      endif
+      set fopts = "-c -O"
+    else
+      set f90c = lf95               # Lahey/Fujitsu compiler
+      set fopts = "-c -O"
+    endif
+  else                              # Portland Group compiler
+    set f90c = pgf90
+    set fopts = "-c -O"
+  endif
+else if ($OS == "AIX") then          # AIX 
+  set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O" 
+else if ($OS == "IRIX64") then       # SGI
+  set fopts = "-c -64 -O"
+else if ($OS == "Darwin") then       # MacOSX
+  set f90c = g77                     
+  set fopts = "-c -O -fno-common"
+else if ($OS == "HP-UX") then        # HP-UX
+  set fopts = "+z -c -O"
+else                                 # SunOS and OSF1 
+  set fopts = "-c -O" 
+endif
+
+set real8 = 0                         # flag for real*8
+set debug = 0
+
+# get a name for the shared object file
+set SharedObj = NONE
+
+while ($#argv)
+  set arg = $argv[1]
+# echo ARG: $arg
+  if ($arg:q == "-d") then
+    set debug = 1
+    echo " " 
+    echo DEBUG ON
+  else if ($arg:q == "-r8") then
+    set real8 = 1
+  else if ($arg:q == "-n") then
+    if ($#argv < 3) then
+      echo "ERROR: missing shared object name after -n option"
+      exit
+    endif
+    shift
+    if ($argv[1]:q == "-l" || $argv[1]:q == "-L" || $argv[1]:q == "-r8") then
+      echo "ERROR: missing shared object name after -n option"
+      exit
+    endif
+    set SharedObj = $argv[1].so
+  else if ($arg:q == "-L") then
+    if ($#argv < 3) then
+      echo "ERROR: missing library path after -L option"
+      exit
+    endif
+    shift
+    if ($argv[1]:q == "-n" || $argv[1]:q == "-l" || $argv[1]:q == "-r8") then
+      echo "ERROR: missing library path after -L option"
+      exit
+    endif
+    if ($?libraries) then
+      set libraries = "$libraries -L$argv[1]"
+    else
+      set libraries = "-L$argv[1]"
+    endif
+  else if ($arg:q == "-l") then
+    if ($#argv < 3) then
+      echo "ERROR: missing library name after -l option"
+      exit
+    endif
+    shift
+    if ($argv[1]:q == "-n" || $argv[1]:q == "-L" || $argv[1]:q == "-r8") then
+      echo "ERROR: missing library name after -l option"
+      exit
+    endif
+    if ($?libraries) then
+      set libraries = "$libraries -l$argv[1]"
+    else
+      set libraries = "-l$argv[1]"
+    endif
+  else             # arg is filename
+    if ($SharedObj == NONE) then
+      set SharedObj = ${argv[1]:r}.so
+    endif
+    break
+  endif
+  shift
+end      
+
+set args = ($argv)     # save list of remaining arguments
+
+# reset compiler options for real*8
+if ($real8 == 1) then
+  if ($OS == "AIX") then
+    set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O -qautodbl=dbl4"
+  else if ($OS == "IRIX64") then
+    set fopts = "-c -64 -O -r8" 
+  else if ($OS == "OSF1") then
+    set fopts = "-c -O -r8" 
+  else if ($OS == "HP-UX") then
+    set fopts = "+z -c -O +r8" 
+  else if ($OS == "SunOS") then
+    set fopts = "-c -O -xtypemap=real:64"
+  else                                # Linux 
+    if ($f90c == "pgf90") then        # Portland Group
+      set fopts = "-c -O -r8"
+    else if ($f90c == "lf95") then    # Lahey/Fujitsu
+      set fopts = "-c -O --dbl"
+    else
+      set fopts = "-c -O"             # g77 (f77)
+    endif
+  endif
+endif
+
+if ($debug) then
+  echo "WRAPIT Version: "$version
+  echo "OPERATING SYSTEM: "$OS
+  if ($OS == "Linux" || $OS == "Darwin") then
+    echo "FORTRAN COMPILER (f90c): "$f90c
+  endif
+  echo "FORTRAN COMPILER OPTIONS (fopts): "$fopts
+endif
+
+echo > WRAPIT.stub     # create empty file
+ 
+while ($#argv)
+  if (-e $argv[1]) then
+    if ($argv[1]:e == "f" || $argv[1]:e == "stub") then
+      cat $argv[1] | sed -e \
+'/^[cC][ ]*[nN][cC][lL][fF][oO][rR][tT][sS][tT][aA][rR][tT]/,/^[cC][ ]*[nN][cC][lL][eE][nN][dD]/p' -e 'd' >> WRAPIT.stub
+    endif
+    shift
+  else
+    echo ERROR: FILE $argv[1] DOES NOT EXIST
+    exit
+  endif
+end
+wrapit77 < WRAPIT.stub >! WRAPIT.c
+
+if ($OS == "AIX") then
+  xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
+     -c -q64 -qmaxmem=-1 -qarch=auto -O -I${NCARG_ROOT}/include WRAPIT.c 
+else if ($OS == "IRIX64") then
+  cc -c -64 -O -I${NCARG_ROOT}/include WRAPIT.c
+else if ($OS == "Darwin") then
+  cc -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
+else if ($OS == "HP-UX") then
+  cc +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
+else           # Linux, OSF1 SunOS 
+  cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
+endif
+echo WRAPIT.o > objects
+
+foreach arg ($args) 
+  if (-e $arg) then
+    if ($arg:e == "f" || $arg:e == "f90") then   
+      echo COMPILING $arg
+      if ($OS == "AIX") then
+        if ($arg:e == "f") then            # fixed format
+          xlf90 $fopts -qfixed $arg
+        else                               # free format
+          xlf90 $fopts -qsuffix=f=f90 $arg
+        endif
+      else if ($OS == "Linux" || $OS == "Darwin") then  # use g77
+        $f90c $fopts $arg
+      else                                # IRIX64, OSF1, SunOS, HP-UX 
+        f90 $fopts $arg
+      endif
+      set objfile = {$arg:t}              # remove path 
+      echo {$objfile:r}.o >> objects      # remove extension
+    endif
+  else
+    echo ERROR: FILE $arg DOES NOT EXIST
+    exit
+  endif
+end
+
+set object_files = `cat objects`
+
+# link the object modules and produce the shared object module
+if (-e $SharedObj) then
+  'rm' $SharedObj
+endif
+if ($?libraries) then
+  set ld_suffix = "$object_files $libraries -o $SharedObj"
+else
+  set ld_suffix = "$object_files -o $SharedObj"
+endif
+if ($debug) then
+  echo "SHARED OBJECT NAME (SharedObj): "$SharedObj
+  echo "LINKER SUFFIX (ld_suffux): "$ld_suffix
+  echo " "
+endif
+
+if ($OS == "AIX") then
+  if ($debug) then
+    ld -bnoquiet -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 $ld_suffix
+  else
+    ld -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 $ld_suffix
+  endif
+else if ($OS == "IRIX64") then
+  if ($debug) then
+    ld -v -V -64 -shared $ld_suffix
+  else
+    ld -64 -shared $ld_suffix
+  endif
+  'rm' so_locations
+else if ($OS == "Linux") then 
+  if ($f90c == "pgf90") then   # PG compiler
+    if ($debug) then
+      $f90c -V -v -shared $ld_suffix
+    else
+      $f90c -shared $ld_suffix
+    endif
+  else                         # LF compiler
+   $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
+  endif
+else if ($OS == "OSF1") then 
+  f90 -shared $ld_suffix
+  'rm' so_locations
+else if ($OS == "Darwin") then   # MacOSX
+  cc -bundle -flat_namespace -undefined suppress $ld_suffix -lg2c
+else if ($OS == "HP-UX") then    # HP-UX
+  ld -b $ld_suffix
+else                             # SunOS
+  if ($debug) then
+    ld -V -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
+  else
+    ld -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
+  endif
+endif
+
+# clean up
+if (! $debug) then
+ 'rm' $object_files
+ 'rm' objects
+ 'rm' WRAPIT.c
+ 'rm' WRAPIT.stub
+endif

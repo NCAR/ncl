@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 2002-09-16 20:52:01 haley Exp $
+#	$Id: yMakefile,v 1.4 2003-02-23 00:00:53 haley Exp $
 #
 
 #ifdef	BuildWithF90
@@ -8,7 +8,8 @@ NHF_SCRIPT	=	nhlf90
 NHF_SCRIPT	=	nhlf77
 #endif
 
-SCRIPTS = nhlcc $(NHF_SCRIPT) ng4ex 
+SCRIPTS1 = nhlcc $(NHF_SCRIPT) ng4ex
+SCRIPTS2 = WRAPIT
 
 #ifdef	BuildWithF90
 MOREMAN1 = nhlf90
@@ -61,8 +62,9 @@ FORMAT_EXT	= .p
 FORMAT_EXT	= .m
 #endif
 
-InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget($(SCRIPTS))
+InstallTarget($(SCRIPTS1),$(INSTALL_BIN),$(BINPATH))
+InstallTarget($(SCRIPTS2),$(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget($(SCRIPTS1))
 InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
 FormatManPages($(MAN1),.m,.p)
 
