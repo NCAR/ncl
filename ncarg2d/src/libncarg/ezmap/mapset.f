@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.7 1994-04-08 23:00:32 kennison Exp $
+C $Id: mapset.f,v 1.8 1996-05-07 21:34:57 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -14,7 +14,7 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
@@ -29,8 +29,8 @@ C
 C
 C Transfer the parameters defining the map limits.
 C
-      I=IDICTL(ARG1,LDCT,5)
-      IF (I.EQ.0) I=IDICTL(ARG1,LDCL,5)
+      I=IDICTL(ARG1,LDCT,6)
+      IF (I.EQ.0) I=IDICTL(ARG1,LDCL,6)
       IF (I.EQ.0) GO TO 901
       ILTS=I
 C

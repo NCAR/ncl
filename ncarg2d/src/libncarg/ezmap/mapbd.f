@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.6 1994-03-18 23:49:46 kennison Exp $
+C $Id: mapbd.f,v 1.7 1996-05-07 21:34:55 kennison Exp $
 C
       BLOCK DATA MAPBD
 C
@@ -45,7 +45,7 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
 C
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
 C
@@ -198,7 +198,7 @@ C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE).
 C JPRJ is an integer between 1 and 9 indicating the type of projection
 C currently in use.  PHIA, PHIO, and ROTA are the pole latitude and
 C longitude and the rotation angle specified by the last user call to
-C MAPROJ.  ILTS is an integer between 1 and 5, specifying how the limits
+C MAPROJ.  ILTS is an integer between 1 and 6, specifying how the limits
 C of the map are to be chosen.  PLA1-4 and PLB1-4 are the values given
 C by the user for PLM1(1), PLM2(1), ..., PLM1(2), PLM2(2), ..., in the
 C last call to MAPSET.  PLTR is the plotter resolution - effectively,
@@ -244,8 +244,8 @@ C
       DATA DDCT / 'NO','CO','US','PS','PO' /
       DATA DDCL / 'no','co','us','ps','po' /
 C
-      DATA LDCT / 'MA','CO','PO','AN','LI' /
-      DATA LDCL / 'ma','co','po','an','li' /
+      DATA LDCT / 'MA','CO','PO','AN','LI','GR' /
+      DATA LDCL / 'ma','co','po','an','li','gr' /
 C
       DATA PDCT / 'LC','ST','OR','LE','GN','AE','CE','ME','MO','SV' /
       DATA PDCL / 'lc','st','or','le','gn','ae','ce','me','mo','sv' /

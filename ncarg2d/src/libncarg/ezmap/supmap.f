@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.6 1994-03-18 23:51:17 kennison Exp $
+C $Id: supmap.f,v 1.7 1996-05-07 21:34:58 kennison Exp $
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
      +                   JGRD,IOUT,IDOT,IERR)
@@ -9,16 +9,16 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      DIMENSION LPRJ(10),LLTS(5)
+      DIMENSION LPRJ(10),LLTS(6)
 C
       DATA LPRJ / 2,3,1,4,5,6,10,7,8,9 /
-      DATA LLTS / 1,2,5,4,3 /
+      DATA LLTS / 1,2,5,4,3,6 /
 C
 C Check for an uncleared prior error.
 C
@@ -66,7 +66,7 @@ C
 C
 C Set EZMAP's rectangular-limits-selection parameters.
 C
-      I=LLTS(MAX(1,MIN(5,IABS(JLTS))))
+      I=LLTS(MAX(1,MIN(6,IABS(JLTS))))
       CALL MAPSET (LDCT(I),PLM1,PLM2,PLM3,PLM4)
       IF (ICFELL('SUPMAP',8).NE.0) RETURN
 C

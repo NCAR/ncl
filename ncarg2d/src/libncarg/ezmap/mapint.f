@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.7 1994-05-03 21:17:25 kennison Exp $
+C $Id: mapint.f,v 1.8 1996-05-07 21:34:56 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -270,7 +270,7 @@ C
 C
 C Now, jump to the appropriate limit-setting code.
 C
-      GO TO (600,200,300,400,500) , ILTS
+      GO TO (600,200,300,400,500,550) , ILTS
 C
 C ILTS=2    Points (PL1,PL2) and (PL3,PL4) are on opposite corners
 C ------    of the plot.
@@ -442,6 +442,47 @@ C
       UMAX=PLA2
       VMIN=PLA3
       VMAX=PLA4
+      GO TO 600
+C
+C ILTS=6    Ranges of latitudes and longitudes are given, defining a
+C ------    region of interest, all of which is to be shown.
+C
+  550 RLT1=MAX(-90.,MIN(90.,PLA1))
+      RLT2=MAX(-90.,MIN(90.,PLA3))
+      IF (RLT1.GT.RLT2) THEN
+        RLAT=RLT1
+        RLT1=RLT2
+        RLT2=RLAT
+      END IF
+      RLN1=MOD(PLA2+3600.,360.)
+      RLN2=MOD(PLA4+3600.,360.)
+      IF (RLN2.LT.RLN1) RLN2=RLN2+360.
+      NLTS=MAX(5,INT((RLT2-RLT1)/GRDR))+2
+      NLNS=MAX(5,INT((RLN2-RLN1)/GRDR))+2
+      XMIN=+1.E12
+      XMAX=-1.E12
+      YMIN=+1.E12
+      YMAX=-1.E12
+      DO 552 J=1,NLTS
+        RLAT=RLT1+REAL(J-1)*(RLT2-RLT1)/REAL(NLTS-1)
+        DO 551 I=1,NLNS
+          RLON=RLN1+REAL(I-1)*(RLN2-RLN1)/REAL(NLNS-1)
+          CALL MAPTRN (RLAT,RLON,XPOS,YPOS)
+          IF (XPOS.NE.1.E12) THEN
+            XMIN=MIN(XMIN,XPOS)
+            XMAX=MAX(XMAX,XPOS)
+            YMIN=MIN(YMIN,YPOS)
+            YMAX=MAX(YMAX,YPOS)
+          END IF
+  551   CONTINUE
+  552 CONTINUE
+      IF (XMIN.NE.1.E12) THEN
+        UMIN=XMIN
+        UMAX=XMAX
+        VMIN=YMIN
+        VMAX=YMAX
+      END IF
+      GO TO 600
 C
 C Compute the width and height of the plot.
 C
@@ -526,7 +567,7 @@ C
 C
 C If that didn't work, try a point based on the limits specifier.
 C
-        IF (ILTS.EQ.2) THEN
+        IF (ILTS.EQ.2.OR.ILTS.EQ.6) THEN
           CLAT=.5*(PLA1+PLA3)
           CLON=.5*(PLA2+PLA4)
         ELSE IF (ILTS.EQ.3) THEN
