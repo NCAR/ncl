@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.11 1997-10-23 00:27:00 dbrown Exp $
+ *      $Id: app.c,v 1.12 1998-03-11 18:58:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -387,7 +387,10 @@ NgAppQuit
 /*
  * TODO:	call a quitConfirm callback - iff cbdata comes back true,
  *		then call quitNow callback. If that returns, exit.
+ *              for now, just close ncl and then the hlu library.
  */
+        NclCloseServer();
+        
 	exit(0);
 
 	return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.8 1997-09-04 17:05:45 boote Exp $
+ *      $Id: xapp.c,v 1.9 1998-03-11 18:58:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -446,8 +446,12 @@ XAppMgrDestroy
 /*
  * TODO!!!
  */
-	NhlDestroy(xapp->addfile);
-	NhlDestroy(xapp->loadfile);
+#if 0        
+        if (xapp->addfile > NhlNULLOBJID)
+                NhlDestroy(xapp->addfile);
+        if (xapp->loadfile > NhlNULLOBJID)
+                NhlDestroy(xapp->loadfile);
+#endif        
 	XtDestroyWidget(xapp->app_widget);
 	XCloseDisplay(xapp->x.dpy);
 

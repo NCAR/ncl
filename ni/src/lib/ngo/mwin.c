@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.14 1998-01-29 16:05:05 boote Exp $
+ *      $Id: mwin.c,v 1.15 1998-03-11 18:58:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -734,7 +734,9 @@ CleanUpCB
 	NhlArgVal	udata
 )
 {
+#if 0        
 	CleanUp((NgObjTree)udata.ptrval);
+#endif        
 	return;
 }
 

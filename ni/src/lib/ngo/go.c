@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.12 1997-10-23 00:27:03 dbrown Exp $
+ *      $Id: go.c,v 1.13 1998-03-11 18:58:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -641,7 +641,8 @@ GOInitialize
 	udata.ptrval = new;
 	go->appdestroy_cb = _NhlAddObjCallback(_NhlGetLayer(go->appmgr),
 				_NhlCBobjDestroy,dummy,NgDestroyMeCB,udata);
-
+        go->gochange_cb = NULL;
+        
 	lret = NhlVAGetValues(go->appmgr,
 		NgNxappExport,	&go->x,
 		NULL);
@@ -663,6 +664,10 @@ GOInitialize
 	go->shell = NULL;
 
 	go->menubar = NULL;
+        go->create_menu = NULL;
+        go->delete_menu = NULL;
+        
+        
 
 	NgAppAddGO(go->appmgr,new->base.id);
 
@@ -711,10 +716,21 @@ GODestroy
 		go->xm_title = NULL;
 	}
 
+        if (go->delete_menu) {
+                NgDestroyVarMenus(go->delete_menu);
+                go->delete_menu = NULL;
+        }
+        if (go->create_menu) {
+                NgDestroyCreateMenu(go->create_menu);
+                go->create_menu = NULL;
+        }
+
 	NgAppRemoveGO(go->appmgr,l->base.id);
 
 	_NhlCBDelete(go->appdestroy_cb);
-
+        if (go->gochange_cb)
+                _NhlCBDelete(go->gochange_cb);
+        
 	if(go->iowin != None)
 		XDestroyWindow(go->x->dpy,go->iowin);
 
@@ -1263,9 +1279,6 @@ RemoveGOWin
 	Cardinal	nchildren;
 	int		i,w_goid;
 	int		which=0;	/* 0 none, 1 ncledit, 2 browse */
-
-        NgDestroyVarMenus(go->go.delete_menu);
-        NgDestroyCreateMenu(go->go.create_menu);
         
 	XtVaGetValues(go->go.wmenu,
 		XmNchildren,	&children,
@@ -1439,7 +1452,7 @@ _NgGOCreateMenubar
 	Widget		ncledit,browse;
 	static char	*new[]= {"new",NULL};
 	_NhlCB		cb;
-	NhlArgVal	dummy,udata;
+	NhlArgVal	sel,udata;
 
 	if(gp->menubar){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:menubar exists?",func));
@@ -1616,14 +1629,15 @@ _NgGOCreateMenubar
 
 	NgAppEnumerateGO(gp->appmgr,EnumWindows,go);
 
-	NhlINITVAR(dummy);
+	NhlINITVAR(sel);
 	NhlINITVAR(udata);
 	udata.ptrval = go;
-	cb = _NhlAddObjCallback(_NhlGetLayer(gp->appmgr),NgCBAppGoChange,dummy,
-			GOChangeCB,udata);
-
+	gp->gochange_cb = _NhlAddObjCallback
+                (_NhlGetLayer(gp->appmgr),
+                 NgCBAppGoChange,sel,GOChangeCB,udata);
+#if 0
 	XtAddCallback(gp->menubar,XmNdestroyCallback,DelGoChangeCB,cb);
-
+#endif
 	XtManageChild(gp->fmenu);
 	XtManageChild(gp->emenu);
 	XtManageChild(gp->vmenu);

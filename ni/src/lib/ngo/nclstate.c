@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.15 1998-01-29 16:05:06 boote Exp $
+ *      $Id: nclstate.c,v 1.16 1998-03-11 18:58:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -978,6 +978,7 @@ NclStateDestroy
 
 	_NhlCBDelete(ncl->appdestroy_cb);
 
+#if 0        
 	DestroyObjList(ncl->hluobj_pending);
 	DestroyObjList(ncl->hluvar_pending);
 	DestroyObjList(ncl->var_pending);
@@ -995,6 +996,7 @@ NclStateDestroy
 	_NhlCBDestroy(ncl->submitcb);
 	_NhlCBDestroy(ncl->promptcb);
 	_NhlCBDestroy(ncl->resetcb);
+#endif        
 
 	return NhlNOERROR;
 }

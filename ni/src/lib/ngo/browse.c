@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.18 1998-02-20 22:42:44 dbrown Exp $
+ *      $Id: browse.c,v 1.19 1998-03-11 18:58:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -169,8 +169,9 @@ BrowseDestroy
 	NgBrowse	browse = (NgBrowse)l;
 	NgBrowsePart	*np = &((NgBrowse)l)->browse;
 
+#if 0        
 	NgAppRemoveGO(browse->go.appmgr,l->base.id);
-
+#endif
 	return NhlNOERROR;
 }
 

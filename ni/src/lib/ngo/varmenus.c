@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.6 1998-01-08 22:45:21 dbrown Exp $
+ *      $Id: varmenus.c,v 1.7 1998-03-11 18:58:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -433,6 +433,27 @@ static void VarMenuCB
         
 }
 
+static void InitVarRec
+(
+        NgVarRec 	*vrec,
+        NgvmVarType     vtype
+        )
+{
+        vrec->vtype = vtype;
+        vrec->menu = NULL;
+        vrec->mbutton = NULL;
+        vrec->varcount = 0;
+        vrec->vbuttons = NULL;
+        vrec->qvars = NULL;
+        vrec->alloced = 0;
+        vrec->in_use = 0;
+        vrec->modified = True;
+        vrec->priv = NULL;
+        vrec->create_cb = NULL;
+        vrec->delete_cb = NULL;
+        return;
+}
+
 NgVarMenus
 NgCreateVarMenus
 (
@@ -472,37 +493,10 @@ NgCreateVarMenus
         vp->filevar_cb = filevar_cb;
         vp->udata = udata;
 
-        vp->hluvars.varcount = 0;
-        vp->hluvars.alloced = 0;
-        vp->hluvars.in_use = 0;
-        vp->hluvars.vbuttons = NULL;
-        vp->hluvars.modified = True;
-        vp->hluvars.vtype = _vmHLUVAR;
-        vp->hluvars.priv = NULL;
-
-        vp->regvars.varcount = 0;
-        vp->regvars.alloced = 0;
-        vp->regvars.in_use = 0;
-        vp->regvars.vbuttons = NULL;
-        vp->regvars.modified = True;
-        vp->regvars.vtype = _vmREGULAR;
-        vp->regvars.priv = NULL;
-        
-        vp->filerefs.varcount = 0;
-        vp->filerefs.alloced = 0;
-        vp->filerefs.in_use = 0;
-        vp->filerefs.vbuttons = NULL;
-        vp->filerefs.modified = True;
-        vp->filerefs.vtype = _vmFILEREF;
-        vp->filerefs.priv = NULL;
-
-        vp->filevars.varcount = 0;
-        vp->filevars.alloced = 0;
-        vp->filevars.in_use = 0;
-        vp->filevars.vbuttons = NULL;
-        vp->filevars.modified = True;
-        vp->filevars.vtype = _vmFILEVAR;
-        vp->filevars.priv = NULL;
+        InitVarRec(&vp->hluvars,_vmHLUVAR);
+        InitVarRec(&vp->regvars,_vmREGULAR);
+        InitVarRec(&vp->filerefs,_vmFILEREF);
+        InitVarRec(&vp->filevars,_vmFILEVAR);
 
         fvar = NhlMalloc(sizeof(NgFileVarRec));
         fvar->next = NULL;
@@ -678,8 +672,10 @@ void NgDestroyVarMenus
                             fvar = (NgFileVarRec *)vrec->priv;
                             break;
                 }
-                _NhlCBDelete(vrec->create_cb);
-                _NhlCBDelete(vrec->delete_cb);
+                if (vrec->create_cb)
+                        _NhlCBDelete(vrec->create_cb);
+                if (vrec->delete_cb)
+                        _NhlCBDelete(vrec->delete_cb);
                 if (fvar) {
                         NgFileVarRec *ftmp;
                         while (fvar) {
