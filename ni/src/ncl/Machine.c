@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.82 2002-07-08 18:32:51 ethan Exp $
+ *      $Id: Machine.c,v 1.83 2002-07-08 18:39:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2208,7 +2208,7 @@ if(the_list != NULL) {
 								tmp_var1->var.thesym = NULL;
 								tmp_var1->var.sel_rec = NULL;
 								tmp_var1->var.var_type =NORMAL;
-								tmp_var1->obj.status = NORMAL;
+								tmp_var1->obj.status = PERMANENT;
 							}
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
 							check_ret_status = 0;
