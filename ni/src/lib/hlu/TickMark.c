@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.53 1997-01-14 21:23:33 dbrown Exp $
+ *      $Id: TickMark.c,v 1.54 1997-02-21 19:30:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2587,6 +2587,7 @@ NhlTickMarkLayer tlayer;
 			}
 		}
 	}
+	c_sflush();
 	
 	return(ret);
 }
