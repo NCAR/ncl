@@ -6,6 +6,14 @@ undef("plot_title")
 undef("fix_longitude")
 undef("fix_longitude_coord")
 undef("set_map_limits_from_object")
+undef("test_func")
+
+function test_func ()
+
+begin
+	print("executing test func")
+	return 0
+end
 
 
 function dim_average (data)

@@ -123,10 +123,21 @@
 ! The map
 !
 *map@pmOverlays : (/ $cnplot$, $maptick$ /)
+*map@pmOverlays%Profile : (/ InitializeOnly : True /)
+
 *map@ndvUpdateFunc : set_map_limits_from_object($map$,$cnplot$,False,False)
+*map@ndvUpdateFunc%Profile : (/ Name : Set Map Limits from Data Extent /)
+
 *map@pmAnnoViews : (/$xy$,$left_title$,$right_title$ /)
+*map@pmAnnoViews%Profile : (/ InitializeOnly : True /)
+
 *map@ndvUpdateFunc1 : plot_title($map$,\
 	$left_title$,$geosf$@long_name,$right_title$,$geosf$@units,0.014,1)
+*map@ndvUpdateFunc1%Profile : (/ Name : Plot Titles /)
+
+*map@ndvUpdateFunc2 : test_func ( )
+*map@ndvUpdateFunc2%Profile : (/ InitializeOnly : True /)
+
 !*map*mpGeophysicalLineColor : Foreground
 *map*vpXF : 0.08
 *map*vpWidthF : 0.57
@@ -134,6 +145,7 @@
 ! Loglinplot used to overlay tickmarks
 !
 *maptick@ndvUpdateFunc : map_tickmarks($map$,$maptick$)
+*maptick@ndvUpdateFunc%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick*tfDoNDCOverlay : True
 *maptick*pmTickMarkDisplayMode : always
 *maptick*amZone : 0
@@ -148,6 +160,7 @@
 *cnplot@cnFillColors%Profile : (/ Name : Level Colors , \
 				SaveForCompare : True /)
 *cnplot@pmAnnoViews : (/ $timestamp$ /)
+*cnplot@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 *cnplot*cnRasterModeOn : True
 *cnplot*cnRasterSmoothingOn : True
 *cnplot*cnLinesOn : False
