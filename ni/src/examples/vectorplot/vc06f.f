@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.1 1996-06-27 16:07:12 haley Exp $
+C  $Id: vc06f.f,v 1.2 1996-09-18 20:04:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -43,7 +43,6 @@ C
       external NhlFVectorFieldClass
       external NhlFScalarFieldClass
       external NhlFMapPlotClass
-      external NhlFResListClass
       
       integer NCGM, X11, PS
       integer appid,wid,vcid,vfid, sfid, mpid
@@ -66,7 +65,7 @@ C
       integer uv, p, u_id, v_id, p_id, lon_id, lat_id, FRAME_COUNT
       integer  i, mindistval, icount(3), longitudeval
       real val
-      integer  start(2), count(2), lonlen, latlen
+      integer  start(2), count(2), lonlen, latlen, flen
       real CenLonF
       character*256  filenameUV
       character*256  filenamePsl
