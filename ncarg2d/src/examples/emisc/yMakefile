@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.6 1993-10-19 17:22:51 boote Exp $
+#	$Id: yMakefile,v 1.7 1994-12-05 23:28:52 haley Exp $
 #
 
 MYNAME	= emisc
+
 GENERIC_SRCS = bnchmk.f example.f
-GENERIC_OBJS = bnchmk.o example.o
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

@@ -1,13 +1,9 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-19 17:23:37 boote Exp $
+#	$Id: yMakefile,v 1.3 1994-12-05 23:29:02 haley Exp $
 #
 
 MYNAME	= estitl
 
-GENERIC_SRCS = \
-	 slex01.f
-
-GENERIC_OBJS = \
-	 slex01.o
+GENERIC_SRCS = slex01.f
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

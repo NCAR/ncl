@@ -1,16 +1,11 @@
 #
-#	$Id: yMakefile,v 1.7 1994-09-14 16:48:30 kennison Exp $
+#	$Id: yMakefile,v 1.8 1994-12-05 23:28:40 haley Exp $
 #
-FSPLIT	= ncarguncat
 
 MYNAME	= econpa
 
 GENERIC_SRCS = \
 	 cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f\
 	 cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cbex01.f
-
-GENERIC_OBJS = \
-	 cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o\
-	 cpex07.o cpex08.o cpex09.o cpex10.o cpex11.o cpex12.o cbex01.o
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

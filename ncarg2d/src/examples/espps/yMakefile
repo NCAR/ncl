@@ -1,10 +1,9 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:23:17 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-12-05 23:28:58 haley Exp $
 #
 
 MYNAME	= espps
 
-GENERIC_SRCS = \
-	splogy.f sprevx.f
+GENERIC_SRCS = splogy.f sprevx.f
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
