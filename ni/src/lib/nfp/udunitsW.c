@@ -2,6 +2,51 @@
 #include <udunits.h>
 #include "wrapper.h"
 
+/*
+ * Function for initializing Udunits package.  If UDUNITS_PATH is
+ * set, then this path is used for the "udunits.dat" file. Otherwise,
+ * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits) is used.
+ */
+int utopen()
+{
+  const char *path = NULL;
+  char udunits_file[_NhlMAXFNAMELEN];
+  int utret;
+  utUnit unit;
+/*
+ * Initialize the Udunits package.
+ *
+ * The default is to use $NCARG_ROOT/lib/ncarg/udunits/udunits.dat
+ * for the initialization file, unless UDUNITS_PATH is set by the
+ * user, then it will try to use this path. 
+ */
+  path = getenv("UDUNITS_PATH");
+  if ((void *)path == (void *)NULL) {
+    path = _NGGetNCARGEnv("udunits");
+    if ((void *)path != (void *)NULL) {
+      strcpy(udunits_file,path);
+      strcat(udunits_file,_NhlPATHDELIMITER);
+      strcat(udunits_file,"udunits.dat");
+      utret = utInit(udunits_file);
+    }
+    else {
+/*
+ * Use path built-in at compile time. It's not a good thing if we reach
+ * this point, because the "_NGGetNCARGEnv" call above should have
+ * returned a valid path.
+ */
+      utret = utInit("");
+    }
+  }
+  else {
+/*
+ * Use UDUNITS_PATH.
+ */
+    utret = utInit(path);
+  }
+  return(utret);
+}
+
 NhlErrorTypes ut_calendar_W( void )
 {
 /*
@@ -16,6 +61,13 @@ NhlErrorTypes ut_calendar_W( void )
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /*
+ * Variables for Udunits package.
+ */
+  const char *path = NULL;
+  char udunits_file[_NhlMAXFNAMELEN];
+  int utopen();
+  utUnit unit;
+/*
  * Output variables.
  */
   int year, month, day, hour, minute;
@@ -27,7 +79,15 @@ NhlErrorTypes ut_calendar_W( void )
  * various
  */
   int i, total_size_x;
-  utUnit unit;
+
+/*
+ * Before we do anything, initialize the Udunits package.
+ */
+  if (utopen() != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Could not initialize Udunits package.");
+    return(NhlFATAL);
+  }
+
 /*
  * Retrieve parameters
  *
@@ -73,13 +133,6 @@ NhlErrorTypes ut_calendar_W( void )
   cspec = NrmQuarkToString(*sspec);
 
 /*
- * Initialize Udunits package.
- */
-  if (utInit("") != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Could not initialize udunits");
-    return(NhlFATAL);
-  }
-/*
  * Make sure cspec is a valid udunits string.
  */
   if(utScan(cspec, &unit) != 0) {
@@ -122,15 +175,15 @@ NhlErrorTypes ut_calendar_W( void )
  * Convert input to double if necessary.
  */
   tmp_x = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
-			      &missing_dx);
+                  &missing_dx);
 /* 
  * Loop through each element and get the 6 values.
  */
   for( i = 0; i < total_size_x; i++ ) {
     if(!has_missing_x ||
-	   (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
+       (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
       (void) utCalendar(tmp_x[i],&unit,&year,&month,&day,
-			&hour,&minute,&second);
+            &hour,&minute,&second);
     
       ((float*)date)[i]                  = (float)year;
       ((float*)date)[i+total_size_x]     = (float)month;
@@ -191,6 +244,13 @@ NhlErrorTypes ut_inv_calendar_W( void )
   NclScalar missing_minute;
   NclScalar missing_second;
 /*
+ * Variables for Udunits package.
+ */
+  const char *path = NULL;
+  char udunits_file[_NhlMAXFNAMELEN];
+  int utopen();
+  utUnit unit;
+/*
  * Output variables.
  */
   double *x;
@@ -200,7 +260,14 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * various
  */
   int i, total_size_input;
-  utUnit unit;
+/*
+ * Before we do anything, initialize the Udunits package.
+ */
+  if (utopen() != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Could not initialize Udunits package.");
+    return(NhlFATAL);
+  }
+
 /*
  * Retrieve parameters
  *
@@ -264,34 +331,34 @@ NhlErrorTypes ut_inv_calendar_W( void )
            2);
 
   if(ndims_year != ndims_month || ndims_year != ndims_day    || 
-	 ndims_year != ndims_hour  || ndims_year != ndims_minute ||
-	 ndims_year != ndims_second) {
+     ndims_year != ndims_hour  || ndims_year != ndims_minute ||
+     ndims_year != ndims_second) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: The first six arguments must have the same dimensionality");
     return(NhlFATAL);
   }
 
   for(i = 0; i < ndims_year; i++ ) {
-	if(dsizes_year[i] != dsizes_month[i]  ||
-	   dsizes_year[i] != dsizes_day[i]    || 
-	   dsizes_year[i] != dsizes_hour[i]   || 
-	   dsizes_year[i] != dsizes_minute[i] ||
-	   dsizes_year[i] != dsizes_second[i]) {
-	  
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: The first six arguments must have the same dimensionality");
-	  return(NhlFATAL);
-	}
+    if(dsizes_year[i] != dsizes_month[i]  ||
+       dsizes_year[i] != dsizes_day[i]    || 
+       dsizes_year[i] != dsizes_hour[i]   || 
+       dsizes_year[i] != dsizes_minute[i] ||
+       dsizes_year[i] != dsizes_second[i]) {
+      
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: The first six arguments must have the same dimensionality");
+      return(NhlFATAL);
+    }
   }
 /* 
  * x will contain a _FillValue attribute if any of the input
  * has a _FillValue attribute set.
  */
   if(has_missing_year || has_missing_month || has_missing_day ||
-	 has_missing_hour || has_missing_minute || has_missing_second) {
+     has_missing_hour || has_missing_minute || has_missing_second) {
     has_missing_x = 1;
 /*
  * Get the default missing value for a double type.
  */
-	missing_x = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+    missing_x = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
   }
   else {
     has_missing_x = 0;
@@ -326,14 +393,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   cspec = NrmQuarkToString(*sspec);
 
 /*
- * Initialize Udunits package.
- */
-  if (utInit("") != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Could not initialize udunits");
-    return(NhlFATAL);
-  }
-/*
- * Make sure cspec is a valid udunits string.
+ * Make sure cspec is a valid Udunits string.
  */
   if(utScan(cspec, &unit) != 0) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Invalid specification string");
@@ -357,25 +417,25 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * Loop through each data value, and call Udunits routine.
  */ 
   for( i = 0; i < total_size_input; i++ ) {
-    if((!has_missing_year ||
-		(has_missing_year  && year[i]    != missing_year.intval))   &&
-	   (!has_missing_month ||
-		 (has_missing_month && month[i]  != missing_month.intval))  &&
-	   (!has_missing_day ||
-		 (has_missing_day   && day[i]    != missing_day.intval))    &&
-	   (!has_missing_hour ||
-		 (has_missing_hour  && hour[i]   != missing_hour.intval))   &&
-	   (!has_missing_minute ||
-		 (has_missing_minute&& minute[i] != missing_minute.intval)) &&
-	   (!has_missing_second ||
-	    (has_missing_second&& second[i] != missing_second.doubleval)) ) {
+    if((!has_missing_year   ||
+        (has_missing_year  && year[i]    != missing_year.intval))   &&
+       (!has_missing_month  ||
+         (has_missing_month && month[i]  != missing_month.intval))  &&
+       (!has_missing_day    ||
+         (has_missing_day   && day[i]    != missing_day.intval))    &&
+       (!has_missing_hour   ||
+         (has_missing_hour  && hour[i]   != missing_hour.intval))   &&
+       (!has_missing_minute ||
+         (has_missing_minute&& minute[i] != missing_minute.intval)) &&
+       (!has_missing_second ||
+        (has_missing_second&& second[i]  != missing_second.doubleval)) ) {
 
-	   (void)utInvCalendar(year[i],month[i],day[i],hour[i],minute[i],
+       (void)utInvCalendar(year[i],month[i],day[i],hour[i],minute[i],
                            second[i],&unit,&x[i]);
     }
     else {
       x[i]  = missing_x.doubleval;
-	}
+    }
   }
 
 /*
@@ -387,10 +447,10 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */ 
   if(has_missing_x) {
     return(NclReturnValue((void*)x,ndims_year,dsizes_year,&missing_x,
-						  NCL_double,0));
+                          NCL_double,0));
   }
   else {
     return(NclReturnValue((void*)x,ndims_year,dsizes_year,NULL,
-						  NCL_double,0));
+                          NCL_double,0));
   }
 }
