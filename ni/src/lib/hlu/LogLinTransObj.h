@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.h,v 1.4 1997-08-11 18:22:15 dbrown Exp $
+ *      $Id: LogLinTransObj.h,v 1.5 1998-02-07 03:50:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,11 @@
 #define _NLogLinTransObj_h
 
 #include <ncarg/hlu/TransObj.h>
+
+#define NhlNtrXLog		"trXLog"
+#define NhlCtrXLog		"TrXLog"
+#define NhlNtrYLog		"trYLog"
+#define NhlCtrYLog		"TrYLog"
 
 extern NhlClass NhllogLinTransObjClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.26 1997-09-22 19:32:43 dbrown Exp $
+ *      $Id: TransObj.c,v 1.27 1998-02-07 03:51:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,9 +45,6 @@ static NhlResource resources[] =  {
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_reverse),
 		NhlTImmediate,_NhlUSET(False),0,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlTransObjLayerRec,trobj.x_log),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTransObjLayerRec,trobj.y_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
@@ -65,9 +62,6 @@ static NhlResource resources[] =  {
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_reverse),
          	NhlTImmediate,_NhlUSET(False),0,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlTransObjLayerRec,trobj.y_log),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
 		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
@@ -289,28 +283,14 @@ TransInitialize
 
 
         if (! tp->x_min_set) {
-                tp->x_min = tp->x_log ? 0.1 : 0.0;
+                tp->x_min = 0.0;
         }
-        else if (tp->x_log && tp->x_min <= 0.0) {
-                e_text =
-                    "%s: invalid range for X Axis log mode; setting %s off";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-                tp->x_log = False;
-                ret = NhlWARNING;
-	}
         if (! tp->x_max_set) {
                 tp->x_max = 1.0;
         }
         if (! tp->y_min_set) {
-                tp->y_min = tp->y_log ? 0.1 : 0.0;
+                tp->y_min = 0.0;
         }
-        if (tp->y_log && tp->y_min <= 0.0) {
-                e_text =
-                    "%s: invalid range for Y Axis log mode; setting %s off";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-                tp->y_log = False;
-                ret = NhlWARNING;
-	}
         if (! tp->y_max_set) {
                 tp->y_max = 1.0;
         }
@@ -357,21 +337,6 @@ static NhlErrorTypes TransSetValues
                 tp->y_min_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
                 tp->y_max_set = True;
-
-        if (tp->x_log && tp->x_min <= 0.0) {
-                e_text =
-                    "%s: invalid range for X Axis log mode; setting %s off";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-                tp->x_log = False;
-                ret = NhlWARNING;
-	}
-        if (tp->y_log && tp->y_min <= 0.0) {
-                e_text =
-                    "%s: invalid range for Y Axis log mode; setting %s off";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-                tp->y_log = False;
-                ret = NhlWARNING;
-	}
                         
         return NhlNOERROR;
 }

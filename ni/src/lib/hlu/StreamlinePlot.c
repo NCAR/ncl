@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.38 1998-01-24 01:51:46 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.39 1998-02-07 03:51:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1154,7 +1154,7 @@ StreamlinePlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
 					False,True,NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";

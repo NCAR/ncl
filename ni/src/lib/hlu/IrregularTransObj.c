@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.36 1997-09-23 00:02:52 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.37 1998-02-07 03:50:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,15 +108,7 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
 
 /* End-documented-resources */
-
- 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-          	NhlOffset(NhlIrregularTransObjLayerRec,trobj.x_log),
-		NhlTImmediate,_NhlUSET((NhlPointer) False),
-          	_NhlRES_PRIVATE,NULL },
- 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-          	NhlOffset(NhlIrregularTransObjLayerRec,trobj.y_log),
-		NhlTImmediate,_NhlUSET((NhlPointer) False),
-          	_NhlRES_PRIVATE,NULL },
+        
 	{ NhlNtrLowLevelLogOn,NhlCtrLowLevelLogOn, NhlTBoolean, 
 		sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,

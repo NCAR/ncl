@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.36 1997-08-14 16:30:17 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.37 1998-02-07 03:51:00 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -34,9 +34,6 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-{NhlNtrOutOfRangeF,NhlCtrOutOfRangeF,NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
-	 NhlTString,_NhlUSET("1.0e12"),0,NULL},
 {NhlNmpProjection,NhlCmpProjection,NhlTProjection,sizeof(NhlProjection),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.projection),NhlTImmediate,
 	 _NhlUSET((NhlPointer)NhlCYLINDRICALEQUIDISTANT),0,NULL},
@@ -57,10 +54,6 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.rel_center_lon),
 	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
-{NhlNmpPreserveAspectRatio,NhlCmpPreserveAspectRatio,NhlTBoolean,
-	 sizeof(NhlBoolean),
-	 NhlOffset(NhlMapTransObjLayerRec,mptrans.preserve_aspect),
-	 NhlTImmediate,_NhlUSET((NhlPointer)True) ,0,NULL},
 
 
 {NhlNmpLimitMode,NhlCmpLimitMode,NhlTMapLimitMode,
@@ -217,7 +210,34 @@ static NhlResource resources[] = {
 
 
 /* End-documented-resources */
+        
+{NhlNmpPreserveAspectRatio,NhlCmpPreserveAspectRatio,NhlTBoolean,
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.preserve_aspect),
+	 NhlTImmediate,_NhlUSET((NhlPointer)True) ,_NhlRES_PRIVATE,NULL},
 
+{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.x_min),
+          NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.x_max),
+          NhlTString,_NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.x_reverse),
+          NhlTImmediate,_NhlUSET(False),_NhlRES_PRIVATE,NULL},
+{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.y_min),
+          NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.y_max),
+          NhlTString,_NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.y_reverse),
+          NhlTImmediate,_NhlUSET(False),_NhlRES_PRIVATE,NULL},
+        
+{ "no.res", "No.res",NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
+	 NhlTString,_NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL},
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},

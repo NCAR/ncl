@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.44 1998-01-16 21:08:29 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.45 1998-02-07 03:51:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -172,7 +172,7 @@ static NhlResource resources[] = {
 	{NhlNvcFillArrowsOn,NhlCvcFillArrowsOn,
 		NhlTBoolean,sizeof(NhlBoolean),
 		Oset(fill_arrows_on),NhlTProcedure,
-	 	_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	 	_NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_PRIVATE,NULL},
 	{NhlNvcMonoFillArrowFillColor,NhlCvcMonoFillArrowFillColor,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(mono_f_arrow_fill_color),NhlTImmediate,
@@ -1687,7 +1687,7 @@ VectorPlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
 					False,True,NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";

@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.8 1997-09-27 00:36:37 boote Exp $
+ *      $Id: Callbacks.c,v 1.9 1998-02-07 03:49:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -116,6 +116,8 @@ _NhlCBDestroy
 				NhlArgVal	cbdata;
 				NhlArgVal	sel;
 
+                                NhlINITVAR(sel);
+                                NhlINITVAR(cbdata);
 				sel.lngval = cbt1->index;
 				(*cblist->task_proc)
 					(cblist->task_proc_data,
@@ -187,6 +189,7 @@ _NhlCBAdd
 		NhlBoolean yes;
 		
 		yes = True;
+                NhlINITVAR(sel);
 		sel.lngval = cb->index;
 		(*cblist->task_proc) 
 			(cblist->task_proc_data,
@@ -245,6 +248,8 @@ _NhlCBDelete
 				NhlArgVal	cbdata;
 				NhlArgVal	sel;
 
+                                NhlINITVAR(sel);
+                                NhlINITVAR(cbdata);
 				sel.lngval = cb->index;
 				(*cblist->task_proc)
 					(cblist->task_proc_data,
@@ -324,6 +329,7 @@ _NhlCBCallCallbacks
 
 			yes = True;
 			sel.lngval = index;
+                        NhlINITVAR(sel);
 			(*cblist->task_proc)
 				(cblist->task_proc_data,_NhlcbCALL,
 				 sel,&yes,&cbdata,&cb->cbnode_data);
@@ -396,7 +402,8 @@ _NhlCBIterate
 		return;
 
 	cblist->state = _NhlCBCALLING;
-
+        NhlINITVAR(sel);
+        
 	for(i=0;i<cblist->size;i++){
 		_NhlCB	*cbptr;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.32 1997-09-23 00:02:54 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.33 1998-02-07 03:50:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,10 +27,12 @@
 
 
 static NhlResource resources[] =  {
-        { "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-          NhlOffset(NhlLogLinTransObjLayerRec,lltrans.foo),
-          NhlTImmediate,_NhlUSET((NhlPointer) False),
-          _NhlRES_PRIVATE,NULL }
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
+		NhlTImmediate,_NhlUSET(False),0,NULL},
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
+		NhlTImmediate,_NhlUSET(False),0,NULL},
 };
 
 
@@ -229,6 +231,22 @@ static NhlErrorTypes LlTransSetValues
 	float tmp;
 	NhlTransObjLayerPart	*tp = &lnew->trobj;
 	NhlTransObjLayerPart	*otp = &lold->trobj;
+        NhlErrorTypes ret = NhlNOERROR;
+
+        if (lnew->lltrans.x_log && tp->x_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for X Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+                lnew->lltrans.x_log = False;
+                ret = NhlWARNING;
+	}
+        if (lnew->lltrans.y_log && tp->y_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for Y Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+                lnew->lltrans.y_log = False;
+                ret = NhlWARNING;
+	}
 
         lnew->lltrans.x_min = tp->x_min;
         lnew->lltrans.y_min = tp->y_min;
@@ -236,8 +254,6 @@ static NhlErrorTypes LlTransSetValues
         lnew->lltrans.y_max = tp->y_max;
         lnew->lltrans.x_reverse = tp->x_reverse;
         lnew->lltrans.y_reverse = tp->y_reverse;
-        lnew->lltrans.x_log = tp->x_log;
-        lnew->lltrans.y_log = tp->y_log;
         
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
@@ -338,48 +354,6 @@ static NhlErrorTypes LlTransSetValues
 			return(NhlFATAL);
 		}
 	}
-#if 0
-	if (tp->x != otp->x) {
-		free(lnew->lltrans.xmin_ndc_dat);
-		if ((lnew->lltrans.xmin_ndc_dat = 
-		     _NhlCmpFSetup(tp->x,5)) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "%s: error setting up compare information",
-				  entry_name);
-			return(NhlFATAL);
-		}
-	}
-	if (tp->x != otp->x || tp->width != otp->width) {
-		free(lnew->lltrans.xmax_ndc_dat);
-		if ((lnew->lltrans.xmax_ndc_dat = 
-		     _NhlCmpFSetup(tp->x + tp->width,5)) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "%s: error setting up compare information",
-				  entry_name);
-			return(NhlFATAL);
-		}
-	}
-	if (tp->y != otp->y || tp->height != otp->height) {
-		free(lnew->lltrans.ymin_ndc_dat);
-		if ((lnew->lltrans.ymin_ndc_dat =
-		     _NhlCmpFSetup(tp->y - tp->height,5)) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "%s: error setting up compare information",
-				  entry_name);
-			return(NhlFATAL);
-		}
-	}
-	if (tp->y != otp->y) {
-		free(lnew->lltrans.ymax_ndc_dat);
-		if ((lnew->lltrans.ymax_ndc_dat = 
-		     _NhlCmpFSetup(tp->y,5)) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "%s: error setting up compare information",
-				  entry_name);
-			return(NhlFATAL);
-		}
-	}
-#endif
 	if (lnew->lltrans.x_log) {
 		if (lnew->lltrans.x_min != lold->lltrans.x_min) {
 			if (lnew->lltrans.log_xmin_dat != NULL)
@@ -442,7 +416,7 @@ static NhlErrorTypes LlTransSetValues
         tp->x_min_set = tp->x_max_set = False;
         tp->y_min_set = tp->y_max_set = False;
 	
-	return(NhlNOERROR);
+	return(ret);
 
 }
 
@@ -477,16 +451,36 @@ static NhlErrorTypes LlTransInitialize
 	NhlString e_text, entry_name = "LlSetValues";
 	NhlTransObjLayerPart	*tp = &lnew->trobj;
 	float tmp;
+        NhlErrorTypes ret = NhlNOERROR;
 
 	tp->change_count++;
+        
+        if (! tp->x_min_set) {
+                tp->x_min = lnew->lltrans.x_log ? 0.1 : 0.0;
+        }
+        else if (lnew->lltrans.x_log && tp->x_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for X Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+                lnew->lltrans.x_log = False;
+                ret = NhlWARNING;
+	}
+        if (! tp->y_min_set) {
+                tp->y_min = lnew->lltrans.y_log ? 0.1 : 0.0;
+        }
+        else if (lnew->lltrans.y_log && tp->y_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for Y Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+                lnew->lltrans.y_log = False;
+                ret = NhlWARNING;
+	}
         lnew->lltrans.x_min = tp->x_min;
         lnew->lltrans.y_min = tp->y_min;
         lnew->lltrans.x_max = tp->x_max;
         lnew->lltrans.y_max = tp->y_max;
         lnew->lltrans.x_reverse = tp->x_reverse;
         lnew->lltrans.y_reverse = tp->y_reverse;
-        lnew->lltrans.x_log = tp->x_log;
-        lnew->lltrans.y_log = tp->y_log;
         
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
@@ -575,38 +569,6 @@ static NhlErrorTypes LlTransInitialize
 			  entry_name);
 		return(NhlFATAL);
 	}
-
-#if 0
-
-	if ((lnew->lltrans.xmin_ndc_dat = 
-	     _NhlCmpFSetup(tp->x,5)) == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: error setting up compare information",
-			  entry_name);
-		return(NhlFATAL);
-	}
-	if ((lnew->lltrans.xmax_ndc_dat = 
-	     _NhlCmpFSetup(tp->x + tp->width,5)) == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: error setting up compare information",
-			  entry_name);
-		return(NhlFATAL);
-	}
-	if ((lnew->lltrans.ymin_ndc_dat =
-	     _NhlCmpFSetup(tp->y - tp->height,5)) == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: error setting up compare information",
-			  entry_name);
-		return(NhlFATAL);
-	}
-	if ((lnew->lltrans.ymax_ndc_dat = 
-	     _NhlCmpFSetup(tp->y,5)) == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: error setting up compare information",
-			  entry_name);
-		return(NhlFATAL);
-	}
-#endif
 	if (lnew->lltrans.x_log) {
 		if ((lnew->lltrans.log_xmin_dat = 
 		     _NhlCmpFSetup((float)log10(lnew->lltrans.x_min),5)) 
@@ -652,7 +614,7 @@ static NhlErrorTypes LlTransInitialize
         tp->x_min_set = tp->x_max_set = False;
         tp->y_min_set = tp->y_max_set = False;
 
-	return(NhlNOERROR);
+	return(ret);
 
 }
 

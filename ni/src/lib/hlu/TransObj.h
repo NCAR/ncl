@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.10 1997-09-22 19:32:44 dbrown Exp $
+ *      $Id: TransObj.h,v 1.11 1998-02-07 03:51:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,8 +26,6 @@
 
 #include <ncarg/hlu/Base.h>
 
-#define NhlNtrXLog		"trXLog"
-#define NhlCtrXLog		"TrXLog"
 #define NhlNtrXMinF		"trXMinF"
 #define NhlCtrXMinF		"TrXMinF"
 #define NhlNtrXMaxF		"trXMaxF"
@@ -35,8 +33,6 @@
 #define NhlNtrXReverse		"trXReverse"
 #define NhlCtrXReverse		"TrXReverse"
 
-#define NhlNtrYLog		"trYLog"
-#define NhlCtrYLog		"TrYLog"
 #define NhlNtrYMinF		"trYMinF"
 #define NhlCtrYMinF		"TrYMinF"
 #define NhlNtrYMaxF		"trYMaxF"

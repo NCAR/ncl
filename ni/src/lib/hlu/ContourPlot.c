@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.69 1998-01-16 21:08:20 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.70 1998-02-07 03:49:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1950,7 +1950,7 @@ ContourPlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
-        subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+        subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
 					False,True,NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
@@ -3517,7 +3517,7 @@ static NhlErrorTypes cnInitCellArray
                                 * cnp->raster_sample_factor;
         }
         
-        if (!cnp->sticky_cell_size_set) {
+        if (!cnp->sticky_cell_size_set && cnp->raster_sample_factor > 0.0) {
                 *msize = MIN(*msize,max_msize);
                 *nsize = MIN(*nsize,max_nsize);
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
