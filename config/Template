@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.36 2001-10-09 23:03:55 haley Exp $
+ *      $Id: Template,v 1.37 2002-02-22 14:42:01 haley Exp $
  */
 /************************************************************************
 *									*
@@ -702,7 +702,7 @@ FCPP		= FCppCommand
 
 F77		= FCompiler
 F77_LD		= FLoader
-FCOPTIONS	= FcOptions
+FCOPTIONS	= FcOptions $(EXTRA_FCOPTIONS)
 
 XTRA_FDEFINES	= $(EXTRA_FDEFINES) $(EXTRA_DEFINES)
 FFLAGS	= $(FCOPTIONS) $(FOPT) $(XTRA_FDEFINES)
