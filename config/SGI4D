@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI4D,v 1.21 1996-10-25 21:08:48 boote Exp $
+ *      $Id: SGI4D,v 1.22 1996-12-22 19:10:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,18 +23,14 @@
 #define	XdrLibrary	-lsun
 #define	HdfDefines	-DIRIS4
 #define	StdDefines	-DSYSV
-#define CcOptions	-xansi -D_XOPEN_SOURCE
+#define CcOptions	-xansi -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
 #define	RanLib		$(AR) m
 #define CtoFLibraries	-lftn
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
 
-/*
- *	Uncomment this to build shared libs for this arch.
- *	(Don't do this until ncarview is done - which it isn't.)
- *	#define	BuildShared
- */
+#define	BuildShared
 
 #ifdef	sgi
 #undef	sgi
