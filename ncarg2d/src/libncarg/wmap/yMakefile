@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1996-10-25 21:46:30 boote Exp $
+#	$Id: yMakefile,v 1.3 1999-11-19 23:24:56 haley Exp $
 #
 
 MYNAME	= wmaps
@@ -34,6 +34,10 @@ PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGmisc.a,$(OBJECTS))
+
+#if defined(CRAY)
+	$(F77) -g -c wmblda.f
+#endif
 
 wmbarb.o : wmcomn.h
 wmblda.o : wmcomn.h
