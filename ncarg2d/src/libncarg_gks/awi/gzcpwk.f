@@ -1,5 +1,5 @@
 C
-C	$Id: gzcpwk.f,v 1.2 1993-03-19 01:27:38 fred Exp $
+C	$Id: gzcpwk.f,v 1.3 1994-03-30 02:06:07 fred Exp $
 C
       SUBROUTINE GZCPWK(WKID)
 C
@@ -41,6 +41,7 @@ C
       INTEGER WKID
       INTEGER ICNTX(31)
       REAL    RCNTX(19)
+      CHARACTER*80 IDR,ODR
 C
       PARAMETER (MXCOL=256)
 C
@@ -75,9 +76,24 @@ C
         CALL GACWK(WKID)
       ENDIF
 C
-C  Copy the segment.
+C  Send a flag to PostScript workstations to indicate the beginning
+C  of a segment copy so that the color setting can be retained and
+C  reset after the copy.
 C
+      WRITE(IDR,500) WKID
+  500 FORMAT(I5)
+      CALL GESC(-1510,1,IDR,1,1,ODR)
+C
+C  Copy the segment.  Set CUFLAG to inidicate that the interface 
+C  calls should go only to the designated workstation.
+C
+      CUFLAG = WKID
       CALL GZW2GK(WKID,WCONID,IER)
+      CUFLAG = -1
+C
+C  Tell PostScript workstations that we are done copying the segment.
+C
+      CALL GESC(-1511,1,IDR,1,1,ODR)
       IF (IER .NE. 0) RETURN
 C
 C  Restore the attribute context.

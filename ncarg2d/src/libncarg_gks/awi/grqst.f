@@ -1,5 +1,5 @@
 C
-C	$Id: grqst.f,v 1.1 1993-01-09 02:02:12 fred Exp $
+C	$Id: grqst.f,v 1.2 1994-03-30 02:06:06 fred Exp $
 C
       SUBROUTINE GRQST (WKID,STDNR,STAT,LOSTR,STR)
 C
@@ -14,7 +14,7 @@ C
       CHARACTER*80 IDR,ODR
 C
 C  The only reason this subroutine is in the NCAR GKS package is
-C  to support the pause feature of FRAME and NBPICT in a standard
+C  to support the pause feature of FRAME and NGPICT in a standard
 C  manner so that those two subroutines can work with a any level
 C  2B GKS package.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gziqwk.f,v 1.1 1993-01-09 02:04:17 fred Exp $
+C	$Id: gziqwk.f,v 1.2 1994-03-30 02:06:07 fred Exp $
 C
       SUBROUTINE GZIQWK(WTYPE,WKID)
 C
@@ -19,8 +19,9 @@ C
       IF (WTYPE .EQ. GCGM) THEN
         CALL G01WDR(WKID)
         RETURN
-      ELSE IF ((WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP) 
-     +         .AND. FCODE .EQ. -256) THEN
+      ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
+     +         WTYPE.EQ.GXWE  .OR.
+     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
         CALL GZXID(WKID,XID,RERR)
         IF (RERR .NE. 0) RETURN
         IL1 = 0
@@ -33,7 +34,7 @@ C
         IF (RERR .NE. 0) THEN
           ERS = 1
 C
-C  Set any out-of-range error to the error number flagging a local X 
+C  Set any out-of-range error to the error number flagging a local
 C  driver fault.     
 C
           IF (RERR.LT.-200 .OR. RERR.GT.2100) THEN

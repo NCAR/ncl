@@ -1,5 +1,5 @@
 C
-C	$Id: gerlog.f,v 1.2 1993-01-09 01:58:26 fred Exp $
+C	$Id: gerlog.f,v 1.3 1994-03-30 02:05:58 fred Exp $
 C
       SUBROUTINE GERLOG(ERRNR,FCTID,ERRFIL)
 C
@@ -13,13 +13,27 @@ C
 C
       IF (ERRNR .EQ. -113) THEN
 C
-C  Handle all errors coming from the X driver separately here.  The 
-C  error message coming from the X driver is contained in the integer 
-C  array XERMSG (as ADE).
+C  Handle all errors coming from the C drivers separately here.  The 
+C  error message coming from a C driver is contained in the integer 
+C  array XERMSG (as ADE).  If the message is prefixed with "PS:", then
+C  it is from a PostScript driver, otherwise it is from an X driver.
 C
-        WRITE(ERRFIL,710) ERRNR
-  710   FORMAT(' Local GKS error number',I5,
+        IF (CHAR(XERMSG(1)).EQ.'P' .AND. CHAR(XERMSG(2)).EQ.'S' .AND.        
+     +      CHAR(XERMSG(3)).EQ.':') THEN
+          WRITE(ERRFIL,750) ERRNR
+  750     FORMAT(' Local GKS error number',I5,
+     +         ' issued from a PostScript workstation:')
+          DO 760 I=1,157
+            XERMSG(I) = XERMSG(I+3)
+  760     CONTINUE
+          XERMSG(158) = ICHAR(' ')
+          XERMSG(159) = ICHAR(' ')
+          XERMSG(160) = ICHAR(' ')
+        ELSE
+          WRITE(ERRFIL,710) ERRNR
+  710     FORMAT(' Local GKS error number',I5,
      +         ' issued from the X driver:')       
+        ENDIF
         IFS = 0
         NUMC = 1
         DO 720 I=160,1,-1
@@ -39,7 +53,11 @@ C
 C
 C  Ignore error -109 for non-metafile workstations at OPEN WORKSTATION time.
 C
-        IF (CUFLAG .NE. -1) RETURN
+        IF (CUFLAG .NE. -1) THEN
+          RETURN
+        ELSE
+          WRITE(L1,700) ERRNR,GNAM(FCTID+1)
+        ENDIF
       ELSE
 C
 C  Write the first line of the GKS error message to internal file L1.

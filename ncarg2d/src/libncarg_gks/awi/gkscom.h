@@ -5,7 +5,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               SEGT(NSEG,2,3), CURTM(2,3)
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(5)       ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(17)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,
@@ -17,25 +17,29 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
      +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
      +               CCLIP , SWKTP(MXNWK)  , NOPICT, NWKTP ,
-     +               LXWKID(MXNWK) , ECONID
+     +               LXWKID(MXNWK) , ECONID, CLLX  , CLLY  , CURX  ,
+     +               CURY  , CPSCL
       INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
      +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
      +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
      +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
      +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
      +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               LXWKID, ECONID
+     +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
+     +               CPSCL
       REAL           NTWN  , NTVP
       COMMON/GKEROR/ ERS   , ERF   , CUFLAG, XERMSG(160)
       INTEGER        ERS   , ERF   , CUFLAG, XERMSG
       COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP
+     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
+     +               GPSMIN, GPSMAX
       INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP
-      COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)
-      CHARACTER      GNAM*6, SEGNAM*57
+     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
+     +               GPSMIN, GPSMAX
+      COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME
+      CHARACTER      GNAM*6, SEGNAM*57     , GFNAME*80
       COMMON/GKSIN1/ FCODE , CONT  , 
      +               IL1   , IL2   , ID(128)       ,
      +               IC1   , IC2   , IC(128)       ,

@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.4 1993-03-19 01:27:43 fred Exp $
+C	$Id: gztowk.f,v 1.5 1994-03-30 02:06:09 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -18,40 +18,33 @@ C  Invoke workstation drivers for GKCL functions and OPEN WORKSTATION.
 C
       IF (IST .GE. GGKCL) THEN
 C
-C  Metafile name.
+C  Picture name.
 C
-        IF (ID(1).EQ.GCGM .AND. FCODE.EQ.90) THEN
-          READ(STR(76:80),211) IDWK
-  211     FORMAT(I5)
-          CALL G01WDR(IDWK)
+        IF (FCODE .EQ. 92) THEN
+          CALL G01WDR(ID(1))
           RETURN
-C
-C  Open workstation.
-C
         ELSE IF (FCODE .EQ. -3) THEN
           IF (ID(3) .EQ. GCGM) THEN
             CALL G01WDR(ID(1))
             RETURN
-          ELSE IF (ID(3).EQ.GXWC .OR. ID(3).EQ.GXWE .OR. 
-     +             ID(3).EQ.GDMP) THEN
+          ELSE IF (ID(3).EQ.GXWC  .OR. ID(3).EQ.GXWE .OR. 
+     +             ID(3).EQ.GDMP  .OR. 
+     +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX)) THEN
             DO 80 J=1,STRL2
               ADESTR(J) = ICHAR(STR(J:J))
    80       CONTINUE
-            IID = ID(1)
+            IID   = ID(1)
             ID(1) = ID(2)
             ID(2) = ID(3)
-            ID(3) = 0
-            NUMP  = 2
+            ID(3) = ID(4)
+            ID(4) = ID(5)
+            ID(5) = ID(6)
+            ID(6) = ID(7)
+            ID(7) = ID(8)
+            NUMP  = 7
             CALL GGKWDR(IID,FCODE,0,NUMP,IL2,ID,IC1,IC2,IC,
      -                  RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
-            IF (RERR .EQ. -113) THEN
-              ERS = 1
-              CALL GERHND(RERR,0,ERF)
-              ERS = 0
-              RERR = 0
-            ENDIF
-C
-            RETURN
+            IF (RERR .EQ. -113) RETURN
           ELSE IF (ID(3) .EQ. GWSS) THEN
             CALL GZSRAT(3,ICNTX,RCNTX)
             CALL GWIWDR(ICNTX,RCNTX)
@@ -111,21 +104,19 @@ C
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 50
               CALL G01WDR(SOPWK(I))
    50         CONTINUE
-            ELSE IF (SWKTP(I).EQ.GXWC .OR.SWKTP(I).EQ.GXWE .OR.
-     +               SWKTP(I).EQ.GDMP) THEN
+            ELSE IF (SWKTP(I).EQ.GXWC  .OR. SWKTP(I).EQ.GXWE .OR.
+     +               SWKTP(I).EQ.GDMP  .OR. 
+     +              (SWKTP(I).GE.GPSMIN .AND. SWKTP(I).LE.GPSMAX)) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10 
 C
-C  Get the local X workstation ID and convert characters to ADE 
+C  Get the local workstation ID and convert characters to ADE 
 C  before invoking the interface.
 C
-              IF (SWKTP(I).EQ.GXWC .OR. SWKTP(I).EQ.GDMP .OR.
-     +            SWKTP(I).EQ.GXWE) THEN
-                CALL GZXID(SOPWK(I),XID,RERR)
-              ENDIF 
+              CALL GZXID(SOPWK(I),XID,RERR)
 C
               IF (STRL2 .GT. 0) THEN
                 DO 30 J=1,STRL2
@@ -176,15 +167,16 @@ C
               IF (CUFLAG.GE.0 .AND. SACWK(I).NE.CUFLAG) GO TO 60
               CALL G01WDR(SACWK(I))
    60         CONTINUE
-            ELSE IF (ITYP.EQ.GXWC .OR. ITYP.EQ.GXWE .OR.
-     +               ITYP.EQ.GDMP) THEN
+            ELSE IF (ITYP.EQ.GXWC  .OR. ITYP.EQ.GXWE .OR.
+     +               ITYP.EQ.GDMP  .OR. 
+     +              (ITYP.GE.GPSMIN .AND. ITYP.LE.GPSMAX)) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
               IF (CUFLAG.GE.0 .AND. SACWK(I).NE.CUFLAG) GO TO 20
 C
-C  Get the local X workstation ID and convert characters to ADE
+C  Get the local workstation ID and convert characters to ADE
 C  before invoking the interface.
 C
               CALL GZXID(SACWK(I),XID,RERR)

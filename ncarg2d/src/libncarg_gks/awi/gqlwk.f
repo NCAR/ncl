@@ -1,5 +1,5 @@
 C
-C	$Id: gqlwk.f,v 1.2 1993-01-09 02:00:28 fred Exp $
+C	$Id: gqlwk.f,v 1.3 1994-03-30 02:06:03 fred Exp $
 C
       SUBROUTINE GQLWK(WTYPE,ERRIND,MPLBTE,MPMBTE,MTXBTE,MFABTE,
      +                 MPAI,MCOLI)
@@ -29,6 +29,17 @@ C
       ENDIF
 C
       IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP) THEN
+        MPLBTE = 0
+        MPMBTE = 0
+        MTXBTE = 0
+        MFABTE = 0
+        MPAI   = 0
+        MCOLI  = 256
+        RETURN
+      ENDIF
+C
+      IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+        DCUNIT = 1
         MPLBTE = 0
         MPMBTE = 0
         MTXBTE = 0

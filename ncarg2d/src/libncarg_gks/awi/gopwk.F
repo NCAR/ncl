@@ -50,10 +50,10 @@ C
       ENDIF
 C
 C  Check if the specified connection identifier is currently open
-C  for CGM or WISS workstation types (CONID is not relevant for
-C  other currently supported workstation types).
+C  for CGM or WISS workstation types (CONID is not 
+C  relevant for other currently supported workstation types).
 C
-      IF (WTYPE.EQ.GCGM .OR. WTYPE.EQ.GWSS) THEN
+      IF (WTYPE.EQ.GCGM  .OR. WTYPE.EQ.GWSS) THEN
 #if defined(u370) && defined(unix)
 C       INQUIRE (CONID,OPENED=IOPEN)
 C       IF (IOPEN) THEN
@@ -118,25 +118,62 @@ C
         FCODE = -3
         CONT  = 0
         CALL GZROI(0)
-        IL1   = 3
-        IL2   = 3
-        ID(1) = WKID
-        ID(2) = CONID
-        ID(3) = WTYPE
+        IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+          IL1   = 8
+          IL2   = 8
+          ID(1) = WKID
+          ID(2) = CONID
+          ID(3) = WTYPE
+C
+C  Positioning coordinates for those workstations that can use them.
+C
+          ID(4) = CLLX
+          ID(5) = CLLY
+          ID(6) = CURX
+          ID(7) = CURY
+C
+C  Scale factor for PostScript workstaitons.
+C
+          ID(8) = CPSCL
+        ELSE
+          IL1   = 3
+          IL2   = 3
+          ID(1) = WKID
+          ID(2) = CONID
+          ID(3) = WTYPE
+        ENDIF
+C
+        STRL1 = 80
+        STRL2 = 80
+        STR   = GFNAME
         CALL GZTOWK
         IF (RERR.NE.0) THEN
           ERS = 1
           CALL GERHND(RERR,EOPWK,ERF)
           ERS = 0
+          RETURN
         ENDIF
+C
+C  Set the file name for an MO workstation back to default; set the
+C  positioning coordinates back to defaults.
+C
+        GFNAME = 'DEFAULT'
+        CLLX = -1
+        CLLY = -1
+        CURX = -1
+        CURY = -1
 C
 C  For an X window that does not currently exist, obtain the local 
 C  window ID for all future calls; for an X window that already exists
 C  the connection ID is the window ID.  In the case of an X window
 C  that does not exist, the window ID is returned from the interface
-C  call in IL2 (non-standard usage of this parameter).
+C  call in IL2 (non-standard usage of this parameter).  The
+C  PostScript drivers are treated the same as X windows for this
+C  purpose.
 C
-        IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GDMP .OR. WTYPE.EQ.GXWE) THEN       
+        IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR. 
+     +      WTYPE.EQ.GXWE  .OR. 
+     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
           LXWKID(NOPWK) = IL2
         ENDIF
 C

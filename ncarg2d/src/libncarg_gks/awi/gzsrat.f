@@ -1,5 +1,5 @@
 C
-C	$Id: gzsrat.f,v 1.2 1993-03-19 01:27:40 fred Exp $
+C	$Id: gzsrat.f,v 1.3 1994-03-30 02:06:08 fred Exp $
 C
       SUBROUTINE GZSRAT(SRFLG,CICNTX,CFCNTX)
 C
@@ -131,7 +131,7 @@ C
         SFAISA   = CFAISA
         SFASIA   = CFASIA
         SFACIA   = CFACIA
-      ELSE IF (SRFLG .EQ. 2) THEN
+      ELSE IF (SRFLG .EQ. 1) THEN
         CCLIP    = SCLIP
         CALL GSCLIP (CCLIP)
         CPLI     = SPLI

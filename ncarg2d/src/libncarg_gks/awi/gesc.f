@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.5 1993-02-26 00:35:03 fred Exp $
+C	$Id: gesc.f,v 1.6 1994-03-30 02:05:59 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -49,6 +49,19 @@ C      -1394  --  Currently undefined.
 C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
 C      -1397  --  Color table identifier for use by NCAR Interactive.
+C
+C  PostScript specific escapes.
+C
+C      -1510  --  Flags beginning of segment copy for PS workstations.
+C      -1511  --  Flags end of segment copy for PS workstations.
+C      -1512  --  Spacing between fill lines.
+C      -1513  --  Spacing between hatch lines.
+C      -1514  --  Maximum size of the stack.
+C      -1515  --  Maximum number of points in a path.
+C      -1516  --  Scale factor for nominal linewidth.
+C      -1517  --  Background fills entire page.
+C      -1518  --  Line joins.
+C      -1519  --  Line caps.
 C
       IF (FCTID .EQ. -1396) THEN
 C
@@ -232,17 +245,67 @@ C
 C
 C  File name for output metafile.
 C
-        FCODE = 90
-        CONT = 0
+        GFNAME = IDR(1)
+C
+C  Set flag to indicate that the current picture is empty.
+C
+        NOPICT = 0
+C
+C  PostScript escapes.
+C
+      ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
+C
+C  Decode the workstation ID.
+C
+        READ (IDR,501,ERR=150) IWKID
+        GO TO 160
+C
+  150   CONTINUE
+        ERS = 1
+        CALL GERHND(182,EESC,ERF)
+        ERS = 0
+        RETURN
+C
+  160   CONTINUE
+        CUFLAG = IWKID
+C
+C  If setting coordinates for positioning on the page, store them
+C  for use with the next OPEN WORKSTATION.  This call can be made
+C  with no workstations open.
+C
+        IF (FCTID .EQ. -1521) THEN
+          READ(IDR(1)( 6:10),520) CLLX
+          READ(IDR(1)(11:15),520) CLLY
+          READ(IDR(1)(16:20),520) CURX
+          READ(IDR(1)(21:25),520) CURY
+  520     FORMAT(I5)
+          RETURN
+        ENDIF 
+C
+C  Scale factor.
+C
+        IF (FCTID .EQ. -1522) THEN
+          READ(IDR(1)(6:10),520) CPSCL
+          RETURN
+        ENDIF 
+C
+C  Return if not a PostScript workstation.
+C
+        CALL GQWKC(IWKID,IER,ICONID,ITYP)
+        IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) RETURN 
+C
+        FCODE = 6
         CALL GZROI(0)
         IL1 = 1
         IL2 = 1
-        ID(1) = GCGM
+        ID(1) = FCTID
+C
+C  Send over the data record.
+C
+        CONT = 0
         STRL1 = 80
         STRL2 = 80
-        DNAME = '00000'
-        STR(1:75) = IDR(1)(1:75)
-        STR(76:80) = DNAME(1:5)
+        STR(1:80) = IDR(1)
         CALL GZTOWK
         IF (RERR .NE. 0) THEN
           ERS = 1
@@ -250,10 +313,7 @@ C
           ERS = 0
           RETURN
         ENDIF
-C
-C  Set flag to indicate that the current picture is empty.
-C
-        NOPICT = 0
+        CUFLAG = -1
       ELSE
 C
 C  Send ESCAPE element.

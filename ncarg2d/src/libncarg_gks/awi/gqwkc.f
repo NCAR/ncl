@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkc.f,v 1.2 1993-01-09 02:01:56 fred Exp $
+C	$Id: gqwkc.f,v 1.3 1994-03-30 02:06:04 fred Exp $
 C
       SUBROUTINE GQWKC(WKID,ERRIND,CONID,WTYPE)
 C
@@ -36,7 +36,12 @@ C
    10 CONTINUE
       IF (WTYPE .EQ. GWSS) THEN
         CONID = WCONID
-      ELSE IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GDMP .OR. WTYPE.EQ.GXWE) THEN       
+C
+C  Connection ID is not used for C drivers.
+C
+      ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
+     +      WTYPE.EQ.GXWE  .OR.
+     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
         CONID = 0
       ELSE 
 C

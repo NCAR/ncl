@@ -1,5 +1,5 @@
 C
-C	$Id: gcsgwk.f,v 1.2 1993-01-09 01:58:09 fred Exp $
+C	$Id: gcsgwk.f,v 1.3 1994-03-30 02:05:58 fred Exp $
 C
       SUBROUTINE GCSGWK(WKID,SGNA)
 C
@@ -114,7 +114,7 @@ C
       RETURN
    30 CONTINUE
 C
-C  If the copy is to a non-metafile or if the segment transformation
+C  If the copy is to a non-CGM, or if the segment transformation
 C  is not the identity, do the copy by parsing the segments.
 C
       DO 60 I=1,NUMSEG
@@ -137,13 +137,7 @@ C
      +                 .OR. CURTM(1,3).NE.0. .OR.CURTM(2,1).NE.0.
      +                 .OR. CURTM(2,2).NE.1. .OR.CURTM(2,3).NE.0.
      +                 ) THEN
-C
-C  Set CUFLAG to inidicate that the interface call should go only
-C  to the designated workstation.
-C
-        CUFLAG = WKID
         CALL GZCPWK(WKID)
-        CUFLAG = -1
         RETURN
       ELSE
 C

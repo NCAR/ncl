@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkca.f,v 1.3 1993-01-10 23:29:05 fred Exp $
+C	$Id: gqwkca.f,v 1.4 1994-03-30 02:06:05 fred Exp $
 C
       SUBROUTINE GQWKCA(WTYPE,ERRIND,WKCAT)
 C
@@ -24,6 +24,8 @@ C
       IF (WTYPE .EQ. GWSS) THEN
         WKCAT = GWISS
       ELSE IF (WTYPE.EQ.GCGM) THEN
+        WKCAT = GMO
+      ELSE IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
         WKCAT = GMO
       ELSE IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE) THEN       
         WKCAT = GOUTIN

@@ -1,5 +1,5 @@
 C
-C	$Id: gqdsp.f,v 1.2 1993-01-09 01:59:55 fred Exp $
+C	$Id: gqdsp.f,v 1.3 1994-03-30 02:06:03 fred Exp $
 C
       SUBROUTINE GQDSP(WTYPE,ERRIND,DCUNIT,RXP,RYP,LX,LY)
 C
@@ -45,6 +45,15 @@ C
         RYP = 1.
         LX  = 1280
         LY  = 1024
+        RETURN
+      ENDIF
+C
+      IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+        DCUNIT = 1
+        RXP = 1.
+        RYP = 1.
+        LX  = 13335
+        LY  = 13335
         RETURN
       ENDIF
 C   
