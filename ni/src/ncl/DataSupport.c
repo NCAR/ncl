@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.39 2000-02-11 23:49:06 ethan Exp $
+ *      $Id: DataSupport.c,v 1.40 2000-08-25 21:30:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -807,6 +807,9 @@ NclBasicDataTypes totype;
 		case NCL_byte:
 		case NCL_char:
 			*(char*) to = *(char*)from;
+			return(1);
+		case NCL_int:
+			*(int*) to = *(char*)from;
 			return(1);
 		case NCL_string:
 			buffer[0] = *(char*)from;

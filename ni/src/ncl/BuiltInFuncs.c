@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.123 2000-04-03 16:27:19 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.124 2000-08-25 21:30:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3277,6 +3277,11 @@ int asciinumeric
 				*step++ = cc;
 				state = 5;
 				break;
+			case 'E' :
+			case 'e' : 
+				state = 5;
+				ungetc(cc,fp);
+				break;
 			default:
 				if(isdigit(cc)) {
 					*step++ = cc;
@@ -3295,6 +3300,11 @@ int asciinumeric
 				switch(cc) {
 				case '.':
 					*step++ = cc;
+					state = 5;
+					break;
+				case 'E' :
+				case 'e' : 
+					ungetc(cc,fp);
 					state = 5;
 					break;
 				default:
@@ -8970,6 +8980,7 @@ NhlErrorTypes _Nclmask
 	NclMultiDValData tmp_md2 = NULL;
 	void **out_val;
 	int j,i;
+	int nblk = 0 ;
 	int diff, n;
 	void *tmp = NULL;
 	logical *tmp0 = NULL;
@@ -9058,26 +9069,34 @@ NhlErrorTypes _Nclmask
 		mask_val = tmp_md2->multidval.val;
 		mask_type = tmp_md1->multidval.type;
 	}
+
+
 	tmp0 = (logical*)NclMalloc(sizeof(logical)*tmp_md0->multidval.totalelements);
 	if(tmp_md0->multidval.totalelements != tmp_md1->multidval.totalelements) {
 		n = tmp_md0->multidval.totalelements/tmp_md1->multidval.totalelements;
 	} else {
 		n = 1;
 	}
-	out_val = (void*)NclMalloc(tmp_md0->multidval.totalsize);
 	_Nclne(mask_type,tmp0,mask_grid,mask_val,NULL,NULL,tmp_md1->multidval.totalelements,1);
+	out_val = (void*)NclMalloc(tmp_md0->multidval.totalsize);
+
+
+	nblk = tmp_md1->multidval.totalelements*tmp_md0->multidval.type->type_class.size;
 	for(j = 0; j < n; j++ ) {
-		memcpy(&((char*)out_val)[j*tmp_md1->multidval.totalsize],&((char*)tmp_md0->multidval.val)[j*tmp_md1->multidval.totalsize],tmp_md1->multidval.totalsize);
+
+
+		memcpy(&((char*)out_val)[j*nblk],&((char*)tmp_md0->multidval.val)[j*nblk],nblk);
+
 		if(tmp_md0->multidval.missing_value.has_missing) {
 			for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
 				if(tmp0[i]) {
-					memcpy(&(((char*)out_val)[j*tmp_md1->multidval.totalsize+ (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.missing_value.value,tmp_md0->multidval.type->type_class.size);
+					memcpy(&(((char*)out_val)[j*nblk + (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.missing_value.value,tmp_md0->multidval.type->type_class.size);
 				} 
 			}
 		} else {
 			for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
 				if(tmp0[i]) {
-					memcpy(&(((char*)out_val)[j*tmp_md1->multidval.totalsize+ (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.type->type_class.default_mis,tmp_md0->multidval.type->type_class.size);
+					memcpy(&(((char*)out_val)[j*nblk + (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.type->type_class.default_mis,tmp_md0->multidval.type->type_class.size);
 				} 
 			}
 		
