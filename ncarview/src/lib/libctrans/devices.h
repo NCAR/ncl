@@ -32,14 +32,10 @@
  */
 #ifdef	GCAP
 #define	G	1
+#define	R	1
 #else
 #define	G	0
-#endif	
-
-#ifdef	CGI
-#define	C	1
-#else
-#define	C	0
+#define	R	0
 #endif	
 
 #ifdef	X11
@@ -83,12 +79,12 @@
  *	important.
  */
 #define	GCAP_I	(G -1)
-#define	CGI_I	(G + C -1)
-#define	X11_I	(G + C + X -1)
-#define	XBFR_I	(G + C + X + B -1)
-#define	CTXT_I	(G + C + X + B + CL -1)
-#define	SunV_I	(G + C + X + B + CL + SV -1)
-#define	SunR_I	(G + C + X + B + CL + SV + SR -1)
+#define	RAST_I	(G + R -1)
+#define	X11_I	(G + R + X -1)
+#define	XBFR_I	(G + R + X + B -1)
+#define	CTXT_I	(G + R + X + B + CL -1)
+#define	SunV_I	(G + R + X + B + CL + SV -1)
+#define	SunR_I	(G + R + X + B + CL + SV + SR -1)
 
 
 /*
@@ -100,6 +96,11 @@
  */
 
 #ifdef	DEVICES
+
+static	OptDescRec	raster_opts[] = {
+	{"resolution", OptSepArg, "512x512"},
+	{NULL}
+	};
 
 #ifdef	X11
 static	OptDescRec	X11_opts[] = {
@@ -131,25 +132,27 @@ struct device{
         boolean usegcap;	/* true if device uses a graphcap	*/
         boolean usefcap;	/* true if device uses a fontcap	*/
         char    *gcapname;	/* unused				*/
+        boolean    use_common;	/* use common device interface		*/
 	OptDescRec	*opt;	/* command line options for the device	*/
 } devices[] = {
-        {"gcap",GCAP_I,TRUE,TRUE,"", NULL}
-#ifdef	CGI
-        ,{"cgi",CGI_I,FALSE,TRUE,"", NULL}
-#endif   
+        {"gcap",GCAP_I,TRUE,TRUE,"", TRUE, NULL}
+        ,{"xwd",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"nrif",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"hdf",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"sun",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
 
 #ifdef  X11
-        ,{"X11",X11_I,FALSE,TRUE,"", X11_opts}
-	,{"xbfr",XBFR_I, FALSE,TRUE, "", X11_opts}
+        ,{"X11",X11_I,FALSE,TRUE,"", FALSE, X11_opts}
+	,{"xbfr",XBFR_I, FALSE,TRUE, "", FALSE, X11_opts}
 #endif   
 
 #ifdef  CTXT
-        ,{"CTXT",CTXT_I,FALSE,FALSE,"", CTXT_opts}
+        ,{"CTXT",CTXT_I,FALSE,FALSE,"", FALSE, CTXT_opts}
 #endif   
 
 #ifdef  SunV
-        ,{"sunview",SunV_I, FALSE,TRUE,"", SunV_opts}
-        ,{"sunraster",SunR_I, FALSE,TRUE,"", SunV_opts}
+        ,{"sunview",SunV_I, FALSE,TRUE,"", FALSE, SunV_opts}
+        ,{"sunraster",SunR_I, FALSE,TRUE,"", FALSE, SunV_opts}
 #endif   
 
 };
@@ -163,6 +166,7 @@ extern	struct device{
         boolean usegcap;
         boolean usefcap;
         char    *gcapname;
+        boolean    use_common;	/* use common device interface		*/
 	OptDescRec	*opt;	/* command line options for the device	*/
 } devices[];
 

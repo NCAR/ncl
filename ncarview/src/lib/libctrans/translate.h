@@ -18,10 +18,22 @@
 #define	R_YConvert(y)	(long) (((y) * (R_Y_Scale)) + R_Y_Off)
 
 /*
+ *	macros to convert back from device coordinates to virtual device coords 
+ */
+#define	XConvert_(x_)	(long) (((x_) - (X_Off)) * X_Scale)
+#define	YConvert_(y_)	(long) (((y_) - (Y_Off)) * Y_Scale)
+
+/*
  * Macros to convert VDC x and y's into device x and y's
  */
 #define	XScale(x)	(long) (labs(X_Scale * (x)))
 #define	YScale(y)	(long) (labs(Y_Scale * (y)))
+
+/*
+ * Macros to scale a device dimension to VDC dimension
+ */
+#define	XScale_(x_)	(long) (labs(((double) (x_)) / X_Scale ))
+#define	YScale_(y_)	(long) (labs(((double) (y_)) / Y_Scale ))
 
 /*
  *	structure to define a coordinate system

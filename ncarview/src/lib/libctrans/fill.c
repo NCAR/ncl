@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.2 1991-01-09 11:09:53 clyne Exp $
+ *	$Id: fill.c,v 1.3 1991-03-12 17:37:07 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -48,7 +48,6 @@
  *	return = number of bytes of data in instr->data left un-processed.
  */
 		
-extern	char	*malloc();
 extern	char	*realloc();
 extern	long	GetInt();
 extern	double	GetReal();
@@ -81,7 +80,7 @@ fill_E(cgmc,instr,p_len)
 		if (cgmc->e != (Etype *) NULL)
 			cfree((char *) cgmc->e); 
 		cgmc->Espace = numparm;
-		cgmc->e= (Etype *) malloc (numparm * sizeof(Etype));
+		cgmc->e= (Etype *) icMalloc (numparm * sizeof(Etype));
 	}
 
 	cgmc->Enum = numparm;	
@@ -128,7 +127,7 @@ fill_CD(cgmc,instr,p_len)
 		if (cgmc->cd != (CDtype *) NULL)
 			cfree((char *) cgmc->cd); 
 		cgmc->CDspace = numparm; 
-		cgmc->cd= (CDtype *) malloc (numparm * sizeof(CDtype)); 
+		cgmc->cd= (CDtype *) icMalloc (numparm * sizeof(CDtype)); 
 	}
 
 	cgmc->CDnum = numparm;	
@@ -178,7 +177,7 @@ fill_CI(cgmc,instr,p_len)
 		if (cgmc->ci != (CItype *) NULL)
 			cfree((char *) cgmc->ci); 
 		cgmc->CIspace = numparm;
-		cgmc->ci = (CItype *) malloc (numparm * sizeof(CItype));
+		cgmc->ci = (CItype *) icMalloc (numparm * sizeof(CItype));
 	}
 
 	cgmc->CInum = numparm;	
@@ -239,7 +238,7 @@ fill_CO(cgmc,instr,p_len)
 				cfree((char *) cgmc->cd); 
 
 			cgmc->CDspace = numparm;
-			cgmc->cd = (CDtype *) malloc (numparm * sizeof(CDtype));
+			cgmc->cd = (CDtype *) icMalloc (numparm * sizeof(CDtype));
 		}
 	}
 	else { 
@@ -248,7 +247,7 @@ fill_CO(cgmc,instr,p_len)
 				cfree((char *) cgmc->ci); 
 
 			cgmc->CIspace = numparm;
-			cgmc->ci = (CItype *) malloc (numparm * sizeof(CItype));
+			cgmc->ci = (CItype *) icMalloc (numparm * sizeof(CItype));
 		}
 	}
   
@@ -316,7 +315,7 @@ fill_D(cgmc,instr,p_len)
 			cfree((char *) cgmc->d); 
 
 		cgmc->Dspace = numparm;
-		cgmc->d = (Dtype *) malloc (numparm * sizeof(Dtype));
+		cgmc->d = (Dtype *) icMalloc (numparm * sizeof(Dtype));
 	}
 
 	cgmc->Dnum = numparm;	
@@ -359,7 +358,7 @@ fill_I(cgmc,instr,p_len)
 			cfree((char *) cgmc->i); 
 
 		cgmc->Ispace = numparm;
-		cgmc->i = (Itype *) malloc (numparm * sizeof(Itype));
+		cgmc->i = (Itype *) icMalloc (numparm * sizeof(Itype));
 	}
 
 	cgmc->Inum = numparm;	
@@ -407,7 +406,7 @@ fill_IX(cgmc,instr,p_len)
 			cfree((char *) cgmc->ix); 
 
 		cgmc->IXspace = numparm;
-		cgmc->ix = (IXtype *) malloc (numparm * sizeof(IXtype));
+		cgmc->ix = (IXtype *) icMalloc (numparm * sizeof(IXtype));
 	}
 
 	cgmc->IXnum = numparm;	
@@ -471,7 +470,7 @@ fill_P(cgmc,instr,p_len)
 			cfree((char *) cgmc->p); 
 
 		cgmc->Pspace = numparm;
-		cgmc->p = (Ptype *) malloc (numparm * sizeof(Ptype));
+		cgmc->p = (Ptype *) icMalloc (numparm * sizeof(Ptype));
 	}
 
 	cgmc->Pnum = numparm;	
@@ -535,7 +534,7 @@ fill_R(cgmc,instr,p_len)
 			cfree((char *) cgmc->r); 
 
 		cgmc->Rspace = numparm;
-		cgmc->r = (Rtype *) malloc (numparm * sizeof(Rtype));
+		cgmc->r = (Rtype *) icMalloc (numparm * sizeof(Rtype));
 	}
 
 	cgmc->Rnum = numparm;	
@@ -623,7 +622,7 @@ fill_S(cgmc,instr)
 			if (cgmc->s->string[cgmc->Snum] != (char *) NULL)
 				cfree((char *) cgmc->s->string[cgmc->Snum]);
 
-			cgmc->s->string[cgmc->Snum] = (char *) malloc 
+			cgmc->s->string[cgmc->Snum] = (char *) icMalloc 
 				(charcount+1 * sizeof(char));
 			cgmc->s->string_space[cgmc->Snum] = charcount + 1;
 		}
@@ -689,7 +688,7 @@ fill_VDC(cgmc,instr,p_len)
 			cfree((char *) cgmc->vdc); 
 
 		cgmc->VDCspace = numparm;
-		cgmc->vdc = (VDCtype *) malloc (numparm * sizeof(VDCtype));
+		cgmc->vdc = (VDCtype *) icMalloc (numparm * sizeof(VDCtype));
 	}
 
 	cgmc->VDCnum = numparm;	
@@ -872,7 +871,7 @@ static	int	count;		/* number of cells processed in a row of data*/
 		if (numparm > cgmc->Cnum) {
 			if (cgmc->c != (Ctype *) NULL)
 				cfree((char *) cgmc->c);
-			cgmc->c = (Ctype *) malloc (numparm * sizeof(Ctype));
+			cgmc->c = (Ctype *) icMalloc (numparm * sizeof(Ctype));
 			cgmc->Cspace = numparm;
 		}
 
@@ -942,7 +941,7 @@ static	int	count;		/* number of cells processed in a row of data*/
 				if (cgmc->cd != (CDtype *) NULL)
 					cfree((char *) cgmc->cd); 
 				cgmc->CDspace = numparm;
-				cgmc->cd = (CDtype *) malloc 
+				cgmc->cd = (CDtype *) icMalloc 
 					(numparm * sizeof(CDtype));
 				cgmc->CDnum = numparm;	
 			}
@@ -953,7 +952,7 @@ static	int	count;		/* number of cells processed in a row of data*/
 					cfree((char *) cgmc->ci); 
 				cgmc->CIspace = numparm;
 	
-				cgmc->ci = (CItype *) malloc 
+				cgmc->ci = (CItype *) icMalloc 
 					(numparm * sizeof(CItype));
 				cgmc->CInum = numparm;	
 			}
@@ -964,7 +963,7 @@ static	int	count;		/* number of cells processed in a row of data*/
 			if (cgmc->ci != (CItype *) NULL)
 				cfree((char *) cgmc->ci); 
 			cgmc->Ispace = numparm;
-			cgmc->i = (Itype *) malloc (numparm * sizeof(Itype));
+			cgmc->i = (Itype *) icMalloc (numparm * sizeof(Itype));
 			cgmc->Inum = numparm;	
 		}
   

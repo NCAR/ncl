@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.2 1991-01-09 11:09:36 clyne Exp $
+ *	$Id: devices.c,v 1.3 1991-03-12 17:35:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -87,59 +87,24 @@ Ct_err Escape();
 
 Ct_err Message(), ApplData();
 
-#ifdef CGI
 
 /*
- *				CGI
+ *				raster
  *
- *	The function that inturn call the CGI library
  */
 
 /*	Class 0	*/
 
-Ct_err	 CGIBegMF(), CGIEndMF(), CGIBegPic(), CGIBegPicBody(), CGIEndPic();
-
-/*	Class 1	*/
-
-Ct_err	CGIMFVersion(), CGIMFDesc(), 
-	CGIMFElemList(), 
-	CGIMFDefaults(), CGICharSetList(), CGICharCoding();
-
-/*	Class 2	*/
-
-Ct_err	CGIBackColr();
-
-/*	Class 3	*/
-
-Ct_err	CGIAuxColr(), CGITransparency(); 
+Ct_err	 Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), Ras_EndPic();
 
 /*	Class 4	*/
 
-Ct_err	CGIPolyLine(), CGIDisjtLine(), CGIPolyMarker(), Text(), 
-	CGIRestrText(), CGIApndText(), CGIPolygon(), CGIPolygonSet(), 
-	CGICellArray(), CGIGDP(), CGIRect(), CGICircle(), CGIArc3Pt(), 
-	CGIArc3PtClose(), CGIArcCtr(), CGIArcCtrClose(), CGIEllipse(), 
-	CGIEllipArc(), CGIEllipArcClose();
+Ct_err	Ras_CellArray();
 
 /*	Class 5	*/
 
-Ct_err	CGILineIndex(), CGIMarkerIndex(), 
-	CGITextIndex(), CGITextPrec(), 
-	CGICharSetIndex(),
-	CGIAltCharSetIndex(), CGIFillIndex(),
-	CGIPatIndex(),
-	CGIEdgeIndex(), CGIPatTable(), 
-	CGIColrTable(), CGIASF();
+Ct_err	Ras_ColrTable();
 
-/*	Class 6	*/
-
-Ct_err	CGIEscape();
-
-/*	Class 7	*/
-
-Ct_err	CGIMessage(), CGIApplData();
-
-#endif CGI
 
 
 #ifdef X11
@@ -410,15 +375,14 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 
 	},
 
-#ifdef CGI 
 
-	/* The CGI functions */
+	/* The  functions */
 
 	{
 	/* Class 0 */
 	{
-	noop, CGIBegMF, CGIEndMF, CGIBegPic, CGIBegPicBody,
-	CGIEndPic, NULL, NULL, NULL, NULL, 
+	noop, Ras_BegMF, Ras_EndMF, Ras_BegPic, Ras_BegPicBody,
+	Ras_EndPic, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -428,10 +392,10 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 1 */
 	{
-	NULL, CGIMFVersion, CGIMFDesc, VDCType, IntergerPrec,
+	NULL, MFVersion, MFDesc, VDCType, IntergerPrec,
 	RealPrec, IndexPrec,ColrPrec,ColrIndexPrec,MaxColrIndex,
-	ColrValueExt,CGIMFElemList,CGIMFDefaults,FontList,
-	CGICharSetList, CGICharCoding, NULL, NULL, NULL, NULL, 
+	ColrValueExt,MFElemList,MFDefaults,FontList,
+	CharSetList, CharCoding, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -440,7 +404,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 2 */
 	{
 	NULL, ScaleMode, ColrMode, LineWidthMode, MarkerSizeMode,
-	EdgeWidthMode, VDCExt, CGIBackColr, NULL, NULL, 
+	EdgeWidthMode, VDCExt, BackColr, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -450,7 +414,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 3 */
 	{
-	NULL, VDCIntergerPrec, VDCRealPrec, CGIAuxColr, CGITransparency,
+	NULL, VDCIntergerPrec, VDCRealPrec, AuxColr, Transparency,
 	ClipRect, Clip, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -461,10 +425,10 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 4 */
 	{
-	NULL, CGIPolyLine, CGIDisjtLine, CGIPolyMarker, Text,
-	CGIRestrText, CGIApndText, CGIPolygon, CGIPolygonSet, CGICellArray,
-	CGIGDP, CGIRect, CGICircle, CGIArc3Pt, CGIArc3PtClose,
-	CGIArcCtr, CGIArcCtrClose, CGIEllipse, CGIEllipArc, CGIEllipArcClose,
+	NULL, PolyLine, DisjtLine, PolyMarker, Text,
+	RestrText, ApndText, Polygon, PolygonSet, Ras_CellArray,
+	GDP, Rect, Circle, Arc3Pt, Arc3PtClose,
+	ArcCtr, ArcCtrClose, Ellipse, EllipArc, EllipArcClose,
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, 
@@ -472,19 +436,19 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 5 */
 	{
-	NULL, CGILineIndex, LineType, LineWidth, LineColr,
-	CGIMarkerIndex,MarkerType,MarkerSize,MarkerColr,
-	CGITextIndex, TextFontIndex, TextPrec, CharExpan, 
+	NULL, LineIndex, LineType, LineWidth, LineColr,
+	MarkerIndex,MarkerType,MarkerSize,MarkerColr,
+	TextIndex, TextFontIndex, TextPrec, CharExpan, 
 	CharSpace, TextColr, CharHeight, CharOri, 
-	TextPath, TextAlign, CGICharSetIndex, CGIAltCharSetIndex,
-	CGIFillIndex,IntStyle,FillColr,HatchIndex,
-	CGIPatIndex, CGIEdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, CGIPatTable, PatSize, CGIColrTable,
-	CGIASF,
+	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
+	FillIndex,IntStyle,FillColr,HatchIndex,
+	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
+	EdgeVis, FillRefPt, PatTable, PatSize, Ras_ColrTable,
+	ASF,
 	},
 	/* Class 6 */
 	{
-	NULL, CGIEscape, NULL, NULL, NULL, 
+	NULL, Escape, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -495,7 +459,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 7 */
 	{
-	NULL, CGIMessage, CGIApplData, NULL, NULL, 
+	NULL, Message, ApplData, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -507,7 +471,6 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 
 	},
 
-#endif CGI
 
 #ifdef X11 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgi_cell_sim.c,v 1.2 1991-01-09 11:08:50 clyne Exp $
+ *	$Id: cgi_cell_sim.c,v 1.3 1991-03-12 17:35:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,7 +35,6 @@
 
 
 extern	Ct_err	Instr_Dec();
-extern	char	*malloc();
 
 static	struct {
 	Cint	*colorind;	/* raster array of colour indecies	*/

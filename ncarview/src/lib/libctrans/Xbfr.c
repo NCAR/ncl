@@ -1,5 +1,5 @@
 /*
- *	$Id: Xbfr.c,v 1.2 1991-01-08 12:23:23 clyne Exp $
+ *	$Id: Xbfr.c,v 1.3 1991-03-12 17:34:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,7 +40,6 @@
 #define BORDERWIDTH	0
 #define	LOGO	"NCAR Graphics"
 
-extern	char	*malloc();
 extern	char	*strcpy();
 extern	char	*strcat();
 extern	char	*strncpy();

@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.h,v 1.3 1991-02-06 15:27:28 clyne Exp $
+ *	$Id: cterror.h,v 1.4 1991-03-12 17:35:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -10,6 +10,8 @@
 *                      NCAR View V3.00 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
+#ifndef	_cterror_
+#define	_cterror_
 typedef	enum {
 	ALL, TERMINAL, NON_TERM
 	} Report;
@@ -129,3 +131,4 @@ typedef enum {
 	T_X11DEVNS = BEG_T_X11	/* X11 display env. var. not set	*/
 	} Ct_error;
 
+#endif	_cterror_

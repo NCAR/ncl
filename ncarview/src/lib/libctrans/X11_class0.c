@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.2 1991-01-08 12:23:20 clyne Exp $
+ *	$Id: X11_class0.c,v 1.3 1991-03-12 17:34:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,7 +44,6 @@
 
 #define	FONT	"8x13bold"
 
-extern	char	*malloc();
 extern	char	*strcpy();
 extern	char	*strcat();
 extern	char	*strncpy();
@@ -667,7 +666,7 @@ do_geometry(Geometry, xsh)
 	 *	create full path name to application default file for 
 	 *	ctrans
 	 */
-	name = (char *) malloc ((unsigned) 
+	name = (char *) icMalloc ((unsigned) 
 		(strlen(APP_DEF) + strlen("ctrans") + 1));
 
 	(void) strcpy(name, APP_DEF);

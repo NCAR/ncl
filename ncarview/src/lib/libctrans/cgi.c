@@ -1,5 +1,5 @@
 /*
- *	$Id: cgi.c,v 1.2 1991-01-09 11:08:41 clyne Exp $
+ *	$Id: cgi.c,v 1.3 1991-03-12 17:34:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,24 +28,24 @@
 
 
 #include <stdio.h>
+#include <math.h>
 #include <cgidefs.h>
 #include <suntool/sunview.h>
 #include <fcntl.h>
+#include <ncarv.h>
 #include <cterror.h>
 #include "ctrandef.h"
-#include <math.h>
 #include "cgmc.h"
 #include "default.h"
 #include "translate.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/Attic/cgi.c,v 1.2 1991-01-09 11:08:41 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/Attic/cgi.c,v 1.3 1991-03-12 17:34:59 clyne Exp $";
 #endif
 
 #define	MAXPOINT 1024 /* maximum number of coordinate points in a list */
 
 extern	FILE	*tty;
-extern	char	*malloc();
 extern	char	*strcpy();
 
 static Cint 	name;
@@ -444,7 +444,7 @@ CGMC *c;
 
 		if (list.ptlist != (Ccoor *) NULL) cfree( (char *) list.ptlist);
 		list.ptlist = (Ccoor *)
-			malloc(numToMalloc * (unsigned)sizeof(Ccoor));
+			icMalloc(numToMalloc * (unsigned)sizeof(Ccoor));
 
 		coordspace = numToMalloc;
 	}
@@ -539,7 +539,7 @@ CGMC *c;
 
 		if (list.ptlist != (Ccoor *) NULL) cfree( (char *) list.ptlist);
 		list.ptlist = (Ccoor *)
-			malloc(numToMalloc * (unsigned)sizeof(Ccoor));
+			icMalloc(numToMalloc * (unsigned)sizeof(Ccoor));
 
 		coordspace = numToMalloc;
 	}
@@ -635,7 +635,7 @@ CGMC *c;
 
 		if (list.ptlist != (Ccoor *) NULL) cfree( (char *) list.ptlist);
 		list.ptlist = (Ccoor *)
-			malloc(numToMalloc * (unsigned)sizeof(Ccoor));
+			icMalloc(numToMalloc * (unsigned)sizeof(Ccoor));
 
 		coordspace = numToMalloc;
 	}

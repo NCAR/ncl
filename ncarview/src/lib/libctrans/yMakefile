@@ -49,16 +49,18 @@ DDEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES)
 
 GENSRCS =  \
 	bitops.c buffer.c clip.c ctrans.c default.c \
-	fill.c fontlist.c format.c gcap.c gcread.c in.c linesim.c raster.c \
+	fill.c fontlist.c format.c gcap.c gcread.c in.c rast.c \
 	readfont.c rgbtohls.c text.c translate.c env.c \
-	soft_fill.c cell.c bsd-sysv.c
+	soft_fill.c cell.c bsd-sysv.c commondev.c gcapdev.c gcaprast.c \
+	rastdev.c 
 
 
 GENOBJS	= \
 	bitops.o buffer.o clip.o ctrans.o default.o \
-	fill.o fontlist.o format.o gcap.o gcread.o in.o linesim.o raster.o \
+	fill.o fontlist.o format.o gcap.o gcread.o in.o rast.o \
 	readfont.o rgbtohls.o text.o translate.o env.o \
-	soft_fill.o cell.o bsd-sysv.o
+	soft_fill.o cell.o bsd-sysv.o commondev.o gcapdev.o gcaprast.o \
+	rastdev.o
 
 DEVSRCS	= cterror.c devices.c
 DEVOBJS	= cterror.o devices.o
@@ -100,7 +102,7 @@ DCTXTSRCS = clear_text.c
 
 DCTXTOBJS = clear_text.o
 
-CDEFINES	= -I$(LOCINCDIR)
+CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include -DBROKEN
 
 all::
 	@$(CAT) Copyright

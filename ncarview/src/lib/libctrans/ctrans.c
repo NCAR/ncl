@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.5 1991-03-05 14:39:25 clyne Exp $
+ *	$Id: ctrans.c,v 1.6 1991-03-12 17:35:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.5 1991-03-05 14:39:25 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.6 1991-03-12 17:35:41 clyne Exp $";
 #endif
 
 
@@ -63,7 +63,6 @@ static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/lib
 
 
 
-extern char *malloc();
 extern char *getenv();
 extern Ct_err GP_Init();
 extern Ct_err Init_Font();
@@ -396,9 +395,10 @@ SetDevice(gcap)
 	 */
 	for(i=0;(i<devicenum) && (strcmp(device,devices[i].name) != 0);i++);
 	if (i<devicenum)
-		currdev = devices[i].number;
+		currdev = i;
 	else
 		currdev = 0;
+
 
 	/*
 	 *	This is a hack for Sun's cgi which seems to capture
@@ -407,8 +407,7 @@ SetDevice(gcap)
 	 *	close the error module and then open it again using
 	 *	stderr for direct error messages instead of a file
 	 */
-		if (devices[currdev].number == CGI_I ||
-			devices[currdev].number == X11_I) {
+		if ( devices[currdev].number == X11_I) {
 
 			close_ct_error();
 			init_ct_error("ctrans", FALSE);
@@ -429,6 +428,13 @@ SetDevice(gcap)
 			return(-1);
 		}
 
+	}
+
+	/*
+	 * load device dependent portion of common routines
+	 */
+	if (devices[currdev].use_common) {
+		ComSetDevice(devices[currdev].name);
 	}
 
 	return(1);
@@ -478,16 +484,16 @@ SetFont(fcap)
 Process(c)
 CGMC	*c;
 {
+	int	devnum = devices[currdev].number;	
 #ifdef DEBUG
-		(void)fprintf(stdout,"class = %d, id = %d\n",	
-					c->class,c->command);
+	(void)fprintf(stdout,"class = %d, id = %d\n",	c->class,c->command);
 #else
 
 		if ((c->class > MAXCLASS) || (c->command > MAXFUNCPERCLASS))
 			ct_error(NT_IOUE,""); /* Illegal or Unsupported cgm  */
 
-		else if (cmdtab[currdev][c->class][c->command])
-			(void)(*cmdtab[currdev][c->class][c->command])(c);
+		else if (cmdtab[devnum][c->class][c->command])
+			(void)(*cmdtab[devnum][c->class][c->command])(c);
 		else
 			ct_error(NT_IOUE,""); /* Illegal or Unsupported cgm  */
 
@@ -513,41 +519,41 @@ CGMC *cgmc;
 {
 	int	i;
 
-	cgmc->ci = (CItype *) malloc (NUMTOALLOC * sizeof(CItype));  	
+	cgmc->ci = (CItype *) icMalloc (NUMTOALLOC * sizeof(CItype));  	
 	cgmc->CIspace = NUMTOALLOC;
 	cgmc->CInum = 0;
 
-	cgmc->cd = (CDtype *) malloc (NUMTOALLOC * sizeof(CDtype));  	
+	cgmc->cd = (CDtype *) icMalloc (NUMTOALLOC * sizeof(CDtype));  	
 	cgmc->CDspace = NUMTOALLOC;
 	cgmc->CDnum = 0;
 
-	cgmc->ix = (IXtype *) malloc (NUMTOALLOC * sizeof(IXtype));  	
+	cgmc->ix = (IXtype *) icMalloc (NUMTOALLOC * sizeof(IXtype));  	
 	cgmc->IXnum = 0;
 	cgmc->IXspace = NUMTOALLOC;
 
-	cgmc->e  = (Etype *) 	malloc (NUMTOALLOC * sizeof(Etype));    	
+	cgmc->e  = (Etype *) 	icMalloc (NUMTOALLOC * sizeof(Etype));    	
 	cgmc->Espace = NUMTOALLOC;
 	cgmc->Enum = 0;
 
-	cgmc->i  = (Itype *) 	malloc (NUMTOALLOC * sizeof(Itype));    	
+	cgmc->i  = (Itype *) 	icMalloc (NUMTOALLOC * sizeof(Itype));    	
 	cgmc->Ispace = NUMTOALLOC;
 	cgmc->Inum = 0;
 
-	cgmc->r  = (Rtype *) 	malloc (NUMTOALLOC * sizeof(Rtype));    	
+	cgmc->r  = (Rtype *) 	icMalloc (NUMTOALLOC * sizeof(Rtype));    	
 	cgmc->Rspace = NUMTOALLOC;
 	cgmc->Rnum = 0;
 
-	cgmc->s  = (Stype *) 	malloc (sizeof(Stype));    	
+	cgmc->s  = (Stype *) 	icMalloc (sizeof(Stype));    	
 	cgmc->Sspace = NUMTOALLOC;
 	cgmc->Snum = 0;
 		cgmc->s->string = (char **)
-			malloc(cgmc->Sspace * sizeof(char *));
+			icMalloc(cgmc->Sspace * sizeof(char *));
 
 		cgmc->s->string_space = (int *)
-			malloc(cgmc->Sspace * sizeof(int));
+			icMalloc(cgmc->Sspace * sizeof(int));
 
 		cgmc->s->string_space[0] = 256;
-		cgmc->s->string[0] = (char *) malloc 
+		cgmc->s->string[0] = (char *) icMalloc 
 			((unsigned) (cgmc->s->string_space[0] * sizeof(char)));
 
 		for (i = 1; i < cgmc->Sspace; i++) {
@@ -555,19 +561,19 @@ CGMC *cgmc;
 			cgmc->s->string[i] = NULL;
 		}
 
-	cgmc->vdc= (VDCtype *)malloc (NUMTOALLOC * sizeof(VDCtype));	
+	cgmc->vdc= (VDCtype *)icMalloc (NUMTOALLOC * sizeof(VDCtype));	
 	cgmc->VDCspace = NUMTOALLOC;
 	cgmc->VDCnum = 0;
 
-	cgmc->p  = (Ptype *) 	malloc (NUMTOALLOC * sizeof(Ptype));    	
+	cgmc->p  = (Ptype *) 	icMalloc (NUMTOALLOC * sizeof(Ptype));    	
 	cgmc->Pspace = NUMTOALLOC;
 	cgmc->Pnum = 0;
 
-	cgmc->c  = (Ctype *) 	malloc (NUMTOALLOC * sizeof(Ctype));    	
+	cgmc->c  = (Ctype *) 	icMalloc (NUMTOALLOC * sizeof(Ctype));    	
 	cgmc->Cspace = NUMTOALLOC;
 	cgmc->Cnum = 0;
 
-	cgmc->d  = (Ctype *) 	malloc (NUMTOALLOC * sizeof(Dtype));    	
+	cgmc->d  = (Ctype *) 	icMalloc (NUMTOALLOC * sizeof(Dtype));    	
 	cgmc->Dspace = NUMTOALLOC;
 	cgmc->Dnum = 0;
 
@@ -622,6 +628,8 @@ GraphicsMode(on)
 close_ctrans()
 {
 
+	int	devnum = devices[currdev].number;	
+
 	if (!ctransIsInit) {
 		return;
 	}
@@ -631,12 +639,14 @@ close_ctrans()
 		if (tty) (void) fclose (tty);
 	}
 
+	if (devices[currdev].use_common) ComClose();
+
 	/*
 	 * invoke driver specific termination routine. If it has not
 	 * already been invoked and we are not in debug mode.
 	 */
 	if (deviceIsInit && ! (*deBug)) {
-		(void)(*cmdtab[currdev][DEL_ELEMENT][END_MF])(&command);
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
 	}
 
 	/*

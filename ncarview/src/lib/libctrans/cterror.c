@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.4 1991-02-04 10:06:45 clyne Exp $
+ *	$Id: cterror.c,v 1.5 1991-03-12 17:35:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -337,12 +337,14 @@ char	*message;
 		if (action == ACT) {
 
 			if (currdev >= 0) {	/* do we have a device? */
+				int	devnum;
 				/*
 				 * execute the coresponding CGM End Metafile 
 				 * function for the device
 				 */
+				devnum = devices[currdev].number;
 				(void)
-				(*cmdtab[currdev][DEL_ELEMENT][END_MF])(&command);
+				(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
 				if (devices[currdev].usegcap) 
 					flush();
 			}

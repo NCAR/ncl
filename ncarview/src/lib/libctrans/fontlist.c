@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.2 1991-01-09 11:10:01 clyne Exp $
+ *	$Id: fontlist.c,v 1.3 1991-03-12 17:37:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,6 +19,7 @@
 #endif SYSV
 
 #include	<cterror.h>
+#include	<ncarv.h>
 #include	"default.h"
 #include	"defines.h"
 /*	fontlist.c:
@@ -45,7 +46,6 @@ char	*Fontlist[MAXFONT];
 extern	char	*getFcapname();
 extern	Ct_err	Init_Font();
 extern	char	msg[];
-extern	char	*malloc();
 
 static	int	fontindex = -1;	
 
@@ -63,7 +63,7 @@ InitFontList()
 	if (initialized) return; 
 	
 	for (i=0;i<MAXFONT;i++) {
-		Fontlist[i] = (char *) malloc ((MAXFONTSTR + 1) * sizeof(char));
+		Fontlist[i] = (char *) icMalloc ((MAXFONTSTR + 1) * sizeof(char));
 	}
 
 	/* build default font list.
@@ -125,7 +125,7 @@ CGMC *c;
 	for (i=0;i<c->Snum;i++) {
 		if (strlen(c->s->string[i]) > MAXFONTSTR) {
 			if (Fontlist[i] != NULL) cfree ((char *) Fontlist[i]);
-			Fontlist[i] = (char *) malloc ((unsigned) 
+			Fontlist[i] = (char *) icMalloc ((unsigned) 
 				((strlen(c->s->string[i]) + 1) * sizeof(char)));
 		}
 

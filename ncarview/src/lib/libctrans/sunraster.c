@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.3 1991-01-08 12:23:29 clyne Exp $
+ *	$Id: sunraster.c,v 1.4 1991-03-12 17:39:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,7 +33,6 @@
 #include	"soft_fill.h"
 #include	"translate.h"
 
-extern	char	*malloc();
 extern	char	*strcpy();
 extern	char	*strcat();
 extern	char	*strncpy();
@@ -795,7 +794,7 @@ static	sim_polygon(sun_pt_list, n, op)
 
 	extern	FillTable	*buildFillTable();
 
-	Ptype *p_list = (Ptype *) malloc ((unsigned) (n * sizeof(Ptype)));
+	Ptype *p_list = (Ptype *) icMalloc ((unsigned) (n * sizeof(Ptype)));
 
 	for (i = 0; i < n; i++) {
 		p_list[i].x = sun_pt_list[i].x;
@@ -1111,7 +1110,7 @@ static	init_sunv(color_ava)
 			green[MAX_COLOR],
 			blue[MAX_COLOR];
 
-	pointBuf.p = (struct pr_pos *) malloc 
+	pointBuf.p = (struct pr_pos *) icMalloc 
 		(POINT_BUF_ALLOCED * sizeof (struct pr_pos));
 
 	pointBuf.size = POINT_BUF_ALLOCED;
@@ -1164,9 +1163,9 @@ static	init_sunv(color_ava)
 	/*
 	 * memory needed to write out the color palette
 	 */
-	colormap_T.map[0] = (unsigned char * ) malloc (MAX_COLOR);
-	colormap_T.map[1] = (unsigned char * ) malloc (MAX_COLOR);
-	colormap_T.map[2] = (unsigned char * ) malloc (MAX_COLOR);
+	colormap_T.map[0] = (unsigned char * ) icMalloc (MAX_COLOR);
+	colormap_T.map[1] = (unsigned char * ) icMalloc (MAX_COLOR);
+	colormap_T.map[2] = (unsigned char * ) icMalloc (MAX_COLOR);
 
 	/*
 	 * create a pixrect for polygon hatch pattern replication

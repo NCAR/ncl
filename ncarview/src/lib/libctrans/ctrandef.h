@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.3 1991-02-06 15:27:40 clyne Exp $
+ *	$Id: ctrandef.h,v 1.4 1991-03-12 17:35:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,15 +34,19 @@
 #endif
 
 #ifndef	MAX
-#define	MAX(A,B)	((A) > (B) ? (A) : (B))
+#define	MAX(A,B)	(((A) > (B)) ? (A) : (B))
 #endif
 
 #ifndef	MIN
-#define	MIN(A,B)	((A) < (B) ? (A) : (B))
+#define	MIN(A,B)	(((A) < (B)) ? (A) : (B))
 #endif
 
 #ifndef	ABS
-#define	ABS(X)          ((X) < 0 ? -(X) : (X))
+#define	ABS(X)          (((X) < (0)) ? -(X) : (X))
+#endif
+
+#ifndef	SIGN
+#define	SIGN(X)		(((X) < (0)) ? (-1) : (1))
 #endif
 
 #endif	_ctrandef_

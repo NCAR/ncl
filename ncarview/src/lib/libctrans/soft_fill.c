@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.3 1991-02-04 10:07:00 clyne Exp $
+ *	$Id: soft_fill.c,v 1.4 1991-03-12 17:39:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,6 +11,7 @@
 *                                                                      *
 ***********************************************************************/
 #include	<stdio.h>
+#include	<ncarv.h>
 #include	"soft_fill.h"
 #include	"ctrandef.h"
 #include	"cgmc.h"
@@ -36,7 +37,6 @@
  *				  plots
  */
 	
-extern	char	*malloc();
 
 static	FillTable	fillTable =  { /* the fill table		*/
 				NULL, 0, 0, NULL, 0, 0
@@ -72,9 +72,9 @@ initSoftSim(height, x_extent)
 		cfree((char *) fillTable.x_count);
 	}
 
-	fillTable.x_coord = (DCtype **) malloc ((unsigned) 
+	fillTable.x_coord = (DCtype **) icMalloc ((unsigned) 
 			(2 * height * sizeof(DCtype *)));
-	fillTable.x_count = (int *) malloc ((unsigned) 
+	fillTable.x_count = (int *) icMalloc ((unsigned) 
 			(2 * height * sizeof (int)));
 	Height = height;	/* height of the display */
 	xExtent = x_extent;	/* width of the display		*/
@@ -147,14 +147,14 @@ FillTable	*buildFillTable(point_list, count)
 	DCtype	ymax = 0; 
 	DCtype	xmin = xExtent;
 	DCtype	ymin = Height;
-	DCtype	xwidth = 0;	/* how wide a table we need	*/
+	DCtype	xwidth;		/* how wide a table we need	*/
 
 	DCtype	*hit_list;	/* which X points are used in point_list */
 
 	if (count < 2)
 		return((FillTable *) NULL);
 
-	if ((hit_list = (DCtype *) malloc 
+	if ((hit_list = (DCtype *) icMalloc 
 		((unsigned) (xExtent * sizeof (DCtype)))) == NULL) {
 
 		perror("");
@@ -175,6 +175,7 @@ FillTable	*buildFillTable(point_list, count)
 	}
 
 
+#ifdef	DEAD
 	/*
 	 *	find out how wide our table needs to be based on how many
 	 *	x values are used. This is conservative but is guaranteed
@@ -183,6 +184,10 @@ FillTable	*buildFillTable(point_list, count)
 	for (i = 0, xwidth = 0; i < xExtent; i++) {
 		if (hit_list[i]) xwidth++;
 	}
+#else
+	xwidth = xmax;
+#endif
+
 	cfree ((char *) hit_list);
 
 	/*
@@ -204,12 +209,9 @@ FillTable	*buildFillTable(point_list, count)
 	 */
 	for (i = ymin; i < (ymax + 1); i++) {
 		if (!(fillTable.x_coord[i])) {
-			fillTable.x_coord[i] = (DCtype *) malloc 
+			fillTable.x_coord[i] = (DCtype *) icMalloc 
 				((unsigned) fillTable.x_extent *sizeof(DCtype));
 		}
-
-		if (fillTable.x_coord[i] == NULL) 
-			exit(1);
 
 		fillTable.x_count[i] = 0;	/* no x coordinates	*/
 	}
@@ -222,6 +224,7 @@ FillTable	*buildFillTable(point_list, count)
 
 		count--;
 	}
+
 	/*
 	 * add the pixels coords to the fillTable
 	 */
@@ -231,6 +234,7 @@ FillTable	*buildFillTable(point_list, count)
 			(DCtype) point_list[i+1].x, 
 			(DCtype) point_list[i+1].y);
 	}
+
 	/*
 	 * close the polygon
 	 */
@@ -246,6 +250,7 @@ FillTable	*buildFillTable(point_list, count)
 	 * parity fill algorithm
 	 */
 	add_end_points(point_list, count);
+
 
 	/*
 	 *	sort the table so x coordinates are in ascending order

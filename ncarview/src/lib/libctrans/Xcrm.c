@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.2 1991-01-09 11:08:07 clyne Exp $
+ *	$Id: Xcrm.c,v 1.3 1991-03-12 17:34:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<cterror.h>
+#include	<ncarv.h>
 #include	"cgmc.h"
 #include	"Xdefs.h"
 #define		XCRM
@@ -36,7 +37,6 @@
 extern	Pixeltype 	max_colour;
 extern	Display		*dpy;
 extern	Colormap	Cmap;
-extern	char		*malloc();
 
 free_colors()
 {
@@ -48,7 +48,7 @@ free_colors()
 	extern	Pixeltype	Colortab[];
 	extern	boolean		Colordef[];
 
-	free_list = (Pixeltype *) malloc 
+	free_list = (Pixeltype *) icMalloc 
 			((unsigned) MAX_COLOR_SIZE * sizeof(Pixeltype));
 
 
