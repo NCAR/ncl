@@ -41,10 +41,8 @@ Use the ncargex command to see the following relevant
 examples: 
 arex02.
 .SH ACCESS
-To use ARMVAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_armvam,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.
+To use ARMVAM or c_armvam, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH MESSAGES
 See the areas man page for a description of all Areas error
 messages and/or informational messages.

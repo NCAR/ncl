@@ -92,10 +92,8 @@ examples:
 arex01,
 cardb2.
 .SH ACCESS
-To use ARDBPA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_ardbpa, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use ARDBPA or c_ardbpa, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH SEE ALSO
 Online:
 areas, areas_params, ardrln, aredam, argeti, argetr, argtai, arinam,
