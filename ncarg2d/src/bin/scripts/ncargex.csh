@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.54 1993-10-26 23:21:57 haley Exp $
+#   $Id: ncargex.csh,v 1.55 1994-01-19 16:38:26 haley Exp $
 #
 
 #********************#
@@ -318,7 +318,7 @@ set threed_list = ($tst_threed $fnd_threed)
 # set vectors examples #
 #                      #
 #**********************#
-set ex_vectors   = (vvex01 vvex02)
+set ex_vectors   = (vvex01 vvex02 vvex03)
 set tst_vectors  = (tvelvc)
 set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05 fcover)
 set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
@@ -329,7 +329,7 @@ set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 #  all streamlines and vectors examples  #
 #                                        #
 #****************************************#
-set ex_field   = (stex01 stex02 stex03 vvex01 vvex02)
+set ex_field   = (stex01 stex02 stex03 vvex01 vvex02 vvex03)
 set tst_field  = (tstrml tvelvc)
 set fnd_field  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover)
 set field_list = ($ex_field $tst_field $fnd_field)
