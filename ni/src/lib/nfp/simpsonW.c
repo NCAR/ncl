@@ -158,7 +158,7 @@ NhlErrorTypes simpson_W( void )
 /*
  * Free memory.
  */
-  if(type_x != NCL_double) clFree(tmp_x);
+  if(type_x != NCL_double) NclFree(tmp_x);
   if(type_f != NCL_double) {
     NclFree(tmp_simpson);
     NclFree(tmp_f);
