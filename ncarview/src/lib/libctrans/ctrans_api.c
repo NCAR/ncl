@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.3 1991-10-04 15:19:00 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.4 1991-10-09 15:14:09 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -192,6 +192,10 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 
 	init_cgmc(&cgmc);
 
+	/*
+	 * intialize the default table
+	 */
+	InitDefault();
 
 	/*
 	 * after we init the cgmc we want to set the initialize flag to
@@ -243,7 +247,7 @@ CtransSetMetafile(metafile)
 	/*
 	 *      open the metafile
 	 */
-	if ((cgm_fd = CGM_open(metafile, 1440, "w")) < 0) {
+	if ((cgm_fd = CGM_open(metafile, 1440, "r")) < 0) {
 		CtransSetError_(ERR_OPEN_META);
 		return(-1);
 	}
