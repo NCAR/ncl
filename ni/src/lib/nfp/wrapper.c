@@ -5366,7 +5366,7 @@ void NclAddUserFuncs(void)
 
 /*
  *  Registering dcdfnorx_W.
-*/
+ */
     nargs = 0;
     args = NewArgs(3);
 
@@ -5422,26 +5422,38 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(tempnam_W, args, "tempnam", nargs);
 
 /*
- * Register "print2d".
+ * Register "print2d"
+ *
+ * There are three functions associated with print2d() -- see the
+ * source file $NCARG_ROOT/ni/src/lib/nfp/writeAscii2d.f
+ *
+ * Supported numeric data types:
+ *      integer data (type: NCL_short, NCL_int, NCL_long)
+ *      floating point data (type: NCL_float)
+ *      double precision data (type: NCL_double)
  */
     nargs = 0;
-    args = NewArgs(8);
+    args = NewArgs(6);
 
-    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
+    /* Incoming data may only be 2D, dimensioned to any size */
+    SetArgTemplate(args, nargs, "numeric", 2, NclANY); nargs++;
+
+    /* Data format is a string scalar */
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+
+    /* Output filename (stdout or file) and title are string scalar */
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+
+    /* Spaces before the title and printing row numbers are integer scalar */
     SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
 
     NclRegisterProc(print2d_W, args, "print2d", nargs);
 
-
     return;
 }
-
 
 
 
