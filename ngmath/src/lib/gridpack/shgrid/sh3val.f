@@ -1,5 +1,5 @@
 C
-C       $Id: sh3val.f,v 1.1 1999-08-19 21:18:08 fred Exp $
+C       $Id: sh3val.f,v 1.2 1999-09-13 19:00:57 fred Exp $
 C
       FUNCTION SH3VAL (PX,PY,PZ,N,X,Y,Z,F,NR,LCELL,LNEXT,
      +                 XYZMIN,XYZDEL,RMAX,RSQ,A)
@@ -207,7 +207,9 @@ C
       SH3VAL = 0.
       RETURN
    35 CONTINUE
-      CALL SHERR (1,'SH3VAL - search radius must be positive',39)
+      CALL SHERR (14,
+     +'SH3GRD - negative search radius in calculating least squares fit'
+     +           ,64)
       SH3VAL = 0.
       RETURN
       END

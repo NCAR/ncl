@@ -1,5 +1,5 @@
 C
-C       $Id: shqshep.f,v 1.1 1999-08-19 21:18:10 fred Exp $
+C       $Id: shqshep.f,v 1.2 1999-09-13 19:00:58 fred Exp $
 C
       SUBROUTINE SHQSHEP (N,X,Y,Z,F,NQ,NW,NR, LCELL,LNEXT,
      +                   XYZMIN,XYZDEL,RMAX,RSQ,A,IER)
@@ -421,19 +421,23 @@ C
 C  N, NQ, NW, or NR is out of range.
 C
    30 CONTINUE
-      CALL SHERR (3,'SHQSHEP - NQ must be at least 9',31)
+      CALL SHERR (3,'SHQSHEP - number of data points used in least squar
+     +es fit must be at least 9',75)
       IER = 3
       RETURN
    31 CONTINUE
-      CALL SHERR (4,'SHQSHEP - NW must be at least 1',31)
+      CALL SHERR (4,'SHQSHEP - NFL (number of points used to calculate w
+     +eights) must be at least 1',76)
       IER = 4
       RETURN
    32 CONTINUE
-      CALL SHERR (5,'SHQSHEP - must have N < NQ < 41',31)
+      CALL SHERR (5,'SHQSHEP - number of points used in least squares fi
+     +t too large',61)
       IER = 5
       RETURN
    33 CONTINUE
-      CALL SHERR (6,'SHQSHEP - must have N < NW < 41',31)
+      CALL SHERR (6,'SHQSHEP - number of points used in calculating weig
+     +hts too large',63)
       IER = 6
       RETURN
    34 CONTINUE

@@ -1,5 +1,5 @@
 C
-C       $Id: shstore3.f,v 1.2 1999-09-11 00:50:23 fred Exp $
+C       $Id: shstore3.f,v 1.3 1999-09-13 19:00:58 fred Exp $
 C
       SUBROUTINE SHSTORE3 (N,X,Y,Z,NR, LCELL,LNEXT,XYZMIN,
      +                    XYZDEL,IER)
@@ -173,6 +173,6 @@ C
       CALL SHERR (7,
      +            'SHSTORE3 - cell grid dimensions must be positive',
      +             48)
-      IER = 2
+      IER = 7
       RETURN
       END
