@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.29 1993-04-01 23:04:49 clyne Exp $
+ *	$Id: X11_class0.c,v 1.30 1993-04-04 20:50:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -205,9 +205,10 @@ Window	create_window(dpy, geometry, cmap, depth, visual)
 	Window			win;
 	XSizeHints  		xsh;	/* Size hints for window manager*/
 
+
 	xsh.flags = 0L;
 	xsh.flags = XWMGeometry(
-		dpy, DefaultScreen(dpy), geometry, NULL, BORDERWIDTH, 
+		dpy, DefaultScreen(dpy), geometry, "512x512", BORDERWIDTH, 
 		&xsh, &(xsh.x), &(xsh.y), &(xsh.base_width), &(xsh.base_height),
 		&(xsh.win_gravity)
 	);
