@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.34 1999-07-28 17:21:13 haley Exp $
+ *	$Id: w_idt.c,v 1.35 2000-03-21 22:02:55 haley Exp $
  */
 /*
  *	w_idt.c
@@ -486,7 +486,7 @@ create_main_panel(parent, select_action)
 		ascent, descent; 	/* retrieve bounds of font	*/
 	XCharStruct	overall;
 
-	char *line1 = " Copyright (C) 1991-1999 - All Rights Reserved    \n";
+	char *line1 = " Copyright (C) 1991-2000 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
 #ifdef	__STDC__
 	char *line3 = " NCAR View - UNIX Version " VERSION "   \n";
