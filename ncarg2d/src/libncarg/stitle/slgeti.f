@@ -1,28 +1,25 @@
 C
-C $Id: slgeti.f,v 1.2 1993-01-14 00:29:45 kennison Exp $
+C $Id: slgeti.f,v 1.3 1995-07-28 18:38:05 kennison Exp $
 C
-      SUBROUTINE SLGETI(PNAM,IVAL)
+      SUBROUTINE SLGETI (PNAM,IVAL)
 C
-C Get the integer value of an STITLE parameter.
+C Get in IVAL the integer value of the STITLE parameter named PNAM.
 C
-C Arguments
-C     Input
-C             PNAM     The three-character name of some parameter.
+        CHARACTER*(*) PNAM
 C
-C     Output
-C             IVAL     The integer value of the specified parameter.
+C Check for an uncleared prior error.
 C
-      CHARACTER*(*) PNAM
-      CHARACTER*3   CTMP
+        IF (ICFELL('SLGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Call SLGETR to obtain the real value of the parameter and then
 C return the integer portion of that.
 C
-      CALL SLGETR(PNAM,RVAL)
-      IVAL = INT(RVAL)
+        CALL SLGETR (PNAM,RVAL)
+        IF (ICFELL('SLGETI',2).NE.0) RETURN
+        IVAL=INT(RVAL)
 C
 C Done.
 C
-      RETURN
+        RETURN
 C
       END

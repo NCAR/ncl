@@ -1,22 +1,31 @@
 C
-C $Id: slownd.f,v 1.1 1993-01-14 00:29:54 kennison Exp $
+C $Id: slownd.f,v 1.2 1995-07-28 18:38:08 kennison Exp $
 C
       SUBROUTINE SLOWND
 C
 C Draw the outline of the windowed area.
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-      CALL PLOTIT (LIM(1),LIM(3),0)
-      CALL PLOTIT (LIM(2),LIM(3),1)
-      CALL PLOTIT (LIM(2),LIM(4),1)
-      CALL PLOTIT (LIM(1),LIM(4),1)
-      CALL PLOTIT (LIM(1),LIM(3),1)
-      RETURN
+        CALL PLOTIF (  0.,  0.,2)
+        IF (ICFELL('SLOWND',1).NE.0) RETURN
+        CALL PLOTIF (RVPL,RVPB,0)
+        IF (ICFELL('SLOWND',2).NE.0) RETURN
+        CALL PLOTIF (RVPR,RVPB,1)
+        IF (ICFELL('SLOWND',3).NE.0) RETURN
+        CALL PLOTIF (RVPR,RVPT,1)
+        IF (ICFELL('SLOWND',4).NE.0) RETURN
+        CALL PLOTIF (RVPL,RVPT,1)
+        IF (ICFELL('SLOWND',5).NE.0) RETURN
+        CALL PLOTIF (RVPL,RVPB,1)
+        IF (ICFELL('SLOWND',6).NE.0) RETURN
+        CALL PLOTIF (  0.,  0.,2)
+        IF (ICFELL('SLOWND',7).NE.0) RETURN
+        RETURN
       END

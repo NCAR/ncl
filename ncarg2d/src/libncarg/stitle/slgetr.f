@@ -1,229 +1,312 @@
 C
-C $Id: slgetr.f,v 1.2 1993-01-14 00:29:48 kennison Exp $
+C $Id: slgetr.f,v 1.3 1995-07-28 18:38:05 kennison Exp $
 C
-      SUBROUTINE SLGETR(PNAM,RVAL)
+      SUBROUTINE SLGETR (PNAM,RVAL)
 C
-C Get the real value of an STITLE parameter.
+C Get in RVAL the real value of the STITLE parameter named PNAM.
 C
-C Arguments
-C     Input
-C             PNAM     The three-character name of some parameter.
+        CHARACTER*(*) PNAM
 C
-C     Output
-C             RVAL     The real value of the specified parameter.
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-      CHARACTER*(*) PNAM
-      CHARACTER*3   CTMP
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C Define a temporary variable in which to put the first three characters
+C of PNAM.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+        CHARACTER*3 CTMP
 C
-C Initialize variables if this is the first user call.
+C Define a character variable in which messages may be formed.
 C
-      IF (IFST .EQ. 0) THEN
-        CALL SLINIT
-        IFST = 1
-      ENDIF
+        CHARACTER*29 CMSG
 C
-      CTMP = PNAM
-      LNTHC = LEN(PNAM)
+C Declare the block data routine SLBLDA external to force it to load,
+C so that the internal parameters will be initialized.
 C
-      IF (LNTHC .LT. 3) GO TO 901
+        EXTERNAL SLBLDA
 C
-C See what parameter name we have.
+C Check for an uncleared prior error.
 C
-      IF      (CTMP.EQ.'ALN' .OR. CTMP.EQ.'aln') THEN
+        IF (ICFELL('SLGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C  Get the flag controlling the output of the alignment frames.
+C Extract the first three characters of the parameter name.
 C
-        RVAL = REAL(LND)
+        CTMP=PNAM
 C
-      ELSE IF (CTMP.EQ.'BGB' .OR. CTMP.EQ.'bgb') THEN
+C If the parameter name has less than three characters, log an error.
 C
-C  Get background color, blue component.
+        IF (LEN(PNAM).LT.3) GO TO 901
 C
-        RVAL = BGCLR(3)
+C See what the parameter name is ...
 C
-      ELSE IF (CTMP.EQ.'BGG' .OR. CTMP.EQ.'bgg') THEN
+C ... the flag controlling the output of the alignment frames, ...
 C
-C  Get background color, green component.
+        IF      (CTMP.EQ.'ALN'.OR.CTMP.EQ.'aln') THEN
 C
-        RVAL = BGCLR(2)
+          RVAL=REAL(IDOT)
 C
-      ELSE IF (CTMP.EQ.'BGR' .OR. CTMP.EQ.'bgr') THEN
+C ... the blue component of the background color, ...
 C
-C  Get background color, red component.
+        ELSE IF (CTMP.EQ.'BGB'.OR.CTMP.EQ.'bgb') THEN
 C
-        RVAL = BGCLR(1)
+          CALL SLGCLR (IBGC,DUMI,DUMI,RVAL)
+          IF (ICFELL('SLGETR',2).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FGB' .OR. CTMP.EQ.'fgb') THEN
+C ... the default background color index ...
 C
-C  Get foreground color, blue component.
+        ELSE IF (CTMP.EQ.'BGC'.OR.CTMP.EQ.'bgc') THEN
 C
-        RVAL = FGCLR(3)
+          RVAL=REAL(IBGC)
 C
-      ELSE IF (CTMP.EQ.'FGG' .OR. CTMP.EQ.'fgg') THEN
+C ... the background color fade flag ...
 C
-C  Get foreground color, green component.
+        ELSE IF (CTMP.EQ.'BGF'.OR.CTMP.EQ.'bgf') THEN
 C
-        RVAL = FGCLR(2)
+          RVAL=REAL(IBGF)
 C
-      ELSE IF (CTMP.EQ.'FGR' .OR. CTMP.EQ.'fgr') THEN
+C ... the green component of the background color, ...
 C
-C  Get foreground color, red component.
+        ELSE IF (CTMP.EQ.'BGG'.OR.CTMP.EQ.'bgg') THEN
 C
-        RVAL = FGCLR(1)
+          CALL SLGCLR (IBGC,DUMI,RVAL,DUMI)
+          IF (ICFELL('SLGETR',3).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FIN' .OR. CTMP.EQ.'fin') THEN
+C ... the red component of the background color, ...
 C
-C  Get fade in time.
+        ELSE IF (CTMP.EQ.'BGR'.OR.CTMP.EQ.'bgr') THEN
 C
-        RVAL = FIN
+          CALL SLGCLR (IBGC,RVAL,DUMI,DUMI)
+          IF (ICFELL('SLGETR',4).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FOU' .OR. CTMP.EQ.'fou') THEN
+C ... the blue component of the foreground color, ...
 C
-C  Get fade out time.
+        ELSE IF (CTMP.EQ.'FGB'.OR.CTMP.EQ.'fgb') THEN
 C
-        RVAL = FOU
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLGCLR (IPAI,DUMI,DUMI,RVAL)
+          IF (ICFELL('SLGETR',5).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'GSZ' .OR. CTMP.EQ.'gsz') THEN
+C ... the default foreground color index ...
 C
-C  Get value of interline spacing.
+        ELSE IF (CTMP.EQ.'FGC'.OR.CTMP.EQ.'fgc') THEN
 C
-        RVAL = GAPSZ
+          RVAL=REAL(IFGC)
 C
-      ELSE IF (CTMP.EQ.'ICO' .OR. CTMP.EQ.'ico') THEN
+C ... the foreground color fade flag ...
 C
-C  Get centering parameter.
+        ELSE IF (CTMP.EQ.'FGF'.OR.CTMP.EQ.'fgf') THEN
 C
-        RVAL = REAL(ICO)
+          RVAL=REAL(IFGF)
 C
-      ELSE IF (CTMP.EQ.'ICU' .OR. CTMP.EQ.'icu') THEN
+C ... the green component of the foreground color, ...
 C
-C  Get unit number for input.
+        ELSE IF (CTMP.EQ.'FGG'.OR.CTMP.EQ.'fgg') THEN
 C
-        RVAL = REAL(ICU)
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLGCLR (IPAI,DUMI,RVAL,DUMI)
+          IF (ICFELL('SLGETR',6).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'INC' .OR. CTMP.EQ.'inc') THEN
+C ... the red component of the foreground color, ...
 C
-C  Get interline spacing in practice runs.
+        ELSE IF (CTMP.EQ.'FGR'.OR.CTMP.EQ.'fgr') THEN
 C
-        RVAL = REAL(ICRTJP)
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLGCLR (IPAI,RVAL,DUMI,DUMI)
+          IF (ICFELL('SLGETR',7).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'LOG' .OR. CTMP.EQ.'log') THEN
+C ... the fade-in time, ...
 C
-C  Get the FORTRAN logical unit number for WISS.
+        ELSE IF (CTMP.EQ.'FIN'.OR.CTMP.EQ.'fin') THEN
 C
-        RVAL = REAL(IWU)
+          RVAL=TFIN
 C
-      ELSE IF (CTMP.EQ.'LX1' .OR. CTMP.EQ.'lx1') THEN
+C ... the fade-out time, ...
 C
-C  Get lower left X viewport value.
+        ELSE IF (CTMP.EQ.'FOU'.OR.CTMP.EQ.'fou') THEN
 C
-        RVAL = REAL(LIM(1))
+          RVAL=TFOU
 C
-      ELSE IF (CTMP.EQ.'LX2' .OR. CTMP.EQ.'lx2') THEN
+C ... the interline spacing ("gap size"), ...
 C
-C  Get upper right X viewport value.
+        ELSE IF (CTMP.EQ.'GSZ'.OR.CTMP.EQ.'gsz') THEN
 C
-        RVAL = REAL(LIM(2))
+          RVAL=GPSZ
 C
-      ELSE IF (CTMP.EQ.'LY1' .OR. CTMP.EQ.'ly1') THEN
+C ... the centering parameter, ...
 C
-C  Get lower left Y viewport value.
+        ELSE IF (CTMP.EQ.'ICO'.OR.CTMP.EQ.'ico') THEN
 C
-        RVAL = REAL(LIM(3))
+          RVAL=REAL(ICOP)
 C
-      ELSE IF (CTMP.EQ.'LY2' .OR. CTMP.EQ.'ly2') THEN
+C ... the FORTRAN logical unit number for "card" input, ...
 C
-C  Get upper right Y viewport value.
+        ELSE IF (CTMP.EQ.'ICU'.OR.CTMP.EQ.'icu') THEN
 C
-        RVAL = REAL(LIM(4))
+          RVAL=REAL(INCU)
 C
-      ELSE IF (CTMP.EQ.'MAP' .OR. CTMP.EQ.'map') THEN
+C ... the interline spacing for practice runs, ...
 C
-C  Get PLOTCHAR mapping flag.
+        ELSE IF (CTMP.EQ.'INC'.OR.CTMP.EQ.'inc') THEN
 C
-        RVAL = REAL(IMAP)
+          RVAL=REAL(IJMP)
 C
-      ELSE IF (CTMP.EQ.'NXE' .OR. CTMP.EQ.'nxe') THEN
+C ... the FORTRAN logical unit number for WISS, ...
 C
-C  Get horizontal scroll end.
+        ELSE IF (CTMP.EQ.'LOG'.OR.CTMP.EQ.'log') THEN
 C
-        RVAL = REAL(NXFIN)
+          RVAL=REAL(IWLU)
 C
-      ELSE IF (CTMP.EQ.'NXS' .OR. CTMP.EQ.'nxs') THEN
+C ... the plotter X coordinate of the left edge of the viewport, ...
 C
-C  Get horizontal scroll start.
+        ELSE IF (CTMP.EQ.'LX1'.OR.CTMP.EQ.'lx1') THEN
 C
-        RVAL = REAL(NXST)
+          RVAL=32767.*RVPL
 C
-      ELSE IF (CTMP.EQ.'ORV' .OR. CTMP.EQ.'orv') THEN
+C ... the plotter X coordinate of the right edge of the viewport, ...
 C
-C  Get PLOTCHAR out-of-range flag.
+        ELSE IF (CTMP.EQ.'LX2'.OR.CTMP.EQ.'lx2') THEN
 C
-        RVAL = OORV
+          RVAL=32767.*RVPR
 C
-      ELSE IF (CTMP.EQ.'PSZ' .OR. CTMP.EQ.'psz') THEN
+C ... the plotter Y coordinate of the bottom edge of the viewport, ...
 C
-C  Get character size.
+        ELSE IF (CTMP.EQ.'LY1'.OR.CTMP.EQ.'ly1') THEN
 C
-        RVAL = PCHSZ
+          RVAL=32767.*RVPB
 C
-      ELSE IF (CTMP.EQ.'SBK' .OR. CTMP.EQ.'sbk') THEN
+C ... the plotter Y coordinate of the top edge of the viewport, ...
 C
-C  Get the flag controlling the suppression of background color
-C  during a fade in/out.
+        ELSE IF (CTMP.EQ.'LY2'.OR.CTMP.EQ.'ly2') THEN
 C
-        RVAL = REAL(ISPB)
+          RVAL=32767.*RVPT
 C
-      ELSE IF (CTMP.EQ.'SFG' .OR. CTMP.EQ.'sfg') THEN
+C ... the PLOTCHAR mapping flag, ...
 C
-C  Get the flag controlling the suppression of foreground color
-C  during a fade in/out.
+        ELSE IF (CTMP.EQ.'MAP'.OR.CTMP.EQ.'map') THEN
 C
-        RVAL = REAL(ISPF)
+          RVAL=REAL(IMAP)
 C
-      ELSE IF (CTMP.EQ.'TM1' .OR. CTMP.EQ.'tm1') THEN
+C ... the number of frames per second, ...
 C
-C  Get initial blank frame count.
+        ELSE IF (CTMP.EQ.'NFS'.OR.CTMP.EQ.'nfs') THEN
 C
-        RVAL = T1
+          RVAL=RNFS
 C
-      ELSE IF (CTMP.EQ.'TM2' .OR. CTMP.EQ.'tm2') THEN
+C ... the horizontal scroll end coordinate, ...
 C
-C  Get final blank frame count.
+        ELSE IF (CTMP.EQ.'NXE'.OR.CTMP.EQ.'nxe') THEN
 C
-        RVAL = T2
+          RVAL=REAL(IXND)
 C
-      ELSE IF (CTMP.EQ.'WID' .OR. CTMP.EQ.'wid') THEN
+C ... the horizontal scroll start coordinate, ...
 C
-C  Get the workstation identifier for WISS.
+        ELSE IF (CTMP.EQ.'NXS'.OR.CTMP.EQ.'nxs') THEN
 C
-        RVAL = REAL(IDEN)
+          RVAL=REAL(IXST)
 C
-      ELSE
+C ... the PLOTCHAR out-of-range value, ...
 C
-C Parameter name not recognized.
+        ELSE IF (CTMP.EQ.'ORV'.OR.CTMP.EQ.'orv') THEN
 C
-        GO TO 901
+          RVAL=OORV
 C
-      ENDIF
+C ... the character size, ...
 C
-      RETURN
+        ELSE IF (CTMP.EQ.'PSZ'.OR.CTMP.EQ.'psz') THEN
 C
-C Error return.
+          RVAL=PCSZ
 C
-  901 WRITE(I1MACH(4),1001) CTMP
-      RVAL=0.
-      RETURN
+C ... the flag controlling suppression of background color during a
+C fade-in or fade-out, ...
 C
- 1001 FORMAT (' SLGETI OR SLGETR -- INVALID KEYWORD = ',A3,', ZERO VALUE
-     + RETURNED')
+        ELSE IF (CTMP.EQ.'SBK'.OR.CTMP.EQ.'sbk') THEN
+C
+          IF (IBGF.NE.-1) THEN
+            RVAL=0.
+          ELSE
+            RVAL=1.
+          END IF
+C
+C ... the flag controlling suppression of foreground color during a
+C fade-in or fade-out, ...
+C
+        ELSE IF (CTMP.EQ.'SFG'.OR.CTMP.EQ.'sfg') THEN
+C
+          IF (IFGF.NE.-1) THEN
+            RVAL=0.
+          ELSE
+            RVAL=1.
+          END IF
+C
+C ... the initial blank-frame count (for FTITLE), ...
+C
+        ELSE IF (CTMP.EQ.'TM1'.OR.CTMP.EQ.'tm1') THEN
+C
+          RVAL=TGP1
+C
+C ... the intermediate blank-frame count (for FTITLE), ...
+C
+        ELSE IF (CTMP.EQ.'TM2'.OR.CTMP.EQ.'tm2') THEN
+C
+          RVAL=TGP2
+C
+C ... the terminal extra blank-frame count (for FTITLE), ...
+C
+        ELSE IF (CTMP.EQ.'TM3'.OR.CTMP.EQ.'tm3') THEN
+C
+          RVAL=TGP2
+C
+C ... the NDC Y coordinate of the bottom edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPB'.OR.CTMP.EQ.'vpb') THEN
+C
+          RVAL=RVPB
+C
+C ... the NDC X coordinate of the left edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPL'.OR.CTMP.EQ.'vpl') THEN
+C
+          RVAL=RVPL
+C
+C ... the NDC X coordinate of the right edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPR'.OR.CTMP.EQ.'vpr') THEN
+C
+          RVAL=RVPR
+C
+C ... the NDC Y coordinate of the top edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPT'.OR.CTMP.EQ.'vpt') THEN
+C
+          RVAL=RVPT
+C
+C ... or the workstation identifier for WISS.
+C
+        ELSE IF (CTMP.EQ.'WID'.OR.CTMP.EQ.'wid') THEN
+C
+          RVAL=REAL(IWWI)
+C
+        ELSE
+C
+C Otherwise, the parameter name is not recognized.
+C
+          GO TO 901
+C
+        END IF
+C
+        RETURN
+C
+C Error exit.
+C
+  901   CMSG(1:29)='SLGETR - INVALID KEYWORD: '//CTMP
+        CALL SETER (CMSG(1:29),8,1)
+        RETURN
 C
       END

@@ -1,24 +1,24 @@
 C
-C $Id: slstln.f,v 1.1 1993-01-14 00:30:04 kennison Exp $
+C $Id: slstln.f,v 1.2 1995-07-28 18:38:11 kennison Exp $
 C
-      INTEGER FUNCTION SLSTLN(STRING)
+      INTEGER FUNCTION SLSTLN (STRING)
 C
-C  Compute the position of the first non-blank character in the
-C  STRING from the right.
+C Compute the position of the first non-blank character in STRING
+C from the right.
 C
-      CHARACTER*(*) STRING
+        CHARACTER*(*) STRING
 C
-      ILNTH = LEN(STRING)
+        LNTH=LEN(STRING)
 C
-      DO 101 I=1,ILNTH
-        NCHR = ILNTH+1-I
-        IF (STRING(NCHR:NCHR) .NE. ' ') THEN
-          SLSTLN = NCHR
-          RETURN
-        ENDIF
-  101 CONTINUE
+        DO 101 I=1,LNTH
+          NCHR=LNTH+1-I
+          IF (STRING(NCHR:NCHR).NE.' ') THEN
+            SLSTLN=NCHR
+            RETURN
+          END IF
+  101   CONTINUE
 C
-      SLSTLN = 1
-      RETURN
+        SLSTLN=1
+        RETURN
 C
       END

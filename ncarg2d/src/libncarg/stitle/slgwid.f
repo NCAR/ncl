@@ -1,0 +1,40 @@
+C
+C $Id: slgwid.f,v 1.1 1995-07-28 18:38:06 kennison Exp $
+C
+      SUBROUTINE SLGWID
+C
+C Get the ID of the first active workstation.
+C
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
+C
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
+C
+C Define a character variable in which messages may be formed.
+C
+        CHARACTER*42 CMSG
+C
+C Get the required ID from GKS.
+C
+        CALL GQACWK (1,IERR,NOAW,IWRK)
+C
+        IF (IERR.NE.0) THEN
+          CMSG(1:34)='SLGWID - ERROR RETURN FROM GQACWK:'
+          WRITE (CMSG(35:42),'(I8)') IERR
+          CALL SETER (CMSG(1:42),1,1)
+          RETURN
+        END IF
+C
+        IF (NOAW.LT.1) THEN
+          CALL SETER ('SLGWID - NO ACTIVE WORKSTATIONS',2,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END

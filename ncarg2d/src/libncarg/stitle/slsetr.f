@@ -1,228 +1,314 @@
 C
-C $Id: slsetr.f,v 1.2 1993-01-14 00:30:02 kennison Exp $
+C $Id: slsetr.f,v 1.3 1995-07-28 18:38:10 kennison Exp $
 C
-      SUBROUTINE SLSETR(PNAM,RVAL)
+      SUBROUTINE SLSETR (PNAM,RVAL)
 C
-C Set a parameter of STITLE, using a real value.
+C Set the real value of the STITLE parameter named PNAM from RVAL.
 C
-C Arguments
-C     Input
-C             PNAM     The three-character name of some parameter.
+        CHARACTER*(*) PNAM
 C
-C             RVAL     A real expression which is to become the value
-C                      of the specified parameter.
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-      CHARACTER*(*) PNAM
-      CHARACTER*3   CTMP
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C Define a temporary variable in which to put the first three characters
+C of PNAM.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+        CHARACTER*3 CTMP
 C
-C Initialize variables if this is the first user call.
+C Define a character variable in which messages may be formed.
 C
-      IF (IFST .EQ. 0) THEN
-        CALL SLINIT
-        IFST = 1
-      ENDIF
+        CHARACTER*29 CMSG
 C
-      CTMP = PNAM
-      LNTHC = LEN(PNAM)
+C Declare the block data routine SLBLDA external to force it to load,
+C so that the internal parameters will be initialized.
 C
-      IF (LNTHC .LT. 3) GO TO 901
+        EXTERNAL SLBLDA
 C
-C See what parameter name we have.
+C Check for an uncleared prior error.
 C
-      IF      (CTMP.EQ.'ALN' .OR. CTMP.EQ.'aln') THEN
+        IF (ICFELL('SLSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C  Set the flag controlling the output of the alignment frames.
+C Extract the first three characters of the parameter name.
 C
-        LND = INT(RVAL)
+        CTMP=PNAM
 C
-      ELSE IF (CTMP.EQ.'BGB' .OR. CTMP.EQ.'bgb') THEN
+C If the parameter name has less than three characters, log an error.
 C
-C  Set background color, blue component.
+        IF (LEN(PNAM).LT.3) GO TO 901
 C
-        BGCLR(3) = RVAL
+C See what the parameter name is ...
 C
-      ELSE IF (CTMP.EQ.'BGG' .OR. CTMP.EQ.'bgg') THEN
+C ... the flag controlling the output of the alignment frames, ...
 C
-C  Set background color, green component.
+        IF      (CTMP.EQ.'ALN'.OR.CTMP.EQ.'aln') THEN
 C
-        BGCLR(2) = RVAL
+          IDOT=MAX(0,MIN(2,INT(RVAL)))
 C
-      ELSE IF (CTMP.EQ.'BGR' .OR. CTMP.EQ.'bgr') THEN
+C ... the blue component of the background color, ...
 C
-C  Set background color, red component.
+        ELSE IF (CTMP.EQ.'BGB'.OR.CTMP.EQ.'bgb') THEN
 C
-        BGCLR(1) = RVAL
+          CALL SLSCLR (IBGC,-1.,-1.,RVAL)
+          IF (ICFELL('SLSETR',2).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FGB' .OR. CTMP.EQ.'fgb') THEN
+C ... the default background color index ...
 C
-C  Set foreground color, blue component.
+        ELSE IF (CTMP.EQ.'BGC'.OR.CTMP.EQ.'bgc') THEN
 C
-        FGCLR(3) = RVAL
+          IBGC=MAX(0,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'FGG' .OR. CTMP.EQ.'fgg') THEN
+C ... the background color fade flag ...
 C
-C  Set foreground color, green component.
+        ELSE IF (CTMP.EQ.'BGF'.OR.CTMP.EQ.'bgf') THEN
 C
-        FGCLR(2) = RVAL
+          IBGF=MAX(-2,MIN(999999,INT(RVAL)))
 C
-      ELSE IF (CTMP.EQ.'FIN' .OR. CTMP.EQ.'fin') THEN
+C ... the green component of the background color, ...
 C
-C  Set fade in time.
+        ELSE IF (CTMP.EQ.'BGG'.OR.CTMP.EQ.'bgg') THEN
 C
-        FIN = RVAL
+          CALL SLSCLR (IBGC,-1.,RVAL,-1.)
+          IF (ICFELL('SLSETR',3).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FOU' .OR. CTMP.EQ.'fou') THEN
+C ... the red component of the background color, ...
 C
-C  Set fade out time.
+        ELSE IF (CTMP.EQ.'BGR'.OR.CTMP.EQ.'bgr') THEN
 C
-        FOU = RVAL
+          CALL SLSCLR (IBGC,RVAL,-1.,-1.)
+          IF (ICFELL('SLSETR',4).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'GSZ' .OR. CTMP.EQ.'gsz') THEN
+C ... the blue component of the foreground color, ...
 C
-C  Set value of interline spacing.
+        ELSE IF (CTMP.EQ.'FGB'.OR.CTMP.EQ.'fgb') THEN
 C
-        GAPSZ = RVAL
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLSCLR (IPAI,-1.,-1.,RVAL)
+          IF (ICFELL('SLSETR',5).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'FGR' .OR. CTMP.EQ.'fgr') THEN
+C ... the default foreground color index ...
 C
-C  Set foreground color, red component.
+        ELSE IF (CTMP.EQ.'FGC'.OR.CTMP.EQ.'fgc') THEN
 C
-        FGCLR(1) = RVAL
+          IFGC=MAX(1,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'ICO' .OR. CTMP.EQ.'ico') THEN
+C ... the foreground color fade flag ...
 C
-C  Set centering parameter.
+        ELSE IF (CTMP.EQ.'FGF'.OR.CTMP.EQ.'fgf') THEN
 C
-        ICO = INT(RVAL)
+          IFGF=MAX(-2,MIN(999999,INT(RVAL)))
 C
-      ELSE IF (CTMP.EQ.'ICU' .OR. CTMP.EQ.'icu') THEN
+C ... the green component of the foreground color, ...
 C
-C  Set unit number for input.
+        ELSE IF (CTMP.EQ.'FGG'.OR.CTMP.EQ.'fgg') THEN
 C
-        ICU = INT(RVAL)
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLSCLR (IPAI,-1.,RVAL,-1.)
+          IF (ICFELL('SLSETR',6).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'INC' .OR. CTMP.EQ.'inc') THEN
+C ... the red component of the foreground color, ...
 C
-C  Set interline spacing in practice runs.
+        ELSE IF (CTMP.EQ.'FGR'.OR.CTMP.EQ.'fgr') THEN
 C
-        ICRTJP= INT(RVAL)
+          CALL SLGPAI (PNAM,4,IPAI)
+          IF (IPAI.LE.0) IPAI=IFGC
+          CALL SLSCLR (IPAI,RVAL,-1.,-1.)
+          IF (ICFELL('SLSETR',7).NE.0) RETURN
 C
-      ELSE IF (CTMP.EQ.'LOG' .OR. CTMP.EQ.'log') THEN
+C ... the fade-in time, ...
 C
-C  Set the FORTRAN logical unit number for WISS.
+        ELSE IF (CTMP.EQ.'FIN'.OR.CTMP.EQ.'fin') THEN
 C
-        IWU = INT(RVAL)
+          TFIN=MAX(0.,RVAL)
 C
-      ELSE IF (CTMP.EQ.'LX1' .OR. CTMP.EQ.'lx1') THEN
+C ... the fade-out time, ...
 C
-C  Set lower left X viewport value.
+        ELSE IF (CTMP.EQ.'FOU'.OR.CTMP.EQ.'fou') THEN
 C
-        LIM(1) = INT(RVAL)
+          TFOU=MAX(0.,RVAL)
 C
-      ELSE IF (CTMP.EQ.'LX2' .OR. CTMP.EQ.'lx2') THEN
+C ... the interline spacing ("gap size"), ...
 C
-C  Set upper right X viewport value.
+        ELSE IF (CTMP.EQ.'GSZ'.OR.CTMP.EQ.'gsz') THEN
 C
-        LIM(2) = INT(RVAL)
+          GPSZ=MAX(0.,RVAL)
 C
-      ELSE IF (CTMP.EQ.'LY1' .OR. CTMP.EQ.'ly1') THEN
+C ... the centering parameter, ...
 C
-C  Set lower left Y viewport value.
+        ELSE IF (CTMP.EQ.'ICO'.OR.CTMP.EQ.'ico') THEN
 C
-        LIM(3) = INT(RVAL)
+          ICOP=MAX(0,MIN(2,INT(RVAL)))
 C
-      ELSE IF (CTMP.EQ.'MAP' .OR. CTMP.EQ.'map') THEN
+C ... the FORTRAN logical unit number for "card" input, ...
 C
-C  Set PLOTCHAR mapping flag.
+        ELSE IF (CTMP.EQ.'ICU'.OR.CTMP.EQ.'icu') THEN
 C
-        IMAP = INT(RVAL)
+          INCU=MAX(0,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'LY2' .OR. CTMP.EQ.'ly2') THEN
+C ... the interline spacing for practice runs, ...
 C
-C  Set upper right Y viewport value.
+        ELSE IF (CTMP.EQ.'INC'.OR.CTMP.EQ.'inc') THEN
 C
-        LIM(4) = INT(RVAL)
+          IJMP=MAX(1,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'NXE' .OR. CTMP.EQ.'nxe') THEN
+C ... the FORTRAN logical unit number for WISS, ...
 C
-C  Set horizontal scroll end.
+        ELSE IF (CTMP.EQ.'LOG'.OR.CTMP.EQ.'log') THEN
 C
-        NXFIN = INT(RVAL)
+          IWLU=MAX(0,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'NXS' .OR. CTMP.EQ.'nxs') THEN
+C ... the plotter X coordinate of the left edge of the viewport, ...
 C
-C  Set horizontal scroll start.
+        ELSE IF (CTMP.EQ.'LX1'.OR.CTMP.EQ.'lx1') THEN
 C
-        NXST = INT(RVAL)
+          RVPL=MAX(0.,MIN(1.,RVAL/32767.))
 C
-      ELSE IF (CTMP.EQ.'ORV' .OR. CTMP.EQ.'orv') THEN
+C ... the plotter X coordinate of the right edge of the viewport, ...
 C
-C  Set PLOTCHAR out-of-range flag.
+        ELSE IF (CTMP.EQ.'LX2'.OR.CTMP.EQ.'lx2') THEN
 C
-        RVAL = OORV
+          RVPR=MAX(0.,MIN(1.,RVAL/32767.))
 C
-      ELSE IF (CTMP.EQ.'PSZ' .OR. CTMP.EQ.'psz') THEN
+C ... the plotter Y coordinate of the bottom edge of the viewport, ...
 C
-C  Set character size.
+        ELSE IF (CTMP.EQ.'LY1'.OR.CTMP.EQ.'ly1') THEN
 C
-        PCHSZ = RVAL
+          RVPB=MAX(0.,MIN(1.,RVAL/32767.))
 C
-      ELSE IF (CTMP.EQ.'SBK' .OR. CTMP.EQ.'sbk') THEN
+C ... the plotter Y coordinate of the top edge of the viewport, ...
 C
-C  Set the flag controlling the suppression of background color
-C  during a fade in/out.
+        ELSE IF (CTMP.EQ.'LY2'.OR.CTMP.EQ.'ly2') THEN
 C
-        ISPB = INT(RVAL)
+          RVPT=MAX(0.,MIN(1.,RVAL/32767.))
 C
-      ELSE IF (CTMP.EQ.'SFG' .OR. CTMP.EQ.'sfg') THEN
+C ... the PLOTCHAR mapping flag, ...
 C
-C  Set the flag controlling the suppression of foreground color
-C  during a fade in/out.
+        ELSE IF (CTMP.EQ.'MAP'.OR.CTMP.EQ.'map') THEN
 C
-        ISPF = INT(RVAL)
+          IMAP=MAX(0,INT(RVAL))
 C
-      ELSE IF (CTMP.EQ.'TM1' .OR. CTMP.EQ.'tm1') THEN
+C ... the number of frames per second, ...
 C
-C  Set initial blank frame count.
+        ELSE IF (CTMP.EQ.'NFS'.OR.CTMP.EQ.'nfs') THEN
 C
-        T1 = RVAL
+          RNFS=MAX(0.,RVAL)
 C
-      ELSE IF (CTMP.EQ.'TM2' .OR. CTMP.EQ.'tm2') THEN
+C ... the horizontal scroll end coordinate, ...
 C
-C  Set final blank frame count.
+        ELSE IF (CTMP.EQ.'NXE'.OR.CTMP.EQ.'nxe') THEN
 C
-        T2 = RVAL
+          IXND=MAX(0,MIN(1023,INT(RVAL)))
 C
-      ELSE IF (CTMP.EQ.'WID' .OR. CTMP.EQ.'wid') THEN
+C ... the horizontal scroll start coordinate, ...
 C
-C  Set the workstation identifier for WISS.
+        ELSE IF (CTMP.EQ.'NXS'.OR.CTMP.EQ.'nxs') THEN
 C
-        IDEN = INT(RVAL)
+          IXST=MAX(0,MIN(1023,INT(RVAL)))
 C
-      ELSE
+C ... the PLOTCHAR out-of-range value, ...
 C
-C Parameter name not recognized.
+        ELSE IF (CTMP.EQ.'ORV'.OR.CTMP.EQ.'orv') THEN
 C
-        GO TO 901
+          OORV=RVAL
 C
-      ENDIF
+C ... the character size, ...
 C
-      RETURN
+        ELSE IF (CTMP.EQ.'PSZ'.OR.CTMP.EQ.'psz') THEN
 C
-C Error return.
+          PCSZ=MAX(0.,RVAL)
 C
-  901 WRITE(I1MACH(4),1001) CTMP
-      RETURN
+C ... the flag controlling suppression of background color during a
+C fade-in or fade-out, ...
 C
- 1001 FORMAT(' SLSETI OR SLSETR -- INVALID KEYWORD = ',A3,', NO ACTION T
-     +AKEN')
+        ELSE IF (CTMP.EQ.'SBK'.OR.CTMP.EQ.'sbk') THEN
+C
+          IF (RVAL.EQ.0.) THEN
+            IBGF=-2
+          ELSE
+            IBGF=-1
+          END IF
+C
+C ... the flag controlling suppression of foreground color during a
+C fade-in or fade-out, ...
+C
+        ELSE IF (CTMP.EQ.'SFG'.OR.CTMP.EQ.'sfg') THEN
+C
+          IF (RVAL.EQ.0.) THEN
+            IFGF=-2
+          ELSE
+            IFGF=-1
+          END IF
+C
+C ... the initial blank-frame time (for FTITLE),
+C
+        ELSE IF (CTMP.EQ.'TM1'.OR.CTMP.EQ.'tm1') THEN
+C
+          TGP1=RVAL
+C
+C ... the intermediate blank-frame time (for FTITLE), ...
+C
+        ELSE IF (CTMP.EQ.'TM2'.OR.CTMP.EQ.'tm2') THEN
+C
+          TGP2=RVAL
+C
+C ... the intermediate blank-frame time (for FTITLE), ...
+C
+        ELSE IF (CTMP.EQ.'TM3'.OR.CTMP.EQ.'tm3') THEN
+C
+          TGP3=RVAL
+C
+C ... the NDC Y coordinate of the bottom edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPB'.OR.CTMP.EQ.'vpb') THEN
+C
+          RVPB=MAX(0.,MIN(1.,RVAL))
+C
+C ... the NDC X coordinate of the left edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPL'.OR.CTMP.EQ.'vpl') THEN
+C
+          RVPL=MAX(0.,MIN(1.,RVAL))
+C
+C ... the NDC X coordinate of the right edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPR'.OR.CTMP.EQ.'vpr') THEN
+C
+          RVPR=MAX(0.,MIN(1.,RVAL))
+C
+C ... the NDC Y coordinate of the top edge of the viewport, ...
+C
+        ELSE IF (CTMP.EQ.'VPT'.OR.CTMP.EQ.'vpt') THEN
+C
+          RVPT=MAX(0.,MIN(1.,RVAL))
+C
+C ... or the workstation identifier for WISS.
+C
+        ELSE IF (CTMP.EQ.'WID'.OR.CTMP.EQ.'wid') THEN
+C
+          IWWI=MAX(0,INT(RVAL))
+C
+        ELSE
+C
+C Otherwise, the parameter name is not recognized.
+C
+          GO TO 901
+C
+        END IF
+C
+C Normal exit.
+C
+        RETURN
+C
+C Error exit.
+C
+  901   CMSG(1:29)='SLSETR - INVALID KEYWORD: '//CTMP
+        CALL SETER (CMSG(1:29),8,1)
+        RETURN
 C
       END

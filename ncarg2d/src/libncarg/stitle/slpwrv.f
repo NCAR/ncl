@@ -1,36 +1,34 @@
 C
-C $Id: slpwrv.f,v 1.1 1993-01-14 00:29:57 kennison Exp $
+C $Id: slpwrv.f,v 1.2 1995-07-28 18:38:08 kennison Exp $
 C
-      SUBROUTINE SLPWRV (XPOS,YPOS,ITXT,LTXT,IWID,IORI,ICEN)
+      SUBROUTINE SLPWRV (XPOS,YPOS,CHRS,SIZE)
 C
 C This routine is used by STITLE to write a message vertically.  The
-C arguments are like those for PWRIT.  The characters are centered
-C vertically.
+C message is centered at the position (XPOS,YPOS) in the fractional
+C coordinate system.  The characters are as specified by CHRS and they
+C are of the size specified by SIZE (a character width, between 0 and
+C 1, in the fractional coordinate system).
 C
-      CHARACTER*(*) ITXT
+C Note: The current "user" coordinate system must be the fractional
+C coordinate system for this routine to work properly.
 C
-C Compute the height of the characters used.
+        CHARACTER*(*) CHRS
 C
-      IHEI = MAX0(IWID,0)
-      IF (IHEI.LE.3) IHEI = 4*(2+(4*IHEI)/3)
-      IHEI = 2*IHEI
-      FHEI = REAL(IHEI)/1024.
-      YTOT = REAL(LTXT)*FHEI
+C Find the length of the character string.
 C
-C Plot the text characters (if any) one at a time, reducing the Y
-C coordinate by the character height each time.
+        NCHR=LEN(CHRS)
 C
-      IF (LTXT.GT.0) THEN
+C Compute the appropriate size to tell WTSTR to use.
 C
-        YPOST = .5+.5*YTOT
+        ISIZ=INT(1023.*SIZE)
 C
-        DO 101 JTXT=1,LTXT
-          CALL PWRIT(XPOS,YPOST,ITXT(JTXT:JTXT),1,IWID,IORI,ICEN)
-          YPOST = YPOST-FHEI
+C Write the characters one at a time, using WTSTR.
+C
+        DO 101 I=1,NCHR
+          CALL WTSTR (XPOS,YPOS+SIZE*(NCHR+1-2*I),CHRS(I:I),ISIZ,0,0)
+          IF (ICFELL('SLPWRV',1).NE.0) RETURN
   101   CONTINUE
 C
-      END IF
-C
-      RETURN
+        RETURN
 C
       END

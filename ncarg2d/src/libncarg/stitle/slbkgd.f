@@ -1,51 +1,76 @@
 C
-C $Id: slbkgd.f,v 1.1 1993-01-14 00:29:39 kennison Exp $
+C $Id: slbkgd.f,v 1.2 1995-07-28 18:38:02 kennison Exp $
 C
       SUBROUTINE SLBKGD
 C
-C  Plot background if the user has set the BGC parameter.
+C This routine fills the STITLE viewport with the background color
+C defined by the color index IBGC (the internal parameter 'BGC').
+C It is called by STITLE only when the value of IBGC is other than
+C zero.  (The assumption is that, when IBGC is zero, GKS handles
+C background fill.)
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-      DIMENSION XL(4),YL(4)
+C Declare arrays in which to define a rectangle to be filled.
 C
-      XL(1) = REAL(LIM(1)/32767.)
-      XL(2) = REAL(LIM(2)/32767.)
-      XL(3) = REAL(LIM(2)/32767.)
-      XL(4) = REAL(LIM(1)/32767.)
-      YL(1) = REAL(LIM(3)/32767.)
-      YL(2) = REAL(LIM(3)/32767.)
-      YL(3) = REAL(LIM(4)/32767.)
-      YL(4) = REAL(LIM(4)/32767.)
+        DIMENSION XCRA(4),YCRA(4)
 C
-      CALL GQFAIS(IERR,ISFS)
-      IF (IERR.NE.0) THEN
-        WRITE(I1MACH(4),1001) IERR
-        STOP
-      END IF
-      CALL GSFAIS(1)
+C Define a character variable in which messages may be formed.
 C
-      CALL GQFACI(IERR,ISCI)
-      IF (IERR.NE.0) THEN
-        WRITE(I1MACH(4),1002) IERR
-        STOP
-      END IF
-      CALL GSFACI(IBKG)
+        CHARACTER*42 CMSG
 C
-      CALL GFA(4,XL,YL)
+C Define the rectangle to be filled.
 C
-      CALL GSFAIS(ISFS)
-      CALL GSFACI(ISCI)
+        XCRA(1)=RVPL
+        XCRA(2)=RVPR
+        XCRA(3)=RVPR
+        XCRA(4)=RVPL
+        YCRA(1)=RVPB
+        YCRA(2)=RVPB
+        YCRA(3)=RVPT
+        YCRA(4)=RVPT
 C
-      RETURN
+C Save the current "fill area interior style" and reset to "solid".
 C
- 1001 FORMAT (' SLBKGD - Error flag returned by GQFAIS - ',I8)
- 1002 FORMAT (' SLBKGD - Error flag returned by GQFACI - ',I8)
+        CALL GQFAIS (IERR,ISFS)
+        IF (IERR.NE.0) THEN
+          CMSG(1:34)='SLBKGD - ERROR RETURN FROM GQFAIS:'
+          WRITE (CMSG(35:42),'(I8)') IERR
+          CALL SETER (CMSG(1:42),1,1)
+          RETURN
+        END IF
+        CALL GSFAIS (1)
+C
+C Save the current "fill area color index" and reset it to the index of
+C the background color.
+C
+        CALL GQFACI (IERR,ISFC)
+        IF (IERR.NE.0) THEN
+          CMSG(1:34)='SLBKGD - ERROR RETURN FROM GQFACI:'
+          WRITE (CMSG(35:42),'(I8)') IERR
+          CALL SETER (CMSG(1:42),2,1)
+          RETURN
+        END IF
+        CALL GSFACI (IBGC)
+C
+C Fill the rectangle.
+C
+        CALL GFA (4,XCRA,YCRA)
+C
+C Restore the original "fill area interior style" and "fill area color
+C index".
+C
+        CALL GSFAIS (ISFS)
+        CALL GSFACI (ISFC)
+C
+C Done.
+C
+        RETURN
 C
       END

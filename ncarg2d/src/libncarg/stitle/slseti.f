@@ -1,25 +1,24 @@
 C
-C $Id: slseti.f,v 1.2 1993-01-14 00:29:59 kennison Exp $
+C $Id: slseti.f,v 1.3 1995-07-28 18:38:10 kennison Exp $
 C
-      SUBROUTINE SLSETI(PNAM,IVAL)
+      SUBROUTINE SLSETI (PNAM,IVAL)
 C
-C Set a parameter of STITLE, using an integer value.
+C Set the integer value of the STITLE parameter named PNAM from IVAL.
 C
-C Arguments
-C             PNAM     The three-character name of some parameter.
+        CHARACTER*(*) PNAM
 C
-C             IVAL     An integer expression which is to become the
-C                      value of the specified parameter.
+C Check for an uncleared prior error.
 C
-      CHARACTER*(*) PNAM
+        IF (ICFELL('SLSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Pass SLSETR the real equivalent of the integral value and let it do
 C the work.
 C
-      CALL SLSETR(PNAM,REAL(IVAL))
+        CALL SLSETR (PNAM,REAL(IVAL))
+        IF (ICFELL('SLSETI',2).NE.0) RETURN
 C
 C Done.
 C
-      RETURN
+        RETURN
 C
       END

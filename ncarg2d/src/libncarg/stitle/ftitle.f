@@ -1,84 +1,114 @@
 C
-C $Id: ftitle.f,v 1.2 1993-01-14 00:29:33 kennison Exp $
+C $Id: ftitle.f,v 1.3 1995-07-28 18:38:02 kennison Exp $
 C
-      SUBROUTINE FTITLE (MOVIE)
+      SUBROUTINE FTITLE (MTST)
 C
-C For a description of this routine, see the comments at the beginning
-C of the routine STITLE.
+C The routine FTITLE reads from a "card input unit" groups of cards,
+C each of which describes a single title frame that is to be displayed
+C for a specified number of seconds using characters of a specified
+C size.  FTITLE does the call to STITLE which is required to create the
+C desired frames.
 C
-C This subroutine limits the number of lines on a given frame to 120.
-C If more lines than this are desired, reset the parameter MAXLIN
-C in the following PARAMETER statement.
+C FTITLE limits the number of lines on a given frame to "MCDS" (by
+C default, 120).  If more lines than this are desired, reset the value
+C in the following PARAMETER statement:
 C
-      PARAMETER (MAXLIN=120)
-      PARAMETER (IBDIM = 5*MAXLIN+14)
-      CHARACTER*100 CARDS(MAXLIN)
+        PARAMETER (MCDS=120)
+        CHARACTER*100 CRDS(MCDS)
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-C Initialize variables if this is the first user call.
+C Check for an uncleared prior error.
 C
-      IF (IFST .EQ. 0) THEN
-        CALL SLINIT
-        IFST = 1
-      ENDIF
+        IF (ICFELL('FTITLE - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Output an initial gap of T1 seconds.
+C Set TGPN, which is the size of the gap preceding the next title (TGP1
+C preceding the first title), and TGPF, which is the size of the final
+C gap (zero so that, if no titles are found, we get no gap at all).
 C
-      CALL SLOGAP (T1,MOVIE)
+        TGPN=TGP1
+        TGPF=0.
 C
-C Read up the first card of the next batch (quit on zero card-count
-C or end-of-file).
+C Read up the first card of the next batch (done if end of file or zero
+C card count are seen, error if there are too many title lines).
 C
-  101 NCARDS = 0
-      READ (ICU,'(I5,2F5.1)',END=102) NCARDS,T,SIZE
-      IF (NCARDS .EQ. 0) GO TO 102
-      IF (NCARDS .GT. MAXLIN) GO TO 901
+  101   NCDS=0
 C
-C Compute the vertical size of a line and of the gap between lines.
+        READ (INCU,'(I5,2F5.1)',END=103,ERR=901) NCDS,TIME,SIZE
 C
-      ISIZ = INT(SIZE*PCHSZ)
-      IGAP = INT(SIZE*GAPSZ)
+        IF (NCDS.LE.0) GO TO 103
 C
-      ISUM = ISIZ+IGAP
+        IF (NCDS.GT.MCDS) GO TO 902
+C
+C Compute the vertical size of a line and of the gap between lines and
+C the sum of those.
+C
+        ISIZ=INT(SIZE*PCSZ)
+        IGAP=INT(SIZE*GPSZ)
+C
+        ISUM=ISIZ+IGAP
 C
 C Set the X/Y coordinates of the first line.
 C
-      IX = 64+448*ICO
-      IY = 512+((NCARDS-1)*ISUM)/2
+        IXPS=64+448*ICOP
+        IYPS=512+((NCDS-1)*ISUM)/2
 C
-C Set up CARDS array for input to STITLE.
+C Set up the CRDS array for input to STITLE.
 C
-      DO 103 I=1,NCARDS
-        WRITE(CARDS(I)(1:20),'(3I5,F5.1)') IX,IY,ICO,SIZE
-        READ (ICU,'(A80)') CARDS(I)(21:100)
-        IY = IY-ISUM
-  103 CONTINUE
+        DO 102 I=1,NCDS
+          WRITE (CRDS(I)(1:20),'(3I5,F5.1)') IXPS,IYPS,ICOP,SIZE
+          READ (INCU,'(A80)',ERR=902,END=903) CRDS(I)(21:100)
+          IYPS=IYPS-ISUM
+  102   CONTINUE
 C
-C Call STITLE to actually produce the desired plots.
+C Output a gap before calling STITLE.
 C
-      CALL STITLE (CARDS,NCARDS,512,512,T,0.,0.,MOVIE)
+        IF (TGPN.GT.0.) THEN
+          CALL SLOGAP (TGPN,MTST)
+          IF (ICFELL('FTITLE',2).NE.0) RETURN
+        END IF
 C
-C Output a gap and go get the next batch of input cards.
+C Call STITLE to actually produce the desired frames.
 C
-      CALL SLOGAP (T2,MOVIE)
+        CALL STITLE (CRDS,NCDS,512,512,0.,TIME,0.,MTST)
+        IF (ICFELL('FTITLE',3).NE.0) RETURN
 C
-      GO TO 101
+C Reset TGPN and TGPF to the appropriate values for the gaps preceding
+C the next label and following the last label.
 C
-C Normal return if end-of-file read.
+        TGPN=TGP2
+        TGPF=TGP2+TGP3
 C
-  102 RETURN
+C Go back to read the next batch of cards.
 C
-C Error exit on too many cards in a single batch.
+        GO TO 101
 C
-  901 WRITE(I1MACH(4),
-     +      '('' FTITLE -- NUMBER OF INPUT CARDS EXCEEDS 120'')')
-      STOP
+C End of input detected.  Output a final gap.
+C
+  103   IF (TGPF.GT.0.) THEN
+          CALL SLOGAP (TGPF,MTST)
+          IF (ICFELL('FTITLE',4).NE.0) RETURN
+        END IF
+C
+C Normal return.
+C
+        RETURN
+C
+C Error exits.
+C
+  901   CALL SETER ('FTITLE - READ ERROR ON CARD INPUT UNIT',5,1)
+        RETURN
+C
+  902   CALL SETER ('FTITLE - TOO MANY INPUT CARDS IN GROUP',6,1)
+        RETURN
+C
+  903   CALL SETER ('FTITLE - PREMATURE EOF ON CARD INPUT UNIT',7,1)
+        RETURN
 C
       END

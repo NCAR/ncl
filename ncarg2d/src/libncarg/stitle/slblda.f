@@ -1,78 +1,117 @@
 C
-C $Id: slblda.f,v 1.1 1993-01-14 00:29:42 kennison Exp $
+C $Id: slblda.f,v 1.2 1995-07-28 18:38:03 kennison Exp $
 C
       BLOCK DATA SLBLDA
 C
-C The labeled common block SLCOMN holds all of the internal parameters
-C for the STITLE package.
+C This "routine" provides default values for the internal parameters of
+C STITLE.
 C
-      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
-     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
-      SAVE   /SLCOMN/
+C The common block SLCOMN holds all of the internal parameters of
+C the package STITLE except for color-table parameters.
 C
-C Define the card-input unit for FTITLE.
+        COMMON /SLCOMN/ GPSZ,IBGC,IBGF,ICOP,IDOT,IFGC,IFGF,IJMP,IMAP,
+     +                  INCU,IWLU,IWRK,IWWI,IXND,IXST,OORV,PCSZ,RNFS,
+     +                  RVPB,RVPL,RVPR,RVPT,TFIN,TFOU,TGP1,TGP2,TGP3
+        SAVE   /SLCOMN/
 C
-      DATA ICU    /   5 /
+C The common block SLCLRS holds color-table parameters.
 C
-C Define the centering option for lines written by FTITLE.
+        COMMON /SLCLRS/ CRED(256),CGRN(256),CBLU(256),LOCI(256),NOCI
+        SAVE   /SLCLRS/
 C
-      DATA ICO    /   1 /
+C GPSZ is the interline spacing assumed by FTITLE, in the plotter
+C coordinate system.
 C
-C Define the character size assumed by FTITLE.
+        DATA GPSZ / 40. /
 C
-      DATA PCHSZ  / 21. /
+C IBGC is the default background color index.
 C
-C Define the interline spacing assumed by FTITLE.
+        DATA IBGC / 0 /
 C
-      DATA GAPSZ  / 40. /
+C IBGF is the background fade flag (-2 for a fade from/to black in the
+C HSV system, -1 for no fade, and "n" greater than or equal to 0 for a
+C fade-in from the color with color index n/1000 and a fade-out to the
+C color with color index MOD[n,1000], in the RGB system).
 C
-C Define the blank-frame gap lengths used by FTITLE.
+        DATA IBGF / -2 /
 C
-      DATA T1     / 1.0 /
-      DATA T2     / 0.5 /
+C ICOP is the centering option for lines written by FTITLE.
 C
-C Define the start and finish coordinates for STITLE in the
+        DATA ICOP / 1 /
+C
+C IDOT is a flag saying whether to draw alignment frames with dots in
+C the corners.
+C
+        DATA IDOT / 0 /
+C
+C IFGC is the default foreground color index.
+C
+        DATA IFGC / 1 /
+C
+C IFGF is the foreground fade flag (-2 for a fade from/to black in the
+C HSV system, -1 for no fade, and "n" greater than or equal to 0 for a
+C fade-in from the color with color index n/1000 and a fade-out to the
+C color with color index MOD[n,1000], in the RGB system).
+C
+        DATA IFGF / -2 /
+C
+C IJMP is the distance between centers of practice frames.
+C
+        DATA IJMP / 300 /
+C
+C IMAP is the PLOTCHAR mapping flag.
+C
+        DATA IMAP / 100 /
+C
+C INCU is the card-input unit for FTITLE.
+C
+        DATA INCU / 5 /
+C
+C IWLU and IWWI are the logical unit and the workstation ID for WISS.
+C
+        DATA IWLU,IWWI / 4 , 9 /
+C
+C IWRK is the ID of the first active workstation, set to an impossible
+C value, so that it will be initialized when it's needed.
+C
+        DATA IWRK / -1 /
+C
+C NOCI is the number of color indices currently defined by entries in
+C the "list of color indices" array LOCI.
+C
+        DATA NOCI / 0 /
+C
+C IXST and IXND are the start and finish coordinates for STITLE in the
 C X direction.
 C
-      DATA NXST   / 512 /
-      DATA NXFIN  / 512 /
+        DATA IXST,IXND / 512 ,512 /
 C
-C Define the distance between centers of practice frames.
+C OORV is the PLOTCHAR out-of-range value.
 C
-      DATA ICRTJP / 300 /
+        DATA OORV / 1.E12 /
 C
-C Define the viewport.
+C PCSZ is the nominal character size used by STITLE, in the plotter
+C coordinate system.  All user character-size values are given as
+C multiples of this.
 C
-      DATA LIM(1),LIM(2),LIM(3),LIM(4) / 0 , 32767 , 0 , 32767 /
+        DATA PCSZ / 21. /
 C
-C Define the default background color index.
+C RNFS is the real number of frames per second.  The default, 24, is
+C an appropriate value for old-fashioned film, but video tape uses 30
+C frames per second.
 C
-      DATA IBKG/0/
+        DATA RNFS / 24. /
 C
-C Define the flag to control the drawing of alignment frames with dots
-C in the corners.
+C RVPL, RVPR, RVPB, and RVPT define the limits of the STITLE viewport.
 C
-      DATA LND/0/
+        DATA RVPB,RVPL,RVPR,RVPT / 0. , 0. , 1. , 1. /
 C
-C Flag to indicate if SLINIT has been called.
+C TFIN and TFOU are the default fade-in and fade-out times.
 C
-      DATA IFST/0/
+        DATA TFIN,TFOU / 0. , 0. /
 C
-C Set default fade-in, fade-out times.
+C TGP1, TGP2, and TGP3 are the blank-frame gap lengths used by FTITLE.
 C
-      DATA FIN,FOU/0.,0./
-C
-C Suppression flags for background and foreground fades.
-C
-      DATA ISPB,ISPF/0,0/
-C
-C Workstation ID and logical unit for WISS.
-C
-      DATA IDEN,IWU/9,4/
-C
-C PLOTCHAR mapping flag and out-of-range indicator.
-C
-      DATA IMAP,OORV / 100 , 1.E12 /
+        DATA TGP1,TGP2,TGP3 / 1. , .5 , 0. /
 C
       END
