@@ -1,3 +1,6 @@
+C
+C $Id: lg03f.f,v 1.2 1995-02-18 00:49:17 boote Exp $
+C
 	program lg03f
 	implicit none
 
@@ -7,7 +10,7 @@ C                Copyright (C)  1995                                   C
 C        University Corporation for Atmospheric Research               C
 C                All Rights Reserved                                   C
 C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:           lg03f.f
 C
@@ -31,7 +34,6 @@ C
 
         character*8 labels(5)
         integer colors(5)
-        integer types(5)
         integer item_ind(5)
         real item_hgt, lnthik(5)
   
@@ -44,8 +46,6 @@ C
 	data colors / 40, 57, 65, 80, 90 /
 
 	data lnthik / 4.0, 4.0, 4.0, 4.0, 4.0 /
-
-	data types / 0, 0, 0, 0, 0 /
 
 	data item_ind / 2, 3, 4, 5, 6 /
 
@@ -83,26 +83,26 @@ C
 C Specify the line types for the legend.
 C
         call NhlFRLSetInteger(rlist,'lgItemCount',5,ierr)
-        call NhlFRLSetString(rlist,'lgMonoItemType','False',ierr)
         call NhlFRLSetFloat(rlist,'lgLabelFontHeightF',.03,ierr)
         call NhlFRLSetStringArray(rlist,'lgLabelStrings',labels,
      $       5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemTypes',types,
-     $       5,ierr)
+        call NhlFRLSetInteger(rlist,'lgMonoItemType',1,ierr)
+        call NhlFRLSetInteger(rlist,'lgItemType',0,ierr)
 C
 C Set the dashed lines and the line characters to the same colors.
 C
-        call NhlFRLSetIntegerArray(rlist,'lgItemColors',colors,
+        call NhlFRLSetIntegerArray(rlist,'lgLineColors',colors,
      $       5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemStringColors',
+        call NhlFRLSetIntegerArray(rlist,'lgLineLabelColors',
      $       colors,5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemIndexes',item_ind,
+        call NhlFRLSetIntegerArray(rlist,'lgDashIndexes',item_ind,
      $       5,ierr)
-        call NhlFRLSetString(rlist,'lgMonoItemThickness','False',ierr)
-        call NhlFRLSetFloatArray(rlist,'lgItemThicknesses',lnthik,
+        call NhlFRLSetString(rlist,'lgMonoLineThickness','False',ierr)
+        call NhlFRLSetFloatArray(rlist,'lgLineThicknesses',lnthik,
      $       5,ierr)
-        call NhlFRLSetFloat(rlist,'lgItemFontHeightF',.03,ierr)
-	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,ierr)
+        call NhlFRLSetFloat(rlist,'lgLineLabelFontHeightF',.03,ierr)
+	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,
+     $		ierr)
 
 
 	call NhlFDraw(pid,ierr)

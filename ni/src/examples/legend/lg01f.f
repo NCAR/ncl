@@ -7,7 +7,7 @@ C                Copyright (C)  1995                                   C
 C        University Corporation for Atmospheric Research               C
 C                All Rights Reserved                                   C
 C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:           lg01f.f
 C
@@ -36,20 +36,20 @@ C
 	call NhlFInitialize
 
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the
+C working directory.
 C In this example the resource file supplies the plot title only.
 C
         call NhlFRLCreate(rlist,'SETRL')
         call NhlFRLClear(rlist)
-	call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
 	call NhlFCreate(appid,'lg01',NhlFappLayerClass,0,rlist,ierr)
 
 C
 C Create an XWorkstation object.
 C
 	call NhlFRLClear(rlist)
-	call NhlFRLSetInteger(rlist,'wkPause','True',ierr)
+	call NhlFRLSetInteger(rlist,'wkPause',1,ierr)
 	call NhlFCreate(wid,'lg01Work',NhlFxWorkstationLayerClass,0,
      $       rlist,ierr)
 C
@@ -60,7 +60,8 @@ C
 	call NhlFRLSetFloat(rlist,'vpYF',1.,ierr)
 	call NhlFRLSetFloat(rlist,'vpWidthF',1.,ierr)
 	call NhlFRLSetFloat(rlist,'vpHeightF',1.,ierr)
-	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,ierr)
+	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,
+     $	ierr)
 
 	call NhlFDraw(pid,ierr)
 	call NhlFFrame(wid,ierr)

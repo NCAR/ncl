@@ -7,7 +7,7 @@ C                Copyright (C)  1995                                   C
 C        University Corporation for Atmospheric Research               C
 C                All Rights Reserved                                   C
 C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:           lg02f.f
 C
@@ -31,7 +31,6 @@ C
 
         character*8 labels(5)
         integer colors(5)
-        integer markrs(5)
         integer item_ind(5)
         real item_hgt, mkthik(5)
   
@@ -45,8 +44,6 @@ C
 
 	data mkthik / 2.0, 3.0, 4.0, 5.0, 6.0 /
 
-	data markrs / 1, 1, 1, 1, 1/
-
 	data item_ind / 2, 3, 4, 5, 6 /
 
 C
@@ -55,20 +52,19 @@ C
 	call NhlFInitialize
 
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
+C Create an application context.  By default the application looks
+C for a resource file in the working directory.
 C In this example the resource file supplies the plot title only.
 C
         call NhlFRLCreate(rlist,'SETRL')
         call NhlFRLClear(rlist)
-	call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
 	call NhlFCreate(appid,'lg02',NhlFappLayerClass,0,rlist,ierr)
 
 C
 C Create an XWorkstation object.
 C
 	call NhlFRLClear(rlist)
-	call NhlFRLSetInteger(rlist,'wkPause','True',ierr)
+	call NhlFRLSetInteger(rlist,'wkPause',1,ierr)
 	call NhlFCreate(wid,'lg02Work',NhlFxWorkstationLayerClass,0,
      $       rlist,ierr)
 C
@@ -83,21 +79,21 @@ C
 C Specify the type of markers for the legend.
 C
         call NhlFRLSetInteger(rlist,'lgItemCount',5,ierr)
-        call NhlFRLSetString(rlist,'lgMonoItemType','False',ierr)
         call NhlFRLSetFloat(rlist,'lgLabelFontHeightF',.03,ierr)
         call NhlFRLSetStringArray(rlist,'lgLabelStrings',labels,
      $       5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemTypes',markrs,
+        call NhlFRLSetInteger(rlist,'lgMonoItemType',1,ierr)
+        call NhlFRLSetInteger(rlist,'lgItemType',1,ierr)
+        call NhlFRLSetIntegerArray(rlist,'lgMarkerColors',colors,
      $       5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemColors',colors,
+        call NhlFRLSetIntegerArray(rlist,'lgMarkerIndexes',item_ind,
      $       5,ierr)
-        call NhlFRLSetIntegerArray(rlist,'lgItemIndexes',item_ind,
+	call NhlFRLSetInteger(rlist,'lgMonoMarkerThickness',0,ierr)
+        call NhlFRLSetFloatArray(rlist,'lgMarkerThicknesses',mkthik,
      $       5,ierr)
-        call NhlFRLSetString(rlist,'lgMonoItemThickness','False',ierr)
-        call NhlFRLSetFloatArray(rlist,'lgItemThicknesses',mkthik,
-     $       5,ierr)
-        call NhlFRLSetFloat(rlist,'lgItemFontHeightF',.05,ierr)
-	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,ierr)
+        call NhlFRLSetFloat(rlist,'lgMarkerSizeF',.05,ierr)
+	call NhlFCreate(pid,'Legend',NhlFlegendLayerClass,wid,rlist,
+     $	ierr)
 
 
 

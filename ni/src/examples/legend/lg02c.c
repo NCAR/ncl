@@ -30,9 +30,8 @@ main()
 	int appid, wid, pid;
 	int rlist;
 	char *labels[5];
-	int colors[5];
-	int markrs[5];
-	int item_ind[5];
+	NhlColorIndex colors[5];
+	NhlMarkerIndex item_ind[5];
 	float item_hgt, mkthik[5];
 
 /*
@@ -53,11 +52,6 @@ main()
 	mkthik[2] = 4.;
 	mkthik[3] = 5.;
 	mkthik[4] = 6.;
-	markrs[0] = 1;
-	markrs[1] = 1;
-	markrs[2] = 1;
-	markrs[3] = 1;
-	markrs[4] = 1;
 	item_ind[0] =  2;
 	item_ind[1] =  3;
 	item_ind[2] =  4;
@@ -77,7 +71,6 @@ main()
  */
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
 	NhlCreate(&appid,"lg02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
@@ -102,15 +95,15 @@ main()
  */
 
 	NhlRLSetInteger(rlist,NhlNlgItemCount,5);
-	NhlRLSetString(rlist,NhlNlgMonoItemType,"False");
+	NhlRLSetInteger(rlist,NhlNlgMonoItemType,True);
+	NhlRLSetInteger(rlist,NhlNlgItemType,NhlMARKERS);
 	NhlRLSetFloat(rlist,NhlNlgLabelFontHeightF,.03);
 	NhlRLSetStringArray(rlist,NhlNlgLabelStrings,labels,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemTypes,markrs,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemColors,colors,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemIndexes,item_ind,5);
-	NhlRLSetString(rlist,NhlNlgMonoItemThickness,"False");
-	NhlRLSetFloatArray(rlist,NhlNlgItemThicknesses,mkthik,5);
-	NhlRLSetFloat(rlist,NhlNlgItemFontHeightF,.05);
+	NhlRLSetIntegerArray(rlist,NhlNlgMarkerColors,colors,5);
+	NhlRLSetIntegerArray(rlist,NhlNlgMarkerIndexes,item_ind,5);
+	NhlRLSetString(rlist,NhlNlgMonoMarkerThickness,"False");
+	NhlRLSetFloatArray(rlist,NhlNlgMarkerThicknesses,mkthik,5);
+	NhlRLSetFloat(rlist,NhlNlgMarkerSizeF,.05);
 	NhlCreate(&pid,"Legend",
 		  NhllegendLayerClass,wid,rlist);
 

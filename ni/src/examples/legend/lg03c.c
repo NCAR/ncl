@@ -33,7 +33,7 @@ main()
 	int colors[5];
 	int types[5];
 	int item_ind[5];
-	float item_hgt, lnthik[5];
+	float item_hgt, lnthik;
 
 /*
  * Initialize data values
@@ -48,21 +48,8 @@ main()
 	colors[2] = 65;
 	colors[3] = 80;
 	colors[4] = 90;
-	lnthik[0] = 4.;
-	lnthik[1] = 4.;
-	lnthik[2] = 4.;
-	lnthik[3] = 4.;
-	lnthik[4] = 4.;
+	lnthik = 4.;
 
-/*
- * Item types of 0 are lines, 1 are markers
- */
-
-	types[0] = 0;
-	types[1] = 0;
-	types[2] = 0;
-	types[3] = 0;
-	types[4] = 0;
 	item_ind[0] =  2;
 	item_ind[1] =  3;
 	item_ind[2] =  4;
@@ -82,7 +69,6 @@ main()
  */
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
 	NhlCreate(&appid,"lg03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
@@ -107,21 +93,26 @@ main()
  */
 
 	NhlRLSetInteger(rlist,NhlNlgItemCount,5);
-	NhlRLSetString(rlist,NhlNlgMonoItemType,"False");
+
+	NhlRLSetInteger(rlist,NhlNlgMonoItemType,True);
+	NhlRLSetInteger(rlist,NhlNlgItemType,NhlMARKLINES);
+
 	NhlRLSetFloat(rlist,NhlNlgLabelFontHeightF,.03);
 	NhlRLSetStringArray(rlist,NhlNlgLabelStrings,labels,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemTypes,types,5);
 
 /*
  * Set the dashed lines and the line characters to the same colors.
  */
 
-	NhlRLSetIntegerArray(rlist,NhlNlgItemColors,colors,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemStringColors,colors,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgItemIndexes,item_ind,5);
-	NhlRLSetString(rlist,NhlNlgMonoItemThickness,"False");
-	NhlRLSetFloatArray(rlist,NhlNlgItemThicknesses,lnthik,5);
-	NhlRLSetFloat(rlist,NhlNlgItemFontHeightF,.03);
+	NhlRLSetIntegerArray(rlist,NhlNlgLineColors,colors,5);
+	NhlRLSetIntegerArray(rlist,NhlNlgDashIndexes,item_ind,5);
+
+	NhlRLSetInteger(rlist,NhlNlgMonoLineThickness,True);
+	NhlRLSetFloat(rlist,NhlNlgLineThicknessF,lnthik);
+
+	NhlRLSetIntegerArray(rlist,NhlNlgLineLabelColors,colors,5);
+	NhlRLSetFloat(rlist,NhlNlgLineLabelFontHeightF,.03);
+
 	NhlCreate(&pid,"Legend",
 		  NhllegendLayerClass,wid,rlist);
 
