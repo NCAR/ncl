@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.88 2002-07-18 19:28:19 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.89 2003-06-11 18:45:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <stdio.h>
 #include <math.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/XyPlotP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
@@ -1002,8 +1003,10 @@ XyResetExtents
 	/*
 	 * Only reset extent's if tickmark mode is automatic, otherwise
 	 * the already computed data min/max are the correct values.
+	 * Also don't do it if the data is constant.
 	 */
-	if((xb_mode == NhlAUTOMATIC) || (xt_mode == NhlAUTOMATIC)){
+	if(((xb_mode == NhlAUTOMATIC) || (xt_mode == NhlAUTOMATIC)) &&
+	   (_NhlCmpFAny2(newxy->x_data_min,newxy->x_data_max,5,1e-32) != 0)){
 		if(newxy->compute_x_min) {
 			tfp->x_min = (xb_mode == NhlAUTOMATIC)?
 							xb_start:xt_start;
@@ -1014,7 +1017,8 @@ XyResetExtents
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
 		}
 	}
-	if((yl_mode == NhlAUTOMATIC) || (yr_mode == NhlAUTOMATIC)){
+	if(((yl_mode == NhlAUTOMATIC) || (yr_mode == NhlAUTOMATIC)) &&
+	   (_NhlCmpFAny2(newxy->y_data_min,newxy->y_data_max,5,1e-32) != 0)) {
 		if(newxy->compute_y_min){
 			tfp->y_min = (yl_mode == NhlAUTOMATIC)?
 							yl_start:yr_start;
@@ -4154,6 +4158,9 @@ ComputeDataExtents
 	}
 
 	if(xnew->xyplot.check_ranges){
+		NhlBoolean xmin_set, xmax_set, ymin_set, ymax_set;
+
+		xmin_set = xmax_set = ymin_set = ymax_set = False;
 
 		/*
 		 * Set Initial default for left,right,top,bottom
@@ -4165,18 +4172,52 @@ ComputeDataExtents
 		if(!xnew->trans.x_min_set || xnew->xyplot.compute_x_min){
 			xnew->trans.x_min = xnew->xyplot.x_data_min;
 			xnew->trans.x_min_set = True;
+			xmin_set = True;
 		}
 		if(!xnew->trans.x_max_set || xnew->xyplot.compute_x_max){
 			xnew->trans.x_max = xnew->xyplot.x_data_max;
 			xnew->trans.x_max_set = True;
+			xmax_set = True;
 		}
 		if(!xnew->trans.y_min_set || xnew->xyplot.compute_y_min){
 			xnew->trans.y_min = xnew->xyplot.y_data_min;
 			xnew->trans.y_min_set = True;
+			ymin_set = True;
 		}
 		if(!xnew->trans.y_max_set || xnew->xyplot.compute_y_max){
 			xnew->trans.y_max = xnew->xyplot.y_data_max;
 			xnew->trans.y_max_set = True;
+			ymax_set = True;
+		}
+		if (xmin_set && xmax_set) {
+			if (_NhlCmpFAny2(xnew->trans.x_min,xnew->trans.x_max,
+					 5,1e-32) == 0) {
+				if (fabs(xnew->trans.x_min) > 1e-32) {
+					xnew->trans.x_min -= 0.0001 *
+						fabs(xnew->trans.x_min);
+					xnew->trans.x_max += 0.0001 *
+						fabs(xnew->trans.x_max);
+				}
+				else {
+					xnew->trans.x_min = -1;
+					xnew->trans.x_max = 1;
+				}
+			}
+		}
+		if (ymin_set && ymax_set) {
+			if (_NhlCmpFAny2(xnew->trans.y_min,xnew->trans.y_max,
+					 5,1e-32) == 0) {
+				if (fabs(xnew->trans.y_min) > 1e-32) {
+					xnew->trans.y_min -= 0.0001 *
+						fabs(xnew->trans.y_min);
+					xnew->trans.y_max += 0.0001 *
+						fabs(xnew->trans.y_max);
+				}
+				else {
+					xnew->trans.y_min = -1;
+					xnew->trans.y_max = 1;
+				}
+			}
 		}
 
 		/*
