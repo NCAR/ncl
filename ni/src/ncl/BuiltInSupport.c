@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInSupport.c,v 1.4 1996-05-09 23:29:56 ethan Exp $
+ *      $Id: BuiltInSupport.c,v 1.5 1998-01-29 18:57:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -115,25 +115,56 @@ int copy_data;
 	NclTypeClass tc;
 	int i,total=1;
 	NclMultiDValData tmp_md;
+	NclObj theobj;
 
 	if((value != NULL)&&(n_dims > 0)&&(dimsizes != NULL)&&((int)type>0)) {
 		obj_type = _NclBasicDataTypeToObjType(type);
 		tc = _NclTypeEnumToTypeClass(obj_type);
 		if(tc != NULL)  {
+			for(i = 0; i < n_dims; i ++) {
+				total *= dimsizes[i];
+			}
 			if(copy_data) {
-				for(i = 0; i < n_dims; i ++) {
-					total *= dimsizes[i];
-				}
 				tmp = NclMalloc(total*tc->type_class.size);
 				memcpy(tmp,value,total*tc->type_class.size);
 			} else {
 				tmp = value;
 			}
-			tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,tmp,missing,n_dims,dimsizes,TEMPORARY,NULL,(NclObjClass)tc);
-			data.kind = NclStk_VAL;
-			data.u.data_obj = tmp_md;
-			_NclPlaceReturn(data);
-			return(NhlNOERROR);
+			switch(type) {
+			case NCL_obj:
+				i = 0;
+				if(missing != NULL) {
+					while(((obj*)value)[i] == missing->objval) {
+						i++;
+					}
+				}
+				theobj = _NclGetObj(((obj*)value)[i]);
+				switch(theobj->obj.obj_type) {
+				case Ncl_HLUObj:
+					tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValHLUObjData,0,tmp,missing,n_dims,dimsizes,TEMPORARY,NULL,(NclObjClass)tc);
+					data.kind = NclStk_VAL;
+					data.u.data_obj = tmp_md;
+					_NclPlaceReturn(data);
+					return(NhlNOERROR);
+				case Ncl_File:
+					tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValnclfileData,0,tmp,missing,n_dims,dimsizes,TEMPORARY,NULL,(NclObjClass)tc);
+					data.kind = NclStk_VAL;
+					data.u.data_obj = tmp_md;
+					_NclPlaceReturn(data);
+					return(NhlNOERROR);
+				default:
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not determine type class. Incorrect BasicType requested by builtin function");
+					return(NhlFATAL);
+				}
+				
+				
+			default:
+				tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,tmp,missing,n_dims,dimsizes,TEMPORARY,NULL,(NclObjClass)tc);
+				data.kind = NclStk_VAL;
+				data.u.data_obj = tmp_md;
+				_NclPlaceReturn(data);
+				return(NhlNOERROR);
+			}
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not determine type class. Incorrect BasicType requested by builtin function");
 			return(NhlFATAL);
