@@ -1,26 +1,26 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.6 1995-04-20 16:52:25 haley Exp $
+#      $Id: make-tarfile,v 1.7 1995-06-06 18:22:55 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Reseplatform		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
 #	File:		make-tarfile
 #
 #	Author:		John Clyne
-#			National Center for Atmospheric Reseplatform
+#			National Center for Atmospheric Research
 #			PO 3000, Boulder, Colorado
 #
 #	Date:		Wed Dec 9 15:46:42 MST 1992
 #
 #	Description:	Write an NCAR G binary distribution tarfile.
 #
-#	Usage:		make-tarfile -<platform> directory
+#	Usage:		make-tarfile [-doc] [-<platform> directory]
 #
 #	Environment:
 #
@@ -31,11 +31,10 @@
 #		$build_root/INSTALL/INSTALL.TAR	: install script
 #
 #		$build_root/$platform/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
+#		$build_root/$platform/{HTML,PS}.TAR	: documentation tar files
 #
 #
-#	Options:	
-
-
+#	Options:	  -doc - generate documentation tarfile only
 
 #
 #	execute a command via system(). If $doDebug is set just print the 
@@ -64,56 +63,54 @@ sub	my_system {
 ##
 ##
 
-
-
 $do_inter = 0;			# do interactive mode?
 $build_root = "/cyclone/ncargd/dist/binaries";	
 $install_dir = "INSTALL";
 $toc_file = "$build_root/INSTALL/var/TOC";
-@platforms;				# platformitectures to write binaries for
-$usage = "-<platform> directory";
+$usage = "-doc/-<platform> directory";
 $version;			# ncarg version
 $tarfile;			# path to tarfile we'll create.
 
+
+if (@ARGV < 1) {
+        print STDERR "Usage: make-tarfile $usage\nn";
+	exit 1;
+}
 
 #
 # Tar files we write for each requested platform
 # N.B. order is important
 #
-@tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
-
-
-if (@ARGV != 2) {
-        print STDERR "Usage: make-tarfile $usage\nn";
-	exit 1;
+$firstarg = $ARGV[0];
+if ($firstarg == "-doc") {
+  @tars = ("HTML.TAR", "PS.TAR");	
+  $platform = "doc";
+}
+else {
+  @tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
+  $platform = $firstarg;
+  $platform =~ s/^-//;
 }
 
-$platform = $ARGV[0];
-$platform =~ s/^-//;
 $directory = $ARGV[1];
-
 
 $cmd = "cat $build_root/$platform/version";
 $version = `$cmd`;
 if ($? != 0) {
-	print STDERR "\"$cmd\" exited with error : $!\n";
-	exit 1;
+  print STDERR "\"$cmd\" exited with error : $!\n";
+  exit 1;
 }
 chop $version;
-$tarfile = "$directory/ncarg$version.$platform.tar";
 
+$tarfile = "$directory/ncarg$version.$platform.tar";
 print "platform=$platform, build_root=$build_root, tarfile=$tarfile\n";
 
 #
 #	generate the tar file with the install script
 #
-#$cmd = "cd $build_root/$install_dir; tar cbf 20 ../INSTALL.TAR .";
-#do my_system("$cmd");
-
-
 	
 chdir $build_root;
-#$tars = "";
+
 $tars = "$install_dir";
 foreach $tar (@tars) {
 	$tars = "$tars $platform/$tar";
