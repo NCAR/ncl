@@ -161,8 +161,8 @@ C
         CALL GSFAIS(ISTYLO)
       ENDIF
 C
-C  Draw polymarkers if the size is small enough (not that there is
-C  an overlap where both dots and markers are drawn)..
+C  Draw polymarkers if the size is small enough (note that there is
+C  an overlap where both dots and markers are drawn).
 C
       IF (SD .LT. DM) THEN
 C

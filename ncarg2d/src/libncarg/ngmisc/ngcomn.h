@@ -1,0 +1,6 @@
+      COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
+     +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
+     +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
+     +                RMITER
+      COMMON /NGCOMC/ CFILNM, CPICNM
+      CHARACTER CFILNM*256, CPICNM*80
