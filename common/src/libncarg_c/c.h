@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.13 1992-09-09 17:38:08 clyne Exp $
+ *	$Id: c.h,v 1.14 1992-09-24 17:24:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,6 +38,17 @@ typedef	caddr_t	Voidptr;
 
 #endif	/*	__STDC__	*/
 
+/*
+ * C++ prototype protector
+ */
+#ifdef	__cpluscplus
+#define	NCARG_PROTO_BEGIN	extern "C" {
+#define	NCARG_PROTO_END		}
+#else
+#define	NCARG_PROTO_BEGIN
+#define	NCARG_PROTO_END	
+#endif
+
 typedef	unsigned int	boolean;
 
 #ifndef	TRUE
@@ -45,6 +56,7 @@ typedef	unsigned int	boolean;
 #define TRUE	!FALSE
 #endif	/* TRUE */
 
+NCARG_PROTO_BEGIN
 /*
 **
 **	A R G U M E N T   V E C T O R S
@@ -349,5 +361,6 @@ extern	const char	*GetNCARGPath(
 );
 
 
+NCARG_PROTO_END
 
 #endif	/* _ncarg_c_	*/
