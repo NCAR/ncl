@@ -110,14 +110,10 @@ else
   end if
 end if
 
-getvalues wid
-  "wkGksWorkId" : gkswid
-end getvalues
-
-tdez2d(gkswid, xo, yo, output1, rho, theta, phi, 6)
+tdez2d(wid, xo, yo, output1, rho, theta, phi, 6)
 frame(wid)
 
-tdez2d(gkswid, xo, yo, output2, rho, theta, phi, 6)
+tdez2d(wid, xo, yo, output2, rho, theta, phi, 6)
 frame(wid)
 
 end

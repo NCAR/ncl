@@ -82,16 +82,13 @@ zo = ftsurf(xi,yi,zi,xo,yo)
      end if
   end if
  
-  getvalues wid
-    "wkGksWorkId" : gkswid
-  end getvalues
 ;
 ;  Draw plot.
 ;
 rho = 3.
 theta = 36.
 phi = 67.
-tdez2d(gkswid, xo, yo, zo, rho, theta, phi, -6)
+tdez2d(wid, xo, yo, zo, rho, theta, phi, -6)
 frame(wid)
 
 end

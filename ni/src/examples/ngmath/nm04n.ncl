@@ -102,14 +102,10 @@ else
   end if
 end if
 
-getvalues wid
-  "wkGksWorkId" : gkswid
-end getvalues
-
 ;output!0 = "i"
 ;output!1 = "j"
 ;output!2 = "k"
-tdez3d(gkswid,xo,yo,zo,output,3.,2.,-35.,65.,6)
+tdez3d(wid,xo,yo,zo,output,3.,2.,-35.,65.,6)
 frame(wid)
 
 end
