@@ -3,34 +3,34 @@ How to download and build NCAR Graphics® Software from source code
 To download the NCAR Graphics source code, follow the instructions at
 the URL:
 
-     http://ngwww.ucar.edu/
+     http://ngwww.ucar.edu/ng4.2/
 
 The NCAR Graphics source code that you download will either be a
 single compressed tar file, or multiple compressed tar files.
 
 Let's assume you downloaded the multiple compressed tar files, called
-"ncarg4.1.2.libs.tar.gz", "ncarg4.1.2.db.tar.gz", and
-"ncarg4.1.2.misc.tar.gz". To get ready to build NCAR Graphics Software
+"ncarg4.2.0.libs.tar.gz", "ncarg4.2.0.db.tar.gz", and
+"ncarg4.2.0.misc.tar.gz". To get ready to build NCAR Graphics Software
 from these files, move them to a temporary directory where you have
 plenty of disk space (around 100 megabytes to hold all of the source
 code, object files, binaries, and so on). Then, uncompress and un-tar
 the files as follows:
 
-     % gunzip ncarg4.1.2.libs.tar.gz (or uncompress if the files end in
+     % gunzip ncarg4.2.0.libs.tar.gz (or uncompress if the files end in
      ".Z")
-     % gunzip ncarg4.1.2.db.tar.gz
-     % gunzip ncarg4.1.2.misc.tar.gz
-     % tar -xvf ncarg4.1.2.libs.tar
-     % tar -xvf ncarg4.1.2.db.tar
-     % tar -xvf ncarg4.1.2.misc.tar
+     % gunzip ncarg4.2.0.db.tar.gz
+     % gunzip ncarg4.2.0.misc.tar.gz
+     % tar -xvf ncarg4.2.0.libs.tar
+     % tar -xvf ncarg4.2.0.db.tar
+     % tar -xvf ncarg4.2.0.misc.tar
 
-The above steps will create a directory called ncarg-4.1.2. Set the
+The above steps will create a directory called ncarg-4.2.0. Set the
 environment variable NCARG to the name of this directory. For purposes
 of convenience, we use the notation $NCARG to mean the top level of
 the NCAR Graphics source tree. For example, if you untarred the files
 from the directory /usr/local/src, then you would do the following:
 
-     setenv NCARG /usr/local/src/ncarg-4.1.2
+     setenv NCARG /usr/local/src/ncarg-4.2.0
 
   ------------------------------------------------------------------------
 
@@ -654,6 +654,6 @@ trademarks or registered trademarks of their respective holders. Reference
 to a company or product name does not imply approval or recommendation of
 that company or product to the exclusion of others.
 
-© 1987-2000 University Corporation for Atmospheric Research (UCAR)
+Copyright 1987-2000 University Corporation for Atmospheric Research (UCAR)
 The use of this software is governed by a License Agreement.
 All rights reserved.
