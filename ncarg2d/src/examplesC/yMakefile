@@ -1,20 +1,14 @@
 #
-#	$Id: yMakefile,v 1.3 1993-01-15 21:44:56 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-01-15 22:39:52 haley Exp $
 #
 NCARG	= ../../..
 
 CSRCS = \
-	c_agex01.c c_agex02.c c_agex03.c c_agex04.c c_agex05.c c_agex06.c \
-	c_agex07.c c_agex08.c c_agex11.c c_agex12.c c_agex13.c c_coex01.c \
-	c_coex02.c c_coex03.c c_cpex02.c c_cpex04.c c_cpex05.c c_cpex06.c \
-	c_cpex07.c c_cpex08.c c_cpex09.c c_cpexcc.c c_eezmpa.c c_elblba.c \
-	c_epltch.c c_example.c c_mpex01.c c_mpex02.c c_mpex04.c c_mpex05.c \
-	c_mpex06.c c_mpex07.c c_mpex10.c c_mpexfi.c c_sfex01.c c_sfex02.c \
-	c_stex01.c c_colcon.c
+	c_agex07.c c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c c_mpex05.c \
+	c_sfex02.c c_slex01.c
 
 SED_SRCS = \
-	c_agex09.c c_agex10.c c_arex01.c c_cbex01.c c_cpex03.c c_mpex03.c \
-	c_mpex08.c c_mpex09.c c_srex01.c
+	c_cbex01.c c_agex07.c c_mpex05.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS) $(FSRCS)
 
@@ -31,45 +25,13 @@ CleanTarget
 clean::
 	@-$(RM) $(SED_SRCS)
 
-
 # Files containing C functions that are called from FORTRAN or that have to
 # be modified to include a macro from the configuration file.
-
-c_agex09.c: c_agex09.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agutol
-
-c_agex10.c: c_agex10.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agchnl
-
-c_arex01.c: c_arex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ ardbpa arcomn arcom1
 
 c_agex07.c: c_agex07.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agutol
 
-c_cpex03.c: c_cpex03.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cpmpxy cpmpc1 cpmpc2
-
-c_mpex03.c: c_mpex03.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
-
-c_mpex08.c: c_mpex08.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapusr
-
-c_mpex09.c: c_mpex09.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod limits
-
-c_srex01.c: c_srex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
 c_cbex01.c: c_cbex01.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cpchhl cpchll amapra idsfft cpdrpl
