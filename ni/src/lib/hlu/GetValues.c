@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.23 1997-09-19 14:41:16 boote Exp $
+ *      $Id: GetValues.c,v 1.24 1997-09-19 18:41:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -524,7 +524,7 @@ NhlGetValues
 			to.data = args[i].value;
 
 			if(context == NULL)
-				context = _NhlCreateConvertContext(l);
+				context = _NhlCreateConvertContext(NULL);
 
 			if(gextra[i].chld_class){
 				_NhlConvertContextClass(context,
