@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_colr_rep.m,v 1.8 1998-02-04 05:12:44 haley Exp $
+.\"	$Id: gset_colr_rep.m,v 1.9 1999-03-23 16:53:10 haley Exp $
 .\"
 .TH GSET_COLR_REP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -71,7 +71,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargfile.m,v 1.5 1998-02-04 05:13:33 haley Exp $
+.\"	$Id: ncargfile.m,v 1.6 1999-03-23 16:53:39 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGFILE 1NCARG "MARCH 1993" NCAR "NCAR GRAPHICS"
@@ -38,7 +38,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

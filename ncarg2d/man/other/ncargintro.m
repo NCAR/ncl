@@ -187,7 +187,7 @@ Online documentation:
 .sp
 http://ngwww.ucar.edu/ngdoc/ng/
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

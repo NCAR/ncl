@@ -88,7 +88,7 @@ NGPSWK(3NCARG),
 NGRITD(3NCARG),
 NGWSYM(3NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

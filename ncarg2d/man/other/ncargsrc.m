@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargsrc.m,v 1.6 1998-02-04 05:13:33 haley Exp $
+.\"	$Id: ncargsrc.m,v 1.7 1999-03-23 16:53:39 haley Exp $
 .\"
 .TH NCARGSRC 1NCARG "OCTOBER 1990" NCAR "NCAR GRAPHICS"
 .de sf          \"start constant spacing
@@ -22,7 +22,7 @@ ncargsrc \- to retrieve NCAR Graphics source.
 .sp 1
 \fIncargsrc\fP is a script that allows the user to retrieve NCAR Graphics
 source files.  These files are copyrighted; redistribution is not permitted
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

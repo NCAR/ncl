@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_max_norm_tran_num.m,v 1.7 1998-02-04 05:12:38 haley Exp $
+.\"	$Id: ginq_max_norm_tran_num.m,v 1.8 1999-03-23 16:53:05 haley Exp $
 .\"
 .TH GINQ_MAX_NORM_TRAN_NUM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -34,7 +34,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br

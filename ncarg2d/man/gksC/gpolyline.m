@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolyline.m,v 1.8 1998-02-04 05:12:42 haley Exp $
+.\"	$Id: gpolyline.m,v 1.9 1999-03-23 16:53:08 haley Exp $
 .\"
 .TH GPOLYLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -42,7 +42,7 @@ User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document"
 .SH COPYRIGHT
-Copyright (C) 1987-1998
+Copyright (C) 1987-1999
 .br
 University Corporation for Atmospheric Research
 .br
