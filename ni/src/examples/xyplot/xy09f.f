@@ -1,5 +1,5 @@
 C     
-C      $Id: xy09f.f,v 1.3 1995-06-22 21:09:46 haley Exp $
+C      $Id: xy09f.f,v 1.4 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -26,6 +26,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 C
@@ -55,13 +56,14 @@ C
      +          0.5,0.0,1.0,
      +          0.6,0.2,0.2/
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -104,6 +106,15 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy09Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy09f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFCreate(xworkid,'xy09Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Initialize data for the XyPlot object.

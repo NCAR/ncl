@@ -1,5 +1,5 @@
 /*
-**      $Id: xy14c.c,v 1.4 1998-08-18 22:56:00 haley Exp $
+**      $Id: xy14c.c,v 1.5 2003-03-03 21:31:21 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -33,6 +33,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -69,7 +70,7 @@ main()
 /*
  * Default is to display output to an X workstation
  */
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the HLU library.
  */
@@ -108,6 +109,15 @@ main()
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./xy14c.ps");
         NhlCreate(&work_id,"xy14Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./xy14c.pdf");
+        NhlCreate(&work_id,"xy14Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
 /*

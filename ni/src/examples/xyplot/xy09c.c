@@ -1,5 +1,5 @@
 /*
-**      $Id: xy09c.c,v 1.2 1995-06-22 21:09:45 haley Exp $
+**      $Id: xy09c.c,v 1.3 2003-03-03 21:31:21 grubin Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -32,6 +32,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -54,7 +55,7 @@ main()
     float   theta;
     float   cmap[NCOLORS][3];
     char plot_name[8];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the HLU library and set up resource template
  */
@@ -109,6 +110,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy09c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy09Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy09c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&xworkid,"xy09Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

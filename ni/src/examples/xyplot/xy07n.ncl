@@ -1,5 +1,5 @@
 ;
-;      $Id: xy07n.ncl,v 1.4 1998-04-15 21:40:48 ethan Exp $
+;      $Id: xy07n.ncl,v 1.5 2003-03-03 21:31:21 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,6 +90,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
@@ -127,6 +128,16 @@ else
         "wkPSFileName" : "xy07n.ps"
         "wkColorMap" : cmap
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        xworkid = create "xy07Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "xy07n.pdf"
+          "wkColorMap" : cmap
+        end create
+      end if
     end if
   end if
 end if

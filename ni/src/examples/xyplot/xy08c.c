@@ -1,5 +1,5 @@
 /*
-**      $Id: xy08c.c,v 1.4 1995-06-22 21:09:42 haley Exp $
+**      $Id: xy08c.c,v 1.5 2003-03-03 21:31:21 grubin Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
 #include <ncarg/hlu/TickMark.h>
@@ -56,7 +57,7 @@ main()
     float   cmap[NCOLORS][3];
     FILE    *fp;
 
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Fill the data arrays.
  */
@@ -134,6 +135,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy08c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,clen);
         NhlCreate(&xworkid,"xy08Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy08c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,clen);
+        NhlCreate(&xworkid,"xy08Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

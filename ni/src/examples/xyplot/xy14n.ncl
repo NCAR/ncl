@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.8 1998-08-18 22:56:01 haley Exp $
+;      $Id: xy14n.ncl,v 1.9 2003-03-03 21:31:21 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -58,6 +58,7 @@ tr_data = (/                                                     \
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -82,6 +83,15 @@ else
       xworkid = create "simple" psWorkstationClass defaultapp
         "wkPSFileName" : "xy14n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        xworkid = create "simple" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "xy14n.pdf"
+        end create
+      end if
     end if
   end if
 end if

@@ -1,5 +1,5 @@
 C
-C      $Id: xy15f.f,v 1.2 1998-11-24 17:06:26 haley Exp $
+C      $Id: xy15f.f,v 1.3 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -32,6 +32,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -48,13 +49,14 @@ C
       integer   am2, am3, am4
       integer   rlist, i
       real      theta
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize data for the XyPlot object.
 C
@@ -104,6 +106,14 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./xy15f.ps',ierr)
          call NhlFCreate(xworkid,'xy15Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy15f.pdf',ierr)
+         call NhlFCreate(xworkid,'xy15Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Define 4 separate CoordArrays objects - one for each XYPlot. 

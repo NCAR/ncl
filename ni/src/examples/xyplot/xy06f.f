@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.11 1997-05-22 17:07:24 haley Exp $
+C      $Id: xy06f.f,v 1.12 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -38,6 +38,7 @@ C
       external NhlFAppClass 
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -101,13 +102,14 @@ C
      +          0.75,0.00,0.75,
      +          1.00,1.00,0.00/
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -156,6 +158,16 @@ C
      +        ierr)
          call NhlFCreate(xworkid,'xy06Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy06f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(xworkid,'xy06Work',
+     +        NhlFPDfWorkstationClass,0,rlist,ierr)
       endif
 C
 C We need to initialize a non-constant dummy array for our Data

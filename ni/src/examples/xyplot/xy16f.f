@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.4 1998-10-27 19:05:23 haley Exp $
+C      $Id: xy16f.f,v 1.5 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -47,6 +47,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
@@ -83,10 +84,11 @@ C
 C Indicate whether we want output to go to NCGM, X11 window or
 C PS file.
 C
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Create Application object.
 C
@@ -129,6 +131,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./xy16f.ps',ierr)
          call NhlFCreate(xworkid,'xy16Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./xy16f.pdf',ierr)
+         call NhlFCreate(xworkid,'xy16Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t

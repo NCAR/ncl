@@ -1,5 +1,5 @@
 /*
- *      $Id: xy16c.c,v 1.3 1998-10-27 19:05:23 haley Exp $
+ *      $Id: xy16c.c,v 1.4 2003-03-03 21:31:21 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -52,6 +52,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 #include <ncarg/hlu/Title.h>
@@ -92,7 +93,7 @@ main()
  * Indicate whether we want output to go to NCGM, X11 window or
  * PS file.
  */
-    int     NCGM=0, X11=1, PS=0;
+    int     NCGM=0, X11=1, PS=0, PDF=0;
 
     strcpy(filename,"xy.asc");
 /*
@@ -141,6 +142,14 @@ main()
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPSFileName,"./xy16c.ps");
       NhlCreate(&xworkid,"xy16Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkPDFFileName,"./xy16c.pdf");
+      NhlCreate(&xworkid,"xy16Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
     }
 /*
  *  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t

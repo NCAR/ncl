@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.14 1995-06-22 21:09:26 haley Exp $
+**      $Id: xy03c.c,v 1.15 2003-03-03 21:31:21 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -36,6 +36,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -51,7 +52,7 @@ main()
     int     i, rlist, len[2];
     float   xdra[NPTS],ydra[NPTS], theta;
     float   cmap[4][3];
-    int     NCGM=0, X11=1, PS=0;
+    int     NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize some data for the XyPlot object.
  */
@@ -112,6 +113,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy03c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy03Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy03c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&xworkid,"xy03Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

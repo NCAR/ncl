@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.9 1995-06-22 21:09:36 haley Exp $
+**      $Id: xy06c.c,v 1.10 2003-03-03 21:31:21 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -45,6 +45,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 #include <netcdf.h>
@@ -98,7 +99,7 @@ main()
     char    filename[256], station_name[20], recname[50];
     const char *dir = _NGGetNCARGEnv("data");
 
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Declare 2-d arrays to hold data values.
  */
@@ -162,6 +163,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy06c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&xworkid,"xy06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy06c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
+        NhlCreate(&xworkid,"xy06Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

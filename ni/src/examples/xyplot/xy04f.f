@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.15 1998-11-24 16:21:20 haley Exp $
+C      $Id: xy04f.f,v 1.16 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -33,6 +33,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 C
@@ -51,13 +52,14 @@ C
       character*6 cmap(NCOLORS)
       data cmap/"black","white","red","green","blue","yellow"/
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize data for the XyPlot object.
 C
@@ -109,6 +111,15 @@ C
          call NhlFRLSetStringArray(rlist,'wkColorMap',cmap,NCOLORS,ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy04f.pdf',ierr)
+         call NhlFRLSetStringArray(rlist,'wkColorMap',cmap,NCOLORS,ierr)
+         call NhlFCreate(xworkid,'xy04Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Define the data object.  The id for this object will later be used

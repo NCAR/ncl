@@ -1,5 +1,5 @@
 C
-C      $Id: xy08f.f,v 1.3 1995-06-22 21:09:43 haley Exp $
+C      $Id: xy08f.f,v 1.4 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -30,6 +30,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
@@ -64,13 +65,14 @@ C
      +          0.00,0.00,0.00,
      +          0.00,0.00,1.00/
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Fill the data arrays.
 C
@@ -133,6 +135,15 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy08f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
+         call NhlFCreate(xworkid,'xy08Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create NCURVE CoordArray objects which define the data for the XyPlot

@@ -1,5 +1,5 @@
 C
-C      $Id: xy05f.f,v 1.12 1995-06-22 21:09:34 haley Exp $
+C      $Id: xy05f.f,v 1.13 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -32,6 +32,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
@@ -63,13 +64,14 @@ C
      +          1.00,0.83,0.00,
      +          1.00,1.00,0.00/
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template
 C
@@ -107,13 +109,22 @@ C
      +                0,rlist,ierr)
       else if (PS.eq.1) then
 C
-C Create an NCGM workstation.
+C Create an PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName','./xy05f.ps',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy05Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create an PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy05f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFCreate(xworkid,'xy05Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Initialize data.

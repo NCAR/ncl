@@ -1,5 +1,5 @@
 /*
-**      $Id: xy10c.c,v 1.3 1995-06-22 21:09:48 haley Exp $
+**      $Id: xy10c.c,v 1.4 2003-03-03 21:31:21 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -59,7 +60,7 @@ main()
     char    filename[256], recname[50];
     const   char *dir = _NGGetNCARGEnv("data");
 
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -100,6 +101,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy10c.ps");
         NhlCreate(&xworkid,"xy10Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy10c.pdf");
+        NhlCreate(&xworkid,"xy10Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

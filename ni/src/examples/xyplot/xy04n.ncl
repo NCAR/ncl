@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.15 1998-10-27 17:36:36 haley Exp $
+;      $Id: xy04n.ncl,v 1.16 2003-03-03 21:31:21 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -76,6 +76,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -103,6 +104,16 @@ else
         "wkPSFileName" : "xy04n.ps"
         "wkColorMap" : cmap
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        xworkid = create "xy04Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "xy04n.pdf"
+          "wkColorMap" : cmap
+        end create
+      end if
     end if
   end if
 end if

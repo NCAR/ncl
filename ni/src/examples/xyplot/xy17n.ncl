@@ -73,6 +73,7 @@ y = (/u, v, (t - 273.15) * 9.0 / 5.0 + 32.0/)
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -97,6 +98,15 @@ else
       wks = create "xy17Work" psWorkstationClass defaultapp
     "wkPSFileName" : "xy17n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Open PDF workstation.
+;
+        wks = create "xy17Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "xy17n.pdf"
+        end create
+      end if
     end if
   end if
 end if

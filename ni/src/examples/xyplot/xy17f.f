@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.6 1998-11-24 17:06:27 haley Exp $
+C      $Id: xy17f.f,v 1.7 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -25,13 +25,14 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 
       parameter (ncurve=3, npts=129) 
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       integer i, rlist, wks, appid, field1, field2, field3
       integer xy1, xy2, xy3, grlist
@@ -57,6 +58,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C  Read ASCII file xy.asc
 C
@@ -133,6 +135,16 @@ C
          call NhlFRLSetString (rlist, 'wkPSFileName', 
      +                         'xy17f.ps', ierr)
          call NhlFCreate (wks, 'xy17Work', NhlFPSWorkstationClass, 
+     +                    0, rlist, ierr)
+C
+C  Open PDF workstation. 
+C
+
+      else if (PDF .eq. 1) then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkPDFFileName', 
+     +                         'xy17f.pdf', ierr)
+         call NhlFCreate (wks, 'xy17Work', NhlFPDFWorkstationClass, 
      +                    0, rlist, ierr)
       endif
 

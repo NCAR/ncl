@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.13 1998-10-27 19:05:22 haley Exp $
+**      $Id: xy04c.c,v 1.14 2003-03-03 21:31:21 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -58,7 +59,7 @@ main()
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j, len[2];
     float   theta;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize data for the XyPlot object.
  */
@@ -111,6 +112,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy04c.ps");
         NhlRLSetStringArray(rlist,NhlNwkColorMap,cmap,NCOLORS);
         NhlCreate(&xworkid,"xy04Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./xy04c.pdf");
+        NhlRLSetStringArray(rlist,NhlNwkColorMap,cmap,NCOLORS);
+        NhlCreate(&xworkid,"xy04Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

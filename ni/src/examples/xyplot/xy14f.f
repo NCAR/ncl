@@ -1,5 +1,5 @@
 C
-C     $Id: xy14f.f,v 1.3 1998-11-24 17:06:26 haley Exp $
+C     $Id: xy14f.f,v 1.4 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -27,6 +27,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -60,13 +61,14 @@ C
       real t_mean, std_dev, mm2inch
       data mm2inch/0.03937/
       integer appid, xworkid, plotid, dataid
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library.
 C
@@ -104,6 +106,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./xy14f.ps',ierr)
          call NhlFCreate(xworkid,'xy14Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./xy14f.pdf',ierr)
+         call NhlFCreate(xworkid,'xy14Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Create X-axis values and convert data to Fahrenheit.

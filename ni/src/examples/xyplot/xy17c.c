@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.6 1998-10-27 19:05:24 haley Exp $
+ *      $Id: xy17c.c,v 1.7 2003-03-03 21:31:21 grubin Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -43,7 +44,7 @@
 
 void main ()
 {
-   int NCGM=0, X11=1, PS=0;
+   int NCGM=0, X11=1, PS=0, PDF=0;
    int i=0, rlist, wks, appid, field1, field2, field3, xy1, xy2, xy3;
    int grlist, datadepid[1];
    int *dspec = datadepid;
@@ -137,6 +138,17 @@ void main ()
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkPSFileName, "xy17c.ps");
       NhlCreate (&wks, "xy17Work", NhlpsWorkstationClass, 0, rlist);
+   }
+   else
+
+/*
+ *  Open PDF workstation. 
+ */
+
+   if (PDF == 1) {
+      NhlRLClear (rlist);
+      NhlRLSetString (rlist, NhlNwkPDFFileName, "xy17c.pdf");
+      NhlCreate (&wks, "xy17Work", NhlpdfWorkstationClass, 0, rlist);
    }
 
 /*

@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.8 1997-07-28 21:51:43 haley Exp $
+C      $Id: xy10f.f,v 1.9 2003-03-03 21:31:21 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -23,6 +23,7 @@ C
       external NhlFAppClass 
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFMapPlotClass
@@ -50,13 +51,14 @@ C
       integer ndims, nvars, ngatts, rec_len
       integer start(1), count(1)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -96,6 +98,14 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./xy10f.ps',ierr)
          call NhlFCreate(xworkid,'xy10Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./xy10f.pdf',ierr)
+         call NhlFCreate(xworkid,'xy10Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Open the netCDF file.
