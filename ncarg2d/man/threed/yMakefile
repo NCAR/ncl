@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.7 1994-03-03 18:00:34 haley Exp $
+#	$Id: yMakefile,v 1.8 1994-04-08 22:24:38 haley Exp $
 #
 
 MAN =	curve3 fence3 frst3 line3 perim3 point3 psym3 pwrz pwrzt set3 threed \
 	tick3 tick43 vect3
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

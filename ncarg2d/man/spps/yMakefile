@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-03 18:00:21 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 22:24:26 haley Exp $
 #
 
 MAN =	cfux cfuy clsgks cmfx cmfy cmux cmuy cpfx cpfy cpux cpuy cufx cufy \
@@ -9,7 +9,7 @@ MAN =	cfux cfuy clsgks cmfx cmfy cmux cmuy cpfx cpfy cpux cpuy cufx cufy \
 	spps_params vector wtstr
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
