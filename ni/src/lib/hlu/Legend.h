@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.16 1995-04-07 10:42:37 boote Exp $
+ *      $Id: Legend.h,v 1.17 1995-06-05 19:08:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -136,7 +136,7 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgTitleOn			"lgTitleOn"
 #define NhlNlgTitleString		"lgTitleString"
 #define NhlNlgTitlePosition		"lgTitlePosition"
-#define NhlNlgMaxTitleExtentF		"lgMaxTitleExtentF"
+#define NhlNlgTitleExtentF		"lgTitleExtentF"
 #define NhlNlgTitleAngleF		"lgTitleAngleF"
 #define NhlNlgTitleDirection		"lgTitleDirection"
 #define NhlNlgTitleFont			"lgTitleFont"
@@ -255,7 +255,7 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgTitleOn			"LgTitleOn"
 #define NhlClgTitleString		"LgTitleString"
 #define NhlClgTitlePosition		"LgTitlePosition"
-#define NhlClgMaxTitleExtentF		"LgMaxTitleExtentF"
+#define NhlClgTitleExtentF		"LgTitleExtentF"
 #define NhlClgTitleAngleF		"LgTitleAngleF"
 #define NhlClgTitleDirection		"LgTitleDirection"
 #define NhlClgTitleJust			"LgTitleJust"

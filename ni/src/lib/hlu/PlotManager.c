@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.11 1995-05-18 20:05:43 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.12 1995-06-05 19:09:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4031,7 +4031,7 @@ ManageLabelBar
  */
 	bbox.set = 0;
 	zone = anno_rec->zone < 2 ? anno_rec->zone : anno_rec->zone - 1;
-	ret = InternalGetBB((NhlLayer)ovnew,&bbox,zone,
+	subret = InternalGetBB((NhlLayer)ovnew,&bbox,zone,
 			    entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
@@ -4151,12 +4151,14 @@ ManageLabelBar
 			NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->lbar_x);
 		if (ovp->lbar_y != oovp->lbar_y)
 			NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->lbar_y);
+
 		if (ovp->lbar_width != oovp->lbar_width)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpWidthF,ovp->lbar_width);
 		if (ovp->lbar_height != oovp->lbar_height)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovp->lbar_height);
+
 		if (ovp->real_lbar_just != oovp->real_lbar_just)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlbJustification,ovp->real_lbar_just);
@@ -4172,8 +4174,16 @@ ManageLabelBar
 			return(NhlFATAL);
 		}
 	}
+/*
+ * Need to retrieve the height and width because the LabelBar might 
+ * change these values, particularly if auto_manage is set false.
+ */
+	subret = NhlVAGetValues(ovp->labelbar->base.id,
+				NhlNvpWidthF,&ovp->lbar_width,
+				NhlNvpHeightF,&ovp->lbar_height,
+				NULL);
 
-	return ret;
+	return MIN(ret,subret);
 }
 
 
@@ -4416,8 +4426,16 @@ ManageLegend
 			return(NhlFATAL);
 		}
 	}
+/*
+ * Need to retrieve the height and width because the LabelBar might 
+ * change these values, particularly if auto_manage is set false.
+ */
+	subret = NhlVAGetValues(ovp->legend->base.id,
+				NhlNvpWidthF,&ovp->lgnd_width,
+				NhlNvpHeightF,&ovp->lgnd_height,
+				NULL);
 
-	return ret;
+	return MIN(ret,subret);
 }
 
 

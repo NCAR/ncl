@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.15 1995-05-23 01:12:15 dbrown Exp $
+ *      $Id: LegendP.h,v 1.16 1995-06-05 19:08:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,9 +42,13 @@
 #define NhlLG_DEF_BAR_MINOR	0.33
 #define NhlLg_DEF_LABEL_MINOR	0.33
 #define NhlLG_DEF_CHAR_HEIGHT	0.04
-#define NhlLG_DEF_MAX_TITLE_EXT	0.15
+#define NhlLG_DEF_TITLE_EXT	0.15
 #define NhlLG_DEF_TITLE_OFF	0.03
 
+typedef struct _lgLocInfo {
+	float l,r,b,t;
+	float lxtr,rxtr,bxtr,txtr;
+} lgLocInfo;
 
 typedef struct _NhlLegendLayerPart {
 
@@ -56,7 +60,7 @@ typedef struct _NhlLegendLayerPart {
 	float		box_major_ext;
 	float		box_minor_ext;
 	int		item_count;
-	int     	item_placement;
+	NhllgItemPlacementMode	item_placement;
 
 	NhlBoolean	auto_manage;
 	float		label_angle_add;
@@ -115,8 +119,7 @@ typedef struct _NhlLegendLayerPart {
 	int		labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;
-	int     	label_alignment;  /* 0 - Item Centers, 1 - Above Items,
-				       		2 - Below Items */
+	NhllgLabelAlignmentMode	label_alignment; 
 	int		label_dir;
 	float		label_angle;
 	NhlFont		label_font;
@@ -130,7 +133,7 @@ typedef struct _NhlLegendLayerPart {
 	NhlTextDirection label_direction;
 	int     	label_stride;
 	
-	float		max_title_ext;
+	float		title_ext;
 	char		*title_string;
 	int		title_on;
 	NhlPosition 	title_pos;
@@ -171,26 +174,29 @@ typedef struct _NhlLegendLayerPart {
 	float  		lg_y;
 	float		lg_width;
 	float		lg_height;
-	NhlBoundingBox	perim;		/* base perimeter */
+	lgLocInfo	perim;
 	NhlBoundingBox  adj_perim;	/* perimeter minus margins */
-	NhlBoundingBox	real_perim;	/* perimeter after accounting for
-					   excess label and title extent */
+	float		adj_width;	/* width minus margins  */
+	float		adj_height;	/* height minus margins */
+	lgLocInfo	title;
+	lgLocInfo	labels;
+	NhlBoundingBox	bar;	         /* preliminary bar boundary */
+	NhlBoundingBox	adj_bar;       /* after external label, label angle */
+	NhlCoord	box_size;        /* size of box assuming uniform */
+	NhlCoord        adj_box_size;    /* size of box after adjustments */
+	float		title_off_ndc;
+	float		label_off_ndc;
+	float		small_axis;
 
 	int		label_draw_count;
 	int		max_label_draw_count;
 	int		max_label_stride_count;
 
-	NhlBoundingBox	bar;	         /* preliminary bar boundary */
-	NhlBoundingBox	adj_bar;       /* after external label, label angle */
-	NhlCoord	box_size;        /* size of box assuming uniform */
-	NhlCoord        adj_box_size;    /* size of box after adjustments */
 	float		*item_locs;      /* x or y depending on orientation */
-	NhlBoundingBox	labels;          /* overall boundary of label area */
 	int		labels_id;       /* multitext id */
 	float		const_pos;       /* constant position for labels */
 	float		*label_locs;     /* locations for multitext */
 	char		**stride_labels; /* subset of label_strings */
-	NhlBoundingBox	title;
 	int		title_id;
 	float		title_x;
 	float		title_y;

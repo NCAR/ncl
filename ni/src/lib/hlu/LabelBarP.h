@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.9 1995-04-27 16:58:30 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.10 1995-06-05 19:08:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,18 +25,38 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/LabelBar.h>
 
+/* defines */
+
+#define NhlLB_MAX_BOXES   	256
+#define NhlLB_MAX_LBL_STRINGS  	(NhlLB_MAX_BOXES + 1)
+#define NhlLB_DEF_BOX_COUNT   	16
+#define NhlLB_DEF_COLOR   	NhlFOREGROUND
+#define NhlLB_DEF_PATTERN 	1
+#define NhlLB_DEF_VALUE   	0.0
+#define NhlLB_DEF_STRING  	"Label_"
+#define NhlLB_DEF_BAR_MAJOR	1.0
+#define NhlLB_DEF_BAR_MINOR	0.33
+#define NhlLb_DEF_LABEL_MINOR	0.33
+#define NhlLB_DEF_CHAR_HEIGHT	0.04
+#define NhlLB_DEF_TITLE_EXT	0.15
+#define NhlLB_DEF_TITLE_OFF	0.03
+
+typedef struct _lbLocInfo {
+      float l,r,b,t;
+      float lxtr,rxtr,bxtr,txtr;
+} lbLocInfo;
+
 typedef struct _NhlLabelBarLayerPart {
 
 	/* public resource fields */
 
-	char	*title_string;
 	NhlBoolean	labelbar_on;
 	NhlOrientation	orient;
 	NhlJustification just;
 	float	box_major_ext;
 	float	box_minor_ext;
 	int	box_count;
-	int     box_sizing;
+	NhllbBoxSizingMode	box_sizing;
 
 	NhlBoolean	auto_manage;
 	float	label_angle_add;
@@ -60,8 +80,7 @@ typedef struct _NhlLabelBarLayerPart {
 	int	labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;
-	int     label_alignment;    /* 0 - Box Centers, 1 - Interior_Edges,
-				       2 - External_Edges */
+	NhllbLabelAlignmentMode	label_alignment;    
 	int	label_dir;
 	float	label_angle;
 	NhlFont	label_font;
@@ -75,7 +94,8 @@ typedef struct _NhlLabelBarLayerPart {
 	NhlTextDirection label_direction;
 	int     label_stride;
 	
-	float	max_title_ext;
+	float	title_ext;
+	char	*title_string;
 	int	title_on;
 	NhlPosition title_pos;
 	NhlJustification  title_just;
@@ -115,27 +135,30 @@ typedef struct _NhlLabelBarLayerPart {
 	float  		lb_y;
 	float		lb_width;
 	float		lb_height;
-	NhlBoundingBox	perim;		/* base perimeter */
+	lbLocInfo	perim;
 	NhlBoundingBox  adj_perim;	/* perimeter minus margins */
-	NhlBoundingBox	real_perim;	/* perimeter after accounting for
-					   excess label and title extent */
+	float		adj_width;	/* width minus margins  */
+	float		adj_height;	/* height minus margins */
+	lbLocInfo	title;
+	lbLocInfo	labels;
+	NhlBoundingBox	bar;	         /* preliminary bar boundary */
+	NhlBoundingBox	adj_bar;       /* after external label, label angle */
+	NhlCoord	box_size;        /* size of box assuming uniform */
+	NhlCoord        adj_box_size;    /* size of box after adjustments */
+	float		title_off_ndc;
+	float		label_off_ndc;
+	float		small_axis;
 
 	int		current_label_count;
 	int		label_draw_count;
 	int		max_label_draw_count;
 	int		max_label_stride_count;
 
-	NhlBoundingBox	bar;	         /* preliminary bar boundary */
-	NhlBoundingBox	adj_bar;        /* after external label, label angle */
-	NhlCoord	box_size;        /* size of box assuming uniform */
-	NhlCoord        adj_box_size;    /* size of box after adjustments */
 	float		*box_locs;       /* x or y depending on orientation */
-	NhlBoundingBox	labels;          /* overall boundary of label area */
 	int		labels_id;       /* multitext id */
 	float		const_pos;       /* constant position for labels */
 	float		*label_locs;     /* locations for multitext */
 	char		**stride_labels; /* subset of label_strings */
-	NhlBoundingBox	title;
 	int		title_id;
 	float		title_x;
 	float		title_y;

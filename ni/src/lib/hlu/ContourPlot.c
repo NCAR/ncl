@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.16 1995-05-23 01:12:00 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.17 1995-06-05 19:08:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,10 +36,10 @@
  * Description:	This function can be used to determine if a resource has
  *		been set at initialize time either in the Create call or
  *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_resource_set')
+ *		variable (by convention '<var_name>_set')
  *		MUST directly proceed the declaration of the subject
  *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the resource_set variable
+ *		NhlResource struct for the <var_name>_set variable
  *		must directly preceed the Resource of interest in the 
  *		Resource initialization list of this module.
  *
@@ -157,7 +157,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
  	{NhlNcnSmoothingTensionF,NhlCcnSmoothingTensionF,NhlTFloat,
 		 sizeof(float),Oset(smoothing_tension),
-		 NhlTString,_NhlUSET("2.5"),0,NULL},
+		 NhlTString,_NhlUSET("-2.5"),0,NULL},
  	{NhlNcnSmoothingDistanceF,NhlCcnSmoothingDistanceF,NhlTFloat,
 		 sizeof(float),Oset(smoothing_distance),
 		 NhlTString,_NhlUSET("0.01"),0,NULL},
@@ -3802,11 +3802,12 @@ static NhlErrorTypes cnDraw
 	c_cpseti("NVS",0);		/* no vertical strips */
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
+
         if (cnp->check_point_distance)
                 c_cpsetr("PIT",cnp->max_point_distance);
         else
                 c_cpsetr("PIT",(float)0.0);
-
+	
         if (cnp->smoothing_on) {
                 c_cpsetr("T2D",cnp->smoothing_tension);
                 c_cpsetr("SSL",cnp->smoothing_distance);
@@ -4004,9 +4005,9 @@ static NhlErrorTypes AddDataBoundToAreamap
 #if 0
 	gset_linewidth(4.0);
 	gset_line_colr_ind(30);
-#endif
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
+#endif
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -9626,10 +9627,13 @@ static NhlErrorTypes ChooseSpacingLin
 	int	max_ticks;
 #endif
 {
-	double	table[10] = { 1.0,2.0,2.5,4.0,5.0,10.0,20.0,25.0,40.0,50.0 };
+	double	table[] = 
+	{ 1.0,2.0,2.5,4.0,5.0,
+		  10.0,20.0,25.0,40.0,50.0,
+		  100.0,200.0,250.0,400.0,500.0 };
 	double	d,u,t,am1,ax1;
 	double	am2=0.0,ax2=0.0;
-	int	npts = 10;
+	int	npts = 15;
 	int	i;
 	char	*e_text;
 

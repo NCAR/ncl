@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.38 1995-05-26 16:15:58 haley Exp $
+ *      $Id: MapPlot.c,v 1.39 1995-06-05 19:09:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2351,23 +2351,29 @@ static NhlErrorTypes mpDraw
 		c_mpseti("LS",ls);
  		c_mpseti("C3",mpp->labels.gks_color);
 		c_mpseti("LA",1);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		do_labels = True;
 	}
 	else {
 		c_mpseti("LA",0);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 	
 	if (mpp->perim.on && mpp->perim.order == order) {
 		c_mpseti("C1",mpp->perim.gks_color);
 		c_mpseti("PE",1);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		do_perim = True;
 	}
 	else {
 		c_mpseti("PE",0);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 	if (do_labels || do_perim)  {
 		c_mpsetc("OU","NO");
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		c_maplbl();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 
 	if (mp->view.use_segments) {
@@ -2418,8 +2424,11 @@ static NhlErrorTypes mpOutline
 	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
 
 	c_mpseti("C5",mpp->geophysical.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C6",mpp->us_state.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C7",mpp->national.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	if (mpp->global_outline_mode != mpNONE) {
 		subret = mpSetUpDrawIds(mpp,mpDRAWOUTLINE,entry_name);
@@ -2440,6 +2449,7 @@ static NhlErrorTypes mpOutline
 		}
 #endif
 		c_maplot();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 
         if (mpp->usstates_outline_mode != mpNOSET) {
@@ -2449,6 +2459,7 @@ static NhlErrorTypes mpOutline
 		printf("using US for outlines\n");
 #endif
 		c_maplot();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 
 	return ret;
@@ -2582,7 +2593,9 @@ static NhlErrorTypes mpGrid
 	int ll,status;
 
 	c_mpseti("C2",mpp->grid.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C4", mpp->limb.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	mpp->relative_grid_spacing = False;
 
@@ -2591,6 +2604,7 @@ static NhlErrorTypes mpGrid
 	}
 	else {
 		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		avlat = (wby + wuy) / 2.0;
 		avlon = (wrx + wlx) / 2.0;
 		_NhlWinToData(mp->trans.trans_obj,&avlon,&avlat,
@@ -2602,9 +2616,11 @@ static NhlErrorTypes mpGrid
 		spacing = spacing < 0 ? -spacing : spacing;
 	}
 	c_mpsetr("GR",spacing);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	if (mpp->grid_mask_mode == NhlMASKNONE) {
 		c_mapgrd();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		return ret;
 	}
 	if (mpp->global_fill_mode != mpNONE) {
@@ -2723,6 +2739,7 @@ static NhlErrorTypes mpSetUpAreamap
 	}
 	if (! inited) {
 		c_mpseti("VS",0);
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		subret = _NhlArinam(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2812,6 +2829,7 @@ static NhlErrorTypes mpSetUpDrawIds
 	switch (gmode) {
 	case mpGEO:
 		c_mpsetc("OU","CO");
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		Outline_Set = mpCO;
 		id_ix = 0;
 		cix_ix = 0;
@@ -2819,11 +2837,13 @@ static NhlErrorTypes mpSetUpDrawIds
 	case mpNAT:
 		if (smode > mpNOSET) {
 			c_mpsetc("OU","PS");
+			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPS;
 			id_ix = 2;
 		}
 		else {
 			c_mpsetc("OU","PO");
+			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPO;
 			id_ix = 1;
 		}
@@ -2836,11 +2856,13 @@ static NhlErrorTypes mpSetUpDrawIds
 	case mpIMPLIED_NAT:
 		if (smode > mpNOSET) {
 			c_mpsetc("OU","PS");
+			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPS;
 			id_ix = 2;
 		}
 		else {
 			c_mpsetc("OU","PO");
+			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPO;
 			id_ix = 1;
 		}
@@ -3031,6 +3053,7 @@ static NhlErrorTypes mpSetUpStateDrawIds
 	}
 
 	c_mpsetc("OU","US");
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	Outline_Set = mpUS;
 	offset = Id_Offset[2];
 	if (gmode == mpNONE || US_Border == 2)
@@ -5311,6 +5334,7 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	float	p0,p1,jcrt;
 	int	slen;
 	char	buffer[128];
+	char	*entry_name = "mpDraw";
 
 	if (Mpp == NULL) {
 		_NHLCALLF(mapusr,MAPUSR)(iprt);
@@ -5355,20 +5379,26 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	}
 		
  	c_pcseti("CC",-1);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_pcseti("OC",-1);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	gset_linewidth(thickness);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	dpat %= Mpp->dash_table->num_elements;
 	sp = (NhlString *) Mpp->dash_table->data;
 	slen = strlen(sp[dpat]);
 	p0 =  (float) c_kfpy(0.0);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	p1 = dseglen;
 	p1 = (float) c_kfpy(p1);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	jcrt = (int) ((p1 - p0) / slen + 0.5);
 	jcrt = jcrt > 1 ? jcrt : 1;
 	strcpy(buffer,sp[dpat]);
 	
 	c_dashdc(buffer,jcrt,4);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 }
 
@@ -5467,13 +5497,11 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 	default:
 		return;
 	}
-	
-#if 0
+#if 0	
 
 	printf("nseg %d idls %d, idrs %d, npts %d\n", 
 	       *nseg,*idls,*idrs,*npts);
 #endif
-
 	return;
 }
 

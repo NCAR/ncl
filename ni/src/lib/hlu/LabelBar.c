@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.38 1995-05-23 01:12:04 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.39 1995-06-05 19:08:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -279,8 +279,8 @@ static NhlResource resources[] = {
 	 sizeof(NhlPosition), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
 	 NhlTImmediate,_NhlUSET((NhlPointer) NhlTOP),0,NULL},
-{NhlNlbMaxTitleExtentF, NhlClbMaxTitleExtentF, NhlTFloat,
-	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.max_title_ext),
+{NhlNlbTitleExtentF, NhlClbTitleExtentF, NhlTFloat,
+	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_ext),
 	 NhlTString,_NhlUSET("0.15"),0,NULL},
 {NhlNlbTitleAngleF, NhlClbTitleAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_angle),
@@ -462,6 +462,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    SetLabelBarGeometry(
 #if	NhlNeedProto
 	NhlLayer	new,
+	NhlLayer	old,
 	NhlBoolean	init,
 	_NhlArgList	args,
 	int		num_args
@@ -706,11 +707,11 @@ static NhlErrorTypes    LabelBarInitialize
 	lb_p->lb_width = tnew->view.width;
 	lb_p->lb_height = tnew->view.height;
 
-	lb_p->perim.l = lb_p->lb_x;
-	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
-	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
-	lb_p->perim.t = lb_p->lb_y;
 
+	lb_p->perim.l = lb_p->perim.lxtr = lb_p->lb_x;
+	lb_p->perim.r = lb_p->perim.rxtr = lb_p->lb_x + lb_p->lb_width;
+	lb_p->perim.b = lb_p->perim.bxtr = lb_p->lb_y - lb_p->lb_height;
+	lb_p->perim.t = lb_p->perim.txtr = lb_p->lb_y;
 
 /*
  * Set up array resources
@@ -723,33 +724,27 @@ static NhlErrorTypes    LabelBarInitialize
  * Calculate labelbar geometry
  */
 
-	ret1 = SetLabelBarGeometry(new,True,args,num_args);
-	ret = MIN(ret1,ret);
-/*
- * Set up the title using a text object
- */
-
-	ret1 = SetTitle(new,req,1,args,num_args);
+	ret1 = SetLabelBarGeometry(new,req,True,args,num_args);
 	ret = MIN(ret1,ret);
 
 /*
  * Set the box locations
  */
-	ret1 = SetBoxLocations(new,req,1,args,num_args);
+	ret1 = SetBoxLocations(new,req,True,args,num_args);
 	ret = MIN(ret1,ret);
 
 /*
  * Set up the labels using a multitext object
  */
 
-	ret1 = SetLabels(new,req,1,args,num_args);
+	ret1 = SetLabels(new,req,True,args,num_args);
 	ret = MIN(ret1,ret);
 
 /*
   Adjust the geometry
   */
 
-	ret1 = AdjustGeometry(new,req,1,args,num_args);
+	ret1 = AdjustGeometry(new,req,True,args,num_args);
 	ret = MIN(ret1,ret);
 	
 
@@ -801,6 +796,7 @@ static NhlErrorTypes LabelBarSetValues
 	char 			*e_text;
 	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
+	NhlBoolean	        do_scaling = False;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
 		tnew->view.use_segments = told->view.use_segments;
@@ -808,10 +804,20 @@ static NhlErrorTypes LabelBarSetValues
 		e_text = "%s: attempt to set create-only resource overridden";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
-	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) {
+		view_args++;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) {
+		view_args++;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) {
+		view_args++;
+		do_scaling = True;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) {
+		view_args++;
+		do_scaling = True;
+	}
 
 	if (num_args > view_args)
 		lb_p->new_draw_req = True;
@@ -822,16 +828,20 @@ static NhlErrorTypes LabelBarSetValues
 		ret = NhlWARNING;
 		lb_p->box_count = 1;
 	}
-
+		
 /*
  * Ensure that the label and title angles range is between -360 and 360
  */
 	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
 	lb_p->title_angle = fmod(lb_p->title_angle,360.0);
 
-	ret1 = ManageDynamicArrays(new,old,args,num_args);
-	ret = MIN(ret,ret1);
-
+/*
+ * if the title string is set, turn on the title unless it is simultaneously
+ * explicitly turned off.
+ */
+	if (_NhlArgIsSet(args,num_args,NhlNlbTitleString) &&
+	    !_NhlArgIsSet(args,num_args,NhlNlbTitleOn))
+		lb_p->title_on = True;
 /*
  * Adjust the title direction according to the position unless
  * it is explicitly set.
@@ -851,32 +861,11 @@ static NhlErrorTypes LabelBarSetValues
 		}
 	}
 
-	if (tnew->view.x != told->view.x
-	    || tnew->view.y != told->view.y) {
-
-		_NhlEvalTrans(tnew->view.trans_children,
-			      lb_p->lb_x,lb_p->lb_y,
-			      &lb_p->lb_x,&lb_p->lb_y);
-	}
-	if (tnew->view.width != told->view.width
-	    || tnew->view.height != told->view.height) {
-
+	if (do_scaling) {
 		
 		float tx, ty;
-		float ow = lb_p->lb_width;
-		float oh = lb_p->lb_height;
-
-		_NhlEvalTrans(tnew->view.trans_children,
-			      olb_p->lb_x + lb_p->lb_width, 
-			      olb_p->lb_y - lb_p->lb_height,
-			      &tx, &ty);
-
-		lb_p->lb_width  = tx - lb_p->lb_x;
-		lb_p->lb_height = lb_p->lb_y - ty;
-
-		tx = lb_p->lb_width / ow;
-		ty = lb_p->lb_height / oh;
-
+		tx = tnew->view.width / told->view.width;
+		ty = tnew->view.height / told->view.height;
 
 		if (! _NhlArgIsSet(args,num_args,NhlNlbLabelFontHeightF)) {
 
@@ -894,10 +883,20 @@ static NhlErrorTypes LabelBarSetValues
 		}
 	}
 
-	lb_p->perim.l = lb_p->lb_x;
-	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
-	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
-	lb_p->perim.t = lb_p->lb_y;
+	lb_p->lb_x = tnew->view.x;
+	lb_p->lb_y = tnew->view.y;
+	lb_p->lb_width = tnew->view.width;
+	lb_p->lb_height = tnew->view.height;
+		
+	lb_p->perim.l = lb_p->lb_x + (lb_p->perim.l - lb_p->perim.lxtr);
+	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width - 
+		(lb_p->perim.rxtr - lb_p->perim.r);
+	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height + 
+		(lb_p->perim.b - lb_p->perim.bxtr);
+	lb_p->perim.t = lb_p->lb_y - (lb_p->perim.txtr - lb_p->perim.t);
+
+	ret1 = ManageDynamicArrays(new,old,args,num_args);
+	ret = MIN(ret,ret1);
 
 /*
  * Return now if the labelbar is turned off
@@ -909,20 +908,18 @@ static NhlErrorTypes LabelBarSetValues
  * Calculate labelbar geometry
  */
 
-	ret1 = SetLabelBarGeometry(new,True,args,num_args);
-	ret = MIN(ret1,ret);
-	ret1 = SetTitle(new,old,0,args,num_args);
+	ret1 = SetLabelBarGeometry(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);
 /*
  * Set the box locations
  */
-	ret1 = SetBoxLocations(new,old,0,args,num_args);
+	ret1 = SetBoxLocations(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);
 
-	ret1 = SetLabels(new,old,0,args,num_args);
+	ret1 = SetLabels(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);
 
-	ret1 = AdjustGeometry(new,old,0,args,num_args);
+	ret1 = AdjustGeometry(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);
 		     
         return(MIN(ret,ret1));
@@ -1595,41 +1592,41 @@ static NhlErrorTypes    SetLabelBarGeometry
 #if	NhlNeedProto
 (
 	NhlLayer new, 
+	NhlLayer old,
 	NhlBoolean init,
  	_NhlArgList args,
 	int num_args
 )
 #else
-(new,init,args,num_args)
+(new,old,init,args,num_args)
 	NhlLayer	new;
+	NhlLayer	old;
 	NhlBoolean	init,
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
- 	NhlErrorTypes		ret = NhlNOERROR;
+ 	NhlErrorTypes		ret = NhlNOERROR, ret1 = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name;
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
 	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
-	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
-	float small_axis;
-	float title_off = 0.0, angle_adj = 0.0;
-	float angle, title_angle, tan_t;
+	float bar_ext,bar_room,title_ext;
 
 	entry_name = init ? Init_Name : SetValues_Name;
 
 /* Calculate the ndc margin from the fractional margin */
 
-	small_axis = MIN(lb_p->lb_width, lb_p->lb_height);
+	lb_p->small_axis = MIN(lb_p->perim.r - lb_p->perim.l, 
+			       lb_p->perim.t - lb_p->perim.b);
 
-	lb_p->adj_perim.l = lb_p->perim.l + lb_p->margin.l * small_axis;
-	lb_p->adj_perim.r = lb_p->perim.r - lb_p->margin.r * small_axis;
-	lb_p->adj_perim.b = lb_p->perim.b + lb_p->margin.b * small_axis;
-	lb_p->adj_perim.t = lb_p->perim.t - lb_p->margin.t * small_axis;
-	adj_perim_width = lb_p->adj_perim.r - lb_p->adj_perim.l;
-	adj_perim_height = lb_p->adj_perim.t - lb_p->adj_perim.b;
+	lb_p->adj_perim.l = lb_p->perim.l + lb_p->margin.l * lb_p->small_axis;
+	lb_p->adj_perim.r = lb_p->perim.r - lb_p->margin.r * lb_p->small_axis;
+	lb_p->adj_perim.b = lb_p->perim.b + lb_p->margin.b * lb_p->small_axis;
+	lb_p->adj_perim.t = lb_p->perim.t - lb_p->margin.t * lb_p->small_axis;
+	lb_p->adj_width = lb_p->adj_perim.r - lb_p->adj_perim.l;
+	lb_p->adj_height = lb_p->adj_perim.t - lb_p->adj_perim.b;
 
 /*
  * Check the box extent values; and issue a warning if required
@@ -1638,12 +1635,14 @@ static NhlErrorTypes    SetLabelBarGeometry
 		e_text = "%s: %s out of range, defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNlbBoxMajorExtentF);
+		ret = MIN(ret,NhlWARNING);
 		lb_p->box_major_ext = 1.0;
 	}
 	if (lb_p->box_minor_ext > 1.0 || lb_p->box_minor_ext < 0.0) {
 		e_text = "%s: %s out of range, defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNlbBoxMinorExtentF);
+		ret = MIN(ret,NhlWARNING);
 		lb_p->box_minor_ext = 0.33;
 	}
 /*
@@ -1651,67 +1650,142 @@ static NhlErrorTypes    SetLabelBarGeometry
  * limit; then locate the title
  */
 	if (lb_p->auto_manage && 
-	    lb_p->max_title_ext + lb_p->title_off > 0.5) {
-		/* need a NhlWARNING */
-		lb_p->max_title_ext = NhlLB_DEF_MAX_TITLE_EXT;
+	    lb_p->title_ext + lb_p->title_off > 0.5) {
+		e_text = "%s: sum of %s and %s are too large, defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,
+			  NhlNlbTitleExtentF,NhlNlbTitleOffsetF);
+		ret = MIN(ret,NhlWARNING);
+		lb_p->title_ext = NhlLB_DEF_TITLE_EXT;
 		lb_p->title_off = NhlLB_DEF_TITLE_OFF;
 	}
-	angle = (lb_p->title_angle < 0.0) ?
-		lb_p->title_angle + 360.0 : lb_p->title_angle;
-	title_angle = angle * DEGTORAD;
-	tan_t = fabs(sin(title_angle)) / 
-		     MAX(0.01, fabs(cos(title_angle)));
-		    
-	if (!lb_p->title_on)
+	if (!lb_p->title_on) {
 		title_loc = NO_TITLE;
+		lb_p->title_off_ndc = 0.0;
+	}
 	else if (lb_p->orient == NhlHORIZONTAL) {
 		if (lb_p->title_pos == NhlRIGHT ||
 		    lb_p->title_pos == NhlLEFT) {
 			title_loc = MAJOR_AXIS;
-			title_off = lb_p->title_off * adj_perim_width;
-			if (lb_p->title_direction == NhlACROSS)
-				angle_adj = adj_perim_height / tan_t;
-			else
-				angle_adj = adj_perim_height * tan_t;
-						
+			lb_p->title_off_ndc =
+				lb_p->title_off * lb_p->adj_width;
+			title_ext = lb_p->title_ext * lb_p->adj_width;
 		}
 		else {
 			title_loc = MINOR_AXIS;
-			title_off = lb_p->title_off * adj_perim_height;
-			if (lb_p->title_direction == NhlACROSS)
-				angle_adj = adj_perim_width * tan_t; 
-			else
-				angle_adj = adj_perim_width / tan_t;
+			lb_p->title_off_ndc =
+				lb_p->title_off * lb_p->adj_height;
+			title_ext = lb_p->title_ext * lb_p->adj_height;
 		}
 	}
 	else {
 		if (lb_p->title_pos == NhlRIGHT ||
 		    lb_p->title_pos == NhlLEFT) {
 			title_loc = MINOR_AXIS;
-			title_off = lb_p->title_off * adj_perim_width;
-			if (lb_p->title_direction == NhlACROSS)
-				angle_adj = adj_perim_height / tan_t;
-			else
-				angle_adj = adj_perim_height * tan_t;
+			lb_p->title_off_ndc =
+				lb_p->title_off * lb_p->adj_width;
+			title_ext = lb_p->title_ext * lb_p->adj_width;
 		}
 		else {
 			title_loc = MAJOR_AXIS;
-			title_off = lb_p->title_off * adj_perim_height;
-			if (lb_p->title_direction == NhlACROSS)
-				angle_adj = adj_perim_width * tan_t; 
-			else
-				angle_adj = adj_perim_width / tan_t;
+			lb_p->title_off_ndc =
+				lb_p->title_off * lb_p->adj_height;
+			title_ext = lb_p->title_ext * lb_p->adj_height;
 		}
 	}
-/*
- * If not in auto manage mode the title offset should make the label bar
- * grow. By setting it to 0.0 here, it will be added into the total size
- * in the AdjustGeometry routine.
- */
 
-	if (! lb_p->auto_manage) {
-		title_off = 0.0;
+	if (lb_p->orient == NhlHORIZONTAL) {
+		switch (title_loc) {
+
+		case NO_TITLE:
+			lb_p->title.l = lb_p->adj_perim.l;
+			lb_p->title.r = lb_p->adj_perim.r;
+			lb_p->title.b = lb_p->adj_perim.b;
+			lb_p->title.t = lb_p->adj_perim.t;
+
+			break;
+
+		case MAJOR_AXIS:
+			
+			lb_p->title.b = lb_p->adj_perim.b;
+			lb_p->title.t = lb_p->adj_perim.t;
+				
+			if (lb_p->title_pos == NhlLEFT) {
+				lb_p->title.l = lb_p->adj_perim.l;
+				lb_p->title.r = lb_p->title.l + title_ext;
+			}
+			else if (lb_p->title_pos == NhlRIGHT) {
+				lb_p->title.r = lb_p->adj_perim.r;
+				lb_p->title.l = lb_p->title.r - title_ext;
+			}
+			break;
+
+		case MINOR_AXIS:
+
+			lb_p->title.l = lb_p->adj_perim.l;
+			lb_p->title.r = lb_p->adj_perim.r;
+				
+			if (lb_p->title_pos == NhlBOTTOM) {
+				lb_p->title.b = lb_p->adj_perim.b;
+				lb_p->title.t = lb_p->title.b + title_ext;
+			}
+			else if (lb_p->title_pos == NhlTOP) {
+				lb_p->title.t = lb_p->adj_perim.t;
+				lb_p->title.b = lb_p->title.t - title_ext;
+			}
+			break;
+		default:
+			e_text = "%s: Invalid title location value";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
 	}
+	else { /* NhlVERTICAL */
+		switch (title_loc) {
+
+		case NO_TITLE:
+			lb_p->title.l = lb_p->adj_perim.l;
+			lb_p->title.r = lb_p->adj_perim.r;
+			lb_p->title.b = lb_p->adj_perim.b;
+			lb_p->title.t = lb_p->adj_perim.t;
+			break;
+
+		case MAJOR_AXIS:
+			lb_p->title.l = lb_p->adj_perim.l;
+			lb_p->title.r = lb_p->adj_perim.r;
+				
+			if (lb_p->title_pos == NhlBOTTOM) {
+				lb_p->title.b = lb_p->adj_perim.b;
+				lb_p->title.t = lb_p->title.b + title_ext;
+			}
+			else if (lb_p->title_pos == NhlTOP) {
+				lb_p->title.t = lb_p->adj_perim.t;
+				lb_p->title.b = lb_p->title.t - title_ext;
+			}
+			break;
+
+		case MINOR_AXIS:
+			lb_p->title.b = lb_p->adj_perim.b;
+			lb_p->title.t = lb_p->adj_perim.t;
+				
+			if (lb_p->title_pos == NhlLEFT) {
+				lb_p->title.l = lb_p->adj_perim.l;
+				lb_p->title.r = lb_p->title.l + title_ext;
+			}
+			else if (lb_p->title_pos == NhlRIGHT) {
+				lb_p->title.r = lb_p->adj_perim.r;
+				lb_p->title.l = lb_p->title.r - title_ext;
+			}
+			break;
+		default:
+			e_text = "%s: Invalid title location value";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+
+	ret1 = SetTitle(new,old,init,args,num_args);
+	if ((ret = MIN(ret1,ret)) < NhlWARNING) return ret;
 
 /*
  * Silently modify the label position if not appropriate for the
@@ -1752,12 +1826,15 @@ static NhlErrorTypes    SetLabelBarGeometry
 	}
 		
 /*
- * Determine dimensions: first pass determines basic position for
- * title, bar and labels. Bar dimensions may be adjusted later to 
+ * Determine bar and label dimensions.
+ * Bar dimensions may be adjusted later to 
  * ensure that labels are visible.
  */
 	if (lb_p->orient == NhlHORIZONTAL) {
-		bar_ext = adj_perim_height * lb_p->box_minor_ext;
+		bar_room = MAX(lb_p->title.txtr - lb_p->title.bxtr,
+			       lb_p->adj_height);
+
+		bar_ext =  lb_p->box_minor_ext * bar_room;
 		switch (title_loc) {
 
 		case NO_TITLE:
@@ -1769,7 +1846,7 @@ static NhlErrorTypes    SetLabelBarGeometry
 			if (! lb_p->labels_on || 
 			    lb_p->label_pos == NhlCENTER) {
 				lb_p->bar.b = lb_p->adj_perim.b +
-					(adj_perim_height - bar_ext) / 2.0;
+					(bar_room - bar_ext) / 2.0;
 				lb_p->bar.t = lb_p->bar.b + bar_ext;
 				lb_p->labels.b = lb_p->bar.b;
 				lb_p->labels.t = lb_p->bar.t;
@@ -1789,26 +1866,15 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MAJOR_AXIS:
-			
-			max_title_ext = 
-				MIN(lb_p->max_title_ext * adj_perim_width,
-				    2.0 * lb_p->title_height + angle_adj);
-			lb_p->title.b = lb_p->adj_perim.b;
-			lb_p->title.t = lb_p->adj_perim.t;
-				
 			if (lb_p->title_pos == NhlLEFT) {
 				lb_p->bar.l = lb_p->adj_perim.l +
-					max_title_ext + title_off;
+					title_ext + lb_p->title_off_ndc;
 				lb_p->bar.r = lb_p->adj_perim.r;
-				lb_p->title.l = lb_p->adj_perim.l;
-				lb_p->title.r = lb_p->bar.l - title_off;
 			}
 			else if (lb_p->title_pos == NhlRIGHT) {
 				lb_p->bar.l = lb_p->adj_perim.l;
 				lb_p->bar.r = lb_p->adj_perim.r - 
-					max_title_ext - title_off;
-				lb_p->title.l = lb_p->bar.r + title_off;
-				lb_p->title.r = lb_p->adj_perim.r;
+					title_ext - lb_p->title_off_ndc;
 			}
 			lb_p->labels.l = lb_p->bar.l;
 			lb_p->labels.r = lb_p->bar.r;
@@ -1816,7 +1882,7 @@ static NhlErrorTypes    SetLabelBarGeometry
 			if (! lb_p->labels_on || 
 			    lb_p->label_pos == NhlCENTER) {
 				lb_p->bar.b = lb_p->adj_perim.b +
-					(adj_perim_height - bar_ext) / 2.0;
+					(bar_room - bar_ext) / 2.0;
 				lb_p->bar.t = lb_p->bar.b + bar_ext;
 				lb_p->labels.b = lb_p->bar.b;
 				lb_p->labels.t = lb_p->bar.t;
@@ -1837,41 +1903,31 @@ static NhlErrorTypes    SetLabelBarGeometry
 
 		case MINOR_AXIS:
 
-			max_title_ext = 
-				MIN(lb_p->max_title_ext * adj_perim_height,
-				    2.0 * lb_p->title_height + angle_adj);
-			if (max_title_ext + title_off + bar_ext > 
-			    adj_perim_height) {
+			if (title_ext + 
+			    lb_p->title_off_ndc + bar_ext > bar_room) {
 				e_text = 
 				  "%s: Maximum bar size exceeded, defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ret = MIN(ret, NhlWARNING);
-				bar_ext = adj_perim_height - 
-					max_title_ext - title_off;
-				lb_p->box_minor_ext = 
-					bar_ext / adj_perim_height;
+				bar_ext = bar_room - 
+					title_ext - lb_p->title_off_ndc;
+				lb_p->box_minor_ext = bar_ext / bar_room;
 			}
-			lb_p->title.l = lb_p->adj_perim.l;
-			lb_p->title.r = lb_p->adj_perim.r;
 			lb_p->bar.l = lb_p->adj_perim.l;
 			lb_p->bar.r = lb_p->adj_perim.r;
 			lb_p->labels.l = lb_p->adj_perim.l;
 			lb_p->labels.r = lb_p->adj_perim.r;
 				
 			if (lb_p->title_pos == NhlBOTTOM) {
-				lb_p->title.b = lb_p->adj_perim.b;
-				lb_p->title.t = lb_p->adj_perim.b + 
-					max_title_ext;
-				lb_p->bar.b = lb_p->title.t + title_off;
+				lb_p->bar.b = 
+					lb_p->title.t + lb_p->title_off_ndc;
 				lb_p->bar.t = lb_p->adj_perim.t;
 			}
 			else if (lb_p->title_pos == NhlTOP) {
 				lb_p->bar.b = lb_p->adj_perim.b;
 				lb_p->bar.t = lb_p->adj_perim.t - 
-					max_title_ext - title_off;
-				lb_p->title.b = lb_p->bar.t + title_off;
-				lb_p->title.t = lb_p->adj_perim.t;
+					title_ext - lb_p->title_off_ndc;
 			}
 
 			
@@ -1907,8 +1963,9 @@ static NhlErrorTypes    SetLabelBarGeometry
 
 	else { /* NhlVERTICAL */
 
-		bar_ext = adj_perim_width * lb_p->box_minor_ext;
-
+		bar_room = MAX(lb_p->title.rxtr - lb_p->title.lxtr,
+			       lb_p->adj_width);
+		bar_ext = lb_p->box_minor_ext * bar_room;
 		switch (title_loc) {
 
 		case NO_TITLE:
@@ -1919,7 +1976,7 @@ static NhlErrorTypes    SetLabelBarGeometry
 					
 			if (!lb_p->labels_on || lb_p->label_pos == NhlCENTER) {
 				lb_p->bar.l = lb_p->adj_perim.l +
-					(adj_perim_width - bar_ext) / 2.0;
+					(bar_room - bar_ext) / 2.0;
 				lb_p->bar.r = lb_p->bar.l + bar_ext;
 				lb_p->labels.l = lb_p->bar.l;
 				lb_p->labels.r = lb_p->bar.r;
@@ -1939,26 +1996,16 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MAJOR_AXIS:
-			max_title_ext = 
-				MIN(lb_p->max_title_ext * adj_perim_height,
-				    2.0 * lb_p->title_height + angle_adj);
-
-			lb_p->title.l = lb_p->adj_perim.l;
-			lb_p->title.r = lb_p->adj_perim.r;
 				
 			if (lb_p->title_pos == NhlBOTTOM) {
 				lb_p->bar.b = lb_p->adj_perim.b + 
-					max_title_ext + title_off;
+					title_ext + lb_p->title_off_ndc;
 				lb_p->bar.t = lb_p->adj_perim.t;
-				lb_p->title.b = lb_p->adj_perim.b;
-				lb_p->title.t = lb_p->bar.b - title_off;
 			}
 			else if (lb_p->title_pos == NhlTOP) {
 				lb_p->bar.b = lb_p->adj_perim.b;
 				lb_p->bar.t = lb_p->adj_perim.t - 
-					max_title_ext - title_off;
-				lb_p->title.b = lb_p->bar.t + title_off;
-				lb_p->title.t = lb_p->adj_perim.t;
+					title_ext - lb_p->title_off_ndc;
 			}
 			lb_p->labels.b = lb_p->bar.b;
 			lb_p->labels.t = lb_p->bar.t;
@@ -1966,7 +2013,7 @@ static NhlErrorTypes    SetLabelBarGeometry
 			if (! lb_p->labels_on || 
 			    lb_p->label_pos == NhlCENTER) {
 				lb_p->bar.l = lb_p->adj_perim.l +
-					(adj_perim_width - bar_ext) / 2.0;
+					(bar_room - bar_ext) / 2.0;
 				lb_p->bar.r = lb_p->bar.l + bar_ext;
 				lb_p->labels.l = lb_p->bar.l;
 				lb_p->labels.r = lb_p->bar.r;
@@ -1987,44 +2034,32 @@ static NhlErrorTypes    SetLabelBarGeometry
 
 		case MINOR_AXIS:
 
-			max_title_ext = 
-				MIN(lb_p->max_title_ext * adj_perim_width,
-				    2.0 * lb_p->title_height + angle_adj);
-			if (max_title_ext + title_off + bar_ext > 
-			    adj_perim_width) {
+			if (title_ext + 
+			    lb_p->title_off_ndc + bar_ext > bar_room) {
 				e_text = 
 				  "%s: Maximum bar size exceeded, defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ret = MIN(ret, NhlWARNING);
-				bar_ext = adj_perim_width - 
-					max_title_ext - title_off;
-				lb_p->box_minor_ext = 
-					bar_ext / adj_perim_width;
+				bar_ext = bar_room - 
+					title_ext - lb_p->title_off_ndc;
+				lb_p->box_minor_ext = bar_ext / bar_room;
 			}
-
-			lb_p->title.b = lb_p->adj_perim.b;
-			lb_p->title.t = lb_p->adj_perim.t;
 			lb_p->bar.b = lb_p->adj_perim.b;
 			lb_p->bar.t = lb_p->adj_perim.t;
 			lb_p->labels.b = lb_p->adj_perim.b;
 			lb_p->labels.t = lb_p->adj_perim.t;
 				
 			if (lb_p->title_pos == NhlLEFT) {
-				lb_p->title.l = lb_p->adj_perim.l;
-				lb_p->title.r = lb_p->adj_perim.l + 
-					max_title_ext;
-				lb_p->bar.l = lb_p->title.r + title_off;
+				lb_p->bar.l = 
+					lb_p->title.r + lb_p->title_off_ndc;
 				lb_p->bar.r = lb_p->adj_perim.r;
 			}
 			else if (lb_p->title_pos == NhlRIGHT) {
 				lb_p->bar.l = lb_p->adj_perim.l;
 				lb_p->bar.r = lb_p->adj_perim.r - 
-					max_title_ext - title_off;
-				lb_p->title.l = lb_p->bar.r + title_off;
-				lb_p->title.r = lb_p->adj_perim.r;
+					title_ext - lb_p->title_off_ndc;
 			}
-
 			
 			if (!lb_p->labels_on || lb_p->label_pos == NhlCENTER) {
 				lb_p->bar.l = (lb_p->bar.r - lb_p->bar.l - 
@@ -2110,12 +2145,21 @@ static NhlErrorTypes    SetTitle
 	float w, h, wta, hta, factor, height;
 	char *entry_name;
 	float angle;
+	NhlBoolean string_changed = False;
 
+	lb_p->title.lxtr = lb_p->title.l;
+	lb_p->title.rxtr = lb_p->title.r;
+	lb_p->title.bxtr = lb_p->title.b;
+	lb_p->title.txtr = lb_p->title.t;
+	lb_p->title_x = lb_p->title.lxtr + 
+		(lb_p->title.rxtr - lb_p->title.lxtr) / 2.0;
+	lb_p->title_y = lb_p->title.bxtr + 
+		(lb_p->title.txtr - lb_p->title.bxtr) / 2.0;
 /*
  * Only initialize a text item for the title if it is turned on
  * and the maximum title extent is greater than 0.0.
  */
-	if (!lb_p->title_on || lb_p->max_title_ext <= 0.0)
+	if (!lb_p->title_on || lb_p->title_ext <= 0.0)
 		return ret;
 
 	entry_name = init ? Init_Name : SetValues_Name;
@@ -2142,12 +2186,14 @@ static NhlErrorTypes    SetTitle
                 c_p = lb_p->title_string;
                 lb_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
                 strcpy(lb_p->title_string,c_p);
+		string_changed = True;
         }
 	else if (lb_p->title_string != olb_p->title_string) {
 		NhlFree(olb_p->title_string);
 		c_p = lb_p->title_string;
 		lb_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
 		strcpy(lb_p->title_string, c_p);
+		string_changed = True;
 	}
 
 	switch (lb_p->title_just) {
@@ -2203,28 +2249,27 @@ static NhlErrorTypes    SetTitle
 
 	angle = (lb_p->title_angle < 0.0) ?
 		lb_p->title_angle + 360.0 : lb_p->title_angle;
-	if (init || lb_p->title_id < 0) {
+	if (lb_p->title_id < 0) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Title");
 		ret1 = NhlVACreate(&lb_p->title_id,
-				 buffer,NhltextItemClass,
-				 tnew->base.id,
-				 NhlNtxFont,lb_p->title_font,
-				 NhlNtxString,lb_p->title_string,
-				 NhlNtxPosXF,lb_p->title_x,
-				 NhlNtxPosYF,lb_p->title_y,
-				 NhlNtxDirection,lb_p->title_direction,
-				 NhlNtxAngleF,angle,
-				 NhlNtxJust,(int)lb_p->title_just,
-				 NhlNtxFontColor,lb_p->title_color,
-				 NhlNtxFontHeightF,height,
-				 NhlNtxFontAspectF,lb_p->title_aspect,
-				 NhlNtxConstantSpacingF,
-				 	lb_p->title_const_spacing,
-				 NhlNtxFontQuality,lb_p->title_quality,
-				 NhlNtxFuncCode,lb_p->title_func_code,
-				 NhlNtxFontThicknessF,lb_p->title_thickness,
-				 NULL);
+				   buffer,NhltextItemClass,tnew->base.id,
+				   NhlNtxFont,lb_p->title_font,
+				   NhlNtxString,lb_p->title_string,
+				   NhlNtxPosXF,lb_p->title_x,
+				   NhlNtxPosYF,lb_p->title_y,
+				   NhlNtxDirection,lb_p->title_direction,
+				   NhlNtxAngleF,angle,
+				   NhlNtxJust,lb_p->title_just,
+				   NhlNtxFontColor,lb_p->title_color,
+				   NhlNtxFontHeightF,height,
+				   NhlNtxFontAspectF,lb_p->title_aspect,
+				   NhlNtxConstantSpacingF,
+				   lb_p->title_const_spacing,
+				   NhlNtxFontQuality,lb_p->title_quality,
+				   NhlNtxFuncCode,lb_p->title_func_code,
+				   NhlNtxFontThicknessF,lb_p->title_thickness,
+				   NULL);
 		if (ret1 < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: Title create error", entry_name);
@@ -2233,23 +2278,52 @@ static NhlErrorTypes    SetTitle
 		ret = MIN(ret,ret1);
 	}
 	else {
-		ret1 = NhlVASetValues(lb_p->title_id,
-				    NhlNtxFont,lb_p->title_font,
-				    NhlNtxString,lb_p->title_string,
-				    NhlNtxPosXF,lb_p->title_x,
-				    NhlNtxPosYF,lb_p->title_y,
-				    NhlNtxDirection,lb_p->title_direction,
-				    NhlNtxAngleF,angle,
-				    NhlNtxJust,(int)lb_p->title_just,
-				    NhlNtxFontColor,lb_p->title_color,
-				    NhlNtxFontHeightF,height,
-				    NhlNtxFontAspectF,lb_p->title_aspect,
-				    NhlNtxConstantSpacingF,
-				    	lb_p->title_const_spacing,
-				    NhlNtxFontQuality,lb_p->title_quality,
-				    NhlNtxFuncCode,lb_p->title_func_code,
-				    NhlNtxFontThicknessF,lb_p->title_thickness,
-				    NULL);
+		NhlSArg		sargs[16];
+		int		sargc = 0;
+
+		if (lb_p->title_font != olb_p->title_font)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFont,lb_p->title_font);
+		if (string_changed)
+			NhlSetSArg(&sargs[(sargc)++],
+				    NhlNtxString,lb_p->title_string);
+		if (lb_p->title_x != olb_p->title_x)
+			NhlSetSArg(&sargs[(sargc)++],
+				    NhlNtxPosXF,lb_p->title_x);
+		if (lb_p->title_y != olb_p->title_y)
+			NhlSetSArg(&sargs[(sargc)++],
+				    NhlNtxPosYF,lb_p->title_y);
+		if (lb_p->title_direction != olb_p->title_direction)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxDirection,lb_p->title_direction);
+		if (angle != olb_p->title_angle)
+			NhlSetSArg(&sargs[(sargc)++],NhlNtxAngleF,angle);
+		if (lb_p->title_just != olb_p->title_just)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxJust,(int)lb_p->title_just);
+		if (lb_p->title_color != olb_p->title_color)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFontColor,lb_p->title_color);
+		if (height != olb_p->title_height)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFontHeightF,height);
+		if (lb_p->title_aspect != olb_p->title_aspect)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFontAspectF,lb_p->title_aspect);
+		if (lb_p->title_const_spacing != olb_p->title_const_spacing)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxConstantSpacingF,
+				   lb_p->title_const_spacing);
+		if (lb_p->title_quality != olb_p->title_quality)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFontQuality,lb_p->title_quality);
+		if (lb_p->title_func_code != olb_p->title_func_code)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFuncCode,lb_p->title_func_code);
+		if (lb_p->title_thickness != olb_p->title_thickness)
+			NhlSetSArg(&sargs[(sargc)++],
+				   NhlNtxFontThicknessF,lb_p->title_thickness);
+		ret1 = NhlALSetValues(lb_p->title_id,sargs,sargc);
 		if (ret1 < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: Title SetValues error", entry_name);
@@ -2287,18 +2361,23 @@ static NhlErrorTypes    SetTitle
 	if (lb_p->title_height <= 0.0 || lb_p->auto_manage) {
 		factor = wta / w < hta / h ? wta / w : hta / h;
 		lb_p->title_height = height * factor;
+		if (height != lb_p->title_height) {
+			ret1 = NhlVASetValues(lb_p->title_id,
+					  NhlNtxFontHeightF,lb_p->title_height,
+					      NULL);
+			if ((ret = MIN(ret,ret1)) < NhlWARNING) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting title height",entry_name);
+				return(NhlFATAL);
+			}
+		}
 	}
-	ret1 = NhlVASetValues(lb_p->title_id,
-			   NhlNtxFontHeightF,lb_p->title_height,
-			   NULL);
-	if (ret1 < NhlWARNING) {
-		NhlPError(NhlFATAL,
-			  NhlEUNKNOWN,
-			  "%s: error setting title height",entry_name);
-		return(NhlFATAL);
+	else {
+		lb_p->title.lxtr = MIN(lb_p->title.l,titleBB.l);
+		lb_p->title.rxtr = MAX(titleBB.r,lb_p->title.r);
+		lb_p->title.bxtr = MIN(lb_p->title.b,titleBB.b);
+		lb_p->title.txtr = MAX(titleBB.t,lb_p->title.t);
 	}
-	ret = MIN(ret,ret1);
-
 	return ret;
 }
 
@@ -2636,7 +2715,6 @@ static NhlErrorTypes    SetLabels
 	int count; 
 	int itmp, max_strlen = 0;
 	int i,j,ix;
-	float label_offset;
 	NhlMTextOrientatonType mtext_orient;
 	float label_height, char_space, avail_char_space;
 	float base_pos = 0.0, offset = 0.0, increment = 0.0;
@@ -2644,9 +2722,15 @@ static NhlErrorTypes    SetLabels
 	float c_frac = 1.0;
 	char	*entry_name;
 	float angle;
+	float x,y,width,height;
 		
-	if (! lb_p->labels_on)
+	if (! lb_p->labels_on) {
+		lb_p->labels.lxtr = lb_p->labels.l;
+		lb_p->labels.rxtr = lb_p->labels.r;
+		lb_p->labels.bxtr = lb_p->labels.b;
+		lb_p->labels.txtr = lb_p->labels.t;
 		return NhlNOERROR;
+	}
 
 	entry_name = init ? Init_Name : SetValues_Name;
 /*
@@ -2666,12 +2750,12 @@ static NhlErrorTypes    SetLabels
 
 	if (lb_p->orient == NhlHORIZONTAL) {
 		mtext_orient = NhlMTEXT_Y_CONST;
-		label_offset = lb_p->label_off * 
+		lb_p->label_off_ndc = lb_p->label_off * 
 			(lb_p->adj_perim.t - lb_p->adj_perim.b);
 	}
 	else {
 		mtext_orient = NhlMTEXT_X_CONST;
-		label_offset = lb_p->label_off *
+		lb_p->label_off_ndc = lb_p->label_off *
 			(lb_p->adj_perim.r - lb_p->adj_perim.l);
 	}
 
@@ -2745,11 +2829,11 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->orient == NhlHORIZONTAL) {
 			larea.x = lb_p->labels.r - lb_p->labels.l;
 			larea.y = lb_p->adj_bar.t - 
-				lb_p->adj_bar.b - label_offset;
+				lb_p->adj_bar.b - lb_p->label_off_ndc;
 		}
 		else {
 			larea.x = lb_p->adj_bar.r - 
-				lb_p->adj_bar.l - label_offset;
+				lb_p->adj_bar.l - lb_p->label_off_ndc;
 			larea.y = lb_p->labels.t - lb_p->labels.b;
 		}
 	}
@@ -2757,11 +2841,11 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->orient == NhlHORIZONTAL) {
 			larea.x = lb_p->labels.r - lb_p->labels.l;
 			larea.y = lb_p->labels.t - lb_p->labels.b - 
-				label_offset;
+				lb_p->label_off_ndc;
 		}
 		else {
 			larea.x = lb_p->labels.r - lb_p->labels.l - 
-				label_offset;
+				lb_p->label_off_ndc;
 			larea.y = lb_p->labels.t - lb_p->labels.b;
 		}
 	}
@@ -2770,7 +2854,7 @@ static NhlErrorTypes    SetLabels
  * Account for the box_major_ext fraction if centered or label
  * offset is negative
  */
-	if (lb_p->label_pos == NhlCENTER || label_offset < 0.0) {
+	if (lb_p->label_pos == NhlCENTER || lb_p->label_off_ndc < 0.0) {
 		if (lb_p->label_alignment == NhlBOXCENTERS) {
 			c_frac = lb_p->box_major_ext;
 		}
@@ -2804,14 +2888,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlBOTTOM:
-			lb_p->const_pos = lb_p->labels.t - label_offset;
+			lb_p->const_pos = lb_p->labels.t - lb_p->label_off_ndc;
 			break;
 		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
 			break;
 		case NhlTOP:
-			lb_p->const_pos = lb_p->labels.b + label_offset;
+			lb_p->const_pos = lb_p->labels.b + lb_p->label_off_ndc;
 			break;
 		}
 	}
@@ -2837,14 +2921,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlBOTTOM:
-			lb_p->const_pos = lb_p->labels.t - label_offset;
+			lb_p->const_pos = lb_p->labels.t - lb_p->label_off_ndc;
 			break;
 		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
 			break;
 		case NhlTOP:
-			lb_p->const_pos = lb_p->labels.b + label_offset;
+			lb_p->const_pos = lb_p->labels.b + lb_p->label_off_ndc;
 			break;
 		}
 	}
@@ -2869,14 +2953,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlLEFT:
-			lb_p->const_pos = lb_p->labels.r - label_offset;
+			lb_p->const_pos = lb_p->labels.r - lb_p->label_off_ndc;
 			break;
 		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
 			break;
 		case NhlRIGHT:
-			lb_p->const_pos = lb_p->labels.l + label_offset;
+			lb_p->const_pos = lb_p->labels.l + lb_p->label_off_ndc;
 			break;
 		}
 	}
@@ -2900,14 +2984,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlLEFT:
-			lb_p->const_pos = lb_p->labels.r - label_offset;
+			lb_p->const_pos = lb_p->labels.r - lb_p->label_off_ndc;
 			break;
 		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
 			break;
 		case NhlRIGHT:
-			lb_p->const_pos = lb_p->labels.l + label_offset;
+			lb_p->const_pos = lb_p->labels.l + lb_p->label_off_ndc;
 			break;
 		}
 	}
@@ -2977,7 +3061,7 @@ static NhlErrorTypes    SetLabels
 
 	angle = (lb_p->label_angle < 0.0) ? 
 		lb_p->label_angle + 360.0 : lb_p->label_angle;
-	if (init) {
+	if (lb_p->labels_id < 0) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
 		subret = NhlVACreate(&(lb_p->labels_id),buffer,
@@ -3067,7 +3151,7 @@ static NhlErrorTypes    SetLabels
 	}
 
 
-	if (lb_p->auto_manage) {
+	if (lb_p->auto_manage || lb_p->label_height <= 0.0) {
 
 		olb_p->label_just = lb_p->label_just;
 		olb_p->label_height = label_height;
@@ -3076,6 +3160,21 @@ static NhlErrorTypes    SetLabels
 				      larea.x,larea.y,entry_name);
 		ret = MIN(ret, subret);
 	}
+
+	subret = NhlVAGetValues(lb_p->labels_id,
+				NhlNvpXF,&x,
+				NhlNvpYF,&y,
+				NhlNvpWidthF,&width,
+				NhlNvpHeightF,&height,
+				NhlNMtextConstPosF,&lb_p->const_pos,
+				NULL);
+/*
+ * store the actual label bounding box in the 'xtr' variables.
+ */
+	lb_p->labels.lxtr = x;
+	lb_p->labels.rxtr = x + width;
+	lb_p->labels.bxtr = y - height;
+	lb_p->labels.txtr = y;
 
 	return (ret);
 }
@@ -3461,7 +3560,6 @@ static NhlErrorTypes    AdjustGeometry
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
 	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
-	NhlBoundingBox titleBB;
 	NhlBoundingBox labelbarBB;
 	NhlBoundingBox tmpBB,bar_and_labelsBB;
 	float title_x = lb_p->title_x;
@@ -3469,31 +3567,33 @@ static NhlErrorTypes    AdjustGeometry
 	float pos_offset = 0.0;
 	float obj_offset = 0.0;
 	float x_off, y_off;
-	float small_axis;
 	float minor_off;
 	float major_off;
 	float center_off;
+	float p_width,p_height,ex_width,ex_height;
 	int i;
-
-	small_axis = MIN(lb_p->lb_width, lb_p->lb_height);
 
 	bar_and_labelsBB.b = lb_p->adj_perim.b;
 	bar_and_labelsBB.t = lb_p->adj_perim.t;
 	bar_and_labelsBB.l = lb_p->adj_perim.l;
 	bar_and_labelsBB.r = lb_p->adj_perim.r;
-	if (lb_p->title_on) {
+	if (lb_p->title_on && lb_p->title_ext > 0.0) {
 		switch (lb_p->title_pos) {
 		case NhlTOP:
-			bar_and_labelsBB.t = lb_p->title.b;
+			bar_and_labelsBB.t = 
+				lb_p->title.b - lb_p->title_off_ndc;
 			break;
 		case NhlBOTTOM:
-			bar_and_labelsBB.b = lb_p->title.t;
+			bar_and_labelsBB.b = 
+				lb_p->title.t + lb_p->title_off_ndc;
 			break;
 		case NhlLEFT:
-			bar_and_labelsBB.l = lb_p->title.r;
+			bar_and_labelsBB.l = 
+				lb_p->title.r + lb_p->title_off_ndc;
 			break;
 		case NhlRIGHT:
-			bar_and_labelsBB.r = lb_p->title.l;
+			bar_and_labelsBB.r = 
+				lb_p->title.l - lb_p->title_off_ndc;
 			break;
 		default:
 			break;
@@ -3505,142 +3605,97 @@ static NhlErrorTypes    AdjustGeometry
  * and adjust both the bar and the labels to the center of the combined box.
  */
 	if (! lb_p->labels_on) {
-		labelbarBB.l = lb_p->adj_bar.l;
-		labelbarBB.r = lb_p->adj_bar.r;
-		labelbarBB.b = lb_p->adj_bar.b;
-		labelbarBB.t = lb_p->adj_bar.t;
+		tmpBB.l = lb_p->adj_bar.l;
+		tmpBB.r = lb_p->adj_bar.r;
+		tmpBB.b = lb_p->adj_bar.b;
+		tmpBB.t = lb_p->adj_bar.t;
 	}
 	else {
-		NhlBoundingBox labelsBB;
-		float width, height;
-
-		ret1 = NhlVAGetValues(lb_p->labels_id,
-				     NhlNvpXF,&labelsBB.l,
-				     NhlNvpYF,&labelsBB.t,
-				     NhlNvpWidthF,&width,
-				     NhlNvpHeightF,&height,
-				     NhlNMtextConstPosF,&lb_p->const_pos,
-				     NULL);
-		if ((ret = MIN(ret1,ret)) < NhlWARNING) return ret;
-		labelsBB.r = labelsBB.l + width;
-		labelsBB.b = labelsBB.t - height;
-		
 		if (lb_p->orient == NhlHORIZONTAL) {
-			
-			obj_offset = lb_p->label_off * 
-				(lb_p->adj_perim.t - lb_p->adj_perim.b);
-
 			if (lb_p->label_pos == NhlTOP) {
-				pos_offset = lb_p->adj_bar.t +
-					obj_offset - labelsBB.b;
+				pos_offset = lb_p->adj_bar.t + 
+				       lb_p->label_off_ndc - lb_p->labels.bxtr;
 			}
 			else if (lb_p->label_pos == NhlBOTTOM) {
 				pos_offset = lb_p->adj_bar.b - 
-					obj_offset - labelsBB.t;
+				       lb_p->label_off_ndc - lb_p->labels.txtr;
 			}
-			labelsBB.b += pos_offset;
-			labelsBB.t += pos_offset;
+			lb_p->labels.bxtr += pos_offset;
+			lb_p->labels.txtr += pos_offset;
 		}
 		else {
-			
-			obj_offset = lb_p->label_off * 
-				(lb_p->adj_perim.r - lb_p->adj_perim.l);
-
 			if (lb_p->label_pos == NhlRIGHT) {
 				pos_offset = lb_p->adj_bar.r + 
-					obj_offset - labelsBB.l;
+				       lb_p->label_off_ndc - lb_p->labels.lxtr;
 			}
 			else if (lb_p->label_pos == NhlLEFT) {
 				pos_offset = lb_p->adj_bar.l - 
-					obj_offset - labelsBB.r;
+				       lb_p->label_off_ndc - lb_p->labels.rxtr;
 			}
-			labelsBB.l += pos_offset;
-			labelsBB.r += pos_offset;
+			lb_p->labels.lxtr += pos_offset;
+			lb_p->labels.rxtr += pos_offset;
 		}
 		
-		tmpBB.l = MIN(labelsBB.l, lb_p->adj_bar.l);
-		tmpBB.r = MAX(labelsBB.r, lb_p->adj_bar.r);
-		tmpBB.b = MIN(labelsBB.b, lb_p->adj_bar.b);
-		tmpBB.t = MAX(labelsBB.t, lb_p->adj_bar.t);
-		labelbarBB.l = MIN(tmpBB.l, lb_p->labels.l);
-		labelbarBB.r = MAX(tmpBB.r, lb_p->labels.r);
-		labelbarBB.b = MIN(tmpBB.b, lb_p->labels.b);
-		labelbarBB.t = MAX(tmpBB.t, lb_p->labels.t);
-		labelbarBB.l = MIN(labelbarBB.l, bar_and_labelsBB.l);
-		labelbarBB.r = MAX(labelbarBB.r, bar_and_labelsBB.r);
-		labelbarBB.b = MIN(labelbarBB.b, bar_and_labelsBB.b);
-		labelbarBB.t = MAX(labelbarBB.t, bar_and_labelsBB.t);
-
-		if (lb_p->orient == NhlHORIZONTAL) {
-
-			center_off = (labelbarBB.t - tmpBB.t + 
-				      labelbarBB.b - tmpBB.b) / 2.0;
-			labelsBB.b += center_off;
-			labelsBB.t += center_off;
-			lb_p->adj_bar.b += center_off;
-			lb_p->adj_bar.t += center_off;
-			pos_offset += center_off;
-		}
-		else {
-
-			center_off = (labelbarBB.r - tmpBB.r +
-				      labelbarBB.l - tmpBB.l) / 2.0;
-			labelsBB.l += center_off;
-			labelsBB.r += center_off;
-			lb_p->adj_bar.l += center_off;
-			lb_p->adj_bar.r += center_off;
-			pos_offset += center_off;
-		}		
-		
+		tmpBB.l = MIN(lb_p->labels.lxtr, lb_p->adj_bar.l);
+		tmpBB.r = MAX(lb_p->labels.rxtr, lb_p->adj_bar.r);
+		tmpBB.b = MIN(lb_p->labels.bxtr, lb_p->adj_bar.b);
+		tmpBB.t = MAX(lb_p->labels.txtr, lb_p->adj_bar.t);
 	}
+	labelbarBB.l = MIN(tmpBB.l, bar_and_labelsBB.l);
+	labelbarBB.r = MAX(tmpBB.r, bar_and_labelsBB.r);
+	labelbarBB.b = MIN(tmpBB.b, bar_and_labelsBB.b);
+	labelbarBB.t = MAX(tmpBB.t, bar_and_labelsBB.t);
 
-/*
- * handle the title
- */
-	if (! lb_p->title_on || lb_p->max_title_ext <= 0.0) {
-		titleBB.l = labelbarBB.l;
-		titleBB.r = labelbarBB.r;
-		titleBB.b = labelbarBB.b;
-		titleBB.t = labelbarBB.t;
+	if (lb_p->orient == NhlHORIZONTAL) {
+		center_off = (labelbarBB.t - tmpBB.t + 
+			      labelbarBB.b - tmpBB.b) / 2.0;
+		lb_p->labels.bxtr += center_off;
+		lb_p->labels.txtr += center_off;
+		lb_p->adj_bar.b += center_off;
+		lb_p->adj_bar.t += center_off;
+		pos_offset += center_off;
 	}
 	else {
-		if ((ret1 = NhlGetBB(lb_p->title_id, &titleBB)) < NhlWARNING)
-			return ret1;
-		ret = MIN(ret1,ret);
+		center_off = (labelbarBB.r - tmpBB.r +
+			      labelbarBB.l - tmpBB.l) / 2.0;
+		lb_p->labels.lxtr += center_off;
+		lb_p->labels.rxtr += center_off;
+		lb_p->adj_bar.l += center_off;
+		lb_p->adj_bar.r += center_off;
+		pos_offset += center_off;
+	}		
+
 		
-		
-		/*
-		 * Adjust for the title: 
-		 * first move it out of the way of the labelbar, 
-		 * then adjust for possibly larger justification area.
-		 */
-		
-		
-		if (lb_p->title_pos == NhlBOTTOM || lb_p->title_pos == NhlTOP)
-			obj_offset = lb_p->title_off *
-				(lb_p->adj_perim.t - lb_p->adj_perim.b);
-		else
-			obj_offset = lb_p->title_off *
-				(lb_p->adj_perim.r - lb_p->adj_perim.l);
+/*
+ * Adjust for the title: 
+ * first move it out of the way of the legend, 
+ * then adjust for possibly larger justification area.
+ */
+
+	if (lb_p->title_on) {
 		if (lb_p->title_pos == NhlBOTTOM &&
-		    titleBB.t > labelbarBB.b - obj_offset) {
-			title_y -= titleBB.t + obj_offset - labelbarBB.b;
+		    lb_p->title.txtr > labelbarBB.b - lb_p->title_off_ndc) {
+			title_y -= lb_p->title.txtr + 
+				lb_p->title_off_ndc - labelbarBB.b;
 		}
-		else if (lb_p->title_pos == NhlTOP &&
-			 titleBB.b < labelbarBB.t + obj_offset) {
-			title_y += labelbarBB.t + obj_offset - titleBB.b;
+		else if (lb_p->title_pos == NhlTOP && lb_p->title.bxtr < 
+			 labelbarBB.t + lb_p->title_off_ndc) {
+			title_y += labelbarBB.t + 
+				lb_p->title_off_ndc - lb_p->title.bxtr;
 		}
-		else if (lb_p->title_pos == NhlLEFT &&
-			 titleBB.r > labelbarBB.l - obj_offset) {
-			title_x -= titleBB.r + obj_offset - labelbarBB.l;
+		else if (lb_p->title_pos == NhlLEFT && lb_p->title.rxtr > 
+			 labelbarBB.l - lb_p->title_off_ndc) {
+			title_x -= lb_p->title.rxtr + 
+				lb_p->title_off_ndc - labelbarBB.l;
 		}
 		else if (lb_p->title_pos == NhlRIGHT &&
-			 titleBB.l < labelbarBB.r + obj_offset) {
-			title_x += labelbarBB.r + obj_offset - titleBB.l;
+			 lb_p->title.lxtr < labelbarBB.r + obj_offset) {
+			title_x += labelbarBB.r + 
+				lb_p->title_off_ndc - lb_p->title.lxtr;
 		}
 		
-		if (lb_p->title_pos == NhlTOP
-		    || lb_p->title_pos == NhlBOTTOM) {
+		if (lb_p->title_pos == NhlTOP || 
+		    lb_p->title_pos == NhlBOTTOM) {
 			switch (lb_p->title_just) {
 			case NhlBOTTOMLEFT:
 			case NhlCENTERLEFT:
@@ -3661,8 +3716,8 @@ static NhlErrorTypes    AdjustGeometry
 				break;
 			}
 		}
-		else if (lb_p->title_pos == NhlLEFT
-			 || lb_p->title_pos == NhlRIGHT) {
+		else if (lb_p->title_pos == NhlLEFT || 
+			 lb_p->title_pos == NhlRIGHT) {
 			switch (lb_p->title_just) {
 			case NhlBOTTOMLEFT:
 			case NhlBOTTOMCENTER:
@@ -3683,93 +3738,161 @@ static NhlErrorTypes    AdjustGeometry
 				break;
 			}
 		}
-		titleBB.l += title_x - lb_p->title_x;
-		titleBB.r += title_x - lb_p->title_x;
-		titleBB.b += title_y - lb_p->title_y;
-		titleBB.t += title_y - lb_p->title_y;
-		titleBB.l = MIN(titleBB.l, lb_p->title.l);
-		titleBB.r = MAX(titleBB.r, lb_p->title.r);
-		titleBB.b = MIN(titleBB.b, lb_p->title.b);
-		titleBB.t = MAX(titleBB.t, lb_p->title.t);
-	}
+		lb_p->title.lxtr += title_x - lb_p->title_x;
+		lb_p->title.rxtr += title_x - lb_p->title_x;
+		lb_p->title.bxtr += title_y - lb_p->title_y;
+		lb_p->title.txtr += title_y - lb_p->title_y;
+
 /*
- * Determine the real perimeter and set the view accordingly
+ * now get the real bounding box of the labelbar
  */
+		labelbarBB.l = MIN(labelbarBB.l,lb_p->title.lxtr);
+		labelbarBB.r = MAX(labelbarBB.r,lb_p->title.rxtr);
+		labelbarBB.b = MIN(labelbarBB.b,lb_p->title.bxtr);
+		labelbarBB.t = MAX(labelbarBB.t,lb_p->title.txtr);
+	}
 
-	lb_p->real_perim.l = MIN(labelbarBB.l - lb_p->margin.l * small_axis, 
-				 titleBB.l - lb_p->margin.l * small_axis);
-	lb_p->real_perim.r = MAX(labelbarBB.r + lb_p->margin.r * small_axis, 
-				 titleBB.r + lb_p->margin.r * small_axis);
-	lb_p->real_perim.b = MIN(labelbarBB.b - lb_p->margin.b * small_axis, 
-				 titleBB.b - lb_p->margin.b * small_axis);
-	lb_p->real_perim.t = MAX(labelbarBB.t + lb_p->margin.t * small_axis, 
-				 titleBB.t + lb_p->margin.t * small_axis);
-
+/*
+ * Determine the external perimeter
+ */
+	lb_p->perim.lxtr = labelbarBB.l - lb_p->margin.l * lb_p->small_axis;
+	lb_p->perim.rxtr = labelbarBB.r + lb_p->margin.r * lb_p->small_axis;
+	lb_p->perim.bxtr = labelbarBB.b - lb_p->margin.b * lb_p->small_axis;
+	lb_p->perim.txtr = labelbarBB.t + lb_p->margin.t * lb_p->small_axis;
 /*
  * Adjust position based on the justification
  */
 	switch (lb_p->just) {
-
 	case NhlBOTTOMLEFT:
-		x_off = lb_p->real_perim.l - lb_p->perim.l;
-		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		x_off = lb_p->perim.lxtr - lb_p->lb_x;
+		y_off = lb_p->perim.bxtr - (lb_p->lb_y - lb_p->lb_width);
 		break;
 	case NhlCENTERLEFT:
-		x_off = lb_p->real_perim.l - lb_p->perim.l;
-		y_off = lb_p->real_perim.b + 
-			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+		x_off = lb_p->perim.lxtr - lb_p->perim.l;
+		y_off = lb_p->perim.bxtr + 
+			(lb_p->perim.txtr - lb_p->perim.bxtr)/2.0 -
 				(lb_p->lb_y - lb_p->lb_height/2.0);
 		break;
 	case NhlTOPLEFT:
-		x_off = lb_p->real_perim.l - lb_p->perim.l;
-		y_off = lb_p->real_perim.t - lb_p->perim.t;
+		x_off = lb_p->perim.lxtr - lb_p->perim.l;
+		y_off = lb_p->perim.txtr - lb_p->perim.t;
 		break;
 	case NhlBOTTOMCENTER:
-		x_off = lb_p->real_perim.l + 
-			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+		x_off = lb_p->perim.lxtr + 
+			(lb_p->perim.rxtr - lb_p->perim.lxtr)/2.0 -
 				(lb_p->lb_x + lb_p->lb_width/2.0);
-		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		y_off = lb_p->perim.bxtr - lb_p->perim.b;
 		break;
 	case NhlCENTERCENTER:
 	default:
-		x_off = lb_p->real_perim.l + 
-			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+		x_off = lb_p->perim.lxtr + 
+			(lb_p->perim.rxtr - lb_p->perim.lxtr)/2.0 -
 				(lb_p->lb_x + lb_p->lb_width/2.0);
-		y_off = lb_p->real_perim.b + 
-			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+		y_off = lb_p->perim.bxtr + 
+			(lb_p->perim.txtr - lb_p->perim.bxtr)/2.0 -
 				(lb_p->lb_y - lb_p->lb_height/2.0);
 		break;
 	case NhlTOPCENTER:
-		x_off = lb_p->real_perim.l + 
-			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+		x_off = lb_p->perim.lxtr + 
+			(lb_p->perim.rxtr - lb_p->perim.lxtr)/2.0 -
 				(lb_p->lb_x + lb_p->lb_width/2.0);
-		y_off = lb_p->real_perim.t - lb_p->perim.t;
+		y_off = lb_p->perim.txtr - lb_p->perim.t;
 		break;
 	case NhlBOTTOMRIGHT:
-		x_off = lb_p->real_perim.r - lb_p->perim.r;
-		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		x_off = lb_p->perim.rxtr - lb_p->perim.r;
+		y_off = lb_p->perim.bxtr - lb_p->perim.b;
 		break;
 	case NhlCENTERRIGHT:
-		x_off = lb_p->real_perim.r - lb_p->perim.r;
-		y_off = lb_p->real_perim.b + 
-			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+		x_off = lb_p->perim.rxtr - lb_p->perim.r;
+		y_off = lb_p->perim.bxtr + 
+			(lb_p->perim.txtr - lb_p->perim.bxtr)/2.0 -
 				(lb_p->lb_y - lb_p->lb_height/2.0);
 		break;
 	case NhlTOPRIGHT:
-		x_off = lb_p->real_perim.r - lb_p->perim.r;
-		y_off = lb_p->real_perim.t - lb_p->perim.t;
+		x_off = lb_p->perim.rxtr - lb_p->perim.r;
+		y_off = lb_p->perim.txtr - lb_p->perim.t;
+		break;
 	}
 
 	minor_off = (lb_p->orient == NhlHORIZONTAL) ? y_off : x_off;
 	major_off = (lb_p->orient == NhlHORIZONTAL) ? x_off : y_off;
 /*
- * Adjust the perimeter
+ * Adjust the external perimeter
+ */
+	lb_p->perim.lxtr -= x_off;
+	lb_p->perim.rxtr -= x_off;
+	lb_p->perim.bxtr -= y_off;
+	lb_p->perim.txtr -= y_off;
+
+/*
+ * Adjust the nominal perimeter
  */
 
-	lb_p->real_perim.l -= x_off;
-	lb_p->real_perim.r -= x_off;
-	lb_p->real_perim.b -= y_off;
-	lb_p->real_perim.t -= y_off;
+	p_width = lb_p->perim.r - lb_p->perim.l;
+	p_height = lb_p->perim.t - lb_p->perim.b;
+	ex_width = MAX(0.0, 
+		       (lb_p->perim.rxtr - lb_p->perim.lxtr) - p_width);
+	ex_height = MAX(0.0, 
+			(lb_p->perim.txtr - lb_p->perim.bxtr) - p_height);
+
+	switch (lb_p->just) {
+	case NhlBOTTOMLEFT:
+		lb_p->perim.l = lb_p->perim.lxtr;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlCENTERLEFT:
+		lb_p->perim.l = lb_p->perim.lxtr;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_height / 2.0;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlTOPLEFT:
+		lb_p->perim.l = lb_p->perim.lxtr;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_height;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlBOTTOMCENTER:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width / 2.0;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlCENTERCENTER:
+	default:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width / 2.0;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_height / 2.0;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlTOPCENTER:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width / 2.0;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_height;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlBOTTOMRIGHT:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlCENTERRIGHT:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_width / 2.0;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	case NhlTOPRIGHT:
+		lb_p->perim.l = lb_p->perim.lxtr + ex_width;
+		lb_p->perim.r = lb_p->perim.l + p_width;
+		lb_p->perim.b = lb_p->perim.bxtr + ex_height;
+		lb_p->perim.t = lb_p->perim.b + p_height;
+		break;
+	}
+	
 /*
  * Adjust the bar position
  */
@@ -3781,6 +3904,7 @@ static NhlErrorTypes    AdjustGeometry
 	for (i=0; i<lb_p->box_count+1; i++) {
 		lb_p->box_locs[i] -= major_off;
 	}
+
 /*
  * Adjust the labels position
  */
@@ -3803,9 +3927,11 @@ static NhlErrorTypes    AdjustGeometry
  * Set the title position
  */
 
-	if (lb_p->title_on && lb_p->max_title_ext > 0.0) {
+	if (lb_p->title_on && lb_p->title_ext > 0.0) {
 		title_x -= x_off;
 		title_y -= y_off;
+		lb_p->title_x = title_x;
+		lb_p->title_y = title_y;
 		if ((ret1 = NhlVASetValues(lb_p->title_id,
 					 NhlNtxPosXF, title_x,
 					 NhlNtxPosYF, title_y,
@@ -3814,13 +3940,16 @@ static NhlErrorTypes    AdjustGeometry
 		ret = MIN(ret1,ret);
 	}
 
+	lb_p->lb_x = lb_p->perim.lxtr;
+	lb_p->lb_y = lb_p->perim.txtr;
+	lb_p->lb_width = lb_p->perim.rxtr - lb_p->perim.lxtr;
+	lb_p->lb_height = lb_p->perim.txtr - lb_p->perim.bxtr;
+
 	_NhlInternalSetView((NhlViewLayer)tnew,
-			    lb_p->real_perim.l, lb_p->real_perim.t,
-			    lb_p->real_perim.r - lb_p->real_perim.l,
-			    lb_p->real_perim.t - lb_p->real_perim.b,
+			    lb_p->lb_x,lb_p->lb_y,
+			    lb_p->lb_width,lb_p->lb_height,
 			    False);
 	return (ret);
-
 }
 
 /*
@@ -4054,16 +4183,16 @@ static NhlErrorTypes    LabelBarDraw
 
 	if (lb_p->perim_on) {
 
-		xpoints[0] = lb_p->real_perim.l;
-		ypoints[0] = lb_p->real_perim.b;
-		xpoints[1] = lb_p->real_perim.r;;
-		ypoints[1] = lb_p->real_perim.b;
-		xpoints[2] = lb_p->real_perim.r;
-		ypoints[2] = lb_p->real_perim.t;
-		xpoints[3] = lb_p->real_perim.l;
-		ypoints[3] = lb_p->real_perim.t;
-		xpoints[4] = lb_p->real_perim.l;
-		ypoints[4] = lb_p->real_perim.b;
+		xpoints[0] = lb_p->perim.lxtr;
+		ypoints[0] = lb_p->perim.bxtr;
+		xpoints[1] = lb_p->perim.rxtr;
+		ypoints[1] = lb_p->perim.bxtr;
+		xpoints[2] = lb_p->perim.rxtr;
+		ypoints[2] = lb_p->perim.txtr;
+		xpoints[3] = lb_p->perim.lxtr;
+		ypoints[3] = lb_p->perim.txtr;
+		xpoints[4] = lb_p->perim.lxtr;
+		ypoints[4] = lb_p->perim.bxtr;
 
 		NhlVASetValues(lbl->base.wkptr->base.id,
 			     _NhlNwkDrawEdges, 1,
@@ -4190,7 +4319,7 @@ static NhlErrorTypes    LabelBarDraw
 
 	if (lbl->view.use_segments) {
 
-		if (lb_p->title_on && lb_p->max_title_ext > 0.0)
+		if (lb_p->title_on && lb_p->title_ext > 0.0)
 			_NhlSegDraw(_NhlGetLayer(lb_p->title_id));
 		
 		if (lb_p->labels_on )
@@ -4202,7 +4331,7 @@ static NhlErrorTypes    LabelBarDraw
 	else {
 		_NhlDeactivateWorkstation(lbl->base.wkptr);
 
-		if (lb_p->title_on && lb_p->max_title_ext > 0.0)
+		if (lb_p->title_on && lb_p->title_ext > 0.0)
 			NhlDraw(lb_p->title_id);
 		
 		if (lb_p->labels_on )
