@@ -1,19 +1,7 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-12 19:31:06 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-10-31 03:17:26 haley Exp $
 #
 
-CSRCS = c_cbex01.c
+EXAMPLES = c_cbex01.c
 
-SED_SRCS = c_cbex01.c
-
-GENERIC_SRCS = $(CSRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-
-c_cbex01.c: c_cbex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cpchhl cpchll amapra idsfft cpdrpl
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
