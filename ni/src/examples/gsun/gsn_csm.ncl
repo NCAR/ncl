@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.30 2000-01-07 01:05:36 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.31 2000-01-28 18:42:05 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -47,7 +47,6 @@ undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
 undef("check_for_lon_coord")
 undef("get_polar_type")
-undef("create_labelbar")
 undef("add_subtitles")
 undef("add_labelbar")
 undef("set_pres_hgt_axes")
@@ -665,63 +664,6 @@ begin
     end if
   else
     if(isatt(data,"lon2d").and. \
-; Function : create_labelbar                                            ;
-;                wks: graphic                                           ;
-;               nbox: integer                                           ;
-;             colors: array                                             ;
-;             labels: array                                             ;
-;              lbres: logical                                           ;
-;                                                                       ;
-; This function creates a labelbar given a workstation, the number of   ;
-; boxes, the colors and labels to use, and an optional list of          ;
-; labelbar resources. By default, lbAutoManage is set to False, the     ;
-; perimeter is turned off, and the fill patterns are set to solid.      ;
-;***********************************************************************;
- 
-function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
-lbres:logical)
-local perim_on, mono_fill_pat, label_align, labelbar_object
-begin
-
-  if(lbres.and.isatt(lbres,"lbPerimOn"))
-    perim_on = lbres@lbPerimOn
-    delete(lbres@lbPerimOn)
-  else
-    perim_on = False
-  end if
-
-  if(lbres.and.isatt(lbres,"lbMonoFillPattern"))
-    mono_fill_pat = lbres@lbMonoFillPattern
-    delete(lbres@lbMonoFillPattern)
-  else
-    mono_fill_pat = True
-  end if
-
-  if(lbres.and.isatt(lbres,"lbLabelAlignment"))
-    label_align = lbres@lbLabelAlignment
-    delete(lbres@lbLabelAlignment)
-  else
-    label_align = "InteriorEdges"
-  end if
-
-  labelbar_object = create "labelbar" labelBarClass wks
-    "lbBoxCount"        : nbox
-    "lbFillColors"      : colors
-    "lbLabelStrings"    : labels
-    "lbAutoManage"      : False
-    "lbPerimOn"         : perim_on
-    "lbLabelAlignment"  : label_align
-    "lbMonoFillPattern" : mono_fill_pat
-  end create
-
-  if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-    attsetvalues(labelbar_object,lbres)
-  end if
-
-  return(labelbar_object)
-end
-
-;***********************************************************************;
        all(dimsizes(data@lon2d).eq.dimsizes(data)).and. \
        .not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data@lon2d)
@@ -738,7 +680,8 @@ end
 ;***********************************************************************;
 ; Function : get_polar_type                                             ;
 ;                 res: logical                                          ;
-local text_object, parallel_pos, anno, just, strings, txres, amres, num_res
+;                                                                       ;
+; This function checks the resource list for gsnPolar, gsnPolarNH, or   ;
 ; gsnPolarSH to and returns what kind of polar plot is desired.         ;
 ;                                                                       ;
 ; The default will be northern ("NH") if none is set.                   ;
@@ -773,30 +716,40 @@ begin
     orthpos = 0.01*(vph)
   end if
 
+  end if
 
   if(.not.polar_nh.and..not.polar_sh) 
-      text_object = create just(i)+"string" textItemClass wks
-        "txString" : strings(i)
-      end create
+    print("get_polar_type: Warning: No polar projection has been selected. Defaulting to northern hemisphere.")
+    return("NH")
+  end if
 
-      if(txres.and..not.any(ismissing(getvaratts(txres))))
-        attsetvalues(text_object,txres)   ; Set some text resources.
-      end if
+  if(polar_nh) 
+    return("NH")
+  else
+    return("SH")
+  end if
+end
+
+        if(txres.and..not.any(ismissing(getvaratts(txres))))
+          attsetvalues(text_object,txres)   ; Set some text resources.
+        end if
 ; Procedure : add_subtitles                                             ;
-      anno = NhlAddAnnotation(plot,text_object)  ; Add annotation to plot.
+;                wks: graphic                                           ;
 ;               plot: graphic                                           ;
-      setvalues anno
-        "amZone"          : 3             ; Just outside plot area
-        "amSide"          : "top"         ; Subtitle at top.
-        "amParallelPosF"  : parallel_pos(i)
-        "amJust"          : "bottom"+just(i)
-        "amOrthogonalPosF": orthpos       ; Move away from top edge
-        "amResizeNotify"  : True          ; Resize subtitle if map resized.
-      end setvalues
+;        left_string: logical                                           ;
+;      center_string: logical                                           ;
+;       right_string: logical                                           ;
+;                res: logical                                           ;
+;                                                                       ;
+; This procedure adds one to three subtitles to the top of the plot,    ;
+; depending on whether the special resources gsnLeftString,             ;
+; gsnCenterString, and/or gsnRightString had been set.                  ;
 ;***********************************************************************;
-      if(amres.and..not.any(ismissing(getvaratts(amres))))
-        attsetvalues(anno,amres)   ; Set some annotation resources.
+        if(amres.and..not.any(ismissing(getvaratts(amres))))
+          attsetvalues(anno,amres)   ; Set some annotation resources.
+        end if
 procedure add_subtitles(wks:graphic,plot:graphic,left_string:logical,\
+                        center_string:logical,right_string:logical,\
                         res:logical)
 local text_object, parallel_pos, anno, just, strings, txres, amres, \
 num_res, ablank, chararray, string_len
@@ -2358,6 +2311,12 @@ local i, attnames, contour_object, map_object, res, lbar_pos, lbar_zone, \
     return(map_object)
 end
 
+;***********************************************************************;
+; Function : gsn_csm_map                                                ;
+;                   wks: workstation object                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function calls either gsn_csm_map_ce, gsn_csm_map_other, or      ;
 ; gsn_csm_map_polar depending on if gsnPolar is set, or how             ;
 ; mpProjection is set.                                                  ;
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
@@ -3604,6 +3563,9 @@ callframe, left_string, center_string, right_string, main_zone, ncurves
   check_for_y_lat_coord(datanew,res2_tmp,"contour")
     res2 = resources
 
+; Default for second plot is to draw line labels, but make background
+; label box transparent. Also, move the info label around depending on
+
   set_attr(res2_tmp,"cnLineLabelBackgroundColor",-1)
   if(.not.isatt(res2_tmp,"cnInfoLabelOrthogonalPosF"))
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
@@ -3712,10 +3674,6 @@ begin
         nyref        = dimsizes(yref_line)
         delete(res2@gsnYRefLine)
 ;
-
-      left_string   = new(1,logical)
-      center_string = new(1,logical)
-      right_string  = new(1,logical)
 ; Determine color of Y reference line.
 ;
         if(isatt(res2,"gsnYRefLineColor"))
