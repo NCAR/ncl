@@ -1,5 +1,5 @@
 C
-C	$Id: trn32t.f,v 1.1.1.1 1992-04-17 22:31:46 ncargd Exp $
+C	$Id: trn32t.f,v 1.2 1993-10-21 17:05:17 haley Exp $
 C
       SUBROUTINE TRN32T (U,V,W,XT,YT,ZT,IENT)
 C
@@ -69,7 +69,7 @@ C TO THE 3-SPACE W AXIS, THE 3-SPACE V AXIS IS CHOSEN (IN-
 C STEAD OF THE 3-SPACE W AXIS) TO BE TRANSFORMED INTO THE
 C 2-SPACE Y AXIS.
 C
-      ASSIGN  90 TO JDONE
+      JDONE = 2
       IF (ISCALE)  10, 30, 10
    10 X0 = XMIN
       Y0 = YMIN
@@ -89,14 +89,14 @@ C
       Y3 = Y2/(2.*BIGD)
       FACT = R0/D
    20 DELCRT = X2
-      ASSIGN  80 TO JDONE
+      JDONE = 1
    30 IF (SINGA .LT. 0.0001) GO TO  40
       R = 1./SINGA
-      ASSIGN  70 TO JUMP
+      JUMP = 2
       RETURN
    40 SINBE = SIN(BE)
       R = 1./SINBE
-      ASSIGN  60 TO JUMP
+      JUMP = 1
       RETURN
 C
 C********************  ENTRY TRN32  ************************
@@ -106,13 +106,13 @@ C
       VV = V
       WW = W
       Q = D/((UU-EU)*COSAL+(VV-EV)*COSBE+(WW-EW)*COSGA)
-      GO TO JUMP,( 60, 70)
+      GO TO (60, 70), JUMP
    60 UU = ((EW+Q*(WW-EW)-AW)*COSAL-(EU+Q*(UU-EU)-AU)*COSGA)*R
       VV = (EV+Q*(VV-EV)-AV)*R
-      GO TO JDONE,( 80, 90)
+      GO TO (80, 90), JDONE
    70 UU = ((EU+Q*(UU-EU)-AU)*COSBE-(EV+Q*(VV-EV)-AV)*COSAL)*R
       VV = (EW+Q*(WW-EW)-AW)*R
-      GO TO JDONE,( 80, 90)
+      GO TO (80, 90), JDONE
    80 XT = X1+X3*(FACT*UU-X0)
       YT = Y1+Y3*(FACT*VV-Y0)
       RETURN

@@ -1,5 +1,5 @@
 C
-C	$Id: trn32s.f,v 1.1.1.1 1992-04-17 22:31:42 ncargd Exp $
+C	$Id: trn32s.f,v 1.2 1993-10-21 17:04:57 haley Exp $
 C
       SUBROUTINE TRN32S (X,Y,Z,XT,YT,ZT,IFLAG)
 C
@@ -71,8 +71,8 @@ C TRN32 IS CALLED.
 C
       IF (IFLAG)  40, 10, 40
    10 CONTINUE
-      ASSIGN  60 TO JUMP3
-      IF (IOFFP .EQ. 1) ASSIGN  50 TO JUMP3
+      JUMP3 = 1
+      IF (IOFFP .EQ. 1) JUMP3 = 2
       AX = X
       AY = Y
       AZ = Z
@@ -91,9 +91,9 @@ C
       COSBE = DY/D
       COSGA = DZ/D
       SINGA = SQRT(1.-COSGA*COSGA)
-      ASSIGN 120 TO JUMP2
+      JUMP2 = 1
       IF (LL .EQ. 0) GO TO  20
-      ASSIGN 100 TO JUMP2
+      JUMP2 = 2
       DELCRT = NRU(LL)-NLU(LL)
       U0 = UMIN
       V0 = VMIN
@@ -120,26 +120,26 @@ C 2-SPACE Y AXIS.
 C
    20 IF (SINGA .LT. 0.0001) GO TO  30
       R = 1./SINGA
-      ASSIGN  70 TO JUMP
+      JUMP = 1
       RETURN
    30 SINBE = SQRT(1.-COSBE*COSBE)
       R = 1./SINBE
-      ASSIGN  80 TO JUMP
+      JUMP = 2
       RETURN
    40 CONTINUE
       XX = X
       YY = Y
       ZZ = Z
-      GO TO JUMP3,( 50, 60)
+      GO TO ( 60, 50) , JUMP3
    50 IF (ZZ .EQ. SPVAL) GO TO 110
    60 Q = D/((XX-EX)*COSAL+(YY-EY)*COSBE+(ZZ-EZ)*COSGA)
-      GO TO JUMP,( 70, 80)
+      GO TO (70,80), JUMP
    70 XX = ((EX+Q*(XX-EX)-AX)*COSBE-(EY+Q*(YY-EY)-AY)*COSAL)*R
       YY = (EZ+Q*(ZZ-EZ)-AZ)*R
-      GO TO  90
+      GO TO 90
    80 XX = ((EZ+Q*(ZZ-EZ)-AZ)*COSAL-(EX+Q*(XX-EX)-AX)*COSGA)*R
       YY = (EY+Q*(YY-EY)-AY)*R
-   90 GO TO JUMP2,(100,120)
+   90 GO TO (120,100), JUMP2
   100 XX = AMIN1(U4,AMAX1(U1,U1+U3*(FACT*XX-U0)))
       YY = AMIN1(V4,AMAX1(V1,V1+V3*(FACT*YY-V0)))
       GO TO 120
