@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.11 1997-12-30 16:08:32 haley Exp $
+#      $Id: yMakefile,v 1.12 1998-01-08 01:44:50 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -39,7 +39,7 @@ PROG_LIBS	=	$(NGOLIB) $(XCBLIB) $(DBLIB) $(NCLAPILIB) \
 			$(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
-EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
+EXTRA_LIBS	=	$(NCDFLIBS) -lXmHTML -lXpm $(HDFLIB)
 SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm 
 
 

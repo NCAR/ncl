@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.12 1997-10-23 00:30:47 dbrown Exp $
+!      $Id: ngi.res,v 1.13 1998-01-08 01:44:49 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -479,3 +479,7 @@ browse.title:				Data Browser
 addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
 
+!htmlview: display is sgi,linux
+*html*fontSizeList: 12,8,22,18,14,12,10,8
+!htmlview: display is sun
+*html*fontSizeList: 10,8,20,16,12,10,8,6
