@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlotP.h,v 1.1 1993-11-20 01:06:10 dbrown Exp $
+ *      $Id: LogLinPlotP.h,v 1.2 1993-12-22 00:56:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,27 +24,16 @@
 #define _NLogLinPlotP_h
 
 #include <ncarg/hlu/TransformP.h>
-#include <ncarg/hlu/LogLinTransObj.h>
+#include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
 typedef struct LogLinPlotLayerPart {
 
 	/* Public resources */
 
-	NhlBoolean	overlay_plot_base;
-	float 		x_min;
-	float		x_max;
-	int		x_log;
-	int 		x_reverse;
-	float 		y_min;
-	float		y_max;
-	int		y_log;
-	int 		y_reverse;
-
 	/* Private Fields */
 
-	Layer		trans;
-	Layer		overlay;
+	Layer		overlay_object;
 
 } LogLinPlotLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.6 1993-12-14 21:44:31 boote Exp $
+ *      $Id: hlu.h,v 1.7 1993-12-22 00:56:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -505,6 +505,40 @@ extern NhlErrorTypes NhlDataToNDC(
 	float*  /* out_of_range */
 #endif
 );
+
+extern NhlErrorTypes NhlDataPolyline(
+#ifdef NhlNeedProto
+	int		/* pid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlNDCPolyline(
+#ifdef NhlNeedProto
+	int		/* pid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+NhlErrorTypes NhlAddToOverlay(
+#ifdef NhlNeedProto
+        int		/* base_id */,
+	int		/* plot_id */,
+	int		/* after_id */
+#endif
+);
+
+NhlErrorTypes NhlRemoveFromOverlay(
+#ifdef NhlNeedProto
+        int		/* base_id */,
+	int		/* plot_id */
+#endif
+);
+
 
 
 #endif /* _NHLU_h */

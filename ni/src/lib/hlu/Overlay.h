@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Overlay.h,v 1.1 1993-11-20 01:06:20 dbrown Exp $
+ *      $Id: Overlay.h,v 1.2 1993-12-22 00:56:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,10 +31,22 @@
 #include <ncarg/hlu/Legend.h>
 
 /*
+ * Overlay instance resources
+ */
+
+#define NhlNovOverlayIds	".ovOverlayIds"
+#define NhlNovPreDrawOrder	".ovPreDrawOrder"
+#define NhlNovPostDrawOrder	".ovPostDrawOrder"
+
+/*
  * Overlay class resources
  */
 
-#define NhlNovOverlayTrans		"ovOverlayTrans"
+#define NhlCovOverlayIds	".OvOverlayIds"
+#define NhlCovPreDrawOrder	".OvPreDrawOrder"
+#define NhlCovPostDrawOrder	".OvPostDrawOrder"
+
+
 typedef struct _OverlayLayerClassRec *OverlayLayerClass;
 typedef struct _OverlayLayerRec *OverlayLayer;
 

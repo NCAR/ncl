@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.1 1993-11-20 01:06:14 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.2 1993-12-22 00:56:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,25 @@
 
 #include <ncarg/hlu/Overlay.h>
 
+#define NhlmpOrthographic		"OR"
+#define NhlmpStereographic		"ST"
+#define NhlmpLambertEqualArea		"LE"
+#define NhlmpGnomonic			"GN"
+#define NhlmpAzimuthalEquidistant	"AE"
+#define NhlmpSatellite			"SV"
+#define NhlmpMollweide			"MO"
+#define NhlmpMercator			"ME"
+#define NhlmpCylindrical		"CE"
+#define NhlmpLambertConformal		"LC"
+
+/*
+ * MapPlot instance resources
+ */
+
 /*
  * MapPlot class resources
  */
+
 
 typedef struct _MapPlotLayerClassRec *MapPlotLayerClass;
 typedef struct _MapPlotLayerRec *MapPlotLayer;

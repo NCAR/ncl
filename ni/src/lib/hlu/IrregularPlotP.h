@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.1 1993-11-20 01:06:03 dbrown Exp $
+ *      $Id: IrregularPlotP.h,v 1.2 1993-12-22 00:55:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,9 @@
 #include <ncarg/hlu/IrregularPlot.h>
 
 typedef struct IrregularPlotLayerPart {
-	/* User settable resource fields */
+
 	int foo;
-	/* Private Fields */
+
 } IrregularPlotLayerPart;
 
 typedef struct _IrregularPlotLayerRec {

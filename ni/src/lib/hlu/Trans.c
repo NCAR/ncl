@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.4 1993-12-14 23:31:54 ethan Exp $
+ *      $Id: Trans.c,v 1.5 1993-12-22 00:56:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,26 @@
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/TransformP.h>
 
+
+static NhlErrorTypes CallDataPolyline(
+#ifdef NhlNeedProto
+	Layer layer,
+	LayerClass class,
+	float	*x,
+	float 	*y,
+	int	n
+#endif
+);
+
+static NhlErrorTypes CallNDCPolyline(
+#ifdef NhlNeedProto
+	Layer layer,
+	LayerClass class,
+	float	*x,
+	float 	*y,
+	int	n
+#endif
+);
 
 NhlErrorTypes 	_NhlWinToNDC
 #if  __STDC__
@@ -449,7 +469,7 @@ static NhlErrorTypes CallDataToNDC
 /*
 * This is a call first method
 */
-	if(class != transformLayerClass) {
+	if (class != viewLayerClass) {
 		if(tclass->trans_class.data_to_ndc != NULL) 
 			return((*tclass->trans_class.data_to_ndc)(layer,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 		else 
@@ -518,7 +538,7 @@ static NhlErrorTypes CallNDCToData
 /*
 * This is a call first method
 */
-	if(class != transformLayerClass) {
+	if (class != viewLayerClass) {
 		if(tclass->trans_class.ndc_to_data != NULL) 
 			return((*tclass->trans_class.ndc_to_data)(layer,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 		else 
@@ -561,4 +581,144 @@ NhlErrorTypes NhlNDCToData
 		return(FATAL);
 	}
 	return(ret);
+}
+
+
+NhlErrorTypes NhlDataPolyline
+#if __STDC__
+(int pid, float *x,float *y, int n)
+#else 
+(pid,x,y,n)
+	int pid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	TransformLayer		tl = (TransformLayer)_NhlGetLayer(pid);
+	NhlErrorTypes		ret = NOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlDataPolyline";
+
+
+	if (tl == NULL) {
+		e_text = "%s: invalid object id"; 
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+	else if (_NhlIsTransform(tl)) {
+
+		ret = CallDataPolyline((Layer)tl,tl->base.layer_class,x,y,n);
+
+	} else {
+		e_text = "%s: unsupported method for this object"; 
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+
+	return(ret);
+}
+
+static NhlErrorTypes CallDataPolyline
+#if __STDC__
+(Layer layer, LayerClass class,float *x,float *y,int n)
+#else 
+(layer,class,x,y,n)
+	Layer layer;
+	LayerClass class;
+	float	*x;
+	float 	*y;
+	int	n;
+#endif
+{
+	NhlErrorTypes		ret = NOERROR;
+	TransformLayerClass 	tclass = (TransformLayerClass) class;
+	char			*e_text;
+	char			*entry_name = "NhlDataPolyline";
+
+	if (class != viewLayerClass) {
+		if (tclass->trans_class.data_polyline != NULL) 
+			ret = (*tclass->trans_class.data_polyline)
+				(layer,x,y,n);
+		else 
+			ret = CallDataPolyline(layer,
+					       tclass->base_class.superclass,
+					       x,y,n);
+	} else {
+		e_text = "%s: method not registered for this plot class";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+
+	return ret;
+}
+
+
+NhlErrorTypes NhlNDCPolyline
+#if __STDC__
+(int pid, float *x,float *y, int n)
+#else 
+(pid,x,y,n)
+	int pid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	TransformLayer		tl = (TransformLayer)_NhlGetLayer(pid);
+	NhlErrorTypes		ret = NOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlNDCPolyline";
+
+
+	if (tl == NULL) {
+		e_text = "%s: invalid object id"; 
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+	else if (_NhlIsTransform(tl)) {
+
+		ret = CallNDCPolyline((Layer)tl,tl->base.layer_class,x,y,n);
+
+	} else {
+		e_text = "%s: unsupported method for this object"; 
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+
+	return(ret);
+}
+
+static NhlErrorTypes CallNDCPolyline
+#if __STDC__
+(Layer layer, LayerClass class,float *x,float *y,int n)
+#else 
+(layer,class,x,y,n)
+	Layer layer;
+	LayerClass class;
+	float	*x;
+	float 	*y;
+	int	n;
+#endif
+{
+	NhlErrorTypes		ret = NOERROR;
+	TransformLayerClass 	tclass = (TransformLayerClass) class;
+	char			*e_text;
+	char			*entry_name = "NhlNDCPolyline";
+
+	if (class != viewLayerClass) {
+		if (tclass->trans_class.ndc_polyline != NULL) 
+			ret = (*tclass->trans_class.ndc_polyline)
+				(layer,x,y,n);
+		else 
+			ret = CallNDCPolyline(layer,
+					      tclass->base_class.superclass,
+					      x,y,n);
+	} else {
+		e_text = "%s: method not registered for this plot class";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return(FATAL);
+	}
+	
+	return ret;
 }

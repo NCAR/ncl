@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.2 1993-10-19 17:50:03 boote Exp $
+ *      $Id: Converters.c,v 1.3 1993-12-22 00:55:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,13 +23,15 @@
  */
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Converters.h>
+#include <math.h>
 
-#if	defined(__CENTERLINE__) && defined(sun)
+#if	defined(sun)
 #include <floatingpoint.h>
-#endif	/* centerline/sun hack- strtod should be in stdlib.h but it's not */
+#endif	/* sun hack- strtod should be in stdlib.h but it's not */
 
 /*
  * This macro is used because most of the converters end the same way.

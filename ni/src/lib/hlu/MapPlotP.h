@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.1 1993-11-20 01:06:16 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.2 1993-12-22 00:56:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,9 +28,13 @@
 #include <ncarg/hlu/MapPlot.h>
 
 typedef struct MapPlotLayerPart {
-	/* User settable resource fields */
+
+	/* Public resources */
+
 	int foo;
+
 	/* Private Fields */
+
 } MapPlotLayerPart;
 
 typedef struct _MapPlotLayerRec {

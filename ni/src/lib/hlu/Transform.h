@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Transform.h,v 1.1 1993-04-30 17:25:29 boote Exp $
+ *      $Id: Transform.h,v 1.2 1993-12-22 00:56:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,18 @@
 #define _NTransform_h
 
 #include <ncarg/hlu/View.h>
+
+/*
+ * Public Transform instance resources
+ */
+
+#define NhlNtfOverlayPlotBase	"tfOverlayPlotBase"
+
+/*
+ * Public Transform class resources
+ */
+
+#define NhlCtfOverlayPlotBase	"TfOverlayPlotBase"
 
 typedef struct _TransformLayerClassRec *TransformLayerClass;
 typedef struct _TransformLayerRec *TransformLayer;

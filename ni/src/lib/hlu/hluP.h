@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.5 1993-10-23 00:35:14 dbrown Exp $
+ *      $Id: hluP.h,v 1.6 1993-12-22 00:56:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -440,6 +440,32 @@ float*          /* transform */
 );
 
 extern void _NhlEndSegment();
+
+/*
+* Globally callable functions from Draw.c
+*/
+
+extern NhlErrorTypes _NhlPreDraw(
+#ifdef NhlNeedProto
+	Layer	layer	/* layer of object to draw	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlDraw(
+#ifdef NhlNeedProto
+	Layer	layer	/* layer of object to draw	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlPostDraw(
+#ifdef NhlNeedProto
+	Layer	layer	/* layer of object to draw	*/
+#endif
+);
+
+/*
+* End of Draw.c functions
+*/
 
 extern void _NhlConvertersInitialize(
 #if	NhlNeedProto

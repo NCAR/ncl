@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.6 1993-12-14 21:44:28 boote Exp $
+ *      $Id: hlu.c,v 1.7 1993-12-22 00:56:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -195,7 +195,8 @@ NhlFree
 		return(NOERROR);
 
 	else{
-#if	defined(__sgi) || defined(_HPUX_SOURCE) || defined(__CLCC__)
+#if	defined(__sgi) || defined(_HPUX_SOURCE) || defined(__CLCC__) \
+	|| defined(GCC)
 
 		free(ptr);
 		return NOERROR;
@@ -1221,7 +1222,7 @@ NhlFreeGenArray
  *
  *		Pointer gto must point to an allocated Generic Array that
  *		is assumed to be valid and serves as a template for 
- *		validated the user-supplied gfrom Generic Array. It need not
+ *		validating the user-supplied gfrom Generic Array. It need not
  *		contain any actual data (num_elements may be 0).
  *		The type, type size, number of dimensions, and
  *		length of all dimensions except the first, must match 

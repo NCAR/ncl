@@ -1,6 +1,6 @@
 
 /*
- *      $Id: IrregularPlot.h,v 1.1 1993-11-20 01:06:01 dbrown Exp $
+ *      $Id: IrregularPlot.h,v 1.2 1993-12-22 00:55:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,10 +25,6 @@
 #define _NIrregularPlot_h
 
 #include <ncarg/hlu/Overlay.h>
-
-/*
- * IrregularPlot class resources
- */
 
 typedef struct _IrregularPlotLayerClassRec *IrregularPlotLayerClass;
 typedef struct _IrregularPlotLayerRec *IrregularPlotLayer;

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.4 1993-12-13 23:35:08 ethan Exp $
+ *      $Id: TransformP.h,v 1.5 1993-12-22 00:56:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,16 +29,38 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/Transform.h>
 
+#define NhlNtfOverlayObject	".tfOverlayObject"
+#define NhlCtfOverlayObject	".TfOverlayObject"
+#define NhlNtfOverlayTrans	".tfOverlayTrans"
+#define NhlCtfOverlayTrans	".TfOverlayTrans"
+#define NhlNtfOverlayStatus	".tfOverlayStatus"
+#define NhlCtfOverlayStatus	".TfOverlayStatus"
+
+typedef enum _NhltfOverlayStatus {
+	_tfNotInOverlay,
+	_tfCurrentOverlayBase,
+	_tfCurrentOverlayMember
+} NhltfOverlayStatus;
+
 typedef struct TransformLayerPart {
-	/* User settable resource fields */
-	/* none */
-	/* Private Fields */
-	Layer overlay_trans;
-	Layer plot_trans;
-	Layer title;
-	Layer tic_marks;
-	Layer legend;
-	Layer labelbar;
+
+	/* Public resource fields */
+
+	NhlBoolean		overlay_plot_base;
+
+	/* Private resource fields, set only by the overlay manager */
+
+	Layer			overlay_trans_obj;  
+	Layer			overlay_object; 
+	NhltfOverlayStatus	overlay_status;
+
+	/* 
+	 * Private field for members of the Transform class 
+	 * All plots supporting overlays must fill in this field
+	 */
+ 
+	Layer			trans_obj;
+
 } TransformLayerPart;
 
 typedef struct _TransformLayerRec {
