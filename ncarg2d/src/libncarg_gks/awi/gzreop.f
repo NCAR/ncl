@@ -41,6 +41,7 @@ C
 C
 C  Check if the workstation identifier is valid.
 C
+      print *,'Got to GZREOP'
       IF (WKID .LT. 0) THEN
         ERS = 1
         CALL GERHND(-401,ENAM,ERF)
@@ -264,6 +265,22 @@ C       CALL GSPARF (CPARF(1),CPARF(2))
         CALL GSASF (LASF)
 C
 C  Send out the context.
+C
+C  Put out new picture initialization if CGM and the picture is empty.
+C
+        IF (WTYPE .EQ. GCGM) THEN
+          IF (NOPICT .LE. 0) THEN
+            FCODEO = FCODE
+            CONTO  = CONT
+            FCODE = 91
+            CONT  =  0
+            CALL GZROI(0)
+            CALL G01WDR(WKID,' ')
+            FCODE  = FCODEO
+            CONT   = CONTO
+            NOPICT = 1
+          ENDIF
+        ENDIF
 C
         CUFLAG = WKID
         FCODE = -6
