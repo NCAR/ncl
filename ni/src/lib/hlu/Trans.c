@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.15 1997-05-05 21:45:25 boote Exp $
+ *      $Id: Trans.c,v 1.16 1998-02-24 02:21:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -550,9 +550,12 @@ NhlErrorTypes NhlDataPolyline
 	int n;
 #endif
 {
-	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
+	NhlLayer		tl = _NhlGetLayer(pid);
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 
@@ -629,6 +632,9 @@ NhlErrorTypes NhlNDCPolyline
 	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 
@@ -699,6 +705,9 @@ NhlErrorTypes NhlDataPolygon
 	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 
@@ -775,6 +784,9 @@ NhlErrorTypes NhlNDCPolygon
 	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 
@@ -845,6 +857,9 @@ NhlErrorTypes NhlDataPolymarker
 	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 
@@ -921,6 +936,9 @@ NhlErrorTypes NhlNDCPolymarker
 	NhlLayer		tl = _NhlGetLayer(pid);
 	NhlTransformClass	tc;
 
+        if (tl && _NhlIsWorkstation(tl)) {
+                tl = _NhlDefaultPlot(tl);
+        }
 	if(tl && _NhlIsTransform(tl)) {
 		tc = (NhlTransformClass)tl->base.layer_class;
 

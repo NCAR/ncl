@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.73 1997-09-08 19:26:45 dbrown Exp $
+ *      $Id: Workstation.c,v 1.74 1998-02-24 02:21:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
+#include <ncarg/hlu/LogLinPlot.h>
 
 #define DEBUG_NCGM 0
 /* 
@@ -1118,6 +1119,7 @@ static NhlErrorTypes WorkstationInitialize
 	wp->open = False;
 	wp->gkswkstype = (int)NhlFATAL;
 	wp->gkswksconid = (int)NhlFATAL;
+	wp->def_plot_id = NhlNULLOBJID;
 
 	/*
 	 * Initialize colormap with _NhlCOLUNSET, then call DoCmap to fill cmap
@@ -1972,6 +1974,9 @@ static NhlErrorTypes WorkstationDestroy
 
 	if (_NhlGetLayer(wp->def_graphic_style_id) != NULL) {
 		NhlDestroy(wp->def_graphic_style_id);
+	}
+	if (_NhlGetLayer(wp->def_plot_id) != NULL) {
+		NhlDestroy(wp->def_plot_id);
 	}
 
 	return(retcode);
@@ -4573,6 +4578,60 @@ _NhlWorkstationMarker
 	&((NhlWorkstationClass)l->base.layer_class)->work_class;
 
 	return (*wcp->marker_work)(l,x,y,num_points);
+}
+
+/*
+ * Function:	_NhlDefaultPlot
+ *
+ * Description:	returns the default plot associated with a Workstation.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlLayer
+_NhlDefaultPlot
+#if	NhlNeedProto
+(
+	NhlLayer l
+)
+#else
+(l)
+	NhlLayer l;
+#endif
+{
+	NhlWorkstationLayer wl;
+	NhlErrorTypes subret = NhlNOERROR;
+
+	if(! (l && _NhlIsWorkstation(l)))
+		return NULL;
+
+	wl = (NhlWorkstationLayer) l;
+
+	if (wl->work.def_plot_id == NhlNULLOBJID) {
+		int plot_id;
+		char	buffer[_NhlMAXRESNAMLEN];
+
+		sprintf(buffer,"%s",wl->base.name);
+		strcat(buffer,".Plot");
+		subret = NhlVACreate(&plot_id,buffer,NhllogLinPlotClass,
+				     wl->base.id,
+				     NhlNtfPlotManagerOn,False,
+				     NhlNvpXF,0.0,
+				     NhlNvpYF,1.0,
+				     NhlNvpWidthF,1.0,
+				     NhlNvpHeightF,1.0,
+				     NULL);
+		if (subret < NhlWARNING) 
+			return NULL;
+		wl->work.def_plot_id = plot_id;
+	}
+	
+	return _NhlGetLayer(wl->work.def_plot_id);
 }
 
 /*

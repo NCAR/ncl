@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.41 1998-01-26 21:07:39 dbrown Exp $
+ *      $Id: TextItem.c,v 1.42 1998-02-24 02:21:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -429,6 +429,9 @@ static NhlErrorTypes    TextItemInitialize
 	float			tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	NhlBoolean		do_view_trans = False;
 
+        tnew->text.new_draw_req = True;
+        tnew->text.trans_dat = NULL;
+        
 	if(!tnew->text.pos_x_set) tnew->text.pos_x = 0.5;
 	if(!tnew->text.pos_y_set) tnew->text.pos_y = 0.5;
 	if(!tnew->text.angle_set) tnew->text.angle = 0.0;
@@ -587,7 +590,24 @@ static NhlErrorTypes TextItemSetValues
 	float tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	char *tmp;
 	int	rstringchange = 0;
+	int	view_args = 0;
 
+	if (tnew->view.use_segments != told->view.use_segments) {
+		tnew->text.new_draw_req = True;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpOn)) view_args++;
+	if (num_args > view_args ||
+            ! _NhlSegmentSpansArea(tnew->text.trans_dat,
+                                   tnew->view.x,
+                                   tnew->view.x + tnew->view.width,
+                                   tnew->view.y - tnew->view.height,
+                                   tnew->view.y))
+		tnew->text.new_draw_req = True;
+        
 	if (tnew->text.constant_spacing < 0.0) {
 		tnew->text.constant_spacing = 0.0;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -766,9 +786,20 @@ static NhlErrorTypes    TextItemDraw
 	NhlTextItemLayer tlayer = (NhlTextItemLayer) layer;
 	float fl,fr,fb,ft,ul,ur,ub,ut;
 	int ll;
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
 	char buf[10];
-	char *func = "TextItemDraw";
+	char *e_text, *func = "TextItemDraw";
+
+	if (tlayer->view.use_segments && ! tlayer->text.new_draw_req) {
+                
+                subret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDrawSegment(tlayer->text.trans_dat,
+				_NhlWorkstationId(tlayer->base.wkptr));
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
+		return MIN(subret,ret);
+	}
 
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
@@ -778,12 +809,27 @@ static NhlErrorTypes    TextItemDraw
 	c_pcsetr("PW",tlayer->text.real_ph_width);
 	c_pcseti("QU",tlayer->text.qual);
 	c_pcseti("FN",tlayer->text.font);
-	c_pcseti("OC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
-	c_pcseti("CC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	c_pcseti("OC",_NhlGetGksCi
+                 (tlayer->base.wkptr,tlayer->text.font_color));
+	c_pcseti("CC",_NhlGetGksCi
+                 (tlayer->base.wkptr,tlayer->text.font_color));
 	sprintf(buf,"%c",tlayer->text.func_code);
 	c_pcsetc("FC",buf);
 
 	_NhlActivateWorkstation(tlayer->base.wkptr);
+
+	if (tlayer->view.use_segments) {
+		if (tlayer->text.trans_dat != NULL)
+			_NhlDeleteViewSegment(layer, tlayer->text.trans_dat);
+		if ((tlayer->text.trans_dat =
+                     _NhlNewViewSegment(layer)) == NULL) {
+			e_text = "%s: error opening segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, func);
+			return(ret);
+		}
+		_NhlStartSegment(tlayer->text.trans_dat);
+	}
+        
 	if(tlayer->text.qual == 2){
 		Gtext_font_prec gtfp;
 		gtfp.font = 1;
@@ -793,7 +839,8 @@ static NhlErrorTypes    TextItemDraw
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
-
+        tlayer->text.new_draw_req = False;
+        
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 
 /* first draw the perimeter: it may have a solid background */
@@ -822,10 +869,13 @@ static NhlErrorTypes    TextItemDraw
 	}
 
 	gset_linewidth((Gdouble)tlayer->text.font_thickness);
-	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
-	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	gset_line_colr_ind((Gint)_NhlGetGksCi
+                           (tlayer->base.wkptr,tlayer->text.font_color));
+	gset_line_colr_ind((Gint)_NhlGetGksCi
+                           (tlayer->base.wkptr,tlayer->text.font_color));
 	gset_fill_style_ind(GSTYLE_SOLID);
-	gset_marker_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	gset_marker_colr_ind((Gint)_NhlGetGksCi
+                             (tlayer->base.wkptr,tlayer->text.font_color));
 
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
@@ -834,7 +884,11 @@ static NhlErrorTypes    TextItemDraw
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-
+        
+	if (tlayer->view.use_segments) {
+		_NhlEndSegment();
+        }
+        
 	_NhlDeactivateWorkstation(tlayer->base.wkptr);
 	return(ret);
 }

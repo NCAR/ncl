@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.9 1997-02-27 20:13:07 boote Exp $
+ *      $Id: WorkstationI.h,v 1.10 1998-02-24 02:21:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -278,6 +278,12 @@ extern int _NhlNewColor(
         float   /* red */,
         float   /* green */,
         float   /* blue */
+#endif
+);
+
+extern NhlLayer _NhlDefaultPlot(
+#if	NhlNeedProto
+        NhlLayer  l
 #endif
 );
 
