@@ -1431,6 +1431,22 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
     }
   }
 
+  if(type_wgtq != NCL_double) {
+    tmp_wgtq = (double*)calloc(klevnlatnlon,sizeof(double));
+    if( tmp_wgtq == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_wgtr != NCL_double) {
+    tmp_wgtr = (double*)calloc(klevnlatnlon,sizeof(double));
+    if( tmp_wgtr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Coerce weights to double if necessary.
  */
@@ -1473,6 +1489,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Loop through leftmost dimensions and call Fortran routine.
  */
   index_q = 0;
+
   for( i = 0; i < total_leftmost; i++ ) {
     if(type_q != NCL_double) {
 /*
