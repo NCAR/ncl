@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.100 2002-07-30 15:17:31 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.101 2002-08-15 22:08:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -79,6 +79,8 @@ undef("get_lat_labels")
 undef("add_lon_labels")
 undef("add_lat_labels_xaxis")
 undef("add_lat_labels_yaxis")
+undef("add_latlon_labels")
+undef("add_map_tickmarks")
 undef("gsn_add_cyclic_point")
 undef("pop_tick_locs")
 undef("pop_latlon_grid")
@@ -830,7 +832,7 @@ end
 function get_allowed_latnames()
 begin
   return((/"lat","Lat","Latitude","LAT","latitude","LATITUDE","hlat",\
-           "lat_u","lat_t","yc"/))
+           "lat_u","lat_t","lat_98","yc"/))
 end
 
 ;***********************************************************************;
@@ -854,7 +856,7 @@ end
 function get_allowed_lonnames()
 begin
   return((/"lon","Lon","Longitude","LON","longitude","LONGITUDE","hlon",\
-           "long","lon_u","lon_t","xc"/))
+           "long","lon_u","lon_t","lon_98","xc"/))
 end
 
 ;***********************************************************************;
@@ -3241,6 +3243,16 @@ begin
     ypos   = get_res_value(res2,"vpYF",0.8)
 
 ;
+; Print a warning if user tries to set mpMinLonF and/or mpMaxLonF,
+; since these values should not be messed with in a polar plot (they
+; should be -180 and 180.
+;
+    if(isatt(res2,"mpMinLonF").or.isatt(res2,"mpMaxLonF")) then
+      print("gsn_csm_map_polar: Warning: you should not set the mpMinLonF and/or mpMaxLonF resources.")
+      print("Setting these resources to something other than -180 and 180 may produce unexpected results.")
+    end if
+
+;
 ; Check for other resources that we need to set at the time the
 ; map is created.
 ;
@@ -3281,7 +3293,7 @@ begin
 ;
 ; If labeling the polar plot with time values, then we want slt = 0
 ; to be at the bottom of the plot, so we need to rotate the map 
-; accordinly, by setting mpCenterLonF.
+; accordingly, by setting mpCenterLonF.
 ;
 ;  If slt = ut + lon/15, then at slt=0:
 ;

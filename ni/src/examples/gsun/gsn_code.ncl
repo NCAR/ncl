@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.89 2002-07-30 15:17:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.90 2002-08-15 22:08:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1789,15 +1789,17 @@ begin
 ;
 ; Set some defaults
 ;
-  perim_on      = get_res_value(lbres,"lbPerimOn",False)
-  mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
-  label_align   = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
-  font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
-  orientation   = get_res_value(lbres,"lbOrientation","horizontal")
   vpxf          = get_res_value(lbres,"vpXF",0.1)
   vpyf          = get_res_value(lbres,"vpYF",0.1)
   vpwidthf      = get_res_value(lbres,"vpWidthF",0.8)
   vpheightf     = get_res_value(lbres,"vpHeightF",0.3)
+  new_colors    = get_res_value(lbres,"lbFillColors",colors)
+  new_labels    = get_res_value(lbres,"lbLabelStrings",labels)
+  orientation   = get_res_value(lbres,"lbOrientation","horizontal")
+  perim_on      = get_res_value(lbres,"lbPerimOn",False)
+  label_align   = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
+  font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
+  mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
 
   labelbar_object = create "labelbar" labelBarClass wks
     "vpXF"              : vpxf
@@ -1805,8 +1807,8 @@ begin
     "vpWidthF"          : vpwidthf
     "vpHeightF"         : vpheightf
     "lbBoxCount"        : nbox
-    "lbFillColors"      : colors
-    "lbLabelStrings"    : labels
+    "lbFillColors"      : new_colors
+    "lbLabelStrings"    : new_labels
     "lbOrientation"     : orientation
     "lbPerimOn"         : perim_on
     "lbLabelAlignment"  : label_align
