@@ -1008,7 +1008,7 @@ NhlErrorTypes pslhor_W( void )
  */
   if(type_z != NCL_double && type_t != NCL_double && 
      type_phis != NCL_double && type_ps != NCL_double && 
-     type_pres != NCL_double && type_lats != NCL_double) {
+     type_pres != NCL_double) {
 
     type_slp = NCL_float;
 
