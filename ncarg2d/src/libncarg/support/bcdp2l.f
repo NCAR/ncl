@@ -1,7 +1,7 @@
 C
-C	$Id: bzdp2l.f,v 1.2 1992-11-17 19:10:02 fred Exp $
+C $Id: bcdp2l.f,v 1.1 1999-09-21 17:07:31 kennison Exp $
 C
-      REAL FUNCTION BZDP2L(PX,PY,X1,Y1,X2,Y2)
+      REAL FUNCTION BCDP2L(PX,PY,X1,Y1,X2,Y2)
 C
 C  Calculate the undirected distance from a point (PX,PY) to a line
 C  passing through the two points (X1,Y1) and (X2,Y2).  Use the formula
@@ -17,17 +17,17 @@ C  Return the distance from (PX,PY) to the point (X1,Y1) which is greater
 C  than or equal to the distance from (PX,PY) to any line passing through
 C  (X1,Y1) = (X2,Y2).
 C
-          BZDP2L = SQRT((PY-Y1)**2+(PX-X1)**2)
+          BCDP2L = SQRT((PY-Y1)**2+(PX-X1)**2)
           GO TO 10
         ENDIF
-        BZDP2L = ABS(PX-X1)
+        BCDP2L = ABS(PX-X1)
         GO TO 10
       ELSE
         CONST = (Y1-Y2)/(X2-X1)
         A = CONST
         B = 1.
         C = -(CONST*X1+Y1)
-        BZDP2L = ABS(A*PX+B*PY+C)/SQRT(A*A+B*B)
+        BCDP2L = ABS(A*PX+B*PY+C)/SQRT(A*A+B*B)
         GO TO 10
       ENDIF
 C

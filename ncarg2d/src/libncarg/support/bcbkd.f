@@ -1,11 +1,11 @@
 C
-C	$Id: bzbkd.f,v 1.2 1992-11-17 19:09:57 fred Exp $
+C $Id: bcbkd.f,v 1.1 1999-09-21 17:07:30 kennison Exp $
 C
-      BLOCKDATA BZBKD
+      BLOCKDATA BCBKD
 C
 C  Data for the Bezier curve package.
 C
-      include 'bzcom.h'
+      include 'bccom.h'
 C
 C  FRATIO  --  The tolerance limit for the recursive subdivision
 C              algorithm.  This limit specifies how close the

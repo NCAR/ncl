@@ -1,7 +1,7 @@
 C
-C	$Id: bzcurv.f,v 1.2 1992-11-17 19:10:01 fred Exp $
+C $Id: bccurv.f,v 1.1 1999-09-21 17:07:31 kennison Exp $
 C
-      SUBROUTINE BZCURV(BXI,BYI,NO,XO,YO,NPTS)
+      SUBROUTINE BCCURV(BXI,BYI,NO,XO,YO,NPTS)
 C
 C  PURPOSE
 C    This subroutine calculates points along a Bezier curve whose
@@ -13,7 +13,7 @@ C
 C  USAGE
 C                Argument    Type     Mode    Dimension 
 C                --------    ----     ----    ---------
-C    CALL BZCURV(BXI,        Real     Input   4
+C    CALL BCCURV(BXI,        Real     Input   4
 C                BYI,        Real     Input   4
 C                NO,         Integer  Input   
 C                XO,         Real     Output  NO
@@ -43,11 +43,11 @@ C             ones to represent the original curve.
 C  MXCRV  --  Maximum number of curves resulting from the subdivision
 C             process.
 C
-      include 'bzcom.h'
+      include 'bccom.h'
 C
 C Declare the BLOCK DATA routine external to force it to load.
 C
-      EXTERNAL BZBKD
+      EXTERNAL BCBKD
 C
       PARAMETER (UNDEF=2.**100, NLEV=8, MXCRV=2**(NLEV-1))
 C
@@ -64,7 +64,7 @@ C  Set the flatness tolerance value EPS in user coordinates.
 C
       CALL GQCNTN(IER,NTR)
       IF (IER .EQ. 8) THEN
-        PRINT * , 'BZCURV -- GKS must be open before calling functions i
+        PRINT * , 'BCCURV -- GKS must be open before calling functions i
      +n the Bezier curve package.'
         STOP
       ENDIF
@@ -78,11 +78,11 @@ C
       IF (NPPC .GT. 1) THEN
         IF (NO .LT. NPPC) THEN
           WRITE(6,510) NPPC,NO
-  510     FORMAT(' BZCURV -- Number of points specified for interpolatio
+  510     FORMAT(' BCCURV -- Number of points specified for interpolatio
      -n along the curve = ',I5,',',/'           exceeds the array dimens
      -ion reserved for them ='I5,'.'/)
         ENDIF
-        CALL BZFCRV(BXI,BYI,NPPC,XO,YO)
+        CALL BCFCRV(BXI,BYI,NPPC,XO,YO)
         NPTS = NPPC
         GO TO 110
       ENDIF
@@ -127,7 +127,7 @@ C
           NDXL = NDXO
           NDXR = NDXL+INC
           IF (BZPTSX(1,NDXO) .NE. UNDEF) THEN
-            DIST = BZFTOL(BZPTSX(1,NDXO),BZPTSY(1,NDXO))
+            DIST = BCFTOL(BZPTSX(1,NDXO),BZPTSY(1,NDXO))
             IF (DIST .GT. EPS) THEN
 C
 C  Curve is not flat, subdivide it.
@@ -137,7 +137,7 @@ C
                 BZX(K) = BZPTSX(K,NDXO)
                 BZY(K) = BZPTSY(K,NDXO)
   100         CONTINUE
-              CALL BZSUBD(BZX,BZY,BZPTSX(1,NDXL),BZPTSY(1,NDXL),
+              CALL BCSUBD(BZX,BZY,BZPTSX(1,NDXL),BZPTSY(1,NDXL),
      -                            BZPTSX(1,NDXR),BZPTSY(1,NDXR))
             ENDIF
           ENDIF

@@ -1,7 +1,7 @@
 C
-C	$Id: bzsetr.f,v 1.2 1992-11-17 19:10:14 fred Exp $
+C $Id: bcsetr.f,v 1.1 1999-09-21 17:07:33 kennison Exp $
 C
-      SUBROUTINE BZSETR(PA,RVAL)
+      SUBROUTINE BCSETR(PA,RVAL)
 C
 C Set real-valued parameters for the Bezier curve package.
 C
@@ -13,7 +13,7 @@ C
       CHARACTER*(*) PA
       CHARACTER*3   CTMP
 C
-      include 'bzcom.h'
+      include 'bccom.h'
 C
       CTMP = PA(1:3)
 C
@@ -28,6 +28,6 @@ C
 C
       RETURN
 C
-  500 FORMAT(' BZSETR -- Invalid keyword = ',A3,', no action taken')
+  500 FORMAT(' BCSETR -- Invalid keyword = ',A3,', no action taken')
 C
       END

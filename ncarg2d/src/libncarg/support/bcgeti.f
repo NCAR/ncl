@@ -1,7 +1,7 @@
 C
-C	$Id: bzgeti.f,v 1.2 1992-11-17 19:10:08 fred Exp $
+C $Id: bcgeti.f,v 1.1 1999-09-21 17:07:32 kennison Exp $
 C
-      SUBROUTINE BZGETI(PA,IVAL)
+      SUBROUTINE BCGETI(PA,IVAL)
 C
 C Retrieve integer-valued parameters for the Bezier curve package.
 C
@@ -17,7 +17,7 @@ C
       CHARACTER*(*) PA
       CHARACTER*3   CTMP
 C
-      include 'bzcom.h'
+      include 'bccom.h'
 C
       CTMP = PA(1:3)
 C
