@@ -495,7 +495,12 @@ NhlErrorTypes _NclBuildArray
 				_NclDestroyObj((NclObj)data.u.data_var);
 			}
 		} else {
-			theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(data.u.data_var->obj.status == PERMANENT) {
+				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			} else {
+				theobj = _NclStripVarData(data.u.data_var);
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
 			if(theobj == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
 				_NclCleanUpStack(items_left);
@@ -554,15 +559,8 @@ NhlErrorTypes _NclBuildArray
 	ptr = (char*)value;
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
-	if((data.kind == NclStk_VAR)&&(data.u.data_obj->obj.status != PERMANENT)){
-		if((data.u.data_obj->obj.id != theobj->obj.id)&&(theobj->obj.status != PERMANENT)){
-			_NclDestroyObj((NclObj)theobj);
-		}
-		_NclDestroyObj((NclObj)data.u.data_obj);
-	} else if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
-		if(theobj->obj.status != PERMANENT)
-			_NclDestroyObj((NclObj)theobj);
-		_NclDestroyObj((NclObj)data.u.data_var);
+	if(theobj->obj.status != PERMANENT) {
+		_NclDestroyObj((NclObj)theobj);
 	}
 
 
@@ -631,6 +629,9 @@ NhlErrorTypes _NclBuildArray
 			obj_type = _NclGetVarRepValue(data.u.data_var);	
 			if(!(obj_type & result_type)) {
 				theobj = _NclCoerceVar(data.u.data_var,result_type,mis_ptr);
+				if(data.u.data_var->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
 				if(theobj == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
@@ -647,7 +648,12 @@ NhlErrorTypes _NclBuildArray
 					themissing = theobj->multidval.missing_value.value;
 				}
 			} else {
-				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+				if(data.u.data_var->obj.status == PERMANENT) {
+					theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+				} else {
+					theobj = _NclStripVarData(data.u.data_var);
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
 				if(theobj == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
 					_NclCleanUpStack(items_left);
@@ -680,18 +686,9 @@ NhlErrorTypes _NclBuildArray
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
 		ptr += partsize;
-		if((data.kind == NclStk_VAL)&&(data.u.data_obj->obj.status != PERMANENT)) {
-			if((data.u.data_obj->obj.id != theobj->obj.id)&&(theobj->obj.status != PERMANENT))
-				_NclDestroyObj((NclObj)theobj);
-
-			_NclDestroyObj((NclObj)data.u.data_obj);
-		} else if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
-
-			if(theobj->obj.status != PERMANENT)
-				_NclDestroyObj((NclObj)theobj);
-
-			_NclDestroyObj((NclObj)data.u.data_var);
-		}
+		if(theobj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)theobj);
+		} 
 	}
 	result->kind = NclStk_VAL;
 /*
