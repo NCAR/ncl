@@ -1,41 +1,72 @@
-; $Id: basic05n.ncl,v 1.5 1995-04-07 10:53:51 boote Exp $
+; $Id: basic05n.ncl,v 1.6 1995-04-27 19:08:13 scheitln Exp $
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                       ;
+;                Copyright (C)  1993                                    ;
+;        University Corporation for Atmospheric Research                ;
+;                All Rights Reserved                                    ;
+;                                                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; This example demonstrates how to read and manipulate colormaps.
+;   File:       basic05n.ncl
+;
+;   Author: Tim Scheitlin
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
+;
+;
+;   Date: Thu Apr 27 13:03:39 MDT 1995 
+;
+;   Description: This example demonstrates how to read, display, 
+;                and manipulate colormaps.
 
-; The first frame displays the default colormap.
-; The second frame shows how to alter an entry in the colormap.
-; The third frame shows how to create a completely new colormap.
-
-; Begin the ncl script.
+; The NG 4.x HLU software supports several different predefined
+; colormaps of various sizes.  This example demonstrates how to
+; display each of those colormaps using the labelbar utility.
+; This example also shows how to change entries in a colormap
+; and create a completely new colormap.
 
 begin
 
-; ###########
-; # Frame 1 #
-; ###########
-; Display the default colormap.
-
-; Initialize labels for the color map entries
-
-colorindices=new(114,integer)
-do i = 0, 113
-   colorindices(i) = i
+; Initialize numeric labels for the labelbar annotation.
+colorindices=new(175,integer)
+do i = 1, 175
+   colorindices(i-1) = i
 end do
 
-; Create an XWorkstation object.
+;
+; Set the display. Default is to display output to an X workstation
+;
+NCGM=0
 
-wks = create "wks" xWorkstationClass defaultapp
-end create
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object with default colormap.
+;
+  wks = create "wks" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "basic05n.ncgm"
+      "wkColorMap" : "default"	      ; Set Colormap to default. Note,
+                                      ; this assignment is redundant.
+  end create
+else
+;
+; Create an XWorkstation object with default colormap.
+;
+  wks = create "wks" xWorkstationClass defaultapp
+      "wkPause" : "True"
+      "wkColorMap" : "default"	      ; Set Colormap to default. Note,
+                                      ; this assignment is redundant.
+  end create
+end if
 
 ; Create a labelbar object. 
 
 lbar = create "LabelBar" labelBarClass wks
 	"lbLabelStrings" : colorindices       ; Assign the labels
-	"lbLabelStride" : 17                  ; Label every 17th entry
+	"lbLabelStride" :  5                  ; Label every 5th entry
 	"lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill
 	"lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
 	"lbBoxLinesOn" : "FALSE"              ; Turn off lines between colors
-	"lbBoxCount" : 114                    ; Display 114 entries
+	"lbBoxCount" : 131                    ; Display 131 entries
 	"lbPerimOn" : "FALSE"                 ; Turn off labelbar perimeter
 	"lbTitleString" : "Default Colormap"  ; Plot title
 	"lbTitleFont" : "Helvetica-bold"      ; Title font
@@ -46,83 +77,193 @@ lbar = create "LabelBar" labelBarClass wks
 	"vpHeightF" : 1.
 end create
 
-; Draw and frame the labelbar
+; Create a text label
+text = create "textitem" textItemClass lbar
+        "txFont" : "Helvetica-bold" ; Set font
+        "txPosXF" : .5              ; Set position and height
+        "txPosYF" : .03
+        "txFontHeightF" : .035
+        "txFuncCode" : "*"   ; This is set, so the colon character, which is
+                             ; the default function code character, can be
+                             ; used in the "txString" resource.
+        "txString" : "Note: Entry 0 is the background color"
+end create
 
+; Draw the labelbar displaying the default colormap and textual annotation
 draw(lbar)
+draw(text)
 frame(wks)
 
-; ###########
-; # Frame 2 #
-; ###########
-; Alter a single entry in the colormap.
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "cyclic"
+end setvalues
 
-; Get the current colormap for the workstation pointed to by wks.
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Cyclic Colormap"   ; Labelbar title
+	"lbLabelStride" :  1                  ; Label every entry
+        "lbBoxCount"    :  7                  ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "gscyclic"   ; gray scale cyclic
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Gscyclic Colormap" ; Labelbar title
+	"lbLabelStride" :  1                  ; Label every entry
+        "lbBoxCount"    :  7                  ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "gsltod"	      ;gray scale light to dark
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Gsltod Colormap"   ; Labelbar title
+	"lbLabelStride" :  2                  ; Label every other entry
+        "lbBoxCount"    :  32                 ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "gsdtol"	      ; 
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Gsdtol Colormap"   ; Labelbar title
+	"lbLabelStride" :  2                  ; Label every other entry
+        "lbBoxCount"    :  32                 ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "uniform"	      ; 
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Uniform Colormap"   ; Labelbar title
+	"lbLabelStride" :  10                  ; Label every 10th entry
+        "lbBoxCount"    :  112                 ; Number of entries to display
+end setvalues
+  
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; This next example changes three entries in the colormap.  Changing the
+; first entry (colormap index 0) in the colormap, sets the background 
+; color for a plot. The second entry (color index 1) sets the foreground
+; color for a plot.
+
 ; The colormap is stored in a 3xN variable where N is the length of
 ; the colormap.  Each entry in the color map consists of a vector
 ; of 3 normalized red-green-blue color values.
 
-; Note:  At the time of writing this script, most of the NCL functions
-; for color map manipulation were not yet available.  So, the rest
-; of this example may no longer be the most effective and simplest
-; way to change color map entries.
+; Assign a new colormap
+setvalues wks
+   	"wkColorMap" : "gscyclic" ; Assign grayscale colormap	      
+end setvalues
 
+; Copy the colormap rgb values into the variable cmap
 getvalues wks
   "wkColorMap" : cmap
 end getvalues
 
-; Change the first entry in the colormap array to red.
+; Change the first entry in the colormap array to blue, the
+; second to green, and the fourth to red.
 
-cmap(0,:) = (/1.0,0.0,0.0/)
+cmap(0,:) = (/0.0,0.0,1.0/)   ; Background color
+cmap(1,:) = (/0.0,1.0,0.0/)   ; Foreground color
+cmap(3,:) = (/1.0,0.0,0.0/)   ; Colormap entry 3
 
-; Assign the new color map to the workstation object.
-
+; Reassign the colormap 
 setvalues wks
    	"wkColorMap" : cmap
 end setvalues
 
-; Add a different title.
-
+; Set the annotation for the label bar
 setvalues lbar
-	"lbTitleString" : "Entry 0 set to Red"
+	"lbTitleString" : "Changing colormap entries"
+	"lbLabelStride" :  1                  ; Label every entry
+        "lbBoxCount"    :  7                  ; Number of entries to display
+end setvalues
+
+setvalues text
+	"txString" : "Entry 0 (background) set to Blue"
 end setvalues
    
-; Draw and frame the labelbar.
-
+; Draw the labelbar and textual annotation.
 draw(lbar)
+draw(text)
 frame(wks)
 
-; ###########
-; # Frame 3 #
-; ###########
-; Create and assign a new colormap.
+; This next example demonstrates how to create and assign a new colormap.
 
-; Create an array that will contain the new colormap.
-
-newcmap = new((/114,3/), float)
+; Create an array that will contain the new colormap.  For this example,
+; we are creating a colormap with 100 (arbitrary size) rgb entries.
+newcmap = new((/100,3/), float)
 
 ; Assign new RGB values to each entry of the colormap.
 
-do i = 0, 113
-   newcmap(i,:) = (/1.-(i/113.),(i/113.), (i/113.)/)
+; Set the first entry (background color) to black
+newcmap(0,:) = (/0.,0.,0./)
+
+do i = 1, 99
+   newcmap(i,:) = (/1.-(i/99.),(i/99.), (i/99.)/)
 end do
 
-; Assign the new color map to the workstation object.
 
+; Assign the new color map to the workstation object.
 setvalues wks
    	"wkColorMap" : newcmap
 end setvalues
 
 ; Assign a new title.
-
 setvalues lbar
-	"lbTitleString" : "New colormap"
+	"lbTitleString" : "New colormap"       ; Labelbar title
+	"lbLabelStride" :  10                  ; Label every 10th entry
+        "lbBoxCount"    :  99                  ; Number of entries to display
 end setvalues
 
-; Draw and frame the labelbar
-
+; Draw the labelbar and textual annotation
 draw(lbar)
 frame(wks)
 
-; End the ncl script.
+; Clean up
+delete(lbar)
+delete(text)
+delete(wks)
+delete(colorindices)
+delete(newcmap)
 
+; End the ncl script.
 end
