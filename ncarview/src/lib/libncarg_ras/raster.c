@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.17 1992-09-14 22:16:34 don Exp $
+ *	$Id: raster.c,v 1.18 1992-09-16 21:28:21 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -224,8 +224,12 @@ argdel(argc, argv, i)
 	if (i != 0) {
 		if (i != (*argc - 1)) {
 			for(arg=i; arg<(*argc - 1); arg++) {
-				argv[arg] = argv[arg+1];
+				argv[arg]   = argv[arg+1];
+				argv[arg+1] = (char *) NULL;
 			}
+		}
+		else {
+			argv[i] = (char *) NULL;
 		}
 		--(*argc);
 	}
