@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.4 1993-11-10 01:19:15 ethan Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.5 1993-11-15 21:21:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -267,7 +267,9 @@ static SetUpTrans(
 #if NhlNeedProto
         Layer   /*new*/,
         Layer   /*old*/,
-	int	/*c_or_s*/
+	int	/*c_or_s*/,
+	_NhlArgList /*args*/, 
+	int /*nargs*/
 #endif
 );
 
