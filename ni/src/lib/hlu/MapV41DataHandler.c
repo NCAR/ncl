@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.15 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.16 2002-07-17 17:22:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2496,7 +2496,7 @@ static NhlErrorTypes mpSetUpAreamap
 	 * mpWORKSPACE_SIZE_REQ bytes in the workspace.
 	 */
 	req_size = MAX(100000,MIN(mpWORKSPACE_SIZE_REQ,
-				  (int) 65 * mv41p->data_set_point_count));
+		       (int) 4 * 65 * mv41p->data_set_point_count));
 #if 0
 	printf("point count %d req size %d\n",
 	       mv41p->data_set_point_count,req_size);
