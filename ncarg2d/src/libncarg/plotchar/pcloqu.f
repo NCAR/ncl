@@ -1,5 +1,5 @@
 C
-C $Id: pcloqu.f,v 1.7 2000-08-22 15:05:25 haley Exp $
+C $Id: pcloqu.f,v 1.8 2003-02-25 20:36:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,7 @@ C USA.
 C
       SUBROUTINE PCLOQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
-C This routine provides an alternate entry point for the high-quality
+C This routine provides an alternate entry point for the low-quality
 C character-drawing routine; the name has the standard prefix "PC".
 C
         CHARACTER CHRS*(*)
