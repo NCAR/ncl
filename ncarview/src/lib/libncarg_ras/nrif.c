@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.16 1993-03-25 22:19:29 haley Exp $
+ *	$Id: nrif.c,v 1.17 1993-06-03 15:15:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -369,6 +369,7 @@ _NrifReadIndexedRLE(ras)
 	char		dummy[RAS_DEFAULT_NCOLORS];
 	int		x, y, length;
 	NrifInfo	*dep;
+	unsigned char	*cptr;
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -436,14 +437,17 @@ _NrifReadIndexedRLE(ras)
 		if (status != ras->ncolor) return(RAS_EOF);
 	}
 
-	for(length=0, y=0; y<ras->ny; y++)
+	for(length=0, y=0, cptr=ras->data; y<ras->ny; y++)
 	for(x=0; x<ras->nx; x++) {
 		if (length == 0) {
 		status = fread((char *)buf, 1, 2, ras->fp);
 			if (status != 2) return(RAS_EOF);
 			length = buf[0];
 		}
+#ifdef	DEAD
 		INDEXED_PIXEL(ras, x, y) = buf[1];
+#endif
+		*cptr++ = buf[1];
 		length--;
 	}
 
@@ -798,7 +802,7 @@ _NrifWriteIndexedRLE(ras)
 	int		status;
 	int		x, y, runx, length;
 	int		image_length = 0;
-	unsigned char	p1, p2;
+	unsigned char	*cptr1, *cptr2;
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -820,16 +824,19 @@ _NrifWriteIndexedRLE(ras)
 		return(RAS_ERROR);
 	}
 	
-	for(y=0; y<ras->ny; y++) {
-	for(x=0; x<ras->nx; x+=length) {
-		p1 = INDEXED_PIXEL(ras, x, y);
-		for(runx=x,length=0;length<255&&runx<ras->nx;runx++,length++) {
+	for(y=0, cptr1=ras->data; y<ras->ny; y++) {
+	for(x=0; x<ras->nx; x+=length, cptr1+=length) {
+
+		for(
+			runx=x, length=0, cptr2=cptr1; 
+			length<255 && runx<ras->nx;
+			runx++, length++, cptr2++) 
+		{
 			/*
 			(void) fprintf(stderr,
 			"Comparing x=%d to runx=%d (len=%d)\n",x,runx,length);
 			*/
-			p2 = INDEXED_PIXEL(ras, runx, y);
-			if (p1!=p2) break;
+			if (*cptr1 != *cptr2) break;
 		}
 
 		/*
@@ -846,7 +853,7 @@ _NrifWriteIndexedRLE(ras)
 		}
 
 		tmpbuf[image_length++] = length;
-		tmpbuf[image_length++] = p1;
+		tmpbuf[image_length++] = *cptr1;
 	}}
 
 	/* Write the header. */
