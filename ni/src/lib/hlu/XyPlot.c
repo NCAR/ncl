@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.54 1996-01-09 17:11:44 boote Exp $
+ *      $Id: XyPlot.c,v 1.55 1996-02-26 21:46:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -585,7 +585,11 @@ NhlXyPlotClassRec NhlxyPlotClassRec = {
 /* data_to_ndc			*/	NhlInheritTransFunc,
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
-/* ndc_polyline			*/	NhlInheritPolyTransFunc
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	/* datacomm_class */
 	{
@@ -684,7 +688,7 @@ XyDataClassInitialize
 		{NhlCUSTOM,	"custom"}
 	};
 
-	_NhlRegisterEnumType(NhlxyDataSpecClass,NhlTLineLabelMode,lblmode,
+	_NhlRegisterEnumType(NhlxyPlotClass,NhlTLineLabelMode,lblmode,
 		NhlNumber(lblmode));
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.10 1995-05-03 03:11:29 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.11 1996-02-26 21:46:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,15 @@ NhlLayer   /* instance */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
+#endif
+);
+
+typedef NhlErrorTypes (*NhlPolygonProc)(
+#if	NhlNeedProto
+NhlLayer instance,
+float   *x,
+float   *y,
+int     n
 #endif
 );
 
@@ -82,6 +91,7 @@ typedef struct _NhlTransObjLayerRec {
 
 #define NhlInheritTransPoint	((NhlTransformPoint)_NhlInherit)
 #define NhlInheritLineTo	((NhlLineToProc)_NhlInherit)
+#define NhlInheritPolygon	((NhlPolygonProc)_NhlInherit)
 
 typedef struct _NhlTransObjClassPart {
 	NhlSetTransFunc set_trans;
@@ -110,6 +120,7 @@ typedef struct _NhlTransObjClassPart {
 	NhlLineToProc	compc_lineto;
 	NhlLineToProc	win_lineto;
 	NhlLineToProc	NDC_lineto;
+	NhlPolygonProc  data_polygon;
 } NhlTransObjClassPart;
 
 typedef struct _NhlTransObjClassRec {

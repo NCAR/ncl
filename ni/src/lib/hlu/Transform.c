@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.22 1995-12-19 20:39:32 boote Exp $
+ *      $Id: Transform.c,v 1.23 1996-02-26 21:46:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,22 +39,22 @@ static NhlResource resources[] = {
 	{ NhlNtfPlotManagerOn,NhlCtfPlotManagerOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlTransformLayerRec,trans.plot_manager_on),
-		  NhlTImmediate,(NhlPointer)True,0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 
 /* End-documented-resources */
 
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),
-		  NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{ NhlNtfOverlayTrans,NhlCtfOverlayTrans,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_trans_obj),
-		  NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{ NhlNtfOverlayStatus,NhlCtfOverlayStatus,
 		  NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_status),
-		  NhlTImmediate,(NhlPointer)_tfNotInOverlay,0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer)_tfNotInOverlay),0,NULL}
 };
 
 static NhlErrorTypes TransformClassPartInit(
@@ -99,7 +99,7 @@ static NhlErrorTypes TransformNDCToData(
 
 static NhlErrorTypes TransformDataPolyline(
 #if	NhlNeedProto
-	NhlLayer		/* plot */,
+	NhlLayer	/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
@@ -108,7 +108,43 @@ static NhlErrorTypes TransformDataPolyline(
 
 static NhlErrorTypes TransformNDCPolyline(
 #if	NhlNeedProto
-	NhlLayer		/* plot */,
+	NhlLayer	/* plot */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+static NhlErrorTypes TransformDataPolygon(
+#if	NhlNeedProto
+	NhlLayer	/* plot */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+static NhlErrorTypes TransformNDCPolygon(
+#if	NhlNeedProto
+	NhlLayer	/* plot */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+static NhlErrorTypes TransformDataPolymarker(
+#if	NhlNeedProto
+	NhlLayer	/* plot */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+static NhlErrorTypes TransformNDCPolymarker(
+#if	NhlNeedProto
+	NhlLayer	/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
@@ -156,7 +192,11 @@ NhlTransformClassRec NhltransformClassRec = {
 /* data_to_ndc			*/	TransformDataToNDC,
 /* ndc_to_data			*/	TransformNDCToData,
 /* data_polyline		*/	TransformDataPolyline,
-/* ndc_polyline			*/	TransformNDCPolyline
+/* ndc_polyline			*/	TransformNDCPolyline,
+/* data_polygon			*/	TransformDataPolygon,
+/* ndc_polygon			*/	TransformNDCPolygon,
+/* data_polymarker		*/	TransformDataPolymarker,
+/* ndc_polymarker		*/	TransformNDCPolymarker
 	}
 };
 	
@@ -199,6 +239,18 @@ TransformClassPartInit
 		tlc->trans_class.data_polyline = sc->trans_class.data_polyline;
 	if(tlc->trans_class.ndc_polyline == NhlInheritPolyTransFunc)
 		tlc->trans_class.ndc_polyline = sc->trans_class.ndc_polyline;
+
+	if(tlc->trans_class.data_polygon == NhlInheritPolyTransFunc)
+		tlc->trans_class.data_polygon = sc->trans_class.data_polygon;
+	if(tlc->trans_class.ndc_polygon == NhlInheritPolyTransFunc)
+		tlc->trans_class.ndc_polygon = sc->trans_class.ndc_polygon;
+
+	if(tlc->trans_class.data_polymarker == NhlInheritPolyTransFunc)
+		tlc->trans_class.data_polymarker 
+			= sc->trans_class.data_polymarker;
+	if(tlc->trans_class.ndc_polymarker == NhlInheritPolyTransFunc)
+		tlc->trans_class.ndc_polymarker 
+			= sc->trans_class.ndc_polymarker;
 	return NhlNOERROR;
 }
 
@@ -490,6 +542,7 @@ static NhlErrorTypes TransformDataPolyline
 	}
 
 
+	gset_clip_ind(GIND_CLIP);
 /* Do a pen up to the first point */
 
 	subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
@@ -511,6 +564,7 @@ static NhlErrorTypes TransformDataPolyline
  * This call ensures a NCAR LASTD call
  */
 	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
+	gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
@@ -605,6 +659,8 @@ static NhlErrorTypes TransformNDCPolyline
 		return(ret);
 	}
 
+	gset_clip_ind(GIND_CLIP);
+
 /* Do a pen up to the first point */
 
 	subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,1);
@@ -626,6 +682,7 @@ static NhlErrorTypes TransformNDCPolyline
  * This call ensures a NCAR LASTD call
  */
 	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
+	gset_clip_ind(GIND_NO_CLIP);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polyline";
@@ -643,6 +700,460 @@ static NhlErrorTypes TransformNDCPolyline
 
 	return MIN(ret,subret);
 }
+
+
+/*
+ * Function:	TransformDataPolygon
+ *
+ * Description:	Immediate mode drawing of a polygon whose points are
+ *		given in data coordinate space.
+ *
+ * In Args:	plot 	instance record pointer
+ *		x	array of x data coordinate values
+ *		y	array of y data coordinate values
+ *		n	number of elements in x and y
+ *
+ * Out Args:	none
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	 NONE
+ */
+static NhlErrorTypes TransformDataPolygon
+#if	NhlNeedProto
+(NhlLayer plot,float* x,float* y,int n)
+#else
+(plot,x,y,n)
+	NhlLayer		plot;
+	float*		x;
+	float*		y;
+	int		n;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjClass 	tocp;
+	char			*e_text;
+	char			*entry_name = "TransformDataPolygon";
+
+	if (n < 2) {
+		e_text = "%s, not enough points for a polygon";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
+	}
+
+/* 
+ * Set up the transformation based on whether the plot is part of an
+ * overlay.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
+	}
+
+	tocp = (NhlTransObjClass) (top->base.layer_class);
+
+	subret = _NhlActivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	_NhlSetFillInfo(tl->base.wkptr, plot);
+
+/* Set the transformation */
+
+	subret = _NhlSetTrans((NhlLayer) top, plot);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	gset_clip_ind(GIND_CLIP);
+	subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
+	gset_clip_ind(GIND_NO_CLIP);
+
+        subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error deactivating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	return MIN(ret,subret);
+}
+
+/*
+ * Function:	TransformNDCPolygon
+ *
+ * Description:	Immediate mode drawing of a polygon whose points are
+ *		given in NDC space.
+ *
+ * In Args:	plot 	instance record pointer
+ *		x	array of x NDC values
+ *		y	array of y NDC values
+ *		n	number of elements in x and y
+ *
+ * Out Args:	none
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	 NONE
+ */
+static NhlErrorTypes TransformNDCPolygon
+#if	NhlNeedProto
+(NhlLayer plot,float* x,float* y,int n)
+#else
+(plot,x,y,n)
+	NhlLayer		plot;
+	float*		x;
+	float*		y;
+	int		n;
+#endif
+{
+	char			*entry_name = "TransformNDCPolygon";
+	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjClass 	tocp;
+
+	if (n < 2) {
+		e_text = "%s, not enough points for a polygon";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
+	}
+
+/* 
+ * Set up the transformation based on whether the plot is part of an
+ * overlay.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
+	}
+	tocp = (NhlTransObjClass) (top->base.layer_class);
+
+	subret = _NhlActivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+/* Set the transformation */
+
+	subret = _NhlSetTrans((NhlLayer) top, plot);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	_NhlSetFillInfo(tl->base.wkptr, plot);
+
+	gset_clip_ind(GIND_CLIP);
+	subret = _NhlWorkstationFill(tl->base.wkptr,x,y,n);
+	gset_clip_ind(GIND_NO_CLIP);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error drawing polygon";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+        subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error deactivating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	return MIN(ret,subret);
+}
+
+
+/*
+ * Function:	TransformDataPolymarker
+ *
+ * Description:	Immediate mode drawing of a polymarker whose points are
+ *		given in data coordinate space.
+ *
+ * In Args:	plot 	instance record pointer
+ *		x	array of x data coordinate values
+ *		y	array of y data coordinate values
+ *		n	number of elements in x and y
+ *
+ * Out Args:	none
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	 NONE
+ */
+static NhlErrorTypes TransformDataPolymarker
+#if	NhlNeedProto
+(NhlLayer plot,float* x,float* y,int n)
+#else
+(plot,x,y,n)
+	NhlLayer		plot;
+	float*		x;
+	float*		y;
+	int		n;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjClass 	tocp;
+	char			*e_text;
+	char			*entry_name = "TransformDataPolymarker";
+	float			*xndc,*yndc;
+	int			status;
+	float			out_of_range; 
+
+	if (n < 1) {
+		e_text = "%s, polymarker is empty";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
+	}
+
+/* 
+ * Set up the transformation based on whether the plot is part of an
+ * overlay.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
+	}
+
+	xndc = NhlMalloc(n * sizeof(float));
+	yndc = NhlMalloc(n * sizeof(float));
+	subret = NhlDataToNDC(plot->base.id,x,y,n,xndc,yndc,
+			      NULL,NULL,&status,&out_of_range);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error transforming marker locations";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	/* throw away out of range values */
+
+	if (status) {
+		int i,j;
+		i = 0;
+		while (i < n-1) {
+			if (xndc[i] == out_of_range || 
+			    yndc[i] == out_of_range) {
+				for (j = i; j < n-1; j++) {
+					xndc[j] = xndc[j+1];
+					yndc[j] = yndc[j+1];
+				}
+				n --;
+			}
+			else {
+				i++;
+			}
+		}
+		if (xndc[n-1] == out_of_range || yndc[n-1] == out_of_range) {
+			n--;
+		}
+		if (n < 1) {
+			e_text = "%s, polymarker out of range";
+			NhlPError(NhlINFO,NhlEUNKNOWN,e_text, entry_name);
+			return NhlINFO;
+		}
+	}
+
+	tocp = (NhlTransObjClass) (top->base.layer_class);
+
+	subret = _NhlActivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+#if 0
+/* Set the transformation */
+/* not needed because DataToNDC has already set the trans -- but
+   is it good practice to know this? */
+	subret = _NhlSetTrans((NhlLayer) top, plot);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+#endif
+	_NhlSetMarkerInfo(tl->base.wkptr, plot);
+
+	gset_clip_ind(GIND_CLIP);
+	subret = _NhlWorkstationMarker(tl->base.wkptr,xndc,yndc,n);
+	gset_clip_ind(GIND_NO_CLIP);
+
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error drawing polymarker";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+        subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error deactivating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	NhlFree(xndc);
+	NhlFree(yndc);
+	return MIN(ret,subret);
+}
+
+/*
+ * Function:	TransformNDCPolymarker
+ *
+ * Description:	Immediate mode drawing of a polymarker whose points are
+ *		given in NDC space.
+ *
+ * In Args:	plot 	instance record pointer
+ *		x	array of x NDC values
+ *		y	array of y NDC values
+ *		n	number of elements in x and y
+ *
+ * Out Args:	none
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	 NONE
+ */
+static NhlErrorTypes TransformNDCPolymarker
+#if	NhlNeedProto
+(NhlLayer plot,float* x,float* y,int n)
+#else
+(plot,x,y,n)
+	NhlLayer		plot;
+	float*		x;
+	float*		y;
+	int		n;
+#endif
+{
+	char			*entry_name = "TransformNDCPolymarker";
+	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjClass 	tocp;
+
+	if (n < 1) {
+		e_text = "%s, polymarker is empty";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
+	}
+
+/* 
+ * Set up the transformation based on whether the plot is part of an
+ * overlay.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
+	}
+	tocp = (NhlTransObjClass) (top->base.layer_class);
+
+	subret = _NhlActivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+
+/* Not sure if a set trans is required */
+
+	subret = _NhlSetTrans((NhlLayer) top, plot);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	_NhlSetMarkerInfo(tl->base.wkptr, plot);
+
+	gset_clip_ind(GIND_CLIP);
+	subret = _NhlWorkstationMarker(tl->base.wkptr,x,y,n);
+	gset_clip_ind(GIND_NO_CLIP);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error drawing polymarker";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+        subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error deactivating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	return MIN(ret,subret);
+}
+
+
 
 /*
  * Function:	_NhlIsOverlayMember

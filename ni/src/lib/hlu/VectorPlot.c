@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.6 1996-02-01 20:43:02 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.7 1996-02-26 21:46:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1346,6 +1346,10 @@ NhlVectorPlotClassRec NhlvectorPlotClassRec = {
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
 /* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	/* datacomm_class */
 	{

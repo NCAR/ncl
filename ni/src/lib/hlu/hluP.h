@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.30 1995-06-17 00:09:42 boote Exp $
+ *      $Id: hluP.h,v 1.31 1996-02-26 21:46:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -137,6 +137,10 @@ typedef struct _NhlLayerRec *NhlLayer;
 #define	_NhlIsApp(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
 							_NhlAppClassFlag)
+#define	_NhlStyleClassFlag	0x2000
+#define	_NhlIsStyle(instance) \
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlStyleClassFlag)
 
 #define MIN(a,b)	(((a)<(b))?(a):(b))
 #define MAX(a,b)	(((a)>(b))?(a):(b))

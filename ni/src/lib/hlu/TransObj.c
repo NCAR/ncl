@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.16 1995-12-19 20:39:31 boote Exp $
+ *      $Id: TransObj.c,v 1.17 1996-02-26 21:46:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -70,6 +70,15 @@ static NhlErrorTypes TransLineTo(
 #endif
 );
 
+static NhlErrorTypes TransDataPolygon(
+#if	NhlNeedProto
+	NhlLayer	tl,
+	float		*x,
+	float		*y,
+	int		n
+#endif
+);
+
 static NhlErrorTypes TransObjClassPartInit(
 #if	NhlNeedProto
 	NhlClass	lc
@@ -112,7 +121,8 @@ NhlTransObjClassRec NhltransObjClassRec = {
 /* data_lineto */	TransLineTo,
 /* compc_lineto */	TransLineTo,
 /* win_lineto */	TransLineTo,
-/* NDC_lineto */	TransLineTo
+/* NDC_lineto */	TransLineTo,
+/* data_polygon */      TransDataPolygon
 	}
 };
 
@@ -237,6 +247,29 @@ TransLineTo
 	return NhlFATAL;
 }
 
+static NhlErrorTypes
+TransDataPolygon
+#if	NhlNeedProto
+(
+	NhlLayer	tl,
+	float		*x,
+	float		*y,
+	int		n
+)
+#else
+(tl,x,y,upordown)
+	NhlLayer	tl;
+	float		*x;
+	float		*y;
+	int		n;
+#endif
+{
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"DataPolygon Function not defined for (%s) class",
+		tl->base.layer_class->base_class.class_name);
+	return NhlFATAL;
+}
+
 NhlErrorTypes _NhlDataLineTo 
 #if	NhlNeedProto
 (NhlLayer instance, float x, float y, int upordown)
@@ -305,10 +338,32 @@ int upordown;
 	return((*tlc->trobj_class.NDC_lineto)(instance,x,y,upordown));
 }
 
+NhlErrorTypes _NhlDataPolygon 
+#if	NhlNeedProto
+(NhlLayer instance, float *x, float *y, int n)
+#else
+(instance,x,y,n)
+NhlLayer instance;
+float	*x;
+float *y;
+int n;
+#endif
+{
+	NhlTransObjClass tlc = (NhlTransObjClass)
+						instance->base.layer_class;
+
+	return((*tlc->trobj_class.data_polygon)(instance,x,y,n));
+}
+
 #define CTOP 010
 #define CBOTTOM 04
 #define CRIGHT 02
 #define CLEFT  01
+#define C0TOP 0200
+#define C0BOTTOM 0100
+#define C0RIGHT 040
+#define C0LEFT 020
+
 /*ARGSUSED*/
 void _NhlTransClipLine
 #if	NhlNeedProto
@@ -336,7 +391,7 @@ float missing;
 
 
                 /*
-                * These set the outcodes as discxssed in class
+                * These set the outcodes as discussed in class
                 */
 
                 if( *x1 > xmax ) 
@@ -357,7 +412,6 @@ float missing;
 			outcodeb |= CTOP;
                 else if( *y0 < ymin ) 
 			outcodeb |= CBOTTOM;
-
 
                 /*
                 * The following determines what case is cxrrent

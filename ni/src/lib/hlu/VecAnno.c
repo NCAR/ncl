@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.4 1996-01-19 18:06:36 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.5 1996-02-26 21:46:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
 
 #include <ncarg/hlu/VecAnnoP.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/WorkstationP.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <math.h>
 
 /* Resources */
@@ -779,7 +779,7 @@ VecAnnoDraw
 	/* first draw the perimeter: it may have a solid background */
 	if (vap->perim_on || vap->bg_fill_color > NhlTRANSPARENT) {
 		NhlVASetValues(val->base.wkptr->base.id,
-			       _NhlNwkDrawEdges,vap->perim_on,
+			       _NhlNwkEdgesOn,vap->perim_on,
 			       _NhlNwkEdgeDashPattern,NhlSOLIDLINE,
 			       _NhlNwkEdgeThicknessF,vap->perim_thickness,
 			       _NhlNwkEdgeColor,vap->perim_color,

@@ -1,0 +1,103 @@
+/*
+ *      $Id: Style.c,v 1.1 1996-02-26 21:46:05 dbrown Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1992			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Style.c
+ *
+ *	Author:		David Brown
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Feb 20 18:10:29 MST 1996
+ *
+ *	Description:	The Style class controls the attributes of 
+ *                      drawing primitives
+ */
+
+#include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/StyleP.h>
+
+#define Oset(field)     NhlOffset(NhlStyleLayerRec,style.field)
+static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
+	{NhlNgsClipOn,NhlCgsClipOn,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(clip_on),NhlTImmediate,
+		 _NhlUSET((NhlPointer) True),0,NULL}
+
+/* End-documented-resources */
+
+};
+
+
+NhlStyleClassRec NhlstyleClassRec = {
+	{
+/* class_name			*/	"styleClass",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(NhlStyleLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
+
+/* layer_resources		*/	resources,
+/* num_resources		*/	NhlNumber(resources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	NULL,
+/* layer_initialize		*/	NULL,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL,
+
+/* child_resources		*/	NULL,
+/* layer_draw			*/      NULL,
+/* layer_pre_draw		*/      NULL,
+/* layer_draw_segonly		*/	NULL,
+/* layer_post_draw		*/      NULL,
+/* layer_clear			*/      NULL
+	},
+	{
+					NULL
+	}
+};
+
+NhlClass NhlstyleClass = 
+			(NhlClass)&NhlstyleClassRec;
+
+/*
+ * Function:	nhlfstyleclass
+ *
+ * Description:	Fortran ?referencable? function to return layer class.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlClass
+ * Side Effect:	
+ */
+NhlClass
+_NHLCALLF(nhlfstyleclass,NHLFSTYLECLASS)
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlstyleClass;
+}
+

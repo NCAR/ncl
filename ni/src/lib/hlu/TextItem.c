@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.34 1995-12-19 20:39:27 boote Exp $
+ *      $Id: TextItem.c,v 1.35 1996-02-26 21:46:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -798,7 +798,7 @@ static NhlErrorTypes    TextItemDraw
 	    tlayer->text.bg_fill_color > NhlTRANSPARENT) {
 
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			       _NhlNwkDrawEdges,tlayer->text.perim_on,
+			       _NhlNwkEdgesOn,tlayer->text.perim_on,
 			       _NhlNwkEdgeDashPattern,
 			       tlayer->text.perim_dash_pattern,
 			       _NhlNwkEdgeThicknessF,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.17 1995-04-22 01:02:13 boote Exp $
+ *      $Id: Workstation.h,v 1.18 1996-02-26 21:46:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #define _NWorkstation_h
 
 #include <ncarg/hlu/Base.h>
+#include <ncarg/hlu/GraphicStyle.h>
 
 /*
  * Public Workstation Resources are defined here.
@@ -98,6 +99,8 @@
 #define NhlCwkMarkerTableLength	"WkMarkerTableLength"
 #define NhlNwkGksWorkId		"wkGksWorkId"
 #define NhlCwkGksWorkId		"WkGksWorkId"
+#define NhlNwkDefGraphicStyleId	"wkDefGraphicStyleId"
+#define NhlCwkDefGraphicStyleId	"WkDefGraphicStyleId"
 
 /* Define for dash pattern index 0 */
 

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.23 1995-12-19 20:39:17 boote Exp $
+*      $Id: MapTransObj.c,v 1.24 1996-02-26 21:46:01 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -371,6 +371,15 @@ int     /* upordown */
 #endif
 );
 
+static NhlErrorTypes MapDataPolygon(
+#if     NhlNeedProto
+NhlLayer   /* instance */,
+float*   /* x */,
+float*   /* y */,
+int     /* n */
+#endif
+);
+
 /* internal functions */
 
 static NhlErrorTypes GetWindowLimits(
@@ -431,7 +440,8 @@ NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 /* data_lineto */       MapDataLineTo,
 /* compc_lineto */      MapDataLineTo,
 /* win_lineto */        MapWinLineTo,
-/* NDC_lineto */        MapNDCLineTo
+/* NDC_lineto */        MapNDCLineTo,
+/* data_polygon */      MapDataPolygon 
 }
 };
 
@@ -1673,7 +1683,6 @@ int upordown;
         float holdx,holdy;
 	float xmin,ymin,xmax,ymax;
 
-
 	xmin = MIN(minst->mptrans.ul,minst->mptrans.ur);
 	xmax = MAX(minst->mptrans.ul,minst->mptrans.ur);
 	ymin = MIN(minst->mptrans.ut,minst->mptrans.ub);
@@ -1783,4 +1792,26 @@ int upordown;
                         return(MIN(ret1,ret));
                 }
         }
+}
+
+
+/*ARGSUSED*/
+static NhlErrorTypes MapDataPolygon
+#if	NhlNeedProto
+(NhlLayer instance, float *x, float *y, int n )
+#else
+(instance, x, y, n )
+NhlLayer instance;
+float *x;
+float *y;
+int n;
+#endif
+{
+	NhlString e_text;
+	NhlString entry_name = "MapDataPolygon";
+
+	e_text = "%s: not yet implemented";
+	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+	return NhlWARNING;
+	
 }

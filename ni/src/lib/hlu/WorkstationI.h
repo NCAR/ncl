@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.6 1995-04-22 01:02:13 boote Exp $
+ *      $Id: WorkstationI.h,v 1.7 1996-02-26 21:46:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,9 @@
  */
 #define	_NhlNwkSetPublic		".wkSetPublic"
 #define	_NhlCwkSetPublic		".WkSetPublic"
+
+#define _NhlNwkGraphicStyle	".wkGraphicStyle"
+#define _NhlCwkGraphicStyle	".WkGraphicStyle"
 
 #define _NhlNwkDashPattern	".wkDashPattern"
 #define _NhlCwkDashPattern	".WkDashPattern"
@@ -102,8 +105,8 @@
 #define _NhlNwkFillLineThicknessF ".wkFillLineThicknessF"
 #define _NhlCwkFillLineThicknessF ".WkFillLineThicknessF"
 
-#define _NhlNwkDrawEdges		".wkDrawEdges"
-#define _NhlCwkDrawEdges		".WkDrawEdges"
+#define _NhlNwkEdgesOn		 ".wkEdgesOn"
+#define _NhlCwkEdgesOn		 ".WkEdgesOn"
 
 #define _NhlNwkEdgeDashPattern   ".wkEdgeDashPattern"
 #define _NhlCwkEdgeDashPattern   ".WkEdgeDashPattern"

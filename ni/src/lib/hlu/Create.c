@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.20 1995-12-19 20:39:02 boote Exp $
+ *      $Id: Create.c,v 1.21 1996-02-26 21:45:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,6 +144,8 @@ InitializeClass
 			inited |= (_NhlDataSpecClassFlag);
 		else if(step == NhlappClass)
 			inited |= (_NhlAppClassFlag);
+		else if(step == NhlstyleClass)
+			inited |= (_NhlStyleClassFlag);
 		step = step->base_class.superclass;
 	}
 

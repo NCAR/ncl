@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.1 1996-02-01 20:42:57 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.2 1996-02-26 21:46:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -128,6 +128,8 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float			min_line_length;
 	NhlBoolean		min_line_spacing_set;
 	float			min_line_spacing;
+	NhlBoolean		min_arrow_spacing_set;
+	float			min_arrow_spacing;
 	float			min_step_factor;
 	int			length_check_count;
 	int			crossover_check_count;

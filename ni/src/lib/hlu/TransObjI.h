@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.4 1995-05-03 03:11:29 dbrown Exp $
+ *      $Id: TransObjI.h,v 1.5 1996-02-26 21:46:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,10 @@
 #define NhlNtrChangeCount	"trChangeCount"
 #define NhlCtrChangeCount	"TrChangeCount"
 
+
+/*
+ * Private Global functions defined by the Transform Class
+ */
 
 extern NhlErrorTypes _NhlDataLineTo(
 #if	NhlNeedProto
@@ -71,9 +75,14 @@ int     /* upordown */
 #endif
 );
 
-/*
- * Private Global functions defined by the Transform Class
- */
+extern NhlErrorTypes _NhlDataPolygon(
+#if	NhlNeedProto
+NhlLayer	instance,
+float		*x,
+float		*y,
+int		n
+#endif
+);
 
 extern NhlErrorTypes _NhlDataToWin(
 #if	NhlNeedProto

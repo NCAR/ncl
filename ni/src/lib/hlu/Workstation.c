@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.41 1995-12-19 20:39:39 boote Exp $
+ *      $Id: Workstation.c,v 1.42 1996-02-26 21:46:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,8 +186,9 @@ static NhlResource resources[] = {
 	{NhlNwkForegroundColor,NhlCwkForegroundColor,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(foregnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),Oset(gkswksid),
-		NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),
+		 Oset(gkswksid),
+		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 	{NhlNwkDashTableLength,NhlCwkDashTableLength,NhlTInteger,sizeof(int),
 		Oset(dash_table_len),NhlTImmediate,_NhlUSET((NhlPointer)0),
 		_NhlRES_GONLY,NULL},
@@ -197,11 +198,14 @@ static NhlResource resources[] = {
 	{NhlNwkMarkerTableLength,NhlCwkMarkerTableLength,NhlTInteger,
 		sizeof(int),Oset(marker_table_len),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkDefGraphicStyleId,NhlCwkDefGraphicStyleId,
+		 NhlTInteger,sizeof(int),Oset(def_graphic_style_id),
+		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 
 #define POset(field) Oset(public_lineinfo.field)
-	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
-		POset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),
-		_NhlRES_DEFAULT,NULL},
+	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,
+		 sizeof(NhlDashIndex),POset(dash_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_DEFAULT,NULL},
 	{NhlNwkLineDashSegLenF,NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
 		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),
 		_NhlRES_DEFAULT,NULL},
@@ -212,10 +216,12 @@ static NhlResource resources[] = {
 		POset(line_thickness),NhlTString,_NhlUSET("1.0"),
 		_NhlRES_DEFAULT,NULL},
 	{NhlNwkLineLabel,NhlCwkLineLabel,NhlTString,sizeof(NhlString),
-		POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+		POset(line_label_string),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NULL),
+		 _NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNwkLineLabelFont,NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
-		POset(line_label_font),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		POset(line_label_font),NhlTImmediate,
+		 _NhlUSET((NhlPointer)0),
 		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNwkLineLabelFontColor,NhlCwkLineLabelFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(line_label_font_color),
@@ -249,8 +255,8 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
 	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
-		POset(marker_size),NhlTString,_NhlUSET("0.007"),_NhlRES_DEFAULT,
-		NULL},
+		POset(marker_size),NhlTString,
+		 _NhlUSET("0.007"),_NhlRES_DEFAULT,NULL},
 	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
 		POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,
 		NULL},
@@ -262,6 +268,7 @@ static NhlResource resources[] = {
 		_NhlRES_DEFAULT,NULL},
 #undef POset
 
+
 /* End-documented-resources */
 
 	{_NhlNwkReset,_NhlCwkReset,NhlTBoolean,sizeof(NhlBoolean),Oset(reset),
@@ -269,6 +276,9 @@ static NhlResource resources[] = {
 	{_NhlNwkSetPublic,_NhlCwkSetPublic,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(set_public),NhlTImmediate,_NhlUSET((NhlPointer)0),
 		_NhlRES_SONLY,NULL},
+	{_NhlNwkGraphicStyle,_NhlCwkGraphicStyle,NhlTObjId,
+		sizeof(int),Oset(graphic_style_id),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_SGONLY,NULL},
 
 #define POset(field) Oset(private_lineinfo.field)
 	{_NhlNwkDashPattern,_NhlCwkDashPattern,NhlTDashIndex,
@@ -277,18 +287,19 @@ static NhlResource resources[] = {
 	{_NhlNwkLineDashSegLenF,_NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
 		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),
 		_NhlRES_SGONLY,NULL},
-	{_NhlNwkLineColor,_NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
-		POset(line_color),NhlTImmediate,
+	{_NhlNwkLineColor,_NhlCwkLineColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),POset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineThicknessF,_NhlCwkLineThicknessF,NhlTFloat,sizeof(float),
-		POset(line_thickness),NhlTString,_NhlUSET("1.0"),_NhlRES_SGONLY,
-		NULL},
+		POset(line_thickness),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineLabel,_NhlCwkLineLabel,NhlTString,sizeof(NhlString),
-		POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		 POset(line_label_string),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NULL),
 		_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
 	{_NhlNwkLineLabelFont,_NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
-		POset(line_label_font),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
+		POset(line_label_font),NhlTImmediate,
+		 _NhlUSET((NhlPointer)0),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineLabelFontColor,_NhlCwkLineLabelFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(line_label_font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
@@ -334,47 +345,54 @@ static NhlResource resources[] = {
 		sizeof(float),POset(marker_thickness),NhlTString,
 		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
 #undef POset
+
+#define POset(field) Oset(private_fillinfo.field)
+
+	{_NhlNwkFillIndex,_NhlCwkFillIndex,NhlTFillIndex,sizeof(NhlFillIndex),
+		POset(fill_index),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_SGONLY,NULL},
+	{_NhlNwkFillColor,_NhlCwkFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),POset(fill_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
+	{_NhlNwkFillBackground,_NhlCwkFillBackground,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(fill_background),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlTRANSPARENT),_NhlRES_SGONLY,NULL},
+	{_NhlNwkFillScaleFactorF,_NhlCwkFillScaleFactorF,NhlTFloat,
+		sizeof(float),POset(fill_scale_factor),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkFillLineThicknessF,_NhlCwkFillLineThicknessF,NhlTFloat,
+		sizeof(float),POset(fill_line_thickness),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkEdgesOn,_NhlCwkEdgesOn,NhlTBoolean,sizeof(NhlBoolean),
+		POset(edges_on),NhlTImmediate,_NhlUSET(False),_NhlRES_SGONLY,
+		NULL},
+	{_NhlNwkEdgeDashPattern,_NhlCwkEdgeDashPattern,NhlTDashIndex,
+		sizeof(NhlDashIndex),POset(edge_dash_pattern),NhlTImmediate,
+		_NhlUSET(0),_NhlRES_SGONLY,NULL},
+	{_NhlNwkEdgeThicknessF,_NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
+		POset(edge_thickness),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkEdgeDashSegLenF,_NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
+		POset(edge_dash_seglen),NhlTString,_NhlUSET(".15"),
+		_NhlRES_SGONLY,NULL},
+	{_NhlNwkEdgeColor,_NhlCwkEdgeColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),POset(edge_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
+#undef POset
+
+
 	{_NhlNwkDashTable,_NhlCwkDashTable,NhlTStringGenArray,
 		sizeof(NhlGenArray),Oset(dash_table),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,
 		(NhlFreeFunc)NhlFreeGenArray},
-	{_NhlNwkFillIndex,_NhlCwkFillIndex,NhlTFillIndex,sizeof(NhlFillIndex),
-		Oset(fill_index),NhlTImmediate,_NhlUSET((NhlPointer)0),
-		_NhlRES_SGONLY,NULL},
-	{_NhlNwkFillColor,_NhlCwkFillColor,NhlTColorIndex,sizeof(NhlColorIndex),
-		Oset(fill_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
-	{_NhlNwkFillBackground,_NhlCwkFillBackground,NhlTColorIndex,
-		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlTRANSPARENT),_NhlRES_SGONLY,NULL},
-	{_NhlNwkFillScaleFactorF,_NhlCwkFillScaleFactorF,NhlTFloat,
-		sizeof(float),Oset(fill_scale_factor),NhlTString,
-		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
-	{_NhlNwkFillLineThicknessF,_NhlCwkFillLineThicknessF,NhlTFloat,
-		sizeof(float),Oset(fill_line_thickness),NhlTString,
-		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
-	{_NhlNwkDrawEdges,_NhlCwkDrawEdges,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(edges_on),NhlTImmediate,_NhlUSET(False),_NhlRES_SGONLY,
-		NULL},
-	{_NhlNwkEdgeDashPattern,_NhlCwkEdgeDashPattern,NhlTDashIndex,
-		sizeof(NhlDashIndex),Oset(edge_dash_pattern),NhlTImmediate,
-		_NhlUSET(0),_NhlRES_SGONLY,NULL},
-	{_NhlNwkEdgeThicknessF,_NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
-		Oset(edge_thickness),NhlTString,_NhlUSET("1.0"),_NhlRES_SGONLY,
-		NULL},
-	{_NhlNwkEdgeDashSegLenF,_NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
-		Oset(edge_dash_seglen),NhlTString,_NhlUSET(".15"),
-		_NhlRES_SGONLY,NULL},
-	{_NhlNwkEdgeColor,_NhlCwkEdgeColor,NhlTColorIndex,sizeof(NhlColorIndex),
-		Oset(edge_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
-	{_NhlNwkMarkerTableStrings,_NhlCwkMarkerTableStrings,NhlTStringGenArray,
+	{_NhlNwkMarkerTableStrings,_NhlCwkMarkerTableStrings,
+		 NhlTStringGenArray,
 		sizeof(NhlGenArray),Oset(marker_table_strings),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,
 		(NhlFreeFunc)NhlFreeGenArray},
 	{_NhlNwkMarkerTableParams,_NhlCwkMarkerTableParams,NhlTGenArray,
 		sizeof(NhlGenArray),Oset(marker_table_params),NhlTImmediate,
-		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,NULL},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,NULL}
 };
 
 /*
@@ -637,31 +655,31 @@ WorkstationClassInitialize
 		{NhlMARKLINES,	"marklines"}
 	};
 
-	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTDashIndex,dashvals,
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndex,dashvals,
 		NhlNumber(dashvals));
-	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTColorIndex,colorvals,
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTColorIndex,colorvals,
 		NhlNumber(colorvals));
-	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTFillIndex,fillvals,
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTFillIndex,fillvals,
 		NhlNumber(fillvals));
-	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTMarkerIndex,markervals,
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTMarkerIndex,markervals,
 		NhlNumber(markervals));
-	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTMarkLineMode,mrkline,
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTMarkLineMode,mrkline,
 		NhlNumber(mrkline));
 
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTDashIndex,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTDashIndex,
 		_NhlCvtScalarToIndex,dashargs,NhlNumber(dashargs),False,NULL);
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTColorIndex,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTColorIndex,
 		_NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTFillIndex,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTFillIndex,
 		_NhlCvtScalarToIndex,fillargs,NhlNumber(fillargs),False,NULL);
 
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
 		NhlTDashIndexGenArray,_NhlCvtGenArrayToIndexGenArray,dashargs,
 		NhlNumber(dashargs),False,NULL);
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
 		NhlTColorIndexGenArray,_NhlCvtGenArrayToIndexGenArray,colorargs,
 		NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
 		NhlTFillIndexGenArray,_NhlCvtGenArrayToIndexGenArray,fillargs,
 		NhlNumber(fillargs),False,NULL);
 
@@ -1075,24 +1093,139 @@ static NhlErrorTypes WorkstationInitialize
 	
 	newl->work.dash_table_len = dash_table_len - 1;
 /*
- * Initialize the "default" graphics primatives.
+ * Initialize the "default" graphics primatives - used privately only.
  */
 	newl->work.default_lineinfo = newl->work.private_lineinfo;
 	newl->work.default_markinfo = newl->work.private_markinfo;
+	newl->work.default_fillinfo = newl->work.private_fillinfo;
 
 /*
- * Set the line label resources
+ * Create the default GraphicStyle object
  */
-        if(newl->work.public_lineinfo.line_label != NULL) {
-		char *tmp;
-                tmp = (char*)NhlMalloc(
-			strlen(newl->work.public_lineinfo.line_label)+1);
-                strcpy(tmp,newl->work.public_lineinfo.line_label);
-                newl->work.public_lineinfo.line_label = tmp;
-        }
+	{
+		int	gsid;
+		char	buffer[_NhlMAXRESNAMLEN];
 
-	if(newl->work.public_lineinfo.line_label_const_spacing < 0.0)
-		newl->work.public_lineinfo.line_label_const_spacing = 0.0;
+		sprintf(buffer,"%s",new->base.name);
+		strcat(buffer,".GraphicStyle");
+
+		subret = NhlVACreate(&gsid,buffer,NhlgraphicStyleClass,
+				  new->base.id,NULL);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
+			return retcode;
+		newl->work.def_graphic_style_id = gsid;
+	}
+
+/*
+ * The "wk" line and marker attributes are now obsolete but for now
+ * if they are set they will affect the default graphic style.
+ */
+	{
+		_NhlLineStyleInfo *lsp = &newl->work.public_lineinfo;
+		_NhlMarkerStyleInfo *msp = &newl->work.public_markinfo; 
+		NhlSArg		sargs[128];
+		int		nargs = 0;
+
+		
+		if (lsp->dash_pattern != 0) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineDashPattern,lsp->dash_pattern);
+		}
+		
+		if ((int)(100*lsp->line_dash_seglen) != 15) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineDashSegLenF,
+				   lsp->line_dash_seglen);
+		}
+	
+		if (lsp->line_color != NhlFOREGROUND) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineColor,lsp->line_color);
+		}
+		if ((int)lsp->line_thickness != 1) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineThicknessF,lsp->line_thickness);
+		}
+		if (lsp->line_label_string != NULL) {
+			NhlSetSArg(&sargs[nargs++],
+				NhlNgsLineLabelString,lsp->line_label_string);
+		}
+		if (lsp->line_label_font != 0) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFont,lsp->line_label_font);
+		}
+
+		if (lsp->line_label_font_color != NhlFOREGROUND) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontColor,
+				   lsp->line_label_font_color);
+		}
+		if ((int)(10000*lsp->line_label_font_height) != 125) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontHeightF,
+				   lsp->line_label_font_height);
+		}
+		if ((int)(10000*lsp->line_label_font_aspect) != 13125) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontAspectF,
+				   lsp->line_label_font_aspect);
+		}
+		if ((int)lsp->line_label_font_thickness != 1) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontThicknessF,
+				   lsp->line_label_font_thickness);
+		}
+		if (lsp->line_label_font_quality != NhlHIGH) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontQuality,
+				   lsp->line_label_font_quality);
+		}
+		if ((int)lsp->line_label_const_spacing != 0) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelConstantSpacingF,
+				   lsp->line_label_const_spacing);
+		}
+		if (lsp->line_label_func_code != ':') {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFuncCode,
+				   lsp->line_label_func_code);
+		}
+		if (msp->marker_index != 3) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerIndex,msp->marker_index);
+		}
+		if (msp->marker_color != NhlFOREGROUND) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerColor,msp->marker_color);
+		}
+		if ((int)(1000*msp->marker_size) != 7) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerSizeF,msp->marker_size);
+		}
+		if ((int)msp->marker_thickness != 1) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerThicknessF,
+				   msp->marker_thickness);
+		}
+		if (nargs > 0) {
+			subret = NhlALSetValues(
+					   newl->work.def_graphic_style_id,
+					   sargs,nargs);
+
+			if ((retcode = MIN(subret,retcode)) < NhlWARNING) {
+				e_text = 
+				    "%s: error setting default GraphicStyle";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			e_text = 
+"%s: Obsolete Workstation line or marker resources set: use GraphicStyle resources instead";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			retcode = MIN(retcode,NhlWARNING);
+		}
+	}
+
 
 	return(retcode);
 }
@@ -1135,9 +1268,7 @@ WorkstationSetValues
 	NhlWorkstationLayer	oldl = (NhlWorkstationLayer) old;
 	NhlErrorTypes	retcode = NhlNOERROR,subret = NhlNOERROR;
 	char *tmp;
-	int count;
 	char *entry_name = "WorkstationSetValues";
-	NhlColor *tcolor;
 	int len1,len2;
 	NhlMarkerTableParams *mparams;
 	NhlString *mstrings;
@@ -1158,38 +1289,60 @@ WorkstationSetValues
 			return NhlFATAL;
 		}
 
-		if(newl->work.private_lineinfo.line_label !=
-					newl->work.public_lineinfo.line_label)
-			NhlFree(newl->work.private_lineinfo.line_label);
+		if (newl->work.private_lineinfo.line_label_string != NULL)
+			NhlFree(newl->work.private_lineinfo.line_label_string);
 
 		newl->work.private_lineinfo = newl->work.default_lineinfo;
 		newl->work.private_markinfo = newl->work.default_markinfo;
+		newl->work.private_fillinfo = newl->work.default_fillinfo;
+		newl->work.lip = &newl->work.private_lineinfo;
+		newl->work.mip = &newl->work.private_markinfo;
+		newl->work.fip = &newl->work.private_fillinfo;
 
 		return NhlNOERROR;
 	}
-	if(_NhlArgIsSet(args,num_args,_NhlNwkSetPublic)){
+	if(_NhlArgIsSet(args,num_args,_NhlNwkGraphicStyle)){
+		NhlLayer gsl;
+		_NhlLineStyleInfo	*lsp;
+		_NhlMarkerStyleInfo	*msp;
+		_NhlFillStyleInfo	*fsp;
 
 		/*
-		 * The _NhlNwkSetPublic Private Resource MUST be set
-		 * individually.
+		 * The _NhlNwkGraphicStyle Private Resource MUST be set
+		 * individually. As long as this stays private - and is
+		 * set at each entry, it should be okay to point to 
+		 * the line label string in the GraphicStyle object.
 		 */
-		if(num_args > 1){
+		if (num_args > 1){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:%s must be set alone!",entry_name,
-					_NhlNwkSetPublic);
+					_NhlNwkGraphicStyle);
+			return NhlFATAL;
+		}
+		if (newl->work.graphic_style_id == NhlNULLOBJID) {
+			gsl = _NhlGetLayer(newl->work.def_graphic_style_id);
+		}
+		else {
+			gsl = _NhlGetLayer(newl->work.graphic_style_id);
+		}
+		if (gsl == NULL || ! _NhlIsStyle(gsl)) {
+			e_text = "%s: invalid GraphicStyle object id";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
 
-		if(newl->work.private_lineinfo.line_label !=
-					newl->work.public_lineinfo.line_label)
-			NhlFree(newl->work.private_lineinfo.line_label);
+		NhlVAGetValues(gsl->base.id,
+			       _NhlNgsLineStyleInfo,&lsp,
+			       _NhlNgsFillStyleInfo,&fsp,
+			       _NhlNgsMarkerStyleInfo,&msp,
+			       NULL);
 
-		newl->work.private_lineinfo = newl->work.public_lineinfo;
-		newl->work.private_markinfo = newl->work.public_markinfo;
-
+		newl->work.lip = lsp;
+		newl->work.fip = fsp;
+		newl->work.mip = msp;
 		return NhlNOERROR;
 	}
-
+		    
 	/*
 	 * This function sets the private colormap based on the public
 	 * resources.
@@ -1275,40 +1428,144 @@ WorkstationSetValues
 	}
 	
 /*
- * Set the line label
+ * Set the private line label resources
  */
 
-        if((oldl->work.public_lineinfo.line_label !=
-				newl->work.public_lineinfo.line_label)) {
+        if((oldl->work.private_lineinfo.line_label_string !=
+	    newl->work.private_lineinfo.line_label_string)) {
 
-		NhlFree(oldl->work.public_lineinfo.line_label);
-                if(newl->work.public_lineinfo.line_label != NULL) {
+		if (oldl->work.private_lineinfo.line_label_string != NULL)
+			NhlFree(oldl->work.private_lineinfo.line_label_string);
+
+                if(newl->work.private_lineinfo.line_label_string != NULL) {
                         tmp = (char*)NhlMalloc((unsigned)
-			  strlen(newl->work.public_lineinfo.line_label)+1);
-                        strcpy(tmp,newl->work.public_lineinfo.line_label);
-                        newl->work.public_lineinfo.line_label = tmp;
-                }
-        }
-
-        if((oldl->work.private_lineinfo.line_label !=
-				newl->work.private_lineinfo.line_label)) {
-
-		if(oldl->work.private_lineinfo.line_label !=
-					oldl->work.public_lineinfo.line_label)
-			NhlFree(oldl->work.private_lineinfo.line_label);
-                if(newl->work.private_lineinfo.line_label != NULL) {
-                        tmp = (char*)NhlMalloc((unsigned)
-			  strlen(newl->work.private_lineinfo.line_label)+1);
-                        strcpy(tmp,newl->work.private_lineinfo.line_label);
-                        newl->work.private_lineinfo.line_label = tmp;
+		      strlen(newl->work.private_lineinfo.line_label_string)+1);
+                        strcpy(tmp,
+			       newl->work.private_lineinfo.line_label_string);
+                        newl->work.private_lineinfo.line_label_string = tmp;
                 }
         }
 
 	if(newl->work.private_lineinfo.line_label_const_spacing < 0.0)
 		newl->work.private_lineinfo.line_label_const_spacing = 0.0;
 
-	if(newl->work.public_lineinfo.line_label_const_spacing < 0.0)
-		newl->work.public_lineinfo.line_label_const_spacing = 0.0;
+/*
+ * The "wk" line and marker attributes are now obsolete but for now
+ * if they are set they will affect the default graphic style.
+ */
+	{
+		_NhlLineStyleInfo *lsp = &newl->work.public_lineinfo;
+		_NhlLineStyleInfo *olsp = &oldl->work.public_lineinfo;
+		_NhlMarkerStyleInfo *msp = &newl->work.public_markinfo; 
+		_NhlMarkerStyleInfo *omsp = &newl->work.public_markinfo; 
+		NhlSArg		sargs[128];
+		int		nargs = 0;
+		
+		if (lsp->dash_pattern != olsp->dash_pattern) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineDashPattern,lsp->dash_pattern);
+		}
+		
+		if (lsp->line_dash_seglen != olsp->line_dash_seglen) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineDashSegLenF,
+				   lsp->line_dash_seglen);
+		}
+	
+		if (lsp->line_color != olsp->line_color) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineColor,lsp->line_color);
+		}
+		if (lsp->line_thickness != olsp->line_thickness) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineThicknessF,lsp->line_thickness);
+		}
+		if (lsp->line_label_string != olsp->line_label_string) {
+			NhlSetSArg(&sargs[nargs++],
+				NhlNgsLineLabelString,lsp->line_label_string);
+		}
+		if (lsp->line_label_font != olsp->line_label_font) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFont,lsp->line_label_font);
+		}
+
+		if (lsp->line_label_font_color != 
+		    olsp->line_label_font_color) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontColor,
+				   lsp->line_label_font_color);
+		}
+		if (lsp->line_label_font_height != 
+		    olsp->line_label_font_height) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontHeightF,
+				   lsp->line_label_font_height);
+		}
+		if (lsp->line_label_font_aspect != 
+		    olsp->line_label_font_aspect) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontAspectF,
+				   lsp->line_label_font_aspect);
+		}
+		if (lsp->line_label_font_thickness != 
+		    olsp->line_label_font_thickness) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontThicknessF,
+				   lsp->line_label_font_thickness);
+		}
+		if (lsp->line_label_font_quality != 
+		    olsp->line_label_font_quality) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFontQuality,
+				   lsp->line_label_font_quality);
+		}
+		if (lsp->line_label_const_spacing != 
+		    olsp->line_label_const_spacing) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelConstantSpacingF,
+				   lsp->line_label_const_spacing);
+		}
+		if (lsp->line_label_func_code != olsp->line_label_func_code) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsLineLabelFuncCode,
+				   lsp->line_label_func_code);
+		}
+		if (msp->marker_index != omsp->marker_index) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerIndex,msp->marker_index);
+		}
+		if (msp->marker_color != omsp->marker_color) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerColor,msp->marker_color);
+		}
+		if (msp->marker_size != omsp->marker_size) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerSizeF,msp->marker_size);
+		}
+		if (msp->marker_thickness != omsp->marker_thickness) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNgsMarkerThicknessF,
+				   msp->marker_thickness);
+		}
+		if (nargs > 0) {
+			subret = NhlALSetValues(
+					   newl->work.def_graphic_style_id,
+					   sargs,nargs);
+
+			if ((retcode = MIN(subret,retcode)) < NhlWARNING) {
+				e_text = 
+				    "%S: error setting default GraphicStyle";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			e_text = 
+"%s: Obsolete Workstation line or marker resources set: use GraphicStyle resources instead";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			retcode = MIN(retcode,NhlWARNING);
+		}
+	}
+
 
 	return(retcode);
 }
@@ -1349,6 +1606,7 @@ WorkstationGetValues
 	int		num_args;
 #endif
 {
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlWorkstationLayer wl = (NhlWorkstationLayer)l;
 	int i,j;
 	NhlColor* tmp;
@@ -1432,7 +1690,8 @@ WorkstationGetValues
 				       sizeof(NhlString))) == NULL) {
 				e_text = "%s: error allocating %s data";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,_NhlNwkMarkerTableStrings);
+					  entry_name,
+					  _NhlNwkMarkerTableStrings);
 				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
@@ -1453,7 +1712,8 @@ WorkstationGetValues
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,_NhlNwkMarkerTableStrings);
+					  entry_name,
+					  _NhlNwkMarkerTableStrings);
 				return NhlFATAL;
 			}
 			ga->my_data = True;
@@ -1522,8 +1782,9 @@ WorkstationGetValues
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
+
 	}
-	return(NhlNOERROR);
+	return(ret);
 }
 
 /*
@@ -1558,9 +1819,10 @@ static NhlErrorTypes WorkstationDestroy
 	NhlFreeGenArray(wp->marker_table_strings);
 	NhlFreeGenArray(wp->marker_table_params);
 
-	if(wp->public_lineinfo.line_label != wp->private_lineinfo.line_label)
-		NhlFree(wp->private_lineinfo.line_label);
-	NhlFree(wp->public_lineinfo.line_label);
+	if(wp->public_lineinfo.line_label_string != 
+	   wp->private_lineinfo.line_label_string)
+		NhlFree(wp->private_lineinfo.line_label_string);
+	NhlFree(wp->public_lineinfo.line_label_string);
 
 	return(retcode);
 }
@@ -2093,6 +2355,7 @@ WorkstationFill
 	char			func[] = "WorkstationFill";
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	NhlWorkstationLayerPart	*wk_p = &wl->work;
+	_NhlFillStyleInfo	*wkfp = wk_p->fip;
 	static int		first = 1;
 	static float		*dst;
 	static int		*ind;
@@ -2155,10 +2418,10 @@ WorkstationFill
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_fill_int_style(&err_ind, &save_fillstyle);
 	ginq_linetype(&err_ind, &save_linetype);
-	fill_color = (wk_p->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
-		_NhlGetGksCi(l,wk_p->fill_color);
-	fill_background = (wk_p->fill_background < 0) ?
-		wk_p->fill_background : _NhlGetGksCi(l,wk_p->fill_background);
+	fill_color = (wkfp->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
+		_NhlGetGksCi(l,wkfp->fill_color);
+	fill_background = (wkfp->fill_background < 0) ?
+		wkfp->fill_background : _NhlGetGksCi(l,wkfp->fill_background);
 
 /*
  * Draw the fill, unless a negative fill index or Transparent fill color
@@ -2167,10 +2430,10 @@ WorkstationFill
 	if (fill_color == NhlTRANSPARENT)
 	/*SUPPRESS570*/
 		;
-	else if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
+	else if ((ix = wkfp->fill_index) == NhlSOLIDFILL) {
 		/* fill_specs[ix].type  must be 0 */
 		gset_fill_int_style(1);
-		gset_linewidth(wk_p->fill_line_thickness);
+		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("type of fill", 0);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -2190,7 +2453,7 @@ WorkstationFill
 							fill_background);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
-		gset_linewidth(wk_p->fill_line_thickness);
+		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("TY", fill_specs[ix].type);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -2210,12 +2473,12 @@ WorkstationFill
 /*
  * Draw the edges
  */
-	if (wk_p->edges_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(l,wk_p->edge_color));
+	if (wkfp->edges_on) {
+		gset_line_colr_ind((Gint)_NhlGetGksCi(l,wkfp->edge_color));
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		gset_linewidth(wk_p->edge_thickness);
+		gset_linewidth(wkfp->edge_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		if (wk_p->edge_dash_pattern > 0) {
+		if (wkfp->edge_dash_pattern > 0) {
 			c_curved(x,y,num_points);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
@@ -2312,7 +2575,7 @@ _NhlSetColor
 	if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
 		 blue < 0.0 || blue > 1.0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:a color component was invalid: no allocation",func);
+		      "%s:a color component was invalid: no allocation",func);
 		return(NhlWARNING);
 	}
 
@@ -3211,7 +3474,7 @@ _NhlSetLineInfo
 	char			*e_text;
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
         NhlWorkstationLayerPart	*wkp = &(wl)->work;
-	_NhlWorkLineInfo	*wklp = &wkp->private_lineinfo;
+	_NhlLineStyleInfo	*wklp = wkp->lip;
 	float			tf;
         char			buffer[80];
 	int			buff_size = sizeof(buffer) - 1;
@@ -3272,7 +3535,7 @@ _NhlSetLineInfo
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 
-        if (wklp->line_label != NULL) {
+        if (wklp->line_label_string != NULL) {
 		float	pwidth, pheight, height;
 		char	fcode[2];
 
@@ -3282,7 +3545,7 @@ _NhlSetLineInfo
 			/*
 			 * Put spaces in for label.
 			 */
-			j = MIN(strlen(wklp->line_label) * 2 + 1,buff_size);
+			j = MIN(strlen(wklp->line_label_string) * 2 + 1,buff_size);
 			for(i=0;i < j-1;i+=2){
 				tchar[i] = ' ';
 				tchar[i+1] = '|';
@@ -3294,10 +3557,10 @@ _NhlSetLineInfo
 			 */
 			i=0;
 			j=0;
-			while(i < buff_size && wklp->line_label[j] != '\0'){
-				if(wklp->line_label[j] == ' ')
+			while(i < buff_size && wklp->line_label_string[j] != '\0'){
+				if(wklp->line_label_string[j] == ' ')
 					tchar[i++] = '|';
-				tchar[i++] = wklp->line_label[j++];
+				tchar[i++] = wklp->line_label_string[j++];
 			}
 			
 			c_pcseti("CC",_NhlGetGksCi(plot->base.wkptr,
@@ -3398,19 +3661,20 @@ _NhlSetFillInfo
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	char			func[] = "_NhlSetFillInfo";
 	NhlWorkstationLayerPart	*wk_p = &wl->work;
+	_NhlFillStyleInfo	*wkfp = wk_p->fip;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
         float			x0,x1;
         int			ll,ix;
         char			buffer[80];
 	
 
-	if (wk_p->edges_on && wk_p->edge_dash_pattern < 0) {
+	if (wkfp->edges_on && wkfp->edge_dash_pattern < 0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "_NhlSetFillInfo: invalid edge dash pattern index");
-		wk_p->edge_dash_pattern = NhlSOLIDLINE;
+		wkfp->edge_dash_pattern = NhlSOLIDLINE;
 	}
-	else if (wk_p->edges_on && wk_p->edge_dash_pattern > 0) {
+	else if (wkfp->edges_on && wkfp->edge_dash_pattern > 0) {
 		memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
 		c_sflush();
@@ -3420,11 +3684,11 @@ _NhlSetFillInfo
 			return;
 
 		x0 = fl;
-		x1 = fl + wk_p->edge_dash_seglen;
+		x1 = fl + wkfp->edge_dash_seglen;
 		x0 = (float)c_kfpy(x0);
 		x1 = (float)c_kfpy(x1);
 	
-		if ((ix = wk_p->edge_dash_pattern) > wk_p->dash_table_len) {
+		if ((ix = wkfp->edge_dash_pattern) > wk_p->dash_table_len) {
 			/* NhlINFO - but it's a void function right now */
 			NhlPError(NhlINFO,NhlEUNKNOWN,
 	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
@@ -3446,11 +3710,11 @@ _NhlSetFillInfo
 /*
  * Make sure the scale factor is okay
  */
-	if (wk_p->fill_scale_factor <= 0.0) {
+	if (wkfp->fill_scale_factor <= 0.0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"_NhlSetFillInfo: fill scale factor must be greater than 0.0");
-		wk_p->fill_scale_factor = 1.0;
+		wkfp->fill_scale_factor = 1.0;
 	}
 		
 /*
@@ -3458,11 +3722,11 @@ _NhlSetFillInfo
  * level. 
  */
 
-	if ((ix = wk_p->fill_index) < NhlHOLLOWFILL) {
+	if ((ix = wkfp->fill_index) < NhlHOLLOWFILL) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			   "_NhlSetFillInfo: invalid fill index");
-		wk_p->fill_index = NhlHOLLOWFILL;
+		wkfp->fill_index = NhlHOLLOWFILL;
 		
 	}
 	else if (ix > wk_p->fill_table_len) {
@@ -3477,7 +3741,7 @@ _NhlSetFillInfo
 		c_sfseti("AN", fill_specs[ix].angle);
 		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
 		c_sfsetr("SP", fill_specs[ix].spacing * 
-			 wk_p->fill_scale_factor);
+			 wkfp->fill_scale_factor);
 		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
 	}
 
@@ -3833,7 +4097,7 @@ _NhlSetMarkerInfo
 	char			func[] = "_NhlSetMarkerInfo";
         NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
 	NhlWorkstationLayerPart	*wk_p = &tinst->work;
-	_NhlMarkerInfo		*mkp = &wk_p->private_markinfo;
+	_NhlMarkerStyleInfo	*mkp = wk_p->mip;
 	int			index;
 	int			marker_color;
 	float			p_height, p_width;

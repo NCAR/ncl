@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.22 1995-12-19 20:39:15 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.23 1996-02-26 21:45:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,28 +33,28 @@ static NhlResource resources[] = {
 
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_min),
-		NhlTString,"0.0",0,NULL},
+		NhlTString,_NhlUSET("0.0"),0,NULL},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_max),
-		NhlTString,"1.0",0,NULL},
+		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
-		NhlTImmediate,False,0,NULL},
+		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_reverse),
-		NhlTImmediate,False,0,NULL},
+		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_min),
-		NhlTString,"0.0",0,NULL},
+		NhlTString,_NhlUSET("0.0"),0,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_max),
-		NhlTString,"1.0",0,NULL},
+		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
-		NhlTImmediate,False,0,NULL},
+		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
-		NhlTImmediate,False,0,NULL}
+		NhlTImmediate,_NhlUSET(False),0,NULL}
 
 /* End-documented-resources */
 
@@ -103,6 +103,15 @@ NhlLayer   /* instance */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes LlDataPolygon(
+#if     NhlNeedProto
+NhlLayer   /* instance */,
+float*   /* x */,
+float*   /* y */,
+int     /* n */
 #endif
 );
 
@@ -192,7 +201,8 @@ NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
 /* data_lineto 		*/      LlDataLineTo,
 /* compc_lineto 	*/      LlDataLineTo,
 /* win_lineto 		*/      LlDataLineTo,
-/* NDC_lineto 		*/      LlNDCLineTo
+/* NDC_lineto 		*/      LlNDCLineTo,
+/* data_polygon		*/      LlDataPolygon 
         },
 	{
 		NULL
@@ -501,7 +511,6 @@ static NhlErrorTypes LlWinToNDC
 	NhlLogLinTransObjLayer	linstance = (NhlLogLinTransObjLayer)instance;
 	NhlTransObjLayerPart	*tp = &linstance->trobj;
 	int i;
-	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	float tmpx,tmpy;
@@ -876,7 +885,6 @@ int upordown;
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-			return(_NhlWorkstationLineTo(llinst->trobj.wkptr,c_cufx(x),c_cufy(y),1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
@@ -958,4 +966,195 @@ int upordown;
 			return(MIN(ret1,ret));
 		}
 	}
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes LlDataPolygon
+#if	NhlNeedProto
+(NhlLayer instance, float *x, float *y, int n )
+#else
+(instance, x, y, n )
+NhlLayer instance;
+float *x;
+float *y;
+int n;
+#endif
+{
+	NhlErrorTypes ret;
+	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayerPart *ltp = 
+		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
+	NhlString e_text;
+	NhlString entry_name = "LlDataPolygon";
+	float out_of_range = llinst->trobj.out_of_range;
+	int i,j;
+	float px,py,cx,cy;
+	float *xbuf,*ybuf;
+	int *ixbuf;
+	NhlBoolean open;
+	NhlBoolean status = False, log_mode = False,done = False;
+	int count;
+	
+
+	if (ltp->x_log) {
+		for (i = 0; i < n; i++) {
+			if (x[i] <= 0.0) {
+				log_mode = True;
+				break;
+			}
+		}
+	}
+	if (ltp->y_log && ! log_mode) {
+		for (i = 0; i < n; i++) {
+			if (y[i] <= 0.0) {
+				log_mode = True;
+				break;
+			}
+		}
+	}
+				
+	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
+	count = open ? n + 1 : n; 
+
+	if (! log_mode) {
+		xbuf = NhlMalloc(count * sizeof(float));
+		ybuf = NhlMalloc(count * sizeof(float));
+	
+		if (xbuf == NULL || ybuf == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+
+		for (i=0; i<n; i++) {
+			xbuf[i] = c_cufx(x[i]);
+			ybuf[i] = c_cufy(y[i]);
+		}
+		if (open) {
+			xbuf[n] = c_cufx(x[0]);
+			ybuf[n] = c_cufy(y[0]);
+		}
+
+		ret = _NhlWorkstationFill(llinst->trobj.wkptr,xbuf,ybuf,count);
+
+		NhlFree(xbuf);
+		NhlFree(ybuf);
+	
+		return ret;
+	}
+/*
+ * "log-mode", allows primitives that contain points outside the log domain
+ */
+	xbuf = NhlMalloc(2 * count * sizeof(float));
+	ybuf = NhlMalloc(2 * count * sizeof(float));
+	ixbuf = NhlMalloc(2 * count * sizeof(int));
+	
+	if (xbuf == NULL || ybuf == NULL || ixbuf == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	if (x[0] < ltp->x_min || x[0] >ltp->x_max ||  
+	    y[0] < ltp->y_min || y[0] >ltp->y_max) {
+		xbuf[0] = out_of_range;
+		ybuf[0] = out_of_range;
+		ixbuf[0] = 0;
+	}
+	else {
+		xbuf[0] = c_cufx(x[0]);
+		ybuf[0] = c_cufy(y[0]);
+		ixbuf[0] = -1;
+	}
+
+	j = 1;
+	i = 0;
+	while (! done) {
+		if (i < n - 1) {
+			px = x[i];
+			py = y[i];
+			i++;
+			cx = x[i];
+			cy = y[i];
+		}
+		else {
+			if (! open) 
+				break;
+			else {
+				px = x[i];
+				py = y[i];
+				cx = x[0];
+				cy = y[0];
+				done = True;
+			}
+		}
+		_NhlTransClipLine(ltp->x_min,ltp->x_max,
+				  ltp->y_min,ltp->y_max,
+				  &px,&py,&cx,&cy,out_of_range);
+
+		if (px == out_of_range) {
+			xbuf[j] = out_of_range;
+			ybuf[j] = out_of_range;
+			ixbuf[j] = i;
+			j++;
+		}
+		else {
+			if (px != x[i-1] || py != y[i-1]) {
+				xbuf[j] = c_cufx(px);
+				ybuf[j] = c_cufy(py);
+				ixbuf[j] = -1;
+				j++;
+			}
+			xbuf[j] = c_cufx(cx);
+			ybuf[j] = c_cufy(cy);
+			ixbuf[j] = -1;
+			j++;
+			if (cx != x[i] || cy != y[i]) {
+				xbuf[j] = out_of_range;
+				ybuf[j] = out_of_range;
+				ixbuf[j] = i;
+				j++;
+			}
+		}
+	}
+	if (j > count) status = True;
+	count = j;
+/*
+ * Replace out of bounds point with extrapolated points in the ndc
+ * space. Since they will be clipped, these points need only be 
+ * topologically correct with respect to the window coordinate boundaries.
+ */
+	if (status) { 
+		float xrat,yrat;
+		float vl,vr,vb,vt,ul,ur,ub,ut;
+		int ll;
+
+		count = j;
+		c_getset(&vl,&vr,&vb,&vt,&ul,&ur,&ub,&ut,&ll);
+
+		xrat = (vr-vl) / (ur-ul);
+		yrat = (vt-vb) / (ut-ub);
+
+		for (j = 0; j < count; j++) {
+			if (xbuf[j] == out_of_range) {
+				if (ixbuf[j] == -1) {
+					e_text = "%s: internal error";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				cx = x[ixbuf[j]];
+				cy = y[ixbuf[j]];
+				xbuf[j] = vl + xrat * (cx - ul);
+				ybuf[j] = vb + yrat * (cy - ub);
+			}
+		}
+	}
+		
+	ret = _NhlWorkstationFill(llinst->trobj.wkptr,xbuf,ybuf,count);
+
+	NhlFree(xbuf);
+	NhlFree(ybuf);
+	
+	return ret;
+	
 }

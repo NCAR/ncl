@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.33 1995-12-19 20:39:03 boote Exp $
+ *      $Id: DataComm.c,v 1.34 1996-02-26 21:45:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -152,7 +152,11 @@ NhlDataCommClassRec NhldataCommClassRec = {
 /* data_to_ndc			*/	NhlInheritTransFunc,
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
-/* ndc_polyline			*/	NhlInheritPolyTransFunc
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	/* NhlDataCommClassPart */
 	{

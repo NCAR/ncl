@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.20 1996-01-19 18:06:31 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.21 1996-02-26 21:46:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -581,7 +581,11 @@ NhlPlotManagerClassRec NhlplotManagerClassRec = {
 /* data_to_ndc			*/	NhlInheritTransFunc,
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
-/* ndc_polyline			*/	NhlInheritPolyTransFunc
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	{
 /* wkspace_list			*/	NULL

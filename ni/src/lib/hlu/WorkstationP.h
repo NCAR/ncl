@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.10 1995-04-22 01:02:14 boote Exp $
+ *      $Id: WorkstationP.h,v 1.11 1996-02-26 21:46:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include	<ncarg/hlu/BaseP.h>
 #include	<ncarg/hlu/TextItem.h>
 #include 	<ncarg/hlu/WorkstationI.h>
+#include	<ncarg/hlu/GraphicStyleP.h>
 
 #define _NhlMAX_COLOR_MAP	256
 
@@ -98,33 +99,8 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #define NhlInheritFill   ((NhlWorkstationFill)_NhlInherit)
 #define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
 
-typedef struct _NhlWorkLineInfo{
-        NhlDashIndex	dash_pattern;
-        float		line_dash_seglen;
-        NhlColorIndex	line_color;
-        float		line_thickness;
-        NhlString	line_label;
-	NhlFont		line_label_font;
-	NhlColorIndex	line_label_font_color;
-        float		line_label_font_height;
-	float		line_label_font_aspect;
-	float		line_label_font_thickness;
-	NhlFontQuality	line_label_font_quality;
-	float		line_label_const_spacing;
-	char		line_label_func_code;
-} _NhlWorkLineInfo;
-
-typedef struct _NhlMarkerInfo{
-	NhlMarkerIndex	marker_index;
-	NhlColorIndex	marker_color;
-	float		marker_size;
-	float		marker_x_off;
-	float		marker_y_off;
-	float		marker_thickness;
-} _NhlMarkerInfo;
-
 typedef struct _NhlWorkstationLayerPart{
-	/* User setable resource fields */
+	/* User settable resource fields */
 
 	NhlGenArray	color_map;
 	int		color_map_len;
@@ -133,38 +109,35 @@ typedef struct _NhlWorkstationLayerPart{
 	int		dash_table_len;
 	int		fill_table_len;
 	int		marker_table_len;
+	int		def_graphic_style_id;
 
-	/* Private setable resource fields */
+	/* Private settable resource fields */
 
 	NhlBoolean		reset;
 	NhlBoolean		set_public;
+	int			graphic_style_id;
 
-	_NhlWorkLineInfo	default_lineinfo;
-	_NhlWorkLineInfo	public_lineinfo;
-	_NhlWorkLineInfo	private_lineinfo;
+	_NhlLineStyleInfo	default_lineinfo;
+	_NhlLineStyleInfo	public_lineinfo;
+	_NhlLineStyleInfo	private_lineinfo;
+	_NhlLineStyleInfo	gs_lineinfo;
+	_NhlLineStyleInfo	*lip;
 
-	_NhlMarkerInfo		default_markinfo;
-	_NhlMarkerInfo		public_markinfo;
-	_NhlMarkerInfo		private_markinfo;
+	_NhlMarkerStyleInfo	default_markinfo;
+	_NhlMarkerStyleInfo	public_markinfo;
+	_NhlMarkerStyleInfo	private_markinfo;
+	_NhlMarkerStyleInfo	gs_markinfo;
+	_NhlMarkerStyleInfo	*mip;
+
+	_NhlFillStyleInfo	default_fillinfo;
+	_NhlFillStyleInfo	private_fillinfo;
+	_NhlFillStyleInfo	gs_fillinfo;
+	_NhlFillStyleInfo	*fip;
 
 	NhlGenArray	dash_table;
 
-	int	fill_index;
-	int	fill_color;
-	int	fill_background;
-	float	fill_scale_factor;
-	float	fill_line_thickness;
-
-	int	edges_on;
-	int	edge_dash_pattern;
-	float	edge_thickness;
-	float	edge_dash_seglen;
-	int	edge_color;
-
 	NhlGenArray	marker_table_strings;
 	NhlGenArray	marker_table_params;
-
-
 
 	/* Private internal fields */
 

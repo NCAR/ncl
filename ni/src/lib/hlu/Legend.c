@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.44 1995-12-19 20:39:13 boote Exp $
+ *      $Id: Legend.c,v 1.45 1996-02-26 21:45:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5274,7 +5274,7 @@ static NhlErrorTypes    LegendDraw
 		ypoints[4] = lg_p->perim.bxtr;
 
 		NhlVASetValues(lgl->base.wkptr->base.id,
-			     _NhlNwkDrawEdges, 1,
+			     _NhlNwkEdgesOn, 1,
 			     _NhlNwkEdgeDashPattern, lg_p->perim_dash_pattern,
 			     _NhlNwkEdgeThicknessF, lg_p->perim_thickness,
 			     _NhlNwkEdgeDashSegLenF, lg_p->perim_dash_seglen,
@@ -5294,7 +5294,7 @@ static NhlErrorTypes    LegendDraw
  */
 
 	NhlVASetValues(lgl->base.wkptr->base.id,
-		     _NhlNwkDrawEdges, lg_p->box_line_on,
+		     _NhlNwkEdgesOn, lg_p->box_line_on,
 		     _NhlNwkEdgeDashPattern, lg_p->box_line_dash_pattern,
 		     _NhlNwkEdgeThicknessF, lg_p->box_line_thickness,
 		     _NhlNwkEdgeDashSegLenF, lg_p->box_line_dash_seglen,

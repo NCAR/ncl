@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.17 1995-12-19 20:39:08 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.18 1996-02-26 21:45:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -143,7 +143,11 @@ NhlIrregularPlotClassRec NhlirregularPlotClassRec = {
 /* data_to_ndc			*/	NhlInheritTransFunc,
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
-/* ndc_polyline			*/	NhlInheritPolyTransFunc
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	{
 /* foo				*/	NULL

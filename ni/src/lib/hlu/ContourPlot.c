@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.30 1996-02-01 20:42:54 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.31 1996-02-26 21:45:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1574,6 +1574,10 @@ NhlContourPlotClassRec NhlcontourPlotClassRec = {
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
 /* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	/* datacomm_class */
 	{
@@ -9946,7 +9950,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				       _NhlNwkFillScaleFactorF,fscale,
 				       _NhlNwkFillBackground,
 				       Cnp->fill_background_color,
-				       _NhlNwkDrawEdges,0,
+				       _NhlNwkEdgesOn,0,
 				       NULL);
 			
 			_NhlSetFillInfo(Cnl->base.wkptr,(NhlLayer) Cnl);

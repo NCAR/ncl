@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.20 1996-02-01 20:42:55 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.21 1996-02-26 21:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -335,6 +335,15 @@ int     /* upordown */
 #endif
 );
 
+static NhlErrorTypes IrDataPolygon(
+#if     NhlNeedProto
+NhlLayer   /* instance */,
+float*   /* x */,
+float*   /* y */,
+int     /* n */
+#endif
+);
+
 static NhlErrorTypes SetUpTrans(
 #if NhlNeedProto
         NhlLayer   /*new*/,
@@ -426,7 +435,9 @@ NhlIrregularTransObjClassRec NhlirregularTransObjClassRec = {
 /* data_lineto 		*/      IrDataLineTo,
 /* compc_lineto		*/      IrWinLineTo,
 /* win_lineto 		*/      IrWinLineTo,
-/* NDC_lineto 		*/      IrNDCLineTo
+/* NDC_lineto 		*/      IrNDCLineTo,
+/* data_polygon		*/      IrDataPolygon
+
         }
 };
 
@@ -1853,6 +1864,168 @@ int upordown;
 			
 			
 	}
+	
+}
+
+
+/*ARGSUSED*/
+static NhlErrorTypes IrDataPolygon
+#if	NhlNeedProto
+(NhlLayer instance, float *x, float *y, int n )
+#else
+(instance, x, y, n )
+NhlLayer instance;
+float *x;
+float *y;
+int n;
+#endif
+{
+	NhlErrorTypes ret;
+	NhlIrregularTransObjLayer irinst = (NhlIrregularTransObjLayer)instance;
+	NhlIrregularTransObjLayerPart *irtp = 
+		(NhlIrregularTransObjLayerPart *) &irinst->irtrans;
+	NhlString e_text;
+	NhlString entry_name = "IrDataPolygon";
+	float out_of_range = irinst->trobj.out_of_range;
+	int i,j;
+	float px,py,cx,cy;
+	float *xbuf,*ybuf;
+	int *ixbuf;
+	NhlBoolean open, done = False;
+	int count, status = 0;
+
+	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
+	count = open ? n + 1 : n; 
+
+	xbuf = NhlMalloc(2 * count * sizeof(float));
+	ybuf = NhlMalloc(2 * count * sizeof(float));
+	ixbuf = NhlMalloc(2 * count * sizeof(int));
+	
+	if (xbuf == NULL || ybuf == NULL || ixbuf == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	xbuf[0] = x[0];
+	ybuf[0] = y[0];
+	ixbuf[0] = 0;
+
+	j = 1;
+	i = 0;
+	while (! done) {
+		if (i < n - 1) {
+			px = x[i];
+			py = y[i];
+			i++;
+			cx = x[i];
+			cy = y[i];
+		}
+		else {
+			if (! open) 
+				break;
+			else {
+				px = x[i];
+				py = y[i];
+				cx = x[0];
+				cy = y[0];
+				done = True;
+			}
+		}
+		_NhlTransClipLine(irtp->x_min,irtp->x_max,
+				  irtp->y_min,irtp->y_max,
+				  &px,&py,&cx,&cy,out_of_range);
+
+		if (px == out_of_range) {
+			xbuf[j] = x[i];
+			ybuf[j] = y[i];
+			ixbuf[j] = i;
+			j++;
+		}
+		else {
+			if (px != x[i-1] || py != y[i-1]) {
+				xbuf[j] = px;
+				ybuf[j] = py;
+				ixbuf[j] = -1;
+				j++;
+			}
+			xbuf[j] = cx;
+			ybuf[j] = cy;
+			ixbuf[j] = -1;
+			j++;
+			if (cx != x[i] || cy != y[i]) {
+				xbuf[j] = x[i];
+				ybuf[j] = y[i];
+				ixbuf[j] = i;
+				j++;
+			}
+		}
+	}
+	count = j;
+	ret = IrDataToCompc(instance,xbuf,ybuf,count,
+			    xbuf,ybuf,NULL,NULL,&status);
+/*
+ * Replace out of bounds point with extrapolated points in the window
+ * space. Since they will be clipped, these points need only be 
+ * topologically correct with respect to the data coordinate boundaries.
+ */
+	if (! status) { 
+		for (j = 0; j < count; j++) {
+			xbuf[j] = c_cufx(xbuf[j]);
+			ybuf[j] = c_cufy(ybuf[j]);
+		}
+	}
+	else {
+		float xrat,yrat,xdor,xwor,ydor,ywor;
+
+		if (irtp->x_reverse) {
+			xrat = (irtp->ur - irtp->ul) /
+				(irtp->x_min - irtp->x_max);
+			xdor = irtp->x_max;
+		}
+		else {
+			xrat = (irtp->ur - irtp->ul) /
+				(irtp->x_max - irtp->x_min);
+			xdor = irtp->x_min;
+		}
+		xwor = irtp->ul;
+		if (irtp->y_reverse) {
+			yrat = (irtp->ut - irtp->ub) /
+				(irtp->y_min - irtp->y_max);
+			ydor = irtp->y_max;
+		}
+		else {
+			yrat = (irtp->ut - irtp->ub) /
+				(irtp->y_max - irtp->y_min);
+			ydor = irtp->y_min;
+		}
+		ywor = irtp->ub;
+
+		for (j = 0; j < count; j++) {
+			if (xbuf[j] == out_of_range ||
+			    ybuf[j] == out_of_range) {
+				if (ixbuf[j] == -1) {
+					e_text = "%s: internal error";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				cx = x[ixbuf[j]];
+				cy = y[ixbuf[j]];
+				xbuf[j] = xwor + xrat * (cx - xdor);
+				ybuf[j] = ywor + yrat * (cy - ydor);
+			}
+			xbuf[j] = c_cufx(xbuf[j]);
+			ybuf[j] = c_cufy(ybuf[j]);
+		}
+	}
+		
+	ret = _NhlWorkstationFill(irinst->trobj.wkptr,xbuf,ybuf,count);
+
+	NhlFree(xbuf);
+	NhlFree(ybuf);
+	
+	return ret;
 	
 }
 

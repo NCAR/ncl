@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.13 1995-04-07 10:44:05 boote Exp $
+ *      $Id: Trans.c,v 1.14 1996-02-26 21:46:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -540,10 +540,11 @@ void _NHLCALLF(nhl_fndctodata,NHL_FNDCTODATA)
 
 NhlErrorTypes NhlDataPolyline
 #if NhlNeedProto
-(int pid, float *x,float *y, int n)
+(int pid,int gsid,float *x,float *y, int n)
 #else 
-(pid,x,y,n)
+(pid,gsid,x,y,n)
 	int pid;
+	int gsid;
 	float *x;
 	float *y;
 	int n;
@@ -556,7 +557,7 @@ NhlErrorTypes NhlDataPolyline
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkSetPublic,	True,
+			_NhlNwkGraphicStyle,	gsid,
 			NULL);
 
 		return (*tc->trans_class.data_polyline)(tl,x,y,n);
@@ -585,21 +586,23 @@ void _NHLCALLF(nhl_fdatapolyline,NHL_FDATAPOLYLINE)
 #if	NhlNeedProto
 (
 	int	*pid,
+	int     *gsid,
 	float	*x,
 	float	*y,
 	int	*n,
 	int	*err
 )
 #else
-(pid,x,y,n,err)
+(pid,gsid,x,y,n,err)
 	int	*pid;
+	int	*gsid;
 	float	*x;
 	float	*y;
 	int	*n;
 	int	*err;
 #endif
 {
-	*err = NhlDataPolyline(*pid,x,y,*n);
+	*err = NhlDataPolyline(*pid,*gsid,x,y,*n);
 
 	return;
 }
@@ -609,13 +612,15 @@ NhlErrorTypes NhlNDCPolyline
 #if NhlNeedProto
 (
 	int	pid,
+	int	gsid,
 	float	*x,
 	float	*y,
 	int	n
 )
 #else 
-(pid,x,y,n)
+(pid,gsid,x,y,n)
 	int pid;
+	int gsid;
 	float *x;
 	float *y;
 	int n;
@@ -628,7 +633,7 @@ NhlErrorTypes NhlNDCPolyline
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
-			_NhlNwkSetPublic,	True,
+			_NhlNwkGraphicStyle,	gsid,
 			NULL);
 
 		return (*tc->trans_class.ndc_polyline)(tl,x,y,n);
@@ -657,21 +662,315 @@ void _NHLCALLF(nhl_fndcpolyline,NHL_FNDCPOLYLINE)
 #if	NhlNeedProto
 (
 	int	*pid,
+	int	*gsid,
 	float	*x,
 	float	*y,
 	int	*n,
 	int	*err
 )
 #else
-(pid,x,y,n,err)
+(pid,gsid,x,y,n,err)
 	int	*pid;
+	int	*gsid;
 	float	*x;
 	float	*y;
 	int	*n;
 	int	*err;
 #endif
 {
-	*err = NhlNDCPolyline(*pid,x,y,*n);
+	*err = NhlNDCPolyline(*pid,*gsid,x,y,*n);
+
+	return;
+}
+
+
+NhlErrorTypes NhlDataPolygon
+#if NhlNeedProto
+(int pid,int gsid,float *x,float *y, int n)
+#else 
+(pid,gsid,x,y,n)
+	int pid;
+	int gsid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	NhlLayer		tl = _NhlGetLayer(pid);
+	NhlTransformClass	tc;
+
+	if(tl && _NhlIsTransform(tl)) {
+		tc = (NhlTransformClass)tl->base.layer_class;
+
+		NhlVASetValues(tl->base.wkptr->base.id,
+			_NhlNwkGraphicStyle,	gsid,
+			NULL);
+
+		return (*tc->trans_class.data_polygon)(tl,x,y,n);
+	}
+
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlDataPolygon:called with invalid object");
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fdatapolygon
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fdatapolygon,NHL_FDATAPOLYGON)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*gsid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,gsid,x,y,n,err)
+	int	*pid;
+	int	*gsid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlDataPolygon(*pid,*gsid,x,y,*n);
+
+	return;
+}
+
+
+NhlErrorTypes NhlNDCPolygon
+#if NhlNeedProto
+(
+	int	pid,
+	int	gsid,
+	float	*x,
+	float	*y,
+	int	n
+)
+#else 
+(pid,gsid,x,y,n)
+	int pid;
+	int gsid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	NhlLayer		tl = _NhlGetLayer(pid);
+	NhlTransformClass	tc;
+
+	if(tl && _NhlIsTransform(tl)) {
+		tc = (NhlTransformClass)tl->base.layer_class;
+
+		NhlVASetValues(tl->base.wkptr->base.id,
+			_NhlNwkGraphicStyle,	gsid,
+			NULL);
+
+		return (*tc->trans_class.ndc_polygon)(tl,x,y,n);
+	}
+
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlNDCPolygon:called with invalid object");
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fndcpolygon
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fndcpolygon,NHL_FNDCPOLYGON)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*gsid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,gsid,x,y,n,err)
+	int	*pid;
+	int	*gsid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlNDCPolygon(*pid,*gsid,x,y,*n);
+
+	return;
+}
+
+
+NhlErrorTypes NhlDataPolymarker
+#if NhlNeedProto
+(int pid,int gsid,float *x,float *y, int n)
+#else 
+(pid,gsid,x,y,n)
+	int pid;
+	int gsid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	NhlLayer		tl = _NhlGetLayer(pid);
+	NhlTransformClass	tc;
+
+	if(tl && _NhlIsTransform(tl)) {
+		tc = (NhlTransformClass)tl->base.layer_class;
+
+		NhlVASetValues(tl->base.wkptr->base.id,
+			_NhlNwkGraphicStyle,	gsid,
+			NULL);
+
+		return (*tc->trans_class.data_polymarker)(tl,x,y,n);
+	}
+
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlDataPolymarker:called with invalid object");
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fdatapolymarker
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fdatapolymarker,NHL_FDATAPOLYMARKER)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*gsid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,gsid,x,y,n,err)
+	int	*pid;
+	int	*gsid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlDataPolymarker(*pid,*gsid,x,y,*n);
+
+	return;
+}
+
+
+NhlErrorTypes NhlNDCPolymarker
+#if NhlNeedProto
+(
+	int	pid,
+	int	gsid,
+	float	*x,
+	float	*y,
+	int	n
+)
+#else 
+(pid,gsid,x,y,n)
+	int pid;
+	int gsid;
+	float *x;
+	float *y;
+	int n;
+#endif
+{
+	NhlLayer		tl = _NhlGetLayer(pid);
+	NhlTransformClass	tc;
+
+	if(tl && _NhlIsTransform(tl)) {
+		tc = (NhlTransformClass)tl->base.layer_class;
+
+		NhlVASetValues(tl->base.wkptr->base.id,
+			_NhlNwkGraphicStyle,	gsid,
+			NULL);
+
+		return (*tc->trans_class.ndc_polymarker)(tl,x,y,n);
+	}
+
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlNDCPolymarker:called with invalid object");
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fndcpolymarker
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fndcpolymarker,NHL_FNDCPOLYMARKER)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*gsid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,gsid,x,y,n,err)
+	int	*pid;
+	int	*gsid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlNDCPolymarker(*pid,*gsid,x,y,*n);
 
 	return;
 }

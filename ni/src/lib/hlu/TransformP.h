@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.16 1995-11-21 20:19:01 dbrown Exp $
+ *      $Id: TransformP.h,v 1.17 1996-02-26 21:46:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -112,6 +112,10 @@ typedef struct NhlTransformClassPart{
 	NhlTransFunction	ndc_to_data;
 	NhlTransPolyFunc	data_polyline;
 	NhlTransPolyFunc	ndc_polyline;
+	NhlTransPolyFunc	data_polygon;
+	NhlTransPolyFunc	ndc_polygon;
+	NhlTransPolyFunc	data_polymarker;
+	NhlTransPolyFunc	ndc_polymarker;
 } NhlTransformClassPart;
 
 typedef struct _NhlTransformClassRec{

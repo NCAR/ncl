@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.2 1996-02-06 19:59:19 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.3 1996-02-26 21:46:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
 
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/StreamlinePlotP.h>
@@ -141,6 +142,13 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNstMinLineSpacingF,NhlCstMinLineSpacingF,
 		  NhlTFloat,sizeof(float),Oset(min_line_spacing),NhlTProcedure,
+		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(min_arrow_spacing_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNstMinArrowSpacingF,NhlCstMinArrowSpacingF,
+		  NhlTFloat,sizeof(float),
+                 Oset(min_arrow_spacing),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNstMinStepFactorF,NhlCstMinStepFactorF,NhlTFloat,sizeof(float),
 		  Oset(min_step_factor),NhlTString,
@@ -1052,6 +1060,10 @@ NhlStreamlinePlotClassRec NhlstreamlinePlotClassRec = {
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
 /* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	/* datacomm_class */
 	{
@@ -1421,7 +1433,8 @@ StreamlinePlotInitialize
 	if (! stp->arrow_length_set) stp->arrow_length = 0.008;
         if (! stp->step_size_set) stp->step_size = 0.012;
 	if (! stp->min_line_spacing_set) stp->min_line_spacing = 0.01;
-	if (! stp->min_line_length_set) stp->min_line_length = 0.05;
+	if (! stp->min_arrow_spacing_set) stp->min_arrow_spacing = 0.0;
+	if (! stp->min_line_length_set) stp->min_line_length = 0.0;
 	       
 	if (! stp->level_spacing_set) stp->level_spacing = 5.0;
 	if (! stp->min_level_set) stp->min_level_val = -FLT_MAX;
@@ -1574,6 +1587,7 @@ StreamlinePlotInitialize
 	stp->arrow_length_set = False;
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
+	stp->min_arrow_spacing_set = False;
 	stp->min_line_length_set = False;
 
 	return ret;
@@ -1639,6 +1653,8 @@ static NhlErrorTypes StreamlinePlotSetValues
 		stp->step_size_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNstMinLineSpacingF))
 		stp->min_line_spacing_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNstMinArrowSpacingF))
+		stp->min_arrow_spacing_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNstMinLineLengthF))
 		stp->min_line_length_set = True;
 
@@ -1771,6 +1787,7 @@ static NhlErrorTypes StreamlinePlotSetValues
 	stp->arrow_length_set = False;
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
+	stp->min_arrow_spacing_set = False;
 	stp->min_line_length_set = False;
 
 	return ret;
@@ -2792,6 +2809,10 @@ static NhlErrorTypes stDraw
 	c_stsetr("ARL",stp->arrow_length / stl->view.width);
 	c_stsetr("DFM",stp->step_size / stl->view.width);
 	c_stsetr("SSP",stp->min_line_spacing / stl->view.width);
+/*
+	c_stsetr("AMD",stp->min_arrow_spacing / stl->view.width);
+	c_stsetr("SMD",stp->min_line_length / stl->view.width);
+*/
 	c_stsetr("CDS",stp->min_step_factor);
 	c_stseti("CKP",stp->length_check_count < 1 ? 
 		 35 : stp->length_check_count);
@@ -5152,6 +5173,16 @@ static NhlErrorTypes    ManageViewDepResources
 				stnew->view.width / stold->view.width;
 		}
 	}
+	if (! stp->min_arrow_spacing_set) {
+		if (init) {
+			stp->min_arrow_spacing *= 
+				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+		}
+		else if (stnew->view.width != stold->view.width) {
+			stp->min_arrow_spacing *= 
+				stnew->view.width / stold->view.width;
+		}
+	}
 	if (! stp->min_line_length_set) {
 		if (init) {
 			stp->min_line_length *= 
@@ -6660,9 +6691,10 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 	int status = 1;
         float xe,ye,xt,yt,xtf,ytf,xd,yd;
         float dv1,dv2,duv;
-        int count = 0,max_count = 40;
+        int count = 0,max_count = 25;
         float sign = 1.0,prec_fac = 1.0e5,pvfrac = 0.1;
 	float xdata,ydata;
+	NhlBoolean sign_changed = False;
 
         if (Stp == NULL) {
 		_NHLCALLF(stmpta,STMPTA)
@@ -6686,6 +6718,7 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			}
                         dv1 = sqrt((*du)*(*du)+(*dv)*(*dv));
 
+		retry0:
                         /* set up inital increment factor */
 
                         duv = pvfrac / Vnml;
@@ -6724,8 +6757,28 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			}
 			xe = *xnd + sign*xd*dv1/dv2;
 			ye = *ynd + sign*yd*dv1/dv2;
+			if (count == max_count) {
+				if (! sign_changed) {
+					sign_changed = True;
+					sign = -1.0;
+					count = 0;
+					goto retry0;
+				}
+				else {
+					*ist = -5;
+					return;
+				}
+			}
 		}
+		errno = 0;
 		*ta = atan2((ye-*ynd),(xe-*xnd));
+		if (errno == EDOM)
+			printf("ye %f *ynd %f xe %f *xnd %f\n",
+			       ye,*ynd,xe,*xnd);
+		else if (errno == ERANGE)
+			printf("*ta %f\n",*ta);
+		else if (errno != 0)
+			printf ("errno - %d\n",errno);
 	}
 	else {
 		float cos_lat;
@@ -6742,14 +6795,21 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			*ist = - 1;
 			return;
 		}
+	retry1:
 		duv = pvfrac / Vnml;
 		cos_lat = cos(*yda * DEG2RAD);
 		dtx = *du / cos_lat;
 		dty = *dv;
 		while ( count < max_count) {
-			dnx = dtx * duv;
-			dny = dty * duv;
+			dnx = xdata + sign * dtx * duv;
+			dny = ydata + sign * dty * duv;
+/*
 			c_maptra(ydata+sign*dny,xdata+sign*dnx,&xt,&yt);
+*/
+			_NhlDataToWin(trans_p,&dnx,&dny,1,&xt,&yt,
+			      &status,NULL,NULL);
+			if (status)
+				xt = dnx, yt = dny;
 
 			if (xt < Wxmn || xt > Wxmx ||
 			    yt < Wymn || yt > Wymx) {
@@ -6777,7 +6837,27 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			}
 			break;
 		}
+		if (count == max_count) {
+			if (! sign_changed) {
+				sign_changed = True;
+				sign = -1.0;
+				count = 0;
+				goto retry1;
+			}
+			else {
+				*ist = -5;
+				return;
+			}
+		}
+		errno = 0;
 		*ta = atan2(sign*yd,sign*xd);
+		if (errno == EDOM)
+			printf("ytf %f *ynd %f xtf %f *xnd %f\n",
+			       ytf,*ynd,xtf,*xnd);
+		else if (errno == ERANGE)
+			printf("*ta %f\n",*ta);
+		else if (errno != 0)
+			printf ("errno - %d\n",errno);
 	}
 
 			

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.11 1995-04-18 00:45:18 dbrown Exp $
+ *      $Id: Transform.h,v 1.12 1996-02-26 21:46:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,7 @@ extern NhlErrorTypes NhlDataToNDC(
 extern NhlErrorTypes NhlDataPolyline(
 #if	NhlNeedProto
 	int		/* pid */,
+        int		/* gsid */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
@@ -82,6 +83,47 @@ extern NhlErrorTypes NhlDataPolyline(
 extern NhlErrorTypes NhlNDCPolyline(
 #if	NhlNeedProto
 	int		/* pid */,
+        int		/* gsid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlDataPolygon(
+#if	NhlNeedProto
+	int		/* pid */,
+        int		/* gsid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlNDCPolygon(
+#if	NhlNeedProto
+	int		/* pid */,
+        int		/* gsid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlDataPolymarker(
+#if	NhlNeedProto
+	int		/* pid */,
+        int		/* gsid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlNDCPolymarker(
+#if	NhlNeedProto
+	int		/* pid */,
+        int		/* gsid */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */

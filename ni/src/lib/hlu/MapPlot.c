@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.43 1995-12-19 20:39:16 boote Exp $
+ *      $Id: MapPlot.c,v 1.44 1996-02-26 21:46:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -851,7 +851,11 @@ NhlMapPlotClassRec NhlmapPlotClassRec = {
 /* data_to_ndc			*/	NhlInheritTransFunc,
 /* ndc_to_data			*/	NhlInheritTransFunc,
 /* data_polyline		*/	NhlInheritPolyTransFunc,
-/* ndc_polyline			*/	NhlInheritPolyTransFunc
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
+/* data_polygon			*/	NhlInheritPolyTransFunc,
+/* ndc_polygon			*/	NhlInheritPolyTransFunc,
+/* data_polymarker		*/	NhlInheritPolyTransFunc,
+/* ndc_polymarker		*/	NhlInheritPolyTransFunc
 	},
 	{
 /* foo				*/	NULL
@@ -5817,7 +5821,7 @@ int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 		       _NhlNwkFillIndex, pat_ix,
 		       _NhlNwkFillColor, col_ix,
 		       _NhlNwkFillScaleFactorF,fscale,
-		       _NhlNwkDrawEdges,0,
+		       _NhlNwkEdgesOn,0,
 		       NULL);
 	
 	_NhlSetFillInfo(Mpl->base.wkptr, (NhlLayer) Mpl);

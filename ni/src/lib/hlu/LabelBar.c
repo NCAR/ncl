@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.42 1995-12-19 20:39:11 boote Exp $
+ *      $Id: LabelBar.c,v 1.43 1996-02-26 21:45:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4212,7 +4212,7 @@ static NhlErrorTypes    LabelBarDraw
 		ypoints[4] = lb_p->perim.bxtr;
 
 		NhlVASetValues(lbl->base.wkptr->base.id,
-			     _NhlNwkDrawEdges, 1,
+			     _NhlNwkEdgesOn, 1,
 			     _NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
 			     _NhlNwkEdgeThicknessF, lb_p->perim_thickness,
 			     _NhlNwkEdgeDashSegLenF, lb_p->perim_dash_seglen,
@@ -4232,7 +4232,7 @@ static NhlErrorTypes    LabelBarDraw
  */
 
 	NhlVASetValues(lbl->base.wkptr->base.id,
-		     _NhlNwkDrawEdges, lb_p->box_line_on,
+		     _NhlNwkEdgesOn, lb_p->box_line_on,
 		     _NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
 		     _NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
 		     _NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_seglen,

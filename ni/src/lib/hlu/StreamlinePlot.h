@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.2 1996-02-06 19:59:19 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.3 1996-02-26 21:46:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,8 @@
 #define NhlNstLengthCheckCount		"stLengthCheckCount" 	/* CKP */
 #define NhlNstCrossoverCheckCount	"stCrossoverCheckCount" /* CKX */
 
-#define NhlNstMinLineLengthF		"stMinLineLengthF"	
+#define NhlNstMinLineLengthF		"stMinLineLengthF"	/* SMD */
+#define NhlNstMinArrowSpacingF		"stMinArrowSpacingF"	/* AMD */
 #define NhlNstMinLineSpacingF		"stMinLineSpacingF"	/* SSP */
 #define NhlNstLineStartStride		"stLineStartStride"     /* SGD */
 #define NhlNstArrowStartStride		"stArrowStartStride"    /* AGD */
@@ -132,6 +133,7 @@
 #define NhlCstCrossoverCheckCount	"StCrossoverCheckCount" /* CKX */
 
 #define NhlCstMinLineLengthF		"StMinLineLengthF"	
+#define NhlCstMinArrowSpacingF		"StMinArrowSpacingF"	/* AMD */
 #define NhlCstMinLineSpacingF		"StMinLineSpacingF"	/* SSP */
 #define NhlCstLineStartStride		"StLineStartStride"     /* SGD */
 #define NhlCstArrowStartStride		"StArrowStartStride"    /* AGD */
