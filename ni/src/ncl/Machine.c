@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.68 1998-01-30 23:52:44 ethan Exp $
+ *      $Id: Machine.c,v 1.69 1998-02-19 18:20:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2419,7 +2419,11 @@ void _NclDumpStack
 			break;
 		case 	NclStk_VAR:
 			fprintf(file,"NclStk_VAR\t");
-			fprintf(file,"%s ",NrmQuarkToString(tmp_ptr->u.data_var->var.var_quark));
+			if(tmp_ptr->u.data_var->var.var_quark> 0) {
+				fprintf(file,"%s ",NrmQuarkToString(tmp_ptr->u.data_var->var.var_quark));
+			} else {
+				fprintf(file,"unnamed ");
+			}
 			switch(tmp_ptr->u.data_var->var.var_type) {
 			case VARSUBSEL:
 				fprintf(file,"(subsection)\t");

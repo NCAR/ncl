@@ -473,11 +473,13 @@ NhlErrorTypes _NclBuildArray
 * Still the  possibility that dimensions numbers and sizes of elements don't 
 * match
 */
-
+/*
 	data = _NclPop();
+*/
+	data_ptr = _NclPeek(0);
 	items_left--;
-	if(data.kind == NclStk_VAL) {
-		theobj = (NclMultiDValData)data.u.data_obj;
+	if(data_ptr->kind == NclStk_VAL) {
+		theobj = (NclMultiDValData)data_ptr->u.data_obj;
 		if(!(theobj->multidval.type->type_class.type & result_type)) {
 			coerce_res = _NclCoerceData(theobj,result_type,NULL);
 			if(coerce_res == NULL) {
@@ -496,19 +498,21 @@ NhlErrorTypes _NclBuildArray
 				mis_ptr = &themissing;
 				themissing = coerce_res->multidval.missing_value.value;
 			}
+/*
 			if(theobj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)theobj);
 			}
+*/
 			theobj = coerce_res;
 		} else if(theobj->multidval.missing_value.has_missing) {
 			still_no_missing = 0;
 			mis_ptr = &themissing;
 			themissing = theobj->multidval.missing_value.value;
 		}
-	} else if(data.kind == NclStk_VAR){
-		obj_type = _NclGetVarRepValue(data.u.data_var);	
+	} else if(data_ptr->kind == NclStk_VAR){
+		obj_type = _NclGetVarRepValue(data_ptr->u.data_var);	
 		if(!(obj_type & result_type)) {
-			theobj = _NclCoerceVar(data.u.data_var,result_type,NULL);
+			theobj = _NclCoerceVar(data_ptr->u.data_var,result_type,NULL);
 			if(theobj == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
@@ -527,16 +531,22 @@ NhlErrorTypes _NclBuildArray
 				mis_ptr = &themissing;
 				themissing = theobj->multidval.missing_value.value;
 			}
-			if(data.u.data_var->obj.status != PERMANENT) {
-				_NclDestroyObj((NclObj)data.u.data_var);
+/*
+			if(data_ptr->u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)data_ptr->u.data_var);
 			}
+*/
 		} else {
-			if(data.u.data_var->obj.status == PERMANENT) {
-				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+/*
+			if(data_ptr->u.data_var->obj.status == PERMANENT) {
+*/
+				theobj = _NclVarValueRead(data_ptr->u.data_var,NULL,NULL);
+/*
 			} else {
-				theobj = _NclStripVarData(data.u.data_var);
-				_NclDestroyObj((NclObj)data.u.data_var);
+				theobj = _NclStripVarData(data_ptr->u.data_var);
+				_NclDestroyObj((NclObj)data_ptr->u.data_var);
 			}
+*/
 			if(theobj == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
 				_NclCleanUpStack(items_left);
@@ -595,16 +605,21 @@ NhlErrorTypes _NclBuildArray
 	ptr = (char*)value;
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
+/*
 	if(theobj->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)theobj);
 	}
+*/
 
 
-	while(items_left) {
+	for(i = 1; i< n_items; i++) {
+		data_ptr = _NclPeek(i);
+/*
 		data = _NclPop();
+*/
 		items_left--;
-		if(data.kind == NclStk_VAL) {
-			theobj = (NclMultiDValData)data.u.data_obj;
+		if(data_ptr->kind == NclStk_VAL) {
+			theobj = (NclMultiDValData)data_ptr->u.data_obj;
 			if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: Arrays of files are not yet supported");
 				result->kind = NclStk_NOVAL;
@@ -630,9 +645,11 @@ NhlErrorTypes _NclBuildArray
 					mis_ptr = &themissing;
 					themissing = theobj->multidval.missing_value.value;
 				}
+/*
 				if(theobj->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)theobj);
 				}
+*/
 				theobj = coerce_res;
 			} else if((theobj->multidval.missing_value.has_missing)&&(still_no_missing)) {
 				still_no_missing = 0;
@@ -651,9 +668,11 @@ NhlErrorTypes _NclBuildArray
 * following will not cause the pointer to be lost.
 */
 					coerce_res = _NclCopyVal(theobj,mis_ptr);
+/*
 					if(theobj->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)theobj);
 					}
+*/
 					theobj = coerce_res;
 				} else {
 					if(mis_ptr != NULL) {
@@ -661,13 +680,15 @@ NhlErrorTypes _NclBuildArray
 					}
 				}
 			}
-		} else if(data.kind == NclStk_VAR){
-			obj_type = _NclGetVarRepValue(data.u.data_var);	
+		} else if(data_ptr->kind == NclStk_VAR){
+			obj_type = _NclGetVarRepValue(data_ptr->u.data_var);	
 			if(!(obj_type & result_type)) {
-				theobj = _NclCoerceVar(data.u.data_var,result_type,mis_ptr);
-				if(data.u.data_var->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)data.u.data_var);
+				theobj = _NclCoerceVar(data_ptr->u.data_var,result_type,mis_ptr);
+/*
+				if(data_ptr->u.data_var->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)data_ptr->u.data_var);
 				}
+*/
 				if(theobj == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
@@ -684,12 +705,16 @@ NhlErrorTypes _NclBuildArray
 					themissing = theobj->multidval.missing_value.value;
 				}
 			} else {
-				if(data.u.data_var->obj.status == PERMANENT) {
-					theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
+/*
+				if(data_ptr->u.data_var->obj.status == PERMANENT) {
+*/
+					theobj = _NclVarValueRead(data_ptr->u.data_var,NULL,NULL);
+/*
 				} else {
-					theobj = _NclStripVarData(data.u.data_var);
-					_NclDestroyObj((NclObj)data.u.data_var);
+					theobj = _NclStripVarData(data_ptr->u.data_var);
+					_NclDestroyObj((NclObj)data_ptr->u.data_var);
 				}
+*/
 				if(theobj == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
 					_NclCleanUpStack(items_left);
@@ -707,9 +732,11 @@ NhlErrorTypes _NclBuildArray
 						}
 					} else {
 						coerce_res = _NclCopyVal(theobj,mis_ptr);
+/*
 						if(theobj->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)theobj);
 						}
+*/
 						theobj = coerce_res;
 					}
 				}
@@ -722,9 +749,11 @@ NhlErrorTypes _NclBuildArray
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
 		ptr += partsize;
+/*
 		if(theobj->obj.status != PERMANENT) {
 			_NclDestroyObj((NclObj)theobj);
 		} 
+*/
 	}
 	result->kind = NclStk_VAL;
 /*
@@ -735,6 +764,12 @@ NhlErrorTypes _NclBuildArray
 		result->u.data_obj = _NclMultiDValHLUObjDataCreate(NULL,NULL,Ncl_MultiDValHLUObjData,0,value,mis_ptr,ndims,dim_sizes,TEMPORARY,NULL);
 	} else {
 		result->u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,value,mis_ptr,ndims,dim_sizes,TEMPORARY,NULL,_NclTypeEnumToTypeClass(result_type));
+	}
+	for(i = 0; i< n_items; i++) {
+		data = _NclPop();
+		if(data.u.data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)data.u.data_obj);
+		}
 	}
 	if(result->u.data_obj != NULL) 
 		return(NhlNOERROR);
