@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.38 1997-09-19 14:41:18 boote Exp $
+ *      $Id: Resources.c,v 1.39 1998-02-25 15:02:45 haley Exp $
  */
 /************************************************************************
 *									*
@@ -148,14 +148,14 @@ _NhlConvertArg
 		tmp.fltval = arg->value.dblval;
 	else if(_NhlIsSubtypeQ(doubleQ,name))
 		tmp.dblval = arg->value.dblval;
-#ifdef	IRIX64
+#ifdef	NGLONG2XINT
 	/*
-	 * On the IRIX64 - int's are 4 bytes and longs are 8 bytes.  From
-	 * the AL/VA interface all non-long integral types are promoted to
-	 * int, but they are pulled off the va_arg stack as a long, and
-	 * put in the arg->value union as a long.  So, to get to the
-	 * actual value, I treat the long as an array of two ints, and
-	 * pull off the second int.
+	 * On non-byte swapped systems where ints are 4 bytes and longs are
+     * 8 bytes, this macro must be set.  From the AL/VA interface all
+	 * non-long integral types are promoted to int, but they are pulled
+     * off the va_arg stack as a long, and put in the arg->value union
+     * as a long.  So, to get to the actual value, I treat the long as
+     * an array of two ints, and pull off the second int.
 	 */
 	else if(_NhlIsSubtypeQ(charQ,name) ||
 			_NhlIsSubtypeQ(byteQ,name))
