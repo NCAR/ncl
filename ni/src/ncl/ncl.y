@@ -905,8 +905,12 @@ procedure : IPROC opt_arg_list    {
 /*
 	| identifier opt_arg_list	{ ERROR("syntax error: <identifier> IS NOT A PROCEDURE"); }
 */
-	| IFUNC opt_arg_list	{ ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
-	| NFUNC opt_arg_list	{ ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
+	| IFUNC opt_arg_list	{ $$ = NULL;  ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
+	| NFUNC opt_arg_list	{ $$ = NULL; ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
+/*
+	| UNDEF LP arg_list RP	{ $$ = NULL; NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s IS A FUNCTION NOT A PROCEDURE",$1->name); }
+*/
+
 ;
 
 opt_arg_list : LP arg_list RP			{ $$ = $2;    }
@@ -1232,6 +1236,13 @@ assignment :  identifier '=' expr		{
 						((NclGenericRefNode*)$1)->ref_type = Ncl_WRITEIT;
 						$$ = _NclMakeAssignment($1,$3);
 						  
+					}
+	| identifier  error {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
+						$$ = NULL;
+					}
+	| identifier '='  error		{
+						$$ = NULL;
 					}
 /*
 	| identifier '=' vcreate	{
@@ -1791,7 +1802,7 @@ yyerror
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
-			if(loading) {
+			if(loading > 0) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number + 1,cur_load_file,error_buffer);
 			} else if(cmd_line){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
@@ -1803,7 +1814,7 @@ yyerror
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+cur_line_length-1]),"^\n");
-			if(loading) {
+			if(loading > 0) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
 			} else if(cmd_line){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);

@@ -107,6 +107,7 @@ void _NclResetScanner
 #endif
 {
 	if ( --loading < 0 ) {
+		loading = 0;
 		return;
 	} else {
 /*
@@ -203,6 +204,7 @@ digit	[0-9]
 }
 <<EOF>> {
 	if ( --loading < 0 ) {
+		loading = 0;
 		yyterminate();
 	} else {
 		yy_delete_buffer( YY_CURRENT_BUFFER );
