@@ -3069,11 +3069,15 @@ GribFileRecord *therec;
 int param_num;
 #endif
 {
-	GribParamList *step = therec->var_list;
-	while(step != NULL) {
-		if(step->param_number == param_num) return(1);
-		step = step->next;
+	GribParamList *step;
+
+	if(therec != NULL) {
+	 	step = therec->var_list;
+		while(step != NULL) {
+			if(step->param_number == param_num) return(1);
+			step = step->next;
 		
+		}
 	}
 	return(0);
 }
