@@ -41,14 +41,14 @@ C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'tm01',NhlFappLayerClass,0,rlist,ierr)
+      call nhlfcreate(appid,'tm01',nhlfapplayerclass,0,rlist,ierr)
 
 C
 C Create an XWorkstation object.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'wkPause','True',ierr)
-      call nhlfcreate(wid,'tm01Work',NhlFxWorkstationLayerClass,0,
+      call nhlfcreate(wid,'tm01Work',nhlfxworkstationlayerclass,0,
      1    rlist,ierr)
 C
 C Specify the viewport extent of the object.
