@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.2 1994-04-05 19:22:39 fred Exp $
+ *	$Id: ps.c,v 1.3 1994-04-28 23:30:17 fred Exp $
  */
 /*
  *
@@ -1739,10 +1739,10 @@ char *GetFileName(int wkid, ps_file_type file_type, char *file_name)
 	static char *tch;
 
 	/*
-	 *  A setting of the environment variable NCARG_PS_OUTPUT
+	 *  A setting of the environment variable NCARG_GKS_PSOUTPUT
 	 *  takes precedence over everything.
 	 */
-	tch = getenv("NCARG_PS_OUTPUT");
+	tch = getenv("NCARG_GKS_PSOUTPUT");
 	if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
 		return (tch);
 	}
@@ -3166,12 +3166,12 @@ ps_Esc(gksc)
 	case -1511:  /* Restore color setting after segment copy */
 		(void) fprintf(psa->file_pointer, "rd gr bl R\n");
 		break;
-	case -1512:  /* Spacing between fill lines */
+	case -1512:  /* Spacing between fill lines in range 0. to 1. */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
 		psa->sfill_spacing = (float) atof(strng);
 		break;
-	case -1513:  /* Spacing between hatch lines */
+	case -1513:  /* Spacing between hatch lines in range 0. to 1. */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
 		psa->hatch_spacing = (float) atof(strng);
@@ -3186,12 +3186,12 @@ ps_Esc(gksc)
 		strng = strtok((char *) NULL, " ");
 		psa->path_size = (int) atoi(strng);
 		break;
-	case -1516:
+	case -1516:  /* Linewidth scale */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
 		psa->nominal_width_scale = 0.5 * (float) atof(strng);
 		break;
-	case -1517:
+	case -1517:  /* Full background */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
 		psa->full_background = (int) atoi(strng);
