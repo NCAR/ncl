@@ -9,11 +9,11 @@ only if the entire array is to be drawn, the data points are
 equally spaced in the X-Y plane, there are no stereo pairs, and
 scaling is chosen internally.
 .SH SYNOPSIS
-CALL EZSRFC (Z,M,ANGH,ANGV,WORK)
+CALL EZSRFC (Z,M,N,ANGH,ANGV,WORK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ezsrfc (float *z, int m, float angh, float angv, 
+void c_ezsrfc (float *z, int m, int n, float angh, float angv, 
 .br
 float *work)
 .SH DESCRIPTION 
