@@ -8,36 +8,36 @@
 !  ==============================================================
 !
 !       Height in NDC (0. to 1.) of the viewport
-! *lg01Work.Legend.vpHeightF                   : 0.8
+! lg01.lg01Work.Legend.vpHeightF                   : 0.8
 !
 !       Switch to allow the plot X to Y aspect ratio to remain fixed
 !       when resizing or moving the object.
-! *lg01Work.Legend.vpKeepAspect                : False
+! lg01.lg01Work.Legend.vpKeepAspect                : False
 !
 !       Save this graphical object as a GKS segment
-! *lg01Work.Legend.vpUseSegments               : False
+! lg01.lg01Work.Legend.vpUseSegments               : False
 !
 !       Width in NDC (0. to 1.) of the viewport
-! *lg01Work.Legend.vpWidthF                    : 0.8
+! lg01.lg01Work.Legend.vpWidthF                    : 0.8
 !
 !       NDC (0. to 1.) X location of the upper left corner of the plot
-! *lg01Work.Legend.vpXF                        : 0.1
+! lg01.lg01Work.Legend.vpXF                        : 0.1
 !
 !       NDC (0. to 1.) Y location of the upper left corner of the plot
-! *lg01Work.Legend.vpYF                        : 0.9
+! lg01.lg01Work.Legend.vpYF                        : 0.9
 !
 ! ----------------------
 ! THE COMPOSITE LEGEND
 ! ----------------------
 !
 !       Switch to turn on/off drawing of the legend
-! *lg01Work.Legend.lgLegend              : True
+! lg01.lg01Work.Legend.lgLegend              : True
 !
 !       Is title and label sizing to be done automatically
-! *lg01Work.Legend.lgAutoManage          : True
+! lg01.lg01Work.Legend.lgAutoManage          : True
 !
 !       Should the legend be HORIZONTAL or VERTICAL
-! *lg01Work.Legend.lgOrientation         : VERTICAL
+! lg01.lg01Work.Legend.lgOrientation         : VERTICAL
 !
 !   When the legend changes size the justification determines
 !   a fixed point about which the size change occurs. Any of the
@@ -53,30 +53,30 @@
 !       TOPRIGHT
 !       CENTERRIGHT
 !       BOTTOMRIGHT
-! *lg01Work.Legend.lgJustification       : BOTTOMLEFT
+! lg01.lg01Work.Legend.lgJustification       : BOTTOMLEFT
 !
 !       Distance from Legend perimeter to the Legend information
 !       as a fraction of the smaller perim dimension.
-! *lg01Work.Legend.lgLeftMarginF         : .05
+! lg01.lg01Work.Legend.lgLeftMarginF         : .05
 !
 !       Distance from Legend perimeter to the Legend information
 !       as a fraction of the smaller perim dimension.
-! *lg01Work.Legend.lgRightMarginF        : .05
+! lg01.lg01Work.Legend.lgRightMarginF        : .05
 !
 !       Distance from Legend perimeter to the Legend information
 !       as a fraction of the smaller perim dimension.
-! *lg01Work.Legend.lgBottomMarginF       : .05
+! lg01.lg01Work.Legend.lgBottomMarginF       : .05
 !
 !       Distance from Legend perimeter to the Legend information
 !       as a fraction of the smaller perim dimension.
-! *lg01Work.Legend.lgTopMarginF          : .05
+! lg01.lg01Work.Legend.lgTopMarginF          : .05
 !
 ! ------------------
 ! THE LEGEND TITLE
 ! ------------------
 !
 !       Draw the legend title (default is True)
-! *lg01Work.Legend.lgDrawTitle           : 1
+! lg01.lg01Work.Legend.lgDrawTitle           : 1
 !
 !       If a string is set DrawTitle defaults to True.  Else
 !       DrawTitle defaults to False.  If DrawTitle is set to
@@ -84,25 +84,25 @@
 !       a title consisting of the name of the current instantiation
 !       of the object is inserted into TitleString.
 !
-! *lg01Work.Legend.lgTitleString          :
+! lg01.lg01Work.Legend.lgTitleString          :
 !
 !       Determines where the title goes relative to the legend object.
 !       Options are TOP, BOTTOM, LEFT, and RIGHT.
-! *lg01Work.Legend.lgTitlePosition        : TOP
+! lg01.lg01Work.Legend.lgTitlePosition        : TOP
 !
 !       Determines the NDC distance between the title and the label/box info.
-! *lg01Work.Legend.lgTitleOffsetF         : .03
+! lg01.lg01Work.Legend.lgTitleOffsetF         : .03
 !
 !       NDC extent allocated for the title when AutoManage is on.
-! *lg01Work.Legend.lgMaxTitleExtentF      : .15
+! lg01.lg01Work.Legend.lgMaxTitleExtentF      : .15
 !
 !       Rotation angle of the title
-! *lg01Work.Legend.lgTitleAngleF          : 0.
+! lg01.lg01Work.Legend.lgTitleAngleF          : 0.
 !
 !       Direction the title is to be drawn
 !       Defaults to ACROSS when TitlePosition = TOP or BOTTOM
 !       Defaults to DOWN when TitlePosition = LEFT or RIGHT
-! *lg01Work.Legend.lgTitleDirection       : ACROSS
+! lg01.lg01Work.Legend.lgTitleDirection       : ACROSS
 !
 !       How the title text is justified within the text bounding box
 !       TOPLEFT
@@ -114,7 +114,7 @@
 !       TOPRIGHT
 !       CENTERRIGHT
 !       BOTTOMRIGHT
-! *lg01Work.Legend.lgTitleJust           : CENTERCENTER
+! lg01.lg01Work.Legend.lgTitleJust           : CENTERCENTER
 !
 !       The type of character font where the options include:
 ! |-------------------------------------------------------|
@@ -187,7 +187,7 @@
 ! The default pwritx_database font contains many characters
 ! (564) which can be accessed using the FuncCode resource.
 !
-! *lg01Work.Legend.lgTitleFont            : 1
+! lg01.lg01Work.Legend.lgTitleFont            : 1
 !
 !     Color indices are taken from the default HLU colormap.  Choices are:
 !
@@ -198,26 +198,26 @@
 !     60-66   cyans     70-80  greens    81-90  dark grns  91-100   blues
 !   106-114   blacks
 !
-! *lg01Work.Legend.lgTitleFontColor       : FOREGROUND
+! lg01.lg01Work.Legend.lgTitleFontColor       : FOREGROUND
 !
 !       The character height in NDCs of the text to be written
-! *lg01Work.Legend.lgTitleFontHeightF     : .025
+! lg01.lg01Work.Legend.lgTitleFontHeightF     : .025
 !
 !       The height/width aspect ratio of the text to be written
-! *lg01Work.Legend.lgTitleFontAspectF     : 1.0
+! lg01.lg01Work.Legend.lgTitleFontAspectF     : 1.0
 !
 !       The width of the lines that form the text outline
-! *lg01Work.Legend.lgTitleFontThicknessF  : 1.0
+! lg01.lg01Work.Legend.lgTitleFontThicknessF  : 1.0
 !
 !       The degree of quality of the text to be written (LOW,MEDIUM,HIGH)
-! *lg01Work.Legend.lgTitleFontQuality     : HIGH
+! lg01.lg01Work.Legend.lgTitleFontQuality     : HIGH
 !
 !       The spacing between characters of the text to be written
-! *lg01Work.Legend.lgTitleConstantSpacingF: 0.0
+! lg01.lg01Work.Legend.lgTitleConstantSpacingF: 0.0
 !
 !       A process for accessing the many characters of the default
 !       pwritx font.
-! *lg01Work.Legend.lgTitleFuncCode        : :
+! lg01.lg01Work.Legend.lgTitleFuncCode        : :
 !
 !
 ! ------------------
@@ -225,25 +225,25 @@
 ! ------------------
 !
 !       Draw the legend perim   (0 is off, 1 is on)
-! *lg01Work.Legend.lgDrawPerim           : 1
+! lg01.lg01Work.Legend.lgDrawPerim           : 1
 !
 !       Color of the legend perim
-! *lg01Work.Legend.lgPerimColor          : FOREGROUND
+! lg01.lg01Work.Legend.lgPerimColor          : FOREGROUND
 !
 !       Fill sytle of the legend perim
-! *lg01Work.Legend.lgPerimFill           : FOREGROUND
+! lg01.lg01Work.Legend.lgPerimFill           : FOREGROUND
 !
 !       Fill color of the legend perim
-! *lg01Work.Legend.lgPerimFillColor      : FOREGROUND
+! lg01.lg01Work.Legend.lgPerimFillColor      : FOREGROUND
 !
 !       Width of the legend perim
-! *lg01Work.Legend.lgPerimThicknessF     : 1.0
+! lg01.lg01Work.Legend.lgPerimThicknessF     : 1.0
 !
 !       Dash pattern of the legend perim
-! *lg01Work.Legend.lgPerimDashPattern    : 0
+! lg01.lg01Work.Legend.lgPerimDashPattern    : 0
 !
 !       Length of dash segments of the legend perim
-! *lg01Work.Legend.lgPerimDashSegLenF    : 0.15
+! lg01.lg01Work.Legend.lgPerimDashSegLenF    : 0.15
 !
 ! ------------------------
 ! THE LEGEND ITEM BOXES
@@ -251,92 +251,92 @@
 !
 !   The color index used for the background of all the boxes in
 !   the Legend when the fill type is not solid.
-! *lg01Work.Legend.lgBoxBackground       : TRANSPARENT
+! lg01.lg01Work.Legend.lgBoxBackground       : TRANSPARENT
 !
 !       A relative box width.  0. = no width, 1. = touching boxes
-! *lg01Work.Legend.lgBoxMajorExtentF     : 1.0
+! lg01.lg01Work.Legend.lgBoxMajorExtentF     : 1.0
 !
 !       A relative box length in a box + label pair.
 !       If set to 1.0 it crowds out the label.
-! *lg01Work.Legend.lgBoxMinorExtentF     : 0.33
+! lg01.lg01Work.Legend.lgBoxMinorExtentF     : 0.33
 !
 !       Draw the box perimeters  (0 is off, 1 is on)
-! *lg01Work.Legend.lgDrawBoxLines        : 0
+! lg01.lg01Work.Legend.lgDrawBoxLines        : 0
 !
 !       Color of the box perimeter
-! *lg01Work.Legend.lgBoxLineColor          : FOREGROUND
+! lg01.lg01Work.Legend.lgBoxLineColor          : FOREGROUND
 !
 !       Width of the box perimeter
-! *lg01Work.Legend.lgBoxLineThicknessF     : 1.0
+! lg01.lg01Work.Legend.lgBoxLineThicknessF     : 1.0
 !
 !       Dash pattern of the box perimeter
-! *lg01Work.Legend.lgBoxLineDashPattern    : 0
+! lg01.lg01Work.Legend.lgBoxLineDashPattern    : 0
 !
 !       Length of dash segments of the box perimeter
-! *lg01Work.Legend.lgBoxLineDashSegLenF    : 0.15
+! lg01.lg01Work.Legend.lgBoxLineDashSegLenF    : 0.15
 !
 ! ------------------------
 ! THE LEGEND ITEM LABELS
 ! ------------------------
 !
 !       Quick switch for turning labels on/off  (default is on)
-! *lg01Work.Legend.lgDrawLabels              : 1
+! lg01.lg01Work.Legend.lgDrawLabels              : 1
 !
 !       Determines the position of the labels with respect to the
 !  Legend boxes.  If orientation is HORIZONTAL valid values are TOP,
 !  CENTER, or BOTTOM.  If the orientation is VERTICAL valid values are
 !  LEFT, CENTER, and RIGHT.
-! *lg01Work.Legend.lgLabelPosition           : RIGHT
+! lg01.lg01Work.Legend.lgLabelPosition           : RIGHT
 !
 !       Angle at which the scale labels are drawn
-! *lg01Work.Legend.lgLabelAngleF             : 0.0
+! lg01.lg01Work.Legend.lgLabelAngleF             : 0.0
 !
 !  LabelAlignment determines the alignment of the labels to the boxes.
 !       BOXCENTERS    - BoxCount labels centered at the boxes.
 !       INTERIOREDGES - BoxCount-1 labels starting at the bottom of box 1.
 !       EXTERNALEDGES - BoxCount+1 labels starting at the top of box 1.
-! *lg01Work.Legend.lgLabelAlignment          : BOXCENTERS
+! lg01.lg01Work.Legend.lgLabelAlignment          : BOXCENTERS
 !
 !       Direction in which scale labels are drawn (UP,DOWN,ACROSS)
 !       Normal direction is across for all axes.
-! *lg01Work.Legend.lgLabelDirection          : ACROSS
+! lg01.lg01Work.Legend.lgLabelDirection          : ACROSS
 !
 !       How label text is justified in a text extent rectangle
-! *lg01Work.Legend.lgLabelJust               : CENTERCENTER
+! lg01.lg01Work.Legend.lgLabelJust               : CENTERCENTER
 !
 !       The font style to use for labels
-! *lg01Work.Legend.lgLabelFont               : 1
+! lg01.lg01Work.Legend.lgLabelFont               : 1
 !
 !       The color for label text
-! *lg01Work.Legend.lgLabelFontColor          : FOREGROUND
+! lg01.lg01Work.Legend.lgLabelFontColor          : FOREGROUND
 !
 !       The NDC (0. to 1.) height of the label text
-! *lg01Work.Legend.lgLabelFontHeightF        : .02
+! lg01.lg01Work.Legend.lgLabelFontHeightF        : .02
 !
 !       The height to width aspect ratio of label characters
-! *lg01Work.Legend.lgLabelFontAspectF        : 1.0
+! lg01.lg01Work.Legend.lgLabelFontAspectF        : 1.0
 !
 !       The width of the lines that form the text outline
-! *lg01Work.Legend.lgLabelFontThicknessF      : 1.0
+! lg01.lg01Work.Legend.lgLabelFontThicknessF      : 1.0
 !
 !       The degree of quality of the text to be written (LOW,MEDIUM,HIGH)
-! *lg01Work.Legend.lgLabelFontQuality         : HIGH
+! lg01.lg01Work.Legend.lgLabelFontQuality         : HIGH
 !
 !       The spacing between characters of the text to be written
-! *lg01Work.Legend.lgLabelConstantSpacingF    : 0.0
+! lg01.lg01Work.Legend.lgLabelConstantSpacingF    : 0.0
 !
 !       A process for accessing the many characters of the default
 !       pwritx font.
-! *lg01Work.Legend.lgLabelFuncCode            : :
+! lg01.lg01Work.Legend.lgLabelFuncCode            : :
 !
 !       The stride between labeled bars
-! *lg01Work.Legend.lgLabelStride             : 1
+! lg01.lg01Work.Legend.lgLabelStride             : 1
 !
 !       Fractional distance between the box and the label
-! *lg01Work.Legend.lgLabelOffsetF            : 0.
+! lg01.lg01Work.Legend.lgLabelOffsetF            : 0.
 !
 !       An array of label strings
-! *lg01Work.Legend.lgLabelStrings            : Label_
+! lg01.lg01Work.Legend.lgLabelStrings            : Label_
 !
 ! ----------------
 ! THE LEGEND ITEMS
@@ -346,99 +346,99 @@
 !       The meaning of the index depends on the ItemType:
 !       If the type is NhllgLINES, then a dash pattern.
 !       Else it is a marker index.
-! *lg01Work.Legend.lgItemIndexes            : 1 to ItemCount
+! lg01.lg01Work.Legend.lgItemIndexes            : 1 to ItemCount
 !
 !       Number of items in the Legend.
-! *lg01Work.Legend.lgItemCount              : 16
+! lg01.lg01Work.Legend.lgItemCount              : 16
 !
 !       Items can be uniformly spaced or explicitly placed
 !       using UNIFORMPLACEMENT or EXPLICITPLACEMENT.
-! *lg01Work.Legend.lgItemPlacement          : UNIFORMPLACEMENT
+! lg01.lg01Work.Legend.lgItemPlacement          : UNIFORMPLACEMENT
 !
 !       When ItemPlacement is EXPLICITPLACEMENT the positions are a
 !        monotonically increasing sequence in the range 0.0 to 1.0
-! *lg01Work.Legend.lgItemPositions          : NULL
+! lg01.lg01Work.Legend.lgItemPositions          : NULL
 !
 !       Used with ItemIndexes and ItemType to define lines or markers.
-! *lg01Work.Legend.lgItemStrings            : NULL
+! lg01.lg01Work.Legend.lgItemStrings            : NULL
 !
 !       Items are set to either LINES or Markers, whichever is
 !       the first element of the ItemTypes array.
-! *lg01Work.Legend.lgMonoItemType           : True
+! lg01.lg01Work.Legend.lgMonoItemType           : True
 !
 !       Not implemented yet
-! *lg01Work.Legend.lgItemType               :
+! lg01.lg01Work.Legend.lgItemType               :
 !
 !       Currently either LINES or MARKERS.
-! *lg01Work.Legend.lgItemTypes              : NULL
+! lg01.lg01Work.Legend.lgItemTypes              : NULL
 !
 !       When set True, all items in the Legend are set to a single
 !       color defined by the value of the first element of array
 !       ItemColors.
-! *lg01Work.Legend.lgMonoItemColor          : False
+! lg01.lg01Work.Legend.lgMonoItemColor          : False
 !
 !       ItemColor has not been implemented yet
-! *lg01Work.Legend.lgItemColor              :
+! lg01.lg01Work.Legend.lgItemColor              :
 !
 !       Each item is assigned a color index
-! *lg01Work.Legend.lgItemColors             : 1 to ItemCount
+! lg01.lg01Work.Legend.lgItemColors             : 1 to ItemCount
 !
 !       When set True, all items in the Legend are given a line
 !       thickness equal to that specified in the first element
 !       of array ItemThicknesses.
-! *lg01Work.Legend.lgMonoItemThickness      : True
+! lg01.lg01Work.Legend.lgMonoItemThickness      : True
 !
 !       ItemThickness has not been implemented yet
-! *lg01Work.Legend.lgItemThickness          :
+! lg01.lg01Work.Legend.lgItemThickness          :
 !
 !       Each item is assigned a line or glyph thickness.
-! *lg01Work.Legend.lgItemThicknesses        : NULL
+! lg01.lg01Work.Legend.lgItemThicknesses        : NULL
 !
 !       When set True, all items in the Legend are given a line
 !       label or glyph height equal to that specified in the first
 !       element of array ItemTextHeights.
-! *lg01Work.Legend.lgMonoItemTextHeight     : True
+! lg01.lg01Work.Legend.lgMonoItemTextHeight     : True
 !
 !       ItemTextHeight has not been implemented yet
-! *lg01Work.Legend.lgItemTextHeight         :
+! lg01.lg01Work.Legend.lgItemTextHeight         :
 !
 !       Each item is assigned a line label or glyph height in NDCs.
-! *lg01Work.Legend.lgItemTextHeights        : NULL
+! lg01.lg01Work.Legend.lgItemTextHeights        : NULL
 !
 !       When set True, all items are given a single color which is
 !       in element one of array ItemStringColors.
-! *lg01Work.Legend.lgMonoItemStringColor     : True
+! lg01.lg01Work.Legend.lgMonoItemStringColor     : True
 !
 !       ItemStringColor has not been implemented yet
-! *lg01Work.Legend.lgItemStringColor         :
+! lg01.lg01Work.Legend.lgItemStringColor         :
 !
 !       Each item is assigned a color index of the HLU color table.
-! *lg01Work.Legend.lgItemStringColors        : NULL
+! lg01.lg01Work.Legend.lgItemStringColors        : NULL
 !
 !       A boolean flag determining whether to draw internal line
 !       labels within Legend line items.
-! *lg01Work.Legend.lgDrawLineLabels          : True
+! lg01.lg01Work.Legend.lgDrawLineLabels          : True
 !
 !       The length in NDC units of the dash pattern used for Legend
 !       line items.
-! *lg01Work.Legend.lgLineDashSegLenF         : 0.15
+! lg01.lg01Work.Legend.lgLineDashSegLenF         : 0.15
 !
 !       The font type to use for item line labels or marker glyphs.
-! *lg01Work.Legend.lgItemStringFont            : 1
+! lg01.lg01Work.Legend.lgItemStringFont            : 1
 !
 !   The height to width aspect ratio of item characters
-! *lg01Work.Legend.lgItemStringFontAspectF     : 1.0
+! lg01.lg01Work.Legend.lgItemStringFontAspectF     : 1.0
 !
 !   The width of the lines that form the text outline
-! *lg01Work.Legend.lgItemStringFontThicknessF  : 1.0
+! lg01.lg01Work.Legend.lgItemStringFontThicknessF  : 1.0
 !
 !   The degree of quality of the text to be written (LOW,MEDIUM,HIGH)
-! *lg01Work.Legend.lgItemStringFontQuality     : HIGH
+! lg01.lg01Work.Legend.lgItemStringFontQuality     : HIGH
 !
 !   The spacing between characters of the text to be written
-! *lg01Work.Legend.lgItemStringConstantSpacingF: 0.0
+! lg01.lg01Work.Legend.lgItemStringConstantSpacingF: 0.0
 !
 !   A process for accessing the many characters of the default
 !   pwritx font.
-! *lg01Work.Legend.lgItemStringFuncCode        : :
+! lg01.lg01Work.Legend.lgItemStringFuncCode        : :
 !

@@ -1,11 +1,13 @@
-
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/*
+ *  $Id: lg03c.c,v 1.5 1995-02-21 23:05:49 haley Exp $
+ */
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
  *      File:           lg03c.c
  *
@@ -23,104 +25,101 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
-		
+        
 
 main()
 {
-	int appid, wid, pid;
-	int rlist;
-	char *labels[5];
-	int colors[5];
-	int types[5];
-	int item_ind[5];
-	float item_hgt, lnthik;
+    int appid, wid, pid;
+    int rlist;
+    char *labels[5];
+    int colors[5];
+    int types[5];
+    int item_ind[5];
+    float item_hgt, lnthik;
 
 /*
  * Initialize data values
  */
-	labels[0] = "Line_Type_0";
-	labels[1] = "Line_Type_1";
-	labels[2] = "Line_Type_2";
-	labels[3] = "Line_Type_3";
-	labels[4] = "Line_Type_4";
-	colors[0] = 40;
-	colors[1] = 57;
-	colors[2] = 65;
-	colors[3] = 80;
-	colors[4] = 90;
-	lnthik = 4.;
+    labels[0] = "Line_Type_0";
+    labels[1] = "Line_Type_1";
+    labels[2] = "Line_Type_2";
+    labels[3] = "Line_Type_3";
+    labels[4] = "Line_Type_4";
+    colors[0] = 40;
+    colors[1] = 57;
+    colors[2] = 65;
+    colors[3] = 80;
+    colors[4] = 90;
+    lnthik = 4.;
 
-	item_ind[0] =  2;
-	item_ind[1] =  3;
-	item_ind[2] =  4;
-	item_ind[3] =  5;
-	item_ind[4] =  6;
+    item_ind[0] =  2;
+    item_ind[1] =  3;
+    item_ind[2] =  4;
+    item_ind[3] =  5;
+    item_ind[4] =  6;
 
 /*
  * Initialize the high level utility library
  */
-
-	NhlInitialize();
+    NhlInitialize();
 
 /*
  * Create an application context. Set the app dir to the current directory
  * so the application looks for a resource file in the working directory.
  * In this example the resource file supplies the plot title only.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
-	NhlCreate(&appid,"lg03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlCreate(&appid,"lg03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"lg03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-									rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNwkPause,True);
+    NhlCreate(&wid,"lg03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                                    rlist);
 /*
  * Specify the viewport extent of the object.
  */
-
-        NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpXF,0.);
-	NhlRLSetFloat(rlist,NhlNvpYF,1.);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,1.);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,1.);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,0.);
+    NhlRLSetFloat(rlist,NhlNvpYF,1.);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,1.);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,1.);
 
 /*
  * Specify the line types for the legend.
  */
+    NhlRLSetInteger(rlist,NhlNlgItemCount,5);
 
-	NhlRLSetInteger(rlist,NhlNlgItemCount,5);
+    NhlRLSetInteger(rlist,NhlNlgMonoItemType,True);
+    NhlRLSetInteger(rlist,NhlNlgItemType,NhlMARKLINES);
 
-	NhlRLSetInteger(rlist,NhlNlgMonoItemType,True);
-	NhlRLSetInteger(rlist,NhlNlgItemType,NhlMARKLINES);
-
-	NhlRLSetFloat(rlist,NhlNlgLabelFontHeightF,.03);
-	NhlRLSetStringArray(rlist,NhlNlgLabelStrings,labels,5);
+    NhlRLSetFloat(rlist,NhlNlgLabelFontHeightF,.03);
+    NhlRLSetStringArray(rlist,NhlNlgLabelStrings,labels,5);
 
 /*
  * Set the dashed lines and the line characters to the same colors.
  */
+    NhlRLSetIntegerArray(rlist,NhlNlgLineColors,colors,5);
+    NhlRLSetIntegerArray(rlist,NhlNlgDashIndexes,item_ind,5);
 
-	NhlRLSetIntegerArray(rlist,NhlNlgLineColors,colors,5);
-	NhlRLSetIntegerArray(rlist,NhlNlgDashIndexes,item_ind,5);
+    NhlRLSetInteger(rlist,NhlNlgMonoLineThickness,True);
+    NhlRLSetFloat(rlist,NhlNlgLineThicknessF,lnthik);
 
-	NhlRLSetInteger(rlist,NhlNlgMonoLineThickness,True);
-	NhlRLSetFloat(rlist,NhlNlgLineThicknessF,lnthik);
+    NhlRLSetIntegerArray(rlist,NhlNlgLineLabelColors,colors,5);
+    NhlRLSetFloat(rlist,NhlNlgLineLabelFontHeightF,.03);
 
-	NhlRLSetIntegerArray(rlist,NhlNlgLineLabelColors,colors,5);
-	NhlRLSetFloat(rlist,NhlNlgLineLabelFontHeightF,.03);
+    NhlCreate(&pid,"Legend",NhllegendLayerClass,wid,rlist);
 
-	NhlCreate(&pid,"Legend",
-		  NhllegendLayerClass,wid,rlist);
-
-	NhlDraw(pid);
-	NhlFrame(wid);
-	NhlDestroy(pid);
-	NhlDestroy(wid);
-	NhlDestroy(appid);
-	NhlClose();
-	exit(0);
+    NhlDraw(pid);
+    NhlFrame(wid);
+    NhlDestroy(pid);
+    NhlDestroy(wid);
+    NhlDestroy(appid);
+    NhlClose();
+    exit(0);
 }

@@ -1,17 +1,16 @@
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
 ;        University Corporation for Atmospheric Research               ;
 ;                All Rights Reserved                                   ;
 ;                                                                      ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;      File:           lg03n.ncl
 ;
-;      Author:         Ed Stautler
-;			National Center for Atmospheric Research
-;			PO 3000, Boulder, Colorado
+;      Author:         Bob Lackman (converted by Ed Stautler)
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
 ;
 ;      Date:           Fri Jan 13 18:31:18 MDT 1995
 ;
@@ -25,7 +24,6 @@ labels = (/"Line_Type_0","Line_Type_1","Line_Type_2", \
            "Line_Type_3","Line_Type_4" /)
 colors = (/ 40, 57, 65, 80, 90 /)
 lnthik = (/ 4.0, 4.0, 4.0, 4.0, 4.0 /)
-types = (/ 0, 0, 0, 0, 0 /)
 item_ind = (/ 2, 3, 4, 5, 6 /)
 
 ;
@@ -33,14 +31,15 @@ item_ind = (/ 2, 3, 4, 5, 6 /)
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lg03" appLayerClass noparent
+appid = create "lg03" appLayerClass defaultapp
+        "appDefaultParent" : "True"
         "appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "lg03Work" xWorkstationLayerClass noparent
+wid = create "lg03Work" xWorkstationLayerClass defaultapp
         "wkPause" : "True"
 end create
 
@@ -55,20 +54,20 @@ pid = create "Legend" legendLayerClass wid
 ;
 ; Specify the type of markers for the legend.
 ;
-	"lgItemCount" : 5
-	"lgMonoItemType" : "False"
-	"lgLabelFontHeightF" : .03
-	"lgLabelStrings" : labels
-	"lgItemTypes" : types
+    "lgItemCount" : 5
+    "lgLabelFontHeightF" : .03
+    "lgLabelStrings" : labels
+    "lgMonoItemType" : "True"
+    "lgItemType" : 0
 ;
 ; Set the dashed lines and the line characters to the same colors.
 ;
-	"lgItemColors" : colors
-        "lgItemStringColors" : colors
-	"lgItemIndexes" : item_ind
-	"lgMonoItemThickness" : "False"
-	"lgItemThicknesses" : lnthik
-	"lgItemFontHeightF" : .03
+    "lgLineColors" : colors
+    "lgLineLabelColors" : colors
+    "lgDashIndexes" : item_ind
+    "lgMonoLineThickness" : "False"
+    "lgLineThicknesses" : lnthik
+    "lgLineLabelFontHeightF" : .03
 end create
 
 draw(pid)

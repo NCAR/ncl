@@ -1,4 +1,3 @@
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
@@ -9,9 +8,9 @@
 ;
 ;      File:           lg02n.ncl
 ;
-;      Author:         Ed Stautler
-;			National Center for Atmospheric Research
-;			PO 3000, Boulder, Colorado
+;      Author:         Bob Lackman (converted by Ed Stautler)
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
 ;
 ;      Date:           Fri Jan 13 18:31:18 MDT 1995
 ;
@@ -24,7 +23,6 @@
 labels = (/"Marker_0","Marker_1","Marker_2","Marker_3","Marker_4" /)
 colors = (/ 11, 21, 31, 41, 51 /)
 mkthik = (/ 2.0, 3.0, 4.0, 5.0, 6.0 /)
-markrs = (/ 1, 1, 1, 1, 1 /)
 item_ind = (/ 2, 3, 4, 5, 6 /)
 
 ;
@@ -32,14 +30,15 @@ item_ind = (/ 2, 3, 4, 5, 6 /)
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lg02" appLayerClass noparent
+appid = create "lg02" appLayerClass defaultapp
+        "appDefaultParent" : "True"
         "appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "lg02Work" xWorkstationLayerClass noparent
+wid = create "lg02Work" xWorkstationLayerClass defaultapp
         "wkPause" : "True"
 end create
 
@@ -54,16 +53,15 @@ pid = create "Legend" legendLayerClass wid
 ;
 ; Specify the type of markers for the legend.
 ;
-	"lgItemCount" : 5
-	"lgMonoItemType" : "False"
-	"lgLabelFontHeightF" : .03
-	"lgLabelStrings" : labels
-	"lgItemTypes" : markrs
-	"lgItemColors" : colors
-	"lgItemIndexes" : item_ind
-	"lgMonoItemThickness" : "False"
-	"lgItemThicknesses" : mkthik
-	"lgItemFontHeightF" : .05
+    "lgItemCount" : 5
+    "lgMonoItemType" : "True"
+    "lgItemType" : "MARKERS"
+    "lgLabelStrings" : labels
+    "lgMarkerColors" : colors
+    "lgMarkerIndexes" : item_ind
+    "lgMonoMarkerThickness" : "False"
+    "lgMarkerThicknesses" : mkthik
+    "lgMarkerSizeF" : 0.05
 end create
 
 draw(pid)
