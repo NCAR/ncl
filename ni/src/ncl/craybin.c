@@ -76,9 +76,48 @@ int /*nwords*/
 #endif
 );
 
+#ifdef ByteSwapped
+#define BYTE0 3
+#define BYTE1 2
+#define BYTE2 1
+#define BYTE3 0
+#else
+#define BYTE0 0
+#define BYTE1 1
+#define BYTE2 2
+#define BYTE3 3
+#endif
 
 
-
+static int extract(int which,char buf[8])
+{
+        char tmp[8];
+ 
+        switch(which){
+        case 0:
+                return((int)buf[0]>>4);
+        case 1:
+                tmp[BYTE0] = 0;
+                tmp[BYTE1] = (buf[0]<<4)>>4;
+                tmp[BYTE2] = buf[1];
+                tmp[BYTE3] = buf[2];
+                return(*(int*)tmp);
+        case 2:
+                return((int)buf[3]>>7);
+        case 3:
+                tmp[BYTE0] = 0;
+                tmp[BYTE1] = buf[4]>>1;
+                tmp[BYTE2] = buf[5]>>1 | (buf[4]&(char)0001)<<7;
+                tmp[BYTE3] = buf[6]>>1 | (buf[5]&(char)0001)<<7;
+                return(*(int*)tmp);
+        case 4:
+                tmp[BYTE0] = 0;
+                tmp[BYTE1] = 0;
+                tmp[BYTE2] = buf[6] & (char)0001;
+                tmp[BYTE3] = buf[7];
+                return(*(int*)tmp);
+        }
+}
 
 static int IsCOSBlocked
 #if NhlNeedProto
@@ -88,25 +127,45 @@ static int IsCOSBlocked
 int fd;
 #endif
 {
-        BCW cw;
+        char thebuff[8];
         char bytes[8][511];
-
-        read(fd,&cw,sizeof(BCW));
-
-        if ( cw.type != 0 || cw.bnhi != 0 || cw.bnlo != 0 ) return 0;
-
+        int tmp;
+        int type;
+        int junk;
+        int bnhi;
+        int bnlo;
+        int fwi;
+ 
+ 
+ 
+        read(fd,(void*)thebuff,sizeof(BCW));
+        type = extract(0,thebuff);
+        junk = extract(1,thebuff);
+        bnhi = extract(2,thebuff);
+        bnlo = extract(3,thebuff);
+        fwi = extract(4,thebuff);
+ 
+ 
+        if ( type != 0 || bnhi != 0 || bnlo != 0 ) return 0;
+ 
          /* Skip over the rest of the first block. */
-
+ 
         if ( read(fd, bytes, WORD_SIZE*511) != 511*WORD_SIZE ) return 0;
-
+ 
         /* Read and interpret second control word. */
-
-        if ( read(fd, &cw, sizeof( BCW )) != sizeof(BCW) ) return 0;
-
-        if ( cw.type != 0 || cw.bnhi != 0 || cw.bnlo != 1 ) return 0;
-
+ 
+        if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) return 0;
+ 
+        type = extract(0,thebuff);
+        junk = extract(1,thebuff);
+        bnhi = extract(2,thebuff);
+        bnlo = extract(3,thebuff);
+        fwi = extract(4,thebuff);
+ 
+        if ( type != 0 || bnhi != 0 || bnlo != 1 ) return 0;
+ 
         lseek(fd,0,SEEK_SET);
-
+ 
         return(1);
 }
 

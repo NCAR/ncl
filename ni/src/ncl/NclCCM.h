@@ -206,13 +206,16 @@ typedef struct ncl_q_list {
 #define ILEV_DIM_NUMBER 4
 #define MLEV_DIM_NUMBER 5
 #define LONGITUDE_DIM_NUMBER 6
-
 typedef struct {
-  unsigned int type  :  4;
-  unsigned int junk  : 27;
-  unsigned int bnhi  :  1;
-  unsigned int bnlo  : 23;
-  unsigned int fwi   :  9;
+  	unsigned int type  :  4;
+  	unsigned int junk  : 27;
+  	unsigned int bnhi  :  1;
+  	unsigned int bnlo  : 23;
+  	unsigned int fwi   :  9;
+}BBCCWW;
+typedef union{
+	BBCCWW bc;
+	char thebuf[8];
 } BCW;
 
 /*

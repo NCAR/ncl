@@ -13,6 +13,18 @@
 #include <math.h>
 #include "ccmhdr.h"
 
+
+#ifndef ByteSwapped
+#define BYTE0 0
+#define BYTE1 1
+#define BYTE2 2
+#define BYTE3 3
+#else
+#define BYTE3 0
+#define BYTE2 1
+#define BYTE1 2
+#define BYTE0 3
+#endif
 static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
 
 static int printbinary(FILE *fp,int val,int val2) {
@@ -24,6 +36,7 @@ static int printbinary(FILE *fp,int val,int val2) {
                 fp = stdout;
                 fl = 1;
         }
+#ifndef ByteSwapped
         (val & 020000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
         (val & 010000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
         (val & 004000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
@@ -89,6 +102,80 @@ static int printbinary(FILE *fp,int val,int val2) {
         (val2 & 000000000004) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
         (val2 & 000000000002) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
         (val2 & 000000000001) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+#else
+
+        (val & 000000000200) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000100) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000040) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000020) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000010) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000004) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000002) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000001) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val & 000000100000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000040000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000020000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000010000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000004000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000002000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000001000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000400) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val & 000040000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000020000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000010000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000004000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000002000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000001000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000400000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000200000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val & 020000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 010000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 004000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 002000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 001000000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000400000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000200000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000100000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val2 & 000000000200) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000100) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000040) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000020) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000010) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000004) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000002) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000001) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val2 & 000000100000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000040000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000020000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000010000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000004000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000002000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000001000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000400) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val2 & 000040000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000020000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000010000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000004000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000002000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000001000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000400000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000200000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val2 & 020000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 010000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 004000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 002000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 001000000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000400000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000200000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000100000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+#endif
 
         if(fl)
                 fprintf(fp,"\n");
@@ -167,6 +254,69 @@ NclQuark path;
 	return(NULL);
 }
 
+unsigned short IntIt2(char* buffer) {
+	char b2[WORD_SIZE];
+	int zero = 0;
+	int total = 1;
+	int tmp_out;
+	b2[0] = (char)0;
+	b2[1] = (char)0;
+	b2[2] = (char)0;
+	b2[3] = (char)0;
+        b2[4] = (char)0;
+        b2[5] = (char)0;
+        b2[6] = buffer[0];
+        b2[7] = buffer[1];
+	ctospi(b2,&tmp_out,&total,&zero);
+	return((unsigned short)tmp_out);
+}
+unsigned int IntIt4(char* buffer) {
+	char b2[WORD_SIZE];
+	int zero = 0;
+	int total = 1;
+	int tmp_out;
+	b2[0] = (char)0;
+	b2[1] = (char)0;
+	b2[2] = (char)0;
+	b2[3] = (char)0;
+        b2[4] = buffer[0];
+        b2[5] = buffer[1];
+        b2[6] = buffer[2];
+        b2[7] = buffer[3];
+	ctospi(b2,&tmp_out,&total,&zero);
+	return(tmp_out);
+}
+
+static int extractCCM(int which,char buf[8])
+{
+	char tmp[8];
+	
+	switch(which){
+	case 0:
+		return((int)buf[0]>>4);
+	case 1:
+		tmp[BYTE0] = 0;
+		tmp[BYTE1] = (buf[0]<<4)>>4;
+		tmp[BYTE2] = buf[1];
+		tmp[BYTE3] = buf[2];
+		return(*(int*)tmp);
+	case 2:
+		return((int)buf[3]>>7);
+	case 3:
+		tmp[BYTE0] = 0;
+		tmp[BYTE1] = buf[4]>>1;
+		tmp[BYTE2] = buf[5]>>1 | (buf[4]&(char)0001)<<7;
+		tmp[BYTE3] = buf[6]>>1 | (buf[5]&(char)0001)<<7;
+		return(*(int*)tmp);
+	case 4:
+		tmp[BYTE0] = 0;
+		tmp[BYTE1] = 0;
+		tmp[BYTE2] = buf[6] & (char)0001;
+		tmp[BYTE3] = buf[7];
+		return(*(int*)tmp);
+	}
+}
+
 static int IsCOSBlockedCCM
 #if NhlNeedProto
 (int fd)
@@ -175,12 +325,26 @@ static int IsCOSBlockedCCM
 int fd;
 #endif
 {
-	BCW cw;
+	char thebuff[8];
 	char bytes[8][511];
-
-	read(fd,&cw,sizeof(BCW));
+	int tmp;
+	int type;
+	int junk;
+	int bnhi;
+	int bnlo;
+	int fwi;
 	
-	if ( cw.type != 0 || cw.bnhi != 0 || cw.bnlo != 0 ) return 0;
+
+
+	read(fd,(void*)thebuff,sizeof(BCW));
+	type = extractCCM(0,thebuff);
+	junk = extractCCM(1,thebuff);
+	bnhi = extractCCM(2,thebuff);
+	bnlo = extractCCM(3,thebuff);
+	fwi = extractCCM(4,thebuff);
+
+
+	if ( type != 0 || bnhi != 0 || bnlo != 0 ) return 0;
 
 	 /* Skip over the rest of the first block. */
 
@@ -188,9 +352,15 @@ int fd;
 
   	/* Read and interpret second control word. */
 
-  	if ( read(fd, &cw, sizeof( BCW )) != sizeof(BCW) ) return 0;
+  	if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) return 0;
 
-  	if ( cw.type != 0 || cw.bnhi != 0 || cw.bnlo != 1 ) return 0;
+	type = extractCCM(0,thebuff);
+	junk = extractCCM(1,thebuff);
+	bnhi = extractCCM(2,thebuff);
+	bnlo = extractCCM(3,thebuff);
+	fwi = extractCCM(4,thebuff);
+
+  	if ( type != 0 || bnhi != 0 || bnlo != 1 ) return 0;
 
 	lseek(fd,0,SEEK_SET);
 
@@ -1545,7 +1715,11 @@ int level_type;
 			ctodpf(&(((char*)buffer)[k*4]),ll,&total,&zero);
 			k += 4;
 			for(i = 0; i < dimsizes[1]; i++) {
+
+/*
 				memcpy(&uval,&(((char*)buffer)[k*4]),4);
+*/
+				uval = IntIt4(&(((char*)buffer)[k*4]));
 				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)uval)/ll[1]);
 				k++;
 			}
@@ -1555,7 +1729,10 @@ int level_type;
 			ctodpf(&(((char*)buffer)[k*4]),ll,&total,&zero);
 			k += 4;
 			for(i = 0; i < dimsizes[1]; i++) {
+/*
 				memcpy(&uval,&(((char*)buffer)[k*4]),4);
+*/
+				uval = IntIt4(&(((char*)buffer)[k*4]));
 				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)uval)/ll[1]);
 				k++;
 			}
@@ -1575,7 +1752,10 @@ int level_type;
 			ctodpf(&(((char*)buffer)[k*2]),ll,&total,&zero);
 			k += 8;
 			for(i = 0; i < dimsizes[1]; i++) {
+/*
 				memcpy(&sval,&(((char*)buffer)[k*2]),2);
+*/
+				sval = IntIt2(&(((char*)buffer)[k*2]));
 				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)sval)/ll[1]);
 				k++;
 			}
@@ -1585,7 +1765,10 @@ int level_type;
 			ctodpf(&(((char*)buffer)[k*2]),ll,&total,&zero);
 			k += 8;
 			for(i = 0; i < dimsizes[1]; i++) {
+/*
 				memcpy(&sval,&(((char*)buffer)[k*2]),2);
+*/
+				sval = IntIt2(&(((char*)buffer)[k*2]));
 				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)sval)/ll[1]);
 				k++;
 			}

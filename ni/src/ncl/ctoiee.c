@@ -26,6 +26,38 @@
 #define CSIGNMASK	0200	/*  Mask to get 1st of 8 bits  */
 #define LCDIF		sizeof(double) - sizeof(char)
 
+#ifdef ByteSwapped
+#define FLCDIF		0
+#define BYTE0 3
+#define BYTE1 2
+#define BYTE2 1
+#define BYTE3 0
+
+#define DBYTE0 7
+#define DBYTE1 6
+#define DBYTE2 5
+#define DBYTE3 4
+#define DBYTE4 3
+#define DBYTE5 2
+#define DBYTE6 1
+#define DBYTE7 0
+
+#else
+#define FLCDIF		(sizeof(long)-sizeof(char))
+#define BYTE0 0
+#define BYTE1 1
+#define BYTE2 2
+#define BYTE3 3
+
+#define DBYTE0 0
+#define DBYTE1 1
+#define DBYTE2 2
+#define DBYTE3 3
+#define DBYTE4 4
+#define DBYTE5 5
+#define DBYTE6 6
+#define DBYTE7 7
+#endif
 /*
 ** Because the SUN Fortran compiler adds an underscore to Fortran entry
 ** points, we need to define the following wrappers to the user
@@ -115,7 +147,7 @@ int *n;
      	    /* 
 	    ** sign+upper 7 bits of exponent 
 	    */
-     	    out[joff] = sign | (exp >> 4); 
+     	    out[joff+DBYTE0] = sign | (exp >> 4); 
 
     	    /* next joff+1 get lower 4 bits of exponent plus first 5 bits 
      	    ** of cray mantissa....but throw away left normalized bit because 
@@ -123,13 +155,13 @@ int *n;
      	    ** for next byte
      	    **/
 
-    	    out[joff+1]=  ((exp      & 0xf) <<4) | ((*manp[0] >>3) & 0xf);
-    	    out[joff+2] = ((*manp[0] & 0x7) <<5) | ((*manp[1] & 0xf8) >>3);
-    	    out[joff+3] = ((*manp[1] & 0x7) <<5) | ((*manp[2] & 0xf8) >>3);
-    	    out[joff+4] = ((*manp[2] & 0x7) <<5) | ((*manp[3] & 0xf8) >>3);
-    	    out[joff+5] = ((*manp[3] & 0x7) <<5) | ((*manp[4] & 0xf8) >>3);
-    	    out[joff+6] = ((*manp[4] & 0x7) <<5) | ((*manp[5] & 0xf8) >>3);
-    	    out[joff+7] = ((*manp[5] & 0x7) <<5);
+    	    out[joff+DBYTE1]=  ((exp      & 0xf) <<4) | ((*manp[0] >>3) & 0xf);
+    	    out[joff+DBYTE2] = ((*manp[0] & 0x7) <<5) | ((*manp[1] & 0xf8) >>3);
+    	    out[joff+DBYTE3] = ((*manp[1] & 0x7) <<5) | ((*manp[2] & 0xf8) >>3);
+    	    out[joff+DBYTE4] = ((*manp[2] & 0x7) <<5) | ((*manp[3] & 0xf8) >>3);
+    	    out[joff+DBYTE5] = ((*manp[3] & 0x7) <<5) | ((*manp[4] & 0xf8) >>3);
+    	    out[joff+DBYTE6] = ((*manp[4] & 0x7) <<5) | ((*manp[5] & 0xf8) >>3);
+    	    out[joff+DBYTE7] = ((*manp[5] & 0x7) <<5);
   	}
 }
 
@@ -161,7 +193,7 @@ int *n;
 #define FCBIAS		040000	/*  Cray f.p. exponent bias  */
 #define FMBIAS		126	/*  IEEE f.p. exponent bias  */
 #define FCSIGNMASK	0200	/*  Mask to get 1st of 8 bits  */
-#define FLCDIF		sizeof(long) - sizeof(char)
+
 
 void checkrng();
 
@@ -257,10 +289,10 @@ int *n;
 	    **	bit 31:		sign
 	    */
 	    expp = ((unsigned char *)(&exp)) + FLCDIF;
-	    out[joff] = sign | (*expp >> 1);
-	    out[joff+1] = (*manp[0] & (~FCSIGNMASK)) | ((*expp & 1) << 7);
-	    out[joff+2] = *manp[1];
-	    out[joff+3] = *manp[2];
+	    out[joff+BYTE0] = sign | (*expp >> 1);
+	    out[joff+BYTE1] = (*manp[0] & (~FCSIGNMASK)) | ((*expp & 1) << 7);
+	    out[joff+BYTE2] = *manp[1];
+	    out[joff+BYTE3] = *manp[2];
 	}
 }
 
@@ -280,10 +312,10 @@ int *n; int *zpad;
 	
 	    sign = *(pin) & CSIGNMASK;	/*  sign bit  */
 	
-	    p[0] = pin+4;	
-	    p[1] = pin+5;	
-	    p[2] = pin+6;	
-	    p[3] = pin+7;	
+	    p[BYTE0] = pin+4;	
+	    p[BYTE1] = pin+5;	
+	    p[BYTE2] = pin+6;	
+	    p[BYTE3] = pin+7;	
 	
 	    checkrng(sign,pin,p);	/*  check if int w/i IEEE limits  */
 	
@@ -291,10 +323,10 @@ int *n; int *zpad;
 	    ** Pack it into 4 byte IEEE integer representation  
 	    */
 	
-	    out[joff] = sign | (*p[0] & (~CSIGNMASK));
-	    out[joff+1] = *p[1];
-	    out[joff+2] = *p[2];
-	    out[joff+3] = *p[3];
+	    out[joff+BYTE0] = sign | (*p[BYTE0] & (~CSIGNMASK));
+	    out[joff+BYTE1] = *p[BYTE1];
+	    out[joff+BYTE2] = *p[BYTE2];
+	    out[joff+BYTE3] = *p[BYTE3];
 
 	    /* 
 	    ** 4 bytes of zeros if requested 
@@ -316,15 +348,15 @@ unsigned char sign, *cp, *p[4];
 	*/
 	if (sign == 0)	{
 	    if ((*(cp+4) & CSIGNMASK) != 0) { 
-	        p[0] = p[1] = p[2] = p[3] = &maxint;
+	        p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &maxint;
 	    } else if( *cp != 0 ) {
-	        p[0] = p[1] = p[2] = p[3] = &maxint;
+	        p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &maxint;
 	    } else if( *(cp+1) != 0) {
-	        p[0] = p[1] = p[2] = p[3] = &maxint;
+	        p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &maxint;
 	    } else if( *(cp+2) != 0) {
-	        p[0] = p[1] = p[2] = p[3] = &maxint;
+	        p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &maxint;
 	    } else if( *(cp+3) != 0) {
-	        p[0] = p[1] = p[2] = p[3] = &maxint;
+	        p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &maxint;
 	    }
 	}
 	else {		
@@ -333,7 +365,7 @@ unsigned char sign, *cp, *p[4];
 	    */
 	    if ((*(cp+4) & CSIGNMASK) < 0200 || *cp != 0377 || *(cp+1) != 0377
 	                               || *(cp+2) != 0377  ||  *(cp+3) != 0377)
-	      p[0] = p[1] = p[2] = p[3] = &minint;
+	      p[BYTE0] = p[BYTE1] = p[BYTE2] = p[BYTE3] = &minint;
 	}
 }
 	
