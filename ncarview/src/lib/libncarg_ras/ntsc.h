@@ -1,5 +1,5 @@
 /*
- *	$Id: ntsc.h,v 1.2 1992-03-23 21:45:42 clyne Exp $
+ *	$Id: ntsc.h,v 1.3 1992-09-10 21:39:29 don Exp $
  */
 #define MAX_PIXELS	256
 #define GAMMA		2.2
@@ -16,7 +16,7 @@ starts at 0 IRE, not 7.5 IRE setup.
 static float	ChromaMax =  50.0; /* Chroma amplitude */
 static float	LumaMax   =  95.0; /* Luminance level */
 static float	Pedestal  =   0.0; /* Where we start from */
-static float	IREMax    = 110.0; /* Level not to exceed */
+/*static float	IREMax    = 110.0;*/ /* Level not to exceed */
 
 /* Equations to convert from RGB to YIQ and back */
 
