@@ -1,5 +1,5 @@
 C
-C       $Id: wmex02.f,v 1.9 1994-12-16 01:53:38 fred Exp $
+C       $Id: wmex02.f,v 1.10 1995-04-21 16:55:02 haley Exp $
 C
       PROGRAM WMEX02
 C
@@ -109,7 +109,7 @@ C
         RCY(I) = Y-0.00027*(REAL(IMXH)-REAL(ICY(I)))
    10 CONTINUE
       CALL GSFAIS(1)
-      CALL GQFACI(IOC)
+      CALL GQFACI(IOC,IERR)
       CALL GSFACI(ICLR)
       CALL GFA(ID,RCX,RCY)
       CALL GSFACI(IOC)
