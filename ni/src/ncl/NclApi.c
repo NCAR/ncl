@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.51 1998-03-13 23:03:14 ethan Exp $
+ *      $Id: NclApi.c,v 1.52 1998-09-18 23:10:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -381,6 +381,10 @@ int NclSubmitCommand
 {
 	static int first = 1;
 	int state;
+
+	if(the_input_buffer != NULL) {
+		NclFree(the_input_buffer);
+	}
 	the_input_buffer = (char*)NclMalloc((unsigned)strlen(command)+2);
 	strcpy(the_input_buffer,command);
 	the_input_buffer[strlen(command)+1] = '\0';
