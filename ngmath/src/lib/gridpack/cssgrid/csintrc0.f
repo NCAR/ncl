@@ -10,7 +10,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   07/24/96
+C                                                   11/30/99
 C
 C   Given a triangulation of a set of nodes on the unit
 C sphere, along with data values at the nodes, this sub-
@@ -119,10 +119,7 @@ C P is contained in the triangle (I1,I2,I3).  Normalize the
 C   barycentric coordinates.
 C
         SUM = B1 + B2 + B3
-        B1 = B1/SUM
-        B2 = B2/SUM
-        B3 = B3/SUM
-        PW = B1*W(I1) + B2*W(I2) + B3*W(I3)
+        PW = (B1*W(I1) + B2*W(I2) + B3*W(I3))/SUM
         IER = 0
         RETURN
       ENDIF
