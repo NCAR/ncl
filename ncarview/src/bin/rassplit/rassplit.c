@@ -23,7 +23,7 @@ main(argc, argv)
 	int	status;
 	Raster	*src, *dst, *RasterOpen(), *RasterOpenWrite();
 	int	frame = 0;
-	char	*malloc(), *out_format, *p, *root = (char *) NULL;
+	char	*out_format, *p, *root = (char *) NULL;
 	static	char dstfile[256];
 	static	int frame_list[1024];
 	static	int frames_selected = 0;
