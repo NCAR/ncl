@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.4 2000-07-12 16:27:03 haley Exp $
+C	$Id: wmdrrg.f,v 1.5 2000-07-19 05:39:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -132,6 +132,17 @@ C
 C  Get the color index.
 C
         ICLEN = LEN(ITYPE)
+C
+C  Find the first non-blank character starting from the right
+C  of ITYPE and moving to the left.  Adjust ICLEN accordingly.
+C
+        DO 400 I=ICLEN,1,-1
+          IF (ITYPE(I:I) .NE. ' ') THEN
+            ICLEN = I
+            GO TO 405
+          ENDIF
+  400   CONTINUE   
+  405   CONTINUE
         IF (ICLEN .EQ. 6) THEN
            READ(ITYPE(6:ICLEN),'(I1)') NDX
         ELSE IF (ICLEN .EQ. 7) THEN
