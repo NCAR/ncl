@@ -2,6 +2,8 @@
 .na
 .nh
 .SH NAME
+spps_converters - A set of functions which transform coordinates
+between the various NCAR Graphics coordinate systems.  The full list is:
 CFUX, CFUY, CMFX, CMFY, CMUX, CMUY, CPFX, CPFY, CPUX, CPUY, CUFX, CUFY,
 KFMX, KFMY, KFPX, KFPY, KMPX, KMPY, KPMX, KPMY, KUMX, KUMY, KUPX, KUPY
 .SH STATUS
@@ -100,10 +102,10 @@ CUFY go in the opposite direction.
 .sp
 To use one of CFUX, CFUY, CUFX, or CUFY,
 load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cfux,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cfux,
 c_cfuy, c_cufx, or c_cufy, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 cfux, cfuy, cmfx, cmfy, cmux, cmuy, cpfx, cpfy, cpux, cpuy, cufx, cufy, 
