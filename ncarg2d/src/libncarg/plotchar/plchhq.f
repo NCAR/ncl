@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.7 1993-02-19 17:42:24 kennison Exp $
+C $Id: plchhq.f,v 1.8 1993-03-25 16:59:50 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -1494,16 +1494,19 @@ C Now, if there are visible pieces of the polyline/polygon, ...
 C
               IF (NPCS.NE.0) THEN
 C
-C ... save the current SET call, ...
+C ... save the number of the current normalization transformation, ...
 C
-                CALL GETSET (XVPL,XVPR,YVPB,YVPT,
-     +                       XWDL,XWDR,YWDB,YWDT,LNLG)
+                CALL GQCNTN (IERR,ISNT)
 C
-C ... redo the SET call so we can use fractional coordinates, ...
+                IF (IERR.NE.0) THEN
+                  CALL SETER ('PLCHHQ - ERROR EXIT FROM GQCNTN',13,2)
+                  STOP
+                END IF
 C
-
-                CALL    SET (XVPL,XVPR,YVPB,YVPT,
-     +                       XVPL,XVPR,YVPB,YVPT,1)
+C ... switch to normalization transformation 0 so we can use fractional
+C coordinates, ...
+C
+                CALL GSELNT (0)
 C
 C ... change color (during pass 2) if so directed by information from
 C the fontcap, ...
@@ -1559,10 +1562,9 @@ C
 C
                 END IF
 C
-C ... restore the original SET call, ...
+C ... switch back to the original normalization transformation, ...
 C
-                CALL    SET (XVPL,XVPR,YVPB,YVPT,
-     +                       XWDL,XWDR,YWDB,YWDT,LNLG)
+                CALL GSELNT (ISNT)
 C
 C ... and, if the color was just overridden above, set it back to what
 C it was.
