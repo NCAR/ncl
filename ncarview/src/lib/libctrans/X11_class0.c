@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.32 1994-03-07 22:08:40 clyne Exp $
+ *	$Id: X11_class0.c,v 1.33 1994-04-20 16:05:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -772,7 +772,7 @@ CGMC *c;
 	if (*doBell) XBell(dpy, 0);
 
 	if (Batch || x11_opts.wid != -1) {
-		XFlush(dpy);
+		XSync(dpy, True);
 		return(0);
 	}
 
