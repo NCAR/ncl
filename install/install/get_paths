@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: get_paths,v 1.4 1995-06-13 16:30:45 haley Exp $
+#      $Id: get_paths,v 1.5 1995-06-13 17:06:56 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -357,7 +357,7 @@ else
 			clear > /dev/tty
 
 			if ("$do_htmldoc") then
-			  set htmldoc_path = `$LOCALDIR/get_path "$htmldoc_prompt" $htmldoc_path -doc`
+			  set htmldoc_path = `$LOCALDIR/get_path "$htmldoc_prompt" $htmldoc_path`
 			  if ($status != 0) goto cleanup
 			endif	# if (do_htmldoc)
 				
