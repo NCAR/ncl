@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.77 2001-08-02 17:20:49 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.78 2001-08-22 14:29:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -113,6 +113,7 @@ undef("gsn_csm_pres_hgt")
 undef("gsn_csm_vector")
 undef("gsn_csm_pres_hgt_vector")
 undef("gsn_csm_streamline")
+undef("gsn_csm_pres_hgt_streamline")
 
 
 ;***********************************************************************;
@@ -1209,11 +1210,11 @@ begin
   if(check_attr(res,"lbLabelBarOn",False,False))
     return
   end if
-    set_attr(lbres,"vpHeightF",height)
-    set_attr(lbres,"vpWidthF",0.2*width)
+
+  lbres = True   ; hold labelbar resources
   amres = True   ; hold annomanager resources 
-    set_attr(lbres,"vpHeightF",0.3*height)
-    set_attr(lbres,"vpWidthF",def_lvpwf*width)
+
+    width  = get_res_value(res,"pmLabelBarWidthF",def_lpwf*width)
 
 ; Check for annotation/labelbar resources
 
@@ -1224,6 +1225,8 @@ begin
   set_attr(amres,"amResizeNotify",True)
   set_attr(amres,"amParallelPosF",parallel)
   set_attr(lbres,"lbLabelFontHeightF",font_height)
+
+; Default is horizontal at the bottom.
 
   lbar_orient = "horizontal"
   lbar_side   = "bottom"
@@ -3350,7 +3353,7 @@ end
 ;    7. If either of the resources "gsnPolarNH" or "gsnPolarSH" are set ;
 ;       to True then only the northern or southern hemisphere is        ;
     mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am"/))
-    cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am"/))
+    cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am","pm"/))
 
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
                                 resources:logical)
@@ -3591,7 +3594,7 @@ begin
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+            set_attr(res2, "vpWidthF",0.7)
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
 
@@ -3873,7 +3876,7 @@ end
 ; This function creates and draws a contour plot over a map plot to the ;
 ; workstation "wks" (the variable returned from a previous call to      ;
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+; and "resources" is an optional list of resources. The Id of the map   ;
 ; plot is returned.                                                     ;
 ;                                                                       ;
 ; This function behaves differently from gsn_contour in that it will    ;
@@ -4089,7 +4092,7 @@ end
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
+lbar_on, lbar_zone, unew, vnew
 begin
 
 ; Initialize.
@@ -4263,7 +4266,7 @@ begin
     map_object@vector = vector_object
     return(map_object)
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
+
 ;***********************************************************************;
 ; Function : gsn_csm_vector_map_polar                                   ;
 ;                   wks: workstation object                             ;
@@ -4429,7 +4432,7 @@ begin
 
     map_object@data   = vector_object@data
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+    return(map_object)
 end
 
 ;***********************************************************************;
@@ -5040,7 +5043,7 @@ begin
     end if
 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+; "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -5242,7 +5245,7 @@ begin
 
 ; Check for cyclic point (default is True).
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
+    if(get_res_value(res2,"gsnAddCyclic",True))
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
       datanew = gsn_add_cyclic_point(data)
@@ -5412,7 +5415,7 @@ res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+; Initialize.
     infolabel_on   = False
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -5617,7 +5620,7 @@ begin
     center_string = new(1,logical)
     right_string  = new(1,logical)
 
-    vcres = get_res_ne(res2,(/"mp","lb","tx","am"/))
+    check_for_subtitles(res2,left_string,center_string,right_string)
 
     if(left_string.or.center_string.or.right_string)
       main_zone   = main_zone+1
@@ -5893,7 +5896,7 @@ begin
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+; Check for type of scalar field representation.
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
 ; Check for subtitles at top and add to mpres if exist.
@@ -6155,7 +6158,7 @@ begin
 ; "units" if they exist.
 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
+    set_left_subtitle(unew,res2,mpres)
 
 ; Check for draw and frame.
 
@@ -6368,7 +6371,7 @@ begin
 ; overlay vectors on map.
 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+    check_for_lon_coord(unew,res2,"vector")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -8108,7 +8111,7 @@ begin
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
                                           ; X/Y axis labels.
-  cnres = get_res_ne(res2,(/"vc","vf"/))
+
   vcres = get_res_eq(res2,(/"vc","vf"/))
     minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
@@ -8325,6 +8328,83 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
+
+    if(left_string.or.center_string.or.right_string)
+      main_zone   = main_zone+1
+    end if
+
+    if(check_attr(res2,"gsnShape",True,False))
+      main_zone     = main_zone+1 ; Zone for main title
+    end if
+
+; Use coordinate variables for X and/or Y if they exist.
+
+    check_for_coord_arrays(unew,res2,"vector")
+
+    res2          = True
+    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
+    res2@gsnFrame = False   ; frame since we take care of that later.
+    res2@gsnScale = True    ; force labels and ticks to be same.
+
+  res2 = resources
+    stream_object = gsn_streamline(wks,unew,vnew,stres)
+
+; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
+
+    add_latlon_labels(stream_object,unew,res2)
+
+; Get some information from streamline plot that was created.
+
+    getvalues stream_object
+      "vpWidthF"             : width
+      "vpHeightF"            : height
+  
+      "tiXAxisFontHeightF"   : xfontf
+      "tiYAxisFontHeightF"   : yfontf
+  
+      "tmYLMajorLengthF"     : ylength
+      "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+
+    font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
+                                          ; function of the size of the
+                                          ; X/Y axis labels.
+
+    major_length = min((/ylength,xlength/))    ; New length for major ticks.
+    minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
+
+; If the plot is close to square in size, then make the 
+; three top titles and the tick marks smaller.
+
+    font_scale = (/1.0,0.8,0.8/)
+    ratios     = (/0.5,0.75,1.0/)
+
+    ratio = height/width
+    if(ratio.gt.1) 
+      ratio = 1./ratio
+    end if
+    index = ind(ratio.le.ratios)
+
+    scale = font_scale(index(0))
+    font_height  = scale * font_height
+;
+; Make tick marks same length and point outward.
+;
+    major_length = scale * major_length
+    minor_length = scale * minor_length
+
+    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
+    gsnp_point_tickmarks_outward(stream_object,tmres,xlength,ylength,\
+                                               xmlength,ymlength,\
+                                               major_length,minor_length)
+
+; Set up three subtitles at top, if they exist.
+    subres = get_res_eq(res2,(/"am","tx"/))  ; Get textitem resources
+    subres                  = True
+    set_attr(subres,"txFontHeightF",font_height)
+    add_subtitles(wks,stream_object,left_string,center_string,\
                   right_string,subres)
 
 ; Draw all this stuff: streamline plot and subtitles.
