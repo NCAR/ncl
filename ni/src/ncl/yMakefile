@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.79 2002-02-22 05:35:31 haley Exp $
+#      $Id: yMakefile,v 1.80 2002-08-05 19:36:02 haley Exp $
 #
 #########################################################################
 #									#
@@ -121,9 +121,10 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
-			GetGrids.c NclCCM.c craybin.c ctoiee.c complete.c \
-			editline.c sysunix.c ListSupport.c NclList.c NclMultiDVallistData.c NclTypelist.c
+			HLUFunctions.c NclHDF.c NclHDFEOS.c NclGRIB.c date.c \
+			yywrap.c GetGrids.c NclCCM.c craybin.c ctoiee.c \
+			complete.c editline.c sysunix.c ListSupport.c \
+			NclList.c NclMultiDVallistData.c NclTypelist.c
 
 
 FSRCS		=	fortranio.f gaus.f QU2REG.f
@@ -145,9 +146,10 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o \
-			GetGrids.o NclCCM.o craybin.o ctoiee.o complete.o \
-			editline.o sysunix.o ListSupport.o NclList.o NclMultiDVallistData.o NclTypelist.o
+			HLUFunctions.o NclHDF.o NclHDFEOS.o NclGRIB.o date.o \
+			yywrap.o GetGrids.o NclCCM.o craybin.o ctoiee.o \
+			complete.o editline.o sysunix.o ListSupport.o \
+			NclList.o NclMultiDVallistData.o NclTypelist.o
 
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
