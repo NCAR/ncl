@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:40:54 haley Exp $
+#
+
+#if defined(CRAY)
+CRAY_SOURCE = conv_cray_str.c
+CRAY_OBJECT = conv_cray_str.o
+#endif
+
+SRCS	= array.c chk_ret_str.c $(CRAY_SOURCE)
+OBJS	= array.o chk_ret_str.o $(CRAY_OBJECT)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:44:35 haley Exp $
+#
+
+MYNAME	= srfaceC
+
+SRCS = c_ezsrfc.c c_srface.c c_trn32s.c c_pwrzs.c c_setr.c
+
+OBJS = c_ezsrfc.o c_srface.o c_trn32s.o c_pwrzs.o c_setr.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:41:48 haley Exp $
+#
+
+MYNAME	= dashpackC
+ 
+SRCS = c_dpcurv.c c_dpdraw.c c_dpfrst.c c_dpgetc.c c_dpgeti.c c_dpgetr.c \
+	c_dplast.c c_dpline.c c_dpsetc.c c_dpseti.c c_dpsetr.c c_dpsmth.c \
+	c_dpvect.c
+
+OBJS = c_dpcurv.o c_dpdraw.o c_dpfrst.o c_dpgetc.o c_dpgeti.o c_dpgetr.o \
+	c_dplast.o c_dpline.o c_dpsetc.o c_dpseti.o c_dpsetr.o c_dpsmth.o \
+	c_dpvect.o
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

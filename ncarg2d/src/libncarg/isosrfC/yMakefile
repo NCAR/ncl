@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:43:26 haley Exp $
+#
+
+MYNAME	= isosrfC
+
+SRCS = c_ezisos.c c_isosrf.c c_trn32i.c c_issetr.c c_isseti.c c_ispltf.c \
+	c_isgetr.c c_isgeti.c c_istr32.c c_pwrzi.c
+
+OBJS = c_ezisos.o c_isosrf.o c_trn32i.o c_issetr.o c_isseti.o c_ispltf.o \
+	c_isgetr.o c_isgeti.o c_istr32.o c_pwrzi.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

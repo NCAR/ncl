@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:43:33 haley Exp $
+#
+
+MYNAME	= labelbarC
+
+SRCS = c_lblbar.c c_lbgeti.c c_lbgetr.c c_lbseti.c c_lbsetr.c
+
+OBJS = c_lblbar.o c_lbgeti.o c_lbgetr.o c_lbseti.o c_lbsetr.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

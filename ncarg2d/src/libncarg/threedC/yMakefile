@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:45:12 haley Exp $
+#
+
+MYNAME	= threedC
+
+SRCS = c_set3.c c_curve3.c c_line3.c c_frst3.c c_vect3.c c_point3.c \
+	c_perim3.c c_tick43.c c_fence3.c c_pwrzt.c
+
+OBJS = c_set3.o c_curve3.o c_line3.o c_frst3.o c_vect3.o c_point3.o \
+	c_perim3.o c_tick43.o c_fence3.o c_pwrzt.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:44:00 haley Exp $
+#
+
+MYNAME	= polypackC
+
+SRCS = c_ppditr.c c_ppintr.c c_ppplcl.c c_ppuntr.c c_ppppap.c c_ppunpo.c \
+	c_ppinpo.c c_ppdipo.c
+
+OBJS = c_ppditr.o c_ppintr.o c_ppplcl.o c_ppuntr.o c_ppppap.o c_ppunpo.o \
+	c_ppinpo.o c_ppdipo.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

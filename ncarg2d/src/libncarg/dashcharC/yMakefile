@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:41:38 haley Exp $
+#
+
+MYNAME	= dashcharC
+
+SRCS = c_curved.c c_frstd.c c_lined.c c_dashdb.c c_dashdc.c c_lastd.c \
+	c_vectd.c c_reset.c
+
+OBJS = c_curved.o c_frstd.o c_lined.o c_dashdb.o c_dashdc.o c_lastd.o \
+	c_vectd.o c_reset.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:44:51 haley Exp $
+#
+
+MYNAME	= strmlnC
+
+SRCS = c_ezstrm.c c_stgeti.c c_stgetr.c c_stinit.c c_stream.c \
+	c_strmln.c c_strset.c c_stseti.c c_stsetr.c
+
+OBJS = c_ezstrm.o c_stgeti.o c_stgetr.o c_stinit.o c_stream.o \
+	c_strmln.o c_strset.o c_stseti.o c_stsetr.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

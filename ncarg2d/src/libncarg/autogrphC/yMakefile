@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:40:44 haley Exp $
+#
+
+MYNAME	= autogrphC
+
+SRCS = c_agback.c c_agbnch.c c_agcurv.c c_agdshn.c \
+	c_aggetc.c c_aggetf.c c_aggeti.c c_aggetp.c \
+	c_aggetr.c c_agrstr.c c_agsave.c c_agsetc.c \
+	c_agsetf.c c_agseti.c c_agsetp.c c_agsetr.c \
+	c_agstup.c c_anotat.c c_displa.c c_ezmxy.c c_ezmy.c \
+	c_ezxy.c c_ezy.c
+
+OBJS = c_agback.o c_agbnch.o c_agcurv.o c_agdshn.o \
+	c_aggetc.o c_aggetf.o c_aggeti.o c_aggetp.o \
+	c_aggetr.o c_agrstr.o c_agsave.o c_agsetc.o \
+	c_agsetf.o c_agseti.o c_agsetp.o c_agsetr.o \
+	c_agstup.o c_anotat.o c_displa.o c_ezmxy.o c_ezmy.o \
+	c_ezxy.o c_ezy.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

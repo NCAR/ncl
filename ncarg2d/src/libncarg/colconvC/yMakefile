@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:40:51 haley Exp $
+#
+
+MYNAME	= colconvC
+
+SRCS = c_hlsrgb.c c_hsvrgb.c c_rgbhls.c c_rgbhsv.c c_rgbyiq.c c_yiqrgb.c
+
+OBJS = c_hlsrgb.o c_hsvrgb.o c_rgbhls.o c_rgbhsv.o c_rgbyiq.o c_yiqrgb.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

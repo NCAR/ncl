@@ -1,0 +1,21 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:45:04 haley Exp $
+#
+
+MYNAME	= supportC
+
+SRCS = c_encd.c c_entsr.c c_nerro.c c_eprin.c c_errof.c c_msbsf1.c \
+	c_msbsf2.c c_msceez.c c_mskrv1.c c_mskrv2.c c_msntvl.c c_msshch.c \
+	c_mssrf1.c c_mssrf2.c c_mstrms.c c_q8qst4.c c_retsr.c c_semess.c \
+	c_seter.c c_icloem.c c_icfell.c
+
+OBJS = c_encd.o c_entsr.o c_nerro.o c_eprin.o c_errof.o c_msbsf1.o \
+	c_msbsf2.o c_msceez.o c_mskrv1.o c_mskrv2.o c_msntvl.o c_msshch.o \
+	c_mssrf1.o c_mssrf2.o c_mstrms.o c_q8qst4.o c_retsr.o c_semess.o \
+	c_seter.o c_icloem.o c_icfell.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

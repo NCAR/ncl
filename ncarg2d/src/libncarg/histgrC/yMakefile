@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:43:18 haley Exp $
+#
+
+MYNAME	= histgrC
+
+SRCS = c_histgr.c c_hstopc.c c_hstopi.c c_hstopl.c c_hstopr.c
+
+OBJS = c_histgr.o c_hstopc.o c_hstopi.o c_hstopl.o c_hstopr.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

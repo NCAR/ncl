@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.
+#
+
+MYNAME	= plotcharC
+
+SRCS =  c_pcdlsc.c c_pcgetc.c c_pcgeti.c c_pcgetr.c c_pchiqu.c c_pcloqu.c \
+	c_pcmequ.c c_pcmpxy.c c_pcpnwi.c c_pcrset.c c_pcsetc.c c_pcseti.c \
+	c_pcsetr.c c_plchhq.c c_plchlq.c c_plchmq.c
+
+OBJS =  c_pcdlsc.o c_pcgetc.o c_pcgeti.o c_pcgetr.o c_pchiqu.o c_pcloqu.o \
+	c_pcmequ.o c_pcmpxy.o c_pcpnwi.o c_pcrset.o c_pcsetc.o c_pcseti.o \
+	c_pcsetr.o c_plchhq.o c_plchlq.o c_plchmq.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

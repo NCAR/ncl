@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:44:30 haley Exp $
+#
+
+MYNAME	= sppsC
+
+SRCS = c_clsgks.c c_curve.c c_fl2int.c c_frame.c c_frstpt.c c_getset.c \
+	c_getusv.c c_line.c c_opngks.c c_plotif.c c_point.c c_points.c c_set.c \
+	c_setusv.c c_sflush.c c_vector.c c_wtstr.c c_plotit.c c_pwrit.c c_cfux.c \
+	c_cfuy.c c_cmfx.c c_cmfy.c c_cufx.c c_cufy.c c_cpux.c c_cpuy.c c_cpfx.c \
+	c_cpfy.c c_cmux.c c_cmuy.c c_kfpx.c c_kfpy.c c_kfmx.c c_kfmy.c c_kupx.c \
+	c_kupy.c c_kumx.c c_kumy.c c_kpmx.c c_kpmy.c c_kmpx.c c_kmpy.c 
+
+OBJS = c_clsgks.o c_curve.o c_fl2int.o c_frame.o c_frstpt.o c_getset.o \
+	c_getusv.o c_line.o c_opngks.o c_plotif.o c_point.o c_points.o c_set.o \
+	c_setusv.o c_sflush.o c_vector.o c_wtstr.o c_plotit.o c_pwrit.o c_cfux.o \
+	c_cfuy.o c_cmfx.o c_cmfy.o c_cufx.o c_cufy.o c_cpux.o c_cpuy.o c_cpfx.o \
+	c_cpfy.o c_cmux.o c_cmuy.o c_kfpx.o c_kfpy.o c_kfmx.o c_kfmy.o c_kupx.o \
+	c_kupy.o c_kumx.o c_kumy.o c_kpmx.o c_kpmy.o c_kmpx.o c_kmpy.o 
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,23 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:41:15 haley Exp $
+#
+
+MYNAME	= conpackC
+ 
+SRCS = c_cpback.c c_cpcica.c c_cpcltr.c c_cpcnrc.c c_cpezct.c c_cpseti.c \
+	c_cpclam.c c_cplbdr.c c_cpsetr.c c_cpcldr.c c_cprect.c c_cplbam.c \
+	c_cpcldm.c c_cpgeti.c c_cpgetr.c c_cppkcl.c c_cppklb.c c_cpsetc.c \
+	c_cpgetc.c c_cprset.c c_cpsps1.c c_cpsps2.c c_cpsprs.c c_cpmviw.c \
+	c_cpmvrw.c
+
+OBJS = c_cpback.o c_cpcica.o c_cpcltr.o c_cpcnrc.o c_cpezct.o c_cpseti.o \
+	c_cpclam.o c_cplbdr.o c_cpsetr.o c_cpcldr.o c_cprect.o c_cplbam.o \
+	c_cpcldm.o c_cpgeti.o c_cpgetr.o c_cppkcl.o c_cppklb.o c_cpsetc.o \
+	c_cpgetc.o c_cprset.o c_cpsps1.o c_cpsps2.o c_cpsprs.o c_cpmviw.o \
+	c_cpmvrw.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

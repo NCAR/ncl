@@ -1,0 +1,22 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:45:33 haley Exp $
+#
+
+MYNAME	= wmapC
+ 
+SRCS = c_wmbarb.c c_wmdflt.c c_wmdrft.c c_wmdrrg.c c_wmgetc.c c_wmgeti.c \
+	c_wmgetr.c c_wmgtln.c c_wmlabc.c c_wmlabs.c c_wmlabt.c c_wmlabw.c \
+	c_wmlgnd.c c_wmrgwt.c c_wmsetc.c c_wmseti.c c_wmsetr.c c_wmstnm.c \
+	c_wmw2nx.c c_wmw2ny.c
+
+OBJS = c_wmbarb.o c_wmdflt.o c_wmdrft.o c_wmdrrg.o c_wmgetc.o c_wmgeti.o \
+	c_wmgetr.o c_wmgtln.o c_wmlabc.o c_wmlabs.o c_wmlabt.o c_wmlabw.o \
+	c_wmlgnd.o c_wmrgwt.o c_wmsetc.o c_wmseti.o c_wmsetr.o c_wmstnm.o \
+	c_wmw2nx.o c_wmw2ny.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))
+

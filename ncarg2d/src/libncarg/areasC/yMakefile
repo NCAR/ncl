@@ -1,0 +1,18 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:40:25 haley Exp $
+#
+MYNAME	= areasC
+
+SRCS = c_ardrln.c c_aredam.c c_argeti.c c_argtai.c \
+	c_arinam.c c_armvam.c c_arpram.c c_arscam.c \
+	c_arseti.c c_arsetr.c c_argetr.c c_ardbpa.c
+
+OBJS = c_ardrln.o c_aredam.o c_argeti.o c_argtai.o \
+	c_arinam.o c_armvam.o c_arpram.o c_arscam.o \
+	c_arseti.o c_arsetr.o c_argetr.o c_ardbpa.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

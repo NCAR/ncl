@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:43:45 haley Exp $
+#
+
+MYNAME	= ngmiscC
+
+SRCS = c_ngckop.c c_ngdots.c c_nggcog.c c_nggetc.c c_nggeti.c c_nggetr.c \
+	c_nggsog.c c_ngmftc.c c_ngpict.c c_ngpswk.c c_ngreop.c c_ngritd.c \
+	c_ngsetc.c c_ngseti.c c_ngsetr.c c_ngsrat.c c_ngwsym.c
+
+OBJS = c_ngckop.o c_ngdots.o c_nggcog.o c_nggetc.o c_nggeti.o c_nggetr.o \
+	c_nggsog.o c_ngmftc.o c_ngpict.o c_ngpswk.o c_ngreop.o c_ngritd.o \
+	c_ngsetc.o c_ngseti.o c_ngsetr.o c_ngsrat.o c_ngwsym.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

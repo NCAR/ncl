@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:45:20 haley Exp $
+#
+
+MYNAME	= velvctC
+
+SRCS = c_ezvec.c c_velvct.c c_velvec.c c_vvectr.c c_vvgetc.c c_vvgeti.c \
+	c_vvgetr.c c_vvinit.c c_vvrset.c c_vvsetc.c c_vvseti.c c_vvsetr.c
+
+OBJS = c_ezvec.o c_velvct.o c_velvec.o c_vvectr.o c_vvgetc.o c_vvgeti.o \
+	c_vvgetr.o c_vvinit.o c_vvrset.o c_vvsetc.o c_vvseti.o c_vvsetr.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

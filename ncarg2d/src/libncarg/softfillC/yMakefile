@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:44:11 haley Exp $
+#
+
+MYNAME	= softfillC
+
+SRCS = c_sfgetc.c c_sfgeti.c c_sfgetp.c c_sfgetr.c c_sfnorm.c c_sfsetc.c \
+	c_sfseti.c c_sfsetp.c c_sfsetr.c c_sfsgfa.c c_sfwrld.c
+
+OBJS = c_sfgetc.o c_sfgeti.o c_sfgetp.o c_sfgetr.o c_sfnorm.o c_sfsetc.o \
+	c_sfseti.o c_sfsetp.o c_sfsetr.o c_sfsgfa.o c_sfwrld.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

@@ -1,0 +1,15 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:42:33 haley Exp $
+#
+
+MYNAME	= gflashC
+
+SRCS = c_gflas1.c c_gflas2.c c_gflas3.c c_gflas4.c
+
+OBJS = c_gflas1.o c_gflas2.o c_gflas3.o c_gflas4.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))

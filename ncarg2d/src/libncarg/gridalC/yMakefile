@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1 1997-04-11 17:43:12 haley Exp $
+#
+
+MYNAME	= gridalC
+
+SRCS = c_gacolr.c c_gagetc.c c_gageti.c c_gagetr.c c_gasetc.c c_gaseti.c \
+	c_gasetr.c c_grid.c c_gridal.c c_gridl.c c_halfax.c c_labmod.c c_perim.c \
+	c_periml.c c_tick4.c c_ticks.c
+
+OBJS = c_gacolr.o c_gagetc.o c_gageti.o c_gagetr.o c_gasetc.o c_gaseti.o \
+	c_gasetr.o c_grid.o c_gridal.o c_gridl.o c_halfax.o c_labmod.o c_perim.o \
+	c_periml.o c_tick4.o c_ticks.o
+
+EXTRA_CDEFINES = $(OS_DEF)
+
+PartialLibraryTarget(libncarg.a,$(OBJS))
+PartialLibraryTarget(libNGlluC.a,$(OBJS))
+DependTarget($(SRCS))
