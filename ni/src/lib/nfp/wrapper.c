@@ -56,6 +56,7 @@ extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
 extern NhlErrorTypes svdcov_sv_W(void);
 extern NhlErrorTypes svdstd_sv_W(void);
+extern NhlErrorTypes svdpar_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
@@ -665,6 +666,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(sindex_yrmo_W,args,"sindex_yrmo",nargs);
+/*
+ * Register "svdpar".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+
+    NclRegisterProc(svdpar_W,args,"svdpar",nargs);
 /*
  * Register "snindex_yrmo".
  *

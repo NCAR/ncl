@@ -505,7 +505,7 @@ NhlErrorTypes wmdrft_W( void )
  */
   gactivate_ws (gkswid);
   ginq_clip(&ier,&clip_ind_rect);
-  gset_clip_ind(1);
+  gset_clip_ind(GIND_CLIP);
   
 /*
  *  If wmdrft is being used in conjunction with a 
@@ -770,7 +770,7 @@ NhlErrorTypes wmlabs_W( void )
  */
   gactivate_ws (gkswid);
   ginq_clip(&ier,&clip_ind_rect);
-  gset_clip_ind(1);
+  gset_clip_ind(GIND_CLIP);
   c_wmgeti("ezf",&ezf);
   if (ezf != -1) {
     for (i = 0; i < dsizes_x[0]; i++) {

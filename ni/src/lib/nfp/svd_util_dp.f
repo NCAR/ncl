@@ -85,10 +85,14 @@ c print data from an array
 
       LEN = INDEX(LABEL,'$') - 1
 
-      WRITE (*,FMT='(/,a)') LABEL(1:LEN)
-      DO MR = 1,MRX
-          WRITE (*,FMT='(i5,12f8.4)') MR, (X(MR,NC),NC=1,NCX)
-      END DO
+      IF(LEN.LE.0) THEN
+         WRITE (*,*) 'svdpar: String must end in $'
+      ELSE
+         WRITE (*,FMT='(/,a)') LABEL(1:LEN)
+         DO MR = 1,MRX
+            WRITE (*,FMT='(i5,12f8.4)') MR, (X(MR,NC),NC=1,NCX)
+         END DO
+      END IF
 
       RETURN
       END

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 /*
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
@@ -27,6 +28,9 @@ extern void NGCALLF(dsvdsv,DSVDSV)(double *,double *, int *,int *,int *,
                                    double *, double *,double *, double *,
                                    double *,double *, double *,int *,
                                    double *,int *,int *);
+
+extern void NGCALLF(dsvdpar,DSVDPAR)(double *,int *,int*,int*,char*,int);
+
 
 NhlErrorTypes svdcov_W( void )
 {
@@ -1844,5 +1848,58 @@ NhlErrorTypes svdstd_sv_W( void )
   return_data.kind = NclStk_VAR;
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
+
+NhlErrorTypes svdpar_W( void )
+{
+/*
+ * Input variables.
+ */
+  void *x;
+  double *dx;
+  int dsizes_x[2];
+  NclBasicDataTypes type_x;
+  string *label;
+  char *label2;
+/*
+ * Get data to print.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           2,
+           NULL,
+           dsizes_x,
+           NULL,
+           NULL,
+           &type_x,
+           2);
+/*
+ * Coerce to double if necessary.
+ */
+  dx = coerce_input_double(x,type_x,dsizes_x[0]*dsizes_x[1],0,NULL,NULL);
+
+/*
+ * Get label.
+ */
+  label = (string *)NclGetArgValue(
+	    1,
+	    2,
+	    NULL,
+	    NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+  label2 = NrmQuarkToString(*label);
+/*
+ * Call the Fortran version of 'dsvdpar' with the full argument list.
+ */
+  NGCALLF(dsvdpar,DSVDPAR)(dx,&dsizes_x[1],&dsizes_x[1],&dsizes_x[0],
+			   label2,strlen(label2));
+/*
+ * Free up memory and return.
+ */
+  if((void*)dx != x) NclFree(dx);
   return(NhlNOERROR);
 }
