@@ -1,5 +1,5 @@
 C
-C $Id: cttmtl.f,v 1.2 2003-05-30 20:30:00 kennison Exp $
+C $Id: cttmtl.f,v 1.3 2003-07-08 23:10:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C
      +                   IEDG,MEDG,NEDG,LOEN,
      +                   ITRI,MTRI,NTRI,LOTN)
 C
-      DIMENSION TBUF(15,MBUF)
+      DIMENSION TBUF(12,MBUF)
       DIMENSION IPPP(2,MPPP),IPPE(2,MPPE)
       DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
 C
@@ -50,12 +50,12 @@ C
 C Compute a value of EPST, to be used in ICAPNT in a test to determine
 C whether or not two points should be treated as identical.
 C
-      EPST=.01*MAX(MAX(TBUF(1,IBUF),TBUF(6,IBUF),TBUF(11,IBUF))-
-     +             MIN(TBUF(1,IBUF),TBUF(6,IBUF),TBUF(11,IBUF)),
-     +             MAX(TBUF(2,IBUF),TBUF(7,IBUF),TBUF(12,IBUF))-
-     +             MIN(TBUF(2,IBUF),TBUF(7,IBUF),TBUF(12,IBUF)),
-     +             MAX(TBUF(3,IBUF),TBUF(8,IBUF),TBUF(13,IBUF))-
-     +             MIN(TBUF(3,IBUF),TBUF(8,IBUF),TBUF(13,IBUF)))
+      EPST=.01*MAX(MAX(TBUF(1,IBUF),TBUF(5,IBUF),TBUF( 9,IBUF))-
+     +             MIN(TBUF(1,IBUF),TBUF(5,IBUF),TBUF( 9,IBUF)),
+     +             MAX(TBUF(2,IBUF),TBUF(6,IBUF),TBUF(10,IBUF))-
+     +             MIN(TBUF(2,IBUF),TBUF(6,IBUF),TBUF(10,IBUF)),
+     +             MAX(TBUF(3,IBUF),TBUF(7,IBUF),TBUF(11,IBUF))-
+     +             MIN(TBUF(3,IBUF),TBUF(7,IBUF),TBUF(11,IBUF)))
 C
 C Use the function ICAPNT to get indices for each of the three points
 C of the triangle in the point list and form the base indices (IPP1,
@@ -69,18 +69,18 @@ C
 C
       IF (ICFELL('CTTMTL',1).NE.0) RETURN
 C
-      IPP2=(ICAPNT(TBUF( 6,IBUF),
+      IPP2=(ICAPNT(TBUF( 5,IBUF),
+     +             TBUF( 6,IBUF),
      +             TBUF( 7,IBUF),
      +             TBUF( 8,IBUF),
-     +             TBUF( 9,IBUF),
      +             RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
       IF (ICFELL('CTTMTL',2).NE.0) RETURN
 C
-      IPP3=(ICAPNT(TBUF(11,IBUF),
+      IPP3=(ICAPNT(TBUF( 9,IBUF),
+     +             TBUF(10,IBUF),
+     +             TBUF(11,IBUF),
      +             TBUF(12,IBUF),
-     +             TBUF(13,IBUF),
-     +             TBUF(14,IBUF),
      +             RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
       IF (ICFELL('CTTMTL',3).NE.0) RETURN
@@ -139,7 +139,7 @@ C Copy the last triangle in the triangle buffer to the vacated slot left
 C by the one just processed.
 C
       IF (IBUF.NE.NBUF) THEN
-        DO 101 J=1,15
+        DO 101 J=1,12
         TBUF(J,IBUF)=TBUF(J,NBUF)
   101   CONTINUE
       END IF
