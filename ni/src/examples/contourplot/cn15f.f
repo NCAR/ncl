@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.7 2003-02-28 22:19:26 grubin Exp $
+C      $Id: cn15f.f,v 1.8 2003-03-06 23:18:14 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -77,7 +77,7 @@ C
 C
 C Output to all three workstations.
 C
-      integer ncgm1, x1, ps1, PDF1
+      integer ncgm1, x1, ps1, pdf1
       integer NCGM, X11, PS, PDF
       NCGM=1
       X11=1
@@ -483,9 +483,32 @@ C
       call NhlFDraw(xy_plot,ierr)
       call NhlFDraw(tx,ierr)
       call NhlFFrame(ps1,ierr)
+
+C
+C Reassign the workstation to save PDF.
+C
+      call NhlFChangeWorkstation (ice,pdf1,ierr)
+      call NhlFChangeWorkstation (cn,pdf1,ierr)
+      call NhlFChangeWorkstation (mp,pdf1,ierr)
+      call NhlFChangeWorkstation (xy_plot,pdf1,ierr)
+      call NhlFChangeWorkstation (tx,pdf1,ierr)
+C
+C Draw all objects to PDF.
+C
+      call NhlFDraw(ice,ierr)
+      call NhlFDraw(cn,ierr)
+      call NhlFDraw(mp,ierr)
+      call NhlFDraw(xy_plot,ierr)
+      call NhlFDraw(tx,ierr)
+      call NhlFFrame(pdf1,ierr)
+
+C
+C Cleanup
+C
       call NhlFDestroy(ncgm1,ierr)
       call NhlFDestroy(x1,ierr)
       call NhlFDestroy(ps1,ierr)
+      call NhlFDestroy(pdf1,ierr)
       call NhlFDestroy(appid,ierr)
       stop
       end

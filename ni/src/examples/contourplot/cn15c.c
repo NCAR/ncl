@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.7 2003-02-28 22:19:25 grubin Exp $
+ *      $Id: cn15c.c,v 1.8 2003-03-06 23:18:14 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -84,10 +84,10 @@ main()
     const char *dir = _NGGetNCARGEnv("data");
     FILE *fp;
 /*
- * Output to all three workstations.
+ * Output to all four workstations.
  */
     int ncgm1,x1,ps1, pdf1;
-    int NCGM=1, X111=1, PS=1, PDF=1;
+    int NCGM=1, X11=1, PS=1, PDF=1;
     int nlt, nln, zonal, ksst;
     float sstzon;
 /*
@@ -176,6 +176,17 @@ main()
       NhlRLSetString(srlist,NhlNwkPSFileName,"./cn15c.ps");
       NhlRLSetString(srlist,NhlNwkVisualType,"color");
 /*
+ * Since the plots are beside each other, use landscape mode and the
+ * PostScript resources for positioning the plot on the paper.
+ */
+      NhlRLSetString(srlist,NhlNwkOrientation,"landscape");
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerX,0);
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerY,60);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlCreate(&ps1,"cn15Work",NhlpsWorkstationClass,0,srlist);
+/*
  * Create a PDF workstation.
  */
       NhlRLClear(srlist);
@@ -191,7 +202,6 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&ps1,"cn15Work",NhlpsWorkstationClass,0,srlist);
       NhlCreate(&pdf1,"cn15Work",NhlpdfWorkstationClass,0,srlist);
 /*
  * Open and read NetCDF file.
@@ -469,4 +479,5 @@ main()
       NhlDestroy(appid);
 
 }
+
 
