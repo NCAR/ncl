@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.44 2001-11-28 02:47:51 dbrown Exp $
+ *      $Id: Workspace.c,v 1.45 2002-02-11 19:17:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2858,6 +2858,7 @@ NhlErrorTypes _NhlCplbdr
 	}
 	c_entsr(&save_mode,1);
 
+
 	do {
 		c_cplbdr(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr);
 
@@ -3255,6 +3256,12 @@ NhlErrorTypes _NhlCprect
 		return NhlFATAL;
 	}
 	c_entsr(&save_mode,1);
+
+	if (iwsrp->cur_size < mzdt * nzdt * sizeof(int)) {
+		int amount = (mzdt * nzdt) * sizeof(int) - iwsrp->cur_size;
+		ret = ChangeWorkspaceSize(iwsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 
 	do {
 		c_cprect(zdat,kzdt,mzdt,nzdt,

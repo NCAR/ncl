@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.108 2001-12-07 21:49:21 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.109 2002-02-11 19:17:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4385,6 +4385,7 @@ static NhlErrorTypes cnDraw
 	}
 	c_cpseti("WSO", 3);		/* error recovery on */
 	c_cpseti("NVS",0);		/* no vertical strips */
+	c_cpseti("HLE",1);              /* search for equal high/lows */
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
 
