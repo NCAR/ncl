@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.2 1995-02-16 14:53:21 haley Exp $
+;      $Id: xy01n.ncl,v 1.3 1995-02-21 15:13:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -66,7 +66,7 @@ xworkid = create "xy01Work" xWorkstationLayerClass noparent end create
 ; Define the data object.  Since only the Y values are specified here,
 ; each Y value will be paired with its integer array index.  The id
 ; for this object will later be used as the value for the XyPlot
-; object resource, "xyCurveData".
+; object resource, "xyCoordData".
 ;
 dataid = create "xyData" coordArraysLayerClass noparent
     "caYArray": ydra
@@ -77,7 +77,7 @@ end create
 ; XWorkstation object.
 ; 
 plotid = create "xyPlot" xyPlotLayerClass xworkid
-    "xyCurveData": dataid
+    "xyCoordData": dataid
 end create
 
 ;
