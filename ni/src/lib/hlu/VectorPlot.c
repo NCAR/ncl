@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.78 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.79 2002-09-20 21:36:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4225,7 +4225,7 @@ static NhlErrorTypes InitCoordBounds
         if (vcp->trans_type == vcIRREGULAR) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlsfXARR_CHANGED)))
+			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -4236,7 +4236,7 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlsfYARR_CHANGED)))
+			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
@@ -4691,11 +4691,11 @@ static NhlErrorTypes SetUpCrvTransObj
 	}
         else {
                 if (vcp->data_changed &&vcp->vfp->x_arr &&
-                    (vcp->vfp->changed & _NhlsfXARR_CHANGED))
+                    (vcp->vfp->changed & _NhlvfXARR_CHANGED))
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXCoordPoints,vcp->vfp->x_arr);
                 if (vcp->data_changed && vcp->vfp->y_arr &&
-		    (vcp->vfp->changed & _NhlsfYARR_CHANGED))
+		    (vcp->vfp->changed & _NhlvfYARR_CHANGED))
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrYCoordPoints,vcp->vfp->y_arr);
         
