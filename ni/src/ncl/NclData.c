@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.13 1996-12-20 00:42:09 ethan Exp $
+ *      $Id: NclData.c,v 1.14 1996-12-20 21:21:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -609,6 +609,7 @@ NclObj self;
 	}
 	if(objs[tmp].id == self->obj.id) {
 		objs[tmp].id = -1;
+		objs[tmp].theobj = NULL;
 		if(objs[tmp].next != NULL) {
 			step = objs[tmp].next;
 			objs[tmp] = *objs[tmp].next;

@@ -157,13 +157,15 @@ int operation;
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
 
-		if(((lhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((lhs_data_obj->obj.status == TEMPORARY)||(lhs.u.data_obj->obj.status == TEMPORARY))) {
-			result->u.data_obj = lhs_data_obj;
-		} else if(((rhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((rhs_data_obj->obj.status == TEMPORARY)||(rhs.u.data_obj->obj.status == TEMPORARY))) {
-			result->u.data_obj = rhs_data_obj;
-		} else {
-			result->u.data_obj = NULL;
-		}
+		if(result->u.data_obj == NULL) {
+			if(((lhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((lhs_data_obj->obj.status == TEMPORARY)||(lhs.u.data_obj->obj.status == TEMPORARY))) {
+				result->u.data_obj = lhs_data_obj;
+			} else if(((rhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((rhs_data_obj->obj.status == TEMPORARY)||(rhs.u.data_obj->obj.status == TEMPORARY))) {
+				result->u.data_obj = rhs_data_obj;
+			} else {
+				result->u.data_obj = NULL;
+			}
+		} 
 		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,(NclObj*)&(result->u.data_obj));
 		if(result->u.data_obj != NULL)
 			result->kind = NclStk_VAL;
@@ -1513,7 +1515,7 @@ NclStackEntry missing_expr;
 			
 		}
 		tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ? Ncl_MultiDValData:the_obj_type),0,tmp_val,&missing_val,j,dim_sizes,TEMPORARY,NULL,(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?_NclTypeEnumToTypeClass(the_obj_type):NULL));
-		if(tmp1_md != size_md) {
+		if((tmp1_md != size_md)&&(tmp1_md->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)tmp1_md);
 		}
 		if(tmp_md != NULL) {
