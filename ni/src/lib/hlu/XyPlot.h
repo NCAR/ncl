@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.14 1995-04-07 10:44:34 boote Exp $
+ *      $Id: XyPlot.h,v 1.15 1995-05-03 03:11:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 
 #include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/PlotManager.h>
-#include <ncarg/hlu/IrregularType2TransObj.h>
+#include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
 /*

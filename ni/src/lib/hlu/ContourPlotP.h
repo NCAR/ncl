@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.2 1995-04-07 10:41:09 boote Exp $
+ *      $Id: ContourPlotP.h,v 1.3 1995-05-03 03:11:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -270,6 +270,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlWorkspace	*fws,*iws,*aws;
 	NhlBoolean	area_ws_inited;
 	float		*data;
+	NhlBoolean	do_low_level_log;
 
 } NhlContourPlotLayerPart;
 

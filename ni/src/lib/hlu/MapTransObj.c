@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.19 1995-04-07 10:42:59 boote Exp $
+*      $Id: MapTransObj.c,v 1.20 1995-05-03 03:11:20 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1102,6 +1102,7 @@ static NhlErrorTypes  MapTransSetValues
 	char *e_text, *entry_name = "MapTransSetValues";
 	
 	mtp->trans_changed = True;
+	mnew->trobj.change_count++;
 
 /*
  * Ignore any attempts to set map pos directly
@@ -1187,6 +1188,7 @@ static NhlErrorTypes MapTransInitialize
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransInitialize";
 
+	mnew->trobj.change_count++;
 	if (_NhlCmpFAny(mnew->trobj.out_of_range,1e12,6) != 0) {
 		e_text = 
 		"%s: %s must always equal 1e12 for map projections: resetting";

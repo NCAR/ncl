@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.34 1995-04-29 18:53:36 boote Exp $
+ *      $Id: TickMark.c,v 1.35 1995-05-03 03:11:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/TickMarkP.h>
 #include <ncarg/hlu/TransObjI.h>
-#include <ncarg/hlu/IrregularType2TransObj.h>
+#include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/MultiText.h>
 #include <ncarg/hlu/ConvertersP.h>
@@ -6731,7 +6731,7 @@ int		c_or_s;
  *		NhlLINEAR a set of three control points are used, the start,
  *		end and a point half way between. For NhlLOGs it is a little
  *		more difficult. An extension to the SplineCoord approx code
- *		was needed as well as the IrregularType2TransObj. This new 
+ *		was needed as well as the IrregularTransObj. This new 
  *	 	option informs the spline code that the log10 should be taken
  *		on all the input values before createing the approximation.
  *		three control points are used, start, end and 
@@ -6749,7 +6749,7 @@ int		c_or_s;
  * Side Effects: Sets ir_**min and ir_**max which are used by the ChangeTrans
  *		function to determine whether new mins and maxs exceed the
  *		minimum and maximum range of the coordinate points arrays of
- *		the IrregularType2TransObj.
+ *		the IrregularTransObj.
  */
 /*ARGSUSED*/
 static NhlErrorTypes CreateXBYLTransformInfo
@@ -6765,8 +6765,6 @@ int num_args;
 	NhlSArg	sargs[20];
 	int nargs = 0;
 	NhlClass trans_class = NULL;
-	float *tmpycoordpoints;
-        float *tmpxcoordpoints;
 	char buffer[_NhlMAXFNAMELEN];
 	int tmpid;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -6782,50 +6780,22 @@ int num_args;
 * THis is needed because new has already been reallocated and could possibly
 * be the same as told. Also old is already freed!
 */
-				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tnew->tick.y_l_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-					tnew->tick.y_l_irregular_points->len_dimensions[0]);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+					   tnew->tick.y_l_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlIRREGULARAXIS);
 				break;
 			case NhlLOG:
-				tmpycoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpycoordpoints[2] = tnew->tick.y_l_data_top;
-				tmpycoordpoints[0] = tnew->tick.y_l_data_bottom;
-				tmpycoordpoints[1] = (float)pow(10.0,
-					(double)(log10(tmpycoordpoints[0]) 
-					+ log10(tmpycoordpoints[2]))/2.0);
-
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlLOGAXIS);
 				tnew->tick.ir_ylmin = tnew->tick.y_l_data_min;
 				tnew->tick.ir_ylmax = tnew->tick.y_l_data_max;
-
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrYCoordPoints,tmpycoordpoints);
-				NhlSetSArg(&sargs[nargs++],	
-					NhlNtrYNumPoints,3);
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrYUseLog,1);
 				break;
 			case NhlLINEAR:
-				tmpycoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpycoordpoints[2] =
-					tnew->tick.y_l_data_top;
-				tmpycoordpoints[0] =
-					tnew->tick.y_l_data_bottom;
-				tmpycoordpoints[1] = 
-					(tmpycoordpoints[0] 
-					+ tmpycoordpoints[2])/2.0;
-
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlLINEARAXIS);
 				tnew->tick.ir_ylmin = tnew->tick.y_l_data_min;
 				tnew->tick.ir_ylmax = tnew->tick.y_l_data_max;
-
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrYCoordPoints,tmpycoordpoints);
-				NhlSetSArg(&sargs[nargs++],	
-					NhlNtrYNumPoints,3);
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrYUseLog,0);
 				break;
 			case NhlTIME:
 			case NhlGEOGRAPHIC:
@@ -6835,51 +6805,28 @@ int num_args;
 			case NhlIRREGULAR:
 				NhlSetSArg(&sargs[nargs++],
 					NhlNtrXCoordPoints,
-					tnew->tick.x_b_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],		
-					NhlNtrXNumPoints,
-					tnew->tick.x_b_irregular_points->len_dimensions[0]);
+					tnew->tick.x_b_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlIRREGULARAXIS);
 				break;
 			case NhlLOG:
-				tmpxcoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpxcoordpoints[2] =
-					tnew->tick.x_b_data_right;
-				tmpxcoordpoints[0] =
-					tnew->tick.x_b_data_left;
-				tmpxcoordpoints[1] = (float)pow(10.0,
-					(double)(log10(tmpxcoordpoints[0]) 
-					+ log10(tmpxcoordpoints[2]))/2.0);
-
 				tnew->tick.ir_xbmin = tnew->tick.x_b_data_min;
 				tnew->tick.ir_xbmax = tnew->tick.x_b_data_max;
-
-				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
-					tmpxcoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlLOGAXIS);
 				break;
 			case NhlLINEAR:
-				tmpxcoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpxcoordpoints[2] = tnew->tick.x_b_data_right;
-				tmpxcoordpoints[0] = tnew->tick.x_b_data_left;
-				tmpxcoordpoints[1] = (tmpxcoordpoints[0] 
-						+ tmpxcoordpoints[2])/2.0;
-
 				tnew->tick.ir_xbmin = tnew->tick.x_b_data_min;
 				tnew->tick.ir_xbmax = tnew->tick.x_b_data_max;
 
-				NhlSetSArg(&sargs[nargs++], 
-					NhlNtrXCoordPoints,tmpxcoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlLINEARAXIS);
 				break;
 			case NhlTIME:
 			case NhlGEOGRAPHIC:
 				break;
 			}
-			trans_class = NhlirregularType2TransObjClass;
+			trans_class = NhlirregularTransObjClass;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
@@ -6963,8 +6910,6 @@ int num_args;
 	NhlSArg	sargs[20];
 	int nargs = 0;
 	NhlClass trans_class = NULL;
-	float *tmpycoordpoints;
-        float *tmpxcoordpoints;
 	char buffer[_NhlMAXFNAMELEN];
 	int tmpid;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -6975,42 +6920,21 @@ int num_args;
 			switch(tnew->tick.y_r_style) {
 			case NhlIRREGULAR:
 				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tnew->tick.y_r_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-					tnew->tick.y_r_irregular_points->len_dimensions[0]);
+					tnew->tick.y_r_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlIRREGULARAXIS);
 				break;
 			case NhlLOG:
-				tmpycoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpycoordpoints[2] = tnew->tick.y_r_data_top;
-				tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;
-				tmpycoordpoints[1] = (float)pow(10.0,
-					(double)(log10(tmpycoordpoints[0]) 
-					+ log10(tmpycoordpoints[2]))/2.0);
-
 				tnew->tick.ir_yrmin = tnew->tick.y_r_data_min;
 				tnew->tick.ir_yrmax = tnew->tick.y_r_data_max;
-
-				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tmpycoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
-				NhlSetSArg(&sargs[nargs++], NhlNtrYUseLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlLOGAXIS);
 				break;
 			case NhlLINEAR:
-				tmpycoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpycoordpoints[2] = tnew->tick.y_r_data_top;
-				tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;
-				tmpycoordpoints[1] = (tmpycoordpoints[0] 
-						+ tmpycoordpoints[2])/2.0;
-
 				tnew->tick.ir_yrmin = tnew->tick.y_r_data_min;
 				tnew->tick.ir_yrmax = tnew->tick.y_r_data_max;
-
-				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tmpycoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
-				NhlSetSArg(&sargs[nargs++], NhlNtrYUseLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,
+					   NhlLINEARAXIS);
 				break;
 			case NhlTIME:
 			case NhlGEOGRAPHIC:
@@ -7019,52 +6943,28 @@ int num_args;
 			switch(tnew->tick.x_t_style) {
 			case NhlIRREGULAR:
 				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
-					tnew->tick.x_t_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
-					tnew->tick.x_t_irregular_points->len_dimensions[0]);
+					tnew->tick.x_t_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlIRREGULARAXIS);
 				break;
 			case NhlLOG:
-				tmpxcoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpxcoordpoints[2] = tnew->tick.x_t_data_right;
-				tmpxcoordpoints[0] = tnew->tick.x_t_data_left;
-				tmpxcoordpoints[1] = (float)pow(10.0, (double)
-						(log10(tmpxcoordpoints[0]) 
-						+log10(tmpxcoordpoints[2]))/2.0);
-
 				tnew->tick.ir_xtmin = tnew->tick.x_t_data_min;
 				tnew->tick.ir_xtmax = tnew->tick.x_t_data_max;
-
-				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
-				tmpxcoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlLOGAXIS);
 				break;
 			case NhlLINEAR:
-				tmpxcoordpoints = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*3);
-				tmpxcoordpoints[2] =
-					tnew->tick.x_t_data_right;
-				tmpxcoordpoints[0] =
-					tnew->tick.x_t_data_left;
-				tmpxcoordpoints[1] = 
-					(tmpxcoordpoints[0] 
-					+ tmpxcoordpoints[2])/2.0;
-
 				tnew->tick.ir_xtmin = tnew->tick.x_t_data_min;
 				tnew->tick.ir_xtmax = tnew->tick.x_t_data_max;
 
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrXCoordPoints,tmpxcoordpoints);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-				NhlSetSArg(&sargs[nargs++],
-					NhlNtrXUseLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,
+					   NhlLINEARAXIS);
 				break;
 			case NhlTIME:
 			case NhlGEOGRAPHIC:
 				break;
 			}
-			trans_class = NhlirregularType2TransObjClass;
+			trans_class = NhlirregularTransObjClass;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
@@ -7315,8 +7215,6 @@ int num_args;
 	int need_ir = 0;
 	NhlSArg sargs[20];
         int nargs = 0;
-        float *tmpycoordpoints;
-        float *tmpxcoordpoints;
         NhlErrorTypes ret = NhlNOERROR;
 
 
@@ -7339,7 +7237,7 @@ int num_args;
 			need_ir = 1;
 		}
 /*
-* Following is the case when an IrregularType2TransObj is already in use
+* Following is the case when an IrregularTransObj is already in use
 * and needs to be modified using SetValues
 */
 		if((have_ir)&&(need_ir)) {
@@ -7353,11 +7251,11 @@ int num_args;
 */
 
 					NhlSetSArg(&sargs[nargs++], 
-						NhlNtrYCoordPoints,
-                                        	tnew->tick.y_l_irregular_points->data);
-                                	NhlSetSArg(&sargs[nargs++],
-						NhlNtrYNumPoints,
-                                        	tnew->tick.y_l_irregular_points->len_dimensions[0]);
+					     NhlNtrYCoordPoints,
+                                            tnew->tick.y_l_irregular_points);
+					NhlSetSArg(&sargs[nargs++],
+						   NhlNtrYAxisType,
+						   NhlIRREGULARAXIS);
 					}
 					if(told->tick.y_l_tension != 
 						tnew->tick.y_l_tension) {
@@ -7368,7 +7266,7 @@ int num_args;
 					break;
 				case NhlLOG:
 /*
-* Since an IrregularType2TransObj is being used careful attention must be
+* Since an IrregularTransObj is being used careful attention must be
 * made to assure that the max and min do not exceed the range of the coordinate
 * arrays, which in the case of log and lin are the min and max of extents 
 * for a given axis. the ir_ylmin and ir_ylmax fields are set when the 
@@ -7383,28 +7281,14 @@ int num_args;
 						||(tnew->tick.ir_ylmax < 
 						tnew->tick.y_l_data_max)) {
 
-						tmpycoordpoints = 
-							(float*)NhlMalloc(
-							(unsigned)sizeof(float)*3);
-						tmpycoordpoints[2] = 
-							tnew->tick.y_l_data_top;
-						tmpycoordpoints[0] = 
-							tnew->tick.y_l_data_bottom;
-						tmpycoordpoints[1] = (float)
-							pow(10.0, (double)
-							(log10(tmpycoordpoints[0])
-							+ log10(tmpycoordpoints[2]))/2.0);
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrYAxisType,
+							   NhlLOGAXIS);
+
 						tnew->tick.ir_ylmin =
 							tnew->tick.y_l_data_min;
 						tnew->tick.ir_ylmax =
 							tnew->tick.y_l_data_max;
-
-						NhlSetSArg(&sargs[nargs++],
-						NhlNtrYCoordPoints,tmpycoordpoints);
-						NhlSetSArg(&sargs[nargs++],
-							NhlNtrYNumPoints,3);
-						NhlSetSArg(&sargs[nargs++],
-		                                        NhlNtrYUseLog,1);
 					}
 					break;
 				case NhlLINEAR:
@@ -7416,28 +7300,14 @@ int num_args;
 						tnew->tick.y_l_data_min)
 						||(tnew->tick.ir_ylmax >
 						tnew->tick.y_l_data_max)){
-	                                tmpycoordpoints = (float*)NhlMalloc(
-	                                        (unsigned)sizeof(float)*3);
-	                                tmpycoordpoints[2] =
-	                                        tnew->tick.y_l_data_top;
-	                                tmpycoordpoints[0] =
-	                                        tnew->tick.y_l_data_bottom;
-	                                tmpycoordpoints[1] =
-	                                        (tmpycoordpoints[0]
-	                                        + tmpycoordpoints[2])/2.0;
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrYAxisType,
+							   NhlLINEARAXIS);
 
-					tnew->tick.ir_ylmin =
-						tnew->tick.y_l_data_min;
-					tnew->tick.ir_ylmax =
-						tnew->tick.y_l_data_max;
-
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYCoordPoints,tmpycoordpoints);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYNumPoints,3);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYUseLog,0);
-
+						tnew->tick.ir_ylmin =
+							tnew->tick.y_l_data_min;
+						tnew->tick.ir_ylmax =
+							tnew->tick.y_l_data_max;
 					}
 					break;
 				case NhlTIME:
@@ -7454,11 +7324,12 @@ int num_args;
 
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrXCoordPoints,
-                                        	tnew->tick.x_b_irregular_points->data);
-                                	NhlSetSArg(&sargs[nargs++],
-						NhlNtrXNumPoints,
-                                        	tnew->tick.x_b_irregular_points->len_dimensions[0]);
+                                       	      tnew->tick.x_b_irregular_points);
 					}
+					NhlSetSArg(&sargs[nargs++],
+						   NhlNtrXAxisType,
+						   NhlIRREGULARAXIS);
+
 					if(told->tick.x_b_tension != 
 						tnew->tick.x_b_tension) {
                                 		NhlSetSArg(&sargs[nargs++],
@@ -7472,29 +7343,13 @@ int num_args;
 						tnew->tick.x_b_data_min)
 						||(tnew->tick.ir_xbmax < 
 						tnew->tick.x_b_data_max)) {
-
-						tmpxcoordpoints = 
-							(float*)NhlMalloc(
-							(unsigned)sizeof(float)*3);
-						tmpxcoordpoints[2] = 
-							tnew->tick.x_b_data_right;
-						tmpxcoordpoints[0] = 
-							tnew->tick.x_b_data_left;
-						tmpxcoordpoints[1] = (float)
-							pow(10.0, (double)
-							(log10(tmpxcoordpoints[0])
-							+ log10(tmpxcoordpoints[2]))/2.0);
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrXAxisType,
+							   NhlLOGAXIS);
 						tnew->tick.ir_xbmin =
 							tnew->tick.x_b_data_min;
 						tnew->tick.ir_xbmax =
 							tnew->tick.x_b_data_max;
-
-						NhlSetSArg(&sargs[nargs++],
-						NhlNtrXCoordPoints,tmpxcoordpoints);
-						NhlSetSArg(&sargs[nargs++],
-							NhlNtrXNumPoints,3);
-						NhlSetSArg(&sargs[nargs++],
-		                                        NhlNtrXUseLog,1);
 					}
 					break;
 				case NhlLINEAR:
@@ -7503,27 +7358,13 @@ int num_args;
 						tnew->tick.x_b_data_min)
 						||(tnew->tick.ir_xbmax >
 						tnew->tick.x_b_data_max)){
-	                                tmpxcoordpoints = (float*)NhlMalloc(
-	                                        (unsigned)sizeof(float)*3);
-	                                tmpxcoordpoints[2] =
-	                                        tnew->tick.x_b_data_right;
-	                                tmpxcoordpoints[0] =
-	                                        tnew->tick.x_b_data_left;
-	                                tmpxcoordpoints[1] =
-	                                        (tmpxcoordpoints[0]
-	                                        + tmpxcoordpoints[2])/2.0;
-
-					tnew->tick.ir_xbmin =
-						tnew->tick.x_b_data_min;
-					tnew->tick.ir_xbmax =
-						tnew->tick.x_b_data_max;
-
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXCoordPoints,tmpxcoordpoints);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXNumPoints,3);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXUseLog,0);
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrXAxisType,
+							   NhlLINEARAXIS);
+						tnew->tick.ir_xbmin =
+							tnew->tick.x_b_data_min;
+						tnew->tick.ir_xbmax =
+							tnew->tick.x_b_data_max;
 
 					}
 					break;
@@ -7612,10 +7453,10 @@ int num_args;
 
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrYCoordPoints,
-                                        	tnew->tick.y_r_irregular_points->data);
-                                	NhlSetSArg(&sargs[nargs++],
-						NhlNtrYNumPoints,
-                                        	tnew->tick.y_r_irregular_points->len_dimensions[0]);
+                                            tnew->tick.y_r_irregular_points);
+					NhlSetSArg(&sargs[nargs++],
+						   NhlNtrYAxisType,
+						   NhlIRREGULARAXIS);
 					}
 					if(told->tick.y_r_tension != 
 						tnew->tick.y_r_tension) {
@@ -7631,28 +7472,14 @@ int num_args;
 						||(tnew->tick.ir_yrmax < 
 						tnew->tick.y_r_data_max)) {
 
-						tmpycoordpoints = 
-							(float*)NhlMalloc(
-							(unsigned)sizeof(float)*3);
-						tmpycoordpoints[2] = 
-							tnew->tick.y_r_data_top;
-						tmpycoordpoints[0] = 
-							tnew->tick.y_r_data_bottom;
-						tmpycoordpoints[1] = (float)
-							pow(10.0, (double)
-							(log10(tmpycoordpoints[0])
-							+ log10(tmpycoordpoints[2]))/2.0);
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrYAxisType,
+							   NhlLOGAXIS);
+
 						tnew->tick.ir_yrmin =
 							tnew->tick.y_r_data_min;
 						tnew->tick.ir_yrmax =
 							tnew->tick.y_r_data_max;
-
-						NhlSetSArg(&sargs[nargs++],
-						NhlNtrYCoordPoints,tmpycoordpoints);
-						NhlSetSArg(&sargs[nargs++],
-							NhlNtrYNumPoints,3);
-						NhlSetSArg(&sargs[nargs++],
-		                                        NhlNtrYUseLog,1);
 					}
 					break;
 				case NhlLINEAR:
@@ -7661,27 +7488,14 @@ int num_args;
 						tnew->tick.y_r_data_min)
 						||(tnew->tick.ir_yrmax >
 						tnew->tick.y_r_data_max)){
-	                                tmpycoordpoints = (float*)NhlMalloc(
-	                                        (unsigned)sizeof(float)*3);
-	                                tmpycoordpoints[2] =
-	                                        tnew->tick.y_r_data_top;
-	                                tmpycoordpoints[0] =
-	                                        tnew->tick.y_r_data_bottom;
-	                                tmpycoordpoints[1] =
-	                                        (tmpycoordpoints[0]
-	                                        + tmpycoordpoints[2])/2.0;
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrYAxisType,
+							   NhlLINEARAXIS);
 
 					tnew->tick.ir_yrmin =
 						tnew->tick.y_r_data_min;
 					tnew->tick.ir_yrmax =
 						tnew->tick.y_r_data_max;
-
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYCoordPoints,tmpycoordpoints);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYNumPoints,3);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrYUseLog,0);
 
 					}
 					break;
@@ -7696,11 +7510,11 @@ int num_args;
 						(tnew->tick.new_ir_xt)) {
 
 					NhlSetSArg(&sargs[nargs++], 
-						NhlNtrXCoordPoints,
-                                        	tnew->tick.x_t_irregular_points->data);
-                                	NhlSetSArg(&sargs[nargs++],
-						NhlNtrXNumPoints,
-                                        	tnew->tick.x_t_irregular_points->len_dimensions[0]);
+					     NhlNtrXCoordPoints,
+                                             tnew->tick.x_t_irregular_points);
+					NhlSetSArg(&sargs[nargs++],
+						   NhlNtrXAxisType,
+						   NhlIRREGULARAXIS);
 					}
 					if(told->tick.x_t_tension != 
 						tnew->tick.x_t_tension) {
@@ -7716,28 +7530,13 @@ int num_args;
 						||(tnew->tick.ir_xtmax < 
 						tnew->tick.x_t_data_max)) {
 
-						tmpxcoordpoints = 
-							(float*)NhlMalloc(
-							(unsigned)sizeof(float)*3);
-						tmpxcoordpoints[2] = 
-							tnew->tick.x_t_data_right;
-						tmpxcoordpoints[0] = 
-							tnew->tick.x_t_data_left;
-						tmpxcoordpoints[1] = (float)
-							pow(10.0, (double)
-							(log10(tmpxcoordpoints[0])
-							+ log10(tmpxcoordpoints[2]))/2.0);
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrXAxisType,
+							   NhlLOGAXIS);
 						tnew->tick.ir_xtmin =
 							tnew->tick.x_t_data_min;
 						tnew->tick.ir_xtmax =
 							tnew->tick.x_t_data_max;
-
-						NhlSetSArg(&sargs[nargs++],
-						NhlNtrXCoordPoints,tmpxcoordpoints);
-						NhlSetSArg(&sargs[nargs++],
-							NhlNtrXNumPoints,3);
-						NhlSetSArg(&sargs[nargs++],
-		                                        NhlNtrXUseLog,1);
 					}
 					break;
 				case NhlLINEAR:
@@ -7746,27 +7545,14 @@ int num_args;
 						tnew->tick.x_t_data_min)
 						||(tnew->tick.ir_xtmax >
 						tnew->tick.x_t_data_max)){
-	                                tmpxcoordpoints = (float*)NhlMalloc(
-	                                        (unsigned)sizeof(float)*3);
-	                                tmpxcoordpoints[2] =
-	                                        tnew->tick.x_t_data_right;
-	                                tmpxcoordpoints[0] =
-	                                        tnew->tick.x_t_data_left;
-	                                tmpxcoordpoints[1] =
-	                                        (tmpxcoordpoints[0]
-	                                        + tmpxcoordpoints[2])/2.0;
+						NhlSetSArg(&sargs[nargs++],
+							   NhlNtrXAxisType,
+							   NhlLINEARAXIS);
 
 					tnew->tick.ir_xtmin =
 						tnew->tick.x_t_data_min;
 					tnew->tick.ir_xtmax =
 						tnew->tick.x_t_data_max;
-
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXCoordPoints,tmpxcoordpoints);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXNumPoints,3);
-	                                NhlSetSArg(&sargs[nargs++],
-	                                        NhlNtrXUseLog,0);
 
 					}
 					break;

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.4 1995-04-07 10:41:59 boote Exp $
+ *      $Id: IrregularTransObj.h,v 1.5 1995-05-03 03:11:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,46 +24,50 @@
 
 #include <ncarg/hlu/TransObj.h>
 
-#define NhlNtrXMinF     "trXMinF"
-#define NhlCtrXMinF     "TrXMinF"
-#define NhlNtrXMaxF     "trXMaxF"
-#define NhlCtrXMaxF     "TrXMaxF"
+typedef enum { 
+	NhlIRREGULARAXIS, 
+	NhlLINEARAXIS, 
+	NhlLOGAXIS 
+} NhlAxisType;
 
+#define NhlTAxisType "axistype"
+
+#define NhlNtrXAxisType		"trXAxisType"
+#define NhlCtrXAxisType		"TrXAxisType"
+#define NhlNtrXMinF     	"trXMinF"
+#define NhlCtrXMinF     	"TrXMinF"
+#define NhlNtrXMaxF     	"trXMaxF"
+#define NhlCtrXMaxF     	"TrXMaxF"
 #define NhlNtrXCoordPoints	"trXCoordPoints"
 #define NhlCtrXCoordPoints	"TrXCoordPoints"
 #define NhlNtrXInterPoints	"trXInterPoints"
 #define NhlCtrXInterPoints	"TrXInterPoints"
-#define NhlNtrXNumPoints	"trXNumPoints"
-#define NhlCtrXNumPoints	"TrXNumPoints"
 #define NhlNtrXReverse		"trXReverse"
 #define NhlCtrXReverse		"TrXReverse"
 #define NhlNtrXTensionF		"trXTensionF"
 #define NhlCtrXTensionF		"TrXTensionF"
 #define NhlNtrXSamples		"trXSamples"
 #define NhlCtrXSamples		"TrXSamples"
-#define NhlNtrXUseLog		"trXUseLog"
-#define NhlCtrXUseLog		"TrXUseLog"
 
-#define NhlNtrYMinF     "trYMinF"
-#define NhlCtrYMinF     "TrYMinF"
-#define NhlNtrYMaxF     "trYMaxF"
-#define NhlCtrYMaxF     "TrYMaxF"
+#define NhlNtrYAxisType		"trYAxisType"
+#define NhlCtrYAxisType		"TrYAxisType"
+#define NhlNtrYMinF     	"trYMinF"
+#define NhlCtrYMinF     	"TrYMinF"
+#define NhlNtrYMaxF     	"trYMaxF"
+#define NhlCtrYMaxF     	"TrYMaxF"
 #define NhlNtrYCoordPoints	"trYCoordPoints"
 #define NhlCtrYCoordPoints	"TrYCoordPoints"
 #define NhlNtrYInterPoints	"trYInterPoints"
 #define NhlCtrYInterPoints	"TrYInterPoints"
-#define NhlNtrYNumPoints	"trYNumPoints"
-#define NhlCtrYNumPoints	"TrYNumPoints"
 #define NhlNtrYReverse		"trYReverse"
 #define NhlCtrYReverse		"TrYReverse"
 #define NhlNtrYTensionF		"trYTensionF"
 #define NhlCtrYTensionF		"TrYTensionF"
 #define NhlNtrYSamples		"trYSamples"
 #define NhlCtrYSamples		"TrYSamples"
-#define NhlNtrYUseLog		"trYUseLog"
-#define NhlCtrYUseLog		"TrYUseLog"
 
 
-extern NhlClass	NhlirregularTransObjClass;
+extern NhlClass NhlirregularTransObjClass;
 
 #endif /* _NIrregularTransObj_h */
+

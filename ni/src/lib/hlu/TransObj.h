@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.6 1995-04-07 10:44:07 boote Exp $
+ *      $Id: TransObj.h,v 1.7 1995-05-03 03:11:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
 #define  _NTransObj_h
 
 #include <ncarg/hlu/Base.h>
-
 
 #define NhlNtrOutOfRangeF	"trOutOfRangeF"
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"

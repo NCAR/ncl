@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.45 1995-04-29 18:53:49 boote Exp $
+ *      $Id: XyPlot.c,v 1.46 1995-05-03 03:11:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3490,7 +3490,7 @@ ComputeDataExtents
  *		for the XyPlot. For log and linear plots the tranformation
  *		object is not destroyed when changes in rsources affecting
  *		the tranformation are changed (i.e. data extents). However,
- *		IrregularType2TransObjs have to be freed whenever the 
+ *		IrregularTransObjs have to be freed whenever the 
  *		data extent increases but not when it decreases.  The 
  *		LogLinTransObjs are only destroyed when the style is switched
  *		from log or linear to irregular.  This function uses two 
@@ -3602,14 +3602,13 @@ SetUpTransObjs
 
 		if(newxy->y_style == NhlIRREGULAR){
 
-			trans_class = NhlirregularType2TransObjClass;
+			trans_class = NhlirregularTransObjClass;
 			newxy->have_irreg_trans = True;
 
 			gen = newxy->y_irregular_points;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-								gen->data);
-			NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-							gen->len_dimensions[0]);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,gen);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrYAxisType,NhlIRREGULARAXIS);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
 							newxy->y_tension);
 
@@ -3617,34 +3616,19 @@ SetUpTransObjs
 
 				gen = newxy->x_irregular_points;
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-								gen->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
-							gen->len_dimensions[0]);
+								gen);
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtrXAxisType,NhlIRREGULARAXIS);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
 							newxy->x_tension);
 			}
-			else{
-
-				newxy->fake_x = True;
-				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
-				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
-
-				if(newxy->x_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
-				}
-				else if(newxy->x_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
-					NhlSetSArg(&sargs[nargs++],
-							NhlNtrXUseLog,True);
-				}
-
-				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-
+			else if (newxy->x_style == NhlLOG){
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtrXAxisType,NhlLOGAXIS);
+			}
+			else if (newxy->x_style == NhlLINEAR){
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtrXAxisType,NhlLINEARAXIS);
 			}
 		}
 		/*
@@ -3653,37 +3637,27 @@ SetUpTransObjs
 		else{
 			if(newxy->x_style == NhlIRREGULAR){
 
-				trans_class = NhlirregularType2TransObjClass;
+				trans_class = NhlirregularTransObjClass;
 				newxy->have_irreg_trans = True;
 
 				gen = newxy->x_irregular_points;
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-								gen->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
-							gen->len_dimensions[0]);
+								gen);
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtrXAxisType,NhlIRREGULARAXIS);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
 							newxy->x_tension);
 
-				newxy->fake_y = True;
-				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
-				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
-
 				if(newxy->y_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
+					NhlSetSArg(&sargs[nargs++],
+						   NhlNtrYAxisType,
+						   NhlLINEARAXIS);
 				}
 				else if(newxy->y_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
 					NhlSetSArg(&sargs[nargs++],
-							NhlNtrYUseLog,True);
+						   NhlNtrYAxisType,
+						   NhlLOGAXIS);
 				}
-
-				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
-
 			}
 			/*
 			 * X is not IRREG
@@ -3732,107 +3706,40 @@ SetUpTransObjs
 	 * if we are tricking an irreg object into being a log or lin - take
 	 * care of setting the transformation.
 	 */
-	if(newxy->have_irreg_trans){
-		if(newxy->fake_x){
-			if(newxy->x_style == NhlIRREGULAR){
-				newxy->fake_x = False;
-				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-					newxy->x_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
-				newxy->x_irregular_points->len_dimensions[0]);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
-							newxy->x_tension);
-			}
-			else if((newxy->x_style != oldxy->x_style) ||
-				(newxy->x_min < newxy->fake_x_min) ||
-				(newxy->x_max > newxy->fake_x_max)){
-
-				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
-				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
-				if(newxy->x_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
-				}
-				else if(newxy->x_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
-				}
-				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
-			}
+	if (newxy->have_irreg_trans &&
+	   newxy->x_style != oldxy->x_style){
+		if(newxy->x_style == NhlIRREGULAR){
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
+				   newxy->x_irregular_points);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrXAxisType,NhlIRREGULARAXIS);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
+				   newxy->x_tension);
 		}
-		else {
-			if(newxy->x_style != NhlIRREGULAR){
-				newxy->fake_x = True;
-				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
-				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
-				if(newxy->x_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
-				}
-				else if(newxy->x_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
-				}
-				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
+		else if (newxy->x_style == NhlLOG)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrXAxisType,NhlLOGAXIS);
+		else if (newxy->x_style == NhlLINEAR)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrXAxisType,NhlLINEARAXIS);
+	}
 
-			}
+	if (newxy->have_irreg_trans &&
+	    newxy->y_style != oldxy->y_style){
+		if(newxy->y_style == NhlIRREGULAR){
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+				   newxy->y_irregular_points);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrYAxisType,NhlIRREGULARAXIS);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
+				   newxy->y_tension);
 		}
-		if(newxy->fake_y){
-			if(newxy->y_style == NhlIRREGULAR){
-				newxy->fake_y = False;
-				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-					newxy->y_irregular_points->data);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-				newxy->y_irregular_points->len_dimensions[0]);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
-							newxy->y_tension);
-			}
-			else if((newxy->y_style != oldxy->y_style) ||
-				(newxy->y_min < newxy->fake_y_min) ||
-				(newxy->y_max > newxy->fake_y_max)){
-
-				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
-				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
-				if(newxy->y_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
-				}
-				else if(newxy->y_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
-				}
-				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
-			}
-		}
-		else {
-			if(newxy->y_style != NhlIRREGULAR){
-				newxy->fake_y = True;
-				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
-				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
-				if(newxy->y_style == NhlLINEAR){
-					tmpcoords[1] =
-						(tmpcoords[0]+tmpcoords[2])/2.0;
-				}
-				else if(newxy->y_style == NhlLOG){
-					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0]) +
-						log10(tmpcoords[2])) / 2.0);
-				}
-				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-								tmpcoords);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
-
-			}
-		}
+		else if (newxy->y_style == NhlLOG)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrYAxisType,NhlLOGAXIS);
+		else if (newxy->y_style == NhlLINEAR)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtrYAxisType,NhlLINEARAXIS);
 	}
 		
 	if(newxy->x_min != oldxy->x_min)
@@ -3848,24 +3755,6 @@ SetUpTransObjs
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,newxy->x_reverse);
 	if(newxy->y_reverse != oldxy->y_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,newxy->y_reverse);
-
-	if(newxy->x_style != oldxy->x_style){
-		if(newxy->have_irreg_trans)
-			NhlSetSArg(&sargs[nargs++],NhlNtrXUseLog,
-						(newxy->x_style == NhlLOG));
-		else
-			NhlSetSArg(&sargs[nargs++],NhlNtrXLog,
-						(newxy->x_style == NhlLOG));
-	}
-
-	if(newxy->y_style != oldxy->y_style){
-		if(newxy->have_irreg_trans)
-			NhlSetSArg(&sargs[nargs++],NhlNtrYUseLog,
-						(newxy->y_style == NhlLOG));
-		else
-			NhlSetSArg(&sargs[nargs++],NhlNtrYLog,
-						(newxy->y_style == NhlLOG));
-	}
 
 	return NhlALSetValues(newxy->thetrans->base.id,sargs,nargs);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.9 1995-04-07 10:44:09 boote Exp $
+ *      $Id: TransObjP.h,v 1.10 1995-05-03 03:11:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +59,10 @@ NhlLayer 	/* parent */
 
 typedef struct _NhlTransObjLayerPart {
 	float		out_of_range;
-
+/*
+ * Each time the trans obj changes this field is incremented
+ */
+	int		change_count;
 	/*
 	 * These fields are filled in by the "SetTrans" function, and then
 	 * used by the LineTo and CoordToCoord functions.

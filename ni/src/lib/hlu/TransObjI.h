@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.3 1995-04-07 09:36:09 boote Exp $
+ *      $Id: TransObjI.h,v 1.4 1995-05-03 03:11:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,15 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/TransObj.h>
+
+/* 
+ * private get-only resource that allows an object to determine
+ * if the trans obj has changed 
+ */
+
+#define NhlNtrChangeCount	"trChangeCount"
+#define NhlCtrChangeCount	"TrChangeCount"
+
 
 extern NhlErrorTypes _NhlDataLineTo(
 #if	NhlNeedProto

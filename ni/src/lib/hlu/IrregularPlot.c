@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.15 1995-04-07 10:41:52 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.16 1995-05-03 03:11:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -251,7 +251,7 @@ IrregularPlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhlirregularType2TransObjClass,
+	subret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -580,7 +580,7 @@ static NhlErrorTypes SetUpTransObj
 		strcat(buffer,".Trans");
 
 		subret = _NhlVACreateChild(&tmpid,buffer,
-					 NhlirregularType2TransObjClass,
+					 NhlirregularTransObjClass,
 					 (NhlLayer) irnew, NULL);
 
 		ret = MIN(subret,ret);

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.6 1995-04-07 10:41:54 boote Exp $
+ *      $Id: IrregularPlotP.h,v 1.7 1995-05-03 03:11:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,6 @@
 #define _NIrregularPlotP_h
 
 #include <ncarg/hlu/TransformP.h>
-#include <ncarg/hlu/IrregularType2TransObj.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/IrregularPlot.h>
 

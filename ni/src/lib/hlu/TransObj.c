@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.13 1995-04-07 10:44:06 boote Exp $
+ *      $Id: TransObj.c,v 1.14 1995-05-03 03:11:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,9 +30,13 @@ static NhlResource resources[] =  {
 
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
-		NhlTString, "1.0e12",0,NULL }
+		NhlTString, _NhlUSET("1.0e12"),0,NULL },
 
 /* End-documented-resources */
+
+	{ NhlNtrChangeCount, NhlCtrChangeCount, NhlTInteger, sizeof(int),
+		NhlOffset(NhlTransObjLayerRec, trobj.change_count),
+		NhlTImmediate, _NhlUSET((NhlPointer) 0),_NhlRES_GONLY,NULL }
 
 };
 
@@ -146,6 +150,7 @@ TransObjClassPartInit
 		tlc->trobj_class.win_to_compc = sc->trobj_class.win_to_compc;
 	if(tlc->trobj_class.compc_to_win == NhlInheritTransPoint)
 		tlc->trobj_class.compc_to_win = sc->trobj_class.compc_to_win;
+	return NhlNOERROR;
 }
 
 static NhlErrorTypes

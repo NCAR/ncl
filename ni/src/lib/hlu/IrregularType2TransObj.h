@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.h,v 1.4 1995-04-07 10:42:09 boote Exp $
+ *      $Id: IrregularType2TransObj.h,v 1.5 1995-05-03 03:11:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #define NhlCtrXMinF     "TrXMinF"
 #define NhlNtrXMaxF     "trXMaxF"
 #define NhlCtrXMaxF     "TrXMaxF"
+
 #define NhlNtrXCoordPoints	"trXCoordPoints"
 #define NhlCtrXCoordPoints	"TrXCoordPoints"
 #define NhlNtrXInterPoints	"trXInterPoints"
@@ -63,7 +64,6 @@
 #define NhlCtrYUseLog		"TrYUseLog"
 
 
-extern NhlClass NhlirregularType2TransObjClass;
+extern NhlClass	NhlirregularType2TransObjClass;
 
 #endif /* _NIrregularType2TransObj_h */
-

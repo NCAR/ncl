@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.9 1995-04-29 18:53:23 boote Exp $
+ *      $Id: PlotManager.c,v 1.10 1995-05-03 03:11:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,6 @@
 #include <ncarg/hlu/PlotManagerP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
-#include <ncarg/hlu/IrregularType2TransObj.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
@@ -229,41 +228,6 @@ static NhlResource resources[] = {
 		  sizeof(NhlBoolean),
 		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-
-/* 
- * Intercepted TransObj resources
- */
-	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		Oset(x_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		Oset(x_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNtrXLog, NhlCtrXLog,NhlTBoolean, sizeof(NhlBoolean),
-		  Oset(x_log),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
-	{ NhlNtrYLog, NhlCtrYLog,NhlTBoolean, sizeof(NhlBoolean),
-		  Oset(y_log),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
-	{ NhlNtrXReverse, NhlCtrXReverse,NhlTBoolean, sizeof(NhlBoolean),
-		  Oset(x_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
-	{ NhlNtrYReverse, NhlCtrYReverse,NhlTBoolean, sizeof(NhlBoolean),
-		  Oset(y_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL },
-	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
-		Oset(y_tension),
-		NhlTString,_NhlUSET("2.0" ),0,NULL},
-	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
-		Oset(x_tension),
-		NhlTString,_NhlUSET("2.0" ),0,NULL},
-		
 /*
  * Intercepted title resources
  */
@@ -858,6 +822,8 @@ PlotManagerInitialize
 	}
 	ovnew->trans.overlay_object = new;
 	ovnew->trans.trans_obj = parent->trans.trans_obj;
+	ovp->trans_change_count = 0;
+	ovp->trans_changed = True;
 /*
  * Allocate an array to store pointers to the overlay records. 
  * Then allocate an array for the first member element.
@@ -994,11 +960,11 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlPlotManagerLayer		ovnew = (NhlPlotManagerLayer) new;
 	NhlPlotManagerLayer		ovold = (NhlPlotManagerLayer) old;
 	NhlPlotManagerLayerPart	*ovp = &(ovnew->plotmanager);
-	NhlPlotManagerLayerPart	*oovp = &(ovold->plotmanager);
         NhlSArg			sargs[16];
         int			nargs = 0;
 	int			i;
 	NhlBoolean		update_req = False;
+	int			trans_change_count;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
 	    ovp->lbar_width_set = True;
@@ -1015,8 +981,16 @@ static NhlErrorTypes PlotManagerSetValues
 		e_text = "%s: attempt to set create-only resource overridden";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
-	ovnew->trans.trans_obj = ovnew->trans.overlay_trans_obj;
 
+	subret = NhlVAGetValues(ovnew->trans.trans_obj->base.id,
+				NhlNtrChangeCount,&trans_change_count,
+				NULL);
+	if (trans_change_count != ovp->trans_change_count ||
+	    ovnew->trans.trans_obj != ovnew->trans.overlay_trans_obj)
+		ovp->trans_changed = True;
+	
+	ovnew->trans.trans_obj = ovnew->trans.overlay_trans_obj;
+	ovp->trans_change_count = trans_change_count;
 /* 
  * The annotation children can only be created during initialization
  */
@@ -1121,7 +1095,6 @@ static NhlErrorTypes PlotManagerSetValues
 		return ret;
 	}
 
-
 /*
  * Only a master overlay with member plots needs to execute the remaining code
  */
@@ -1143,16 +1116,7 @@ static NhlErrorTypes PlotManagerSetValues
  * with member overlay plots need to be updated.
  */
 	if (ovp->update_req ||
-	    (ovp->x_log != oovp->x_log) ||
-	    (ovp->y_log != oovp->y_log) ||
-	    (ovp->x_min != oovp->x_min) ||
-	    (ovp->y_min != oovp->y_min) ||
-	    (ovp->x_max != oovp->x_max) ||
-	    (ovp->y_max != oovp->y_max) ||
-	    (ovp->x_reverse != oovp->x_reverse) ||
-	    (ovp->y_reverse != oovp->y_reverse) ||
-	    (ovp->x_tension != oovp->x_tension) ||
-	    (ovp->y_tension != oovp->y_tension)) {
+	    ovp->trans_changed) {
 		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 		update_req = True;
 	}
@@ -3385,17 +3349,15 @@ ManageTickMarks
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[ovTMARGCOUNT];
         int			nargs = 0;
-	NhlLayer			trobj;
+	NhlLayer		trobj;
 	NhlString		trobj_name;
-	float			x_irr[NhlOV_IRR_COUNT], y_irr[NhlOV_IRR_COUNT];
-	float			*x_irrp, *y_irrp;
-	NhlBoolean		set = False;
-	int			i, count = 2, status = 0;
-	float			*xmiss = NULL, *ymiss = NULL; 
-	float			out_of_range;
-	NhlTickMarkStyle	tm_style = NhlLINEAR;
-	NhlBoolean		x_log,y_log;
+	NhlBoolean		x_log,y_log,x_reverse,y_reverse;
+	float			x_min,x_max,y_min,y_max;
 	float			x_tension,y_tension;
+	NhlBoolean		view_changed = False;
+	float			d_left,d_right,d_bottom,d_top;
+	NhlAxisType		y_axis,x_axis;
+	float			*x_coord = NULL,*y_coord = NULL;
 
 	entry_name = (init) ? "PlotManagerInitialize" : "PlotManagerSetValues";
 
@@ -3404,9 +3366,14 @@ ManageTickMarks
  */
 	anno_rec->status = ovp->display_tickmarks;
 
+	if (ovnew->view.x != ovold->view.x ||
+	    ovnew->view.y != ovold->view.y ||
+	    ovnew->view.width != ovold->view.width ||
+	    ovnew->view.height != ovold->view.height)
+		view_changed = True;
 /*
- * If not displaying tickmarks just call the SetValues function --
- * this call is only to avoid the no set values called error.
+ * If not displaying tickmarks or if the trans object and the view have
+ * not changed just call the SetValues function
  */
 	if (! init) {
 		if (ovp->tickmarks == NULL) {
@@ -3414,7 +3381,8 @@ ManageTickMarks
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(NhlFATAL);
 		}
-		if (ovp->display_tickmarks == NhlNEVER) {
+		if (ovp->display_tickmarks == NhlNEVER ||
+		    (! ovp->trans_changed && ! view_changed)) {
 			return _NhlALSetValuesChild(ovp->tickmarks->base.id,
 						    (NhlLayer)ovnew,
 						    sargs,nargs);
@@ -3425,89 +3393,9 @@ ManageTickMarks
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
 	}
-	
-	if (ovp->x_irr != NULL) {
-		x_irrp = (float *) ovp->x_irr->data;
-	}
-	else {
-		count = NhlOV_IRR_COUNT;
-		x_irrp = (float *) NhlMalloc(count * sizeof(float));
-		if (x_irrp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		memset((void*)x_irrp,0,count * sizeof(float));
-		ovp->x_irr = NhlCreateGenArray((NhlPointer)x_irrp,
-					       NhlTFloat,sizeof(float),
-					       1,&count);
-		if (ovp->x_irr == NULL) {
-			e_text = "%s: error creating %s GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNtmXBIrregularPoints);
-			return NhlFATAL;
-		}
-		ovp->x_irr->my_data  = True;
-		
-	}
-	if (ovp->y_irr != NULL) {
-		y_irrp = (float *) ovp->y_irr->data;
-	}
-	else {
-		count = NhlOV_IRR_COUNT;
-		y_irrp = (float *) NhlMalloc(count * sizeof(float));
-		if (y_irrp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		memset((void*)y_irrp,0,count * sizeof(float));
-		ovp->y_irr = NhlCreateGenArray((NhlPointer)y_irrp,
-					       NhlTFloat,sizeof(float),
-					       1,&count);
-		if (ovp->y_irr == NULL) {
-			e_text = "%s: error creating %s GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNtmXBIrregularPoints);
-			return NhlFATAL;
-		}
-		ovp->y_irr->my_data  = True;
-	}
-
-	if (tfp->overlay_status == _tfCurrentOverlayMember) {
-		subret = NhlVAGetValues(tfp->overlay_object->base.id,
-				      NhlNtrXLog,&x_log,
-				      NhlNtrYLog,&y_log,
-				      NhlNtrXTensionF, &x_tension,
-				      NhlNtrYTensionF, &y_tension,
-				      NULL);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			e_text = "%s: error getting trans object values";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	else {
-		x_log = ovp->x_log;
-		y_log = ovp->y_log;
-		x_tension = ovp->x_tension;
-		y_tension = ovp->y_tension;
-	}
-	
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
-	if (trobj_name == 
-	    NhllogLinTransObjClass->base_class.class_name) {
-		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
-		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
-	}
-	else if (trobj_name ==
-		 NhlirregularTransObjClass->base_class.class_name) {
-		ovp->x_tm_style = NhlLINEAR;
-		ovp->y_tm_style = NhlLINEAR;
-	}
-	else if (trobj_name ==
-		 NhlmapTransObjClass->base_class.class_name) {
+	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -3525,12 +3413,76 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-	else if (trobj_name== NhlirregularType2TransObjClass->base_class.class_name) {
-		tm_style = NhlIRREGULAR;
-		ovp->x_tm_style = NhlIRREGULAR;
-		ovp->y_tm_style = NhlIRREGULAR;
-		ovp->x_tension = x_tension;
-		ovp->y_tension = y_tension;
+	else if (trobj_name == 
+		 NhllogLinTransObjClass->base_class.class_name) {
+		NhlVAGetValues(trobj->base.id,
+			       NhlNtrXMinF,&x_min,
+			       NhlNtrXMaxF,&x_max,
+			       NhlNtrXLog,&x_log,
+			       NhlNtrXReverse,&x_reverse,
+			       NhlNtrYMinF,&y_min,
+			       NhlNtrYMaxF,&y_max,
+			       NhlNtrYLog,&y_log,
+			       NhlNtrYReverse,&y_reverse,
+			       NULL);
+		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
+		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
+	}
+	else if (trobj_name== 
+		 NhlirregularTransObjClass->base_class.class_name) {
+		NhlVAGetValues(trobj->base.id,
+			       NhlNtrXMinF,&x_min,
+			       NhlNtrXMaxF,&x_max,
+			       NhlNtrXAxisType,&x_axis,
+			       NhlNtrXReverse,&x_reverse,
+			       NhlNtrXCoordPoints,&x_coord,
+			       NhlNtrXTensionF,&x_tension,
+			       NhlNtrYMinF,&y_min,
+			       NhlNtrYMaxF,&y_max,
+			       NhlNtrYAxisType,&y_axis,
+			       NhlNtrYReverse,&y_reverse,
+			       NhlNtrYCoordPoints,&y_coord,
+			       NhlNtrYTensionF,&y_tension,
+			       NULL);
+
+		switch (x_axis) {
+		case NhlLINEARAXIS:
+			ovp->x_tm_style = NhlLINEAR;
+			break;
+		case NhlLOGAXIS:
+			ovp->x_tm_style = NhlLOG;
+			break;
+		case NhlIRREGULARAXIS:
+			ovp->x_tm_style = NhlIRREGULAR;
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXBIrregularPoints,x_coord);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTIrregularPoints,x_coord);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXBIrrTensionF,x_tension);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTIrrTensionF,x_tension);
+			break;
+		}
+		switch (y_axis) {
+		case NhlLINEARAXIS:
+			ovp->y_tm_style = NhlLINEAR;
+			break;
+		case NhlLOGAXIS:
+			ovp->y_tm_style = NhlLOG;
+			break;
+		case NhlIRREGULARAXIS:
+			ovp->y_tm_style = NhlIRREGULAR;
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYLIrregularPoints,y_coord);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRIrregularPoints,y_coord);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYLIrrTensionF,y_tension);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRIrrTensionF,y_tension);
+			break;
+		}
 	}
 	else {
 		e_text = 
@@ -3550,74 +3502,32 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-
-	if (tm_style == NhlLINEAR) {
-		count = 2;
-		x_irr[0] = ovnew->view.x;
-		y_irr[0] = ovnew->view.y - ovnew->view.height;
-		x_irr[1] = ovnew->view.x + ovnew->view.width;
-		y_irr[1] = ovnew->view.y;
+	if (x_reverse) {
+		d_left = x_max; 
+		d_right = x_min;
 	}
-	else if (tm_style == NhlIRREGULAR) {
-		count = NhlOV_IRR_COUNT;
-		for (i=0; i < count - 1; i++) {
-			x_irr[i] = ovnew->view.x + ovnew->view.width * 
-				(float) i / (count - 1.0);
-			y_irr[i] = ovnew->view.y - ovnew->view.height +
-				ovnew->view.height * (float) i / (count - 1.0);
-		}
-		x_irr[count - 1] = ovnew->view.x + ovnew->view.width;
-		y_irr[count - 1] = ovnew->view.y;
+	else {
+		d_left = x_min; 
+		d_right = x_max;
+	}
+	if (y_reverse) {
+		d_bottom = y_max; 
+		d_top = y_min;
+	}
+	else {
+		d_bottom = y_min; 
+		d_top = y_max;
 	}
 
-	subret = NhlNDCToData(ovp->pm_recs[0]->plot->base.id,
-			      x_irr,y_irr,count,x_irr,y_irr,
-			      xmiss,ymiss,&status,&out_of_range);
-	ret = MIN(ret,subret);
-	if (status  || ret < NhlWARNING) {
-		e_text = 
-		   "%s: can't transform NDC to Data; turning tick marks off";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		if (init) {
-			anno_rec->status = 
-				ovp->display_tickmarks = NhlNOCREATE;
-			return ret;
-		}
-		else {
-			anno_rec->status = 
-				ovp->display_tickmarks =  NhlNEVER;
-			subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
-						      (NhlLayer)ovnew,
-						      sargs,nargs);
-			return MIN(subret,ret);
-		}
-	}
 
-	for (i=0; i < count; i++)
-		if (x_irr[i] != x_irrp[i] || y_irr[i] != y_irrp[i]) {
-			set = True;
-			break;
-		}
-
-	memcpy((void*)x_irrp,(void*)x_irr,count*sizeof(float));
-	memcpy((void*)y_irrp,(void*)y_irr,count*sizeof(float));
-
-	if (set) {
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,x_irr[0]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,x_irr[count-1]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataBottomF,y_irr[0]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,y_irr[count-1]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBIrregularPoints,ovp->x_irr);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLIrregularPoints,ovp->y_irr);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,x_irr[0]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,x_irr[count-1]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,y_irr[0]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,y_irr[count-1]);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTIrregularPoints,ovp->x_irr);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRIrregularPoints,ovp->y_irr);
-	}
-		 
+	NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
+	NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
+	NhlSetSArg(&sargs[nargs++],NhlNtmYLDataBottomF,d_bottom);
+	NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
+	NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
+	NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
+	NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,d_bottom);
+	NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
 		 
 /*
  * If no tickmark object exists, create it; otherwise just set the relevant
@@ -3632,12 +3542,8 @@ ManageTickMarks
 		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovnew->view.height);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLStyle,ovp->y_tm_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBStyle,ovp->x_tm_style);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBIrrTensionF,ovp->x_tension);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLIrrTensionF,ovp->y_tension);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYRStyle,ovp->y_tm_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXTStyle,ovp->x_tm_style);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTIrrTensionF,ovp->x_tension);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRIrrTensionF,ovp->y_tension);
 
 		if (nargs >= ovTMARGCOUNT) {
 			e_text = "%s: TickMark setargs array exceeded";
@@ -3684,20 +3590,6 @@ ManageTickMarks
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYRStyle,ovp->y_tm_style);
 		}
-		if (ovp->x_tension != oovp->x_tension) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmXBIrrTensionF,ovp->x_tension);
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmXTIrrTensionF,ovp->x_tension);
-		}
-		if (ovp->y_tension != oovp->y_tension) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmYLIrrTensionF,ovp->y_tension);
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmYRIrrTensionF,ovp->y_tension);
-		}
-
-
 		if (nargs >= ovTMARGCOUNT) {
 			e_text = "%s: TickMark setargs array exceeded";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -4729,7 +4621,8 @@ NhlErrorTypes NhlAddOverlay
 		}
 
 		subret = NhlVAGetValues(plot_tfp->overlay_object->base.id,
-				      NhlNpmPlotManagerRecs, &ga, NULL);
+					NhlNpmPlotManagerRecs,&ga,
+					NULL);
 
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			return ret;
@@ -6095,7 +5988,8 @@ RestoreOverlayBase
 	}
 
 	subret = NhlVAGetValues(plot_ovl->base.id,
-			      NhlNpmPlotManagerRecs, &ga, NULL);
+				NhlNpmPlotManagerRecs,&ga,
+				NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		return ret;

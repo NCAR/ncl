@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.20 1995-04-29 18:53:16 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.21 1995-05-03 03:11:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -230,6 +230,7 @@ static NhlErrorTypes LlTransSetValues
 #endif
 {
 	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
+	NhlLogLinTransObjLayer lold = (NhlLogLinTransObjLayer) old;
 	float tmp;
 
 	lnew->lltrans.ul = lnew->lltrans.x_min;
@@ -271,6 +272,14 @@ static NhlErrorTypes LlTransSetValues
 	} else {
 		lnew->lltrans.log_lin_value = 1;
 	}
+
+	if (lnew->lltrans.ul != lold->lltrans.ul ||
+	    lnew->lltrans.ur != lold->lltrans.ur ||
+	    lnew->lltrans.ub != lold->lltrans.ub ||
+	    lnew->lltrans.ut != lold->lltrans.ut ||
+	    lnew->lltrans.log_lin_value != lold->lltrans.log_lin_value)
+		lnew->trobj.change_count++;
+
 	return(NhlNOERROR);
 
 }
@@ -305,6 +314,7 @@ static NhlErrorTypes LlTransInitialize
 	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
 	float tmp;
 
+	lnew->trobj.change_count++;
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
 	lnew->lltrans.ut = lnew->lltrans.y_max;
