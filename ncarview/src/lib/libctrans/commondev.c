@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.22 1993-04-27 20:32:28 clyne Exp $
+ *	$Id: commondev.c,v 1.23 1993-06-28 19:39:25 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -755,6 +755,10 @@ CGMC *c;
  *		NOT be invoked.
  */
 
+#define	DASH	'-'
+#define	DOT	'.'
+#define	SPACE	' '
+
 int	ComLineSim (x1,y1,x2,y2)
 	VDCtype	x1,y1,x2,y2;
 {
@@ -763,25 +767,35 @@ int	ComLineSim (x1,y1,x2,y2)
 					 * needed to make dots and dashes
 					 */
 	float	len,			/* length of entire line */
-		seglen,			/* length of dot or dash segment */
-		x_space, y_space;	/* x,y coordinates for placements of
-					 * dots and dashes
-					 */
+		seglen;			/* length of dot or dash segment */
+	float	x,y;
+	float	partial;
+	const	char	*pptr;		/* pattern pointer	*/
+	const	char	*pattern;	/* dash/dot pattern	*/
+
+	static	const char	dash_pattern[] = {
+		DASH, SPACE, '\0'
+	};
+	static	const char	dot_pattern[] = {
+		DOT, SPACE, '\0'
+	};
+	static	const char	dash_dot_pattern[] = {
+		DASH, DOT, SPACE, '\0'
+	};
+	static	const char	dash_dot_dot_pattern[] = {
+		DASH, DOT, DOT, SPACE, '\0'
+	};
  
-	int	inc,		/*number segment that will fit in the line*/
-		i;
-
-	VDCtype	xtemp, ytemp;
-
-
-
-	boolean	dash = TRUE;	/*indicates dot or dash		*/
-
 	seglen = (XMAX - XMIN) * 0.01;	/*seglen is 0.01*VDC extent	*/
 
-	/*want to draw in positive x direction to simplify case statements	*/
-	if(x2<x1) { 	xtemp = x1; x1 = x2; x2 = xtemp;
-			ytemp = y1; y1 = y2; y2 = ytemp;
+	/*
+	 * want to draw in positive x direction to simplify case statements
+	 */
+	if(x2 < x1) { 	
+		VDCtype xtemp, ytemp;
+
+		xtemp = x1; x1 = x2; x2 = xtemp;
+		ytemp = y1; y1 = y2; y2 = ytemp;
 	}
 
 	/* calculate length of line	*/
@@ -791,109 +805,71 @@ int	ComLineSim (x1,y1,x2,y2)
 	delta_x = seglen*(x2-x1)/len;
 	delta_y = seglen*(y2-y1)/len;
 
-	x_space = x1; y_space = y1;	/*begining of line	*/
-
-	inc = len/seglen;
 
 	switch (LINE_TYPE) {
-	case 2:	/*line type is dash	*/
-		for(i=0;i<inc/2;i++) {
-			xtemp = (VDCtype)x_space;
-			ytemp = (VDCtype)y_space;
-			x_space += delta_x; y_space += delta_y;
-
-			/*output the dash	*/
-			dev->line(xtemp,ytemp,(VDCtype)x_space,(VDCtype)y_space);
-			x_space += delta_x; y_space += delta_y;
-		}
+	case	L_DASH:
+		pattern =  dash_pattern;
 		break;
-	case 3:	/*line type is dot	*/
-		dash = FALSE;
-		for(i=0;i<inc;i++) {
-			/*output the dot	*/
-			dev->line((VDCtype)x_space,(VDCtype)y_space,
-				(VDCtype)x_space,(VDCtype)y_space);
-			x_space += delta_x; y_space += delta_y;
-		}
-		break;
-	case 4:	/*line type is dash dot	*/
-		i=0;
-		while(i < inc) {
-			if (dash) {
-				xtemp = (VDCtype)x_space;
-				ytemp = (VDCtype)y_space;
-				x_space += delta_x; y_space += delta_y;
 
-				/*output the dash	*/
-				dev->line(xtemp,ytemp,
-					(VDCtype)x_space,(VDCtype)y_space);
-				x_space += delta_x; y_space += delta_y;
-				dash = FALSE;
-				i+=2;
-			}
-			else {
-				/*output the dot	*/
-				dev->line((VDCtype)x_space,(VDCtype)y_space,
-					(VDCtype)x_space,(VDCtype)y_space);
-				x_space += delta_x; y_space += delta_y;
-				dash = TRUE;
-				i++;
-			}
-		}
+	case	L_DOT:
+		pattern =  dot_pattern;
 		break;
-				
-	case 5: /*line type is dash dot	dot	*/
-		for(i=0;i<inc/2;i++) {
-			if (dash) {
-				xtemp = (VDCtype)x_space;
-				ytemp = (VDCtype)y_space;
-				x_space += delta_x; y_space += delta_y;
 
-				/*output the dash	*/
-				dev->line(xtemp,ytemp,
-					(VDCtype)x_space,(VDCtype)y_space);
-				x_space += delta_x; y_space += delta_y;
-				dash = FALSE;
-			}
-			else {
-				/*output the first dot	*/
-				dev->line((VDCtype)x_space,(VDCtype)y_space,
-					(VDCtype)x_space,(VDCtype)y_space);
-				x_space += delta_x; y_space += delta_y;
-
-				/*output the second dot	*/
-				dev->line((VDCtype)x_space,(VDCtype)y_space,
-					(VDCtype)x_space,(VDCtype)y_space);
-				x_space += delta_x; y_space += delta_y;
-				dash = TRUE;
-			}
-		}
+	case	L_DASH_DOT:
+		pattern =  dash_dot_pattern;
 		break;
+
+	case	L_DASH_DOT_DOT:
+		pattern =  dash_dot_dot_pattern;
+		break;
+
 	default:
 		ESprintf(EINVAL, "Illegal line type(%d)", LINE_TYPE);
 		return(-1);
 
 	}
-	/* see if room for one more dash or dot as case may be	*/
-	if (dash) {	/*we're printing dashed	*/
-		if (((x_space+delta_x)< x2) && ((y_space+delta_x) < y2)) {
-			dev->line((VDCtype) x_space, (VDCtype) y_space, 
-				(VDCtype) (x_space+delta_x), 
-				(VDCtype) (y_space+delta_y));
-		} 
-		else
-			dev->line((VDCtype) x_space,(VDCtype) y_space, x2, y2);
-	}
-	else {		/*we're printing dots	*/
 
-		if ((x_space < x2) && (y_space < y2)) {
-			dev->line((VDCtype) x_space, (VDCtype) y_space, 
-				(VDCtype) (x_space), (VDCtype) (y_space));
-		} 
-		else
-			dev->line(x2,y2, x2, y2);
+	/*
+	 * step through the line in $segment size increments. Draw
+	 * whatever is appropriate for each segment, e.g. dash, dot
+	 * or space
+	 */
+	for(partial=0.0, x=x1, y=y1, pptr=pattern; 
+		(partial+seglen)<=len; 
+		partial+=seglen, x+=delta_x, y+=delta_y, pptr++) {
+
+		if (! *pptr) pptr = pattern;	/* reset pattern	*/
+
+		switch (*pptr) {
+		case	DASH:
+			dev->line(
+				(VDCtype) x, (VDCtype) y, 
+				(VDCtype) (x + delta_x), (VDCtype) (y + delta_y)
+			);
+			break;
+
+		case	DOT:
+			dev->line(
+				(VDCtype) (x + delta_x),(VDCtype) (y + delta_y),
+				(VDCtype) (x + delta_x),(VDCtype) (y + delta_y)
+			);
+			break;
+
+		case	SPACE:
+			break;
+		}
+		
 	}
 
+	if (! *pptr) pptr = pattern;	/* reset pattern	*/
+
+	/*
+	 * draw the final *partial* dash if necessary
+	 */
+	if (*pptr == DASH) {
+		dev->line((VDCtype) x, (VDCtype) y, x2, y2);
+	}
+		
 	return (0);
 }
 
