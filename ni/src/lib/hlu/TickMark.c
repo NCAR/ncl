@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.24 1994-12-16 20:04:47 boote Exp $
+ *      $Id: TickMark.c,v 1.25 1995-01-04 21:27:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/MultiText.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/Workstation.h>
 
 
 /* resource list definition */
@@ -1874,127 +1875,115 @@ NhlTickMarkLayer tlayer;
 
 	if(tlayer->tick.x_major_grid){
 		if(tlayer->tick.x_b_on) {
-			gset_line_colr_ind((Gint) _NhlGetGksCi(
-				tlayer->base.wkptr, 
-				tlayer->tick.x_major_grid_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.x_major_grid_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_b_nmajor; i++) {
-				c_line(tlayer->tick.x_b_major_ndc_locs[i],
-					yb,
-					tlayer->tick.x_b_major_ndc_locs[i],
-					yt);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],yb,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],yt,0);
 			}
 		} else if(tlayer->tick.x_t_on) {
-			gset_line_colr_ind((Gint) _NhlGetGksCi(
-				tlayer->base.wkptr, 
-				tlayer->tick.x_major_grid_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.x_major_grid_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_t_nmajor; i++) {
-				c_line(tlayer->tick.x_t_major_ndc_locs[i],
-					yb,
-					tlayer->tick.x_t_major_ndc_locs[i],
-					yt);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],yb,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],yt,0);
 			}
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis grid");
 			ret1 = NhlWARNING;
 		}
-		c_sflush();
 	}
 	if(tlayer->tick.x_minor_grid) {
 		if((tlayer->tick.x_b_on)&&(tlayer->tick.x_b_minor_on)) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-                                tlayer->base.wkptr,
-                                tlayer->tick.x_minor_grid_line_color));
-                        gset_linewidth((Gdouble)
-                                tlayer->tick.x_minor_grid_thickness);
-			for(i=0; i<tlayer->tick.x_b_nminor; i++) {
-				c_line(tlayer->tick.x_b_minor_ndc_locs[i],	
-					yb,
-					tlayer->tick.x_b_minor_ndc_locs[i],
-					yt);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+			for(i = 0; i < tlayer->tick.x_b_nminor; i++) {
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i],yb,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i],yt,0);
 			}
 		} else if((tlayer->tick.x_t_on)&&(tlayer->tick.x_t_minor_on)){
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-                                tlayer->base.wkptr,
-                                tlayer->tick.x_minor_grid_line_color));
-                        gset_linewidth((Gdouble)
-                                tlayer->tick.x_minor_grid_thickness);
-			for(i=0; i<tlayer->tick.x_b_nminor; i++) {
-				c_line(tlayer->tick.x_b_minor_ndc_locs[i],	
-					yb,
-					tlayer->tick.x_b_minor_ndc_locs[i],
-					yt);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+			for(i = 0; i < tlayer->tick.x_t_nminor; i++) {
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i],yb,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i],yt,0);
 			}
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis minor grid");
 			ret1 = NhlWARNING;
 		}
-		c_sflush();
 	}
 	if(tlayer->tick.y_major_grid){
 		if(tlayer->tick.y_l_on) {
-			gset_line_colr_ind((Gint) _NhlGetGksCi(
-				tlayer->base.wkptr, 
-				tlayer->tick.y_major_grid_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.y_major_grid_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_l_nmajor; i++) {
-				c_line(xl,
-					tlayer->tick.y_l_major_ndc_locs[i],
-					xr,
-					tlayer->tick.y_l_major_ndc_locs[i]);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_l_major_ndc_locs[i],1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_major_ndc_locs[i],0);
 			}
 		} else if(tlayer->tick.y_r_on) {
-			gset_line_colr_ind((Gint) _NhlGetGksCi(
-				tlayer->base.wkptr, 
-				tlayer->tick.y_major_grid_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.y_major_grid_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_r_nmajor; i++) {
-				c_line(xl,
-					tlayer->tick.y_r_major_ndc_locs[i],
-					xr,
-					tlayer->tick.y_r_major_ndc_locs[i]);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_r_major_ndc_locs[i],1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_r_major_ndc_locs[i],0);
 			}
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis grid");
 			ret1 = NhlWARNING;
 		}
-		c_sflush();
 	}
 	if(tlayer->tick.y_minor_grid) {
 		if((tlayer->tick.y_l_on)&&(tlayer->tick.y_l_minor_on)) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-                                tlayer->base.wkptr,
-                                tlayer->tick.y_minor_grid_line_color));
-                        gset_linewidth((Gdouble)
-                                tlayer->tick.y_minor_grid_thickness);
-			for(i=0; i<tlayer->tick.y_l_nminor; i++) {
-				c_line(xl,
-					tlayer->tick.y_l_minor_ndc_locs[i],
-					xr,
-					tlayer->tick.y_l_minor_ndc_locs[i]);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+			for(i = 0; i < tlayer->tick.y_l_nminor; i++) {
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_l_minor_ndc_locs[i],1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_minor_ndc_locs[i],0);
 			}
 		} else if((tlayer->tick.y_r_on)&&(tlayer->tick.y_r_minor_on)){
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-                                tlayer->base.wkptr,
-                                tlayer->tick.y_minor_grid_line_color));
-                        gset_linewidth((Gdouble)
-                                tlayer->tick.y_minor_grid_thickness);
-			for(i=0; i<tlayer->tick.y_r_nminor; i++) {
-				c_line(xl,
-					tlayer->tick.y_r_minor_ndc_locs[i],
-					xr,
-					tlayer->tick.y_r_minor_ndc_locs[i]);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
+				NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
+				NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+			for(i = 0; i < tlayer->tick.y_r_nminor; i++) {
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_r_minor_ndc_locs[i],1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_r_minor_ndc_locs[i],0);
 			}
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis minor grid");
 			ret1 = NhlWARNING;
 		}
-		c_sflush();
 	}
 
 	return(MIN(ret,ret1));
@@ -2041,111 +2030,124 @@ NhlTickMarkLayer tlayer;
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 	
 	if(tlayer->tick.x_b_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
-                        tlayer->tick.x_b_major_line_color));
-		gset_linewidth((Gdouble)tlayer->tick.x_b_major_thickness);
+		NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlNwkLineColor,tlayer->tick.x_b_major_line_color,
+			NhlNwkDashPattern,0,
+			NhlNwkLineThicknessF,tlayer->tick.x_b_major_thickness,
+			NULL);
+		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.x_b_nmajor; i++) {
-			c_line(tlayer->tick.x_b_major_ndc_locs[i],
-				yb - tlayer->tick.x_b_major_outward_length,
-				tlayer->tick.x_b_major_ndc_locs[i],
-				(yb+tlayer->tick.x_b_major_length) 
-				- tlayer->tick.x_b_major_outward_length);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],
+					yb - tlayer->tick.x_b_major_outward_length,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],
+					(yb+tlayer->tick.x_b_major_length) - tlayer->tick.x_b_major_outward_length,0);
+
 		}
-		c_sflush();
 		if(tlayer->tick.x_b_minor_on) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
-				, tlayer->tick.x_b_minor_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.x_b_minor_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_b_minor_line_color,
+				NhlNwkDashPattern,0,
+				NhlNwkLineThicknessF,tlayer->tick.x_b_minor_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_b_nminor; i++){
-			c_line(tlayer->tick.x_b_minor_ndc_locs[i],
-				yb - tlayer->tick.x_b_minor_outward_length,
-				tlayer->tick.x_b_minor_ndc_locs[i],
-				(yb + tlayer->tick.x_b_minor_length)
-				- tlayer->tick.x_b_minor_outward_length);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i], 
+					yb - tlayer->tick.x_b_minor_outward_length,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i], 
+					(yb + tlayer->tick.x_b_minor_length) - tlayer->tick.x_b_minor_outward_length,0);
 			}
-		c_sflush();
 		}
 	}
 	if(tlayer->tick.x_t_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
-                        tlayer->tick.x_t_major_line_color));
-		gset_linewidth((Gdouble)tlayer->tick.x_t_major_thickness);
+		NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlNwkLineColor,tlayer->tick.x_t_major_line_color,
+			NhlNwkDashPattern,0,
+			NhlNwkLineThicknessF,tlayer->tick.x_t_major_thickness,
+			NULL);
+		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.x_t_nmajor; i++) {
-			c_line(tlayer->tick.x_t_major_ndc_locs[i],
-				yt + tlayer->tick.x_t_major_outward_length,
-				tlayer->tick.x_t_major_ndc_locs[i],
-				(yt-tlayer->tick.x_t_major_length) 
-				+ tlayer->tick.x_t_major_outward_length);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],
+					yt + tlayer->tick.x_t_major_outward_length,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],
+					(yt-tlayer->tick.x_t_major_length) + tlayer->tick.x_t_major_outward_length,0);
 		}
-		c_sflush();
 		if(tlayer->tick.x_t_minor_on) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
-				, tlayer->tick.x_t_minor_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.x_t_minor_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.x_t_minor_line_color,
+				NhlNwkDashPattern,0,
+				NhlNwkLineThicknessF,tlayer->tick.x_t_minor_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_t_nminor; i++){
-			c_line(tlayer->tick.x_t_minor_ndc_locs[i],
-				yt + tlayer->tick.x_t_minor_outward_length,
-				tlayer->tick.x_t_minor_ndc_locs[i],
-				(yt - tlayer->tick.x_t_minor_length)
-				+ tlayer->tick.x_t_minor_outward_length);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i], 
+					yt + tlayer->tick.x_t_minor_outward_length,1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i], 
+					(yt - tlayer->tick.x_t_minor_length) + tlayer->tick.x_t_minor_outward_length,0);
 			}
-		c_sflush();
 		}
 	}
 	if(tlayer->tick.y_l_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
-                        tlayer->tick.y_l_major_line_color));
-		gset_linewidth((Gdouble)tlayer->tick.y_l_major_thickness);
-		for(i=0; i < tlayer->tick.y_l_nmajor; i++) {
-			c_line(xl - tlayer->tick.y_l_major_outward_length,
-				tlayer->tick.y_l_major_ndc_locs[i],
-				xl + tlayer->tick.y_l_major_length 
-				- tlayer->tick.y_l_major_outward_length,
-				tlayer->tick.y_l_major_ndc_locs[i]);
+		NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlNwkLineColor,tlayer->tick.y_l_major_line_color,
+			NhlNwkDashPattern,0,
+			NhlNwkLineThicknessF,tlayer->tick.y_l_major_thickness,
+			NULL);
+		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+		for(i = 0; i< tlayer->tick.y_l_nmajor; i++) {
+				_NhlWorkstationLineTo( tlayer->base.wkptr, xl - tlayer->tick.y_l_major_outward_length,
+					tlayer->tick.y_l_major_ndc_locs[i],1);
+				_NhlWorkstationLineTo( tlayer->base.wkptr,
+					(xl+tlayer->tick.y_l_major_length) - tlayer->tick.y_l_major_outward_length,
+					tlayer->tick.y_l_major_ndc_locs[i],0);
 		}
-		c_sflush();
 		if(tlayer->tick.y_l_minor_on) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
-				,tlayer->tick.y_l_minor_line_color));
-			gset_linewidth((Gdouble)
-					tlayer->tick.y_l_minor_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_l_minor_line_color,
+				NhlNwkDashPattern,0,
+				NhlNwkLineThicknessF,tlayer->tick.y_l_minor_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_l_nminor; i++){
-			c_line( xl - tlayer->tick.y_l_minor_outward_length,
-				tlayer->tick.y_l_minor_ndc_locs[i],
-				(xl + tlayer->tick.y_l_minor_length)
-				- tlayer->tick.y_l_minor_outward_length,
-				tlayer->tick.y_l_minor_ndc_locs[i]);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,
+					xl - tlayer->tick.y_l_minor_outward_length,
+					tlayer->tick.y_l_minor_ndc_locs[i], 
+					1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,
+					(xl + tlayer->tick.y_l_minor_length) - tlayer->tick.y_l_minor_outward_length,
+					tlayer->tick.y_l_minor_ndc_locs[i],0);
 			}
-		c_sflush();
 		}
 	}
 	if(tlayer->tick.y_r_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
-                        tlayer->tick.y_r_major_line_color));
-		gset_linewidth((Gdouble)tlayer->tick.y_r_major_thickness);
-		for(i=0; i < tlayer->tick.y_r_nmajor; i++) {
-			c_line(xr + tlayer->tick.y_r_major_outward_length,
-				tlayer->tick.y_r_major_ndc_locs[i],
-				xr - tlayer->tick.y_r_major_length 
-				+ tlayer->tick.y_r_major_outward_length,
-				tlayer->tick.y_r_major_ndc_locs[i]);
+		NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlNwkLineColor,tlayer->tick.y_r_major_line_color,
+			NhlNwkDashPattern,0,
+			NhlNwkLineThicknessF,tlayer->tick.y_r_major_thickness,
+			NULL);
+		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
+		for(i = 0; i< tlayer->tick.y_r_nmajor; i++) {
+				_NhlWorkstationLineTo( tlayer->base.wkptr, xr + tlayer->tick.y_r_major_outward_length,
+					tlayer->tick.y_r_major_ndc_locs[i],1);
+				_NhlWorkstationLineTo( tlayer->base.wkptr,
+					(xr-tlayer->tick.y_r_major_length) + tlayer->tick.y_r_major_outward_length,
+					tlayer->tick.y_r_major_ndc_locs[i],0);
 		}
-		c_sflush();
 		if(tlayer->tick.y_r_minor_on) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
-				, tlayer->tick.y_r_minor_line_color));
-			gset_linewidth((Gdouble)
-				tlayer->tick.y_r_minor_thickness);
+			NhlVASetValues(tlayer->base.wkptr->base.id,
+				NhlNwkLineColor,tlayer->tick.y_r_minor_line_color,
+				NhlNwkDashPattern,0,
+				NhlNwkLineThicknessF,tlayer->tick.y_r_minor_thickness,
+				NULL);
+			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_r_nminor; i++){
-			c_line( xr + tlayer->tick.y_r_minor_outward_length,
-				tlayer->tick.y_r_minor_ndc_locs[i],
-				(xr - tlayer->tick.y_r_minor_length)
-				+ tlayer->tick.y_r_minor_outward_length,
-				tlayer->tick.y_r_minor_ndc_locs[i]);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,
+					xr + tlayer->tick.y_r_minor_outward_length,
+					tlayer->tick.y_r_minor_ndc_locs[i], 
+					1);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,
+					(xr - tlayer->tick.y_r_minor_length) + tlayer->tick.y_r_minor_outward_length,
+					tlayer->tick.y_r_minor_ndc_locs[i],0);
 			}
-		c_sflush();
 		}
 	}
 	
@@ -2344,15 +2346,47 @@ static NhlErrorTypes TickMarkGetBB
 {
 	NhlTickMarkLayer tinstance = (NhlTickMarkLayer) instance;
 
-	if((tinstance->tick.xb_multi != NULL)&&(tinstance->tick.x_b_nmajor > 0))
+	if((tinstance->tick.xb_multi != NULL)&&(tinstance->tick.x_b_nmajor > 0)&&(tinstance->tick.x_b_labels_on))
 	_NhlGetBB(tinstance->tick.xb_multi,thebox);
-	if((tinstance->tick.xt_multi != NULL)&&(tinstance->tick.x_t_nmajor > 0))
+	if((tinstance->tick.xt_multi != NULL)&&(tinstance->tick.x_t_nmajor > 0)&&(tinstance->tick.x_t_labels_on))
 	_NhlGetBB(tinstance->tick.xt_multi,thebox);
-	if((tinstance->tick.yl_multi != NULL)&&(tinstance->tick.y_l_nmajor > 0))
+	if((tinstance->tick.yl_multi != NULL)&&(tinstance->tick.y_l_nmajor > 0)&&(tinstance->tick.y_l_labels_on))
 	_NhlGetBB(tinstance->tick.yl_multi,thebox);
-	if((tinstance->tick.yr_multi != NULL)&&(tinstance->tick.y_r_nmajor > 0))
+	if((tinstance->tick.yr_multi != NULL)&&(tinstance->tick.y_r_nmajor > 0)&&(tinstance->tick.y_r_labels_on))
 	_NhlGetBB(tinstance->tick.yr_multi,thebox);
-	
+
+	if(tinstance->tick.x_b_on) {
+		float ext;
+
+		ext = (tinstance->tick.x_b_major_outward_length > tinstance->tick.x_b_minor_outward_length ? tinstance->tick.x_b_major_outward_length : tinstance->tick.x_b_minor_outward_length);
+		if(thebox->b > tinstance->view.y - tinstance->view.height - ext) {
+			thebox->b = tinstance->view.y - tinstance->view.height - ext;
+		}
+	}	
+	if(tinstance->tick.x_t_on) {
+		float ext;
+
+		ext = (tinstance->tick.x_t_major_outward_length > tinstance->tick.x_t_minor_outward_length ? tinstance->tick.x_t_major_outward_length : tinstance->tick.x_t_minor_outward_length);
+		if(thebox->t < tinstance->view.y + ext) {
+			thebox->t = tinstance->view.y + ext;
+		}
+	}	
+	if(tinstance->tick.y_r_on) {
+		float ext;
+
+		ext = (tinstance->tick.y_r_major_outward_length > tinstance->tick.y_r_minor_outward_length ? tinstance->tick.y_r_major_outward_length : tinstance->tick.y_r_minor_outward_length);
+		if(thebox->r < tinstance->view.x + tinstance->view.width + ext) {
+			thebox->r = tinstance->view.x + tinstance->view.width + ext;
+		}
+	}	
+	if(tinstance->tick.y_l_on) {
+		float ext;
+
+		ext = (tinstance->tick.y_l_major_outward_length > tinstance->tick.y_l_minor_outward_length ? tinstance->tick.y_l_major_outward_length : tinstance->tick.y_l_minor_outward_length);
+		if(thebox->l > tinstance->view.x - ext) {
+			thebox->l = tinstance->view.x - ext;
+		}
+	}	
 	return(NhlNOERROR);
 }
 
@@ -6230,6 +6264,13 @@ int		c_or_s;
                 tnew->tick.x_b_ndc_label_y = tnew->view.y - tnew->view.height 
                                 - (DEFAULTOFFSET + tnew->tick.x_b_label_delta) 
 				* tnew->tick.x_b_label_font_height;
+		if(tnew->tick.x_b_on) {
+			if(tnew->tick.x_b_major_outward_length > tnew->tick.x_b_minor_outward_length) {
+				tnew->tick.x_b_ndc_label_y = tnew->tick.x_b_ndc_label_y - tnew->tick.x_b_major_outward_length;
+			} else {
+				tnew->tick.x_b_ndc_label_y = tnew->tick.x_b_ndc_label_y - tnew->tick.x_b_minor_outward_length;
+			}
+		}
 	if((c_or_s == CREATE)||(tnew->tick.xb_multi ==NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".xb_Multi");
@@ -6340,6 +6381,13 @@ int		c_or_s;
                 tnew->tick.x_t_ndc_label_y = 
                         tnew->view.y+(DEFAULTOFFSET+tnew->tick.x_t_label_delta)
 					*tnew->tick.x_t_label_font_height;
+		if(tnew->tick.x_t_on) {
+			if(tnew->tick.x_t_major_outward_length > tnew->tick.x_t_minor_outward_length) {
+				tnew->tick.x_t_ndc_label_y = tnew->tick.x_t_ndc_label_y + tnew->tick.x_t_major_outward_length;
+			} else {
+				tnew->tick.x_t_ndc_label_y = tnew->tick.x_t_ndc_label_y + tnew->tick.x_t_minor_outward_length;
+			}
+		}
 	if((c_or_s == CREATE)||(tnew->tick.xt_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".xt_Multi");
@@ -6445,6 +6493,13 @@ int		c_or_s;
 * Now compute label location
 */
                 tnew->tick.y_l_ndc_label_x = tnew->view.x - (DEFAULTOFFSET +tnew->tick.y_l_label_delta) * tnew->tick.y_l_label_font_height;
+		if(tnew->tick.y_l_on) {
+			if(tnew->tick.y_l_major_outward_length > tnew->tick.y_l_minor_outward_length) {
+				tnew->tick.y_l_ndc_label_x = tnew->tick.y_l_ndc_label_x - tnew->tick.y_l_major_outward_length;
+			} else {
+				tnew->tick.y_l_ndc_label_x = tnew->tick.y_l_ndc_label_x - tnew->tick.y_l_minor_outward_length;
+			}
+		}
 	
 	if((c_or_s == CREATE)||(tnew->tick.yl_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
@@ -6555,6 +6610,13 @@ int		c_or_s;
 */
                 tnew->tick.y_r_ndc_label_x = tnew->view.x+tnew->view.width +
                 (tnew->tick.y_r_label_delta+ DEFAULTOFFSET)*tnew->tick.y_r_label_font_height;
+		if(tnew->tick.y_r_on) {
+			if(tnew->tick.y_r_major_outward_length > tnew->tick.y_r_minor_outward_length) {
+				tnew->tick.y_r_ndc_label_x = tnew->tick.y_r_ndc_label_x + tnew->tick.y_r_major_outward_length;
+			} else {
+				tnew->tick.y_r_ndc_label_x = tnew->tick.y_r_ndc_label_x + tnew->tick.y_r_minor_outward_length;
+			}
+		}
 	if((c_or_s == CREATE)||(tnew->tick.yr_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".yr_Multi");
