@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.6 1996-04-01 05:15:06 boote Exp $
+ *	$Id: xddi.h,v 1.7 1996-08-24 19:38:12 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -43,7 +43,8 @@ typedef	struct	Xddi_	{
 			text_gc,
 			fill_gc,
 			cell_gc,
-			bg_gc;
+			bg_gc,
+			hatch_gc;
 	int		line_index,
 			marker_index,
 			text_index,

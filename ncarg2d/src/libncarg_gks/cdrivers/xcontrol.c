@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.13 1996-05-09 14:42:32 haley Exp $
+ *	$Id: xcontrol.c,v 1.14 1996-08-24 19:38:11 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -333,6 +333,12 @@ init_color
 	gcv.background = xi->color_pal[1];
 	gcv.foreground = xi->color_pal[0];
 	xi->bg_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),&gcv);
+
+	/*
+	 * init hatch_gc to None.  If we use one, we need a depth one drawable
+	 * to create it.
+	 */
+	xi->hatch_gc = None;
 
 	/*
 	 * If the index in these vars change, then the corresponding GC

@@ -1,5 +1,5 @@
 /*
- *	$Id: xoutput.c,v 1.4 1994-06-27 15:52:03 boote Exp $
+ *	$Id: xoutput.c,v 1.5 1996-08-24 19:38:13 boote Exp $
  */
 /*
  *      File:		xoutput.c
@@ -59,7 +59,7 @@ static	hatch_fill
 	int		n,
 	int		hatch_index,
 	GC		fill_gc,
-	GC		bg_gc,
+	GC		*hatch_gc,
 	unsigned int	depth
 )
 #else
@@ -70,7 +70,7 @@ static	hatch_fill
 	int		n;
 	int		hatch_index;
 	GC		fill_gc,
-			bg_gc;
+			*hatch_gc;
 	unsigned int	depth;
 #endif
 {
@@ -87,7 +87,7 @@ static	hatch_fill
 	int	status = 0;
 
 	if (first) {
-		XQueryBestTile(dpy, win, PWIDTH, PHEIGHT,
+		XQueryBestStipple(dpy, win, PWIDTH, PHEIGHT,
                 (unsigned int *) &tile.width, (unsigned int *) &tile.height);
 
 		first = FALSE;
@@ -96,16 +96,25 @@ static	hatch_fill
 
 
 	/*	
-	 *	Create pixmap for tile.
+	 *	Create pixmap for stipple.
 	 *	This needs to be done for each invocation of
-	 *	the polygon routine because once a tile is
+	 *	the polygon routine because once a stipple is
 	 *	set in a GC, X does not allow it to be changed.
 	 */
 	if((tile.tileid = XCreatePixmap(dpy,win,tile.width,tile.height,
-								depth)) == 0){
+								1)) == 0){
 
 		ESprintf(ERR_CRT_PIXMAP, "XCreatePixmap(,,,,)");
 		return(ERR_CRT_PIXMAP);
+	}
+
+	if(!*hatch_gc){
+		*hatch_gc = XCreateGC(dpy,tile.tileid,0,NULL);
+		if(!*hatch_gc){
+			ESprintf(ERR_INTRNL_MEMORY, "XCreateGC(,,,)");
+			XFreePixmap(dpy, tile.tileid);
+			return ERR_INTRNL_MEMORY;
+		}
 	}
 
 	tile.P[1].x = tile.P[2].x = tile.width;
@@ -113,9 +122,12 @@ static	hatch_fill
 
 
 	/*	
-	 * clear the tile with the background gc
+	 * clear the stipple
 	 */
-	XFillPolygon(dpy,tile.tileid,bg_gc, tile.P, 4, Complex,CoordModeOrigin);
+	XSetFunction(dpy,*hatch_gc,GXclear);
+	XFillPolygon(dpy,tile.tileid,*hatch_gc,tile.P,4,Convex,CoordModeOrigin);
+
+	XSetFunction(dpy,*hatch_gc,GXset);
 
 	switch (hatch_index) {
 
@@ -125,49 +137,50 @@ static	hatch_fill
 	case HORIZONTAL_HATCH:
 
 		/* draw new pattern	*/
-		XDrawLine(dpy, tile.tileid, fill_gc, (int) 0,
+		XDrawLine(dpy, tile.tileid, *hatch_gc, (int) 0,
 			tile.height-1, tile.width, tile.height-1);
 
 		break;
 
 	case VERTICAL_HATCH:
-		XDrawLine(dpy, tile.tileid, fill_gc, tile.width-1,
+		XDrawLine(dpy, tile.tileid, *hatch_gc, tile.width-1,
 				0, tile.width-1, tile.height);
 
 		break;
 
 	case POSITIVE_HATCH:
-		XDrawLine(dpy, tile.tileid, fill_gc,tile.width,0,0,tile.height);
+		XDrawLine(dpy,tile.tileid,*hatch_gc,
+				tile.width-1,0,0,tile.height-1);
 		break;
 
 	case NEGATIVE_HATCH:
-		XDrawLine(dpy, tile.tileid, fill_gc,0,0,tile.width,tile.height);
+		XDrawLine(dpy, tile.tileid, *hatch_gc,0,0,tile.width,tile.height);
 		break;
 
 	case HORIZ_VERT_HATCH:
-		XDrawLine(dpy, tile.tileid, fill_gc, 
+		XDrawLine(dpy, tile.tileid, *hatch_gc, 
 			0, tile.height-1, tile.width, tile.height-1);
 
-		XDrawLine(dpy, tile.tileid, fill_gc, 
+		XDrawLine(dpy, tile.tileid, *hatch_gc, 
 			tile.width-1,0, tile.width-1, tile.height);
 		break;
 
 	case POS_NEG_HATCH:
-		XDrawLine(dpy, tile.tileid, fill_gc,tile.width,0,0,tile.height);
-		XDrawLine(dpy, tile.tileid, fill_gc,0,0,tile.width,tile.height);
+		XDrawLine(dpy, tile.tileid, *hatch_gc,tile.width-1,0,0,tile.height-1);
+		XDrawLine(dpy, tile.tileid, *hatch_gc,0,0,tile.width,tile.height);
 		break;
 
 	}
 
 	/* 
-	 * set the GC tile parameter to our tile 
+	 * set the GC stipple parameter to our stipple 
 	 */
-	XSetTile(dpy, fill_gc, tile.tileid);
+	XSetStipple(dpy, fill_gc, tile.tileid);
 
 	/* 
 	 * change the fill style to use the tile 
 	 */
-	XSetFillStyle(dpy, fill_gc, FillTiled);
+	XSetFillStyle(dpy, fill_gc, FillStippled);
 
 	XFillPolygon(dpy, win, fill_gc, pptr, n, Complex, CoordModeOrigin);
 			
@@ -853,12 +866,12 @@ X11_FillArea(gksc)
 		case	HATCH_FILL:
 
 			/*	
-			 *	Hatch indecies are simulated using a fill tile
-			 *	for the area. See section 5.4.3.
+			 *	Hatch indecies are simulated using a fill
+			 *	stipple	for the area. See section 5.4.3.
 			 */
 		
 			status = hatch_fill(dpy,win,pptr,n,hatch_index,gc,
-							xi->bg_gc,xi->depth);
+						&xi->hatch_gc,xi->depth);
 			break;
 
 		default:
