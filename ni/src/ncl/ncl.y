@@ -241,11 +241,12 @@ statement_list :  statement eoln			{
 								if(stat(tmp,&buff) != -1) {
 									tmp_file = fopen(tmp,"r");
 									if(tmp_file != NULL) {
-										tmp_input = (char*)NclMalloc(buff.st_size);
+										tmp_input = (char*)NclMalloc(buff.st_size + 1);
 										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
 											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
 										}
 										fclose(tmp_file);
+										tmp_input[buff.st_size] = (char)0; 
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
 										loading += 1;
@@ -284,11 +285,12 @@ statement_list :  statement eoln			{
 								if(stat(tmp,&buff) != -1) {
 									tmp_file = fopen(tmp,"r");
 									if(tmp_file != NULL) {
-										tmp_input = (char*)NclMalloc(buff.st_size);
+										tmp_input = (char*)NclMalloc(buff.st_size +1);
 										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
 											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
 										}
 										fclose(tmp_file);
+										tmp_input[buff.st_size] = (char)0;
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
 										loading += 1;
@@ -429,11 +431,12 @@ block_statement_list : statement eoln {
                                                                 if(stat(tmp,&buff) != -1) {
                                                                         tmp_file = fopen(tmp,"r");
                                                                         if(tmp_file != NULL) {
-                                                                                tmp_input = (char*)NclMalloc(buff.st_size);
+                                                                                tmp_input = (char*)NclMalloc(buff.st_size + 1);
                                                                                 if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
                                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
                                                                                 }
                                                                                 fclose(tmp_file);
+										tmp_input[buff.st_size] = (char)0;
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
                                                                                 loading += 1;
@@ -473,11 +476,12 @@ block_statement_list : statement eoln {
                                                                 if(stat(tmp,&buff) != -1) {
                                                                         tmp_file = fopen(tmp,"r");
                                                                         if(tmp_file != NULL) {
-                                                                                tmp_input = (char*)NclMalloc(buff.st_size);
+                                                                                tmp_input = (char*)NclMalloc(buff.st_size+1);
                                                                                 if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
                                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
                                                                                 }
                                                                                 fclose(tmp_file);
+										tmp_input[buff.st_size] = (char)0;
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
                                                                                 loading += 1;
