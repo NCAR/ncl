@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.8 1992-09-01 23:43:11 clyne Exp $
+ *	$Id: soft_fill.c,v 1.9 1992-11-21 00:24:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -89,6 +89,16 @@ static	add_line(x1, y1, x2, y2, yoff)
 	DCtype	plotx, ploty;	/* possible candiated for ploting	*/
 	DCtype	lasty;	/* previous value of plot{x,y}		*/
 	unsigned short	plot;	/* boolean				*/
+	int	temp;
+
+	/*
+	 * bogus algorithm draws lines differently from top to bottom
+	 * the from bottom to top
+	 */
+	if (y2 > y1) {
+		temp = x1; x1 = x2; x2 = temp;
+		temp = y1; y1 = y2; y2 = temp;
+	}
 
 	dx = x2 - x1;
 	dy = y2 - y1;

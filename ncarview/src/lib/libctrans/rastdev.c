@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.12 1992-09-01 23:43:02 clyne Exp $
+ *	$Id: rastdev.c,v 1.13 1992-11-21 00:24:11 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -24,42 +24,69 @@ static	float	rasLineWidth;
 static	void	line_(x1, y1, x2, y2)
 	int	x1, y1, x2, y2;
 {
-	int	d, x, y, ax, ay, sx, sy, dx, dy;
+
+	int	dx, dy;		/* difference between endpoints	*/
+	int	ix, iy;		/* absolute value of (dx, dy)	*/
+	int	i, inc;		/* the largest of ix, iy	*/
+	int	x,y;
+	int	plotx, ploty;	/* possible candiated for ploting	*/
 	int	index = rasColorIndex;
+	int	do_plot = 0;
+	int	temp;
 
 	extern	RasColrTab      colorTab;
 
-	dx = x2-x1; ax = ABS(dx)<<1; sx = SIGN(dx);
-	dy = y2-y1; ay = ABS(dy)<<1; sy = SIGN(dy);
+	/*
+	 * bogus algorithm draws lines differently from top to bottom
+	 * the from bottom to top
+	 */
+	if (y2 > y1) {
+		temp = x1; x1 = x2; x2 = temp;
+		temp = y1; y1 = y2; y2 = temp;
+	}
 
-	x = x1;
-	y = y1;
-	if (ax > ay) {	/*	x dominant	*/
-		d = ay - (ax>>1);
-		for (;;) {
-			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
-			if (x == x2) return;
-			if (d >= 0) {
-				y += sy;
-				d -= ax;
-			}
-			x += sx;
-			d += ay;
+
+	dx = x2 - x1;
+	dy = y2 - y1;
+
+	ix = ABS(dx);
+	iy = ABS(dy);
+	inc = MAX(ix, iy);
+
+	plotx = x1;
+	ploty = y1;
+	x = y = 0;
+
+	RAS_PUT_PIX(rastGrid,plotx,ploty,index,colorTab,rasIsDirect);
+
+	for (i = 0; i <= inc; ++i) {
+		x += ix;
+		y += iy;
+
+		do_plot = 0;	/* false	*/
+
+		if (x > inc) {
+			do_plot = 1;
+			x -= inc;
+			plotx = (dx > 0
+				? plotx + 1 : (plotx == 0 ? plotx : plotx - 1));
+
+
+		}
+
+		if (y > inc) {
+			do_plot = 1;
+			y -= inc;
+			ploty = (dy > 0 
+				? ploty + 1 : (ploty == 0 ? ploty : ploty - 1));
+		}
+
+
+		if (do_plot) {
+			RAS_PUT_PIX(rastGrid,plotx,ploty,index,colorTab,rasIsDirect);
 		}
 	}
-	else {	/*	y dominant	*/
-		d = ax-(ay>>1);
-		for (;;) {
-			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
-			if (y == y2) return;
-			if (d >= 0) {
-				x += sx;
-				d -= ay;
-			}
-			y += sy;
-			d += ax;
-		}
-	}
+
 }
 void	rast_open(max_poly_points)
 	unsigned long	*max_poly_points;
