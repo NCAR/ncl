@@ -1,5 +1,5 @@
 C
-C $Id: cpcica.f,v 1.11 2002-05-02 16:39:59 kennison Exp $
+C $Id: cpcica.f,v 1.12 2002-05-02 19:30:25 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -199,7 +199,8 @@ C Find the center point of each cell in the data index system.  The flag
 C IOOR is set non-zero if, in the process, the point is found to be
 C invisible under the current mapping or outside the coordinate ranges
 C associated with the data grid; at the same time, the area identifier
-C for the cell is set to the value specified for areas outside the grid.
+C for the cell is set to the appropriate value for an area which is
+C invisible or outside the grid.
 C
           IOOR=0
 C
@@ -209,13 +210,16 @@ C
           ELSE
             CALL HLUCPMPXY (-IMPF,XCCU,YCCU,XCCD,YCCD)
             IF (ICFELL('CPCICA',11).NE.0) RETURN
-            IF ((OORV.EQ.0..OR.XCCD.NE.OORV).AND.XCCD.GE.XUMN.AND.XCCD.L
-     +E.XUMX.AND.YCCD.GE.YUMN.AND.YCCD.LE.YUMX) THEN
-              XCCI=1.+((XCCD-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
-              YCCI=1.+((YCCD-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
-            ELSE
+            IF (OORV.NE.0..AND.XCCD.EQ.OORV) THEN
               IOOR=1
               IAID=IAIA(259)
+            ELSE IF (XCCD.LT.XUMN.OR.XCCD.GT.XUMX.OR.YCCD.LT.YUMN.OR.YCC
+     +D.GT.YUMX) THEN
+              IOOR=1
+              IAID=IAIA(257)
+            ELSE
+              XCCI=1.+((XCCD-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
+              YCCI=1.+((YCCD-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
             END IF
           END IF
 C
