@@ -17,17 +17,14 @@ extern void printtoken(
 #else
 #define printtoken(n,m)
 #endif
-#ifdef YYLMAX
-#define MAXTMPSPACE YYLMAX
-#else
 #define MAXTMPSPACE 512
-#endif
-char cur_line_text[MAXTMPSPACE];
-char *cur_line_text_pos = &(cur_line_text[0]);
+char *cur_line_text = NULL;
+char *cur_line_text_pos = NULL;
 int cur_line_length = 0;
 int cur_line_number= 1;
 int last_line_length = 0;
 int ok_to_start_vsblk = 0;
+int cur_line_maxsize = 0;
 extern int loading;
 #include <ctype.h>
 #ifdef MAKEAPI
@@ -43,6 +40,30 @@ int the_input_buffer_size = 0;
 
 int rec = 0;
 FILE *recfp;
+
+
+void CopyIt
+#if NhlNeedProto
+(char **cltp,int *cll,int ylg,char* ytxt)
+#else
+(cltp,cll,ylg,ytxt)
+char **cltp;
+int *cll;
+int ylg;
+char* ytxt;
+#endif
+{
+	if(*cll + yyleng > cur_line_maxsize -1) {
+		cur_line_text = (char*)NclRealloc(cur_line_text,2*cur_line_maxsize);
+		*cltp = &(cur_line_text[*cll]);
+		cur_line_maxsize = 2 * cur_line_maxsize;
+	}
+	*cll += yyleng;
+        strcpy(*cltp,ytxt);
+        (*cltp) += ylg;
+	return;
+}
+
 %}
 %a 4000
 %o 4000
@@ -64,9 +85,7 @@ digit	[0-9]
 <AA>[\n] {
 	cur_line_number++;
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
@@ -78,9 +97,7 @@ digit	[0-9]
 }
 [\\][ \t]*[\n] {
 	BEGIN AA;
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
@@ -92,9 +109,7 @@ digit	[0-9]
 }
 \;[^\n]*[\n] { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
@@ -119,235 +134,177 @@ digit	[0-9]
 	return EOLN;
 }
 [ \t] { 
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	cur_line_length += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	
 }
 {digit}+\.|{digit}*\.{digit}+ {
 		sscanf(yytext,"%lf",&(yylval.real));
 		printtoken(REAL,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+		CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 		return REAL;
 }
 {digit}\.?{digit}*[eE][+-]?{digit}+|{digit}?\.{digit}+[eE][+-]?{digit}+ {
 	sscanf(yytext,"%le",&(yylval.real));
 	printtoken(REAL,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return REAL;
 }
 {digit}+ {
 	sscanf(yytext,"%d",&(yylval.integer));
 	printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return INT;
 }
 {digit}+(".gt."|".GT.") {
 	yyless(yyleng - strlen(".gt."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".lt."|".LT.") {
 	yyless(yyleng - strlen(".lt."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".le."|".LE.") {
 	yyless(yyleng - strlen(".le."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".eq."|".EQ.") {
 	yyless(yyleng - strlen(".eq."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".ge."|".GE.") {
 	yyless(yyleng - strlen(".ge."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".ne."|".NE.") {
 	yyless(yyleng - strlen(".ne."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".and."|".AND.") {
 	yyless(yyleng - strlen(".and."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".or."|".OR.") {
 	yyless(yyleng - strlen(".or."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".xor."|".XOR.") {
 	yyless(yyleng - strlen(".xor."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".not."|".NOT.") {
 	yyless(yyleng - strlen(".not."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+(".xor."|".XOR.") {
 	yyless(yyleng - strlen(".xor."));
 	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 ".gt."|".GT." {
 	printtoken(GT,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return GT;
 }
 ".lt."|".LT." {
 	printtoken(LT,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return LT;
 } 
 ".le."|".LE." { 
 	printtoken(LE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return LE;
 }
 ".eq."|".EQ." { 
 	printtoken(EQ,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return EQ;
 }
 ".ge."|".GE." {
 	printtoken(GE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return GE;
 }
 ".not."|".not." {
 	printtoken(NOT,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return NOT;
 }
 ".ne."|".NE." {
 	printtoken(NE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return NE;
 }
 ".and."|".AND." {
 	printtoken(AND,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return AND;
 }
 ".or."|".OR." {
 	printtoken(OR,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return OR;
 }
 ".xor."|".XOR." {
 	printtoken(XOR,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return XOR;
 }
 "->"{alnum}+ {
 
 	strcpy(yylval.str,yytext);
 	printtoken(FVAR,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FVAR;
 }
 "$" {
 	strcpy(yylval.str,yytext);
 	printtoken(FVAR,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return EFSTRING;
 }
 "->$" {
 	strcpy(yylval.str,yytext);
 	printtoken(FVAR,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FSTRING;
 }
 {let}{alnum}* {
         NclSymbol *s;
 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         if(( s = _NclLookUp(yytext)) == NULL) 
 		s = _NclAddSym(yytext,UNDEF);
        	yylval.sym = s;
@@ -360,9 +317,7 @@ digit	[0-9]
 [!] {
 	strcpy(yylval.str,&(yytext[1]));
 	printtoken(DIM_MARKER,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return DIM_MARKER;
 }
 [@]{let}{alnum}* {
@@ -371,9 +326,7 @@ digit	[0-9]
 	tmp = (char*)yytext + 1;
 	strcpy(yylval.str,tmp);
 	printtoken(ATTNAME,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return ATTNAME;
 
 }
@@ -396,27 +349,21 @@ digit	[0-9]
 	}
 	strcpy(yylval.str,yytext);
 	printtoken(DIM,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return DIM;
 }
 [&]{let}{alnum}* {
 
 	strcpy(yylval.str,yytext);
 	printtoken(COORDV,yylval.str);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return COORDV;
 /* NOTREACHED */
 }
 ["][^"\n]*["] {
 	char *tmp;
 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	tmp = strrchr(yytext,'\"');
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
@@ -426,73 +373,53 @@ digit	[0-9]
 }
 \: { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(COLON); 
 }
 \{ { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	printtoken(yytext[0],(char*)NULL); 
 	return(LBC); 
 }
 \} { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(RBC); 
 }
 \( { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(LP); 
 }
 "(\/" { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(LPSLSH); 
 }
 \) { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(RP); 
 }
 "\/)" { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(SLSHRP); 
 }
 \[ { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(LBK); 
 }
 \] { 
 	printtoken(yytext[0],(char*)NULL); 
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(RBK); 
 }
 \' {
 	printtoken(yytext[0],(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(MARKER);
 }
 [\177] {
@@ -500,8 +427,6 @@ digit	[0-9]
 }
 . {  
 	printtoken(yytext[0],(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(yytext[0]);
 }

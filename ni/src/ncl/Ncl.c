@@ -21,6 +21,10 @@ FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
+extern char *cur_line_text;
+extern int cur_line_maxsize;
+extern char *cur_line_text_pos;
+
 
 #if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
@@ -52,6 +56,10 @@ main() {
 	error_fp = stderr;
 	stdout_fp = stdout;
 	stdin_fp = stdin;
+	cur_line_text = NclMalloc((unsigned)512);
+	cur_line_maxsize = 512;
+	cur_line_text_pos = &(cur_line_text[0]);
+
 
 #ifdef NCLDEBUG
 	thefptr = fopen("ncl.tree","w");

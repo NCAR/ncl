@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.27 1996-01-24 19:59:36 ethan Exp $
+ *      $Id: NclApi.c,v 1.28 1996-03-08 19:36:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -74,6 +74,10 @@ FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
+extern char *cur_line_text;
+extern int cur_line_maxsize;
+extern char *cur_line_text_pos;
+
 
 extern FILE* error_fp;
 extern FILE* stdout_fp;
@@ -112,6 +116,10 @@ int NclInitServer
 	thefptr = fopen("ncl.tree","w");
         theoptr = fopen("ncl.seq","w");
 */
+	cur_line_text = NclMalloc((unsigned)512);
+        cur_line_maxsize = 512;
+        cur_line_text_pos = &(cur_line_text[0]);
+
 	NhlInitialize();
 	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
                 NhlNappDefaultParent,1,NULL);
