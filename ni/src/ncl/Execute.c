@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.103 1998-09-02 22:19:41 ethan Exp $
+ *      $Id: Execute.c,v 1.104 1998-09-16 23:13:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,7 @@ static void _NclPopExecute
 void CallINT_SUBSCRIPT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry data1;
-				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort); 
+				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort | Ncl_Typebyte); 
 
 /*
 * This is the first place that type checks on the vectors and range values can
@@ -123,7 +123,7 @@ void CallINT_SUBSCRIPT_OP(void) {
 					if(data.u.vec_rec.vec->multidval.type->type_class.type & mask ) {
 						data1.u.sub_rec.sub_type = INT_VECT;
 						data1.u.sub_rec.u.vec = data.u.vec_rec;
-					} else{
+					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Vector subscripts must be integer");
 						estatus = NhlFATAL;
 					}
@@ -348,7 +348,7 @@ void CallSINGLE_INDEX_OP(void) {
 void CallCOORD_SUBSCRIPT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry data1;
-				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort); 
+				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort |Ncl_Typebyte); 
 
 /*
 * This is the first place that type checks on the vectors and range values can
