@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.20 1995-03-20 09:51:33 boote Exp $
+ *      $Id: Resources.c,v 1.21 1995-03-20 19:58:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -427,6 +427,9 @@ GetResources
 
 				if(rdbtype != resources[i].nrm_type){
 
+					if(rdbtype == QString)
+						from.size =
+						sizeof(NhlString);
 					to.size = resources[i].nrm_size;
 					to.data.ptrval =(void *)(base +
 						resources[i].nrm_offset);

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.24 1995-03-14 21:06:00 haley Exp $
+ *      $Id: CoordArrays.c,v 1.25 1995-03-20 19:58:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -128,17 +128,23 @@ static NhlResource resources[] = {
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
-		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
-		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaXMaxV,NhlCcaXMaxV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMaxV,NhlCcaYMaxV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaXMinV,NhlCcaXMinV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMinV,NhlCcaYMinV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
 
 /* End-documented-resources */
 

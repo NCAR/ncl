@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.32 1995-03-13 21:47:22 dbrown Exp $
+ *      $Id: Converters.c,v 1.33 1995-03-20 19:58:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1903,7 +1903,18 @@ CvtArgs
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
 	}
-	memcpy(data,&from->data,from->size);
+
+	if((from->typeQ == stringQ) && from->data.strval){
+		NhlString	*tptr = data;
+		*tptr = NhlConvertMalloc(strlen(from->data.strval)+1);
+		if(!*tptr){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		strcpy(*tptr,from->data.strval);
+	}
+	else
+		memcpy(data,&from->data,from->size);
 	sgen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
 							from->size,1,NULL);
 
