@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.4 1995-02-18 00:53:53 boote Exp $
+ *      $Id: xy12c.c,v 1.5 1995-02-22 16:35:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -256,7 +256,6 @@ NextFrameCB
 	 */
 	if(FirstTime){
 		int		dataspecid;
-		int		grlist;
 
 		FirstTime = False;
 
@@ -269,6 +268,12 @@ NextFrameCB
 		NhlCreate(&dataid,"xy_data",NhlcoordArrTableLayerClass,
 							NhlDEFAULT_APP,rlist);
 
+		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
+		NhlRLSetInteger(rlist,NhlNxyColor,4);
+		NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
+		NhlCreate(&dataspecid,"xy_spec",NhlxyDataDepLayerClass,
+							NhlDEFAULT_APP,rlist);
 
 		NhlRLClear(rlist);
 		NhlRLSetFloat(rlist,NhlNvpXF,.25);
@@ -285,9 +290,9 @@ NextFrameCB
 		NhlRLSetInteger(rlist,NhlNtmXBLabelJust,0);
 		NhlRLSetInteger(rlist,NhlNtmXBLabelAngleF,330);
 
-		NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-		NhlRLSetInteger(rlist,NhlNtrYMaxF,1030);
-		NhlRLSetInteger(rlist,NhlNtrYMinF,960);
+		NhlRLSetInteger(rlist,NhlNxyCurveData,dataspecid);
+		NhlRLSetInteger(rlist,NhlNxyYMaxF,1030);
+		NhlRLSetInteger(rlist,NhlNxyYMinF,960);
 
 		NhlRLSetString(rlist,NhlNtiMainString,title);
 		NhlRLSetString(rlist,NhlNtiXAxisString,"Time");
@@ -296,19 +301,8 @@ NextFrameCB
 
 		NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,
 									rlist);
-
-		grlist = NhlRLCreate(NhlGETRL);
-		NhlRLClear(grlist);
-		NhlRLGetInteger(grlist,NhlNxyCoordDataSpec,&dataspecid);
-		NhlGetValues(xyplotid,grlist);
-		NhlRLDestroy(grlist);
-
 		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNxyLineColor,4);
-		NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
-		NhlSetValues(dataspecid,rlist);
 
-		NhlRLClear(rlist);
 		XtSetSensitive(hardCopy,True);
 	}
 	/*

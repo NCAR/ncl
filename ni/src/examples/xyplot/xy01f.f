@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.5 1995-02-18 00:53:42 boote Exp $
+C      $Id: xy01f.f,v 1.6 1995-02-22 16:35:30 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -55,7 +55,11 @@ C Create Application and XWorkstation objects.  The Application object
 C name is used to determine the name of the resource file, which is
 C "xy01.res" in this case.
 C
-      call nhlfcreate(appid,'xy01',nhlfapplayerclass,0,0,ierr)
+      call nhlfrlclear(rlist)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
+      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+      call nhlfcreate(appid,'xy01',nhlfapplayerclass,0,rlist,ierr)
+
       call nhlfcreate(xworkid,'xy01Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C

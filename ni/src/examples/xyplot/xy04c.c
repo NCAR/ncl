@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.4 1995-02-18 00:53:48 boote Exp $
+**      $Id: xy04c.c,v 1.5 1995-02-22 16:35:40 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -47,9 +47,6 @@
 float ydra[NCURVE][NPTS];
 int len[2] = {NCURVE,NPTS};
 
-/*
- * Set up arrays of labels, colors, and dash patterns for each curve.
- */
 main()
 {
     int     appid,xworkid,plotid,dataid,datadepid;
@@ -75,7 +72,11 @@ main()
  * object name is used to determine the name of the resource file,
  * which is "xy04.res" in this case.
  */
-    NhlCreate(&appid,"xy04",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"xy04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+
     NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,
               NhlDEFAULT_APP,0);
 /*
@@ -86,7 +87,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&ydra[0][0],2,len);
-    NhlCreate(&dataid,"XYCoord",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
               rlist);
 /*
  * This new DataItem object is now the resource value for xyCoordData.
@@ -103,7 +104,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
  * Draw the plot (to its parent XWorkstation).
  */

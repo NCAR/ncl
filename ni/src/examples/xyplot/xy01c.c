@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.8 1995-02-18 00:53:41 boote Exp $
+**      $Id: xy01c.c,v 1.9 1995-02-22 16:35:29 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -64,7 +64,11 @@ main()
  * name is used to determine the name of the resource file, which is
  * "xy01.res" in this case.
  */
-    NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+
     NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Define the data object.  Since only the Y values are specified here, each

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.3 1995-02-16 14:53:36 haley Exp $
+;      $Id: xy05n.ncl,v 1.4 1995-02-22 16:35:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,8 +90,12 @@ assigndata(ydra,npts,ncurve)
 ; object name is used to determine the name of the resource file,
 ; which is "xy05.res" in this case.
 ; 
-appid = create "xy05" appLayerClass noparent end create
-xworkid = create "xy05Work" xWorkstationLayerClass noparent end create
+appid = create "xy05" appLayerClass defaultapp
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
+end create
+
+xworkid = create "xy05Work" xWorkstationLayerClass defaultapp end create
 
 ;
 ; Define the Data objects.  Since only the Y values are specified here,
@@ -101,22 +105,8 @@ xworkid = create "xy05Work" xWorkstationLayerClass noparent end create
 ;
 dataid = new(ncurve,graphic)
 do i=1,ncurve
-  dataid(i-1) = create "xyData"+i coordArraysLayerClass noparent
+  dataid(i-1) = create "xyData"+i coordArraysLayerClass defaultapp
     "caYArray": ydra(i-1,0:(len(i-1)-1))
-  end create
-end do
-
-;
-; Create DataDep objects each as a child of the XWorkstation object.
-; DataDep resources are used for defining things like the marker
-; colors, styles, and sizes for each line.  The array of ids from
-; these objects will become the value for the XyPlot resource
-; "xyCurveData".
-;
-datadepid = new(ncurve,graphic)
-do i=1,ncurve
-  datadepid(i-1) = create "xyDataDep"+i xyDataDepLayerClass xworkid
-    "dsDataItem":      dataid(i-1)
   end create
 end do
 
@@ -126,7 +116,7 @@ end do
 ; in the "xy05.res" file, and they will affect this XyPlot object.
 ;
 plotid = create "xyPlot" xyPlotLayerClass xworkid
-    "xyCurveData": datadepid
+    "xyCoordData": dataid
     "xyYIrregularPoints":  exp_vals
 end create
 

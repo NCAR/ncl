@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.3 1995-02-18 00:53:49 boote Exp $
+C      $Id: xy04f.f,v 1.4 1995-02-22 16:35:41 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -38,17 +38,9 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid,datadepid
-      integer rlist, i, j, len(2), grlist
+      integer rlist, i, j, len(2)
       real ydra(NPTS,NCURVE), theta
       data len/NPTS,NCURVE/
-C
-C Set up arrays of labels, colors, and dash patterns for each curve.
-C
-      integer colors(NCURVE),xydash(NCURVE)
-      data colors/50, 75, 100, 40/
-      data xydash/0, 5, 10, 15/
-      character*7 explabs(NCURVE)
-      data explabs/'Curve 1','Curve 2','Curve 3', 'Curve 4'/
 C
 C Initialize data for the XyPlot object.
 C
@@ -68,15 +60,18 @@ C Create Application and XWorkstation objects.  The Application
 C object name is used to determine the name of the resource file,
 C which is "xy04.res" in this case.
 C
-      call nhlfcreate(appid,'xy04',nhlfapplayerclass,0,0,ierr)
+      call nhlfrlclear(rlist)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
+      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+      call nhlfcreate(appid,'xy04',nhlfapplayerclass,0,rlist,ierr)
+
       call nhlfcreate(xworkid,'xy04Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
 C Define the data object.  The id for this object will later be used
 C as the value for the XYPlot data resource, 'xyCoordData'.
-C Since only the Y values are
-C specified here, each Y value will be paired with its integer
-C array index.
+C Since only the Y values are specified here, each Y value will be
+C paired with its integer array index.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetmdfloatarray(rlist,'caYArray',ydra,2,len,ierr)
@@ -91,29 +86,6 @@ C
       call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
-C
-C Retrieve the XyData dependent object id that was created by XyPlot
-C to determine how to display "dataid".
-C
-      call nhlfrlcreate(grlist,'GETRL')
-      call nhlfrlgetinteger(grlist,'xyCoordDataSpec',datadepid,ierr)
-      call nhlfgetvalues(plotid,grlist,ierr)
-C
-C Destroy grlist since we don't need it anymore.
-C
-      call nhlfrldestroy(grlist)
-C
-C Define Data Dependent resources.  Here's where you specify the arrays
-C for defining the color, label, and dash pattern of each line, 
-C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetintegerarray(rlist,'xyLineColors',colors,NCURVE,
-     +	ierr)
-      call nhlfrlsetintegerarray(rlist,'xyDashPatterns',xydash,NCURVE,
-     +                          ierr)
-      call nhlfrlsetstringarray(rlist,'xyExplicitLabels',explabs,NCURVE,
-     +                          ierr)
-      call nhlfsetvalues(datadepid,rlist,ierr)
 C
 C Draw the plot (to its parent X Workstation)
 C

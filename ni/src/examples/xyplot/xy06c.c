@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.1 1995-02-16 14:53:38 haley Exp $
+**      $Id: xy06c.c,v 1.2 1995-02-22 16:35:47 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -87,7 +87,11 @@ main()
  * object name is used to determine the name of the resource file,
  * which is "xy06.res" in this case.
  */
-    NhlCreate(&appid,"xy06",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"xy06",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+
     NhlCreate(&xworkid,"xy06Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Initialize data.

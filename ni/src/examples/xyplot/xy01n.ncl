@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.3 1995-02-21 15:13:34 haley Exp $
+;      $Id: xy01n.ncl,v 1.4 1995-02-22 16:35:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -59,8 +59,12 @@ assigndata(ydra,npts)
 ; name is used to determine the name of the resource file, which is
 ; "xy01.res" in this case.
 ; 
-appid = create "xy01" appLayerClass noparent end create
-xworkid = create "xy01Work" xWorkstationLayerClass noparent end create
+appid = create "xy01" appLayerClass defaultapp
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
+end create
+
+xworkid = create "xy01Work" xWorkstationLayerClass defaultapp end create
 
 ;
 ; Define the data object.  Since only the Y values are specified here,
@@ -68,7 +72,7 @@ xworkid = create "xy01Work" xWorkstationLayerClass noparent end create
 ; for this object will later be used as the value for the XyPlot
 ; object resource, "xyCoordData".
 ;
-dataid = create "xyData" coordArraysLayerClass noparent
+dataid = create "xyData" coordArraysLayerClass defaultapp
     "caYArray": ydra
 end create
 

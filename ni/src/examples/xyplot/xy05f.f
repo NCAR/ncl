@@ -1,5 +1,5 @@
 C     
-C      $Id: xy05f.f,v 1.3 1995-02-18 00:53:51 boote Exp $
+C      $Id: xy05f.f,v 1.4 1995-02-22 16:35:45 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -74,7 +74,11 @@ C Create Application and XWorkstation objects.  The Application
 C object name is used to determine the name of the resource file,
 C which is "xy05.res" in this case.
 C
-      call nhlfcreate(appid,'xy05',nhlfapplayerclass,0,0,ierr)
+      call nhlfrlclear(rlist)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
+      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+      call nhlfcreate(appid,'xy05',nhlfapplayerclass,0,rlist,ierr)
+
       call nhlfcreate(xworkid,'xy05Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
@@ -98,7 +102,7 @@ C xyCoordData.  Tweak some more XYPlot resources in the resource file
 C An XyDataSpec object gets created by XyPlot internally to deal
 C with each DataItem that is in the xyCoordData resource.  So,
 C you can set Data Specific resources using the name of each data
-C item that you add.  See the resource file ("xy05.res") to see what I mean.
+C item that you add.  See the resource file ("xy05.res").
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'xyYIrregularPoints',

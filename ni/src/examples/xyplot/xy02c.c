@@ -1,5 +1,5 @@
 /*
-**      $Id: xy02c.c,v 1.8 1995-02-18 00:53:43 boote Exp $
+**      $Id: xy02c.c,v 1.9 1995-02-22 16:35:33 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -62,7 +62,11 @@ main()
  * name is used to determine the name of the resource file, which is
  * "xy02.res" in this case.
  */
-    NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+
     NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,
               NhlDEFAULT_APP,0);
 /*

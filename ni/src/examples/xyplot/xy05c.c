@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.5 1995-02-18 00:53:50 boote Exp $
+**      $Id: xy05c.c,v 1.6 1995-02-22 16:35:44 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -55,7 +55,7 @@ main()
     int     appid,xworkid,plotid,dataid[NCURVE],datadepid[NCURVE];
     int     *dspec = datadepid;
     int     num_dspec;
-    int     rlist,grlist;
+    int     rlist;
     int     i, j;
     float   theta;
     float   explicit_values[10];
@@ -66,7 +66,8 @@ main()
     for( j = 0; j < NCURVE; j++ ) {
         ydra[j] = (float *)malloc(sizeof(float)*len[j]);
         if (ydra[j] == NULL) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to malloc space for ydra array");
+            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "Unable to malloc space for ydra array");
             exit(3);
         }
         for( i = 0; i < len[j]; i++ ) {
@@ -90,13 +91,17 @@ main()
  * object name is used to determine the name of the resource file,
  * which is "xy05.res" in this case.
  */
-    NhlCreate(&appid,"xy05",NhlappLayerClass,NhlDEFAULT_APP,0);
-    NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,appid,0);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"xy05",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+
+    NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Define the Data objects.  Since only the Y values are specified here,
  * each Y value will be paired with its integer array index.  The array of
  * data ids from these objects will become the value for the XyPlot
- * resource "xyCurveData".
+ * resource "xyCoordData".
  */
     for( i = 0; i < NCURVE; i++ ) {
         NhlRLClear(rlist);
@@ -107,44 +112,18 @@ main()
     }
 
 /*
- * Create the XyPlot object which is created as a child of the
- * XWorkstation object.  The resources that are being changed are done
- * in the "xy05.res" file, and they will affect this XyPlot object.
+ * This array of Data objects is now the resource value for
+ * xyCoordData.  Tweak some more XYPlot resources in the resource file
+ * An XyDataSpec object gets created by XyPlot internally to deal
+ * with each DataItem that is in the xyCoordData resource.  So,
+ * you can set Data Specific resources using the name of each data
+ * item that you add.  See the resource file ("xy05.res").
  */
     NhlRLClear(rlist);
     NhlRLSetIntegerArray(rlist,NhlNxyCoordData,dataid,NhlNumber(dataid));
     NhlRLSetFloatArray(rlist,NhlNxyYIrregularPoints,explicit_values,
                     NhlNumber(explicit_values));
-    NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);
-
-/*
- * Tweak XyDataSpec resources...
- */
-    grlist = NhlRLCreate(NhlGETRL);
-    NhlRLGetIntegerArray(grlist,NhlNxyCoordDataSpec,&dspec,&num_dspec);
-    NhlGetValues(plotid,grlist);
-    NhlRLDestroy(grlist);
-
-    if(NCURVE != num_dspec){
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Dspecs don't match Data???");
-	exit(0);
-    }
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyLineColor,NhlBACKGROUND);
-    NhlSetValues(dspec[0],rlist);
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyLineColor,NhlFOREGROUND);
-    NhlSetValues(dspec[1],rlist);
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyLineColor,100);
-    NhlSetValues(dspec[2],rlist);
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyLineColor,120);
-    NhlSetValues(dspec[3],rlist);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 
 /*
  * Draw the plot (to its parent X Workstation)
