@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.70 1999-10-20 21:12:53 haley Exp $
+#      $Id: yMakefile,v 1.71 1999-11-05 15:40:44 haley Exp $
 #
 #########################################################################
 #									#
@@ -58,7 +58,7 @@ PROG_LIBS	=	$(NFPLIB) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIB) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
 #if defined(SUN)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf -lf90
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf
 #elif defined(AIX)
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -llapack -lessl -lxlf90
 #elif (defined(IRIX) || defined(IRIX64))
