@@ -29,14 +29,14 @@
 /*
  * Macros to convert VDC x and y's into device x and y's
  */
-#define	XScale(x)	(long) (LABS((long) (X_Scale * (x))))
-#define	YScale(y)	(long) (LABS((long) (Y_Scale * (y))))
+#define	XScale(x)	(long) (labs((long) (X_Scale * (x))))
+#define	YScale(y)	(long) (labs((long) (Y_Scale * (y))))
 
 /*
  * Macros to scale a device dimension to VDC dimension
  */
-#define	XScale_(x_)	(long) (LABS((long) (((double) (x_)) / X_Scale )))
-#define	YScale_(y_)	(long) (LABS((long) (((double) (y_)) / Y_Scale )))
+#define	XScale_(x_)	(long) (labs((long) (((double) (x_)) / X_Scale )))
+#define	YScale_(y_)	(long) (labs((long) (((double) (y_)) / Y_Scale )))
 
 /*
  *	structure to define a coordinate system
