@@ -1,5 +1,5 @@
 /*
- *	$Id: c_elblba.c,v 1.4 1993-01-23 15:15:00 haley Exp $
+ *	$Id: c_elblba.c,v 1.5 1993-07-19 21:50:11 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -145,7 +145,7 @@ void dfclrs()
     rgbv[14].rgb.red = 1.00; rgbv[14].rgb.green = 0.00; rgbv[14].rgb.blue = 0.38;
     rgbv[15].rgb.red = 1.00; rgbv[15].rgb.green = 0.00; rgbv[15].rgb.blue = 0.00;
 
-    rgbv[1].rgb.red = rgbv[1].rgb.green = rgbv[1].rgb.blue = 0.0;
+    rgbv[0].rgb.red = rgbv[0].rgb.green = rgbv[0].rgb.blue = 0.0;
 /*
  * Define 16 different color indices, for indices 0 through 15.  The
  * color corresponding to index 0 is black and the color corresponding
