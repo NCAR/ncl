@@ -1,5 +1,5 @@
 C
-C	$Id: gdsg.f,v 1.2 1993-01-09 01:58:14 fred Exp $
+C	$Id: gdsg.f,v 1.3 1993-01-13 22:32:46 fred Exp $
 C
       SUBROUTINE GDSG(SGNA)
 C
@@ -64,9 +64,15 @@ C
       IF (NUMSEG .GT. 0) THEN
         DO 201 I=1,NUMSEG
           IF (SEGS(I) .EQ. SGNA) THEN
+C
+C  Define the segment name for the interface call.
+C
+            STR = ' '
+            STR = SEGNAM(SGNA)
             IP1 = I+1
             DO 202 J=IP1,NUMSEG
               SEGS(J-1) = SEGS(J)
+              SEGNAM(J-1) = SEGNAM(J)
               SEGLEN(J-1) = SEGLEN(J)
               DO 205 IR=1,2
                 DO 206 JC=1,3
@@ -93,20 +99,17 @@ C
 C
 C  Invoke workstation interface.
 C
-      FCODE = 84
-      CONT  = 0
-      CALL GZROI(0)
-      IL1 = 1
-      IL2 = 1
-      ID(1) = SGNA
-      STR = ' '
-      STR = SEGNAM(SGNA)
-      CALL GZTOWK
-      IF (RERR .NE. 0) THEN
-        ERS = 1
-        CALL GERHND(RERR,EDSG,ERF)
-        ERS = 0
-      ENDIF
+C     FCODE = 84
+C     CONT  = 0
+C     CALL GZROI(0)
+C     IL1 = 1
+C     IL2 = 1
+C     CALL GZTOWK
+C     IF (RERR .NE. 0) THEN
+C       ERS = 1
+C       CALL GERHND(RERR,EDSG,ERF)
+C       ERS = 0
+C     ENDIF
 C
       RETURN
       END
