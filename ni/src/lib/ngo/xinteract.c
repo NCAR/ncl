@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.11 1999-10-22 00:37:29 dbrown Exp $
+ *      $Id: xinteract.c,v 1.12 2000-02-17 01:36:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 
 #include <X11/cursorfont.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/xinteractP.h>
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
@@ -421,6 +423,23 @@ static int GetIntersectingViews
 	return count;
 }
 
+static NhlBoolean
+GetBrowser
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	int	*browse = (int*)udata;
+
+	if(NhlIsClass(goid,NgbrowseClass)){
+		*browse = goid;
+		return False;
+	}
+
+	return True;
+}
+
 static void Manipulate
 (
 	NgXWk		xwk,
@@ -636,11 +655,49 @@ static void Manipulate
 	XUngrabPointer(dpy, CurrentTime);
 
 
+	if (rubber.type != MOVE) {
+		int		browse = NhlDEFAULT_APP;
+		NhlString 	view_name;
+		int		page_id;
+		NrmQuark	qplot_name,qview_name,qvar;
+
+		ClearViewBB(xwk,l->base.id,True);
+		SetViewPort(xwk,l->base.id,&rubber.bbox,False);
+		/*
+		 * need to see if a size change causes any update functions
+		 * to change.
+		 */
+		NgAppEnumerateGO(xwk->go.appmgr,GetBrowser,&browse);
+
+		view_name = NgNclGetHLURef(xwk->go.nclstate,l->base.id);
+		qview_name = NrmStringToQuark(view_name);
+		qplot_name = NgGraphicArrayofGraphic(qview_name);
+		qvar = qplot_name > NrmNULLQUARK ? qplot_name : qview_name;
+		page_id = NgGetPageId(browse,qvar,NULL);
+
+#if DEBUG_XINTERACT
+		fprintf (stderr,"name %s page %d\n",view_name,page_id);
+#endif
+
+		if (page_id) {
+			NgUpdatePage(browse,page_id);
+		
+			NgDrawView(xwk->base.id,l->base.id,True);
+
+
+			/* Draw the new bounding box for the object */
+			XorDrawViewPort(xwk,l->base.id,False);
+			return;
+		}
+
+	}
+
 	/*
-	 * region has been defined - Set the viewport.
+	 * region has been defined - clear the original area and
+	 * then set the viewport.
 	 */
 
-	ClearViewBB(xwk,l->base.id,True);
+ 	ClearViewBB(xwk,l->base.id,True);
 
 	/*
 	 * turn off auto_refresh temporarily because we don't want the 
@@ -709,7 +766,7 @@ ManipulateEH
 	NhlLayer 		l;
 
 #if DEBUG_XINTERACT
-fprintf(stderr,"In ManipulateEH()\n");
+	fprintf(stderr,"In ManipulateEH()\n");
 #endif
 
 	if(event->type != ButtonPress){

@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.15 2000-01-21 05:18:52 dbrown Exp $
+ *      $Id: graphic.c,v 1.16 2000-02-17 01:36:22 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -27,6 +27,9 @@
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/xinteract.h>
+#include <ncarg/ngo/stringutil.h>
+
+static NrmQuark QPlotName = NrmNULLQUARK;
 
 /*
  * Function:	NgCreatePreviewGraphic
@@ -965,3 +968,40 @@ extern void NgFreeResData
 
 	return;
 }
+
+NrmQuark NgGraphicArrayofGraphic
+(
+	NrmQuark qgraphic
+)
+{
+	NclApiDataList	*dl = NULL;
+        NclApiVarInfoRec *vinfo;
+	int i;
+        NclExtValueRec *val;
+
+	if (QPlotName == NrmNULLQUARK) {
+		QPlotName = NrmStringToQuark(ndvPLOTNAME);
+	}
+
+	dl = NclGetVarInfo(qgraphic);
+
+	if (! dl)
+		return NrmNULLQUARK;
+
+	vinfo = dl->u.var;
+	for (i = 0; i < vinfo->n_atts; i++) {
+		char *sval;
+		int len;
+		if (vinfo->attnames[i] == QPlotName) {
+			val = NclReadVarAtt(qgraphic,vinfo->attnames[i]);
+			if (! val)
+				return NrmNULLQUARK;
+			sval = NgTypedValueToString(val,0,False,&len);
+			if (! sval)
+				return NrmNULLQUARK;
+			return NrmStringToQuark(sval);
+		}
+	}
+	return NrmNULLQUARK;
+}
+	

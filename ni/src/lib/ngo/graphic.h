@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.7 1999-10-05 23:16:20 dbrown Exp $
+ *      $Id: graphic.h,v 1.8 2000-02-17 01:36:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,14 +47,12 @@ typedef struct _NgResDataRec {
 	NgVarData *vdata;
 } NgResDataRec, *NgResData;
 
-extern NgResData NgReallocResData
-(
+extern NgResData NgReallocResData(
 	NgResData resdata,
 	int	  rescount
 );
 
-extern void NgFreeResData
-(
+extern void NgFreeResData(
 	NgResData resdata
 );
 
@@ -70,33 +68,28 @@ typedef struct _NgHluDataRec {
 	NhlBoolean	draw_req;
 } NgHluDataRec, *NgHluData;
 
-extern NgHluData NgGetHluData
-(
+extern NgHluData NgGetHluData(
 	void
 );
 
-void NgFreeHluData
-(
+void NgFreeHluData(
 	NgHluData hlu_data
 );
 	
 
-typedef int (*NgSetResProc)
-(
+typedef int (*NgSetResProc)(
         int nclstate,
         NhlPointer res_proc_data,
         int block_id
         );
 
-typedef void (*NgPreviewResProc)
-(
+typedef void (*NgPreviewResProc)(
         int srlist_id,
         NhlPointer res_proc_data
         );
 
 extern
-NhlErrorTypes NgCreatePreviewGraphic
-(
+NhlErrorTypes NgCreatePreviewGraphic(
 	int		goid,
         int		*hlu_id,
 	NhlString	hlu_name,
@@ -109,15 +102,13 @@ NhlErrorTypes NgCreatePreviewGraphic
         );
 
 extern
-NhlErrorTypes NgDestroyPreviewGraphic
-(
+NhlErrorTypes NgDestroyPreviewGraphic(
 	int		goid,
         int		hlu_id
         );
 
 extern
-NhlErrorTypes NgCreateGraphic
-(
+NhlErrorTypes NgCreateGraphic(
 	int		goid,
         int		*hlu_id,
 	NhlString	hlu_name,
@@ -130,8 +121,7 @@ NhlErrorTypes NgCreateGraphic
         );
 
 extern
-NhlErrorTypes NgUpdateGraphic
-(
+NhlErrorTypes NgUpdateGraphic(
 	int		goid,
 	NhlString	ncl_graphic,
         int		res_proc_count,
@@ -140,15 +130,13 @@ NhlErrorTypes NgUpdateGraphic
         );
 
 extern
-NhlErrorTypes NgDestroyGraphic
-(
+NhlErrorTypes NgDestroyGraphic(
 	int		goid,
 	NhlString	ncl_graphic
         );
 
 extern
-NhlErrorTypes NgDrawGraphic
-(
+NhlErrorTypes NgDrawGraphic(
 	int		goid,
 	NhlString	ncl_graphic,
         NhlBoolean	clear
@@ -159,8 +147,7 @@ NhlErrorTypes NgDrawGraphic
  */
 
 extern
-NhlErrorTypes NgDrawView
-(
+NhlErrorTypes NgDrawView(
 	int		goid,
 	int		view_id,
         NhlBoolean	clear
@@ -170,18 +157,20 @@ NhlBoolean NgViewOn(
 	int view_id
 );
 
-extern int NgAddResList
-(
+extern int NgAddResList(
         int		nclstate,
         NhlPointer	data,
         int		block_id
         );
 
-extern void NgPreviewResList
-(
+extern void NgPreviewResList(
         int		setrl_id,
         NhlPointer	data
         );
+
+extern NrmQuark NgGraphicArrayofGraphic(
+	NrmQuark qgraphic
+	);
 
 #endif	/* _NG_GRAPHIC_H */
 

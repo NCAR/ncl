@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.13 2000-02-08 01:29:57 dbrown Exp $
+ *      $Id: plotpage.c,v 1.14 2000-02-17 01:36:24 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -1279,6 +1279,7 @@ static NhlBoolean CreateGraphic
 			(void)NgNclSubmitBlock(rec->go->go.nclstate,buf);
 		}
 	}
+	NgGraphicArrayofGraphic(NrmStringToQuark(ncl_name));
 	return True;
 }
 
