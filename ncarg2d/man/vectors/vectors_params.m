@@ -735,7 +735,7 @@ influences the mapping between user and NDC space.
 .IP "TVL - Array of Threshold Values - Real Array"
 TVL is an array of threshold values that is used to determine the
 individual vector color, when CTV and NLV are both non-zero. For each
-vector the TVL array is searched for the largest value less than or
+vector the TVL array is searched for the smallest value greater than or
 equal to the scalar value associated with the vector. The array
 subscript of this element is used as an index into the CLR array.
 Vectors uses the GKS color index found at this element of the CLR
