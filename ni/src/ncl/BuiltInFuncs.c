@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.99 1998-06-09 19:14:36 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.100 1998-06-09 20:12:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3027,6 +3027,7 @@ NhlErrorTypes _NclIfbinread
 		*dimsizes= size/thetype->type_class.size;
 		totalsize = size;
 		tmp_ptr = NclMalloc(totalsize);
+		close(fd);
 	} else {
 		totalsize = size*thetype->type_class.size;
 		tmp_ptr = NclMalloc(totalsize);
