@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.99 2002-11-10 15:58:37 haley Exp $
+;      $Id: gsn_code.ncl,v 1.100 2003-01-27 18:12:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -656,7 +656,7 @@ begin
   if(typeof(display_mode).ne."string") then
     return(display_mode)
   else
-    new_display_mode = -1      ; Default is 0 ("nocreate")
+    new_display_mode = -1      ; Default is -1 ("nocreate")
 
     if(lower_case(display_mode).eq."nocreate") then
       new_display_mode = -1
@@ -2935,7 +2935,7 @@ begin
     bb = NhlGetBB(plot)
   end if
   gsres = True
-  gsres@gsLineThicknessF = 5.0
+;  gsres@gsLineThicknessF = 5.0
   gsres@gsLineColor      = "red"
   do i=0,dimplot-1
     top = bb(i,0)
