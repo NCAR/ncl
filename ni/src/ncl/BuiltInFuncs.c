@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.145 2002-07-01 21:42:31 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.146 2002-07-08 18:32:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10450,8 +10450,12 @@ NhlErrorTypes _NclIGetVarDims
 			data = _NclGetVarInfo2(tmp_var);
 			for (i=0; i < data->u.var->n_dims;i++) {
 				names[i] = data->u.var->dim_info[i].dim_quark;
+				if(data->u.var->dim_info[i].dim_quark < 0) {
+					names[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+					
+				}
 			}
-			ret = NclReturnValue((void*)names, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			ret = NclReturnValue((void*)names, 1, &data->u.var->n_dims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		}
 	} else {
 		ret  = NhlFATAL;
@@ -11868,6 +11872,7 @@ static nc_type _MapType (NclBasicDataTypes data_type) {
 		}
 	return(the_type);
 }
+
 NhlErrorTypes _NclICreateFile(void)
 {
 	NclStackEntry out_data,data;
@@ -11900,6 +11905,8 @@ NhlErrorTypes _NclICreateFile(void)
         NclMultiDValData out_md = NULL;
         int *id = (int*)NclMalloc((unsigned)sizeof(int));
         int dim_size = 1;
+	NclBasicDataTypes ncl_var_type;
+	int unlimited_id = -1;
 	
 	
 
@@ -11960,6 +11967,7 @@ NhlErrorTypes _NclICreateFile(void)
 	for(i = 0; i < n_dims; i++) {
 		if(dimsizes[i] == -1) {	
 			dim_ids[i] = ncdimdef(cdfid,NrmQuarkToString(dimnames[i]),NC_UNLIMITED);
+			unlimited_id = dim_ids[i];
 		} else {
 			dim_ids[i] = ncdimdef(cdfid,NrmQuarkToString(dimnames[i]),(long)dimsizes[i]);
 		}
@@ -12001,10 +12009,19 @@ NhlErrorTypes _NclICreateFile(void)
 			return(NhlFATAL);
 		}
 		for(j = 0; j < dnames_md->multidval.totalelements; j++) {
+			ids[j] = -2;
 			for(k=0; k < n_dims; k++) {
 				if(((string*)(dnames_md->multidval.val))[j] == dimnames[k]) {
 					ids[j] = dim_ids[k];
+					if((unlimited_id == ids[j])&&(j != 0)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: unlimited dimension must be first dimension");
+						return(NhlFATAL);
+					}
 				}
+			}
+			if(ids[j] == -2) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: dimension named %s was not defined in dimension info list can't continue",NrmQuarkToString(((string*)(dnames_md->multidval.val))[j]));
+				return(NhlFATAL);
 			}
 		}
 		nclattlist = tmp_att->att.att_list;
@@ -12012,6 +12029,7 @@ NhlErrorTypes _NclICreateFile(void)
 		while(nclattlist != NULL) {
 			if(nclattlist->quark == NrmStringToQuark("type")){
 				the_type = _MapType(_NclKeywordToDataType( _NclLookUp(NrmQuarkToString(*(string*)(nclattlist->attvalue->multidval.val)))));
+				ncl_var_type = _NclKeywordToDataType( _NclLookUp(NrmQuarkToString(*(string*)(nclattlist->attvalue->multidval.val))));
 				break;
 			} else {
 				nclattlist = nclattlist->next;
@@ -12025,17 +12043,53 @@ NhlErrorTypes _NclICreateFile(void)
 		varids[i]= ncvardef(cdfid,NrmQuarkToString(*(string*)tmp_md->multidval.val),the_type,dnames_md->multidval.totalelements,ids);
 		nclattlist = tmp_att->att.att_list;
 		while(nclattlist != NULL){ 
-			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))&&(nclattlist->quark != NrmStringToQuark("set_fillvalue"))){
+			if((nclattlist->quark == NrmStringToQuark("set_fillvalue"))||(nclattlist->quark == NrmStringToQuark("_FillValue"))) {
+				tmp_type = _MapType(nclattlist->attvalue->multidval.data_type);
+				if((tmp_type == the_type)&&(nclattlist->quark == NrmStringToQuark("set_fillvalue"))) {
+					ncattput(cdfid,varids[i],"_FillValue",the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
+				} else {
+					if(nclattlist->quark == NrmStringToQuark("_FillValue"))  {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: _FillValue attributes can not be set in VarInfo parameter, use set_fillvalue, using default missing value for variable type");
+					} else {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: set_fillvalue attribute is a different type than the variable, using default missing value for variable type");
+					}
+					switch(ncl_var_type) {
+						case NCL_float:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypefloatClassRec.type_class.default_mis.floatval));
+							break;
+						case NCL_logical:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelogicalClassRec.type_class.default_mis.logicalval));
+							break;
+						case NCL_char:
+						case NCL_string:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypecharClassRec.type_class.default_mis.charval));
+							break;
+						case NCL_double:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypedoubleClassRec.type_class.default_mis.doubleval));
+							break;
+						case NCL_byte:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypebyteClassRec.type_class.default_mis.byteval));
+							break;
+						case NCL_int:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeintClassRec.type_class.default_mis.intval));
+							break;
+						case NCL_long:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelongClassRec.type_class.default_mis.longval));
+							break;
+						case NCL_short:
+							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
+							break;
+						
+					}
+				}
+			} else if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
 				if(nclattlist->attvalue->multidval.data_type != NCL_string) {		
-					the_type = _MapType(nclattlist->attvalue->multidval.data_type);
+					tmp_type = _MapType(nclattlist->attvalue->multidval.data_type);
 					ncattput(cdfid,varids[i],nclattlist->attname,tmp_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
 				} else {
 					ncattput(cdfid,varids[i],nclattlist->attname,NC_CHAR,strlen(NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val)),NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val));
 				}
-			} else if(nclattlist->quark == NrmStringToQuark("set_fillvalue")) {
-				the_type = _MapType(nclattlist->attvalue->multidval.data_type);
-				ncattput(cdfid,varids[i],"_FillValue",the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
-			}
+			} 
 			nclattlist = nclattlist->next;
 		}
 
@@ -12085,7 +12139,6 @@ NhlErrorTypes _NclICreateFile(void)
 
 	return(NhlNOERROR);
 }
-
 
 
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.81 2002-06-19 16:23:56 ethan Exp $
+ *      $Id: Machine.c,v 1.82 2002-07-08 18:32:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2048,6 +2048,7 @@ void _NclRemapParameters
 					} else {
 						tmp_var1->var.thesym=NULL;
 						tmp_var1->var.sel_rec =NULL;
+						tmp_var1->obj.status =PERMANENT;
 					}
 					tmp_fp->func_ret_value.u.data_var = tmp_var;
 					check_ret_status = 0;
@@ -2058,6 +2059,7 @@ void _NclRemapParameters
 					} else {
 						data.u.data_var->var.thesym=NULL;
 						data.u.data_var->var.sel_rec =NULL;
+						data.u.data_var->obj.status = PERMANENT;
 					}
 				}
 			default:
@@ -2080,6 +2082,7 @@ void _NclRemapParameters
 				} else {
 					data.u.data_var->var.thesym=NULL;
 					data.u.data_var->var.sel_rec =NULL;
+					data.u.data_var->obj.status = PERMANENT;
 				}
 			default:
 				break;
@@ -2141,6 +2144,7 @@ if(the_list != NULL) {
 								data.u.data_var->var.thesym=NULL;
 								data.u.data_var->var.sel_rec =NULL;
 								data.u.data_var->var.var_type =NORMAL;
+								data.u.data_var->obj.status = PERMANENT;
 							}
 							data.u.data_var = tmp_var;
 						}
@@ -2173,6 +2177,7 @@ if(the_list != NULL) {
 						} else {
 							the_list->the_elements[i].var_ptr->var.thesym=NULL;
 							the_list->the_elements[i].var_ptr->var.sel_rec =NULL;
+							 the_list->the_elements[i].var_ptr->obj.status = PERMANENT;
 						}
 					}
 
@@ -2203,6 +2208,7 @@ if(the_list != NULL) {
 								tmp_var1->var.thesym = NULL;
 								tmp_var1->var.sel_rec = NULL;
 								tmp_var1->var.var_type =NORMAL;
+								tmp_var1->obj.status = NORMAL;
 							}
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
 							check_ret_status = 0;
@@ -2238,6 +2244,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec = NULL;
 							tmp_var1->var.var_type =NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2264,6 +2271,7 @@ if(the_list != NULL) {
 									data.u.data_var->var.thesym = NULL;
 									data.u.data_var->var.sel_rec = NULL;
 									data.u.data_var->var.var_type =NORMAL;
+									data.u.data_var->obj.status = PERMANENT;
 								}
 								
 							} else {
@@ -2273,6 +2281,7 @@ if(the_list != NULL) {
 									data.u.data_var->var.thesym = NULL;
 									data.u.data_var->var.sel_rec = NULL;
 									data.u.data_var->var.var_type =NORMAL;
+									data.u.data_var->obj.status = PERMANENT;
 								}
 							}
 						} else {
@@ -2282,6 +2291,7 @@ if(the_list != NULL) {
 								data.u.data_var->var.thesym = NULL;
 								data.u.data_var->var.sel_rec = NULL;
 								data.u.data_var->var.var_type =NORMAL;
+								data.u.data_var->obj.status = PERMANENT;
 							}
 						}
 					}
@@ -2292,6 +2302,7 @@ if(the_list != NULL) {
 						} else {
 							the_list->the_elements[i].var_ptr->var.thesym = NULL;
 							the_list->the_elements[i].var_ptr->var.sel_rec = NULL;
+							the_list->the_elements[i].var_ptr->obj.status = PERMANENT;
 						}
 					}
 				}
@@ -2337,6 +2348,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec = NULL;
 							tmp_var1->var.var_type =NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2373,6 +2385,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec = NULL;
 							tmp_var1->var.var_type =NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2383,6 +2396,7 @@ if(the_list != NULL) {
 						data.u.data_var->var.thesym = NULL;
 						data.u.data_var->var.sel_rec = NULL;
 						data.u.data_var->var.var_type =NORMAL;
+						data.u.data_var->obj.status = PERMANENT;
 					}
 				}
 			} else {
@@ -2415,6 +2429,7 @@ if(the_list != NULL) {
 							} else {
 								the_list->the_elements[i].var_ptr->var.thesym = NULL;
 								the_list->the_elements[i].var_ptr->var.sel_rec = NULL;
+								the_list->the_elements[i].var_ptr->obj.status = PERMANENT;
 							}
 						}
 						if(tmp_var1->obj.ref_count == 0) {
@@ -2423,6 +2438,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec= NULL;
 							tmp_var1->var.var_type =NORMAL;
+							tmp_var1->obj.status =PERMANENT;
 						}
 					
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -2460,6 +2476,7 @@ if(the_list != NULL) {
 							} else {
 								the_list->the_elements[i].var_ptr->var.thesym = NULL;
 								the_list->the_elements[i].var_ptr->var.sel_rec= NULL;
+								the_list->the_elements[i].var_ptr->obj.status = PERMANENT;
 							}
 						}
 						if(tmp_var1->obj.ref_count == 0) {
@@ -2468,6 +2485,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec= NULL;
 							tmp_var1->var.var_type =NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2478,6 +2496,7 @@ if(the_list != NULL) {
 						} else {
 							the_list->the_elements[i].var_ptr->var.thesym = NULL;
 							the_list->the_elements[i].var_ptr->var.sel_rec= NULL;
+							the_list->the_elements[i].var_ptr->obj.status = PERMANENT;
 						}
 					}
 					if(data.u.data_var->obj.ref_count ==0 ){
@@ -2486,6 +2505,7 @@ if(the_list != NULL) {
 						data.u.data_var->var.thesym = NULL;
 						data.u.data_var->var.sel_rec= NULL;
 						data.u.data_var->var.var_type = NORMAL;
+						data.u.data_var->obj.status = PERMANENT;
 					}
 				}
 			}
@@ -2523,6 +2543,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec= NULL;
 							tmp_var1->var.var_type = NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2560,6 +2581,7 @@ if(the_list != NULL) {
 							tmp_var1->var.thesym = NULL;
 							tmp_var1->var.sel_rec= NULL;
 							tmp_var1->var.var_type = NORMAL;
+							tmp_var1->obj.status = PERMANENT;
 						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2576,9 +2598,24 @@ if(the_list != NULL) {
 * Value is a constant
 */
 						data.u.data_var->obj.status = TEMPORARY;
-						tmp_md = _NclStripVarData(data.u.data_var);
-						_NclDestroyObj((NclObj)data.u.data_var);
-						tmp_md->obj.status = PERMANENT;
+						if(data.u.data_var->obj.ref_count == 0) {
+							tmp_md = _NclStripVarData(data.u.data_var);
+							_NclDestroyObj((NclObj)data.u.data_var);
+							tmp_md->obj.status = PERMANENT;
+						} else {
+							tmp2_md = _NclCopyVal((NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id),NULL);
+							tmp_md = _NclStripVarData(data.u.data_var);
+							tmp_md->obj.status = PERMANENT;
+							if(tmp2_md != NULL) {
+								data.u.data_var->var.thevalue_id = tmp2_md->obj.id;
+							} else {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Unrecoverable error in _NclRemapParameters!");
+							}
+							data.u.data_var->var.thesym = NULL;
+							data.u.data_var->var.sel_rec= NULL;
+							data.u.data_var->var.var_type = NORMAL;
+							data.u.data_var->obj.status = PERMANENT;
+						}
 					} else {
 						if(data.u.data_var->obj.ref_count ==0) {
 							_NclDestroyObj((NclObj)data.u.data_var);
@@ -2586,6 +2623,8 @@ if(the_list != NULL) {
 							data.u.data_var->var.thesym = NULL;
 							data.u.data_var->var.sel_rec= NULL;
 							data.u.data_var->var.var_type = NORMAL;
+							data.u.data_var->obj.status = PERMANENT;
+
 						}
 					}
 				}
