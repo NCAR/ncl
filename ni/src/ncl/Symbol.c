@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.54 1998-12-21 19:04:56 dbrown Exp $
+ *      $Id: Symbol.c,v 1.55 1999-02-23 03:04:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2338,7 +2338,7 @@ NclQuark var_sym_name;
 	NclStackEntry *the_var;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if((s->type == VAR)&&(s->type!= UNDEF)) {
+	if(s && (s->type == VAR)&&(s->type!= UNDEF)) {
 		the_var = _NclRetrieveRec(s,DONT_CARE);	
 		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar)))) {
 
@@ -2623,6 +2623,9 @@ int copy_data;
 		for(i = 0; i < the_val->multidval.n_dims; i++) {
 			tmp->dim_sizes[i] = the_val->multidval.dim_sizes[i];
 		}
+/* added by dib */
+		tmp->n_dims = the_val->multidval.n_dims;
+/* end added by dib */
 		tmp->has_missing = the_val->multidval.missing_value.has_missing;
 		tmp->missing = *(NclApiScalar*)&(the_val->multidval.missing_value.value);
 		return(tmp);

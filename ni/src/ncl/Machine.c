@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.72 1998-11-25 01:04:05 ethan Exp $
+ *      $Id: Machine.c,v 1.73 1999-02-23 03:04:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -585,6 +585,8 @@ int access_type;
 	NclFrame *previous;
 	NclParamRecList *the_list;
 
+	if (! the_sym)
+		return NULL;
 
 	i = current_scope_level;
 	
