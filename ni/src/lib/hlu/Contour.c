@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.39 1994-11-11 22:12:46 boote Exp $
+ *      $Id: Contour.c,v 1.40 1994-11-17 20:49:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
+#include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
@@ -3431,8 +3432,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 #endif
 #define _cnMAPBOUNDINC	2000
 
-	if (! strcmp(cnp->trans_obj->base.layer_class->base_class.class_name,
-		   "MapTransObj")) {
+	if ( cnp->trans_obj->base.layer_class->base_class.nrm_class ==
+		   NhlmapTransObjLayerClass->base_class.nrm_class) {
 		ezmap = True;
 	}
 #if 0
@@ -3491,38 +3492,14 @@ static NhlErrorTypes AddDataBoundToAreamap
 			_NhlAredam(cnp->aws,xa,ya,5,3,-1,0,entry_name);
 	}
 	else {
-		NhlBoolean	started = False;
-		float		xinc,yinc; 
-		int		j;
+		char            cval[4];
 
-		xa[0] = xa[1] = xa[4] = cnp->xlb;
-		xa[2] = xa[3] = cnp->xub;
-		ya[0] = ya[3] = ya[4] = cnp->ylb;
-		ya[1] = ya[2] = cnp->yub;
-
-		for (i=0;  i < 4; i++) {
-			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
-			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
-			if (! started) {
-				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,3,-1,0,entry_name);
-#if 0
-				c_mapit(ya[i],xa[i],0);
-#endif
-				started = True;
-			}
-			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
-				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   1,3,-1,0,entry_name);
-#if 0
-				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
-#endif
-			}
-		}
-		_NhlMapiqa(cnp->aws,3,-1,0,entry_name);
-#if 0
-		c_mapiq();
-#endif
+                c_mpgetc("OU",cval,3);
+                c_mpsetc("OU","NO");
+                c_mpseti("G2",3);
+                c_mpseti("VS",1);
+                _NhlMapbla(cnp->aws,entry_name);
+                c_mpsetc("OU",cval);
 	}
 	return NhlNOERROR;
 }

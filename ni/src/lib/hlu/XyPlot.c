@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.25 1994-11-07 03:10:51 ethan Exp $
+ *      $Id: XyPlot.c,v 1.26 1994-11-17 20:49:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -430,6 +430,16 @@ static NhlResource resources[] = {
 
 /* base methods */
 
+static NhlErrorTypes XyDataSetValues(
+#ifdef NhlNeedProto
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args*/
+#endif
+);
+
 static NhlErrorTypes XyPlotSetValues(
 #ifdef NhlNeedProto
         NhlLayer,          /* old */
@@ -437,6 +447,22 @@ static NhlErrorTypes XyPlotSetValues(
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
+#endif
+);
+
+static NhlErrorTypes XyDataGetValues(
+#ifdef NhlNeedProto
+        NhlLayer	l,
+        _NhlArgList	args,
+        int		nargs
+#endif
+);
+
+static NhlErrorTypes XyPlotGetValues(
+#ifdef NhlNeedProto
+        NhlLayer	l,
+        _NhlArgList	args,
+        int		nargs
 #endif
 );
 
@@ -612,9 +638,9 @@ NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec = {
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	XyDataClassInitialize,
 /* layer_initialize		*/	XyDataInitialize,
-/* layer_set_values		*/	NULL,
+/* layer_set_values		*/	XyDataSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	XyDataGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
 	},
@@ -647,7 +673,7 @@ NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
 /* layer_initialize             */      XyPlotInitialize,
 /* layer_set_values             */      XyPlotSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values             */      NULL,
+/* layer_get_values             */      XyPlotGetValues,
 /* layer_reparent               */      NULL,
 /* layer_destroy                */      XyPlotDestroy,
 
@@ -744,6 +770,21 @@ static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 
+static NrmQuark QXirreg = NrmNULLQUARK;
+static NrmQuark QYirreg = NrmNULLQUARK;
+static NrmQuark QXalt = NrmNULLQUARK;
+static NrmQuark QYalt = NrmNULLQUARK;
+static NrmQuark QXorig = NrmNULLQUARK;
+static NrmQuark QYorig = NrmNULLQUARK;
+
+static NrmQuark Qcolors = NrmNULLQUARK;
+static NrmQuark Qdpatterns = NrmNULLQUARK;
+static NrmQuark Qmarkmodes = NrmNULLQUARK;
+static NrmQuark Qmarkers = NrmNULLQUARK;
+static NrmQuark Qmarksizes = NrmNULLQUARK;
+static NrmQuark Qmarkercolors = NrmNULLQUARK;
+static NrmQuark Qlabels = NrmNULLQUARK;
+
 /*
  * Function:	XyDataClassInitialize
  *
@@ -785,6 +826,14 @@ XyDataClassInitialize
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 
+	Qcolors = NrmStringToQuark(NhlNxyColors);
+	Qdpatterns = NrmStringToQuark(NhlNxyDashPatterns);
+	Qmarkmodes = NrmStringToQuark(NhlNxyMarkerModes);
+	Qmarkers = NrmStringToQuark(NhlNxyMarkers);
+	Qmarksizes = NrmStringToQuark(NhlNxyMarkerSizesF);
+	Qmarkercolors = NrmStringToQuark(NhlNxyMarkerColors);
+	Qlabels = NrmStringToQuark(NhlNxyExplicitLabels);
+
 	return NhlNOERROR;
 }
 
@@ -822,6 +871,13 @@ XyPlotClassInitialize
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
+
+	QXirreg = NrmStringToQuark(NhlNxyXIrregularPoints);
+	QYirreg = NrmStringToQuark(NhlNxyYIrregularPoints);
+	QXalt = NrmStringToQuark(NhlNxyXAlternateCoords);
+	QYalt = NrmStringToQuark(NhlNxyYAlternateCoords);
+	QXorig = NrmStringToQuark(NhlNxyXOriginalCoords);
+	QYorig = NrmStringToQuark(NhlNxyYOriginalCoords);
 
 	return NhlNOERROR;
 }
@@ -1045,6 +1101,66 @@ XyDataInitialize
 		}
 	}
 
+	if(dnew->xydata.marker_modes != NULL){
+		gen = dnew->xydata.marker_modes;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_modes = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkerModes);
+
+			dnew->xydata.marker_modes = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.markers != NULL){
+		gen = dnew->xydata.markers;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.markers = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkers);
+
+			dnew->xydata.markers = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.marker_sizes != NULL){
+		gen = dnew->xydata.marker_sizes;
+		if((gen->size == sizeof(float)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_sizes = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic float array: ignoring",
+					error_lead,NhlNxyMarkerSizesF);
+
+			dnew->xydata.marker_sizes = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.marker_colors != NULL){
+		gen = dnew->xydata.marker_colors;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_colors = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkerColors);
+
+			dnew->xydata.marker_colors = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
 	if(dnew->xydata.labels != NULL){
 		gen = dnew->xydata.labels;
 		if((gen->typeQ == Qstring) &&(gen->size == sizeof(NhlString)) &&
@@ -1114,6 +1230,162 @@ XyPlotInitialize
 }
 
 /*
+ * Function:	XyDataSetValues
+ *
+ * Description:	Initializes the XyData Dependent class instance.
+ *
+ * In Args:	
+ *		NhlLayerClass	class,
+ *		NhlLayer		req,
+ *		NhlLayer		new,
+ *		_NhlArgList	args,
+ *		int		num_args
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+XyDataSetValues
+#if  __STDC__
+(
+	NhlLayer		old,
+	NhlLayer		reference,
+	NhlLayer		new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(old,reference,new,args,num_args)
+	NhlLayer		old;
+	NhlLayer		reference;
+	NhlLayer		new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlXyDataDepLayer	dnew = (NhlXyDataDepLayer)new;
+	NhlXyDataDepLayer	dold = (NhlXyDataDepLayer)old;
+	char		*error_lead = "XyDataInitialize";
+	NhlGenArray	gen;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(dnew->xydata.colors != dold->xydata.colors){
+		gen = dnew->xydata.colors;
+		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
+						(gen->num_dimensions == 1)){
+			dnew->xydata.colors = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyColors);
+
+			dnew->xydata.colors = dold->xydata.colors;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.dash_patterns != dold->xydata.dash_patterns){
+		gen = dnew->xydata.dash_patterns;
+		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
+						(gen->num_dimensions == 1)){
+			dnew->xydata.dash_patterns = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyDashPatterns);
+
+			dnew->xydata.dash_patterns = dold->xydata.dash_patterns;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.marker_modes != dold->xydata.marker_modes){
+		gen = dnew->xydata.marker_modes;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_modes = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkerModes);
+
+			dnew->xydata.marker_modes = dold->xydata.marker_modes;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.markers != dold->xydata.markers){
+		gen = dnew->xydata.markers;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.markers = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkers);
+
+			dnew->xydata.markers = dold->xydata.markers;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.marker_sizes != dold->xydata.marker_sizes){
+		gen = dnew->xydata.marker_sizes;
+		if((gen->size == sizeof(float)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_sizes = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic float array: ignoring",
+					error_lead,NhlNxyMarkerSizesF);
+
+			dnew->xydata.marker_sizes = dold->xydata.marker_sizes;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.marker_colors != dold->xydata.marker_colors){
+		gen = dnew->xydata.marker_colors;
+		if((gen->size == sizeof(int)) && (gen->num_dimensions == 1)){
+			dnew->xydata.marker_colors = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s must be set with a 1-dim generic int array: ignoring",
+					error_lead,NhlNxyMarkerColors);
+
+			dnew->xydata.marker_colors = dold->xydata.marker_colors;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(dnew->xydata.labels != dold->xydata.labels){
+		gen = dnew->xydata.labels;
+		if((gen->typeQ == Qstring) &&(gen->size == sizeof(NhlString)) &&
+						(gen->num_dimensions == 1)){
+
+			dnew->xydata.labels = _NhlCopyGenArray(gen,True);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"%s:%s must be set with a generic NhlString array: ignoring",
+					error_lead,NhlNxyExplicitLabels);
+
+			dnew->xydata.labels = dold->xydata.labels;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	return ret;
+}
+
+/*
  * Function:	XyPlotSetValues
  *
  * Description: 
@@ -1176,6 +1448,147 @@ XyPlotSetValues
 	}
 
 	return XyPlotChanges(xnew,xold,SET);
+}
+
+/*
+ * Function:	XyDataGetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XyDataGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
+#else
+(l,args,nargs)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		nargs;
+#endif
+{
+	char			func[] = "XyDataGetValues";
+	NhlXyDataDepLayerPart	*xyp = &((NhlXyDataDepLayer)l)->xydata;
+	int			i;
+	NhlGenArray		ga;
+	NhlString		res_name;
+
+	for(i=0;i<nargs;i++){
+		ga = NULL;
+		res_name = NULL;
+
+		if(args[i].quark == Qcolors){
+			ga = xyp->colors;
+		}
+		if(args[i].quark == Qdpatterns){
+			ga = xyp->dash_patterns;
+		}
+		if(args[i].quark == Qmarkmodes){
+			ga = xyp->marker_modes;
+		}
+		if(args[i].quark == Qmarkers){
+			ga = xyp->markers;
+		}
+		if(args[i].quark == Qmarksizes){
+			ga = xyp->marker_sizes;
+		}
+		if(args[i].quark == Qmarkercolors){
+			ga = xyp->marker_colors;
+		}
+		if(args[i].quark == Qlabels){
+			ga = xyp->labels;
+		}
+
+		if(ga != NULL){
+			*((NhlGenArray *)args[i].value.ptrval) =
+						_NhlCopyGenArray(ga,True);
+			if(!*(NhlGenArray *)args[i].value.ptrval){
+				NhlPError(NhlWARNING,ENOMEM,
+					"%s:Unable to retrieve %s",func,
+					NrmQuarkToString(args[i].quark));
+			}
+		}
+	}
+}
+
+/*
+ * Function:	XyPlotGetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XyPlotGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
+#else
+(l,args,nargs)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		nargs;
+#endif
+{
+	char			func[] = "XyPlotGetValues";
+	NhlXyPlotLayerPart	*xyp = &((NhlXyPlotLayer)l)->xyplot;
+	int			i;
+	NhlGenArray		ga;
+	NhlString		res_name;
+
+	for(i=0;i<nargs;i++){
+		ga = NULL;
+		res_name = NULL;
+
+		if(args[i].quark == QXirreg){
+			ga = xyp->x_irregular_points;
+		}
+		if(args[i].quark == QYirreg){
+			ga = xyp->y_irregular_points;
+		}
+		if(args[i].quark == QXalt){
+			ga = xyp->x_alternate_coords;
+		}
+		if(args[i].quark == QYalt){
+			ga = xyp->y_alternate_coords;
+		}
+		if(args[i].quark == QXorig){
+			ga = xyp->x_original_coords;
+		}
+		if(args[i].quark == QYorig){
+			ga = xyp->y_original_coords;
+		}
+
+		if(ga != NULL){
+			*((NhlGenArray *)args[i].value.ptrval) =
+						_NhlCopyGenArray(ga,True);
+			if(!*(NhlGenArray *)args[i].value.ptrval){
+				NhlPError(NhlWARNING,ENOMEM,
+					"%s:Unable to retrieve %s",func,
+					NrmQuarkToString(args[i].quark));
+			}
+		}
+	}
 }
 
 /*
