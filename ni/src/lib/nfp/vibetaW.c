@@ -173,8 +173,8 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Coerce pbot to double if necessary.
  */
-  tmp_pbot = coerce_input_double(pbot,type_pbot,1,NULL,NULL,NULL);
-  tmp_ptop = coerce_input_double(ptop,type_ptop,1,NULL,NULL,NULL);
+  tmp_pbot = coerce_input_double(pbot,type_pbot,1,0,NULL,NULL);
+  tmp_ptop = coerce_input_double(ptop,type_ptop,1,0,NULL,NULL);
   if(tmp_pbot == NULL || tmp_ptop == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing pbot/ptop arrays to double precision");
     return(NhlFATAL);

@@ -4,7 +4,6 @@
 * They should be located in ${NCARG_ROOT}/include
 */
 #include "wrapper.h"
-#include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
 #include "DataSupport.h"

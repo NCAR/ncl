@@ -2848,11 +2848,11 @@ NclScalar         *missing_dx)
  * Coerce x to double if necessary.
  */
   if(type_x != NCL_double) {
-    dx = (double*)calloc(sizeof(double),size_x);
+    dx = (double*)calloc(size_x,sizeof(double));
     if( dx == NULL ) return(NULL);
     if(has_missing_x) {
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
+                 (void*)dx,
                  x,
                  size_x,
                  missing_dx,
@@ -2861,7 +2861,7 @@ NclScalar         *missing_dx)
     }
     else {
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
+                 (void*)dx,
                  x,
                  size_x,
                  NULL,
