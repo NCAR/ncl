@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.170 2004-10-06 17:59:49 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.171 2004-10-11 19:25:24 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -420,15 +420,12 @@ NhlErrorTypes _NclIGetFileVarNames
 	int i,ret =0;
 	int dimsize = 0;
 	NclFile thefile;
-	NclMultiDValData tmp_md;
+	NclMultiDValData tmp_md = NULL;
 	
 	tmp = NULL;
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
-/*
-		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-*/
 		file_q = data.u.data_var->var.var_quark;
 		break;
 	case NclStk_VAL:
