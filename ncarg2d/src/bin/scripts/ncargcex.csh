@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.19 1994-11-03 17:32:18 haley Exp $
+#	$Id: ncargcex.csh,v 1.20 1994-11-03 22:54:48 haley Exp $
 #
 
 #**************************#
@@ -17,8 +17,12 @@ if ($#argv < 1) then
   echo "   [-A] [-x11]"
   echo ""
   echo " To invoke various utilities:"
-  echo "   [-autograph] [-bivar] [-conpack] [-ezmap] [-gks]     "
-  echo "   [-labelbar] [-plotchar] [-scrolled_title] [-softfill]"
+  echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]  "
+  echo "   [-dashline] [dashpack] [-ezmap] [-field_flow]         "
+  echo "   [-gflash] [-gks] [-gridall] [-histogram] [-isosurface]"
+  echo "   [-labelbar] [-ngmisc] [-plotchar] [polypack]          "
+  echo "   [-scrolled_title] [-softfill] [-spps] [-streamlines]  "
+  echo "   [-surface] [-threed] [-vectors] [-wmap]"
   echo ""
   echo " Other options:"
   echo "   [-W workstation_type] [-n] [-clean] [-onebyone] names"
@@ -127,6 +131,16 @@ set default_msgs = (\
 	"Monochrome landscape encapsulated PostScript file is named" \
 	"Monochrome landscape interchange encapsulated PostScript file is named")
 
+#**********************#
+#                      #
+#  Set areas examples  #
+#                      #
+#**********************#
+set ex_areas   = (c_arex01 c_arex02)
+set tst_areas  = (c_tareas)
+set ttr_areas  = (c_cardb1 c_caredg c_carline c_cardb2 c_carfill c_carmap)
+set areas_list = ($ex_areas $tst_areas $ttr_areas)
+
 #**************************#
 #                          #
 #  Set autograph examples  #
@@ -145,11 +159,36 @@ set cbivar_list = ($ex_cbivar)
 
 #************************#
 #                        #
+#  Set colconv examples  #
+#                        #
+#************************#
+set ex_colconv   = (c_coex02)
+set colconv_list = ($ex_colconv)
+
+#************************#
+#                        #
 #  Set conpack examples  #
 #                        #
 #************************#
 set ttr_conpack  = (c_colcon)
-set conpack_list = ($ttr_conpack)
+set ex_conpack   = (${ex_cbivar})
+set conpack_list = ($ex_conpack $ttr_conpack)
+
+#*************************#
+#                         #
+#  Set dashline examples  #
+#                         #
+#*************************#
+set fnd_dashline  = (c_fdldashc)
+set dashline_list = ($fnd_dashline)
+
+#*************************#
+#                         #
+#  Set dashpack examples  #
+#                         #
+#*************************#
+set tst_dashpack  = (c_tdshpk)
+set dashpack_list = ($tst_dashpack)
 
 #**********************#
 #                      #
@@ -159,6 +198,14 @@ set conpack_list = ($ttr_conpack)
 set ex_ezmap   = (c_mpex05 c_eezmpa)
 set ezmap_list = ($ex_ezmap)
 
+#***********************#
+#                       #
+#  Set gflash examples  #
+#                       #
+#***********************#
+set tst_gflash  = (c_tgflas)
+set gflash_list = ($tst_gflash)
+
 #******************#
 #                  #
 # set gks examples #
@@ -166,6 +213,30 @@ set ezmap_list = ($ex_ezmap)
 #******************#
 set ex_gks     = (c_gtxpac)
 set gks_list   = ($ex_gks)
+
+#************************#
+#                        #
+#  Set gridall examples  #
+#                        #
+#************************#
+set tst_gridall  = (c_tgrida)
+set gridall_list = ($tst_gridall)
+
+#**************************#
+#                          #
+#  Set histogram examples  #
+#                          #
+#**************************#
+set tst_histogram  = (c_thstmv)
+set histogram_list = ($tst_histogram)
+
+#*************************#
+#                         #
+# set isosurface examples #
+#                         #
+#*************************#
+set tst_isosurface  = (c_tisosr)
+set isosurface_list = ($tst_isosurface)
 
 #***********************#
 #                       #
@@ -175,13 +246,29 @@ set gks_list   = ($ex_gks)
 set ex_labelbar   = (c_elblba)
 set labelbar_list = ($ex_labelbar)
 
+#*********************#
+#                     #
+# set ngmisc examples #
+#                     #
+#*********************#
+set fnd_ngmisc  = (c_fngwsym)
+set ngmisc_list = ($fnd_ngmisc)
+
 #***********************#
 #                       #
 # set plotchar examples #
 #                       #
 #***********************#
 set ex_plotchar   = (c_epltch)
-set plotchar_list = ($ex_plotchar) 
+set plotchar_list = ($ex_plotchar)
+
+#***********************#
+#                       #
+# set polypack examples #
+#                       #
+#***********************#
+set ex_polypack   = (c_ppex01)
+set polypack_list = ($ex_polypack)
 
 #*****************************#
 #                             #
@@ -199,16 +286,82 @@ set scrlld_title_list = (${ex_scrlld_title})
 set ex_softfill   = (c_sfex02)
 set softfill_list = ($ex_softfill)
 
+#*******************#
+#                   #
+# set spps examples #
+#                   #
+#*******************#
+set fnd_spps  = (c_fcoord2)
+set spps_list = ($fnd_spps)
+
+#**************************#
+#                          #
+# set streamlines examples #
+#                          #
+#**************************#
+set fnd_streamlines  = (c_ffex03)
+set streamlines_list = ($fnd_streamlines)
+
+#**********************#
+#                      #
+# set surface examples #
+#                      #
+#**********************#
+set ex_surface   = (c_srex01)
+set surface_list = ($ex_surface)
+
+#*********************#
+#                     #
+# set threed examples #
+#                     #
+#*********************#
+set fnd_threed  = (c_fthex01)
+set threed_list = ($fnd_threed)
+
+#**********************#
+#                      #
+# set vectors examples #
+#                      #
+#**********************#
+set ex_vectors   = (c_vvex03)
+set vectors_list = ($ex_vectors)
+
+#*******************#
+#                   #
+# set wmap examples #
+#                   #
+#*******************#
+set ex_wmap   = (c_wmex03)
+set wmap_list = ($ex_wmap)
+
+#****************************************#
+#                                        #
+#  Set field flow examples - consists of #
+#  all streamlines and vectors examples  #
+#                                        #
+#****************************************#
+set ex_field   = (c_vvex03)
+set fnd_field  = (c_ffex03)
+set field_list = ($ex_field $fnd_field)
+
 #****************************************#
 #                                        #
 # Set lists of various types of examples #
 #                                        #
 #****************************************#
 set x11_list = (c_xwndws)
-set ex_list  = ($ex_autograph $ex_ezmap $ex_gks $ex_labelbar \
-                $ex_plotchar ${ex_scrlld_title} $ex_softfill)
+set ex_list  = ($ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
+                $ex_field $ex_gks $ex_labelbar $ex_plotchar $ex_polypack \
+                ${ex_scrlld_title} $ex_softfill $ex_surface \
+                $ex_wmap)
+
+set tst_list = ($tst_areas $tst_dashpack $tst_gflash $tst_gridall \
+                $tst_histogram $tst_isosurface)
 
 set ttr_list = ($ttr_conpack)
+
+set fnd_list = ($fnd_dashline $fnd_field $fnd_ngmisc $fnd_spps $fnd_threed)
+
 #****************************************#
 #                                        #
 # Default is to load in the X11 library. #
@@ -239,7 +392,36 @@ while ($#argv > 0)
     case "-all":
     case "-A":
       shift
-      set names=($names $ex_list $ttr_list)
+      set names=($names $ex_list $tst_list $ttr_list $fnd_list)
+      breaksw
+        
+    case "-allexamples":
+    case "-E":
+      shift
+      set names=($names $ex_list)
+      breaksw
+
+    case "-alltests":
+    case "-T":
+      shift
+      set names=($names $tst_list)
+      breaksw
+        
+    case "-alltutorial":
+    case "-U":
+      shift
+      set names=($names $ttr_list)
+      breaksw
+        
+    case "-allfundamental":
+    case "-F":
+      shift
+      set names=($names $fnd_list)
+      breaksw
+        
+    case "-areas":
+      shift
+      set names=($names $areas_list)
       breaksw
         
     case "-autograph":
@@ -252,9 +434,24 @@ while ($#argv > 0)
       set names=($names $cbivar_list)
       breaksw
 
+    case "-colconv":
+      shift
+      set names=($names $colconv_list)
+      breaksw
+
     case "-conpack":
       shift
       set names=($names $conpack_list)
+      breaksw
+
+    case "-dashline":
+      shift
+      set names=($names $dashline_list)
+      breaksw
+
+    case "-dashpack":
+      shift
+      set names=($names $dashpack_list)
       breaksw
 
     case "-ezmap":
@@ -262,9 +459,34 @@ while ($#argv > 0)
       set names=($names $ezmap_list)
       breaksw
 
+    case "-field_flow":
+      shift
+      set names=($names $field_list)
+      breaksw
+
+    case "-gflash":
+      shift
+      set names=($names $gflash_list)
+      breaksw
+
     case "-gks":
       shift
       set names=($names $gks_list)
+      breaksw
+
+    case "-gridall":
+      shift
+      set names=($names $gridall_list)
+      breaksw
+
+    case "-histogram":
+      shift
+      set names=($names $histogram_list)
+      breaksw
+
+    case "-isosurface":
+      shift
+      set names=($names $isosurface_list)
       breaksw
 
     case "-labelbar":
@@ -272,9 +494,19 @@ while ($#argv > 0)
       set names=($names $labelbar_list)
       breaksw
 
+    case "-ngmisc":
+      shift
+      set names=($names $ngmisc_list)
+      breaksw
+
     case "-plotchar":
       shift
       set names=($names $plotchar_list)
+      breaksw
+
+    case "-polypack":
+      shift
+      set names=($names $polypack_list)
       breaksw
 
     case "-scrolled_title":
@@ -285,6 +517,36 @@ while ($#argv > 0)
     case "-softfill":
       shift
       set names=($names $softfill_list)
+      breaksw
+
+    case "-spps":
+      shift
+      set names=($names $spps_list)
+      breaksw
+
+    case "-streamlines":
+      shift
+      set names=($names $streamlines_list)
+      breaksw
+
+    case "-surface":
+      shift
+      set names=($names $surface_list)
+      breaksw
+
+    case "-threed":
+      shift
+      set names=($names $threed_list)
+      breaksw
+
+    case "-vectors":
+      shift
+      set names=($names $vectors_list)
+      breaksw
+
+    case "-wmap":
+      shift
+      set names=($names $wmap_list)
       breaksw
 
     case "-x11":
@@ -541,12 +803,41 @@ foreach known ($ex_list)
   endif
 end
 
+if ( $ex_type == "Unknown" ) then
+  foreach known ($tst_list)
+    if ("$name" == "$known") then
+      set ex_type=" Test"
+      set temp_dir = "$test_dir"
+      break
+    endif
+  end
+endif
 
 if ( $ex_type == "Unknown" ) then
   foreach known ($ttr_list)
     if ("$name" == "$known") then
       set ex_type=" Tutorial"
       set temp_dir = "$tutor_dir"
+      break
+    endif
+  end
+endif
+
+if ( $ex_type == "Unknown" ) then
+  foreach known ($fnd_list $x11_list)
+    if ("$name" == "$known") then
+      set ex_type=" Fundamentals"
+      set temp_dir = "$fund_dir"
+      break
+    endif
+  end
+endif
+
+if ( $ex_type == "Unknown" ) then
+  foreach known ($pdc_list)
+    if ("$name" == "$known") then
+      set ex_type=" Programmer"
+      set temp_dir = "$pdoc_dir"
       break
     endif
   end
@@ -575,63 +866,6 @@ endif
 # if there's anything special about it #
 #                                      #
 #**************************************#
-switch($name)
-    case c_pgkex19:
-    case c_pgkex20:
-    case c_pgkex21:
-    case c_pgkex22:
-    case c_pgkex23:
-      set tmp_ws_type = "20"
-      echo ""
-      echo "  This example was set up to demonstrate the Postscript"
-      echo "  driver, so workstation type 20 is being used."
-      echo ""
-    breaksw
-
-    case c_wmex01:
-    case c_wmex02:
-    case c_wmex04:
-      if ($ws_type >= 20 && $ws_type < 31) then
-        set tmp_ws_type = "26"
-        echo ""
-        echo "  This example was set up to use the entire"
-        echo "  page when going to PostScript, so workstation"
-        echo "  type 26 is being used."
-        echo ""
-      endif
-    breaksw
-
-    case c_pgkex26:
-    case c_fgke03:
-      set tmp_ws_type = "1"
-      echo ""
-      echo "  This example was set up to demonstrate how to change"
-      echo "  the name of the metafile from within the program."
-      echo ""
-      set tmp_msg = "Metafiles META01 and META02 produced."
-      set no_file
-    breaksw
-
-    case c_fgke01:
-    case c_fgke04:
-      echo ""
-      echo "  This example was set up to demonstrate the X11"
-      echo "  driver.  It also generates a graphic file."
-      echo ""
-    breaksw
-
-    case c_ccpcff:
-    case c_tcolcv:
-    case c_fcce02:
-      unset tmp_ws_type
-      set no_file
-      set tmp_msg = "   "
-      echo ""
-      echo "  No graphics file will be produced by this example."
-      echo ""
-    breaksw
-endsw
-
 if ($?tmp_ws_type) then
   set the_ws_type = "$tmp_ws_type"
 else
@@ -704,15 +938,35 @@ else
   set ncargccflags = ("")
 endif
 
-#**********************************#
-#                                  #
-# Some examples need extra Fortran #
-# files, data files, or special    #
-# compiler options                 #
-#                                  #
-#**********************************#
+#**************************#
+#                          #
+# Some examples need extra #
+# C files, data files, or  #
+# special compiler options #
+#                          #
+#**************************#
 set extra_c_files
 set data_files
+
+switch ($name)
+    case c_ffex03:
+        set data_files = (ffex02.dat)
+    breaksw
+
+    case c_srex01:
+        set data_files = (srex01.dat)
+    breaksw
+endsw
+
+#**********************************#
+#                                  #
+# Check if this particular example #
+# needs a data file                #
+#                                  #
+#**********************************#
+if ("$data_files" != "") then
+  set input = "$data_files"
+endif
 
 #******************************#
 #                              #
@@ -784,6 +1038,7 @@ if (! $?NoRunOption) then
         echo ""
         echo "The execution of ./$name failed"
         echo ""
+        /bin/rm ./$default_file >& /dev/null
         exit
     endif
     echo ""
