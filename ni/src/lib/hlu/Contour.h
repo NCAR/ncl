@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.14 1994-09-16 19:12:52 dbrown Exp $
+ *      $Id: Contour.h,v 1.15 1994-09-28 20:16:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -281,6 +281,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnOutOfRangeFillPattern	"cnOutOfRangeFillPattern"
 #define NhlNcnOutOfRangeFillScaleF	"cnOutOfRangeFillScaleF"
 
+#define NhlNcnDumpAreaMap		"cnDumpAreaMap"
+
 /*
  * Contour class resources
  */
@@ -478,6 +480,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnOutOfRangeFillColor	"CnOutOfRangeFillColor"
 #define NhlCcnOutOfRangeFillPattern	"CnOutOfRangeFillPattern"
 #define NhlCcnOutOfRangeFillScaleF	"CnOutOfRangeFillScaleF"
+
+#define NhlCcnDumpAreaMap		"CnDumpAreaMap"
 
 extern NhlLayerClass			NhlcontourLayerClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.28 1994-09-27 00:50:28 dbrown Exp $
+ *      $Id: Contour.c,v 1.29 1994-09-28 20:16:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -708,9 +708,12 @@ static NhlResource resources[] = {
 
 /* Private resources */
 
-	{ NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(data_changed),
-		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnDumpAreaMap, NhlCcnDumpAreaMap,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(dump_area_map),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(data_changed),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 
 /* Intercepted resources */
 
@@ -2789,9 +2792,10 @@ static NhlErrorTypes cnInitAreamap
 
 	subret = _NhlCpclam(cnp->data,cnp->fws,cnp->iws,cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-	_NhlDumpAreaMap(cnp->aws,entry_name);
-#endif	
+
+	if (cnp->dump_area_map)
+	    _NhlDumpAreaMap(cnp->aws,entry_name);
+
 	cnp->area_ws_inited = True;
 
 	return ret;
@@ -3098,8 +3102,8 @@ static NhlErrorTypes cnDraw
 	c_cpsetr("XCM",cnp->xcm);
 	c_cpsetr("YC1",cnp->yc1);
 	c_cpsetr("YCN",cnp->ycn);
-	c_cpseti("WSO", 3);
-	c_cpseti("NVS",0);
+	c_cpseti("WSO", 3);		/* error recovery on */
+	c_cpseti("NVS",0);		/* no vertical strips */	
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
         if (cnp->check_point_distance)
@@ -3160,7 +3164,9 @@ static NhlErrorTypes cnDraw
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
-	if (cnp->do_lines && cnp->line_order == order) {
+	if (cnp->line_order == order &&
+	    (cnp->do_lines || cnp->missing_val.perim_on ||
+	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
 		if (cnp->do_labels && cnp->label_masking) {
 			subret = _NhlCpcldm(cnp->data,
 					    cnp->fws,cnp->iws,cnp->aws,
@@ -3227,7 +3233,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 	int			xrev,yrev;
 	float			xa[5],ya[5];
 
-#define _cnMAPBOUNDINC	20
+#if 0
+#define _cnMAPBOUNDINC	3700
+#endif
+#define _cnMAPBOUNDINC	2000
 
 	if (! strcmp(cnp->trans_obj->base.layer_class->base_class.class_name,
 		   "MapTransObj")) {
@@ -3293,7 +3302,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   2,3,-1,0,entry_name);
+					   1,3,-1,0,entry_name);
 #if 0
 				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
 #endif
@@ -3498,7 +3507,9 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		aia = aid_offset+i+1;
 		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",clvp[i]);
-		if (cnp->mono_level_flag)
+		if (! *do_lines)
+			c_cpseti("CLU",NhlcnNOLINE);
+		else if (cnp->mono_level_flag)
 			c_cpseti("CLU",clup[0]);
 		else
 			c_cpseti("CLU",clup[i]);
@@ -8111,13 +8122,13 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	int i;
 	int pat_ix, col_ix;
 	float fscale;
-
+#if 0
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 10 && iai[i] == -1) {
 			return 0;
 		}
 	}
-
+#endif
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 3) {
 			if (iai[i] > 99 && 
@@ -8205,6 +8216,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 	c_cpgeti("PAI", &pai);
 	if (pai > 0 && pai < 256) {
+		if (! Cnp->do_lines) return;
 		pai -= 1;
 		thickness = Cnp->mono_line_thickness ? thp[0] : thp[pai];
 		lcol = Cnp->mono_line_color ? 
@@ -8215,13 +8227,13 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 		NhlcnRegionAttrs *reg_attrs;
 
 		switch (pai) {
-		case 257:
+		case -1:
 			reg_attrs = &Cnp->grid_bound;
 			break;
-		case 258:
+		case -2:
 			reg_attrs = &Cnp->missing_val;
 			break;
-		case 259:
+		case -3:
 			reg_attrs = &Cnp->out_of_range;
 			break;
 		default:

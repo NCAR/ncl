@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.14 1994-09-23 23:36:50 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.15 1994-09-28 20:16:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -295,7 +295,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate, _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNmpGridSpacingF,NhlCmpGridSpacingF,
 		 NhlTFloat,sizeof(float),Oset(grid_spacing),
-		 NhlTString, _NhlUSET("0.1"),0,NULL},
+		 NhlTString, _NhlUSET("15.0"),0,NULL},
 	{NhlNmpGridMaskMode,NhlCmpGridMaskMode,NhlTMapGridMaskMode,
 		 sizeof(NhlMapGridMaskMode),Oset(grid_mask_mode),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlmpMASKNONE),0,NULL},
@@ -2374,6 +2374,8 @@ static NhlErrorTypes mpGrid
 
 	c_mpseti("C2",mpp->grid.gks_color);
 	c_mpseti("C4", mpp->limb.gks_color);
+
+	mpp->relative_grid_spacing = False;
 
 	if (! mpp->relative_grid_spacing) {
 		spacing = mpp->grid_spacing;

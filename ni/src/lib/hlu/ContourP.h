@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.15 1994-09-16 19:12:52 dbrown Exp $
+ *      $Id: ContourP.h,v 1.16 1994-09-28 20:16:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -120,8 +120,6 @@ typedef struct _NhlContourLayerPart {
 
 	NhlGenArray	scalar_field_data;
 
-	float		out_of_range_val;
-
 	NhlcnLevelSelectionMode		level_selection_mode;
 	int		level_count;
 	int		max_level_count;
@@ -218,10 +216,10 @@ typedef struct _NhlContourLayerPart {
 	NhlGenArray	labelbar_labels;
 	NhlString	labelbar_title;
 
-	NhlBoolean	update_req;
-
 	/* private resource */
 
+	NhlBoolean	dump_area_map;
+	NhlBoolean	update_req;
 	NhlBoolean	data_changed;
 
 	/* Private Fields */
