@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.16 1994-04-18 22:24:40 kennison Exp $
+.\"	$Id: ncargex.m,v 1.17 1994-05-05 14:09:08 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -286,7 +286,7 @@ listed according to which utility they belong with:
 	fisissrf fispwrzi tisosr tpwrzi
 .sp
 .I "LABELBAR Examples:"
-	elblba tlblba
+	elblba tlblba clbfil clbbar clblbr
 .sp
 .I "NGMISC Examples:"
 	fngngdts fngwsym
