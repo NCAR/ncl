@@ -1,5 +1,5 @@
 C
-C       $Id: stmpxy.f,v 1.7 1993-12-03 21:18:45 kennison Exp $
+C       $Id: stmpxy.f,v 1.8 1994-06-01 23:08:29 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -112,7 +112,40 @@ C
          YDA=YUS
       ELSE IF (IMAP .EQ. 1) THEN
          CALL MAPTRI(XUS,YUS,YDA,XDA)
-      ELSE IF (IMAP .EQ. 2) THEN
+         IF (XDA .EQ. 1.E12 .OR. YDA .EQ. 1.E12) THEN
+            IST = -1
+            RETURN
+         ENDIF
+C
+C Depending on how the data coordinate boundaries are expressed, 
+C it may be necessary to adjust the longitudinal values in order 
+C to place them within range. Latitudes are not adjusted.
+C
+         XLO = MIN(XLOV,XHIV)
+         XHI = MAX(XLOV,XHIV)
+         IF (XDA .LT. XLO) THEN       
+ 10         CONTINUE
+            IF (XDA .GT. XHI) THEN
+               IST = -1
+               RETURN
+            ELSE IF (XDA .GE. XLO) THEN
+               RETURN
+            ENDIF
+            XDA = XDA + 360.0
+            GOTO 10
+         ELSE IF (XDA .GT. XHI) THEN
+ 20         CONTINUE
+            IF (XDA .LT. XLO) THEN
+               IST = -1
+               RETURN
+            ELSE IF (XDA .LE. XHI) THEN
+               RETURN
+            ENDIF
+            XDA = XDA - 360.0
+            GOTO 10
+         ENDIF
+C
+       ELSE IF (IMAP .EQ. 2) THEN
          XDA=SQRT(XUS*XUS+YUS*YUS)
          YDA=PRTOD*ATAN2(YUS,XUS)
 C
