@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.12 2000-03-21 02:35:54 dbrown Exp $
+ *      $Id: vartree.c,v 1.13 2000-06-28 19:24:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -113,25 +114,9 @@ static char *GetLongName(
 
 	for (i = 0; i < vinfo->n_atts; i++) {
 		if (vinfo->attnames[i] == Qlong_name) {
-                        if (qfile != NrmNULLQUARK) {
-                                if (qdim != NrmNULLQUARK)
-                                        val = NclReadFileVarAtt
-                                                (qfile,qdim,
-                                                 vinfo->attnames[i]);
-                                else
-                                        val = NclReadFileVarAtt
-                                                (qfile,qvar,
-                                                 vinfo->attnames[i]);
-                        }
-                        else {
-                                if (qdim != NrmNULLQUARK)
-                                        val = NclReadVarCoordAtt
-                                                (qvar,qdim,vinfo->attnames[i]);
-                                else
-                                        val = NclReadVarAtt
-                                                (qvar,vinfo->attnames[i]);
-                        }
-                        sval = NgTypedValueToString(val,0,False,&len);
+			val = NgNclReadAtt(qfile,qvar,qdim,vinfo->attnames[i]);
+			if (val)			       
+				sval = NgTypedValueToString(val,0,False,&len);
                         break;
                 }
         }
@@ -299,23 +284,12 @@ static void ExpandAttr
                     fprintf(stderr,"internal expand callback error\n");
                     return;
             case _vtLVAttr:
-                    if (vtp->qfileref != NrmNULLQUARK)
-                            val = NclReadFileVarAtt
-                                    (vtp->qfileref,
-                                     ndata->parent->qname,ndata->qname);
-                    else
-                            val = NclReadVarAtt
-                                    (ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(vtp->qfileref,ndata->parent->qname,
+				       NrmNULLQUARK,ndata->qname);
                     break;
             case _vtLVDAttr:
-                    if (vtp->qfileref != NrmNULLQUARK)
-                            val = NclReadFileVarAtt
-                                    (vtp->qfileref,
-                                     ndata->parent->qname,ndata->qname);
-                    else
-                            val = NclReadVarCoordAtt
-                                    (vtp->qvar,
-                                     ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(vtp->qfileref,vtp->qvar,
+				       ndata->parent->qname,ndata->qname);
                     break;
         }
         if (!val) return;
@@ -450,23 +424,12 @@ static void DoSingleLineAttrVal
                     fprintf(stderr,"internal expand callback error\n");
                     return;
             case _vtLVAttr:
-                    if (vtp->qfileref != NrmNULLQUARK)
-                            val = NclReadFileVarAtt
-                                    (vtp->qfileref,
-                                     ndata->parent->qname,ndata->qname);
-                    else
-                            val = NclReadVarAtt
-                                    (ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(vtp->qfileref,ndata->parent->qname,
+				       NrmNULLQUARK,ndata->qname);
                     break;
             case _vtLVDAttr:
-                    if (vtp->qfileref != NrmNULLQUARK)
-                            val = NclReadFileVarAtt
-                                    (vtp->qfileref,
-                                     ndata->parent->qname,ndata->qname);
-                    else
-                            val = NclReadVarCoordAtt
-                                    (vtp->qvar,
-                                     ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(vtp->qfileref,vtp->qvar,
+				       ndata->parent->qname,ndata->qname);
                     break;
         }
         if (!val) return;
@@ -704,13 +667,8 @@ static void ExpandDim
         
         if (cvinfo) {
                 stride = MAX(1,cvinfo->dim_info[0].dim_size - 1);
-                if (vtp->qfileref != NrmNULLQUARK)
-                        val = NclReadFileVarCoord
-                                (vtp->qfileref,vtp->qvar,ndata->qname,
-                                 NULL,NULL,&stride);
-                else
-                        val = NclReadVarCoord
-                                (vtp->qvar,ndata->qname,NULL,NULL,&stride);
+		val = NgNclReadVarValue(vtp->qfileref,vtp->qvar,ndata->qname,
+					NULL,NULL,&stride);
         }
         
         for (i = 0; i < rowcount; i++) {

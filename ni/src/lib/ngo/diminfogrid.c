@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.8 1999-11-03 20:29:27 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.9 2000-06-28 19:23:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/diminfogridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -84,17 +85,16 @@ VarTypeText
                 cp = NrmQuarkToString(vinfo->name);
         }
         else {
-                if (dip->qfileref) {
-                        val = NclReadFileVarAtt(dip->qfileref,vinfo->name,
-                                                vinfo->attnames[i]);
-                }
-                else {
-                        val = NclReadVarAtt(vinfo->name,vinfo->attnames[i]);
-                }
-                cp = NgTypedValueToString(val,0,False,&len);
-                if (val->constant != 0)
-                        NclFree(val->value);
-                NclFreeExtValue(val);
+		val = NgNclReadAtt(dip->qfileref,vinfo->name,NrmNULLQUARK,
+				   vinfo->attnames[i]);
+		if (! val)
+			cp = NrmQuarkToString(vinfo->name);
+		else {
+			cp = NgTypedValueToString(val,0,False,&len);
+			if (val->constant != 0)
+				NclFree(val->value);
+			NclFreeExtValue(val);
+		}
         }
 
         while (strlen(cp) + strlen(Buffer) + 1> Buflen) {
@@ -211,17 +211,10 @@ RangeText
                         long    stride;
                         
 			stride = MAX(1,vinfo->dim_info[i].dim_size - 1);
-                        if (dip->qfileref) {
-                                val = NclReadFileVarCoord(dip->qfileref,
-                                                          vinfo->name,
-                                                          vinfo->coordnames[i],
-                                                          NULL,NULL,&stride);
-                        }
-                        else {
-                                val = NclReadVarCoord(vinfo->name,
-                                                      vinfo->coordnames[i],
-                                                      NULL,NULL,&stride);
-                        }
+			val = NgNclReadVarValue(dip->qfileref,vinfo->name,
+						vinfo->coordnames[i],
+						NULL,NULL,&stride);
+
                         sval = NgTypedValueToString(val,0,True,&len);
                         strcat(Buffer,"|[");
 			strcat(Buffer,sval);

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.25 2000-06-07 21:45:48 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.26 2000-06-28 19:24:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/shapeinfogridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/nclapi.h>
 #include <float.h>
 
 #include <Xm/Xm.h>
@@ -318,76 +319,6 @@ StrideText
 }
 
 
-
-static	NclExtValueRec *
-ReadCoord
-(
-        NclApiVarInfoRec	*vinfo,
-        NrmQuark		qfile,
-	int			dim_ix,
-	long			*start,
-	long			*finish,
-	long			*stride
-)
-{
-	NclExtValueRec *val;
-
-        if (vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
-                return NULL;
-        
-        if (qfile) {
-                val = NclReadFileVarCoord(qfile,vinfo->name,
-                                          vinfo->coordnames[dim_ix],
-                                          start,finish,stride);
-        }
-        else {
-                val = NclReadVarCoord(vinfo->name,
-                                      vinfo->coordnames[dim_ix],
-                                      start,finish,stride);
-        }
-        return val;
-
-}
-
-static double
-ValToDouble
-(
-        NclExtValueRec	*val,
-        int		index
-        )
-{
-        char *valp = ((char *) val->value) + index * val->elem_size;
-        double dout;
-
-        switch (val->type) {
-            case NCLAPI_float:
-                    dout = (double)*(float*)valp;
-                    return dout;
-            case NCLAPI_double:
-                    dout = *(double*)valp;
-                    return dout;
-            case NCLAPI_byte:
-                    dout = (double)*(unsigned char*)valp;
-                    return dout;
-            case NCLAPI_char:
-                    dout = (double)*(char*)valp;
-                    return dout;
-            case NCLAPI_int:
-                    dout = (double)*(int*)valp;
-                    return dout;
-            case NCLAPI_short:
-                    dout = (double)*(short*)valp;
-                    return dout;
-            case NCLAPI_long:
-                    dout = (double)*(long*)valp;
-                    return dout;
-            default:
-                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-		             "type not supported for coordinate variable\n"));
-        }
-        return 0.0;
-}
-
 static void
 SetSelectedDim
 (
@@ -578,13 +509,14 @@ UpdateCoordInfo
                 
                 if (sirp->vinfo->coordnames[i] <= NrmNULLQUARK)
                         continue;
-                val = ReadCoord(sirp->vinfo,sirp->qfileref,i,
-                                &sip->start[i],&sip->finish[i],
-                                &sip->stride[i]);
+		val = NgNclReadCoordValue(sirp->qfileref,
+					  sirp->vinfo->name,i,
+					  &sip->start[i],&sip->finish[i],
+					  &sip->stride[i]);
                 if (val) {
-                        sirp->start_coords[i] = ValToDouble(val,0);
+                        sirp->start_coords[i] = NgNumericValToDouble(val,0);
                         sirp->finish_coords[i] =
-                                ValToDouble(val,val->totalelements-1);
+                                NgNumericValToDouble(val,val->totalelements-1);
                         sirp->float_types[i] =
                                 (val->type == NCLAPI_float ||
                                  val->type == NCLAPI_double) ?
@@ -622,7 +554,9 @@ UpdateCoordValue
         NhlBoolean retval;
 
         
-	val = ReadCoord(sirp->vinfo,sirp->qfileref,column,NULL,NULL,NULL);
+	val = NgNclReadCoordValue(sirp->vinfo->name,sirp->qfileref,
+				  column,NULL,NULL,NULL);
+
         if (! val)
                 return False;
         
@@ -630,18 +564,18 @@ UpdateCoordValue
         switch (row) {
             case START_ROW:
                     fstart = coordval;
-                    ffinish = sip->synchro_step ?
-			    coordval : ValToDouble(val,sip->finish[column]);
+                    ffinish = sip->synchro_step ? coordval : 
+			    NgNumericValToDouble(val,sip->finish[column]);
                     break;
             case FINISH_ROW:
-                    fstart = sip->synchro_step ?
-			    coordval : ValToDouble(val,sip->start[column]);
+                    fstart = sip->synchro_step ? coordval : 
+			    NgNumericValToDouble(val,sip->start[column]);
                     ffinish = coordval;
                     break;
         }
 
-	firstval = (double) ValToDouble(val,0);
-	lastval = (double) ValToDouble(val,dimsize-1);
+	firstval = (double) NgNumericValToDouble(val,0);
+	lastval = (double) NgNumericValToDouble(val,dimsize-1);
 
 	ascending_coords = lastval > firstval;
 	ascending_bounds = ffinish > fstart;
@@ -655,14 +589,14 @@ UpdateCoordValue
 	imax = dimsize - 1;
 	if (ascending_coords) {
 		for (i = 0;i<dimsize;i++) {
-			double coord = ValToDouble(val,i);
+			double coord = NgNumericValToDouble(val,i);
 			if (fmin <= coord) {
 				imin = i;
 				break;
 			}
 		}
 		for (i = dimsize-1;i>-1;i--) {
-			double coord = ValToDouble(val,i);
+			double coord = NgNumericValToDouble(val,i);
 			if (fmax >= coord) {
 				imax = MAX(i,imin);
 				break;
@@ -671,14 +605,14 @@ UpdateCoordValue
 	}
 	else {
 		for (i = dimsize-1;i>-1;i--) {
-			double coord = ValToDouble(val,i);
+			double coord = NgNumericValToDouble(val,i);
 			if (fmin <= coord) {
 				imin = i;
 				break;
 			}
 		}
 		for (i = 0;i<dimsize;i++) {
-			double coord = ValToDouble(val,i);
+			double coord = NgNumericValToDouble(val,i);
 			if (fmax >= coord) {
 				imax = MAX(imin,i);
 				break;
@@ -1104,8 +1038,7 @@ NewCoordValue
                                 NclFree(val->value);
                         NclFreeExtValue(val);
                 }
-                val = ReadCoord(sirp->vinfo,
-                                sirp->qfileref,column,NULL,NULL,NULL);
+		val = NgNclReadCoordValue(qfile,qvar,column,NULL,NULL,NULL);
         }
 	if (! val) {
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));

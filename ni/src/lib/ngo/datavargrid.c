@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.18 2000-06-07 21:45:46 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.19 2000-06-28 19:23:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/shell.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -796,45 +797,6 @@ PossibleNclSymbol
 	return True;
 }
 
-static double
-ValToDouble
-(
-        NclExtValueRec	*val,
-        int		index
-        )
-{
-        char *valp = ((char *) val->value) + index * val->elem_size;
-        double dout;
-
-        switch (val->type) {
-            case NCLAPI_float:
-                    dout = (double)*(float*)valp;
-                    return dout;
-            case NCLAPI_double:
-                    dout = *(double*)valp;
-                    return dout;
-            case NCLAPI_byte:
-                    dout = (double)*(unsigned char*)valp;
-                    return dout;
-            case NCLAPI_char:
-                    dout = (double)*(char*)valp;
-                    return dout;
-            case NCLAPI_int:
-                    dout = (double)*(int*)valp;
-                    return dout;
-            case NCLAPI_short:
-                    dout = (double)*(short*)valp;
-                    return dout;
-            case NCLAPI_long:
-                    dout = (double)*(long*)valp;
-                    return dout;
-            default:
-		    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			       "type not supported for coordinate variable"));
-        }
-        return 0.0;
-}
-
 /*
  * get the shape for a dimension specified in coordinate value format.
  * assumes that reasonable default index values have already been specified.
@@ -926,15 +888,12 @@ GetCoordDimShape
 	qcoord = dl->u.var->coordnames[dim_ix];
 	if (qcoord <= NrmNULLQUARK)
 		return NULL;
-	if (qfile)
-		val = NclReadFileVarCoord
-			(qfile,dl->u.var->name,qcoord,NULL,NULL,NULL);
-	else
-		val = NclReadVarCoord
-			(dl->u.var->name,qcoord,NULL,NULL,NULL);
+	
+	val = NgNclReadVarValue(qfile,dl->u.var->name,qcoord,NULL,NULL,NULL);
+
 	dimsize = dl->u.var->dim_info[dim_ix].dim_size;
-	vfirst = ValToDouble(val,0);
-	vlast = ValToDouble(val,dimsize-1);
+	vfirst = NgNumericValToDouble(val,0);
+	vlast = NgNumericValToDouble(val,dimsize-1);
 
 	ascending = vlast > vfirst;
 	sub_ascending = True;
@@ -945,7 +904,7 @@ GetCoordDimShape
 		if (sub_ascending) {
 			if (has_start) {
 				for (i = 0; i < dimsize; i++) {
-					if (ValToDouble(val,i) > s) {
+					if (NgNumericValToDouble(val,i) > s) {
 						*start = MAX(0,i-1);
 						break;
 					}
@@ -953,7 +912,7 @@ GetCoordDimShape
 			}
 			if (has_finish) {
 				for (i = dimsize-1; i>-1; i--) {
-					if (ValToDouble(val,i) < f) {
+					if (NgNumericValToDouble(val,i) < f) {
 						*finish = MIN(dimsize-1,i+1);
 						break;
 					}
@@ -963,7 +922,7 @@ GetCoordDimShape
 		else {
 			if (has_start) {
 				for (i = dimsize-1; i>-1; i--) {
-					if (ValToDouble(val,i) < s) {
+					if (NgNumericValToDouble(val,i) < s) {
 						*start = MIN(dimsize-1,i+1);
 						break;
 					}
@@ -971,7 +930,7 @@ GetCoordDimShape
 			}
 			if (has_finish) {
 				for (i = 0; i < dimsize; i++) {
-					if (ValToDouble(val,i) > f) {
+					if (NgNumericValToDouble(val,i) > f) {
 						*finish = MAX(0,i-1);
 						break;
 					}
@@ -983,7 +942,7 @@ GetCoordDimShape
 		if (sub_ascending) {
 			if (has_start) {
 				for (i = dimsize-1; i>-1; i--) {
-					if (ValToDouble(val,i) > s) {
+					if (NgNumericValToDouble(val,i) > s) {
 						*start = MIN(dimsize-1,i+1);
 						break;
 					}
@@ -991,7 +950,7 @@ GetCoordDimShape
 			}
 			if (has_finish) {
 				for (i = 0; i < dimsize; i++) {
-					if (ValToDouble(val,i) < f) {
+					if (NgNumericValToDouble(val,i) < f) {
 						*finish = MAX(0,i-1);
 						break;
 					}
@@ -1001,7 +960,7 @@ GetCoordDimShape
 		else {
 			if (has_start) {
 				for (i = 0; i < dimsize; i++) {
-					if (ValToDouble(val,i) < s) {
+					if (NgNumericValToDouble(val,i) < s) {
 						*start = MAX(0,i-1);
 						break;
 					}
@@ -1009,7 +968,7 @@ GetCoordDimShape
 			}
 			if (has_finish) {
 				for (i = dimsize-1; i>-1; i--) {
-					if (ValToDouble(val,i) > f) {
+					if (NgNumericValToDouble(val,i) > f) {
 						*finish = MIN(dimsize-1,i+1);
 						break;
 					}

@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.20 2000-06-07 21:45:44 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.21 2000-06-28 19:23:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -399,7 +399,19 @@ static NhlBoolean GetFillValue
                 val = NclReadVarAtt(qvar,vinfo->attnames[i]);
 
         if (val) {
-                lvalue = (NhlPointer) NclTypeToString(val->value,val->type);
+		char buf[32];
+		NhlBoolean free_lvalue = True;
+
+		switch (val->type) {
+		case NCLAPI_byte:
+			sprintf(buf,"%d",*(unsigned char*)val->value);
+			lvalue = buf;
+			free_lvalue = False;
+			break;
+		default:
+			lvalue = NclTypeToString(val->value,val->type);
+			break;
+		}
 		if (lvalue) {
 			if (private) {
 				*value = NhlMalloc(strlen(lvalue)+1);
@@ -411,7 +423,8 @@ static NhlBoolean GetFillValue
 				strcat(*value,lvalue);
 				strcat(*value,"\"");
 			}
-			NclFree(lvalue);
+			if (free_lvalue)
+				NclFree(lvalue);
 		}
                 if (val->constant != 0)
                         NclFree(val->value);
@@ -947,8 +960,6 @@ ValToDouble
                     dout = *(double*)valp;
                     return dout;
             case NCLAPI_byte:
-                    dout = (double)*(unsigned char*)valp;
-                    return dout;
             case NCLAPI_char:
                     dout = (double)*(char*)valp;
                     return dout;

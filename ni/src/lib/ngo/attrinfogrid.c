@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.7 2000-05-16 01:59:14 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.8 2000-06-28 19:23:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/attrinfogridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -126,30 +127,24 @@ AttrText
         char *attname,*attvalue;
         int cwidth0,cwidth1,i,len;
         char *cp;
+	NrmQuark qatt = NrmNULLQUARK,qvar = NrmNULLQUARK;
 
         Buffer[0] = '\0';
         if (dlist->kind == FILE_LIST) {
-                NclApiFileInfoRec *finfo;
-                
-                finfo = dlist->u.file;
-                attname = NrmQuarkToString(finfo->attnames[attnum]);
-                val = NclReadFileAtt(aip->qfileref,finfo->attnames[attnum]);
+                NclApiFileInfoRec *finfo = dlist->u.file;
+ 		qatt = finfo->attnames[attnum];
         }
         else if (dlist->kind == VARIABLE_LIST) {
-                NclApiVarInfoRec *vinfo;
-                
-                vinfo = dlist->u.var;
-                attname = NrmQuarkToString(vinfo->attnames[attnum]);
-                if (vinfo->type == FILEVAR)
-                        val = NclReadFileVarAtt(aip->qfileref,vinfo->name,
-                                                vinfo->attnames[attnum]);
-                else
-                        val = NclReadVarAtt(vinfo->name,
-                                            vinfo->attnames[attnum]);
+                NclApiVarInfoRec *vinfo = dlist->u.var;
+ 		qatt = vinfo->attnames[attnum];
+		qvar = vinfo->name;
         }
+
+	val = NgNclReadAtt(aip->qfileref,qvar,NrmNULLQUARK,qatt);
         if (!val) {
                 return Buffer;
         }
+	attname = NrmQuarkToString(qatt);
         
         sprintf(Buffer,"%s|",attname);
         cwidth0 = strlen(Buffer);

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.32 2000-03-29 04:01:22 dbrown Exp $
+ *      $Id: mwin.c,v 1.33 2000-06-28 19:24:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1565,6 +1565,7 @@ OverlayStatusCB
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
 	NgObjTreeNode	bvp,ovnode,*vp,wp = NULL;
 	NgWksObj	wks;
+	int		base_id;
 
 #if DEBUG_MWIN
 	fprintf(stderr,"in overlay status cb\n");
@@ -1585,6 +1586,9 @@ OverlayStatusCB
 	wks = (NgWksObj)wp->ndata;
 	if (tl->base.wkptr->base.being_destroyed)
 		wks->auto_refresh = False;
+
+	base_id = _NhlIsOverlay(ovstat->base_id) ?
+		_NhlOverlayBase(ovstat->base_id) : ovstat->base_id;
 	if (ovstat->status == _tfCurrentOverlayMember) {
 		int pos,sel_id;
 		
@@ -1603,7 +1607,7 @@ OverlayStatusCB
 				   func));
 			return;
 		}
-		bvp = GetBasePlotNode(wp->cnodes,ovstat->base_id);
+		bvp = GetBasePlotNode(wp->cnodes,base_id);
 		if (! bvp) {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				   "%s:Internal error finding base plot node!",
@@ -1653,7 +1657,7 @@ OverlayStatusCB
 		 * it's been removed from an overlay. restore it to top-level
 		 * status.
 		 */
-		bvp = GetBasePlotNode(wp->cnodes,ovstat->base_id);
+		bvp = GetBasePlotNode(wp->cnodes,base_id);
 		if (! bvp) {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				   "%s:Internal error finding overlay node!",
@@ -1674,7 +1678,7 @@ OverlayStatusCB
 			RemoveOverlayNode(otree,bvp,ovstat->id);
 		}
 		else {
-			NhlLayer bl = _NhlGetLayer(ovstat->base_id);
+			NhlLayer bl = _NhlGetLayer(base_id);
 			/*
 			 * This draw must occur before removing the node so
 			 * that the removed overlay won't yet be seen as
@@ -1683,7 +1687,7 @@ OverlayStatusCB
 			 */
 			if (bl && ! bl->base.being_destroyed)
 				NgDrawXwkView(wks->wks_wrap_id,
-					      ovstat->base_id,True);
+					      base_id,True);
 
 			RemoveOverlayNode(otree,bvp,ovstat->id);
 			/* 

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.18 2000-06-07 21:45:47 dbrown Exp $
+ *      $Id: plotpage.c,v 1.19 2000-06-28 19:24:03 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/ngo/xinteract.h>
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/plotapp.h>
+#include <ncarg/ngo/nclapi.h>
 #include <math.h>
 
 #include <Xm/Xm.h>
@@ -71,75 +72,6 @@ static NhlBoolean IsGribVar
 	}
 	return False;
 }	
-
-static double
-ValToDouble
-(
-        NclExtValueRec	*val,
-        int		index
-        )
-{
-        char *valp = ((char *) val->value) + index * val->elem_size;
-        double dout;
-
-        switch (val->type) {
-            case NCLAPI_float:
-                    dout = (double)*(float*)valp;
-                    return dout;
-            case NCLAPI_double:
-                    dout = *(double*)valp;
-                    return dout;
-            case NCLAPI_byte:
-                    dout = (double)*(unsigned char*)valp;
-                    return dout;
-            case NCLAPI_char:
-                    dout = (double)*(char*)valp;
-                    return dout;
-            case NCLAPI_int:
-                    dout = (double)*(int*)valp;
-                    return dout;
-            case NCLAPI_short:
-                    dout = (double)*(short*)valp;
-                    return dout;
-            case NCLAPI_long:
-                    dout = (double)*(long*)valp;
-                    return dout;
-            default:
-                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			      "type not supported for coordinate variable\n"));
-        }
-        return 0.0;
-}
-
-static	NclExtValueRec *
-ReadCoord
-(
-        NclApiVarInfoRec	*vinfo,
-        NrmQuark		qfile,
-	int			dim_ix,
-	long			*start,
-	long			*finish,
-	long			*stride
-)
-{
-	NclExtValueRec *val;
-
-        if (vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
-                return NULL;
-        
-        if (qfile) {
-                val = NclReadFileVarCoord(qfile,vinfo->name,
-                                          vinfo->coordnames[dim_ix],
-                                          start,finish,stride);
-        }
-        else {
-                val = NclReadVarCoord(vinfo->name,
-                                      vinfo->coordnames[dim_ix],
-                                      start,finish,stride);
-        }
-        return val;
-
-}
 
 static void
 SetPlotAppFunc
@@ -494,8 +426,8 @@ void GetGribDimGrids
 	int grid_num;
 	char buf[32];
 
-	val = NclReadFileVarAtt(vdata->qfile,vdata->qvar,Qgrid_number);
-	grid_num = (int) ValToDouble(val,0);
+	val = NgNclReadAtt(vdata->qfile,vdata->qvar,NrmNULLQUARK,Qgrid_number);
+	grid_num = (int) NgNumericValToDouble(val,0);
 	NclFreeExtValue(val);
 
 	sprintf(buf,"gridlat_%d",grid_num);
@@ -526,21 +458,23 @@ static NhlBoolean GetGribDataExtent
 	if (! (qlon && qlat))
 		return False;
 
-	lonval = NclReadFileVar(vdata->qfile,qlon,NULL,NULL,NULL);
-	latval = NclReadFileVar(vdata->qfile,qlat,NULL,NULL,NULL);
+	lonval = NgNclReadVarValue
+		(vdata->qfile,qlon,NrmNULLQUARK,NULL,NULL,NULL);
+	latval = NgNclReadVarValue
+		(vdata->qfile,qlat,NrmNULLQUARK,NULL,NULL,NULL);
 	
 	if (! (lonval && latval))
 		return False;
 
 	fdim_size = lonval->dim_sizes[1];
 
-	*lmin = ValToDouble(lonval,fdim_size * vdata->start[lat_ix] +
+	*lmin = NgNumericValToDouble(lonval,fdim_size * vdata->start[lat_ix] +
 			    vdata->start[lon_ix]);
-	*bmin = ValToDouble(latval,fdim_size * vdata->start[lat_ix] +
+	*bmin = NgNumericValToDouble(latval,fdim_size * vdata->start[lat_ix] +
 			    vdata->start[lon_ix]);
-	*rmax = ValToDouble(lonval,fdim_size * vdata->finish[lat_ix] +
+	*rmax = NgNumericValToDouble(lonval,fdim_size * vdata->finish[lat_ix] +
 			    vdata->finish[lon_ix]);
-	*tmax = ValToDouble(latval,fdim_size * vdata->finish[lat_ix] +
+	*tmax = NgNumericValToDouble(latval,fdim_size * vdata->finish[lat_ix] +
 			    vdata->finish[lon_ix]);
 
 	*lmode = NhlCORNERS;
@@ -586,7 +520,8 @@ static NhlBoolean GetDataExtent
 	}
 	vinfo = vdata->dl->u.var;
 
-	val = ReadCoord(vinfo,vdata->qfile,lon_ix,NULL,NULL,NULL);
+	val = NgNclReadCoordValue(vdata->qfile,vinfo->name,lon_ix,
+				  NULL,NULL,NULL);
 
 	if (! val) {
 		if (IsGribVar(vinfo) && vdata->qfile != NrmNULLQUARK) {
@@ -597,8 +532,8 @@ static NhlBoolean GetDataExtent
 			return False;
 	}
 
-	*lmin = ValToDouble(val,vdata->start[lon_ix]);
-	*rmax = ValToDouble(val,vdata->finish[lon_ix]);
+	*lmin = NgNumericValToDouble(val,vdata->start[lon_ix]);
+	*rmax = NgNumericValToDouble(val,vdata->finish[lon_ix]);
 	if (*lmin > *rmax) {
 		tmp = *lmin;
 		*lmin = *rmax;
@@ -606,14 +541,15 @@ static NhlBoolean GetDataExtent
 	}
 	NclFreeExtValue(val);
 
-	val = ReadCoord(vinfo,vdata->qfile,lat_ix,NULL,NULL,NULL);
+	val = NgNclReadCoordValue(vdata->qfile,vinfo->name,lat_ix,
+				  NULL,NULL,NULL);
 	if (! val) 
 		return False;
 
 
 
-	*bmin = ValToDouble(val,vdata->start[lat_ix]);
-	*tmax = ValToDouble(val,vdata->finish[lat_ix]);
+	*bmin = NgNumericValToDouble(val,vdata->start[lat_ix]);
+	*tmax = NgNumericValToDouble(val,vdata->finish[lat_ix]);
 	if (*bmin > *tmax) {
 		tmp = *bmin;
 		*bmin = *tmax;
@@ -891,31 +827,8 @@ static NhlBoolean GetDataVal
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var data set state"));
 		return False;
 	}
-	switch (vdata->type) {
-	case FILEVAR:
-		val = NclReadFileVar
-			(vdata->qfile,vdata->qvar,
-			 vdata->start,vdata->finish,vdata->stride);
-		break;
-	case COORD:
-		if (vdata->qfile) 
-			val = NclReadFileVarCoord
-				(vdata->qfile,vdata->qfile,vdata->qvar,
-				 vdata->start,vdata->finish,vdata->stride);
-		else
-			val = NclReadVarCoord
-				(vdata->qvar,vdata->qcoord,
-				 vdata->start,vdata->finish,vdata->stride);
-		break;
-	case NORMAL:
-		val = NclReadVar
-			(vdata->qvar,
-			 vdata->start,vdata->finish,vdata->stride);
-		break;
-	default:
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var type"));
-		return False;
-	}
+	val = NgNclReadVarValue(vdata->qfile,vdata->qvar,vdata->qcoord,
+				vdata->start,vdata->finish,vdata->stride);
 	if (! val)
 		return False;
 
@@ -938,7 +851,8 @@ static NhlBoolean DataChanged
 	NhlBoolean ret = False;
 	NhlBoolean user = vdata->set_state == _NgEXPRESSION ? False : True;
 
-	oldval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+	oldval = NgNclReadVarValue(NrmNULLQUARK,vdata->qexpr_var,NrmNULLQUARK,
+				   NULL,NULL,NULL);
 
 	ret = NgSetExpressionVarData(vdata->goid,vdata,
 				     vdata->expr_val,_NgFORCED_EVAL,user);
@@ -946,7 +860,8 @@ static NhlBoolean DataChanged
 		return False;
 	ret = False;
 
-	newval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+	newval = NgNclReadVarValue(NrmNULLQUARK,vdata->qexpr_var,NrmNULLQUARK,
+				   NULL,NULL,NULL);
 
 	if (! (newval && oldval)) {
 		; /* can't do any further testing */
@@ -1835,7 +1750,8 @@ static NhlErrorTypes DoUpdateFunc
 			   vdata->expr_val));
 		return NhlWARNING;
 	}
-	val = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+	val = NgNclReadVarValue(NrmNULLQUARK,vdata->qexpr_var,NrmNULLQUARK,
+				   NULL,NULL,NULL);
 	if (! val) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "Error reading temporary variable: %s",
@@ -2585,16 +2501,18 @@ static void AnalyzeGribMapLocation
 #endif
 
 	GetGribDimGrids(vdata,&qlon,&qlat);
-	lonval = NclReadFileVar(vdata->qfile,qlon,NULL,NULL,NULL);
-	latval = NclReadFileVar(vdata->qfile,qlat,NULL,NULL,NULL);
+	lonval = NgNclReadVarValue(vdata->qfile,qlon,NrmNULLQUARK,
+				   NULL,NULL,NULL);
+	latval = NgNclReadVarValue(vdata->qfile,qlat,NrmNULLQUARK,
+				   NULL,NULL,NULL);
 
 	NhlNDCToData(map_id,
 		     xloc,yloc,2,xt,yt,NULL,NULL,&status,&oor);
 
 	fdim_size = lonval->dim_sizes[1];
 	sdim_size = lonval->dim_sizes[0];
-	tlat = ValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
-	tlon = ValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
+	tlat = NgNumericValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
+	tlon = NgNumericValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
 	mindist = (tlon - xt[0]) * (tlon - xt[0]) + 
 		(tlat - yt[0]) * (tlat - yt[0]);
 
@@ -2607,8 +2525,10 @@ static void AnalyzeGribMapLocation
 				     j < MIN(sdim_size,*sy_ix+2); j++) {
 				if (i == *sx_ix && j == *sy_ix)
 					continue;
-				tlat = ValToDouble(latval,fdim_size * j + i);
-				tlon = ValToDouble(lonval,fdim_size * j + i);
+				tlat = NgNumericValToDouble
+					(latval,fdim_size * j + i);
+				tlon = NgNumericValToDouble
+					(lonval,fdim_size * j + i);
 				tdist = (tlon - xt[0]) * (tlon - xt[0]) + 
 					(tlat - yt[0]) * (tlat - yt[0]);
 				if (tdist >= mindist)
@@ -2626,8 +2546,8 @@ static void AnalyzeGribMapLocation
 	}
 
 
-	tlat = ValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
-	tlon = ValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
+	tlat = NgNumericValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
+	tlon = NgNumericValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
 	mindist = (tlon - xt[1]) * (tlon - xt[1]) + 
 		(tlat - yt[1]) * (tlat - yt[1]);
 
@@ -2640,8 +2560,10 @@ static void AnalyzeGribMapLocation
 				     j < MIN(sdim_size,*fy_ix+2); j++) {
 				if (i == *fx_ix && j == *fy_ix)
 					continue;
-				tlat = ValToDouble(latval,fdim_size * j + i);
-				tlon = ValToDouble(lonval,fdim_size * j + i);
+				tlat = NgNumericValToDouble
+					(latval,fdim_size * j + i);
+				tlon = NgNumericValToDouble
+					(lonval,fdim_size * j + i);
 				tdist = (tlon - xt[1]) * (tlon - xt[1]) + 
 					(tlat - yt[1]) * (tlat - yt[1]);
 				if (tdist >= mindist)
@@ -2665,10 +2587,10 @@ static void AnalyzeGribMapLocation
 	 * Given these data adjust the location so that the map is 
 	 * registered correctly
 	 */
-	xt[0] = ValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
-	yt[0] = ValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
-	xt[1] = ValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
-	yt[1] = ValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
+	xt[0] = NgNumericValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
+	yt[0] = NgNumericValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
+	xt[1] = NgNumericValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
+	yt[1] = NgNumericValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
 	
 	NhlDataToNDC(map_id,
 		     xt,yt,2,xloc,yloc,NULL,NULL,&status,&oor);
@@ -2862,7 +2784,7 @@ void GetGribGridDataLimits
 			do_y = True;
 
 		qgrid = do_y ?  qlat : qlon;
-		val = NclReadFileVarAtt(vdata->qfile,qgrid,Qcorners);
+		val = NgNclReadAtt(vdata->qfile,qgrid,NrmNULLQUARK,Qcorners);
 
 		if (! val) {
 			vdata->dstart[i] = 0;
@@ -2880,13 +2802,13 @@ void GetGribGridDataLimits
 			continue;
 		}
 		if (do_y) {
-			*ymin = ValToDouble(val,0);
-			*ymax = ValToDouble(val,2);
+			*ymin = NgNumericValToDouble(val,0);
+			*ymax = NgNumericValToDouble(val,2);
 			*yinc = 0;
 		}
 		else {
-			*xmin = ValToDouble(val,0);
-			*xmax = ValToDouble(val,2);
+			*xmin = NgNumericValToDouble(val,0);
+			*xmax = NgNumericValToDouble(val,2);
 			*xinc = 0;
 		}
 		NclFreeExtValue(val);
@@ -2968,25 +2890,22 @@ void GetDataLimits2D
 			continue;
 		}
 		else {
-			if (vdata->qfile)
-				val = NclReadFileVarCoord
-					(vdata->qfile,vinfo->name,
-					 qcoord,NULL,NULL,NULL);
-			else
-				val = NclReadVarCoord
-					(vinfo->name,qcoord,NULL,NULL,NULL);
+			val = NgNclReadVarValue
+				(vdata->qfile,vinfo->name,qcoord,
+				 NULL,NULL,NULL);
 			if (! val)
 				continue;
-			vdata->dstart[i] = ValToDouble(val,0);
-			vdata->dfinish[i] = ValToDouble
+			vdata->dstart[i] = NgNumericValToDouble(val,0);
+			vdata->dfinish[i] = NgNumericValToDouble
 				(val,vinfo->dim_info[i].dim_size - 1);
 		}
-		tinc = ValToDouble(val,1) - vdata->dstart[i];
+		tinc = NgNumericValToDouble(val,1) - vdata->dstart[i];
 		sign = (tinc < 0.0) ? -1.0 : 1.0;
 		inc = tinc * sign;
 		monotonic = True;
 		for (j = 2; j < vdata->size[i]; j++) {
-			tinc = ValToDouble(val,j)-ValToDouble(val,j-1);
+			tinc = NgNumericValToDouble(val,j) -
+				NgNumericValToDouble(val,j-1);
 			if (tinc * sign < 0.0) {
 				monotonic = False;
 				break;

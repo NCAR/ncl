@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.12 2000-03-21 02:35:39 dbrown Exp $
+ *      $Id: filetree.c,v 1.13 2000-06-28 19:23:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/sort.h>
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -202,13 +203,14 @@ static void ExpandAttr
                     fprintf(stderr,"internal expand callback error\n");
                     return;
             case _ftLAttr:
-                    val = NclReadFileAtt(ftp->qfileref,ndata->qname);
+		    val = NgNclReadAtt(ftp->qfileref,NrmNULLQUARK,
+				       NrmNULLQUARK,ndata->qname);
                     break;
             case _ftLDAttr:
             case _ftLVAttr:
             case _ftLVDAttr:
-                    val = NclReadFileVarAtt
-                            (ftp->qfileref,ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(ftp->qfileref,ndata->parent->qname,
+				       NrmNULLQUARK,ndata->qname);
                     break;
         }
         if (!val) return;
@@ -345,13 +347,14 @@ static void DoSingleLineAttrVal
                     fprintf(stderr,"internal expand callback error\n");
                     return;
             case _ftLAttr:
-                    val = NclReadFileAtt(ftp->qfileref,ndata->qname);
+		    val = NgNclReadAtt(ftp->qfileref,NrmNULLQUARK,
+				       NrmNULLQUARK,ndata->qname);
                     break;
             case _ftLDAttr:
             case _ftLVAttr:
             case _ftLVDAttr:
-                    val = NclReadFileVarAtt
-                            (ftp->qfileref,ndata->parent->qname,ndata->qname);
+		    val = NgNclReadAtt(ftp->qfileref,ndata->parent->qname,
+				       NrmNULLQUARK,ndata->qname);
                     break;
         }
         if (!val) return;
@@ -608,9 +611,9 @@ static void ExpandDim
         
         if (vinfo) {
                 stride = MAX(1,vinfo->dim_info[0].dim_size - 1);
-                val = NclReadFileVarCoord
-                        (ftp->qfileref,ndata->qname,vinfo->coordnames[0],
-                         NULL,NULL,&stride);
+		val = NgNclReadVarValue
+			(ftp->qfileref,ndata->qname,vinfo->coordnames[0],
+			 NULL,NULL,&stride);
         }
         
          for (i = 0; i < rowcount; i++) {
@@ -698,9 +701,9 @@ static char *GetLongName(
 	for (i = 0; i < vinfo->n_atts; i++) {
 		if (vinfo->attnames[i] == Qlong_name) {
                         int len;
-                        
-                        val = NclReadFileVarAtt(qfile,qvar,
-                                                vinfo->attnames[i]);
+
+                        val = NgNclReadAtt(qfile,qvar,NrmNULLQUARK,
+					   vinfo->attnames[i]);
                         sval = NgTypedValueToString(val,0,False,&len);
                         
                         if (val->constant != 0)

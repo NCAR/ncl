@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.35 2000-05-16 01:59:27 dbrown Exp $
+ *      $Id: hlupage.c,v 1.36 2000-06-28 19:24:00 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/plotapp.h>
 #include <ncarg/ngo/Grid.h>
+#include <ncarg/ngo/nclapi.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -717,31 +718,8 @@ static NhlBoolean GetDataVal
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var data set state"));
 		return False;
 	}
-	switch (vdata->type) {
-	case FILEVAR:
-		val = NclReadFileVar
-			(vdata->qfile,vdata->qvar,
-			 vdata->start,vdata->finish,vdata->stride);
-		break;
-	case COORD:
-		if (vdata->qfile) 
-			val = NclReadFileVarCoord
-				(vdata->qfile,vdata->qfile,vdata->qvar,
-				 vdata->start,vdata->finish,vdata->stride);
-		else
-			val = NclReadVarCoord
-				(vdata->qvar,vdata->qcoord,
-				 vdata->start,vdata->finish,vdata->stride);
-		break;
-	case NORMAL:
-		val = NclReadVar
-			(vdata->qvar,
-			 vdata->start,vdata->finish,vdata->stride);
-		break;
-	default:
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var type"));
-		return False;
-	}
+	val = NgNclReadVarValue(vdata->qfile,vdata->qvar,vdata->qcoord,
+				vdata->start,vdata->finish,vdata->stride);
 	if (! val)
 		return False;
 

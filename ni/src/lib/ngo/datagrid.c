@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.13 2000-06-07 21:45:43 dbrown Exp $
+ *      $Id: datagrid.c,v 1.14 2000-06-28 19:23:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include  <ncarg/ngo/Grid.h>
+#include <ncarg/ngo/nclapi.h>
 
 static char *Buffer = NULL;
 static int  Buflen;
@@ -128,26 +129,8 @@ static NclExtValueRec *ReadMoreData
                             dgrp->stride[dgrp->row_dim] * rows_to_go);
                 }
         }
-	
-        switch (dgrp->vinfo->type) {
-            case FILEVAR:
-                    val = NclReadFileVar
-                            (dgrp->qsymbol,dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgrp->stride);
-                    break;
-            case COORD:
-                    val = NclReadVarCoord
-                            (dgrp->qsymbol,dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgrp->stride);
-                    break;
-            case NORMAL:
-                    val = NclReadVar
-                            (dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgrp->stride);
-                    break;
-            default:
-                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid var type\n"));
-        }
+	val = NgNclReadVarValue(dgrp->qsymbol,dgrp->vinfo->name,NrmNULLQUARK,
+				dgrp->istart,dgrp->ifinish,dgrp->stride);
 
         if (dgrp->row_dim > -1)
                 *last_row_read = row +
@@ -494,28 +477,11 @@ static void SetData
                 }
         }
         else {
-                val = NULL;
-                switch (dgrp->vinfo->type) {
-                    case FILEVAR:
-                            val = NclReadFileVarCoord
-                                    (dgrp->qsymbol,dgrp->vinfo->name,
-                                     dgrp->vinfo->coordnames[dgrp->col_dim],
-                                     &dgrp->start[dgrp->col_dim],
-                                     &dgrp->finish[dgrp->col_dim],
-                                     &dgrp->stride[dgrp->col_dim]);
-                            break;
-                    case NORMAL:
-                            val = NclReadVarCoord
-                                    (dgrp->vinfo->name,
-                                     dgrp->vinfo->coordnames[dgrp->col_dim],
-                                     &dgrp->start[dgrp->col_dim],
-                                     &dgrp->finish[dgrp->col_dim],
-                                     &dgrp->stride[dgrp->col_dim]);
-                            break;
-                    default:
-			    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				       "invalid var type"));
-                }
+                val = NgNclReadVarValue(dgrp->qsymbol,dgrp->vinfo->name,
+					dgrp->vinfo->coordnames[dgrp->col_dim],
+					&dgrp->start[dgrp->col_dim],
+					&dgrp->finish[dgrp->col_dim],
+					&dgrp->stride[dgrp->col_dim]);
                 if (!val) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				   "error reading var"));
@@ -584,27 +550,12 @@ static void SetData
 		}
 		else {
 			int last_pos = -1;
-                        switch (dgrp->vinfo->type) {
-                            case FILEVAR:
-                                    val = NclReadFileVarCoord
-                                            (dgrp->qsymbol,dgrp->vinfo->name,
-                                             dgrp->vinfo->coordnames[i],
-                                             &dgrp->start[i],
-                                             &dgrp->finish[i],
-                                             &dgrp->stride[i]);
-                                    break;
-                            case NORMAL:
-                                    val = NclReadVarCoord
-                                            (dgrp->vinfo->name,
-                                             dgrp->vinfo->coordnames[i],
-                                             &dgrp->start[i],
-                                             &dgrp->finish[i],
-                                             &dgrp->stride[i]);
-                                    break;
-                            default:
-				    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					       "invalid var type"));
-                        }
+			val = NgNclReadVarValue
+				(dgrp->qsymbol,dgrp->vinfo->name,
+				 dgrp->vinfo->coordnames[i],
+				 &dgrp->start[i],
+				 &dgrp->finish[i],
+				 &dgrp->stride[i]);
                         if (!val) {
                                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					   "error reading var"));
