@@ -1,36 +1,47 @@
 C
-C	$Id: cmpita.f,v 1.1 1992-09-29 16:10:03 ncargd Exp $
+C       $Id: cmpita.f,v 1.2 1992-10-02 22:45:04 ncargd Exp $
 C
 C
 C Declare fill routine external, or crash program
 C
-	EXTERNAL FILL
+        EXTERNAL FILL
 
-	PARAMETER(IGRD=2,IMAP=2500000,NWRK=15000)
-	PARAMETER(M=180/IGRD,N=360/IGRD)
+        PARAMETER(IGRD=15,IMAP=220000,NWRK=15000)
+        PARAMETER(M=180/IGRD,N=360/IGRD)
 
-	INTEGER MAP(IMAP), IGRP(5), IAREA(5)
-	REAL XWRK(NWRK),YWRK(NWRK), ZDAT(M,N)
-	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
+        COMMON /DAT1/ ZDAT(M,N)
 
-	COMMON /DAT1/ ZDAT
+        INTEGER MAP(IMAP), IGRP(5), IAREA(5), ISPACE
+        REAL XWRK(NWRK),YWRK(NWRK),ZDAT
+        REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
-	DATA PLIM1 /0.,0./
-	DATA PLIM2 /0.,0./
-	DATA PLIM3 /0.,0./
-	DATA PLIM4 /0.,0./
+        DATA PLIM1 /0.,0./
+        DATA PLIM2 /0.,0./
+        DATA PLIM3 /0.,0./
+        DATA PLIM4 /0.,0./
+C
+C Print out a warning about how time consuming this example is
+C
+	WRITE (6,*) ' WARNING: This example may take 20 minutes'
+	WRITE (6,*) '          to execute on some machines.'
 C
 C Generate some data to base color fill on
 C
-	CALL GENDAT(ZDAT,M,M,N,1.,15.,1.,15.)
+        CALL GENDAT(ZDAT,M,M,N,1.,15.,1.,15.)
+C
+C Make sure that data at -180 is the same as data at +180
+C
+	DO 10, I=1,M
+	   ZDAT(I,N) = ZDAT (I,1)
+ 10	CONTINUE
 C
 C Open GKS.
 C
-	CALL OPNGKS
+        CALL OPNGKS
 C
 C Set up color table
 C
-	CALL COLOR
+        CALL COLOR
 C
 C Set the outline-dataset parameter.
 C
@@ -46,56 +57,60 @@ C
 C
 C Initalize areas, initialize ezmap
 C
-	CALL ARINAM (MAP, IMAP)
-	CALL MAPINT
+        CALL ARINAM (MAP, IMAP)
+        CALL MAPINT
 C
 C Add geographic outlines to area map
 C
-	CALL MAPBLA (MAP)
+        CALL MAPBLA (MAP)
 
 C
 C Add longitude lines at 2 degree intervals over the states to area map
 C
-	DO 1, I=-90,90,IGRD
-	  DO 2 J=-180, 180-IGRD,IGRD
-	    LEFT  = (J+181)*1000 + (I+91)
-	    CALL MAPITA(REAL(I),REAL(J)     ,0,MAP,5,LEFT,0)
-	    CALL MAPITA(REAL(I),REAL(J+IGRD),1,MAP,5,LEFT,0)
-	    CALL MAPIQA(MAP,5,LEFT,0)
- 2	  CONTINUE
- 1	CONTINUE
+        DO 1, I=-90,90,IGRD
+          DO 2 J=-180, 180-IGRD,IGRD
+            LEFT  = (J+181)*1000 + (I+91)
+            CALL MAPITA(REAL(I),REAL(J)     ,0,MAP,5,LEFT,0)
+            CALL MAPITA(REAL(I),REAL(J+IGRD),1,MAP,5,LEFT,0)
+            CALL MAPIQA(MAP,5,LEFT,0)
+ 2        CONTINUE
+ 1      CONTINUE
 
 C
 C Add latitude lines at 2 degree intervals over the states to area map
 C
-	DO 3, I=-180, 180,IGRD
-	  DO 4 J=-90,90-IGRD,IGRD
-	    CALL MAPITA(REAL(J),     REAL(I),0,MAP,5,0,0)
-	    CALL MAPITA(REAL(J+IGRD),REAL(I),1,MAP,5,0,0)
-	    CALL MAPIQA(MAP,5,0,0)
- 4	  CONTINUE
- 3	CONTINUE
+        DO 3, I=-180, 180,IGRD
+          DO 4 J=-90,90-IGRD,IGRD
+            CALL MAPITA(REAL(J),     REAL(I),0,MAP,5,0,0)
+            CALL MAPITA(REAL(J+IGRD),REAL(I),1,MAP,5,0,0)
+            CALL MAPIQA(MAP,5,0,0)
+ 4        CONTINUE
+ 3      CONTINUE
 C
 C Fill in areas over land with colors
 C
-	CALL GSFAIS(1)
-	CALL ARSCAM(MAP,XWRK,YWRK,NWRK,IAREA,IGRP,5,FILL)
+        CALL GSFAIS(1)
+        CALL ARSCAM(MAP,XWRK,YWRK,NWRK,IAREA,IGRP,5,FILL)
 C
 C Draw perimeter
 C
-	CALL MAPSTI('LA - LABEL FLAG',0)
-	CALL MAPLBL
+        CALL MAPSTI('LA - LABEL FLAG',0)
+        CALL MAPLBL
 C
 C Draw map over area plot
 C
-      CALL MAPLOT
-
+        CALL MAPLOT
+C
+C Report how much space was used in the area map
+C
+        ISPACE=MAP(1) - MAP(6) + MAP(5)
+        WRITE (6,*) 'Area Map Workspace Used: ',ISPACE
 C
 C Put the label at the top of the plot.
 C
       CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
       CALL PLCHHQ (.5,.85,'Filling Gridded Data over Landmasses',
-     +		.017,0.,0.)
+     +          .017,0.,0.)
 C
 C Advance the frame.
 C
@@ -111,63 +126,64 @@ C
 C
       END
 
-	SUBROUTINE FILL(XWRK,YWRK,NWRK,IAREA,IGRP,NSIZE)
+        SUBROUTINE FILL(XWRK,YWRK,NWRK,IAREA,IGRP,NSIZE)
 
-	PARAMETER(IGRD=2,M=180/IGRD,N=360/IGRD)
-	REAL XWRK(NWRK), YWRK(NWRK)
-	INTEGER IAREA(NSIZE),IGRP(NSIZE)
+        PARAMETER(IGRD=15,M=180/IGRD,N=360/IGRD)
 
 C bring in the data array to define colors
-      COMMON /DAT1/ ZDAT(M,N)
+        COMMON /DAT1/ ZDAT(M,N)
+
+        REAL XWRK(NWRK), YWRK(NWRK), ZDAT
+        INTEGER IAREA(NSIZE),IGRP(NSIZE)
 
 C
 C Group 5 is the group of 2 degree grid lines, group 1 are political and
 C continental outlines.
 C
-	IAREA1=-1
-	IAREA5=-1
+        IAREA1=-1
+        IAREA5=-1
 C
 C If there are less than 3 points defining the area, return to arscam
 C
-	IF (NWRK.LE.3) RETURN
+        IF (NWRK.LE.3) RETURN
 C
 C Check each of the group and area identifiers for the current area
 C
-	DO 10, I=1,NSIZE
-	   IF (IGRP(I).EQ.1) IAREA1=IAREA(I)
-	   IF (IGRP(I).EQ.5) IAREA5=IAREA(I)
- 10	CONTINUE
+        DO 10, I=1,NSIZE
+           IF (IGRP(I).EQ.1) IAREA1=IAREA(I)
+           IF (IGRP(I).EQ.5) IAREA5=IAREA(I)
+ 10     CONTINUE
 C
 C If the area identifier is over the globe
 C
-	IF (IAREA1.GT.0) THEN
+        IF (IAREA1.GT.0) THEN
 C
 C If the color id for the area is 1, then the area is over ocean and
 C don't fill area
 C
-	  IF (MAPACI(IAREA1).NE.1.AND.IAREA5.GT.0) THEN
+          IF (MAPACI(IAREA1).NE.1.AND.IAREA5.GT.0) THEN
 C
 C At this point you need to invert your area identifier function to 
 C retrieve your latitude and longitude values (or your data array
 C indicies) so that you can color fill based on them.
 C
-	     LAT = MOD(IAREA5,1000)
-	     I = LAT/IGRD + 1
-	     LON = IAREA5/1000
-	     J = LON/IGRD + 1
+             LAT = MOD(IAREA5,1000)
+             I = LAT/IGRD + 1
+             LON = IAREA5/1000
+             J = LON/IGRD + 1
 C
 C Our data is predefined to have values between 1. and 15 (chosen
 C because we have 15 colors defined in subroutine COLOR.
 C color index 1 is white, so we set the color index to start at 2.
 C
-	     ICLR = INT(ZDAT(I,J))+1
-	     CALL GSFACI(ICLR)
-	     CALL GFA(NWRK-1,XWRK,YWRK)
-	  ENDIF
-	ENDIF
+             ICLR = INT(ZDAT(I,J))+1
+             CALL GSFACI(ICLR)
+             CALL GFA(NWRK-1,XWRK,YWRK)
+          ENDIF
+        ENDIF
 
-	RETURN
-	END
+        RETURN
+        END
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
 C This is a routine to generate test data for two-dimensional graphics
