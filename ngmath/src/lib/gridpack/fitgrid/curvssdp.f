@@ -1,5 +1,5 @@
 C
-C $Id: curvssdp.f,v 1.1 2002-08-27 03:55:59 haley Exp $
+C $Id: curvssdp.f,v 1.2 2003-08-11 22:44:00 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -19,6 +19,9 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
+C
+C NOTE: If you make any changes to this software, please remember to
+C make the same changes to the corresponding single precision routine.
 C
       SUBROUTINE CURVSSDP(N,X,Y,D,ISW,S,EPS,YS,YSP,SIGMA,TD,TSD1,HD,HSD1,
      +                  HSD2,RD,RSD1,RSD2,V,IERR)

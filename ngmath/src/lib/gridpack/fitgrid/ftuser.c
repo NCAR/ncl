@@ -1,5 +1,5 @@
 /*
- * $Id: ftuser.c,v 1.4 2002-08-03 00:27:32 fred Exp $
+ * $Id: ftuser.c,v 1.5 2003-08-11 22:44:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,36 @@
 ************************************************************************/
 
 #include "ftuvars.h"
+
+/*
+ * Copy double data to float array, using a void array. 
+ */
+void *copy_dtof(void *dval, int size)
+{
+   int i;
+   void *fval;
+
+   fval = (float *) calloc(size, sizeof(float));
+   for( i = 0; i < size; i++ ) {
+      ((float*)fval)[i]  = (float)((double*)dval)[i];
+   }
+   return(fval);
+}
+
+/*
+ * Copy float data to double array, using a void array. 
+ */
+void *copy_ftod(void *fval, int size)
+{
+   int i;
+   void *dval;
+
+   dval = (double *) calloc(size, sizeof(double));
+   for( i = 0; i < size; i++ ) {
+       ((double*)dval)[i]  = (double)((float*)fval)[i];
+   }
+   return(dval);
+}
 
 /*
  *  Set values for int parameters.
@@ -73,31 +103,69 @@ int c_ftseti(char *pnam, int ival)
 int c_ftsetr(char *pnam, float fval)
 {
    if (!strncmp(pnam,"sl1",3) || !strncmp(pnam,"SL1",3)) {
-      ft_slp1 = fval;
+      ft_slp1 = (double) fval;
    }
    else if (!strncmp(pnam,"sln",3) || !strncmp(pnam,"SLN",3)) {
-      ft_slpn = fval;
+      ft_slpn = (double) fval;
    }
    else if (!strncmp(pnam,"sig",3) || !strncmp(pnam,"SIG",3)) {
-      ft_sigma = fval; 
+      ft_sigma = (double) fval; 
    }
    else if (!strncmp(pnam,"smt",3) || !strncmp(pnam,"SMT",3)) {
-      ft_s = fval; 
+      ft_s = (double) fval; 
    }
    else if (!strncmp(pnam,"eps",3) || !strncmp(pnam,"EPS",3)) {
-      ft_eps = fval; 
+      ft_eps = (double) fval; 
    }
    else if (!strncmp(pnam,"z11",3) || !strncmp(pnam,"Z11",3)) {
-      ft_z11 = fval; 
+      ft_z11 = (double) fval; 
    }
    else if (!strncmp(pnam,"zm1",3) || !strncmp(pnam,"ZM1",3)) {
-      ft_zm1 = fval; 
+      ft_zm1 = (double) fval; 
    }
    else if (!strncmp(pnam,"z1n",3) || !strncmp(pnam,"Z1N",3)) {
-      ft_z1n = fval; 
+      ft_z1n = (double) fval; 
    }
    else if (!strncmp(pnam,"zmn",3) || !strncmp(pnam,"ZMN",3)) {
-      ft_zmn = fval; 
+      ft_zmn = (double) fval; 
+   }
+   else {
+      return(1);
+   }
+   return(0);
+}
+
+/*
+ *  Set values for double parameters.
+ */
+int c_ftsetrd(char *pnam, double dval)
+{
+   if (!strncmp(pnam,"sl1",3) || !strncmp(pnam,"SL1",3)) {
+      ft_slp1 = dval;
+   }
+   else if (!strncmp(pnam,"sln",3) || !strncmp(pnam,"SLN",3)) {
+      ft_slpn = dval;
+   }
+   else if (!strncmp(pnam,"sig",3) || !strncmp(pnam,"SIG",3)) {
+      ft_sigma = dval; 
+   }
+   else if (!strncmp(pnam,"smt",3) || !strncmp(pnam,"SMT",3)) {
+      ft_s = dval; 
+   }
+   else if (!strncmp(pnam,"eps",3) || !strncmp(pnam,"EPS",3)) {
+      ft_eps = dval; 
+   }
+   else if (!strncmp(pnam,"z11",3) || !strncmp(pnam,"Z11",3)) {
+      ft_z11 = dval; 
+   }
+   else if (!strncmp(pnam,"zm1",3) || !strncmp(pnam,"ZM1",3)) {
+      ft_zm1 = dval; 
+   }
+   else if (!strncmp(pnam,"z1n",3) || !strncmp(pnam,"Z1N",3)) {
+      ft_z1n = dval; 
+   }
+   else if (!strncmp(pnam,"zmn",3) || !strncmp(pnam,"ZMN",3)) {
+      ft_zmn = dval; 
    }
    else {
       return(1);
@@ -172,31 +240,69 @@ int c_ftgeti(char *pnam, int *ival)
 int c_ftgetr(char *pnam, float *fval)
 {
    if (!strncmp(pnam,"sl1",3) || !strncmp(pnam,"SL1",3)) {
-      *fval = ft_slp1;
+      *fval = (float) ft_slp1;
    }
    else if (!strncmp(pnam,"sln",3) || !strncmp(pnam,"SLN",3)) {
-      *fval = ft_slpn;
+      *fval = (float) ft_slpn;
    }
    else if (!strncmp(pnam,"sig",3) || !strncmp(pnam,"SIG",3)) {
-      *fval = ft_sigma; 
+      *fval = (float) ft_sigma; 
    }
    else if (!strncmp(pnam,"smt",3) || !strncmp(pnam,"SMT",3)) {
-      *fval = ft_s; 
+      *fval = (float) ft_s; 
    }
    else if (!strncmp(pnam,"eps",3) || !strncmp(pnam,"EPS",3)) {
-      *fval = ft_eps; 
+      *fval = (float) ft_eps; 
    }
    else if (!strncmp(pnam,"z11",3) || !strncmp(pnam,"Z11",3)) {
-      *fval = ft_z11; 
+      *fval = (float) ft_z11; 
    }
    else if (!strncmp(pnam,"zm1",3) || !strncmp(pnam,"ZM1",3)) {
-      *fval = ft_zm1; 
+      *fval = (float) ft_zm1; 
    }
    else if (!strncmp(pnam,"z1n",3) || !strncmp(pnam,"Z1N",3)) {
-      *fval = ft_z1n; 
+      *fval = (float) ft_z1n; 
    }
    else if (!strncmp(pnam,"zmn",3) || !strncmp(pnam,"ZMN",3)) {
-      *fval = ft_zmn; 
+      *fval = (float) ft_zmn; 
+   }
+   else {
+      return(1);
+   }
+   return(0);
+}
+
+/*
+ *  Get values for double parameters.
+ */
+int c_ftgetrd(char *pnam, double *dval)
+{
+   if (!strncmp(pnam,"sl1",3) || !strncmp(pnam,"SL1",3)) {
+      *dval = ft_slp1;
+   }
+   else if (!strncmp(pnam,"sln",3) || !strncmp(pnam,"SLN",3)) {
+      *dval = ft_slpn;
+   }
+   else if (!strncmp(pnam,"sig",3) || !strncmp(pnam,"SIG",3)) {
+      *dval = ft_sigma; 
+   }
+   else if (!strncmp(pnam,"smt",3) || !strncmp(pnam,"SMT",3)) {
+      *dval = ft_s; 
+   }
+   else if (!strncmp(pnam,"eps",3) || !strncmp(pnam,"EPS",3)) {
+      *dval = ft_eps; 
+   }
+   else if (!strncmp(pnam,"z11",3) || !strncmp(pnam,"Z11",3)) {
+      *dval = ft_z11; 
+   }
+   else if (!strncmp(pnam,"zm1",3) || !strncmp(pnam,"ZM1",3)) {
+      *dval = ft_zm1; 
+   }
+   else if (!strncmp(pnam,"z1n",3) || !strncmp(pnam,"Z1N",3)) {
+      *dval = ft_z1n; 
+   }
+   else if (!strncmp(pnam,"zmn",3) || !strncmp(pnam,"ZMN",3)) {
+      *dval = ft_zmn; 
    }
    else {
       return(1);
@@ -224,25 +330,59 @@ int c_ftgetc(char *pnam, char *vnam)
 }
 
 /*
- *  Set floating arrays.
+ *  Set floating point arrays.
  */
 int c_ftsetfa(char *pnam, int n, float *far)
 {
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
       ft_zx1.size = n;
-      ft_zx1.data = far;
+	  ft_zx1.data = (float *) far;
+      ft_zx1.type = ft_float;
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
       ft_zxm.size = n;
-      ft_zxm.data = far;
+      ft_zxm.type = ft_float;
+	  ft_zxm.data = (float *) far;
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
       ft_zy1.size = n;
-      ft_zy1.data = far;
+      ft_zy1.type = ft_float;
+	  ft_zy1.data = (float *) far;
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
       ft_zyn.size = n;
-      ft_zyn.data = far;
+      ft_zyn.type = ft_float;
+	  ft_zyn.data = (float *) far;
+   }
+   else {
+      return(1);
+   }
+   return(0);
+}
+/*
+ *  Set double arrays.
+ */
+int c_ftsetda(char *pnam, int n, double *dar)
+{
+   if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
+      ft_zx1.size = n;
+	  ft_zx1.data = (double *) dar;
+      ft_zx1.type = ft_double;
+   }
+   else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
+      ft_zxm.size = n;
+	  ft_zxm.data = (double *) dar;
+      ft_zxm.type = ft_double;
+   }
+   else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
+      ft_zy1.size = n;
+	  ft_zy1.data = (double *) dar;
+      ft_zy1.type = ft_double;
+   }
+   else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
+      ft_zyn.size = n;
+	  ft_zyn.data = (double *) dar;
+      ft_zyn.type = ft_double;
    }
    else {
       return(1);
@@ -251,7 +391,7 @@ int c_ftsetfa(char *pnam, int n, float *far)
 }
 
 /*
- *  Retrieve floating array sizes.
+ *  Retrieve array sizes.
  */
 int c_ftgetfa_size(char *pnam)
 {
@@ -272,24 +412,98 @@ int c_ftgetfa_size(char *pnam)
    }
 }
 
+
 /*
  *  Retreive floating array data.
  */
 float *c_ftgetfa_data(char *pnam)
 {
+   void *fval;
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
-      return(ft_zx1.data);
+      if(ft_zx1.type == ft_double) {
+         ft_zx1.type = ft_float;
+         fval        = copy_dtof(ft_zx1.data,ft_zx1.size);
+         free(ft_zx1.data);
+		 ft_zx1.data = fval;
+      }
+      return((float *)ft_zx1.data);
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
-      return(ft_zxm.data);
+      if(ft_zxm.type == ft_double) {
+         ft_zxm.type = ft_float;
+         fval =      copy_dtof(ft_zxm.data,ft_zxm.size);
+         free(ft_zxm.data);
+         ft_zxm.data = fval;
+      }
+      return((float *)ft_zxm.data);
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
-      return(ft_zy1.data);
+      if(ft_zy1.type == ft_double) {
+         ft_zy1.type = ft_float;
+         fval =      copy_dtof(ft_zy1.data,ft_zy1.size);
+         free(ft_zy1.data);
+         ft_zy1.data = fval;
+      }
+      return((float *)ft_zy1.data);
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
-      return(ft_zyn.data);
+      if(ft_zyn.type == ft_double) {
+         ft_zyn.type = ft_float;
+         fval =      copy_dtof(ft_zyn.data,ft_zyn.size);
+         free(ft_zyn.data);
+         ft_zyn.data = fval;
+      }
+      return((float *)ft_zyn.data);
    }
    else {
       return(NULL);
    }
 }
+
+/*
+ *  Retreive double array data.
+ */
+double *c_ftgetda_data(char *pnam)
+{
+   void *dval;
+   if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
+      if(ft_zx1.type == ft_float) {
+         ft_zx1.type = ft_double;
+         dval        = copy_ftod(ft_zx1.data,ft_zx1.size);
+         free(ft_zx1.data);
+		 ft_zx1.data = dval;
+      }
+      return((double *)ft_zx1.data);
+   }
+   else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
+	 if(ft_zxm.type == ft_float) {
+        ft_zxm.type = ft_double;
+	    dval        = copy_ftod(ft_zxm.data,ft_zxm.size);
+	    free(ft_zxm.data);
+	    ft_zxm.data = dval;
+	  }
+      return((double *)ft_zxm.data);
+   }
+   else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
+	  if(ft_zy1.type == ft_float) {
+ 	     ft_zy1.type = ft_double;
+	     dval        = copy_ftod(ft_zy1.data,ft_zy1.size);
+	     free(ft_zy1.data);
+	     ft_zy1.data = dval;
+ 	  }
+      return((double *)ft_zy1.data);
+   }
+   else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
+	  if(ft_zyn.type == ft_float) {
+	     ft_zyn.type = ft_double;
+	     dval      = copy_ftod(ft_zyn.data,ft_zyn.size);
+	     free(ft_zyn.data);
+	     ft_zyn.data = dval;
+  	  }
+      return((double *)ft_zyn.data);
+   }
+   else {
+      return(NULL);
+   }
+}
+

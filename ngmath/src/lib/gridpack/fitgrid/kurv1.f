@@ -1,5 +1,5 @@
 C
-C $Id: kurv1.f,v 1.3 2000-08-22 15:19:36 haley Exp $
+C $Id: kurv1.f,v 1.4 2003-08-11 22:44:01 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -19,6 +19,9 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
+C
+C NOTE: If you make any changes to this software, please remember to
+C make the same changes to the corresponding double precision routine.
 C
       subroutine kurv1 (n,x,y,slp1,slpn,islpsw,xp,yp,temp,s,
      *                  sigma,ierr)

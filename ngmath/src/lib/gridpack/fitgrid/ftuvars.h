@@ -1,5 +1,5 @@
 /*
- * $Id: ftuvars.h,v 1.3 2000-08-22 03:34:57 haley Exp $
+ * $Id: ftuvars.h,v 1.4 2003-08-11 22:44:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,7 +33,7 @@
  *  Define all global variables (they all begin with the sentinel
  *  characters "ft_").
  */
-extern float     ft_sigma, ft_slp1, ft_slpn, ft_s, ft_eps,
+extern double    ft_sigma, ft_slp1, ft_slpn, ft_s, ft_eps,
                  ft_z11, ft_zm1, ft_z1n, ft_zmn;
 
 extern int       ft_islp, ft_sms, ft_err,

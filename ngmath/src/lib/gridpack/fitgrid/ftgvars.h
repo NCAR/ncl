@@ -1,5 +1,5 @@
 /*
- * $Id: ftgvars.h,v 1.4 2002-08-27 03:56:00 haley Exp $
+ * $Id: ftgvars.h,v 1.5 2003-08-11 22:44:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -79,7 +79,7 @@
  *     df8     ft_df8      int      flags if zmn is user supplied (0 if so).
  */
 
-float     ft_sigma = 1., ft_slp1 = 0., ft_slpn = 0., ft_s, ft_eps,
+double    ft_sigma = 1., ft_slp1 = 0., ft_slpn = 0., ft_s, ft_eps,
           ft_z11 = 0., ft_zm1 = 0., ft_z1n = 0., ft_zmn = 0.;
 
 int       ft_islp = 3, ft_sms = 0, ft_df1 = 1, ft_df2 = 1, ft_df3 = 1,
@@ -89,9 +89,3 @@ int       ft_islp = 3, ft_sms = 0, ft_df1 = 1, ft_df2 = 1, ft_df3 = 1,
 char      ft_cdum[13] = {"dummy_string"};
 
 FTdata    ft_zx1, ft_zxm, ft_zy1, ft_zyn;
-
-double    ft_sigma_dp = 1., ft_slp1_dp = 0., ft_slpn_dp = 0., ft_s_dp,
-          ft_eps_dp, ft_z11_dp = 0., ft_zm1_dp = 0., ft_z1n_dp = 0.,
-          ft_zmn_dp = 0.;
-
-DPdata    ft_zx1_dp, ft_zxm_dp, ft_zy1_dp, ft_zyn_dp;

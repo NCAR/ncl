@@ -1,5 +1,5 @@
 /*
- * $Id: c_ftcurv.c,v 1.6 2002-08-27 03:55:56 haley Exp $
+ * $Id: c_ftcurv.c,v 1.7 2003-08-11 22:43:58 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -32,13 +32,23 @@
 int c_ftcurv(int n, float xi[], float yi[], int m, float xo[], float yo[])
 {
   float *yp, *temp;
+  float ft_slp1_tmp, ft_slpn_tmp, ft_sigma_tmp;
 
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(n, sizeof(float));
   
-  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp, 
-          yp, temp, &ft_sigma, &ft_err);
-  NGCALLF(fcurv2,FCURV2)(&n, xi, yi, yp, &ft_sigma, &m, xo, yo);
+/*
+ * Note: these next three parameters are supposedly unaltered by
+ * the Fortran routines, so we don't need to save their values when
+ * we return from the Fortran routines.
+ */
+  ft_slp1_tmp  = (float) ft_slp1;
+  ft_slpn_tmp  = (float) ft_slpn;
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1_tmp, &ft_slpn_tmp, &ft_islp, 
+                       yp, temp, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fcurv2,FCURV2)(&n, xi, yi, yp, &ft_sigma_tmp, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -49,13 +59,23 @@ int c_ftcurv(int n, float xi[], float yi[], int m, float xo[], float yo[])
 int c_ftcurvd(int n, float xi[], float yi[], int m, float xo[], float yo[])
 {
   float *yp, *temp;
+  float ft_slp1_tmp, ft_slpn_tmp, ft_sigma_tmp;
 
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(n, sizeof(float));
   
-  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp, 
-          yp, temp, &ft_sigma, &ft_err);
-  NGCALLF(fcurvd,FCURVD)(&n, xi, yi, yp, &ft_sigma, &m, xo, yo);
+/*
+ * Note: these next three parameters are supposedly unaltered by
+ * the Fortran routines, so we don't need to save their values when
+ * we return from the Fortran routines.
+ */
+  ft_slp1_tmp  = (float) ft_slp1;
+  ft_slpn_tmp  = (float) ft_slpn;
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1_tmp, &ft_slpn_tmp, &ft_islp, 
+                       yp, temp, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fcurvd,FCURVD)(&n, xi, yi, yp, &ft_sigma_tmp, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -67,13 +87,23 @@ int c_ftcurvi(float xl, float xr, int n, float xi[], float yi[],
               float *integral)
 {
   float *yp, *temp;
+  float ft_slp1_tmp, ft_slpn_tmp, ft_sigma_tmp;
 
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(n, sizeof(float));
   
-  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp, 
-          yp, temp, &ft_sigma, &ft_err);
-  NGCALLF(fcurvi,FCURVI)(&xl, &xr, &n, xi, yi, yp, &ft_sigma, integral);
+/*
+ * Note: these next three parameters are supposedly unaltered by
+ * the Fortran routines, so we don't need to save their values when
+ * we return from the Fortran routines.
+ */
+  ft_slp1_tmp  = (float) ft_slp1;
+  ft_slpn_tmp  = (float) ft_slpn;
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(curv1,CURV1)(&n, xi, yi, &ft_slp1_tmp, &ft_slpn_tmp, &ft_islp, 
+                       yp, temp, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fcurvi,FCURVI)(&xl, &xr, &n, xi, yi, yp, &ft_sigma_tmp, integral);
 
   free(yp);
   free(temp);
@@ -85,12 +115,20 @@ int c_ftcurvp(int n, float xi[], float yi[], float p,
               int m, float xo[], float yo[])
 {
   float *yp, *temp;
+  float ft_sigma_tmp;
 
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(2*n, sizeof(float));
   
-  NGCALLF(curvp1,CURVP1)(&n, xi, yi, &p, yp, temp, &ft_sigma, &ft_err);
-  NGCALLF(fcurvp2,FCURVP2)(&n, xi, yi, yp, &p, &ft_sigma, &m, xo, yo);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(curvp1,CURVP1)(&n, xi, yi, &p, yp, temp, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fcurvp2,FCURVP2)(&n, xi, yi, yp, &p, &ft_sigma_tmp, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -102,12 +140,21 @@ int c_ftcurvpi(float xl, float xr, float p, int n, float xi[], float yi[],
               float *integral)
 {
   float *yp, *temp;
+  float ft_sigma_tmp;
 
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(2*n, sizeof(float));
   
-  NGCALLF(curvp1,CURVP1)(&n, xi, yi, &p, yp, temp, &ft_sigma, &ft_err);
-  NGCALLF(fcurvpi,FCURVPI)(&xl, &xr, &p, &n, xi, yi, yp, &ft_sigma, integral);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(curvp1,CURVP1)(&n, xi, yi, &p, yp, temp, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fcurvpi,FCURVPI)(&xl, &xr, &p, &n, xi, yi, yp, &ft_sigma_tmp,
+                           integral);
 
   free(yp);
   free(temp);
@@ -119,6 +166,7 @@ int c_ftcurvs(int n, float xi[], float yi[], int dflg, float d[],
               int m, float xo[], float yo[])
 {
   float *ys, *ysp, *temp, smths, smeps;
+  float ft_sigma_tmp;
 
 /*
  *  Establish the values for the parameters S, EPS, and D.
@@ -129,25 +177,32 @@ int c_ftcurvs(int n, float xi[], float yi[], int dflg, float d[],
     smeps = (float) sqrt( (float) (2./smths) );
   }
   else if (ft_sms == 1) {
-    smths = ft_s;
-    smeps = ft_eps;
+    smths = (float) ft_s;
+    smeps = (float) ft_eps;
   }
   else if (ft_sms == 2) {
-    smths = ft_s;
+    smths = (float) ft_s;
     smeps = (float) sqrt( (float) (2./((float) n)) );
   }
   else if (ft_sms == 3) {
     smths = (float) n;
-    smeps = ft_eps;
+    smeps = (float) ft_eps;
   }
 
   ys   = (float *) calloc(n, sizeof(float));
   ysp  = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(9*n, sizeof(float));
   
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
   NGCALLF(curvs,CURVS)(&n, xi, yi, d, &dflg, &smths, &smeps, ys, ysp,
-                       &ft_sigma, temp, &ft_err);
-  NGCALLF(fcurv2,FCURV2)(&n, xi, ys, ysp, &ft_sigma, &m, xo, yo);
+                       &ft_sigma_tmp, temp, &ft_err);
+  NGCALLF(fcurv2,FCURV2)(&n, xi, ys, ysp, &ft_sigma_tmp, &m, xo, yo);
 
   free(ys);
   free(ysp);
@@ -160,6 +215,7 @@ int c_ftcurvps(int n, float xi[], float yi[], float p, int dflg, float d[],
                int m, float xo[], float yo[])
 {
   float *ys, *ysp, *temp, smths, smeps;
+  float ft_sigma_tmp;
 
 /*
  *  Establish the values for the parameters S, EPS, and D.
@@ -170,25 +226,32 @@ int c_ftcurvps(int n, float xi[], float yi[], float p, int dflg, float d[],
     smeps = (float) sqrt( (float) (2./smths) );
   }
   else if (ft_sms == 1) {
-    smths = ft_s;
-    smeps = ft_eps;
+    smths = (float) ft_s;
+    smeps = (float) ft_eps;
   }
   else if (ft_sms == 2) {
-    smths = ft_s;
+    smths = (float) ft_s;
     smeps = (float) sqrt( (float) (2./((float) n)) );
   }
   else if (ft_sms == 3) {
     smths = (float) n;
-    smeps = ft_eps;
+    smeps = (float) ft_eps;
   }
 
   ys   = (float *) calloc(n, sizeof(float));
   ysp  = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(11*n, sizeof(float));
   
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
   NGCALLF(curvps,CURVPS)(&n, xi, yi, &p, d, &dflg, &smths, &smeps, ys, ysp,
-                       &ft_sigma, temp, &ft_err);
-  NGCALLF(fcurvp2,FCURVP2)(&n, xi, ys, ysp, &p, &ft_sigma, &m, xo, yo);
+                         &ft_sigma_tmp, temp, &ft_err);
+  NGCALLF(fcurvp2,FCURVP2)(&n, xi, ys, ysp, &p, &ft_sigma_tmp, &m, xo, yo);
 
   free(ys);
   free(ysp);
@@ -201,15 +264,25 @@ int c_ftkurv(int n, float xi[], float yi[], int m, float t[],
              float xo[], float yo[])
 {
   float *s, *xp, *yp, *temp;
+  float ft_slp1_tmp, ft_slpn_tmp, ft_sigma_tmp;
 
   s    = (float *) calloc(n, sizeof(float));
   xp   = (float *) calloc(n, sizeof(float));
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(n, sizeof(float));
   
-  NGCALLF(kurv1,KURV1)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp,
-                       xp, yp, temp, s, &ft_sigma, &ft_err);
-  NGCALLF(fkurv2,FKURV2)(&n, xi, yi, &m, t, xo, yo, xp, yp, s, &ft_sigma);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_slp1_tmp  = (float) ft_slp1;
+  ft_slpn_tmp  = (float) ft_slpn;
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(kurv1,KURV1)(&n, xi, yi, &ft_slp1_tmp, &ft_slpn_tmp, &ft_islp,
+                       xp, yp, temp, s, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fkurv2,FKURV2)(&n, xi, yi, &m, t, xo, yo, xp, yp, s, &ft_sigma_tmp);
 
   free(s);
   free(xp);
@@ -223,14 +296,22 @@ int c_ftkurvp(int n, float xi[], float yi[], int m, float t[],
              float xo[], float yo[])
 {
   float *s, *xp, *yp, *temp;
+  float ft_sigma_tmp;
 
   s    = (float *) calloc(n, sizeof(float));
   xp   = (float *) calloc(n, sizeof(float));
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(2*n, sizeof(float));
   
-  NGCALLF(kurvp1,KURVP1)(&n, xi, yi, xp, yp, temp, s, &ft_sigma, &ft_err);
-  NGCALLF(fkurvp2,FKURVP2)(&n, xi, yi, &m, t, xo, yo, xp, yp, s, &ft_sigma);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(kurvp1,KURVP1)(&n, xi, yi, xp, yp, temp, s, &ft_sigma_tmp, &ft_err);
+  NGCALLF(fkurvp2,FKURVP2)(&n, xi, yi, &m, t, xo, yo, xp, yp, s, &ft_sigma_tmp);
 
   free(s);
   free(xp);
@@ -245,16 +326,26 @@ int c_ftkurvd(int n, float xi[], float yi[], int m, float t[],
              float xdd[], float ydd[])
 {
   float *s, *xp, *yp, *temp;
+  float ft_slp1_tmp, ft_slpn_tmp, ft_sigma_tmp;
 
   s    = (float *) calloc(n, sizeof(float));
   xp   = (float *) calloc(n, sizeof(float));
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(n, sizeof(float));
   
-  NGCALLF(kurv1,KURV1)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp,
-                       xp, yp, temp, s, &ft_sigma, &ft_err);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_slp1_tmp  = (float) ft_slp1;
+  ft_slpn_tmp  = (float) ft_slpn;
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(kurv1,KURV1)(&n, xi, yi, &ft_slp1_tmp, &ft_slpn_tmp, &ft_islp,
+                       xp, yp, temp, s, &ft_sigma_tmp, &ft_err);
   NGCALLF(fkurvd,FKURVD)(&n, xi, yi, &m, t, xo, yo, xd, yd, xdd, ydd,
-                         xp, yp, s, &ft_sigma);
+                         xp, yp, s, &ft_sigma_tmp);
 
   free(s);
   free(xp);
@@ -269,15 +360,23 @@ int c_ftkurvpd(int n, float xi[], float yi[], int m, float t[],
               float xdd[], float ydd[])
 {
   float *s, *xp, *yp, *temp;
+  float ft_sigma_tmp;
 
   s    = (float *) calloc(n, sizeof(float));
   xp   = (float *) calloc(n, sizeof(float));
   yp   = (float *) calloc(n, sizeof(float));
   temp = (float *) calloc(2*n, sizeof(float));
   
-  NGCALLF(kurvp1,KURVP1)(&n, xi, yi, xp, yp, temp, s, &ft_sigma, &ft_err);
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
+  NGCALLF(kurvp1,KURVP1)(&n, xi, yi, xp, yp, temp, s, &ft_sigma_tmp, &ft_err);
   NGCALLF(fkurvpd,FKURVPD)(&n, xi, yi, &m, t, xo, yo, xd, yd, xdd, ydd,
-                           xp, yp, s, &ft_sigma);
+                           xp, yp, s, &ft_sigma_tmp);
 
   free(s);
   free(xp);
@@ -292,6 +391,7 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
 {
   int   i, j, sflag;
   float *zp, *temp, *fz, *output;
+  float ft_sigma_tmp, ft_z11_tmp, ft_zm1_tmp, ft_z1n_tmp, ft_zmn_tmp;
 
   fz   = (float *) calloc(mi*ni, sizeof(float));
   zp   = (float *) calloc(3*mi*ni, sizeof(float));
@@ -310,21 +410,25 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
   if (ft_df1 != 0) {
     ft_zx1.size = ni;
     ft_zx1.data = (float *) calloc(ni, sizeof(float));
+    ft_zx1.type = ft_float;
     sflag = sflag + 1;
   }
   if (ft_df2 != 0) {
     ft_zxm.size = ni;
     ft_zxm.data = (float *) calloc(ni, sizeof(float));
+    ft_zxm.type = ft_float;
     sflag = sflag + 2;
   }
   if (ft_df3 != 0) {
     ft_zy1.size = mi;
     ft_zy1.data = (float *) calloc(mi, sizeof(float));
+    ft_zy1.type = ft_float;
     sflag = sflag + 4;
   }
   if (ft_df4 != 0) {
     ft_zyn.size = mi;
     ft_zyn.data = (float *) calloc(mi, sizeof(float));
+    ft_zyn.type = ft_float;
     sflag = sflag + 8;
   }
   if (ft_df5 != 0) {
@@ -340,10 +444,21 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
     sflag = sflag + 128;
   }
   
+/*
+ * Note: these five parameter are supposedly unaltered by the
+ * Fortran routine, so we don't need to save their values
+ * when we return.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+  ft_z11_tmp   = (float) ft_z11;
+  ft_zm1_tmp   = (float) ft_zm1;
+  ft_z1n_tmp   = (float) ft_z1n;
+  ft_zmn_tmp   = (float) ft_zmn;
+
   NGCALLF(surf1,SURF1)(&mi, &ni, xi, yi, fz, &mi, 
           ft_zx1.data, ft_zxm.data, ft_zy1.data, ft_zyn.data,
-          &ft_z11, &ft_zm1, &ft_z1n, &ft_zmn, &sflag,
-          zp, temp, &ft_sigma, &ft_err);
+          &ft_z11_tmp, &ft_zm1_tmp, &ft_z1n_tmp, &ft_zmn_tmp, &sflag,
+          zp, temp, &ft_sigma_tmp, &ft_err);
 
 /*
  *  Call surf2, reversing the ordering of the output array.
@@ -352,7 +467,7 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
   for (i = 0; i < mo; i++) {
     for (j = 0; j < no; j++) {
       NGCALLF(fsurf2,FSURF2)(output + i*no + j, xo+i, yo+j, 
-                             &mi, &ni, xi, yi, fz, &mi, zp, &ft_sigma);
+                             &mi, &ni, xi, yi, fz, &mi, zp, &ft_sigma_tmp);
     }
   }
 
@@ -382,6 +497,7 @@ int c_ftcurvs1(int n, float xi[], float yi[], int dflg, float d[],
                int m, float xl, float xr, float xo[], float yo[])
 {
   float *param, *xs, *xsp, *ys, *ysp, *temp, smths, smeps;
+  float ft_sigma_tmp;
   int   i;
 
 /*
@@ -393,16 +509,16 @@ int c_ftcurvs1(int n, float xi[], float yi[], int dflg, float d[],
     smeps = (float) sqrt( (float) (2./smths) );
   }
   else if (ft_sms == 1) {
-    smths = ft_s;
-    smeps = ft_eps;
+    smths = (float) ft_s;
+    smeps = (float) ft_eps;
   }
   else if (ft_sms == 2) {
-    smths = ft_s;
+    smths = (float) ft_s;
     smeps = (float) sqrt( (float) (2./((float) n)) );
   }
   else if (ft_sms == 3) {
     smths = (float) n;
-    smeps = ft_eps;
+    smeps = (float) ft_eps;
   }
 
   ys    = (float *) calloc(n, sizeof(float));
@@ -412,10 +528,17 @@ int c_ftcurvs1(int n, float xi[], float yi[], int dflg, float d[],
   param = (float *) calloc(n, sizeof(float));
   temp  = (float *) calloc(19*n, sizeof(float));
   
+/*
+ * Note: this parameter is supposedly unaltered by the
+ * Fortran routines, so we don't need to save its value
+ * when we return from the Fortran routines.
+ */
+  ft_sigma_tmp = (float) ft_sigma;
+
   NGCALLF(curvs1,CURVS1)(&n, xi, yi, d, &dflg, &smths, &smeps, param,
-                         xs, ys, xsp, ysp, &ft_sigma, temp, &ft_err);
-  NGCALLF(fcurvs2,FCURVS2)(&n, param, xi, yi, xs, xsp, ys, ysp, &ft_sigma, 
-                           &m, &xl, &xr, xo, yo);
+                         xs, ys, xsp, ysp, &ft_sigma_tmp, temp, &ft_err);
+  NGCALLF(fcurvs2,FCURVS2)(&n, param, xi, yi, xs, xsp, ys, ysp, 
+                           &ft_sigma_tmp, &m, &xl, &xr, xo, yo);
 
   free(xs);
   free(xsp);
@@ -434,9 +557,9 @@ int c_ftcurvdp(int n, double xi[], double yi[], int m, double xo[], double yo[])
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(n, sizeof(double));
 
-  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1_dp, &ft_slpn_dp, &ft_islp,
-                           yp, temp, &ft_sigma_dp, &ft_err);
-  NGCALLF(fcurv2dp,FCURV2DP)(&n, xi, yi, yp, &ft_sigma_dp, &m, xo, yo);
+  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp,
+                           yp, temp, &ft_sigma, &ft_err);
+  NGCALLF(fcurv2dp,FCURV2DP)(&n, xi, yi, yp, &ft_sigma, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -451,9 +574,9 @@ int c_ftcurvddp(int n, double xi[], double yi[], int m, double xo[], double yo[]
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(n, sizeof(double));
   
-  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1_dp, &ft_slpn_dp, &ft_islp, 
-                           yp, temp, &ft_sigma_dp, &ft_err);
-  NGCALLF(fcurvddp,FCURVDDP)(&n, xi, yi, yp, &ft_sigma_dp, &m, xo, yo);
+  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp, 
+                           yp, temp, &ft_sigma, &ft_err);
+  NGCALLF(fcurvddp,FCURVDDP)(&n, xi, yi, yp, &ft_sigma, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -469,9 +592,9 @@ int c_ftcurvidp(double xl, double xr, int n, double xi[], double yi[],
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(n, sizeof(double));
   
-  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1_dp, &ft_slpn_dp, &ft_islp, 
-                           yp, temp, &ft_sigma_dp, &ft_err);
-  NGCALLF(fcurvidp,FCURVIDP)(&xl, &xr, &n, xi, yi, yp, &ft_sigma_dp, integral);
+  NGCALLF(curv1dp,CURV1DP)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp, 
+                           yp, temp, &ft_sigma, &ft_err);
+  NGCALLF(fcurvidp,FCURVIDP)(&xl, &xr, &n, xi, yi, yp, &ft_sigma, integral);
 
   free(yp);
   free(temp);
@@ -487,8 +610,8 @@ int c_ftcurvpdp(int n, double xi[], double yi[], double p,
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(2*n, sizeof(double));
   
-  NGCALLF(curvp1dp,CURVP1DP)(&n, xi, yi, &p, yp, temp, &ft_sigma_dp, &ft_err);
-  NGCALLF(fcurvp2dp,FCURVP2DP)(&n, xi, yi, yp, &p, &ft_sigma_dp, &m, xo, yo);
+  NGCALLF(curvp1dp,CURVP1DP)(&n, xi, yi, &p, yp, temp, &ft_sigma, &ft_err);
+  NGCALLF(fcurvp2dp,FCURVP2DP)(&n, xi, yi, yp, &p, &ft_sigma, &m, xo, yo);
 
   free(yp);
   free(temp);
@@ -504,8 +627,8 @@ int c_ftcurvpidp(double xl, double xr, double p, int n, double xi[], double yi[]
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(2*n, sizeof(double));
   
-  NGCALLF(curvp1dp,CURVP1DP)(&n, xi, yi, &p, yp, temp, &ft_sigma_dp, &ft_err);
-  NGCALLF(fcurvpidp,FCURVPIDP)(&xl, &xr, &p, &n, xi, yi, yp, &ft_sigma_dp,
+  NGCALLF(curvp1dp,CURVP1DP)(&n, xi, yi, &p, yp, temp, &ft_sigma, &ft_err);
+  NGCALLF(fcurvpidp,FCURVPIDP)(&xl, &xr, &p, &n, xi, yi, yp, &ft_sigma,
                                integral);
 
   free(yp);
@@ -528,16 +651,16 @@ int c_ftcurvsdp(int n, double xi[], double yi[], int dflg, double d[],
     smeps = (double) sqrt( (double) (2./smths) );
   }
   else if (ft_sms == 1) {
-    smths = ft_s_dp;
-    smeps = ft_eps_dp;
+    smths = ft_s;
+    smeps = ft_eps;
   }
   else if (ft_sms == 2) {
-    smths = ft_s_dp;
+    smths = ft_s;
     smeps = (double) sqrt( (double) (2./((double) n)) );
   }
   else if (ft_sms == 3) {
     smths = (double) n;
-    smeps = ft_eps_dp;
+    smeps = ft_eps;
   }
 
   ys   = (double *) calloc(n, sizeof(double));
@@ -545,8 +668,8 @@ int c_ftcurvsdp(int n, double xi[], double yi[], int dflg, double d[],
   temp = (double *) calloc(9*n, sizeof(double));
   
   NGCALLF(curvsdp,CURVSDP)(&n, xi, yi, d, &dflg, &smths, &smeps, ys, ysp,
-                           &ft_sigma_dp, temp, &ft_err);
-  NGCALLF(fcurv2dp,FCURV2DP)(&n, xi, ys, ysp, &ft_sigma_dp, &m, xo, yo);
+                           &ft_sigma, temp, &ft_err);
+  NGCALLF(fcurv2dp,FCURV2DP)(&n, xi, ys, ysp, &ft_sigma, &m, xo, yo);
 
   free(ys);
   free(ysp);
@@ -555,8 +678,8 @@ int c_ftcurvsdp(int n, double xi[], double yi[], int dflg, double d[],
   return(ft_err);
 }
 
-int c_ftcurvpsdp(int n, double xi[], double yi[], double p, int dflg, double d[],
-               int m, double xo[], double yo[])
+int c_ftcurvpsdp(int n, double xi[], double yi[], double p, int dflg,
+                 double d[], int m, double xo[], double yo[])
 {
   double *ys, *ysp, *temp, smths, smeps;
 
@@ -569,16 +692,16 @@ int c_ftcurvpsdp(int n, double xi[], double yi[], double p, int dflg, double d[]
     smeps = (double) sqrt( (double) (2./smths) );
   }
   else if (ft_sms == 1) {
-    smths = ft_s_dp;
-    smeps = ft_eps_dp;
+    smths = ft_s;
+    smeps = ft_eps;
   }
   else if (ft_sms == 2) {
-    smths = ft_s_dp;
+    smths = ft_s;
     smeps = (double) sqrt( (double) (2./((double) n)) );
   }
   else if (ft_sms == 3) {
     smths = (double) n;
-    smeps = ft_eps_dp;
+    smeps = ft_eps;
   }
 
   ys   = (double *) calloc(n, sizeof(double));
@@ -586,8 +709,8 @@ int c_ftcurvpsdp(int n, double xi[], double yi[], double p, int dflg, double d[]
   temp = (double *) calloc(11*n, sizeof(double));
   
   NGCALLF(curvpsdp,CURVPSDP)(&n, xi, yi, &p, d, &dflg, &smths, &smeps, ys,
-                             ysp, &ft_sigma_dp, temp, &ft_err);
-  NGCALLF(fcurvp2dp,FCURVP2DP)(&n, xi, ys, ysp, &p, &ft_sigma_dp, &m, xo, yo);
+                             ysp, &ft_sigma, temp, &ft_err);
+  NGCALLF(fcurvp2dp,FCURVP2DP)(&n, xi, ys, ysp, &p, &ft_sigma, &m, xo, yo);
 
   free(ys);
   free(ysp);
@@ -606,10 +729,10 @@ int c_ftkurvdp(int n, double xi[], double yi[], int m, double t[],
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(n, sizeof(double));
   
-  NGCALLF(kurv1dp,KURV1DP)(&n, xi, yi, &ft_slp1_dp, &ft_slpn_dp, &ft_islp,
-                           xp, yp, temp, s, &ft_sigma_dp, &ft_err);
+  NGCALLF(kurv1dp,KURV1DP)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp,
+                           xp, yp, temp, s, &ft_sigma, &ft_err);
   NGCALLF(fkurv2dp,FKURV2DP)(&n, xi, yi, &m, t, xo, yo, xp, yp, s,
-                             &ft_sigma_dp);
+                             &ft_sigma);
   free(s);
   free(xp);
   free(yp);
@@ -628,10 +751,10 @@ int c_ftkurvpdp(int n, double xi[], double yi[], int m, double t[],
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(2*n, sizeof(double));
   
-  NGCALLF(kurvp1dp,KURVP1DP)(&n, xi, yi, xp, yp, temp, s, &ft_sigma_dp, 
+  NGCALLF(kurvp1dp,KURVP1DP)(&n, xi, yi, xp, yp, temp, s, &ft_sigma, 
                              &ft_err);
   NGCALLF(fkurvp2dp,FKURVP2DP)(&n, xi, yi, &m, t, xo, yo, xp, yp, s, 
-                               &ft_sigma_dp);
+                               &ft_sigma);
 
   free(s);
   free(xp);
@@ -652,10 +775,10 @@ int c_ftkurvddp(int n, double xi[], double yi[], int m, double t[],
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(n, sizeof(double));
   
-  NGCALLF(kurv1dp,KURV1DP)(&n, xi, yi, &ft_slp1_dp, &ft_slpn_dp, &ft_islp,
-                           xp, yp, temp, s, &ft_sigma_dp, &ft_err);
+  NGCALLF(kurv1dp,KURV1DP)(&n, xi, yi, &ft_slp1, &ft_slpn, &ft_islp,
+                           xp, yp, temp, s, &ft_sigma, &ft_err);
   NGCALLF(fkurvddp,FKURVDDP)(&n, xi, yi, &m, t, xo, yo, xd, yd, xdd, ydd,
-                             xp, yp, s, &ft_sigma_dp);
+                             xp, yp, s, &ft_sigma);
 
   free(s);
   free(xp);
@@ -676,10 +799,10 @@ int c_ftkurvpddp(int n, double xi[], double yi[], int m, double t[],
   yp   = (double *) calloc(n, sizeof(double));
   temp = (double *) calloc(2*n, sizeof(double));
   
-  NGCALLF(kurvp1dp,KURVP1DP)(&n, xi, yi, xp, yp, temp, s, &ft_sigma_dp,
+  NGCALLF(kurvp1dp,KURVP1DP)(&n, xi, yi, xp, yp, temp, s, &ft_sigma,
                              &ft_err);
   NGCALLF(fkurvpddp,FKURVPDDP)(&n, xi, yi, &m, t, xo, yo, xd, yd, xdd, ydd,
-                               xp, yp, s, &ft_sigma_dp);
+                               xp, yp, s, &ft_sigma);
 
   free(s);
   free(xp);
@@ -710,23 +833,27 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   }
   sflag = 0;
   if (ft_df1 != 0) {
-    ft_zx1_dp.size = ni;
-    ft_zx1_dp.data = (double *) calloc(ni, sizeof(double));
+    ft_zx1.size = ni;
+    ft_zx1.data = (double *) calloc(ni, sizeof(double));
+    ft_zx1.type = ft_double;
     sflag = sflag + 1;
   }
   if (ft_df2 != 0) {
-    ft_zxm_dp.size = ni;
-    ft_zxm_dp.data = (double *) calloc(ni, sizeof(double));
+    ft_zxm.size = ni;
+    ft_zxm.data = (double *) calloc(ni, sizeof(double));
+    ft_zxm.type = ft_double;
     sflag = sflag + 2;
   }
   if (ft_df3 != 0) {
-    ft_zy1_dp.size = mi;
-    ft_zy1_dp.data = (double *) calloc(mi, sizeof(double));
+    ft_zy1.size = mi;
+    ft_zy1.data = (double *) calloc(mi, sizeof(double));
+    ft_zy1.type = ft_double;
     sflag = sflag + 4;
   }
   if (ft_df4 != 0) {
-    ft_zyn_dp.size = mi;
-    ft_zyn_dp.data = (double *) calloc(mi, sizeof(double));
+    ft_zyn.size = mi;
+    ft_zyn.data = (double *) calloc(mi, sizeof(double));
+    ft_zyn.type = ft_double;
     sflag = sflag + 8;
   }
   if (ft_df5 != 0) {
@@ -743,9 +870,9 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   }
   
   NGCALLF(surf1dp,SURF1DP)(&mi, &ni, xi, yi, fz, &mi, 
-          ft_zx1_dp.data, ft_zxm_dp.data, ft_zy1_dp.data, ft_zyn_dp.data,
-          &ft_z11_dp, &ft_zm1_dp, &ft_z1n_dp, &ft_zmn_dp, &sflag,
-          zp, temp, &ft_sigma_dp, &ft_err);
+          ft_zx1.data, ft_zxm.data, ft_zy1.data, ft_zyn.data,
+          &ft_z11, &ft_zm1, &ft_z1n, &ft_zmn, &sflag,
+          zp, temp, &ft_sigma, &ft_err);
 
 /*
  *  Call surf2, reversing the ordering of the output array.
@@ -754,7 +881,7 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   for (i = 0; i < mo; i++) {
     for (j = 0; j < no; j++) {
       NGCALLF(fsurf2dp,FSURF2DP)(output + i*no + j, xo+i, yo+j, &mi, &ni,
-                                 xi, yi, fz, &mi, zp, &ft_sigma_dp);
+                                 xi, yi, fz, &mi, zp, &ft_sigma);
     }
   }
 
@@ -762,20 +889,20 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   free(zp);
   free(temp);
   if (ft_df1 != 0) {
-    ft_zx1_dp.size = 0;
-    free(ft_zx1_dp.data);
+    ft_zx1.size = 0;
+    free(ft_zx1.data);
   }
   if (ft_df2 != 0) {
-    ft_zxm_dp.size = ni;
-    free(ft_zxm_dp.data);
+    ft_zxm.size = ni;
+    free(ft_zxm.data);
   }
   if (ft_df3 != 0) {
-    ft_zy1_dp.size = mi;
-    free(ft_zy1_dp.data);
+    ft_zy1.size = mi;
+    free(ft_zy1.data);
   }
   if (ft_df4 != 0) {
-    ft_zyn_dp.size = mi;
-    free(ft_zyn_dp.data);
+    ft_zyn.size = mi;
+    free(ft_zyn.data);
   }
   return(output);
 }

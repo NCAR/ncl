@@ -1,5 +1,5 @@
 C
-C $Id: curvpp.f,v 1.5 2002-05-22 05:52:18 fred Exp $
+C $Id: curvpp.f,v 1.6 2003-08-11 22:43:59 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -19,6 +19,9 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
+C
+C NOTE: If you make any changes to this software, please remember to
+C make the same changes to the corresponding double precision routine.
 C
       subroutine curvpp (n,x,y,p,d,isw,s,eps,ys,ysp,sigma,
      *                   td,tsd1,hd,hsd1,hsd2,rd,rsd1,rsd2,

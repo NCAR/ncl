@@ -1,5 +1,5 @@
 /* 
- * $Id: fttypes.h,v 1.4 2002-08-27 03:56:00 haley Exp $
+ * $Id: fttypes.h,v 1.5 2003-08-11 22:44:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,12 +24,15 @@
 *                                                                       *
 ************************************************************************/
 
-typedef struct {
-      size_t size;
-      float  *data;
-} FTdata;
+typedef enum FtDType {
+  ft_notype = 0,
+  ft_float  = 1, 
+  ft_double = 2
+} FtDataTypes;
 
 typedef struct {
-      size_t size;
-      double  *data;
-} DPdata;
+      size_t      size;
+      void        *data;
+      FtDataTypes type;
+} FTdata;
+

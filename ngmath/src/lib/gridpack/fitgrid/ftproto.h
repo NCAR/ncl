@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.6 2002-08-27 03:56:00 haley Exp $
+ * $Id: ftproto.h,v 1.7 2003-08-11 22:44:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -31,13 +31,17 @@
  */
 int c_ftseti(char *, int);
 int c_ftsetr(char *, float);
+int c_ftsetrd(char *, double);
 int c_ftsetc(char *, char *);
 int c_ftgeti(char *, int *);
 int c_ftgetr(char *, float *);
+int c_ftgetrd(char *, double *);
 int c_ftgetc(char *, char *);
 int c_ftsetfa(char *, int, float *);
+int c_ftsetda(char *, int, double *);
 int c_ftgetfa_size(char *);
 float *c_ftgetfa_data(char *);
+double *c_ftgetda_data(char *);
 int c_ftcurv (int, float [], float [], int, float [], float []);
 int c_ftcurvd(int, float [], float [], int, float [], float []);
 int c_ftcurvi(float, float, int, float [], float [], float *);
