@@ -8,7 +8,6 @@ C
       include 'gkscom.h'
 C
       INTEGER WKID,CONID,WTYPE
-      LOGICAL IOPEN
       INTEGER LASF(13)
 C
 C  Check that GKS is in the proper state.
@@ -47,26 +46,6 @@ C
         CALL GERHND(26,EOPWK,ERF)
         ERS = 0
         RETURN
-      ENDIF
-C
-C  Check if the specified connection identifier is currently open
-C  for CGM or WISS workstation types (CONID is not 
-C  relevant for other currently supported workstation types).
-C
-      IF (WTYPE.EQ.GCGM  .OR. WTYPE.EQ.GWSS) THEN
-C
-C  May want to comment out the following INQUIRE if "u370" and
-C  "unix" are set.
-C
-C     #if defined(u370) && defined(unix)
-C
-        INQUIRE (CONID,OPENED=IOPEN)
-        IF (IOPEN) THEN
-          ERS = 1
-          CALL GERHND(26,EOPWK,ERF)
-          ERS = 0
-          RETURN
-        ENDIF
       ENDIF
 C
 C  Only one CGM workstation currently allowed.
