@@ -1,5 +1,5 @@
 C
-C $Id: mpex13.f,v 1.2 2001-08-17 23:12:53 kennison Exp $
+C $Id: mpex13.f,v 1.3 2001-11-02 22:48:08 kennison Exp $
 C
       PROGRAM TESTIT
 C
@@ -85,9 +85,12 @@ C
 C
 C Declare stuff required to do color fill.
 C
-        PARAMETER (LAMA=200000,NCRA=10000,NGPS=10)
+        PARAMETER (LAMA=200000,NCRA=10000,NGPS=10,LRWK=2*NCRA)
 C
         DIMENSION IAMA(LAMA),XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
+C
+        DIMENSION RWRK(LRWK)
+        EQUIVALENCE (RWRK(1),XCRA(1)),(RWRK(NCRA+1),YCRA(1))
 C
         EXTERNAL COLRCO,COLRE2
 C
@@ -120,14 +123,14 @@ C
 C
 C Tell the user what he needs to do to get this to run.
 C
-        PRINT * , ' '
-        PRINT * , 'This example will not run properly until you have'
-        PRINT * , 'downloaded the RANGS/GSHHS data, supplied a routine'
-        PRINT * , 'for EZMAP to call to find out which directory the'
-        PRINT * , 'data are in, and removed these PRINTs and the STOP'
-        PRINT * , 'which follows them.  See code for full information.'
-        PRINT * , ' '
-        STOP
+	PRINT * , ' '
+	PRINT * , 'This example will not run properly until you have'
+	PRINT * , 'downloaded the RANGS/GSHHS data, supplied a routine'
+	PRINT * , 'for EZMAP to call to find out which directory the'
+	PRINT * , 'data are in, and removed these PRINTs and the STOP'
+	PRINT * , 'which follows them.  See code for full information.'
+	PRINT * , ' '
+	STOP
 C
 C Open GKS.
 C
@@ -274,11 +277,11 @@ C Now, draw a solid-filled map using the RANGS/GSHHS data.
 C
           PRINT * , '  USING RANGS/GSHHS DATABASE'
 C
-          CALL MDRGSF (IRGL(ISPT))
+          CALL MDRGSF (IRGL(ISPT),RWRK,LRWK,IAMA,LAMA)
 C
 C Add outlines using the RANGS/GSHHS data.
 C
-          CALL MDRGOL (IRGL(ISPT))
+          CALL MDRGOL (IRGL(ISPT),RWRK,LRWK)
 C
 C Overlay a lat/lon grid.
 C
