@@ -1,5 +1,5 @@
 /*
- *      $Id: mwinP.h,v 1.1 1997-01-03 01:38:00 boote Exp $
+ *      $Id: mwinP.h,v 1.2 1998-01-29 16:05:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ typedef struct _NgMWinPart {
 	int		foo;
 
 /* private fields */
+	Widget		cwki;
 
 } NgMWinPart;
 

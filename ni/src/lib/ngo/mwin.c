@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.13 1997-10-23 17:34:49 dbrown Exp $
+ *      $Id: mwin.c,v 1.14 1998-01-29 16:05:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,8 @@
 
 #include <ncarg/ngo/Tree.h>
 
+#include "xterm.xpm"
+
 #define	Oset(field)	NhlOffset(NgMWinRec,mwin.field)
 static NhlResource resources[] = {
 	{"no.res","no.res",NhlTString,sizeof(NhlString),
@@ -60,6 +62,10 @@ static NhlErrorTypes MWDestroy(
 );
 
 static NhlBoolean MWCreateWin(
+	NgGO	go
+);
+
+static NhlBoolean MWCreateWinHook(
 	NgGO	go
 );
 
@@ -97,7 +103,7 @@ NgMWinClassRec NgmWinClassRec = {
 
 /* top_win_chain	*/	False,
 /* create_win		*/	MWCreateWin,
-/* create_win_hook	*/	NULL,
+/* create_win_hook	*/	MWCreateWinHook,
 /* close		*/	_NgGOInheritClose,
 	},
 	{
@@ -408,6 +414,20 @@ WkChildChangeCB
 		return;
 
 	/*
+	 * Since this is called from a work proc, it is possible
+	 * the plot was reparented again - need to check.
+	 * (In fact, the child may not even exist anymore.... uggghhhh!
+	 */
+	cc->new = NhlGetParentWorkstation(cc->child);
+	/*
+	 * If the new is the same as the old, don't do anything, child
+	 * was reparented back to old.  If new < 0, then child was destroyed,
+	 * and we shouldn't have to worry about it here.
+	 */
+	if((cc->new < 0) || (cc->new == cc->old))
+		return;
+
+	/*
 	 * find node for new workstation
 	 */
 	work = wknode->tree->wklist;
@@ -533,18 +553,20 @@ CreateCB
 	char		func[]="CreateCB";
 	NgNclHluObj	hlu = (NgNclHluObj)cbdata.ptrval;
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
-	NgObjTreeNode	new = AllocNode(hlu);
+	NgObjTreeNode	new;
 	NgObjTreeNode	tmp,last;
-	NhlLayer	l=_NhlGetLayer(hlu->id);
+	NhlLayer	l;
 	int		level=0,pos=-1,i;
 	Boolean		expn = True;
 	NhlArgVal	sel,ludata;
 
+	new = AllocNode(hlu);
 	if(!new){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
 	}
 
+	l = _NhlGetLayer(hlu->id);
 	if(l && _NhlIsClass(l,NhlworkstationClass)){
 		if(otree->wklist){
 			for(last=NULL,tmp=otree->wklist;tmp;tmp=tmp->next){
@@ -883,7 +905,8 @@ MWCreateWin
 
 	ManageObjTree(objtree,nsid);
 
-	cwki = XtVaCreateManagedWidget("cwki",xmPushButtonWidgetClass,ptbform,
+	mp->cwki=cwki = XtVaCreateManagedWidget("cwki",xmPushButtonWidgetClass,
+									ptbform,
 		XmNrightAttachment,	XmATTACH_NONE,
 		NULL);
 	XtAddCallback(cwki,XmNactivateCallback,CreateXWorkCB,NULL);
@@ -898,6 +921,56 @@ MWCreateWin
 
 	dtbform = XtVaCreateManagedWidget("dtbform",xmFormWidgetClass,dform,
 		NULL);
+
+	return True;
+}
+
+static NhlBoolean
+MWCreateWinHook
+(
+	NgGO	go
+)
+{
+	char		func[]="MWCreateWinHook";
+	NgMWinPart	*mp = &((NgMWin)go)->mwin;
+	Pixmap		pmap = None;
+	int		xpmstatus;
+	XpmAttributes	xpmat;
+	XpmColorSymbol	colsym;
+	Pixel		back;
+
+	XtRealizeWidget(go->go.shell);
+
+	/*
+	 * Set the colorsymbol "none" to the background - poor man's
+	 * transparency.
+	 */
+	XtVaGetValues(mp->cwki,
+		XmNbackground,	&back,
+		NULL);
+
+	colsym.name = NULL;
+	colsym.value = "none";
+	colsym.pixel = back;
+	xpmat.colorsymbols = &colsym;
+	xpmat.numsymbols = 1;
+	xpmat.valuemask = XpmColorSymbols;
+
+	xpmstatus = XcbXpmCreatePixmapFromData(go->go.xcb,XtWindow(mp->cwki),
+				xterm_xpm,&pmap,NULL,&xpmat);
+
+	if(xpmstatus != XpmSuccess){
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Unable to create Pixmap"));
+		return True;
+	}
+
+	XtVaSetValues(mp->cwki,
+		XmNlabelType,	XmPIXMAP,
+		XmNlabelPixmap,	pmap,
+		NULL);
+
+	XtAddCallback(mp->cwki,XmNdestroyCallback,XcbFreePixmapCB,
+							(XtPointer)pmap);
 
 	return True;
 }

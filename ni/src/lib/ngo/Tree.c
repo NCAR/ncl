@@ -1,5 +1,5 @@
 /*
- *      $Id: Tree.c,v 1.3 1997-10-23 00:26:58 dbrown Exp $
+ *      $Id: Tree.c,v 1.4 1998-01-29 16:05:03 boote Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -48,6 +48,10 @@ Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 #include "TreeP.h"
 
 #include <stdio.h>
+
+#ifdef	NGOLIB
+#include <Xcb/xcbShells.h>
+#endif
 
 #ifdef XmL_ANSIC
 
@@ -292,7 +296,19 @@ Widget w;
 		XFreePixmap(dpy, t->tree.filePixmask);
 		XFreePixmap(dpy, t->tree.folderPixmask);
 		XFreePixmap(dpy, t->tree.folderOpenPixmask);
+#ifdef	NGOLIB
+		{
+			Xcb	xcb = XcbGetXcbFromWidget((Widget)t);
+
+			if(!xcb)
+				XFreeColors(dpy,attr.colormap,t->tree.pixColors,
+									4, 0L);
+			else
+				XcbFreeColors(xcb,t->tree.pixColors,4);
+		}
+#else
 		XFreeColors(dpy, attr.colormap, t->tree.pixColors, 4, 0L);
+#endif
 		}
 	}
 
@@ -1163,6 +1179,14 @@ XmLTreeWidget t;
 			},
 		};
 
+#ifdef	NGOLIB
+	Xcb	xcb = XcbGetXcbFromWidget((Widget)t);
+
+	const Boolean	do_xcb = True;
+#else
+	const Boolean	do_xcb = False;
+#endif
+
 	dpy = XtDisplay(t);
 	win = XtWindow(t);
 	XGetWindowAttributes(dpy, win, &attr);
@@ -1178,6 +1202,13 @@ XmLTreeWidget t;
 		color.green = colors[i][1];
 		color.blue = colors[i][2];
 		color.flags = DoRed | DoGreen | DoBlue;
+#ifdef	NGOLIB
+		if(do_xcb && xcb){
+			XcbAllocROColor(xcb,&color);
+			t->tree.pixColors[i] = color.pixel;
+		}
+		else
+#endif
 		if (XAllocColor(dpy, attr.colormap, &color))
 			t->tree.pixColors[i] = color.pixel;
 		else

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.8 1997-10-03 20:08:11 dbrown Exp $
+ *      $Id: nclstate.h,v 1.9 1998-01-29 16:05:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,6 +53,13 @@ typedef struct _NgNclPromptCBDataRec{
 	NhlBoolean	istate;
 	NhlBoolean	err;
 } NgNclPromptCBDataRec, *NgNclPromptCBData;
+
+/*
+ * This constant is used as the difference from NgNclCBCREATE_{} to
+ * NgNclCBDELETE_{} so ORDER and NUMERICAL values in the _NgNclCBType
+ * ARE IMPORTANT!
+ */
+#define	NgNclCB_C_D_DIFF	(NgNclCBDELETE_HLUOBJ-NgNclCBCREATE_HLUOBJ)
 
 typedef enum _NgNclCBType{
 	NgNclCBUNKNOWN=0,

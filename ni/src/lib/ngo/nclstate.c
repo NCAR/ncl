@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.14 1997-10-23 00:27:06 dbrown Exp $
+ *      $Id: nclstate.c,v 1.15 1998-01-29 16:05:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -251,6 +251,7 @@ ProcessObj
 	NgNclAny	node=NULL;
 	NhlArgVal	cbtype,objptr;
 	NhlBoolean	dofree=False;
+	NgNclCBType	deltype=NgNclCBUNKNOWN;
 
 	while(*alist){
 		if((*alist)->id == id){
@@ -273,6 +274,34 @@ ProcessObj
 		case NgNclCBCREATE_HLUVAR:
 		case NgNclCBCREATE_VAR:
 		case NgNclCBCREATE_FILEVAR:
+
+			/*
+			 * Before adding this node into nclstate, make
+			 * sure it isn't immediately destroyed by checking
+			 * the list for a destroy for the same object.
+			 */
+			deltype = (NgNclCBType)(node->cbtype+NgNclCB_C_D_DIFF);
+			alist = (NgNclAny*)list;
+			while(*alist){
+				if(((*alist)->cbtype == deltype) &&
+						((*alist)->id == id)){
+					/*
+					 * Free "Create" node.
+					 */
+					NhlFree(node);
+
+					/*
+					 * Pull "Delete" node off of list
+					 * and free it.
+					 */
+					node = *alist;
+					*alist = (NgNclAny)node->next;
+					NhlFree(node);
+
+					return True;
+				}
+				alist = (NgNclAny*)&(*alist)->next;
+			}
 
 			node = InsertObj(atree,NULL,node);
 
