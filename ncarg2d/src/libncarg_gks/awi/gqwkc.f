@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkc.f,v 1.3 1994-03-30 02:06:04 fred Exp $
+C	$Id: gqwkc.f,v 1.4 1994-05-11 23:27:20 fred Exp $
 C
       SUBROUTINE GQWKC(WKID,ERRIND,CONID,WTYPE)
 C
@@ -42,7 +42,7 @@ C
       ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
      +      WTYPE.EQ.GXWE  .OR.
      +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
-        CONID = 0
+        CONID = -1
       ELSE 
 C
 C  Invoke interface.

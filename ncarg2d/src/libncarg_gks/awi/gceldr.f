@@ -1,5 +1,5 @@
 C
-C	$Id: gceldr.f,v 1.1 1993-01-09 01:57:53 fred Exp $
+C	$Id: gceldr.f,v 1.2 1994-05-11 23:27:19 fred Exp $
 C
       SUBROUTINE GCELDR(IOS,STATUS)
 C
@@ -7,7 +7,6 @@ C  Put out the cell array.
 C
       include 'trpars.h'
       include 'gkscom.h'
-      include '../bwi/g01io.h'
 C
       INTEGER IOS, STATUS
       INTEGER P(2),Q(2),R(2),PDIM(2)
