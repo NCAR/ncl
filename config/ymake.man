@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.14 1995-03-21 07:24:29 boote Exp $
+.\"	$Id: ymake.man,v 1.15 1997-02-28 19:42:35 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -323,6 +323,8 @@ the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .br
 	\fICNCARGGKSLIB\fP	libncarg_gksC.a
 .br
+	\fINGMATHLIB\fP	libngmath.a
+.br
 	\fICGMLIB\fP	libcgm.a
 .br
 	\fINCARGRASLIB\fP	libncarg_ras.a
@@ -363,6 +365,8 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 	\fIDEPNCARGGKSLIB\fP
 .br
 	\fIDEPCNCARGGKSLIB\fP
+.br
+	\fIDEPNGMATHLIB\fP
 .br
 	\fIDEPCGMLIB\fP
 .br
