@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.47 2004-08-17 21:53:57 shea Exp $
+;      $Id: contributed.ncl,v 1.48 2004-08-18 22:08:40 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4069,7 +4069,7 @@ begin
 end
 
 undef ("eofunc_varimax_Wrap")
-function eof_varimax_Wrap (data:numeric, eof:numeric, optEVX:logical)
+function eof_varimax_Wrap (eof:numeric, optEVX:logical)
 local eofEMX
 begin
   eofEVX = eof
