@@ -55,7 +55,6 @@ main(int argc, char *argv[])
     int appid,wid,mapid;
     int rlist,grlist;
     int i;
-    char buf[256];
 
     Anno_List anno_list[] = {
     {"Los Angeles",34.0,-118.28,-1,-1},

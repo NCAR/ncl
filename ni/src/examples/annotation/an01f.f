@@ -36,8 +36,6 @@ C
       data ret/-1/
       integer appid,wid,mapid,rlist
       integer i
-      character*256 buf
-
       data name/'Los Angeles','Seattle','Toronto','New York','Miami',
      1 'Mexico City','London','Jakarta','Moscow','New Delhi',
      1 'Rio de Janeiro','Cairo','Buenos Aires','Beijing','Tokyo',
