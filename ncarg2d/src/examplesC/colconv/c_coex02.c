@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.6 1997-04-21 14:38:25 haley Exp $
+ *  $Id: c_coex02.c,v 1.7 1999-03-23 15:49:45 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -137,7 +137,7 @@ int indx;
  * Create structure to pass to gfill_area
  */
     fill_area.num_points = 5;
-    fill_area.points = (Gpoint *) malloc(10*sizeof(Gfloat));
+    fill_area.points = (Gpoint *) malloc(5*sizeof(Gpoint));
     if( !fill_area.points ) {
         fprintf( stderr, "drbox: Not enough memory to create fill area structure\n" );
         gemergency_close_gks();
