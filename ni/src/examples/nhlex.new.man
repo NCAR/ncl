@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\" $Id: nhlex.new.man,v 1.1 1995-01-25 22:09:48 haley Exp $
+.\" $Id: nhlex.new.man,v 1.2 1995-01-26 15:48:51 haley Exp $
 .\"
 .\"######################################################################
 .\"#                                                                    #
@@ -75,6 +75,22 @@ Generate all available examples, unless the \fI-n\fP or \fI-list\fP option is
 included on the command line, in which case the behavior is different
 (see explanation of \fI-n\fP and \fI-list\fP below).
 .sp
+.IP \fI-C\fP " " ""
+Generate all C examples, unless the \fI-n\fP or \fI-list\fP option is
+included on the command line, in which case the behavior is different
+(see explanation of \fI-n\fP and \fI-list\fP below).
+.sp
+.IP \fI-Fortran\fP " " ""
+Generate all Fortran examples, unless the \fI-n\fP or \fI-list\fP
+option is included on the command line, in which case the behavior is
+different (see explanation of \fI-n\fP and \fI-list\fP below).
+.sp
+.IP \fI-annotation\fP " " ""
+Generate all Fortran and C Annotation examples, unless the \fI-n\fP or
+\fI-list\fP option is included on the command line, in which case the
+behavior is different (see explanation of \fI-n\fP and \fI-list\fP
+below).
+.sp
 .IP \fI-contour\fP " " ""
 Generate all Fortran and C Contour examples, unless the \fI-n\fP or
 \fI-list\fP option is included on the command line, in which case the
@@ -132,11 +148,11 @@ below).
 .IP \fI-list\fP " " ""
 Specifies that the names of the selected examples should be echoed to the
 screen instead of being copied or generated.  This option must be used
-in conjunction with one of the other options that selects a particular
+with one of the other options that selects a particular
 subset of examples.  For example, if you want to see a list of all the
 available examples, then use \fI-list\fP in conjuction with the \fI-A\fP
 option.  If you want to see a list of all the Contour examples, then
-use \fI-list\fP with the \fI-contour\fP option (and so on.)
+use \fI-list\fP with the \fI-contour\fP option (and so on).
 .sp
 .IP \fI-clean\fP " " ""
 Remove everything but the ".ncgm" file.

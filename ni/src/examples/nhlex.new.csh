@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlex.new.csh,v 1.1 1995-01-25 22:09:47 haley Exp $
+#	$Id: nhlex.new.csh,v 1.2 1995-01-26 15:48:49 haley Exp $
 #
 
 #***********************#
@@ -9,11 +9,11 @@
 #                       #
 #***********************#
 if ($#argv < 1) then
-  echo "usage: nhlex [options] [example names]"
+  echo "usage: nhlex.new [options] [example names]"
   echo ""
   echo " Options:"
   echo ""
-  echo "   [-A] [-n] [-clean] names"
+  echo "   [-list] [-n] [-clean]"
   echo ""
   echo " To invoke various types of examples:"
   echo "   [-A] [-C] [-Fortran]"
@@ -22,7 +22,7 @@ if ($#argv < 1) then
   echo "   [-annotation] [-contour] [-labelbar] [-legend] [-mapplot]  "
   echo "   [-overlay] [-textitem] [-tickmark] [-title] [-xyplot]    "
   echo ""
-  echo "See <man nhlex> for explanation of options." 
+  echo "See <man nhlex.new> for explanation of options." 
   echo ""
   exit
 endif
@@ -319,7 +319,7 @@ end
 
 if ( "$ex_type" == "Unknown" ) then
   echo ""
-  echo "nhlex: <$name> is not a known example"
+  echo "nhlex.new: <$name> is not a known example"
   echo ""
   goto theend
 else
