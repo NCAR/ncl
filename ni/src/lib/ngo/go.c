@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.3 1996-11-24 22:27:34 boote Exp $
+ *      $Id: go.c,v 1.4 1997-01-03 01:37:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <ncarg/ngo/goP.h>
 #include <ncarg/ngo/xapp.h>
+#include <ncarg/ngo/nclstate.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -143,27 +144,6 @@ GOClassPartInitialize
 }
 
 static void
-closeWindow
-(
-	Widget		w,
-	XEvent		*xev,
-	String		*params,
-	Cardinal	*num_params
-)
-{
-	char	func[] = "closeWindow";
-	int	goid = NhlDEFAULT_APP;
-
-	if(!w){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
-		return;
-	}
-
-	goid = NgGOWidgetToGoId(w);
-	NgGOPopdown(goid);
-}
-
-static void
 quitApplication
 (
 	Widget		w,
@@ -190,12 +170,279 @@ quitApplication
 	NgAppQuit(go->go.appmgr);
 }
 
+static void
+closeWindow
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char	func[] = "closeWindow";
+	int	goid = NhlDEFAULT_APP;
+
+	if(!w){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	goid = NgGOWidgetToGoId(w);
+	NgGOPopdown(goid);
+}
+
+/*
+ * Function:	addFile
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+addFile
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "addFile";
+	int		goid = NhlDEFAULT_APP;
+	int		appmgr = NhlDEFAULT_APP;
+	int		addfile = NhlDEFAULT_APP;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+	NhlVAGetValues(goid,
+		_NhlNguiData,	&appmgr,
+		NULL);
+
+	if((*num_params == 1) || (*num_params > 2)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+	else if(*num_params == 2){
+		int		nclstate = NhlDEFAULT_APP;
+		struct stat	buf;
+		char		line[512];
+
+		if((strlen(params[0])+strlen(params[1])) > (sizeof(line) - 19)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:parameters too long:%s:%s",
+				func,params[0],params[1]));
+			return;
+		}
+
+		NhlVAGetValues(appmgr,
+			NgNappNclState,	&nclstate,
+			NULL);
+		if(!NhlIsClass(nclstate,NgnclStateClass)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:invalid nclstate obj",func));
+			return;
+		}
+
+		/*
+		 * Check to see if file exists and is text...
+		 */
+		if(stat(params[1],&buf) != 0){
+			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
+							func,params[0]));
+			return;
+		}
+
+		/*
+		 * Submit it to nclstate.
+		 */
+		sprintf(line,"%s = addfile(\"%s\",\"r\")\n",
+							params[0],params[1]);
+		(void)NgNclSubmitBlock(nclstate,line);
+
+		return;
+	}
+
+	/*
+	 * Popup addfile selection box.
+	 */
+	NhlVAGetValues(appmgr,
+		NgNxappAddFile,	&addfile,
+		NULL);
+	/*
+	 *TODO: move addfile window to center of goid window.
+	 */
+	NgGOPopup(addfile);
+
+	return;
+}
+
+/*
+ * Function:	loadScript
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+loadScript
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "loadScript";
+	int		goid = NhlDEFAULT_APP;
+	int		appmgr = NhlDEFAULT_APP;
+	int		load = NhlDEFAULT_APP;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	NhlVAGetValues(goid,
+		_NhlNguiData,	&appmgr,
+		NULL);
+
+	if(*num_params > 1){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+	else if(*num_params == 1){
+		int		nclstate = NhlDEFAULT_APP;
+		struct stat	buf;
+		char		line[512];
+
+		if(strlen(params[0]) > (sizeof(line) - 9)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:parameter too long:%s",func,params[0]));
+			return;
+		}
+		NhlVAGetValues(appmgr,
+			NgNappNclState,	&nclstate,
+			NULL);
+
+		if(!NhlIsClass(nclstate,NgnclStateClass)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:invalid nclstate obj",func));
+			return;
+		}
+
+		/*
+		 * Check to see if file exists and is text...
+		 */
+
+		if(stat(params[0],&buf) != 0){
+			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
+							func,params[0]));
+			return;
+		}
+		/*
+		 * Submit it to nclstate.
+		 */
+		sprintf(line,"load \"%s\"\n",params[0]);
+		(void)NgNclSubmitBlock(nclstate,line);
+
+		return;
+	}
+
+	/*
+	 * Popup addfile selection box.
+	 */
+	NhlVAGetValues(appmgr,
+		NgNxappLoadFile,	&load,
+		NULL);
+	/*
+	 *TODO: move load window to center of goid window.
+	 */
+	NgGOPopup(load);
+
+	return;
+}
+
+/*
+ * Function:	nclWindow
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+nclWindow
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "nclWindow";
+	int		goid = NhlDEFAULT_APP;
+	int		appmgr = NhlDEFAULT_APP;
+	int		ne = NhlDEFAULT_APP;
+	NhlBoolean	new = False;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	NhlVAGetValues(goid,
+		_NhlNguiData,	&appmgr,
+		NULL);
+
+	if(*num_params > 1){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+	else if((*num_params == 1) && !strcmp(params[0],"new")){
+		new = True;
+	}
+
+	ne = NgAppGetNclEditor(appmgr,new);
+
+	NgGOPopup(ne);
+
+	return;
+}
+
 /*
  * Global actions for all parts of the application
  */
 static XtActionsRec go_act[] = {
-	{"closeWindow", closeWindow,},
 	{"quitApplication", quitApplication,},
+	{"closeWindow", closeWindow,},
+	{"addFile", addFile,},
+	{"loadScript", loadScript,},
+	{"nclWindow", nclWindow,},
 };
 
 /*
@@ -574,7 +821,7 @@ GOCreateWinHook
 
 	InstallTranslations(gp->shell,gp);
 
-	return;
+	return True;
 }
 /*
  * Static funcs that are not methods
@@ -593,10 +840,10 @@ CallCreateWin
 		ret = CallCreateWin(go,sc);
 
 	if(!ret)
-		return;
+		return ret;
 
 	if(gc->go_class.create_win)
-		return (*gc->go_class.create_win)(go);
+		ret = (*gc->go_class.create_win)(go);
 
 	return ret;
 }
@@ -611,11 +858,14 @@ CallCreateWinHook
 	NgGOClass	sc = (NgGOClass)gc->base_class.superclass;
 	NhlBoolean	ret = True;
 
+	if(!gc->go_class.top_win_chain)
+		ret = CallCreateWinHook(go,sc);
+
+	if(!ret)
+		return ret;
+
 	if(gc->go_class.create_win_hook)
 		ret = (*gc->go_class.create_win_hook)(go);
-
-	if(ret && !gc->go_class.top_win_chain)
-		return CallCreateWinHook(go,sc);
 
 	return ret;
 }

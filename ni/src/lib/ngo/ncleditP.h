@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.3 1996-11-24 22:27:35 boote Exp $
+ *      $Id: ncleditP.h,v 1.4 1997-01-03 01:38:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,6 @@ typedef struct _NgNclEditPart {
 	NhlBoolean	my_cmd;
 	NhlBoolean	print;
 	char		*more_cmds;
-	XmTextPosition	prompt_pos;
 	XmTextPosition	submit_pos;
 	XmTextPosition	reset_pos;
 	int		line;
@@ -58,18 +57,33 @@ typedef struct _NgNclEditPart {
 	Widget		vlist;
 	Widget		flist;
 	Widget		fulist;
+	Widget		prompt_text;
 	Widget		text;
 	Widget		reset;
+	Widget		iform;
+	Widget		scroll;
 	Widget		ilabel;
+	Widget		vsbar;
+
+	Window		prompt_win;
+	XmFontList	prompt_font;
+	GC		high_gc;
+	Dimension	prompt_margin;
+	Dimension	prompt_width;
+	Dimension	text_height;
+	Dimension	text_width;
+	Dimension	shadow_thickness;
+	int		left_offset;
+	int		top_offset;
+	NhlBoolean	high_drawn;
+	Pixel		high_color;
+	Pixel		back_color;
 
 	_NhlCB		submitcb;
 	_NhlCB		promptcb;
 	_NhlCB		resetcb;
 	_NhlCB		outputcb;
 	_NhlCB		erroutputcb;
-
-	int		load;
-	int		addfile;
 
 } NgNclEditPart;
 

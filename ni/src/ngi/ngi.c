@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.2 1996-10-16 16:19:06 boote Exp $
+ *      $Id: ngi.c,v 1.3 1997-01-03 01:37:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 
 #include <ncarg/ngo/xapp.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/ncledit.h>
 
 /*
@@ -61,7 +62,7 @@ main
 	char	**argv;
 #endif
 {
-	int		appid,nxapp,ncl,ne;
+	int		appid,nxapp,ncl,ne,mn;
 
 	NhlInitialize();
 
@@ -90,14 +91,21 @@ main
 	NhlVACreate(&ncl,"nclstate",NgnclStateClass,appid,
 		NULL);
 
+#if	NOT
 	NhlVACreate(&ne,"ncledit",NgnclEditClass,appid,
 		NULL);
 
 	NgGOPopup(ne);
+#endif
 
 	/*
 	 * Now create the main window object.
 	 */
+
+	NhlVACreate(&mn,"main",NgmWinClass,appid,
+		NULL);
+
+	NgGOPopup(mn);
 
 	/*
 	 * Now, let the application run.

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.2 1996-11-24 22:27:36 boote Exp $
+ *      $Id: xapp.c,v 1.3 1997-01-03 01:38:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,9 @@
 #include <ncarg/ngo/xappP.h>
 #include <ncarg/hlu/AppI.h>
 
+#include <ncarg/ngo/addfile.h>
+#include <ncarg/ngo/load.h>
+
 #include <X11/cursorfont.h>
 #include <Xm/Xm.h>
 
@@ -41,6 +44,12 @@ static NhlResource resources[] = {
 		_NhlRES_CONLY,NULL},
 	{NgNxappExport,NgCxappExport,NhlTPointer,sizeof(NhlPointer),
 		Oset(x),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_GONLY,NULL},
+	{NgNxappAddFile,NgCxappAddFile,NhlTInteger,sizeof(int),
+		Oset(addfile),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_GONLY,NULL},
+	{NgNxappLoadFile,NgCxappLoadFile,NhlTInteger,sizeof(int),
+		Oset(addfile),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_GONLY,NULL},
 };
 #undef	Oset
@@ -145,6 +154,10 @@ XAppMgrClassPartInitialize
 	return NhlNOERROR;
 }
 
+static NrmQuark	qexp = NrmNULLQUARK;
+static NrmQuark	qlfile = NrmNULLQUARK;
+static NrmQuark	qafile = NrmNULLQUARK;
+
 /*
  * Function:	XAppMgrClassInitialize
  *
@@ -165,6 +178,10 @@ XAppMgrClassInitialize
 )
 {
 	XtToolkitInitialize();
+
+	qexp = NrmStringToQuark(NgNxappExport);
+	qafile = NrmStringToQuark(NgNxappAddFile);
+	qlfile = NrmStringToQuark(NgNxappLoadFile);
 
 	return NhlNOERROR;
 }
@@ -319,6 +336,9 @@ XAppMgrInitialize
 
 	LoadXresFromNres(_NhlGetResDB(new),xapp->x.dpy);
 
+	xapp->addfile = NhlDEFAULT_APP;
+	xapp->loadfile = NhlDEFAULT_APP;
+
 	return NhlNOERROR;
 }
 
@@ -343,16 +363,30 @@ XAppMgrGetValues
 	int		nargs
 )
 {
-	static NrmQuark	qexp = NrmNULLQUARK;
 	NgXAppMgrPart	*xapp = &((NgXAppMgr)l)->xapp;
+	NgAppMgrPart	*app = &((NgAppMgr)l)->app;
 	int		i;
 
-	if(!qexp)
-		qexp = NrmStringToQuark(NgNxappExport);
-
 	for(i=0;i<nargs;i++){
-		if(args[i].quark == qexp)
+		if(args[i].quark == qexp){
 			*(NgXAppExport*)args[i].value.ptrval = &xapp->x;
+		}
+		else if(args[i].quark == qafile){
+			if(xapp->addfile == NhlDEFAULT_APP)
+				NhlVACreate(&xapp->addfile,"addfile",
+						NgaddFileClass,
+						l->base.appobj->base.id,
+					NULL);
+			*(int*)args[i].value.ptrval = xapp->addfile;
+		}
+		else if(args[i].quark == qlfile){
+			if(xapp->loadfile == NhlDEFAULT_APP)
+				NhlVACreate(&xapp->loadfile,"loadfile",
+						NgloadClass,
+						l->base.appobj->base.id,
+					NULL);
+			*(int*)args[i].value.ptrval = xapp->loadfile;
+		}
 	}
 
 	return NhlNOERROR;
@@ -377,9 +411,13 @@ XAppMgrDestroy
 	NhlLayer	l
 )
 {
+	NgXAppMgrPart	*xapp = &((NgXAppMgr)l)->xapp;
 /*
  * TODO!!!
  */
+	NhlDestroy(xapp->addfile);
+	NhlDestroy(xapp->loadfile);
+
 	return NhlNOERROR;
 }
 

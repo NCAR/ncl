@@ -1,5 +1,5 @@
 /*
- *      $Id: util.c,v 1.2 1996-11-24 22:27:35 boote Exp $
+ *      $Id: util.c,v 1.3 1997-01-03 01:38:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -225,7 +225,7 @@ static int match(
 	NgGlobChar *,
 	NgGlobChar *,
 	NgGlobChar *);
-#ifdef DEBUG
+#ifdef GLOBDEBUG
 static void qprintf(
 	const char *,
 	NgGlobChar *);
@@ -390,7 +390,7 @@ static int globexp2(ptr, pattern, pglob, rv)
 					continue;
 
 				/* Expand the current pattern */
-#ifdef DEBUG
+#ifdef GLOBDEBUG
 				qprintf("globexp2:", patbuf);
 #endif
 				*rv = globexp1(patbuf, pglob);
@@ -535,7 +535,7 @@ glob0(pattern, pglob)
 		}
 	}
 	*bufnext = EOS;
-#ifdef DEBUG
+#ifdef GLOBDEBUG
 	qprintf("glob0:", patbuf);
 #endif
 
@@ -889,7 +889,7 @@ g_Ctoc(str, buf)
 		continue;
 }
 
-#ifdef DEBUG
+#ifdef GLOBDEBUG
 static void 
 qprintf(str, s)
 	const char *str;

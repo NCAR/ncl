@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.2 1996-10-16 16:21:15 boote Exp $
+ *      $Id: app.c,v 1.3 1997-01-03 01:37:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <ncarg/ngo/appP.h>
 #include <ncarg/hlu/AppI.h>
+#include <ncarg/ngo/ncledit.h>
 
 #define	Oset(field)	NhlOffset(NgAppMgrRec,app.field)
 static NhlResource resources[] = {
@@ -189,6 +190,7 @@ AppMgrInitialize
 
 	app->wp = NULL;
 	app->go = NULL;
+	app->ncleditors = NULL;
 	app->active = NULL;
 
 	ac->app_class.num_mgrs++;
@@ -657,6 +659,162 @@ NgAppRemoveGO
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find goid %d",func,goid));
 	return;
+}
+
+/*
+ * Function:	NgAppAddNclEditor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+NgAppAddNclEditor
+(
+	int	appid,
+	int	goid
+)
+{
+	char		func[] = "NgAppAddNclEditor";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
+	_NgAppGOList	*go;
+	int		i;
+
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
+		return;
+	}
+
+	go = &app->app.ncleditors;
+	while(*go && (*go)->num >= _NgGOLISTSIZE)
+		go = &(*go)->next;
+
+	if(!*go){
+		*go = NhlMalloc(sizeof(_NgAppGOListRec));
+		if(!*go){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+		memset((*go)->go,NhlDEFAULT_APP,sizeof(int)*_NgGOLISTSIZE);
+		(*go)->num = 0;
+		(*go)->next = NULL;
+	}
+
+	for(i=0;i<_NgGOLISTSIZE;i++){
+		if((*go)->go[i] == NhlDEFAULT_APP){
+			(*go)->go[i] = goid;
+			(*go)->num++;
+			return;
+		}
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to add NclEditor???",func));
+	return;
+}
+
+/*
+ * Function:	NgAppRemoveNclEditor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+NgAppRemoveNclEditor
+(
+	int	appid,
+	int	goid
+)
+{
+	char		func[] = "NgAppRemoveNclEditor";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
+	_NgAppGOList	go;
+	int		i;
+
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
+		return;
+	}
+
+	go = app->app.ncleditors;
+
+	while(go){
+		if(go->num){
+			for(i=0;i<_NgGOLISTSIZE;i++){
+				if(go->go[i] == goid){
+					go->go[i] = NhlDEFAULT_APP;
+					go->num--;
+					return;
+				}
+			}
+		}
+		go = go->next;
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find NclEditor %d",func,
+									goid));
+	return;
+}
+
+/*
+ * Function:	NgAppGetNclEditor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+NgAppGetNclEditor
+(
+	int		appid,
+	NhlBoolean	new
+)
+{
+	char		func[] = "NgAppGetNclEditor";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
+	_NgAppGOList	go;
+	int		i;
+	int		ne;
+
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
+		return;
+	}
+
+	go = app->app.ncleditors;
+
+	while(go && !new){
+		if(go->num){
+			for(i=0;i<_NgGOLISTSIZE;i++){
+				if(go->go[i] != NhlDEFAULT_APP)
+					return go->go[i];
+			}
+		}
+		go = go->next;
+	}
+
+	NhlVACreate(&ne,"ncledit",NgnclEditClass,app->base.appobj->base.id,
+		NULL);
+
+	return ne;
 }
 
 /*

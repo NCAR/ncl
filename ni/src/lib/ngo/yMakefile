@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1996-11-24 22:27:36 boote Exp $
+#      $Id: yMakefile,v 1.6 1997-01-03 01:38:03 boote Exp $
 #
 #########################################################################
 #									#
@@ -25,7 +25,7 @@ DEBUG_LIB	=	$(XMULIB)
 #endif
 
 EXTRA_CDEFINES	=	$(OS_DEF)
-CLIENT_LIBS	=	$(NCLAPILIB) $(HLULIB) $(XMOTIFCLIENTLIBS) $(DEBUG_LIB) -lc
+CLIENT_LIBS	=	$(NCLAPILIB) $(HLULIB) -lXmL $(XMOTIFCLIENTLIBS) $(DEBUG_LIB) -lc
 
 HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h util.h \
 		$(XHDRS)
@@ -33,9 +33,9 @@ SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS)
 OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS)
 
 XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
-		loadP.h load.h addfileP.h addfile.h
-XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c
-XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o
+		loadP.h load.h addfileP.h addfile.h mwinP.h mwin.h
+XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c
+XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o
 
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,$(CLIENT_LIBS))

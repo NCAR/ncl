@@ -1,5 +1,5 @@
 /*
- *      $Id: xappP.h,v 1.1 1996-10-10 18:55:31 boote Exp $
+ *      $Id: xappP.h,v 1.2 1997-01-03 01:38:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,9 @@ struct _NgXmStringBucketRec{
 typedef struct _NgXAppMgrPart {
 	int			argc;
 	char			**argv;
+
+	int			addfile;
+	int			loadfile;
 
 	NgXAppExportRec		x;
 	_NgXmStringBucket	xmstrings[_NgNUMXmSTRINGBUCKETS];

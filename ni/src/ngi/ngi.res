@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.3 1996-11-24 22:26:52 boote Exp $
+!      $Id: ngi.res,v 1.4 1997-01-03 01:37:52 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -23,10 +23,10 @@
 
 ! These resources will *hopefully* be replaced by a configuration dialog
 ! in and "Options" menu.
-ncledit*loadMGR.pattern:	*.ncl
-ncledit*loadMGR.directory:	.
-ncledit*addfileMGR.pattern:	*.{cdf,nc,grb}
-ncledit*addfileMGR.directory:	.
+NgNGO*loadMGR.pattern:	*.ncl
+NgNGO*loadMGR.directory:	.
+NgNGO*addfileMGR.pattern:	*.{cdf,nc,grb}
+NgNGO*addfileMGR.directory:	.
 
 NgNGO*background:	#b2b2b2
 NgNGO*foreground:	black
@@ -45,14 +45,48 @@ NgNGO*XmTextField*FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859
 NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-*
 
 *globalTranslations:	\
-		Meta ~Ctrl<Key>W:	closeWindow()		\n\
-		 Alt ~Ctrl<Key>W:	closeWindow()		\n\
+		Meta ~Ctrl<Key>C:	closeWindow()		\n\
+		 Alt ~Ctrl<Key>C:	closeWindow()		\n\
 		Meta ~Ctrl<Key>Q:	quitApplication()	\n\
 		 Alt ~Ctrl<Key>Q:	quitApplication()	\n\
 		Meta ~Ctrl<Key>A:	addFile()		\n\
 		 Alt ~Ctrl<Key>A:	addFile()		\n\
 		Meta ~Ctrl<Key>L:	loadScript()		\n\
-		 Alt ~Ctrl<Key>L:	loadScript()
+		 Alt ~Ctrl<Key>L:	loadScript()		\n\
+		Meta ~Ctrl<Key>N:	nclWindow()		\n\
+		 Alt ~Ctrl<Key>N:	nclWindow()
+
+!!!!!!!!!!!!!!!!!
+! Main Window	!
+!!!!!!!!!!!!!!!!!
+main.mainMGR*topOffset:			5
+main.mainMGR*bottomOffset:		5
+main.mainMGR*leftOffset:		5
+main.mainMGR*rightOffset:		5
+
+main.mainMGR*XmPushButton.width:	32
+main.mainMGR*XmPushButton.height:	32
+
+main.mainMGR*menubar.bottomAttachment:	ATTACH_NONE
+main.mainMGR*menubar.topOffset:		0
+main.mainMGR*menubar.bottomOffset:	0
+main.mainMGR*menubar.leftOffset:	0
+main.mainMGR*menubar.rightOffset:	0
+
+main.mainMGR*pane.topOffset:		0
+main.mainMGR*pane.leftOffset:		0
+main.mainMGR*pane.rightOffset:		0
+main.mainMGR*pane.bottomOffset:		0
+main.mainMGR*pane.marginHeight:		0
+
+main.mainMGR*pane*ptbform*rightAttachment:	ATTACH_NONE
+main.mainMGR*pane*ptbform*labelString:	I
+
+main.mainMGR*otree.highlightRowMode:		True
+main.mainMGR*otree.horizontalSizePolicy:	CONSTANT
+main.mainMGR*otree.hsbDisplayPolicy:		STATIC
+main.mainMGR*otree.verticalSizePolicy:		CONSTANT
+main.mainMGR*otree.vsbDisplayPolicy:		STATIC
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! NCL EDITOR			!
@@ -73,22 +107,22 @@ ncledit.ncleditMGR*XmFrame.marginHeight:	5
 ncledit.ncleditMGR*XmFrame*childHorizontalAlignment:	ALIGNMENT_CENTER
 
 ! default XmForm constraints for all widgets in the ncledit window
-ncledit*topAttachment:		ATTACH_FORM
-ncledit*bottomAttachment:	ATTACH_FORM
-ncledit*leftAttachment:		ATTACH_FORM
-ncledit*rightAttachment:	ATTACH_FORM
+*topAttachment:			ATTACH_FORM
+*bottomAttachment:		ATTACH_FORM
+*leftAttachment:		ATTACH_FORM
+*rightAttachment:		ATTACH_FORM
 ncledit.ncleditMGR*topOffset:		5
-ncledit.ncleditMGR*bottomOffset:		5
+ncledit.ncleditMGR*bottomOffset:	5
 ncledit.ncleditMGR*leftOffset:		5
 ncledit.ncleditMGR*rightOffset:		5
 
 ncledit.ncleditMGR*menubar.bottomAttachment:	ATTACH_NONE
 ncledit.ncleditMGR*menubar.topOffset:		0
-ncledit.ncleditMGR*menubar.bottomOffset:		0
+ncledit.ncleditMGR*menubar.bottomOffset:	0
 ncledit.ncleditMGR*menubar.leftOffset:		0
 ncledit.ncleditMGR*menubar.rightOffset:		0
 
-ncledit.ncleditMGR*pane.topOffset:			0
+ncledit.ncleditMGR*pane.topOffset:		0
 ncledit.ncleditMGR*pane.leftOffset:		0
 ncledit.ncleditMGR*pane.rightOffset:		0
 ncledit.ncleditMGR*pane.bottomOffset:		0
@@ -98,30 +132,47 @@ ncledit.ncleditMGR*slabel.bottomAttachment:	ATTACH_NONE
 
 ncledit.ncleditMGR*sform*bottomOffset:		10
 ncledit.ncleditMGR*sform*bottomOffset:		10
-ncledit.ncleditMGR*scroll*topOffset:		10
 
-ncledit.ncleditMGR*hoframe.rightPosition:		23
+ncledit.ncleditMGR*nclprompt.topOffset:		12
+ncledit.ncleditMGR*nclprompt.leftOffset:	4
+ncledit.ncleditMGR*nclprompt*rightAttachment:	ATTACH_NONE
+ncledit.ncleditMGR*nclprompt*bottomAttachment:	ATTACH_NONE
+ncledit.ncleditMGR*nclprompt*highlightThickness:0
+ncledit.ncleditMGR*nclprompt*borderWidth:	0
+
+ncledit.ncleditMGR*nclcmd*highlightThickness:0
+ncledit.ncleditMGR*nclcmd*borderWidth:		0
+
+ncledit.ncleditMGR*scroll*topOffset:		12
+ncledit.ncleditMGR*scroll*leftOffset:		0
+
+ncledit.ncleditMGR*hoframe.rightPosition:	23
 ncledit.ncleditMGR*vframe.leftPosition:		23
-ncledit.ncleditMGR*vframe.rightPosition:		46
+ncledit.ncleditMGR*vframe.rightPosition:	46
 ncledit.ncleditMGR*fframe.leftPosition:		46
-ncledit.ncleditMGR*fframe.rightPosition:		69
-ncledit.ncleditMGR*fuframe.leftPosition:		69
+ncledit.ncleditMGR*fframe.rightPosition:	69
+ncledit.ncleditMGR*fuframe.leftPosition:	69
 
 ncledit.ncleditMGR*reset.topAttachment:		ATTACH_NONE
-ncledit.ncleditMGR*reset.rightAttachment:		ATTACH_NONE
+ncledit.ncleditMGR*reset.rightAttachment:	ATTACH_NONE
 
-ncledit.ncleditMGR*ilabel.topAttachment:		ATTACH_NONE
+ncledit.ncleditMGR*ilabel.topAttachment:	ATTACH_NONE
 ncledit.ncleditMGR*ilabel.alignment:		ALIGNMENT_BEGINNING
 
+ncledit*nclprompt.editable:		False
+ncledit*nclprompt.cursorPositionVisible:False
+ncledit*nclprompt.traversalOn:		False
+ncledit*nclprompt.marginWidth:		2
 ncledit*nclcmd.columns:			40
+ncledit*nclprompt.rows:			15
 ncledit*nclcmd.rows:			15
 
 !
 ! Geometry for addfile window
 !
-ncledit*addfile*vname.rightAttachment:		ATTACH_NONE
-ncledit*addfile*midtxt.rightAttachment:		ATTACH_NONE
-ncledit*addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
+addfile*vname.rightAttachment:		ATTACH_NONE
+addfile*midtxt.rightAttachment:		ATTACH_NONE
+addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
 
 !
 ! Menubar strings
@@ -137,6 +188,9 @@ ncledit*addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
 *menubar.config.mnemonic:		C
 *menubar.config.sensitive:		False
 
+*menubar.window.labelString:		Window
+*menubar.window.mnemonic:		W
+
 *menubar.help.labelString:		Help
 *menubar.help.mnemonic:			H
 *menubar.help.sensitive:		False
@@ -151,11 +205,15 @@ ncledit*addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
 
 *fmenu.closeWindow.labelString:		Close
 *fmenu.closeWindow.mnemonic:		C
-*fmenu.closeWindow.acceleratorText:	Alt+W
+*fmenu.closeWindow.acceleratorText:	Alt+C
 
 *fmenu.quitApplication.labelString:	Exit
 *fmenu.quitApplication.mnemonic:	x
 *fmenu.quitApplication.acceleratorText:	Alt+Q
+
+*wmenu.nclWindow.labelString:		Ncl Editor
+*wmenu.nclWindow.mnemonic:		N
+*wmenu.nclWindow.acceleratorText:	Alt+N
 
 ! titles/labels and such
 !ngi.ncledit.gotitle:		NCL Editor
@@ -170,10 +228,10 @@ ncledit*reset.labelString:	Reset
 ncledit*reset.sensitive:	False
 ncledit*close.labelString:	Close
 
-ncledit*addfile*vname.resizeWidth:	True
-ncledit*addfile*vname.value:	\ 
-ncledit*addfile*midtxt.labelString:	= addfile(\"[ ]\",\"
-ncledit*addfile*endtxt.labelString:	\")
+addfile*vname.resizeWidth:	True
+addfile*vname.value:	\ 
+addfile*midtxt.labelString:	= addfile(\"[ ]\",\"
+addfile*endtxt.labelString:	\")
 
 !ncledit*loadscript_fsb_popup.title:	Load NCL Script
 !ncledit*loadscript_fsb.selectionLabelString:	Select NCL Script:

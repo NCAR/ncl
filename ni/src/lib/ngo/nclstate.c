@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.2 1996-10-16 16:21:23 boote Exp $
+ *      $Id: nclstate.c,v 1.3 1997-01-03 01:38:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -239,6 +239,7 @@ ProcessObj
 	NgNclAny	*atree = (NgNclAny*)tree;
 	NgNclAny	node=NULL;
 	NhlArgVal	cbtype,objptr;
+	NhlBoolean	dofree=False;
 
 	while(*alist){
 		if((*alist)->id == id){
@@ -272,6 +273,7 @@ ProcessObj
 		case NgNclCBDELETE_FILEVAR:
 
 			node = ExtractObj(atree,node);
+			dofree=True;
 
 			break;
 
@@ -292,6 +294,9 @@ ProcessObj
 	cbtype.lngval = node->cbtype;
 	objptr.ptrval = node;
 	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsObject,cbtype,objptr);
+
+	if(dofree)
+		NhlFree(node);
 
 	return True;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.3 1996-11-24 22:27:35 boote Exp $
+ *      $Id: ncledit.c,v 1.4 1997-01-03 01:38:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,6 @@
 #include <ncarg/ngo/ncleditP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/xutil.h>
-#include <ncarg/ngo/addfile.h>
-#include <ncarg/ngo/load.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -114,207 +112,6 @@ NgNclEditClassRec NgnclEditClassRec = {
 
 NhlClass NgnclEditClass = (NhlClass)&NgnclEditClassRec;
 
-/*
- * Function:	addFile
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static void
-addFile
-(
-	Widget		w,
-	XEvent		*xev,
-	String		*params,
-	Cardinal	*num_params
-)
-{
-	char		func[] = "addFile";
-	int		goid = NhlDEFAULT_APP;
-	NgNclEdit	ncl = NULL;
-
-	goid = NgGOWidgetToGoId(w);
-	if(goid == NhlDEFAULT_APP){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
-		return;
-	}
-
-	if((*num_params == 1) || (*num_params > 2)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"%s:wrong number of params",func));
-		return;
-	}
-	else if(*num_params == 2){
-		int		appmgr = NhlDEFAULT_APP;
-		int		nclstate = NhlDEFAULT_APP;
-		struct stat	buf;
-		char		line[512];
-
-		if((strlen(params[0])+strlen(params[1])) > (sizeof(line) - 19)){
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"%s:parameters too long:%s:%s",
-				func,params[0],params[1]));
-			return;
-		}
-		NhlVAGetValues(goid,
-			_NhlNguiData,	&appmgr,
-			NULL);
-		NhlVAGetValues(appmgr,
-			NgNappNclState,	&nclstate,
-			NULL);
-
-		if(!NhlIsClass(nclstate,NgnclStateClass)){
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"%s:invalid nclstate obj",func));
-			return;
-		}
-
-		/*
-		 * Check to see if file exists and is text...
-		 */
-
-		if(stat(params[1],&buf) != 0){
-			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
-							func,params[0]));
-			return;
-		}
-		/*
-		 * Submit it to nclstate.
-		 */
-		sprintf(line,"%s = addfile(\"%s\",\"r\")\n",
-							params[0],params[1]);
-		(void)NgNclSubmitBlock(nclstate,line);
-
-		return;
-	}
-
-	ncl = (NgNclEdit)_NhlGetLayer(goid);
-	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclEditClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid window",func));
-		return;
-	}
-
-	/*
-	 * Popup addfile selection box.
-	 */
-	if(ncl->ncledit.addfile == NhlDEFAULT_APP){
-		NhlVACreate(&ncl->ncledit.addfile,"addfile",NgaddFileClass,goid,
-			NULL);
-	}
-	NgGOPopup(ncl->ncledit.addfile);
-
-	return;
-}
-
-/*
- * Function:	loadScript
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static void
-loadScript
-(
-	Widget		w,
-	XEvent		*xev,
-	String		*params,
-	Cardinal	*num_params
-)
-{
-	char		func[] = "loadScript";
-	int		goid = NhlDEFAULT_APP;
-	NgNclEdit	ncl = NULL;
-
-	goid = NgGOWidgetToGoId(w);
-	if(goid == NhlDEFAULT_APP){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
-		return;
-	}
-
-	if(*num_params > 1){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"%s:wrong number of params",func));
-		return;
-	}
-	else if(*num_params == 1){
-		int		appmgr = NhlDEFAULT_APP;
-		int		nclstate = NhlDEFAULT_APP;
-		struct stat	buf;
-		char		line[512];
-
-		if(strlen(params[0]) > (sizeof(line) - 9)){
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"%s:parameter too long:%s",func,params[0]));
-			return;
-		}
-		NhlVAGetValues(goid,
-			_NhlNguiData,	&appmgr,
-			NULL);
-		NhlVAGetValues(appmgr,
-			NgNappNclState,	&nclstate,
-			NULL);
-
-		if(!NhlIsClass(nclstate,NgnclStateClass)){
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"%s:invalid nclstate obj",func));
-			return;
-		}
-
-		/*
-		 * Check to see if file exists and is text...
-		 */
-
-		if(stat(params[0],&buf) != 0){
-			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
-							func,params[0]));
-			return;
-		}
-		/*
-		 * Submit it to nclstate.
-		 */
-		sprintf(line,"load \"%s\"\n",params[0]);
-		(void)NgNclSubmitBlock(nclstate,line);
-
-		return;
-	}
-
-	ncl = (NgNclEdit)_NhlGetLayer(goid);
-	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclEditClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid window",func));
-		return;
-	}
-
-	/*
-	 * Popup load file selection box.
-	 */
-	if(ncl->ncledit.load == NhlDEFAULT_APP){
-		NhlVACreate(&ncl->ncledit.load,"load",NgloadClass,goid,
-			NULL);
-	}
-	NgGOPopup(ncl->ncledit.load);
-
-	return;
-}
-
-static XtActionsRec ncl_act[] = {
-	{"addFile", addFile,},
-	{"loadScript", loadScript,},
-};
-
 static NhlErrorTypes
 NEInitialize
 (
@@ -325,7 +122,6 @@ NEInitialize
 	int		nargs
 )
 {
-	static NhlBoolean	init = True;
 	char			func[] = "NEInitialize";
 	NgNclEdit		ncl = (NgNclEdit)new;
 	NgNclEditPart		*np = &((NgNclEdit)new)->ncledit;
@@ -341,11 +137,6 @@ NEInitialize
 		return NhlFATAL;
 	}
 
-	if(init){
-		init = False;
-		XtAppAddActions(ncl->go.x->app_con,ncl_act,NhlNumber(ncl_act));
-	}
-
 	np->rstr = NgXAppCreateXmString(ncl->go.appmgr,np->rmsg);
 	np->rmsg = NULL;
 	np->estr = NgXAppCreateXmString(ncl->go.appmgr,np->emsg);
@@ -357,12 +148,15 @@ NEInitialize
 	np->my_cmd = False;
 	np->print = False;
 	np->more_cmds = NULL;
-	np->prompt_pos = np->submit_pos = np->reset_pos = 0;
+	np->submit_pos = np->reset_pos = 0;
 	np->line = 0;
 	np->my_focus = False;
 
-	np->load = NhlDEFAULT_APP;
-	np->addfile = NhlDEFAULT_APP;
+	np->prompt_win = None;
+	np->high_gc = NULL;
+	np->high_drawn = False;
+
+	NgAppAddNclEditor(ncl->go.appmgr,new->base.id);
 
 	return NhlNOERROR;
 }
@@ -375,6 +169,8 @@ NEDestroy
 {
 	NgNclEdit	ncl = (NgNclEdit)l;
 	NgNclEditPart	*np = &((NgNclEdit)l)->ncledit;
+
+	NgAppRemoveNclEditor(ncl->go.appmgr,l->base.id);
 
 	/*
 	 * Don't destroy widgets!  NgGO takes care of that.
@@ -391,19 +187,33 @@ NEDestroy
 		NhlFree(np->more_cmds);
 	}
 
-	if(np->load != NhlDEFAULT_APP){
-		NhlDestroy(np->load);
-		np->load = NhlDEFAULT_APP;
-	}
+	if(np->prompt_win != None)
+		XDestroyWindow(ncl->go.x->dpy,np->prompt_win);
+
+	if(np->high_gc != None)
+		XFreeGC(ncl->go.x->dpy,np->high_gc);
 
 	return NhlNOERROR;
 }
 
-static void Popup
+static void
+TextFocusCB
 (
 	Widget		w,
 	XtPointer	udata,
 	XtPointer	cbdata
+)
+{
+	XmProcessTraversal((Widget)udata,XmTRAVERSE_CURRENT);
+}
+
+static void
+TextFocusEH
+(
+	Widget		widget,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
 )
 {
 	XmProcessTraversal((Widget)udata,XmTRAVERSE_CURRENT);
@@ -422,6 +232,7 @@ CheckInput
 	XmTextVerifyPtr	ver = (XmTextVerifyPtr)cbdata;
 	char		*nl,*ptr;
 	int		oset,len;
+	int		max,ssize;
 
 	if(np->edit)
 		return;
@@ -457,6 +268,22 @@ CheckInput
 			}
 		}
 	}
+	XmTextShowPosition(w,ver->startPos);
+	XmTextShowPosition(np->prompt_text,
+					XmTextGetLastPosition(np->prompt_text));
+	/*
+	 * value of scrollbar doesn't get updated properly, so we need to use
+	 * the max value and slider size to tell the prompt_text the correct
+	 * slider value for the bottom of the window - which should be where
+	 * it is after the ShowPosition call from above.
+	 */
+	XtVaGetValues(np->vsbar,
+		XmNmaximum,	&max,
+		XmNsliderSize,	&ssize,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	max - ssize,
+		NULL);
 
 	if(ver->text->length <= 1)
 		return;
@@ -475,7 +302,7 @@ CheckInput
 	 * take first line of input and send it through
 	 */
 	oset = nl - ver->text->ptr + 1;
-	ptr = NhlMalloc(sizeof(char)*(oset + 1));
+	ptr = XtMalloc(sizeof(char)*(oset + 1));
 	if(!ptr){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		ver->doit = False;
@@ -591,6 +418,7 @@ FREE_MEM:
 	np->edit = False;
 	np->my_cmd = False;
 	if(np->more_cmds) NhlFree(np->more_cmds);
+	np->more_cmds = NULL;
 
 	return;
 }
@@ -606,14 +434,25 @@ SubmitCB
 	NgNclEdit	ncl = (NgNclEdit)udata.ptrval;
 	NgNclEditPart	*np = &ncl->ncledit;
 	NhlBoolean	edit;
+	int		val;
 
-	if(np->my_cmd) return;
-	edit = np->edit;
-	np->edit = True;
+	if(!np->my_cmd){
+		edit = np->edit;
+		np->edit = True;
 
-	XmTextReplace(np->text,np->submit_pos,XmTextGetLastPosition(np->text),
-								cbdata.strval);
-	np->edit = edit;
+		XmTextReplace(np->text,np->submit_pos,
+				XmTextGetLastPosition(np->text),cbdata.strval);
+		np->edit = edit;
+	}
+
+	XmTextInsert(np->prompt_text,XmTextGetLastPosition(np->prompt_text),
+									"\n");
+	XtVaGetValues(np->vsbar,
+		XmNvalue,	&val,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	val,
+		NULL);
 
 	return;
 }
@@ -627,6 +466,9 @@ OutputCB
 {
 	NgNclEdit	ncl = (NgNclEdit)udata.ptrval;
 	NgNclEditPart	*np = &ncl->ncledit;
+	char		*nl;
+	int		num=0;
+	XmTextPosition	tp;
 	NhlBoolean	edit;
 
 	edit = np->edit;
@@ -634,6 +476,23 @@ OutputCB
 
 	np->print = True;
 	XmTextInsert(np->text,XmTextGetLastPosition(np->text),cbdata.strval);
+	nl = strchr(cbdata.strval,'\n');
+	while(nl){
+		num++;
+		nl = strchr(++nl,'\n');
+	}
+	if(num)
+		tp = XmTextGetLastPosition(np->prompt_text);
+	while(num){
+		XmTextInsert(np->prompt_text,tp++,"\n");
+		num--;
+	}
+	XtVaGetValues(np->vsbar,
+		XmNvalue,	&num,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	num,
+		NULL);
 	np->edit = edit;
 
 	return;
@@ -649,7 +508,9 @@ ErrOutputCB
 	NgNclEdit	ncl = (NgNclEdit)udata.ptrval;
 	NgNclEditPart	*np = &ncl->ncledit;
 	NhlBoolean	edit;
+	XmTextPosition	tp;
 	char		buffer[NhlERRMAXMSGLEN+1];
+	char		*nl;
 	int		len;
 
 	NhlErrSPrintMsg(buffer,(NhlErrMsg*)cbdata.ptrval);
@@ -662,9 +523,71 @@ ErrOutputCB
 	edit = np->edit;
 	np->edit = True;
 	XmTextInsert(np->text,XmTextGetLastPosition(np->text),buffer);
+	len=0;
+	nl = strchr(buffer,'\n');
+	while(nl){
+		len++;
+		nl = strchr(++nl,'\n');
+	}
+	if(len)
+		tp = XmTextGetLastPosition(np->prompt_text);
+	while(len){
+		XmTextInsert(np->prompt_text,tp++,"\n");
+		len--;
+	}
+	XtVaGetValues(np->vsbar,
+		XmNvalue,	&len,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	len,
+		NULL);
 	np->edit = edit;
 
 	return;
+}
+
+static void
+DrawHighlight
+(
+	NgNclEdit	ncl
+)
+{
+	NgNclEditPart	*np = &ncl->ncledit;
+	int		x,y;
+	unsigned int	width,height;
+	XPoint		pt[3];
+
+	if(!np->high_drawn)
+		return;
+
+	x = np->left_offset-1;
+	y = np->top_offset-1;
+	width = np->prompt_width+np->text_width+2;
+	height = np->text_height+2;
+	XDrawRectangle(ncl->go.x->dpy,XtWindow(np->iform),np->high_gc,
+			x,y,width,height);
+	pt[0].x = pt[2].y = 0;
+	pt[0].y = pt[1].y = np->text_height+1;
+	pt[1].x = pt[2].x = np->text_width+1;
+	XDrawLines(ncl->go.x->dpy,XtWindow(np->scroll),np->high_gc,pt,3,
+							CoordModeOrigin);
+}
+
+static void
+EraseHighlight
+(
+	NgNclEdit	ncl
+)
+{
+	NgNclEditPart	*np = &ncl->ncledit;
+	int		x,y;
+	unsigned int	width,height;
+
+	if(!np->high_drawn)
+		return;
+
+	XClearArea(ncl->go.x->dpy,XtWindow(np->iform),0,0,0,0,False);
+	XClearArea(ncl->go.x->dpy,XtWindow(np->scroll),0,0,0,0,False);
 }
 
 static void
@@ -679,9 +602,12 @@ PromptCB
 	NgNclEditPart		*np = &ncl->ncledit;
 	NhlBoolean		edit;
 	XmTextPosition		pos = XmTextGetLastPosition(np->text);
+	XmTextPosition		ppos = XmTextGetLastPosition(np->prompt_text);
 	char			buff[20];
 	NgNclPromptCBData	prompt = (NgNclPromptCBData)cbdata.ptrval;
 	XmString		msg;
+	int			len;
+	Dimension		font_width;
 
 	edit = np->edit;
 	np->edit = True;
@@ -698,14 +624,19 @@ PromptCB
 		if(buff[1] != '\n'){
 			XmTextInsert(np->text,pos,"\n\n");
 			pos += 2;
+			XmTextInsert(np->prompt_text,ppos,"\n\n");
+			ppos += 2;
 		}
-		else if(buff[0] != '\n')
+		else if(buff[0] != '\n'){
 			XmTextInsert(np->text,pos++,"\n");
+			XmTextInsert(np->prompt_text,ppos++,"\n");
+		}
 	}
-	else if(buff[1] != '\n')
+	else if(buff[1] != '\n'){
 		XmTextInsert(np->text,pos++,"\n");
+		XmTextInsert(np->prompt_text,ppos++,"\n");
+	}
 
-	np->prompt_pos = pos;
 	if(prompt->istate){
 		np->reset_pos = pos;
 		if(np->my_focus){
@@ -736,10 +667,32 @@ PromptCB
 		XmNlabelString,	msg,
 		NULL);
 
-	sprintf(buff,"ncl %d> ",prompt->line);
-	XmTextInsert(np->text,pos,buff);
-	np->submit_pos = pos + strlen(buff);
+	sprintf(buff,"ncl %d>",prompt->line);
+	msg = NgXAppCreateXmString(ncl->go.appmgr,buff);
+	font_width = XmStringWidth(np->prompt_font,msg);
+	NgXAppFreeXmString(ncl->go.appmgr,msg);
+	if(font_width+np->shadow_thickness+(2*np->prompt_margin) >
+							np->prompt_width){
+		EraseHighlight(ncl);
+		XtVaSetValues(np->prompt_text,
+			XmNwidth,font_width+(2*np->shadow_thickness)+
+							(2*np->prompt_margin),
+			NULL);
+		np->prompt_width = font_width+(2*np->shadow_thickness)+
+							(2*np->prompt_margin);
+		DrawHighlight(ncl);
+	}
+
+	XmTextInsert(np->prompt_text,ppos,buff);
+	np->submit_pos = pos;
 	np->line = prompt->line;
+
+	XtVaGetValues(np->vsbar,
+		XmNvalue,	&len,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	len,
+		NULL);
 
 	np->edit = edit;
 
@@ -756,9 +709,9 @@ ResetCB
 	NgNclEdit		ncl = (NgNclEdit)udata.ptrval;
 	NgNclEditPart		*np = &ncl->ncledit;
 
-	XmTextSetHighlight(np->text,np->reset_pos,np->prompt_pos,
+	XmTextSetHighlight(np->text,np->reset_pos,np->submit_pos,
 						XmHIGHLIGHT_SECONDARY_SELECTED);
-	np->reset_pos = np->prompt_pos;
+	np->reset_pos = np->submit_pos;
 	if(np->my_focus){
 		XtSetSensitive(np->reset,False);
 		NgAppReleaseFocus(ncl->go.appmgr,ncl->base.id);
@@ -780,6 +733,191 @@ static void ResetButtonCB
 )
 {
 	NgNclReset((int)udata);
+}
+
+static void
+MapPromptEH
+(
+	Widget		widget,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+	char			func[] = "MapPromptEH";
+	NgNclEdit		ncl = (NgNclEdit)udata;
+	NgNclEditPart		*np = &ncl->ncledit;
+	NgGOPart		*gp = &ncl->go;
+	NgXAppExport		x = ncl->go.x;
+	XSetWindowAttributes	att;
+	unsigned long		vmask;
+	XGCValues		gcvalues;
+
+	if(event->type != MapNotify)
+		return;
+
+	XtRemoveEventHandler(np->prompt_text,StructureNotifyMask,False,
+						MapPromptEH,udata);
+
+	XtVaGetValues(np->prompt_text,
+		XmNwidth,	&np->prompt_width,
+		XmNleftOffset,	&np->left_offset,
+		XmNtopOffset,	&np->top_offset,
+		NULL);
+
+	XtVaGetValues(np->text,
+		XmNheight,		&np->text_height,
+		XmNwidth,		&np->text_width,
+		XmNshadowThickness,	&np->shadow_thickness,
+		XmNhighlightColor,	&np->high_color,
+		NULL);
+
+	XtVaGetValues(np->iform,
+		XmNbackground,		&np->back_color,
+		NULL);
+
+	gcvalues.function = GXcopy;
+	gcvalues.foreground = np->high_color;
+	gcvalues.line_width = 2;
+	np->high_gc = XCreateGC(x->dpy,XtWindow(np->iform),
+			(GCFunction|GCLineWidth|GCForeground),&gcvalues);
+
+	vmask = CWDontPropagate | CWEventMask;
+	att.do_not_propagate_mask = (KeyPressMask | KeyReleaseMask |
+				ButtonPressMask | ButtonReleaseMask |
+				PointerMotionMask | ButtonMotionMask);
+	att.event_mask = (KeyPressMask | KeyReleaseMask |
+				ButtonPressMask | ButtonReleaseMask |
+				PointerMotionMask | ButtonMotionMask);
+	np->prompt_win = XCreateWindow(x->dpy,XtWindow(np->prompt_text),
+				0,0,WidthOfScreen(XtScreen(np->prompt_text)),
+				HeightOfScreen(XtScreen(np->prompt_text)),
+				0,CopyFromParent,InputOnly,CopyFromParent,
+				vmask,&att);
+	if(np->prompt_win == None){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Can't create iowin",func));
+		return;
+	}
+
+	XMapRaised(x->dpy,np->prompt_win);
+
+	return;
+}
+
+static void
+PromptScrollCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	XmScrollBarCallbackStruct	*cbs =
+					(XmScrollBarCallbackStruct *)cbdata;
+	Widget		prompt = (Widget)udata;
+	int		cur_top,lines;
+
+	XtVaGetValues(prompt,
+		XmNuserData,	&cur_top,
+		NULL);
+
+	lines = cbs->value - cur_top;
+	XtVaSetValues(prompt,
+		XmNuserData,	cbs->value,
+		NULL);
+
+	XmTextScroll(prompt,lines);
+
+	return;
+}
+
+static void
+ExposeFocusEH
+(
+	Widget		w,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+	NgNclEdit	ncl = (NgNclEdit)udata;
+
+	DrawHighlight(ncl);
+}
+
+static void
+GainFocusCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+
+	np->high_drawn = True;
+	DrawHighlight(ncl);
+	XtAddEventHandler(np->iform,ExposureMask,False,
+					ExposeFocusEH,(XtPointer)ncl);
+}
+
+static void
+LoseFocusCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+	int		x,y;
+	unsigned int	width,height;
+
+	XtRemoveEventHandler(np->iform,ExposureMask,False,
+					ExposeFocusEH,(XtPointer)ncl);
+
+	EraseHighlight(ncl);
+	np->high_drawn = False;
+}
+
+static void
+ChangeSizeEH
+(
+	Widget		w,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+	int		val;
+	NhlBoolean	draw = np->high_drawn;
+
+	if(event->type != ConfigureNotify)
+		return;
+
+	EraseHighlight(ncl);
+	np->high_drawn = False;
+
+	XtVaGetValues(w,
+		XmNheight,	&np->text_height,
+		XmNwidth,	&np->text_width,
+		NULL);
+	XtVaGetValues(ncl->ncledit.vsbar,
+		XmNvalue,	&val,
+		NULL);
+	XtVaSetValues(ncl->ncledit.prompt_text,
+		XmNheight,	np->text_height,
+		XmNuserData,	val,
+		NULL);
+
+	np->high_drawn = draw;
+	DrawHighlight(ncl);
+
+	return;
 }
 
 static NhlBoolean
@@ -809,6 +947,7 @@ NECreateWin
 	NhlLayer	nstate;
 	NhlArgVal	dummy,udata;
 	char		buff[20];
+	XmString	msg;
 
 	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,
 								go->go.manager,
@@ -963,7 +1102,8 @@ NECreateWin
 
 	(void)NgXListManage(np->nsid,np->fulist,NgNclFUNC,NULL,NULL);
 
-	iform = XtVaCreateManagedWidget("iform",xmFormWidgetClass,pane,
+	np->iform = iform = XtVaCreateManagedWidget("iform",xmFormWidgetClass,
+									pane,
 		NULL);
 
 	np->reset = XtVaCreateManagedWidget("reset",xmPushButtonWidgetClass,
@@ -979,10 +1119,32 @@ NECreateWin
 		XmNtopWidget,		np->reset,
 		NULL);
 
-	scroll = XtVaCreateManagedWidget("scroll",xmScrolledWindowWidgetClass,
+	np->prompt_text = XtVaCreateManagedWidget("nclprompt",xmTextWidgetClass,
 									iform,
+		XmNeditMode,		XmMULTI_LINE_EDIT,
+		XmNuserData,		0,
+		NULL);
+	XtVaGetValues(np->prompt_text,
+		XmNfontList,		&np->prompt_font,
+		XmNmarginWidth,		&np->prompt_margin,
+		XmNshadowThickness,	&np->shadow_thickness,
+		NULL);
+
+	XtAddCallback(np->prompt_text,XmNfocusCallback,TextFocusCB,
+							(XtPointer)np->text);
+	XtAddEventHandler(np->prompt_text,StructureNotifyMask,False,
+						MapPromptEH,(XtPointer)go);
+	XtAddEventHandler(np->prompt_text,ButtonPressMask,False,
+					TextFocusEH,(XtPointer)np->text);
+
+
+
+	np->scroll = scroll = XtVaCreateManagedWidget("scroll",
+					xmScrolledWindowWidgetClass,iform,
 		XmNbottomAttachment,	XmATTACH_WIDGET,
 		XmNbottomWidget,	np->reset,
+		XmNleftAttachment,	XmATTACH_WIDGET,
+		XmNleftWidget,		np->prompt_text,
 		NULL);
 
 	np->text = XtVaCreateManagedWidget("nclcmd",xmTextWidgetClass,scroll,
@@ -991,8 +1153,33 @@ NECreateWin
 	XtAddCallback(np->text,XmNmodifyVerifyCallback,CheckInput,
 								(XtPointer)go);
 	XtAddCallback(np->text,XmNactivateCallback,ActivateCB,(XtPointer)go);
+	XtAddCallback(go->go.shell,XmNpopupCallback,TextFocusCB,
+							(XtPointer)np->text);
+	XtAddCallback(np->text,XmNfocusCallback,GainFocusCB,(XtPointer)go);
+	XtAddCallback(np->text,XmNlosingFocusCallback,LoseFocusCB,
+								(XtPointer)go);
 
-	XtAddCallback(go->go.shell,XmNpopupCallback,Popup,(XtPointer)np->text);
+	XtAddEventHandler(np->text,StructureNotifyMask,False,ChangeSizeEH,
+								(XtPointer)go);
+	XtVaGetValues(scroll,
+		XmNverticalScrollBar,	&np->vsbar,
+		NULL);
+
+	XtAddCallback(np->vsbar,XmNvalueChangedCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNincrementCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNdecrementCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNpageIncrementCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNpageDecrementCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNtoTopCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNtoBottomCallback,PromptScrollCB,
+							np->prompt_text);
+	XtAddCallback(np->vsbar,XmNdragCallback,PromptScrollCB,np->prompt_text);
 
 #ifdef	DEBUG
 	memset(&dummy,0,sizeof(NhlArgVal));
@@ -1012,13 +1199,19 @@ NECreateWin
 	np->erroutputcb = _NhlAddObjCallback(nstate,NgCBnsErrOutput,dummy,
 							ErrOutputCB,udata);
 
-	np->line = NgNclCurrentLine(np->nsid);
-	sprintf(buff,"ncl %d> ",np->line);
-	np->edit = True;
-	XmTextReplace(np->text,0,XmTextGetLastPosition(np->text),buff);
 	np->edit = False;
-	np->reset_pos = 0;
-	np->submit_pos = np->reset_pos + strlen(buff);
+	np->line = NgNclCurrentLine(np->nsid);
+
+	sprintf(buff,"ncl %d>",np->line);
+	msg = NgXAppCreateXmString(go->go.appmgr,buff);
+	width = XmStringWidth(np->prompt_font,msg);
+	NgXAppFreeXmString(go->go.appmgr,msg);
+	XtVaSetValues(np->prompt_text,
+		XmNwidth,width+(2*np->shadow_thickness)+(2*np->prompt_margin),
+		NULL);
+	XmTextReplace(np->prompt_text,0,XmTextGetLastPosition(np->prompt_text),
+									buff);
+	np->submit_pos = np->reset_pos = 0;
 
 	return True;
 }

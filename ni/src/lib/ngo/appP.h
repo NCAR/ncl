@@ -1,5 +1,5 @@
 /*
- *      $Id: appP.h,v 1.2 1996-10-16 16:21:17 boote Exp $
+ *      $Id: appP.h,v 1.3 1997-01-03 01:37:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,13 +55,13 @@ typedef struct _NgAppMgrPart {
 /* required fields */
 	NhlString		app_name;
 	NhlString		app_class;
-	int			appid;
 /* export fields */
 	int			nclstate;
 
 /* private fields */
 	_NgWorkProc		wp;
 	_NgAppGOList		go;
+	_NgAppGOList		ncleditors;
 	_NgAppFStack		active;
 
 } NgAppMgrPart;

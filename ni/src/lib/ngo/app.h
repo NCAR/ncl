@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.2 1996-10-16 16:21:16 boote Exp $
+ *      $Id: app.h,v 1.3 1997-01-03 01:37:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -86,6 +86,21 @@ extern void NgAppAddGO(
 extern void NgAppRemoveGO(
 	int	appid,
 	int	goid
+);
+
+extern void NgAppAddNclEditor(
+	int	appid,
+	int	goid
+);
+
+extern void NgAppRemoveNclEditor(
+	int	appid,
+	int	goid
+);
+
+extern int NgAppGetNclEditor(
+	int		appid,
+	NhlBoolean	new
 );
 
 extern void NgAppGrabFocus(
