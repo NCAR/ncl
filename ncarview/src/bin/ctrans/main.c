@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.10 1991-10-01 10:56:22 clyne Exp $
+ *	$Id: main.c,v 1.11 1991-10-01 11:52:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -281,6 +281,9 @@ char	**argv;
 		 */
 		if ((status = init_metafile(NEXT, cgm_fd)) < 1) {
 			meta_files++;
+			/*
+			 * skip to next metafile
+			 */
 			continue;
 		}
 
