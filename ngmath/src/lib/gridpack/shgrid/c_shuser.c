@@ -3,6 +3,25 @@
 
 #include "shproto.h"
 
+#ifdef  UNICOS
+#include <fortran.h>
+#define NGstring            _fcd
+#define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0)
+)
+#define NGFstrToCstr(fstr) (_fcdtocp(fstr))
+#define NGFlgclToClgcl(flog)  (_ltob(&flog))
+#define NGClgclToFlgcl(clog)  (_btol(clog))
+#else
+#define NGstring            char *
+#define NGCstrToFstr(cstr,len) (char *)cstr
+#define NGFstrToCstr(fstr) fstr
+#define NGFlgclToClgcl(flog)  flog
+#define NGClgclToFlgcl(clog)  clog
+#endif
+ 
+#define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
+
+
 float *c_shgrid(int n, float x[], float y[], float z[], float f[],
                 int nxo, int nyo, int nzo, float xo[], float yo[], float zo[],
                 int *ier)
@@ -98,4 +117,37 @@ int c_shgetnp(float px, float py, float pz, int n,
  *  Adjust the Fortran index for C and return.
  */
   return(np-1);
+}
+
+void c_shseti(char *pnam, int ival)
+{
+    NGstring pnam2;
+    int len;
+/*
+ * Make sure parameter name is not NULL
+ */
+    if ( !pnam ) {
+        fprintf( stderr, "c_shseti:  illegal parameter name (NULL)\n");
+        return;
+    }
+    len = NGSTRLEN(pnam);
+    pnam2 = NGCstrToFstr(pnam,len);
+    NGCALLF(shseti,SHSETI)(pnam,&ival,len);
+}
+
+int c_shgeti(char *pnam)
+{
+    NGstring pnam2;
+    int len,ivp;
+/*
+ * Make sure parameter name is not NULL
+ */
+    if ( !pnam ) {
+        fprintf( stderr, "c_shgeti:  illegal parameter name (NULL)\n");
+        return;
+    }
+    len = NGSTRLEN(pnam);
+    pnam2 = NGCstrToFstr(pnam,len);
+    NGCALLF(shgeti,SHGETI)(pnam2,&ivp,len);
+    return(ivp);
 }
