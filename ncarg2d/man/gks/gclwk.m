@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclwk.m,v 1.4 1993-05-12 17:13:56 haley Exp $
+.\"	$Id: gclwk.m,v 1.5 1993-09-03 19:03:32 haley Exp $
 .\"
 .TH GCLWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -9,7 +9,7 @@ CALL GCLWK (WKID)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/gks.h>
 .sp
-void gclear_ws(Gint ws_id, Gctrl_flag  ctrl_flag);
+void gclose_ws(Gint ws_id);
 .SH DESCRIPTION
 .IP WKID 12
 (Input, Integer) - A number identifying the workstation to be
