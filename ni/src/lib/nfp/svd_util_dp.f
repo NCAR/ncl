@@ -90,7 +90,7 @@ c print data from an array
       ELSE
          WRITE (*,FMT='(/,a)') LABEL(1:LEN)
          DO MR = 1,MRX
-            WRITE (*,FMT='(i5,12f8.4)') MR, (X(MR,NC),NC=1,NCX)
+            WRITE (*,FMT='(i5,(12f8.4))') MR, (X(MR,NC),NC=1,NCX)
          END DO
       END IF
 
