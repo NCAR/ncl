@@ -6,7 +6,9 @@
 !
 ! Title resources
 !
-*TiTitleFontHeightsF:        0.018
+*tiMainFontHeightF:        0.018
+*tiXAxisFontHeightF:       0.018
+*tiYAxisFontHeightF:       0.018
 *tiMainFont:                 26
 *tiXAxisFont:                26
 *tiYAxisFont:                26
