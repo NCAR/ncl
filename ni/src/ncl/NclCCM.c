@@ -220,7 +220,7 @@ char EndOfRec(char cw[]) {
 	} else if(tmpc == (char)0) {
 		return(CBCW);
 	} else {
-		fprintf(stdout, "ERROR:");
+		fprintf(stdout, "ERROR:\n");
 		return((char)0377);
 	}
 }
@@ -749,12 +749,16 @@ int	wr_status;
 			tmp_lon = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
 			tmp_siga = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
 			tmp_sigb = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
+/*
 			fprintf(stdout,"ilev:\n");
+*/
 			for(i = 0; i < initial_iheader.NLEV+1; i++) {
 				tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i) + *(initial_rheader.sigb + 2*i));
 				tmp_siga[i] = *(initial_rheader.siga + 2*i);
 				tmp_sigb[i] = *(initial_rheader.sigb + 2*i);
+/*
 				fprintf(stdout,"%f\n",tmp_lon[i]);
+*/
 			}
 			tmp_var = CcmAddIntVar(
 					therec,
@@ -777,12 +781,16 @@ int	wr_status;
 			tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
 			tmp_siga = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
 			tmp_sigb = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
+/*
 			fprintf(stdout,"lev:\n");
+*/
 			for(i = 0; i < initial_iheader.NLEV; i++) {
 				tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i+1) + *(initial_rheader.sigb + 2*i+1));
 				tmp_siga[i] = *(initial_rheader.siga + 2*i+1);
 				tmp_sigb[i] = *(initial_rheader.sigb + 2*i+1);
+/*
 				fprintf(stdout,"%f\n",tmp_lon[i]);
+*/
 			}
 			tmp_var = CcmAddIntVar(therec,therec->dims[MLEV_DIM_NUMBER].dim_name,therec->dims[MLEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_lon,PERMANENT,MLEV_DIM_NUMBER);
                         CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_PS_var"),NrmStringToQuark("PS"));
