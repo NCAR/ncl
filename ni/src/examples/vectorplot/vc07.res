@@ -29,6 +29,10 @@
 !
 ! VectorPlot resources
 !
+*vcLevelSelectionMode    : ManualLevels
+*vcMinLevelValF          : 970.
+*vcMaxLevelValF          : 1040.
+*vcLevelSpacingF         : 5.
 *vcLevelColors           : (/9,10,11,12,13,14,15,16,17,18,19,20,21,22,23/)
 *vcLineArrowHeadMinSizeF :  0.007
 *vcLineArrowThicknessF   : 3.0
