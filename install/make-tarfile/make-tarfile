@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.5 1995-04-20 16:31:15 haley Exp $
+#      $Id: make-tarfile,v 1.6 1995-04-20 16:52:25 haley Exp $
 #
 #########################################################################
 #									#
@@ -107,7 +107,7 @@ print "platform=$platform, build_root=$build_root, tarfile=$tarfile\n";
 #
 #	generate the tar file with the install script
 #
-#$cmd = "cd $build_root/$install_dir; tar cbf ../INSTALL.TAR 20 .";
+#$cmd = "cd $build_root/$install_dir; tar cbf 20 ../INSTALL.TAR .";
 #do my_system("$cmd");
 
 
@@ -118,7 +118,7 @@ $tars = "$install_dir";
 foreach $tar (@tars) {
 	$tars = "$tars $platform/$tar";
 }
-$cmd = "tar cbf $tarfile 20 $tars";
+$cmd = "tar cbf 20 $tarfile $tars";
 do my_system("$cmd");
 
 exit 0;
