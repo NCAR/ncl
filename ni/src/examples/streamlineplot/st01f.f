@@ -1,5 +1,5 @@
 C
-C      $Id: st01f.f,v 1.1 1996-05-10 17:05:11 haley Exp $
+C      $Id: st01f.f,v 1.2 1996-05-10 17:12:00 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -107,8 +107,8 @@ C
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Basic StreamlinePlot Example',ierr)
       call NhlFRLSetInteger(rlist,'stVectorFieldData',vfid,ierr)
-      call NhlFCreate(stid,'streamline',NhlFStreamlinePlotClass,wid,rlist,
-     1     ierr)
+      call NhlFCreate(stid,'streamline',NhlFStreamlinePlotClass,wid,
+     1     rlist,ierr)
 
       call NhlFDraw(stid,ierr)
       call NhlFFrame(wid,ierr)
