@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.9 1992-04-03 20:56:39 clyne Exp $
+ *	$Id: ctrandef.h,v 1.10 1992-04-16 17:29:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,6 +13,12 @@
 
 #ifndef	_ctrandef_
 #define	_ctrandef_
+
+#if	defined(__STDC__) || defined(sgi) || defined(RS6000)
+typedef	signed char	SignedChar;
+#else
+typedef	char	SignedChar;
+#endif
 
 /*	a macro to determine if two colors are the same	*/
 #define COLOR_EQUAL(A,B)	((CSM == INDEXED) ? (A.index == B.index) : ((A.direct.red == B.direct.red)&& (A.direct.green == B.direct.green) && (A.direct.blue == B.direct.blue)))

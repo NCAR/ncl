@@ -1,5 +1,5 @@
 /*
- *	$Id: buffer.c,v 1.3 1992-04-03 20:41:12 clyne Exp $
+ *	$Id: buffer.c,v 1.4 1992-04-16 17:29:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include "ctrandef.h"
 
 static	int	out = 1;		/* fd for output init to stdout */
 
@@ -43,8 +44,8 @@ flush()
  *	flushing the buffer if need be.
  */
 buffer(str,count)
-char 	*str;
-int  	count;
+	SignedChar 	*str;
+	int  		count;
 {
 	register int	tmp;
 

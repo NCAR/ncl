@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.8 1992-04-03 20:57:44 clyne Exp $
+ *	$Id: gcaprast.c,v 1.9 1992-04-16 17:30:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -333,6 +333,7 @@ CGMC	*c;
 	Ctype	*index_array;	/* an array of row colour indecies	*/
 	long	nx,ny;		/* number of cells in x and y direction	*/
 	long	snx,sny;	/* dimensions of cell array		*/
+	SignedChar	s_char;
 
 	Runlength = FALSE; 	/* default is packed encoding	*/
 	
@@ -404,8 +405,9 @@ CGMC	*c;
 			/*
 			 * format the begin raster instruction
 			 */
-			for(k=0;k<RASTER_HOR_START_SIZE;k++)
-				switch(RASTER_HOR_START[k]) {
+			for(k=0;k<RASTER_HOR_START_SIZE;k++) {
+				s_char = (SignedChar) RASTER_HOR_START[k];
+				switch ((int) s_char) {
 				case XYC:
 					(void)formatcoord(px,py,2);
 					break;
@@ -422,9 +424,10 @@ CGMC	*c;
 					Runlength = TRUE;
 					break;
 				default:
-					buffer(&RASTER_HOR_START[k],1);
+					buffer(&s_char,1);
 					break;
 				}
+			}
 
 			py++;	/* advance to next row of pixels	*/
 
@@ -497,6 +500,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 	unsigned char	*index_array;	/* color indeces for a cell row	*/
 	int		cgmc_index;	/* index into the cgmc		*/
 	boolean		swap;
+	SignedChar	s_char;
 
 
 	register int	i,j,k;
@@ -570,7 +574,8 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 			 * format the begin raster instruction
 			 */
 			for(k=0;k<RASTER_HOR_START_SIZE;k++) {
-				switch(RASTER_HOR_START[k]) {
+				s_char = (SignedChar) RASTER_HOR_START[k];
+				switch ((int) s_char) {
 				case XYC:
 					(void)formatcoord(start_x,start_y,2);
 					break;
@@ -587,7 +592,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 					Runlength = TRUE;
 					break;
 				default:
-					buffer(&RASTER_HOR_START[k],1);
+					buffer(&s_char,1);
 					break;
 				}
 			}

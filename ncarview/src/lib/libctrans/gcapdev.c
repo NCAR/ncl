@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.11 1992-02-28 00:20:16 clyne Exp $
+ *	$Id: gcapdev.c,v 1.12 1992-04-16 17:30:07 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -51,6 +51,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	int	currentpoint = 0;
 	int	i;
 	boolean mass = FALSE;	/* true if can buffer all points at once */
+	SignedChar	s_char;
 
 	int	line_width = ROUND(LINE_WIDTH);
 
@@ -86,8 +87,9 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	if (polyflag && (POLYGON_START_SIZE > 0) && !polysim) {
 
 		mass = TRUE;
-		for(i=0;i<POLYGON_START_SIZE;i++) 
-			switch (POLYGON_START[i]) {
+		for(i=0;i<POLYGON_START_SIZE;i++) {
+			s_char = (SignedChar) POLYGON_START[i];
+			switch ((int) s_char) {
 			case VC:
 				(void)formatveccnt(*coord_buf_num + 1);
 				break;
@@ -107,9 +109,10 @@ boolean polysim;	/* True if to simulate polygons with lines */
 					    2);
 				break;
 			default:
-				buffer(&POLYGON_START[i],1);
+				buffer(&s_char,1);
 				break;
 			}
+		}
 
 	}
 
@@ -120,8 +123,9 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	if (POLY_FLAG && (!polyflag || polysim)) {
 		mass = TRUE;
 
-		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
-			switch (LINE_DRAW_START[i]) {
+		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
+			s_char = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char) {
 			case VC:
 				if (polyflag)
 					(void)formatveccnt(*coord_buf_num + 1);
@@ -147,9 +151,10 @@ boolean polysim;	/* True if to simulate polygons with lines */
 				currentpoint = 1;
 				break;
 			default:
-				buffer(&LINE_DRAW_START[i],1);
+				buffer(&s_char,1);
 				break;
 			}
+		}
 	}
 
 	/*
@@ -286,14 +291,16 @@ long	x1_,y1_,x2_,y2_;
 	int	i;	/* loop variable */
 
 	long	x1, y1, x2, y2;
+	SignedChar	s_char;
 
 	if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
 		return;
 	}
 
 	if (POLY_FLAG) {
-		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
-			switch (LINE_DRAW_START[i]) {
+		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
+			s_char = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char) {
 			case VC:
 				(void)formatveccnt((long)2);
 				break;
@@ -311,9 +318,10 @@ long	x1_,y1_,x2_,y2_;
 				(void)formatcoord(XConvert(x1), YConvert(y1), 2);
 				break;
 			default:
-				buffer(&LINE_DRAW_START[i],1);
+				buffer(&s_char,1);
 				break;
 			}
+		}
 
 
 		/*
@@ -364,10 +372,12 @@ void	gcap_devline(x1, y1, x2, y2)
 	DCtype	x1, y1, x2, y2;
 {
 	int	i;	/* loop variable */
+	SignedChar	s_char;
 
 	if (POLY_FLAG) {
-		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
-			switch (LINE_DRAW_START[i]) {
+		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
+			s_char = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char) {
 			case VC:
 				(void)formatveccnt((long)2);
 				break;
@@ -381,9 +391,10 @@ void	gcap_devline(x1, y1, x2, y2)
 				(void)formatcoord((long) x1, (long) y1, 2);
 				break;
 			default:
-				buffer(&LINE_DRAW_START[i],1);
+				buffer(&s_char,1);
 				break;
 			}
+		}
 
 
 		/*
@@ -550,6 +561,7 @@ void	gcap_update_color_table()
 	long	data[3];
 	boolean	skipping,
 		defining;
+	SignedChar	s_char;
 
 
 	if (!COLOUR_AVAIL)
@@ -574,17 +586,18 @@ void	gcap_update_color_table()
 	if (COLOUR_INDEX_DAMAGE(i)) {
 
 		for (k=0;k<MAP_START_SIZE;k++) {
-			switch (MAP_START[k]) {
+			s_char = (SignedChar) MAP_START[k];
+			switch ((int) s_char) {
 			case MAD:
 				(void)formatindex(i,FALSE);
 				break;
 			default: 
-				buffer(&MAP_START[k],1);
+				buffer(&s_char,1);
 				break;
 			}
 		}
 
-		switch (MAP_MODEL) {
+		switch ((int) MAP_MODEL) {
 		case 0: /* mono */
 			data[0] = (0.3 * COLOUR_INDEX_RED(i)) + 
 				(0.6 * COLOUR_INDEX_GREEN(i)) +
@@ -650,12 +663,13 @@ void	gcap_update_color_table()
 				 */
 
 				for (k=0;k<MAP_START_SIZE;k++) {
-					switch (MAP_START[k]) {
+					s_char = (SignedChar) MAP_START[k];
+					switch ((int) s_char) {
 					case MAD:
 						(void)formatindex(i,FALSE);
 						break;
 					default: 
-						buffer(&MAP_START[k],1);
+						buffer(&s_char,1);
 						break;
 					}
 				}
@@ -663,7 +677,7 @@ void	gcap_update_color_table()
 				skipping = FALSE;
 			}
 
-			switch (MAP_MODEL) {
+			switch ((int) MAP_MODEL) {
 			case 0: /* mono */
 				data[0] = (0.3 * COLOUR_INDEX_RED(i)) + 
 					(0.6 * COLOUR_INDEX_GREEN(i)) +

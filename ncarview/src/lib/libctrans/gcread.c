@@ -1,5 +1,5 @@
 /*
- *	$Id: gcread.c,v 1.4 1992-04-03 20:57:48 clyne Exp $
+ *	$Id: gcread.c,v 1.5 1992-04-16 17:30:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 #include	<cterror.h>
 #define GCREAD
 #include "graphcap.h"
+#include "ctrandef.h"
 
 extern	char	*strcpy();
 
@@ -215,10 +216,11 @@ F_2_Cstring(Fstring, len)
 {
    
 	int	i;
-	char	*ptr;
+	SignedChar	*ptr;
 
-	for (i=0, ptr = (char *) Fstring; i < len; i++, ptr++, Fstring++)
+	for (i=0,ptr = (unsigned char *) Fstring; i<len; i++, ptr++,Fstring++){
 		*ptr = (char) *Fstring; 
+	}
 
 	/*
 	 *	add null C string terminator

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.19 1992-04-03 20:57:33 clyne Exp $
+ *	$Id: gcap.c,v 1.20 1992-04-16 17:30:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -281,6 +281,7 @@ CGMC *c;
 {
 	int	i,j,k;		/* loop var */
 	long	data[3];
+	SignedChar	s_char;
 
 
 	/*
@@ -289,31 +290,35 @@ CGMC *c;
 	if (MAP_AVAIL) {
 
 		if (!MAP_INDIVIDUAL)
-			for (i=0;i<MAP_START_SIZE;i++) 
-				switch (MAP_START[i]) {
+			for (i=0;i<MAP_START_SIZE;i++) { 
+				s_char = (SignedChar) MAP_START[i];
+				switch ((int) s_char) {
 				case MAD:
 					(void)formatindex((CItype)MAP_INIT_INDEXS[0],
 							  FALSE);
 					break;
 				default: 
-					buffer(&MAP_START[i],1);
+					buffer(&s_char,1);
 					break;
 				}
+			}
 
 		for(i=0,j=0;j<MAP_INDEX_DEFINED;j++) {
 
 			if (MAP_INDIVIDUAL)
-				for (k=0;k<MAP_START_SIZE;k++) 
-					switch (MAP_START[k]) {
+				for (k=0;k<MAP_START_SIZE;k++) {
+					s_char = (SignedChar) MAP_START[k];
+					switch ((int) s_char) {
 					case MAD:
 						(void)formatindex(
 							(CItype)MAP_INIT_INDEXS[j],
 							FALSE);
 						break;
 					default: 
-						buffer(&MAP_START[k],1);
+						buffer(&s_char,1);
 						break;
 					}
+				}
 
 			switch (MAP_MODEL) {
 			case	0:	/* gray scale	*/
