@@ -61,11 +61,14 @@ C
 C Define the parameter that says whether or not color-filled contours
 C (drawn using an area map) are to be drawn:
 C
-        PARAMETER (ICOL=0)  !  no color fill done
-C       PARAMETER (ICOL=1)  !  color fill done
+C       PARAMETER (ICOL=0)  !  no color fill done
+        PARAMETER (ICOL=1)  !  color fill done
 C
         PARAMETER (IMSL=0)  !  mesh not drawn on frame
 C       PARAMETER (IMSL=1)  !  mesh drawn on frame
+C
+C       PARAMETER (ICSL=0)  !  contours not drawn on frame
+        PARAMETER (ICSL=1)  !  contours drawn on frame
 C
 C Define the parameter that says whether or not color-filled contours
 C (drawn using a cell array) are to be drawn:
@@ -426,9 +429,9 @@ C
         CALL GOPWK (IWID,LUNI,IWTY)
         CALL GACWK (IWID)
 C
-C Turn off the clipping indicator.
+C Turn on the clipping indicator.
 C
-        CALL GSCLIP (0)
+        CALL GSCLIP (1)
 C
 C Define a basic set of colors.
 C
@@ -472,15 +475,15 @@ C
 C Set the area identifier for cells associated with triangles that are
 C seen from "the back".
 C
-c       CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-1)
-c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1001)
+C       CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-1)
+C       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1001)
 C
 C Set the area identifier for cells associated with no triangles of the
 C mesh.
 C
-c       CALL CTSETI ('PAI',-2)
-c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1002)
-c
+C       CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-2)
+C       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1002)
+C
 C Set the 2D smoother flag.
 C
         CALL CTSETR ('T2D - TENSION ON 2D SPLINES',T2DS)
@@ -517,7 +520,7 @@ C
 C
 C Set the point-interpolation threshold value.
 C
-        CALL CTSETR ('PIT - POINT INTERPOLATION THRESHOLD VALUE',.001)
+        CALL CTSETR ('PIT - POINT INTERPOLATION THRESHOLD VALUE',.005)
 C
 C Tell CONPACKT not to do its own call to SET, since TDPACK will have
 C done it.
@@ -1005,6 +1008,47 @@ C
 C
           END IF
 C
+          IF (ICSL.NE.0) THEN
+C
+            IF (ABS(ILLP).EQ.1) THEN
+C
+              PRINT * , '  CALLING CTCLDR'
+              CALL CTCLDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+C
+              PRINT * , '  CALLING CTLBDR'
+              CALL CTLBDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+C
+            ELSE IF (ABS(ILLP).GT.1) THEN
+C
+              MAXN=0
+C
+              PRINT * , '  CALLING ARINAM'
+              CALL ARINAM (IAMA,LAMA)
+C
+              PRINT * , '  CALLING CTLBAM'
+              CALL CTLBAM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA)
+C
+              PRINT * , '  CALLING CTCLDM'
+              CALL CTCLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,DRWMCL)
+C
+              PRINT * , '  AREA MAP SPACE REQUIRED:         ',
+     +                                         IAMA(1)-IAMA(6)+IAMA(5)+1
+C
+              PRINT * , '  NUMBER OF POINTS IN LONGEST LINE:',MAXN
+C
+              PRINT * , '  CALLING CTLBDR'
+              CALL CTLBDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+C
+            END IF
+C
+            CALL CTGETI ('IWU - INTEGER WORKSPACE USED',IIWU)
+            PRINT * , '  INTEGER WORKSPACE REQUIRED:      ',IIWU
+C
+            CALL CTGETI ('RWU -    REAL WORKSPACE USED',IRWU)
+            PRINT * , '  REAL WORKSPACE REQUIRED:         ',IRWU
+C
+          END IF
+C
 C If a left-eye view has just been done, loop back for a right-eye view.
 C
           IF (OTEP.LT.0.) THEN
@@ -1385,7 +1429,7 @@ C
           DO 101 J=1,JDIM
             XLAT(I,J)= -90.+(REAL(J-1)/REAL(JDIM-1))*180.
             XLON(I,J)=-180.+(REAL(I-1)/REAL(IDIM-1))*360.
-            ZDAT(I,J)=COS(3.*DTOR*XLAT(I,J))*COS(3.*DTOR*XLON(I,J))
+            ZDAT(I,J)=1.
   101     CONTINUE
   102   CONTINUE
 C
@@ -1393,11 +1437,13 @@ C Call a general-purpose subroutine that accepts a rectangular grid
 C mapped onto the surface of the globe and returns a triangular mesh
 C equivalent to it.
 C
-        CALL CTTMRG (IDIM,JDIM,XLAT,XLON,ZDAT,ISCR,SVAL,MITD01,
-     +               RPNT,MPNT,NPNT,LOPN,
-     +               IEDG,MEDG,NEDG,LOEN,
-     +               ITRI,MTRI,NTRI,LOTN)
-C
+        CALL CTTMRG (IDIM,JDIM,           ! dimensioning information
+     +               XLAT,XLON,ZDAT,ISCR, ! data arrays, scratch array
+     +                 0.,MITD01,         ! special value, index mapper
+     +               RPNT,MPNT,NPNT,LOPN, ! point node array
+     +               IEDG,MEDG,NEDG,LOEN, ! edge node array
+     +               ITRI,MTRI,NTRI,LOTN) ! triangle node array
+
 C Done.
 C
         RETURN
