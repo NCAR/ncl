@@ -1,9 +1,10 @@
 /*
- *	$Id: s_gfa.c,v 1.1 1997-03-05 19:12:49 haley Exp $
+ *	$Id: s_gfa.c,v 1.2 1999-07-27 20:31:02 haley Exp $
  */
 /*
  *  Fill area  
  */
+#include <stdlib.h>
 
 #include <ncarg/gks.h>
 

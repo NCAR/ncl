@@ -1,9 +1,10 @@
 /*
- *	$Id: s_gpm.c,v 1.1 1997-03-05 19:12:52 haley Exp $
+ *	$Id: s_gpm.c,v 1.2 1999-07-27 20:31:04 haley Exp $
  */
 /*
  *  Polymarker  
  */
+#include <stdlib.h>
 
 #include <ncarg/gks.h>
 

@@ -1,9 +1,10 @@
 /*
- *	$Id: s_gca.c,v 1.1 1997-03-05 19:12:45 haley Exp $
+ *	$Id: s_gca.c,v 1.2 1999-07-27 20:30:56 haley Exp $
  */
 /*
  *  Cell array  
  */
+#include <stdlib.h>
 
 #include <ncarg/gks.h>
 

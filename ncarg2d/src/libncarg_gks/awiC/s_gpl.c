@@ -1,9 +1,10 @@
 /*
- *	$Id: s_gpl.c,v 1.1 1997-03-05 19:12:52 haley Exp $
+ *	$Id: s_gpl.c,v 1.2 1999-07-27 20:31:03 haley Exp $
  */
 /*
  *  Polyline  
  */
+#include <stdlib.h>
 
 #include <ncarg/gks.h>
 
