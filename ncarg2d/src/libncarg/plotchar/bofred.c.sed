@@ -1,5 +1,5 @@
 /*
- * $Id: bofred.c.sed,v 1.4 1992-11-17 18:45:55 kennison Exp $
+ * $Id: bofred.c.sed,v 1.5 1994-03-01 21:45:21 haley Exp $
  */
 
 #include <stdio.h>
@@ -19,29 +19,29 @@
  *	compilers don't complain.
  */
 bofred_(unit, fnum, ios, status)
-	long		*unit, *fnum, *ios, *status;
+	int		*unit, *fnum, *ios, *status;
 {
-	int             fd;
-	char		fontname[32];
-	char		*pathname;
+	int		fd;
+	char	fontname[32];
+	char	*pathname;
 
 	/* Get the path name to the fontcap file using the font number */
 
-	(void) sprintf(fontname, "font%d", (int) *fnum);
+	(void) sprintf(fontname, "font%d", *fnum);
 
 	if ( (pathname = getFcapname(fontname)) == (char *) NULL)
 	{
 		(void) fprintf(stderr, 
 		"Error in bofred_(): Could not find <%s>\n", fontname);
-		*status = 1L;
-		*unit = -1L;
+		*status = 1;
+		*unit = -1;
 	}
 	else
 		if ( (fd = open(pathname, 0)) == -1)
-			*status = 1L;
+			*status = 1;
 		else
-			*status = 0L;
+			*status = 0;
 
-	*unit = (long) fd;
+	*unit = fd;
 	*ios = *status;
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: pcbnrd.c.sed,v 1.1 1992-11-30 16:42:46 kennison Exp $
+ * $Id: pcbnrd.c.sed,v 1.2 1994-03-01 21:45:22 haley Exp $
  */
 
 #include <stdio.h>
@@ -16,8 +16,8 @@
 *
 *       unit -  A UNIX file-descriptor, but passed
 *               in from a calling FORTRAN procedure.
-*       count - The number of long integers to read. On most 16 and
-*               32 bit systems, long integers are 32 bits, and on
+*       count - The number of integers to read. On most 16 and
+*               32 bit systems, integers are 32 bits, and on
 *               the Cray system, all integers are 64 bits, except
 *               when compiling with Cray's Fortran 77 compiler
 *               which uses 48 bit integers. Since this C function
@@ -27,7 +27,7 @@
 *
 *       Output Variables:
 *
-*       buffer - The long integer buffer to read the data into.
+*       buffer - The integer buffer to read the data into.
 *
 *       ios:    The I/O status - valid only if "status"
 *               is non-zero.
@@ -40,15 +40,15 @@
 *
 ***********************************************************************/
 pcbnrd_(unit, count, buffer, ios, status)
-        long           *unit, *count, buffer[], *ios, *status;
+	int		*unit, *count, buffer[], *ios, *status;
 {
-        int             nbytes, nbread;
+	int		nbytes, nbread;
 
-        nbytes = (int) *count * sizeof(long);
+	nbytes = *count * sizeof(int);
 
-        nbread = read( (int) *unit, (char *) buffer, nbytes);
+	nbread = read( *unit, (char *) buffer, nbytes);
 
-        *status = 0L;
+	*status = 0;
 
-        *ios = *status;
+	*ios = *status;
 }
