@@ -1,84 +1,102 @@
 C NCLFORTSTART
-      SUBROUTINE DTDRVPRC(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,
-     +                    NEVAL,EVAL,PCVAR,TRACE,IOPT,JOPT,IREVERT,
-     +                    CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,
-     +                    TEOF,WEVAL,W2D,WEVEC,XDVAR,IER)
+      SUBROUTINE TDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,IER)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
 c .   It results in [sometimes, MUCH] faster execution
-c Note for NCL: in *this* routine NROBS=NROW, NCSTA<=NCOL
+c Note for NCL: in *this* routine NROBS=NROW, NCSTA=NCOL
 
-      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IREVERT,IER
-      DOUBLE PRECISION EVAL(NEVAL),TRACE,XMSG
-      REAL PCVAR(NEVAL)
-      INTEGER LWORK,LIWORK,LCSSM
-      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROW,NEVAL),
-     +                 WEVAL(NROW),W2D(NROW,NEVAL),WEVEC(NCOL,NEVAL),
-     +                 XDATA(NROW,NCOL),XDATAT(NCOL,NROW),XDVAR(NCOL)
-
-      INTEGER IWORK(LIWORK),IFAIL(NROW)
-
+      INTEGER          NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IER
+      DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
+     +                 PCVAR(NEVAL),TRACE,XMSG,PCRIT
 C NCLEND
 
 c======== .so info=====================
-c SGI/dataproc: WRAPIT -L /usr/lib64 -l complib.sgimath_mp \
-c      prneofTranspose.f
-c Sun/CGD: 
-c WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf 
-c       prneofTranspose.f
+c SGI/dataproc: WRAPIT -L /usr/lib64 -l complib.sgimath_mp prneofTranspose.f
+c Sun/CGD: WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf prneofTranspose.f
 c======================================
+     
 
-      INTEGER K,NE,NR,NC
+c AUTOMATIC FORTRAN ARRAYS TO HOLD DATA AND DATA STATS
+      DOUBLE PRECISION XDATA(NROW,NCOL), 
+     +                 XAVE(NCOL), XVAR(NCOL), XDVAR(NCOL)
 
-c initialize.
+C LOCAL VARIABLES
+      DOUBLE PRECISION PCX, CON, XSD
+      INTEGER          K,KNTX,KER,NE,NR,NC,MCSTA,LSSM,LWORK,LIWORK
 
-      DO NR = 1,NROW
-         WEVAL(NR) = XMSG
+
+c strip all grid points that have less that "PCRIT" valid values
+c .   create the "XDATA". This may have fewer columns/grid-pts
+c .   than the original "X" array if not all columns 
+c .   had the minimun number of valid values.
+
+      MCSTA = 0
+      DO NC = 1,NCOL
+
+c statistics for this station/grid-point
+
+          CALL DSTAT2(X(1,NC),NROW,XMSG,XAVE(NC),XVAR(NC),XSD,KNTX,KER)
+
+c quick way of eliminating stations/grid-points
+
+          PCX = (DBLE(KNTX)/DBLE(NROW))*100.D0
+          IF (PCX.LT.PCRIT .OR. XSD.LE.0.0D0) THEN
+              XAVE(NC) = XMSG
+          END IF
+
+c possible normalizing for jopt=1
+
+          CON = 1.0D0
+          IF (JOPT.EQ.1 .AND. XAVE(NC).NE.XMSG 
+     +                  .AND. XSD.GT.0.D0) CON = 1.D0/XSD
+
+c WORK WITH ANOMALIES: XDAVE=0.0 [or standardized anomalies]
+
+          IF (XAVE(NC).NE.XMSG) THEN
+              MCSTA = MCSTA + 1
+
+              DO NR = 1,NROW
+                  IF (X(NR,NC).NE.XMSG) THEN
+                      XDATA(NR,MCSTA) = (X(NR,NC)-XAVE(NC))*CON
+c c c                 XDATA(NR,MCSTA) =  X(NR,NC)
+                  ELSE
+                      XDATA(NR,MCSTA) = XMSG
+                  END IF
+              END DO
+
+              IF (JOPT.EQ.0) THEN
+                  XDVAR(MCSTA) = XVAR(NC)
+              ELSE
+                  XDVAR(MCSTA) = 1.0D0
+              END IF
+          END IF
+
       END DO
 
-C Don't need to do this because are doing this in C wrapper.
-      DO NE = 1,NEVAL
-          EVAL(NE) = XMSG
+c pass the selected data (XDATA) to the EOF driver 
 
-          DO NC = 1,NCOL
-              WEVEC(NC,NE) = XMSG
-          END DO
-
-          DO NR = 1,NROBS
-              W2D(NR,NE)  = XMSG
-              TEOF(NR,NE) = XMSG
-          END DO
-      END DO
-
-c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
-c .                     when some stations/grid_pts do not have enough 
-c .                     data
-
-      CALL DXRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,
-     +              WEVAL,WEVEC,PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,
-     +              LWORK,IWORK,LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
-
-c return only the requested number of eigenvalues
-
-      DO K = 1,NEVAL
-          EVAL(K) = WEVAL(K)
-      END DO
+      CALL XRVEOFT(XDATA,NROW,NCOL,NROBS,MCSTA,XMSG,
+     +             NEVAL,EVAL,EVEC,PCVAR,TRACE,
+     +             XDVAR,XAVE,JOPT,IER)
 
       RETURN
       END
+
 c ---------------------------------------------------------
-      SUBROUTINE DXRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,
-     +                    NEVAL,WEVAL,WEVEC,PCVAR,TRACE,IOPT,JOPT,CSSM,
-     +                    LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
-     +                    W2D,XVAR,IREVERT,IER)
+      SUBROUTINE XRVEOFT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,
+     +                   NEVAL,EVAL,EVEC,PCVAR,TRACE,
+     +                   XDVAR,XAVE,JOPT,IER)
       IMPLICIT NONE
+
+C **** USES AUTOMATIC ARRAYS SO USE WITH g77 or f90 
 
 c operate on the *TRANSPOSE* OF XDATA: then use matrix stuff to
 c .   get the desired eof information.
 
-c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
-c .               when some stations/grid_pts do not have enough data
+c Note: NROW=NROBS but, it is possible for  MCSTA<=NCOL
+c .                     when some stations/grid_pts do not have enough data
 
 c driver to calculate :
 c .   the principal components (eignvalues and eigenvectors)
@@ -88,11 +106,10 @@ c .       calculate a var-cov matrix but it may not be
 c .       positive definite.
 
 c . The eigenvectors and eigenvalues of the *TRANSPOSED* matrix
-c .      are used to derive the corresponding values
+c .      are used to derive the corresponding eigenvectors
 c .      associated with the original matrix.
 
 c .       USES LAPACK/BLAS ROUTINES
-c .       USES AUTOMATIC ARRAYS SO USE WITH F90 (or Cray f77)
 
 c nomenclature :
 c .   xdata     - matrix containing the data. it contains n observations
@@ -121,63 +138,77 @@ c .               equal the sum of all possible eigenvalues.
 c .   iopt      - not used; kept for compatibility with old routine
 c .   jopt      - =  0 : use var-covar matrix in prncmp
 c .                  1 : use correlation matrix in prncmp
-c .   irevert   - switch for returned eigenvalues
-c .               0=return_transposed_info
-c .               1=return_original_matrix_info [default]
 c .   ier       - error code
 
-      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,LWORK,LIWORK,LCSSM
-      INTEGER IWORK(LIWORK),IFAIL(NROBS),IREVERT,IER
+      INTEGER          NROW,NCOL,NROBS,NCSTA,NEVAL,
+     +                 LSSM,LWORK,LIWORK,JOPT,IER
 
-      DOUBLE PRECISION XDATA(NROW,NCOL),XDATAT(NCOL,NROW),WEVAL(NROW),
-     +                 WEVEC(NCOL,NEVAL),XMSG,TRACE
-      REAL             PCVAR(NEVAL)
-
+      DOUBLE PRECISION XDATA(NROW,NCOL),PCVAR(NEVAL),XMSG,TRACE,
+     +                 EVAL(NEVAL), EVEC(NCOL,NEVAL)                 
 
 c temporary arrays (automatic or passed in via interface)
 
-      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROW,NEVAL),
-     +                 W2D(NROW,NEVAL), XVAR(NCOL),TOTVAR
+      DOUBLE PRECISION CSSM(NROW*(NROW+1)/2),
+     *                 WORK(8*NROW)
+      INTEGER          IWORK(5*NROW)
+
+      DOUBLE PRECISION TEOFPC(NROW,NEVAL),
+     +                 WEVAL(NROW),WEVEC(NCSTA,NEVAL),
+     +                 W2D(NROW,NEVAL), XAVE(NCOL),XDVAR(NCOL),
+     +                 XDATAT(NCSTA,NROW)
+      INTEGER          IFAIL(NROBS)
 
 c local
       CHARACTER*16     LABEL
-      DOUBLE PRECISION TEMP,TOL,EPSMACH,TRACER,TRACEO
-      INTEGER N,NR,NC,MEVAL,KNT,IPR,IPRFLG,MEVOUT,ILOW,IUP,INFO
-      DOUBLE PRECISION TBAR,TVAR,TSTD,VLOW,VUP
+      DOUBLE PRECISION TEMP,TOL,EPSMACH,TRACER,TRACEO,
+     +                 TBAR,TVAR,TSTD,VLOW,VUP
+      INTEGER          N,NE,NR,NC,MEVAL,KNT,IPR,IPRFLG,
+     +                 MEVOUT,ILOW,IUP,INFO,MCSTA
 
       DATA IPR/6/
       DATA IPRFLG/0/
 
-c calculate covariance or correlation matrix in symmetric storage mode
-c .   of the *TRANSPOSE* of the *anomalies* of the input data matrix
-c .   JOPT=1 ... already handled in driver ... use covariance routine
+c length of various temporary arrays
 
-      IER = 0
-c
-c Note: in the following code, the DVCMSSMT (T=transpose) routine was
-c originally called, but we found it was slower due to the innermost
-c loop being done across the slowest varying dimension. So, Dennis
-c suggested making a transpose copy of XDATA and passing this to
-c the DVCMSSM routine instead.
-c 
-c c c IF (JOPT.EQ.0) THEN
-        DO NC=1,NCOL
-           DO NR=1,NROW
+      LSSM   = NROW* (NROW+1)/2
+      LWORK  = 8*NROW
+      LIWORK = 5*NROW
+
+c EXPLICITLY INITALIZE
+
+      DO NR = 1,NROW
+          WEVAL(NR) = XMSG
+      END DO
+
+      DO NE = 1,NEVAL
+          EVAL(NE) = XMSG
+
+          DO NC = 1,NCOL
+              EVEC(NC,NE)  = XMSG
+              WEVEC(NC,NE) = XMSG
+          END DO
+
+          DO NR = 1,NROW 
+              W2D(NR,NE)  = XMSG
+              TEOFPC(NR,NE) = XMSG
+          END DO
+      END DO
+
+c create transposed data array
+
+      DO NC=1,NCSTA
+          DO NR=1,NROW
               XDATAT(NC,NR) = XDATA(NR,NC)
-           END DO
-        END DO
-        CALL DVCMSSM(XDATAT,NCOL,NROW,NCSTA,NROBS,XMSG,CSSM,LCSSM,IER)
-c
-c The original call to DVCMSSMT
-c
-c c c   CALL DVCMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
-c c c ELSE
-c c c   CALL DCRMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
-c c c END IF
+          END DO
+      END DO
+
+c compute the covariance matrix using the transposed data 
+
+      CALL DVCMSSM(XDATAT,NCOL,NROW,NCSTA,NROW,XMSG,CSSM,LSSM,IER)
 
       IF (IER.NE.0) THEN
-          WRITE (IPR,FMT='(//'' sub drveoft: ier,jopt= '',2i3
-     +   ,'' returned from vcmssm/crmssm'')') IER,JOPT
+          WRITE (IPR,FMT='(//'' sub drveoft: ier= '',i3
+     +   ,'' returned from vcmssm/crmssm'')') IER
           IF (IER.GT.0) RETURN
       END IF
 
@@ -189,31 +220,32 @@ c activate if print of cov/cor matrix [work] is desired
           ELSE
               LABEL(1:15) = 'DRVEOFT: correl matrix: '
           END IF
-          WRITE (IPR,FMT='(//,a15,''sym storage mode'')') LABEL(1:15)
+          WRITE (IPR,"(//,a15,'sym storage mode')") LABEL(1:15)
           CALL DSSMIOX(CSSM,NROW)
       END IF
 
-c calculate the trace of transposed matrix (TRACER)
+c calculate the trace of transposed matrix (TRACE)
 c before matrix is destroyed by sspevx
 
       N = 0
-      TEMP = 0.d0
+      TRACE = 0.d0
       DO NR = 1,NROW
           N = N + NR
-          TEMP = TEMP + CSSM(N)
+          TRACE = TRACE + CSSM(N)
       END DO
-      IF (TEMP.LE.0.d0) THEN
+      IF (TRACE.LE.0.d0) THEN
           IER = -88
           WRITE (IPR,FMT='(//'' SUB DRVEOFT: ier,jopt= '',2i3
-     +     ,'' trace='',f15.5)') IER,JOPT,TRACE
+     +           ,'' trace='',f15.5)') IER,JOPT,TRACE
           RETURN
       END IF
-      TRACER = TEMP
-      TRACE  = TRACER
+
 
 c calculate specified number of eigenvalues and eigenvectors.
 c .   make sure that  neval <= nrow (=nrobs)
-c .   remember the TEOF are the eofs of the *transposed* matrix
+c
+c .   Remember the TEOFPC are the eofs of the *transposed* matrix.
+c .   This means they are the principal components of the original data. 
 
       MEVAL = MIN(NEVAL,NROW)
 
@@ -225,18 +257,18 @@ c .   remember the TEOF are the eofs of the *transposed* matrix
       MEVOUT = 0
 
       CALL DSPEVX('V','I','U',NROW,CSSM,VLOW,VUP,ILOW,IUP,TOL,MEVOUT,
-     +            WEVAL,TEOF,NROW,WORK,IWORK,IFAIL,INFO)
+     +            WEVAL,TEOFPC,NROW,WORK,IWORK,IFAIL,INFO)
 
       IF (INFO.NE.0) THEN
           IER = IER + INFO
-          WRITE (IPR,FMT='(//,'' SUB DRVEOFT: dspevx error: info=''
+          WRITE (IPR,FMT='(//,'' SUB DRVEOFT: sspevx error: info=''
      +                       ,   i9)') INFO
-          WRITE (IPR,FMT='(   '' SUB DRVEOFT: dspevx error: ifail=''
+          WRITE (IPR,FMT='(   '' SUB DRVEOFT: sspevx error: ifail=''
      +      ,   20i5)') (IFAIL(N),N=1,MIN(20,NROBS))
       END IF
 
-c reverse the order of things from "dspevx" so
-c .   largest eigenvalues/vectors are first.
+c reorder so eigenvalues are in descending order
+c .   make sure the asocciated eigenvectors are also reordered
 
       DO N = 1,MEVAL
           WORK(N) = WEVAL(N)
@@ -248,55 +280,50 @@ c .   largest eigenvalues/vectors are first.
 
       DO N = 1,MEVAL
           DO NR = 1,NROW
-              W2D(NR,N) = TEOF(NR,N)
+              W2D(NR,N) = TEOFPC(NR,N)
           END DO
       END DO
 
       DO N = 1,MEVAL
           DO NR = 1,NROW
-              TEOF(NR,N) = W2D(NR,MEVAL+1-N)
+              TEOFPC(NR,N) = W2D(NR,MEVAL+1-N)
           END DO
       END DO
 
-c percent variance explained of *transposed* matrix
+c percent variance explained (PCVAR) of transposed matrix.
+c .   Both the eigenvalues (hence, PCVAR) are equivalent
+c .   due to "duality" od space/time.
 
       DO N = 1,MEVAL
-          PCVAR(N) = REAL(WEVAL(N)/TRACER)*100.
+          PCVAR(N) = (WEVAL(N)/TRACE)*100.D0
       END DO
 
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c section to invert from transposed grid to 'original' grid.
+c section to invert from transposed data space to original data space.
+c ie: compute the eigenvectors of the original data
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-c calculate the DESIRED eofs from the TRANSPOSED
-c remember: x(nr,nc) are anomalies
+c calculate the SPATIAL eofs from the TEOFPC and XDATAT
 
       DO N = 1,MEVAL
           DO NC = 1,NCSTA
-              TEMP = 0.0d0
+              WEVEC(NC,N) = 0.0d0
 
               DO NR = 1,NROW
-                  IF (XDATA(NR,NC).NE.XMSG) THEN
-                      TEMP = TEMP + TEOF(NR,N)*XDATA(NR,NC)
+                  IF (XDATAT(NC,NR).NE.XMSG) THEN
+                      WEVEC(NC,N) = WEVEC(NC,N) 
+     +                            + TEOFPC(NR,N)*XDATAT(NC,NR)
                   END IF
               END DO
 
-              WEVEC(NC,N) = TEMP
           END DO
       END DO
 
-c remove the mean from WEVEC
+c normalize spatial eofs to variance=1.0
+c normalize the time series [principal components] 
 
       DO N = 1,MEVAL
-          CALL DSTAT2(WEVEC(1,N),NCSTA,XMSG,TBAR,TVAR,TSTD,KNT,IER)
-          DO NC = 1,NCSTA
-              WEVEC(NC,N) = WEVEC(NC,N) - TBAR
-          END DO
-      END DO
 
-c normalize by euclidean norm
-
-      DO N = 1,MEVAL
           TEMP  = 0.0d0
           DO NC = 1,NCSTA
               TEMP = TEMP + WEVEC(NC,N)*WEVEC(NC,N)
@@ -306,195 +333,29 @@ c normalize by euclidean norm
           DO NC = 1,NCSTA
               WEVEC(NC,N) = WEVEC(NC,N)/TEMP
           END DO
+
       END DO
 
+c return only the requested number of eigenvalues
 
-      IF (IREVERT.EQ.1) THEN
+      DO N = 1,NEVAL
+          EVAL(N) = WEVAL(N)
+          DO NC = 1,NCOL
+              EVEC(NC,N) = XMSG
+          END DO
+      END DO
 
-c Basically, here we try to create the eigenvalues that would have
-c .   been created using the untransposed data matrix
-c .   totvar is the same as the trace of the *original* matrix
-c .          same as the trace untransposed cov/cor matrix (TRACEO)
+c return the requested eigenvector
+c .   the purpose of the "if" is to reassign to correct locations
 
-          IF (JOPT.EQ.0) THEN
-              TOTVAR = 0.D0
-              DO NC = 1,NCSTA
-                  TOTVAR = TOTVAR + XVAR(NC)
+      MCSTA = 0
+      DO NC = 1,NCOL
+          IF (XAVE(NC).NE.XMSG) THEN
+              MCSTA = MCSTA + 1
+              DO N = 1,NEVAL
+                  EVEC(NC,N) = WEVEC(MCSTA,N)
               END DO
-          ELSE
-              TOTVAR = NCSTA
           END IF
-
-          TRACEO = TOTVAR
-          TRACE  = TRACEO
-
-c calculate the variance of the 'original' amplitude time series
-c These would be the eigenvalues of the original matrix
-c To avoid confusion, these will be set to the eigenvalues for return
-
-          DO N = 1,MEVAL
-              DO NR = 1,NROBS
-                  TEMP  = 0.0D0
-                  DO NC = 1,NCSTA
-                      IF (XDATA(NR,NC).NE.XMSG) THEN
-                          TEMP = TEMP + WEVEC(NC,N)*XDATA(NR,NC)
-                      END IF
-                  END DO
-                  WORK(NR) = TEMP
-              END DO
-
-              CALL DSTAT2(WORK,NROW,XMSG,TBAR,TVAR,TSTD,KNT,IER)
-              WEVAL(N) = TVAR
-              PCVAR(N) = REAL(TVAR/TRACEO)*100.
-          END DO
-      END IF
-
-      RETURN
-      END
-c ----------------------------------------------------------------------
-C NCLFORTSTART
-      SUBROUTINE DVCMSSMT(X,NROW,NCOL,NRT,NCS,XMSG,VCM,LVCM,IER)
-      IMPLICIT NONE
-
-      INTEGER NROW,NCOL,NRT,NCS,LVCM,IER
-      DOUBLE PRECISION X(NROW,NCOL),VCM(LVCM),XMSG
-C NCLEND
-
-c this routine will calculate the variance-couariance matrix (vcm)
-c .   of the *TRANSPOSE* of the array x containing missing data.
-c .   Obviously if x does contain missing data then vcm is
-c .   only an approximation.
-
-c note : symmetric storage mode is utilized for vcm to save space.
-
-c input:
-c     x        - input data array  ( unchanged on output)
-c     nrow,ncol- exact dimensions of x in calling routine
-c     nrt,ncs  - dimension of sub-matrix which contains the data
-c                (nrt <= nrow : ncs <= ncol)
-c     xmsg     - missing data code 
-c                (if none set to some no. not encountered)
-c output:
-c     vcm      - var-cov matrix
-c     lvcm     - length of vcm (lvcm=nrt*(nrt+1)/2)
-c     ier      - error code (if ier=-1 then vcm contains missing entry)
-
-      INTEGER NRA,NRB,I,NN
-      DOUBLE PRECISION XN,XRA,XRB,XRARB
-
-      IER = 0
-      IF (NROW.LT.1 .OR. NCOL.LT.1) IER = IER + 1
-      IF (NRT.LT.1 .OR. NCS.LT.1) IER = IER + 10
-      IF (IER.NE.0) RETURN
-
-c calculate the var-cov between rows (obs)
-
-      NN = 0
-      DO NRA = 1,NRT
-          DO NRB = 1,NRA
-              XN    = 0.d0
-              XRA   = 0.d0
-              XRB   = 0.d0
-              XRARB = 0.d0
-              NN = NN + 1
-
-              IF (NN.GT.LVCM) THEN
-                  PRINT *,'VCMSSMT: NN > LVCM: STOP'
-                  STOP
-              END IF
-
-              DO I = 1,NCS
-                  IF (X(NRA,I).NE.XMSG .AND. X(NRB,I).NE.XMSG) THEN
-                      XN = XN + 1.d0
-                      XRA = XRA + X(NRA,I)
-                      XRB = XRB + X(NRB,I)
-                      XRARB = XRARB + X(NRA,I)*X(NRB,I)
-                  END IF
-              END DO
-              IF (XN.GE.2.D0) THEN
-                  VCM(NN) = (XRARB- (XRA*XRB)/XN)/ (XN-1.d0)
-              ELSE
-                  IER = -1
-                  VCM(NN) = XMSG
-              END IF
-          END DO
-      END DO
-
-      RETURN
-      END
-c ----------------------------------------------------------------------
-C NCLFORTSTART
-      SUBROUTINE DCRMSSMT(X,NROW,NCOL,NRT,NCS,XMSG,CRM,LCRM,IER)
-      IMPLICIT NONE
-
-      INTEGER NROW,NCOL,NRT,NCS,LCRM,IER
-      DOUBLE PRECISION X(NROW,NCOL),CRM(LCRM),XMSG
-C NCLEND
-
-c this routine will calculate the correlation matrix   (crm)
-c .   of the *TRANSPOSE* of array x containing missing data.
-c .   Obviously if x does contain missing data then crm is
-c .   only an approximation.
-
-c note : symmetric storage mode is utilized for crm to save space.
-
-c input:
-c     x        - input data array  ( unchanged on output)
-c     nrow,ncol- exact dimensions of x in calling routine
-c     nrt,ncs  - dimension of sub-matrix which contains the data
-c                (nrt <= nrow : ncs <= ncol)
-c     xmsg     - missing data code 
-c .              (if none set to some no. not encountered)
-c output:
-c     crm      - correlation matrix
-c     lcrm     - length of crm  (lcrm >= nrt*(nrt+1)/2)
-c     ier      - error code (if ier=-1 then crm contains missing entry)
-
-      INTEGER NRA,NRB,I,NN
-      DOUBLE PRECISION XN,XRA,XRB,XRARB,XRA2,XRB2,XVARA,XVARB
-
-      IER = 0
-      IF (NROW.LT.1 .OR. NCOL.LT.1) IER = IER + 1
-      IF (NRT.LT.1 .OR. NCS.LT.1) IER = IER + 10
-      IF (IER.NE.0) RETURN
-
-c calculate the var-cov between columns (stations)
-
-      NN = 0
-      DO NRA = 1,NRT
-          DO NRB = 1,NRA
-              XN    = 0.D0
-              XRA   = 0.D0
-              XRB   = 0.D0
-              XRA2  = 0.D0
-              XRB2  = 0.D0
-              XRARB = 0.D0
-              NN = NN + 1
-              DO I = 1,NCS
-                  IF (X(NRA,I).NE.XMSG .AND. X(NRB,I).NE.XMSG) THEN
-                      XN = XN + 1.D0
-                      XRA = XRA + X(NRA,I)
-                      XRB = XRB + X(NRB,I)
-                      XRA2 = XRA2 + X(NRA,I)*X(NRA,I)
-                      XRB2 = XRB2 + X(NRB,I)*X(NRB,I)
-                      XRARB = XRARB + X(NRA,I)*X(NRB,I)
-                  END IF
-              END DO
-              IF (XN.GE.2.D0) THEN
-                  XVARA = (XRA2- ((XRA*XRA)/ (XN)))/ (XN-1.D0)
-                  XVARB = (XRB2- ((XRB*XRB)/ (XN)))/ (XN-1.D0)
-                  IF (XVARA.GT.0.D0 .AND. XVARB.GT.0.D0) THEN
-                      CRM(NN) = (XRARB- ((XRA*XRB)/ (XN)))/ (XN-1.D0)
-                      CRM(NN) = CRM(NN)/ (DSQRT(XVARA)*DSQRT(XVARB))
-                  ELSE
-                      IER = -1
-                      CRM(NN) = XMSG
-                  END IF
-              ELSE
-                  IER = -1
-                  CRM(NN) = XMSG
-              END IF
-          END DO
       END DO
 
       RETURN
