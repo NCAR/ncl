@@ -1,22 +1,24 @@
 #
-#       $Id: yMakefile,v 1.3 1997-06-30 22:03:23 kennison Exp $
+#       $Id: yMakefile,v 1.4 1998-06-19 17:51:29 fred Exp $
 #
 
 MYNAME  = tdpack
 
 GENERIC_SRCS = \
 	ilsint.f itrovr.f lnbpcs.f tdblda.f tdclrs.f tdctab.f tdctap.f \
-	tddtri.f tdgeti.f tdgetr.f tdgrds.f tdgrid.f tdgtrs.f tdinit.f \
-	tditri.f tdlbla.f tdlbls.f tdline.f tdlndp.f tdlnpa.f tdlpdp.f \
-	tdmrka.f tdmrkb.f tdmtri.f tdotri.f tdpara.f tdplch.f tdprpa.f \
-	tdprpi.f tdprpt.f tdseti.f tdsetr.f tdsort.f tdstri.f tdstrs.f
+	tddtri.f tdez2d.f tdez3d.f tdgeti.f tdgetr.f tdgrds.f tdgrid.f \
+	tdgtrs.f tdinit.f tditri.f tdlbla.f tdlbls.f tdline.f tdlndp.f \
+	tdlnpa.f tdlpdp.f tdmrka.f tdmrkb.f tdmtri.f tdotri.f tdpara.f \
+	tdplch.f tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f tdsort.f \
+	tdstri.f tdstrs.f
 
 GENERIC_OBJS = \
 	ilsint.o itrovr.o lnbpcs.o tdblda.o tdclrs.o tdctab.o tdctap.o \
-	tddtri.o tdgeti.o tdgetr.o tdgrds.o tdgrid.o tdgtrs.o tdinit.o \
-	tditri.o tdlbla.o tdlbls.o tdline.o tdlndp.o tdlnpa.o tdlpdp.o \
-	tdmrka.o tdmrkb.o tdmtri.o tdotri.o tdpara.o tdplch.o tdprpa.o \
-	tdprpi.o tdprpt.o tdseti.o tdsetr.o tdsort.o tdstri.o tdstrs.o
+	tddtri.o tdez2d.o tdez3d.o tdgeti.o tdgetr.o tdgrds.o tdgrid.o \
+	tdgtrs.o tdinit.o tditri.o tdlbla.o tdlbls.o tdline.o tdlndp.o \
+	tdlnpa.o tdlpdp.o tdmrka.o tdmrkb.o tdmtri.o tdotri.o tdpara.o \
+	tdplch.o tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o tdsort.o \
+	tdstri.o tdstrs.o
 
 SOURCES = $(GENERIC_SRCS)
 
