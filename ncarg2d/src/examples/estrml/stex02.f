@@ -1,5 +1,5 @@
 C
-C	$Id: stex02.f,v 1.1 1993-01-17 04:30:44 haley Exp $
+C	$Id: stex02.f,v 1.2 1993-01-21 01:23:17 dbrown Exp $
 C
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -171,11 +171,11 @@ C
            call vvsetr('xc1 -- lower X bound', 1.0)
            call vvsetr('xcm -- upper X bound', xmx)
            call vvsetr('yc1 -- lower X bound', 1.0)
-           call vvsetr('ycm -- upper Y bound', 100.0)
+           call vvsetr('ycn -- upper Y bound', 100.0)
            call stsetr('xc1 -- lower X bound', 1.0)
            call stsetr('xcm -- upper X bound', xmx)
            call stsetr('yc1 -- lower X bound', 1.0)
-           call stsetr('ycm -- upper Y bound', 100.0)
+           call stsetr('ycn -- upper Y bound', 100.0)
            call stsetr('ssp -- stream spacing', 0.015)
 c           
            nset=1

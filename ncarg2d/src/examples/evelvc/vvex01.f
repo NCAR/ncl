@@ -237,7 +237,7 @@ C
            CALL VVSETR('XC1 -- Lower X Bound', 0.1)
            CALL VVSETR('XCM -- Upper X Bound', 1.0)
            CALL VVSETR('YC1 -- Lower X Bound', 0.0)
-           CALL VVSETR('YCM -- Upper Y Bound', 360.0)
+           CALL VVSETR('YCN -- Upper Y Bound', 360.0)
            CALL VVSETI('SET -- Set Call Flag', 0)
            CALL VVSETI('MSK -- Area Mask Flag', 1)
 C

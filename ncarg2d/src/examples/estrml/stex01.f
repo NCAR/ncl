@@ -1,5 +1,5 @@
 C
-C	$Id: stex01.f,v 1.1 1993-01-17 04:30:41 haley Exp $
+C	$Id: stex01.f,v 1.2 1993-01-21 01:23:15 dbrown Exp $
 C
       PROGRAM STEX01
 C
@@ -51,7 +51,7 @@ c$$$      CALL VVSETI('set -- do set call', 0)
 c$$$      CALL VVSETR('XC1 -- LOWER X BOUND', -120.0)
 c$$$      CALL VVSETR('XCM -- UPPER X BOUND', -75.0)
 c$$$      CALL VVSETR('YC1 -- LOWER Y BOUND', 25.0)
-c$$$      CALL VVSETR('YCM -- UPPER Y BOUND', 50.0)
+c$$$      CALL VVSETR('YCN -- UPPER Y BOUND', 50.0)
 c$$$      CALL VVSETR('VFR - Vector fractional floor', 0.75)
 c$$$      call vvseti('cpm - compatibility mode', -4)
 c$$$      CALL GSPLCI(3)
@@ -63,7 +63,7 @@ c
       CALL STSETR('XC1 -- LOWER X BOUND', 1.0)
       CALL STSETR('XCM -- UPPER X BOUND', 20.0)
       CALL STSETR('YC1 -- LOWER Y BOUND', 0.0)
-      CALL STSETR('YCM -- UPPER Y BOUND', 360.0)
+      CALL STSETR('YCN -- UPPER Y BOUND', 360.0)
 c     CALL STSETI('TRT -- TRANSFORM TYPE', 1)
       do 20 i = 1,M
          do 10 j = 1,N

@@ -1,4 +1,4 @@
-C	$Id: vvex02.f,v 1.1 1993-01-17 04:29:53 haley Exp $
+C	$Id: vvex02.f,v 1.2 1993-01-21 01:24:10 dbrown Exp $
 C
       PROGRAM BNCHMK
 C
@@ -93,7 +93,7 @@ C
          CALL VVSETR('XC1 -- LOWER X BOUND', -180.0)
          CALL VVSETR('XCM -- UPPER X BOUND', 180.0)
          CALL VVSETR('YC1 -- LOWER X BOUND', -90.0)
-         CALL VVSETR('YCM -- UPPER Y BOUND', 90.0)
+         CALL VVSETR('YCN -- UPPER Y BOUND', 90.0)
          MA = 25
          NA = 25
          IDM = 0

@@ -1,4 +1,4 @@
-C	$Id: stex03.f,v 1.1 1993-01-17 04:30:48 haley Exp $
+C	$Id: stex03.f,v 1.2 1993-01-21 01:23:20 dbrown Exp $
 C
       PROGRAM STEX03
 C
@@ -117,7 +117,7 @@ c$$$C
          CALL STSETR('XC1 -- LOWER X BOUND', -180.0)
          CALL STSETR('XCM -- UPPER X BOUND', 180.0)
          CALL STSETR('YC1 -- LOWER Y BOUND', -90.0)
-         CALL STSETR('YCM -- UPPER Y BOUND', 90.0)
+         CALL STSETR('YCN -- UPPER Y BOUND', 90.0)
          CALL STSETI('PLR -- VECTOR POLAR FLAG', 1)
          CALL STSETI('TRP -- interpolation method', 1)
          CALL STSETR('ssp -- stream spacing', 0.015)
@@ -125,7 +125,7 @@ c$$$C
          CALL VVSETR('XC1 -- LOWER X BOUND', -180.0)
          CALL VVSETR('XCM -- UPPER X BOUND', 180.0)
          CALL VVSETR('YC1 -- LOWER Y BOUND', -90.0)
-         CALL VVSETR('YCM -- UPPER Y BOUND', 90.0)
+         CALL VVSETR('YCN -- UPPER Y BOUND', 90.0)
          CALL VVSETI('PLR -- VECTOR POLAR FLAG', 1)
          CALL VVSETR('VFR -- Vector Fractional minimum', 0.7)
          MA = M
@@ -430,7 +430,7 @@ C
         RETURN
       END
 C
-C	$Id: stex03.f,v 1.1 1993-01-17 04:30:48 haley Exp $
+C	$Id: stex03.f,v 1.2 1993-01-21 01:23:20 dbrown Exp $
 C
       SUBROUTINE GENARA (A,B,ID,JD)
 C
@@ -486,7 +486,7 @@ C
       RETURN
       END
 C
-C	$Id: stex03.f,v 1.1 1993-01-17 04:30:48 haley Exp $
+C	$Id: stex03.f,v 1.2 1993-01-21 01:23:20 dbrown Exp $
 C
       SUBROUTINE OPENR (IUNIT)
       CHARACTER*128 PARANM,FILENM
@@ -511,7 +511,7 @@ C
 	STOP
       END
 C
-C	$Id: stex03.f,v 1.1 1993-01-17 04:30:48 haley Exp $
+C	$Id: stex03.f,v 1.2 1993-01-21 01:23:20 dbrown Exp $
 C
       FUNCTION RANDNO()
 C
