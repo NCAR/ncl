@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.42 2000-03-22 00:31:46 haley Exp $
+#	$Id: yMakefile,v 1.43 2000-04-18 20:59:56 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -8,21 +8,19 @@ SRC_SCRIPTS	=	ncargsrc ncargsrcy
 
 #ifdef	BuildWithF90
 NGF_SCRIPT	=	ncargf90
-NHF_SCRIPT	=	nhlf90
 #else
 NGF_SCRIPT	=	ncargf77
-NHF_SCRIPT	=	nhlf77
 #endif
 
-SCRIPTS = ncargfile ncargcc nhlcc  ncargversion ncargrun ncargex \
-	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPT) $(NHF_SCRIPT)
+SCRIPTS = ncargfile ncargcc ncargversion ncargrun ncargex \
+	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPT)
 
 FILES = ngurl
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
-CleanFilesTarget($(NGF_SCRIPT) $(NHF_SCRIPT) ncargcc nhlcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget($(NGF_SCRIPT) ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
 
 ncargversion:	version.sed
 	@sed \
@@ -58,44 +56,6 @@ ncargcc: ncargcc.csh Makefile
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargcc.csh >ncargcc
-
-$(NHF_SCRIPT): nhlf77.csh Makefile
-	@sed \
-	-e 's+SED_FC+$(F77)+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
-	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
-	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
-	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
-	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_LIBDIR+$(LIBDIR)+' \
-	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlf77.csh > $(NHF_SCRIPT)
-
-nhlcc: nhlcc.csh Makefile
-	@sed \
-	-e 's+SED_CC+$(CC)+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
-	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
-	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
-	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
-	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
-	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
-	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
-	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
-	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_LIBDIR+$(LIBDIR)+' \
-	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlcc.csh >nhlcc
 
 ncargex: ncargex.csh Makefile
 	@sed \
