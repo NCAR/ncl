@@ -294,7 +294,6 @@ NhlErrorTypes svdcov_W( void )
   if((void*)dx != x) NclFree(dx);
   if((void*)dy != y) NclFree(dy);
 
-  NclFree(w);
 /*
  * If hom/het were originally float, then we need to coerce them from
  * double to float. Do this by creating a pointer of type float that 
@@ -547,6 +546,9 @@ NhlErrorTypes svdcov_W( void )
                NULL
                );
   }
+
+  NclFree(w);
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -833,7 +835,6 @@ NhlErrorTypes svdstd_W( void )
   if((void*)dx != x) NclFree(dx);
   if((void*)dy != y) NclFree(dy);
 
-  NclFree(w);
 /*
  * If hom/het were originally float, then we need to coerce them from
  * double to float. Do this by creating a pointer of type float that 
@@ -1086,6 +1087,9 @@ NhlErrorTypes svdstd_W( void )
                NULL
                );
   }
+
+  NclFree(w);
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
