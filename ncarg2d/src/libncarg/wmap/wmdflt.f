@@ -1,5 +1,5 @@
 C
-C	$Id: wmdflt.f,v 1.1 1994-09-09 23:54:48 fred Exp $
+C	$Id: wmdflt.f,v 1.2 1994-09-23 17:13:46 fred Exp $
 C
       SUBROUTINE WMDFLT()
 C
@@ -41,6 +41,7 @@ C
       WBYT   =  0.00000
       WBBASE =  0.30000
       WBLSIZ =  0.17000
+      DLINWD =  2.00000
 C
       IWBBAS =   0
       IBGCTY =   0
@@ -54,6 +55,17 @@ C
       ICOLOR =   1
       NPTSBZ =  51
       MAXSYM = 200
+      ISUNC1 =   2
+      ISUNC2 =   3
+      ISUNC3 =   1
+      ISUNC4 =   1
+      ICLDC1 =   2
+      ICLDC2 =   1
+      ICLDC3 =   1
+      ILTNC1 =   2
+      ILTNC2 =   1
+      ILTNC3 =   1
+      NUMSYO =   0
 C
       DO 10 I=1,ISDIM
         ISTYPE(I) = 2

@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.2 1994-09-12 19:07:33 fred Exp $
+C	$Id: wmgeti.f,v 1.3 1994-09-23 17:13:51 fred Exp $
 C
       SUBROUTINE WMGETI (CNP,IVP)
 C
@@ -45,6 +45,10 @@ C
      +    CNP(1:3).EQ.'Mxs') THEN
         IVP = MAXSYM
         GO TO 110
+      ELSE IF (CNP(1:3).EQ.'NMS' .OR. CNP(1:3).EQ.'nms' .OR. 
+     +    CNP(1:3).EQ.'Nms') THEN
+        IVP = NUMSYO
+        GO TO 110
       ELSE IF (CNP(1:3).EQ.'PAI' .OR. CNP(1:3).EQ.'pai' .OR. 
      +    CNP(1:3).EQ.'Pai') THEN
         IVP = IARNDX
@@ -84,6 +88,46 @@ C
       ELSE IF (CNP(1:3).EQ.'WBF' .OR. CNP(1:3).EQ.'wbf' .OR. 
      +    CNP(1:3).EQ.'Wbf') THEN
         IVP = IALOFT
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SC1' .OR. CNP(1:3).EQ.'sc1' .OR. 
+     +    CNP(1:3).EQ.'Sc1') THEN
+        IVP = ISUNC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SC2' .OR. CNP(1:3).EQ.'sc2' .OR. 
+     +    CNP(1:3).EQ.'Sc2') THEN
+        IVP = ISUNC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SC3' .OR. CNP(1:3).EQ.'sc3' .OR. 
+     +    CNP(1:3).EQ.'Sc3') THEN
+        IVP = ISUNC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SC4' .OR. CNP(1:3).EQ.'sc4' .OR. 
+     +    CNP(1:3).EQ.'Sc4') THEN
+        IVP = ISUNC4
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR. 
+     +    CNP(1:3).EQ.'cc1') THEN
+        IVP = ISUNC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR. 
+     +    CNP(1:3).EQ.'cc2') THEN
+        IVP = ICLDC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'CC3' .OR. CNP(1:3).EQ.'cc3' .OR. 
+     +    CNP(1:3).EQ.'cc3') THEN
+        IVP = ICLDC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LC1' .OR. CNP(1:3).EQ.'lc1' .OR. 
+     +    CNP(1:3).EQ.'lc1') THEN
+        IVP = ILTNC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LC2' .OR. CNP(1:3).EQ.'lc2' .OR. 
+     +    CNP(1:3).EQ.'lc2') THEN
+        IVP = ILTNC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LC3' .OR. CNP(1:3).EQ.'lc3' .OR. 
+     +    CNP(1:3).EQ.'lc3') THEN
+        IVP = ILTNC3
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '

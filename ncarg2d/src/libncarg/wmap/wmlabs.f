@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabs.f,v 1.1 1994-09-09 23:55:11 fred Exp $
+C	$Id: wmlabs.f,v 1.2 1994-09-23 17:13:56 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -11,6 +11,10 @@ C         'HI'
 C         'LOW'
 C         'ARROW'
 C         'DOT'
+C         'CLOUD'
+C         'RAIN'
+C         'SUN'
+C         'THUNDERSTORM'
 C
       CHARACTER*(*) SYMTYP
 C
@@ -48,7 +52,7 @@ C
 C
       SIZEL = WSIZES
 C
-      IF (SYMTYP(1:1) .EQ. 'H') THEN
+      IF (SYMTYP(1:1).EQ.'H' .OR. SYMTYP(1:1).EQ.'h') THEN
 C
 C  Draw a high symbol.
 C
@@ -68,7 +72,7 @@ C
         CALL PLCHHQ(XNDC,YNDC,'H',SIZEL,0.,0.)
         CALL PCSETI('CC - character color',ICLRO)
         CALL PCSETI('FN - font name',IFNTO)
-      ELSE IF (SYMTYP(1:1) .EQ. 'L') THEN
+      ELSE IF (SYMTYP(1:1).EQ.'L' .OR. SYMTYP(1:1).EQ.'l') THEN
 C
 C  Draw a low symbol.
 C
@@ -86,7 +90,7 @@ C
         CALL PLCHHQ (XNDC,YNDC,':F22:L',SIZEL,0.,0.)
         CALL PCSETI('CC - CHARACTER COLOR',ICLRO)
         CALL PCSETI('FN - font name',IFNTO)
-      ELSE IF (SYMTYP(1:1) .EQ. 'A') THEN
+      ELSE IF (SYMTYP(1:1).EQ.'A' .OR. SYMTYP(1:1).EQ.'a') THEN
 C
 C  Draw an arrow of length ARWSIZ in direction ARWDIR with the
 C  point of the arrow at (X,Y).
@@ -126,7 +130,7 @@ C
 C  Draw the arrow.
 C
         CALL GFA(IADIM,ARROWX,ARROWY)
-      ELSE IF (SYMTYP(1:1) .EQ. 'D') THEN
+      ELSE IF (SYMTYP(1:1).EQ.'D' .OR. SYMTYP(1:1).EQ.'d') THEN
 C
 C  Draw a dot to mark a city location.
 C
@@ -136,6 +140,158 @@ C
         CALL NGDOTS(XNDC,YNDC,1,3.5*RADIUS,0)
         CALL NGDOTS(XNDC,YNDC,1,2.0*RADIUS,IDOTCO)
         CALL NGSETI('CT',ICTYPO)
+      ELSE IF (SYMTYP(1:1).EQ.'C' .OR. SYMTYP(1:1).EQ.'R' .OR.
+     +         SYMTYP(1:1).EQ.'c' .OR. SYMTYP(1:1).EQ.'r') THEN
+C
+C  Draw a cloud as a daily weather icon.
+C
+        CALL PCGETI('CC - character color',ICC)
+        IF (ICLDC3 .GE. 0) THEN
+C
+          CALL PCGETI('SF - shadow flag',ISF)
+          CALL PCGETI('SC - shadow color',ISC)
+          CALL PCGETR('SX - shadow X offset',OSX)
+          CALL PCGETR('SY - shadow Y offset',OSY)
+C
+          CALL PCSETI('SF - shadow flag',1)
+          CALL PCSETI('SC - shadow color',ICLDC3)
+          CALL PCSETI('CC - character color',ICLDC3)
+          CALL PCSETR('SX - shadow X offset', -.016)
+          CALL PCSETR('SY - shadow Y offset', -.02)
+C
+          CALL PLCHHQ(XNDC,YNDC,':F37:k',10.*SIZEL,0.,0.)
+C
+          CALL PCSETI('SF - shadow flag',ISF)
+          CALL PCSETI('SC - shadow color',ISC)
+          CALL PCSETR('SX - shadow X offset',OSX)
+          CALL PCSETR('SY - shadow Y offset',OSY)
+        ENDIF
+        IF (ICLDC1 .GE. 0) THEN
+          CALL PCSETI('CC',ICLDC1)
+          CALL PLCHHQ(XNDC,YNDC,':F37:k',10.*SIZEL,0.,0.)
+        ENDIF
+        IF (ICLDC2 .GE. 0) THEN
+          CALL PCSETI('CC',ICLDC2)
+          CALL PLCHHQ(XNDC,YNDC,':F137:k',10.*SIZEL,0.,0.)
+        ENDIF
+        IF (SYMTYP(1:1).EQ.'R' .OR. SYMTYP(1:1).EQ.'r') THEN
+          CALL PCSETI('CC - character color',ICOLOR)
+          CALL PLCHHQ(XNDC,YNDC,':F37:o',10.*SIZEL,0.,0.)
+        ENDIF
+        CALL PCSETI('CC - character color',ICC)
+      ELSE IF (SYMTYP(1:1).EQ.'S' .OR. SYMTYP(1:1).EQ.'s') THEN
+C
+C  Draw a sun as a daily weather icon.
+C
+        CALL PCGETI('CC - character color',ICC)
+        IF (ISUNC4 .GE. 0) THEN
+C
+          CALL PCGETI('SF - shadow flag',ISF)
+          CALL PCGETI('SC - shadow color',ISC)
+          CALL PCGETR('SX - shadow X offset',OSX)
+          CALL PCGETR('SY - shadow Y offset',OSY)
+C
+          CALL PCSETI('SF - shadow flag',1)
+          CALL PCSETI('SC - shadow color',ISUNC4)
+          CALL PCSETI('CC - character color',ISUNC4)
+          CALL PCSETR('SX - shadow X offset', -.016)
+          CALL PCSETR('SY - shadow Y offset', -.02)
+C
+          CALL PLCHHQ(XNDC,YNDC,':F37:l',10.*SIZEL,0.,0.)
+C
+          CALL PCSETI('SF - shadow flag',ISF)
+          CALL PCSETI('SC - shadow color',ISC)
+          CALL PCSETR('SX - shadow X offset',OSX)
+          CALL PCSETR('SY - shadow Y offset',OSY)
+        ENDIF
+        IF (ISUNC2 .GE. 0) THEN
+          CALL PCSETI('CC',ISUNC2)
+          CALL PLCHHQ(XNDC,YNDC,':F37:l',10.*SIZEL,0.,0.)
+          IF (ISUNC3 .GE. 0) THEN
+            CALL PCSETI('CC',ISUNC3)
+            CALL PLCHHQ(XNDC,YNDC,':F137:l',10.*SIZEL,0.,0.)
+          ENDIF
+        ENDIF
+        IF (ISUNC1 .GE. 0) THEN
+          CALL PCSETI('CC',ISUNC1)
+          CALL PLCHHQ(XNDC,YNDC,':F37:m',10.*SIZEL,0.,0.)
+          IF (ISUNC3 .GE. 0) THEN
+            CALL PCSETI('CC',ISUNC3)
+            CALL PLCHHQ(XNDC,YNDC,':F137:m',10.*SIZEL,0.,0.)
+          ENDIF
+        ENDIF
+        CALL PCSETI('CC - character color',ICC)
+      ELSE IF (SYMTYP(1:1).EQ.'T' .OR. SYMTYP(1:1).EQ.'t') THEN
+C
+C  Draw a thunderstorm symbol as a daily weather icon.
+C
+        CALL PCGETI('CC - character color',ICC)
+        CALL PCSETI('CC - character color',ICOLOR)
+        CALL PLCHHQ(XNDC,YNDC,':F37:o',10.*SIZEL,0.,0.)
+C
+        OXNDC = XNDC+0.019*50.*SIZEL
+        OYNDC = YNDC-0.06*50.*SIZEL
+        TSIZ  = 6.*SIZEL
+        CALL PCSETR('ZX',.8)
+        CALL PCSETR('ZY',1.3)
+        IF (ILTNC3 .GE. 0) THEN
+          CALL PCGETI('SF - shadow flag',ISF)
+          CALL PCGETI('SC - shadow color',ISC)
+          CALL PCGETR('SX - shadow X offset',OSX)
+          CALL PCGETR('SY - shadow Y offset',OSY)
+C
+          CALL PCSETI('SF - shadow flag',1)
+          CALL PCSETI('SC - shadow color',ILTNC3)
+          CALL PCSETI('CC - character color',ILTNC3)
+          CALL PCSETR('SX - shadow X offset', -.015)
+          CALL PCSETR('SY - shadow Y offset', -.04)
+C
+          CALL PLCHHQ(OXNDC,OYNDC,':F37:f',TSIZ,0.,0.)
+C
+          CALL PCSETI('SF - shadow flag',ISF)
+          CALL PCSETI('SC - shadow color',ISC)
+          CALL PCSETR('SX - shadow X offset',OSX)
+          CALL PCSETR('SY - shadow Y offset',OSY)
+        ENDIF
+        IF (ILTNC1 .GE. 0) THEN
+          CALL PCSETI('CC',ILTNC1)
+          CALL PLCHHQ(OXNDC,OYNDC,':F37:f',TSIZ,0.,0.)
+        ENDIF
+        IF (ILTNC2 .GE. 0) THEN
+          CALL PCSETI('CC',ILTNC2)
+          CALL PLCHHQ(OXNDC,OYNDC,':F137:f',TSIZ,0.,0.)
+        ENDIF
+        CALL PCSETR('ZX',1.)
+        CALL PCSETR('ZY',1.)
+C
+        IF (ICLDC3 .GE. 0) THEN
+          CALL PCGETI('SF - shadow flag',ISF)
+          CALL PCGETI('SC - shadow color',ISC)
+          CALL PCGETR('SX - shadow X offset',OSX)
+          CALL PCGETR('SY - shadow Y offset',OSY)
+C
+          CALL PCSETI('SF - shadow flag',1)
+          CALL PCSETI('SC - shadow color',ICLDC3)
+          CALL PCSETI('CC - character color',ICLDC3)
+          CALL PCSETR('SX - shadow X offset', -.016)
+          CALL PCSETR('SY - shadow Y offset', -.02)
+C
+          CALL PLCHHQ(XNDC,YNDC,':F37:k',10.*SIZEL,0.,0.)
+C
+          CALL PCSETI('SF - shadow flag',ISF)
+          CALL PCSETI('SC - shadow color',ISC)
+          CALL PCSETR('SX - shadow X offset',OSX)
+          CALL PCSETR('SY - shadow Y offset',OSY)
+        ENDIF
+        IF (ICLDC1 .GE. 0) THEN
+          CALL PCSETI('CC',ICLDC1)
+          CALL PLCHHQ(XNDC,YNDC,':F37:k',10.*SIZEL,0.,0.)
+        ENDIF
+        IF (ICLDC2 .GE. 0) THEN
+          CALL PCSETI('CC',ICLDC2)
+          CALL PLCHHQ(XNDC,YNDC,':F137:k',10.*SIZEL,0.,0.)
+        ENDIF
+        CALL PCSETI('CC - character color',ICC)
       ENDIF
 C
 C  Restore original attrributes.

@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.1 1994-09-09 23:54:53 fred Exp $
+C	$Id: wmdrft.f,v 1.2 1994-09-23 17:13:48 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -41,7 +41,7 @@ C
       CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,ISLFLG)
       DO 10 I=1,NPTS
         T = REAL(I-1)/REAL(NPTS-1)
-        IF (I.EQ.1) THEN
+        IF (I .EQ. 1) THEN
           CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,1,
      +                SLOPEL)
         ELSE IF (I .EQ. NPTS) THEN
@@ -103,21 +103,29 @@ C
         CALL WMLGPL(NPTS,XOUT,YOUT)
       ENDIF
 C
+C  Done if squall, tropical front.
+C
+      IF (IFRONT.EQ.5 .OR. IFRONT.EQ.6) GO TO 60
+C
 C  Calculate the number of symbols along the curve.
 C
       DSTBTW = BETDST
       CRVLEN = ALEN(NPTS)
-      NUMSYM = 1
-      DO 40 I=1,MAXSYM
-        IF (REAL(I+1)*SYMWID+BEGDST+ENDDST+REAL(I)*DSTBTW .LE.
-     +      CRVLEN) THEN
-          NUMSYM = I+1
-          IF (NUMSYM .EQ. MAXSYM) GO TO 50
-          GO TO 40
-        ELSE
-          GO TO 50
-        ENDIF
-   40 CONTINUE
+      IF (NUMSYO .GT. 0) THEN
+        NUMSYM = MIN(NUMSYO,MAXSYM)
+      ELSE
+        NUMSYM = 1
+        DO 40 I=1,MAXSYM
+          IF (REAL(I+1)*SYMWID+BEGDST+ENDDST+REAL(I)*DSTBTW .LE.
+     +        CRVLEN) THEN
+            NUMSYM = I+1
+            IF (NUMSYM .EQ. MAXSYM) GO TO 50
+            GO TO 40
+          ELSE
+            GO TO 50
+          ENDIF
+   40   CONTINUE
+      ENDIF
    50 CONTINUE
 C
 C  Calculate distance between symbols for even spacing.
@@ -151,6 +159,8 @@ C
 C  Draw the symbols along the front.
 C
       CALL WMDRSM(NUMSYM,DSTBTW,NPTS,XOUT,YOUT,ALEN,XS,YS)
+C
+   60 CONTINUE
 C
 C  Restore the original normalization transformation, interior style,
 C  linewidth, fill color, line color.

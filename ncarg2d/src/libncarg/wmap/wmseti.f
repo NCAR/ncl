@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.1 1994-09-09 23:55:35 fred Exp $
+C	$Id: wmseti.f,v 1.2 1994-09-23 17:14:01 fred Exp $
 C
       SUBROUTINE WMSETI (CNP,IVP)
 C
@@ -59,6 +59,13 @@ C
           GO TO 120
         ENDIF
         MAXSYM = IVP
+        GO TO 120
+C
+C  NMS - force a certain number of symbols on a front line (if > 0).
+C
+      ELSE IF (CNP(1:3).EQ.'NMS' .OR. CNP(1:3).EQ.'nms' .OR.
+     +    CNP(1:3).EQ.'Nms') THEN
+        NUMSYO = IVP
         GO TO 120
 C
 C  PAI - current parameter array index.
@@ -175,6 +182,76 @@ C
       ELSE IF (CNP(1:3).EQ.'WBF' .OR. CNP(1:3).EQ.'wbf' .OR.
      +    CNP(1:3).EQ.'Wbf') THEN
         IWBBAS = IVP
+        GO TO 120
+C
+C  SC1 - color index for center of sun symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'SC1' .OR. CNP(1:3).EQ.'sc1' .OR.
+     +    CNP(1:3).EQ.'Sc1') THEN
+        ISUNC1 = IVP
+        GO TO 120
+C
+C  SC2 - color index for center of sun symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'SC2' .OR. CNP(1:3).EQ.'sc2' .OR.
+     +    CNP(1:3).EQ.'Sc2') THEN
+        ISUNC2 = IVP
+        GO TO 120
+C
+C  SC3 - color index for center of sun symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'SC3' .OR. CNP(1:3).EQ.'sc3' .OR.
+     +    CNP(1:3).EQ.'Sc3') THEN
+        ISUNC3 = IVP
+        GO TO 120
+C
+C  SC4 - color index for center of sun symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'SC4' .OR. CNP(1:3).EQ.'sc4' .OR.
+     +    CNP(1:3).EQ.'Sc4') THEN
+        ISUNC4 = IVP
+        GO TO 120
+C
+C  CC1 - color index for cloud symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR.
+     +    CNP(1:3).EQ.'cc1') THEN
+        ICLDC1 = IVP
+        GO TO 120
+C
+C  CC2 - color index for cloud symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR.
+     +    CNP(1:3).EQ.'cc2') THEN
+        ICLDC2 = IVP
+        GO TO 120
+C
+C  CC3 - color index for cloud symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'CC3' .OR. CNP(1:3).EQ.'cc3' .OR.
+     +    CNP(1:3).EQ.'cc3') THEN
+        ICLDC3 = IVP
+        GO TO 120
+C
+C  LC1 - color index for lightening bolt symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'LC1' .OR. CNP(1:3).EQ.'lc1' .OR.
+     +    CNP(1:3).EQ.'lc1') THEN
+        ILTNC1 = IVP
+        GO TO 120
+C
+C  LC2 - color index for lightening bolt symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'LC2' .OR. CNP(1:3).EQ.'lc2' .OR.
+     +    CNP(1:3).EQ.'lc2') THEN
+        ILTNC2 = IVP
+        GO TO 120
+C
+C  LC3 - color index for lightening bolt symbol.
+C
+      ELSE IF (CNP(1:3).EQ.'LC3' .OR. CNP(1:3).EQ.'lc3' .OR.
+     +    CNP(1:3).EQ.'lc3') THEN
+        ILTNC3 = IVP
         GO TO 120
       ELSE
         CTM(1:36) = 'WMSETI - Parameter name not known - '

@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetc.f,v 1.1 1994-09-09 23:55:33 fred Exp $
+C	$Id: wmsetc.f,v 1.2 1994-09-23 17:13:59 fred Exp $
 C
       SUBROUTINE WMSETC (CNP,CVP)
 C
@@ -71,6 +71,19 @@ C
               ISTYPE(I) = 1
             ENDIF
    60     CONTINUE
+        ELSE IF (CC.EQ.'SQU' .OR. CC.EQ.'squ' .OR. CC.EQ.'Squ') THEN
+          IFRONT = 5
+        ELSE IF (CC.EQ.'TRO' .OR. CC.EQ.'tro' .OR. CC.EQ.'Tro') THEN
+          IFRONT = 6
+        ELSE IF (CC.EQ.'CON' .OR. CC.EQ.'con' .OR. CC.EQ.'Con') THEN
+          IFRONT = 7
+          DO 65 I=1,MAXSYM
+            IF (MOD(I,2) .EQ. 1) THEN
+              ISTYPE(I) = 3
+            ELSE
+              ISTYPE(I) = -3
+            ENDIF
+   65     CONTINUE
         ELSE
           CTM(1:42) = 'WMSETC - Parameter value out of range for '
           CTM(43:45) = CNP(1:3)

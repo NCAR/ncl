@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrsm.f,v 1.1 1994-09-09 23:54:56 fred Exp $
+C	$Id: wmdrsm.f,v 1.2 1994-09-23 17:13:49 fred Exp $
 C
       SUBROUTINE WMDRSM(NUMSYM,DSTBTW,IPTS,XIN,YIN,ARCLEN,XT,YT)
 C
@@ -34,7 +34,7 @@ C  Handle the case of drawing a single symbol.
 C
       SYMWDH = 0.5*SYMWID
       WDTHSQ = SYMWID*SYMWID 
-      IF (NUMSYM.EQ.1 .AND. 
+      IF (NUMSYM.EQ.1 .AND. IFRONT.NE.7 .AND.
      +             ARCLEN(IPTS).LT.BEGDST+SYMWID+ENDDST) THEN
 C
 C  Draw a single symbol in the center of the curve in the direction
@@ -173,7 +173,7 @@ C
 C
 C  Get the points making up the symbol.
 C
-        IF (IABS(ISTYPE(I)) .EQ. 1) THEN
+        IF (IABS(ISTYPE(1)).EQ.1 .OR. IABS(ISTYPE(1)).EQ.3) THEN
           NOUT = 3
         ELSE
           NOUT = NPTSBZ
@@ -189,6 +189,11 @@ C
         NF = NOUT+NDXR-NDXL+1
         IF (IALOFT .NE. 0) THEN
           CALL WMLGPL(NF,XT,YT)
+        ELSE IF(IFRONT.EQ.7) THEN
+          CALL GQLWSC(IER,OSCL)
+          CALL GSLWSC(DLINWD)
+          CALL GPL(2,XT,YT)
+          CALL GSLWSC(OSCL)
         ELSE
           CALL GFA(NF,XT,YT)
         ENDIF

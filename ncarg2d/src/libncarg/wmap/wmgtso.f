@@ -1,5 +1,5 @@
 C
-C	$Id: wmgtso.f,v 1.1 1994-09-09 23:55:06 fred Exp $
+C	$Id: wmgtso.f,v 1.2 1994-09-23 17:13:54 fred Exp $
 C
       SUBROUTINE WMGTSO(X1,Y1,X2,Y2,NOUT,XIN,YIN,IFLG)
 C
@@ -70,7 +70,7 @@ C
         WYTRAN(I) = YM+WYTRAN(I)
    40 CONTINUE
 C
-      IF (IABS(IFLG) .EQ. 1) THEN
+      IF (IABS(IFLG).EQ.1 .OR. IABS(IFLG).EQ.3) THEN
 C
 C  Return cold front symbol.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.1 1994-09-09 23:55:38 fred Exp $
+C	$Id: wmsetr.f,v 1.2 1994-09-23 17:14:02 fred Exp $
 C
       SUBROUTINE WMSETR (CNP,RVP)
 C
@@ -50,6 +50,14 @@ C
      +         CNP(1:3).EQ.'Lin') THEN
         RLINWD = MAX(RVP,0.05)
         CALL GSLWSC(RLINWD)
+        GO TO 120
+C
+C  DWD - specify line widths as a fraction of the screen height for
+C        fronts with dashed lines.
+C
+      ELSE IF (CNP(1:3).EQ.'DWD' .OR. CNP(1:3).EQ.'dwd' .OR.
+     +         CNP(1:3).EQ.'Dwd') THEN
+        DLINWD = MAX(RVP,0.05)
         GO TO 120
 C
 C  LWD - linewidth to use when using the internal routine WMDRFL

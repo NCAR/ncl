@@ -1,5 +1,5 @@
 C
-C	$Id: wmgetr.f,v 1.1 1994-09-09 23:55:02 fred Exp $
+C	$Id: wmgetr.f,v 1.2 1994-09-23 17:13:53 fred Exp $
 C
       SUBROUTINE WMGETR (CNP,RVP)
 C
@@ -59,6 +59,10 @@ C
       ELSE IF (CNP(1:3).EQ.'LIN' .OR. CNP(1:3).EQ.'lin' .OR. 
      +    CNP(1:3).EQ.'Lin') THEN
         RVP = RLINWD
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'DWD' .OR. CNP(1:3).EQ.'dwd' .OR. 
+     +    CNP(1:3).EQ.'Dwd') THEN
+        RVP = DLINWD
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'LWD' .OR. CNP(1:3).EQ.'lwd' .OR. 
      +    CNP(1:3).EQ.'Lwd') THEN

@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.2 1994-09-12 17:05:04 fred Exp $
+C	$Id: wmblda.f,v 1.3 1994-09-23 17:13:42 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -18,6 +18,10 @@ C
 C  Maximum number of symbols allowed on a front line.
 C
       DATA MAXSYM/200/
+C
+C  User override for number of symbols on a front line.
+C
+      DATA NUMSYO/0/
 C
 C  Front type (1=cold, 2=warm, 3=stationary, 4=occluded.
 C
@@ -43,9 +47,10 @@ C  Flag for aloft or surface (0=surface; non-zero=aloft).
 C
       DATA IALOFT/0/
 C
-C  Line widths when using the GKS linewidth scale factor.
+C  Line widths for fronts when using the GKS linewidth scale factor;
+C  line widths for squalls, tropical fronts, and convergence.
 C
-      DATA RLINWD/8.0/
+      DATA RLINWD,DLINWD/8.0,2.0/
 C
 C  Flags method of implementing linewidths (0=GKS linewidth; 1=internal)
 C
@@ -144,5 +149,12 @@ C
 C  Extent of barb ticks.
 C
       DATA WBXL,WBXR,WBYB,WBYT/0.,0.,0.,0./
+C
+C  Color indices for sun, cloud, and lightening bolt symbols.
+C
+      DATA ISUNC1, ISUNC2, ISUNC3, ISUNC4, ICLDC1, ICLDC2, ICLDC3, 
+     +     ILTNC1, ILTNC2, ILTNC3
+     +   /      2,      3,      1,      1,      2,      1,      1, 
+     +          2,      1,      1                                 /
 C
       END

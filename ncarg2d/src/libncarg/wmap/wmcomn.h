@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.2 1994-09-12 19:07:31 fred Exp $
+C	$Id: wmcomn.h,v 1.3 1994-09-23 17:13:44 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -21,10 +21,11 @@ C               symbol is drawn.
 C    BETDST  -  Distance to leave along the curve between symbols.
 C    MAXSYM  -  Maximum number of symbols allowed along a front line.
 C    ISTYPE  -  An integer array indicating the sequence of symbol
-C               types to be drawn along a front line (0 = cold; 
-C               1 = warm).
+C               types to be drawn along a front line (1 = warm; 2 = cold; 
+C               3 = convergence).
 C    IARNDX  -  Current array index.
-C    IFRONT  -  Type of front.
+C    IFRONT  -  Type of front (1=warm, 2=cold, 3=occluded, 4=stationary,
+C               5=squall, 6=tropical, 7=convergence).
 C    CRVLEN  -  Length of current curve.
 C    ISLFLG  -  Flag for usage of endline slopes in interpolator.
 C    SLOPE1  -  Supplied slope for beginning of line.
@@ -33,6 +34,7 @@ C    SLOPEL  -  Slope calculated at beginning of spline curve.
 C    SLOPER  -  Slope calculated at end of spline curve.
 C    IALOFT  -  Flag to indicate surface/aloft.
 C    RLINWD  -  Line width scale factor.
+C    DLINWD  -  Line width scale factor for fronts with dashed lines.
 C    IWDTYP  -  Controls how line widths are implemented (0=use GKS
 C               linewidth scale factor; 1=use internal subroutines)
 C    SLINWD  -  Width of line if using the precise width linewidth 
@@ -74,6 +76,17 @@ C               of the shaft length.
 C    IWBBAS  -  Flag indicating whether space should be left at the base
 C               of a wind barb (=1) or not (=0, the default).
 C    WBLSIZ  -  Size of text labels in station model display.
+C    ISUNC1  -  Color index for center of sun symbol.
+C    ISUNC2  -  Color index for points of sun symbol.
+C    ISUNC3  -  Color index for outline of cun symbol.
+C    ISUNC4  -  Color index for color of sun symbol offset.
+C    ICLDC1  -  Color index for cloud symbol.
+C    ICLDC2  -  Color index for outline.
+C    ICLDC3  -  Color index for cloud symbol offset.
+C    ILTNC1  -  Color index for lightening bolt symbol.
+C    ILTNC2  -  Color index for lightening bolt outline.
+C    ILTNC3  -  Color index for lightening bolt offset.
+C    NUMSYO  -  Forces this number of symbols on a front line if > 0.
 C
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,
@@ -82,7 +95,9 @@ C
      +                ARWSIZ, ARWLEN, ARWDIR, CDOTSZ, CTYMRG, TMPMRG,
      +                IBGCTY, IFGTRG, IDOTCO, WBSHFT, WBFTIC, WBDIST,
      +                WBCLMR, WBBANG, WBXL  , WBXR  , WBYB  , WBYT  ,
-     +                WBBASE, IWBBAS, WBLSIZ,
+     +                WBBASE, IWBBAS, WBLSIZ, ISUNC1, ISUNC2, ISUNC3,
+     +                ISUNC4, ICLDC1, ICLDC2, ICLDC3, ILTNC1, ILTNC2,
+     +                ILTNC3, DLINWD, NUMSYO,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.
