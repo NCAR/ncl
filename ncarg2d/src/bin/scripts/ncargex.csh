@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.126 2002-02-22 05:15:55 haley Exp $
+#   $Id: ncargex.csh,v 1.127 2002-03-21 23:59:59 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1386,7 +1386,6 @@ switch($name)
     case nnex09:
     case nnex10:
     case mpex12:
-    case mpex13:
       unset tmp_ws_type
       set tmp_msg = "   "
       echo ""
