@@ -14,6 +14,7 @@
 #include "NclHLUObj.h"
 #include "NclBuiltInSupport.h"
 #include "Machine.h"
+#include "HLUSupport.h"
 
 NhlErrorTypes _NclINhlIsApp
 #if	NhlNeedProto
@@ -584,7 +585,7 @@ NhlErrorTypes _NclIChangeWorkstation
 	for( i = 0; i < j; i++) {
 		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsView(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
 			if(tmp_hlu_ptr[i]->hlu.parent_hluobj_id != -1) {
-				_NclDelHLUChild(_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),tmp_hlu_ptr[i]->obj.id);
+				_NclDelHLUChild((NclHLUObj)_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),tmp_hlu_ptr[i]->obj.id);
 			}
 			_NclAddHLUChild(wk_ptr,tmp_hlu_ptr[i]->obj.id);
 			if(NhlChangeWorkstation(tmp_hlu_ptr[i]->hlu.hlu_id,wk_ptr->hlu.hlu_id) < NhlNOERROR) {
@@ -3133,5 +3134,222 @@ NhlErrorTypes _NclINhlAppGetDefaultParentId
 		0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
 		&len_dims,TEMPORARY,NULL);
 	_NclPlaceReturn(data_out);
+	return(ret);
+}
+NhlErrorTypes _NclINhlGetParentWorkstation
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        int nargs = 1;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+        NclHLUObj tmp_hlu_ptr;
+	NclHLUObj tmp_hlu;
+        NclScalar missing;
+        obj *ncl_hlu_obj_ids;
+        obj *outpt;
+	int tmp_id;
+	NclHLULookUpTable* tmp_lo;
+	NhlErrorTypes ret = NhlNOERROR;
+
+
+        ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+                        0,
+                        nargs,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+ 
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	outpt = NclMalloc(sizeof(obj)*total);
+        if(has_missing) {
+                for( i = 0; i < total; i++) {
+                        if(ncl_hlu_obj_ids[i] != missing.objval) {
+                                tmp_hlu_ptr = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(tmp_hlu_ptr != NULL) {
+					tmp_id = NhlGetParentWorkstation(tmp_hlu_ptr->hlu.hlu_id);
+					if(tmp_id < 1) {	
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentWorkstation : Object does not have a parent workstation, it must not be drawable");
+						ret = NhlWARNING;
+						outpt[i] = missing.objval;
+					} else {
+						tmp_lo = _NclGetHLURefInfo(tmp_id);
+						if(tmp_lo != NULL ) {
+							outpt[i] = tmp_lo->ncl_hlu_id;
+						} else {
+							tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp_id,-1,_NhlClass(_NhlGetLayer(tmp_id)));
+							if(tmp_hlu != NULL) {	
+								outpt[i] = tmp_hlu->obj.id;
+							} else {
+								outpt[i] = missing.objval;
+							}
+						}
+					}
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentWorkstation : Invalid plot passed in can't get objects parent workstation");
+					ret = NhlWARNING;
+					outpt[i] = missing.objval;
+				}
+                        } else {
+                                tmp_hlu_ptr = NULL;
+				outpt[i] = missing.objval;
+                        }
+                }
+        } else {
+                for( i = 0; i < total; i++) {
+                        tmp_hlu_ptr = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			if(tmp_hlu_ptr != NULL) {
+				tmp_id = NhlGetParentWorkstation(tmp_hlu_ptr->hlu.hlu_id);
+				if(tmp_id < 1) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentWorkstation : Object does not have a parent workstation, it must not be drawable");
+					ret = NhlWARNING;
+					outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+				} else {
+					tmp_lo = _NclGetHLURefInfo(tmp_id);
+					if(tmp_lo != NULL ) {
+						outpt[i] = tmp_lo->ncl_hlu_id;
+					} else {
+						tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp_id,-1,_NhlClass(_NhlGetLayer(tmp_id)));
+						if(tmp_hlu != NULL) {	
+							outpt[i] = tmp_hlu->obj.id;
+						} else {
+							outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+						}
+					}
+				}
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentWorkstation : Invalid plot passed in can't get objects parent workstation");
+				outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+				ret = NhlWARNING;
+			}
+                }
+        }
+	NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                has_missing? &missing : &(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+		NCL_obj,
+                0
+        );
+	return(ret);
+}
+
+NhlErrorTypes _NclINhlGetParentId
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        int nargs = 1;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+        NclHLUObj tmp_hlu_ptr;
+        NclScalar missing;
+        obj *ncl_hlu_obj_ids;
+        obj *outpt;
+	int tmp_id;
+	NclHLULookUpTable* tmp_lo;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclHLUObj tmp_hlu;
+
+
+        ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+                        0,
+                        nargs,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+ 
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	outpt = NclMalloc(sizeof(obj)*total);
+        if(has_missing) {
+                for( i = 0; i < total; i++) {
+                        if(ncl_hlu_obj_ids[i] != missing.objval) {
+                                tmp_hlu_ptr = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(tmp_hlu_ptr != NULL) {
+					tmp_id = NhlGetParentId(tmp_hlu_ptr->hlu.hlu_id);
+					if(tmp_id < 1) {	
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentId: Object does not have a parent");
+						ret = NhlWARNING;
+						outpt[i] = missing.objval;
+					} else {
+						tmp_lo = _NclGetHLURefInfo(tmp_id);
+						if(tmp_lo != NULL ) {
+							outpt[i] = tmp_lo->ncl_hlu_id;
+						} else {
+							tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp_id,-1,_NhlClass(_NhlGetLayer(tmp_id)));
+							if(tmp_hlu != NULL) {	
+								outpt[i] = tmp_hlu->obj.id;
+							} else {
+								outpt[i] = missing.objval;
+							}
+						}
+					}
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentId: Invalid plot passed in can't get objects parent");
+					ret = NhlWARNING;
+					outpt[i] = missing.objval;
+				}
+                        } else {
+                                tmp_hlu_ptr = NULL;
+				outpt[i] = missing.objval;
+                        }
+                }
+        } else {
+                for( i = 0; i < total; i++) {
+                        tmp_hlu_ptr = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			if(tmp_hlu_ptr != NULL) {
+				tmp_id = NhlGetParentId(tmp_hlu_ptr->hlu.hlu_id);
+				if(tmp_id < 1) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentId: Object does not have a parent");
+					ret = NhlWARNING;
+					outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+				} else {
+					tmp_lo = _NclGetHLURefInfo(tmp_id);
+					if(tmp_lo != NULL ) {
+						outpt[i] = tmp_lo->ncl_hlu_id;
+					} else {
+						tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp_id,-1,_NhlClass(_NhlGetLayer(tmp_id)));
+						if(tmp_hlu != NULL) {	
+							outpt[i] = tmp_hlu->obj.id;
+						} else {
+							outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+						}
+					}
+				}
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetParentId: Invalid plot passed in can't get objects parent");
+				outpt[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+				ret = NhlWARNING;
+			}
+                }
+        }
+	NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                has_missing? &missing : &(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+		NCL_obj,
+                0
+        );
 	return(ret);
 }

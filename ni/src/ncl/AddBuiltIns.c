@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.38 1997-12-18 01:12:01 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.39 1998-01-28 00:38:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,16 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _NclINhlGetParentId(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlGetParentWorkstation(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes sprintf_W(
 #if NhlNeedProto
 void
@@ -1374,6 +1384,16 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     NclRegisterFunc(sprintf_W,args,"sprintf",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    NclRegisterFunc(_NclINhlGetParentWorkstation,args,"NhlGetParentWorkstation",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    NclRegisterFunc(_NclINhlGetParentId,args,"NhlGetParentId",nargs);
 
 /*
 	nargs = 0;
