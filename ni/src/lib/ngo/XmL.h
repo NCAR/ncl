@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.h,v 1.2 1997-10-03 20:07:51 dbrown Exp $
+ *      $Id: XmL.h,v 1.3 1998-02-19 17:12:04 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -43,6 +43,10 @@ Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 
 #ifndef XmLH
 #define XmLH
+
+#ifdef Linux
+#define MOTIF20
+#endif
 
 #include <Xm/Xm.h>
 
