@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.166 2004-01-25 17:10:51 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.167 2004-03-10 02:01:13 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3268,13 +3268,14 @@ int asciinumeric
 	char buffer[256];
 	char *step;
 	int state = 1;
+	int predot = 0, postdot = 0, postexp = 0;
 	char cc;
 
 	step = buffer;
 	while(!feof(fp)&& (state != 9)) {
 		cc = fgetc(fp);
-		switch(state) {
-		case 0:
+		switch(state) { 
+		case 0: /* nothing found yet:  0 and 1 are the same */
 		case 1:
 			switch(cc) {
 			case '+':
@@ -3296,29 +3297,40 @@ int asciinumeric
 				}
 			}
 			break;
-		case 2:
+		case 2: /* initial +|- */
 			switch(cc) {
 			case '.':
 				*step++ = cc;
 				state = 5;
 				break;
-			case 'E' :
+#if 0
+/* 
+ * I dont think e|E is valid after an initial + or - with no digits
+ * intervening, anymore than it is valid as the initial character. 
+ * It does not produce a valid number when scanned by sscanf.
+ * dib
+ */
+
+ 			case 'E' :
 			case 'e' : 
 				state = 5;
 				ungetc(cc,fp);
 				break;
+#endif
 			default:
 				if(isdigit(cc)) {
 					*step++ = cc;
 					state = 3;
 				} else {
+					/* not a number */
 					ungetc(cc,fp);
 					step = buffer;
 					state = 0;
 				}
 			}
 			break;
-		case 3:
+		case 3: /* digit before decimal point */
+			predot = 1;
 			if(isdigit(cc)) {
 				*step++ = cc;
 			} else {
@@ -3334,16 +3346,18 @@ int asciinumeric
 					break;
 				default:
 /*
-* ACCEPT INTEGER
-*/
+ * ACCEPT INTEGER
+ */
 					ungetc(cc,fp);
 					state = 9;
 					*step++ = '\0';
 				}
 			}
 			break;
-		case 5:
+		case 5: 
+			/* decimal point, possibly virtual if e|E */
 			if(isdigit(cc)) {
+				postdot = 1;
 				*step++ = cc;
 			} else {
 				switch(cc) {
@@ -3353,17 +3367,25 @@ int asciinumeric
 					state = 6;
 					break;
 				default:
-/*
-* ACCEPT INTEGER
-*/
 					ungetc(cc,fp);
-					state = 9;
-					*step++ = '\0';
+					
+					if (! (predot || postdot)) {
+						/*
+						 * a single dot is not a number
+						 */
+						step = buffer;
+						state = 0;
+					}
+					else {
+						state = 9;
+						*step++ = '\0';
+					}
 				}
 			}
 			break;
-		case 6:
+		case 6: /* exponent e|E */
 			if(isdigit(cc)) {
+				postexp = 1;
 				*step++ = cc;
 				state = 8;
 			} else {
@@ -3375,35 +3397,49 @@ int asciinumeric
 					break;
 				default:
 					ungetc(cc,fp);
-					step = buffer;
-					state = 0;
+					if (! (predot || postdot)) {
+						/* not a number */
+						step = buffer;
+						state = 0;
+					}
+					else {
+						step--; /* get rid of e|E */
+						*step++ = '\0';
+						state = 9;
+					}
 				}
 			}
 			break;
-		case 7:
+		case 7: /* + or - after exponent */
 			if(isdigit(cc)) {
+				postexp = 1;
 				*step++=  cc;
                                 state = 8;
                         } else {
 				ungetc(cc,fp);
-				step = buffer;
-				state = 0;
-			}
-			break;
-		case 8:
-			if(isdigit(cc)) {
-                                *step++=  cc;
-                                state = 8;
-                        } else {
-/*
-* ACCEPT INTEGER
-*/
-					ungetc(cc,fp);
-					state = 9;
+				if (! (predot || postdot)) {
+					step = buffer;
+					state = 0;
+				}
+				else {
+					step -= 2; /* get rid of sign and e */
 					*step++ = '\0';
-			}
-			break;
-		}	
+					state = 9;
+				}
+				break;
+			case 8: 
+				/* at least 1 digit of an exponent */
+				if(isdigit(cc)) {
+					*step++=  cc;
+					state = 8;
+				} else {
+					ungetc(cc,fp);
+					*step++ = '\0';
+					state = 9;
+				}
+				break;
+			}	
+		}
 	}
 	if((step != buffer)&&(!feof(fp))) {
 		sscanf(buffer,format,retvalue);
