@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI4D,v 1.19 1994-04-08 18:37:14 boote Exp $
+ *      $Id: SGI4D,v 1.20 1996-09-04 21:57:12 haley Exp $
  */
 /************************************************************************
 *									*
@@ -20,13 +20,12 @@
  *	Description:	
  */
 #define UseCatDirs	YES
-#define	ExtraSysLibraries	-lbsd
 #define	XdrLibrary	-lsun
 #define	HdfDefines	-DIRIS4
 #define	StdDefines	-DSYSV
-#define CcOptions	-ansiposix
+#define CcOptions	-xansi -D_XOPEN_SOURCE
 #define	RanLib		$(AR) m
-#define CtoFLibraries	-lF77 -lI77 -lU77 -lisam -lm -lc
+#define CtoFLibraries	-lftn -lm -lc
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
