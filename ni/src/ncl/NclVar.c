@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.43 1997-03-12 19:19:02 ethan Exp $
+ *      $Id: NclVar.c,v 1.44 1997-03-19 18:25:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1171,6 +1171,7 @@ char *dim_name;
 					tmp_var = (NclVar)_NclGetObj(self->var.coord_vars[dim_num]);
 					if(tmp_var != NULL) {
 						tmp_var->var.var_quark = dim_quark;
+						tmp_var->var.dim_info[dim_num].dim_quark = dim_quark;
 					}
 				}
 					
@@ -1812,7 +1813,7 @@ struct _NclVarRec *storage;
 	}
 */
 	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
-	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,(new_name == NULL)?NrmQuarkToString(thevar->var.var_quark):new_name,TEMPORARY);
+	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,(thevar->var.var_type == PARAM)?NORMAL:thevar->var.var_type,(new_name == NULL)?NrmQuarkToString(thevar->var.var_quark):new_name,TEMPORARY);
 	
 
 	return(tmp_var);
