@@ -1,11 +1,12 @@
 #
-#	$Id: yMakefile,v 1.8 1994-12-05 23:28:40 haley Exp $
+#	$Id: yMakefile,v 1.9 1995-06-08 20:25:17 kennison Exp $
 #
 
 MYNAME	= econpa
 
 GENERIC_SRCS = \
-	 cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f\
-	 cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cbex01.f
+	cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f \
+	cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cpex13.f \
+	cbex01.f
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
