@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.18 1993-12-16 22:36:48 haley Exp $
+#	$Id: yMakefile,v 1.19 1997-04-11 16:02:35 boote Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -19,16 +19,14 @@ SYS_LIBS	=	-lm
 
 
 #if defined(IRIX) && (MAJOR == 5)
-
-EXTRA_CDEFINES =	-DXAPPDIR='"$(XAPPDIR)"' -DTRANSLATOR='"$(TRANSLATOR)"' \
-		-DBINDIR='"$(BINDIR)"' $(VDEFINE) -D_BSD_TYPES
-
+MY_DEFINES = -D_BSD_TYPES
 #else
-
-EXTRA_CDEFINES =	-DXAPPDIR='"$(XAPPDIR)"' -DTRANSLATOR='"$(TRANSLATOR)"' \
-		-DBINDIR='"$(BINDIR)"' $(VDEFINE)
-
+MY_DEFINES =
 #endif
+
+EXTRA_CDEFINES =	-DXAPPDIR='"$(XAPPDIR)"' \
+			-DTRANSLATOR='"$(TRANSLATOR)"' -DBINDIR='"$(BINDIR)"' \
+			$(VDEFINE) $(OS_DEF) $(MAJOR_DEF) $(MY_DEFINES)
 
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
