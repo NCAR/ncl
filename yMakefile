@@ -131,6 +131,11 @@ dirs::
 	@-if (test ! -d $(TESTSPATH) || test ! -w $(TESTSPATH)) then \
 	echo "Installation Error - $(TESTSPATH) is not writeable"; exit 1; \
 	else continue; fi
+	@-if (test ! -d $(TUTORIALPATH)) then mkdir $(TUTORIALPATH); \
+	else continue; fi
+	@-if (test ! -d $(TUTORIALPATH) || test ! -w $(TUTORIALPATH)) then \
+	echo "Installation Error - $(TUTORIALPATH) is not writeable"; exit 1; \
+	else continue; fi
 	@-if (test ! -d $(XAPPPATH)) then mkdir $(XAPPPATH); else continue; fi
 	@-if (test ! -d $(XAPPPATH) || test ! -w $(XAPPPATH)) then \
 	echo "Installation Error - $(XAPPPATH) is not writeable"; exit 1; \
