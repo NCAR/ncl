@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.5 1996-01-12 21:13:09 boote Exp $
+ *	$Id: xattribute.c,v 1.6 1996-01-18 14:57:26 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -648,8 +648,7 @@ X11_SetColorRepresentation
 				XFreeColors(xi->dpy,xi->cmap,
 				&color_status[color_info[index]].xpixnum,1,0);
 			}
-			color_def[color_status[color_info[index]].xpixnum] =
-									False;
+			color_def[color_status[color_info[index]].xpixnum]--;
 			xi->mycmap_cells--;
 		}
 		color_info[index] = -1;
@@ -677,7 +676,7 @@ X11_SetColorRepresentation
 		color_status[i].green = rgbptr->green;
 		color_status[i].blue = rgbptr->blue;
 		xi->mycmap_cells++;
-		color_def[xindx] = True;
+		color_def[xindx]++;
 	}
 	else if(xi->cmap_ro && XAllocColor(dpy, cmap, &rgbptr[0])){
 		/*
@@ -695,7 +694,7 @@ X11_SetColorRepresentation
 		color_status[i].blue = rgbptr->blue;
 		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
 		xi->mycmap_cells++;
-		color_def[rgbptr->pixel] = True;
+		color_def[rgbptr->pixel]++;
 	}
 	else if(xi->color_model == CM_MIXED){
 		/*

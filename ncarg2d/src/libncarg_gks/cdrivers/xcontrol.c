@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.9 1996-01-12 21:13:10 boote Exp $
+ *	$Id: xcontrol.c,v 1.10 1996-01-18 14:57:26 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -234,7 +234,7 @@ init_color
 	xi->color_status[0].red = tcolor.red;
 	xi->color_status[0].green = tcolor.green;
 	xi->color_status[0].blue = tcolor.blue;
-	xi->color_def[tcolor.pixel] = True;
+	xi->color_def[tcolor.pixel]++;
 	xi->mycmap_cells++;
 
 	/*
@@ -255,7 +255,7 @@ init_color
 	xi->color_status[1].red = tcolor.red;
 	xi->color_status[1].green = tcolor.green;
 	xi->color_status[1].blue = tcolor.blue;
-	xi->color_def[tcolor.pixel] = True;
+	xi->color_def[tcolor.pixel]++;
 	xi->mycmap_cells++;
 
 	/*
