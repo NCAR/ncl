@@ -4,7 +4,7 @@
 #include "display.h"
 
 void	ScrollTo(
-#ifndef	NeedFuncProto
+#ifdef	NeedFuncProto
 	WidgetData	*wd,
 	float		percent
 #endif
