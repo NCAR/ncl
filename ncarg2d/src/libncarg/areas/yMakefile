@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.9 2004-05-11 16:56:19 kennison Exp $
+#       $Id: yMakefile,v 1.10 2004-05-21 14:29:07 haley Exp $
 #
 
 MYNAME	= areas
@@ -28,7 +28,7 @@ CleanFilesTarget($(SOURCES) IftranRun)
 $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
-	@../Iftran/Iftran < CodeIftran > CodeFortran
-	@../Iftran/Fsplit CodeFortran
+	@$(IFTRAN) < CodeIftran > CodeFortran
+	@$(FSPLIT) CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun
