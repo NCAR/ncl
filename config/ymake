@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.28 1997-04-22 19:28:41 haley Exp $
+#	$Id: ymake,v 1.29 1997-04-23 22:31:42 haley Exp $
 #
 ######################################################################
 #
@@ -366,14 +366,10 @@ case    Linux:
     set os = $opsys
 
     switch ("$mach")
-    case    i486:
-        set model = i486
-        set arch = i486
+    case    i*86:
+        set model = $mach
+        set arch = $mach
         breaksw
-    case    i586:
-        set model = i586
-        set arch = i586
-    breaksw
     default:
         echo "$0 : Unknown machine type" > /dev/tty
         exit 1
