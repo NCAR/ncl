@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.20 1992-09-25 16:20:27 clyne Exp $
+#	$Id: yMakefile,v 1.21 1992-09-28 16:04:46 don Exp $
 #
 
 
@@ -26,7 +26,7 @@ SUNLIBS		 = -lsuntool -lsunwindow -lpixrect
 LOCLIB		= $(LIBPATH)/libctrans.o $(LIBPATH)/libcgm.a \
 		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
 
-GENLIBS 	= $(HDFLIB) -lm 
+GENLIBS 	= $(NETCDFLIB) $(HDFLIB) -lm 
 LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 
 

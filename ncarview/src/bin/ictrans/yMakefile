@@ -23,7 +23,7 @@ LOCLIB		= $(LIBPATH)/libictrans_.o $(LIBPATH)/libctrans.o \
 		$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a \
 		$(LIBPATH)/libncarg_ras.a 
 
-GENLIBS		= $(HDFLIB) -lm 
+GENLIBS		= $(NETCDFLIB) $(HDFLIB) -lm 
 LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 
 SRCS		= main.c 

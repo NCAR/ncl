@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.6 1992-09-25 16:21:13 clyne Exp $
+#	$Id: yMakefile,v 1.7 1992-09-28 16:10:14 don Exp $
 #
 #
 #	Makefile for rasstat
@@ -12,7 +12,7 @@ NCARG = ../../../..
 MYNAME	= rasstat
 
 LIBS		= $(LIBPATH)/libncarg_ras.a \
-		$(LIBPATH)/libncarg_c.a $(HDFLIB) -lm
+		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
 
 CDEFINES	= 
 
