@@ -224,8 +224,8 @@ overlay(mapid,stid)
 ;
 
 time = vf->timestep
-hour = new(1,string,"00")
-day = new(1,string,"05")
+hour = new(1,string)
+day = new(1,string)
 
 do i = 0, TIMESTEPS - 1
 	if (i.ne.17 .and. i.ne.36 .and. i.ne.37) then
