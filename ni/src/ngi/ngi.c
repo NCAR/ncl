@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.3 1997-01-03 01:37:52 boote Exp $
+ *      $Id: ngi.c,v 1.4 1997-02-27 20:20:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,10 +33,6 @@
 #include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/ncledit.h>
 
-/*
- * commandline and fallbacks need to be added to the app object in the
- * hlu library.
- */
 static NhlString resdb[] = {
 #ifndef	DEBUG
 #include "ngi.res.h"
@@ -67,6 +63,7 @@ main
 	NhlInitialize();
 
 	NhlVACreate(&appid,"ngi",NhlappClass,NhlDEFAULT_APP,
+		NhlNappDefaultParent,		True,
 		_NhlNappResourceStrings,	resdb,
 		_NhlNappCommandLineOpts,	clineopts,
 		_NhlNappArgcInOut,		&argc,
@@ -91,17 +88,19 @@ main
 	NhlVACreate(&ncl,"nclstate",NgnclStateClass,appid,
 		NULL);
 
-#if	NOT
-	NhlVACreate(&ne,"ncledit",NgnclEditClass,appid,
-		NULL);
-
-	NgGOPopup(ne);
-#endif
+	/*
+	 * Create an Ncleditor object - don't pop it up.  Just make
+	 * sure one is created immediately, so it records all ncl
+	 * commands that happen.
+	 */
+/*
+ * TODO: Ncleditor doesn't install callbacks until it is pop'ed up...
+ */
+	(void)NgAppGetNclEditor(nxapp,False);
 
 	/*
 	 * Now create the main window object.
 	 */
-
 	NhlVACreate(&mn,"main",NgmWinClass,appid,
 		NULL);
 
