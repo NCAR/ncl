@@ -40,7 +40,7 @@ begin
   zi = new(ndata,float)
 
 ;
-;  Generate input data using the functiuon f(x,y) = y**2 - 0.5*y*x**2
+;  Generate input data using the function f(x,y) = y**2 - 0.5*y*x**2
 ;
   do i=0,ndata-1
       xi(i) = xmin + (xmax-xmin)*rand()/32767.
