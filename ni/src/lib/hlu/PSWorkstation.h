@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.h,v 1.5 2000-12-22 00:04:15 dbrown Exp $
+ *      $Id: PSWorkstation.h,v 1.6 2003-02-27 18:14:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -24,49 +24,21 @@
 
 #include <ncarg/hlu/Workstation.h>
 
+/*
+ * See: Workstation.h for common/shared resources with PDF Workstation
+ */
 #define	NhlNwkPSFormat		"wkPSFormat"
 #define	NhlCwkPSFormat		"WkPSFormat"
-
-#define	NhlNwkVisualType	"wkVisualType"
-#define	NhlCwkVisualType	"WkVisualType"
-
-#define	NhlNwkOrientation	"wkOrientation"
-#define	NhlCwkOrientation	"WkOrientation"
 
 #define	NhlNwkPSFileName	"wkPSFileName"
 #define	NhlCwkPSFileName	"WkPSFileName"
 
-#define	NhlNwkFullBackground	"wkFullBackground"
-#define	NhlCwkFullBackground	"WkFullBackground"
-
 #define	NhlNwkPSResolution	"wkPSResolution"
 #define	NhlCwkPSResolution	"WkPSResolution"
-
-#define	NhlNwkDeviceLowerX	"wkDeviceLowerX"
-#define	NhlCwkDeviceLowerX	"WkDeviceLowerX"
-
-#define	NhlNwkDeviceLowerY	"wkDeviceLowerY"
-#define	NhlCwkDeviceLowerY	"WkDeviceLowerY"
-
-#define	NhlNwkDeviceUpperX	"wkDeviceUpperX"
-#define	NhlCwkDeviceUpperX	"WkDeviceUpperX"
-
-#define	NhlNwkDeviceUpperY	"wkDeviceUpperY"
-#define	NhlCwkDeviceUpperY	"WkDeviceUpperY"
-
-#define	NhlNwkColorModel	"wkColorModel"
-#define	NhlCwkColorModel	"WkColorModel"
-
-#define	NhlNwkSuppressBackground	"wkSuppressBackground"
-#define	NhlCwkSuppressBackground	"WkSuppressBackground"
-
-#define	NhlNwkSuppressBBInfo	"wkSuppressBBInfo"
-#define	NhlCwkSuppressBBInfo	"WkSuppressBBInfo"
 
 /*
  * New Types.
  */
-
 #define	NhlTPSFormat	"PSFormat"
 typedef enum _NhlPSFormat{
 	NhlPS = 0,
@@ -74,23 +46,6 @@ typedef enum _NhlPSFormat{
 	NhlEPSI = 2
 } NhlPSFormat;
 
-#define	NhlTVisualType	"VisualType"
-typedef enum _NhlVisualType{
-	NhlCOLOR = 0,
-	NhlMONOCHROME = 3
-} NhlVisualType;
-
-#define NhlTWorkOrientation	"WorkOrientation"
-typedef enum _NhlWorkOrientation{
-	NhlPORTRAIT = 0,
-	NhlLANDSCAPE = 6
-} NhlWorkOrientation;
-
-#define	NhlTColorModel	"ColorModel"
-typedef enum _NhlColorModel{
-	NhlCMYK = 0,
-	NhlRGB	= 1
-} NhlColorModel;
 
 extern NhlClass NhlpsWorkstationClass;
 

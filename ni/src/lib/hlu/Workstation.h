@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.33 2001-01-23 23:58:58 dbrown Exp $
+ *      $Id: Workstation.h,v 1.34 2003-02-27 18:14:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -196,6 +196,59 @@ typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
 
 #define NhlTFontQuality		"FontQuality"
 #define NhlTTextDirection	"TextDirection"
+
+/*
+ * Common/shared resources for PostScript (PS) and Portable
+ * Document Format (PDF) workstation types.
+ */
+#define    NhlTVisualType  "VisualType"
+typedef enum _NhlVisualType {
+    NhlCOLOR = 0,
+    NhlMONOCHROME = 3
+} NhlVisualType;
+
+#define    NhlTWorkOrientation     "WorkOrientation"
+typedef enum _NhlWorkOrientation {
+    NhlPORTRAIT = 0,
+    NhlLANDSCAPE = 6
+} NhlWorkOrientation;
+
+#define    NhlTColorModel      "ColorModel"
+typedef enum _NhlColorModel {
+    NhlCMYK = 0,
+    NhlRGB  = 1
+} NhlColorModel;
+
+#define	NhlNwkVisualType	"wkVisualType"
+#define	NhlCwkVisualType	"WkVisualType"
+
+#define	NhlNwkOrientation	"wkOrientation"
+#define	NhlCwkOrientation	"WkOrientation"
+
+#define	NhlNwkFullBackground	"wkFullBackground"
+#define	NhlCwkFullBackground	"WkFullBackground"
+
+#define	NhlNwkDeviceLowerX	"wkDeviceLowerX"
+#define	NhlCwkDeviceLowerX	"WkDeviceLowerX"
+
+#define	NhlNwkDeviceLowerY	"wkDeviceLowerY"
+#define	NhlCwkDeviceLowerY	"WkDeviceLowerY"
+
+#define	NhlNwkDeviceUpperX	"wkDeviceUpperX"
+#define	NhlCwkDeviceUpperX	"WkDeviceUpperX"
+
+#define	NhlNwkDeviceUpperY	"wkDeviceUpperY"
+#define	NhlCwkDeviceUpperY	"WkDeviceUpperY"
+
+#define	NhlNwkColorModel	"wkColorModel"
+#define	NhlCwkColorModel	"WkColorModel"
+
+#define	NhlNwkSuppressBackground	"wkSuppressBackground"
+#define	NhlCwkSuppressBackground	"WkSuppressBackground"
+
+#define	NhlNwkSuppressBBInfo	"wkSuppressBBInfo"
+#define	NhlCwkSuppressBBInfo	"WkSuppressBBInfo"
+
 
 /*
  * Public access functions to support Workstation Class
