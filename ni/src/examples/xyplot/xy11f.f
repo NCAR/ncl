@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.8 1995-04-04 21:56:19 haley Exp $
+C     $Id: xy11f.f,v 1.9 1995-04-06 14:43:43 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -111,7 +111,7 @@ C
       call NhlFRLClear(list)
       call NhlFRLSetFloat(list,'vpXF',0.25,ierr)
       call NhlFRLSetFloat(list,'vpYF',0.75,ierr)
-      call NhlFRLSetFloat(list,'vpXWidthF',0.5,ierr)
+      call NhlFRLSetFloat(list,'vpWidthF',0.5,ierr)
       call NhlFRLSetFloat(list,'vpHeightF',0.5,ierr)
 
       call NhlFRLSetInteger(list,'xyCoordData',idata,ierr)

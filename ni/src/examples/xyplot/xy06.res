@@ -10,14 +10,16 @@
 !
 !  If you want temperature values for other stations, change
 !  the 'xyExplicitLegendLabels' resource accordingly.  You must 
-!  know the three letter code for the city you want.
+!  know the three letter code for the city you want.  This resource
+!  is only being used by the C and Fortran program version of this
+!  example.  The NCL example sets the stations right in the script.
 !
 *xyExplicitLegendLabels: (/DEN,FTW,HNL,MIA,PHL,SAN,SEA,ALB,LAS/)
 *xyData.xyLineColors:    (/90,96,68,23,50,83,19,58,40/)
 *xyData.xyMarkLineMode:  MARKLINES
 *xyData.xyMarkerColors:  (/90,96,68,23,50,83,19,58,40/)
-*xyPlot1.tiYAxisString:  Degrees (Celsius)
-*xyPlot2.tiYAxisString:  Degrees (Fahrenheit)
+*xyPlot1.tiYAxisString:  Degrees (:S:o:N:C)
+*xyPlot2.tiYAxisString:  Degrees (:S:o:N:F)
 !
 ! Legend resources
 !

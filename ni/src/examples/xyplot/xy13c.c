@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.7 1995-03-23 16:31:34 haley Exp $
+ *      $Id: xy13c.c,v 1.8 1995-04-06 14:43:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -524,13 +524,7 @@ main
     float *xdata[31];
     float *ydata[31];
     int lengths[31];
-    int dash_patterns[31];
-    int colors[31];
-    char *line_labels[31];
     int dataid;
-    int datadepid[1];
-    int *dspec = datadepid;
-    int num_dspec;
 
     /*
      * Initialize data values
@@ -538,189 +532,96 @@ main
     xdata[0] = dry_minusfiftyT;
     ydata[0] = dry_minusfiftyP;
     lengths[0] = sizeof(dry_minusfiftyT)/sizeof(float);
-    dash_patterns[0] = 2;
-    colors[0] = 10;
-    line_labels[0] = "-50";
     xdata[1] = dry_minusfourtyT;
     ydata[1] = dry_minusfourtyP;
     lengths[1] = sizeof(dry_minusfourtyT)/sizeof(float);
-    line_labels[1] = "-40";
-    dash_patterns[1] = 2;
-    colors[1] = 10;
     xdata[2] = dry_minusthirtyT;
     ydata[2] = dry_minusthirtyP;
     lengths[2] = sizeof(dry_minusthirtyT)/sizeof(float);
-    line_labels[2] = "-30";
-    dash_patterns[2] = 2;
-    colors[2] = 10;
     xdata[3] = dry_minustwentyT;
     ydata[3] = dry_minustwentyP;
     lengths[3] = sizeof(dry_minustwentyT)/sizeof(float);
-    line_labels[3] = "-20";
-    dash_patterns[3] = 2;
-    colors[3] = 10;
     xdata[4] = dry_minustenT;
     ydata[4] = dry_minustenP;
     lengths[4] = sizeof(dry_minustenT)/sizeof(float);
-    line_labels[4] = "-10";
-    dash_patterns[4] = 2;
-    colors[4] = 10;
     xdata[5] = dry_zeroT;
     ydata[5] = dry_zeroP;
     lengths[5] = sizeof(dry_zeroT)/sizeof(float);
-    line_labels[5] = "0";
-    dash_patterns[5] = 3;
-    colors[5] = 10;
     xdata[6] = dry_tenT;
     ydata[6] = dry_tenP;
     lengths[6] = sizeof(dry_tenT)/sizeof(float);
-    line_labels[6] = "10";
-    dash_patterns[6] = 2;
-    colors[6] = 10;
     xdata[7] = dry_twentyT;
     ydata[7] = dry_twentyP;
     lengths[7] = sizeof(dry_twentyT)/sizeof(float);
-    line_labels[7] = "20";
-    dash_patterns[7] = 2;
-    colors[7] = 10;
     xdata[8] = dry_thirtyT;
     ydata[8] = dry_thirtyP;
     lengths[8] = sizeof(dry_thirtyT)/sizeof(float);
-    line_labels[8] = "30";
-    dash_patterns[8] = 2;
-    colors[8] = 10;
     xdata[9] = dry_fourtyT;
     ydata[9] = dry_fourtyP;
     lengths[9] = sizeof(dry_fourtyT)/sizeof(float);
-    line_labels[9] = "40";
-    dash_patterns[9] = 2;
-    colors[9] = 10;
     xdata[10] = dry_fiftyT;
     ydata[10] = dry_fiftyP;
     lengths[10] = sizeof(dry_fiftyT)/sizeof(float);
-    line_labels[10] = "50";
-    dash_patterns[10] = 2;
-    colors[10] = 10;
     xdata[11] = dry_sixtyT;
     ydata[11] = dry_sixtyP;
     lengths[11] = sizeof(dry_sixtyT)/sizeof(float);
-    line_labels[11] = "60";
-    dash_patterns[11] = 2;
-    colors[11] = 10;
     xdata[12] = dry_seventyT;
     ydata[12] = dry_seventyP;
     lengths[12] = sizeof(dry_seventyT)/sizeof(float);
-    line_labels[12] = "70";
-    dash_patterns[12] = 2;
-    colors[12] = 10;
     xdata[13] = dry_eightyT;
     ydata[13] = dry_eightyP;
     lengths[13] = sizeof(dry_eightyT)/sizeof(float);
-    line_labels[13] = "80";
-    dash_patterns[13] = 2;
-    colors[13] = 10;
     xdata[14] = dry_ninetyT;
     ydata[14] = dry_ninetyP;
     lengths[14] = sizeof(dry_ninetyT)/sizeof(float);
-    line_labels[14] = "90";
-    dash_patterns[14] = 2;
-    colors[14] = 10;
     xdata[15] = iso_160T;
     ydata[15] = iso_160P;
     lengths[15] = sizeof(iso_160T)/sizeof(float);
-    line_labels[15] = "160g";
-    dash_patterns[15] = 1;
-    colors[15] = 40;
     xdata[16] = iso_80T;
     ydata[16] = iso_80P;
     lengths[16] = sizeof(iso_80T)/sizeof(float);
-    line_labels[16] = "80g";
-    dash_patterns[16] = 1;
-    colors[16] = 40;
     xdata[17] = iso_40T;
     ydata[17] = iso_40P;
     lengths[17] = sizeof(iso_40T)/sizeof(float);
-    line_labels[17] = "40g";
-    dash_patterns[17] = 1;
-    colors[17] = 40;
     xdata[18] = iso_20T;
     ydata[18] = iso_20P;
     lengths[18] = sizeof(iso_20T)/sizeof(float);
-    line_labels[18] = "20g";
-    dash_patterns[18] = 1;
-    colors[18] = 40;
     xdata[19] = iso_10T;
     ydata[19] = iso_10P;
     lengths[19] = sizeof(iso_10T)/sizeof(float);
-    line_labels[19] = "10g";
-    dash_patterns[19] = 1;
-    colors[19] = 40;
     xdata[20] = iso_5T;
     ydata[20] = iso_5P;
     lengths[20] = sizeof(iso_5T)/sizeof(float);
-    line_labels[20] = "5g";
-    dash_patterns[20] = 1;
-    colors[20] = 40;
     xdata[21] = iso_2_5T;
     ydata[21] = iso_2_5P;
     lengths[21] = sizeof(iso_2_5T)/sizeof(float);
-    line_labels[21] = "2.5g";
-    dash_patterns[21] = 1;
-    colors[21] = 40;
     xdata[22] = iso_1_25T;
     ydata[22] = iso_1_25P;
     lengths[22] = sizeof(iso_1_25T)/sizeof(float);
-    line_labels[22] = "1.25g";
-    dash_patterns[22] = 1;
-    colors[22] = 40;
     xdata[23] = iso_0_625T;
     ydata[23] = iso_0_625P;
     lengths[23] = sizeof(iso_0_625T)/sizeof(float);
-    line_labels[23] = "0.625g";
-    dash_patterns[23] = 1;
-    colors[23] = 40;
     xdata[24] = wet_40gT;
     ydata[24] = wet_40gP;
     lengths[24] = sizeof(wet_40gT)/sizeof(float);
-    line_labels[24] = NULL;
-    dash_patterns[24] = 1;
-    colors[24] = 60;
     xdata[25] = wet_20gT;
     ydata[25] = wet_20gP;
     lengths[25] = sizeof(wet_20gT)/sizeof(float);
-    line_labels[25] = NULL;
-    dash_patterns[25] = 1;
-    colors[25] = 60;
     xdata[26] = wet_10gT;
     ydata[26] = wet_10gP;
     lengths[26] = sizeof(wet_10gT)/sizeof(float);
-    line_labels[26] = NULL;
-    dash_patterns[26] = 1;
-    colors[26] = 60;
     xdata[27] = wet_5gT;
     ydata[27] = wet_5gP;
     lengths[27] = sizeof(wet_5gT)/sizeof(float);
-    line_labels[27] = NULL;
-    dash_patterns[27] = 1;
-    colors[27] = 60;
     xdata[28] = wet_5gT;
     ydata[28] = wet_5gP;
     lengths[28] = sizeof(wet_5gT)/sizeof(float);
-    line_labels[28] = NULL;
-    dash_patterns[28] = 1;
-    colors[28] = 60;
     xdata[29] = wet_2_5gT;
     ydata[29] = wet_2_5gP;
     lengths[29] = sizeof(wet_2_5gT)/sizeof(float);
-    line_labels[29] = NULL;
-    dash_patterns[29] = 1;
-    colors[29] = 60;
     xdata[30] = wet_1_25gT;
     ydata[30] = wet_1_25gP;
     lengths[30] = sizeof(wet_1_25gT)/sizeof(float);
-    line_labels[30] = NULL;
-    dash_patterns[30] = 1;
-    colors[30] = 60;
 
     /*
      * Call this before X calls so I can use NhlPError stuff
@@ -760,37 +661,11 @@ main
 
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNxyCoordData,dataid);
-    NhlRLSetFloat(srlist,NhlNvpXF,.25);
-    NhlRLSetFloat(srlist,NhlNvpYF,.75);
-    NhlRLSetFloat(srlist,NhlNvpWidthF,.5);
-    NhlRLSetFloat(srlist,NhlNvpHeightF,.5);
     NhlRLSetInteger(srlist,NhlNxyYStyle,NhlIRREGULAR);
     NhlRLSetFloatArray(srlist,NhlNxyYIrregularPoints,dry_zeroP,
                     (sizeof(dry_zeroP)/sizeof(float)));
 
-    NhlRLSetFloat(srlist,NhlNxyLineLabelFontHeightF,.015);
-    NhlRLSetFloat(srlist,NhlNxyLineDashSegLenF,.3);
-    NhlRLSetFloat(srlist,NhlNtrYMinF,300.0);
-    NhlRLSetFloat(srlist,NhlNtrYMaxF,1000.0);
-    NhlRLSetFloat(srlist,NhlNtrXMinF,-45.0);
-    NhlRLSetFloat(srlist,NhlNtrXMaxF,30.0);
-    NhlRLSetInteger(srlist,NhlNtrYReverse,True);
-
-    NhlRLSetString(srlist,NhlNtiMainString,"Stuve Chart");
-    NhlRLSetString(srlist,NhlNtiYAxisString,"Pressure (mb)");
-    NhlRLSetString(srlist,NhlNtiXAxisString,"Temperature (:S:o:N:C)");
     NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,srlist);
-
-    NhlRLClear(grlist);
-    NhlRLGetIntegerArray(grlist,NhlNxyCoordDataSpec,&dspec,&num_dspec);
-    NhlGetValues(xyplotid,grlist);
-
-    NhlRLClear(srlist);
-    NhlRLSetIntegerArray(srlist,NhlNxyLineColors,colors,31);
-    NhlRLSetIntegerArray(srlist,NhlNxyDashPatterns,dash_patterns,31);
-    NhlRLSetInteger(srlist,NhlNxyLabelMode,NhlCUSTOM);
-    NhlRLSetStringArray(srlist,NhlNxyExplicitLabels,line_labels,31);
-    NhlSetValues(dspec[0],srlist);
 
     XtAddEventHandler(graphics,ButtonPressMask,False,
                 (XtEventHandler)SelectionEH,(XtPointer)NULL);

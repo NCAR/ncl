@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.10 1995-03-23 16:31:19 haley Exp $
+**      $Id: xy03c.c,v 1.11 1995-04-06 14:43:30 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -110,7 +110,7 @@ main()
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
     NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
- * Draw the plot (to its parent XWorkstation).
+ * Draw the plot.
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);

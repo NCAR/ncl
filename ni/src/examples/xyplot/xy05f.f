@@ -1,5 +1,5 @@
 C
-C      $Id: xy05f.f,v 1.8 1995-04-04 21:56:14 haley Exp $
+C      $Id: xy05f.f,v 1.9 1995-04-06 14:43:38 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -42,7 +42,7 @@ C
       integer length(NCURVE)
 
       integer appid,xworkid,plotid,dataid(NCURVE)
-      integer rlist, i, j, num
+      integer rlist, i, j
       character*10 datastr
       integer NCGM
 C
@@ -114,7 +114,7 @@ C
       call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
      +     rlist,ierr)
 C
-C Draw the plot (to its parent XWorkstation).
+C Draw the plot.
 C
       call NhlFDraw(plotid,ierr)
       call NhlFFrame(xworkid,ierr)

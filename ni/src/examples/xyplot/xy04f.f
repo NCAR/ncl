@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.9 1995-04-04 21:56:11 haley Exp $
+C      $Id: xy04f.f,v 1.10 1995-04-06 14:43:35 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -119,7 +119,7 @@ C
       call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot.
 C
       call NhlFDraw(plotid,ierr)
       call NhlFFrame(xworkid,ierr)

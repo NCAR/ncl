@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.1 1995-04-04 21:56:18 haley Exp $
+C      $Id: xy06f.f,v 1.2 1995-04-06 14:43:42 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -23,7 +23,7 @@ C                 1) How to create an XyPlot object with multiple
 C                    lines using the CoordArrays and Data objects.
 C                 2) How to change the data to create a different
 C                    plot, without having to create a new data object
-C                    (using the NhlSetValues call).
+C                    (using the NhlFSetValues call).
 C                 3) How to overlay a Legend object and to tweak
 C                    several kinds of resources (see "xy06.res").
 C                 4) How to use netCDF interface routines to open
@@ -294,7 +294,7 @@ C
       call NhlFCreate(plotid,'xyPlot1',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot.
 C
       call NhlFDraw(plotid,ierr)
       call NhlFFrame(xworkid,ierr)
@@ -327,7 +327,7 @@ C
       call NhlFCreate(plotid,'xyPlot2',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent X Workstation)
+C Draw the plot.
 C
       call NhlFDraw(plotid,ierr)
       call NhlFFrame(xworkid,ierr)

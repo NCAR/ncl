@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.8 1995-03-28 23:50:42 haley Exp $
+;      $Id: xy01n.ncl,v 1.9 1995-04-06 14:43:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -111,7 +111,7 @@ plotid = create "xyPlot" xyPlotLayerClass xworkid
 end create
 
 ;
-; Draw the plot (to its parent XWorkstation).
+; Draw the plot.
 ; 
 draw(plotid)
 frame(xworkid)

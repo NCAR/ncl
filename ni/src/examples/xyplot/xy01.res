@@ -97,19 +97,6 @@
 ! xy01.xy01Work.xyPlot.xyComputeXMax               : dynamic
 ! xy01.xy01Work.xyPlot.xyComputeYMax               : dynamic
 !
-!       This resource indicates the length of each segment of a dash
-!       pattern. It is the length in NDC before the dash pattern
-!       repeats itself.  This resource automatically scales with
-!       changes in the size of the viewport of the xyPlot.
-! xy01.xy01Work.xyPlot.xyLineDashSegLenF           : 0.15
-!
-!       This allows the user to set the size of the characters used for
-!       the curve labels when the Data Dependent resource 'xyLabelMode'
-!       is set to LETTERED or CUSTOM. The size of the font is expressed
-!       in NDC and scales with changes in the size of the Viewport of
-!       the xyPlot object.
-! xy01.xy01Work.xyPlot.xyLineLabelFontHeightF      : 0.01
-!
 !       These resources are currently not available:
 ! xy01.xy01Work.xyPlot.xyXAlternate                : NULL
 ! xy01.xy01Work.xyPlot.xyYAlternate                : NULL
@@ -126,6 +113,19 @@
 ! example's data object is called "xyData", and the XyPlot object is
 ! "xyPlot", hence the following resources' full pathname is
 ! "xy01.xy01Work.xyPlot.xyData".
+!
+!       This resource indicates the length of each segment of a dash
+!       pattern. It is the length in NDC before the dash pattern
+!       repeats itself.  This resource automatically scales with
+!       changes in the size of the viewport of the xyPlot.
+! xy01.xy01Work.xyPlot.xyData.xyLineDashSegLenF    : 0.15
+!
+!       This allows the user to set the size of the characters used for
+!       the curve labels when the Data Dependent resource 'xyLabelMode'
+!       is set to LETTERED or CUSTOM. The size of the font is expressed
+!       in NDC and scales with changes in the size of the Viewport of
+!       the xyPlot object.
+! xy01.xy01Work.xyPlot.xyData.xyLineLabelFontHeightF: 0.01
 !
 !       This resource determines what dash pattern index all the curves
 !       derived from the associated Data Object will be drawn with if
