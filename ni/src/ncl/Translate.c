@@ -11,6 +11,7 @@ extern  "C" {
 #include "parser.h"
 #include "OpsList.h"
 #include "SrcTree.h"
+#include "NclMdInc.h"
 #include <errno.h>
 
 typedef struct _NclLoopCoBrRec {
@@ -179,6 +180,9 @@ int _NclTranslate
 	NclSrcListNode *step;
 	int off1 = -1 ,off2 = -1 ,off3 = -1, off4 = -1 ,off5 = -1;
 	static int nesting = 0;
+	NclMultiDValData tmp_md = NULL;
+	void *tmp_val = NULL;
+	int dim_size = 1;
 
 	nesting++;
 
@@ -340,10 +344,6 @@ if(groot != NULL) {
 		case Ncl_RESOURCE:
 		{
 			NclResource *resource = (NclResource*)root;
-/*
-			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,resource->line,resource->file);
-			_NclPutInstr((NclValue)resource->res_name_q,resource->line,resource->file);
-*/
 			off1 = _NclTranslate(resource->resexpr,fp);
 			_NclTranslate(resource->expr,fp);
 			break;
@@ -355,10 +355,6 @@ if(groot != NULL) {
 * block starts.
 */
 			NclGetResource *resource = (NclGetResource*)root;
-/*
-			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,resource->line,resource->file);
-			_NclPutInstr((NclValue)resource->res_name_q,resource->line,resource->file);
-*/
 			off1 = _NclTranslate(resource->resexpr,fp);
 			_NclPutInstr((NclValue)GET_OBJ_OP,resource->line,resource->file);
 /*
@@ -375,6 +371,7 @@ if(groot != NULL) {
                         int off8 = -1;
                         int off9 = -1;
                         int off10 = -1;
+			int id;
 
 			if(dofromto->block_stmnt_list != NULL) {
 				_NclNewLoop();
@@ -383,7 +380,13 @@ if(groot != NULL) {
 * Two values of start expr pushed on stack
 */
                         	off1 = _NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
-                        	_NclPutIntInstr(1,dofromto->line,dofromto->file);
+				tmp_val = NclMalloc(sizeof(int));
+				*(int*)tmp_val = 1;
+				tmp_md = _NclCreateMultiDVal(NULL,
+                                                NULL,Ncl_MultiDValData,0,
+                                                (void*)tmp_val,NULL,1,&dim_size,
+                                                PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+                        	_NclPutIntInstr(tmp_md->obj.id,dofromto->line,dofromto->file);
 /*
 * assigns increment value to inc_sym uncovers direction logical on top of stack
 */
@@ -393,8 +396,12 @@ if(groot != NULL) {
 /*
 * assigns direction sym uncovers start_expr value
 */
-				_NclPutInstr(PUSH_LOG_LIT_OP,dofromto->line,dofromto->file);
-				_NclPutIntInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(PUSH_LOGICAL_LIT_OP,dofromto->line,dofromto->file);
+				tmp_val = NclMalloc(sizeof(logical));
+                        	*(logical*)tmp_val = 0;
+                        	tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                                	(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+				_NclPutIntInstr(tmp_md->obj.id,dofromto->line,dofromto->file);
 
 				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 				_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
@@ -641,7 +648,11 @@ if(groot != NULL) {
 					root;
 			if(subscript->dimname_q != -1) {
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
-				_NclPutInstr((NclValue)subscript->dimname_q,subscript->line,subscript->file);
+				tmp_val = NclMalloc(sizeof(NclQuark));
+				*(NclQuark*)tmp_val = subscript->dimname_q;
+				tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
 				_NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(NAMED_INT_SUBSCRIPT_OP,subscript->line,subscript->file);
 			} else {
@@ -656,7 +667,11 @@ if(groot != NULL) {
 					root;
 			if(subscript->dimname_q != -1) {
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
-				_NclPutInstr((NclValue)subscript->dimname_q,subscript->line,subscript->file);
+				tmp_val = NclMalloc(sizeof(NclQuark));
+				*(NclQuark*)tmp_val = subscript->dimname_q;
+				tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
 				_NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(NAMED_COORD_SUBSCRIPT_OP,subscript->line,subscript->file);
 			} else {
@@ -870,28 +885,47 @@ if(groot != NULL) {
 			NclReal *real = (NclReal*)root;
 			
 			off1 = _NclPutInstr(PUSH_REAL_LIT_OP,real->line,real->file);
-			_NclPutRealInstr(real->real,real->line,real->file);
+			tmp_val = NclMalloc(sizeof(float));
+                        *(float*)tmp_val = real->real;
+                        tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                                (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+			_NclPutIntInstr(tmp_md->obj.id,real->line,real->file);
 			break;
 		}
 		case Ncl_LOGICAL:
 		{
 			NclInt *integer = (NclInt*)root;
 			off1 = _NclPutInstr(PUSH_LOGICAL_LIT_OP,integer->line,integer->file);
-			_NclPutIntInstr(integer->integer,integer->line,integer->file);
+			tmp_val = NclMalloc(sizeof(logical));
+                        *(logical*)tmp_val = integer->integer;
+                        tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                                (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+
+			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
 			break;
 		}
 		case Ncl_INT:
 		{
 			NclInt *integer = (NclInt*)root;
+
 			off1 = _NclPutInstr(PUSH_INT_LIT_OP,integer->line,integer->file);
-			_NclPutIntInstr(integer->integer,integer->line,integer->file);
+			tmp_val = NclMalloc(sizeof(int));
+			*(int*)tmp_val = integer->integer;
+			tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0, 
+				(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
 			break;
 		}
 		case Ncl_STRING:
 		{
 			NclString *string= (NclString*)root;
+
 			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,string->line,string->file);
-			_NclPutInstr((NclValue)string->string_q,string->line,string->file);
+			tmp_val = NclMalloc(sizeof(NclQuark));
+			*(NclQuark*)tmp_val = string->string_q;
+			tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+				(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+			_NclPutIntInstr(tmp_md->obj.id,string->line,string->file);
 			break;
 		}
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.25 1996-05-09 23:29:58 ethan Exp $
+ *      $Id: DataSupport.c,v 1.26 1996-06-25 22:47:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -845,6 +845,7 @@ NclObj *result;
 {
 	NclDataClass data_part;
 	int f_selection;
+	NclMultiDValData tmp_result = (NclMultiDValData)*result;
 
 	data_part = (NclDataClass)
 		((NclDataClass)lhs_data_obj->obj.class_ptr);
@@ -852,103 +853,203 @@ NclObj *result;
 	f_selection = (int)
 		((lhs_data_obj->multidval.kind<< 1)
 		|(rhs_data_obj->multidval.kind));
-	*result = NULL;
-	while(((NclObjClass) data_part != nclObjClass)&&(*result == NULL)) {
-		switch(operation) {
-		case MOD_OP:
-		if(data_part->data_class.mod[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+
+	if(tmp_result == NULL) {	
+		while((NclObjClass) data_part != nclObjClass){
+			switch(operation) {
+			case MOD_OP:
+			if(data_part->data_class.mod[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case OR_OP:
+			if(data_part->data_class.or[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case AND_OP:
+			if(data_part->data_class.and[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case XOR_OP:
+			if(data_part->data_class.xor[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case LTSEL_OP:
+			if(data_part->data_class.sel_lt[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case GTSEL_OP:
+			if(data_part->data_class.sel_gt[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case PLUS_OP:
+			if(data_part->data_class.plus[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case MINUS_OP:
+			if(data_part->data_class.minus[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case MUL_OP:
+			if(data_part->data_class.multiply[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case MAT_OP:
+			if(data_part->data_class.mat[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case DIV_OP:
+			if(data_part->data_class.divide[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case EXP_OP:
+			if(data_part->data_class.exponent[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case LE_OP:
+			if(data_part->data_class.le[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case GE_OP:
+			if(data_part->data_class.ge[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case GT_OP:
+			if(data_part->data_class.gt[f_selection] != NULL) {
+				*result =(NclObj) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case LT_OP:
+			if(data_part->data_class.lt[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case EQ_OP:
+			if(data_part->data_class.eq[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			case NE_OP:
+			if(data_part->data_class.ne[f_selection] != NULL) {
+				*result = (NclObj)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+			}
+			break;
+			default:
+				return(NhlFATAL);
+			}
+			data_part = (NclDataClass)data_part->obj_class.super_class;
 		}
-		break;
-		case OR_OP:
-		if(data_part->data_class.or[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
+	} else {
+		while((NclObjClass) data_part != nclObjClass){
+			switch(operation) {
+			case MOD_OP:
+			if(data_part->data_class.mod[f_selection] != NULL) {
+				(void)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case OR_OP:
+			if(data_part->data_class.or[f_selection] != NULL) {
+				(void)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case AND_OP:
+			if(data_part->data_class.and[f_selection] != NULL) {
+				(void)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case XOR_OP:
+			if(data_part->data_class.xor[f_selection] != NULL) {
+				(void)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case LTSEL_OP:
+			if(data_part->data_class.sel_lt[f_selection] != NULL) {
+				(void)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case GTSEL_OP:
+			if(data_part->data_class.sel_gt[f_selection] != NULL) {
+				(void)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case PLUS_OP:
+			if(data_part->data_class.plus[f_selection] != NULL) {
+				(void)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case MINUS_OP:
+			if(data_part->data_class.minus[f_selection] != NULL) {
+				(void)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case MUL_OP:
+			if(data_part->data_class.multiply[f_selection] != NULL) {
+				(void)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case MAT_OP:
+			if(data_part->data_class.mat[f_selection] != NULL) {
+				(void)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case DIV_OP:
+			if(data_part->data_class.divide[f_selection] != NULL) {
+				(void)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case EXP_OP:
+			if(data_part->data_class.exponent[f_selection] != NULL) {
+				(void)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case LE_OP:
+			if(data_part->data_class.le[f_selection] != NULL) {
+				(void)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case GE_OP:
+			if(data_part->data_class.ge[f_selection] != NULL) {
+				(void)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case GT_OP:
+			if(data_part->data_class.gt[f_selection] != NULL) {
+				(void) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case LT_OP:
+			if(data_part->data_class.lt[f_selection] != NULL) {
+				(void)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case EQ_OP:
+			if(data_part->data_class.eq[f_selection] != NULL) {
+				(void)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			case NE_OP:
+			if(data_part->data_class.ne[f_selection] != NULL) {
+				(void)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+			}
+			break;
+			default:
+				return(NhlFATAL);
+			}
+			data_part = (NclDataClass)data_part->obj_class.super_class;
 		}
-		break;
-		case AND_OP:
-		if(data_part->data_class.and[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case XOR_OP:
-		if(data_part->data_class.xor[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case LTSEL_OP:
-		if(data_part->data_class.sel_lt[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case GTSEL_OP:
-		if(data_part->data_class.sel_gt[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case PLUS_OP:
-		if(data_part->data_class.plus[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case MINUS_OP:
-		if(data_part->data_class.minus[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case MUL_OP:
-		if(data_part->data_class.multiply[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case MAT_OP:
-		if(data_part->data_class.mat[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case DIV_OP:
-		if(data_part->data_class.divide[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case EXP_OP:
-		if(data_part->data_class.exponent[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case LE_OP:
-		if(data_part->data_class.le[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case GE_OP:
-		if(data_part->data_class.ge[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case GT_OP:
-		if(data_part->data_class.gt[f_selection] != NULL) {
-			*result =(NclObj) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case LT_OP:
-		if(data_part->data_class.lt[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case EQ_OP:
-		if(data_part->data_class.eq[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		case NE_OP:
-		if(data_part->data_class.ne[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		}
-		break;
-		default:
-			return(NhlFATAL);
-		}
-		data_part = (NclDataClass)data_part->obj_class.super_class;
 	}
 	if(*result != NULL) {
 		return(NhlNOERROR);

@@ -180,6 +180,13 @@ int operation;
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
+		if((lhs_data_obj->multidval.kind != SCALAR)&&((lhs_data_obj->obj.status == TEMPORARY)||(lhs.u.data_obj->obj.status == TEMPORARY))) {
+			result->u.data_obj = lhs_data_obj;
+		} else if((rhs_data_obj->multidval.kind != SCALAR)&&((rhs_data_obj->obj.status == TEMPORARY)||(rhs.u.data_obj->obj.status == TEMPORARY))) {
+			result->u.data_obj = rhs_data_obj;
+		} else {
+			result->u.data_obj = NULL;
+		}
 		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,(NclObj*)&(result->u.data_obj));
 		if(result->u.data_obj != NULL)
 			result->kind = NclStk_VAL;
@@ -189,39 +196,63 @@ int operation;
 
 
 
-
         if(lhs.kind == NclStk_VAL) {
-		if(lhs_data_obj != lhs.u.data_obj) {
+		if(lhs_data_obj->obj.id != result->u.data_obj->obj.id) {
+			if(lhs_data_obj != lhs.u.data_obj) {
+				if(lhs_data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)lhs_data_obj);
+				}
+			}
+			if(lhs.u.data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)lhs.u.data_obj);
+			}
+		}
+        } else if(lhs.kind == NclStk_VAR) {
+		if(lhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(lhs_data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)lhs_data_obj);
 			}
-		}
-		if(lhs.u.data_obj->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)lhs.u.data_obj);
-		}
-        } else if(lhs.kind == NclStk_VAR) {
-		if(lhs_data_obj->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)lhs_data_obj);
-		}
-		if(lhs.u.data_var->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)lhs.u.data_var);
+			if(lhs.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)lhs.u.data_var);
+			}
+		} else {
+			if((lhs.u.data_var->obj.status != PERMANENT)&&(result->u.data_obj->obj.ref_count ==1)) {
+				lhs.u.data_var->var.thevalue_id = -1;
+				_NclDestroyObj((NclObj)lhs.u.data_var);
+				result->u.data_obj->obj.status = TEMPORARY;
+				result->u.data_obj->obj.ref_count = 0;
+				NclFree(result->u.data_obj->obj.parents);
+			}
 		}
         } 
         if(rhs.kind == NclStk_VAL) {
-		if(rhs_data_obj != rhs.u.data_obj) {
+		if(rhs_data_obj->obj.id != result->u.data_obj->obj.id) {
+			if(rhs_data_obj != rhs.u.data_obj) {
+				if(rhs_data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)rhs_data_obj);
+				}
+			}
+			if(rhs.u.data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs.u.data_obj);
+			}
+		}
+        } else if(rhs.kind == NclStk_VAR) {
+		if(rhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(rhs_data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)rhs_data_obj);
 			}
-		}
-		if(rhs.u.data_obj->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs.u.data_obj);
-		}
-        } else if(rhs.kind == NclStk_VAR) {
-		if(rhs_data_obj->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs_data_obj);
-		}
-		if(rhs.u.data_var->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs.u.data_var);
+			if(rhs.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs.u.data_var);
+			}
+		} else {
+			if((rhs.u.data_var->obj.status != PERMANENT)&&(result->u.data_obj->obj.ref_count ==1)) {
+				rhs.u.data_var->var.thevalue_id = -1;
+				_NclDestroyObj((NclObj)rhs.u.data_var);
+				result->u.data_obj->obj.status = TEMPORARY;
+				result->u.data_obj->obj.ref_count = 0;
+				NclFree(result->u.data_obj->obj.parents);
+			}
+
 		}
         } 
 

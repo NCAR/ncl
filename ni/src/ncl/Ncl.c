@@ -96,10 +96,10 @@ main() {
 #ifdef NCLDEBUG
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
-	_NclPrintUnfreedObjs(theoptr);
-	fclose(theoptr);
 	_NclObjsSize(stdout);
 	_NclNumGetObjCals(stdout);
+	_NclPrintUnfreedObjs(theoptr);
+	fclose(theoptr);
 #endif
 	NhlClose();
 	exit(0);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.66 1996-06-24 23:32:57 ethan Exp $
+ *      $Id: Execute.c,v 1.67 1996-06-25 22:48:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -818,72 +818,21 @@ NclExecuteReturnStatus _NclExecute
 					estatus = _NclPush(data);
 				break;
 			}
+			case PUSH_REAL_LIT_OP : 
+			case PUSH_LOGICAL_LIT_OP: 
+			case PUSH_INT_LIT_OP :
 			case PUSH_STRING_LIT_OP :
 			{
 				NclStackEntry data;
-				NclQuark *thestr;
-				int dim_size = 1;
 			
 				ptr++;lptr++;fptr++;
+				data.u.data_obj = (NclMultiDValData)_NclGetObj(*ptr);
 				data.kind = NclStk_VAL;
-				thestr = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark));
-				*thestr = *ptr;
-				data.u.data_obj = _NclCreateMultiDVal(NULL,
-						NULL,Ncl_MultiDValData,0,
-						(void*)thestr,NULL,1,&dim_size,
-						TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
-				estatus  = _NclPush(data);
-				break;
-			}
-			case PUSH_REAL_LIT_OP : 
-			{
-				NclStackEntry data;
-				int dim_size = 1;
-				ptr++;lptr++;fptr++;
-				data.kind = NclStk_VAL;
-				data.u.data_obj = _NclCreateMultiDVal(NULL,
-						NULL,Ncl_MultiDValData,0,
-						(void*)ptr,NULL,1,&dim_size,
-						STATIC,NULL,(NclTypeClass)nclTypefloatClass);
-				estatus = _NclPush(data);
-				break;
-			}
-			case PUSH_LOGICAL_LIT_OP: {
-				NclStackEntry data;
-				int dim_size = 1;
-				ptr++;lptr++;fptr++;
-				data.kind = NclStk_VAL;
-				data.u.data_obj = _NclCreateMultiDVal(NULL,
-						NULL,Ncl_MultiDValData,0,
-						(void*)ptr,NULL,1,&dim_size,
-						STATIC,NULL,(NclTypeClass)nclTypelogicalClass);
-				estatus = _NclPush(data);
-				break;
-			}
-			case PUSH_INT_LIT_OP :
-			{
-				NclStackEntry data;
-				int dim_size = 1;
-				ptr++;lptr++;fptr++;
-				data.kind = NclStk_VAL;
-				data.u.data_obj = _NclCreateMultiDVal(NULL,
-						NULL,Ncl_MultiDValData,0,
-						(void*)ptr,NULL,1,&dim_size,
-						STATIC,NULL,(NclTypeClass)nclTypeintClass);
-				estatus = _NclPush(data);
-				break;
-			}
-			case PUSH_LOG_LIT_OP :
-			{
-				NclStackEntry data;
-				int dim_size = 1;
-				ptr++;lptr++;fptr++;
-				data.kind = NclStk_VAL;
-				data.u.data_obj = _NclCreateMultiDVal(NULL,
-						NULL,Ncl_MultiDValData,0,
-						(void*)ptr,NULL,1,&dim_size,
-						STATIC,NULL,(NclTypeClass)nclTypelogicalClass);
-				estatus = _NclPush(data);
+				if(data.u.data_obj != NULL) {
+					estatus  = _NclPush(data);
+				} else {
+					estatus  = NhlFATAL;
+				}
 				break;
 			}
 			case JMP_SCALAR_TRUE_OP: {

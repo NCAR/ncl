@@ -129,7 +129,9 @@ statement_list :  statement eoln			{
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
 									_NclTransTerminate();
+#ifdef NCLDEBUG
 									_NclPrintMachine(strt,-1,theoptr);
+#endif
 #ifndef PRINTTREEONLY
 									_NclExecute(strt);
 #endif
@@ -154,7 +156,9 @@ statement_list :  statement eoln			{
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
 									_NclTransTerminate();
+#ifdef NCLDEBUG
 									_NclPrintMachine(strt,-1,theoptr);
+#endif
 #ifndef PRINTTREEONLY
 									_NclExecute(strt);
 #endif

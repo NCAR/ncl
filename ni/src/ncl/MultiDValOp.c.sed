@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.2 1996-05-02 23:30:49 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.3 1996-06-25 22:48:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,9 @@ NclData result;
         if((other_md->multidval.n_dims != self_md->multidval.n_dims)){
                 return(NULL);
         }
+	if(result_md != NULL) {
+		result_val = result_md->multidval.val;
+	}
 	for(i = 0; i< self_md->multidval.n_dims; i++) {
                 if(self_md->multidval.dim_sizes[i]
                         != other_md->multidval.dim_sizes[i]) {
@@ -71,10 +74,12 @@ NclData result;
 */
 
 		the_type = _NclTFUNC_type(self_md->multidval.type);
-		result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
-		if(result_val == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
-			return(NULL);
+		if(result_md == NULL) {
+			result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
+			if(result_val == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+				return(NULL);
+			}
 		}
 		if(_NclTFUNC(
 			self_md->multidval.type,
@@ -89,23 +94,28 @@ NclData result;
 			if((the_type != self_md->multidval.type)&&(themissing.has_missing)) {
 				themissing.value = the_type->type_class.default_mis;
 			}
-
-			output_md = _NclCreateMultiDVal(
-				(NclObj)result_md,
-				NULL,
-				Ncl_MultiDValData,
-				0,
-				result_val,
-				(themissing.has_missing? &(themissing.value):NULL),
-				self_md->multidval.n_dims,
-				self_md->multidval.dim_sizes,
-				TEMPORARY,
-				NULL,
-				the_type
-			);
-			return((NclData)output_md);
+			if(result_md == NULL) {
+				output_md = _NclCreateMultiDVal(
+					(NclObj)result_md,
+					NULL,
+					Ncl_MultiDValData,
+					0,
+					result_val,
+					(themissing.has_missing? &(themissing.value):NULL),
+					self_md->multidval.n_dims,
+					self_md->multidval.dim_sizes,
+					TEMPORARY,
+					NULL,
+					the_type
+				);
+				return((NclData)output_md);
+			} else {
+				return((NclData)result_md);
+			}
 		} else {
-			NclFree(result_val);
+			if(result_md == NULL) {
+				NclFree(result_val);
+			}
 			return(NULL);
 		}
 			
@@ -155,6 +165,9 @@ NclData result;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TFUNC for scalar values was called with non scalar value, this should not happen");
 		return(NULL);
 	}
+	if(result_md != NULL) {
+		result_val = result_md->multidval.val;
+	}
 	total = self_md->multidval.totalelements;
 	n_dims = self_md->multidval.n_dims;
 	dim_sizes = self_md->multidval.dim_sizes;
@@ -171,10 +184,12 @@ NclData result;
 */
 
 		the_type = _NclTFUNC_type(self_md->multidval.type);
-		result_val = (void*)NclMalloc(total * the_type->type_class.size);
-		if(result_val == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
-			return(NULL);
+		if(result_md == NULL) {
+			result_val = (void*)NclMalloc(total * the_type->type_class.size);
+			if(result_val == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
+				return(NULL);
+			}
 		}
 		if((the_type != self_md->multidval.type)&&(themissing.has_missing)) {
 			themissing.value = the_type->type_class.default_mis;
@@ -189,22 +204,28 @@ NclData result;
 			self_md->multidval.totalelements,
 			other_md->multidval.totalelements) != NhlFATAL) {
 
-			output_md = _NclCreateMultiDVal(
-				(NclObj)result_md,
-				NULL,
-				Ncl_MultiDValData,
-				0,
-				result_val,
-				(themissing.has_missing? &(themissing.value):NULL),
-				n_dims,
-				dim_sizes,
-				TEMPORARY,
-				NULL,
-				the_type
-			);
-			return((NclData)output_md);
+			if(result_md == NULL) {
+				output_md = _NclCreateMultiDVal(
+					(NclObj)result_md,
+					NULL,
+					Ncl_MultiDValData,
+					0,
+					result_val,
+					(themissing.has_missing? &(themissing.value):NULL),
+					n_dims,
+					dim_sizes,
+					TEMPORARY,
+					NULL,
+					the_type
+				);
+				return((NclData)output_md);
+			} else {
+				return((NclData)result_md);
+			}
 		} else {
-			NclFree(result_val);
+			if(result_md == NULL) {
+				NclFree(result_val);
+			}
 			return(NULL);
 		}
 	} else {
