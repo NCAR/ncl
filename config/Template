@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.21 1994-04-08 20:26:18 boote Exp $
+ *      $Id: Template,v 1.22 1994-04-21 18:46:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -815,6 +815,8 @@ depend-local::
 
 includes-local::
 
+preformatted-local::
+
 #ifdef	IHaveSubdirs
 
 InternalInstallSubdirs($(SUBDIRS))
@@ -823,6 +825,7 @@ InternalCleanSubdirs($(SUBDIRS))
 InternalDistCleanSubdirs($(SUBDIRS))
 InternalDependSubdirs($(SUBDIRS))
 InternalIncludesSubdirs($(SUBDIRS))
+FormatManPagesSubdirs($(SUBDIRS))
 
 #else	/* IHaveSubdirs */
 
@@ -839,5 +842,7 @@ clean:: clean-local
 dist-clean:: clean-local
 	@$(RM) Makefile
 	@echo "dist-clean in $(CURRENT_DIR)"
+
+preformatted:: preformatted-local
 
 #endif	/* IHaveSubdirs */

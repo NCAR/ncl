@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.20 1994-04-08 19:37:09 boote Exp $
+ *	$Id: Rules,v 1.21 1994-04-21 18:46:06 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -42,6 +42,26 @@ local-Makefile::]\
 ]\
 me: local-Makefile]
 #endif	/* InternalMakefileTarget */
+
+/*
+ * Macro:	SubdirTarget
+ *
+ * Description:	This rule takes a target name and applies it to all the
+ *		dirs passed to it.
+ */
+#ifndef	SubdirTarget
+#define	SubdirTarget(dirs,target,dependency)\
+]\
+target::dependency]\
+	@tname\=target; \ ]\
+	for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "Making $$tname in $(CURRENT_DIR)/$$dir";\ ]\
+	$(MAKE) $(MFLAGS) target);\ ]\
+	else echo "NOT Making $$tname in $(CURRENT_DIR)/$$dir"; fi \ ]\
+	done]\
+]
+#endif
 
 /*
  * Macro:	InstallTarget
@@ -105,14 +125,7 @@ all:: all-local makesubdirs]
  */
 #ifndef	InternalCleanSubdirs
 #define InternalCleanSubdirs(dirs)\
-]\
-clean:: clean-local]\
-	-@for dir in dirs ; do \ ]\
-	if (test -d $$dir) then \ ]\
-	(cd $$dir;\ ]\
-	$(MAKE) $(MFLAGS) clean);\ ]\
-	else echo "NOT Cleaning $(CURRENT_DIR)/$$dir"; fi \ ]\
-	done]
+SubdirTarget(dirs,clean,clean-local)
 #endif	/* InternalCleanSubdirs */
 
 /*
@@ -123,13 +136,9 @@ clean:: clean-local]\
  */
 #ifndef	InternalDistCleanSubdirs
 #define	InternalDistCleanSubdirs(dirs)\
+SubdirTarget(dirs,dist-clean,clean-local)\
 ]\
-dist-clean:: clean-local]\
-	-@for dir in dirs ; do \ ]\
-	if (test -d $$dir) then \ ]\
-	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\ ]\
-	else echo "NOT dist-cleaning $(CURRENT_DIR)/$$dir"; fi \ ]\
-	done]\
+dist-clean::]\
 	@$(RM) Makefile]\
 	@echo "dist-clean in $(CURRENT_DIR)"]\
 
@@ -143,14 +152,7 @@ dist-clean:: clean-local]\
  */
 #ifndef	InternalInstallSubdirs
 #define InternalInstallSubdirs(dirs)\
-]\
-install:: install-local]\
-	@for dir in dirs ; do \ ]\
-	if (test -d $$dir) then \ ]\
-	(cd $$dir;\ ]\
-	$(MAKE) $(MFLAGS) install);\ ]\
-	else echo "NOT installing $(CURRENT_DIR)/$$dir"; fi \ ]\
-	done]
+SubdirTarget(dirs,install,install-local)
 #endif	/* InternalInstallSubdirs */
 
 /*
@@ -533,17 +535,10 @@ depend-local:: srcs]\
 #ifndef	InternalDependSubdirs
 #ifdef	NoMakeDepend
 #define InternalDependSubdirs(dirs)\
-depend:: depend-local]
+depend::]
 #else
 #define InternalDependSubdirs(dirs)\
-]\
-depend:: depend-local]\
-	@for dir in dirs ; do \ ]\
-	if (test -d $$dir) then \ ]\
-	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\ ]\
-	$(MAKE) $(MFLAGS) depend);\ ]\
-	else echo "NOT Depending in $(CURRENT_DIR)/$$dir"; fi; \ ]\
-	done]
+SubdirTarget(dirs,depend,depend-local)
 #endif	/* NoMakeDepend */
 #endif	/* InternalDependSubdirs */
 
@@ -585,14 +580,7 @@ includes-local::]\
  */
 #ifndef	InternalIncludesSubdirs
 #define	InternalIncludesSubdirs(dirs)\
-]\
-includes:: includes-local]\
-	@for dir in dirs ; do \ ]\
-	if (test -d $$dir) then \ ]\
-	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\ ]\
-	$(MAKE) $(MFLAGS) includes);\ ]\
-	else echo "NOT including in $(CURRENT_DIR)/$$dir"; fi;\ ]\
-	done]
+SubdirTarget(dirs,includes,includes-local)
 #endif	/* InternalIncludesSubdirs */
 
 /*
@@ -640,12 +628,25 @@ install-local:: destdir/file.section]\
 #ifndef	FormatManPages
 #define	FormatManPages(manpages,mansuffix,catsuffix)\
 ]\
-preformatted::]\
+preformatted-local::]\
 	@for name in manpages; do \ ]\
 	echo "Formatting $${name}mansuffix";\ ]\
 	$(TBL) $${name}mansuffix | $(NROFF) | $(COL) > $${name}catsuffix;\ ]\
 	done]
 #endif	/* FormatManPages */
+
+/*
+ * Macro:	FormatManPagesSubdirs
+ *
+ * Description:	This rule propagates the "preformatted" target threw the
+ *		build tree.
+ */
+#ifndef	FormatManPagesSubdirs
+#define	FormatManPagesSubdirs(dirs)\
+preformatted-local::]\
+]\
+SubdirTarget(dirs,preformatted,preformatted-local)
+#endif	/* FormatManPagesSubdirs */
 
 /*
  * Macro:	InstallXappFiles
