@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
 ;        University Corporation for Atmospheric Research               ;
@@ -9,8 +9,8 @@
 ;   File:       cn12n.ncl
 ;
 ;   Author:     Mary Haley
-;           National Center for Atmospheric Research
-;           PO 3000, Boulder, Colorado
+;               National Center for Atmospheric Research
+;               PO 3000, Boulder, Colorado
 ;
 ;   Date:       Wed Oct 11 16:18:15 MDT 1995
 ;
@@ -32,7 +32,15 @@ begin
 ;
 ; These are the geographical areas we want to mask.
 ;
-  mask_specs = (/"algeria","angola","angola-exclave-called-cabinda","benin","botswana","burundi","cameroon","central-african-republic","chad","congo","djibouti","egypt","equatorial-guinea","ethiopia","gabon","gambia","ghana","guinea","guinea-bissau","ivory-coast","kenya","lesotho","liberia","libya","madagascar","malawi","mali","mauritania","mauritius","morocco","mozambique","namibia","niger","nigeria","rwanda","senegal","sierra-leone","somalia","south-africa","sudan","swaziland","tanzania","togo","tunisia","uganda","upper-volta","western-sahara","zaire","zambia","zimbabwe"/)
+  mask_specs = (/\
+  "algeria","angola","angola-exclave-called-cabinda","benin","botswana",\
+  "burundi","cameroon","central-african-republic","chad","congo","djibouti",\
+  "egypt","equatorial-guinea","ethiopia","gabon","gambia","ghana","guinea",\
+  "guinea-bissau","ivory-coast","kenya","lesotho","liberia","libya",\
+  "madagascar","malawi","mali","mauritania","mauritius","morocco",\
+  "mozambique","namibia","niger","nigeria","rwanda","senegal","sierra-leone",\
+  "somalia","south-africa","sudan","swaziland","tanzania","togo","tunisia",\
+  "uganda","upper-volta","western-sahara","zaire","zambia","zimbabwe"/)
 ;
 ; Create an application object.
 ;
