@@ -1,0 +1,49 @@
+/*
+ *      $Id: LINUX,v 1.1 1996-01-13 00:37:44 haley Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		LINUX
+ *
+ *	Author:		Tim Fredrick
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Wed Oct 25 14:56:41 MDT 1995
+ *
+ *	Description:	This file contains all the directives needed to
+ *			tell ymake how LINUX is different from a
+ *			default setup.
+ */
+#define	HdfDefines	-DLINUX
+#define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define ByteSwapped
+#define	CCompiler	gcc
+#define	FCompiler	g77
+#define	CtoFLibraries	-lm -lf2c
+#define CcOptions       -ansi
+#define COptimizeFlag   
+#define FOptimizeFlag   
+#define HDFlib          -ldf -ljpeg
+
+#define	ArchRecLibSearch	-L/usr/X11/lib -L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/X11/include -I/usr/local/include
+
+/*************** Redefine Macros from Rules ********************************/
+
+/*
+ * Macro:	MakeDir
+ *
+ * Description:	This rule creates a directory - if a parent dir doesn't exist
+ *		it attempts to create it.
+ */
+#ifndef	MakeDir
+#define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#endif
+
