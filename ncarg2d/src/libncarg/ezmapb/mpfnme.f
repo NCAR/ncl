@@ -1,5 +1,5 @@
 C
-C $Id: mpfnme.f,v 1.1 1998-04-16 20:45:37 kennison Exp $
+C $Id: mpfnme.f,v 1.2 1998-04-30 22:43:52 kennison Exp $
 C
       CHARACTER*128 FUNCTION MPFNME (IAIN,ILVL)
 C
@@ -21,8 +21,7 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/ NAME(MNAI),FLNS
-        CHARACTER*64    NAME
-        CHARACTER*128   FLNS
+        CHARACTER*64    NAME,FLNS
         SAVE   /MAPCMY/
 C
         CHARACTER*128 CTMP

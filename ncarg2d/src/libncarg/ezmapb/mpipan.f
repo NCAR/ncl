@@ -1,5 +1,5 @@
 C
-C $Id: mpipan.f,v 1.1 1998-04-16 20:45:44 kennison Exp $
+C $Id: mpipan.f,v 1.2 1998-04-30 22:43:54 kennison Exp $
 C
       INTEGER FUNCTION MPIPAN (IAIN,ANME)
 C
@@ -14,8 +14,7 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/ NAME(MNAI),FLNS
-        CHARACTER*64    NAME
-        CHARACTER*128   FLNS
+        CHARACTER*64    NAME,FLNS
         SAVE   /MAPCMY/
 C
         MPIPAN=0

@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.1 1998-04-29 16:42:53 kennison Exp $
+C $Id: mplnri.f,v 1.2 1998-04-30 22:43:57 kennison Exp $
 C
       SUBROUTINE MPLNRI (FLNM)
 C
@@ -18,14 +18,14 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/ NAME(MNAI),FLNS
-        CHARACTER*64    NAME
-        CHARACTER*128   FLNS
+        CHARACTER*64    NAME,FLNS
         SAVE   /MAPCMY/
 C
-C FLNT is a character variable in which to form the name of a file to
-C be read.
+C FLNL and FLND are character variables in which to form the names of
+C files to be read (locally or in the NCAR Graphics database directory).
 C
-        CHARACTER*128 FLNT
+        CHARACTER*71  FLNL
+        CHARACTER*128 FLND
 C
 C CHRS is a buffer used to read name information.
 C
@@ -35,24 +35,33 @@ C Check for an uncleared prior error.
 C
         IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Form the full name of the ".names" file.
+C Form the full names of the ".names" file (locally and in the NCAR
+C Graphics database directory).
 C
         LFNM=MPILNB(FLNM)
-        CALL MPDBDI (FLNT,ISTA)
+C
+        FLNL=FLNM(1:LFNM)//'.names'//CHAR(0)
+        LFNL=LFNM+7
+C
+        CALL MPDBDI (FLND,ISTA)
         IF (ISTA.EQ.-1) GO TO 901
         DO 101 I=1,121-LFNM
-          IF (FLNT(I:I).EQ.CHAR(0)) THEN
-            FLNT(I:128)='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
-            LFLT=I+LFNM+7
+          IF (FLND(I:I).EQ.CHAR(0)) THEN
+            FLND(I:128)='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
+            LFND=I+LFNM+7
             GO TO 102
           ENDIF
   101   CONTINUE
         GO TO 901
 C
-C Open the ".names" file.
+C Open the ".names" file.  Look for a local version first; if that one
+C can't be found, look for one in the NCAR Graphics database directory.
 C
-  102   CALL NGOFRO (FLNT(1:LFLT),IFDE,ISTA)
-        IF (ISTA.NE.0) GO TO 902
+  102   CALL NGOFRO (FLNL(1:LFNL),IFDE,ISTA)
+        IF (ISTA.NE.0) THEN
+          CALL NGOFRO (FLND(1:LFND),IFDE,ISTA)
+          IF (ISTA.NE.0) GO TO 902
+        END IF
 C
 C Clear the arrays into which the name information is to be read.
 C
@@ -89,7 +98,7 @@ C
 C Save the file name, so that other routines that read the info will
 C know it's unnecessary.
 C
-        FLNS=FLNT
+        FLNS=FLNM
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: hlumpchln.f,v 1.3 1998-04-28 20:45:22 kennison Exp $
+C $Id: hlumpchln.f,v 1.4 1998-04-30 22:43:51 kennison Exp $
 C
       SUBROUTINE HLUMPCHLN (IFLG,ILTY,IOAL,IOAR,NPTS,PNTS)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mpioar.f,v 1.1 1998-04-16 20:45:42 kennison Exp $
+C $Id: mpioar.f,v 1.2 1998-04-30 22:43:54 kennison Exp $
 C
       INTEGER FUNCTION MPIOAR (IAID,ILVL)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.3 1998-04-28 20:45:24 kennison Exp $
+C $Id: mplndm.f,v 1.4 1998-04-30 22:43:56 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -29,18 +29,18 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/ NAME(MNAI),FLNS
-        CHARACTER*64    NAME
-        CHARACTER*128   FLNS
+        CHARACTER*64    NAME,FLNS
         SAVE   /MAPCMY/
 C
         COMMON /MAPCMZ/ NNMS,ILTY,IAIL,IAIR,BLAG,SLAG,BLOG,SLOG,
      +                  PNTS(200)
         SAVE   /MAPCMZ/
 C
-C FLNT is a character variable in which to form the name of a file to
-C be read.
+C FLNL and FLND are character variables in which to form the names of
+C files to be read (locally or in the NCAR Graphics database directory).
 C
-        CHARACTER*128 FLNT
+        CHARACTER*71  FLNL
+        CHARACTER*128 FLND
 C
 C CHRS is a buffer used to read name information.
 C
@@ -50,15 +50,20 @@ C Check for an uncleared prior error.
 C
         IF (ICFELL('MPLNDM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Form the full name of the ".names" file.
+C Form the full names of the ".names" file (locally and in the NCAR
+C Graphics database directory).
 C
         LFNM=MPILNB(FLNM)
-        CALL MPDBDI (FLNT,ISTA)
+C
+        FLNL=FLNM(1:LFNM)//'.names'//CHAR(0)
+        LFNL=LFNM+7
+C
+        CALL MPDBDI (FLND,ISTA)
         IF (ISTA.EQ.-1) GO TO 901
         DO 101 I=1,121-LFNM
-          IF (FLNT(I:I).EQ.CHAR(0)) THEN
-            FLNT(I:128)='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
-            LFLT=I+LFNM+7
+          IF (FLND(I:I).EQ.CHAR(0)) THEN
+            FLND(I:128)='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
+            LFND=I+LFNM+7
             GO TO 102
           ENDIF
   101   CONTINUE
@@ -67,12 +72,16 @@ C
 C If the name of the file to be used is not the same as the one last
 C time, re-read name information.
 C
-  102   IF (FLNT.NE.FLNS) THEN
+  102   IF (FLNM.NE.FLNS) THEN
 C
-C Open the ".names" file.
+C Open the ".names" file.  Look for a local version first; if that one
+C can't be found, look for one in the NCAR Graphics database directory.
 C
-          CALL NGOFRO (FLNT(1:LFLT),IFDE,ISTA)
-          IF (ISTA.NE.0) GO TO 902
+          CALL NGOFRO (FLNL(1:LFNL),IFDE,ISTA)
+          IF (ISTA.NE.0) THEN
+            CALL NGOFRO (FLND(1:LFND),IFDE,ISTA)
+            IF (ISTA.NE.0) GO TO 902
+          END IF
 C
 C Clear the arrays into which the name information is to be read.
 C
@@ -108,15 +117,25 @@ C
 C
 C Save the file name, so that the read next time can be skipped.
 C
-          FLNS=FLNT
+          FLNS=FLNM
 C
         END IF
 C
-C Open the ".lines" file.
+C If EZMAP needs initialization, do nothing further.
 C
-        FLNT(LFLT-6:LFLT-1)='.lines'
-        CALL NGOFRO (FLNT(1:LFLT),IFDE,ISTA)
-        IF (ISTA.NE.0) GO TO 905
+        CALL MPGETI ('IN',INTF)
+        IF (INTF.NE.0) RETURN
+C
+C Open the ".lines" file.  Again, look for a local version first and, if
+C that one can't be found, look in the NCAR Graphics database directory.
+C
+        FLNL(LFNL-6:LFNL-1)='.lines'
+        CALL NGOFRO (FLNL(1:LFNL),IFDE,ISTA)
+        IF (ISTA.NE.0) THEN
+          FLND(LFND-6:LFND-1)='.lines'
+          CALL NGOFRO (FLND(1:LFND),IFDE,ISTA)
+          IF (ISTA.NE.0) GO TO 905
+        END IF
 C
 C Set the flag IWGF to say whether or not the whole globe is shown by
 C the current projection.  If so (IWGF=1), there's no need to waste the

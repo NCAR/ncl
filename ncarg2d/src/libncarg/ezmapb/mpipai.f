@@ -1,5 +1,5 @@
 C
-C $Id: mpipai.f,v 1.1 1998-04-16 20:45:43 kennison Exp $
+C $Id: mpipai.f,v 1.2 1998-04-30 22:43:54 kennison Exp $
 C
       INTEGER FUNCTION MPIPAI (IAIN,IAIP)
 C
