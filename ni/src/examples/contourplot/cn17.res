@@ -61,7 +61,7 @@
 ;
 *txAngleF:       -45.
 *txFont:         25
-*txFontColor:    6
+*txFontColor:    yellow
 *txFontHeightF:  0.02
 
 ;
