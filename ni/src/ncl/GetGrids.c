@@ -96,6 +96,8 @@ static NhlErrorTypes DummyWorkstationDeactivate(
 #endif
 );
 
+static int	DummyWksCount = 0;
+
 NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
         {
 /* class_name			*/	"dummyWorkstationClass",
@@ -130,7 +132,7 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
 	{
-/* current_wks_count	*/	NhlInheritCurrentWksCount,                
+/* current_wks_count	*/	&DummyWksCount,                
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	DummyWorkstationOpen,
