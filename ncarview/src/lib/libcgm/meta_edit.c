@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.12 1992-07-16 19:32:50 clyne Exp $
+ *	$Id: meta_edit.c,v 1.13 1992-07-30 19:22:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -972,7 +972,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	tmp = buf[HEADERSIZE] << 8 | buf[HEADERSIZE + 1];
 	if (GETBITS(tmp, CLASS_POSS, CLASS_BITS) != DEL_ELEMENT ||
-		GETBITS(tmp, ID_POSS, ID_BITS ) != END_MF) {
+		GETBITS(tmp, ID_POSS, ID_BITS ) != END_MF_ID) {
 
 		(void) CGM_close(tmp_fd);
 		if (buf) cfree((char *) buf);
@@ -1123,7 +1123,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			(void) CGM_close(t_fd);
 			return(ERR);
 		}
-		if (instr.class == DEL_ELEMENT && instr.id == END_PIC)
+		if (instr.class == DEL_ELEMENT && instr.id == END_PIC_ID)
 			break;
 
 		if ((i = CGM_putInstr(workingList.tmp_fd, &instr)) < 0) {
@@ -1142,7 +1142,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			(void) CGM_close(t_fd);
 			return(ERR);
 		}
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == BEG_PIC_B)));
+	} while (!((instr.class == DEL_ELEMENT) && (instr.id == BEG_PIC_B_ID)));
 
 	/* 
 	 * copy elements from "top" frame to tmp file until after an
@@ -1159,7 +1159,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 		}
 		frame_size += i;
 		
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC))); 
+	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
 	(void) CGM_flushOutputInstr(workingList.tmp_fd);
 	frame_size++;
 	(void) CGM_close(t_fd);
@@ -1597,7 +1597,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 			}
 		}
 		frame_size += i; /* keep track of num of recordss in frame */
-	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC))); 
+	} while (!((instr.class == DEL_ELEMENT) && (instr.id == END_PIC_ID))); 
 		
 	/*
 	 * flusth the output buffer to the tmp file
@@ -1629,7 +1629,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 * to update the working directory textual description of that
 	 * frame. The textual description comes from the BEG PIC data.
 	 */
-	if (edit_instr->class == DEL_ELEMENT && edit_instr->id == BEG_PIC) {
+	if (edit_instr->class == DEL_ELEMENT && edit_instr->id == BEG_PIC_ID) {
 		if (workingDir->d[frame].text != NULL) {
 			cfree ((char *) workingDir->d[frame].text);
 		}

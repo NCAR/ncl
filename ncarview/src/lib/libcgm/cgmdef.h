@@ -125,42 +125,45 @@
  */
 #define	DEL_ELEMENT	0	
 
-#define	NOOP		0	/* no operation		*/
-#define BEG_MF		1	/* begin metafile	*/
-#define END_MF		2	/* end metafile		*/
-#define BEG_PIC		3	/* begin picture	*/
-#define BEG_PIC_B	4	/* begin picture body	*/
-#define END_PIC		5	/* end picture		*/
+#define	NOOP_ID		0	/* no operation		*/
+#define BEG_MF_ID	1	/* begin metafile	*/
+#define END_MF_ID	2	/* end metafile		*/
+#define BEG_PIC_ID	3	/* begin picture	*/
+#define BEG_PIC_B_ID	4	/* begin picture body	*/
+#define END_PIC_ID	5	/* end picture		*/
 
 /*
  *	cgm descriptor elements (class 1)
  */
 #define	DES_ELEMENT	1
 
-#define	MF_VERSION	1
-#define	MF_ELIST	11
-#define	MF_DEFAULTS	12
+#define	MF_VERSION_ID	1
+#define	MF_ELIST_ID	11
+#define	MF_DEFAULTS_ID	12
 
 /*
  *	cgm graphical primitive elements (class 4)
  */
-#define	GRP_ELEMENT	4
+#define	GRP_ELEMENT		4
 
-#define CELL_ARRAY	9
+#define POLYGON_ID		7
+#define CELL_ARRAY_ID		9
 
 /*
  *	cgm attribute elements (class 4)
  */
-#define	ATT_ELEMENT	5
+#define	ATT_ELEMENT		5
 
-#define COLOR_TABLE	34
+#define	INTERIOR_STYLE_ID	22
+#define	FILL_COLOUR_ID		23
+#define COLOR_TABLE_ID		34
 
 /*
  *	cgm escape elements (class 6)
  */
-#define	ESC_ELEMENT	6
+#define	ESC_ELEMENT		6
 
-#define	ESCAPE		1
+#define	ESCAPE_ID		1
 
 
 #endif	_cgmdef_

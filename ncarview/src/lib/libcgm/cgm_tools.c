@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.17 1992-07-27 15:05:15 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.18 1992-07-30 19:21:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -589,7 +589,7 @@ Directory	*CGM_directory(cgm_fd, fp)
 			if (GETBITS(tmp, CLASS_POSS, CLASS_BITS) 
 					== DEL_ELEMENT && 
 					GETBITS(tmp, ID_POSS, ID_BITS )
-					== BEG_PIC) {
+					== BEG_PIC_ID) {
 
 				data_len = GETBITS(tmp, PARM_POSS, PARM_BITS);
 
@@ -1058,11 +1058,15 @@ int	CGM_putInstr(cgm_fd, instr)
 		 * begin picture and a end metafile  to ensure that the 
 		 * beg pic/end mf is the first element in a record
 		 */
-		if ((free_count < COMM_SIZE) || 
-			((instr->class == DEL_ELEMENT && instr->id == BEG_PIC)&&
-			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)||
-			((instr->class == DEL_ELEMENT && instr->id == END_MF)&&
-			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)){
+		if ((free_count < COMM_SIZE) || (
+			(instr->class == DEL_ELEMENT && instr->id == BEG_PIC_ID)
+			&&
+			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE
+			) || (
+			(instr->class == DEL_ELEMENT && instr->id == END_MF_ID)
+			&&
+			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)
+			){
 
 			if ((free_count = put_output(cgm_fd, pg, free_count))<1)
 				return(free_count);
@@ -1103,9 +1107,9 @@ int	CGM_putInstr(cgm_fd, instr)
 		 * record status of frame bits for NCAR CGM header
 		 */
 		if (instr->class == DEL_ELEMENT) {
-			pg->beg_meta = (pg->beg_meta || instr->id == BEG_MF);
-			pg->end_meta = (pg->end_meta || instr->id == END_MF);
-			pg->new_frame =(pg->new_frame || instr->id == BEG_PIC);
+			pg->beg_meta = (pg->beg_meta || instr->id == BEG_MF_ID);
+			pg->end_meta = (pg->end_meta || instr->id == END_MF_ID);
+			pg->new_frame =(pg->new_frame || instr->id == BEG_PIC_ID);
 		}
 	}
 
