@@ -545,8 +545,9 @@ eoln : EOLN 						{ yyerrok; }
 								ExtStack *tm;
 								yyerrok;
 								if(tmp_sym != NULL) {
-									tm = tmp_sym->next;
+									tm = tmp_sym;
 									tm->tmp_sym->u.package->scope = _NclPopScope();
+									tmp_sym = tmp_sym->next;
 									NclFree(tm);
 								} 
 
