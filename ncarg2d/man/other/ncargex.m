@@ -1,10 +1,10 @@
 .\"
-.\"	$Id: ncargex.m,v 1.7 1993-04-15 16:40:15 haley Exp $
+.\"	$Id: ncargex.m,v 1.8 1993-04-19 18:59:01 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
-ncargex \- NCAR Graphics Fortran Examples and Tests
+ncargex \- NCAR Graphics Fortran Examples
 .SH SYNOPSIS
 \fBncargex\fP 
 [\fB\-all, -A\fR]
@@ -50,30 +50,33 @@ ncargex \- NCAR Graphics Fortran Examples and Tests
 \fBname ...\fR
 .SH DESCRIPTION
 .I ncargex
-provides the user with access to example source code as
-well as the tutorial code for NCAR
-Graphics. \fIncargex\fP
-copies the source code for the specified example(s)
-into the current directory and then compiles, links,
-and executes the example, leaving an NCGM file
-with the same name as the example, suffixed with
-".ncgm".
+provides the user with access to example source code as well as the
+tutorial code for NCAR Graphics. \fIncargex\fP copies the source code
+for the specified example(s) into the current directory and then
+compiles, links, and executes the example, leaving an NCGM file with
+the same name as the example, suffixed with ".ncgm".  Exceptions to
+this are examples that don't generate NCGM files (a message will be
+printed to this effect) and the "fgke03" example, which generates two
+metafiles with the names "META01" and "META02".
 .sp
 In order to run \fIncargex\fP, you must have your NCARG_ROOT
 environment variable set to the directory pathname where the NCAR
 Graphics libraries, binaries, and include files were installed.  If
-you are not sure what NCARG_ROOT should be set to, please check with 
-your system administrator or the site representative for NCAR Graphics.
-If the NCAR Graphics libraries, binaries, and include files were not
-installed under one root directory, then you will need to set the 
-environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE instead.
-Please see "man ncargintro" for more information.
+you are not sure what NCARG_ROOT should be set to, please check with
+your system administrator or the site representative for NCAR
+Graphics.  If the NCAR Graphics libraries, binaries, and include files
+were not installed under one root directory, then you will need to set
+the environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE
+instead.  Please see "man ncargintro" for more information.
 .sp
-An option allows you to request that only the source code be copied 
-to your directory, without compilation, linking, or execution.
-Another option allows you to request that only the NCGM file be left
-in your directory and that all other files The argument \fIname\fP may be
-selected from the lists that appear below.
+There are two interactive examples that require you to be running X
+and to have your DISPLAY environment variable set correctly in order
+to execute them, because they pop up an X window.  These examples are
+"fgke01" and "fgke04".  The "-gks" and "-F" options will not generate
+these examples; you must explicitly list them on the \fIncargex\fP
+command line.
+.sp
+The argument \fIname\fP may be selected from the lists that appear below.
 .sp
 .I OPTIONS
 .IP "\-all, \-A"
@@ -198,199 +201,123 @@ tests.
 Specifies that the selected examples and/or tests should be generated one
 at a time and viewed as they are generated.  This is intended for use during
 testing of new releases at NCAR.
+.sp
+Below is a list of all the available \fIncargex\fP examples.  They are
+listed according to which utility they belong with:
 .nf
 .sp
 .I "EXAMPLES AVAILABLE"
 .sp
-.I "AREAS Example:"
-	arex01
+.I "AREAS Examples:"
+	arex01 cardb1 cardb2 caredg carfill carline carmap tareas
 .sp
 .I "AUTOGRAPH Examples:"
-	agex01 agex02 agex03 agex04 agex05
-	agex06 agex07 agex08 agex09 agex10
-	agex11 agex12 agex13
+	agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08
+	agex09 agex10 agex11 agex12 agex13 fagaxclr fagaxlbl
+	fagaxmax fagcuclr fagcudsh fagezmxy fagezmy fagezxy
+	fagezy fagilclr fagovrvw tagupw tautog
 .sp
-.I "BIVAR Example:"
-	cbex01
+.I "BIVAR Examples:"
+	cbex01 cidsfft
+.sp
+.I "COLCONV Examples:"
+	coex01 coex02 coex03 fcce01 fcce02 tcolcv
 .sp
 .I "CONPACK Examples:"
-	cpex01 cpex02 cpex03 cpex04 cpex05
-	cpex06 cpex07 cpex08 cpex09
+	cbex01 ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit
+	ccpclc ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc
+	ccpdflt ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt
+	ccpila ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb
+	ccpllc ccplll ccpllo ccpllp ccpllt ccpllw ccpmap ccpmovi
+	ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 ccppc2
+	ccppc3 ccppc4 ccppkcl ccppole ccprc ccprect ccprwc ccprwu
+	ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccpt2d ccptitle
+	ccpvp ccpvs cidsfft colcon cpex01 cpex02 cpex03 cpex04
+	cpex05 cpex06 cpex07 cpex08 cpex09 tconpa
 .sp
-.I "EZMAP Examples:"
-	mpex01 mpex02 mpex03 mpex04 mpex05
-	mpex06 mpex07 mpex08 mpex09 mpex10
-	mpexfi eezmpa
-.sp
-.I "LABELBAR Example:"
-	elblba
-.sp
-.I "PLOTCHAR Example:"
-	epltch
-.sp
-.I "SCROLLED_TITLE Example:"
-	slex01
-.sp
-.I "SOFTFILL Examples:"
-	sfex01 sfex02
-.sp
-.I "SPPS Examples:"
-	splogy sprevx spset1 spset2
-.sp
-.I "STREAMLINES Examples:"
-	stex01 stex02 stex03
-.sp
-.I "SURFACE Example:"
-	srex01
-.sp
-.I "VECTORS Examples:"
-	vvex01 vvex02
-.sp
-.I "Miscellaneous Examples:"
-	coex01 coex02 coex03 bnchmk
-.sp
-.I "Tutorial AREAS Examples:"
-	cardb1 caredg carline cardb2 carfill carmap
-.sp
-.I "Tutorial CONPACK/BIVAR Example:"
-	cidsfft
-.sp
-.I "Tutorial CONPACK Examples:"
-	ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc
-	ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt
-	ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt ccpila
-	ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb
-	ccpllc ccplll ccpllo ccpllp ccpllt ccpllw ccpmap
-	ccpmovi ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1
-	ccppc2 ccppc3 ccppc4 ccppkcl ccppole ccpt2d ccprc ccprect
-	ccprwc ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv
-	ccptitle ccpvp ccpvs colcon
-.sp
-.I "Tutorial EZMAP Examples:"
-	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
-	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
-	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
-.sp
-.I "Fundamental AUTOGRAPH Examples:"
-	fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy
-	fagezmy fagezxy fagezy fagilclr fagovrvw
-.sp
-.I "Fundamental COLCONV Examples:"
-	fcce01 fcce02
-.sp
-.I "Fundamental DASHLINE Examples:"
-	fdlcurvd fdldashc fdldashd fdlsmth
-.sp
-.I "Fundamental FIELD_FLOW Examples:"
-	fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05
-.sp
-.I "Fundamental GKS Examples:"
-	fgke01 fgke02 fgke03 fgke04 fcell fcell0 fgpm01 fgkgpl
-	fgkgpm fgkgtx fgklnclr fgklnwth
-.sp
-.I "Fundamental ISOSURFACE Examples:"
-	fisissrf fispwrzi
-.sp
-.I "Fundamental NGMISC Examples:"
-	fngngdts fngwsym
-.sp
-.I "Fundamental PLOTCHAR Examples:"
-	fpchiqu fpcloqu fpcfonts
-.sp
-.I "Fundamental SCROLLED_STITLE Example:"
-	fslfont
-.sp
-.I "Fundamental SOFTFILL Examples:"
-	fsfwrld fsfsgfa
-.sp
-.I "Fundamental SPPS  Examples:"
-	fspcurve fspline fsppoint fspponts
-.sp
-.I "Fundamental STREAMLINES Examples:"
-	fstream ffex00 ffex01 ffex03 ffex04
-.sp
-.I "Fundamental SURFACE Examples:"
-	fsrezsrf fsrpwrzs fsrsrfac
-.sp
-.I "Fundamental THREED Examples:"
-	fthex01 fthex02 fthex03 fthex04 fthex05
-.sp
-.I "Fundamental VECTORS Examples:"
-	ffex00 ffex01 ffex02 ffex05
-.sp
-.I "Programmer Doc GKS Examples:"
-	pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07
-	pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14
-	pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21
-.sp
-.I "AREAS Test Program:"
-    tareas
-.sp
-.I "AUTOGRAPH Test Programs:"
-    tagupw tautog
-.sp
-.I "COLCONV Test Program:"
-    tcolcv
-.sp
-.I "CONPACK Test Program:"
-    tconpa
-.sp
-.I "CONRAN_FAMILY Test Programs:"
+.I "CONRAN FAMILY Examples:"
     tconan tconaq tconas
 .sp
-.I "CONREC_FAMILY Test Programs:"
-    tconre tcnqck tcnsmt tcnsup
+.I "CONREC FAMILY Examples:"
+    tcnqck tcnsmt tcnsup tconre
 .sp
-.I "DASHLINE Test Programs:"
-    tdashc tdashl tdashp tdashs
+.I "DASHLINE Examples:"
+	fdlcurvd fdldashc fdldashd fdlsmth tdashc tdashl tdashp
+	tdashs
 .sp
-.I "EZMAP Test Programs:"
-    tezmap tezmpa
+.I "EZMAP Examples:"
+	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
+	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot
+	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
+	eezmpa mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07
+	mpex08 mpex09 mpex10 mpexfi tezmap tezmpa
 .sp
-.I "GFLASH Test Program:"
+.I "FIELD FLOW Examples:"
+	ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fstream stex01
+	stex02 stex03 vvex01 vvex02
+.sp
+.I "GFLASH Example:"
     tgflas
 .sp
-.I "GRIDALL Test Program:"
+.I "GKS Examples:"
+	fcell fcell0 fgke01 fgke02 fgke03 fgke04 fgkgpl fgkgpm
+	fgkgtx fgklnclr fgklnwth fgpm01 pgkex01 pgkex02 pgkex03
+	pgkex04 pgkex05 pgkex06 pgkex07 pgkex08 pgkex09 pgkex10
+	pgkex11 pgkex12 pgkex13 pgkex14 pgkex15 pgkex16 pgkex17
+	pgkex18 pgkex19 pgkex20 pgkex21
+.sp
+.I "GRIDALL Example:"
     tgrida
 .sp
-.I "HALFTONE Test Program:"
+.I "HALFTONE Example:"
     thafto
 .sp
-.I "HISTOGRAM Test Program:"
+.I "HISTOGRAM Example:"
     thstgr
 .sp
-.I "ISOSRFHR Test Program:"
+.I "ISOSRFHR Example:"
     tisohr
 .sp
-.I "ISOSURFACE Test Programs:"
-    tisosr tpwrzi
+.I "ISOSURFACE Examples:"
+	fisissrf fispwrzi tisosr tpwrzi
 .sp
-.I "LABELBAR Test Program:"
-    tlblba
+.I "LABELBAR Examples:"
+	elblba tlblba
 .sp
-.I "PLOTCHAR Test Program:"
-    tpltch
+.I "NGMISC Examples:"
+	fngngdts fngwsym
 .sp
-.I "PWRITE_FAMILY Test Programs:"
+.I "PLOTCHAR Examples:"
+	epltch fpchiqu fpcloqu fpcfonts tpltch
+.sp
+.I "PWRITE FAMILY Examples:"
     tpwrtx tpwry
 .sp
-.I "SCROLLED_TITLE Test Program:"
-    tstitl
+.I "SCROLLED TITLE Examples:"
+	fslfont slex01 tstitl
 .sp
-.I "SOFTFILL Test Program:"
-    tsoftf
+.I "SOFTFILL Examples:"
+	fsfsgfa fsfwrld sfex01 sfex02 tsoftf
 .sp
-.I "STREAMLINES Test Program:"
-    tstrml
+.I "SPPS Examples:"
+	fcoord fcoord1 fcoord2 fspcurve fspline fsppoint
+	fspponts splogy sprevx
 .sp
-.I "SURFACE Test Programs:"
-    tsrfac tpwrzs
+.I "STREAMLINES Examples:"
+	fstream ffex00 ffex01 ffex03 ffex04 stex01 stex02
+	stex03 tstrml 
 .sp
-.I "THREED Test Programs:"
-    tthree tpwrzt
+.I "SURFACE Examples:"
+	fsrezsrf fsrpwrzs fsrsrfac srex01 tsrfac tpwrzs
 .sp
-.I "VECTORS Test Program:"
-    tvelvc
+.I "THREED Examples:"
+	fthex01 fthex02 fthex03 fthex04 fthex05 tthree tpwrzt
+.sp
+.I "VECTORS Examples:"
+	ffex00 ffex01 ffex02 ffex05 tvelvc vvex01 vvex02
+.sp
+.I "Miscellaneous Examples:"
+	bnchmk example
 .sp
 .fi
 .SH SEE ALSO
