@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.2 1993-04-08 22:36:09 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-04-29 17:55:33 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= fgks
 
 GENERIC_SRCS = fcell.f fcell0.f fgke01.f fgke02.f fgke03.f fgke04.f fgkgpl.f \
-	fgkgpm.f fgkgtx.f fgklnclr.f fgklnwth.f fgpm01.f
+	fgkgpm.f fgkgtx.f fgklnclr.f fgklnwth.f fgpm01.f fcirc.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
