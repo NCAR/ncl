@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.35 2000-02-23 19:52:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.36 2000-03-09 14:42:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -155,7 +155,7 @@ begin
     ncurves    = 1
     nptsy      = dimsizes(y)
 
-    ynew       = new((/nref_lines,nptsy/),float,ymsg)
+    ynew       = new((/nref_lines,nptsy/),typeof(y),ymsg)
     do i = 0,nref_lines-1
       ynew(i,:)  = y
     end do
@@ -169,7 +169,7 @@ begin
   nlines = max((/ncurves,nref_lines/))
 
   if(ndimsx.eq.1)
-    xnew = new((/nlines,nptsy/),float,xmsg)
+    xnew = new((/nlines,nptsy/),typeof(x),xmsg)
     do i = 0,nlines-1
         xnew(i,:)  = x
     end do
@@ -177,7 +177,7 @@ begin
     xnew = x
   end if
 
-  refnew  = new((/nlines/),float)
+  refnew  = new((/nlines/),typeof(ref_line))
   refnew  = ref_line
 
   xinterp(:,0) = xnew(:,0)
@@ -1074,8 +1074,8 @@ end
         end if
       else
         create_gon = True
-            xabove_line = new(npts+2,float)
-            yabove_line = new(npts+2,float)
+      end if   ; not ismissing
+      if(create_gon)
         if(igon.gt.1)
           anumgons = anumgons + 1 
         end if
@@ -1095,8 +1095,8 @@ end
     igon       = 0
     create_gon = False
     do i=0,npts-1
-          yabove_gon = new((/igon+3/),float)
-          xabove_gon = new((/igon+3/),float)
+      if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
+        if(yin(i).le.ref)
           if(igon.eq.0)
             igon = 1
           else
@@ -1137,8 +1137,8 @@ end
             yabove_line(0) = yin(i)
             xabove_line(0) = xin(i)
             igon = 1
-            xbelow_line = new(npts+2,float)
-            ybelow_line = new(npts+2,float)
+          else
+            xabove_line(igon) = xin(i) 
             yabove_line(igon) = yin(i) 
             igon = igon + 1
           end if
@@ -1158,8 +1158,8 @@ end
 ; Close up and draw polygon
           if(yabove_line(0).ne.ref)
             xabove_gon(0) = xabove_line(0)
-          ybelow_gon = new((/igon+3/),float)
-          xbelow_gon = new((/igon+3/),float)
+            yabove_gon(0) = ref
+            xabove_gon(1:igon) = xabove_line(0:igon-1)
             yabove_gon(1:igon) = yabove_line(0:igon-1)
             newgon = igon + 1
           else
@@ -1549,8 +1549,8 @@ begin
 
   tmres = True
   set_attr(tmres,"tmXBMode"         , "Explicit")
-;         lat_spacing: float                                            ;
-;        mlat_spacing: float                                            ;
+  set_attr(tmres,"tmXBLabels"       , lonlabels)
+  set_attr(tmres,"tmXBValues"       , lonvalues)
 ;                                                                       ;
 ;
 ; If the user has set tiXAxisString explicitly, then don't set tiXAxisOn
@@ -1577,7 +1577,7 @@ end
   set_xaxis = False
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
-;              font_height:float                                        ;
+      any(data@units.eq.get_allowed_lat_units)).or. \
      (.not.is_xyplot.and.is_valid_lat_xcoord(data))) then
 
 ; Label X axis with nice latitude labels.
@@ -1680,20 +1680,7 @@ local dims, newdata, ny, mx, mx1
 
     tickmark = create "tickmarks" tickMarkClass wks
        "vpXF"            : vpxf       ; Set the viewport location of the
-    if(typeof(data).eq."float")
-      newdata = new((/ny  ,mx1/),float)
-    else
-      if(typeof(data).eq."double")
-        newdata = new((/ny  ,mx1/),double)
-      else
-        if(typeof(data).eq."integer")
-          newdata = new((/ny  ,mx1/),integer)
-        else
-          print("gsn_add_cyclic_point: Error: Don't recognize type of input data")
-          exit
-        end if
-      end if
-    end if
+       "vpYF"            : vpyf       ; tick marks to be the same as 
 
        "vpWidthF"        : vpwf       ; the map.
        "vpHeightF"       : vphf
@@ -1718,7 +1705,7 @@ local dims, newdata, ny, mx, mx1
     anno = NhlAddAnnotation(map,tickmark)
     setvalues anno
       "amZone"         : 0     ; Zone 0 centers tick marks over map.
-    ret = new(dimsizes(locs),float)
+      "amResizeNotify" : True  ; Resize tick marks if map resized.
     end setvalues
 
     map@tickmarks = tickmark
@@ -3846,8 +3833,8 @@ begin
       else
         ymsg = 1.e36
         else
-      xinterp      = new((/nyref,2*nptsy/),float,xmsg)
-      yinterp      = new((/nyref,2*nptsy/),float,ymsg)
+      xinterp      = new((/nyref,2*nptsy/),typeof(x),xmsg)
+      yinterp      = new((/nyref,2*nptsy/),typeof(y),ymsg)
       npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
 ;
       xinterp = x

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.31 2000-02-23 19:52:12 haley Exp $
+;      $Id: gsn_code.ncl,v 1.32 2000-03-09 14:42:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -358,12 +358,12 @@ end
 ; Procedure : gsnp_turn_off_tickmarks                                   ;
 ;                res:logical                                            ;
 ;                                                                       ;
-;              x_major_length:float                                     ;
-;              y_major_length:float                                     ;
-;              x_minor_length:float                                     ;
-;              y_minor_length:float                                     ;
-;              major_length:float                                       ;
-;              minor_length:float                                       ;
+; By default, tickmarks are drawn on all plots that aren't overlaid on  ;
+; a map. If gsnTickMarksOn is set to False, then this turns off the     ;
+; drawing of tick marks.  This procedure just sets the resources        ;
+; necessary in order to turn off tick marks.                            ;
+;***********************************************************************;
+procedure gsnp_turn_off_tickmarks(res:logical)
 begin
   set_attr(res,"tmXBBorderOn",False )
   set_attr(res,"tmXBOn",      False)
@@ -372,8 +372,8 @@ begin
   set_attr(res,"tmYLBorderOn",False)
 
   set_attr(res,"tmYLOn",      False)
-                              x_major_length:float, y_major_length:float, \
-                              x_minor_length:float, y_minor_length:float, \
+  set_attr(res,"tmYRBorderOn",False)
+  set_attr(res,"tmYROn",      False)
 end
 
 ;***********************************************************************;
@@ -444,14 +444,14 @@ begin
   set_attr(tmres,"tmXBMinorLengthF"        , x_minor_length)
   set_attr(tmres,"tmXBMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmXTMajorLengthF"        , x_major_length)
-;              font_height:float                                        ;
+  set_attr(tmres,"tmXTMajorOutwardLengthF" , x_major_length)
   set_attr(tmres,"tmXTMinorLengthF"        , x_minor_length)
   set_attr(tmres,"tmXTMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmYLMajorLengthF"        , y_major_length)
   set_attr(tmres,"tmYLMajorOutwardLengthF" , y_major_length)
 
   set_attr(tmres,"tmYLMinorLengthF"        , y_minor_length)
-                                       font_height:float)
+  set_attr(tmres,"tmYLMinorOutwardLengthF" , y_minor_length)
   set_attr(tmres,"tmYRMajorLengthF"        , y_major_length)
   set_attr(tmres,"tmYRMajorOutwardLengthF" , y_major_length)
   set_attr(tmres,"tmYRMinorLengthF"        , y_minor_length)
@@ -1037,8 +1037,8 @@ begin
 ; Since the data contains missing values, leave gaps where the missing
 ; values are located.
 ;
-      x2 = new(dimsizes(x),float)
-      y2 = new(dimsizes(x),float)
+      x2 = new(dimsizes(x),typeof(x))
+      y2 = new(dimsizes(x),typeof(y))
       j = 0
       do i = 0,dimsizes(x)-1
         if(ismissing(x(i)).or.ismissing(y(i)))
@@ -1114,8 +1114,8 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 ; Since the data contains missing values, leave gaps where the missing
 ; values are located.
       "vpHeightF" : 1.0
-      x2 = new(dimsizes(x),float)
-      y2 = new(dimsizes(x),float)
+      x2 = new(dimsizes(x),typeof(x))
+      y2 = new(dimsizes(y),typeof(y))
       j = 0
       do i = 0,dimsizes(x)-1
         if(ismissing(x(i)).or.ismissing(y(i)))
@@ -1932,7 +1932,7 @@ end
 ;***********************************************************************;
 
 procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
-                           x:float,y:float,resources:logical )
+                           x,y,resources:logical )
 local i, lbid, attnames, res, lb_res_index, lbres
 begin
 
