@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.6 1995-04-26 23:41:09 kennison Exp $
+C $Id: mapbla.f,v 1.7 1995-07-01 00:04:54 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -23,6 +23,9 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
+      SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
@@ -38,6 +41,14 @@ C
 C Dimension the arrays needed to define some lines across the map.
 C
       DIMENSION XCR(2),YCR(2)
+C
+C Declare an array in which to construct a file name.
+C
+      CHARACTER*128 FLNM
+C
+C Declare an array to use as an input buffer in reading characters.
+C
+      CHARACTER*1 CHRS(512)
 C
 C Define required constants.
 C
@@ -427,9 +438,13 @@ C
       IGRP=IGI1
       CALL MAPIO (1)
       IF (ICFELL('MAPBLA',8).NE.0) RETURN
-      IDLT=IDOS(NOUT)+IDLS
-      IDRT=IDOS(NOUT)+IDRS
       NSEG=0
+C
+C Save the pointers that will tell us whether anything actually got
+C put into the area map, so that, if not, we can take remedial action.
+C
+      IAM5=IAMP(5)
+      IAM6=IAMP(6)
 C
 C Read the next record (group of points).
 C
@@ -439,9 +454,9 @@ C
       IDRT=IDOS(NOUT)+IDRS
       NSEG=NSEG+1
 C
-C Check for the end of the desired data.
+C If the end of the desired data has been reached, quit reading.
 C
-      IF (NPTS.EQ.0) RETURN
+      IF (NPTS.EQ.0) GO TO 302
 C
 C If less than the whole globe is shown by the projection, do a quick
 C check for intersection of the box surrounding the point group with
@@ -463,7 +478,7 @@ C
 10068 CONTINUE
       IF (NPTS.LE.1) GO TO 301
 C
-C Plot the group.
+C Put the group into the area map.
 C
       CALL MAPITA (PNTS(1),PNTS(2),0,IAMP,IGRP,IDLT,IDRT)
       IF (ICFELL('MAPBLA',11).NE.0) RETURN
@@ -486,16 +501,69 @@ C Go get another group.
 C
       GO TO 301
 C
+C See if anything was actually put into the area map and, if not, take
+C action to supply AREAS with a correct area identifier.
+C
+  302 CONTINUE
+      IF (.NOT.(IAMP(5).EQ.IAM5.AND.IAMP(6).EQ.IAM6)) GO TO 10071
+      CALL MPDBDI (FLNM,ISTA)
+      IF (ISTA.EQ.-1) GO TO 309
+      DO 303 I=1,111
+      IF (.NOT.(FLNM(I:I).EQ.CHAR(0))) GO TO 10072
+      FLNM(I:I+17)='/EzmapAreaInfo.'//DDCT(NOUT+1)//CHAR(0)
+      GO TO 304
+10072 CONTINUE
+  303 CONTINUE
+      GO TO 309
+  304 CALL NGOFRO (FLNM,IFDE,ISTA)
+      IF (ISTA.NE.0) GO TO 309
+      NTMS=0
+      MCHR=0
+      NCHR=0
+      DO 307 IDIV=0,9
+      NROW=2**IDIV
+      NCOL=2*NROW
+      DO 306 J=1,NROW
+      RLAT=-90.+(REAL(J)-.5)*(180./REAL(NROW))
+      DO 305 I=1,NCOL
+      RLON=-180.+(REAL(I)-.5)*(360./REAL(NCOL))
+      IF (.NOT.(NTMS.EQ.0)) GO TO 10073
+      CALL MPRDNM (IFDE,CHRS,512,MCHR,NCHR,NTMS)
+      IF (MCHR.EQ.0) GO TO 308
+      CALL MPRDNM (IFDE,CHRS,512,MCHR,NCHR,IAID)
+      IF (MCHR.EQ.0) GO TO 308
+10073 CONTINUE
+      CALL MAPTRA (RLAT,RLON,UVAL,VVAL)
+      IF (.NOT.(UVAL.NE.1.E12)) GO TO 10074
+      XCR(1)=UMIN
+      XCR(2)=UMAX
+      YCR(1)=VMIN
+      YCR(2)=VMAX
+      CALL AREDAM (IAMP,XCR,YCR,2,IGRP,IAID,IAID)
+      GO TO 308
+10074 CONTINUE
+      NTMS=NTMS-1
+  305 CONTINUE
+  306 CONTINUE
+  307 CONTINUE
+10071 CONTINUE
+C
+  308 CALL NGCLFI (IFDE)
+C
+C Done.
+C
+  309 RETURN
+C
 C The following internal procedure is invoked to start a line.
 C
 10005 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10071
+      IF (.NOT.(NCRA.GT.1)) GO TO 10075
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPBLA',14).NE.0)) GO TO 10072
+      IF (.NOT.(ICFELL('MAPBLA',14).NE.0)) GO TO 10076
       IIER=-1
       RETURN
-10072 CONTINUE
-10071 CONTINUE
+10076 CONTINUE
+10075 CONTINUE
       XCRA(1)=XCRD
       YCRA(1)=YCRD
       NCRA=1
@@ -504,16 +572,16 @@ C
 C The following internal procedure is invoked to continue a line.
 C
 10010 CONTINUE
-      IF (.NOT.(NCRA.EQ.100)) GO TO 10073
+      IF (.NOT.(NCRA.EQ.100)) GO TO 10077
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPBLA',15).NE.0)) GO TO 10074
+      IF (.NOT.(ICFELL('MAPBLA',15).NE.0)) GO TO 10078
       IIER=-1
       RETURN
-10074 CONTINUE
+10078 CONTINUE
       XCRA(1)=XCRA(100)
       YCRA(1)=YCRA(100)
       NCRA=1
-10073 CONTINUE
+10077 CONTINUE
       NCRA=NCRA+1
       XCRA(NCRA)=XCRD
       YCRA(NCRA)=YCRD
@@ -522,14 +590,14 @@ C
 C The following internal procedure is invoked to terminate a line.
 C
 10019 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10075
+      IF (.NOT.(NCRA.GT.1)) GO TO 10079
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPBLA',16).NE.0)) GO TO 10076
+      IF (.NOT.(ICFELL('MAPBLA',16).NE.0)) GO TO 10080
       IIER=-1
       RETURN
-10076 CONTINUE
+10080 CONTINUE
       NCRA=0
-10075 CONTINUE
+10079 CONTINUE
       GO TO (10018,10022,10032,10042,10061,10070) , L10019
 C
       END
