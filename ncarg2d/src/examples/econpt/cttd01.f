@@ -1375,7 +1375,8 @@ C Define a constant used to convert from degrees to radians.
 C
         DATA DTOR / .017453292519943 /
 C
-C Zero the data arrays.
+C Define latitudes, longitudes, and dummy field values on a rectangular
+C mesh to be wrapped around the globe.
 C
         DO 102 I=1,IDIM
           DO 101 J=1,JDIM
