@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.35 2003-09-21 00:44:33 fred Exp $
+C	$Id: gesc.f,v 1.36 2003-11-24 19:17:20 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -131,6 +131,7 @@ C      -1526  --  Positioning coordinates that can be set between pictures
 C                   or in the middle of a picture.
 C
 C      -1527  --  Produce an NCAR logo.
+C      -1528  --  Bounding box coordinates for EPS/EPSI files.
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -792,6 +793,82 @@ C
               RETURN
             ENDIF
   320     CONTINUE
+          CONT = 0
+          STR(1:80) = IDR(LIDR)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+          CUFLAG = -1
+        ENDIF
+C
+C  Positioning coordinates for PS that can be set between pictures
+C  or in the middle of a picture.
+C
+        IF (FCTID .EQ. -1528) THEN
+          READ(IDR(1)(1:5),501,ERR=176) IWKID
+          GO TO 175 
+  176     CONTINUE
+          ERS = 1
+          CALL GERHND(182,EESC,ERF)
+          ERS = 0
+          RETURN
+  175     CONTINUE
+          CUFLAG = IWKID
+        ENDIF 
+C
+C  Return if not a PostScript or PDF workstation, unless FCTID = -1521
+C  or FCTID = -1525, or FCTID = -1526, or FCTID = -1528.
+C
+        CALL GQWKC(IWKID,IER,ICONID,ITYP)
+        IF (ITYP.NE.GPDFP .AND. ITYP.NE.GPDFL) THEN
+          IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
+            CUFLAG = -1
+            IF (FCTID.NE.-1521 .AND. FCTID.NE.-1525 .AND.
+     +        FCTID.NE.-1526 .AND. FCTID.NE.-1528) RETURN
+          ENDIF
+        ENDIF
+C
+        FCODE = 6
+        CALL GZROI(0)
+        IL1 = 1
+        IL2 = 1
+        ID(1) = FCTID
+C
+C  Send over the data record.
+C
+        IF (LIDR .EQ. 1) THEN
+          CONT = 0
+          STRL1 = 80
+          STRL2 = 80
+          STR(1:80) = IDR(1)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+          CUFLAG = -1
+        ELSE IF (LIDR .GT. 1) THEN
+          CONT = 1
+          STRL1 = 80*LIDR
+          STRL2 = 80
+          LDRM1 = LIDR-1
+          DO 321 I=1,LDRM1
+            STR(1:80) = IDR(I)
+            IF (I .GT. 1) IL2 = 0
+            CALL GZTOWK
+            IF (RERR .NE. 0) THEN
+              ERS = 1
+              CALL GERHND(RERR,EESC,ERF)
+              ERS = 0
+              RETURN
+            ENDIF
+  321     CONTINUE
           CONT = 0
           STR(1:80) = IDR(LIDR)
           CALL GZTOWK
