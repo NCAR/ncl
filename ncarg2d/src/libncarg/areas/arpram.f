@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.12 1995-05-02 21:39:23 kennison Exp $
+C $Id: arpram.f,v 1.13 1995-05-24 16:55:51 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -821,200 +821,174 @@ C
             IL2=IAM(IP2+9)
             IR2=IAM(IP2+8)
 10121     CONTINUE
-          IMN=MIN(IL1,IL2)
-          IMX=MAX(IL1,IL2)
-          IF (.NOT.(IMN.LT.0)) GO TO 10122
-            IF (.NOT.(IMX.LT.0)) GO TO 10123
-              IAM(IP1+8)=-1
-            GO TO 10124
-10123       CONTINUE
-              IAM(IP1+8)=0
-10124       CONTINUE
-          GO TO 10125
-10122     CONTINUE
-          IF (.NOT.(IMN.EQ.0)) GO TO 10126
-            IAM(IP1+8)=IMX
-          GO TO 10125
-10126     CONTINUE
-          IF (.NOT.(IMN.EQ.IMX)) GO TO 10127
+          IMN=MAX(-1,MIN(IL1,IL2))
+          IMX=MAX(-1,MAX(IL1,IL2))
+          IF (.NOT.(IMN.EQ.IMX)) GO TO 10122
             IAM(IP1+8)=IMN
-          GO TO 10125
-10127     CONTINUE
+          GO TO 10123
+10122     CONTINUE
             IAM(IP1+8)=0
-10125     CONTINUE
-          IMN=MIN(IR1,IR2)
-          IMX=MAX(IR1,IR2)
-          IF (.NOT.(IMN.LT.0)) GO TO 10128
-            IF (.NOT.(IMX.LT.0)) GO TO 10129
-              IAM(IP1+9)=-1
-            GO TO 10130
-10129       CONTINUE
-              IAM(IP1+9)=0
-10130       CONTINUE
-          GO TO 10131
-10128     CONTINUE
-          IF (.NOT.(IMN.EQ.0)) GO TO 10132
-            IAM(IP1+9)=IMX
-          GO TO 10131
-10132     CONTINUE
-          IF (.NOT.(IMN.EQ.IMX)) GO TO 10133
+10123     CONTINUE
+          IMN=MAX(-1,MIN(IR1,IR2))
+          IMX=MAX(-1,MAX(IR1,IR2))
+          IF (.NOT.(IMN.EQ.IMX)) GO TO 10124
             IAM(IP1+9)=IMN
-          GO TO 10131
-10133     CONTINUE
+          GO TO 10125
+10124     CONTINUE
             IAM(IP1+9)=0
-10131     CONTINUE
+10125     CONTINUE
           IAM(IP2+8)=0
           IAM(IP2+9)=0
           IAM(IP2+7)=0
-        GO TO 10134
+        GO TO 10126
 10119   CONTINUE
           IF (IAM(IP1+7).GT.0) IAM(IP2+7)=-ABS(IAM(IP2+7))
-10134   CONTINUE
+10126   CONTINUE
       GO TO (10103,10108,10110,10115,10117) , L10104
 10118 CONTINUE
 C
 C If debugging is turned on, produce a plot.
 C
-      IF (.NOT.(IDB.NE.0)) GO TO 10135
+      IF (.NOT.(IDB.NE.0)) GO TO 10127
         CALL ARDBPA (IAM,IDB,'AFTER REMOVING COINCIDENT SEGMENTS')
         IF (ICFELL('ARPRAM',8).NE.0) RETURN
-10135 CONTINUE
+10127 CONTINUE
 C
 C
 C Look for unclosed edges, if that is to be done.
 C
-      IF (.NOT.(KF2.EQ.0)) GO TO 10136
-10137   CONTINUE
+      IF (.NOT.(KF2.EQ.0)) GO TO 10128
+10129   CONTINUE
           NPF=0
           IPT=8
-10138     CONTINUE
-          IF (.NOT.(IAM(IPT+3).NE.18)) GO TO 10139
+10130     CONTINUE
+          IF (.NOT.(IAM(IPT+3).NE.18)) GO TO 10131
             IPT=IAM(IPT+3)
             IF (.NOT.(IAM(IPT+7).NE.0.AND.IAM(IAM(IPT+4)+7).EQ.0)) GO TO
-     + 10140
+     + 10132
               IGI=ABS(IAM(IPT+7))
               IP1=IAM(IPT+4)
               IP2=IP1
-10141         CONTINUE
+10133         CONTINUE
               IF (.NOT.(IAM(IAM(IP2+6)+1).EQ.IAM(IP1+1).AND.IAM(IAM(IP2+
-     +6)+2).EQ.IAM(IP1+2))) GO TO 10142
+     +6)+2).EQ.IAM(IP1+2))) GO TO 10134
                 IP2=IAM(IP2+6)
-              GO TO 10141
-10142         CONTINUE
+              GO TO 10133
+10134         CONTINUE
               IP3=IP2
               IPF=0
-10143         CONTINUE
+10135         CONTINUE
                 IF (.NOT.(IP2.NE.IP1.AND.(ABS(IAM(IP2+7)).EQ.IGI.OR.ABS(
-     +IAM(IAM(IP2+3)+7)).EQ.IGI))) GO TO 10144
+     +IAM(IAM(IP2+3)+7)).EQ.IGI))) GO TO 10136
                   IPF=1
-                  GO TO 10145
-10144           CONTINUE
+                  GO TO 10137
+10136           CONTINUE
                 IP2=IAM(IP2+5)
                 IF (IAM(IP2+1).NE.IAM(IP1+1).OR.IAM(IP2+2).NE.IAM(IP1+2)
-     +)         GO TO 10145
-              GO TO 10143
-10145         CONTINUE
-              IF (.NOT.(IPF.EQ.0)) GO TO 10146
-                IF (.NOT.(IAM(IPT+7).GT.0)) GO TO 10147
+     +)         GO TO 10137
+              GO TO 10135
+10137         CONTINUE
+              IF (.NOT.(IPF.EQ.0)) GO TO 10138
+                IF (.NOT.(IAM(IPT+7).GT.0)) GO TO 10139
                   IP2=IP3
-10148             CONTINUE
-                    IF (.NOT.(IP2.NE.IP1)) GO TO 10149
+10140             CONTINUE
+                    IF (.NOT.(IP2.NE.IP1)) GO TO 10141
                       IF (.NOT.(IAM(IP2+7).LT.0.AND.ABS(IAM(IP2+7)).NE.I
      +GI.AND.IAM(IAM(IP2+4)+1).EQ.IAM(IPT+1).AND.IAM(IAM(IP2+4)+2).EQ.IA
-     +M(IPT+2)))      GO TO 10150
+     +M(IPT+2)))      GO TO 10142
                         IAM(IP2+7)=ABS(IAM(IP2+7))
-                        GO TO 10151
-10150                 CONTINUE
+                        GO TO 10143
+10142                 CONTINUE
                       IF (.NOT.(IAM(IAM(IP2+3)+7).LT.0.AND.ABS(IAM(IAM(I
      +P2+3)+7)).NE.IGI.AND.IAM(IAM(IP2+3)+1).EQ.IAM(IPT+1).AND.IAM(IAM(I
-     +P2+3)+2).EQ.IAM(IPT+2))) GO TO 10152
+     +P2+3)+2).EQ.IAM(IPT+2))) GO TO 10144
                         IAM(IAM(IP2+3)+7)=
      +                              ABS(IAM(IAM(IP2+3)+7))
-                        GO TO 10151
-10152                 CONTINUE
-10149               CONTINUE
+                        GO TO 10143
+10144                 CONTINUE
+10141               CONTINUE
                     IP2=IAM(IP2+5)
                     IF (IAM(IP2+1).NE.IAM(IP1+1).OR.IAM(IP2+2).NE.IAM(IP
-     +1+2))         GO TO 10151
-                  GO TO 10148
-10151             CONTINUE
-10147           CONTINUE
+     +1+2))         GO TO 10143
+                  GO TO 10140
+10143             CONTINUE
+10139           CONTINUE
                 IAM(IPT+7)=0
                 NPF=NPF+1
-10146         CONTINUE
-10140       CONTINUE
-          GO TO 10138
-10139     CONTINUE
+10138         CONTINUE
+10132       CONTINUE
+          GO TO 10130
+10131     CONTINUE
           IPT=18
-10153     CONTINUE
-          IF (.NOT.(IAM(IPT+4).NE.8)) GO TO 10154
+10145     CONTINUE
+          IF (.NOT.(IAM(IPT+4).NE.8)) GO TO 10146
             IPT=IAM(IPT+4)
             IF (.NOT.(IAM(IPT+7).NE.0.AND.IAM(IAM(IPT+3)+7).EQ.0)) GO TO
-     + 10155
+     + 10147
               IGI=ABS(IAM(IPT+7))
               IP1=IPT
               IP2=IP1
-10156         CONTINUE
+10148         CONTINUE
               IF (.NOT.(IAM(IAM(IP2+6)+1).EQ.IAM(IP1+1).AND.IAM(IAM(IP2+
-     +6)+2).EQ.IAM(IP1+2))) GO TO 10157
+     +6)+2).EQ.IAM(IP1+2))) GO TO 10149
                 IP2=IAM(IP2+6)
-              GO TO 10156
-10157         CONTINUE
+              GO TO 10148
+10149         CONTINUE
               IP3=IP2
               IPF=0
-10158         CONTINUE
+10150         CONTINUE
                 IF (.NOT.(IP2.NE.IP1.AND.(ABS(IAM(IP2+7)).EQ.IGI.OR.ABS(
-     +IAM(IAM(IP2+3)+7)).EQ.IGI))) GO TO 10159
+     +IAM(IAM(IP2+3)+7)).EQ.IGI))) GO TO 10151
                   IPF=1
-                  GO TO 10160
-10159           CONTINUE
+                  GO TO 10152
+10151           CONTINUE
                 IP2=IAM(IP2+5)
                 IF (IAM(IP2+1).NE.IAM(IP1+1).OR.IAM(IP2+2).NE.IAM(IP1+2)
-     +)         GO TO 10160
-              GO TO 10158
-10160         CONTINUE
-              IF (.NOT.(IPF.EQ.0)) GO TO 10161
-                IF (.NOT.(IAM(IPT+7).GT.0)) GO TO 10162
+     +)         GO TO 10152
+              GO TO 10150
+10152         CONTINUE
+              IF (.NOT.(IPF.EQ.0)) GO TO 10153
+                IF (.NOT.(IAM(IPT+7).GT.0)) GO TO 10154
                   IP2=IP3
-10163             CONTINUE
-                    IF (.NOT.(IP2.NE.IP1)) GO TO 10164
+10155             CONTINUE
+                    IF (.NOT.(IP2.NE.IP1)) GO TO 10156
                       IF (.NOT.(IAM(IP2+7).LT.0.AND.ABS(IAM(IP2+7)).NE.I
      +GI.AND.IAM(IAM(IP2+4)+1).EQ.IAM(IAM(IPT+4)+1).AND.IAM(IAM(IP2+4)+2
-     +).EQ.IAM(IAM(IPT+4)+2))) GO TO 10165
+     +).EQ.IAM(IAM(IPT+4)+2))) GO TO 10157
                         IAM(IP2+7)=ABS(IAM(IP2+7))
-                        GO TO 10166
-10165                 CONTINUE
+                        GO TO 10158
+10157                 CONTINUE
                       IF (.NOT.(IAM(IAM(IP2+3)+7).LT.0.AND.ABS(IAM(IAM(I
      +P2+3)+7)).NE.IGI.AND.IAM(IAM(IP2+3)+1).EQ.IAM(IAM(IPT+4)+1).AND.IA
-     +M(IAM(IP2+3)+2).EQ.IAM(IAM(IPT+4)+2))) GO TO 10167
+     +M(IAM(IP2+3)+2).EQ.IAM(IAM(IPT+4)+2))) GO TO 10159
                         IAM(IAM(IP2+3)+7)=
      +                              ABS(IAM(IAM(IP2+3)+7))
-                        GO TO 10166
-10167                 CONTINUE
-10164               CONTINUE
+                        GO TO 10158
+10159                 CONTINUE
+10156               CONTINUE
                     IP2=IAM(IP2+5)
                     IF (IAM(IP2+1).NE.IAM(IP1+1).OR.IAM(IP2+2).NE.IAM(IP
-     +1+2))         GO TO 10166
-                  GO TO 10163
-10166             CONTINUE
-10162           CONTINUE
+     +1+2))         GO TO 10158
+                  GO TO 10155
+10158             CONTINUE
+10154           CONTINUE
                 IAM(IPT+7)=0
                 NPF=NPF+1
-10161         CONTINUE
-10155       CONTINUE
-          GO TO 10153
-10154     CONTINUE
-        IF (.NOT.(NPF.EQ.0)) GO TO 10137
+10153         CONTINUE
+10147       CONTINUE
+          GO TO 10145
+10146     CONTINUE
+        IF (.NOT.(NPF.EQ.0)) GO TO 10129
 C
 C If debugging is turned on, produce a plot.
 C
-        IF (.NOT.(IDB.NE.0)) GO TO 10168
+        IF (.NOT.(IDB.NE.0)) GO TO 10160
           CALL ARDBPA (IAM,IDB,'AFTER REMOVING UNCLOSED EDGES')
           IF (ICFELL('ARPRAM',9).NE.0) RETURN
-10168   CONTINUE
+10160   CONTINUE
 C
 C
-10136 CONTINUE
+10128 CONTINUE
 C
 C Adjust the area identifiers for all edge segments in the map.  We
 C first make a pass over the entire area map, looking for holes and
@@ -1033,24 +1007,24 @@ C of failure, in which case we have to come back and force the step
 C to occur.
 C
   104 CONTINUE
-      IF (.NOT.(KF3.EQ.0)) GO TO 10169
+      IF (.NOT.(KF3.EQ.0)) GO TO 10161
 C
 C
         IPT=8
 C
-10170   CONTINUE
+10162   CONTINUE
 C
 C Move to the right across the area map, looking for an edge segment
 C that has not yet been completely processed.  If no such segment can
 C be found, all subareas have been done.
 C
-10171     CONTINUE
+10163     CONTINUE
           IF (.NOT.(MOD(IAM(IPT),4).EQ.3.OR.ABS(IAM(IPT+7)).LT.IAM(6)))
-     +    GO TO 10172
+     +    GO TO 10164
             IPT=IAM(IPT+5)
-            IF (IPT.EQ.18) GO TO 10173
-          GO TO 10171
-10172     CONTINUE
+            IF (IPT.EQ.18) GO TO 10165
+          GO TO 10163
+10164     CONTINUE
 C
 C Pull out the group identifier for the segment.
 C
@@ -1059,12 +1033,12 @@ C
 C Decide whether to scan the subarea to the left of the edge being
 C traced (IPU=1) or the one to the right (IPU=2).
 C
-          IF (.NOT.(MOD(IAM(IPT),2).EQ.0)) GO TO 10174
+          IF (.NOT.(MOD(IAM(IPT),2).EQ.0)) GO TO 10166
             IPU=1
-          GO TO 10175
-10174     CONTINUE
+          GO TO 10167
+10166     CONTINUE
             IPU=2
-10175     CONTINUE
+10167     CONTINUE
 C
 C IPQ points to the node defining the beginning of the edge segment,
 C IPR to the node defining the end of the edge segment, and IPS to
@@ -1086,7 +1060,7 @@ C
 C Each pass through the following loop moves one step along the edge of
 C the subarea.
 C
-10176     CONTINUE
+10168     CONTINUE
 C
 C Update the pointer to the highest point found along the loop.
 C
@@ -1113,12 +1087,12 @@ C
 C Back up IPR to the beginning of the group of nodes which have the
 C same x and y coordinates as it does.
 C
-10177       CONTINUE
+10169       CONTINUE
             IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.
-     +IAM(IAM(IPR+6)+2))) GO TO 10178
+     +IAM(IAM(IPR+6)+2))) GO TO 10170
               IPR=IAM(IPR+6)
-            GO TO 10177
-10178       CONTINUE
+            GO TO 10169
+10170       CONTINUE
 C
 C Go through the group of nodes, examining all the possible ways to
 C move from the current position to a new one.  Pick the direction
@@ -1127,135 +1101,135 @@ C
             IP1=IPR
             IP2=IPR
             IPR=0
-            IF (.NOT.(IPU.EQ.1)) GO TO 10179
+            IF (.NOT.(IPU.EQ.1)) GO TO 10171
               ANM=-3.14159265358979
-            GO TO 10180
-10179       CONTINUE
+            GO TO 10172
+10171       CONTINUE
               ANM=+3.14159265358979
-10180       CONTINUE
+10172       CONTINUE
 C
-10181       CONTINUE
+10173       CONTINUE
             IF (.NOT.(IAM(IP2+1).EQ.IAM(IP1+1).AND.IAM(IP2+2).EQ.IAM(IP1
-     ++2))) GO TO 10182
+     ++2))) GO TO 10174
               IF (.NOT.(ABS(IAM(IAM(IP2+3)+7)).EQ.IGI.AND.(IAM(IAM(IP2+3
      +)+1).NE.IAM(IPP+1).OR.IAM(IAM(IP2+3)+2).NE.IAM(IPP+2)))) GO TO 101
-     +83
+     +75
                 IXR=IAM(IAM(IP2+3)+1)
                 IYR=IAM(IAM(IP2+3)+2)
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
-                IF (.NOT.(IAU.EQ.1)) GO TO 10184
+                IF (.NOT.(IAU.EQ.1)) GO TO 10176
                   ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
      +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
-                GO TO 10185
-10184           CONTINUE
-                IF (.NOT.(IAU.EQ.2)) GO TO 10186
+                GO TO 10177
+10176           CONTINUE
+                IF (.NOT.(IAU.EQ.2)) GO TO 10178
                   ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
      +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
      +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
      +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
-                GO TO 10185
-10186           CONTINUE
+                GO TO 10177
+10178           CONTINUE
                   IO6(3,1)=IXQ-IXP
                   IO6(3,2)=IYR-IYQ
                   IO6(3,3)=IYQ-IYP
                   IO6(3,4)=IXR-IXQ
                   CALL ARMPIA (IO6,DP1,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10187
+                  IF (.NOT.(IER.NE.0)) GO TO 10179
                     GO TO 10028
-10187             CONTINUE
+10179             CONTINUE
                   CALL ARMPIA (IO7,DP2,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10189
+                  IF (.NOT.(IER.NE.0)) GO TO 10181
                     GO TO 10028
-10189             CONTINUE
+10181             CONTINUE
                   ANG=ARDAT2(DP1,DP2)
-10185           CONTINUE
+10177           CONTINUE
 C
-                IF (.NOT.(IPU.EQ.1)) GO TO 10191
-                  IF (.NOT.(ANG.GT.ANM)) GO TO 10192
+                IF (.NOT.(IPU.EQ.1)) GO TO 10183
+                  IF (.NOT.(ANG.GT.ANM)) GO TO 10184
                     IPR=IAM(IP2+3)
                     ANM=ANG
                     IPM=IPR
                     IPV=1
-10192             CONTINUE
-                GO TO 10193
-10191           CONTINUE
-                  IF (.NOT.(ANG.LT.ANM)) GO TO 10194
+10184             CONTINUE
+                GO TO 10185
+10183           CONTINUE
+                  IF (.NOT.(ANG.LT.ANM)) GO TO 10186
                     IPR=IAM(IP2+3)
                     ANM=ANG
                     IPM=IPR
                     IPV=2
-10194             CONTINUE
-10193           CONTINUE
-10183         CONTINUE
+10186             CONTINUE
+10185           CONTINUE
+10175         CONTINUE
               IF (.NOT.(ABS(IAM(IP2+7)).EQ.IGI.AND.(IAM(IAM(IP2+4)+1).NE
-     +.IAM(IPP+1).OR.IAM(IAM(IP2+4)+2).NE.IAM(IPP+2)))) GO TO 10195
+     +.IAM(IPP+1).OR.IAM(IAM(IP2+4)+2).NE.IAM(IPP+2)))) GO TO 10187
                 IXR=IAM(IAM(IP2+4)+1)
                 IYR=IAM(IAM(IP2+4)+2)
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
-                IF (.NOT.(IAU.EQ.1)) GO TO 10196
+                IF (.NOT.(IAU.EQ.1)) GO TO 10188
                   ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
      +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
-                GO TO 10197
-10196           CONTINUE
-                IF (.NOT.(IAU.EQ.2)) GO TO 10198
+                GO TO 10189
+10188           CONTINUE
+                IF (.NOT.(IAU.EQ.2)) GO TO 10190
                   ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
      +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
      +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
      +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
-                GO TO 10197
-10198           CONTINUE
+                GO TO 10189
+10190           CONTINUE
                   IO6(3,1)=IXQ-IXP
                   IO6(3,2)=IYR-IYQ
                   IO6(3,3)=IYQ-IYP
                   IO6(3,4)=IXR-IXQ
                   CALL ARMPIA (IO6,DP1,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10199
+                  IF (.NOT.(IER.NE.0)) GO TO 10191
                     GO TO 10028
-10199             CONTINUE
+10191             CONTINUE
                   CALL ARMPIA (IO7,DP2,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10201
+                  IF (.NOT.(IER.NE.0)) GO TO 10193
                     GO TO 10028
-10201             CONTINUE
+10193             CONTINUE
                   ANG=ARDAT2(DP1,DP2)
-10197           CONTINUE
+10189           CONTINUE
 C
-                IF (.NOT.(IPU.EQ.1)) GO TO 10203
-                  IF (.NOT.(ANG.GT.ANM)) GO TO 10204
+                IF (.NOT.(IPU.EQ.1)) GO TO 10195
+                  IF (.NOT.(ANG.GT.ANM)) GO TO 10196
                     IPR=IAM(IP2+4)
                     ANM=ANG
                     IPM=IP2
                     IPV=2
-10204             CONTINUE
-                GO TO 10205
-10203           CONTINUE
-                  IF (.NOT.(ANG.LT.ANM)) GO TO 10206
+10196             CONTINUE
+                GO TO 10197
+10195           CONTINUE
+                  IF (.NOT.(ANG.LT.ANM)) GO TO 10198
                     IPR=IAM(IP2+4)
                     ANM=ANG
                     IPM=IP2
                     IPV=1
-10206             CONTINUE
-10205           CONTINUE
-10195         CONTINUE
+10198             CONTINUE
+10197           CONTINUE
+10187         CONTINUE
               IP2=IAM(IP2+5)
-            GO TO 10181
-10182       CONTINUE
+            GO TO 10173
+10174       CONTINUE
 C
 C If no possible exit was found, reverse direction.
 C
-            IF (.NOT.(IPR.EQ.0)) GO TO 10207
+            IF (.NOT.(IPR.EQ.0)) GO TO 10199
               IPR=IPP
               IPV=3-IPV
-              IF (.NOT.(IPU.EQ.1)) GO TO 10208
+              IF (.NOT.(IPU.EQ.1)) GO TO 10200
                 ANM=+3.14159265358979
-              GO TO 10209
-10208         CONTINUE
+              GO TO 10201
+10200         CONTINUE
                 ANM=-3.14159265358979
-10209         CONTINUE
-10207       CONTINUE
+10201         CONTINUE
+10199       CONTINUE
 C
 C Update the total angular change.
 C
@@ -1265,152 +1239,152 @@ C Set the marker for the edge segment picked.  If the marker is set
 C already, either go back and do a slow-path intersection search or
 C log an error.
 C
-            IF (.NOT.(IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)) GO TO 10210
+            IF (.NOT.(IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)) GO TO 10202
               IAM(IPM)=IAM(IPM)+1
-            GO TO 10211
-10210       CONTINUE
-            IF (.NOT.(IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)) GO TO 10212
+            GO TO 10203
+10202       CONTINUE
+            IF (.NOT.(IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)) GO TO 10204
               IAM(IPM)=IAM(IPM)+2
-            GO TO 10211
-10212       CONTINUE
+            GO TO 10203
+10204       CONTINUE
               IPT=IAM(5)-9
-10213         CONTINUE
-              IF (.NOT.(IPT.GT.ILW)) GO TO 10214
+10205         CONTINUE
+              IF (.NOT.(IPT.GT.ILW)) GO TO 10206
                 IAM(IAM(IPT+4)+3)=IAM(IPT+3)
                 IAM(IAM(IPT+3)+4)=IAM(IPT+4)
                 IAM(IAM(IPT+6)+5)=IAM(IPT+5)
                 IAM(IAM(IPT+5)+6)=IAM(IPT+6)
                 IPT=IPT-10
-              GO TO 10213
-10214         CONTINUE
+              GO TO 10205
+10206         CONTINUE
               IAM(5)=ILW
-              DO 10215 IPT=8,IAM(5)-9,10
+              DO 10207 IPT=8,IAM(5)-9,10
                 IAM(IPT)=4*(IAM(IPT)/4)
-10215         CONTINUE
-              IF (.NOT.(KF1.NE.0)) GO TO 10216
+10207         CONTINUE
+              IF (.NOT.(KF1.NE.0)) GO TO 10208
                 KF1=0
                 GO TO 101
-10216         CONTINUE
+10208         CONTINUE
                 CALL SETER ('ARPRAM - ALGORITHM FAILURE',10,1)
                 GO TO 10008
-10211       CONTINUE
+10203       CONTINUE
 C
 C Exit if we're passing the start of the subarea.
 C
             IF (IAM(IPQ+1).EQ.IAM(IPS+1).AND.IAM(IPQ+2).EQ.IAM(IPS+2).AN
      +D.IAM(IPR+1).EQ.IAM(IPT+1).AND.IAM(IPR+2).EQ.IAM(IPT+2)) GO TO 102
-     +18
+     +10
 C
-          GO TO 10176
-10218     CONTINUE
+          GO TO 10168
+10210     CONTINUE
 C
 C If the closed loop just traced was a hole, insert a temporary
 C connecting line to get rid of the hole.
 C
           IF (.NOT.((IPU.EQ.1.AND.ANT.LT.0.).OR.(IPU.EQ.2.AND.ANT.GT.0.)
-     +))  GO TO 10219
+     +))  GO TO 10211
             IOF=0
             XCI=REAL(IAM(IPH+1))
             YCI=REAL(IAM(IPH+2))
             YCO=RLP
             IP1=IPH
-10220       CONTINUE
-            IF (.NOT.(IAM(IAM(IP1+5)+1).EQ.IAM(IPH+1))) GO TO 10221
+10212       CONTINUE
+            IF (.NOT.(IAM(IAM(IP1+5)+1).EQ.IAM(IPH+1))) GO TO 10213
               IP1=IAM(IP1+5)
-            GO TO 10220
-10221       CONTINUE
-10222       CONTINUE
-            IF (.NOT.(IAM(IP1+1).GE.IAM(IPH+1)-IAM(2))) GO TO 10223
+            GO TO 10212
+10213       CONTINUE
+10214       CONTINUE
+            IF (.NOT.(IAM(IP1+1).GE.IAM(IPH+1)-IAM(2))) GO TO 10215
               IF (.NOT.(ABS(IAM(IP1+7)).EQ.IGI.AND.IAM(IAM(IP1+4)+1).GT.
-     +IAM(IP1+1).AND.IAM(IAM(IP1+4)+1).GE.IAM(IPH+1))) GO TO 10224
-                IF (.NOT.(IAU.EQ.1)) GO TO 10225
+     +IAM(IP1+1).AND.IAM(IAM(IP1+4)+1).GE.IAM(IPH+1))) GO TO 10216
+                IF (.NOT.(IAU.EQ.1)) GO TO 10217
                   YTM=REAL(IAM(IP1+2))+
      +            (XCI-REAL(IAM(IP1+1)))*
      +         (REAL(IAM(IAM(IP1+4)+2)-IAM(IP1+2))/
      + REAL(IAM(IAM(IP1+4)+1)-IAM(IP1+1)))
-                GO TO 10226
-10225           CONTINUE
+                GO TO 10218
+10217           CONTINUE
                   YTM=REAL(DBLE(IAM(IP1+2))+
      +            (DBLE(XCI)-DBLE(IAM(IP1+1)))*
      +         (DBLE(IAM(IAM(IP1+4)+2)-IAM(IP1+2))/
      + DBLE(IAM(IAM(IP1+4)+1)-IAM(IP1+1))))
-10226           CONTINUE
-                IF (.NOT.(YTM.GT.YCI.AND.YTM.LT.YCO)) GO TO 10227
+10218           CONTINUE
+                IF (.NOT.(YTM.GT.YCI.AND.YTM.LT.YCO)) GO TO 10219
                   IOF=IP1
                   YCO=YTM
-10227           CONTINUE
-10224         CONTINUE
+10219           CONTINUE
+10216         CONTINUE
               IF (.NOT.(ABS(IAM(IAM(IP1+3)+7)).EQ.IGI.AND.IAM(IAM(IP1+3)
      ++1).GT.IAM(IP1+1).AND.IAM(IAM(IP1+3)+1).GE.IAM(IPH+1))) GO TO 1022
-     +8
-                IF (.NOT.(IAU.EQ.1)) GO TO 10229
+     +0
+                IF (.NOT.(IAU.EQ.1)) GO TO 10221
                   YTM=REAL(IAM(IP1+2))+
      +            (XCI-REAL(IAM(IP1+1)))*
      +         (REAL(IAM(IAM(IP1+3)+2)-IAM(IP1+2))/
      + REAL(IAM(IAM(IP1+3)+1)-IAM(IP1+1)))
-                GO TO 10230
-10229           CONTINUE
+                GO TO 10222
+10221           CONTINUE
                   YTM=REAL(DBLE(IAM(IP1+2))+
      +            (DBLE(XCI)-DBLE(IAM(IP1+1)))*
      +         (DBLE(IAM(IAM(IP1+3)+2)-IAM(IP1+2))/
      + DBLE(IAM(IAM(IP1+3)+1)-IAM(IP1+1))))
-10230           CONTINUE
-                IF (.NOT.(YTM.GT.YCI.AND.YTM.LT.YCO)) GO TO 10231
+10222           CONTINUE
+                IF (.NOT.(YTM.GT.YCI.AND.YTM.LT.YCO)) GO TO 10223
                   IOF=IAM(IP1+3)
                   YCO=YTM
-10231           CONTINUE
-10228         CONTINUE
+10223           CONTINUE
+10220         CONTINUE
               IP1=IAM(IP1+6)
-            GO TO 10222
-10223       CONTINUE
-            IF (.NOT.(IOF.NE.0)) GO TO 10232
+            GO TO 10214
+10215       CONTINUE
+            IF (.NOT.(IOF.NE.0)) GO TO 10224
               IX0=IAM(IPH+1)
               IY0=IAM(IPH+2)
-              IF (.NOT.(INT(YCO).NE.IY0)) GO TO 10233
+              IF (.NOT.(INT(YCO).NE.IY0)) GO TO 10225
                 IPI=18
                 L10017=    6
                 GO TO 10017
-10234           CONTINUE
+10226           CONTINUE
                 IAM(IPN+7)=0
                 IAM(IPN+8)=0
                 IAM(IPN+9)=0
                 IY0=INT(YCO)
                 L10017=    7
                 GO TO 10017
-10235           CONTINUE
+10227           CONTINUE
                 IAM(IPN+7)=LAM-IGI
                 IAM(IPN+8)=0
                 IAM(IPN+9)=0
-10233         CONTINUE
+10225         CONTINUE
               IF (.NOT.((IX0.NE.IAM(IOF+1).OR.IY0.NE.IAM(IOF+2)).AND.(IX
-     +0.NE.IAM(IAM(IOF+4)+1).OR.IY0.NE.IAM(IAM(IOF+4)+2)))) GO TO 10236
+     +0.NE.IAM(IAM(IOF+4)+1).OR.IY0.NE.IAM(IAM(IOF+4)+2)))) GO TO 10228
                 IPI=IOF
                 L10017=    8
                 GO TO 10017
-10237           CONTINUE
-10236         CONTINUE
-10232       CONTINUE
+10229           CONTINUE
+10228         CONTINUE
+10224       CONTINUE
 C
-10219     CONTINUE
+10211     CONTINUE
 C
-        GO TO 10170
-10173   CONTINUE
+        GO TO 10162
+10165   CONTINUE
 C
 C Zero the lower bits in the markers in all the nodes.
 C
-        DO 10238 IPT=8,IAM(5)-9,10
+        DO 10230 IPT=8,IAM(5)-9,10
           IAM(IPT)=4*(IAM(IPT)/4)
-10238   CONTINUE
+10230   CONTINUE
 C
 C If debugging is turned on, produce a plot.
 C
-        IF (.NOT.(IDB.NE.0)) GO TO 10239
+        IF (.NOT.(IDB.NE.0)) GO TO 10231
           CALL ARDBPA (IAM,IDB,'AFTER LOOKING FOR HOLES')
           IF (ICFELL('ARPRAM',11).NE.0) RETURN
-10239   CONTINUE
+10231   CONTINUE
 C
 C
-10169 CONTINUE
+10161 CONTINUE
 C
 C Now, make another pass through the area map, tracing one subarea at a
 C time and setting the area identifiers in each.
@@ -1421,20 +1395,20 @@ C
 C
       IPT=8
 C
-10240 CONTINUE
+10232 CONTINUE
 C
 C Move to the right across the area map, looking for an edge segment
 C that has not yet been completely processed.  If no such segment can
 C be found, all subareas have been done.
 C
-10241   CONTINUE
+10233   CONTINUE
         IF (.NOT.(MOD(IAM(IPT),4).EQ.3.OR.ABS(IAM(IPT+7)).LT.IAM(6).OR.(
      +KF3.NE.0.AND.((MOD(IAM(IPT),2).NE.0.OR.IAM(IPT+8).GT.0).AND.(MOD(I
-     +AM(IPT)/2,2).NE.0.OR.IAM(IPT+9).GT.0))))) GO TO 10242
+     +AM(IPT)/2,2).NE.0.OR.IAM(IPT+9).GT.0))))) GO TO 10234
           IPT=IAM(IPT+5)
-          IF (IPT.EQ.18) GO TO 10243
-        GO TO 10241
-10242   CONTINUE
+          IF (IPT.EQ.18) GO TO 10235
+        GO TO 10233
+10234   CONTINUE
 C
 C Pull out the group identifier for the segment.
 C
@@ -1449,29 +1423,29 @@ C traced (IPU=1) or the one to the right (IPU=2) and initialize the
 C area identifier.
 C
         IF (.NOT.(MOD(IAM(IPT),2).EQ.0.AND.(KF3.EQ.0.OR.IAM(IPT+8).LE.0)
-     +))GO TO 10244
+     +))GO TO 10236
           IPU=1
-        GO TO 10245
-10244   CONTINUE
+        GO TO 10237
+10236   CONTINUE
           IPU=2
-10245   CONTINUE
+10237   CONTINUE
 C
         IAI=0
         IAP=0
         IAX=0
 C
-        IF (.NOT.(JRC.NE.0)) GO TO 10246
+        IF (.NOT.(JRC.NE.0)) GO TO 10238
           ICN=0
           ICZ=0
           IOS=LAM-IAM(6)
-          IF (.NOT.(IOS.GT.IAM(6)-1-IAM(5))) GO TO 10247
+          IF (.NOT.(IOS.GT.IAM(6)-1-IAM(5))) GO TO 10239
             CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',12,1)
             GO TO 10008
-10247     CONTINUE
-          DO 10249 ITM=IAM(6),LAM-1
+10239     CONTINUE
+          DO 10241 ITM=IAM(6),LAM-1
             IAM(ITM-IOS)=0
-10249     CONTINUE
-10246   CONTINUE
+10241     CONTINUE
+10238   CONTINUE
 C
 C IPQ points to the node defining the beginning of the edge segment,
 C IPR to the node defining the end of the edge segment, and IPS to
@@ -1487,7 +1461,7 @@ C
 C Each pass through the following loop moves one step along the edge of
 C the subarea.
 C
-10250   CONTINUE
+10242   CONTINUE
 C
 C Move IPQ to IPP and IPR to IPQ.
 C
@@ -1509,312 +1483,312 @@ C
 C Back up IPR to the beginning of the group of nodes which have the
 C same x and y coordinates as it does.
 C
-10251     CONTINUE
+10243     CONTINUE
           IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.IA
-     +M(IAM(IPR+6)+2))) GO TO 10252
+     +M(IAM(IPR+6)+2))) GO TO 10244
             IPR=IAM(IPR+6)
-          GO TO 10251
-10252     CONTINUE
+          GO TO 10243
+10244     CONTINUE
 C
 C If there is only one node in the group, the exit path is obvious.
 C
           IF (.NOT.(IAM(IPR+1).NE.IAM(IAM(IPR+5)+1).OR.IAM(IPR+2).NE.IAM
-     +(IAM(IPR+5)+2))) GO TO 10253
+     +(IAM(IPR+5)+2))) GO TO 10245
             IF (.NOT.(IAM(IAM(IPR+3)+1).NE.IAM(IPP+1).OR.IAM(IAM(IPR+3)+
-     +2).NE.IAM(IPP+2))) GO TO 10254
+     +2).NE.IAM(IPP+2))) GO TO 10246
               IF (.NOT.(IAM(IAM(IPR+3)+7).EQ.LAM-IGI.OR.ABS(IAM(IAM(IPR+
-     +3)+7)).EQ.IGI)) GO TO 10255
+     +3)+7)).EQ.IGI)) GO TO 10247
                 IPM=IAM(IPR+3)
                 IPR=IPM
                 IPV=IPU
-              GO TO 10256
-10255         CONTINUE
+              GO TO 10248
+10247         CONTINUE
                 IPR=0
-10256         CONTINUE
-            GO TO 10257
-10254       CONTINUE
+10248         CONTINUE
+            GO TO 10249
+10246       CONTINUE
               IF (.NOT.(IAM(IPR+7).EQ.LAM-IGI.OR.ABS(IAM(IPR+7)).EQ.IGI)
-     +)       GO TO 10258
+     +)       GO TO 10250
                 IPM=IPR
                 IPR=IAM(IPR+4)
                 IPV=3-IPU
-              GO TO 10259
-10258         CONTINUE
+              GO TO 10251
+10250         CONTINUE
                 IPR=0
-10259         CONTINUE
-10257       CONTINUE
+10251         CONTINUE
+10249       CONTINUE
 C
 C Otherwise, go through the group of nodes, examining all the possible
 C ways to move from the current position to a new one.  Pick the
 C direction which is leftmost (if IPU=1) or rightmost (if IPU=2).
 C
-          GO TO 10260
-10253     CONTINUE
+          GO TO 10252
+10245     CONTINUE
 C
             IP1=IPR
             IP2=IPR
             IPR=0
-            IF (.NOT.(IPU.EQ.1)) GO TO 10261
+            IF (.NOT.(IPU.EQ.1)) GO TO 10253
               ANM=-3.14159265358979
-            GO TO 10262
-10261       CONTINUE
+            GO TO 10254
+10253       CONTINUE
               ANM=+3.14159265358979
-10262       CONTINUE
+10254       CONTINUE
 C
-10263       CONTINUE
+10255       CONTINUE
             IF (.NOT.(IAM(IP2+1).EQ.IAM(IP1+1).AND.IAM(IP2+2).EQ.IAM(IP1
-     ++2))) GO TO 10264
+     ++2))) GO TO 10256
               IF (.NOT.((IAM(IAM(IP2+3)+7).EQ.LAM-IGI.OR.ABS(IAM(IAM(IP2
      ++3)+7)).EQ.IGI).AND.(IAM(IAM(IP2+3)+1).NE.IAM(IPP+1).OR.IAM(IAM(IP
-     +2+3)+2).NE.IAM(IPP+2)))) GO TO 10265
+     +2+3)+2).NE.IAM(IPP+2)))) GO TO 10257
                 IXR=IAM(IAM(IP2+3)+1)
                 IYR=IAM(IAM(IP2+3)+2)
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
-                IF (.NOT.(IAU.EQ.1)) GO TO 10266
+                IF (.NOT.(IAU.EQ.1)) GO TO 10258
                   ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
      +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
-                GO TO 10267
-10266           CONTINUE
-                IF (.NOT.(IAU.EQ.2)) GO TO 10268
+                GO TO 10259
+10258           CONTINUE
+                IF (.NOT.(IAU.EQ.2)) GO TO 10260
                   ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
      +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
      +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
      +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
-                GO TO 10267
-10268           CONTINUE
+                GO TO 10259
+10260           CONTINUE
                   IO6(3,1)=IXQ-IXP
                   IO6(3,2)=IYR-IYQ
                   IO6(3,3)=IYQ-IYP
                   IO6(3,4)=IXR-IXQ
                   CALL ARMPIA (IO6,DP1,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10269
+                  IF (.NOT.(IER.NE.0)) GO TO 10261
                     GO TO 10028
-10269             CONTINUE
+10261             CONTINUE
                   CALL ARMPIA (IO7,DP2,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10271
+                  IF (.NOT.(IER.NE.0)) GO TO 10263
                     GO TO 10028
-10271             CONTINUE
+10263             CONTINUE
                   ANG=ARDAT2(DP1,DP2)
-10267           CONTINUE
+10259           CONTINUE
 C
-                IF (.NOT.(IPU.EQ.1)) GO TO 10273
-                  IF (.NOT.(ANG.GT.ANM)) GO TO 10274
+                IF (.NOT.(IPU.EQ.1)) GO TO 10265
+                  IF (.NOT.(ANG.GT.ANM)) GO TO 10266
                     IPR=IAM(IP2+3)
                     ANM=ANG
                     IPM=IPR
                     IPV=1
-10274             CONTINUE
-                GO TO 10275
-10273           CONTINUE
-                  IF (.NOT.(ANG.LT.ANM)) GO TO 10276
+10266             CONTINUE
+                GO TO 10267
+10265           CONTINUE
+                  IF (.NOT.(ANG.LT.ANM)) GO TO 10268
                     IPR=IAM(IP2+3)
                     ANM=ANG
                     IPM=IPR
                     IPV=2
-10276             CONTINUE
-10275           CONTINUE
-10265         CONTINUE
+10268             CONTINUE
+10267           CONTINUE
+10257         CONTINUE
               IF (.NOT.((IAM(IP2+7).EQ.LAM-IGI.OR.ABS(IAM(IP2+7)).EQ.IGI
      +).AND.(IAM(IAM(IP2+4)+1).NE.IAM(IPP+1).OR.IAM(IAM(IP2+4)+2).NE.IAM
-     +(IPP+2)))) GO TO 10277
+     +(IPP+2)))) GO TO 10269
                 IXR=IAM(IAM(IP2+4)+1)
                 IYR=IAM(IAM(IP2+4)+2)
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
-                IF (.NOT.(IAU.EQ.1)) GO TO 10278
+                IF (.NOT.(IAU.EQ.1)) GO TO 10270
                   ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
      +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
-                GO TO 10279
-10278           CONTINUE
-                IF (.NOT.(IAU.EQ.2)) GO TO 10280
+                GO TO 10271
+10270           CONTINUE
+                IF (.NOT.(IAU.EQ.2)) GO TO 10272
                   ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
      +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
      +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
      +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
-                GO TO 10279
-10280           CONTINUE
+                GO TO 10271
+10272           CONTINUE
                   IO6(3,1)=IXQ-IXP
                   IO6(3,2)=IYR-IYQ
                   IO6(3,3)=IYQ-IYP
                   IO6(3,4)=IXR-IXQ
                   CALL ARMPIA (IO6,DP1,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10281
+                  IF (.NOT.(IER.NE.0)) GO TO 10273
                     GO TO 10028
-10281             CONTINUE
+10273             CONTINUE
                   CALL ARMPIA (IO7,DP2,IER)
-                  IF (.NOT.(IER.NE.0)) GO TO 10283
+                  IF (.NOT.(IER.NE.0)) GO TO 10275
                     GO TO 10028
-10283             CONTINUE
+10275             CONTINUE
                   ANG=ARDAT2(DP1,DP2)
-10279           CONTINUE
+10271           CONTINUE
 C
-                IF (.NOT.(IPU.EQ.1)) GO TO 10285
-                  IF (.NOT.(ANG.GT.ANM)) GO TO 10286
+                IF (.NOT.(IPU.EQ.1)) GO TO 10277
+                  IF (.NOT.(ANG.GT.ANM)) GO TO 10278
                     IPR=IAM(IP2+4)
                     ANM=ANG
                     IPM=IP2
                     IPV=2
-10286             CONTINUE
-                GO TO 10287
-10285           CONTINUE
-                  IF (.NOT.(ANG.LT.ANM)) GO TO 10288
+10278             CONTINUE
+                GO TO 10279
+10277           CONTINUE
+                  IF (.NOT.(ANG.LT.ANM)) GO TO 10280
                     IPR=IAM(IP2+4)
                     ANM=ANG
                     IPM=IP2
                     IPV=1
-10288             CONTINUE
-10287           CONTINUE
-10277         CONTINUE
+10280             CONTINUE
+10279           CONTINUE
+10269         CONTINUE
               IP2=IAM(IP2+5)
-            GO TO 10263
-10264       CONTINUE
+            GO TO 10255
+10256       CONTINUE
 C
-10260     CONTINUE
+10252     CONTINUE
 C
 C If no possible exit was found, reverse direction.
 C
-          IF (.NOT.(IPR.EQ.0)) GO TO 10289
+          IF (.NOT.(IPR.EQ.0)) GO TO 10281
             IPR=IPP
             IPV=3-IPV
-10289     CONTINUE
+10281     CONTINUE
 C
 C Update the markers for the edge segment picked.
 C
-          IF (.NOT.(IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)) GO TO 10290
+          IF (.NOT.(IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)) GO TO 10282
             IAM(IPM)=IAM(IPM)+1
             IAQ=IPM+8
-          GO TO 10291
-10290     CONTINUE
-          IF (.NOT.(IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)) GO TO 10292
+          GO TO 10283
+10282     CONTINUE
+          IF (.NOT.(IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)) GO TO 10284
             IAM(IPM)=IAM(IPM)+2
             IAQ=IPM+9
-          GO TO 10291
-10292     CONTINUE
+          GO TO 10283
+10284     CONTINUE
             CALL SETER ('ARPRAM - ALGORITHM FAILURE',13,1)
             GO TO 10008
-10291     CONTINUE
+10283     CONTINUE
 C
-          IF (.NOT.(IAM(IAQ).LE.0.OR.IAM(IAQ).GE.IAM(6))) GO TO 10294
+          IF (.NOT.(IAM(IAQ).LE.0.OR.IAM(IAQ).GE.IAM(6))) GO TO 10286
 C
-            IF (.NOT.(JRC.EQ.0)) GO TO 10295
+            IF (.NOT.(JRC.EQ.0)) GO TO 10287
 C
-              IF (.NOT.(IAM(IAQ).LT.0)) GO TO 10296
+              IF (.NOT.(IAM(IAQ).LT.0)) GO TO 10288
                 IAI=-1
                 IAX=LAM*4
-              GO TO 10297
-10296         CONTINUE
+              GO TO 10289
+10288         CONTINUE
               IF (.NOT.(IAM(IAQ).GE.IAM(6).AND.IAM(IPM).GT.IAX)) GO TO 1
-     +0298
+     +0290
                 IAI=IAM(IAQ)
                 IAX=IAM(IPM)
-10297         CONTINUE
-10298         CONTINUE
+10289         CONTINUE
+10290         CONTINUE
 C
-            GO TO 10299
-10295       CONTINUE
+            GO TO 10291
+10287       CONTINUE
 C
-              IF (.NOT.(IAM(IAQ).LT.0)) GO TO 10300
+              IF (.NOT.(IAM(IAQ).LT.0)) GO TO 10292
                 ICN=ICN+1
-              GO TO 10301
-10300         CONTINUE
-              IF (.NOT.(IAM(IAQ).EQ.0)) GO TO 10302
+              GO TO 10293
+10292         CONTINUE
+              IF (.NOT.(IAM(IAQ).EQ.0)) GO TO 10294
                 ICZ=ICZ+1
-              GO TO 10301
-10302         CONTINUE
-              IF (.NOT.(IAM(IAQ).GE.IAM(6))) GO TO 10303
+              GO TO 10293
+10294         CONTINUE
+              IF (.NOT.(IAM(IAQ).GE.IAM(6))) GO TO 10295
                 IAM(IAM(IAQ)-IOS)=IAM(IAM(IAQ)-IOS)+1
-10301         CONTINUE
-10303         CONTINUE
+10293         CONTINUE
+10295         CONTINUE
 C
-10299       CONTINUE
+10291       CONTINUE
 C
             IAM(IAQ)=IAP
             IAP=IAQ
 C
-10294     CONTINUE
+10286     CONTINUE
 C
 C Exit if we're passing the start of the subarea.
 C
           IF (IAM(IPQ+1).EQ.IAM(IPS+1).AND.IAM(IPQ+2).EQ.IAM(IPS+2).AND.
-     +IAM(IPR+1).EQ.IAM(IPT+1).AND.IAM(IPR+2).EQ.IAM(IPT+2)) GO TO 10304
+     +IAM(IPR+1).EQ.IAM(IPT+1).AND.IAM(IPR+2).EQ.IAM(IPT+2)) GO TO 10296
 C
-        GO TO 10250
-10304   CONTINUE
+        GO TO 10242
+10296   CONTINUE
 C
 C If the new way of reconciling contradictory area-identifier info was
 C requested, set IAI accordingly, using the counts that were generated
 C while tracing the boundary of the area.
 C
-        IF (.NOT.(JRC.LT.0.AND.ICN.GT.0)) GO TO 10305
+        IF (.NOT.(JRC.LT.0.AND.ICN.GT.0)) GO TO 10297
           IAI=-1
-        GO TO 10306
-10305   CONTINUE
-        IF (.NOT.(JRC.NE.0)) GO TO 10307
-          IF (.NOT.(ICN.GT.0)) GO TO 10308
+        GO TO 10298
+10297   CONTINUE
+        IF (.NOT.(JRC.NE.0)) GO TO 10299
+          IF (.NOT.(ICN.GT.0)) GO TO 10300
             IAI=-1
             IAX=ICN
-10308     CONTINUE
-          IF (.NOT.(ICZ.GT.IAX.AND.ABS(JRC).EQ.2)) GO TO 10309
+10300     CONTINUE
+          IF (.NOT.(ICZ.GT.IAX.AND.ABS(JRC).EQ.2)) GO TO 10301
             IAI=0
             IAX=ICZ
-10309     CONTINUE
-          DO 10310 ITM=IAM(6),LAM-1
-            IF (.NOT.(IAM(ITM-IOS).GT.IAX)) GO TO 10311
+10301     CONTINUE
+          DO 10302 ITM=IAM(6),LAM-1
+            IF (.NOT.(IAM(ITM-IOS).GT.IAX)) GO TO 10303
               IAI=ITM
               IAX=IAM(ITM-IOS)
-10311       CONTINUE
-10310     CONTINUE
-10306   CONTINUE
-10307   CONTINUE
+10303       CONTINUE
+10302     CONTINUE
+10298   CONTINUE
+10299   CONTINUE
 C
 C Go through the chain of area identifiers, updating them.
 C
-10312   CONTINUE
-        IF (.NOT.(IAP.NE.0)) GO TO 10313
+10304   CONTINUE
+        IF (.NOT.(IAP.NE.0)) GO TO 10305
           IAQ=IAM(IAP)
           IAM(IAP)=IAI
           IAP=IAQ
-        GO TO 10312
-10313   CONTINUE
+        GO TO 10304
+10305   CONTINUE
 C
 C If a zero identifier was selected for the area, see if the search for
 C holes was suppressed and, if so, re-do it.
 C
-        IF (.NOT.(IAI.EQ.0.AND.KF3.NE.0)) GO TO 10314
-          DO 10315 IPT=8,IAM(5)-9,10
+        IF (.NOT.(IAI.EQ.0.AND.KF3.NE.0)) GO TO 10306
+          DO 10307 IPT=8,IAM(5)-9,10
             IAM(IPT)=4*(IAM(IPT)/4)
-10315     CONTINUE
+10307     CONTINUE
           KF3=0
           GO TO 104
-10314   CONTINUE
+10306   CONTINUE
 C
-      GO TO 10240
-10243 CONTINUE
+      GO TO 10232
+10235 CONTINUE
 C
 C Delete the nodes used to put in the temporary connecting lines.
 C
       IPT=IAM(5)-9
 C
-10316 CONTINUE
-      IF (.NOT.(IPT.GT.ILW)) GO TO 10317
+10308 CONTINUE
+      IF (.NOT.(IPT.GT.ILW)) GO TO 10309
         IAM(IAM(IPT+4)+3)=IAM(IPT+3)
         IAM(IAM(IPT+3)+4)=IAM(IPT+4)
         IAM(IAM(IPT+6)+5)=IAM(IPT+5)
         IAM(IAM(IPT+5)+6)=IAM(IPT+6)
         IPT=IPT-10
-      GO TO 10316
-10317 CONTINUE
+      GO TO 10308
+10309 CONTINUE
 C
       IAM(5)=ILW
 C
 C Zero the markers in all the remaining nodes.
 C
-      DO 10318 IPT=8,IAM(5)-9,10
+      DO 10310 IPT=8,IAM(5)-9,10
         IAM(IPT)=0
-10318 CONTINUE
+10310 CONTINUE
 C
 C Update the map state.
 C
@@ -1822,10 +1796,10 @@ C
 C
 C If debugging is turned on, produce a plot.
 C
-      IF (.NOT.(IDB.NE.0)) GO TO 10319
+      IF (.NOT.(IDB.NE.0)) GO TO 10311
         CALL ARDBPA (IAM,IDB,'AFTER UPDATING AREA IDENTIFIERS')
         IF (ICFELL('ARPRAM',14).NE.0) RETURN
-10319 CONTINUE
+10311 CONTINUE
 C
 C
 C Done.
@@ -1839,10 +1813,10 @@ C coordinate order); this is important.
 C
 10017 CONTINUE
         IPN=IAM(5)+1
-        IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10320
+        IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10312
           CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',15,1)
           GO TO 10008
-10320   CONTINUE
+10312   CONTINUE
         IAM(5)=IAM(5)+10
         IAM(IPN)=IAM(IPI)
         IAM(IPN+1)=IX0
@@ -1851,40 +1825,40 @@ C
         IAM(IPN+4)=IAM(IPI+4)
         IAM(IAM(IPI+4)+3)=IPN
         IAM(IPI+4)=IPN
-10322   CONTINUE
-          IF (.NOT.(IAM(IPN+1).LT.IAM(IPX+1))) GO TO 10323
+10314   CONTINUE
+          IF (.NOT.(IAM(IPN+1).LT.IAM(IPX+1))) GO TO 10315
             IPX=IAM(IPX+6)
-          GO TO 10324
-10323     CONTINUE
-          IF (.NOT.(IAM(IPN+1).GT.IAM(IAM(IPX+5)+1))) GO TO 10325
+          GO TO 10316
+10315     CONTINUE
+          IF (.NOT.(IAM(IPN+1).GT.IAM(IAM(IPX+5)+1))) GO TO 10317
             IPX=IAM(IPX+5)
-          GO TO 10324
-10325     CONTINUE
-10326       CONTINUE
+          GO TO 10316
+10317     CONTINUE
+10318       CONTINUE
               IF (.NOT.(IAM(IPN+1).EQ.IAM(IPX+1).AND.IAM(IPN+2).LT.IAM(I
-     +PX+2))) GO TO 10327
+     +PX+2))) GO TO 10319
                 IPX=IAM(IPX+6)
-              GO TO 10328
-10327         CONTINUE
+              GO TO 10320
+10319         CONTINUE
               IF (.NOT.(IAM(IPN+1).EQ.IAM(IAM(IPX+5)+1).AND.IAM(IPN+2).G
-     +T.IAM(IAM(IPX+5)+2))) GO TO 10329
+     +T.IAM(IAM(IPX+5)+2))) GO TO 10321
                 IPX=IAM(IPX+5)
-              GO TO 10328
-10329         CONTINUE
-10330           CONTINUE
+              GO TO 10320
+10321         CONTINUE
+10322           CONTINUE
                 IF (.NOT.(IAM(IAM(IPX+5)+1).EQ.IAM(IPN+1).AND.IAM(IAM(IP
-     +X+5)+2).EQ.IAM(IPN+2))) GO TO 10331
+     +X+5)+2).EQ.IAM(IPN+2))) GO TO 10323
                   IPX=IAM(IPX+5)
-                GO TO 10330
-10331           CONTINUE
-                GO TO 10332
-10328         CONTINUE
-            GO TO 10326
-10332       CONTINUE
-            GO TO 10333
-10324     CONTINUE
-        GO TO 10322
-10333   CONTINUE
+                GO TO 10322
+10323           CONTINUE
+                GO TO 10324
+10320         CONTINUE
+            GO TO 10318
+10324       CONTINUE
+            GO TO 10325
+10316     CONTINUE
+        GO TO 10314
+10325   CONTINUE
         IAM(IPN+5)=IAM(IPX+5)
         IAM(IPN+6)=IAM(IAM(IPX+5)+6)
         IAM(IAM(IPX+5)+6)=IPN
@@ -1892,7 +1866,7 @@ C
         IAM(IPN+7)=IAM(IPI+7)
         IAM(IPN+8)=IAM(IPI+8)
         IAM(IPN+9)=IAM(IPI+9)
-      GO TO (10016,10032,10083,10085,10097,10234,10235,10237) , L10017
+      GO TO (10016,10032,10083,10085,10097,10226,10227,10229) , L10017
 C
 C This internal procedure is called when an error occurs in ARMPIA.
 C
@@ -1912,23 +1886,23 @@ C Delete new nodes from the area map.
 C
         IPT=IAM(5)-9
 C
-10335   CONTINUE
-        IF (.NOT.(IPT.GT.ILW)) GO TO 10336
+10327   CONTINUE
+        IF (.NOT.(IPT.GT.ILW)) GO TO 10328
           IAM(IAM(IPT+4)+3)=IAM(IPT+3)
           IAM(IAM(IPT+3)+4)=IAM(IPT+4)
           IAM(IAM(IPT+6)+5)=IAM(IPT+5)
           IAM(IAM(IPT+5)+6)=IAM(IPT+6)
           IPT=IPT-10
-        GO TO 10335
-10336   CONTINUE
+        GO TO 10327
+10328   CONTINUE
 C
         IAM(5)=ILW
 C
 C Zero the low-order bits of the markers in all the remaining nodes.
 C
-        DO 10337 IPT=8,IAM(5)-9,10
+        DO 10329 IPT=8,IAM(5)-9,10
           IAM(IPT)=4*(IAM(IPT)/4)
-10337   CONTINUE
+10329   CONTINUE
 C
 C If appropriate, delete space temporarily used at the upper end of
 C the area map array.
