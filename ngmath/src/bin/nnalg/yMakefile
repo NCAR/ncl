@@ -4,8 +4,11 @@
 
 MYNAME  = nnalg
 
-GENERIC_SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
+SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
+OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
-GENERIC_OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
+PROG_LIBS = $(NCARGLIBS)
+DEP_LIBS = $(DEPNCARGLIBS)
+SYS_LIBS = $(XLIB)
 
-FortranTarget(nnalg,$(GENERIC_OBJS))
+FortranProgram($MYNAME,$(OBJS),$(DEP_LIBS))
