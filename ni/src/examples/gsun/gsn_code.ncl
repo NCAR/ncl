@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.126 2004-01-02 05:24:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.127 2004-01-06 04:31:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2434,6 +2434,138 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_primitive                                              ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;                 isndc: NDC space or not                               ;
+;              polytype: type of primitive                              ;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This function draws a primitive to the plot "plotid", either in the   ;
+; same data space as the data in the plot, or in NDC space. ("plotid"   ;
+; is returned from a previous call to one of the gsn_* plotting         ;
+; functions), "x" and "y" are the x and y locations of each point in the;
+; primitive, and should either be in the same data space as the data    ;
+; from "plotid" (isndc = False) or should be values from 0 to 1 if in   ;
+; NDC space (isndc = True). Note that using isndc = True should only    ;
+; be used internally. It currently only works for NDC coordinates that  ;
+; actually fall within the plot's boundaries.                           ;
+;                                                                       ;
+; "resources" is an optional list of resources.                         ;
+;                                                                       ;
+;***********************************************************************;
+procedure gsn_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
+                        y[*]:numeric,isndc:logical,polytype:string, \
+                        resources:logical)
+local res2, gsid, gsres, gmres, canvas, xf, yf, x2, y2
+begin
+  if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
+    print("Warning: gsn_primitive: Do not recognize primitive type '"+ polytype + "'.")
+    return
+  end if
+
+  res2 = get_resources(resources)
+
+; Create graphic style object.
+
+  gsid = create "graphic_style" graphicStyleClass wks end create
+
+;
+; Create a canvas to draw on, if this is an NDC draw.
+; 
+  if(isndc) then
+    canvas = create_canvas(wks)
+  end if
+
+  gsres = get_res_eq(res2,"gs")
+  attsetvalues_check(gsid,gsres)
+;
+; Make sure data is float, since NhlDataPolymarker only takes floats.
+;
+  xf = tofloat(x)
+  yf = tofloat(y)
+;
+; Since the NhlData*/NhlNDC* routines don't accept missing values, this
+; routine only draws the ones that aren't missing. For polylines, a pen up
+; and pen down takes place after each section of missing values.  We'll
+; handle this later.
+;
+  if(.not.any(ismissing(xf)).and..not.any(ismissing(yf))) then
+    x2 = xf
+    y2 = yf
+    nomsg = True
+  else
+    x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+    y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+    nomsg = False
+  end if
+
+  if(polytype.eq."polymarker") then
+    if(isndc) then
+      NhlNDCPolymarker(canvas,gsid,x2,y2)
+    else
+      NhlDataPolymarker(plotid,gsid,x2,y2)
+    end if
+  end if
+  if(polytype.eq."polygon") then
+    if(isndc) then
+      NhlNDCPolygon(canvas,gsid,x2,y2)
+    else
+      NhlDataPolygon(plotid,gsid,x2,y2)
+    end if
+  end if
+  if(polytype.eq."polyline".and.nomsg) then
+    if(isndc) then
+      NhlNDCPolyline(canvas,gsid,x2,y2)
+    else
+      NhlDataPolyline(plotid,gsid,x2,y2)
+    end if
+  end if
+  if(polytype.eq."polyline".and..not.nomsg) then
+    first_marker = True
+;
+; If we end up with a line with just one point, then we draw it with
+; a polymarker. Thus, we need to make sure the marker will be the
+; same color as the line.
+; 
+    gmres = False
+    if(isatt(gsres,"gsLineColor"))
+      gmres               = True
+      gmres@gsMarkerColor = gsres@gsLineColor
+    end if
+
+    indices = get_non_missing_pairs(xf,yf)
+    i = 0
+    do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
+      ibeg = indices(i,0)
+      iend = indices(i,1)
+      if(iend.gt.ibeg)
+        if(isndc) then
+          NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
+        else
+          NhlDataPolyline(plotid,gsid,xf(ibeg:iend),yf(ibeg:iend))
+        end if
+      else    ; iend = ibeg --> only one point
+        if(first_marker)
+          attsetvalues_check(gsid,gmres)
+          first_marker = False
+        end if
+        if(isndc) then
+          NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
+        else
+          NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
+        end if
+      end if
+      i = i + 1
+    end do
+    delete(indices)
+  end if
+end
+
+
+;***********************************************************************;
 ; Procedure : gsn_polygon                                               ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -2451,33 +2583,10 @@ end
 ;***********************************************************************;
 procedure gsn_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                       y[*]:numeric,resources:logical)
-local i, gsid, plot_object, res, gs_res_index, res2, \
-xf, yf, x2, y2
+local res2
 begin
-
   res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-
-; Draw a polygon.
-
-    xf = tofloat(x)
-    yf = tofloat(y)
-
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlDataPolygon(plotid,gsid,xf,yf)
-    else
-      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      NhlDataPolygon(plotid,gsid,x2,y2)
-    end if
+  gsn_primitive(wks,plotid,x,y,False,"polygon",res2)
 end
 
 ;***********************************************************************;
@@ -2522,37 +2631,11 @@ end
 ;***********************************************************************;
 procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                           resources:logical)
-local i, gsid, plot_object, res, gs_res_index, xf, yf, x2, y2
+local res2, dummy
 begin
-
-    res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-;
-; Create a canvas to draw on.
-; 
-    canvas = create_canvas(wks)
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-
-; Draw a polygon.
-
-    xf = tofloat(x)
-    yf = tofloat(y)
-
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlNDCPolygon(canvas,gsid,xf,yf)
-    else
-      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      NhlNDCPolygon(canvas,gsid,x2,y2)
-    end if
+  dummy = new(1,graphic)
+  res2 = get_resources(resources)
+  gsn_primitive(wks,dummy,x,y,True,"polygon",res2)
 end
 
 ;***********************************************************************;
@@ -2572,62 +2655,10 @@ end
 ;***********************************************************************;
 procedure gsn_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                        y[*]:numeric,resources:logical)
-local i, gsid, plot_object, res, gs_res_index
+local res2
 begin
-
-    res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-
-    gmres = False
-;
-; If we end up with a line with just one point, then we draw it with
-; a polymarker. Thus, we need to make sure the marker will be the
-; same color as the line.
-; 
-    if(isatt(gsres,"gsLineColor"))
-      gmres = True
-      gmres@gsMarkerColor = gsres@gsLineColor
-    end if
-
-;
-; Convert data to float, since NhlDataPolyline only takes floats.
-;
-    xf = tofloat(x)
-    yf = tofloat(y)
-;
-; Since NhlDataPolyline doesn't accept missing values, this routine steps
-; through all the points, and only draws the ones that aren't missing. If
-; a single point is surrounded by missing values, then a marker is drawn.
-;
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlDataPolyline(plotid,gsid,xf,yf)
-    else
-      first_marker = True
-      indices = get_non_missing_pairs(xf,yf)
-      i = 0
-      do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
-        ibeg = indices(i,0)
-        iend = indices(i,1)
-        if(iend.gt.ibeg)
-          NhlDataPolyline(plotid,gsid,xf(ibeg:iend),yf(ibeg:iend))
-        else    ; iend = ibeg --> only one point
-           if(first_marker)
-             attsetvalues_check(gsid,gmres)
-             first_marker = False
-           end if
-           NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
-        end if
-        i = i + 1
-      end do
-    end if
+  res2 = get_resources(resources)
+  gsn_primitive(wks,plotid,x,y,False,"polyline",res2)
 end
 
 ;***********************************************************************;
@@ -2651,6 +2682,7 @@ end
 ;***********************************************************************;
 function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,resources:logical)
+local res2
 begin
   res2 = get_resources(resources)
   return(gsn_add_primitive(wks,plotid,x,y,False,"polyline",res2))
@@ -2670,53 +2702,11 @@ end
 ;***********************************************************************;
 procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                            resources:logical)
-local gsid, plot_object
+local res2, dummy
 begin
-
-    res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-;
-; Create a canvas to draw on.
-; 
-    canvas = create_canvas(wks)
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-;
-; Convert data to float, since NhlDataPolyline only takes floats.
-;
-    xf = tofloat(x)
-    yf = tofloat(y)
-;
-; Since NhlNDCPolyline doesn't accept missing values, this routine steps
-; through all the points, and only draws the ones that aren't missing. If
-; a single point is surrounded by missing values, then a marker is drawn.
-;
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlNDCPolyline(canvas,gsid,xf,yf)
-    else
-;
-; Since the data contains missing values, loop through each point and only
-; draw the non-missing points.
-;
-      indices = get_non_missing_pairs(xf,yf)
-      i = 0
-      do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
-        ibeg = indices(i,0)
-        iend = indices(i,1)
-        if(iend.gt.ibeg)
-          NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
-        else    ; iend = ibeg --> only one point
-          NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
-        end if
-        i = i + 1
-      end do
-    end if
+  dummy = new(1,graphic)
+  res2 = get_resources(resources)
+  gsn_primitive(wks,dummy,x,y,True,"polyline",res2)
 end
 
 ;***********************************************************************;
@@ -2736,35 +2726,10 @@ end
 ;***********************************************************************;
 procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
-local i, gsid, plot_object, res, xf, yf, x2, y2
+local res2
 begin
-
-    res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-;
-; Make sure data is float, since NhlDataPolymarker only takes floats.
-;
-    xf = tofloat(x)
-    yf = tofloat(y)
-;
-; Since NhlDataPolymarker doesn't accept missing values, this routine
-; only draws the ones that aren't missing.
-;
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlDataPolymarker(plotid,gsid,xf,yf)
-    else
-      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      NhlDataPolymarker(plotid,gsid,x2,y2)
-    end if
+  res2 = get_resources(resources)
+  gsn_primitive(wks,plotid,x,y,False,"polymarker",res2)
 end
 
 ;***********************************************************************;
@@ -2788,6 +2753,7 @@ end
 ;***********************************************************************;
 function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                             y[*]:numeric,resources:logical)
+local res2
 begin
   res2 = get_resources(resources)
   return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
@@ -2808,37 +2774,11 @@ end
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                              resources:logical)
-local i, gsid, plot_object, res, xf, yf, x2, y2
+local res2, dummy
 begin
-
-    res2 = get_resources(resources)
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-;
-; Create a canvas to draw on.
-; 
-    canvas = create_canvas(wks)
-
-    gsres = get_res_eq(res2,"gs")
-    attsetvalues_check(gsid,gsres)
-
-; Make sure data is float.
-    xf = tofloat(x)
-    yf = tofloat(y)
-
-; Draw some polymarkers.
-    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-      NhlNDCPolymarker(canvas,gsid,xf,yf)
-    else
-      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-      NhlNDCPolymarker(canvas,gsid,x2,y2)
-    end if
+  dummy = new(1,graphic)
+  res2 = get_resources(resources)
+  gsn_primitive(wks,dummy,x,y,True,"polymarker",res2)
 end
 
 ;***********************************************************************;
