@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.178 2005-02-28 22:23:10 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.179 2005-03-24 21:56:04 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4782,7 +4782,7 @@ NhlErrorTypes _NclIinttochar
 {
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        char *out_val;
+        unsigned char *out_val;
 	NclBasicDataTypes type;
         int *value;
         int total=1;
@@ -4806,13 +4806,13 @@ NhlErrorTypes _NclIinttochar
 		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 		else {
-			missing2.charval = (char)missing.intval;
+			missing2.charval = (unsigned char)missing.intval;
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.intval)) {
-				out_val[i] = (char)missing2.charval;
+				out_val[i] = (unsigned char)missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	} else {
@@ -4822,7 +4822,7 @@ NhlErrorTypes _NclIinttochar
 				has_missing = 1;
 				out_val[i] = missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	}
@@ -4847,11 +4847,11 @@ NhlErrorTypes _NclIchartoint
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
-        char *value;
+        unsigned char *value;
         int total=1;
         int i;
 
-        value = (char*)NclGetArgValue(
+        value = (unsigned char*)NclGetArgValue(
                         0,
                         1,
                         &n_dims,
@@ -4963,7 +4963,7 @@ NhlErrorTypes _NclIshorttochar
 {
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        char *out_val;
+        unsigned char *out_val;
 	NclBasicDataTypes type;
         short *value;
         int total=1;
@@ -4987,13 +4987,13 @@ NhlErrorTypes _NclIshorttochar
 		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 		else {
-			missing2.charval = (char)missing.shortval;
+			missing2.charval = (unsigned char)missing.shortval;
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.shortval)) {
-				out_val[i] = (char)missing2.charval;
+				out_val[i] = (unsigned char)missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	} else {
@@ -5003,7 +5003,7 @@ NhlErrorTypes _NclIshorttochar
 				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	}
@@ -5028,11 +5028,11 @@ NhlErrorTypes _NclIchartoshort
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
-        char *value;
+        unsigned char *value;
         int total=1;
         int i;
 
-        value = (char*)NclGetArgValue(
+        value = (unsigned char*)NclGetArgValue(
                         0,
                         1,
                         &n_dims,
@@ -5053,7 +5053,7 @@ NhlErrorTypes _NclIchartoshort
 				out_val[i] = (short)value[i];
 			}
 		}
-		missing2.shortval = (short) missing.charval;
+		missing2.shortval = (short)missing.charval;
 
 	} else {
 		for(i = 0; i < total; i++) {
@@ -5270,7 +5270,7 @@ NhlErrorTypes _NclIlongtochar
 {
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        char *out_val;
+        unsigned char *out_val;
 	NclBasicDataTypes type;
         long *value;
         int total=1;
@@ -5298,9 +5298,9 @@ NhlErrorTypes _NclIlongtochar
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.longval)) {
-				out_val[i] = (char)missing2.charval;
+				out_val[i] = (unsigned char)missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	} else {
@@ -5310,7 +5310,7 @@ NhlErrorTypes _NclIlongtochar
 				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	}
@@ -5335,11 +5335,11 @@ NhlErrorTypes _NclIchartolong
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
 	NclBasicDataTypes type;
-        char *value;
+        unsigned char *value;
         int total=1;
         int i;
 
-        value = (char*)NclGetArgValue(
+        value = (unsigned char*)NclGetArgValue(
                         0,
                         1,
                         &n_dims,
@@ -5637,7 +5637,7 @@ NhlErrorTypes _NclIfloattochar
 {
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        char *out_val;
+        unsigned char *out_val;
 	NclBasicDataTypes type;
         float *value;
         int total=1;
@@ -5662,13 +5662,13 @@ NhlErrorTypes _NclIfloattochar
 				((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 		else {
-			missing2.charval = (char)missing.floatval;
+			missing2.charval = (unsigned char)missing.floatval;
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.floatval)) {
 				out_val[i] = missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	} else {
@@ -5678,7 +5678,7 @@ NhlErrorTypes _NclIfloattochar
 				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	}
@@ -5703,11 +5703,11 @@ NhlErrorTypes _NclIchartofloat
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         float *out_val;
 	NclBasicDataTypes type;
-        char *value;
+        unsigned char *value;
         int total=1;
         int i;
 
-        value = (char*)NclGetArgValue(
+        value = (unsigned char*)NclGetArgValue(
                         0,
                         1,
                         &n_dims,
@@ -5817,7 +5817,7 @@ NhlErrorTypes _NclIdoubletochar
 {
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        char *out_val;
+        unsigned char *out_val;
 	NclBasicDataTypes type;
         double *value;
         int total=1;
@@ -5841,13 +5841,13 @@ NhlErrorTypes _NclIdoubletochar
 		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 		else {
-			missing2.charval = (char)missing.doubleval;
+			missing2.charval = (unsigned char)missing.doubleval;
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.doubleval)) {
-				out_val[i] = (char)missing2.charval;
+				out_val[i] = (unsigned char)missing2.charval;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	} else {
@@ -5857,7 +5857,7 @@ NhlErrorTypes _NclIdoubletochar
 				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
-				out_val[i] = (char)value[i];
+				out_val[i] = (unsigned char)value[i];
 			}
 		}
 	}
@@ -5882,11 +5882,11 @@ NhlErrorTypes _NclIchartodouble
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         double *out_val;
 	NclBasicDataTypes type;
-        char *value;
+        unsigned char *value;
         int total=1;
         int i;
 
-        value = (char*)NclGetArgValue(
+        value = (unsigned char*)NclGetArgValue(
                         0,
                         1,
                         &n_dims,

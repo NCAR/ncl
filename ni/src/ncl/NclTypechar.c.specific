@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypechar.c.specific,v 1.5 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id: NclTypechar.c.specific,v 1.6 2005-03-24 21:56:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ NclTypeClass fc;
 #endif
 {
         int i;
-        char *res = (char*)result;
+        unsigned char *res = (unsigned char*)result;
         logical tmp;
         NclTypeOp eq;
         NclScalar tmp_mis;
@@ -96,14 +96,14 @@ NclTypeClass fc;
                                 if(tmp) {
                                         *res = tmp_mis.charval;
                                 } else {
-                                        *res = (char)*fl;
+                                        *res = (unsigned char)*fl;
                                 }
                         }
                 }
                 return(NhlNOERROR);
         }	
         case Ncl_Typechar: {
-                char *fl = (char*)from;
+                unsigned char *fl = (unsigned char*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 *res = *fl;
@@ -115,7 +115,7 @@ NclTypeClass fc;
                                 if(tmp) {
                                         *res = tmp_mis.charval;
                                 } else {
-                                        *res = (char)*fl;
+                                        *res = (unsigned char)*fl;
                                 }
                         }
                 }
@@ -141,12 +141,12 @@ double* result;
 #endif
 {
         
-        if((lhs_m != NULL)&&(lhs_m->charval == *(char*)lhs)) {
+        if((lhs_m != NULL)&&(lhs_m->charval == *(unsigned char*)lhs)) {
                 return(NhlFATAL);
-        } else if((rhs_m != NULL)&&(rhs_m->charval == *(char*)rhs)) {
+        } else if((rhs_m != NULL)&&(rhs_m->charval == *(unsigned char*)rhs)) {
                 return(NhlFATAL);
         } else {
-                *result = (double)(*(char*)lhs-*(char*)rhs);
+                *result = (double)(*(unsigned char*)lhs-*(unsigned char*)rhs);
                 return(NhlNOERROR);
         }
         

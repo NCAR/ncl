@@ -121,7 +121,7 @@ typedef union _NclScalar {
 	int	intval;
 	long    longval;
 	short	shortval;
-	char	charval;
+	unsigned char	charval;
 	string	stringval;
 	byte    byteval;
 	logical	logicalval;

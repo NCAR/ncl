@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.46 2005-02-11 01:59:18 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.47 2005-03-24 21:56:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -301,7 +301,7 @@ NclMultiDValData str_md;
 	int i,n_dims;
 	string *value;
 	int max_len,tmp_len,to;
-	char *val = NULL;
+	unsigned char *val = NULL;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	string missingQ;
 	NhlBoolean has_missing = False;
@@ -337,7 +337,7 @@ NclMultiDValData str_md;
 		dim_sizes[str_md->multidval.n_dims] = max_len;
 		n_dims = str_md->multidval.n_dims +1;
 	}
-	val = (char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
+	val = (unsigned char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
 	for(i = 0, to = 0; i < str_md->multidval.totalelements; i++) {
 		if (has_missing && value[i] == missingQ) {
 			val[to] = '\0';
@@ -375,7 +375,7 @@ NclMultiDValData char_md;
 	int len =0;
 	int from = 0;
 	string *value = NULL;
-	char *val = NULL;
+	unsigned char *val = NULL;
 	string missingQ;
 	char missing;
 	char *cp;
@@ -398,7 +398,7 @@ NclMultiDValData char_md;
 		tmp_missing.stringval = missingQ;
 	}
 	value = (string*) NclMalloc((unsigned)n_strings*sizeof(string));
-	val = (char*)char_md->multidval.val;
+	val = (unsigned char*)char_md->multidval.val;
 	if (has_missing) {
 		/*
 		 * A missing char ends the string. If it is the
