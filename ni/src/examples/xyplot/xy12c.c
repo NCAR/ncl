@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.5 1995-02-22 16:35:49 haley Exp $
+ *      $Id: xy12c.c,v 1.6 1995-03-03 19:23:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -255,7 +255,9 @@ NextFrameCB
 	 * If it's the first time Create the Plot object
 	 */
 	if(FirstTime){
-		int		dataspecid;
+		int grlist, datadepid[1];
+		int *dspec = datadepid;
+		int num_dspec;
 
 		FirstTime = False;
 
@@ -266,13 +268,6 @@ NextFrameCB
 							sizeof(NhlPointer),1);
 		NhlRLSetFloat(rlist,NhlNctYMissingV,-9999.0);
 		NhlCreate(&dataid,"xy_data",NhlcoordArrTableLayerClass,
-							NhlDEFAULT_APP,rlist);
-
-		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
-		NhlRLSetInteger(rlist,NhlNxyColor,4);
-		NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
-		NhlCreate(&dataspecid,"xy_spec",NhlxyDataDepLayerClass,
 							NhlDEFAULT_APP,rlist);
 
 		NhlRLClear(rlist);
@@ -290,9 +285,9 @@ NextFrameCB
 		NhlRLSetInteger(rlist,NhlNtmXBLabelJust,0);
 		NhlRLSetInteger(rlist,NhlNtmXBLabelAngleF,330);
 
-		NhlRLSetInteger(rlist,NhlNxyCurveData,dataspecid);
-		NhlRLSetInteger(rlist,NhlNxyYMaxF,1030);
-		NhlRLSetInteger(rlist,NhlNxyYMinF,960);
+		NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
+		NhlRLSetInteger(rlist,NhlNtrYMaxF,1030);
+		NhlRLSetInteger(rlist,NhlNtrYMinF,960);
 
 		NhlRLSetString(rlist,NhlNtiMainString,title);
 		NhlRLSetString(rlist,NhlNtiXAxisString,"Time");
@@ -301,7 +296,18 @@ NextFrameCB
 
 		NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,
 									rlist);
+		grlist = NhlRLCreate(NhlGETRL);
+		NhlRLClear(grlist);
+		NhlRLGetIntegerArray(grlist,NhlNxyCoordDataSpec,&dspec,&num_dspec);
+		NhlGetValues(xyplotid,grlist);
+
 		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNxyMonoLineColor,True);
+		NhlRLSetInteger(rlist,NhlNxyMonoDashPattern,True);
+		NhlRLSetInteger(rlist,NhlNxyLineColor,4);
+		NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
+		NhlSetValues(dspec[0],rlist);
+
 
 		XtSetSensitive(hardCopy,True);
 	}
