@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.53 1993-10-25 15:07:17 haley Exp $
+#   $Id: ncargex.csh,v 1.54 1993-10-26 23:21:57 haley Exp $
 #
 
 #********************#
@@ -16,9 +16,10 @@ if ($#argv < 1) then
   echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]          "
   echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]   "
   echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]   "
-  echo "               [-scrolled_title] [-seter] [-softfill] [-spps]                "
+  echo "               [-scrolled_title] [-seter] [-softfill] [-spps]       "
   echo "               [-streamlines] [-surface] [-threed] [-vectors]       "
-  echo "               [-gks] [-misc] [-clean] [-n] [-onebyone] names       "
+  echo "               [-gks] [-misc] [-class] [-clean] [-n] [-onebyone]    "
+  echo "                names                                               "
   echo ""
   echo "See <man ncargex>                                                   "
   exit
@@ -354,6 +355,14 @@ set gks_list   = ($fnd_gks $pdc_gks)
 set ex_misc   = (example bnchmk)
 set misc_list = ($ex_misc)
 
+#********************#
+#                    #
+# set class examples #
+#                    #
+#*******************#
+set ttr_class   = (class1 class2 class3)
+set class_list  = ($ttr_class)
+
 #*************************************************************#
 #                                                             #
 # Some of the other examples are considered tutorial examples #
@@ -374,10 +383,10 @@ set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-		$tst_plotchar $tst_pwrite ${tst_scrlld_title} $tst_seter \
+                $tst_plotchar $tst_pwrite ${tst_scrlld_title} $tst_seter \
                 $tst_softfill $tst_surface $tst_threed)
 
-set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
+set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap $ttr_class)
 
 set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
                 $fnd_isosurface $fnd_labelbar $fnd_ngmisc $fnd_plotchar \
@@ -545,9 +554,9 @@ while ($#argv > 0)
             set names=($names ${scrlld_title_list})
             breaksw
 
-	case "-seter":
+        case "-seter":
             shift
-	    set names=($names $seter_list)
+            set names=($names $seter_list)
             breaksw
 
         case "-softfill":
@@ -588,6 +597,11 @@ while ($#argv > 0)
         case "-misc":
             shift
             set names=($names $misc_list)
+            breaksw
+
+        case "-class":
+            shift
+            set names=($names $class_list)
             breaksw
 
         case "-clean":
@@ -869,6 +883,10 @@ switch ($name)
         set copy_files = ($copy_files ccpex.dat)
     breaksw
 
+    case class1:
+        set copy_files = ($copy_files class1.dat)
+    breaksw
+
 #**********************************************************#
 #                                                          #
 # Set special ncargf77 flags for some of the test examples #
@@ -977,6 +995,9 @@ if (! $?NoRunOption) then
         breaksw
         case fcover:
             ncargrun -o $name.ncgm $name < fcover.dat
+        breaksw
+        case class1:
+            ncargrun -o $name.ncgm $name < class1.dat
         breaksw
         case fgke03:
             $name
