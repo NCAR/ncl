@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.7 1993-11-12 02:44:29 boote Exp $
+.\"	$Id: ymake.man,v 1.8 1993-12-09 21:41:07 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -55,7 +55,8 @@ directory, relative to the top. Multiple -D flags may be sent to \fBymake\fP.
 .B \-I\fIdirectory\fP
 This option is passed directly to \fBcpp\fP.  It is typically used to 
 indicate the directory in which the \fBymake\fP template and configuration
-files may be found.
+files may be found. Multiple -I flags may be sent to \fBymake\fP, although
+it is usually not necessary to use this flag at all.
 .SH DESCRIPTION
 .B ymake
 is used to 
@@ -63,10 +64,11 @@ generate \fIMakefiles\fP from a template, a set of \fBcpp\fP macro functions,
 and a per-directory input file called a \fIyMakefile\fP.  This allows machine
 dependencies (such as compiler options, alternate command names, and special
 \fBmake\fP rules) to be kept separate from the descriptions of the
-various items to be built. \fBymake\fP is usually used from withing the
+various items to be built. \fBymake\fP is usually used from within the
 NCAR Graphics source distribution tree.  When it is used in this way, it
 and all of the configuration files listed below can be found in the config
-subdirectory.  \fBymake\fP can also be used from the systems bin directory.
+subdirectory.  \fBymake\fP can also be used from the systems NCARG bin
+directory.
 When it is used in this way, it uses the \fINCARG_ROOT\fP environment
 variable to find the configuration files in
 .I $(NCARG_ROOT)/lib/ncarg/config.
@@ -140,11 +142,12 @@ On systems whose \fBcpp\fP reduces multiple tabs and spaces to a single
 space, \fBymake\fP attempts to put back any necessary tabs (\fBmake\fP is
 very picky about the difference between tabs and spaces).  For this reason,
 colons (:), and equals (=) in command lines must be preceded by a
-backslash (\\).
+backslash (\\) to escape them. \fBymake\fP assumes lines with colons (:) and
+equals (=) should not have a tab before them unless they are escaped.
 .SH "USE IN NCAR GRAPHICS DISTRIBUTION"
 The NCARG distribution uses \fBymake\fP extensively for builds
 within the source tree.  It is also useful to build portions of the source tree
-or even external software, if it is used from the system's bin directory.
+or even external software, if it is used from the system's NCARG bin directory.
 As mentioned above,
 two special variables, \fITOPDIR\fP and \fICURDIR,\fP are set to make
 referencing files using relative path names easier.  For example, the
@@ -167,7 +170,7 @@ source tree. It generates the above \fBymake\fP command.
 When building programs outside the full source tree \fBymake\fP can be
 called without any options from the systems NCARG bin directory (Usually
 $(NCARG_ROOT)/bin).
-The typical way it would be used, is to go to the top directory of your
+The typical way it would be used is to go to the top directory of your
 source tree and then execute
 .B ``ymake''.
 This will create a \fIMakefile\fP in your top-level directory.
@@ -178,8 +181,8 @@ and to build the source tree.  This would be done by executing
 .B ``make includes''
 , and
 .B ``make depend''.
-Once you have done this, all the \fIMakefiles\fP in the source tree should
-be created and have dependencies built into them.
+Once you have done this, all the \fIMakefiles\fP in the source tree
+will have been created and have dependencies built into them.
 .PP
 If you only want to create \fIMakefiles\fP in some sub-tree of your source
 then you can use the \fBymkmf\fP script to create your highest level
@@ -188,7 +191,7 @@ For example if you had the \fIni\fP source tree you could create
 the \fIMakefile\fP in the \fIhlu\fP sub-directory like this:
 .sp
 .nf
-host:~/src/ni/src/lib/hlu > ymkmf ni
+host:~/src/ni/src/lib/hlu% ymkmf ni
 .fi
 .sp
 The \fBymkmf\fP script will search up the directory hierarachy until it finds
@@ -200,6 +203,11 @@ the \fItopdir\fP that was passed to it.  In this case it would create a
 .br
 \fICURRENT_DIR\fP	=	./src/lib/hlu
 .ta
+.PP
+The \fITOP\fP and \fICURRENT_DIR\fP symbols are set using the \fITOPDIR\fP and
+\fICURDIR\fP symbols.  The reason multiple symbols are used, is because the
+\fImakefile\fP must call \fBymake\fP with the \fITOPDIR\fP and \fICURDIR\fP
+symbols so they can not be actual macros in the \fImakefile\fP.
 .PP
 Additionally,
 you can set the environment variable \fI$(YMAKE_DEV_FILE)\fP to an additional
@@ -441,7 +449,10 @@ do that, you use the
 .I #define IHaveSubdirs
 .B cpp
 directive and set the \fBmake\fP symbol \fISUBDIRS\fP to the list of
-subdirectories in the \fIyMakefile\fP.
+subdirectories in the \fIyMakefile\fP.  If a subdirectory listed in the
+\fISUBDIRS\fP symbol doesn't exist, then ymake reports it and continues.
+That way, it is possible to be working with portions of a build tree
+without having to edit the \fIyMakefiles\fP.
 .SH "MAKE SYMBOLS"
 The following is a list of many of the \fBmake\fP symbols that are reserved
 for use in \fIyMakefiles\fP:
@@ -552,7 +563,7 @@ designator for the given system.
 .IP SUBMINOR_DEF
 This
 .B make
-symbol is set to -D\fIMINOR=n\fP where \fIn\fP is the sub-minor revision
+symbol is set to -D\fISUBMINOR=n\fP where \fIn\fP is the sub-minor revision
 designator for the given system.
 If it is null above, then \fISUBMINOR_DEF\fP will also be null.
 .SH "ENVIRONMENT VARIABLES"
@@ -561,11 +572,11 @@ The following environment variables may be used by \fBymake\fP.
 .B YMAKE_DEV_FILE
 If defined, this should be a valid file including \fBmake\fP symbol definitions
 to override the default ones.  This Environment variable is only used
-if \fBymake\fP is being used from the bin directory, it will not effect a full
+if \fBymake\fP is being used from the bin directory; it will not affect a full
 NCAR Graphics distribution build.
 .TP 5
 .B NCARG_ROOT
-This is used by \fBymake\fP to find it's config directory if \fBymake\fP is
+This is used by \fBymake\fP to find its config directory if \fBymake\fP is
 being used from the system's bin directory.
 .TP 5
 .B NCARG_CONFIG

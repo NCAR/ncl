@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.11 1993-11-12 02:44:16 boote Exp $
+ *	$Id: Rules,v 1.12 1993-12-09 21:41:04 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -86,9 +86,11 @@ install-local::]\
 #define InternalMakeSubdirs(dirs)\
 ]\
 makesubdirs:]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; echo "Making $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS));\]\
+	else echo "NOT Making $(CURRENT_DIR)/$$dir"; fi \]\
 	done]\
 ]\
 all:: all-local makesubdirs]
@@ -104,9 +106,11 @@ all:: all-local makesubdirs]
 #define InternalCleanSubdirs(dirs)\
 ]\
 clean:: clean-local]\
-	-@for dir in dirs ; do\]\
+	-@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir;\]\
 	$(MAKE) $(MFLAGS) clean);\]\
+	else echo "NOT Cleaning $(CURRENT_DIR)/$$dir"; fi \]\
 	done]
 #endif	/* InternalCleanSubdirs */
 
@@ -120,8 +124,10 @@ clean:: clean-local]\
 #define	InternalDistCleanSubdirs(dirs)\
 ]\
 dist-clean:: clean-local]\
-	-@for dir in dirs ; do\]\
+	-@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\]\
+	else echo "NOT dist-cleaning $(CURRENT_DIR)/$$dir"; fi \]\
 	done]\
 	@$(RM) Makefile]\
 	@echo "dist-clean in $(CURRENT_DIR)"]\
@@ -138,9 +144,11 @@ dist-clean:: clean-local]\
 #define InternalInstallSubdirs(dirs)\
 ]\
 install:: install-local]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir;\]\
 	$(MAKE) $(MFLAGS) install);\]\
+	else echo "NOT installing $(CURRENT_DIR)/$$dir"; fi \]\
 	done]
 #endif	/* InternalInstallSubdirs */
 
@@ -176,16 +184,20 @@ $(YMAKEDEP):]\
 #define InternalMakefilesSubdirs(dirs)\
 ]\
 Makefiles::]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\]\
 	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;\]\
 	$(MAKE) $(MFLAGS) Makefiles);\]\
+	else echo "NOT Making Makefiles in $(CURRENT_DIR)/$$dir"; fi \]\
 	done]\
 ]\
 Makefiles-local::]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; echo "Making Makefile in $(CURRENT_DIR)/$$dir";\]\
 	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;)\]\
+	else echo "NOT Making Makefile in $(CURRENT_DIR)/$$dir"; fi \]\
 	done]
 #endif	/* InternalMakefilesSubdirs */
 
@@ -504,9 +516,11 @@ depend-local:: srcs]\
 #define InternalDependSubdirs(dirs)\
 ]\
 depend:: depend-local]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) depend);\]\
+	else echo "NOT Depending in $(CURRENT_DIR)/$$dir";\]\
 	done]
 #endif	/* InternalDependSubdirs */
 
@@ -550,9 +564,11 @@ includes-local::]\
 #define	InternalIncludesSubdirs(dirs)\
 ]\
 includes:: includes-local]\
-	@for dir in dirs ; do\]\
+	@for dir in dirs ; do \]\
+	if (test -d $$dir) then \]\
 	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) includes);\]\
+	else echo "NOT including in $(CURRENT_DIR)/$$dir";\]\
 	done]
 #endif	/* InternalIncludesSubdirs */
 
