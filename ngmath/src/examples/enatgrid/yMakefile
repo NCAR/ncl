@@ -1,0 +1,41 @@
+#
+#	$Id: yMakefile,v 1.1 1997-02-27 19:10:14 fred Exp $
+#
+
+MYNAME	= enatgrid
+
+SRCS = \
+	nnplotc.c    c_nnex01.c   c_nnex01d.c    c_nnex02.c    c_nnex03.c \
+	c_nnex06.c                                                        \
+	nnplotf.f    nnex01.f     nnex01d.f      nnex02.f      nnex03.f   \
+	nnex04.f     nnex05.f     nnex06.f       nnex07.f      nnex08.f   \
+	nnex09.f
+
+OBJS = \
+	nnplotc.o    c_nnex01.o   c_nnex01d.o    c_nnex02.o    c_nnex03.o \
+	c_nnex06.o                                                        \
+	nnplotf.o    nnex01.o     nnex01d.o      nnex02.o      nnex03.o   \
+	nnex04.o     nnex05.o     nnex06.o       nnex07.o      nnex08.o   \
+	nnex09.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(nnex01,nnex01.o nnplotf.o)
+FExampleTarget(nnex02,nnex02.o nnplotf.o)
+FExampleTarget(nnex03,nnex03.o nnplotf.o)
+FExampleTarget(nnex04,nnex04.o nnplotf.o)
+FExampleTarget(nnex05,nnex05.o nnplotf.o)
+FExampleTarget(nnex06,nnex06.o nnplotf.o)
+FExampleTarget(nnex07,nnex07.o nnplotf.o)
+FExampleTarget(nnex08,nnex08.o nnplotf.o)
+FExampleTarget(nnex09,nnex09.o nnplotf.o)
+FExampleTarget(nnex01d,nnex01d.o nnplotf.o)
+FExampleTarget(c_nnex01,c_nnex01.o nnplotc.o)
+FExampleTarget(c_nnex02,c_nnex02.o nnplotc.o)
+FExampleTarget(c_nnex03,c_nnex03.o nnplotc.o)
+FExampleTarget(c_nnex06,c_nnex06.o nnplotc.o)
+FExampleTarget(c_nnex01d,c_nnex01d.o nnplotc.o)
