@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.1 1995-05-05 19:35:16 haley Exp $
+C      $Id: xy10f.f,v 1.2 1995-05-09 20:03:14 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,19 +37,17 @@ C Declare variables for the HLU routine calls.
 C
       integer appid, xworkid, xyid1, xyid2, mpid1, mpid2, dataid
       integer rlist, i
-      integer length(2)
       real special_value
       real lat(3000), lon(3000)
       data special_value/-9999./
 C
 C Declare variables for getting information from netCDF file.
 C
-      character*100 error_msg
-      character*50 dir, recname, idname
+      character*50 dir, recname
       character*256 filename
       integer ncid, latid, lonid, recid
       integer ndims, nvars, ngatts, rec_len
-      integer start(1), count(1), idx(1)
+      integer start(1), count(1)
 
       integer NCGM
 C
