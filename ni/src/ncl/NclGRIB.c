@@ -1212,7 +1212,7 @@ GribFileRecord *therec;
 #endif
 {
 	GribParamList *step = NULL;
-	unsigned char buffer[80];
+	char buffer[80];
 
 	for (step = therec->var_list; step != NULL; step = step->next) {
 		NclQuark qvname = step->var_info.var_name_quark;
