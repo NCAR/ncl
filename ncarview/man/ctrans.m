@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.24 1995-10-13 15:12:26 haley Exp $
+.\"	$Id: ctrans.m,v 1.25 1996-01-18 14:38:17 boote Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -411,19 +411,6 @@ renders into a X window created by an application other than
 .BR ctrans .
 As a side effect of this option the rendering window 
 is not cleared between frames.
-.TP 
-.B \-pcmap
-Ask 
-.B ctrans 
-to create its own X color map. If this option is not used
-.B ctrans
-will use the default color map provided by the X server. When this
-option is used color table indeces specified by the metafile are mapped
-directly one-to-one into X pixels.
-.IP
-This option is ignored if the 
-.B \-wid 
-option is present.
 .TP
 .B \-reverse
 On monochrome devices reverse video is simulated by swapping the foreground
@@ -454,6 +441,86 @@ from processing the entire metafile without pausing between frames.
 .IP
 .I window_id 
 may be specified as a decimal or hexidecimal integer.
+.PP
+The following options apply to the X11 color map management of
+.B ctrans
+when
+.I device
+is X11:
+.IP
+.B ctrans
+supports three different methods of X11 color map management.
+.IP
+If the
+user specifies a shared color map (using the
+.B \-scmap
+option), then
+.B ctrans
+will use the default X color map for the screen, that is shared by all
+applications.  If the metafile contains more colors than there are
+available in the default X color map, then a color matching algorithm
+is employed.  The idea of the algorithm is that the color in the
+current color table that is
+.I closest
+to the requested color will be selected.
+.I Closest
+is defined in terms of the normal distance metric on the RGB cube.  If
+the closest color is equal to or farther away than the percentage error
+allowed (
+.B \-colerr
+), then a warning message will be printed.  The closest color is still
+used.
+.IP
+If the
+user specifies a private color map (using the
+.B \-pcmap
+option), then
+.B ctrans
+will create a private color map for the graphics window.  This will guarantee
+that 256 distinct colors are available to the window.  This means that
+the  X window will have a different color map than all the other windows on
+the screen, therefore; you usually have to have the mouse pointer in the
+window for the correct color table to be installed.  One disadvantage to
+this option is that there is usually a color flashing effect on the
+screen since the wrong color table will be installed for the other windows
+on the screen.
+.IP
+The default color map management scheme attempts to take the best of
+the two previous models.  It starts out
+behaving like the shared model, in that it uses the default color map
+for the screen.  It differs in that, once it can't allocate any more colors
+from the default color map, in allocates its own private color table and
+starts using it.  This way, the color flashing is only present if
+it absolutely needs to be so that
+.B ctrans
+can display the correct color.
+.TP 
+.B \-scmap
+Ask
+.B ctrans
+to use the shared default X color map only.
+.IP
+This is the option used if
+.B \-wid
+is specified.
+.TP
+.BI \-colerr " n"
+Specifies the percentage color error that is acceptable if the
+.B \-scmap
+option is being used.  If the color being used is
+.I n
+percentage or more different from the color requested, a warning will be
+reported by
+.B ctrans.
+.TP 
+.B \-pcmap
+Ask 
+.B ctrans 
+to create its own X color map and use it exclusively.
+.IP
+This option is ignored if the 
+.B \-wid 
+option is present.
 .PP
 The following options are available when 
 .I device 
