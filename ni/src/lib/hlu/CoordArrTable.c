@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.8 1994-01-22 01:58:59 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.9 1994-01-24 16:26:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -825,7 +825,7 @@ CoordArrTableClassPartInitialize
 {									\
 	if(ncat->cat##type.dim##table_lens != NULL){			\
 	ncat->cat##type.dim##table_lens =				\
-		_NhlCopyGenArray(ncat->cat##type.dim##table_lens,True);	\
+		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table_lens,(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table_lens == NULL){			\
 		NhlPError(FATAL,ENOMEM,NULL);				\
 		return FATAL;						\
@@ -837,7 +837,7 @@ CoordArrTableClassPartInitialize
 {									\
 	if(ncat->cat##type.dim##table != NULL){				\
 	ncat->cat##type.dim##table =					\
-		_NhlCopyGenArray(ncat->cat##type.dim##table,True);	\
+		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table,(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table == NULL){				\
 		NhlPError(FATAL,ENOMEM,NULL);				\
 		return FATAL;						\
@@ -860,7 +860,7 @@ CoordArrTableClassPartInitialize
 				NhlPError(FATAL,ENOMEM,NULL);		\
 				return FATAL;				\
 			}						\
-			memcpy(nvect,ovect,sizeof(type)*lens[i]);	\
+			memcpy((char*)nvect,(char*)ovect,sizeof(type)*lens[i]);	\
 			vals[i] = nvect;				\
 		}							\
 									\

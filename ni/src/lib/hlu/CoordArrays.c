@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.5 1994-01-22 01:59:05 boote Exp $
+ *      $Id: CoordArrays.c,v 1.6 1994-01-24 16:26:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -795,7 +795,7 @@ CreateTableInt
 	NhlGenArray	*tbl_lens
 )
 #else
-(cast_res,other_cast_res,error_lead,gen,othergen,cast,other_cast,tbl,tbl_lens)
+(cast_res,other_cast_res,error_lead,gen,other_gen,cast,other_cast,tbl,tbl_lens)
 	NhlString	cast_res;
 	NhlString	other_cast_res;
 	NhlString	error_lead;
