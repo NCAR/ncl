@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.167 2004-03-10 02:01:13 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.168 2004-03-10 19:24:29 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3688,6 +3688,32 @@ NhlErrorTypes _NclIasciiread
                                 }
 			}
 			NclFree(tmp_ptr);
+			if (totalsize == 0) {
+				fclose(fd);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+	      "asciiread: No elements read from file, returning a single element with the default missing value for the requested type");
+				tmp_ptr = NclMalloc(1*thetype->type_class.size);
+				dimsizes[0] = 1;
+				tmp_md = _NclCreateMultiDVal(
+					NULL,
+					NULL,
+					Ncl_MultiDValData,
+					0,
+					tmp_ptr,
+					NULL,
+					n_dimensions,
+					dimsizes,
+					TEMPORARY,
+					NULL,
+					thetype);
+				if(tmp_md == NULL) 
+					return(NhlFATAL);
+				memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
+				data_out.kind = NclStk_VAL;
+				data_out.u.data_obj = tmp_md;
+				_NclPlaceReturn(data_out);
+				return(ret);
+			}
 			tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
 			dimsizes[0] = totalsize;
 			fclose(fd);
