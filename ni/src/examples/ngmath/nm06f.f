@@ -1,5 +1,5 @@
 C
-C      $Id: nm06f.f,v 1.1 1997-12-23 16:01:09 haley Exp $
+C      $Id: nm06f.f,v 1.2 1997-12-23 17:25:46 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -27,7 +27,7 @@ C
       parameter(NUM=171,NX=21,NY=21)
 
       real xi(NUM), yi(NUM), zi(NUM)
-      real xo(NX), yo(NY), output(NX,NY)
+      real xo(NX), yo(NY), output(NX,NY),output2(NX,NY)
       data xminin,yminin,xmaxin,ymaxin/ -0.2, -0.2, 1.2, 1.2/
       data xminot,yminot,xmaxot,ymaxot/  0.0,  0.0, 1.0, 1.0/
       data xeye, yeye, zeye/1.3, -1.8, 3.6/
@@ -114,11 +114,20 @@ C
       call NhlFRLGetInteger(grlist,'wkGksWorkId',gkswid,ierr)
       call NhlFGetValues(wid,grlist,ierr)
 C
+C  Interpolate using c_dspnt2s.
+C
+      do 115 i = 1,NX
+         do 110 j = 1,NY
+            call dspnt2s(NUM,xi,yi,zi,1,xo(i),yo(j),output2(i,j),ier)
+ 110     continue
+ 115  continue
+C
 C There's no HLU object for surface plots yet, so we need to call the
 C LLUs to get a surface plot.
 C
       call gacwk (gkswid)
       call drwtd2(gkswid,nx, ny, xo, yo, output, xeye, yeye, zeye, -6)
+      call drwtd2(gkswid,nx, ny, xo, yo, output2, xeye, yeye, zeye, -6)
       call gdawk (gkswid)
 C
 C NhlDestroy destroys the given id and all of its children.
