@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.120 2000-08-22 04:34:27 haley Exp $
+#   $Id: ncargex.csh,v 1.121 2000-08-26 03:07:13 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -405,7 +405,7 @@ set cssgrid_flist = (cssex01 cssex02 cssex03)
 set dsgrid_flist  = (dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06)
 set fitgrid_flist = (ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
 set natgrid_flist = (nnex01 nnex01d nnex02 nnex03 nnex04 nnex05 nnex06 \
-                     nnex07 nnex08 nnex09) 
+                     nnex07 nnex08 nnex09 nnex10)
 set shgrid_flist  = (shex01 shex02 shex03)
 
 set ngmath_flist  = ($csagrid_flist $cssgrid_flist $dsgrid_flist \
@@ -1384,6 +1384,7 @@ switch($name)
 
     case nnex08:
     case nnex09:
+    case nnex10:
     case mpex12:
       unset tmp_ws_type
       set tmp_msg = "   "
@@ -1640,6 +1641,7 @@ switch ($name)
     case nnex07:
     case nnex08:
     case nnex09:
+    case nnex10:
     case nnex01d:
         set extra_src_files = (nnplotf.f)
         set comp_flags = ($comp_flags "-ngmath")
