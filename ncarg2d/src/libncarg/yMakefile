@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.18 2001-10-10 02:52:51 haley Exp $
+#       $Id: yMakefile,v 1.19 2003-06-12 22:33:57 haley Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -9,7 +9,7 @@
 #define IHaveSubdirs
 
 SUBDIRS = \
-	areas autogrph colconv common concom conpack conran conrec \
+	areas autogrph colconv common concom conpack conpackt conran conrec \
 	conterp dashchar dashpack ezmap ezmapa ezmapb ezmapc gflash \
 	gridal hafton histgr isosrf isosrfhr labelbar ngmisc plotchar \
 	polypack pwritx pwrity pwrzi pwrzs pwrzt softfill spps \
