@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1997-01-24 21:59:56 haley Exp $
+#	$Id: yMakefile,v 1.8 2000-09-13 12:35:55 haley Exp $
 #
 
 MYNAME	= fontcap
@@ -40,6 +40,11 @@ CleanFilesTarget($(FONTCAPS) $(FCPP_OBJS))
 .fc:
 	@echo "	Processing fontcap $@"
 	@$(FONTC) $< $@
+
+#if defined(linux)
+cfrdln.o: cfrdln.f
+	$(F77) -g -c cfrdln.f
+#endif
 
 
 
