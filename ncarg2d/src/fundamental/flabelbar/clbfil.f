@@ -21,6 +21,10 @@ C Draw a horizontal bar
 C
       CALL LBLBAR(0,.05,.95,.05,.95,4,1.,.3,IFILL1,2,LAB1,4,1)
 C
+C Advance frame
+C
+      CALL FRAME
+C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
       CALL GDAWK (IWKID)
