@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.16 2002-09-26 22:35:34 haley Exp $
+ * $Id: ngmath.h,v 1.17 2003-11-25 22:14:32 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -122,13 +122,17 @@ double *c_csa3lxd(int, double [], double [], double [], double [],
  */
 int c_ftseti(char *, int);
 int c_ftsetr(char *, float);
+int c_ftsetrd(char *, double);
 int c_ftsetc(char *, char *);
 int c_ftgeti(char *, int *);
 int c_ftgetr(char *, float *);
+int c_ftgetrd(char *, double *);
 int c_ftgetc(char *, char *);
 int c_ftsetfa(char *, int, float *);
+int c_ftsetda(char *, int, double *);
 int c_ftgetfa_size(char *);
 float *c_ftgetfa_data(char *);
+double *c_ftgetda_data(char *);
 int c_ftcurv (int, float [], float [], int, float [], float []);
 int c_ftcurvd(int, float [], float [], int, float [], float []);
 int c_ftcurvi(float, float, int, float [], float [], float *);
@@ -147,11 +151,10 @@ int c_ftkurvpd(int, float [], float [], int, float [], float [], float [],
                float [], float [], float [], float []);
 float *c_ftsurf(int, int, float *, float *, float *,
                 int, int, float *, float *, int *);
-int c_ftcurvdp (int, double [], double [], int, double [], double []);
+int c_ftcurvdp(int, double [], double [], int, double [], double []);
 int c_ftcurvddp(int, double [], double [], int, double [], double []);
 int c_ftcurvidp(double, double, int, double [], double [], double *);
-int c_ftcurvpdp(int, double [], double [], double, int, double [], 
-                double yo[]);
+int c_ftcurvpdp(int, double [], double [], double, int, double [], double []);
 int c_ftcurvpidp(double, double, double, int, double [], double [], 
                  double *);
 int c_ftcurvsdp(int, double [], double [], int, double [], int, double [],
@@ -159,7 +162,7 @@ int c_ftcurvsdp(int, double [], double [], int, double [], int, double [],
 int c_ftcurvs1dp(int, double [], double [], int, double [],
                  int, double, double, double [], double []);
 int c_ftcurvpsdp(int, double [], double [], double, int, double [],
-               int, double [], double []);
+                 int, double [], double []);
 int c_ftkurvdp(int, double [], double [], int, double [], double [], 
                double []);
 int c_ftkurvpdp(int, double [], double [], int, double [], double [],
