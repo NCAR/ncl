@@ -1,5 +1,5 @@
 C
-C $Id: cpplps.f,v 1.6 1995-04-26 22:45:00 kennison Exp $
+C $Id: cpplps.f,v 1.7 1996-02-29 17:44:16 kennison Exp $
 C
       SUBROUTINE CPPLPS (RWRK,IPTX,IPTY,NXYC)
 C
@@ -96,21 +96,12 @@ C
         END IF
       END IF
 C
-C Find the dimensions of the labels being put on this line and a radius
-C to use in computing the penalty based on "curviness".  Add a bit to
-C keep labels from being too close to each other or to the edge.
+C Compute character-size and white-space-size variables.
 C
-      XTRA=.5*CHWM*WCLL*(XVPR-XVPL)
+      WCFS=CHWM*WCLL*(XVPR-XVPL)
+      WWFS=CHWM*WWLL*(XVPR-XVPL)
 C
-      DSTB=CLDB(ICLV)+XTRA
-      DSTL=CLDL(ICLV)+XTRA
-      DSTR=CLDR(ICLV)+XTRA
-      DSTT=CLDT(ICLV)+XTRA
-C
-      WLBL=DSTL+DSTR
-      HLBL=DSTB+DSTT
-C
-      CRAD=MAX(DSTB,DSTL,DSTR,DSTT)
+      XTRA=.5*WCFS
 C
 C Convert all the coordinates from the user system to the fractional
 C system.
@@ -186,6 +177,68 @@ C
           GO TO 10007
 10008     CONTINUE
 C
+C Call a user routine which may change the label to be used; if the
+C label string is blanked by that routine, don't put a label there.
+C
+          XLBC=CFUX(XCLB)
+          IF (ICFELL('CPPLPS',3).NE.0) RETURN
+          YLBC=CFUY(YCLB)
+          IF (ICFELL('CPPLPS',4).NE.0) RETURN
+C
+          ZDVL=CLEV(ICLV)
+C
+          LCTM=NCLB(ICLV)
+          CTMA(1:LCTM)=CLBL(ICLV)(1:LCTM)
+          CTMB(1:LCTM)=CTMA(1:LCTM)
+C
+          CALL HLUCPCHLL (+1)
+          IF (ICFELL('CPPLPS',5).NE.0) RETURN
+C
+C If the label string was blanked by the user, don't put a label there.
+C
+          IF (CTMA(1:LCTM).EQ.' ') GO TO 102
+C
+C Set text extent variables; how this is done depends on whether the
+C user changed the label string or not.
+C
+          IF (CTMA(1:LCTM).EQ.CTMB(1:LCTM)) THEN
+            ICHF=0
+            DSTB=CLDB(ICLV)+XTRA
+            DSTL=CLDL(ICLV)+XTRA
+            DSTR=CLDR(ICLV)+XTRA
+            DSTT=CLDT(ICLV)+XTRA
+          ELSE
+            ICHF=1
+            CALL PCGETI ('TE',ITMP)
+            IF (ICFELL('CPPLPS',6).NE.0) RETURN
+            CALL PCSETI ('TE',1)
+            IF (ICFELL('CPPLPS',7).NE.0) RETURN
+            CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
+            IF (ICFELL('CPPLPS',8).NE.0) RETURN
+            CALL PCGETR ('DL',DTOL)
+            IF (ICFELL('CPPLPS',9).NE.0) RETURN
+            CALL PCGETR ('DR',DTOR)
+            IF (ICFELL('CPPLPS',10).NE.0) RETURN
+            CALL PCGETR ('DB',DTOB)
+            IF (ICFELL('CPPLPS',11).NE.0) RETURN
+            CALL PCGETR ('DT',DTOT)
+            IF (ICFELL('CPPLPS',12).NE.0) RETURN
+            CALL PCSETI ('TE',ITMP)
+            IF (ICFELL('CPPLPS',13).NE.0) RETURN
+            DTOL=DTOL+WWFS
+            DTOR=DTOR+WWFS
+            DTOB=DTOB+WWFS
+            DTOT=DTOT+WWFS
+            DSTL=DTOL+XTRA
+            DSTR=DTOR+XTRA
+            DSTB=DTOB+XTRA
+            DSTT=DTOT+XTRA
+          END IF
+C
+          WLBL=DSTL+DSTR
+          HLBL=DSTB+DSTT
+          CRAD=MAX(DSTB,DSTL,DSTR,DSTT)
+C
 C Determine at what angle the label would be written and compute the
 C coordinates of the left, right, bottom, and top edges of it.
 C
@@ -239,9 +292,9 @@ C
 10012       CONTINUE
             IF (ILBL .GT.(NLBI)) GO TO 10011
 C
-            IF (ILBL.EQ.INIL) XTRA=.5*CHWM*WCIL*(XVPR-XVPL)
-            IF (ILBL.EQ.INHL) XTRA=.5*CHWM*WCHL*(XVPR-XVPL)
-            IF (ILBL.EQ.INLL) XTRA=.5*CHWM*WCLL*(XVPR-XVPL)
+            IF (ILBL.EQ.INIL) ETRA=.5*CHWM*WCIL*(XVPR-XVPL)
+            IF (ILBL.EQ.INHL) ETRA=.5*CHWM*WCHL*(XVPR-XVPL)
+            IF (ILBL.EQ.INLL) ETRA=.5*CHWM*WCLL*(XVPR-XVPL)
             XCOL=RWRK(IR03+4*(ILBL-1)+1)
             YCOL=RWRK(IR03+4*(ILBL-1)+2)
             ANOL=RWRK(IR03+4*(ILBL-1)+3)
@@ -249,15 +302,15 @@ C
             CAOL=COS(ANOL)
             ICOL=INT(RWRK(IR03+4*(ILBL-1)+4))
             IF (ICOL.LE.0) THEN
-              ODSL=RWRK(IR04-ICOL+3)+XTRA
-              ODSR=RWRK(IR04-ICOL+4)+XTRA
-              ODSB=RWRK(IR04-ICOL+5)+XTRA
-              ODST=RWRK(IR04-ICOL+6)+XTRA
+              ODSL=RWRK(IR04-ICOL+3)+ETRA
+              ODSR=RWRK(IR04-ICOL+4)+ETRA
+              ODSB=RWRK(IR04-ICOL+5)+ETRA
+              ODST=RWRK(IR04-ICOL+6)+ETRA
             ELSE
-              ODSL=CLDL(ICOL)+XTRA
-              ODSR=CLDR(ICOL)+XTRA
-              ODSB=CLDB(ICOL)+XTRA
-              ODST=CLDT(ICOL)+XTRA
+              ODSL=CLDL(ICOL)+ETRA
+              ODSR=CLDR(ICOL)+ETRA
+              ODSB=CLDB(ICOL)+ETRA
+              ODST=CLDT(ICOL)+ETRA
             END IF
 C
             IF (ANOL.EQ.0.) THEN
@@ -449,6 +502,11 @@ C
             XMIN=XCLB
             YMIN=YCLB
             AMIN=ANLB
+            ISCF=ICHF
+            SDTL=DTOL
+            SDTR=DTOR
+            SDTB=DTOB
+            SDTT=DTOT
           END IF
 C
   102   CONTINUE
@@ -461,7 +519,7 @@ C
             CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
             IPTX=IPTX-IS01+IR01
             IPTY=IPTY-IS01+IR01
-            IF (IWSE.NE.0.OR.ICFELL('CPPLPS',3).NE.0) THEN
+            IF (IWSE.NE.0.OR.ICFELL('CPPLPS',14).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF
@@ -469,7 +527,28 @@ C
           RWRK(IR03+4*(NLBS-1)+1)=XMIN
           RWRK(IR03+4*(NLBS-1)+2)=YMIN
           RWRK(IR03+4*(NLBS-1)+3)=AMIN
-          RWRK(IR03+4*(NLBS-1)+4)=REAL(ICLV)
+          IF (ISCF.EQ.0) THEN
+            RWRK(IR03+4*(NLBS-1)+4)=REAL(ICLV)
+          ELSE
+            RWRK(IR03+4*(NLBS-1)+4)=-NR04
+            NR04=NR04+6
+            IF (NR04.GT.LR04) THEN
+              IS01=IR01
+              CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
+              IPTX=IPTX-IS01+IR01
+              IPTY=IPTY-IS01+IR01
+              IF (IWSE.NE.0.OR.ICFELL('CPPLPS',15).NE.0) THEN
+                NLBS=NLBS-1
+                RETURN
+              END IF
+            END IF
+            RWRK(IR04+NR04-5)=4.
+            RWRK(IR04+NR04-4)=REAL(ICLV)
+            RWRK(IR04+NR04-3)=SDTL
+            RWRK(IR04+NR04-2)=SDTR
+            RWRK(IR04+NR04-1)=SDTB
+            RWRK(IR04+NR04  )=SDTT
+          END IF
         END IF
 C
       IF (.NOT.(IMIN.EQ.0)) GO TO 10005

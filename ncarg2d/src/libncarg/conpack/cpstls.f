@@ -1,5 +1,5 @@
 C
-C $Id: cpstls.f,v 1.6 1995-04-26 22:45:12 kennison Exp $
+C $Id: cpstls.f,v 1.7 1996-02-29 17:44:16 kennison Exp $
 C
       SUBROUTINE CPSTLS (ZDAT,RWRK,IWRK)
 C
@@ -84,26 +84,18 @@ C
           IF (ICFELL('CPSTLS',2).NE.0) RETURN
           LCTM=KCLB
           CTMA(1:LCTM)=CLBL(ICLV)(1:KCLB)
-          IPAI=ICLV
-          IF (IPAI.GT.256) IPAI=256-IPAI
-          CALL HLUCPCHLL (+1)
-          IF (ICFELL('CPSTLS',3).NE.0) RETURN
           CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),SIZE,360.,0.)
-          IF (ICFELL('CPSTLS',4).NE.0) RETURN
-          IPAI=ICLV
-          IF (IPAI.GT.256) IPAI=256-IPAI
-          CALL HLUCPCHLL (-1)
-          IF (ICFELL('CPSTLS',5).NE.0) RETURN
+          IF (ICFELL('CPSTLS',3).NE.0) RETURN
           CALL PCGETR ('DB',DSTB)
-          IF (ICFELL('CPSTLS',6).NE.0) RETURN
+          IF (ICFELL('CPSTLS',4).NE.0) RETURN
           CALL PCGETR ('DL',DSTL)
-          IF (ICFELL('CPSTLS',7).NE.0) RETURN
+          IF (ICFELL('CPSTLS',5).NE.0) RETURN
           CALL PCGETR ('DR',DSTR)
-          IF (ICFELL('CPSTLS',8).NE.0) RETURN
+          IF (ICFELL('CPSTLS',6).NE.0) RETURN
           CALL PCGETR ('DT',DSTT)
-          IF (ICFELL('CPSTLS',9).NE.0) RETURN
+          IF (ICFELL('CPSTLS',7).NE.0) RETURN
           CALL PCSETI ('TE',ITMP)
-          IF (ICFELL('CPSTLS',10).NE.0) RETURN
+          IF (ICFELL('CPSTLS',8).NE.0) RETURN
           CLDB(ICLV)=DSTB+WWSP
           CLDL(ICLV)=DSTL+WWSP
           CLDR(ICLV)=DSTR+WWSP

@@ -1,12 +1,12 @@
 C
-C $Id: cplbam.f,v 1.6 1995-12-13 22:52:41 kennison Exp $
+C $Id: cplbam.f,v 1.7 1996-02-29 17:44:14 kennison Exp $
 C
       SUBROUTINE CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
       DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*),IAMA(*)
 C
 C The function of the routine CPLBAM is to add to an area map boxes
-C surrounding all of the contour-line labels.
+C surrounding all of the labels.
 C
 C ZDAT is the user's data array.
 C
@@ -100,40 +100,26 @@ C
         GO TO 101
       END IF
 C
-C If no labels are in the label list and labels are being positioned
-C using either the regular scheme or the penalty scheme, force the
-C label positions to be picked, which will have the side effect of
-C forcing contour levels to be sorted.  Otherwise, just do the sort.
+C Make sure label positions have been chosen.
 C
-      IF (NLBS.LE.0.AND.(ABS(IPLL).EQ.2.OR.ABS(IPLL).EQ.3)) THEN
-        CALL CPPKLP (ZDAT,RWRK,IWRK)
-        IF (ICFELL('CPLBAM',6).NE.0) THEN
-          NLBS=0
-          NR04=0
-          INIL=0
-          INHL=0
-          INLL=0
-          RETURN
-        END IF
-      ELSE
-        IF (NCLV.GT.0) CALL CPSORT (CLEV,NCLV,ICLP)
+      CALL CPPKLP (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPLBAM',6).NE.0) THEN
+        NLBS=0
+        NR04=0
+        INIL=0
+        INHL=0
+        INLL=0
+        RETURN
       END IF
 C
-C If there are still no labels in the label list, do the informational
-C label and the high/low labels directly and quit.
+C If there are no labels in the label list, quit.
 C
-      IF (NLBS.LE.0) THEN
-        CALL CPINLB (ZDAT,RWRK,IWRK,3,IAMA)
-        IF (ICFELL('CPLBAM',7).NE.0) RETURN
-        CALL CPHLLB (ZDAT,RWRK,IWRK,3,IAMA)
-        IF (ICFELL('CPLBAM',8).NE.0) RETURN
-        GO TO 101
-      END IF
+      IF (NLBS.LE.0) GO TO 101
 C
-C Put label boxes in the area map.
+C Put label boxes into the area map.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
-      IF (ICFELL('CPLBAM',9).NE.0) RETURN
+      IF (ICFELL('CPLBAM',7).NE.0) RETURN
 C
       DO 10001 I=1,NLBS
         XCLB=RWRK(IR03+4*(I-1)+1)
@@ -164,18 +150,18 @@ C
         RWRK(IR01+ 9)=YCLB-DLLB*SALB+DTLB*CALB
         RWRK(IR01+10)=RWRK(IR01+6)
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
-        IF (ICFELL('CPLBAM',10).NE.0) RETURN
+        IF (ICFELL('CPLBAM',8).NE.0) RETURN
 10001 CONTINUE
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
-      IF (ICFELL('CPLBAM',11).NE.0) RETURN
+      IF (ICFELL('CPLBAM',9).NE.0) RETURN
 C
 C If the area map has no edges in it, something has gone wrong.  Put
 C a dummy rectangle in the area map to prevent problems which result.
 C
   101 IF (IAMA(7).EQ.0) THEN
         CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
-        IF (ICFELL('CPLBAM',12).NE.0) RETURN
+        IF (ICFELL('CPLBAM',10).NE.0) RETURN
         RWRK(IR01+ 1)=0.
         RWRK(IR01+ 2)=1.
         RWRK(IR01+ 3)=1.
@@ -187,9 +173,9 @@ C
         RWRK(IR01+ 9)=1.
         RWRK(IR01+10)=RWRK(IR01+6)
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
-        IF (ICFELL('CPLBAM',13).NE.0) RETURN
+        IF (ICFELL('CPLBAM',11).NE.0) RETURN
         CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
-        IF (ICFELL('CPLBAM',14).NE.0) RETURN
+        IF (ICFELL('CPLBAM',12).NE.0) RETURN
       END IF
 C
 C Release real workspace 1.

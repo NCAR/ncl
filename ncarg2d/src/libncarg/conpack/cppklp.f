@@ -1,5 +1,5 @@
 C
-C $Id: cppklp.f,v 1.5 1995-04-26 22:44:58 kennison Exp $
+C $Id: cppklp.f,v 1.6 1996-02-29 17:44:15 kennison Exp $
 C
       SUBROUTINE CPPKLP (ZDAT,RWRK,IWRK)
 C
@@ -98,12 +98,6 @@ C
       CALL CPSTLS (ZDAT,RWRK,IWRK)
       IF (ICFELL('CPPKLP',5).NE.0) RETURN
 C
-C This routine only does something meaningful if labels are being
-C positioned along the contour lines using the regular scheme or the
-C penalty scheme.  In other cases, quit now.
-C
-      IF (ABS(IPLL).NE.2.AND.ABS(IPLL).NE.3) RETURN
-C
 C Save the index of the informational label.
 C
       INIL=NLBS+1
@@ -125,6 +119,11 @@ C
 C Save the index of the contour-line labels.
 C
       INLL=NLBS+1
+C
+C If labels are not being positioned along the contour lines using the
+C regular scheme or the penalty scheme, quit now.
+C
+      IF (ABS(IPLL).NE.2.AND.ABS(IPLL).NE.3) RETURN
 C
 C If it will be needed, compute the array of gradients.
 C

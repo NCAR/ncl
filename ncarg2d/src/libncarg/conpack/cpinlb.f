@@ -1,14 +1,12 @@
 C
-C $Id: cpinlb.f,v 1.6 1995-06-10 00:59:28 kennison Exp $
+C $Id: cpinlb.f,v 1.7 1996-02-29 17:44:13 kennison Exp $
 C
-      SUBROUTINE CPINLB (ZDAT,RWRK,IWRK,IACT,IAMA)
+      SUBROUTINE CPINLB (ZDAT,RWRK,IWRK)
 C
-      DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*),IAMA(*)
+      DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
 C
-C CPINLB generates the informational label.  If IACT = 1, the quantities
-C defining the label are added to the lists in real workspaces 3 and 4.
-C If IACT = 2, the label is plotted.  If IACT = 3, the label box is
-C added to the area map in IAMA.
+C CPINLB generates the informational label; the quantities defining the
+C label are added to the lists in real workspaces 3 and 4.
 C
 C
 C Declare all of the CONPACK common blocks.
@@ -64,36 +62,6 @@ C
       CHARACTER*32 TXLO
       SAVE   /CPCOM2/
 C
-C Declare local arrays to hold coordinates for area fill of boxes.
-C
-      DIMENSION BFXC(4),BFYC(4)
-C
-C Define some local arrays in which to retrieve information from GKS.
-C
-      DIMENSION DUMI(4),VPRT(4),WIND(4)
-C
-C Define some arithmetic statement functions to get from the fractional
-C system to the world system.
-C
-      CFWX(X)=WIND(1)+(WIND(2)-WIND(1))*(X-VPRT(1))/(VPRT(2)-VPRT(1))
-      CFWY(Y)=WIND(3)+(WIND(4)-WIND(3))*(Y-VPRT(3))/(VPRT(4)-VPRT(3))
-C
-C Retrieve the definitions of the current GKS window and viewport.
-C
-      CALL GQCNTN (IGER,NCNT)
-C
-      IF (IGER.NE.0) THEN
-        CALL SETER ('CPINLB - ERROR EXIT FROM GQCNTN',1,1)
-        RETURN
-      END IF
-C
-      CALL GQNT (NCNT,IGER,WIND,VPRT)
-C
-      IF (IGER.NE.0) THEN
-        CALL SETER ('CPINLB - ERROR EXIT FROM GQNT',2,1)
-        RETURN
-      END IF
-C
 C If the text string for the informational label is blank, do nothing.
 C
       IF (TXIL(1:LTIL).EQ.' ') RETURN
@@ -107,39 +75,39 @@ C
       XPFS=XVPL+CXIL*(XVPR-XVPL)
       YPFS=YVPB+CYIL*(YVPT-YVPB)
       XLBC=CFUX(XPFS)
-      IF (ICFELL('CPINLB',3).NE.0) RETURN
+      IF (ICFELL('CPINLB',1).NE.0) RETURN
       YLBC=CFUY(YPFS)
-      IF (ICFELL('CPINLB',4).NE.0) RETURN
+      IF (ICFELL('CPINLB',2).NE.0) RETURN
       WCFS=CHWM*WCIL*(XVPR-XVPL)
       WWFS=CHWM*WWIL*(XVPR-XVPL)
 C
       CALL PCGETI ('TE',ITMP)
-      IF (ICFELL('CPINLB',5).NE.0) RETURN
+      IF (ICFELL('CPINLB',3).NE.0) RETURN
       CALL PCSETI ('TE',1)
-      IF (ICFELL('CPINLB',6).NE.0) RETURN
+      IF (ICFELL('CPINLB',4).NE.0) RETURN
       CALL HLUCPCHIL (+1)
-      IF (ICFELL('CPINLB',7).NE.0) RETURN
+      IF (ICFELL('CPINLB',5).NE.0) RETURN
+      IF (CTMA(1:LCTM).EQ.' ') GO TO 101
       CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
-      IF (ICFELL('CPINLB',8).NE.0) RETURN
+      IF (ICFELL('CPINLB',6).NE.0) RETURN
       CALL HLUCPCHIL (-1)
-      IF (ICFELL('CPINLB',9).NE.0) RETURN
+      IF (ICFELL('CPINLB',7).NE.0) RETURN
       CALL PCGETR ('DL',DSTL)
-      IF (ICFELL('CPINLB',10).NE.0) RETURN
+      IF (ICFELL('CPINLB',8).NE.0) RETURN
       CALL PCGETR ('DR',DSTR)
-      IF (ICFELL('CPINLB',11).NE.0) RETURN
+      IF (ICFELL('CPINLB',9).NE.0) RETURN
       CALL PCGETR ('DB',DSTB)
-      IF (ICFELL('CPINLB',12).NE.0) RETURN
+      IF (ICFELL('CPINLB',10).NE.0) RETURN
       CALL PCGETR ('DT',DSTT)
-      IF (ICFELL('CPINLB',13).NE.0) RETURN
+      IF (ICFELL('CPINLB',11).NE.0) RETURN
       CALL PCSETI ('TE',ITMP)
-      IF (ICFELL('CPINLB',14).NE.0) RETURN
+      IF (ICFELL('CPINLB',12).NE.0) RETURN
       DSTL=DSTL+WWFS
       DSTR=DSTR+WWFS
       DSTB=DSTB+WWFS
       DSTT=DSTT+WWFS
 C
-C ... and then take the desired action, either putting information
-C about the label into the lists or plotting it.
+C ... and then put information about the label into the lists.
 C
       SINA=SIN(.017453292519943*ANIL)
       COSA=COS(.017453292519943*ANIL)
@@ -165,203 +133,39 @@ C
       END IF
 C
       XLBC=CFUX(XPFS)
-      IF (ICFELL('CPINLB',15).NE.0) RETURN
+      IF (ICFELL('CPINLB',13).NE.0) RETURN
       YLBC=CFUY(YPFS)
-      IF (ICFELL('CPINLB',16).NE.0) RETURN
+      IF (ICFELL('CPINLB',14).NE.0) RETURN
 C
-      IF (IACT.EQ.1) THEN
-        NLBS=NLBS+1
-        IF (4*NLBS.GT.LR03) THEN
-          CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
-          IF (IWSE.NE.0.OR.ICFELL('CPINLB',17).NE.0) THEN
-            NLBS=NLBS-1
-            RETURN
-          END IF
-        END IF
-        RWRK(IR03+4*(NLBS-1)+1)=XPFS
-        RWRK(IR03+4*(NLBS-1)+2)=YPFS
-        RWRK(IR03+4*(NLBS-1)+3)=.017453292519943*ANIL
-        RWRK(IR03+4*(NLBS-1)+4)=-NR04
-        NR04=NR04+6
-        IF (NR04.GT.LR04) THEN
-          CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
-          IF (IWSE.NE.0.OR.ICFELL('CPINLB',18).NE.0) THEN
-            NLBS=NLBS-1
-            RETURN
-          END IF
-        END IF
-        RWRK(IR04+NR04-5)=0.
-        RWRK(IR04+NR04-4)=0.
-        RWRK(IR04+NR04-3)=DSTL
-        RWRK(IR04+NR04-2)=DSTR
-        RWRK(IR04+NR04-1)=DSTB
-        RWRK(IR04+NR04  )=DSTT
-      ELSE IF (IACT.EQ.2) THEN
-        IF (MOD(IBIL/2,2).NE.0) THEN
-          JLBC=ILBC
-          IF (JLBC.GE.0) THEN
-            CALL GQFACI (IGER,ISFC)
-            IF (IGER.NE.0) THEN
-              CALL SETER ('CPINLB - ERROR EXIT FROM GQFACI',19,1)
-              RETURN
-            END IF
-            IF (ISFC.NE.JLBC) CALL GSFACI (JLBC)
-          END IF
-          CALL HLUCPCHIL (+2)
-          IF (ICFELL('CPINLB',20).NE.0) RETURN
-          BFXC(1)=CFWX(XPFS-DSTL*COSA+DSTB*SINA)
-          IF (ICFELL('CPINLB',21).NE.0) RETURN
-          BFYC(1)=CFWY(YPFS-DSTL*SINA-DSTB*COSA)
-          IF (ICFELL('CPINLB',22).NE.0) RETURN
-          BFXC(2)=CFWX(XPFS+DSTR*COSA+DSTB*SINA)
-          IF (ICFELL('CPINLB',23).NE.0) RETURN
-          BFYC(2)=CFWY(YPFS+DSTR*SINA-DSTB*COSA)
-          IF (ICFELL('CPINLB',24).NE.0) RETURN
-          BFXC(3)=CFWX(XPFS+DSTR*COSA-DSTT*SINA)
-          IF (ICFELL('CPINLB',25).NE.0) RETURN
-          BFYC(3)=CFWY(YPFS+DSTR*SINA+DSTT*COSA)
-          IF (ICFELL('CPINLB',26).NE.0) RETURN
-          BFXC(4)=CFWX(XPFS-DSTL*COSA-DSTT*SINA)
-          IF (ICFELL('CPINLB',27).NE.0) RETURN
-          BFYC(4)=CFWY(YPFS-DSTL*SINA+DSTT*COSA)
-          IF (ICFELL('CPINLB',28).NE.0) RETURN
-          CALL GFA (4,BFXC,BFYC)
-          CALL HLUCPCHIL (-2)
-          IF (ICFELL('CPINLB',29).NE.0) RETURN
-          IF (JLBC.GE.0) THEN
-            IF (ISFC.NE.JLBC) CALL GSFACI (ISFC)
-          END IF
-        END IF
-        CALL GQPLCI (IGER,ISLC)
-        IF (IGER.NE.0) THEN
-          CALL SETER ('CPINLB - ERROR EXIT FROM GQPLCI',30,1)
+      NLBS=NLBS+1
+      IF (4*NLBS.GT.LR03) THEN
+        CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('CPINLB',15).NE.0) THEN
+          NLBS=NLBS-1
           RETURN
         END IF
-        CALL GQTXCI (IGER,ISTC)
-        IF (IGER.NE.0) THEN
-          CALL SETER ('CPINLB - ERROR EXIT FROM GQTXCI',31,1)
-          RETURN
-        END IF
-        IF (ICIL.GE.0) THEN
-          JCIL=ICIL
-        ELSE
-          JCIL=ISTC
-        END IF
-        JSLC=ISLC
-        JSTC=ISTC
-        IF (JSLC.NE.JCIL) THEN
-          CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPINLB',32).NE.0) RETURN
-          CALL GSPLCI (JCIL)
-          JSLC=JCIL
-        END IF
-        IF (JSTC.NE.JCIL) THEN
-          CALL GSTXCI (JCIL)
-          JSTC=JCIL
-        END IF
-        CALL GQCLIP (IGER,IGCF,DUMI)
-        IF (IGER.NE.0) THEN
-          CALL SETER ('CPINLB - ERROR EXIT FROM GQCLIP',33,1)
-          RETURN
-        END IF
-        IF (IGCF.NE.0) THEN
-          CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPINLB',34).NE.0) RETURN
-          CALL GSCLIP (0)
-        END IF
-        CALL HLUCPCHIL (+3)
-        IF (ICFELL('CPINLB',35).NE.0) RETURN
-        CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANIL,0.)
-        IF (ICFELL('CPINLB',36).NE.0) RETURN
-        CALL HLUCPCHIL (-3)
-        IF (ICFELL('CPINLB',37).NE.0) RETURN
-        IF (IGCF.NE.0) THEN
-          CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPINLB',38).NE.0) RETURN
-          CALL GSCLIP (IGCF)
-        END IF
-        IF (MOD(IBIL,2).NE.0) THEN
-          WDTH=WLIL
-          IF (WDTH.GT.0.) THEN
-            CALL GQLWSC (IGER,SFLW)
-            IF (IGER.NE.0) THEN
-              CALL SETER ('CPINLB - ERROR EXIT FROM GQLWSC',39,1)
-              RETURN
-            END IF
-            CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('CPINLB',40).NE.0) RETURN
-            CALL GSLWSC (WDTH)
-          END IF
-          CALL HLUCPCHIL (+4)
-          IF (ICFELL('CPINLB',41).NE.0) RETURN
-          CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
-     +                 YPFS-DSTL*SINA-DSTB*COSA,0)
-          IF (ICFELL('CPINLB',42).NE.0) RETURN
-          CALL PLOTIF (XPFS+DSTR*COSA+DSTB*SINA,
-     +                 YPFS+DSTR*SINA-DSTB*COSA,1)
-          IF (ICFELL('CPINLB',43).NE.0) RETURN
-          CALL PLOTIF (XPFS+DSTR*COSA-DSTT*SINA,
-     +                 YPFS+DSTR*SINA+DSTT*COSA,1)
-          IF (ICFELL('CPINLB',44).NE.0) RETURN
-          CALL PLOTIF (XPFS-DSTL*COSA-DSTT*SINA,
-     +                 YPFS-DSTL*SINA+DSTT*COSA,1)
-          IF (ICFELL('CPINLB',45).NE.0) RETURN
-          CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
-     +                 YPFS-DSTL*SINA-DSTB*COSA,1)
-          IF (ICFELL('CPINLB',46).NE.0) RETURN
-          CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPINLB',47).NE.0) RETURN
-          CALL HLUCPCHIL (-4)
-          IF (ICFELL('CPINLB',48).NE.0) RETURN
-          IF (WDTH.GT.0.) THEN
-            CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('CPINLB',49).NE.0) RETURN
-            CALL GSLWSC (SFLW)
-          END IF
-        END IF
-        IF (ISLC.NE.JSLC) THEN
-          CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPINLB',50).NE.0) RETURN
-          CALL GSPLCI (ISLC)
-        END IF
-        IF (ISTC.NE.JSTC) CALL GSTXCI (ISTC)
-      ELSE
-        CALL CPGRWS (RWRK,1,10,IWSE)
-        IF (IWSE.NE.0.OR.ICFELL('CPINLB',51).NE.0) RETURN
-        ANLB=.017453292519943*ANIL
-        SALB=SIN(ANLB)
-        CALB=COS(ANLB)
-        RWRK(IR01+ 1)=CFUX(XPFS-DSTL*CALB+DSTB*SALB)
-        IF (ICFELL('CPINLB',52).NE.0) RETURN
-        RWRK(IR01+ 2)=CFUX(XPFS+DSTR*CALB+DSTB*SALB)
-        IF (ICFELL('CPINLB',53).NE.0) RETURN
-        RWRK(IR01+ 3)=CFUX(XPFS+DSTR*CALB-DSTT*SALB)
-        IF (ICFELL('CPINLB',54).NE.0) RETURN
-        RWRK(IR01+ 4)=CFUX(XPFS-DSTL*CALB-DSTT*SALB)
-        IF (ICFELL('CPINLB',55).NE.0) RETURN
-        RWRK(IR01+ 5)=RWRK(IR01+1)
-        RWRK(IR01+ 6)=CFUY(YPFS-DSTL*SALB-DSTB*CALB)
-        IF (ICFELL('CPINLB',56).NE.0) RETURN
-        RWRK(IR01+ 7)=CFUY(YPFS+DSTR*SALB-DSTB*CALB)
-        IF (ICFELL('CPINLB',57).NE.0) RETURN
-        RWRK(IR01+ 8)=CFUY(YPFS+DSTR*SALB+DSTT*CALB)
-        IF (ICFELL('CPINLB',58).NE.0) RETURN
-        RWRK(IR01+ 9)=CFUY(YPFS-DSTL*SALB+DSTT*CALB)
-        IF (ICFELL('CPINLB',59).NE.0) RETURN
-        RWRK(IR01+10)=RWRK(IR01+6)
-        IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.(XWDL.GT.XWDR.AND.YWDB.GT
-     +.YWDT)) THEN
-          CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
-          IF (ICFELL('CPINLB',60).NE.0) RETURN
-        ELSE
-          CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
-          IF (ICFELL('CPINLB',61).NE.0) RETURN
-        END IF
-        LR01=0
       END IF
+      RWRK(IR03+4*(NLBS-1)+1)=XPFS
+      RWRK(IR03+4*(NLBS-1)+2)=YPFS
+      RWRK(IR03+4*(NLBS-1)+3)=.017453292519943*ANIL
+      RWRK(IR03+4*(NLBS-1)+4)=-NR04
+      NR04=NR04+6
+      IF (NR04.GT.LR04) THEN
+        CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('CPINLB',16).NE.0) THEN
+          NLBS=NLBS-1
+          RETURN
+        END IF
+      END IF
+      RWRK(IR04+NR04-5)=0.
+      RWRK(IR04+NR04-4)=0.
+      RWRK(IR04+NR04-3)=DSTL
+      RWRK(IR04+NR04-2)=DSTR
+      RWRK(IR04+NR04-1)=DSTB
+      RWRK(IR04+NR04  )=DSTT
 C
 C Done.
 C
-      RETURN
+  101 RETURN
 C
       END

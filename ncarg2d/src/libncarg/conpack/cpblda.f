@@ -1,5 +1,5 @@
 C
-C $Id: cpblda.f,v 1.6 1995-06-02 00:24:00 kennison Exp $
+C $Id: cpblda.f,v 1.7 1996-02-29 17:44:10 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C
@@ -881,7 +881,8 @@ C
 C XAT1 and XATM specify the range of X-coordinate values to be used.
 C
 C XLBC is the parameter 'LBX', which may be retrieved in any of the
-C change routines and specifies the X position of the label's center.
+C change routines and specifies the X position of the label's center,
+C in the current user coordinate system.
 C
       DATA XLBC / 0. /
 C
@@ -894,7 +895,8 @@ C
 C YAT1 and YATN specify the range of Y-coordinate values to be used.
 C
 C YLBC is the parameter 'LBY', which may be retrieved in any of the
-C change routines and specifies the Y position of the label's center.
+C change routines and specifies the Y position of the label's center,
+C in the current user coordinate system.
 C
       DATA YLBC / 0. /
 C

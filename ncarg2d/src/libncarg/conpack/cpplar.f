@@ -1,5 +1,5 @@
 C
-C $Id: cpplar.f,v 1.5 1995-04-26 22:44:59 kennison Exp $
+C $Id: cpplar.f,v 1.6 1996-02-29 17:44:15 kennison Exp $
 C
       SUBROUTINE CPPLAR (RWRK,IPTX,IPTY,NXYC)
 C
@@ -69,15 +69,12 @@ C If there are fewer than three points, skip it.
 C
       IF (NXYC.LT.3) RETURN
 C
-C Find the dimensions of the labels being put on this line.  Add a bit
-C to keep labels from being too close to each other or to the edge.
+C Compute character-size and white-space-size variables.
 C
-      XTRA=.5*CHWM*WCLL*(XVPR-XVPL)
+      WCFS=CHWM*WCLL*(XVPR-XVPL)
+      WWFS=CHWM*WWLL*(XVPR-XVPL)
 C
-      DSTB=CLDB(ICLV)+XTRA
-      DSTL=CLDL(ICLV)+XTRA
-      DSTR=CLDR(ICLV)+XTRA
-      DSTT=CLDT(ICLV)+XTRA
+      XTRA=.5*WCFS
 C
 C Convert all the coordinates from the user system to the fractional
 C system.
@@ -112,6 +109,62 @@ C Consider a possible label centered at the point (XCLB,YCLB).
 C
           XCLB=RWRK(IPTX+I)
           YCLB=RWRK(IPTY+I)
+C
+C Call a user routine which may change the label to be used; if the
+C label string is blanked by that routine, don't put a label there.
+C
+          XLBC=CFUX(XCLB)
+          IF (ICFELL('CPPLAR',3).NE.0) RETURN
+          YLBC=CFUY(YCLB)
+          IF (ICFELL('CPPLAR',4).NE.0) RETURN
+C
+          ZDVL=CLEV(ICLV)
+C
+          LCTM=NCLB(ICLV)
+          CTMA(1:LCTM)=CLBL(ICLV)(1:LCTM)
+          CTMB(1:LCTM)=CTMA(1:LCTM)
+C
+          CALL HLUCPCHLL (+1)
+          IF (ICFELL('CPPLAR',5).NE.0) RETURN
+C
+C If the label string was blanked by the user, don't put a label there.
+C
+          IF (CTMA(1:LCTM).EQ.' ') GO TO 101
+C
+C Set text extent variables; how this is done depends on whether the
+C user changed the label string or not.
+C
+          IF (CTMA(1:LCTM).EQ.CTMB(1:LCTM)) THEN
+            DSTL=CLDL(ICLV)+XTRA
+            DSTR=CLDR(ICLV)+XTRA
+            DSTB=CLDB(ICLV)+XTRA
+            DSTT=CLDT(ICLV)+XTRA
+          ELSE
+            CALL PCGETI ('TE',ITMP)
+            IF (ICFELL('CPPLAR',6).NE.0) RETURN
+            CALL PCSETI ('TE',1)
+            IF (ICFELL('CPPLAR',7).NE.0) RETURN
+            CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
+            IF (ICFELL('CPPLAR',8).NE.0) RETURN
+            CALL PCGETR ('DL',DTOL)
+            IF (ICFELL('CPPLAR',9).NE.0) RETURN
+            CALL PCGETR ('DR',DTOR)
+            IF (ICFELL('CPPLAR',10).NE.0) RETURN
+            CALL PCGETR ('DB',DTOB)
+            IF (ICFELL('CPPLAR',11).NE.0) RETURN
+            CALL PCGETR ('DT',DTOT)
+            IF (ICFELL('CPPLAR',12).NE.0) RETURN
+            CALL PCSETI ('TE',ITMP)
+            IF (ICFELL('CPPLAR',13).NE.0) RETURN
+            DTOL=DTOL+WWFS
+            DTOR=DTOR+WWFS
+            DTOB=DTOB+WWFS
+            DTOT=DTOT+WWFS
+            DSTL=DTOL+XTRA
+            DSTR=DTOR+XTRA
+            DSTB=DTOB+XTRA
+            DSTT=DTOT+XTRA
+          END IF
 C
 C Determine at what angle the label would be written and compute the
 C coordinates of the left, right, bottom, and top edges of it.
@@ -166,9 +219,9 @@ C
 10005       CONTINUE
             IF (ILBL .GT.(NLBS)) GO TO 10004
 C
-            IF (ILBL.EQ.INIL) XTRA=.5*CHWM*WCIL*(XVPR-XVPL)
-            IF (ILBL.EQ.INHL) XTRA=.5*CHWM*WCHL*(XVPR-XVPL)
-            IF (ILBL.EQ.INLL) XTRA=.5*CHWM*WCLL*(XVPR-XVPL)
+            IF (ILBL.EQ.INIL) ETRA=.5*CHWM*WCIL*(XVPR-XVPL)
+            IF (ILBL.EQ.INHL) ETRA=.5*CHWM*WCHL*(XVPR-XVPL)
+            IF (ILBL.EQ.INLL) ETRA=.5*CHWM*WCLL*(XVPR-XVPL)
             XCOL=RWRK(IR03+4*(ILBL-1)+1)
             YCOL=RWRK(IR03+4*(ILBL-1)+2)
             ANOL=RWRK(IR03+4*(ILBL-1)+3)
@@ -176,15 +229,15 @@ C
             CAOL=COS(ANOL)
             ICOL=INT(RWRK(IR03+4*(ILBL-1)+4))
             IF (ICOL.LE.0) THEN
-              ODSL=RWRK(IR04-ICOL+3)+XTRA
-              ODSR=RWRK(IR04-ICOL+4)+XTRA
-              ODSB=RWRK(IR04-ICOL+5)+XTRA
-              ODST=RWRK(IR04-ICOL+6)+XTRA
+              ODSL=RWRK(IR04-ICOL+3)+ETRA
+              ODSR=RWRK(IR04-ICOL+4)+ETRA
+              ODSB=RWRK(IR04-ICOL+5)+ETRA
+              ODST=RWRK(IR04-ICOL+6)+ETRA
             ELSE
-              ODSL=CLDL(ICOL)+XTRA
-              ODSR=CLDR(ICOL)+XTRA
-              ODSB=CLDB(ICOL)+XTRA
-              ODST=CLDT(ICOL)+XTRA
+              ODSL=CLDL(ICOL)+ETRA
+              ODSR=CLDR(ICOL)+ETRA
+              ODSB=CLDB(ICOL)+ETRA
+              ODST=CLDT(ICOL)+ETRA
             END IF
 C
             IF (ANOL.EQ.0.) THEN
@@ -221,7 +274,7 @@ C
             CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
             IPTX=IPTX-IS01+IR01
             IPTY=IPTY-IS01+IR01
-            IF (IWSE.NE.0.OR.ICFELL('CPPLAR',3).NE.0) THEN
+            IF (IWSE.NE.0.OR.ICFELL('CPPLAR',14).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF
@@ -229,7 +282,28 @@ C
           RWRK(IR03+4*(NLBS-1)+1)=RWRK(IPTX+I)
           RWRK(IR03+4*(NLBS-1)+2)=RWRK(IPTY+I)
           RWRK(IR03+4*(NLBS-1)+3)=ANLB
-          RWRK(IR03+4*(NLBS-1)+4)=REAL(ICLV)
+          IF (CTMA(1:LCTM).EQ.CTMB(1:LCTM)) THEN
+            RWRK(IR03+4*(NLBS-1)+4)=REAL(ICLV)
+          ELSE
+            RWRK(IR03+4*(NLBS-1)+4)=-NR04
+            NR04=NR04+6
+            IF (NR04.GT.LR04) THEN
+              IS01=IR01
+              CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
+              IPTX=IPTX-IS01+IR01
+              IPTY=IPTY-IS01+IR01
+              IF (IWSE.NE.0.OR.ICFELL('CPPLAR',15).NE.0) THEN
+                NLBS=NLBS-1
+                RETURN
+              END IF
+            END IF
+            RWRK(IR04+NR04-5)=3.
+            RWRK(IR04+NR04-4)=REAL(ICLV)
+            RWRK(IR04+NR04-3)=DTOL
+            RWRK(IR04+NR04-2)=DTOR
+            RWRK(IR04+NR04-1)=DTOB
+            RWRK(IR04+NR04  )=DTOT
+          END IF
 C
 C Update the distance along the line to the next label.
 C
