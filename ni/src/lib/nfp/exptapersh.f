@@ -11,7 +11,7 @@ C NCLEND
 c NCL: wgt = exp_taper (n0, r)
 
       INTEGER N
-      DOUBLE PRECISION CON,N1
+      DOUBLE PRECISION CON
 
       JER = 0
       IF (R.LE.0) THEN
@@ -23,14 +23,10 @@ c NCL: wgt = exp_taper (n0, r)
           PRINT *,'DEXPTAPER: no must be > 0:  n0=',N0
       END IF
       IF (JER.NE.0) RETURN
-c add one so that the mode
 c
-c specified in call is exp(-1)
-c
-      N1 = N0 + 1.D0
 c equation 9
 c
-      CON = N1* (N1+1.D0)
+      CON = N0* (N0+1.D0)
       DO N = 1,NLAT
           S(N) = EXP(- (N* (N+1)/CON)**R)
       END DO

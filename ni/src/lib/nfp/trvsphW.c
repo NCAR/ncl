@@ -16,10 +16,11 @@
 #define min(x,y)  ((x) < (y) ? (x) : (y))
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
-extern void NGCALLF(dtrvsph77,DTRVSPH77)(int *,int *,int *,int *,double *,
-                                         double *,int *,int *,int *,double *,
-                                         double *,int *,double *,int *,
-                                         double *,int *,double *,int *,int *);
+extern void NGCALLF(trvsphx,TRVSPHX)(int *,int *,int *,int *,int *,double *,
+                                     double *,int *,int *,int *,int *,
+                                     double *,double *,double *,int *,
+                                     int *,double *,int *,int *,double *,
+                                     int *,int *,int *);
 
 extern void NGCALLF(df2foshv,DF2FOSHV)(double *,double *,int *,int *,double *,
                                        double *,int *,double *,int *,double *,
@@ -54,6 +55,7 @@ NhlErrorTypes g2gshv_W( void )
   int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
+  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
 /*
  * Workspace variables
  */
@@ -300,28 +302,21 @@ NhlErrorTypes g2gshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
-                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
-                                   twave,work,&lwork,wsave,&lsave,dwork,
-                                   &ldwork,&ier);
+      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
+                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
+                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
+                               &lwork,&lwkmin,dwork,&ldwork,&ier,twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ * Copy output values from temp arrays "tmp_U/Vb" to arrays "U/Vb".
  */
       if(type_Ub != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
-        }
+        coerce_output_float_only(Ub,tmp_Ub,nlatbnlonb,index_UVb);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_Vb != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
-        }
+        coerce_output_float_only(Vb,tmp_Vb,nlatbnlonb,index_UVb);
       } 
     }
     index_UVa += nlatanlona;
@@ -373,6 +368,7 @@ NhlErrorTypes f2gshv_W( void )
   int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
+  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
 /*
  * Workspace variables
  */
@@ -599,28 +595,21 @@ NhlErrorTypes f2gshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
-                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
-                                   twave,work,&lwork,wsave,&lsave,dwork,
-                                   &ldwork,&ier);
+      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
+                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
+                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
+                               &lwork,&lwkmin,dwork,&ldwork,&ier,twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ * Copy output values from temp arrays "tmp_U/Vb" to arrays "U/Vb".
  */
       if(type_Ub != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
-        }
+        coerce_output_float_only(Ub,tmp_Ub,nlatbnlonb,index_UVb);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_Vb != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
-        }
+        coerce_output_float_only(Vb,tmp_Vb,nlatbnlonb,index_UVb);
       } 
     }
     index_UVa += nlatanlona;
@@ -673,6 +662,7 @@ NhlErrorTypes g2fshv_W( void )
   int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
+  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
 /*
  * Workspace variables
  */
@@ -887,28 +877,21 @@ NhlErrorTypes g2fshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
-                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
-                                   &twave,work,&lwork,wsave,&lsave,dwork,
-                                   &ldwork,&ier);
+      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
+                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
+                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
+                               &lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ * Copy output values from temp arrays "tmp_U/Vb" to arrays "U/Vb".
  */
       if(type_Ub != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
-        }
+        coerce_output_float_only(Ub,tmp_Ub,nlatbnlonb,index_UVb);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_Vb != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
-        }
+        coerce_output_float_only(Vb,tmp_Vb,nlatbnlonb,index_UVb);
       } 
     }
     index_UVa += nlatanlona;
@@ -960,6 +943,7 @@ NhlErrorTypes f2fshv_W( void )
   int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
+  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
 /*
  * Workspace variables
  */
@@ -1174,28 +1158,21 @@ NhlErrorTypes f2fshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
-                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
-                                   &twave,work,&lwork,wsave,&lsave,dwork,
-                                   &ldwork,&ier);
+      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
+                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
+                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
+                               &lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ * Copy output values from temp arrays "tmp_U/Vb" to arrays "U/Vb".
  */
       if(type_Ub != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
-        }
+        coerce_output_float_only(Ub,tmp_Ub,nlatbnlonb,index_UVb);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_Vb != NCL_double) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
-        }
+        coerce_output_float_only(Vb,tmp_Vb,nlatbnlonb,index_UVb);
       } 
     }
     index_UVa += nlatanlona;
@@ -1459,20 +1436,13 @@ NhlErrorTypes fo2fshv_W( void )
         NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_ureg" to final array "ureg".
+ * Copy output values from temp arrays "tmp_u/vreg" to final array "u/vreg".
  */
       if(type_ureg != NCL_double) {
-        for(j = 0; j < jlat1ilon; j++) {
-          ((float*)ureg)[index_uvreg+j] = (float)(tmp_ureg[j]);
-        }
+        coerce_output_float_only(ureg,tmp_ureg,jlat1ilon,index_uvreg);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_vreg != NCL_double) {
-        for(j = 0; j < jlat1ilon; j++) {
-          ((float*)vreg)[index_uvreg+j] = (float)(tmp_vreg[j]);
-        }
+        coerce_output_float_only(vreg,tmp_vreg,jlat1ilon,index_uvreg);
       } 
     }
     index_uvoff += jlatilon;
@@ -1741,20 +1711,13 @@ NhlErrorTypes f2foshv_W( void )
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: ier = %d\n", ier );
       }
 /*
- * Copy output values from temporary array "tmp_uoff" to final array "uoff".
+ * Copy output values from temp arrays "tmp_u/voff" to final array "u/voff".
  */
       if(type_uoff != NCL_double) {
-        for(j = 0; j < jlatilon; j++) {
-          ((float*)uoff)[index_uvoff+j] = (float)(tmp_uoff[j]);
-        }
+        coerce_output_float_only(uoff,tmp_uoff,jlatilon,index_uvoff);
       } 
-/*
- * Copy output values from temporary array "tmp_Vb" to final array "Vb".
- */
       if(type_voff != NCL_double) {
-        for(j = 0; j < jlatilon; j++) {
-          ((float*)voff)[index_uvoff+j] = (float)(tmp_voff[j]);
-        }
+        coerce_output_float_only(voff,tmp_voff,jlatilon,index_uvoff);
       } 
     }
     index_uvoff += jlatilon;

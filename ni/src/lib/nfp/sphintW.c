@@ -5,14 +5,10 @@
 */
 #include "wrapper.h"
 
-extern void NGCALLF(dtrssph,DTRSSPH)(int *,int *,int *,int *,double *,int *,
+extern void NGCALLF(trssphx,TRSSPHX)(int *,int *,int *,int *,double *,int *,
                                      int *,int *,double *, double *,int *,
                                      int *,double *,int *,int *, double *,
-                                     int *,int *);
-
-extern void NGCALLF(dtrcwav,DTRCWAV)(int *,int *,int *,double *,double *,
-                                     int *,double *,int *,double *,int *,
-                                     int *,int *);
+                                     int *,int *,int *);
 
 extern void NGCALLF(dfo2f,DFO2F)(double *,int *,int *,double *,int *,double *,
                                  int *,double *,int *,int *,int *);
@@ -215,34 +211,17 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      NGCALLF(dtrssph,DTRSSPH)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
                                &nlonb,&nlatb,tmp_Tb,wsave,&lsave,&lsvmin,
-                               work,&lwork,&lwkmin,dwork,&ldwork,&ier);
+                               work,&lwork,&lwkmin,dwork,&ldwork,&ier,twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: ier = %d\n", ier );
-      }
-      
-      if (abs(*twave)) {
-        NclFree(dwork);
-        ldwork = 2*klat*(klat+1)+1;
-        dwork  = (double *)calloc(ldwork,sizeof(double));
-        if (dwork == NULL) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gsh: workspace allocate failed\n" );
-          return(NhlFATAL);
-        }
-/*
- * Truncate the data at a specified truncation.
- */
-        NGCALLF(dtrcwav,DTRCWAV)(igridb,&nlatb,&nlonb,tmp_Tb,wsave,&lsave,
-                                 work,&lwork,dwork,&ldwork,&ker,twave);
       }
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
       if(type_Tb == NCL_float) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
-        }
+        coerce_output_float_only(Tb,tmp_Tb,nlatbnlonb,index_Tb);
       } 
     }
     index_Ta += nlatanlona;
@@ -483,34 +462,18 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      NGCALLF(dtrssph,DTRSSPH)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
                                &nlonb,&nlatb,tmp_Tb,wsave,&lsave,&lsvmin,
-                               work,&lwork,&lwkmin,dwork,&ldwork,&ier);
+                               work,&lwork,&lwkmin,dwork,&ldwork,&ier,twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: ier = %d\n", ier );
       }
 
-      if (abs(*twave)) {
-        NclFree(dwork);
-        ldwork = 2*klat*(klat+1)+1;
-        dwork  = (double *)calloc(ldwork,sizeof(double));
-        if (dwork == NULL) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gsh: workspace allocate failed\n" );
-          return(NhlFATAL);
-        }
-/*
- * Truncate the data at a specified truncation.
- */
-        NGCALLF(dtrcwav,DTRCWAV)(igridb,&nlatb,&nlonb,tmp_Tb,wsave,&lsave,
-                                 work,&lwork,dwork,&ldwork,&ker,twave);
-      }
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
       if(type_Tb == NCL_float) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
-        }
+        coerce_output_float_only(Tb,tmp_Tb,nlatbnlonb,index_Tb);
       } 
     }
     index_Ta += nlatanlona;
@@ -568,6 +531,7 @@ NhlErrorTypes g2fsh_W( void )
   NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
+  int twave = 0;
 /*
  * Output array variables
  */
@@ -739,9 +703,9 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      NGCALLF(dtrssph,DTRSSPH)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
                                &nlonb,&nlatb,tmp_Tb,wsave,&lsave,&lsvmin,
-                               work,&lwork,&lwkmin,dwork,&ldwork,&ier);
+                               work,&lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: ier = %d\n", ier );
       }
@@ -749,9 +713,7 @@ NhlErrorTypes g2fsh_W( void )
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
       if(type_Tb == NCL_float) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
-        }
+        coerce_output_float_only(Tb,tmp_Tb,nlatbnlonb,index_Tb);
       } 
     }
     index_Ta += nlatanlona;
@@ -810,6 +772,7 @@ NhlErrorTypes f2fsh_W( void )
   NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
+  int twave = 0;
 /*
  * Output array variables
  */
@@ -980,9 +943,9 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      NGCALLF(dtrssph,DTRSSPH)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&nlona,&nlata,tmp_Ta,igridb,
                                &nlonb,&nlatb,tmp_Tb,wsave,&lsave,&lsvmin,
-                               work,&lwork,&lwkmin,dwork,&ldwork,&ier);
+                               work,&lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: ier = %d\n", ier );
       }
@@ -990,9 +953,7 @@ NhlErrorTypes f2fsh_W( void )
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
       if(type_Tb == NCL_float) {
-        for(j = 0; j < nlatbnlonb; j++) {
-          ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
-        }
+        coerce_output_float_only(Tb,tmp_Tb,nlatbnlonb,index_Tb);
       } 
     }
     index_Ta += nlatanlona;
@@ -1205,9 +1166,7 @@ NhlErrorTypes fo2fsh_W( void )
  * Copy output values from temporary array "tmp_goff" to final array "goff".
  */
       if(type_greg == NCL_float) {
-        for(j = 0; j < jlat1ilon; j++) {
-          ((float*)greg)[index_greg+j] = (float)(tmp_greg[j]);
-        }
+        coerce_output_float_only(greg,tmp_greg,jlat1ilon,index_greg);
       } 
     }
     index_goff += jlatilon;
@@ -1413,9 +1372,7 @@ NhlErrorTypes f2fosh_W( void )
  * Copy output values from temporary array "tmp_greg" to final array "greg".
  */
       if(type_goff == NCL_float) {
-        for(j = 0; j < jlatilon; j++) {
-          ((float*)goff)[index_goff+j] = (float)(tmp_goff[j]);
-        }
+        coerce_output_float_only(goff,tmp_goff,jlatilon,index_goff);
       } 
     }
     index_greg += jlat1ilon;
