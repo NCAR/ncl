@@ -1,14 +1,14 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.6 1996-04-04 23:52:35 haley Exp $
+#	$Id: version.sed,v 1.7 1996-04-05 21:22:37 haley Exp $
 #
 
 set year = "19`date +%y`"
 set sitefile = `ncargpath NCARGDIR`/NCARGSITEFILE
 if (-f $sitefile) then
-  set sitenum = "Site ID Number: `head -1 $sitefile`"
+  set sitenum = `head -1 $sitefile`
 else
-  set sitenum = "Site ID Number undefined for support -- please contact your Site Installer."
+  set sitenum = "Site ID Number undefined for support. Please contact your Site Installer."
 endif  
 
 if ($#argv > 0) then
@@ -17,17 +17,21 @@ else
 
 echo ""
 cat <<EOF
-NCAR Graphics - UNIX Version VERSION
-$sitenum
+------------------------------------------------------------------------------
+NCAR Graphics Software and Documentation
+------------------------------------------------------------------------------
+  Version        : VERSION
 
-Copyright (C) 1987-$year
-University Corporation for Atmospheric Research
+  Site ID Number : $sitenum
 
-The use of NCAR Graphics software and documentation is governed
-by a License Agreement.
----------------------------------------------------------------
-NCAR Graphics is a registered trademark of the University
-Corporation for Atmospheric Research.
+  Copyright (C)  : 1987-$year, University Corporation for Atmospheric Research
+
+  Trademark      : NCAR Graphics is a registered trademark of the University
+                   Corporation for Atmospheric Research.
+
+  License        : The use of NCAR Graphics software and documentation is
+                   governed by a License Agreement.
+------------------------------------------------------------------------------
 EOF
 echo ""
 endif

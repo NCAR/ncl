@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.37 1996-04-04 23:52:36 haley Exp $
+#	$Id: yMakefile,v 1.38 1996-04-05 21:22:37 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -22,8 +22,6 @@ ncargversion:	version.sed
 	-e 's+NCARGDIR+$(NCARGDIR)+' \
 	-e 's+NCARGSITEFILE+$(NCARGSITEFILE)+' \
 	< version.sed > ncargversion
-
-sedscript:      Makefile
 
 ncargf77: ncargf77.csh Makefile
 	@sed \
