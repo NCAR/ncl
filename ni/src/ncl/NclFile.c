@@ -2875,6 +2875,7 @@ int type;
 				sel = sel_ptr->selection;
 			} else {
 				for(i = 0 ; i < n_dims_target; i++) {
+					keeper[i] = 1;
 					start[i] = 0;
 					if(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->is_unlimited) {
 						update_unlimited = 1;
