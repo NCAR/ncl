@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.14 1993-12-16 22:32:26 haley Exp $
+#	$Id: yMakefile,v 1.15 1994-01-06 15:38:26 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common C utilities
@@ -21,7 +21,9 @@ OBJS		= options.o misc.o ncarg_path.o version.o \
 		error.o atoargv.o usleep.o $(VMSOBJS)
 
 #if defined(IRIX) && (MAJOR == 5)
-EXTRA_CDEFINES = -D_BSD_TYPES
+EXTRA_CDEFINES = $(VDEFINE) -D_BSD_TYPES
+#else
+EXTRA_CDEFINES = $(VDEFINE)
 #endif
 
 LibraryTarget($(MYNAME),$(OBJS))
