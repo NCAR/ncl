@@ -1,4 +1,4 @@
-C	$Id: ffex05.f,v 1.3 1993-10-01 19:37:52 dbrown Exp $
+C	$Id: ffex05.f,v 1.4 1993-12-13 21:06:35 haley Exp $
 C
       PROGRAM FFEX05
 C
@@ -159,7 +159,7 @@ C Initialize the drawing of the contour plot, and tell Conpack
 C to pick contour levels.
 C
       CALL CPRECT (P,MSIZE,MSIZE,NSIZE,RWRK,ICPRWL,IWRK,ICPIWL)
-      CALL CPPKCL (ZDAT,RWRK,IWRK)
+      CALL CPPKCL (P,RWRK,IWRK)
 C
 C Set up contour line attributes
 C
