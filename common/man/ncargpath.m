@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.1 1994-11-11 22:09:40 haley Exp $
+.\"	$Id: ncargpath.m,v 1.2 1994-11-29 15:08:21 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -28,13 +28,15 @@ are installed
 .IP "examples" 18
 directory where NCAR Graphics Fortran and C examples are installed
 .IP "fontcap" 18
-the default fontcap being used
+the default fontcap being used; only returns a valid fontcap if the 
+environment variable FONTCAP is set.
 .IP "fontcaps" 18
 directory where NCAR Graphics fontcaps are installed
 .IP "gks_output" 18
 the default name of the metafile
 .IP "graphcap" 18
-the default graphcap being used
+the default graphcap being used; only returns a valid graphcap if the 
+environment variable GRAPHCAP is set.
 .IP "graphcaps" 18
 directory where NCAR Graphics graphcaps are installed
 .IP "include" 18
@@ -48,9 +50,10 @@ root directory where NCAR Graphics examples, databases resource files, etc. are 
 .IP "root" 18
 parent directory where NCAR Graphics is installed
 .IP "sysappres" 18
-directory where the NCAR Graphics systems application resource file is installed
+directory where the NCAR Graphics systems application resource file is installed; only applicable on Sun and SGI systems.
 .IP "sysresfile" 18
-directory where the NCAR Graphics system resource file is installed
+directory where the NCAR Graphics system resource file is installed; only
+applicable on Sun and SGI systems.
 .IP "tests" 18
 directory where NCAR Graphics Fortran and C test examples are installed
 .IP "tmp" 18
@@ -58,12 +61,13 @@ directory where NCAR Graphics temporary files will be written
 .IP "tutorial" 18
 directory where NCAR Graphics tutorial C and Fortran examples are installed
 .IP "usrresfile" 18
-directory where the NCAR Graphics user resource file is installed
+directory where the NCAR Graphics user resource file is installed; only
+applicable on Sun and SGI systems.
 .IP "xapp" 18
 directory where NCAR Graphics X application default files are installed
 .SH SEE ALSO
 Online:
-.BR ncarg_gks(3NCARG),ncargintro(5NCARG)
+.BR ncarg_gks(3NCARG), ncargintro(5NCARG)
 .sp
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
