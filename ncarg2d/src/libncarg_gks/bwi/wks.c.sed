@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.6 1993-02-17 21:40:11 clyne Exp $
+ *      $Id: wks.c.sed,v 1.7 1993-02-19 23:57:01 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -137,8 +137,9 @@ int	opnwks_(unit, fname, status)
 #endif
 	int	*status;
 {
-	int		i, pipes[2], type, stat;
+	int		i, pipes[2], stat;
 	char		*p;
+	int		default_bufsize;
 	int		bufsize = 0;
 	char		*otype;
 #ifdef ardent
@@ -222,7 +223,7 @@ int	opnwks_(unit, fname, status)
 
 			/* If file name is GMETA convert to lower case. */
 
-			if (!strcmp(fname, "GMETA")) {
+			if (!strncmp(fname, "GMETA", 5)) {
 				mftab[*unit].name = "gmeta";
 			}
 			else {
@@ -239,12 +240,12 @@ int	opnwks_(unit, fname, status)
 			*/
 
 			/* Skip blanks. */
-			for(p=gks_output_env; *p==' ' && *p != '\0'; p++);
+			for(p=gks_output_env; *p==' ' && *p != '\0'; ) p++;
 	
 			if (*p == '|')
 			{
 				/* Skip blanks. */
-				for(p++; *p==' ' && *p != '\0'; p++);
+				for(p++; *p==' ' && *p != '\0'; ) p++;
 				mftab[*unit].type = PIPE_OUTPUT;
 				mftab[*unit].name =
 					malloc(strlen(p)+1);
@@ -255,7 +256,7 @@ int	opnwks_(unit, fname, status)
 				mftab[*unit].type = FILE_OUTPUT;
 				mftab[*unit].name =
 					malloc(strlen(gks_output_env)+1);
-				(void) strcpy(mftab[*unit].name,gks_output_env);
+				(void)strcpy(mftab[*unit].name,gks_output_env);
 			}
 		}
 	}
@@ -345,11 +346,12 @@ int	opnwks_(unit, fname, status)
 		*/
 
 		if (gks_bufsize_env == (char *) NULL) {
-			if (DEFAULT_GKS_BUFSIZE == 0) {
+			default_bufsize = DEFAULT_GKS_BUFSIZE;
+			if (default_bufsize == 0) {
 				bufsize = BUFSIZ; /* from stdio.h */
 			}
 			else {
-				bufsize = 1024 * DEFAULT_GKS_BUFSIZE;
+				bufsize = 1024 * default_bufsize;
 			}
 		}
 		else {
@@ -406,7 +408,7 @@ int	opnwks_(unit, fname, status)
 	if (gks_debug_env) {
 	(void) fprintf(stderr, 
 		"wks.c: Opened %s as LU %d of type %d on fp %x and fd %d\n", 
-		mftab[*unit].name, *unit, type, mftab[*unit].fp, 
+		mftab[*unit].name, *unit, mftab[*unit].type, mftab[*unit].fp, 
 		fileno(mftab[*unit].fp));
 	}
 
