@@ -317,6 +317,33 @@ static int extractCCM(int which,char buf[8])
 	}
 }
 
+static int IsF77Blocked
+#if NhlNeedProto
+(int fd)
+#else
+(fd)
+int fd;
+#endif
+{
+	int n;
+	char control_word[4];
+	int ind;
+	
+	n = read(fd,(control_word),4);
+	if(n!=4) return(0);
+
+	ind = *(int*)control_word;
+	lseek(fd,ind+ 4,SEEK_SET);
+	n = read(fd,(control_word),4);
+	if(n!=4) return(0);
+	if(ind != *(int*)control_word) {
+		return(0);
+	} else {
+		return(2);
+	}
+	
+}
+
 static int IsCOSBlockedCCM
 #if NhlNeedProto
 (int fd)
@@ -344,15 +371,24 @@ int fd;
 	fwi = extractCCM(4,thebuff);
 
 
-	if ( type != 0 || bnhi != 0 || bnlo != 0 ) return 0;
+	if ( type != 0 || bnhi != 0 || bnlo != 0 ) {
+		lseek(fd,0,SEEK_SET);
+		return (IsF77Blocked(fd));
+	}
 
 	 /* Skip over the rest of the first block. */
 
-  	if ( read(fd, bytes, WORD_SIZE*511) != 511*WORD_SIZE ) return 0;
+  	if ( read(fd, bytes, WORD_SIZE*511) != 511*WORD_SIZE ) {
+		lseek(fd,0,SEEK_SET);
+		return (IsF77Blocked(fd));
+	}
 
   	/* Read and interpret second control word. */
 
-  	if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) return 0;
+  	if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) {
+		lseek(fd,0,SEEK_SET);
+		return (IsF77Blocked(fd));
+	}
 
 	type = extractCCM(0,thebuff);
 	junk = extractCCM(1,thebuff);
@@ -360,7 +396,10 @@ int fd;
 	bnlo = extractCCM(3,thebuff);
 	fwi = extractCCM(4,thebuff);
 
-  	if ( type != 0 || bnhi != 0 || bnlo != 1 ) return 0;
+  	if ( type != 0 || bnhi != 0 || bnlo != 1 ) {
+		lseek(fd,0,SEEK_SET);
+		return (IsF77Blocked(fd));
+	}
 
 	lseek(fd,0,SEEK_SET);
 
@@ -470,8 +509,11 @@ long start_off;
 	if(nwords == 0) {
 		lseek(fd,start_off,SEEK_SET);
 		return(start_off);
-	} else if(therec->cos_blocking) {
+	} else if(therec->cos_blocking==1) {
 		return(COSRecSeek(fd,nwords, start_off));
+	} else if(therec->cos_blocking==0){
+		lseek(fd,start_off+sz(nwords-1),SEEK_SET);
+		return(start_off + sz(nwords-1));
 	} else {
 		lseek(fd,start_off+sz(nwords-1),SEEK_SET);
 		return(start_off + sz(nwords-1));
@@ -566,13 +608,17 @@ long start_off;
         lseek(fd,start_off,SEEK_SET);
         if(nwords == 0) {
                 return(start_off);
-        } else if(therec->cos_blocking){
+        } else if(therec->cos_blocking==1){
 		return(COSGetNWords(fd,nwords,start_off,buffer));
+        } else if(therec->cos_blocking==0) {
+		lseek(fd,start_off,SEEK_SET);
+                n = read(fd,buffer,nwords*WORD_SIZE);
+		return(start_off + n);
         } else {
 		lseek(fd,start_off,SEEK_SET);
                 n = read(fd,buffer,nwords*WORD_SIZE);
 		return(start_off + n);
-        }
+	}
 }
 int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_block,int* finish_offset)
 {
@@ -644,9 +690,11 @@ int *rec_size;
 #endif
 {
 	long end_offset;
-	if(therec->cos_blocking) {
+	char control_word[4];
+	int n;
+	if(therec->cos_blocking==1) {
 		return(COSGetRecord(fd,start_block ,start_offset,buffer,finish_block,finish_offset));
-	} else {
+	} else if(therec->cos_blocking ==0) {
 		if(rec_size != NULL) {
 			*buffer = NclMalloc(*rec_size * WORD_SIZE);
 			end_offset = start_block * BLOCK_SIZE + start_offset * WORD_SIZE + *rec_size * WORD_SIZE;
@@ -657,6 +705,20 @@ int *rec_size;
 		} else {
 			return(-1);
 		}
+	} else {
+		lseek(fd,start_block * BLOCK_SIZE + start_offset * WORD_SIZE, SEEK_SET);
+		n = read(fd,control_word,4);
+		if(n != 4) return(-1);
+
+		*buffer = NclMalloc(*(int*)control_word);
+		end_offset = start_block * BLOCK_SIZE + start_offset * WORD_SIZE + *(int*)control_word + 8;
+		*finish_block = end_offset / BLOCK_SIZE;
+		*finish_offset = (end_offset % BLOCK_SIZE) / WORD_SIZE;
+
+		n = read(fd,*buffer,*(int*)control_word);
+		read(fd,control_word,4);
+		return(n);
+		
 	}
 	
 }
@@ -771,7 +833,7 @@ long UnPackIntHeader(CCMFileRec *therec,int fd, CCMI *header,int start_block, in
 	int len;
 	char cw[WORD_SIZE];
 
-	if(!therec->cos_blocking) {
+	if(therec->cos_blocking==0 ) {
 		n = MyRead(therec,fd,cw,1, start_block * BLOCK_SIZE + sz(start_offset));
 		total = 1;
 		ctospi(cw,&len,&total,&zero);
@@ -1258,31 +1320,23 @@ int	wr_status;
 			dim_num++;
 			therec->vars[i].var_info.num_dimensions = dim_num;
 		}
+		if(therec->cos_blocking == 2) coff += 4;
 		cb = coff / BLOCK_SIZE;
 		cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
-/*
-		if(therec->cos_blocking) {
-*/
-			tmp_off = MySeek(therec,fd,1,coff);
-			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-			index = (int)FloatIt(buffer);
-			if((index < 1)||(index > initial_iheader.NOREC)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
-				NclFree(therec);
-				close(fd);
-				return(NULL);
-			}
-			therec->lat_rec_offsets[(index-1)] = coff;
-			coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
-/*
-		} else {
-			tmp_off = MySeek(therec,fd,0,coff);
-			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-			index = (int)FloatIt(buffer);
-			therec->lat_rec_offsets[(index-1)] = coff;
-			coff = MySeek(therec,fd,initial_iheader.MAXSIZ,coff);
+
+		tmp_off = MySeek(therec,fd,1,coff);
+		tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
+		index = (int)FloatIt(buffer);
+		if((index < 1)||(index > initial_iheader.NOREC)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+			NclFree(therec);
+			close(fd);
+			return(NULL);
 		}
-*/
+		therec->lat_rec_offsets[(index-1)] = coff;
+
+		if(therec->cos_blocking == 2) coff += 4;
+		coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
 		tmp_iheader = initial_iheader;
 
 		j = 1;
@@ -1294,29 +1348,19 @@ int	wr_status;
 * linearly into history files similar to lat records.
 */
 			for( ; j < initial_iheader.NOREC; j++) {
-/*
-				if(therec->cos_blocking) {
-*/
-					tmp_off = MySeek(therec,fd,1,coff);
-					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-					index = (int)FloatIt((buffer));
-					if((index < 1)||(index > tmp_iheader.NOREC)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
-						NclFree(therec);
-						close(fd);
-						return(NULL);
-					}
-					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
-					coff = MySeek(therec,fd,tmp_iheader.MAXSIZ + 1,coff);
-/*
-				} else {
-					tmp_off = MySeek(therec,fd,0,coff);
-					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-					index = (int)FloatIt((buffer));
-					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
-					coff = MySeek(therec,fd,tmp_iheader.MAXSIZ,coff);
+				if(therec->cos_blocking == 2) coff += 4;
+				tmp_off = MySeek(therec,fd,1,coff);
+				tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
+				index = (int)FloatIt((buffer));
+				if((index < 1)||(index > tmp_iheader.NOREC)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+					NclFree(therec);
+					close(fd);
+					return(NULL);
 				}
-*/
+				therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
+				if(therec->cos_blocking == 2) coff += 4;
+				coff = MySeek(therec,fd,tmp_iheader.MAXSIZ + 1,coff);
 			}
 			if( i != initial_iheader.MFILTH-1) {
 				cb = coff / BLOCK_SIZE;
