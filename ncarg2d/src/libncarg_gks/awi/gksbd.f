@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.13 1995-03-01 21:16:46 fred Exp $
+C	$Id: gksbd.f,v 1.14 1995-12-08 20:08:18 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -28,7 +28,7 @@ C                  SEGMENT
 C       SEGDEL  -- FLAG TO INDICATE WHETHER ALL SEGMENTS SHOULD BE
 C                  REMOVED AT CLOSE GKS TIME (0 = NO; 1 = YES)
 C       RWKSP   -- REAL WORKSPACE ARRAY
-C       SEGDEL  -- FLAG TO INDICATE WHETHER GKS CLIPPING IS ON
+C       GKSCLP  -- FLAG TO INDICATE WHETHER GKS CLIPPING IS ON
 C                  (0 = NO; 1 = YES)
 C-----------------------------------------------------------------------
 C

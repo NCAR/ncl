@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.17 1994-09-15 00:24:25 fred Exp $
+C	$Id: gesc.f,v 1.18 1995-12-08 20:08:15 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -49,6 +49,8 @@ C                 if the root is 'fseg', then the segment names will
 C                 be of the form 'fsegnn' where 'nn' is the segment number.
 C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
+C      -1397  --  Flags whether segments should be deleted or not.
+C                 (0 = save; 1 = delete).
 C      -1398  --  Maximum number of error messages before abort.
 C      -1399  --  Flag for GKS clipping (0 = off; 1 = on).
 C
@@ -93,6 +95,11 @@ C
         CALL GERHND(182,EESC,ERF)
         ERS = 0
         RETURN
+      ELSE IF (FCTID .EQ. -1397) THEN
+C
+C  Save segment flag. (1 = delete; 0 = save).
+C
+        READ(IDR(1), 501) SEGDEL
       ELSE IF (FCTID .EQ. -1396) THEN
 C
 C  Decode the workstation ID.
