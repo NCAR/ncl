@@ -23,7 +23,7 @@ static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc
 
 extern int COSGetRecord(
 #if NhlNeedProto
-int /*fd*/, 
+FILE* /*fd*/, 
 int /*block_number*/,
 int /*offset*/,
 char **/*buffer*/,
@@ -121,10 +121,10 @@ static int extract(int which,char buf[8])
 
 static int IsCOSBlocked
 #if NhlNeedProto
-(int fd)
+(FILE* fd)
 #else
 (fd)
-int fd;
+FILE* fd;
 #endif
 {
         char thebuff[8];
@@ -138,7 +138,7 @@ int fd;
  
  
  
-        read(fd,(void*)thebuff,sizeof(BCW));
+        fread((void*)thebuff,1,sizeof(BCW),fd);
         type = extract(0,thebuff);
         junk = extract(1,thebuff);
         bnhi = extract(2,thebuff);
@@ -150,11 +150,11 @@ int fd;
  
          /* Skip over the rest of the first block. */
  
-        if ( read(fd, bytes, WORD_SIZE*511) != 511*WORD_SIZE ) return 0;
+        if ( fread(bytes,1, WORD_SIZE*511,fd) != 511*WORD_SIZE ) return 0;
  
         /* Read and interpret second control word. */
  
-        if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) return 0;
+        if ( fread((void*)thebuff,1, sizeof( BCW ),fd) != sizeof(BCW) ) return 0;
  
         type = extract(0,thebuff);
         junk = extract(1,thebuff);
@@ -164,7 +164,7 @@ int fd;
  
         if ( type != 0 || bnhi != 0 || bnlo != 1 ) return 0;
  
-        lseek(fd,0,SEEK_SET);
+        fseek(fd,0,SEEK_SET);
  
         return(1);
 }
@@ -175,9 +175,9 @@ int fd;
 
 static int 	HandleSingle
 #if NhlNeedProto
-(int fd,int eoff) 
+(FILE* fd,int eoff) 
 #else
-(int fd,int eoff) 
+(FILE* fd,int eoff) 
 #endif
 {
 	int n =0;
@@ -190,15 +190,15 @@ static int 	HandleSingle
 	fprintf(stderr,"In Handle Single %d\n",eoff);
 */
 
-	lseek(fd,end_offset,SEEK_SET);
-	n = read(fd,control_word,WORD_SIZE);
+	fseek(fd,end_offset,SEEK_SET);
+	n = fread(control_word,1,WORD_SIZE,fd);
 	if(n != WORD_SIZE)  {
 		return(0);
 	}
 	while(!done) {
 		while(forward_index(control_word) == 0) {
 			end_offset += WORD_SIZE;
-			n = read(fd,control_word,WORD_SIZE);
+			n = fread(control_word,1,WORD_SIZE,fd);
 			if(n != WORD_SIZE) {
 				done = 1;	
 				break;
@@ -210,8 +210,8 @@ static int 	HandleSingle
 				end_offset += WORD_SIZE;
 				len = forward_index(control_word);
 				end_offset += len* WORD_SIZE;
-				end_offset = lseek(fd,end_offset,SEEK_SET);
-				n = read(fd,control_word,WORD_SIZE);
+				fseek(fd,end_offset,SEEK_SET);
+				n = fread(control_word,1,WORD_SIZE,fd);
 				if(n != WORD_SIZE) {
 					return(total);
 				}
@@ -235,7 +235,7 @@ NhlErrorTypes _NclICrayBinNumRec
         NclScalar missing;
         int     has_missing = 0;
         unsigned char    control_word[WORD_SIZE];
-        int fd = -1;
+        FILE* fd = NULL;
         int ind;
 	int cb_off = 0;
         int cb = 0;
@@ -265,15 +265,15 @@ NhlErrorTypes _NclICrayBinNumRec
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinnumrec: path is a missing value, can't continue");
                 return(NhlFATAL);
         }
-        fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),O_RDONLY);
+        fd = fopen(_NGResolvePath(NrmQuarkToString(*fpath)),"r");
 
-        if(fd == -1) {
+        if(fd == NULL) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinnumrec: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
                 return(NhlFATAL);
         }
 	if(IsCOSBlocked(fd)) {
 
-		n = read(fd,buffer,READ_SIZE);
+		n = fread(buffer,1,READ_SIZE,fd);
 		if(n != READ_SIZE) {
 			end_offset = 0;
 			total = HandleSingle(fd,0);
@@ -296,7 +296,7 @@ NhlErrorTypes _NclICrayBinNumRec
 		/*
 		* ERROR
 		*/
-					        n = read(fd,buffer,READ_SIZE);
+					        n = fread(buffer,1,READ_SIZE,fd);
 						if(n != READ_SIZE) {
 							done = 1;	
 							total = total + HandleSingle(fd,end_offset);
@@ -314,7 +314,7 @@ NhlErrorTypes _NclICrayBinNumRec
 						len = forward_index(&(buffer[index]));
 						index += len* WORD_SIZE + WORD_SIZE;
 						if(index == READ_SIZE) {
-							n = read(fd,buffer,READ_SIZE);
+							n = fread(buffer,1,READ_SIZE,fd);
 							if(n != READ_SIZE) {
 								done = 1;
 								total = total + HandleSingle(fd,end_offset);
@@ -344,7 +344,7 @@ NhlErrorTypes _NclICrayBinNumRec
 
 	} else {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinnumrec: (%s) is not a COS blocked file. Can not read",NrmQuarkToString(*fpath));
-		close(fd);
+		fclose(fd);
 		return(NhlFATAL);
 	}
 }
@@ -373,7 +373,7 @@ NhlErrorTypes _NclICrayBinRecRead
 	int cb_off;
 	int i;
 	int ind;
-	int fd = -1;
+	FILE* fd = NULL;
 	int size = 1;
 	int n;
 	int cur_off = 0;
@@ -445,9 +445,9 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 	thetype = _NclNameToTypeClass(*type);
-	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),O_RDONLY);
+	fd = fopen(_NGResolvePath(NrmQuarkToString(*fpath)),"r");
 
-	if(fd == -1) {
+	if(fd == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
 		return(NhlFATAL);
 	}
@@ -458,12 +458,12 @@ NhlErrorTypes _NclICrayBinRecRead
 	}
 	cur_off = 0;
 	i = 0;
-	lseek(fd,cur_off,SEEK_SET);
-	n = read(fd,control_word,WORD_SIZE);
+	fseek(fd,cur_off,SEEK_SET);
+	n = fread(control_word,1,WORD_SIZE,fd);
 	while(i != *recnum) {
 		while(forward_index(control_word) == 0) {
 			cur_off += WORD_SIZE;
-			n = read(fd,control_word,WORD_SIZE);
+			n = fread(control_word,1,WORD_SIZE,fd);
 			if(n != WORD_SIZE) {
 				done = 1;	
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: a read error occurred while reading (%s) possibly no such record number, can't continue",NrmQuarkToString(*fpath));
@@ -475,8 +475,8 @@ NhlErrorTypes _NclICrayBinRecRead
 			while((EndOfRec(control_word) != CEOR)){
 				len = forward_index(control_word);
 				cur_off += len* WORD_SIZE + WORD_SIZE;
-				cur_off = lseek(fd,cur_off,SEEK_SET);
-				n = read(fd,control_word,WORD_SIZE);
+				fseek(fd,cur_off,SEEK_SET);
+				n = fread(control_word,1,WORD_SIZE,fd);
 				if(n != WORD_SIZE) {
 					done = 1;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: a read error occurred while reading (%s) possibly no such record number, can't continue",NrmQuarkToString(*fpath));
@@ -491,7 +491,7 @@ NhlErrorTypes _NclICrayBinRecRead
 		n = COSGetRecord(fd,cur_off/BLOCK_SIZE,(cur_off%BLOCK_SIZE)/WORD_SIZE,&cbin_buf,&cb,&cb_off);
 		if(n == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
-			close(fd);
+			fclose(fd);
 			return(NhlFATAL);
 		}
 		ind = n;
@@ -606,7 +606,7 @@ NhlErrorTypes _NclICrayBinRecRead
 			if(cbin_buf != value) 
 				NclFree(cbin_buf);
 			NclFree(value);
-			close(fd);
+			fclose(fd);
 			return(NhlFATAL);
 		}
 		data.kind = NclStk_VAL;
@@ -614,7 +614,7 @@ NhlErrorTypes _NclICrayBinRecRead
 		_NclPlaceReturn(data);
 		if(cbin_buf != value) 
 			NclFree(cbin_buf);
-		close(fd);
+		fclose(fd);
 		return(ret);
 	} else {
 		return(NhlFATAL);
