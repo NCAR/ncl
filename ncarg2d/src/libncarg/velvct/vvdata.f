@@ -1,5 +1,5 @@
 C
-C	$Id: vvdata.f,v 1.2 1993-01-20 19:58:36 dbrown Exp $
+C	$Id: vvdata.f,v 1.3 1993-02-19 21:51:07 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -18,7 +18,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -34,6 +37,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -116,21 +120,21 @@ C IYDN -- 'YDN' -- Second dimension of data for U,V,P
 C
       DATA     IYDN / -1 /
 C
-C VLOM -- 'VLM' -- Vector low magnitude -- minimum size vector to plot
+C VLOM -- 'VLC' -- Vector low cutoff  -- minimum size vector to plot
 C                  Old FLO parameter
 C
       DATA     VLOM / 0.0 /
 C
-C VHIM -- 'VHM' -- Vector high magnitude -- maximum size vector to plot
+C VHIM -- 'VHC' -- Vector high cutoff -- maximum size vector to plot
 C                  Old HI parameter
 C
       DATA     VHIM / 0.0 /
 C
 C ISET -- 'SET' -- The Set call flag - Old NSET parameter
 C
-      DATA     ISET / 0 /
+      DATA     ISET / 1 /
 C
-C VMXL -- 'VML' -- Old LENGTH parameter (but stored as a fraction of
+C VMXL -- 'VRL' -- Old LENGTH parameter (but stored as a fraction of
 C                  the viewport width). 
 C                  0.0 causes VVINIT to select a value.
 C
@@ -260,7 +264,7 @@ C
 C
 C NLVL -- 'NLV' -- number of distinct colors to use for the
 C                    independent variable mapping -- cannot exceed
-C                    IPLVLS -- default: 16
+C                    IPLVLS, number of elements used in CLR and TVL
 C                    
       DATA  NLVL /  0 /
 C
@@ -270,12 +274,11 @@ C
       DATA   IPAI /   1     /
 C
 C ICTV -- 'CTV' -- compute thresholds flag:
-C                  0 -- no vector coloring
-C                  < 0: color vectors by magnitude
-C                  > 0: color vectors by contents of scalar array P
-C                  +-1: number of levels and threshold values already
-C                       set
-C                  >1,<1: use CTV equally spaced levels
+C                  -2: color vectors by scalar value, user sets TVL
+C                  -1: color vectors by vector magnitude, user sets TVL
+C                   0: no vector coloring
+C                  +1: color vectors by magnitude, VVINIT sets TVL
+C                  +2: color vectors by scalar array, VVINIT sets TVL
 C
       DATA  ICTV /   0     /
 C
@@ -283,8 +286,8 @@ C WDLV -- 'LWD' -- the width of a vector line
 C 
       DATA  WDLV /   1.0   /
 C
-C UVMN -- 'VMN' -- the minimum displayed vector magnitude, read-only
-C UVMX -- 'VMX' -- the maximum displayed vector magnitude, read-only
+C UVMN -- the minimum vector magnitude
+C UVMX -- the maximum vector magnitude
 C PMIN -- 'PMN' -- the minimum scalar array value, read-only
 C PMAX -- 'PMX' -- the maximum scalar array value, read-only
 C
@@ -292,6 +295,16 @@ C
       DATA UVMX / 0.0 /
       DATA PMIN / 0.0 /
       DATA PMAX / 0.0 /
+C
+C RVMN -- 'VMN' -- the minimum vector magnitude, read-only
+C RVMX -- 'VMX' -- the maximum vector magnitude, read-only
+C RDMN -- 'DMN' -- the minimum vector in NDC, read-only
+C RDMX -- 'DMX' -- the maximum vector in NDC, read-only
+C
+      DATA RVMN / 0.0 /
+      DATA RVMX / 0.0 /
+      DATA RDMN / 0.0 /
+      DATA RDMX / 0.0 /
 C
 C ISPC -- 'SPC' -- Special color -- 
 C                      < 0: no P special value
@@ -458,8 +471,8 @@ C                      -1 - transform position, angle, and magnitude
 C
       DATA ITRT / 1 /
 C
-C DVMN -- 'DMN' -- the minimum displayed vector size in frac. coords
-C DVMX -- 'DMX' -- the maximum displayed vector size in frac. coords
+C DVMN -- the minimum vector size in NDC
+C DVMX -- the maximum vector size in NDC
 C
       DATA DVMN / 0.0 /
       DATA DVMX / 0.0 /

@@ -1,5 +1,5 @@
 C
-C	$Id: vvtext.f,v 1.5 1993-01-20 22:02:54 dbrown Exp $
+C	$Id: vvtext.f,v 1.6 1993-02-19 21:51:38 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -63,7 +63,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -79,6 +82,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -157,8 +161,13 @@ C
 C Turn off clipping because this label is likely to be outside
 C the current viewport
 C
-      CALL GQCLIP(IER,ICLP,IAR)
+      CALL GQCLIP(IER,ICL,IAR)
       CALL GSCLIP(0)
+C
+C Save and reset the SET transformation to an identity (for safety)
+C     
+      CALL GETSET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
+      CALL SET(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1)
 C
 C Convert fraction of viewport values into fractional system
 C coordinates
@@ -249,12 +258,12 @@ C
 C If the vectors are colored by magnitude then find the correct color
 C Set the text color too if required.
 C
-      IF (ICTV .LT. 0) THEN
+      IF (ABS(ICTV).EQ.1) THEN
          DO 100 K=1,NLVL,1
-            IF (VMG .LE. TVLU(K)) THEN
+            IF (VMG .LE. TVLU(K) .OR. K.EQ.NLVL) THEN
                CALL GSPLCI(ICLR(K))
 C
-               IF (ITC .EQ. -1) THEN
+               IF (ITC .EQ. -2) THEN
                   CALL GSTXCI(ICLR(K))
                END IF
 C
@@ -263,6 +272,15 @@ C
  100     CONTINUE
 C     
  101     CONTINUE
+      END IF
+C
+C Adjust the colors depending on the text block setting
+C
+      IF (ITC .GE. 0) THEN
+         CALL GSTXCI(ITC)
+         CALL GSPLCI(ITC)
+      ELSE IF (ITC .LT. -2) THEN
+         CALL  GSPLCI(IOT)
       END IF
 C
 C Temporarily reset the vector positioning flag to ensure a 
@@ -280,25 +298,20 @@ C Restore linewidth and centering flag
 C
       CALL GSLWSC(ROW)
       IVPO=ISP
+      IF (ITC.EQ.-1) CALL GSPLCI(IOT)
 C
-C Set the text color
-C
-      IF (ITC .GE. 0) THEN
-         CALL GSTXCI(ITC)
-         CALL GSPLCI(ITC)
-      ELSE IF (ITC .LT. -1) THEN
-         CALL  GSPLCI(IOT)
-      END IF
-C      
-      CALL PLCHHQ(CFUX(CXT),CFUY(CYT),CTX(IB:IE),TSZ*FW2W,0.0,0.0)
+      XW=CFUX(CXT)
+      YW=CFUY(CYT)
+      CALL PLCHHQ(XW,YW,CTX(IB:IE),TSZ*FW2W,0.0,0.0)
       CALL PLCHHQ(CFUX(CXL),CFUY(CYL),LBL(LB:LE),TSZ*FW2W,0.0,0.0)
 C
       CALL GSTXCI(IOT)
       CALL GSPLCI(IOC)
 C
-C Restore clipping.
+C Restore clipping and the set transformation.
 C
-      CALL GSCLIP(ICLP)
+      CALL GSCLIP(ICL)
+      CALL SET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
 C
 C Done
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: vvinit.f,v 1.4 1993-01-20 19:58:48 dbrown Exp $
+C	$Id: vvinit.f,v 1.5 1993-02-19 21:51:24 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -39,7 +39,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -55,6 +58,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -126,10 +130,15 @@ C
       IVD1=LV
       IPD1=LP
 C
-C Error if M > LU or M > LV?
+C Error if M > LU or M > LV
 C
-      IXDM=MIN(M,LU,LV)
+      IXDM=M
       IYDN=N
+      IF (IXDM.GT.IUD1 .OR. IXDM.GT.IVD1) THEN
+         CSTR(1:40)='VVINIT - FIRST ARRAY DIMENSIONS EXCEEDED'
+         CALL SETER (CSTR(1:40),1,2)
+         STOP
+      END IF
 C
 C Initialize and transfer some arguments to local variables.
 C
@@ -324,23 +333,24 @@ C
       END IF
 C
 C Decide how to use the scalar array.
-C If there would otherwise be no selection of values but NLVL is 0
-C use 16 divisions.
 C
-      IF (ICTV .LT. 0) THEN
+      IF (ABS(ICTV).EQ.1) THEN
          PMIN=UVMN
          PMAX=UVMX
          IP=1
-      ELSE IF (ICTV .GT. 0) THEN
+      ELSE IF (ICTV.NE.0) THEN
 C
 C Check for error condition
 C
-         IF (IPD1 .LT. IXDM) WRITE (*,*) 
-     +        'VVINIT - Scalar array too small'
+         IF (IPD1 .LT. IXDM) THEN
+            CSTR(1:31)='VVINIT - SCALAR ARRAY TOO SMALL'
+            CALL SETER (CSTR(1:31),2,2)
+            STOP
+         END IF
 C
 C Find the max and min scalar values when necessary
 C
-         IF (ICTV .GT. 1 .OR. PMIN .EQ. PMAX) THEN
+         IF (ICTV.GE.2 .OR. PMIN.EQ.PMAX) THEN
             PMIN=RBIG
             PMAX=-RBIG
             IP=0
@@ -360,13 +370,7 @@ C Determine the threshold values. If there were no non-special
 C values in the P array, then set all threshold values to the
 C maximum possible.
 C
-      IF (ABS(ICTV) .GT. 1 .OR. NLVL .LE. 0) THEN
-C
-         IF (ABS(ICTV) .GT. 1) THEN
-            NLVL = ABS(ICTV)
-         ELSE
-            NLVL = 16
-         END IF
+      IF (NLVL.GT.0 .AND. ICTV.GT.0) THEN
 C
          IF (IP .NE. 0) THEN
             TV=(PMAX-PMIN)/NLVL
@@ -385,6 +389,13 @@ C Calculate the sine and cosine of the arrow head half angle
 C
       HSIN = SIN(PDTOR*HANG)
       HCOS = COS(PDTOR*HANG)
+C
+C Copy min/max vector magnitude and NDC size to read-only params.
+C
+      RVMN=UVMN
+      RVMX=UVMX
+      RDMN=DVMN
+      RDMX=DVMX
 C
 C Done.
 C

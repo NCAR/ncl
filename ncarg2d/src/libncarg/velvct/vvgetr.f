@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetr.f,v 1.7 1993-01-27 20:59:51 dbrown Exp $
+C	$Id: vvgetr.f,v 1.8 1993-02-19 21:51:20 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -29,7 +29,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -45,6 +48,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -139,13 +143,13 @@ C
          RVL=REAL(IXDM)
       ELSE IF (CNM(1:3).EQ.'YDN'.OR. CNM(1:3).EQ.'ydn') THEN
          RVL=REAL(IYDN)
-      ELSE IF (CNM(1:3).EQ.'VLM'.OR.CNM(1:3).EQ.'vlm') THEN
+      ELSE IF (CNM(1:3).EQ.'VLC'.OR.CNM(1:3).EQ.'vlc') THEN
         RVL=VLOM
-      ELSE IF (CNM(1:3).EQ.'VHM'.OR.CNM(1:3).EQ.'vhm') THEN
+      ELSE IF (CNM(1:3).EQ.'VHC'.OR.CNM(1:3).EQ.'vhc') THEN
         RVL=VHIM
       ELSE IF (CNM(1:3).EQ.'SET'.OR. CNM(1:3).EQ.'set') THEN
          RVL=REAL(ISET)
-      ELSE IF (CNM(1:3).EQ.'VML'.OR. CNM(1:3).EQ.'vml') THEN
+      ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
          RVL=VMXL
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
          RVL=VFRC
@@ -198,13 +202,13 @@ C
       ELSE IF (CNM(1:3).EQ.'LWD'.OR.CNM(1:3).EQ.'lwd') THEN
         RVL=WDLV
       ELSE IF (CNM(1:3).EQ.'VMN'.OR.CNM(1:3).EQ.'vmn') THEN
-        RVL=UVMN
+        RVL=RVMN
       ELSE IF (CNM(1:3).EQ.'VMX'.OR.CNM(1:3).EQ.'vmx') THEN
-        RVL=UVMX
+        RVL=RVMX
       ELSE IF (CNM(1:3).EQ.'DMN'.OR.CNM(1:3).EQ.'dmn') THEN
-        RVL=DVMN
+        RVL=RDMN
       ELSE IF (CNM(1:3).EQ.'DMX'.OR.CNM(1:3).EQ.'dmx') THEN
-        RVL=DVMX
+        RVL=RDMX
       ELSE IF (CNM(1:3).EQ.'PMN'.OR.CNM(1:3).EQ.'pmn') THEN
         RVL=PMIN
       ELSE IF (CNM(1:3).EQ.'PMX'.OR.CNM(1:3).EQ.'pmx') THEN

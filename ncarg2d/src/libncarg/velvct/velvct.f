@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.5 1993-01-25 17:31:50 dbrown Exp $
+C	$Id: velvct.f,v 1.6 1993-02-19 21:51:03 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -126,7 +126,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -142,6 +145,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -286,8 +290,8 @@ C
 C
 C Use VVSET calls to transfer parameter values into the common block
 C
-         CALL VVSETR('VLM - Minimum vector magnitude', FLO)
-         CALL VVSETR('VHM - Maximum vector magnitude', HI)
+         CALL VVSETR('VLC - Vector Low Cutoff Value', FLO)
+         CALL VVSETR('VHC - Vector High Cutoff Value', HI)
 C
 C Since the set call has been handled VVINIT should not do a SET
 C
@@ -297,13 +301,13 @@ C Convert the maximum vector length from plotter address units to
 C a fraction of the viewport
 C
          IF (LENGTH .EQ. 0) THEN
-            VML=0.0
+            VRL=0.0
          ELSE
             CALL GETUSV('XF',ISX)
             ISX = 2**(15-ISX)
-            VML=CMFX(LENGTH*ISX)/(X2-X1)
+            VRL=CMFX(LENGTH*ISX)/(X2-X1)
          ENDIF
-         CALL VVSETR('VML - Vector Maximum Length', VML)
+         CALL VVSETR('VRL - Maximum Vector Realized Length', VRL)
 C
 C     Special values
 C

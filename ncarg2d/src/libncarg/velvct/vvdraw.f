@@ -1,5 +1,5 @@
 C
-C	$Id: vvdraw.f,v 1.2 1993-01-20 19:58:38 dbrown Exp $
+C	$Id: vvdraw.f,v 1.3 1993-02-19 21:51:10 dbrown Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -32,7 +32,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -48,6 +51,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -107,9 +111,17 @@ C
 C
 C --------------------------------------------------------------------
 C
-      DIMENSION IAI(64), IAG(64)
-      DIMENSION XF(6), YF(6), XW(6), YW(6)
-      DIMENSION XO(6), YO(6)
+C Local parameters
+C
+C Number of points in an arrow
+C
+      PARAMETER (IPAPCT=6)
+C
+C Local arrays
+C
+      DIMENSION IAI(IPAGMX), IAG(IPAGMX)
+      DIMENSION XF(IPAPCT), YF(IPAPCT), XW(IPAPCT), YW(IPAPCT)
+      DIMENSION XO(IPAPCT), YO(IPAPCT)
 C
       CHARACTER*10 LBL
 C
@@ -173,16 +185,16 @@ C
 C Plot the arrow using areas or not, as required.
 C
       IF (IDA .GT. 1) THEN
-        CALL ARGTAI(IAM,XW(1),YW(1),IAI,IAG,64,NAI,0)
-        CALL VVUDMV(X,Y,6,IAI,IAG,NAI)
+        CALL ARGTAI(IAM,XW(1),YW(1),IAI,IAG,IPAGMX,NAI,0)
+        CALL VVUDMV(X,Y,IPAPCT,IAI,IAG,NAI)
       ELSE IF (IDA .EQ. 1) THEN
-         CALL ARDRLN(IAM, XW, YW, 6, XO, YO, 6, IAI, IAG, 64, VVUDMV)
+         CALL ARDRLN(IAM, XW, YW, IPAPCT, 
+     +        XO, YO, IPAPCT, IAI, IAG, IPAGMX, VVUDMV)
       ELSE
-         CALL CURVE(XW,YW,6)
+         CALL CURVE(XW,YW,IPAPCT)
       END IF
 C
 C If requested, put the vector magnitude above the arrow.
-C need to look this over: replace SIZE with FLBS
 C
       IF (NC .GT. 0) THEN
 C
@@ -191,10 +203,10 @@ C
          XC = 0.5*(XF(1)+XF(4))+1.25*FLBS*FW2W*COS(PHI+P1D2PI)
          YC = 0.5*(YF(1)+YF(4))+1.25*FLBS*FW2W*SIN(PHI+P1D2PI)
 C
-         XC = CFUX(Xc)
-         YC = CFUY(Yc)
+         XC = CFUX(XC)
+         YC = CFUY(YC)
          CALL VVTXLN(LBL,10,IB,IE)
-         CALL PLCHLQ(XC,YC,LBL(ib:ie),FLBS*FW2W,PRTOD*PHI,0.0)
+         CALL PLCHLQ(XC,YC,LBL(IB:IE),FLBS*FW2W,PRTOD*PHI,0.0)
 C
       END IF
 C

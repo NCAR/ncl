@@ -1,5 +1,5 @@
 C
-C	$Id: vvrset.f,v 1.4 1993-01-20 19:58:50 dbrown Exp $
+C	$Id: vvrset.f,v 1.5 1993-02-19 21:51:27 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -22,7 +22,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -38,6 +41,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -108,7 +112,7 @@ C
       IYDN = -1
       VLOM = 0.0
       VHIM = 0.0
-      ISET = 0
+      ISET = 1
       VMXL = 0.0
       VFRC = 0.0
       IXIN = 1
@@ -140,6 +144,10 @@ C
       UVMX = 0.0
       PMIN = 0.0
       PMAX = 0.0
+      RVMN = 0.0
+      RVMX = 0.0
+      RDMN = 0.0
+      RDMX = 0.0
       ISPC = -1
       ITHN = 0
       IMAP = 0

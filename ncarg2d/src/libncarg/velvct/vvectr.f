@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.4 1993-01-20 19:58:40 dbrown Exp $
+C	$Id: vvectr.f,v 1.5 1993-02-19 21:51:13 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -45,7 +45,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -61,6 +64,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -124,6 +128,7 @@ C Local variable dimensions
 C
       PARAMETER (IPLBSZ=10)
       CHARACTER*(IPLBSZ)LBL
+      REAL IAR(4)
 C
 C Local variables
 C
@@ -159,6 +164,7 @@ C VFR - Length in fractional coordinates of the adjusted minimum
 C       vector
 C VA  - adjusted length of current vector
 C RA  - ratio of adjusted length to current length
+C SMN,SMX - saved value of DVMN and DVMX so they can be restored
 C
 C Other variables
 C
@@ -177,12 +183,29 @@ C X,Y - mapping of the array indices to a coordinate system
 C VLN - length of the current vector in fractional coordinates
 C XGV,YGV - X and Y grid value, the scaled distance between each
 C           array grid point
+C VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG - Saved SET call values
+C IER,ICL,IAR - Clip query values
 C 
 C ---------------------------------------------------------------------
 C
 C The following call is for gathering statistics on library use at ncar.
 C
       CALL Q8QST4 ('NSSL','VELVCT','VVECTR','VERSION  6')
+C
+C Check for valid area map and area group overflow if masking is enabled
+C
+      IF (IMSK.GT.0) THEN
+         IF (IAM(7).GT.IPAGMX) THEN
+            CSTR(1:29)='VVECTR - TOO MANY AREA GROUPS'
+            CALL SETER (CSTR(1:29),1,2)
+            STOP
+         END IF
+         IF (IAM(7).LE.0) THEN
+            CSTR(1:25)='VVECTR - INVALID AREA MAP'
+            CALL SETER (CSTR(1:29),2,2)
+            STOP
+         END IF
+      END IF
 C
 C Initialize local variables
 C
@@ -197,6 +220,8 @@ C
       VMN = RBIG
       VMX = 0.0
       IZF = 1
+      SMN=DVMN
+      SMX=DVMX
 C 
 C Save the current color and linewidth, then set the vector
 C linewidth. Color must be set on a per vector basis within the 
@@ -283,8 +308,8 @@ C
 C Calculate the grid interval represented by adjacent array
 C elements along each axis
 C
-      XGV=(XHIV-XLOV)/(REAL(NXCT)-1.0)
-      YGV=(YHIV-YLOV)/(REAL(NYCT)-1.0)
+      XGV=(XHIV-XLOV)/(REAL(IXDM)-1.0)
+      YGV=(YHIV-YLOV)/(REAL(IYDN)-1.0)
 C
 C Draw the vectors. Note the extra processing if there are special 
 C values to consider or the independent scalar array is processed.
@@ -329,7 +354,7 @@ C
 C If using a scalar array, check for special values in the array, 
 C then determine the color to use for the vector
 C
-            IF (ICTV .GT. 0) THEN
+            IF (ABS(ICTV) .GE. 2) THEN
 C
                IF (ISPC .EQ. 0 .AND. P(I,J) .EQ. UPSV) THEN
                   GO TO 199
@@ -339,7 +364,7 @@ C
                END IF
 C
                DO 128 K=1,NLVL,1
-                  IF (P(I,J) .LE. TVLU(K)) THEN
+                  IF (P(I,J).LE.TVLU(K) .OR. K.EQ.NLVL) THEN
                      CALL GSPLCI(ICLR(K))
                      IF (ILBC .EQ. -1) THEN
                         CALL GSTXCI(ICLR(K))
@@ -349,14 +374,13 @@ C
  128           CONTINUE
 C
  129           CONTINUE
-               
-            END IF
+C               
+            ELSE IF (ICTV .NE. 0) THEN
 C
 C If coloring based on vector magnitude, figure out the color
 C
-            IF (ICTV .LT. 0) THEN
                DO 130 K=1,NLVL,1
-                  IF (UVM .LE. TVLU(K)) THEN
+                  IF (UVM.LE.TVLU(K) .OR. K.EQ.NLVL) THEN
                      CALL GSPLCI(ICLR(K))
                      IF (ILBC .EQ. -1) THEN
                         CALL GSTXCI(ICLR(K))
@@ -366,6 +390,7 @@ C
  130           CONTINUE
 C
  131           CONTINUE
+C
             END IF
 C
 C Map the vector. If the compatiblity flag is set use the 
@@ -465,20 +490,21 @@ C
 C Plot statistics
 C
       IF (IVST .EQ. 1) THEN
-         WRITE(*,*) 'VVECTR Statistics'
-         WRITE(*,*) '                    Vectors plotted:',ICT
-         WRITE(*,*) 'Vectors rejected by mapping routine:',ISC
-         WRITE(*,*) '    Vectors under minimum magnitude:',MNO
-         WRITE(*,*) '     Vectors over maximum magnitude:',MXO
-         WRITE(*,*) '          Other zero length vectors:',IZC
-         WRITE(*,*) '            Rejected special values:',IVC
-         WRITE(*,*) '   Minimum plotted vector magnitude:',VMN
-         WRITE(*,*) '   Maximum plotted vector magnitude:',VMX
-         IF (ICTV .GT. 0) THEN
-            WRITE(*,*) '               Minimum scalar value:',PMIN
-            WRITE(*,*) '               Maximum scalar value:',PMAX
+         LUN=I1MACH(2)
+         WRITE(LUN,*) 'VVECTR Statistics'
+         WRITE(LUN,*) '                    Vectors plotted:',ICT
+         WRITE(LUN,*) 'Vectors rejected by mapping routine:',ISC
+         WRITE(LUN,*) '    Vectors under minimum magnitude:',MNO
+         WRITE(LUN,*) '     Vectors over maximum magnitude:',MXO
+         WRITE(LUN,*) '          Other zero length vectors:',IZC
+         WRITE(LUN,*) '            Rejected special values:',IVC
+         WRITE(LUN,*) '   Minimum plotted vector magnitude:',VMN
+         WRITE(LUN,*) '   Maximum plotted vector magnitude:',VMX
+         IF (ABS(ICTV).GE.2) THEN
+            WRITE(LUN,*) '               Minimum scalar value:',PMIN
+            WRITE(LUN,*) '               Maximum scalar value:',PMAX
          END IF
-         WRITE(*,*) ' '
+         WRITE(LUN,*) ' '
       END IF
 C
 C Reset the polyline color and the linewidth
@@ -487,11 +513,20 @@ C
       CALL GSLWSC(ROW)
       CALL GSTXCI(IOT)
 C
-C Set UVMX and UVMN to the max and min vectors actually drawn,
-C so the user can recover this information
+C Set the read-only min/max vector sizes to reflect the vectors
+C actually drawn
+C Restore DVMN and DVMX to their original values
 C
-      UVMX=VMX
-      UVMN=VMN
+      IF (IAV.EQ.0) THEN
+         RDMN=VMN*SXDC
+      ELSE
+         RDMN = VFR+(DVMX - VFR)*(VMN - UVMN) /(UVMX - UVMN)
+      END IF
+      RDMX=VMX*SXDC
+      RVMX=VMX
+      RVMN=VMN
+      DVMN=SMN
+      DVMX=SMX
 C
 C If vectors were drawn, write out the vector informational text if 
 C called for, else conditionally write the zero field text.
@@ -499,15 +534,23 @@ C
       IF (IZF .EQ. 0) THEN
 C
          IF (CMXT(1:1) .NE. ' ') THEN
-            CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,DVMX)
+            CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,RDMX)
          END IF
          IF (CMNT(1:1) .NE. ' ') THEN
-            CALL VVARTX(CMNT,IMNP,FMNX,FMNY,FMNS,IMNC,VMN,DVMN)
+            CALL VVARTX(CMNT,IMNP,FMNX,FMNY,FMNS,IMNC,VMN,RDMN)
          END IF
 C
       ELSE
 C
          IF (CZFT(1:1) .NE. ' ') THEN
+C
+C Turn clipping off and SET to an identity transform
+C
+            CALL GQCLIP(IER,ICL,IAR)
+            CALL GSCLIP(0)
+            CALL GETSET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
+            CALL SET(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1)
+C
             XF = XVPL + FZFX * FW2W
             YF = YVPB + FZFY * FH2H
             CALL VVTXLN(CZFT,IPCHSZ,IB,IE)
@@ -524,6 +567,12 @@ C
 C
             CALL GSTXCI(IOT)
             CALL GSPLCI(IOC)
+C
+C Restore clipping and the set transformation.
+C
+            CALL GSCLIP(ICL)
+            CALL SET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
+C
          END IF
 C
       END IF
@@ -564,7 +613,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -580,6 +632,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)

@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetc.f,v 1.6 1993-01-27 20:59:54 dbrown Exp $
+C	$Id: vvsetc.f,v 1.7 1993-02-19 21:51:31 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -29,7 +29,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -45,6 +48,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -127,7 +131,7 @@ C
 C
          CSTR(1:36)='VVSETC - PARAMETER NAME NOT KNOWN - '
          CSTR(37:39)=CNM(1:3)
-         CALL SETER (CSTR(1:39),3,2)
+         CALL SETER (CSTR(1:39),2,2)
          STOP
 C
       END IF

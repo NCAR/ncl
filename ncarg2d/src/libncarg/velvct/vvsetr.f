@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetr.f,v 1.6 1993-01-27 20:59:59 dbrown Exp $
+C	$Id: vvsetr.f,v 1.7 1993-02-19 21:51:34 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -28,7 +28,10 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+C IPLVLS - Maximum number of color threshold level values
+C IPAGMX - Maximum number of area groups allowed in the area map
+C
+      PARAMETER (IPLVLS = 64, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -44,6 +47,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
@@ -138,13 +142,13 @@ C
          IXDM=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'YDN'.OR. CNM(1:3).EQ.'ydn') THEN
          IYDN=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'VLM'.OR.CNM(1:3).EQ.'vlm') THEN
+      ELSE IF (CNM(1:3).EQ.'VLC'.OR.CNM(1:3).EQ.'vlc') THEN
          VLOM=ABS(RVL) 
-      ELSE IF (CNM(1:3).EQ.'VHM'.OR.CNM(1:3).EQ.'vhm') THEN
+      ELSE IF (CNM(1:3).EQ.'VHC'.OR.CNM(1:3).EQ.'vhc') THEN
          VHIM=ABS(RVL) 
       ELSE IF (CNM(1:3).EQ.'SET'.OR. CNM(1:3).EQ.'set') THEN
          ISET=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'VML'.OR. CNM(1:3).EQ.'vml') THEN
+      ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
          VMXL=RVL
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
          VFRC=RVL
@@ -191,7 +195,7 @@ C
       ELSE IF (CNM(1:3).EQ.'YCN'.OR.CNM(1:3).EQ.'ycn') THEN
          UYCN=RVL
       ELSE IF (CNM(1:3).EQ.'NLV'.OR.CNM(1:3).EQ.'nlv') THEN
-         NLVL=INT(RVL)
+         NLVL=MIN(IPLVLS,INT(RVL))
       ELSE IF (CNM(1:3).EQ.'PAI'.OR.CNM(1:3).EQ.'pai') THEN
          IF (RVL .LT. 1.0 .OR. RVL .GT. IPLVLS) GO TO 9800
          IPAI=INT(RVL)
@@ -306,7 +310,7 @@ C
 C
       CSTR(1:50)='VVSETI OR VVSETR - PARAMETER VALUE OUT OF RANGE - '
       CSTR(51:53)=CNM(1:3)
-      CALL SETER (CSTR(1:53),3,2)
+      CALL SETER (CSTR(1:53),4,2)
       STOP
 C      
  9900 CONTINUE
