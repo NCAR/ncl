@@ -1,4 +1,3 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
 ;        University Corporation for Atmospheric Research               ;
@@ -112,8 +111,11 @@ begin
 
   x = .05+.90*(ii(y | :,x | : )+.5)/NCLS
   y = .05+.90*(ii+.5)/NCLS
+ 
+  do i=0,NCLS-1
+    NhlNDCToData(mpid,x(i,:),y(i,:),x(i,:),y(i,:))
+  end do
 
-  NhlNDCToData(mpid,x,y,x,y)
 ;
 ; Now create a cell array.
 ;
