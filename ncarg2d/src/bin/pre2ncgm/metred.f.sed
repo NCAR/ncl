@@ -1,5 +1,5 @@
 C
-C	$Id: metred.F,v 1.5 2000-08-22 04:34:22 haley Exp $
+C	$Id: metred.f.sed,v 1.1 2004-08-03 16:31:24 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.49 2004-02-10 05:08:58 haley Exp $
+#	$Id: yMakefile,v 1.50 2004-08-03 16:21:53 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -48,15 +48,14 @@ EXCSRCS = gsbytes.c logic32.c
 EXOBJS  = gsbytes.o logic32.o
 #endif
 
-FCPP_SRCS = argget.F
-FCPP_FSRCS = argget.f
+FCPP_SRCS = argget.f
 FCPP_OBJS = argget.o
 
 HDRS	= c.h 
 CSRCS	= $(EXCSRCS) options.c misc.c ncarg_path.c version.c \
 	error.c atoargv.c usleep.c env.c trnspprt.c \
 	rwchinfl.c sdbm.c
-FSRCS	= $(EXFSRCS) $(FCPP_FSRCS) lblank.f iargct.f i1mach.f r1mach.f \
+FSRCS	= $(EXFSRCS) $(FCPP_SRCS) lblank.f iargct.f i1mach.f r1mach.f \
 	d1mach.f
 OBJS	= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o \
 	version.o error.o atoargv.o usleep.o env.o trnspprt.o lblank.o \
@@ -81,10 +80,6 @@ usleep.o: usleep.c
 
 sdbm.o: sdbm.c
 	$(CC) $(CCOPTIONS) $(COPT) -c sdbm.c
-#endif
-
-#if (!defined(i386) || defined(linux)) && !defined(Darwin)
-CleanFilesTarget($(FCPP_FSRCS))
 #endif
 
 CleanFilesTarget(ncarg_path.c)

@@ -1,5 +1,5 @@
 C
-C	$Id: fndarg.F,v 1.4 2000-08-22 04:34:21 haley Exp $
+C	$Id: fndarg.f.sed,v 1.1 2004-08-03 16:31:24 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

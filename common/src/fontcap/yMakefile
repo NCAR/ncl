@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.16 2004-07-31 15:30:27 haley Exp $
+#	$Id: yMakefile,v 1.17 2004-08-03 16:24:37 haley Exp $
 #
 
 MYNAME	= fontcap
@@ -11,11 +11,10 @@ ffprsa.o  fftbkd.o  fftkin.o  sffndc.o  sfgtin.o  sfgtkw.o  sfprcf.o  sfskbk.o \
 sftbkd.o
 
 SOURCES = \
-cfaamn.F  cfrdln.f  cfwrit.f  ffgttk.f  ffinfo.f  ffphol.f  ffppkt.f  ffprcf.f \
+cfaamn.f  cfrdln.f  cfwrit.f  ffgttk.f  ffinfo.f  ffphol.f  ffppkt.f  ffprcf.f \
 ffprsa.f  fftbkd.f  fftkin.f  sffndc.f  sfgtin.f  sfgtkw.f  sfprcf.f  sfskbk.f \
 sftbkd.f
 
-FCPP_OBJS       = cfaamn.f
 #if defined(Darwin)
 PROG_LIBS	=	$(NCARGCLIB) $(CTOFLIBS)
 #else
@@ -37,11 +36,7 @@ FONTCAPS = \
 FortranProgram(fontc,$(OBJECTS),$(DEPLIBS))
 InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(FONTCAPPATH))
 
-#if (!defined(i386) || defined(linux) || defined(Linux) || defined(LINUX)) && !defined(Darwin)
-CleanFilesTarget($(FONTCAPS) $(FCPP_OBJS))
-#else
 CleanFilesTarget($(FONTCAPS))
-#endif
 
 # Rule for processing fontcaps
 .SUFFIXES: .fc

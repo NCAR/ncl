@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.18 2004-07-31 15:29:25 haley Exp $
+#	$Id: yMakefile,v 1.19 2004-08-03 16:26:30 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -11,12 +11,11 @@ OBJECTS = \
 	 rascls.o rdline.o skpblk.o txtcls.o
 
 SOURCES = \
-	 capchg.F binput.f bndcls.f capast.F capdat.f cappar.f dascls.f\
+	 capchg.f binput.f bndcls.f capast.f capdat.f cappar.f dascls.f\
 	 devcls.f devcol.f devmap.f fndchr.f grinit.f gtflt.f gtint.f\
 	 gtlog.f gtstr.f intcnv.f lincls.f marcls.f mtchit.f plgcls.f\
 	 rascls.f rdline.f skpblk.f txtcls.f
 
-FCPP_OBJS	= capast.f capchg.f
 #if defined(Darwin)
 PROG_LIBS	=	$(NCARGCLIB) $(CTOFLIBS)
 #else
@@ -47,11 +46,7 @@ InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
 #define linux
 #endif
 
-#if (!defined(i386) || defined(linux)) && !defined(Darwin)
-CleanFilesTarget($(GRAPHCAPS) $(FCPP_OBJS))
-#else
 CleanFilesTarget($(GRAPHCAPS))
-#endif
 
 # rule for processing graphcaps
 .SUFFIXES: .gc

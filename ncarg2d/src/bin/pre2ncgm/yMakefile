@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 2004-07-31 15:34:30 haley Exp $
+#	$Id: yMakefile,v 1.14 2004-08-03 16:31:26 haley Exp $
 #
 
 MYNAME  = pre2ncgm
@@ -28,9 +28,6 @@ SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
 
 OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS) $(ROBJS)
 
-FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
-		trlate.f trndat.f
-
 #if defined(Darwin)
 PROG_LIBS	=	$(NCARGLIBS) $(CTOFLIBS)
 #else
@@ -38,11 +35,4 @@ PROG_LIBS	=	$(NCARGLIBS)
 #endif
 DEP_LIBS = $(DEPNCARGLIBS)
 
-#if defined(Darwin)
-PROG_LIBS =  $(NCARGLIBS) $(CTOFLIBS)
-#endif
-
 FortranProgram(pre2ncgm.prog,$(OBJECTS),$(DEP_LIBS))
-#if (!defined(i386) || defined(linux) || defined(Linux) || defined(LINUX)) && !defined(Darwin)
-CleanFilesTarget($(FCPP_OBJS))
-#endif

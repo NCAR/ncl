@@ -1,5 +1,5 @@
 C
-C	$Id: cfaamn.F,v 1.4 2002-04-03 01:45:05 fred Exp $
+C	$Id: cfaamn.f.sed,v 1.1 2004-08-03 16:24:37 haley Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
