@@ -1,5 +1,5 @@
 C
-C $Id: epltch.f,v 1.4 1993-01-15 22:05:58 kennison Exp $
+C $Id: epltch.f,v 1.5 1994-04-20 23:34:52 kennison Exp $
 C
       PROGRAM EXMPLS
 C
@@ -231,8 +231,8 @@ C the code for it appears at the end of this example.)
 C
       CALL PCSETI ('TE - TEXT EXTENT FLAG',1)
 C
-      CALL PLCHHQ (.130,.140,'TEXT EXTENT BOX',.012,33.,0.)
-      CALL DRAWBX (.130,.140,33.,.01)
+      CALL PLCHHQ (.130,.140,'TEXT EXTENT BOX',.012,35.,0.)
+      CALL DRAWBX (.130,.140,35.,.01)
 C
       CALL PCSETI ('TE - TEXT EXTENT FLAG',0)
 C
