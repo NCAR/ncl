@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.34 1996-04-06 03:49:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.35 1996-05-03 03:30:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2887,6 +2887,7 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_colors);
 	NhlFree(cnp->gks_line_colors);
 	NhlFree(cnp->gks_fill_colors);
+	NhlFreeGenArray(cnp->dash_table);
 	NhlFreeGenArray(cnp->line_dash_patterns);
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);

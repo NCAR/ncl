@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.28 1996-02-01 20:43:04 dbrown Exp $
+ *      $Id: Workspace.c,v 1.29 1996-05-03 03:30:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3094,8 +3094,8 @@ NhlErrorTypes _NhlMapita
 #if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
-	float		x,
 	float		y,
+	float		x,
 	int		up_or_down,
 	int		group_id,
 	int		left_id,
@@ -3103,10 +3103,10 @@ NhlErrorTypes _NhlMapita
 	char		*entry_name
 )
 #else
-(amap_ws,x,y,up_or_down,group_id,left_id,right_id,entry_name)
+(amap_ws,y,x,up_or_down,group_id,left_id,right_id,entry_name)
 	NhlWorkspace	*amap_ws;
-	float		x;
 	float		y;
+	float		x;
 	int		up_or_down;
 	int		group_id;
 	int		left_id;
@@ -3125,7 +3125,7 @@ NhlErrorTypes _NhlMapita
 	c_entsr(&save_mode,1);
 
 	do {
-		c_mapita(x,y,up_or_down,wsrp->ws_ptr,
+		c_mapita(y,x,up_or_down,wsrp->ws_ptr,
 			 group_id,left_id,right_id);
 
 		if (c_nerro(&err_num) == 0) {

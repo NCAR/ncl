@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.50 1996-04-26 23:38:17 dbrown Exp $
+ *      $Id: Workstation.c,v 1.51 1996-05-03 03:30:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3559,13 +3559,56 @@ _NhlSetLineInfo
 	int			i,j,ix;
 	char			*tchar;
 
-	memset((void *) buffer,'\0', sizeof(buffer)*sizeof(char));
-
+ 
 /*
  * Flush plotif buffer...
  */
-	c_plotif(0.,0.,2);
+	c_sflush();
 
+/*
+ * Since Ezmap does not currently use dashpack, map data polylines and 
+ * polygon edges both are controlled using dashchar routines. For now,
+ * therefore in order to ensure that map polylines do not end up with edge
+ * attributes it is necessarry to call both the dashchar and dashpack
+ * routines. Hopefully the dashchar stuff (between the curly braces
+ * below) can be eliminated when Ezmap gets updated.
+ */
+	{
+		float fl,fr,fb,ft,ul,ur,ub,ut;
+		float x0,x1;
+		int ix,ll;
+		int dollar_size;
+
+		memset((void *) buffer, (char) 0, 80 * sizeof(char));
+
+		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return;
+
+		x0 = fl;
+		x1 = fl + wklp->line_dash_seglen;
+		x0 = (float)c_kfpy(x0);
+		x1 = (float)c_kfpy(x1);
+	
+		if ((ix = wklp->dash_pattern) > wkp->dash_table_len) {
+			/* NhlINFO - but it's a void function right now */
+			NhlPError(NhlINFO,NhlEUNKNOWN,
+	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
+
+			ix = 1 + (ix - 1) % wkp->dash_table_len;
+		}
+		
+		dollar_size = (x1 - x0) /
+			strlen(dash_patterns[ix]) + 0.5;
+		if(dollar_size < 1) dollar_size = 1;
+		
+		strcpy(buffer,dash_patterns[ix]);
+		
+		c_dashdc(buffer,dollar_size,1);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	}
+
+	memset((void *) buffer,'\0', sizeof(buffer)*sizeof(char));
 
 	c_pcseti("FN",0);
 	c_pcseti("CL",1);
@@ -3695,6 +3738,8 @@ _NhlSetLineInfo
 
         gset_linewidth(wklp->line_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+
         return;
 }
 
@@ -3769,7 +3814,7 @@ _NhlSetFillInfo
 		if ((ix = wkfp->edge_dash_pattern) > wk_p->dash_table_len) {
 			/* NhlINFO - but it's a void function right now */
 			NhlPError(NhlINFO,NhlEUNKNOWN,
-	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
+	"_NhlSetFillInfo: using mod function on dash pattern index: %d", ix);
 
 			ix = 1 + (ix - 1) % wk_p->dash_table_len;
 		}

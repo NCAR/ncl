@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.24 1996-02-26 21:46:01 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.25 1996-05-03 03:30:55 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/WorkspaceI.h>
 
 static NhlResource resources[] = {
 
@@ -229,7 +230,11 @@ static NhlResource resources[] = {
 
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
-	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+{NhlNmpDumpPolygonAreaMap, NhlCmpDumpPolygonAreaMap,NhlTBoolean,
+	 sizeof(NhlBoolean),NhlOffset(NhlMapTransObjLayerRec,
+				      mptrans.dump_polygon_area_map),
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
 
 };
 
@@ -401,6 +406,17 @@ static NhlErrorTypes CheckMapLimits(
 #endif
 );
 
+extern int (_NHLCALLF(hlumappolygon,HLUMAPPOLYGON))(
+#if	NhlNeedProto
+	float *xcs, 
+	float *ycs, 
+	int *ncs, 
+	int *iai, 
+	int *iag, 
+	int *nai
+#endif
+);
+
 NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 {
 /* class_name			*/	"mapTransObjClass",
@@ -437,11 +453,14 @@ NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 /* compc_to_data	*/	MapDataToCompc, /* compc and data are ident */
 /* win_to_compc		*/	MapWinToData, /* compc and data are ident */
 /* compc_to_win		*/	MapDataToWin, /* compc and data are ident */
-/* data_lineto */       MapDataLineTo,
-/* compc_lineto */      MapDataLineTo,
-/* win_lineto */        MapWinLineTo,
-/* NDC_lineto */        MapNDCLineTo,
-/* data_polygon */      MapDataPolygon 
+/* data_lineto		*/      MapDataLineTo,
+/* compc_lineto		*/      MapDataLineTo,
+/* win_lineto		*/      MapWinLineTo,
+/* NDC_lineto		*/      MapNDCLineTo,
+/* data_polygon		*/      MapDataPolygon 
+},
+{
+/* aws_id		*/	-1
 }
 };
 
@@ -468,6 +487,8 @@ static mpWinLimits Win_Limits[] = {
 	{ -1.0, 2.0, -1.0, 2.0 },
 	{ -1.0, 2.0, -1.0, 2.0 }
 };
+
+static NhlLayer Wkptr = NULL;
 
 /*
 * Function:	MapSetTrans
@@ -713,7 +734,6 @@ NhlLayer parent;
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			c_mapset("MA",rl1,rl2,rl3,rl4);
-			c_mapint();
 			c_mapint();
 			c_nerro(&nerr);
 			if (nerr > 0) {	
@@ -1657,12 +1677,38 @@ float y;
 int upordown;
 #endif
 {
+	static float x_last,y_last;
+	static float *xbuf, *ybuf;
+	float xdist, ydist;
+	static int size = 0;
+	int i;
+
 	if(upordown) {
 		c_mapiq();
 		c_mapit(y,x,0);
-	} else {
-		c_mapit(y,x,2);
+		x_last = x;
+		y_last = y;
+		return NhlNOERROR;
 	}
+#if 0
+	if (size < 10) {
+		xbuf = NhlMalloc(10*sizeof(float));
+		ybuf = NhlMalloc(10*sizeof(float));
+		size = 10;
+	}
+	c_mapgci(y_last,x_last,y,x,10,ybuf,xbuf);
+	for (i = 0; i < 10; i++)
+		c_mapit(ybuf[i],xbuf[i],2);
+#endif
+	xdist = x - x_last;
+	ydist = y - y_last;
+	size = (int)(abs(xdist) + abs(ydist));
+	for (i = 0; i < size; i++) 
+		c_mapit(y_last + ydist *(i+1)/ (float)size,
+			x_last + xdist *(i+1)/ (float)size,2);
+	x_last = x;
+	y_last = y;
+	
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MapWinLineTo
@@ -1796,6 +1842,92 @@ int upordown;
 
 
 /*ARGSUSED*/
+static NhlBoolean Clockwise
+#if	NhlNeedProto
+(float *x, float *y, int n, NhlBoolean closed,NhlBoolean *out_of_range)
+#else
+(x, y, n, closed, out_of_range)
+float *x;
+float *y;
+int n;
+NhlBoolean closed;
+NhlBoolean *out_of_range;
+#endif
+{
+	int ixmin,iymin,ixmax,iymax;
+	int i,imin;
+	NhlBoolean clockwise = False;
+	float x1,x2,y1,y2;
+	float area = 0.0;
+	float lat0,lon0,lat1,lon1;
+
+/*
+ * From comp.graphics.algorithms FAQ: orientation is clockwise if 
+ * the signed area is less than 0.0; counter-clockwise otherwise.
+ */
+	*out_of_range = False;
+	if (y[0] > 90.0) {
+		lat0 = 90.0;
+		*out_of_range = True;
+	}
+	else if (y[0] < -90.0) {
+		lat0 = -90.0;
+		*out_of_range = True;
+	}
+	else {
+		lat0 = y[0];
+	}
+	if (x[0] > 540.0) {
+		lon0 = 540.0;
+		*out_of_range = True;
+	}
+	else if (x[0] < -540.0) {
+		lon0 = -540.0;
+		*out_of_range = True;
+	}
+	else {
+		lon0 = x[0];
+	}
+	for (i=0; i < n; i++) {
+		int nexti = i + 1;
+		if (i == n - 1) {
+			if (closed)
+				break;
+			else
+				nexti = 0;
+		}
+		if (y[nexti] > 90.0) {
+			lat1 = 90.0;
+			*out_of_range = True;
+		}
+		else if (y[nexti] < -90.0) {
+			lat1 = -90.0;
+			*out_of_range = True;
+		}
+		else {
+			lat1 = y[nexti];
+		}
+		if (x[nexti] > 540.0) {
+			lon1 = 540.0;
+			*out_of_range = True;
+		}
+		else if (x[nexti] < -540.0) {
+			lon1 = -540.0;
+			*out_of_range = True;
+		}
+		else {
+			lon1 = x[nexti];
+		}
+		area += lon0 * lat1 - lon1 * lat0;
+		lon0 = lon1;
+		lat0 = lat1;
+	}
+	clockwise = area < 0.0;
+
+	return clockwise;
+		
+}
+/*ARGSUSED*/
 static NhlErrorTypes MapDataPolygon
 #if	NhlNeedProto
 (NhlLayer instance, float *x, float *y, int n )
@@ -1809,9 +1941,262 @@ int n;
 {
 	NhlString e_text;
 	NhlString entry_name = "MapDataPolygon";
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlMapTransObjClass mptransclass;
+	int aws_id;
+	NhlWorkspace *aws;
+	float xdist, ydist;
+	int size,i,j;
+	NhlMapTransObjLayer mptrans = (NhlMapTransObjLayer) instance;
+	char		cval[4];
+	NhlBoolean	clockwise,closed,out_of_range;
+	int		left_id, right_id;
+	int		nexti;
+	int		gsid;
+	int		ldash,lcolor,edash,ecolor;
+	float		ldash_seglen,lthick,edash_seglen,ethick;
+	char		*lstring;
+	NhlBoolean	edges_on;
+	float		*xl,*yl;
+	int		nl;
 
-	e_text = "%s: not yet implemented";
-	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-	return NhlWARNING;
+	Wkptr = mptrans->trobj.wkptr;
+/*
+ * If edges are on it's necessary to turn them off for the polygon draw
+ * and then simulate the edges with a polyline. The reason is that 
+ * there is no way to tell Ezmap not to draw edges along the edges of
+ * the projection where the polygon disappears. This is sort of 
+ * complicated because we need to get the GS to find out if the edges
+ * are on, and, if so, temporarily reset a number of the attributes,
+ * and restore them after finishing.
+ */
+	NhlVAGetValues(Wkptr->base.id,
+		       _NhlNwkGraphicStyle,    &gsid,
+                        NULL);
+
+	NhlVAGetValues(gsid,
+		       NhlNgsLineDashPattern, &ldash,
+		       NhlNgsLineDashSegLenF, &ldash_seglen,
+		       NhlNgsLineColor,       &lcolor,
+		       NhlNgsLineThicknessF,  &lthick,
+		       NhlNgsLineLabelString, &lstring,
+		       NhlNgsEdgesOn,         &edges_on,
+		       NhlNgsEdgeDashPattern, &edash,
+		       NhlNgsEdgeThicknessF,  &ethick,
+		       NhlNgsEdgeDashSegLenF, &edash_seglen,
+		       NhlNgsEdgeColor,       &ecolor,
+		       NULL);
+
+	if (edges_on) {
+		NhlVASetValues(gsid,
+			       NhlNgsEdgesOn,         False,
+			       NhlNgsLineDashPattern, edash,
+			       NhlNgsLineDashSegLenF, edash_seglen,
+			       NhlNgsLineColor,       ecolor,
+			       NhlNgsLineThicknessF,  ethick,
+			       NhlNgsLineLabelString, "",
+			       NULL);
+		NhlVASetValues(Wkptr->base.id,
+			       _NhlNwkGraphicStyle,    gsid,
+			       NULL);
+	}
+			       
+	closed = x[0] == x[n-1] && y[0] == y[n-1] ? True : False;
+
+	clockwise = Clockwise(x,y,n,closed,&out_of_range);
+
+	if (! out_of_range) {
+		nl = n;
+		xl = x;
+		yl = y;
+	}
+	else {
+		e_text = 
+	     "%s: out of range lat/lon coordinates encountered: constraining";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+
+		nl = closed ? n : n + 1;
+		xl = NhlMalloc(nl * sizeof(float));
+		yl = NhlMalloc(nl * sizeof(float));
+		for (i = 0; i < n; i++) {
+			if (y[i] > 90.0) 
+				yl[i] = 90.0;
+			else if (y[i] < -90.0)
+				yl[i] = -90.0;
+			else
+				yl[i] = y[i];
+			if (x[i] > 540.0)
+				xl[i] = 540.0;
+			else if (x[i] < -540.0)
+				xl[i] = -540.0;
+			else 
+				xl[i] = x[i];
+		}
+		if (! closed) {
+			yl[n] = yl[0];
+			xl[n] = xl[0];
+		}
+		closed = True;
+	}
+			
+	if (clockwise) {
+		right_id = 5;
+		left_id = 2;
+	}
+	else {
+		right_id = 2;
+		left_id = 5;
+	}
+
+	mptransclass = (NhlMapTransObjClass) _NhlClass(instance);
+	aws_id = mptransclass->mptrans_class.aws_id;
+
+
+	if (aws_id == -1) {
+		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsNONE,
+					  1000*sizeof(int));
+		if (aws_id < 0) 
+			return MIN(ret,aws_id);
+		mptransclass->mptrans_class.aws_id = aws_id;
+	}
+	if ((aws = _NhlUseWorkspace(aws_id)) == NULL) {
+		e_text = "%s: error reserving area map workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+	c_arseti("RC",1);
+	c_mpseti("VS",0);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	subret = _NhlArinam(aws,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	c_mpgetc("OU",cval,3);
+	c_mpsetc("OU","NO");
+	c_mpseti("G2",3);
+	c_mpseti("G1",3);
+	c_mpseti("VS",1);
+	_NhlMapbla(aws,entry_name);
+	c_mpsetc("OU",cval);
 	
+	subret = _NhlMapita(aws,yl[0],xl[0],0,3,left_id,right_id,entry_name); 
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	for (i = 0; i < n; i++) {
+		nexti = i + 1;
+		if (i == n - 1) {
+			if (closed)
+				break;
+			else
+				nexti = 0;
+		}
+		xdist = xl[nexti] - xl[i];
+		ydist = yl[nexti] - yl[i];
+		size = (int)(abs(xdist) + abs(ydist));
+		for (j = 0; j < size; j++) {
+			_NhlMapita(aws,yl[i] + ydist *(j+1)/ (float)size,
+				   xl[i] + xdist *(j+1)/ (float)size,2,
+				   3,left_id,right_id,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+	}
+	_NhlMapiqa(aws,3,left_id,right_id,entry_name);
+	
+	subret = _NhlArpram(aws,0,0,0,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = _NhlArscam(aws,(_NHLCALLF(hlumappolygon,HLUMAPPOLYGON)),
+			    entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	if (mptrans->mptrans.dump_polygon_area_map) 
+		_NhlDumpAreaMap(aws,entry_name);
+
+	subret = _NhlIdleWorkspace(aws);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	if (edges_on) {
+/*
+ * if not closed, the out_of_range flag must have been False and therefore
+ * no malloc was done up above.
+ */
+		if (! closed) {
+			nl = n+1;
+			xl = NhlMalloc(nl * sizeof(float));
+			yl = NhlMalloc(nl * sizeof(float));
+			memcpy(xl,x,n * sizeof(float));
+			memcpy(yl,y,n * sizeof(float));
+			xl[n] = xl[0];
+			yl[n] = yl[0];
+		}
+			
+		subret = _NhlDeactivateWorkstation(Wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		NhlDataPolyline(instance->base.parent->base.id,gsid,xl,yl,nl);
+		NhlVASetValues(gsid,
+			       NhlNgsLineDashPattern, ldash,
+			       NhlNgsLineDashSegLenF, ldash_seglen,
+			       NhlNgsLineColor,       lcolor,
+			       NhlNgsLineThicknessF,  lthick,
+			       NhlNgsLineLabelString, lstring,
+			       NhlNgsEdgesOn,         True,
+			       NULL);
+		NhlFree(lstring);
+		subret = _NhlActivateWorkstation(Wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+	if (out_of_range || (edges_on && ! closed)) {
+		NhlFree(xl);
+		NhlFree(yl);
+	}
+
+	Wkptr = NULL;
+
+	return ret;
+}
+
+/*
+ * Function:  hlumappolygon
+ *
+ * Description: C version of APR user routine called from within ARSCAM 
+ *		to fill the data polygon
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+int (_NHLCALLF(hlumappolygon,HLUMAPPOLYGON))
+#if	NhlNeedProto
+(
+	float *xcs, 
+	float *ycs, 
+	int *ncs, 
+	int *iai, 
+	int *iag, 
+	int *nai
+)
+#else
+(xcs,ycs,ncs,iai,iag,nai)
+	float *xcs; 
+	float *ycs; 
+	int *ncs; 
+	int *iai; 
+	int *iag; 
+	int *nai;
+#endif
+{
+
+	if (*iai < 1) return 0;
+#if 0
+	printf("iai %d iag %d nai %d\n", *iai,*iag,*nai);
+#endif
+	if (*iai == 5)
+		_NhlWorkstationFill(Wkptr,xcs,ycs,*ncs);
+
+	return 0;
 }

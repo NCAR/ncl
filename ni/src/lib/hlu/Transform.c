@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.23 1996-02-26 21:46:13 dbrown Exp $
+ *      $Id: Transform.c,v 1.24 1996-05-03 03:30:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -738,7 +738,7 @@ static NhlErrorTypes TransformDataPolygon
 	char			*e_text;
 	char			*entry_name = "TransformDataPolygon";
 
-	if (n < 2) {
+	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
@@ -835,7 +835,7 @@ static NhlErrorTypes TransformNDCPolygon
 	NhlTransObjLayer		top;
  	NhlTransObjClass 	tocp;
 
-	if (n < 2) {
+	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;

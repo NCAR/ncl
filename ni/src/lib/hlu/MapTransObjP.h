@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.7 1995-04-07 10:43:02 boote Exp $
+ *      $Id: MapTransObjP.h,v 1.8 1996-05-03 03:30:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,10 @@
  */
 
 #define NhlNmpTransChanged	".mpTransChanged"
+
+/* undocumented debugging aid */
+#define NhlNmpDumpPolygonAreaMap "mpDumpPolygonAreaMap"
+#define NhlCmpDumpPolygonAreaMap "MpDumpPolygonAreaMap"
 
 typedef struct _NhlMapTransObjLayerPart{
 
@@ -108,6 +112,7 @@ typedef struct _NhlMapTransObjLayerPart{
 	/* Private resources */
 
 	NhlBoolean trans_changed;
+	NhlBoolean dump_polygon_area_map;
 
 	/* Private Fields */
 
@@ -127,7 +132,7 @@ typedef struct _NhlMapTransObjLayerRec {
 } NhlMapTransObjLayerRec;
 
 typedef struct _NhlMapTransObjClassPart {
-	char *foo;
+	int aws_id;
 } NhlMapTransObjClassPart;
 
 typedef struct _NhlMapTransObjClassRec {
