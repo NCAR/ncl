@@ -1,5 +1,5 @@
 C
-C $Id: plotif.f,v 1.3 1994-03-17 01:44:05 kennison Exp $
+C $Id: plotif.f,v 1.4 1995-12-21 00:13:46 kennison Exp $
 C
       SUBROUTINE PLOTIF (FX,FY,IP)
 C
@@ -50,15 +50,10 @@ C If a buffer flush is requested, jump.
 C
       IF (IP.EQ.2) GO TO 101
 C
-C Limit the given coordinates to the legal fractional range.
-C
-      GX=AMAX1(0.,AMIN1(1.,FX))
-      GY=AMAX1(0.,AMIN1(1.,FY))
-C
 C Set JX and JY for a possible call to MXMY.
 C
-      JX=KFMX(GX)
-      JY=KFMY(GY)
+      JX=KFMX(FX)
+      JY=KFMY(FY)
 C
 C If the current move is a pen-down move, or if the last one was, bump
 C the pointer into the coordinate arrays and, if the current move is
@@ -78,8 +73,8 @@ C
 C Save the coordinates of the point, in the fractional coordinate
 C system.
 C
-      QX(NQ)=GX
-      QY(NQ)=GY
+      QX(NQ)=FX
+      QY(NQ)=FY
 C
 C If the point-coordinate buffer is full, dump the buffers; otherwise,
 C return.
@@ -115,7 +110,7 @@ C
       DO 102 I=1,NF-1
         CALL GPL (IF(I+1)-IF(I),QX(IF(I)),QY(IF(I)))
   102 CONTINUE
-      IF (IF(NF).NE.NQ) CALL GPL (NQ-IF(NF)+1,QX(IF(I)),QY(IF(I)))
+      IF (IF(NF).NE.NQ) CALL GPL (NQ-IF(NF)+1,QX(IF(NF)),QY(IF(NF)))
 C
 C Put the current transformation back the way it was.
 C

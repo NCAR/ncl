@@ -1,5 +1,5 @@
 C
-C $Id: plotit.f,v 1.3 1994-03-17 01:44:07 kennison Exp $
+C $Id: plotit.f,v 1.4 1995-12-21 00:13:47 kennison Exp $
 C
       SUBROUTINE PLOTIT (IX,IY,IP)
 C
@@ -51,10 +51,10 @@ C If a buffer flush is requested, jump.
 C
       IF (IP.EQ.2) GO TO 101
 C
-C Limit the given coordinates to the legal metacode range.
+C Set JX and JY for a possible call to MXMY.
 C
-      JX=MAX0(0,MIN0(32767,IX))
-      JY=MAX0(0,MIN0(32767,IY))
+      JX=IX
+      JY=IY
 C
 C If the current move is a pen-down move, or if the last one was, bump
 C the pointer into the coordinate arrays and, if the current move is
@@ -74,8 +74,8 @@ C
 C Save the coordinates of the point, in the fractional coordinate
 C system.
 C
-      QX(NQ)=FLOAT(JX)/32767.
-      QY(NQ)=FLOAT(JY)/32767.
+      QX(NQ)=FLOAT(IX)/32767.
+      QY(NQ)=FLOAT(IY)/32767.
 C
 C If all three arguments were zero, or if the point-coordinate buffer
 C is full, dump the buffers; otherwise, return.
@@ -112,7 +112,7 @@ C
       DO 102 I=1,NF-1
         CALL GPL (IF(I+1)-IF(I),QX(IF(I)),QY(IF(I)))
   102 CONTINUE
-      IF (IF(NF).NE.NQ) CALL GPL (NQ-IF(NF)+1,QX(IF(I)),QY(IF(I)))
+      IF (IF(NF).NE.NQ) CALL GPL (NQ-IF(NF)+1,QX(IF(NF)),QY(IF(NF)))
 C
 C Put the current transformation back the way it was.
 C
