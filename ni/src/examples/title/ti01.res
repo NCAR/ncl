@@ -57,7 +57,11 @@
 !  Text Function Codes that allow you to control typographical
 !  attributes such as subscripting and superscripting, change
 !  fonts within a string, embed newlines, etc.
+!
+! Turn on the main title as a minimum accomplishment of this example
+!
 *ti01Work.Titles.tiMainString         : Main
+!
 ! *ti01Work.Titles.tiXAxisString        : XAxis
 ! *ti01Work.Titles.tiYAxisString        : YAxis
 !
