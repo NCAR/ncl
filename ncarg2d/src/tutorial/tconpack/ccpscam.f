@@ -6,22 +6,24 @@ C
 
       PARAMETER (MREG=50,NREG=50)
       REAL XREG(MREG),YREG(NREG),ZREG(MREG,NREG)
-
+C
 C Get data array
+C
       CALL GETDAT(XREG,YREG,ZREG,MREG,NREG)
-
+C
 C Open GKS and turn off clipping
+C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
       CALL GSCLIP(0)
-
+C
 C Call contour B&W fill routine
-
+C
       CALL CCPSCM(ZREG,MREG,NREG)
-
-
+C
 C Close frame and close GKS
+C
       CALL FRAME
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
@@ -39,18 +41,21 @@ C Close frame and close GKS
 
       EXTERNAL SFILL
       EXTERNAL CPDRPL
-
+C
 C Use regular or penalty labeling scheme so that contour labels can be
-c boxed, and draw boxes.
+C boxed, and draw boxes.
+C
       CALL CPSETI('LLP - LINE LABEL POSITIONING FLAG',2)
       CALL CPSETI('LLB - LINE LABEL BOX FLAG',1)
       CALL CPSETI('HLB - HIGH/LOW LABEL BOX FLAG',1)
-
+C
 C Set number of contour levels and initialize Conpack
+C
       CALL CPRECT (ZREG, MREG, MREG, NREG, RWRK, LRWK, IWRK, LIWK)
       CALL CPPKCL (ZREG, RWRK, IWRK)
-
+C
 C Turn on line labeling and turn off area identifiers for all levels
+C
       CALL CPGETI('NCL - NUMBER OF CONTOUR LEVELS',NCL)
       DO 111 I=1,NCL
          CALL CPSETI('PAI - PARAMETER ARRAY INDEX',I)
@@ -58,9 +63,10 @@ C Turn on line labeling and turn off area identifiers for all levels
          CALL CPSETI('AIA - AREA IDENTIFIER ABOVE',0)
          CALL CPSETI('AIB - AREA IDENTIFIER BELOW',0)
  111  CONTINUE
-
+C
 C Add contour levels at 1.25 and 1.5, and set area ids so that 
 C you can fill between them
+C
       CALL CPSETI('NCL - NUMBER OF CONTOUR LEVELS',NCL+2)
       CALL CPSETI('PAI - PARAMETER ARRAY INDEX',NCL+1)
       CALL CPSETR('CLV - CONTOUR LEVEL VALUE',1.25)
@@ -72,29 +78,37 @@ C you can fill between them
       CALL CPSETI('CLU - CONTOUR LEVEL USE FLAG',3)
       CALL CPSETI('AIA - AREA IDENTIFIER ABOVE',3)
       CALL CPSETI('AIB - AREA IDENTIFIER BELOW',1)
-
+C
 C Draw Perimeter
+C
       CALL CPBACK(ZREG, RWRK, IWRK)
-
+C
 C Initialize Areas
+C
       CALL ARINAM(MAP, LMAP)
-
+C
 C Add contours to area map
+C
       CALL CPCLAM(ZREG, RWRK, IWRK, MAP)
-
+C
 C Add label boxes to area map
+C
       CALL CPLBAM(ZREG, RWRK, IWRK, MAP)
-
+C
 C Fill contours
+C
       CALL ARSCAM(MAP, XWRK, YWRK, NWRK, IAREA, IGRP, NOGRPS, SFILL)
-
+C
 C Draw contours, masking label boxes
+C
       CALL CPCLDM(ZREG, RWRK, IWRK, MAP, CPDRPL)
-
+C
 C Draw Labels
+C
       CALL CPLBDR(ZREG, RWRK, IWRK)
-
+C
 C Write out the amount of space used in the area map
+C
       CALL CPGETI('RWU - REAL WORKSPACE USED',IRWU)
       CALL CPGETI('IWU - INTEGER WORKSPACE USED',IWU)
       WRITE (6,*) 'Area map used ',MAP(1)-MAP(6)+MAP(5),' words.'
@@ -114,13 +128,15 @@ C
  10   CONTINUE
 
       IF (IAREA3 .EQ. 1) THEN
+C
 C If the area is defined by 3 or more points, fill it
+C
          CALL SFSETR('SPACING',.006)
          CALL SFNORM(XWRK,YWRK,NWRK,RSCR,5000,ISCR,5000)
       ENDIF
-	
+C   
 C Otherwise, do nothing
-
+C
       RETURN
       END
 
@@ -133,15 +149,14 @@ C Otherwise, do nothing
       INTEGER IWRK(LIWK)
 
       DATA XRAN /12., 60., 14., 33.,  8., 12., 43., 57., 22., 15.,
-     1		   19., 12., 64., 19., 15., 55., 31., 32., 33., 29.,
-     2		   18.,  1., 18., 42., 56.,  9.,  6., 12., 44., 19./
+     1         19., 12., 64., 19., 15., 55., 31., 32., 33., 29.,
+     2         18.,  1., 18., 42., 56.,  9.,  6., 12., 44., 19./
       DATA YRAN / 1.,  2.,  3., 53.,  7., 11., 13., 17., 19., 49.,
-     1		    1., 31., 37.,  5.,  7., 47., 61., 17.,  5., 23.,
-     2		   29.,  3.,  5., 41., 43.,  9., 13., 59.,  1., 67./
+     1          1., 31., 37.,  5.,  7., 47., 61., 17.,  5., 23.,
+     2         29.,  3.,  5., 41., 43.,  9., 13., 59.,  1., 67./
       DATA ZRAN /1.0, 1.5, 1.7, 1.4, 1.9, 1.0, 1.5, 1.2, 1.8, 1.4,
-     1		   1.8, 1.7, 1.9, 1.5, 1.2, 1.1, 1.3, 1.7, 1.2, 1.6,
-     2		   1.9, 1.0, 1.6, 1.3, 1.4, 1.8, 1.7, 1.5, 1.1, 1.0/
-
+     1         1.8, 1.7, 1.9, 1.5, 1.2, 1.1, 1.3, 1.7, 1.2, 1.6,
+     2         1.9, 1.0, 1.6, 1.3, 1.4, 1.8, 1.7, 1.5, 1.1, 1.0/
 C
 C  Set the min and max data values.
 C
@@ -160,10 +175,11 @@ C
       DO 102 I=1,NREG
          YREG(I)=YMIN + (YMAX - YMIN)* REAL(I-1)/NREG
  102  CONTINUE
-      
+C      
 C Interpolate data onto a regular grid
+C
       CALL IDSFFT (1,NRAN,XRAN,YRAN,ZRAN,
-     +		MREG,NREG,MREG,XREG,YREG,ZREG,IWRK,RWRK)
+     +      MREG,NREG,MREG,XREG,YREG,ZREG,IWRK,RWRK)
 
       RETURN
       END

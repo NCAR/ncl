@@ -1,61 +1,59 @@
-	PROGRAM CMPXY
-
-C
+      PROGRAM CMPXY
+C 
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
-C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
-
-	PARAMETER(JX=60,KX=26)
-	PARAMETER(LRWK=5000,LIWK=5000)
-C
-	COMMON /HEIGHT/Z(JX,KX)
-
-	REAL CNTR(JX,KX),RWRK(LRWK)
-	INTEGER IWRK(LIWK)
-
-C
+C 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      
+      PARAMETER(JX=60,KX=26)
+      PARAMETER(LRWK=5000,LIWK=5000)
+C 
+      COMMON /HEIGHT/Z(JX,KX)
+      
+      REAL CNTR(JX,KX),RWRK(LRWK)
+      INTEGER IWRK(LIWK)
+C 
 C Read arrays containing data 
-C
-	OPEN(FILE='cpmpxy1.dat',STATUS='OLD',UNIT=13)
-	DO 10, I=1,JX
-          DO 20 J=1,KX
-	    READ (13,*) Z(I,J)
- 20       CONTINUE
- 10	CONTINUE
-	OPEN(FILE='cpmpxy2.dat',STATUS='OLD',UNIT=14)
-	DO 30, I=1,JX
-          DO 40 J=1,KX
-	    READ (14,*) CNTR(I,J)
- 40       CONTINUE
- 30	CONTINUE
-C
+C 
+      OPEN(FILE='cpmpxy1.dat',STATUS='OLD',UNIT=13)
+      DO 10, I=1,JX
+         DO 20 J=1,KX
+            READ (13,*) Z(I,J)
+ 20      CONTINUE
+ 10   CONTINUE
+      OPEN(FILE='cpmpxy2.dat',STATUS='OLD',UNIT=14)
+      DO 30, I=1,JX
+         DO 40 J=1,KX
+            READ (14,*) CNTR(I,J)
+ 40      CONTINUE
+ 30   CONTINUE
+C 
 C Do a contour plot
-C
-        CALL GOPKS (IERRF, ISZDM)
-        CALL GOPWK (IWKID, LUNIT, IWTYPE)
-        CALL GACWK (IWKID)
-	CALL SET (.1,.95,.25,.85,-110.,-60.,1000.,0.,1)
-	CALL CPSETI ('SET - DO-SET-CALL FLAG',0)
-	CALL CPSETI ('MAP - MAPPING FLAG',4)
-	CALL CPSETR ('XC1 - X COORDINATE AT INDEX 1',-110.)
-	CALL CPSETR ('XCM - X COORDINATE AT INDEX M',-60.)
-	CALL CPSETR ('SPV - SPECIAL VALUE',-9999.)
-	CALL CPRECT (CNTR,JX,JX,KX,RWRK,LRWK,IWRK,LIWK)
-	CALL CPCLDR (CNTR,RWRK,IWRK)
-	CALL LABMOD ('(F5.0)','(F5.0)',0,0,0,0,0,0,0)
-	CALL GRIDAL (5,0,10,0,1,1,5,-110.,1000.)
-	CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
-	CALL PLCHHQ (.03,.6,'PRESSURE',.012,90.,0.)
-	CALL PLCHHQ (.5,.2,'LONGITUDE',.012,0.,0.)
-        CALL GDAWK (IWKID)
-        CALL GCLWK (IWKID)
-        CALL GCLKS
-
-	STOP
-	END
+C 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL SET (.1,.95,.25,.85,-110.,-60.,1000.,0.,1)
+      CALL CPSETI ('SET - DO-SET-CALL FLAG',0)
+      CALL CPSETI ('MAP - MAPPING FLAG',4)
+      CALL CPSETR ('XC1 - X COORDINATE AT INDEX 1',-110.)
+      CALL CPSETR ('XCM - X COORDINATE AT INDEX M',-60.)
+      CALL CPSETR ('SPV - SPECIAL VALUE',-9999.)
+      CALL CPRECT (CNTR,JX,JX,KX,RWRK,LRWK,IWRK,LIWK)
+      CALL CPCLDR (CNTR,RWRK,IWRK)
+      CALL LABMOD ('(F5.0)','(F5.0)',0,0,0,0,0,0,0)
+      CALL GRIDAL (5,0,10,0,1,1,5,-110.,1000.)
+      CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL PLCHHQ (.03,.6,'PRESSURE',.012,90.,0.)
+      CALL PLCHHQ (.5,.2,'LONGITUDE',.012,0.,0.)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+      
+      STOP
+      END
       SUBROUTINE CPMPXY(IMAP,XINP,YINP,XOTP,YOTP)
-C
+C 
 C Transform contours to overlay various mapping transformations:
 C IMAP= 0 - Cartesian data: no transformation necessary
 C IMAP= 1 - Lat/Lon transformation
@@ -66,69 +64,85 @@ C IMAP= 3 - height in the X direction
 C IMAP= 4 - Pressure in the X direction
 C IMAP= 5 - height in the X direction
 C IMAP= 6 - Pressure in the X direction
-C
+C 
       PARAMETER(JX=60,KX=26)
-C
+C 
       COMMON /HEIGHT/Z(JX,KX)
-
-C
+C 
 C Handle the EZMAP case ...
-C
+C 
       IF (ABS(IMAP).EQ.1) THEN
-        IF (IMAP.GT.0) THEN
-          CALL MAPTRA (YINP,XINP,XOTP,YOTP)
-        ELSE
-          CALL MAPTRI (XINP,YINP,YOTP,XOTP)
-        END IF
-C
+         IF (IMAP.GT.0) THEN
+            CALL MAPTRA (YINP,XINP,XOTP,YOTP)
+         ELSE
+            CALL MAPTRI (XINP,YINP,YOTP,XOTP)
+         END IF
+C 
 C ... the polar coordinate case ...
-C
+C 
       ELSE IF (ABS(IMAP).EQ.2) THEN
-        IF (IMAP.GT.0) THEN
-          XOTP=XINP*COS(.017453292519943*YINP)
-          YOTP=XINP*SIN(.017453292519943*YINP)
-        ELSE
-          XOTP=SQRT(XINP*XINP+YINP*YINP)
-          YOTP=57.2957795130823*ATAN2(YINP,XINP)
-        END IF
-C
+         IF (IMAP.GT.0) THEN
+            XOTP=XINP*COS(.017453292519943*YINP)
+            YOTP=XINP*SIN(.017453292519943*YINP)
+         ELSE
+            XOTP=SQRT(XINP*XINP+YINP*YINP)
+            YOTP=57.2957795130823*ATAN2(YINP,XINP)
+         END IF
+C 
 C Height & Pressure Data in the X direction
-C
+C 
 C Pressure transformation in the X direction
       ELSEIF(IMAP.EQ.3.OR.IMAP.EQ.4) THEN
+C
 C The height transformation in X direction is linear
-        XOTP = XINP
+C
+         XOTP = XINP
+C
 C Find next lowest X data point & transform it so that it can be
 C used as an array index
-	CALL CPGETR('XC1',XC1)
-        X = XINP-INT(XC1)
+C
+         CALL CPGETR('XC1',XC1)
+         X = XINP-INT(XC1)
+C
 C Distance between next lowest data point and contour point
-        IIX=INT(X)
-        DIFX=X-FLOAT(IIX)
+C
+         IIX=INT(X)
+         DIFX=X-FLOAT(IIX)
+C
 C Find next lowest y data point
-        Y = YINP
+C
+         Y = YINP
+C
 C Distance between next lowest data point and contour point
-        IY=INT(Y)
-        DIFY=Y-FLOAT(IY)
+C
+         IY=INT(Y)
+         DIFY=Y-FLOAT(IY)
+C
 C Find next highest X and Y data points, 
 C and make sure they are in the domain.
-        IXP1 = MIN0(JX,IIX+1)
-        IYP1 = MIN0(KX ,IY+1)
+C
+         IXP1 = MIN0(JX,IIX+1)
+         IYP1 = MIN0(KX ,IY+1)
+C
 C Linear interpolation between points to give height at contour point
-        Z1 = Z(IIX ,IY)+DIFY*(Z(IIX ,IYP1)-Z(IIX ,IY))
-        Z2 = Z(IXP1,IY)+DIFY*(Z(IXP1,IYP1)-Z(IXP1,IY))
-        ZR = Z1 + DIFX*(Z2-Z1)
-        YOTP=ZR
+C
+         Z1 = Z(IIX ,IY)+DIFY*(Z(IIX ,IYP1)-Z(IIX ,IY))
+         Z2 = Z(IXP1,IY)+DIFY*(Z(IXP1,IYP1)-Z(IXP1,IY))
+         ZR = Z1 + DIFX*(Z2-Z1)
+         YOTP=ZR
+C
 C Pressure Data in the X direction
-        IF(IMAP.EQ.4) YOTP = 1000. * EXP(-ZR/7.)
 C
+         IF(IMAP.EQ.4) YOTP = 1000. * EXP(-ZR/7.)
+C 
 C If IMAP isn't specified as above, then do an identity transformation.
-C
+C 
       ELSE
-          XOTP = XINP
-          YOTP = YINP
+         XOTP = XINP
+         YOTP = YINP
       ENDIF
-C
+C 
       RETURN
       END
-
+      
+      
