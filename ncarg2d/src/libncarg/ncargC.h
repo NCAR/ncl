@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.5 1998-05-24 01:16:32 kennison Exp $
+ *  $Id: ncargC.h,v 1.6 1998-06-19 18:12:57 fred Exp $
  */
 
 #ifndef _ncargC_h
@@ -3324,6 +3324,37 @@ extern void c_tddtri(
     int    mtri,
     int   *ntri,
     int   *itwk
+#endif
+);
+
+extern void c_tdez2d(
+#ifdef NeedFuncProto
+    int nx,
+    int ny,
+    float *x,
+    float *y,
+    float *z,
+    float rmult,
+    float theta,
+    float phi,
+    int ist
+#endif
+);
+
+extern void c_tdez3d(
+#ifdef NeedFuncProto
+    int nx,
+    int ny,
+    int nz,
+    float *x,
+    float *y,
+    float *z,
+    float *u,
+    float value,
+    float rmult,
+    float theta,
+    float phi,
+    int ist
 #endif
 );
 
