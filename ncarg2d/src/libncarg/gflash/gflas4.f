@@ -1,5 +1,5 @@
 C
-C	$Id: gflas4.f,v 1.5 2000-08-22 15:04:30 haley Exp $
+C	$Id: gflas4.f,v 1.6 2001-08-22 23:16:12 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -162,7 +162,7 @@ C
       IDR(1) = ' '
       IFID = -1392
       ILEN = LEN(FNAME)
-      IF (ILEN .GT. 57) ILEN = 57
+      IF (ILEN .GT. 57) GO TO 107
       WRITE(IDR(1)( 1:10),500) IFID
       WRITE(IDR(1)(11:20),500) ID
       WRITE(IDR(1)(21:23),501) ICONW
@@ -195,6 +195,10 @@ C
       CALL GECLKS
       CALL SETER(' GFLAS4 -- CANNOT BE CALLED WHILE GFLAS1 IS STILL OPEN
      -',14,2)
+  107 CONTINUE
+      CALL GECLKS
+      CALL SETER(' GFLAS4 -- Maximum length of a file name is 57 charact
+     -ers',15,2)
 C
   500 FORMAT(I10)
   501 FORMAT(I3)
