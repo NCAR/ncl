@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.8 1992-08-27 17:55:03 clyne Exp $
+ *	$Id: misc.c,v 1.9 1992-09-10 21:35:19 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,9 +26,6 @@
 #include <ncarg/c.h>
 #include "ncarg_ras.h"
 
-extern char	*ProgramName;
-
-
 static unsigned long	swaptest = 1;
 
 int
@@ -48,44 +45,6 @@ read_swap(fp, nb, buf, swapflag)
 	
 	return(RAS_OK);
 }
-
-int
-read_decode(fd, nbytes)
-	int	fd;
-	int	nbytes;
-{
-	int		status;
-	unsigned char	buf[4];
-
-	if (nbytes > 4) {
-		(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
-		return(RAS_ERROR);
-	}
-
-	status = read(fd, (char *) buf, nbytes);
-	if (status != nbytes) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-	else {
-		return(char_decode(buf, nbytes));
-	}
-}
-
-int
-char_decode(buf, nbytes)
-	unsigned char	*buf;
-	int		nbytes;
-{
-	int		i;
-	unsigned int	result = 0;
-
-	for(i=0; i<nbytes; i++)
-		result = (result << 8) | buf[i];
-	
-	return(result);
-}
-
 
 /* Swiped from John Clyne */
 
@@ -139,11 +98,9 @@ ImageCount_(name, format)
 	int	rc;
 
 	if ((ras = RasterOpen(name, format)) == (Raster *) NULL) {
-		ESprintf(
-			E_UNKNOWN, "RasterOpen(%s,%s) : %s",
-			name,format,RasterGetError()
-			);
-		return(-1);
+		if (ras == (Raster *) NULL) {
+			return(RAS_ERROR);
+		}
 	}
 
 	count = 0;
@@ -151,10 +108,9 @@ ImageCount_(name, format)
 		count++;
 	}
 	if (rc == RAS_ERROR) {
-		ESprintf(E_UNKNOWN, "RasterRead() : %s", RasterGetError());
-		count = -1;
+		return(rc);
 	}
 
-	RasterClose(ras);
+	(void) RasterClose(ras);
 	return(count);
 }
