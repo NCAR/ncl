@@ -11,13 +11,13 @@ extern int loading;
 extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
-extern FILE *_yyin;
+extern FILE *nclin;
 extern int cmd_line;
-extern int _yylineno;
-int _yywrap() 
+extern int ncllineno;
+int nclwrap() 
 {
 	if(loading) {
-		_yyin = stdin;
+		nclin = stdin;
 		loading = 0;
 /*
 * Yeah I know the loses the pointer but the allocated string must

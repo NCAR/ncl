@@ -8,7 +8,7 @@ typedef union  {
 	struct src_node_list *list;
 	struct ncl_rcl_list *array;
 } YYSTYPE;
-extern YYSTYPE _yylval;
+extern YYSTYPE ncllval;
 # define EOLN 257
 # define RP 258
 # define LP 259

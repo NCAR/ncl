@@ -5,14 +5,13 @@
 */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
+#include "defs.h"
+#include "NclDataDefs.h"
+#include "Symbol.h"
+#include "SrcTree.h"
+#include "Machine.h"
 #include <errno.h>
-#include <Symbol.h>
 #include <ctype.h>
-#include <SrcTree.h>
-#include <Machine.h>
-#include <Execute.h>
 int scopelevel = 0;
 extern int yydebug;
 extern char yytext[];

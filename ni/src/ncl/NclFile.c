@@ -1786,7 +1786,7 @@ struct _NclSelectionRecord * sel_ptr;
 			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL){
-				tmp_att_md = FileReadAtt(thefile,step->the_att->att_name_quark,NULL);
+				tmp_att_md = FileReadVarAtt(thefile,var,step->the_att->att_name_quark,NULL);
 				if(tmp_att_md != NULL) {
 					if(tmp_att_md->obj.status == TEMPORARY){
 						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.19 1994-07-14 20:45:46 ethan Exp $
+ *      $Id: Execute.c,v 1.20 1994-07-18 15:46:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -40,7 +40,7 @@ extern "C" {
 #include "NclMdInc.h"
 #include "OpsList.h"
 #include "OpsFuncs.h"
-#include "y.tab.h"
+#include "parser.h"
 #include <errno.h>
 
 extern int cmd_line;
@@ -2092,9 +2092,8 @@ NclExecuteReturnStatus _NclExecute
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
 					estatus = NhlFATAL;
 				}
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
-					_NclCleanUpStack(1);
+				if(estatus != NhlFATAL) 
+					_NclPush(data);
 			}
 			break;
 			case ASSIGN_VAR_COORD_OP: {

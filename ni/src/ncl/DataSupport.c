@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.1 1994-07-14 20:45:41 ethan Exp $
+ *      $Id: DataSupport.c,v 1.2 1994-07-18 15:46:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
-#include "y.tab.h"
+#include "parser.h"
 #include "OpsList.h"
 
 

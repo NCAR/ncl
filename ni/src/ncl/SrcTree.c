@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.14 1994-07-14 20:47:17 ethan Exp $
+ *      $Id: SrcTree.c,v 1.15 1994-07-18 15:46:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "SrcTree.h"
-#include "y.tab.h"
+#include "parser.h"
 extern int cur_line_number;
 extern char *cur_load_file;
 

@@ -8,7 +8,7 @@ extern  "C" {
 #include "Symbol.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
-#include "y.tab.h"
+#include "parser.h"
 #include "OpsList.h"
 #include "SrcTree.h"
 #include <errno.h>

@@ -10,7 +10,7 @@ extern "C" {
 #include "Machine.h"
 #include <unistd.h>
 
-extern FILE *_yyin;
+extern FILE *nclin;
 FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
@@ -44,7 +44,7 @@ main() {
 
 	if(cmd_line)	
 		fprintf(stdout,"ncl %d> ",0);
-	_yyparse();
+	nclparse();
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclPrintUnfreedObjs(stdout);

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.11 1994-07-15 17:08:21 ethan Exp $
+#      $Id: yMakefile,v 1.12 1994-07-18 15:47:08 ethan Exp $
 #
 #########################################################################
 #									#
@@ -34,8 +34,6 @@ SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
 SYS_LIBS        =       $(CTOFLIBS) -lm 
 #endif
 
-#define IHaveSubdirs
-
 
 
 MYNAME = ncl
@@ -50,7 +48,7 @@ HDRS	= AttSupport.h NclMultiDValfloatData.h DataSupport.h \
 	NclData.h NclVar.h NclDataDefs.h OpsFuncs.h NclFile.h OpsList.h \
 	NclFileInterfaces.h SrcTree.h NclHLUObj.h Symbol.h NclMdInc.h \
 	VarSupport.h NclMultiDValData.h defs.h NclMultiDValHLUObjData.h \
-	y.tab.h NclMultiDValdoubleData.h
+	parser.h NclMultiDValdoubleData.h
 
 
 API_SRCS	= NclApi.c
@@ -68,7 +66,7 @@ SRCS	= AddBuiltIns.c AddFileFormats.c AddHLUObjs.c AddIntrinsics.c \
 	NclMultiDVallogicalData.c NclMultiDVallongData.c \
 	NclMultiDValnclfileData.c NclMultiDValshortData.c \
 	NclMultiDValstringData.c NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c \
-	SrcTree.c Symbol.c Translate.c VarSupport.c lex.yy.c y.tab.c yywrap.c
+	SrcTree.c Symbol.c Translate.c VarSupport.c scaner.c parser.c yywrap.c
 
 
 API_OBJS	= NclApi.o
@@ -82,7 +80,7 @@ OBJS	= AddBuiltIns.o AddFileFormats.o AddHLUObjs.o AddIntrinsics.o \
 	NclMultiDVallogicalData.o NclMultiDVallongData.o \
 	NclMultiDValnclfileData.o NclMultiDValshortData.o \
 	NclMultiDValstringData.o NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o \
-	SrcTree.o Symbol.o Translate.o VarSupport.o lex.yy.o y.tab.o yywrap.o
+	SrcTree.o Symbol.o Translate.o VarSupport.o scaner.o parser.o yywrap.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)
@@ -95,10 +93,10 @@ DependTarget($(EXESRCS))
 ncl:: $(EXEOBJS) $(DEPLIBS)
 	$(CC_LD) $(CC_LDOPTIONS) -o ncl $(EXEOBJS) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)
 InstallTarget(ncl, $(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget(ncl $(ALLOBJS) y.tab.c y.tab.h lex.yy.c)
+CleanFilesTarget(ncl $(ALLOBJS) parser.c parser.h scaner.c)
 
 libncl.a::
-	-$(RM) $(APIOBJS) y.tab.h y.tab.c lex.yy.c
+	-$(RM) $(APIOBJS) parser.h parser.c scaner.c
 	$(YACC) -d -t -v ncl.y
 	$(LEX) ncl.l
 	$(CC_LD) $(CC_LDOPTIONS) -c $(TOP_INCLUDES) -DMAKE_API $(APISRCS)
@@ -119,12 +117,12 @@ y.tab.c: ncl.y
 y.tab.h: ncl.y
 	$(YACC) -d -t -v ncl.y
 
-Ncl.c: y.tab.h
+Ncl.c: parser.h
 
-Printtoken.c: y.tab.h
+Printtoken.c: parser.h
 
-SrcTree.c: y.tab.h
+SrcTree.c: parser.h
 
-Translate.c: y.tab.h
+Translate.c: parser.h
 
-yywrap.c: y.tab.h
+yywrap.c: parser.h

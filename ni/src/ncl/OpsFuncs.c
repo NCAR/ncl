@@ -14,7 +14,7 @@ extern "C" {
 #include "VarSupport.h"
 #include "NclMdInc.h"
 #include "NclHLUObj.h"
-#include "y.tab.h"
+#include "parser.h"
 #include "OpsList.h"
 
 NhlErrorTypes _NclIAddFile
@@ -875,6 +875,8 @@ int operation;
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
 		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,(NclObj*)&(result->u.data_obj));
+		if(result->u.data_obj != NULL)
+			result->kind = NclStk_VAL;
 	} else {
 		return(NhlFATAL);
 	}
@@ -917,6 +919,8 @@ int operation;
         }
 
 	ret = _NclCallMonoOp(operand_md,(NclObj*)&(result->u.data_obj),operation);
+	if(result->u.data_obj != NULL)
+		result->kind = NclStk_VAL;
 
 	if(operand_md->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)operand_md);

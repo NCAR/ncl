@@ -15,9 +15,9 @@ extern char *malloc(), *realloc();
 #include <errno.h>
 #include <ctype.h>
 int scopelevel = 0;
-extern int _yydebug;
+extern int yydebug;
 extern char yytext[];
-extern int _yylineno;
+extern int yylineno;
 extern FILE *thefptr;
 extern FILE *theoptr;
 extern int cmd_line;
@@ -28,30 +28,30 @@ extern char cur_line_text[512];
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
-
+/*
+extern int _NclTranslate(
+#ifdef NhlNeedProto
+void*,   
+FILE* 
+#endif
+);
+*/
 extern void _NclTransTerminate(
 #ifdef NhlNeedProto
 void
 #endif
 );
 
-extern int _NclTranslate(
-#ifdef NhlNeedProto 
-void *,
-FILE *
-#endif
-);
-
 extern int rec; 
 extern FILE* recfp;
-extern FILE* _yyin;
+extern FILE* yyin;
 
 int loading = 0;
 int top_level_line;
 char *cur_load_file = NULL;
 
 
-# line 40 "ncl.y"
+# line 52 "ncl.y"
 typedef union  {
 	int integer;
 	double real;
@@ -146,19 +146,19 @@ typedef union  {
 # define NE 339
 # define UNOP 340
 # define NOT 341
-#define _yyclearin _yychar = -1
-#define _yyerrok _yyerrflag = 0
-extern int _yychar;
-extern int _yyerrflag;
+#define yyclearin yychar = -1
+#define yyerrok yyerrflag = 0
+extern int yychar;
+extern int yyerrflag;
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 150
 #endif
-YYSTYPE _yylval, _yyval;
+YYSTYPE yylval, yyval;
 # define YYERRCODE 256
 
-# line 1571 "ncl.y"
+# line 1583 "ncl.y"
 
-_yyerror
+yyerror
 #if __STDC__
 (char *s)
 #else 
@@ -204,7 +204,7 @@ _yyerror
 	}
 	return(0);
 }
-int _yyexca[] ={
+int yyexca[] ={
 -1, 0,
 	257, 16,
 	-2, 0,
@@ -276,7 +276,7 @@ int _yyexca[] ={
 	};
 # define YYNPROD 226
 # define YYLAST 2054
-int _yyact[]={
+int yyact[]={
 
    181,     9,   374,    59,    18,    18,   157,     2,    44,   342,
    333,   321,    62,   320,   365,    51,   146,   386,   272,   385,
@@ -484,7 +484,7 @@ int _yyact[]={
      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
      0,     0,     0,     0,     0,     0,     0,     0,   122,   121,
    123,   120,   124,   125 };
-int _yypact[]={
+int yypact[]={
 
   1422,  1378,    59,   -67,   -70, -1000, -1000, -1000, -1000, -1000,
  -1000, -1000, -1000, -1000,   678, -1000, -1000,  -305,   272,     5,
@@ -527,7 +527,7 @@ int _yypact[]={
   -274,  -275, -1000,  1140,    96, -1000, -1000,  -143, -1000, -1000,
   -230,   225, -1000, -1000, -1000, -1000, -1000, -1000, -1000,  -250,
   -250, -1000,  -261, -1000, -1000,  -237, -1000 };
-int _yypgo[]={
+int yypgo[]={
 
      0,   321,     6,   397,   393,   392,   390,     1,   388,   387,
    386,   385,   383,     3,     0,   381,   324,   379,   377,    33,
@@ -535,7 +535,7 @@ int _yypgo[]={
    328,   371,     2,   223,   370,   360,   322,   349,   147,    16,
     22,   340,   337,    46,    18,   347,    14,   344,   339,   338,
    336 };
-int _yyr1[]={
+int yyr1[]={
 
      0,    11,    11,    11,    11,    11,    11,    28,    28,    28,
     28,    28,    28,    44,    44,    43,     2,     2,     2,     2,
@@ -560,7 +560,7 @@ int _yyr1[]={
     14,    14,    14,    14,    14,    21,    21,    21,    21,    21,
     21,    21,    21,    21,    21,    22,    22,    22,    22,    22,
     22,    22,    22,    23,     1,     1 };
-int _yyr2[]={
+int yyr2[]={
 
      0,     5,     7,     9,     7,     7,     9,     5,     7,     9,
      7,     7,     9,     1,     3,     3,     1,     3,     3,     3,
@@ -585,7 +585,7 @@ int _yyr2[]={
      7,     7,     7,     7,     7,     3,     3,     3,     3,     3,
      3,     3,     7,    17,    13,     5,     5,     5,     5,     3,
      3,     3,     3,     7,     3,     7 };
-int _yychk[]={
+int yychk[]={
 
  -1000,   -11,    -2,   326,   322,    -3,    -4,    -5,    -6,    -7,
     -8,    -9,   -17,   -10,   320,   295,   256,   330,   -13,   299,
@@ -628,7 +628,7 @@ int _yychk[]={
    304,   304,   260,   -14,   -14,   327,   327,    44,   -44,   -44,
    304,   -14,   310,   310,   310,   310,   258,   -40,   -39,   -48,
    -49,   294,   -32,    -7,    -7,   304,   294 };
-int _yydef[]={
+int yydef[]={
 
     -2,    -2,     0,     0,     0,    17,    18,    19,    20,    21,
     22,    23,    24,    25,     0,    27,    28,     0,     0,    75,
@@ -671,14 +671,14 @@ int _yydef[]={
      0,     0,   166,   179,     0,    44,    45,     0,    91,   131,
      0,    -2,    33,    37,    35,    36,   213,    87,    88,     0,
      0,    65,     0,    92,   132,     0,    66 };
-typedef struct { char *t_name; int t_val; } _yytoktype;
+typedef struct { char *t_name; int t_val; } yytoktype;
 #ifndef YYDEBUG
 #	define YYDEBUG	1	/* allow debugging */
 #endif
 
 #if YYDEBUG
 
-_yytoktype _yytoks[] =
+yytoktype yytoks[] =
 {
 	"EOLN",	257,
 	"RP",	258,
@@ -779,7 +779,7 @@ _yytoktype _yytoks[] =
 	"-unknown-",	-1	/* ends search */
 };
 
-char * _yyreds[] =
+char * yyreds[] =
 {
 	"-no such reduction-",
 	"statement_list : statement eoln",
@@ -1019,22 +1019,22 @@ char * _yyreds[] =
 /*
 ** yacc user known macros and defines
 */
-#define YYERROR		goto _yyerrlab
-#define YYACCEPT	{ free(_yys); free(_yyv); return(0); }
-#define YYABORT		{ free(_yys); free(_yyv); return(1); }
+#define YYERROR		goto yyerrlab
+#define YYACCEPT	{ free(yys); free(yyv); return(0); }
+#define YYABORT		{ free(yys); free(yyv); return(1); }
 #define YYBACKUP( newtoken, newvalue )\
 {\
-	if ( _yychar >= 0 || ( _yyr2[ _yytmp ] >> 1 ) != 1 )\
+	if ( yychar >= 0 || ( yyr2[ yytmp ] >> 1 ) != 1 )\
 	{\
-		_yyerror( "syntax error - cannot backup" );\
-		goto _yyerrlab;\
+		yyerror( "syntax error - cannot backup" );\
+		goto yyerrlab;\
 	}\
-	_yychar = newtoken;\
-	_yystate = *_yyps;\
-	_yylval = newvalue;\
-	goto _yynewstate;\
+	yychar = newtoken;\
+	yystate = *yyps;\
+	yylval = newvalue;\
+	goto yynewstate;\
 }
-#define YYRECOVERING()	(!!_yyerrflag)
+#define YYRECOVERING()	(!!yyerrflag)
 #ifndef YYDEBUG
 #	define YYDEBUG	1	/* make debugging available */
 #endif
@@ -1042,7 +1042,7 @@ char * _yyreds[] =
 /*
 ** user known globals
 */
-int _yydebug;			/* set to 1 to get debugging */
+int yydebug;			/* set to 1 to get debugging */
 
 /*
 ** driver internal defines
@@ -1052,78 +1052,78 @@ int _yydebug;			/* set to 1 to get debugging */
 /*
 ** static variables used by the parser
 */
-static YYSTYPE *_yyv;			/* value stack */
-static int *_yys;			/* state stack */
+static YYSTYPE *yyv;			/* value stack */
+static int *yys;			/* state stack */
 
-static YYSTYPE *_yypv;			/* top of value stack */
-static int *_yyps;			/* top of state stack */
+static YYSTYPE *yypv;			/* top of value stack */
+static int *yyps;			/* top of state stack */
 
-static int _yystate;			/* current state */
-static int _yytmp;			/* extra var (lasts between blocks) */
+static int yystate;			/* current state */
+static int yytmp;			/* extra var (lasts between blocks) */
 
-int _yynerrs;			/* number of errors */
+int yynerrs;			/* number of errors */
 
-int _yyerrflag;			/* error recovery flag */
-int _yychar;			/* current input token number */
+int yyerrflag;			/* error recovery flag */
+int yychar;			/* current input token number */
 
 
 /*
-** _yyparse - return 0 if worked, 1 if syntax error not recovered from
+** yyparse - return 0 if worked, 1 if syntax error not recovered from
 */
 int
-_yyparse()
+yyparse()
 {
-	register YYSTYPE *_yypvt;	/* top of value stack for $vars */
-	unsigned _yymaxdepth = YYMAXDEPTH;
+	register YYSTYPE *yypvt;	/* top of value stack for $vars */
+	unsigned yymaxdepth = YYMAXDEPTH;
 
 	/*
-	** Initialize externals - _yyparse may be called more than once
+	** Initialize externals - yyparse may be called more than once
 	*/
-	_yyv = (YYSTYPE*)malloc(_yymaxdepth*sizeof(YYSTYPE));
-	_yys = (int*)malloc(_yymaxdepth*sizeof(int));
-	if (!_yyv || !_yys)
+	yyv = (YYSTYPE*)malloc(yymaxdepth*sizeof(YYSTYPE));
+	yys = (int*)malloc(yymaxdepth*sizeof(int));
+	if (!yyv || !yys)
 	{
-		_yyerror( "out of memory" );
+		yyerror( "out of memory" );
 		return(1);
 	}
-	_yypv = &_yyv[-1];
-	_yyps = &_yys[-1];
-	_yystate = 0;
-	_yytmp = 0;
-	_yynerrs = 0;
-	_yyerrflag = 0;
-	_yychar = -1;
+	yypv = &yyv[-1];
+	yyps = &yys[-1];
+	yystate = 0;
+	yytmp = 0;
+	yynerrs = 0;
+	yyerrflag = 0;
+	yychar = -1;
 
-	goto _yystack;
+	goto yystack;
 	{
-		register YYSTYPE *_yy_pv;	/* top of value stack */
-		register int *_yy_ps;		/* top of state stack */
-		register int _yy_state;		/* current state */
-		register int  _yy_n;		/* internal state number info */
+		register YYSTYPE *yy_pv;	/* top of value stack */
+		register int *yy_ps;		/* top of state stack */
+		register int yy_state;		/* current state */
+		register int  yy_n;		/* internal state number info */
 
 		/*
 		** get globals into registers.
 		** branch to here only if YYBACKUP was called.
 		*/
-	_yynewstate:
-		_yy_pv = _yypv;
-		_yy_ps = _yyps;
-		_yy_state = _yystate;
-		goto _yy_newstate;
+	yynewstate:
+		yy_pv = yypv;
+		yy_ps = yyps;
+		yy_state = yystate;
+		goto yy_newstate;
 
 		/*
 		** get globals into registers.
 		** either we just started, or we just finished a reduction
 		*/
-	_yystack:
-		_yy_pv = _yypv;
-		_yy_ps = _yyps;
-		_yy_state = _yystate;
+	yystack:
+		yy_pv = yypv;
+		yy_ps = yyps;
+		yy_state = yystate;
 
 		/*
 		** top of for (;;) loop while no reductions done
 		*/
-	_yy_stack:
+	yy_stack:
 		/*
 		** put a state and value onto the stacks
 		*/
@@ -1134,132 +1134,132 @@ _yyparse()
 		** Note: linear search is used since time is not a real
 		** consideration while debugging.
 		*/
-		if ( _yydebug )
+		if ( yydebug )
 		{
-			register int _yy_i;
+			register int yy_i;
 
-			(void)printf( "State %d, token ", _yy_state );
-			if ( _yychar == 0 )
+			(void)printf( "State %d, token ", yy_state );
+			if ( yychar == 0 )
 				(void)printf( "end-of-file\n" );
-			else if ( _yychar < 0 )
+			else if ( yychar < 0 )
 				(void)printf( "-none-\n" );
 			else
 			{
-				for ( _yy_i = 0; _yytoks[_yy_i].t_val >= 0;
-					_yy_i++ )
+				for ( yy_i = 0; yytoks[yy_i].t_val >= 0;
+					yy_i++ )
 				{
-					if ( _yytoks[_yy_i].t_val == _yychar )
+					if ( yytoks[yy_i].t_val == yychar )
 						break;
 				}
-				(void)printf( "%s\n", _yytoks[_yy_i].t_name );
+				(void)printf( "%s\n", yytoks[yy_i].t_name );
 			}
 		}
 #endif /* YYDEBUG */
-		if ( ++_yy_ps >= &_yys[ _yymaxdepth ] )	/* room on stack? */
+		if ( ++yy_ps >= &yys[ yymaxdepth ] )	/* room on stack? */
 		{
 			/*
 			** reallocate and recover.  Note that pointers
 			** have to be reset, or bad things will happen
 			*/
-			int _yyps_index = (_yy_ps - _yys);
-			int _yypv_index = (_yy_pv - _yyv);
-			int _yypvt_index = (_yypvt - _yyv);
-			_yymaxdepth += YYMAXDEPTH;
-			_yyv = (YYSTYPE*)realloc((char*)_yyv,
-				_yymaxdepth * sizeof(YYSTYPE));
-			_yys = (int*)realloc((char*)_yys,
-				_yymaxdepth * sizeof(int));
-			if (!_yyv || !_yys)
+			int yyps_index = (yy_ps - yys);
+			int yypv_index = (yy_pv - yyv);
+			int yypvt_index = (yypvt - yyv);
+			yymaxdepth += YYMAXDEPTH;
+			yyv = (YYSTYPE*)realloc((char*)yyv,
+				yymaxdepth * sizeof(YYSTYPE));
+			yys = (int*)realloc((char*)yys,
+				yymaxdepth * sizeof(int));
+			if (!yyv || !yys)
 			{
-				_yyerror( "yacc stack overflow" );
+				yyerror( "yacc stack overflow" );
 				return(1);
 			}
-			_yy_ps = _yys + _yyps_index;
-			_yy_pv = _yyv + _yypv_index;
-			_yypvt = _yyv + _yypvt_index;
+			yy_ps = yys + yyps_index;
+			yy_pv = yyv + yypv_index;
+			yypvt = yyv + yypvt_index;
 		}
-		*_yy_ps = _yy_state;
-		*++_yy_pv = _yyval;
+		*yy_ps = yy_state;
+		*++yy_pv = yyval;
 
 		/*
 		** we have a new state - find out what to do
 		*/
-	_yy_newstate:
-		if ( ( _yy_n = _yypact[ _yy_state ] ) <= YYFLAG )
-			goto _yydefault;		/* simple state */
+	yy_newstate:
+		if ( ( yy_n = yypact[ yy_state ] ) <= YYFLAG )
+			goto yydefault;		/* simple state */
 #if YYDEBUG
 		/*
 		** if debugging, need to mark whether new token grabbed
 		*/
-		_yytmp = _yychar < 0;
+		yytmp = yychar < 0;
 #endif
-		if ( ( _yychar < 0 ) && ( ( _yychar = _yylex() ) < 0 ) )
-			_yychar = 0;		/* reached EOF */
+		if ( ( yychar < 0 ) && ( ( yychar = yylex() ) < 0 ) )
+			yychar = 0;		/* reached EOF */
 #if YYDEBUG
-		if ( _yydebug && _yytmp )
+		if ( yydebug && yytmp )
 		{
-			register int _yy_i;
+			register int yy_i;
 
 			(void)printf( "Received token " );
-			if ( _yychar == 0 )
+			if ( yychar == 0 )
 				(void)printf( "end-of-file\n" );
-			else if ( _yychar < 0 )
+			else if ( yychar < 0 )
 				(void)printf( "-none-\n" );
 			else
 			{
-				for ( _yy_i = 0; _yytoks[_yy_i].t_val >= 0;
-					_yy_i++ )
+				for ( yy_i = 0; yytoks[yy_i].t_val >= 0;
+					yy_i++ )
 				{
-					if ( _yytoks[_yy_i].t_val == _yychar )
+					if ( yytoks[yy_i].t_val == yychar )
 						break;
 				}
-				(void)printf( "%s\n", _yytoks[_yy_i].t_name );
+				(void)printf( "%s\n", yytoks[yy_i].t_name );
 			}
 		}
 #endif /* YYDEBUG */
-		if ( ( ( _yy_n += _yychar ) < 0 ) || ( _yy_n >= YYLAST ) )
-			goto _yydefault;
-		if ( _yychk[ _yy_n = _yyact[ _yy_n ] ] == _yychar )	/*valid shift*/
+		if ( ( ( yy_n += yychar ) < 0 ) || ( yy_n >= YYLAST ) )
+			goto yydefault;
+		if ( yychk[ yy_n = yyact[ yy_n ] ] == yychar )	/*valid shift*/
 		{
-			_yychar = -1;
-			_yyval = _yylval;
-			_yy_state = _yy_n;
-			if ( _yyerrflag > 0 )
-				_yyerrflag--;
-			goto _yy_stack;
+			yychar = -1;
+			yyval = yylval;
+			yy_state = yy_n;
+			if ( yyerrflag > 0 )
+				yyerrflag--;
+			goto yy_stack;
 		}
 
-	_yydefault:
-		if ( ( _yy_n = _yydef[ _yy_state ] ) == -2 )
+	yydefault:
+		if ( ( yy_n = yydef[ yy_state ] ) == -2 )
 		{
 #if YYDEBUG
-			_yytmp = _yychar < 0;
+			yytmp = yychar < 0;
 #endif
-			if ( ( _yychar < 0 ) && ( ( _yychar = _yylex() ) < 0 ) )
-				_yychar = 0;		/* reached EOF */
+			if ( ( yychar < 0 ) && ( ( yychar = yylex() ) < 0 ) )
+				yychar = 0;		/* reached EOF */
 #if YYDEBUG
-			if ( _yydebug && _yytmp )
+			if ( yydebug && yytmp )
 			{
-				register int _yy_i;
+				register int yy_i;
 
 				(void)printf( "Received token " );
-				if ( _yychar == 0 )
+				if ( yychar == 0 )
 					(void)printf( "end-of-file\n" );
-				else if ( _yychar < 0 )
+				else if ( yychar < 0 )
 					(void)printf( "-none-\n" );
 				else
 				{
-					for ( _yy_i = 0;
-						_yytoks[_yy_i].t_val >= 0;
-						_yy_i++ )
+					for ( yy_i = 0;
+						yytoks[yy_i].t_val >= 0;
+						yy_i++ )
 					{
-						if ( _yytoks[_yy_i].t_val
-							== _yychar )
+						if ( yytoks[yy_i].t_val
+							== yychar )
 						{
 							break;
 						}
 					}
-					(void)printf( "%s\n", _yytoks[_yy_i].t_name );
+					(void)printf( "%s\n", yytoks[yy_i].t_name );
 				}
 			}
 #endif /* YYDEBUG */
@@ -1267,17 +1267,17 @@ _yyparse()
 			** look through exception table
 			*/
 			{
-				register int *_yyxi = _yyexca;
+				register int *yyxi = yyexca;
 
-				while ( ( *_yyxi != -1 ) ||
-					( _yyxi[1] != _yy_state ) )
+				while ( ( *yyxi != -1 ) ||
+					( yyxi[1] != yy_state ) )
 				{
-					_yyxi += 2;
+					yyxi += 2;
 				}
-				while ( ( *(_yyxi += 2) >= 0 ) &&
-					( *_yyxi != _yychar ) )
+				while ( ( *(yyxi += 2) >= 0 ) &&
+					( *yyxi != yychar ) )
 					;
-				if ( ( _yy_n = _yyxi[1] ) < 0 )
+				if ( ( yy_n = yyxi[1] ) < 0 )
 					YYACCEPT;
 			}
 		}
@@ -1285,42 +1285,42 @@ _yyparse()
 		/*
 		** check for syntax error
 		*/
-		if ( _yy_n == 0 )	/* have an error */
+		if ( yy_n == 0 )	/* have an error */
 		{
 			/* no worry about speed here! */
-			switch ( _yyerrflag )
+			switch ( yyerrflag )
 			{
 			case 0:		/* new error */
-				_yyerror( "syntax error" );
+				yyerror( "syntax error" );
 				goto skip_init;
-			_yyerrlab:
+			yyerrlab:
 				/*
 				** get globals into registers.
 				** we have a user generated syntax type error
 				*/
-				_yy_pv = _yypv;
-				_yy_ps = _yyps;
-				_yy_state = _yystate;
-				_yynerrs++;
+				yy_pv = yypv;
+				yy_ps = yyps;
+				yy_state = yystate;
+				yynerrs++;
 			skip_init:
 			case 1:
 			case 2:		/* incompletely recovered error */
 					/* try again... */
-				_yyerrflag = 3;
+				yyerrflag = 3;
 				/*
 				** find state where "error" is a legal
 				** shift action
 				*/
-				while ( _yy_ps >= _yys )
+				while ( yy_ps >= yys )
 				{
-					_yy_n = _yypact[ *_yy_ps ] + YYERRCODE;
-					if ( _yy_n >= 0 && _yy_n < YYLAST &&
-						_yychk[_yyact[_yy_n]] == YYERRCODE)					{
+					yy_n = yypact[ *yy_ps ] + YYERRCODE;
+					if ( yy_n >= 0 && yy_n < YYLAST &&
+						yychk[yyact[yy_n]] == YYERRCODE)					{
 						/*
 						** simulate shift of "error"
 						*/
-						_yy_state = _yyact[ _yy_n ];
-						goto _yy_stack;
+						yy_state = yyact[ yy_n ];
+						goto yy_stack;
 					}
 					/*
 					** current state has no shift on
@@ -1328,13 +1328,13 @@ _yyparse()
 					*/
 #if YYDEBUG
 #	define _POP_ "Error recovery pops state %d, uncovers state %d\n"
-					if ( _yydebug )
-						(void)printf( _POP_, *_yy_ps,
-							_yy_ps[-1] );
+					if ( yydebug )
+						(void)printf( _POP_, *yy_ps,
+							yy_ps[-1] );
 #	undef _POP_
 #endif
-					_yy_ps--;
-					_yy_pv--;
+					yy_ps--;
+					yy_pv--;
 				}
 				/*
 				** there is no state on stack with "error" as
@@ -1350,40 +1350,40 @@ _yyparse()
 				** debugging, it doesn't hurt to leave the
 				** tests here.
 				*/
-				if ( _yydebug )
+				if ( yydebug )
 				{
-					register int _yy_i;
+					register int yy_i;
 
 					(void)printf( "Error recovery discards " );
-					if ( _yychar == 0 )
+					if ( yychar == 0 )
 						(void)printf( "token end-of-file\n" );
-					else if ( _yychar < 0 )
+					else if ( yychar < 0 )
 						(void)printf( "token -none-\n" );
 					else
 					{
-						for ( _yy_i = 0;
-							_yytoks[_yy_i].t_val >= 0;
-							_yy_i++ )
+						for ( yy_i = 0;
+							yytoks[yy_i].t_val >= 0;
+							yy_i++ )
 						{
-							if ( _yytoks[_yy_i].t_val
-								== _yychar )
+							if ( yytoks[yy_i].t_val
+								== yychar )
 							{
 								break;
 							}
 						}
 						(void)printf( "token %s\n",
-							_yytoks[_yy_i].t_name );
+							yytoks[yy_i].t_name );
 					}
 				}
 #endif /* YYDEBUG */
-				if ( _yychar == 0 )	/* reached EOF. quit */
+				if ( yychar == 0 )	/* reached EOF. quit */
 					YYABORT;
-				_yychar = -1;
-				goto _yy_newstate;
+				yychar = -1;
+				goto yy_newstate;
 			}
-		}/* end if ( _yy_n == 0 ) */
+		}/* end if ( yy_n == 0 ) */
 		/*
-		** reduction by production _yy_n
+		** reduction by production yy_n
 		** put stack tops, etc. so things right after switch
 		*/
 #if YYDEBUG
@@ -1392,71 +1392,71 @@ _yyparse()
 		** specification of the reduction which is just about
 		** to be done.
 		*/
-		if ( _yydebug )
+		if ( yydebug )
 			(void)printf( "Reduce by (%d) \"%s\"\n",
-				_yy_n, _yyreds[ _yy_n ] );
+				yy_n, yyreds[ yy_n ] );
 #endif
-		_yytmp = _yy_n;			/* value to switch over */
-		_yypvt = _yy_pv;			/* $vars top of value stack */
+		yytmp = yy_n;			/* value to switch over */
+		yypvt = yy_pv;			/* $vars top of value stack */
 		/*
 		** Look in goto table for next state
-		** Sorry about using _yy_state here as temporary
+		** Sorry about using yy_state here as temporary
 		** register variable, but why not, if it works...
-		** If _yyr2[ _yy_n ] doesn't have the low order bit
+		** If yyr2[ yy_n ] doesn't have the low order bit
 		** set, then there is no action to be done for
 		** this reduction.  So, no saving & unsaving of
 		** registers done.  The only difference between the
 		** code just after the if and the body of the if is
-		** the goto _yy_stack in the body.  This way the test
+		** the goto yy_stack in the body.  This way the test
 		** can be made before the choice of what to do is needed.
 		*/
 		{
 			/* length of production doubled with extra bit */
-			register int _yy_len = _yyr2[ _yy_n ];
+			register int yy_len = yyr2[ yy_n ];
 
-			if ( !( _yy_len & 01 ) )
+			if ( !( yy_len & 01 ) )
 			{
-				_yy_len >>= 1;
-				_yyval = ( _yy_pv -= _yy_len )[1];	/* $$ = $1 */
-				_yy_state = _yypgo[ _yy_n = _yyr1[ _yy_n ] ] +
-					*( _yy_ps -= _yy_len ) + 1;
-				if ( _yy_state >= YYLAST ||
-					_yychk[ _yy_state =
-					_yyact[ _yy_state ] ] != -_yy_n )
+				yy_len >>= 1;
+				yyval = ( yy_pv -= yy_len )[1];	/* $$ = $1 */
+				yy_state = yypgo[ yy_n = yyr1[ yy_n ] ] +
+					*( yy_ps -= yy_len ) + 1;
+				if ( yy_state >= YYLAST ||
+					yychk[ yy_state =
+					yyact[ yy_state ] ] != -yy_n )
 				{
-					_yy_state = _yyact[ _yypgo[ _yy_n ] ];
+					yy_state = yyact[ yypgo[ yy_n ] ];
 				}
-				goto _yy_stack;
+				goto yy_stack;
 			}
-			_yy_len >>= 1;
-			_yyval = ( _yy_pv -= _yy_len )[1];	/* $$ = $1 */
-			_yy_state = _yypgo[ _yy_n = _yyr1[ _yy_n ] ] +
-				*( _yy_ps -= _yy_len ) + 1;
-			if ( _yy_state >= YYLAST ||
-				_yychk[ _yy_state = _yyact[ _yy_state ] ] != -_yy_n )
+			yy_len >>= 1;
+			yyval = ( yy_pv -= yy_len )[1];	/* $$ = $1 */
+			yy_state = yypgo[ yy_n = yyr1[ yy_n ] ] +
+				*( yy_ps -= yy_len ) + 1;
+			if ( yy_state >= YYLAST ||
+				yychk[ yy_state = yyact[ yy_state ] ] != -yy_n )
 			{
-				_yy_state = _yyact[ _yypgo[ _yy_n ] ];
+				yy_state = yyact[ yypgo[ yy_n ] ];
 			}
 		}
 					/* save until reenter driver code */
-		_yystate = _yy_state;
-		_yyps = _yy_ps;
-		_yypv = _yy_pv;
+		yystate = yy_state;
+		yyps = yy_ps;
+		yypv = yy_pv;
 	}
 	/*
 	** code supplied by user is placed in this switch
 	*/
-	switch( _yytmp )
+	switch( yytmp )
 	{
 		
 case 1:
-# line 104 "ncl.y"
+# line 116 "ncl.y"
 {	
 								int strt;
 
-								if((_yypvt[-1].src_node != NULL)&&!(is_error)) {
-									_NclPrintTree(_yypvt[-1].src_node,thefptr);
-									strt = _NclTranslate(_yypvt[-1].src_node,thefptr);
+								if((yypvt[-1].src_node != NULL)&&!(is_error)) {
+									_NclPrintTree(yypvt[-1].src_node,thefptr);
+									strt = _NclTranslate(yypvt[-1].src_node,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
 									_NclExecute(strt);
@@ -1478,13 +1478,13 @@ case 1:
 								}
 							} break;
 case 2:
-# line 130 "ncl.y"
+# line 142 "ncl.y"
 {		
 								int strt;
 
-								if((_yypvt[-1].src_node != NULL) && !(is_error)) {
-									_NclPrintTree(_yypvt[-1].src_node,thefptr);
-									strt = _NclTranslate(_yypvt[-1].src_node,thefptr);
+								if((yypvt[-1].src_node != NULL) && !(is_error)) {
+									_NclPrintTree(yypvt[-1].src_node,thefptr);
+									strt = _NclTranslate(yypvt[-1].src_node,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
 									_NclExecute(strt);
@@ -1505,13 +1505,13 @@ case 2:
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 							} break;
 case 3:
-# line 155 "ncl.y"
+# line 167 "ncl.y"
 { 
 /*
 * These record statments have to occur here so that the record command isn't written out
 * by the scanner. The scanner writes each line when an EOLN is scanned.
 */
-								recfp = fopen(_NhlResolvePath(_yypvt[-1].str),"w"); 
+								recfp = fopen(_NhlResolvePath(yypvt[-1].str),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -1525,9 +1525,9 @@ case 3:
 #endif 
 							} break;
 case 4:
-# line 173 "ncl.y"
+# line 185 "ncl.y"
 { 
-								recfp = fopen(_NhlResolvePath(_yypvt[-1].str),"w"); 
+								recfp = fopen(_NhlResolvePath(yypvt[-1].str),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -1542,7 +1542,7 @@ case 4:
 #endif 
 							} break;
 case 5:
-# line 193 "ncl.y"
+# line 205 "ncl.y"
 {
 #ifndef MAKEAPI
 								FILE *tmp_file;
@@ -1551,17 +1551,17 @@ case 5:
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NhlResolvePath(_yypvt[-1].str),"r");	
+									tmp_file = fopen(_NhlResolvePath(yypvt[-1].str),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
-										_yyin = tmp_file;
+										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen(_yypvt[-1].str)+1);
-										strcpy(cur_load_file,_yypvt[-1].str);
+										cur_load_file = (char*)NclMalloc((unsigned)strlen(yypvt[-1].str)+1);
+										strcpy(cur_load_file,yypvt[-1].str);
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",_yypvt[-1].str);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",yypvt[-1].str);
 										loading = 0;
 									}
 								}
@@ -1570,7 +1570,7 @@ case 5:
 								}
 							} break;
 case 6:
-# line 219 "ncl.y"
+# line 231 "ncl.y"
 {
 								FILE *tmp_file;
 	
@@ -1578,17 +1578,17 @@ case 6:
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NhlResolvePath(_yypvt[-1].str),"r");	
+									tmp_file = fopen(_NhlResolvePath(yypvt[-1].str),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
-										_yyin = tmp_file;
+										yyin = tmp_file;
 										loading = 1;
-										cur_load_file = (char*)NclMalloc(strlen((char*)_yypvt[-1].str)+1);
+										cur_load_file = (char*)NclMalloc(strlen((char*)yypvt[-1].str)+1);
 										cmd_line = isatty(fileno(tmp_file));
-										strcpy(cur_load_file,_yypvt[-1].str);
+										strcpy(cur_load_file,yypvt[-1].str);
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",_yypvt[-1].str);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",yypvt[-1].str);
 										loading = 0;
 									}
 								}
@@ -1598,7 +1598,7 @@ case 6:
 #endif
 							} break;
 case 7:
-# line 247 "ncl.y"
+# line 259 "ncl.y"
 { 	
 								
 								if(cmd_line) {
@@ -1610,21 +1610,21 @@ case 7:
 									}
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
-								if(_yypvt[-1].src_node != NULL) {
-									_yyval.list = _NclMakeNewListNode();
-									_yyval.list->next = NULL;
-									_yyval.list->node = _yypvt[-1].src_node;
+								if(yypvt[-1].src_node != NULL) {
+									yyval.list = _NclMakeNewListNode();
+									yyval.list->next = NULL;
+									yyval.list->node = yypvt[-1].src_node;
 /*
 									$$->next = _NclMakeNewListNode();
 									$$->next->node = $2;
 									$$->next->next = NULL;
 */
 								} else {
-									_yyval.list = NULL;
+									yyval.list = NULL;
 								}
 							} break;
 case 8:
-# line 271 "ncl.y"
+# line 283 "ncl.y"
 {	
 /*
 * This looping is necessary because ordering needs to be maintained for statement_lists
@@ -1639,21 +1639,21 @@ case 8:
 									}
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
-								if(_yypvt[-2].list == NULL) {
-									if(_yypvt[-1].src_node != NULL) {
-										_yyval.list = _NclMakeNewListNode();
-										_yyval.list->next = NULL;
-										_yyval.list->node = _yypvt[-1].src_node;
+								if(yypvt[-2].list == NULL) {
+									if(yypvt[-1].src_node != NULL) {
+										yyval.list = _NclMakeNewListNode();
+										yyval.list->next = NULL;
+										yyval.list->node = yypvt[-1].src_node;
 /*
 										$$->next = _NclMakeNewListNode();
 										$$->next->node = $3;
 										$$->next->next = NULL;
 */
-									} else if(_yypvt[-1].src_node == NULL) {
-										_yyval.list = NULL;
+									} else if(yypvt[-1].src_node == NULL) {
+										yyval.list = NULL;
 									}
-								} else if(_yypvt[-1].src_node != NULL){
-									step = _yypvt[-2].list;
+								} else if(yypvt[-1].src_node != NULL){
+									step = yypvt[-2].list;
 									while(step->next != NULL) {
 										step = step->next;
 									}
@@ -1665,30 +1665,30 @@ case 8:
 									step->next->next = NULL;
 */
 									step->next = NULL;
-									step->node = _yypvt[-1].src_node;
-									_yyval.list = _yypvt[-2].list;
+									step->node = yypvt[-1].src_node;
+									yyval.list = yypvt[-2].list;
 								} else {
-									_yyval.list = _yypvt[-2].list;
+									yyval.list = yypvt[-2].list;
 								}
 							} break;
 case 9:
-# line 317 "ncl.y"
+# line 329 "ncl.y"
 { 
-								recfp = fopen(_NhlResolvePath(_yypvt[-1].str),"w"); 
+								recfp = fopen(_NhlResolvePath(yypvt[-1].str),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								_yyval.list = _yypvt[-3].list;
+								yyval.list = yypvt[-3].list;
 								if(cmd_line)
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 							} break;
 case 10:
-# line 329 "ncl.y"
+# line 341 "ncl.y"
 { 
-								recfp = fopen(_NhlResolvePath(_yypvt[-1].str),"w"); 
+								recfp = fopen(_NhlResolvePath(yypvt[-1].str),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -1697,10 +1697,10 @@ case 10:
 								}
 								if(cmd_line)
 									fprintf(stdout,"ncl %d> ",cur_line_number);
-								_yyval.list = NULL;
+								yyval.list = NULL;
 							} break;
 case 11:
-# line 346 "ncl.y"
+# line 358 "ncl.y"
 {
 #ifndef MAKEAPI
 								FILE *tmp_file;
@@ -1709,25 +1709,25 @@ case 11:
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NhlResolvePath(_yypvt[-1].str),"r");	
+									tmp_file = fopen(_NhlResolvePath(yypvt[-1].str),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number +1;
 										cur_line_number = 0;
-										_yyin = tmp_file;
+										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen(_yypvt[-1].str)+1);
-										strcpy(cur_load_file,_yypvt[-1].str);
+										cur_load_file = (char*)NclMalloc((unsigned)strlen(yypvt[-1].str)+1);
+										strcpy(cur_load_file,yypvt[-1].str);
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",_yypvt[-1].str);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",yypvt[-1].str);
 										loading = 0;
 									}
 								}
 #endif
-								_yyval.list = NULL;
+								yyval.list = NULL;
 							} break;
 case 12:
-# line 371 "ncl.y"
+# line 383 "ncl.y"
 {
 #ifndef MAKEAPI
 								FILE *tmp_file;
@@ -1736,102 +1736,102 @@ case 12:
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NhlResolvePath(_yypvt[-1].str),"r");	
+									tmp_file = fopen(_NhlResolvePath(yypvt[-1].str),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number +1;
 										cur_line_number = 0;
-										_yyin = tmp_file;
+										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)_yypvt[-1].str)+1);
-										strcpy(cur_load_file,_yypvt[-1].str);
+										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)yypvt[-1].str)+1);
+										strcpy(cur_load_file,yypvt[-1].str);
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",_yypvt[-1].str);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",yypvt[-1].str);
 										loading = 0;
 									}
 								}
 #endif
-								_yyval.list = _yypvt[-3].list;
+								yyval.list = yypvt[-3].list;
 							} break;
 case 13:
-# line 398 "ncl.y"
+# line 410 "ncl.y"
 { /* do nothing */ } break;
 case 14:
-# line 399 "ncl.y"
+# line 411 "ncl.y"
 { 
-				_yyerrok; 
+				yyerrok; 
 				if(cmd_line)
                                       fprintf(stdout,"ncl %d> ",cur_line_number);
 			} break;
 case 15:
-# line 406 "ncl.y"
-{ _yyerrok; } break;
-case 16:
-# line 408 "ncl.y"
-{ _yyval.src_node = NULL; } break;
-case 17:
-# line 409 "ncl.y"
-{
-								_yyval.src_node = _yypvt[-0].src_node; 
-							} break;
-case 18:
-# line 412 "ncl.y"
-{
-								_yyval.src_node = _yypvt[-0].src_node;
-							} break;
-case 19:
-# line 415 "ncl.y"
-{
-								_yyval.src_node = _yypvt[-0].src_node;
-							} break;
-case 20:
 # line 418 "ncl.y"
-{
-								_yyval.src_node = _yypvt[-0].src_node;
-							} break;
-case 21:
+{ yyerrok; } break;
+case 16:
+# line 420 "ncl.y"
+{ yyval.src_node = NULL; } break;
+case 17:
 # line 421 "ncl.y"
 {
-								_yyval.src_node = _yypvt[-0].src_node;
+								yyval.src_node = yypvt[-0].src_node; 
 							} break;
-case 22:
+case 18:
 # line 424 "ncl.y"
 {
-								_yyval.src_node = _yypvt[-0].src_node;
+								yyval.src_node = yypvt[-0].src_node;
 							} break;
-case 23:
+case 19:
 # line 427 "ncl.y"
 {
-								_yyval.src_node = _yypvt[-0].src_node;
+								yyval.src_node = yypvt[-0].src_node;
 							} break;
-case 24:
+case 20:
 # line 430 "ncl.y"
 {
-								_yyval.src_node = _yypvt[-0].src_node;
+								yyval.src_node = yypvt[-0].src_node;
 							} break;
-case 25:
+case 21:
 # line 433 "ncl.y"
 {
-								_yyval.src_node = _yypvt[-0].src_node;
+								yyval.src_node = yypvt[-0].src_node;
 							} break;
-case 26:
+case 22:
 # line 436 "ncl.y"
 {
-								_yyval.src_node = _NclMakeReturn(_yypvt[-0].src_node); 
+								yyval.src_node = yypvt[-0].src_node;
+							} break;
+case 23:
+# line 439 "ncl.y"
+{
+								yyval.src_node = yypvt[-0].src_node;
+							} break;
+case 24:
+# line 442 "ncl.y"
+{
+								yyval.src_node = yypvt[-0].src_node;
+							} break;
+case 25:
+# line 445 "ncl.y"
+{
+								yyval.src_node = yypvt[-0].src_node;
+							} break;
+case 26:
+# line 448 "ncl.y"
+{
+								yyval.src_node = _NclMakeReturn(yypvt[-0].src_node); 
 							} break;
 case 27:
-# line 439 "ncl.y"
+# line 451 "ncl.y"
 { 
 								return(1);
 							} break;
 case 28:
-# line 442 "ncl.y"
+# line 454 "ncl.y"
 { 
-								_yyval.src_node = NULL ; 
+								yyval.src_node = NULL ; 
 								ERROR("error in statement"); 
 							} break;
 case 29:
-# line 446 "ncl.y"
+# line 458 "ncl.y"
 {
 /*
 * this goes here so that rec gets set to one before eoln comes from scanner.
@@ -1839,185 +1839,185 @@ case 29:
 								if(rec ==1 ) {
 									fclose(recfp);
 								} 
-								_yyval.src_node = NULL;
+								yyval.src_node = NULL;
 							} break;
 case 30:
-# line 457 "ncl.y"
+# line 469 "ncl.y"
 {
-				_yyval.src_node = _NclMakeBreakCont(_yypvt[-0].sym);
+				yyval.src_node = _NclMakeBreakCont(yypvt[-0].sym);
 			} break;
 case 31:
-# line 460 "ncl.y"
+# line 472 "ncl.y"
 {
-				_yyval.src_node = _NclMakeBreakCont(_yypvt[-0].sym);
+				yyval.src_node = _NclMakeBreakCont(yypvt[-0].sym);
 		} break;
 case 32:
-# line 464 "ncl.y"
-{  _yyval.src_node = _NclMakeIfThen(_yypvt[-4].src_node,_yypvt[-2].list);  } break;
+# line 476 "ncl.y"
+{  yyval.src_node = _NclMakeIfThen(yypvt[-4].src_node,yypvt[-2].list);  } break;
 case 33:
-# line 465 "ncl.y"
-{  _yyval.src_node = _NclMakeIfThenElse(_yypvt[-6].src_node,_yypvt[-4].list,_yypvt[-2].list);  } break;
+# line 477 "ncl.y"
+{  yyval.src_node = _NclMakeIfThenElse(yypvt[-6].src_node,yypvt[-4].list,yypvt[-2].list);  } break;
 case 34:
-# line 466 "ncl.y"
+# line 478 "ncl.y"
 {  
 											NclSrcListNode *tmp = NULL;	
-											if(_yypvt[-2].src_node != NULL) {
+											if(yypvt[-2].src_node != NULL) {
 												tmp = _NclMakeNewListNode();
 												tmp->next = NULL;
-												tmp->node = _yypvt[-2].src_node;
+												tmp->node = yypvt[-2].src_node;
 											} 
-											_yyval.src_node = _NclMakeIfThen(_yypvt[-4].src_node,tmp);  
+											yyval.src_node = _NclMakeIfThen(yypvt[-4].src_node,tmp);  
 										} break;
 case 35:
-# line 475 "ncl.y"
+# line 487 "ncl.y"
 {  
 											NclSrcListNode *tmp = NULL;
 	
-											if(_yypvt[-4].src_node != NULL) {
+											if(yypvt[-4].src_node != NULL) {
                                                                                                 tmp = _NclMakeNewListNode();
                                                                                                 tmp->next = NULL;
-                                                                                                tmp->node = _yypvt[-4].src_node;
+                                                                                                tmp->node = yypvt[-4].src_node;
 											} 
-											_yyval.src_node = _NclMakeIfThenElse(_yypvt[-6].src_node,tmp,_yypvt[-2].list);  
+											yyval.src_node = _NclMakeIfThenElse(yypvt[-6].src_node,tmp,yypvt[-2].list);  
 										} break;
 case 36:
-# line 487 "ncl.y"
+# line 499 "ncl.y"
 {  
 										NclSrcListNode *tmp = NULL ,*tmp1 = NULL ;
-										if(_yypvt[-4].src_node != NULL) {
+										if(yypvt[-4].src_node != NULL) {
                                                                                         tmp = _NclMakeNewListNode();
                                                                                         tmp->next = NULL;
-                                                                                        tmp->node = _yypvt[-4].src_node;
+                                                                                        tmp->node = yypvt[-4].src_node;
 										}
-										if(_yypvt[-2].src_node != NULL) {
+										if(yypvt[-2].src_node != NULL) {
                                                                                         tmp1 = _NclMakeNewListNode();
                                                                                         tmp1->next = NULL;
-                                                                                        tmp1->node = _yypvt[-2].src_node;
+                                                                                        tmp1->node = yypvt[-2].src_node;
 										}		
-										_yyval.src_node = _NclMakeIfThenElse(_yypvt[-6].src_node,tmp,tmp1);  
+										yyval.src_node = _NclMakeIfThenElse(yypvt[-6].src_node,tmp,tmp1);  
 								} break;
 case 37:
-# line 501 "ncl.y"
+# line 513 "ncl.y"
 {  
 											NclSrcListNode *tmp = NULL ;
-											if(_yypvt[-2].src_node != NULL) {
+											if(yypvt[-2].src_node != NULL) {
                                                                                         	tmp = _NclMakeNewListNode();
                                                                                         	tmp->next = NULL;
-                                                                                        	tmp->node = _yypvt[-2].src_node;
+                                                                                        	tmp->node = yypvt[-2].src_node;
 	                                                                                } 
-											_yyval.src_node = _NclMakeIfThenElse(_yypvt[-6].src_node,_yypvt[-4].list,tmp);  
+											yyval.src_node = _NclMakeIfThenElse(yypvt[-6].src_node,yypvt[-4].list,tmp);  
 
 										} break;
 case 40:
-# line 518 "ncl.y"
+# line 530 "ncl.y"
 {
-				_yyval.src_node = _yypvt[-0].list;
+				yyval.src_node = yypvt[-0].list;
 			} break;
 case 41:
-# line 521 "ncl.y"
+# line 533 "ncl.y"
 {
-				_yyval.src_node = _yypvt[-0].list;
+				yyval.src_node = yypvt[-0].list;
 			} break;
 case 42:
-# line 526 "ncl.y"
+# line 538 "ncl.y"
 {
-			_yyval.src_node = NULL;
+			yyval.src_node = NULL;
 		   } break;
 case 43:
-# line 529 "ncl.y"
-{
-			_yyval.src_node = _yypvt[-0].src_node;
-		     } break;
-case 44:
-# line 535 "ncl.y"
-{   
-									_yyval.src_node = _NclMakeVis(_yypvt[-5].src_node,_yypvt[-4].sym,_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKCREATE);
-								} break;
-case 45:
-# line 538 "ncl.y"
-{   
-									_yyval.src_node = _NclMakeVis(_yypvt[-5].src_node,_yypvt[-4].sym,_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKCREATE); 
-								} break;
-case 46:
 # line 541 "ncl.y"
 {
-										_yyval.src_node = NULL;
+			yyval.src_node = yypvt[-0].src_node;
+		     } break;
+case 44:
+# line 547 "ncl.y"
+{   
+									yyval.src_node = _NclMakeVis(yypvt[-5].src_node,yypvt[-4].sym,yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKCREATE);
+								} break;
+case 45:
+# line 550 "ncl.y"
+{   
+									yyval.src_node = _NclMakeVis(yypvt[-5].src_node,yypvt[-4].sym,yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKCREATE); 
+								} break;
+case 46:
+# line 553 "ncl.y"
+{
+										yyval.src_node = NULL;
 								} break;
 case 47:
-# line 546 "ncl.y"
+# line 558 "ncl.y"
 {
-									_yyval.list = _NclMakeSGVis(_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKSET); 
+									yyval.list = _NclMakeSGVis(yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKSET); 
 								} break;
 case 48:
-# line 549 "ncl.y"
+# line 561 "ncl.y"
 {
-									_yyval.list = _NclMakeSGVis(_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKSET);
+									yyval.list = _NclMakeSGVis(yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKSET);
 								} break;
 case 49:
-# line 552 "ncl.y"
+# line 564 "ncl.y"
 {
-										_yyval.list = NULL;
+										yyval.list = NULL;
 								} break;
 case 50:
-# line 556 "ncl.y"
-{
-									_yyval.list = _NclMakeSGVis(_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKGET); 
-								} break;
-case 51:
-# line 559 "ncl.y"
-{
-									_yyval.list = _NclMakeSGVis(_yypvt[-3].src_node,_yypvt[-2].list,Ncl_VISBLKGET);
-								} break;
-case 52:
-# line 562 "ncl.y"
-{
-										_yyval.list = NULL;
-								} break;
-case 53:
 # line 568 "ncl.y"
 {
-							if(_yypvt[-1].list != NULL) {
-						 		_yyval.list = _NclMakeNewListNode();
-								_yyval.list->next = NULL;
-								_yyval.list->node = _yypvt[-1].list;
+									yyval.list = _NclMakeSGVis(yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKGET); 
+								} break;
+case 51:
+# line 571 "ncl.y"
+{
+									yyval.list = _NclMakeSGVis(yypvt[-3].src_node,yypvt[-2].list,Ncl_VISBLKGET);
+								} break;
+case 52:
+# line 574 "ncl.y"
+{
+										yyval.list = NULL;
+								} break;
+case 53:
+# line 580 "ncl.y"
+{
+							if(yypvt[-1].list != NULL) {
+						 		yyval.list = _NclMakeNewListNode();
+								yyval.list->next = NULL;
+								yyval.list->node = yypvt[-1].list;
 							} else {
-								_yyval.list = NULL;
+								yyval.list = NULL;
 							}
 							if(cmd_line) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 						} break;
 case 54:
-# line 580 "ncl.y"
+# line 592 "ncl.y"
 {
-							if(_yypvt[-2].list == NULL) {
-								if(_yypvt[-1].list != NULL) {
-									_yyval.list = _NclMakeNewListNode();
-									_yyval.list->next = NULL;
-								 	_yyval.list->node = _yypvt[-1].list;
+							if(yypvt[-2].list == NULL) {
+								if(yypvt[-1].list != NULL) {
+									yyval.list = _NclMakeNewListNode();
+									yyval.list->next = NULL;
+								 	yyval.list->node = yypvt[-1].list;
 								} else {
-									_yyval.list = NULL;
+									yyval.list = NULL;
 								}
-							} else if(_yypvt[-1].list != NULL) {
-								_yyval.list = _NclMakeNewListNode();
-								_yyval.list->next = _yypvt[-2].list;
-								_yyval.list->node = _yypvt[-1].list;
+							} else if(yypvt[-1].list != NULL) {
+								yyval.list = _NclMakeNewListNode();
+								yyval.list->next = yypvt[-2].list;
+								yyval.list->node = yypvt[-1].list;
 							} else {
-								_yyval.list = _yypvt[-2].list;
+								yyval.list = yypvt[-2].list;
 							}
 							if(cmd_line) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 						} break;
 case 55:
-# line 602 "ncl.y"
+# line 614 "ncl.y"
 {
-							_yyval.list = NULL;
+							yyval.list = NULL;
 						} break;
 case 56:
-# line 605 "ncl.y"
+# line 617 "ncl.y"
 {
-						 	_yyval.list = _NclMakeGetResource(_yypvt[-2].str,_yypvt[-0].sym);
+						 	yyval.list = _NclMakeGetResource(yypvt[-2].str,yypvt[-0].sym);
 /*
 							if(cmd_line)
 								if(!VerifyGetResExpr($3)) {
@@ -2026,41 +2026,41 @@ case 56:
 */
 						} break;
 case 57:
-# line 619 "ncl.y"
+# line 631 "ncl.y"
 {	
-							_yyval.list = NULL;
+							yyval.list = NULL;
 						} break;
 case 58:
-# line 625 "ncl.y"
+# line 637 "ncl.y"
 {
-							if(_yypvt[-1].list != NULL) {
-						 		_yyval.list = _NclMakeNewListNode();
-								_yyval.list->next = NULL;
-								_yyval.list->node = _yypvt[-1].list;
+							if(yypvt[-1].list != NULL) {
+						 		yyval.list = _NclMakeNewListNode();
+								yyval.list->next = NULL;
+								yyval.list->node = yypvt[-1].list;
 							} else {
-								_yyval.list = NULL;
+								yyval.list = NULL;
 							}
 							if(cmd_line) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 						} break;
 case 59:
-# line 638 "ncl.y"
+# line 650 "ncl.y"
 {
-							if(_yypvt[-2].list == NULL) {
-								if(_yypvt[-1].list != NULL) {
-									_yyval.list = _NclMakeNewListNode();
-									_yyval.list->next = NULL;
-								 	_yyval.list->node = _yypvt[-1].list;
+							if(yypvt[-2].list == NULL) {
+								if(yypvt[-1].list != NULL) {
+									yyval.list = _NclMakeNewListNode();
+									yyval.list->next = NULL;
+								 	yyval.list->node = yypvt[-1].list;
 								} else {
-									_yyval.list = NULL;
+									yyval.list = NULL;
 								}
-							} else if(_yypvt[-1].list != NULL) {
-								_yyval.list = _NclMakeNewListNode();
-								_yyval.list->next = _yypvt[-2].list;
-								_yyval.list->node = _yypvt[-1].list;
+							} else if(yypvt[-1].list != NULL) {
+								yyval.list = _NclMakeNewListNode();
+								yyval.list->next = yypvt[-2].list;
+								yyval.list->node = yypvt[-1].list;
 							} else {
-								_yyval.list = _yypvt[-2].list;
+								yyval.list = yypvt[-2].list;
 								if(is_error) {
 /*
 									_NclDeleteNewSymStack();		
@@ -2074,9 +2074,9 @@ case 59:
 							}
 						} break;
 case 60:
-# line 665 "ncl.y"
+# line 677 "ncl.y"
 {
-							_yyval.list = _yypvt[-2].list;
+							yyval.list = yypvt[-2].list;
 							is_error -= 1;
 /*
 							_NclDeleteNewSymStack();	
@@ -2087,14 +2087,14 @@ case 60:
 							}
 						} break;
 case 61:
-# line 678 "ncl.y"
+# line 690 "ncl.y"
 {
-							_yyval.list = NULL;
+							yyval.list = NULL;
 						} break;
 case 62:
-# line 681 "ncl.y"
+# line 693 "ncl.y"
 {
-						 	_yyval.list = _NclMakeResource(_yypvt[-2].str,_yypvt[-0].src_node);
+						 	yyval.list = _NclMakeResource(yypvt[-2].str,yypvt[-0].src_node);
 /*
 							if(cmd_line)
 								if(!VerifySetResExpr($3)) {
@@ -2103,261 +2103,261 @@ case 62:
 */
 						} break;
 case 63:
-# line 712 "ncl.y"
+# line 724 "ncl.y"
 {
-										_yyval.list = _yypvt[-0].list;
+										yyval.list = yypvt[-0].list;
 									} break;
 case 64:
-# line 715 "ncl.y"
+# line 727 "ncl.y"
 {
 										NclSrcListNode * tmp = NULL;
-										if(_yypvt[-0].src_node != NULL ) {
+										if(yypvt[-0].src_node != NULL ) {
 											tmp = _NclMakeNewListNode();
 											tmp->next = NULL;
-											tmp->node = _yypvt[-0].src_node;
+											tmp->node = yypvt[-0].src_node;
 										}
-										_yyval.list = tmp;
+										yyval.list = tmp;
 									} break;
 case 65:
-# line 726 "ncl.y"
+# line 738 "ncl.y"
 { 
 										
-										_yyval.src_node = _NclMakeDoFromTo(_yypvt[-7].src_node,_yypvt[-5].src_node, _yypvt[-3].src_node, _yypvt[-2].list);
+										yyval.src_node = _NclMakeDoFromTo(yypvt[-7].src_node,yypvt[-5].src_node, yypvt[-3].src_node, yypvt[-2].list);
 									} break;
 case 66:
-# line 730 "ncl.y"
+# line 742 "ncl.y"
 { 
-										_yyval.src_node = _NclMakeDoFromToStride(_yypvt[-9].src_node,_yypvt[-7].src_node,_yypvt[-5].src_node,_yypvt[-3].src_node,_yypvt[-2].list);
+										yyval.src_node = _NclMakeDoFromToStride(yypvt[-9].src_node,yypvt[-7].src_node,yypvt[-5].src_node,yypvt[-3].src_node,yypvt[-2].list);
 									} break;
 case 67:
-# line 733 "ncl.y"
+# line 745 "ncl.y"
 {   
-								_yyval.src_node = _NclMakeWhile(_yypvt[-3].src_node,_yypvt[-2].list);
+								yyval.src_node = _NclMakeWhile(yypvt[-3].src_node,yypvt[-2].list);
 							} break;
 case 68:
-# line 736 "ncl.y"
+# line 748 "ncl.y"
 {   
 								NclSrcListNode *tmp = NULL ;
-								if(_yypvt[-2].src_node != NULL) {
+								if(yypvt[-2].src_node != NULL) {
                                                                		tmp = _NclMakeNewListNode();
                                                                        	tmp->next = NULL;
-                                                                       	tmp->node = _yypvt[-2].src_node;
+                                                                       	tmp->node = yypvt[-2].src_node;
 	                                                        } 
-								_yyval.src_node = _NclMakeWhile(_yypvt[-3].src_node,tmp);
+								yyval.src_node = _NclMakeWhile(yypvt[-3].src_node,tmp);
 							} break;
 case 69:
-# line 747 "ncl.y"
-{ _yyval.src_node = _NclMakeBlock(_yypvt[-1].list); } break;
+# line 759 "ncl.y"
+{ yyval.src_node = _NclMakeBlock(yypvt[-1].list); } break;
 case 70:
-# line 748 "ncl.y"
+# line 760 "ncl.y"
 { 
 					NclSrcListNode *tmp = NULL ;
-					if(_yypvt[-1].src_node != NULL) {
+					if(yypvt[-1].src_node != NULL) {
                                        		tmp = _NclMakeNewListNode();
                                         	tmp->next = NULL;
-                                               	tmp->node = _yypvt[-1].src_node;
+                                               	tmp->node = yypvt[-1].src_node;
 	                                } 
-					_yyval.src_node = _NclMakeBlock(tmp); 
+					yyval.src_node = _NclMakeBlock(tmp); 
 				} break;
 case 71:
-# line 759 "ncl.y"
+# line 771 "ncl.y"
 {
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeProcCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_INTRINSICPROCCALL); 
+							yyval.src_node = _NclMakeProcCall(yypvt[-1].sym,yypvt[-0].list,Ncl_INTRINSICPROCCALL); 
 						}
 				} break;
 case 72:
-# line 776 "ncl.y"
+# line 788 "ncl.y"
 { 
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeProcCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_BUILTINPROCCALL); 
+							yyval.src_node = _NclMakeProcCall(yypvt[-1].sym,yypvt[-0].list,Ncl_BUILTINPROCCALL); 
 						}
 				} break;
 case 73:
-# line 793 "ncl.y"
-{ _yyval.src_node = _NclMakeProcCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_EXTERNALPROCCALL); } break;
+# line 805 "ncl.y"
+{ yyval.src_node = _NclMakeProcCall(yypvt[-1].sym,yypvt[-0].list,Ncl_EXTERNALPROCCALL); } break;
 case 74:
-# line 794 "ncl.y"
-{ _yyval.src_node = _NclMakeProcCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_PROCCALL); } break;
+# line 806 "ncl.y"
+{ yyval.src_node = _NclMakeProcCall(yypvt[-1].sym,yypvt[-0].list,Ncl_PROCCALL); } break;
 case 75:
-# line 795 "ncl.y"
+# line 807 "ncl.y"
 { 
-					_yyval.src_node = _NclMakeProcCall(_yypvt[-0].sym,NULL,Ncl_INTRINSICPROCCALL); 
+					yyval.src_node = _NclMakeProcCall(yypvt[-0].sym,NULL,Ncl_INTRINSICPROCCALL); 
 				} break;
 case 76:
-# line 798 "ncl.y"
+# line 810 "ncl.y"
 { 
-					_yyval.src_node = _NclMakeProcCall(_yypvt[-0].sym,NULL,Ncl_BUILTINPROCCALL); 
+					yyval.src_node = _NclMakeProcCall(yypvt[-0].sym,NULL,Ncl_BUILTINPROCCALL); 
 				} break;
 case 77:
-# line 801 "ncl.y"
-{ _yyval.src_node = _NclMakeProcCall(_yypvt[-0].sym,NULL,Ncl_EXTERNALPROCCALL); } break;
+# line 813 "ncl.y"
+{ yyval.src_node = _NclMakeProcCall(yypvt[-0].sym,NULL,Ncl_EXTERNALPROCCALL); } break;
 case 78:
-# line 802 "ncl.y"
+# line 814 "ncl.y"
 { 
-						if(_yypvt[-0].sym->u.procfunc->nargs != 0) {
+						if(yypvt[-0].sym->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",_yypvt[-0].sym->name,_yypvt[-0].sym->u.procfunc->nargs,0);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",yypvt[-0].sym->name,yypvt[-0].sym->u.procfunc->nargs,0);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeProcCall(_yypvt[-0].sym,NULL,Ncl_PROCCALL); 
+							yyval.src_node = _NclMakeProcCall(yypvt[-0].sym,NULL,Ncl_PROCCALL); 
 						}
 				} break;
 case 79:
-# line 815 "ncl.y"
+# line 827 "ncl.y"
 { ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); } break;
 case 80:
-# line 818 "ncl.y"
-{ _yyval.list = _yypvt[-1].list;    } break;
+# line 830 "ncl.y"
+{ yyval.list = yypvt[-1].list;    } break;
 case 81:
-# line 819 "ncl.y"
-{ _yyval.list = NULL;    } break;
+# line 831 "ncl.y"
+{ yyval.list = NULL;    } break;
 case 82:
-# line 822 "ncl.y"
+# line 834 "ncl.y"
 { 
 						/* Code to check type of expression, iff its and identifier then stamp it with
 							the Ncl_PARAMIT tag so the translator can add extra code */
-							if(((NclGenericNode*)_yypvt[-0].src_node)->kind == Ncl_IDNEXPR) {
-								((NclGenericRefNode*)((NclIdnExpr*)_yypvt[-0].src_node)->idn_ref_node)->ref_type =
+							if(((NclGenericNode*)yypvt[-0].src_node)->kind == Ncl_IDNEXPR) {
+								((NclGenericRefNode*)((NclIdnExpr*)yypvt[-0].src_node)->idn_ref_node)->ref_type =
 									Ncl_PARAMIT;
 							}
-							_yyval.list = _NclMakeNewListNode();
-							_yyval.list->next = NULL;
-							_yyval.list->node = _yypvt[-0].src_node;
+							yyval.list = _NclMakeNewListNode();
+							yyval.list->next = NULL;
+							yyval.list->node = yypvt[-0].src_node;
 						} break;
 case 83:
-# line 833 "ncl.y"
+# line 845 "ncl.y"
 {
 							NclSrcListNode * step;
 						/* 
 						* ordering is important because arguments eventually must be pushed on stack in
 						* appropriate order 
 						*/
-							step = _yypvt[-2].list;
+							step = yypvt[-2].list;
 							while(step->next != NULL) {
 								step = step->next;
 							}
 						/* Code to check type of expression, iff its and identifier then stamp it with
 							the Ncl_PARAMIT tag so the translator can add extra code */
-							if(((NclGenericNode*)_yypvt[-0].src_node)->kind == Ncl_IDNEXPR) {
-								((NclGenericRefNode*)((NclIdnExpr*)_yypvt[-0].src_node)->idn_ref_node)->ref_type =
+							if(((NclGenericNode*)yypvt[-0].src_node)->kind == Ncl_IDNEXPR) {
+								((NclGenericRefNode*)((NclIdnExpr*)yypvt[-0].src_node)->idn_ref_node)->ref_type =
 									Ncl_PARAMIT;
 							}
 							step->next = _NclMakeNewListNode();
 							step->next->next = NULL;
-							step->next->node = _yypvt[-0].src_node;
-							_yyval.list = _yypvt[-2].list;
+							step->next->node = yypvt[-0].src_node;
+							yyval.list = yypvt[-2].list;
 						} break;
 case 84:
-# line 855 "ncl.y"
-{ _NclNewScope(); _yyval.sym = _yypvt[-0].sym; } break;
+# line 867 "ncl.y"
+{ _NclNewScope(); yyval.sym = yypvt[-0].sym; } break;
 case 85:
-# line 858 "ncl.y"
+# line 870 "ncl.y"
 {
 			/* have to make sure that items in the local list are not added twice !! */
 			int lv = _NclGetCurrentScopeLevel();
 
-			if(_yypvt[-0].sym->level != lv) {
-				_NclAddSym(_yypvt[-0].sym->name,UNDEF);
+			if(yypvt[-0].sym->level != lv) {
+				_NclAddSym(yypvt[-0].sym->name,UNDEF);
 			}
 		} break;
 case 86:
-# line 866 "ncl.y"
-{
-			int lv = _NclGetCurrentScopeLevel();
-			if(_yypvt[-0].sym->level != lv) {
-				_NclAddSym(_yypvt[-0].sym->name,UNDEF);
-			}
-		} break;
-case 87:
-# line 872 "ncl.y"
-{
-			int lv = _NclGetCurrentScopeLevel();
-			if(_yypvt[-0].sym->level != lv) {
-				_NclAddSym(_yypvt[-0].sym->name,UNDEF);
-			}
-			} break;
-case 88:
 # line 878 "ncl.y"
 {
 			int lv = _NclGetCurrentScopeLevel();
-			if(_yypvt[-0].sym->level != lv) {
-				_NclAddSym(_yypvt[-0].sym->name,UNDEF);
+			if(yypvt[-0].sym->level != lv) {
+				_NclAddSym(yypvt[-0].sym->name,UNDEF);
+			}
+		} break;
+case 87:
+# line 884 "ncl.y"
+{
+			int lv = _NclGetCurrentScopeLevel();
+			if(yypvt[-0].sym->level != lv) {
+				_NclAddSym(yypvt[-0].sym->name,UNDEF);
+			}
+			} break;
+case 88:
+# line 890 "ncl.y"
+{
+			int lv = _NclGetCurrentScopeLevel();
+			if(yypvt[-0].sym->level != lv) {
+				_NclAddSym(yypvt[-0].sym->name,UNDEF);
 			}
 			} break;
 case 89:
-# line 885 "ncl.y"
-{_NclChangeSymbolType(_yypvt[-4].sym,NFUNC);_NclAddProcFuncInfoToSym(_yypvt[-4].sym,_yypvt[-2].list); } break;
+# line 897 "ncl.y"
+{_NclChangeSymbolType(yypvt[-4].sym,NFUNC);_NclAddProcFuncInfoToSym(yypvt[-4].sym,yypvt[-2].list); } break;
 case 90:
-# line 886 "ncl.y"
+# line 898 "ncl.y"
 {  
 									NclSymTableListNode *tmp;
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
-										_yyval.src_node = NULL;
+										yyval.src_node = NULL;
 									}else {
 										tmp = _NclPopScope();	
-										_yyval.src_node = _NclMakeNFunctionDef(_yypvt[-6].sym,_yypvt[-4].list,_yypvt[-0].src_node,tmp);  
+										yyval.src_node = _NclMakeNFunctionDef(yypvt[-6].sym,yypvt[-4].list,yypvt[-0].src_node,tmp);  
 									}
 								} break;
 case 91:
-# line 898 "ncl.y"
-{_NclChangeSymbolType(_yypvt[-7].sym,NFUNC); _NclAddProcFuncInfoToSym(_yypvt[-7].sym,_yypvt[-5].list); } break;
+# line 910 "ncl.y"
+{_NclChangeSymbolType(yypvt[-7].sym,NFUNC); _NclAddProcFuncInfoToSym(yypvt[-7].sym,yypvt[-5].list); } break;
 case 92:
-# line 899 "ncl.y"
+# line 911 "ncl.y"
 {  
 									NclSymTableListNode *tmp;
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
-										_yyval.src_node = NULL;
+										yyval.src_node = NULL;
 									}else {
 										tmp = _NclPopScope();	
-										_yyval.src_node = _NclMakeNFunctionDef(_yypvt[-9].sym,_yypvt[-7].list,_yypvt[-0].src_node,tmp);  
+										yyval.src_node = _NclMakeNFunctionDef(yypvt[-9].sym,yypvt[-7].list,yypvt[-0].src_node,tmp);  
 									}
 								} break;
 case 93:
-# line 912 "ncl.y"
+# line 924 "ncl.y"
 {  
 									NclSymTableListNode *tmp;
 									if(is_error) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
-										_yyval.src_node = NULL;
+										yyval.src_node = NULL;
 									} else {
 										tmp = _NclPopScope();	
-										_yyval.src_node = _NclMakeEFunctionDef(_NclChangeSymbolType(_yypvt[-5].sym,EFUNC),_yypvt[-3].list,_yypvt[-0].str,tmp);  
+										yyval.src_node = _NclMakeEFunctionDef(_NclChangeSymbolType(yypvt[-5].sym,EFUNC),yypvt[-3].list,yypvt[-0].str,tmp);  
 									}
 								} break;
 case 94:
-# line 925 "ncl.y"
+# line 937 "ncl.y"
 {
 			is_error += 1;
 /*
@@ -2370,220 +2370,220 @@ case 94:
 			(void)_NclPopScope();
 	} break;
 case 95:
-# line 943 "ncl.y"
-{ _yyval.list = NULL; } break;
+# line 955 "ncl.y"
+{ yyval.list = NULL; } break;
 case 96:
-# line 944 "ncl.y"
-{ _yyval.list = _yypvt[-0].list; } break;
+# line 956 "ncl.y"
+{ yyval.list = yypvt[-0].list; } break;
 case 97:
-# line 947 "ncl.y"
+# line 959 "ncl.y"
 {	
-							_yyval.list = _NclMakeNewListNode();
-							_yyval.list->next = NULL;
-							_yyval.list->node = _yypvt[-0].src_node;
+							yyval.list = _NclMakeNewListNode();
+							yyval.list->next = NULL;
+							yyval.list->node = yypvt[-0].src_node;
 						} break;
 case 98:
-# line 952 "ncl.y"
+# line 964 "ncl.y"
 { 
 						/* once again ordering not important as long as it is consistent with function 
 							and procedure ordering of argument lists */
-							_yyval.list = _NclMakeNewListNode();
-							_yyval.list->next = _yypvt[-0].list;
-							_yyval.list->node = _yypvt[-2].src_node;
+							yyval.list = _NclMakeNewListNode();
+							yyval.list->next = yypvt[-0].list;
+							yyval.list->node = yypvt[-2].src_node;
 							  
 						} break;
 case 99:
-# line 962 "ncl.y"
+# line 974 "ncl.y"
 { 
 					NclSymbol *s;
 					int lv = _NclGetCurrentScopeLevel();
 
-					if((_yypvt[-0].sym->type != UNDEF)||(_yypvt[-0].sym->level != lv)) {
-						s = _NclAddSym(_yypvt[-0].sym->name,UNDEF);
+					if((yypvt[-0].sym->type != UNDEF)||(yypvt[-0].sym->level != lv)) {
+						s = _NclAddSym(yypvt[-0].sym->name,UNDEF);
 					} else {
-						s = _yypvt[-0].sym;
+						s = yypvt[-0].sym;
 					}
-					_yyval.src_node = _NclMakeLocalVarDec(s,NULL,NULL); 
+					yyval.src_node = _NclMakeLocalVarDec(s,NULL,NULL); 
 				} break;
 case 100:
-# line 973 "ncl.y"
+# line 985 "ncl.y"
 { 
 					NclSymbol *s;
 					int lv = _NclGetCurrentScopeLevel();
 
-					if((_yypvt[-2].sym->type != UNDEF)||(_yypvt[-2].sym->level != lv)) {
-						s = _NclAddSym(_yypvt[-2].sym->name,UNDEF);
+					if((yypvt[-2].sym->type != UNDEF)||(yypvt[-2].sym->level != lv)) {
+						s = _NclAddSym(yypvt[-2].sym->name,UNDEF);
 					} else {
-						s = _yypvt[-2].sym;
+						s = yypvt[-2].sym;
 					}
-					_yyval.src_node = _NclMakeLocalVarDec(s,NULL,_yypvt[-0].sym); 
+					yyval.src_node = _NclMakeLocalVarDec(s,NULL,yypvt[-0].sym); 
 				} break;
 case 101:
-# line 984 "ncl.y"
+# line 996 "ncl.y"
 { 
 						NclSymbol *s;
 						int lv = _NclGetCurrentScopeLevel();
-						if((_yypvt[-1].sym->type != UNDEF)||(_yypvt[-1].sym->level != lv)) {
-							s = _NclAddSym(_yypvt[-1].sym->name,UNDEF);
+						if((yypvt[-1].sym->type != UNDEF)||(yypvt[-1].sym->level != lv)) {
+							s = _NclAddSym(yypvt[-1].sym->name,UNDEF);
 						} else {
-							s = _yypvt[-1].sym;
+							s = yypvt[-1].sym;
 						}
 
-						_yyval.src_node = _NclMakeLocalVarDec(s,_yypvt[-0].list,NULL); 
+						yyval.src_node = _NclMakeLocalVarDec(s,yypvt[-0].list,NULL); 
 					} break;
 case 102:
-# line 995 "ncl.y"
+# line 1007 "ncl.y"
 { 
 						NclSymbol *s;
 						int lv = _NclGetCurrentScopeLevel();
-						if((_yypvt[-3].sym->type != UNDEF)||(_yypvt[-3].sym->level != lv)) {
-							s = _NclAddSym(_yypvt[-3].sym->name,UNDEF);
+						if((yypvt[-3].sym->type != UNDEF)||(yypvt[-3].sym->level != lv)) {
+							s = _NclAddSym(yypvt[-3].sym->name,UNDEF);
 						} else {
-							s = _yypvt[-3].sym;
+							s = yypvt[-3].sym;
 						}
 
-						_yyval.src_node = _NclMakeLocalVarDec(s,_yypvt[-2].list,_yypvt[-0].sym); 
+						yyval.src_node = _NclMakeLocalVarDec(s,yypvt[-2].list,yypvt[-0].sym); 
 					} break;
 case 103:
-# line 1006 "ncl.y"
+# line 1018 "ncl.y"
 { 
 				/* Need to intercept defined names and add them to current scope */
 					NclSymbol *s;
 
-					s = _NclAddSym(_yypvt[-0].sym->name,UNDEF);
-					_yyval.src_node = _NclMakeLocalVarDec(s,NULL,NULL); 
+					s = _NclAddSym(yypvt[-0].sym->name,UNDEF);
+					yyval.src_node = _NclMakeLocalVarDec(s,NULL,NULL); 
 				} break;
 case 104:
-# line 1013 "ncl.y"
-{ 
-					NclSymbol *s;
-
-					s= _NclAddSym(_yypvt[-2].sym->name,UNDEF);
-					_yyval.src_node = _NclMakeLocalVarDec(s,NULL,_yypvt[-0].sym); 
-				} break;
-case 105:
-# line 1019 "ncl.y"
-{ 
-					NclSymbol *s;
-
-					s = _NclAddSym(_yypvt[-1].sym->name,UNDEF);
-					_yyval.src_node = _NclMakeLocalVarDec(s,_yypvt[-0].list,NULL); 
-				} break;
-case 106:
 # line 1025 "ncl.y"
 { 
 					NclSymbol *s;
 
-					s = _NclAddSym(_yypvt[-3].sym->name,UNDEF);
-					_yyval.src_node = _NclMakeLocalVarDec(s,_yypvt[-2].list,_yypvt[-0].sym); 
+					s= _NclAddSym(yypvt[-2].sym->name,UNDEF);
+					yyval.src_node = _NclMakeLocalVarDec(s,NULL,yypvt[-0].sym); 
+				} break;
+case 105:
+# line 1031 "ncl.y"
+{ 
+					NclSymbol *s;
+
+					s = _NclAddSym(yypvt[-1].sym->name,UNDEF);
+					yyval.src_node = _NclMakeLocalVarDec(s,yypvt[-0].list,NULL); 
+				} break;
+case 106:
+# line 1037 "ncl.y"
+{ 
+					NclSymbol *s;
+
+					s = _NclAddSym(yypvt[-3].sym->name,UNDEF);
+					yyval.src_node = _NclMakeLocalVarDec(s,yypvt[-2].list,yypvt[-0].sym); 
 				} break;
 case 107:
-# line 1033 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 108:
-# line 1036 "ncl.y"
-{		
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 109:
-# line 1039 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 110:
-# line 1042 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 111:
 # line 1045 "ncl.y"
 {
-				_yyval.sym = _yypvt[-0].sym;
+				yyval.sym = yypvt[-0].sym;
 			} break;
-case 112:
+case 108:
 # line 1048 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
+{		
+				yyval.sym = yypvt[-0].sym;
 			} break;
-case 113:
+case 109:
 # line 1051 "ncl.y"
 {
-				_yyval.sym = _yypvt[-0].sym;
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 110:
+# line 1054 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 111:
+# line 1057 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 112:
+# line 1060 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 113:
+# line 1063 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
 			} break;
 case 114:
-# line 1056 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
+# line 1068 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
 case 115:
-# line 1057 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
+# line 1069 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
 case 116:
-# line 1058 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 117:
-# line 1059 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 118:
-# line 1060 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 119:
-# line 1061 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 120:
-# line 1062 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 121:
-# line 1063 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 122:
-# line 1064 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 123:
-# line 1065 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 124:
-# line 1066 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 125:
-# line 1067 "ncl.y"
-{ _yyval.sym = _yypvt[-0].sym; } break;
-case 126:
 # line 1070 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 117:
+# line 1071 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 118:
+# line 1072 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 119:
+# line 1073 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 120:
+# line 1074 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 121:
+# line 1075 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 122:
+# line 1076 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 123:
+# line 1077 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 124:
+# line 1078 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 125:
+# line 1079 "ncl.y"
+{ yyval.sym = yypvt[-0].sym; } break;
+case 126:
+# line 1082 "ncl.y"
 { 
 					/* Dimension size list must be in order */
-						_yyval.list = _NclMakeNewListNode();
-						_yyval.list->next = NULL;
-						_yyval.list->node = _NclMakeDimSizeNode(_yypvt[-1].integer);
+						yyval.list = _NclMakeNewListNode();
+						yyval.list->next = NULL;
+						yyval.list->node = _NclMakeDimSizeNode(yypvt[-1].integer);
 						 
 					} break;
 case 127:
-# line 1077 "ncl.y"
+# line 1089 "ncl.y"
 {
-						_yyval.list = _NclMakeNewListNode();
-						_yyval.list->next = NULL;
-						_yyval.list->node = _NclMakeDimSizeNode(-1);
+						yyval.list = _NclMakeNewListNode();
+						yyval.list->next = NULL;
+						yyval.list->node = _NclMakeDimSizeNode(-1);
 						 
 					} break;
 case 128:
-# line 1083 "ncl.y"
+# line 1095 "ncl.y"
 {   	
 						NclSrcListNode *step;
 						
-						step = _yypvt[-3].list;
+						step = yypvt[-3].list;
 						while(step->next != NULL) 
 							step = step->next;
 						step->next = _NclMakeNewListNode();
 						step->next->next = NULL;
-						step->next->node = _NclMakeDimSizeNode(_yypvt[-1].integer);
+						step->next->node = _NclMakeDimSizeNode(yypvt[-1].integer);
 						
 					} break;
 case 129:
-# line 1094 "ncl.y"
+# line 1106 "ncl.y"
 {   
 						NclSrcListNode *step;
                                                 
-                                                step = _yypvt[-3].list;
+                                                step = yypvt[-3].list;
                                                 while(step->next != NULL) 
                                                         step = step->next;
                                                 step->next = _NclMakeNewListNode();
@@ -2592,13 +2592,13 @@ case 129:
 						
 					} break;
 case 130:
-# line 1107 "ncl.y"
-{ _NclNewScope(); _yyval.sym = _yypvt[-0].sym; } break;
+# line 1119 "ncl.y"
+{ _NclNewScope(); yyval.sym = yypvt[-0].sym; } break;
 case 131:
-# line 1109 "ncl.y"
-{_NclChangeSymbolType(_yypvt[-7].sym,NPROC);_NclAddProcFuncInfoToSym(_yypvt[-7].sym,_yypvt[-5].list); } break;
+# line 1121 "ncl.y"
+{_NclChangeSymbolType(yypvt[-7].sym,NPROC);_NclAddProcFuncInfoToSym(yypvt[-7].sym,yypvt[-5].list); } break;
 case 132:
-# line 1109 "ncl.y"
+# line 1121 "ncl.y"
 {
 								NclSymTableListNode *tmp;
 								if(is_error) {
@@ -2606,36 +2606,36 @@ case 132:
 								}
                                                                 tmp = _NclPopScope();
 							
-								_yyval.src_node = _NclMakeProcDef(_yypvt[-9].sym,_yypvt[-7].list,_yypvt[-0].src_node,tmp);
+								yyval.src_node = _NclMakeProcDef(yypvt[-9].sym,yypvt[-7].list,yypvt[-0].src_node,tmp);
 									
 							} break;
 case 133:
-# line 1119 "ncl.y"
-{_NclChangeSymbolType(_yypvt[-4].sym,NPROC);_NclAddProcFuncInfoToSym(_yypvt[-4].sym,_yypvt[-2].list); } break;
+# line 1131 "ncl.y"
+{_NclChangeSymbolType(yypvt[-4].sym,NPROC);_NclAddProcFuncInfoToSym(yypvt[-4].sym,yypvt[-2].list); } break;
 case 134:
-# line 1119 "ncl.y"
+# line 1131 "ncl.y"
 {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
                                                                 tmp = _NclPopScope();
-								_yyval.src_node = _NclMakeProcDef(_yypvt[-6].sym,_yypvt[-4].list,_yypvt[-0].src_node,tmp);
+								yyval.src_node = _NclMakeProcDef(yypvt[-6].sym,yypvt[-4].list,yypvt[-0].src_node,tmp);
 									
 							} break;
 case 135:
-# line 1128 "ncl.y"
+# line 1140 "ncl.y"
 {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
                                                                 tmp = _NclPopScope();
-								_yyval.src_node = _NclMakeExternalProcDef(_NclChangeSymbolType(_yypvt[-5].sym,EPROC),_yypvt[-3].list,_yypvt[-0].str,tmp);
+								yyval.src_node = _NclMakeExternalProcDef(_NclChangeSymbolType(yypvt[-5].sym,EPROC),yypvt[-3].list,yypvt[-0].str,tmp);
 									
 							} break;
 case 136:
-# line 1137 "ncl.y"
+# line 1149 "ncl.y"
 {
 			is_error += 1;
 /*
@@ -2648,377 +2648,377 @@ case 136:
 			(void)_NclPopScope();
 	} break;
 case 137:
-# line 1150 "ncl.y"
+# line 1162 "ncl.y"
 {
-						((NclGenericRefNode*)_yypvt[-2].src_node)->ref_type = Ncl_WRITEIT;
-						_yyval.src_node = _NclMakeAssignment(_yypvt[-2].src_node,_yypvt[-0].src_node);
+						((NclGenericRefNode*)yypvt[-2].src_node)->ref_type = Ncl_WRITEIT;
+						yyval.src_node = _NclMakeAssignment(yypvt[-2].src_node,yypvt[-0].src_node);
 						  
 					} break;
 case 138:
-# line 1162 "ncl.y"
+# line 1174 "ncl.y"
 {
-			_yyval.src_node = _NclMakeVarRef(_yypvt[-0].sym,NULL);
+			yyval.src_node = _NclMakeVarRef(yypvt[-0].sym,NULL);
 		  } break;
 case 139:
-# line 1165 "ncl.y"
+# line 1177 "ncl.y"
 {
-						_yyval.src_node = _NclMakeFileVarRef(_yypvt[-1].sym,&((_yypvt[-0].str)[2]),NULL,Ncl_FILEVAR);
+						yyval.src_node = _NclMakeFileVarRef(yypvt[-1].sym,&((yypvt[-0].str)[2]),NULL,Ncl_FILEVAR);
 					} break;
 case 140:
-# line 1168 "ncl.y"
+# line 1180 "ncl.y"
 {
-						_yyval.src_node = _NclMakeFileVarRef(_yypvt[-2].sym,&((_yypvt[-1].str)[2]),NULL,Ncl_FILEVAR);
+						yyval.src_node = _NclMakeFileVarRef(yypvt[-2].sym,&((yypvt[-1].str)[2]),NULL,Ncl_FILEVAR);
 					} break;
 case 141:
-# line 1171 "ncl.y"
+# line 1183 "ncl.y"
 {
 				
-						_yyval.src_node = _NclMakeFileVarRef(_yypvt[-5].sym,&((_yypvt[-4].str)[2]),_yypvt[-2].list,Ncl_FILEVAR);
+						yyval.src_node = _NclMakeFileVarRef(yypvt[-5].sym,&((yypvt[-4].str)[2]),yypvt[-2].list,Ncl_FILEVAR);
 					} break;
 case 142:
-# line 1175 "ncl.y"
+# line 1187 "ncl.y"
 {	
 				
-						_yyval.src_node = _NclMakeFileVarRef(_yypvt[-4].sym,&((_yypvt[-3].str)[2]),_yypvt[-1].list,Ncl_FILEVAR);
+						yyval.src_node = _NclMakeFileVarRef(yypvt[-4].sym,&((yypvt[-3].str)[2]),yypvt[-1].list,Ncl_FILEVAR);
 					} break;
 case 143:
-# line 1179 "ncl.y"
-{
-						_yyval.src_node = _NclMakeFileVarDimRef(_yypvt[-3].sym,&((_yypvt[-2].str)[2]),_yypvt[-0].src_node);		
-					} break;
-case 144:
-# line 1182 "ncl.y"
-{
-						_yyval.src_node = _NclMakeFileVarAttRef(_yypvt[-2].sym,&((_yypvt[-1].str)[2]),_yypvt[-0].str,NULL);
-					} break;
-case 145:
-# line 1185 "ncl.y"
-{
-						_yyval.src_node = _NclMakeFileVarAttRef(_yypvt[-5].sym,&((_yypvt[-4].str)[2]),_yypvt[-3].str,_yypvt[-1].list);
-					} break;
-case 146:
-# line 1188 "ncl.y"
-{
-						_yyval.src_node = _NclMakeFileVarCoordRef(_yypvt[-2].sym,&((_yypvt[-1].str)[2]),&((_yypvt[-0].str)[1]),NULL);
-					} break;
-case 147:
 # line 1191 "ncl.y"
 {
-						_yyval.src_node = _NclMakeFileVarCoordRef(_yypvt[-3].sym,&((_yypvt[-2].str)[2]),&((_yypvt[-1].str)[1]),NULL);
+						yyval.src_node = _NclMakeFileVarDimRef(yypvt[-3].sym,&((yypvt[-2].str)[2]),yypvt[-0].src_node);		
 					} break;
-case 148:
+case 144:
 # line 1194 "ncl.y"
 {
-						_yyval.src_node = _NclMakeFileVarCoordRef(_yypvt[-5].sym,&((_yypvt[-4].str)[2]),&((_yypvt[-3].str)[1]),_yypvt[-1].list);
+						yyval.src_node = _NclMakeFileVarAttRef(yypvt[-2].sym,&((yypvt[-1].str)[2]),yypvt[-0].str,NULL);
 					} break;
-case 149:
+case 145:
 # line 1197 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarDimRef(_yypvt[-2].sym,_yypvt[-0].src_node);		
+						yyval.src_node = _NclMakeFileVarAttRef(yypvt[-5].sym,&((yypvt[-4].str)[2]),yypvt[-3].str,yypvt[-1].list);
 					} break;
-case 150:
+case 146:
 # line 1200 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarAttRef(_yypvt[-1].sym,_yypvt[-0].str,NULL);
+						yyval.src_node = _NclMakeFileVarCoordRef(yypvt[-2].sym,&((yypvt[-1].str)[2]),&((yypvt[-0].str)[1]),NULL);
 					} break;
-case 151:
+case 147:
 # line 1203 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarAttRef(_yypvt[-4].sym,_yypvt[-3].str,_yypvt[-1].list);
+						yyval.src_node = _NclMakeFileVarCoordRef(yypvt[-3].sym,&((yypvt[-2].str)[2]),&((yypvt[-1].str)[1]),NULL);
 					} break;
-case 152:
+case 148:
 # line 1206 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarRef(_yypvt[-1].sym,NULL);
+						yyval.src_node = _NclMakeFileVarCoordRef(yypvt[-5].sym,&((yypvt[-4].str)[2]),&((yypvt[-3].str)[1]),yypvt[-1].list);
 					} break;
-case 153:
+case 149:
 # line 1209 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarRef(_yypvt[-4].sym,_yypvt[-2].list);
+						yyval.src_node = _NclMakeVarDimRef(yypvt[-2].sym,yypvt[-0].src_node);		
 					} break;
-case 154:
+case 150:
 # line 1212 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarRef(_yypvt[-3].sym,_yypvt[-1].list);
+						yyval.src_node = _NclMakeVarAttRef(yypvt[-1].sym,yypvt[-0].str,NULL);
 					} break;
-case 155:
+case 151:
 # line 1215 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarCoordRef(_yypvt[-1].sym,&((_yypvt[-0].str)[1]),NULL);
+						yyval.src_node = _NclMakeVarAttRef(yypvt[-4].sym,yypvt[-3].str,yypvt[-1].list);
 					} break;
-case 156:
+case 152:
 # line 1218 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarCoordRef(_yypvt[-4].sym,&((_yypvt[-3].str)[1]),_yypvt[-1].list);
+						yyval.src_node = _NclMakeVarRef(yypvt[-1].sym,NULL);
 					} break;
-case 157:
+case 153:
 # line 1221 "ncl.y"
 {
-						_yyval.src_node = _NclMakeVarCoordRef(_yypvt[-2].sym,&((_yypvt[-1].str)[1]),NULL);
+						yyval.src_node = _NclMakeVarRef(yypvt[-4].sym,yypvt[-2].list);
+					} break;
+case 154:
+# line 1224 "ncl.y"
+{
+						yyval.src_node = _NclMakeVarRef(yypvt[-3].sym,yypvt[-1].list);
+					} break;
+case 155:
+# line 1227 "ncl.y"
+{
+						yyval.src_node = _NclMakeVarCoordRef(yypvt[-1].sym,&((yypvt[-0].str)[1]),NULL);
+					} break;
+case 156:
+# line 1230 "ncl.y"
+{
+						yyval.src_node = _NclMakeVarCoordRef(yypvt[-4].sym,&((yypvt[-3].str)[1]),yypvt[-1].list);
+					} break;
+case 157:
+# line 1233 "ncl.y"
+{
+						yyval.src_node = _NclMakeVarCoordRef(yypvt[-2].sym,&((yypvt[-1].str)[1]),NULL);
 					} break;
 case 158:
-# line 1226 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 159:
-# line 1229 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 160:
-# line 1232 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 161:
-# line 1235 "ncl.y"
-{
-				_yyval.sym = _yypvt[-0].sym;
-			} break;
-case 162:
 # line 1238 "ncl.y"
 {
-				_yyval.sym = _yypvt[-0].sym;
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 159:
+# line 1241 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 160:
+# line 1244 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 161:
+# line 1247 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
+			} break;
+case 162:
+# line 1250 "ncl.y"
+{
+				yyval.sym = yypvt[-0].sym;
 			} break;
 case 163:
-# line 1242 "ncl.y"
+# line 1254 "ncl.y"
 {
 					/* ordering of subscripts must be preserved */
-						_yyval.list = _NclMakeNewListNode();
-						_yyval.list->next = NULL;
-						_yyval.list->node = _yypvt[-0].src_node;
+						yyval.list = _NclMakeNewListNode();
+						yyval.list->next = NULL;
+						yyval.list->node = yypvt[-0].src_node;
 					} break;
 case 164:
-# line 1248 "ncl.y"
+# line 1260 "ncl.y"
 {
 					/* ordering of subscripts must be preserved */
-                                                _yyval.list = _NclMakeNewListNode();
-                                                _yyval.list->next = NULL;
-                                                _yyval.list->node = _yypvt[-1].src_node;
+                                                yyval.list = _NclMakeNewListNode();
+                                                yyval.list->next = NULL;
+                                                yyval.list->node = yypvt[-1].src_node;
 					} break;
 case 165:
-# line 1254 "ncl.y"
+# line 1266 "ncl.y"
 {
 						NclSrcListNode *step;
                                                 
-                                                step = _yypvt[-2].list;
+                                                step = yypvt[-2].list;
                                                 while(step->next != NULL) 
                                                         step = step->next;
                                                 step->next = _NclMakeNewListNode();
                                                 step->next->next = NULL;
-                                                step->next->node = _yypvt[-0].src_node;
+                                                step->next->node = yypvt[-0].src_node;
 						
 					} break;
 case 166:
-# line 1265 "ncl.y"
+# line 1277 "ncl.y"
 {
 						NclSrcListNode *step;
                                          
-                                                step = _yypvt[-4].list;
+                                                step = yypvt[-4].list;
                                                 while(step->next != NULL)
                                                         step = step->next;
                                                 step->next = _NclMakeNewListNode();
                                                 step->next->next = NULL;
-                                                step->next->node = _yypvt[-1].src_node;
+                                                step->next->node = yypvt[-1].src_node;
                                                 
 					} break;
 case 167:
-# line 1278 "ncl.y"
+# line 1290 "ncl.y"
 {  
-						_yyval.src_node = _NclMakeIntSubscript(_yypvt[-0].src_node,NULL);
+						yyval.src_node = _NclMakeIntSubscript(yypvt[-0].src_node,NULL);
 						 
 					} break;
 case 168:
-# line 1282 "ncl.y"
+# line 1294 "ncl.y"
 { 
-						_yyval.src_node = _NclMakeIntSubscript(_yypvt[-0].src_node,_yypvt[-1].str);
+						yyval.src_node = _NclMakeIntSubscript(yypvt[-0].src_node,yypvt[-1].str);
 						  
 					} break;
 case 169:
-# line 1288 "ncl.y"
+# line 1300 "ncl.y"
 {  
-						_yyval.src_node = _NclMakeCoordSubscript(_yypvt[-0].src_node,NULL);
+						yyval.src_node = _NclMakeCoordSubscript(yypvt[-0].src_node,NULL);
 						 
 					} break;
 case 170:
-# line 1292 "ncl.y"
+# line 1304 "ncl.y"
 { 
-						_yyval.src_node = _NclMakeCoordSubscript(_yypvt[-0].src_node,_yypvt[-1].str);
+						yyval.src_node = _NclMakeCoordSubscript(yypvt[-0].src_node,yypvt[-1].str);
 						  
 					} break;
 case 171:
-# line 1299 "ncl.y"
-{
-						_yyval.src_node = _NclMakeSingleIndex(_yypvt[-0].src_node);
-					} break;
-case 172:
-# line 1302 "ncl.y"
-{
-						_yyval.src_node = _NclMakeRangeIndex(NULL,NULL,NULL);
-					} break;
-case 173:
-# line 1305 "ncl.y"
-{
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-2].src_node,_yypvt[-0].src_node,NULL);
-					} break;
-case 174:
-# line 1308 "ncl.y"
-{
-						_yyval.src_node = _NclMakeRangeIndex(NULL,_yypvt[-0].src_node,NULL);
-					} break;
-case 175:
 # line 1311 "ncl.y"
 {
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-1].src_node,NULL,NULL);
+						yyval.src_node = _NclMakeSingleIndex(yypvt[-0].src_node);
 					} break;
-case 176:
+case 172:
 # line 1314 "ncl.y"
 {
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-3].src_node,_yypvt[-1].src_node,NULL);
+						yyval.src_node = _NclMakeRangeIndex(NULL,NULL,NULL);
 					} break;
-case 177:
+case 173:
 # line 1317 "ncl.y"
 {
-						_yyval.src_node = _NclMakeRangeIndex(NULL,_yypvt[-1].src_node,NULL);
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-2].src_node,yypvt[-0].src_node,NULL);
 					} break;
-case 178:
+case 174:
 # line 1320 "ncl.y"
 {
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-2].src_node,NULL,NULL);
+						yyval.src_node = _NclMakeRangeIndex(NULL,yypvt[-0].src_node,NULL);
+					} break;
+case 175:
+# line 1323 "ncl.y"
+{
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-1].src_node,NULL,NULL);
+					} break;
+case 176:
+# line 1326 "ncl.y"
+{
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-3].src_node,yypvt[-1].src_node,NULL);
+					} break;
+case 177:
+# line 1329 "ncl.y"
+{
+						yyval.src_node = _NclMakeRangeIndex(NULL,yypvt[-1].src_node,NULL);
+					} break;
+case 178:
+# line 1332 "ncl.y"
+{
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-2].src_node,NULL,NULL);
 					} break;
 case 179:
-# line 1323 "ncl.y"
-{				
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-4].src_node,_yypvt[-2].src_node,_yypvt[-0].src_node);
-					} break;
-case 180:
-# line 1326 "ncl.y"
-{				
-						_yyval.src_node = _NclMakeRangeIndex(_yypvt[-3].src_node,NULL,_yypvt[-0].src_node);
-					} break;
-case 181:
-# line 1329 "ncl.y"
-{				
-						_yyval.src_node = _NclMakeRangeIndex(NULL,_yypvt[-2].src_node,_yypvt[-0].src_node);
-					} break;
-case 182:
-# line 1332 "ncl.y"
-{				
-						_yyval.src_node = _NclMakeRangeIndex(NULL,NULL,NULL);
-					} break;
-case 183:
 # line 1335 "ncl.y"
 {				
-						_yyval.src_node = _NclMakeRangeIndex(NULL,NULL,_yypvt[-0].src_node);
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-4].src_node,yypvt[-2].src_node,yypvt[-0].src_node);
+					} break;
+case 180:
+# line 1338 "ncl.y"
+{				
+						yyval.src_node = _NclMakeRangeIndex(yypvt[-3].src_node,NULL,yypvt[-0].src_node);
+					} break;
+case 181:
+# line 1341 "ncl.y"
+{				
+						yyval.src_node = _NclMakeRangeIndex(NULL,yypvt[-2].src_node,yypvt[-0].src_node);
+					} break;
+case 182:
+# line 1344 "ncl.y"
+{				
+						yyval.src_node = _NclMakeRangeIndex(NULL,NULL,NULL);
+					} break;
+case 183:
+# line 1347 "ncl.y"
+{				
+						yyval.src_node = _NclMakeRangeIndex(NULL,NULL,yypvt[-0].src_node);
 					} break;
 case 184:
-# line 1339 "ncl.y"
-{
-						_yyval.src_node = _yypvt[-0].src_node;
-					} break;
-case 185:
-# line 1342 "ncl.y"
-{
-						_yyval.src_node = _NclMakeUnaryExpr(_yypvt[-0].src_node,Ncl_NEGEXPR);
-					} break;
-case 186:
-# line 1345 "ncl.y"
-{
-						_yyval.src_node = _NclMakeUnaryExpr(_yypvt[-0].src_node,Ncl_NOTEXPR);
-					} break;
-case 187:
-# line 1348 "ncl.y"
-{
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_MODEXPR);
-					} break;
-case 188:
 # line 1351 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_OREXPR);
+						yyval.src_node = yypvt[-0].src_node;
 					} break;
-case 189:
+case 185:
 # line 1354 "ncl.y"
-{			
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_ANDEXPR);
+{
+						yyval.src_node = _NclMakeUnaryExpr(yypvt[-0].src_node,Ncl_NEGEXPR);
 					} break;
-case 190:
+case 186:
 # line 1357 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_XOREXPR);
+						yyval.src_node = _NclMakeUnaryExpr(yypvt[-0].src_node,Ncl_NOTEXPR);
 					} break;
-case 191:
+case 187:
 # line 1360 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_LTSELECTEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_MODEXPR);
 					} break;
-case 192:
+case 188:
 # line 1363 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_GTSELECTEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_OREXPR);
 					} break;
-case 193:
+case 189:
 # line 1366 "ncl.y"
-{
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_PLUSEXPR);
+{			
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_ANDEXPR);
 					} break;
-case 194:
+case 190:
 # line 1369 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_MINUSEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_XOREXPR);
 					} break;
-case 195:
+case 191:
 # line 1372 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_MULEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_LTSELECTEXPR);
 					} break;
-case 196:
+case 192:
 # line 1375 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_MATMULEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_GTSELECTEXPR);
 					} break;
-case 197:
+case 193:
 # line 1378 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_DIVEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_PLUSEXPR);
 					} break;
-case 198:
+case 194:
 # line 1381 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_EXPEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_MINUSEXPR);
 					} break;
-case 199:
+case 195:
 # line 1384 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_LEEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_MULEXPR);
 					} break;
-case 200:
+case 196:
 # line 1387 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_GEEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_MATMULEXPR);
 					} break;
-case 201:
+case 197:
 # line 1390 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_GTEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_DIVEXPR);
 					} break;
-case 202:
+case 198:
 # line 1393 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_LTEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_EXPEXPR);
 					} break;
-case 203:
+case 199:
 # line 1396 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_EQEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_LEEXPR);
 					} break;
-case 204:
+case 200:
 # line 1399 "ncl.y"
 {
-						_yyval.src_node = _NclMakeExpr(_yypvt[-2].src_node,_yypvt[-0].src_node,Ncl_NEEXPR);
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_GEEXPR);
+					} break;
+case 201:
+# line 1402 "ncl.y"
+{
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_GTEXPR);
+					} break;
+case 202:
+# line 1405 "ncl.y"
+{
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_LTEXPR);
+					} break;
+case 203:
+# line 1408 "ncl.y"
+{
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_EQEXPR);
+					} break;
+case 204:
+# line 1411 "ncl.y"
+{
+						yyval.src_node = _NclMakeExpr(yypvt[-2].src_node,yypvt[-0].src_node,Ncl_NEEXPR);
 					} break;
 case 205:
-# line 1403 "ncl.y"
+# line 1415 "ncl.y"
 {
 /*
 * Note all of the structures created below the primary rule are special! They
@@ -3026,202 +3026,202 @@ case 205:
 * is a parameter to a function or a procedure. The LP expr RP is an
 * exception
 */
-						_yyval.src_node = _NclMakeIdnExpr(_NclMakeRealExpr(_yypvt[-0].real));
+						yyval.src_node = _NclMakeIdnExpr(_NclMakeRealExpr(yypvt[-0].real));
 					} break;
 case 206:
-# line 1412 "ncl.y"
-{
-						_yyval.src_node = _NclMakeIdnExpr(_NclMakeIntExpr(_yypvt[-0].integer));
-					} break;
-case 207:
-# line 1415 "ncl.y"
-{
-						_yyval.src_node = _NclMakeIdnExpr(_NclMakeStringExpr(_yypvt[-0].str));
-					} break;
-case 208:
-# line 1418 "ncl.y"
-{	
-						_yyval.src_node = _NclMakeIdnExpr(_yypvt[-0].src_node);
-					} break;
-case 209:
-# line 1421 "ncl.y"
-{
-						_yyval.src_node = _NclMakeIdnExpr(_yypvt[-0].src_node);
-					} break;
-case 210:
 # line 1424 "ncl.y"
 {
-						_yyval.src_node = _NclMakeIdnExpr(_yypvt[-0].src_node);
+						yyval.src_node = _NclMakeIdnExpr(_NclMakeIntExpr(yypvt[-0].integer));
 					} break;
-case 211:
+case 207:
 # line 1427 "ncl.y"
 {
-						_yyval.src_node = _yypvt[-0].src_node;
+						yyval.src_node = _NclMakeIdnExpr(_NclMakeStringExpr(yypvt[-0].str));
 					} break;
-case 212:
+case 208:
 # line 1430 "ncl.y"
-{ 
-						_yyval.src_node = _yypvt[-1].src_node;
+{	
+						yyval.src_node = _NclMakeIdnExpr(yypvt[-0].src_node);
 					} break;
-case 213:
+case 209:
 # line 1433 "ncl.y"
 {
-						_yyval.src_node = _NclMakeNewOp(_yypvt[-5].src_node,_yypvt[-3].sym,_yypvt[-1].src_node);
+						yyval.src_node = _NclMakeIdnExpr(yypvt[-0].src_node);
 					} break;
-case 214:
+case 210:
 # line 1436 "ncl.y"
 {
-						_yyval.src_node = _NclMakeNewOp(_yypvt[-3].src_node,_yypvt[-1].sym,NULL);
+						yyval.src_node = _NclMakeIdnExpr(yypvt[-0].src_node);
+					} break;
+case 211:
+# line 1439 "ncl.y"
+{
+						yyval.src_node = yypvt[-0].src_node;
+					} break;
+case 212:
+# line 1442 "ncl.y"
+{ 
+						yyval.src_node = yypvt[-1].src_node;
+					} break;
+case 213:
+# line 1445 "ncl.y"
+{
+						yyval.src_node = _NclMakeNewOp(yypvt[-5].src_node,yypvt[-3].sym,yypvt[-1].src_node);
+					} break;
+case 214:
+# line 1448 "ncl.y"
+{
+						yyval.src_node = _NclMakeNewOp(yypvt[-3].src_node,yypvt[-1].sym,NULL);
 					} break;
 case 215:
-# line 1440 "ncl.y"
+# line 1452 "ncl.y"
 {	
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_BUILTINFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-1].sym,yypvt[-0].list,Ncl_BUILTINFUNCCALL);
 						}
 					} break;
 case 216:
-# line 1457 "ncl.y"
+# line 1469 "ncl.y"
 {
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_INTRINSICFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-1].sym,yypvt[-0].list,Ncl_INTRINSICFUNCCALL);
 						}
 					} break;
 case 217:
-# line 1474 "ncl.y"
+# line 1486 "ncl.y"
 {
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_EXTERNFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-1].sym,yypvt[-0].list,Ncl_EXTERNFUNCCALL);
 						}
 					} break;
 case 218:
-# line 1491 "ncl.y"
+# line 1503 "ncl.y"
 {
 						NclSrcListNode *step;
 						int count = 0;
 					
-						step = _yypvt[-0].list;
+						step = yypvt[-0].list;
 						while(step != NULL) {
 							count++;
 							step = step->next;
 						}
-						if(count != _yypvt[-1].sym->u.procfunc->nargs) {
+						if(count != yypvt[-1].sym->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-1].sym->name,_yypvt[-1].sym->u.procfunc->nargs,count);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-1].sym->name,yypvt[-1].sym->u.procfunc->nargs,count);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-1].sym,_yypvt[-0].list,Ncl_FUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-1].sym,yypvt[-0].list,Ncl_FUNCCALL);
 						}
 					} break;
 case 219:
-# line 1508 "ncl.y"
+# line 1520 "ncl.y"
 {
-						if(_yypvt[-0].sym->u.procfunc->nargs != 0) {
+						if(yypvt[-0].sym->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-0].sym->name,_yypvt[-0].sym->u.procfunc->nargs,0);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-0].sym->name,yypvt[-0].sym->u.procfunc->nargs,0);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-0].sym,NULL,Ncl_INTRINSICFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-0].sym,NULL,Ncl_INTRINSICFUNCCALL);
 						}
 					} break;
 case 220:
-# line 1517 "ncl.y"
+# line 1529 "ncl.y"
 {
-						if(_yypvt[-0].sym->u.procfunc->nargs != 0) {
+						if(yypvt[-0].sym->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-0].sym->name,_yypvt[-0].sym->u.procfunc->nargs,0);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-0].sym->name,yypvt[-0].sym->u.procfunc->nargs,0);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-0].sym,NULL,Ncl_BUILTINFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-0].sym,NULL,Ncl_BUILTINFUNCCALL);
 						}
 					} break;
 case 221:
-# line 1526 "ncl.y"
+# line 1538 "ncl.y"
 {
-						if(_yypvt[-0].sym->u.procfunc->nargs != 0) {
+						if(yypvt[-0].sym->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-0].sym->name,_yypvt[-0].sym->u.procfunc->nargs,0);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-0].sym->name,yypvt[-0].sym->u.procfunc->nargs,0);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-0].sym,NULL,Ncl_EXTERNFUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-0].sym,NULL,Ncl_EXTERNFUNCCALL);
 						}
 					} break;
 case 222:
-# line 1535 "ncl.y"
+# line 1547 "ncl.y"
 {
-						if(_yypvt[-0].sym->u.procfunc->nargs != 0) {
+						if(yypvt[-0].sym->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",_yypvt[-0].sym->name,_yypvt[-0].sym->u.procfunc->nargs,0);
-							_yyval.src_node = NULL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",yypvt[-0].sym->name,yypvt[-0].sym->u.procfunc->nargs,0);
+							yyval.src_node = NULL;
 						} else {
-							_yyval.src_node = _NclMakeFuncCall(_yypvt[-0].sym,NULL,Ncl_FUNCCALL);
+							yyval.src_node = _NclMakeFuncCall(yypvt[-0].sym,NULL,Ncl_FUNCCALL);
 						}
 					} break;
 case 223:
-# line 1545 "ncl.y"
+# line 1557 "ncl.y"
 { 
-							_yyval.src_node = _NclMakeArrayNode(_yypvt[-1].array);
+							yyval.src_node = _NclMakeArrayNode(yypvt[-1].array);
 							 
 					} break;
 case 224:
-# line 1551 "ncl.y"
+# line 1563 "ncl.y"
 {	
-							_yyval.array = _NclMakeRowList();
-							_yyval.array->list = _NclMakeNewListNode();
-							_yyval.array->list->next = NULL;
-							_yyval.array->list->node = _yypvt[-0].src_node;
-							_yyval.array->currentitem= _yyval.array->list;
-							_yyval.array->nelem = 1;
+							yyval.array = _NclMakeRowList();
+							yyval.array->list = _NclMakeNewListNode();
+							yyval.array->list->next = NULL;
+							yyval.array->list->node = yypvt[-0].src_node;
+							yyval.array->currentitem= yyval.array->list;
+							yyval.array->nelem = 1;
 						} break;
 case 225:
-# line 1559 "ncl.y"
+# line 1571 "ncl.y"
 { 
 						/* pushed on backwards so they can be popped of in correct order*/
                                          
-                                                	_yypvt[-0].array->currentitem->next =  _NclMakeNewListNode();
-							_yypvt[-0].array->currentitem = _yypvt[-0].array->currentitem->next;
-                                                	_yypvt[-0].array->currentitem->next = NULL;
-                                                	_yypvt[-0].array->currentitem->node = _yypvt[-2].src_node;
-							_yypvt[-0].array->nelem++ ;
-							_yyval.array = _yypvt[-0].array;
+                                                	yypvt[-0].array->currentitem->next =  _NclMakeNewListNode();
+							yypvt[-0].array->currentitem = yypvt[-0].array->currentitem->next;
+                                                	yypvt[-0].array->currentitem->next = NULL;
+                                                	yypvt[-0].array->currentitem->node = yypvt[-2].src_node;
+							yypvt[-0].array->nelem++ ;
+							yyval.array = yypvt[-0].array;
 							 
 						} break;
 	}
-	goto _yystack;		/* reset registers in driver code */
+	goto yystack;		/* reset registers in driver code */
 }

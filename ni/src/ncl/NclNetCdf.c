@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.1 1994-07-14 20:47:04 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.2 1994-07-18 15:46:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -693,6 +693,7 @@ void* storage;
 			}
 			ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
 			ncclose(cdfid);
+			return(storage);
 		} else {
 			stepal = stepal->next;
 		}

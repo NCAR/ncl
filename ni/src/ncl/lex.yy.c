@@ -1,30 +1,30 @@
 # include "stdio.h"
 # define U(x) x
 # define NLSTATE yyprevious=YYNEWLINE
-# define BEGIN _yybgin = _yysvec + 1 +
+# define BEGIN yybgin = yysvec + 1 +
 # define INITIAL 0
-# define YYLERR _yysvec
-# define YYSTATE (_yyestate-_yysvec-1)
+# define YYLERR yysvec
+# define YYSTATE (yyestate-yysvec-1)
 # define YYOPTIM 1
 # define YYLMAX BUFSIZ
-# define output(c) putc(c,_yyout)
-# define input() (((_yytchar=_yysptr>_yysbuf?U(*--_yysptr):getc(_yyin))==10?(_yylineno++,_yytchar):_yytchar)==EOF?0:_yytchar)
-# define unput(c) {_yytchar= (c);if(_yytchar=='\n')_yylineno--;*_yysptr++=_yytchar;}
-# define _yymore() (_yymorfg=1)
-# define ECHO fprintf(_yyout, "%s",yytext)
-# define REJECT { nstr = _yyreject(); goto _yyfussy;}
+# define output(c) putc(c,yyout)
+# define input() (((yytchar=yysptr>yysbuf?U(*--yysptr):getc(yyin))==10?(yylineno++,yytchar):yytchar)==EOF?0:yytchar)
+# define unput(c) {yytchar= (c);if(yytchar=='\n')yylineno--;*yysptr++=yytchar;}
+# define yymore() (yymorfg=1)
+# define ECHO fprintf(yyout, "%s",yytext)
+# define REJECT { nstr = yyreject(); goto yyfussy;}
 int yyleng; extern char yytext[];
-int _yymorfg;
-extern char *_yysptr, _yysbuf[];
-int _yytchar;
-FILE *_yyin = {stdin}, *_yyout = {stdout};
-extern int _yylineno;
-struct _yysvf { 
-	struct _yywork *_yystoff;
-	struct _yysvf *_yyother;
-	int *_yystops;};
-struct _yysvf *_yyestate;
-extern struct _yysvf _yysvec[], *_yybgin;
+int yymorfg;
+extern char *yysptr, yysbuf[];
+int yytchar;
+FILE *yyin = {stdin}, *yyout = {stdout};
+extern int yylineno;
+struct yysvf { 
+	struct yywork *yystoff;
+	struct yysvf *yyother;
+	int *yystops;};
+struct yysvf *yyestate;
+extern struct yysvf yysvec[], *yybgin;
 /*#include <stdio.h>*/
 #include <string.h>
 #include <ncarg/hlu/hlu.h>
@@ -32,7 +32,7 @@ extern struct _yysvf _yysvec[], *_yybgin;
 #include "defs.h"
 #include "NclData.h"
 #include "Symbol.h"
-#include "y.tab.h"
+#include "parser.h"
 #ifdef DEBUGER
 extern void printtoken(
 #ifdef NhlNeedProto
@@ -58,21 +58,21 @@ extern int loading;
 char *the_input_buffer = NULL;
 char *the_input_buffer_ptr = NULL;
 int the_input_buffer_size = 0;
-#define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? 0 : (((int)*the_input_buffer_ptr == 10) ? _yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
+#define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? 0 : (((int)*the_input_buffer_ptr == 10) ? yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
 
-#define unput(c) { _yytchar = (c); if(_yytchar=='\n')_yylineno--;*(--the_input_buffer_ptr) = _yytchar; }
+#define unput(c) { yytchar = (c); if(yytchar=='\n')yylineno--;*(--the_input_buffer_ptr) = yytchar; }
 #endif /* MAKEAPI */
 
 int rec = 0;
 FILE *recfp;
 # define AA 2
 # define YYNEWLINE 10
-_yylex(){
+yylex(){
 int nstr; extern int yyprevious;
-while((nstr = _yylook()) >= 0)
-_yyfussy: switch(nstr){
+while((nstr = yylook()) >= 0)
+yyfussy: switch(nstr){
 case 0:
-if(_yywrap()) return(0); break;
+if(yywrap()) return(0); break;
 case 1:
 {
 	cur_line_number++;
@@ -144,7 +144,7 @@ case 6:
 break;
 case 7:
 {
-		sscanf(yytext,"%lf",&(_yylval.real));
+		sscanf(yytext,"%lf",&(yylval.real));
 		printtoken(REAL,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -154,7 +154,7 @@ case 7:
 break;
 case 8:
 {
-	sscanf(yytext,"%le",&(_yylval.real));
+	sscanf(yytext,"%le",&(yylval.real));
 	printtoken(REAL,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -164,7 +164,7 @@ case 8:
 break;
 case 9:
 {
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
 	printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -175,7 +175,7 @@ break;
 case 10:
 {
 	yyless(yyleng - strlen(".gt."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -186,7 +186,7 @@ break;
 case 11:
 {
 	yyless(yyleng - strlen(".lt."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -197,7 +197,7 @@ break;
 case 12:
 {
 	yyless(yyleng - strlen(".le."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -208,7 +208,7 @@ break;
 case 13:
 {
 	yyless(yyleng - strlen(".eq."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -219,7 +219,7 @@ break;
 case 14:
 {
 	yyless(yyleng - strlen(".ge."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -230,7 +230,7 @@ break;
 case 15:
 {
 	yyless(yyleng - strlen(".ne."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -241,7 +241,7 @@ break;
 case 16:
 {
 	yyless(yyleng - strlen(".and."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -252,7 +252,7 @@ break;
 case 17:
 {
 	yyless(yyleng - strlen(".or."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -263,7 +263,7 @@ break;
 case 18:
 {
 	yyless(yyleng - strlen(".xor."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -274,7 +274,7 @@ break;
 case 19:
 {
 	yyless(yyleng - strlen(".not."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -285,7 +285,7 @@ break;
 case 20:
 {
 	yyless(yyleng - strlen(".xor."));
-	sscanf(yytext,"%d",&(_yylval.integer));
+	sscanf(yytext,"%d",&(yylval.integer));
         printtoken(INT,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -386,8 +386,8 @@ break;
 case 31:
 {
 
-	strcpy(_yylval.str,yytext);
-	printtoken(FVAR,_yylval.str);
+	strcpy(yylval.str,yytext);
+	printtoken(FVAR,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
@@ -403,7 +403,7 @@ case 32:
 	cur_line_text_pos += yyleng;
         if(( s = _NclLookUp(yytext)) == NULL) 
 		s = _NclAddSym(yytext,UNDEF);
-       	_yylval.sym = s;
+       	yylval.sym = s;
        	printtoken(s->type,yytext);
 	if((rec == 1)&&(s->type == QUIT)) {
 		fclose(recfp);
@@ -413,8 +413,8 @@ case 32:
 break;
 case 33:
 {
-	strcpy(_yylval.str,&(yytext[1]));
-	printtoken(DIM_MARKER,_yylval.str);
+	strcpy(yylval.str,&(yytext[1]));
+	printtoken(DIM_MARKER,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
@@ -426,8 +426,8 @@ case 34:
 	char *tmp;
 
 	tmp = (char*)yytext + 1;
-	strcpy(_yylval.str,tmp);
-	printtoken(ATTNAME,_yylval.str);
+	strcpy(yylval.str,tmp);
+	printtoken(ATTNAME,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
@@ -453,8 +453,8 @@ case 35:
 	   	} 
 	   }
 	}
-	strcpy(_yylval.str,yytext);
-	printtoken(DIM,_yylval.str);
+	strcpy(yylval.str,yytext);
+	printtoken(DIM,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
@@ -464,8 +464,8 @@ break;
 case 36:
 {
 
-	strcpy(_yylval.str,yytext);
-	printtoken(COORD,_yylval.str);
+	strcpy(yylval.str,yytext);
+	printtoken(COORD,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
@@ -483,8 +483,8 @@ case 37:
 	tmp = strrchr(yytext,'\"');
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
-	strncpy(_yylval.str,tmp,strlen(tmp)+1);
-	printtoken(STRING,_yylval.str);
+	strncpy(yylval.str,tmp,strlen(tmp)+1);
+	printtoken(STRING,yylval.str);
 	return STRING;
 }
 break;
@@ -591,10 +591,10 @@ break;
 case -1:
 break;
 default:
-fprintf(_yyout,"bad switch _yylook %d",nstr);
+fprintf(yyout,"bad switch yylook %d",nstr);
 } return(0); }
-/* end of _yylex */
-int _yyvstop[] = {
+/* end of yylex */
+int yyvstop[] = {
 0,
 
 48,
@@ -894,7 +894,7 @@ int _yyvstop[] = {
 0,
 0};
 # define YYTYPE int
-struct _yywork { YYTYPE verify, advance; } _yycrank[] = {
+struct yywork { YYTYPE verify, advance; } yycrank[] = {
 0,0,	0,0,	1,5,	0,0,	
 0,0,	0,0,	0,0,	0,0,	
 0,0,	0,0,	1,6,	1,7,	
@@ -1091,189 +1091,189 @@ struct _yywork { YYTYPE verify, advance; } _yycrank[] = {
 160,161,	160,161,	160,161,	160,161,	
 160,161,	160,161,	160,161,	160,161,	
 0,0};
-struct _yysvf _yysvec[] = {
+struct yysvf yysvec[] = {
 0,	0,	0,
-_yycrank+-1,	0,		0,	
-_yycrank+-16,	_yysvec+1,	0,	
-_yycrank+-89,	0,		0,	
-_yycrank+-104,	_yysvec+3,	0,	
-_yycrank+0,	0,		_yyvstop+1,
-_yycrank+0,	0,		_yyvstop+3,
-_yycrank+0,	0,		_yyvstop+6,
-_yycrank+0,	0,		_yyvstop+8,
-_yycrank+-151,	0,		_yyvstop+11,
-_yycrank+179,	0,		_yyvstop+13,
-_yycrank+0,	0,		_yyvstop+15,
-_yycrank+4,	0,		_yyvstop+18,
-_yycrank+0,	0,		_yyvstop+21,
-_yycrank+5,	0,		_yyvstop+24,
-_yycrank+122,	0,		_yyvstop+26,
-_yycrank+4,	0,		_yyvstop+28,
-_yycrank+32,	0,		_yyvstop+30,
-_yycrank+0,	0,		_yyvstop+33,
-_yycrank+-301,	0,		_yyvstop+36,
-_yycrank+329,	0,		_yyvstop+38,
-_yycrank+443,	0,		_yyvstop+40,
-_yycrank+0,	0,		_yyvstop+43,
-_yycrank+4,	0,		_yyvstop+46,
-_yycrank+0,	0,		_yyvstop+48,
-_yycrank+0,	0,		_yyvstop+51,
-_yycrank+0,	0,		_yyvstop+54,
-_yycrank+0,	0,		_yyvstop+57,
-_yycrank+0,	0,		_yyvstop+60,
-_yycrank+0,	0,		_yyvstop+64,
-_yycrank+0,	0,		_yyvstop+67,
-_yycrank+-5,	_yysvec+9,	_yyvstop+71,
-_yycrank+0,	_yysvec+10,	_yyvstop+74,
-_yycrank+0,	0,		_yyvstop+77,
-_yycrank+0,	_yysvec+12,	_yyvstop+81,
-_yycrank+0,	0,		_yyvstop+85,
-_yycrank+0,	_yysvec+14,	_yyvstop+89,
-_yycrank+0,	_yysvec+15,	_yyvstop+92,
-_yycrank+0,	_yysvec+16,	_yyvstop+95,
-_yycrank+0,	_yysvec+17,	_yyvstop+98,
-_yycrank+0,	0,		_yyvstop+102,
-_yycrank+0,	_yysvec+19,	_yyvstop+106,
-_yycrank+0,	_yysvec+20,	_yyvstop+109,
-_yycrank+0,	_yysvec+21,	_yyvstop+112,
-_yycrank+0,	0,		_yyvstop+116,
-_yycrank+0,	_yysvec+23,	_yyvstop+120,
-_yycrank+0,	0,		_yyvstop+123,
-_yycrank+0,	0,		_yyvstop+127,
-_yycrank+0,	0,		_yyvstop+131,
-_yycrank+-6,	_yysvec+9,	0,	
-_yycrank+0,	0,		_yyvstop+135,
-_yycrank+62,	_yysvec+10,	_yyvstop+137,
-_yycrank+0,	0,		_yyvstop+139,
-_yycrank+520,	0,		0,	
-_yycrank+267,	0,		_yyvstop+141,
-_yycrank+13,	0,		0,	
-_yycrank+14,	0,		0,	
-_yycrank+36,	0,		0,	
-_yycrank+37,	0,		0,	
-_yycrank+4,	0,		0,	
-_yycrank+14,	0,		0,	
-_yycrank+18,	0,		0,	
-_yycrank+21,	0,		0,	
-_yycrank+25,	0,		0,	
-_yycrank+39,	0,		0,	
-_yycrank+41,	0,		0,	
-_yycrank+45,	0,		0,	
-_yycrank+45,	0,		0,	
-_yycrank+53,	0,		0,	
-_yycrank+0,	0,		_yyvstop+143,
-_yycrank+595,	0,		_yyvstop+145,
-_yycrank+54,	_yysvec+17,	_yyvstop+147,
-_yycrank+302,	0,		0,	
-_yycrank+0,	_yysvec+19,	0,	
-_yycrank+0,	0,		_yyvstop+149,
-_yycrank+323,	_yysvec+20,	_yyvstop+151,
-_yycrank+44,	0,		0,	
-_yycrank+0,	_yysvec+21,	_yyvstop+153,
-_yycrank+0,	0,		_yyvstop+155,
-_yycrank+0,	0,		_yyvstop+157,
-_yycrank+0,	_yysvec+53,	_yyvstop+159,
-_yycrank+410,	0,		0,	
-_yycrank+40,	0,		0,	
-_yycrank+56,	0,		0,	
-_yycrank+57,	0,		0,	
-_yycrank+58,	0,		0,	
-_yycrank+119,	0,		0,	
-_yycrank+120,	0,		0,	
-_yycrank+121,	0,		0,	
-_yycrank+123,	0,		0,	
-_yycrank+101,	0,		0,	
-_yycrank+86,	0,		0,	
-_yycrank+0,	_yysvec+83,	0,	
-_yycrank+0,	_yysvec+84,	0,	
-_yycrank+0,	_yysvec+85,	0,	
-_yycrank+0,	_yysvec+86,	0,	
-_yycrank+0,	_yysvec+87,	0,	
-_yycrank+0,	_yysvec+88,	0,	
-_yycrank+72,	0,		0,	
-_yycrank+0,	_yysvec+89,	0,	
-_yycrank+76,	0,		0,	
-_yycrank+433,	0,		_yyvstop+161,
-_yycrank+114,	0,		0,	
-_yycrank+115,	_yysvec+72,	0,	
-_yycrank+133,	0,		0,	
-_yycrank+134,	0,		0,	
-_yycrank+142,	0,		0,	
-_yycrank+122,	0,		0,	
-_yycrank+126,	0,		0,	
-_yycrank+96,	0,		0,	
-_yycrank+94,	_yysvec+72,	0,	
-_yycrank+108,	0,		0,	
-_yycrank+121,	0,		0,	
-_yycrank+125,	0,		0,	
-_yycrank+94,	0,		0,	
-_yycrank+117,	0,		0,	
-_yycrank+668,	_yysvec+70,	_yyvstop+163,
-_yycrank+333,	0,		0,	
-_yycrank+0,	_yysvec+117,	_yyvstop+165,
-_yycrank+678,	0,		0,	
-_yycrank+0,	_yysvec+119,	_yyvstop+167,
-_yycrank+185,	0,		0,	
-_yycrank+0,	0,		_yyvstop+169,
-_yycrank+0,	0,		_yyvstop+171,
-_yycrank+0,	0,		_yyvstop+173,
-_yycrank+0,	0,		_yyvstop+175,
-_yycrank+0,	0,		_yyvstop+177,
-_yycrank+0,	0,		_yyvstop+179,
-_yycrank+0,	0,		_yyvstop+181,
-_yycrank+188,	0,		0,	
-_yycrank+0,	_yysvec+121,	0,	
-_yycrank+189,	0,		0,	
-_yycrank+0,	_yysvec+129,	0,	
-_yycrank+693,	0,		0,	
-_yycrank+170,	0,		0,	
-_yycrank+193,	0,		0,	
-_yycrank+194,	0,		0,	
-_yycrank+195,	0,		0,	
-_yycrank+224,	0,		0,	
-_yycrank+225,	0,		0,	
-_yycrank+226,	0,		0,	
-_yycrank+189,	0,		0,	
-_yycrank+257,	0,		0,	
-_yycrank+222,	0,		0,	
-_yycrank+205,	0,		0,	
-_yycrank+0,	_yysvec+135,	0,	
-_yycrank+0,	_yysvec+136,	0,	
-_yycrank+0,	_yysvec+137,	0,	
-_yycrank+0,	_yysvec+138,	0,	
-_yycrank+0,	_yysvec+139,	0,	
-_yycrank+0,	_yysvec+140,	0,	
-_yycrank+190,	0,		0,	
-_yycrank+0,	_yysvec+142,	0,	
-_yycrank+193,	0,		0,	
-_yycrank+703,	0,		_yyvstop+183,
-_yycrank+227,	0,		0,	
-_yycrank+196,	0,		0,	
-_yycrank+0,	0,		_yyvstop+185,
-_yycrank+0,	0,		_yyvstop+187,
-_yycrank+0,	0,		_yyvstop+189,
-_yycrank+722,	0,		0,	
-_yycrank+0,	_yysvec+160,	_yyvstop+191,
-_yycrank+266,	0,		0,	
-_yycrank+0,	0,		_yyvstop+193,
-_yycrank+0,	0,		_yyvstop+195,
-_yycrank+0,	0,		_yyvstop+197,
-_yycrank+0,	0,		_yyvstop+199,
-_yycrank+0,	0,		_yyvstop+201,
-_yycrank+0,	0,		_yyvstop+203,
-_yycrank+267,	0,		0,	
-_yycrank+0,	0,		_yyvstop+205,
-_yycrank+268,	0,		0,	
-_yycrank+0,	_yysvec+162,	0,	
-_yycrank+0,	_yysvec+169,	0,	
-_yycrank+0,	_yysvec+171,	0,	
-_yycrank+0,	0,		_yyvstop+207,
-_yycrank+0,	0,		_yyvstop+209,
-_yycrank+0,	0,		_yyvstop+211,
+yycrank+-1,	0,		0,	
+yycrank+-16,	yysvec+1,	0,	
+yycrank+-89,	0,		0,	
+yycrank+-104,	yysvec+3,	0,	
+yycrank+0,	0,		yyvstop+1,
+yycrank+0,	0,		yyvstop+3,
+yycrank+0,	0,		yyvstop+6,
+yycrank+0,	0,		yyvstop+8,
+yycrank+-151,	0,		yyvstop+11,
+yycrank+179,	0,		yyvstop+13,
+yycrank+0,	0,		yyvstop+15,
+yycrank+4,	0,		yyvstop+18,
+yycrank+0,	0,		yyvstop+21,
+yycrank+5,	0,		yyvstop+24,
+yycrank+122,	0,		yyvstop+26,
+yycrank+4,	0,		yyvstop+28,
+yycrank+32,	0,		yyvstop+30,
+yycrank+0,	0,		yyvstop+33,
+yycrank+-301,	0,		yyvstop+36,
+yycrank+329,	0,		yyvstop+38,
+yycrank+443,	0,		yyvstop+40,
+yycrank+0,	0,		yyvstop+43,
+yycrank+4,	0,		yyvstop+46,
+yycrank+0,	0,		yyvstop+48,
+yycrank+0,	0,		yyvstop+51,
+yycrank+0,	0,		yyvstop+54,
+yycrank+0,	0,		yyvstop+57,
+yycrank+0,	0,		yyvstop+60,
+yycrank+0,	0,		yyvstop+64,
+yycrank+0,	0,		yyvstop+67,
+yycrank+-5,	yysvec+9,	yyvstop+71,
+yycrank+0,	yysvec+10,	yyvstop+74,
+yycrank+0,	0,		yyvstop+77,
+yycrank+0,	yysvec+12,	yyvstop+81,
+yycrank+0,	0,		yyvstop+85,
+yycrank+0,	yysvec+14,	yyvstop+89,
+yycrank+0,	yysvec+15,	yyvstop+92,
+yycrank+0,	yysvec+16,	yyvstop+95,
+yycrank+0,	yysvec+17,	yyvstop+98,
+yycrank+0,	0,		yyvstop+102,
+yycrank+0,	yysvec+19,	yyvstop+106,
+yycrank+0,	yysvec+20,	yyvstop+109,
+yycrank+0,	yysvec+21,	yyvstop+112,
+yycrank+0,	0,		yyvstop+116,
+yycrank+0,	yysvec+23,	yyvstop+120,
+yycrank+0,	0,		yyvstop+123,
+yycrank+0,	0,		yyvstop+127,
+yycrank+0,	0,		yyvstop+131,
+yycrank+-6,	yysvec+9,	0,	
+yycrank+0,	0,		yyvstop+135,
+yycrank+62,	yysvec+10,	yyvstop+137,
+yycrank+0,	0,		yyvstop+139,
+yycrank+520,	0,		0,	
+yycrank+267,	0,		yyvstop+141,
+yycrank+13,	0,		0,	
+yycrank+14,	0,		0,	
+yycrank+36,	0,		0,	
+yycrank+37,	0,		0,	
+yycrank+4,	0,		0,	
+yycrank+14,	0,		0,	
+yycrank+18,	0,		0,	
+yycrank+21,	0,		0,	
+yycrank+25,	0,		0,	
+yycrank+39,	0,		0,	
+yycrank+41,	0,		0,	
+yycrank+45,	0,		0,	
+yycrank+45,	0,		0,	
+yycrank+53,	0,		0,	
+yycrank+0,	0,		yyvstop+143,
+yycrank+595,	0,		yyvstop+145,
+yycrank+54,	yysvec+17,	yyvstop+147,
+yycrank+302,	0,		0,	
+yycrank+0,	yysvec+19,	0,	
+yycrank+0,	0,		yyvstop+149,
+yycrank+323,	yysvec+20,	yyvstop+151,
+yycrank+44,	0,		0,	
+yycrank+0,	yysvec+21,	yyvstop+153,
+yycrank+0,	0,		yyvstop+155,
+yycrank+0,	0,		yyvstop+157,
+yycrank+0,	yysvec+53,	yyvstop+159,
+yycrank+410,	0,		0,	
+yycrank+40,	0,		0,	
+yycrank+56,	0,		0,	
+yycrank+57,	0,		0,	
+yycrank+58,	0,		0,	
+yycrank+119,	0,		0,	
+yycrank+120,	0,		0,	
+yycrank+121,	0,		0,	
+yycrank+123,	0,		0,	
+yycrank+101,	0,		0,	
+yycrank+86,	0,		0,	
+yycrank+0,	yysvec+83,	0,	
+yycrank+0,	yysvec+84,	0,	
+yycrank+0,	yysvec+85,	0,	
+yycrank+0,	yysvec+86,	0,	
+yycrank+0,	yysvec+87,	0,	
+yycrank+0,	yysvec+88,	0,	
+yycrank+72,	0,		0,	
+yycrank+0,	yysvec+89,	0,	
+yycrank+76,	0,		0,	
+yycrank+433,	0,		yyvstop+161,
+yycrank+114,	0,		0,	
+yycrank+115,	yysvec+72,	0,	
+yycrank+133,	0,		0,	
+yycrank+134,	0,		0,	
+yycrank+142,	0,		0,	
+yycrank+122,	0,		0,	
+yycrank+126,	0,		0,	
+yycrank+96,	0,		0,	
+yycrank+94,	yysvec+72,	0,	
+yycrank+108,	0,		0,	
+yycrank+121,	0,		0,	
+yycrank+125,	0,		0,	
+yycrank+94,	0,		0,	
+yycrank+117,	0,		0,	
+yycrank+668,	yysvec+70,	yyvstop+163,
+yycrank+333,	0,		0,	
+yycrank+0,	yysvec+117,	yyvstop+165,
+yycrank+678,	0,		0,	
+yycrank+0,	yysvec+119,	yyvstop+167,
+yycrank+185,	0,		0,	
+yycrank+0,	0,		yyvstop+169,
+yycrank+0,	0,		yyvstop+171,
+yycrank+0,	0,		yyvstop+173,
+yycrank+0,	0,		yyvstop+175,
+yycrank+0,	0,		yyvstop+177,
+yycrank+0,	0,		yyvstop+179,
+yycrank+0,	0,		yyvstop+181,
+yycrank+188,	0,		0,	
+yycrank+0,	yysvec+121,	0,	
+yycrank+189,	0,		0,	
+yycrank+0,	yysvec+129,	0,	
+yycrank+693,	0,		0,	
+yycrank+170,	0,		0,	
+yycrank+193,	0,		0,	
+yycrank+194,	0,		0,	
+yycrank+195,	0,		0,	
+yycrank+224,	0,		0,	
+yycrank+225,	0,		0,	
+yycrank+226,	0,		0,	
+yycrank+189,	0,		0,	
+yycrank+257,	0,		0,	
+yycrank+222,	0,		0,	
+yycrank+205,	0,		0,	
+yycrank+0,	yysvec+135,	0,	
+yycrank+0,	yysvec+136,	0,	
+yycrank+0,	yysvec+137,	0,	
+yycrank+0,	yysvec+138,	0,	
+yycrank+0,	yysvec+139,	0,	
+yycrank+0,	yysvec+140,	0,	
+yycrank+190,	0,		0,	
+yycrank+0,	yysvec+142,	0,	
+yycrank+193,	0,		0,	
+yycrank+703,	0,		yyvstop+183,
+yycrank+227,	0,		0,	
+yycrank+196,	0,		0,	
+yycrank+0,	0,		yyvstop+185,
+yycrank+0,	0,		yyvstop+187,
+yycrank+0,	0,		yyvstop+189,
+yycrank+722,	0,		0,	
+yycrank+0,	yysvec+160,	yyvstop+191,
+yycrank+266,	0,		0,	
+yycrank+0,	0,		yyvstop+193,
+yycrank+0,	0,		yyvstop+195,
+yycrank+0,	0,		yyvstop+197,
+yycrank+0,	0,		yyvstop+199,
+yycrank+0,	0,		yyvstop+201,
+yycrank+0,	0,		yyvstop+203,
+yycrank+267,	0,		0,	
+yycrank+0,	0,		yyvstop+205,
+yycrank+268,	0,		0,	
+yycrank+0,	yysvec+162,	0,	
+yycrank+0,	yysvec+169,	0,	
+yycrank+0,	yysvec+171,	0,	
+yycrank+0,	0,		yyvstop+207,
+yycrank+0,	0,		yyvstop+209,
+yycrank+0,	0,		yyvstop+211,
 0,	0,	0};
-struct _yywork *_yytop = _yycrank+779;
-struct _yysvf *_yybgin = _yysvec+1;
-char _yymatch[] = {
+struct yywork *yytop = yycrank+779;
+struct yysvf *yybgin = yysvec+1;
+char yymatch[] = {
 00  ,01  ,01  ,01  ,01  ,01  ,01  ,01  ,
 01  ,011 ,012 ,01  ,01  ,01  ,01  ,01  ,
 01  ,01  ,01  ,01  ,01  ,01  ,01  ,01  ,
@@ -1291,7 +1291,7 @@ char _yymatch[] = {
 'A' ,'A' ,'A' ,'A' ,'A' ,'A' ,'A' ,'A' ,
 'A' ,'A' ,'A' ,01  ,'|' ,01  ,01  ,01  ,
 0};
-char _yyextra[] = {
+char yyextra[] = {
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
@@ -1304,113 +1304,113 @@ char _yyextra[] = {
 static	char ncform_sccsid[] = "@(#)ncform 1.6 88/02/08 SMI"; /* from S5R2 1.2 */
 #endif
 
-int _yylineno =1;
+int yylineno =1;
 # define YYU(x) x
 # define NLSTATE yyprevious=YYNEWLINE
 char yytext[YYLMAX];
-struct _yysvf *_yylstate [YYLMAX], **_yylsp, **_yyolsp;
-char _yysbuf[YYLMAX];
-char *_yysptr = _yysbuf;
-int *_yyfnd;
-extern struct _yysvf *_yyestate;
+struct yysvf *yylstate [YYLMAX], **yylsp, **yyolsp;
+char yysbuf[YYLMAX];
+char *yysptr = yysbuf;
+int *yyfnd;
+extern struct yysvf *yyestate;
 int yyprevious = YYNEWLINE;
-_yylook(){
-	register struct _yysvf *_yystate, **lsp;
-	register struct _yywork *_yyt;
-	struct _yysvf *_yyz;
-	int _yych, _yyfirst;
-	struct _yywork *_yyr;
+yylook(){
+	register struct yysvf *yystate, **lsp;
+	register struct yywork *yyt;
+	struct yysvf *yyz;
+	int yych, yyfirst;
+	struct yywork *yyr;
 # ifdef LEXDEBUG
 	int debug;
 # endif
-	char *_yylastch;
+	char *yylastch;
 	/* start off machines */
 # ifdef LEXDEBUG
 	debug = 0;
 # endif
-	_yyfirst=1;
-	if (!_yymorfg)
-		_yylastch = yytext;
+	yyfirst=1;
+	if (!yymorfg)
+		yylastch = yytext;
 	else {
-		_yymorfg=0;
-		_yylastch = yytext+yyleng;
+		yymorfg=0;
+		yylastch = yytext+yyleng;
 		}
 	for(;;){
-		lsp = _yylstate;
-		_yyestate = _yystate = _yybgin;
-		if (yyprevious==YYNEWLINE) _yystate++;
+		lsp = yylstate;
+		yyestate = yystate = yybgin;
+		if (yyprevious==YYNEWLINE) yystate++;
 		for (;;){
 # ifdef LEXDEBUG
-			if(debug)fprintf(_yyout,"state %d\n",_yystate-_yysvec-1);
+			if(debug)fprintf(yyout,"state %d\n",yystate-yysvec-1);
 # endif
-			_yyt = _yystate->_yystoff;
-			if(_yyt == _yycrank && !_yyfirst){  /* may not be any transitions */
-				_yyz = _yystate->_yyother;
-				if(_yyz == 0)break;
-				if(_yyz->_yystoff == _yycrank)break;
+			yyt = yystate->yystoff;
+			if(yyt == yycrank && !yyfirst){  /* may not be any transitions */
+				yyz = yystate->yyother;
+				if(yyz == 0)break;
+				if(yyz->yystoff == yycrank)break;
 				}
-			*_yylastch++ = _yych = input();
-			_yyfirst=0;
+			*yylastch++ = yych = input();
+			yyfirst=0;
 		tryagain:
 # ifdef LEXDEBUG
 			if(debug){
-				fprintf(_yyout,"char ");
-				allprint(_yych);
+				fprintf(yyout,"char ");
+				allprint(yych);
 				putchar('\n');
 				}
 # endif
-			_yyr = _yyt;
-			if ( (int)_yyt > (int)_yycrank){
-				_yyt = _yyr + _yych;
-				if (_yyt <= _yytop && _yyt->verify+_yysvec == _yystate){
-					if(_yyt->advance+_yysvec == YYLERR)	/* error transitions */
-						{unput(*--_yylastch);break;}
-					*lsp++ = _yystate = _yyt->advance+_yysvec;
+			yyr = yyt;
+			if ( (int)yyt > (int)yycrank){
+				yyt = yyr + yych;
+				if (yyt <= yytop && yyt->verify+yysvec == yystate){
+					if(yyt->advance+yysvec == YYLERR)	/* error transitions */
+						{unput(*--yylastch);break;}
+					*lsp++ = yystate = yyt->advance+yysvec;
 					goto contin;
 					}
 				}
 # ifdef YYOPTIM
-			else if((int)_yyt < (int)_yycrank) {		/* r < _yycrank */
-				_yyt = _yyr = _yycrank+(_yycrank-_yyt);
+			else if((int)yyt < (int)yycrank) {		/* r < yycrank */
+				yyt = yyr = yycrank+(yycrank-yyt);
 # ifdef LEXDEBUG
-				if(debug)fprintf(_yyout,"compressed state\n");
+				if(debug)fprintf(yyout,"compressed state\n");
 # endif
-				_yyt = _yyt + _yych;
-				if(_yyt <= _yytop && _yyt->verify+_yysvec == _yystate){
-					if(_yyt->advance+_yysvec == YYLERR)	/* error transitions */
-						{unput(*--_yylastch);break;}
-					*lsp++ = _yystate = _yyt->advance+_yysvec;
+				yyt = yyt + yych;
+				if(yyt <= yytop && yyt->verify+yysvec == yystate){
+					if(yyt->advance+yysvec == YYLERR)	/* error transitions */
+						{unput(*--yylastch);break;}
+					*lsp++ = yystate = yyt->advance+yysvec;
 					goto contin;
 					}
-				_yyt = _yyr + YYU(_yymatch[_yych]);
+				yyt = yyr + YYU(yymatch[yych]);
 # ifdef LEXDEBUG
 				if(debug){
-					fprintf(_yyout,"try fall back character ");
-					allprint(YYU(_yymatch[_yych]));
+					fprintf(yyout,"try fall back character ");
+					allprint(YYU(yymatch[yych]));
 					putchar('\n');
 					}
 # endif
-				if(_yyt <= _yytop && _yyt->verify+_yysvec == _yystate){
-					if(_yyt->advance+_yysvec == YYLERR)	/* error transition */
-						{unput(*--_yylastch);break;}
-					*lsp++ = _yystate = _yyt->advance+_yysvec;
+				if(yyt <= yytop && yyt->verify+yysvec == yystate){
+					if(yyt->advance+yysvec == YYLERR)	/* error transition */
+						{unput(*--yylastch);break;}
+					*lsp++ = yystate = yyt->advance+yysvec;
 					goto contin;
 					}
 				}
-			if ((_yystate = _yystate->_yyother) && (_yyt= _yystate->_yystoff) != _yycrank){
+			if ((yystate = yystate->yyother) && (yyt= yystate->yystoff) != yycrank){
 # ifdef LEXDEBUG
-				if(debug)fprintf(_yyout,"fall back to state %d\n",_yystate-_yysvec-1);
+				if(debug)fprintf(yyout,"fall back to state %d\n",yystate-yysvec-1);
 # endif
 				goto tryagain;
 				}
 # endif
 			else
-				{unput(*--_yylastch);break;}
+				{unput(*--yylastch);break;}
 		contin:
 # ifdef LEXDEBUG
 			if(debug){
-				fprintf(_yyout,"state %d char ",_yystate-_yysvec-1);
-				allprint(_yych);
+				fprintf(yyout,"state %d char ",yystate-yysvec-1);
+				allprint(yych);
 				putchar('\n');
 				}
 # endif
@@ -1418,51 +1418,51 @@ _yylook(){
 			}
 # ifdef LEXDEBUG
 		if(debug){
-			fprintf(_yyout,"stopped at %d with ",*(lsp-1)-_yysvec-1);
-			allprint(_yych);
+			fprintf(yyout,"stopped at %d with ",*(lsp-1)-yysvec-1);
+			allprint(yych);
 			putchar('\n');
 			}
 # endif
-		while (lsp-- > _yylstate){
-			*_yylastch-- = 0;
-			if (*lsp != 0 && (_yyfnd= (*lsp)->_yystops) && *_yyfnd > 0){
-				_yyolsp = lsp;
-				if(_yyextra[*_yyfnd]){		/* must backup */
-					while(_yyback((*lsp)->_yystops,-*_yyfnd) != 1 && lsp > _yylstate){
+		while (lsp-- > yylstate){
+			*yylastch-- = 0;
+			if (*lsp != 0 && (yyfnd= (*lsp)->yystops) && *yyfnd > 0){
+				yyolsp = lsp;
+				if(yyextra[*yyfnd]){		/* must backup */
+					while(yyback((*lsp)->yystops,-*yyfnd) != 1 && lsp > yylstate){
 						lsp--;
-						unput(*_yylastch--);
+						unput(*yylastch--);
 						}
 					}
-				yyprevious = YYU(*_yylastch);
-				_yylsp = lsp;
-				yyleng = _yylastch-yytext+1;
+				yyprevious = YYU(*yylastch);
+				yylsp = lsp;
+				yyleng = yylastch-yytext+1;
 				yytext[yyleng] = 0;
 # ifdef LEXDEBUG
 				if(debug){
-					fprintf(_yyout,"\nmatch ");
+					fprintf(yyout,"\nmatch ");
 					sprint(yytext);
-					fprintf(_yyout," action %d\n",*_yyfnd);
+					fprintf(yyout," action %d\n",*yyfnd);
 					}
 # endif
-				return(*_yyfnd++);
+				return(*yyfnd++);
 				}
-			unput(*_yylastch);
+			unput(*yylastch);
 			}
-		if (yytext[0] == 0  /* && feof(_yyin) */)
+		if (yytext[0] == 0  /* && feof(yyin) */)
 			{
-			_yysptr=_yysbuf;
+			yysptr=yysbuf;
 			return(0);
 			}
 		yyprevious = yytext[0] = input();
 		if (yyprevious>0)
 			output(yyprevious);
-		_yylastch=yytext;
+		yylastch=yytext;
 # ifdef LEXDEBUG
 		if(debug)putchar('\n');
 # endif
 		}
 	}
-_yyback(p, m)
+yyback(p, m)
 	int *p;
 {
 if (p==0) return(0);
@@ -1474,10 +1474,10 @@ while (*p)
 return(0);
 }
 	/* the following are only used in the lex library */
-_yyinput(){
+yyinput(){
 	return(input());
 	}
-_yyoutput(c)
+yyoutput(c)
   int c; {
 	output(c);
 	}

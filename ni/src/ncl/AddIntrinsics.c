@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.5 1994-07-14 20:45:36 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.6 1994-07-18 15:46:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@ extern "C" {
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "Symbol.h"
-#include "y.tab.h"
+#include "parser.h"
 
 extern NhlErrorTypes _NclIAddFile(
 #ifdef NhlNeedProto
