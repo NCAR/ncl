@@ -1,6 +1,6 @@
 C
-C $Id: mapgti.f,v 1.13 2000-08-22 15:03:32 haley Exp $
-C                                                                      
+C $Id: mapgti.f,v 1.14 2001-05-18 22:49:38 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -50,6 +50,9 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE   /MAPDPS/
 C
+      COMMON /MAPRGD/ ICOL(5),ICSF(5),NILN,NILT
+      SAVE   /MAPRGD/
+C
       IF (ICFELL('MAPGTI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
       IF      (WHCH(1:2).EQ.'C1'.OR.WHCH(1:2).EQ.'c1') THEN
@@ -94,6 +97,8 @@ C
       ELSE IF (WHCH(1:2).EQ.'IN'.OR.WHCH(1:2).EQ.'in') THEN
         IVAL=0
         IF (INTF) IVAL=1
+      ELSE IF (WHCH(1:2).EQ.'II'.OR.WHCH(1:2).EQ.'ii') THEN
+        IVAL=1000*NILT+NILN
       ELSE IF (WHCH(1:2).EQ.'LA'.OR.WHCH(1:2).EQ.'la') THEN
         IVAL=0
         IF (LBLF) IVAL=1

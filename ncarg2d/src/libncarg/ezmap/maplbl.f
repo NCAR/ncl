@@ -1,6 +1,6 @@
 C
-C $Id: maplbl.f,v 1.10 2000-08-22 15:03:34 haley Exp $
-C                                                                      
+C $Id: maplbl.f,v 1.11 2001-05-18 22:49:38 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -41,10 +41,6 @@ C
 C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE   /MAPCMA/
-C
-C Declare a character temporary to use.
-C
-      CHARACTER*4 CTMP
 C
 C Define required constants.  SIN1 and COS1 are respectively the sine
 C and cosine of one degree.

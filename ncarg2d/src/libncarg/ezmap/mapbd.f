@@ -1,6 +1,6 @@
 C
-C $Id: mapbd.f,v 1.14 2000-08-22 15:03:30 haley Exp $
-C                                                                      
+C $Id: mapbd.f,v 1.15 2001-05-18 22:49:37 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -130,6 +130,13 @@ C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE   /MAPDPS/
+C
+C The common block MAPRGD contains two arrays of color indices and
+C a couple of point-interpolation values used by the routines that plot
+C data from the RANGS/GSHHS dataset.
+C
+      COMMON /MAPRGD/ ICOL(5),ICSF(5),NILN,NILT
+      SAVE   /MAPRGD/
 C
 C Below are descriptions of the variables in each of the common blocks,
 C together with data statements giving default values to those variables
@@ -446,5 +453,29 @@ C
       DATA RSNA,RCSA,RSNB,RCSB / 0.,1.,0.,1. /
 C
       DATA DSNA,DCSA,DSNB,DCSB / 0.D0,1.D0,0.D0,1.D0 /
+C
+C Variables in MAPRGD:
+C
+C The array ICOL contains five color indices to be used in drawing
+C the outlines of polygons of the five different types defined by the
+C RANGS/GSHHS data, and the array ICSF contains five color indices to
+C be used in filling the polygons.  The routine MPRGSC may be called
+C by the user to set these colors and the routine MPRGGC may be called
+C to retrieve them.  The indices of each of these arrays are assigned
+C to features as follows: 1 => ocean; 2 => land; 3 => lake; 4 =>
+C island in lake; and 5 => pond on island.  NILN and NILT determine
+C how many points are to be interpolated per degree of longitude or
+C degree of latitude, respectively, along those parts of the filled
+C polygons lying along the edges of 1-degree cells.  The object of this
+C interpolation is to reduce the probability of having little gaps
+C along the seams between adjacent cells.  (If it is not done and a
+C projection is used that maps the 1-degree cells into patches whose
+C edges are neither horizontal nor vertical, the gaps can be quite
+C noticeable.)
+C
+      DATA ICOL / 1 , 1 , 1 , 1 , 1 /
+      DATA ICSF / 0 , 1 , 0 , 1 , 0 /
+C
+      DATA NILN,NILT / 32 , 32 /
 C
       END

@@ -1,6 +1,6 @@
 C
-C $Id: mapsti.f,v 1.13 2000-08-22 15:03:36 haley Exp $
-C                                                                      
+C $Id: mapsti.f,v 1.14 2001-05-18 22:49:38 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -57,6 +57,9 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE   /MAPDPS/
 C
+      COMMON /MAPRGD/ ICOL(5),ICSF(5),NILN,NILT
+      SAVE   /MAPRGD/
+C
       IF (ICFELL('MAPSTI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
       IF      (WHCH(1:2).EQ.'C1'.OR.WHCH(1:2).EQ.'c1') THEN
@@ -98,6 +101,9 @@ C
         IGI1=IVAL
       ELSE IF (WHCH(1:2).EQ.'G2'.OR.WHCH(1:2).EQ.'g2') THEN
         IGI2=IVAL
+      ELSE IF (WHCH(1:2).EQ.'II'.OR.WHCH(1:2).EQ.'ii') THEN
+        NILN=MAX(1,MIN(256,MOD(IVAL,1000)))
+        NILT=MAX(1,MIN(256,IVAL/1000))
       ELSE IF (WHCH(1:2).EQ.'LA'.OR.WHCH(1:2).EQ.'la') THEN
         LBLF=IVAL.NE.0
       ELSE IF (WHCH(1:2).EQ.'LS'.OR.WHCH(1:2).EQ.'ls') THEN
