@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.71 2003-08-18 14:56:42 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.72 2005-01-26 00:58:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -889,7 +889,7 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
 	NclRegisterProc(_NclIUpdateData,args,"NhlUpdateData",nargs);
 
 	nargs = 0;
