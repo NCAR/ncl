@@ -73,7 +73,7 @@ Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version
 .SH ACKNOWLEDGMENTS
-Bivar was written by Hiroshi Akima in august 1975 and rewritten
+Bivar was written by Hiroshi Akima in August 1975 and rewritten
 by him in late 1976.  In 1989 a new version of Bivar,
 incorporating changes described in a Rocky Mountain Journal of
 Mathematics was obtained from Dr. Akima, and included in NCAR
