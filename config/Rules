@@ -162,7 +162,7 @@ all::]\
 install::]\
 	@-cd arch; \]\
 	for prog in * ; do \]\
-	if (test $$prog != CVS.adm && test $$prog != Copyright) then \]\
+	if (test $$prog != CVS && test $$prog != Copyright) then \]\
 	echo "Installing $$prog in $(BINDIR)" ; \]\
 	$$NCARG/../utils/install -c -m $(INSTALL_BIN) $$prog $(BINDIR) ;\]\
 	fi; \]\
