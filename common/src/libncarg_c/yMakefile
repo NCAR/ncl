@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.20 1994-08-24 13:55:11 haley Exp $
+#	$Id: yMakefile,v 1.21 1995-04-11 18:24:28 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -22,8 +22,8 @@ EXFSRCS = gbytes.f sbytes.f
 EXOBJS  = bcopyswap.o gbytes.o sbytes.o logic32.o
 
 #elif defined(sun3) || defined(sun4) 
-EXCSRCS = fphand.c gsbytes.c logic32.c
-EXOBJS = fphand.o gsbytes.o logic32.o
+EXCSRCS = gsbytes.c logic32.c
+EXOBJS = gsbytes.o logic32.o
 
 #elif (defined(ultrix) && defined(RISC))
 EXCSRCS = bcopyswap.c s_abort.c gsbytes.c logic32.c
