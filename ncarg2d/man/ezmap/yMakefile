@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 1998-05-15 00:28:03 kennison Exp $
+#	$Id: yMakefile,v 1.14 1998-05-24 01:26:10 kennison Exp $
 #
 
 MAN =   ezmap ezmap_params ezmapa mapaci mapbla mapblm mapdrw mapeod mapfst \
@@ -7,9 +7,9 @@ MAN =   ezmap ezmap_params ezmapa mapaci mapbla mapblm mapdrw mapeod mapfst \
 	mapiqd mapiqm mapit mapita mapitd mapitm maplbl maplmb maplot mappos \
 	maproj maprs maprst mapsav mapset mapstc mapsti mapstl mapstr maptra \
 	maptri maptrn mapusr mapvec mpchln mpfnme mpgetc mpgeti mpgetl mpgetr \
-	mpglty mpiaty mpifnb mpilnb mpioar mpipai mpipan mpipar mpisci mplnam \
-	mplndm mplndr mplnri mpname mprset mpsetc mpseti mpsetl mpsetr supcon \
-	supmap
+	mpglty mpiaty mpifnb mpilnb mpiola mpiosa mpipai mpipan mpipar mpisci \
+	mplnam mplndm mplndr mplnri mpname mprset mpsetc mpseti mpsetl mpsetr \
+	supcon supmap
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs

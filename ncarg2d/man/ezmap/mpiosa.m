@@ -1,17 +1,17 @@
-.TH MPIOAR 3NCARG "April 1998" UNIX "NCAR GRAPHICS"
+.TH MPIOSA 3NCARG "April 1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-MPIOAR - Given the area identifier of one of the areas defined by whatever
+MPIOSA - Given the area identifier of one of the areas defined by whatever
 database was last read by one of the EZMAPB routines MPLNAM, MPLNDM, MPLNDR,
-and MPLNRI, this function returns the area identifier of the area, at a
-specified level, that contains it.
+and MPLNRI, this function returns the area identifier of the smallest area,
+at a specified level, that contains it.
 .SH SYNOPSIS
-IOAR=MPIOAR(IAIN,ILVL)
+IOSA=MPIOSA(IAIN,ILVL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-int c_mpioar (int iaid, int ilvl)
+int c_mpiosa (int iaid, int ilvl)
 .SH DESCRIPTION 
 .IP IAIN 12
 is an input expression of type INTEGER, specifying the area identifier of a
@@ -23,15 +23,15 @@ area to be found.
 The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH USAGE
-The statement "IOAR=MPIOAR(IAIN,ILVL)" retrieves in IOAR the area identifier
+The statement "IOSA=MPIOSA(IAIN,ILVL)" retrieves in IOSA the area identifier
 of that area, at level ILVL, that contains the area with area identifier IAIN.
 For example, if IMAD is the area identifier of the little island in Lake
-Superior called "Lake Madeline", then MPIOAR(IMAD,3) is the area identifier
+Superior called "Lake Madeline", then MPIOSA(IMAD,3) is the area identifier
 of the area called "Conterminous US".
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: mpex11, mpex12.
 .SH ACCESS
-To use MPIOAR or c_mpioar, load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use MPIOSA or c_mpiosa, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
@@ -87,6 +87,7 @@ mpglty,
 mpiaty,
 mpifnb,
 mpilnb,
+mpiola,
 mpipai,
 mpipan,
 mpipar,
