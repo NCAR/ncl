@@ -64,16 +64,9 @@ C
      $        0,rlist,ierr)
       endif
 C
-C Specify the viewport extent of the object.
+C Create a TextItem object.
 C
-      call NhlFRLClear(rlist)
-      call NhlFRLSetfloat(rlist,'vpXF',.2,ierr)
-      call NhlFRLSetfloat(rlist,'vpYF',.8,ierr)
-      call NhlFRLSetfloat(rlist,'vpWidthF',.6,ierr)
-      call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
-
-      call NhlFCreate(pid,'TextItems',NhlFTextItemLayerClass,
-     $     wid,rlist,ierr)
+      call NhlFCreate(pid,'TextItems',NhlFTextItemLayerClass,wid,0,ierr)
 
       call NhlFDraw(pid,ierr)
       call NhlFFrame(wid,ierr)

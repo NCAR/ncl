@@ -64,17 +64,11 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"tx02Work",NhlxWorkstationLayerClass,
                   NhlDEFAULT_APP,rlist);
-}
+    }
 /*
- * Specify the viewport extent of the object.
+ * Create TextItem object.
  */
-    NhlRLClear(rlist);
-    NhlRLSetFloat(rlist,NhlNvpXF,.2);
-    NhlRLSetFloat(rlist,NhlNvpYF,.8);
-    NhlRLSetFloat(rlist,NhlNvpWidthF,.6);
-    NhlRLSetFloat(rlist,NhlNvpHeightF,.6);
-
-    NhlCreate(&pid,"TextItems",NhltextItemLayerClass,wid,rlist);
+    NhlCreate(&pid,"TextItems",NhltextItemLayerClass,wid,0);
 
     NhlDraw(pid);
     NhlFrame(wid);

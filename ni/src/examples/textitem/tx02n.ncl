@@ -1,5 +1,5 @@
 ;
-;   $Id: tx02n.ncl,v 1.5 1995-03-22 21:45:50 haley Exp $
+;   $Id: tx02n.ncl,v 1.6 1995-04-06 15:09:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -59,14 +59,9 @@ else
 end if
 
 ;
-; Specify the viewport extent of the object.
+; Create TextItem object.
 ;
-pid = create "TextItems" textItemLayerClass wid
-    "vpXF" : .2
-    "vpYF" : .8
-    "vpWidthF" : .6
-    "vpHeightF" : .6
-end create
+pid = create "TextItems" textItemLayerClass wid end create
 
 draw(pid)
 frame(wid)
