@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.7 1992-12-16 21:17:14 haley Exp $
+#	$Id: ncargcc.cry,v 1.8 1993-01-08 16:19:12 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -21,8 +21,9 @@ set ctrans_libs = ""
 # set up default libraries
 
 set libncarg    =       "-lncarg"
-set libgks      =       "-lncarg_gks"
+set libgks      =       "-lncarg_gksC,-lncarg_gks"
 set liblocal    =       "-lncarg_loc"
+set libcbind    =       "-libncargC"
 
 set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 
@@ -119,7 +120,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv -L$l $ctrans_libs $libs $libncarg $libgks $liblocal $f77libs"
+set newargv = "$newargv -L$l $ctrans_libs $libs $libcbind $libncarg $libgks $liblocal $f77libs"
 
 echo $newargv
 eval $newargv
