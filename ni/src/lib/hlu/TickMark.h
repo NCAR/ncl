@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.17 1999-03-27 00:44:57 dbrown Exp $
+ *      $Id: TickMark.h,v 1.18 1999-03-29 18:31:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,6 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYLFormat		"tmYLFormat"
 #define NhlNtmXTFormat		"tmXTFormat"
 #define NhlNtmYRFormat		"tmYRFormat"
-#define NhlCtmFormat		"TmFormat"
 
 /*
 * X Axis general Control resources for Bottom and Top
@@ -374,20 +373,16 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * All line/text attributes share one class.
 */
 #define NhlCtmMajorThicknessesF		"TmMajorThicknessesF"
-#define NhlCtmMajorLineColors		"TmMajorLineColors"
 #define NhlCtmMajorLengthsF		"TmMajorLengthsF"
 #define NhlCtmMajorOutwardLengthsF	"TmMajorOutwardLengthsF"
 
 #define NhlCtmMinorThicknessesF		"TmMinorThicknessesF"
-#define NhlCtmMinorLineColors		"TmMinorLineColors"
 #define NhlCtmMinorLengthsF		"TmMinorLengthsF"
 #define NhlCtmMinorOutwardLengthsF	"TmMinorOutwardLengthsF"
 
 #define NhlCtmMajorGridThicknessesF	"TmMajorGridThicknessesF"
-#define NhlCtmMajorGridLineColors	"TmMajorGridLineColors"
 #define NhlCtmMajorGridLineDashPatterns	"TmMajorGridLineDashPatterns"
 #define NhlCtmMinorGridThicknessesF	"TmMinorGridThicknessesF"
-#define NhlCtmMinorGridLineColors	"TmMinorGridLineColors"
 #define NhlCtmMinorGridLineDashPatterns	"TmMinorGridLineDashPatterns"
 
 #define NhlCtmPrecisions		"TmPrecisions"
@@ -396,8 +391,6 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * The Following shared amongst axis
 */
 
-#define NhlCtmXLabelDirections		"TmXLabelDirections"
-#define NhlCtmYLabelDirections		"TmYLabelDirections"
 
 #define NhlCtmXMinorPerMajor	"TmXMinorPerMajor"
 #define NhlCtmYMinorPerMajor	"TmYMinorPerMajor"
@@ -431,7 +424,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXBTickSpacingF	"TmXBTickSpacingF"
 #define NhlCtmXBSpacingType	"TmXBSpacingType"
 #define NhlCtmXBValues		"TmXBValues"
-#define NhlCtmXBMinorValues		"TmXBMinorValues"
+#define NhlCtmXBMinorValues	"TmXBMinorValues"
 #define NhlCtmXBLabels		"TmXBLabels"
 #define NhlCtmXBLabelDeltaF	"TmXBLabelDeltaF"
 #define NhlCtmXTLabelStride	"TmXTLabelStride"
@@ -443,7 +436,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXTTickSpacingF	"TmXTTickSpacingF"
 #define NhlCtmXTSpacingType	"TmXTSpacingType"
 #define NhlCtmXTValues		"TmXTValues"
-#define NhlCtmXTMinorValues		"TmXTMinorValues"
+#define NhlCtmXTMinorValues	"TmXTMinorValues"
 #define NhlCtmXTLabels		"TmXTLabels"
 #define NhlCtmXTLabelDeltaF	"TmXLabelDeltaF"
 #define NhlCtmYUseLeft		"TmYUseLeft"
@@ -457,8 +450,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRStyle 		"TmYRStyle"
 #define NhlCtmYLIrrTensionF	"TmYLIrrTensionF"
 #define NhlCtmYRIrrTensionF	"TmYRIrrTensionF"
-#define NhlCtmYMajorGrid		"TmYMajorGrid"
-#define NhlCtmYMinorGrid		"TmYMinorGrid"
+#define NhlCtmYMajorGrid	"TmYMajorGrid"
+#define NhlCtmYMinorGrid	"TmYMinorGrid"
 #define NhlCtmYLMinorOn		"TmYLMinorOn"
 #define NhlCtmYRMinorOn		"TmYRMinorOn"
 #define NhlCtmYLLabelStride	"TmYLLabelStride"
@@ -470,7 +463,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYLTickSpacingF	"TmYLTickSpacingF"
 #define NhlCtmYLSpacingType	"TmYLSpacingType"
 #define NhlCtmYLValues		"TmYLValues"
-#define NhlCtmYLMinorValues		"TmYLMinorValues"
+#define NhlCtmYLMinorValues	"TmYLMinorValues"
 #define NhlCtmYLLabels		"TmYLLabels"
 #define NhlCtmYLLabelDeltaF	"TmYLLabelDeltaF"
 #define NhlCtmYRLabelStride	"TmYRLabelStride"
@@ -482,18 +475,33 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRTickSpacingF	"TmYRTickSpacingF"
 #define NhlCtmYRSpacingType	"TmYRSpacingType"
 #define NhlCtmYRValues		"TmYRValues"
-#define NhlCtmYRMinorValues		"TmYRMinorValues"
+#define NhlCtmYRMinorValues	"TmYRMinorValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
+
+/*
+ * These class resources have been added
+ */
+#define NhlCtmXBLabelJust	"TmXBLabelJust"
+#define NhlCtmXTLabelJust	"TmXTLabelJust"
+#define NhlCtmYLLabelJust	"TmYLLabelJust"
+#define NhlCtmYRLabelJust	"TmYRLabelJust"
 
 /*
  * These class resources have been eliminated
  */
 #if 0
-#define NhlCtmXBBorderOn	"TmXBBorderOn"
-#define NhlCtmXTBorderOn	"TmXTBorderOn"
-#define NhlCtmYLBorderOn	"TmYLBorderOn"
-#define NhlCtmYRBorderOn	"TmYRBorderOn"
+#define NhlCtmFormat			"TmFormat"
+#define NhlCtmXBBorderOn		"TmXBBorderOn"
+#define NhlCtmXTBorderOn		"TmXTBorderOn"
+#define NhlCtmYLBorderOn		"TmYLBorderOn"
+#define NhlCtmYRBorderOn		"TmYRBorderOn"
+#define NhlCtmMajorLineColors		"TmMajorLineColors"
+#define NhlCtmMinorLineColors		"TmMinorLineColors"
+#define NhlCtmMajorGridLineColors	"TmMajorGridLineColors"
+#define NhlCtmMinorGridLineColors	"TmMinorGridLineColors"
+#define NhlCtmXLabelDirections		"TmXLabelDirections"
+#define NhlCtmYLabelDirections		"TmYLabelDirections"
 
 #define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
 #define NhlCtmLabelFontColors		"TmLabelFontColors"

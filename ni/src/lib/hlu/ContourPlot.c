@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.82 1999-03-27 00:44:45 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.83 1999-03-29 18:31:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@ static NhlResource resources[] = {
 
 /* Level resources */
 
-	{ NhlNcnLevelSelectionMode,NhlCcnLevelSelectionMode,
+	{ NhlNcnLevelSelectionMode,NhlCLevelSelectionMode,
 		  NhlTcnLevelSelectionMode,sizeof(NhlcnLevelSelectionMode),
 		  Oset(level_selection_mode),
 		  NhlTImmediate,
@@ -52,28 +52,28 @@ static NhlResource resources[] = {
 	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
 		  Oset(level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
-	{ NhlNcnMaxLevelCount,NhlCcnMaxLevelCount,NhlTInteger,sizeof(int),
+	{ NhlNcnMaxLevelCount,NhlCMaxLevelCount,NhlTInteger,sizeof(int),
 		  Oset(max_level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(level_spacing_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{ NhlNcnLevelSpacingF,NhlCcnLevelSpacingF,NhlTFloat,sizeof(float),
+	{ NhlNcnLevelSpacingF,NhlCLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTProcedure,
 		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{ NhlNcnMinLevelValF,NhlCcnMinLevelValF,NhlTFloat,sizeof(float),
+	{ NhlNcnMinLevelValF,NhlCMinLevelValF,NhlTFloat,sizeof(float),
 		  Oset(min_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(max_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{ NhlNcnMaxLevelValF,NhlCcnMaxLevelValF,NhlTFloat,sizeof(float),
+	{ NhlNcnMaxLevelValF,NhlCMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
-	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
+	{NhlNcnLevels, NhlCLevels,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -275,7 +275,7 @@ static NhlResource resources[] = {
 
 /* Line label resources */
 
-	{NhlNcnLineLabelsOn,NhlCcnLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcnLineLabelsOn,NhlCPlotLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
@@ -305,7 +305,7 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(llabel_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineLabelFormat,NhlCcnLineLabelFormat,
+	{NhlNcnLineLabelFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(line_lbls.format.fstring),NhlTString,
 		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
@@ -331,7 +331,7 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelConstantSpacingF,NhlCTextConstantSpacingF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.cspacing),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNcnLineLabelAngleF,NhlCTextAngleF,
+	{NhlNcnLineLabelAngleF,NhlCcnLineLabelAngleF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.angle),
 		 NhlTString,_NhlUSET("-1.0"),0,NULL},
 	{NhlNcnLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
@@ -345,7 +345,7 @@ static NhlResource resources[] = {
                  NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnLineLabelPerimSpaceF,NhlCcnLineLabelPerimSpaceF,
+	{NhlNcnLineLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNcnLineLabelPerimColor,NhlCEdgeColor,NhlTColorIndex,
@@ -357,14 +357,14 @@ static NhlResource resources[] = {
 
 /* High Label resources */
 
-	{NhlNcnHighLabelsOn,NhlCcnHighLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcnHighLabelsOn,NhlCPlotLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNcnHighLabelString,NhlCcnHighLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
 							(NhlFreeFunc)NhlFree},
-	{NhlNcnHighLabelFormat,NhlCcnHighLabelFormat,
+	{NhlNcnHighLabelFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
@@ -406,7 +406,7 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelPerimOn,NhlCEdgesOn,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(high_lbls.perim_on),NhlTImmediate,
 		_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnHighLabelPerimSpaceF,NhlCcnHighLabelPerimSpaceF,
+	{NhlNcnHighLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		  NhlTFloat,sizeof(float),Oset(high_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNcnHighLabelPerimColor,NhlCEdgeColor,NhlTColorIndex,
@@ -418,14 +418,14 @@ static NhlResource resources[] = {
 
 /* Low label resources */
 
-	{NhlNcnLowLabelsOn,NhlCcnLowLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcnLowLabelsOn,NhlCPlotLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNcnLowLabelString,NhlCcnLowLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
 							(NhlFreeFunc)NhlFree},
-	{NhlNcnLowLabelFormat,NhlCcnLowLabelFormat,
+	{NhlNcnLowLabelFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
@@ -466,7 +466,7 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelPerimOn,NhlCEdgesOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(low_lbls.perim_on),
 		NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{ NhlNcnLowLabelPerimSpaceF,NhlCcnLowLabelPerimSpaceF,
+	{ NhlNcnLowLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		  NhlTFloat,sizeof(float),Oset(low_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNcnLowLabelPerimColor,NhlCEdgeColor,NhlTColorIndex,
@@ -478,14 +478,14 @@ static NhlResource resources[] = {
 
 /* Informational label resources */
 
-	{NhlNcnInfoLabelOn,NhlCcnInfoLabelOn,NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(info_lbl.on),
+	{NhlNcnInfoLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
+	 	sizeof(NhlBoolean),Oset(info_lbl.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnInfoLabelString,NhlCcnInfoLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(info_string),NhlTImmediate,_NhlUSET(NULL),0,
 							(NhlFreeFunc)NhlFree},
-	{NhlNcnInfoLabelFormat,NhlCcnInfoLabelFormat,
+	{NhlNcnInfoLabelFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(info_lbl.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
@@ -531,7 +531,7 @@ static NhlResource resources[] = {
                   NhlTBoolean,sizeof(NhlBoolean),
 		Oset(info_lbl.perim_on),
 		NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{ NhlNcnInfoLabelPerimSpaceF,NhlCcnInfoLabelPerimSpaceF,
+	{ NhlNcnInfoLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		  NhlTFloat,sizeof(float),Oset(info_lbl.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNcnInfoLabelPerimColor,NhlCEdgeColor,NhlTColorIndex,
@@ -558,7 +558,7 @@ static NhlResource resources[] = {
 		 sizeof(float),Oset(info_lbl_rec.ortho_pos),NhlTString,
 		 _NhlUSET("0.02"),0,NULL},
 
-	{NhlNcnNoDataLabelOn,NhlCcnNoDataLabelOn,NhlTBoolean,
+	{NhlNcnNoDataLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(no_data_label_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnNoDataLabelString,NhlCcnNoDataLabelString,
@@ -567,13 +567,13 @@ static NhlResource resources[] = {
 
 /* Constant field label resources */
 
-	{NhlNcnConstFLabelOn,NhlCcnConstFLabelOn,NhlTBoolean,
+	{NhlNcnConstFLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(constf_lbl.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnConstFLabelString,NhlCcnConstFLabelString,
 		 NhlTString,sizeof(NhlString),Oset(constf_string),
 		 NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-	{NhlNcnConstFLabelFormat,NhlCcnConstFLabelFormat,
+	{NhlNcnConstFLabelFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(constf_lbl.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
@@ -619,7 +619,7 @@ static NhlResource resources[] = {
 	{NhlNcnConstFLabelPerimOn,NhlCEdgesOn,
                  NhlTBoolean,sizeof(NhlBoolean),Oset(constf_lbl.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnConstFLabelPerimSpaceF,NhlCcnConstFLabelPerimSpaceF,
+	{NhlNcnConstFLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNcnConstFLabelPerimColor,NhlCEdgeColor,

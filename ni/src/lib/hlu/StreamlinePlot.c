@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.51 1999-03-27 00:44:54 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.52 1999-03-29 18:31:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 
 
-	{NhlNstNoDataLabelOn,NhlCstNoDataLabelOn,NhlTBoolean,
+	{NhlNstNoDataLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(zerof_lbl.string2_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNstNoDataLabelString,NhlCstNoDataLabelString,
@@ -118,7 +118,7 @@ static NhlResource resources[] = {
 
 /* Zero field label resources */
 
-	{NhlNstZeroFLabelOn,NhlCstZeroFLabelOn,NhlTBoolean,
+	{NhlNstZeroFLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(zerof_lbl.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNstZeroFLabelString,NhlCstZeroFLabelString,
@@ -167,7 +167,7 @@ static NhlResource resources[] = {
 	{NhlNstZeroFLabelPerimOn,NhlCEdgesOn,
                  NhlTBoolean,sizeof(NhlBoolean),Oset(zerof_lbl.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNstZeroFLabelPerimSpaceF,NhlCstZeroFLabelPerimSpaceF,
+	{NhlNstZeroFLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		 NhlTFloat,sizeof(float),Oset(zerof_lbl.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
 	{NhlNstZeroFLabelPerimColor,NhlCEdgeColor,
@@ -327,7 +327,7 @@ static NhlResource resources[] = {
         {NhlNstMagnitudeScaleFactorF,NhlCstMagnitudeScaleFactorF,
                  NhlTFloat,sizeof(float),Oset(mag_scale.scale_factor),
                  NhlTString,_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
-	{NhlNstMagnitudeFormat,NhlCstMagnitudeFormat,
+	{NhlNstMagnitudeFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(mag_scale.format.fstring),NhlTImmediate,
 		 _NhlUSET("*+^sg"),0,(NhlFreeFunc)NhlFree},
@@ -342,7 +342,7 @@ static NhlResource resources[] = {
         {NhlNstScalarValueScaleFactorF,NhlCstScalarValueScaleFactorF,
                  NhlTFloat,sizeof(float),Oset(svalue_scale.scale_factor),
                  NhlTString,_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
-	{NhlNstScalarValueFormat,NhlCstScalarValueFormat,
+	{NhlNstScalarValueFormat,NhlCNumberFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(svalue_scale.format.fstring),NhlTImmediate,
 		 _NhlUSET("*+^sg"),0,(NhlFreeFunc)NhlFree},

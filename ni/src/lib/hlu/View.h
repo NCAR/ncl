@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.13 1997-01-17 18:57:48 boote Exp $
+ *      $Id: View.h,v 1.14 1999-03-29 18:31:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -82,6 +82,48 @@ extern NhlBoolean NhlIsView(
 	int	pid
 #endif
 );
+
+/* Common class resources */
+
+#define NhlCLineDashPattern		"LineDashPattern"
+#define NhlCLineDashSegLenF		"LineDashSegLenF"
+#define NhlCLineColor			"LineColor"
+#define NhlCLineThicknessF		"LineThicknessF"
+#define NhlCLineLabelString		"LineLabelString"
+#define NhlCFillPattern			"FillPattern"
+#define NhlCFillColor			"FillColor"
+#define NhlCFillBackgroundColor		"FillBackgroundColor"
+#define NhlCFillScaleF			"FillScaleF"
+#define NhlCFillLineThicknessF		"FillLineThicknessF"
+#define NhlCEdgesOn			"EdgesOn"
+#define NhlCEdgeDashPattern		"EdgeDashPattern"
+#define NhlCEdgeThicknessF		"EdgeThicknessF"
+#define NhlCEdgeDashSegLenF		"EdgeDashSegLenF"
+#define NhlCEdgeColor			"EdgeColor"
+#define NhlCEdgeBorderWidthF		"EdgeBorderWidthF"
+#define NhlCMarkerIndex			"MarkerIndex"
+#define NhlCMarkerColor			"MarkerColor"
+#define NhlCMarkerSizeF			"MarkerSizeF"
+#define NhlCMarkerThicknessF		"MarkerThicknessF"
+
+#define NhlCTextAngleF 			"TextAngleF"
+#define NhlCTextJustification		"TextJustification"
+#define NhlCTextDirection		"TextDirection"
+#define NhlCFont			"Font"
+#define NhlCFontColor			"FontColor"
+#define NhlCFontHeightF			"FontHeightF"
+#define NhlCFontAspectF			"FontAspectF"
+#define NhlCFontThicknessF		"FontThicknessF"
+#define NhlCFontQuality			"FontQuality"
+#define NhlCTextConstantSpacingF	"TextConstantSpacingF"
+#define NhlCTextFuncCode		"TextFuncCode"
+#define NhlCYAxisTextDirection		"YAxisTextDirection"
+#define NhlCYAxisTextAngleF		"YAxisTextAngleF"
+#define NhlCYAxisTextJustification	"YAxisTextJustification"
+
+#define NhlCNumberFormat		"NumberFormat"
+#define NhlCPlotLabelsOn		"PlotLabelsOn"
+#define NhlCAnnotationLabelsOn		"AnnotationLabelsOn"
 
 extern NhlClass NhlviewClass;
 

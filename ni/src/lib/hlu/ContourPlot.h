@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.12 1999-03-27 00:44:46 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.13 1999-03-29 18:31:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -295,12 +295,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnOutOfRangeValF		"CnOutOfRangeValF"
 
 #define NhlCcnLevelCount		"CnLevelCount"		/* read-only */
-#define NhlCcnLevelSelectionMode	"CnLevelSelectionMode"
-#define NhlCcnMaxLevelCount		"CnMaxLevelCount"
-#define NhlCcnLevelSpacingF		"CnLevelSpacingF"
 #define NhlCcnLabelMasking		"CnLabelMasking"
-#define NhlCcnMinLevelValF		"CnMinLevelValF"
-#define NhlCcnMaxLevelValF		"CnMaxLevelValF"
 #define NhlCcnLineLabelInterval		"CnLineLabelInterval"
 #define NhlCcnLabelDrawOrder		"CnLabelDrawOrder"
 #define NhlCcnLineDrawOrder		"CnLineDrawOrder"
@@ -329,7 +324,6 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnRasterMinCellSizeF	"CnRasterMinCellSizeF"
 #define NhlCcnCyclicModeOn		"CnCyclicModeOn"
 
-#define NhlCcnLevels			"CnLevels"
 #define NhlCcnMonoLevelFlag		"CnMonoLevelFlag"
 #define NhlCcnLevelFlag			"CnLevelFlag"
 #define NhlCcnLevelFlags		"CnLevelFlags"
@@ -349,6 +343,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnMonoLineLabelFontColor	"CnMonoLineLabelFontColor"
 #define NhlCcnLineLabelFontColors	"CnLineLabelFontColors"
 #define NhlCcnLineLabelStrings		"CnLineLabelStrings"
+#define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
 
 #define NhlCcnLineLabelPlacementMode	"CnLineLabelPlacementMode"
 
@@ -357,30 +352,17 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnConstFUseInfoLabelRes	"CnConstFUseInfoLabelRes"
 #define NhlCcnHighLowLabelOverlapMode	"CnHighLowLabelOverlapMode"
 
-#define NhlCcnLineLabelsOn		"CnLineLabelsOn"
-#define NhlCcnLineLabelFormat		"CnLineLabelFormat"
-#define NhlCcnLineLabelPerimSpaceF	"CnLineLabelPerimSpaceF"
 
-#define NhlCcnHighLabelsOn		"CnHighLabelsOn"
 #define NhlCcnHighLabelString		"CnHighLabelString"
-#define NhlCcnHighLabelFormat		"CnHighLabelFormat"
-#define NhlCcnHighLabelPerimSpaceF	"CnHighLabelPerimSpaceF"
-
-#define NhlCcnLowLabelsOn		"CnLowLabelsOn"
 #define NhlCcnLowLabelString		"CnLowLabelString"
-#define NhlCcnLowLabelFormat		"CnLowLabelFormat"
-#define NhlCcnLowLabelPerimSpaceF	"CnLowLabelPerimSpaceF"
 
 
-#define NhlCcnInfoLabelOn		"CnInfoLabelOn"
 #define NhlCcnInfoLabelString		"CnInfoLabelString"
-#define NhlCcnInfoLabelFormat		"CnInfoLabelFormat"
 #define NhlCcnInfoLabelSide		"CnInfoLabelSide"
 #define NhlCcnInfoLabelPosition		"CnInfoLabelPosition"
 #define NhlCcnInfoLabelJustification	"CnInfoLabelJusification"
 #define NhlCcnInfoLabelXOffsetF		"CnInfoLabelXOffsetF"
 #define NhlCcnInfoLabelYOffsetF		"CnInfoLabelYOffsetF"
-#define NhlCcnInfoLabelPerimSpaceF	"CnInfoLabelPerimSpaceF"
 
 #define NhlCcnInfoLabelZone		"CnInfoLabelZone"
 #define NhlCcnInfoLabelSide		"CnInfoLabelSide"
@@ -388,13 +370,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnInfoLabelParallelPosF	"CnInfoLabelParallelPosF"
 #define NhlCcnInfoLabelOrthogonalPosF	"CnInfoLabelOrthogonalPosF"
 
-#define NhlCcnNoDataLabelOn		"CnNoDataLabelOn"
 #define NhlCcnNoDataLabelString		"CnNoDataLabelString"
-
-#define NhlCcnConstFLabelOn		"CnConstFLabelOn"
 #define NhlCcnConstFLabelString		"CnConstFLabelString"
-#define NhlCcnConstFLabelFormat		"CnConstFLabelFormat"
-#define NhlCcnConstFLabelPerimSpaceF	"CnConstFLabelPerimSpaceF"
 
 #define NhlCcnConstFLabelZone		"CnConstFLabelZone"
 #define NhlCcnConstFLabelSide		"CnConstFLabelSide"
@@ -406,10 +383,19 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnAreaMapCRange		"CnAreaMapCRange"
 #define NhlCcnConpackParams		"CnConpackParams"
 
+
 /*
  * These class resources have been eliminated
  */
 #if 0
+
+#define NhlCcnLevelSelectionMode	"CnLevelSelectionMode"
+#define NhlCcnMaxLevelCount		"CnMaxLevelCount"
+#define NhlCcnLevelSpacingF		"CnLevelSpacingF"
+#define NhlCcnMinLevelValF		"CnMinLevelValF"
+#define NhlCcnMaxLevelValF		"CnMaxLevelValF"
+#define NhlCcnLevels			"CnLevels"
+
 #define NhlCcnFillBackgroundColor	"CnFillBackgroundColor"
 #define NhlCcnFillColor			"CnFillColor"
 #define NhlCcnFillPattern		"CnFillPattern"
@@ -417,6 +403,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLineColor			"CnLineColor"
 #define NhlCcnLineDashPattern		"CnLineDashPattern"
 #define NhlCcnLineThicknessF		"CnLineThicknessF"
+#define NhlCcnLineLabelsOn		"CnLineLabelsOn"
 #define NhlCcnLineLabelFontColor	"CnLineLabelFontColor"
 #define NhlCcnLineDashSegLenF		"CnLineDashSegLenF"
 #define NhlCcnLineLabelFontHeightF	"CnLineLabelFontHeightF"
@@ -425,13 +412,15 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLineLabelFontThicknessF	"CnLineLabelFontThicknessF"
 #define NhlCcnLineLabelFontQuality	"CnLineLabelFontQuality"
 #define NhlCcnLineLabelConstantSpacingF	"CnLineLabelConstantSpacingF"
-#define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
 #define NhlCcnLineLabelFuncCode		"CnLineLabelFuncCode"
 #define NhlCcnLineLabelBackgroundColor	"CnLineLabelBackgroundColor"
+#define NhlCcnLineLabelFormat		"CnLineLabelFormat"
+#define NhlCcnLineLabelPerimSpaceF	"CnLineLabelPerimSpaceF"
 #define NhlCcnLineLabelPerimOn		"CnLineLabelPerimOn"
 #define NhlCcnLineLabelPerimThicknessF	"CnLineLabelPerimThicknessF"
 #define NhlCcnLineLabelPerimColor	"CnLineLabelPerimColor"
 #define NhlCcnHighLabelFontHeightF	"CnHighLabelFontHeightF"
+#define NhlCcnHighLabelsOn		"CnHighLabelsOn"
 #define NhlCcnHighLabelFont		"CnHighLabelFont"
 #define NhlCcnHighLabelFontColor	"CnHighLabelFontColor"
 #define NhlCcnHighLabelFontAspectF	"CnHighLabelFontAspectF"
@@ -441,9 +430,12 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnHighLabelAngleF		"CnHighLabelAngleF"
 #define NhlCcnHighLabelFuncCode		"CnHighLabelFuncCode"
 #define NhlCcnHighLabelBackgroundColor	"CnHighLabelBackgroundColor"
+#define NhlCcnHighLabelFormat		"CnHighLabelFormat"
+#define NhlCcnHighLabelPerimSpaceF	"CnHighLabelPerimSpaceF"
 #define NhlCcnHighLabelPerimOn		"CnHighLabelPerimOn"
 #define NhlCcnHighLabelPerimThicknessF	"CnHighLabelPerimThicknessF"
 #define NhlCcnHighLabelPerimColor	"CnHighLabelPerimColor"
+#define NhlCcnLowLabelsOn		"CnLowLabelsOn"
 #define NhlCcnLowLabelFontHeightF	"CnLowLabelFontHeightF"
 #define NhlCcnLowLabelFont		"CnLowLabelFont"
 #define NhlCcnLowLabelFontColor		"CnLowLabelFontColor"
@@ -454,9 +446,12 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLowLabelAngleF		"CnLowLabelAngleF"
 #define NhlCcnLowLabelFuncCode		"CnLowLabelFuncCode"
 #define NhlCcnLowLabelBackgroundColor	"CnLowLabelBackgroundColor"
+#define NhlCcnLowLabelFormat		"CnLowLabelFormat"
+#define NhlCcnLowLabelPerimSpaceF	"CnLowLabelPerimSpaceF"
 #define NhlCcnLowLabelPerimOn		"CnLowLabelPerimOn"
 #define NhlCcnLowLabelPerimThicknessF	"CnLowLabelPerimThicknessF"
 #define NhlCcnLowLabelPerimColor	"CnLowLabelPerimColor"
+#define NhlCcnInfoLabelOn		"CnInfoLabelOn"
 #define NhlCcnInfoLabelFontHeightF	"CnInfoLabelFontHeightF"
 #define NhlCcnInfoLabelTextDirection	"CnInfoLabelTextDirection"
 #define NhlCcnInfoLabelFont		"CnInfoLabelFont"
@@ -468,9 +463,13 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnInfoLabelAngleF		"CnInfoLabelAngleF"
 #define NhlCcnInfoLabelFuncCode		"CnInfoLabelFuncCode"
 #define NhlCcnInfoLabelBackgroundColor	"CnInfoLabelBackgroundColor"
+#define NhlCcnInfoLabelFormat		"CnInfoLabelFormat"
+#define NhlCcnInfoLabelPerimSpaceF	"CnInfoLabelPerimSpaceF"
 #define NhlCcnInfoLabelPerimOn		"CnInfoLabelPerimOn"
 #define NhlCcnInfoLabelPerimThicknessF	"CnInfoLabelPerimThicknessF"
 #define NhlCcnInfoLabelPerimColor	"CnInfoLabelPerimColor"
+#define NhlCcnNoDataLabelOn		"CnNoDataLabelOn"
+#define NhlCcnConstFLabelOn		"CnConstFLabelOn"
 #define NhlCcnConstFLabelFontHeightF	"CnConstFLabelFontHeightF"
 #define NhlCcnConstFLabelTextDirection	"CnConstFLabelTextDirection"
 #define NhlCcnConstFLabelFont		"CnConstFLabelFont"
@@ -482,6 +481,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnConstFLabelAngleF		"CnConstFLabelAngleF"
 #define NhlCcnConstFLabelFuncCode	"CnConstFLabelFuncCode"
 #define NhlCcnConstFLabelBackgroundColor "CnConstFLabelBackgroundColor"
+#define NhlCcnConstFLabelFormat		"CnConstFLabelFormat"
+#define NhlCcnConstFLabelPerimSpaceF	"CnConstFLabelPerimSpaceF"
 #define NhlCcnConstFLabelPerimOn	"CnConstFLabelPerimOn"
 #define NhlCcnConstFLabelPerimThicknessF "CnConstFLabelPerimThicknessF"
 #define NhlCcnConstFLabelPerimColor	"CnConstFLabelPerimColor"

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.37 1999-03-27 00:44:57 dbrown Exp $
+ *      $Id: Title.c,v 1.38 1999-03-29 18:31:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -192,11 +192,11 @@ static NhlResource resources[] = {
 		 sizeof(float),
 		 Oset(x_axis_font_thickness), NhlTString,_NhlUSET("1.0"),
 		0,NULL},
-	{NhlNtiXAxisAngleF,NhlCTextAngleF,NhlTFloat,sizeof(float),
+	{NhlNtiXAxisAngleF,NhlCYAxisTextAngleF,NhlTFloat,sizeof(float),
 		 Oset(x_axis_angle), NhlTString,_NhlUSET("0.0"),
 		0,NULL},
-	{NhlNtiXAxisDirection,NhlCTextDirection,NhlTTextDirection,
-		 sizeof(NhlTextDirection),Oset(x_axis_direction), NhlTImmediate,
+	{NhlNtiXAxisDirection,NhlCYAxisTextDirection,NhlTTextDirection,
+		 sizeof(NhlTextDirection),Oset(x_axis_direction),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlACROSS), 0,NULL},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
@@ -229,7 +229,7 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisString, NhlCtiYAxisString,NhlTString,sizeof(NhlString),
 		 Oset(y_axis_string),NhlTImmediate,
 		 _NhlUSET((NhlPointer)YAxis),0,(NhlFreeFunc)NhlFree},
-	{NhlNtiYAxisJust, NhlCTextJustification, NhlTJustification,
+	{NhlNtiYAxisJust, NhlCYAxisTextJustification, NhlTJustification,
 		sizeof(NhlJustification),Oset(y_axis_just),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlCENTERCENTER ),0,NULL},
 	{NhlNtiYAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),

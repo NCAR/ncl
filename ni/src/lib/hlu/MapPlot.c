@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.73 1999-03-27 00:44:51 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.74 1999-03-29 18:31:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -429,7 +429,7 @@ static NhlResource resources[] = {
 
 /* Map label resources */
 
-	{NhlNmpLabelsOn,NhlCmpLabelsOn,NhlTBoolean,
+	{NhlNmpLabelsOn,NhlCPlotLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(labels.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNmpLabelDrawOrder,NhlCmpLabelDrawOrder,NhlTDrawOrder,
@@ -485,18 +485,18 @@ static NhlResource resources[] = {
 		 NhlTColorIndex,sizeof(NhlColorIndex),Oset(labels.back_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),
          	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimOn,NhlCmpLabelPerimOn,NhlTInteger,
+	{NhlNmpLabelPerimOn,NhlCEdgesOn,NhlTInteger,
 		 sizeof(int),Oset(labels.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),
          	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimSpaceF,NhlCmpLabelPerimSpaceF,
+	{NhlNmpLabelPerimSpaceF,NhlCEdgeBorderWidthF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_space),
 		 NhlTString,_NhlUSET("0.33"),_NhlRES_PRIVATE,NULL},
 	{NhlNmpLabelPerimColor,NhlCLineColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(labels.perim_lcolor),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),
          	_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimThicknessF,NhlCmpLabelPerimThicknessF,
+	{NhlNmpLabelPerimThicknessF,NhlCEdgeThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
         	 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
         

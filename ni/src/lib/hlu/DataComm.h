@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.14 1997-08-14 16:29:52 dbrown Exp $
+ *      $Id: DataComm.h,v 1.15 1999-03-29 18:31:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -93,5 +93,14 @@ extern NhlBoolean NhlIsDataSpec(
 	int	pid
 #endif
 );
+
+/* Common class resources */
+
+#define NhlCLevelSelectionMode		"LevelSelectionMode"
+#define NhlCMaxLevelCount		"MaxLevelCount"
+#define NhlCLevelSpacingF		"LevelSpacingF"
+#define NhlCMinLevelValF		"MinLevelValF"
+#define NhlCMaxLevelValF		"MaxLevelValF"
+#define NhlCLevels			"Levels"
 
 #endif /*_NDataComm_h */

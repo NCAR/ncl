@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.4 1999-03-27 00:44:49 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.5 1999-03-29 18:31:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,38 +79,6 @@
 #define NhlNgsTextFuncCode		"gsTextFuncCode"
 
 /* class resources */
-
-#define NhlCLineDashPattern		"LineDashPattern"
-#define NhlCLineDashSegLenF		"LineDashSegLenF"
-#define NhlCLineColor			"LineColor"
-#define NhlCLineThicknessF		"LineThicknessF"
-#define NhlCLineLabelString		"LineLabelString"
-#define NhlCFillPattern			"FillPattern"
-#define NhlCFillColor			"FillColor"
-#define NhlCFillBackgroundColor		"FillBackgroundColor"
-#define NhlCFillScaleF			"FillScaleF"
-#define NhlCFillLineThicknessF		"FillLineThicknessF"
-#define NhlCEdgesOn			"EdgesOn"
-#define NhlCEdgeDashPattern		"EdgeDashPattern"
-#define NhlCEdgeThicknessF		"EdgeThicknessF"
-#define NhlCEdgeDashSegLenF		"EdgeDashSegLenF"
-#define NhlCEdgeColor			"EdgeColor"
-#define NhlCMarkerIndex			"MarkerIndex"
-#define NhlCMarkerColor			"MarkerColor"
-#define NhlCMarkerSizeF			"MarkerSizeF"
-#define NhlCMarkerThicknessF		"MarkerThicknessF"
-
-#define NhlCTextAngleF 			"TextAngleF"
-#define NhlCTextJustification		"TextJustification"
-#define NhlCTextDirection		"TextDirection"
-#define NhlCFont			"Font"
-#define NhlCFontColor			"FontColor"
-#define NhlCFontHeightF			"FontHeightF"
-#define NhlCFontAspectF			"FontAspectF"
-#define NhlCFontThicknessF		"FontThicknessF"
-#define NhlCFontQuality			"FontQuality"
-#define NhlCTextConstantSpacingF	"TextConstantSpacingF"
-#define NhlCTextFuncCode		"TextFuncCode"
 
 #if 0
 /* 
