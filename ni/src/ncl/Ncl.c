@@ -131,7 +131,6 @@ main() {
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
 
-	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 /*
 * Now handle default directories
 */

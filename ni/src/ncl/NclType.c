@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.4 1995-05-23 15:54:15 ethan Exp $
+ *      $Id: NclType.c,v 1.5 1998-01-23 00:46:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,10 +21,123 @@
  *	Description:	
  */
 
-#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Convert.h>
 #include "defs.h"
 #include "NclType.h"
+/*
+ * This macro is used because most of the converters end the same way.
+ */
+#define _NhlSetVal(type,sz,value)                               \
+{                                                               \
+        if((to->size > 0) && (to->data.ptrval != NULL)){        \
+                                                                \
+                /* caller provided space */                     \
+                                                                \
+                if(to->size < sz){                              \
+                        /* Not large enough */                  \
+                        to->size = (unsigned int)sz;            \
+                        return(NhlFATAL);                       \
+                }                                               \
+                                                                \
+                /* give caller copy */                          \
+                                                                \
+                to->size = (unsigned int)sz;                    \
+                *((type *)(to->data.ptrval)) = value;           \
+                return(ret);                                    \
+        }                                                       \
+        else{                                                   \
+                                                                \
+        /* caller didn't provide space - give pointer   */      \
+        /* into static data - if they modify it they    */      \
+        /* may die.                                     */      \
+                                                                \
+                static type val;                                \
+                                                                \
+                to->size = sz;                                  \
+                val = value;                                    \
+                to->data.ptrval = &val;                         \
+                return(ret);                                    \
+        }                                                       \
+}
+
+
+static NhlErrorTypes NhlCvtGenArrayToGenArray
+#if	NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from,to,args,nargs)                                                    
+        NrmValue                *from;                                  
+        NrmValue                *to;                                    
+        NhlConvertArgList       args;                                   
+        int                     nargs;
+#endif
+{
+        NhlGenArray     gen;
+        char            func[] = "NhlCvtGenArrayToGenArray";
+        char            buff[_NhlMAXRESNAMLEN];
+        NrmQuark        newfromQ;
+        NhlErrorTypes   ret = NhlNOERROR;
+	NrmQuark	varQ  = NrmStringToQuark(NhlTVariable) ;
+	NrmQuark	genQ = NrmStringToQuark(NhlTGenArray);
+ 
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "%s:called with wrong number of args",func);
+                to->size = 0;
+                return NhlFATAL;
+        }
+ 
+        gen = from->data.ptrval;
+ 
+        /*
+         * if to GenArray, then all specialized GenArrays are valid and
+         * no conversion is really necessary.
+         */
+        if(to->typeQ == genQ){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+        }
+ 
+        /*
+         * if from is not a GenArray, then this converter was already called
+         * to get the more specific name.  This ends the recursion.
+         */
+        if((from->typeQ != genQ ) && (from->typeQ != varQ)){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "%s:Need a converter from %s to %s",func,
+                                                NrmQuarkToString(from->typeQ),
+                                                NrmQuarkToString(to->typeQ));
+                return NhlFATAL;
+        }
+ 
+        /*
+         * We need a more specific name for the from GenArray so the
+         * specific converters can be called.
+         */
+        strcpy(buff,"Float");
+        strcat(buff,NhlTGenArray);
+        newfromQ = NrmStringToQuark(buff);
+        /*
+         * If they are now equal, then just set.
+         */
+        if(newfromQ == to->typeQ){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+        }
+        return _NhlReConvertData(newfromQ,to->typeQ,from,to);
+}
+
+static NhlErrorTypes Ncl_Type_InitClass
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NhlRegisterConverter(NhlbaseClass,NhlTGenArray,NhlTNclData,
+                NhlCvtGenArrayToGenArray,NULL,0,False,NULL);
+        return(NhlNOERROR);
+}
 
 
 NclTypeClassRec nclTypeClassRec = {
@@ -36,7 +149,7 @@ NclTypeClassRec nclTypeClassRec = {
 		NULL,
 		NULL,
 		NULL,
-		NULL,
+		Ncl_Type_InitClass,
 		NULL,
 		NULL,
 		NULL,
