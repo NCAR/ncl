@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.21 2000-08-22 15:11:27 haley Exp $
+ *	$Id: rasdraw.c,v 1.22 2002-02-23 02:09:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -228,7 +228,7 @@ static	int	load_palette_(red, green, blue, ncolor, context)
 	 * alloc more memory for color list if necessary
 	 */
 	if (context->xcolor_size < num_cols) {
-		if (context->xcolors) cfree((char *) context->xcolors);
+		if (context->xcolors) free((char *) context->xcolors);
 
 		context->xcolors = (XColor *) 
 				malloc((unsigned) num_cols * sizeof(XColor));
@@ -1027,11 +1027,11 @@ int	RasDrawSetPalette(context, red, green, blue, ncolor)
 	unsigned char 	*ucptr;
 
 	if (context->default_pal.red) 
-		cfree((char *) context->default_pal.red);
+		free((char *) context->default_pal.red);
 	if (context->default_pal.green) 
-		cfree((char *)context->default_pal.green);
+		free((char *)context->default_pal.green);
 	if (context->default_pal.blue) 
-		cfree((char *)context->default_pal.blue);
+		free((char *)context->default_pal.blue);
 
 	/*
 	 * store the default color palette in the context structure for
@@ -1093,19 +1093,19 @@ void	RasDrawClose(context)
 	if (! context) return;
 	XtDestroyApplicationContext(context->app_con);
 
-	if (context->xcolors) cfree((char *) context->xcolors);
+	if (context->xcolors) free((char *) context->xcolors);
 
 	if (context->default_pal.red) 
-		cfree((char *) context->default_pal.red);
+		free((char *) context->default_pal.red);
 	if (context->default_pal.green) 
-		cfree((char *) context->default_pal.green);
+		free((char *) context->default_pal.green);
 	if (context->default_pal.blue) 
-		cfree((char *) context->default_pal.blue);
+		free((char *) context->default_pal.blue);
 	if (context->cmap_info.static_pal)
-		cfree((char *) context->cmap_info.static_pal);
+		free((char *) context->cmap_info.static_pal);
 
 	destroy_ximage(context);
 
-	cfree((char *) context);
+	free((char *) context);
 }
 
