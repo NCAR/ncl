@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.33 1997-01-25 00:28:42 haley Exp $
+ *      $Id: Project,v 1.34 1997-02-28 18:30:07 haley Exp $
  */
 /************************************************************************
 *									*
@@ -271,6 +271,8 @@ NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
 
 COMMONSRC	= $(TOP)/common/src
 NCARG2DSRC	= $(TOP)/ncarg2d/src
+NGMATHSRC	= $(TOP)/ngmath/src
+NGMATHLIBSRC= $(NGMATHSRC)/lib
 NVIEWSRC	= $(TOP)/ncarview/src
 NVIEWBINSRC	= $(NVIEWSRC)/bin
 NVIEWLIBSRC	= $(NVIEWSRC)/lib
@@ -298,6 +300,7 @@ NCARGLIB	= -lNGllu
 CNCARGLIB	= -lNGlluC
 NCARGGKSLIB	= -lNGgks
 CNCARGGKSLIB	= -lNGgksC
+NGMATHLIB	= -lNGmath
 CGMLIB		= -lNGcgm
 NCARGRASLIB	= -lNGras
 HLULIB		= -lNGhlu
@@ -313,6 +316,7 @@ DEPNCARGLIB	=
 DEPCNCARGLIB	=
 DEPNCARGGKSLIB	=
 DEPCNCARGGKSLIB	=
+DEPNGMATHLIB	=
 DEPCGMLIB	=
 DEPNCARGRASLIB	=
 DEPHLULIB	=
@@ -329,6 +333,7 @@ NCARGLIB	= _UseLib(-L$(NCARGLIBSRC),-lncarg)
 CNCARGLIB	= _UseLib(-L$(CNCARGLIBSRC),-lncargC)
 NCARGGKSLIB	= _UseLib(-L$(NCARGGKSLIBSRC),-lncarg_gks)
 CNCARGGKSLIB	= _UseLib(-L$(CNCARGGKSLIBSRC),-lncarg_gksC)
+NGMATHLIB	= _UseLib(-L$(NGMATHLIBSRC),-lngmath)
 CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
 NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
@@ -344,6 +349,7 @@ DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBROOT),libncarg.a)
 DEPCNCARGLIB	= _DepLib($(CNCARGLIBSRC),$(LIBROOT),libncargC.a)
 DEPNCARGGKSLIB	= _DepLib($(NCARGGKSLIBSRC),$(LIBROOT),libncarg_gks.a)
 DEPCNCARGGKSLIB	= _DepLib($(CNCARGGKSLIBSRC),$(LIBROOT),libncarg_gksC.a)
+DEPNGMATHLIB	= _DepLib($(NGMATHLIBSRC),$(LIBROOT),libngmath.a)
 DEPCGMLIB	= _DepLib($(CGMLIBSRC),$(LIBROOT),libcgm.a)
 DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBROOT),libncarg_ras.a)
 DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
@@ -360,6 +366,7 @@ DEPICTRANSLIB	= $(ICTRANSLIB)
 
 NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 CNCARGLIBS	= $(CNCARGLIB) $(CNCARGGKSLIB)
+NGMATHLIBS	= $(NGMATHLIB)
 HLULIBS		= $(HLULIB)
 NCLLIBS		= $(NCLAPILIB)
 
