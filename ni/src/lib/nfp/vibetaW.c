@@ -30,7 +30,7 @@ NhlErrorTypes vibeta_W( void )
 /*
  * various
  */
-  int i, j, l, ier = 0, nlev, total_size_x, total_size_psfc, found_missing;
+  int i, j, index_x, ier, nlev, total_size_x, total_size_psfc, found_missing;
   double plvcrt, xsfc;
 /*
  * Retrieve parameters
@@ -139,12 +139,12 @@ NhlErrorTypes vibeta_W( void )
   nlev = dsizes_p[ndims_p-1];
 
   if( nlev < 3 || nlev > 150) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: nlev must be at least 3 and less than 151" );
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: the last dimension of 'p' must be at least 3 and less than 151" );
     return(NhlFATAL);
   }
 
 /*
- * Check for missing values.
+ * Coerce missing values to double if necessary.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
   coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,&missing_dpsfc,NULL);
@@ -160,6 +160,8 @@ NhlErrorTypes vibeta_W( void )
   }
 /*
  * Create memory to allocate p to double precision if necessary.
+ * One subset of p at a time will be coerced to double precision when we
+ * loop through the leftmost dimensions of psfc.
  */
   if(type_p != NCL_double) {
     tmp_p = (double*)calloc(nlev,sizeof(double));
@@ -205,10 +207,6 @@ NhlErrorTypes vibeta_W( void )
   }
 
 /*
- * Set some other input parameters. 
- */
-  xsfc = tmp_x[0];
-/*
  * Allocate space for output value.
  */
   if(type_x != NCL_double && type_p != NCL_double && 
@@ -234,22 +232,22 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Call the f77 version of 'vibeta' with the full argument list.
  */
-  l = 0;
+  index_x = 0;
+  ier     = 0;
   for( i = 0; i < total_size_psfc; i++ ) {
-
 /*
  * Coerce p to double precision if necessary. If p is one-dimensional,
  * the coercion will only happen the first time through this loop.
  */
     if(ndims_p != 1 || (ndims_p == 1 && !i)) {
       if(type_p != NCL_double) {
-        coerce_subset_input_double(p,tmp_p,l,type_p,nlev,0,NULL,NULL);
+        coerce_subset_input_double(p,tmp_p,index_x,type_p,nlev,0,NULL,NULL);
       }
       else {
 /*
  * Point tmp_p to p.
  */
-        tmp_p = &((double*)p)[l];
+        tmp_p = &((double*)p)[index_x];
       }
 
       if(tmp_p[nlev-1] < *tmp_ptop) {
@@ -263,10 +261,14 @@ NhlErrorTypes vibeta_W( void )
       }
       plvcrt = tmp_p[nlev-1];
     }
-    
+/*
+ * Set some other input parameters. 
+ */
+    xsfc = tmp_x[index_x];
+
     if(type_vint == NCL_double) tmp_vint  = &((double*)vint)[i];
 
-    NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[l],&nlev,&missing_dx.doubleval,
+    NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[index_x],&nlev,&missing_dx.doubleval,
                              linlog,&tmp_psfc[i],&xsfc,tmp_pbot,tmp_ptop,
                              &plvcrt,tmp_vint,&ier);
     if(ier == -999) {
@@ -277,7 +279,7 @@ NhlErrorTypes vibeta_W( void )
  */
     if(type_vint != NCL_double) ((float*)vint)[i] = (float)*tmp_vint;
       
-    l += nlev;
+    index_x += nlev;
   }
 
 /*

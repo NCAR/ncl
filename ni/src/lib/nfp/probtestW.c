@@ -1049,10 +1049,11 @@ NhlErrorTypes equiv_sample_size_W( void )
  * output variable 
  */
   int *neqv, *dsizes_neqv, ndims_neqv;
+  NclScalar missing_neqv;
 /*
  * Declare various variables for random purposes.
  */
-  int nx, i, size_neqv, ier, index_x;
+  int nx, i, size_neqv, ier, index_x, is_missing;
 /*
  * Retrieve parameters
  *
@@ -1141,7 +1142,8 @@ NhlErrorTypes equiv_sample_size_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  index_x = 0;
+  index_x = is_missing = 0;
+
   for( i = 0; i < size_neqv; i++ ) {
     if(type_x != NCL_double) {
 /*
@@ -1157,6 +1159,11 @@ NhlErrorTypes equiv_sample_size_W( void )
     }
     NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&nx,&missing_dx.doubleval,tmp_siglvl,
                              &neqv[i]);
+/*
+ * Check if missing value is returned.
+ */
+    if(neqv[i] == -999) is_missing = 1;
+
     index_x += nx;
   }
 /*
@@ -1168,5 +1175,12 @@ NhlErrorTypes equiv_sample_size_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,NULL,NCL_int,0));
+  if(is_missing) {
+    missing_neqv.intval = (int)((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,&missing_neqv,
+                          NCL_int,0));
+  }
+  else {
+    return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,NULL,NCL_int,0));
+  }
 }

@@ -15,13 +15,13 @@ extern void NGCALLF(dncldrv,dncldrv)(double *,double *,int *,int *,int *,
                                      double *,int *,int *,int *,int *,int*);
 
 extern void NGCALLF(deofts7,DEOFTS7)(double *,int *,int *,int *,int *,
-                                     double *,int *, double *,int *,
+                                     double *,int *, double *,int *, int *,
                                      double *,double *,double *,int *);
 
 extern void NGCALLF(DEOFTSCA,deoftsca)(double *,int *,int *,int *,int *,
-				       double *,int *,double *,int *,
-				       double *,double *,int *,double *,
-				       double *);
+                                       double *,int *,double *,int *, int*,
+                                       double *,double *,int *,double *,
+                                       double *);
 
 NhlErrorTypes eofcov_W( void )
 {
@@ -976,7 +976,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-			   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+                           work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1395,7 +1395,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-			   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+                           work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1663,7 +1663,7 @@ NhlErrorTypes eofcov_ts_W( void )
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, jopt = 0, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 0, i, ier = 0;
 /*
  * Work array variables.
  */
@@ -1675,6 +1675,12 @@ NhlErrorTypes eofcov_ts_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
+/*
+ * Variables for retrieving attributes from "evec".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 /*
  * Retrieve parameters
  */
@@ -1696,6 +1702,40 @@ NhlErrorTypes eofcov_ts_W( void )
            &has_missing_evec,
            &type_evec,
            2);
+/*
+ * Check if the "evec" variable coming in has a tsflag attribute riding
+ * along with it.
+ *
+ * First, retrieve "evec" again, this time getting all the stuff that
+ * might be attached to it (attributes).
+ */
+  stack_entry = _NclGetArg(1, 2, DONT_CARE);
+  if(stack_entry.kind == NclStk_VAR ) {
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
+/* 
+ * Retrieve attributes
+ */
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if (strcmp(attr_list->attname, "tsflag") == 0) {
+            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
+            break;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    }
+  }
+/*
+ * Currently, we only recognize the case where iflag = 1, so reset to
+ * 0 otherwise.
+ */
+  if(iflag != 1) {
+    iflag = 0;
+  }
+
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -1769,7 +1809,7 @@ NhlErrorTypes eofcov_ts_W( void )
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,wx,wrk,evec_ts,&ier);
+                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1842,7 +1882,7 @@ NhlErrorTypes eofcor_ts_W( void )
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, jopt = 1, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 1, i, ier = 0;
 /*
  * Work array variables.
  */
@@ -1854,6 +1894,12 @@ NhlErrorTypes eofcor_ts_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
+/*
+ * Variables for retrieving attributes from "evec".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 /*
  * Retrieve parameters
  */
@@ -1875,6 +1921,45 @@ NhlErrorTypes eofcor_ts_W( void )
            &has_missing_evec,
            &type_evec,
            2);
+/*
+ * Check if the "evec" variable coming in has a tsflag attribute riding
+ * along with it.
+ *
+ * First, retrieve "evec" again, this time getting all the stuff that
+ * might be attached to it (attributes).
+ */
+/*
+ * This code is not executed, because for iflag = 1, jopt must also
+ * be = 0 for iflag to even have effect.  So, leave iflag = 0 for now.
+ */
+  /*
+  stack_entry = _NclGetArg(1, 2, DONT_CARE);
+  if(stack_entry.kind == NclStk_VAR ) {
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if (strcmp(attr_list->attname, "tsflag") == 0) {
+            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
+            break;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    }
+  }
+ */
+/*
+ * Currently, we only recognize the case where iflag = 1, so reset to
+ * 0 otherwise.
+ */
+/*
+  if(iflag != 1) {
+    iflag = 0;
+  }
+ */
+
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -1948,7 +2033,7 @@ NhlErrorTypes eofcor_ts_W( void )
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,wx,wrk,evec_ts,&ier);
+                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,&ier);
 /*
  * Check various possible error messages.
  */
@@ -2021,7 +2106,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, jopt = 0, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 0, i, ier = 0;
 /*
  * Work array variables.
  */
@@ -2033,6 +2118,12 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
+/*
+ * Variables for retrieving attributes from "evec".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 /*
  * Retrieve parameters
  */
@@ -2063,6 +2154,40 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
             NULL,
             &type_pcmsg,
             2);
+/*
+ * Check if the "evec" variable coming in has a tsflag attribute riding
+ * along with it.
+ *
+ * First, retrieve "evec" again, this time getting all the stuff that
+ * might be attached to it (attributes).
+ */
+  stack_entry = _NclGetArg(1, 3, DONT_CARE);
+  if(stack_entry.kind == NclStk_VAR ) {
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
+/* 
+ * Retrieve attributes
+ */
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if (strcmp(attr_list->attname, "tsflag") == 0) {
+            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
+            break;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    }
+  }
+/*
+ * Currently, we only recognize the case where iflag = 1, so reset to
+ * 0 otherwise.
+ */
+  if(iflag != 1) {
+    iflag = 0;
+  }
+
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2145,7 +2270,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deoftsca,DEOFTSCA)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-			     &neval,devec,&jopt,evec_ts,dpcmsg,&ier,wx,wrk);
+                             &neval,devec,&jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
 /*
  * Check various possible error messages.
  */
@@ -2219,7 +2344,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, jopt = 1, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 1, i, ier = 0;
 /*
  * Work array variables.
  */
@@ -2231,6 +2356,12 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
+/*
+ * Variables for retrieving attributes from "evec".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 /*
  * Retrieve parameters
  */
@@ -2261,6 +2392,45 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
             NULL,
             &type_pcmsg,
             2);
+/*
+ * Check if the "evec" variable coming in has a tsflag attribute riding
+ * along with it.
+ *
+ * First, retrieve "evec" again, this time getting all the stuff that
+ * might be attached to it (attributes).
+ */
+/*
+ * This code is not executed, because for iflag = 1, jopt must also
+ * be = 0 for iflag to even have effect.  So, leave iflag = 0 for now.
+ */
+  /*
+  stack_entry = _NclGetArg(1, 3, DONT_CARE);
+  if(stack_entry.kind == NclStk_VAR ) {
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if (strcmp(attr_list->attname, "tsflag") == 0) {
+            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
+            break;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    }
+  }
+ */
+/*
+ * Currently, we only recognize the case where iflag = 1, so reset to
+ * 0 otherwise.
+ */
+/*
+  if(iflag != 1) {
+    iflag = 0;
+  }
+
+ */
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2343,7 +2513,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deoftsca,DEOFTSCA)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-			     &neval,devec,&jopt,evec_ts,dpcmsg,&ier,wx,wrk);
+                             &neval,devec,&jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
 /*
  * Check various possible error messages.
  */
