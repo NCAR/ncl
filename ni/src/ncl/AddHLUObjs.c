@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.9 1995-02-27 21:54:04 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.10 1995-03-25 21:55:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,7 @@ extern NhlLayerClass NhlscalarFieldLayerClass;
 extern NhlLayerClass NhlmapPlotLayerClass;
 extern NhlLayerClass NhlappLayerClass;
 extern NhlLayerClass NhlannotationLayerClass;
+extern NhlLayerClass NhlpsWorkstationLayerClass;
 
 
 
@@ -76,6 +77,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlmapPlotLayerClass->base_class.class_name,NhlmapPlotLayerClass);
 	_NclAddSingleObj(NhlappLayerClass->base_class.class_name,NhlappLayerClass);
 	_NclAddSingleObj(NhlannotationLayerClass->base_class.class_name,NhlannotationLayerClass);
+	_NclAddSingleObj(NhlpsWorkstationLayerClass->base_class.class_name,NhlpsWorkstationLayerClass);
 	return;
 	
 }
