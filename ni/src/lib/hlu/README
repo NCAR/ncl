@@ -1,0 +1,3 @@
+If having problems with the HLUs on the Cray, the first thing I try is
+compiling Convert.c with optimization turned off.
+
