@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.6 1999-09-15 02:23:18 dbrown Exp $
+ *      $Id: plotapp.c,v 1.7 1999-09-28 00:47:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2044,7 +2044,7 @@ static void MergeObjResDataItems
 				(rprof->qname,qres,obj->qbasename,
 				 obj->class,ditype,rprof->mindims,
 				 rprof->maxdims,
-				 rprof->data < 0 ? NULL : rprof->data,
+				 ((int)rprof->data) < 0 ? NULL : rprof->data,
 				 rprof->required < 0 ? False : rprof->required,
 				 rprof->vis < 0 ? True : rprof->vis,
 				 set_only,

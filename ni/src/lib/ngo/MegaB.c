@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.8 1999-09-11 01:05:40 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.9 1999-09-28 00:47:32 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -171,6 +171,9 @@ static char traversalTranslations[] =
 #define	_XmStringCreate(s)	XmStringCopy(s)
 #define _XmStringCreateExternal(font,s)	(s)
 
+extern XmFocusData _XmGetFocusData(
+                        Widget wid) ;
+#ifdef Linux 
 static _XmSelectColorDefault(
 	Widget		w,
 	int		offset,
@@ -179,6 +182,7 @@ static _XmSelectColorDefault(
 {
 	XmeGetDefaultPixel(w,XmSELECT,offset,value);
 }
+#endif
 #endif
 
 #define TheOffset(field) XtOffset(XmMegaButtonWidget, mega_button.field)

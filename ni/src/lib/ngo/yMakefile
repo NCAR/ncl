@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.29 1999-09-20 23:59:46 dbrown Exp $
+#      $Id: yMakefile,v 1.30 1999-09-28 00:47:32 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -24,7 +24,7 @@ MYNAME		= libngo
 DEBUG_LIB	=	$(XMULIB)
 #endif
 
-#if	defined(Solaris) || defined(IRIX64)
+#if	(defined(Solaris) && MAJOR == 5 && MINOR < 7) || defined(IRIX64)
 #define	DoDceHacks
 #endif
 
@@ -40,7 +40,7 @@ CLIENT_LIBS	=	$(NCLAPILIB) -lXcb $(HLULIB) $(XMOTIFCLIENTLIBS) \
 			$(DEBUG_LIB) -lc
 
 HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h util.h \
-		$(XHDRS) $(DCEXHDRS)
+		$(XHDRS) $(DCEXHDRS) 
 SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS) $(DCEXSRCS)
 OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS) $(DCEXOBJS)
 

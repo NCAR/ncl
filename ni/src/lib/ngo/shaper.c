@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.16 1999-09-11 01:06:58 dbrown Exp $
+ *      $Id: shaper.c,v 1.17 1999-09-28 00:47:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1205,8 +1205,7 @@ NhlErrorTypes NgUpdateShaper(
 	NgDoShaper(si);
 
 	return NhlNOERROR;
-};
-
+}
 		
 NgShaper *NgDupShaper
 (
