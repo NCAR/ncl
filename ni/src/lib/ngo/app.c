@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.13 1998-08-21 01:14:16 dbrown Exp $
+ *      $Id: app.c,v 1.14 1998-08-26 05:16:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -215,6 +215,7 @@ AppMgrInitialize
 	app->wp = NULL;
 	app->go = NULL;
 	app->active = NULL;
+	app->selected_work_id = -1;
 
 	ac->app_class.num_mgrs++;
 
@@ -369,6 +370,7 @@ DeleteWksCB
                         return;
                 }
         }
+	app->app.selected_work_id = NhlNULLOBJID;
         sprintf(line,"delete(%s)\n",Ng_SELECTED_WORK);
         (void)NgNclSubmitBlock(app->app.nclstate,line);
         
@@ -960,6 +962,9 @@ NgCBWPDestroy
 	return;
 }
 
+#if 0
+/* not used now -- leaving in until I'm sure it's not really necessary */
+
 static void
 CompressGOList
 (
@@ -1001,7 +1006,7 @@ CompressGOList
 
 	return;
 }
-
+#endif
 /*
  * Function:	NgAppAddGO
  *
@@ -1040,6 +1045,9 @@ NgAppAddGO
 	 */
 	REDO:
 	for(go = &app->app.go;*go;go=&(*go)->next){
+		if ((*go)->num <  _NgGOLISTSIZE)
+			break;
+#if 0
 		/*
 		 * If the current node is full, get the next one.
 		 */
@@ -1063,6 +1071,7 @@ NgAppAddGO
 		 */
 		if(!(*go)->next || ((*go)->next->num <= 0))
 			break;
+#endif
 	}
 
 	if(!*go){
@@ -1130,20 +1139,28 @@ NgAppRemoveGO
 			if((*go)->go[i] == goid){
 				NgAppReleaseFocus(appid,goid);
 				(*go)->num--;
+				for(j=i;j<(*go)->num;j++)
+					(*go)->go[j] = (*go)->go[j+1];
+				(*go)->go[(*go)->num] =NhlDEFAULT_APP;
+#if 0
 				if((*go)->num){
 					for(j=i;j<(*go)->num;j++)
 						(*go)->go[j] = (*go)->go[j+1];
+					(*go)->go[(*go)->num] =NhlDEFAULT_APP;
 				}
 				else{
 					/*
 					 * Move empty record to end of list
 					 */
 					_NgAppGOList	tmp = *go;
+
+					tmp->go[0] = NhlDEFAULT_APP;
 					*go = (*go)->next;
 					while(*go)
 						go = &(*go)->next;
 					*go = tmp;
 				}
+#endif
 
 				NhlINITVAR(cbdata);
 				NhlINITVAR(sel);
@@ -1237,11 +1254,8 @@ NgAppGrabFocus
 
 	go = app->app.go;
 	while(go){
-		if(go->num){
-			for(i=0;i<_NgGOLISTSIZE;i++){
-				if(go->go[i] == NhlDEFAULT_APP) continue;
-				NgGOSensitive(go->go[i],(go->go[i] == goid));
-			}
+		for(i=0;i<go->num;i++){
+			NgGOSensitive(go->go[i],(go->go[i] == goid));
 		}
 		go = go->next;
 	}
@@ -1300,8 +1314,7 @@ NgAppReleaseFocus
 
 	go = app->app.go;
 	while(go){
-		for(i=0;i<_NgGOLISTSIZE;i++){
-			if(go->go[i] == NhlDEFAULT_APP) continue;
+		for(i=0;i<go->num;i++){
 			NgGOSensitive(go->go[i],
 					(enable || (go->go[i] == goid)));
 		}
@@ -1373,12 +1386,16 @@ int
 NgAppGetSelectedWork
 (
 	int		appid,
+	NhlBoolean	create,
         NhlBoolean	*created
 )
 {
 	char		func[] = "NgAppGetSelectedWork";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
         int		selected_id,count,*ids;
+
+	if (! create)
+		return app->app.selected_work_id;
 
         *created = False;
         if (! NclSymbolDefined(Ng_SELECTED_WORK)) {
@@ -1403,5 +1420,6 @@ NgAppGetSelectedWork
                            func));
                 NhlFree(ids);
         }
+	app->app.selected_work_id = selected_id;
         return selected_id;
 }

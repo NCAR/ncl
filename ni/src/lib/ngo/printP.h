@@ -1,5 +1,5 @@
 /*
- *      $Id: printP.h,v 1.1 1998-08-21 01:14:21 dbrown Exp $
+ *      $Id: printP.h,v 1.2 1998-08-26 05:16:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/print.h>
+
+#define DEBUG_PRINT	0
 
 /* output destination options */
 #define prPRINTER	0

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.8 1998-08-21 01:14:16 dbrown Exp $
+ *      $Id: app.h,v 1.9 1998-08-26 05:16:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -165,6 +165,7 @@ NgAppSetSelectedWork(
 
 extern int NgAppGetSelectedWork(
 	int		appid,
+	NhlBoolean      create,
         NhlBoolean	*created
         );
 

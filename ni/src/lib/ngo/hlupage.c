@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.14 1998-02-11 21:52:49 dbrown Exp $
+ *      $Id: hlupage.c,v 1.15 1998-08-26 05:16:12 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -726,11 +726,13 @@ int GetWorkstation
         }
         else {
                 wk_id = NgAppGetSelectedWork
-                        (page->go->go.appmgr,work_created);
+                        (page->go->go.appmgr,True,work_created);
+#if 0
                 if (*work_created) {
                         XRaiseWindow(rec->go->go.x->dpy,
                                      XtWindow(rec->go->go.shell));
                 }
+#endif
         }
         return wk_id;
 }

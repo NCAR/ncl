@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.4 1998-03-23 22:48:41 dbrown Exp $
+ *      $Id: graphic.c,v 1.5 1998-08-26 05:16:12 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/goP.h>
 #include <ncarg/hlu/ViewP.h>
+#include <ncarg/ngo/xwk.h>
 #include <ncarg/ngo/nclstate.h>
 
 /*
@@ -303,6 +304,18 @@ NhlErrorTypes NgDrawGraphic
         strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
         
         wk_name = NgNclGetHLURef(go->go.nclstate,wk_id);
+
+	if (NhlIsClass(wk_id,NhlxWorkstationClass)) {
+		int xwk_id,appmgr;
+		NgGO go;
+		NhlLayer wkl = _NhlGetLayer(wk_id);
+		xwk_id = (int) wkl->base.gui_data2;
+		appmgr = (int) wkl->base.gui_data;
+		go = (NgGO) _NhlGetLayer(xwk_id);
+		if (! go->go.up)
+			NgXWorkPopup(appmgr,xwk_id);
+	}
+			
 
         if (clear)
                 sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,base_name);

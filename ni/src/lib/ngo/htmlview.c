@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.7 1998-04-08 23:17:13 dbrown Exp $
+ *      $Id: htmlview.c,v 1.8 1998-08-26 05:16:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -283,8 +283,7 @@ static String GetContent(
 #if DEBUG_HTML        
 		fprintf(stderr,"%s\n",sbuf);
 #endif
-		stat(sbuf,&statbuf);
-		if (! S_ISREG(statbuf.st_mode)) {
+		if (stat(sbuf,&statbuf) || ! S_ISREG(statbuf.st_mode)) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				   "No path to documentation"));
 			return NULL;

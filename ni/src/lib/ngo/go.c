@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.14 1998-08-21 01:14:18 dbrown Exp $
+ *      $Id: go.c,v 1.15 1998-08-26 05:16:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -719,7 +719,7 @@ GOInitialize
 
 	NgAppAddGO(go->appmgr,new->base.id);
 
-	go->print = NULL;
+	go->print = NhlNULLOBJID;
 
 	return NhlNOERROR;
 }
@@ -1903,6 +1903,31 @@ NgGOPopup
 
 	if(!go->go.sensitive)
 		Disable(go);
+
+	return;
+}
+
+
+void
+NgGOCreateUnmapped
+(
+	int		goid
+)
+{
+	char		func[] = "NgGOPopup";
+	NgGO		go = (NgGO)_NhlGetLayer(goid);
+	NgGOPart	*gp;
+	NgGOClass	gc;
+
+	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid goid %d",
+								func,goid));
+		return;
+	}
+	gp = &go->go;
+
+	if(!gp->shell)
+		NgGOCreateWindow(go->base.id);
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.6 1997-09-17 16:41:10 boote Exp $
+ *      $Id: xwk.c,v 1.7 1998-08-26 05:16:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -111,52 +111,23 @@ NgXWkClassRec NgxWkClassRec = {
 
 NhlClass NgxWkClass = (NhlClass)&NgxWkClassRec;
 
-/*
- * Function:	NgXWorkPreOpenCB
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static void
-NgXWorkPreOpenCB
+void NgXWorkPopup
 (
-	NhlArgVal	cbdata,
-	NhlArgVal	udata
+	int appmgr,
+	int xwkid
 )
 {
-	char			func[]="NgXWorkPreOpenCB";
-	NhlXWorkstationLayer	wk = (NhlXWorkstationLayer)cbdata.ptrval;
 	NgXWk			xwk;
-	NgXAppExport		x;
-	int			xwkid,appmgr;
 	XtInputMask		mask;
+	NgXAppExport		x;
 
-	/*
-	 * Eventually, set up a *controlling* window, that doesn't actually
-	 * show the graphics if the user set the window_id.
-	 */
-	if(wk->xwork.window_id_set)
-		return;
-
-	appmgr = (int)wk->base.gui_data;
-	NhlVACreate(&xwkid,"xwork",NgxWkClass,NhlGetParentId(appmgr),
-		NgNxwkWork,	wk,
-		NULL);
 	xwk = (NgXWk)_NhlGetLayer(xwkid);
 	if(!xwk){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-		"%s:Unable to create GUI control window for workstation \"%s\"",							func,wk->base.name));
+			   "%s: Error getting X window layer"));
 		return;
 	}
 	x = xwk->go.x;
-
 	/*
 	 * Pop up xwk, and get the workstation window.
 	 * - lock out rest of app so we can enter mini-event loop until
@@ -181,8 +152,81 @@ NgXWorkPreOpenCB
 		if(mask & XtIMXEvent)
 			XtAppProcessEvent(x->app,XtIMXEvent);
 	}
+	/* 
+	 * on my linux box at least it does not seem to be sufficient to 
+	 * wait for all the event processing -- the draws can still occur
+	 * before the window is ready to receive them. The following seems
+	 * to take care of the problem. Not sure if the syncs are really
+	 * necessary. The sleep is necessary.
+	 */
+
+	XSync(x->dpy,False);
+	sleep(1);
+	XSync(x->dpy,False);
 
 	NgAppReleaseFocus(appmgr,xwkid);
+}
+
+/*
+ * Function:	NgXWorkPreOpenCB
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+NgXWorkPreOpenCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	char			func[]="NgXWorkPreOpenCB";
+	NhlXWorkstationLayer	wk = (NhlXWorkstationLayer)cbdata.ptrval;
+	NgXWk			xwk;
+	int			xwkid,appmgr,selected_work;
+
+	/*
+	 * Eventually, set up a *controlling* window, that doesn't actually
+	 * show the graphics if the user set the window_id.
+	 */
+	if(wk->xwork.window_id_set)
+		return;
+
+	appmgr = (int)wk->base.gui_data;
+	NhlVACreate(&xwkid,"xwork",NgxWkClass,NhlGetParentId(appmgr),
+		NgNxwkWork,	wk,
+		NULL);
+	xwk = (NgXWk)_NhlGetLayer(xwkid);
+	if(!xwk){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	   "%s:Unable to create GUI control window for workstation \"%s\"",
+							func,wk->base.name));
+		return;
+	}
+	wk->base.gui_data2 = (NhlPointer) xwkid;
+
+	selected_work = NgAppGetSelectedWork(appmgr,False,NULL);
+
+	/* 
+	 * if selected_work is -1 it means that a workstation has never
+	 * been created. The first one gets created unmapped.
+	 */
+
+	if (selected_work < 0) {
+		NgGOCreateUnmapped(xwkid);
+		return;
+	}
+
+	/* otherwise pop up the workstation immediately */
+
+	NgXWorkPopup(appmgr,xwkid);
 
 	return;
 }
@@ -323,13 +367,15 @@ XWkDestroy
 		NgNappNclState,	&nclstate,
 		NULL);
 	if(!NhlIsClass(nclstate,NgnclStateClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate object %d",
-								func,nclstate));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "%s:Invalid nclstate object %d",func,nclstate));
 		return NhlFATAL;
 	}
 
 	NgCBWPDestroy(xp->xwork_destroycb);
-
+#if 0
+	NgAppRemoveGO(xwk->go.appmgr,xwk->base.id);
+#endif
 	if(xp->xwork){
 		char	*ref;
 		char	cmdbuff[1024];

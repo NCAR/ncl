@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.1 1998-08-21 01:14:20 dbrown Exp $
+ *      $Id: print.c,v 1.2 1998-08-26 05:16:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -253,8 +253,9 @@ static void CancelCB
 				(XmAnyCallbackStruct*)cbdata;
 	NgPrint	l = (NgPrint)udata;
 
+#if DEBUG_PRINT
         printf("releasing focus\n");
-        
+#endif        
         NgAppReleaseFocus(l->go.appmgr,l->base.id);
 	NgGOPopdown(l->base.id);
         l->print.up = False;
@@ -282,7 +283,9 @@ BasicErrorCB
 	NgGOSensitive(go->base.id,True);
 
 	if (close_dialog) {
+#if DEBUG_PRINT
 		printf("releasing focus\n");
+#endif        
 		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
 		l->print.up = False;
@@ -310,16 +313,22 @@ OverwriteMessageCB
 	NgGOSensitive(go->base.id,True);
 
 	if (cbs->reason == XmCR_OK) {
+#if DEBUG_PRINT
 		printf("OK\n");
+#endif        
 		ret = SavePlotToFile((NgPrint) l,True);
 	}
 	else if (cbs->reason == XmCR_CANCEL) {
+#if DEBUG_PRINT
 		printf("CANCEL\n");
+#endif        
 		return;
 	}
 
 	if (ret) {
+#if DEBUG_PRINT
 		printf("releasing focus\n");
+#endif        
 		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
 		l->print.up = False;
@@ -672,7 +681,7 @@ OutputGif(
 
 	sprintf(stderrfile,"%s/stderr.%d",tmpdir,pid);
 	sprintf(buf1,
-		"sh -c '( ctrans -d sun -res %dx%d -window %f:%f:%f:%f %s 2>%s | rasttopnm 2>>%s | ppmtogif 2>>%s >%s )' 1>>%s 2>&1",
+		"sh -c '( ctrans -d sun -res %dx%d -window %f:%f:%f:%f %s 2>%s | rasttopnm -quiet 2>>%s | ppmtogif -quiet 2>>%s >%s )' 1>>%s 2>&1",
 		rw,rh,wlx,wly,wux,wuy,buf,
 		stderrfile,stderrfile,stderrfile,outfile,stderrfile);
         
@@ -968,7 +977,7 @@ PrintPlot
 	system(buf);
 
 	wait(&status);
-#if 0
+#if DEBUG_PRINT
 	printf("the status is %d ,errno is %d\n",WEXITSTATUS(status),errno);
 #endif
 	
@@ -1031,7 +1040,9 @@ PrintScriptOkCB
 			ret = SavePlotToFile(l,False);
 	}
 	if (ret) {
+#if DEBUG_PRINT
 		printf("releasing focus\n");
+#endif        
 		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
 		l->print.up = False;
@@ -1877,11 +1888,15 @@ VisibilityEH
 	NgPrint	l = (NgPrint)udata;
         
 
+#if DEBUG_PRINT
         printf("in visibility eh\n");
+#endif        
 
         if (! l->print.up) {
 		UpdateDialog(l);
+#if DEBUG_PRINT
                 printf("grabbing focus\n");
+#endif        
                 NgAppGrabFocus(l->go.appmgr,l->base.id);
                 l->print.up = True;
         }

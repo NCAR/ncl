@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.h,v 1.2 1997-08-25 20:24:31 boote Exp $
+ *      $Id: xwk.h,v 1.3 1998-08-26 05:16:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define	_NG_XWK_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/hlu/XWorkstation.h>
 
 extern NhlClass NgxWkClass;
 
@@ -32,5 +33,11 @@ extern NhlClass NgxWkClass;
 
 #define	NgNxwkWork		"ngxwkWork"
 #define	NgCxwkWork		"ngXwkWork"
+
+void NgXWorkPopup
+(
+	int appmgr,
+	int xwkid
+);
 
 #endif	/* _NG_XWK_H */
