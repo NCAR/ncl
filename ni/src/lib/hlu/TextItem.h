@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.7 1995-04-07 10:43:48 boote Exp $
+ *      $Id: TextItem.h,v 1.8 1998-10-28 00:46:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -72,11 +72,6 @@
 #define NhlCtxPerimSpaceF		"TxPerimSpaceF"
 #define NhlCtxBackgroundFillColor	"TxBackgroundFillColor"
 
-typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
-typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
-
-#define NhlTFontQuality		"FontQuality"
-#define NhlTTextDirection	"TextDirection"
 
 extern NhlClass NhltextItemClass;
 #endif  /* _NTextItem_h */

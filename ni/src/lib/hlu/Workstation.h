@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.27 1998-10-27 20:05:34 boote Exp $
+ *      $Id: Workstation.h,v 1.28 1998-10-28 00:46:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,6 +186,12 @@ typedef enum _NhlMarkLineMode{
 	NhlMARKERS = 1,
 	NhlMARKLINES = 2
 } NhlMarkLineMode;
+
+typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
+typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
+
+#define NhlTFontQuality		"FontQuality"
+#define NhlTTextDirection	"TextDirection"
 
 /*
  * Public access functions to support Workstation Class

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.44 1998-10-22 17:39:30 dbrown Exp $
+ *      $Id: TextItem.c,v 1.45 1998-10-28 00:46:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -306,21 +306,6 @@ static NhlErrorTypes    TextItemClassInitialize
 ()
 #endif
 {
-	_NhlEnumVals	fontqlist[] = {
-		{NhlHIGH,	"High"},
-		{NhlMEDIUM,	"Medium"},
-		{NhlLOW,	"Low"}
-	};
-
-	_NhlEnumVals	textdirlist[] = {
-		{NhlDOWN,	"Down"},
-		{NhlACROSS,	"Across"}
-	};
-
-	_NhlRegisterEnumType(NhlbaseClass,NhlTFontQuality,fontqlist,
-							NhlNumber(fontqlist));
-	_NhlRegisterEnumType(NhlbaseClass,NhlTTextDirection,textdirlist,
-							NhlNumber(textdirlist));
 
 	txstrQ = NrmStringToQuark(NhlNtxString);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.87 1998-10-27 20:05:32 boote Exp $
+ *      $Id: Workstation.c,v 1.88 1998-10-28 00:46:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -175,6 +175,7 @@ static NrmQuark foregnd_name;
 static NrmQuark	marker_tbl_strings_name;
 static NrmQuark marker_tbl_params_name;
 static NrmQuark dash_table_name;
+static NrmQuark def_graphic_style_id_name;
 
 #define Oset(field) NhlOffset(NhlWorkstationLayerRec,work.field)
 static NhlResource resources[] = {
@@ -835,7 +836,7 @@ NhlGetNamedColor
 #endif
 {
 	char			func[]="NhlGetNamedColor";
-	NhlWorkstationLayer	wl = _NhlGetLayer(pid);
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)_NhlGetLayer(pid);
 	NGRGB			rgb;
 	int			index;
 
@@ -2043,6 +2044,22 @@ WorkstationClassInitialize
 		{NhlMARKLINES,	"MarkLines"}
 	};
 
+	_NhlEnumVals	fontqlist[] = {
+		{NhlHIGH,	"High"},
+		{NhlMEDIUM,	"Medium"},
+		{NhlLOW,	"Low"}
+	};
+
+	_NhlEnumVals	textdirlist[] = {
+		{NhlDOWN,	"Down"},
+		{NhlACROSS,	"Across"}
+	};
+
+	_NhlRegisterEnumType(NhlbaseClass,NhlTFontQuality,fontqlist,
+			     NhlNumber(fontqlist));
+	_NhlRegisterEnumType(NhlbaseClass,NhlTTextDirection,textdirlist,
+			     NhlNumber(textdirlist));
+
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndexFullEnum,
                                    dashvals,NhlNumber(dashvals));
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTColorIndexFullEnum,
@@ -2244,6 +2261,7 @@ WorkstationClassInitialize
 	marker_tbl_strings_name = NrmStringToQuark(_NhlNwkMarkerTableStrings);
 	marker_tbl_params_name = NrmStringToQuark(_NhlNwkMarkerTableParams);
 	dash_table_name = NrmStringToQuark(_NhlNwkDashTable);
+	def_graphic_style_id_name = NrmStringToQuark(NhlNwkDefGraphicStyleId);
 
 	ginq_op_st(&status);
 
@@ -2868,136 +2886,185 @@ static NhlErrorTypes WorkstationInitialize
 	newl->work.mip = &newl->work.private_markinfo;
 	newl->work.fip = &newl->work.private_fillinfo;
 
+	return(retcode);
+}
+
 /*
- * Create the default GraphicStyle object
+ * This function is called if the user destroys the default GraphicsStyle obj.
  */
-	{
-		int	gsid;
-		char	buffer[_NhlMAXRESNAMLEN];
+static void
+GSDestroyCB
+(
+        NhlArgVal       cbdata,
+        NhlArgVal       udata
+)
+{
+	NhlWorkstationLayer  wl = (NhlWorkstationLayer) udata.ptrval;
 
-		sprintf(buffer,"%s",new->base.name);
-		strcat(buffer,".GraphicStyle");
+	wl->work.def_graphic_style_id = NhlNULLOBJID;
 
-		subret = NhlVACreate(&gsid,buffer,NhlgraphicStyleClass,
-				  new->base.id,NULL);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-			return retcode;
-		newl->work.def_graphic_style_id = gsid;
-	}
+	return;
+}
+/*
+ * Function:	CreateDefGraphicsStyle
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CreateDefGraphicsStyle
+#if  NhlNeedProto
+(
+	NhlWorkstationLayer  wl,
+	NhlString	     entry_name
+)
+#else
+(wl,entry_name)
+	NhlWorkstationLayer  wl;
+	NhlString	     entry_name;
+#endif
+{
+	NhlErrorTypes		retcode = NhlNOERROR,subret = NhlNOERROR;
+	NhlWorkstationLayerPart *wlp = &wl->work;
+	char 			*e_text;
+	int			gsid;
+	char			buffer[_NhlMAXRESNAMLEN];
+	NhlSArg			sargs[128];
+	int			nargs = 0;
+	_NhlLineStyleInfo 	*lsp;
+	_NhlMarkerStyleInfo 	*msp;
+        NhlArgVal           	sel,udata;
 
+	sprintf(buffer,"%s",wl->base.name);
+	strcat(buffer, ".GraphicStyle");
+
+	subret = NhlVACreate(&gsid,buffer,NhlgraphicStyleClass,
+			     wl->base.id,NULL);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
+		return retcode;
+	wlp->def_graphic_style_id = gsid;
+
+        NhlINITVAR(sel);
+        NhlINITVAR(udata);
+        udata.ptrval = wl;
+	wlp->def_gs_destroy_cb = 
+		_NhlAddObjCallback(_NhlGetLayer(wlp->def_graphic_style_id),
+				   _NhlCBobjDestroy,sel,GSDestroyCB,udata);
 /*
  * The "wk" line and marker attributes are now obsolete but for now
  * if they are set they will affect the default graphic style.
  */
-	{
-		_NhlLineStyleInfo *lsp = &newl->work.public_lineinfo;
-		_NhlMarkerStyleInfo *msp = &newl->work.public_markinfo; 
-		NhlSArg		sargs[128];
-		int		nargs = 0;
+	lsp = &wlp->public_lineinfo;
+	msp = &wlp->public_markinfo; 
 
+	if (lsp->dash_pattern != 0) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineDashPattern,lsp->dash_pattern);
+	}
 		
-		if (lsp->dash_pattern != 0) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineDashPattern,lsp->dash_pattern);
-		}
-		
-		if ((int)(100*lsp->line_dash_seglen) != 15) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineDashSegLenF,
-				   lsp->line_dash_seglen);
-		}
+	if ((int)(100*lsp->line_dash_seglen) != 15) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineDashSegLenF,lsp->line_dash_seglen);
+	}
 	
-		if (lsp->line_color != NhlFOREGROUND) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineColor,lsp->line_color);
-		}
-		if ((int)lsp->line_thickness != 1) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineThicknessF,lsp->line_thickness);
-		}
-		if (lsp->line_label_string != NULL) {
-			NhlSetSArg(&sargs[nargs++],
-				NhlNgsLineLabelString,lsp->line_label_string);
-		}
-		if (lsp->line_label_font != 0) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFont,lsp->line_label_font);
-		}
-
-		if (lsp->line_label_font_color != NhlFOREGROUND) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFontColor,
-				   lsp->line_label_font_color);
-		}
-		if ((int)(10000*lsp->line_label_font_height) != 125) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFontHeightF,
-				   lsp->line_label_font_height);
-		}
-		if ((int)(10000*lsp->line_label_font_aspect) != 13125) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFontAspectF,
-				   lsp->line_label_font_aspect);
-		}
-		if ((int)lsp->line_label_font_thickness != 1) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFontThicknessF,
-				   lsp->line_label_font_thickness);
-		}
-		if (lsp->line_label_font_quality != NhlHIGH) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFontQuality,
-				   lsp->line_label_font_quality);
-		}
-		if ((int)lsp->line_label_const_spacing != 0) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelConstantSpacingF,
-				   lsp->line_label_const_spacing);
-		}
-		if (lsp->line_label_func_code != ':') {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsLineLabelFuncCode,
-				   lsp->line_label_func_code);
-		}
-		if (msp->marker_index != 3) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsMarkerIndex,msp->marker_index);
-		}
-		if (msp->marker_color != NhlFOREGROUND) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsMarkerColor,msp->marker_color);
-		}
-		if ((int)(1000*msp->marker_size) != 7) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsMarkerSizeF,msp->marker_size);
-		}
-		if ((int)msp->marker_thickness != 1) {
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNgsMarkerThicknessF,
-				   msp->marker_thickness);
-		}
-		if (nargs > 0) {
-			subret = NhlALSetValues(
-					   newl->work.def_graphic_style_id,
-					   sargs,nargs);
-
-			if ((retcode = MIN(subret,retcode)) < NhlWARNING) {
-				e_text = 
-				    "%s: error setting default GraphicStyle";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			e_text = 
-"%s: Obsolete Workstation line or marker resources set: use GraphicStyle resources instead";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			retcode = MIN(retcode,NhlWARNING);
-		}
+	if (lsp->line_color != NhlFOREGROUND) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineColor,lsp->line_color);
+	}
+	if ((int)lsp->line_thickness != 1) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineThicknessF,lsp->line_thickness);
+	}
+	if (lsp->line_label_string != NULL) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelString,lsp->line_label_string);
+	}
+	if (lsp->line_label_font != 0) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFont,lsp->line_label_font);
 	}
 
+	if (lsp->line_label_font_color != NhlFOREGROUND) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFontColor,
+			   lsp->line_label_font_color);
+	}
+	if ((int)(10000*lsp->line_label_font_height) != 125) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFontHeightF,
+			   lsp->line_label_font_height);
+	}
+	if ((int)(10000*lsp->line_label_font_aspect) != 13125) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFontAspectF,
+			   lsp->line_label_font_aspect);
+	}
+	if ((int)lsp->line_label_font_thickness != 1) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFontThicknessF,
+			   lsp->line_label_font_thickness);
+	}
+	if (lsp->line_label_font_quality != NhlHIGH) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFontQuality,
+			   lsp->line_label_font_quality);
+	}
+	if ((int)lsp->line_label_const_spacing != 0) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelConstantSpacingF,
+			   lsp->line_label_const_spacing);
+	}
+	if (lsp->line_label_func_code != ':') {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsLineLabelFuncCode,
+			   lsp->line_label_func_code);
+	}
+	if (msp->marker_index != 3) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsMarkerIndex,msp->marker_index);
+	}
+	if (msp->marker_color != NhlFOREGROUND) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsMarkerColor,msp->marker_color);
+	}
+	if ((int)(1000*msp->marker_size) != 7) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsMarkerSizeF,msp->marker_size);
+	}
+	if ((int)msp->marker_thickness != 1) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNgsMarkerThicknessF,
+			   msp->marker_thickness);
+	}
+	if (nargs > 0) {
+		subret = NhlALSetValues(wlp->def_graphic_style_id,sargs,nargs);
+
+		if ((retcode = MIN(subret,retcode)) < NhlWARNING) {
+			e_text = 
+				"%s: error setting default GraphicStyle";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name);
+			return NhlFATAL;
+		}
+		e_text = 
+			"%s: Obsolete Workstation line or marker resources set: use GraphicStyle resources instead";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		retcode = MIN(retcode,NhlWARNING);
+	}
 
 	return(retcode);
+
 }
+
+
 
 /*
  * Function:	WorkstationSetValues
@@ -3089,6 +3156,13 @@ WorkstationSetValues
 			return NhlFATAL;
 		}
 		if (newl->work.graphic_style_id == NhlNULLOBJID) {
+			if (newl->work.def_graphic_style_id == NhlNULLOBJID) {
+				subret = CreateDefGraphicsStyle
+					(newl,entry_name);
+				retcode = MIN(subret,retcode);
+				if (retcode < NhlWARNING)
+					return retcode;
+			}
 			gsl = _NhlGetLayer(newl->work.def_graphic_style_id);
 		}
 		else {
@@ -3221,9 +3295,9 @@ WorkstationSetValues
 
 /*
  * The "wk" line and marker attributes are now obsolete but for now
- * if they are set they will affect the default graphic style.
+ * if they are set they will affect the default graphic style (if it exists).
  */
-	{
+	if (newl->work.def_graphic_style_id != NhlNULLOBJID) {
 		_NhlLineStyleInfo *lsp = &newl->work.public_lineinfo;
 		_NhlLineStyleInfo *olsp = &oldl->work.public_lineinfo;
 		_NhlMarkerStyleInfo *msp = &newl->work.public_markinfo; 
@@ -3390,7 +3464,16 @@ WorkstationGetValues
 
 	for( i = 0; i< num_args; i++ ) {
 
-		if(args[i].quark == colormap_name) {
+		if(args[i].quark == def_graphic_style_id_name) {
+			if (wl->work.def_graphic_style_id == NhlNULLOBJID) {
+				ret = CreateDefGraphicsStyle(wl,entry_name);
+				if (ret < NhlWARNING)
+					return ret;
+			}
+			*((int *)(args[i].value.ptrval)) = 
+				wl->work.def_graphic_style_id;
+		}
+		else if(args[i].quark == colormap_name) {
 			private = wl->work.private_color_map;
 			tmp = (NhlColor*)
 				NhlMalloc(wl->work.color_map_len
@@ -3594,6 +3677,8 @@ static NhlErrorTypes WorkstationDestroy
 	if(wp->private_lineinfo.line_label_string != NULL)
 		NhlFree(wp->private_lineinfo.line_label_string);
 
+	_NhlCBDelete(wp->def_gs_destroy_cb);
+ 
 	if (_NhlGetLayer(wp->def_graphic_style_id) != NULL) {
 		NhlDestroy(wp->def_graphic_style_id);
 	}
