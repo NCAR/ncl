@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.141 2003-09-18 18:31:11 kennison Exp $
+#   $Id: ncargex.csh,v 1.142 2003-10-06 17:05:07 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1544,11 +1544,12 @@ set comp_flags = ($X11_option)
 #                                  #
 #**********************************#
 set extra_src_files
-set data_files
+set stdin_data_file
+set other_data_files
 
 switch ($name)
     case agex13:
-        set data_files = (agda13.dat)
+	set stdin_data_file = (agda13.dat)
     breaksw
 
     case ccpcica:
@@ -1564,22 +1565,22 @@ switch ($name)
 
     case ccpila:
     case ccpt2d:
-        set data_files = (ccpila.dat)
+	set stdin_data_file = (ccpila.dat)
     breaksw
 
     case ccpils:
     case ccpilt:
     case ccplbdr:
     case ccptitle:
-        set data_files = (ccpex.dat)
+	set stdin_data_file = (ccpex.dat)
     breaksw
 
     case ccpmpxy:
-        set data_files = (cpmpxy1.dat)
+	set stdin_data_file = (cpmpxy1.dat)
     breaksw
 
     case class1:
-        set data_files = (class1.dat)
+	set stdin_data_file = (class1.dat)
     breaksw
 
     case cpex01:
@@ -1595,57 +1596,57 @@ switch ($name)
     breaksw
 
     case cpex14:
-        set data_files = (cpex14.dat)
+	set other_data_files = (cpex14.dat)
     breaksw
 
     case cpex16:
-        set data_files = (cpex16.dat)
+	set other_data_files = (cpex16.dat)
     breaksw
 
     case ctfite:
-        set data_files = (ctfite.dat)
+	set other_data_files = (ctfite.dat)
     breaksw
 
     case ctgaus:
-        set data_files = (ctgaus.dat)
+	set other_data_files = (ctgaus.dat)
     breaksw
 
     case ctiscp:
-        set data_files = (ctiscp.dat)
+	set other_data_files = (ctiscp.dat)
     breaksw
 
     case ctorca:
-        set data_files = (ctorca.dat)
+	set other_data_files = (ctorca.dat)
     breaksw
 
     case ctpopg:
-        set data_files = (ctpopg.dat)
+	set other_data_files = (ctpopg.dat)
     breaksw
 
     case ctswth:
-        set data_files = (ctswth.dat)
+	set other_data_files = (ctswth.dat)
     breaksw
 
     case ctwng1:
-        set data_files = (ctwng1.dat)
+	set other_data_files = (ctwng1.dat)
     breaksw
 
     case ctwng2:
-        set data_files = (ctwng2.dat)
+	set other_data_files = (ctwng2.dat)
     breaksw
 
     case fcover:
-        set data_files = (fcover.dat)
+	set stdin_data_file = (fcover.dat)
     breaksw
 
     case ffex02:
     case ffex03:
     case c_ffex03:
-        set data_files = (ffex02.dat)
+	set stdin_data_file = (ffex02.dat)
     breaksw
 
     case ffex05:
-        set data_files = (ffex05.dat)
+	set stdin_data_file = (ffex05.dat)
     breaksw
 
     case mpex01:
@@ -1662,13 +1663,13 @@ switch ($name)
     breaksw
 
     case mpexfi:
-        set data_files = (mpexfi.dat)
+	set stdin_data_file = (mpexfi.dat)
         set extra_src_files = (mpexcc.f)
     breaksw
 
     case srex01:
     case c_srex01:
-        set data_files = (srex01.dat)
+	set stdin_data_file = (srex01.dat)
     breaksw
 
     case csex01:
@@ -1822,11 +1823,11 @@ endsw
 #**********************************#
 #                                  #
 # Check if this particular example #
-# needs a data file                #
+# needs a data file on "stdin"     #
 #                                  #
 #**********************************#
-if ("$data_files" != "") then
-  set input = "$data_files"
+if ("$stdin_data_file" != "") then
+  set input = "$stdin_data_file"
 endif
 
 #******************************#
@@ -1867,7 +1868,7 @@ set src_files = ($extra_src_files $main)
 #                       #
 #***********************#
    
-set copy_files = ($extra_src_files $data_files)
+set copy_files = ($extra_src_files $stdin_data_file $other_data_files)
 
 foreach file($copy_files)
     echo "  Copying $file"
@@ -1930,7 +1931,7 @@ endif
 #*******************************************#
 switch ($name)
     case slex02:
-        set data_files = ($data_files slex02.input)
+	set other_data_files = ($other_data_files slex02.input)
     breaksw
 endsw
 
@@ -1940,7 +1941,7 @@ endsw
 # Remove unwanted files #
 #                       #
 #***********************#
-set rmfiles = ($data_files $src_files $nameSED_EXE_SUFFIX)
+set rmfiles = ($stdin_data_file $other_data_files $src_files $nameSED_EXE_SUFFIX)
 foreach file($src_files)
   set obj_file = {$file:r}.o
   set rmfiles = ($rmfiles $obj_file)
