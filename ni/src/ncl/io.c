@@ -3,7 +3,10 @@
 extern "C" {
 #endif
 #include <stdio.h>
+#include <string.h>
+#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
+
 #include "defs.h"
 
 struct str_load_list {

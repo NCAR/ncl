@@ -1975,6 +1975,8 @@ int _NclGetExtRLList
 NhlErrorTypes _NclIPSetRL
 #if  __STDC__
 (void)
+#else
+()
 #endif
 {
 	NclStackEntry arg;

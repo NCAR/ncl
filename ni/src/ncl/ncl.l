@@ -16,8 +16,11 @@ extern void printtoken(
 #else
 #define printtoken(n,m)
 #endif
-
+#ifdef YYLMAX
+#define MAXTMPSPACE YYLMAX
+#else
 #define MAXTMPSPACE 512
+#endif
 char cur_line_text[MAXTMPSPACE];
 char *cur_line_text_pos = &(cur_line_text[0]);
 int cur_line_length = 0;
@@ -72,8 +75,19 @@ digit	[0-9]
 	cur_line_text_pos = &(cur_line_text[0]);
 	return EOLN;
 }
-[\\][\n] {
+[\\][ \t]*[\n] {
 	BEGIN AA;
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	if(rec == 1) {
+		fprintf(recfp,"%s",cur_line_text);
+	}
+	last_line_length = cur_line_length;
+	cur_line_length = 0;
+	cur_line_length = 0;
+	*cur_line_text_pos = '\0';
+	cur_line_text_pos = &(cur_line_text[0]);
 }
 \;[^\n]*[\n] { 
 	printtoken(yytext[0],(char*)NULL); 

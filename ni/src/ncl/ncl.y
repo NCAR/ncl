@@ -25,7 +25,7 @@ extern int cmd_line;
 extern int cur_line_length;
 extern int cur_line_number;
 extern int last_line_length;
-extern char cur_line_text[512];
+extern char cur_line_text[];
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
@@ -1686,19 +1686,29 @@ expr_list :  expr				{
 							$$->list = _NclMakeNewListNode();
 							$$->list->next = NULL;
 							$$->list->node = $1;
-							$$->currentitem= $$->list;
+							$$->currentitem= NULL; 
 							$$->nelem = 1;
 						}
-	| expr ',' expr_list   		{ 
+	| expr_list ',' expr   		{ 
 						/* pushed on backwards so they can be popped of in correct order*/
-                                         
-                                                	$3->currentitem->next =  _NclMakeNewListNode();
-							$3->currentitem = $3->currentitem->next;
-                                                	$3->currentitem->next = NULL;
-                                                	$3->currentitem->node = $1;
-							$3->nelem++ ;
-							$$ = $3;
-							 
+							if($1 == NULL) {
+								$$ == _NclMakeRowList();
+								$$->nelem = 1;
+								$$->list = _NclMakeNewListNode();
+								$$->list->next = NULL;
+								$$->list->node = $1;
+								$$->currentitem= NULL; 
+								$$->nelem = 1;
+							} else {
+								NclSrcListNode *tmp;
+
+								tmp = _NclMakeNewListNode();
+								tmp->next = $1->list;
+								tmp->node = $3;
+								$1->list = tmp;
+								$1->nelem++;
+								$$ = $1;
+							}
 						}
 ;
 %%
@@ -1712,7 +1722,7 @@ yyerror
 {
 	extern int is_error;
 	int i,len;
-	char error_buffer[NCL_MAX_STRING];
+	char error_buffer[1024];
 	
 
 	is_error += 1;

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.10 1994-11-17 20:53:30 boote Exp $
+ *      $Id: NclApi.c,v 1.11 1994-12-01 22:12:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -374,7 +374,7 @@ void _NclAddToNewList
 #if __STDC__
 (int id,NclQuark name,NhlLayerClass cl_ptr)
 #else
-(int id,NclQuark name,NhlLayerClass cl_ptr)
+(id,name,cl_ptr)
 int id;
 NclQuark name;
 NhlLayerClass cl_ptr;
@@ -396,7 +396,7 @@ void _NclAddToDelList
 #if __STDC__
 (int id,NclQuark name,NhlLayerClass cl_ptr)
 #else
-(int id,NclQuark name,NhlLayerClass cl_ptr)
+(id,name,cl_ptr)
 int id;
 NclQuark name;
 NhlLayerClass cl_ptr;
@@ -411,7 +411,6 @@ NhlLayerClass cl_ptr;
 	tmp->u.hlu_obj->obj_class = cl_ptr;
 	tmp->next = del_list;
 	del_list = tmp;
-
 	return;
 }
 

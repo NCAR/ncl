@@ -48,12 +48,14 @@ main() {
 	error_fp = stderr;
 	stdout_fp = stdout;
 	stdin_fp = stdin;
-/*
+
+#ifdef NCLDEBUG
 	thefptr = fopen("ncl.tree","w");
 	theoptr = fopen("ncl.seq","w");
-*/
+#else
 	thefptr = NULL;
 	theoptr = NULL;
+#endif
 	NhlOpen();
 	errid = NhlErrGetID();
 	NhlVASetValues(errid,
@@ -65,17 +67,19 @@ main() {
 	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 	if(cmd_line)	
-		fprintf(stdout,"ncl %d> ",0);
+		fprintf(stdout_fp,"ncl %d> ",0);
 #ifdef SunOS
 	nclparse(1);
 #else
 	yyparse(1);
 #endif
 	fclose(thefptr);
+#ifdef NCLDEBUG
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclPrintUnfreedObjs(stdout);
 	_NclObjsSize(stdout);
 	_NclNumGetObjCals(stdout);
+#endif
 	NhlClose();
 	exit(0);
 }
