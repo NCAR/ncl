@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.13 1994-10-04 01:02:08 boote Exp $
+ *      $Id: Resources.c,v 1.14 1994-10-07 21:45:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,6 @@
  *		_NhlCopyToArg:
  *			Same as _NhlCopyFromArg.
  */
-#include <stdio.h>
-#include <string.h>
 #include <ncarg/hlu/defs.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ConvertP.h>
@@ -403,7 +401,7 @@ GetResources
 	for (i=0; i < num_res; i++){
 
 		if(resfound[i])		/* resource set via arg or datares*/
-			continue;
+			goto found;
 
 		/* Set resources via Nrm databases */
 
@@ -426,7 +424,7 @@ GetResources
 					
 					if(lret == NhlNOERROR){
 						resfound[i] = True;
-						continue;
+						goto found;
 					}
 					/*
 					 * unspecified error - let res-default
@@ -456,7 +454,7 @@ GetResources
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
-					continue;
+					goto found;
 				}
 			}
 		}
@@ -474,8 +472,10 @@ GetResources
 			tree_len = 0;
 			while(nameQ[tree_len]) tree_len++;
 
-			memcpy(lname,nameQ,(tree_len+1)*sizeof(NrmQuark));
-			memcpy(lclass,classQ,(tree_len+1)*sizeof(NrmQuark));
+			memcpy((void*)lname,(void*)nameQ,
+						(tree_len+1)*sizeof(NrmQuark));
+			memcpy((void*)lclass,(void*)classQ,
+						(tree_len+1)*sizeof(NrmQuark));
 			for(tint=0;(tint < tree_len-1) && child[tint] &&
 				NrmQinQList(child[tint],resources[i].nrm_name);
 									tint++){
@@ -511,7 +511,7 @@ GetResources
 					
 					if(lret == NhlNOERROR){
 						resfound[i] = True;
-						continue;continue;
+						goto found;
 					}
 					/*
 					 * unspecified error - let res-default
@@ -541,7 +541,7 @@ GetResources
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
-					continue;continue;
+					goto found;
 					}
 				}
 			}
@@ -626,7 +626,7 @@ GetResources
 						 base,resources[i].nrm_offset);
 				if(lret > NhlWARNING){
 					resfound[i] = True;
-					continue; /* this resource is finished*/
+					goto found; /* this resource is finished*/
 				}
 
 				/* unspecified error - set to NULL */
@@ -684,6 +684,8 @@ GetResources
 							to.data.ptrval,to.size);
 			resfound[i] = True;
 		}
+		found:
+		;
 	}
 
 	if(slist != stackslist)
