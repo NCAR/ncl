@@ -12,7 +12,6 @@ int utopen()
   const char *path = NULL;
   char udunits_file[_NhlMAXFNAMELEN];
   int utret;
-  utUnit unit;
 /*
  * Initialize the Udunits package.
  *
@@ -63,8 +62,6 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Variables for Udunits package.
  */
-  const char *path = NULL;
-  char udunits_file[_NhlMAXFNAMELEN];
   int utopen();
   utUnit unit;
 /*
@@ -246,8 +243,6 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Variables for Udunits package.
  */
-  const char *path = NULL;
-  char udunits_file[_NhlMAXFNAMELEN];
   int utopen();
   utUnit unit;
 /*

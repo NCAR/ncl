@@ -9,9 +9,9 @@ c            xmsg = u@_FillValue
 c            nlat,mlon = dimsizes (u)
 c            iopt= cyclic
 
-C*PL*ERROR* Comment line too long
-c relative vorticity via centered finite difference approach approach (rv)
-c .   rv = dv/dx-du/dy   where "d" means partial derivitive
+c relative vorticity via centered finite difference approach
+c      approach (rv)
+c .   rv = dv/dx-du/dy+(u/a)tan(lat)   where "d" means partial derivitive
 
 c assumptions:
 c .   (1) latitudes  monotonically increasing  [eg: glat(2) > glat(1)]
