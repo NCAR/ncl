@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.57 1996-04-23 00:10:17 ethan Exp $
+ *      $Id: Execute.c,v 1.58 1996-04-25 00:58:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -185,14 +185,19 @@ NclExecuteReturnStatus _NclExecute
 					switch(start.kind) {
 					case NclStk_VAL:
 						if(start.u.data_obj !=NULL) {
-						data.u.range_rec->start = start.u.data_obj;
+							data.u.range_rec->start = start.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->start = 
-								_NclVarValueRead(start.u.data_var,NULL,NULL);
+						if(start.u.data_var->obj.status != PERMANENT) {
+							data.u.range_rec->start = _NclCopyVal(
+								_NclVarValueRead(start.u.data_var,NULL,NULL),NULL);
+							_NclDestroyObj((NclObj)start.u.data_var);
+						} else {
+							data.u.range_rec->start = _NclVarValueRead(start.u.data_var,NULL,NULL);
+						}
 						if(data.u.range_rec->start == NULL) {
 							estatus = NhlFATAL;
 						}
@@ -208,13 +213,19 @@ NclExecuteReturnStatus _NclExecute
 					switch(finish.kind) {
 					case NclStk_VAL:
 						if(finish.u.data_obj !=NULL) {
-						data.u.range_rec->finish= finish.u.data_obj;
+							data.u.range_rec->finish= finish.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL,NULL);
+						if(finish.u.data_var->obj.status != PERMANENT) {
+							data.u.range_rec->finish = _NclCopyVal(
+								_NclVarValueRead(finish.u.data_var,NULL,NULL),NULL);
+							_NclDestroyObj((NclObj)finish.u.data_var);
+						} else {
+							data.u.range_rec->finish = _NclVarValueRead(finish.u.data_var,NULL,NULL);
+						}
 						if(data.u.range_rec->finish == NULL) {
 							estatus = NhlFATAL;
 						}
@@ -230,13 +241,19 @@ NclExecuteReturnStatus _NclExecute
 					switch(stride.kind) {
 					case NclStk_VAL:
 						if(stride.u.data_obj !=NULL) {
-						data.u.range_rec->stride= stride.u.data_obj;
+							data.u.range_rec->stride= stride.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL,NULL);
+						if(stride.u.data_var->obj.status != PERMANENT) {
+							data.u.range_rec->stride = _NclCopyVal(
+								_NclVarValueRead(stride.u.data_var,NULL,NULL),NULL);
+							_NclDestroyObj((NclObj)stride.u.data_var);
+						} else {
+							data.u.range_rec->stride = _NclVarValueRead(stride.u.data_var,NULL,NULL);
+						}
 						if(data.u.range_rec->stride == NULL){
 							estatus = NhlFATAL;
 						}
@@ -1645,13 +1662,13 @@ NclExecuteReturnStatus _NclExecute
 								} else {
 									lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name,PERMANENT);
 								}
+								lhs_var->kind = NclStk_NOVAL;
 								if(lhs_var->u.data_var != NULL) {
 									(void)_NclChangeSymbolType(sym,VAR);
 									lhs_var->kind = NclStk_VAR;
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
 									estatus = NhlWARNING;
-									lhs_var->kind = NclStk_NOVAL;
 								}
 							} 
 						} else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var->obj.status != TEMPORARY)) {

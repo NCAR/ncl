@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.6 1995-06-03 00:45:29 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.7 1996-04-25 00:58:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -163,6 +163,9 @@ NclStatus status)
 			value->multidval.sel_rec,
 			value->multidval.type
 		);
+		if(value->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)value);
+		}
 		if(tmp_md == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCoordVarCreate: Could not create coordinate variable");
 			return(NULL);
