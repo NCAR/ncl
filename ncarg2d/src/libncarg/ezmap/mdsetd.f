@@ -1,5 +1,5 @@
 C
-C $Id: mdsetd.f,v 1.1 2001-08-16 23:09:40 kennison Exp $
+C $Id: mdsetd.f,v 1.2 2001-08-22 21:40:16 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,7 +81,7 @@ C
           DPLT=DVAL
           DPSQ=DPLT*DPLT
         ELSE IF (WHCH(1:2).EQ.'OT'.OR.WHCH(1:2).EQ.'ot') THEN
-          OTOL=MAX(0.,DVAL)
+          OTOL=MAX(0.D0,DVAL)
         ELSE IF (WHCH(1:2).EQ.'RE'.OR.WHCH(1:2).EQ.'re') THEN
           PLTR=DVAL
           INTF=.TRUE.
