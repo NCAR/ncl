@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.58 1997-06-17 23:34:29 boote Exp $
+#      $Id: yMakefile,v 1.59 1997-07-01 00:02:10 ethan Exp $
 #
 #########################################################################
 #									#
@@ -109,7 +109,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
-			GetGrids.c NclCCM.c ctoiee.c
+			GetGrids.c NclCCM.c craybin.c ctoiee.c
 
 FSRCS		=	fortranio.f gaus.f vinth2p.f
 FOBJS		=	fortranio.o gaus.o vinth2p.o
@@ -131,7 +131,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
 			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o \
-			GetGrids.o NclCCM.o ctoiee.o
+			GetGrids.o NclCCM.o craybin.o ctoiee.o
 
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 

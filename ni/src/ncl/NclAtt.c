@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.17 1997-02-27 20:18:45 boote Exp $
+ *      $Id: NclAtt.c,v 1.18 1997-07-01 00:02:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -230,13 +230,6 @@ NclSelectionRecord * sel_ptr;
 
 	att_quark = NrmStringToQuark(attname);
 
-	if((att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT))&&(theattobj->obj.cblist != NULL)) {
-		selector.lngval = MISSINGNOTIFY;
-		cbdata.ptrval = NULL;
-		memcpy((void*)&tmp_scalar,value->multidval.val,value->multidval.type->type_class.size);
-		cbdata.ptrval = &tmp_scalar;
-		_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
-	}
         thelist = theattobj->att.att_list;
         while(thelist != NULL) {
                 if(thelist->quark == att_quark) {
@@ -245,6 +238,38 @@ NclSelectionRecord * sel_ptr;
                         thelist = thelist->next;
                 }
         }
+	if(thelist != NULL) {
+                targetdat = thelist->attvalue;
+                lhs_type = targetdat->multidval.type->type_class.type;
+                rhs_type = value->multidval.type->type_class.type;
+		if(lhs_type != rhs_type) {
+			tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type ,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
+			if(tmp_md == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
+				return(NhlFATAL);
+			} else {
+				if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
+/*
+* value_md is either equal to value or had to be coerced. In the event it
+* was coerced it must be freed. Therefore it will faile value != value_md
+* conditional
+*/
+					_NclDestroyObj((NclObj)tmp_md);
+				}
+			}
+		} else {
+			tmp_md = value;
+		}
+	} else {
+			tmp_md = value;
+	}
+	if((att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT))&&(theattobj->obj.cblist != NULL)) {
+		selector.lngval = MISSINGNOTIFY;
+		cbdata.ptrval = NULL;
+		memcpy((void*)&tmp_scalar,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+		cbdata.ptrval = &tmp_scalar;
+		_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
+	}
         if(thelist == NULL) {
                 thelist = (NclAttList*)NclMalloc((unsigned)
                         sizeof(NclAttList));
@@ -265,31 +290,10 @@ NclSelectionRecord * sel_ptr;
                 theattobj->att.n_atts++;
                 return(NhlNOERROR);
         } else {
-                targetdat = thelist->attvalue;
                 if(value->multidval.n_dims > 1) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign value with more than one dimension to attribute, attributes are restricted to having only one dimension");
                         return(NhlFATAL);
                 } else if(sel_ptr == NULL) {
-                        lhs_type = targetdat->multidval.type->type_class.type;
-                        rhs_type = value->multidval.type->type_class.type;
-                        if(lhs_type != rhs_type) {
-                                tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type ,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
-                                if(tmp_md == NULL) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
-                                        return(NhlFATAL);
-                                } else {
-                                        if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
-/*
-* value_md is either equal to value or had to be coerced. In the event it
-* was coerced it must be freed. Therefore it will faile value != value_md
-* conditional
-*/
-                                                _NclDestroyObj((NclObj)tmp_md);
-                                        }
-                                }
-                        } else {
-                                tmp_md = value;
-                        }
                         if(tmp_md->multidval.dim_sizes[0] != targetdat->multidval.dim_sizes[0]) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size of attribute and right-hand side of assignment do not match");
                                 return(NhlFATAL);

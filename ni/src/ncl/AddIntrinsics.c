@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.25 1997-06-12 19:22:19 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.26 1997-07-01 00:02:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -201,6 +201,11 @@ void
 );
 NhlErrorTypes _NclIfbinrecread(
 #if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclICrayBinNumRec(
+#if NhlNeedProto
 void
 #endif
 );
@@ -579,6 +584,13 @@ void _NclAddIntrinsics
 	args[2].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIfbinrecwrite,args,"fbinrecwrite",3,IPROC);
 	
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclICrayBinNumRec,args,"craybinnumrec",1,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
