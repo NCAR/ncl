@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.15 1995-02-08 17:56:14 haley Exp $
+#      $Id: yMakefile,v 1.16 1995-02-11 16:34:35 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -57,7 +57,6 @@ nhlex.old: nhlex.old.csh Makefile
 ng4ex: ng4ex.csh Makefile
 	@sed \
 	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
-	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_HLUDIR+$(HLUDIR)+' \
 	-e 's+SED_LIBROOT+$(LIBROOT)+' \
