@@ -36,24 +36,25 @@ fill and the outlines become mono-colored, and therefore only modes
 -2, -1, and 0 remain distinguishable. The default value is 0.
 .IP "AFO - Arrow Fill Over Arrow Lines - Integer"
 If AFO is set to 1, the perimeter outline of a filled vector arrow is
-drawn first, underneath the fill. In this case, the line must be drawn
-using a line thickness greater than unity in order for the line to
-appear. The advantage of drawing the line underneath is that the full
-extent of the fill appears, resulting in a crisper, more sharply
-defined arrow; when the line is drawn on top of the fill using a
-different color index, the fill color may be partially or completely
-obscured, especially for small vector arrows. AFO has an effect only
-when the parameter AST is set to 1.  The default value of AFO is 1.
+drawn first, underneath the fill. In this case, you must set the line
+thickness parameter (LWD) to a value greater than unity in order for
+the line to appear completely. The advantage of drawing the line
+underneath is that the full extent of the fill appears, resulting in a
+crisper, more sharply defined arrow; when the line is drawn on top of
+the fill using a different color index, the fill color may be
+partially or completely obscured, especially for small vector
+arrows. AFO has an effect only when the parameter AST is set to 1.
+The default value of AFO is 1.
 .IP "AIR - Arrow Interior Reference Fraction  - Real"
 AIR specifies the distance from the point of the arrowhead of a filled
 vector arrow drawn at the reference length to the point where the
 arrowhead joins with the line extending to the tail of the arrow. Its
 value represents a fraction of the reference length.  This distance is
 adjusted proportionally to the X component of the arrowhead size for
-vector arrows whose length differs from the reference length.  See
-VRL for an explanation of how the reference length is
-determined.  AIR has an effect only when AST is set to 1. Its default
-value is 0.33.
+vector arrows whose length differs from the reference length.  See VRL
+for an explanation of how the reference length is determined.  AIR has
+an effect only when AST is set to 1. AIR is allowed to vary between
+0.0 and 1.0 and its default value is 0.33.
 .IP "AMN - Arrow Head Minimum Size - Real"
 Specifies a minimum length for the two lines representing the point of
 the vector arrow head, as a fraction of the viewport width. AMN has an
@@ -122,14 +123,16 @@ as a fraction of the width of an arrow drawn at the reference
 length. If AWF has the value 0.0, then the ratio of the arrow width to
 the arrow length will be constant for all arrows in the plot.  If
 given the value 1.0, the width will itself be constant for all arrows
-in the plot, regardless of length. See VFR for a discussion of
-how the minimum length is determined. AWF has an effect only when AST
-is set to 1.  Its default value is 0.0.
+in the plot, regardless of length. See VFR for a discussion of how the
+minimum length is determined. AWF has an effect only when AST is set
+to 1.  AWF is allowed to vary between 0.0 and 1.0 and its default
+value is 0.0.
 .IP "AWR - Arrow Width Reference Fraction - Real"
 AWR specifies the width of a filled vector arrow drawn at the
-reference length, as a fraction of the reference length.  See VRL
-for an explanation of how the reference length is determined.  AWR
-has an effect only when AST is set to 1. Its default value is 0.03.
+reference length, as a fraction of the reference length.  See VRL for
+an explanation of how the reference length is determined.  AWR has an
+effect only when AST is set to 1. AWR is allowed to vary between 0.0
+and 1.0 and its default value is 0.03.
 .IP "AXF - Arrow X-Coord Fractional Minimum - Real"
 AXF specifies the X component of the head of a filled vector arrow
 drawn at the minimum length, as a fraction of the X component of the
@@ -139,39 +142,40 @@ along the centerline of the arrow perpendicular the arrowhead\'s rear
 tips. If AXF has the value 0.0, then the ratio of the X component of
 the arrowhead size to the arrow length will be constant for all
 vectors in the plot. If given the value 1.0, the arrowhead X component
-will itself be constant for all arrows in the plot, regardless of their
-length. See VRL for an explanation of how the reference length
-is determined.  AXF has an effect only when AST is set to 1.  Its
-default value is 0.0.
+will itself be constant for all arrows in the plot, regardless of
+their length. See VRL for an explanation of how the reference length
+is determined.  AXF has an effect only when AST is set to 1. AXF is
+allowed to vary between 0.0 and 1.0 and its default value is 0.0.
 .IP "AXR - Arrow X-Coord Reference Fraction - Real"
 AXR specifies the X component of the head of a filled vector arrow
 drawn at the reference length, as a fraction of reference length. The
 X component of the arrowhead is the distance from the point of the
 arrowhead to a point along the centerline of the arrow perpendicular
-the arrowhead\'s rear tips.   See VRL for an explanation of how
-the reference length is determined.  AXR has an effect only when AST
-is set to 1. Its default value is 0.36.
+the arrowhead\'s rear tips.  See VRL for an explanation of how the
+reference length is determined.  AXR has an effect only when AST is
+set to 1. AXR is allowed to vary between 0.0 and 2.0 and its default
+value is 0.36.
 .IP "AYF - Arrow Y-Coord Fractional Minimum - Real"
-AYF specifies the Y component of the head of a filled vector arrow
-drawn at the minimum length, as a fraction of the Y component value of
-an arrow drawn at the reference length. The Y component of the
-arrowhead is considered to be the perpendicular distance from an edge
-parallel to the arrow\'s centerline to one of the arrowhead\'s rear
-tips.  If AYF has the value 0.0, then the ratio of the Y component of
-the arrowhead size to the arrow length will be constant for all
-vectors in the plot. If given the value 1.0, the arrowhead Y component
-will itself be constant for all arrows in the plot, regardless of
-length or width. See VFR for a discussion of how the minimum length is
-determined.  AYF has an effect only when AST is set to 1.  Its 
-default value is 0.0.
+The value of this parameter, when added to the minimum width value,
+specifies the Y component length of the arrowhead size for a filled
+arrow drawn at the minimum length, as a fraction of the length
+specified by AYF. If given the value 1.0, the arrowhead Y component
+will extend the same distance perpendicularly from the edge of all
+arrows in the plot, regardless of their length and width. This can be
+a useful resource to adjust to ensure that the points of even very
+short vector arrows remain visible. See VFR for a discussion of how
+the minimum length is determined.  AYF has an effect only when AST is
+set to 1. AYF is allowed to vary between 0.0 and 1.0 and its default
+value is 0.25.
 .IP "AYR - Arrow Y-Coord Reference Fraction - Real"
-This resource specifies the Y component of a filled vector arrow drawn
-at the reference length, as a fraction of the reference length.  The Y
-component of the arrowhead is considered to be the perpendicular
-distance from an edge parallel to the arrow\'s centerline to one of the
-arrowhead\'s rear tips. See VRL for an explanation of how the
-reference length is determined.  AYF has an effect only when AST is
-set to 1.  Its default value is 0.12.
+AYR specifies the perpendicular distance from one side of a filled
+vector arrowdrawn at the reference length to one of the back tips of
+the arrowhead. The value represents a fraction of the value of of the
+reference length and, when added to half the arrow width, determines
+the Y component of the arrowhead size.  See VRL for an explanation of
+how the reference length is determined.  AYR has an effect only when
+AST is set to 1.  AYR is allowed to vary between 0.0 and 1.0 and its
+default value is 0.12.
 .IP "CLR - Array of GKS Color Indices - Integer Array"
 This parameter represents an array containing the GKS color index to
 use for coloring the vector when the scalar quantity is less than or
@@ -667,8 +671,8 @@ a GKS color index that must be defined by a call to the the GKS
 subroutine, GSCR, prior to calling VVECTR. If CTV is less than 0, in
 addition to setting up the CLR array, you are also responsible for
 setting the first NLV elements of the threshold values array, TVL to
-appropriate values. Currently NLV is constrained to a maximum value of
-64. The default value of NLV is 0, specifying that vectors are colored
+appropriate values. NLV is constrained to a maximum value of
+255. The default value of NLV is 0, specifying that vectors are colored
 according to the value of the GKS polyline color index currently in
 effect, regardless of the value of CTV.  If CTV is greater than 0, you
 must initialize Vectors with a call to VVINIT after modifying this
@@ -967,8 +971,8 @@ you would set VHC to a negative number, the absolute value of which is
 greater than any expected vector magnitude in the series. You can turn
 on Vectors statistics reporting using the parameter VST in order to
 see if any vectors in the datasets do exceed the maximum magnitude you
-have specified. See also the descriptions of the parameters VRL, DMX,
-VLC, VFR, and VRM.
+have specified. See also the descriptions of the parameters VRM, VRL, DMX,
+VLC, and VFR.
 .IP "VLC - Vector Low Cutoff Value - Real"
 Use this parameter to prevent vectors smaller than the specified
 magnitude from appearing in the output plot. VLC also specifies the
