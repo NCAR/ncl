@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.2 1998-05-25 18:52:07 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.3 1998-05-27 22:50:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -286,6 +286,62 @@ static int alpha_sort
         return ret;
 }
 
+#if 0
+static int long_alpha_sort
+(
+        const void *p1,
+        const void *p2
+)
+{
+        v41EntityRec *erec1 = *(v41EntityRec **) p1;
+        v41EntityRec *erec2 = *(v41EntityRec **) p2;
+        int pix1[16], pix2[16];
+        int pcount1,pcount2;
+        char name1[128];
+        char *name2;
+        int i,j,ret;
+
+        pix1[0] = erec1->eid;
+        for (i = 0; pix1[i] != 0; i++)
+                pix1[i+1] = c_mpipar(pix1[i]);
+        pcount1 = i;
+        pix2[0] = erec2->eid;
+        for (i = 0; pix2[i] != 0; i++)
+                pix2[i+1] = c_mpipar(pix2[i]);
+        pcount2 = i;
+
+        for (i = pcount1 - 1, j = pcount2 - 1; i >=0 && j >= 0; i--, j--) {
+                ret = c_mpiaty(pix1[i]) - c_mpiaty(pix2[j]);
+                if (ret)
+                        return ret;
+                strcpy(name1,c_mpname(pix1[i]));
+                name2 = c_mpname(pix2[j]);
+                ret = strcmp(name1,name2);
+                if (ret)
+                        return ret;
+        }
+        return (i - j);
+}
+#endif
+
+typedef struct _LongNameRec 
+{
+        char *lname;
+        v41EntityRec *erec;
+} LongNameRec;
+
+static int long_alpha_sort
+(
+        const void *p1,
+        const void *p2
+)
+{
+        LongNameRec lrec1 = *(LongNameRec *) p1;
+        LongNameRec lrec2 = *(LongNameRec *) p2;
+
+        return strcmp(lrec1.lname,lrec2.lname);
+}
+
 static NhlErrorTypes Init_Entity_Recs
 #if	NhlNeedProto
 (
@@ -302,6 +358,8 @@ static NhlErrorTypes Init_Entity_Recs
 	char *e_text;
         int i,j,us_ix=0;
         int us_child_count[3] = {0,0,0};
+        LongNameRec *lname_recs;
+        char lname_buf[256];
 
             /* since the entity name list is dynamic, for now just get
                the entity identifier count (stored in entity_rec_count) */
@@ -348,11 +406,17 @@ static NhlErrorTypes Init_Entity_Recs
                 (sizeof(v41EntityRec) * Mv41cp->entity_rec_count);
         Mv41cp->alpha_recs = NhlMalloc
                 (sizeof(v41EntityRec *) * Mv41cp->entity_rec_count);
-        if (! Mv41cp->entity_recs || ! Mv41cp->alpha_recs) {
+        Mv41cp->long_alpha_recs = NhlMalloc
+                (sizeof(v41EntityRec *) * Mv41cp->entity_rec_count);
+        lname_recs = NhlMalloc
+                (sizeof(LongNameRec) * Mv41cp->entity_rec_count);
+        if (! Mv41cp->entity_recs || ! Mv41cp->alpha_recs ||
+            !Mv41cp->long_alpha_recs || ! lname_recs) {
                 e_text = "%s: dynamic memory allocation error";
                 NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
                 return NhlFATAL;
         }
+        
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 v41EntityRec *erec = &Mv41cp->entity_recs[i];
                 char *buf;
@@ -360,6 +424,7 @@ static NhlErrorTypes Init_Entity_Recs
                 int type,lasttype = -1;
                 
                 Mv41cp->alpha_recs[i] = erec;
+                Mv41cp->long_alpha_recs[i] = erec;
                 erec->level = (int) NGCALLF(mpiaty,MPIATY)(&ix);
                 erec->eid = ix;
                 buf = c_mpname(ix);
@@ -371,8 +436,12 @@ static NhlErrorTypes Init_Entity_Recs
                 }
                 strcpy(erec->name,buf);
                 mpLowerCase(erec->name);
-                
-                if (NGCALLF(mpipai,MPIPAI)(&ix,&LandId)) {
+
+                if (ix == LandId) {
+                        erec->dynamic_gid = erec->fixed_gid =
+                                NhlmpLANDGROUPINDEX;
+                }
+                else if (NGCALLF(mpipai,MPIPAI)(&ix,&LandId)) {
                         erec->fixed_gid = NhlmpLANDGROUPINDEX;
                         erec->dynamic_gid = NGCALLF(mpisci,MPISCI)(&ix) + 2;
                 }
@@ -382,32 +451,33 @@ static NhlErrorTypes Init_Entity_Recs
                 else 
                         erec->dynamic_gid = erec->fixed_gid
                                 = NhlmpINLANDWATERGROUPINDEX;
-#if 0                
-                buf = c_mpfnme(ix,1);
-                printf("%d	%d	%d	%d	%s\n",
-                       ix,erec->level,erec->fixed_gid,erec->dynamic_gid,buf);
+
                 pix[0] = ix;
                 for (j = 0; pix[j] != 0; j++)
                         pix[j+1] = c_mpipar(pix[j]);
                 pcount = j;
-                
+
+                lname_buf[0] = '\0';
                 for (j = pcount-1; j >=0; j--) {
                         type = c_mpiaty(pix[j]);
                         if (lasttype > -1) {
                                 if (type != lasttype)
-                                        printf(" - ");
+                                        strcat(lname_buf," : ");
                                 else
-                                        printf(" . ");
+                                        strcat(lname_buf," . ");
                         }
-                        buf = c_mpname(pix[j]);
-                        printf("%s",buf);
+                        strcat(lname_buf,c_mpname(pix[j]));
                         lasttype = type;
                 }
-                printf("\n");
-#endif
+                lname_recs[i].lname = NhlMalloc(strlen(lname_buf) + 1);
+                strcpy(lname_recs[i].lname,lname_buf);
+                lname_recs[i].erec = erec;
+                
         }
         qsort(Mv41cp->alpha_recs,Mv41cp->entity_rec_count,
               sizeof(v41EntityRec *),alpha_sort);
+        qsort(lname_recs,Mv41cp->entity_rec_count,
+              sizeof(LongNameRec),long_alpha_sort);
 
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 char buf[256];
@@ -422,7 +492,11 @@ static NhlErrorTypes Init_Entity_Recs
                               Mv41cp->alpha_recs[i-1]->name))
                                 Mv41cp->alpha_recs[i]->unique = False;
                 }
+                Mv41cp->long_alpha_recs[i] = lname_recs[i].erec;
+                NhlFree(lname_recs[i].lname);
 #if 0                
+                printf("%s\n",Mv41cp->long_alpha_recs[i]->name);
+                
                 if (Mv41cp->alpha_recs[i]->unique) {
                         strcpy(buf,Mv41cp->alpha_recs[i]->name);
                 }
@@ -441,6 +515,7 @@ static NhlErrorTypes Init_Entity_Recs
                 printf("%s\n",buf);
 #endif
         }
+        NhlFree(lname_recs);
         
 #if 0        
         for (i = 1; i <= Mv41cp->entity_rec_count; i++) {
@@ -534,8 +609,10 @@ static NhlErrorTypes    mdhManageDynamicArrays
 	ga = init ? NULL : omdhp->area_names;
 
 	if (ga != mdhp->area_names) {
-		if (! mdhp->area_names ||
-                    mdhp->area_names->num_elements != entity_rec_count) {
+		if (! mdhp->area_names) {
+                        NhlFreeGenArray(ga);
+                }
+                else if (mdhp->area_names->num_elements != entity_rec_count) {
 			e_text = 
 			  "%s: %s GenArray must contain %d elements: ignoring";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -589,8 +666,11 @@ static NhlErrorTypes    mdhManageDynamicArrays
 
 	need_check = False;
 	if (ga != mdhp->dynamic_groups) {
-		if (! mdhp->dynamic_groups ||
-                    mdhp->dynamic_groups->num_elements != entity_rec_count) {
+		if (! mdhp->dynamic_groups) { 
+                        NhlFreeGenArray(ga);
+                }
+                else if (mdhp->dynamic_groups->num_elements
+                         != entity_rec_count) {
 			e_text = 
 			  "%s: %s GenArray must contain %d elements: ignoring";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -629,7 +709,8 @@ static NhlErrorTypes    mdhManageDynamicArrays
 				use_default = True;
 			}
 			if (use_default)
-				ip[i] = entity_recs[i].dynamic_gid;
+				ip[i] =
+                                       Mv41cp->long_alpha_recs[i]->dynamic_gid;
 		}
 	}
 
@@ -716,11 +797,14 @@ MapV41DHInitialize
 	mv41p->outline_rec_count = 0;
 	mv41p->outline_recs = NULL;
 
-        ret = Init_Entity_Recs(mv41l,entry_name);
-        if (ret < NhlWARNING) {
-                char e_text[] = "%s: error initializing map outline records";
-                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-                return(ret);
+        if (! Mv41cp->entity_rec_count) {
+                ret = Init_Entity_Recs(mv41l,entry_name);
+                if (ret < NhlWARNING) {
+                        char e_text[] =
+                                "%s: error initializing map outline records";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                        return(ret);
+                }
         }
         
 /* Manage the dynamic arrays */
@@ -819,14 +903,17 @@ static NhlGenArray mdhGetNewGenArray
         NhlString			entry_name;
 #endif
 {
+	NhlMapDataHandlerLayerPart	*mdhp = &(mv41l->mapdh);
 	char *e_text;
 	int i, len;
 	NhlGenArray ga;
         int entity_rec_count;
         v41EntityRec *entity_recs;
+        v41EntityRec **long_alpha_recs;
 
         entity_rec_count = Mv41cp->entity_rec_count;
         entity_recs = Mv41cp->entity_recs;
+        long_alpha_recs = Mv41cp->long_alpha_recs;
         
 	if (quark == Qarea_names) {
 		NhlString	*sp;
@@ -838,16 +925,17 @@ static NhlGenArray mdhGetNewGenArray
 				  NhlEUNKNOWN,e_text,entry_name);
 			return NULL;
 		}
-		for (i = 0; i < len; i++) {
-                        char *buf = c_mpname(i+1);
-			if ((sp[i] = NhlMalloc
-                             (strlen(buf) + 1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NULL;
-			}
-			strcpy(sp[i],buf);
+                for (i = 0; i < len; i++) {
+                        int eid = long_alpha_recs[i]->eid;
+                        char *buf = c_mpname(eid);
+
+                        if ((sp[i] = NhlMalloc(strlen(buf) + 1)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                          e_text,entry_name);
+                                return NULL;
+                        }
+                        strcpy(sp[i],buf);
 		}
 		if ((ga = NhlCreateGenArray(sp,NhlTString,sizeof(NhlString),
 					    1,&len)) == NULL) {
@@ -856,6 +944,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,entry_name);
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 	}
 	else if (quark == Qarea_types) {
@@ -868,7 +957,7 @@ static NhlGenArray mdhGetNewGenArray
 			return NULL;
 		}
 		for (i = 0; i < len; i++) {
-			ip[i] = entity_recs[i].level;
+			ip[i] = long_alpha_recs[i]->level;
 		}
 		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
 					    1,&len)) == NULL) {
@@ -877,6 +966,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,entry_name);
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 
 	}
@@ -890,7 +980,7 @@ static NhlGenArray mdhGetNewGenArray
 			return NULL;
 		}
 		for (i = 0; i < len; i++) {
-                        ip[i] = entity_recs[i].fixed_gid;
+                        ip[i] = long_alpha_recs[i]->fixed_gid;
 		}
 		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
 					    1,&len)) == NULL) {
@@ -899,6 +989,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,entry_name);
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
         }
 	else if (quark == Qdynamic_groups) {
@@ -912,9 +1003,9 @@ static NhlGenArray mdhGetNewGenArray
 				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
 			return NULL;
 		}
-		for (i = 0; i < len; i++) {
-                        ip[i] = entity_recs[i].dynamic_gid;
-		}
+                for (i = 0; i < len; i++) {
+                        ip[i] = long_alpha_recs[i]->dynamic_gid;
+                }
 		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
 					    1,&len)) == NULL) {
 			e_text = "%s: error creating gen array";
@@ -922,6 +1013,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,"MapPlotGetValues");
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 	}
 	return NULL;
@@ -930,7 +1022,7 @@ static NhlGenArray mdhGetNewGenArray
 /*
  * Function:  mpGenArraySubsetCopy
  *
- * Description: Since the internal GenArrays maintained by the Contour object
+ * Description: Since the internal GenArrays maintained by the MapPlot object
  *      may be bigger than the size currently in use, this function allows
  *      a copy of only a portion of the array to be created. This is for
  *      use by the GetValues routine when returning GenArray resources to
@@ -1307,12 +1399,12 @@ static NhlErrorTypes    UpdateSpecFillRecords
                 mv41p->fill_recs[count].spec_fscale = 0;
                 if (mpp->spec_fill_color_count > spec_fill_index) {
 			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[spec_fill_index] != NhlmpUNSETCOLOR)
+			if (ip[spec_fill_index] != NhlUNSPECIFIEDCOLOR)
 				mv41p->fill_recs[count].spec_col =  1;
 		}
 		if (mpp->spec_fill_pattern_count > spec_fill_index) {
 			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[spec_fill_index] != NhlmpUNSETFILLPATTERN)
+			if (ip[spec_fill_index] != NhlUNSPECIFIEDFILL)
 				mv41p->fill_recs[count].spec_pat =  1;
 		}
 		if (mpp->spec_fill_scale_count > spec_fill_index) {

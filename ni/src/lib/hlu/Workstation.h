@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.23 1997-07-14 18:36:35 dbrown Exp $
+ *      $Id: Workstation.h,v 1.24 1998-05-27 22:50:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -100,14 +100,25 @@
 #define NhlNwkDefGraphicStyleId	"wkDefGraphicStyleId"
 #define NhlCwkDefGraphicStyleId	"WkDefGraphicStyleId"
 
-/* Define for dash pattern index 0 */
+/* Dash pattern stuff */
 
-typedef	int	NhlDashIndex;
-#define	NhlTDashIndex	"DashIndex"
+typedef	int				NhlDashIndexFullEnum;
+#define	NhlTDashIndexFullEnum		"DashIndexFullEnum"
+#define	NhlTDashIndexFullEnumGenArray	"DashIndexFullEnumGenArray"
+#define NhlUNSPECIFIEDLINE		-1
+
+typedef	int			NhlDashIndex;
+#define	NhlTDashIndex		"DashIndex"
 #define	NhlTDashIndexGenArray	"DashIndexGenArray"
-#define NhlSOLIDLINE	0
+#define NhlSOLIDLINE		0
 
-/* Colormap stuff */
+/* Color stuff */
+
+typedef	int				NhlColorIndexFullEnum;
+#define	NhlTColorIndexFullEnum		"ColorIndexFullEnum"
+#define	NhlTColorIndexFullEnumGenArray	"ColorIndexFullEnumGenArray"
+#define NhlUNSPECIFIEDCOLOR		-2
+
 typedef	int	NhlColorIndex;
 #define	NhlTColorIndex	"ColorIndex"
 #define	NhlTColorIndexGenArray	"ColorIndexGenArray"
@@ -118,7 +129,12 @@ typedef	int	NhlColorIndex;
 
 typedef float NhlColor[3];
 
-/* Workstation Fill stuff */
+/* Fill stuff */
+
+typedef	int				NhlFillIndexFullEnum;
+#define	NhlTFillIndexFullEnum		"FillIndexFullEnum"
+#define	NhlTFillIndexFullEnumGenArray	"FillIndexFullEnumGenArray"
+#define NhlUNSPECIFIEDFILL		-2
 
 typedef	int	NhlFillIndex;
 #define	NhlTFillIndex	"FillIndex"

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.18 1997-09-19 20:08:22 boote Exp $
+ *      $Id: Convert.c,v 1.19 1998-05-27 22:50:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2055,7 +2055,25 @@ _NhlConvertData
 	NrmValue		*todata;	/* to type		*/
 #endif 
 {
-	return ConvertData(context,fromQ,toQ,fromdata,todata);
+	static NrmQuark genQ = NrmNULLQUARK;
+	NrmQuark realfromQ = fromQ;
+
+	if (genQ == NrmNULLQUARK)
+		genQ = NrmStringToQuark(NhlTGenArray);
+/*
+ * If the from type is GenArray try to make it more specific. This
+ * will help achieve the correct conversion.
+ */
+	if (fromQ == genQ) {
+		char		buff[_NhlMAXRESNAMLEN];
+		NhlGenArray	gen = fromdata->data.ptrval;
+
+		strcpy(buff,NrmQuarkToString(gen->typeQ));
+		strcat(buff,NhlTGenArray);
+		realfromQ = NrmStringToQuark(buff);
+	}
+	
+	return ConvertData(context,realfromQ,toQ,fromdata,todata);
 }
 
 /*

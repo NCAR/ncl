@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertersP.h,v 1.5 1995-12-19 20:39:00 boote Exp $
+ *      $Id: ConvertersP.h,v 1.6 1998-05-27 22:50:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,16 @@ extern NhlErrorTypes _NhlRegisterEnumType(
 #if	NhlNeedProto
 	NhlClass	ref_class,
 	NhlString	enum_name,
+	_NhlEnumVals	*enum_vals,
+	int		nvals
+#endif
+);
+
+extern NhlErrorTypes _NhlRegisterEnumSubtype(
+#if	NhlNeedProto
+	NhlClass	ref_class,
+	NhlString	enum_name,
+        NhlString	enum_supertype_name,
 	_NhlEnumVals	*enum_vals,
 	int		nvals
 #endif

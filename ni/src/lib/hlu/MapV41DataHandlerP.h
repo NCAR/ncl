@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandlerP.h,v 1.1 1998-05-22 01:59:12 dbrown Exp $
+ *      $Id: MapV41DataHandlerP.h,v 1.2 1998-05-27 22:50:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -118,9 +118,10 @@ typedef struct _NhlMapV41DataHandlerLayerRec {
 }NhlMapV41DataHandlerLayerRec;
 
 typedef struct _NhlMapV41DataHandlerClassPart {
-        v41EntityRec 	*entity_recs;
         int		entity_rec_count;
-        v41EntityRec 	**alpha_recs;
+        v41EntityRec 	*entity_recs;         /* eid order */
+        v41EntityRec 	**alpha_recs;         /* alphabetical by base name */
+        v41EntityRec    **long_alpha_recs;    /* alphabetical by long name */
         int		alpha_start_ix[26];
 } NhlMapV41DataHandlerClassPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.1 1998-05-22 01:59:10 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.2 1998-05-27 22:50:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -839,7 +839,7 @@ static NhlErrorTypes MapV40DHSetValues
 /*
  * Function:  mpGenArraySubsetCopy
  *
- * Description: Since the internal GenArrays maintained by the Contour object
+ * Description: Since the internal GenArrays maintained by the MapPlot object
  *      may be bigger than the size currently in use, this function allows
  *      a copy of only a portion of the array to be created. This is for
  *      use by the GetValues routine when returning GenArray resources to
@@ -965,6 +965,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,entry_name);
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 	}
 	else if (quark == Qarea_types) {
@@ -986,6 +987,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,entry_name);
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 
 	}
@@ -1010,6 +1012,7 @@ static NhlGenArray mdhGetNewGenArray
 				  e_text,"MapPlotGetValues");
 			return NULL;
 		}
+                ga->my_data = True;
 		return ga;
 	}
 	return NULL;
@@ -1323,17 +1326,17 @@ static NhlErrorTypes    mdhUpdateDrawGroups
 	if (index != mpNOINDEX) {
 		if (mpp->spec_fill_color_count > index) {
 			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[index] != NhlmpUNSETCOLOR)
+			if (ip[index] != NhlUNSPECIFIEDCOLOR)
 				tmpl.u.f.s_col =  1;
 		}
 		if (mpp->spec_fill_pattern_count > index) {
 			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[index] != NhlmpUNSETFILLPATTERN)
+			if (ip[index] != NhlUNSPECIFIEDFILL)
 				tmpl.u.f.s_pat =  1;
 		}
 		if (mpp->spec_fill_scale_count > index) {
 			float *fp = (float *) mpp->spec_fill_scales->data;
-			if (fp[index] > NhlmpUNSETFILLSCALE)
+			if (fp[index] != NhlmpUNSETFILLSCALE )
 				tmpl.u.f.s_scl =  1;
 		}
 	}
@@ -1390,12 +1393,12 @@ static NhlErrorTypes mpSetFlags
 	if (index != mpNOINDEX) {
 		if (mpp->spec_fill_color_count > index) {
 			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[index] != NhlmpUNSETCOLOR)
+			if (ip[index] != NhlUNSPECIFIEDCOLOR)
 				nrec->u.f.s_col =  1;
 		}
 		if (mpp->spec_fill_pattern_count > index) {
 			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[index] != NhlmpUNSETFILLPATTERN)
+			if (ip[index] != NhlUNSPECIFIEDFILL)
 				nrec->u.f.s_pat =  1;
 		}
 		if (mpp->spec_fill_scale_count > index) {

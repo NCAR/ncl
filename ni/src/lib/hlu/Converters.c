@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.48 1998-05-27 19:22:06 boote Exp $
+ *      $Id: Converters.c,v 1.49 1998-05-27 22:50:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -919,6 +919,121 @@ NhlCvtGenArrayToEnumGenArray
 }
 
 /*
+ * Function:	CompletEnumRegistration
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+CompleteEnumRegistration
+#if	NhlNeedProto
+(
+	NhlClass	ref_class,
+	NhlString	enum_name,
+	_NhlEnumVals	*enum_vals,
+	int		nvals,
+        char		*func
+)
+#else
+(ref_class,enum_name,enum_vals,nvals,func)
+	NhlClass	ref_class;
+	NhlString	enum_name;
+	_NhlEnumVals	*enum_vals;
+	int		nvals;
+        char		*func;
+#endif
+{
+	NhlConvertArg	args[_NhlSTACK_ARGS_SIZE];
+	int		i;
+	char		enumgen_name[_NhlMAXRESNAMLEN];
+        
+	strcpy(enumgen_name,enum_name);
+	strcat(enumgen_name,NhlTGenArray);
+	if(_NhlRegisterType(NhlTEnumGenArray,enumgen_name) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+
+	for(i=0;i<nvals;i++){
+		args[i].addressmode = NhlSTRENUM;
+		args[i].size = enum_vals[i].value;
+		args[i].data.strval = enum_vals[i].name;
+	}
+	if(NhlRegisterConverter(ref_class,NhlTString,enum_name,
+		NhlCvtStringToEnum,args,nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+	if(NhlRegisterConverter(ref_class,enum_name,NhlTString,
+		NhlCvtEnumToString,args,nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+	if(NhlRegisterConverter(ref_class,NhlTStringGenArray,enumgen_name,
+                                NhlCvtStringGenArrayToEnumGenArray,args,
+					nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+
+	for(i=0;i<nvals;i++){
+		args[i].addressmode = NhlIMMEDIATE;
+		args[i].size = sizeof(int);
+		args[i].data.lngval = enum_vals[i].value;
+	}
+	if(NhlRegisterConverter(ref_class,NhlTScalar,enum_name,
+		NhlCvtScalarToEnum,args,nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+	(void)_NhlRegSymConv(ref_class,NhlTScalar,enumgen_name,NhlTScalar,
+								NhlTGenArray);
+	if(NhlRegisterConverter(ref_class,NhlTGenArray,enumgen_name,
+					NhlCvtGenArrayToEnumGenArray,args,
+					nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+
+	if(_NhlRegSymConv(ref_class,NhlTGenArray,enum_name,NhlTGenArray,
+                          NhlTScalar) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+
+	if(_NhlRegSymConv(ref_class,NhlTQuark,
+                          enum_name,NhlTQuark,NhlTScalar) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+	if(_NhlRegSymConv(ref_class,NhlTQuarkGenArray,enumgen_name,
+				NhlTQuarkGenArray,NhlTGenArray) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "%s:Unable to register enum %s",
+                          func,enum_name);
+		return NhlFATAL;
+	}
+
+	return NhlNOERROR;
+}
+
+/*
  * Function:	_NhlRegisterEnumType
  *
  * Description:	This function is used to register an enumeration type as
@@ -950,98 +1065,80 @@ _NhlRegisterEnumType
 #endif
 {
 	char		func[] = "_NhlRegisterEnumType";
-	NhlConvertArg	args[_NhlSTACK_ARGS_SIZE];
-	int		i;
-	char		enumgen_name[_NhlMAXRESNAMLEN];
 
 	if(nvals > _NhlSTACK_ARGS_SIZE){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-	"%s:Unable to register enum, increase _NhlSTACK_ARGS_SIZE to %d",func,
-									nvals);
+	"%s:Unable to register enum, increase _NhlSTACK_ARGS_SIZE to %d",
+                          func,nvals);
 		return NhlFATAL;
 	}
-
+        
 	if(_NhlRegisterType(NhlTEnum,enum_name) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "%s:Unable to register enum %s",
+                          func,enum_name);
 		return NhlFATAL;
 	}
+        return CompleteEnumRegistration
+                (ref_class,enum_name,enum_vals,nvals,func);
+}
 
-	strcpy(enumgen_name,enum_name);
-	strcat(enumgen_name,NhlTGenArray);
-	if(_NhlRegisterType(NhlTEnumGenArray,enumgen_name) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
+/*
+ * Function:	_NhlRegisterEnumSubtype
+ *
+ * Description:	This function is used to register an enumeration type as
+ *		a subtype of another Enum.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegisterEnumSubtype
+#if	NhlNeedProto
+(
+	NhlClass	ref_class,
+	NhlString	enum_name,
+        NhlString	enum_supertype_name,
+	_NhlEnumVals	*enum_vals,
+	int		nvals
+)
+#else
+(ref_class,enum_name,enum_supertype_name,enum_vals,nvals)
+	NhlClass	ref_class;
+	NhlString	enum_name;
+        NhlString	enum_supertype_name;
+	_NhlEnumVals	*enum_vals;
+	int		nvals;
+#endif
+{
+	char		func[] = "_NhlRegisterEnumType";
 
-	for(i=0;i<nvals;i++){
-		args[i].addressmode = NhlSTRENUM;
-		args[i].size = enum_vals[i].value;
-		args[i].data.strval = enum_vals[i].name;
-	}
-	if(NhlRegisterConverter(ref_class,NhlTString,enum_name,
-		NhlCvtStringToEnum,args,nvals,False,NULL) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
+	if(nvals > _NhlSTACK_ARGS_SIZE){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:Unable to register enum, increase _NhlSTACK_ARGS_SIZE to %d",
+                          func,nvals);
 		return NhlFATAL;
 	}
-	if(NhlRegisterConverter(ref_class,enum_name,NhlTString,
-		NhlCvtEnumToString,args,nvals,False,NULL) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
+        if (! _NhlIsSubtype(NhlTEnum,enum_supertype_name)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "%s: %s not a registered enum type",
+                          func,enum_supertype_name);
 		return NhlFATAL;
 	}
-	if(NhlRegisterConverter(ref_class,NhlTStringGenArray,enumgen_name,
-					NhlCvtStringGenArrayToEnumGenArray,args,
-					nvals,False,NULL) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
+                    
+	if(_NhlRegisterType(enum_supertype_name,enum_name) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "%s:Unable to register enum %s",
+                          func,enum_name);
 		return NhlFATAL;
 	}
-
-	for(i=0;i<nvals;i++){
-		args[i].addressmode = NhlIMMEDIATE;
-		args[i].size = sizeof(int);
-		args[i].data.lngval = enum_vals[i].value;
-	}
-	if(NhlRegisterConverter(ref_class,NhlTScalar,enum_name,
-		NhlCvtScalarToEnum,args,nvals,False,NULL) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
-	(void)_NhlRegSymConv(ref_class,NhlTScalar,enumgen_name,NhlTScalar,
-								NhlTGenArray);
-	if(NhlRegisterConverter(ref_class,NhlTGenArray,enumgen_name,
-					NhlCvtGenArrayToEnumGenArray,args,
-					nvals,False,NULL) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
-
-	if(_NhlRegSymConv(ref_class,NhlTGenArray,enum_name,NhlTGenArray,
-					NhlTScalar) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
-
-	if(_NhlRegSymConv(ref_class,NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
-								NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
-	if(_NhlRegSymConv(ref_class,NhlTQuarkGenArray,enumgen_name,
-				NhlTQuarkGenArray,NhlTGenArray) != NhlNOERROR){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
-								func,enum_name);
-		return NhlFATAL;
-	}
-
-	return NhlNOERROR;
+        return CompleteEnumRegistration
+                (ref_class,enum_name,enum_vals,nvals,func);
 }
 
 NhlErrorTypes
@@ -1133,7 +1230,7 @@ _NhlCvtGenArrayToIndexGenArray
 	char		func[] = "_NhlCvtGenArrayToIndexGenArray";
 	char		buff[_NhlMAXRESNAMLEN];
 	char		*indxgen_name;
-	NhlGenArray	gen;
+	NhlGenArray	tgen;
 	int		*tint,i;
 	NrmValue	ival;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1151,22 +1248,8 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 
-	/*
-	 * if from is Generic GenArray, then this converter won't work.
-	 * Need to get the more specific name.
-	 */
-	if(from->typeQ == genQ){
-		NrmQuark	newfromQ;
-
-		gen = from->data.ptrval;
-		strcpy(buff,NrmQuarkToString(gen->typeQ));
-		strcat(buff,NhlTGenArray);
-		newfromQ = NrmStringToQuark(buff);
-		return _NhlReConvertData(newfromQ,to->typeQ,from,to);
-	}
-
 	ival.size = sizeof(NhlGenArray);
-	ival.data.ptrval = &gen;
+	ival.data.ptrval = &tgen;
 	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to convert from %s to %s",func,
@@ -1175,10 +1258,10 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 
-	tint = (int*)gen->data;
+	tint = (int*)tgen->data;
 
 	if(args[0].data.lngval == _NhlRngMINMAX){
-		for(i=0;i < gen->num_elements;i++){
+		for(i=0;i < tgen->num_elements;i++){
 			if(tint[i] < args[1].data.lngval ||
 					tint[i] > args[2].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1190,7 +1273,7 @@ _NhlCvtGenArrayToIndexGenArray
 		}
 	}
 	else if(args[0].data.lngval == _NhlRngMIN){
-		for(i=0;i < gen->num_elements;i++){
+		for(i=0;i < tgen->num_elements;i++){
 			if(tint[i] < args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Value %d is less than index min %d",					func,tint[i],args[1].data.lngval);
@@ -1199,7 +1282,7 @@ _NhlCvtGenArrayToIndexGenArray
 		}
 	}
 	else{
-		for(i=0;i < gen->num_elements;i++){
+		for(i=0;i < tgen->num_elements;i++){
 			if(tint[i] > args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Value %d is more than index max %d",					func,tint[i],args[1].data.lngval);
@@ -1217,9 +1300,9 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 	*indxgen_name = '\0';
-	gen->typeQ = NrmStringToQuark(buff);
+	tgen->typeQ = NrmStringToQuark(buff);
 
-	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /************************************************************************

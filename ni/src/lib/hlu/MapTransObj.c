@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.43 1998-05-22 01:59:10 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.44 1998-05-27 22:50:23 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1530,6 +1530,7 @@ static NhlErrorTypes GetWindowLimits
         float umin=1E12,umax=-1E12,vmin=1E12,vmax=-1E12;
         float latmin=1E12,latmax=-1E12,lonmin=1E12,lonmax=-1E12;
 	float fl,fr,fb,ft,ul,ur,ub,ut;
+        float latinc,loninc;
 	int ll;
 
         *wl=*wr=*wb=*wt=0.0;
@@ -1540,8 +1541,12 @@ static NhlErrorTypes GetWindowLimits
         printf("vp - %f,%f,%f,%f user - %f,%f,%f,%f\n",
                fl,fr,fb,ft,ul,ur,ub,ut);
 #endif
-        for (tlat = mtp->min_lat; tlat <= mtp->max_lat; tlat += 1.0) {
-                for (tlon = mtp->min_lon; tlon <= mtp->max_lon; tlon += 1.0) {
+        latinc = MIN((mtp->max_lat - mtp->min_lat) / 20.0,1.0);
+        loninc = MIN((mtp->max_lon - mtp->min_lon) / 20.0,1.0);
+        
+        for (tlat = mtp->min_lat; tlat <= mtp->max_lat; tlat += latinc) {
+                for (tlon = mtp->min_lon;
+                     tlon <= mtp->max_lon; tlon += loninc) {
                         c_maptra(tlat,tlon,&uval,&vval);
                         if (uval >= 1E9 || vval >= 1E9)
                                 continue;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.79 1998-03-26 03:37:33 dbrown Exp $
+ *      $Id: Workstation.c,v 1.80 1998-05-27 22:50:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -649,7 +649,10 @@ WorkstationClassInitialize
 	int status1,dummy = 6;
 	int i;
 	_NhlEnumVals	dashvals[] = {
+                {NhlUNSPECIFIEDLINE, "Unspecified"},
+                {NhlUNSPECIFIEDLINE, "UnspecifiedLine"},
 		{NhlSOLIDLINE,	"SolidLine"},
+		{NhlSOLIDLINE,	"Solid"},
                 {1,		"Dash"},
 		{1,             "D4U2"},
                 {2,		"Dot"},
@@ -671,25 +674,42 @@ WorkstationClassInitialize
                 {15,		"DUDU3"},
                 {16,		"D5U5"},
 	};
+	NhlConvertArg	dashargsfullenum[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+	};
 	NhlConvertArg	dashargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)0)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
 	};
+        
 	_NhlEnumVals	colorvals[] = {
+                {NhlUNSPECIFIEDCOLOR,   "Unspecified"},
+                {NhlUNSPECIFIEDCOLOR,   "UnspecifiedColor"},
 		{NhlTRANSPARENT,	"Transparent"},
 		{NhlNULLCOLOR,		"NullColor"},
 		{NhlBACKGROUND,		"Background"},
 		{NhlFOREGROUND,		"Foreground"}
 	};
+	NhlConvertArg	colorargsfullenum[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-2)}
+	};
 	NhlConvertArg	colorargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)}
 	};
+        
 	_NhlEnumVals	fillvals[] = {
+                {NhlUNSPECIFIEDFILL,	"Unspecified"},
+                {NhlUNSPECIFIEDFILL,	"UnspecifiedFill"},
 		{NhlHOLLOWFILL,	"HollowFill"},
+		{NhlHOLLOWFILL,	"Hollow"},
 		{NhlNULLFILL,	"NullFill"},
 		{NhlSOLIDFILL,	"SolidFill"},
+		{NhlSOLIDFILL,	"Solid"},
 		{1,		"HatchHorizontal"},
 		{2,		"HatchVertical"},
 		{3,		"Hatch_45"},
@@ -707,6 +727,11 @@ WorkstationClassInitialize
 		{15,		"CrossHatch_0_45_90"},
 		{16,		"CrossHatch_0_45_90_135"},
 		{17,		"Stippled"}
+	};
+	NhlConvertArg	fillargsfullenum[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-2)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)17)}
 	};
 	NhlConvertArg	fillargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
@@ -743,33 +768,76 @@ WorkstationClassInitialize
 		{NhlMARKLINES,	"MarkLines"}
 	};
 
-	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndex,dashvals,
-		NhlNumber(dashvals));
-	(void)_NhlRegisterEnumType(NhlobjClass,NhlTColorIndex,colorvals,
-		NhlNumber(colorvals));
-	(void)_NhlRegisterEnumType(NhlobjClass,NhlTFillIndex,fillvals,
-		NhlNumber(fillvals));
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndexFullEnum,
+                                   dashvals,NhlNumber(dashvals));
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTColorIndexFullEnum,
+                                   colorvals,NhlNumber(colorvals));
+	(void)_NhlRegisterEnumType(NhlobjClass,NhlTFillIndexFullEnum,
+                                   fillvals,NhlNumber(fillvals));
+
+	(void)_NhlRegisterEnumSubtype(NhlobjClass,NhlTDashIndex,
+                                      NhlTDashIndexFullEnum,&dashvals[2],
+                                      NhlNumber(dashvals)-2);
+	(void)_NhlRegisterEnumSubtype(NhlobjClass,NhlTColorIndex,
+                                   NhlTColorIndexFullEnum,&colorvals[2],
+                                   NhlNumber(colorvals)-2);
+	(void)_NhlRegisterEnumSubtype(NhlobjClass,NhlTFillIndex,
+                                   NhlTFillIndexFullEnum,&fillvals[2],
+                                   NhlNumber(fillvals)-2);
+        
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTMarkerIndex,markervals,
 		NhlNumber(markervals));
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTMarkLineMode,mrkline,
 		NhlNumber(mrkline));
 
-	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTDashIndex,
-		_NhlCvtScalarToIndex,dashargs,NhlNumber(dashargs),False,NULL);
-	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTColorIndex,
-		_NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlobjClass,NhlTScalar,NhlTFillIndex,
-		_NhlCvtScalarToIndex,fillargs,NhlNumber(fillargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTDashIndexFullEnum,
+		_NhlCvtScalarToIndex,
+                 dashargsfullenum,NhlNumber(dashargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTColorIndexFullEnum,
+		_NhlCvtScalarToIndex,
+                 colorargsfullenum,NhlNumber(colorargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTFillIndexFullEnum,
+		_NhlCvtScalarToIndex,
+                 fillargsfullenum,NhlNumber(fillargsfullenum),False,NULL);
 
-	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
-		NhlTDashIndexGenArray,_NhlCvtGenArrayToIndexGenArray,dashargs,
-		NhlNumber(dashargs),False,NULL);
-	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
-		NhlTColorIndexGenArray,_NhlCvtGenArrayToIndexGenArray,colorargs,
-		NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlobjClass,NhlTGenArray,
-		NhlTFillIndexGenArray,_NhlCvtGenArrayToIndexGenArray,fillargs,
-		NhlNumber(fillargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTDashIndex,_NhlCvtScalarToIndex,
+                 dashargs,NhlNumber(dashargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTColorIndex,_NhlCvtScalarToIndex,
+                 colorargs,NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTFillIndex,_NhlCvtScalarToIndex,
+                 fillargs,NhlNumber(fillargs),False,NULL);
+        
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTDashIndexFullEnumGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,dashargsfullenum,
+                 NhlNumber(dashargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTColorIndexFullEnumGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,colorargsfullenum,
+                 NhlNumber(colorargsfullenum),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTFillIndexFullEnumGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,fillargsfullenum,
+                 NhlNumber(fillargsfullenum),False,NULL);
+        
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTDashIndexGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,dashargs,
+                 NhlNumber(dashargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTColorIndexGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,colorargs,
+                 NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTFillIndexGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,fillargs,
+                 NhlNumber(fillargs),False,NULL);
 
 	intQ = NrmStringToQuark(NhlTInteger);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.65 1998-05-22 01:59:09 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.66 1998-05-27 22:50:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -126,11 +126,11 @@ static NhlResource resources[] = {
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(spec_fill_direct),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpSpecifiedFillColors,NhlCmpSpecifiedFillColors,
-		 NhlTColorIndexGenArray,sizeof(NhlPointer),
+		 NhlTColorIndexFullEnumGenArray,sizeof(NhlPointer),
 		 Oset(spec_fill_colors),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpSpecifiedFillPatterns,NhlCmpSpecifiedFillPatterns,
-		 NhlTFillIndexGenArray,sizeof(NhlPointer),
+		 NhlTFillIndexFullEnumGenArray,sizeof(NhlPointer),
 		 Oset(spec_fill_patterns),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpSpecifiedFillScales,NhlCmpSpecifiedFillScales,
@@ -337,9 +337,6 @@ static NhlResource resources[] = {
 	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(grid.order),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
-	{NhlNmpRelativeGridSpacing,NhlCmpRelativeGridSpacing,
-		 NhlTBoolean,sizeof(NhlBoolean),Oset(relative_grid_spacing),
-		 NhlTImmediate, _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNmpGridSpacingF,NhlCmpGridSpacingF,
 		 NhlTFloat,sizeof(float),Oset(grid_spacing),
 		 NhlTString, _NhlUSET("15.0"),0,NULL},
@@ -477,6 +474,10 @@ static NhlResource resources[] = {
 	{NhlNmpLabelPerimThicknessF,NhlCmpLabelPerimThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
         	 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+	{NhlNmpRelativeGridSpacing,NhlCmpRelativeGridSpacing,
+		 NhlTBoolean,sizeof(NhlBoolean),Oset(relative_grid_spacing),
+		 NhlTImmediate,
+         	 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         
 	{"no.res","No.res",NhlTFloat,sizeof(float),
 		 NhlOffset(NhlMapPlotLayerRec,trans.x_min),NhlTString,
@@ -2742,7 +2743,7 @@ static NhlErrorTypes    mpManageDynamicArrays
                 ompp->spec_fill_colors = (NhlGenArray)0xdeadbeef;
         }
 	else if (ga != mpp->spec_fill_colors) {
-		int max_val;
+		int max_val,min_val;
                 NhlFreeGenArray(ga);
                 ga = _NhlCopyGenArray(mpp->spec_fill_colors,True);
                 if (ga == NULL) {
@@ -2756,20 +2757,26 @@ static NhlErrorTypes    mpManageDynamicArrays
                 mpp->spec_fill_colors = ga;
                 mpp->spec_fill_color_count
                         = mpp->spec_fill_colors->num_elements;
-		if (mpp->spec_fill_direct)
+		if (mpp->spec_fill_direct) {
                         max_val = INT_MAX;
-		else
+                        min_val = NhlUNSPECIFIEDCOLOR;
+                }
+		else {
 			max_val = mpp->area_group_count - 1;
+                        min_val = 0;
+                }
                 ip = (int *) mpp->spec_fill_colors->data; 
 		for (i = 0; i < mpp->spec_fill_color_count; i++) {
-			if (ip[i] > INT_MAX || ip[i] < NhlmpUNSETCOLOR) {
+                        if (ip[i] == NhlUNSPECIFIEDCOLOR)
+                                continue;
+			if (ip[i] > INT_MAX || ip[i] < min_val) {
 				e_text = 
 	         "%s: %s index %d holds an invalid color index: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name,
 					  NhlNmpSpecifiedFillColors,i);
 				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlmpUNSETCOLOR;
+				ip[i] = NhlUNSPECIFIEDCOLOR;
 			}
 		}
         }
@@ -2788,7 +2795,7 @@ static NhlErrorTypes    mpManageDynamicArrays
                 ompp->spec_fill_patterns = (NhlGenArray)0xdeadbeef;
         }
 	else if (ga != mpp->spec_fill_patterns) {
-		int max_val;
+		int max_val,min_val;
                 NhlFreeGenArray(ga);
                 ga = _NhlCopyGenArray(mpp->spec_fill_patterns,True);
                 if (ga == NULL) {
@@ -2801,22 +2808,28 @@ static NhlErrorTypes    mpManageDynamicArrays
                 mpp->spec_fill_patterns = ga;
                 mpp->spec_fill_pattern_count = 
                         mpp->spec_fill_patterns->num_elements;
-		if (mpp->spec_fill_direct)
+		if (mpp->spec_fill_direct) {
 			NhlVAGetValues(mpnew->base.wkptr->base.id,
 				       NhlNwkFillTableLength, &max_val, NULL);
-		else
+                        min_val = NhlUNSPECIFIEDFILL;
+                }
+		else {
 			max_val = mpp->area_group_count - 1;
+                        min_val = 0;
+                }
 
 		ip = (int *) mpp->spec_fill_patterns->data; 
 		for (i = 0; i < mpp->spec_fill_pattern_count; i++) {
-			if (ip[i] > max_val || ip[i] < NhlmpUNSETFILLPATTERN) {
+                        if (ip[i] == NhlUNSPECIFIEDFILL)
+                                continue;
+			if (ip[i] > max_val || ip[i] < min_val) {
 				e_text = 
 	         "%s: %s index %d holds an invalid pattern index: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name,
 					  NhlNmpSpecifiedFillPatterns,i);
 				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlmpUNSETFILLPATTERN;
+				ip[i] = NhlUNSPECIFIEDFILL;
 			}
 		}
 	}
@@ -2837,7 +2850,7 @@ static NhlErrorTypes    mpManageDynamicArrays
                 ompp->spec_fill_scales = (NhlGenArray)0xdeadbeef;
         }
 	else if (ga != mpp->spec_fill_scales) {
-		float max_val;
+		float max_val,min_val;
                 NhlFreeGenArray(ga);
                 ga = _NhlCopyGenArray(mpp->spec_fill_scales,True);
                 if (ga == NULL) {
@@ -2851,12 +2864,18 @@ static NhlErrorTypes    mpManageDynamicArrays
                 mpp->spec_fill_scale_count = 
                         mpp->spec_fill_scales->num_elements;
 		fp = (float *) mpp->spec_fill_scales->data; 
-		if (! mpp->spec_fill_direct)
+		if (! mpp->spec_fill_direct) {
 			max_val = mpp->area_group_count - 1;
-		else
+                        min_val = 0.0;
+                }
+		else {
 			max_val = FLT_MAX;
-
+                        min_val = 0.0;
+                }
+                
 		for (i = 0; i < mpp->spec_fill_scale_count; i++) {
+                        if (fp[i] == NhlmpUNSETFILLSCALE)
+                                continue;
 			if (fp[i] > max_val || fp[i] < 0.0) {
 				e_text = 
 	           "%s: %s index %d holds an invalid scale: defaulting";
