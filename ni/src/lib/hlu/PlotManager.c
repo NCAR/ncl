@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.57 1999-04-08 00:05:34 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.58 1999-04-12 19:11:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4041,6 +4041,23 @@ ManageTitles
 			       NhlNtiXAxisFontHeightF,&x_axis_height,
 			       NhlNtiYAxisFontHeightF,&y_axis_height,
 			       NULL);
+/*
+
+I'm commenting these out because I just don't get it.
+
+Setting ovp->ti_main_font_height to main_height forces the default
+height during create whether the user set FontHeightF or not. This
+is clearly not right.
+
+I just don't get why the title object should be created with
+all default resources and the overide user set resources in the
+following lines.
+
+I guess the point was to make the default font height always
+apply when creating the titles so that premature scalling doesn't
+happen. Anyhow the following doesn't work if the user sets
+the font height manually
+
 		if (_NhlCmpFAny(main_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
 			ovp->ti_main_font_height_set = True;
 		}
@@ -4053,6 +4070,7 @@ ManageTitles
 			ovp->ti_y_axis_font_height_set = True;
 		}
 		ovp->ti_y_axis_font_height = y_axis_height;
+*/
 	}
 	else {
 		if (ovp->titles == NULL) {
