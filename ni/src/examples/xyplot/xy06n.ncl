@@ -1,5 +1,5 @@
-;
-;      $Id: xy06n.ncl,v 1.3 1995-04-27 17:34:46 haley Exp $
+
+;      $Id: xy06n.ncl,v 1.4 1995-06-09 21:01:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -36,82 +36,57 @@
 ;
 begin
 
-;
-; Define procedure for getting the daily data values from a particular
-; station.
-;
-procedure StationValues(tdata:float,pdata:float,vdata:float,stations:string,nstations:integer,day:string,spv:float)
-local tmpid,tmpfile,filename
-begin
-  tdata@_FillValue = spv
-  pdata@_FillValue = spv
-  vdata@_FillValue = spv
-  do j = 0,2
-    do k = 0,9
-      if((j.lt.2).or.(k.lt.4))
-        filedir = ncargpath("data")
-        filename = filedir + "/cdf/" + day + j + k + "_sao.cdf"
-; 
-; Open data file containing grid of global data values.
-;
-        tmpfile = addfile(filename,"r");
-        do l = 0, nstations-1
-          do i = 0, (dimsizes(tmpfile->id(:,0)) -1)
-            if(tmpfile->id(i,:) .eq. stations(l)) 
-              break
-            end if
-          end do
-          print("station " + stations(l))
-          if(i .lt. dimsizes(tmpfile->id(:,0))) 
-            print("loaded hour " + (j*10+k))
-            tdata(l,j*10+k) = tmpfile->T(i)
-            pdata(l,j*10+k) = tmpfile->PSL(i)
-            vdata(l,j*10+k) = tmpfile->SPD(i)
-          else
-            print("missing hour " + (j*10+k))
-            tdata(l,j*10+k) = spv
-            pdata(l,j*10+k) = spv
-            vdata(l,j*10+k) = spv
-          end if
-        end do
-      end if
-    end do
-  end do
-end
 
 ;
-; Create variables for stations information. "nstations" is the number
+; Create variables for stations information. "NSTATIONS" is the number
 ; of stations we want data vales for, and "spv" is the special value
 ; for missing values.  If you want to plot data values for
 ; other cities, change the "stations" variable accordingly, and
-; also change "nstations" if you change the number of stations.
+; also change "NSTATIONS" if you change the number of stations.
 ;
-; DEN = Denver, FTW = Fort Worth, HNL = Honolulu
-;
-nhours = 24
-nstations = 3
-ncolors = 5
-stations = new(nstations,string)
-stations = (/"DEN","FTW","HNL"/)
+
+NHOURS = 24
+NSTATIONS = 8
+NCOLORS = NSTATIONS+2
+
 spv = -9999.0
 
 ;
 ; Create variable for holding data values.
 ;
-temp = new((/nstations,nhours/),float,spv)
-pressure = new((/nstations,nhours/),float,spv)
-wind_speed = new((/nstations,nhours/),float,spv)
+temp = new((/NSTATIONS,NHOURS/),float,spv)
+pressure = new((/NSTATIONS,NHOURS/),float,spv)
+wind_speed = new((/NSTATIONS,NHOURS/),float,spv)
+
+;
+; We need to initialize a non-constant dummy array for our Data
+; object, otherwise we'll get error messages.
+;
+do  j = 0,NHOURS-1
+   temp(0,j) = j
+end do
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
 ; and foreground colors respectively.
 ;
-cmap = new( (/ncolors,3/), float)
+cmap = new( (/NCOLORS,3/), float)
 cmap(0,:) = (/0.00,0.00,0.00/)
 cmap(1,:) = (/1.00,1.00,1.00/)
 cmap(2,:) = (/0.00,0.00,1.00/)
 cmap(3,:) = (/0.00,1.00,0.00/)
 cmap(4,:) = (/0.00,1.00,0.75/)
+cmap(5,:) = (/0.50,0.50,0.63/)
+cmap(6,:) = (/1.00,0.00,0.00/)
+cmap(7,:) = (/0.75,0.38,0.25/)
+cmap(8,:) = (/0.75,0.00,0.75/)
+cmap(9,:) = (/1.00,1.00,0.00/)
+
+
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
 
 ;
 ; Create application object.  The application name is used to 
@@ -122,11 +97,6 @@ appid = create "xy06" appClass defaultapp
    "appDefaultParent" : "True"
    "appUsrDir" : "./"
 end create
-
-;
-; Default is to display output to an X workstation
-;
-NCGM=0
 
 if (NCGM .eq. 1) then
 ;
@@ -147,11 +117,88 @@ else
 end if
 
 ;
-; Call procedure to get data values.
+; Define a dummy Data object.  We do this so a DataSpec object is
+; created automatically and then we can use a NhlFGetValues call to
+; get the names of the stations we want data values for.
+;
+dataid = create "xyData" coordArraysClass noparent
+    "caYArray" : temp
+end create
+
+;
+; The id for this dummy Data object will now become the resource
+; value for "xyCoordData".
+;
+plotid = create "xyPlot1" xyPlotClass xworkid
+    "xyCoordData": dataid
+end create
+;
+; Get the DataSpec object id.
+;
+getvalues plotid
+   "xyCoordDataSpec" : dspec
+end getvalues
+
+;
+; Get station id names that have been set in resource file.  This
+; is a round-about way of doing things, but it makes it convenient to
+; be able to specify the stations we want.  We used the
+; 'xyExplicitLegendLabels' resource, because we also want to use the 
+; station names to label the lines in the legend.
+;
+getvalues dspec(0)
+   "xyExplicitLegendLabels" : station_abrev
+end getvalues
+
+numids = dimsizes(station_abrev)
+
+;
+; Set date.
 ;
 date = "950318"
 
-StationValues(temp,pressure,wind_speed,stations,nstations,date,spv)
+;
+; Define procedure for getting the daily data values from a particular
+; station.
+;
+
+  temp@_FillValue = spv
+  pressure@_FillValue = spv
+  wind_speed@_FillValue = spv
+  filedir = ncargpath("data")
+  do j = 0,NHOURS-1
+    if((j.lt.10))
+      filename = filedir + "/cdf/" + date + "0" + j + "_sao.cdf"
+    else
+      filename = filedir + "/cdf/" + date + j + "_sao.cdf"
+    end if
+; 
+; Open data file containing grid of global data values.
+;
+    tmpfile = addfile(filename,"r")
+    rdstations = tmpfile->id
+    isize = dimsizes(tmpfile->id(:,0))
+    do l = 0, numids-1
+      do i = 0, (isize-1)
+        if(rdstations(i,:) .eq. station_abrev(l)) 
+          break
+        end if
+      end do
+      print("station " + station_abrev(l))
+      if(i .lt. isize) 
+        print("loaded hour " + j)
+        temp(l,j) = tmpfile->T(i)
+        pressure(l,j) = tmpfile->PSL(i)
+        wind_speed(l,j) = tmpfile->SPD(i)
+      else
+        print("missing hour " + j)
+        temp(l,j) = spv
+        pressure(l,j) = spv
+        wind_speed(l,j) = spv
+      end if
+    end do
+    delete(rdstations)
+  end do
 
 ;
 ; Define the Data object.  Since only the Y values are specified here,
