@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.3 1991-11-15 16:56:13 don Exp $
+ *	$Id: raster.c,v 1.4 1991-12-02 23:58:03 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -72,8 +72,6 @@ RasterInit(argc, argv)
 	int	i;
 
 	ProgramName = argv[0];
-
-	if (*argc < 2) exit(RAS_OK);
 
 	for(i=1; i<*argc; ) {
 		if (!strcmp(argv[i], "-printoptions")) {
