@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.IRIX64_IP,v 1.1 1995-10-20 15:36:10 haley Exp $
+#      $Id: paths.IRIX64_IP,v 1.2 1996-04-19 16:58:38 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -18,7 +18,7 @@
 #
 #   Date:       Tue Sep 29 17:05:36 MDT 1992
 #
-#   Description:    Set default installation paths for a SGI4D. This
+#   Description:    Set default installation paths for a SGIR8. This
 #           script is sourced by the get_paths script to set
 #           the variables bin_path, inc_path, lib_path, and 
 #           man_path
