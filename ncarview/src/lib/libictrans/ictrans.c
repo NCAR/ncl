@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.20 1993-03-16 18:48:59 clyne Exp $
+ *	$Id: ictrans.c,v 1.21 1993-03-25 16:54:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -151,6 +151,8 @@ ICTrans(argc, argv, mem_cgm)
 	int	od;
 	FILE	*fp;			/* status messages/user interaction */
 	char	*dev_null	= "/dev/null";	/* bit bucket		*/
+	char	*dev_tty	= "/dev/tty";
+	int	batch_rc = 0;	/* batch return code			*/
 
 	/*
 	 * list of metafiles to process
@@ -324,19 +326,24 @@ ICTrans(argc, argv, mem_cgm)
 		}
 		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
 	}
-	else if (! isatty(fileno(stdout))) {
+	else if (batch || ! isatty(fileno(stdin))) {
 
 		/*
 		 * graphics go to stdout, everything else goes to
 		 * bit bucket
 		 */
 		if ((fp = fopen(dev_null, "w")) == NULL) {
-			fprintf(stderr, "fdopen(%s, w)\n", dev_null);
+			fprintf(stderr, "fopen(%s, w)\n", dev_null);
 			return(-1);
 		}
+		batch = TRUE;
 	}
 	else {
-		fp = stdout;
+		if ((fp = fopen(dev_tty, "w")) == NULL) {
+			fprintf(stderr, "fopen(%s, w)\n", dev_tty);
+			return(-1);
+		}
+		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
 	}
 	icommand.fp = fp;
 
@@ -395,26 +402,32 @@ ICTrans(argc, argv, mem_cgm)
 		case GET_EOLN:  /* normal termination   */
 			if (ex_command(&icommand) == 0) {	/* quit	*/
 				(void) close_ctrans();
-				return(0);
+				return(batch ? batch_rc : 0);
 			}
 			break;
 		case GET_OUTOFRANGE:
 			(void) fprintf(stderr,
 				"Address Out of Range. There are %d frames\n",
 				icommand.last_frame);
+			batch_rc = -1;
 			break;
 		case GET_SYMBOL:
 			(void) fprintf(stderr, "Invalid Symbol: %s\n", yytext);
+			batch_rc = -1;
 			break;
 		case GET_SYNTAX:
 			(void) fprintf(stderr, "Invalid Syntax: %s\n", yytext);
+			batch_rc = -1;
 			break;
 		case GET_EOF:
 			/*
 			 *	terminate ctrans
 			 */
+			icommand.cmd.name = "quit";
+			icommand.cmd.data = NULL;
+			(void) ex_command(&icommand);
 			(void) close_ctrans();
-			return(0);
+			return(batch ? batch_rc : 0);
 			break;
 		}
 	}
