@@ -27,5 +27,4 @@ TBLE2 ecmwf_190_params[] = {
 {179, "Top net longwave radiation", "W s m**-2", "TTR"},
 {228, "Total precipitation", "m", "TP"},
 {229, "Total soil moisture", "m (kg?)", "TSM"},
-{255, "Missing", "Missing", "MISSING"},
 };
