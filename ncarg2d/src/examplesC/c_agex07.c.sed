@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.4 1993-01-15 21:43:23 haley Exp $
+ *	$Id: c_agex07.c.sed,v 1.5 1993-01-23 15:14:51 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -19,6 +19,7 @@ main()
     char dshp[9][29], stmp[17];
     int i, j, fj;
     extern char *agdshn();
+    extern void bndary();
 /*
  * initialize gks.
  */

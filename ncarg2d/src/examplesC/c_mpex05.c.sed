@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mpex05.c.sed,v 1.3 1993-01-15 21:44:32 haley Exp $
+ *	$Id: c_mpex05.c.sed,v 1.4 1993-01-23 15:15:04 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -12,6 +12,7 @@
 
 main()
 {
+    extern void bndary();
 /*
  * This programproduces a single frame with maximal-area
  * views of all the EZMAP projections of the globe.

@@ -21,7 +21,7 @@
 main()
 {
     float zreg[MREG][NREG];
-    extern void color(), colcon(), gendat();
+    extern void colcon(), gendat();
 /*
  * get data array
  */
@@ -56,7 +56,7 @@ char *proj;
     int iwrk[LIWK], lfin[35];
     int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
     char *lbls[35];
-
+    extern void color(int n);
     extern int fill(), mask();
 
     rltmn[0] = rlatmn;
@@ -95,9 +95,9 @@ char *proj;
     c_cpseti("llp - line label positioning flag",0);
     c_cpseti("hlb - high/low label box flag",2);
     c_cpseti("hlc - high/low label color index",1);
-    c_cprect(zreg, NREG, NREG, MREG, rwrk, LRWK, iwrk, LIWK);
-    c_cpclam(zreg, rwrk, iwrk, map);
-    c_cplbam(zreg, rwrk, iwrk, map);
+    c_cprect((float *)zreg, NREG, NREG, MREG, rwrk, LRWK, iwrk, LIWK);
+    c_cpclam((float *)zreg, rwrk, iwrk, map);
+    c_cplbam((float *)zreg, rwrk, iwrk, map);
 /*
  * choose a color for every contour level
  */
@@ -111,8 +111,8 @@ char *proj;
  * draw continental outlines, labels, and masked contours
  */
     c_maplot();
-    c_cplbdr(zreg,rwrk,iwrk);
-    c_cpcldm(zreg,rwrk,iwrk,map,mask);
+    c_cplbdr((float *)zreg,rwrk,iwrk);
+    c_cpcldm((float *)zreg,rwrk,iwrk,map,mask);
 /*
  * draw and fill a label bar
  */
@@ -301,8 +301,7 @@ float fran()
     return(rseq[iseq-1]);
 }
 
-void color (n)
-int n;
+void color (int n)
 {
 /*
  * background color

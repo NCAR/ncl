@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.6 1993-01-15 21:43:41 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.7 1993-01-23 15:14:54 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -119,7 +119,7 @@ main()
 /*
  * Call IDSFFT to obtain a regular grid of values on the fitted surface.
  */
-    c_idsfft(1,9,xran,yran,zran,11,12,11,xdat,ydat,zdat,iwrk,rwrk);
+    c_idsfft(1,9,xran,yran,zran,11,12,11,xdat,ydat,(float *)zdat,iwrk,rwrk);
 /*
  * Open GKS.
  */

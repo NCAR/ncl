@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfex02.c,v 1.3 1993-01-15 21:44:50 haley Exp $
+ *	$Id: c_sfex02.c,v 1.4 1993-01-23 15:15:06 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -17,15 +17,28 @@ main()
  * Declare required dimensioned arrays.
  */
     float xcs[101],ycs[101],xra[100],yra[100],dst[102];
-    int ind[104],ias[13];
+    int ind[104];
     char lbl[3];
     int i, ity, ici, l;
     float xcn, ycn, x1, y1,x2,y2,rx,rx2;
+    Gasfs ias;
     extern double sin(), cos();
 /*
  * Initialize the values in the aspect-source-flag array.
  */
-    for( i = 0; i < 13; i++ ) ias[i] = 1;
+    ias.linetype = 1;
+    ias.linewidth = 1;
+    ias.line_colr_ind = 1;
+    ias.marker_type = 1;
+    ias.marker_size = 1;
+    ias.marker_colr_ind = 1;
+    ias.text_font_prec = 1;
+    ias.char_expan = 1;
+    ias.char_space = 1;
+    ias.text_colr_ind = 1;
+    ias.fill_int_style = 1;
+    ias.fill_style_ind = 1;
+    ias.fill_colr_ind = 1;
 /*
  * Open GKS.
  */
@@ -37,7 +50,7 @@ main()
 /*
  * Set all the GKS aspect source flags to "individual".
  */
-    gset_asfs (ias);
+    gset_asfs (&ias);
 /*
  * force solid fill.
  */

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_elblba.c,v 1.3 1993-01-15 21:44:17 haley Exp $
+ *	$Id: c_elblba.c,v 1.4 1993-01-23 15:15:00 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -32,11 +32,25 @@ char *llb6[4] = {"A","B","C","D"};
 
 main()
 {
-    int i,iasf[13];
+    int i;
+    Gasfs iasf;
     int lnd1[20],lnd2[16],lnd3[4],lnd4[4],lnd5[4],lnd6[4];
+    extern void dfclrs();
 
-    for( i = 0; i < 13; i++ ) iasf[i] = 1;
-              
+    iasf.linetype = 1;
+    iasf.linewidth = 1;
+    iasf.line_colr_ind = 1;
+    iasf.marker_type = 1;
+    iasf.marker_size = 1;
+    iasf.marker_colr_ind = 1;
+    iasf.text_font_prec = 1;
+    iasf.char_expan = 1;
+    iasf.char_space = 1;
+    iasf.text_colr_ind = 1;
+    iasf.fill_int_style = 1;
+    iasf.fill_style_ind = 1;
+    iasf.fill_colr_ind = 1;
+
     for( i = 0; i < 20; i++ ) lnd1[i] = i+1;
     for( i = 0; i < 16; i++ ) lnd2[i] = i;
     for( i = 0; i < 4; i++ ) {
@@ -52,7 +66,7 @@ main()
 /*
  * Set all the GKS aspect source flags to "individual".
  */
-    gset_asfs(iasf);
+    gset_asfs(&iasf);
 /*
  * Force solid fill.
  */

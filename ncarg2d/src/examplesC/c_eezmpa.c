@@ -1,5 +1,5 @@
 /*
- *	$Id: c_eezmpa.c,v 1.3 1993-01-15 21:44:15 haley Exp $
+ *	$Id: c_eezmpa.c,v 1.4 1993-01-23 15:14:58 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -20,7 +20,7 @@ main()
     int iai[10],iag[10];
     float rgb[4][15],p1[2],p2[2],p3[3],p4[2];
     int ioc[14];
-    int if1[13];
+    Gasfs if1;
     int i,j,isu,ie;
     Gcolr_rep color;
     extern int colram(
@@ -82,10 +82,10 @@ main()
 /*
  * re-set certain aspect source flags to "individual".
  */
-    ginq_asfs(&ie,if1);
-    if1[10]=1;
-    if1[11]=1;
-    gset_asfs(if1);
+    ginq_asfs(&ie,&if1);
+    if1.fill_int_style = 1;
+    if1.fill_style_ind = 1;
+    gset_asfs(&if1);
 /*
  * force solid fill.
  */
