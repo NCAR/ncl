@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.6 1991-08-15 17:10:26 clyne Exp $
+.\"	$Id: ctrans.m,v 1.7 1991-08-22 14:14:31 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
@@ -31,7 +31,9 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .I device\-specific options
 ] 
 [
-.BI metafile " ..."
+.B - 
+| 
+.I metafile ...
 ]
 .SH DESCRIPTION
 .B ctrans
@@ -91,16 +93,14 @@ and
 .BR CTXT) ,
 may be supported by your version of 
 .BR ctrans .
-For a list of supported devices make sure
-GRAPHCAP
-is not set and invoke
-.B ctrans
-without any arguments.
+For a list of supported devices see the
+.BR gcaps(1NCARG)
+command.
 .LP
 Consult the
 .I Ctrans Reference Manual
 (May 1988)
-for details regarding customizing you own driver.
+for details regarding customizing your own driver.
 .PP
 .SH OPTIONS
 .TP
@@ -129,6 +129,15 @@ If no GRAPHCAP environment variable is defined, and the
 option is not used,
 .B ctrans
 will terminate processing with a report of the supported devices.
+See 
+.BR graphcap(1NCARG)
+for a description of supported devices. 
+See
+.BR gcaps(1NCARG)
+for a list of devices supported by 
+.I your 
+configuration of 
+.BR ctrans .
 .TP
 .BI \-f " fontcap"
 Fontcap file to be used for stroking text.
@@ -145,6 +154,9 @@ specifications.
 Note also that a CGM may explicitly specify a named font which may override a
 font provided on the command line. The environment variable FONTCAP
 may be used to specify a default fontcap.
+See 
+.BR fontcap(1NCARG)
+for a description of the available fontcaps. 
 .TP
 .BI \-movie " time"
 Set pause to 
@@ -191,7 +203,7 @@ vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
 .TP
 .B \-bell
-Turn off bell. The default is to bell between plotting of frames.
+Ring the bell at the end of each frame. The default is to run in silent mode.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be
@@ -348,7 +360,8 @@ and display its contents on the
 TEKTRONIX 4107 terminal, use the following call:
 .sp
 .ti +0.5i
-% ctrans -d t4107 gmeta
+% 
+.B ctrans -d t4107 gmeta
 .br
 .PP
 If this device is already defined by the GRAPHCAP environment variable,
@@ -396,18 +409,19 @@ at a resolution of 1024x1024 pixels, call:
 .sp
 .br
 The raster output is in X11 "xwd" format and is sent to the file
-.BR xwdfile .
+.BR raster.xwd .
 .SH FILES
-.nf
-/usr/local/lib/graphcaps/*           The binary NCAR Graphcap files
-/usr/local/lib/fontcaps/*            The binary NCAR Fontcap files
-.fi
+.IP /usr/local/lib/graphcaps/* 30
+The binary NCAR Graphcap files
+.IP /usr/local/lib/fontcaps/* 30
+The binary NCAR Fontcap files
 .SH SEE ALSO
 .BR cgmtrans(1NCARG), 
 .BR fcaps(1NCARG), 
 .BR fontcap(1NCARG), 
 .BR gcaps(1NCARG), 
 .BR graphcap(1NCARG), 
+.BR idt(1NCARG), 
 .BR ncarg_ras(1NCARG), 
 .BR med(1NCARG), 
 .BR ictrans(1NCARG),
@@ -420,3 +434,5 @@ in no pause between frames.
 .PP
 Metafiles which reference color table indices that were not previously 
 defined may have varying results from one device to the next.
+.PP
+The HP Laser Jet series of devices is not available in ctrans at this time.

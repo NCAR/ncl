@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.6 1991-08-15 17:11:07 clyne Exp $
+.\"	$Id: ictrans.m,v 1.7 1991-08-22 14:14:40 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -89,11 +89,15 @@ the device option be omitted.
 Not all devices may be supported by your version
 of 
 .B ictrans.
-For a list of supported devices make sure 
-GRAPHCAP 
-is not set and invoke 
-.B ictrans 
-without any arguments.
+See
+.BR graphcap(1NCARG)
+for a description of supported devices.
+See
+.BR gcaps(1NCARG)
+for a list of devices supported by
+.I your
+configuration of
+.BR ctrans .
 .TP
 .BI \-e " script"
 .I script
@@ -134,7 +138,7 @@ Specifies the default color to use for the background of an X11 window.
 If the metafile explicitly sets color index 0 this option is overridden.
 .TP 
 .B \-bell
-Turn off bell. The default is to bell between plotting of frames.
+Ring the bell at the end of each frame. The default is to run in silent mode.
 .TP 
 .BI \-foreground " color"
 Specifies the default foreground color of an X11 window. 
@@ -681,3 +685,5 @@ Metafile frames written to an existing file via the
 .B save
 command will be subject to the effects of any global "attribute elements"
 contained within the file.
+.PP
+The HP Laser Jet series of devices is not available in ctrans at this time.

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcaps.m,v 1.2 1991-01-09 10:47:34 clyne Exp $
+.\"	$Id: gcaps.m,v 1.3 1991-08-22 14:14:37 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GCAPS 1NCARV "JUNE 1990" NCAR "NCAR View 3.01"
@@ -17,3 +17,6 @@ metafile translation.
 .BR ctrans(1NCARG),
 .BR ictrans(1NCARG),
 .BR graphcap(1NCARG)
+.SH BUGS
+The HP Laser Jet series of devices is not available in ctrans at this time.
+
