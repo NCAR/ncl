@@ -73,3 +73,11 @@
 *mp03Work.Contour1*cnHighLabelPerimOn : true
 *mp03Work.Contour1*cnHighLowLabelOverlapMode : AdjustVpOmitOverHLandInfo
 *mp03Work.Contour1*cnHighLabelFormat : 0.4?5g
+!
+! Set up the colors we want to use from the 
+! "example" color map.
+!
+*mp03Work*mpLandFillColor:  58
+*wkColorMap:   example
+
+*cnFillColors:  (/2,5,11,16,19,24,36,39,43,51,53,56,61,66,69,71,81,86,91,101/)
