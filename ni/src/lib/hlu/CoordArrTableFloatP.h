@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableFloatP.h,v 1.1 1993-09-15 22:10:19 boote Exp $
+ *      $Id: CoordArrTableFloatP.h,v 1.2 1993-10-06 01:55:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
  */
 #ifndef _NCoordArrTableFloatP_h
 #define _NCoordArrTableFloatP_h
-#include <ncarg/hlu/BaseP.h>
 
 typedef struct _CoordArrTableFloatLayerClassRec *CoordArrTableFloatLayerClass;
 typedef struct _CoordArrTableFloatLayerRec *CoordArrTableFloatLayer;

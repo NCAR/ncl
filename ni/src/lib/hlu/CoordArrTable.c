@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.2 1993-09-20 21:37:10 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.3 1993-10-06 01:54:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -290,6 +290,45 @@ static NhlResource fltresources[] = {
 		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctXMissingF,NhlCctXMissingF,NhlTFloat,sizeof(float),
+		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctYMissingF,NhlCctYMissingF,NhlTFloat,sizeof(float),
+		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctXMaxF,NhlCctXMaxF,NhlTFloat,sizeof(float),
+		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(max_y_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctYMaxF,NhlCctYMaxF,NhlTFloat,sizeof(float),
+		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(min_x_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctXMinF,NhlCctXMinF,NhlTFloat,sizeof(float),
+		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(min_y_set),NhlTImmediate,(NhlPointer)True},
+	{NhlNctYMinF,NhlCctYMinF,NhlTFloat,sizeof(float),
+		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet}
+};
+#undef Oset
+
+#define	Oset(field)	NhlOffset(CoordArrTableIntLayerRec,catint.field)
+static NhlResource intresources[] = {
+	{NhlNctXTable,NhlCctXTable,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(xtable),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNctYTable,NhlCctYTable,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(ytable),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNctXTableLengths,NhlCctXTableLengths,NhlTGenArray,
+		sizeof(NhlGenArray),
+		Oset(xtable_lens),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
+		sizeof(NhlGenArray),
+		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNctXMissing,NhlCctXMissing,NhlTFloat,sizeof(float),
 		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
@@ -315,21 +354,6 @@ static NhlResource fltresources[] = {
 };
 #undef Oset
 
-#define	Oset(field)	NhlOffset(CoordArrTableIntLayerRec,catint.field)
-static NhlResource intresources[] = {
-	{NhlNctXTable,NhlCctXTable,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xtable),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNctYTable,NhlCctYTable,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(ytable),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNctXTableLengths,NhlCctXTableLengths,NhlTGenArray,
-		sizeof(NhlGenArray),
-		Oset(xtable_lens),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
-		sizeof(NhlGenArray),
-		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL}
-};
-#undef Oset
-
 #define	Oset(field)	NhlOffset(CoordArrTableLayerRec,cat.field)
 static NhlResource resources[] = {
 	{NhlNdiType,NhlCdiType,NhlTString,sizeof(NhlString),
@@ -352,6 +376,16 @@ static NhlErrorTypes CoordArrTableClassInitialize(
 );
 
 static NhlErrorTypes CoordArrTableFloatInitialize(
+#if	NhlNeedProto
+	LayerClass	lc,	/* class	*/
+	Layer		req,	/* requested	*/
+	Layer		new,	/* new		*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+#endif
+);
+
+static NhlErrorTypes CoordArrTableIntInitialize(
 #if	NhlNeedProto
 	LayerClass	lc,	/* class	*/
 	Layer		req,	/* requested	*/
@@ -429,7 +463,7 @@ CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
-/* layer_initialize		*/	NULL,
+/* layer_initialize		*/	CoordArrTableIntInitialize,
 /* layer_set_values		*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
@@ -515,20 +549,24 @@ CvtGenObjToFloatObj
 	NrmValue		*from,
 	NrmValue		*to,
 	NhlConvertArgList	args,
-	int			nargs
+	int			num_args
 )
 #else
-(from,to,args,nargs)
+(from,to,args,num_args)
 	NrmValue		*from;
 	NrmValue		*to;
 	NhlConvertArgList	args;
-	int			nargs;
+	int			num_args;
 #endif
 {
 	CoordArrTableLayer	catl = NULL;
-	CoordArrTableFloatLayer	catfl;
+	NhlSArg			sargs[30];
+	int			nargs=0,i,j,*lens;
+	float			**flttable,*fltvect;
+	NhlGenArray		xtbl = NULL, ytbl = NULL;
+	NhlErrorTypes		ret = NOERROR;
 
-	if(nargs != 0){
+	if(num_args != 0){
 		NhlPError(FATAL,E_UNKNOWN,
 				"CvtGenObjToFloatObj:Called w/wrong args");
 		return FATAL;
@@ -542,26 +580,105 @@ CvtGenObjToFloatObj
 	}
 
 	if(catl->cat.type == floatQ){
-		catfl = (CoordArrTableFloatLayer)catl->cat.child;
+		CoordArrTableFloatLayer	l =
+				(CoordArrTableFloatLayer)catl->cat.child;
+		CoordArrTableFloatLayerPart	*child =
+				(CoordArrTableFloatLayerPart*)&l->catfloat;
 
-		return NhlCreate((int*)to->addr,"no.name",
-			coordArrTableFloatLayerClass,catl->base.id,
-			NhlNctXTable,		catfl->catfloat.xtable,
-			NhlNctYTable,		catfl->catfloat.ytable,
-			NhlNctXTableLengths,	catfl->catfloat.xtable_lens,
-			NhlNctYTableLengths,	catfl->catfloat.ytable_lens,
-			NhlNctXMissing,		catfl->catfloat.missing_x,
-			NhlNctYMissing,		catfl->catfloat.missing_y,
-			NhlNctXMax,		catfl->catfloat.max_x,
-			NhlNctYMax,		catfl->catfloat.max_y,
-			NhlNctXMin,		catfl->catfloat.min_x,
-			NhlNctYMin,		catfl->catfloat.min_y,
-			NULL);
+		NhlSetSArg(&sargs[nargs++],NhlNctXTable,child->xtable);
+		NhlSetSArg(&sargs[nargs++],NhlNctYTable,child->ytable);
+		NhlSetSArg(&sargs[nargs++],NhlNctXTableLengths,
+							child->xtable_lens);
+		NhlSetSArg(&sargs[nargs++],NhlNctYTableLengths,
+							child->ytable_lens);
+		NhlSetSArg(&sargs[nargs++],NhlNctXMaxF,child->max_x);
+		NhlSetSArg(&sargs[nargs++],NhlNctYMaxF,child->max_y);
+		NhlSetSArg(&sargs[nargs++],NhlNctXMinF,child->min_x);
+		NhlSetSArg(&sargs[nargs++],NhlNctYMinF,child->min_y);
+
+		if(child->missing_x_set)
+			NhlSetSArg(&sargs[nargs++],NhlNctXMissingF,
+							child->missing_x);
+		if(child->missing_y_set)
+			NhlSetSArg(&sargs[nargs++],NhlNctYMissingF,
+							child->missing_y);
+	}
+	else if(catl->cat.type == intQ){
+		int	*intvect,**inttable;
+		CoordArrTableIntLayer	l =
+					(CoordArrTableIntLayer)catl->cat.child;
+		CoordArrTableIntLayerPart	*child =
+					(CoordArrTableIntLayerPart*)&l->catint;
+
+		NhlSetSArg(&sargs[nargs++],NhlNctXTableLengths,
+							child->xtable_lens);
+		NhlSetSArg(&sargs[nargs++],NhlNctYTableLengths,
+							child->ytable_lens);
+		NhlSetSArg(&sargs[nargs++],NhlNctXMaxF,(float)child->max_x);
+		NhlSetSArg(&sargs[nargs++],NhlNctYMaxF,(float)child->max_y);
+		NhlSetSArg(&sargs[nargs++],NhlNctXMinF,(float)child->min_x);
+		NhlSetSArg(&sargs[nargs++],NhlNctYMinF,(float)child->min_y);
+		if(child->missing_x_set)
+			NhlSetSArg(&sargs[nargs++],NhlNctXMissingF,
+						(float)child->missing_x);
+		if(child->missing_y_set)
+			NhlSetSArg(&sargs[nargs++],NhlNctYMissingF,
+						(float)child->missing_y);
+		/*
+		 * I must copy the vectors here, and use the convertMalloc
+		 * function to do it, that way the memory is around as long
+		 * as the data conversion is needed.
+		 */
+		if(child->xtable != NULL){
+			xtbl = _NhlCopyGenArray(child->xtable,True);
+			if(xtbl == NULL)
+				return FATAL;
+			inttable = (int**)xtbl->data;
+			flttable = (float**)xtbl->data;
+			lens = (int*)child->xtable_lens->data;
+			for(i=0;i < xtbl->len_dimensions[0];i++){
+				intvect = inttable[i];
+				fltvect=NhlConvertMalloc(sizeof(float)*lens[i]);
+				if(fltvect == NULL)
+					return FATAL;
+				for(j=0;j < lens[i];j++){
+					fltvect[j] = (float)intvect[j];
+				}
+				flttable[i] = fltvect;
+			}
+			NhlSetSArg(&sargs[nargs++],NhlNctXTable,xtbl);
+		}
+		if(child->ytable != NULL){
+			ytbl = _NhlCopyGenArray(child->ytable,True);
+			if(ytbl == NULL)
+				return FATAL;
+			inttable = (int**)ytbl->data;
+			flttable = (float**)ytbl->data;
+			lens = (int*)child->ytable_lens->data;
+			for(i=0;i < ytbl->len_dimensions[0];i++){
+				intvect = inttable[i];
+				fltvect=NhlConvertMalloc(sizeof(float)*lens[i]);
+				if(fltvect == NULL)
+					return FATAL;
+				for(j=0;j < lens[i];j++){
+					fltvect[j] = (float)intvect[j];
+				}
+				flttable[i] = fltvect;
+			}
+			NhlSetSArg(&sargs[nargs++],NhlNctYTable,ytbl);
+		}
+	}
+	else{
+		return FATAL;
 	}
 
-	NhlPError(FATAL,E_UNKNOWN,"Unable to convert???");
+	ret = NhlALCreate((int*)to->addr,"no.name",
+			coordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
 
-	return FATAL;
+	NhlFreeGenArray(xtbl);
+	NhlFreeGenArray(ytbl);
+
+	return ret;
 }
 
 /************************************************************************
@@ -643,6 +760,131 @@ CoordArrTableClassPartInitialize
 	return MIN(lret,ret);
 }
 
+#define CHECK_TABLES(type,dim,DIM)\
+{									\
+	if((ncat->cat##type.dim##table != NULL) &&			\
+			(ncat->cat##type.dim##table_lens != NULL)){	\
+		gen = ncat->cat##type.dim##table;			\
+		gen2 = ncat->cat##type.dim##table_lens;			\
+		if((gen->num_dimensions != 1) ||			\
+					(gen2->num_dimensions != 1)){	\
+			NhlPError(WARNING,E_UNKNOWN,			\
+		"%s:%s and %s must one dimensional arrays:ignoring",	\
+					error_lead,NhlNct##DIM##Table,	\
+					NhlNct##DIM##TableLengths);	\
+			ncat->cat##type.dim##table = NULL;		\
+			ncat->cat##type.dim##table_lens = NULL;		\
+			imp##dim = True;				\
+		}							\
+		else if(gen->len_dimensions[0]!=gen2->len_dimensions[0]){\
+			NhlPError(WARNING,E_UNKNOWN,			\
+	"%s:%s and %s must be arrays of the same length:ignoring",	\
+					error_lead,NhlNct##DIM##Table,	\
+					NhlNct##DIM##TableLengths);	\
+			ncat->cat##type.dim##table = NULL;		\
+			ncat->cat##type.dim##table_lens = NULL;		\
+			imp##dim = True;				\
+		}							\
+		else{							\
+			ncat->cat##type.dim##table =			\
+					_NhlCopyGenArray(gen,True);	\
+			ncat->cat##type.dim##table_lens =		\
+					_NhlCopyGenArray(gen2,True);	\
+		}							\
+	}								\
+	else if((ncat->cat##type.dim##table != NULL) ||			\
+			(ncat->cat##type.dim##table_lens != NULL)){	\
+		NhlPError(WARNING,E_UNKNOWN,				\
+			"%s:%s and %s must be set together:ignoring",	\
+					error_lead,NhlNct##DIM##Table,	\
+					NhlNct##DIM##TableLengths);	\
+		ncat->cat##type.dim##table = NULL;			\
+		ncat->cat##type.dim##table_lens = NULL;			\
+		imp##dim = True;					\
+	}								\
+	else								\
+		imp##dim = True;					\
+}
+#define FREE_TABLES(type,dim)\
+{									\
+	NhlFreeGenArray(ncat->cat##type.dim##table);			\
+	NhlFreeGenArray(ncat->cat##type.dim##table_lens);		\
+}
+
+#define	CHECK_MINMAX(type,dim,otherdim)\
+{									\
+	if(!ncat->cat##type.max_##dim##_set ||				\
+				!ncat->cat##type.min_##dim##_set){	\
+		int	*lens,i,j;					\
+		type	**vals,max,min;					\
+									\
+		if(ncat->cat##type.dim##table != NULL){			\
+									\
+			vals=(type**)ncat->cat##type.dim##table->data;	\
+			max = min = **vals;				\
+			lens = (int*)ncat->cat##type.dim##table_lens->data;\
+			for(i=0;					\
+			i<ncat->cat##type.dim##table->len_dimensions[0];\
+								i++){	\
+				type	*vect;				\
+									\
+				vect = vals[i];				\
+				for(j=0;j < lens[i];j++){		\
+					max = MAX(vect[j],max);		\
+					min = MIN(vect[j],min);		\
+				}					\
+			}						\
+									\
+		}							\
+		else{							\
+			max = min = 1.0;				\
+			lens =						\
+			(int*)ncat->cat##type.otherdim##table_lens->data;\
+			for(i=0;					\
+		i<ncat->cat##type.otherdim##table_lens->len_dimensions[0];\
+								i++)	\
+				max = MAX(max,lens[i]);			\
+		}							\
+									\
+		if(!ncat->cat##type.max_##dim##_set)			\
+			ncat->cat##type.max_##dim = max;		\
+		if(!ncat->cat##type.min_##dim##_set)			\
+			ncat->cat##type.min_##dim = min;		\
+	}								\
+}
+
+
+#define INIT_FUNC(name,type)\
+{									\
+	char		*error_lead = #name "Initialize";		\
+	name##Layer	ncat = (name##Layer)new;			\
+	NhlErrorTypes	ret=NOERROR;					\
+	NhlGenArray	gen, gen2;					\
+	NhlBoolean	impy = False, impx = False;			\
+									\
+	/*								\
+	 * insure accuracy, and copy Table & Table_lens			\
+	 */								\
+	CHECK_TABLES(type,y,Y)						\
+	CHECK_TABLES(type,x,X)						\
+									\
+	if(impx && impy){						\
+		NhlPError(FATAL,E_UNKNOWN,				\
+		"%s:Cannot have Implied X and Y values",error_lead);	\
+		FREE_TABLES(type,x)					\
+		FREE_TABLES(type,y)					\
+		return FATAL;						\
+	}								\
+									\
+	/*								\
+	 * Set Max's and Min's						\
+	 */								\
+	CHECK_MINMAX(type,x,y)						\
+	CHECK_MINMAX(type,y,x)						\
+									\
+	return ret;							\
+}		
+
 /*
  * Function:	CoordArrTableFloatInitialize
  *
@@ -681,135 +923,52 @@ CoordArrTableFloatInitialize
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
-{
-	char			*error_lead = "CoordArrTableFloatInitialize";
-	CoordArrTableFloatLayer	ncat = (CoordArrTableFloatLayer)new;
-	NhlErrorTypes		ret=NOERROR;
-	NhlGenArray		gen, gen2;
+INIT_FUNC(CoordArrTableFloat,float)
 
-	/*
-	 * insure accuracy, and copy YTable and YTableLengths
-	 */
-	if((ncat->catfloat.ytable == NULL) ||
-					(ncat->catfloat.ytable_lens == NULL)){
-		NhlPError(FATAL,E_UNKNOWN,"%s:%s and %s must be specified",
-				error_lead,NhlNctYTable,NhlNctYTableLengths);
-		return FATAL;
-	}
-	gen = ncat->catfloat.ytable;
-	gen2 = ncat->catfloat.ytable_lens;
-	if((gen->len_dimensions != NULL) || (gen2->len_dimensions != NULL)){
-		NhlPError(FATAL,E_UNKNOWN,
-				"%s:%s and %s must one dimensional arrays",
-				error_lead,NhlNctYTable,NhlNctYTableLengths);
-		return FATAL;
-	}
-	if(gen->num_dimensions != gen2->num_dimensions){
-		NhlPError(FATAL,E_UNKNOWN,
-			"%s:%s and %s must be arrays of the same length",
-				error_lead,NhlNctYTable,NhlNctYTableLengths);
-		return FATAL;
-	}
-	ncat->catfloat.ytable = _NhlCopyGenArray(gen,True);
-	ncat->catfloat.ytable_lens = _NhlCopyGenArray(gen2,True);
+/*
+ * Function:	CoordArrTableIntInitialize
+ *
+ * Description:	This function initializes an instance of a CoordArrTableInt
+ *		class object.
+ *
+ * In Args:	
+ *	LayerClass	lc,	class
+ *	Layer		req,	requested
+ *	Layer		new,	new
+ *	_NhlArgList	args,	args
+ *	int		nargs	nargs
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CoordArrTableIntInitialize
+#if	__STDC__
+(
+	LayerClass	lc,	/* class	*/
+	Layer		req,	/* requested	*/
+	Layer		new,	/* new		*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+)
+#else
+(lc,req,new,args,nargs)
+	LayerClass	lc;	/* class	*/
+	Layer		req;	/* requested	*/
+	Layer		new;	/* new		*/
+	_NhlArgList	args;	/* args		*/
+	int		nargs;	/* nargs	*/
+#endif
+INIT_FUNC(CoordArrTableInt,int)
 
-	/*
-	 * insure accuracy, and copy XTable and XTableLengths
-	 */
-	if((ncat->catfloat.xtable != NULL) &&
-					(ncat->catfloat.xtable_lens != NULL)){
-		gen = ncat->catfloat.xtable;
-		gen2 = ncat->catfloat.xtable_lens;
-		if((gen->len_dimensions != NULL) ||
-						(gen2->len_dimensions != NULL)){
-			NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s and %s must one dimensional arrays:ignoring",
-				error_lead,NhlNctXTable,NhlNctXTableLengths);
-			ncat->catfloat.xtable = NULL;
-			ncat->catfloat.xtable_lens = NULL;
-		}
-		else if(gen->num_dimensions != gen2->num_dimensions){
-			NhlPError(FATAL,E_UNKNOWN,
-		"%s:%s and %s must be arrays of the same length:ignoring",
-				error_lead,NhlNctXTable,NhlNctXTableLengths);
-			ncat->catfloat.xtable = NULL;
-			ncat->catfloat.xtable_lens = NULL;
-		}
-		else{
-			ncat->catfloat.xtable = _NhlCopyGenArray(gen,True);
-			ncat->catfloat.xtable_lens =_NhlCopyGenArray(gen2,True);
-		}
-	}
-	else if((ncat->catfloat.xtable != NULL) ||
-					(ncat->catfloat.xtable_lens != NULL)){
-		NhlPError(FATAL,E_UNKNOWN,
-			"%s:%s and %s must be set together:ignoring",
-				error_lead,NhlNctXTable,NhlNctXTableLengths);
-		ncat->catfloat.xtable = NULL;
-		ncat->catfloat.xtable_lens = NULL;
-	}
-
-	/*
-	 * Set Max's and Min's
-	 */
-	if(!ncat->catfloat.max_x_set || !ncat->catfloat.min_x_set){
-		int	*lens,i,j;
-		float	**xvals,xmax,xmin;
-
-		if(ncat->catfloat.xtable != NULL){
-
-			xvals = (float**)ncat->catfloat.xtable->data;
-			xmax = xmin = **xvals;
-			lens = (int*)ncat->catfloat.xtable_lens->data;
-			for(i=0;i < ncat->catfloat.xtable->num_dimensions;i++){
-				float	*xvect;
-
-				xvect = xvals[i];
-				for(j=0;j < lens[i];j++){
-					xmax = MAX(xvect[j],xmax);
-					xmin = MIN(xvect[j],xmin);
-				}
-			}
-
-		}
-		else{
-			xmax = xmin = 1.0;
-			lens = (int*)ncat->catfloat.ytable_lens->data;
-			for(i=0;i<ncat->catfloat.ytable_lens->num_dimensions;
-									i++)
-				xmax = MAX(xmax,lens[i]);
-		}
-
-		if(!ncat->catfloat.max_x_set)
-			ncat->catfloat.max_x = xmax;
-		if(!ncat->catfloat.min_x_set)
-			ncat->catfloat.min_x = xmin;
-	}
-
-	if(!ncat->catfloat.max_y_set || !ncat->catfloat.min_y_set){
-		int	*lens,i,j;
-		float	**yvals,ymax,ymin;
-		yvals = (float**)ncat->catfloat.ytable->data;
-		ymax = ymin = **yvals;
-		lens = (int*)ncat->catfloat.ytable_lens->data;
-		for(i=0;i < ncat->catfloat.ytable->num_dimensions;i++){
-			float	*yvect;
-
-			yvect = yvals[i];
-			for(j=0;j < lens[i];j++){
-				ymax = MAX(yvect[j],ymax);
-				ymin = MIN(yvect[j],ymin);
-			}
-		}
-
-		if(!ncat->catfloat.max_y_set)
-			ncat->catfloat.max_y = ymax;
-		if(!ncat->catfloat.min_y_set)
-			ncat->catfloat.min_y = ymin;
-	}
-
-	return ret;
-}
+#undef CHECK_TABLES
+#undef FREE_TABLES
+#undef CHECK_MINMAX
+#undef INIT_FUNC
 
 /*
  * Function:	CoordArrTableInitialize
