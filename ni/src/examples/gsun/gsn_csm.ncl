@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.153 2004-01-17 00:25:20 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.154 2004-01-23 17:26:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4695,7 +4695,7 @@ begin
           set_attr(res2,     "vpYF",0.9)
         end if
         zmeans2 = dim_avg(datanew)
-        if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
+        if(min(zmeans2).le.0.or.max(zmeans2).ge.0)
           nmeans = dimsizes(zmeans2)
           zmeans = new((/2,nmeans/),typeof(zmeans2))
           zmeans(0,:) = zmeans2
