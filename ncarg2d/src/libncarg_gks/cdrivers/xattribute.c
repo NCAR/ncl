@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.4 1994-06-27 15:51:52 boote Exp $
+ *	$Id: xattribute.c,v 1.5 1996-01-12 21:13:09 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -597,6 +597,10 @@ update_gcs
 	return;
 }
 
+extern void
+X11_private_color(
+	Xddp	*xi
+);
 
 int
 X11_SetColorRepresentation
@@ -622,8 +626,9 @@ X11_SetColorRepresentation
 	Pixeltype	*color_pal = xi->color_pal;
 	int		*color_info = xi->color_info;
 	XddpColorStatus	*color_status = xi->color_status;
+	Boolean		*color_def = xi->color_def;
 	float		color_error = 0;
-	int		i;
+	int		i,xindx;
 	
 
 	if (index > (MAX_COLORS - 1)) {
@@ -643,25 +648,36 @@ X11_SetColorRepresentation
 				XFreeColors(xi->dpy,xi->cmap,
 				&color_status[color_info[index]].xpixnum,1,0);
 			}
-			else{
-				xi->mycmap_cells--;
-			}
+			color_def[color_status[color_info[index]].xpixnum] =
+									False;
+			xi->mycmap_cells--;
 		}
+		color_info[index] = -1;
 	}
 
-	if(xi->mycmap && !xi->cmap_ro && (xi->mycmap_cells < MAX_COLORS)){
+	if(xi->mycmap && !xi->cmap_ro){
+		/*
+		 * Find open color_status index (i)
+		 */
 		for(i=0;i < MAX_COLORS;i++)
 			if(color_status[i].ref_count == 0)
 				break;
-		xi->mycmap_cells++;
-		color_info[index] = rgbptr->pixel = i;
-		color_status[i].xpixnum = color_pal[index] = i;
+		/*
+		 * Find open X pixel (xindx)
+		 */
+		for(xindx=MAX_COLORS-1;xindx>=0;xindx--)
+			if(!color_def[xindx])
+				break;
+		color_info[index] = i;
+		rgbptr->pixel = xindx;
+		color_status[i].xpixnum = color_pal[index] = xindx;
 		XStoreColor(xi->dpy,xi->cmap,&rgbptr[0]);
 		color_status[i].ref_count = 1;
 		color_status[i].red = rgbptr->red;
 		color_status[i].green = rgbptr->green;
 		color_status[i].blue = rgbptr->blue;
-
+		xi->mycmap_cells++;
+		color_def[xindx] = True;
 	}
 	else if(xi->cmap_ro && XAllocColor(dpy, cmap, &rgbptr[0])){
 		/*
@@ -678,6 +694,15 @@ X11_SetColorRepresentation
 		color_status[i].green = rgbptr->green;
 		color_status[i].blue = rgbptr->blue;
 		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
+		xi->mycmap_cells++;
+		color_def[rgbptr->pixel] = True;
+	}
+	else if(xi->color_model == CM_MIXED){
+		/*
+		 * Color Fault - switch to a private colormap, and retry.
+		 */
+		X11_private_color(xi);
+		return X11_SetColorRepresentation(gksc);
 	}
 	else{
 		/*
@@ -908,4 +933,3 @@ X11_SetViewport
 
 	return(0);
 }
-

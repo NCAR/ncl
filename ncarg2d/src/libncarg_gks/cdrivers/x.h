@@ -1,5 +1,5 @@
 /*
- *	$Id: x.h,v 1.2 1994-06-08 16:57:53 boote Exp $
+ *	$Id: x.h,v 1.3 1996-01-12 21:13:08 boote Exp $
  */
 /*
  *      File:		x.h
@@ -39,5 +39,12 @@ typedef	unsigned long	Pixeltype;
 enum XWorkType_ { XREG = 8, XUSRWIN = 7 };
 
 typedef enum XWorkType_ XWorkType;
+
+typedef enum XColModel_{
+	CM_UNDEFINED = -1,
+	CM_SHARED = 0,
+	CM_PRIVATE = 1,
+	CM_MIXED = 2
+} XColModel;
 
 #endif	/*	_x_h_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: gks.h,v 1.3 1994-06-18 00:09:43 boote Exp $
+ *	$Id: gks.h,v 1.4 1996-01-12 21:13:07 boote Exp $
  */
 /*
  *      File:		gks.h
@@ -147,6 +147,7 @@
 #define	ESCAPE_PAUSE		-1396
 #define	ESCAPE_COLOR_ERROR	-1400
 #define	ESCAPE_PRIVATE_CMAP	-1401
+#define	ESCAPE_COLOR_MODEL	-1402
 
 #endif	/*	_gks_	*/
 

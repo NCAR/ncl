@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.4 1994-06-18 00:09:45 boote Exp $
+ *	$Id: gksc.h,v 1.5 1996-01-12 21:13:08 boote Exp $
  */
 /*
  *      File:		gksc.h
@@ -206,6 +206,7 @@ typedef	struct	GKSC_	{
 #define ERR_INV_INDEX      -218	/* invalid index into GKS wks. ids      */
 #define ERR_MAX_COLOR      -219	/* color index too big                  */
 #define ERR_DIFF_COLOR     -220	/* color is different than requested	*/
+#define ERR_CHNG_CMODEL    -221	/* can't change to requested color model*/
 
 /*
  *  local PostScript output errors.

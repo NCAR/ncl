@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.8 1995-04-29 19:36:54 boote Exp $
+ *	$Id: xcontrol.c,v 1.9 1996-01-12 21:13:10 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -28,6 +28,96 @@
 #include "x_device.h"
 #include "xddi.h"
 
+static void
+free_colors
+(
+	Display		*dpy,
+	Colormap	cmap,
+	XddpColorStatus	color_status[]
+)
+{
+	int		i,j;
+	Pixeltype	free_pixels[MAX_COLORS];
+
+	for (i=0,j=0; i<MAX_COLORS; i++)
+		if(color_status[i].ref_count > 0)
+			free_pixels[j++] = color_status[i].xpixnum;
+
+	XFreeColors(dpy,cmap,free_pixels,j,(Pixeltype)0);
+
+	return;
+}
+
+/*
+ * Function:	X11_private_color
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+X11_private_color
+#ifdef	NeedFuncProto
+(
+	Xddp		*xi
+)
+#else
+(xi)
+	Xddp		*xi;
+#endif
+{
+	XColor		colors[MAX_COLORS];
+	int		i;
+
+	if(xi->mycmap)
+		return;
+
+	/*
+	 * See if we have to use a RO/RW color model
+	 */
+	switch(xi->vis->class){
+		/*
+		 * RO model
+		 */
+		case TrueColor:
+		case StaticColor:
+		case StaticGray:
+
+		xi->cmap = XCopyColormapAndFree(xi->dpy,xi->cmap);
+		xi->cmap_ro = True;
+
+		break;
+
+		/*
+		 * RW model
+		 */
+		default:
+
+		for(i=0;i<MAX_COLORS;i++){
+			colors[i].pixel = i;
+		}
+
+		XQueryColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+		free_colors(xi->dpy,xi->cmap,xi->color_status);
+		xi->cmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
+		XStoreColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+		xi->cmap_ro = False;
+
+		break;
+	}
+
+	xi->mycmap = True;
+	XSetWindowColormap(xi->dpy,xi->win,xi->cmap);
+
+	return;
+}
+
 /*
  * Function:	init_color
  *
@@ -47,19 +137,78 @@ static	void
 init_color
 #ifdef	NeedFuncProto
 (
-	Xddp		*xi,
-	Boolean		create
+	Xddp		*xi
 )
 #else
-(xi,create)
+(xi)
 	Xddp		*xi;
-	Boolean		create;
 #endif
 {
 	int		i;
 	int		fg_indx;
 	XColor		tcolor;
+	XColor		colors[MAX_COLORS];
 	XGCValues	gcv;		/* struc for manip. a GC*/
+
+
+	memset(xi->color_def,0,sizeof(Boolean)*MAX_COLORS);
+	xi->mycmap_cells = 0;
+
+	switch(xi->color_model){
+
+		default:
+		case CM_UNDEFINED:
+
+		if(xi->xwtype == XUSRWIN)
+			xi->color_model = CM_SHARED;
+		else
+			xi->color_model = CM_MIXED;
+
+		case CM_MIXED:
+		case CM_SHARED:
+
+		xi->mycmap = False;
+		xi->cmap_ro = True;
+
+		break;
+
+		case CM_PRIVATE:
+		xi->mycmap = True;
+
+		/*
+		 * See if we have to use a RO/RW color model
+		 */
+		switch(xi->vis->class){
+			/*
+			 * RO model
+			 */
+			case TrueColor:
+			case StaticColor:
+			case StaticGray:
+			xi->cmap_ro = True;
+			xi->cmap = XCopyColormapAndFree(xi->dpy,xi->cmap);
+			break;
+
+			/*
+			 * RW model
+			 */
+			default:
+
+			for(i=0;i<MAX_COLORS;i++){
+				colors[i].pixel = i;
+			}
+	
+			XQueryColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+			XFreeColormap(xi->dpy,xi->cmap);
+			xi->cmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
+								AllocAll);
+			XStoreColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+			xi->cmap_ro = False;
+			break;
+		}
+		XSetWindowColormap(xi->dpy,xi->win,xi->cmap);
+		break;
+	}
 
 	/*
 	 * init background(gks 0) to black and foreground(gks 1) to white.
@@ -67,66 +216,47 @@ init_color
 	tcolor.flags = (DoRed | DoGreen | DoBlue);
 	tcolor.pad = '\0';
 
-	/* rw model */
-	if(xi->mycmap && !xi->cmap_ro){
-		/*
-		 * Background
-		 */
-		tcolor.red = (unsigned short)0;
-		tcolor.green = (unsigned short)0;
-		tcolor.blue = (unsigned short)0;
-		xi->color_info[0] = tcolor.pixel = 0;
-		xi->color_status[0].xpixnum = xi->color_pal[0] = 0;
-		XStoreColor(xi->dpy,xi->cmap,&tcolor);
-		xi->color_status[0].ref_count = 1;
-		xi->color_status[0].red = tcolor.red;
-		xi->color_status[0].green = tcolor.green;
-		xi->color_status[0].blue = tcolor.blue;
-
-		/*
-		 * Foreground
-		 */
-		tcolor.red = (unsigned short)MAX_INTENSITY;
-		tcolor.green = (unsigned short)MAX_INTENSITY;
-		tcolor.blue = (unsigned short)MAX_INTENSITY;
-		xi->color_info[1] = tcolor.pixel = 1;
-		xi->color_status[1].xpixnum = xi->color_pal[1] = 1;
-		XStoreColor(xi->dpy,xi->cmap,&tcolor);
-		xi->color_status[1].ref_count = 1;
-		xi->color_status[1].red = tcolor.red;
-		xi->color_status[1].green = tcolor.green;
-		xi->color_status[1].blue = tcolor.blue;
-	}
-	/* ro model - use if we can */
+	/*
+	 * Background
+	 */
+	tcolor.red = (unsigned short)0;
+	tcolor.green = (unsigned short)0;
+	tcolor.blue = (unsigned short)0;
+	if(xi->cmap_ro)
+		XAllocColor(xi->dpy, xi->cmap, &tcolor);
 	else{
-		/*
-		 * Background
-		 */
-		tcolor.red = (unsigned short)0;
-		tcolor.green = (unsigned short)0;
-		tcolor.blue = (unsigned short)0;
-		XAllocColor(xi->dpy, xi->cmap, &tcolor);
-		xi->color_info[0] = 0;
-		xi->color_status[0].xpixnum = xi->color_pal[0] = tcolor.pixel;
-		xi->color_status[0].ref_count = 1;
-		xi->color_status[0].red = tcolor.red;
-		xi->color_status[0].green = tcolor.green;
-		xi->color_status[0].blue = tcolor.blue;
-
-		/*
-		 * Foreground
-		 */
-		tcolor.red = (unsigned short)MAX_INTENSITY;
-		tcolor.green = (unsigned short)MAX_INTENSITY;
-		tcolor.blue = (unsigned short)MAX_INTENSITY;
-		XAllocColor(xi->dpy, xi->cmap, &tcolor);
-		xi->color_info[1] = 1;
-		xi->color_status[1].xpixnum = xi->color_pal[1] = tcolor.pixel;
-		xi->color_status[1].ref_count = 1;
-		xi->color_status[1].red = tcolor.red;
-		xi->color_status[1].green = tcolor.green;
-		xi->color_status[1].blue = tcolor.blue;
+		tcolor.pixel = BlackPixelOfScreen(xi->scr);
+		XStoreColor(xi->dpy,xi->cmap,&tcolor);
 	}
+	xi->color_info[0] = 0;
+	xi->color_status[0].xpixnum = xi->color_pal[0] = tcolor.pixel;
+	xi->color_status[0].ref_count = 1;
+	xi->color_status[0].red = tcolor.red;
+	xi->color_status[0].green = tcolor.green;
+	xi->color_status[0].blue = tcolor.blue;
+	xi->color_def[tcolor.pixel] = True;
+	xi->mycmap_cells++;
+
+	/*
+	 * Foreground
+	 */
+	tcolor.red = (unsigned short)MAX_INTENSITY;
+	tcolor.green = (unsigned short)MAX_INTENSITY;
+	tcolor.blue = (unsigned short)MAX_INTENSITY;
+	if(xi->cmap_ro)
+		XAllocColor(xi->dpy, xi->cmap, &tcolor);
+	else{
+		tcolor.pixel = WhitePixelOfScreen(xi->scr);
+		XStoreColor(xi->dpy,xi->cmap,&tcolor);
+	}
+	xi->color_info[1] = 1;
+	xi->color_status[1].xpixnum = xi->color_pal[1] = tcolor.pixel;
+	xi->color_status[1].ref_count = 1;
+	xi->color_status[1].red = tcolor.red;
+	xi->color_status[1].green = tcolor.green;
+	xi->color_status[1].blue = tcolor.blue;
+	xi->color_def[tcolor.pixel] = True;
+	xi->mycmap_cells++;
 
 	/*
 	 * Set all remaining colors in the gks colormap to the same color
@@ -148,37 +278,23 @@ init_color
 	gcv.background = xi->color_pal[0];
 	gcv.foreground = xi->color_pal[1];
 
-	if(create){
-		xi->line_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-		xi->fill_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-		xi->marker_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-		xi->cell_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-		xi->text_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-	}
-	else{
-		XChangeGC(xi->dpy,xi->line_gc,(GCForeground|GCBackground),&gcv);
-		XChangeGC(xi->dpy,xi->fill_gc,(GCForeground|GCBackground),&gcv);
-		XChangeGC(xi->dpy,xi->marker_gc,(GCForeground|GCBackground),
+	xi->line_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
 									&gcv);
-		XChangeGC(xi->dpy,xi->cell_gc,(GCForeground|GCBackground),&gcv);
-		XChangeGC(xi->dpy,xi->text_gc,(GCForeground|GCBackground),&gcv);
-	}
+	xi->fill_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->marker_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->cell_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->text_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
 
 	/*
 	 * create a background gc (gc for drawing in background color)
 	 */
 	gcv.background = xi->color_pal[1];
 	gcv.foreground = xi->color_pal[0];
-	if(create)
-		xi->bg_gc = XCreateGC(xi->dpy,xi->win,
-					(GCForeground|GCBackground),&gcv);
-	else
-		XChangeGC(xi->dpy,xi->bg_gc,(GCForeground|GCBackground),&gcv);
+	xi->bg_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),&gcv);
 
 	/*
 	 * If the index in these vars change, then the corresponding GC
@@ -190,33 +306,6 @@ init_color
 	xi->cell_index = 1;
 	xi->text_index = 1;
 	xi->bg_index = 1;
-
-	return;
-}
-
-static void
-free_color
-#ifdef	NeedFuncProto
-(
-	Display		*dpy,
-	Colormap	cmap,
-	XddpColorStatus	color_status[]
-)
-#else
-(dpy,cmap,color_status)
-	Display		*dpy,
-	Colormap	cmap,
-	XddpColorStatus	color_status[]
-#endif
-{
-	int		i,j;
-	Pixeltype	free_pixels[MAX_COLORS];
-
-	for (i=0,j=0; i<MAX_COLORS; i++)
-		if(color_status[i].ref_count > 0)
-			free_pixels[j++] = color_status[i].xpixnum;
-
-	XFreeColors(dpy,cmap,free_pixels,j,(Pixeltype)0);
 
 	return;
 }
@@ -546,9 +635,7 @@ X11_OpenWorkstation
 	xi->scr = xwa.screen;
 	xi->vis = xwa.visual;
 	xi->cmap = xwa.colormap;
-	xi->mycmap = False;
-	xi->cmap_ro = True;
-	xi->mycmap_cells = 0;
+	xi->color_model = (XColModel)iptr[2];
 
 	TransformSetWindow(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
 	TransformSetViewport(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
@@ -582,7 +669,7 @@ X11_OpenWorkstation
 
 	xi->depth = xwa.depth;
 
-	init_color(xi,TRUE);
+	init_color(xi);
 
 	xi->marker_size = 1.0;
 
@@ -777,45 +864,13 @@ X11_Esc
 		break;
 
 	case	ESCAPE_PRIVATE_CMAP:
-		if(xi->cmap_ro)
-			free_color(xi->dpy,xi->cmap,xi->color_status);
 
-		if(xi->mycmap)
-			XFreeColormap(xi->dpy,xi->cmap);
-		/*
-		 * See if we have to use a RO/RW color model
-		 */
-		switch(xi->vis->class){
-			/*
-			 * RO model
-			 */
-			case TrueColor:
-			case StaticColor:
-			case StaticGray:
-				xi->cmap = XCreateColormap(xi->dpy,xi->win,
-							xi->vis,AllocNone);
-				xi->mycmap = True;
-				xi->cmap_ro = True;
-
-				break;
-
-			/*
-			 * RW model
-			 */
-			default:
-				xi->cmap = XCreateColormap(xi->dpy,xi->win,
-							xi->vis,AllocAll);
-				xi->mycmap = True;
-				xi->cmap_ro = False;
-				xi->mycmap_cells = 0;
-
-				break;
+		if(xi->mycmap){
+			xi->color_model = CM_PRIVATE;
+			break;
 		}
-		
-		init_color(xi,FALSE);
-		XSetWindowColormap(xi->dpy,xi->win,xi->cmap);
-		XSetWindowBackground(xi->dpy,xi->win,xi->color_pal[0]);
-		XClearWindow(xi->dpy,xi->win);
+
+		X11_private_color(xi);
 		break;
 
 	case	ESCAPE_COLOR_ERROR:
@@ -832,6 +887,57 @@ X11_Esc
 		xi->percent_colerr = tint;
 		xi->pcerr_sqr = (float)tint*((float)MAX_INTEN_DIST/(float)100);
 		xi->pcerr_sqr *= xi->pcerr_sqr;
+		break;
+
+	case	ESCAPE_COLOR_MODEL:
+		/* first token is wkid */
+		tstr = strtok(sptr," ");
+		/* second token is data */
+		tstr = strtok(NULL," ");
+		if(tstr == NULL)
+			return ERR_INV_DATA;
+		tint = atoi(tstr);
+		if((tint < 0 )|| (tint > 2))
+			return ERR_INV_DATA;
+		if(tint == xi->color_model){
+			/*
+			 * noop - no change.
+			 */
+			;
+		}
+		else if(tint == CM_MIXED){
+			/*
+			 * setting to mixed doesn't immediately change anything.
+			 * It just means GSCR reacts differently on a
+			 * color fault.
+			 */
+			xi->color_model = tint;
+		}
+		else if(tint == CM_PRIVATE){
+			/*
+			 * Moving to CM_PRIVATE.
+			 * Allocate Colormap, and copy default colormap into
+			 * it to minimize flashing.
+			 * This is the same as a color fault in
+			 * SetColorRepresentation for CM_MIXED.
+			 */
+			X11_private_color(xi);
+			xi->color_model = tint;
+		}
+		else if(xi->mycmap){
+			/*
+			 * Can't go back to shared once we allocate a private
+			 * colormap.
+			 */
+			return ERR_CHNG_CMODEL;
+		}
+		else{
+			/*
+			 * moving to shared from mixed without already
+			 * having allocated a cmap - no work.
+			 */
+			xi->color_model = tint;
+		}
 		break;
 
 	default:
