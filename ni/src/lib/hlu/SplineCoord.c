@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.8 1998-10-28 00:46:57 dbrown Exp $
+ *      $Id: SplineCoord.c,v 1.9 2001-03-27 01:38:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -143,6 +143,11 @@ NhlStatus *ystatus)
 	int sample;
 	NhlErrorTypes	xret = NhlNOERROR;
 	NhlErrorTypes	yret = NhlNOERROR;
+	float tmin,tmax;
+	char *func = "_NhlCreateSplineCoordApprox";
+	char *nonmonotonic_error =
+		"%s: input %s coordinate array is non-monotonic";
+	char *approx_error = "%s: Attempt to create spline approximation for %s axis failed: consider adjusting %s value";
 
 	thedat->xstatus = *xstatus = NhlNONE;
 	thedat->ystatus = *ystatus = NhlNONE;
@@ -151,7 +156,18 @@ NhlStatus *ystatus)
 			(unsigned)((MAX(xsample,ysample))*sizeof(float)*(MAX(nx,ny))+1));
 	thedat->y_use_log = 0;
 	thedat->x_use_log = 0;
-	if(nx > 2)  {
+
+	/* 
+	 * Test the input coordinates to make sure they are monotonic
+	 */
+	xdirection = GetOrdering(x,nx,&tmin,&tmax);
+	if (xdirection == NhlNONMONOTONIC) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  nonmonotonic_error,func,"x");
+		xret = NhlFATAL;
+		*xstatus = NhlNONE;
+	}
+	else if(nx > 2)  {
 		sample = xsample;
 		thedat->x_orig_inverse = (float*)NhlMalloc((unsigned)
 					sizeof(float)*nx);
@@ -182,6 +198,8 @@ NhlStatus *ystatus)
 		}
 
 		if(xdirection_int == NhlNONMONOTONIC) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,nonmonotonic_error,
+				  func,"x_int");
 			thedat->nx_inverse = 0;
 			NhlFree(thedat->x_orig_inverse);
 			thedat->x_orig_inverse = NULL;
@@ -189,8 +207,8 @@ NhlStatus *ystatus)
 			thedat->fx_orig_inverse = NULL;
 			NhlFree(thedat->x_coefs_inverse);
 			thedat->x_coefs_inverse = NULL;
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
 			xret = NhlWARNING;
+			thedat->xstatus = *xstatus = NhlNONE;
 		} else
 		if((xdirection_int == NhlINCREASING)
 			||(xdirection_int == NhlDECREASING)){
@@ -258,7 +276,9 @@ NhlStatus *ystatus)
 				NhlFree(thedat->x_coefs_forward);
 				thedat->x_coefs_forward = NULL;
 				xret = NhlWARNING;
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  approx_error,func,
+					  "X","trXTensionF");
 			}
 			if((xdirection == NhlDECREASING)||
 					(xdirection == NhlINCREASING)) {
@@ -287,7 +307,17 @@ NhlStatus *ystatus)
 		xret = NhlFATAL;
 		*xstatus = NhlNONE;
 	}
-	if(ny > 2) {
+	/* 
+	 * Test the input coordinates to make sure they are monotonic
+	 */
+	ydirection = GetOrdering(y,ny,&tmin,&tmax);
+	if (ydirection == NhlNONMONOTONIC) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  nonmonotonic_error,func,"y");
+		yret = NhlFATAL;
+		*ystatus = NhlNONE;
+	}
+	else if(ny > 2) {
 		sample = ysample;
 		thedat->y_orig_inverse = (float*)NhlMalloc((unsigned)
 					sizeof(float)*ny);
@@ -317,7 +347,8 @@ NhlStatus *ystatus)
 		}
 
 		if(ydirection_int == NhlNONMONOTONIC) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox for the y axis");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,nonmonotonic_error,
+				  func,"y_int");
 			thedat->ny_inverse = 0;
 			NhlFree(thedat->y_orig_inverse);
 			thedat->y_orig_inverse = NULL;
@@ -399,7 +430,9 @@ ERROR
 				NhlFree(thedat->y_coefs_forward);
 				thedat->y_coefs_forward = NULL;
 				thedat->ystatus = *ystatus = NhlINVERSE;
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  approx_error,func,
+					  "Y","trYTensionF");
 			}
 			if((ydirection == NhlDECREASING)||
 					(ydirection == NhlINCREASING)) {
