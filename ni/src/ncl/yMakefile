@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.76 2000-03-10 20:33:57 ethan Exp $
+#      $Id: yMakefile,v 1.77 2000-12-05 17:18:53 haley Exp $
 #
 #########################################################################
 #									#
@@ -42,7 +42,7 @@ ARCH_LIBS	=	-lPW
 HACKOBJS	=	hphack.o
 #endif
 
-#ifdef LINUX
+#if defined(linux) || defined(i386)
 EXTRA_CLDFLAGS	= -rdynamic
 #endif
 
