@@ -151,6 +151,7 @@ C
 C
 C  Find the extreme values.
 C
+      XMN =  X(1)
       XMX =  X(1)
       YMN =  Y(1)
       YMX =  Y(1)
