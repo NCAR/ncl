@@ -26,6 +26,9 @@ int SHADE2(float*,float*,int*,int*,int*,int*);
 int CFILL(float*,float*,int*,int*,int*,int*);
 void COLOR();
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 int main()
 {
 	int map[LMAP];		/* map data */
@@ -39,7 +42,9 @@ int main()
 /*
 ** Open GKS.
 */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
 ** Turn off the clipping indicator.
 */
@@ -238,7 +243,9 @@ int main()
 /*
 ** Close GKS.
 */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 /*
 ** Done.
 */

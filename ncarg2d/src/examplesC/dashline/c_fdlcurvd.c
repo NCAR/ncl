@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fdlcurvd.c,v 1.2 1994-06-21 14:59:52 haley Exp $
+ *	$Id: c_fdlcurvd.c,v 1.3 1994-06-24 22:25:54 haley Exp $
  */
 
 #include <stdio.h>
@@ -21,8 +21,8 @@ main()
 /*
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
-	gopne_gks ("stdout",0);
-	gopne_ws (WKID, NULL, WSTYPE);
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
 	gactivate_ws(WKID);
 /*
  * PURPOSE                To provide a simple demonstration of the
