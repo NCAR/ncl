@@ -1,5 +1,5 @@
 /*
-**      $Id: cn13c.c,v 1.2 1995-11-28 17:35:07 haley Exp $
+**      $Id: cn13c.c,v 1.3 1995-12-01 15:39:54 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -45,10 +45,9 @@
 main()
 {
     float x[NCLS*NCLS], y[NCLS*NCLS],rlat[NCLS*NCLS], rlon[NCLS*NCLS];
-    float dval, oor;
-    int icra[NCLS][NCLS], count[2];
+    float dval, oor,  icra[NCLS][NCLS], miss_val = 1.e12;
     int appid, workid, dataid, cnid, mpid;
-    int srlist, i, j, l, status;
+    int srlist, i, j, l, status, count[2];
     NhlErrorTypes ierr;
 /*
  * Declare variables for defining color map.
@@ -143,14 +142,14 @@ main()
     l = 0;
     for( i = 0; i < NCLS; i++ ) {
         for( j = 0; j < NCLS; j++ ) {
-            if (rlat[l] == oor) {
-                icra[j][i] = 0;
+			if( rlat[l] == oor ) {
+                icra[j][i] = miss_val;
             }
             else {
                 dval=.25*(1.+cos(DTOR*10.*rlat[l]))+
-                     .25*(1.+sin(DTOR*10.*rlon[l]))*cos(DTOR*rlat[l]);
-                icra[j][i] = max(2,min(NCOLORS-1,
-                                 2+(int)(dval*(float)(NCOLORS-2))));
+                  .25*(1.+sin(DTOR*10.*rlon[l]))*cos(DTOR*rlat[l]);
+                icra[j][i] = 2.+dval*(float)(NCOLORS-2);
+                if( icra[j][i] != miss_val) icra[j][i] = min((float)(NCOLORS-1),icra[j][i] );
             }
             l++;
         }
@@ -160,7 +159,8 @@ main()
  */
     count[0] = count[1] = NCLS;
     NhlRLClear(srlist);
-    NhlRLSetMDIntegerArray(srlist,NhlNsfDataArray,&icra[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&icra[0][0],2,(int *)count);
+    NhlRLSetFloat(srlist,NhlNsfMissingValueV,miss_val);
     NhlCreate(&dataid,"DataItem",NhlscalarFieldClass,appid,srlist);
 /*
  * Create contour object.

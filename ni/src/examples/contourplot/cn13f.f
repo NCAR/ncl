@@ -1,5 +1,5 @@
 C
-C      $Id: cn13f.f,v 1.1 1995-11-28 17:35:08 haley Exp $
+C      $Id: cn13f.f,v 1.2 1995-12-01 15:39:54 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -33,8 +33,9 @@ C
       parameter(NCLS=300,NC=NCLS*NCLS,DTOR=.017453292519943,NCOLORS=66)
 
       real x(NC), y(NC),rlat(NC), rlon(NC)
-      real dval, oor
-      integer icra(NCLS,NCLS), count(2)
+      real icra(NCLS,NCLS), dval, oor, miss_val
+      data miss_val/1.e12/
+      integer count(2)
       integer appid, workid, dataid, cnid, mpid
       integer srlist, i, j, l, status, ierr, ierrx, ierry
 C
@@ -140,12 +141,14 @@ C
       do 30 i=1,NCLS
          do 25 j=1,NCLS
             if (rlat(l) .eq. oor) then
-               icra(i,j) = 0
+               icra(i,j) = miss_val
             else
                dval=.25*(1.+cos(DTOR*10.*rlat(l)))+
      +              .25*(1.+sin(DTOR*10.*rlon(l)))*cos(DTOR*rlat(l))
-               icra(i,j) = max(2,min(NCOLORS-1,
-     +              2+int(dval*real(NCOLORS-2))))
+               icra(i,j) = 2.+dval*real(NCOLORS-2)
+               if( icra(i,j).ne.miss_val) then
+                  icra(i,j) = min(real(NCOLORS-1),icra(i,j))
+               endif
             endif
             l = l+1
  25      continue
@@ -156,8 +159,9 @@ C
       count(1) = NCLS
       count(2) = NCLS
       call NhlFRLClear(srlist)
-      call NhlFRLSetMDIntegerArray(srlist,'sfDataArray',icra,2,count,
+      call NhlFRLSetMDFloatArray(srlist,'sfDataArray',icra,2,count,
      +     ierr)
+      call NhlFRLSetFloat(srlist,'sfMissingValueV',miss_val,ierr)
       call NhlFCreate(dataid,'DataItem',nhlfscalarfieldclass,appid,
      +     srlist,ierr)
 C

@@ -18,34 +18,18 @@
 ;                how to do inverse map tranformations and raster contour
 ;                plots.
 ;
+;                Notice how quick the NCL version of this example 
+;                runs because of the use of NCL's array arithmetic.
 
 begin
 
-  function max(x:float,y:float)
-  begin
-    if ( x.gt.y ) then
-      return(x)
-    else
-      return(y)
-    end if
-  end
-
-  function min(x:float,y:float)
-  begin
-    if ( x.lt.y ) then
-      return(x)
-    else
-      return(y)
-    end if
-  end
       
   NCLS = 300
-  NC = NCLS*NCLS
   NCOLORS = 66
   DTOR = .017453292519943
-  icra = new((/NCLS,NCLS/),integer)
-  x = new((/NC/),float)
-  y = new((/NC/),float)
+  icra = new((/NCLS,NCLS/),float,1.e12)
+  x = new((/NCLS,NCLS/),float,1.e12)
+  y = new((/NCLS,NCLS/),float,1.e12)
 ;
 ; Declare variable for defining color map.
 ;
@@ -116,36 +100,31 @@ begin
 ; Calculate nice range of x,y values, and then get their
 ; corresponding lon,lat values.
 ;
-  l = 0
+  ii = new((/NCLS,NCLS/),float)
+  ii!0 = "x"
+  ii!1 = "y"
   do i = 0,NCLS-1
-    do j = 0,NCLS-1
-      x(l) = .05+.90*(i+.5)/NCLS
-      y(l) = .05+.90*(j+.5)/NCLS
-      l=l+1
-    end do
+    ii(i,:) = i
   end do
+
+  x = .05+.90*(ii(y | :,x | : )+.5)/NCLS
+  y = .05+.90*(ii+.5)/NCLS
 
   NhlNDCToData(mpid,x,y,x,y)
 ;
 ; Now create a cell array.
 ;
-  l = 0
-  do i = 0,NCLS-1
-    do j = 0,NCLS-1
-      if (x(l) .eq. 1.e12) then
-        icra(j,i) = 0
-      else
-        dval=.25*(1.+cos(DTOR*10.*y(l)))+.25*(1.+sin(DTOR*10.*x(l)))*cos(DTOR*y(l))
-        icra(j,i) = floattoint(max(2,floattoint(min(NCOLORS-1,2+floattoint(dval*(NCOLORS-2))))))
-      end if
-      l = l+1
-    end do
-  end do
+  icra = 2 + ((.25*(1.+cos(DTOR*10.* y))+.25*(1.+sin(DTOR*10.*x ))*cos(DTOR* y))*(NCOLORS-2))
+
+print(icra)
+  icra = icra < NCOLORS-1
+print(icra)
 ;
 ; Create a scalar field object.
 ;
   dataid = create "DataItem" scalarFieldClass defaultapp
-    "sfDataArray" : icra(:,:)
+    "sfDataArray" : icra
+    "sfMissingValueV" : icra@_FillValue
   end create
 ;
 ; Create a contour object
@@ -153,6 +132,7 @@ begin
   cnid = create "ContourPlot" contourPlotClass wid
     "cnScalarFieldData":      dataid
   end create
+
 ;
 ; Draw MapPlot on ContourPlot.
 ;
@@ -163,4 +143,8 @@ begin
 ; Destroy the workstation object and exit.
 ;
   delete(wid)
+  delete(x)
+  delete(y)
+  delete(icra)
+  delete(ii)
 end
