@@ -1,0 +1,146 @@
+c -----------------------------------------------------------
+C NCLFORTSTART
+      SUBROUTINE DRCM2POINTS(NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO,XMSG,OPT, 
+     +     IER)
+      IMPLICIT NONE
+      INTEGER NXI,NYI,NXYO,IER
+      DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI),OPT
+      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO),XMSG
+C NCLEND
+
+C This is written  with GNU f77 acceptable extensions
+c .   This could be improved considerably with f90
+
+c NCL:  fo = rcm2points(lat2d,lon2d,fi, lat, lon iopt)
+c                        yi    xi   fi  yo   xo
+c
+c            fo is the same size xo, yo and same type as "fi"
+c            xmsg = fi@_FillValue
+c            opt unused option
+c
+c            The NCL wrapper should allow for multiple datasets
+c            so the user need only make one call to the function.
+
+c perform 2D interpolation allowing for missing data:  nothing fancy
+
+c nomenclature:
+c .   nxi,nyi - lengths of xi,yi and dimensions of fi (must be >= 2)
+c .   xi      - coordinates of fi (eg, lon [2D] )
+c .   yi      - coordinates of fi (eg, lat [2D] )
+c .   fi      - functional input values [2D]
+c .   nxyo    - number of output points
+c .   xo      - lon coordinates of fo (eg, lon [1D])
+c .   yo      - lat coordinates of fo (eg, lat [1D])
+c .   fo      - functional output values [interpolated]
+c .   xmsg    - missing code
+c .   opt     - unused
+c .   ier     - error code
+c .             =0;   no error
+c .             =1;   not enough points in input/output array
+c .             =2/3; xi or yi are not monotonically increasing
+c .             =4/5; xo or yo are not monotonically increasing
+c
+c                              local
+      INTEGER NX,NY,NXY,NEXACT,IX,IY,M,N,NW,NER,K
+      DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
+      DOUBLE PRECISION DGCDIST
+c                              error checking
+      IER = 0
+      IF (NXI.LE.1 .OR. NYI.LE.1 .OR. NXYO.LE.0) THEN
+          IER = 1
+          RETURN
+      END IF
+      IF (IER.NE.0) RETURN
+
+      DO NY = 1,NYI
+          CHKLAT(NY) = YI(1,NY)
+c c c    print *,"chklat: ny=",ny,"  chklat=",chklat(ny)
+      END DO
+      CALL DMONOINC(CHKLAT,NYI,IER,NER)
+      IF (IER.NE.0) RETURN
+
+      DO NX = 1,NXI
+          CHKLON(NX) = XI(NX,1)
+c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
+      END DO
+      CALL DMONOINC(CHKLAT,NYI,IER,NER)
+      IF (IER.NE.0) RETURN
+
+      K = 2
+c c c k = opt
+
+      DO NXY = 1,NXYO
+          FO(NXY) = XMSG
+      END DO
+c                              main loop [exact matches]
+      NEXACT = 0
+      DO NXY = 1,NXYO
+
+          DO IY = 1,NYI
+              DO IX = 1,NXI
+                  IF (XO(NXY).EQ.XI(IX,IY) .AND.
+     +                YO(NXY).EQ.YI(IX,IY)) THEN
+                      FO(NXY) = FI(IX,IY)
+                      NEXACT = NEXACT + 1
+                      GO TO 10
+                  END IF
+              END DO
+          END DO
+
+   10     CONTINUE
+      END DO
+
+c c c print *, "nexact=",nexact
+c                              main loop [interpolation]
+      DO NXY = 1,NXYO
+          IF (FO(NXY).EQ.XMSG) THEN
+
+              DO IY = 1,NYI - K
+                  DO IX = 1,NXI - K
+                      IF (XO(NXY).GE.XI(IX,IY) .AND.
+     +                    XO(NXY).LE.XI(IX+K,IY) .AND.
+     +                    YO(NXY).GE.YI(IX,IY) .AND.
+     +                    YO(NXY).LE.YI(IX,IY+K)) THEN
+
+                          W(1,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                             YI(IX,IY),XI(IX,IY),2))**2
+                          W(2,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                             YI(IX+K,IY),XI(IX+K,IY),2))**2
+                          W(1,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                             YI(IX,IY+K),XI(IX,IY+K),2))**2
+                          W(2,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                             YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
+
+                          FW(1,1) = FI(IX,IY)
+                          FW(2,1) = FI(IX+K,IY)
+                          FW(1,2) = FI(IX,IY+K)
+                          FW(2,2) = FI(IX+K,IY+K)
+
+                          NW = 0
+                          SUMF = 0.0D0
+                          SUMW = 0.0D0
+                          DO N = 1,2
+                              DO M = 1,2
+                                  IF (FW(M,N).NE.XMSG) THEN
+                                      SUMF = SUMF + FW(M,N)*W(M,N)
+                                      SUMW = SUMW + W(M,N)
+                                      NW = NW + 1
+                                  END IF
+                              END DO
+                          END DO
+c                                             nw >=3 arbitrary
+                          IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
+                              FO(NXY) = SUMF/SUMW
+                          END IF
+                          GO TO 20
+                      END IF
+                  END DO
+              END DO
+
+   20         CONTINUE
+          END IF
+
+      END DO
+
+      RETURN
+      END
