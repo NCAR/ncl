@@ -1,9 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:28:39 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-10-31 03:54:50 haley Exp $
 #
 
-CSRCS = c_fngngdts.c c_fngwsym.c
+EXAMPLES = c_fngngdts.c c_fngwsym.c
 
-GENERIC_SRCS = $(CSRCS)
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
