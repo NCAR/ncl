@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.6 1995-03-22 18:20:21 haley Exp $
+C     $Id: mp02f.f,v 1.7 1995-04-01 00:43:15 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -19,10 +19,10 @@ C      Date:            Tue Jan 24 10:08:49 MST 1995
 C
 C      Description:     Demonstrates individual control of MapPlot areas
 C
-      external nhlfapplayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfmapplotlayerclass
+      external NhlFAppLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFMapPlotLayerClass
       integer appid,wid,mapid
       integer rlist
 C
@@ -47,7 +47,7 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
@@ -55,26 +55,26 @@ C working directory. The resource file sets most of the Contour
 C resources that remain fixed throughout the life of the Contour
 C object.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid,'mp02',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'mp02',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./mp02f.ncgm',ierr)
-         call nhlfcreate(wid,'mp02Work',nhlfncgmworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./mp02f.ncgm',ierr)
+         call NhlFCreate(wid,'mp02Work',NhlFNcgmWorkstationLayerClass,0,
      1        rlist,ierr)
       else 
 C
 C Create an X workstation
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
-         call nhlfcreate(wid,'mp02Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
+         call NhlFCreate(wid,'mp02Work',NhlFXWorkstationLayerClass,0,
      1     rlist,ierr)
       endif
 C
@@ -83,40 +83,40 @@ C Outlines are on by default turn fill on.
 C By default the geophysical boundary set is used both for outline and
 C fill.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'ovTitleDisplayMode','always',ierr)
-      call nhlfrlsetstring(rlist,'tiMainString','mp02f - Frame 1',
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'ovTitleDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 1',
      1    ierr)
-      call nhlfrlsetstring(rlist,'mpFillOn','TRUE',ierr)
-      call nhlfrlsetstring(rlist,'mpProjection','orthographic',ierr)
-      call nhlfrlsetfloat(rlist,'mpCenterLatF',10.0,ierr)
-      call nhlfrlsetfloat(rlist,'mpCenterLonF',-90.0,ierr)
-      call nhlfrlsetfloat(rlist,'mpCenterRotF',45.0,ierr)
-      call nhlfrlsetstring(rlist,'mpLimitMode','latlon',ierr)
-      call nhlfrlsetfloat(rlist,'mpMinLatF',-60.0,ierr)
-      call nhlfrlsetfloat(rlist,'mpMaxLatF',60.0,ierr)
-      call nhlfrlsetfloat(rlist,'mpMinLonF',-135.0,ierr)
-      call nhlfrlsetfloat(rlist,'mpMaxLonF',-45.0,ierr)
+      call NhlFRLSetstring(rlist,'mpFillOn','TRUE',ierr)
+      call NhlFRLSetstring(rlist,'mpProjection','orthographic',ierr)
+      call NhlFRLSetfloat(rlist,'mpCenterLatF',10.0,ierr)
+      call NhlFRLSetfloat(rlist,'mpCenterLonF',-90.0,ierr)
+      call NhlFRLSetfloat(rlist,'mpCenterRotF',45.0,ierr)
+      call NhlFRLSetstring(rlist,'mpLimitMode','latlon',ierr)
+      call NhlFRLSetfloat(rlist,'mpMinLatF',-60.0,ierr)
+      call NhlFRLSetfloat(rlist,'mpMaxLatF',60.0,ierr)
+      call NhlFRLSetfloat(rlist,'mpMinLonF',-135.0,ierr)
+      call NhlFRLSetfloat(rlist,'mpMaxLonF',-45.0,ierr)
 C
 C Highlight selected countries using their "political" color.
 C
-      call nhlfrlsetstringarray(rlist,'mpFillAreaSpecifiers',
+      call NhlFRLSetstringarray(rlist,'mpFillAreaSpecifiers',
      1      fill_specs,7,ierr)
       
-      call nhlfcreate(mapid,'Map0',nhlfmapplotlayerclass,wid,rlist,ierr)
-      call nhlfdraw(mapid,ierr)
-      call nhlfframe(wid,ierr)
+      call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
+      call NhlFDraw(mapid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Individually outline some other countries and some US states.
 C
-      call nhlfrlclear(rlist)  
-      call nhlfrlsetstring(rlist,'tiMainString','mp02f - Frame 2',ierr)
-      call nhlfrlsetstringarray(rlist,'mpOutlineSpecifiers',
+      call NhlFRLClear(rlist)  
+      call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 2',ierr)
+      call NhlFRLSetstringarray(rlist,'mpOutlineSpecifiers',
      1    outline_specs,6,ierr)
-      call nhlfsetvalues(mapid,rlist,ierr)
+      call NhlFSetValues(mapid,rlist,ierr)
 
-      call nhlfdraw(mapid,ierr)
-      call nhlfframe(wid,ierr)
+      call NhlFDraw(mapid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Turn off the base geophysical set for outlines and fill, leaving only
 C the specified areas.
@@ -131,18 +131,18 @@ C Canada Lakes are drawn using mpInlandWaterFillColor, which is, by
 C default, set to the same color as mpOceanFillColor.
 C
       fill_specs(5) = 'canada*'
-      call nhlfrlclear(rlist)  
-      call nhlfrlsetstring(rlist,'tiMainString','mp02f - Frame 3',ierr)
-      call nhlfrlsetstring(rlist,'mpFillBoundarySets','noBoundaries',
+      call NhlFRLClear(rlist)  
+      call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 3',ierr)
+      call NhlFRLSetstring(rlist,'mpFillBoundarySets','noBoundaries',
      *   ierr)
-      call nhlfrlsetstring(rlist,'mpOutlineBoundarySets','noBoundaries',
+      call NhlFRLSetstring(rlist,'mpOutlineBoundarySets','noBoundaries',
      1     ierr)
-      call nhlfrlsetstringarray(rlist,'mpFillAreaSpecifiers',
+      call NhlFRLSetstringarray(rlist,'mpFillAreaSpecifiers',
      1     fill_specs,7,ierr)
-      call nhlfsetvalues(mapid,rlist,ierr)
+      call NhlFSetValues(mapid,rlist,ierr)
 
-      call nhlfdraw(mapid,ierr)
-      call nhlfframe(wid,ierr)
+      call NhlFDraw(mapid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C You can also specify area groupings using certain predefined 
 C string constants: set 'continents' on to demonstrate.
@@ -158,24 +158,24 @@ C >>> performance can be improved before the release.
 C
       fill_specs(1) = 'continents'
       fill_specs(2) = 'us'
-      call nhlfrlclear(rlist)  
-      call nhlfrlsetstring(rlist,'tiMainString','mp02f - Frame 4',ierr)
-      call nhlfrlsetstring(rlist,'mpFillBoundarySets','noBoundaries',
+      call NhlFRLClear(rlist)  
+      call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 4',ierr)
+      call NhlFRLSetstring(rlist,'mpFillBoundarySets','noBoundaries',
      1    ierr)
-      call nhlfrlsetstringarray(rlist,'mpFillAreaSpecifiers',
+      call NhlFRLSetstringarray(rlist,'mpFillAreaSpecifiers',
      1     fill_specs,7,ierr)
-      call nhlfrlsetstringarray(rlist,'mpMaskAreaSpecifiers',
+      call NhlFRLSetstringarray(rlist,'mpMaskAreaSpecifiers',
      1        mask_specs,7,ierr)
-      call nhlfsetvalues(mapid,rlist,ierr)
+      call NhlFSetValues(mapid,rlist,ierr)
 
-      call nhlfdraw(mapid,ierr)
-      call nhlfframe(wid,ierr)
+      call NhlFDraw(mapid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Destroy the objects created, close the HLU library and exit.
 C
-      call nhlfdestroy(mapid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDestroy(mapid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
       stop 
       end

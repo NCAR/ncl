@@ -1,5 +1,5 @@
 C
-C     $Id: mp03f.f,v 1.3 1995-03-22 18:20:26 haley Exp $
+C     $Id: mp03f.f,v 1.4 1995-04-01 00:43:16 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -20,12 +20,12 @@ C
 C   Description:    Demonstrates MapPlot masking; loosely emulates the
 C           LLU example 'colcon'
 C
-      external nhlfapplayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfmapplotlayerclass
-      external nhlfscalarfieldlayerclass
-      external nhlfcontourlayerclass
+      external NhlFAppLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFMapPlotLayerClass
+      external NhlFScalarFieldLayerClass
+      external NhlFContourPlotLayerClass
 
       integer appid,wid,mapid,dataid,cnid
       integer rlist
@@ -49,33 +49,33 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the working
-C directory. The resource file sets most of the Contour resources that
-C remain fixed throughout the life of the Contour object.
+C directory. The resource file sets most of the ContourPlot resources
+C that remain fixed throughout the life of the ContourPlot object.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid,'mp03',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'mp03',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
-         call nhlfcreate(wid,'mp03Work',nhlfncgmworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
+         call NhlFCreate(wid,'mp03Work',NhlFNcgmWorkstationLayerClass,0,
      1        rlist,ierr)
       else 
 C
 C Create an X Workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
-         call nhlfcreate(wid,'mp03Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
+         call NhlFCreate(wid,'mp03Work',NhlFXWorkstationLayerClass,0,
      1        rlist,ierr)
       endif
 C
@@ -84,56 +84,56 @@ C data. Create a ScalarField data object and hand it the data created
 C by 'gendat'. Define the extent of the data coordinates as the whole
 C globe. 
 
-      call nhlfrlclear(rlist)
+      call NhlFRLClear(rlist)
       len_dims(1) = N
       len_dims(2) = M
       call gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
-      call nhlfrlsetmdfloatarray(rlist,'sfDataArray',z,2,len_dims,ierr)
-      call nhlfrlsetinteger(rlist,'sfXCStartV',-180,ierr)
-      call nhlfrlsetinteger(rlist,'sfXCEndV',180,ierr)
-      call nhlfrlsetinteger(rlist,'sfYCStartV',-90,ierr)
-      call nhlfrlsetinteger(rlist,'sfYCEndV',90,ierr)
-      call nhlfcreate(dataid,'Gendat',nhlfscalarfieldlayerclass,appid,
+      call NhlFRLSetmdfloatarray(rlist,'sfDataArray',z,2,len_dims,ierr)
+      call NhlFRLSetinteger(rlist,'sfXCStartV',-180,ierr)
+      call NhlFRLSetinteger(rlist,'sfXCEndV',180,ierr)
+      call NhlFRLSetinteger(rlist,'sfYCStartV',-90,ierr)
+      call NhlFRLSetinteger(rlist,'sfYCEndV',90,ierr)
+      call NhlFCreate(dataid,'Gendat',NhlFScalarFieldLayerClass,appid,
      1     rlist,ierr)
 
 C
 C Create a Contour object, supplying the ScalarField object as data,
 C and setting the size of the viewport.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'cnScalarFieldData',dataid,ierr)
-      call nhlfrlsetstring(rlist,'cnLabelDrawOrder','postdraw',ierr)
-      call nhlfcreate(cnid,'Contour1',nhlfcontourlayerclass,wid,rlist,
+      call NhlFRLClear(rlist)
+      call NhlFRLSetinteger(rlist,'cnScalarFieldData',dataid,ierr)
+      call NhlFRLSetstring(rlist,'cnLabelDrawOrder','postdraw',ierr)
+      call NhlFCreate(cnid,'Contour1',NhlFContourLayerClass,wid,rlist,
      1     ierr)
 C
 C Create a MapPlot object, setting the fill to draw over the main draw,
 C and masking out the oceans.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloat(rlist,'vpYF',0.775,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',0.45,ierr)
-      call nhlfrlsetstring(rlist,'mpFillOn','true',ierr)
-      call nhlfrlsetstring(rlist,'ovTitleDisplayMode','always',ierr)
-      call nhlfrlsetstring(rlist,'tiMainString','mp03f',ierr)
-      call nhlfrlsetstring(rlist,'mpFillDrawOrder','postdraw',ierr)
-      call nhlfrlsetstring(rlist,'mpAreaMaskingOn','true',ierr)
-      call nhlfrlsetstringarray(rlist,'mpMaskAreaSpecifiers',mask_specs,
+      call NhlFRLClear(rlist)
+      call NhlFRLSetfloat(rlist,'vpYF',0.775,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',0.45,ierr)
+      call NhlFRLSetstring(rlist,'mpFillOn','true',ierr)
+      call NhlFRLSetstring(rlist,'ovTitleDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'tiMainString','mp03f',ierr)
+      call NhlFRLSetstring(rlist,'mpFillDrawOrder','postdraw',ierr)
+      call NhlFRLSetstring(rlist,'mpAreaMaskingOn','true',ierr)
+      call NhlFRLSetstringarray(rlist,'mpMaskAreaSpecifiers',mask_specs,
      1     1,ierr)
-      call nhlfcreate(mapid,'Map1',nhlfmapplotlayerclass,wid,rlist,ierr)
+      call NhlFCreate(mapid,'Map1',NhlFMapPlotLayerClass,wid,rlist,ierr)
 C
 C Overlay the Contour object on the MapPlot object
 C
-      call nhlfaddtooverlay(mapid,cnid,-1,ierr)
+      call NhlFAddToOverlay(mapid,cnid,-1,ierr)
     
-      call nhlfdraw(mapid,ierr)
-      call nhlfframe(wid,ierr)
+      call NhlFDraw(mapid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Destroy the objects created, close the HLU library and exit.
 C
 
-      call nhlfdestroy(mapid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfclose
+      call NhlFDestroy(mapid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFClose
 
       stop
       end
