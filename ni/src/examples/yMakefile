@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.11 1995-01-25 22:09:49 haley Exp $
+#      $Id: yMakefile,v 1.12 1995-01-25 22:18:06 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -21,7 +21,8 @@
 
 #define IHaveSubdirs
 
-SUBDIRS		= $(EXAMPLES)
+SUBDIRS		= $(EXAMPLES)  annotation contour mapplot \
+			textitem xyplot
 
 EXAMPLES	= nhl01 nhl02 nhl03 nhl05 nhl06 nhl07 nhl08 nhl09 \
 		nhl10 nhl11 nhl12 nhl13 nhlf01 nhlf05 nhlf06 nhlf07 nhlf08 \
