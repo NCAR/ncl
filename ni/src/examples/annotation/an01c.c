@@ -55,6 +55,7 @@ main(int argc, char *argv[])
     int appid,wid,mapid;
     int rlist,grlist;
     int i;
+    int NCGM=0;
 
     Anno_List anno_list[] = {
     {"Los Angeles",34.0,-118.28,-1,-1},
@@ -101,22 +102,22 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"an01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-#if XWORK
+    if (NCGM) {
 /*
- * Create an X workstation
- */
-    NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
-#else
-/*
- * Create a meta file workstation
+ * Create a meta file workstation.
  */
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./an01c.ncgm");
         NhlCreate(&wid,"an01Work",
                   NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
-#endif
-
+    }
+    else {
+/*
+ * Create an X workstation.
+ */
+        NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+    }
 /* 
  * Create a Map Plot object
  */

@@ -36,6 +36,7 @@ C
       data ret/-1/
       integer appid,wid,mapid,rlist
       integer i
+      integer NCGM
       data name/'Los Angeles','Seattle','Toronto','New York','Miami',
      1 'Mexico City','London','Jakarta','Moscow','New Delhi',
      1 'Rio de Janeiro','Cairo','Buenos Aires','Beijing','Tokyo',
@@ -50,6 +51,8 @@ C
      1 106.75,37.7,77.217,-43.283,31.25,-58.4167,116.4167,139.67,3.28,
      1 36.833,151.167,-74.083,-77.05,18.4667,88.35,121.4167,72.85,
      1 -105.017/
+
+      NCGM=1
 C
 C Initialize the high level utility library
 C
@@ -66,13 +69,21 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'an01',nhlfapplayerclass,0,rlist,ierr)
+      if( NCGM.eq.1 ) then
 C
 C Create a meta file workstation
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkMetaName','./an01f.ncgm',ierr)
-      call nhlfcreate(wid,'an01Work',nhlfncgmworkstationlayerclass,0,
-     1         rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./an01f.ncgm',ierr)
+         call nhlfcreate(wid,'an01Work',nhlfncgmworkstationlayerclass,
+     1        0,rlist,ierr)
+      else
+C
+C Create an X workstation
+C
+         call nhlfcreate(wid,'an01Work',nhlfxworkstationlayerclass,0,
+     1        0,ierr)
+      endif
 C
 C Create a Map Plot object
 C
