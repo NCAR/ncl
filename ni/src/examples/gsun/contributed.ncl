@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;      $Id: contributed.ncl,v 1.3 2003-03-10 18:53:18 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -189,9 +189,36 @@ begin
   att_names =getvaratts(var_from);
     if(.not.all(ismissing(att_names)))
       do i = 0,dimsizes(att_names)-1
+         if (isatt(vNew,att_names(i))) then
+             delete(vNew@$att_names(i)$)  ; var_from att may be diff size/type
+         end if
 	 var_to@$att_names(i)$ = var_from@$att_names(i)$
       end do
   end if
+end
+
+;****************************************
+; D. Shea
+; Basically a function version of copy_VarAtts which is a procedure
+; copy attributes associated with "var_from" to "var_to" and
+; return as a new variable.
+
+undef("merge_VarAtts")
+function merge_VarAtts(var_from,var_to)    
+local att_names, i, vNew
+
+begin                                       
+  vNew = var_to
+  att_names =getvaratts(var_from);
+  if(.not.all(ismissing(att_names)))
+      do i = 0,dimsizes(att_names)-1
+         if (isatt(vNew,att_names(i))) then
+             delete(vNew@$att_names(i)$)  ; var_from att may be diff size/type
+         end if
+	 vNew@$att_names(i)$ = var_from@$att_names(i)$
+      end do
+  end if
+  return(vNew)
 end
 
 ;***************************************************************
@@ -217,11 +244,14 @@ begin
   att_names = getvaratts(var_from);
   if(.not.all(ismissing(att_names)))
     do i = 0, dimsizes(att_names)-1
-       if(isatt(var_from,"_FillValue").eq.True)then
+       if(isatt(var_from,"_FillValue"))then
           if(typeof(var_from@_FillValue).eq."double"  .and.\
              typeof(var_to).eq."float")then
 	     var_to@_FillValue = doubletofloat(var_from@_FillValue)
           else
+             if (isatt(var_to,att_names(i))) then  ; added 10 Mar 2003 [DJS]
+                 delete(var_to@$att_names(i)$)  
+             end if
              var_to@$att_names(i)$ = var_from@$att_names(i)$
           end if
         end if
@@ -4893,4 +4923,185 @@ begin
      time&time = time
 
      return (time)
+end
+;*************************************************************************
+; D. Shea
+; Read simple f90 namelist file as indicated by Ben Foster
+; An integer variable is returned. Upon return it will have 
+; associated with it attributes that were created from the
+; input namelist file.
+;
+; Usage:
+; 
+;     hao_user = namelist("haoUserNameList")
+;
+;     In some cases, these new attributes are used to modify an
+;     existing (say, default) suite of attributes (say, haoDefault).
+;
+;     hao = merge_VarAtts(hao_user, haoDefault) 
+;
+undef ("namelist")
+function namelist (fname:string)
+local lines, nam, chr, blankc, eqc, quot1c, quot2c, semic    \
+    , decimalc, slashc, commac, ampc, nullc, newlc, nLines   \
+    , nl, cc, CC, nc, NC, nEq, iEq, iSemic, aName, iq, i, n  \
+    , iComma, nComma, nDecimal, rhs, RHS 
+begin
+  lines  = asciiread (fname, -1, "string")
+  nam    = 1   ; create variable to which 
+               ; attributes may be attached
+
+               ; special characters to check 
+               ; for clarity use stringtochar 
+  chr    = stringtochar(" ")  ; dimsizes(chr)=2
+  blankc = chr(0)             ; blank space     (int 32)
+
+  chr    = stringtochar("=")  ; dimsizes(chr)=2
+  eqc    = chr(0)             ; equal           (int 61)
+
+  chr    = stringtochar(";")  ; dimsizes(chr)=2
+  semic  = chr(0)             ; comment         (int 59)
+
+  chr    = stringtochar("\")  ; dimsizes(chr)=2
+  slashc = chr(0)             ; line continuation (int 92)
+
+  chr    = stringtochar(",")  ; dimsizes(chr)=2
+  commac = chr(0)             ; value separator (int 44)
+
+  chr    = stringtochar(".")  ; dimsizes(chr)=2
+  decimalc= chr(0)            ; indicate float  (int 46)
+
+  chr    = stringtochar("&")  ; dimsizes(chr)=2
+  ampc   = chr(0)             ; ampersand       (int 38)
+
+  chr    = stringtochar("'")  ; dimsizes(chr)=2
+  quot1c = chr(0)             ; single quote    (int 39)
+
+  quot2c= integertochar(34)   ; double quote "  (int 34)
+  newlc = integertochar(10)   ; new line character
+  nullc = integertochar(0)    ; null
+
+  nLines = dimsizes(lines)    ; # of lines (strings)
+
+  do nl=0,nLines-1                 ; loop over each line
+     cc  = stringtochar(lines(nl)) ; convert to characters
+     nc  = dimsizes(cc)            ; # characters
+     nc  = nc - 1                  ; ignore last character
+
+     nEq = num(cc.eq.eqc)          ; number of = signs
+                                   ; eliminate (a) HAO's  &proc
+                                   ; (b) any line without an =
+     if (cc(0).eq.ampc .or. nEq.eq.0) then     
+         delete (cc)               ; delete cuz size changes
+         continue                  ; go to next iteration
+     end if
+
+     iSemic = ind(cc.eq.semic)     ; is simicolon (;) present [comment] 
+     if (.not.ismissing(iSemic)) then
+         nc = iSemic(0)-1          ; only look up to semi-colon
+         if (nc.le.1) then         ; need at least 3 char [eg: i=0]
+             delete (cc)
+             delete (iSemic)
+             continue              ; go to next iteration
+         end if
+     end if
+     delete (iSemic)
+
+     NC = -1                       ; remove blanks
+     CC = new ( nc, "character")   ; cc after blanks removed
+   do n=0,nc-1
+      if (cc(n).ne.blankc .and. cc(n).ne.nullc .and. cc(n).ne.newlc) then 
+          NC     = NC+1
+          CC(NC) = cc(n)
+      end if
+   end do
+   delete (cc)                     ; no longer needed
+
+   if (NC.le.1) then               ; again need min 3 char
+       delete (CC)                 ; size might change
+       continue                    ; go to next iteration
+   end if
+
+   iEq     = ind(CC.eq.eqc)        ; = is separator; return index
+
+                                   ; name of attribute (lhs)
+   aName    = chartostring( (/CC(0:iEq-1)/) )
+
+   nComma   = num(CC.eq.commac)    ; a comma (,) means more than one 
+   RHS      = chartostring(CC(iEq+1:))       ; right hand side
+
+                              ; does rhs have a ' or " [if so, string]
+   iq = ind(CC.eq.quot1c .or. CC.eq.quot2c)  ; indices of quotes (',")
+
+   if (any(.not.ismissing(iq))) then
+       CC(iq) = quot2c        ; change ' to " [also "-to-" for convenience]
+
+       if (nComma.gt.0) then              ; more than 1 element
+           rhs         = new ( nComma+1, "string")
+           delete (rhs@_FillValue)
+                                          ; must parse CC(iEq+1:)
+                                          ; put each element => array rhs
+           iComma      = ind(CC.eq.commac); indices of commas
+           rhs(0)      = chartostring( CC(iEq+1:iComma(0)-1) )
+           rhs(nComma) = chartostring( CC(iComma(nComma-1)+1:nc-1) )
+           if (nComma.gt.1) then
+               do i=0,nComma-2
+                  rhs(i+1) = chartostring(CC(iComma(i)+1:iComma(i+1)-1))
+               end do
+           end if
+
+           nam@$aName$ = rhs
+           delete (rhs)
+           delete (iComma)
+       else
+           nam@$aName$ = RHS    ; single string
+       end if
+       
+       delete (iq)
+       delete (CC)
+       continue                 ; go to next iteration
+   end if
+                                ; MUST be integer or real
+   delete (iq)                  ; iq referred to index of ' or "
+
+   nDecimal = num(CC.eq.decimalc)      ; number of decimal pts
+
+   if (nComma.gt.0) then
+       iComma          = ind(CC.eq.commac)  ; inices of ,
+       if (nDecimal.eq.0) then
+           rhs         = new ( nComma+1, "integer")
+           rhs(0)      = stringtointeger( chartostring( CC(iEq+1:iComma(0)-1) ))
+           rhs(nComma) = stringtointeger( chartostring( CC(iComma(nComma-1)+1:nc-1) ))
+           if (nComma.gt.1) then
+               do i=0,nComma-2
+                  rhs(i+1) = stringtointeger(chartostring(CC(iComma(i)+1:iComma(i+1)-1)))
+               end do
+           end if
+       else
+           rhs         = new ( nComma+1, "float")
+           rhs(0)      = stringtofloat( chartostring( CC(iEq+1:iComma(0)-1) ))
+           rhs(nComma) = stringtofloat( chartostring( CC(iComma(nComma-1)+1:nc-1) ))
+           if (nComma.gt.1) then
+               do i=0,nComma-2
+                  rhs(i+1) = stringtofloat( chartostring(CC(iComma(i)+1:iComma(i+1)-1)))
+               end do
+           end if
+       end if
+       delete (rhs@_FillValue)
+       delete (iComma)
+   else
+       if (nDecimal.eq.0) then
+           rhs = stringtointeger(RHS)
+       else
+           rhs = stringtofloat(RHS)
+       end if
+   end if
+
+   nam@$aName$ = rhs     ; associate values with variable
+   delete (rhs)
+
+   delete (CC)
+  end do
+
+  return(nam)
 end
