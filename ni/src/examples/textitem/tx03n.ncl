@@ -1,5 +1,5 @@
 ;
-;    $Id: tx03n.ncl,v 1.8 1995-06-22 21:08:38 haley Exp $
+;    $Id: tx03n.ncl,v 1.9 1995-07-19 15:51:41 dbrown Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -79,14 +79,18 @@ getvalues wid
 end getvalues
 
 ;
-; Create multiple plots varying the fill color of the text bounding box
-; to all entries of the default workstation color map.
+; Create a TextItem and then draw multiple frames varying the fill
+; color of the text bounding box to all entries of the default
+; workstation color map.
 ;
 
+
+pid = create "TextItems" textItemClass wid
+end create
 do i=1,num_colors
-    pid = create "TextItems" textItemClass wid
+    setvalues pid
         "txBackgroundFillColor" : i
-    end create
+    end setvalues
 
     draw(pid);
     frame(wid);

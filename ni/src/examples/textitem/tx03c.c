@@ -84,13 +84,16 @@ main()
     NhlRLGetInteger(grlist,NhlNwkColorMapLen,&num_colors);
     NhlGetValues(wid,grlist);
 /*
- * Create multiple plots varying the fill color of the text bounding box
- * to all entries of the default workstation color map.
+ * Create a TextItem and then draw multiple frames varying the fill 
+ * color of the text bounding box to all entries of the default 
+ * workstation color map.
  */
+    NhlRLClear(srlist);
+    NhlCreate(&pid,"TextItems",NhltextItemClass,wid,srlist);
     for( i = 1; i <= num_colors; i++ ) {
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNtxBackgroundFillColor,i);
-        NhlCreate(&pid,"TextItems",NhltextItemClass,wid,srlist);
+        NhlSetValues(pid,srlist);
         NhlDraw(pid);
         NhlFrame(wid);
     }

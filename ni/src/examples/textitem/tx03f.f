@@ -83,24 +83,27 @@ C
       call NhlFRLGetInteger(grlist,'wkColorMapLen',num_colors,ierr)
       call NhlFGetValues(wid,grlist,ierr)
 C
-C Create multiple plots varying the fill color of the text bounding box
-C to all entries of the default workstation color map.
 C
+C Create a TextItem and then draw multiple frames varying the fill
+C color of the text bounding box to all entries of the default
+C workstation color map.
+C
+      call NhlFRLClear(srlist)
+      call NhlFCreate(pid,'TextItems',NhlFTextItemClass,
+     $        wid,srlist,ierr)
       do 10, i=1,num_colors
          call NhlFRLClear(srlist)
          call NhlFRLSetinteger(srlist,'txBackgroundFillColor',
      $        i,ierr)
-         call NhlFCreate(pid,'TextItems',NhlFTextItemClass,
-     $        wid,srlist,ierr)
-
+         call NhlFSetValues(pid,srlist,ierr)
          call NhlFDraw(pid,ierr)
          call NhlFFrame(wid,ierr)
  10   continue
-
+C
       call NhlFDestroy(pid,ierr)
       call NhlFDestroy(wid,ierr)
       call NhlFDestroy(appid,ierr)
       call NhlFClose
-
+C
       stop
       end
