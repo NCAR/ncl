@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.17 1994-10-15 00:29:52 dbrown Exp $
+ *      $Id: Contour.h,v 1.18 1994-10-27 01:36:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,8 +51,9 @@ typedef enum _NhlcnLevelUseMode {
 /* Line label spacing */
 
 typedef enum _NhlcnLineLabelSpacingMode {
-	NhlcnNOLABELS, NhlcnCONSTANT, 
-	NhlcnRANDOMIZED, NhlcnCOMPUTED
+	NhlcnCONSTANT, 
+	NhlcnRANDOMIZED,
+	NhlcnCOMPUTED
 } NhlcnLineLabelSpacingMode;
 
 #define NhlTcnLineLabelSpacingMode	"cnlinelabelspacingmode"

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.9 1994-09-23 23:37:02 dbrown Exp $
+ *      $Id: View.c,v 1.10 1994-10-27 01:37:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -491,8 +491,7 @@ static NhlErrorTypes	ViewClassInitialize()
         {NhlBOTTOM,	"bottom"},
         {NhlRIGHT, 	"right"},
         {NhlLEFT,	"left"},
-        {NhlCENTER,	"center"},
-        {NhlBOTH,	"both"}
+        {NhlCENTER,	"center"}
         };
 
 	_NhlEnumVals justificationlist[] =  {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.16 1994-10-07 18:47:58 dbrown Exp $
+ *      $Id: Legend.c,v 1.17 1994-10-27 01:36:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/LegendP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 static int def_colors[] = { 
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
@@ -58,9 +59,10 @@ static NhlResource resources[] = {
 {NhlNlgItemCount, NhlClgItemCount, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.item_count),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 16),0,NULL},
-{NhlNlgItemPlacement, NhlClgItemPlacement, NhlTInteger,
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.item_placement),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_UNIFORMPLACEMENT),0,NULL},
+{NhlNlgItemPlacement, NhlClgItemPlacement, NhlTlgItemPlacementMode,
+	 sizeof(NhllgItemPlacementMode), 
+	 NhlOffset(NhlLegendLayerRec,legend.item_placement),
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhllgUNIFORMPLACEMENT),0,NULL},
 {NhlNlgBoxBackground, NhlClgBoxBackground, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_background),
 	 NhlTImmediate, _NhlUSET((NhlPointer) -1),0,NULL},
@@ -68,9 +70,6 @@ static NhlResource resources[] = {
 {NhlNlgAutoManage, NhlClgAutoManage, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.auto_manage),
 	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
-{NhlNlgMaxLabelAngleAdditionF, NhlClgMaxLabelAngleAdditionF, NhlTFloat,
-	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_angle_add),
-	 NhlTString, _NhlUSET("0.15"),0,NULL},
 {NhlNlgLabelOffsetF, NhlClgLabelOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_off),
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
@@ -191,9 +190,10 @@ static NhlResource resources[] = {
 {NhlNlgLabelAngleF, NhlClgLabelAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_angle),
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
-{NhlNlgLabelAlignment, NhlClgLabelAlignment, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_alignment),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_ITEMCENTERS),0,NULL},
+{NhlNlgLabelAlignment, NhlClgLabelAlignment, NhlTlgLabelAlignmentMode, 
+	 sizeof(NhllgLabelAlignmentMode), 
+	 NhlOffset(NhlLegendLayerRec,legend.label_alignment),
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhllgITEMCENTERS),0,NULL},
 {NhlNlgLabelDirection,NhlClgLabelDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.label_direction),
@@ -304,13 +304,13 @@ static NhlResource resources[] = {
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
 {NhlNlgPerimColor, NhlClgPerimColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_color),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 {NhlNlgPerimFill, NhlClgPerimFill, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
 {NhlNlgPerimFillColor, NhlClgPerimFillColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill_color),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 {NhlNlgPerimThicknessF, NhlClgPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_thickness),
@@ -325,6 +325,10 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.15"),0,NULL},
 
 /* End-documented-resources */
+
+{NhlNlgMaxLabelAngleAdditionF, NhlClgMaxLabelAngleAdditionF, NhlTFloat,
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_angle_add),
+	 NhlTString, _NhlUSET("0.15"),0,NULL}
 
 };
 
@@ -922,7 +926,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 		return NhlFATAL;
 	}
 	for (i=0; i < count; i++) 
-		i_p[i] = NhlLG_LINES;
+		i_p[i] = NhllgLINES;
 
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -949,13 +953,13 @@ static NhlErrorTypes    InitializeDynamicArrays
  */
 	i_p = (int *) lg_p->item_types->data;
 	for (i=0; i<count; i++) {
-		if (i_p[i] != NhlLG_LINES && i_p[i] != NhlLG_MARKERS) {
+		if (i_p[i] != NhllgLINES && i_p[i] != NhllgMARKERS) {
 			e_text =
 	       "%s: %s index %d holds an invalid item type: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemTypes, i);
 		        ret = MIN(ret, NhlWARNING);
-			i_p[i] = NhlLG_LINES;
+			i_p[i] = NhllgLINES;
 		}
 	}
 
@@ -976,7 +980,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	i2_p = (int *)lg_p->item_types->data;
 
-	if (lg_p->mono_item_type && *i2_p == NhlLG_LINES) { 
+	if (lg_p->mono_item_type && *i2_p == NhllgLINES) { 
 		for (i=0; i<count; i++)
 			i_p[i] = NhlLG_MIN_LINE_INDEX + i;
 	}
@@ -986,7 +990,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	else {
 		for (i=0; i<count; i++) {
-			if (i2_p[i] == NhlLG_LINES) 
+			if (i2_p[i] == NhllgLINES) 
 				i_p[i] = NhlLG_MIN_LINE_INDEX + i;
 			else
 				i_p[i] = NhlLG_MIN_MARKER_INDEX + i;
@@ -1017,7 +1021,7 @@ static NhlErrorTypes    InitializeDynamicArrays
  */
 
 	i_p = (int *) lg_p->item_indexes->data;
-	if (lg_p->mono_item_type && *i2_p == NhlLG_LINES) { 
+	if (lg_p->mono_item_type && *i2_p == NhllgLINES) { 
 		for (i=0; i<count;i++)
 			if (i_p[i] < NhlLG_MIN_LINE_INDEX) { 
 				i_p[i] = NhlLG_DEF_LINE_INDEX;
@@ -1031,7 +1035,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	else {
 		for (i=0; i<count; i++) {
-			if (i2_p[i] == NhlLG_LINES) {
+			if (i2_p[i] == NhllgLINES) {
 				if (i_p[i] < NhlLG_MIN_LINE_INDEX)  
 					i_p[i] = NhlLG_DEF_LINE_INDEX;
 			}
@@ -1538,14 +1542,14 @@ static NhlErrorTypes    ManageDynamicArrays
 		i_p = (int *) lg_p->item_types->data;
 
 		for (i=0; i<MIN(count,lg_p->item_types->num_elements); i++) {
-			if (i_p[i] != NhlLG_LINES && 
-			    i_p[i] != NhlLG_MARKERS) {
+			if (i_p[i] != NhllgLINES && 
+			    i_p[i] != NhllgMARKERS) {
 				e_text =
 		"%s: %s index %d holds an invalid type value: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 					  entry_name,NhlNlgItemTypes, i);
 				ret = MIN(ret, NhlWARNING);
-				i_p[i] = NhlLG_LINES;
+				i_p[i] = NhllgLINES;
 			}
 		}
 	}
@@ -1560,7 +1564,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			return NhlFATAL;
 		}
 		for (i=lg_p->item_types->num_elements; i<count; i++) {
-			i_p[i] = NhlLG_LINES;
+			i_p[i] = NhllgLINES;
 		}
 
 		lg_p->item_types->data = (NhlPointer) i_p;
@@ -1597,7 +1601,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		i_p = (int *) lg_p->item_indexes->data;
 		count = MIN(lg_p->item_count,lg_p->item_indexes->num_elements);
 
-		if (lg_p->mono_item_type && *i2_p == NhlLG_LINES) {
+		if (lg_p->mono_item_type && *i2_p == NhllgLINES) {
 			for (i=0; i<count; i++)
 				if (i_p[i] < NhlLG_MIN_LINE_INDEX) 
 					i_p[i] = NhlLG_DEF_LINE_INDEX;
@@ -1609,7 +1613,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		else {
 			for (i=0; i<count; i++)
-				if (i2_p[i] == NhlLG_LINES)
+				if (i2_p[i] == NhllgLINES)
 					if (i_p[i] < NhlLG_MIN_LINE_INDEX)
 						i_p[i] = NhlLG_DEF_LINE_INDEX;
 				else
@@ -2783,7 +2787,7 @@ static NhlErrorTypes    SetBoxLocations
 	int i;
 	float *item_positions = (float *)lg_p->item_positions->data;
 
-	if (lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
+	if (lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
 		ret1 = ManageItemPositionsArray(item_positions,
 						lg_p->item_count);
 	}
@@ -2797,7 +2801,7 @@ static NhlErrorTypes    SetBoxLocations
 	       sizeof(NhlBoundingBox));
 	memcpy((void *)&lg_p->adj_box_size, (Const void *)&lg_p->box_size,
 	       sizeof(NhlCoord));
-	if (lg_p->label_alignment == NhlLG_ABOVEITEMS) {
+	if (lg_p->label_alignment == NhllgABOVEITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
 				lg_p->item_count / (lg_p->item_count + 0.5);
@@ -2815,7 +2819,7 @@ static NhlErrorTypes    SetBoxLocations
 				lg_p->bar.b + lg_p->adj_box_size.y / 2.0;
 		}
 	}
-	else if (lg_p->label_alignment == NhlLG_BELOWITEMS) {
+	else if (lg_p->label_alignment == NhllgBELOWITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
 				lg_p->item_count / (lg_p->item_count + 0.5);
@@ -2841,7 +2845,7 @@ static NhlErrorTypes    SetBoxLocations
  */
 		
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
+	    lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
 		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
 		box_len = bar_len / (lg_p->item_count);
 		lg_p->item_locs[0] = lg_p->adj_bar.l + 0.5 * box_len;
@@ -2851,7 +2855,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
+	    lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
 		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
 		box_len = bar_len / (lg_p->item_count);
 		lg_p->item_locs[0] = lg_p->adj_bar.b + 0.5 * box_len;
@@ -2861,7 +2865,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.t;
 	}
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
+	    lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
 		for (i=0; i < lg_p->item_count; i++) {
 			lg_p->item_locs[i] = lg_p->adj_bar.l + 
@@ -2870,7 +2874,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
+	    lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
 		for (i=0; i < lg_p->item_count; i++) {
 			lg_p->item_locs[i] = lg_p->adj_bar.b + 
@@ -3238,7 +3242,7 @@ static NhlErrorTypes    SetLabels
  * offset is negative
  */
 	if (lg_p->label_pos == NhlCENTER || label_offset < 0.0) {
-		if (lg_p->label_alignment == NhlLG_ITEMCENTERS) {
+		if (lg_p->label_alignment == NhllgITEMCENTERS) {
 			c_frac = lg_p->box_major_ext;
 		}
 		else {
@@ -3260,7 +3264,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant Y axis value and the justification */
 		switch (lg_p->label_pos) {
-		case NhlBOTH:
 		case NhlLEFT:
 		case NhlRIGHT:
 		default:
@@ -3296,7 +3299,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant Y axis value and the justification */
 		switch (lg_p->label_pos) {
-		case NhlBOTH:
 		case NhlLEFT:
 		case NhlRIGHT:
 		default:
@@ -3331,7 +3333,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		switch (lg_p->label_pos) {
-		case NhlBOTH:
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
@@ -3365,7 +3366,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		switch (lg_p->label_pos) {
-		case NhlBOTH:
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
@@ -3398,9 +3398,9 @@ static NhlErrorTypes    SetLabels
 		base_pos = lg_p->adj_bar.l;
 		
 		/* determine offset */
-		if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+		if (lg_p->label_alignment == NhllgITEMCENTERS)
 			offset = lg_p->adj_box_size.x / 2.0;
-		else if (lg_p->label_alignment == NhlLG_ABOVEITEMS)
+		else if (lg_p->label_alignment == NhllgABOVEITEMS)
 			offset = lg_p->adj_box_size.x;
 		else
 			offset = 0;
@@ -3414,16 +3414,16 @@ static NhlErrorTypes    SetLabels
 		base_pos = lg_p->adj_bar.b;
 		
 		/* determine offset */
-		if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+		if (lg_p->label_alignment == NhllgITEMCENTERS)
 			offset = lg_p->adj_box_size.y / 2.0;
-		else if (lg_p->label_alignment == NhlLG_ABOVEITEMS)
+		else if (lg_p->label_alignment == NhllgABOVEITEMS)
 			offset = lg_p->adj_box_size.y;
 		else
 			offset = 0;
 		
 		increment = lg_p->adj_box_size.y * lg_p->label_stride;
 	}
-	if (lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
+	if (lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
 		for (i=0; i<lg_p->label_draw_count; i++) 
 			lg_p->label_locs[i] = base_pos + offset + 
 				(float) i * increment;
@@ -3436,9 +3436,9 @@ static NhlErrorTypes    SetLabels
 		for (i=0; i < lg_p->label_draw_count; i++) {
 
 			ix = i * lg_p->label_stride;
-			if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+			if (lg_p->label_alignment == NhllgITEMCENTERS)
 				lg_p->label_locs[i] = lg_p->item_locs[ix];
-			else if (lg_p->label_alignment == NhlLG_ABOVEITEMS) {
+			else if (lg_p->label_alignment == NhllgABOVEITEMS) {
 				float t;
 				if (i == lg_p->label_draw_count - 1)
 					t = lg_p->item_locs[ix+1] - 
@@ -4630,7 +4630,7 @@ static NhlErrorTypes    LegendDraw
 			string = lg_p->line_labels_on ? item_strings[i] : NULL;
 				
 
-			if (item_type == NhlLG_LINES) {
+			if (item_type == NhllgLINES) {
 				NhlVASetValues(lgl->base.wkptr->base.id,
 				  NhlNwkLineLabel,string,
 				  NhlNwkDashPattern,indexes[i],
@@ -4722,7 +4722,7 @@ static NhlErrorTypes    LegendDraw
 
 			string = lg_p->line_labels_on ? item_strings[i] : NULL;
 
-			if (item_type == NhlLG_LINES) {
+			if (item_type == NhllgLINES) {
 				NhlVASetValues(lgl->base.wkptr->base.id,
 					     NhlNwkLineLabel, string,
 					     NhlNwkDashPattern,indexes[i],
@@ -4812,7 +4812,29 @@ static NhlErrorTypes    LegendClassInitialize
 ()
 #endif
 {
-	
+        _NhlEnumVals   labelalignmentlist[] = {
+        {NhllgITEMCENTERS,	"itemcenters"},
+        {NhllgABOVEITEMS,	"aboveitems"},
+        {NhllgBELOWITEMS,	"belowitems"},
+        };
+
+        _NhlEnumVals   itemplacementlist[] = {
+        {NhllgUNIFORMPLACEMENT,		"uniformplacement"},
+        {NhllgEXPLICITPLACEMENT,	"explicitplacement"},
+        };
+
+        _NhlEnumVals   itemtypelist[] = {
+        {NhllgLINES,	"lines"},
+        {NhllgMARKERS,	"markers"},
+        };
+
+	_NhlRegisterEnumType(NhlTlgLabelAlignmentMode,labelalignmentlist,
+			     NhlNumber(labelalignmentlist));
+	_NhlRegisterEnumType(NhlTlgItemPlacementMode,itemplacementlist,
+			     NhlNumber(itemplacementlist));
+	_NhlRegisterEnumType(NhlTlgItemType,itemtypelist,
+			     NhlNumber(itemtypelist));
+
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);

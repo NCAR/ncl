@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.5 1994-03-02 01:44:01 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.6 1994-10-27 01:36:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,21 +43,17 @@
 
 /* label alignment */
 
-#define NhlLB_BOXCENTERS	0
-#define NhlLB_INTERIOREDGES	1
-#define NhlLB_EXTERNALEDGES	2
+typedef enum _NhllbLabelAlignmentMode {
+	NhllbBOXCENTERS =0, NhllbINTERIOREDGES, NhllbEXTERNALEDGES
+} NhllbLabelAlignmentMode;
 
-/* Box sizing */
+#define NhlTlbLabelAlignmentMode "lblabelalignmentmode"
 
-#define NhlLB_UNIFORMSIZING	0
-#define NhlLB_EXPLICITSIZING	1
+typedef enum _NhllbBoxSizingMode {
+	NhllbUNIFORMSIZING = 0, NhllbEXPLICITSIZING
+} NhllbBoxSizingMode;
 
-/* Bar Mode */
-
-#define NlhLB_CENTERBAR		0
-#define NhlLB_SIZEBARTOFIT	1
-#define NhlLB_JUSTIFYLABELSIDE	2
-#define NhlLB_JUSTIFYBARSIDE	3
+#define NhlTlbBoxSizingMode "lbboxsizingmode"
 
 /* Instance resources */
 
@@ -70,7 +66,6 @@
 #define NhlNlbBoxSizing			"lbBoxSizing"
 
 #define NhlNlbAutoManage		"lbAutoManage"
-#define NhlNlbBarMode			"lbBarMode"
 #define NhlNlbMonoFillColor		"lbMonoFillColor"
 #define NhlNlbMonoFillPattern		"lbMonoFillPattern"
 #define NhlNlbMonoFillScale		"lbMonoFillScale"
@@ -153,7 +148,6 @@
 #define NhlClbBoxSizing			"LbBoxSizing"
 
 #define NhlClbAutoManage		"LbAutoManage"
-#define NhlClbBarMode			"LbBarMode"
 #define NhlClbMaxLabelAngleAdditionF	"LbMaxLabelAngleAdditionF"
 #define NhlClbMonoFillColor		"LbMonoFillColor"
 #define NhlClbMonoFillPattern		"LbMonoFillPattern"

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.8 1994-09-23 23:36:46 dbrown Exp $
+ *      $Id: Legend.h,v 1.9 1994-10-27 01:36:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,26 +26,28 @@
 #include <ncarg/hlu/MultiText.h>
 
 /* label alignment */
-#if 0
-typedef enum _NhllgLabelAlignmentMode {
-	NhlLG_ITEMCENTERS = 0, NhlLG_ABOVEITEMS, NhlLG_BELOWITEMS
-} NhllgLabelAlignmentMode;
-#endif
 
-#define	NhlLG_ITEMCENTERS	0
-#define NhlLG_ABOVEITEMS	1
-#define NhlLG_BELOWITEMS	2
+typedef enum _NhllgLabelAlignmentMode {
+	NhllgITEMCENTERS = 0, NhllgABOVEITEMS, NhllgBELOWITEMS
+} NhllgLabelAlignmentMode;
+
+#define NhlTlgLabelAlignmentMode "lglabelalignmentmode"
 
 /* Box sizing */
 
+typedef enum _NhllgItemPlacementMode {
+	NhllgUNIFORMPLACEMENT = 0, NhllgEXPLICITPLACEMENT
+} NhllgItemPlacementMode;
 
-#define NhlLG_UNIFORMPLACEMENT	0
-#define NhlLG_EXPLICITPLACEMENT	1
+#define NhlTlgItemPlacementMode "lgitemplacementmode"
 
 /* Legend types */
 
-#define NhlLG_LINES		0
-#define NhlLG_MARKERS		1
+typedef enum _NhllgItemType {
+	NhllgLINES = 0, NhllgMARKERS 
+} NhllgItemType;
+
+#define NhlTlgItemType "lgitemtype"
 
 /* Instance resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.34 1994-10-15 00:29:50 dbrown Exp $
+ *      $Id: Contour.c,v 1.35 1994-10-27 01:36:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1681,7 +1681,6 @@ ContourClassInitialize
         };
 
         _NhlEnumVals   linelabelspacinglist[] = {
-        {NhlcnNOLABELS,		"nolabels"},
         {NhlcnCONSTANT, 	"constant"},
         {NhlcnRANDOMIZED, 	"randomized"},
         {NhlcnCOMPUTED,      	"computed"}
@@ -4781,7 +4780,7 @@ static NhlErrorTypes ManageTickMarks
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
- 	if (! tfp->overlay_plot_base ||
+ 	if (! tfp->overlay_on ||
 	    cnp->display_tickmarks == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -4838,7 +4837,7 @@ static NhlErrorTypes ManageTitles
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
- 	if (! tfp->overlay_plot_base ||
+ 	if (! tfp->overlay_on ||
 	    cnp->display_titles == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -4898,7 +4897,7 @@ static NhlErrorTypes ManageLegend
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
- 	if (! tfp->overlay_plot_base ||
+ 	if (! tfp->overlay_on ||
 	    cnp->display_legend == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -4941,11 +4940,10 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgItemIndexes,cnp->line_dash_patterns);
 		do_it = True;
-		if (cnp->draw_lgnd_line_lbls_set) 
-			do_it = cnp->draw_lgnd_line_lbls;
-		else if (cnp->llabel_spacing == NhlcnNOLABELS) {
+		if (! cnp->line_lbls.on)
 			do_it = False;
-		}
+		else if (cnp->draw_lgnd_line_lbls_set) 
+			do_it = cnp->draw_lgnd_line_lbls;
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgDrawLineLabels,do_it);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLabelStrings,cnp->llabel_strings);
@@ -5011,11 +5009,14 @@ static NhlErrorTypes ManageLegend
 		changed = False;
 		if (cnp->draw_lgnd_line_lbls_set &&
 		    (cnp->draw_lgnd_line_lbls != ocnp->draw_lgnd_line_lbls)) {
-			do_it = cnp->draw_lgnd_line_lbls;
+			if (! cnp->line_lbls.on)
+				do_it = False;
+			else
+				do_it = cnp->draw_lgnd_line_lbls;
 			changed = True;
 		}
 		else if (cnp->llabel_spacing != ocnp->llabel_spacing) {
-			if (cnp->llabel_spacing == NhlcnNOLABELS)
+			if (! cnp->line_lbls.on)
 				do_it = False;
 			changed = True;
 		}
@@ -5139,7 +5140,7 @@ static NhlErrorTypes ManageLabelBar
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
- 	if (! tfp->overlay_plot_base ||
+ 	if (! tfp->overlay_on ||
 	    cnp->display_labelbar == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -5179,7 +5180,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelAlignment,NhlLB_EXTERNALEDGES);
+			   NhlNlbLabelAlignment,NhllbEXTERNALEDGES);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,cnp->llabel_strings);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -5759,7 +5760,7 @@ static NhlErrorTypes ManageAnnotation
  * If the Contour plot is an overlay plot base register the annotation with
  * its own base, ensuring that it will always follow the overlay.
  */
-		if (tfp->overlay_plot_base)
+		if (tfp->overlay_on)
 			subret = NhlRegisterAnnotation(cnnew->base.id,
 						       *idp);
 		else 
@@ -6233,7 +6234,6 @@ ConstrainJustification
 		case NhlBOTTOMRIGHT:
 			return NhlBOTTOMLEFT;
 		}
-	case NhlBOTH:
 	case NhlCENTER:
 	default:
 		break;
@@ -8246,6 +8246,13 @@ static NhlErrorTypes    SetupLevelsExplicit
 	float			*fp;
 	float			ftmp;
 
+	if (cnp->levels == NULL || cnp->levels->num_elements < 1) {
+		ret = MIN(NhlWARNING,ret);
+		e_text = 
+	      "%s: %s is NULL: defaulting to Automatic level selection mode";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNcnLevels);
+		return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+	}
 	count = cnp->levels->num_elements;
 
 	if ((count = cnp->levels->num_elements) > Nhl_cnMAX_LEVELS) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.7 1994-10-13 19:30:06 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.8 1994-10-27 01:36:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,15 +28,6 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/IrregularPlotP.h>
-
-#if 0
-static NhlResource resources[] = {
-	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
-		NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlIrregularPlotLayerRec,trans.overlay_plot_base),
-		NhlTImmediate,(NhlPointer)False},
-};
-#endif
 
 /* base methods */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.5 1994-09-08 01:34:39 dbrown Exp $
+ *      $Id: View.h,v 1.6 1994-10-27 01:37:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,8 +39,7 @@ typedef enum _NhlPosition {
 	NhlBOTTOM,
 	NhlRIGHT,
 	NhlLEFT,
-	NhlCENTER,
-	NhlBOTH       /* LabelBar needs this */
+	NhlCENTER
 } NhlPosition;
 
 /* justification enumeration */

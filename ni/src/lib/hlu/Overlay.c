@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.25 1994-10-15 00:29:56 dbrown Exp $
+ *      $Id: Overlay.c,v 1.26 1994-10-27 01:36:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2126,10 +2126,12 @@ static NhlErrorTypes SetViewTracking
 		     &x_pos,&y_pos,NULL,NULL,&status,&oo_range);
 	if (status) {
 		NhlLayer anl = _NhlGetLayer(anno_rec->anno_id);
+#if 0
 		e_text = 
 	     "%s: annotation \"%s\" track point not in range: cannot display";
 		ret = MIN(ret,NhlWARNING);
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,anl->base.name);
+#endif
 		anno_rec->out_of_range = True;
 		return ret;
 	}
@@ -2674,7 +2676,6 @@ ConstrainJustification
 		case NhlBOTTOMRIGHT:
 			return NhlBOTTOMLEFT;
 		}
-	case NhlBOTH:
 	case NhlCENTER:
 	default:
 		break;
@@ -4219,7 +4220,7 @@ NhlErrorTypes NhlAddToOverlay
 
 	plot_tfp = &(((NhlTransformLayer)plot)->trans);
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_plot_base ||
+	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
@@ -4507,7 +4508,7 @@ NhlErrorTypes NhlRemoveFromOverlay
 	}
 
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_plot_base ||
+	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
@@ -4529,7 +4530,7 @@ NhlErrorTypes NhlRemoveFromOverlay
 	if (plot_id == base_id) {
 		NhlSArg			sarg;
 
-		NhlSetSArg(&sarg,NhlNtfOverlayPlotBase,False);
+		NhlSetSArg(&sarg,NhlNtfOverlayOn,False);
 		subret = NhlALSetValues(base_id,&sarg,1); 
 		return MIN(subret,ret);
 	}
@@ -4696,7 +4697,7 @@ NhlErrorTypes NhlRegisterAnnotation
  * layer pointer from the base plot's transform layer.
  */
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_plot_base ||
+	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
@@ -4840,7 +4841,7 @@ NhlErrorTypes NhlUnregisterAnnotation
  * layer pointer from the base plot's transform layer.
  */
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_plot_base ||
+	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
@@ -5297,13 +5298,13 @@ extern NhlErrorTypes _NhlManageOverlay
 	int			lsarg_count = 8; /* Keep up to date!!! */
 
 	if (*overlay_object == NULL) {
-		if (! tfp->overlay_plot_base)
+		if (! tfp->overlay_on)
 			return ret;
 		else if (! init) {
 			e_text = "%s: resetting create-only resource: %s";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtfOverlayPlotBase);
-			tfp->overlay_plot_base = False;
+				  entry_name,NhlNtfOverlayOn);
+			tfp->overlay_on = False;
 			return NhlWARNING;
 		}
 	}
@@ -5355,13 +5356,13 @@ extern NhlErrorTypes _NhlManageOverlay
 		tfp->overlay_status = _tfCurrentOverlayBase;
 		return ret;
 	}
-	else if (tfp->overlay_plot_base == False) {
+	else if (tfp->overlay_on == False) {
 
 		if (tfp->overlay_status == _tfCurrentOverlayMember) {
 			e_text = 
 	       "%s: must remove from overlay before destroying overlay base";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			tfp->overlay_plot_base = True;
+			tfp->overlay_on = True;
 		}
 		else {
 			subret = _NhlDestroyChild((*overlay_object)->base.id,

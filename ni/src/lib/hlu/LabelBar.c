@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.16 1994-09-23 23:36:44 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.17 1994-10-27 01:36:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/LabelBarP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 /* default pattern list */
 
@@ -62,9 +63,10 @@ static NhlResource resources[] = {
 {NhlNlbBoxCount, NhlClbBoxCount, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_count),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 16),0,NULL},
-{NhlNlbBoxSizing, NhlClbBoxSizing, NhlTInteger,
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_sizing),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlLB_UNIFORMSIZING),0,NULL},
+{NhlNlbBoxSizing, NhlClbBoxSizing, NhlTlbBoxSizingMode,
+	 sizeof(NhllbBoxSizingMode),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_sizing),
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhllbUNIFORMSIZING),0,NULL},
 
 {NhlNlbAutoManage, NhlClbAutoManage, NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.auto_manage),
@@ -81,10 +83,6 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_scale),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-{NhlNlbMaxLabelAngleAdditionF, NhlClbMaxLabelAngleAdditionF, NhlTFloat,
-	 sizeof(float), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle_add),
-	 NhlTString,_NhlUSET("0.15"),0,NULL},
 {NhlNlbLabelOffsetF, NhlClbLabelOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_off),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -103,9 +101,6 @@ static NhlResource resources[] = {
 {NhlNlbTopMarginF, NhlClbTopMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.t),
 	 NhlTString,_NhlUSET("0.05"),0,NULL},
-{NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.margin_mode),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 
 {NhlNlbFillPatterns, NhlClbFillPatterns, NhlTIntegerGenArray,
 	 sizeof(NhlPointer), 
@@ -143,9 +138,10 @@ static NhlResource resources[] = {
 {NhlNlbLabelAngleF, NhlClbLabelAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
-{NhlNlbLabelAlignment, NhlClbLabelAlignment, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_alignment),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlLB_BOXCENTERS),0,NULL},
+{NhlNlbLabelAlignment, NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
+	 sizeof(NhllbLabelAlignmentMode), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_alignment),
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhllbBOXCENTERS),0,NULL},
 {NhlNlbLabelDirection,NhlClbLabelDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_direction),
@@ -259,13 +255,13 @@ static NhlResource resources[] = {
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
 {NhlNlbPerimColor, NhlClbPerimColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_color),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlLB_DEF_COLOR),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 {NhlNlbPerimFill, NhlClbPerimFill, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_fill),
-	 NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
 {NhlNlbPerimFillColor, NhlClbPerimFillColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_fill_color),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlLB_DEF_COLOR),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 {NhlNlbPerimThicknessF, NhlClbPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_thickness),
@@ -285,9 +281,17 @@ static NhlResource resources[] = {
 {NhlNlbFillLineThicknessF, NhlClbFillLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_line_thickness),
-	 NhlTString,_NhlUSET("1.0"),0,NULL}
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
 
 /* End-documented-resources */
+
+{NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
+	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.margin_mode),
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+{NhlNlbMaxLabelAngleAdditionF, NhlClbMaxLabelAngleAdditionF, NhlTFloat,
+	 sizeof(float), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle_add),
+	 NhlTString,_NhlUSET("0.15"),0,NULL}
 
 };
 
@@ -1112,9 +1116,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	lb_p->max_label_stride_count = 0;
 	lb_p->max_label_draw_count = 0;
-	if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+	if (lb_p->label_alignment == NhllbBOXCENTERS)
 		lb_p->current_label_count = lb_p->box_count;
-	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+	else if (lb_p->label_alignment == NhllbINTERIOREDGES)
 		lb_p->current_label_count = lb_p->box_count - 1;
 	else
 		lb_p->current_label_count = lb_p->box_count + 1;
@@ -1448,9 +1452,9 @@ static NhlErrorTypes    ManageDynamicArrays
  * created for the additional elements.
  */
 
-	if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+	if (lb_p->label_alignment == NhllbBOXCENTERS)
 		count = lb_p->box_count;
-	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+	else if (lb_p->label_alignment == NhllbINTERIOREDGES)
 		count = lb_p->box_count - 1;
 	else
 		count = lb_p->box_count + 1;
@@ -2298,7 +2302,7 @@ static NhlErrorTypes    SetBoxLocations
 	int i;
 	float *box_fractions = (float *)lb_p->box_fractions->data;
 
-	if (lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
+	if (lb_p->box_sizing == NhllbEXPLICITSIZING) {
 		ret1 = ManageBoxFractionsArray(box_fractions,lb_p->box_count);
 	}
 	ret = MIN(ret,ret1);
@@ -2311,7 +2315,7 @@ static NhlErrorTypes    SetBoxLocations
 	       sizeof(NhlBoundingBox));
 	memcpy((void *)&lb_p->adj_box_size, (Const void *)&lb_p->box_size,
 	       sizeof(NhlCoord));
-	if (lb_p->label_alignment == NhlLB_EXTERNALEDGES) {
+	if (lb_p->label_alignment == NhllbEXTERNALEDGES) {
 		if (lb_p->orient == NhlHORIZONTAL) {
 			lb_p->adj_box_size.x = lb_p->box_size.x * 
 				lb_p->box_count / (lb_p->box_count + 1);
@@ -2329,7 +2333,7 @@ static NhlErrorTypes    SetBoxLocations
 				lb_p->bar.t - lb_p->adj_box_size.y / 2.0;
 		}
 	}
-	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES) {
+	else if (lb_p->label_alignment == NhllbINTERIOREDGES) {
 		if (lb_p->orient == NhlHORIZONTAL) {
 			lb_p->labels.l = lb_p->bar.l + lb_p->box_size.x / 2.0;
 			lb_p->labels.r = lb_p->bar.r - lb_p->box_size.x / 2.0;
@@ -2345,7 +2349,7 @@ static NhlErrorTypes    SetBoxLocations
  */
 		
 	if (lb_p->orient == NhlHORIZONTAL &&
-	    lb_p->box_sizing == NhlLB_UNIFORMSIZING) {
+	    lb_p->box_sizing == NhllbUNIFORMSIZING) {
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.l + 
 				(float) i * lb_p->adj_box_size.x;
@@ -2353,7 +2357,7 @@ static NhlErrorTypes    SetBoxLocations
 		lb_p->box_locs[lb_p->box_count] = lb_p->adj_bar.r;
 	}
 	if (lb_p->orient == NhlVERTICAL &&
-	    lb_p->box_sizing == NhlLB_UNIFORMSIZING) {
+	    lb_p->box_sizing == NhllbUNIFORMSIZING) {
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.b + 
 				(float) i * lb_p->adj_box_size.y;
@@ -2361,7 +2365,7 @@ static NhlErrorTypes    SetBoxLocations
 		lb_p->box_locs[lb_p->box_count] = lb_p->adj_bar.t;
 	}
 	if (lb_p->orient == NhlHORIZONTAL &&
-	    lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
+	    lb_p->box_sizing == NhllbEXPLICITSIZING) {
 		bar_len = lb_p->adj_bar.r - lb_p->adj_bar.l;
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.l + 
@@ -2370,7 +2374,7 @@ static NhlErrorTypes    SetBoxLocations
 		lb_p->box_locs[lb_p->box_count] = lb_p->adj_bar.r;
 	}
 	if (lb_p->orient == NhlVERTICAL &&
-	    lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
+	    lb_p->box_sizing == NhllbEXPLICITSIZING) {
 		bar_len = lb_p->adj_bar.t - lb_p->adj_bar.b;
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.b + 
@@ -2705,7 +2709,7 @@ static NhlErrorTypes    SetLabels
  * offset is negative
  */
 	if (lb_p->label_pos == NhlCENTER || label_offset < 0.0) {
-		if (lb_p->label_alignment == NhlLB_BOXCENTERS) {
+		if (lb_p->label_alignment == NhllbBOXCENTERS) {
 			c_frac = lb_p->box_major_ext;
 		}
 		else {
@@ -2728,7 +2732,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant Y axis value and the justification */
 		switch (lb_p->label_pos) {
-		case NhlBOTH:
 		case NhlLEFT:
 		case NhlRIGHT:
 		default:
@@ -2764,7 +2767,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant Y axis value and the justification */
 		switch (lb_p->label_pos) {
-		case NhlBOTH:
 		case NhlLEFT:
 		case NhlRIGHT:
 		default:
@@ -2799,7 +2801,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		switch (lb_p->label_pos) {
-		case NhlBOTH:
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
@@ -2833,7 +2834,6 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		switch (lb_p->label_pos) {
-		case NhlBOTH:
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
@@ -2859,7 +2859,7 @@ static NhlErrorTypes    SetLabels
  * Now find the variable label positions
  */
 
-	if (lb_p->box_sizing == NhlLB_UNIFORMSIZING) {
+	if (lb_p->box_sizing == NhllbUNIFORMSIZING) {
 
 		if (lb_p->orient == NhlHORIZONTAL) {
 		
@@ -2868,9 +2868,9 @@ static NhlErrorTypes    SetLabels
 			base_pos = lb_p->adj_bar.l;
 		       
 			/* determine offset */
-			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+			if (lb_p->label_alignment == NhllbBOXCENTERS)
 				offset = lb_p->adj_box_size.x / 2.0;
-			else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+			else if (lb_p->label_alignment == NhllbINTERIOREDGES)
 				offset = lb_p->adj_box_size.x;
 			else
 				offset = 0;
@@ -2884,9 +2884,9 @@ static NhlErrorTypes    SetLabels
 			base_pos = lb_p->adj_bar.b;
 		       
 			/* determine offset */
-			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+			if (lb_p->label_alignment == NhllbBOXCENTERS)
 				offset = lb_p->adj_box_size.y / 2.0;
-			else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+			else if (lb_p->label_alignment == NhllbINTERIOREDGES)
 				offset = lb_p->adj_box_size.y;
 			else
 				offset = 0;
@@ -2901,11 +2901,11 @@ static NhlErrorTypes    SetLabels
 		for (i=0; i < lb_p->label_draw_count; i++) {
 
 			ix = i * lb_p->label_stride;
-			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+			if (lb_p->label_alignment == NhllbBOXCENTERS)
 				lb_p->label_locs[i] = lb_p->box_locs[ix] +
 					(lb_p->box_locs[ix+1] -
 					  lb_p->box_locs[ix]) / 2.0;
-			else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+			else if (lb_p->label_alignment == NhllbINTERIOREDGES)
 				lb_p->label_locs[i] = lb_p->box_locs[ix+1];
 			else
 				lb_p->label_locs[i] = lb_p->box_locs[ix];
@@ -4107,6 +4107,22 @@ static NhlErrorTypes    LabelBarClassInitialize
 ()
 #endif
 {
+        _NhlEnumVals   labelalignmentlist[] = {
+	{NhllbBOXCENTERS, "boxcenters"},
+	{NhllbINTERIOREDGES, "interioredges"},
+	{NhllbEXTERNALEDGES, "externaledges"}
+        };
+
+        _NhlEnumVals   boxsizinglist[] = {
+        {NhllbUNIFORMSIZING,	"uniformsizing"},
+        {NhllbEXPLICITSIZING,	"explicitsizing"},
+        };
+
+	_NhlRegisterEnumType(NhlTlbLabelAlignmentMode,labelalignmentlist,
+			     NhlNumber(labelalignmentlist));
+	_NhlRegisterEnumType(NhlTlbBoxSizingMode,boxsizinglist,
+			     NhlNumber(boxsizinglist));
+
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);
