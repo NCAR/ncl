@@ -1,4 +1,4 @@
-# $Id: udunits.dat,v 1.1 2003-02-26 19:31:54 haley Exp $
+# $Id: udunits.dat,v 1.2 2004-10-14 15:03:39 haley Exp $
 #
 # The first column is the unit name.  The second column indicates whether or
 # not the unit name has a plural form (i.e. with an 's' appended).  
@@ -140,7 +140,7 @@ atomic_mass_unit	P 1.66054e-27 kilogram	# was 1.66044e-27
 
 tonne			P metric_ton
 apothecary_ounce	P troy_ounce
-apothecary_pound	P avoirdupois_pound
+apothecary_pound	P troy_pound
 pound			P avoirdupois_pound
 metricton		P metric_ton
 gr			S grain
@@ -212,6 +212,7 @@ in			S inches		# alias
 feet			S foot			# alias
 ft			S feet			# alias
 yd			S yard			# alias
+mi			S mile			# alias
 
 chain			P 2.011684e1 meter
 
@@ -254,7 +255,7 @@ sidereal_year		P 3.155815e7 second
 tropical_year		P 3.15569259747e7 second
 lunar_month		P 29.530589 day
 
-common_year		P 365 day		# exact: 153600e7 seconds
+common_year		P 365 day		# exact: 3.153600e7 seconds
 leap_year		P 366 day		# exact
 Julian_year		P 365.25 day		# exact
 Gregorian_year		P 365.2425 day		# exact
@@ -339,7 +340,7 @@ standard_free_fall	S 9.806650 meter/second2	# exact
 
 pascal			P newton/meter2
 joule			P newton.meter
-hz			S hertz
+Hz			S hertz
 sr			S steradian
 force			S standard_free_fall
 gravity			S standard_free_fall
@@ -397,6 +398,8 @@ circular_mil		P 5.067075e-10 m2
 darcy			P 9.869233e-13 m2	# permeability of porous solids
 hectare			P 1e4 m2		# exact
 acre			P 160 rod2		# exact
+
+b                       S barn
 
 #
 # ELECTRICITY AND MAGNETISM
@@ -691,7 +694,6 @@ dr			S dram
 # COMPUTERS AND COMMUNICATION
 #
 baud			S 1/second		# exact
-b			S bit
 bps			S bit/second
 cps			S hertz
 
