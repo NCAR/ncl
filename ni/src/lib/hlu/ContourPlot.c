@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.11 1995-05-03 03:11:06 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.12 1995-05-04 01:09:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7353,15 +7353,9 @@ static NhlErrorTypes    ManageDynamicArrays
 	cnp->fill_colors = ga;
 
 	if (init || changed) {
-		int len, spacing;
-
 		ip = (int *) ga->data;
-		NhlVAGetValues(cnew->base.wkptr->base.id,
-			       NhlNwkColorMapLen, &len, NULL);
-	
-		spacing = MAX(len / count, 1); 
 		for (i=init_count; i < count; i++) {
-			ip[i] = 1 + i * spacing;
+			ip[i] = 1 + i;
 		}
 	}
 
@@ -7994,16 +7988,13 @@ static NhlErrorTypes	CheckColorArray
 	NhlErrorTypes ret = NhlNOERROR;
 	char *e_text;
 	int *ip;
-	int i, len, spacing;
+	int i;
 	
 
 	ip = (int *) ga->data;
-	NhlVAGetValues(cl->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len, NULL);
-	
-	spacing = MAX(len / count, 1); 
+
 	for (i=init_count; i < count; i++) {
-		ip[i] = 1 + i * spacing;
+		ip[i] = 1 + i;
 	}
 
 	if (last_count == 0) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.36 1995-04-29 18:53:13 boote Exp $
+ *      $Id: Legend.c,v 1.37 1995-05-04 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1291,7 +1291,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /*=======================================================================*/
 /* 
- * Initialize the color array:  
+ * Initialize the color array starting with the foreground color (index 1):  
  * Create an array that contains the larger of the default box
  * count and the supplied box count. Fill it with the default color array 
  * values up to the default box count size, and the single default color value
@@ -1312,10 +1312,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlgLineColors);
 		return NhlFATAL;
 	}
-	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
-		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
-		i_p[i] = i;
+	for (i=0; i < count; i++)
+		i_p[i] = i + 1;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1346,10 +1344,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlgMarkerColors);
 		return NhlFATAL;
 	}
-	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
-		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
-		i_p[i] = i;
+	for (i=0; i < count; i++)
+		i_p[i] = i + 1;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1707,11 +1703,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 		return NhlFATAL;
 	}
 
-
-	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
-		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
-		i_p[i] = i;
+	for (i=0; i < count; i++)
+		i_p[i] = i + 1;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
@@ -2055,6 +2048,9 @@ static NhlErrorTypes    ManageDynamicArrays
 				  NhlNlgLineColors);
 			return NhlFATAL;
 		}
+		for (i=lg_p->line_colors->num_elements; i<count; i++) {
+			i_p[i] = i + 1;
+		}
 
 		lg_p->line_colors->data = (NhlPointer) i_p;
 		lg_p->line_colors->num_elements = count;
@@ -2086,6 +2082,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgMarkerColors);
 			return NhlFATAL;
+		}
+		for (i=lg_p->marker_colors->num_elements; i<count; i++) {
+			i_p[i] = i + 1;
 		}
 
 		lg_p->marker_colors->data = (NhlPointer) i_p;
@@ -2400,7 +2399,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /*=======================================================================*/
 /*
- * Manage the item string colors array: if the array has changed copy the new
+ * Manage the line label colors array: if the array has changed copy the new
  * array elements, check them for validity and get the GKS index.
  * Then if the box count is greater than the current array size, enlarge
  * the array and give initial values to the new elements.
@@ -2429,6 +2428,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLineLabelFontColors);
 			return NhlFATAL;
+		}
+		for (i=lg_p->line_label_colors->num_elements; i<count; i++) {
+			i_p[i] = i + 1;
 		}
 
 		lg_p->line_label_colors->data = (NhlPointer) i_p;

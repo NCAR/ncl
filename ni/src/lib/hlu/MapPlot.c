@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.35 1995-04-27 21:21:49 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.36 1995-05-04 01:09:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -881,8 +881,9 @@ static NhlBoolean US_Amap_Inited;
 
 #if 0
 static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
-#endif
 static int Init_Colors[] ={84,56,74,56,89,65,81,70,39,68,72,56,95};
+#endif
+static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
 
 
 static mpOutlineRec *OutRecs = NULL;

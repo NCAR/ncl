@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.34 1995-04-27 16:58:29 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.35 1995-05-04 01:09:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -110,8 +110,6 @@ ResourceUnset
 /* default pattern list */
 
 static int def_patterns[] = { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-static int def_colors[] = { 
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 static char Init_Name[] = "LabelBarInitialize";
@@ -985,18 +983,12 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /*=======================================================================*/
 /* 
- * Initialize the color array:  
- * Create an array that contains the larger of the default box
- * count and the supplied box count. Fill it with the default color array 
- * values up to the default box count size, and the single default color value
- * for the rest of the elements. 
+ * Initialize the color array starting with index 1, the foreground color. 
  * Then if the user has supplied a generic array copy it over the 
  * created array. Then check each element to ensure that
  * it is a valid color index.
  */
 
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len, NULL);
 	count = MAX(lb_p->box_count, NhlLB_DEF_BOX_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
@@ -1004,10 +996,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlbFillColors);
 		return NhlFATAL;
 	}
-	for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
-		i_p[i] = def_colors[i];
-	for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
-		i_p[i] = i < len ? i : NhlLB_DEF_COLOR;
+	for (i=0; i<count; i++)
+		i_p[i] = i + 1;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1081,7 +1071,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	for (i=0; i<count; i++) {
 		if (i_p[i] < NhlHOLLOWFILL) {
 			e_text =
-	       "%s: %s index %d holds an invalid color value, %d: defaulting";
+	       "%s: %s index %d holds an invalid fill value, %d: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlbFillPatterns, i, i_p[i]);
 		        ret = MIN(ret, NhlWARNING);
@@ -1318,8 +1308,6 @@ static NhlErrorTypes    ManageDynamicArrays
  * the array and give initial values to the new elements.
  */
 
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len, NULL);
 	count = lb_p->box_count;
 
 	if (lb_p->fill_colors != olb_p->fill_colors) {
@@ -1347,7 +1335,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			return NhlFATAL;
 		}
 		for (i=lb_p->fill_colors->num_elements; i<count; i++) {
-			i_p[i] = i < len ? i : NhlLB_DEF_COLOR;
+			i_p[i] = i + 1;
 		}
 
 		lb_p->fill_colors->data = (NhlPointer) i_p;
