@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.1 1991-08-16 11:07:07 clyne Exp $
+ *      $Id: ncarg_path.c,v 1.2 1992-03-26 18:22:50 clyne Exp $
  */
 /*
  *	File:		ncarg_path.c

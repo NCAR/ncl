@@ -1,6 +1,6 @@
 
 /*
- *      $Id: version.c,v 1.3 1992-02-24 17:54:21 clyne Exp $
+ *      $Id: version.c,v 1.4 1992-03-26 18:23:01 clyne Exp $
  */
 /*
  *	File:		version.c

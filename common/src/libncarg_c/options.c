@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.5 1991-08-16 11:06:04 clyne Exp $
+ *	$Id: options.c,v 1.6 1992-03-26 18:22:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
  */
 #include <stdio.h>
 #include <sys/types.h>
+#include <errno.h>
 #include <ncarv.h>
 
 static	OptDescRec	*optDescRec = NULL;	/* the option table	*/
@@ -33,150 +34,218 @@ static	int		optDescRecSize = 0;	/* mem alloced to table */
 static	int		optDescRecNum = 0;	/* num elements in table*/
 
 /*
- *	conv_to_int:
+**
+**	Type converters. The following functions convert string representations
+**	of data into their primitive data formats. A NULL 'from' value
+**	should result in a reasonable value.
+**
+*/
+
+/*
+ *	NCARGCvtToInt()
  *
  *	convert a ascii string to its integer value
  */
-static	conv_to_int(s, value)
-	char	*s;	/* the string	*/
-	IntType_	*value;	/* it value	*/
+int	NCARGCvtToInt(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
 {
-	if (sscanf(s, "%d", value) != 1) {
+	int	*iptr	= (int *) to;
 
-		(void) fprintf(stderr, 
-			"Type conversion for %s to int failed\n", s);
-
+	if (! from) {
+		*iptr = 0;
 	}
+	else if (sscanf(from, "%d", iptr) != 1) {
+		ESprintf(EINVAL, "Convert(%s) to int failed", from);
+		return(-1);
+	}
+	return(1);
 }
+
 /*
- *	conv_to_float:
+ *	NCARGCvtToFloat()
  *
  *	convert a ascii string to its floating point value
  */
-static	conv_to_float(s, value)
-	char	*s;	/* the string	*/
-	FloatType_	*value;	/* it value	*/
+int	NCARGCvtToFloat(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
 {
-	if (sscanf(s, "%f", value) != 1) {
-
-		(void) fprintf(stderr, 
-			"Type conversion for %s to int failed\n", s);
-
+	float	*fptr	= (float *) to;
+	if (! from) {
+		*fptr = 0.0;
 	}
+	else if (sscanf(from, "%f", fptr) != 1) {
+		ESprintf(EINVAL, "Convert(%s) to float failed", from);
+		return(-1);
+	}
+	return(1);
 }
+
 /*
- *	conv_to_bool:
+ *	NCARGCvtToChar()
+ *
+ *	convert a ascii string to a char.
+ */
+int	NCARGCvtToChar(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
+{
+	char	*cptr	= (char *) to;
+
+	if (! from) {
+		*cptr = '\0';
+	}
+	else if (sscanf(from, "%c", cptr) != 1) {
+		ESprintf(EINVAL, "Convert(%s) to char failed", from);
+		return(-1);
+	}
+	return(1);
+}
+
+
+/*
+ *	NCARGConvetToBoolean()
  *
  *	convert a ascii string containing either "true" or "false" to
- *	to 1 or 0
+ *	to TRUE or FALSE
  */
-static	conv_to_bool(s, value)
-	char	*s;
-	BoolType_	*value;
+int	NCARGCvtToBoolean(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
 {
-	if (strcmp("true", s) == 0) {
-		*value = 1;
-		return;
-	}
+	boolean	*bptr	= (boolean *) to;
 
-	if (strcmp("false", s) == 0) {
-		*value = 0;
-		return;
+	if (! from) {
+		*bptr = FALSE;
 	}
-
-	(void) fprintf(stderr, "Type conversion for %s to boolean failed\n", s);
+	else if (strcmp("true", from) == 0) {
+		*bptr = TRUE;
+	}
+	else if (strcmp("false", from) == 0) {
+		*bptr = FALSE;
+	}
+	else {
+		ESprintf(EINVAL, "Convert(%s) to boolean failed", from);
+		return(-1);
+	}
+	return(1);
 }
 
 /*
- *	getOptions
+ *	NCARGCvtToString()
+ *
+ */
+int	NCARGCvtToString(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
+{
+	char	**sptr	= (char **) to;
+	*sptr = from;
+}
+
+
+/*
+ *	GetOptions
  *	[exported]
  *
- *	getOptions may be called after parseOptionTable in order to 
+ *	GetOptions may be called after ParseOptionTable in order to 
  *	retrieve values from the option table. The values in the option
- *	data base are converted into appropriate types as requested in
- *	"options". Currently only StringType, BoolType and IntType are
- *	supported.
+ *	data base are converted into appropriate types by calling the 
+ *	type converter specifed in 'options' for each option.
+ *
+ *	The fields of the Option struct are as follows:
+ *
+ *	char		*option_name;	the options name - used to look the
+ *					requested option in the option table.
+ *	int		(*type_conv)();	option type converter - converts the
+ *					string representation of the option
+ *					value into a specified format and store
+ *					the result at address given by 'offset'
+ *	Voidptr		offset;		offset of return address
+ *	int		size;		size of option in bytes - if there are
+ *					multiple arguments for a single option
+ *					their destination address is computed
+ *					by adding 'size' to 'offset' as
+ *					appropriate.
+ *
+ *	GetOptions() invokes ESprintf() on failure.
+ *
+ *
  * on entry
- *	base		: the base address of the data object that will
- *			  contain option values returned by getOptions
  *	options		: Null terminated list of options to be returned
+ *
+ * on exit
+ *	return		: -1 => failure, else OK
  */
-getOptions(base, options)
-	caddr_t		base;
+GetOptions(options)
 	Option		*options;
 {
 
-	int	i;
+	int	i, j;
+	char	*s;
+	int	arg_count;
 
-	StringType_	string_value;
-	IntType_	int_value;
-	FloatType_	float_value;
-	BoolType_	bool_value;
-	OptDescRec	*opt;
-	OptDescRec	*get_option();
-
-	unsigned long	address;
+	OptDescRec	*optd, *get_option();
+	Voidptr		offset;
 
 	for (i = 0; options[i].option_name; i++ ) {
 
-		opt = get_option(options[i].option_name);/* find the option */
+		optd = get_option(options[i].option_name);/* find the option */
 
-		if (opt == (OptDescRec *) NULL) {
-			(void) fprintf(stderr, "Couldn't find option: %s\n", 
-				options[i].option_name);
-			continue;
+		if (optd == (OptDescRec *) NULL) {
+			ESprintf(
+				EINVAL, "Option %s unknown", 
+				options[i].option_name
+			);
+			return(-1);
 		}
 
 		/*
-		 * address of storage for option
+		 * zero arg_count options really do have a single argument
 		 */
-		address = (unsigned long) base + options[i].option_offset;
+		arg_count = optd->arg_count ? optd->arg_count : 1;
 
-		switch ((int) options[i].option_type) {
-		case	StringType:
-			string_value =  (StringType_) &opt->value[0];
-			bcopy((char *) &string_value, (char *) address,
-				(int) options[i].option_size);
-			break;
-
-		case	IntType:
-			conv_to_int(opt->value, &int_value);
-			bcopy((char *) &int_value, (char *) address,
-				(int) options[i].option_size);
-			break;
-
-		case	BoolType:
-			conv_to_bool(opt->value, &bool_value);
-			bcopy((char *) &bool_value, (char *) address,
-				(int) options[i].option_size);
-			break;
-
-		case	FloatType:
-			conv_to_float(opt->value, &float_value);
-			bcopy((char *) &float_value, (char *) address,
-				(int) options[i].option_size);
-			break;
-		default	:
-			(void) fprintf(stderr, "Unsupported option type\n");
-			break;
+		offset = options[i].offset;
+		for(j=0,s=optd->value; j<arg_count; j++){
+			if (options[i].type_conv(s, offset) < 0) {
+				return(-1);
+			}
+			if (s) s += strlen(s) + 1;
+			offset = (char *) offset + options[i].size;
 		}
 	}
+	return(1);
 }
 
 
 /*
- *	buildOptionTable
+ *	LoadOptionTable
  *	[exported]
  *
  *	Add a list of valid application options to the option table. All 
- *	options are assumed to begin with a '-' and contain 0 or 1 arguments.
- *	If an option has more than 1 arg it must be quoted and treated as a
- *	single string.
+ *	options are assumed to begin with a '-' and contain 0 or more arguments.
+ *
+ *	The fields of the OptDescRec struct are as follows: 
+ *
+ *	char	*option;	name of option without preceeding '-'
+ *	int	arg_count;	num args expected by option
+ *	char	*value;		default value for the argument - if 'arg_count'
+ *				is zero 'value' is ignored. if 'arg_count' is 
+ *				greater than 1 'value' is a string of space 
+ *				separted arguments.
+ *	char	*help;		help string for option
+ *
+ *	LoadOptionTable() invokes ESprintf() on error.
+ *
  * on entry
- *	opts		: Null terminated list of options
+ *	optd		: Null terminated list of options
+ *
+ * on exit
+ *	return		: -1 => failure, else OK.
  */
-buildOptionTable(opts)
-	OptDescRec	*opts;
+LoadOptionTable(optd)
+	OptDescRec	*optd;
 {
 
 	int	i,j,n;
@@ -184,8 +253,9 @@ buildOptionTable(opts)
 	static	short	first = 1;
 
 	extern	char	*strcpy();
+	char	*fmt_opt_string();
 
-	if (! opts[0].option) return (0);
+	if (! optd[0].option) return (0);
 
 	/*
 	 * make sure there are no duplicate names in the table. This only 
@@ -193,9 +263,14 @@ buildOptionTable(opts)
 	 * entries within the new entries they won't be found. Count
 	 * how many options there are as well
 	 */
-	for (j = 0, num = 0; opts[j].option; j++) {
+	for (j = 0, num = 0; optd[j].option; j++) {
 		for ( i = 0; i < optDescRecNum; i++) {
-			if (strcmp(optDescRec[i].option, opts[j].option) == 0){
+			if (strcmp(optDescRec[i].option, optd[j].option) == 0){
+				ESprintf(
+					EINVAL, 
+					"Option %s already in option table", 
+					optd[j].option
+				);
 				return(-1);	/* duplicate entry	*/
 			}
 		}
@@ -206,16 +281,23 @@ buildOptionTable(opts)
 	 * if first time called malloc memory, else realloc memory.
 	 */
 	if (first) {
-		optDescRec = 
-			(OptDescRec *) icMalloc ((unsigned) 
-			((num+1) * sizeof(OptDescRec)));
+		if (! (optDescRec = (OptDescRec *) malloc ((unsigned) 
+			((num+1) * sizeof(OptDescRec))))) {
+
+			ESprintf(errno,"malloc(%d)",(num+1)*sizeof(OptDescRec));
+			return(-1);
+		}
 		optDescRecSize = num + 1;
 		first = 0;
 	}
 	else {
 		optDescRecSize += num;
-		optDescRec = (OptDescRec *) icRealloc ((char *) optDescRec, 
-			(unsigned) (sizeof (OptDescRec) * optDescRecSize));
+		if (! (optDescRec = (OptDescRec *) realloc ((char *)optDescRec, 
+			(unsigned) (sizeof (OptDescRec) * optDescRecSize)))) {
+
+			ESprintf(errno,"malloc(%d)",(num+1)*sizeof(OptDescRec));
+			return(-1);
+		}
 	}
 
 	/*
@@ -223,18 +305,27 @@ buildOptionTable(opts)
 	 * as necessary.
 	 */
 	for (i = 0, n = optDescRecNum; i < num; i++, optDescRecNum++, n++) {
-		optDescRec[n].option = optDescRec[n].value = NULL;
-		if (opts[i].option) {
-			optDescRec[n].option = (char *) icMalloc 
-				((unsigned) (strlen (opts[i].option) + 1));
-			(void) strcpy(optDescRec[n].option, opts[i].option);
+		if (optd[i].arg_count == 0) optd[i].value = "false";
+
+		if (! optd[i].option) {
+			ESprintf(EINVAL, ("Invalid option descriptor"));
+			return(-1);
 		}
-		if (opts[i].value) {
-			optDescRec[n].value = (char *) icMalloc 
-				((unsigned) (strlen (opts[i].value) + 1));
-			(void) strcpy(optDescRec[n].value, opts[i].value);
+
+		if (optd[i].value) {
+			optd[i].value = fmt_opt_string(
+				optd[i].value,optd[i].arg_count
+			);
+			if (! optd[i].value) {
+				return(-1);
+			}
 		}
-		optDescRec[n].arg_type  = opts[i].arg_type;
+
+		optDescRec[n].option = optd[i].option;
+		optDescRec[n].arg_count = optd[i].arg_count;
+		optDescRec[n].value = optd[i].value;
+		optDescRec[n].help = optd[i].help;
+
 	}
 	optDescRec[n].option = NULL;	/* terminate list  */
 	
@@ -243,39 +334,43 @@ buildOptionTable(opts)
 
 
 /*
- *	parseOptionTable
+ *	ParseOptionTable
  *	[exported]
  *
  *	parse the option table with the command line options. After the 
- *	option table is created with buildOptionTable this function may
+ *	option table is created with LoadOptionTable this function may
  *	be called to change values of options in the table. We assume
  *	argv[0] is the program name and we leave it unmolested
+ *
+ *	ESprintf() is invoked on error.
  *
  * on entry:
  *	**argv		: list of command line args
  *	*argc		: num elements in argv
- *	*opts		: additional options to merge into the option table
+ *	*optds		: additional options to merge into the option table
  * on exit
  *	**argv		: contains options not found in the option table
  *	*argc		: num elements in argv
+ *	return		: -1 => failure, else OK
  */
-parseOptionTable(argc, argv, opts)
+ParseOptionTable(argc, argv, optds)
 	int	*argc;
 	char	**argv;
-	OptDescRec	*opts;
+	OptDescRec	*optds;
 {
 	int	i;
 	char	**next = argv + 1;
-	OptDescRec	*opt;
+	OptDescRec	*optd;
 	int		new_argc = 1;
 
 	extern	OptDescRec	*get_option();
+	char	*copy_create_arg_string();
 
 	/*
 	 * if any options to be merged do so
 	 */
-	if (opts) {
-		(void) buildOptionTable(opts);
+	if (optds) {
+		(void) LoadOptionTable(optds);
 	}
 
 	if (! argv) return;
@@ -287,22 +382,22 @@ parseOptionTable(argc, argv, opts)
 	for (i = 1; i < *argc; i++) {
 
 		if (*argv[i] == '-') {	/* is it an option specifier?	*/
-			opt = get_option((char *) (argv[i] + 1));
+			optd = get_option((char *) (argv[i] + 1));
 		}
 		else {
-			opt = (OptDescRec *) NULL;	/* not a specifier */ 
+			optd = (OptDescRec *) NULL;	/* not a specifier */ 
 		}
 
-		if (opt == (OptDescRec *) -1) {
-			(void) fprintf(stderr,"Ambigous option: %s\n", argv[i]);
-			exit(1);
+		if (optd == (OptDescRec *) -1) {
+			ESprintf(EINVAL, "Ambiguous option: %s", argv[i]);
+			return(-1);
 		}
 
 		/*
 		 * if no match found leave option in argv along with anything
 		 * that follows that is not an option specifier
 		 */
-		if (opt == (OptDescRec *) NULL) {	/* not found	*/
+		if (optd == (OptDescRec *) NULL) {	/* not found	*/
 			*next = argv[i];
 			new_argc++;
 			next++;
@@ -316,38 +411,90 @@ parseOptionTable(argc, argv, opts)
 		}
 
 		/*
-		 * found an option. add it to the found option
-		 * table
+		 * make sure enough args for option
 		 */
-		if (opt->arg_type == OptSepArg) {
-			i++;
-			if (i >= *argc) {
-				(void) fprintf(stderr,
-					"Missing arg to: %s\n",argv[i-1]);
-				exit(1);
-			}
-			if (opt->value) cfree((char *) opt->value);
-			opt->value = argv[i];
+		if ((i + optd->arg_count) >= *argc) {
+			ESprintf(
+				EINVAL, "Option -%s expects %d args",
+				optd->option, optd->arg_count
+				);
+			return(-1);
+		}
+
+		/*
+		 * Options with no args are a special case. Assign them
+		 * a value of true. They are false by default
+		 */
+		if (optd->arg_count == 0) {
+			optd->value = "true";
 			continue;
 		}
 
-		if (opt->arg_type == OptIsArg) {
-			if (!opt->value)
-				opt->value = "true";
-			else if (strcmp(opt->value, "true") == 0) {
-				cfree((char *) opt->value);
-				opt->value = "false";
-			}
-			else  {	/* assume false	*/
-				cfree((char *) opt->value);
-				opt->value = "true";
-			}
-			continue;
+
+		/*
+		 * convert the arg list to a single string and stash it
+		 * in the option table
+		 */
+		optd->value =copy_create_arg_string(&argv[i+1],optd->arg_count);
+		if (! optd->value) {
+			return(-1);
 		}
+		i += optd->arg_count;
 				
 	}
 	*argc = new_argc;
 	argv[*argc] = NULL;
+
+	return(1);
+}
+
+/*
+ *	PrintOptionHelp()
+ *
+ *	Print help about each option.
+ *
+ *	Each option known to the option table is printed, followed by
+ *	the string "arg0 arg1 ... argN", where N+1 is the number of arguments
+ *	expected by the option, followed by the contents of the 'help' field.
+ *
+ * on entry
+ *	*fp		: file pointer where output is written.
+ */
+void	PrintOptionHelp(fp)
+	FILE	*fp;
+{
+	int	i,j;
+	char	buf[30];
+	char	sbf[20];
+
+	for(i=0; i<optDescRecNum; i++) {
+		sprintf(buf, "    -%-8.8s", optDescRec[i].option);
+		if (optDescRec[i].arg_count < 4) {
+			for(j=0; j<optDescRec[i].arg_count; j++) {
+				sprintf(sbf, " arg%d", j);
+				if (strlen(sbf) + strlen(buf) < sizeof(buf)) {
+					(void) strcat(buf, sbf);
+				}
+				else {
+					break;
+				}
+			}
+		}
+		else {
+			sprintf(sbf," arg0 .. arg%d",optDescRec[i].arg_count-1);
+			(void) strcat(buf, sbf);
+		}
+		(void) fprintf(fp, buf);
+		for(j=strlen(buf); j<sizeof(buf); j++) {
+			putc(' ', fp);
+		}
+		if (optDescRec[i].help) {
+			(void) fprintf(fp, "%s\n", optDescRec[i].help);
+		}
+		else {
+			(void) fprintf(fp, "\n");
+		}
+	}
 }
 
 /*
@@ -388,4 +535,57 @@ static	OptDescRec	*get_option (name)
 	if (nmatches > 1)	/* ambiguous	*/
 		return ((OptDescRec *)-1);
 	return (found);
+}
+
+/*
+ * convert an array of strings into a singe contiguous array of strings
+ */
+static	char	*copy_create_arg_string(argv, argc)
+	char	**argv;
+	int	argc;
+{
+	char	*s,*t;
+	int	i,
+		len;	/* lenght of new arg string	*/
+
+	for(len=0,i=0; i<argc; i++) {
+		len += strlen(argv[i]);
+		len++;	/* one for the space	*/
+	}
+
+	if ((s = (char *) malloc(len +1)) == NULL) {
+		ESprintf(errno, "malloc(%d)", len+1);
+		return(NULL);
+	}
+	s = strcpy(s, argv[0]);
+	for(i=1, t=s; i<argc; i++) {
+		t += strlen(t);
+		*t++ = '\0';
+		(void) strcpy(t, argv[i]);
+	}
+	return(s);
+}
+
+/*
+ * convert a space seprated string to an array of contiguous strings
+ */
+char	*fmt_opt_string(arg, n)
+	char	*arg;
+	int	n;
+{
+	int	i;
+	char	*s;
+
+	for (i=1, s = arg; i<n; i++) {
+		while(*s && ! isspace(*s)) s++;
+
+		if (! *s) {
+			ESprintf(EINVAL, "Arg string invalid: %s", arg);
+			return(NULL);
+		}
+		*s++ = '\0';
+
+		while(*s && isspace(*s)) s++;
+	}
+	return(arg);
 }

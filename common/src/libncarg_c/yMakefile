@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.4 1992-02-13 14:03:04 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-03-26 18:23:03 clyne Exp $
 #
 #
 #	Makefile for libncarv -- NCAR View library of general routines
@@ -19,9 +19,11 @@ VMSOBJS		= vms-unix.o
 VMSSRCS		= vms-unix.c
 #endif
 
-INCLUDES	= boolean.h options.h icmalloc.h ncarv.h common.h
-SRCS		= options.c icmalloc.c misc.c ncarg_path.c version.c $(VMSSRCS)
-OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o $(VMSOBJS)
+INCLUDES	= ncarv.h 
+SRCS		= options.c icmalloc.c misc.c ncarg_path.c version.c \
+		error.c $(VMSSRCS)
+OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o \
+		error.o $(VMSOBJS)
 
 EQUALHACK	= =
 
@@ -33,6 +35,13 @@ Library($(MYNAME),$(OBJECTS))
 
 ncarg_path.o:	Makefile
 	$(CC) $(CFLAGS) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' -c $*.c
+
+test_opt:	test_opt.o
+	$(CC_LD) $(LD_CFLAGS) -o test_opt test_opt.o $(LIBDIR)/libncarv.a
+
+clean::
+	@-$(RM) test_opt
+
 
 lint:
 	$(LINT) -I$(LOCINCDIR) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' \
