@@ -12,6 +12,7 @@ extern  "C" {
 #include "OpsList.h"
 #include "SrcTree.h"
 #include "NclMdInc.h"
+#include "DataSupport.h"
 #include <errno.h>
 
 typedef struct _NclLoopCoBrRec {
@@ -176,6 +177,37 @@ NclTypeClass type;
 	number_of_constants++;
 	return(_NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type));
 
+}
+
+static struct _NclMultiDValDataRec *CreateTrueConst
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int first = 1;
+	
+	if(first) {
+		number_of_constants++;
+		first = 0;
+	}
+	return(_NclCreateTrue());
+}
+static struct _NclMultiDValDataRec *CreateFalseConst
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int first = 1;
+	
+	if(first) {
+		number_of_constants++;
+		first = 0;
+	}
+	return(_NclCreateFalse());
 }
 
 
@@ -431,10 +463,7 @@ if(groot != NULL) {
 * assigns direction sym uncovers start_expr value
 */
 				_NclPutInstr(PUSH_LOGICAL_LIT_OP,dofromto->line,dofromto->file);
-				tmp_val = NclMalloc(sizeof(logical));
-                        	*(logical*)tmp_val = 0;
-                        	tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
-                                	(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+                        	tmp_md = CreateFalseConst();
 				_NclPutIntInstr(tmp_md->obj.id,dofromto->line,dofromto->file);
 
 				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
@@ -940,10 +969,11 @@ if(groot != NULL) {
 		{
 			NclInt *integer = (NclInt*)root;
 			off1 = _NclPutInstr(PUSH_LOGICAL_LIT_OP,integer->line,integer->file);
-			tmp_val = NclMalloc(sizeof(logical));
-                        *(logical*)tmp_val = integer->integer;
-                        tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
-                                (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+			if(integer->integer) {
+				tmp_md = CreateTrueConst();
+			} else {
+				tmp_md = CreateFalseConst();
+			}
 
 			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
 			break;
