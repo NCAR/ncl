@@ -779,4 +779,26 @@
 04/16/92 - Copied over new libctrans to fix PostScript bug on System V
 	   machines.
 04/21/92 - Copied over $NCARG/ncarview/src/include/cgmdef.h from
-	   red:/u1/clyne/ncarg3.1.3/ncarview/src/include.
+		red:/u1/clyne/ncarg3.1.3/ncarview/src/include.
+05/08/92 - Modified files in $NCARG/ncarview/src/lib/libctrans to rename
+		s_char to s_char_ because of problems on the DEC.
+05/13/92 - Corrected syntax problem in example "coex02.f".
+05/14/92 - Modified $NCARG/ncarg2d/src/bin/ncargsrcx/ncargsrc.c to
+		force "ncargsrcy" to always be executed from /usr/local/bin.
+05/18/92 - In LABELBAR, modified lblbar.f to fix problem of not being
+		able to tell it not to outline the boxes comprising the bar.
+05/28/92 - Modified $NCARG/config/Cray and 
+		$NCARG/ncarg2d/src/bin/scripts/ncargf77.cry to handle version 
+		5.0.x of CF77.
+06/04/92 - Removed variable that was not needed from 
+	$NCARG/ncarg2d/src/bin/scripts/{ncargcc.cry,ncargcc.csh}
+06/04/92 - Edited $NCARG/ncarg2d/src/bin/scripts/ncargcc.csh to include
+	"-lm" on the load line. Fixed other minor bugs.
+06/15/92 - In DASHCHAR, declared DASHDB external in cfvld.f to be sure it
+	gets loaded properly.
+07/21/92 - In AREAS, modified several routines to handle single/double
+	precision calculations properly.  Was brought about by a problem a
+	user was having on a Macintosh.
+07/21/92 - In GRIDAL, turned optimization back on for compilation on
+	DECstations.
+
