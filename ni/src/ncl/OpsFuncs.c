@@ -732,9 +732,9 @@ NhlErrorTypes _NclBuildArray
 * ------------> stilll need to handle dim info
 */
 	if((result_type & Ncl_Typeobj)&&(must_be_numeric == -1)) {
-		result->u.data_obj = _NclMultiDValHLUObjDataCreate(NULL,NULL,Ncl_MultiDValHLUObjData,0,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
+		result->u.data_obj = _NclMultiDValHLUObjDataCreate(NULL,NULL,Ncl_MultiDValHLUObjData,0,value,mis_ptr,ndims,dim_sizes,TEMPORARY,NULL);
 	} else {
-		result->u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,value,NULL,ndims,dim_sizes,TEMPORARY,NULL,_NclTypeEnumToTypeClass(result_type));
+		result->u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,value,mis_ptr,ndims,dim_sizes,TEMPORARY,NULL,_NclTypeEnumToTypeClass(result_type));
 	}
 	if(result->u.data_obj != NULL) 
 		return(NhlNOERROR);
