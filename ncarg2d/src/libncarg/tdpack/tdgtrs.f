@@ -1,5 +1,5 @@
 C
-C $Id: tdgtrs.f,v 1.1 1997-06-18 22:08:31 kennison Exp $
+C $Id: tdgtrs.f,v 1.2 1998-06-17 19:03:29 kennison Exp $
 C
       SUBROUTINE TDGTRS (IRST,IA01,IA02,IA03,IA04,IA05,IA06,IA07,RA08,
      +                                                      RA09,RA10)
@@ -8,6 +8,9 @@ C This routine allows the caller to retrieve the values defining a
 C particular rendering style.  The arguments are as follows (all are
 C output, those  beginning with an "I" are of type INTEGER, and those
 C beginning with an "R" are of type "REAL"):
+C
+C   IRST is the index of the rendering style for which values are to
+C   be retrieved and should be in the range from 1 to 64, inclusive.
 C
 C   IA01 and IA02 are color indices specifying a range of colors to be
 C   used for the "bottom" side of a surface (where function values are
