@@ -1,9 +1,5 @@
 C
-C	$Id: ardbda.f,v 1.1.1.1 1992-04-17 22:32:11 ncargd Exp $
-C
-C
-C The subroutine ARDBDA.
-C --- ---------- -------
+C $Id: ardbda.f,v 1.2 1993-06-03 22:44:10 kennison Exp $
 C
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
 C
@@ -13,6 +9,17 @@ C system.  The left and right area identifiers IL and IR are written
 C in the proper positions relative to the arrow.  In order to prevent
 C too many arrowheads from appearing, we keep track of the cumulative
 C distance along edges being drawn (in DT).
+C
+C Declare the AREAS common block.
+C
+C
+C ARCOMN contains variables which are used by all the AREAS routines.
+C
+      COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
+     +                IDC,IDI,RLA,RWA,RDI,RSI
+      SAVE   /ARCOMN/
+C
+C Declare a local common block used to communicate with ARDBPA.
 C
       COMMON /ARCOM1/ DT
 C
@@ -34,15 +41,17 @@ C
 C
       IF (DP.EQ.0.) RETURN
 C
-C If the area identifiers are in a reasonable range (less than 100,000
-C in absolute value), write them on either side of the arrow.
+C If area identifiers are to be written and they are in a reasonable
+C range (less than 100,000 in absolute value), write them on either
+C side of the arrow.
 C
-      IF (.NOT.(ABS(IL).LT.100000.AND.ABS(IR).LT.100000)) GO TO 10001
+      IF (.NOT.(RDI.GT.0..AND.RSI.GT.0.AND.ABS(IL).LT.100000.AND.ABS(IR)
+     +.LT.100000)) GO TO 10001
 C
         XC=.5*(X1+X2)
         YC=.5*(Y1+Y2)
-        XL=XC-.004*DY/DP
-        YL=YC+.004*DX/DP
+        XL=XC-RDI*DY/DP
+        YL=YC+RDI*DX/DP
         WRITE (CS,'(I6)') IL
         NC=0
         DO 101 I=1,6
@@ -52,10 +61,10 @@ C
           CS(NC:NC)=IC
 10002   CONTINUE
   101   CONTINUE
-        CALL PLCHLQ (XL,YL,CS(1:NC),.001,0.,0.)
+        CALL PLCHLQ (XL,YL,CS(1:NC),RSI,0.,0.)
 C
-        XR=XC+.004*DY/DP
-        YR=YC-.004*DX/DP
+        XR=XC+RDI*DY/DP
+        YR=YC-RDI*DX/DP
         WRITE (CS,'(I6)') IR
         NC=0
         DO 102 I=1,6
@@ -65,28 +74,29 @@ C
           CS(NC:NC)=IC
 10003   CONTINUE
   102   CONTINUE
-        CALL PLCHLQ (XR,YR,CS(1:NC),.001,0.,0.)
+        CALL PLCHLQ (XR,YR,CS(1:NC),RSI,0.,0.)
 C
 10001 CONTINUE
 C
-C If the cumulative length of the edge being drawn is too little,
-C quit; otherwise, put out an arrowhead.
+C If an arrowhead is to be drawn, do that now, making sure that the
+C cumulative length of the edge being drawn is great enough.
 C
-      DT=DT+DP
-      IF(DT.LE..008) RETURN
-C
-      DT=0.
-      B=(DP-.008)/DP
-      A=1.0-B
-      XT=A*X1+B*X2
-      YT=A*Y1+B*Y2
-      X3=XT-.002*DY/DP
-      Y3=YT+.002*DX/DP
-      X4=XT+.002*DY/DP
-      Y4=YT-.002*DX/DP
-      CALL PLOTIF (X3,Y3,0)
-      CALL PLOTIF (X2,Y2,1)
-      CALL PLOTIF (X4,Y4,1)
+      IF (.NOT.(RLA.GT.0..AND.RWA.GT.0.)) GO TO 10004
+        DT=DT+DP
+        IF(DT.LE.RLA) RETURN
+        DT=0.
+        B=(DP-RLA)/DP
+        A=1.-B
+        XT=A*X1+B*X2
+        YT=A*Y1+B*Y2
+        X3=XT-RWA*DY/DP
+        Y3=YT+RWA*DX/DP
+        X4=XT+RWA*DY/DP
+        Y4=YT-RWA*DX/DP
+        CALL PLOTIF (X3,Y3,0)
+        CALL PLOTIF (X2,Y2,1)
+        CALL PLOTIF (X4,Y4,1)
+10004 CONTINUE
 C
 C Done.
 C

@@ -1,60 +1,5 @@
 C
-C	$Id: arblda.f,v 1.4 1992-09-04 20:31:19 ncargd Exp $
-C
-C ---------------------------------------------------------------------
-C I N T R O D U C T I O N
-C ---------------------------------------------------------------------
-C
-C This file contains implementation instructions and the code for a
-C graphics package called AREAS.  Given a set of "edges" dividing the
-C plane into separate areas, the package allows one to recover the
-C polygons defining all of those areas.  The polygons may then be
-C color-filled, shaded, or used as "shields" in the drawing of other
-C objects.
-C
-C ---------------------------------------------------------------------
-C I M P L E M E N T A T I O N   I N S T R U C T I O N S
-C ---------------------------------------------------------------------
-C
-C How you go about implementing AREAS depends on which version of this
-C file you have.  Look at the first two lines of the file.  If they are
-C
-C    .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 IF=2
-C    .EL I
-C
-C you have an IFTRAN version of the file; otherwise, you have a FORTRAN
-C version.
-C
-C The IFTRAN version of AREAS is more readable and, because of extensive
-C parameterization, easier to change; unfortunately, one must have an
-C IFTRAN preprocessor available in order to generate usable FORTRAN code
-C from the IFTRAN code.
-C
-C To implement the IFTRAN version.
-C -- --------- --- ------ -------
-C
-C To implement the IFTRAN version, review the IFTRAN commands in the
-C rest of this section, making such changes as seem necessary for the
-C target machine, and then run the resulting file through IFTRAN to
-C obtain a FORTRAN file.
-C
-C To implement the FORTRAN version.
-C -- --------- --- ------- -------
-C
-C The FORTRAN version is portable FORTRAN-77 code and should require no
-C modifications to run.
-C
-C In the FORTRAN version, the section "IMPLEMENTATION INSTRUCTIONS"
-C ends here; in the IFTRAN version, various preprocessor-time variables
-C are set following this point.
-C
-C
-C ---------------------------------------------------------------------
-C C O D E
-C ---------------------------------------------------------------------
-C
-C The BLOCK DATA routine ARBLDA
-C --- ----- ---- ------- ------
+C $Id: arblda.f,v 1.5 1993-06-03 22:44:05 kennison Exp $
 C
       BLOCK DATA ARBLDA
 C
@@ -64,7 +9,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI
+     +                IDC,IDI,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Below are descriptions of all the common variables and default values
@@ -119,5 +64,30 @@ C be processed is traced counter-clockwise (interior to the left), or a
 C 2 if the polygon is traced clockwise (interior to the right).
 C
       DATA IDI / 0 /
+C
+C RLA is the internal parameter 'AL', which specifies the length of the
+C arrowheads to be used on debug plots, stated as a fraction of the
+C distance across the plotter frame.
+C
+      DATA RLA / .008 /
+C
+C RWA is the internal parameter 'AW', which specifies the width of the
+C arrowheads to be used on debug plots, stated as a fraction of the
+C distance across the plotter frame.  RWA is actually half the width
+C of an arrowhead.
+C
+      DATA RWA / .002 /
+C
+C RDI is the internal parameter 'ID', which specifies the distance from
+C an edge to an identifier on a debug plot, stated as a fraction of the
+C distance across the plotter frame.
+C
+      DATA RDI / .004 /
+C
+C RSI is the internal parameter 'IS', which specifies the size (width)
+C of characters used to write identifiers on a debug plot, stated as a
+C fraction of the distance across the plotter frame.
+C
+      DATA RSI / .001 /
 C
       END

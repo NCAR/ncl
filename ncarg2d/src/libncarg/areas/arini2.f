@@ -1,9 +1,5 @@
 C
-C	$Id: arini2.f,v 1.2 1992-09-04 20:31:25 ncargd Exp $
-C
-C
-C The subroutine ARINI2.
-C --- ---------- -------
+C $Id: arini2.f,v 1.3 1993-06-03 22:44:29 kennison Exp $
 C
       SUBROUTINE ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
 C

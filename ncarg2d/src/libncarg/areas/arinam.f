@@ -1,9 +1,5 @@
 C
-C	$Id: arinam.f,v 1.1.1.1 1992-04-17 22:32:12 ncargd Exp $
-C
-C
-C The subroutine ARINAM.
-C --- ---------- -------
+C $Id: arinam.f,v 1.2 1993-06-03 22:44:27 kennison Exp $
 C
       SUBROUTINE ARINAM (IAM,LAM)
 C
@@ -25,7 +21,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI
+     +                IDC,IDI,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

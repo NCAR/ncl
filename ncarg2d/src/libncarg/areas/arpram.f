@@ -1,9 +1,5 @@
 C
-C	$Id: arpram.f,v 1.3 1992-09-04 20:31:29 ncargd Exp $
-C
-C
-C The subroutine ARPRAM.
-C --- ---------- -------
+C $Id: arpram.f,v 1.4 1993-06-03 22:44:36 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -40,7 +36,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI
+     +                IDC,IDI,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

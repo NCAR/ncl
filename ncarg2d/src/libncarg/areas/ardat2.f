@@ -1,9 +1,5 @@
 C
-C	$Id: ardat2.f,v 1.1.1.1 1992-04-17 22:32:11 ncargd Exp $
-C
-C
-C The function ARDAT2
-C --- -------- ------
+C $Id: ardat2.f,v 1.2 1993-06-03 22:44:08 kennison Exp $
 C
       FUNCTION ARDAT2 (YVL,XVL)
 C
