@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.31 1999-04-01 20:27:21 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.32 1999-04-23 22:07:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -581,7 +581,7 @@ void _NclAddIntrinsics
 	args[2].arg_data_type = _NclLookUp("integer");
 	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
-	args[3].dim_sizes[0] = -1;
+	args[2].dim_sizes[0] = -1;
 	args[3].arg_data_type = _NclLookUp("string");
 	args[3].is_dimsizes = 1;
 	args[3].dim_sizes[0] = 1;

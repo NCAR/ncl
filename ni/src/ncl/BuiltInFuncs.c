@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.107 1999-04-13 21:33:21 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.108 1999-04-23 22:07:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2340,8 +2340,8 @@ NhlErrorTypes _NclIfbindirread(void)
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
 		dimsizes = (int*)tmp_md->multidval.val;
-		if((n_dimensions == 1)&&(dimsizes[0] = -1)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: -1 is not suppored for fbindirread use cbinread");
+		if((n_dimensions == 1)&&(dimsizes[0] == -1)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: -1 is not supported for fbindirread use cbinread");
 			return(NhlFATAL);
 		}
 	}
