@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.4 1995-12-19 20:39:35 boote Exp $
+ *      $Id: VectorPlot.c,v 1.5 1996-01-19 18:06:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
 
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/VectorPlotP.h>
-#include <ncarg/hlu/VecAnno.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
@@ -123,8 +122,8 @@ static NhlResource resources[] = {
 		  _NhlUSET((NhlPointer) NhlARROWCENTER),0,NULL},
 
 
-	{ NhlNvcMinFractionalLenF,NhlCvcMinFractionalLenF,
-		  NhlTFloat,sizeof(float),Oset(min_frac_len),NhlTString,
+	{ NhlNvcMinVectorDistanceF,NhlCvcMinVectorDistanceF,
+		  NhlTFloat,sizeof(float),Oset(min_vec_dist),NhlTString,
 		  _NhlUSET("0.0"),0,NULL},
 	{ NhlNvcMinMagnitudeF,NhlCvcMinMagnitudeF,
 		  NhlTFloat,sizeof(float),Oset(min_magnitude),NhlTString,
@@ -141,6 +140,9 @@ static NhlResource resources[] = {
 	{ NhlNvcRefLengthF,NhlCvcRefLengthF,
 		  NhlTFloat,sizeof(float),Oset(ref_length),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{ NhlNvcMinFracLengthF,NhlCvcMinFracLengthF,
+		  NhlTFloat,sizeof(float),Oset(min_frac_len),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
 
 /* Level resources */
 
@@ -179,12 +181,41 @@ static NhlResource resources[] = {
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 
 
-	{ NhlNvcArrowHeadMinSizeF,NhlCvcArrowHeadMinSizeF,
+	{NhlNvcFilledArrowsOn,NhlCvcFilledArrowsOn,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(filled_arrows_on),NhlTImmediate,
+		  _NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNvcLineArrowHeadMinSizeF,NhlCvcLineArrowHeadMinSizeF,
 		  NhlTFloat,sizeof(float),Oset(arrow_min_size),NhlTString,
 		  _NhlUSET("0.005"),0,NULL},
-	{ NhlNvcArrowHeadMaxSizeF,NhlCvcArrowHeadMaxSizeF,
+	{NhlNvcLineArrowHeadMaxSizeF,NhlCvcLineArrowHeadMaxSizeF,
 		  NhlTFloat,sizeof(float),Oset(arrow_max_size),NhlTString,
 		  _NhlUSET("0.05"),0,NULL},
+	{NhlNvcFillArrowWidthF,NhlCvcFillArrowWidthF,
+		  NhlTFloat,sizeof(float),Oset(arrow_width),NhlTString,
+		  _NhlUSET("0.03"),0,NULL},
+	{NhlNvcFillArrowMinFracWidthF,NhlCvcFillArrowMinFracWidthF,
+		  NhlTFloat,sizeof(float),Oset(arrow_min_width),NhlTString,
+		  _NhlUSET("0.00"),0,NULL},
+	{NhlNvcFillArrowHeadXF,NhlCvcFillArrowHeadXF,
+		  NhlTFloat,sizeof(float),Oset(arrowhead_x),NhlTString,
+		  _NhlUSET("0.36"),0,NULL},
+	{NhlNvcFillArrowHeadMinFracXF,NhlCvcFillArrowHeadMinFracXF,
+		  NhlTFloat,sizeof(float),Oset(arrowhead_min_x),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{NhlNvcFillArrowHeadInteriorXF,NhlCvcFillArrowHeadInteriorXF,
+		  NhlTFloat,sizeof(float),Oset(arrowhead_interior),NhlTString,
+		  _NhlUSET("0.33"),0,NULL},
+	{NhlNvcFillArrowHeadYF,NhlCvcFillArrowHeadYF,
+		  NhlTFloat,sizeof(float),Oset(arrowhead_y),NhlTString,
+		  _NhlUSET("0.12"),0,NULL},
+	{NhlNvcFillArrowHeadMinFracYF,NhlCvcFillArrowHeadMinFracYF,
+		  NhlTFloat,sizeof(float),Oset(arrowhead_min_y),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{NhlNvcFillOverLine,NhlCvcFillOverLine,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(fill_over_line),NhlTImmediate,
+		  _NhlUSET((NhlPointer) True),0,NULL},
 	{ NhlNvcVectorLineThicknessF,NhlCvcVectorLineThicknessF,
 		  NhlTFloat,sizeof(float),Oset(line_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
@@ -192,12 +223,19 @@ static NhlResource resources[] = {
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(use_scalar_array),NhlTImmediate,
 		  _NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNvcMonoVectorColor,NhlCvcMonoVectorColor,
+	{NhlNvcMonoVectorLineColor,NhlCvcMonoVectorLineColor,
 		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(mono_vector_color),NhlTImmediate,
+		  Oset(mono_vector_line_color),NhlTImmediate,
 		  _NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNvcVectorColor, NhlCvcVectorColor, NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(vector_color),
+	{NhlNvcVectorLineColor, NhlCvcVectorLineColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(vector_line_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNvcMonoVectorFillColor,NhlCvcMonoVectorFillColor,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(mono_vector_fill_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNvcVectorFillColor, NhlCvcVectorFillColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(vector_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNvcVectorColors, NhlCvcVectorColors, NhlTColorIndexGenArray,
 		 sizeof(NhlGenArray),Oset(vector_colors),
@@ -228,9 +266,13 @@ static NhlResource resources[] = {
         {NhlNvcRefAnnoExplicitMagnitudeF,NhlCvcRefAnnoExplicitMagnitudeF,
 		 NhlTFloat,sizeof(float),Oset(ref_attrs.vec_mag),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
-        {NhlNvcRefAnnoArrowColor,NhlCvcRefAnnoArrowColor,
+        {NhlNvcRefAnnoArrowLineColor,NhlCvcRefAnnoArrowLineColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
-		 Oset(ref_attrs.arrow_color),
+		 Oset(ref_attrs.arrow_line_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+        {NhlNvcRefAnnoArrowFillColor,NhlCvcRefAnnoArrowFillColor,
+		 NhlTColorIndex,sizeof(NhlColorIndex),
+		 Oset(ref_attrs.arrow_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
         {NhlNvcRefAnnoArrowUseVecColor,NhlCvcRefAnnoArrowUseVecColor,
 		 NhlTBoolean,sizeof(NhlBoolean),
@@ -349,9 +391,13 @@ static NhlResource resources[] = {
         {NhlNvcMinAnnoExplicitMagnitudeF,NhlCvcMinAnnoExplicitMagnitudeF,
 		 NhlTFloat,sizeof(float),Oset(min_attrs.vec_mag),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
-        {NhlNvcMinAnnoArrowColor,NhlCvcMinAnnoArrowColor,
+        {NhlNvcMinAnnoArrowLineColor,NhlCvcMinAnnoArrowLineColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
-		 Oset(min_attrs.arrow_color),
+		 Oset(min_attrs.arrow_line_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+        {NhlNvcMinAnnoArrowFillColor,NhlCvcMinAnnoArrowFillColor,
+		 NhlTColorIndex,sizeof(NhlColorIndex),
+		 Oset(min_attrs.arrow_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
         {NhlNvcMinAnnoArrowUseVecColor,NhlCvcMinAnnoArrowUseVecColor,
 		 NhlTBoolean,sizeof(NhlBoolean),
@@ -658,6 +704,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(lbar_labels_res),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNlbLabelFuncCode, NhlClbLabelFuncCode, NhlTCharacter,
+		 sizeof(char),Oset(lbar_func_code),
+		 NhlTString,_NhlUSET(":"),0,NULL },
 	{NhlNlbLabelAlignment,NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
 		 sizeof(NhllbLabelAlignmentMode), 
 		 Oset(lbar_alignment),NhlTImmediate,
@@ -1009,16 +1058,6 @@ static NhlErrorTypes SetFormatRec(
 #endif
 );
 
-static char *VectorPlotFormat(
-#if	NhlNeedProto
-	NhlVectorPlotLayerPart	*vcp,
-	vcValueType		vtype,
-	float			val,
-	NhlFormatRec		*format,
-	NhlString		entry_name
-#endif
-);
-
 static NhlErrorTypes    SetupLevels(
 #if	NhlNeedProto
 	NhlLayer	new,
@@ -1178,19 +1217,7 @@ static NhlGenArray GenArraySubsetCopy(
 #endif
 );
 
-static NhlErrorTypes GetVectorData(
-#if	NhlNeedProto
-	NhlVectorPlotLayer	cl
-#endif
-);
-
-static NhlErrorTypes GetScalarData(
-#if	NhlNeedProto
-	NhlVectorPlotLayer	cl
-#endif
-);
-
-extern void   (_NHLCALLF(vvumxy,VVUMXY))(
+extern void   (_NHLCALLF(hluvvmpxy,HLUVVMPXY))(
 #if	NhlNeedProto
  float *x,
  float *y, 
@@ -1211,6 +1238,34 @@ static void   load_hlucp_routines(
 #endif
 );
 
+extern void (_NHLCALLF(vvmpxy,VVMPXY))(
+#if	NhlNeedProto
+ float *x,
+ float *y, 
+ float *u, 
+ float *v, 
+ float *uvm, 
+ float *xb, 
+ float *yb, 
+ float *xe, 
+ float *ye, 
+ int *ist
+#endif
+);
+
+extern void (_NHLCALLF(vvgetmapinfo,VVGETMAPINFO))(
+#if	NhlNeedProto
+ int *imp,
+ int *itr,
+ float *dmx,
+ float *sxd,
+ float *syd,
+ float *xmn,
+ float *xmx,
+ float *ymn,
+ float *ymx
+#endif
+);
 
 NhlVectorPlotDataDepClassRec NhlvectorPlotDataDepClassRec = {
 	/* base_class */
@@ -1530,7 +1585,7 @@ VectorPlotClassInitialize
 	Qref_magnitude = NrmStringToQuark(NhlNvcRefMagnitudeF);
 	Qmin_magnitude = NrmStringToQuark(NhlNvcMinMagnitudeF);
 	Qmax_magnitude = NrmStringToQuark(NhlNvcMaxMagnitudeF);
-	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFractionalLenF);
+	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFracLengthF);
 	Qref_length = NrmStringToQuark(NhlNvcRefLengthF);
 
 	{
@@ -1608,6 +1663,7 @@ VectorPlotClassPartInitialize
 					NhlNlbBoxCount,
 					NhlNlbLabelAlignment,
 					NhlNlbLabelStrings,
+					NhlNlbLabelFuncCode,
 					NhlNlbMonoFillColor,
 					NhlNlbFillColor,
 					NhlNlbFillColors,
@@ -1759,6 +1815,7 @@ VectorPlotInitialize
 	vcp->ovfp = NULL;
 	vcp->sfp = NULL;
 	vcp->osfp = NULL;
+	vcp->fws_id = NhlNULLOBJID;
 /*
  * Constrain resources
  */
@@ -1766,7 +1823,7 @@ VectorPlotInitialize
 		ret = MIN(ret,NhlWARNING);
 		e_text = "%s: %s out of bounds: constraining";
 		NhlPError(ret,NhlEUNKNOWN,
-			  e_text,entry_name, NhlNvcMinFractionalLenF);
+			  e_text,entry_name, NhlNvcMinFracLengthF);
 		vcp->min_frac_len = MIN(1.0,MAX(0.0,vcp->min_frac_len));
 	}
 	if (vcp->ref_length < 0.0) {
@@ -2019,7 +2076,7 @@ static NhlErrorTypes VectorPlotSetValues
 		ret = MIN(ret,NhlWARNING);
 		e_text = "%s: %s out of bounds: constraining";
 		NhlPError(ret,NhlEUNKNOWN,
-			  e_text,entry_name, NhlNvcMinFractionalLenF);
+			  e_text,entry_name, NhlNvcMinFracLengthF);
 		vcp->min_frac_len = MIN(1.0,MAX(0.0,vcp->min_frac_len));
 	}
 	if (vcp->ref_length < 0.0) {
@@ -2796,21 +2853,33 @@ static NhlErrorTypes vcInitDraw
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlString		e_text;
 
+	vcp->fws = NULL;
 	vcp->wk_active = False;
 	vcp->seg_open = False;
 
-#if 0
-	subret = GetVectorData(vcl);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	if (vcp->scalar_data_init) {
-		subret = GetScalarData(vcl);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if (vcp->min_vec_dist > 0.0) {
+		if (vcp->fws_id == NhlNULLOBJID) {
+			if ((vcp->fws_id = 
+			     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
+					    100*sizeof(float))) < 0) {
+				e_text = 
+					"%s: float workspace allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		if ((vcp->fws = _NhlUseWorkspace(vcp->fws_id)) == NULL) {
+			e_text = "%s: error reserving float workspace";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
 	}
-#endif
+
 	return ret;
 }
 
@@ -2950,6 +3019,11 @@ static void VectorAbortDraw
 		NhlVASetValues(tfp->trans_obj->base.id,
 			       NhlNtrLowLevelLogOn,False,NULL);
 
+	if (vcp->fws != NULL) {
+		_NhlIdleWorkspace(vcp->fws);
+		vcp->fws = NULL;
+	}
+
 	e_text = "%s: draw error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,"VectorPlotDraw");
 }
@@ -3061,6 +3135,11 @@ static NhlErrorTypes VectorPlotPostDraw
 			ret = MIN(subret,ret);
 		}
 	}
+	if (vcp->fws != NULL) {
+		subret = _NhlIdleWorkspace(vcp->fws);
+		ret = MIN(subret,ret);
+		vcp->fws = NULL;
+	}
 
 	return ret;
 }
@@ -3100,6 +3179,7 @@ static NhlErrorTypes vcDraw
 	NhlBoolean		low_level_log = False;
 	float			vfr,vlc,vrl,vhc,vrm,amn,amx;
 	float			*u_data,*v_data,*p_data;
+        NhlBoolean		all_mono = False;
 
 	if (vcp->vector_order != order)
 		return NhlNOERROR;
@@ -3303,10 +3383,72 @@ static NhlErrorTypes vcDraw
 		c_vvseti("LBL",0);
 	}
 
-	if (vcp->mono_vector_color) {
+	if (vcp->filled_arrows_on) {
+                int fcolor = vcp->vector_fill_color;
+                int lcolor = vcp->vector_line_color;
+		c_vvseti("AST",1);
+                if (vcp->mono_vector_line_color &&
+                    vcp->mono_vector_fill_color) {
+                        all_mono = True;
+                        if (fcolor <= NhlTRANSPARENT) {
+                                c_vvseti("ACM",-1);
+                                if (lcolor <= NhlTRANSPARENT)
+                                        lcolor = NhlFOREGROUND;
+                                gset_line_colr_ind( 
+                                       _NhlGetGksCi(vcl->base.wkptr,lcolor));
+                        }
+                        else if (lcolor <= NhlTRANSPARENT) {
+                                c_vvseti("ACM",-2); 
+                                gset_fill_colr_ind(
+                                       _NhlGetGksCi(vcl->base.wkptr,fcolor));
+                        }
+                        else {
+                                c_vvseti("ACM",0);
+                                gset_fill_colr_ind(
+                                     _NhlGetGksCi(vcl->base.wkptr,fcolor));
+                                gset_line_colr_ind(
+                                     _NhlGetGksCi(vcl->base.wkptr,lcolor));
+                        }
+                }
+                else if (vcp->mono_vector_line_color) {
+                        if (lcolor <= NhlTRANSPARENT) {
+                                c_vvseti("ACM",-2);
+                        }
+                        else {
+                                c_vvseti("ACM",0);
+                                gset_line_colr_ind(
+                                     _NhlGetGksCi(vcl->base.wkptr,lcolor));
+                        }
+                }
+                else if (vcp->mono_vector_fill_color) {
+                        if (fcolor <= NhlTRANSPARENT) {
+                                c_vvseti("ACM",-1);
+                        }
+                        else {
+                                c_vvseti("ACM",1);
+                                gset_fill_colr_ind(
+                                       _NhlGetGksCi(vcl->base.wkptr,fcolor));
+                        }
+                }
+                else {
+                        c_vvseti("ACM",3);
+                }
+                        
+        }
+	else {
+		c_vvseti("AST",0);
+                if (vcp->mono_vector_line_color) {
+                        int lcolor = vcp->vector_line_color;
+
+                        all_mono = True;
+                        if (lcolor <= NhlTRANSPARENT) lcolor = NhlFOREGROUND;
+                        gset_line_colr_ind(
+                                    _NhlGetGksCi(vcl->base.wkptr,lcolor));
+                }
+        }
+
+	if (all_mono) {
 		c_vvseti("CTV",0);
-		gset_line_colr_ind(_NhlGetGksCi(vcl->base.wkptr,
-						vcp->vector_color));
 	}
 	else {
 		float *tvl = (float *) vcp->levels->data;
@@ -3340,6 +3482,16 @@ static NhlErrorTypes vcDraw
 		c_vvsetr("TVL",1E12);
 		c_vvseti("CLR",clr[vcp->level_count]);
 	}
+
+	c_vvsetr("VMD",vcp->min_vec_dist);
+	c_vvsetr("AWR",vcp->arrow_width);
+	c_vvsetr("AWF",vcp->arrow_min_width);
+	c_vvsetr("AXR",vcp->arrowhead_x);
+	c_vvsetr("AXF",vcp->arrowhead_min_x);
+	c_vvsetr("AYR",vcp->arrowhead_y);
+	c_vvsetr("AYF",vcp->arrowhead_min_y);
+	c_vvsetr("AIR",vcp->arrowhead_interior);
+	c_vvseti("AFO",vcp->fill_over_line);
 				 
 	/* Draw the vectors */
 
@@ -3347,31 +3499,110 @@ static NhlErrorTypes vcDraw
 	Need_Info = True;
 
 	u_data = &((float *) vcp->vfp->u_arr->data)[vcp->vfp->begin]; 
-	v_data = &((float *) vcp->vfp->v_arr->data)[vcp->vfp->begin]; 
+	v_data = &((float *) vcp->vfp->v_arr->data)[vcp->vfp->begin];
+		
 	if (vcp->scalar_data_init) {
 		p_data = &((float *) vcp->sfp->d_arr->data)[vcp->sfp->begin];
-		c_vvinit(u_data,vcp->vfp->fast_dim,v_data,vcp->vfp->fast_dim,
-			 p_data,vcp->sfp->fast_dim,
-			 vcp->vfp->fast_len,vcp->vfp->slow_len,NULL,0);
-		c_vvectr(u_data,v_data,p_data,NULL,NULL,NULL);
+		subret = _NhlVvinit(u_data,vcp->vfp->fast_dim,
+				    v_data,vcp->vfp->fast_dim,
+				    p_data,vcp->sfp->fast_dim,
+				    vcp->vfp->fast_len,vcp->vfp->slow_len,
+				    vcp->fws,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error drawing vectors";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			VectorAbortDraw(vcl);
+			return(ret);
+ 		}
+		subret = _NhlVvectr(u_data,v_data,p_data,
+				    NULL,NULL,vcp->fws,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error drawing vectors";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			VectorAbortDraw(vcl);
+			return(ret);
+ 		}
 	}
 	else {
-		c_vvinit(u_data,vcp->vfp->fast_dim,v_data,vcp->vfp->fast_dim,
-			 NULL,0,vcp->vfp->fast_len,vcp->vfp->slow_len,NULL,0);
-		c_vvectr(u_data,v_data,NULL,NULL,NULL,NULL);
+		subret = _NhlVvinit(u_data,vcp->vfp->fast_dim,
+				    v_data,vcp->vfp->fast_dim,
+				    NULL,0,
+				    vcp->vfp->fast_len,vcp->vfp->slow_len,
+				    vcp->fws,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error drawing vectors";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			VectorAbortDraw(vcl);
+			return(ret);
+ 		}
+		subret = _NhlVvectr(u_data,v_data,NULL,
+				    NULL,NULL,vcp->fws,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error drawing vectors";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			VectorAbortDraw(vcl);
+			return(ret);
+ 		}
 	}
-	gset_clip_ind(GIND_NO_CLIP);
 		
-#if 0
-	{ /* for debugging */
-		float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+	{ /* set draw params for the vector annotion */
+		float wlx,wrx,wby,wty; 
+		int lnlg,invx,invy;
+		_NhlvaDrawParams tdparams;
+		_NhlvaDrawParams *dp = &vcp->d_params;
+
+		memcpy(&tdparams,dp,sizeof(_NhlvaDrawParams));
+
+		c_getset(&dp->xvpl,&dp->xvpr,&dp->xvpb,&dp->xvpt,
+			 &wlx,&wrx,&wby,&wty,&lnlg);
+
+		invx = wlx < wrx ? 0 : 1;
+		invy = wby < wty ? 0 : 1;
+		dp->invx = (float) invx;
+		dp->invy = (float) invy;
+		dp->lnlg = (float) lnlg;
+
+		if (invx) {
+			dp->wxmn = wrx;
+			dp->wxmx = wlx;
+		}
+		else {
+			dp->wxmn = wlx;
+			dp->wxmx = wrx;
+		}
+		if (invy) {
+			dp->wymn = wty;
+			dp->wymx = wby;
+		}
+		else {
+			dp->wymn = wby;
+			dp->wymx = wty;
+		}
+		if (memcmp(&tdparams,dp,sizeof(_NhlvaDrawParams))) {
+			if (vcp->refvec_anno_rec.id != NhlNULLOBJID) {
+				subret = NhlVASetValues(
+						vcp->refvec_anno_rec.id,
+						NhlNvaDrawParams,dp,NULL);
+				if ((ret = MIN(ret,subret)) < NhlWARNING) {
+					VectorAbortDraw(vcl);
+					return(ret);
+				}
+			}
+			if (vcp->minvec_anno_rec.id != NhlNULLOBJID) {
+				subret = NhlVASetValues(
+						vcp->minvec_anno_rec.id,
+						NhlNvaDrawParams,dp,NULL);
+				if ((ret = MIN(ret,subret)) < NhlWARNING) {
+					VectorAbortDraw(vcl);
+					return(ret);
+				}
+			}
+		}
   	}
-#endif
 
 
+
+	gset_clip_ind(GIND_NO_CLIP);
 	if (vcl->view.use_segments) {
 		_NhlEndSegment();
 	}
@@ -3388,150 +3619,6 @@ static NhlErrorTypes vcDraw
 	ret = MIN(subret,ret);
 
 	return MIN(subret,ret);
-}
-
-/*
- * Function:	GetVectorData
- *
- * Description:	
- *
- * In Args:	cl	VectorPlotLayer instance
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: 
- *		 
- */	
-
-static NhlErrorTypes GetVectorData
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayer	vl
-)
-#else
-(cl)
-	NhlVectorPlotLayer	vl;
-#endif
-{
-	char			*e_text;
-	char			*entry_name = "VectorPlotDraw";
-	NhlVectorPlotLayerPart	*vcp = &(vl->vectorplot);
-	NhlVectorFieldFloatLayer	vfl;
-	_NhlDataNodePtr			*dlist = NULL;
-	NhlBoolean			new;
-
-	if (_NhlGetDataInfo(vcp->vector_field_data,&dlist) != 1) {
-		e_text = "%s: internal error retrieving data info";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	if (vcp->vfp != NULL && vcp->ovfp == NULL) {
-		vcp->ovfp = NhlMalloc(sizeof(NhlVectorFieldFloatLayerPart));
-		if (vcp->ovfp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if (vcp->vfp != NULL) {
-		memcpy(vcp->ovfp,
-		       vcp->vfp,sizeof(NhlVectorFieldFloatLayerPart));	
-	}
-	vfl = (NhlVectorFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
-	if (vfl == NULL) {
-		e_text = "%s: internal error retrieving data set";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	vcp->vfp = (NhlVectorFieldFloatLayerPart *) &vfl->vfieldfloat;
-
-	return NhlNOERROR;
-}
-
-
-/*
- * Function:	GetScalarData
- *
- * Description:	
- *
- * In Args:	cl	VectorPlotLayer instance
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: 
- *		 
- */	
-
-static NhlErrorTypes GetScalarData
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayer	vl
-)
-#else
-(cl)
-	NhlVectorPlotLayer	vl;
-#endif
-{
-	char			*e_text;
-	char			*entry_name = "VectorPlotDraw";
-	NhlErrorTypes		ret = NhlNOERROR;
-	NhlVectorPlotLayerPart	*vcp = &(vl->vectorplot);
-	NhlScalarFieldFloatLayer	sfl;
-	NhlScalarFieldFloatLayerPart	*sfp;
-	_NhlDataNodePtr			*dlist = NULL;
-	NhlBoolean			new;
-
-	if (_NhlGetDataInfo(vcp->scalar_field_data,&dlist) != 1) {
-		e_text = "%s: internal error retrieving data info";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	if (vcp->sfp != NULL && vcp->osfp == NULL) {
-		vcp->osfp = NhlMalloc(sizeof(NhlScalarFieldFloatLayerPart));
-		if (vcp->osfp == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if (vcp->sfp != NULL) {
-		memcpy(vcp->osfp,
-		       vcp->sfp,sizeof(NhlScalarFieldFloatLayerPart));	
-	}
-	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
-	if (sfl == NULL) {
-		e_text = "%s: internal error retrieving data set";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
-
-	if (vcp->data_init && 
-	    (sfp->fast_len != vcp->vfp->fast_len ||
-	     sfp->slow_len != vcp->vfp->slow_len)) {
-		e_text = "%s: ignoring %s: size does not match %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNvcScalarFieldData,NhlNvcVectorFieldData);
-		ret = NhlWARNING;
-		vcp->scalar_data_init = False;
-		vcp->sfp = NULL;
-		vcp->scalar_min = 0.0;
-		vcp->scalar_max = 1.0;
-	}
-	else {
-		vcp->scalar_min = vcp->sfp->data_min;
-		vcp->scalar_max = vcp->sfp->data_max;
-		vcp->sfp = sfp;
-		vcp->scalar_data_init = True;
-		vcp->data_changed = True;
-	}
-	return NhlNOERROR;
 }
 
 /*
@@ -4157,19 +4244,6 @@ static NhlErrorTypes SetFormat
 		subret = SetFormatRec(&vcp->svalue_scale.format,
 				      NhlNvcScalarValueFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-#if 0
-		subret = SetFormatRec(&vcp->refvec_anno.format,
-				      NhlNvcRefAnnoFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
-		subret = SetFormatRec(&vcp->minvec_anno.format,
-				      NhlNvcMinAnnoFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
-		subret = SetFormatRec(&vcp->zerof_lbl.format,
-				      NhlNvcZeroFLabelFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-#endif
 		
 		return ret;
 	}
@@ -4191,35 +4265,6 @@ static NhlErrorTypes SetFormat
 			NhlFree(ovcp->svalue_scale.format.fstring);
 		ovcp->svalue_scale.format.fstring = NULL;
 	}
-#if 0	
-	if (vcp->refvec_anno.format.fstring != 
-	    ovcp->refvec_anno.format.fstring) {
-		subret = SetFormatRec(&vcp->refvec_anno.format,
-				      NhlNvcRefAnnoFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (ovcp->refvec_anno.format.fstring != NULL)
-			NhlFree(ovcp->refvec_anno.format.fstring);
-		ovcp->refvec_anno.format.fstring = NULL;
-	}
-	if (vcp->minvec_anno.format.fstring != 
-	    ovcp->minvec_anno.format.fstring) {
-		subret = SetFormatRec(&vcp->minvec_anno.format,
-				      NhlNvcMinAnnoFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (ovcp->minvec_anno.format.fstring != NULL)
-			NhlFree(ovcp->minvec_anno.format.fstring);
-		ovcp->minvec_anno.format.fstring = NULL;
-	}
-	if (vcp->zerof_lbl.format.fstring != 
-	    ovcp->zerof_lbl.format.fstring) {
-		subret = SetFormatRec(&vcp->zerof_lbl.format,
-				      NhlNvcZeroFLabelFormat,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (ovcp->zerof_lbl.format.fstring != NULL)
-			NhlFree(ovcp->zerof_lbl.format.fstring);
-		ovcp->zerof_lbl.format.fstring = NULL;
-	}
-#endif
 	return ret;
 }
 
@@ -4307,8 +4352,10 @@ static NhlErrorTypes ManageLabels
 			vcp->refvec_anno.aap->arrow_min_offset;
 		vcp->minvec_anno.aap->use_vec_color = 
 			vcp->refvec_anno.aap->use_vec_color;
-		vcp->minvec_anno.aap->arrow_color = 
-			vcp->refvec_anno.aap->arrow_color;
+		vcp->minvec_anno.aap->arrow_line_color = 
+			vcp->refvec_anno.aap->arrow_line_color;
+		vcp->minvec_anno.aap->arrow_fill_color = 
+			vcp->refvec_anno.aap->arrow_fill_color;
 	}
 
 /* Manage constant field label */
@@ -4336,15 +4383,19 @@ static NhlErrorTypes ManageLabels
 		vcp->refvec_anno.aap->real_vec_mag = 
 			vcp->refvec_anno.aap->vec_mag;
 		if (vcp->min_frac_len > 0.0) {
-			float minlen = 
-				vcp->min_frac_len * vcp->real_ref_length;
-			float refmag = (vcp->ref_magnitude > 0.0) ?
-				vcp->ref_magnitude : vcp->zmax;
+			float minlen, minmag, refmag;
+
+                        minlen = vcp->min_frac_len * vcp->real_ref_length;
+			refmag = (vcp->ref_magnitude > 0.0) ?
+				vcp->ref_magnitude : 
+                                        MIN(vcp->max_magnitude,vcp->zmax);
+                        minmag = (vcp->min_magnitude > 0.0) ?
+                                vcp->min_magnitude : vcp->zmin;
 
 			vcp->refvec_anno.aap->vec_len = minlen +
-				(vcp->real_ref_length - minlen) *
-				 (vcp->refvec_anno.aap->vec_mag - vcp->zmin) / 
-					(refmag - vcp->zmin);
+			      (vcp->real_ref_length - minlen) *
+			      (vcp->refvec_anno.aap->real_vec_mag - minmag) / 
+					(refmag - minmag);
 		}
 		else {
 			float refmag = (vcp->ref_magnitude > 0.0) ?
@@ -4383,21 +4434,25 @@ static NhlErrorTypes ManageLabels
 
 	if (vcp->minvec_anno.aap->vec_mag <= 0.0) {
 		vcp->minvec_anno.aap->real_vec_mag = 
-			MAX(vcp->zmin,vcp->min_magnitude);
+			MAX(vcp->a_params.uvmn,vcp->zmin);
 	}
 	else {
 		vcp->minvec_anno.aap->real_vec_mag = 
 			vcp->minvec_anno.aap->vec_mag;
 		if (vcp->min_frac_len > 0.0) {
-			float minlen = 
-				vcp->min_frac_len * vcp->real_ref_length;
-			float refmag = (vcp->ref_magnitude > 0.0) ?
-				vcp->ref_magnitude : vcp->zmax;
+			float minlen, minmag, refmag;
+
+                        minlen = vcp->min_frac_len * vcp->real_ref_length;
+			refmag = (vcp->ref_magnitude > 0.0) ?
+				vcp->ref_magnitude : 
+                                        MIN(vcp->max_magnitude,vcp->zmax);
+                        minmag = (vcp->min_magnitude > 0.0) ?
+                                vcp->min_magnitude : vcp->zmin;
 
 			vcp->minvec_anno.aap->vec_len = minlen +
-				(vcp->real_ref_length - minlen) *
-				 (vcp->minvec_anno.aap->vec_mag - vcp->zmin) / 
-					(refmag - vcp->zmin);
+			       (vcp->real_ref_length - minlen) *
+			       (vcp->minvec_anno.aap->real_vec_mag - minmag) / 
+					(refmag - minmag);
 		}
 		else {
 			float refmag = (vcp->ref_magnitude > 0.0) ?
@@ -4950,7 +5005,9 @@ static NhlErrorTypes ManageLabelBar
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,entry_name);
+					    NULL,NULL,NULL,
+					    vcp->lbar_func_code,
+					    entry_name);
 			if (s == NULL) return NhlFATAL;
 			to_sp[0] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[0] == NULL) {
@@ -4975,7 +5032,9 @@ static NhlErrorTypes ManageLabelBar
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,entry_name);
+					    NULL,NULL,NULL,
+					    vcp->lbar_func_code,
+					    entry_name);
 			if (s == NULL) return NhlFATAL;
 			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[count - 1] == NULL) {
@@ -5006,9 +5065,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,vcp->lbar_labels);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbMonoFillColor,vcp->mono_vector_color);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColor,vcp->vector_color);
+			   NhlNlbMonoFillColor,False);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillColors,vcp->vector_colors);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -5027,12 +5084,6 @@ static NhlErrorTypes ManageLabelBar
 	if (vcp->lbar_labels != ovcp->lbar_labels)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,vcp->lbar_labels);
-	if (vcp->mono_vector_color != ovcp->mono_vector_color)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbMonoFillColor,vcp->mono_vector_color);
-	if (vcp->vector_color != ovcp->vector_color)
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColor,vcp->vector_color);
 	if (vcp->vector_colors != ovcp->vector_colors)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillColors,vcp->vector_colors);
@@ -5067,12 +5118,13 @@ static NhlErrorTypes PrepareAnnoString
 	NhlString		old_string,
 	NhlString		def_string,
 	NhlString		*formatted_string,
+	char			func_code,
 	NhlBoolean		*changed,
 	NhlString		entry_name
 )
 #else 
-(vcp,ovcp,init,ilp,oilp,value,old_value,new_string,old_string,def_string,
- formatted_string,changed,entry_name)
+(vcp,ovcp,init,value,old_value,new_string,old_string,def_string,
+ formatted_string,func_code,changed,entry_name)
 	NhlVectorPlotLayerPart	*vcp;
 	NhlVectorPlotLayerPart	*ovcp;
 	NhlBoolean		init;
@@ -5082,6 +5134,7 @@ static NhlErrorTypes PrepareAnnoString
 	NhlString		old_string;
 	NhlString		def_string;
 	NhlString		*formatted_string;
+	char			func_code;
 	NhlBoolean		*changed;
 	NhlString		entry_name;
 #endif
@@ -5178,7 +5231,7 @@ static NhlErrorTypes PrepareAnnoString
 		}
 		subst = _NhlFormatFloat(&sip->format,val,NULL,
 					&sip->sig_digits,&sip->left_sig_digit,
-					NULL,NULL,NULL,entry_name);
+					NULL,NULL,NULL,func_code,entry_name);
 		if (subst == NULL) return NhlFATAL;
 		Substitute(matchp,5,subst);
 	}
@@ -5259,8 +5312,7 @@ static NhlErrorTypes ManageVecAnno
 	int			targc = 0;
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-	NhlBoolean		on;			
-	
+	NhlBoolean		on;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -5269,6 +5321,7 @@ static NhlErrorTypes ManageVecAnno
 				   oilp->aap->real_vec_mag,
 				   &ilp->string1,oilp->string1,
 				   def_string1,&ilp->text1,
+				   ilp->fcode[0],
 				   &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	if (text_changed) oilp->text1 = NULL;
@@ -5278,21 +5331,14 @@ static NhlErrorTypes ManageVecAnno
 				   oilp->aap->real_vec_mag,
 				   &ilp->string2,oilp->string2,
 				   def_string2,&ilp->text2,
+				   ilp->fcode[0],
 				   &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	if (text_changed) oilp->text2 = NULL;
 
 	if (! ilp->aap->use_vec_color) {
-		if (ilp->aap->arrow_color < NhlBACKGROUND) {
-			ilp->aap->real_arrow_color = ilp->color;
-		}
-		else {
-			ilp->aap->real_arrow_color = ilp->aap->arrow_color;
-		}
-	}
-	else if (vcp->mono_vector_color ||
-		 (vcp->use_scalar_array && vcp->scalar_data_init)) {
-		ilp->aap->real_arrow_color = vcp->vector_color;
+		ilp->aap->real_arrow_line_color = ilp->aap->arrow_line_color;
+		ilp->aap->real_arrow_fill_color = ilp->aap->arrow_fill_color;
 	}
 	else {
 		int i;
@@ -5300,17 +5346,54 @@ static NhlErrorTypes ManageVecAnno
 		int *ip = (int *) vcp->vector_colors->data;
 		float mag = ilp->aap->real_vec_mag;
 		NhlBoolean set = False;
+		int color = 1;
 		for (i = 0; i < vcp->level_count; i++) {
 			if (mag <= fp[i]) {
-				ilp->aap->real_arrow_color = ip[i];
+				color = ip[i];
 				set = True;
 				break;
 			}
 		}
 		if (! set) {
-			ilp->aap->real_arrow_color = ip[vcp->level_count];
+			color = ip[vcp->level_count];
+		}
+		if (vcp->mono_vector_fill_color ||
+		    (vcp->use_scalar_array && vcp->scalar_data_init)) {
+			ilp->aap->real_arrow_fill_color = 
+				vcp->vector_fill_color;
+		}
+		else {
+			ilp->aap->real_arrow_fill_color = color;
+		}
+		if (vcp->mono_vector_line_color ||
+		    (vcp->use_scalar_array && vcp->scalar_data_init)) {
+			ilp->aap->real_arrow_line_color = 
+				vcp->vector_line_color;
+		}
+		else {
+			ilp->aap->real_arrow_line_color = color;
 		}
 	}
+
+	vcp->a_params.ast_iast = (float) vcp->filled_arrows_on;
+	vcp->a_params.fw2w = vcnew->view.width;
+	vcp->a_params.uvmg = ilp->aap->real_vec_mag;
+	vcp->a_params.vlc_vlom = MAX(0.0,vcp->min_magnitude);
+	vcp->a_params.vhc_vhim = MAX(0.0,vcp->max_magnitude);
+	vcp->a_params.vfr_vfrc = MIN(1.0,MAX(0.0,vcp->min_frac_len));
+	vcp->a_params.vrl_vrln = 
+		MAX(0.0,vcp->real_ref_length / vcnew->view.width);
+	vcp->a_params.vrm_vrmg = MAX(0.0,vcp->ref_magnitude);
+	vcp->a_params.amn_famn = MAX(0.0,vcp->arrow_min_size);
+	vcp->a_params.amx_famx = MAX(0.0,vcp->arrow_max_size);
+	vcp->a_params.air_fair = vcp->arrowhead_interior;
+	vcp->a_params.awr_fawr = vcp->arrow_width;
+	vcp->a_params.awf_fawf = vcp->arrow_min_width;
+	vcp->a_params.axr_faxr = vcp->arrowhead_x;
+	vcp->a_params.axr_faxf = vcp->arrowhead_min_x;
+	vcp->a_params.ayr_fayr = vcp->arrowhead_y;
+	vcp->a_params.ayf_fayf = vcp->arrowhead_min_y;
+	vcp->a_params.afo_iafo = (float)vcp->fill_over_line;
 
 	if (init || anrp->id == NhlNULLOBJID) {
 		NhlSetSArg(&targs[(targc)++],NhlNvaString1On,
@@ -5323,12 +5406,10 @@ static NhlErrorTypes ManageVecAnno
 			   ilp->text2);
 		NhlSetSArg(&targs[(targc)++],NhlNvaVectorLenF,
 			   ilp->aap->vec_len);
-		NhlSetSArg(&targs[(targc)++],NhlNvaVectorColor,
-			   ilp->aap->real_arrow_color);
-		NhlSetSArg(&targs[(targc)++],NhlNvaArrowHeadMinSizeF,
-			   vcp->arrow_min_size);
-		NhlSetSArg(&targs[(targc)++],NhlNvaArrowHeadMaxSizeF,
-			   vcp->arrow_max_size);
+		NhlSetSArg(&targs[(targc)++],NhlNvaVectorLineColor,
+			   ilp->aap->real_arrow_line_color);
+		NhlSetSArg(&targs[(targc)++],NhlNvaVectorFillColor,
+			   ilp->aap->real_arrow_fill_color);
 		NhlSetSArg(&targs[(targc)++],NhlNvaArrowLineThicknessF,
 			   vcp->line_thickness);
 		NhlSetSArg(&targs[(targc)++],NhlNvaArrowAngleF,
@@ -5337,6 +5418,8 @@ static NhlErrorTypes ManageVecAnno
 			   ilp->aap->arrow_space);
 		NhlSetSArg(&targs[(targc)++],NhlNvaArrowMinOffsetF,
 			   ilp->aap->arrow_min_offset);
+		NhlSetSArg(&targs[(targc)++],NhlNvaArrowParams,
+			   &vcp->a_params);
 		NhlSetSArg(&targs[(targc)++],NhlNtxFontHeightF,ilp->height);
 		NhlSetSArg(&targs[(targc)++],NhlNtxDirection,ilp->direction);
 		NhlSetSArg(&targs[(targc)++],NhlNtxAngleF,ilp->angle);
@@ -5399,9 +5482,14 @@ static NhlErrorTypes ManageVecAnno
 		if (ilp->aap->vec_len != oilp->aap->vec_len)
 			NhlSetSArg(&targs[(targc)++],NhlNvaVectorLenF,
 				   ilp->aap->vec_len);
-		if (ilp->aap->real_arrow_color != oilp->aap->real_arrow_color)
-			NhlSetSArg(&targs[(targc)++],NhlNvaVectorColor,
-				   ilp->aap->real_arrow_color);
+		if (ilp->aap->real_arrow_line_color != 
+		    oilp->aap->real_arrow_line_color)
+			NhlSetSArg(&targs[(targc)++],NhlNvaVectorLineColor,
+				   ilp->aap->real_arrow_line_color);
+		if (ilp->aap->real_arrow_fill_color != 
+		    oilp->aap->real_arrow_fill_color)
+			NhlSetSArg(&targs[(targc)++],NhlNvaVectorFillColor,
+				   ilp->aap->real_arrow_fill_color);
 		if (ilp->aap->arrow_angle != oilp->aap->arrow_angle)
 			NhlSetSArg(&targs[(targc)++],NhlNvaArrowAngleF,
 				   ilp->aap->arrow_angle);
@@ -5411,6 +5499,10 @@ static NhlErrorTypes ManageVecAnno
 		if (ilp->aap->arrow_min_offset != oilp->aap->arrow_min_offset)
 			NhlSetSArg(&targs[(targc)++],NhlNvaArrowMinOffsetF,
 				   ilp->aap->arrow_min_offset);
+		if (memcmp(&vcp->a_params,
+			   &ovcp->a_params,sizeof(_NhlvaArrowParams)))
+			NhlSetSArg(&targs[(targc)++],NhlNvaArrowParams,
+				   &vcp->a_params);
 		if (ilp->height != oilp->height)
 			NhlSetSArg(&targs[(targc)++],
 				   NhlNtxFontHeightF,ilp->height);
@@ -6004,96 +6096,6 @@ static NhlErrorTypes SetFormatRec
 	return ret;
 }
 
-#if 0
-/*
- * Function:	VectorPlotFormat
- *
- * Description: formats a numeric internal vector value type into a string.
- *		the string is stored in static memory; previous values 
- *		overwritten at each invocation.
- *
- * In Args:	vcp	VectorPlot layer part
- *		type	the type of value requested
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	
- */
-static char *VectorPlotFormat
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayerPart	*vcp,
-	vcValueType		vtype,
-	float			val,
-	NhlFormatRec		*format,
-	NhlString		entry_name
-)
-#else 
-(vcp,vtype,value,format,entry_name)
-	NhlVectorPlotLayerPart	*vcp;
-	vcValueType		vtype;
-	float			val;
-	NhlFormatRec		*format;
-	NhlString		entry_name;
-
-#endif
-{
-	char	*cp;
-	float  value;
-	NhlFormatRec *formp;
-
-	switch (vtype) {
-
-	case vcEXPLICIT:
-		value = val * vcp->mag_scale.scale_factor;
-		break;
-	case vcMAXMAG:
-		value = vcp->zmax * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcMINMAG:
-		value = vcp->zmin * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcREFMAG:
-		value = vcp->ref_magnitude * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcMAXUVAL:
-		value = vcp->zmax * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcMINUVAL:
-		value = vcp->zmin * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcMAXVVAL:
-		value = vcp->zmax * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcMINVVAL:
-		value = vcp->zmin * vcp->mag_scale.scale_factor;
-		formp = &vcp->mag_scale.format;
-		break;
-	case vcSCALEFACTOR:
-		value = vcp->mag_scale.scale_factor;
-		break;
-	default:
-		value = 1e12;
-	}
-
-	cp = _NhlFormatFloat(format,value,NULL,
-			     &vcp->mag_scale.format.sig_digits,
-			     &vcp->mag_scale.format.left_sig_digit,
-                             NULL,NULL,NULL,entry_name);
-	if (cp == NULL) 
-		return NULL;
-	return cp;
-	
-}
-#endif
 /*
  * Function:	ConstrainJustification
  *
@@ -6360,14 +6362,14 @@ static NhlErrorTypes    ManageVectorData
 	entry_name = (init) ? InitName : SetValuesName;
 
 	if (! vcp->data_changed && 
-	    (vcp->vector_field_data == ovcp->vector_field_data))
+	    ! _NhlArgIsSet(args,num_args,NhlNvcVectorFieldData))
 		return NhlNOERROR;
 
 	if (vcp->vector_field_data != NULL)
 		ndata = _NhlGetDataInfo(vcp->vector_field_data,&dlist);
 	if (ndata <= 0) {
-		vcp->mag_scale.min_val = vcp->zmin = 0.0;
-		vcp->mag_scale.max_val = vcp->zmax = 1.0;
+		vcp->a_params.uvmn = vcp->mag_scale.min_val = vcp->zmin = 0.01;
+		vcp->a_params.uvmx = vcp->mag_scale.max_val = vcp->zmax = 1.0;
 		vcp->data_init = False;
 		vcp->vfp = NULL;
 		return NhlNOERROR;
@@ -6413,6 +6415,8 @@ static NhlErrorTypes    ManageVectorData
 		vcp->zmax = vcp->vfp->mag_max;
 	vcp->mag_scale.max_val = vcp->zmax;
 	vcp->mag_scale.min_val = vcp->zmin;
+	vcp->a_params.uvmn = vcp->vfp->mag_min;
+	vcp->a_params.uvmx = vcp->vfp->mag_max;
 
 	vcp->zero_field = _NhlCmpFAny(vcp->zmax,vcp->zmin,8) <= 0.0 ?
 		True : False;
@@ -6479,8 +6483,8 @@ static NhlErrorTypes    ManageScalarData
 
 	entry_name = (init) ? InitName : SetValuesName;
 
-	if (! init && 
-	    (vcp->scalar_field_data == ovcp->scalar_field_data))
+	if (! vcp->data_changed && 
+	    ! _NhlArgIsSet(args,num_args,NhlNvcScalarFieldData))
 		return NhlNOERROR;
 
 	if (vcp->scalar_field_data != NULL)
@@ -6536,8 +6540,10 @@ static NhlErrorTypes    ManageScalarData
 		vcp->svalue_scale.max_val = vcp->scalar_max = 1.0;
 	}
 	else {
-		vcp->svalue_scale.min_val = vcp->scalar_min = vcp->sfp->data_min;
-		vcp->svalue_scale.max_val = vcp->scalar_max = vcp->sfp->data_max;
+		vcp->svalue_scale.min_val = 
+			vcp->scalar_min = vcp->sfp->data_min;
+		vcp->svalue_scale.max_val = 
+			vcp->scalar_max = vcp->sfp->data_max;
 		vcp->scalar_data_init = True;
 		vcp->data_changed = True;
 	}
@@ -6582,30 +6588,34 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlVectorPlotLayer		vcnew = (NhlVectorPlotLayer) new;
 	NhlVectorPlotLayerPart		*vcp = &(vcnew->vectorplot);
 	NhlVectorPlotLayer		vcold = (NhlVectorPlotLayer) old;
+	float				dvmx;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
 /* adjust the reference length if it is not set */
 
+	if (! vcp->data_init) {
+		dvmx = vcnew->view.width * 0.05;
+	}
+	else if (init || vcp->data_changed) {
+		int nx,ny;
+		float sx,sy;
+		nx = vcp->vfp->fast_len;
+		ny = vcp->vfp->slow_len;
+		sx = vcnew->view.width / nx;
+		sy = vcnew->view.height / ny;
+		dvmx = sqrt((sx*sx + sy*sy) / 2.0);
+	}
+	vcp->a_params.dvmx = dvmx;
+
 	if (vcp->ref_length > 0.0) {
 		vcp->real_ref_length = vcp->ref_length;
 	}
-	else {
-		if (! vcp->data_init) {
-			vcp->real_ref_length = vcnew->view.width * 0.05;
-		}
-		else if (init || vcp->data_changed) {
-			int nx,ny;
-			float sx,sy;
-
-			nx = vcp->vfp->fast_len;
-			ny = vcp->vfp->slow_len;
-			sx = vcnew->view.width / nx;
-			sy = vcnew->view.height / ny;
-			vcp->real_ref_length = sqrt((sx*sx + sy*sy) / 2.0);
-		}
+	else if (init || vcp->data_changed || ! vcp->data_init) {
+		vcp->real_ref_length = dvmx;
 		vcp->ref_length_set = True;
 	}
+
 	if (! vcp->ref_length_set) {
 		if (vcnew->view.width != vcold->view.width ||
 		    vcnew->view.height != vcold->view.height) {
@@ -6669,8 +6679,6 @@ static NhlErrorTypes    CopyTextAttrs
 	NhlString	entry_name;
 #endif
 {
-	char 		*e_text;
-	char		*save_fstring;
 	NhlString	save_name;
 	NhlString	save_text1;
 	NhlString	save_text2;
@@ -6689,36 +6697,12 @@ static NhlErrorTypes    CopyTextAttrs
 	save_string2 = dest->string2;
 	save_attrs = dest->aap;
 	save_angle = dest->angle;
-	save_fstring = dest->format.fstring;
 	string1_on = dest->string1_on;
 	string2_on = dest->string2_on;
 	on = dest->on;
 
-	if (source->format.fstring == NULL) {
-		if (save_fstring)
-			NhlFree(save_fstring);
-		save_fstring = NULL;
-	}
-	else {
-		int	slen = 0,dlen = 0;
-		slen = strlen(source->format.fstring);
-		if (save_fstring)
-			dlen = strlen(save_fstring);
-		if (dlen < slen) {
-			if (save_fstring)
-				NhlFree(save_fstring);
-			if ((save_fstring = NhlMalloc(slen+1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-		}
-		strcpy(save_fstring,source->format.fstring);
-	}
 	memcpy((void *)dest,(Const void *)source,sizeof(NhlvcLabelAttrs));
 
-	dest->format.fstring = save_fstring;
 	dest->name = save_name;
 	dest->text1 = save_text1;
 	dest->text2 = save_text2;
@@ -7017,7 +7001,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			cp = _NhlFormatFloat(frec,fval,NULL,
 					     &sip->sig_digits,
 					     &sip->left_sig_digit,
-                                             NULL,NULL,NULL,entry_name);
+                                             NULL,NULL,NULL,
+					     vcp->lbar_func_code,
+					     entry_name);
 			if (cp == NULL) return NhlFATAL;
 			if ((sp[i] = (char *) 
 			     NhlMalloc(strlen(cp)+1)) == NULL) {
@@ -7041,8 +7027,10 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	if (
 	    vcp->vector_colors != ovcp->vector_colors ||
-	    vcp->mono_vector_color != ovcp->mono_vector_color ||
-	    vcp->vector_color != ovcp->vector_color ||
+	    vcp->mono_vector_fill_color != ovcp->mono_vector_fill_color ||
+	    vcp->vector_fill_color != ovcp->vector_fill_color ||
+	    vcp->mono_vector_line_color != ovcp->mono_vector_line_color ||
+	    vcp->vector_line_color != ovcp->vector_line_color ||
 	    vcp->levels != ovcp->levels ||
 	    vcp->level_strings != ovcp->level_strings) {
 		vcp->new_draw_req = True;
@@ -8007,8 +7995,22 @@ static NhlErrorTypes ChooseSpacingLin
 	
 }
 
-void vvumxy_
-#if __STDC__
+/*
+ * Function:  hluvvmpxy
+ *
+ * Description: 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
+#if	NhlNeedProto
 (
  float *x,
  float *y, 
@@ -8049,6 +8051,7 @@ void vvumxy_
 	float xsc = 1.0, ysc = 1.0;
 
         if (Vcp == NULL) {
+		_NHLCALLF(vvmpxy,VVMPXY)(x,y,u,v,uvm,xb,yb,xe,ye,ist);
 		return;
 	}
 
@@ -8090,19 +8093,7 @@ void vvumxy_
 	else if (overlay_trans_obj == NULL) {
 		trans_p = trans_obj;
 
-		_NhlCompcToWin(trans_p,x,y,1,
-			       &xout,&yout,&status,NULL,NULL);
-#if 0
-		if(status) {
-			xout = *x;
-			yout = *y;
-		}
-		if (xout < wxmn || xout > wxmx || 
-		    yout < wymn || yout > wymx) {
-			*ist = -5;
-			return;
-		}
-#endif
+		_NhlCompcToWin(trans_p,x,y,1,&xout,&yout,&status,NULL,NULL);
 		if(status) {
 			*ist = -5;
 			return;
@@ -8112,7 +8103,8 @@ void vvumxy_
 		*xe = *xb + *u * sxdc * xsc;
 		*ye = *yb + *v * sydc * ysc;
 #if 0
-		printf("compc %f %f : win %f %f\n", *x, *y, xout, yout);
+		printf("compc %f %f : win %f %f", *x, *y, xout, yout);
+		printf("ndc %f %f\n", *xb, *yb);
 #endif
 
 		if (itrt < 1)
@@ -8120,10 +8112,6 @@ void vvumxy_
 			
 		_NhlCompcToData(trans_p,x,y,1,&xdata,&ydata,
 			&status,NULL,NULL);
-		if(status) {
-			xdata = *x;
-			ydata = *y;
-		}
 		if(status) {
 			*ist = -5;
 			return;
@@ -8138,10 +8126,6 @@ void vvumxy_
 		_NhlCompcToData(trans_obj,x,y,1,&xdata,&ydata,
 			&status,NULL,NULL);
 		if(status) {
-			xdata = *x;
-			ydata = *y;
-		}
-		if(status) {
 			*ist = -5;
 			return;
 		}
@@ -8149,15 +8133,6 @@ void vvumxy_
 		_NhlDataToWin(overlay_trans_obj,
 			      &xdata, &ydata,1,&xout,&yout,
 			      &status,NULL,NULL);
-		if(status) {
-			xout = xdata;
-			yout = ydata;
-		}
-		if (xout < wxmn || xout > wxmx || 
-		    yout < wymn || yout > wymx) {
-			*ist = -5;
-			return;
-		}
 		if(status) {
 			*ist = -5;
 			return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.10 1995-06-27 20:28:56 dbrown Exp $
+ *      $Id: Format.c,v 1.11 1996-01-19 18:06:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -803,11 +803,12 @@ NhlString _NhlFormatFloat
 	int		*exp_fwidth,
 	int		*exp_switch_len,
 	int		*point_pos,
+	char		func_code,
 	NhlString	entry_point
 )
 #else
 (format,value,fwidth,sig_digits,left_sig_digit,
- exp_fwidth,exp_switch_len,point_pos,entry_point)
+ exp_fwidth,exp_switch_len,point_pos,func_code,entry_point)
 	NhlFormatRec	*format;
 	float		value;
 	int		*fwidth;
@@ -816,15 +817,17 @@ NhlString _NhlFormatFloat
 	int		*exp_fwidth;
 	int		*exp_switch_len;
 	int		*point_pos;
+	char		func_code;
 	NhlString	entry_point;
 #endif
 {
         int ndgd,lmsd,iexp,lexp;
-        char *cex1[] = { " "," ","x",":F18:U:F:" };
+        char *c1[] = { " "," ","x",":F18:U:F:" };
         int  lex1[] = { 1,1,1,1 };
-        char *cex2[] = { "e","E","10**","10:S:" };
+        char *c2[] = { "e","E","10**","10:S:" };
         int lex2[] = { 0,0,4,2 };
-        char *cex3[] = { " "," "," ",":N:" };
+        char *c3[] = { " "," "," ",":N:" };
+	char cex1[10],cex2[6],cex3[4];
         int lex3[] = { 0,0,0,0 };
         int len_diff[] = { 0,0,0,14 };
 	int exp_len[] = {1,1,5,14 };
@@ -883,8 +886,16 @@ NhlString _NhlFormatFloat
                         lexp = *exp_fwidth;
         }
 
-
         ix = (int) format->exp_type;
+	strcpy(cex1,c1[ix]);
+	strcpy(cex2,c2[ix]);
+	strcpy(cex3,c3[ix]);
+	if (format->exp_type == NhlffSUPERSCRIPT && func_code != ':') {
+		cex1[0] = cex1[4] = cex1[6] = cex1[8] = func_code;
+		cex2[2] = cex2[4] = func_code;
+		cex3[0] = cex3[2] = func_code;
+	}
+
         ioma = (int) ! format->exclamation;
         iodp = (int) ! format->pound;
         iotz = (int) ! format->zero;
@@ -907,13 +918,13 @@ NhlString _NhlFormatFloat
 		NGstring cex3_f;
 		NGstring cbuf_f;
 		char *cbuf_c;
-		len1 = NGSTRLEN(cex1[ix]);
-		len2 = NGSTRLEN(cex2[ix]);
-		len3 = NGSTRLEN(cex3[ix]);
+		len1 = NGSTRLEN(cex1);
+		len2 = NGSTRLEN(cex2);
+		len3 = NGSTRLEN(cex3);
 		len4 = 128;
-		cex1_f = NGCstrToFstr(cex1[ix],len1);
-		cex2_f = NGCstrToFstr(cex2[ix],len2);
-		cex3_f = NGCstrToFstr(cex3[ix],len3);
+		cex1_f = NGCstrToFstr(cex1,len1);
+		cex2_f = NGCstrToFstr(cex2,len2);
+		cex3_f = NGCstrToFstr(cex3,len3);
 		cbuf_f = NGCstrToFstr(cbuf,len4);
         	NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
 			       cex1_f,cex2_f,cex3_f,
@@ -995,7 +1006,7 @@ NhlString _NhlFormatFloat
  */
 	if (format->field_type != NhlffFLOATFLD) {
                 exp_pos = find_exp(format,cbuf,
-				   cex1[ix],cex2[ix],&has_mantissa);
+				   cex1,cex2,&has_mantissa);
 		if (! has_mantissa) {
 			if (format->exp_type == NhlffASTERISK) {
 				exp_len[ix] = 4;
@@ -1226,7 +1237,6 @@ NhlErrorTypes _NhlGetScaleInfo
         int ndgs;
         int ieva;
 	float tmpf;
-	int i;
 	char *cp;
 
         lmsd = -10000;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.2 1995-12-01 04:15:54 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.3 1996-01-19 18:06:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/VectorFieldFloatP.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
 #include <ncarg/hlu/FormatI.h>
+#include <ncarg/hlu/VecAnno.h>
 
 #define Nhl_vcDEF_ARRAY_SIZE	16
 #define Nhl_vcMAX_LEVELS	255
@@ -56,8 +57,10 @@ typedef struct _NhlvcArrowAttrs {
 	float			vec_len;
 	float			vec_mag;
 	float			real_vec_mag;
-	NhlColorIndex		arrow_color;
-	NhlColorIndex		real_arrow_color;
+	NhlColorIndex		arrow_line_color;
+	NhlColorIndex		real_arrow_line_color;
+	NhlColorIndex		arrow_fill_color;
+	NhlColorIndex		real_arrow_fill_color;
 	NhlBoolean		use_vec_color;
 	float			arrow_angle;
 	float			arrow_space;
@@ -74,7 +77,6 @@ typedef struct _NhlvcLabelAttrs {
 	NhlString		string2;
 	NhlString		text1;  /* after substitution */
 	NhlString		text2;  /* after substitution */
-	NhlFormatRec		format;
 	NhlBoolean		height_set;
 	float			height;
 	NhlTextDirection	direction;
@@ -148,6 +150,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean		map_direction;
 	NhlVectorPositionMode	position_mode;
 
+	float			min_vec_dist;
 	float			min_frac_len;
 	float			min_magnitude;
 	float			max_magnitude;
@@ -168,10 +171,21 @@ typedef struct _NhlVectorPlotLayerPart {
 
 	float			arrow_min_size;
 	float			arrow_max_size;
+	NhlBoolean		filled_arrows_on;
+	float			arrow_width;
+	float			arrow_min_width;
+	float			arrowhead_x;
+	float			arrowhead_min_x;
+	float			arrowhead_y;
+	float			arrowhead_min_y;
+	float			arrowhead_interior;
+	NhlBoolean		fill_over_line;
 	float			line_thickness;
 	NhlBoolean		use_scalar_array;
-	NhlBoolean		mono_vector_color;
-	NhlColorIndex		vector_color;
+	NhlBoolean		mono_vector_line_color;
+	NhlColorIndex		vector_line_color;
+	NhlBoolean		mono_vector_fill_color;
+	NhlColorIndex		vector_fill_color;
 	NhlGenArray		vector_colors;
 	NhlColorIndex		scalar_mval_color;
 	NhlDrawOrder		vector_order;
@@ -216,6 +230,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
 	NhlGenArray	lbar_labels_res;
+	char		lbar_func_code;
 	NhllbLabelAlignmentMode lbar_alignment;
 
 	/* private resource */
@@ -268,6 +283,16 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean	lbar_labels_res_set;
 	NhlBoolean	lbar_labels_set;
 	NhlGenArray	lbar_labels;
+
+	/* workspace */
+
+	int		fws_id;
+	NhlWorkspace	*fws;
+
+	/* for VecAnno */
+
+	_NhlvaArrowParams a_params;
+	_NhlvaDrawParams  d_params;
 
 } NhlVectorPlotLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.15 1995-12-19 20:39:18 boote Exp $
+ *      $Id: MultiText.c,v 1.16 1996-01-19 18:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -70,11 +70,13 @@ static NhlResource resources[] = {
 		sizeof(float),Oset(constant_spacing),NhlTString,"0.0",0,NULL},
 	{NhlNtxDirection, NhlCtxDirection, NhlTTextDirection,
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
-						(NhlPointer)NhlACROSS,0,NULL}
+						(NhlPointer)NhlACROSS,0,NULL},
+	{NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter,
+		 sizeof(char),Oset(func_code),NhlTString,":",0,NULL}
 };
 #undef Oset
 
-/* Methode declarations	*/
+/* Method declarations	*/
 
 static NhlErrorTypes MultiTextClassPartInitialize(
 #if	NhlNeedProto
@@ -478,6 +480,7 @@ MultiTextInitialize
 		NhlNtxFontThicknessF,	mtnew->multitext.font_thickness,
 		NhlNtxConstantSpacingF,	mtnew->multitext.constant_spacing,
 		NhlNtxDirection,	mtnew->multitext.direction,
+		NhlNtxFuncCode,		mtnew->multitext.func_code,
 		NULL);
 
 	if(num_strings > 0){
@@ -671,6 +674,7 @@ MultiTextSetValues
 			NhlNtxConstantSpacingF,
 					mtnew->multitext.constant_spacing,
 			NhlNtxDirection,	mtnew->multitext.direction,
+			NhlNtxFuncCode,		mtnew->multitext.func_code,
 			NULL);
 		ret = MIN(ret,lret);
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.26 1995-12-19 20:39:38 boote Exp $
+ *      $Id: Workspace.c,v 1.27 1996-01-19 18:06:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3382,6 +3382,349 @@ NhlErrorTypes _NhlMapgrm
 					  e_text,entry_name,e_msg);
 				return NhlFATAL;
 			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlVvinit
+ *
+ * Description: Vectors routine VVINIT
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlVvinit
+#if	NhlNeedProto
+(
+	float		*u,
+	int		lu,
+	float		*v,
+	int		lv,
+	float		*p,
+	int		lp,
+	int		m,
+	int		n,				
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+)
+#else
+(u,lu,v,lv,p,lp,m,n,flt_ws,entry_name)
+	float		*u;
+	int		lu;
+	float		*v;
+	int		lv;
+	float		*p;
+	int		lp;
+	int		m;
+	int		n;				
+	NhlWorkspace	*flt_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	int		req_size;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+
+	req_size = 2 * m * n * sizeof(float);
+	if (fwsrp && fwsrp->cur_size != req_size) {
+		int amount = req_size - fwsrp->cur_size;
+		ret = ChangeWorkspaceSize(fwsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	c_entsr(&save_mode,1);
+	do {
+		if (fwsrp) {
+			c_vvinit(u,lu,v,lv,p,lp,m,n,fwsrp->ws_ptr,
+				 (fwsrp->cur_size/sizeof(float)));
+		}
+		else {
+			c_vvinit(u,lu,v,lv,p,lp,m,n,NULL,0);
+		}
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if 0
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlVvectr
+ *
+ * Description: Vectors routine VVECTR
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlVvectr
+#if	NhlNeedProto
+(
+	float		*u,
+	float		*v,
+	float		*p,
+        NhlWorkspace	*amap_ws,
+	int 		(*vvudmv)(float *xcs, 
+				  float *ycs,
+				  int *ncs,
+				  int *iai,
+				  int *iag,
+				  int *nai),
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+)
+#else
+(u,v,p,amap_ws,vvudmv,flt_ws,entry_name)
+	float		*u;
+	float		*v;
+	float		*p;
+        NhlWorkspace	*amap_ws;
+	int 		(*vvudmv)();
+	NhlWorkspace	*flt_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *awsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+	void		*awp,*fwp;
+
+	awp = awsrp ? awsrp->ws_ptr : NULL;
+	fwp = fwsrp ? fwsrp->ws_ptr : NULL;
+	c_entsr(&save_mode,1);
+	do {
+		c_vvectr(u,v,p,awp,vvudmv,fwp);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlStinit
+ *
+ * Description: Streamlines routine STINIT
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlStinit
+#if	NhlNeedProto
+(
+	float		*u,
+	int		lu,
+	float		*v,
+	int		lv,
+	float		*p,
+	int		lp,
+	int		m,
+	int		n,				
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+)
+#else
+(u,lu,v,lv,p,lp,m,n,flt_ws,entry_name)
+	float		*u;
+	int		lu;
+	float		*v;
+	int		lv;
+	float		*p;
+	int		lp;
+	int		m;
+	int		n;				
+	NhlWorkspace	*flt_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+	int		req_size;
+
+	req_size = 2 * m * n * sizeof(float);
+	if (fwsrp->cur_size != req_size) {
+		int amount = req_size - fwsrp->cur_size;
+		ret = ChangeWorkspaceSize(fwsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	c_entsr(&save_mode,1);
+
+	do {
+		c_stinit(u,lu,v,lv,p,lp,m,n,
+			 fwsrp->ws_ptr,(fwsrp->cur_size/sizeof(float)));
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if 0
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlStream
+ *
+ * Description: Streamlines routine STREAM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlStream
+#if	NhlNeedProto
+(
+	float		*u,
+	float		*v,
+	float		*p,
+        NhlWorkspace	*amap_ws,
+	int 		(*stumsl)(float *xcs, 
+				  float *ycs,
+				  int *ncs,
+				  int *iai,
+				  int *iag,
+				  int *nai),
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+)
+#else
+(u,v,p,amap_ws,stumsl,flt_ws,entry_name)
+	float		*u;
+	float		*v;
+	float		*p;
+        NhlWorkspace	*amap_ws;
+	int 		(*stumsl)();
+	NhlWorkspace	*flt_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *awsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+
+	c_entsr(&save_mode,1);
+
+	do {
+		c_stream(u,v,p,awsrp->ws_ptr,stumsl,fwsrp->ws_ptr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name,e_msg);
+			return NhlFATAL;
 		}
 	} while (! done);
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.11 1995-06-30 20:40:31 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.12 1996-01-19 18:06:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -101,6 +101,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		x_b_label_just;
 	float		x_b_label_angle;
 	NhlTextDirection   x_b_label_direction;
+	char		x_b_label_fcode;
 	float		x_b_label_delta;
 	NhlBoolean	x_b_auto_precision;
 	float		x_t_data_left;
@@ -133,6 +134,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		x_t_label_just;
 	float		x_t_label_angle;
 	NhlTextDirection   x_t_label_direction;
+	char		x_t_label_fcode;
 	float		x_t_label_delta;
 	NhlBoolean	x_t_auto_precision;
 	NhlBoolean	y_use_left;
@@ -198,6 +200,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		y_l_label_just;
 	float		y_l_label_angle;
 	NhlTextDirection   y_l_label_direction;
+	char		y_l_label_fcode;
 	float		y_l_label_delta;
 	NhlBoolean	y_l_auto_precision;
 	float		y_r_data_top;
@@ -230,6 +233,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		y_r_label_just;
 	float		y_r_label_angle;
 	NhlTextDirection   y_r_label_direction;
+	char		y_r_label_fcode;
 	float		y_r_label_delta;
 	NhlBoolean	y_r_auto_precision;
 /* Private fields */

@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnnoP.h,v 1.1 1995-11-21 20:19:03 dbrown Exp $
+ *      $Id: VecAnnoP.h,v 1.2 1996-01-19 18:06:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,13 +38,15 @@ typedef struct _NhlVecAnnoLayerPart{
 	NhlBoolean	string2_on;
 	NhlString	string2;
 	float		vec_len;
-	NhlColorIndex	vec_color;
-	float		ah_min_size;
-	float		ah_max_size;
+	NhlColorIndex	vec_line_color;
+	NhlColorIndex	vec_fill_color;
 	float		ah_line_thickness;
 	float		ah_angle;
 	float		ah_space;
 	float		ah_min_offset;
+	_NhlvaArrowParams *a_params;
+	_NhlvaDrawParams *d_params;
+
 	float		max_len;	/* read-only */
 
 	/* textItem resources that need to be managed */

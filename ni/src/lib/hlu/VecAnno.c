@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.3 1995-12-19 20:39:33 boote Exp $
+ *      $Id: VecAnno.c,v 1.4 1996-01-19 18:06:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,15 +42,12 @@ static NhlResource resources[] = {
 		(NhlFreeFunc)NhlFree},
 	{NhlNvaVectorLenF, NhlCvaVectorLenF, NhlTFloat,sizeof(float),
 		 Oset(vec_len),NhlTString,_NhlUSET("0.01"),0,NULL},
-	{NhlNvaVectorColor, NhlCvaVectorColor, NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(vec_color),
+	{NhlNvaVectorLineColor, NhlCvaVectorLineColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(vec_line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{ NhlNvaArrowHeadMinSizeF,NhlCvaArrowHeadMinSizeF,
-		  NhlTFloat,sizeof(float),Oset(ah_min_size),NhlTString,
-		  _NhlUSET("0.005"),0,NULL},
-	{ NhlNvaArrowHeadMaxSizeF,NhlCvaArrowHeadMaxSizeF,
-		  NhlTFloat,sizeof(float),Oset(ah_max_size),NhlTString,
-		  _NhlUSET("0.05"),0,NULL},
+	{NhlNvaVectorFillColor, NhlCvaVectorFillColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(vec_fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
 	{ NhlNvaArrowLineThicknessF,NhlCvaArrowLineThicknessF,
 		  NhlTFloat,sizeof(float),Oset(ah_line_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
@@ -63,6 +60,13 @@ static NhlResource resources[] = {
 	{ NhlNvaArrowMinOffsetF,NhlCvaArrowMinOffsetF,
 		  NhlTFloat,sizeof(float),Oset(ah_min_offset),NhlTString,
 		  _NhlUSET("0.25"),0,NULL},
+	{ NhlNvaArrowParams,NhlCvaArrowParams,NhlTPointer,sizeof(NhlPointer),
+		  Oset(a_params),NhlTImmediate,
+		  _NhlUSET((NhlPointer)0),0,NULL},
+	{ NhlNvaDrawParams,NhlCvaDrawParams,NhlTPointer,sizeof(NhlPointer),
+		  Oset(d_params),NhlTImmediate,
+		  _NhlUSET((NhlPointer)0),0,NULL},
+
 	/*
 	 * These resources are actually resources in the TextItem object
 	 * that is used by this object.  If there are changes in the
@@ -289,8 +293,6 @@ CalculateGeometry
 {
 	NhlVecAnnoLayerPart *vap = (NhlVecAnnoLayerPart *) &l->vecanno;
 	NhlVecAnnoLayerPart *ovap;
-	float		tx;
-	float		ty;
 	float		twidth;
 	float		theight;
 	float		space;
@@ -298,21 +300,11 @@ CalculateGeometry
 	float		s2width,s2height;
 	float		max_tx_height;
 	float		margin;
-	float		c1;
-	float		vxl, vyl, half_height;
+	float		tx,ty,txe,tye;
         float		ajx, ajy;
-	float		ax[5],ay[5];
 	float		xmn,xmx,ymn,ymx;
-	int		i,ix,iy;
-	float		ref_width;
 
 #define DEGTORAD 0.017453292519943
-#define AH_ANGLE DEGTORAD * 22.5
-#define AH_FRAC 0.25
-#define AH_INTPOINT 0.5
-
-	float hsin = sin (AH_ANGLE);
-	float hcos = cos (AH_ANGLE);
 
 	if (ol != NULL)
 		ovap = (NhlVecAnnoLayerPart *) &ol->vecanno;
@@ -337,45 +329,13 @@ CalculateGeometry
 			       NhlNvpHeightF,	&s2height,
 			       NULL);
 	}
-	c1 = AH_FRAC;
-        NhlVAGetValues(l->base.parent->base.id,
-		       NhlNvpWidthF,&ref_width,
-		       NULL);
-	if (vap->vec_len * c1 < vap->ah_min_size * ref_width)
-		c1 = vap->ah_min_size * ref_width / vap->vec_len;
-	if (vap->vec_len * c1 > vap->ah_max_size * ref_width)
-		c1 = vap->ah_max_size * ref_width / vap->vec_len;
 
-	half_height = vap->vec_len * 2.0 * c1 * hsin;
+	txe = tx + vap->vec_len * cos(DEGTORAD * vap->ah_angle);
+	tye = ty + vap->vec_len * sin(DEGTORAD * vap->ah_angle); 
 
-/* temporarily position the arrow at the vecanno origin */
-
-	ax[0] = tx;
-	ay[0] = ty;
-	ax[3] = tx + vap->vec_len * cos(DEGTORAD * vap->ah_angle);
-	ay[3] = ty + vap->vec_len * sin(DEGTORAD * vap->ah_angle);
-	vxl = ax[3] - ax[0];
-	vyl = ay[3] - ay[0];
-	ax[2] = ax[3] - c1 * (hcos * vxl - hsin * vyl);
-	ay[2] = ay[3] - c1 * (hcos * vyl + hsin * vxl);
-	ax[1] = ax[3] - c1 * AH_INTPOINT * vxl;
-	ay[1] = ay[3] - c1 * AH_INTPOINT * vyl;
-	ax[4] = ax[3] - c1 * (hcos * vxl + hsin * vyl);
-	ay[4] = ay[3] - c1 * (hcos * vyl - hsin * vxl);
-
-	xmn = xmx = tx;
-	ymn = ymx = ty;
-	for (i = 0; i < 5; i++) {
-		if (xmn > ax[i]) {
-			xmn = ax[i];
-		}
-		if (xmx < ax[i]) xmx = ax[i];
-		if (ymn > ay[i]) ymn = ay[i];
-		if (ymx < ay[i]) {
-			ymx = ay[i];
-		}
-	}
-
+	NGCALLF(vvgetarrowbound,VVGETARROWBOUND)
+                (vap->a_params,&tx,&ty,&txe,&tye,&vap->vec_len,
+		 &xmn,&ymn,&xmx,&ymx);
 	vap->vec.width = xmx - xmn;
 	vap->vec.height = ymx - ymn;
 
@@ -398,10 +358,10 @@ CalculateGeometry
 	ajx = vap->vec.x - xmn;
 	ajy = vap->vec.y - ymx;
 
-	vap->vxb = ax[0] + ajx;
-	vap->vxe = ax[3] + ajx;
-	vap->vyb = ay[0] + ajy;
-	vap->vye = ay[3] + ajy;
+	vap->vxb = tx + ajx;
+	vap->vxe = txe + ajx;
+	vap->vyb = ty + ajy;
+	vap->vye = tye + ajy;
 
 	if (vap->string1_on) {
 		vap->ti1.width = s1width;
@@ -520,6 +480,19 @@ VecAnnoInitialize
 	}
 	strcpy(vap->string2,rvap->string2);
 
+	if (rvap->a_params == NULL) {
+		e_text = "%s: vaArrowParams must not be NULL";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	vap->a_params = NhlMalloc(sizeof(_NhlvaArrowParams));
+	if (vap->a_params == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	memcpy(vap->a_params,rvap->a_params,sizeof(_NhlvaArrowParams));
+
 	/* give child a name */
 	strcpy(name,new->base.name);
 	strcat(name,"-String1");
@@ -618,13 +591,28 @@ VecAnnoSetValues
 	NhlString	e_text;
 	NhlString	entry_name = "VecAnnoSetValues";
 
+	/* if the draw params is set nothing else should be */
+
+	if (_NhlArgIsSet(args,nargs,NhlNvaDrawParams)) {
+		NhlFree(ovap->d_params);
+		ovap->d_params = vap->d_params;
+		vap->d_params = NhlMalloc(sizeof(_NhlvaDrawParams));
+		if (vap->d_params == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		memcpy(vap->d_params,ovap->d_params,sizeof(_NhlvaDrawParams));
+                return NhlNOERROR;
+	}
+
 	if (vanew->view.x != vaold->view.x ||
 	    vanew->view.y != vaold->view.y ||
 	    vanew->view.width != vaold->view.width ||
 	    vanew->view.height != vaold->view.height) {
 		changed = True;
 	}
-	if (vap->string1 != ovap->string1) {
+	if (_NhlArgIsSet(args,nargs,NhlNvaString1)) {
 		NhlFree(ovap->string1);
 		ovap->string1 = vap->string1;
 		vap->string1 = (NhlString) 
@@ -637,7 +625,7 @@ VecAnnoSetValues
 		strcpy(vap->string1,ovap->string1);
 		text_changed = True;
 	}
-	if (vap->string2 != ovap->string2) {
+	if (_NhlArgIsSet(args,nargs,NhlNvaString2)) {
 		NhlFree(ovap->string2);
 		ovap->string2 = vap->string2;
 		vap->string2 = (NhlString) 
@@ -650,6 +638,19 @@ VecAnnoSetValues
 		strcpy(vap->string2,ovap->string2);
 		text_changed = True;
 	}
+	if (_NhlArgIsSet(args,nargs,NhlNvaArrowParams)) {
+		NhlFree(ovap->a_params);
+		ovap->a_params = vap->a_params;
+		vap->a_params = NhlMalloc(sizeof(_NhlvaArrowParams));
+		if (vap->a_params == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		memcpy(vap->a_params,ovap->a_params,sizeof(_NhlvaArrowParams));
+		changed = True;
+	}
+
 	if (vap->vec_len != ovap->vec_len)
 		changed = True;
 
@@ -745,12 +746,14 @@ VecAnnoDraw
 {
 	NhlVecAnnoLayer	val = (NhlVecAnnoLayer)l;
 	NhlErrorTypes	ret = NhlNOERROR;
+	NhlString	e_text;
+	NhlString	entry_name = "VecAnnoDraw";
 	NhlVecAnnoLayerPart *vap = (NhlVecAnnoLayerPart *) &val->vecanno;
 	float fl,fr,fb,ft,ul,ur,ub,ut;
 	int ll;
 	float xb,xe,yb,ye,vln;
-	int idm,zero;
 	float x[5],y[5];
+	int line_color;
 
 	x[0] = val->view.x;
 	x[1] = val->view.x + val->view.width;
@@ -788,7 +791,29 @@ VecAnnoDraw
 		_NhlWorkstationFill(l->base.wkptr,x,y,5);
 	}
 
-	gset_line_colr_ind((Gint)_NhlGetGksCi(l->base.wkptr,vap->vec_color));
+	line_color = vap->vec_line_color;
+	if (vap->a_params->ast_iast == 1) {
+		int acm = 0;
+		if (vap->vec_fill_color <= NhlTRANSPARENT) {
+			if (line_color <= NhlTRANSPARENT)
+				line_color = NhlFOREGROUND;
+			acm = -1;
+		}
+		else if (line_color <= NhlTRANSPARENT) {
+			acm = -2;
+		}
+		c_vvseti("ACM",acm);
+	}
+	else if (line_color <= NhlTRANSPARENT) {
+		line_color = NhlFOREGROUND;
+	}
+
+	if (line_color > NhlTRANSPARENT)
+		gset_line_colr_ind((Gint)
+				   _NhlGetGksCi(l->base.wkptr,line_color));
+	if (vap->vec_fill_color > NhlTRANSPARENT) 
+		gset_fill_colr_ind((Gint)
+			    _NhlGetGksCi(l->base.wkptr,vap->vec_fill_color));
 	gset_linewidth(vap->ah_line_thickness);
 
 	xb = vap->vxb;
@@ -796,11 +821,14 @@ VecAnnoDraw
 	xe = vap->vxe;
 	ye = vap->vye;
 	vln = vap->vec_len;
-	zero = 0;
 
-	c_vvseti("VPO",1);
-	_NHLCALLF(vvdraw,VVDRAW)(&xb,&yb,&xe,&ye,&vln,
-				 &idm,&zero,&idm,&idm,&zero);
+	if (vap->d_params == NULL || vap->a_params == NULL) {
+		e_text = "%s: internal parameter values not initialized";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	_NHLCALLF(vvarrowdraw,VVARROWDRAW)(vap->d_params,vap->a_params,
+					   &xb,&yb,&xe,&ye,&vln);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 

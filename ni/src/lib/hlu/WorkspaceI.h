@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.9 1995-05-18 20:05:49 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.10 1996-01-19 18:06:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -232,6 +232,8 @@ extern NhlErrorTypes _NhlCprect(
 #endif
 );
 
+/* Dyanamic Ezmap interface functions */
+
 extern NhlErrorTypes _NhlMapbla(
 #if	NhlNeedProto
  	NhlWorkspace	*amap_ws,
@@ -289,5 +291,75 @@ extern NhlErrorTypes _NhlMapgrm(
 	char		*entry_name
 #endif
 );
+
+
+/* Dynamic Vectors interface functions */
+
+extern NhlErrorTypes _NhlVvinit(
+#if	NhlNeedProto
+	float		*u,
+	int		lu,
+	float		*v,
+	int		lv,
+	float		*p,
+	int		lp,
+	int		m,
+	int		n,				
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlVvectr(
+#if	NhlNeedProto
+	float		*u,
+	float		*v,
+	float		*p,
+        NhlWorkspace	*amap_ws,
+	int 		(*vvudmv_)(float *xcs, 
+				   float *ycs,
+				   int *ncs,
+				   int *iai,
+				   int *iag,
+				   int *nai),
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+#endif
+);
+
+/* Dynamic Streamlines interface functions */
+
+extern NhlErrorTypes _NhlStinit(
+#if	NhlNeedProto
+	float		*u,
+	int		lu,
+	float		*v,
+	int		lv,
+	float		*p,
+	int		lp,
+	int		m,
+	int		n,				
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlStream(
+#if	NhlNeedProto
+	float		*u,
+	float		*v,
+	float		*p,
+        NhlWorkspace	*amap_ws,
+	int 		(*stumsl_)(float *xcs, 
+				   float *ycs,
+				   int *ncs,
+				   int *iai,
+				   int *iag,
+				   int *nai),
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+#endif
+);
+
 
 #endif	/* _NWORKSPACEI_H */

@@ -1,5 +1,5 @@
 C
-C $Id: VECTORPLOT.f,v 1.1 1995-11-21 20:19:02 dbrown Exp $
+C $Id: VECTORPLOT.f,v 1.2 1996-01-19 18:06:36 dbrown Exp $
 C
 C****************************************************************
 C								*
@@ -39,7 +39,6 @@ C
       SAVE /VVMAP/
 C
       IMP = IMAP
-      ITR = ITRT
       DMX = DVMX
       SXD = SXDC
       SYD = SYDC

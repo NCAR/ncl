@@ -1,5 +1,5 @@
 /*
- *      $Id: FormatI.h,v 1.2 1995-01-24 01:25:12 boote Exp $
+ *      $Id: FormatI.h,v 1.3 1996-01-19 18:06:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,7 @@ extern NhlString _NhlFormatFloat(
 	int		*exp_fwidth,
 	int		*exp_switch_len,
 	int		*point_pos,
+	char		func_code,				 
 	NhlString	entry_point
 #endif
 );

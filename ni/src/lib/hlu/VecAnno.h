@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.h,v 1.1 1995-11-21 20:19:03 dbrown Exp $
+ *      $Id: VecAnno.h,v 1.2 1996-01-19 18:06:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,44 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/TextItem.h>
 
+typedef struct __NhlvaArrowParams {
+	float ast_iast;
+	float uvmx;
+	float uvmn;
+	float dvmx;
+	float fw2w;
+	float uvmg;
+	float vlc_vlom;
+	float vhc_vhim;
+	float vfr_vfrc;
+	float vrl_vrln;
+        float vrm_vrmg;
+	float amn_famn;
+	float amx_famx;
+	float air_fair;
+	float awr_fawr;
+	float awf_fawf;
+	float axr_faxr;
+	float axr_faxf;
+	float ayr_fayr;
+	float ayf_fayf;
+	float afo_iafo;
+} _NhlvaArrowParams;
+
+typedef struct __NhlvaDrawParams {
+	float xvpl;
+        float xvpr;
+        float xvpb;
+        float xvpt;
+        float wxmn;
+        float wxmx;
+        float wymn;
+        float wymx;
+        float invx;
+        float invy;
+        float lnlg;
+} _NhlvaDrawParams;
+        
 /*
  * Resource name definitions
  */
@@ -34,13 +72,14 @@
 #define NhlNvaString2		"vaString2"
 #define NhlNvaString2On		"vaString2On"
 #define NhlNvaVectorLenF	"vaVectorLenF"
-#define NhlNvaVectorColor	"vaVectorColor"
-#define NhlNvaArrowHeadMinSizeF		"vaArrowHeadMinSizeF"
-#define NhlNvaArrowHeadMaxSizeF		"vaArrowHeadMaxSizeF"
+#define NhlNvaVectorLineColor	"vaVectorLineColor"
+#define NhlNvaVectorFillColor	"vaVectorFillColor"
 #define NhlNvaArrowLineThicknessF	"vaArrowLineThicknessF"
 #define NhlNvaArrowAngleF		"vaArrowAngleF"
 #define NhlNvaArrowSpaceF		"vaArrowSpaceF"
 #define NhlNvaArrowMinOffsetF		"vaArrowMinOffsetF"
+#define NhlNvaArrowParams		"vaArrowParams"
+#define NhlNvaDrawParams		"vaDrawParams"
 
 #define NhlNvaPerimOn		"vaPerimOn"
 #define NhlNvaPerimColor	"vaPerimColor"
@@ -53,13 +92,14 @@
 #define NhlCvaString2		"VaString2"
 #define NhlCvaString2On		"VaString2On"
 #define NhlCvaVectorLenF	"VaVectorLenF"
-#define NhlCvaVectorColor	"VaVectorColor"
-#define NhlCvaArrowHeadMinSizeF		"VaArrowHeadMinSizeF"
-#define NhlCvaArrowHeadMaxSizeF		"VaArrowHeadMaxSizeF"
+#define NhlCvaVectorLineColor	"VaVectorLineColor"
+#define NhlCvaVectorFillColor	"VaVectorFillColor"
 #define NhlCvaArrowLineThicknessF	"VaArrowLineThicknessF"
 #define NhlCvaArrowAngleF		"VaArrowAngleF"
 #define NhlCvaArrowSpaceF		"VaArrowSpaceF"
 #define NhlCvaArrowMinOffsetF		"VaArrowMinOffsetF"
+#define NhlCvaArrowParams		"VaArrowParams"
+#define NhlCvaDrawParams		"VaDrawParams"
 
 #define NhlCvaPerimOn		"VaPerimOn"
 #define NhlCvaPerimColor	"VaPerimColor"

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.19 1996-01-12 01:59:05 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.20 1996-01-19 18:06:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3378,7 +3378,7 @@ ManageTickMarks
 	NhlBoolean		view_changed = False;
 	float			d_left,d_right,d_bottom,d_top;
 	NhlAxisType		y_axis,x_axis;
-	float			*x_coord = NULL,*y_coord = NULL;
+	NhlGenArray		x_coord_ga = NULL,y_coord_ga = NULL;
 
 	entry_name = (init) ? "PlotManagerInitialize" : "PlotManagerSetValues";
 
@@ -3420,10 +3420,12 @@ ManageTickMarks
 
 	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
 /*
- * Set the tickmarks to dummy values if they are turned on. Set the
- * AnnoRec status to Never, to ensure that they do not actually get
+ * Set the tickmarks to dummy values if the TickMark is just being
+ * created. Otherwise leave its state intact (except that viewport
+ * values may be updated). Set the
+ * AnnoRec status to Never, to ensure that it does not actually get
  * displayed but do not disturb the TickMarkDisplaymode. That
- * way, it is possible to ensure that the TickMarks stay up to date.
+ * way, it is possible to ensure that TickMark stays up to date.
  */
 		if (ovp->display_tickmarks > NhlNEVER) {
 			e_text = 
@@ -3431,16 +3433,18 @@ ManageTickMarks
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 		}
 		anno_rec->status = NhlNEVER;
-		x_min = 0.0;
-		x_max = 1.0;
-		x_log = False;
-		x_reverse = False;
-		y_min = 0.0;
-		y_max = 1.0;
-		y_log = False;
-		y_reverse = False;
-		ovp->x_tm_style = NhlLINEAR;
-		ovp->y_tm_style = NhlLINEAR;
+		if (ovp->tickmarks == NULL) {
+			x_min = 0.0;
+			x_max = 1.0;
+			x_log = False;
+			x_reverse = False;
+			y_min = 0.0;
+			y_max = 1.0;
+			y_log = False;
+			y_reverse = False;
+			ovp->x_tm_style = NhlLINEAR;
+			ovp->y_tm_style = NhlLINEAR;
+		}
 	}
 	else if (trobj_name == 
 		 NhllogLinTransObjClass->base_class.class_name) {
@@ -3464,13 +3468,13 @@ ManageTickMarks
 			       NhlNtrXMaxF,&x_max,
 			       NhlNtrXAxisType,&x_axis,
 			       NhlNtrXReverse,&x_reverse,
-			       NhlNtrXCoordPoints,&x_coord,
+			       NhlNtrXCoordPoints,&x_coord_ga,
 			       NhlNtrXTensionF,&x_tension,
 			       NhlNtrYMinF,&y_min,
 			       NhlNtrYMaxF,&y_max,
 			       NhlNtrYAxisType,&y_axis,
 			       NhlNtrYReverse,&y_reverse,
-			       NhlNtrYCoordPoints,&y_coord,
+			       NhlNtrYCoordPoints,&y_coord_ga,
 			       NhlNtrYTensionF,&y_tension,
 			       NULL);
 
@@ -3484,9 +3488,9 @@ ManageTickMarks
 		case NhlIRREGULARAXIS:
 			ovp->x_tm_style = NhlIRREGULAR;
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmXBIrregularPoints,x_coord);
+				   NhlNtmXBIrregularPoints,x_coord_ga);
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmXTIrregularPoints,x_coord);
+				   NhlNtmXTIrregularPoints,x_coord_ga);
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmXBIrrTensionF,x_tension);
 			NhlSetSArg(&sargs[nargs++],
@@ -3503,9 +3507,9 @@ ManageTickMarks
 		case NhlIRREGULARAXIS:
 			ovp->y_tm_style = NhlIRREGULAR;
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmYLIrregularPoints,y_coord);
+				   NhlNtmYLIrregularPoints,y_coord_ga);
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNtmYRIrregularPoints,y_coord);
+				   NhlNtmYRIrregularPoints,y_coord_ga);
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYLIrrTensionF,y_tension);
 			NhlSetSArg(&sargs[nargs++],
@@ -3531,32 +3535,50 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-	if (x_reverse) {
-		d_left = x_max; 
-		d_right = x_min;
-	}
-	else {
-		d_left = x_min; 
-		d_right = x_max;
-	}
-	if (y_reverse) {
-		d_bottom = y_max; 
-		d_top = y_min;
-	}
-	else {
-		d_bottom = y_min; 
-		d_top = y_max;
-	}
+	if (ovp->tickmarks == NULL || 
+	    trobj_name != NhlmapTransObjClass->base_class.class_name) {
+		if (x_reverse) {
+			d_left = x_max; 
+			d_right = x_min;
+		}
+		else {
+			d_left = x_min; 
+			d_right = x_max;
+		}
+		if (y_reverse) {
+			d_bottom = y_max; 
+			d_top = y_min;
+		}
+		else {
+			d_bottom = y_min; 
+			d_top = y_max;
+		}
+		if (x_reverse) {
+			d_left = x_max; 
+			d_right = x_min;
+		}
+		else {
+			d_left = x_min; 
+			d_right = x_max;
+		}
+		if (y_reverse) {
+			d_bottom = y_max; 
+			d_top = y_min;
+		}
+		else {
+			d_bottom = y_min; 
+			d_top = y_max;
+		}
 
-
-	NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
-	NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
-	NhlSetSArg(&sargs[nargs++],NhlNtmYLDataBottomF,d_bottom);
-	NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
-	NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
-	NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
-	NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,d_bottom);
-	NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataBottomF,d_bottom);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,d_bottom);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
+	}
 		 
 /*
  * If no tickmark object exists, create it; otherwise just set the relevant
@@ -6107,7 +6129,7 @@ RestoreOverlayBase
 				sub_recs[--new_plot_count] = NULL;
 			}
 			else if (ovp->pm_recs[j]->plot == sub_recs[i]->plot) {
-				if (ovp->pm_recs[j] != orec)
+				if (ovp->pm_recs[j] != orec)  
 					NhlFree(ovp->pm_recs[j]);
 				for (k = j; k < ovp->overlay_count - 1; k++) {
 					ovp->pm_recs[k] = ovp->pm_recs[k+1];

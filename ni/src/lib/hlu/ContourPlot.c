@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.28 1995-12-19 20:38:56 boote Exp $
+ *      $Id: ContourPlot.c,v 1.29 1996-01-19 18:06:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -842,6 +842,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(lbar_labels_res),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNlbLabelFuncCode, NhlClbLabelFuncCode, NhlTCharacter,
+		 sizeof(char),Oset(lbar_func_code),
+		 NhlTString,_NhlUSET(":"),0,NULL },
 	{NhlNlbLabelAlignment,NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
 		 sizeof(NhllbLabelAlignmentMode), 
 		 Oset(lbar_alignment),NhlTImmediate,
@@ -855,6 +858,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(lgnd_labels_res),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNlgLabelFuncCode, NhlClbLabelFuncCode, NhlTCharacter,
+		 sizeof(char),Oset(lgnd_func_code),
+		 NhlTString,_NhlUSET(":"),0,NULL },
 	{NhlNlgLineLabelsOn,NhlClgLineLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean), Oset(draw_lgnd_line_lbls),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -1229,6 +1235,7 @@ static char *ContourPlotFormat(
 	NhlContourPlotLayerPart	*cnp,
 	cnValueType		vtype,
 	NhlFormatRec		*format,
+        char			func_code,			       
 	NhlString		entry_name
 #endif
 );
@@ -1945,6 +1952,7 @@ ContourPlotClassPartInitialize
 					NhlNlgDashIndexes,
 					NhlNlgMarkerIndexes,
 					NhlNlgLabelStrings,
+					NhlNlgLabelFuncCode,
 					NhlNlgMonoLineColor,
 					NhlNlgLineColor,
 					NhlNlgLineColors,
@@ -1976,6 +1984,7 @@ ContourPlotClassPartInitialize
 					NhlNlbBoxCount,
 					NhlNlbLabelAlignment,
 					NhlNlbLabelStrings,
+					NhlNlbLabelFuncCode,
 					NhlNlbMonoFillColor,
 					NhlNlbFillColor,
 					NhlNlbFillColors,
@@ -6057,6 +6066,9 @@ static NhlErrorTypes ManageLegend
 		}
 		cnp->lgnd_labels_set = True;
 	}
+	if (use_line_label_strings) {
+		cnp->lgnd_func_code = cnp->line_lbls.fcode[0];
+	}
 	
 /*
  * Decide whether all lines or only a subset is going to the Legend
@@ -6291,6 +6303,8 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLabelStrings,cnp->lgnd_labels);
 		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlgLabelFuncCode,cnp->lgnd_func_code);
+		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgMonoLineLabelFontColor,
 			   cnp->line_lbls.mono_color);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -6347,6 +6361,9 @@ static NhlErrorTypes ManageLegend
 	if (cnp->lgnd_labels != ocnp->lgnd_labels)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLabelStrings,cnp->lgnd_labels);
+	if (cnp->lgnd_func_code != ocnp->lgnd_func_code)
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlgLabelFuncCode,cnp->lgnd_func_code);
 	if (cnp->mono_line_color != ocnp->mono_line_color)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgMonoLineColor,cnp->mono_line_color);
@@ -6532,6 +6549,8 @@ static NhlErrorTypes ManageLabelBar
 
 	if (copy_line_label_strings) {
 		NhlGenArray ga;
+
+		cnp->lbar_func_code = cnp->line_lbls.fcode[0];
 		if (cnp->lbar_labels != NULL) 
 			NhlFreeGenArray(cnp->lbar_labels);
 		if (! cnp->lbar_end_labels_on) {
@@ -6558,6 +6577,7 @@ static NhlErrorTypes ManageLabelBar
 			}
 			s = ContourPlotFormat(cnp,cnDATAMINVAL,
 					      &cnp->line_lbls.format,
+					      cnp->lbar_func_code,
 					      entry_name);
 			if (s == NULL) return NhlFATAL;
 			to_sp[0] = NhlMalloc(strlen(s) + 1);
@@ -6581,6 +6601,7 @@ static NhlErrorTypes ManageLabelBar
 			}
 			s = ContourPlotFormat(cnp,cnDATAMAXVAL,
 					      &cnp->line_lbls.format,
+					      cnp->lbar_func_code,
 					      entry_name);
 			if (s == NULL) return NhlFATAL;
 			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);
@@ -6613,6 +6634,8 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,cnp->lbar_labels);
 		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlbLabelFuncCode,cnp->lbar_func_code);
+		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillColor,cnp->mono_fill_color);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillColor,cnp->fill_color);
@@ -6642,6 +6665,9 @@ static NhlErrorTypes ManageLabelBar
 	if (cnp->lbar_labels != ocnp->lbar_labels)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,cnp->lbar_labels);
+	if (cnp->lbar_func_code != ocnp->lbar_func_code)
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlbLabelFuncCode,cnp->lbar_func_code);
 	if (cnp->mono_fill_color != ocnp->mono_fill_color)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillColor,cnp->mono_fill_color);
@@ -7347,6 +7373,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			if ((matchp = strstr(buffer,"$CIU$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnCONINTERVAL,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7354,6 +7381,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			else if ((matchp = strstr(buffer,"$CMN$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnCONMINVAL,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7361,6 +7389,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			else if ((matchp = strstr(buffer,"$CMX$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnCONMAXVAL,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 
 				if (subst == NULL) return NhlFATAL;
@@ -7369,6 +7398,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			else if ((matchp = strstr(buffer,"$SFU$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnSCALEFACTOR,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7376,6 +7406,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			else if ((matchp = strstr(buffer,"$ZMN$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnDATAMINVAL,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7383,6 +7414,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 			else if ((matchp = strstr(buffer,"$ZMX$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnDATAMAXVAL,
 						      &cnp->info_lbl.format,
+						      cnp->info_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7410,7 +7442,8 @@ static NhlErrorTypes ReplaceSubstitutionChars
 		while (! done) {
 			if ((matchp = strstr(buffer,"$ZDV$")) != NULL) {
 				subst = ContourPlotFormat(cnp,cnCONSTFVAL,
-						      &cnp->info_lbl.format,
+						      &cnp->constf_lbl.format,
+						      cnp->constf_lbl.fcode[0],
 						      entry_name);
 				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
@@ -7583,13 +7616,15 @@ static char *ContourPlotFormat
 	NhlContourPlotLayerPart	*cnp,
 	cnValueType		vtype,
 	NhlFormatRec		*format,
+	char			func_code,
 	NhlString		entry_name
 )
 #else 
-(cnp,vtype,format,entry_name)
+(cnp,vtype,format,func_code,entry_name)
 	NhlContourPlotLayerPart	*cnp;
 	cnValueType		vtype;
 	NhlFormatRec		*format;
+	char			func_code;
 	NhlString		entry_name;
 
 #endif
@@ -7627,7 +7662,7 @@ static char *ContourPlotFormat
 	cp = _NhlFormatFloat(format,value,NULL,
 			     &cnp->max_data_format.sig_digits,
 			     &cnp->max_data_format.left_sig_digit,
-                             NULL,NULL,NULL,entry_name);
+                             NULL,NULL,NULL,func_code,entry_name);
 	if (cp == NULL) 
 		return NULL;
 	return cp;
@@ -8665,7 +8700,9 @@ static NhlErrorTypes    ManageDynamicArrays
                                              NULL,
 					     &frec->sig_digits,
 					     &frec->left_sig_digit,
-                                             NULL,NULL,NULL,entry_name);
+                                             NULL,NULL,NULL,
+					     cnp->line_lbls.fcode[0],
+					     entry_name);
 			if (cp == NULL) return NhlFATAL;
 			if ((sp[i] = (char *) 
 			     NhlMalloc(strlen(cp)+1)) == NULL) {
@@ -10259,7 +10296,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourPlotDraw");
+                                       NULL,NULL,NULL,
+				       Cnp->high_lbls.fcode[0],
+				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
 		break;
@@ -10293,7 +10332,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourPlotDraw");
+                                       NULL,NULL,NULL,
+				       Cnp->high_lbls.fcode[0],
+				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
 		break;
@@ -10331,7 +10372,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourPlotDraw");
+                                       NULL,NULL,NULL,
+				       Cnp->low_lbls.fcode[0],
+				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
 		break;
@@ -10364,7 +10407,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourPlotDraw");
+                                       NULL,NULL,NULL,
+				       Cnp->low_lbls.fcode[0],
+				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
 		break;

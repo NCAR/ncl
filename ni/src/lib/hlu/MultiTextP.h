@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiTextP.h,v 1.4 1995-04-27 16:58:35 dbrown Exp $
+ *      $Id: MultiTextP.h,v 1.5 1996-01-19 18:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ typedef struct _NhlMultiTextLayerPart{
 	float			font_thickness;
 	float			constant_spacing;
 	NhlTextDirection	direction;
+	char			func_code;
 
 	/* Internal private fields */
 

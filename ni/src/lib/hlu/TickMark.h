@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.11 1995-12-14 22:34:28 dbrown Exp $
+ *      $Id: TickMark.h,v 1.12 1996-01-19 18:06:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmXBLabelJust		"tmXBLabelJust"
 #define NhlNtmXBLabelAngleF		"tmXBLabelAngleF"
 #define NhlNtmXBLabelDirection		"tmXBLabelDirection"
+#define NhlNtmXBLabelFuncCode		"tmXBLabelFuncCode"
 
 #define NhlNtmXBLabelDeltaF		"tmXBLabelDeltaF"
 
@@ -191,6 +192,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmXTLabelJust		"tmXTLabelJust"
 #define NhlNtmXTLabelAngleF		"tmXTLabelAngleF"
 #define NhlNtmXTLabelDirection		"tmXTLabelDirection"
+#define NhlNtmXTLabelFuncCode		"tmXTLabelFuncCode"
 
 #define NhlNtmXTLabelDeltaF		"tmXTLabelDeltaF"
 
@@ -283,6 +285,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYLLabelJust		"tmYLLabelJust"
 #define NhlNtmYLLabelAngleF		"tmYLLabelAngleF"
 #define NhlNtmYLLabelDirection		"tmYLLabelDirection"
+#define NhlNtmYLLabelFuncCode		"tmYLLabelFuncCode"
 
 #define NhlNtmYLLabelDeltaF		"tmYLLabelDeltaF"
 
@@ -337,6 +340,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYRLabelJust		"tmYRLabelJust"
 #define NhlNtmYRLabelAngleF		"tmYRLabelAngleF"
 #define NhlNtmYRLabelDirection		"tmYRLabelDirection"
+#define NhlNtmYRLabelFuncCode		"tmYRLabelFuncCode"
 
 #define NhlNtmYRLabelDeltaF		"tmYRRLabelDeltaF"
 
@@ -383,10 +387,12 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 */
 
 #define NhlCtmXLabelDirections		"TmXLabelDirections"
+#define NhlCtmXLabelFuncCodes		"TmXLabelFuncCodes"
 #define NhlCtmXLabelAnglesF		"TmXLabelAnglesF"
 #define NhlCtmXLabelJusts		"TmXLabelJusts"
 
 #define NhlCtmYLabelDirections		"TmYLabelDirections"
+#define NhlCtmYLabelFuncCodes		"TmYLabelFuncCodes"
 #define NhlCtmYLabelAnglesF		"TmYLabelAnglesF"
 #define NhlCtmYLabelJusts		"TmYLabelJusts"
 
