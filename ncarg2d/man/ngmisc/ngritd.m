@@ -9,7 +9,9 @@ CALL NGRITD (IAXS,ANGL,UCRD,VCRD,WCRD)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-???
+void c_ngritd(int iaxs, float angl, float *ucrd, float *ycrd,
+.br
+float *wcrd)
 .SH DESCRIPTION 
 .IP IAXS 12
 (an input expression of type INTEGER) specifies the axis about which rotation

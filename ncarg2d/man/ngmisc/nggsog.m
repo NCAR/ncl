@@ -9,7 +9,9 @@ CALL NGGSOG (SLAT,SLON,SRAD,ALAT,ALON)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-???
+void c_nggsog(float slat, float slon, float srad, float *alat,
+.br
+float *alon)
 .SH DESCRIPTION 
 .IP SLAT 12
 (an input expression of type REAL) is the latitude, in degrees, of a point

@@ -9,7 +9,9 @@ CALL NGGCOG (CLAT,CLON,CRAD,ALAT,ALON,NPTS)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-???
+void c_nggcog(float clat, float clon, float crad, float *alat, 
+.br
+float *alon, int npts)
 .SH DESCRIPTION 
 .IP CLAT 12
 (an input expression of type REAL) is the latitude, in degrees, of a point
