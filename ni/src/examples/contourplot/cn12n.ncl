@@ -15,10 +15,10 @@
 ;   Date:       Wed Oct 11 16:18:15 MDT 1995
 ;
 ;   Description:  This example emulates LLU example "cpex08".  It
-;                 draws a filled map with contours appearing in Africa.
-;                 In order to mask Africa from the map fill, we use
-;                 the mpMaskAreaSpecifiers resource and mask all of the
-;                 countries in Africa.
+;                 draws a filled map with filled contours appearing in
+;                 Africa. In order to mask Africa from the map fill, we
+;                 use the mpMaskAreaSpecifiers resource and mask all of
+;                 the countries in Africa.
 ;
 
 begin
@@ -96,14 +96,15 @@ begin
     "sfYCEndV": 38.
   end create
 ;
-; Create a ContourPlot object using the above data field.
+; Create a ContourPlot object using the above data field, and make sure
+; the LabelBar is displayed.
 ;
   conid = create "con1" contourPlotClass wid
     "cnScalarFieldData":      field1
     "pmLabelBarDisplayMode":  "always"
   end create
 ;
-; Create a map object.
+; Create a map object, specifying the areas we want filled and masked.
 ;
   mapid = create "map" mapPlotClass wid 
     "mpMaskAreaSpecifiers":   mask_specs
