@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.87 2003-06-28 01:46:03 dbrown Exp $
+#      $Id: yMakefile,v 1.88 2003-06-29 04:55:03 haley Exp $
 #
 #########################################################################
 #									#
@@ -62,7 +62,7 @@ EXTRA_CLDFLAGS	= -rdynamic
 DYNAMIC_LIBS	=	-ldl
 #endif
 
-EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF) $(HDFEOS_DEFS) $(UDUNITS_DEFS)
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(HDFEOS_DEFS) $(UDUNITS_DEFS)
 
 API_DEFS	=	-DMAKEAPI
 
