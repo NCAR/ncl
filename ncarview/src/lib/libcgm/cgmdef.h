@@ -138,7 +138,7 @@ typedef	enum {
 	END_MF_ID,		/* end metafile		*/
 	BEG_PIC_ID,		/* begin picture	*/
 	BEG_PIC_B_ID,		/* begin picture body	*/
-	END_PIC_ID,		/* end picture		*/
+	END_PIC_ID		/* end picture		*/
 } CGM_Class0Element;
 
 /*
@@ -175,7 +175,7 @@ typedef	enum {
 	MARKER_SIZE_SPEC_MODE_ID,
 	EDGE_WIDTH_SPEC_MODE_ID,
 	VDC_EXTENT_ID,
-	BACKGROUND_COLOUR_ID,
+	BACKGROUND_COLOUR_ID
 } CGM_Class2Element;
 
 
@@ -188,7 +188,7 @@ typedef	enum {
 	AUXILLARY_COLOUR_ID,
 	TRANSPARENCY_ID,
 	CLIP_RECTANGLE_ID,
-	CLIP_INDICATOR_ID,
+	CLIP_INDICATOR_ID
 } CGM_Class3Element;
 
 
@@ -213,7 +213,7 @@ typedef	enum {
 	CIRULAR_ARC_3_PT_CLOSE_ID,
 	CIRULAR_ARC_CENTRE_ID,
 	CIRULAR_ARC_CENTRE_CLOSE_ID,
-	ELIPSE_ID,
+	ELIPSE_ID
 } CGM_Class4Element;
 
 	
