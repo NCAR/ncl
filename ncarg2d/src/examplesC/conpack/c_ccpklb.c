@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpklb.c,v 1.1 1994-05-13 14:25:41 haley Exp $
+ * $Id: c_ccpklb.c,v 1.2 1994-05-31 22:28:20 haley Exp $
  */
 
 #include <stdio.h>
@@ -61,9 +61,9 @@ int k, *m, n;
 
     l = 0;
     *m = k;
-    for( j = 0; j < n; j++ ) {
-        for( i = 0; i < *m; i++ ) {
-            z[l++] = 10.e-8*(-16.*(float)(i*i*j) + 34.*(float)(i*j*j) - (float)(6*i) + 93.);
+    for( j = 1; j <= n; j++ ) {
+        for( i = 1; i <= *m; i++ ) {
+            z[l++] = 10.e-5*(-16.*(float)(i*i*j) + 34.*(float)(i*j*j) - (float)(6*i) + 93.);
         }
     }
     return;
