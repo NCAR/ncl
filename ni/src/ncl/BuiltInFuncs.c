@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.95 1998-04-16 21:13:27 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.96 1998-04-20 20:57:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11915,7 +11915,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 	int dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar missing;
 	int has_missing;
-	int total;
+	int total = 1;
         NclStackEntry data;
 	NclAtt tmp_attobj;
 	NclAttList *att_list;
