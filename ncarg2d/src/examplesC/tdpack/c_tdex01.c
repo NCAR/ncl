@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdex01.c,v 1.1 1997-06-30 22:14:38 kennison Exp $
+ *      $Id: c_tdex01.c,v 1.2 1997-07-01 23:00:54 kennison Exp $
  */
 
 /*
@@ -11,9 +11,8 @@
 
 /*
  * Include NCAR Graphics function prototypes.
-#include <ncarg/ncargC.h>
  */
-#include "ncargC.h"
+#include <ncarg/ncargC.h>
 
 /*
  * Define the workstation type and identifier.
