@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.40 1996-10-03 18:32:20 ethan Exp $
+ *      $Id: Symbol.c,v 1.41 1996-10-07 15:22:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2271,7 +2271,7 @@ NclQuark var_sym_name;
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
 	if(s->type == VAR) {
 		the_var = _NclRetrieveRec(s,DONT_CARE);	
-		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar|Ncl_HLUVar)))) {
+		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar)))) {
 
 			tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 			tmp->kind = VARIABLE_LIST;

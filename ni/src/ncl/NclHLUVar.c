@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.9 1996-10-02 22:33:57 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.10 1996-10-07 15:22:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -127,7 +127,7 @@ unsigned int type;
                 tmp->var.dim_sizes[i] = var->var.dim_info[i].dim_size;
                 tmp->var.dim_quarks[i] = var->var.dim_info[i].dim_quark;
         }
-	tmp_md = _NclGetObj(var->var.thevalue_id);
+	tmp_md = (NclMultiDValHLUObjData)_NclGetObj(var->var.thevalue_id);
 	tmp->hlu.the_hlu_info = (NclHLUObjInfoRec*)NclMalloc(sizeof(NclHLUObjInfoRec)*tmp_md->multidval.totalelements);
 	for(i = 0; i < tmp_md->multidval.totalelements;i++) {
 		tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[i]);
