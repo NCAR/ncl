@@ -1,5 +1,5 @@
 /*
- *      $Id: CallbacksP.h,v 1.2 1996-09-14 17:05:52 boote Exp $
+ *      $Id: CallbacksP.h,v 1.3 1996-10-10 17:57:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,12 @@
 #define	_NHL_CALLBACKSP_H
 #include <ncarg/hlu/Callbacks.h>
 
+#define	_NhlCBCALLING		(0x01)
+#define	_NhlCBNODEDESTROY	(0x02)
+#define _NhlCBLISTDESTROY	(0x04)
+
 struct _NhlCBRec {
+	int		state;
 	_NhlCBList	cblist;
 	int		index;
 	_NhlCBFunc	cbfunc;
@@ -33,6 +38,7 @@ struct _NhlCBRec {
 };
 
 struct _NhlCBListRec {
+	int		state;
 	int		size;
 	long		mask;
 	_NhlCB		single;

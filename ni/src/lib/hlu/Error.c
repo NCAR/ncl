@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.22 1996-09-14 17:06:09 boote Exp $
+ *      $Id: Error.c,v 1.23 1996-10-10 17:58:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,6 @@
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ConvertersP.h>
 
-#define	MAXERRMSGLEN	10240
 #define	TABLELISTINC	10
 #define	ERRLISTINC	32
 
@@ -1129,7 +1128,7 @@ PrintMessage
 #endif
 {
 	if(errorLayer->error.error_mode == _NhlFLIB){
-		static char	tbuf[MAXERRMSGLEN];
+		static char	tbuf[NhlERRMAXMSGLEN];
 		Const char	*message;
 		_NhlFString	fmessage;
 		int		fmessage_len;
@@ -1177,7 +1176,8 @@ AddErrMsg
 #endif
 {
 	NhlArgVal	cbdata,dummy;
-	static char	buffer[MAXERRMSGLEN];
+	static char	buffer[NhlERRMAXMSGLEN];
+	Const char	*ret;
 
 	/* if error instance not init'ed - print to sterr */
 	if(errorLayer == NULL)
@@ -1193,6 +1193,12 @@ AddErrMsg
 		BufferMsg(msg);
 	}
 
+	/* print out message */
+	if(errorLayer->error.print_errors)
+		ret = PrintMessage(msg);
+	else
+		ret = NhlErrSPrintMsg(buffer,msg);
+
 #ifdef	DEBUG
 	memset(&dummy,0,sizeof(NhlArgVal));
 	memset(&cbdata,0,sizeof(NhlArgVal));
@@ -1200,11 +1206,7 @@ AddErrMsg
 	cbdata.ptrval = (NhlPointer)msg;
 	_NhlCallObjCallbacks((NhlLayer)errorLayer,_NhlCBerrPError,dummy,cbdata);
 
-	/* print out message */
-	if(errorLayer->error.print_errors)
-		return PrintMessage(msg);
-	else
-		return NhlErrSPrintMsg(buffer,msg);
+	return ret;
 }
 
 /************************************************************************
@@ -1350,7 +1352,7 @@ Const char *NhlPError
 #endif
 {
 	va_list		ap;
-	char		tbuf[MAXERRMSGLEN];
+	char		tbuf[NhlERRMAXMSGLEN];
 	NhlString	errstr;
 
 	if(fmt != NULL){
@@ -1864,8 +1866,8 @@ NhlErrSPrintMsg
 	Const NhlErrMsg	*msg;		/* message to print		*/
 #endif
 {
-	char tbuf[MAXERRMSGLEN];
-	int	space = MAXERRMSGLEN-1;
+	char tbuf[NhlERRMAXMSGLEN];
+	int	space = NhlERRMAXMSGLEN-1;
 	int	tmp;
 
 	if(msg->severity == NhlNOERROR)
@@ -1942,7 +1944,7 @@ void _NHLCALLF(nhl_ferrsprintmsg,NHL_FERRSPRINTMSG)
 	int		*msg_num;
 #endif
 {
-	char		tbuf[MAXERRMSGLEN];
+	char		tbuf[NhlERRMAXMSGLEN];
 	char		*msgstr;
 	Const NhlErrMsg	*msg;
 	NhlErrorTypes	ret;
@@ -1989,7 +1991,7 @@ NhlErrFPrintMsg
 	Const NhlErrMsg	*msg;	/* message to print	*/
 #endif
 {
-	static char tbuf[MAXERRMSGLEN];
+	static char tbuf[NhlERRMAXMSGLEN];
 
 	if(fprintf(fp,"%s\n\r",NhlErrSPrintMsg(tbuf,msg)) < 0)
 		fprintf(stderr,"Unable to print Error Messages???");

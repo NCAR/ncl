@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.10 1996-09-14 17:06:08 boote Exp $
+ *      $Id: Destroy.c,v 1.11 1996-10-10 17:57:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,7 +121,6 @@ NhlDestroy
 	memset(&dummy,0,sizeof(NhlArgVal));
 	memset(&cbdata,0,sizeof(NhlArgVal));
 #endif
-
 	cbdata.ptrval = l;
 	_NhlCallObjCallbacks(l,_NhlCBobjDestroy,dummy,cbdata);
 

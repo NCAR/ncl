@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.3 1996-09-14 17:05:51 boote Exp $
+ *      $Id: Callbacks.c,v 1.4 1996-10-10 17:57:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,7 @@ _NhlCBCreate
 	for(i=0;i<hash_mult;i++)
 		size *= 2;
 
+	cblist->state = 0;
 	cblist->size = size;
 	cblist->single = NULL;
 	cblist->mask = size - 1;
@@ -95,6 +96,11 @@ _NhlCBDestroy
 
 	if(!cblist)
 		return;
+
+	if(cblist->state & _NhlCBCALLING){
+		cblist->state |= _NhlCBLISTDESTROY;
+		return;
+	}
 
 	for(i=0;i<cblist->size;i++){
 		cbt1 = cblist->hash[i];
@@ -144,6 +150,7 @@ _NhlCBAdd
 		return NULL;
 	}
 
+	cb->state = 0;
 	cb->cblist = cblist;
 	if(cblist->add_hash)
 		cb->index = (*cblist->add_hash)(selector,udata);
@@ -155,6 +162,10 @@ _NhlCBAdd
 	cb->next = NULL;
 
 	cbptr = &cblist->hash[cb->index & cblist->mask];
+	/*
+	 * MUST be added to end of list so it will get called even if
+	 * it has been added during a CallCallbacks.
+	 */
 	while(*cbptr)
 		cbptr = &(*cbptr)->next;
 	*cbptr = cb;
@@ -181,6 +192,11 @@ _NhlCBDelete
 	if(!cb)
 		return;
 	cblist = cb->cblist;
+
+	if(cblist->state & _NhlCBCALLING){
+		cb->state |= _NhlCBNODEDESTROY;
+		return;
+	}
 
 	cbptr = &cblist->hash[cb->index & cblist->mask];
 
@@ -220,10 +236,15 @@ _NhlCBCallCallbacks
 {
 	long	index;
 	_NhlCB	cb,tcb;
+	int	i;
 
 	if(!cblist)
 		return;
 
+	if(cblist->state & _NhlCBCALLING)
+		return;
+
+	cblist->state = _NhlCBCALLING;
 	if(cblist->call_hash)
 		index = (*cblist->call_hash)(selector,cbdata);
 	else
@@ -232,13 +253,41 @@ _NhlCBCallCallbacks
 	cb = cblist->hash[index & cblist->mask];
 	while(cb){
 		/*
-		 * Get the "next" pointer now, in case cbfunc does a
-		 * CBDelete.
+		 * Only call the cb if the index matches, and the callback
+		 * wasn't removed during this call to CallCallbacks.
 		 */
-		tcb = cb->next;
-		if(cb->index == index)
+		if(cb->index == index && !(cb->state & _NhlCBNODEDESTROY))
 			(*cb->cbfunc)(cbdata,cb->udata);
-		cb = tcb;
+		if(cblist->state & _NhlCBLISTDESTROY)
+			break;
+		cb = cb->next;
+	}
+	cblist->state &= ~_NhlCBCALLING;
+
+	/*
+	 * If _NhlCBDestroy was called during the call of the list
+	 */
+	if(cblist->state & _NhlCBLISTDESTROY){
+		_NhlCBDestroy(cblist);
+		return;
+	}
+
+	/*
+	 * Remove any nodes that were deleted during the call of the list
+	 */
+	for(i=0;i<cblist->size;i++){
+		_NhlCB	*cbptr;
+
+		cbptr = &cblist->hash[i];
+		while(*cbptr){
+			cb = *cbptr;
+			if(cb->state & _NhlCBNODEDESTROY){
+				*cbptr = cb->next;
+				NhlFree(cb);
+				continue;
+			}
+			cbptr = &cb->next;
+		}
 	}
 
 	return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.10 1996-09-14 17:05:49 boote Exp $
+ *      $Id: BaseP.h,v 1.11 1996-10-10 17:57:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,8 @@ typedef struct _NhlObjLayerPart {
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
 	_NhlAllChildList	all_children;
+	NhlPointer	ncl_data;
+	NhlPointer	gui_data;
 } NhlObjLayerPart;
 
 
@@ -88,6 +90,8 @@ typedef struct _NhlBaseLayerPart {
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
 	_NhlAllChildList	all_children;
+	NhlPointer	ncl_data;
+	NhlPointer	gui_data;
 
 /* NOTHING CAN BE ADDED BEFORE HERE UNLESS IT IS ALSO ADDED IN ObjLayerPart */
 

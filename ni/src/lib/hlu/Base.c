@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.16 1996-09-14 17:05:46 boote Exp $
+ *      $Id: Base.c,v 1.17 1996-10-10 17:57:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,24 @@ static _NhlRawObjCB bcallbacks[] = {
 };
 static _NhlRawObjCB ocallbacks[] = {
 	{_NhlCBobjDestroy,NhlOffset(NhlObjLayerRec,base.destroycb),0,NULL,NULL}
+};
+
+static NhlResource bresources[] = {
+	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlBaseLayerRec,base.ncl_data),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlBaseLayerRec,base.gui_data),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+};
+
+static NhlResource oresources[] = {
+	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlObjLayerRec,base.ncl_data),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlObjLayerRec,base.gui_data),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 };
 
 static NhlErrorTypes BaseClassInitialize(

@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseI.h,v 1.1 1996-09-14 17:05:48 boote Exp $
+ *      $Id: BaseI.h,v 1.2 1996-10-10 17:57:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,6 @@
 
 #include <ncarg/hlu/Base.h>
 
-#define	_NhlCBobjDestroy	"CBobjDestroy"
+#define	_NhlCBobjDestroy	"CBobjDestroy"	/* cbdata.ptrval is NhlLayer */
 
 #endif  /* _NBaseI_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.7 1995-04-07 10:41:47 boote Exp $
+ *      $Id: Error.h,v 1.8 1996-10-10 17:58:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,7 @@
 #ifndef ENOSYS
 #define	ENOSYS	(90)
 #endif
+#define NhlERRMAXMSGLEN 2048
 
 extern NhlClass NhlerrorClass;
 

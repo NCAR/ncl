@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.25 1996-10-09 15:46:06 ethan Exp $
+ *      $Id: App.c,v 1.26 1996-10-10 17:57:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1293,7 +1293,7 @@ int id;
 {
 	NhlLayer l = _NhlGetLayer(id);
 	if(l != NULL) {
-		if((l->base.parent == NULL)||(((NhlAppLayer)l->base.parent == NhlappClassRec.app_class.current_app)||((NhlAppLayer)l->base.parent == NhlappClassRec.app_class.default_app))) {
+		if((l->base.parent == NULL)||((NhlAppLayer)l->base.parent == NhlappClassRec.app_class.default_app)) {
 			return(0);
 		} else {
 			return(l->base.parent->base.id);
