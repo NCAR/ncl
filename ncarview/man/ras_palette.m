@@ -1,15 +1,15 @@
 .\"
-.\"	$Id: ras_palette.m,v 1.3 1993-01-16 00:02:39 clyne Exp $
+.\"	$Id: ras_palette.m,v 1.4 1993-02-20 00:01:08 don Exp $
 .\"
 .TH RAS_PALETTE 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
-.SH NAME
+.SH \fBNAME\fP
 ras_palette \- format descriptions for palette files for NCAR View
-.SH SYNOPSIS
+.SH \fBSYNOPSIS\fP
 .nf
 palette_file.pal
 palette_file.txt
 .fi
-.SH DESCRIPTION
+.SH \fBDESCRIPTION\fP
 .LP
 NCAR View supports a binary as well as a textual format for color
 palettes.
@@ -43,7 +43,9 @@ color palette entry has the following format:
 .LP
 where \fIindex_number\fP, \fIred\fP, \fIgreen\fP, and \fIblue\fP are
 all integers in the range 0 to 255.
-.SH EXAMPLES
+.SH \fBEXAMPLES\fP
+.LP
+All of the examples below deal with textual color palettes.
 .TP
 Setting Entries
 .IP
@@ -92,8 +94,9 @@ file, "temp.txt".
 255 255 0 0
 .fi
 .in -1.0i
-.SH "SEE ALSO"
-\fBrasview(1NCARG), rascat(1NCARG)\fP
-.SH BUGS/CAVEATS
+.SH "\fBSEE ALSO\fP"
+\fBrasview\fP(1NCARG),\fBrascat\fP(1NCARG),\fBrasgetpal\fP(1NCARG),
+\fBrassplit\fP(1NCARG),\fBrasls\fP(1NCARG),\fBras_formats\fP(5NCARG)
+.SH \fBBUGS/CAVEATS\fP
 .LP
 Color palettes are only useful with indexed-color imagery.
