@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.3 1997-06-20 16:35:35 dbrown Exp $
+ *      $Id: nclstate.h,v 1.4 1997-06-24 15:00:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -227,4 +227,17 @@ NgNclGetSymName(
         NhlBoolean	add_zero
 );
 
+/*
+ * This function returns a single int id for the first Hlu object represented
+ * by the ncl symbol name. If the variable is scalar then the id_array
+ * output parameter will be set to NULL. Otherwise it will be the array 
+ * of Hlu Ids and will need to be freed by the caller.
+ */
+ 
+extern int
+NgNclGetHluObjId(
+	NhlString	hlu_varname,
+        int		**id_array
+        );
+        
 #endif	/* _NG_NCLSTATE_H */

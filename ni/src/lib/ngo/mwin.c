@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.6 1997-06-20 16:35:34 dbrown Exp $
+ *      $Id: mwin.c,v 1.7 1997-06-24 15:00:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -832,6 +832,11 @@ CreateXWorkCB
 		name,name);
 	(void)NgNclSubmitBlock(nclstate,line);
 
+        if (! NclSymbolDefined(Ng_SELECTED_WORK)) {
+                sprintf(line,"%s = %s\n",Ng_SELECTED_WORK,name);
+                (void)NgNclSubmitBlock(nclstate,line);
+        }
+        
 	return;
 }
 

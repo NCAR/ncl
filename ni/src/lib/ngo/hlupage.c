@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.2 1997-06-23 21:06:24 dbrown Exp $
+ *      $Id: hlupage.c,v 1.3 1997-06-24 15:00:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,11 +21,408 @@
  */
 
 #include <ncarg/ngo/hlupageP.h>
+#include <ncarg/ngo/nclstate.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>
+
+static NhlErrorTypes
+ManageScalarField
+(
+        brPage	*page,
+	char	*sfname,
+ 	NhlBoolean create,
+	char	*fillvalue
+)
+{
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+	char buf[256];
+	char *fillvaluestring = "";
+        char sfbuf[256];
+        int i,dimcount = 0;
+        NgVarPageOutput *ditem = rec->var_data[0];
+        int nclstate;
+
+        if (ditem->qfile > NrmNULLQUARK)
+                sprintf(sfbuf,"%s->%s(",
+                        NrmQuarkToString(ditem->qfile),
+                        NrmQuarkToString(ditem->qvar));
+                else
+                        sprintf(sfbuf,"%s",ditem->qvar);
+        for (i=ditem->ndims-1; i>=0;i--) {
+                if (abs((ditem->finish[i] - ditem->start[i])
+                        /ditem->stride[i])< 1)
+                        continue;
+                dimcount++;
+        }
+        if (dimcount < 2) {
+                printf("insufficient dimensionality\n");
+                return NhlFATAL;
+        }
+        for (i = 0; i < ditem->ndims; i++) {
+                if (dimcount > 2) {
+                        sprintf(&sfbuf[strlen(sfbuf)],"%d:%d:%d,",
+                                ditem->start[i],ditem->start[i],1);
+                        if (abs((ditem->finish[i] - ditem->start[i])
+                                /ditem->stride[i])>0)
+                                dimcount--;
+                        continue;
+                }
+                sprintf(&sfbuf[strlen(sfbuf)],"%d:%d:%d,",
+                        ditem->start[i],ditem->finish[i],ditem->stride[i]);
+        }
+        sfbuf[strlen(sfbuf)-1] = ')';
+
+	if (fillvalue) {
+		char prefix[] = "\"sfMissingValueV\" : ";
+		fillvaluestring = 
+			NhlMalloc(strlen(prefix) + strlen(fillvalue) + 3);
+		strcpy(fillvaluestring,prefix);
+		strcat(fillvaluestring,fillvalue);
+		strcat(fillvaluestring,"\n");
+	}
+
+	if (create) {
+		sprintf(buf,
+       "%s = create \"%s\" %s %s\n\"sfDataArray\" : %s\n%send create\n",
+			sfname,sfname,"scalarFieldClass","defaultapp",
+			sfbuf,fillvaluestring);
+	}
+	else {
+		sprintf(buf,
+		   "setvalues %s\n\"sfDataArray\" : %s\n%send setvalues\n",
+			sfname,
+			sfbuf,fillvaluestring);
+	}
+        NhlVAGetValues(page->go->go.appmgr,
+                       NgNappNclState,	&nclstate,
+                       NULL);
+
+        (void)NgNclSubmitBlock(nclstate,buf);
+        
+	if (strlen(fillvaluestring) > 1)
+		NhlFree(fillvaluestring);
+
+	return NhlNOERROR;
+}
+
+
+static Boolean ManagePlotObj
+(
+        brPage	*page,
+	char 	**dataitemlist,
+	int	dataitemcount,
+        int	wk_id
+)
+{
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        NgDataSinkRec *dsp = rec->public.data_info;
+	char buf[512];
+	char *cp = buf;
+	char title[] = 
+		"\"tiMainString\" : \"%s\"\n";
+
+	char *cnlineres[] = {
+		"cnScalarFieldData",
+		NULL 
+	};
+	char *cnlinevalues[] = { 
+		NULL,
+		NULL
+	};
+
+	char *cnfillres[] = {
+		"cnScalarFieldData",
+		"cnLinesOn",
+		"cnLineLabelsOn",
+		"cnFillOn",
+		"pmLabelBarDisplayMode",
+		"vpXF",
+		NULL
+	};
+	char *cnfillvalues[] = {
+		NULL,
+		"False",
+		"False",
+		"True",
+		"\"Conditional\"",
+		"\"0.12\"",
+		NULL
+	};
+
+	char *cnrasterres[] = {
+		"cnScalarFieldData",
+		"cnLinesOn",
+		"cnLineLabelsOn",
+		"cnFillOn",
+		"cnRasterModeOn",
+                "cnRasterCellSizeF",
+		"pmLabelBarDisplayMode",
+		"vpXF",
+		NULL
+	};
+	char *cnrastervalues[] = {
+		NULL,
+		"False",
+		"False",
+		"True",
+		"True",
+                "0.006",
+		"\"Conditional\"",
+		"\"0.12\"",
+		NULL
+	};
+
+	char *stres[] = {
+		"stVectorFieldData",
+		NULL
+	};
+	char *stvalues[] = {
+		NULL,
+		NULL
+	};
+
+	char *vclineres[] = {
+		"vcVectorFieldData",
+		"vcScalarFieldData",
+		"vcMonoLineArrowColor",
+		"vcUseScalarArray",
+		"pmLabelBarDisplayMode",
+		"vpXF",
+		NULL
+	};
+	char *vclinevalues[] = {
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	};
+	
+	char *vcfillres[] = {
+		"vcVectorFieldData",
+		"vcScalarFieldData",
+		"vcMonoFillArrowFillColor",
+		"vcUseScalarArray",
+		"pmLabelBarDisplayMode",
+		"vpXF",
+		"vcFillArrowsOn",
+		NULL
+	};
+	
+	char *vcfillvalues[] = {
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		"True",
+		NULL
+	};
+
+	char *xylineres[] = {
+		"xyCoordData",
+		"xyXIrregularPoints",
+		"xyYIrregularPoints",
+		"xyXStyle",
+		"xyYStyle",
+		NULL
+	};
+	
+	char *xylinevalues[] = {
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	};
+	
+	char **res;
+	char **values;
+	char *copy_res[16];
+	int i;
+	int sv_res_count[16] = { 1, 1, 1, 1, 2, 2, 3, 3 };
+        int nclstate;
+
+	switch (dsp->type) {
+ 	case (int)ngLINECONTOUR:
+		res = cnlineres;
+		values = cnlinevalues;
+		break;
+	case (int)ngFILLCONTOUR:
+		res = cnfillres;
+		values = cnfillvalues;
+		break;
+ 	case (int)ngRASTERCONTOUR:
+		res = cnrasterres;
+		values = cnrastervalues;
+		break;
+ 	case (int)ngSTREAMLINE:
+		res = stres;
+		values = stvalues;
+		break;
+ 	case (int)ngLINEVECTOR:
+		res = vclineres;
+		values = vclinevalues;
+		break;
+ 	case (int)ngFILLVECTOR:
+		res = vcfillres;
+		values = vcfillvalues;
+		break;
+ 	case (int)ngLINEXY:
+ 	case (int)ngSCATTERXY:
+		res = xylineres;
+		values = xylinevalues;
+		break;
+	default:
+		printf("not supported yet\n");
+		return False;
+	}
+
+	for (i = 0; i < dataitemcount; i++) {
+		values[i] = dataitemlist[i];
+	}
+
+	if (!rec->created) {
+		sprintf(buf,"%s = create \"%s\" %s %s\n",
+                        NrmQuarkToString(page->qvar),
+                        NrmQuarkToString(page->qvar),
+			rec->public.class_name,NhlName(wk_id));
+		for (i=0; res[i] != NULL; i++) 
+			copy_res[i] = res[i];
+		copy_res[i] = NULL;
+	}
+	else {
+		sprintf(buf,"setvalues %s\n",NrmQuarkToString(page->qvar));
+		for (i=0; i < sv_res_count[dsp->type]; i++) 
+			copy_res[i] = res[i];
+		copy_res[i] = NULL;
+	}
+
+	cp += strlen(buf);
+#if 0        
+	if (plotobj->title) {
+		sprintf(cp,title,plotobj->title);
+	}
+#endif
+	for (i = 0; copy_res[i] != NULL; i++) {
+		char *resp = copy_res[i];
+		char *valp = values[i];
+		cp = buf + strlen(buf);
+		if (! valp) continue;
+		sprintf(cp,"\"%s\" : %s\n",resp,valp);
+	}
+	cp = buf + strlen(buf);
+	if (!rec->created) {
+		sprintf(cp,"end create\n");
+	}
+	else {
+		sprintf(cp,"end setvalues\n");
+	}
+
+        NhlVAGetValues(page->go->go.appmgr,
+                       NgNappNclState,	&nclstate,
+                       NULL);
+
+        (void)NgNclSubmitBlock(nclstate,buf);
+                
+	return True;
+}
+
+static void
+ContourCreateUpdate
+(
+        brPage		*page,
+        int		wk_id
+)
+{
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+	char buf[512];
+        NgDataSinkRec *dsp = rec->public.data_info;
+	char *dataitemlist[2];
+	char *fillvalue = NULL;
+	NhlBoolean create,clear;
+	NclApiDataList		*dl;
+	NclExtValueRec *val = NULL;
+	char *sval;
+        int i;
+        static NrmQuark QFillValue = NrmNULLQUARK;
+        NhlErrorTypes ret;
+        int nclstate;
+        
+        if (QFillValue == NrmNULLQUARK) {
+                QFillValue = NrmStringToQuark("_FillValue"); 
+        }
+        
+	create = False;
+	if (rec->data_objects[0] <= NrmNULLQUARK) {
+                char *name;
+		sprintf(buf,"%s_%s",NrmQuarkToString(page->qvar),"sf");
+                name = NgNclGetSymName(buf,True);
+                
+		rec->data_objects[0] = NrmStringToQuark(name);
+		create = True;
+	}
+        
+	dataitemlist[0] = NrmQuarkToString(rec->data_objects[0]);
+        if (rec->var_data[0]->qfile > NrmNULLQUARK)
+                dl = NclGetFileVarInfo(rec->var_data[0]->qfile,
+                                       rec->var_data[0]->qvar);
+        else
+                dl = NclGetVarInfo(rec->var_data[0]->qvar);
+        for (i = 0; i < dl->u.var->n_atts; i++) {
+                if (dl->u.var->attnames[i] == QFillValue)
+                        break;
+        }
+        if (i == dl->u.var->n_atts)
+                fillvalue = NULL;
+        else if (rec->var_data[0]->qfile > NrmNULLQUARK)
+                val = NclReadFileVarAtt
+                        (rec->var_data[0]->qfile,rec->var_data[0]->qvar,
+                         dl->u.var->attnames[i]);
+        else 
+                val = NclReadVarAtt
+                        (rec->var_data[0]->qvar,dl->u.var->attnames[i]);
+        if (val) {
+                fillvalue = NclTypeToString(val->value,val->type);
+                if (val->constant != 0)
+                        NclFree(val->value);
+                NclFreeExtValue(val);
+        }
+	NclFreeDataList(dl);
+	
+	ret = ManageScalarField(page,dataitemlist[0],create,fillvalue);
+	if (fillvalue)
+		NclFree(fillvalue);
+        
+        if (ret < NhlWARNING)
+                return;
+
+        if  (ManagePlotObj(page,dataitemlist,1,wk_id)) {
+                rec->created = True;
+
+                sprintf(buf,"clear(%s)\ndraw(%s)\nframe(%s)",Ng_SELECTED_WORK,
+                        NrmQuarkToString(page->qvar),Ng_SELECTED_WORK);
+
+                NhlVAGetValues(page->go->go.appmgr,
+                               NgNappNclState,	&nclstate,
+                               NULL);
+
+                (void)NgNclSubmitBlock(nclstate,buf);
+        }
+        
+	return;
+        
+}
 
 static void CreateUpdateCB 
 (
@@ -37,9 +434,20 @@ static void CreateUpdateCB
         brPage		*page = (brPage *)udata;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        int		wk_id;
 
         printf("in CreateUpdateCB\n");
         
+        if (strcmp(rec->public.class_name,"contourPlotClass")) {
+                printf("%s plots are not supported yet\n",
+                       rec->public.class_name);
+                return;
+        }
+
+        wk_id = NgAppGetSelectedWork(page->go->go.appmgr);
+
+        ContourCreateUpdate(page,wk_id);
+
         return;
 }
 
@@ -53,8 +461,16 @@ static void AutoUpdateCB
         brPage		*page = (brPage *)udata;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        Boolean		set;
 
         printf("in AutoUpdateCB\n");
+
+        XtVaGetValues(w,
+                      XmNset,&set,
+                      NULL);
+        
+        rec->do_auto_update = set;
+        
         return;
 }
 
@@ -68,6 +484,7 @@ static void HluPageInputNotify (
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
         NgVarPageOutput	*var_data = (NgVarPageOutput *)output_data;
+        int		wk_id;
                 
         printf("in hlu page input notify\n");
 
@@ -82,6 +499,11 @@ static void HluPageInputNotify (
                     printf("page type not supported for input\n");
         }
                     
+        if (rec->do_auto_update) {
+                wk_id = NgAppGetSelectedWork(page->go->go.appmgr);
+                ContourCreateUpdate(page,wk_id);
+        }
+        
         return;
 }
 
@@ -106,10 +528,12 @@ DeactivateHluPage
 {
 	brHluPageRec *rec = (brHluPageRec *)page->pdata->type_rec;
 
-        XtRemoveCallback(rec->create_update,
-                         XmNactivateCallback,CreateUpdateCB,page);
-        XtRemoveCallback(rec->auto_update,
-                         XmNvalueChangedCallback,AutoUpdateCB,page);
+        if (rec->create_update)
+                XtRemoveCallback(rec->create_update,
+                                 XmNactivateCallback,CreateUpdateCB,page);
+        if (rec->auto_update)
+                XtRemoveCallback(rec->auto_update,
+                                 XmNvalueChangedCallback,AutoUpdateCB,page);
 
         rec->activated = False;
 }
@@ -143,7 +567,9 @@ AdjustHluPageGeometry
         
 	twidth = 0;
 	theight = 0;
-
+        w = 0;
+        y = 0;
+        h = 0;
         if (rec->data_sink_grid) {
                 XtVaGetValues(rec->data_sink_grid->grid,
                               XmNwidth,&w,
@@ -235,12 +661,14 @@ static brPageData *
 NewHluPage
 (
   	NgGO		go,
-        brPane		*pane
+        brPane		*pane,
+        NhlBoolean	is_hlu
         )
 {
 	brPageData	*pdp;
 	brHluPageRec	*rec;
         NhlString	e_text;
+        int		i;
         
 	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
 		e_text = "%s: dynamic memory allocation error";
@@ -265,6 +693,11 @@ NewHluPage
         rec->auto_update = NULL;
         rec->var_data_count = 0;
         rec->var_data = NULL;
+        rec->created = False;
+        rec->do_auto_update = False;
+        
+        for (i=0; i <  8; i++)
+                rec->data_objects[i] = NrmNULLQUARK;
         
 	pdp->form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,pane->folder,
@@ -320,9 +753,11 @@ NgGetHluPage
 		  break;
 	}
         if (! pdp)
-                pdp = NewHluPage(go,pane);
+                pdp = NewHluPage(go,pane,is_hlu);
         if (! pdp)
                 return NULL;
+        
+        rec = (brHluPageRec *) pdp->type_rec;
         
 	pdp->in_use = True;
         

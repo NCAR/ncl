@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.4 1997-01-17 18:59:28 boote Exp $
+ *      $Id: app.h,v 1.5 1997-06-24 15:00:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,8 @@
 
 #include <ncarg/hlu/Base.h>
 #include <ncarg/ngo/ngo.h>
+
+#define Ng_SELECTED_WORK	"NgSelectedWork"
 
 #define NgNappName			"ngappName"
 #define NgCappName			"ngAppName"
@@ -149,6 +151,10 @@ extern void NgAppRemoveNclEditor(
 extern int NgAppGetNclEditor(
 	int		appid,
 	NhlBoolean	new
+);
+
+extern int NgAppGetSelectedWork(
+	int		appid
 );
 
 extern void NgAppGrabFocus(

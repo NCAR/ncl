@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.5 1997-02-27 20:25:43 boote Exp $
+ *      $Id: app.c,v 1.6 1997-06-24 15:00:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #include <ncarg/ngo/appP.h>
 #include <ncarg/hlu/AppI.h>
 #include <ncarg/ngo/ncledit.h>
+#include <ncarg/ngo/nclstate.h>
 
 #define	Oset(field)	NhlOffset(NgAppMgrRec,app.field)
 static NhlResource resources[] = {
@@ -1257,4 +1258,49 @@ NgAppReleaseFocus
 		}
 		go = go->next;
 	}
+}
+
+/*
+ * Function:	NgAppGetSelectedWork
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+NgAppGetSelectedWork
+(
+	int		appid
+)
+{
+	char		func[] = "NgAppGetSelectedWork";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
+        int		selected_id,*ids;
+
+        if (! NclSymbolDefined(Ng_SELECTED_WORK)) {
+                char *name, line[512];
+                    /*
+                     * Submit to nclstate
+                     */
+                name = NgNclGetSymName("Xwk",True);
+                sprintf(line,
+               "%s = create \"%s\" xWorkstationClass defaultapp\nend create\n",
+                        name,name);
+                (void)NgNclSubmitBlock(app->app.nclstate,line);
+                sprintf(line,"%s = %s\n",Ng_SELECTED_WORK,name);
+                (void)NgNclSubmitBlock(app->app.nclstate,line);
+        }
+        selected_id = NgNclGetHluObjId(Ng_SELECTED_WORK,&ids);
+        if (ids) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                           "%s:selected workstation variable is an array",
+                           func));
+        }
+        return selected_id;
 }

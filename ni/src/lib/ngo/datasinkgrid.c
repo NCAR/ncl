@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.1 1997-06-23 21:08:24 dbrown Exp $
+ *      $Id: datasinkgrid.c,v 1.2 1997-06-24 15:00:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,7 +73,7 @@ TitleText
         sprintf(Buffer,"%s|",dsp->data_sink->class_name);
         len = dsp->cwidths[0] = strlen(Buffer);
         
-        sprintf(&Buffer[len],"%s","DataVar");
+        sprintf(&Buffer[len],"%s","Data Variables");
         dsp->cwidths[1] = strlen(Buffer) - len;
         
 #if DEBUG_DATA_SINK_GRID      
@@ -175,7 +175,9 @@ NhlErrorTypes NgUpdateDataSinkGrid
         
         XmLGridSelectRow(data_sink_grid->grid,0,False);
 
+#if 0        
         data_sink_grid->height = 6+Row_Height*(nattrs+1)+2*nattrs;
+#endif        
         return NhlNOERROR;
 }
 
@@ -216,11 +218,11 @@ NgDataSinkGrid *NgCreateDataSinkGrid
         XmLGridAddRows(data_sink_grid->grid,XmHEADING,0,1);
 #if 0        
         ret = NgUpdateDataSinkGrid(data_sink_grid,qname,data_sink_rec);
-#endif
         if (ret < NhlWARNING) {
                 NhlFree(dsp);
                 return NULL;
         }
+#endif
         return data_sink_grid;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.7 1997-06-20 16:35:34 dbrown Exp $
+ *      $Id: nclstate.c,v 1.8 1997-06-24 15:00:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1298,3 +1298,46 @@ NgNclGetSymName
         
 	return buff;
 }
+
+int
+NgNclGetHluObjId(
+	NhlString	hlu_varname,
+        int		**id_array
+        )
+{
+	char		func[] = "NgNclGetHluObjId";
+        NclExtValueRec	*val;
+        int		scalar_id;
+
+        *id_array = NULL;
+        
+        val = NclGetHLUObjId(hlu_varname);
+        if (! val) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "%s:selected workstation variable unavailable",
+                           func));
+                return NhlNULLOBJID;
+        }
+        
+        scalar_id = ((int *)val->value)[0];
+        if (val->totalelements == 1) {
+                if (val->constant != 0)
+                        NclFree(val->value);
+                NclFreeExtValue(val);
+                return scalar_id;
+        }
+        if (val->constant != 0) {
+                *id_array = (int *) val->value;
+                NclFreeExtValue(val);
+                return scalar_id;
+        }
+        
+        *id_array = NhlMalloc(sizeof(int) * val->totalelements);
+        memcpy((char*)*id_array,(char*)val->value,
+               sizeof(int) * val->totalelements);
+        
+        return scalar_id;
+}
+
+
+        

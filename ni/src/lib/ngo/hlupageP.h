@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.2 1997-06-23 21:06:25 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.3 1997-06-24 15:00:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,10 +46,13 @@ typedef struct _brHluPageRec
         NhlClass	class;
         NgDataSinkGrid	*data_sink_grid;
         Widget		create_update;
+        NhlBoolean	created;
         Widget		auto_update;
+        NhlBoolean	do_auto_update;
         hluData		*data;
         int		var_data_count;
         NgVarPageOutput	**var_data;
+        NrmQuark	data_objects[8];
 } brHluPageRec;
 
 extern brPageData *
