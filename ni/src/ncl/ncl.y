@@ -115,9 +115,9 @@ char *cur_load_file = NULL;
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
-%type <src_node> subscript0 break_cont vcreate
-%type <src_node> subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector
-%type <list> the_list arg_dec_list subscript_list opt_arg_list 
+%type <src_node> subscript0 subscript2 break_cont vcreate
+%type <src_node> subscript3 subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector
+%type <list> the_list arg_dec_list subscript_list opt_arg_list named_subscript_list normal_subscript_list
 %type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
 %type <sym> datatype pfname vname
@@ -1447,7 +1447,56 @@ vname : OBJVAR		{
 				$$ = $1;
 			}
 ;
-subscript_list :  subscript0 	{
+subscript_list : named_subscript_list {
+			$$ = $1;
+		}
+	| normal_subscript_list {
+		$$ = $1;
+	}
+
+named_subscript_list:  subscript2 	{
+					/* ordering of subscripts must be preserved */
+						$$ = _NclMakeNewListNode();
+						$$->next = NULL;
+						$$->node = $1;
+					}
+	| LBC subscript3 RBC 		{
+					/* ordering of subscripts must be preserved */
+                                                $$ = _NclMakeNewListNode();
+                                                $$->next = NULL;
+                                                $$->node = $2;
+					}
+	| named_subscript_list ',' subscript2 {
+						NclSrcListNode *step;
+                                                
+                                                step = $1;
+                                                while(step->next != NULL) 
+                                                        step = step->next;
+                                                step->next = _NclMakeNewListNode();
+                                                step->next->next = NULL;
+                                                step->next->node = $3;
+						
+					}
+	| named_subscript_list ',' LBC subscript3 RBC {
+						NclSrcListNode *step;
+                                         
+                                                step = $1;
+                                                while(step->next != NULL)
+                                                        step = step->next;
+                                                step->next = _NclMakeNewListNode();
+                                                step->next->next = NULL;
+                                                step->next->node = $4;
+                                                
+					}
+	| named_subscript_list ',' error {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript, named subscripting is being used, make sure each subscript has a name");
+					is_error += 1;
+					$$ = NULL;
+					
+
+				}
+;
+normal_subscript_list:  subscript0 	{
 					/* ordering of subscripts must be preserved */
 						$$ = _NclMakeNewListNode();
 						$$->next = NULL;
@@ -1459,7 +1508,7 @@ subscript_list :  subscript0 	{
                                                 $$->next = NULL;
                                                 $$->node = $2;
 					}
-	| subscript_list ',' subscript0 {
+	| normal_subscript_list ',' subscript0 {
 						NclSrcListNode *step;
                                                 
                                                 step = $1;
@@ -1470,7 +1519,7 @@ subscript_list :  subscript0 	{
                                                 step->next->node = $3;
 						
 					}
-	| subscript_list ',' LBC subscript1 RBC {
+	| normal_subscript_list ',' LBC subscript1 RBC {
 						NclSrcListNode *step;
                                          
                                                 step = $1;
@@ -1481,13 +1530,21 @@ subscript_list :  subscript0 	{
                                                 step->next->node = $4;
                                                 
 					}
+	| normal_subscript_list ',' error {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript, normal subscripting is being used, make sure named subscripting has not been used");
+					is_error += 1;
+					$$ = NULL;
+					
+
+				}
 ;
 
 subscript0:  subexpr 			{  
 						$$ = _NclMakeIntSubscript($1,NULL);
 						 
 					}
-	|  DIM subexpr			{ 
+;
+subscript2:  DIM subexpr			{ 
 						$$ = _NclMakeIntSubscript($2,_NclMakeStringExpr($1));
 						  
 					}
@@ -1501,7 +1558,8 @@ subscript1:  subexpr	 		{
 						$$ = _NclMakeCoordSubscript($1,NULL);
 						 
 					}
-	|  DIM subexpr			{ 
+;
+subscript3:  DIM subexpr			{ 
 						$$ = _NclMakeCoordSubscript($2,_NclMakeStringExpr($1));
 						  
 					}
