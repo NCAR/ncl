@@ -1,5 +1,5 @@
 /*
-**      $Id: cn13c.c,v 1.1 1995-11-27 21:38:15 haley Exp $
+**      $Id: cn13c.c,v 1.2 1995-11-28 17:35:07 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -18,8 +18,8 @@
 **  Date:       Fri Oct 20 13:28:23 MDT 1995
 **
 **  Description:  This example emulates LLU example "mpex10".  It shows
-**                how to do inverse map tranformations and raster cell
-**                arrays.
+**                how to do inverse map tranformations and raster contour
+**                plots.
 */
 
 
@@ -44,13 +44,11 @@
 
 main()
 {
-    float dval, rastersize;
-    int icra[NCLS][NCLS];
     float x[NCLS*NCLS], y[NCLS*NCLS],rlat[NCLS*NCLS], rlon[NCLS*NCLS];
-    float oor;
+    float dval, oor;
+    int icra[NCLS][NCLS], count[2];
     int appid, workid, dataid, cnid, mpid;
-    int srlist, grlist, i, j, l, count[2];
-    int status;
+    int srlist, i, j, l, status;
     NhlErrorTypes ierr;
 /*
  * Declare variables for defining color map.
@@ -74,8 +72,8 @@ main()
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn13",NhlappClass,NhlDEFAULT_APP,srlist);
 /*
- * Modify the color map.  Color indices '0' and '1' are the background
- * and foreground colors respectively.
+ * Modify the color map. Colors for contour fill areas varying from
+ * blue to red.
  */
     cmap[ 0][0] = 0.00; cmap[ 0][1] = 0.00; cmap[ 0][2] = 0.00;
     cmap[ 1][0] = 1.00; cmap[ 1][1] = 1.00; cmap[ 1][2] = 1.00;
@@ -171,7 +169,7 @@ main()
     NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
     NhlCreate(&cnid,"ContourPlot",NhlcontourPlotClass,workid,srlist);
 /*
- * Overlay MapPlot on ContourPlot.
+ * Draw MapPlot on ContourPlot.
  */
     NhlDraw(cnid);
     NhlDraw(mpid);
