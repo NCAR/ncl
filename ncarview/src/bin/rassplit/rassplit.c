@@ -7,7 +7,7 @@
 static char	*ProgramName = "rassplit";
 
 int		OptionVerbose = False;
-char		*OptionFormat = (char *) NULL;
+char		*OptionOutputFormat = (char *) NULL;
 
 static char	*srcfile = (char *) NULL;
 static char	*Comment = "Created by rassplit";
@@ -21,7 +21,7 @@ main(argc, argv)
 	int	status;
 	Raster	*src, *dst, *RasterOpen(), *RasterOpenWrite();
 	int	frame = 0;
-	char	*malloc(), *format, *p, *root = (char *) NULL;
+	char	*malloc(), *out_format, *p, *root = (char *) NULL;
 	static	char dstfile[256];
 	static	int frame_list[1024];
 	static	int frames_selected = 0;
@@ -48,7 +48,7 @@ main(argc, argv)
 		else if (!strcmp(arg, "-ofmt")) {
 			if (argc > 0) {
 				argc--;
-				OptionFormat = *++argv;
+				OptionOutputFormat = *++argv;
 			}
 			else {
 				fprintf(stderr,
@@ -67,16 +67,21 @@ main(argc, argv)
 		else if (!strcmp(arg, "-v")) {
 			OptionVerbose = True;
 		}
+		else if (!strcmp(arg, "-Version")) {
+			(void) PrintVersion(ProgramName);
+			exit(0);
+		}
 		else if (*arg == '-') {
-			(void) fprintf(stderr, "%s: Bad option '%c'\n",
-				ProgramName,
-				arg);
+			(void) fprintf(stderr,
+				"%s: Unknown option \"%s\"\n",
+				ProgramName, arg);
+			exit(1);
 		}
 		else {
 			if (srcfile == (char *) NULL)
 				srcfile = arg;
 			else {
-				fprintf(stderr, "Too many arguments\n");
+				(void) fprintf(stderr, "Too many arguments\n");
 				exit(1);
 			}
 		}
@@ -97,14 +102,25 @@ main(argc, argv)
 	p = strchr(root, '.');
 	*p = '\0';
 
-	if (OptionFormat == (char *) NULL) {
-		format = strrchr(srcfile, '.');
-		if (format != (char *) NULL) {
-			format++;
+	/*
+	** By default, the output file defaults to be the same but
+	** this won't work for HDF files. Warn the user and select
+	** a reasonable detour.
+	*/
+	if (OptionOutputFormat == (char *) NULL) {
+		out_format = strrchr(srcfile, '.');
+		if (out_format != (char *) NULL) {
+			out_format++;
+			if (!strcmp(out_format, "hdf")) {
+				(void) fprintf(stderr,
+		"%s: HDF-to-HDF output not available, use -ofmt option\n",
+				ProgramName);
+				exit(1);
+			}
 		}
 	}
 	else {
-		format = OptionFormat;
+		out_format = OptionOutputFormat;
 	}
 
 	/* Open the source file and read the header. */
@@ -134,7 +150,7 @@ main(argc, argv)
 
 		/* Prepare single file name. */
 
-		(void) sprintf(dstfile, "%s.%4d.%s", root, frame, format);
+		(void) sprintf(dstfile, "%s.%4d.%s", root, frame, out_format);
 		for(p=dstfile; *p!='\0'; p++) {
 			if (*p == ' ') *p = '0';
 		}
@@ -224,6 +240,7 @@ PrintHelp()
 	"",
 	"	-help			Print this help information",
 	"	-v			Verbose",
+	"	-Version		Print version and exit",
 	"	-ofmt format-specifier	Output format selection",
 	"				(defaults to input format)",
 	"	-f framenumbers		Select frames to split out",
