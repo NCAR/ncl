@@ -7,6 +7,7 @@
  *	condition 23 ("Specified workstation type does not exist") for
  *	all invocations. 
  */
+void
 NGCALLF(ggkwdr,GGKWDR)(wk_id, gks_opcode, continuation,
         total_i, num_i_sent, ints,
         total_x, num_x_sent, indexes,
