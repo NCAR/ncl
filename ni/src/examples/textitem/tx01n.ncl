@@ -24,25 +24,26 @@
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "tx01" appLayerClass noparent
-	"appUsrDir" : "./"
+appid = create "tx01" appLayerClass defaultapp
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "tx01Work" xWorkstationLayerClass noparent
-	"wkPause" : "True"
+wid = create "tx01Work" xWorkstationLayerClass defaultapp
+    "wkPause" : "True"
 end create
 
 ;
 ; Specify the viewport extent of the object.
 ;
 pid = create "TextItems" textItemLayerClass wid
-	"vpXF" : .2
-	"vpYF" : .8
-	"vpWidthF" : .6
-	"vpHeightF" : .6
+    "vpXF" : .2
+    "vpYF" : .8
+    "vpWidthF" : .6
+    "vpHeightF" : .6
 end create
 
 draw(pid)

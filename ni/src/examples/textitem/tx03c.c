@@ -1,11 +1,10 @@
-
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
  *      File:           tx03c.c
  *
@@ -25,55 +24,52 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
-		
+
 main()
 {
-	int appid, wid, pid;
-	int rlist;
-	int M = 114;
-	int i;
+    int appid, wid, pid;
+    int rlist;
+    int M = 114;
+    int i;
 
 /*
  * Initialize the high level utility library
  */
-
-	NhlInitialize();
+    NhlInitialize();
 
 /*
- * Create an application context. Set the app dir to the current directory
- * so the application looks for a resource file in the working directory.
- * In this example the resource file supplies the plot title only.
+ * Create an application context. Set the app dir to the current
+ * directory so the application looks for a resource file in the
+ * working directory. In this example the resource file supplies the
+ * plot title only.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"tx03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"tx03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"tx03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-									rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNwkPause,True);
+    NhlCreate(&wid,"tx03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                                    rlist);
 /*
  * Create 114 plots varying the fill color of the text bounding box
  * to all entries of the default workstation color map.
  */
-
-for( i = 1; i <= M; i++ ) {
+    for( i = 1; i <= M; i++ ) {
         NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNtxBackgroundFillColor,i);
-
-	NhlCreate(&pid,"TextItems",
-		  NhltextItemLayerClass,wid,rlist);
-
-	NhlDraw(pid);
-	NhlFrame(wid);
-}
-	NhlDestroy(pid);
-	NhlDestroy(wid);
-	NhlDestroy(appid);
-	NhlClose();
-	exit(0);
+        NhlRLSetInteger(rlist,NhlNtxBackgroundFillColor,i);
+        NhlCreate(&pid,"TextItems",NhltextItemLayerClass,wid,rlist);
+        NhlDraw(pid);
+        NhlFrame(wid);
+    }
+    NhlDestroy(pid);
+    NhlDestroy(wid);
+    NhlDestroy(appid);
+    NhlClose();
+    exit(0);
 }

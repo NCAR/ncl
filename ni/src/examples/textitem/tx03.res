@@ -8,23 +8,23 @@
 !  ==============================================================
 !
 !       Height in NDC (0. to 1.) of the viewport
-! *tx03Work.TextItems.vpHeightF                   : 0.8
+! tx03.tx03Work.TextItems.vpHeightF                   : 0.8
 !
 !       Switch to allow the plot X to Y aspect ratio to remain fixed
 !       when resizing or moving the object.
-! *tx03Work.TextItems.vpKeepAspect                : False
+! tx03.tx03Work.TextItems.vpKeepAspect                : False
 !
 !       Save this graphical object as a GKS segment
-! *tx03Work.TextItems.vpUseSegments               : False
+! tx03.tx03Work.TextItems.vpUseSegments               : False
 !
 !       Width in NDC (0. to 1.) of the viewport
-! *tx03Work.TextItems.vpWidthF                    : 0.8
+! tx03.tx03Work.TextItems.vpWidthF                    : 0.8
 !
 !       NDC (0. to 1.) X location of the upper left corner of the plot
-! *tx03Work.TextItems.vpXF                        : 0.1
+! tx03.tx03Work.TextItems.vpXF                        : 0.1
 !
 !       NDC (0. to 1.) Y location of the upper left corner of the plot
-! *tx03Work.TextItems.vpYF                        : 0.9
+! tx03.tx03Work.TextItems.vpYF                        : 0.9
 !
 !
 !  ==============================================================
@@ -34,17 +34,17 @@
 !
 !       Sets the X location of the justification point in NDCs.
 !                                         default = 0.
-*tx03Work.TextItems.txPosXF              : 0.5
+tx03.tx03Work.TextItems.txPosXF              : 0.5
 !
 !       Sets the Y location of the justification point in NDCs.
 !                                         default = 1.
-*tx03Work.TextItems.txPosYF              : 0.5
+tx03.tx03Work.TextItems.txPosYF              : 0.5
 !
 !       Sets the rotation angle of the text around the justification
 !       point. The angle is counter-clockwise and 0 degrees is
 !       horizontal on the screen.
 !                                         default = 0.
-*tx03Work.TextItems.txAngleF             : 45.0
+tx03.tx03Work.TextItems.txAngleF             : 45.0
 !
 !       How text is justified within the text bounding box
 !       TOPLEFT              = 0,
@@ -57,10 +57,10 @@
 !       CENTERRIGHT          = 7,
 !       BOTTOMRIGHT          = 8
 !
-! *tx03Work.TextItems.txJust               : 4
+! tx03.tx03Work.TextItems.txJust               : 4
 !
 !       Direction in which text is to be drawn   (UP, DOWN, ACROSS)
-! *tx03Work.TextItems.txDirection          : ACROSS
+! tx03.tx03Work.TextItems.txDirection          : ACROSS
 !
 !
 !  ==============================================================
@@ -68,7 +68,7 @@
 !  ==============================================================
 !
 !       The text string to be written
-*tx03Work.TextItems.txString              : NCAR Graphics
+tx03.tx03Work.TextItems.txString              : NCAR Graphics
 !
 !       The type of character font where the options include:
 ! |-------------------------------------------------------|
@@ -146,7 +146,7 @@
 ! pwritx_database font.
 !
 !                                         default = 1
-*tx03Work.TextItems.txFont                : 22
+tx03.tx03Work.TextItems.txFont                : 22
 !
 !       Colors are chosen from the HLU colormap.  Index choices are:
 !
@@ -159,26 +159,26 @@
 !
 !       The color of the text to be written
 !                                         default = 1
-*tx03Work.TextItems.txFontColor           : 2
+tx03.tx03Work.TextItems.txFontColor           : 2
 !
 !       The character height in NDCs of the text to be written
-! *tx03Work.TextItems.txFontHeightF         : .05
+! tx03.tx03Work.TextItems.txFontHeightF         : .05
 !
 !       The height/width aspect ratio of the text to be written
-! *tx03Work.TextItems.txFontAspectF         : 1.3125
+! tx03.tx03Work.TextItems.txFontAspectF         : 1.3125
 !
 !       The width of the lines that form the text outline
-! *tx03Work.TextItems.txFontThicknessF      : 1.0
+! tx03.tx03Work.TextItems.txFontThicknessF      : 1.0
 !
 !       The degree of quality of the text to be written (LOW,MEDIUM,HIGH)
-! *tx03Work.TextItems.txFontQuality         : HIGH
+! tx03.tx03Work.TextItems.txFontQuality         : HIGH
 !
 !       The spacing between characters of the text to be written
-! *tx03Work.TextItems.txConstantSpacingF    : 0.0
+! tx03.tx03Work.TextItems.txConstantSpacingF    : 0.0
 !
 !       A process for accessing the many characters of the default
 !       pwritx font.
-! *tx03Work.TextItems.txFuncCode            : :
+! tx03.tx03Work.TextItems.txFuncCode            : :
 !
 !  ==============================================================
 !  The following resources relate to the bounding box of the text
@@ -186,24 +186,24 @@
 !
 !       Draw the text bounding box
 !                                         default = False
-*tx03Work.TextItems.txPerimOn             : True
+tx03.tx03Work.TextItems.txPerimOn             : True
 !
 !       Color of the text bounding box
 !                                         default = FOREGROUND
-*tx03Work.TextItems.txPerimColor          : 1
+tx03.tx03Work.TextItems.txPerimColor          : 1
 !
 !       Width of the text bounding box
-! *tx03Work.TextItems.txPerimThicknessF     : 1.0
+! tx03.tx03Work.TextItems.txPerimThicknessF     : 1.0
 !
 !       Dash pattern of the text bounding box
-! *tx03Work.TextItems.txPerimDashPattern    : 0
+! tx03.tx03Work.TextItems.txPerimDashPattern    : 0
 !
 !       Length of dash segments of the text bounding box
-! *tx03Work.TextItems.txPerimDashLengthF    : 0.15
+! tx03.tx03Work.TextItems.txPerimDashLengthF    : 0.15
 !
 !       Length between dash segments of the text bounding box
-! *tx03Work.TextItems.txPerimSpaceF         : 0.5
+! tx03.tx03Work.TextItems.txPerimSpaceF         : 0.5
 !
 !       Fill color of the interior of the bounding box
 !                                         default = TRANSPARENT
-*tx03Work.TextItems.txBackgroundFillColor : 44
+tx03.tx03Work.TextItems.txBackgroundFillColor : 44

@@ -1,11 +1,10 @@
-
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
  *      File:           tx01c.c
  *
@@ -24,53 +23,53 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
-		
+
 main()
 {
-	int appid, wid, pid;
-	int rlist;
+    int appid, wid, pid;
+    int rlist;
 
 /*
  * Initialize the high level utility library
  */
-
-	NhlInitialize();
+    NhlInitialize();
 
 /*
- * Create an application context. Set the app dir to the current directory
- * so the application looks for a resource file in the working directory.
- * In this example the resource file supplies the plot title only.
+ * Create an application context. Set the app dir to the current
+ * directory so the application looks for a resource file in the
+ * working directory. In this example the resource file supplies the
+ * plot title only.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"tx01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"tx01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"tx01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-									rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNwkPause,True);
+    NhlCreate(&wid,"tx01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                                    rlist);
 /*
  * Specify the viewport extent of the object.
  */
 
-        NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpXF,.2);
-	NhlRLSetFloat(rlist,NhlNvpYF,.8);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,.6);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,.6);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,.2);
+    NhlRLSetFloat(rlist,NhlNvpYF,.8);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,.6);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,.6);
 
-	NhlCreate(&pid,"TextItems",
-		  NhltextItemLayerClass,wid,rlist);
+    NhlCreate(&pid,"TextItems",NhltextItemLayerClass,wid,rlist);
 
-	NhlDraw(pid);
-	NhlFrame(wid);
-	NhlDestroy(pid);
-	NhlDestroy(wid);
-	NhlDestroy(appid);
-	NhlClose();
-	exit(0);
+    NhlDraw(pid);
+    NhlFrame(wid);
+    NhlDestroy(pid);
+    NhlDestroy(wid);
+    NhlDestroy(appid);
+    NhlClose();
+    exit(0);
 }

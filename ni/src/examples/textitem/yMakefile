@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1995-02-15 22:39:48 haley Exp $
+#   $Id: yMakefile,v 1.9 1995-02-22 14:48:46 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -17,6 +17,7 @@ COBJS     = tx01c.o tx02c.o tx03c.o tx04c.o
 FOBJS     = tx01f.o tx02f.o tx03f.o tx04f.o
 SRCS      = $(CSRCS) $(FSRCS)
 OBJS      = $(COBJS) $(FOBJS)
+NCGMS     = tx04c.ncgm tx04f.ncgm tx04n.ncgm
 RESFILES  = tx01.res tx02.res tx03.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
@@ -33,7 +34,7 @@ HLUFExampleTarget(tx02f,tx02f.o)
 HLUFExampleTarget(tx03f,tx03f.o)
 HLUFExampleTarget(tx04f,tx04f.o)
 
-CleanFilesTarget($(OBJS))
+CleanFilesTarget($(OBJS) $(NCGMS))
 DependTarget($(CSRCS))
 
 

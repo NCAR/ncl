@@ -1,28 +1,20 @@
-C
-C     $Id: tx04f.f,v 1.2 1995-02-03 15:57:42 haley Exp $
-C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C                            Copyright (C)  1995                       C
+C                 University Corporation for Atmospheric Research      C
+C                            All Rights Reserved                       C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:            tx04f.f
 C
-C      Author:          Jeff Boote (converted to Fortran by Ed Stautler)
+C      Author:          Jeff Boote (converted by Ed Stautler)
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 10:28:20 MST 1995
 C
 C      Description:     Demonstrates TextItem object.
-C
-      program tx04f
-      implicit none
-C
-C  This program is the equivalent of nhl05.c.
 C
       external nhlfapplayerclass
       external nhlfncgmworkstationlayerclass
@@ -31,29 +23,30 @@ C
       
       integer i,appid,text_item_id,wid,rlist,ierr
       
-      real oparent
 C     
 C  Initialize the high level utility library.
 C     
       call nhlfinitialize
 C   
-C  Create an application context.  Set the app dir to the current directory
-C  so the application looks for the resource file in the execution 
-C  directory.
+C Create an application context.  Set the app dir to the current
+C directory so the application looks for the resource file in the
+C execution directory.
 C   
       call nhlfrlcreate(rlist,'setrl')
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid, 'tx04',nhlfapplayerclass,0,0,ierr)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
+      call nhlfcreate(appid, 'tx04',nhlfapplayerclass,0,rlist,ierr)
 C  
-C  Create a meta file workstation
+C Create a meta file workstation giving the output file a conventional 
+C metafile name.
 C  
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'wkMetaName','./tx04f.ncgm',ierr)
       call nhlfcreate(wid,'tx04Work',nhlfncgmworkstationlayerclass,0,
      1     rlist,ierr)
 C  
-C  This is the only creation of a text object for this program.
+C This is the only creation of a text object for this entire program.
 C  
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'txJust',4,ierr)
@@ -143,11 +136,12 @@ C
       
       call nhlfdraw(text_item_id,ierr)
 C  
-C  Below are examples using the function control characters. In each iteration
-C  of the loop a new string is set using call nhlfsetvalues. In order to
-C  demonstrate what the value of 'txString' is, the function code is 
-C  temporarily changed causing the entire contents of 'txString' to be drawn.
-C  
+C  Below are examples using the function control characters. In each
+C  iteration of the loop a new string is set using call nhlfsetvalues.
+C  In order to demonstrate what the value of 'txString' is, the
+C  function code is temporarily changed causing the entire contents of
+C  'txString' to be drawn.
+C
       do 10 i=0,11
          if (i .eq. 0) then
             call nhlfrlclear(rlist)
@@ -224,8 +218,8 @@ C
          
          call nhlfdraw(text_item_id,ierr)
 C  
-C  Change to medium font quality and set function code so full string will be
-C  drawn.
+C Change to medium font quality and set function code so full string
+C will be drawn.
 C  
          call nhlfrlclear(rlist)
          call nhlfrlsetstring(rlist,'txFontQuality','MEDIUM',ierr)

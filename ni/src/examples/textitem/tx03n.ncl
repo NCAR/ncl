@@ -25,15 +25,16 @@
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "tx03" appLayerClass noparent
-	"appUsrDir" : "./"
+appid = create "tx03" appLayerClass defaultapp
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "tx03Work" xWorkstationLayerClass noparent
-	"wkPause" : "True"
+wid = create "tx03Work" xWorkstationLayerClass defaultapp
+    "wkPause" : "True"
 end create
 
 ;
@@ -42,10 +43,10 @@ end create
 ;
 
 do i=1,114
-	pid = create "TextItems" textItemLayerClass wid
-		"txBackgroundFillColor" : i
-	end create
+    pid = create "TextItems" textItemLayerClass wid
+        "txBackgroundFillColor" : i
+    end create
 
-	draw(pid);
-	frame(wid);
+    draw(pid);
+    frame(wid);
 end do
