@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.c,v 1.5 2003-01-06 23:30:13 fred Exp $
+ *      $Id: pdfdevice.c,v 1.1 2003-01-06 23:30:15 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -32,112 +32,64 @@
 *                                                                       *
 ************************************************************************/
 /*
- *      File:           gksP.c
+ *      File:           pdfdevice.c
  *
- *      Author:         Jeff W. Boote
+ *      Author:         Fred Clare
  *                      National Center for Atmospheric Research
  *                      PO 3000, Boulder, Colorado
  *
- *      Date:           Sat Mar 9 14:16:43 MST 1996
+ *      Date:           Tue Oct 15 18:04:15 MDT 2002
  *
- *      Description:    
+ *      Description:    Breaking up gks_device.c so each driver can be a
+ *                      delay-loaded dynamically shared object.
+ *                      (The old dev_tab caused the text segments of all
+ *                      the cdrivers to be included in the data segment -
+ *                      and therefore caused resolution of those symbols
+ *                      from the dso's even though the text symbols were
+ *                      not actually called.  This way forces a symbol
+ *                      call to actually force the dso to load.
  */
-#include <ncarg/gksP.h>
-#include <ncarg/c.h>
-#include "gks.h"
-#include "gksc.h"
 #include "gks_device.h"
+#include "pdf.h"
+#include "pdf_device.h"
 
-/*
- * Prototypes for Fortran calls
- */
-void NGCALLF(gzxid,GZXID)(
-#ifdef  NeedFuncProto
-        int     *wkid,
-        int     *loc_id,
-        int     *ierr
-#endif
-);
-
-#define MaxEsc  10
-
-static _NGCesc init_escape[MaxEsc];
-static int      num_init=0;
-
-/*
- * Function:    _NGCescape
- *
- * Description: Send a native "C" type to one of the cdrivers using gescape
- *
- * In Args:     
- *
- * Out Args:    
- *
- * Scope:       
- * Returns:     
- * Side Effect: 
- */
-int _NGCescape
-#ifdef  NeedFuncProto
-(
-        int     func_id,
-        _NGCesc *cesc
-)
-#else
-(func_id,cesc)
-        int     func_id;
-        _NGCesc *cesc;
-#endif
+static GKSdev pdfdev =
 {
-        _NGCAny *escape = &cesc->any;
-        int     lid,ierr;
-        GKSC    *gksc;
+        "pdf", 
 
-        /*
-         * Get local id for workstation.
-         */
-        if(escape->work_id == -1){
-                /*
-                 * escape applies to next workstation created.
-                 */
-                if(num_init >= (MaxEsc - 1))
-                        return 300;
-                init_escape[num_init++] = *cesc;
+        NULL,
 
-                return 0;
-        }
+        PDFConvPoints, sizeof(PDFPoint), 
+        PDFConvString, sizeof(char), PDFConvInts, sizeof(int), 
+        PDFConvFloats, sizeof(int), PDFConvIndexes, sizeof(int),
+        PDFConvRGBs, sizeof(PDFColor),
 
-        NGCALLF(gzxid,GZXID)(&escape->work_id,&lid,&ierr);
-        if(ierr != 0) return ierr;
+        PDFOpenWorkstation, PDFActivateWorkstation, 
+        PDFCloseWorkstation, PDFClearWorkstation, 
+        PDFPolyline, PDFPolymarker, PDFText, PDFFillArea, 
+        PDFCellarray, PDFSetLinetype, PDFSetLineWidthScaleFactor, 
+        PDFSetPolylineColorIndex, PDFSetMarkerType, 
+        PDFSetMarkerSizeScaleFactor, PDFSetPolymarkerColorIndex, 
+        PDFSetTextFontAndPrecision, PDFSetCharacterExpansionFactor, 
+        PDFSetCharacterSpacing, PDFSetTextColorIndex, 
+        PDFSetCharacterHeightAndUpVector, PDFSetTextPath, 
+        PDFSetTextAlignment, PDFSetFillAreaInteriorStyle, 
+        PDFSetFillAreaStyleIndex, PDFSetFillAreaColorIndex, 
+        PDFSetColorRepresentation, PDFSetClipIndicator, 
+        PDFSetWindow, PDFGetColorRepresentation,
+        PDFEsc, PDFUpdateWorkstation, PDFDeactivateWorkstation,
+        PDFSetViewport
+};
 
-        /*
-         * Get gksc ptr from local id.
-         */
-        gksc = IndexToGKSC(lid);
-        if(!gksc) return 182;
-
-        /*
-         * Call the escape function - put the func_id in the ilist,
-         * and the native data there, then call it.
-         */
-        gksc->opcode = ESCAPE;
-        *(int*)gksc->i.list = func_id;
-        gksc->i.num = 1;
-        gksc->native = cesc;
-        ierr = ExecGKSC(gksc);
-        ClearGKSC(gksc);
-        gksc->native = NULL;
-
-        return ierr;
-}
-
-_NGCesc *
-_NGGetCEscInit
+GKSdev
+*GKS_GetPDFdev
+#ifdef  NeedFuncProto
 (
         void
 )
+#else
+()
+#endif
 {
-        if(!num_init)
-                return NULL;
-        return &init_escape[--num_init];
+        return &pdfdev;
 }

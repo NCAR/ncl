@@ -1,5 +1,5 @@
 /*
- *      $Id: psfill.c,v 1.7 2003-01-06 23:30:17 fred Exp $
+ *      $Id: pdffill.c,v 1.1 2003-01-06 23:30:16 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,7 +25,7 @@
 ************************************************************************/
 
 /*
- *      File:           ps_fill.c
+ *      File:           pdf_fill.c
  *
  *      Author:         Fred Clare
  *                      National Center for Atmospheric Research
@@ -49,17 +49,20 @@
 #include "gksc.h"
 #include "gks.h"
 #include "common.h"
-#include "ps.h"
-#include "psddi.h"
-#include "ps_device.h"
+#include "pdf.h"
+#include "pdfddi.h"
+#include "pdf_device.h"
 
-void PSprint_points(PSddp *, PSPoint *, unsigned, terminator_type);
-static int icompar(const void *p1, const void *p2);
-static void ascsrt(float xa[], int ip[], int n);
+void PDFprint_points(PDFddp *, PDFPoint *, unsigned, terminator_type);
+static int picompar(const void *p1, const void *p2);
+static void pascsrt(float xa[], int ip[], int n);
+
+extern char page_lines[MAX_PAGE_SIZE][MAX_LINE_SIZE];
+extern int  stream_size, object_number, byte_count, num_page_lines;
 
 static float *sort_array;
 
-void ps_SoftFill (GKSC *gksc, float angle, float spl)
+void pdf_SoftFill (GKSC *gksc, float angle, float spl)
 
 {
   float   xco, yco, spi, rangle, tmp, smalld=.000001, *rst;
@@ -67,11 +70,11 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
   int     jnd, knd, ipt, ipe, indx1, indx2, previous_point, following_point;
   int     i, isp, ipx, lnd, ip1, ip2, in1, in2, jn1, jn2, jnt;
   int     ocounter, counter_inc=3;
-  PSPoint *points, opoint;
-  PSddp   *psa;
+  PDFPoint *points,opoint;
+  PDFddp   *psa;
 
-  psa = (PSddp *) gksc->ddp;
-  points = (PSPoint *) (gksc->p).list;
+  psa = (PDFddp *) gksc->ddp;
+  points = (PDFPoint *) (gksc->p).list;
   nra = (gksc->p).num;
 
   rangle = 0.017453292519943 * angle;   /* converts angle to radians */
@@ -126,7 +129,7 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
    *  is a list of the directed distances of the given points, in increasing 
    *  numerical order.
    */
-  ascsrt (rst, ind, nra);
+  pascsrt (rst, ind, nra);
 
   /* 
    *  Draw lines at distances "spi" from the line "xco*x+yco*y=0" which are
@@ -276,7 +279,7 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
        *  Put these values in ascending order.  Actually, once again, 
        *  we set up an index array specifying the order.
        */
-      ascsrt (rst + nra, ind + nra, lnd - nra + 1);
+      pascsrt (rst + nra, ind + nra, lnd - nra + 1);
 
       /* 
        *  Draw the line segments specified by the list.
@@ -302,18 +305,13 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
           {
             opoint.x = (spi - yco * rst[jn1]) / xco;
             opoint.y = rst[jn1];
-            PSprint_points(psa, &opoint, 1, MOVETO);
+            PDFprint_points(psa, &opoint, 1, MOVETO);
             opoint.x = (spi - yco * rst[jn2]) / xco;
             opoint.y = rst[jn2];
-            PSprint_points(psa, &opoint, 1, LINETO);
-            ocounter += counter_inc;
-            if (((ocounter-1) % POINTS_PER_LINE == 0) || 
-                        (ocounter % POINTS_PER_LINE == 0))
-                                fprintf(psa->file_pointer, "\n");
-            if (ocounter >= MAX_PATH ) {
-                fprintf(psa->file_pointer, " K\n");
-                ocounter = 0;
-            }           
+            PDFprint_points(psa, &opoint, 1, LINETO);
+            num_page_lines++;
+            sprintf(page_lines[num_page_lines],"S\n");
+            stream_size += 2;
           }
           in1 = in2 + 1;
         }
@@ -338,18 +336,13 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
           {
             opoint.x = rst[jn1];
             opoint.y = (spi - xco * rst[jn1]) / yco;
-            PSprint_points(psa, &opoint, 1, MOVETO);
+            PDFprint_points(psa, &opoint, 1, MOVETO);
             opoint.x = rst[jn2];
             opoint.y = (spi - xco * rst[jn2]) / yco;
-            PSprint_points(psa, &opoint, 1, LINETO);
-            ocounter += counter_inc;
-            if (((ocounter-1) % POINTS_PER_LINE == 0) ||
-                        (ocounter % POINTS_PER_LINE == 0))
-                                fprintf(psa->file_pointer, "\n");
-            if (ocounter >= MAX_PATH ) {
-                fprintf(psa->file_pointer, " K\n");
-                ocounter = 0;
-            }           
+            PDFprint_points(psa, &opoint, 1, LINETO);
+            num_page_lines++;
+            sprintf(page_lines[num_page_lines],"S\n");
+            stream_size += 2;
           }
           in1 = in2 + 1;
         }
@@ -359,11 +352,9 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
   free (rst);
   free (ind);
 }
-
-
 /*
  *  Given an array of  n  floating values in  xa, 
- *  ascsrt returns a permutation vector ip such that
+ *  pascsrt returns a permutation vector ip such that
  * 
  *   xa[ip[i]] <= xa[ip[j]]
  *         for all i,j such that  1 <= i <= j <= n .
@@ -371,7 +362,7 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
  *  This function uses the C library function qsort.
  */
 
-static void ascsrt(float xa[], int ip[], int n)
+static void pascsrt(float xa[], int ip[], int n)
 
 {
         int i;
@@ -390,11 +381,11 @@ static void ascsrt(float xa[], int ip[], int n)
                 ip[i] = i;
         }
 
-        qsort ( (void *) ip, n, sizeof(ip[0]), icompar);
+        qsort ( (void *) ip, n, sizeof(ip[0]), picompar);
         return;
 }
 
-static int icompar(const void *p1, const void *p2)
+static int picompar(const void *p1, const void *p2)
 {
         float difference;
         int *i1,*i2;

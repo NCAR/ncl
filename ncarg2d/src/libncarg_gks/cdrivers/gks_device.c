@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.c,v 1.6 2000-08-22 15:09:49 haley Exp $
+ *      $Id: gks_device.c,v 1.7 2003-01-06 23:30:13 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,15 +25,15 @@
 ************************************************************************/
 
 /*
- *      File:		gks_device.c
+ *      File:           gks_device.c
  *
- *      Author:		John Clyne
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *      Author:         John Clyne
+ *                      National Center for Atmospheric Research
+ *                      PO 3000, Boulder, Colorado
  *
- *      Date:		Wed May  1 17:49:30 MDT 1991
+ *      Date:           Wed May  1 17:49:30 MDT 1991
  *
- *      Description:	This file contains the devices for the GKS driver.
+ *      Description:    This file contains the devices for the GKS driver.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,48 +42,50 @@
 #include "gksc.h"
 #include "gks_device.h"
 
-int	Verbose = 0;
+int     Verbose = 0;
 
 /*
- *	GKS_GetDevByName
- *	[exported]
+ *      GKS_GetDevByName
+ *      [exported]
  *
- *	return a device named by 'name'
+ *      return a device named by 'name'
  * on entry
- *	*name		: name of gks output device
+ *      *name           : name of gks output device
  * on exit
- *	return		: the appropriate GKSdev structure or NULL if device
- *			  could not be found.
+ *      return          : the appropriate GKSdev structure or NULL if device
+ *                        could not be found.
  */
-GKSdev	*GKS_GetDevByName(name)
-	char	*name;
+GKSdev  *GKS_GetDevByName(name)
+        char    *name;
 {
-	GKSdev	*ptr;
-	int	i;
+        GKSdev  *ptr;
+        int     i;
 
 
-	static	int	first = 1;
+        static  int     first = 1;
 
-	if (first) {
-		if (getenv("GKS_VERBOSE")) {
-			Verbose = 1;
-		}
-		first = 0;
-	}
+        if (first) {
+                if (getenv("GKS_VERBOSE")) {
+                        Verbose = 1;
+                }
+                first = 0;
+        }
 
-	/*
-	 * look for device 'name'
-	 */
-	if(!strcmp(name,"ctxt"))
-		return GKS_GetCTXTdev();
-	else if(!strcmp(name,"X11"))
-		return GKS_GetX11dev();
-	else if(!strcmp(name,"ps"))
-		return GKS_GetPSdev();
+        /*
+         * look for device 'name'
+         */
+        if(!strcmp(name,"ctxt"))
+                return GKS_GetCTXTdev();
+        else if(!strcmp(name,"X11"))
+                return GKS_GetX11dev();
+        else if(!strcmp(name,"ps"))
+                return GKS_GetPSdev();
+        else if(!strcmp(name,"pdf"))
+                return GKS_GetPDFdev();
 
-	/*
-	 * device not found
-	 */
-	ESprintf(ERR_OPN_DEV, "device not found (%s)", name);
-	return ((GKSdev *) NULL);
+        /*
+         * device not found
+         */
+        ESprintf(ERR_OPN_DEV, "device not found (%s)", name);
+        return ((GKSdev *) NULL);
 }

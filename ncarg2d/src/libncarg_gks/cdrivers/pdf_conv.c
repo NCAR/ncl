@@ -1,5 +1,5 @@
 /*
- *      $Id: ctxt_conv.c,v 1.4 2003-01-06 23:30:12 fred Exp $
+ *      $Id: pdf_conv.c,v 1.1 2003-01-06 23:30:15 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,55 +25,56 @@
 ************************************************************************/
 
 /*
- *      File:           ctxt_conv.c
+ *      File:           pdf_conv.c
  *
- *      Author:         John Clyne
+ *      Author:         Fred Clare
  *                      National Center for Atmospheric Research
  *                      PO 3000, Boulder, Colorado
  *
- *      Date:           Mon May  6 14:51:38 MDT 1991
+ *      Date:           Tue Jul 27 11:50:09 MDT 1993
  *
- *      Description:    These are the ctxt conversion routines which convert
- *                      raw data to its device dependent format.
- *                      These routines assume sufficient space exists in the
- *                      destination list. 
+ *      Description:    These are the PostScript conversion routines 
+ *                      that convert raw data to their device dependent 
+ *                      format. These routines assume sufficient space 
+ *                      exists in the destination list. 
  */
 
 #include <stdio.h>
 #include "gksc.h"
-#include "ctxt.h"
-#include "ctxt_device.h"
+#include "pdf.h"
+#include "pdfddi.h"
+#include "pdf_device.h"
+
 
 /*ARGSUSED*/
-void    ctxt_ConvPoints(ddp, rawx, rawy, points, n, conv)
-        GKSC_Ptr        ddp;
-        float   *rawx, *rawy;
-        Points  *points;
-        int     *n;
-        int     conv;
+void    PDFConvPoints(GKSC_Ptr ddp, float *rawx, float *rawy, 
+                      Points *points, int *n, int conv)
 {
-        CTXTPoint       *point_ptr = (CTXTPoint *) points->list; 
-        int     index = points->num;
-        
-        int     i;
+  PDFddp   *psa = (PDFddp *) ddp;
+  PDFPoint *pdf_point_ptr = (PDFPoint *) points->list; 
+  int      i, index = points->num;
 
-        if (conv == RAW_TO_COOKED) {
-                for (i=0; i<*n; index++, i++) {
-                        point_ptr[index].x = rawx[i];
-                        point_ptr[index].y = rawy[i];
-                }
-                points->num = index;
-        }
-        else {
-                for (i=0; i<*n; i++) {
-                        rawx[i] = point_ptr[i].x;
-                        rawy[i] = point_ptr[i].y;
-                }
-        }
+  if (conv == RAW_TO_COOKED) {
+    for (i=0; i<*n; index++, i++) {
+      pdf_point_ptr[index].x = (((psa->transform).x_scale * rawx[i]) +
+                                (psa->transform).x_trans);
+      pdf_point_ptr[index].y = (((psa->transform).y_scale * rawy[i]) +
+                                (psa->transform).y_trans);
+      }
+      points->num = index;
+    }
+    else {
+      for (i=0; i<*n; i++) {
+        rawx[i] = (pdf_point_ptr[i].x-(psa->transform).x_trans) /
+                                   (psa->transform).x_scale;
+        rawy[i] = (pdf_point_ptr[i].y-(psa->transform).y_trans) /
+                                   (psa->transform).y_scale;
+      }
+   }
 }
 
 /*ARGSUSED*/
-void    ctxt_ConvString(ddp, raw, string, n, conv)
+void    PDFConvString(ddp, raw, string, n, conv)
         GKSC_Ptr        ddp;
         int     *raw;
         String  *string;
@@ -102,7 +103,7 @@ void    ctxt_ConvString(ddp, raw, string, n, conv)
 }
 
 /*ARGSUSED*/
-void    ctxt_ConvInts(ddp, raw, ints, n, conv)
+void    PDFConvInts(ddp, raw, ints, n, conv)
         GKSC_Ptr        ddp;
         int     *raw;
         Ints    *ints;
@@ -129,7 +130,7 @@ void    ctxt_ConvInts(ddp, raw, ints, n, conv)
 }
 
 /*ARGSUSED*/
-void    ctxt_ConvFloats(ddp, raw, floats, n, conv)
+void    PDFConvFloats(ddp, raw, floats, n, conv)
         GKSC_Ptr        ddp;
         float   *raw;
         Floats  *floats;
@@ -156,7 +157,7 @@ void    ctxt_ConvFloats(ddp, raw, floats, n, conv)
 }
 
 /*ARGSUSED*/
-void    ctxt_ConvIndexes(ddp, raw, indexes, n, conv)
+void    PDFConvIndexes(ddp, raw, indexes, n, conv)
         GKSC_Ptr        ddp;
         int     *raw;
         Indexes *indexes;
@@ -183,21 +184,21 @@ void    ctxt_ConvIndexes(ddp, raw, indexes, n, conv)
 }
 
 /*ARGSUSED*/
-void    ctxt_ConvRGBs(ddp, raw, rgbs, n, conv)
+void    PDFConvRGBs(ddp, raw, rgbs, n, conv)
         GKSC_Ptr        ddp;
         float   *raw;
         RGBs    *rgbs;
         int     *n;
         int     conv;
 {
-        CTXTColor       *color = (CTXTColor *) rgbs->list;
+        PDFColor        *color = (PDFColor *) rgbs->list;
         int             index = rgbs->num;
 
         int     i;
 
         if (conv == RAW_TO_COOKED) {
                 for (i=0; i<*n; i +=3, index++) {
-                        color[index].r = raw[i];
+                        color[index].r = raw[  i];
                         color[index].g = raw[i+1];
                         color[index].b = raw[i+2];
                 }
@@ -206,7 +207,7 @@ void    ctxt_ConvRGBs(ddp, raw, rgbs, n, conv)
         }
         else {
                 for (index=0, i=0; i<*n; i +=3, index++) {
-                        raw[i] = color[index].r;
+                        raw[  i] = color[index].r;
                         raw[i+1] = color[index].g;
                         raw[i+2] = color[index].b;
                 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: fort_c.h,v 1.6 2000-08-22 03:23:30 haley Exp $
+ *	$Id: fort_c.h,v 1.7 2003-01-06 23:30:13 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -50,6 +50,8 @@
 #define	DEV_X11		8
 #define	DEV_WISS	9	/* not supported	*/
 #define	DEV_CTXT       10
+#define	DEV_PDF_P      11       /* PDF portrait */
+#define	DEV_PDF_L      12       /* PDF landscape */
 #define	DEV_PS         20 	/* generic id for all PS drivers */
 #define	DEV_PS_MIN     20       /* smallest id for the PS drivers */
 #define	DEV_PS_MAX     31       /* largest id for the PS drivers */
