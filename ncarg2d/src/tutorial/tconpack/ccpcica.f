@@ -1,3 +1,5 @@
+
+
       PROGRAM CCPCIC
 C
 C  Define error file, Fortran unit number, and workstation type,
@@ -95,6 +97,7 @@ C
       STOP
       END
       
+
       SUBROUTINE MKDAT(NCTFR,ZDAT,NLON,NLAT)
 C 
 C Create some data to contour
@@ -129,6 +132,7 @@ C
       RETURN
       END
       
+
       SUBROUTINE SETMAP (PTYPE,PLAT,PLON)
 C 
 C Set up a map projection with desired options, but don't draw it.
@@ -143,6 +147,7 @@ C
       RETURN
       END
       
+
       SUBROUTINE SETCTR (ISET,MAPFLG,XMIN,XMAX,YMIN,YMAX,SPVAL)
 C 
 C Set up Conpack options, but don't do anything
@@ -161,24 +166,32 @@ C
       CALL CPSETR ('SPV - SPECIAL VALUE',SPVAL)
       CALL CPSETI ('CAF - CELL ARRAY FLAG',2)
       CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',-1)
-      CALL CPSETI ('AIA - AREA IDENTIFIER OUTSIDE THE GRID',-100)
+      CALL CPSETI ('AIA - AREA IDENTIFIER OUTSIDE THE GRID',99)
       CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',-2)
-      CALL CPSETI ('AIA - AREA IDENTIFIER - SPECIAL-VALUE AREAS',-100)
+      CALL CPSETI ('AIA - AREA IDENTIFIER - SPECIAL-VALUE AREAS',100)
+      CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',-3)
+      CALL CPSETI ('AIA - AREA IDENTIFIER - OUT-OF-RANGE AREAS',101)
       CALL CPSETI ('LLP - LINE LABEL POSITIONING',0)
-      CALL CPSETC ('HLT - HIGH/LOW TEXT',' '' ')
+      CALL CPSETC ('HLT - HIGH/LOW TEXT',' ')
 *     CALL CPSETC ('ILT - INFORMATIONAL LABEL TEXT',' ')
-      
+C
       RETURN
       END
+
+
       SUBROUTINE COLOR(IWKID)
       CALL GSCR (IWKID, 0,0.000,0.000,0.000)
       CALL GSCR (IWKID, 1,1.000,1.000,1.000)
       CALL GSCR (IWKID, 2,0.500,1.000,1.000)
       DO 10 I=3,15
-         CALL GSCR (IWKID,I,MAX(0.,MIN(1.,1.-REAL(ABS(I- 3)/10.))),
-     1         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
-     2         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
+         CALL GSCR (IWKID,I,
+     1         MAX(0.,MIN(1.,1.-REAL(ABS(I- 3)/10.))),
+     2         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
+     3         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
  10   CONTINUE
       CALL GSCR (IWKID,16,1.,0.,0.)
+      CALL GSCR (IWKID,101,0.,0.,0.) ! OUTSIDE THE GRID
+      CALL GSCR (IWKID,102,.5,.5,.5) ! SPECIAL VALUE
+      CALL GSCR (IWKID,103,0.,0.,0.) ! OUT-OF-RANGE AREA
       RETURN
       END
