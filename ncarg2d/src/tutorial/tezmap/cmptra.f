@@ -1,11 +1,15 @@
+
+      PROGRAM CMPTRA
 C
-C	$Id: cmptra.f,v 1.4 1995-06-14 14:07:18 haley Exp $
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
-C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 
       REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 

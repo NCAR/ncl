@@ -1,6 +1,5 @@
-C
-C	$Id: cmpgrp.f,v 1.4 1995-06-14 14:07:06 haley Exp $
-C
+
+       PROGRAM CMPGRP
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
