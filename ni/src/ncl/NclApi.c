@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.52 1998-09-18 23:10:20 boote Exp $
+ *      $Id: NclApi.c,v 1.53 1999-02-09 22:57:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -385,12 +385,28 @@ int NclSubmitCommand
 	if(the_input_buffer != NULL) {
 		NclFree(the_input_buffer);
 	}
-	the_input_buffer = (char*)NclMalloc((unsigned)strlen(command)+2);
-	strcpy(the_input_buffer,command);
-	the_input_buffer[strlen(command)+1] = '\0';
-	the_input_buffer[strlen(command)] = '\177';
-
-	the_input_buffer_size = strlen(command) + 2;
+	if(command[strlen(command)-2] == '\n') {
+		the_input_buffer = (char*)NclMalloc((unsigned)strlen(command)+2);
+		strcpy(the_input_buffer,command);
+		the_input_buffer[strlen(command)+1] = '\0';
+		the_input_buffer[strlen(command)] = '\177';
+	
+		the_input_buffer_size = strlen(command) + 2;
+	} else {
+/*
+* All lines must be terminated by '\n'
+* Since sometimes the calling environment appends a '\n'
+* this if statement takes care of when the caller doesn't
+* append a '\n'
+*/
+		the_input_buffer = (char*)NclMalloc((unsigned)strlen(command)+3);
+		strcpy(the_input_buffer,command);
+		the_input_buffer[strlen(command)] = '\n';
+		the_input_buffer[strlen(command)+2] = '\0';
+		the_input_buffer[strlen(command)+1] = '\177';
+	
+		the_input_buffer_size = strlen(command) + 3;
+	}
 
 	if(force_reset) {
                 _NclDeleteNewSymStack();
@@ -637,15 +653,15 @@ NclExtValueRec *NclGetExprValue
 */
 	size = strlen(expression);
 	size += strlen(NCLAPI_TMP_VAR);
-	size += 2; /* one for equals and one for '\0' */
+	size += 2; /* one for equals and one for '\n' */
 
 	ptr = tmp = NclMalloc(size);
 	memcpy(ptr,NCLAPI_TMP_VAR,strlen(NCLAPI_TMP_VAR));
-	ptr += strlen(NCLAPI_TMP_VAR) + 1;
+	ptr += strlen(NCLAPI_TMP_VAR);
 	*ptr++ = '=';
 	memcpy(ptr,expression,strlen(expression));
-	ptr += strlen(expression) + 1;
-	*ptr = '\0';
+	ptr += strlen(expression);
+	*ptr = '\n';
 	NclSubmitCommand(tmp);
 	tmp_val = NclGetVarValue(NCLAPI_TMP_VAR,1);
 	NclSubmitCommand(NCLAPI_DEL_TMP_VAR);
