@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.7 1993-12-22 00:56:34 dbrown Exp $
+ *      $Id: hlu.h,v 1.8 1994-01-12 00:35:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -535,7 +535,8 @@ NhlErrorTypes NhlAddToOverlay(
 NhlErrorTypes NhlRemoveFromOverlay(
 #ifdef NhlNeedProto
         int		/* base_id */,
-	int		/* plot_id */
+	int		/* plot_id */,
+	NhlBoolean	/* restore */
 #endif
 );
 

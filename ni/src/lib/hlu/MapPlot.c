@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.2 1993-12-22 00:56:09 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.3 1994-01-12 00:34:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,12 +28,14 @@
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
+#if 0
 static NhlResource resources[] = {
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(MapPlotLayerRec,trans.overlay_plot_base),
 		NhlTImmediate,(NhlPointer)False},
 };
+#endif
 
 /* base methods */
 
@@ -98,8 +100,8 @@ MapPlotLayerClassRec mapPlotLayerClassRec = {
 /* class_inited			*/      False,
 /* superclass			*/      (LayerClass)&transformLayerClassRec,
 
-/* layer_resources		*/	resources,
-/* num_resources		*/	NhlNumber(resources),
+/* layer_resources		*/	NULL,
+/* num_resources		*/	0,
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	MapPlotClassPartInitialize,
@@ -126,7 +128,7 @@ MapPlotLayerClassRec mapPlotLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	True,
+/* overlay_capability 		*/	_tfOverlayBaseOnly,
 /* data_to_ndc			*/	NULL,
 /* ndc_to_data			*/	NULL,
 /* data_polyline		*/	NULL,
@@ -263,49 +265,27 @@ MapPlotInitialize
         int             num_args;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	char			*entry_name = "MapPlotInitialize";
 	MapPlotLayer		mpnew = (MapPlotLayer) new;
 	MapPlotLayerPart	*mpp = &(mpnew->mapplot);
-	TransformLayerPart	*tfp = &(mpnew->trans);
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			buffer[MAXFNAMELEN];
-	int			tmpid = -1;
-	char			*e_text;
-	char			*entry_name = "MapPlotInitialize";
 	
+/* Initialize private fields */
+
+	mpp->overlay_object = NULL;
+
 /* Set up the Map transformation */
 
 	subret = SetUpTransObj(mpnew, (MapPlotLayer) req, True);
 	if ((ret = MIN(ret,subret)) < WARNING) 
 		return ret;
 
-/* 
- * Since the Map plot does not have any annotation objects it only
- * must put data into the first two field of the overlay record, in case
- * the plot is added to an overlay. 
- * Set up the overlay if required -- be sure to set the overlay view to be
- * coincident with the plot view.
- */
+/* Manage the overlay */
 
- 	if (tfp->overlay_plot_base == True) {
-
-		strcpy(buffer,mpnew->base.name);
-		strcat(buffer,".Overlay");
-		subret = _NhlCreateChild(&tmpid,buffer,overlayLayerClass,
-					 new,
-					 NhlNvpXF,mpnew->view.x,
-					 NhlNvpYF,mpnew->view.y,
-					 NhlNvpWidthF,mpnew->view.width,
-					 NhlNvpHeightF,mpnew->view.height,
-					 NULL);
-		ret = MIN(ret,subret);
-
-		if (ret < WARNING ||
-		    (tfp->overlay_object = _NhlGetLayer(tmpid)) == NULL) {
-			e_text = "%s: overlay creation failure";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
-		}
-	}
+	subret = _NhlManageOverlay(&mpp->overlay_object,new,req,
+				   True,NULL,0,entry_name);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
 
 	return ret;
 }
@@ -347,87 +327,23 @@ static NhlErrorTypes MapPlotSetValues
 #endif
 {
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
 	char			*entry_name = "MapPlotSetValues";
 	MapPlotLayer		mpnew = (MapPlotLayer) new;
-	MapPlotLayer		mpold = (MapPlotLayer) old;
 	MapPlotLayerPart	*mpp = &(mpnew->mapplot);
-	TransformLayerPart	*tfp = &(mpnew->trans);
-        NhlSArg			sargs[16];
-        int			nargs = 0;
 
-/* 
- * Warn if user tries to modify overlay base status - then revert to
- * status at initialization.
- */
-	
-	if (mpnew->trans.overlay_plot_base != mpold->trans.overlay_plot_base) {
-		e_text = "%s: Attempt to modify create only resource";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		ret = MIN(ret,WARNING);
-		mpnew->trans.overlay_plot_base = 
-			mpold->trans.overlay_plot_base;
-	}
-
-/*
- * If there is an overlay and this is the base plot propagate any view
- * change to the overlay object. Else if this is an overlay plot 
- * set the view to the overlay's view, warning of any attempt to set it
- * to something different. Note that when the Overlay manager calls 
- * SetValues for an overlay plot it always sets the view identical to
- * its own view.
- */
-
-	if (tfp->overlay_object != NULL && tfp->overlay_plot_base) {
-		if (mpnew->view.x != mpold->view.x)
-			NhlSetSArg(&sargs[nargs++],NhlNvpXF,mpnew->view.x);
-		if (mpnew->view.y != mpold->view.y)
-			NhlSetSArg(&sargs[nargs++],NhlNvpYF,mpnew->view.y);
-		if (mpnew->view.width != mpold->view.width)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpWidthF,mpnew->view.width);
-		if (mpnew->view.height != mpold->view.height)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpHeightF,mpnew->view.height);
-		
-		subret = _NhlALSetValuesChild(tfp->overlay_object->base.id,
-					      new,sargs,nargs);
-
-		if ((ret = MIN(subret, ret)) < WARNING) {
-			e_text = "%s: error setting overlay object view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
-		}
-	}
-/*
- * It shouldn't be possible for a map plot object to be any part of any
- * overlay other than the base -- but for now leave this code in as
- * a test.
- */
-	else if (tfp->overlay_object != NULL) {
-		
-		ViewLayer	vl = (ViewLayer) (tfp->overlay_object);
-		
-		if (mpnew->view.x != vl->view.x ||
-		    mpnew->view.y != vl->view.y ||
-		    mpnew->view.width != vl->view.width ||
-		    mpnew->view.height != vl->view.height) {
-
-			mpnew->view.x = vl->view.x;
-			mpnew->view.y = vl->view.y;
-			mpnew->view.width = vl->view.width;
-			mpnew->view.height = vl->view.height;
-
-			e_text="%s: attempt to set overlay plot view ignored";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			ret = MIN(ret,WARNING);
-		}
-	}
 
 /* Set up the Map transformation */
 
 	subret = SetUpTransObj(mpnew, (MapPlotLayer) old, False);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
+
+/* Manage the overlay */
+
+	subret = _NhlManageOverlay(&mpp->overlay_object,new,old,
+			       False,NULL,0,entry_name);
 	ret = MIN(ret,subret);
+
 
 	return ret;
 }
@@ -454,14 +370,16 @@ Layer inst;
 #endif
 {
 	MapPlotLayerPart	*mpp = &(((MapPlotLayer) inst)->mapplot);
-	TransformLayerPart	*tfp = &(((TransformLayer) inst)->trans);
+	TransformLayerPart	*mptp = &(((TransformLayer) inst)->trans);
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
 
-	if (tfp->overlay_plot_base && tfp->overlay_object != NULL) {
-		subret =  _NhlDestroyChild(tfp->overlay_object->base.id,inst);
+	if (mpp->overlay_object != NULL) {
+		(void) _NhlDestroyChild(mpp->overlay_object->base.id,inst);
+		mpp->overlay_object = NULL;
 	}
-	if (tfp->trans_obj != NULL) {
-		subret = _NhlDestroyChild(tfp->trans_obj->base.id,inst);
+	if (mptp->trans_obj != NULL) {
+		(void) _NhlDestroyChild(mptp->trans_obj->base.id,inst);
+		mptp->trans_obj = NULL;
 	}
 	
 	return(ret);
@@ -510,6 +428,9 @@ static NhlErrorTypes MapPlotDraw
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
 		return FATAL;
 	}
+
+	gset_line_colr_ind((Gint)_NhlGetGksCi(mp->base.wkptr,0));
+	gset_linewidth(1.0);
 
 	c_mapsti("PE",0);
 	c_mapdrw();

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.2 1993-12-22 00:55:37 dbrown Exp $
+ *      $Id: Contour.c,v 1.3 1994-01-12 00:34:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,35 +29,31 @@
 #include "testdata.h"
 
 static NhlResource resources[] = {
-	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
-		NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(ContourLayerRec,trans.overlay_plot_base),
-		NhlTImmediate,(NhlPointer)False},
 	{ NhlNcnOutOfRangeValF,NhlCcnOutOfRangeValF,NhlTFloat,sizeof(float),
 		NhlOffset(ContourLayerRec,contour.out_of_range_val),
 		NhlTString,"1.0E12"},
-	{ NhlNcnXMinF,NhlCcnXMinF,NhlTFloat,sizeof(float),
+	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(ContourLayerRec,contour.x_min),
 		NhlTString,"0.0"},
-	{ NhlNcnXMaxF,NhlCcnXMaxF,NhlTFloat,sizeof(float),
+	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(ContourLayerRec,contour.x_max),
 		NhlTString,"1.0"},
-	{ NhlNcnXLog,NhlCcnXLog,NhlTBoolean,sizeof(NhlBoolean),
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(ContourLayerRec,contour.x_log),
 		NhlTImmediate,(NhlPointer)False},
-	{ NhlNcnXReverse,NhlCcnXReverse,NhlTBoolean,sizeof(NhlBoolean),
+	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(ContourLayerRec,contour.x_reverse),
 		NhlTImmediate,(NhlPointer)False},
-	{ NhlNcnYMinF,NhlCcnYMinF,NhlTFloat,sizeof(float),
+	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(ContourLayerRec,contour.y_min),
 		NhlTString,"0.0"},
-	{ NhlNcnYMaxF,NhlCcnYMaxF,NhlTFloat,sizeof(float),
+	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(ContourLayerRec,contour.y_max),
 		NhlTString,"1.0"},
-	{ NhlNcnYLog,NhlCcnYLog,NhlTBoolean,sizeof(NhlBoolean),
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(ContourLayerRec,contour.y_log),
 		NhlTImmediate,(NhlPointer)False},
-	{ NhlNcnYReverse,NhlCcnYReverse,NhlTBoolean,sizeof(NhlBoolean),
+	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(ContourLayerRec,contour.y_reverse),
 		NhlTImmediate,(NhlPointer)False},
 };
@@ -153,7 +149,7 @@ ContourLayerClassRec contourLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	True,
+/* overlay_capability 		*/	_tfOverlayBaseOrMember,
 /* data_to_ndc			*/	NULL,
 /* ndc_to_data			*/	NULL,
 /* data_polyline		*/	NULL,
@@ -222,20 +218,81 @@ ContourClassPartInitialize
 	LayerClass	lc;	/* Layer Class to init	*/
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes lret = NOERROR;
+	NhlErrorTypes	ret = NOERROR, subret = NOERROR;
+	char		*e_text;
+	char		*entry_name = "ContourClassPartInitialize";
 
-	/*
-	 * Register children objects
-	 */
-	lret = _NhlRegisterChildClass(lc,overlayLayerClass,False,False,
-				      NULL);
+/*
+ * Register children objects
+ */
+	subret = _NhlRegisterChildClass(lc,overlayLayerClass,
+					False,False,NULL);
 
-	_NhlInitializeLayerClass(logLinTransObjLayerClass);
-	_NhlInitializeLayerClass(irregularType2TransObjLayerClass);
-	_NhlInitializeLayerClass(irregularTransObjLayerClass);
+	if ((ret = MIN(ret,subret)) < WARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  "overlayLayerClass");
+		return(FATAL);
+	}
 
-	return MIN(lret,ret);
+	subret = _NhlRegisterChildClass(lc,logLinTransObjLayerClass,
+					False,False,
+					NhlNtrXMinF,
+					NhlNtrXMaxF,
+					NhlNtrXLog,
+					NhlNtrXReverse,
+					NhlNtrYMinF,
+					NhlNtrYMaxF,
+					NhlNtrYLog,
+					NhlNtrYLog,
+					NULL);
+
+	if ((ret = MIN(ret,subret)) < WARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  "logLinTransObjLayerClass");
+		return(FATAL);
+	}
+
+	subret = _NhlRegisterChildClass(lc,irregularType2TransObjLayerClass,
+					False,False,
+					NhlNtrXMinF,
+					NhlNtrXMaxF,
+					NhlNtrXLog,
+					NhlNtrXReverse,
+					NhlNtrYMinF,
+					NhlNtrYMaxF,
+					NhlNtrYLog,
+					NhlNtrYLog,
+					NULL);
+
+	if ((ret = MIN(ret,subret)) < WARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  "irregularType2TransObjLayerClass");
+		return(FATAL);
+	}
+
+	subret = _NhlRegisterChildClass(lc,irregularTransObjLayerClass,
+					False,False,
+					NhlNtrXMinF,
+					NhlNtrXMaxF,
+					NhlNtrXLog,
+					NhlNtrXReverse,
+					NhlNtrYMinF,
+					NhlNtrYMaxF,
+					NhlNtrYLog,
+					NhlNtrYLog,
+					NULL);
+
+	if ((ret = MIN(ret,subret)) < WARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  "irregularTransObjLayerClass");
+		return(FATAL);
+	}
+
+	return ret;
 }
 
 
@@ -276,14 +333,10 @@ ContourInitialize
         int             num_args;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	char			*entry_name = "ContourInitialize";
 	ContourLayer		cnew = (ContourLayer) new;
 	ContourLayerPart	*cnp = &(cnew->contour);
-	TransformLayerPart	*tfp = &(cnew->trans);
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			buffer[MAXFNAMELEN];
-	int			tmpid = -1;
-	char			*e_text;
-	char			*entry_name = "ContourInitialize";
 
 /* initialize private members */
 
@@ -295,32 +348,12 @@ ContourInitialize
 	if ((ret = MIN(ret,subret)) < WARNING) 
 		return ret;
 
-/* 
- * Set up the overlay if required -- be sure to set the overlay view to be
- * coincident with the plot view.
- */
+/* Manage the overlay */
 
-
-	if (tfp->overlay_plot_base == True) {
-
-		strcpy(buffer,cnew->base.name);
-		strcat(buffer,".Overlay");
-		subret = _NhlCreateChild(&tmpid,buffer,overlayLayerClass,
-					 new,
-					 NhlNvpXF,cnew->view.x,
-					 NhlNvpYF,cnew->view.y,
-					 NhlNvpWidthF,cnew->view.width,
-					 NhlNvpHeightF,cnew->view.height,
-					 NULL);
-		ret = MIN(ret,subret);
-
-		if (ret < WARNING ||
-		    (tfp->overlay_object = _NhlGetLayer(tmpid)) == NULL) {
-			e_text = "%s: overlay creation failure";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
-		}
-	}
+	subret = _NhlManageOverlay(&cnp->overlay_object,new,req,
+			       True,NULL,0,entry_name);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
 
 	return ret;
 }
@@ -362,80 +395,21 @@ static NhlErrorTypes ContourSetValues
 #endif
 {
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
 	char			*entry_name = "ContourSetValues";
 	ContourLayer		cnew = (ContourLayer) new;
-	ContourLayer		cold = (ContourLayer) old;
 	ContourLayerPart	*cnp = &(cnew->contour);
-	TransformLayerPart	*tfp = &(cnew->trans);
-        NhlSArg			sargs[16];
-        int			nargs = 0;
 
-/* 
- * Warn if user tries to modify overlay base status - then revert to
- * status at initialization.
- */
-	
-	if (cnew->trans.overlay_plot_base != cold->trans.overlay_plot_base) {
-		e_text = "%s: Attempt to modify create only resource";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		ret = MIN(ret,WARNING);
-		cnew->trans.overlay_plot_base = cold->trans.overlay_plot_base;
-	}
-
-/*
- * If there is an overlay and this is the base plot propagate any view
- * change to the overlay object. Else if this is an overlay plot 
- * set the view to the overlay's view, warning of any attempt to set it
- * to something different. Note that when the Overlay manager calls 
- * SetValues for an overlay plot it always sets the view identical to
- * its own view.
- */
-
-	if (tfp->overlay_object != NULL && tfp->overlay_plot_base) {
-		if (cnew->view.x != cold->view.x)
-			NhlSetSArg(&sargs[nargs++],NhlNvpXF,cnew->view.x);
-		if (cnew->view.y != cold->view.y)
-			NhlSetSArg(&sargs[nargs++],NhlNvpYF,cnew->view.y);
-		if (cnew->view.width != cold->view.width)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpWidthF,cnew->view.width);
-		if (cnew->view.height != cold->view.height)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpHeightF,cnew->view.height);
-		
-		subret = _NhlALSetValuesChild(tfp->overlay_object->base.id,
-					      new,sargs,nargs);
-
-		if ((ret = MIN(subret, ret)) < WARNING) {
-			e_text = "%s: error setting overlay object view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
-		}
-	}
-	else if (tfp->overlay_object != NULL) {
-		
-		ViewLayer	vl = (ViewLayer) (tfp->overlay_object);
-		
-		if (cnew->view.x != vl->view.x ||
-		    cnew->view.y != vl->view.y ||
-		    cnew->view.width != vl->view.width ||
-		    cnew->view.height != vl->view.height) {
-
-			cnew->view.x = vl->view.x;
-			cnew->view.y = vl->view.y;
-			cnew->view.width = vl->view.width;
-			cnew->view.height = vl->view.height;
-
-			e_text="%s: attempt to set overlay plot view ignored";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			ret = MIN(ret,WARNING);
-		}
-	}
 
 /* Set up the contour object's transformation */
 
 	subret = SetUpTransObj(cnew, (ContourLayer) old, False);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
+
+/* Manage the overlay */
+
+	subret = _NhlManageOverlay(&cnp->overlay_object,new,old,
+			       False,NULL,0,entry_name);
 	ret = MIN(ret,subret);
 
 	return ret;
@@ -462,15 +436,29 @@ static NhlErrorTypes ContourDestroy
 Layer inst;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+#if 0
+	char			*e_text;
+	char			*entry_name = "ContourDestroy";
+#endif
 	ContourLayerPart	*cnp = &(((ContourLayer) inst)->contour);
 	TransformLayerPart	*cntp = &(((TransformLayer) inst)->trans);
-	NhlErrorTypes		ret = NOERROR;
+
+	if (cntp->overlay_status == _tfCurrentOverlayMember) {
+		subret = NhlRemoveFromOverlay(
+				cntp->overlay_object->base.parent->base.id,
+					      inst->base.id,False);
+		if ((ret = MIN(subret,ret)) < WARNING)
+			return FATAL;
+	}
 
 	if (cnp->overlay_object != NULL) {
 		(void) _NhlDestroyChild(cnp->overlay_object->base.id,inst);
+		cnp->overlay_object = NULL;
 	}
 	if (cntp->trans_obj != NULL) {
-		(void) NhlDestroy(cntp->trans_obj->base.id);
+		(void) _NhlDestroyChild(cntp->trans_obj->base.id,inst);
+		cntp->trans_obj = NULL;
 	}
 	
 	return(ret);
@@ -510,10 +498,10 @@ static NhlErrorTypes ContourDraw
         int			iwrk[1000];
 
 /*
- * If the plot is part of an overlay, but not the overlay plot base, use
- * the overlay manager's trans object.
+ * If the plot is an overlay member, use the overlay manager's trans object.
  */
-	if (! tfp->overlay_plot_base && tfp->overlay_trans_obj != NULL) {
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
 
 		trans_obj = tfp->overlay_trans_obj;
 	}
@@ -559,6 +547,10 @@ static NhlErrorTypes ContourDraw
 		c_cpsetr("YC1",clp->y_max);
 		c_cpsetr("YCN",clp->y_min);
 	}
+
+	gset_line_colr_ind((Gint)_NhlGetGksCi(cl->base.wkptr,0));
+	gset_linewidth(1.0);
+
         c_cpsetr("CIS",5.0);
         c_cpsetr("DPS",.02);
         c_cpseti("LIS",2);
@@ -566,7 +558,6 @@ static NhlErrorTypes ContourDraw
         c_cpseti("MAP",3);
 
         c_cprect(T,73,73,10,rwrk,5000,iwrk,1000);
-	fprintf(stderr, "calling cpcldr\n");
         c_cpcldr(T,rwrk,iwrk);
 
         subret = _NhlDeactivateWorkstation(cl->base.wkptr);
@@ -645,8 +636,9 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = NhlALCreate(&tmpid,buffer,logLinTransObjLayerClass,
-				     cnnew->base.id,sargs,nargs);
+		subret = _NhlALCreateChild(&tmpid,buffer,
+					   logLinTransObjLayerClass,
+					   (Layer)cnnew,sargs,nargs);
 
 		ret = MIN(subret,ret);
 
@@ -661,25 +653,30 @@ static NhlErrorTypes SetUpTransObj
 		return ret;
 	}
 		
-	if(cnp->x_min != ocnp->x_min)
+	if (cnp->x_min != ocnp->x_min)
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,cnp->x_min);
-	if(cnp->x_max != ocnp->x_max)
+	if (cnp->x_max != ocnp->x_max)
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,cnp->x_max);
-	if(cnp->y_min != ocnp->y_min)
+	if (cnp->y_min != ocnp->y_min)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,cnp->y_min);
-	if(cnp->y_max != ocnp->y_max)
+	if (cnp->y_max != ocnp->y_max)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,cnp->y_max);
 
-	if(cnp->x_reverse != ocnp->x_reverse)
+	if (cnp->x_reverse != ocnp->x_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
-	if(cnp->y_reverse != ocnp->y_reverse)
+	if (cnp->y_reverse != ocnp->y_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
 
-	if(cnp->x_log != ocnp->x_log)
+	if (cnp->x_log != ocnp->x_log)
 		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,cnp->x_log);
-	if(cnp->y_log != ocnp->y_log)
+	if (cnp->y_log != ocnp->y_log)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,cnp->y_log);
 
-	return NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
+				      (Layer) cnnew,sargs,nargs);
+	return MIN(ret,subret);
 
 }
+
+
+

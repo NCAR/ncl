@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.2 1993-12-22 00:56:13 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.3 1994-01-12 00:34:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,9 +31,9 @@ typedef struct MapPlotLayerPart {
 
 	/* Public resources */
 
-	int foo;
-
 	/* Private Fields */
+
+	Layer		overlay_object;
 
 } MapPlotLayerPart;
 

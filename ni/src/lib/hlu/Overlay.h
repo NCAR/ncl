@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Overlay.h,v 1.2 1993-12-22 00:56:18 dbrown Exp $
+ *      $Id: Overlay.h,v 1.3 1994-01-12 00:35:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,12 +31,36 @@
 #include <ncarg/hlu/Legend.h>
 
 /*
+ * defines for Display resources (temporary, should be enums)
+ */
+
+#define Nhl_ovNever		0
+#define Nhl_ovAlways		1
+#define Nhl_ovConditionally	2
+
+/*
  * Overlay instance resources
  */
 
 #define NhlNovOverlayIds	".ovOverlayIds"
 #define NhlNovPreDrawOrder	".ovPreDrawOrder"
 #define NhlNovPostDrawOrder	".ovPostDrawOrder"
+#define NhlNovDisplayTitles	"ovDisplayTitles"
+#define NhlNovDisplayTickMarks	"ovDisplayTickMarks"
+#define NhlNovDisplayLabelBar	"ovDisplayLabelBar"
+#define NhlNovDisplayLegend	"ovDisplayLegend"
+#define NhlNovLabelBarWidthF	"ovLabelBarWidth"
+#define NhlNovLabelBarHeightF	"ovLabelBarHeight"
+#define NhlNovLabelBarXOffsetF	"ovLabelBarXOffset"
+#define NhlNovLabelBarYOffsetF	"ovLabelBarYOffset"
+#define NhlNovLabelBarSide	"ovLabelBarSide"
+#define NhlNovLabelBarPosition	"ovLabelBarPosition"
+#define NhlNovLegendWidthF	"ovLegendWidth"
+#define NhlNovLegendHeightF	"ovLegendHeight"
+#define NhlNovLegendXOffsetF	"ovLegendXOffset"
+#define NhlNovLegendYOffsetF	"ovLegendYOffset"
+#define NhlNovLegendSide	"ovLegendSide"
+#define NhlNovLegendPosition	"ovLegendPosition"
 
 /*
  * Overlay class resources
@@ -45,11 +69,45 @@
 #define NhlCovOverlayIds	".OvOverlayIds"
 #define NhlCovPreDrawOrder	".OvPreDrawOrder"
 #define NhlCovPostDrawOrder	".OvPostDrawOrder"
+#define NhlCovDisplayTitles	"OvDisplayTitles"
+#define NhlCovDisplayTickMarks	"OvDisplayTickMarks"
+#define NhlCovDisplayLabelBar	"OvDisplayLabelBar"
+#define NhlCovDisplayLegend	"OvDisplayLegend"
+#define NhlCovLabelBarWidthF	"OvLabelBarWidth"
+#define NhlCovLabelBarHeightF	"OvLabelBarHeight"
+#define NhlCovLabelBarXOffsetF	"OvLabelBarXOffset"
+#define NhlCovLabelBarYOffsetF	"OvLabelBarYOffset"
+#define NhlCovLabelBarSide	"OvLabelBarSide"
+#define NhlCovLabelBarPosition	"OvLabelBarPosition"
+#define NhlCovLegendWidthF	"OvLegendWidth"
+#define NhlCovLegendHeightF	"OvLegendHeight"
+#define NhlCovLegendXOffsetF	"OvLegendXOffset"
+#define NhlCovLegendYOffsetF	"OvLegendYOffset"
+#define NhlCovLegendSide	"OvLegendSide"
+#define NhlCovLegendPosition	"OvLegendPosition"
 
 
 typedef struct _OverlayLayerClassRec *OverlayLayerClass;
 typedef struct _OverlayLayerRec *OverlayLayer;
 
 extern LayerClass overlayLayerClass;
+
+/* 
+ * Convenience function that performs the basic management of an
+ * overlay for a plot object. Designed to be called from ...Initialize
+ * or ...SetValues.
+ */
+
+extern NhlErrorTypes _NhlManageOverlay(
+#ifdef NhlNeedProto
+	Layer		*overlay_object,
+	Layer		lnew,
+	Layer		lold,
+	NhlBoolean	init,
+	NhlSArgList	sargs,
+	int		nargs,
+	char		*entry_name				   
+#endif
+);
 
 #endif /*_NOverlay_h */

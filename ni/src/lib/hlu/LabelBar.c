@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.4 1993-11-02 19:59:12 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.5 1994-01-12 00:34:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,9 +44,9 @@ static int def_colors[] = {
 
 static NhlResource resources[] = { 
 
-{NhlNlbLabelBar, NhlClbLabelBar, NhlTInteger,
-	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.labelbar_on),
-	 NhlTImmediate,(NhlPointer) 1}, 
+{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean,
+	 sizeof(NhlBoolean), NhlOffset(LabelBarLayerRec,labelbar.labelbar_on),
+	 NhlTImmediate,(NhlPointer) True}, 
 {NhlNlbOrientation, NhlClbOrientation, NhlTOrientation,
 	 sizeof(NhlOrientation), NhlOffset(LabelBarLayerRec,labelbar.orient),
 	 NhlTImmediate,(NhlPointer) NhlVERTICAL},
@@ -596,6 +596,13 @@ static NhlErrorTypes    LabelBarInitialize
 	ret = MIN(ret,ret1);
 
 /*
+ * Return now if the labelbar is turned off
+ */
+
+	if (! lb_p->labelbar_on)
+		return ret;
+
+/*
  * Calculate labelbar geometry
  */
 
@@ -687,9 +694,9 @@ static NhlErrorTypes LabelBarSetValues
 	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
 	lb_p->title_angle = fmod(lb_p->title_angle,360.0);
 
+
 	ret1 = ManageDynamicArrays(new,old,args,num_args);
 	ret = MIN(ret,ret1);
-
 
 /*
  * Adjust the title direction according to the position unless
@@ -784,7 +791,12 @@ static NhlErrorTypes LabelBarSetValues
 			lb_p->orient = NhlHORIZONTAL;
 	}
 	lb_p->orient_set = True;
-		
+/*
+ * Return now if the labelbar is turned off
+ */
+
+	if (! lb_p->labelbar_on)
+		return ret;
 /*
  * Calculate labelbar geometry
  */

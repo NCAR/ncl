@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.2 1993-12-22 00:55:59 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.3 1994-01-12 00:34:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
  */
 
 #include <stdio.h>
-#include <math.h>
 #include <ncarg/hlu/LogLinPlotP.h>
 
 /* base methods */
@@ -82,6 +81,7 @@ static NhlErrorTypes SetUpTransObj(
 #endif
 );
 
+
 LogLinPlotLayerClassRec logLinPlotLayerClassRec = {
         {
 /* class_name			*/      "LogLinPlot",
@@ -118,7 +118,7 @@ LogLinPlotLayerClassRec logLinPlotLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	True,
+/* overlay_capability 		*/	_tfOverlayBaseOrMember,
 /* data_to_ndc			*/	NULL,
 /* ndc_to_data			*/	NULL,
 /* data_polyline		*/	NULL,
@@ -210,7 +210,7 @@ LogLinPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < WARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "mapTransObjLayerClass");
+			  "logLinTransObjLayerClass");
 		return(FATAL);
 	}
 
@@ -255,14 +255,10 @@ LogLinPlotInitialize
         int             num_args;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	char			*entry_name = "LogLinPlotInitialize";
 	LogLinPlotLayer		lnew = (LogLinPlotLayer) new;
 	LogLinPlotLayerPart	*llp = &(lnew->llplot);
-	TransformLayerPart	*tfp = &(lnew->trans);
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			buffer[MAXFNAMELEN];
-	int			tmpid = -1;
-	char			*e_text;
-	char			*entry_name = "LogLinPlotInitialize";
 
 /* Initialize private fields */
 
@@ -274,35 +270,12 @@ LogLinPlotInitialize
 	if ((ret = MIN(ret,subret)) < WARNING) 
 		return ret;
 
-/* 
- * Set up the overlay if required -- be sure to set the overlay view to be
- * coincident with the plot view. Also fill in the overlay_object and
- * overlay_status fields in the Transform layer. These may be modified 
- * through a SetValues call later, but that will be by an overlay manager.
- */
+/* Manage the overlay */
 
- 	if (tfp->overlay_plot_base == True) {
-
-		strcpy(buffer,lnew->base.name);
-		strcat(buffer,".Overlay");
-		subret = _NhlCreateChild(&tmpid,buffer,overlayLayerClass,
-					 new,
-					 NhlNvpXF,lnew->view.x,
-					 NhlNvpYF,lnew->view.y,
-					 NhlNvpWidthF,lnew->view.width,
-					 NhlNvpHeightF,lnew->view.height,
-					 NULL);
-		ret = MIN(ret,subret);
-
-		if (ret < WARNING ||
-		    (llp->overlay_object = _NhlGetLayer(tmpid)) == NULL) {
-			e_text = "%s: overlay creation failure";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
-		}
-		tfp->overlay_object = llp->overlay_object;
-		tfp->overlay_status = _tfCurrentOverlayBase;
-	}
+	subret = _NhlManageOverlay(&llp->overlay_object,new,req,
+				   True,NULL,0,entry_name);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
 
 	return ret;
 }
@@ -344,94 +317,21 @@ static NhlErrorTypes LogLinPlotSetValues
 #endif
 {
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
 	char			*entry_name = "LogLinPlotSetValues";
 	LogLinPlotLayer		lnew = (LogLinPlotLayer) new;
-	LogLinPlotLayer		lold = (LogLinPlotLayer) old;
 	LogLinPlotLayerPart	*llp = &(lnew->llplot);
-	TransformLayerPart	*tfp = &(lnew->trans);
-        NhlSArg			sargs[8];
-        int			nargs = 0;
 
-/* 
- * Warn if user tries to modify overlay base status - then revert to
- * status at initialization.
- */
-	
-	if (lnew->trans.overlay_plot_base != lold->trans.overlay_plot_base) {
-		e_text = "%s: Attempt to modify create only resource";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		ret = MIN(ret,WARNING);
-		lnew->trans.overlay_plot_base = lold->trans.overlay_plot_base;
-	}
-
-/*
- * If this plot is an overlay member (not the base plot), its view should
- * be the same as that of the overlay. If it is not, the user must have
- * set it: in this case issue a warning and set it to the view of the
- * overlay.
- */
-
-	if (tfp->overlay_status == _tfCurrentOverlayMember) {
-
-		ViewLayer ovvl = (ViewLayer) tfp->overlay_object;
-
-		if (tfp->overlay_object == NULL || 
-		    ! _NhlIsTransform(tfp->overlay_object)) {
-			e_text = "%s: inconsistent overlay info";
-		        NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
-		}
-
-		if (lnew->view.x != ovvl->view.x ||
-		    lnew->view.y != ovvl->view.y ||
-		    lnew->view.width != ovvl->view.width ||
-		    lnew->view.height != ovvl->view.height) {
-
-			lnew->view.x = ovvl->view.x;
-			lnew->view.y = ovvl->view.y;
-			lnew->view.width = ovvl->view.width;
-			lnew->view.height = ovvl->view.height;
-
-			e_text =
-			"%s: attempt to set overlay member plot view ignored";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			ret = MIN(ret,WARNING);
-		}
-	}
-
-/*
- * If the plot has an overlay object child, it is either the current overlay 
- * base plot, or it started out as a base plot but has been added to another
- * overlay. In either case, update the object with a SetValues child call.
- */
-
-	if (llp->overlay_object != NULL) {
-
-		if (lnew->view.x != lold->view.x)
-			NhlSetSArg(&sargs[nargs++],NhlNvpXF,lnew->view.x);
-		if (lnew->view.y != lold->view.y)
-			NhlSetSArg(&sargs[nargs++],NhlNvpYF,lnew->view.y);
-		if (lnew->view.width != lold->view.width)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpWidthF,lnew->view.width);
-		if (lnew->view.height != lold->view.height)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpHeightF,lnew->view.height);
-		
-		subret = _NhlALSetValuesChild(llp->overlay_object->base.id,
-					      new,sargs,nargs);
-
-		if ((ret = MIN(subret, ret)) < WARNING) {
-			e_text = "%s: error setting overlay object view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
-		}
-	}
 
 /* Set up the loglin transformation */
 
 	subret = SetUpTransObj(lnew, (LogLinPlotLayer) old, False);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
+
+/* Manage the overlay */
+
+	subret = _NhlManageOverlay(&llp->overlay_object,new,old,
+			       False,NULL,0,entry_name);
 	ret = MIN(ret,subret);
 
 	return ret;
@@ -458,15 +358,29 @@ static NhlErrorTypes LogLinPlotDestroy
 Layer inst;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+#if 0
+	char			*e_text;
+	char			*entry_name = "LogLinPlotDestroy";
+#endif
 	LogLinPlotLayerPart	*llp = &(((LogLinPlotLayer) inst)->llplot);
 	TransformLayerPart	*lltp = &(((TransformLayer) inst)->trans);
-	NhlErrorTypes		ret = NOERROR;
+
+	if (lltp->overlay_status == _tfCurrentOverlayMember) {
+		subret = NhlRemoveFromOverlay(
+				lltp->overlay_object->base.parent->base.id,
+					      inst->base.id,False);
+		if ((ret = MIN(subret,ret)) < WARNING)
+			return FATAL;
+	}
 
 	if (llp->overlay_object != NULL) {
 		(void) _NhlDestroyChild(llp->overlay_object->base.id,inst);
+		llp->overlay_object = NULL;
 	}
 	if (lltp->trans_obj != NULL) {
 		(void) _NhlDestroyChild(lltp->trans_obj->base.id,inst);
+		lltp->trans_obj = NULL;
 	}
 	
 	return(ret);
@@ -494,12 +408,7 @@ static NhlErrorTypes LogLinPlotDraw
         Layer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
-	char			*entry_name = "LogLinPlotDraw";
-	LogLinPlotLayer		ll = (LogLinPlotLayer) layer;
-	LogLinPlotLayerPart	*llp = &(ll->llplot);
-	TransformLayerPart	*tfp = &(ll->trans);
+	NhlErrorTypes		ret = NOERROR;
 
 	return ret;
 }
@@ -539,8 +448,6 @@ static NhlErrorTypes SetUpTransObj
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
 	char 			*e_text;
 	char			*entry_name;
-	LogLinPlotLayerPart	*llp = &(llnew->llplot);
-	LogLinPlotLayerPart	*ollp = &(llold->llplot);
 	TransformLayerPart	*tfp = &(llnew->trans);
 	char			buffer[MAXRESNAMLEN];
 	int			tmpid;
@@ -581,3 +488,5 @@ static NhlErrorTypes SetUpTransObj
 	return MIN(ret,subret);
 
 }
+
+

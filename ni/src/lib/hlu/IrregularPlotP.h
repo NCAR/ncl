@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.2 1993-12-22 00:55:56 dbrown Exp $
+ *      $Id: IrregularPlotP.h,v 1.3 1994-01-12 00:34:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,11 @@
 
 typedef struct IrregularPlotLayerPart {
 
-	int foo;
+	/* Public resources */
+
+	/* Private Fields */
+
+	Layer		overlay_object;
 
 } IrregularPlotLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.4 1993-12-22 00:56:24 dbrown Exp $
+ *      $Id: Transform.c,v 1.5 1994-01-12 00:35:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,7 +141,7 @@ TransformLayerClassRec transformLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	False,
+/* overlay_capability 		*/	_tfNotOverlayCapable,
 /* data_to_ndc			*/	TransformDataToNDC,
 /* ndc_to_data			*/	TransformNDCToData,
 /* data_polyline		*/	TransformDataPolyline,

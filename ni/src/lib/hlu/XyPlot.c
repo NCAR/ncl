@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.12 1994-01-10 19:49:10 boote Exp $
+ *      $Id: XyPlot.c,v 1.13 1994-01-12 00:35:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -626,7 +626,7 @@ XyPlotLayerClassRec xyPlotLayerClassRec = {
 	},
 	/* trans_class */
 	{
-/* handles_overlays 		*/	False,
+/* overlay_capability 		*/	_tfNotOverlayCapable,
 /* data_to_ndc			*/	XyPlotDataToNDC,
 /* ndc_to_data			*/	XyPlotNDCToData,
 /* data_polyline		*/	NULL,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LabelBarP.h,v 1.2 1993-10-19 17:51:17 boote Exp $
+ *      $Id: LabelBarP.h,v 1.3 1994-01-12 00:34:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ typedef struct _LabelBarLayerPart {
 
 	/* public resource fields */
 
-	int	labelbar_on;
+	NhlBoolean	labelbar_on;
 	NhlOrientation	orient;
 	NhlJustification just;
 	float	box_major_ext;

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.2 1993-12-22 00:55:52 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.3 1994-01-12 00:34:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,13 +29,14 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/IrregularPlotP.h>
 
+#if 0
 static NhlResource resources[] = {
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(IrregularPlotLayerRec,trans.overlay_plot_base),
 		NhlTImmediate,(NhlPointer)False},
 };
-
+#endif
 
 /* base methods */
 
@@ -100,8 +101,8 @@ IrregularPlotLayerClassRec irregularPlotLayerClassRec = {
 /* class_inited			*/      False,
 /* superclass			*/      (LayerClass)&transformLayerClassRec,
 
-/* layer_resources		*/	resources,
-/* num_resources		*/	NhlNumber(resources),
+/* layer_resources		*/	NULL, /* resources */
+/* num_resources		*/	0, /*NhlNumber(resources), */
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	IrregularPlotClassPartInitialize,
@@ -128,7 +129,7 @@ IrregularPlotLayerClassRec irregularPlotLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	True,
+/* overlay_capability 		*/	_tfOverlayBaseOrMember,
 /* data_to_ndc			*/	NULL,
 /* ndc_to_data			*/	NULL,
 /* data_polyline		*/	NULL,
@@ -266,47 +267,30 @@ IrregularPlotInitialize
         int             num_args;
 #endif
 {
-	IrregularPlotLayer	lnew = (IrregularPlotLayer) new;
-	IrregularPlotLayerPart	*irp = &(lnew->irrplot);
-	TransformLayerPart	*tfp = &(lnew->trans);
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			buffer[MAXFNAMELEN];
-	int			tmpid = -1;
-	char			*e_text;
 	char			*entry_name = "IrregularPlotInitialize";
+	IrregularPlotLayer	inew = (IrregularPlotLayer) new;
+	IrregularPlotLayerPart	*irp = &(inew->irrplot);
 
+
+
+/* Initialize private fields */
+
+	irp->overlay_object = NULL;
+	
 	
 /* Set up the Irregular transformation */
 
-	subret = SetUpTransObj(lnew, (IrregularPlotLayer) req, True);
+	subret = SetUpTransObj(inew, (IrregularPlotLayer) req, True);
 	if ((ret = MIN(ret,subret)) < WARNING) 
 		return ret;
 
-/* 
- * Set up the overlay if required -- be sure to set the overlay view to be
- * coincident with the plot view.
- */
+/* Manage the overlay */
 
- 	if (tfp->overlay_plot_base == True) {
-
-		strcpy(buffer,lnew->base.name);
-		strcat(buffer,".Overlay");
-		subret = _NhlCreateChild(&tmpid,buffer,overlayLayerClass,
-					 new,
-					 NhlNvpXF,lnew->view.x,
-					 NhlNvpYF,lnew->view.y,
-					 NhlNvpWidthF,lnew->view.width,
-					 NhlNvpHeightF,lnew->view.height,
-					 NULL);
-		ret = MIN(ret,subret);
-
-		if (ret < WARNING ||
-		    (tfp->overlay_object = _NhlGetLayer(tmpid)) == NULL) {
-			e_text = "%s: overlay creation failure";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
-		}
-	}
+	subret = _NhlManageOverlay(&irp->overlay_object,new,req,
+			       True,NULL,0,entry_name);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
 
 	return ret;
 }
@@ -348,81 +332,23 @@ static NhlErrorTypes IrregularPlotSetValues
 #endif
 {
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
 	char			*entry_name = "IrregularPlotSetValues";
-	IrregularPlotLayer	lnew = (IrregularPlotLayer) new;
-	IrregularPlotLayer	lold = (IrregularPlotLayer) old;
-	IrregularPlotLayerPart	*irp = &(lnew->irrplot);
-	TransformLayerPart	*tfp = &(lnew->trans);
-        NhlSArg			sargs[16];
-        int			nargs = 0;
+	IrregularPlotLayer	inew = (IrregularPlotLayer) new;
+	IrregularPlotLayerPart	*irp = &(inew->irrplot);
 
-/* 
- * Warn if user tries to modify overlay base status - then revert to
- * status at initialization.
- */
-	
-	if (lnew->trans.overlay_plot_base != lold->trans.overlay_plot_base) {
-		e_text = "%s: Attempt to modify create only resource";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		ret = MIN(ret,WARNING);
-		lnew->trans.overlay_plot_base = lold->trans.overlay_plot_base;
-	}
 
-/*
- * If there is an overlay and this is the base plot propagate any view
- * change to the overlay object. Else if this is an overlay plot 
- * set the view to the overlay's view, warning of any attempt to set it
- * to something different. Note that when the Overlay manager calls 
- * SetValues for an overlay plot it always sets the view identical to
- * its own view.
- */
-
-	if (tfp->overlay_object != NULL && tfp->overlay_plot_base) {
-		if (lnew->view.x != lold->view.x)
-			NhlSetSArg(&sargs[nargs++],NhlNvpXF,lnew->view.x);
-		if (lnew->view.y != lold->view.y)
-			NhlSetSArg(&sargs[nargs++],NhlNvpYF,lnew->view.y);
-		if (lnew->view.width != lold->view.width)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpWidthF,lnew->view.width);
-		if (lnew->view.height != lold->view.height)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpHeightF,lnew->view.height);
-		
-		subret = _NhlALSetValuesChild(tfp->overlay_object->base.id,
-					      new,sargs,nargs);
-
-		if ((ret = MIN(subret, ret)) < WARNING) {
-			e_text = "%s: error setting overlay object view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
-		}
-	}
-	else if (tfp->overlay_object != NULL) {
-		
-		ViewLayer	vl = (ViewLayer) (tfp->overlay_object);
-		
-		if (lnew->view.x != vl->view.x ||
-		    lnew->view.y != vl->view.y ||
-		    lnew->view.width != vl->view.width ||
-		    lnew->view.height != vl->view.height) {
-
-			lnew->view.x = vl->view.x;
-			lnew->view.y = vl->view.y;
-			lnew->view.width = vl->view.width;
-			lnew->view.height = vl->view.height;
-
-			e_text="%s: attempt to set overlay plot view ignored";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			ret = MIN(ret,WARNING);
-		}
-	}
 
 /* Set up the Irregular transformation */
 
-	subret = SetUpTransObj(lnew, (IrregularPlotLayer) old, False);
+	subret = SetUpTransObj(inew, (IrregularPlotLayer) old, False);
 	ret = MIN(ret,subret);
+
+/* Manage the overlay */
+
+	subret = _NhlManageOverlay(&irp->overlay_object,new,old,
+			       False,NULL,0,entry_name);
+	if ((ret = MIN(ret,subret)) < WARNING) 
+		return ret;
 
 	return ret;
 }
@@ -448,15 +374,30 @@ static NhlErrorTypes IrregularPlotDestroy
 Layer inst;
 #endif
 {
+	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+#if 0
+	char			*e_text;
+	char			*entry_name = "LogLinPlotDestroy";
+#endif
 	IrregularPlotLayerPart	*irp = &(((IrregularPlotLayer) inst)->irrplot);
-	TransformLayerPart	*lltp = &(((TransformLayer) inst)->trans);
-	NhlErrorTypes		ret = NOERROR;
+	TransformLayerPart	*irtp = &(((TransformLayer) inst)->trans);
 
-	if (lltp->overlay_plot_base && lltp->overlay_object != NULL) {
-		(void) _NhlDestroyChild(lltp->overlay_object->base.id,inst);
+
+	if (irtp->overlay_status == _tfCurrentOverlayMember) {
+		subret = NhlRemoveFromOverlay(
+				irtp->overlay_object->base.parent->base.id,
+					      inst->base.id,False);
+		if ((ret = MIN(subret,ret)) < WARNING)
+			return FATAL;
 	}
-	if (lltp->trans_obj != NULL) {
-		(void) _NhlDestroyChild(lltp->trans_obj->base.id,inst);
+
+	if (irp->overlay_object != NULL) {
+		(void) _NhlDestroyChild(irp->overlay_object->base.id,inst);
+		irp->overlay_object = NULL;
+	}
+	if (irtp->trans_obj != NULL) {
+		(void) _NhlDestroyChild(irtp->trans_obj->base.id,inst);
+		irtp->trans_obj = NULL;
 	}
 	
 	return(ret);
@@ -484,12 +425,7 @@ static NhlErrorTypes IrregularPlotDraw
         Layer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	char			*e_text;
-	char			*entry_name = "IrregularPlotDraw";
-	IrregularPlotLayer	ll = (IrregularPlotLayer) layer;
-	IrregularPlotLayerPart	*irp = &(ll->irrplot);
-	TransformLayerPart	*tfp = &(ll->trans);
+	NhlErrorTypes		ret = NOERROR;
 
 	return ret;
 }
@@ -498,9 +434,7 @@ static NhlErrorTypes IrregularPlotDraw
  * Function:	SetUpTransObjs
  *
  * Description: Sets up the Irregular transformation object for the generic
- *		Irregular plot object. Note that since this trans object
- *		does not require any dynamic memory, the same trans object
- *		persists for the life of the IrregularPlot object.
+ *		Irregular plot object. 
  *
  * In Args:	xnew	new instance record
  *		xold	old instance record if not initializing
