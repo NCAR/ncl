@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.85 2002-01-08 23:48:55 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.86 2002-06-03 22:24:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4722,7 +4722,6 @@ static NhlErrorTypes ManageTickMarks
 	else {
  		yron = True;
 		yr_labels_on = True;
-		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYROn,True);
 		if (yrcount == ylcount &&
 			 ! memcmp(ylvalues,yrvalues,yrcount * sizeof(float))) {
 			for (i = 0; i < yrcount; i++) {
