@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.181 2004-12-31 19:04:16 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.182 2005-02-15 22:03:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8451,73 +8451,73 @@ begin
           print("of curves, or be one.")
           return
         end if
-      end if                            ; Check if gsnYRefLine set.
 ;
 ; Determine color of Y reference line(s).
 ;
-      set_yref_line_color = False
-      if(isatt(res2,"gsnYRefLineColors"))
-        yref_line_color = get_res_value(res2,"gsnYRefLineColors","foreground")
-        set_yref_line_color = True
-      else
-        if(isatt(res2,"gsnYRefLineColor"))
-          yref_line_color = get_res_value(res2,"gsnYRefLineColor","foreground")
+        set_yref_line_color = False
+        if(isatt(res2,"gsnYRefLineColors"))
+          yref_line_color = get_res_value(res2,"gsnYRefLineColors","foreground")
           set_yref_line_color = True
         else
-          yref_line_color = "foreground"
+          if(isatt(res2,"gsnYRefLineColor"))
+            yref_line_color = get_res_value(res2,"gsnYRefLineColor","foreground")
+            set_yref_line_color = True
+          else
+            yref_line_color = "foreground"
+          end if
         end if
-      end if
-      if(set_yref_line_color) then
-        if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
-                 dimsizes(yref_line_color).eq.1))
-          print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
-          print("or the same number of colors as there are reference lines.")
-          print("Will use the foreground color.") 
-          yref_line_color = "foreground"
+        if(set_yref_line_color) then
+          if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
+                   dimsizes(yref_line_color).eq.1))
+            print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
+            print("or the same number of colors as there are reference lines.")
+            print("Will use the foreground color.") 
+            yref_line_color = "foreground"
+          end if
         end if
-      end if
 ;
 ; Determine dash pattern of Y reference line(s).
 ;
-      if(isatt(res2,"gsnYRefLineDashPattern"))
-        yref_line_pattern = res2@gsnYRefLineDashPattern(0)
-        delete(res2@gsnYRefLineDashPattern)
-      else
-        if(isatt(res2,"gsnYRefLineDashPatterns"))
-          yref_line_pattern = res2@gsnYRefLineDashPatterns
-          delete(res2@gsnYRefLineDashPatterns)
-          if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
-                   dimsizes(yref_line_pattern).eq.1))
-            print("gsn_csm_xy: Warning: you must specify either one Y reference line dash pattern")
-            print("or the same number of dash patterns as there are reference lines.")
-            print("Will use a solid line.") 
+        if(isatt(res2,"gsnYRefLineDashPattern"))
+          yref_line_pattern = res2@gsnYRefLineDashPattern(0)
+          delete(res2@gsnYRefLineDashPattern)
+        else
+          if(isatt(res2,"gsnYRefLineDashPatterns"))
+            yref_line_pattern = res2@gsnYRefLineDashPatterns
+            delete(res2@gsnYRefLineDashPatterns)
+            if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
+                     dimsizes(yref_line_pattern).eq.1))
+              print("gsn_csm_xy: Warning: you must specify either one Y reference line dash pattern")
+              print("or the same number of dash patterns as there are reference lines.")
+              print("Will use a solid line.") 
+              yref_line_pattern = 0  ; defaults to solid
+            end if
+          else
             yref_line_pattern = 0  ; defaults to solid
           end if
-        else
-          yref_line_pattern = 0  ; defaults to solid
         end if
-      end if
 ;
 ; Determine thickness of Y reference line(s).
 ;
-      if(isatt(res2,"gsnYRefLineThicknessF"))
-        yref_line_thickness = res2@gsnYRefLineThicknessF(0)
-        delete(res2@gsnYRefLineThicknessF)
-      else
-        if(isatt(res2,"gsnYRefLineThicknesses"))
-          yref_line_thickness = res2@gsnYRefLineThicknesses
-          delete(res2@gsnYRefLineThicknesses)
-          if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
-                   dimsizes(yref_line_thickness).eq.1))
-            print("gsn_csm_xy: Warning: you must specify either one Y reference line thickness")
-            print("or the same number of line thicknesses as there are reference lines.")
-            print("Will use a thickness of 1.") 
+        if(isatt(res2,"gsnYRefLineThicknessF"))
+          yref_line_thickness = res2@gsnYRefLineThicknessF(0)
+          delete(res2@gsnYRefLineThicknessF)
+        else
+          if(isatt(res2,"gsnYRefLineThicknesses"))
+            yref_line_thickness = res2@gsnYRefLineThicknesses
+            delete(res2@gsnYRefLineThicknesses)
+            if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
+                     dimsizes(yref_line_thickness).eq.1))
+              print("gsn_csm_xy: Warning: you must specify either one Y reference line thickness")
+              print("or the same number of line thicknesses as there are reference lines.")
+              print("Will use a thickness of 1.") 
+              yref_line_thickness = 1.0
+            end if
+          else
             yref_line_thickness = 1.0
           end if
-        else
-          yref_line_thickness = 1.0
         end if
-      end if
+      end if                            ; Check if gsnYRefLine set.
 ;
 ; Check if we want a bar chart.
 ;
@@ -9364,7 +9364,8 @@ begin
     end if
 
 ;
-; Get viewport coordinates of first plot, to use for second plot.
+; Get viewport coordinates, tickmark lengths, and font heights of
+; first plot to use for second plot.
 ;
     getvalues xy1
       "vpHeightF"               : vph      ; Get assorted info from previous
@@ -9372,6 +9373,11 @@ begin
       "vpXF"                    : vpx
       "vpYF"                    : vpy
                                             ; Bottom X axis stuff
+      "trXMinF"                 : trxmin 
+      "trXMaxF"                 : trxmax
+      "trYMinF"                 : trymin 
+      "trYMaxF"                 : trymax
+
       "tiXAxisFontHeightF"      : xfonth
       "tmXBLabelFontHeightF"    : xbfonth
       "tmXBMajorLengthF"        : xmjlength
@@ -9391,6 +9397,10 @@ begin
 ; If the user is setting any of these, then use these settings and
 ; not the ones we just retrieved.
 ;
+    trxmin     = get_res_value(locRes2,"trXMinF",                 trxmin)
+    trxmax     = get_res_value(locRes2,"trXMaxF",                 trxmax)
+    trymin     = get_res_value(locRes2,"trYMinF",                 trymin)
+    trymax     = get_res_value(locRes2,"trYMaxF",                 trymax)
     xfonth     = get_res_value(locRes2,"tiXAxisFontHeightF",      xfonth)
     xbfonth    = get_res_value(locRes2,"tmXBLabelFontHeightF",    xbfonth)
     xmjlength  = get_res_value(locRes2,"tmXBMajorLengthF",        xmjlength)
@@ -9428,6 +9438,8 @@ begin
 ; Set some resources that will apply if you have two Y axes.
 ;
     if(axis.eq."y".or.axis.eq."xy") then
+      locRes2@trXMinF                 = trxmin
+      locRes2@trXMaxF                 = trxmax
       locRes2@tmYRLabelsOn            = True   ; Turn on right axis label
       locRes2@tmYROn                  = True   ; Turn on right tick marks
       locRes2@tmYUseLeft              = False  
@@ -9462,6 +9474,8 @@ begin
 ; Set some resources that will apply if you have two X axes.
 ;
     if(axis.eq."x".or.axis.eq."xy") then
+      locRes2@trYMinF                 = trymin
+      locRes2@trYMaxF                 = trymax
       locRes2@tmXTLabelsOn            = True   ; Turn on top axis label
       locRes2@tmXTOn                  = True   ; Turn on top tick marks
       locRes2@tmXUseBottom            = False  
