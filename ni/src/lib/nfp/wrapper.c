@@ -36,6 +36,7 @@ extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof2data_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
+extern NhlErrorTypes eof_varimax2_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
 extern NhlErrorTypes uv2vr_cfd_W(void);
 extern NhlErrorTypes uv2dv_cfd_W(void);
@@ -636,7 +637,7 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(f2fshv_W,args,"f2fshv",nargs);
 /*
- * Register "eof".
+ * Register "EOF".
  *
  * Create private argument array.
  */
@@ -647,10 +648,10 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_W,args,"eof",nargs);
+    NclRegisterFunc(eof_W,args,"EOF",nargs);
 
 /*
- * Register "eof_ts".
+ * Register "EOF_TS".
  *
  * Create private argument array.
  */
@@ -661,7 +662,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_ts_W,args,"eof_ts",nargs);
+    NclRegisterFunc(eof_ts_W,args,"EOF_TS",nargs);
 /*
  * Register "eofcov".
  *
@@ -782,6 +783,18 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     NclRegisterFunc(eof_varimax_W,args,"eof_varimax",nargs);
+
+/*
+ * Register "EOF_VARIMAX".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterFunc(eof_varimax2_W,args,"EOF_VARIMAX",nargs);
 
 /*
  * Register "eof2data".
