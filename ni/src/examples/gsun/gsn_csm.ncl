@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.133 2003-08-01 16:59:18 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.134 2003-08-01 18:47:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3179,7 +3179,12 @@ begin
   meridian = minlon + (maxlon - minlon)/2.
   mpres                        = True
   mpres@mpProjection           = "LambertConformal"
-  mpres@mpLimitMode            = "LatLon"
+  if(isatt(res,"mpLimitMode")) then
+    need_to_set_limits = False
+  else
+    need_to_set_limits = True
+    mpres@mpLimitMode  = "LatLon"
+  end if
   mpres@mpLambertMeridianF     = get_res_value_keep(res, \
                                  "mpLambertMeridianF",meridian)
   if (minlat.lt.0) then
@@ -3203,17 +3208,20 @@ begin
   end if
 
 ;
-; Make sure there's some space around the area we want to mask.
+; If the user hasn't already set the limits of the map, then set them
+; here. Make sure there's some space around the area we want to mask.
 ;
-  if(is_nh)
-    mpres@mpMinLatF = max((/minlat-0.5,  0/))
-    mpres@mpMaxLatF = min((/maxlat+0.5, 90/))
-  else
-    mpres@mpMinLatF = max((/minlat-0.5,-90/))
-    mpres@mpMaxLatF = min((/maxlat+0.5,  0/))
+  if(need_to_set_limits) then
+    if(is_nh)
+      mpres@mpMinLatF = max((/minlat-0.5,  0/))
+      mpres@mpMaxLatF = min((/maxlat+0.5, 90/))
+    else
+      mpres@mpMinLatF = max((/minlat-0.5,-90/))
+      mpres@mpMaxLatF = min((/maxlat+0.5,  0/))
+    end if
+    mpres@mpMinLonF = minlon-0.5
+    mpres@mpMaxLonF = maxlon+0.5
   end if
-  mpres@mpMinLonF = minlon-0.5
-  mpres@mpMaxLonF = maxlon+0.5
 
 ;
 ; These draw order resources are necessary to make sure the map
