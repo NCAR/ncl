@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.7 1993-02-03 04:26:40 clyne Exp $
+.\"	$Id: rascat.m,v 1.8 1993-02-20 00:36:26 clyne Exp $
 .\"
 .TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -50,16 +50,6 @@ file formats
 will perform format conversion such that 
 the resulting concatenated file will be in the format
 of the first file processed. 
-.B rascat 
-understands the following file name extensions: 
-.BR .a60 , 
-.BR .avs , 
-.BR .hdf ,
-.BR .nrif ,
-.BR .sgi ,
-.BR .sun ,
-and
-.BR .xwd .
 .LP
 Input files must all have the same spatial resolution and have the 
 same depth; 8-bit and 24-bit files may not be intermixed. Furthermore,
@@ -67,6 +57,10 @@ if an input file contains multiple images each image in that file must
 have the same spatial resolution and be of the same depth.
 .LP
 Currently, only 8-bit-indexed and 24-bit-direct color encodings are supported.
+.LP
+See 
+.B ras_formats(5NCARG)
+for a list of supported image formats.
 .SH OPTIONS
 .TP
 .B \-help
@@ -75,7 +69,10 @@ Print a usage message and exit.
 .BI \-ifmt " format"
 Specify the input file format. 
 .I format
-is one of the aforementioned file name extensions (without the ".", e.g. 
+is one of the file name extensions discussed 
+in
+.B ras_formats(5NCARG) 
+(without the ".", e.g. 
 .BR xwd). 
 When this option is 
 specified file name extensions are not necessary and are ignored if present.
@@ -222,7 +219,8 @@ is extracted and written to the file
 .IP
 % rascat -window 512 512 0 0 foo.sun > foo.512x512.sun
 .SH "SEE ALSO"
-.BR ras_palette(5NCARG)
+.BR ras_palette(5NCARG),
+.BR ras_formats(5NCARG)
 .br
 .ne 5
 .SH CAVEATS
