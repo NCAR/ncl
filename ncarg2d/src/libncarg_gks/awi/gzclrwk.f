@@ -1,7 +1,7 @@
 C
-C	$Id: gzclrwk.f,v 1.1 1998-03-13 22:10:24 dbrown Exp $
+C	$Id: gzclrwk.f,v 1.2 1998-03-19 04:46:20 dbrown Exp $
 C
-      SUBROUTINE GZCLRWK(WKID)
+      SUBROUTINE GZCLRWK(WKID,COFL)
 C
 C  CLEAR WORKSTATION
 C
