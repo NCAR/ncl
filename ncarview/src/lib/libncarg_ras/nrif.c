@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.17 1993-06-03 15:15:56 clyne Exp $
+ *	$Id: nrif.c,v 1.18 1993-06-24 17:08:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -496,6 +496,7 @@ _NrifReadDirectRLE(ras)
 	char		*errmsg = "_NrifReadDirectRLE(\"%s\")";
 	int		x, y, length;
 	NrifInfo	*dep;
+	unsigned char	*cptr;
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -525,16 +526,24 @@ _NrifReadDirectRLE(ras)
 		ras->data = (unsigned char *)ras_calloc ((unsigned) ras->length, 1);
 	}
 
-	for(length=0, y=0; y<ras->ny; y++)
+	for(length=0, y=0, cptr=ras->data; y<ras->ny; y++)
 	for(x=0; x<ras->nx; x++) {
 		if (length == 0) {
 		status = fread((char *)buf, 1, 4, ras->fp);
 			if (status != 4) return(RAS_EOF);
 			length = buf[0];
 		}
+#ifdef	DEAD
+/*
+ * this code is too slow :-(
+ */
 		DIRECT_RED(ras,x,y)	= buf[1];
 		DIRECT_GREEN(ras,x,y)	= buf[2];
 		DIRECT_BLUE(ras,x,y)	= buf[3];
+#endif
+		*cptr++ = buf[1];
+		*cptr++ = buf[2];
+		*cptr++ = buf[3];
 		length--;
 	}
 
@@ -929,7 +938,7 @@ _NrifWriteDirectRLE(ras)
 	int		status;
 	int		x, y, runx, length;
 	int		image_length = 0;
-	unsigned char	*p1, r1, g1, b1, *p2, r2, g2, b2;
+	unsigned char	*cptr1, *cptr2;
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -949,18 +958,22 @@ _NrifWriteDirectRLE(ras)
 		return(RAS_ERROR);
 	}
 	
-	for(y=0; y<ras->ny; y++) {
-	for(x=0; x<ras->nx; x+=length) {
-		p1 = &DIRECT_RED(ras, x, y);
-		r1 = *p1++; g1 = *p1++; b1 = *p1++;
-		for(runx=x,length=0;length<255&&runx<ras->nx;runx++,length++) {
+	for(y=0, cptr1=ras->data; y<ras->ny; y++) {
+	for(x=0; x<ras->nx; x+=length, cptr1+=(length*3)) {
+		for(
+			runx=x+1,length=1,cptr2=cptr1+3;
+			length<255&&runx<ras->nx;
+			runx++,length++,cptr2+=3) {
+
 			/*
 			(void) fprintf(stderr,
 			"Comparing x=%d to runx=%d (len=%d)\n",x,runx,length);
 			*/
-			p2 = &DIRECT_RED(ras, runx, y);
-			r2 = *p2++; g2 = *p2++; b2 = *p2++;
-			if (r1!=r2 || g1!=g2 || b1!=b2) break;
+			if (
+				cptr1[0] != cptr2[0] || /* compare reds */
+				cptr1[1] != cptr2[1] ||	/* compare greens */
+				cptr1[2] != cptr2[2]	/* compare blues */
+			) break;
 		}
 
 		/*
@@ -977,9 +990,9 @@ _NrifWriteDirectRLE(ras)
 		}
 
 		tmpbuf[image_length++] = length;
-		tmpbuf[image_length++] = r1;
-		tmpbuf[image_length++] = g1;
-		tmpbuf[image_length++] = b1;
+		tmpbuf[image_length++] = cptr1[0];
+		tmpbuf[image_length++] = cptr1[1];
+		tmpbuf[image_length++] = cptr1[2];
 	}}
 
 	/* Write the header. */
