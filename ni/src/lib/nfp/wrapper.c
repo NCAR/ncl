@@ -27,6 +27,7 @@ extern NhlErrorTypes eof_W(void);
 extern NhlErrorTypes eof_ts_W(void);
 extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
+extern NhlErrorTypes eofcov_tr_W(void);
 extern NhlErrorTypes eofcov_pcmsg_W(void);
 extern NhlErrorTypes eofcor_pcmsg_W(void);
 extern NhlErrorTypes eofcov_ts_W(void);
@@ -393,6 +394,9 @@ extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
 extern NhlErrorTypes output_gif_W(void);
+/*
+extern NhlErrorTypes attcreate_W(void);
+*/
 extern NhlErrorTypes nice_mnmxintvl_W(void);
 extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
@@ -658,7 +662,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(eof_ts_W,args,"eof_ts",nargs);
-
 /*
  * Register "eofcov".
  *
@@ -671,6 +674,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(eofcov_W,args,"eofcov",nargs);
+/*
+ * Register "eofcov_tr".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcov_tr_W,args,"eofcov_tr",nargs);
 /*
  * Register "eofcov_pcmsg".
  *
@@ -5197,6 +5213,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);   nargs++;
     NclRegisterProc(output_gif_W, args, "output_gif", nargs);
 
+/*
+ *  Register attcreate.
+ */
+	/*
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);   nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);   nargs++;
+    SetArgTemplate(args, nargs, "graphic", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
+    NclRegisterFunc(attcreate_W, args, "attcreate", nargs);
+	*/
 /*
  *  Register nice_mnmxintvl.
  */

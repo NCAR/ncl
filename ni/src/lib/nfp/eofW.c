@@ -29,7 +29,7 @@ extern void NGCALLF(dtdrvprc,DTDRVPRDC)(double *, int *, int *, int *, int *,
                                         double *, int *, double *, double *,
                                         float *, double *, int *, int *,
                                         double *, int *, double *,
-                                        long long int *, double *, int *,
+                                        int *, double *, int *,
                                         int *, int *, int *, double *,
                                         double *, double *, double *,
                                         double *, double *, double *, double *,
@@ -62,7 +62,7 @@ NhlErrorTypes eof_W( void )
  * Various.
  */
   double pcrit = 50.;
-  int call_transpose, irevert = 0;
+  int call_transpose, irevert = 1;
 
 /*
  * Work array variables.
@@ -70,8 +70,9 @@ NhlErrorTypes eof_W( void )
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
   double *xdata, *con, *pcx, *xdvar, *xvar, *xsd;
   int   *iwork, *ifail;
-  int lwork, liwork, lifail, lweval;
-  long long int lcssm;
+  int lwork, liwork, lifail, lweval, lcssm;
+  long long int llcssm;
+
 /*
  * Attribute variables
  */
@@ -195,7 +196,7 @@ NhlErrorTypes eof_W( void )
   else {
         call_transpose = 1;
   }
-  call_transpose = 0;
+
 /*
  * Create some work arrays.  This is necessary to avoid having
  * these arrays created dynamically in the Fortran file (which makes
@@ -205,20 +206,21 @@ NhlErrorTypes eof_W( void )
  * just calculated slightly differently.
  */
   if(call_transpose) {
-    lcssm  = nobs*(nobs+1)/2;
-    lwork  = 8*nobs;
-    liwork = 5*nobs;
-    lifail = nobs;
+    lcssm  = nrow*(nrow+1)/2;
+    lwork  = 8*nrow;
+    liwork = 5*nrow;
+    lifail = nrow;
     lweval = nrow;
+    cssm   = (double *)calloc(lcssm,sizeof(double));
   }
   else {
-    lcssm  = msta*(msta+1)/2;
+    llcssm = msta*(msta+1)/2;
     lwork  = 8*msta;
     liwork = 5*msta;
     lifail = msta;
     lweval = lifail;
+    cssm   = (double *)calloc(llcssm,sizeof(double));
   }
-  cssm   = (double *)calloc(lcssm,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   weval  = (double *)calloc(lweval,sizeof(double));
   iwork  =    (int *)calloc(liwork,sizeof(int));
@@ -232,8 +234,8 @@ NhlErrorTypes eof_W( void )
  * Additional work arrays for transpose routine.
  */
   if(call_transpose) {
-    teof   = (double *)calloc(*neval * nobs,sizeof(double));
-    w2d    = (double *)calloc(*neval * nobs,sizeof(double));
+    teof   = (double *)calloc(*neval * nrow,sizeof(double));
+    w2d    = (double *)calloc(*neval * nrow,sizeof(double));
     wevec  = (double *)calloc(*neval * ncol,sizeof(double));
     xdata  = (double *)calloc(nrow * ncol,sizeof(double));
     xave   = (double *)calloc(ncol,sizeof(double));
@@ -263,7 +265,7 @@ NhlErrorTypes eof_W( void )
   else {
     NGCALLF(ddrveof,DDRVEOF)(dx,&nrow,&ncol,&nobs,&msta,
                              &missing_dx.doubleval,neval,eval,evec,pcvar,
-                             trace,&iopt,&jopt,cssm,&lcssm,work,&lwork,
+                             trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
                              weval,iwork,&liwork,ifail,&lifail,&ier);
   }
 /*
@@ -352,6 +354,7 @@ NhlErrorTypes eof_W( void )
 /*
  * pcvar is returned as float no matter what. 
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -485,6 +488,7 @@ NhlErrorTypes eof_W( void )
 /*
  * pcvar is returned as float no matter what.
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -1161,6 +1165,7 @@ NhlErrorTypes eofcov_W( void )
 /*
  * pcvar is returned as float no matter what. 
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -1250,6 +1255,7 @@ NhlErrorTypes eofcov_W( void )
 /*
  * pcvar is returned as float no matter what.
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -1585,6 +1591,7 @@ NhlErrorTypes eofcor_W( void )
 /*
  * pcvar is returned as float no matter what. 
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -1674,6 +1681,7 @@ NhlErrorTypes eofcor_W( void )
 /*
  * pcvar is returned as float no matter what.
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -1765,6 +1773,500 @@ NhlErrorTypes eofcor_W( void )
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
 }
+
+
+NhlErrorTypes eofcov_tr_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  double *dx;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  NclScalar missing_x, missing_rx, missing_dx;
+  NclBasicDataTypes type_x;
+  int nrow, ncol, nobs, msta, total_size_x;
+  int *neval, *opt, iopt = 0, jopt = 0, i, ier = 0;
+/*
+ * Various.
+ */
+  double pcrit = 50.;
+  int irevert = 1;
+
+/*
+ * Work array variables.
+ */
+  double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
+  double *xdata, *con, *pcx, *xdvar, *xvar, *xsd;
+  int   *iwork, *ifail;
+  int lwork, liwork, lifail, lweval, lcssm;
+/*
+ * Attribute variables
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  int *eof_function;
+  double *trace, *eval;
+  float *pcvar;
+  float *rtrace, *reval;
+/*
+ * Output array variables
+ */
+  double *evec;
+  float *revec;
+  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+/*
+ * Retrieve parameters
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+/*
+ * Get number of eigenvalues and eigen vectors to be computed.
+ */
+  neval = (int *)NclGetArgValue(
+            1,
+            3, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+/*
+ * Get option.
+ */
+  opt = (int *)NclGetArgValue(
+            2,
+            3, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+/*
+ * The grid coming in must be at least 2-dimensional.
+ */
+  if( ndims_x < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: The input array must be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+/*
+ * Check dimension sizes.
+ */
+  msta = 1;
+  for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
+  ncol = msta;
+  nobs = nrow = dsizes_x[ndims_x-1];
+
+  total_size_x = ncol * nrow;
+
+  if( msta < 1 || nobs < 1 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: The dimensions of the input array must both be at least 1");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+/*
+ * Coerce x to double if necessary.
+ */
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  if( dx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for coercing x array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for return variable.
+ */
+  dsizes_evec[0] = *neval;
+  for( i = 0; i <= ndims_x-2; i++ ) dsizes_evec[i+1] = dsizes_x[i];
+
+  total_size_evec = *neval * ncol;
+
+  evec = (double *)calloc(total_size_evec,sizeof(double));
+  if( evec == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for attributes.
+ */
+  trace = (double *)calloc(1,sizeof(double));
+  eval  = (double *)calloc(*neval,sizeof(double));
+  pcvar = (float *)calloc(*neval,sizeof(float));
+  if( trace == NULL || pcvar == NULL || eval == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for attribute arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Create some work arrays.  This is necessary to avoid having
+ * these arrays created dynamically in the Fortran file (which makes
+ * it Fortran 90, and unportable to some systems. 
+ */
+  lcssm  = nobs*(nobs+1)/2;
+  lwork  = 8*nobs;
+  liwork = 5*nobs;
+  lifail = nobs;
+  lweval = nrow;
+  cssm   = (double *)calloc(lcssm,sizeof(double));
+  work   = (double *)calloc(lwork,sizeof(double));
+  weval  = (double *)calloc(lweval,sizeof(double));
+  iwork  =    (int *)calloc(liwork,sizeof(int));
+  ifail  =    (int *)calloc(lifail,sizeof(int));
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
+      ifail == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Additional work arrays for transpose routine.
+ */
+  teof   = (double *)calloc(*neval * nobs,sizeof(double));
+  w2d    = (double *)calloc(*neval * nobs,sizeof(double));
+  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xave   = (double *)calloc(ncol,sizeof(double));
+  xvar   = (double *)calloc(ncol,sizeof(double));
+  xdvar  = (double *)calloc(ncol,sizeof(double));
+  con    = (double *)calloc(1,sizeof(double));
+  pcx    = (double *)calloc(1,sizeof(double));
+  xsd    = (double *)calloc(1,sizeof(double));
+  if( teof == NULL || w2d == NULL || wevec == NULL || xdata == NULL ||
+      xave == NULL || xvar == NULL || xdvar == NULL || con == NULL ||
+      pcx == NULL || xsd == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for additional work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran 77 version of appropriate routine.
+ */
+  NGCALLF(dtdrvprc,DTDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
+                              &missing_dx.doubleval,neval,eval,evec,pcvar,
+                              trace,&iopt,&jopt,&pcrit,&irevert,cssm,&lcssm,
+                              work,&lwork,iwork,&liwork,ifail,teof,weval,w2d,
+                              wevec,xdata,xave,xvar,xdvar,con,pcx,xsd,&ier);
+/*
+ * Check various possible error messages.
+ */
+  if (ier != 0) {
+    if (ier == -1) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
+    }
+    else if (ier == -88) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
+    }
+    else if (ier < 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The %d-th argument had an illegal value", abs(ier) );
+    }
+    else {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: %d eigenvectors failed to converge",ier);
+    }
+  }
+/*
+ * Free unneeded memory common to both routines.
+ */
+  if((void*)dx != x) NclFree(dx);
+  NclFree(work);
+  NclFree(cssm);
+  NclFree(weval);
+  NclFree(iwork);
+  NclFree(ifail);
+  NclFree(teof);
+  NclFree(weval);
+  NclFree(w2d);
+  NclFree(wevec);
+  NclFree(xdata);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
+  NclFree(con);
+  NclFree(pcx);
+  NclFree(xsd);
+
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    revec = (float*)calloc(total_size_evec,sizeof(float));
+    if( revec == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
+
+/*
+ * Free up double precision array.
+ */
+    NclFree(evec);
+/*
+ * Set up return value.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)revec,
+                              &missing_rx,
+                              ndims_x,
+                              dsizes_evec,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * pcvar is returned as float no matter what. 
+ */
+    dsizes[0] = *neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)pcvar,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "pcvar",
+               att_md,
+               NULL
+               );
+
+/*
+ * Only return the eigenvalues if the appropriate option has been set.
+ * That option hasn't been determined yet, so set the option to something
+ * here that won't get used.
+ */
+    if(*opt == -1) {
+/*
+ * Coerce eval to float.
+ */
+      reval = (float *)calloc(*neval,sizeof(float));
+      for( i = 0; i < *neval; i++ ) reval[i] = (float)eval[i];
+/*
+ * Free double precision eval.
+ */
+      NclFree(eval);
+
+      dsizes[0] = *neval;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)reval,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "eval",
+                 att_md,
+                 NULL
+                 );
+    }
+/*
+ * Only return the eigenvalues if the appropriate option has been set.
+ * That option hasn't been determined yet, so set the option to something
+ * here that won't get used.
+ */
+    if(*opt == -1) {
+/*
+ * Coerce trace to float.
+ */
+      rtrace = (float *)calloc(1,sizeof(float));
+      *rtrace = (float)(*trace);
+      dsizes[0] = 1;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)rtrace,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "trace",
+                 att_md,
+                 NULL
+                 );
+    }
+  }
+  else {
+/*
+ *  Return doubles.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)evec,
+                              &missing_dx,
+                              ndims_x,
+                              dsizes_evec,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    dsizes[0] = *neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)eval,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "eval",
+               att_md,
+               NULL
+               );
+/*
+ * pcvar is returned as float no matter what.
+ */
+    dsizes[0] = *neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)pcvar,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "pcvar",
+               att_md,
+               NULL
+               );
+
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)trace,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "trace",
+               att_md,
+               NULL
+               );
+  }
+
+/*
+ * eof_function is returned to indicate which function was used.
+ */
+  eof_function = (int *)calloc(1,sizeof(int));
+  *eof_function = 0;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)eof_function,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "eof_function",
+             att_md,
+             NULL
+             );
+
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
+
 
 
 NhlErrorTypes eofcov_pcmsg_W( void )
@@ -2050,6 +2552,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * pcvar is returned as float no matter what. 
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -2144,6 +2647,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * pcvar is returned as float no matter what.
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -2564,6 +3068,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * pcvar is returned as float no matter what. 
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
@@ -2653,6 +3158,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * pcvar is returned as float no matter what.
  */
+    dsizes[0] = *neval;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
