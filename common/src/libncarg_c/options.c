@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.10 1992-04-10 00:56:04 clyne Exp $
+ *	$Id: options.c,v 1.11 1992-04-10 15:17:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -528,6 +528,14 @@ ParseEnvOptions(envv, optds)
 			if (ParseOptionTable(
 				&argc, argv, (OptDescRec *) NULL) == -1) {
 
+				return(-1);
+			}
+
+			if (argc != 1) {
+				ESprintf(
+					EINVAL, "Environment variable %s='%s'",
+					envptr->env_var, arg_string
+				);
 				return(-1);
 			}
 		}
