@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.17 1995-10-13 15:12:32 haley Exp $
+.\"	$Id: idt.m,v 1.18 1995-10-16 15:15:31 haley Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -406,6 +406,8 @@ following into your .Xdefaults file:
 .B DISPLAY
 This is the standard X environment variable for specifying display
 name. If the translation output device is
+.B X11
+this variable MUST be set. 
 .TP
 .B FONTCAP
 Default fontcap specifier.
