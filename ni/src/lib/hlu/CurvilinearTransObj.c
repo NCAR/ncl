@@ -1,5 +1,5 @@
 /*
- *      $Id: CurvilinearTransObj.c,v 1.3 2004-12-23 20:07:24 dbrown Exp $
+ *      $Id: CurvilinearTransObj.c,v 1.4 2004-12-23 22:42:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1928,7 +1928,6 @@ static NhlErrorTypes CrDataToCompc
 			subret = GetFracCoordsD(crp,xt,yt,
 						&xo,&yo);
 			xout[i] = xo;
-			yout[i] = crp->compc_y_max - yo;
 			yout[i] = yo;
 			ret = MIN(ret,subret);
 			continue;
@@ -1941,7 +1940,6 @@ static NhlErrorTypes CrDataToCompc
 		subret = GetFracCoordsD(crp,xt,yt,&xo,&yo);
 
 		xout[i] = xo;
-		yout[i] = crp->compc_y_max - yo;
 		yout[i] = yo;
 			
 		ret = MIN(ret,subret);
