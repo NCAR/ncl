@@ -1,5 +1,5 @@
 C
-C       $Id: velvct.f,v 1.14 1996-01-19 17:21:43 dbrown Exp $
+C       $Id: velvct.f,v 1.15 1996-02-08 20:07:59 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -222,7 +222,8 @@ C X1,X2,Y1,Y2     - temporary viewport boundary
 C X3,Y3,X4,Y4     - temporary window boundary
 C SVM             - Size of Viewport, Metacode coords
 C LEN             - maximum vector size in Metacode coords
-C IDM             - integer dummy variable
+C RDA             - real dummy array variable
+C IDA             - integer dummy array variable
 C XP              - X coordinate position
 C YP              - Y coordinate position
 C TSZ             - text size
@@ -236,6 +237,7 @@ C
 C The character variables must be declared:
 C
       CHARACTER*(IPCHSZ) CSMNT, CSMXT
+      EXTERNAL VVDUMB
 C
 C This is an empirically derived factor for converting from the
 C WTSTR text size to PLCHHQ text
@@ -244,7 +246,10 @@ C
 C
 C Dummy variable
 C
-      DATA IDM / 0 /
+      DIMENSION RDA(1)
+      DIMENSION IDA(1)
+      DATA RDA / 0.0 /
+      DATA IDA / 0 / 
 C
 C -------------------------------------------------------------------
 C
@@ -419,9 +424,9 @@ C
 C
 C Initialize the vector plotting routine and plot the vectors
 C
-      CALL VVINIT(U,LU,V,LV,IDM,IDM,M,N,IDM,IDM)
+      CALL VVINIT(U,LU,V,LV,FDA,0,M,N,FDA,0)
 C
-      CALL VVECTR(U,V,IDM,IDM,IDM,IDM)
+      CALL VVECTR(U,V,FDA,IDA,VVDUMB,FDA)
 C
 C Restore original SET values, if required.
 C

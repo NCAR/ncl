@@ -1,5 +1,5 @@
 C
-C       $Id: vvtext.f,v 1.9 1996-01-19 17:21:51 dbrown Exp $
+C       $Id: vvtext.f,v 1.10 1996-02-08 20:08:00 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -148,7 +148,9 @@ C
      +           P5D2PI = 7.85398163397448) 
 C
 C --------------------------------------------------------------------
-      CHARACTER*10LBL
+C
+      CHARACTER*10 LBL
+      EXTERNAL VVDUMB
 C
 C Space height factors -- if the vector is large in comparison with
 C the text the space is calculated as a fraction (PSPFC1) of the 
@@ -160,7 +162,6 @@ C (PSPFC2) of the text height.
 C
       PARAMETER (PSPFC1=0.5,PSPFC2=2.0)
       REAL IAR(4)
-      INTEGER IDM
       DATA IDM / 0 /
 C
 C --------------------------------------------------------------------
@@ -198,9 +199,9 @@ C
       UVMG = VMG
       IF (WA .GT. 0.0) THEN
          IF (IAST .EQ. 0) THEN
-            CALL VVDRAW(0.5,0.5,0.5+WA,0.5,-WA,IDM,0,IDM,IDM,0)
+            CALL VVDRAW(0.5,0.5,0.5+WA,0.5,-WA,LBL,0,IDM,VVDUMB,0)
          ELSE
-            CALL VVDRFL(0.5,0.5,0.5+WA,0.5,-WA,IDM,0,IDM,IDM,0)
+            CALL VVDRFL(0.5,0.5,0.5+WA,0.5,-WA,LBL,0,IDM,VVDUMB,0)
          END IF
       END IF
       IF (WA .LE. 0.0) THEN
@@ -318,9 +319,9 @@ C
       CALL GSLWSC(WDLV)
       IF (WA .GT. 0.0) THEN
          IF (IAST .EQ. 0) THEN
-            CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+            CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,LBL,0,IDM,VVDUMB,0)
          ELSE
-            CALL VVDRFL(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+            CALL VVDRFL(CXA,CYA,CXA+WA,CYA,WA,LBL,0,IDM,VVDUMB,0)
          END IF
       END IF
 C
@@ -505,5 +506,9 @@ C
 C
 C Done
 C
+      RETURN
+      END
+C
+      SUBROUTINE VVDUMB()
       RETURN
       END

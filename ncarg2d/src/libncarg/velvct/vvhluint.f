@@ -1,5 +1,5 @@
 C
-C       $Id: vvhluint.f,v 1.3 1996-02-07 18:11:47 dbrown Exp $
+C       $Id: vvhluint.f,v 1.4 1996-02-08 20:07:59 dbrown Exp $
 C
 C This module contains interface routines for VectorPlot and VecAnno
 C
@@ -111,6 +111,9 @@ C
 C
 C --------------------------------------------------------------------
 C
+      CHARACTER*1  CDM
+      EXTERNAL VVDUMB
+C
       IAST = INT(ARS(1))
       UVMX = ARS(2)
       UVMN = ARS(3)
@@ -144,10 +147,10 @@ C
       ISP = IVPO
       IVPO = 1
       IF (IAST.EQ.0) THEN
-         CALL VVDRAW(XB,YB,XE,YE,VL,IDM,0,IDM,IDM,0)
+         CALL VVDRAW(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       ELSE
          CALL VVINFA()
-         CALL VVDRFL(XB,YB,XE,YE,VL,IDM,0,IDM,IDM,0)
+         CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP
 C
@@ -264,6 +267,9 @@ C
 C
 C --------------------------------------------------------------------
 C
+      CHARACTER*1  CDM
+      EXTERNAL VVDUMB
+C
       IAST = INT(ARS(1))
       UVMX = ARS(2)
       UVMN = ARS(3)
@@ -310,10 +316,10 @@ C
       ISP = IVPO
       IVPO = 1
       IF (IAST.EQ.0) THEN
-         CALL VVDRAW(XB,YB,XE,YE,VL,IDM,0,IDM,IDM,0)
+         CALL VVDRAW(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       ELSE
          CALL VVINFA()
-         CALL VVDRFL(XB,YB,XE,YE,VL,IDM,0,IDM,IDM,0)
+         CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP
 C
