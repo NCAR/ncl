@@ -1,8 +1,9 @@
 #
-#	$Id: yMakefile,v 1.2 1994-05-26 14:36:08 haley Exp $
+#	$Id: yMakefile,v 1.3 1994-07-27 22:54:08 haley Exp $
 #
 
-CSRCS = c_fspponts.c
+CSRCS = c_fspponts.c c_sprevx.c c_splogy.c c_fspline.c c_fcoord1.c c_fcoord2.c\
+	c_fcoord.c c_fspcurve.c
 
 SED_SRCS = c_spps.c
 
