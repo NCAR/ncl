@@ -1,6 +1,6 @@
 
 #
-#      $Id: multid_data_c.sh,v 1.1 1995-01-28 01:53:44 ethan Exp $
+#      $Id: multid_data_c.sh,v 1.2 1997-09-02 20:27:26 ethan Exp $
 #
 #########################################################################
 #									#
@@ -114,6 +114,10 @@ sed \
 -e 's/FUNCNAME/Xor/g' \
 -e 's/TFUNC/xor/g' \
 MultiDValOp.c.sed >> .tmp.$$
+
+sed \
+-e 's/FUNCNAME/Mat/g' \
+MatMulDValOp.c.sed >> .tmp.$$
 
 if [ ! $? ]
 then

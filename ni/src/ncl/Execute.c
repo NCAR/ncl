@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.96 1997-08-20 22:56:13 ethan Exp $
+ *      $Id: Execute.c,v 1.97 1997-09-02 20:26:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -56,41 +56,57 @@ extern void _NclHLUVarValChange(
 NhlArgVal cbdata, NhlArgVal udata
 #endif
 );
+typedef struct exe_stack_node {
+        NclValue *ptr;
+        int *lptr;
+        char **fptr;
+        NclValue *machine;
+        struct exe_stack_node *next;
+} ExeStackNode;
+ExeStackNode handle = { NULL,NULL,NULL,NULL,NULL};
+NclValue *ptr;
+int *lptr;
+char **fptr;
+NclValue *machine;
+NhlErrorTypes estatus = NhlNOERROR;
+static int level = 0;
 
-NclExecuteReturnStatus _NclExecute
-#if	NhlNeedProto
-(unsigned long start_offset)
-#else 
-(start_offset) 
-	unsigned long start_offset;
+
+static void _NclPushExecute
+#if     NhlNeedProto
+(void)
+#else
+()
 #endif
 {
-	NclValue *ptr;
-	int *lptr;
-	char **fptr;
-	NclValue *machine;
-	NhlErrorTypes estatus = NhlNOERROR;
-	static int level = 0;
+        ExeStackNode *tmp = handle.next;
 
-	machine = _NclGetCurrentMachine();
-	ptr = machine + start_offset;
-	lptr = _NclGetCurrentLineRec() + start_offset;
-	fptr = _NclGetCurrentFileNameRec() + start_offset;
-	level++;
+        handle.next = (ExeStackNode*)NclMalloc(sizeof(ExeStackNode));
+        handle.next->ptr = ptr;
+        handle.next->lptr = lptr;
+        handle.next->fptr= fptr;
+        handle.next->machine= machine;
+        handle.next->next= tmp;
+}
+static void _NclPopExecute
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        ExeStackNode *tmp = handle.next;
 
-	while(1) {
-		switch(*ptr) {
-/****************************
-* Zero Operand Instructions *
-****************************/
-			case STOPSEQ:
-				level--;
-				return(Ncl_STOPS);
-			case ENDSTMNT_OP:
-			case NOOP :
-				break;
-			case NAMED_INT_SUBSCRIPT_OP :
-			case INT_SUBSCRIPT_OP : {
+        if(handle.next != NULL) {
+                ptr = handle.next->ptr;
+                lptr = handle.next->lptr;
+                fptr =  handle.next->fptr;
+                machine = handle.next->machine;
+                handle.next= handle.next->next;
+                NclFree(tmp);
+        }
+}
+void CallINT_SUBSCRIPT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry data1;
 				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort); 
@@ -154,16 +170,16 @@ NclExecuteReturnStatus _NclExecute
 							_NclCleanUpStack(1);
 					}
 				}
-				break;
 			}
-			case DEFAULT_RANGE_OP : {
+
+void CallDEFAULT_RANGE_OP(void) {
 				NclStackEntry data;
 				data.kind = NclStk_NOVAL;
 				data.u.offset = 0;
 				estatus = _NclPush(data);
-				break;
 			}
-			case RANGE_INDEX_OP : {
+
+void CallRANGE_INDEX_OP(void) {
 				NclStackEntry start;
 				NclStackEntry finish;
 				NclStackEntry stride;
@@ -279,9 +295,9 @@ NclExecuteReturnStatus _NclExecute
 				} else if(estatus == NhlFATAL)  {
 					_NclCleanUpStack(1);
 				}
-				break;
 			}
-			case SINGLE_INDEX_OP : {
+
+void CallSINGLE_INDEX_OP(void) {
 				NclStackEntry data;
 				NclStackEntry data1;
 				NclMultiDValData val;
@@ -325,27 +341,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					estatus = NhlFATAL;
 				}
-				break;
 			}
-			case CRETURN_OP : {
-				level--;
-				return(Ncl_STOPS);
-			}
-			case RETURN_OP : {
-				NclStackEntry data;
-				NhlErrorTypes ret = NhlNOERROR;
-				data = _NclPop();
-				
-				ret = _NclPlaceReturn(data);
-				if(ret< NhlWARNING) {
-					estatus = NhlFATAL;
-				} else {
-					level--;
-					return(Ncl_STOPS);
-				}
-			}
-			case NAMED_COORD_SUBSCRIPT_OP : 
-			case COORD_SUBSCRIPT_OP : {
+
+void CallCOORD_SUBSCRIPT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry data1;
 				int mask = (int)(Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort); 
@@ -397,9 +395,9 @@ NclExecuteReturnStatus _NclExecute
 				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
 				}
-				break;
-			} 
-			case NEG_OP : {
+			}
+
+void CallNEG_OP(void) {
 				NclStackEntry data;
 				NclStackEntry operand;
 				operand = _NclPop();
@@ -412,8 +410,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case NOT_OP : {
+
+void CallNOT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry operand;
 				operand = _NclPop();
@@ -426,8 +424,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case MOD_OP : {
+
+void CallMOD_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -442,8 +440,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case OR_OP : {
+
+void CallOR_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -458,8 +456,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case AND_OP : {
+
+void CallAND_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -474,8 +472,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case XOR_OP : {
+
+void CallXOR_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -490,8 +488,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case LTSEL_OP : {
+
+void CallLTSEL_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -506,8 +504,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case GTSEL_OP : {
+
+void CallGTSEL_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -522,9 +520,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case PLUS_OP :
-			{
+
+void CallPLUS_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -539,9 +536,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-				break;
-			case MINUS_OP :
-			{
+
+void CallMINUS_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -556,9 +552,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-				break;
-			case MUL_OP :
-			{
+
+void CallMUL_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -573,9 +568,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-				break;
-			case MAT_OP :
-			{
+
+void CallMAT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -590,9 +584,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-				break;
-			case DIV_OP :
-			{
+
+void CallDIV_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -607,8 +600,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-				break;
-			case EXP_OP :{
+
+void CallEXP_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -623,8 +616,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case LE_OP : {
+
+void CallLE_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -639,8 +632,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case GE_OP : {
+
+void CallGE_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -655,8 +648,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case GT_OP : {
+
+void CallGT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -671,8 +664,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case LT_OP : {
+
+void CallLT_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -687,8 +680,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case EQ_OP : {
+
+void CallEQ_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -703,8 +696,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case NE_OP : {
+
+void CallNE_OP(void) {
 				NclStackEntry data;
 				NclStackEntry lhs;
 				NclStackEntry rhs;
@@ -719,9 +712,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 				}
 			}
-			break;
-			case GET_OBJ_OP :
-			{
+
+void CallGET_OBJ_OP(void) {
 				NclStackEntry obj_name;
 				NclStackEntry res_name;
 				NclStackEntry data_out;
@@ -765,11 +757,8 @@ NclExecuteReturnStatus _NclExecute
 				}
 				
 			}
-			break;
-/***************************
-* One Operand Instructions *
-***************************/
-			case FUNC_CALL_OP: {
+
+void CallFUNC_CALL_OP(void) {
 				NclSymbol *func = NULL;
 				int caller_level;
 
@@ -780,36 +769,29 @@ NclExecuteReturnStatus _NclExecute
 			/*
 			* Doesn't leave anything on the stack if an error has occured
 			*/	
+				_NclPushExecute();
 				estatus = _NclFuncCallOp(func,caller_level);
-				break;
+				_NclPopExecute();
 			}
-			case FPDEF:
-				ptr++;lptr++;fptr++;
-				break;
-			case JMP:
-			{
+
+void CallJMP(void) {
 				unsigned long offset;
 				ptr++;lptr++;fptr++;
 				offset = *ptr;	
 				ptr = machine + offset - 1;
 				lptr = _NclGetCurrentLineRec() + offset - 1;
 				fptr = _NclGetCurrentFileNameRec() + offset - 1;
-				break;
 			}
-			case ARRAY_LIT_OP :
-			{
+
+void CallARRAY_LIT_OP(void) {
 				NclStackEntry data;
 				ptr++;lptr++;fptr++;
 				estatus = _NclBuildArray(*ptr,&data);
 				if(estatus != NhlFATAL)
 					estatus = _NclPush(data);
-				break;
 			}
-			case PUSH_REAL_LIT_OP : 
-			case PUSH_LOGICAL_LIT_OP: 
-			case PUSH_INT_LIT_OP :
-			case PUSH_STRING_LIT_OP :
-			{
+
+void CallPUSH_STRING_LIT_OP(void) {
 				NclStackEntry data;
 			
 				NhlINITVAR(data);
@@ -822,9 +804,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					estatus  = NhlFATAL;
 				}
-				break;
 			}
-			case JMP_SCALAR_TRUE_OP: {
+
+void CallJMP_SCALAR_TRUE_OP(void) {
 				NclStackEntry data;
 				NclMultiDValData val;
 				unsigned long offset;
@@ -857,9 +839,9 @@ NclExecuteReturnStatus _NclExecute
 				if(estatus != NhlFATAL) {
 					estatus =  _NclPush(data);
 				}
-				break;
 			}
-			case JMP_SCALAR_FALSE_OP: {
+
+void CallJMP_SCALAR_FALSE_OP(void) {
 				NclStackEntry data;
 				NclMultiDValData val;
 				unsigned long offset;
@@ -892,9 +874,9 @@ NclExecuteReturnStatus _NclExecute
 				if(estatus != NhlFATAL) {
 					estatus = _NclPush(data);
 				}
-				break;
 			}
-			case JMPFALSE : {
+
+void CallJMPFALSE(void) {
 				NclStackEntry data;
 				NclMultiDValData val;
 				unsigned long offset;
@@ -934,9 +916,9 @@ NclExecuteReturnStatus _NclExecute
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Conditional statments (if and do while) require SCALAR logical values, see all and any functions");
 					estatus = NhlFATAL;
 				}
-				break;
 			}
-			case SET_OBJ_OP : {
+
+void CallSET_OBJ_OP(void) {
 				NclStackEntry data;
 				NclMultiDValData val;
 				int nres;
@@ -965,8 +947,8 @@ NclExecuteReturnStatus _NclExecute
 		
 				}
 			}
-				break;
-			case PROC_CALL_OP:{
+
+void CallPROC_CALL_OP(void) {
 				NclSymbol *proc = NULL;
 				int caller_level;
 
@@ -974,11 +956,12 @@ NclExecuteReturnStatus _NclExecute
 				proc = (NclSymbol*)(*ptr);
 			
 				caller_level = _NclFinishFrame();	
+				_NclPushExecute();
 				estatus = _NclProcCallOp(proc,caller_level);
+				_NclPopExecute();
 			}
-				break;
-			case INTRINSIC_FUNC_CALL:
-			{
+
+void CallINTRINSIC_FUNC_CALL(void) {
 				int i;
 				NclFrame *previous_fp;
 				int caller_level;
@@ -1034,9 +1017,8 @@ NclExecuteReturnStatus _NclExecute
 				}
 				ptr++;lptr++;fptr++;
 			}
-				break;
-			case INTRINSIC_PROC_CALL:
-			{
+
+void CallINTRINSIC_PROC_CALL(void) {
 				int i;
 				NclFrame *previous_fp;
 				int caller_level;
@@ -1089,8 +1071,8 @@ NclExecuteReturnStatus _NclExecute
 				}
 				ptr++;lptr++;fptr++;
 			}
-				break;
-			case DUP_TOFS: {
+
+void CallDUP_TOFS(void) {
 				NclStackEntry data;
 				NclStackEntry data_dup;
 				
@@ -1114,9 +1096,9 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 					break;
 				}
-				break;
 			}
-			case LOOP_VALIDATE_OP: {
+
+void CallLOOP_VALIDATE_OP(void) {
 					NclStackEntry end_val;
 					NclStackEntry inc_var;
 					NclStackEntry *tmp_ptr;
@@ -1246,8 +1228,8 @@ NclExecuteReturnStatus _NclExecute
 						}
 					}
 				}
-				break;
-			case LOOP_INC_OP: {
+
+void CallLOOP_INC_OP(void) {
 					NclStackEntry end_val;
 					NclStackEntry inc_var;
 					NclStackEntry *tmp_ptr;
@@ -1367,9 +1349,8 @@ NclExecuteReturnStatus _NclExecute
 						_NclDestroyObj((NclObj)end_val.u.data_obj);
 					}
 				}
-				break;
-			case PARAM_VAR_DIM_OP:
-			case VAR_DIM_OP: {
+
+void CallVAR_DIM_OP(void) {
 				NclSymbol *thesym;
 				long dim_num;
 				NclStackEntry data;
@@ -1446,8 +1427,8 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 			}
-			break;
-			case ASSIGN_VAR_DIM_OP: {
+
+void CallASSIGN_VAR_DIM_OP(void) {
 				NclSymbol *thesym = NULL;
 				long	dim_num;
 				char	*dim_name = NULL;
@@ -1543,10 +1524,8 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 			}
-			break;
-			case NEW_WM_OP:
-			case NEW_OP:
-			{	
+
+void CallNEW_OP(void) {
 				NclStackEntry size_expr;
 				NclStackEntry missing_expr;
 				NclSymbol *data_type;
@@ -1576,9 +1555,9 @@ NclExecuteReturnStatus _NclExecute
 					break;
 				}
 				
-				break;
 			}
-			case ISDEFINED_OP: {
+
+void CallISDEFINED_OP(void) {
 				NclStackEntry* var;
 				NclSymbol *var_sym;
 
@@ -1590,12 +1569,9 @@ NclExecuteReturnStatus _NclExecute
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined indentifier: (%s) is undefined, can't continue",var_sym->name);
 					estatus = NhlFATAL;
 				}
-				break;
 			}
-/***************************
-* Two Operand Instructions *
-***************************/			
-			case VARVAL_READ_OP: {
+
+void CallVARVAL_READ_OP(void) {
 				NhlErrorTypes ret = NhlNOERROR;
 				int i;
 				int nsubs;
@@ -1679,9 +1655,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 			}
-			break;
-			case PARAM_VAR_OP:
-			case VAR_READ_OP: {
+
+void CallVAR_READ_OP(void) {
 				NhlErrorTypes ret = NhlNOERROR;
 				int i;
 				int nsubs;
@@ -1758,8 +1733,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 			}
-			break;
-			case ASSIGN_VAR_OP :{
+
+void CallASSIGN_VAR_OP(void) {
 				NclStackEntry rhs;
 				NclStackEntry data;
 				NclStackEntry *lhs_var = NULL;
@@ -1974,9 +1949,9 @@ NclExecuteReturnStatus _NclExecute
 			} else {
 				_NclCleanUpStack(nsubs);
 			}
-			break;
 			}
-			case NEW_FRAME_OP: {
+
+void CallNEW_FRAME_OP(void) {
 				NclSymbol *proc;
 				int offset;
 				ptr++;lptr++;fptr++;
@@ -1991,9 +1966,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					estatus = NhlFATAL;
 				}
-				break;
 			}
-			case CONVERT_TO_LOCAL: {
+
+void CallCONVERT_TO_LOCAL(void) {
 				NclSymbol *thesym = NULL;
 				NclGenProcFuncInfo *pfinfo = NULL;
 				NclSymbol *argsym = NULL;
@@ -2362,9 +2337,9 @@ NclExecuteReturnStatus _NclExecute
 					_NclChangeSymbolType(argsym,VAR);
 */
 				}
-				break;
 			}
-			case ASSIGN_FILEVAR_DIM_OP: {
+
+void CallASSIGN_FILEVAR_DIM_OP(void) {
 				NclFile file;
 				NclStackEntry* file_ptr,data,rhs_data,fvar;
 				NclMultiDValData file_md,rhs_md,dim_expr_md,thevalue;
@@ -2461,10 +2436,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(2);
 				} 
-			break;
 			}
-			case FILEVAR_DIM_OP:	
-			case PARAM_FILEVAR_DIM_OP: {
+
+void CallPARAM_FILEVAR_DIM_OP(void) {
 				NclSymbol *file;
 				NclQuark var_name;
 				NclStackEntry dim_expr;
@@ -2556,10 +2530,9 @@ NclExecuteReturnStatus _NclExecute
 						}
 					}
 				}
-			break;
 			}
-			case CREATE_OBJ_WP_OP : 
-			case CREATE_OBJ_OP : {
+
+void CallCREATE_OBJ_OP(void) {
 				int nres;
 				NclSymbol *objtype;
 				NclStackEntry parent,data;
@@ -2662,12 +2635,8 @@ NclExecuteReturnStatus _NclExecute
 					_NclDestroyObj((NclObj)tmp_md);
 				}
 			}
-			break;
-/*****************************
-* Three Operand Instructions *
-*****************************/
-			case PARAM_VARATT_OP:
-			case VARATT_OP: {
+
+void CallVARATT_OP(void) {
 				NclSymbol *thesym = NULL;
 				char*	attname = NULL;
 				int	nsubs;
@@ -2741,7 +2710,6 @@ NclExecuteReturnStatus _NclExecute
 							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING) {
 								estatus = ret;
-								break;
 							}
 						} else if(nsubs != 0) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
@@ -2770,9 +2738,8 @@ NclExecuteReturnStatus _NclExecute
 				if(estatus != NhlFATAL) 
 					estatus = _NclPush(data);
 			}
-			break;
-			case PARAM_VAR_COORD_ATT_OP:
-			case VAR_COORD_ATT_OP: {
+
+void CallVAR_COORD_ATT_OP(void) {
 				NclStackEntry *var = NULL;
 				NclVar coord_var;
 				NclStackEntry data,cvar,avar;
@@ -2876,7 +2843,6 @@ NclExecuteReturnStatus _NclExecute
 									_NclFreeSubRec(&data.u.sub_rec);
 									if(ret < NhlWARNING) {
 										estatus = ret;
-										break;
 									}
 								} else if(nsubs != 0) {
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);
@@ -2911,8 +2877,8 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 			}
-			break;
-			case ASSIGN_VAR_COORD_OP: {
+
+void CallASSIGN_VAR_COORD_OP(void) {
 				NclStackEntry *var = NULL,cvar;
 				NclStackEntry data;
 				NclSymbol* thesym = NULL;
@@ -3043,8 +3009,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 			}
-			break;
-			case ASSIGN_VAR_COORD_ATT_OP: {
+
+void CallASSIGN_VAR_COORD_ATT_OP(void) {
 				NclStackEntry *var = NULL,avar,cvar;
 				NclVar coord_var;
 				NclStackEntry data1;
@@ -3195,8 +3161,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 			}
-			break;
-			case VARVAL_COORD_OP: {
+
+void CallVARVAL_COORD_OP(void) {
 				NclStackEntry *var = NULL,cvar;
                                 NclStackEntry data;
                                 NclSymbol* thesym = NULL;
@@ -3297,9 +3263,8 @@ NclExecuteReturnStatus _NclExecute
 					} 
 				}
 			}
-			break;
-			case PARAM_VAR_COORD_OP:
-			case VAR_COORD_OP: {
+
+void CallVAR_COORD_OP(void) {
 				NclStackEntry *var = NULL,cvar;
                                 NclStackEntry data;
                                 NclSymbol* thesym = NULL;
@@ -3400,8 +3365,8 @@ NclExecuteReturnStatus _NclExecute
 					} 
 				}
 			}
-			break;
-			case ASSIGN_FILE_VAR_OP :{
+
+void CallASSIGN_FILE_VAR_OP(void) {
 /*
 * Changed to a two operand function 1/30
 */
@@ -3609,9 +3574,9 @@ NclExecuteReturnStatus _NclExecute
 					}
 					_NclCleanUpStack(nsubs +1);
 				}
-				break;
 			}
-			case FILE_VARVAL_OP : {
+
+void CallFILE_VARVAL_OP(void) {
 /*
 * Changed to a two operand function 1/31/96
 */
@@ -3775,10 +3740,9 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(nsubs);
 				}
 				
-				break;
 			}
-			case PARAM_FILE_VAR_OP:
-			case FILE_VAR_OP : {
+
+void CallFILE_VAR_OP(void) {
 /*
 * Changed to a two operand function 1/31/96
 */
@@ -3942,9 +3906,9 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(nsubs);
 				}
 				
-				break;
 			}
-			case ASSIGN_VARATT_OP: {
+
+void CallASSIGN_VARATT_OP(void) {
 				NclSymbol *thesym = NULL;
 				char *attname = NULL;
 				int nsubs;
@@ -4052,11 +4016,8 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 			}
-			break;
-/*****************************
-* Four Operand Instructions  *
-*****************************/
-			case ASSIGN_FILEVAR_COORD_ATT_OP: {
+
+void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 				NclFile file;
 				NclStackEntry *file_ptr,value,data1,fvar,out_data,avar,cvar;
 				NclMultiDValData file_md;
@@ -4237,8 +4198,8 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 			}
-			break;
-			case ASSIGN_FILEVARATT_OP: {
+
+void CallASSIGN_FILEVARATT_OP(void) {
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,data1,rhs,fvar,avar;
 				NclMultiDValData file_md,rhs_md;
@@ -4377,9 +4338,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(nsubs);
 				}
-				break;
 			}
-			case ASSIGN_FILEVAR_COORD_OP:{
+
+void CallASSIGN_FILEVAR_COORD_OP(void) {
 				NclFile file;
 				NclStackEntry *file_ptr,rhs_data,data,fvar,cvar;
 				NclMultiDValData file_md;
@@ -4545,10 +4506,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(nsubs +1);
 				}
-				break;
 			}
-			case FILEVAR_COORD_ATT_OP: 
-			case PARAM_FILEVAR_COORD_ATT_OP: {
+
+void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,fvar,avar,cvar;
 				NclMultiDValData file_md,thevalue = NULL;
@@ -4710,10 +4670,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(nsubs);
 				}
-				break;
 			}
-			case FILEVARATT_OP:
-			case PARAM_FILEVARATT_OP: {
+
+void CallPARAM_FILEVARATT_OP(void) {
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,fvar,avar;
 				NclMultiDValData file_md,thevalue;
@@ -4841,11 +4800,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(nsubs);
 				}
-				break;
 			}
-			case FILEVARVAL_COORD_OP:
-			case FILEVAR_COORD_OP:
-			case PARAM_FILEVAR_COORD_OP: {
+
+void CallPARAM_FILEVAR_COORD_OP(void) {
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,fvar,cvar;
 				NclMultiDValData file_md,thevalue;
@@ -4978,9 +4935,9 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					_NclCleanUpStack(nsubs);
 				}
-				break;
 			}
-			case ASSIGN_VAR_VAR_OP: {
+
+void CallASSIGN_VAR_VAR_OP(void) {
 				NhlErrorTypes ret = NhlNOERROR;
 				int i;
 				int rhs_nsubs=0,lhs_nsubs=0;
@@ -5203,15 +5160,379 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(rhs_nsubs);
 					_NclCleanUpStack(lhs_nsubs);
 				}
-				break;
 			}
-			case PUSHNULL: {
+
+void CallPUSHNULL(void) {
 				NclStackEntry data;
 
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclPush(data);
 			}
+
+
+
+
+NclExecuteReturnStatus _NclExecute
+#if	NhlNeedProto
+(unsigned long start_offset)
+#else 
+(start_offset) 
+	unsigned long start_offset;
+#endif
+{
+
+	estatus = NhlNOERROR;
+	machine = _NclGetCurrentMachine();
+	ptr = machine + start_offset;
+	lptr = _NclGetCurrentLineRec() + start_offset;
+	fptr = _NclGetCurrentFileNameRec() + start_offset;
+	level++;
+
+	while(1) {
+		switch(*ptr) {
+/****************************
+* Zero Operand Instructions *
+****************************/
+			case STOPSEQ:
+				level--;
+				return(Ncl_STOPS);
+			case ENDSTMNT_OP:
+			case NOOP :
+				break;
+			case NAMED_INT_SUBSCRIPT_OP :
+			case INT_SUBSCRIPT_OP : {
+				CallINT_SUBSCRIPT_OP();
+			}
+			break;
+			case DEFAULT_RANGE_OP : {
+				CallDEFAULT_RANGE_OP();
+			}
+			break;
+			case RANGE_INDEX_OP : {
+				CallRANGE_INDEX_OP();
+			}
+			break;
+			case SINGLE_INDEX_OP : {
+				CallSINGLE_INDEX_OP();
+			}
+			break;
+			case CRETURN_OP : 
+			{
+				level--;
+				return(Ncl_STOPS);
+			}
+			case RETURN_OP : 
+			{
+				NclStackEntry data;
+				NhlErrorTypes ret = NhlNOERROR;
+				data = _NclPop();
+				
+				ret = _NclPlaceReturn(data);
+				if(ret< NhlWARNING) {
+					estatus = NhlFATAL;
+				} else {
+					level--;
+					return(Ncl_STOPS);
+				}
+			}
+			break;
+			case NAMED_COORD_SUBSCRIPT_OP : 
+			case COORD_SUBSCRIPT_OP : {
+				CallCOORD_SUBSCRIPT_OP();
+			} 
+			break;
+			case NEG_OP : {
+				CallNEG_OP();
+			}
+			break;
+			case NOT_OP : {
+				CallNOT_OP();
+			}
+			break;
+			case MOD_OP : {
+				CallMOD_OP();
+			}
+			break;
+			case OR_OP : {
+				CallOR_OP();
+			}
+			break;
+			case AND_OP : {
+				CallAND_OP();
+			}
+			break;
+			case XOR_OP : {
+				CallXOR_OP();
+			}
+			break;
+			case LTSEL_OP : {
+				CallLTSEL_OP();
+			}
+			break;
+			case GTSEL_OP : {
+				CallGTSEL_OP();
+			}
+			break;
+			case PLUS_OP : {
+				CallPLUS_OP();
+			}
+				break;
+			case MINUS_OP : {
+				CallMINUS_OP();
+			}
+				break;
+			case MUL_OP : {
+				CallMUL_OP();
+			}
+				break;
+			case MAT_OP : {
+				CallMAT_OP();
+			}
+				break;
+			case DIV_OP : {
+				CallDIV_OP();
+			}
+				break;
+			case EXP_OP : {
+				CallEXP_OP();
+			}
+			break;
+			case LE_OP : {
+				CallLE_OP();
+			}
+			break;
+			case GE_OP : {
+				CallGE_OP();
+			}
+			break;
+			case GT_OP : {
+				CallGT_OP();
+			}
+			break;
+			case LT_OP : {
+				CallLT_OP();
+			}
+			break;
+			case EQ_OP : {
+				CallEQ_OP();
+			}
+			break;
+			case NE_OP : {
+				CallNE_OP();
+			}
+			break;
+			case GET_OBJ_OP : {
+				CallGET_OBJ_OP();
+			}
+			break;
+/***************************
+* One Operand Instructions *
+***************************/
+			case FUNC_CALL_OP : {
+				CallFUNC_CALL_OP();
+			}
+			break;
+			case FPDEF: 
+				ptr++;lptr++;fptr++;
+				break;
+			case JMP : {
+				CallJMP();
+			}
+			break;
+			case ARRAY_LIT_OP : {
+				CallARRAY_LIT_OP();
+			}
+			break;
+			case PUSH_REAL_LIT_OP : 
+			case PUSH_LOGICAL_LIT_OP: 
+			case PUSH_INT_LIT_OP :
+			case PUSH_STRING_LIT_OP : {
+				CallPUSH_STRING_LIT_OP();
+			}
+			break;
+			case JMP_SCALAR_TRUE_OP : {
+				CallJMP_SCALAR_TRUE_OP();
+			}
+			break;
+			case JMP_SCALAR_FALSE_OP : {
+				CallJMP_SCALAR_FALSE_OP();
+			}
+			break;
+			case JMPFALSE : {
+				CallJMPFALSE();
+			}
+			break;
+			case SET_OBJ_OP : {
+				CallSET_OBJ_OP();
+			}
+				break;
+			case PROC_CALL_OP : {
+				CallPROC_CALL_OP();
+			}
+				break;
+			case INTRINSIC_FUNC_CALL : {
+				CallINTRINSIC_FUNC_CALL();
+			}
+				break;
+			case INTRINSIC_PROC_CALL : {
+				CallINTRINSIC_PROC_CALL();
+			}
+				break;
+			case DUP_TOFS : {
+				CallDUP_TOFS();
+			}
+			break;
+			case LOOP_VALIDATE_OP : {
+				CallLOOP_VALIDATE_OP();
+			}
+				break;
+			case LOOP_INC_OP : {
+				CallLOOP_INC_OP();
+			}
+				break;
+			case PARAM_VAR_DIM_OP:
+			case VAR_DIM_OP : {
+				CallVAR_DIM_OP();
+			}
+			break;
+			case ASSIGN_VAR_DIM_OP : {
+				CallASSIGN_VAR_DIM_OP();
+			}
+			break;
+			case NEW_WM_OP:
+			case NEW_OP : {	
+				CallNEW_OP();
+			}
+			break;
+			case ISDEFINED_OP : {
+				CallISDEFINED_OP();
+			}
+			break;
+/***************************
+* Two Operand Instructions *
+***************************/			
+			case VARVAL_READ_OP : {
+				CallVARVAL_READ_OP();
+			}
+			break;
+			case PARAM_VAR_OP:
+			case VAR_READ_OP : {
+				CallVAR_READ_OP();
+			}
+			break;
+			case ASSIGN_VAR_OP : {
+				CallASSIGN_VAR_OP();
+			}
+			break;
+			case NEW_FRAME_OP : {
+				CallNEW_FRAME_OP();
+			}
+			break;
+			case CONVERT_TO_LOCAL : {
+				CallCONVERT_TO_LOCAL();
+			}
+			break;
+			case ASSIGN_FILEVAR_DIM_OP : {
+				CallASSIGN_FILEVAR_DIM_OP();
+			}
+			break;
+			case FILEVAR_DIM_OP:	
+			case PARAM_FILEVAR_DIM_OP : {
+				CallPARAM_FILEVAR_DIM_OP();
+			}
+			break;
+			case CREATE_OBJ_WP_OP : 
+			case CREATE_OBJ_OP : {
+				CallCREATE_OBJ_OP();
+			}
+			break;
+/*****************************
+* Three Operand Instructions *
+*****************************/
+			case PARAM_VARATT_OP:
+			case VARATT_OP : {
+				CallVARATT_OP();
+			}
+			break;
+			case PARAM_VAR_COORD_ATT_OP:
+			case VAR_COORD_ATT_OP : {
+				CallVAR_COORD_ATT_OP();
+			}
+			break;
+			case ASSIGN_VAR_COORD_OP : {
+				CallASSIGN_VAR_COORD_OP();
+			}
+			break;
+			case ASSIGN_VAR_COORD_ATT_OP : {
+				CallASSIGN_VAR_COORD_ATT_OP();
+			}
+			break;
+			case VARVAL_COORD_OP : {
+				CallVARVAL_COORD_OP();
+			}
+			break;
+			case PARAM_VAR_COORD_OP:
+			case VAR_COORD_OP : {
+				CallVAR_COORD_OP();
+			}
+			break;
+			case ASSIGN_FILE_VAR_OP : {
+				CallASSIGN_FILE_VAR_OP();
+			}
+			break;
+			case FILE_VARVAL_OP : {
+				CallFILE_VARVAL_OP();
+			}
+			break;
+			case PARAM_FILE_VAR_OP:
+			case FILE_VAR_OP : {
+				CallFILE_VAR_OP();
+			}
+			break;
+			case ASSIGN_VARATT_OP : {
+				CallASSIGN_VARATT_OP();
+			}
+			break;
+/*****************************
+* Four Operand Instructions  *
+*****************************/
+			case ASSIGN_FILEVAR_COORD_ATT_OP : {
+				CallASSIGN_FILEVAR_COORD_ATT_OP();
+			}
+			break;
+			case ASSIGN_FILEVARATT_OP : {
+				CallASSIGN_FILEVARATT_OP();
+			}
+			break;
+			case ASSIGN_FILEVAR_COORD_OP : {
+				CallASSIGN_FILEVAR_COORD_OP();
+			}
+			break;
+			case FILEVAR_COORD_ATT_OP: 
+			case PARAM_FILEVAR_COORD_ATT_OP : {
+				CallPARAM_FILEVAR_COORD_ATT_OP();
+			}
+			break;
+			case FILEVARATT_OP:
+			case PARAM_FILEVARATT_OP : {
+				CallPARAM_FILEVARATT_OP();
+			}
+			break;
+			case FILEVARVAL_COORD_OP:
+			case FILEVAR_COORD_OP:
+			case PARAM_FILEVAR_COORD_OP : {
+				CallPARAM_FILEVAR_COORD_OP();
+			}
+			break;
+			case ASSIGN_VAR_VAR_OP : {
+				CallASSIGN_VAR_VAR_OP();
+			}
+			break;
+			case PUSHNULL : {
+				CallPUSHNULL();
+			}
+			break;
 			default:
 				break;
 		}

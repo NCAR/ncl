@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.5 1997-04-08 18:11:06 ethan Exp $
+ *      $Id: NclHDF.c,v 1.6 1997-09-02 20:26:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -227,7 +227,7 @@ int wr_status;
 	}
 
 	if(cdfid == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file (%s) does not exist or can't be opened\n",NrmQuarkToString(path));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified HDF file (%s) does not exist or can't be opened\n",NrmQuarkToString(path));
 		NclFree(tmp);
 		return(NULL);
 	}

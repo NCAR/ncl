@@ -271,6 +271,13 @@ sed  \
 -e "s/DATATYPE/$1/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
+TypeMatMulOpTemplate.c.sed
+
+sed  \
+-e "s/OUTDATATYPE/$1/g" \
+-e "s/DATATYPE/$1/g" \
+-e "s/LEFTMISSING/lhs_m->$1val/g" \
+-e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/+/' \
 -e 's/OPER/\+/' \
 -e 's/FUNCNAME/plus/' \

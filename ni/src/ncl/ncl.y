@@ -996,11 +996,12 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 								{  
 									NclScopeRec *tmp;
 
-									if(is_error) {
+									if(is_error||((!cmd_line)&&block_syntax_error)) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
 										$$ = NULL;
-										is_error += 1;
+										is_error += 1;	
+										$1->type = UNDEF;
 									}else {
 										tmp = _NclPopScope();	
 										$$ = _NclMakeNFunctionDef($1,$3,$7,tmp);  
@@ -1010,11 +1011,12 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 								{  
 									NclScopeRec *tmp;
 
-									if(is_error) {
+									if(is_error||(!cmd_line&&block_syntax_error)) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
 										$$ = NULL;
 										is_error += 1;
+										$1->type = UNDEF;
 									}else {
 										tmp = _NclPopScope();	
 										$$ = _NclMakeNFunctionDef($1,$3,$11,tmp);  
@@ -1032,6 +1034,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 * Need to call function to free scope
 */
 			(void)_NclPopScope();
+			$1->type = UNDEF;
 	}
 	| KEYFUNC error {
 		is_error += 1;
@@ -1204,21 +1207,31 @@ proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
 procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
 								NclScopeRec *tmp;
-								if(is_error) {
+								if(is_error||((!cmd_line)&&block_syntax_error)) {
 									_NclDeleteNewSymStack();
+                                                                	tmp = _NclPopScope();
+									$$ = NULL;
+									is_error +=1;
+									$1->type = UNDEF;
+								} else {
+									tmp = _NclPopScope();	
+									$$ = _NclMakeProcDef($1,$3,$11,tmp);
 								}
-                                                                tmp = _NclPopScope();
 							
-								$$ = _NclMakeProcDef($1,$3,$11,tmp);
-									
 							}
 	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
 								NclScopeRec *tmp;
-								if(is_error) {
+
+								if(is_error||((!cmd_line)&&block_syntax_error)) {
 									_NclDeleteNewSymStack();
+                                                                	tmp = _NclPopScope();
+									$$ = NULL;
+									is_error +=1;
+									$1->type = UNDEF;
+								} else {
+									tmp = _NclPopScope();	
+									$$ = _NclMakeProcDef($1,$3,$7,tmp);
 								}
-                                                                tmp = _NclPopScope();
-								$$ = _NclMakeProcDef($1,$3,$7,tmp);
 									
 							}
 	| proc_identifier error {
@@ -1231,6 +1244,8 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local
 * Need to call function to free scope
 */
 			(void)_NclPopScope();
+			$1->type = UNDEF;
+			$$ = NULL;
 	}
 ;
 
@@ -1345,6 +1360,10 @@ identifier : vname {
 	| vname coordvarselector attributeselector LP subscript_list RP {
 						$$ = _NclMakeVarCoordAttRef($1,$2,$3,$5);
 					}
+	| vname LP RP error 			{
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
+					$$ = NULL;
+	}
 ;
 
 vname : OBJVAR		{

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.19 1996-07-16 20:58:43 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.20 1997-09-02 20:26:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,7 @@ struct _NetCdfVarInqRec {
 
 struct _NetCdfDimInqRec {
 	int dimid;
+	int is_unlimited;
 	NclQuark name;
 	long size;
 };
@@ -238,6 +239,7 @@ int wr_status;
 					(unsigned) sizeof(NetCdfDimInqRecList));
 			(*stepdlptr)->dim_inq = (NetCdfDimInqRec*)NclMalloc(
 					(unsigned)sizeof(NetCdfDimInqRec));
+			(*stepdlptr)->dim_inq->is_unlimited = (i==dummy)?1:0;
 			(*stepdlptr)->next = NULL;
 			(*stepdlptr)->dim_inq->dimid = i;
 			ncdiminq(cdfid,i,buffer,&((*stepdlptr)->dim_inq->size));
@@ -529,6 +531,7 @@ NclQuark dim_name_q;
 			tmp = (NclFDimRec*)NclMalloc((unsigned)sizeof(NclFDimRec));
 			tmp->dim_name_quark = dim_name_q;
 			tmp->dim_size = stepdl->dim_inq->size;
+			tmp->is_unlimited  = stepdl->dim_inq->is_unlimited;
 			return(tmp);
 		} else {
 			stepdl = stepdl->next;

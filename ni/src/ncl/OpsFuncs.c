@@ -764,19 +764,23 @@ NhlErrorTypes _NclProcCallOp
 	if(proc->u.procfunc== NULL) {
 		return(NhlFATAL);
 	}
-	
-	_NclPushMachine(proc->u.procfunc->mach_rec_ptr);
-	eret = _NclExecute(0);
-	switch(eret) {
-	case Ncl_ERRORS:
-		ret = NhlFATAL;
-		break;
-	case Ncl_STOPS:
-	default:
+
+	if(proc->u.procfunc->mach_rec_ptr != NULL) {	
+		_NclPushMachine(proc->u.procfunc->mach_rec_ptr);
+		eret = _NclExecute(0);
+		switch(eret) {
+		case Ncl_ERRORS:
+			ret = NhlFATAL;
+			break;
+		case Ncl_STOPS:
+		default:
 		ret = NhlNOERROR;
-		break;
+			break;
+		}
+		(void)_NclPopMachine();
+	} else {
+		ret = NhlFATAL;
 	}
-	(void)_NclPopMachine();
 /*
 * Temporary stack management code
 */
@@ -813,19 +817,23 @@ NhlErrorTypes _NclFuncCallOp
 	if(func->u.procfunc == NULL) {
 		return(NhlFATAL);
 	}
-	
-	_NclPushMachine(func->u.procfunc->mach_rec_ptr);
-	eret = _NclExecute(0);
-	switch(eret) {
-	case Ncl_ERRORS:
+
+	if(func->u.procfunc->mach_rec_ptr != NULL) {	
+		_NclPushMachine(func->u.procfunc->mach_rec_ptr);
+		eret = _NclExecute(0);
+		switch(eret) {
+		case Ncl_ERRORS:
+			ret = NhlFATAL;
+			break;
+		case Ncl_STOPS:
+		default:
+			ret = NhlNOERROR;
+			break;
+		}
+		(void)_NclPopMachine();
+	} else {
 		ret = NhlFATAL;
-		break;
-	case Ncl_STOPS:
-	default:
-		ret = NhlNOERROR;
-		break;
 	}
-	(void)_NclPopMachine();
 
 	if(ret != NhlFATAL) {
 		previous_fp = _NclLeaveFrame(caller_level);

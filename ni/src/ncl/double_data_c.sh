@@ -17,8 +17,6 @@ sed \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypedouble.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/Ncl_Type_double_mat_type/NULL/' \
--e 's/Ncl_Type_double_mat/NULL/' \
 -e 's/Ncl_Type_double_mod_type/NULL/' \
 -e 's/Ncl_Type_double_mod/NULL/' \
 NclType.c.sed > NclTypedouble.c

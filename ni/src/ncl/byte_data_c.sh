@@ -18,8 +18,6 @@ sed \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypebyte.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/Ncl_Type_byte_mat_type/NULL/' \
--e 's/Ncl_Type_byte_mat/NULL/' \
 -e 's/Ncl_Type_byte_mod_type/NULL/' \
 -e 's/Ncl_Type_byte_mod/NULL/' \
 NclType.c.sed > NclTypebyte.c

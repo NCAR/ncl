@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.9 1997-06-18 02:37:49 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.10 1997-09-02 20:26:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -83,7 +83,7 @@ NclData result;
 			result_md->multidval.hlu_type_rep[1] = the_type->type_class.hlu_type_rep[1];
 			result_md->multidval.totalsize = result_md->multidval.totalelements * the_type->type_class.size;
 		} else {
-			if(result_md != NULL)  {
+			if((result_md != NULL) &&((result_md != self_md)||(result_md != other_md))) {
 				_NclDestroyObj((NclObj)result_md);
 				result_md = NULL;
 			}

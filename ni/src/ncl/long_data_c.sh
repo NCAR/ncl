@@ -18,8 +18,6 @@ sed \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypelong.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/Ncl_Type_long_mat_type/NULL/' \
--e 's/Ncl_Type_long_mat/NULL/' \
 NclType.c.sed > NclTypelong.c
 
 rm .tmp.$$

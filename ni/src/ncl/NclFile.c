@@ -424,8 +424,11 @@ FILE    *fp;
 		return(NhlWARNING);
 	}
 	for(i = 0; i< thefile->file.n_file_dims; i++) {
-		ret = nclfprintf(fp,"      %s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
-			thefile->file.file_dim_info[i]->dim_size);
+		if(thefile->file.file_dim_info[i]->is_unlimited) {
+		  	ret = nclfprintf(fp,"      %s = %ld  // unlimited\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark), thefile->file.file_dim_info[i]->dim_size);
+		} else {
+		 	ret = nclfprintf(fp,"      %s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),thefile->file.file_dim_info[i]->dim_size);
+		}
 		if(ret < 0) {	
 			return(NhlWARNING);
 		}
@@ -2651,12 +2654,16 @@ int type;
 						n_elem = (int)(fabs(((float)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
 
 						if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
-                                        		return(NhlFATAL);
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+                                        			return(NhlFATAL);
+							}
                                 		}
                                 		if((sel->u.sub.finish> thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.finish < 0)) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
-                                        		return(NhlFATAL);
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+                                        			return(NhlFATAL);
+							}
                                 		}
 						if(sel->dim_num != i) {
 							has_reorder = 1;

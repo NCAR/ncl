@@ -18,8 +18,6 @@ sed \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypefloat.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/Ncl_Type_float_mat_type/NULL/' \
--e 's/Ncl_Type_float_mat/NULL/' \
 -e 's/Ncl_Type_float_mod_type/NULL/' \
 -e 's/Ncl_Type_float_mod/NULL/' \
 NclType.c.sed > NclTypefloat.c

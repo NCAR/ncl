@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.61 1997-08-06 20:19:24 boote Exp $
+#      $Id: yMakefile,v 1.62 1997-09-02 20:27:43 ethan Exp $
 #
 #########################################################################
 #									#
@@ -208,13 +208,13 @@ lex.yy.c: ncl.l
 y.tab.c y.tab.h: ncl.y 
 	$(YACC) -d -t ncl.y
 
-TypeSupport.h: TypeSupport.h.sed
+TypeSupport.h: TypeSupport.h.sed TypeSupportMatTemplate.h.sed TypeSupportOpTemplate.h.sed TypeSupportMonoOpTemplate.h.sed
 	@$(SHELL) type_support_h.sh
 
-TypeSupport.c: TypeSupport.c.sed
+TypeSupport.c: TypeSupport.c.sed TypeSupportMatTemplate.c.sed TypeSupportOpTemplate.c.sed TypeSupportMonoOpTemplate.c.sed
 	@$(SHELL) type_support_c.sh
 
-NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h math_funcs.sh
+NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h math_funcs.sh MatMulDValOp.c.sed
 	@$(SHELL) multid_data_c.sh
 
 MathFuncs.c: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
@@ -243,6 +243,7 @@ NclTypeRule_c(type,xtra_dep)
 
 NUM_OP_TMPL	=	TypeDivOpTemplate.c.sed \
 			TypeFunctionOpTemplate.c.sed \
+			TypeMatMulOpTemplate.c.sed \
 			TypeIsMonoFunc.c.sed \
 			TypeMonoOpTemplate.c.sed \
 			TypeResetMissing.c.sed \

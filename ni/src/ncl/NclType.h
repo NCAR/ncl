@@ -1,5 +1,5 @@
 /*
- *      $Id: NclType.h,v 1.4 1995-11-03 00:00:53 ethan Exp $
+ *      $Id: NclType.h,v 1.5 1997-09-02 20:26:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,19 @@
 #define NclType_h
 #include "NclData.h"
 
+typedef NhlErrorTypes (*NclMatTypeOp)  (
+#if	NhlNeedProto
+void * /*result*/,
+void * /* lhs */,
+void * /* rhs */,
+NclScalar * /* lhs_m */, 
+NclScalar * /* rhs_m */,
+int /* ndimslhs */, 
+int */* dimsizeslhs */, 
+int /* ndimsrhs */,
+int */* dimsizesrhs */ 
+#endif
+);
 typedef NhlErrorTypes (*NclTypeOp)  (
 #if	NhlNeedProto
 void * /*result*/,
@@ -125,7 +138,7 @@ typedef struct _NclTypeClassPart {
 	NclTypeOutType		exponent_type;
 	NclTypeOp		mod;
 	NclTypeOutType		mod_type;
-	NclTypeOp		mat;
+	NclMatTypeOp		mat;
 	NclTypeOutType		mat_type;
 	NclTypeOp		sel_lt;
 	NclTypeOutType		sel_lt_type;

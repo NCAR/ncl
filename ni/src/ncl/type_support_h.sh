@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: type_support_h.sh,v 1.1 1995-01-28 01:54:03 ethan Exp $
+#      $Id: type_support_h.sh,v 1.2 1997-09-02 20:27:41 ethan Exp $
 #
 #########################################################################
 #									#
@@ -106,6 +106,11 @@ TypeSupportMonoOpTemplate.h.sed >> .tmp.$$
 sed \
 -e 's/TFUNC/neg/g' \
 TypeSupportMonoOpTemplate.h.sed >> .tmp.$$
+
+sed \
+-e 's/TFUNC/mat/g' \
+TypeSupportMatTemplate.h.sed >> .tmp.$$
+
 
 
 if [ ! $? ]

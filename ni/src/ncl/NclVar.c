@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.45 1997-06-10 15:06:06 ethan Exp $
+ *      $Id: NclVar.c,v 1.46 1997-09-02 20:26:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -711,6 +711,11 @@ NclStatus status)
 			} else {
 				var_out->var.dim_info[i].dim_quark = -1;
 			}
+		}
+		for(;i< NCL_MAX_DIMENSIONS; i++) {
+			var_out->var.dim_info[i].dim_size = -1;
+			var_out->var.dim_info[i].dim_num = i;
+			var_out->var.dim_info[i].dim_quark = -1;
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign non-value data type to variable (%s)",v_name);

@@ -22,6 +22,7 @@ struct _NclFVarRec {
 struct _NclFDimRec {
 	NclQuark dim_name_quark;
 	long dim_size;
+	int is_unlimited;
 };	
 
 typedef NclFormatFunctionRecPtr (*NclAddFileFormat) (

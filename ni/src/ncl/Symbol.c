@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.48 1997-08-01 21:02:27 ethan Exp $
+ *      $Id: Symbol.c,v 1.49 1997-09-02 20:26:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -121,15 +121,19 @@ NhlErrorTypes _NclWalkSymTable
 						break;
 					case NPROC: 
 						fprintf(stdout,"NPROC: %s\n",s->name);
-						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
-						_NclPrintMachine(-1,-1,stdout);
-						(void) _NclPopMachine();
+						if(s->u.procfunc->mach_rec_ptr != NULL) {
+							_NclPushMachine(s->u.procfunc->mach_rec_ptr);
+							_NclPrintMachine(-1,-1,stdout);
+							(void) _NclPopMachine();
+						}
 						break;
 					case NFUNC:
 						fprintf(stdout,"NFUNC: %s\n",s->name);
-						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
-						_NclPrintMachine(-1,-1,stdout);
-						(void) _NclPopMachine();
+						if(s->u.procfunc->mach_rec_ptr != NULL) {
+							_NclPushMachine(s->u.procfunc->mach_rec_ptr);
+							_NclPrintMachine(-1,-1,stdout);
+							(void) _NclPopMachine();
+						}
 						break;
 					case IPROC: 
 						fprintf(stdout,"IPROC: %s\n",s->name);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.24 1997-01-28 00:38:57 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.25 1997-09-02 20:26:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2113,10 +2113,10 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
                                                 MultiDVal_ss_Mod
 					},
 /* NclDataFunction mat; 	*/	{
-                                                NULL,
-                                                NULL,
-                                                NULL,
-                                                NULL 
+                                                MultiDVal_mdmd_Mat,
+                                                MultiDVal_ss_Mul,
+                                                MultiDVal_ss_Mul,
+                                                MultiDVal_ss_Mul 
 					},
 /* NclDataFunction sel_lt; 	*/	{
                                                 MultiDVal_mdmd_SelLt,
