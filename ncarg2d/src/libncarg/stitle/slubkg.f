@@ -1,5 +1,5 @@
 C
-C $Id: slubkg.f,v 1.1 1993-01-15 23:30:40 kennison Exp $
+C $Id: slubkg.f,v 1.2 1993-01-15 23:34:58 kennison Exp $
 C
       SUBROUTINE SLUBKG (IPOC)
 C
@@ -12,16 +12,16 @@ C called, as follows:
 C
 C     IPOC  Position of call to SLUBKG
 C     ----  -----------------------------------------------------------
-C      -1   Just before drawing characters on a "fade-in" frame.
-C      +1   Just before drawing characters on a "fade-in" frame.
-C      -2   Just before drawing characters on a "start" frame.
-C      +2   Just before drawing characters on a "start" frame.
-C      -3   Just before drawing characters on a "move" frame.
-C      +3   Just before drawing characters on a "move" frame.
-C      -4   Just before drawing characters on an "end" frame.
-C      +4   Just before drawing characters on an "end" frame.
-C      -5   Just before drawing characters on a "fade-out" frame.
-C      +5   Just before drawing characters on a "fade-out" frame.
+C      -1   Just before drawing titles on a "fade-in" frame.
+C      +1   Just after drawing titles on a "fade-in" frame.
+C      -2   Just before drawing titles on a "start" frame.
+C      +2   Just after drawing titles on a "start" frame.
+C      -3   Just before drawing titles on a "move" frame.
+C      +3   Just after drawing titles on a "move" frame.
+C      -4   Just before drawing titles on an "end" frame.
+C      +4   Just after drawing titles on an "end" frame.
+C      -5   Just before drawing titles on a "fade-out" frame.
+C      +5   Just after drawing titles on a "fade-out" frame.
 C
 C The default version of the routine does nothing.
 C
