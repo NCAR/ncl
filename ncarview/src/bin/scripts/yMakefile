@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 1993-11-01 17:43:18 boote Exp $
+#	$Id: yMakefile,v 1.14 1994-04-19 13:50:03 haley Exp $
 #
 
 MYNAME		= scripts
@@ -68,8 +68,6 @@ ncarvversion:	sedscript
 
 sedscript:      Makefile
 	@echo 's+VERSION+$(VERSION)+' > $@
-	@echo '$$a\' >> $@
-
 
 ctlib:	ctlib.csh Makefile
 	@sed \
