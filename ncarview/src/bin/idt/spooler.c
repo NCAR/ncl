@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.5 1992-09-01 23:38:58 clyne Exp $
+ *	$Id: spooler.c,v 1.6 1994-03-08 00:40:58 clyne Exp $
  */
 /*
  *	spooler.c
@@ -30,12 +30,12 @@
  *	return		: a null terminated list of spooler names
  */
 char	**SpoolerList(alias_list)
-	char	*alias_list;
+	const char	*alias_list;
 {
-	int	i, 
-		count;	/* number of newline separated spoolers in list */
-	char	*s, *t;
-	char	**ptr;
+	int		i, 
+			count;	/* num newline separated spoolers in list */
+	const char	*s, *t;
+	char		**ptr;
 
 	static	char	**spooler_list = NULL;
 
@@ -56,7 +56,6 @@ char	**SpoolerList(alias_list)
 		if (*s == '\n') count++;
 	}   
 	if (s != alias_list) count++;
-	*s = '\n';	/* terminate last item with a newline	*/
 
 	spooler_list = (char **) 
 		malloc((unsigned) (sizeof (char *) * (count + 1)));
@@ -77,22 +76,26 @@ char	**SpoolerList(alias_list)
 		while(isspace(*s)) s++;
 
 		t = s;
-		while(isprint(*s) && *s != ':')
-			s++;
+		while(isprint(*s) && *s != ':') s++;
+
+		if ( !(*ptr = malloc((unsigned) (s - t + 1)))) {
+			perror("malloc()");
+			return(NULL);
+		}
+		(void) strncpy (*ptr, t,s-t);
+		(*ptr)[s-t] = '\0';
+
+		while(isspace(*s)) s++;
+
 		if (*s != ':') {
 			(void) fprintf(stderr, "Error in spool config file\n");
 			return(NULL);
 		}
-		*s = '\0';
-		if ( !(*ptr = malloc((unsigned) (strlen(t) + 1)))) {
-			perror("malloc()");
-			return(NULL);
-		}
-		(void) strcpy (*ptr, t);
 
-		while(*s != '\n')
-			s++;
-		s++;
+		/*
+		 * skip ": stuff : more stuff"
+		 */
+		while (*s != '\n' && *s) s++;
 	}
 	*ptr = NULL;
 		
