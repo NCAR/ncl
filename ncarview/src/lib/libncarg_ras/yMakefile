@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.23 1992-08-12 23:00:09 clyne Exp $
+#	$Id: yMakefile,v 1.24 1992-08-27 17:55:11 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -99,7 +99,7 @@ SRCS		= $(GENERIC_SRCS)
 
 EQUALHACK	= =
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR)/ncarg)
 Library($(MYNAME),$(OBJS))
 
 dither.o:	ncarg_ras.h

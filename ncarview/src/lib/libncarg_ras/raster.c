@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.14 1992-07-17 22:36:22 don Exp $
+ *	$Id: raster.c,v 1.15 1992-08-27 17:55:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,7 +28,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "ncarg_ras.h"
 #include "raster.h"
 #include "options.h"

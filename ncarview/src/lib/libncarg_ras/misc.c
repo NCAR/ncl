@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.7 1992-03-27 20:59:59 clyne Exp $
+ *	$Id: misc.c,v 1.8 1992-08-27 17:55:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,7 @@
  *		are used by other members of the "libraster"
  *		package.
  */
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "ncarg_ras.h"
 
 extern char	*ProgramName;
