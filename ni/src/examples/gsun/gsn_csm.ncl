@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.122 2003-03-28 15:09:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.123 2003-04-17 21:03:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -521,22 +521,52 @@ begin
   right  = False
   center = False
 
-  if((res).and..not.any(ismissing(getvaratts(res))))
-    if(isatt(res,"gsnLeftString"))
+  if((res).and..not.any(ismissing(getvaratts(res)))) then
+    if(isatt(res,"gsnLeftString")) then
       left            = True
       left@sub_string = res@gsnLeftString
+      if(isatt(res,"gsnLeftStringFontHeightF")) then
+        left@gsnLeftStringFontHeightF = get_res_value(res, \
+                                        "gsnLeftStringFontHeightF",0.0)
+      else
+        if(isatt(res,"gsnStringFontHeightF")) then
+          left@gsnLeftStringFontHeightF = get_res_value_keep(res, \
+                                          "gsnStringFontHeightF",0.0)
+        end if 
+      end if 
       delete(res@gsnLeftString)
     end if
     if(isatt(res,"gsnCenterString"))
       center            = True
       center@sub_string = res@gsnCenterString
+      if(isatt(res,"gsnCenterStringFontHeightF")) then
+        center@gsnCenterStringFontHeightF = get_res_value(res, \
+                                           "gsnCenterStringFontHeightF",0.0)
+      else
+        if(isatt(res,"gsnStringFontHeightF")) then
+          center@gsnCenterStringFontHeightF = get_res_value_keep(res, \
+                                             "gsnStringFontHeightF",0.0)
+        end if 
+      end if 
       delete(res@gsnCenterString)
     end if
     if(isatt(res,"gsnRightString"))
       right            = True
       right@sub_string = res@gsnRightString
+      if(isatt(res,"gsnRightStringFontHeightF")) then
+        right@gsnRightStringFontHeightF = get_res_value(res, \
+                                         "gsnRightStringFontHeightF",0.0)
+      else
+        if(isatt(res,"gsnStringFontHeightF")) then
+          right@gsnRightStringFontHeightF = get_res_value_keep(res, \
+                                           "gsnStringFontHeightF",0.0)
+        end if 
+      end if 
       delete(res@gsnRightString)
     end if
+  end if
+  if(isatt(res,"gsnStringFontHeightF")) then
+    delete(res@gsnStringFontHeightF)
   end if
   return
 end
@@ -1455,27 +1485,43 @@ num_res, ablank, chararray, string_len
 begin
   amres = False   ; Annotation resources
   txres = False   ; Text resources
+  txres = get_res_eq(res,"tx")
+  amres = get_res_eq(res,"am")
+  
 
   num_res  = 0
   parallel_pos = (/0.0,0.5,1.0/)
   just         = (/"left","center","right"/)
-
-  strings = (/"","",""/)  
+  fhghts       = (/0.,0.,0./)
+  strings      = (/"","",""/)  
+;
+; Set the three strings and their font heights. 
+;
   if(left_string)
-    strings(0) =   left_string@sub_string
+    strings(0) = left_string@sub_string
+    fhghts(0)  = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",\
+                 get_res_value_keep(left_string,"gsnStringFontHeightF",\
+                 get_res_value_keep(txres,"txFontHeightF",0.0)))
   end if
   if(center_string) 
     strings(1) = center_string@sub_string
+    fhghts(1)  = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",\
+                 get_res_value_keep(center_string,"gsnStringFontHeightF",\
+                 get_res_value_keep(txres,"txFontHeightF",0.0)))
   end if
   if(right_string)
     strings(2) =  right_string@sub_string
+    fhghts(2)  = get_res_value_keep(right_string,"gsnRightStringFontHeightF",\
+                 get_res_value_keep(right_string,"gsnStringFontHeightF",\
+                 get_res_value_keep(txres,"txFontHeightF",0.0)))
+  end if
+;
+; Remove the text font height, so it doesn't get applied at the end.
+;
+  if(isatt(txres,"txFontHeightF")) then
+    delete(txres@txFontHeightF)
   end if
 
-; Check for text and annotation resources
-
-  txres = get_res_eq(res,"tx")
-  amres = get_res_eq(res,"am")
-  
   getvalues plot
     "vpHeightF"  : vph
   end getvalues
@@ -1492,7 +1538,8 @@ begin
 
       if(any(chararray(0:string_len-1).ne.ablank(0)))
         text_object = create just(i)+"string" textItemClass wks
-          "txString" : strings(i)
+          "txString"      : strings(i)
+          "txFontHeightF" : fhghts(i)
         end create
 
         attsetvalues_check(text_object,txres)   ; Set some text resources.
@@ -1507,7 +1554,6 @@ begin
           "amOrthogonalPosF": orthpos       ; Move away from top edge
           "amResizeNotify"  : True          ; Resize subtitle if map resized.
         end setvalues
-
         attsetvalues_check(anno,amres)   ; Set some annotation resources.
       end if
       delete(chararray)
@@ -3511,16 +3557,8 @@ begin
 ; Calculate slt, given ut and lon (slt = ut + lon/15). Make sure values 
 ; fall between 0 and 23.
 ;
-        slt = (ut + plon/15) % 24
-;
-; It's possible some values fall between -23 and -1, so add 24 to them.
-;
-        ind_lt_00 = ind(slt.lt.0)
-
-        if(.not.any(ismissing(ind_lt_00))) then
-          slt(ind_lt_00) = slt(ind_lt_00) + 24
-        end if
-        delete(ind_lt_00)
+        ut_plon = ut + plon/15
+        slt     = ut_plon - floattointeger(floor(ut_plon/24.))
 ; 
 ; Convert "slt" to integer. If it is equal to the float version of "slt",
 ; then we know that our values are effectively integers, and we can plot
