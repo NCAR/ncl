@@ -1,3 +1,6 @@
+C
+C $Id: tdez3d.f,v 1.2 1998-06-20 00:09:16 fred Exp $
+C
       SUBROUTINE TDEZ3D(NX,NY,NZ,X,Y,Z,U,VALUE,
      +                           RMULT,THETA,PHI,IST)
 C
@@ -110,7 +113,7 @@ C  near 0 give brighter colors and values near 1 give pastel shades.
 C  Values of SHDR near 0 give a narrow range of shades and values near
 C  1 give a wide range of shades.
 C
-      DATA SHDE,SHDR / .0 , 0.9 /
+      DATA SHDE,SHDR / .0 , 0.8 /
 C
 C  Specify the number of shades for each color, the starting
 C  color index for the color shades part of the color table,
