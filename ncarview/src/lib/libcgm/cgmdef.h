@@ -110,5 +110,12 @@
 
 #define COLOR_TABLE	34
 
+/*
+ *	cgm escape elements (class 6)
+ */
+#define	ESC_ELEMENT	6
+
+#define	ESCAPE		1
+
 
 #endif	_cgmdef_
