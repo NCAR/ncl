@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: MakeNcl.csh,v 1.1 2004-08-26 15:47:20 haley Exp $
+#   $Id: MakeNcl.csh,v 1.2 2004-08-26 21:33:04 haley Exp $
 #                                                                      
 #                Copyright (C)  2004
 #        University Corporation for Atmospheric Research
@@ -46,7 +46,7 @@ if (! -d "$libpath") then
   exit 1
 endif
 
-set objfiles   = ""
+set files      = ""
 set extra_opts = ""
 
 foreach arg ($argv)
