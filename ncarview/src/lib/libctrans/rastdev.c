@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.13 1992-11-21 00:24:11 clyne Exp $
+ *	$Id: rastdev.c,v 1.14 1993-01-07 00:33:03 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -11,6 +11,7 @@
 
 extern	Raster	*rastGrid;
 extern	boolean	rasIsDirect;
+extern	boolean	startedDrawing;
 
 static	int	rasColorIndex;
 
@@ -415,14 +416,30 @@ static	void	line_(a1, b1, a2, b2)
 		
 		
 
+extern	RasColrTab      colorTab;
 
+int	set_back_colr() {
+
+	CGMC	cgmc;
+
+	if (startedDrawing) {
+		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
+		return(-1);
+	}
+
+	colorTab.rgb[0].red =  COLOUR_INDEX_RED(0);
+	colorTab.rgb[0].green =  COLOUR_INDEX_GREEN(0);
+	colorTab.rgb[0].blue =  COLOUR_INDEX_BLUE(0);
+
+	Ras_ClearDevice(&cgmc);
+
+}
 
 
 void	rast_update_color_table()
 {
 	int	i;
 
-	extern	RasColrTab      colorTab;
 
 	/*
 	 * any time we change the colour table we "damage" the colour
@@ -432,7 +449,16 @@ void	rast_update_color_table()
 	MARKER_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 
-	for (i=0; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I && i<MAX_COLOR; i++) {
+	/*
+	 * This is a hack to ensure background color gets set correctly
+	 * in the case that colr table index 0 is changed *and* no
+	 * coresponding CGM BACKGROUND COLOUR is received
+	 */
+	if (COLOUR_INDEX_DAMAGE(0)) {
+		(void) set_back_colr();
+	}
+
+	for (i=1; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I && i<MAX_COLOR; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			colorTab.rgb[i].red =  COLOUR_INDEX_RED(i);

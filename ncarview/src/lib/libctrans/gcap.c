@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.30 1992-11-06 23:17:49 clyne Exp $
+ *	$Id: gcap.c,v 1.31 1993-01-07 00:32:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,6 +63,7 @@ FILE	*tty = (FILE *) NULL;
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
 extern	int	optionDesc;
+extern	boolean	startedDrawing;
 
 static	struct	GCapOpts_	{
 	char	*window;
@@ -116,6 +117,8 @@ CGMC *c;
 	extern	int	commFillScaleFactor;
 	extern	int	commHatchScaleFactor;
 	int	status = 0;
+
+	startedDrawing = FALSE;
 
 	/*
 	 * parse gcap specific options
@@ -402,6 +405,7 @@ CGMC *c;
 int	BegPicBody(c)
 CGMC *c;
 {
+	startedDrawing = FALSE;
 	return (0);
 }
 
@@ -646,6 +650,8 @@ CGMC *c;
 		);
 		CLIP_DAMAGE = FALSE;
 	}
+
+	startedDrawing = TRUE;
 
 	/*
  	 *	extract data from cgmc

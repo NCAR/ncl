@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.21 1993-01-06 21:11:55 clyne Exp $
+ *	$Id: X11_class4.c,v 1.22 1993-01-07 00:32:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -49,6 +49,7 @@ extern	boolean	Colordef[];
 extern	boolean	*softFill;
 extern	Pixeltype	Colortab[];
 extern	boolean	Color_ava;
+extern	boolean	startedDrawing;
 
 static	struct	{	/* a pixmap for tileing a filled polygon*/
 	XPoint	P[4];
@@ -95,11 +96,6 @@ static	struct	{	/* list of line styles. See section 5.4.2	*/
 		dashddlist,
 	};		
 
-/*
- * this flag is a hack to prevent bogus CGM's from attempting to change 
- * background colour after drawing has begun for a frame
- */
-boolean startedDrawing = FALSE;
 
 /*
  *	The class 4 CGM elements functions

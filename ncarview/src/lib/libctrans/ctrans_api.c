@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.15 1992-10-15 16:49:14 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.16 1993-01-07 00:32:52 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -90,6 +90,7 @@ extern	boolean	deviceIsInit;
 extern	int	optionDesc;
 extern	int	currdev;
 extern	struct	device	devices[];
+extern	boolean	startedDrawing;
 
 static	CGMC	cgmc;			/* shuttle for cgm elements	*/
 static	Cgm_fd	cgm_fd = -1;		/* file descriptor for metafile	*/
@@ -162,6 +163,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	deBug = &deBugOption;		/* no debugging			*/
 	doBell = &doBellOption;		/* no bell			*/
 	deviceIsInit = FALSE;
+	startedDrawing = FALSE;		/* haven't begun to draw yet	*/
 
 
 	frameCount = 0;

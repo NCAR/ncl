@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.19 1993-01-06 21:12:06 clyne Exp $
+ *	$Id: commondev.c,v 1.20 1993-01-07 00:32:45 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -33,6 +33,7 @@ static	int	numDev = sizeof (func_tab) / sizeof (ComDev);
 static	ComDev	*dev;
 
 extern	boolean	*softFill;
+extern	boolean	startedDrawing;
 
 /*
  *      A buffer holding a lot of x,y pairs so that as the clipping is done
@@ -244,6 +245,8 @@ CGMC *c;
 		CLIP_DAMAGE = FALSE;
 	}
 
+	startedDrawing = TRUE;
+
 
 	/*
 	 * if no clipping use the quick algorithm
@@ -358,6 +361,8 @@ CGMC *c;
 	if (LINE_WIDTH == 0.0) 
 		return(0);	/* do nothing if line is zero width	*/
 
+	startedDrawing = TRUE;
+
 	/*
 	 * draw line segments one at a time
 	 */
@@ -387,6 +392,8 @@ int	fat_dot;
 		dev->update_color_table();
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
+
+	startedDrawing = TRUE;
 
 	line_colour = LINE_COLOUR.index;
 	line_width = LINE_WIDTH;
@@ -522,6 +529,8 @@ CGMC *c;
 		);
 		CLIP_DAMAGE = FALSE;
 	}
+
+	startedDrawing = TRUE;
 
 	/*
 	 * get the points from the cgmc

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.28 1993-01-06 21:12:10 clyne Exp $
+ *	$Id: ctrans.c,v 1.29 1993-01-07 00:32:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,6 +68,11 @@ char	**Argv;
 int	Argc;
 boolean	stand_Alone;	/* if false then the driver provides a window	*/
 boolean	Batch;		/* if true don't prompt for user interaction	*/ 
+/*
+ * this flag is a hack to prevent bogus CGM's from attempting to change 
+ * background colour after drawing has begun for a frame
+ */
+boolean startedDrawing = FALSE;
 
 /*
  * storate for some global command line options. 

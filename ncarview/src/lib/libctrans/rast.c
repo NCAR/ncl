@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.20 1993-01-06 21:12:23 clyne Exp $
+ *	$Id: rast.c,v 1.21 1993-01-07 00:33:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,7 @@ extern	boolean	*softFill;
 extern	boolean	deviceIsInit;
 extern  int  	currdev;
 extern  int  	optionDesc;
+extern	boolean	startedDrawing;
 
 
 static	struct	Opts {
@@ -163,14 +164,6 @@ static	init_color_tab()
 
 }
 	
-static	set_back_color(colr)
-	CDtype	colr;
-{
-	colorTab.rgb[0].red = colr.red;
-	colorTab.rgb[0].green = colr.green;
-	colorTab.rgb[0].blue = colr.blue;
-}
-
 #define DEFAULT_WIDTH   512	/* default raster width         */
 #define DEFAULT_HEIGHT  512	/* default raster height        */
 get_resolution(dev_extent, opts, name)
@@ -445,6 +438,7 @@ CGMC *c;
 	Raster	*RasterOpenWrite();
 	int	status = 0;
 
+	startedDrawing = FALSE;
 	/*
 	 *      parse raster specific command line args
 	 *      (currently only resolution accepted       )
@@ -620,11 +614,7 @@ CGMC *c;
 int	Ras_BegPicBody(c)
 CGMC *c;
 {
-	if (BACKCOLR_DAMAGE) {
-		set_back_color(BACKCOLR);
-		BACKCOLR_DAMAGE = FALSE;
-	}
-
+	startedDrawing = FALSE;
 	return (0);
 }
 
@@ -717,6 +707,8 @@ CGMC *c;
 		);
 		CLIP_DAMAGE = FALSE;
 	}
+
+	startedDrawing = TRUE;
 
 
 	/*
