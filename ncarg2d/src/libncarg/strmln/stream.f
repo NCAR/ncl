@@ -1,5 +1,5 @@
 C
-C       $Id: stream.f,v 1.9 1996-02-08 20:30:13 dbrown Exp $
+C       $Id: stream.f,v 1.10 1996-02-15 22:08:37 dbrown Exp $
 C
       SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
@@ -15,6 +15,7 @@ C IAM    - An area map array, may be dummied if 'MSK' is zero
 C STUMSL - User modifiable masked drawing function; also may
 C          be dummied if 'MSK is zero
 C WRK    - workspace 
+C
 C
 C ---------------------------------------------------------------------
 C
@@ -167,9 +168,5 @@ C
       CALL GSLWSC(ROW)
       CALL GSTXCI(IOT)
 C
-      RETURN
-      END
-C
-      SUBROUTINE STDUMB
       RETURN
       END

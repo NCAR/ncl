@@ -1,5 +1,5 @@
 C
-C       $Id: strmln.f,v 1.14 1996-02-08 20:30:14 dbrown Exp $
+C       $Id: strmln.f,v 1.15 1996-02-15 22:08:37 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -122,6 +122,7 @@ C
 C LANGUAGE               FORTRAN 77
 C
 C The remainder of the original STRMLN discussion follows the code
+C
 C
 C
 C ---------------------------------------------------------------------
@@ -254,7 +255,7 @@ C X1,X2,Y1,Y2     - temporary viewport boundary
 C X3,Y3,X4,Y4     - temporary window boundary
 C LEN             - maximum vector size in Metacode coords
 C
-      EXTERNAL STDUMB
+      EXTERNAL STUMSL
       DIMENSION RDA(1)
       DIMENSION IDA(1)
       DATA RDA / 0.0 /
@@ -277,6 +278,7 @@ C
       CALL STGETR('DFM - Differential magnitude', SDFM) 
       CALL STGETR('CDS - Critical Displacement', SCDS)
       CALL STGETR('SSP - Streamline Spacing', SSSP)
+      CALL STGETI('MSK - Masking Flag', ISMSK)
 C
 C Load the communication common block with parameters
 C
@@ -395,11 +397,15 @@ C
 C
       END IF
 C
+C Turn off masking in all cases: w/o an areamap it can't work
+C
+      CALL STSETI('MSK - mask to area map', 0)
+C
 C Initialize the stream plotting routine and draw the streamlines
 C
       CALL STINIT(U,LU,V,LV,RDA,0,M,N,WORK,LW)
 C
-      CALL STREAM(U,V,RDA,IDA,STDUMB,WORK)
+      CALL STREAM(U,V,RDA,IDA,STUMSL,WORK)
 C
 C Fetch the error value into the output parameter, IER
 C
@@ -426,6 +432,7 @@ C
       CALL STSETR('DFM - Differential magnitude', SDFM) 
       CALL STSETR('CDS - Critical Displacement', SCDS)
       CALL STSETR('SSP - Streamline Spacing', SSSP)
+      CALL STGETI('MSK - Masking Flag', ISMSK)
 C
 C
 C Restore the compatibility flag value if necessary
