@@ -1,14 +1,14 @@
 #
-#	$Id: yMakefile,v 1.1 1999-08-19 23:47:55 fred Exp $
+#	$Id: yMakefile,v 1.2 1999-08-20 23:29:23 fred Exp $
 #
 
 MYNAME	= edsgrid
 
 SRCS = \
-	shex01.f
+	c_shex01.c shex01.f
 
 OBJS = \
-	shex01.o
+	c_shex01.o shex01.o
 
 PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
 SYS_LIBS		= $(XLIB) $(CTOFLIBS)
@@ -16,3 +16,4 @@ SYS_LIBS		= $(XLIB) $(CTOFLIBS)
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 FExampleTarget(shex01,shex01.o)
+CExampleTarget(c_shex01,c_shex01.o)
