@@ -107,6 +107,7 @@ main() {
 
 	error_fp = stderr;
 	stdout_fp = stdout;
+	fprintf(stdout," Copyright (C) 1995-1998 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n",GetNCARGVersion());
 /*
          k = (mode_t)umask(22);
 	fprintf(stdout,"%d\n",k);

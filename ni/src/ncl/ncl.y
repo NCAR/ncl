@@ -207,7 +207,9 @@ statement_list :  statement eoln			{
 	| EXTERNAL UNDEF STRING	eoln			{
 								void (*init_function)(void);
 								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+/*
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($3));
+*/
 #if defined(HPUX)
 
 								$2->u.package->so_handle = shl_load(_NGResolvePath($3),BIND_IMMEDIATE,0L);
@@ -245,7 +247,9 @@ statement_list :  statement eoln			{
 								void (*init_function)(void);
 								$$ = NULL;
 								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+/*
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($4));
+*/
 #if defined(HPUX)
 								$3->u.package->so_handle = shl_load(_NGResolvePath($4),BIND_IMMEDIATE,0L);
 #else
@@ -359,7 +363,9 @@ block_statement_list : statement eoln {
 								void (*init_function)(void);
 								$$ = NULL;
 								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+/*
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($3));
+*/
 #if defined(HPUX)
 								$2->u.package->so_handle = shl_load(_NGResolvePath($3),BIND_IMMEDIATE,0L);
 #else
@@ -395,7 +401,9 @@ block_statement_list : statement eoln {
 								void (*init_function)(void);
 								$$ = NULL;
 								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+/*
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($4));
+*/
 #if defined(HPUX)
 								$3->u.package->so_handle = shl_load(_NGResolvePath($4),BIND_IMMEDIATE,0L);
 #else
