@@ -1,13 +1,13 @@
 #
-#	$Id: yMakefile,v 1.3 1993-11-01 17:36:14 boote Exp $
+#	$Id: yMakefile,v 1.4 1994-04-13 22:37:28 kennison Exp $
 #
 MYNAME	= ngmisg
 
 GENERIC_SRCS = \
-	ngdots.f   ngpict.f   ngputg.f   ngwsym.f
+	ngdots.f nggsog.f nggsog.f ngpict.f ngputg.f ngritd.f ngwsym.f
 
 GENERIC_OBJS = \
-	 ngdots.o   ngpict.o   ngputg.o   ngwsym.o
+	ngdots.o nggsog.o nggsog.o ngpict.o ngputg.o ngritd.o ngwsym.o
 
 SOURCES = $(GENERIC_SRCS)
 
