@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:14:42 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-04-06 15:11:25 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -29,13 +29,6 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-#if (defined(u370) && defined(unix)) || defined(RS6000)
-#
-# ibm compiler broke with optimizer
-#
-FOPT	= -g
-#endif
-	
 PartialLibrary(libncarg.a,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary
