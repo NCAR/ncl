@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.8 1995-05-01 22:15:08 scheitln Exp $
+; $Id: basic05n.ncl,v 1.9 1995-05-15 17:16:34 scheitln Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -208,6 +208,23 @@ setvalues lbar
 	"lbTitleString" : "Psgcap Colormap"    ; Labelbar title
 	"lbLabelStride" :  15                  ; Label every 15th entry
         "lbBoxCount"    :  230                 ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "example"	      ; Example colormap
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Example Colormap"    ; Labelbar title
+	"lbLabelStride" :  10                  ; Label every 10th entry
+        "lbBoxCount"    :  114                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation

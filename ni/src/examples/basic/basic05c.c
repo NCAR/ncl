@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.6 1995-05-10 17:13:08 scheitln Exp $
+ * $Id: basic05c.c,v 1.7 1995-05-15 17:16:32 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -376,6 +376,37 @@ main()
 
         /* Number of entries to display */
         NhlRLSetInteger(rlist, "lbBoxCount", 230);
+
+	NhlSetValues(lbar,rlist);
+
+/*
+ * Draw the labelbar displaying the default colormap and textual annotation
+ */
+	NhlDraw(lbar);
+	NhlDraw(text);
+	NhlFrame(wks);
+
+/*
+ *  Change the colormap to one of the predefined colormaps
+ */
+
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,"wkColorMap","example");
+	NhlSetValues(wks,rlist);
+/*
+ *  Change the labelbar title, annotation, and number of entries.
+ */
+
+        NhlRLClear(rlist);
+
+        /* Labelbar title */
+        NhlRLSetString(rlist,"lbTitleString","Example Colormap");
+
+        /* Label every 15th entry */
+        NhlRLSetInteger(rlist, "lbLabelStride", 10);                  
+
+        /* Number of entries to display */
+        NhlRLSetInteger(rlist, "lbBoxCount", 114);
 
 	NhlSetValues(lbar,rlist);
 

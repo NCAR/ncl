@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.6 1995-05-01 21:50:27 scheitln Exp $
+C $Id: basic05f.f,v 1.7 1995-05-15 17:16:33 scheitln Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -342,6 +342,33 @@ C Draw and frame the labelbar
       call NhlFDraw(text,ierr)
       call NhlFFrame(wks,ierr)
 
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','example',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Example Colormap',
+     $     ierr)
+
+C Label every 15th entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',10,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',114,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+
 C  This next example changes three entries in the colormap.  Changing the
 C  first entry (colormap index 0) in the colormap, sets the background
 C  color for a plot. The second entry (color index 1) sets the foreground
@@ -437,9 +464,9 @@ C the colormap is a smooth table that ranges from red to blue.
       newcmap(2,1) = 0.
       newcmap(3,1) = 0.
       do 10, i=2,100
-         newcmap(1,i) = 1.-(i/99.)
-         newcmap(2,i) = i/99.
-         newcmap(3,i) = i/99.
+         newcmap(1,i) = 1.-(i/100.)
+         newcmap(2,i) = i/100.
+         newcmap(3,i) = i/100.
  10   continue
 
 C Assign the new color map to the workstation object.
