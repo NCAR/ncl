@@ -1,5 +1,5 @@
 C
-C      $Id: cn10f.f,v 1.3 1996-05-09 15:37:38 haley Exp $
+C      $Id: cn10f.f,v 1.4 1997-05-22 16:19:05 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -206,7 +206,7 @@ C
 C Open the netCDF file.
 C
       call gngpat(filename,'data',ierr)
-      flen = 14
+      flen = 13
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
             filename(i:i+flen)='/cdf/cn10n.cdf'
@@ -362,7 +362,7 @@ C
       call NhlFCreate(y_dataid,'xyData',nhlfcoordarraysclass,appid,
      +     srlist,ierr)
 
-      call NhlFRLClear(srlist,ierr)
+      call NhlFRLClear(srlist)
       call NhlFRLSetFloat(srlist,'vpXF',.2,ierr)
       call NhlFRLSetFloat(srlist,'vpYF',.85,ierr)
       call NhlFRLSetFloat(srlist,'vpWidthF',.7,ierr)
