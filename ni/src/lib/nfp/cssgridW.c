@@ -157,6 +157,7 @@ NhlErrorTypes css2c_W(void)
       }
     }
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes csc2s_W(void)
@@ -275,6 +276,7 @@ NhlErrorTypes csc2s_W(void)
       }
     }
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes cssetp_W(void)
@@ -833,6 +835,7 @@ NhlErrorTypes csvoro_W(void)
       return(NhlNOERROR);
     }
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes cssgrid_W(void)
@@ -1128,4 +1131,5 @@ NhlErrorTypes cssgrid_W(void)
   else if (ztype == NCL_float) {
     return( NclReturnValue( (void*) zout, zdim, zsize, NULL, NCL_float, 0) );
   }
+  return(NhlNOERROR);
 }

@@ -662,6 +662,8 @@ NhlErrorTypes wmfndn(float x1, float y1, float x2, float y2,
   *xp = x1t;
   *yp = y1t;
 
+  return(NhlNOERROR);
+
 }
 
 NhlErrorTypes wmlabs_W( void )
