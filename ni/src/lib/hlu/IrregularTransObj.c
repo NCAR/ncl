@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.40 1998-04-16 03:08:39 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.41 1998-07-07 21:52:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -858,7 +858,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		irp->x_inter_points = (float*)
                         NhlMalloc(sizeof(float) * (irp->x_irr_count));
-		if (!irp->x_inter_points == NULL) {
+		if (irp->x_inter_points == NULL) {
                         e_text = "%s: dynamic memory allocation error";
                         NHLPERROR((NhlFATAL,ENOMEM,e_text,error_lead));
                         return NhlFATAL;
@@ -1012,7 +1012,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		irp->y_inter_points = (float*)
                         NhlMalloc(sizeof(float) * (irp->y_irr_count));
-		if (!irp->y_inter_points == NULL) {
+		if (irp->y_inter_points == NULL) {
                         e_text = "%s: dynamic memory allocation error";
                         NHLPERROR((NhlFATAL,ENOMEM,e_text,error_lead));
                         return NhlFATAL;
