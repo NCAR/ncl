@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.32 1996-08-29 23:39:21 ethan Exp $
+ *      $Id: NclVar.c,v 1.33 1996-10-02 22:33:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -297,7 +297,15 @@ unsigned int type;
 	
 	tmp->obj.obj_id = obj->obj.id;
 	tmp->obj.obj_type = NCLVar;
-	tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+	if((var->var.thesym != NULL)&&(var->var.thesym->level != 1)) {
+		if(var->var.var_type == NORMAL) {
+			tmp->var.var_type = (NclApiVarTypes)NclAPIFUNCNORMAL;
+		} else {
+			tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+		} 
+	} else {
+		tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+	}
 	tmp->var.var_quark = var->var.var_quark;
 	tmp->var.n_dims = var->var.n_dims;
 	for ( i = 0; i < var->var.n_dims; i++) {

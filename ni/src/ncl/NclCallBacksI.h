@@ -31,7 +31,7 @@ NCLHLUVar = 			01000000
 /* NCLOneDValCoordData = 		040000000 */
 } NclApiObjTypes;
 
-typedef enum { NclAPINORMAL, NclAPIVARSUBSEL , NclAPICOORD, NclAPICOORDSUBSEL, NclAPIFILEVAR, NclAPIFILEVARSUBSEL,NclAPIPARAM,NclAPIRETURNVAR,NclAPIHLUOBJ } NclApiVarTypes;
+typedef enum { NclAPINORMAL, NclAPIVARSUBSEL , NclAPICOORD, NclAPICOORDSUBSEL, NclAPIFILEVAR, NclAPIFILEVARSUBSEL,NclAPIPARAM,NclAPIRETURNVAR,NclAPIHLUOBJ,NclAPIFUNCNORMAL } NclApiVarTypes;
 
 
 typedef struct _NclObjInfoRec {
@@ -58,7 +58,7 @@ typedef struct _NclVarClassInfo {
 } NclVarClassInfo;
 
 typedef struct _NclHLUVarInfoRec {
-	int foo;
+	struct _NclHLUObjInfoRec *the_hlu_info;
 } NclHLUVarInfoRec;
 
 typedef struct _NclHLUVarClassInfo {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.38 1996-09-27 22:44:54 ethan Exp $
+ *      $Id: Symbol.c,v 1.39 1996-10-02 22:34:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2488,6 +2488,11 @@ long*stride;
 				_NclSetStatus((NclObj)the_val,STATIC);
 			}
 			tmp->value = the_val->multidval.val;
+			tmp->n_dims= the_val->multidval.n_dims;
+			for(i = 0; i < the_val->multidval.n_dims; i++) {
+				tmp->dim_sizes[i] = the_val->multidval.dim_sizes[i];
+			}
+			_NclDestroyObj((NclObj)the_val);
 		} else {
 			tmp->elem_size = sizeof(int);
 			tmp->value = (void*)NclMalloc(sizeof(int)*the_val->multidval.totalelements);
@@ -2509,11 +2514,6 @@ long*stride;
 				
 			}
 		}
-		tmp->n_dims= the_val->multidval.n_dims;
-		for(i = 0; i < the_val->multidval.n_dims; i++) {
-			tmp->dim_sizes[i] = the_val->multidval.dim_sizes[i];
-		}
-		_NclDestroyObj((NclObj)the_val);
 		return(tmp);
 	} 
 	return(NULL);

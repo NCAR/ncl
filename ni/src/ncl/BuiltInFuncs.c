@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.43 1996-09-04 22:00:23 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.44 1996-10-02 22:33:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1463,7 +1463,7 @@ NhlErrorTypes _NclIDestroy
 	if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 		obj_ids = (obj*)tmp_md->multidval.val;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-			if((tmp_md->multidval.missing_value.has_missing) &&(obj_ids[i] != tmp_md->multidval.missing_value.value.objval)){
+			if((!tmp_md->multidval.missing_value.has_missing)||(obj_ids[i] != tmp_md->multidval.missing_value.value.objval)){
 				_NclDestroyObj(_NclGetObj(obj_ids[i]));
 			}
 		}

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.8 1996-05-15 22:51:46 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.9 1996-10-02 22:33:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 #include "Machine.h"
 #include "DataSupport.h"
 #include "NclHLUVar.h"
+#include "NclHLUObj.h"
 #include "NclCallBacksI.h"
 
 static NhlErrorTypes InitializeHLUVarClass(
@@ -105,18 +106,45 @@ unsigned int type;
 {
         NclHLUVarClassInfo  *tmp = NclMalloc(sizeof(NclHLUVarClassInfo));
         NclHLUVar var = (NclHLUVar)obj;
+	NclMultiDValHLUObjData tmp_md;
+	NclHLUObj tmp_ho;
         int i;
         
         tmp->obj.obj_id = obj->obj.id;
         tmp->obj.obj_type = NCLHLUVar;
-        tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+	if((var->var.thesym != NULL)&&(var->var.thesym->level != 1)) {
+                if(var->var.var_type == NORMAL) {
+                        tmp->var.var_type = (NclApiVarTypes)NclAPIFUNCNORMAL;
+                } else {
+                        tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+                }
+        } else {
+                tmp->var.var_type = (NclApiVarTypes)var->var.var_type;
+        }
         tmp->var.var_quark = var->var.var_quark;
         tmp->var.n_dims = var->var.n_dims;
         for ( i = 0; i < var->var.n_dims; i++) {
                 tmp->var.dim_sizes[i] = var->var.dim_info[i].dim_size;
                 tmp->var.dim_quarks[i] = var->var.dim_info[i].dim_quark;
         }
-	tmp->hlu.foo = 0;
+	tmp_md = _NclGetObj(var->var.thevalue_id);
+	tmp->hlu.the_hlu_info = (NclHLUObjInfoRec*)NclMalloc(sizeof(NclHLUObjInfoRec)*tmp_md->multidval.totalelements);
+	for(i = 0; i < tmp_md->multidval.totalelements;i++) {
+		tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[i]);
+		if(tmp_ho != NULL) {
+			tmp->hlu.the_hlu_info[i].hlu_id = tmp_ho->hlu.hlu_id;
+			tmp->hlu.the_hlu_info[i].hlu_name = tmp_ho->hlu.hlu_name;
+			tmp->hlu.the_hlu_info[i].parent_hluobj_id = tmp_ho->hlu.parent_hluobj_id;
+			tmp->hlu.the_hlu_info[i].class_ptr = tmp_ho->hlu.class_ptr;	
+		} else {
+			tmp->hlu.the_hlu_info[i].hlu_id = -1;	
+			tmp->hlu.the_hlu_info[i].hlu_name = -1;	
+			tmp->hlu.the_hlu_info[i].parent_hluobj_id= -1;	
+			tmp->hlu.the_hlu_info[i].class_ptr = NULL;	
+			
+		}
+	}
+	
         return((void*)tmp);
 }
 
