@@ -15,7 +15,7 @@
 #endif	BuildXlibDependentCode
 
 NCARG		= ../../../..
-LOCINCDIR	= /usr/local/include
+LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
