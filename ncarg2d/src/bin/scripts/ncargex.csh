@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.97 1996-08-30 14:20:50 haley Exp $
+#   $Id: ncargex.csh,v 1.98 1996-10-05 04:36:01 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -285,7 +285,7 @@ set gks_ffnd    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
 set gks_fpdc    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
                   pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 \
-                  pgkex22 pgkex23 pgkex24 pgkex25 pgkex26)
+                  pgkex22 pgkex23 pgkex24 pgkex25 pgkex26 pgkex27)
 set gks_flist   = ($gks_ffnd $gks_fpdc)
 
 set gks_cex     = (c_gtxpac)
