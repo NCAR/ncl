@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.28 2003-06-04 19:04:11 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.29 2003-08-13 21:26:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -84,6 +84,7 @@ typedef struct _NhlcnLabelAttrs {
 	float			x_pos;
 	float			y_pos;
 	NhlJustification	just;
+	int			count;   /* get only count of number of labels drawn */
 } NhlcnLabelAttrs;
 
 typedef struct _NhlcnRegionAttrs {
@@ -192,6 +193,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	line_dash_seglen_set;
 	float		line_dash_seglen;
 	NhlcnLineLabelPlacementMode	llabel_placement;
+	float           llabel_density;
 
 	NhlBoolean	low_use_high_attrs;
 	NhlBoolean	high_use_line_attrs;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.16 2003-06-04 19:04:11 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.17 2003-08-13 21:26:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -160,6 +160,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnHighUseLineLabelRes	"cnHighUseLineLabelRes"
 #define NhlNcnConstFUseInfoLabelRes	"cnConstFUseInfoLabelRes"
 #define NhlNcnLineLabelPlacementMode	"cnLineLabelPlacementMode"
+#define NhlNcnLineLabelDensityF		"cnLineLabelDensityF"
+#define NhlNcnLineLabelCount		"cnLineLabelCount"
 #define NhlNcnHighLowLabelOverlapMode	"cnHighLowLabelOverlapMode"
 
 #define NhlNcnLineLabelsOn		"cnLineLabelsOn"
@@ -195,6 +197,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnHighLabelPerimSpaceF	"cnHighLabelPerimSpaceF"
 #define NhlNcnHighLabelPerimThicknessF	"cnHighLabelPerimThicknessF"
 #define NhlNcnHighLabelPerimColor	"cnHighLabelPerimColor"
+#define NhlNcnHighLabelCount		"cnHighLabelCount"
 
 #define NhlNcnLowLabelsOn		"cnLowLabelsOn"
 #define NhlNcnLowLabelString		"cnLowLabelString"
@@ -213,6 +216,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnLowLabelPerimSpaceF	"cnLowLabelPerimSpaceF"
 #define NhlNcnLowLabelPerimThicknessF	"cnLowLabelPerimThicknessF"
 #define NhlNcnLowLabelPerimColor	"cnLowLabelPerimColor"
+#define NhlNcnLowLabelCount		"cnLowLabelCount"
 
 #define NhlNcnInfoLabelOn		"cnInfoLabelOn"
 #define NhlNcnInfoLabelString		"cnInfoLabelString"
@@ -349,6 +353,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
 
 #define NhlCcnLineLabelPlacementMode	"CnLineLabelPlacementMode"
+#define NhlCcnLineLabelDensityF		"CnLineLabelDensityF"
+#define NhlCcnLineLabelCount		"CnLineLabelCount"
 
 #define NhlCcnLowUseHighLabelRes	"CnLowUseHighLabelRes"
 #define NhlCcnHighUseLineLabelRes	"CnHighUseLineLabelRes"
@@ -357,7 +363,9 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 
 
 #define NhlCcnHighLabelString		"CnHighLabelString"
+#define NhlCcnHighLabelCount		"CnHighLabelCount"
 #define NhlCcnLowLabelString		"CnLowLabelString"
+#define NhlCcnLowLabelCount		"CnLowLabelCount"
 
 
 #define NhlCcnInfoLabelString		"CnInfoLabelString"

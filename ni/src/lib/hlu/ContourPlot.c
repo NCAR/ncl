@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.120 2003-07-14 23:11:02 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.121 2003-08-13 21:26:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -295,6 +295,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlcnLineLabelPlacementMode),
 		 Oset(llabel_placement),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRANDOMIZED),0,NULL},
+	{NhlNcnLineLabelDensityF,NhlCcnLineLabelDensityF,NhlTFloat,sizeof(float),
+		 Oset(llabel_density),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(llabel_strings),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -359,6 +362,9 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelPerimThicknessF,NhlCEdgeThicknessF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnLineLabelCount,NhlCcnLineLabelCount,NhlTInteger,
+		 sizeof(int),Oset(line_lbls.count),
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 
 /* High Label resources */
 
@@ -420,6 +426,9 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelPerimThicknessF,NhlCEdgeThicknessF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnHighLabelCount,NhlCcnHighLabelCount,NhlTInteger,
+		 sizeof(int),Oset(high_lbls.count),
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 
 /* Low label resources */
 
@@ -480,6 +489,9 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelPerimThicknessF,NhlCEdgeThicknessF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnLowLabelCount,NhlCcnLowLabelCount,NhlTInteger,
+		 sizeof(int),Oset(low_lbls.count),
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 
 /* Informational label resources */
 
@@ -4237,6 +4249,7 @@ static NhlErrorTypes ContourPlotPostDraw
 		}
 	}
 
+
 	return ret;
 }
 
@@ -4606,6 +4619,9 @@ static NhlErrorTypes cnDraw
 	}
 	
 	if (cnp->do_labels && cnp->label_order == order) {
+		cnp->line_lbls.count = 0;
+		cnp->high_lbls.count = 0;
+		cnp->low_lbls.count = 0;
 		gset_fill_int_style(GSTYLE_SOLID);
 
 		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
@@ -5257,6 +5273,14 @@ static NhlErrorTypes UpdateLineAndLabelParams
 			c_cpseti("LLO",0); /* fixed angle  */
 			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
 		}
+		if (cnp->llabel_density > 0.0) {
+			float rc1 = 0.25 / cnp->llabel_density;
+			float rc2 = 0.25 / cnp->llabel_density;
+			float rc3 = 0.05 / cnp->llabel_density;	
+			c_cpsetr("RC1",rc1);
+			c_cpsetr("RC2",rc2);
+			c_cpsetr("RC3",rc3);
+		}
 	}
 	else {
 		*do_labels = True;
@@ -5266,6 +5290,34 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		else {
 			c_cpseti("LLO",0); /* fixed angle  */
 			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
+		}
+		if (cnp->llabel_density > 0.0) {
+			float pc1 = 1.0;
+			float pc2 = 5.0;
+			float pc3 = 60.0;
+                        float pc4 = 0.05;
+			float pc5 = 0.15;
+                        float pc6 = 0.30;
+			float pw1 = 2.0;
+                        float pw2 = 0.0;
+                        float pw3 = 1.0;
+                        float pw4 = 1.0;
+
+			pc6 /= cnp->llabel_density;
+			pc3 = pc3 + 30 * (cnp->llabel_density - 1);
+			pc1 *= cnp->llabel_density;
+			pc5 *= cnp->llabel_density;
+
+			c_cpsetr("PC1",pc1);
+			c_cpsetr("PC2",pc2);
+			c_cpsetr("PC3",pc3);
+			c_cpsetr("PC4",pc4);
+			c_cpsetr("PC5",pc5);
+			c_cpsetr("PC6",pc6);
+			c_cpsetr("PW1",pw1);
+			c_cpsetr("PW2",pw2);
+			c_cpsetr("PW3",pw3);
+			c_cpsetr("PW4",pw4);
 		}
 	}
 
@@ -11140,6 +11192,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
+		Cnp->high_lbls.count++;
 		break;
 	case 4:
 		gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
@@ -11214,6 +11267,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
+		Cnp->low_lbls.count++;
 		break;
 	case 8:
 		gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
@@ -11299,6 +11353,7 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			c_pcsetc("FC",Cnp->line_lbls.fcode);
 			gset_linewidth((float)Cnp->line_lbls.thickness);
 		}
+		Cnp->line_lbls.count++;
 	}
 	else if (*iflg == 4) {
 		gset_line_colr_ind(Cnp->line_lbls.gks_plcolor);
