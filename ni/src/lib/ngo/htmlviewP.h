@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlviewP.h,v 1.1 1998-01-08 01:19:27 dbrown Exp $
+ *      $Id: htmlviewP.h,v 1.2 1998-09-24 19:54:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,6 @@
 typedef struct __hvHtmlObject
 {
         struct __hvHtmlObject	*next;
-        int			num_anchors;
         int			num_named_anchors;
         int			anchor_words;
         XmHTMLObject		*elements;

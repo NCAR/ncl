@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.8 1998-08-26 05:16:12 dbrown Exp $
+ *      $Id: htmlview.c,v 1.9 1998-09-24 19:54:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
 #if 0
 #define DOCTOP "ngdoc/ng4.0/"
 #else 
-#define DOCTOP "ngdoc/ng4.1alpha/"
+#define DOCTOP "ngdoc/ng4.1/"
 #endif
 
 #define DOCHLURESDIR "ref/hlu/obj/"
@@ -128,7 +128,6 @@ void _XmHTMLClearWidget
         html->html.anchor_data = NULL;
         html->html.formatted = NULL;
 	html->html.images = NULL;
-        html->html.num_anchors = 0;
         html->html.num_named_anchors = 0;
         html->html.anchor_words = 0;
         if (html->html.value)
@@ -151,7 +150,6 @@ void _XmHTMLSetWidget
         html->html.anchor_data = hobject->anchor_data;
         html->html.formatted = hobject->formatted;
 	html->html.images = hobject->images;
-        html->html.num_anchors = hobject->num_anchors;
         html->html.num_named_anchors = hobject->num_named_anchors;
         html->html.anchor_words = hobject->anchor_words;
         
@@ -170,7 +168,6 @@ void _XmHTMLSetObject
         hobject->anchor_data = html->html.anchor_data;
         hobject->formatted = html->html.formatted;
         hobject->images = html->html.images;
-        hobject->num_anchors = html->html.num_anchors;
         hobject->num_named_anchors = html->html.num_named_anchors;
         hobject->anchor_words = html->html.anchor_words;
         
@@ -242,11 +239,14 @@ static String GetContent(
         if (! hvp->filebase) {
 		/* contruct a command to get the doc for this resource */
 
-		sprintf(sbuf,"wget -T 15 -t 3 -s -S -O - '%s%s%s%s%s'",
-			hvp->urlbase,DOCTOP,DOCHLURESDIR,filename,DOCRESEXT);
 
 #if DEBUG_HTML        
+		sprintf(sbuf,"wget -T 15 -t 3 -s -S -O - '%s%s%s%s%s'",
+			hvp->urlbase,DOCTOP,DOCHLURESDIR,filename,DOCRESEXT);
 		fprintf(stderr,"%s\n",sbuf);
+#else
+		sprintf(sbuf,"wget -q -T 15 -t 3 -s -S -O - '%s%s%s%s%s'",
+			hvp->urlbase,DOCTOP,DOCHLURESDIR,filename,DOCRESEXT);
 #endif
 		fp = popen(sbuf,"r");
 
@@ -756,6 +756,11 @@ _NgCreateHtmlView(
                  XmNheight, 500,
 		 XmNimageEnable,False,
                  NULL);
+#if DEBUG_HTML	      
+	      fprintf(stderr, "%s, %i\n",
+		      XmHTMLVERSION_STRING, XmHTMLGetVersion());
+#endif
+
         }
         
         hvp = NhlMalloc(sizeof(NgHtmlViewRec));
