@@ -1,4 +1,11 @@
-/* ECMWF local table 2 version 140 (Wave) */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 140
+ * Usage: Wave
+ */ 
+
 TBLE2 ecmwf_140_params[] = {
 {220, "Mean wave period based on first moment", "s", "MP1"},
 {221, "Mean wave period based on second moment", "s", "MP2"},

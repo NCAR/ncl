@@ -1,3 +1,10 @@
+/*
+ * Deutscher Wetterdienst (DWD): Offenbach
+ * Center: 78
+ * Subcenter: 0
+ * Parameter table version: 2
+ */
+
 TBLE2 dwd_002_params[] = {
 {1, "pressure", "Pa", "PS"},
 {2, "pressure reduced to MSL", "Pa", "PS_MSL"},

@@ -1,4 +1,11 @@
-/* ECMWF local table 2 version 151 (Ocean - operational) */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 151
+ * Usage: Ocean - operational
+ */ 
+
 TBLE2 ecmwf_151_params[] = {
 {1, "Accumulated potential temperature", "deg C", "APT"},
 {2, "Accumulated salinity", "psu", "AS"},

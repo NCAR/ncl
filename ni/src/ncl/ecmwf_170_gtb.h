@@ -1,4 +1,11 @@
-/* ECMWF local table 2: Version Number 170 (Seasonal Forecasting). */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 170
+ * Usage: Seasonal Forecasting
+ */ 
+
 TBLE2 ecmwf_170_params[] = {
 {129, "Geopotential", "m**2 s**-2", "Z"},
 {130, "Temperature", "K", "T"},

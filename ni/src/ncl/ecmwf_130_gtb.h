@@ -1,3 +1,11 @@
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 130
+ * Usage: Atlantic Stratocumulus Transition Experiment (ASTEX)
+ */ 
+
 TBLE2 ecmwf_130_params[] = {
 {208, "Top solar radiation upward", "W m**-2", "TSRU"},
 {209, "Top thermal radiation upward", "W m**-2", "TTRU"},

@@ -1,4 +1,11 @@
-/* ECMWF local table 2 version 190 (DEMETER - Provisional) */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 190
+ * Usage:  Development of a European Multi model Ensemble system for seasonal to inter annual prediction (DEMETER) - Provisional
+ */ 
+
 TBLE2 ecmwf_190_params[] = {
 {34, "Sea surface temperature", "K", "SSTK"},
 {129, "Geopotential", "m**2 s**-2", "Z"},

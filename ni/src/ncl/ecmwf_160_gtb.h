@@ -1,4 +1,11 @@
-/* ECMWF local table 2 version 160 (ECMWF re-analysis statistics) */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 160
+ * Usage: ECMWF re-analysis statistics
+ */ 
+
 TBLE2 ecmwf_160_params[] = {
 {127, "Atmospheric tide", "-", "AT"},
 {128, "Budget values", "-", "BV"},

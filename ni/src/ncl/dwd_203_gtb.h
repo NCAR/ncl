@@ -1,3 +1,10 @@
+/*
+ * Deutscher Wetterdienst (DWD): Offenbach
+ * Center: 78
+ * Subcenter: 0
+ * Parameter table version: 203
+ */
+
 TBLE2 dwd_203_params[] = {
 {1, "pressure", "hPa", "PRESSURE"},
 {2, "geopotential height", "10 * gpm", "GEOPOT_H"},

@@ -1,4 +1,11 @@
-/* ECMWF local table 2 version 180 (ECSN - HIRETYCS) */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 180
+ * Usage: European Climate Support Network: High Resolution Ten Year Climate Simulation (ECSN - HIRETYCS)
+ */ 
+
 TBLE2 ecmwf_180_params[] = {
 {129, "Geopotential", "m**2 s**-2", "Z"},
 {130, "Temperature", "K", "T"},

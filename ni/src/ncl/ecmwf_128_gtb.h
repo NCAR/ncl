@@ -1,4 +1,10 @@
-/* ECMWF local table 2 version 128 */
+/* 
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 128
+ */ 
+
 TBLE2 ecmwf_128_params[] = {
 {1, "Stream function", "m**2 s**-1", "STRF"},
 {2, "Velocity potential", "m**2 s**-1", "VPOT"},

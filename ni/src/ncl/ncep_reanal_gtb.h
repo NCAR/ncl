@@ -1,3 +1,11 @@
+/* 
+ * US National Weather Service - NCEP (WMC)
+ * Center: 7
+ * Subcenter: 1 
+ * Parameter table version: 0
+ * Usage: Reanalysis
+ */ 
+
 TBLE2 ncep_reanal_params[] = {
 {1, "Pressure", "Pa", "PRES"},
 {2, "Pressure reduced to MSL", "Pa", "PRMSL"},

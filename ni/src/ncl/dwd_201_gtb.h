@@ -1,3 +1,10 @@
+/*
+ * Deutscher Wetterdienst (DWD): Offenbach
+ * Center: 78
+ * Subcenter: 0
+ * Parameter table version: 201
+ */
+
 TBLE2 dwd_201_params[] = {
 {1, "downward shortwave radiant flux density", "W/m**2", "DW_SW_FLUX"},
 {2, "upward shortwave radiant flux density", "W/m**2", "UW_SW_FLUX"},

@@ -1,3 +1,11 @@
+/* 
+ * US National Weather Service - NCEP (WMC)
+ * Center: 7
+ * Subcenter: 0 
+ * Parameter table version: 128
+ * Usage: Ocean Modeling Branch
+ */ 
+
 TBLE2 omb_params[] = {
 {2, "6.6 GHz", "K", "GHZ6"},
 {3, "10.7 GHz", "K", "GHZ10"},

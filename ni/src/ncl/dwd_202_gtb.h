@@ -1,3 +1,10 @@
+/*
+ * Deutscher Wetterdienst (DWD): Offenbach
+ * Center: 78
+ * Subcenter: 0
+ * Parameter table version: 202
+ */
+
 TBLE2 dwd_202_params[] = {
 {1, "jonswap parameter fm", "s**(-1)", "SEEG_PEAK"},
 {2, "jonswap parameter alpha", "1", "SEEG_ALPHA"},

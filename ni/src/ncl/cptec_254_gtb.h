@@ -1,3 +1,10 @@
+/*
+ * Brazilian Space Agency - INPE/CPTEC
+ * Center: 46
+ * Subcenter: 0
+ * Parameter table version: 254
+ */
+
 TBLE2 cptec_254_params[] = {
 {1, "Pressure", "hPa", "PRES"},
 {2, "Pressure reduced to MSL", "hPa", "PSNM"},

@@ -1,3 +1,10 @@
+/* 
+ * US Navy - Fleet Numerical Meteorology and Oceanography Center
+ * Center: 58
+ * Subcenter: 0
+ * Parameter table version: 0
+ */ 
+
 TBLE2 fnmoc_params[] = {
 {1, "pressure", "Pa", "PRES"},
 {2, "pressure reduced to msl", "Pa", "PRMSL"},

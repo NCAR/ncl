@@ -3955,6 +3955,10 @@ int wr_status;
 							ptable = &ecmwf_150_params[0];
 							ptable_count = sizeof(ecmwf_150_params)/sizeof(TBLE2);
 							break;
+						case 151:
+							ptable = &ecmwf_151_params[0];
+							ptable_count = sizeof(ecmwf_151_params)/sizeof(TBLE2);
+							break;
 						case 160:
 							ptable = &ecmwf_160_params[0];
 							ptable_count = sizeof(ecmwf_160_params)/sizeof(TBLE2);
@@ -3966,6 +3970,10 @@ int wr_status;
 						case 180:
 							ptable = &ecmwf_180_params[0];
 							ptable_count = sizeof(ecmwf_180_params)/sizeof(TBLE2);
+							break;
+						case 190:
+							ptable = &ecmwf_190_params[0];
+							ptable_count = sizeof(ecmwf_190_params)/sizeof(TBLE2);
 							break;
 						}
 						break;
