@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.3 1993-01-13 19:53:01 fred Exp $
+C	$Id: gesc.f,v 1.4 1993-01-15 17:44:23 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -77,7 +77,7 @@ C
         CUFLAG = -1
       ELSE IF (FCTID .EQ. -1395) THEN
 C
-C  Put out a CGM ESCAPE element that will cause ctrans to pause.
+C  Put out a CGM MESSAGE element.  The message string is in IDR.
 C
         FCODE = 93
         CONT  = 0
