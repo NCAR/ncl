@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmdrrg.m,v 1.3 1996-01-29 17:37:45 haley Exp $
+.\"	$Id: wmdrrg.m,v 1.4 1998-02-04 05:15:25 haley Exp $
 .\"
 .TH WMDRRG 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -63,10 +63,8 @@ the points specified in the X and Y arrays serve as control points for
 a spline curve that is fitted to the input polygon.  X(N) should equal
 X(1) and Y(N) should equal Y(1).
 .SH ACCESS
-To use WMDRRG, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmdrrg, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMDRRG or c_wmdrrg, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmsetc, wmseti, wmsetr, wmap_params
@@ -75,7 +73,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -28,10 +28,8 @@ This routine allows you to retrieve the current value of Softfill
 parameters. For a complete list of parameters available in this
 utility, see the softfill_params man page.
 .SH ACCESS
-To use SFGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_sfgetc, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use SFGETC or c_sfgetc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the softfill man page for a description of all Softfill error
 messages and/or informational messages.
@@ -43,7 +41,7 @@ sfsgfa, sfwrld, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

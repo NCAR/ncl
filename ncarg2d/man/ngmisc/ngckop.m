@@ -27,14 +27,12 @@ WKID is open, otherwise it returns a "0".
 .fi
 sets IOPEN to "1" if WKID is open and sets IOPEN to "0" otherwise.
 .SH ACCESS
-To use NGCKOP, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngdots, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGCKOP or c_ngckop, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online URL: http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

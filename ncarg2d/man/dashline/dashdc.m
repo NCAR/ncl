@@ -64,10 +64,8 @@ when the "quick" version is in use, an error exit will result.
 A dash pattern defined by a call to DASHDC will supersede one defined
 by an earlier call to DASHDB or DASHDC.
 .SH ACCESS
-To use DASHDC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_dashdc, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use DASHDC or c_dashdc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 dashline, dashline_params,
@@ -78,7 +76,7 @@ NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

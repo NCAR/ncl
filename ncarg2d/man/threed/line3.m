@@ -41,10 +41,8 @@ Use the ncargex command to see the following relevant example:
 tpwrzt,
 fthex02.
 .SH ACCESS
-To use LINE3, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_line3, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use LINE3 or c_line3, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 threed,
@@ -66,7 +64,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -36,10 +36,8 @@ This routine allows you to retrieve the current value of
 Plotchar parameters.  For a complete list of parameters available
 in this utility, see the plotchar_params man page.
 .SH ACCESS
-To use PCGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_pcgetc, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use PCGETC or c_pcgetc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.
@@ -64,7 +62,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

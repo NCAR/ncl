@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmlgnd.m,v 1.3 1996-01-29 17:37:51 haley Exp $
+.\"	$Id: wmlgnd.m,v 1.4 1998-02-04 05:15:29 haley Exp $
 .\"
 .TH WMLGND 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -48,10 +48,8 @@ NTYPE=1. Choices for IROWS x ICOLS are: 1x6, 2x3, 3x2, and 6x1.
 The only internal parameter that controls the appearance of a legend is
 COL, specifying its color.
 .SH ACCESS
-To use WMLGND, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmlgnd, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMLGND or c_wmlgnd, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmsetc, wmseti, wmsetr, wmap_params
@@ -60,7 +58,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nhlf77.m,v 1.5 1997-03-26 23:14:57 haley Exp $
+.\"	$Id: nhlf77.m,v 1.6 1998-02-04 05:13:34 haley Exp $
 .\"
 .TH NHLF77 1NCARG "April 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -54,7 +54,7 @@ Online:
 .BR ncargintro(5NCARG)
 .sp
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

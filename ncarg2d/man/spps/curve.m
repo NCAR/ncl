@@ -38,9 +38,7 @@ GKS routines GSLN, GSLWSC, GSCR, and GSPLCI, before calling CURVE.
 Use the ncargex command to see the following relevant examples: 
 sfex01, sfex02, and tsoftf.
 .SH ACCESS
-To use CURVE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_curve, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+To use CURVE or c_curve, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
@@ -52,7 +50,7 @@ NCAR Graphics Fundamentals, UNIX Version
 User's Guide for NCAR GKS-0A Graphics;
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

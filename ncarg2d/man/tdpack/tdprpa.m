@@ -25,17 +25,15 @@ the coordinates of the projection of the point in the projection plane.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH ACCESS
-To use TDPRPA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_tdprpa,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.
+To use TDPRPA or c_tdprpa, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH SEE ALSO
 Online:
 tdclrs, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
 tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params,
 tdpara, tdplch, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstri, tdstrs
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

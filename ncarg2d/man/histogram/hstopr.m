@@ -137,10 +137,8 @@ C
 Example  "ncargex thstmv" shows three
 examples of histograms with missing values in the input data.
 .SH ACCESS
-To use HSTOPR, load the NCAR Graphics libraries ncarg, ncarg_gks, and
-ncarg_c, preferably in that order.  To use c_hstopr, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
-ncarg_c, preferably in that order.
+To use HSTOPR or c_hstopr, load the NCAR Graphics libraries ncarg, ncarg_gks, and
+ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the histogram man page for a description of all Histogram error
 messages and/or informational messages.
@@ -151,7 +149,7 @@ histogram, histogram_params, hstopc, hstopi, hstopl, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

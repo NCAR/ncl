@@ -60,10 +60,8 @@ c_ppunpo
 .br
 c_ppuntr
 .SH ACCESS
-To use Polypack, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use the Polypack
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use Polypack routines, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 None.  All error conditions in Polypack routines are reported by means
 of an error-flag argument.
@@ -75,7 +73,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

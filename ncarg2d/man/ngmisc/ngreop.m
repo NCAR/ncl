@@ -153,10 +153,8 @@ metafile for appending.
 Use the ncargex command to see the following relevant example: 
 pgkex27.
 .SH ACCESS
-To use NGREOP, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngsrat, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGREOP or c_ngreop, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 NGREOP issues the same messages as those issued by GOPWK.
 .SH SEE ALSO
@@ -166,7 +164,7 @@ ngsrat(3NCARG),
 .sp
 Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -29,10 +29,8 @@ This routine allows you to set the current value of Tdpack
 parameters. For a complete list of parameters available in this 
 utility, see the "tdpack_params" man page.
 .SH ACCESS
-To use TDSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_tdsetr,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.
+To use TDSETR or c_tdsetr, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH MESSAGES
 See the "tdpack" man page for a description of all Tdpack error
 messages and/or informational messages.
@@ -42,7 +40,7 @@ tdclrs, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
 tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params,
 tdpara, tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsort, tdstri, tdstrs
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

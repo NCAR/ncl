@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_marker_type.m,v 1.6 1996-01-29 17:34:29 haley Exp $
+.\"	$Id: ginq_marker_type.m,v 1.7 1998-02-04 05:12:38 haley Exp $
 .\"
 .TH GINQ_MARKER_TYPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -30,7 +30,7 @@ set by default or by a call to gset_marker_type.
  X (cross)
 .RE
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -50,7 +50,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -123,9 +123,7 @@ c_tdotri
 c_tdsort
 .SH ACCESS
 To use Tdpack, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use the Tdpack
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called. By default, SETER writes a message to the standard
@@ -168,7 +166,7 @@ tdclrs, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
 tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack_params, tdpara,
 tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstri, tdstrs
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

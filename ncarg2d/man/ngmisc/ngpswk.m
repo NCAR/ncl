@@ -65,10 +65,8 @@ would be used as the third argument in a call to the GKS function GOPWK
 for a workstation that would produce Encapsulated color Postscript in
 landscape mode.
 .SH ACCESS
-To use NGPSWK, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngpswk, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGPSWK or c_ngpswk, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 Warning messages will be issued if one calls NGPSWK with unrecognizable
 arguments.
@@ -86,7 +84,7 @@ Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -32,17 +32,15 @@ perimeter), 2 (draw a perimeter with inward-pointing ticks), or 3
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH ACCESS
-To use TDGRID, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_tdgrid,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.
+To use TDGRID or c_tdgrid, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH SEE ALSO
 Online:
 tdclrs, tddtri, tdgeti, tdgetr, tdgrds, tdgtrs, tdinit, tditri, tdlbla,
 tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params, tdpara,
 tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstri, tdstrs
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

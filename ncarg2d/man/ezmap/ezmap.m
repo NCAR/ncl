@@ -291,9 +291,7 @@ segment to see if it ought to be plotted and, if not, to delete it. This
 can be used (for example) to reduce the clutter in northern Canada.
 .RE
 .SH ACCESS 
-To use Ezmap routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_c, preferably in that order.  To use the 
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
+To use Ezmap Fortran or C routines, load the NCAR Graphics libraries ncarg,
 ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
@@ -507,7 +505,7 @@ Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial; 
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

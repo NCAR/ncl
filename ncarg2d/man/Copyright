@@ -1,6 +1,16 @@
 The contents of this directory are copyright protected:
 -------------------------------------------------------
-NCAR Graphics - UNIX Version 4.0.1
+<<<<<<< Copyright
+<<<<<<< Copyright
+NCAR Graphics - UNIX Version 4.1
+Copyright (C) 1987-1998
+=======
+NCAR Graphics - UNIX Version 3.2
+Copyright (C) 1987, 1988, 1989, 1991, 1993
+>>>>>>> 1.2
+=======
+NCAR Graphics - UNIX Version 4.1
 Copyright (C) 1987-1996
+>>>>>>> 1.5
 University Corporation for Atmospheric Research
 The use of this Software is governed by a License Agreement.

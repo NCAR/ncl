@@ -45,11 +45,9 @@ c_rgbyiq
 .br
 c_yiqrgb
 .SH ACCESS 
-To use Colconv routines, load the NCAR Graphics libraries
+To use Colconv or c_colconv routines, load the NCAR Graphics libraries
 ncarg, ncarg_gks, and ncarg_c, preferably in that order.
-To use the Colconv C-bindings, load the NCAR Graphics libraries
-ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
-in that order.
+
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called in such a way that it writes a message to the standard
@@ -88,7 +86,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

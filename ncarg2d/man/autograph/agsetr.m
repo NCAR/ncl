@@ -28,10 +28,8 @@ This routine allows you to set the current value of
 Autograph parameters.  For a complete list of parameters available
 in this utility, see the autograph_params man page.
 .SH ACCESS 
-To use AGSETR, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.  To use c_agsetr, 
-the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.  
+To use AGSETR or c_agsetr, load the NCAR Graphics libraries ncarg, 
+ncarg_gks, and ncarg_c, preferably in that order.    
 To get smoother curves, drawn using spline interpolation, also 
 load libdashsmth.o.  Or, you can use the ncargf77 command to 
 compile your program and load the above libraries, then, to 
@@ -72,7 +70,7 @@ ezy
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: geval_tran_matrix.m,v 1.7 1996-01-29 17:34:19 haley Exp $
+.\"	$Id: geval_tran_matrix.m,v 1.8 1998-02-04 05:12:33 haley Exp $
 .\"
 .TH GEVAL_TRAN_MATRIX 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -83,7 +83,7 @@ fixed point (.5,.5) ); and shift by .25 in X and 0. in Y.  The
 input values for the fixed point and shift vector are in world
 coordintes.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -102,7 +102,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

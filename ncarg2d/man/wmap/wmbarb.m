@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmbarb.m,v 1.3 1996-01-29 17:37:43 haley Exp $
+.\"	$Id: wmbarb.m,v 1.4 1998-02-04 05:15:22 haley Exp $
 .\"
 .TH WMBARB 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -28,10 +28,8 @@ Set the values for the appropriate internal parameters before calling
 WMBARB to produce the wind barb.  The internal parameters that control
 the appearance of wind barbs are: COL, WBA, WBD, WBF, WBS, WBT.
 .SH ACCESS
-To use WMBARB, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmbarb, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMBARB or c_wmbarb, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmlabs, wmsetc, wmseti, wmsetr, wmstnm, wmap_params
@@ -40,7 +38,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

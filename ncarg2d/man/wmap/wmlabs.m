@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmlabs.m,v 1.3 1996-01-29 17:37:49 haley Exp $
+.\"	$Id: wmlabs.m,v 1.4 1998-02-04 05:15:27 haley Exp $
 .\"
 .TH WMLABS 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -61,10 +61,8 @@ AOC (for arrows); DBC, DTC, DTS (for dots); CC1, CC2, CC3 (for the cloud icon);
 LC1, LC2, LC3 (for lightening bolts); SC1, SC2, SC3, SC4 (for the sun icon);
 COL.
 .SH ACCESS
-To use WMLABS, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmlabs, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMLABS or c_wmlabs, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmsetc, wmseti, wmsetr, wmap_params
@@ -73,7 +71,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

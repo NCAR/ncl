@@ -264,10 +264,8 @@ MAPEOD
 .br
 MAPUSR
 .SH ACCESS 
-To use Ezmap routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_c, preferably in that order.  To use the 
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
-ncarg_gks, and ncarg_c, preferably in that order.
+To use Ezmap or c_ezmap routines, load the NCAR Graphics libraries ncarg,
+ncarg_gks, and ncarg_c, preferably in that order.  
 .SH MESSAGES
 Possible error-flag values are as shown in the following table:
 .RS 4
@@ -377,7 +375,7 @@ ncarg_cbind
 Hardcopy: 
 NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

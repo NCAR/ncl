@@ -77,10 +77,8 @@ device coordinates, and
 fcoord2 shows the mapping from NCAR Graphics user coordinates to GKS
 normalized device coordinates.
 .SH ACCESS
-To use SET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_set, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use SET or c_set, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 gsvp, gswn, getset, getusv, setusv, spps, spps_params, ncarg_cbind
@@ -90,7 +88,7 @@ NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics;
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

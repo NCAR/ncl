@@ -72,9 +72,7 @@ and world coordinates.
 Use the ncargex command to see the following relevant examples: 
 arex01, mpex07, mpex09, cpexcc.
 .SH ACCESS
-To use GETSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_getset, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+To use GETSET or c_getset, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
@@ -84,7 +82,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

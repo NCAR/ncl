@@ -182,10 +182,8 @@ other coordinate system.
 CPSCAE -
 Updates a particular element of a user's cell array.	
 .SH ACCESS 
-To use Conpack, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use the C bindings, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use the Conpack Fortran or C routines, load the NCAR Graphics
+libraries ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 Various error conditions can occur in Conpack.  Each of these results in
 a call to the error-handling routine SETER, with a final argument indicating
@@ -397,7 +395,7 @@ cpsetc, cpseti, cpsetr, cpsprs, cpsps1, cpsps2, ncarg_cbind
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -32,9 +32,7 @@ This routine allows you to set the current value of
 Scrolled_title parameters.  For a complete list of parameters available
 in this utility, see the scrolled_title_params man page.
 .SH ACCESS
-To use SLSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_c, preferably in that order.  To use c_slseti, load 
-the NCAR Graphics libraries ncarg, ncarg_gks,
+To use SLSETI or c_slseti, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the scrolled_title man page for a description of all Scrolled_title error
@@ -56,7 +54,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -17,10 +17,8 @@ This routine resets all Vectors parameters to their default values.
 For a complete list of the parameters affected and their default
 values, see the vectors_params man page.
 .SH ACCESS
-To use VVRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_vvrset, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use VVRSET or c_vvrset, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 vectors,
@@ -40,7 +38,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

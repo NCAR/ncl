@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqnt.m,v 1.6 1996-01-29 17:33:49 haley Exp $
+.\"	$Id: gqnt.m,v 1.7 1998-02-04 05:12:15 haley Exp $
 .\"
 .TH GQNT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -38,7 +38,7 @@ gswn, gsvp, gselnt, gqcntn, gqmntn, getset, gsclip, gqclip, ginq_norm_tran
 Hardcopy:
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

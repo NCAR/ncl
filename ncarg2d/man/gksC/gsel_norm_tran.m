@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsel_norm_tran.m,v 1.7 1996-01-29 17:34:36 haley Exp $
+.\"	$Id: gsel_norm_tran.m,v 1.8 1998-02-04 05:12:42 haley Exp $
 .\"
 .TH GSEL_NORM_TRAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -31,7 +31,7 @@ gset_vp.
 When a normalization transformation is selected, all world coordinate
 arguments to GKS functions are transformed by it.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -46,7 +46,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

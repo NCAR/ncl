@@ -211,7 +211,7 @@ example:
 stex02,
 tvelvc.
 .SH ACCESS
-To use VELVCT, load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use VELVCT or c_velvct, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
@@ -231,7 +231,7 @@ vvudmv,
 vvumxy,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

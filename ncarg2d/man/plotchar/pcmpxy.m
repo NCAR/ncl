@@ -159,10 +159,8 @@ CALL PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 The default version of PCMPXY does several useful mappings;
 a user version may be supplied to do others.
 .SH ACCESS
-To use PCMPXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_pcmpxy, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use PCMPXY or c_pcmpxy, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 plotchar,
@@ -183,7 +181,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

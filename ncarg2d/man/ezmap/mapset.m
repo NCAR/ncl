@@ -120,10 +120,8 @@ fgkgpl,
 fgkgtx,
 fngngdts.
 .SH ACCESS
-To use MAPSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_mapset, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.
+To use MAPSET or c_mapset, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.
@@ -188,7 +186,7 @@ ncarg_cbind
 Hardcopy:  
 NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

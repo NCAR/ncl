@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: psblack.m,v 1.6 1996-01-29 17:35:49 haley Exp $
+.\"	$Id: psblack.m,v 1.7 1998-02-04 05:13:36 haley Exp $
 .\"
 .TH PSBLACK 1NCARG "May 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -22,7 +22,7 @@ Graphics.
 .SH SEE ALSO
 ctrans(1NCARG), pswhite(1NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

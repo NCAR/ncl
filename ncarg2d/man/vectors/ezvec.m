@@ -15,7 +15,7 @@ transition to the new version of the utility. When writing new code
 you are encouraged not to use this entry point, since it provides less
 capability than the standard Vectors interface, and may eventually
 be phased out.
-.SH C-BINDING SYNOPSIS
+.SH C-BINDING SYNOPSIS#
 #include <ncarg/ncargC.h>
 .sp
 void c_ezvec (float *u, float *v, int m, int n)
@@ -89,7 +89,7 @@ vvudmv,
 vvumxy,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

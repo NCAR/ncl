@@ -26,9 +26,7 @@ specifying the file name of the disk file.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH ACCESS
-To use GFLAS4, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_gflas4, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+To use GFLAS4 or c_gflas4, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
@@ -42,7 +40,7 @@ Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

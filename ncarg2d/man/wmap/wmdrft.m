@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmdrft.m,v 1.3 1996-01-29 17:37:45 haley Exp $
+.\"	$Id: wmdrft.m,v 1.4 1998-02-04 05:15:23 haley Exp $
 .\"
 .TH WMDRFT 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -35,10 +35,8 @@ a spline curve that is fitted between the first and last point.  The spline
 passes through the given points.  If the desired front line is reasonably 
 smooth, then only a few input points need be specified.
 .SH ACCESS
-To use WMDRFT, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmdrft, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMDRFT or c_wmdrft, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmsetc, wmseti, wmsetr, wmap_params
@@ -47,7 +45,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

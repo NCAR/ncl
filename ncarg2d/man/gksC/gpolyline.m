@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolyline.m,v 1.7 1996-01-29 17:34:35 haley Exp $
+.\"	$Id: gpolyline.m,v 1.8 1998-02-04 05:12:42 haley Exp $
 .\"
 .TH GPOLYLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -21,7 +21,7 @@ user coordinates.  Among other things, this means that the log scaling
 and mirror-imaging features available via the c_set call and the SPPS
 functions for drawing lines are not applicable here.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -42,7 +42,7 @@ User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document"
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -153,10 +153,8 @@ c_dpsmth
 .br
 c_dpvect
 .SH ACCESS
-To use Dashpack, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use the Dashpack
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use the Dashpack C or Fortran routines, load the NCAR Graphics
+libraries ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called. By default, SETER writes a message to the standard
@@ -332,7 +330,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

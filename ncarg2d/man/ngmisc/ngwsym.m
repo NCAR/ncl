@@ -484,10 +484,8 @@ Use the ncargex command to see the following relevant
 example: 
 fngwsym.
 .SH ACCESS
-To use NGWSYM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngwsym, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGWSYM or c_ngwsym, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 If an illegal font, or symbol number within a font, is requested,
 then a warning is issued.
@@ -499,7 +497,7 @@ ncarg_cbind(3NCARG)
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -57,10 +57,8 @@ any polyline attribute.
 Use the ncargex command to see the following relevant examples: 
 arex01, cbex01, cmppos, coex03, cpexcc, epltch.
 .SH ACCESS
-To use PLOTIF, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_plotif, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use PLOTIF or c_plotif, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 gpl, plotit, setusv, getusv, sflush, frstpt, vector, line, curve,
@@ -70,7 +68,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

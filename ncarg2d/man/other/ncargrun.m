@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargrun.m,v 1.8 1996-01-29 17:35:45 haley Exp $
+.\"	$Id: ncargrun.m,v 1.9 1998-02-04 05:13:33 haley Exp $
 .\"
 .TH NCARGRUN 1NCARG "JUNE 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -33,7 +33,7 @@ specifies that metafile output should be piped to the default translator
 .BR ncarg_env(5NCARG),
 .BR ncargintro(5NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -54,10 +54,8 @@ would temporarily close the workstation.
 Use the ncargex command to see the following relevant example: 
 pgkex27.
 .SH ACCESS
-To use NGMFTC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngmftc, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGMFTC or c_ngmftc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 The argument to NGMFTC must be an NCGM workstation that is open 
 but not active.
@@ -70,7 +68,7 @@ Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 .sp
 Hardcopy:
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

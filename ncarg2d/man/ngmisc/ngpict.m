@@ -74,10 +74,8 @@ the X11 window after the window has been updated.  After a mouse click
 in the X11 window, that window will be cleared before program execution
 continues.
 .SH ACCESS
-To use NGPICT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngpict, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGPICT or c_ngpict, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 Non-fatal errors are reported for values of ACTION out of range and
 for values of ACTION inappropriately applied to a metafile.  Also,
@@ -99,7 +97,7 @@ Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -31,10 +31,8 @@ is equivalent to
 CALL TICK4 (LMJR,LMNR,LMJR,LMNR)
 .RE
 .SH ACCESS
-To use TICKS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ticks, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use TICKS or c_ticks, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 gridall,
@@ -56,7 +54,7 @@ periml,
 tick4,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

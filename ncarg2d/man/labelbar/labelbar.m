@@ -30,10 +30,7 @@ c_lbsetr
 LBFILL - Fills label bars.
 .SH ACCESS 
 To use Labelbar routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_c, preferably in that order.  To use the
-Labelbar C-binding routines, load the NCAR Graphics libraries 
-ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
-in that order.
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 Various error conditions can occur in Labelbar.  Each of these results in
 a call to the error-handling routine SETER, with a final argument indicating
@@ -86,7 +83,7 @@ labelbar_params, lbfill, lbgeti, lbgetr, lblbar, lbseti, lbsetr, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -74,10 +74,8 @@ maintained in the data.
 Use the ncargex command to see the following relevant
 examples: ppex01, tppack, c_ppex01.
 .SH ACCESS
-To use PPPPAP, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ppppap, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use PPPPAP or c_ppppap, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 polypack, ppdipo, ppditr, ppinpo, ppintr, ppplcl, ppunpo, ppuntr,
@@ -86,7 +84,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

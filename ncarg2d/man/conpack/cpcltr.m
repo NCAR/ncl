@@ -80,10 +80,8 @@ level have been processed.
 If the parameter 'T2D' has a non-zero value, the contour lines are smoothed,
 using cubic splines under tension.
 .SH ACCESS
-To use CPCLTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_cpcltr, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use CPCLTR or c_cpcltr, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.
@@ -95,7 +93,7 @@ cpcldr, cpcnrc, cpdrpl, cpezct, cpgetc, cpgeti, cpgetr, cplbam,
 cplbdr, cpmpxy, cpmviw, cpmvrw, cppkcl, cppklb, cprect, cprset, cpscae,
 cpsetc, cpseti, cpsetr, cpsps1, cpsps2, ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

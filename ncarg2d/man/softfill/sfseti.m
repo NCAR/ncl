@@ -36,11 +36,8 @@ Use the ncargex command to see the following relevant example:
 agex12, cpex01, cpex02, cpex03, cpex04, cpex05, elblba, 
 sfex01, sfex02, vvex01, tlblba, tsoftf, fsfsgfa.
 .SH ACCESS
-To use SFSETI, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.  To use
-c_sfseti, load the NCAR Graphics libraries ncargC, 
-ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably in 
-that order.
+To use SFSETI or c_sfseti, load the NCAR Graphics libraries ncarg, 
+ncarg_gks, and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the softfill man page for a description of all Softfill 
 error messages and/or informational messages.
@@ -52,7 +49,7 @@ sfsetc, sfseti, sfsetp, sfsetr, sfsgfa, sfwrld, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

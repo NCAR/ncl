@@ -136,10 +136,8 @@ argument descriptions.
 Use the ncarg command to see the following relevant examples: 
 colcon, cpex05, cpex07, cpex08, elblba, tconpa, and tlblba.
 .SH ACCESS
-To use LBLBAR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_lblbar, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use LBLBAR or c_lblbar, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.
@@ -151,7 +149,7 @@ ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

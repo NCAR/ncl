@@ -60,10 +60,8 @@ tdashc, tdashl, tdashp, tdashs, carline,
 fcover, ffex03, ffex05,
 fdlcurvd, fdldashd, fdlsmth, fpcloqu.
 .SH ACCESS
-To use CURVED, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_curved, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use CURVED or c_curved, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .sp
 See the man page for dashline to see how to access the quick,
 normal, smooth, and super line draw options.
@@ -77,7 +75,7 @@ NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

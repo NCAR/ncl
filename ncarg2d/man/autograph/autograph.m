@@ -207,11 +207,8 @@ AGUTOL -
 Provides a way for the user to change the user-system-to-label-system
 mapping for one or more of the four axes.
 .SH ACCESS 
-To use Autograph, routines load the NCAR Graphics libraries
+To use the Autograph Fortran or C routines, load the NCAR Graphics libraries
 ncarg, ncarg_gks, and ncarg_c, preferably in that order.
-To use the Autograph C-bindings, load the NCAR Graphics libraries
-ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
-in that order.
 .sp
 To get smoother curves, drawn using spline interpolation,
 also load libdashsmth.o     
@@ -446,7 +443,7 @@ ezy
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

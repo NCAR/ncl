@@ -33,10 +33,8 @@ This routine allows you to retrieve the current value of Streamlines
 parameters of type CHARACTER. For a complete list of parameters
 available in this utility, see the streamlines_params man page.
 .SH ACCESS
-To use STGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_stgetc,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use STGETC or c_stgetc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the streamlines man page for a description of all Streamlines error
 messages and/or informational messages.
@@ -61,7 +59,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

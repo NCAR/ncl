@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsvp.m,v 1.6 1996-01-29 17:34:08 haley Exp $
+.\"	$Id: gsvp.m,v 1.7 1998-02-04 05:12:25 haley Exp $
 .\"
 .TH GSVP 3NCARG "14 January 1992" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -58,7 +58,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

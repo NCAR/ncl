@@ -48,10 +48,8 @@ tagupw,
 tautog,
 fagezy.
 .SH ACCESS 
-To use EZY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_ezy, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
-ncarg_c, preferably in that order.  To get smoother curves, 
+To use EZY or c_ezy, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.    To get smoother curves, 
 drawn using spline interpolation, also load libdashsmth.o.  Or,
 you can use the ncargf77 command to compile your program and load 
 the above libraries, then, to get smoother curves, use the 
@@ -91,7 +89,7 @@ ezxy
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

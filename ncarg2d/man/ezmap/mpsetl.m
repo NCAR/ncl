@@ -34,10 +34,8 @@ The capabilities offered by the MAPSTL or MPSETL routines are
 also offered by the MAPSTI or MPSETI routines. See the examples
 listed on the MAPSTI or MPSETI man page.
 .SH ACCESS
-To use MAPSTL or MPSETL, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.  To use 
-c_mapstl or c_mpsetl, load the NCAR Graphics libraries ncargC, 
-ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use MAPSTL, MPSETL, or c_mapstl, load the NCAR Graphics libraries ncarg, 
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.
@@ -97,7 +95,7 @@ supmap,
 supcon,
 ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -30,10 +30,8 @@ this utility, see the labelbar_params man page.
 Use the ncargex command to see the following relevant
 examples: cpex07 and cpex08, and tconpa.
 .SH ACCESS
-To use LBSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_lbseti, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use LBSETI or c_lbseti, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.
@@ -45,7 +43,7 @@ lbsetr, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

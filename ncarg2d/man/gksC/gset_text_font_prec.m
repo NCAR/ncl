@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_font_prec.m,v 1.7 1996-01-29 17:34:47 haley Exp $
+.\"	$Id: gset_text_font_prec.m,v 1.8 1998-02-04 05:12:47 haley Exp $
 .\"
 .TH GSET_TEXT_FONT_PREC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -85,7 +85,7 @@ one accesses the Hershey fonts via PLOTCHAR, then the characters
 are stroked by PLOTCHAR itself.  This can make a significant
 difference in metafile sizes.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -113,7 +113,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

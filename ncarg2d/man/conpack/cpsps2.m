@@ -119,10 +119,8 @@ Use the ncargex command to see the following relevant
 example:
 ccpsps2.
 .SH ACCESS
-To use CPSPS2, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_c, preferably in that order.  To use 
-c_cpsps2, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use CPSPS2 or c_cpsps2, load the NCAR Graphics libraries ncarg,
+ncarg_gks, and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.
@@ -137,7 +135,7 @@ cpsetc, cpseti, cpsetr, cpsps1, ncarg_cbind
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_name_open_seg.m,v 1.6 1996-01-29 17:34:30 haley Exp $
+.\"	$Id: ginq_name_open_seg.m,v 1.7 1998-02-04 05:12:38 haley Exp $
 .\"
 .TH GINQ_NAME_OPEN_SEG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,7 +18,7 @@ then err_ind is returned as "0"; otherwise err_ind is returned as "4".
 name_open_seg is returned as the number of the currently open segment; otherwise
 name_open_seg is undefined.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -37,7 +37,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

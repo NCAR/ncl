@@ -102,8 +102,6 @@ User modifiable routine that maps a single point on
 the streamline from data to user coordinate space.
 .SH ACCESS 
 To use Streamlines, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use the C bindings, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH MESSAGES
 In this section are listed, in alphabetical order, all the
@@ -168,7 +166,7 @@ ncarg_cbind.
 .sp
 Hardcopy: NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

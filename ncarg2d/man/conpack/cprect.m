@@ -156,10 +156,8 @@ ffex03,
 ffex05,
 fsfsgfa.
 .SH ACCESS
-To use CPRECT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_cprect, 
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use CPRECT or c_cprect, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 conpack,
@@ -171,7 +169,7 @@ cpseti, cpsetr, cpsps1, cpsps2, ncarg_cbind
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

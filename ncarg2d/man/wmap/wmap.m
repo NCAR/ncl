@@ -88,10 +88,8 @@ c_wmsetr
 .br
 c_wmstnm
 .SH ACCESS 
-To use Wmap Fortran entries, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use Wmap C entries, load the
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use Wmap Fortran or C entries, load the NCAR Graphics libraries
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 wmap_params,
@@ -117,7 +115,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

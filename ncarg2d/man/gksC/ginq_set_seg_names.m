@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_set_seg_names.m,v 1.7 1996-01-29 17:34:31 haley Exp $
+.\"	$Id: ginq_set_seg_names.m,v 1.8 1998-02-04 05:12:39 haley Exp $
 .\"
 .TH GINQ_SET_SEG_NAMES 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -34,7 +34,7 @@ For NCAR GKS, segment names are integers between 0 and 99 inclusive
 (see the man page for gcreate_seg(3NCARG)).
 .sp
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -53,7 +53,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -113,10 +113,8 @@ routine URPT.
 Use the ncargex command to see the following relevant
 examples: ppex01, tppack, c_ppex01.
 .SH ACCESS
-To use PPDITR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ppditr, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use PPDITR or c_ppditr, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 polypack, ppdipo, ppinpo, ppintr, ppplcl, ppppap, ppunpo, ppuntr,
@@ -125,7 +123,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

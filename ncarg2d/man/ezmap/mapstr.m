@@ -64,10 +64,8 @@ fgkgtx,
 fngngdts,
 fpchiqu.
 .SH ACCESS
-To use MAPSTR or MPSETR, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.  To use 
-c_mapstr or c_mpsetr, load the NCAR Graphics libraries ncargC, 
-ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use MAPSTR, MPSETR, or c_mapstr load the NCAR Graphics libraries ncarg, 
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.
@@ -130,7 +128,7 @@ ncarg_cbind
 Hardcopy:  
 NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

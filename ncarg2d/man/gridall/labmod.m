@@ -136,10 +136,8 @@ tgrida,
 ccpga,
 ccpmpxy.
 .SH ACCESS
-To use LABMOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_labmod, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.
+To use LABMOD or c_labmod, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 gridall,
@@ -167,7 +165,7 @@ NCAR Graphics Contouring and Mapping Tutorial
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -120,17 +120,16 @@ the current text color index; 5) the current fill area color index; 6) the
 current dash pattern.
 .SP
 .SH ACCESS
-To use Error_handling, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use the Error_handling
-C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use the Error_handling C or Fortran routines, load the NCAR
+Graphics libraries ncarg, ncarg_gks, and ncarg_c, preferably in that
+order.
 .sp
 .SH SEE ALSO
 Online:
 entsr, eprin, errof, fdum, icfell, icloem, nerro, retsr, semess, seter,
 ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

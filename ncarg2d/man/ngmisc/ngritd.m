@@ -48,10 +48,8 @@ Use the ncargex command to see the following relevant
 example: 
 cpex10.
 .SH ACCESS
-To use NGRITD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_ngritd, load the
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_c, preferably in that order.
+To use NGRITD or c_ngritd, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 None.
 .SH SEE ALSO
@@ -59,7 +57,7 @@ Online:
 nggcog(3NCARG),
 nggsog(3NCARG).
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

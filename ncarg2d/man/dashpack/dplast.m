@@ -26,10 +26,8 @@ Use the ncargex command to see the following relevant
 examples: 
 tdshpk.
 .SH ACCESS
-To use DPLAST, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_dplast, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use DPLAST or c_dplast, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 dashpack,
@@ -51,7 +49,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -35,10 +35,8 @@ made to prevent this.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH ACCESS 
-To use IDPLTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_idpltr, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.
+To use IDPLTR or c_idpltr, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the bivar man page for a description of all Bivar error
 messages and/or informational messages.
@@ -47,7 +45,7 @@ Online:
 bivar, bivar_params, idbvip, idsfft, idgeti, idgetr, idseti, idsetr,
 ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

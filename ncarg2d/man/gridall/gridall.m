@@ -130,10 +130,8 @@ c_tick4
 .SH USER-MODIFIABLE INTERNAL ROUTINES
 None.
 .SH ACCESS 
-To use Gridall, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use the C bindings, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use Gridall C or Fortran routines, load the NCAR Graphics libraries ncarg,
+ncarg_gks, and ncarg_c, preferably in that order.  
 .SH MESSAGES
 Various error conditions can occur in Gridall.  Each of these results in
 a call to the error-handling routine SETER, with a final argument indicating
@@ -218,7 +216,7 @@ ncarg_cbind.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -19,9 +19,7 @@ char *c_agbnch(int idsh)
 The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH ACCESS 
-To use AGBNCH, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_agbnch, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
+To use AGBNCH or c_agbnch, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 and ncarg_c, preferably in that order.  To get smoother curves, 
 drawn using spline interpolation, also load libdashsmth.o.  Or,
 you can use the ncargf77 command to compile your program and load 
@@ -62,7 +60,7 @@ ezy
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

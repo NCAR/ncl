@@ -32,10 +32,8 @@ This routine allows you to retrieve the current value of
 Dashpack parameters.  For a complete list of parameters available
 in this utility, see the dashpack_params man page.
 .SH ACCESS
-To use DPGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_dpgetc, load
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use DPGETC or c_dpgetc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the dashpack man page for a description of all Dashpack error
 messages and/or informational messages.
@@ -60,7 +58,7 @@ ncarg_cbind.
 Hardcopy:
 None.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

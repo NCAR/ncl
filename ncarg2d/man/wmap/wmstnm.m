@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmstnm.m,v 1.3 1996-01-29 17:37:54 haley Exp $
+.\"	$Id: wmstnm.m,v 1.4 1998-02-04 05:15:30 haley Exp $
 .\"
 .TH WMSTNM 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -32,10 +32,8 @@ The appearance of the wind barb part of the station model data is controlled
 by the internal parameters applying to wind barbs.  See the documentation
 for WMBARB for a description of wind barbs.
 .SH ACCESS
-To use WMSTNM, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_wmstnm, load the 
-NCAR Graphics libraries ncargC, ncarg, ncarg_gksC, ncarg_gks, and ncarg_c,
-preferably in that order.
+To use WMSTNM or c_wmstnm, load the NCAR Graphics libraries ncarg, ncarg_gks, 
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 wmap, wmdflt, wmgetc, wmgeti, wmgetr, wmlabs, wmsetc, wmseti, wmsetr, wmap_params
@@ -44,7 +42,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

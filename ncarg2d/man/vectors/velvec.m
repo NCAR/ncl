@@ -98,7 +98,7 @@ VELVEC is used identically to VELVCT except that there is no provision
 for adjusting the realized length of the maximum vector magnitude. See the
 velvct man page for more information.
 .SH ACCESS
-To use VELVEC, load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use VELVEC or c_velvec, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
@@ -118,7 +118,7 @@ vvudmv,
 vvumxy,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -46,10 +46,10 @@ c_idsetr
 .SH EXAMPLES
 See the example "cbex01".
 .SH ACCESS 
-To use the Bivar routines, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use the Bivar C-bindings,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.
+
+To use the Bivar Fortran or C routines, load the NCAR Graphics
+libraries ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called. By default, SETER writes a message to the standard
@@ -133,7 +133,7 @@ the capability of doing linear interpolation and a different kind
 of triangulation, put in a parameter access interface, and wrote a
 routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

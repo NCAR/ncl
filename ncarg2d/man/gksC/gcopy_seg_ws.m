@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcopy_seg_ws.m,v 1.6 1996-01-29 17:34:16 haley Exp $
+.\"	$Id: gcopy_seg_ws.m,v 1.7 1998-02-04 05:12:30 haley Exp $
 .\"
 .TH GCOPY_SEG_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,7 +18,7 @@ a gopen_ws call) that is to receive the segment copy.
 that is to be copied to the specified workstation.
 seg_name must have been used in a previous call to gcreate_seg.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -37,7 +37,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

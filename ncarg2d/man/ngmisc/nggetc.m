@@ -26,10 +26,8 @@ This routine allows you to retrieve the current value of Ngmisc
 parameters. For a complete list of parameters available in this
 utility, see the ngmisc_params man page.
 .SH ACCESS
-To use NGGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_nggetc, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.
+To use NGGETC or c_nggetc, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 ngmisc_params,
@@ -45,7 +43,7 @@ Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

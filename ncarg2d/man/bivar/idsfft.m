@@ -132,9 +132,7 @@ cidsfft,
 fsfsgfa,
 cbex01.
 .SH ACCESS 
-To use IDSFFT, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_c, preferably in that order.  To use c_idsfft, load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
+To use IDSFFT or c_idsfft, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the bivar man page for a description of all Bivar error
@@ -156,7 +154,7 @@ the capability of doing linear interpolation and a different kind
 of triangulation, put in a parameter access interface, and wrote a
 routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -31,10 +31,8 @@ Use the ncargex command to see the following relevant examples:
 sfex01,
 tsoftf.
 .SH ACCESS
-To use SFSETC, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.  To use
-c_sfsetc, load the NCAR Graphics libraries ncargC, ncarg_gksC,
-ncarg, ncarg_gks, and ncarg_c, preferably in that order.
+To use SFSETC or c_sfsetc, load the NCAR Graphics libraries ncarg, 
+ncarg_gks, and ncarg_c, preferably in that order.  
 .SH MESSAGES
 See the softfill man page for a description of all Softfill
 error messages and/or informational messages.
@@ -46,7 +44,7 @@ sfseti, sfsetp, sfsetr, sfsgfa, sfwrld, ncarg_cbind
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_align.m,v 1.6 1996-01-29 17:34:46 haley Exp $
+.\"	$Id: gset_text_align.m,v 1.7 1998-02-04 05:12:47 haley Exp $
 .\"
 .TH GSET_TEXT_ALIGN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -44,7 +44,7 @@ rectangle.  The text extent rectangle rotates about
 the point determined by the horizontal and vertical 
 text alignment settings (text_align.hor, text_align.vert).
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+To use the GKS C-binding routines, load the ncarg_gks and
 ncarg_c libraries.
 .SH SEE ALSO
 Online: 
@@ -72,7 +72,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_vp.m,v 1.6 1996-01-29 17:34:49 haley Exp $
+.\"	$Id: gset_vp.m,v 1.7 1998-02-04 05:12:48 haley Exp $
 .\"
 .TH GSET_VP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -47,7 +47,7 @@ viewport.
 tran_num = 0, vp_limits.x_min = 0.0, vp_limits.x_max = 1.0,
 vp_limits.y_min = 0.0, vp_limits.y_max = 1.0
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC and ncarg_gks
+To use the GKS C-binding routines, load the ncarg_gks and ncarg_c
 libraries.
 .SH SEE ALSO
 Online: 
@@ -62,7 +62,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

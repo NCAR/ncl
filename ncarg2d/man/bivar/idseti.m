@@ -28,10 +28,8 @@ This routine allows you to set the current value of Bivar
 parameters. For a complete list of parameters available in this 
 utility, see the bivar_params man page.
 .SH ACCESS
-To use IDSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order. To use c_idseti,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_c, preferably in that order.
+To use IDSETI or c_idseti, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH MESSAGES
 See the bivar man page for a description of all Bivar error
 messages and/or informational messages.
@@ -44,7 +42,7 @@ Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1996
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br
