@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.104 1997-04-16 21:30:42 haley Exp $
+#   $Id: ncargex.csh,v 1.105 1997-06-19 17:45:37 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -538,6 +538,21 @@ set c_list = ($c_list $surface_clist)
 
 #*********************#
 #                     #
+# set tdpack examples #
+#                     #
+#*********************#
+set tdpack_fex   = (tdex01 tdex02)
+set tdpack_ftst  = ()
+set tdpack_flist = ($tdpack_fex $tdpack_ftst)
+
+set tdpack_cex   = ()
+set tdpack_clist = ($tdpack_cex)
+
+set f_list = ($f_list $tdpack_flist)
+set c_list = ($c_list $tdpack_clist)
+
+#*********************#
+#                     #
 # set threed examples #
 #                     #
 #*********************#
@@ -634,12 +649,12 @@ set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
                 $ezmap_fex $field_fex $labelbar_fex $ngmath_fex $plotchar_fex \
                 $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
-                $surface_fex $wmap_fex $misc_fex)
+                $surface_fex $tdpack_fex $wmap_fex $misc_fex)
 
 set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $ezmap_cex \
                 $field_cex $gks_cex $labelbar_cex $ngmath_cex $plotchar_cex \
                 $polypack_cex ${scrlld_title_cex} $softfill_cex $surface_cex \
-                $wmap_cex)
+                $tdpack_cex $wmap_cex)
 
 set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
                 ${cnrn_family_ftst} ${cnrc_family_ftst} $dashline_ftst \
@@ -647,10 +662,10 @@ set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
                 $gridall_ftst $halftone_ftst $histogram_ftst $isosrfhr_ftst \
                 $isosurface_ftst $labelbar_ftst $plotchar_ftst $polypack_ftst \
                 $pwrite_ftst ${scrlld_title_ftst} $seter_ftst $softfill_ftst \
-                $surface_ftst $threed_ftst)
+                $surface_ftst $tdpack_ftst $threed_ftst)
 
 set list_ctst = ($areas_ctst $dashpack_ctst $gflash_ctst $gridall_ctst \
-                $histogram_ctst $isosurface_ctst)
+                $histogram_ctst $isosurface_ctst $tdpack_ctst)
 
 set list_fttr = ($areas_fttr $conpack_fttr $ezmap_fttr $class_fttr)
 
@@ -894,6 +909,11 @@ while ($#argv > 0)
     case "-surface":
       shift
       set names=($names $surface_flist $surface_clist)
+      breaksw
+
+    case "-tdpack":
+      shift
+      set names=($names $tdpack_flist $tdpack_clist)
       breaksw
 
     case "-threed":
