@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabw.f,v 1.1 1994-09-09 23:55:16 fred Exp $
+C	$Id: wmlabw.f,v 1.2 1994-10-14 01:24:07 fred Exp $
 C
       SUBROUTINE WMLABW(X,Y,LABEL)
 C
@@ -39,7 +39,9 @@ C
       CALL PCGETI ('BC(2) - BOX COLOR - BOX FILL       ',IBC2)
       CALL PCGETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',IBC3)
       CALL PCGETI ('CC - CHARACTER COLOR',ICCO)
-      CALL PCGETI ('FN',IFNO)
+      CALL PCGETI ('OC - outline color',IOC)
+      CALL PCGETI ('OF - outline flag',IFC)
+      CALL PCGETI ('FN - font number',IFNO)
 C
 C  Draw a label with a box around it.
 C
@@ -47,11 +49,15 @@ C
       CALL PCSETR ('BM - BOX MARGIN',.35)
       CALL PCSETR ('BX - BOX SHADOW X OFFSET',-0.20)
       CALL PCSETR ('BY - BOX SHADOW Y OFFSET',-0.20)
-      CALL PCSETI ('BC(1) - BOX COLOR - BOX OUTLINE    ',ICOLOR)
-      CALL PCSETI ('BC(2) - BOX COLOR - BOX FILL       ',0)
-      CALL PCSETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',ICOLOR)
-      CALL PCSETI ('CC - CHARACTER COLOR',ICOLOR)
+      CALL PCSETI ('BC(1) - BOX COLOR - BOX OUTLINE    ',IRGLC1)
+      CALL PCSETI ('BC(2) - BOX COLOR - BOX FILL       ',IRGLC2)
+      CALL PCSETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',IRGLC3)
+      CALL PCSETI ('CC - CHARACTER COLOR',IRGLC4)
       CALL PCSETI ('FN',22)
+      IF (IRGLC5 .GE. 0) THEN
+        CALL PCSETI ('OF - outline flag',1)
+        CALL PCSETI ('OC - outline color',IRGLC5)
+      ENDIF
       CALL PLCHHQ (XNDC,YNDC,LABEL,SIZEL,0.,0.)
 C
 C  Restore Plotchar parameters.
@@ -63,8 +69,9 @@ C
       CALL PCSETI ('BC(1) - BOX COLOR - BOX OUTLINE    ',IBC1)
       CALL PCSETI ('BC(2) - BOX COLOR - BOX FILL       ',IBC2)
       CALL PCSETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',IBC3)
-      CALL PCSETI ('CC - CHARACTER COLOR',ICCO)
-      CALL PCSETI ('FN',IFNO)
+      CALL PCSETI ('OF - outline flag',IFC)
+      CALL PCSETI ('OC - outline color',IOC)
+      CALL PCSETI ('FN - font number',IFNO)
 C
 C  Restore GKS environment.
 C

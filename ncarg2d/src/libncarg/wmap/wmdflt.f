@@ -1,5 +1,5 @@
 C
-C	$Id: wmdflt.f,v 1.2 1994-09-23 17:13:46 fred Exp $
+C	$Id: wmdflt.f,v 1.3 1994-10-14 01:23:50 fred Exp $
 C
       SUBROUTINE WMDFLT()
 C
@@ -47,6 +47,7 @@ C
       IBGCTY =   0
       IFGTRG =   1
       IDOTCO =   1
+      IDOTBG =   0
       IFRONT =   2
       IARNDX =   1
       ISLFLG =   3
@@ -66,6 +67,26 @@ C
       ILTNC2 =   1
       ILTNC3 =   1
       NUMSYO =   0
+      IWARMC =   1
+      ICOLDC =   1
+      IHIGC1 =   1
+      IHIGC2 =   0
+      IHIGC3 =   1
+      IHIGC4 =   1
+      ILOWC1 =   0
+      ILOWC2 =   1
+      ILOWC3 =   0
+      IRGLC1 =   1
+      IRGLC2 =   0
+      IRGLC3 =   1
+      IRGLC4 =   1
+      IRGLC4 =  -1
+      IAROWC =   1
+      IARSHC =  -1
+      IAROUC =  -1
+      IRLLSC =  -1
+      IRLOUC =  -1
+      IRLBKC =  -1
 C
       DO 10 I=1,ISDIM
         ISTYPE(I) = 2

@@ -1,5 +1,5 @@
-C
-C	$Id: wmlabs.f,v 1.2 1994-09-23 17:13:56 fred Exp $
+
+C	$Id: wmlabs.f,v 1.3 1994-10-14 01:24:04 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -60,14 +60,14 @@ C
         OFFSET = 0.15*RADIUS
         CALL NGGETI('CT',ICTYPO)
         CALL NGSETI('CT',0)
-        CALL NGDOTS(XNDC-OFFSET,YNDC-OFFSET,1,2.*RADIUS,ICOLOR)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,0)
+        CALL NGDOTS(XNDC-OFFSET,YNDC-OFFSET,1,2.*RADIUS,IHIGC1)
+        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC2)
         CALL NGSETI('CT',1)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ICOLOR)
+        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC4)
         CALL NGSETI('CT',ICTYPO)
         CALL PCGETI('CC - character color',ICLRO)
         CALL PCGETI('FN - font name',IFNTO)
-        CALL PCSETI('CC - character color',ICOLOR)
+        CALL PCSETI('CC - character color',IHIGC3)
         CALL PCSETI('FN - font name',22)
         CALL PLCHHQ(XNDC,YNDC,'H',SIZEL,0.,0.)
         CALL PCSETI('CC - character color',ICLRO)
@@ -80,12 +80,12 @@ C
         OFFSET = 0.20*RADIUS
         CALL NGGETI('CT',ICTYPO)
         CALL NGSETI('CT',0)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS+OFFSET,0)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ICOLOR)
+        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS+OFFSET,ILOWC1)
+        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ILOWC2)
         CALL NGSETI('CT',ICTYPO)
         CALL PCGETI('CC - character color',ICLRO)
         CALL PCGETI('FN - font name',IFNTO)
-        CALL PCSETI('CC - character color',0)
+        CALL PCSETI('CC - character color',ILOWC3)
         CALL PCSETI('FN - font name',22)
         CALL PLCHHQ (XNDC,YNDC,':F22:L',SIZEL,0.,0.)
         CALL PCSETI('CC - CHARACTER COLOR',ICLRO)
@@ -127,9 +127,28 @@ C
           ARROWY(I) = YNDC+ARROWY(I)
    40   CONTINUE
 C
+C  Draw a shadow if the arrow shadow color is non-negative.
+C
+        IF (IARSHC .GE. 0) THEN
+          DO 50 I=1,IADIM 
+            TMPX(I) = ARROWX(I)-.002
+            TMPY(I) = ARROWY(I)-.002
+   50     CONTINUE
+          CALL GSFACI(IARSHC)
+          CALL GFA(IADIM,TMPX,TMPY)
+        ENDIF
+C
 C  Draw the arrow.
 C
+        CALL GSFACI(IAROWC)
         CALL GFA(IADIM,ARROWX,ARROWY)
+C
+C  Draw an outline around the arrow if the outline color is non-negative.
+C
+        IF (IAROUC .GE. 0) THEN
+          CALL GSPLCI(IAROUC)
+          CALL GPL(IADIM,ARROWX,ARROWY)
+        ENDIF
       ELSE IF (SYMTYP(1:1).EQ.'D' .OR. SYMTYP(1:1).EQ.'d') THEN
 C
 C  Draw a dot to mark a city location.
@@ -137,7 +156,7 @@ C
         RADIUS = 0.5*CDOTSZ
         CALL NGGETI('CT',ICTYPO)
         CALL NGSETI('CT',0)
-        CALL NGDOTS(XNDC,YNDC,1,3.5*RADIUS,0)
+        CALL NGDOTS(XNDC,YNDC,1,3.5*RADIUS,IDOTBG)
         CALL NGDOTS(XNDC,YNDC,1,2.0*RADIUS,IDOTCO)
         CALL NGSETI('CT',ICTYPO)
       ELSE IF (SYMTYP(1:1).EQ.'C' .OR. SYMTYP(1:1).EQ.'R' .OR.

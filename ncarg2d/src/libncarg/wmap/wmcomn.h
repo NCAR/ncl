@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.3 1994-09-23 17:13:44 fred Exp $
+C	$Id: wmcomn.h,v 1.4 1994-10-14 01:23:49 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -24,7 +24,7 @@ C    ISTYPE  -  An integer array indicating the sequence of symbol
 C               types to be drawn along a front line (1 = warm; 2 = cold; 
 C               3 = convergence).
 C    IARNDX  -  Current array index.
-C    IFRONT  -  Type of front (1=warm, 2=cold, 3=occluded, 4=stationary,
+C    IFRONT  -  Type of front (1=cold, 2=warm, 3=occluded, 4=stationary,
 C               5=squall, 6=tropical, 7=convergence).
 C    CRVLEN  -  Length of current curve.
 C    ISLFLG  -  Flag for usage of endline slopes in interpolator.
@@ -39,7 +39,8 @@ C    IWDTYP  -  Controls how line widths are implemented (0=use GKS
 C               linewidth scale factor; 1=use internal subroutines)
 C    SLINWD  -  Width of line if using the precise width linewidth 
 C               option.
-C    ICOLOR  -  GKS color index to be used for all objects.
+C    ICOLOR  -  GKS color index to be used for objects that have only
+C               a single color selection.
 C    NPTSBZ  -  Number of points used in calculating the Bezier curves 
 C               making up the warm front symbols.
 C    WSIZET  -  Size of labels drawn with WMLABT.
@@ -78,7 +79,7 @@ C               of a wind barb (=1) or not (=0, the default).
 C    WBLSIZ  -  Size of text labels in station model display.
 C    ISUNC1  -  Color index for center of sun symbol.
 C    ISUNC2  -  Color index for points of sun symbol.
-C    ISUNC3  -  Color index for outline of cun symbol.
+C    ISUNC3  -  Color index for outline of sun symbol.
 C    ISUNC4  -  Color index for color of sun symbol offset.
 C    ICLDC1  -  Color index for cloud symbol.
 C    ICLDC2  -  Color index for outline.
@@ -87,6 +88,27 @@ C    ILTNC1  -  Color index for lightening bolt symbol.
 C    ILTNC2  -  Color index for lightening bolt outline.
 C    ILTNC3  -  Color index for lightening bolt offset.
 C    NUMSYO  -  Forces this number of symbols on a front line if > 0.
+C    IWARMC  -  Color index for drawing warm front symbols.
+C    ICOLDC  -  Color index for drawing cold front symbols.
+C    IHIGC1  -  Shadow color for high symbols.
+C    IHIGC2  -  Symbol color for high symbols.
+C    IHIGC3  -  Character background color for high symbols.
+C    IHIGC4  -  Color for circle perimeter around high symbols.
+C    ILOWC1  -  Shadow color for low symbols.
+C    ILOWC2  -  Symbol color for low symbols.
+C    ILOWC3  -  Character background color for low symbols.
+C    IRGLC1  -  Color of box outline for regional weather labels.
+C    IRGLC2  -  Color of character background color for regional labels.
+C    IRGLC3  -  Color of shadow for regional labels.
+C    IRGLC4  -  Color of characters for regional labels.
+C    IRGLC5  -  Color of outlines for characters for regional labels.
+C    IDOTBG  -  Color used for drawing background of a dot symbol.
+C    IAROWC  -  Arrow color index.
+C    IARSHC  -  Arrow shadow color.
+C    IRLLSC  -  Regional temperature label shadow color index.
+C    IRLOUC  -  Regional temperature label outline color.
+C    IRLBKC  -  Regional temperature label background box color.
+C    IAROUC  -  Arrow outline color.
 C
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,
@@ -97,7 +119,10 @@ C
      +                WBCLMR, WBBANG, WBXL  , WBXR  , WBYB  , WBYT  ,
      +                WBBASE, IWBBAS, WBLSIZ, ISUNC1, ISUNC2, ISUNC3,
      +                ISUNC4, ICLDC1, ICLDC2, ICLDC3, ILTNC1, ILTNC2,
-     +                ILTNC3, DLINWD, NUMSYO,
+     +                ILTNC3, DLINWD, NUMSYO, IWARMC, ICOLDC, IHIGC1,
+     +                IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1,
+     +                IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, IARSHC,
+     +                IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, IRGLC5,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.

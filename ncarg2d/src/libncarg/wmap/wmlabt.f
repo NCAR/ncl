@@ -1,7 +1,7 @@
 C
-C	$Id: wmlabt.f,v 1.2 1994-09-12 19:07:35 fred Exp $
+C	$Id: wmlabt.f,v 1.3 1994-10-14 01:24:06 fred Exp $
 C
-      SUBROUTINE WMLABT(X,Y,LABEL,IFLG,IBGCLR)
+      SUBROUTINE WMLABT(X,Y,LABEL,IFLG)
 C
 C  Plots regional temperature labels with the option of
 C  plotting arrows, depending on the value of IFLG.
@@ -28,19 +28,7 @@ C
 C
 C
 C  For IFLG=1 through 12 the tip of the arrow is positioned at (X,Y).
-C
-C     0 <= IBGCLR <  1000  --  IBGCLR will be used as the color index 
-C                              for a background box around the label.
-C -1000 <  IBGCLR <     0  --  IBGCLR will be used as the color index 
-C                              for a background box around the label,
-C                              and the label will be drawn with color
-C                              index IFGTRG with a shadow in the
-C                              foreground color.
-C          IBGCLR = -1000  --  Draw the string and arrow and return, no
-C                              background box.
-C          IBGCLR =  1000  --  Draw the string in the background color
-C                              and an outline and shadow in the foreground
-C                              color, no background box.
+C  For IFLG=0, only the label is drawn and not the arrow.
 C
       CHARACTER*(*) LABEL
       PARAMETER (D2RAD=.017453293)
@@ -70,14 +58,13 @@ C
 C
 C  Use Plotchar font Helvetica-bold.
 C
-      CALL PCGETI ('FN',IFNO)
       CALL PCSETI ('FN',22)
+      JFLG = IFLG
 C
-C  If IFLG is out out range, plot the string and return.
+C  If IFLG is out out range, just plot the string.
 C
       IF (IFLG.GT.12 .OR. IFLG.LT.0) THEN
-        CALL PLCHHQ (XNDC,YNDC,LABEL,SIZEL,0.,0.)
-        GO TO 20
+        JFLG = 0
       ENDIF
 C
 C  Scale the length of an arrow to leave space between the tail of
@@ -99,96 +86,59 @@ C
       CALL PCGETR ('DT',YT)
       CALL PCSETI ('TE',0)
 C     
-      IF (IFLG .EQ. 0) THEN
+      IF (JFLG .EQ. 0) THEN
         XP = XNDC
         YP = YNDC
-      ELSE IF (IFLG .EQ. 1) THEN
+      ELSE IF (JFLG .EQ. 1) THEN
         XP = XNDC - ELEN - XR
         YP = YNDC
-      ELSE IF (IFLG .EQ. 2) THEN
+      ELSE IF (JFLG .EQ. 2) THEN
         XP = XNDC - D1 - XR
         YP = YNDC - D1 - YT
-      ELSE IF (IFLG .EQ. 3) THEN
+      ELSE IF (JFLG .EQ. 3) THEN
         XP = XNDC - D2 - 0.5*XR
         YP = YNDC - D3 - YT
-      ELSE IF (IFLG .EQ. 4) THEN
+      ELSE IF (JFLG .EQ. 4) THEN
         XP = XNDC
         YP = YNDC - ELEN - YT
-      ELSE IF (IFLG .EQ. 5) THEN
+      ELSE IF (JFLG .EQ. 5) THEN
         XP = XNDC + D2 + 0.5*XL
         YP = YNDC - D3 - YT
-      ELSE IF (IFLG .EQ. 6) THEN
+      ELSE IF (JFLG .EQ. 6) THEN
         XP = XNDC + D1 + XL
         YP = YNDC - D1 - YT
-      ELSE IF (IFLG .EQ. 7) THEN
+      ELSE IF (JFLG .EQ. 7) THEN
         XP = XNDC + ELEN + XL
         YP = YNDC
-      ELSE IF (IFLG .EQ. 8) THEN
+      ELSE IF (JFLG .EQ. 8) THEN
         XP = XNDC + D1 + XL
         YP = YNDC + D1 + YB
-      ELSE IF (IFLG .EQ. 9) THEN
+      ELSE IF (JFLG .EQ. 9) THEN
         XP = XNDC + D2 + 0.5*XL
         YP = YNDC + D3 + YB
-      ELSE IF (IFLG .EQ. 10) THEN
+      ELSE IF (JFLG .EQ. 10) THEN
         XP = XNDC
         YP = YNDC + ELEN + YB
-      ELSE IF (IFLG .EQ. 11) THEN
+      ELSE IF (JFLG .EQ. 11) THEN
         XP = XNDC - D2 - 0.5*XR
         YP = YNDC + D3 + YB
-      ELSE IF (IFLG .EQ. 12) THEN
+      ELSE IF (JFLG .EQ. 12) THEN
         XP = XNDC - D1 - XR
         YP = YNDC + D1 + YB
       ENDIF
 C
 C  Draw the label.
 C
-      IF (IBGCLR .EQ.  1000) THEN
+      CALL WMCHBG(XP,YP,LABEL,SIZEL)
 C
-C  Characters drawn in background color with an outline in the 
-C  foreground color and a shadow in the foreground color.
-C
-        CALL PCGETI('CC - character color',ICOLD)
-        CALL PCGETI('FN - font name',IFNOLD)
-        CALL PCGETI('SF - shadow flag',ISFOLD)
-        CALL PCGETR('OL - outline width',WIDOLD)
-        CALL PCGETI('OF - outline flag',IOFOLD)
-        CALL PCGETI('SC - shadow color',ISHOLD)
-C
-        CALL PCSETI('CC - character color',0)
-        CALL PCSETI('FN - font name',22)
-        CALL PCSETI('SF - shadow flag',1)
-        CALL PCSETR('OL - outline width',0.5)
-        CALL PCSETI('OF - outline flag',1)
-        CALL PCSETI('SC - shadow color',1)
-        CALL PCSETR('SX - shadow X offset',-.08)
-        CALL PCSETR('SY - shadow Y offset',-.08)
-C
-        CALL PLCHHQ (XP,YP,LABEL,SIZEL,0.,0.)
-C
-        CALL PCSETI('CC',ICOLD)
-        CALL PCSETI('FN',IFNOLD)
-        CALL PCSETI('SF - shadow flag',ISFOLD)
-        CALL PCSETR('OL - outline width',WIDOLD)
-        CALL PCSETI('OF - outline flag',IOFOLD)
-        CALL PCSETI('SC - shadow color',ISHOLD)
-      ELSE IF (IBGCLR .EQ. -1000) THEN
-C
-C  Just plot the string.
-C  
-        CALL PLCHHQ (XP,YP,LABEL,SIZEL,0.,0.)
-      ELSE
-C
-C  Draw string with background boxes.
-C
-        CALL WMCHBG(XP,YP,LABEL,SIZEL,TMPMRG,IBGCLR)
-      ENDIF
-      IF (IFLG .EQ. 0) GO TO 20
+      IF (JFLG .NE. 0) THEN
 C
 C  Draw the arrow.
 C
-      CALL WMGETR ('ARD',ARDO)
-      CALL WMSETR ('ARD',ANGS(IFLG))
-      CALL WMLABS (XNDC,YNDC,'ARROW')
+        CALL WMGETR ('ARD',ARDO)
+        CALL WMSETR ('ARD',ANGS(JFLG))
+        CALL WMLABS (XNDC,YNDC,'ARROW')
+      ENDIF
 C
 C  Restore the original environment.
 C
@@ -197,8 +147,7 @@ C
       CALL GSFACI(IFCLRO)
       CALL GSPLCI(ILCLRO)
       CALL GSELNT(NTRO)
-      CALL PCSETI ('FN',IFNO)
-      CALL WMSETR ('ARD',ARDO)
+      CALL WMSETR('ARD',ARDO)
 C
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.3 1994-09-23 17:13:51 fred Exp $
+C	$Id: wmgeti.f,v 1.4 1994-10-14 01:23:57 fred Exp $
 C
       SUBROUTINE WMGETI (CNP,IVP)
 C
@@ -73,9 +73,25 @@ C
      +    CNP(1:3).EQ.'Rfc') THEN
         IVP = IFGTRG
         GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RLS' .OR. CNP(1:3).EQ.'rls' .OR. 
+     +    CNP(1:3).EQ.'Rls') THEN
+        IVP = IRLLSC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'ROS' .OR. CNP(1:3).EQ.'ros' .OR. 
+     +    CNP(1:3).EQ.'Ros') THEN
+        IVP = IRLOUC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RBS' .OR. CNP(1:3).EQ.'rbs' .OR. 
+     +    CNP(1:3).EQ.'Rbs') THEN
+        IVP = IRBLBKC
+        GO TO 110
       ELSE IF (CNP(1:3).EQ.'DTC' .OR. CNP(1:3).EQ.'dtc' .OR. 
      +    CNP(1:3).EQ.'Dtc') THEN
         IVP = IDOTCO
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'DBC' .OR. CNP(1:3).EQ.'dbc' .OR. 
+     +    CNP(1:3).EQ.'Dbc') THEN
+        IVP = IDOTBG
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'NBZ' .OR. CNP(1:3).EQ.'nbz' .OR. 
      +    CNP(1:3).EQ.'Nbz') THEN
@@ -106,28 +122,96 @@ C
         IVP = ISUNC4
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR. 
-     +    CNP(1:3).EQ.'cc1') THEN
+     +    CNP(1:3).EQ.'Cc1') THEN
         IVP = ISUNC1
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR. 
-     +    CNP(1:3).EQ.'cc2') THEN
+     +    CNP(1:3).EQ.'Cc2') THEN
         IVP = ICLDC2
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CC3' .OR. CNP(1:3).EQ.'cc3' .OR. 
-     +    CNP(1:3).EQ.'cc3') THEN
+     +    CNP(1:3).EQ.'Cc3') THEN
         IVP = ICLDC3
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'LC1' .OR. CNP(1:3).EQ.'lc1' .OR. 
-     +    CNP(1:3).EQ.'lc1') THEN
+     +    CNP(1:3).EQ.'Lc1') THEN
         IVP = ILTNC1
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'LC2' .OR. CNP(1:3).EQ.'lc2' .OR. 
-     +    CNP(1:3).EQ.'lc2') THEN
+     +    CNP(1:3).EQ.'Lc2') THEN
         IVP = ILTNC2
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'LC3' .OR. CNP(1:3).EQ.'lc3' .OR. 
-     +    CNP(1:3).EQ.'lc3') THEN
+     +    CNP(1:3).EQ.'Lc3') THEN
         IVP = ILTNC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'WFC' .OR. CNP(1:3).EQ.'wfc' .OR. 
+     +    CNP(1:3).EQ.'Wfc') THEN
+        IVP = IWARMC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'CFC' .OR. CNP(1:3).EQ.'cfc' .OR. 
+     +    CNP(1:3).EQ.'Cfc') THEN
+        IVP = ICOLDC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RC1' .OR. CNP(1:3).EQ.'rc1' .OR. 
+     +    CNP(1:3).EQ.'Rc1') THEN
+        IVP = IRGLC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RC2' .OR. CNP(1:3).EQ.'rc2' .OR. 
+     +    CNP(1:3).EQ.'Rc2') THEN
+        IVP = IRGLC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RC3' .OR. CNP(1:3).EQ.'rc3' .OR. 
+     +    CNP(1:3).EQ.'Rc3') THEN
+        IVP = IRGLC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RC4' .OR. CNP(1:3).EQ.'rc4' .OR. 
+     +    CNP(1:3).EQ.'Rc4') THEN
+        IVP = IRGLC4
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'RC5' .OR. CNP(1:3).EQ.'rc5' .OR. 
+     +    CNP(1:3).EQ.'Rc5') THEN
+        IVP = IRGLC5
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'AWC' .OR. CNP(1:3).EQ.'awc' .OR. 
+     +    CNP(1:3).EQ.'Awc') THEN
+        IVP = IAROWC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'ASC' .OR. CNP(1:3).EQ.'asc' .OR. 
+     +    CNP(1:3).EQ.'Asc') THEN
+        IVP = IARSHC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'AOC' .OR. CNP(1:3).EQ.'aoc' .OR. 
+     +    CNP(1:3).EQ.'Aoc') THEN
+        IVP = IAROUC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'HIS' .OR. CNP(1:3).EQ.'his' .OR. 
+     +    CNP(1:3).EQ.'His') THEN
+        IVP = IHIGC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'HIF' .OR. CNP(1:3).EQ.'hif' .OR. 
+     +    CNP(1:3).EQ.'Hif') THEN
+        IVP = IHIGC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'HIB' .OR. CNP(1:3).EQ.'hib' .OR. 
+     +    CNP(1:3).EQ.'Hib') THEN
+        IVP = IHIGC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'HIC' .OR. CNP(1:3).EQ.'hic' .OR. 
+     +    CNP(1:3).EQ.'Hic') THEN
+        IVP = IHIGC4
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LOS' .OR. CNP(1:3).EQ.'los' .OR. 
+     +    CNP(1:3).EQ.'Los') THEN
+        IVP = ILOWC1
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LOF' .OR. CNP(1:3).EQ.'lof' .OR. 
+     +    CNP(1:3).EQ.'Lof') THEN
+        IVP = ILOWC3
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LOB' .OR. CNP(1:3).EQ.'lob' .OR. 
+     +    CNP(1:3).EQ.'Lob') THEN
+        IVP = ILOWC2
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '

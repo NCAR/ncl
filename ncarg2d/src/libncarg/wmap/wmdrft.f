@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.2 1994-09-23 17:13:48 fred Exp $
+C	$Id: wmdrft.f,v 1.3 1994-10-14 01:23:52 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -10,6 +10,7 @@ C
       include 'wmcomn.h'
 C
       DIMENSION X(N),Y(N)
+      DIMENSION IPOSIT(200)
 C
       NPO = N
 C
@@ -94,16 +95,7 @@ C
      +              SQRT((XOUT(I)-XOUT(I-1))**2+(YOUT(I)-YOUT(I-1))**2)      
    30 CONTINUE
 C
-C  Draw the spline curve if it is long enough.  If the curve is not
-C  long enough to position a single symbol on, that case will be
-C  handled specially below.  Several of the arrays can be reused after 
-C  the call has been made to draw the line.
-C 
-      IF (ALEN(NPTS) .GT. BEGDST+SYMWID+ENDDST) THEN
-        CALL WMLGPL(NPTS,XOUT,YOUT)
-      ENDIF
-C
-C  Done if squall, tropical front.
+C  Just draw line if squall or tropical front.
 C
       IF (IFRONT.EQ.5 .OR. IFRONT.EQ.6) GO TO 60
 C
@@ -158,9 +150,43 @@ C
 C
 C  Draw the symbols along the front.
 C
-      CALL WMDRSM(NUMSYM,DSTBTW,NPTS,XOUT,YOUT,ALEN,XS,YS)
+      CALL WMDRSM(NUMSYM,DSTBTW,NPTS,XOUT,YOUT,ALEN,XS,YS,IPOSIT)
 C
    60 CONTINUE
+C
+C  Draw the spline curve if it is long enough.
+C 
+      IF (ALEN(NPTS) .GT. BEGDST+SYMWID+ENDDST) THEN
+        CALL GQPLCI(IER,ICOLD)
+        IF (NUMSYM .LE. 1) THEN
+          IF (IABS(ISTYPE(1)) .EQ. 1) THEN
+            ICOLOR = ICOLDC
+          ELSE IF (IABS(ISTYPE(1)) .EQ. 2) THEN
+            ICOLOR = IWARMC
+          ENDIF
+          CALL WMLGPL(NPTS,XOUT,YOUT)
+        ELSE
+          IBL = 1
+          DO 70 J=1,NUMSYM-1
+            IF (IABS(ISTYPE(J)) .EQ. 1) THEN
+              ICOLOR = ICOLDC
+            ELSE IF (IABS(ISTYPE(J)) .EQ. 2) THEN
+              ICOLOR = IWARMC
+            ENDIF
+            IBR = (IPOSIT(J+1)+IPOSIT(J))/2
+            CALL WMLGPL(IBR-IBL+1,XOUT(IBL),YOUT(IBL))
+            IBL = IBR
+   70     CONTINUE 
+          IF (IABS(ISTYPE(NUMSYM)) .EQ. 1) THEN
+            ICOLOR = ICOLDC
+          ELSE IF (IABS(ISTYPE(NUMSYM)) .EQ. 2) THEN
+            ICOLOR = IWARMC
+          ENDIF
+          IBR = NPTS
+          CALL WMLGPL(IBR-IBL+1,XOUT(IBL),YOUT(IBL))
+        ENDIF
+        ICOLOR = ICOLD
+      ENDIF
 C
 C  Restore the original normalization transformation, interior style,
 C  linewidth, fill color, line color.

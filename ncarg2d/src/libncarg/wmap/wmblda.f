@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.3 1994-09-23 17:13:42 fred Exp $
+C	$Id: wmblda.f,v 1.4 1994-10-14 01:23:45 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -116,19 +116,20 @@ C  Size of background margins for regional temperature labels.
 C
       DATA TMPMRG/0.001/
 C
-C  Color index to use for the backgrounds of the cities and daily
-C  temperature highs and lows.
+C  Background color index for city names.
 C
       DATA IBGCTY/0/
 C
-C  Color index to use for the characters of the regional temperature 
-C  labels.
+C  Color index for regional weather labels and regioanl temperature labels.
 C
       DATA IFGTRG/1/
 C
-C  Color index to use for the dots that mark cities.
+C  Colors for regional temperature label shadows and outlines.
 C
-      DATA IDOTCO/1/
+      DATA IRLOUC,IRLBKC,IRLLSC/-1,-1,-1/
+C
+C  Colors of dot drawn for cities and its background.
+      DATA IDOTBG,IDOTCO/0,1/
 C
 C  Length of windbarb shaft as a fraction of maximim screen height;
 C  length of full windbarb tic as a percentage of the shaft length;
@@ -156,5 +157,22 @@ C
      +     ILTNC1, ILTNC2, ILTNC3
      +   /      2,      3,      1,      1,      2,      1,      1, 
      +          2,      1,      1                                 /
+C
+C  Color indices for warm front and cold front symbols.
+C
+      DATA IWARMC,ICOLDC/1,1/
+C
+C  Color indices for high and low symbols.
+C
+      DATA IHIGC1,IHIGC2,IHIGC3,IHIGC4/1,0,1,1/
+      DATA ILOWC1,ILOWC2,ILOWC3/0,1,0/
+C
+C  Color indices for regional weather label boxes.
+C
+      DATA IRGLC1,IRGLC2,IRGLC3,IRGLC4,IRGLC5/1,0,1,1,-1/
+C
+C  Arrow color, arrow shadow color, arrow outline color.
+C
+      DATA IAROWC,IARSHC,IAROUC/1,-1,-1/
 C
       END

@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabc.f,v 1.1 1994-09-09 23:55:09 fred Exp $
+C	$Id: wmlabc.f,v 1.2 1994-10-14 01:24:02 fred Exp $
 C
       SUBROUTINE WMLABC(X,Y,CITY,TEMPS) 
 C
@@ -39,9 +39,11 @@ C
       GAP = .9*SIZEL
       CALL PCSETI ('CC - character color',ICOLOR)
       CALL PCSETI ('FN - font name',22)
-      CALL WMCHBG (XNDC,YNDC+0.5*(GAP+SIZEL),CITY,SIZEL,CTYMRG,IBGCTY)
-      CALL WMCHBG (XNDC,YNDC-0.5*(GAP+SIZEL),TEMPS,0.9*SIZEL,CTYMRG,
-     +             IBGCTY)
+      CALL WMGETI ('RBS',IRBSO)
+      CALL WMSETI ('RBS',IBGCTY)
+      CALL WMCHBG (XNDC,YNDC+0.5*(GAP+SIZEL),CITY,SIZEL)
+      CALL WMCHBG (XNDC,YNDC-0.5*(GAP+SIZEL),TEMPS,0.9*SIZEL)
+      CALL WMSETI ('RBS',IRBSO)
 C
 C  Restore Plotchar parameters.
 C

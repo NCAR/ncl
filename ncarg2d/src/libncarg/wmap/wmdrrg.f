@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.1 1994-09-09 23:54:54 fred Exp $
+C	$Id: wmdrrg.f,v 1.2 1994-10-14 01:23:54 fred Exp $
 C
       SUBROUTINE WMDRRG(N,X,Y,ITYPE,NC,XC,YC)
 C
@@ -101,6 +101,7 @@ C  transformation 0.
 C
       CALL GQCNTN(IER,NTRO)
       CALL GSELNT(0)
+      CALL GQPLCI(IER,IPLLRO)
       CALL GQFACI(IER,IFCLRO)
       CALL GQFAIS(IER,INSTYO)
       CALL GSFAIS(1)
@@ -118,6 +119,7 @@ C
           NDX = 1
         ENDIF
         CALL GSFACI(NDX)
+        CALL GSPLCI(NDX)
 C
 C  Draw the region.
 C 
@@ -140,6 +142,7 @@ C
 C  Thunderstorms.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,102)
       ELSE IF (ITYPE(1:2).EQ.'SH' .OR. ITYPE(1:2).EQ.'sh' .OR.
      +         ITYPE(1:2).EQ.'Sh') THEN
@@ -147,18 +150,21 @@ C
 C  Showers.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,101)
       ELSE IF (ITYPE(1:1).EQ.'R' .OR. ITYPE(1:1).EQ.'r') THEN
 C
 C  Rain.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,103)
       ELSE IF (ITYPE(1:1).EQ.'F' .OR. ITYPE(1:1).EQ.'f') THEN
 C
 C  Flurries.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,106)
       ELSE IF (ITYPE(1:2).EQ.'SN' .OR. ITYPE(1:2).EQ.'sn' .OR.
      +         ITYPE(1:2).EQ.'Sn') THEN
@@ -166,12 +172,14 @@ C
 C  Snow.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,104)
       ELSE IF (ITYPE(1:1).EQ.'I' .OR. ITYPE(1:1).EQ.'i') THEN
 C
 C  Ice.
 C
         CALL GSFACI(ICOLOR)
+        CALL GSPLCI(ICOLOR)
         CALL WMRGWT(NPTS,XOUT,YOUT,37,105)
       ENDIF
 C
@@ -180,6 +188,7 @@ C
       CALL GSELNT(NTRO)
       CALL GSFAIS(INSTYO)
       CALL GSFACI(IFCLRO)
+      CALL GSPLCI(IPLLRO)
 C
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C	$Id: wmgtso.f,v 1.2 1994-09-23 17:13:54 fred Exp $
+C	$Id: wmgtso.f,v 1.3 1994-10-14 01:24:01 fred Exp $
 C
       SUBROUTINE WMGTSO(X1,Y1,X2,Y2,NOUT,XIN,YIN,IFLG)
 C
@@ -86,7 +86,7 @@ C  Calculate the points along the Bezier curve for a warm front symbol.
 C
         NHALF = NOUT/2
         CALL BZFCRV(WXTRAN(1),WYTRAN(1),NHALF+1,XIN(1),YIN(1))
-        IF (MOD(NHALF,2) .EQ. 0) THEN
+        IF (MOD(NOUT,2) .EQ. 0) THEN
           CALL BZFCRV(WXTRAN(4),WYTRAN(4),NHALF,
      +                XIN(NHALF+1),YIN(NHALF+1))       
         ELSE

@@ -1,7 +1,7 @@
 C
-C	$Id: wmdrsm.f,v 1.2 1994-09-23 17:13:49 fred Exp $
+C	$Id: wmdrsm.f,v 1.3 1994-10-14 01:23:56 fred Exp $
 C
-      SUBROUTINE WMDRSM(NUMSYM,DSTBTW,IPTS,XIN,YIN,ARCLEN,XT,YT)
+      SUBROUTINE WMDRSM(NUMSYM,DSTBTW,IPTS,XIN,YIN,ARCLEN,XT,YT,IPOSIT)       
 C
 C  Draw weather symbols along the curve  ((XIN,YIN),I=1,IPTS).
 C  ARCLEN contains the cumulative polygonal arclengths of the curve.
@@ -11,6 +11,7 @@ C
 C
       PARAMETER (EPS=0.0001)
       DIMENSION XIN(IPTS),YIN(IPTS),ARCLEN(IPTS),XT(IPTS),YT(IPTS)
+      DIMENSION IPOSIT(NUMSYM)
 C
 C  Arithmetic statement function for computing square of distance.
 C
@@ -26,6 +27,7 @@ C
 C  Save the current fill attributes and reset.
 C
       CALL GQFACI(IER,ICOLD)
+      CALL GQPLCI(IER,IPOLD)
       CALL GQFAIS(IER,IFOLD)
       CALL GSFACI(ICOLOR)
       CALL GSFAIS(1)
@@ -46,6 +48,7 @@ C  endpoints.
 C
         SYMPOS = 0.5*ARCLEN(IPTS)
         CALL WMINTV(SYMPOS,ARCLEN,IPTS,NDX)
+        IPOSIT(1) = NDX
         XPM = XIN(NDX)
         YPM = YIN(NDX)
         TDST = SQRT(DSQ(YIN(IPTS)-YIN(1),XIN(IPTS)-XIN(1)))
@@ -100,6 +103,7 @@ C
           SYMPOS = BEGDST+SYMWDH+REAL(I-1)*(DSTBTW+SYMWID)
         ENDIF
         CALL WMINTV(SYMPOS,ARCLEN,IPTS,NDX)
+        IPOSIT(I) = NDX
 C
 C  Back up along the curve half a symbol width.
 C
@@ -173,7 +177,7 @@ C
 C
 C  Get the points making up the symbol.
 C
-        IF (IABS(ISTYPE(1)).EQ.1 .OR. IABS(ISTYPE(1)).EQ.3) THEN
+        IF (IABS(ISTYPE(I)).EQ.1 .OR. IABS(ISTYPE(I)).EQ.3) THEN
           NOUT = 3
         ELSE
           NOUT = NPTSBZ
@@ -182,12 +186,21 @@ C
 C
 C  Add points along the curve and draw.
 C
-        DO 40 J=NDXL,NDXR
-          XT(NOUT+J-NDXL+1) = XIN(J)
-          YT(NOUT+J-NDXL+1) = YIN(J)
-   40   CONTINUE
-        NF = NOUT+NDXR-NDXL+1
+        IF (NDXR-NDXL .GE. 2) THEN
+          DO 40 J=NDXL+1,NDXR-1
+            XT(NOUT+J-NDXL) = XIN(J)
+            YT(NOUT+J-NDXL) = YIN(J)
+   40     CONTINUE
+          NF = NOUT+NDXR-NDXL-1
+        ELSE
+          NF = NOUT
+        ENDIF
         IF (IALOFT .NE. 0) THEN
+          IF (IABS(ISTYPE(I)) .EQ. 2) THEN
+            CALL GSPLCI(IWARMC)
+          ELSE IF (IABS(ISTYPE(I)) .EQ. 1) THEN
+            CALL GSPLCI(ICOLDC)
+          ENDIF
           CALL WMLGPL(NF,XT,YT)
         ELSE IF(IFRONT.EQ.7) THEN
           CALL GQLWSC(IER,OSCL)
@@ -195,6 +208,11 @@ C
           CALL GPL(2,XT,YT)
           CALL GSLWSC(OSCL)
         ELSE
+          IF (IABS(ISTYPE(I)) .EQ. 2) THEN
+            CALL GSFACI(IWARMC)
+          ELSE IF (IABS(ISTYPE(I)) .EQ. 1) THEN
+            CALL GSFACI(ICOLDC)
+          ENDIF
           CALL GFA(NF,XT,YT)
         ENDIF
 C          
@@ -204,6 +222,7 @@ C
 C  Restore fill attributes.
 C
       CALL GSFACI(ICOLD)
+      CALL GSPLCI(IPOLD)
       CALL GSFAIS(IFOLD)
 C
       RETURN

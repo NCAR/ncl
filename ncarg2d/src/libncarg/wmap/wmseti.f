@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.2 1994-09-23 17:14:01 fred Exp $
+C	$Id: wmseti.f,v 1.3 1994-10-14 01:24:11 fred Exp $
 C
       SUBROUTINE WMSETI (CNP,IVP)
 C
@@ -129,7 +129,8 @@ C
         ENDIF
         GO TO 120
 C
-C  COL - specify color index to be used for all objects.
+C  COL - specify color index to be used for all objects that require 
+C        only a single color setting.
 C
       ELSE IF (CNP(1:3).EQ.'COL' .OR. CNP(1:3).EQ.'col' .OR.
      +    CNP(1:3).EQ.'Col') THEN
@@ -145,11 +146,32 @@ C
         GO TO 120
 C
 C  RFC - specify color index to be used for foreground of regional
-C        temperature labels.
+C        temperature labels and cities.
 C
       ELSE IF (CNP(1:3).EQ.'RFC' .OR. CNP(1:3).EQ.'rfc' .OR.
      +    CNP(1:3).EQ.'Rbc') THEN
         IFGTRG = IVP
+        GO TO 120
+C
+C  RLS - shadow color index for regional temperature labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RLS' .OR. CNP(1:3).EQ.'rls' .OR.
+     +    CNP(1:3).EQ.'Rls') THEN
+        IRLLSC = IVP
+        GO TO 120
+C
+C  ROS - outline color index for regional temperature labels.
+C
+      ELSE IF (CNP(1:3).EQ.'ROS' .OR. CNP(1:3).EQ.'ros' .OR.
+     +    CNP(1:3).EQ.'Ros') THEN
+        IRLOUC = IVP
+        GO TO 120
+C
+C  RBS -  color index for background box for regional temperature labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RBS' .OR. CNP(1:3).EQ.'rbs' .OR.
+     +    CNP(1:3).EQ.'Rbs') THEN
+        IRLBKC = IVP
         GO TO 120
 C
 C  DTC - specify color index to be used for the dots marking cities.
@@ -157,6 +179,13 @@ C
       ELSE IF (CNP(1:3).EQ.'DTC' .OR. CNP(1:3).EQ.'dtc' .OR.
      +    CNP(1:3).EQ.'dtc') THEN
         IDOTCO = IVP
+        GO TO 120
+C
+C  DBC - specify color background color for dot symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'DBC' .OR. CNP(1:3).EQ.'dbc' .OR.
+     +    CNP(1:3).EQ.'dbc') THEN
+        IDOTBG = IVP
         GO TO 120
 C
 C  NBZ - number of points to use in Bezier curves for warm front
@@ -215,43 +244,162 @@ C
 C  CC1 - color index for cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR.
-     +    CNP(1:3).EQ.'cc1') THEN
+     +    CNP(1:3).EQ.'Cc1') THEN
         ICLDC1 = IVP
         GO TO 120
 C
 C  CC2 - color index for cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR.
-     +    CNP(1:3).EQ.'cc2') THEN
+     +    CNP(1:3).EQ.'Cc2') THEN
         ICLDC2 = IVP
         GO TO 120
 C
 C  CC3 - color index for cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC3' .OR. CNP(1:3).EQ.'cc3' .OR.
-     +    CNP(1:3).EQ.'cc3') THEN
+     +    CNP(1:3).EQ.'Cc3') THEN
         ICLDC3 = IVP
         GO TO 120
 C
 C  LC1 - color index for lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC1' .OR. CNP(1:3).EQ.'lc1' .OR.
-     +    CNP(1:3).EQ.'lc1') THEN
+     +    CNP(1:3).EQ.'Lc1') THEN
         ILTNC1 = IVP
         GO TO 120
 C
 C  LC2 - color index for lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC2' .OR. CNP(1:3).EQ.'lc2' .OR.
-     +    CNP(1:3).EQ.'lc2') THEN
+     +    CNP(1:3).EQ.'Lc2') THEN
         ILTNC2 = IVP
         GO TO 120
 C
 C  LC3 - color index for lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC3' .OR. CNP(1:3).EQ.'lc3' .OR.
-     +    CNP(1:3).EQ.'lc3') THEN
+     +    CNP(1:3).EQ.'Lc3') THEN
         ILTNC3 = IVP
+        GO TO 120
+C
+C  WFC - color index for warm front symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'WFC' .OR. CNP(1:3).EQ.'wfc' .OR.
+     +    CNP(1:3).EQ.'Wfc') THEN
+        IWARMC = IVP
+        GO TO 120
+C
+C  CFC - color index for cold front symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'CFC' .OR. CNP(1:3).EQ.'cfc' .OR.
+     +    CNP(1:3).EQ.'Cfc') THEN
+        ICOLDC = IVP
+        GO TO 120
+C
+C  HIS - shadow color for high symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'HIS' .OR. CNP(1:3).EQ.'his' .OR.
+     +    CNP(1:3).EQ.'His') THEN
+        IHIGC1 = IVP
+        GO TO 120
+C
+C  HIF - symbol color for high symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'HIF' .OR. CNP(1:3).EQ.'hif' .OR.
+     +    CNP(1:3).EQ.'Hif') THEN
+        IHIGC3 = IVP
+        GO TO 120
+C
+C  HIB - character background color for high symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'HIB' .OR. CNP(1:3).EQ.'hib' .OR.
+     +    CNP(1:3).EQ.'Hib') THEN
+        IHIGC2 = IVP
+        GO TO 120
+C
+C  HIC - color of circumscribed circle.
+C
+      ELSE IF (CNP(1:3).EQ.'HIC' .OR. CNP(1:3).EQ.'hic' .OR.
+     +    CNP(1:3).EQ.'Hic') THEN
+        IHIGC4 = IVP
+        GO TO 120
+C
+C  LOS - shadow color for low symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'LOS' .OR. CNP(1:3).EQ.'los' .OR.
+     +    CNP(1:3).EQ.'Los') THEN
+        ILOWC1 = IVP
+        GO TO 120
+C
+C  LOF - symbol color for low symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'LOF' .OR. CNP(1:3).EQ.'lof' .OR.
+     +    CNP(1:3).EQ.'Lof') THEN
+        ILOWC3 = IVP
+        GO TO 120
+C
+C  LOB - character background color for low symbols.
+C
+      ELSE IF (CNP(1:3).EQ.'LOB' .OR. CNP(1:3).EQ.'lob' .OR.
+     +    CNP(1:3).EQ.'Lob') THEN
+        ILOWC2 = IVP
+        GO TO 120
+C
+C  RC1 - box outline color for regional weather labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RC1' .OR. CNP(1:3).EQ.'rc1' .OR.
+     +    CNP(1:3).EQ.'Rc1') THEN
+        IRGLC1 = IVP
+        GO TO 120
+C
+C  RC2 - background color for regional weather labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RC2' .OR. CNP(1:3).EQ.'rc2' .OR.
+     +    CNP(1:3).EQ.'Rc2') THEN
+        IRGLC2 = IVP
+        GO TO 120
+C
+C  RC3 - shadow color for regional weather labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RC3' .OR. CNP(1:3).EQ.'rc3' .OR.
+     +    CNP(1:3).EQ.'Rc3') THEN
+        IRGLC3 = IVP
+        GO TO 120
+C
+C  RC4 - character color for regional weather labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RC4' .OR. CNP(1:3).EQ.'rc4' .OR.
+     +    CNP(1:3).EQ.'Rc4') THEN
+        IRGLC4 = IVP
+        GO TO 120
+C
+C  RC5 - character outline color for regional weather labels.
+C
+      ELSE IF (CNP(1:3).EQ.'RC5' .OR. CNP(1:3).EQ.'rc5' .OR.
+     +    CNP(1:3).EQ.'Rc5') THEN
+        IRGLC5 = IVP
+        GO TO 120
+C
+C  AWC - arrow color.
+C
+      ELSE IF (CNP(1:3).EQ.'AWC' .OR. CNP(1:3).EQ.'awc' .OR.
+     +    CNP(1:3).EQ.'Awc') THEN
+        IAROWC = IVP
+        GO TO 120
+C
+C  AWC - arrow shadow color.
+C
+      ELSE IF (CNP(1:3).EQ.'ASC' .OR. CNP(1:3).EQ.'asc' .OR.
+     +    CNP(1:3).EQ.'Asc') THEN
+        IARSHC = IVP
+        GO TO 120
+C
+C  AOC - arrow outline color.
+C
+      ELSE IF (CNP(1:3).EQ.'AOC' .OR. CNP(1:3).EQ.'aoc' .OR.
+     +    CNP(1:3).EQ.'Aoc') THEN
+        IAROUC = IVP
         GO TO 120
       ELSE
         CTM(1:36) = 'WMSETI - Parameter name not known - '

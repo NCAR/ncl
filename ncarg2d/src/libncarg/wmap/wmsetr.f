@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.2 1994-09-23 17:14:02 fred Exp $
+C	$Id: wmsetr.f,v 1.3 1994-10-14 01:24:12 fred Exp $
 C
       SUBROUTINE WMSETR (CNP,RVP)
 C
@@ -49,7 +49,6 @@ C
       ELSE IF (CNP(1:3).EQ.'LIN' .OR. CNP(1:3).EQ.'lin' .OR.
      +         CNP(1:3).EQ.'Lin') THEN
         RLINWD = MAX(RVP,0.05)
-        CALL GSLWSC(RLINWD)
         GO TO 120
 C
 C  DWD - specify line widths as a fraction of the screen height for

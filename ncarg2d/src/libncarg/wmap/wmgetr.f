@@ -1,5 +1,5 @@
 C
-C	$Id: wmgetr.f,v 1.2 1994-09-23 17:13:53 fred Exp $
+C	$Id: wmgetr.f,v 1.3 1994-10-14 01:23:59 fred Exp $
 C
       SUBROUTINE WMGETR (CNP,RVP)
 C
@@ -121,7 +121,7 @@ C
         RVP = ARWDIR
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CMG' .OR. CNP(1:3).EQ.'cmg' .OR. 
-     +    CNP(1:3).EQ.'Crd') THEN
+     +    CNP(1:3).EQ.'Cmg') THEN
         RVP = CTYMRG
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'RMG' .OR. CNP(1:3).EQ.'rmg' .OR. 
