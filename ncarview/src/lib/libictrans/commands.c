@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.12 1992-02-19 18:21:38 clyne Exp $
+ *	$Id: commands.c,v 1.13 1992-06-24 21:06:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -146,7 +146,7 @@ int	iCFile(ic)
 
 		
 
-	if ((toc = CGM_initMetaEdit(argv[0], 1440, NULL)) == NULL) {
+	if ((toc = CGM_initMetaEdit(argv[0], 1440, NULL,TRUE)) == NULL) {
 		perror((char *) NULL);
 		return;
 	}
@@ -1274,7 +1274,7 @@ processMemoryCGM(ic, mem_file)
 	Directory	*toc;
 	int		fd = ic->fd;
 
-	if ((toc = CGM_initMetaEdit(mem_file, -1440, NULL)) == NULL) {
+	if ((toc = CGM_initMetaEdit(mem_file, -1440, NULL,TRUE)) == NULL) {
 		perror((char *) NULL);
 		return;
 	}

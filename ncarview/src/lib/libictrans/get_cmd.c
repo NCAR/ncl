@@ -1,5 +1,5 @@
 /*
- *	$Id: get_cmd.c,v 1.4 1991-08-20 15:57:29 clyne Exp $
+ *	$Id: get_cmd.c,v 1.5 1992-06-24 21:06:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,9 +23,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <ncarv.h>
 #include "lex.h"
 #include "ictrans.h"
-#include "icmalloc.h"
 #include "get_cmd.h"
 
 extern	int	my_yylex();

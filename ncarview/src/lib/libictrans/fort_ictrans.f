@@ -1,5 +1,5 @@
 C
-C	$Id: fort_ictrans.f,v 1.2 1991-01-09 11:13:00 clyne Exp $
+C	$Id: fort_ictrans.f,v 1.3 1992-06-24 21:06:22 clyne Exp $
 C
 C
 C	subroutine GOPNIC

@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.8 1992-03-19 20:07:21 clyne Exp $
+#	$Id: yMakefile,v 1.9 1992-06-24 21:07:05 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -73,7 +73,7 @@ sedscript:      Makefile
 	@echo 's/static void __yy__unused() { main(); }//g' >> $@
 
 clean::
-	@$(RM) lex.yy.c.sed sedscript
+	@-$(RM) lex.yy.c.sed sedscript ictrans_wks.c
 
 lint: $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 

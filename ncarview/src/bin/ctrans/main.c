@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.19 1992-02-27 01:08:01 clyne Exp $
+ *	$Id: main.c,v 1.20 1992-06-24 20:59:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,72 +57,81 @@ char	*ProgramName;
  *	a global structure that contains values of command line options
  */
 static	struct	{
-	StringType_	device;		/* the device name		*/
-	StringType_	font;		/* the font name		*/
-	IntType_	movie;		/* movie or batch mode		*/
-	BoolType_       soft_fill;	/* software fill of polygons	*/
-	BoolType_       debug;		/* software fill of polygons	*/
-	BoolType_       bell_off;	/* turn off the bell		*/
-	BoolType_       read_stdin;	/* read metafile from stdin	*/
-	FloatType_ 	min_line_width;	/* minimum line width		*/
-	FloatType_ 	max_line_width;	/* maximun line width		*/
-	FloatType_ 	line_scale;	/* additional line scaling	*/
-	StringType_	pal;		/* optional color palette	*/
-	BoolType_       version;	/* print the verison number	*/
-	BoolType_       verbose;	/* operate in verbose mode	*/
-	} commLineOpt;
+	char	*device;		/* the device name		*/
+	char	*font;		/* the font name		*/
+	int	movie;		/* movie or batch mode		*/
+	boolean	soft_fill;	/* software fill of polygons	*/
+	boolean	debug;		/* software fill of polygons	*/
+	boolean	do_bell;	/* turn off the bell		*/
+	boolean	read_stdin;	/* read metafile from stdin	*/
+	float 	min_line_width;	/* minimum line width		*/
+	float 	max_line_width;	/* maximun line width		*/
+	float 	line_scale;	/* additional line scaling	*/
+	char	*pal;		/* optional color palette	*/
+	boolean	version;	/* print the verison number	*/
+	boolean	verbose;	/* operate in verbose mode	*/
+	boolean	help;		/* print usage string		*/
+	} opt;
 	
 
 static	OptDescRec	set_options[] = {
-	{"device", OptSepArg, NULL},	
-	{"font", OptSepArg, NULL},	
-	{"movie", OptSepArg, "-1"},	
-        {"softfill", OptIsArg, "false"},
-        {"Debug", OptIsArg, "false"},
-        {"bell", OptIsArg, "true"},
-        {"", OptIsArg, "false"},
-	{"lmin", OptSepArg, "-1"},	
-	{"lmax", OptSepArg, "-1"},	
-	{"lscale", OptSepArg, "-1"},	
-	{"pal", OptSepArg, NULL},	
-        {"Version", OptIsArg, "false"},
-        {"verbose", OptIsArg, "false"},
+	{"device", 1, NULL, "Specify output device type"},
+	{"font", 1, NULL, "Specify path to font"},
+	{"movie", 1, "-1", "Operate in batch mode with 'arg0' second delay"},	
+        {"softfill", 0, NULL, "Do perform polygon scan conversion in software"},
+        {"Debug", 0, NULL, "Do operate in debug mode"},
+        {"bell", 0, NULL, "Do ring bell between frames"},
+        {"", 0, NULL, "Read metafile from the standard input"},
+	{"lmin", 1, "-1", "Set minimum line width"},
+	{"lmax", 1, "-1", "Set maximum line width"},
+	{"lscale", 1, "-1", "Scale all lines by 'arg0'"},
+	{"pal", 1, NULL, "'arg0' is a color palette file"},
+        {"Version", 0, NULL, "Print version and exit"},
+        {"verbose", 0, NULL, "Operate in verbose mode"},
+        {"help", 0, NULL, "Print usage and exit"},
 	{NULL}
 	};
 
 static	Option	get_options[] = {
-	{"device", StringType, (unsigned long) &(commLineOpt.device), 
-							sizeof(StringType_)},	
-	{"font", StringType, (unsigned long) &commLineOpt.font, 
-							sizeof(StringType_)},	
-	{"movie", IntType, (unsigned long) &commLineOpt.movie, 
-							sizeof(IntType_ ) },	
-        {"softfill", BoolType, (unsigned long) &commLineOpt.soft_fill, 
-							sizeof (BoolType_ )},
-        {"Debug", BoolType, (unsigned long) &commLineOpt.debug, 
-							sizeof (BoolType_ )},
-        {"bell", BoolType, (unsigned long) &commLineOpt.bell_off, 
-							sizeof (BoolType_ )},
-        {"", BoolType, (unsigned long) &commLineOpt.read_stdin, 
-							sizeof (BoolType_ )},
-        {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
-							sizeof (FloatType_ )},
-        {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
-							sizeof (FloatType_ )},
-        {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
-							sizeof (FloatType_ )},
-	{"pal", StringType, (unsigned long) &(commLineOpt.pal), 
-							sizeof(StringType_)},	
-        {"Version", BoolType, (unsigned long) &commLineOpt.version, 
-							sizeof (BoolType_ )},
-        {"verbose", BoolType, (unsigned long) &commLineOpt.verbose, 
-							sizeof (BoolType_ )},
-	{NULL}
-	};
+	{"device", NCARGCvtToString, (Voidptr)&(opt.device),sizeof(opt.device)
+	},
+	{"font", NCARGCvtToString, (Voidptr) &opt.font, sizeof(opt.font)
+	},
+	{"movie", NCARGCvtToInt, (Voidptr) &opt.movie, sizeof(opt.movie)
+	},
+        {"softfill", NCARGCvtToBoolean, (Voidptr) &opt.soft_fill, 
+							sizeof (opt.soft_fill)
+	},
+        {"Debug", NCARGCvtToBoolean, (Voidptr) &opt.debug, sizeof (opt.debug)
+	},
+        {"bell", NCARGCvtToBoolean,(Voidptr)&opt.do_bell,sizeof(opt.do_bell)
+	},
+        {"",NCARGCvtToBoolean,(Voidptr)&opt.read_stdin, sizeof(opt.read_stdin)
+	},
+	{"lmin", NCARGCvtToFloat, (Voidptr) &opt.min_line_width, 
+					sizeof(opt.min_line_width )
+	},
+        {"lmax", NCARGCvtToFloat, (Voidptr) &opt.max_line_width, 
+						sizeof (opt.max_line_width )
+	},
+        {"lscale", NCARGCvtToFloat, (Voidptr) &opt.line_scale, 
+						sizeof (opt.line_scale)
+	},
+	{"pal", NCARGCvtToString, (Voidptr) &(opt.pal), sizeof(opt.pal)
+	},
+        {"Version",NCARGCvtToBoolean,(Voidptr)&opt.version,sizeof(opt.version)
+	},
+        {"verbose",NCARGCvtToBoolean,(Voidptr)&opt.verbose,sizeof(opt.verbose)
+	},
+        {"help",NCARGCvtToBoolean,(Voidptr)&opt.help,sizeof(opt.help)
+	},
+	{NULL
+	}
+};
 
 extern	boolean *softFill;
 extern	boolean *deBug;
-extern	boolean *bellOff;
+extern	boolean *doBell;
 	
 main(argc,argv)
 int	argc;
@@ -149,6 +158,7 @@ char	**argv;
 			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
 	int	frame_count = 1;
+	int	od;
 
 	extern	void	SetDefaultPalette();
 
@@ -156,42 +166,61 @@ char	**argv;
 
 	program_name = (program_name = strrchr(argv[0], '/')) ?
 						++program_name : *argv;
-	/*
-	 * 	init ctrans' error module so we can use it
-	 */
-	init_ct_error(program_name, TRUE);
 
 	/*
 	 *	parse command line argument. Separate ctrans specific
 	 *	args from device specific args
 	 */
-	softFill = &commLineOpt.soft_fill;
-	deBug = &commLineOpt.debug;
-	bellOff = &commLineOpt.bell_off;
-	parseOptionTable(&argc, argv, set_options);
+	softFill = &opt.soft_fill;
+	deBug = &opt.debug;
+	doBell = &opt.do_bell;
+	od = OpenOptionTbl();
+	if (ParseOptionTable(od, &argc, argv, set_options) < 0) {
+		fprintf(
+			stderr, "%s : Error parsing options [ %s ]\n", 
+			program_name, ErrGetMsg()
+		);
+		exit(1);
+	}
 
 	/*
-	 * load the options into commLineOpt
+	 * load the options into opt
 	 */
-	getOptions((caddr_t) 0, get_options);
+	if (GetOptions(od, get_options) < 0) {
+		fprintf(
+			stderr, "%s : Error getting options [ %s ]\n", 
+			program_name, ErrGetMsg()
+		);
+		PrintOptionHelp(od, stderr);
+		exit(1);
+	}
 
-	batch = commLineOpt.movie != -1;
-	sleep_time = commLineOpt.movie;
+	/*
+	 * 	init ctrans' error module so we can use it
+	 */
+	init_ct_error(program_name, TRUE);
 
-	if (commLineOpt.version) {
+	batch = opt.movie != -1;
+	sleep_time = opt.movie;
+
+	if (opt.version) {
 		PrintVersion(program_name);
+		exit(0);
+	}
+	if (opt.help) {
+		usage(od, program_name, NULL);
 		exit(0);
 	}
 
 	/*
 	 * set line scaling options
 	 */
-	if (commLineOpt.min_line_width > -1) 
-		SetMinLineWidthDefault(commLineOpt.min_line_width);
-	if (commLineOpt.max_line_width > -1) 
-		SetMaxLineWidthDefault(commLineOpt.max_line_width);
-	if (commLineOpt.line_scale > -1) 
-		SetAdditionalLineScale(commLineOpt.line_scale);
+	if (opt.min_line_width > -1) 
+		SetMinLineWidthDefault(opt.min_line_width);
+	if (opt.max_line_width > -1) 
+		SetMaxLineWidthDefault(opt.max_line_width);
+	if (opt.line_scale > -1) 
+		SetAdditionalLineScale(opt.line_scale);
 
         /*
 	 *	If a device was given on command line build the full path
@@ -200,7 +229,7 @@ char	**argv;
 	 *	not a graphcap then a path will still be built to it but
 	 *	it will have no meaning.
          */
-        if ((gcap = getGcapname( commLineOpt.device )) == NULL )
+        if ((gcap = getGcapname( opt.device )) == NULL )
 		ct_error(T_MD,"");
 
 
@@ -209,7 +238,7 @@ char	**argv;
 	 *	to it. Else try and get font from the FONTCAP variable
 	 *	Else try and use the default font
          */
-        if ((fcap = getFcapname( commLineOpt.font )) == NULL) {
+        if ((fcap = getFcapname( opt.font )) == NULL) {
 
 		/*
 		 *	use default font
@@ -223,8 +252,8 @@ char	**argv;
 	 * inform ctrans to use a default color palette if one was
 	 * requested
 	 */
-	if (commLineOpt.pal) {
-		SetDefaultPalette(commLineOpt.pal);
+	if (opt.pal) {
+		SetDefaultPalette(opt.pal);
 	}
 
 	/*
@@ -260,6 +289,7 @@ char	**argv;
 	meta_files[0] = NULL;
 	for (j = 0 ; i < argc; i++, j++) {
 		if (*argv[i] == '-') {
+			usage(od, program_name, NULL);
 			ct_error(T_NSO, "");
 			break;
 		} 
@@ -306,7 +336,7 @@ char	**argv;
 			 *	unrecoverable error occurs
 			 */
 			while (ctrans(NEXT) == OK) {
-				if (commLineOpt.verbose) {
+				if (opt.verbose) {
 					fprintf(
 						stderr, 
 						"plotted %d frames\n", 
@@ -324,7 +354,7 @@ char	**argv;
 			i = 0;
 			while (record[i] != -1) {
 				(void) ctrans(record[i++]);
-				if (commLineOpt.verbose) {
+				if (opt.verbose) {
 					fprintf(
 						stderr, 
 						"plotted %d frames\n", 
@@ -348,4 +378,18 @@ char	**argv;
 	(void) close_ctrans();
 
 	exit(0);
+}
+
+usage(od, prog_name, msg)
+	int	od;
+	char	*prog_name;
+	char	*msg;
+{
+	char	*usage = "-d device [-f font] [options] [device options]";
+
+	if (msg) fprintf(stderr, "%s: %s\n", prog_name, msg);
+
+	fprintf(stderr, "Usage: %s %s\n", prog_name, usage);
+	PrintOptionHelp(od, stderr);
+
 }

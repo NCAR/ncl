@@ -1,24 +1,35 @@
-#	$Id: yMakefile,v 1.20 1992-03-31 00:09:32 don Exp $
+#	$Id: yMakefile,v 1.21 1992-06-24 21:07:23 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
 #
 
 
+#
+#	The following drivers are compiled unconditionally: HDF, HP Laser
+#	Jet, NRIF, Sun and AVS.
+#
 #define	BuildRasterHDF
 #define	BuildRasterHPLaser
 #define	BuildRasterNrif
 #define	BuildRasterSun
 #define BuildRasterAVS
-#define BuildParallax
 
-#ifdef	BuildParallax
-#define BuildRasterParallax
-#endif
-
+#
+#	Additionally, if 'BuildXlibDependentCode' is defined the XWD
+#	driver is also compiled
+#
 #ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
 #endif	BuildXlibDependentCode
+
+#
+#	For Sun systems the parallax driver is also loaded 
+# 
+#ifdef	sun
+#define	BuildRasterParallax
+#endif
+
 
 NCARG		= ../../../..
 LOCINCDIR	= ../../include
@@ -55,7 +66,7 @@ XWD_SRCS =	xwd.c
 XWD_DEFS = 	-DBuildRasterXWD
 #endif
 
-#ifdef BuildRasterParallax
+#if defined (BuildRasterParallax) && defined(sun)
 PARALLAX_OBJS =	parallax.o
 PARALLAX_SRCS =	parallax.c
 PARALLAX_DEFS =	-DBuildRasterParallax

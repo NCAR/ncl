@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.2 1991-01-09 10:56:21 clyne Exp $
+ *	$Id: main.c,v 1.3 1992-06-24 21:01:19 clyne Exp $
  */
 #include <stdio.h>
 #include <signal.h>

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.11 1992-03-19 20:07:09 clyne Exp $
+ *	$Id: ictrans.c,v 1.12 1992-06-24 21:06:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,9 +33,9 @@
 #include <cgm_tools.h>
 #include <ncarv.h>
 #include <stdio.h>
+#include <ncarv.h>
 #include <cterror.h>
 #include "ictrans.h"
-#include "icmalloc.h"
 #include "lex.h"
 #include "get_cmd.h"
 
@@ -51,59 +51,55 @@ extern	IcState	icState;
 extern	int	spoolerJobs;
 
 static	struct	{
-	StringType_	device;		/* the device name		*/
-	StringType_	font;		/* the font name		*/
-	BoolType_	soft_fill;	/* software fill of piolygons	*/
-	BoolType_	bell_off;	/* turn the bell off		*/
-	FloatType_ 	min_line_width;	/* minimum line width		*/
-	FloatType_ 	max_line_width;	/* maximun line width		*/
-	FloatType_ 	line_scale;	/* additional line scaling	*/
-	StringType_     pal;            /* optional color palette       */
-	IntType_	fd;		/* output file descriptor	*/
-	BoolType_	version;	/* software fill of piolygons	*/
-	} commLineOpt;
+	char	*device;	/* the device name		*/
+	char	*font;		/* the font name		*/
+	boolean	soft_fill;	/* software fill of piolygons	*/
+	boolean	do_bell;	/* turn the bell on		*/
+	float 	min_line_width;	/* minimum line width		*/
+	float 	max_line_width;	/* maximun line width		*/
+	float 	line_scale;	/* additional line scaling	*/
+	char	*pal;		/* optional color palette       */
+	int	fd;		/* output file descriptor	*/
+	boolean	version;	/* software fill of piolygons	*/
+	} opt;
 
 static	OptDescRec	set_options[] = {
-	{"device", OptSepArg, NULL},	
-	{"font", OptSepArg, NULL},	
-	{"softfill", OptIsArg, "false"},
-	{"bell", OptIsArg, "true"},
-	{"lmin", OptSepArg, "-1"},	
-	{"lmax", OptSepArg, "-1"},	
-	{"lscale", OptSepArg, "-1"},	
-        {"pal", OptSepArg, NULL},
-        {"fdn", OptSepArg, "-1"},
-        {"Version", OptIsArg, "false"},
+	{"device", 1, NULL, "Specify output device type"},
+	{"font", 1, NULL, "Specify path to font"},
+        {"softfill", 0, NULL, "Do perform polygon scan conversion in software"},
+        {"bell", 0, NULL, "Do ring bell between frames"},
+	{"lmin", 1, "-1", "Set minimum line width"},
+	{"lmax", 1, "-1", "Set maximum line width"},
+	{"lscale", 1, "-1", "Scale all lines by 'arg0'"},
+	{"pal", 1, NULL, "'arg0' is a color palette file"},
+        {"fdn", 1, "-1", ""},
+        {"Version", 0, NULL, "Print version and exit"},
 	{NULL}
-	};
+};
 
 static	Option	get_options[] = {
-	{"device", StringType, (unsigned long) &commLineOpt.device, 
-						sizeof(StringType_)},	
-	{"font", StringType, (unsigned long) &commLineOpt.font, 
-						sizeof(StringType_)},	
-	{"softfill", BoolType, (unsigned long) &commLineOpt.soft_fill, 
-						sizeof (BoolType_ )},
-	{"bell", BoolType, (unsigned long) &commLineOpt.bell_off, 
-						sizeof (BoolType_ )},
-        {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
-							sizeof (FloatType_ )},
-        {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
-							sizeof (FloatType_ )},
-        {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
-							sizeof (FloatType_ )},
-	{"pal", StringType, (unsigned long) &(commLineOpt.pal),
-							sizeof(StringType_)},
-	{"fdn", IntType, (unsigned long) &(commLineOpt.fd),
-							sizeof(IntType_)},
-	{"Version", BoolType, (unsigned long) &commLineOpt.version, 
-						sizeof (BoolType_ )},
+	{"device", NCARGCvtToString, (Voidptr) &opt.device, sizeof(opt.device)},
+	{"font", NCARGCvtToString, (Voidptr) &opt.font, sizeof(opt.font)},	
+	{"softfill", NCARGCvtToBoolean, (Voidptr) &opt.soft_fill, 
+						sizeof (opt.soft_fill )},
+	{"bell", NCARGCvtToBoolean, (Voidptr) &opt.do_bell, 
+						sizeof (opt.do_bell )},
+        {"lmin", NCARGCvtToFloat, (Voidptr) &opt.min_line_width, 
+						sizeof (opt.min_line_width)},
+        {"lmax", NCARGCvtToFloat, (Voidptr) &opt.max_line_width, 
+						sizeof (opt.max_line_width )},
+        {"lscale", NCARGCvtToFloat, (Voidptr) &opt.line_scale, 
+						sizeof (opt.line_scale )},
+	{"pal", NCARGCvtToString, (Voidptr) &(opt.pal), sizeof(opt.pal)},
+	{"fdn", NCARGCvtToInt, (Voidptr) &(opt.fd), sizeof(opt.fd)},
+	{"Version", NCARGCvtToBoolean, (Voidptr) &opt.version, 
+						sizeof (opt.version )},
 
 	{NULL}
 	};
 
 extern	boolean	*softFill;
-extern	boolean	*bellOff;
+extern	boolean	*doBell;
 
 char	*programName;
 
@@ -121,6 +117,7 @@ ICTrans(argc, argv, mem_cgm)
 	char	*fcap,			/* path to font			*/
 		*gcap;			/* path to device		*/
 	boolean	batch = FALSE;
+	int	od;
 
 					/*
 					 * list of metafiles to process
@@ -145,28 +142,43 @@ ICTrans(argc, argv, mem_cgm)
 	 *	parse command line argument. Separate ctrans specific
 	 *	args from device specific args
 	 */
-	softFill = &commLineOpt.soft_fill;
-	bellOff = &commLineOpt.bell_off;;
-	parseOptionTable(&argc, argv, set_options);
+	softFill = &opt.soft_fill;
+	doBell = &opt.do_bell;;
+	od = OpenOptionTbl();
+	if (ParseOptionTable(od, &argc, argv, set_options) < 0) {
+		fprintf(
+			stderr, "%s : Error loading options - %s\n",
+			programName, ErrGetMsg()
+		);
+		exit(1);
+	}
 
 	/*
-	 * load the options into commLineOpt
+	 * load the options into opt
 	 */
-	getOptions((caddr_t) 0, get_options);
+	if (GetOptions(od, get_options) < 0) {
+		fprintf(
+			stderr, "%s : Error getting options - %s\n",
+			programName, ErrGetMsg()
+		);
+		PrintOptionHelp(od, stderr);
+		exit(1);
+	}
 
-	if (commLineOpt.version) {
+
+	if (opt.version) {
 		PrintVersion(programName);
 		exit(0);
 	}
 	/*
 	 * set line scaling options
 	 */
-	if (commLineOpt.min_line_width > -1) 
-		SetMinLineWidthDefault(commLineOpt.min_line_width);
-	if (commLineOpt.max_line_width > -1) 
-		SetMaxLineWidthDefault(commLineOpt.max_line_width);
-	if (commLineOpt.line_scale > -1) 
-		SetAdditionalLineScale(commLineOpt.line_scale);
+	if (opt.min_line_width > -1) 
+		SetMinLineWidthDefault(opt.min_line_width);
+	if (opt.max_line_width > -1) 
+		SetMaxLineWidthDefault(opt.max_line_width);
+	if (opt.line_scale > -1) 
+		SetAdditionalLineScale(opt.line_scale);
 
         /*
 	 *	If a device was given on command line build the full path
@@ -175,7 +187,7 @@ ICTrans(argc, argv, mem_cgm)
 	 *	not a graphcap then a path will still be built to it but
 	 *	it will have no meaning.
          */
-        if ((gcap = getGcapname( commLineOpt.device )) == NULL )
+        if ((gcap = getGcapname( opt.device )) == NULL )
 		ct_error(T_MD,"");
 
 	icState.device = (icState.device = strrchr(gcap, '/')) ?
@@ -187,7 +199,7 @@ ICTrans(argc, argv, mem_cgm)
 	 *	to it. Else try and get font from the FONTCAP variable
 	 *	Else try and use the default font
          */
-        if ((fcap = getFcapname( commLineOpt.font )) == NULL) {
+        if ((fcap = getFcapname( opt.font )) == NULL) {
 		/*
 		*	use default font
 		*/
@@ -203,8 +215,8 @@ ICTrans(argc, argv, mem_cgm)
 	 * inform ctrans to use a default color palette if one was
 	 * requested
 	 */
-	if (commLineOpt.pal) {
-		SetDefaultPalette(commLineOpt.pal);
+	if (opt.pal) {
+		SetDefaultPalette(opt.pal);
 	}
 
 
@@ -262,7 +274,7 @@ ICTrans(argc, argv, mem_cgm)
 	icState.spool_alias = GetCurrentAlias();
 
 	init_icommand(&icommand);
-	icommand.fd = commLineOpt.fd == -1 ? fileno(stdout) : commLineOpt.fd;
+	icommand.fd = opt.fd == -1 ? fileno(stdout) : opt.fd;
 
 	/*
 	 * prime the system by executing a file() command
