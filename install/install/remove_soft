@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: remove_soft,v 1.1 1993-02-20 00:11:31 clyne Exp $
+#      $Id: remove_soft,v 1.2 1993-02-25 17:16:43 clyne Exp $
 #
 #########################################################################
 #									#
@@ -121,7 +121,7 @@ endif
 #	N.B. csh doesn't let you redirect stderr without molesting
 #	output to stdout. Hence the ugly kludge with echo
 #
-/bin/csh -c echo $lib_path/ncarg.* >& /dev/null
+(/bin/csh -fc echo $lib_path/ncarg.* >& /dev/null)
 if ($status == 0) then
 	set files = `echo $lib_path/ncarg.*`
 	foreach file ($files)
@@ -129,6 +129,17 @@ if ($status == 0) then
 		set instbls = ($instbls $version)
 	end
 endif
+
+if ($pre3_2 == "" && $instbls == "") then
+	clear
+	echo ""
+	echo ""
+	echo ""
+	echo "	No NCAR Graphics installations found"
+	$LOCALDIR/pause
+	exit 0
+endif
+
 
 set select_vector = `$LOCALDIR/list_menu -t "$menu_title" $pre3_2 $instbls`
 if ($status != 0) then
