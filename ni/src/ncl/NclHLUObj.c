@@ -110,7 +110,8 @@ static void HLUObjDestroy
 	NhlArgVal selector;
 	NclRefList *parents,*tmpptr,*tmpptr2;
 
-
+	NhlINITVAR(cbdata);
+	NhlINITVAR(selector);
 
 	if(hlu_obj != NULL) {
 /*
@@ -318,6 +319,9 @@ int child_id;
 	NhlArgVal selector;
 	NhlArgVal udata;
 	
+	NhlINITVAR(selector);
+	NhlINITVAR(udata);
+
 	selector.lngval = 0;
 
 	

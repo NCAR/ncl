@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.16 1997-01-16 19:44:06 ethan Exp $
+ *      $Id: NclAtt.c,v 1.17 1997-02-27 20:18:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -225,6 +225,8 @@ NclSelectionRecord * sel_ptr;
 	NhlArgVal selector;
 	NclScalar tmp_scalar;
 	
+	NhlINITVAR(cbdata);
+	NhlINITVAR(selector);
 
 	att_quark = NrmStringToQuark(attname);
 

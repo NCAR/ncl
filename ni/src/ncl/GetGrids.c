@@ -12,19 +12,16 @@
 #include "NclGRIB.h"
 #include <math.h>
 
-#include	<ncarg/hlu/hluP.h>
-#include	<ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Workstation.h>
-#include 	<ncarg/hlu/WorkstationP.h>
+#include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
 #include <ncarg/hlu/MapPlot.h>
-
-
-
 
 typedef struct _NhlDummyWorkstationLayerPart{
 	char *foo;
@@ -107,11 +104,13 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* superclass			*/	(NhlClass)&NhlworkstationClassRec,
 /* cvt_table			*/	NULL,
 
-/* layer_resources		*/	NULL,
+/* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
-/* all_resources		*/	NULL,
-/* num_resources		*/	0,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.15 1996-10-11 23:17:09 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.16 1997-02-27 20:18:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1705,14 +1705,16 @@ static void MultiDVal_HLUObj_Destroy
         NclMultiDValHLUObjData self_md = (NclMultiDValHLUObjData)self;
 	NclHLUObj tmp_ho;
 	obj *obj_ids,i;
-	NhlArgVal selector;
-        NhlArgVal cbdata;
-
-
-	cbdata.intval = self->obj.id;
-        selector.lngval = DESTROYED;
 
         if(self->obj.cblist != NULL) {
+		NhlArgVal selector;
+		NhlArgVal cbdata;
+
+		NhlINITVAR(selector);
+		NhlINITVAR(cbdata);
+		cbdata.intval = self->obj.id;
+	        selector.lngval = DESTROYED;
+
                 _NhlCBCallCallbacks(self->obj.cblist,selector,cbdata);
         }
 

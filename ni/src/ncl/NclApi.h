@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.17 1996-10-10 18:21:54 boote Exp $
+ *      $Id: NclApi.h,v 1.18 1997-02-27 20:18:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -347,6 +347,12 @@ void * /*user_data */
 extern void NclSetOutputStream(
 #if	NhlNeedProto
 	FILE	*out
+#endif
+);
+
+extern NhlBoolean NclSymbolDefined(
+#if	NhlNeedProto
+	char	*sym
 #endif
 );
 

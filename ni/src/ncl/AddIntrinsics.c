@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.22 1997-01-31 22:24:48 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.23 1997-02-27 20:18:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -274,62 +274,76 @@ void _NclAddIntrinsics
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIPrint,args,"print",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDelete,args,"delete",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDraw,args,"NhlDraw",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDraw,args,"draw",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDestroy,args,"NhlDestroy",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDestroy,args,"destroy",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIUpdate,args,"NhlUpdateWorkstation",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIUpdate,args,"update",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIFrame,args,"NhlFrame",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIFrame,args,"frame",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIClear,args,"NhlClearWorkstation",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIClear,args,"clear",1,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].is_dimsizes = 1;
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIDumpStk,args,"dump",1,PIPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("integer");
 	args[0].is_dimsizes = 1;
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIPSetRL,args,"setrl",1,PIPROC);
+
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].is_dimsizes = 1;
@@ -340,22 +354,27 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].n_dims = 1;
 	_NclRegisterProc(_NclIAddFile,args,"addfile",2,IFUNC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclISizeOf,args,"sizeof",1,IFUNC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIDimSizes,args,"dimsizes",1,IFUNC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("logical");
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIAny,args,"any",1,IFUNC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("logical");
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIAll,args,"all",1,IFUNC);
+
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 1;
@@ -366,7 +385,8 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].n_dims = 1;
 	_NclRegisterProc(_NclIAddToOverlay,args,"overlay",2,IPROC);
-	args = NclCalloc(2,sizeof(NclArgTemplate));
+
+	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 1;
 	args[0].dim_sizes[0] = 1;
@@ -375,15 +395,17 @@ void _NclAddIntrinsics
 	args[1].is_dimsizes = 1;
 	args[1].dim_sizes[0] = 1;
 	args[1].n_dims = 1;
-	args[1].arg_data_type = _NclLookUp("graphic");
-	args[1].is_dimsizes = 1;
-	args[1].dim_sizes[0] = 1;
-	args[1].n_dims = 1;
+	args[2].arg_data_type = _NclLookUp("graphic");
+	args[2].is_dimsizes = 1;
+	args[2].dim_sizes[0] = 1;
+	args[2].n_dims = 1;
 	_NclRegisterProc(_NclIAddToOverlayAfter,args,"NhlAddOverlay",3,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIIsMissing,args,"ismissing",1,IFUNC);
+
 	args = NclCalloc(5,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 1;
@@ -402,6 +424,8 @@ void _NclAddIntrinsics
 	args[4].is_dimsizes = 0;
 	args[4].n_dims = 1;
 	_NclRegisterProc(_NclINhlDataToNDC,args,"NhlDataToNDC",5,IPROC);
+
+	args = NclCalloc(5,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 1;
 	args[0].dim_sizes[0] = 1;
@@ -419,6 +443,7 @@ void _NclAddIntrinsics
 	args[4].is_dimsizes = 0;
 	args[4].n_dims = 1;
 	_NclRegisterProc(_NclINhlDataToNDC,args,"datatondc",5,IPROC);
+
 	args = NclCalloc(5,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
@@ -435,6 +460,7 @@ void _NclAddIntrinsics
 	args[4].is_dimsizes = 0;
 	args[4].n_dims = 1;
 	_NclRegisterProc(_NclINhlNDCToData,args,"ndctodata",5,IPROC);
+
 	args = NclCalloc(5,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
 	args[0].is_dimsizes = 0;
@@ -451,10 +477,12 @@ void _NclAddIntrinsics
 	args[4].is_dimsizes = 0;
 	args[4].n_dims = 1;
 	_NclRegisterProc(_NclINhlNDCToData,args,"NhlNDCToData",5,IPROC);
+
 	_NclRegisterProc(_NclIListVariables,NULL,"list_vars",0,IPROC);
 	_NclRegisterProc(_NclIListFiles,NULL,"list_files",0,IPROC);
 	_NclRegisterProc(_NclIListFuncs,NULL,"list_procfuncs",0,IPROC);
 	_NclRegisterProc(_NclIListHLUObjs,NULL,"list_hlus",0,IPROC);
+
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("file");
 	args[0].is_dimsizes = 1;
@@ -489,7 +517,7 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].is_dimsizes = 1;
 	args[1].n_dims = 1;
-	_NclRegisterFunc(_NclIbsearch,args,"bsearch",1,IFUNC);
+	_NclRegisterFunc(_NclIbsearch,args,"bsearch",2,IFUNC);
 
 	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
@@ -611,11 +639,6 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIabs,args,"abs",1,IFUNC);
 	
-
-
-	
-	
-
 	return;
 }
 

@@ -956,8 +956,9 @@ NclStackEntry _NclCreateHLUObjOp
 	int parent_hluobj_id = -1;
 	int *ids;
 	int appd_id = 0;
-	NhlArgVal udata;
+	NhlArgVal sel,udata;
 
+	NhlINITVAR(data_out);
 
 	if(parent != NULL) 	 {
 		if(parent->multidval.totalelements > 1) {
@@ -1116,8 +1117,10 @@ NclStackEntry _NclCreateHLUObjOp
 		if(tmp_ho->hlu.hlu_id == appd_id) {	
 			defaultapp_hluobj_id = tmp_ho->obj.id;
 		}
+		NhlINITVAR(sel);
+		NhlINITVAR(udata);
 		udata.lngval = tmp_ho->obj.id;
-		tmp_ho->hlu.apcb = _NhlAppAddDefaultChangeCB(DefaultAppChangeCB,udata);
+		tmp_ho->hlu.apcb = _NhlAddClassCallback(NhlappClass,_NhlCBappDefParentChange,sel,DefaultAppChangeCB,udata);
 	}
 
 	

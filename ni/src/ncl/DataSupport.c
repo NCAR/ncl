@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.33 1997-01-16 19:43:59 ethan Exp $
+ *      $Id: DataSupport.c,v 1.34 1997-02-27 20:18:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1282,6 +1282,9 @@ NhlArgVal *udata;
 {
 	NhlArgVal mudata;
 	NhlArgVal selector;
+
+	NhlINITVAR(mudata);
+	NhlINITVAR(selector);
 
 	if(udata != NULL) {	
 		mudata = *udata;

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.84 1997-01-31 22:24:52 ethan Exp $
+ *      $Id: Execute.c,v 1.85 1997-02-27 20:18:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -805,6 +805,8 @@ NclExecuteReturnStatus _NclExecute
 			{
 				NclStackEntry data;
 			
+				NhlINITVAR(data);
+
 				ptr++;lptr++;fptr++;
 				data.u.data_obj = (NclMultiDValData)_NclGetObj(*(int*)ptr);
 				data.kind = NclStk_VAL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.43 1996-10-10 16:25:45 ethan Exp $
+ *      $Id: Symbol.c,v 1.44 1997-02-27 20:18:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2574,6 +2574,7 @@ int copy_data;
 		tmp->missing = *(NclApiScalar*)&(the_val->multidval.missing_value.value);
 		return(tmp);
 	} 
+	NclFree(tmp);
 	return(NULL);
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.40 1997-01-31 22:27:59 ethan Exp $
+ *      $Id: NclApi.c,v 1.41 1997-02-27 20:18:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@ extern "C" {
 #include "defs.h"
 #include "NclData.h"
 #include "Symbol.h"
+#include "Keywords.h"
 #include "NclVar.h"
 #include "ApiRecords.h"
 #include "NclApi.h"
@@ -790,6 +791,27 @@ int data_type;
 	out = (char*)NclMalloc(strlen(buffer)+1);
 	strcpy(out,buffer);
 	return(out);
+}
+
+NhlBoolean
+NclSymbolDefined
+#if	NhlNeedProto
+(
+	char	*sym
+)
+#else
+(sym)
+	char	*sym;
+#endif
+{
+	NclSymbol	*s;
+
+	s = _NclLookUp(sym);
+
+	if(!s || (s->type == UNDEF))
+		return False;
+	else
+		return True;
 }
 
 #ifdef __cplusplus
