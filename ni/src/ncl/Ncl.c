@@ -4,11 +4,10 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <Symbol.h>
-#include <y.tab.h>
-#include <Machine.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "NclData.h"
+#include "Machine.h"
 #include <unistd.h>
 
 extern FILE *_yyin;

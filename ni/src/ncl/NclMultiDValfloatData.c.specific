@@ -1,0 +1,158 @@
+
+/*
+ *      $Id: NclMultiDValfloatData.c.specific,v 1.1 1994-07-14 20:46:51 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1994			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Thu Jan 13 14:56:36 MST 1994
+ *
+ *	Description:	
+ */
+#include "NclMultiDValdoubleData.h"
+
+static struct _NclDataRec *MultiDVal_float_md_Coerce
+#if  __STDC__
+(NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
+#else
+(self,coerce_to_obj,new_missing)
+        NclData self;
+        NclObjTypes coerce_to_obj;
+	NclScalar *new_missing;
+#endif
+{
+	NclData output_md;
+	NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
+	double *dvalue;
+	NclScalar missing;
+	int i,chckmiss = 0;
+
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDfloatData);
+/*
+* new_missing is either NULL or is a value of data_type belonging to
+* the coerce_to_type
+*/
+
+	switch(coerce_to_obj) {
+	case Ncl_MultiDValdoubleData:
+		dvalue = (double*)NclMalloc((unsigned)sizeof(double)*
+			self_md->multidval.totalelements);
+		if(self_md->multidval.missing_value.has_missing) {
+			if(new_missing == NULL) {
+				missing.doubleval = (double)
+					self_md->multidval.missing_value.value.floatval;
+			} else {
+				chckmiss = 1;
+				missing = self_md->multidval.missing_value.value;
+			}
+		} 
+		if(chckmiss) {
+			for(i=0; i<self_md->multidval.totalelements;i++) {
+				dvalue[i] = (double)(((float*)self_md->multidval.val)[i] == missing.floatval ? new_missing->doubleval:((float*)self_md->multidval.val)[i]) ;
+			}
+		} else {
+			for(i=0; i<self_md->multidval.totalelements;i++) {
+				dvalue[i] = (double)((float*)self_md->multidval.val)[i];
+			}
+		}
+		if(new_missing != NULL) {
+			missing = *new_missing;
+		}
+		output_md = (NclData)_NclMultiDValdoubleCreate(NULL,NULL,Ncl_MultiDValdoubleData,0,(void*)dvalue,
+		((self_md->multidval.missing_value.has_missing||new_missing !=NULL) ? &missing:NULL),
+			self_md->multidval.n_dims,
+			self_md->multidval.dim_sizes,	
+			TEMPORARY,NULL);
+		return((NclData)output_md);
+	case Ncl_MultiDValfloatData:
+		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
+			return((NclData)self);
+		} else if(new_missing->floatval != self_md->multidval.missing_value.value.floatval){
+			if(self->obj.status == TEMPORARY) {	
+				_NclResetMissingValue((NclMultiDValData)self,new_missing);
+				return((NclData)self);
+			} else {
+				return((NclData)_NclCopyVal((NclMultiDValData)self,new_missing));
+			}
+		} else {
+			return((NclData)self);
+		}
+	default:
+		return(NULL);
+	}
+}
+static struct _NclDataRec *MultiDVal_float_s_Coerce
+#if  __STDC__
+(NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
+#else
+(self,coerce_to_obj,new_missing)
+        NclData self;
+        NclObjTypes coerce_to_obj;
+	NclScalar *new_missing;
+#endif
+{
+        NclData output_md;
+        NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
+        double *dvalue;
+        NclScalar missing;
+	int chckmiss = 0;
+
+	
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDfloatData);
+
+	switch(coerce_to_obj) {
+	case Ncl_MultiDValdoubleData:
+		dvalue = (double*)NclMalloc((unsigned)sizeof(double));
+		if(self_md->multidval.missing_value.has_missing) {
+			if(new_missing == NULL) {
+				missing.doubleval = (double)
+					self_md->multidval.missing_value.value.floatval;
+			} else {
+				chckmiss = 1;
+				missing = self_md->multidval.missing_value.value;
+			}
+		}
+		if(chckmiss) {
+			*dvalue = (double)
+			(*((float*)self_md->multidval.val) == missing.floatval ?
+new_missing->doubleval : *((float*)self_md->multidval.val)); 
+		} else {
+			*dvalue = (double)*((float*)self_md->multidval.val);
+		}
+		if(new_missing != NULL) {
+			missing = *new_missing;
+		}
+		output_md = (NclData)_NclMultiDValdoubleCreate(NULL,NULL,Ncl_MultiDValdoubleData,0,(void*)dvalue,
+		((self_md->multidval.missing_value.has_missing || new_missing != NULL) ? &missing:NULL),
+			self_md->multidval.n_dims,
+			self_md->multidval.dim_sizes,	
+			TEMPORARY,NULL);
+		return((NclData)output_md);
+	case Ncl_MultiDValfloatData:
+		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
+			return((NclData)self);
+		} else if(new_missing->floatval != self_md->multidval.missing_value.value.floatval){
+			if(self->obj.status == TEMPORARY) {
+				_NclResetMissingValue((NclMultiDValData)self,new_missing);
+				return(self);
+			} else {
+				return((NclData)_NclCopyVal((NclMultiDValData)self,new_missing));
+			}
+		} else {
+				return(self);
+		}
+	default:
+		return(NULL);
+	}
+}

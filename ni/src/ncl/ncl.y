@@ -27,6 +27,19 @@ extern char cur_line_text[512];
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
+/*
+extern int _NclTranslate(
+#ifdef NhlNeedProto
+void*,   
+FILE* 
+#endif
+);
+*/
+extern void _NclTransTerminate(
+#ifdef NhlNeedProto
+void
+#endif
+);
 
 extern int rec; 
 extern FILE* recfp;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.7 1994-07-08 21:31:39 ethan Exp $
+ *      $Id: Memory.c,v 1.8 1994-07-14 20:46:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,9 +26,11 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <errno.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <data_objs/NclMultiDValData.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "NclData.h"
+#include "Machine.h"
+#include "NclMultiDValData.h"
 
 
 void

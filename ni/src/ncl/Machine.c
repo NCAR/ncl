@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.17 1994-07-08 21:31:36 ethan Exp $
+ *      $Id: Machine.c,v 1.18 1994-07-14 20:45:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,16 +27,17 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <data_objs/NclMultiDValData.h>
-#include <data_objs/NclVar.h>
-#include <data_objs/NclAtt.h>
-#include <data_objs/DataSupport.h>
-#include <Symbol.h>
 #include <errno.h>
-#include <OpsList.h>
-#include <Machine.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "NclVar.h"
+#include "NclMultiDValData.h"
+#include "NclAtt.h"
+#include "Machine.h"
+#include "OpsList.h"
+#include "VarSupport.h"
+#include "AttSupport.h"
+#include "DataSupport.h"
 
 /*
 * This is done so stack size and machine size can be configured at 

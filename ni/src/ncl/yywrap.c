@@ -5,12 +5,8 @@ extern "C" {
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <Symbol.h>
-#include <SrcTree.h>
+#include "defs.h"
 #include <errno.h>
-#include <y.tab.h>
 extern int loading;
 extern char *cur_load_file;
 extern int cur_line_number;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.4 1994-07-08 21:31:24 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.5 1994-07-14 20:45:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,11 +26,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <y.tab.h>
-#include <Symbol.h>
-#include <ProcFuncs.h>
+#include "defs.h"
 
 
 void _NclAddBuiltIns

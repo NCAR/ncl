@@ -4,15 +4,14 @@ extern  "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <Symbol.h>
-#include <SrcTree.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "NclDataDefs.h"
+#include "Machine.h"
+#include "y.tab.h"
+#include "OpsList.h"
+#include "SrcTree.h"
 #include <errno.h>
-#include <y.tab.h>
-#include <OpsList.h>
-#include <Machine.h>
-#include <data_objs/DataSupport.h>
 
 extern char *cur_load_file;
 extern int loading;

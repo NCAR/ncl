@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.8 1994-05-28 00:13:16 ethan Exp $
+ *      $Id: Symbol.h,v 1.9 1994-07-14 20:47:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,12 +27,92 @@ extern "C" {
 #ifndef _NCSymbol_h
 #define _NCSymbol_h
 
-#include <Files.h>
-#include <Variable.h>
-#include <Literal.h>
-#include <ProcFuncs.h>
-#include <Graphics.h>
+typedef struct _NclFileInfo {
+	char filename[NCL_MAX_STRING];
+	int level;
+	unsigned int offset;
+	struct _NclSymTableListNode *filescope;
+} NclFileInfo;
 
+typedef struct _NclFileVarInfo {
+	char fvarname[NCL_MAX_STRING];
+	int level;
+	unsigned int offset;
+	struct _NclSymbol *parent_file;
+} NclFileVarInfo;
+
+
+typedef struct _NclVarInfo {
+	char	varname[NCL_MAX_STRING];
+	int level;
+	int datatype;
+	unsigned int offset;
+}NclVarInfo; 
+
+
+#define ANYDIMSIZE = -1
+
+typedef NhlErrorTypes (*NclBuiltInProcWrapper)(
+#if	NhlNeedProto
+	void
+#endif
+);
+typedef NhlErrorTypes (*NclIntrinsicProcWrapper)(
+#if	NhlNeedProto
+	void	
+#endif
+);
+
+typedef NhlErrorTypes (*NclBuiltInFuncWrapper)(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+
+typedef struct _NclGenProcFuncInfo {
+	int nargs;
+	struct _NclArgTemplate * theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+} NclGenProcFuncInfo;
+
+typedef struct _NclProcFuncInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+	void *mach_rec_ptr;
+} NclProcFuncInfo;
+
+typedef struct _NclBuiltInFuncInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+	NclBuiltInFuncWrapper thefunc;
+} NclBuiltInFuncInfo;
+
+typedef struct _NclBuiltInProcInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+	NclBuiltInProcWrapper theproc;
+} NclBuiltInProcInfo;
+
+
+typedef struct _NclArgTemplate {
+	int n_dims;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+	struct _NclSymbol *arg_data_type; /* use symbol table keyword entries */
+	struct _NclSymbol *arg_sym;
+	int is_dimsizes;
+} NclArgTemplate;
+
+typedef struct _NclVisBlkInfo {
+	struct _NclSymbol*  obj_type;
+} NclVisBlkInfo;
 
 typedef struct _NclSymbol {
 	int type;
@@ -210,12 +290,6 @@ int                   /* ftype */
 #endif
 );
 
-void _NclAddSingleObj(
-#ifdef NhlNeedProto
-char * /*name*/,
-struct _NhlLayerClassRec * /* the_ptr */
-#endif
-);
 
 #endif /*_NCSymbol_h*/
 #ifdef __cplusplus

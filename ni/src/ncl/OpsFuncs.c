@@ -4,29 +4,18 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <data_objs/NclMultiDValdoubleData.h>
-#include <data_objs/NclMultiDValfloatData.h>
-#include <data_objs/NclMultiDVallongData.h>
-#include <data_objs/NclMultiDValintData.h>
-#include <data_objs/NclMultiDValshortData.h>
-#include <data_objs/NclMultiDValstringData.h>
-#include <data_objs/NclMultiDValHLUObjData.h>
-#include <data_objs/NclMultiDVallogicalData.h>
-#include <data_objs/NclMultiDValnclfileData.h>
-#include <data_objs/NclHLUObj.h>
-#include <defs.h>
-#include <Symbol.h>
+#include "defs.h"
 #include <errno.h>
-#include <OpsList.h>
-#include <Machine.h>
-#include <Execute.h>
-#include <OpsFuncs.h>
-#include <data_objs/NclVar.h>
-#include <data_objs/DataSupport.h>
-#include <data_objs/NclFileInterfaces.h>
-#include <data_objs/NclFile.h>
-#include <data_objs/FileSupport.h>
-#include <y.tab.h>
+#include "Symbol.h"
+#include "NclDataDefs.h"
+#include "Machine.h"
+#include "NclFile.h"
+#include "NclVar.h"
+#include "VarSupport.h"
+#include "NclMdInc.h"
+#include "NclHLUObj.h"
+#include "y.tab.h"
+#include "OpsList.h"
 
 NhlErrorTypes _NclIAddFile
 #if  __STDC__
@@ -885,7 +874,7 @@ int operation;
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
-		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,result);
+		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,(NclObj*)&(result->u.data_obj));
 	} else {
 		return(NhlFATAL);
 	}
@@ -927,7 +916,7 @@ int operation;
                 return(NhlFATAL);
         }
 
-	ret = _NclCallMonoOp(operand_md,result,operation);
+	ret = _NclCallMonoOp(operand_md,(NclObj*)&(result->u.data_obj),operation);
 
 	if(operand_md->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)operand_md);

@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.3 1994-07-08 21:31:28 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.4 1994-07-14 20:45:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,12 +27,13 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <Symbol.h>
 
+extern void _NclAddSingleObj(
+#ifdef NhlNeedProto
+char * /*name*/,
+struct _NhlLayerClassRec * /* the_ptr */
+#endif
+);
 
 
 extern NhlLayerClass NhltickMarkLayerClass;

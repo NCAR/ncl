@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.18 1994-07-13 16:03:55 ethan Exp $
+ *      $Id: Execute.c,v 1.19 1994-07-14 20:45:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,25 +28,20 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 
-#include <data_objs/NclVar.h>
-#include <data_objs/NclMultiDValdoubleData.h>
-#include <data_objs/NclMultiDValfloatData.h>
-#include <data_objs/NclMultiDValintData.h>
-#include <data_objs/NclMultiDValshortData.h>
-#include <data_objs/NclMultiDVallongData.h>
-#include <data_objs/NclMultiDValstringData.h>
-#include <defs.h>
-#include <Symbol.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "NclVar.h"
+#include "NclFileInterfaces.h"
+#include "NclFile.h"
+#include "FileSupport.h"
+#include "DataSupport.h"
+#include "VarSupport.h"
+#include "Machine.h"
+#include "NclMdInc.h"
+#include "OpsList.h"
+#include "OpsFuncs.h"
+#include "y.tab.h"
 #include <errno.h>
-#include <OpsList.h>
-#include <Machine.h>
-#include <Execute.h>
-#include <OpsFuncs.h>
-#include <y.tab.h>
-#include <data_objs/DataSupport.h>
-#include <data_objs/NclFileInterfaces.h>
-#include <data_objs/NclFile.h>
-#include <data_objs/FileSupport.h>
 
 extern int cmd_line;
 

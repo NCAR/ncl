@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.6 1994-05-28 00:12:48 ethan Exp $
+ *      $Id: Keywords.h,v 1.7 1994-07-14 20:45:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#include <y.tab.h>
+#include "y.tab.h"
 
 static struct {
         char *keyword;

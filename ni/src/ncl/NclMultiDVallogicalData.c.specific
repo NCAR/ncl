@@ -1,0 +1,64 @@
+
+static NclData MultiDVal_logical_md_Coerce
+#if  __STDC__
+(NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
+#else
+(self, coerce_to_obj, new_missing)
+	NclData  self;
+	NclObjTypes coerce_to_obj;
+	NclScalar *new_missing;
+#endif
+{
+	NclMultiDVallogicalData self_md = (NclMultiDVallogicalData)self;
+	if(self_md->obj.obj_type == Ncl_MultiDVallogicalData) {
+		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
+			return(self);
+		} else if(self_md->multidval.missing_value.value.logicalval != new_missing->logicalval) {
+			if(self->obj.status == TEMPORARY) {
+/*
+* This avoids a new allocation and copy but probably costs more time
+*/
+				_NclResetMissingValue((NclMultiDValData)self,new_missing);
+				return(self);
+			} else {
+				return((NclData)_NclCopyVal((NclMultiDValData)self,new_missing));
+			}
+		} else {
+				return(self);
+		}
+	} else {
+		return(NULL);
+	}
+}
+
+static NclData MultiDVal_logical_s_Coerce
+#if  __STDC__
+(NclData self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
+#else
+(self, coerce_to_obj,new_missing)
+NclData self;
+NclObjTypes coerce_to_obj;
+NclScalar *new_missing;
+#endif
+{
+	NclMultiDVallogicalData self_md = (NclMultiDVallogicalData)self;
+	if(self_md->obj.obj_type == Ncl_MultiDVallogicalData) {
+		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
+			return(self);
+		}  else if(new_missing->logicalval != self_md->multidval.missing_value.value.logicalval){
+			if(self->obj.status == TEMPORARY) {
+/*
+* This avoids a new allocation and copy but probably costs more time
+*/
+				_NclResetMissingValue((NclMultiDValData)self,new_missing);
+				return(self);
+			} else {
+				return((NclData)_NclCopyVal((NclMultiDValData)self,new_missing));
+			}
+		} else {
+			return(self);
+		}
+	} else {
+		return(NULL);
+	}
+}

@@ -7,14 +7,13 @@ extern char *malloc(), *realloc();
 */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
+#include "defs.h"
+#include "NclDataDefs.h"
+#include "Symbol.h"
+#include "SrcTree.h"
+#include "Machine.h"
 #include <errno.h>
-#include <Symbol.h>
 #include <ctype.h>
-#include <SrcTree.h>
-#include <Machine.h>
-#include <Execute.h>
 int scopelevel = 0;
 extern int _yydebug;
 extern char yytext[];
@@ -29,6 +28,19 @@ extern char cur_line_text[512];
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
+
+extern void _NclTransTerminate(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern int _NclTranslate(
+#ifdef NhlNeedProto 
+void *,
+FILE *
+#endif
+);
 
 extern int rec; 
 extern FILE* recfp;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.11 1994-07-13 16:03:59 ethan Exp $
+ *      $Id: Symbol.c,v 1.12 1994-07-14 20:47:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,10 +26,10 @@ extern "C" {
 #include <errno.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <defs.h>
-#include <data_objs/NclData.h>
-#include <Keywords.h>
-#include <Symbol.h>
+#include "defs.h"
+#include "Symbol.h"
+#include "Keywords.h"
+
 extern void _NclAddFileFormats(
 #ifdef NhlNeedProto
 void
