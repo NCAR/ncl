@@ -1,5 +1,5 @@
 C
-C	$Id: eezmpa.f,v 1.3 1995-06-14 13:56:44 haley Exp $
+C       $Id: eezmpa.f,v 1.4 1996-07-24 20:15:36 kennison Exp $
 C
       PROGRAM COLRIT
 C
@@ -12,7 +12,7 @@ C Define the array that holds the area map.  It is put in a labeled
 C common block only because, on some machines, having a local array
 C that large causes problems.
 C
-        COMMON /CLRCMN/ IAM(250000)
+        COMMON /CLRCMN/ IAM(400000)
 C
 C Dimension the arrays needed by ARSCAM for edges.
 C
@@ -96,7 +96,7 @@ C
 C
 C Initialize the area map.
 C
-        CALL ARINAM (IAM,250000)
+        CALL ARINAM (IAM,400000)
 C
 C Add edges to the area map.
 C
@@ -108,7 +108,7 @@ C
 C
 C Compute and print the amount of space used in the area map.
 C
-        ISU=250000-(IAM(6)-IAM(5)-1)
+        ISU=400000-(IAM(6)-IAM(5)-1)
         PRINT * , 'SPACE USED IN AREA MAP IS ',ISU
 C
 C Set the background color.
