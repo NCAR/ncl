@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.6 1995-06-22 21:09:38 haley Exp $
+;      $Id: xy06n.ncl,v 1.7 1995-07-10 23:19:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -87,8 +87,6 @@ cmap(9,:) = (/1.00,1.00,0.00/)
 ; Default is to display output to an X workstation
 ;
 NCGM=0
-X11=1
-PS=0
 
 ;
 ; Create application object.  The application name is used to 
@@ -109,25 +107,13 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
-  if (X11 .eq. 1) then
 ;
 ; Create an X workstation
 ;
-    xworkid = create "xy06Work" xWorkstationClass defaultapp
+  xworkid = create "xy06Work" xWorkstationClass defaultapp
       "wkPause" : "True"
       "wkColorMap" : cmap
-    end create
-  else
-    if (PS .eq. 1) then
-;
-; Create a PSWorkstation object.
-;
-      xworkid = create "xy06Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "xy06n.ps"
-        "wkColorMap"   : cmap
-     end create
-    end if
-  end if
+  end create
 end if
 
 ;
@@ -167,52 +153,58 @@ end getvalues
 
 numids = dimsizes(station_abrev)
 
+;
+; Set date.
+;
+date = "950318"
+
+;
+; Define procedure for getting the daily data values from a particular
+; station.
+;
+
 temp@_FillValue = spv
 pressure@_FillValue = spv
 wind_speed@_FillValue = spv
+filedir = ncargpath("data")
+do j = 0,NHOURS-1
+  if((j.lt.10))
+    filename = filedir + "/cdf/" + date + "0" + j + "_sao.cdf"
+  else
+    filename = filedir + "/cdf/" + date + j + "_sao.cdf"
+  end if
 ; 
 ; Open data file containing grid of global data values.
 ;
-filedir = ncargpath("data")
-filename = filedir + "/cdf/950318_sao.cdf"
-tmpfile = addfile(filename,"r")
-
-;
-; Get station ids, temperatures, pressures, and wind speeds.
-;
-rdstations = tmpfile->id
-tdata = tmpfile->T
-pdata = tmpfile->PSL
-vdata = tmpfile->SPD
-
-; Loop through each hour of the day.
-;
-do j = 0,NHOURS-1
-; 
-; Get number of station ids.
-;
-  isize = dimsizes(tmpfile->id(:,j,0))
-;
-; Loop through each station we want to get values for.
-;
+  tmpfile = addfile(filename,"r")
+  rdstations = tmpfile->id
+  tdata = tmpfile->T
+  pdata = tmpfile->PSL
+  vdata = tmpfile->SPD
+  isize = dimsizes(tmpfile->id(:,0))
   do l = 0, numids-1
     do i = 0, (isize-1)
-      if(rdstations(i,j,:) .eq. station_abrev(l)) 
+      if(rdstations(i,:) .eq. station_abrev(l)) 
         break
       end if
     end do
-;
-; If found the station we wanted, then get the temperature, pressure,
-; and wind speed; otherwise, assign a missing value.
-;
-    if(i .lt. isize) then
-      print("station " + station_abrev(l))
+    print("station " + station_abrev(l))
+    if(i .lt. isize) 
       print("loaded hour " + j)
-      temp(l,j) = tdata(i,j)
-      pressure(l,j) = pdata(i,j)
-      wind_speed(l,j) = vdata(i,j)
+      temp(l,j) = tdata(i)
+      pressure(l,j) = pdata(i)
+      wind_speed(l,j) = vdata(i)
+    else
+      print("missing hour " + j)
+      temp(l,j) = spv
+      pressure(l,j) = spv
+      wind_speed(l,j) = spv
     end if
   end do
+  delete(rdstations)
+  delete(tdata)
+  delete(pdata)
+  delete(vdata)
 end do
 
 ;
@@ -221,7 +213,7 @@ end do
 ; id from this object will become the value for the XyPlot resource
 ; "xyCoordData".
 ;
-dataid = create "xyData" coordArraysClass defaultapp
+dataid = create "xyData" coordArraysClass noparent
     "caYArray" : temp
     "caYMissingV" : spv
 end create
