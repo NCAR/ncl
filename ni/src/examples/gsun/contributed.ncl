@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.48 2004-08-18 22:08:40 shea Exp $
+;      $Id: contributed.ncl,v 1.49 2004-08-26 15:38:39 asphilli Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3676,6 +3676,10 @@ begin
               x(:,:,:,d,:) = x(:,:,:,d,:)*sqrtcos(d)
            end do  
         end if
+	if (numdims.ge.6) then
+	   print("SqrtCosWeight accepts an array with 5 dimensions or less, array has "+numdims+" dimensions, exiting")
+	   exit
+	end if
         x@long_name = x@long_name + " (sqrt cosine weighted)"
 return(x)
 end
@@ -3732,6 +3736,10 @@ begin
               x(:,:,:,d,:) = x(:,:,:,d,:)*coslat(d)
            end do  
         end if
+	if (numdims.ge.6) then
+	   print("NewCosWeight accepts an array with 5 dimensions or less, array has "+numdims+" dimensions, exiting")
+	   exit
+	end if
         x@long_name = x@long_name + " (cosine weighted)"
 return(x)
 end
