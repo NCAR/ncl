@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.92 1995-12-11 23:32:02 kennison Exp $
+#   $Id: ncargex.csh,v 1.93 1996-02-22 15:13:44 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1449,6 +1449,7 @@ switch ($name)
     case c_srex01:
         set data_files = (srex01.dat)
     breaksw
+
 #************************************************#           
 #                                                #
 # autograph with pwritx for character generation #
@@ -1595,6 +1596,18 @@ if (! $?NoRunOption) then
     echo "$msg"
     echo ""
 endif
+
+#*******************************************#
+#                                           #
+# Remove files created after the execution. #
+#                                           #
+#*******************************************#
+switch ($name)
+    case slex02:
+        set data_files = ($data_files slex02.input)
+    breaksw
+endsw
+
 
 #***********************#
 #                       #
