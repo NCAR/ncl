@@ -1,0 +1,39 @@
+#
+#
+#	$Id: yMakefile,v 1.1 1992-04-02 21:30:08 clyne Exp $
+#
+#
+#	Makefile for rasstat
+#
+#
+
+NCARG = ../../../..
+BINDIR_LOCAL = ../../../bin
+
+MYNAME	= rasstat
+
+LOCLIBDIR	= ../../../lib
+LOCINCDIR	= ../../include
+
+LIBS		= $(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a \
+		$(LIBDIR)/libncarv.a -lm
+
+CDEFINES	= -I$(LOCINCDIR)
+
+OBJS		= rasstat.o
+SRCS		= rasstat.c
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
