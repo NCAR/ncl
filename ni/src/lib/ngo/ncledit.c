@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.5 1997-01-17 18:59:29 boote Exp $
+ *      $Id: ncledit.c,v 1.6 1997-02-27 20:25:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,8 @@ NgNclEditClassRec NgnclEditClassRec = {
 /* all_resources	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize*/	NULL,
 /* class_initialize	*/	NULL,
@@ -945,10 +947,9 @@ NECreateWin
 {
 	char		func[]="NECreateWin";
 	NgNclEditPart	*np = &((NgNclEdit)go)->ncledit;
-	Widget		menubar,menush,fmenu,fmenush,emenu,emenush;
-	Widget		cmenu,cmenush;
-	Widget		hmenu,hmenush;
-	Widget		file,edit,config,help;
+	Widget		menubar,menush,fmenu,emenu;
+	Widget		vmenu,omenu,wmenu,hmenu;
+	Widget		file,edit,view,options,window,help;
 	Widget		addfile,load,close,quit;
 	Widget		pane,sform,sform1;
 	Widget		slabel;
@@ -987,7 +988,15 @@ NECreateWin
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	cmenu = XtVaCreateWidget("cmenu",xmRowColumnWidgetClass,menush,
+	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
@@ -1005,9 +1014,19 @@ NECreateWin
 		XmNsubMenuId,	emenu,
 		NULL);
 
-	config = XtVaCreateManagedWidget("config",xmCascadeButtonGadgetClass,
+	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
 									menubar,
-		XmNsubMenuId,	cmenu,
+		XmNsubMenuId,	vmenu,
+		NULL);
+
+	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	omenu,
+		NULL);
+
+	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	wmenu,
 		NULL);
 
 	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
@@ -1041,7 +1060,9 @@ NECreateWin
 
 	XtManageChild(fmenu);
 	XtManageChild(emenu);
-	XtManageChild(cmenu);
+	XtManageChild(vmenu);
+	XtManageChild(omenu);
+	XtManageChild(wmenu);
 	XtManageChild(hmenu);
 
 	pane = XtVaCreateManagedWidget("pane",xmPanedWindowWidgetClass,
@@ -1148,8 +1169,6 @@ NECreateWin
 		XmNshadowThickness,	&np->shadow_thickness,
 		NULL);
 
-	XtAddCallback(np->prompt_text,XmNfocusCallback,TextFocusCB,
-							(XtPointer)np->text);
 	XtAddEventHandler(np->prompt_text,StructureNotifyMask,False,
 						MapPromptEH,(XtPointer)go);
 
@@ -1164,6 +1183,8 @@ NECreateWin
 	np->text = XtVaCreateManagedWidget("nclcmd",xmTextWidgetClass,scroll,
 		XmNeditMode,	XmMULTI_LINE_EDIT,
 		NULL);
+	XtAddCallback(np->prompt_text,XmNfocusCallback,TextFocusCB,
+							(XtPointer)np->text);
 	XtAddCallback(np->text,XmNmodifyVerifyCallback,CheckInput,
 								(XtPointer)go);
 	XtAddCallback(np->text,XmNactivateCallback,ActivateCB,(XtPointer)go);
@@ -1220,10 +1241,8 @@ NECreateWin
 							np->prompt_text);
 	XtAddCallback(np->vsbar,XmNdragCallback,PromptScrollCB,np->prompt_text);
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
+	NhlINITVAR(udata);
 	udata.ptrval = go;
 
 	nstate = _NhlGetLayer(np->nsid);

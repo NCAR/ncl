@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.3 1997-01-03 01:38:02 boote Exp $
+ *      $Id: nclstate.c,v 1.4 1997-02-27 20:25:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -81,6 +81,8 @@ NgNclStateClassRec NgnclStateClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	callbacks,
 /* num_callbacks		*/	NhlNumber(callbacks),
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize	*/	NclStateClassPartInitialize,
 /* class_initialize		*/	NclStateClassInitialize,
@@ -286,11 +288,8 @@ ProcessObj
 	if(!node)
 		return False;
 
-#ifdef	DEBUG
-	memset(&cbtype,0,sizeof(NhlArgVal));
-	memset(&objptr,0,sizeof(NhlArgVal));
-#endif
-
+	NhlINITVAR(cbtype);
+	NhlINITVAR(objptr);
 	cbtype.lngval = node->cbtype;
 	objptr.ptrval = node;
 	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsObject,cbtype,objptr);
@@ -562,10 +561,8 @@ InsertFunc
 	if(!*tree){
 		NhlArgVal	cbtype,objptr;
 
-#ifdef	DEBUG
-		memset((char*)&cbtype,0,sizeof(_NhlArgVal));
-		memset((char*)&objptr,0,sizeof(_NhlArgVal));
-#endif
+		NhlINITVAR(cbtype);
+		NhlINITVAR(objptr);
 
 		*tree = (NgNclFunc)AllocNclObj();
 		if(!*tree){
@@ -685,10 +682,8 @@ NclOutput
 	int		len;
 	NhlArgVal	dummy,cbdata;
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
 
 	len = vsprintf(buffer,fmt,ap);
 /*
@@ -718,9 +713,7 @@ ErrOutput
 
 	ncl->nclstate.err = True;
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
 	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsErrOutput,dummy,cbdata);
 
 	return;
@@ -773,10 +766,8 @@ NclStateInitialize
 		NgNappNclState,	new->base.id,
 		NULL);
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
+	NhlINITVAR(udata);
 	udata.ptrval = nncl;
 	ns->appdestroy_cb = _NhlAddObjCallback(_NhlGetLayer(ns->appmgr),
 				_NhlCBobjDestroy,dummy,NgDestroyMeCB,udata);
@@ -962,9 +953,7 @@ ResetNcl
 		return;
 
 	NclResetServer();
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
 	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsReset,dummy,dummy);
 
 	return;
@@ -1006,10 +995,8 @@ SubmitNclLine
 	NhlArgVal		dummy,cbdata;
 	NgNclPromptCBDataRec	prompt;
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
 
 	/*
 	 * Find first unescaped newline - everything after that will be
@@ -1290,4 +1277,20 @@ NgNclEnumerateObj
 	}
 
 	return;
+}
+
+NhlString
+NgNclGetSymName
+(
+	NhlString	basename
+)
+{
+	static char	buff[512];
+	int		i=1;
+
+	for(sprintf(buff,"%s%i",basename,i);
+		NclSymbolDefined(buff);
+			i++,sprintf(buff,"%s%i",basename,i));
+
+	return buff;
 }

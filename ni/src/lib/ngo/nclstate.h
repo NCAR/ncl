@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.1 1996-10-10 18:55:25 boote Exp $
+ *      $Id: nclstate.h,v 1.2 1997-02-27 20:25:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -212,6 +212,18 @@ NgNclEnumerateObj(
 	NgNclCBType	otype,
 	NgNclEnumFunc	func,
 	NhlPointer	udata
+);
+
+/*
+ * This function finds the first symbol that isn't already being used
+ * with the given basename, and an integer appended.
+ * This function returns a pointer to internal memory, so don't free it.
+ * The internal memory is copied over each time it is called, so copy
+ * the result immediately.
+ */
+extern NhlString
+NgNclGetSymName(
+	NhlString	basename
 );
 
 #endif	/* _NG_NCLSTATE_H */

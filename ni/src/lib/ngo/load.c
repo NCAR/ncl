@@ -1,5 +1,5 @@
 /*
- *      $Id: load.c,v 1.2 1996-11-24 22:27:34 boote Exp $
+ *      $Id: load.c,v 1.3 1997-02-27 20:25:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,6 +64,8 @@ NgLoadClassRec NgloadClassRec = {
 /* all_resources	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize*/	LoadClassPartInitialize,
 /* class_initialize	*/	NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.3 1997-01-03 01:38:02 boote Exp $
+ *      $Id: xapp.c,v 1.4 1997-02-27 20:25:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 
 #include <ncarg/ngo/addfile.h>
 #include <ncarg/ngo/load.h>
+#include <ncarg/ngo/xwk.h>
 
 #include <X11/cursorfont.h>
 #include <Xm/Xm.h>
@@ -34,7 +35,7 @@ static NhlResource resources[] = {
 		Oset(x.dpy),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_CGONLY,NULL},
 	{NgNxappContext,NgCxappContext,NhlTPointer,sizeof(NhlPointer),
-		Oset(x.app_con),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		Oset(x.app),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_CGONLY,NULL},
 	{NgNxappArgc,NgCxappArgc,NhlTInteger,sizeof(int),
 		Oset(argc),NhlTImmediate,_NhlUSET((NhlPointer)0),
@@ -103,6 +104,8 @@ NgXAppMgrClassRec NgxappMgrClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize	*/	XAppMgrClassPartInitialize,
 /* class_initialize		*/	XAppMgrClassInitialize,
@@ -182,6 +185,8 @@ XAppMgrClassInitialize
 	qexp = NrmStringToQuark(NgNxappExport);
 	qafile = NrmStringToQuark(NgNxappAddFile);
 	qlfile = NrmStringToQuark(NgNxappLoadFile);
+
+	_NhlInitializeClass(NgxWkClass);
 
 	return NhlNOERROR;
 }
@@ -299,21 +304,21 @@ XAppMgrInitialize
 	NgXAppMgrPart	*xapp = &((NgXAppMgr)new)->xapp;
 	NgAppMgrPart	*app = &((NgXAppMgr)new)->app;
 
-	if(!xapp->x.app_con){
+	if(!xapp->x.app){
 		if(xapp->x.dpy)
-			xapp->x.app_con = XtDisplayToApplicationContext(
+			xapp->x.app = XtDisplayToApplicationContext(
 								xapp->x.dpy);
 		else
-			xapp->x.app_con = XtCreateApplicationContext();
+			xapp->x.app = XtCreateApplicationContext();
 	}
-	if(!xapp->x.app_con){
+	if(!xapp->x.app){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to get Xt Application Context",func);
 		return NhlFATAL;
 	}
 
 	if(!xapp->x.dpy){
-		xapp->x.dpy = XtOpenDisplay(xapp->x.app_con,NULL,
+		xapp->x.dpy = XtOpenDisplay(xapp->x.app,NULL,
 				app->app_name,app->app_class,
 				NULL,0,&xapp->argc,xapp->argv);
 	}
@@ -442,7 +447,7 @@ XAppRun
 {
 	NgXAppMgr	xapp = (NgXAppMgr)app;
 
-	XtAppMainLoop(xapp->xapp.x.app_con);
+	XtAppMainLoop(xapp->xapp.x.app);
 }
 
 typedef struct XAppWorkType{
@@ -510,7 +515,7 @@ XAppDevWProc(
 	xwk->app = app;
 	xwk->wp = wp;
 
-	(void)XtAppAddWorkProc(xapp->x.app_con,XWorkProcs,xwk);
+	(void)XtAppAddWorkProc(xapp->x.app,XWorkProcs,xwk);
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.2 1997-01-17 18:59:28 boote Exp $
+ *      $Id: mwin.c,v 1.3 1997-02-27 20:25:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,6 +75,8 @@ NgMWinClassRec NgmWinClassRec = {
 /* all_resources	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize*/	NULL,
 /* class_initialize	*/	NULL,
@@ -482,10 +484,8 @@ AddWkNode
 	if(!wknode)
 		return;
 
-#if	DEBUG
-	memset(&sel,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(sel);
+	NhlINITVAR(udata);
 	sel.lngval = 0;	/* not used */
 	udata.ptrval = wknode;
 	wknode->cccb = NgCBWPAdd(otree->appmgr,CopyCC,FreeCC,wknode->l,
@@ -556,10 +556,9 @@ CreateCB
 		else{
 			otree->wklist = new;
 		}
-#if	DEBUG
-		memset(&sel,0,sizeof(NhlArgVal));
-		memset(&ludata,0,sizeof(NhlArgVal));
-#endif
+
+		NhlINITVAR(sel);
+		NhlINITVAR(ludata);
 		sel.lngval = 0;	/* not used */
 		ludata.ptrval = new;
 		new->cccb = NgCBWPAdd(otree->appmgr,CopyCC,FreeCC,new->l,
@@ -649,9 +648,9 @@ DestroyCB
 		*tptr = (*tptr)->next;
 		NumberNodes(*tptr,work->pos-1);
 		work->next = NULL;
-		FreeNodeList(otree,work);
 		XmLGridDeleteRows(otree->wtree,XmCONTENT,work->pos,
 							work->nchildren+1);
+		FreeNodeList(otree,work);
 	}
 	else if(NhlClassIsSubclass(hlu->class_ptr,NhlviewClass) &&
 		_NhlIsClass(_NhlGetLayer(hlu->parent_id),NhlworkstationClass)){
@@ -671,8 +670,8 @@ DestroyCB
 		work->nchildren--;
 		NumberNodes(work->next,work->pos+work->nchildren);
 		tmp->next = NULL;
-		FreeNodeList(otree,tmp);
 		XmLGridDeleteRows(otree->wtree,XmCONTENT,work->pos+tmp->pos,1);
+		FreeNodeList(otree,tmp);
 	}
 
 	return;
@@ -767,10 +766,8 @@ ManageObjTree
 	NumberNodes(otree->wklist,-1);
 	InitWTree(otree,otree->wtree,otree->wklist);
 
-#ifdef	DEBUG
-	memset(&sel,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(sel);
+	NhlINITVAR(udata);
 	sel.lngval = NgNclCBCREATE_HLUOBJ;
 	udata.ptrval = otree;
 	otree->create = _NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,udata);
@@ -792,6 +789,50 @@ ManageObjTree
 	return;
 }
 
+static void
+CreateXWorkCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	char	func[]="CreateXWorkCB";
+	int	goid;
+	int	appmgr;
+	int	nclstate = NhlDEFAULT_APP;
+	char	*name;
+	char	line[512];
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+	NhlVAGetValues(goid,
+		_NhlNguiData,	&appmgr,
+		NULL);
+	NhlVAGetValues(appmgr,
+		NgNappNclState,	&nclstate,
+		NULL);
+	if(!NhlIsClass(nclstate,NgnclStateClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:invalid nclstate obj",func));
+		return;
+	}
+
+	/*
+	 * Submit to nclstate
+	 */
+	name = NgNclGetSymName("Xwk");
+	sprintf(line,
+	"%s = create \"%s\" xWorkstationClass defaultapp\nend create\n",
+		name,name);
+	(void)NgNclSubmitBlock(nclstate,line);
+
+	return;
+}
+
 static NhlBoolean
 MWCreateWin
 (
@@ -801,8 +842,8 @@ MWCreateWin
 	char		func[]="MWCreateWin";
 	NgMWinPart	*mp = &((NgMWin)go)->mwin;
 	Widget		menubar,menush,fmenu,emenu;
-	Widget		cmenu,wmenu,hmenu;
-	Widget		file,edit,config,window,help;
+	Widget		vmenu,omenu,wmenu,hmenu;
+	Widget		file,edit,view,options,window,help;
 	Widget		addfile,load,close,quit;
 	Widget		ncledit;
 	Widget		pane;
@@ -831,7 +872,11 @@ MWCreateWin
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	cmenu = XtVaCreateWidget("cmenu",xmRowColumnWidgetClass,menush,
+	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
@@ -853,9 +898,14 @@ MWCreateWin
 		XmNsubMenuId,	emenu,
 		NULL);
 
-	config = XtVaCreateManagedWidget("config",xmCascadeButtonGadgetClass,
+	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
 									menubar,
-		XmNsubMenuId,	cmenu,
+		XmNsubMenuId,	vmenu,
+		NULL);
+
+	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	omenu,
 		NULL);
 
 	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
@@ -899,7 +949,8 @@ MWCreateWin
 
 	XtManageChild(fmenu);
 	XtManageChild(emenu);
-	XtManageChild(cmenu);
+	XtManageChild(vmenu);
+	XtManageChild(omenu);
 	XtManageChild(wmenu);
 	XtManageChild(hmenu);
 
@@ -930,6 +981,7 @@ MWCreateWin
 	cwki = XtVaCreateManagedWidget("cwki",xmPushButtonWidgetClass,ptbform,
 		XmNrightAttachment,	XmATTACH_NONE,
 		NULL);
+	XtAddCallback(cwki,XmNactivateCallback,CreateXWorkCB,NULL);
 
 	cvi = XtVaCreateManagedWidget("cvi",xmPushButtonWidgetClass,ptbform,
 		XmNleftAttachment,	XmATTACH_WIDGET,

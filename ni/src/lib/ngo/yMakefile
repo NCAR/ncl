@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1997-01-03 01:38:03 boote Exp $
+#      $Id: yMakefile,v 1.7 1997-02-27 20:25:47 boote Exp $
 #
 #########################################################################
 #									#
@@ -33,9 +33,12 @@ SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS)
 OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS)
 
 XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
-		loadP.h load.h addfileP.h addfile.h mwinP.h mwin.h
-XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c
-XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o
+		loadP.h load.h addfileP.h addfile.h mwinP.h mwin.h \
+		xwkP.h xwk.h
+XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
+		xwk.c
+XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
+		xwk.o
 
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,$(CLIENT_LIBS))

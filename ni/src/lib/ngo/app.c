@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.4 1997-01-17 18:59:27 boote Exp $
+ *      $Id: app.c,v 1.5 1997-02-27 20:25:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,8 @@ NgAppMgrClassRec NgappMgrClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize	*/	AppMgrClassPartInitialize,
 /* class_initialize		*/	AppMgrClassInitialize,
@@ -585,6 +587,10 @@ NgRemoveWorkProc
 	return;
 }
 
+#define	NgCBWPCALLING	(0x01)
+#define	NgCBWPCLEANOUT	(0x02)
+#define	NgCBWPDESTROY	(0x04)
+
 typedef struct _NgCBWP_WPLRec _NgCBWP_WPLRec, *_NgCBWP_WPL;
 
 struct NgCBWPRec{
@@ -594,6 +600,8 @@ struct NgCBWPRec{
 	_NhlCBFunc	cb_func;
 	NhlArgVal	udata;
 
+	int		state;
+	int		co_id;
 	_NhlCB		cb;
 	_NhlCB		ldestroycb;
 	_NhlCB		adestroycb;
@@ -605,6 +613,11 @@ struct _NgCBWP_WPLRec{
 	NhlArgVal	cbdata;
 	_NgCBWP_WPL	next;
 };
+
+static void
+_NgCBWPCleanout(
+	NgCBWP		cbwp
+);
 
 /*
  * This function actually executes the cb_func that was added with the
@@ -620,6 +633,10 @@ _NgCBWPWorkProc
 	_NgCBWP_WPL	*wpptr;
 	NgCBWP		cbwp = wpnode->cbwp;
 
+	if(cbwp->state & NgCBWPCALLING)
+		return False;
+
+	cbwp->state = NgCBWPCALLING;
 	(*cbwp->cb_func)(wpnode->cbdata,cbwp->udata);
 	if(cbwp->free_func)
 		(*cbwp->free_func)(wpnode->cbdata);
@@ -634,6 +651,16 @@ _NgCBWPWorkProc
 	}
 
 	NhlFree(wpnode);
+
+	cbwp->state &= ~NgCBWPCALLING;
+	/*
+	 * If this CBWP list was marked for destroy during the call of
+	 * the function - then free the whole thing now.
+	 */
+	if(cbwp->state & NgCBWPDESTROY)
+		NgCBWPDestroy(cbwp);
+	else if(cbwp->state & NgCBWPCLEANOUT)
+		_NgCBWPCleanout(cbwp);
 
 	return True;
 }
@@ -654,10 +681,10 @@ _NgCBWPCallback
 	_NgCBWP_WPL	wpnode;
 	NgCBWP		cbwp = (NgCBWP)udata.ptrval;
 
-#if	DEBUG
-	memset(&lcbdata,0,sizeof(NhlArgVal));
-#endif
+	if(cbwp->state & (NgCBWPDESTROY | NgCBWPCLEANOUT))
+		return;
 
+	NhlINITVAR(lcbdata);
 	if(cbwp->copy_func){
 		if(!(*cbwp->copy_func)(cbdata,&lcbdata))
 			return;
@@ -682,6 +709,39 @@ _NgCBWPCallback
 	return;
 }
 
+static void
+_NgCBWPCleanout
+(
+	NgCBWP		cbwp
+)
+{
+	_NgCBWP_WPL	node;
+
+	if(cbwp->state & NgCBWPCALLING){
+		cbwp->state |= NgCBWPCLEANOUT;
+		return;
+	}
+
+	_NhlCBDelete(cbwp->cb);
+	_NhlCBDelete(cbwp->ldestroycb);
+	_NhlCBDelete(cbwp->adestroycb);
+	cbwp->cb = cbwp->ldestroycb = cbwp->adestroycb = NULL;
+
+	if((cbwp->co_id == NhlDEFAULT_APP) || (cbwp->co_id == cbwp->appmgrid)){
+		while(cbwp->wp_list){
+			node = cbwp->wp_list;
+			cbwp->wp_list = node->next;
+			if(cbwp->free_func)
+				(*cbwp->free_func)(node->cbdata);
+			NgRemoveWorkProc(cbwp->appmgrid,_NgCBWPWorkProc,
+							(NhlPointer)node);
+			NhlFree(node);
+		}
+	}
+
+	return;
+}
+
 /*
  * This function is added as Destroy callback to the appmgr and to the
  * NhlLayer that the original callback list was installed to.  It removes
@@ -698,20 +758,11 @@ _NgCBWPDeleteCB
 {
 	NgCBWP		cbwp = (NgCBWP)udata.ptrval;
 	NhlLayer	l = (NhlLayer)cbdata.ptrval;
-	_NgCBWP_WPL	node;
 
-	_NhlCBDelete(cbwp->cb);
-	_NhlCBDelete(cbwp->ldestroycb);
-	_NhlCBDelete(cbwp->adestroycb);
-	cbwp->cb = cbwp->ldestroycb = cbwp->adestroycb = NULL;
+	if(l->base.id != cbwp->appmgrid)
+		cbwp->co_id = l->base.id;
 
-	if(l->base.id == cbwp->appmgrid){
-		while(cbwp->wp_list){
-			node = cbwp->wp_list;
-			cbwp->wp_list = node->next;
-			NhlFree(node);
-		}
-	}
+	_NgCBWPCleanout(cbwp);
 
 	return;
 }
@@ -759,10 +810,10 @@ NgCBWPAdd
 		return NULL;
 	}
 
-#ifdef	DEBUG
-	memset(&ludata,0,sizeof(NhlArgVal));
-	memset(&lsel,0,sizeof(NhlArgVal));
-#endif
+	cbwp->state = 0;
+	cbwp->co_id = NhlDEFAULT_APP;
+	NhlINITVAR(ludata);
+	NhlINITVAR(lsel);
 	ludata.ptrval = cbwp;
 	cbwp->cb = _NhlAddObjCallback(l,cbname,sel,_NgCBWPCallback,ludata);
 	if(!cbwp->cb){
@@ -811,17 +862,15 @@ NgCBWPDestroy
 	if(!cbwp)
 		return;
 
-	_NhlCBDelete(cbwp->cb);
-	_NhlCBDelete(cbwp->ldestroycb);
-	_NhlCBDelete(cbwp->adestroycb);
-	cbwp->cb = cbwp->ldestroycb = cbwp->adestroycb = NULL;
-
-	while(cbwp->wp_list){
-		node = cbwp->wp_list;
-		cbwp->wp_list = node->next;
-		NgAddWorkProc(cbwp->appmgrid,_NgCBWPWorkProc,(NhlPointer)node);
-		NhlFree(node);
+	if(cbwp->state & NgCBWPCALLING){
+		cbwp->state |= NgCBWPDESTROY;
+		return;
 	}
+
+	cbwp->co_id = NhlDEFAULT_APP;
+	_NgCBWPCleanout(cbwp);
+
+	NhlFree(cbwp);
 
 	return;
 }

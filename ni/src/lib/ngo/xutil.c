@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.c,v 1.3 1996-11-24 22:27:36 boote Exp $
+ *      $Id: xutil.c,v 1.4 1997-02-27 20:25:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -393,10 +393,8 @@ NgXListManage
 	NumberNodes(list->list,0);
 	InitXmList(list->xmlist,list->list);
 
-#ifdef	DEBUG
-	memset(&sel,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(sel);
+	NhlINITVAR(udata);
 	sel.lngval = ccb;
 	udata.ptrval = list;
 	list->create = _NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,udata);

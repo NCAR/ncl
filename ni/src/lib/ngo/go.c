@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.4 1997-01-03 01:37:59 boote Exp $
+ *      $Id: go.c,v 1.5 1997-02-27 20:25:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,9 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 #include <Xm/Form.h>
+#include <Xm/RowColumn.h>
+#include <Xm/CascadeBG.h>
+#include <Xm/PushBG.h>
 
 #ifdef	DEBUG
 #include <X11/Xmu/Editres.h>
@@ -80,6 +83,8 @@ NgGOClassRec NggOClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize	*/	GOClassPartInitialize,
 /* class_initialize		*/	NULL,
@@ -499,10 +504,8 @@ GOInitialize
 	go->x_sensitive = True;
 	go->i_sensitive = True;
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&udata,0,sizeof(NhlArgVal));
-#endif
+	NhlINITVAR(dummy);
+	NhlINITVAR(udata);
 	udata.ptrval = new;
 	go->appdestroy_cb = _NhlAddObjCallback(_NhlGetLayer(go->appmgr),
 				_NhlCBobjDestroy,dummy,NgDestroyMeCB,udata);
@@ -516,7 +519,7 @@ GOInitialize
 
 	if(init){
 		init = False;
-		XtAppAddActions(go->x->app_con,go_act,NhlNumber(go_act));
+		XtAppAddActions(go->x->app,go_act,NhlNumber(go_act));
 	}
 
 	go->iowin = None;
@@ -713,6 +716,7 @@ GOCreateWin
 		gp->shell = XtVaCreatePopupShell(go->base.name,
 						gc->go_class.dialog,pp->shell,
 			XmNdeleteResponse,	XmDO_NOTHING,
+			XmNmappedWhenManaged,	False,
 			XmNautoUnmanage,	False,
 			XmNallowShellResize,	True,
 			NULL);
@@ -728,6 +732,7 @@ GOCreateWin
 		gp->shell = XtVaAppCreateShell(go->base.name,"NgNGO",
 					gc->go_class.toplevel,x->dpy,
 			XmNdeleteResponse,	XmDO_NOTHING,
+			XmNmappedWhenManaged,	False,
 			XmNautoUnmanage,	False,
 			XmNallowShellResize,	True,
 			XmNuserData,		go->base.id,
@@ -782,7 +787,7 @@ InstallTranslations
 	/*
 	 * Install global translations
 	 */
-	if(gp->global_trans)
+	if(gp->global_trans && XtIsWidget(w))
 		XtOverrideTranslations(w,gp->global_trans);
 
 	/*
@@ -954,6 +959,129 @@ _NgGODefActionCB
 	}
 
 	XtCallActionProc(w,XtName(w),xmcb->event,params,i);
+}
+
+Widget
+_NgGOCreateMenubar
+(
+	NgGO	go,
+	Widget	manager
+)
+{
+	Widget	m;
+	Widget	menubar,menush,fmenu,emenu;
+	Widget	vmenu,omenu,wmenu,hmenu;
+	Widget	file,edit,view,options,window,help;
+	Widget	addfile,load,close,quit;
+	Widget	ncledit;
+
+	if(manager)
+		m = manager;
+	else
+		m = go->go.manager;
+
+	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,m,
+		XmNrowColumnType,	XmMENU_BAR,
+		NULL);
+
+	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
+								go->go.shell,
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		NULL);
+	fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	hmenu = XtVaCreateWidget("hmenu",xmRowColumnWidgetClass,menush,
+		XmNrowColumnType,	XmMENU_PULLDOWN,
+		NULL);
+
+	file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	fmenu,
+		NULL);
+
+	edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	emenu,
+		NULL);
+
+	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	vmenu,
+		NULL);
+
+	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	omenu,
+		NULL);
+
+	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	wmenu,
+		NULL);
+
+	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
+									menubar,
+		XmNsubMenuId,	hmenu,
+		NULL);
+
+	XtVaSetValues(menubar,
+		XmNmenuHelpWidget,	help,
+		NULL);
+
+	addfile = XtVaCreateManagedWidget("addFile",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	load = XtVaCreateManagedWidget("loadScript",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	close = XtVaCreateManagedWidget("closeWindow",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	quit = XtVaCreateManagedWidget("quitApplication",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	ncledit = XtVaCreateManagedWidget("nclWindow",
+					xmPushButtonGadgetClass,wmenu,
+		NULL);
+	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	XtManageChild(fmenu);
+	XtManageChild(emenu);
+	XtManageChild(vmenu);
+	XtManageChild(omenu);
+	XtManageChild(wmenu);
+	XtManageChild(hmenu);
+
+	return menubar;
 }
 /*
  * Public API
@@ -1135,8 +1263,8 @@ NgGOWidgetToGoId
 				NULL);
 			if(NhlIsClass(goid,NggOClass))
 				break;
+			goid = NhlDEFAULT_APP;
 		}
-		goid = NhlDEFAULT_APP;
 	}
 
 	return goid;

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.3 1996-11-24 22:27:34 boote Exp $
+ *      $Id: goP.h,v 1.4 1997-02-27 20:25:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -85,7 +85,7 @@ typedef struct _NgGOClassPart {
 
 	NhlBoolean	top_win_chain;
 	_NgGOFunc	create_win;		/* D chained	*/
-	_NgGOFunc	create_win_hook;	/* U chained	*/
+	_NgGOFunc	create_win_hook;	/* D chained	*/
 
 } NgGOClassPart;
 
@@ -131,6 +131,11 @@ extern void _NgGODefActionCB(
 	Widget		w,
 	XtPointer	udata,
 	XtPointer	cbdata
+);
+
+extern Widget _NgGOCreateMenubar(
+	NgGO		go,
+	Widget		manager
 );
 
 #endif	/* _NG_GOP_H_ */

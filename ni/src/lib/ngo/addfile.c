@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.1 1996-11-24 22:27:33 boote Exp $
+ *      $Id: addfile.c,v 1.2 1997-02-27 20:25:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,6 +71,8 @@ NgAddFileClassRec NgaddFileClassRec = {
 /* all_resources	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
+/* class_callbacks	*/	NULL,
+/* num_class_callbacks	*/	0,
 
 /* class_part_initialize*/	AddFileClassPartInitialize,
 /* class_initialize	*/	NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.h,v 1.2 1997-01-03 01:38:03 boote Exp $
+ *      $Id: xapp.h,v 1.3 1997-02-27 20:25:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ extern NhlClass NgxappMgrClass;
 
 typedef struct NgXAppExportRec NgXAppExportRec, *NgXAppExport;
 struct NgXAppExportRec{
-	XtAppContext	app_con;
+	XtAppContext	app;
 	Display		*dpy;
 
 	Atom		wm_delete_window;
