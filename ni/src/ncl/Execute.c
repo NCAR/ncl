@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.8 1994-02-03 01:58:54 ethan Exp $
+ *      $Id: Execute.c,v 1.9 1994-02-04 01:38:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -990,7 +990,7 @@ NclExecuteReturnStatus _NclExecute
 */
 								rhs_md= _NclCopyVal(rhs_md,NULL);
 							}
-							lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL,sym->name);
+							lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,0,NULL,-1,0,NULL,NORMAL,sym->name);
 							if(lhs_var->u.data_var != NULL) {
 								(void)_NclChangeSymbolType(sym,VAR);
 								lhs_var->kind = NclStk_VAR;
@@ -1122,7 +1122,7 @@ NclExecuteReturnStatus _NclExecute
 
 				var = _NclRetrieveRec(thesym);
 				if(var->u.data_var != NULL) {
-					if(_NclIsAtt(var->u.data_var,attname)) {
+					if(_NclVarIsAtt(var->u.data_var,attname)) {
 						if(nsubs == 1) {
 							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 							sel_ptr->n_entries = 1;
