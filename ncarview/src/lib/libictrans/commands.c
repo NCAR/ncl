@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.23 1993-02-11 21:43:15 clyne Exp $
+ *	$Id: commands.c,v 1.24 1993-02-17 20:01:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -654,6 +654,7 @@ static	print_file(ic, translator, dev_win_string)
 	int	frame;
 	int	count;
 	char	*record;
+	int	step;
 	int	len = (sizeof (int) * 3) + 1;
 
 	int	argc;
@@ -669,7 +670,7 @@ static	print_file(ic, translator, dev_win_string)
 	 * correctly and easily
 	 */
 	for (i = 0, count = 0; i < ic->cmd.src_frames.num; i++) {
-		count += ic->cmd.src_frames.fc[i].num_frames; 
+		count += ABS(ic->cmd.src_frames.fc[i].num_frames);
 	}
 
 	if ( !(argv = (char **) malloc ((count + 7) * sizeof (char *)))) {
@@ -688,8 +689,10 @@ static	print_file(ic, translator, dev_win_string)
 	 * build the arg list from the list of frames
 	 */
 	for (i = 0; i < ic->cmd.src_frames.num; i++) {
+		step = ic->cmd.src_frames.fc[i].num_frames < 0 ? -1 : 1;
 		for (j = 0, frame = ic->cmd.src_frames.fc[i].start_frame; 
-			j < ic->cmd.src_frames.fc[i].num_frames; j++, frame++){
+			j < ABS(ic->cmd.src_frames.fc[i].num_frames); 
+			j++, frame+=step) {
 
 			if (! (record = malloc ((unsigned) len))) {
 				perror("malloc()");

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.h,v 1.5 1992-09-01 23:43:58 clyne Exp $
+ *	$Id: ictrans.h,v 1.6 1993-02-17 20:01:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,10 @@
 #ifndef	FALSE
 #define	FALSE	0
 #define	TRUE	~FALSE
+#endif
+
+#ifndef	ABS
+#define	ABS(X)	(((X) < (0)) ? -(X) : (X))
 #endif
 
 
