@@ -1,5 +1,5 @@
 C
-C	$Id: ftex05.f,v 1.1 1998-02-06 19:40:55 fred Exp $
+C	$Id: ftex05.f,v 1.2 2002-02-15 16:47:52 haley Exp $
 C
       PROGRAM FTEX05
 C
@@ -18,7 +18,6 @@ C
 C  Do KURVP1 set up.
 C
       SIGMA = 1.
-      ISF   = 3
       CALL KURVP1(IDIM,X,Y,XP,YP,TEMP,S,SIGMA,IERR)
       IF (IERR .NE. 0) THEN
         PRINT *, 'Error return from KURVP1 =',IERR
