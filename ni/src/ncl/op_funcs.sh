@@ -338,7 +338,7 @@ TypeIsMonoFunc.c.sed
 if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
 then
 sed \
--e "s/OUTDATATYPE/double/g" \
+-e "s/OUTDATATYPE/float/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
@@ -348,7 +348,7 @@ sed \
 TypeFunctionOpTemplate.c.sed
 else
 sed \
--e "s/OUTDATATYPE/double/g" \
+-e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
