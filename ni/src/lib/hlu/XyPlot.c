@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.50 1995-06-16 20:57:15 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.51 1995-08-18 02:19:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3820,6 +3820,12 @@ SetUpTransObjs
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtrXAxisType,NhlLINEARAXIS);
 	}
+	else if (newxy->x_style != oldxy->x_style) {
+		if (newxy->x_style == NhlLOG)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXLog,True);
+		else
+			NhlSetSArg(&sargs[nargs++],NhlNtrXLog,False);
+	}
 
 	if (newxy->have_irreg_trans &&
 	    newxy->y_style != oldxy->y_style){
@@ -3837,6 +3843,12 @@ SetUpTransObjs
 		else if (newxy->y_style == NhlLINEAR)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtrYAxisType,NhlLINEARAXIS);
+	}
+	else if (newxy->y_style != oldxy->y_style) {
+		if (newxy->y_style == NhlLOG)
+			NhlSetSArg(&sargs[nargs++],NhlNtrYLog,True);
+		else
+			NhlSetSArg(&sargs[nargs++],NhlNtrYLog,False);
 	}
 		
 	if(newxy->x_min != oldxy->x_min)
