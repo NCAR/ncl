@@ -60,6 +60,7 @@ C
       PARAMETER(JX=60,KX=26)
 C
       COMMON /HEIGHT/Z(JX,KX)
+
 C
 C Handle the EZMAP case ...
 C
@@ -87,8 +88,10 @@ C Pressure transformation in the X direction
       ELSEIF(IMAP.EQ.3.OR.IMAP.EQ.4) THEN
 C The height transformation in X direction is linear
         XOTP = XINP
-C Find next lowest X data point
-        X = XINP
+C Find next lowest X data point & transform it so that it can be
+C used as an array index
+	CALL CPGETR('XC1',XC1)
+        X = XINP-INT(XC1)
 C Distance between next lowest data point and contour point
         IIX=INT(X)
         DIFX=X-FLOAT(IIX)
@@ -118,3 +121,4 @@ C
 C
       RETURN
       END
+
