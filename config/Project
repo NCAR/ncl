@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.47 2002-09-12 14:20:03 haley Exp $
+ *      $Id: Project,v 1.48 2002-11-21 00:12:13 haley Exp $
  */
 /************************************************************************
 *									*
@@ -232,7 +232,7 @@ ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
  *		functions and ncargpath reports the error.
  */
 NGENV_DESCRIPT	= \
-		'{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
+		{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"fontcap","FONTCAP",NULL,NULL,NULL,		\
 		"graphcap","GRAPHCAP",NULL,NULL,NULL,		\
 		"root",NULL,NULL,"$(ROOTPATH)",$(ROOTPATHCHECK),\
@@ -262,9 +262,7 @@ NGENV_DESCRIPT	= \
 		"ngurl",NULL,"ngwww",NULL,NULL,			\
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
-		NULL}'
-
-NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
+		NULL}
 
 #ifdef	UseInstalled
 #define _UseLib(a,b) b
