@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.1 1995-01-28 01:51:50 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.2 1995-05-23 15:54:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1453,7 +1453,10 @@ NclMultiDValnclfileDataClassRec nclMultiDValnclfileDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	NULL,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-	/* NclPrintFunction print; 	*/	NULL
+	/* NclPrintFunction print; 	*/	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclMultiDValhluDup,

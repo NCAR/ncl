@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.6 1995-02-17 20:52:41 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.7 1995-05-23 15:54:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1553,7 +1553,10 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	NULL,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-	/* NclPrintFunction print; 	*/	NULL
+	/* NclPrintFunction print; 	*/	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclMultiDValhluDup,

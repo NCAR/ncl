@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.14 1995-05-01 22:07:51 ethan Exp $
+ *      $Id: NclVar.c,v 1.15 1995-05-23 15:54:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -204,7 +204,10 @@ NclVarClassRec nclVarClassRec = {
 		(NclInitClassFunction)NULL,
 		(NclAddParentFunction)VarAddParent,
                 (NclDelParentFunction)VarDelParent,
-/* NclPrintFunction print */	VarPrint
+/* NclPrintFunction print */	VarPrint,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclRepValueFunc rep_val */		VarValRep,

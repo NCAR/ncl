@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.4 1995-02-04 01:41:31 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.5 1995-05-23 15:53:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,10 @@ NclCoordVarClassRec nclCoordVarClassRec = {
 		(NclInitClassFunction)NULL,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-/* NclPrintFunction print */	NULL
+/* NclPrintFunction print */	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,

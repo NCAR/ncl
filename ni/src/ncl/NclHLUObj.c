@@ -215,7 +215,10 @@ NclHLUObjClassRec nclHLUObjClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	NULL,
 		(NclAddParentFunction)HLUObjAddParent,
                 (NclDelParentFunction)HLUObjDelParent,
-	/* NclPrintFunction print; 	*/	HLUObjPrint
+	/* NclPrintFunction print; 	*/	HLUObjPrint,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* foo; 	*/	DelHLUChild,

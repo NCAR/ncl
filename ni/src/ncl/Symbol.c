@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.21 1995-04-07 10:46:48 boote Exp $
+ *      $Id: Symbol.c,v 1.22 1995-05-23 15:54:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1090,7 +1090,7 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 	return(thelist);
 }
 
-int _NclGetHLUObjId
+NclExtValueRec *_NclGetHLUObjId
 #if	NhlNeedProto
 (char *varname)
 #else
@@ -1102,23 +1102,60 @@ int _NclGetHLUObjId
 	NclStackEntry *the_var;
 	NclMultiDValData the_hlu = NULL;
 	NclHLUObj hlu = NULL;
+	NclExtValueRec *tmp = NULL;
+	int i;
+	int *value;
+	
+
 
 	if(thesym != NULL) {
 		the_var = _NclRetrieveRec(thesym,DONT_CARE);	
+		tmp = (NclExtValueRec*)NclMalloc((unsigned)sizeof(NclExtValueRec));
+		tmp->constant = 0;
 		if((the_var->kind == NclStk_VAR)&&((the_var->u.data_var->obj.obj_type_mask & Ncl_HLUVar))) {
 			the_hlu = _NclVarValueRead(the_var->u.data_var,NULL,NULL);
+			tmp->type = the_hlu->multidval.data_type;
+			tmp->totalelements = the_hlu->multidval.totalelements;
+			tmp->elem_size = the_hlu->multidval.type->type_class.size;
+			tmp->n_dims = the_hlu->multidval.n_dims;
+			value = NULL;
 			if(the_hlu != NULL) {
+				value = (int*)NclMalloc(sizeof(int)* the_hlu->multidval.totalelements);
 				if(the_hlu->multidval.kind == SCALAR) {
-					hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[0]);
+					if((!the_hlu->multidval.missing_value.has_missing)||(*((int*)the_hlu->multidval.val)!= the_hlu->multidval.missing_value.value.objval)) {
+						hlu = (NclHLUObj)_NclGetObj(*((int*)the_hlu->multidval.val));
+						*value = hlu->hlu.hlu_id;
+					} else {
+						*value = the_hlu->multidval.missing_value.value.objval;
+					}
+					tmp->dim_sizes[0] = 1;
+					tmp->value = (void*)value;
+					
 					if(hlu != NULL) {
-						return(hlu->hlu.hlu_id);
+						return(tmp);
 					} 
+				} else {
+					for(i = 0; i<the_hlu->multidval.n_dims; i++) {
+						tmp->dim_sizes[i] = the_hlu->multidval.dim_sizes[i];
+
+						if((!the_hlu->multidval.missing_value.has_missing)||(((int*)the_hlu->multidval.val)[i] != the_hlu->multidval.missing_value.value.objval)) {
+							hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[i]);
+							value[i] = hlu->hlu.hlu_id;
+						} else {
+							value[i] = the_hlu->multidval.missing_value.value.objval;
+						}
+					}
+					tmp->value = (void*)value;
 				}
 			}
-		}
-		
+			if(tmp->value != NULL) {
+				return(tmp);
+			} else {
+				NclFree(tmp);
+			}
+		} 
 	} 
-       	return(-1);
+       	return(NULL);
 }
 
 NclApiDataList * _NclGetDefinedHLUInfo
@@ -1155,19 +1192,26 @@ NclApiDataList * _NclGetDefinedHLUInfo
 								tmp->u.hlu->objs = (NclApiHLUInfoRec*)NclMalloc(sizeof(NclApiHLUInfoRec)*tmp->u.hlu->n_objs);
 								tmp->u.hlu->name = the_var->u.data_var->var.var_quark;
 								for(j = 0 ;  j < the_hlu->multidval.totalelements; j++) {
-									hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[j]);
-									if(hlu != NULL) {
-										tmp->u.hlu->objs[j].obj_name = NrmStringToQuark(NhlName(hlu->hlu.hlu_id));
-										tmp->u.hlu->objs[j].obj_class= NrmStringToQuark(NhlClassName(hlu->hlu.hlu_id));
-										tmp->u.hlu->objs[j].obj_id = hlu->hlu.hlu_id;
+									if(!(the_hlu->multidval.missing_value.has_missing)||(((int*)the_hlu->multidval.val)[j]!= the_hlu->multidval.missing_value.value.objval)) {
+										hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[j]);
+										if(hlu != NULL) {
+											tmp->u.hlu->objs[j].obj_name = NrmStringToQuark(NhlName(hlu->hlu.hlu_id));
+											tmp->u.hlu->objs[j].obj_class= NrmStringToQuark(NhlClassName(hlu->hlu.hlu_id));
+											tmp->u.hlu->objs[j].obj_id = hlu->hlu.hlu_id;
+										} else {
+											not_ok = 1;
+										} 
 									} else {
-										not_ok = 1;
+										tmp->u.hlu->objs[j].obj_name = 0;
+										tmp->u.hlu->objs[j].obj_class= 0;
+										tmp->u.hlu->objs[j].obj_id = the_hlu->multidval.missing_value.value.objval;
 									}
 								}
 								if(not_ok) {
 									NclFree(tmp->u.hlu->objs);
 									NclFree(tmp->u.hlu);
 									NclFree(tmp);
+									not_ok = 0;
 									tmp = NULL;
 								} else {
 									tmp->next = thelist;

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.18 1995-05-20 23:30:13 ethan Exp $
+ *      $Id: NclApi.c,v 1.19 1995-05-23 15:53:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -314,7 +314,7 @@ NclApiDataList *dlist;
 	if(dlist != NULL) 
 		_NclFreeApiDataList((void*)dlist);
 }
-int NclGetHLUObjId
+NclExtValueRec *NclGetHLUObjId
 #if	NhlNeedProto
 (char *varname)
 #else

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.3 1995-04-19 00:01:50 ethan Exp $
+ *      $Id: NclType.c,v 1.4 1995-05-23 15:54:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,10 @@ NclTypeClassRec nclTypeClassRec = {
 		NULL,
 		NULL,
 		NULL,
-		NULL
+		NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclObjTypes type;			*/ Ncl_Type,

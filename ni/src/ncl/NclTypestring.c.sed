@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.5 1995-04-24 19:22:34 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.6 1995-05-23 15:54:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -666,7 +666,10 @@ NclTypestringClassRec nclTypestringClassRec = {
 		Ncl_Type_string_InitClass,
 		NULL,
 		NULL,
-		NULL
+		NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclObjTypes type 			*/ Ncl_Typestring,

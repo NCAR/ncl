@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.1 1995-01-28 01:51:59 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.2 1995-05-23 15:54:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -477,7 +477,10 @@ NclOneDValCoordDataClassRec nclOneDValCoordDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	NULL,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-	/* NclPrintFunction print; 	*/	NULL
+	/* NclPrintFunction print; 	*/	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	NclOneDValCoordDup,

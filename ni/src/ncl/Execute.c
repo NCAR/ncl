@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.40 1995-05-02 15:39:32 ethan Exp $
+ *      $Id: Execute.c,v 1.41 1995-05-23 15:53:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3453,6 +3453,7 @@ NclExecuteReturnStatus _NclExecute
 */
 						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
 						lhs_var->u.data_var->var.thesym = lhs_sym;
+						(void)_NclChangeSymbolType(lhs_sym,VAR);
 						lhs_var->u.data_var->var.var_type = NORMAL;
 /*
 *-----> end of questionable code
@@ -3464,6 +3465,7 @@ NclExecuteReturnStatus _NclExecute
 						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
 						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
 						lhs_var->u.data_var->var.thesym = lhs_sym;
+						(void)_NclChangeSymbolType(lhs_sym,VAR);
 						lhs_var->u.data_var->var.var_type = NORMAL;
 					}
 				} else if((estatus !=NhlFATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {

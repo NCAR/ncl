@@ -361,7 +361,10 @@ NclFileClassRec nclFileClassRec = {
 		(NclInitClassFunction)NULL,
 		(NclAddParentFunction)FileAddParent,
 		(NclDelParentFunction)FileDelParent,
-		(NclPrintFunction) FilePrint
+		(NclPrintFunction) FilePrint,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 		FileVarRepValue,
@@ -937,40 +940,260 @@ int vtype;
 			}
 		}
 	} else if((vtype == FILE_VAR_ACCESS ? thefile->file.format_funcs->read_var_ns != NULL : thefile->file.format_funcs->read_coord_ns!= NULL)){
-		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(!has_stride)) {
-			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
-			if(vtype == FILE_VAR_ACCESS) {
-				(*thefile->file.format_funcs->read_var_ns)(
-					thefile->file.private_rec,
-					thefile->file.var_info[index]->var_name_quark,
-					start,
-					finish,
-					val);
-			} else {
-				(*thefile->file.format_funcs->read_coord_ns)(
-					thefile->file.private_rec,
-					thefile->file.var_info[index]->var_name_quark,
-					start,
-					finish,
-					val);
-			}
-		
-			n_dims_output = n_dims_input;
-			i = 0;
-			while((i <  n_dims_output)&&(n_dims_output > 1)) {
-				if(output_dim_sizes[i] == 1) {
-					for(j = i; j < n_dims_output-1; j++) {
-						output_dim_sizes[j] = output_dim_sizes[j+1];
-						(dim_info)[j] = (dim_info)[j+1];
-					}
-					n_dims_output--;
+		if(!has_stride) {
+			if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
+				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if(vtype == FILE_VAR_ACCESS) {
+					(*thefile->file.format_funcs->read_var_ns)(
+						thefile->file.private_rec,
+						thefile->file.var_info[index]->var_name_quark,
+						start,
+						finish,
+						val);
 				} else {
+					(*thefile->file.format_funcs->read_coord_ns)(
+						thefile->file.private_rec,
+						thefile->file.var_info[index]->var_name_quark,
+						start,
+						finish,
+						val);
+				}
+			
+				n_dims_output = n_dims_input;
+				i = 0;
+				while((i <  n_dims_output)&&(n_dims_output > 1)) {
+					if(output_dim_sizes[i] == 1) {
+						for(j = i; j < n_dims_output-1; j++) {
+							output_dim_sizes[j] = output_dim_sizes[j+1];
+							(dim_info)[j] = (dim_info)[j+1];
+						}
+						n_dims_output--;
+					} else {
+						i++;
+					}
+				}
+			} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
+	/*
+	* If a reverse is detected it is quicker to read everything in inorder and
+	* perform swapping in memory. This is easiest done if selections containing
+	* vectors and dimension reordering are excluded. Unfortunately swap space
+	* is needed and this could be as large as the product of the sizes of all 
+	* dimensions with the exception of dimension 0.
+	*/
+				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				i = 0;
+				while((i<n_dims_input)&&(compare_sel[i] != NCLFILE_DEC)){
 					i++;
+				}
+				swap_size = 1;
+				for(j = i + 1; j < n_dims_input; j++) {	
+					swap_size *= output_dim_sizes[j];
+				}
+				swap_space = (void*)NclMalloc(swap_size * _NclSizeOf(thefile->file.var_info[index]->data_type));
+				for(i = 0;i < n_dims_input; i++) {
+					switch(compare_sel[i]) {
+					case NCLFILE_INC:
+						current_index[i] = start[i];
+						current_finish[i] = finish[i];
+						break;
+					case NCLFILE_DEC:
+	/*
+	* Problem here is that selecting in reverse order could
+	* alter selection when (finish - start )%stride != 0
+	* Therefore a new start and finish must be computed to
+	* produce desired selection
+	*/
+						current_finish[i] = start[i];
+						current_index[i] = finish[i] ;
+						break;
+					}
+				}
+				if(vtype == FILE_VAR_ACCESS) {
+					(*thefile->file.format_funcs->read_var_ns)(
+						thefile->file.private_rec,
+						thefile->file.var_info[index]->var_name_quark,
+						current_index,
+						current_finish,
+						(void*)val);
+				} else {
+					(*thefile->file.format_funcs->read_coord_ns)(
+						thefile->file.private_rec,
+						thefile->file.var_info[index]->var_name_quark,
+						current_index,
+						current_finish,
+						(void*)val);
+				}
+                        	n_dims_output = n_dims_input;
+                        	i = 0;
+                        	while((i <  n_dims_output)&&(n_dims_output > 1)) {
+                                	if(output_dim_sizes[i] == 1) {
+                                        	for(j = i; j < n_dims_output-1; j++) {
+                                                	output_dim_sizes[j] = output_dim_sizes[j+1];
+							compare_sel[j] = compare_sel[j+1];
+                                                	(dim_info)[j] = (dim_info)[j+1];
+                                        	}
+                                        	n_dims_output--;
+                                	} else {
+                                        	i++;
+                                	}
+                        	}
+				ReverseIt(val,swap_space,n_dims_output,compare_sel,output_dim_sizes,_NclSizeOf(thefile->file.var_info[index]->data_type));
+				NclFree(swap_space);
+			} else {
+				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				to = 0;
+				block_read_limit = n_dims_input - 1 ;
+	/*
+	* Find out what size chunks can be read in at once
+	*/
+				for(i = n_dims_input-1 ; i>= 0; i--) {
+					if((compare_sel[index_map[i]] != NCLFILE_INC)||(index_map[i] != i)) {
+						block_read_limit = i;
+						break;
+					}
+				}
+	/*
+	* Initialize starting index, finish and stride values for first read
+	*/
+                        	n_elem_block = 1;
+                        	for(i = 0; i < n_dims_input ; i++) {
+                                	current_index[index_map[i]] = start[index_map[i]];
+                                	if(i > block_read_limit) {
+	/*
+	* OK to use i here since these indices are in order
+	*/
+                                        	n_elem_block *= output_dim_sizes[i];
+                                        	current_finish[i] = finish[i];
+                                	} else {
+                                        	switch(compare_sel[index_map[i]]) {
+                                        	case NCLFILE_INC:
+                                                	current_finish[index_map[i]] = current_index[index_map[i]] ;
+                                                	break;
+                                        	case NCLFILE_DEC:
+                                                	current_finish[index_map[i]] = current_index[index_map[i]] ;
+                                                	break;
+                                        	default:         /* vectors */
+                                                	current_finish[index_map[i]]  = current_index[index_map[i]];
+                                                	break;
+                                        	}
+                                	}
+                        	}
+				while(!done) {
+					if(vtype == FILE_VAR_ACCESS) {
+						(*thefile->file.format_funcs->read_var_ns)(
+							thefile->file.private_rec,
+							thefile->file.var_info[index]->var_name_quark,
+							current_index,
+							current_finish,
+							(void*)&(((char*)val)[to]));
+					} else {
+						(*thefile->file.format_funcs->read_coord_ns)(
+							thefile->file.private_rec,
+							thefile->file.var_info[index]->var_name_quark,
+							current_index,
+							current_finish,
+							(void*)&(((char*)val)[to]));
+					}
+					to += n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type);
+					if(compare_sel[index_map[block_read_limit]] < 0) {
+						current_index[index_map[block_read_limit]] += 1;
+						current_finish[index_map[block_read_limit]] = current_index[index_map[block_read_limit]];
+					} else {
+						compare_sel[index_map[block_read_limit]]++;
+					}
+					for(i = block_read_limit; i > 0; i--) {
+						switch(compare_sel[index_map[i]]) {
+						case NCLFILE_INC:
+							if(current_index[index_map[i]] > finish[index_map[i]]) {
+								current_index[index_map[i]] = start[index_map[i]];
+								if(compare_sel[index_map[i-1]] < 0 ) {
+									current_index[index_map[i-1]] += 1; 
+								} else {
+									compare_sel[index_map[i-1]]++;
+								}
+	
+							} else {
+								inc_done = 1;
+							}	
+							current_finish[index_map[i]] = current_index[index_map[i]] ;
+							break;
+						case NCLFILE_DEC:
+							if(current_index[index_map[i]] < finish[index_map[i]]) {
+								current_index[index_map[i]] = start[index_map[i]];
+								if(compare_sel[index_map[i-1]] < 0) {
+									current_index[index_map[i-1]] += 1; 
+								} else {
+									compare_sel[index_map[i-1]]++;
+								}
+							} else {	
+								inc_done = 1;
+							}
+							current_finish[index_map[i]] = current_index[index_map[i]];
+							break;
+						default:
+							if(compare_sel[index_map[i]] >= sel[index_map[i]].u.vec.n_ind) {
+								compare_sel[index_map[i]] = 0;
+								current_index[index_map[i]] = sel[index_map[i]].u.vec.ind[0];
+								if(compare_sel[index_map[i-1]] < 0 ) {
+									current_index[index_map[i-1]] += 1; 
+								} else {
+									compare_sel[index_map[i-1]]++;
+								}
+							} else {
+								current_index[index_map[i]] = sel[index_map[i]].u.vec.ind[compare_sel[index_map[i]]];
+								inc_done = 1;
+							}
+							current_finish[index_map[i]] = current_index[index_map[i]];
+							break;
+						} 
+						if(inc_done) {
+							inc_done = 0;
+							break;
+						}
+					}
+					switch(compare_sel[index_map[0]]) {
+					case NCLFILE_DEC:
+						if(current_index[index_map[0]] < finish[index_map[0]]) 
+								done = 1;
+						current_finish[index_map[0]] = current_index[index_map[0]]; 
+						break;
+					case NCLFILE_INC:
+						if(current_index[index_map[0]] > finish[index_map[0]]) 
+								done = 1;
+						current_finish[index_map[0]] = current_index[index_map[0]]; 
+						break;
+					default:
+						if(compare_sel[index_map[0]] >= sel[0].u.vec.n_ind) {
+								done = 1;
+						}  else {
+							current_index[index_map[0]] = sel[0].u.vec.ind[compare_sel[index_map[0]]];
+						}
+						current_finish[index_map[0]] = current_index[index_map[0]]; 
+					}
+				}
+				n_dims_output = n_dims_input;
+				i = 0;
+				while((i <  n_dims_output)&&(n_dims_output > 1)) {
+					if(output_dim_sizes[i] == 1) {
+						for(j = i; j < n_dims_output-1; j++) {
+							output_dim_sizes[j] = output_dim_sizes[j+1];
+							(dim_info)[j] = (dim_info)[j+1];
+						}
+						n_dims_output--;
+					} else {
+						i++;
+					}
 				}
 			}
 		} else {
-			return(NULL);
-		}
+			if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
+			} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
+			} else {
+/*
+* has vectors or reorder
+*/
+			}
+		} 
 	} 
 	if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT)!=-1)){
 		mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);

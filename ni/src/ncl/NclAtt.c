@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.6 1995-01-28 01:51:10 ethan Exp $
+ *      $Id: NclAtt.c,v 1.7 1995-05-23 15:53:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -429,6 +429,9 @@ NclAttClassRec nclAttClassRec = {
 /* NclAddParentFunction add_parent */	AttAddParent,
 /* NclDelParentFunction del_parent */	AttDelParent,
 /* NclAttPrintFunction print */		AttPrint,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclAddAttFunction add_att */		AttAddFunction,

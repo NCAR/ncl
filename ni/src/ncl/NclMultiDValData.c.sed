@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.12 1995-05-16 20:08:05 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.13 1995-05-23 15:53:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1872,7 +1872,10 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	NULL,
 		(NclAddParentFunction)MultiDValAddParent,
                 (NclDelParentFunction)MultiDValDelParent,
-	/* NclPrintFunction print; 	*/	MultiDValPrint	
+	/* NclPrintFunction print; 	*/	MultiDValPrint	,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclGenericFunction dup; 	*/	MultiDValDup,

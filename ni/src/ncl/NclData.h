@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.5 1995-01-28 01:51:16 ethan Exp $
+ *      $Id: NclData.h,v 1.6 1995-05-23 15:53:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,10 @@ struct _NclObjRec *	/*parent*/
 #endif
 );
 
+#define CREATED  01
+#define DESTROYED 02
+#define MODIFIED 04
+
 
 typedef struct _NclObjPart {
 	struct _NclObjRec*	self;
@@ -50,6 +54,7 @@ typedef struct _NclObjPart {
 	NclStatus   status;
 	NclRefList                      *parents;
 	int 	ref_count;
+	unsigned int callback_state;
 } NclObjPart;
 
 typedef struct _NclObjRec {
@@ -97,6 +102,19 @@ typedef struct _NclDataRec *(*NclCopyFunction)(
 #endif
 );
 
+typedef void *(*NclCallBack)(
+#if	NhlNeedProto
+void* 	/*obj_ref*/, /* This is really a pointer to NclApiDataList*  */
+void*	/*user_data*/
+#endif
+);
+
+typedef struct _NclCallBackList {
+	NclCallBack	func;
+	void*		user_data;
+	struct _NclCallBackList *next;
+}NclCallBackList;
+
 typedef struct _NclObjClassPart {	
 	char 	*class_name;
 	unsigned int obj_size;
@@ -113,6 +131,9 @@ typedef struct _NclObjClassPart {
         NclAddParentFunction            add_parent;
         NclDelParentFunction            del_parent;
 	NclPrintFunction        print;
+	NclCallBackList		*create_callback;
+	NclCallBackList		*delete_callback;
+	NclCallBackList		*modify_callback;
 }NclObjClassPart;
 
 typedef struct _NclObjClassRec{

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.5 1994-12-23 01:18:11 ethan Exp $
+ *      $Id: NclData.c,v 1.6 1995-05-23 15:53:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,9 @@ NclObjClassRec nclObjClassRec = {
 		(NclAddParentFunction)NULL,
 		(NclDelParentFunction)NULL,
 /* NclPrintFunction      print; 	*/ 	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	}
 };
 

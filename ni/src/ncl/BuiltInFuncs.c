@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.15 1995-05-01 22:07:39 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.16 1995-05-23 15:53:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -75,7 +75,11 @@ NhlErrorTypes _NclIListHLUObjs
 	while(step != NULL) {
 		nclfprintf(fp,"\nVariable: %s\n",NrmQuarkToString(step->u.hlu->name));
 		for(i = 0 ; i < step->u.hlu->n_objs; i++) {
-			nclfprintf(fp,"\t%s\t%s\n",NrmQuarkToString(step->u.hlu->objs[i].obj_name),NrmQuarkToString(step->u.hlu->objs[i].obj_class));
+			if(step->u.hlu->objs[i].obj_name !=0) {
+				nclfprintf(fp,"\t%s\t%s\n",NrmQuarkToString(step->u.hlu->objs[i].obj_name),NrmQuarkToString(step->u.hlu->objs[i].obj_class));
+			} else {
+				nclfprintf(fp,"\tmissing\n");
+			}
 		}
 		step = step->next;
 	}

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.3 1995-01-28 01:51:31 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.4 1995-05-23 15:53:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,10 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 		(NclInitClassFunction)NULL,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-/* NclPrintFunction print */	NULL
+/* NclPrintFunction print */	NULL,
+/* NclCallBackList* create_callback*/   NULL,
+/* NclCallBackList* delete_callback*/   NULL,
+/* NclCallBackList* modify_callback*/   NULL
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.7 1995-05-20 23:30:11 ethan Exp $
+ *      $Id: NclApi.h,v 1.8 1995-05-23 15:53:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -116,7 +116,7 @@ void
 #endif
 );
 
-extern int NclGetHLUObjId(
+extern struct _NclExtValueRec *NclGetHLUObjId(
 #if NhlNeedProto
 char * /*var_name*/
 #endif
@@ -138,6 +138,7 @@ struct _NclExtValueRec {
 	int type;
 	int constant;
 	void *value;
+	NclScalar missing;
 	int elem_size;
 	int totalelements;
 	int n_dims;
