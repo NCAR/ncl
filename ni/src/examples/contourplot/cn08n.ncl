@@ -23,7 +23,7 @@
 begin
 
 ; 
-; Open data file containing grid of gloval temperatures
+; Open data file containing grid of global temperatures.
 ;
 filedir = ncargpath("data")
 filename = filedir + "/cdf/contour.cdf"
