@@ -1,7 +1,7 @@
 C
-C $Id: arinit.f,v 1.5 1993-09-23 17:25:07 kennison Exp $
+C $Id: arinit.f,v 1.6 1993-11-23 18:14:28 kennison Exp $
 C
-      SUBROUTINE ARINIT
+      SUBROUTINE ARINIT (IER)
 C
 C Declare the AREAS common block.
 C
@@ -40,8 +40,8 @@ C
           IAU=3
         GO TO 10003
 10005   CONTINUE
-          CALL SETER ('ARINIT - VALUE OF ''LC'' IS TOO LARGE',2,2)
-          STOP
+          IER=1
+          RETURN
 10003   CONTINUE
 10001 CONTINUE
 C
@@ -73,6 +73,7 @@ C
 C
 C Done.
 C
+      IER=0
       RETURN
 C
       END

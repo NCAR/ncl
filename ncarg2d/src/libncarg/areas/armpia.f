@@ -1,7 +1,7 @@
 C
-C $Id: armpia.f,v 1.3 1993-09-23 17:25:09 kennison Exp $
+C $Id: armpia.f,v 1.4 1993-11-23 18:14:30 kennison Exp $
 C
-      SUBROUTINE ARMPIA (IOP,DPV)
+      SUBROUTINE ARMPIA (IOP,DPV,IER)
 C
       DOUBLE PRECISION DPV
 C
@@ -51,6 +51,11 @@ C to the product of those with indices I3 and I4.
 C
 C When I1 = 5, the multiple-precision integer with index I2 is returned
 C as the real value of DPV.
+C
+C The argument IER is an error flag; it is normally returned with value
+C zero.  When an error occurs, IER is returned with a positive value
+C indicating the nature of the error (currently, the only error is
+C error number 1).
 C
 C Declare the AREAS common block.
 C
@@ -235,13 +240,13 @@ C
 C
 C Done.
 C
+      IER=0
       RETURN
 C
 C Error exit.
 C
 10006 CONTINUE
-        CALL SETER ('ARMPIA - MULTIPLE-PRECISION QUANTITY TOO BIG',
-     +                                                            1,2)
-        STOP
+        IER=1
+        RETURN
 C
       END

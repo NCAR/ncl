@@ -1,5 +1,5 @@
 C
-C $Id: arseti.f,v 1.6 1993-09-27 17:13:58 kennison Exp $
+C $Id: arseti.f,v 1.7 1993-11-23 18:14:44 kennison Exp $
 C
       SUBROUTINE ARSETI (IPN,IVL)
 C

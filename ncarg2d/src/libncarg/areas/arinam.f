@@ -1,5 +1,5 @@
 C
-C $Id: arinam.f,v 1.3 1993-09-23 17:25:03 kennison Exp $
+C $Id: arinam.f,v 1.4 1993-11-23 18:14:24 kennison Exp $
 C
       SUBROUTINE ARINAM (IAM,LAM)
 C
@@ -31,14 +31,21 @@ C
 C
 C If AREAS itself has not been initialized, do it now.
 C
-      IF (IAU.EQ.0) CALL ARINIT
+      IF (.NOT.(IAU.EQ.0)) GO TO 10001
+        CALL ARINIT (IER)
+        IF (.NOT.(IER.NE.0)) GO TO 10002
+          CALL SETER
+     +    ('ARINAM/ARINIT - VALUE OF ''LC'' IS TOO LARGE',1,1)
+          RETURN
+10002   CONTINUE
+10001 CONTINUE
 C
 C Log an error if the user's array is too small.
 C
-      IF (.NOT.(LAM.LE.27)) GO TO 10001
-        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',1,2)
+      IF (.NOT.(LAM.LE.27)) GO TO 10003
+        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',2,1)
         RETURN
-10001 CONTINUE
+10003 CONTINUE
 C
 C Proceed with initialization.  Store the length of the array as its
 C first element and as its last; this allows for later error checking.

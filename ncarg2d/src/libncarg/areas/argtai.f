@@ -1,5 +1,5 @@
 C
-C $Id: argtai.f,v 1.3 1993-09-23 17:25:01 kennison Exp $
+C $Id: argtai.f,v 1.4 1993-11-23 18:14:21 kennison Exp $
 C
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
@@ -74,7 +74,7 @@ C
           MSG(8:80)=SEMESS()
           CALL ERROF
           CALL RETSR (IRO)
-          CALL SETER (MSG,200+IER,1)
+          CALL SETER (MSG,2,1)
           RETURN
 10003   CONTINUE
           CALL RETSR (IRO)

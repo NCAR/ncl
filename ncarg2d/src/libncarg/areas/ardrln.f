@@ -1,5 +1,5 @@
 C
-C $Id: ardrln.f,v 1.3 1993-09-23 17:24:52 kennison Exp $
+C $Id: ardrln.f,v 1.4 1993-11-23 18:14:12 kennison Exp $
 C
       SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -125,7 +125,7 @@ C
           MSG(8:80)=SEMESS()
           CALL ERROF
           CALL RETSR (IRO)
-          CALL SETER (MSG,200+IER,1)
+          CALL SETER (MSG,2,1)
           RETURN
 10003   CONTINUE
           CALL RETSR (IRO)
@@ -364,24 +364,27 @@ C
           IO1(3, 2)=IY4-IY3
           IO1(3, 3)=IX4-IX3
           IO1(3, 4)=IY2-IY1
-          CALL ARMPIA (IO1,DPT)
+          CALL ARMPIA (IO1,DPT,IER)
+          IF (.NOT.(IER.NE.0)) GO TO 10043
+            GO TO 10045
+10043     CONTINUE
           TMP=REAL(DPT)
 10041   CONTINUE
 C
-        IF (.NOT.(TMP.NE.0.)) GO TO 10043
+        IF (.NOT.(TMP.NE.0.)) GO TO 10046
 C
-          IF (.NOT.(IAU.EQ.1)) GO TO 10044
+          IF (.NOT.(IAU.EQ.1)) GO TO 10047
             FX0=((FX4-FX3)*(FX2*FY1-FX1*FY2)
      +          -(FX2-FX1)*(FX4*FY3-FX3*FY4))/TMP
-          GO TO 10045
-10044     CONTINUE
-          IF (.NOT.(IAU.EQ.2)) GO TO 10046
+          GO TO 10048
+10047     CONTINUE
+          IF (.NOT.(IAU.EQ.2)) GO TO 10049
             FX0=REAL((DBLE(IX4-IX3)*
      +               (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))
      +               -DBLE(IX2-IX1)*
      +               (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/DPT)
-          GO TO 10045
-10046     CONTINUE
+          GO TO 10048
+10049     CONTINUE
             IO2(3, 1)=IX2
             IO2(3, 2)=IY1
             IO2(3, 4)=IX1
@@ -390,71 +393,77 @@ C
             IO2(3, 9)=IY3
             IO2(3,11)=IX3
             IO2(3,12)=IY4
-            CALL ARMPIA (IO2,DX0)
+            CALL ARMPIA (IO2,DX0,IER)
+            IF (.NOT.(IER.NE.0)) GO TO 10050
+              GO TO 10045
+10050       CONTINUE
             FX0=REAL(DX0/DPT)
-10045     CONTINUE
+10048     CONTINUE
 C
-          IF (.NOT.(IAU.EQ.1)) GO TO 10047
+          IF (.NOT.(IAU.EQ.1)) GO TO 10052
             FY0=((FY4-FY3)*(FX2*FY1-FX1*FY2)
      +          -(FY2-FY1)*(FX4*FY3-FX3*FY4))/TMP
-          GO TO 10048
-10047     CONTINUE
-          IF (.NOT.(IAU.EQ.2)) GO TO 10049
+          GO TO 10053
+10052     CONTINUE
+          IF (.NOT.(IAU.EQ.2)) GO TO 10054
             FY0=REAL((DBLE(IY4-IY3)*
      +               (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))
      +               -DBLE(IY2-IY1)*
      +               (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/DPT)
-          GO TO 10048
-10049     CONTINUE
-            CALL ARMPIA (IO3,DY0)
+          GO TO 10053
+10054     CONTINUE
+            CALL ARMPIA (IO3,DY0,IER)
+            IF (.NOT.(IER.NE.0)) GO TO 10055
+              GO TO 10045
+10055       CONTINUE
             FY0=REAL(DY0/DPT)
-10048     CONTINUE
+10053     CONTINUE
 C
           IF (.NOT.((FX0-FX1+X21)*(FX0-FX2-X21).LT.0..AND.(FY0-FY1+Y21)*
      +(FY0-FY2-Y21).LT.0..AND.(FX0-FX3+X43)*(FX0-FX4-X43).LT.0..AND.(FY0
-     +-FY3+Y43)*(FY0-FY4-Y43).LT.0.)) GO TO 10050
+     +-FY3+Y43)*(FY0-FY4-Y43).LT.0.)) GO TO 10057
 C
             DS0=ABS(FX0-FX1)+ABS(FY0-FY1)
 C
               IIF = 1
-              GO TO 10053
-10051         CONTINUE
+              GO TO 10060
+10058         CONTINUE
               IIF =IIF +1
-10053         CONTINUE
-              IF (IIF .GT.(MIN(NIF,10))) GO TO 10052
+10060         CONTINUE
+              IF (IIF .GT.(MIN(NIF,10))) GO TO 10059
               IF (ABS(DS0-DSI(IIF)).LT.1.) GO TO 102
-              IF (.NOT.(DS0.LT.DSI(IIF))) GO TO 10054
+              IF (.NOT.(DS0.LT.DSI(IIF))) GO TO 10061
                 IOF=IIF
                 GO TO 101
-10054         CONTINUE
-            GO TO 10051
-10052       CONTINUE
+10061         CONTINUE
+            GO TO 10058
+10059       CONTINUE
 C
             IOF=NIF+1
 C
   101       CONTINUE
-            IF (.NOT.(IOF.LE.10)) GO TO 10055
+            IF (.NOT.(IOF.LE.10)) GO TO 10062
                 IIF = MIN(NIF,9)
-                GO TO 10058
-10056           CONTINUE
+                GO TO 10065
+10063           CONTINUE
                 IIF =IIF -1
-10058           CONTINUE
-                IF (IIF .LT.(IOF)) GO TO 10057
+10065           CONTINUE
+                IF (IIF .LT.(IOF)) GO TO 10064
                 XCI(IIF+1)=XCI(IIF)
                 YCI(IIF+1)=YCI(IIF)
                 DSI(IIF+1)=DSI(IIF)
-              GO TO 10056
-10057         CONTINUE
+              GO TO 10063
+10064         CONTINUE
               XCI(IOF)=FX0
               YCI(IOF)=FY0
               DSI(IOF)=DS0
-10055       CONTINUE
+10062       CONTINUE
 C
             NIF=NIF+1
 C
-10050     CONTINUE
+10057     CONTINUE
 C
-10043   CONTINUE
+10046   CONTINUE
 C
   102   CONTINUE
 C
@@ -465,36 +474,36 @@ C polyline output arrays and prepares them to continue receiving points.
 C
 10027 CONTINUE
 C
-        IF (.NOT.(NCS.GT.1)) GO TO 10059
+        IF (.NOT.(NCS.GT.1)) GO TO 10066
 C
           XCP=REAL(INT(.5*(XCS(NCS/2)+XCS(NCS/2+1))))+.5
           YCP=REAL(INT(.5*(YCS(NCS/2)+YCS(NCS/2+1))))+.5
 C
-          L10061=    1
-          GO TO 10061
-10060     CONTINUE
+          L10068=    1
+          GO TO 10068
+10067     CONTINUE
 C
           XSV=XCS(NCS)
           YSV=YCS(NCS)
 C
-          DO 10062 I=1,NCS
+          DO 10069 I=1,NCS
             XCS(I)=XCS(I)/RLC
             YCS(I)=YCS(I)/RLC
-10062     CONTINUE
+10069     CONTINUE
 C
-          IF (.NOT.(NAI.EQ.IAM(7))) GO TO 10063
+          IF (.NOT.(NAI.EQ.IAM(7))) GO TO 10070
             CALL LPR (XCS,YCS,NCS,IAI,IAG,NAI)
-          GO TO 10064
-10063     CONTINUE
+          GO TO 10071
+10070     CONTINUE
             CALL SETER ('ARDRLN - ALGORITHM FAILURE',3,1)
             GO TO 10035
-10064     CONTINUE
+10071     CONTINUE
 C
           XCS(1)=XSV
           YCS(1)=YSV
           NCS=1
 C
-10059   CONTINUE
+10066   CONTINUE
 C
       GO TO (10026,10031,10033) , L10027
 C
@@ -502,105 +511,112 @@ C The following internal procedure picks up area identifier and group
 C identifier information for the point (XCP,YCP) and puts it into the
 C user's arrays.
 C
-10061 CONTINUE
+10068 CONTINUE
 C
 C
         IXP=INT(XCP)
 C
         NAI=0
 C
-10066   CONTINUE
-          IF (.NOT.(IAM(IPX+1)+IAM(2).LE.IXP)) GO TO 10067
+10073   CONTINUE
+          IF (.NOT.(IAM(IPX+1)+IAM(2).LE.IXP)) GO TO 10074
             IPX=IAM(IPX+5)
-          GO TO 10068
-10067     CONTINUE
-          IF (.NOT.(IAM(IAM(IPX+6)+1)+IAM(2).GT.IXP)) GO TO 10069
+          GO TO 10075
+10074     CONTINUE
+          IF (.NOT.(IAM(IAM(IPX+6)+1)+IAM(2).GT.IXP)) GO TO 10076
             IPX=IAM(IPX+6)
-          GO TO 10068
-10069     CONTINUE
-            GO TO 10070
-10068     CONTINUE
-        GO TO 10066
-10070   CONTINUE
+          GO TO 10075
+10076     CONTINUE
+            GO TO 10077
+10075     CONTINUE
+        GO TO 10073
+10077   CONTINUE
 C
         IGI=LAM
 C
-10071   CONTINUE
-        IF (.NOT.(IGI.GT.IAM(6))) GO TO 10072
+10078   CONTINUE
+        IF (.NOT.(IGI.GT.IAM(6))) GO TO 10079
           IGI=IGI-1
-          IF (.NOT.(MOD(IAM(IGI),2).EQ.0)) GO TO 10073
+          IF (.NOT.(MOD(IAM(IGI),2).EQ.0)) GO TO 10080
             IAF=0
             YCM=RLP
             IPT=IPX
-10074       CONTINUE
-            IF (.NOT.(IAM(IPT+1).LE.IXP)) GO TO 10075
+10081       CONTINUE
+            IF (.NOT.(IAM(IPT+1).LE.IXP)) GO TO 10082
               IF (.NOT.(ABS(IAM(IPT+7)).EQ.IGI.AND.IAM(IAM(IPT+4)+1).GT.
-     +IXP))   GO TO 10076
-                IF (.NOT.(IAU.EQ.1)) GO TO 10077
+     +IXP))   GO TO 10083
+                IF (.NOT.(IAU.EQ.1)) GO TO 10084
                   YTM=REAL(IAM(IPT+2))+
      +            (XCP-REAL(IAM(IPT+1)))*
      +         (REAL(IAM(IAM(IPT+4)+2)-IAM(IPT+2))/
      + REAL(IAM(IAM(IPT+4)+1)-IAM(IPT+1)))
-                GO TO 10078
-10077           CONTINUE
+                GO TO 10085
+10084           CONTINUE
                   YTM=REAL(DBLE(IAM(IPT+2))+
      +            (DBLE(XCP)-DBLE(IAM(IPT+1)))*
      +         (DBLE(IAM(IAM(IPT+4)+2)-IAM(IPT+2))/
      + DBLE(IAM(IAM(IPT+4)+1)-IAM(IPT+1))))
-10078           CONTINUE
-                IF (.NOT.(YTM.GE.YCP.AND.YTM.LT.YCM)) GO TO 10079
+10085           CONTINUE
+                IF (.NOT.(YTM.GE.YCP.AND.YTM.LT.YCM)) GO TO 10086
                   IAF=IPT+8
                   YCM=YTM
-10079           CONTINUE
-10076         CONTINUE
+10086           CONTINUE
+10083         CONTINUE
               IF (.NOT.(ABS(IAM(IAM(IPT+3)+7)).EQ.IGI.AND.IAM(IAM(IPT+3)
-     ++1).GT.IXP)) GO TO 10080
-                IF (.NOT.(IAU.EQ.1)) GO TO 10081
+     ++1).GT.IXP)) GO TO 10087
+                IF (.NOT.(IAU.EQ.1)) GO TO 10088
                   YTM=REAL(IAM(IPT+2))+
      +            (XCP-REAL(IAM(IPT+1)))*
      +         (REAL(IAM(IAM(IPT+3)+2)-IAM(IPT+2))/
      + REAL(IAM(IAM(IPT+3)+1)-IAM(IPT+1)))
-                GO TO 10082
-10081           CONTINUE
+                GO TO 10089
+10088           CONTINUE
                   YTM=REAL(DBLE(IAM(IPT+2))+
      +            (DBLE(XCP)-DBLE(IAM(IPT+1)))*
      +         (DBLE(IAM(IAM(IPT+3)+2)-IAM(IPT+2))/
      + DBLE(IAM(IAM(IPT+3)+1)-IAM(IPT+1))))
-10082           CONTINUE
-                IF (.NOT.(YTM.GE.YCP.AND.YTM.LT.YCM)) GO TO 10083
+10089           CONTINUE
+                IF (.NOT.(YTM.GE.YCP.AND.YTM.LT.YCM)) GO TO 10090
                   IAF=IAM(IPT+3)+9
                   YCM=YTM
-10083           CONTINUE
-10080         CONTINUE
+10090           CONTINUE
+10087         CONTINUE
               IPT=IAM(IPT+5)
-            GO TO 10074
-10075       CONTINUE
+            GO TO 10081
+10082       CONTINUE
 C
-            IF (.NOT.(IAF.NE.0)) GO TO 10084
+            IF (.NOT.(IAF.NE.0)) GO TO 10091
               ITI=IAM(IAF)
               IF (ITI.GE.IAM(6)) ITI=IAM(ITI)/2
-            GO TO 10085
-10084       CONTINUE
+            GO TO 10092
+10091       CONTINUE
               ITI=-1
-10085       CONTINUE
+10092       CONTINUE
 C
-            IF (.NOT.(NAI.LT.MAI)) GO TO 10086
+            IF (.NOT.(NAI.LT.MAI)) GO TO 10093
               NAI=NAI+1
               IAI(NAI)=ITI
               IAG(NAI)=IAM(IGI)/2
-            GO TO 10087
-10086       CONTINUE
+            GO TO 10094
+10093       CONTINUE
               CALL SETER ('ARDRLN - MAI TOO SMALL',4,1)
               GO TO 10035
-10087       CONTINUE
+10094       CONTINUE
 C
-10073     CONTINUE
+10080     CONTINUE
 C
-        GO TO 10071
-10072   CONTINUE
+        GO TO 10078
+10079   CONTINUE
 C
 C
-      GO TO (10060) , L10061
+      GO TO (10067) , L10068
+C
+C This internal procedure is called when an error occurs in ARMPIA.
+C
+10045 CONTINUE
+        CALL SETER
+     +  ('ARDRLN/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',5,1)
+        GO TO 10035
 C
 C The following internal procedure restores some parameters and returns
 C control to the caller.

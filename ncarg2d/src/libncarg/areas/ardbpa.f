@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.6 1993-09-23 17:24:49 kennison Exp $
+C $Id: ardbpa.f,v 1.7 1993-11-23 18:14:10 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
@@ -86,7 +86,7 @@ C
 C
       IF (.NOT.(INDX.LT.8.OR.INDX.GT.IAMA(5).OR.MOD(INDX-8,10).NE.0))
      +GO TO 10002
-        CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',2,2)
+        CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',2,1)
         GO TO 102
 10002 CONTINUE
 C

@@ -1,5 +1,5 @@
 C
-C $Id: aredam.f,v 1.3 1993-09-23 17:24:55 kennison Exp $
+C $Id: aredam.f,v 1.4 1993-11-23 18:14:15 kennison Exp $
 C
       SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
 C
