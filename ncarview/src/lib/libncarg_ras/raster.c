@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.23 1993-02-10 19:19:13 don Exp $
+ *	$Id: raster.c,v 1.24 1993-10-04 19:06:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -705,9 +705,17 @@ int	RasterStat(path, format, ras_stat, icount)
 	Raster	*ras;
 	int	rc;
 
-	if (stat(path, &(ras_stat->stat)) < 0) {
-		ESprintf(errno, "stat(\"%s\", )", path);
-		return(RAS_ERROR);
+	if (strcmp(path, "stdin") == 0) {
+		if (fstat(fileno(stdin), &(ras_stat->stat)) < 0) {
+			ESprintf(errno, "fstat(%d, )", fileno(stdin));
+			return(RAS_ERROR);
+		}
+	}
+	else {
+		if (stat(path, &(ras_stat->stat)) < 0) {
+			ESprintf(errno, "stat(\"%s\", )", path);
+			return(RAS_ERROR);
+		}
 	}
 
 	if ((ras = RasterOpen(path, format)) == (Raster *) NULL) {
