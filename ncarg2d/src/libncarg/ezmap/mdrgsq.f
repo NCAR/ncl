@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.2 2001-09-12 17:29:00 kennison Exp $
+C $Id: mdrgsq.f,v 1.3 2001-09-20 20:20:35 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -558,7 +558,7 @@ C
               XCRA(NCRA)=REAL(XCRD)
               YCRA(NCRA)=REAL(YCRD)
               IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-              IF (ICSF(ITYP+1).GE.0) THEN
+              IF (ICSF(ITYP+1).GE.0.AND.NCRA.GT.2) THEN
                 CALL GSFACI (ICSF(ITYP+1))
                 CALL GFA (NCRA,XCRA,YCRA)
               END IF
