@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.16 1995-11-03 00:00:51 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.17 1996-01-18 22:14:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -956,6 +956,19 @@ NclSelectionRecord *from_selection;
 	int chckmiss = 0;
 	int el_size;
 	logical tmpe =0 ;
+	
+	for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
+		to_current_index[i] = 0;
+		to_multiplier[i] = 0;
+		to_compare_sel[i] = 0;
+		to_strider[i]=0;
+		to_output_dim_sizes[i]=0;
+		from_current_index[i]=0;
+		from_multiplier[i]=0;
+		from_compare_sel[i]=0;
+		from_strider[i]=0;
+		from_output_dim_sizes[i]=0;
+	}
 
 	if((target_md == NULL)||(value_md == NULL) ) {
 		return(NhlFATAL);
@@ -1195,6 +1208,7 @@ NclSelectionRecord *from_selection;
 	}
 	if(n_dims_value == 0) {
 		n_dims_value = 1;
+		from_output_dim_sizes[0] = 1;
 	}
 	i = 0;
 	while( i < n_dims_target ) {
@@ -1209,6 +1223,7 @@ NclSelectionRecord *from_selection;
 	}
 	if(n_dims_target == 0) {
 		n_dims_target = 1;
+		to_output_dim_sizes[0] = 1;
 	}
 	
 	if(n_dims_target != n_dims_value) {

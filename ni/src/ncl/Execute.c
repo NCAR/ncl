@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.47 1995-10-26 22:31:00 ethan Exp $
+ *      $Id: Execute.c,v 1.48 1996-01-18 22:14:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3420,7 +3420,14 @@ NclExecuteReturnStatus _NclExecute
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",lhs_sym->name);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(lhs_nsubs);
-					} else if(rhs_nsubs != 0) {
+					} else if(rhs_nsubs == 0) {
+						lhs_var->kind = NclStk_VAR;
+						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,lhs_sym->name,NULL);
+						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
+						lhs_var->u.data_var->var.thesym = lhs_sym;
+						(void)_NclChangeSymbolType(lhs_sym,VAR);
+						lhs_var->u.data_var->var.var_type = NORMAL;
+					} else if((rhs_nsubs != 0)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
 /*
 * This branch is where wholesale assigment of rhs to lhs occurs. including coords,atts and values
 */
@@ -3482,12 +3489,10 @@ NclExecuteReturnStatus _NclExecute
 */
 					}
 					} else {
-						lhs_var->kind = NclStk_VAR;
-						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,lhs_sym->name,NULL);
-						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
-						lhs_var->u.data_var->var.thesym = lhs_sym;
-						(void)_NclChangeSymbolType(lhs_sym,VAR);
-						lhs_var->u.data_var->var.var_type = NORMAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
+						estatus = NhlFATAL;
+						_NclCleanUpStack(rhs_nsubs);
+						
 					}
 				} else if((estatus !=NhlFATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {
 /*
@@ -3495,7 +3500,11 @@ NclExecuteReturnStatus _NclExecute
 * if it is then the _NclAssignVarToVar is used which is different then the normal assignment provided
 * by the ASSIGN_VAR_OP operator.
 */
-					if(rhs_nsubs!=0) {
+					if((estatus != NhlFATAL)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
+						estatus = NhlFATAL;
+						_NclCleanUpStack(rhs_nsubs);
+					} else if(rhs_nsubs!=0) {
 						rhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
 						rhs_sel_ptr->n_entries = rhs_nsubs;
 				
@@ -3530,7 +3539,11 @@ NclExecuteReturnStatus _NclExecute
 					} else {
 						rhs_sel_ptr = NULL;
 					}
-					if((lhs_nsubs !=0)&&(estatus != NhlFATAL)) {
+					if((estatus != NhlFATAL)&&(lhs_nsubs != lhs_var->u.data_var->var.n_dims)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on lhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",lhs_nsubs,lhs_var->u.data_var->var.n_dims);
+						estatus = NhlFATAL;
+						_NclCleanUpStack(lhs_nsubs);
+					} else if((lhs_nsubs !=0)&&(estatus != NhlFATAL)) {
 						lhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
 						lhs_sel_ptr->n_entries = lhs_nsubs;
 						for(i=0;i<lhs_nsubs;i++) {
@@ -3575,7 +3588,7 @@ NclExecuteReturnStatus _NclExecute
 						if(ret < NhlINFO) {
 							estatus = ret;
 						}
-					}
+					} 
 				} else {
 					_NclCleanUpStack(rhs_nsubs);
 					_NclCleanUpStack(lhs_nsubs);
