@@ -18,6 +18,7 @@ C    FILSPC  -  Spacing between fill lines in PostScript.
 C    HATSPC  -  Spacing between hatch fill lines in PostScript
 C    RNLSCL  -  Nominal linewidth scale factor for PostScript lines.
 C    ICOSCL  -  Scale factor for PostScript coordinate representation.
+C    IPSCM   -  PostScript color model (1=RGB, 0=CMYK).
 C    RMITER  -  Miter limit for PostScript lines when line join type is
 C               miter.
 C    IERRMX  -  Maximum number of GKS errors allowed before abort.
@@ -34,7 +35,7 @@ C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
-     +                RMITER, IERRMX, IGKSCP, IPERCX,
+     +                RMITER, IERRMX, IGKSCP, IPERCX,  IPSCM,
      +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

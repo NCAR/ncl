@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.11 1996-10-07 19:18:17 fred Exp $
+C	$Id: ngseti.f,v 1.12 1999-03-25 00:25:46 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -387,6 +387,15 @@ C
         ICOSCL = MAX(IVP,1)
         WRITE(IDR(1:5), 500) ICOSCL
         CALL GESC(-1522,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  CM - PostScript color model.
+C
+      ELSE IF (CNP(1:2).EQ.'CM' .OR. CNP(1:2).EQ.'cm' .OR.
+     +         CNP(1:2).EQ.'Cm') THEN
+        IPSCM = IVP
+        WRITE(IDR(1: 5), 500) IVP
+        CALL GESC(-1523,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  CT - Flag to indicate if NGDOTS draws circles or filled dots (0=dots;

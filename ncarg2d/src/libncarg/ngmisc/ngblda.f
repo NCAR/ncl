@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.7 1996-01-12 21:31:07 boote Exp $
+C	$Id: ngblda.f,v 1.8 1999-03-25 00:25:45 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -42,6 +42,10 @@ C
 C  Coordinate scale factor.
 C
       DATA ICOSCL/25/
+C
+C  PostScript color model (1=RGB, 0=CMYK)
+C
+      DATA IPSCM/1/
 C
 C  Maximum number of GKS errors allowed before abort.
 C
