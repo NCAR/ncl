@@ -1,5 +1,5 @@
 C
-C $Id: cptroe.f,v 1.6 1995-06-02 00:24:06 kennison Exp $
+C $Id: cptroe.f,v 1.7 1995-06-02 21:55:43 kennison Exp $
 C
       SUBROUTINE CPTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
@@ -53,10 +53,10 @@ C     0  =>  Beginning of an open curve.
 C     1  =>  Beginning of a closed curve.
 C     2  =>  Part of an open curve, not including either end point.
 C     3  =>  Part of a closed curve, not including either end point.
-C     4  =>  End of an open curve.
-C     5  =>  End of a closed curve.
-C     6  =>  An entire open curve, including both end points.
-C     7  =>  An entire closed curve, including both end points.
+C     4  =>  An entire open curve, including both end points.
+C     5  =>  An entire closed curve, including both end points.
+C     6  =>  End of an open curve.
+C     7  =>  End of a closed curve.
 C
 C First, extract individual flags from IOCF.  IBEG says whether or not
 C the curve begins with this call, IEND says whether or not the curve
@@ -70,6 +70,18 @@ C Initialize the flag that tells CPWLAM whether it just got a first
 C point or not.
 C
       IFST=0
+C
+C Initialize XNXT and YNXT for one particular case (when the first call
+C defining a closed curve defines just the first two points of it).
+C
+      XNXT=1.E36
+      YNXT=1.E36
+C
+C Initialize the variables that hold local copies of the left and right
+C area identifiers.
+C
+      JAIL=IAIL
+      JAIR=IAIR
 C
 C Do necessary initialization.
 C
@@ -86,32 +98,30 @@ C
         ELSE
           RWRK(1)=XCRA(2)
           RWRK(2)=YCRA(2)
+          RWRK(5)=REAL(IAIL)
+          RWRK(6)=REAL(IAIR)
           IF (NCRA.GE.3) THEN
             RWRK(3)=XCRA(3)
             RWRK(4)=YCRA(3)
-            RWRK(5)=REAL(IAIL)
-            RWRK(6)=REAL(IAIR)
           ELSE
             RWRK(3)=1.E36
             RWRK(4)=1.E36
-            RWRK(5)=1.E36
-            RWRK(6)=1.E36
           END IF
         END IF
       ELSE
         IF (RWRK(3).EQ.1.E36) THEN
           RWRK(3)=XCRA(2)
           RWRK(4)=YCRA(2)
-          RWRK(5)=REAL(IAIL)
-          RWRK(6)=REAL(IAIR)
         END IF
-        XNXT=RWRK(9)
-        YNXT=RWRK(10)
-        JAIL=INT(RWRK(11))
-        JAIR=INT(RWRK(12))
-        CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,JAIL,JAIR)
-        IF (ICFELL('CPTROE',1).NE.0) RETURN
-        IFST=1
+        IF (RWRK(9).NE.1.E36) THEN
+          XNXT=RWRK(9)
+          YNXT=RWRK(10)
+          JAIL=INT(RWRK(11))
+          JAIR=INT(RWRK(12))
+          CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,JAIL,JAIR)
+          IF (ICFELL('CPTROE',1).NE.0) RETURN
+          IFST=1
+        END IF
         ICRA=0
         XCPB=RWRK(7)
         YCPB=RWRK(8)
