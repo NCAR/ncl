@@ -1569,13 +1569,12 @@ int vtype;
 /*
 * No reverse here so all is just added
 */
-					for(i = block_read_limit; i > 0 ; i--) {
-						current_index[i] += stride[i];
-						if(current_index[i] > finish[i]) {
+					for(i = block_read_limit; i >= 0 ; i--) {
+						if((current_index[i] + stride[i] > finish[i])&&(i != 0)) {
 							current_index[i] = start[i];
-							current_index[i-1] += stride[i-1];
 							current_finish[i] = current_index[i];
 						} else {
+							current_index[i] = current_index[i] + stride[i];
 							current_finish[i] = current_index[i];
 							break;
 						}
@@ -1616,9 +1615,18 @@ int vtype;
 * Still could be reverse.
 */
 						n_elem_block *= output_dim_sizes[i];
-						real_stride[i] = abs(stride[i]);
-						current_finish[i] = start[i];
-						current_index[i] = finish[i];
+						switch(compare_sel[i]) {
+						case NCLFILE_DEC:
+							real_stride[i] = -abs(stride[i]);
+							current_finish[i] = start[i];
+							current_index[i] = finish[i];
+							break;
+						case NCLFILE_INC:
+							real_stride[i] = abs(stride[i]);
+							current_finish[i] = finish[i];
+							current_index[i] = start[i];
+							break;
+						}
 					} else {
 						switch(compare_sel[i]) {
 						case NCLFILE_DEC:
@@ -1651,33 +1659,31 @@ int vtype;
 							current_finish,
 							val);
 					}
-					if((n_dims_input - block_read_limit)>1) {
-						ReverseIt((void*)&(((char*)val)[to]),swap_space,n_dims_input-block_read_limit,&(compare_sel[block_read_limit]),&(output_dim_sizes[block_read_limit]),_NclSizeOf(thefile->file.var_info[index]->data_type));
+					if((n_dims_input - (block_read_limit + 1))>=1) {
+						ReverseIt((void*)&(((char*)val)[to]),swap_space,n_dims_input - (block_read_limit + 1),&(compare_sel[block_read_limit+1]),&(output_dim_sizes[block_read_limit+1]),_NclSizeOf(thefile->file.var_info[index]->data_type));
 					}
 					to += n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type);
 /*
 * No reverse here so all is just added
 */
-					for(i = block_read_limit; i > 0 ; i--) {
+					for(i = block_read_limit; i >= 0 ; i--) {
 						switch(compare_sel[i]) {
 						case NCLFILE_DEC:
-							current_index[i] += real_stride[i];
-							if(current_index[i] < finish[i]) {
+							if((current_index[i] + real_stride[i] < finish[i])&&(i != 0)) {
 								current_index[i] = start[i];
-								current_index[i-1] += real_stride[i-1];
 								current_finish[i] = current_index[i];
 							} else {
+								current_index[i] +=  real_stride[i];
 								current_finish[i] = current_index[i];
 								inc_done = 1;
 							}
 							break;
 						case NCLFILE_INC:
-							current_index[i] += real_stride[i];
-							if(current_index[i] > finish[i]) {
+							if((current_index[i] + real_stride[i]> finish[i])&&(i != 0)) {
 								current_index[i] = start[i];
-								current_index[i-1] += real_stride[i-1];
 								current_finish[i] = current_index[i];
 							} else {
+								current_index[i] +=  real_stride[i];
 								current_finish[i] = current_index[i];
 								inc_done = 1;
 							}
@@ -1689,11 +1695,11 @@ int vtype;
 						}
 					}
 					if(compare_sel[0] == NCLFILE_INC) {
-						if(current_index[0]  > finish[0]) {
+						if(current_index[0] > finish[0]) {
 							done = 1;
 						}
 					} else {
-						if(current_index[0]  < start[0]) {
+						if(current_index[0] < start[0]) {
 							done = 1;
 						}
 					}
