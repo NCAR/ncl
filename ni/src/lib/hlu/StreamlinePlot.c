@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.24 1997-04-02 21:04:28 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.25 1997-04-11 20:06:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2995,32 +2995,51 @@ static NhlErrorTypes SetCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
-	float		tmin,tmax;
+	float		tmin,tmax,t;
 	NhlBoolean	rev;
 
 	if (ctype == stXCOORD) {
 
 		rev = stp->vfp->x_start > stp->vfp->x_end;
-		if (! rev) {
-			tmin = MAX(stp->vfp->x_start,stp->x_min); 
-			tmax = MIN(stp->vfp->x_end,stp->x_max);
-		}
-		else {
-			tmin = MAX(stp->vfp->x_end,stp->x_min); 
-			tmax = MIN(stp->vfp->x_start,stp->x_max);
-		}
-		stp->xlb = tmin;
-		stp->xub = tmax;
-
 		if (count == 0) {
+                        if (! rev) {
+                                tmin = MAX(stp->vfp->x_start,stp->x_min); 
+                                tmax = MIN(stp->vfp->x_end,stp->x_max);
+                        }
+                        else {
+                                tmin = MAX(stp->vfp->x_end,stp->x_min); 
+                                tmax = MIN(stp->vfp->x_start,stp->x_max);
+                        }
+                        stp->xlb = tmin;
+                        stp->xub = tmax;
+
 			stp->xc1 = stp->vfp->x_start;
 			stp->xcm = stp->vfp->x_end;
 		}
 		else {
+                        if (! rev) {
+                                tmin = MIN(stp->vfp->x_end,
+                                           MAX(stp->vfp->x_start,stp->x_min)); 
+                                tmax = MAX(stp->vfp->x_start,
+                                           MIN(stp->vfp->x_end,stp->x_max));
+                        }
+                        else {
+                                tmin = MIN(stp->vfp->x_start,
+                                           MAX(stp->vfp->x_end,stp->x_min));
+                                tmax = MAX(stp->vfp->x_end,
+                                           MIN(stp->vfp->x_start,stp->x_max));
+                        }
+                        if (tmin > tmax) {
+                                t = tmin;
+                                tmin = tmax;
+                                tmax = t;
+                        }
+                        stp->xlb = tmin;
+                        stp->xub = tmax;
 			stp->xc1 = 0;
 			stp->xcm = count - 1;
 
-			if (tmin > stp->x_min) {
+			if (stp->x_min < tmin || stp->x_min > tmax) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -3028,7 +3047,7 @@ static NhlErrorTypes SetCoordBounds
 				ret = MIN(ret,NhlWARNING);
 				stp->x_min = tmin;
 			}
-			if (tmax < stp->x_max) {
+			if (stp->x_max > tmax || stp->x_max < tmin) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -3041,25 +3060,44 @@ static NhlErrorTypes SetCoordBounds
 	else if (ctype == stYCOORD) {
 
 		rev = stp->vfp->y_start > stp->vfp->y_end;
-		if (! rev) {
-			tmin = MAX(stp->vfp->y_start,stp->y_min); 
-			tmax = MIN(stp->vfp->y_end,stp->y_max);
-		}
-		else {
-			tmin = MAX(stp->vfp->y_end,stp->y_min); 
-			tmax = MIN(stp->vfp->y_start,stp->y_max);
-		}
-		stp->ylb = tmin;
-		stp->yub = tmax;
-
 		if (count == 0) {
+                        if (! rev) {
+                                tmin = MAX(stp->vfp->y_start,stp->y_min); 
+                                tmax = MIN(stp->vfp->y_end,stp->y_max);
+                        }
+                        else {
+                                tmin = MAX(stp->vfp->y_end,stp->y_min); 
+                                tmax = MIN(stp->vfp->y_start,stp->y_max);
+                        }
+                        stp->ylb = tmin;
+                        stp->yub = tmax;
 			stp->yc1 = stp->vfp->y_start;
 			stp->ycn = stp->vfp->y_end;
 		}
 		else {
+                        if (! rev) {
+                                tmin = MIN(stp->vfp->y_end,
+                                           MAX(stp->vfp->y_start,stp->y_min)); 
+                                tmax = MAX(stp->vfp->y_start,
+                                           MIN(stp->vfp->y_end,stp->y_max));
+                        }
+                        else {
+                                tmin = MIN(stp->vfp->y_start,
+                                           MAX(stp->vfp->y_end,stp->y_min));
+                                tmax = MAX(stp->vfp->y_end,
+                                           MIN(stp->vfp->y_start,stp->y_max));
+                        }
+                        if (tmin > tmax) {
+                                t = tmin;
+                                tmin = tmax;
+                                tmax = t;
+                        }
+                        stp->ylb = tmin;
+                        stp->yub = tmax;
 			stp->yc1 = 0;
 			stp->ycn = count - 1;
-			if (tmin > stp->y_min) {
+                        
+			if (stp->y_min < tmin || stp->y_min > tmax) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -3067,7 +3105,7 @@ static NhlErrorTypes SetCoordBounds
 				ret = MIN(ret,NhlWARNING);
 				stp->y_min = tmin;
 			}
-			if (tmax < stp->y_max) {
+			if (stp->y_max > tmax || stp->y_max < tmin) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -6582,7 +6620,7 @@ static NhlErrorTypes ChooseSpacingLin
 	}
 		
 	d = pow(10.0,floor(log10(*tend-*tstart)) - 2.0);
-	u = *spacing = 1e30;
+	u = *spacing = FLT_MAX;
 	for(i=0;i<npts; i++) {
 		t = table[i] * d;
 		am1 = ceil(*tstart/t) *t;
