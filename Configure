@@ -173,13 +173,12 @@ EOF
 
 endif
 
-if ($?verbose_option) then
-  cat <<"EOF"
+cat <<"EOF"
 
 	As of version 3.2 of NCAR Graphics, every user will need to
 	set at least one environment variable in order to use the
 	package.  Depending on how you install NCAR Graphics on
-	your system, users may also need set additional environment
+	your system, users may also need to set additional environment
 	variables.  To keep from having to do this, it is a good
 	idea to install NCAR Graphics libraries, binaries, and
 	include files under one root directory; for example,
@@ -194,11 +193,9 @@ if ($?verbose_option) then
 
 "EOF"
 
-  echo -n "Enter Return to continue, or q(quit) > "
-  set answer=$<
-  if ("$answer" == "q") goto cleanup
-
-endif
+echo -n "Enter Return to continue, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
 
 #
 # Binary directory.
@@ -735,9 +732,8 @@ endif
 #
 # Summarize configuration
 #
-if ($?verbose_option) then
-  if ($libdir:h != $bindir:h || $libdir:h != $incdir:h || $bindir:h != $incdir:h ) then
-    cat <<EOF
+if ($libdir:h != $bindir:h || $libdir:h != $incdir:h || $bindir:h != $incdir:h ) then
+  cat <<EOF
 
 	Since you did not specify to have the libraries, binaries, and
 	include files installed under one root directory, every user of
@@ -750,7 +746,7 @@ if ($?verbose_option) then
 
 EOF
 	
-  else
+else
     cat <<EOF
 
 	Since you specified to have the libraries, binaries, and
@@ -762,7 +758,6 @@ EOF
 
 EOF
 	
-  endif
 endif
 
 echo ""
