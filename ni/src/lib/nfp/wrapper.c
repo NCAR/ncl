@@ -318,6 +318,8 @@ extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
 
+extern NhlErrorTypes paleo_outline_W(void);
+
 void NclAddUserFuncs(void)
 {
     void *args;
@@ -3832,6 +3834,17 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     NclRegisterFunc(conform_W, args, "conform", nargs);
+
+/*
+ *  Register paleo_outline.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "string", 1, NclANY);  nargs++;
+    NclRegisterProc(paleo_outline_W, args, "paleo_outline", nargs);
 
     return;
 }
