@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.67 1999-10-13 20:26:12 ethan Exp $
+#      $Id: yMakefile,v 1.68 1999-10-15 17:59:19 haley Exp $
 #
 #########################################################################
 #									#
@@ -54,9 +54,19 @@ EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 
 API_DEFS	=	-DMAKEAPI
 
-PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
-DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
-EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
+PROG_LIBS	=	$(NFPLIB) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
+DEPLIBS		=	$(DEPNFPLIB) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
+
+#if defined(SUN)
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf -lf90
+#elif defined(AIX)
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -llapack -lessl -lxlf90
+#elif (defined(IRIX) || defined(IRIX64))
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -lcomplib.sgimath
+#else
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -llapack -lblas
+#endif
+
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
@@ -89,8 +99,7 @@ EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
 APISRCS		=	$(API_SRCS) $(SRCS) NclUserHLUStub.c \
 			NclUserFileFormStub.c
-EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c \
-			NclUserFileFormStub.c
+EXESRCS		=	$(EXE_SRCS) $(SRCS)
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
@@ -147,8 +156,7 @@ EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
 ALLOBJS		=	$(EXE_OBJS) $(OBJS)
 APIOBJS		=	$(API_OBJS) $(OBJS) \
 			NclUserHLUStub.o NclUserFileFormStub.o
-EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS) \
-			NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS)
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
