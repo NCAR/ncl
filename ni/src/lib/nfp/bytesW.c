@@ -4,8 +4,7 @@
 #include "DataSupport.h"
 #include <ncarg/c.h>
 
-extern NGCALLF(dimgbits,DIMGBITS)(int *, int *, int *, int *, int *,
-                                  int *, int *);
+extern NGCALLF(gbytes,GBYTES)(int *, int *, int *, int *, int *, int *);
 
 NhlErrorTypes dim_gbits_W( void )
 {
@@ -174,8 +173,8 @@ NhlErrorTypes dim_gbits_W( void )
       tmp_isam  = &((int*)isam)[index_isam];
     }
 
-    NGCALLF(dimgbits,DIMGBITS)(&n,tmp_npack,tmp_isam,&tmp_ibit,nbits,
-			       &tmp_nskip,iter);
+    NGCALLF(gbytes,GBYTES)(tmp_npack,tmp_isam,&tmp_ibit,nbits,
+                           &tmp_nskip,iter);
 
     if(type_npack == NCL_short) {
       for(j = 0; j < *iter; j++ ) {
