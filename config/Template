@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.14 1994-03-03 17:55:45 haley Exp $
+ *      $Id: Template,v 1.15 1994-03-03 22:05:29 haley Exp $
  */
 /************************************************************************
 *									*
@@ -626,6 +626,7 @@ LD_REL		= LdRelCommand
 AR		= ArCommand
 AR_SRC		= ArSrcCommand
 AR_SRC_QUICK	= $(AR_SRC) ArQuickOpt
+AR_SRC_CHECK	= $(AR_SRC) ArRegOpt
 AR_REG		= $(AR) ArRegOpt
 AR_QUICK	= $(AR) ArQuickOpt
 
