@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.5 1996-05-10 09:38:26 boote Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.6 1996-07-16 20:58:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,6 @@ typedef struct _HLUMDCalRec {
 
 typedef struct _NclMultiDValHLUObjDataPart {
 	_NhlCB *cbs;
-	_NhlCBList cblist;
 	HLUMDCalRec **crecs;
 }NclMultiDValHLUObjDataPart;
 

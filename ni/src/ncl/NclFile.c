@@ -205,6 +205,104 @@ struct _NclSelectionRecord* /* sel_ptr */
 #endif
 );
 
+static void FileAttIsBeingDestroyedNotify
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata, udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+        NclAtt theattobj;
+	NclFile thefile;
+	NclQuark attname;
+	NclQuark thevar;
+	int index;
+	NclFileAttInfoList *thelist;
+	NclMultiDValData tmp_md;
+	void *val;
+
+	theattobj = (NclAtt)_NclGetObj(((FileCallBackRec*)udata.ptrval)->theattid);
+	thefile = (NclFile)_NclGetObj(((FileCallBackRec*)udata.ptrval)->thefileid);
+	thevar = ((FileCallBackRec*)udata.ptrval)->thevar;
+	attname = cbdata.lngval;
+
+	if((theattobj == NULL) ||(thefile == NULL)) return;
+
+	if(thevar != -1) {
+		if(_NclFileDeleteVarAtt(thefile,thevar,attname) < NhlNOERROR) {
+
+/*
+* The premis here is that the above only fails when deleting attributes is not
+* supported or when the permissions were wrong. Therefore the following is
+* valid
+*/
+			index = _NclFileIsVar(thefile,thevar);
+			thelist = thefile->file.var_att_info[index] ;
+			while(thelist != NULL) {
+				if(thelist->the_att->att_name_quark ==  attname) {
+					if(thefile->file.format_funcs->read_var_att != NULL) {
+                                		val = NclMalloc(_NclSizeOf(thelist->the_att->data_type)* thelist->the_att->num_elements );
+                                		(void)(*thefile->file.format_funcs->read_var_att)(
+                                        		thefile->file.private_rec,
+                                        		thevar,
+                                        		thelist->the_att->att_name_quark,
+                                        		val
+                                        		);
+                                		tmp_md = _NclCreateMultiDVal(
+                                                		NULL,
+                                                		NULL,
+                                                		Ncl_MultiDValData,
+                                                		0,
+                                                		val,
+                                                		NULL,
+                                                		1,
+                                                		&thelist->the_att->num_elements,
+                                                		TEMPORARY,
+                                                		NULL,
+                                                		_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thelist->the_att->data_type))
+                                                	);
+                                			if(tmp_md != NULL) {
+                                        			_NclAddAtt(thefile->file.var_att_ids[index],NrmQuarkToString(thelist->the_att->att_name_quark),tmp_md,NULL);
+                                			}
+					}
+					return;
+				} else {
+					thelist = thelist->next;
+				}
+			}
+		}
+	} else {
+		if(_NclFileDeleteAtt(thefile,attname)<NhlNOERROR) {
+			index = _NclFileIsAtt(thefile,attname);
+                	if(thefile->file.format_funcs->read_att != NULL) {
+                                val = NclMalloc(_NclSizeOf(thefile->file.file_atts[index]->data_type)* thefile->file.file_atts[index]->num_elements );
+                                (void)(*thefile->file.format_funcs->read_att)(
+                                        thefile->file.private_rec,
+                                        thefile->file.file_atts[index]->att_name_quark,
+                                        val
+                                        );
+                                tmp_md = _NclCreateMultiDVal(
+                                                NULL,
+                                                NULL,
+                                                Ncl_MultiDValData,
+                                                0,
+                                                val,
+                                                NULL,
+                                                1,
+                                                &thefile->file.file_atts[index]->num_elements,
+                                                TEMPORARY,
+                                                NULL,
+                                                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[index]->data_type)));
+                                if(tmp_md != NULL) {
+                                        _NclAddAtt(thefile->file.file_atts_id,NrmQuarkToString(thefile->file.file_atts[index]->att_name_quark),tmp_md,NULL);
+				 }
+			}
+		}
+	}
+}
+
 NhlErrorTypes FilePrint
 #if	NhlNeedProto
 (NclObj self, FILE    *fp)
@@ -342,6 +440,9 @@ NclObj self;
 	}
 	for(i =0 ; i < thefile->file.n_vars; i++) {
 		NclFree(thefile->file.var_info[i]);
+		if(thefile->file.var_att_cb[i] != NULL) {
+			_NhlCBDelete(thefile->file.var_att_cb[i]);
+		}
 		if(thefile->file.var_att_info[i] != NULL) {
 			step = thefile->file.var_att_info[i];	
 			if(thefile->file.var_att_ids[i]!= -1) {
@@ -359,10 +460,14 @@ NclObj self;
 		NclFree(thefile->file.file_dim_info[i]);
 	}
 	if(thefile->file.file_atts_id != -1) {
+		_NhlCBDelete(thefile->file.file_att_cb);
 		_NclDelParent(_NclGetObj(thefile->file.file_atts_id),self);
 	}
 	for(i =0 ; i < thefile->file.n_file_atts; i++) {
 		NclFree(thefile->file.file_atts[i]);
+	}
+	if(thefile->obj.cblist != NULL) {
+		_NhlCBDestroy(thefile->obj.cblist);
 	}
 	NclFree(thefile);
 	return;
@@ -461,6 +566,111 @@ unsigned int type;
 
 }
 
+static NhlErrorTypes FileDelAtt
+#if     NhlNeedProto
+(NclFile thefile, NclQuark attname)
+#else
+(thefile, attname)
+NclFile thefile;
+NclQuark attname;
+#endif
+{
+	int index;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclFAttRec *tmpal;
+
+	if(thefile->file.wr_status <= 0) {
+		index = _NclFileIsAtt(thefile,attname);
+		if(index != -1) {
+			if(thefile->file.format_funcs->del_att != NULL) {
+				ret = (*thefile->file.format_funcs->del_att)(thefile->file.private_rec,attname);
+				if(ret < NhlNOERROR) {
+					return(ret);
+				}
+				if(thefile->file.file_atts[index] != NULL) {
+					tmpal = thefile->file.file_atts[index];
+					for(;index < thefile->file.n_file_atts - 1;index++) {
+						thefile->file.file_atts[index] = thefile->file.file_atts[index+1];
+					}
+					thefile->file.n_file_atts--;
+					NclFree(tmpal);
+					return(ret);
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute deletion not supported by format");
+				return(NhlFATAL);
+			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to delete undefined attribute from file");
+			return(NhlFATAL);
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelAtt: file (%s) is read only, can not delete attribute",NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);
+	}
+}
+
+static NhlErrorTypes FileDelVarAtt
+#if     NhlNeedProto
+(NclFile thefile, NclQuark var, NclQuark attname)
+#else
+(thefile, var, attname)
+NclFile thefile;
+NclQuark var;
+NclQuark attname;
+#endif
+{
+	int index;
+	int vindex;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclFileAttInfoList  *stepal,*tmpal;
+
+	if(thefile->file.wr_status <= 0) {
+		vindex = _NclFileIsVar(thefile,var);
+		index = _NclFileVarIsAtt(thefile,var,attname);
+		if((index != -1)&&(vindex != -1)) {
+			if(thefile->file.format_funcs->del_var_att != NULL) {
+				ret = (*thefile->file.format_funcs->del_var_att)(thefile->file.private_rec,var,attname);
+				if(ret < NhlNOERROR) {
+					return(ret);
+				}
+				if(thefile->file.var_att_info[vindex] != NULL) {
+					stepal = thefile->file.var_att_info[vindex];
+					if(stepal->the_att->att_name_quark == attname) {
+						tmpal = stepal;
+						thefile->file.var_att_info[vindex] = stepal->next;
+						NclFree(tmpal);
+						return(NhlNOERROR);
+					} else {
+						while(stepal->next != NULL) {
+							if(stepal->next->the_att->att_name_quark == attname) {
+								tmpal = stepal->next;
+								stepal->next= stepal->next->next;
+								NclFree(tmpal);
+							} else {
+								stepal = stepal->next;
+							}
+						}
+						return(NhlNOERROR);
+					}
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute deletion not supported by format");
+				return(NhlFATAL);
+			}
+		} else if(vindex == -1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to delete attribute from undefined variable");
+			return(NhlFATAL);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to delete undefined attribute from variable");
+			return(NhlFATAL);
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelVarAtt: file (%s) is read only, can not delete attribute",NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);
+	}
+}
+
 NclFileClassRec nclFileClassRec = {
 	{	
 		"NclFileClass",
@@ -489,9 +699,11 @@ NclFileClassRec nclFileClassRec = {
 		FileIsAtt,
 		FileReadAtt,
 		FileWriteAtt,
+		FileDelAtt,
 		FileIsVarAtt,
 		FileReadVarAtt,
 		FileWriteVarAtt,
+		FileDelVarAtt,
 		FileIsDim,
 		FileVarIsDim,
 		FileVarReadDim,
@@ -1734,6 +1946,7 @@ struct _NclSelectionRecord* sel_ptr;
 	NclSelection *sel = NULL;
 	NclObj  att_obj = NULL;
 	int single = 0;
+	NhlArgVal udata;
 /*
 * By the the time it gets here the file suport routines in that build the selection
 * record have made sure var_name is valid and all the demensions in sel_ptr
@@ -1757,7 +1970,7 @@ struct _NclSelectionRecord* sel_ptr;
 				att_id = -1;
 			}
 		} else if(thefile->file.var_att_info[index] != NULL){
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL) {
 				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
@@ -1771,6 +1984,18 @@ struct _NclSelectionRecord* sel_ptr;
 		
 				}
 				step = step->next;
+			}
+			thefile->file.var_att_ids[index] = att_id;
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = var_name;
+			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+			if(att_obj != NULL) {
+				att_id = att_obj->obj.id;
+			} else {
+				att_id = -1;
 			}
 		} else {
 			att_id = -1;
@@ -1904,7 +2129,8 @@ struct _NclSelectionRecord *sel_ptr;
 	int att_id = -1;
 	void *val;
 	NclMultiDValData tmp_md;
-	
+	NhlArgVal udata;
+
 	aindex = FileIsVarAtt(thefile,var,attname);
 	if(aindex > -1) {
 		index = FileIsVar(thefile,var);
@@ -1940,6 +2166,11 @@ struct _NclSelectionRecord *sel_ptr;
 				}
 				step = step->next;
 			}
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = var;
+			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
 			if(att_id != -1) {	
 				thefile->file.var_att_ids[index] = att_id;
 				return(_NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr));
@@ -3052,6 +3283,7 @@ struct _NclSelectionRecord * sel_ptr;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 	void *data_type;
+	NhlArgVal udata;
 
 	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
@@ -3071,6 +3303,11 @@ struct _NclSelectionRecord * sel_ptr;
 					}
 					step = step->next;
 				}
+				udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+				((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+				((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+				((FileCallBackRec*)udata.ptrval)->thevar = var;
+				thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
 				thefile->file.var_att_ids[index] = att_id;
 			}  else {
 				att_id = thefile->file.var_att_ids[index];
@@ -3192,7 +3429,7 @@ struct _NclSelectionRecord *sel_ptr;
 	int att_id = -1,i;
 	void *val;
 	NclMultiDValData tmp_md;
-	
+	NhlArgVal udata;
 	aindex = FileIsAtt(thefile,attname);
 	if(aindex > -1) {
 		if(thefile->file.file_atts_id != -1) {
@@ -3223,6 +3460,11 @@ struct _NclSelectionRecord *sel_ptr;
 					_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_md,NULL);
 				}
 			}
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = -1;
+			thefile->file.file_att_cb = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
 			if(att_id != -1) {	
 				thefile->file.file_atts_id = att_id;
 				return(_NclGetAtt(thefile->file.file_atts_id,NrmQuarkToString(attname),sel_ptr));
@@ -3251,6 +3493,7 @@ struct _NclSelectionRecord *sel_ptr;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 	void *data_type;
+	NhlArgVal udata;
 
 	if(thefile->file.wr_status<=0) {
 		if(thefile->file.file_atts_id == -1) {
@@ -3267,6 +3510,11 @@ struct _NclSelectionRecord *sel_ptr;
 				}
 			}
 			thefile->file.file_atts_id = att_id;
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = -1;
+			thefile->file.file_att_cb = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
 		}  else {
 			att_id = thefile->file.file_atts_id;
 		}
@@ -3595,9 +3843,10 @@ struct _NclSelectionRecord* sel_ptr;
 	NclMultiDValData tmp_md,tmp_att_md;
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 	int att_id = -1;
-	NclObj att_obj;
+	NclObj att_obj = NULL;
 	NclVar tmp_var = NULL;
 	NclFileAttInfoList *step;
+	NhlArgVal udata;
 
 	if(FileIsCoord(thefile,coord_name) > -1){
 		index = FileIsVar(thefile,coord_name);
@@ -3614,7 +3863,7 @@ struct _NclSelectionRecord* sel_ptr;
 				att_id = -1;
 			}
 		} else if(thefile->file.var_att_info[index] != NULL) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)NULL);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL) {
 				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
@@ -3627,6 +3876,18 @@ struct _NclSelectionRecord* sel_ptr;
 					}
 				}
 				step = step->next;
+			}
+			thefile->file.file_atts_id = att_id;
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = coord_name;
+			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+			if(att_obj != NULL) {
+				att_id = att_obj->obj.id;
+			} else {
+				att_id = -1;
 			}
 		} else {
 			att_id = -1;
@@ -3652,8 +3913,8 @@ struct _NclSelectionRecord* sel_ptr;
 					TEMPORARY);
 			if(tmp_var == NULL) {
 				_NclDestroyObj((NclObj)tmp_md);
-				if(att_id != -1) {
-					_NclDestroyObj((NclObj)_NclGetObj(att_id));
+				if(att_obj != NULL) {
+					_NclDestroyObj((NclObj)att_obj);
 				}
 			}
 		}

@@ -132,8 +132,8 @@ static void HLUObjDestroy
 				}
 				if(parents->pptr->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
 					cbdata.lngval = hlu_obj->obj.id;
-					selector.lngval = 0;
-					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)parents->pptr)->multi_obj.cblist,selector,cbdata);
+					selector.lngval = HLUDESTROYED;
+					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)parents->pptr)->obj.cblist,selector,cbdata);
 				} else if(parents->pptr->obj.obj_type_mask & Ncl_HLUObj) {
 					cbdata.lngval = hlu_obj->obj.id;
 					selector.lngval = 0;
@@ -219,6 +219,9 @@ static void HLUObjDestroy
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
 			NhlDestroy(hlu_obj->hlu.hlu_id);
+		}
+		if(self->obj.cblist != NULL) {
+			_NhlCBDestroy(self->obj.cblist);
 		}
 		_NclUnRegisterObj(self);
 		NclFree(self);

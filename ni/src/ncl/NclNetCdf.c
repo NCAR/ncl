@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.18 1996-05-09 23:30:35 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.19 1996-07-16 20:58:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1029,6 +1029,153 @@ void *data;
 	return(NhlFATAL);
 }
 
+static NhlErrorTypes NetDelAtt
+#if 	NhlNeedProto
+(void *therec, NclQuark theatt)
+#else 
+(therec, theatt)
+void *therec;
+NclQuark thevar;
+NclQuark theatt;
+#endif
+{
+	NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
+	NetCdfAttInqRecList *stepal,*tmpal;
+	int cdfid;
+	int ret;
+
+	if(rec->wr_status <= 0) {
+		stepal = rec->file_atts;
+		if((stepal != NULL) && (stepal->att_inq->name == theatt)) {
+			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if(cdfid == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
+			ncredef(cdfid);
+			ret = ncattdel(cdfid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
+			ncendef(cdfid);
+	
+			tmpal = stepal;
+			rec->file_atts = stepal->next;
+			NclFree(tmpal->att_inq);
+			NclFree(tmpal);
+			ncclose(cdfid);
+			if(ret == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
+			return(NhlNOERROR);
+		} else {
+			while(stepal->next != NULL) {
+				if(stepal->next->att_inq->name == theatt) {
+					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+					if(cdfid == -1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+						return(NhlFATAL);
+					}
+
+					ncredef(cdfid);
+					ret = ncattdel(cdfid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
+					ncendef(cdfid);
+					tmpal = stepal->next;
+					stepal->next = stepal->next->next;
+					NclFree(tmpal->att_inq);
+					NclFree(tmpal);
+					ncclose(cdfid);
+					if(ret == -1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+						return(NhlFATAL);
+					}
+					return(NhlNOERROR);
+				} else {	
+					stepal = stepal->next;
+				}
+			}	
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
+	}
+	return(NhlFATAL);
+}
+
+static NhlErrorTypes NetDelVarAtt
+#if 	NhlNeedProto
+(void *therec, NclQuark thevar, NclQuark theatt)
+#else 
+(therec, thevar, theatt)
+void *therec;
+NclQuark thevar;
+NclQuark theatt;
+#endif
+{
+	NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
+	NetCdfAttInqRecList *stepal,*tmpal;
+	NetCdfVarInqRecList *stepvl;
+	int cdfid;
+	int ret;
+
+	if(rec->wr_status <= 0) {
+		stepvl = rec->vars;
+		while(stepvl != NULL) {
+			if(stepvl->var_inq->name == thevar) {
+				stepal = stepvl->var_inq->att_list;
+				if((stepal != NULL) && (stepal->att_inq->name == theatt)) {
+					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+					if(cdfid == -1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+						return(NhlFATAL);
+					}
+					ncredef(cdfid);
+					ret = ncattdel(cdfid,stepvl->var_inq->varid,(const char*)NrmQuarkToString(theatt));
+					ncendef(cdfid);
+			
+					tmpal = stepal;
+					stepvl->var_inq->att_list = stepal->next;
+					NclFree(tmpal->att_inq);
+					NclFree(tmpal);
+					ncclose(cdfid);
+					if(ret == -1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+						return(NhlFATAL);
+					}
+					return(NhlNOERROR);
+				} else {
+					while(stepal->next != NULL) {
+						if(stepal->next->att_inq->name == theatt) {
+							cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+							if(cdfid == -1) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+								return(NhlFATAL);
+							}
+
+							ncredef(cdfid);
+							ret = ncattdel(cdfid,stepvl->var_inq->varid,(const char*)NrmQuarkToString(theatt));
+							ncendef(cdfid);
+							tmpal = stepal->next;
+							stepal->next = stepal->next->next;
+							NclFree(tmpal->att_inq);
+							NclFree(tmpal);
+							ncclose(cdfid);
+							if(ret == -1) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+								return(NhlFATAL);
+							}
+							return(NhlNOERROR);
+						} else {	
+							stepal = stepal->next;
+						}
+					}	
+				}
+			} else {
+				stepvl = stepvl->next;
+			}
+		} 
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
+	}
+	return(NhlFATAL);
+}
 static NhlErrorTypes NetWriteVarAtt 
 #if	NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt, void* data)
@@ -1572,7 +1719,9 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclAddAttFunc           add_att; */			NetAddAtt,
 /* NclAddVarAttFunc        add_var_att; */		NetAddVarAtt,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	NetMapToNcl,
-/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl,
+/* NclDelAttFunc           del_att; */			NetDelAtt,
+/* NclDelVarAttFunc        del_var_att; */		NetDelVarAtt
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 
 #if	NhlNeedProto

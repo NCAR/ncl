@@ -3819,7 +3819,9 @@ NclFormatFunctionRec GribRec = {
 /* NclAddAttFunc           add_att; */			NULL,
 /* NclAddVarAttFunc        add_var_att; */		NULL,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	GribMapToNcl,
-/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	GribMapFromNcl
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	GribMapFromNcl,
+/* NclDelAttFunc           del_att; */			NULL,
+/* NclDelVarAttFunc        del_var_att; */		NULL
 };
 NclFormatFunctionRecPtr GribAddFileFormat 
 #if	NhlNeedProto

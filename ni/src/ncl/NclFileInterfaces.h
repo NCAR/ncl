@@ -314,6 +314,13 @@ long * /* dim_sizes */
 #endif
 );
 
+typedef NhlErrorTypes (*NclDelVarAttFunc) (
+#if	NhlNeedProto
+void * /*therec*/,
+NclQuark /*thevar*/,
+NclQuark /*theatt*/
+#endif
+);
 typedef NhlErrorTypes (*NclAddVarAttFunc) (
 #if	NhlNeedProto
 void * /*therec*/,
@@ -325,6 +332,12 @@ void * /*values*/
 #endif
 );
 
+typedef NhlErrorTypes (*NclDelAttFunc) (
+#if	NhlNeedProto
+void * /*therec*/,
+NclQuark /*theatt*/
+#endif
+);
 typedef NhlErrorTypes (*NclAddAttFunc) (
 #if	NhlNeedProto
 void * /*therec*/,
@@ -380,6 +393,8 @@ NclAddAttFunc		add_att;
 NclAddVarAttFunc	add_var_att;
 NclMapFormatTypeToNcl	map_format_type_to_ncl;
 NclMapNclTypeToFormat	map_ncl_type_to_format;
+NclDelAttFunc		del_att;
+NclDelVarAttFunc	del_var_att;
 };
 
 extern void _NclRegisterFormat(

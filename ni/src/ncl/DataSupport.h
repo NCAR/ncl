@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.10 1995-11-04 00:49:24 ethan Exp $
+ *      $Id: DataSupport.h,v 1.11 1996-07-16 20:58:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -195,6 +195,18 @@ NclObj /*theobj*/ ,
 NclObj /*parent*/
 #endif
 );
+
+extern _NhlCB _NclAddCallback(
+#if NhlNeedProto
+NclObj /* theobj */,
+NclObj /* parent */,
+_NhlCBFunc /* cbfunc */,
+long /* cbsel*/,
+NhlArgVal * /*udata*/
+#endif
+);
+
+
 
 extern NhlErrorTypes _NclDelParent(
 #if NhlNeedProto

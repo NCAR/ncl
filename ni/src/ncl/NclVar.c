@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.29 1996-06-17 22:15:18 ethan Exp $
+ *      $Id: NclVar.c,v 1.30 1996-07-16 20:58:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -259,6 +259,28 @@ NclVarClassRec nclVarClassRec = {
 };
 
 NclObjClass nclVarClass = (NclObjClass)&nclVarClassRec;
+
+void _NclVarMissingNotify
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	NclVar self = NULL;
+	NclMultiDValData theval = NULL;
+	NclMultiDValData themis = NULL;
+
+	self = (NclVar)_NclGetObj(udata.intval);
+	if(self != NULL) {
+		theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+		if(theval != NULL) {
+			_NclResetMissingValue(theval,(NclScalar*)cbdata.ptrval);
+		}
+	}
+}
 
 static void *VarObtainCallData
 #if NhlNeedProto
@@ -723,6 +745,7 @@ NclStatus status)
 		var_out->var.att_id = att_id;
 		if(att_id != -1) {
 			_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
+			var_out->var.att_cb = _NclAddCallback(_NclGetObj(att_id),(NclObj)var_out,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 		} 
 		if(coords != NULL) {
 			for(i = 0; i<var_out->var.n_dims; i++) {
@@ -752,10 +775,12 @@ NclStatus status)
 				tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
 				_NclSetStatus((NclObj)tmp_att,PERMANENT);
 				_NclAddParent((NclObj)tmp_att,(NclObj)var_out);
+				var_out->var.att_cb = _NclAddCallback((NclObj)tmp_att,(NclObj)var_out,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 				var_out->var.att_id = tmp_att->obj.id;
 			} else {
 				var_out->var.att_id = tmp_att->obj.id;
 				_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
+				var_out->var.att_cb = _NclAddCallback(_NclGetObj(att_id),(NclObj)var_out,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 			}
 		} else {
 			var_out->var.att_id = att_id;
@@ -808,12 +833,17 @@ struct _NclObjRec*	self;
 			_NclDelParent(_NclGetObj(self_var->var.coord_vars[i]),self);
 		}
 	}
-	if(self_var->var.att_id != -1)
-	_NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
+	if(self_var->var.att_id != -1) {
+		_NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
+		_NhlCBDelete(self_var->var.att_cb);
+	}
 
 	
 	if(value != NULL) {
 		_NclDelParent(value,self);
+	}
+	if(self_var->obj.cblist != NULL) {
+		_NhlCBDestroy(self_var->obj.cblist);
 	}
 	NclFree(self_var);
 	return;
@@ -937,6 +967,7 @@ struct _NclSelectionRecord *sel_ptr;
 	}
 	if(self->var.att_id == -1) {
 		self->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self);
+		self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),(NclObj)self,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 	}
 	return(_NclAddAtt(self->var.att_id,attname,value_md,sel_ptr));
 }
@@ -1255,6 +1286,7 @@ NclSelectionRecord *sel_ptr;
 					if(self_var->var.att_id == -1) {
 						self_var->var.att_id =
 							_NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
+						self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),(NclObj)self,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 					}
 					_NclAddAtt(self_var->var.att_id,NCL_MISSING_VALUE_ATT,attvalue,NULL);
 				} else  {
@@ -1705,6 +1737,7 @@ struct _NclVarRec *storage;
 	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
 	if(tmp_obj != NULL) {
 		_NclAddParent(tmp_obj,(NclObj)tmp_var);
+		tmp_var->var.att_cb = _NclAddCallback((NclObj)tmp_obj,(NclObj)tmp_var,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 		tmp_var->var.att_id = tmp_obj->obj.id;
 	} else {
 		tmp_var->var.att_id = -1;
@@ -2656,6 +2689,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 * Simple case just copy atts
 */
 		lhs->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)lhs);
+		lhs->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(lhs->var.att_id),(NclObj)lhs,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 		
 		tmp_att = (NclAtt)_NclGetObj(rhs->var.att_id);
 		att_list = tmp_att->att.att_list;		
@@ -2668,24 +2702,3 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	return(ret);
 }
 
-void _NclVarMissingNotify
-#if     NhlNeedProto
-(NhlArgVal cbdata, NhlArgVal udata)
-#else
-(cbdata,udata)
-NhlArgVal cbdata;
-NhlArgVal udata;
-#endif
-{
-	NclVar self = NULL;
-	NclMultiDValData theval = NULL;
-	NclMultiDValData themis = NULL;
-
-	self = (NclVar)_NclGetObj(udata.intval);
-	if(self != NULL) {
-		theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
-		if(theval != NULL) {
-			_NclResetMissingValue(theval,(NclScalar*)cbdata.ptrval);
-		}
-	}
-}

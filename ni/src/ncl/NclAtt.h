@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclAtt.h,v 1.2 1996-06-17 22:15:14 ethan Exp $
+ *      $Id: NclAtt.h,v 1.3 1996-07-16 20:58:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -87,6 +87,7 @@ typedef struct _NclAttList {
 	int	quark;
 	char	*attname;
 	NclMultiDValData attvalue;
+	_NhlCB	cb;
 	struct _NclAttList *next;
 }NclAttList;
 
@@ -98,17 +99,10 @@ typedef struct _NclAttClassPart {
 	NclCopyAttFunction	copy_att;
 } NclAttClassPart;
 
-typedef struct _NclAttCBRec {
-	int pid;
-	_NhlCB cb;
-	struct _NclAttCBRec *next;
-} NclAttCBRec;
 
 typedef struct _NclAttPart {
 	int				n_atts;
 	NclAttList			*att_list;
-	NclAttCBRec 			*cbr_list;
-	_NhlCBList 			cblist;
 }NclAttPart;
  
 typedef struct _NclAttClassRec{

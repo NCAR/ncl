@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.8 1995-11-03 00:00:43 ethan Exp $
+ *      $Id: NclData.h,v 1.9 1996-07-16 20:58:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #define NclData_h
 
 #include "NclDataDefs.h"
+#include <ncarg/hlu/Callbacks.h>
 
 typedef NhlErrorTypes (*NclDelParentFunction) (
 #if NhlNeedProto
@@ -39,9 +40,13 @@ struct _NclObjRec *	/*parent*/
 #endif
 );
 
-#define CREATED  01
-#define DESTROYED 02
-#define MODIFIED 04
+#define CREATED		01
+#define DESTROYED	02
+#define MODIFIED	04
+#define MISSINGNOTIFY	3
+#define HLUDESTROYED	5
+#define ATTDESTROYED	6
+#define COORDDESTROYED	7
 
 
 typedef struct _NclObjPart {
@@ -55,6 +60,7 @@ typedef struct _NclObjPart {
 	NclRefList                      *parents;
 	int 	ref_count;
 	unsigned int callback_state;
+	 _NhlCBList                      cblist;
 } NclObjPart;
 
 typedef struct _NclObjRec {

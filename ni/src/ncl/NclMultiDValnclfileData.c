@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.3 1995-06-03 00:45:53 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.4 1996-07-16 20:58:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1389,6 +1389,9 @@ static void MultiDVal_nclfile_Destroy
 	
 	if((self_md->obj.status != STATIC)&&(self_md->multidval.val != NULL)) {
 		NclFree(self_md->multidval.val);
+	}
+	if(self->obj.cblist != NULL) {
+		_NhlCBDestroy(self->obj.cblist);
 	}
 	NclFree(self);
 	return;

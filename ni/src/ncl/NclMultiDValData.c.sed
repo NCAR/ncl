@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.19 1996-06-17 22:15:15 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.20 1996-07-16 20:58:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1888,7 +1888,15 @@ static void MultiDValDestroy
 #endif
 {
         NclMultiDValData self_md = (NclMultiDValData)self;
+	NhlArgVal selector;
+	NhlArgVal cbdata;
 
+	cbdata.intval = self->obj.id;
+	selector.lngval = DESTROYED;
+
+	if(self->obj.cblist != NULL) {
+		_NhlCBCallCallbacks(self->obj.cblist,selector,cbdata);
+	}
         _NclUnRegisterObj(self);
 
         if(self_md->multidval.sel_rec != NULL) {
@@ -1898,6 +1906,9 @@ static void MultiDValDestroy
         if((self_md->obj.status != STATIC)&&(self_md->multidval.val != NULL)) {
                 NclFree(self_md->multidval.val);
         }
+	if(self->obj.cblist != NULL) {
+		_NhlCBDestroy(self->obj.cblist);
+	}
         NclFree(self);
         return;
 }

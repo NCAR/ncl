@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.38 1996-07-03 22:45:24 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.39 1996-07-16 20:58:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1618,6 +1618,7 @@ NhlErrorTypes _NclIDelete
 
 	switch(data.kind) {
 	case NclStk_VAL:
+/*
 		if(data.u.data_obj->obj.ref_count != 0) {
 			rlist = data.u.data_obj->obj.parents;
 			while(rlist != NULL) {
@@ -1632,8 +1633,11 @@ NhlErrorTypes _NclIDelete
 				rlist = rlist->next;
 			}
 		} else {
+*/
 			_NclDestroyObj((NclObj)data.u.data_obj);
+/*
 		}
+*/
 		break;
 	case NclStk_VAR:
 		if(data.u.data_var != NULL) {

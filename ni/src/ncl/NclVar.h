@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.5 1996-04-23 00:10:24 ethan Exp $
+ *      $Id: NclVar.h,v 1.6 1996-07-16 20:58:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -216,6 +216,7 @@ typedef struct _NclVarPart {
 	int n_dims;
 	NclDimRec  dim_info[NCL_MAX_DIMENSIONS];
 	int				att_id;
+	_NhlCB				att_cb;
 	int coord_vars[NCL_MAX_DIMENSIONS];
 }NclVarPart;
  

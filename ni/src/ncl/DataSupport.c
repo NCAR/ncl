@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.27 1996-07-10 19:26:56 ethan Exp $
+ *      $Id: DataSupport.c,v 1.28 1996-07-16 20:58:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1173,7 +1173,7 @@ void _NclResetMissingValue
 {
 	NclDataClass dc ;
 	
-	if((self == NULL)||(missing == NULL)) {
+	if(self == NULL) {
 		return;
 	} else {
 		dc  = (NclDataClass)self->obj.class_ptr;
@@ -1344,6 +1344,35 @@ NclObjClass type;
         }
 }
 
+
+_NhlCB _NclAddCallback
+#if 	NhlNeedProto
+( struct _NclObjRec * theobj, struct _NclObjRec *parent, _NhlCBFunc cbfunc, long cbsel, NhlArgVal *udata )
+#else
+( theobj, parent, cbfunc, cbsel , udata)
+struct _NclObjRec * theobj;
+struct _NclObjRec *parent;
+_NhlCBFunc cbfunc;
+long cbsel; 
+NhlArgVal *udata;
+#endif
+{
+	NhlArgVal mudata;
+	NhlArgVal selector;
+
+	if(udata != NULL) {	
+		mudata = *udata;
+	} else if(parent != NULL) {
+		mudata.intval = parent->obj.id;
+	} else {
+		mudata.ptrval = NULL;
+	}
+	selector.lngval = cbsel;
+	if(theobj->obj.cblist == NULL) {
+		theobj->obj.cblist = _NhlCBCreate(0,NULL,NULL);
+	}
+	return(_NhlCBAdd(theobj->obj.cblist, selector, cbfunc, mudata));
+}
 
 NhlErrorTypes _NclAddParent
 #if	NhlNeedProto

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.9 1996-05-15 22:51:44 ethan Exp $
+ *      $Id: FileSupport.c,v 1.10 1996-07-16 20:58:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -831,6 +831,32 @@ struct _NclSelectionRecord *sel_ptr;
 	return(NULL);
 }
 
+
+NhlErrorTypes _NclFileDeleteVarAtt
+#if	NhlNeedProto
+(NclFile thefile, NclQuark var, NclQuark attname)
+#else 
+(thefile, var, attname)
+NclFile thefile;
+NclQuark var;
+NclQuark attname;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.del_var_att_func != NULL) {
+			return((*fc->file_class.del_var_att_func)(thefile, var, attname));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
 NhlErrorTypes _NclFileWriteVarAtt
 #if	NhlNeedProto
 (NclFile thefile, NclQuark var, NclQuark attname,struct _NclMultiDValDataRec* value, struct _NclSelectionRecord * sel_pr)
@@ -909,6 +935,30 @@ struct _NclSelectionRecord *sel_ptr;
 	return(NULL);
 }
 
+NhlErrorTypes _NclFileDeleteAtt
+#if	NhlNeedProto
+(NclFile thefile, NclQuark attname)
+#else 
+(thefile, attname)
+NclFile thefile;
+NclQuark attname;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.del_att_func != NULL) {
+			return((*fc->file_class.del_att_func)(thefile, attname));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
 NhlErrorTypes _NclFileWriteAtt
 #if	NhlNeedProto
 (NclFile thefile, NclQuark attname, struct _NclMultiDValDataRec* value, struct _NclSelectionRecord *sel_ptr)

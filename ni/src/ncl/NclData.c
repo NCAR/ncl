@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.11 1996-06-24 23:33:05 ethan Exp $
+ *      $Id: NclData.c,v 1.12 1996-07-16 20:58:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -562,6 +562,7 @@ NclStatus status;
 	theinst->obj.id = _NclRegisterObj(theinst);
 	theinst->obj.parents = NULL;
 	theinst->obj.ref_count = 0;
+	theinst->obj.cblist =  NULL;
 	return(theinst);
 }
 

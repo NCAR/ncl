@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.4 1995-11-04 00:49:25 ethan Exp $
+ *      $Id: FileSupport.h,v 1.5 1996-07-16 20:58:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -137,6 +137,12 @@ struct _NclSelectionRecord* /* sel_ptr*/
 #endif
 );
 
+extern NhlErrorTypes _NclFileDeleteAtt(
+#if	NhlNeedProto
+NclFile /*thefile;*/,
+NclQuark  /*attname;*/
+#endif
+);
 extern NhlErrorTypes _NclFileWriteAtt(
 #if	NhlNeedProto
 NclFile /*thefile;*/,
@@ -163,6 +169,13 @@ struct _NclSelectionRecord* /*sel_ptr*/
 #endif
 );
 
+extern NhlErrorTypes _NclFileDeleteVarAtt(
+#if	NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* var */,
+NclQuark /* attname */
+#endif
+);
 extern NhlErrorTypes _NclFileWriteVarAtt(
 #if	NhlNeedProto
 NclFile /* thefile */,

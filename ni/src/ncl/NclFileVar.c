@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.15 1996-05-09 23:30:21 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.16 1996-07-16 20:58:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -344,6 +344,9 @@ struct _NclObjRec*	self;
 	
 	if((value != NULL)&&(value->obj.class_ptr->obj_class.destroy != NULL)) {
 		_NclDelParent((NclObj)value,self);
+	}
+	if(self_var->obj.cblist != NULL) {
+		_NhlCBDestroy(self_var->obj.cblist);
 	}
 	NclFree(self_var);
 	return;

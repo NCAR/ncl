@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.3 1996-03-07 17:26:06 ethan Exp $
+ *      $Id: NclFile.h,v 1.4 1996-07-16 20:58:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,14 @@ struct _NclSelectionRecord* /*sel_ptr*/
 #endif
 );
 
+typedef NhlErrorTypes (*NclDeleteVarAttributeFunc)(
+#if	NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* var */,
+NclQuark /* attname */
+#endif
+);
+
 typedef NhlErrorTypes (*NclWriteVarAttributeFunc)(
 #if	NhlNeedProto
 NclFile /* thefile */,
@@ -113,6 +121,12 @@ struct _NclSelectionRecord* /* sel_ptr*/
 #endif
 );
 
+typedef NhlErrorTypes (*NclDeleteAttributeFunc)(
+#if	NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* attname */
+#endif
+);
 typedef NhlErrorTypes (*NclWriteAttributeFunc)(
 #if	NhlNeedProto
 NclFile /* thefile */,
@@ -195,9 +209,11 @@ typedef struct _NclFileClassPart {
 	NclFileIsAFunc		is_att;
 	NclReadAttributeFunc	read_att_func;	
 	NclWriteAttributeFunc	write_att_func;	
+	NclDeleteAttributeFunc	del_att_func;	
 	NclFileVarIsAFunc		is_var_att;
 	NclReadVarAttributeFunc	read_var_att_func;	
 	NclWriteVarAttributeFunc	write_var_att_func;	
+	NclDeleteVarAttributeFunc	del_var_att_func;	
 	NclFileIsAFunc		is_dim;
 	NclFileVarIsAFunc		is_var_dim;
 	NclReadVarDimensionFunc 	read_var_dim_func;	
@@ -221,6 +237,7 @@ typedef struct _NclFilePart {
 	int		n_vars;
 	struct _NclFVarRec 	*var_info[NCL_MAX_FVARS];
 	NclFileAttInfoList *var_att_info[NCL_MAX_FVARS];
+	_NhlCB		var_att_cb[NCL_MAX_FVARS];
 	int 		var_att_ids[NCL_MAX_FVARS];
 
 	int 	   	n_file_dims;
@@ -230,6 +247,7 @@ typedef struct _NclFilePart {
 	int		n_file_atts;
 	struct _NclFAttRec	*file_atts[NCL_MAX_FVARS];
 	int 		file_atts_id;
+	_NhlCB 		file_att_cb;
 	struct _NclFormatFunctionRecord *format_funcs;
 	void	*private_rec;
 }NclFilePart;
@@ -261,4 +279,10 @@ extern NclFile _NclCreateFile(
 #endif
 );
 
-#endif /* NclVar_h */
+typedef struct _FileCallBackRec {
+	int	thefileid;
+	int	theattid;
+	int	thevar;
+}FileCallBackRec;
+
+#endif /* NclFile_h */

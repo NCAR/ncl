@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.2 1995-06-21 00:52:04 ethan Exp $
+ *      $Id: NclHDF.c,v 1.3 1996-07-16 20:58:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1465,7 +1465,9 @@ NclFormatFunctionRec HDFRec = {
 /* NclAddAttFunc           add_att; */			HDFAddAtt,
 /* NclAddVarAttFunc        add_var_att; */		HDFAddVarAtt,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	HDFMapToNcl,
-/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	HDFMapFromNcl
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	HDFMapFromNcl,
+/* NclDelAttFunc           del_att; */			NULL,
+/* NclDelVarAttFunc        del_var_att; */		NULL
 };
 NclFormatFunctionRecPtr HDFAddFileFormat 
 #if	NhlNeedProto

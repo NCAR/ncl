@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.10 1996-05-10 23:51:23 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.11 1996-07-16 20:58:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -116,7 +116,7 @@ int index;
 	udata.ptrval = (NhlPointer)crec;
 	selector.lngval = 0;
 	self_md->multi_obj.crecs[index] = crec;
-	return(_NhlCBAdd(self_md->multi_obj.cblist,selector,MultiDVal_HluObj_DestroyNotify,udata));
+	return(_NclAddCallback((NclObj)self_md,NULL,MultiDVal_HluObj_DestroyNotify,HLUDESTROYED,&udata));
 }
 static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 #if	NhlNeedProto
@@ -1620,7 +1620,9 @@ static void MultiDVal_HLUObj_Destroy
 		}
 	}
 	NclFree(self_md->multi_obj.crecs);
-	_NhlCBDestroy(self_md->multi_obj.cblist);
+	if(self_md->obj.cblist != NULL) {
+		_NhlCBDestroy(self_md->obj.cblist);
+	}
 	NclFree(self_md->multi_obj.cbs);
 
 	if(self_md->multidval.missing_value.has_missing) {
@@ -1645,6 +1647,9 @@ static void MultiDVal_HLUObj_Destroy
 	
 	if((self_md->obj.status != STATIC)&&(self_md->multidval.val != NULL)) {
 		NclFree(self_md->multidval.val);
+	}
+	if(self->obj.cblist != NULL) {
+		_NhlCBDestroy(self->obj.cblist);
 	}
 	NclFree(self);
 	return;
@@ -1829,7 +1834,6 @@ NclSelectionRecord *sel_rec;
 
 	obj_ids = (obj*)thevalobj->multidval.val;
 	thevalobj->multi_obj.cbs = (_NhlCB*)NclMalloc(sizeof(_NhlCB)*thevalobj->multidval.totalelements);
-	thevalobj->multi_obj.cblist = _NhlCBCreate(0,NULL,NULL);
 	thevalobj->multi_obj.crecs= (HLUMDCalRec**)NclMalloc(sizeof(HLUMDCalRec*)*thevalobj->multidval.totalelements);
 	for(i = 0; i<thevalobj->multidval.totalelements; i++) {
 		thevalobj->multi_obj.crecs[i] = NULL;
