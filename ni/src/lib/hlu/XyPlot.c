@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.83 1999-04-02 23:51:23 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.84 1999-04-26 21:05:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3071,7 +3071,7 @@ static NhlErrorTypes XyPlotPostDraw
 		ret = MIN(ret,subret);
 
 		if (xyl->view.use_segments) {
-			_NhlEndSegment(xyp->draw_dat);
+			_NhlEndSegment(xyp->postdraw_dat);
 		}
 
 		subret = _NhlDeactivateWorkstation(xyl->base.wkptr);	
