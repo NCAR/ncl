@@ -1,6 +1,6 @@
 
 /*
- *      $Id: usleep.c,v 1.2 1992-09-09 17:38:23 clyne Exp $
+ *      $Id: usleep.c,v 1.3 1992-10-05 20:43:02 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,10 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#ifdef RS6000
+#define	NBBY	8	/* xlc compiler isn't config'ed properly	*/
+#include <sys/select.h>
+#endif
 
 void	USleep(usec)
 	unsigned	usec;
@@ -35,6 +39,6 @@ void	USleep(usec)
 	struct timeval	tv;
 	tv.tv_usec = usec % 1000000;
 	tv.tv_sec = usec / 1000000;
-	(void) select(1, (fd_set *) NULL, (fd_set *) NULL, (fd_set *) NULL, tv);
+	(void) select(1, (fd_set *) NULL, (fd_set *) NULL, (fd_set *) NULL,&tv);
 #endif
 }
