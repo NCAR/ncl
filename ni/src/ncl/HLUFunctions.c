@@ -1354,7 +1354,7 @@ NhlErrorTypes _NclIDataPolyline
 	}
 	for( i = 0; i < j; i++) {
 		if(tmp_hlu_ptr[i] != NULL) {
-			NhlDataPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,n_dims1);
+			NhlDataPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,dimsizes1[0]);
 		}
 	}
 	return(NhlNOERROR);
@@ -1448,7 +1448,7 @@ NhlErrorTypes _NclINDCPolyline
 	}
 	for( i = 0; i < j; i++) {
 		if(tmp_hlu_ptr[i] != NULL) {
-			NhlNDCPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,n_dims1);
+			NhlNDCPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,dimsizes1[0]);
 		}
 	}
 	return(NhlNOERROR);
