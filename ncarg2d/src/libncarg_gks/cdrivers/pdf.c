@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.20 2003-04-02 19:16:43 fred Exp $
+ *      $Id: pdf.c,v 1.21 2003-05-30 23:17:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1834,6 +1834,14 @@ PDFClearWorkstation(GKSC *gksc)
   PDFddp  *psa;
   int     ier = 0;
   psa = (PDFddp *) gksc->ddp;
+
+/*
+ *  Put out a picture preamble if the picture is empty.
+ */
+  if (psa->pict_empty) {
+    PDFpreamble(psa, FOR_PICTURE);
+    psa->pict_empty = FALSE;
+  }
 
 /*
  *  Stroke the current path in case it has not been stroked.
