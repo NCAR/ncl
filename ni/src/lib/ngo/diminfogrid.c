@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.4 1997-07-23 22:23:36 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.5 1997-10-03 20:07:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
-#include  <XmL/Grid.h>
+#include  <ncarg/ngo/Grid.h>
 
 static char *Buffer;
 static int  Buflen;

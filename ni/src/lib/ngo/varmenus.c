@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.3 1997-08-20 20:49:07 dbrown Exp $
+ *      $Id: varmenus.c,v 1.4 1997-10-03 20:08:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
 #include <Xm/CascadeB.h>
 #include <Xm/CascadeBG.h>
 #include <Xm/MenuShell.h>
+#include <X11/IntrinsicP.h>
+#include <X11/CoreP.h>
 
 static void
 FileVarMenu(
@@ -46,11 +48,11 @@ CreateCB
 {
 	NgVarRec	*vrec = (NgVarRec *)udata.ptrval;
 
+        if (! vrec->varcount)
+              XtSetSensitive(vrec->mbutton,True);  
         vrec->varcount++;
 	vrec->modified = True;
 
-        if (vrec->varcount > 0)
-                XtSetSensitive(vrec->mbutton,True);
         return;
 
 }
@@ -67,7 +69,7 @@ DeleteCB
         vrec->varcount--;
 	vrec->modified = True;
 
-        if (vrec->varcount < 1)
+        if (! vrec->varcount)
                 XtSetSensitive(vrec->mbutton,False);
         return;
 }
@@ -301,14 +303,14 @@ static void VarMenuCB
                 XtUnmanageChildren(vrec->vbuttons,vrec->in_use);
         }
 	switch (vrec->vtype) {
-	case _brHLUVAR:
+	case _vmHLUVAR:
 		vrec->qvars = NclGetHLUVarSymNames(&count);
 		break;
-	case _brREGULAR:
+	case _vmREGULAR:
 		vrec->qvars = NclGetVarSymNames(&count);
 		break;
-	case _brFILEREF:
-	case _brFILEVAR:
+	case _vmFILEREF:
+	case _vmFILEVAR:
 		vrec->qvars = NclGetFileSymNames(&count);
 		break;
 	}
@@ -319,7 +321,7 @@ static void VarMenuCB
                 vrec->vbuttons = NhlRealloc(vrec->vbuttons,
                                             count * sizeof(Widget));
                 switch (vrec->vtype) {
-                case _brHLUVAR:
+                case _vmHLUVAR:
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget
                                         ("vbutton",xmCascadeButtonGadgetClass,
@@ -330,7 +332,7 @@ static void VarMenuCB
                                          vp->udata);
                         }
                         break;
-                case _brREGULAR:
+                case _vmREGULAR:
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget
                                         ("vbutton",xmCascadeButtonGadgetClass,
@@ -341,7 +343,7 @@ static void VarMenuCB
                                          vp->udata);
                         }
                         break;
-                case _brFILEREF:
+                case _vmFILEREF:
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget
                                         ("vbutton",xmCascadeButtonGadgetClass,
@@ -352,7 +354,7 @@ static void VarMenuCB
                                          vp->udata);
                         }
                         break;
-                case _brFILEVAR:
+                case _vmFILEVAR:
                         fvar = (NgFileVarRec *)vrec->priv;
                         if (!fvar->override_sh) {
                                 fvar->override_sh = XtVaCreatePopupShell
@@ -418,8 +420,7 @@ static void VarMenuCB
 NgVarMenus
 NgCreateVarMenus
 (
-        int		appmgr,
-        int		nsid,
+        int		goid,
         Widget		parent,
         XtCallbackProc	hluvar_cb,
         XtCallbackProc	regvar_cb,
@@ -436,14 +437,19 @@ NgCreateVarMenus
         NrmQuark	*qvars;
         int		count;
         NgFileVarRec	*fvar;
-	NhlLayer	ncl = _NhlGetLayer(nsid);
-
+	NhlLayer	ncl;
+        NgGO        	go = (NgGO)_NhlGetLayer(goid);
+        
+        if (!go)
+                return NULL;
+        
         vp = NhlMalloc(sizeof(VarMenusRec));
         vmenus = NhlMalloc(sizeof(NgVarMenusRec));
         vmenus->vmenu_data = (NhlPointer)vp;
         vmenus->qfile = NrmNULLQUARK;
-        vp->appmgr = appmgr;
-        vp->nsid = nsid;
+        vp->appmgr = go->go.appmgr;
+        vp->nsid = go->go.nclstate;
+        ncl = _NhlGetLayer(vp->nsid);
         vp->hluvar_cb = hluvar_cb;
         vp->regvar_cb = regvar_cb;
         vp->fileref_cb = fileref_cb;
@@ -455,7 +461,7 @@ NgCreateVarMenus
         vp->hluvars.in_use = 0;
         vp->hluvars.vbuttons = NULL;
         vp->hluvars.modified = True;
-        vp->hluvars.vtype = _brHLUVAR;
+        vp->hluvars.vtype = _vmHLUVAR;
         vp->hluvars.priv = NULL;
 
         vp->regvars.varcount = 0;
@@ -463,7 +469,7 @@ NgCreateVarMenus
         vp->regvars.in_use = 0;
         vp->regvars.vbuttons = NULL;
         vp->regvars.modified = True;
-        vp->regvars.vtype = _brREGULAR;
+        vp->regvars.vtype = _vmREGULAR;
         vp->regvars.priv = NULL;
         
         vp->filerefs.varcount = 0;
@@ -471,7 +477,7 @@ NgCreateVarMenus
         vp->filerefs.in_use = 0;
         vp->filerefs.vbuttons = NULL;
         vp->filerefs.modified = True;
-        vp->filerefs.vtype = _brFILEREF;
+        vp->filerefs.vtype = _vmFILEREF;
         vp->filerefs.priv = NULL;
 
         vp->filevars.varcount = 0;
@@ -479,7 +485,7 @@ NgCreateVarMenus
         vp->filevars.in_use = 0;
         vp->filevars.vbuttons = NULL;
         vp->filevars.modified = True;
-        vp->filevars.vtype = _brFILEVAR;
+        vp->filevars.vtype = _vmFILEVAR;
         vp->filevars.priv = NULL;
 
         fvar = NhlMalloc(sizeof(NgFileVarRec));
@@ -502,115 +508,173 @@ NgCreateVarMenus
                  XtNoverrideRedirect,	True,
                  NULL);
 
-        vp->hluvars.menu = XtVaCreateWidget
-                ("Hlu Vars",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-		 XmNuserData,	&vp->hluvars,
-                 NULL);
-	XtAddCallback(vp->hluvars.menu,
-		      XmNmapCallback,VarMenuCB,vmenus);
-
-	vmenus->hluvars_mbutton = vp->hluvars.mbutton =
-                XtVaCreateManagedWidget
-                ("Hlu Vars",xmCascadeButtonGadgetClass,
-                 parent,
-                 XmNsubMenuId,	vp->hluvars.menu,
-                 NULL);
-
-        vp->regvars.menu = XtVaCreateWidget
-                ("Reg Vars",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-		 XmNuserData,	&vp->regvars,
-                 NULL);
-	XtAddCallback(vp->regvars.menu,
-		      XmNmapCallback,VarMenuCB,vmenus);
-
-	vmenus->regvars_mbutton = vp->regvars.mbutton =
-                XtVaCreateManagedWidget
-                ("Regular Vars",xmCascadeButtonGadgetClass,
-                 parent,
-                 XmNsubMenuId,	vp->regvars.menu,
-                 NULL);
-
-        vp->filerefs.menu = XtVaCreateWidget
-                ("Files",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-		 XmNuserData,	&vp->filerefs,
-                 NULL);
-	XtAddCallback(vp->filerefs.menu,
-		      XmNmapCallback,VarMenuCB,vmenus);
-
-	vmenus->filerefs_mbutton = vp->filerefs.mbutton =
-                XtVaCreateManagedWidget
-                ("Files",xmCascadeButtonGadgetClass,
-                 parent,
-                 XmNsubMenuId,	vp->filerefs.menu,
-                 NULL);
-        
-        vp->filevars.menu = XtVaCreateWidget
-                ("File Vars",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-		 XmNuserData,	&vp->filevars,
-                 NULL);
-	XtAddCallback(vp->filevars.menu,
-		      XmNmapCallback,VarMenuCB,vmenus);
-
-	vmenus->filevars_mbutton = vp->filevars.mbutton =
-                XtVaCreateManagedWidget
-                ("File Vars",xmCascadeButtonGadgetClass,
-                 parent,
-                 XmNsubMenuId,	vp->filevars.menu,
-                 NULL);
-        
-	XtManageChild(vp->hluvars.menu);
-	XtManageChild(vp->regvars.menu);
-	XtManageChild(vp->filerefs.menu);
-	XtManageChild(vp->filevars.menu);
-
-        qvars = NclGetVarSymNames(&count);
-        vp->regvars.varcount = count;
-	XtSetSensitive(vp->regvars.mbutton,count > 0);
-        NclFree(qvars);
-
-        qvars = NclGetHLUVarSymNames(&count);
-        vp->hluvars.varcount = count;
-	XtSetSensitive(vp->hluvars.mbutton,count > 0);
-        NclFree(qvars);
-        
-        qvars = NclGetFileSymNames(&count);
-        vp->filerefs.varcount = count;
-        vp->filevars.varcount = count;
-	XtSetSensitive(vp->filerefs.mbutton,count > 0);
-	XtSetSensitive(vp->filevars.mbutton,count > 0);
-        NclFree(qvars);
 
 	NhlINITVAR(sel);
 	NhlINITVAR(user_data);
+        if (vp->hluvar_cb) {
+                vp->hluvars.menu = XtVaCreateWidget
+                        ("Hlu Vars",xmRowColumnWidgetClass,menush,
+                         XmNrowColumnType,	XmMENU_PULLDOWN,
+                         XmNuserData,	&vp->hluvars,
+                         NULL);
+                XtAddCallback(vp->hluvars.menu,
+                              XmNmapCallback,VarMenuCB,vmenus);
 
-	user_data.ptrval = &vp->hluvars;
-	sel.lngval = NgNclCBCREATE_HLUVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,user_data);
-	sel.lngval = NgNclCBDELETE_HLUVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,DeleteCB,user_data);
+                vmenus->hluvars_mbutton = vp->hluvars.mbutton =
+                        XtVaCreateManagedWidget
+                        ("Hlu Vars",xmCascadeButtonGadgetClass,
+                         parent,
+                         XmNsubMenuId,	vp->hluvars.menu,
+                         NULL);
+
+                qvars = NclGetHLUVarSymNames(&count);
+                vp->hluvars.varcount = count;
+                XtSetSensitive(vp->hluvars.mbutton,count > 0);
+                NclFree(qvars);
+
+                user_data.ptrval = &vp->hluvars;
+                sel.lngval = NgNclCBCREATE_HLUVAR;
+                vp->hluvars.create_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,CreateCB,user_data);
+                sel.lngval = NgNclCBDELETE_HLUVAR;
+                vp->hluvars.delete_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,DeleteCB,user_data);
+        }
+
+        if (vp->regvar_cb) {
+                vp->regvars.menu = XtVaCreateWidget
+                        ("Reg Vars",xmRowColumnWidgetClass,menush,
+                         XmNrowColumnType,	XmMENU_PULLDOWN,
+                         XmNuserData,	&vp->regvars,
+                         NULL);
+                XtAddCallback(vp->regvars.menu,
+                              XmNmapCallback,VarMenuCB,vmenus);
+                
+                vmenus->regvars_mbutton = vp->regvars.mbutton =
+                        XtVaCreateManagedWidget
+                        ("Regular Vars",xmCascadeButtonGadgetClass,
+                         parent,
+                         XmNsubMenuId,	vp->regvars.menu,
+                         NULL);
+                qvars = NclGetVarSymNames(&count);
+                vp->regvars.varcount = count;
+                XtSetSensitive(vp->regvars.mbutton,count > 0);
+                NclFree(qvars);
         
-	user_data.ptrval = &vp->regvars;
-	sel.lngval = NgNclCBCREATE_VAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,user_data);
-	sel.lngval = NgNclCBDELETE_VAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,DeleteCB,user_data);
+                user_data.ptrval = &vp->regvars;
+                sel.lngval = NgNclCBCREATE_VAR;
+                vp->regvars.create_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,CreateCB,user_data);
+                sel.lngval = NgNclCBDELETE_VAR;
+                vp->regvars.delete_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,DeleteCB,user_data);
+        }
+
+        qvars = NULL;
+        if (vp->fileref_cb) {
+                vp->filerefs.menu = XtVaCreateWidget
+                        ("Files",xmRowColumnWidgetClass,menush,
+                         XmNrowColumnType,	XmMENU_PULLDOWN,
+                         XmNuserData,	&vp->filerefs,
+                         NULL);
+                XtAddCallback(vp->filerefs.menu,
+                              XmNmapCallback,VarMenuCB,vmenus);
+
+                vmenus->filerefs_mbutton = vp->filerefs.mbutton =
+                        XtVaCreateManagedWidget
+                        ("Files",xmCascadeButtonGadgetClass,
+                         parent,
+                         XmNsubMenuId,	vp->filerefs.menu,
+                         NULL);
+
+                qvars = NclGetFileSymNames(&count);
+                vp->filerefs.varcount = count;
+                XtSetSensitive(vp->filerefs.mbutton,count > 0);
         
-	user_data.ptrval = &vp->filerefs;
-	sel.lngval = NgNclCBCREATE_FILEVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,user_data);
-	sel.lngval = NgNclCBDELETE_FILEVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,DeleteCB,user_data);
+                user_data.ptrval = &vp->filerefs;
+                sel.lngval = NgNclCBCREATE_FILEVAR;
+                vp->filerefs.create_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,CreateCB,user_data);
+                sel.lngval = NgNclCBDELETE_FILEVAR;
+                vp->filerefs.delete_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,DeleteCB,user_data);
+        }
         
-	user_data.ptrval = &vp->filevars;
-	sel.lngval = NgNclCBCREATE_FILEVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,user_data);
-	sel.lngval = NgNclCBDELETE_FILEVAR;
-	_NhlAddObjCallback(ncl,NgCBnsObject,sel,DeleteCB,user_data);
+        if (vp->filevar_cb) {
+                vp->filevars.menu = XtVaCreateWidget
+                        ("File Vars",xmRowColumnWidgetClass,menush,
+                         XmNrowColumnType,	XmMENU_PULLDOWN,
+                         XmNuserData,	&vp->filevars,
+                         NULL);
+                XtAddCallback(vp->filevars.menu,
+                              XmNmapCallback,VarMenuCB,vmenus);
+
+                vmenus->filevars_mbutton = vp->filevars.mbutton =
+                        XtVaCreateManagedWidget
+                        ("File Vars",xmCascadeButtonGadgetClass,
+                         parent,
+                         XmNsubMenuId,	vp->filevars.menu,
+                         NULL);
+        
+                if (!qvars)
+                        qvars = NclGetFileSymNames(&count);
+                vp->filevars.varcount = count;
+                XtSetSensitive(vp->filevars.mbutton,count > 0);
+                user_data.ptrval = &vp->filevars;
+                sel.lngval = NgNclCBCREATE_FILEVAR;
+                vp->filevars.create_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,CreateCB,user_data);
+                sel.lngval = NgNclCBDELETE_FILEVAR;
+                vp->filevars.delete_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,DeleteCB,user_data);
+        }
+        if (qvars)
+                NclFree(qvars);
 
         return vmenus;
         
+}
+
+void NgDestroyVarMenus
+(
+        NgVarMenus vmenus
+        )
+{
+	VarMenusRec	*vp = (VarMenusRec *)vmenus->vmenu_data;
+        NgVarRec	*vrec;
+        NgFileVarRec	*fvar;
+        int i;
+        
+        for (i = 0; i < 4; i++) {
+                fvar = NULL;
+                switch (i) {
+                    case 0:
+                            vrec = &vp->hluvars;
+                            break;
+                    case 1:
+                            vrec = &vp->regvars;
+                            break;
+                    case 2:
+                            vrec = &vp->filerefs;
+                            break;
+                    case 3:
+                            vrec = &vp->filevars;
+                            fvar = (NgFileVarRec *)vrec->priv;
+                            break;
+                }
+                _NhlCBDelete(vrec->create_cb);
+                _NhlCBDelete(vrec->delete_cb);
+                if (fvar) {
+                        NgFileVarRec *ftmp;
+                        while (fvar) {
+                                ftmp = fvar;
+                                fvar = fvar->next;
+                                NhlFree(ftmp);
+                        }
+                }
+        }
+        NhlFree(vp);
+        NhlFree(vmenus);
+                            
+        return;
 }

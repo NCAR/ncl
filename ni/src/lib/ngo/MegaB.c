@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.3 1997-09-17 16:41:03 boote Exp $ */
+/* $Id: MegaB.c,v 1.4 1997-10-03 20:07:45 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -1664,13 +1664,13 @@ static void rectSpaceProc
 static void findGoodShowPos(XmMegaButtonWidget _mbw)
 {
 	int topDiff, bottomDiff;
-
+#if 0
 	if (MODE(_mbw) != XmMODE_TOGGLE_BUTTON)
 	{
 		FPOS(_mbw) = 0;
 		return;
 	}
-
+#endif
 	VIS_POS(_mbw) = 0;
 	if (!HAS_ARROWS(_mbw) || (SET_POS(_mbw) == -1))
 		FPOS(_mbw) = 0;

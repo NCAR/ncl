@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenusP.h,v 1.2 1997-08-20 20:49:08 dbrown Exp $
+ *      $Id: varmenusP.h,v 1.3 1997-10-03 20:08:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,17 +23,16 @@
 #define	_NG_VARMENUSP_H_
 
 #include <ncarg/ngo/goP.h>
-
 #include <ncarg/ngo/varmenus.h>
 
 #define DEBUG_ENTRY 1
 #define DEBUG_MENUS 1 << 1
 #define DEBUG_VAR_MENUS 0
 
-typedef enum _NgbrVarType
+typedef enum _NgvmVarType
 {
-	_brREGULAR, _brFILEREF, _brFILEVAR, _brHLUVAR
-} NgbrVarType;
+	_vmREGULAR, _vmFILEREF, _vmFILEVAR, _vmHLUVAR
+} NgvmVarType;
 
 typedef struct _NgFileVarRec 
 {
@@ -49,7 +48,7 @@ typedef struct _NgFileVarRec
 
 typedef struct _NgVarRec 
 {
-	NgbrVarType	vtype;
+	NgvmVarType	vtype;
         Widget		menu;
         Widget		mbutton;
         int		varcount;
@@ -59,6 +58,8 @@ typedef struct _NgVarRec
         int		in_use;
 	NhlBoolean	modified;
         NhlPointer	priv;
+        _NhlCB		create_cb;
+        _NhlCB		delete_cb;
 } NgVarRec;
 
 typedef struct _VarMenusRec

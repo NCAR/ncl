@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.h,v 1.1 1997-08-21 16:33:04 dbrown Exp $
+ *      $Id: restree.h,v 1.2 1997-10-03 20:08:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,10 +49,17 @@ typedef struct _NgResTree
         NhlPointer	geo_data;
 } NgResTree;
 
-extern NhlErrorTypes NgResTreeAddResList
+extern void NgResTreeAddResList
 (
-        NgResTree	*res_tree,
+        int		nclstate,
+        NhlPointer	res_tree,
         int		block_id
+        );
+
+void NgResTreePreviewResList
+(
+        int		setrl_id,
+        NhlPointer	res_tree
         );
 
 extern NhlErrorTypes NgResTreeResUpdateComplete

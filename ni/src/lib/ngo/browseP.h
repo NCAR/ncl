@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.3 1997-06-23 21:06:21 dbrown Exp $
+ *      $Id: browseP.h,v 1.4 1997-10-03 20:07:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/vcrcontrol.h>
 #include <ncarg/ngo/varmenus.h>
-#include <XmL/XmL.h>
+#include <ncarg/ngo/XmL.h>
 
 #define DEBUG_ENTRY 1
 #define DEBUG_FOLDER 1 << 1

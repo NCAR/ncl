@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstateP.h,v 1.4 1997-08-20 20:49:06 dbrown Exp $
+ *      $Id: nclstateP.h,v 1.5 1997-10-03 20:08:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,12 +33,11 @@ typedef struct _NgNclStateRec *NgNclState;
 
 typedef struct _NgNclStatePart {
 /* required fields */
-        int		foo;
+	int		classcount;
+        NhlClass	*classlist;
 
 /* internal data */
 	int		appmgr;
-	int		classcount;
-        NhlClass	*classlist;
 
 /* submission state */
 	NhlBoolean	istate;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.h,v 1.2 1997-06-27 07:20:16 dbrown Exp $
+ *      $Id: datasinkgrid.h,v 1.3 1997-10-03 20:07:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #define	_NG_DATASINKGRID_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/ngo/createmenus.h>
+#include <ncarg/ngo/plotspecmenu.h>
 #include <ncarg/ngo/varpage.h>
 
 #ifndef _NCL_H_

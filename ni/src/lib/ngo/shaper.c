@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.6 1997-07-23 22:23:40 dbrown Exp $
+ *      $Id: shaper.c,v 1.7 1997-10-03 20:08:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@
 #include <Xm/ToggleB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/MessageB.h>
-#include  <XmL/Grid.h>
+#include  <ncarg/ngo/Grid.h>
 
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
@@ -187,9 +187,14 @@ UpdateShaperCoord
         
 	if (shaper->new_coord) {
                 XmString xmstr;
-                sprintf(buf,"%s Values",
-                        NrmQuarkToString
-                        (si->vinfo->dim_info[dim_ix].dim_quark));
+                char *name;
+
+                if (si->vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
+                        name = "<unnamed>";
+                else
+                        name = NrmQuarkToString
+                                (si->vinfo->dim_info[dim_ix].dim_quark);
+                sprintf(buf,"%s Values",name);
                 xmstr = NgXAppCreateXmString(si->go->go.appmgr,buf);
                 XtVaSetValues(si->datagrid_toggle,
                               XmNlabelString,xmstr,

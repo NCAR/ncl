@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.7 1997-08-25 20:24:29 boote Exp $
+ *      $Id: nclstate.h,v 1.8 1997-10-03 20:08:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,11 @@ extern NhlClass NgnclStateClass;
 /*
  * Resources
  */
+
+#define NgNnsHluClasses		"nsHluClasses"
+#define NgCnsHluClasses		"NsHluClasses"
+#define NgNnsHluClassCount	"nsHluClassCount"
+#define NgCnsHluClassCount	"NsHluClassCount"
 
 /*
  * Callbacks
@@ -250,6 +255,7 @@ extern int
 NgNclGetHluObjId(
 	int		nclstate,
 	NhlString	hlu_varname,
+        int		*count,
         int		**id_array
         );
 

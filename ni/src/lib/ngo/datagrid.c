@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.4 1997-06-20 21:48:24 dbrown Exp $
+ *      $Id: datagrid.c,v 1.5 1997-10-03 20:07:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
-#include  <XmL/Grid.h>
+#include  <ncarg/ngo/Grid.h>
 
 static char *Buffer = NULL;
 static int  Buflen;

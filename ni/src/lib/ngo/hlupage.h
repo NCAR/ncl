@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.3 1997-08-20 20:49:04 dbrown Exp $
+ *      $Id: hlupage.h,v 1.4 1997-10-03 20:08:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #define	_NG_HLUPAGE_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/ngo/createmenus.h>
+#include <ncarg/ngo/plotspecmenu.h>
 #include <ncarg/ngo/restree.h>
 
 #ifndef _NCL_H_

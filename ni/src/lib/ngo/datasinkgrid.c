@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.4 1997-07-23 22:23:36 dbrown Exp $
+ *      $Id: datasinkgrid.c,v 1.5 1997-10-03 20:07:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
-#include  <XmL/Grid.h>
+#include  <ncarg/ngo/Grid.h>
 #include <float.h>
 
 static char *Buffer;
@@ -112,10 +112,18 @@ DataText
                         sprintf(&Buffer[cwidth0],"%s",
                                 NrmQuarkToString(ditem->qvar));
                 for (i=0; i< ditem->ndims; i++) {
-                        sprintf(&Buffer[strlen(Buffer)],"%d:%d:%d,",
-                                ditem->start[i],
-                                ditem->finish[i],ditem->stride[i]);
+                        if ((ditem->finish[i] - ditem->start[i])
+                            /ditem->stride[i] == 0) {
+                                sprintf(&Buffer[strlen(Buffer)],"%d,",
+                                        ditem->start[i]);
+                        }
+                        else {
+                                sprintf(&Buffer[strlen(Buffer)],"%d:%d:%d,",
+                                        ditem->start[i],
+                                        ditem->finish[i],ditem->stride[i]);
+                        }
                 }
+                    /* back up 1 to remove final comma */
                 Buffer[strlen(Buffer)-1] = ')';
                 dsp->cwidths[1] = MAX(dsp->cwidths[1],
                                       strlen(Buffer)-cwidth0-1);

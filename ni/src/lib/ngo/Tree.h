@@ -1,4 +1,7 @@
 /*
+ *      $Id: Tree.h,v 1.2 1997-10-03 20:07:49 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE COPIED AND USED 
@@ -41,8 +44,8 @@ Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 #ifndef XmLTreeH
 #define XmLTreeH
 
-#include <XmL/XmL.h>
-#include <XmL/Grid.h>
+#include <ncarg/ngo/XmL.h>
+#include <ncarg/ngo/Grid.h>
 
 #ifdef XmL_CPP
 extern "C" {
@@ -59,7 +62,7 @@ typedef struct _XmLTreeRowRec *XmLTreeRow;
 
 Widget XmLCreateTree(Widget parent, char *name, ArgList arglist,
 	Cardinal argcount);
-void XmLTreeAddRow(Widget w, int level, Boolean expands, Boolean isExpaned,
+void XmLTreeAddRow(Widget w, int level, Boolean expands, Boolean isExpanded,
 	int position, Pixmap pixmap, Pixmap pixmask, XmString string);
 void XmLTreeAddRows(Widget w, XmLTreeRowDefinition *rows,
 	int count, int position);

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.h,v 1.3 1997-07-23 22:23:35 dbrown Exp $
+ *      $Id: plotspecmenu.h,v 1.1 1997-10-03 20:08:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		createmenus.h
+ *	File:		plotspecmenu.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef	_NG_CREATEMENUS_H
-#define	_NG_CREATEMENUS_H
+#ifndef	_NG_PLOTSPECMENU_H
+#define	_NG_PLOTSPECMENU_H
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
@@ -80,7 +80,7 @@ typedef struct _NgDataSinkRec
         int		coord_ix[3];
 } NgDataSinkRec;
         
-typedef struct _NgCreateMenus
+typedef struct _NgPlotSpecMenu
 {
         Widget		menubar;
         Widget		plot_mbutton;
@@ -93,25 +93,25 @@ typedef struct _NgCreateMenus
 	long			*stride;
         PageOutputNotify	output_notify;
         NhlPointer		pdata;
-} NgCreateMenus;
+} NgPlotSpecMenu;
 
-NgCreateMenus *
-NgCreateCreateMenus(
+NgPlotSpecMenu *
+NgCreatePlotSpecMenu(
         NgGO		go,
         Widget		parent
         );
 
 NhlErrorTypes
-NgUpdateCreateMenus
+NgUpdatePlotSpecMenu
 (
-        NgCreateMenus		*create_menus
+        NgPlotSpecMenu		*plot_spec_menu
         );
         
 void
-NgDestroyCreateMenus
+NgDestroyPlotSpecMenu
 (
-        NgCreateMenus		*create_menus
+        NgPlotSpecMenu		*plot_spec_menu
         );
         
 
-#endif	/* _NG_CREATEMENUS_H */
+#endif	/* _NG_PLOTSPECMENU_H */

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.5 1997-09-08 19:29:23 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.6 1997-10-03 20:08:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,12 @@ typedef struct _hluData
         Widget		*labels;
         Widget		*textfields;
 } hluData;
-        
+
+typedef enum __hluState
+{
+        _hluNOTCREATED, _hluPREVIEW, _hluCREATED
+} _hluState;
+
 typedef struct _brHluPageRec 
 {
         NgHluPage	public;
@@ -47,9 +52,10 @@ typedef struct _brHluPageRec
         NhlBoolean	activated;
         NhlClass	class;
         NgDataSinkGrid	*data_sink_grid;
+        NhlBoolean	new_data;
         NgResTree	*res_tree;
         Widget		create_update;
-        NhlBoolean	created;
+        _hluState	state;
         int		hlu_id;
         Widget		auto_update;
         NhlBoolean	do_auto_update;

@@ -1,4 +1,7 @@
 /*
+ *      $Id: XmL.c,v 1.2 1997-10-03 20:07:50 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS PROGRAM BELONGS TO MICROLINE SOFTWARE.  IT IS CONSIDERED A TRADE
@@ -42,7 +45,7 @@ Restricted Rights at 48 CFR 52.227-19, as applicable, supplier is
 Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 */
 
-#include <XmL/XmL.h>
+#include <ncarg/ngo/XmL.h>
 #include <Xm/XmP.h>
 #include <Xm/LabelP.h>
 #include <Xm/DrawnBP.h>
@@ -93,9 +96,13 @@ struct _XmLArrayRec
 	void **_items;
 	};
 
+#ifdef XmL_ANSIC
+XmLArray XmLArrayNew(char autonumber, char growFast)
+#else
 XmLArray XmLArrayNew(autonumber, growFast)
 char autonumber;
 char growFast;
+#endif
 	{
 	XmLArray array;
 
@@ -772,12 +779,18 @@ XtPointer clientData, callData;
 #define XmLDrawNOCLIP  1
 #define XmLDrawCLIPPED 2
 
+#ifdef XmL_ANSIC
+static int XmLDrawCalc(Widget w, Dimension width, Dimension height,
+	unsigned char alignment, XRectangle *rect, XRectangle *clipRect,
+	int *x, int *y)
+#else
 static int XmLDrawCalc(w, width, height, alignment, rect, clipRect, x, y)
 Widget w;
 Dimension width, height;
 unsigned char alignment;
 XRectangle *rect, *clipRect;
 int *x, *y;
+#endif
 	{
 	if (rect->width <= 4 || rect->height <= 4 ||
 		clipRect->width < 3 || clipRect->height < 3 ||
@@ -815,6 +828,12 @@ int *x, *y;
 	return XmLDrawCLIPPED;
 	}
 
+#ifdef XmL_ANSIC
+void XmLDrawToggle(Widget w, Boolean state, Dimension size,
+	unsigned char alignment, GC gc, Pixel backgroundColor,
+	Pixel topColor, Pixel bottomColor, Pixel checkColor,
+	XRectangle *rect, XRectangle *clipRect)
+#else
 void XmLDrawToggle(w, state, size, alignment, gc, backgroundColor,
 	topColor, bottomColor, checkColor, rect, clipRect)
 Widget w;
@@ -825,6 +844,7 @@ GC gc;
 Pixel backgroundColor, topColor, bottomColor, checkColor;
 XRectangle *rect;
 XRectangle *clipRect;
+#endif
 	{
 	Display *dpy;
 	Window win;
@@ -937,10 +957,15 @@ Widget widget;
 	return fontList;
 	}
 
+#ifdef XmL_ANSIC
+void XmLFontListGetDimensions(XmFontList fontList, short *width,
+	short *height, Boolean useAverageWidth)
+#else
 void XmLFontListGetDimensions(fontList, width, height, useAverageWidth)
 XmFontList fontList;
 short *width, *height;
 Boolean useAverageWidth;
+#endif
 	{
 	XmStringCharSet charset;
 	XmFontContext context;
@@ -1047,10 +1072,14 @@ void XmLInitialize()
 #endif
 	}
 
+#ifdef XmL_ANSIC
+int XmLMessageBox(Widget w, char *string, Boolean okOnly)
+#else
 int XmLMessageBox(w, string, okOnly)
 Widget w;
 char *string;
 Boolean okOnly;
+#endif
 	{
 	int status = 0;
 	Widget dialog, shell;
@@ -1137,6 +1166,11 @@ XtPointer clientData, callData;
 		}
 	}
 
+#ifdef XmL_ANSIC
+void XmLPixmapDraw(Widget w, Pixmap pixmap, Pixmap pixmask,
+	int pixmapWidth, int pixmapHeight, unsigned char alignment,
+	GC gc, XRectangle *rect, XRectangle *clipRect)
+#else
 void XmLPixmapDraw(w, pixmap, pixmask, pixmapWidth, pixmapHeight,
 alignment, gc, rect, clipRect)
 Widget w;
@@ -1145,6 +1179,7 @@ int pixmapWidth, pixmapHeight;
 unsigned char alignment;
 GC gc;
 XRectangle *rect, *clipRect;
+#endif
 	{
 	Display *dpy;
 	Window win;
@@ -1354,6 +1389,11 @@ start:
 		}
 	}
 
+#ifdef XmL_ANSIC
+void XmLStringDraw(Widget w, XmString string, XmStringDirection stringDir,
+	XmFontList fontList, unsigned char alignment, GC gc,
+	XRectangle *rect, XRectangle *clipRect)
+#else
 void XmLStringDraw(w, string, stringDir, fontList, alignment,
 gc, rect, clipRect)
 Widget w;
@@ -1364,6 +1404,7 @@ unsigned char alignment;
 GC gc;
 XRectangle *rect;
 XRectangle *clipRect;
+#endif
 	{
 	Display *dpy;
 	Window win;
@@ -1400,7 +1441,12 @@ XRectangle *clipRect;
 	if (drawType == XmLDrawCLIPPED)
 		XSetClipMask(dpy, gc, None);
 	}
-
+#ifdef XmL_ANSIC
+void XmLStringDrawDirection(Display *dpy, Window win, XmFontList fontlist,
+	XmString string, GC gc, int x, int y, Dimension width,
+	unsigned char alignment, unsigned char layout_direction,
+	unsigned char drawing_direction)
+#else
 void XmLStringDrawDirection(dpy, win, fontlist, string, gc, x, y,
 	width, alignment, layout_direction, drawing_direction)
 Display *dpy;
@@ -1413,6 +1459,7 @@ Dimension width;
 unsigned char alignment;
 unsigned char layout_direction;
 unsigned char drawing_direction;
+#endif
 {
 	Screen *screen;
 	XFontStruct *fontStruct;

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.9 1997-09-04 17:05:39 boote Exp $
+ *      $Id: app.c,v 1.10 1997-10-03 20:07:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1250,7 +1250,7 @@ NgAppGetSelectedWork
 {
 	char		func[] = "NgAppGetSelectedWork";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-        int		selected_id,*ids;
+        int		selected_id,count,*ids;
 
         *created = False;
         if (! NclSymbolDefined(Ng_SELECTED_WORK)) {
@@ -1267,11 +1267,13 @@ NgAppGetSelectedWork
                 (void)NgNclSubmitBlock(app->app.nclstate,line);
                 *created = True;
         }
-        selected_id = NgNclGetHluObjId(app->app.nclstate,Ng_SELECTED_WORK,&ids);
-        if (ids) {
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+        selected_id = NgNclGetHluObjId
+                (app->app.nclstate,Ng_SELECTED_WORK,&count,&ids);
+        if (count > 1) {
+                NHLPERROR((NhlINFO,NhlEUNKNOWN,
                            "%s:selected workstation variable is an array",
                            func));
+                NhlFree(ids);
         }
         return selected_id;
 }

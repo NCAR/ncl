@@ -1,4 +1,7 @@
 /*
+ *      $Id: Folder.c,v 1.2 1997-10-03 20:07:32 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS PROGRAM BELONGS TO MICROLINE SOFTWARE.  IT IS CONSIDERED A TRADE
@@ -3067,11 +3070,13 @@ int includeShadow;
 		}
 	}
 
-static void SetActiveTab(f, w, event, notify)
-XmLFolderWidget f;
-Widget w;
-XEvent *event;
-Boolean notify;
+static void SetActiveTab
+(
+	XmLFolderWidget f, 
+	Widget w, 
+	XEvent *event,
+	Boolean notify
+	)
 	{
 	XmLFolderCallbackStruct cbs;
 	XmLFolderConstraintRec *fc, *cfc;
@@ -3675,10 +3680,12 @@ XmString string;
 	return form;
 	}
 
-void XmLFolderSetActiveTab(w, position, notify)
-Widget w;
-int position;
-Boolean notify;
+void XmLFolderSetActiveTab
+(
+	Widget w,
+	int position,
+	Boolean notify
+	)
 	{
 	XmLFolderWidget f;
 

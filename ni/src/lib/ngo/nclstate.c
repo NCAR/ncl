@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.12 1997-09-16 22:22:51 boote Exp $
+ *      $Id: nclstate.c,v 1.13 1997-10-03 20:08:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,10 +32,16 @@
 
 #define	Oset(field)	NhlOffset(NgNclStateRec,nclstate.field)
 static NhlResource resources[] = {
-	{"no.res","no.res",NhlTInteger,sizeof(int),
-		Oset(foo),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_NOACCESS,NULL},
+	{NgNnsHluClassCount,NgCnsHluClassCount,NhlTInteger,sizeof(int),
+         Oset(classcount),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+         _NhlRES_GONLY,NULL},
+	{NgNnsHluClasses,NgCnsHluClasses,NhlTPointer,sizeof(NhlPointer),
+         Oset(classlist),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+         _NhlRES_GONLY,NULL},
 };
+
+static NrmQuark QHlu_Class_Count;
+static NrmQuark QHlu_Classes;
 
 static _NhlRawObjCB callbacks[] = {
 	{NgCBnsObject,Oset(object),3,NULL,NULL},
@@ -128,6 +134,8 @@ NclStateClassPartInitialize
 		return NhlFATAL;
 
 	NgnclStateClassRec.nclstate_class.num = 0;
+	QHlu_Class_Count = NrmStringToQuark(NgNnsHluClassCount);
+	QHlu_Classes = NrmStringToQuark(NgNnsHluClasses);
         
 	return NhlNOERROR;
 }
@@ -719,6 +727,15 @@ ErrOutput
 
 	return;
 }
+static int ClassSort
+(
+        const void *p1,
+        const void *p2
+)
+{
+        return (strcmp((*(NhlClass*)p1)->base_class.class_name,
+                       (*(NhlClass*)p2)->base_class.class_name));
+}
 
 /*
  * Function:	NclStateInitialize
@@ -817,15 +834,50 @@ NclStateInitialize
 
 
 	(void)UpdateFuncList((NhlPointer)nncl);
+        
         ns->classlist = NclGetHLUClassPtrs(&ns->classcount);
-
+        qsort(ns->classlist,ns->classcount,sizeof(NhlClass),ClassSort);
+        
         ns->block_id = 0;
         ns->bufsize = 0;
         ns->buffer = NULL;
         
 	return NhlNOERROR;
 }
+#if 0
+static NhlErrorTypes    NclStateGetValues(
+        NhlLayer	l,
+        _NhlArgList     args,
+        int             num_args
+)
 
+{
+	NgNclState	ncl = (NgNclState)l;
+	NgNclStatePart	*ns = &ncl->nclstate;
+        int i;
+        NhlBoolean got_class_ptrs = False;
+        
+        for (i = 0; i < num_args; i++) {
+                if (! got_class_ptrs &&
+                    (args[i].quark == QHlu_Class_Count ||
+                     args[i].quark == QHlu_Classes)) {
+                        ns->classlist = NclGetHLUClassPtrs(&ns->classcount);
+                        qsort(ns->classlist,
+                              ns->classcount,sizeof(NhlClass),ClassSort);
+                        got_class_ptrs = True;
+                }
+                if (args[i].quark == QHlu_Class_Count) {
+                        *((int*)(args[i].value.ptrval)) = ns->classcount;
+                }
+                else if (args[i].quark == QHlu_Classes) {
+                         *((NhlPointer*)(args[i].value.ptrval))
+                                 = ns->classlist;
+                }
+        }
+        return NhlNOERROR;
+}
+                
+#endif
 static void
 DestroyObjList
 (
@@ -1125,7 +1177,6 @@ NgNclSubmitLine
 {
 	char		func[] = "NgNclSubmitLine";
 	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
-	NhlBoolean	ret;
 
 	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclStateClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate id",func));
@@ -1135,11 +1186,9 @@ NgNclSubmitLine
 	if(reset)
 		ResetNcl(ncl);
 
-	ret = SubmitNclLine(ncl,command);
-
 	SubmitPostSubmit(ncl);
 
-	return ret;
+	return SubmitNclLine(ncl,command);
 }
 
 /*
@@ -1393,7 +1442,10 @@ NgNclGetHLURef(
 	}
 
 	nvi = NclGetVarInfo(nhs.var_quark);
+#if 0        
 	if(!nvi || (nvi->u.var->type != HLUOBJ)){
+#endif        
+	if(!nvi || (nvi->u.var->data_type != NCLAPI_obj)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Var Info mis-match",func));
 		NclFreeDataList(nvi);
 		return NULL;
@@ -1444,7 +1496,7 @@ NgNclGetHLURef(
  *        (1) If variable not defined or it's not a graphic var, a
  *        warning is issued and an error is returned.
  *        (2) If var is defined but does not represent an instantiated 
- *        hlu object, NhlNULLOBJID is returned but no warning is issued.
+ *        hlu object, NhlNULLOBJID is returned and but count is 1
  *        (3) If var is an array, the first member is returned as a 
  *        scalar; all members (including first) are returned in an allocated 
  *        array. The caller is responsible for freeing this array. Each 
@@ -1465,6 +1517,7 @@ int
 NgNclGetHluObjId(
 	int		nclstate,
 	NhlString	hlu_varname,
+        int		*count,
         int		**id_array
         )
 {
@@ -1472,6 +1525,7 @@ NgNclGetHluObjId(
         NclExtValueRec	*val;
         int		i, scalar_id;
 
+        *count = 0;
         *id_array = NULL;
         
         val = NclGetHLUObjId(hlu_varname);
@@ -1485,6 +1539,8 @@ NgNclGetHluObjId(
         scalar_id = ((int *)val->value)[0];
 	if (val->has_missing && scalar_id == val->missing.objval)
 		scalar_id = NhlNULLOBJID;
+        
+        *count = val->totalelements;
         if (val->totalelements == 1) {
                 if (val->constant != 0)
                         NclFree(val->value);

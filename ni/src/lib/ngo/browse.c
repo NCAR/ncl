@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.12 1997-09-17 16:41:06 boote Exp $
+ *      $Id: browse.c,v 1.13 1997-10-03 20:07:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@
 #include <Xm/CascadeBG.h>
 #include <Xm/MenuShell.h>
 #include <Xm/DrawnB.h>
-#include <XmL/Folder.h>
+#include <ncarg/ngo/Folder.h>
 
 static void TabFocusAction(
 #if	NhlNeedProto
@@ -1751,8 +1751,8 @@ CreateVarMenus
                  XmNleftOffset,		15,
                  XmNrightAttachment,	XmATTACH_NONE,
                  NULL);
-        return NgCreateVarMenus(browse->go.appmgr,
-                                np->nsid,menubar,
+        return NgCreateVarMenus(go->base.id,
+                                menubar,
 				BrowseHluCB,
                                 BrowseVarCB,
                                 BrowseFileCB,
@@ -2083,7 +2083,7 @@ BrowseCreateWin
                 ("form",xmFormWidgetClass,
                  go->go.manager,
                  XmNtopAttachment,	XmATTACH_WIDGET,
-                 XmNtopWidget,		np->vmenus,
+                 XmNtopWidget,		form,
                  XmNbottomAttachment,	XmATTACH_NONE,
                  NULL);
         SetupPaneControl(go,form);

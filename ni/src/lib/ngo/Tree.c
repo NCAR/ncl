@@ -1,4 +1,7 @@
 /*
+ *      $Id: Tree.c,v 1.2 1997-10-03 20:07:48 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS PROGRAM BELONGS TO MICROLINE SOFTWARE.  IT IS CONSIDERED A TRADE
@@ -1260,6 +1263,10 @@ Cardinal argcount;
 		arglist, argcount);
 	}
 
+#ifdef XmL_ANSIC
+void XmLTreeAddRow(Widget w, int level, Boolean expands, Boolean isExpanded,
+	int position, Pixmap pixmap, Pixmap pixmask, XmString string)
+#else
 void XmLTreeAddRow(w, level, expands, isExpanded, position,
 	pixmap, pixmask, string)
 Widget w;
@@ -1269,6 +1276,7 @@ Boolean isExpanded;
 int position;
 Pixmap pixmap, pixmask;
 XmString string;
+#endif
 	{
 	XmLTreeRowDefinition row;
 

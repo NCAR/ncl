@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.4 1997-06-20 21:48:26 dbrown Exp $
+ *      $Id: filetree.c,v 1.5 1997-10-03 20:08:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
-#include  <XmL/Tree.h>
+#include  <ncarg/ngo/Tree.h>
 #include <float.h>
 
 static NrmQuark Qlong_name;

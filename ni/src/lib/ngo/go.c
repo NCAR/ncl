@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.10 1997-09-17 16:41:07 boote Exp $
+ *      $Id: go.c,v 1.11 1997-10-03 20:08:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/ncledit.h>
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/xwk.h>
+#include <ncarg/ngo/graphic.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -557,7 +558,7 @@ browseWindow
 		NgAppEnumerateGO(appmgr,GetBrowser,&browse);
 	if(browse == NhlDEFAULT_APP)
 		NhlVACreate(&browse,"browse",NgbrowseClass,
-						app->base.appobj->base.id,NULL);
+                            app->base.appobj->base.id,NULL);
 	NgGOPopup(browse);
 
 	return;
@@ -615,7 +616,10 @@ GOInitialize
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr",func));
 		return NhlFATAL;
 	}
-
+        NhlVAGetValues(go->appmgr,
+                       NgNappNclState,&go->nclstate,
+                       NULL);
+        
 	if(go->title){
 		go->title = NhlMalloc(sizeof(char)*(strlen(go->title)+1));
 		if(!go->title){
@@ -1260,6 +1264,9 @@ RemoveGOWin
 	int		i,w_goid;
 	int		which=0;	/* 0 none, 1 ncledit, 2 browse */
 
+        NgDestroyVarMenus(go->go.delete_menu);
+        NgDestroyCreateMenu(go->go.create_menu);
+        
 	XtVaGetValues(go->go.wmenu,
 		XmNchildren,	&children,
 		XmNnumChildren,	&nchildren,
@@ -1375,6 +1382,46 @@ DelGoChangeCB
 	_NhlCBDelete((_NhlCB)udata);
 }
 
+static void
+DeleteVarCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+        NgGO		go = (NgGO) udata;
+	NrmQuark	qvar;
+        char		buf[512];
+        
+        
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+        printf("deleting %s\n", NrmQuarkToString(qvar));
+        sprintf(buf,"delete(%s)\n",NrmQuarkToString(qvar));
+        (void)NgNclSubmitBlock(go->go.nclstate,buf);
+        return;
+        
+}
+static void
+DeleteHLUCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+        NgGO		go = (NgGO) udata;
+	NrmQuark	qvar;
+        
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+        printf("deleting %s\n", NrmQuarkToString(qvar));
+        NgDestroyGraphic(go->base.id,NrmQuarkToString(qvar));
+}
+
 void
 _NgGOCreateMenubar
 (
@@ -1384,7 +1431,7 @@ _NgGOCreateMenubar
 	char		func[]="_NgGOCreateMenubar";
 	NgGOPart	*gp = &go->go;
 	Widget		file,edit,view,options,window,help;
-	Widget		addfile,load,close,quit;
+	Widget		addfile,load,close,quit,delete,create,pulldown,menush;
 	Widget		ncledit,browse;
 	static char	*new[]= {"new",NULL};
 	_NhlCB		cb;
@@ -1478,9 +1525,10 @@ _NgGOCreateMenubar
 	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
 		NULL);
 
-	browse = XtVaCreateManagedWidget("browseWindow",xmPushButtonGadgetClass,
-							gp->fmenu,
-		NULL);
+	browse = XtVaCreateManagedWidget("browseWindow",
+                                         xmPushButtonGadgetClass,
+                                         gp->fmenu,
+                                         NULL);
 	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,new);
 
 	ncledit = XtVaCreateManagedWidget("nclWindow",xmPushButtonGadgetClass,
@@ -1488,6 +1536,55 @@ _NgGOCreateMenubar
 		NULL);
 	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,new);
 
+	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
+		NULL);
+
+	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
+								gp->fmenu,
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		NULL);
+	pulldown = XtVaCreateWidget("pulldown",
+                                    xmRowColumnWidgetClass,menush,
+                                    XmNrowColumnType,	XmMENU_PULLDOWN,
+                                    NULL);
+        
+        gp->create_menu = NgCreateCreateMenu(go->base.id,
+                                             pulldown);
+                                                   
+	create = XtVaCreateManagedWidget
+                ("Create",xmCascadeButtonGadgetClass,
+                 gp->fmenu,
+                 XmNsubMenuId,pulldown,
+                 NULL);
+        
+	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
+								gp->fmenu,
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		NULL);
+	pulldown = XtVaCreateWidget("pulldown",
+                                    xmRowColumnWidgetClass,menush,
+                                    XmNrowColumnType,	XmMENU_PULLDOWN,
+                                    NULL);
+        
+        gp->delete_menu = NgCreateVarMenus(go->base.id,
+                                           pulldown,
+                                           DeleteVarCB,
+                                           DeleteVarCB,
+                                           DeleteVarCB,
+                                           NULL,go);
+                                                   
+	delete = XtVaCreateManagedWidget
+                ("Delete",xmCascadeButtonGadgetClass,
+                 gp->fmenu,
+                 XmNsubMenuId,pulldown,
+                 NULL);
+        
 	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
 		NULL);
 

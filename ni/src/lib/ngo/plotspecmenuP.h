@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenusP.h,v 1.2 1997-06-23 21:06:23 dbrown Exp $
+ *      $Id: plotspecmenuP.h,v 1.1 1997-10-03 20:08:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		createmenusP.h
+ *	File:		plotspecmenuP.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,19 +19,19 @@
  *
  *	Description:	
  */
-#ifndef	_NG_CREATEMENUSP_H_
-#define	_NG_CREATEMENUSP_H_
+#ifndef	_NG_PLOTSPECMENUP_H_
+#define	_NG_PLOTSPECMENUP_H_
 
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/varpage.h>
 #include <ncarg/ngo/hlupage.h>
-#include <ncarg/ngo/createmenus.h>
+#include <ncarg/ngo/plotspecmenu.h>
 
 #define DEBUG_ENTRY 1
 #define DEBUG_MENUS 1 << 1
-#define DEBUG_CREATEMENUS 0
+#define DEBUG_PLOTSPECMENU 0
 
 typedef struct _NgMenuRec 
 {
@@ -43,9 +43,9 @@ typedef struct _NgMenuRec
 	NhlBoolean	modified;
 } NgMenuRec;
 
-typedef struct _CreateMenusRec
+typedef struct _PlotSpecMenuRec
 {
-	NgCreateMenus   public;
+	NgPlotSpecMenu   public;
         NgGO		go;
         int		nsid;
         Widget		create_dialog;
@@ -53,7 +53,7 @@ typedef struct _CreateMenusRec
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;
-} CreateMenusRec;
+} PlotSpecMenuRec;
 
-#endif	/* _NG_CREATEMENUSP_H_ */
+#endif	/* _NG_PLOTSPECMENUP_H_ */
 

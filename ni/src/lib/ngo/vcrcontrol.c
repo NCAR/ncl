@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.3 1997-06-20 21:48:31 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.4 1997-10-03 20:08:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <Xm/Protocols.h>
 #include <Xm/Form.h>
 #include  <Xm/DrawnB.h>
-#include  <XmL/XmL.h>
+#include  <ncarg/ngo/XmL.h>
 #include <float.h>
 
 NhlErrorTypes NgUpdateVcrControl

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.8 1997-09-08 19:29:22 dbrown Exp $
+ *      $Id: hlupage.c,v 1.9 1997-10-03 20:08:04 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -22,12 +22,17 @@
 
 #include <ncarg/ngo/hlupageP.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/graphic.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>
+#include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/View.h>
+
+static NrmQuark QFillValue = NrmNULLQUARK;
 
 static NhlErrorTypes
 ManageScalarField
@@ -60,6 +65,8 @@ ManageScalarField
                         (rec->nclstate,_NgCREATE,sfname,"defaultapp",
                          "scalarFieldClass");
 	}
+        else if (!rec->new_data)
+                return NhlNOERROR;
 	else {
                 block_id = NgNclVisBlockBegin
                         (rec->nclstate,_NgSETVAL,sfname,NULL,NULL);
@@ -84,18 +91,23 @@ ManageScalarField
                 return NhlFATAL;
         }
         for (i = 0; i < ditem->ndims; i++) {
-                if (dimcount > 2) {
-                        sprintf(&sfbuf[strlen(sfbuf)],"%d:%d:%d,",
-                                ditem->start[i],ditem->start[i],1);
-                        if (abs((ditem->finish[i] - ditem->start[i])
-                                /ditem->stride[i])>0)
-                                dimcount--;
+                if ((ditem->finish[i] - ditem->start[i])
+                    /ditem->stride[i] == 0) {
+                        sprintf(&sfbuf[strlen(sfbuf)],"%d,",
+                                ditem->start[i]);
+                        continue;
+                }
+                else if (dimcount > 2) {
+                        sprintf(&sfbuf[strlen(sfbuf)],"%d,",
+                                ditem->start[i]);
+                        dimcount--;
                         continue;
                 }
                 sprintf(&sfbuf[strlen(sfbuf)],"%d:%d:%d,",
                         ditem->start[i],ditem->finish[i],ditem->stride[i]);
         }
-        sfbuf[strlen(sfbuf)-1] = ')';
+	/* backing up 1 to get rid of last comma */
+        sprintf(&sfbuf[strlen(sfbuf)-1],")");
         values[0] = sfbuf;
 
 	if (fillvalue) {
@@ -321,7 +333,7 @@ static Boolean ManagePlotObj
 		values[i] = dataitemlist[i];
 	}
 
-        if (!rec->created) {
+        if (rec->state != _hluCREATED) {
                 block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
                                               NrmQuarkToString(page->qvar),
                                               (NhlString)NhlName(wk_id),
@@ -335,14 +347,16 @@ static Boolean ManagePlotObj
                 block_id = NgNclVisBlockBegin(rec->nclstate,_NgSETVAL,
                                               NrmQuarkToString(page->qvar),
                                               NULL,NULL);
+#if 0                
 		for (i=0; i < sv_res_count[dsp->type]; i++) {
                         res_count++;
                         quote[i] = False;
                 }
+#endif                
         }
         NgNclVisBlockAddResList(rec->nclstate,block_id,res_count,
                                 res,values,quote);
-        NgResTreeAddResList(rec->res_tree,block_id);
+        NgResTreeAddResList(rec->nclstate,(NhlPointer)rec->res_tree,block_id);
         
         NgNclVisBlockEnd(rec->nclstate,block_id);
                 
@@ -353,8 +367,7 @@ static void
 ContourCreateUpdate
 (
         brPage		*page,
-        int		wk_id,
-	NhlBoolean	configure
+        int		wk_id
 )
 {
 	brPageData	*pdp = page->pdata;
@@ -363,15 +376,15 @@ ContourCreateUpdate
         NgDataSinkRec *dsp = rec->public.data_info;
 	char *dataitemlist[2];
 	char *fillvalue = NULL;
-	NhlBoolean create,created;
 	NclApiDataList		*dl;
 	NclExtValueRec *val = NULL;
 	char *sval;
         int i;
         static NrmQuark QFillValue = NrmNULLQUARK;
         NhlErrorTypes ret;
+        XmString xmstring;
+        NhlBoolean create,already_created = False;
         
-	created = rec->created;
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
         }
@@ -419,39 +432,205 @@ ContourCreateUpdate
         
         if (ret < NhlWARNING)
                 return;
-        rec->res_tree->preview_instance = configure ? True : False;
-        
-        if  (ManagePlotObj(page,dataitemlist,1,wk_id)) {
-                if (!rec->created) {
-                        NclExtValueRec *val;
-                        val = NclGetHLUObjId(NrmQuarkToString(page->qvar));
-                        if (val->totalelements > 1)
-                                printf("var references hlu object array\n");
-			rec->hlu_id = ((int*)val->value)[0];
-                        NclFreeExtValue(val);    
-                }
-		if (! configure) {
-			rec->created = True;
-			sprintf(buf,"clear(%s)\ndraw(%s)\n",
-				Ng_SELECTED_WORK,
-				NrmQuarkToString(page->qvar));
-			(void)NgNclSubmitBlock(rec->nclstate,buf);
-		}
-                NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
-#if 0                
-                NgUpdateResTree
-                        (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
-#endif                
+
+        if (rec->state == _hluPREVIEW) {
+                sprintf(buf,"destroy(%s)\n",NrmQuarkToString(page->qvar));
+                (void)NgNclSubmitBlock(rec->nclstate,buf);
         }
-	if (! created && rec->created) {
-		XmString xmstring = NgXAppCreateXmString
-			(rec->go->go.appmgr,"Update");
+        if  (! ManagePlotObj(page,dataitemlist,1,wk_id))
+                return;
+
+        switch (rec->state) {
+            case _hluNOTCREATED:
+                    rec->state = _hluPREVIEW;
+                    rec->res_tree->preview_instance = True;
+                    break;
+            case _hluPREVIEW:
+                    rec->state = _hluCREATED;
+                    rec->res_tree->preview_instance = False;
+                    
+                    xmstring = NgXAppCreateXmString
+                            (rec->go->go.appmgr,"Update");
+                    XtVaSetValues(rec->create_update,
+                                  XmNlabelString,xmstring,
+                                  NULL);
+                    NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
+                    break;
+            case _hluCREATED:
+                    already_created = True;
+                    break;
+        }
+        if (! already_created) {
+                val = NclGetHLUObjId(NrmQuarkToString(page->qvar));
+                if (val->totalelements > 1)
+                        printf("var references hlu object array\n");
+                rec->hlu_id = ((int*)val->value)[0];
+                NclFreeExtValue(val);
+        }
+        NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+
+        if (rec->state == _hluCREATED) {
+                NgDrawGraphic(rec->go->base.id,
+                              NrmQuarkToString(page->qvar),True);
+                rec->new_data = False;
+        }
+        
+	return;
+}
+static int
+CreatePreviewInstance
+(
+        brPage	*page,
+        int	wk_id
+)
+{
+        NhlErrorTypes	ret;
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        int		hlu_id;
+        NgPreviewResProc	resproc[2];
+        XtPointer	resdata[2];
+        NhlString	parent = NULL;
+
+        resproc[0] = NgResTreePreviewResList;
+        resdata[0] = (NhlPointer)rec->res_tree;
+        if (wk_id != NhlNULLOBJID)
+                parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
+        
+        ret = NgCreatePreviewGraphic
+                (rec->go->base.id,&hlu_id,
+                 NrmQuarkToString(page->qvar),parent,
+                 rec->public.class_name,1,resproc,resdata);
+        if (ret > NhlFATAL)
+                return hlu_id;
+
+        return ret;
+}
+
+static int
+CreateInstance
+(
+        brPage	*page,
+        int	wk_id
+)
+{
+        NhlErrorTypes	ret;
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        int		hlu_id;
+        NgSetResProc	setresproc[2];
+        XtPointer	setresdata[2];
+        NhlString	parent = NULL;
+
+        setresproc[0] = NgResTreeAddResList;
+        setresdata[0] = (NhlPointer)rec->res_tree;
+
+        if (wk_id != NhlNULLOBJID)
+                parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
+        
+        ret = NgCreateGraphic
+                (rec->go->base.id,&hlu_id,
+                 NrmQuarkToString(page->qvar),parent,
+                 rec->public.class_name,1,setresproc,setresdata);
+        if (NhlClassIsSubclass(rec->class,NhlviewClass)) {
+                NgDrawGraphic
+                        (rec->go->base.id,NrmQuarkToString(page->qvar),True);
+        }
+        if (ret > NhlFATAL)
+                return hlu_id;
+        
+        return ret;
+}
+
+static int
+UpdateInstance
+(
+        brPage	*page,
+        int	wk_id
+)
+{
+        NhlErrorTypes	ret;
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        int		hlu_id;
+        NgSetResProc	setresproc[2];
+        XtPointer	setresdata[2];
+
+        setresproc[0] = NgResTreeAddResList;
+        setresdata[0] = (XtPointer)rec->res_tree;
+        
+        ret = NgUpdateGraphic
+                (rec->go->base.id,NrmQuarkToString(page->qvar),
+                 1,setresproc,setresdata);
+        if (NhlClassIsSubclass(rec->class,NhlviewClass)) {
+                NgDrawGraphic
+                        (rec->go->base.id,NrmQuarkToString(page->qvar),True);
+        }
+        
+        return ret;
+}
+
+static void
+CreateUpdate
+(
+        brPage		*page,
+        int		wk_id
+)
+{
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        
+        if (rec->state == _hluNOTCREATED) {
+                rec->hlu_id = CreatePreviewInstance(page,wk_id);
+                rec->state = _hluPREVIEW;
+                rec->res_tree->preview_instance = True;
+        }
+        else  if (rec->state == _hluPREVIEW) {
+                XmString xmstring;
+                
+                if (rec->hlu_id > NhlNULLOBJID)
+                        NgDestroyPreviewGraphic(rec->go->base.id,rec->hlu_id);
+                rec->hlu_id = CreateInstance(page,wk_id);
+                rec->state = _hluCREATED;
+                
+		xmstring = NgXAppCreateXmString(rec->go->go.appmgr,"Update");
 		XtVaSetValues(rec->create_update,
 			      XmNlabelString,xmstring,
 			      NULL);
 		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
-	}     
+                rec->res_tree->preview_instance = False;
+        }
+        else {
+                UpdateInstance(page,wk_id);
+        }
+        
+        NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
 	return;
+}
+
+int GetWorkstation
+(
+        brPage		*page,
+        NhlBoolean	*work_created
+        )
+{
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        int wk_id;
+        
+        if (NhlClassIsSubclass(rec->class,NhlworkstationClass)||
+            NhlClassIsSubclass(rec->class,NhlappClass)) {
+                wk_id = NhlNULLOBJID;
+        }
+        else {
+                wk_id = NgAppGetSelectedWork
+                        (page->go->go.appmgr,work_created);
+                if (*work_created) {
+                        XRaiseWindow(rec->go->go.x->dpy,
+                                     XtWindow(rec->go->go.shell));
+                }
+        }
+        return wk_id;
 }
 
 static void CreateUpdateCB 
@@ -464,31 +643,21 @@ static void CreateUpdateCB
         brPage		*page = (brPage *)udata;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
+        NgHluPage 	*pub = &rec->public;
         int		wk_id;
 	char		buf[512];
         NhlBoolean	work_created;
 
         printf("in CreateUpdateCB\n");
         
-        if (strcmp(rec->public.class_name,"contourPlotClass")) {
-                printf("%s plots are not supported yet\n",
-                       rec->public.class_name);
-                return;
+        wk_id = GetWorkstation(page,&work_created);
+        if (pub->data_info &&
+            !strcmp(rec->public.class_name,"contourPlotClass")) {
+                ContourCreateUpdate(page,wk_id);
         }
-
-        wk_id = NgAppGetSelectedWork(page->go->go.appmgr,&work_created);
-        if (work_created) {
-                XRaiseWindow(rec->go->go.x->dpy,
-                             XtWindow(rec->go->go.shell));
+        else {
+                CreateUpdate(page,wk_id);
         }
-
-	if (! rec->created && rec->hlu_id > NhlNULLOBJID) {
-		sprintf(buf,"destroy(%s)\n",
-			NrmQuarkToString(page->qvar));
-		(void)NgNclSubmitBlock(rec->nclstate,buf);
-	}
-        ContourCreateUpdate(page,wk_id,False);
-
         return;
 }
 
@@ -611,39 +780,35 @@ static void HluPageInputNotify (
         NgHluPage 	*pub = &rec->public;
         NgVarPageOutput	*var_data = (NgVarPageOutput *)output_data;
         int		wk_id;
-        NhlBoolean 	work_created;
+        NhlBoolean 	work_created,non_contour = False;
+        
                 
         printf("in hlu page input notify\n");
 
         switch (output_page_type) {
+            case _brNULL:
+                    non_contour = True;
+                    break;
             case _brREGVAR:
             case _brFILEVAR:
                     if (! UpdateVarData(rec,var_data->data_ix,var_data))
                             return;
                     NgUpdateDataSinkGrid
                             (rec->data_sink_grid,page->qvar,pub->data_info);
+                    rec->new_data = True;
                     break;
             default:
                     printf("page type not supported for input\n");
         }
-        if (! rec->created) {
-		wk_id = NgAppGetSelectedWork(page->go->go.appmgr,
-                                             &work_created);
-		ContourCreateUpdate(page,wk_id,True);
-	}
-        else if (rec->do_auto_update) {
-                wk_id = NgAppGetSelectedWork(page->go->go.appmgr,
-                                             &work_created);
-		if (! rec->created)
-			ContourCreateUpdate(page,wk_id,True);
-		else
-			ContourCreateUpdate(page,wk_id,False);
+        if (rec->state < _hluCREATED || rec->do_auto_update) {
+                
+                wk_id = GetWorkstation(page,&work_created);
+                
+                if (non_contour)
+                        CreateUpdate(page,wk_id);
+                else
+                        ContourCreateUpdate(page,wk_id);
         }
-        if (work_created) {
-                XRaiseWindow(rec->go->go.x->dpy,
-                             XtWindow(rec->go->go.shell));
-        }
-        
         
         return;
 }
@@ -692,10 +857,11 @@ DeactivateHluPage
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
 
-        rec->created = False;
+        rec->state = _hluNOTCREATED;
         rec->do_auto_update = False;
         rec->public.data_info = NULL;
         rec->public.class_name = NULL;
+        rec->new_data = True;
         
         for (i=0; i <  8; i++)
                 rec->data_objects[i] = NrmNULLQUARK;
@@ -730,7 +896,9 @@ static void DestroyHluPage
                 }
         }
         NhlFree(hlu_rec->var_data);
-                                
+
+        NgDestroyResTree(hlu_rec->res_tree);
+        
         NhlFree(data);
 	return;
 }
@@ -790,6 +958,13 @@ static NhlErrorTypes UpdateHluPage
         
         printf("in updata hlu page\n");
 
+        if (! pub->class_name) {
+               NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                          "no class specified for graphic variable %s",
+                          NrmQuarkToString(page->qvar)));
+                return NhlFATAL;
+        } 
+                
         printf("%s\n",pub->class_name);
 
         if (rec->hlu_id > NhlNULLOBJID)
@@ -823,7 +998,6 @@ static NhlErrorTypes UpdateHluPage
 			(rec->data_sink_grid,page->qvar,pub->data_info);
 	}
 
-
 /* ResTree */
         
         if (!rec->res_tree) {
@@ -840,8 +1014,8 @@ static NhlErrorTypes UpdateHluPage
                 rec->res_tree->geo_notify = AdjustHluPageGeometry;
         }
         else {
-                rec->res_tree->preview_instance = rec->created ?
-                        False : True;
+                rec->res_tree->preview_instance =
+                        rec->state == _hluCREATED ? False : True;
                 NgUpdateResTree
                         (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
         }
@@ -892,14 +1066,14 @@ NewHluPage
                        NgNappNclState,	&rec->nclstate,
                        NULL);
         
-        rec->activated = False;
         rec->data_sink_grid = NULL;
         rec->res_tree = NULL;
         rec->create_update = NULL;
         rec->auto_update = NULL;
         rec->var_data_count = 0;
+        rec->new_data = True;
         rec->var_data = NULL;
-        rec->created = False;
+        rec->state = _hluNOTCREATED;
         rec->do_auto_update = False;
         rec->public.data_info = NULL;
         rec->public.class_name = NULL;
@@ -923,6 +1097,31 @@ NewHluPage
         pdp->update_page = UpdateHluPage;
         pdp->pane = pane;
         
+        rec->data_sink_grid = NgCreateDataSinkGrid
+                (pdp->form,page->qvar,rec->public.data_info);
+        XtVaSetValues(rec->data_sink_grid->grid,
+                      XmNbottomAttachment,XmATTACH_NONE,
+                      XmNrightAttachment,XmATTACH_NONE,
+                      NULL);
+        
+        rec->create_update = XtVaCreateManagedWidget
+                ("Create/Update",xmPushButtonGadgetClass,pdp->form,
+                 XmNtopAttachment,XmATTACH_WIDGET,
+                 XmNtopWidget,rec->data_sink_grid->grid,
+                 XmNrightAttachment,XmATTACH_NONE,
+                 XmNbottomAttachment,XmATTACH_NONE,
+                 NULL);
+
+        rec->auto_update = XtVaCreateManagedWidget
+                ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
+                 XmNtopAttachment,XmATTACH_WIDGET,
+                 XmNtopWidget,rec->data_sink_grid->grid,
+                 XmNleftAttachment,XmATTACH_WIDGET,
+                 XmNleftWidget,rec->create_update,
+                 XmNrightAttachment,XmATTACH_NONE,
+                 XmNbottomAttachment,XmATTACH_NONE,
+                 NULL);
+        
         return pdp;
 }
         
@@ -939,24 +1138,29 @@ NgGetHluPage
 	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
 	brPageData		*pdp;
-	brHluPageRec		*rec,*copy_rec;
+	brHluPageRec		*rec,*copy_rec = NULL;
         NrmQuark		*qhlus;
-        int			count;
         NhlBoolean		is_hlu = False;
         int			i;
         static int		first = True;
-	int			hlu_id, *hlu_array = NULL;
+	int			hlu_id,count,*hlu_array = NULL;
 	int			nclstate;
+        XmString		xmstring;
+
+        if (QFillValue == NrmNULLQUARK) {
+                QFillValue = NrmStringToQuark("_FillValue"); 
+        }
 
 	NhlVAGetValues(go->go.appmgr,
 		NgNappNclState,	&nclstate,
 		NULL);
 
-	hlu_id = NgNclGetHluObjId(nclstate,
-				  NrmQuarkToString(page->qvar),&hlu_array);
+	hlu_id = NgNclGetHluObjId
+                (nclstate,NrmQuarkToString(page->qvar),&count,&hlu_array);
 	if (hlu_id < NhlNOERROR)
 		return NULL;
-	if (hlu_array) {
+
+	if (count > 1) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
                        "variable %s is an array: only handling first element",
                            NrmQuarkToString(page->qvar)));
@@ -975,73 +1179,46 @@ NgGetHluPage
         if (! pdp)
                 return NULL;
         page->pdata = pdp;
+	pdp->in_use = True;
         
         rec = (brHluPageRec *) pdp->type_rec;
         
-        if (! rec->data_sink_grid) {
-                rec->data_sink_grid = NgCreateDataSinkGrid
-                        (pdp->form,page->qvar,rec->public.data_info);
-                XtVaSetValues(rec->data_sink_grid->grid,
-                              XmNbottomAttachment,XmATTACH_NONE,
-                              XmNrightAttachment,XmATTACH_NONE,
-                              NULL);
-        }
-        if (! rec->create_update) {
-		XmString xmstring;
-		if (copy_page && copy_rec->created)
-			xmstring = NgXAppCreateXmString
-				(rec->go->go.appmgr,"Update");
-		else
-			xmstring = NgXAppCreateXmString
-				(rec->go->go.appmgr,"Create");
-                rec->create_update = XtVaCreateManagedWidget
-                        ("Create/Update",xmPushButtonGadgetClass,
-                         pdp->form,
-                         XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->data_sink_grid->grid,
-                         XmNrightAttachment,XmATTACH_NONE,
-                         XmNbottomAttachment,XmATTACH_NONE,
-			 XmNlabelString,xmstring,
-                         NULL);
-		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
-        }
-        if (! rec->auto_update) {
-                rec->auto_update = XtVaCreateManagedWidget
-                        ("Auto Update",xmToggleButtonGadgetClass,
-                         pdp->form,
-                         XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->data_sink_grid->grid,
-                         XmNleftAttachment,XmATTACH_WIDGET,
-                         XmNleftWidget,rec->create_update,
-                         XmNrightAttachment,XmATTACH_NONE,
-                         XmNbottomAttachment,XmATTACH_NONE,
-                         NULL);
-        }
-        if (! rec->activated) {
-                rec->activated = True;
-                XtAddCallback(rec->create_update,
-                              XmNactivateCallback,CreateUpdateCB,page);
-                XtAddCallback(rec->auto_update,
-                              XmNvalueChangedCallback,AutoUpdateCB,page);
-        }
 	if (hlu_id > NhlNULLOBJID) {
 		rec->hlu_id = hlu_id;
 		rec->class = NhlClassOfObject(hlu_id);
 		rec->public.class_name = rec->class->base_class.class_name;
+                if (copy_rec && copy_rec->state == _hluPREVIEW)
+                        rec->state = _hluPREVIEW;
+                else
+                        rec->state = _hluCREATED;
 	}
-	pdp->in_use = True;
+        else {
+                rec->hlu_id = NhlNULLOBJID;
+                rec->class = NULL;
+                rec->public.class_name = NULL;
+                rec->state = _hluNOTCREATED;
+        }
+        if (rec->state == _hluCREATED)
+                xmstring = NgXAppCreateXmString(rec->go->go.appmgr,"Update");
+        else
+                xmstring = NgXAppCreateXmString(rec->go->go.appmgr,"Create");
+        XtVaSetValues(rec->create_update,
+                      XmNlabelString,xmstring,
+                      NULL);
+        NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
 
+        rec->activated = True;
+        XtAddCallback
+                (rec->create_update,XmNactivateCallback,CreateUpdateCB,page);
+        XtAddCallback
+                (rec->auto_update,XmNvalueChangedCallback,AutoUpdateCB,page);
+        
         if (! copy_page) {
                 if (rec->hlu_id > NhlNULLOBJID)
                         UpdateHluPage(page);
                 return pdp;
         }
-
-        rec->public.class_name = copy_rec->public.class_name;
         rec->public.data_info = copy_rec->public.data_info;
-        rec->class = copy_rec->class;
-        rec->hlu_id = copy_rec->hlu_id;
-        rec->created = copy_rec->created;
         
 /* ResTree */
         
@@ -1069,10 +1246,8 @@ NgGetHluPage
                       XmNverticalScrollBar,&rec->res_tree->v_scroll,
                       NULL);
         rec->res_tree->geo_data = (NhlPointer) page;
-        rec->res_tree->preview_instance = rec->created ?
-                False : True;
-        rec->class = copy_rec->class;
-        rec->created = copy_rec->created;
+        rec->res_tree->preview_instance =
+                (rec->state == _hluCREATED) ? False : True;
         rec->do_auto_update = copy_rec->do_auto_update;
 
         if (rec->do_auto_update)
@@ -1096,7 +1271,9 @@ NgGetHluPage
                 NgUpdateDataSinkGrid
                         (rec->data_sink_grid,page->qvar,rec->public.data_info);
         }
+#if 0        
         if (rec->hlu_id > NhlNULLOBJID)
                 UpdateHluPage(page);
+#endif        
         return pdp;
 }

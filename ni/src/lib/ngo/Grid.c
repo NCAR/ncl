@@ -1,4 +1,7 @@
 /*
+ *      $Id: Grid.c,v 1.2 1997-10-03 20:07:36 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS PROGRAM BELONGS TO MICROLINE SOFTWARE.  IT IS CONSIDERED A TRADE
@@ -2192,9 +2195,13 @@ int erase;
 	XSetFunction(dpy, gc, GXcopy);
 	}
 
+#ifdef XmL_ANSIC
+static void DefineCursor(XmLGridWidget g, char defineCursor)
+#else
 static void DefineCursor(g, defineCursor)
 XmLGridWidget g;
 char defineCursor;
+#endif
 	{
 	Display *dpy;
 	Window win;
@@ -2414,12 +2421,17 @@ int *fr, *lr, *fc, *lc;
 		}
 	}
 
+#ifdef XmL_ANSIC
+static void ExtendSelect(XmLGridWidget g, XEvent *event, Boolean set,
+	int row, int col)
+#else
 static void ExtendSelect(g, event, set, row, col)
 XmLGridWidget g;
 XEvent *event;
 Boolean set;
 int row;
 int col;
+#endif
 	{
 	int type;
 	int r, fr, lr;
@@ -2475,6 +2487,10 @@ int col;
 				g->grid.extendSelect, True);
 	}
 
+#ifdef XmL_ANSIC
+static void SelectTypeArea(XmLGridWidget g, int type, XEvent *event,
+	int row, int col, Boolean select, Boolean notify)
+#else
 static void SelectTypeArea(g, type, event, row, col, select, notify)
 XmLGridWidget g;
 int type;
@@ -2482,6 +2498,7 @@ XEvent *event;
 int row, col;
 Boolean select;
 Boolean notify;
+#endif
 	{
 	Widget w;
 	XmLGridRow rowp;
@@ -3542,10 +3559,14 @@ int pos;
 	return type;
 	}
 
+#ifdef XmL_ANSIC
+static int ColPosToTypePos(XmLGridWidget g, unsigned char type, int pos)
+#else
 static int ColPosToTypePos(g, type, pos)
 XmLGridWidget g;
 unsigned char type;
 int pos;
+#endif
 	{
 	int c;
 
@@ -3573,10 +3594,14 @@ int pos;
 	return type;
 	}
 
+#ifdef XmL_ANSIC
+static int RowPosToTypePos(XmLGridWidget g, unsigned char type, int pos)
+#else
 static int RowPosToTypePos(g, type, pos)
 XmLGridWidget g;
 unsigned char type;
 int pos;
+#endif
 	{
 	int r;
 
@@ -3589,11 +3614,16 @@ int pos;
 	return r;
 	}
 
+#ifdef XmL_ANSIC
+static int ColTypePosToPos(XmLGridWidget g, unsigned char type,
+	int pos, int allowNeg)
+#else
 static int ColTypePosToPos(g, type, pos, allowNeg)
 XmLGridWidget g;
 unsigned char type;
 int pos;
 int allowNeg;
+#endif
 	{
 	if (pos < 0)
 		{
@@ -3632,11 +3662,16 @@ int allowNeg;
 	return pos;
 	}
 
+#ifdef XmL_ANSIC
+static int RowTypePosToPos(XmLGridWidget g, unsigned char type,
+	int pos, int allowNeg)
+#else
 static int RowTypePosToPos(g, type, pos, allowNeg)
 XmLGridWidget g;
 unsigned char type;
 int pos;
 int allowNeg;
+#endif
 	{
 	if (pos < 0)
 		{
@@ -3832,11 +3867,16 @@ int *row, *col;
 	return -1;
 	}
 
+#ifdef XmL_ANSIC
+static int RowColToXY(XmLGridWidget g, int row, int col,
+	Boolean clipped, XRectangle *rect)
+#else
 static int RowColToXY(g, row, col, clipped, rect)
 XmLGridWidget g;
 int row, col;
 Boolean clipped;
 XRectangle *rect;
+#endif
 	{
 	XmLGridCell cell;
 	XmLGridCellRefValues *cellValues;
@@ -3884,6 +3924,11 @@ XRectangle *rect;
 	return -1;
 	}
 
+#ifdef XmL_ANSIC
+static int RowColFirstSpan(XmLGridWidget g, int row, int col,
+	int *firstRow, int *firstCol, XRectangle *rect, Boolean lookLeft,
+	Boolean lookUp)
+#else
 static int RowColFirstSpan(g, row, col, firstRow, firstCol, rect,
 	lookLeft, lookUp)
 XmLGridWidget g;
@@ -3891,6 +3936,7 @@ int row, col;
 int *firstRow, *firstCol;
 XRectangle *rect;
 Boolean lookLeft, lookUp;
+#endif
 	{
 	XmLGridCell cell;
 	int done;
@@ -6141,12 +6187,17 @@ long mask;
    Read, Write, Copy, Paste
 */
 
+#ifdef XmL_ANSIC
+static int Read(XmLGridWidget g, int format, char delimiter,
+	int row, int col, char *data)
+#else
 static int Read(g, format, delimiter, row, col, data)
 XmLGridWidget g;
 int format;
 char delimiter;
 int row, col;
 char *data;
+#endif
 	{
 	char *c1, *c2, buf[256], *bufp;
 	int r, c, i, j, len, n, needsResize, allowSet, done;
@@ -6275,6 +6326,10 @@ char *data;
 	return n;
 	}
 
+#ifdef XmL_ANSIC
+static void Write(XmLGridWidget g, FILE *file, int format, char delimiter,
+	Boolean skipHidden, int row, int col, int nrow, int ncol)
+#else
 static void Write(g, file, format, delimiter, skipHidden, row, col, nrow, ncol)
 XmLGridWidget g;
 FILE *file;
@@ -6283,6 +6338,7 @@ char delimiter;
 Boolean skipHidden;
 int row, col;
 int nrow, ncol;
+#endif
 	{
 	int r, c, i, first, last;
 	char *cs;
@@ -7076,9 +7132,13 @@ XtPointer clientData, callData;
 	free ((char *)clientData);
 	}
 
+#ifdef XmL_ANSIC
+static void DropRegister(XmLGridWidget g, Boolean set)
+#else
 static void DropRegister(g, set)
 XmLGridWidget g;
 Boolean set;
+#endif
 	{
 #ifndef MOTIF11
 	Atom importTargets[1];
@@ -7922,9 +7982,13 @@ XmLGridRow row;
 	return row->grid.selected;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridRowSetSelected(XmLGridRow row, Boolean selected)
+#else
 static void XmLGridRowSetSelected(row, selected)
 XmLGridRow row;
 Boolean selected;
+#endif
 	{
 	row->grid.selected = selected;
 	}
@@ -8061,9 +8125,13 @@ XmLGridColumn column;
 	return column->grid.selected;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridColumnSetSelected(XmLGridColumn column, Boolean selected)
+#else
 static void XmLGridColumnSetSelected(column, selected)
 XmLGridColumn column;
 Boolean selected;
+#endif
 	{
 	column->grid.selected = selected;
 	}
@@ -8269,36 +8337,52 @@ XmLGridCell cell;
 	return False;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetValueSet(XmLGridCell cell, Boolean set)
+#else
 static void XmLGridCellSetValueSet(cell, set)
 XmLGridCell cell;
 Boolean set;
+#endif
 	{
 	cell->cell.flags |= XmLGridCellValueSetFlag;
 	if (set != True)
 		cell->cell.flags ^= XmLGridCellValueSetFlag;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetInRowSpan(XmLGridCell cell, Boolean set)
+#else
 static void XmLGridCellSetInRowSpan(cell, set)
 XmLGridCell cell;
 Boolean set;
+#endif
 	{
 	cell->cell.flags |= XmLGridCellInRowSpanFlag;
 	if (set != True)
 		cell->cell.flags ^= XmLGridCellInRowSpanFlag;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetInColumnSpan(XmLGridCell cell, Boolean set)
+#else
 static void XmLGridCellSetInColumnSpan(cell, set)
 XmLGridCell cell;
 Boolean set;
+#endif
 	{
 	cell->cell.flags |= XmLGridCellInColumnSpanFlag;
 	if (set != True)
 		cell->cell.flags ^= XmLGridCellInColumnSpanFlag;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetSelected(XmLGridCell cell, Boolean selected)
+#else
 static void XmLGridCellSetSelected(cell, selected)
 XmLGridCell cell;
 Boolean selected;
+#endif
 	{
 	cell->cell.flags |= XmLGridCellSelectedFlag;
 	if (selected != True)
@@ -8334,10 +8418,15 @@ XmLGridCell cell;
 	XmLGridCellSetValueSet(cell, True);
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetString(XmLGridCell cell, XmString string,
+	Boolean copy)
+#else
 static void XmLGridCellSetString(cell, string, copy)
 XmLGridCell cell;
 XmString string;
 Boolean copy;
+#endif
 	{
 	XmLGridCellIcon *icon;
 
@@ -8390,9 +8479,13 @@ XmLGridCell cell;
 	return str;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetToggle(XmLGridCell cell, Boolean state)
+#else
 static void XmLGridCellSetToggle(cell, state)
 XmLGridCell cell;
 Boolean state;
+#endif
 	{
 	if (cell->cell.refValues->type == XmTOGGLE_CELL)
 		{
@@ -8419,10 +8512,15 @@ XmLGridCell cell;
 	return toggled;
 	}
 
+#ifdef XmL_ANSIC
+static void XmLGridCellSetPixmap(XmLGridCell cell, Pixmap pixmap,
+	Dimension width, Dimension height)
+#else
 static void XmLGridCellSetPixmap(cell, pixmap, width, height)
 XmLGridCell cell;
 Pixmap pixmap;
 Dimension width, height;
+#endif
 	{
 	XmLGridCellPixmap *pix;
 
@@ -8941,11 +9039,15 @@ Cardinal argcount;
 		arglist, argcount);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridAddColumns(Widget w, unsigned char type, int position, int count)
+#else
 void XmLGridAddColumns(w, type, position, count)
 Widget w;
 unsigned char type;
 int position;
 int count;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridColumn col;
@@ -9064,11 +9166,15 @@ int count;
 		DrawArea(g, DrawAll, 0, 0);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridAddRows(Widget w, unsigned char type, int position, int count)
+#else
 void XmLGridAddRows(w, type, position, count)
 Widget w;
 unsigned char type;
 int position;
 int count;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridRow row;
@@ -9190,9 +9296,13 @@ int count;
 #endif
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeleteAllColumns(Widget w, unsigned char type)
+#else
 void XmLGridDeleteAllColumns(w, type)
 Widget w;
 unsigned char type;
+#endif
 	{
 	XmLGridWidget g;
 	int n;
@@ -9216,9 +9326,13 @@ unsigned char type;
 	XmLGridDeleteColumns(w, type, 0, n);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeleteAllRows(Widget w, unsigned char type)
+#else
 void XmLGridDeleteAllRows(w, type)
 Widget w;
 unsigned char type;
+#endif
 	{
 	XmLGridWidget g;
 	int n;
@@ -9242,9 +9356,13 @@ unsigned char type;
 	XmLGridDeleteRows(w, type, 0, n);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectAllRows(Widget w, Boolean notify)
+#else
 void XmLGridDeselectAllRows(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9254,9 +9372,13 @@ Boolean notify;
 	SelectTypeArea(g, SelectRow, (XEvent *)0, -1, 0, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectAllColumns(Widget w, Boolean notify)
+#else
 void XmLGridDeselectAllColumns(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9266,9 +9388,13 @@ Boolean notify;
 	SelectTypeArea(g, SelectCol, (XEvent *)0, 0, -1, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectAllCells(Widget w, Boolean notify)
+#else
 void XmLGridDeselectAllCells(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9278,10 +9404,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCell, (XEvent *)0, -1, -1, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectCell(Widget w, int row, int column, Boolean notify)
+#else
 void XmLGridDeselectCell(w, row, column, notify)
 Widget w;
 int row, column;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9291,10 +9421,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCell, (XEvent *)0, row, column, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectColumn(Widget w, int column, Boolean notify)
+#else
 void XmLGridDeselectColumn(w, column, notify)
 Widget w;
 int column;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9304,10 +9438,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCol, (XEvent *)0, 0, column, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeselectRow(Widget w, int row, Boolean notify)
+#else
 void XmLGridDeselectRow(w, row, notify)
 Widget w;
 int row;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9317,11 +9455,16 @@ Boolean notify;
 	SelectTypeArea(g, SelectRow, (XEvent *)0, row, 0, False, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeleteColumns(Widget w, unsigned char type, int position,
+	int count)
+#else
 void XmLGridDeleteColumns(w, type, position, count)
 Widget w;
 unsigned char type;
 int position;
 int count;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridRow row;
@@ -9438,11 +9581,15 @@ int count;
 		DrawArea(g, DrawAll, 0, 0);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridDeleteRows(Widget w, unsigned char type, int position, int count)
+#else
 void XmLGridDeleteRows(w, type, position, count)
 Widget w;
 unsigned char type;
 int position;
 int count;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridRow row;
@@ -9588,10 +9735,14 @@ Boolean *focusIn;
 	*column = ColPosToTypePos(g, XmCONTENT, g->grid.focusCol);
 	}
 
+#ifdef XmL_ANSIC
+XmLGridRow XmLGridGetRow(Widget w, unsigned char rowType, int row)
+#else
 XmLGridRow XmLGridGetRow(w, rowType, row)
 Widget w;
 unsigned char rowType;
 int row;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridRow r;
@@ -9607,10 +9758,14 @@ int row;
 	return r;
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridEditBegin(Widget w, Boolean insert, int row, int column)
+#else
 int XmLGridEditBegin(w, insert, row, column)
 Widget w;
 Boolean insert;
 int row, column;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -9670,10 +9825,14 @@ Widget w;
 	TextAction(g, TEXT_EDIT_COMPLETE);
 	}
 
+#ifdef XmL_ANSIC
+XmLGridColumn XmLGridGetColumn(Widget w, unsigned char columnType, int column)
+#else
 XmLGridColumn XmLGridGetColumn(w, columnType, column)
 Widget w;
 unsigned char columnType;
 int column;
+#endif
 	{
 	XmLGridWidget g;
 	XmLGridColumn c;
@@ -9934,6 +10093,11 @@ int count;
 	DrawArea(g, DrawAll, 0, 0);
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridRowColumnToXY(Widget w, unsigned char rowType, int row,
+	unsigned char columnType, int column, Boolean clipped, 
+	XRectangle *rect)
+#else
 int XmLGridRowColumnToXY(w, rowType, row, columnType, column, clipped, rect)
 Widget w;
 unsigned char rowType;
@@ -9942,6 +10106,7 @@ unsigned char columnType;
 int column;
 Boolean clipped;
 XRectangle *rect;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -9974,9 +10139,13 @@ int row;
 	return True;
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectAllRows(Widget w, Boolean notify)
+#else
 void XmLGridSelectAllRows(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9986,9 +10155,13 @@ Boolean notify;
 	SelectTypeArea(g, SelectRow, (XEvent *)0, -1, 0, True, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectAllColumns(Widget w, Boolean notify)
+#else
 void XmLGridSelectAllColumns(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -9998,9 +10171,13 @@ Boolean notify;
 	SelectTypeArea(g, SelectCol, (XEvent *)0, 0, -1, True, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectAllCells(Widget w, Boolean notify)
+#else
 void XmLGridSelectAllCells(w, notify)
 Widget w;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -10010,10 +10187,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCell, (XEvent *)0, -1, -1, True, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectCell(Widget w, int row, int column, Boolean notify)
+#else
 void XmLGridSelectCell(w, row, column, notify)
 Widget w;
 int row, column;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -10023,10 +10204,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCell, (XEvent *)0, row, column, True, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectColumn(Widget w, int column, Boolean notify)
+#else
 void XmLGridSelectColumn(w, column, notify)
 Widget w;
 int column;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -10036,10 +10221,14 @@ Boolean notify;
 	SelectTypeArea(g, SelectCol, (XEvent *)0, 0, column, True, notify);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridSelectRow(Widget w, int row, Boolean notify)
+#else
 void XmLGridSelectRow(w, row, notify)
 Widget w;
 int row;
 Boolean notify;
+#endif
 	{
 	XmLGridWidget g;
 
@@ -10108,12 +10297,17 @@ Widget w;
 	DrawArea(g, DrawAll, 0, 0);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridRedrawCell(Widget w, unsigned char rowType, int row,
+	unsigned char columnType, int column)
+#else
 void XmLGridRedrawCell(w, rowType, row, columnType, column)
 Widget w;
 unsigned char rowType;
 int row;
 unsigned char columnType;
 int column;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -10126,10 +10320,14 @@ int column;
 	DrawArea(g, DrawCell, r, c);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridRedrawColumn(Widget w, unsigned char type, int column)
+#else
 void XmLGridRedrawColumn(w, type, column)
 Widget w;
 unsigned char type;
 int column;
+#endif
 	{
 	XmLGridWidget g;
 	int c;
@@ -10141,10 +10339,14 @@ int column;
 	DrawArea(g, DrawCol, 0, c);
 	}
 
+#ifdef XmL_ANSIC
+void XmLGridRedrawRow(Widget w, unsigned char type, int row)
+#else
 void XmLGridRedrawRow(w, type, row)
 Widget w;
 unsigned char type;
 int row;
+#endif
 	{
 	XmLGridWidget g;
 	int r;
@@ -10156,11 +10358,15 @@ int row;
 	DrawArea(g, DrawRow, r, 0);
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridRead(Widget w, FILE *file, int format, char delimiter)
+#else
 int XmLGridRead(w, file, format, delimiter)
 Widget w;
 FILE *file;
 int format;
 char delimiter;
+#endif
 	{
 	XmLGridWidget g;
 	char *data;
@@ -10185,6 +10391,10 @@ char delimiter;
 	return n;
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridReadPos(Widget w, FILE *file, int format, char delimiter,
+	unsigned char rowType, int row, unsigned char columnType, int column)
+#else
 int XmLGridReadPos(w, file, format, delimiter, rowType, row,
 	columnType, column)
 Widget w;
@@ -10195,6 +10405,7 @@ unsigned char rowType;
 int row;
 unsigned char columnType;
 int column;
+#endif
 	{
 	XmLGridWidget g;
 	char *data;
@@ -10233,6 +10444,10 @@ char *data;
 	return Read(g, XmFORMAT_DELIMITED, '|', 0, 0, data);
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridSetStringsPos(Widget w, unsigned char rowType, int row,
+	unsigned char columnType, int column, char *data)
+#else
 int XmLGridSetStringsPos(w, rowType, row, columnType, column, data)
 Widget w;
 unsigned char rowType;
@@ -10240,6 +10455,7 @@ int row;
 unsigned char columnType;
 int column;
 char *data;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -10252,12 +10468,17 @@ char *data;
 	return Read(g, XmFORMAT_DELIMITED, '|', r, c, data);
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridWrite(Widget w, FILE *file, int format, char delimiter,
+	Boolean skipHidden)
+#else
 int XmLGridWrite(w, file, format, delimiter, skipHidden)
 Widget w;
 FILE *file;
 int format;
 char delimiter;
 Boolean skipHidden;
+#endif
 	{
 	XmLGridWidget g;
 	int nrow, ncol;
@@ -10271,6 +10492,11 @@ Boolean skipHidden;
 	return 0;
 	}
 
+#ifdef XmL_ANSIC
+int XmLGridWritePos(Widget w, FILE *file, int format, char delimiter,
+	Boolean skipHidden, unsigned char rowType, int row,
+	unsigned char columnType, int column, int nrow, int ncolumn)
+#else
 int XmLGridWritePos(w, file, format, delimiter, skipHidden,
 	rowType, row, columnType, column, nrow, ncolumn)
 Widget w;
@@ -10283,6 +10509,7 @@ int row;
 unsigned char columnType;
 int column;
 int nrow, ncolumn;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -10296,15 +10523,20 @@ int nrow, ncolumn;
 	return 0;
 	}
 
-Boolean XmLGridCopyPos(w, time, rowType, row, columnType, column,
-	nrow, ncolumn)
+#ifdef XmL_ANSIC
+Boolean XmLGridCopyPos(Widget w, Time time, unsigned char rowType, int row,
+	unsigned char columnType, int column, int nrow, int ncolumn)
+#else
+Boolean XmLGridCopyPos(w, time, rowType, row,columnType, column, nrow, ncolumn)
 Widget w;
 Time time;
-unsigned char rowType;
+unsigned char rowType; 
 int row;
-unsigned char columnType;
+unsigned char columnType; 
 int column;
-int nrow, ncolumn;
+int nrow;
+int ncolumn;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;
@@ -10348,12 +10580,17 @@ Widget w;
 	return Paste(g, r, c);
 	}
 
-Boolean XmLGridPastePos(w, rowType, row, columnType, column)
+#ifdef XmL_ANSIC
+Boolean XmLGridPastePos(Widget w, unsigned char rowType, int row,
+	unsigned char columnType, int column)
+#else
+Boolean XmLGridPastePos(w,rowType,row,columnType,column)
 Widget w;
 unsigned char rowType;
 int row;
 unsigned char columnType;
 int column;
+#endif
 	{
 	XmLGridWidget g;
 	int r, c;

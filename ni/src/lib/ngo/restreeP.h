@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.3 1997-09-11 01:01:50 dbrown Exp $
+ *      $Id: restreeP.h,v 1.4 1997-10-03 20:08:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -93,9 +93,20 @@ typedef struct _rtEnumInfoRec {
 	int			count;
 	int			selected;
         Widget 			popup;
+        Widget			menu;
         Widget			mega;
 	NhlBoolean		up;
+        Dimension		width,height;
+        Position		x,y;
+        Time			time;
 } rtEnumInfoRec;
+
+typedef struct _rtSResState 
+{
+	rtResData *res_data;
+	NhlBoolean faked;
+        NhlPointer dbres_value;
+} rtSResState;
 	
 typedef struct _NgResTreeRec 
 {
@@ -129,6 +140,7 @@ typedef struct _NgResTreeRec
         Boolean			scroll_cbs_installed;
         Widget			text;
   	rtEnumInfoRec		enum_info;
+	rtSResState		*sres_state;
 } NgResTreeRec;
 
 #endif	/* _NG_RESTREEP_H_ */

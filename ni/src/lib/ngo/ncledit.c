@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.10 1997-09-17 16:41:09 boote Exp $
+ *      $Id: ncledit.c,v 1.11 1997-10-03 20:08:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1087,7 +1087,8 @@ NECreateWin
 		XmNmarginWidth,		&np->prompt_margin,
 		XmNshadowThickness,	&np->shadow_thickness,
 		NULL);
-
+        np->prompt_width = 0;
+        
 	XtAddEventHandler(np->prompt_text,StructureNotifyMask,False,
 						MapPromptEH,(XtPointer)go);
 

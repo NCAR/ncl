@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.10 1997-09-17 16:41:09 boote Exp $
+ *      $Id: mwin.c,v 1.11 1997-10-03 20:08:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@
 #include <Xm/MenuShell.h>
 #include <Xcb/xcbShells.h>
 
-#include <XmL/Tree.h>
+#include <ncarg/ngo/Tree.h>
 
 #define	Oset(field)	NhlOffset(NgMWinRec,mwin.field)
 static NhlResource resources[] = {

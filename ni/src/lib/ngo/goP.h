@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.7 1997-09-17 16:41:08 boote Exp $
+ *      $Id: goP.h,v 1.8 1997-10-03 20:08:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,8 @@
 #include <ncarg/ngo/go.h>
 
 #include <ncarg/ngo/xapp.h>
+#include <ncarg/ngo/varmenus.h>
+#include <ncarg/ngo/createmenu.h>
 
 typedef struct _NgGOClassRec *NgGOClass;
 typedef struct _NgGORec *NgGO;
@@ -40,6 +42,7 @@ typedef struct _NgGOPart {
 /* private fields */
 	XmString	xm_title;
 	int		appmgr;
+        int		nclstate;
 
 	NhlBoolean	x_sensitive;
 	NhlBoolean	i_sensitive;
@@ -66,6 +69,8 @@ typedef struct _NgGOPart {
 	Widget		omenu;
 	Widget		wmenu,wsep1,wsep2;
 	Widget		hmenu;
+        NgCreateMenu	*create_menu;
+        NgVarMenus	delete_menu;
 
 	XtTranslations	global_trans;
 

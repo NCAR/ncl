@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.6 1997-08-25 20:24:26 boote Exp $
+ *      $Id: plotspecmenu.c,v 1.1 1997-10-03 20:08:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		createmenus.c
+ *	File:		plotspecmenu.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -20,7 +20,7 @@
  *	Description:	
  */
 
-#include <ncarg/ngo/createmenusP.h>
+#include <ncarg/ngo/plotspecmenuP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
 
@@ -100,12 +100,12 @@ static NgDataSinkRec DataSinks[] = {
 
 static void CopyShapedVar
 (
-        CreateMenusRec	*priv,
+        PlotSpecMenuRec	*priv,
         NhlString	varname
         )
 {
         char buf[256];
-	NgCreateMenus	*pub = &priv->public;
+	NgPlotSpecMenu	*pub = &priv->public;
         int i;
 
         if (pub->qsymbol)
@@ -135,8 +135,8 @@ static void CreateCB
 	XtPointer	cb_data
 )
 {
-	CreateMenusRec	*priv = (CreateMenusRec	*)udata;
-	NgCreateMenus	*pub = &priv->public;
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
+	NgPlotSpecMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
         NgDataSinkRec	*sink;
         NrmQuark	qname;
@@ -195,13 +195,13 @@ static void CreateCB
 
 static void CreateDialog
 (
-       CreateMenusRec	*priv,
+       PlotSpecMenuRec	*priv,
        NgDataSinkRec 	*sink
        )
 {
 	Arg	args[50];
 	int	nargs;
-	NgCreateMenus	*pub = &priv->public;
+	NgPlotSpecMenu	*pub = &priv->public;
 	char    buf[128] = "";
         XmString xmname;
         Widget  form,label,help;
@@ -263,8 +263,8 @@ static void CreateDialogCB
 	XtPointer	cb_data
 )
 {
-	CreateMenusRec	*priv = (CreateMenusRec	*)udata;
-	NgCreateMenus	*pub = &priv->public;
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
+	NgPlotSpecMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
         NgDataSinkRec	*sink;
 
@@ -285,8 +285,8 @@ static void PlotMenuCB
 	XtPointer	cb_data
 )
 {
-	CreateMenusRec	*priv = (CreateMenusRec	*)udata;
-	NgCreateMenus	*pub = &priv->public;
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
+	NgPlotSpecMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
         int		i;
 
@@ -309,27 +309,27 @@ static void PlotMenuCB
         }
         return;
 }
-NhlErrorTypes NgUpdateCreateMenus
+NhlErrorTypes NgUpdatePlotSpecMenu
 (
-        NgCreateMenus		*create_menus
+        NgPlotSpecMenu		*plot_spec_menu
         )
 {
-	NgCreateMenus	*pub = create_menus;
-	CreateMenusRec	*priv = (CreateMenusRec	*)pub;
+	NgPlotSpecMenu	*pub = plot_spec_menu;
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)pub;
 }
 
-NgCreateMenus *
-NgCreateCreateMenus
+NgPlotSpecMenu *
+NgCreatePlotSpecMenu
 (
         NgGO            go,
         Widget		parent
 )
 {
-	CreateMenusRec	*priv;
-	NgCreateMenus	*pub;
+	PlotSpecMenuRec	*priv;
+	NgPlotSpecMenu	*pub;
         Widget		menush;
 
-        priv = NhlMalloc(sizeof(CreateMenusRec));
+        priv = NhlMalloc(sizeof(PlotSpecMenuRec));
         priv->go = go;
         priv->create_dialog = NULL;
 	pub = &priv->public;
@@ -395,13 +395,13 @@ NgCreateCreateMenus
         
 }
 
-void NgDestroyCreateMenus
+void NgDestroyPlotSpecMenu
 (
-        NgCreateMenus		*create_menus
+        NgPlotSpecMenu		*plot_spec_menu
         )
 {
-	NgCreateMenus	*pub = create_menus;
-	CreateMenusRec	*priv = (CreateMenusRec	*)pub;
+	NgPlotSpecMenu	*pub = plot_spec_menu;
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)pub;
 
         if (priv->plot.count)
                 NhlFree(priv->plot.buttons);

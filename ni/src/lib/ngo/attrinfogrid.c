@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.3 1997-06-20 21:48:21 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.4 1997-10-03 20:07:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
-#include  <XmL/Grid.h>
+#include  <ncarg/ngo/Grid.h>
 #include <float.h>
 
 static char *Buffer;

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.5 1997-06-27 07:20:23 dbrown Exp $
+ *      $Id: varpage.c,v 1.6 1997-10-03 20:08:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -320,7 +320,7 @@ static void DestroyVarPage
 
         NgDestroyVarTree(rec->vartree);
         NgDestroyDimInfoGrid(rec->diminfogrid);
-        NgDestroyCreateMenus(rec->createmenu);
+        NgDestroyPlotSpecMenu(rec->plotspecmenu);
         
         if (rec->datagrid) {
                 NgDestroyDataGrid(rec->datagrid);
@@ -469,7 +469,7 @@ NewVarPage
         rec->new_data = True;
         rec->data_ctrl_form = NULL;
         rec->datagrid_toggle = NULL;
-        rec->createmenu = NULL;
+        rec->plotspecmenu = NULL;
         rec->start = NULL;
         rec->finish = NULL;
         rec->stride = NULL;
@@ -694,9 +694,9 @@ NgGetVarPage
                          XmNleftAttachment,XmATTACH_WIDGET,
                          XmNleftWidget,rec->datagrid_toggle,
                          NULL);
-                rec->createmenu =
-                        NgCreateCreateMenus(page->go,rec->data_ctrl_form);
-                XtVaSetValues(rec->createmenu->menubar,
+                rec->plotspecmenu =
+                        NgCreatePlotSpecMenu(page->go,rec->data_ctrl_form);
+                XtVaSetValues(rec->plotspecmenu->menubar,
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNtopOffset,4,
                               XmNtopAttachment,XmATTACH_WIDGET,
@@ -707,13 +707,13 @@ NgGetVarPage
                               XmNleftWidget,label,
                               NULL);
         }
-        rec->createmenu->qsymbol = page->qfile;
-        rec->createmenu->vinfo = pdp->dl->u.var;
-        rec->createmenu->start = rec->start;
-        rec->createmenu->finish = rec->finish;
-        rec->createmenu->stride = rec->stride;
-        rec->createmenu->output_notify = VarPageOutputNotify;
-        rec->createmenu->pdata = page;
+        rec->plotspecmenu->qsymbol = page->qfile;
+        rec->plotspecmenu->vinfo = pdp->dl->u.var;
+        rec->plotspecmenu->start = rec->start;
+        rec->plotspecmenu->finish = rec->finish;
+        rec->plotspecmenu->stride = rec->stride;
+        rec->plotspecmenu->output_notify = VarPageOutputNotify;
+        rec->plotspecmenu->pdata = page;
 
 /* Data Grid */
         

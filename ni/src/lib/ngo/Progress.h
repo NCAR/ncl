@@ -41,7 +41,7 @@ Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 #ifndef XmLProgressH
 #define XmLProgressH
 
-#include <XmL/XmL.h>
+#include <ncarg/ngo/XmL.h>
 
 #ifdef XmL_CPP
 extern "C" {

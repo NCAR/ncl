@@ -1,4 +1,7 @@
 /*
+ *      $Id: XmL.h,v 1.2 1997-10-03 20:07:51 dbrown Exp $
+ */
+/*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
   
 THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE COPIED AND USED 
