@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.20 2001-01-11 23:16:50 dbrown Exp $
+C       $Id: vvectr.f,v 1.21 2001-04-17 00:23:05 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -696,7 +696,7 @@ C Output parameters:
 C
 C XB,YB -- the begin position of the vector in fractional coords
 C XE,YE -- the end position of the vector in fractional coords
-C  
+C
 C ---------------------------------------------------------------------
 C
 C NOTE:
@@ -745,7 +745,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C
@@ -964,7 +964,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

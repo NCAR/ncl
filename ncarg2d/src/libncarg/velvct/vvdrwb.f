@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrwb.f,v 1.5 2000-08-22 15:07:34 haley Exp $
+C       $Id: vvdrwb.f,v 1.6 2001-04-17 00:23:05 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -445,7 +445,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C
