@@ -1,25 +1,32 @@
       PROGRAM CAREDG
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Produce a Mercator projection of the Americas, using simplified 
 C continental outlines.  See the routine MAPEOD, below.
 C And draw a basic contour plot beside it.
 C
-        PARAMETER (M=40, N=40)
-        REAL Z(M,N), RWRK (2000), PLIM1(2),PLIM2(2),PLIM3(2),PLIM4(2)
-        INTEGER IWRK (2000)
+      PARAMETER (M=40, N=40)
+      REAL Z(M,N), RWRK (2000), PLIM1(2),PLIM2(2),PLIM3(2),PLIM4(2)
+      INTEGER IWRK (2000)
 
-        DATA PLIM1 /-60.,0./
-        DATA PLIM2 /-170.,0./
-        DATA PLIM3 /75.,0./
-        DATA PLIM4 /-30.,0./
+      DATA PLIM1 /-60.,0./
+      DATA PLIM2 /-170.,0./
+      DATA PLIM3 /75.,0./
+      DATA PLIM4 /-30.,0./
 C
 C Get some data
 C
-        CALL GENDAT(Z,M,M,N,1,25,1.0,25.)
+      CALL GENDAT(Z,M,M,N,1,25,1.0,25.)
 C
-C Open GKS.
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Turn off the clipping indicator.
 C
@@ -27,42 +34,43 @@ C
 C
 C Draw the map.
 C
-        CALL MAPPOS (0.0,.53,0.53,1.)
-        CALL SUPMAP (9,0.,0.,0.,PLIM1,PLIM2,PLIM3,PLIM4,2,0,2,0,IERR)
-        CALL GETSET (VPL,VPR,VPB,VPT,WL,WR,WB,WT,LOG)
-        CALL GSELNT (0)
-        CALL PLCHHQ (.25,.50,'Geographic Map',.013,0.,0.)
+      CALL MAPPOS (0.0,.53,0.53,1.)
+      CALL SUPMAP (9,0.,0.,0.,PLIM1,PLIM2,PLIM3,PLIM4,2,0,2,0,IERR)
+      CALL GETSET (VPL,VPR,VPB,VPT,WL,WR,WB,WT,LOG)
+      CALL GSELNT (0)
+      CALL PLCHHQ (.25,.50,'Geographic Map',.013,0.,0.)
 C
 C Draw contour plot
 C
-        CALL SET (.53, 1.,VPB,VPT,1.,REAL(M),1.,REAL(N),LOG)
-        CALL CPSETR ('SET',0.)
-        CALL CPSETR ('LLP',0.)
-        CALL CPRECT (Z, M, M, N, RWRK, 2000, IWRK, 2000)
-        CALL PERIM (0,0,0,0)
-        CALL CPCLDR (Z, RWRK, IWRK)
-        CALL GSELNT (0)
-        CALL PLCHHQ (.75,.50,'Contour Map',.013,0.,0.)
-
+      CALL SET (.53, 1.,VPB,VPT,1.,REAL(M),1.,REAL(N),LOG)
+      CALL CPSETR ('SET',0.)
+      CALL CPSETR ('LLP',0.)
+      CALL CPRECT (Z, M, M, N, RWRK, 2000, IWRK, 2000)
+      CALL PERIM (0,0,0,0)
+      CALL CPCLDR (Z, RWRK, IWRK)
+      CALL GSELNT (0)
+      CALL PLCHHQ (.75,.50,'Contour Map',.013,0.,0.)
 C
 C Draw Vertical Strips
 C
-        CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
-	CALL LINE (.2,.05,.8,.05)
-	CALL LINE (.2,.45,.8,.45)
-	CALL LINE (.2,.05,.2,.45)
-	CALL LINE (.3,.05,.3,.45)
-	CALL LINE (.4,.05,.4,.45)
-	CALL LINE (.5,.05,.5,.45)
-	CALL LINE (.6,.05,.6,.45)
-	CALL LINE (.7,.05,.7,.45)
-	CALL LINE (.8,.05,.8,.45)
-        CALL GSELNT (0)
-        CALL PLCHHQ (.50,.01,'Vertical Strips',.013,0.,0.)
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL LINE (.2,.05,.8,.05)
+      CALL LINE (.2,.45,.8,.45)
+      CALL LINE (.2,.05,.2,.45)
+      CALL LINE (.3,.05,.3,.45)
+      CALL LINE (.4,.05,.4,.45)
+      CALL LINE (.5,.05,.5,.45)
+      CALL LINE (.6,.05,.6,.45)
+      CALL LINE (.7,.05,.7,.45)
+      CALL LINE (.8,.05,.8,.45)
+      CALL GSELNT (0)
+      CALL PLCHHQ (.50,.01,'Vertical Strips',.013,0.,0.)
 C
-C Close GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C
