@@ -1,5 +1,5 @@
 C
-C	$Id: fx.f,v 1.3 1993-01-15 22:46:23 dbrown Exp $
+C	$Id: fx.f,v 1.4 1993-01-20 22:02:43 dbrown Exp $
 C
       FUNCTION FX(X,Y)
 C
@@ -63,9 +63,9 @@ C
 C     Polar coordinate transformation.
 C
 30    CONTINUE
-      THETA=A1+A2*(Y-1)/(FLOAT(NA)-1.0)
-      R=D1+(D2-D1)*(X-1.)/(FLOAT(MA)-1.)
-      FX=R*COS(.017453292519943*THETA)
+      THETA=YLOV+YHIV*(Y-1)/(FLOAT(NYCT)-1.0)
+      R=XLOV+(XHIV-XLOV)*(X-1.)/(FLOAT(NXCT)-1.)
+      FX=R*COS(PDTOR*THETA)
       RETURN
 C
       END

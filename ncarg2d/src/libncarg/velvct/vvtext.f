@@ -1,5 +1,5 @@
 C
-C	$Id: vvtext.f,v 1.4 1993-01-20 19:58:56 dbrown Exp $
+C	$Id: vvtext.f,v 1.5 1993-01-20 22:02:54 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -203,31 +203,31 @@ C
 C Adjust the input position so that we can effectively
 C treat it as lower left.
 C
-      IF (IPO .LE. -4) THEN
+      IF (IPO.LE.-4) THEN
          XFA=XF
          YFA=YF
-      ELSE IF (IPO .EQ. -3) THEN
+      ELSE IF (IPO.EQ.-3) THEN
          XFA=XF-0.5*WTT
          YFA=YF
-      ELSE IF (IPO .EQ. -2) THEN
+      ELSE IF (IPO.EQ.-2) THEN
          XFA=XF-WTT
          YFA=YF
-      ELSE IF (IPO .EQ. -1) THEN
+      ELSE IF (IPO.EQ.-1) THEN
          XFA=XF
          YFA=YF-0.5*HTT
-      ELSE IF (IPO .EQ. 0) THEN
+      ELSE IF (IPO.EQ.0) THEN
          XFA=XF-0.5*WTT
          YFA=YF-0.5*HTT
-      ELSE IF (IPO .EQ. 1) THEN
+      ELSE IF (IPO.EQ.1) THEN
          XFA=XF-WTT
          YFA=YF-0.5*HTT
-      ELSE IF (IPO .EQ. 2) THEN
+      ELSE IF (IPO.EQ.2) THEN
          XFA=XF
          YFA=YF-HTT
-      ELSE IF (IPO .EQ. 3) THEN
+      ELSE IF (IPO.EQ.3) THEN
          XFA=XF-0.5*WTT
          YFA=YF-HTT
-      ELSE IF (IPO .GE.j 4) THEN
+      ELSE IF (IPO.GE.4) THEN
          XFA=XF-WTT
          YFA=YF-HTT
       END IF

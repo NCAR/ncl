@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.3 1993-01-20 19:58:33 dbrown Exp $
+C	$Id: velvct.f,v 1.4 1993-01-20 22:02:46 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -226,7 +226,7 @@ C
 C Local variables:
 C
 C IPM             - parameter use flag
-C IVC             - VEC1,VEC2 common blocks use flag
+C ICB             - VEC1,VEC2 common blocks use flag
 C VXL,VXR,VYB,VYT - saved viewport boundary
 C WXL,WXR,WYB,WYT - saved window boundary
 C X1,X2,Y1,Y2     - temporary viewport boundary
@@ -263,7 +263,7 @@ C is equal to the default value. It will be restored as soon as
 C the vectors are drawn
 C
       IPM = 0
-      IVC = 0
+      ICB = 0
       IF (ICPM .GE. -2 .AND. ICPM .LE. 2) IPM = 1
       IF (ABS(ICPM).EQ.1 .OR. ABS(ICPM).EQ.3 .OR. ICPM.EQ.0) ICB = 1 
       IF (ICPM.EQ.0) ICPM = 99
@@ -338,7 +338,7 @@ C
 C
 C Common block values
 C
-      IF (IVC .EQ. 1) THEN
+      IF (ICB .EQ. 1) THEN
          CALL VVSETR('VPS - Viewport mode setting', EXT)
          CALL VVSETI('VPO - Vector position method', ICTRFG)
          CALL VVSETI('LBL - Vector labelling flag', ILAB)

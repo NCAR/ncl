@@ -1,5 +1,5 @@
 C
-C	$Id: vvmpxy.f,v 1.3 1993-01-15 22:46:58 dbrown Exp $
+C	$Id: vvmpxy.f,v 1.4 1993-01-20 22:02:51 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -99,7 +99,7 @@ C
 C DUV   - incremental UV magnitude difference
 C CLT   - cosine of the latitude
 C ICT   - repetition count for the difference loop
-C ISN   - sign factor, for switching from pos to neg difference
+C SGN   - sign factor, for switching from pos to neg difference
 C XT,YT - temporary projected X,Y position values
 C XTF,YTF - temporary X,Y fractional coordinate values
 C DV1,DV2 - vector magnitudes
@@ -117,10 +117,8 @@ C Linear transformation
 C
          IF (X .LT. WXMN .OR. X .GT. WXMX .OR.
      +        Y .LT. WYMN .OR. Y .GT. WYMX) THEN
-            IF (ISN .EQ. -1) THEN
-               IST=-4
-               RETURN
-            ENDIF
+            IST=-5
+            RETURN
          ENDIF
          XB=CUFX(X)
          YB=CUFY(Y)
@@ -138,8 +136,8 @@ C
 C Set up an initial increment factor
 C
             DUV=0.1/UVM
-            ISN=1
             ICT=0
+            SGN=1.0
 C     
  10         CONTINUE
 C
@@ -154,12 +152,12 @@ C Calculate the incrmental end points, then check to see if
 C they take us out of the user coordinate boundaries. If they
 C do, try incrementing in the other direction
 C
-            XT=X+ISN*U*DUV
-            YT=Y+ISN*V*DUV
+            XT=X+SGN*U*DUV
+            YT=Y+SGN*V*DUV
             IF (XT .LT. WXMN .OR. XT .GT. WXMX .OR.
      +           YT .LT. WYMN .OR. YT .GT. WYMX) THEN
-               IF (ISN .EQ. 1) THEN
-                  ISN = -1
+               IF (SGN .EQ. 1.0) THEN
+                  SGN = -1.0
                   GO TO 10
                ELSE
                   IST=-4
@@ -188,8 +186,8 @@ C
 C The actual endpoints are found using the ratio of the incremental
 C distance to the actual distance times the fractional component
 C length
-            XE=XB+ISN*(XTF-XB)*DV1/DV2
-            YE=YB+ISN*(YTF-YB)*DV1/DV2
+            XE=XB+SGN*(XTF-XB)*DV1/DV2
+            YE=YB+SGN*(YTF-YB)*DV1/DV2
 C
          END IF
 C
@@ -235,18 +233,18 @@ C work, try the negative difference. If the difference results in a
 C zero length vector, try a number of progressively larger increments. 
 C
          ICT=0
-         ISN=1
+         SGN=1.0
  20      CONTINUE
 
-         CALL MAPTRN(Y+ISN*V*DUV,X+ISN*U*DUV/CLT,XT,YT)
+         CALL MAPTRN(Y+SGN*V*DUV,X+SGN*U*DUV/CLT,XT,YT)
 
          DV1=SQRT((XT-XB)*(XT-XB)+(YT-YB)*(YT-YB))
          IF (DV1 .GT. RLEN) THEN
-            IF (ISN .EQ. -1) THEN
+            IF (SGN .EQ. -1.0) THEN
                IST=-4
                RETURN
             ELSE
-               ISN=-1
+               SGN=-1.0
                GO TO 20
             END IF
          END IF
@@ -267,10 +265,10 @@ C
             RETURN
          END IF
 C
-         T=ISN*((XT-XB)/DV1)*UVM
+         T=SGN*((XT-XB)/DV1)*UVM
          XB=CUFX(XB)
          XE=XB+T*SXDC
-         T=ISN*((YT-YB)/DV1)*UVM
+         T=SGN*((YT-YB)/DV1)*UVM
          YB=CUFY(YB)
          YE=YB+T*SYDC
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetr.f,v 1.5 1993-01-20 19:58:45 dbrown Exp $
+C	$Id: vvgetr.f,v 1.6 1993-01-20 22:02:49 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -164,7 +164,7 @@ C
       ELSE IF (WHCH(1:3).EQ.'MSK'.OR. WHCH(1:3).EQ.'msk') THEN
          RVAL=REAL(IMSK)
       ELSE IF (WHCH(1:3).EQ.'VPS'.OR. WHCH(1:3).EQ.'vps') THEN
-         RVAL=REAL(IVPS)
+         RVAL=REAL(UVPS)
       ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl') THEN
          RVAL=UVPL
       ELSE IF (WHCH(1:3).EQ.'VPR'.OR.WHCH(1:3).EQ.'vpr') THEN
