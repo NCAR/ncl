@@ -1,9 +1,12 @@
 #
-#	$Id: yMakefile,v 1.14 1998-05-26 16:51:04 haley Exp $
+#	$Id: yMakefile,v 1.15 1998-07-28 20:35:15 haley Exp $
 #
 
 #ifdef BuildNCARGSourceLibrary
 MOREMAN1 = ncargsrc
+#endif
+#ifdef	BuildWithF90
+MOREMAN1 = nhlf90 ncargf90
 #endif
 
 MAN1 = findg ncargcc ncargcex ncargex ncargf77 ncargrun nhlcc nhlf77 \

@@ -1,4 +1,4 @@
-.TH NCARGINTRO 5NCARG "June 1995" NCAR "NCAR GRAPHICS"
+.TH NCARGINTRO 5NCARG "July 1998" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargintro \- NCAR Graphics Overview
 .SH SYNOPSIS
@@ -8,9 +8,11 @@ NCAR Graphics is a collection of graphics libraries that supports the
 display of scientific data. Several interfaces are available for
 visualizing your data:
 .sp
-1. The low-level utilities (LLUs) are the traditional C and Fortran
-interfaces for contouring, mapping, drawing field flows, drawing
-surfaces, drawing histograms, drawing X/Y plots, labeling, and more.
+1. The NCAR Command Language (NCL) is a full programming language
+including looping and conditionals for data selection, manipulation,
+and display. NCL commands can be executed one at a time from the
+command line, or can be gathered into a series of commands, called a
+script, and executed in a batch mode.
 .sp
 2. The high-level utilities (HLUs) are a high level programmatic
 interface with both C and Fortran bindings. The range of functionality
@@ -18,21 +20,31 @@ of the HLUs is exercised by setting option switches, called
 resources. Resources can be set in a text file, so a plot can be
 redrawn without a recompile.
 .sp
-3. The NCAR Command Language (NCL) is a full programming language
-including looping and conditionals for data selection, manipulation,
-and display. NCL commands can be executed one at a time from the
-command line, or can be gathered into a series of commands, called a
-script, and executed in a batch mode.
-.sp
-4. The prototype GUI interface (xproto) is an X11-based "point and click"
-interface. The prototype qualifier means that this version of the GUI
-will not be supported, but is there if you can use it.
+3. The low-level utilities (LLUs) are the traditional C and Fortran
+interfaces for contouring, mapping, drawing field flows, drawing
+surfaces, drawing histograms, drawing X/Y plots, labeling, and more.
 .sp
 Output from these interfaces can be directed in a combination of three
 ways: an NCGM (NCAR Graphics Computer Graphics Metafile), an X11
 window, or one of many PostScript outputs (regular, Encapsulated, or
 Interchange PostScript format).  Other formats are available through
 NCGM translators and accompanying device drivers.
+.SH MATH LIBRARY
+As of March, 1998 the Ngmath library contains a collection of
+interpolators for one-dimensional, two-dimensional, and
+three-dimensional data. The packages are:
+.sp
+natgrid -- a two-dimensional random data interpolation package based
+on Dave Watson's package nngridr.
+.sp
+dsgrid -- a three-dimensional random data interpolator based on a
+simple inverse distance weighting algorithm.
+.sp
+fitgrid -- an interpolation package for one-dimensional and
+two-dimensional gridded data based on Alan Cline's package Fitpack, an
+early version of which is available from netlib. Fitpack uses splines
+under tension to interpolate in one and two dimensions.
+.sp
 .SH ENVIRONMENT VARIABLES
 Every user of NCAR Graphics will either need to set the environment
 variable NCARG_ROOT or the environment variables NCARG_BIN, NCARG_LIB,
@@ -88,10 +100,6 @@ NCAR Command Language:
 .sp
 .BR ncl
 .sp
-Prototype GUI:
-.sp
-.BR xproto
-.sp
 Fortran utilities in NCAR Graphics:
 .sp
 .BR areas(3NCARG),
@@ -114,7 +122,7 @@ Fortran utilities in NCAR Graphics:
 .BR surface(3NCARG),
 .BR scrolled_title(3NCARG),
 .BR streamlines(3NCARG),
-.BR threed(3NCARG),
+.BR tdpack(3NCARG),
 .BR vectors(3NCARG),
 .BR wmap(3NCARG)
 .sp
@@ -177,13 +185,7 @@ Programs for generating sample NCGMs:
 .sp
 Online documentation:
 .sp
-NCAR Graphics User Guide,
-NCAR Graphics Reference Manual,
-NCAR Graphics Quick Start Guide,
-NCAR Graphics Contouring and Mapping Tutorial,
-NCAR Graphics Fundamentals,
-User's Guide for NCAR GKS-0A Graphics,
-NCAR Graphics Release Notes
+http://ngwww.ucar.edu/ngdoc/ng/
 .SH COPYRIGHT
 Copyright (C) 1987-1998
 .br
