@@ -66,7 +66,7 @@ NhlErrorTypes _NclINhlIsApp
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsApp(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -137,7 +137,7 @@ NhlErrorTypes _NclINhlIsDataComm
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsDataComm(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -207,7 +207,7 @@ NhlErrorTypes _NclINhlIsDataItem
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsDataItem(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -277,7 +277,7 @@ NhlErrorTypes _NclINhlIsDataSpec
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsDataSpec(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -347,7 +347,7 @@ NhlErrorTypes _NclINhlIsTransform
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsTransform(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -417,7 +417,7 @@ NhlErrorTypes _NclINhlIsView
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsView(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -487,7 +487,7 @@ NhlErrorTypes _NclINhlIsWorkstation
 			if(tmp_hlu_ptr[i] != NULL ) {
 				outpt[i] = (NhlIsWorkstation(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
 			} else {
-				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				outpt[i] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			}
 		}
 		NclFree(tmp_hlu_ptr);
@@ -549,7 +549,7 @@ NhlErrorTypes _NclIChangeWorkstation
 			0);
 
 	if((has_missing_wk)&&(*wk_obj_id == missing.objval)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIChangeWorkstation: workstation parameter is missing values");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIChangeWorkstation: workstation parameter is a missing value");
 		return(NhlFATAL);
 	} else {
 		wk_ptr = (NclHLUObj)_NclGetObj(*wk_obj_id);
@@ -887,17 +887,16 @@ NhlErrorTypes _NclINewColor
 
 	colori_out = (int*)NclMalloc(sizeof(int)*j*total_c);
 	for( i = 0; i < j; i++) {
-		
 		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsWorkstation(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
 			m = 0;
 			for(k = 0; k < total_c; k++) {
-				if( ((!has_missing_r)||(red[i] != missing_r.floatval))&&
-				((!has_missing_g)||(green[i] != missing_g.floatval))&&
-				((!has_missing_b)||(blue[i] != missing_b.floatval))) {
-					colori_out[i*j+k] = NhlNewColor(tmp_hlu_ptr[i]->hlu.hlu_id,red[k],green[k],blue[k]);
-				} else {
-					colori_out[i*j+k] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
-				}
+					if( ((!has_missing_r)||(red[i] != missing_r.floatval))&&
+					((!has_missing_g)||(green[i] != missing_g.floatval))&&
+					((!has_missing_b)||(blue[i] != missing_b.floatval))) {
+						colori_out[i*j+k] = NhlNewColor(tmp_hlu_ptr[i]->hlu.hlu_id,red[k],green[k],blue[k]);
+					} else {
+						colori_out[i*j+k] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+					}
 			}
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring");
@@ -1100,7 +1099,9 @@ NhlErrorTypes _NclIIsAllocatedColor
 			} 
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAllocatedColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring");
-			log_out[i*j+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+			for(k = 0; k < total_c; k++) {
+				log_out[i*j+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+			} 
 		}
 	}
 	if(j == 1) {
@@ -1291,7 +1292,7 @@ NhlErrorTypes _NclIAddData
 		total2 *= dimsizes2[i];
 	}
 	tmp_data_ptr  = (NclHLUObj*)NclMalloc(dimsizes2[0]*sizeof(NclHLUObj));
-	if(has_missing) {
+	if(has_missing2) {
 		for( i = 0; i < total2; i++) {
 			if(ncl_data_obj_ids[i] != missing2.objval) {
 				tmp_data_ptr[i] = (NclHLUObj)_NclGetObj(ncl_data_obj_ids[i]);
@@ -1334,7 +1335,9 @@ NhlErrorTypes _NclIAddData
 				}
 			}
 		} else {
-			out_dspec_ids[i*j+l] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+			for(l = 0; l < k ; l++) {
+				out_dspec_ids[i*j+l] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;	
+			}
 		}
 	}
 	if(j == 1)  {
@@ -1433,7 +1436,7 @@ NhlErrorTypes _NclIRemoveData
 		total2 *= dimsizes2[i];
 	}
 	tmp_data_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
-	if(has_missing) {
+	if(has_missing2) {
 		for( i = 0; i < total2; i++) {
 			if(ncl_data_obj_ids[i] != missing2.objval) {
 				tmp_data_ptr[k] = (NclHLUObj)_NclGetObj(ncl_data_obj_ids[i]);
@@ -1715,7 +1718,7 @@ NhlErrorTypes _NclIAddAnnotation
 		for( i = 0; i < j; i++) {
 			out_anno_ids[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
 		}
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIAddAnnotation: First paramter is a missing value, returning missing values");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIAddAnnotation: First parameter is a missing value, returning missing values");
 		ret = NhlWARNING;
 	}
 	n_dims_  = 1;
@@ -1778,7 +1781,7 @@ NhlErrorTypes _NclIRemoveAnnotation
 			if(ncl_hlu_obj_ids[i] != missing1.objval) {
 				tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_ano_obj_ids[i]);
 				j++;
-			}
+			} 
 		}
 	} else {
 		for( i = 0; i < total; i++) {
@@ -1798,7 +1801,7 @@ NhlErrorTypes _NclIRemoveAnnotation
 			}
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIRemoveAnnotation: First paramter is a missing value, returning missing values");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIRemoveAnnotation: First parameter is a missing value, returning missing values");
 		NclFree(tmp_hlu_ptr);
 		return(NhlWARNING);
 	}

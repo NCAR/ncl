@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.100 1998-06-09 20:12:08 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.101 1998-07-28 16:48:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1083,31 +1083,68 @@ NhlErrorTypes _NclIAddToOverlay
 
 	switch(base.kind) {
 	case NclStk_VAL:
-		baseid = *(int*)base.u.data_obj->multidval.val;
-		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		if(base.u.data_obj->multidval.missing_value.has_missing) {
+			baseid = *(int*)base.u.data_obj->multidval.val;
+			if(baseid == base.u.data_obj->multidval.missing_value.value.objval) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"overlay: missing value as input, can't continue");
+				return(NhlFATAL);
+			}
+			base_hl = (NclHLUObj)_NclGetObj(baseid);
+		} else {
+			baseid = *(int*)base.u.data_obj->multidval.val;
+			base_hl = (NclHLUObj)_NclGetObj(baseid);
+		}
 		break;
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(base.u.data_var,NULL,NULL);
-		baseid = *(int*)tmp_md->multidval.val;
-		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		if(tmp_md->multidval.missing_value.has_missing) {
+			baseid = *(int*)tmp_md->multidval.val;
+			if(baseid== tmp_md->multidval.missing_value.value.objval) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"overlay: missing value as input, can't continue");
+				return(NhlFATAL);
+			}
+			base_hl = (NclHLUObj)_NclGetObj(baseid);
+		} else {
+			baseid = *(int*)tmp_md->multidval.val;
+			base_hl = (NclHLUObj)_NclGetObj(baseid);
+		}
 		break;
 	default:
 		return(NhlFATAL);
 	}
 	switch(over.kind) {
 	case NclStk_VAL:
-		overid = *(int*)over.u.data_obj->multidval.val;
+		if(over.u.data_obj->multidval.missing_value.has_missing) {
+			overid = *(int*)over.u.data_obj->multidval.val;
+			if(overid == over.u.data_obj->multidval.missing_value.value.objval) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"overlay: missing value as input, can't continue");
+				return(NhlFATAL);
+			}
+			over_hl = (NclHLUObj)_NclGetObj(overid);
+		} else {
+			overid = *(int*)over.u.data_obj->multidval.val;
+			over_hl = (NclHLUObj)_NclGetObj(overid);
+		}
 		over_hl = (NclHLUObj)_NclGetObj(overid);
 		break;
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(over.u.data_var,NULL,NULL);
-		overid = *(int*)tmp_md->multidval.val;
-		over_hl = (NclHLUObj)_NclGetObj(overid);
+		if(tmp_md->multidval.missing_value.has_missing) {
+			overid = *(int*)tmp_md->multidval.val;
+			if(overid== tmp_md->multidval.missing_value.value.objval) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"overlay: missing value as input, can't continue");
+				return(NhlFATAL);
+			} 
+			over_hl = (NclHLUObj)_NclGetObj(overid);
+		} else {
+			overid = *(int*)tmp_md->multidval.val;
+			over_hl = (NclHLUObj)_NclGetObj(overid);
+		}
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	if((_NhlGetLayer(base_hl->hlu.hlu_id) != NULL)&&(_NhlGetLayer(over_hl->hlu.hlu_id)!= NULL)) {
+	if((base_hl != NULL) &&(_NhlGetLayer(base_hl->hlu.hlu_id) != NULL)&&(over_hl != NULL)&&(_NhlGetLayer(over_hl->hlu.hlu_id)!= NULL)) {
 		NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
 		_NclAddHLUToExpList(base_hl,over_hl->obj.id);
 		return(NhlNOERROR);
