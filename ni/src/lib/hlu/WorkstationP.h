@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.12 1996-04-05 21:15:39 boote Exp $
+ *      $Id: WorkstationP.h,v 1.13 1996-04-17 18:29:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -88,7 +88,7 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 /*
  * This is used as the Inheritance constant
  */
-#define NhlInheritPalette ((int)_NhlInherit)
+#define NhlInheritPalette ((int)-1)
 #define NhlInheritOpen ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritActivate ((NhlWorkstationProc)_NhlInherit)
