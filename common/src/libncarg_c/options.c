@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.7 1992-03-26 22:33:02 clyne Exp $
+ *	$Id: options.c,v 1.8 1992-03-27 21:05:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -158,7 +158,7 @@ int	NCARGCvtToDimension(from, to)
 	if (! from) {
 		dptr->nx = dptr->ny = 0;
 	}
-	else if (sscanf(from, "%dx%d", dptr) != 2) {
+	else if (sscanf(from, "%dx%d", &(dptr->nx), &(dptr->ny)) != 2) {
 		ESprintf(EINVAL, "Convert(%s) to dimension failed", from);
 		return(-1);
 	}
