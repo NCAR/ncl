@@ -2088,6 +2088,7 @@ void *storage
                         	sel_ptr.selection[0].u.sub.start = start[0];
                         	sel_ptr.selection[0].u.sub.finish = finish[0];
                         	sel_ptr.selection[0].u.sub.stride = stride[0];
+                        	sel_ptr.selection[i].u.sub.is_single = abs((finish[0] - start[0])/stride[0]) > 0 ? 0 : 1;
 				if(tmp->thevalue != NULL) {
 					tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp->thevalue,&sel_ptr,NULL);
 					memcpy(storage,tmp_md2->multidval.val,tmp_md2->multidval.totalsize);
@@ -2136,6 +2137,8 @@ void *storage
                         sel_ptr.selection[i].u.sub.start = start[k];
                         sel_ptr.selection[i].u.sub.finish = finish[k];
                         sel_ptr.selection[i].u.sub.stride = stride[k];
+                        sel_ptr.selection[i].u.sub.is_single = abs((finish[k] - start[k])/stride[k]) > 0 ? 0 : 1;
+
 			dimsizes[i] = tmp_var->var_info.dim_sizes[k];
 			ns *= ((finish[k] - start[k]) / stride[k]) + 1;
 			buf_size *= tmp_var->var_info.dim_sizes[k];

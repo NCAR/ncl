@@ -1432,16 +1432,16 @@ int vtype;
 						current_finish[index_map[i]] = current_index[index_map[i]];
 						break;
 					default:
-						if(compare_sel[index_map[i]] >= sel[index_map[i]].u.vec.n_ind) {
+						if(compare_sel[index_map[i]] >= sel[i].u.vec.n_ind) {
 							compare_sel[index_map[i]] = 0;
-							current_index[index_map[i]] = sel[index_map[i]].u.vec.ind[0];
+							current_index[index_map[i]] = sel[i].u.vec.ind[0];
 							if(compare_sel[index_map[i-1]] < 0 ) {
 								current_index[index_map[i-1]] += stride[index_map[i-1]];
 							} else {
 								compare_sel[index_map[i-1]]++;
 							}
 						} else {
-							current_index[index_map[i]] = sel[index_map[i]].u.vec.ind[compare_sel[index_map[i]]];
+							current_index[index_map[i]] = sel[i].u.vec.ind[compare_sel[index_map[i]]];
 							inc_done = 1;
 						}
 						current_finish[index_map[i]] = current_index[index_map[i]];
