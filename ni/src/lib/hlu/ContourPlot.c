@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.14 1995-05-18 20:05:30 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.15 1995-05-22 22:51:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3238,8 +3238,6 @@ static NhlErrorTypes GetDataBound
 	NhlBoolean		ezmap = False;
 
 
-#define _cnMAPBOUNDINC	100
-
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
@@ -3288,47 +3286,6 @@ static NhlErrorTypes GetDataBound
 			       NhlNmpBottomNDCF,&bbox->b,
 			       NhlNmpTopNDCF,&bbox->t,
 			       NULL);
-#if 0
-		float		xa[5],ya[5];
-		float		xinc,yinc; 
-		float		xt1[_cnMAPBOUNDINC],xt2[_cnMAPBOUNDINC];
-		float		yt1[_cnMAPBOUNDINC],yt2[_cnMAPBOUNDINC];
-		int		i,j;
-
-		xa[0] = xa[1] = xa[4] = cnp->xlb;
-		xa[2] = xa[3] = cnp->xub;
-		ya[0] = ya[3] = ya[4] = cnp->ylb;
-		ya[1] = ya[2] = cnp->yub;
-
-		bbox->l = 1.0;
-		bbox->r = 0.0;
-		bbox->b = 1.0;
-		bbox->t = 0.0;
-		for (i=0;  i < 4; i++) {
-			xinc = (xa[i+1] - xa[i]) / (_cnMAPBOUNDINC - 1);
-			yinc = (ya[i+1] - ya[i]) / (_cnMAPBOUNDINC - 1);
-
-			for (j = 0; j < _cnMAPBOUNDINC; j++) {
-				xt1[j] = xa[i] + j * xinc;
-				yt1[j] = ya[i] + j * yinc;
-			}
-			_NhlDataToWin(cnp->trans_obj,xt1,yt1,
-				      _cnMAPBOUNDINC,xt2,yt2,
-				      &status,NULL,NULL);
-			_NhlWinToNDC(cnp->trans_obj,xt2,yt2,
-				     _cnMAPBOUNDINC,xt1,yt1,
-				     &status,NULL,NULL);
-			for (j = 0; j < _cnMAPBOUNDINC; j++) {
-				if (xt1[j] == cnp->out_of_range_val ||
-				    yt1[j] == cnp->out_of_range_val)
-					continue;
-				if (xt1[j] < bbox->l) bbox->l = xt1[j];
-				if (xt1[1] > bbox->r) bbox->r = xt1[j];
-				if (yt1[j] < bbox->b) bbox->b = yt1[j];
-				if (yt1[j] > bbox->t) bbox->t = yt1[j];
-			}
-		}
-#endif
 	}
 
 	return NhlNOERROR;
@@ -8511,8 +8468,14 @@ static NhlErrorTypes    ManageDynamicArrays
 		NhlString cp;
 
 		fp = (float *) cnp->levels->data;
-		if (cnp->llabel_strings == ocnp->llabel_strings
-		    && ! cnp->explicit_line_labels_on) {
+
+		/* 
+		 * Ignore set values when explicit line labels is False,
+		 * or when it has just been set but label strings has not
+		 * been set.
+		 */
+
+		if (! cnp->explicit_line_labels_on) {
 			init_count = 0;
 		}
 		for (i=init_count; i<count; i++) {
@@ -9698,13 +9661,11 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 
 	if (Cnp == NULL) return 0;
 
-#if 0
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 17 && iai[i] == 9999) {
 			return 0;
 		}
 	}
-#endif
 
 	colp = (int *) Cnp->fill_colors->data;
 	patp = (int *) Cnp->fill_patterns->data;
@@ -9801,7 +9762,12 @@ void  (_NHLCALLF(hlucpscae,HLUCPSCAE))
 {
 	int col_ix;
 
-	if (Cnp == NULL) return;
+	if (Cnp == NULL) {
+		_NHLCALLF(cpscae,CPSCAE)
+			(icra,ica1,icam,ican,xcpf,ycpf,xcqf,ycqf,
+			 ind1,ind2,icaf,iaid);
+		return;
+	}
 
 	if (*iaid > 99 && *iaid < 100 + Cnp->fill_count) {
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
@@ -10364,6 +10330,9 @@ static void   load_hlucp_routines
 		_NHLCALLF(hlucpchll,HLUCPCHLL)(&idum);
 		_NHLCALLF(hlucpchhl,HLUCPCHHL)(&idum);
 		_NHLCALLF(hlucpchcl,HLUCPCHCL)(&idum);
+		_NHLCALLF(hlucpscae,HLUCPSCAE)(&idum,&idum,&idum,&idum,
+					       &fdum,&fdum,&fdum,&fdum,
+					       &idum,&idum,&idum,&idum);
 	}
 	return;
 }
