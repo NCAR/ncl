@@ -1,9 +1,8 @@
-.\"
-.\"	$Id: srface.m,v 1.1 1993-03-11 16:34:18 haley Exp $
-.\"
 .TH SRFACE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-SRFACE - SRFACE draws a perspective picture of a function of
+SRFACE - Draws a perspective picture of a function of
 two variables with hidden lines removed. The function is
 approximated by a two-dimensional array of heights.
 .SH SYNOPSIS
@@ -11,7 +10,9 @@ CALL SRFACE (X,Y,Z,M,MX,NX,NY,S,STEREO)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_srface (float *x, float *y, float *z, int *m, int mx, int nx, int ny, float s[6], float stereo)
+void c_srface (float *x, float *y, float *z, int *m, \\
+.br
+int mx, int nx, int ny, float s[6], float stereo)
 .SH DESCRIPTION 
 .IP X 12
 A linear array NX long containing the X coordinates of
@@ -44,18 +45,16 @@ opposite corners (X(1), Y(1), ZMIN) and (X(NX), Y(NY),
 ZMAX) and the point looked at should be inside it. For
 a nice perspective effect, the distance between the
 eye and the point looked at should be 5 to 10 times the
-size of the block. See the "Notes" below.
+size of the block. 
 .IP STEREO 12
 Flag to indicate if stereo pairs are to be drawn.  0.0
 means no stereo pair (one picture). Non-zero means put
 out two pictures. The value of STEREO is the relative
 angle between the eyes. A value of 1.0 produces
 standard separation. Negative STEREO reverses the left
-and right figures. See the "NCAR GRAPHICS 2.00 User's
-Guide" for internal variable ISTP for additional
-information.
+and right figures. 
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions, with the following exceptions:
 .sp
 .IP z 12
@@ -77,12 +76,10 @@ units and not wildly different in magnitude. S is assumed to be
 in the same units as X, Y, and Z.
 .sp
 .IP \(bu 2
-Picture size can be made relative to distance. See comments
-in SETR.
+Picture size can be made relative to distance. 
 .sp
 .IP \(bu 2
-TRN32S can be used to translate from 3 space to 2 space. See
-comments there.
+TRN32S can be used to translate from 3 space to 2 space. 
 .sp
 .IP \(bu 2
 Data with extreme discontinuities may cause visibility
@@ -95,21 +92,29 @@ wishes to change the line color, he can do so by defining color
 index 1 before calling SRFACE, or by putting the common block
 SRFINT in his calling program and defining and using color
 index ISRFMJ (defaulted to 1 in BLOCKDATA).
-.sp
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+srex01,
+fsrpwrzs,
+fsrsrfac,
+tpwrzs,
+tsrfac.
 .SH ACCESS
-To use SRFACE load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_srface load 
+To use SRFACE, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_srface, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
-.sp
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-srface, ezsrfc, pwrzs, trn32s, ncarg_cbind
-.sp
-Hardcopy:  "NCAR Graphics User's Guide, Version 2.00"
+surface,
+surface_params,
+ezsrfc,
+pwrzs,
+setr,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-

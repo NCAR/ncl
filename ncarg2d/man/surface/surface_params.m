@@ -5,12 +5,12 @@
 Surface_params - This document briefly describes the Surface
 internal parameters.
 .SH DESCRIPTION 
-There are no parameter access routines available for the SRFACE utility. 
+There are no parameter access routines available for the Surface utility. 
 Therefore,
 parameters must be set through the common blocks SRFBLK and SRFIP1.
 .sp
 In order to access the internal parameters, you must declare the following
-common blocks for the SRFACE parameters in your code.
+common blocks for the Surface parameters in your code.
 .sp
 .nf
  COMMON /SRFBLK/ LIMU(1024) ,LIML(1024) ,CL(41)     ,NCL        ,
@@ -31,22 +31,22 @@ Definitions of only user-modifiable parameters follow:
 .nf
 
 .IP IFR 12
--1   Call FRAME first.
+\-1   Call FRAME first.
 .br
  0   Do not call FRAME.
 .br
-+1   Call FRAME when done (default).
+\+1   Call FRAME when done (default).
 
 
 .IP ISTP 12
--1   Draws alternating frames, slightly offset 
+\-1   Draws alternating frames, slightly offset 
 .br
      (For movies, IROTS = 0).
  0   Blank frame between for stereo slide (IROTS = 1)
 .br
      (default).
 .br
-+1   Both on same frame. (left picture to left 
+\+1   Both on same frame. (left picture to left 
 .br
      side. IROTS = 0).
      
@@ -56,33 +56,33 @@ Definitions of only user-modifiable parameters follow:
 .br
      (default).
 .br
-+1   +Z in horizontal plotting direction (COMIC mode).
+\+1   +Z in horizontal plotting direction (COMIC mode).
 
 
 .IP IDRX 12
-+1   Draw lines of constant X (default).
+\+1   Draw lines of constant X (default).
 .br
  0   Do not.
 
 .IP IDRY 12
-+1   Draw lines of constant Y (default).
+\+1   Draw lines of constant Y (default).
 .br
  0   Do not.
 
 .IP IDRZ 12
-+1   Draw lines of constant Z (contour lines).
+\+1   Draw lines of constant Z (contour lines).
 .br
  0   Do not (default).
 
 .IP IUPPER 12
-+1   Draw upper side of surface.
+\+1   Draw upper side of surface.
 .br
  0   Draw both sides (default).
 .br
--1   Draw lower side.
+\-1   Draw lower side.
 
 .IP ISKIRT 12
-+1   Draw a skirt around the surface.
+\+1   Draw a skirt around the surface.
 .br
      BOTTOM = HSKIRT.
 .br
@@ -98,7 +98,7 @@ Definitions of only user-modifiable parameters follow:
 .IP THETA 12
      The angle in radians between eyes for stereo pairs.
 .br
-     The default is .02.
+     The default is \&.02.
 
 .IP HSKIRT 12
      Height of skirt (if ISKIRT = 1). The default is 0.
@@ -131,9 +131,12 @@ Definitions of only user-modifiable parameters follow:
 .fi
 .SH SEE ALSO
 Online:
-srface, ezsrfc, pwrzs, trn32s, ncarg_cbind
-Hardcopy:
-NCAR Graphics Fundamentals, UNIX Version;
+surface,
+ezsrfc,
+pwrzs,
+setr,
+srface.
+ncarg_cbind.
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
