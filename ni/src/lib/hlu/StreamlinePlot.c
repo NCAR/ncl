@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.69 2003-09-26 16:48:41 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.70 2003-11-21 00:04:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2468,10 +2468,11 @@ static NhlErrorTypes stUpdateTrans
 
 			xmin = MIN (stp->vfp->x_start,stp->vfp->x_end);
 			xmax = MAX (stp->vfp->x_start,stp->vfp->x_end);
-
+#if 0
 			cell_size = (xmax - xmin) / (stp->vfp->fast_len-1);
 			xmin -= 0.5 * cell_size;
 			xmax += 0.5 * cell_size;
+#endif
 			if (stp->vfp->x_start < stp->vfp->x_end) {
 				subret = NhlVASetValues
 					(stp->trans_obj->base.id,

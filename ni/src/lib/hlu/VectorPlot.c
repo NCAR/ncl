@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.84 2003-09-26 16:48:39 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.85 2003-11-21 00:04:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3307,10 +3307,11 @@ static NhlErrorTypes vcUpdateTrans
 
 			xmin = MIN (vcp->vfp->x_start,vcp->vfp->x_end);
 			xmax = MAX (vcp->vfp->x_start,vcp->vfp->x_end);
-
+#if 0
 			cell_size = (xmax - xmin) / (vcp->vfp->fast_len-1);
 			xmin -= 0.5 * cell_size;
 			xmax += 0.5 * cell_size;
+#endif
 			if (vcp->vfp->x_start < vcp->vfp->x_end) {
 				subret = NhlVASetValues
 					(vcp->trans_obj->base.id,
