@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.64 1998-03-27 20:09:17 haley Exp $
+#      $Id: yMakefile,v 1.65 1998-04-17 18:44:11 haley Exp $
 #
 #########################################################################
 #									#
@@ -46,7 +46,7 @@ HACKOBJS	=	hphack.o
 EXTRA_CLDFLAGS	= -rdynamic
 #endif
 
-#if !defined(CRAY) && !defined(HPUX) && !defined(IRIX_IP) && !defined(IRIX64_IP)
+#if !defined(CRAY) && !defined(HPUX) && !defined(IRIX_IP) && !defined(IRIX64_IP) && !defined(alpha)
 DYNAMIC_LIBS	=	-ldl
 #endif
 
