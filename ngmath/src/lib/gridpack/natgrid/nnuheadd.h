@@ -42,5 +42,5 @@ void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
 void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
 void  NGCALLF(nnpntend,NNPNTEND) ();
 
-double  **c_natgridd(int, double [], double [], double [],
+double  *c_natgridd(int, double [], double [], double [],
                     int, int, double [], double [], int *);

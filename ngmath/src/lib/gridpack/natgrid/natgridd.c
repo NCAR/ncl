@@ -1,10 +1,10 @@
 #include "nnghead.h"
 #include "nngheadd.h"
 
-double **c_natgridd(int n, double x[], double y[], double z[],
+double *c_natgridd(int n, double x[], double y[], double z[],
                    int nxi, int nyi, double xi[], double yi[], int *ier)
 {  
-   double **data_out;
+   double **data_out, *rtrn_val;
 
    *ier = 0;
 
@@ -16,7 +16,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       if (ReadDatad(n,x,y,z) != 0)
       {
          *ier = error_status;
-         return ( (double **) NULL);
+         return ( (double *) NULL);
       }
    }
 
@@ -26,7 +26,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       if (error_status)
       {
          *ier = error_status;
-         return ( (double **) NULL);
+         return ( (double *) NULL);
       }
    }
    if (igrad)
@@ -35,7 +35,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       if (error_status)
       {
          *ier = error_status;
-         return ( (double **) NULL);
+         return ( (double *) NULL);
       }
    }
 
@@ -43,7 +43,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
    if (error_status)
    {
       *ier = error_status;
-      return ( (double **) NULL);
+      return ( (double *) NULL);
    }
 
    if (single_point == 0)
@@ -51,7 +51,9 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       Terminate();
    }
 
-   return (data_out);
+   rtrn_val = data_out[0];
+   free (data_out);
+   return (rtrn_val);
 }
 void Initialized(int n, double x[], double y[], int nxi, int nyi,
                 double xi[], double yi[])

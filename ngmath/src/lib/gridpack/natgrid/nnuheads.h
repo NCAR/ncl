@@ -42,5 +42,5 @@ void  NGCALLF(nnpntinits,NNPNTINITS) (int *, float *, float *, float *);
 void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
 void  NGCALLF(nnpntend,NNPNTEND) ();
 
-float  **c_natgrids(int, float [], float [], float [],
-                    int, int, float [], float [], int *);
+float  *c_natgrids(int, float [], float [], float [],
+                   int, int, float [], float [], int *);

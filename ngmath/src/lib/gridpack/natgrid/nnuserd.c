@@ -118,7 +118,7 @@ void NGCALLF(natgridd,NATGRIDD) (int *n, double *x, double *y, double *z,
                 int *nxg, int *nyg, double *xg, double *yg, double *zg,
                 int *ier)
 {
-   double **zar;
+   double *zar;
    int   nn, mm;
 
    zar = c_natgridd(*n, x, y, z, *nxg, *nyg, xg, yg, ier);
@@ -127,9 +127,10 @@ void NGCALLF(natgridd,NATGRIDD) (int *n, double *x, double *y, double *z,
 
    for (mm = 0 ; mm < *nxg ; mm++) {
      for (nn = 0 ; nn < *nyg ; nn++) {
-       *(zg + nn * (*nxg) + mm) = zar[mm][nn];
+       *(zg + nn * (*nxg) + mm) = zar[mm*(*nyg)+nn];
      }
    }    
+   free(zar);
 
    return;
 }

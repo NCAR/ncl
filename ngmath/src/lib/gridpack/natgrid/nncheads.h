@@ -1,11 +1,3 @@
-struct asinfo
-{  int          crows;
-   int          ccols;
-   float        **aspect_out;
-   float        **slope_out;
-};
-struct asinfo   curas;
-
 extern double   armin(int, float *);
 extern double   armax(int, float *);
 

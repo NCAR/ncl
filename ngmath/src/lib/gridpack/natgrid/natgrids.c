@@ -1,10 +1,10 @@
 #include "nnghead.h"
 #include "nngheads.h"
 
-float **c_natgrids(int n, float x[], float y[], float z[],
-                   int nxi, int nyi, float xi[], float yi[], int *ier)
+float *c_natgrids(int n, float x[], float y[], float z[],
+                  int nxi, int nyi, float xi[], float yi[], int *ier)
 {  
-   float **data_out;
+   float **data_out, *rtrn_val;
 
    *ier = 0;
 
@@ -16,7 +16,7 @@ float **c_natgrids(int n, float x[], float y[], float z[],
       if (ReadData(n,x,y,z) != 0)
       {
          *ier = error_status;
-         return ( (float **) NULL);
+         return ( (float *) NULL);
       }
    }
 
@@ -26,7 +26,7 @@ float **c_natgrids(int n, float x[], float y[], float z[],
       if (error_status)
       {
          *ier = error_status;
-         return ( (float **) NULL);
+         return ( (float *) NULL);
       }
    }
    if (igrad)
@@ -35,7 +35,7 @@ float **c_natgrids(int n, float x[], float y[], float z[],
       if (error_status)
       {
          *ier = error_status;
-         return ( (float **) NULL);
+         return ( (float *) NULL);
       }
    }
 
@@ -43,7 +43,7 @@ float **c_natgrids(int n, float x[], float y[], float z[],
    if (error_status)
    {
       *ier = error_status;
-      return ( (float **) NULL);
+      return ( (float *) NULL);
    }
 
    if (single_point == 0)
@@ -51,7 +51,9 @@ float **c_natgrids(int n, float x[], float y[], float z[],
       Terminate();
    }
 
-   return (data_out);
+   rtrn_val = data_out[0];
+   free (data_out);
+   return (rtrn_val);
 }
 void Initialize(int n, float x[], float y[], int nxi, int nyi, 
                 float xi[], float yi[])

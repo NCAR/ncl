@@ -1,5 +1,7 @@
 #include "nncheads.h"
 #include "nnchead.h"
+#include "nntypes.h"
+#include "nnexver.h"
 #include "nnuheads.h"
 #include "nnuhead.h"
 
@@ -357,11 +359,6 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
       if (error_status) return ( (float **) NULL);
    }
 
-   if (first_c)
-      first_c = 0;
-   else
-      FreeMatrixf(data_out);
-
    data_out = FloatMatrix(nxi,nyi);
    if (error_status) return ( (float **) NULL);
 
@@ -609,7 +606,7 @@ void c_nnpntinits(int n, float x[], float y[], float z[])
 void c_nnpnts(float x, float y, float *point)
 {
    int   idum, nxi=3, nyi=3, ierr;
-   float xdum[1], ydum[1], zdum[1], xi[3], yi[3], **out;
+   float xdum[1], ydum[1], zdum[1], xi[3], yi[3], *out;
 
 /*
  *  Check to see if the input point is within the gridded region
@@ -641,7 +638,7 @@ void c_nnpnts(float x, float y, float *point)
       *point = -999.;
    }
    
-   *point = out[1][1];
+   *point = out[3*1 + 1];
 }
 void c_nnpntend()
 {

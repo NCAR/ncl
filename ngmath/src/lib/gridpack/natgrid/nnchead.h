@@ -12,35 +12,6 @@
 #define AND     &&
 #define OR      ||
 
-struct datum
-{  double       values[3];
-   struct datum *nextdat;
-};
-struct datum    *rootdat, *curdat, *holddat;
-
-struct simp
-{  int          vert[3];
-   double       cent[3];
-   struct simp  *nextsimp;
-};
-struct simp     *rootsimp, *cursimp, *holdsimp,
-                *lastsimp, *prevsimp;
-
-struct temp
-{  int          end[2];
-   struct temp  *nexttemp;
-};
-struct temp     *roottemp, *curtemp, *lasttemp,
-                *prevtemp;
-
-struct neig
-{  int          neinum;
-   double       narea;
-   double       coord;
-   struct neig  *nextneig;
-};
-struct neig     *rootneig, *curneig, *lastneig;
-
 extern  double  **points, **joints, wbit,
                 horilap, vertlap, bI, bJ, nuldat,
                 xstart, ystart, xend, yend,

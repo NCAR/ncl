@@ -12,35 +12,6 @@
 #define AND            &&
 #define OR             ||
 
-struct datum
-{  double       values[3];
-   struct datum *nextdat;
-};
-struct datum    *rootdat = NULL, *curdat, *holddat;
-
-struct simp
-{  int          vert[3];
-   double       cent[3];
-   struct simp  *nextsimp;
-};
-struct simp     *rootsimp = NULL, *cursimp, *holdsimp,
-                *lastsimp, *prevsimp;
-
-struct temp
-{  int          end[2];
-   struct temp  *nexttemp;
-};
-struct temp     *roottemp = NULL, *curtemp, *lasttemp,
-                *prevtemp;
-
-struct neig
-{  int          neinum;
-   double       narea;
-   double       coord;
-   struct neig  *nextneig;
-};
-struct neig     *rootneig = NULL, *curneig, *lastneig;
-
 double  **points, **joints, wbit, 
         horilap = -1., vertlap = -1., bI = 1.5, bJ = 7.0, nuldat = 0.0,
         xstart, ystart, xend, yend,
@@ -61,7 +32,7 @@ int     datcnt, datcnt3, numtri, imag, numnei, iscale,
         ext, *jndx, neicnt, optim = 1, goodflag, updir = 1,
         scor[3][2] = {{1,2}, {2,0}, {0,1}}, auto_scale = 1,
         single_point = 0, first_single = 1, asflag = 1,
-        error_status;
+        error_status = 0;
 
 char    tri_file[256] = {"nnalg.dat"}, error_file[256] = {"stderr"},
         emsg[256];

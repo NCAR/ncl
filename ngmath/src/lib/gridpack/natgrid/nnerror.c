@@ -4,7 +4,8 @@
 
 void     ErrorLog(int, char *, FILE *, char *);
 char     *ErrMsg(int);
-int      error_status = 0;
+
+extern   int   error_status;
 
 void ErrorHnd(int error, char *func, FILE *efile, char *smsg)
 {

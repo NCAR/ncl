@@ -1,5 +1,13 @@
+/*
+ *  The code in this file is based on code written and 
+ *  copyrighted (C) by Dave Watson.  Dr. Watson retains the
+ *  copyright to his original code.  Augmentations and changes
+ *  to Dr. Watson's code are copyrighted (C) by UCAR, 1997.
+ */
 #include "nncheads.h"
 #include "nnchead.h"
+#include "nntypes.h"
+#include "nnexver.h"
 #include "nnuheads.h"
 #include "nnuhead.h"
 
