@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.29 1999-09-30 21:46:18 dbrown Exp $
+!      $Id: ngi.res,v 1.30 1999-10-07 18:13:30 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -812,6 +812,8 @@ addfile*Start_Stop.translations: #override \
 	<Btn1Up>(2+):	PopupShaperAction() \n\
         <Btn1Down>,<Btn1Up>: XmLGridSelect(BEGIN) \
 				XmLGridSelect(END)  
+*browseMGR*PlotTree*translations: #override \
+        <Btn3Up>:               Button3ObjectAction()
 
 
 ! Geometry
