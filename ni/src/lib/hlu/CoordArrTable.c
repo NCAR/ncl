@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.21 1994-12-16 20:04:00 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.22 1995-01-19 22:04:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,22 +66,22 @@ static NhlResource resources[] = {
 	{NhlNctCopyTables,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_tables),NhlTImmediate,(NhlPointer)True,0,NULL},
 
-	{NhlNctXMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctXMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
 		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNctYMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctYMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
 		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNctXMaxV,NhlCctXMaxV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctXMaxV,NhlCctXMaxV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNctYMaxV,NhlCctYMaxV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctYMaxV,NhlCctYMaxV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNctXMinV,NhlCctXMinV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctXMinV,NhlCctXMinV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNctYMinV,NhlCctYMinV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNctYMinV,NhlCctYMinV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
 

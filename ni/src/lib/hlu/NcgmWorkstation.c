@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.11 1994-12-16 20:04:29 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.12 1995-01-19 22:04:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,14 +25,15 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NcgmWorkstationP.h>
 
-#define DEFAULT_META_NAME "gmeta"
+#define DEFAULT_META_NAME	"gmeta"
 
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
-	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,DEFAULT_META_NAME,0,(NhlFreeFunc)NhlFree }
+	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,
+		DEFAULT_META_NAME,0,(NhlFreeFunc)NhlFree }
 
 /* End-documented-resources */
 
@@ -209,14 +210,10 @@ static NhlErrorTypes NcgmWorkstationInitialize
 
 
 
-	/* SUPPRESS 112 */
-	if(strcmp(wreq->ncgm.meta_name,DEFAULT_META_NAME) != 0) {
-		/* SUPPRESS 112 */
-		wnew->ncgm.meta_name =
+	wnew->ncgm.meta_name =
 			(char*)NhlMalloc(strlen(wreq->ncgm.meta_name) + 1);
-		/* SUPPRESS 112 */
-		strcpy(wnew->ncgm.meta_name,wreq->ncgm.meta_name);
-	}
+	strcpy(wnew->ncgm.meta_name,wreq->ncgm.meta_name);
+
 	if(*(wclass->ncgm_class.cgm_inited) == _NhlUNINITED){
 		wnew->work.gkswkstype = NCGM_WORKSTATION_TYPE;
 		wnew->work.gkswksconid = default_conid++;
@@ -285,8 +282,7 @@ static NhlErrorTypes NcgmWorkstationDestroy
 	NhlNcgmWorkstationLayer winst = (NhlNcgmWorkstationLayer)inst;
 	NhlNcgmWorkstationLayerClass wclass = (NhlNcgmWorkstationLayerClass)inst->base.layer_class;
 
-	if(strcmp(winst->ncgm.meta_name,DEFAULT_META_NAME) != 0)
-		NhlFree(winst->ncgm.meta_name);
+	NhlFree(winst->ncgm.meta_name);
 	*(wclass->ncgm_class.cgm_inited) = _NhlUNINITED;
 	return(NhlNOERROR);
 }
@@ -323,6 +319,7 @@ static NhlErrorTypes NcgmWorkstationSetValues
 
 	if(wnew->ncgm.meta_name != wold->ncgm.meta_name ) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NcgmWorkstationSetValues: metafile name cannot change after initialization");
+		wnew->ncgm.meta_name = wold->ncgm.meta_name;
 		return(NhlWARNING);
 	}
 	return(NhlNOERROR);

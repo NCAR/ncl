@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.19 1994-12-16 20:04:01 boote Exp $
+ *      $Id: CoordArrays.c,v 1.20 1995-01-19 22:04:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -127,17 +127,17 @@ static NhlResource resources[] = {
 		Oset(ycast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
 		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
-	{NhlNcaYMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaYMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
 		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
-	{NhlNcaXMaxV,NhlCcaXMaxV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaXMaxV,NhlCcaXMaxV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
-	{NhlNcaYMaxV,NhlCcaYMaxV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaYMaxV,NhlCcaYMaxV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
-	{NhlNcaXMinV,NhlCcaXMinV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaXMinV,NhlCcaXMinV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
-	{NhlNcaYMinV,NhlCcaYMinV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNcaYMinV,NhlCcaYMinV,NhlTVariable,sizeof(NhlGenArray),
 		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
 
 /* End-documented-resources */
@@ -633,7 +633,7 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NhlTGenArray,NhlTFloat,
+				lret = NhlConvertData(NhlTVariable,NhlTFloat,
 								&from,&to);
 				if(ret < NhlWARNING)
 					return NhlFATAL;
@@ -693,7 +693,7 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NhlTGenArray,NhlTFloat,
+				lret = NhlConvertData(NhlTVariable,NhlTFloat,
 								&from,&to);
 				if(lret < NhlWARNING)
 					return NhlFATAL;

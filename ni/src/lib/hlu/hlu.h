@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.24 1995-01-11 00:47:01 boote Exp $
+ *      $Id: hlu.h,v 1.25 1995-01-19 22:05:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -96,6 +96,11 @@
 /* public Array types */
 #define	NhlTGenArray		"GenArray"
 
+/*
+ * This type is a one element GenArray - used for "variable" type scalar's.
+ */
+#define	NhlTVariable		"Variable"
+
 #define NhlTStringGenArray	"StringGenArray"
 
 #define NhlTByteGenArray	"ByteGenArray"
@@ -120,6 +125,7 @@ typedef	char	*NhlString;
 typedef	void	*NhlPointer;
 typedef	int	NhlBoolean;
 typedef	int	NhlFont;
+typedef char	NhlByte;
 
 /* This declaration will hopefully move to hluP.h */
 typedef	struct NhlGenArrayRec_ *NhlGenArray;

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.29 1995-01-11 00:46:57 boote Exp $
+ *      $Id: XyPlot.c,v 1.30 1995-01-19 22:04:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1094,7 +1094,7 @@ XyDataInitialize
 
 	if(dnew->xydata.colors != NULL){
 		gen = dnew->xydata.colors;
-		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
+		if(_NhlIsSubtypeQ(Qint,gen->typeQ)&&(gen->size == sizeof(int))&&
 						(gen->num_dimensions == 1)){
 			dnew->xydata.colors = _NhlCopyGenArray(gen,True);
 		}
@@ -1110,7 +1110,7 @@ XyDataInitialize
 
 	if(dnew->xydata.dashes != NULL){
 		gen = dnew->xydata.dashes;
-		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
+		if(_NhlIsSubtypeQ(Qint,gen->typeQ)&&(gen->size == sizeof(int))&&
 						(gen->num_dimensions == 1)){
 			dnew->xydata.dashes = _NhlCopyGenArray(gen,True);
 		}

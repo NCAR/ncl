@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.25 1995-01-11 00:46:27 boote Exp $
+ *      $Id: Converters.c,v 1.26 1995-01-19 22:04:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -574,6 +574,12 @@ _NhlRegisterEnumType
 
 	if(_NhlRegSymConv(NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
 								NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+								func,enum_name);
+		return NhlFATAL;
+	}
+	if(_NhlRegSymConv(NhlTQuarkGenArray,enumgen_name,
+				NhlTQuarkGenArray,NhlTGenArray) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
@@ -1163,7 +1169,7 @@ CvtArgs
 	char		func[] = "NhlCvtScalarToGenArray";
 	NhlGenArray	gen;
 	NrmValue	val;
-	NhlArgVal	*data;
+	NhlPointer	data;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -1173,17 +1179,17 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	data = NhlConvertMalloc(sizeof(NhlArgVal));
+	data = NhlConvertMalloc(from->size);
 	if(data == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
 	}
-	*data = from->data;
+	memcpy(data,&from->data,from->size);
 	gen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
 							from->size,1,NULL);
 
 	if(!gen){
-		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array");
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;
 	}
 
@@ -1262,6 +1268,59 @@ CvtArgs
 		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 	return _NhlReConvertData(newfromQ,to->typeQ,from,to);
+}
+
+/*
+ * This converter is used to convert from ANY GenArray value to the scalar
+ * "variable" type.
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtGenArrayToVariable
+CvtArgs
+{
+	NhlGenArray	gen;
+	char		func[] = "NhlCvtGenArrayToVariable";
+	NhlPointer	data;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:called with wrong number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+
+	/*
+	 * if the from gen array is null, then it is valid as is.
+	 */
+	if(!gen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	}
+
+	if(gen->num_elements > 1){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s to %s conversion loosing information",func,
+			NrmQuarkToString(from->typeQ),NhlTVariable);
+		ret = NhlWARNING;
+
+		data = NhlConvertMalloc(gen->size);
+		if(data == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		memcpy(data,gen->data,gen->size);
+		gen = _NhlConvertCreateGenArray(data,
+			NrmQuarkToString(gen->typeQ),gen->size,1,NULL);
+		if(!gen){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+	}
+
+	SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 }
 
 /*
@@ -2264,7 +2323,7 @@ _NhlConvertersInitialize
 	(void)_NhlRegisterTypes(NhlTGenArray,NhlTByteGenArray,
 		NhlTCharacterGenArray,NhlTShortGenArray,NhlTLongGenArray,
 		NhlTFloatGenArray,NhlTDoubleGenArray,NhlTIntegerGenArray,
-		NhlTStringGenArray,NhlTQuarkGenArray,NULL);
+		NhlTStringGenArray,NhlTQuarkGenArray,NhlTVariable,NULL);
 
 	(void)_NhlRegisterTypes(NhlTIntegerGenArray,NhlTEnumGenArray,NULL);
 
@@ -2352,6 +2411,7 @@ _NhlConvertersInitialize
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NhlTScalar,NhlTIntegerGenArray,NhlTScalar,
 								NhlTGenArray);
+	(void)_NhlRegSymConv(NhlTScalar,NhlTVariable,NhlTScalar,NhlTGenArray);
 
 	/*
 	 * Register all the converters from Array types to other Array
@@ -2375,6 +2435,9 @@ _NhlConvertersInitialize
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NhlTGenArray,NhlTIntegerGenArray,NhlTGenArray,
 								NhlTGenArray);
+
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTVariable,
+				NhlCvtGenArrayToVariable,NULL,0,False,NULL);
 
 #define	_RegArr(FROM,TO)\
 	(void)NhlRegisterConverter(NhlT##FROM##GenArray,NhlT##TO##GenArray,\
@@ -2421,6 +2484,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTShortGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTStringGenArray,
+						NhlTQuarkGenArray,NhlTGenArray);
+	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTVariable,
 						NhlTQuarkGenArray,NhlTGenArray);
 	/*
 	 * Register enumerations.

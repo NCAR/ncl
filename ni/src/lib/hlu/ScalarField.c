@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.13 1994-12-16 20:04:40 boote Exp $
+ *      $Id: ScalarField.c,v 1.14 1995-01-19 22:04:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,34 +55,34 @@ static NhlResource resources[] = {
 	{NhlNsfExchangeDimensions,NhlCsfExchangeDimensions,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(exchange_dimensions),NhlTImmediate,
 		 _NhlUSET((NhlPointer)False),0,NULL},
-	{NhlNsfMissingValueV,NhlCsfMissingValueV,NhlTGenArray,
+	{NhlNsfMissingValueV,NhlCsfMissingValueV,NhlTVariable,
 		 sizeof(NhlGenArray),Oset(missing_value),NhlTImmediate,
 		 _NhlUSET(NULL),0,NULL},
-	{NhlNsfDataMinV,NhlCsfDataMinV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfDataMinV,NhlCsfDataMinV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(data_min),NhlTImmediate,_NhlUSET(NULL),0,NULL},
-	{NhlNsfDataMaxV,NhlCsfDataMaxV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfDataMaxV,NhlCsfDataMaxV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(data_max),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 
-	{NhlNsfXCStartV,NhlCsfXCStartV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfXCStartV,NhlCsfXCStartV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(x_start),NhlTImmediate,_NhlUSET(NULL),0,NULL},
-	{NhlNsfXCEndV,NhlCsfXCEndV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfXCEndV,NhlCsfXCEndV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(x_end),NhlTImmediate,_NhlUSET(NULL),0,NULL},
-	{NhlNsfYCStartV,NhlCsfYCStartV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfYCStartV,NhlCsfYCStartV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(y_start),NhlTImmediate,_NhlUSET(NULL),0,NULL},
-	{NhlNsfYCEndV,NhlCsfYCEndV,NhlTGenArray,sizeof(NhlGenArray),
+	{NhlNsfYCEndV,NhlCsfYCEndV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(y_end),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 
 	{NhlNsfXCStartSubsetV,NhlCsfXCStartSubsetV,
-		 NhlTGenArray,sizeof(NhlGenArray),
+		 NhlTVariable,sizeof(NhlGenArray),
 		 Oset(x_subset_start),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfXCEndSubsetV,NhlCsfXCEndSubsetV,
-		 NhlTGenArray,sizeof(NhlGenArray),
+		 NhlTVariable,sizeof(NhlGenArray),
 		 Oset(x_subset_end),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfYCStartSubsetV,NhlCsfYCStartSubsetV,
-		 NhlTGenArray,sizeof(NhlGenArray),
+		 NhlTVariable,sizeof(NhlGenArray),
 		 Oset(y_subset_start),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfYCEndSubsetV,NhlCsfYCEndSubsetV,
-		 NhlTGenArray,sizeof(NhlGenArray),
+		 NhlTVariable,sizeof(NhlGenArray),
 		 Oset(y_subset_end),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 
 	{NhlNsfXCStartIndex,NhlCsfXCStartIndex,NhlTInteger,sizeof(int),
