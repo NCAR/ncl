@@ -1,6 +1,6 @@
 C
-C $Id: mpiola.f,v 1.4 2000-08-22 15:04:03 haley Exp $
-C                                                                      
+C $Id: mpiola.f,v 1.5 2001-08-16 23:10:50 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,28 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       INTEGER FUNCTION MPIOLA (IAID,ILVL)
-C
-        PARAMETER (MNAI=6000)
-C
-C The value of MPIOLA(IAID,ILVL) is the area identifier of the largest
-C area, at level ILVL, that contains the area with area identifier IAID.
-C
-        COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-        SAVE   /MAPCMX/
-C
-        ITMP=IAID
-        NSTP=0
-C
-  101   IF (IPAR(ITMP).GE.1.AND.IPAR(ITMP).LE.MNAI) THEN
-          IF (IATY(IPAR(ITMP)).GE.ILVL) THEN
-            ITMP=IPAR(ITMP)
-            NSTP=NSTP+1
-            IF (NSTP.LT.10) GO TO 101
-          END IF
-        END IF
-C
-        MPIOLA=ITMP
-C
+        INTEGER IAID,ILVL
+        MPIOLA=MDIOLA(IAID,ILVL)
         RETURN
-C
       END

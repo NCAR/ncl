@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mdname.f,v 1.1 2001-08-16 23:10:48 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,31 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPLNRI (FLNM)
-        CHARACTER*(*) FLNM
-        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-        CALL MDLNRI (FLNM)
+      CHARACTER*64 FUNCTION MDNAME (IAIN)
+C
+        INTEGER      IAIN
+C
+        PARAMETER (MNAI=6000)
+C
+C The value of MDNAME(IAIN) is the name of the area with the area
+C identifier IAIN.
+C
+        COMMON /MAPCMX/  IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
+        INTEGER          IATY,ISCI,IPAR
+        SAVE   /MAPCMX/
+C
+        COMMON /MAPCMY/  NAME(MNAI),FLNS
+        CHARACTER*64     NAME,FLNS
+        SAVE   /MAPCMY/
+C
+        MDNAME=' '
+C
+        IF (IAIN.GE.1.AND.IAIN.LE.MNAI) THEN
+          IF (IATY(IAIN).NE.0) THEN
+            MDNAME=NAME(IAIN)
+          END IF
+        END IF
+C
         RETURN
+C
       END

@@ -1,6 +1,6 @@
 C
-C $Id: mpglty.f,v 1.5 2000-08-22 15:04:02 haley Exp $
-C                                                                      
+C $Id: mpglty.f,v 1.6 2001-08-16 23:10:49 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,17 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE MPGLTY (IARG)
-C
-C This routine may be called by a user from the line-processing routine
-C specified as the final argument in a call to MPLNDM in order to obtain
-C the type of the line being processed.
-C
-        COMMON /MAPCMZ/ NNMS,ILTY,IAIL,IAIR,BLAG,SLAG,BLOG,SLOG,
-     +                  PNTS(200)
-        SAVE   /MAPCMZ/
-C
-        IARG=ILTY
-C
+        INTEGER IARG
+        CALL MDGLTY (IARG)
         RETURN
-C
       END

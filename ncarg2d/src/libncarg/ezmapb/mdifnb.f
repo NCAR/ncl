@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mdifnb.f,v 1.1 2001-08-16 23:10:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,26 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPLNRI (FLNM)
-        CHARACTER*(*) FLNM
-        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-        CALL MDLNRI (FLNM)
+      INTEGER FUNCTION MDIFNB (CHRS)
+C
+        CHARACTER*(*) CHRS
+C
+C The value of MDIFNB(CHRS) is the index of the first non-blank in the
+C character string CHRS.
+C
+C Declare local variables.
+C
+        INTEGER I
+C
+        DO 101 I=1,LEN(CHRS)
+          IF (CHRS(I:I).NE.' ') THEN
+            MDIFNB=I
+            RETURN
+          END IF
+  101   CONTINUE
+C
+        MDIFNB=1
+C
         RETURN
+C
       END

@@ -1,6 +1,6 @@
 C
-C $Id: mpname.f,v 1.6 2000-08-22 15:04:05 haley Exp $
-C                                                                      
+C $Id: mpname.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,27 +21,8 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       CHARACTER*64 FUNCTION MPNAME (IAIN)
-C
-        PARAMETER (MNAI=6000)
-C
-C The value of MPNAME(IAIN) is the name of the area with the area
-C identifier IAIN.
-C
-        COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-        SAVE   /MAPCMX/
-C
-        COMMON /MAPCMY/ NAME(MNAI),FLNS
-        CHARACTER*64    NAME,FLNS
-        SAVE   /MAPCMY/
-C
-        MPNAME=' '
-C
-        IF (IAIN.GE.1.AND.IAIN.LE.MNAI) THEN
-          IF (IATY(IAIN).NE.0) THEN
-            MPNAME=NAME(IAIN)
-          END IF
-        END IF
-C
+        INTEGER      IAIN
+        CHARACTER*64 MDNAME
+        MPNAME=MDNAME(IAIN)
         RETURN
-C
       END

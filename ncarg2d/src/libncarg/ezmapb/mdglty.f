@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mdglty.f,v 1.1 2001-08-16 23:10:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,22 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPLNRI (FLNM)
-        CHARACTER*(*) FLNM
-        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-        CALL MDLNRI (FLNM)
+      SUBROUTINE MDGLTY (IARG)
+C
+        INTEGER IARG
+C
+C This routine may be called by a user from the line-processing routine
+C specified as the final argument in a call to MDLNDM in order to obtain
+C the type of the line being processed.
+C
+        COMMON /MAPCMZ/  NNMS,ILTY,IAIL,IAIR,BLAG,SLAG,BLOG,SLOG,
+     +                   PNTS(200)
+        INTEGER          NNMS,ILTY,IAIL,IAIR
+        REAL             BLAG,SLAG,BLOG,SLOG,PNTS
+        SAVE   /MAPCMZ/
+C
+        IARG=ILTY
+C
         RETURN
+C
       END

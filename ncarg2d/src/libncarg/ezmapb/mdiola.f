@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mdiola.f,v 1.1 2001-08-16 23:10:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,36 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPLNRI (FLNM)
-        CHARACTER*(*) FLNM
-        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-        CALL MDLNRI (FLNM)
+      INTEGER FUNCTION MDIOLA (IAID,ILVL)
+C
+        INTEGER IAID,ILVL
+C
+        PARAMETER (MNAI=6000)
+C
+C The value of MDIOLA(IAID,ILVL) is the area identifier of the largest
+C area, at level ILVL, that contains the area with area identifier IAID.
+C
+        COMMON /MAPCMX/  IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
+        INTEGER          IATY,ISCI,IPAR
+        SAVE   /MAPCMX/
+C
+C Declare local variables.
+C
+        INTEGER          ITMP,NSTP
+C
+        ITMP=IAID
+        NSTP=0
+C
+  101   IF (IPAR(ITMP).GE.1.AND.IPAR(ITMP).LE.MNAI) THEN
+          IF (IATY(IPAR(ITMP)).GE.ILVL) THEN
+            ITMP=IPAR(ITMP)
+            NSTP=NSTP+1
+            IF (NSTP.LT.10) GO TO 101
+          END IF
+        END IF
+C
+        MDIOLA=ITMP
+C
         RETURN
+C
       END

@@ -1,6 +1,6 @@
 C
-C $Id: mprdcs.f,v 1.5 2000-08-22 15:04:05 haley Exp $
-C                                                                      
+C $Id: mdrdcs.f,v 1.1 2001-08-16 23:10:48 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,16 +20,21 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPRDCS (IFDE,CHRS,LCHR,MCHR,NCHR,CVAR)
+      SUBROUTINE MDRDCS (IFDE,CHRS,LCHR,MCHR,NCHR,CVAR)
 C
-        CHARACTER*1 CHRS(LCHR)
-C
+        INTEGER       IFDE
+        CHARACTER*1   CHRS(LCHR)
+        INTEGER       LCHR,MCHR,NCHR
         CHARACTER*(*) CVAR
 C
 C Given the file descriptor of an open file in IFDE and a character
 C buffer CHRS, of length LCHR, having in it MCHR characters read from
 C the file, of which NCHR have previously been processed, this routine
 C returns the next LEN(CVAR) characters in the character variable CVAR.
+C
+C Declare local variables.
+C
+        INTEGER       IICV,ISTA,LOCV
 C
 C Find the length of the character variable.
 C

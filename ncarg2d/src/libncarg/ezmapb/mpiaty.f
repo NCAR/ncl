@@ -1,6 +1,6 @@
 C
-C $Id: mpiaty.f,v 1.6 2000-08-22 15:04:02 haley Exp $
-C                                                                      
+C $Id: mpiaty.f,v 1.7 2001-08-16 23:10:49 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,18 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       INTEGER FUNCTION MPIATY (IAIN)
-C
-        PARAMETER (MNAI=6000)
-C
-C The value of MPIATY(IAIN) is the area type for the area whose area
-C identifier is IAIN.
-C
-        COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-        SAVE   /MAPCMX/
-C
-        MPIATY=0
-        IF (IAIN.GE.1.AND.IAIN.LE.MNAI) THEN
-          MPIATY=IATY(IAIN)
-        END IF
+        INTEGER IAIN
+        MPIATY=MDIATY(IAIN)
         RETURN
       END

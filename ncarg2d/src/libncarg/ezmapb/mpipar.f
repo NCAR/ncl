@@ -1,6 +1,6 @@
 C
-C $Id: mpipar.f,v 1.6 2000-08-22 15:04:04 haley Exp $
-C                                                                      
+C $Id: mpipar.f,v 1.7 2001-08-16 23:10:51 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,25 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       INTEGER FUNCTION MPIPAR (IAIN)
-C
-        PARAMETER (MNAI=6000)
-C
-C The value of MPIPAR(IAIN) is the area identifier of the parent of the
-C area whose area identifier is IAIN.  The parent of an an area is the
-C area of which it is a part.  For example, the area named "Honshu" is
-C a part of the area named "Japan", which is its parent.
-C
-        COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-        SAVE   /MAPCMX/
-C
-        MPIPAR=0
-C
-        IF (IAIN.GE.1.AND.IAIN.LE.MNAI) THEN
-          IF (IATY(IAIN).NE.0) THEN
-            MPIPAR=IPAR(IAIN)
-          END IF
-        END IF
-C
+        INTEGER IAIN
+        MPIPAR=MDIPAR(IAIN)
         RETURN
-C
       END

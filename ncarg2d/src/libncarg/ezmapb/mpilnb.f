@@ -1,6 +1,6 @@
 C
-C $Id: mpilnb.f,v 1.5 2000-08-22 15:04:03 haley Exp $
-C                                                                      
+C $Id: mpilnb.f,v 1.6 2001-08-16 23:10:50 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -21,21 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       INTEGER FUNCTION MPILNB (CHRS)
-C
         CHARACTER*(*) CHRS
-C
-C The value of MPILNB(CHRS) is the index of the last non-blank in the
-C character string CHRS.
-C
-        DO 101 I=LEN(CHRS),1,-1
-          IF (CHRS(I:I).NE.' ') THEN
-            MPILNB=I
-            RETURN
-          END IF
-  101   CONTINUE
-C
-        MPILNB=1
-C
+        MPILNB=MDILNB(CHRS)
         RETURN
-C
       END

@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mdiosa.f,v 1.1 2001-08-16 23:10:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,38 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPLNRI (FLNM)
-        CHARACTER*(*) FLNM
-        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-        CALL MDLNRI (FLNM)
+      INTEGER FUNCTION MDIOSA (IAID,ILVL)
+C
+        INTEGER IAID,ILVL
+C
+        PARAMETER (MNAI=6000)
+C
+C The value of MDIOSA(IAID,ILVL) is the area identifier of the smallest
+C area, at level ILVL, that contains the area with area identifier IAID.
+C
+        COMMON /MAPCMX/  IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
+        INTEGER          IATY,ISCI,IPAR
+        SAVE   /MAPCMX/
+C
+C Declare local variables.
+C
+        INTEGER          ITMP,NSTP
+C
+        ITMP=IAID
+        NSTP=0
+C
+  101   IF (IATY(ITMP).GT.ILVL) THEN
+          IF (IPAR(ITMP).GE.1.AND.IPAR(ITMP).LE.MNAI) THEN
+            IF (IATY(IPAR(ITMP)).NE.0) THEN
+              ITMP=IPAR(ITMP)
+              NSTP=NSTP+1
+              IF (NSTP.LT.10) GO TO 101
+            END IF
+          END IF
+        END IF
+C
+        MDIOSA=ITMP
+C
         RETURN
+C
       END
