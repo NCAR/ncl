@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.14 2000-08-22 15:11:13 haley Exp $
+ *	$Id: commands.c,v 1.15 2002-02-23 02:08:46 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1037,14 +1037,14 @@ void	medSplit(med_data)
 				start_frame - 1, (unsigned) file_size) < 0) {
 			command_error_message (
 				med_data, errno, 0, (char *) NULL, MED_WARN);
-			if (file_name) cfree (file_name);
+			if (file_name) free (file_name);
 			return;
 		}
 
 		start_frame += file_size;
 	}
 #endif
-	if (file_name) cfree (file_name);
+	if (file_name) free (file_name);
 }
 
 
