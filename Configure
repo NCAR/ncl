@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.14 2000-09-05 21:46:49 haley Exp $
+#      $Id: Configure,v 1.15 2000-09-13 15:00:28 haley Exp $
 #
 #########################################################################
 #									#
@@ -22,12 +22,6 @@
 #			build this one.
 
 onintr cleanup
-
-set shell = $SHELL
-if (($shell:t != "csh") && ($shell:t != "tcsh")) then
-	echo "Current shell must be csh."
-	exit 1
-endif
 
 set cmd = $0
 set cmddir = ${cmd:h}
