@@ -1,5 +1,5 @@
 /*
- *      $Id: pr04c.c,v 1.1 1996-05-23 01:57:39 dbrown Exp $
+ *      $Id: pr04c.c,v 1.2 1996-06-28 20:55:38 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,14 +41,14 @@ main(int argc, char *argv[])
     int rlist,grlist;
     int appid,wid,canvas;
     int i;
-    float plx[6] = { 0.1,0.9,0.5,0.1 };
-    float ply[6] = { 0.1,0.1,0.9,0.1 };
-    float pmx[] = { 0.05,0.95,0.5,0.5 };
-    float pmy[] = { 0.05,0.05,1.05,0.5 };
-    float pgx[] = { 0.2,0.8,0.5,0.2 };
-    float pgy[] = { 0.25,0.25,0.85,0.25 };
-    float dpgx[] = { 5.0,110.0,110.0,0.0,110.0,5.0,5.0 };
-    float dpgy[] = { 10.,10.,20.0,20.,110.,110,10.0 };
+    float plx[5] = { 0.1,0.9,0.5,0.1 };
+    float ply[5] = { 0.1,0.1,0.9,0.1 };
+    float pmx[4] = { 0.05,0.95,0.5,0.5 };
+    float pmy[4] = { 0.05,0.05,1.05,0.5 };
+    float pgx[4] = { 0.2,0.8,0.5,0.2 };
+    float pgy[4] = { 0.25,0.25,0.85,0.25 };
+    float dpgx[7] = { 5.0,110.0,110.0,0.0,110.0,5.0,5.0 };
+    float dpgy[7] = { 10.,10.,20.0,20.,110.,110,10.0 };
 
 /*
  * Initialize the high level utility library
@@ -91,12 +91,10 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr04c.ps");
         NhlCreate(&wid,"pr04Work",NhlpsWorkstationClass,appid,rlist);
     }
-
 /*
  * Create an IrregularPlot that covers the entire NDC space 
  * to use as a drawing canvas
  */
-
     NhlRLClear(rlist);
     NhlRLSetFloat(rlist,NhlNvpXF,0.1);
     NhlRLSetFloat(rlist,NhlNvpYF,0.9);
