@@ -544,7 +544,7 @@ c .   may be considerably different (reduced) from the variance of x
 c .   on input [xinfo(2)]. xinfo(1) will contain the mean of the
 c .   input series.
 
-      CALL DDTRNDXD(X,NX,IOPT,XINFO(1),XINFO(2),XINFO(3),COEF,IER)
+      CALL DDTRNDX (X,NX,IOPT,XINFO(1),XINFO(2),XINFO(3),COEF,IER)
 
 c perform tapering on detrended x vector
 c .   the tapering procedure alters the variance of the input
@@ -696,130 +696,6 @@ c nag    sinfo(8) = g01ccf (0.95,dof,jfail)/dof
   270 FRQ(N) = SINFO(5)*DBLE(N-1)
 
 c c c call specdf  (frq,spc,nspc,sinfo(9),ier)
-
-      RETURN
-      END
-c -------------------------------------------------------------------
-      SUBROUTINE DDTRNDXD(X,NPTS,IOPT,XMEAN,XVARI,XVARO,C,IER)
-      DOUBLE PRECISION XMEAN
-      DOUBLE PRECISION XVARI
-      DOUBLE PRECISION XVARO
-      DOUBLE PRECISION XCNTR
-      DOUBLE PRECISION XBAR
-c
-c detrend the series x
-c
-c nomenclature :
-c
-c .   input
-c
-c .   x         - series to be detrended
-c .   npts      - length of x
-c .   iopt      - detrending option
-c .               iopt < 0 : calculate the mean and variance of x
-c .                          then return
-c .               iopt = 0 : remove the mean only
-c .               iopt = 1 : remove the mean and use linear lst sqrs to
-c .               iopt = 2 : remove the mean and use quadratic lst sqrs
-c .
-c .   output
-c .
-c .   xmean     - mean of the original input  series (output)
-c .   xvari     - variance of the original input series (output)
-c .   xvaro     - variance of the detrended series (output)
-c .               note : xvari = xvaro when iopt @ 0
-c .   c         - coefficients of the least squares polynomial (output)
-c .               must be dimensioned (3) in the calling program
-c .               c(1)  constant
-c .               c(2)  coef of first power [slope if iopt=1]
-c .               c(3)  coef of second power
-c .   ier       - error code
-c
-      DOUBLE PRECISION X(NPTS),C(3)
-C*PT*WARNING* Already double-precision
-      DOUBLE PRECISION XM,XV,XN
-
-      C(1) = 0.D0
-      C(2) = 0.D0
-      C(3) = 0.D0
-
-      IER = 0
-      IF (NPTS.LT.2) IER = -21
-      IF (IER.NE.0) RETURN
-
-      N = NPTS
-C*PT*WARNING* Constant already double-precision
-
-c calculate the mean and variance of the input series
-
-      XM = 0.d0
-C*PT*WARNING* Constant already double-precision
-      XV = 0.d0
-C*PT*WARNING* Already double-precision (DBLE)
-      XN = DBLE(DBLE(N))
-      DO I = 1,N
-C*PT*WARNING* Already double-precision (DBLE)
-          XM = XM + DBLE(X(I))
-C*PT*WARNING* DPROD found - result may be incorrect
-          XV = XV + X(I)*X(I)
-      END DO
-      XV = (XV-XM*XM/XN)/XN
-C*PT*WARNING* Non-reversible tranformation (SNGL)
-      XMEAN = XM/XN
-C*PT*WARNING* Non-reversible tranformation (SNGL)
-      XVARI = XV
-      XVARO = XVARI
-
-      IF (IOPT.LT.0) RETURN
-
-c must at least want the series mean removed (iopt=0)
-
-      DO I = 1,N
-          X(I) = X(I) - XMEAN
-      END DO
-
-      IF (IOPT.EQ.1) THEN
-
-c must also want least squares trend line removed
-
-          C(2) = 0.D0
-          XCNTR = DBLE(N+1)*0.5D0
-          DO I = 1,N
-              C(2) = C(2) + X(I)* (DBLE(I)-XCNTR)
-          END DO
-
-          C(2) = C(2)*12.D0/DBLE(N* (N*N-1))
-C y-intercept
-          C(1) = XMEAN - C(2)*XCNTR
-
-          DO I = 1,N
-              X(I) = X(I) - C(2)* (DBLE(I)-XCNTR)
-          END DO
-
-      END IF
-C*PT*WARNING* Constant already double-precision
-
-c calculate the variance of the detrended series
-c .   xbar should be zero to machine accuracy subtract it out anyway
-
-      XM = 0.d0
-C*PT*WARNING* Constant already double-precision
-      XV = 0.d0
-      DO I = 1,N
-C*PT*WARNING* Already double-precision (DBLE)
-          XM = XM + DBLE(X(I))
-C*PT*WARNING* DPROD found - result may be incorrect
-          XV = XV + X(I)*X(I)
-      END DO
-      XV = (XV-XM*XM/XN)/XN
-C*PT*WARNING* Non-reversible tranformation (SNGL)
-      XVARO = XV
-C*PT*WARNING* Non-reversible tranformation (SNGL)
-      XBAR = XM/XN
-
-      DO I = 1,N
-          X(I) = X(I) - XBAR
-      END DO
 
       RETURN
       END
