@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.20 1995-06-15 01:36:49 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.21 1995-06-16 20:56:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -327,7 +327,7 @@ static NhlResource resources[] = {
 	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(max_data_format.fstring),NhlTImmediate,
-		 _NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 
 /* Line label resources */
 
@@ -364,7 +364,7 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelFormat,NhlCcnLineLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(line_lbls.format.fstring),NhlTString,
-		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -423,7 +423,7 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelFormat,NhlCcnHighLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -484,7 +484,7 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelFormat,NhlCcnLowLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -544,7 +544,7 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelFormat,NhlCcnInfoLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(info_lbl.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(info_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -632,7 +632,7 @@ static NhlResource resources[] = {
 	{NhlNcnConstFLabelFormat,NhlCcnConstFLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(constf_lbl.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(constf_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -5291,6 +5291,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->max_data_format.fstring != NULL)
 			NhlFree(ocnp->max_data_format.fstring);
+		ocnp->max_data_format.fstring = NULL;
 	}
 	
 	if (cnp->line_lbls.format.fstring != ocnp->line_lbls.format.fstring) {
@@ -5299,6 +5300,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->line_lbls.format.fstring != NULL)
 			NhlFree(ocnp->line_lbls.format.fstring);
+		ocnp->line_lbls.format.fstring = NULL;
 	}
 	
 	if (cnp->high_lbls.format.fstring != ocnp->high_lbls.format.fstring) {
@@ -5307,6 +5309,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->high_lbls.format.fstring != NULL)
 			NhlFree(ocnp->high_lbls.format.fstring);
+		ocnp->high_lbls.format.fstring = NULL;
 	}
 	if (cnp->low_lbls.format.fstring != ocnp->low_lbls.format.fstring) {
 		subret = SetFormatRec(&cnp->low_lbls.format,
@@ -5314,6 +5317,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->low_lbls.format.fstring != NULL)
 			NhlFree(ocnp->low_lbls.format.fstring);
+		ocnp->low_lbls.format.fstring = NULL;
 	}
 	if (cnp->info_lbl.format.fstring != ocnp->info_lbl.format.fstring) {
 		subret = SetFormatRec(&cnp->info_lbl.format,
@@ -5321,6 +5325,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->info_lbl.format.fstring != NULL)
 			NhlFree(ocnp->info_lbl.format.fstring);
+		ocnp->info_lbl.format.fstring = NULL;
 	}
 	if (cnp->constf_lbl.format.fstring != 
 	    ocnp->constf_lbl.format.fstring) {
@@ -5329,6 +5334,7 @@ static NhlErrorTypes SetLabelFormats
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		if (ocnp->constf_lbl.format.fstring != NULL)
 			NhlFree(ocnp->constf_lbl.format.fstring);
+		ocnp->constf_lbl.format.fstring = NULL;
 	}
 	return ret;
 }
@@ -5754,7 +5760,7 @@ static NhlErrorTypes ManageTickMarks
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
- 	if (! tfp->overlay_on ||
+ 	if (! tfp->plot_manager_on ||
 	    cnp->display_tickmarks == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -5811,7 +5817,7 @@ static NhlErrorTypes ManageTitles
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
- 	if (! tfp->overlay_on ||
+ 	if (! tfp->plot_manager_on ||
 	    cnp->display_titles == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -5879,7 +5885,7 @@ static NhlErrorTypes ManageLegend
 	
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
- 	if (! tfp->overlay_on ||
+ 	if (! tfp->plot_manager_on ||
 	    cnp->display_legend == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -6360,7 +6366,7 @@ static NhlErrorTypes ManageLabelBar
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
- 	if (! tfp->overlay_on ||
+ 	if (! tfp->plot_manager_on ||
 	    cnp->display_labelbar == NhlNOCREATE) 
 		return NhlNOERROR;
 
@@ -7143,7 +7149,7 @@ static NhlErrorTypes ManageAnnotation
  * If the ContourPlot plot is an overlay plot base register the AnnoManager
  * with its own base, ensuring that it will always follow the overlay.
  */
-		if (tfp->overlay_on)
+		if (tfp->plot_manager_on)
 			subret = _NhlRegisterAnnotation(cnp->overlay_object,
 							_NhlGetLayer(*idp),
 							NULL);
@@ -7420,25 +7426,23 @@ static NhlErrorTypes SetFormatRec
 	char		*e_text;
 	NhlFormatRec	*frec;
 
+
+	if (format->fstring == NULL || format->fstring[0] == '\0') {
+		e_text = "%s: empty format string supplied for %s; defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,resource);
+		ret = NhlWARNING;
+		format->fstring = NhlcnDEF_FORMAT;
+	}
 	if ((frec = _NhlScanFString(format->fstring,entry_name)) == NULL) {
-		if (format->fstring == NULL) {
+		e_text = "%s: error in format string for %s: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,resource);
+		ret = NhlWARNING;
+		format->fstring = NhlcnDEF_FORMAT;
+		if ((frec = _NhlScanFString(format->fstring,
+					    entry_name)) == NULL) {
 			e_text = "%s: internal error getting format";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
-		}
-		else {
-			e_text = 
-			      "%s: error in format string for %s: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,resource);
-			ret = NhlWARNING;
-			if ((frec = 
-			     _NhlScanFString(NULL,entry_name)) == NULL) {
-				e_text = "%s: internal error getting format";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return(NhlFATAL);
-			}
 		}
 	}
 	memcpy((void *)format,(Const void *)frec,sizeof(NhlFormatRec));
@@ -9041,10 +9045,17 @@ static NhlErrorTypes    cnComputeRefLevel
 	int	i;
 	int	divpwr,sigdig,ref_level = 0;
 	int	min_sig_digits = 64;
+	int	max_sig_digits = 1;
 	float	test_fac = 1.0;
 	float	test_val = MAX(fabs(cnp->zmax),fabs(cnp->zmin));
 	float	test_high = pow(10.0,cnp->max_data_format.sig_digits);
 	float	test_low  = pow(10.0,cnp->max_data_format.sig_digits - 1);
+
+	if (cnp->max_data_format.left_sig_digit_flag == NhlffDYNAMIC) {
+		subret = _NhlGetScaleInfo(test_val,
+					  &divpwr,&sigdig,entry_name);
+		cnp->max_data_format.left_sig_digit = divpwr - 1;
+	}
 
 	if (test_val < test_low) {
 		while (test_val < test_low) {
@@ -9072,9 +9083,17 @@ static NhlErrorTypes    cnComputeRefLevel
 			min_sig_digits = sigdig;
 			ref_level = i;
 		}
+		if (sigdig > max_sig_digits) {
+			max_sig_digits = sigdig;
+		}
 	}
 	cnp->ref_level = ref_level;
-	
+
+#if 0	
+	if (cnp->max_data_format.sig_digits_flag == NhlffDYNAMIC) {
+		cnp->max_data_format.sig_digits = MIN(6,max_sig_digits);
+	}
+#endif
 	return ret;
 }
 
@@ -9134,7 +9153,8 @@ static NhlErrorTypes    SetupLevels
 	    (cnp->max_level_count == ocnp->max_level_count) &&
 	    (cnp->min_level_val == ocnp->min_level_val) &&
 	    (cnp->max_level_val == ocnp->max_level_val) &&
-	    (cnp->const_field == ocnp->const_field))
+	    (cnp->const_field == ocnp->const_field) &&
+	    (cnp->max_data_format.fstring == ocnp->max_data_format.fstring))
 		return ret;
 
 	cnp->new_draw_req = True;
@@ -9233,6 +9253,8 @@ static NhlErrorTypes    SetupLevels
 
 	cnp->min_level_set = True;
 	cnp->max_level_set = True;
+
+		
 	return ret;
 
 }

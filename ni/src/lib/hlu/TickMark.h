@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.9 1995-05-05 08:50:40 boote Exp $
+ *      $Id: TickMark.h,v 1.10 1995-06-16 20:57:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,12 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmXTAutoPrecision	"tmXTAutoPrecision"
 #define NhlNtmYRAutoPrecision	"tmYRAutoPrecision"
 #define NhlCtmAutoPrecision	"TmAutoPrecision"
+
+#define NhlNtmXBFormat		"tmXBFormat"
+#define NhlNtmYLFormat		"tmYLFormat"
+#define NhlNtmXTFormat		"tmXTFormat"
+#define NhlNtmYRFormat		"tmYRFormat"
+#define NhlCtmFormat		"TmFormat"
 
 /*
 * X Axis general Control resources for Bottom and Top

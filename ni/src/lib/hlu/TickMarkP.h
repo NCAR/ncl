@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.8 1995-04-07 10:44:00 boote Exp $
+ *      $Id: TickMarkP.h,v 1.9 1995-06-16 20:57:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,10 +26,12 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/TextItem.h>
+#include <ncarg/hlu/FormatI.h>
 
 #define	DEFAULTOFFSET	1.0
 #define MAXTICKS	256
 #define MAXMINORTICKS	1024
+#define NhltmDEF_FORMAT "0@*+^sg"
 
 typedef struct _NhlTickMarkLayerPart {
 	/* Publically setable resources */
@@ -47,8 +49,12 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlTickMarkStyle	x_t_style;
 	float		x_t_tension;
 	float		x_b_tension;
+	NhlBoolean	x_b_precision_set;
 	int		x_b_precision;
+	NhlBoolean	x_t_precision_set;
 	int		x_t_precision;
+	NhlFormatRec	x_b_format;
+	NhlFormatRec	x_t_format;
 	float		border_thickness;
 	int		border_line_color;
 	NhlBoolean	x_major_grid;
@@ -132,8 +138,12 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlTickMarkStyle	y_r_style;
 	float		y_l_tension;
 	float		y_r_tension;
+	NhlBoolean	y_l_precision_set;
 	int		y_l_precision;
+	NhlBoolean	y_r_precision_set;
 	int		y_r_precision;
+	NhlFormatRec	y_l_format;
+	NhlFormatRec	y_r_format;
 	NhlBoolean	y_major_grid;
 	NhlBoolean	y_minor_grid;
 	float		y_major_grid_thickness;
@@ -272,6 +282,7 @@ typedef struct _NhlTickMarkLayerPart {
 	float		*y_r_minor_data_locs;
 	int		y_r_nminor;
 	float		y_r_ndc_label_x;
+
 	NhlBoolean	new_draw_req;	
         NhlTransDat	*trans_dat;	/* segment transform data */
 }NhlTickMarkLayerPart;

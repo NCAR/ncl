@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.38 1995-05-05 08:50:34 boote Exp $
+ *      $Id: Converters.c,v 1.39 1995-06-16 20:56:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -245,6 +245,7 @@ _NhlStringToStringGenArray
 				break;
 			case ENDOFSTRING:
 				state = 7;
+				done = 1;
 				break;
 			case RP:
 				if(level >=0 ) {

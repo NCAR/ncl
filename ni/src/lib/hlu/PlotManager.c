@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.13 1995-06-09 19:19:58 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.14 1995-06-16 20:57:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4599,7 +4599,7 @@ NhlErrorTypes NhlAddOverlay
 
 	plot_tfp = &(((NhlTransformLayer)plot)->trans);
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
+	if (! base_tfp->plot_manager_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: base is not a plot object";
@@ -4891,7 +4891,7 @@ NhlErrorTypes NhlRemoveOverlay
 	}
 
 	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
+	if (! base_tfp->plot_manager_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: base is not a plot object";
@@ -5052,7 +5052,7 @@ NhlLayer GetPlotOverlay
 	NhlTransformLayerPart	*tfp = &transform->trans;
 	NhlPlotManagerLayer	ovl = (NhlPlotManagerLayer)tfp->overlay_object;
 
-	if (! tfp->overlay_on  ||
+	if (! tfp->plot_manager_on  ||
 	    tfp->overlay_status == _tfNotInOverlay ||
 	    ovl == NULL || ! _NhlIsTransform((NhlLayer) ovl) ||
 	    (ovl->base.layer_class)->base_class.class_name !=
@@ -6165,13 +6165,13 @@ extern NhlErrorTypes _NhlManageOverlay
 	int			lsarg_count = 8; /* Keep up to date!!! */
 
 	if (*overlay_object == NULL) {
-		if (! tfp->overlay_on)
+		if (! tfp->plot_manager_on)
 			return ret;
 		else if (method != _NhlCREATE) {
 			e_text = "%s: resetting create-only resource: %s";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNtfPlotManagerOn);
-			tfp->overlay_on = False;
+			tfp->plot_manager_on = False;
 			return NhlWARNING;
 		}
 	}
@@ -6231,13 +6231,13 @@ extern NhlErrorTypes _NhlManageOverlay
 
 		return ret;
 	}
-	else if (tfp->overlay_on == False) {
+	else if (tfp->plot_manager_on == False) {
 
 		if (tfp->overlay_status == _tfCurrentOverlayMember) {
 			e_text = 
 	       "%s: must remove from overlay before destroying overlay base";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			tfp->overlay_on = True;
+			tfp->plot_manager_on = True;
 		}
 		else {
 			subret = _NhlDestroyChild((*overlay_object)->base.id,

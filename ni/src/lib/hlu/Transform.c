@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.20 1995-04-07 10:44:10 boote Exp $
+ *      $Id: Transform.c,v 1.21 1995-06-16 20:57:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@ static NhlResource resources[] = {
 
 	{ NhlNtfPlotManagerOn,NhlCtfPlotManagerOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
-		  NhlOffset(NhlTransformLayerRec,trans.overlay_on),
+		  NhlOffset(NhlTransformLayerRec,trans.plot_manager_on),
 		  NhlTImmediate,(NhlPointer)True,0,NULL},
 
 /* End-documented-resources */

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.49 1995-05-30 23:36:12 boote Exp $
+ *      $Id: XyPlot.c,v 1.50 1995-06-16 20:57:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -866,12 +866,21 @@ XyResetExtents
 	float			xstart,xend,ystart,yend;
 	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
 	NhlErrorTypes		ret;
+	NhlBoolean		xb_on,xt_on,yl_on,yr_on;
 
+	if (! xnew->trans.plot_manager_on ||
+	    newxy->display_tickmarks < NhlCONDITIONAL)
+		return NhlNOERROR;
+	    
 	nargs = 0;
 	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickStartF,&xstart);
 	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickEndF,&xend);
 	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickStartF,&ystart);
 	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickEndF,&yend);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBOn,&xb_on);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXTOn,&xt_on);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLOn,&yl_on);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYROn,&yr_on);
 	ret = NhlALGetValues(newxy->overlay->base.id,gargs,nargs);
 	if(ret < NhlNOERROR){
 		NhlPError(ret,NhlEUNKNOWN,
@@ -880,21 +889,25 @@ XyResetExtents
 	}
 
 	nargs = 0;
-	if(newxy->compute_x_min){
-		newxy->x_min = xstart;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
+	if (xb_on || xt_on) {
+		if(newxy->compute_x_min) {
+			newxy->x_min = xstart;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
+		}
+		if(newxy->compute_x_max){
+			newxy->x_max = xend;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
+		}
 	}
-	if(newxy->compute_x_max){
-		newxy->x_max = xend;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
-	}	
-	if(newxy->compute_y_min){
-		newxy->y_min = ystart;
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
-	}
-	if(newxy->compute_y_max){
-		newxy->y_max = yend;
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+	if (yl_on || yr_on) {
+		if(newxy->compute_y_min){
+			newxy->y_min = ystart;
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
+		}
+		if(newxy->compute_y_max){
+			newxy->y_max = yend;
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+		}
 	}
 
 	if(!nargs)
@@ -3886,7 +3899,7 @@ SetUpTicks
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->overlay_on ||
+	if(!tfp->plot_manager_on ||
 		nxp->display_tickmarks == NhlNOCREATE)
 		return NhlNOERROR;
 
@@ -3942,7 +3955,7 @@ static NhlErrorTypes SetUpTitles
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->overlay_on ||
+	if(!tfp->plot_manager_on ||
 		nxp->display_titles == NhlNOCREATE)
 		return NhlNOERROR;
 
@@ -3998,7 +4011,7 @@ static NhlErrorTypes SetUpLegend
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->overlay_on ||
+	if(!tfp->plot_manager_on ||
 		nxp->display_legend == NhlNOCREATE)
 		return NhlNOERROR;
 

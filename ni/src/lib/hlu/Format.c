@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.8 1995-05-10 01:25:34 dbrown Exp $
+ *      $Id: Format.c,v 1.9 1995-06-16 20:56:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -218,14 +218,15 @@ static NhlErrorTypes parse_field_width(void)
 			Cp++;
 			break;
 		case '*':
-			if (ndigits > 0) {
+			if (ndigits > 0 && *(Cp + 1) != '+') {
 				e_text =
 				      "%s: invalid field width specification";
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,
                                           e_text,Entry_Name);
                                 return NhlFATAL;
 			}
-			Format.field_width_flag = NhlffDYNAMIC;
+			if (ndigits == 0)
+				Format.field_width_flag = NhlffDYNAMIC;
 			Cp++;
 			if (*Cp == '+') {
 				Format.sig_digits_flag = NhlffDYNAMIC;
@@ -832,7 +833,7 @@ NhlString _NhlFormatFloat
         int nbuf;
         int ndgs;
         int ieva;
-        int ix, i;
+        int ix, i,j;
         char *cp =NULL, *ppos = NULL;
         char fill_char;
         NhlBoolean zero_added = False;
@@ -840,7 +841,8 @@ NhlString _NhlFormatFloat
         int field_width,apparent_fwidth;
 	NhlBoolean left_justify = False;
 	int set_ppos,move_cnt = 0;
-	NhlBoolean has_mantissa;
+	NhlBoolean has_mantissa,set_point_pos = False;
+	NhlBoolean check_zero = True;
 
 	lmsd = format->left_sig_digit;
         if (format->left_sig_digit_flag) {
@@ -887,6 +889,15 @@ NhlString _NhlFormatFloat
         iodp = (int) ! format->pound;
         iotz = (int) ! format->zero;
 
+	if (value == 0.0) {
+		check_zero = True;
+		if (lmsd < -1000) {
+			lmsd = 0;
+			check_zero = False;
+		}
+		value = pow(10.0,lmsd - ndgd - 4);
+	}
+
         NGCALLF(cpinrc,CPINRC)();
 
 	{
@@ -915,7 +926,6 @@ NhlString _NhlFormatFloat
 		cbuf[nbuf] = '\0';
 	}
 
-
 /*
  * Add a leading zero if appropriate.
  */		
@@ -931,6 +941,26 @@ NhlString _NhlFormatFloat
                 nbuf++;
                 zero_added = True;
         }
+/*
+ * If the value was 0.0 CPNUMB will put extra zeros in the front.
+ * Remove them. If the field is to be filled with a fill character,
+ * they may be replaced later.
+ */
+
+	if (check_zero) {
+		i = 0;
+		if (cbuf[0] == '-') i++;
+		if (cbuf[i] == '0') i++;
+		j = i;
+		while (cbuf[j] == '0' && cbuf[j] != '\0') j++;
+		while (cbuf[j] != '\0')
+			cbuf[i++] = cbuf[j++];
+		nbuf -= (j - i);
+		cbuf[i] = '\0';
+	}
+		
+			
+		
 /*
  * Add a trailing zero as required
  */
@@ -978,17 +1008,31 @@ NhlString _NhlFormatFloat
 	}
 
 /*
+ * Find out whether the point is to be placed explicitly
+ */
+	
+	if (field_width > 0) {
+		if (format->point_position_flag == NhlffEXPLICIT) {
+			set_ppos = format->point_position;
+			set_point_pos = True;
+		}
+		else if (format->point_position_flag == NhlffDYNAMIC &&
+			 point_pos != NULL) {
+			set_ppos = *point_pos;
+			set_point_pos = True;
+		}
+	}
+	      
+/*
  * If replacing the decimal or adding trailing zeros find the position of
  * the decimal point. Note that a trailing zero may need to be inserted
  * after the decimal point and before the exponent.
  */
-        if (format->comma || 
-	    (format->at_sign && ! zero_added) ||
-	    format->point_position_flag)
+        if (format->comma || set_point_pos ||
+	    (format->at_sign && ! zero_added))
                 ppos = strchr((const char *)cbuf,(int)'.');
-
 	if (ppos != NULL) {
-		if (format->comma)
+ 		if (format->comma)
 			*ppos = ',';
 		if (format->at_sign && ! zero_added) {
 			if (exp_pos == ppos + 1) {
@@ -1045,16 +1089,9 @@ NhlString _NhlFormatFloat
  * position it is placed as near to it as possible.
  */
 
-        set_ppos = format->point_position;
-        if (format->point_position_flag) {
-                if (format->point_position == NhlffDYNAMIC && 
-                    point_pos != NULL)
-                        set_ppos = *point_pos;
-        }
-
-	if (format->point_position_flag) {
+	if (set_point_pos) {
 		move_cnt = ppos == NULL ? set_ppos - nbuf - 1:
-			format->point_position - (ppos - cbuf) - 1;
+			set_ppos - (ppos - cbuf) - 1;
 		if (move_cnt + nbuf > apparent_fwidth) {
 			move_cnt = apparent_fwidth - nbuf;
 		}
@@ -1063,8 +1100,20 @@ NhlString _NhlFormatFloat
 				cbuf[i + move_cnt] = cbuf[i];
 			}
 			nbuf += move_cnt;
+			if (exp_pos != NULL)
+				exp_pos += move_cnt;
 			for (i = 0; i < move_cnt; i++)
 				cbuf[i] = fill_char;
+			switch (cbuf[move_cnt]) {
+			case '+':
+			case '-':
+			case ' ':
+				cbuf[0] = cbuf[move_cnt];
+				cbuf[move_cnt] = fill_char;
+				break;
+			default:
+				break;
+			}
 		}
 	}
 	else if (format->minus) {
@@ -1083,35 +1132,20 @@ NhlString _NhlFormatFloat
 		cbuf[nbuf] = '\0';
 	}
         else {
-                if (left_justify && exp_pos != NULL && format->zero) {
-                        int start = exp_pos - cbuf;
-                        int len = nbuf - start;
-                        for (i = 1; i <= nbuf - start; i++)
-                                cbuf[apparent_fwidth-i] = cbuf[nbuf-i];
-                        for (i = start; i < apparent_fwidth - len; i++)
-                                cbuf[i] = fill_char;
-                }
-                else if (left_justify) {
-                        for (i = nbuf; i < apparent_fwidth; i++)
-                                cbuf[i] = fill_char;
-                }
-                else if (format->point_position_flag && 
-			 fill_char == '0') {
-			if (move_cnt > 0) {
-				switch (cbuf[move_cnt]) {
-				case '+':
-				case '-':
-				case ' ':
-					cbuf[0] = cbuf[move_cnt];
-					cbuf[move_cnt] = fill_char;
-					break;
-				default:
-					break;
-				}
+		if (left_justify || set_point_pos) {
+			if (exp_pos != NULL && fill_char == '0') {
+				int start = exp_pos - cbuf;
+				int len = nbuf - start;
+				for (i = 1; i <= nbuf - start; i++)
+					cbuf[apparent_fwidth-i] = cbuf[nbuf-i];
+				for (i = start; i < apparent_fwidth - len; i++)
+					cbuf[i] = fill_char;
 			}
-			for (i = nbuf; i < apparent_fwidth; i++)
-				cbuf[i] = fill_char;
-		}
+			else {
+				for (i = nbuf; i < apparent_fwidth; i++)
+					cbuf[i] = fill_char;
+			}
+                }
                 else if (fill_char == '0') {
 			switch (cbuf[0]) {
 			case '+':
@@ -1130,10 +1164,6 @@ NhlString _NhlFormatFloat
 				break;
 			}
                 }
-                else if (format->point_position_flag) {
-			for (i = nbuf; i < apparent_fwidth; i++)
-				cbuf[i] = fill_char;
-		}
 		else {
 			for (i = 1; i <= nbuf; i++)
 				cbuf[apparent_fwidth-i] = cbuf[nbuf-i];
@@ -1195,6 +1225,8 @@ NhlErrorTypes _NhlGetScaleInfo
         int nbuf;
         int ndgs;
         int ieva;
+	float tmpf;
+	int i;
 
         lmsd = -10000;
         ndgd = 10;
@@ -1206,13 +1238,50 @@ NhlErrorTypes _NhlGetScaleInfo
         iotz = 0;
 
         NGCALLF(cpinrc,CPINRC)();
-        NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
-                         cex1,cex2,cex3,&lex1,&lex2,&lex3,
-                         &ioma,&iodp,&iotz,cbuf,&nbuf,&ndgs,&ieva,
-                         1,1,1,127);
+
+	{
+		int len1,len2,len3,len4;
+		NGstring cex1_f;
+		NGstring cex2_f;
+		NGstring cex3_f;
+		NGstring cbuf_f;
+		char *cbuf_c;
+		len1 = NGSTRLEN(cex1);
+		len2 = NGSTRLEN(cex2);
+		len3 = NGSTRLEN(cex3);
+		len4 = 128;
+		cex1_f = NGCstrToFstr(cex1,len1);
+		cex2_f = NGCstrToFstr(cex2,len2);
+		cex3_f = NGCstrToFstr(cex3,len3);
+		cbuf_f = NGCstrToFstr(cbuf,len4);
+		NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
+				       cex1,cex2,cex3,&lex1,&lex2,&lex3,
+				       &ioma,&iodp,&iotz,cbuf,&nbuf,
+				       &ndgs,&ieva,len1,len2,len3,len4);
+		cbuf_c = NGFstrToCstr(cbuf_f);
+		if (cbuf_c != &cbuf[0])
+			strcpy(cbuf,cbuf_c);
+		cbuf[nbuf] = '\0';
+	}
 
 	*div_pwr = ieva;
-	*sig_digits = ndgs;
+
+	tmpf = fabs(value);
+	sprintf(cbuf,"%.8f",tmpf);
+	*sig_digits = 0;
+	i = 0;
+	if (tmpf < 1.0) {
+		while ((cbuf[i] == '0' || cbuf[i] == '.') &&
+		       cbuf[i] != '\0')
+			i++;
+	}
+	while (cbuf[i] != '\0') {
+		if (cbuf[i] == '0')
+			break;
+		if (cbuf[i] != '.')
+			(*sig_digits)++;
+		i++;
+	}
 
 	return NhlNOERROR;
 }
