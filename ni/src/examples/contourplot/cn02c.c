@@ -1,0 +1,232 @@
+/*
+ *      $Id: cn02c.c,v 1.1 1995-03-31 21:54:47 haley Exp $
+ */
+/************************************************************************
+*                                                                       *
+*                Copyright (C)  1993                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
+************************************************************************/
+/*
+ *  File:       cn02c.c
+ *
+ *  Author:     David Brown
+ *          National Center for Atmospheric Research
+ *          PO 3000, Boulder, Colorado
+ *
+ *  Date:       Tue Oct  4 18:48:08 MDT 1994
+ *
+ *  Description:    Demonstrates basic features of the Contour object
+ */
+
+#include <math.h>
+#include <stdio.h>
+#include <ncarg/gks.h>
+#include <ncarg/ncargC.h>
+#include <ncarg/hlu/hlu.h>
+
+/*
+ * Include a header file for each object created
+ */
+
+#include <ncarg/hlu/App.h>
+#include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/ScalarField.h>
+#include <ncarg/hlu/Contour.h>
+
+static const int M=25, N=25;
+
+main(int argc, char *argv[])
+{
+    float   T[25 * 25];
+    int len_dims[2];
+    int appid,wid,dataid,cnid;
+    int srlist,grlist;
+    float   x,y;
+    int i,j;
+    float   *fscales;
+    int *colors;
+    int     count, itmp;
+    int NCGM=0;
+
+/* create a simple bull's eye pattern test data set */
+
+#define PI  3.14159
+    for (i=-N/2;i<=N/2;i++) {
+        for (j=-M/2;j<=M/2;j++) {
+            x = 8.0 * i;
+            y = 8.0 * j;
+            *(T+(M*(i+N/2)+j+M/2)) = 
+                100.0 - sqrt((double)(x*x + y*y));
+        }
+    }
+/*
+ * Initialize the high level utility library
+ */
+    NhlInitialize();
+/*
+ * Create an application context. Set the app dir to the current directory
+ * so the application looks for a resource file in the working directory.
+ * In this example the resource file supplies the plot title only.
+ */
+    srlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"cn02",NhlappLayerClass,NhlDEFAULT_APP,srlist);
+
+    if (NCGM) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkMetaName,"./cn02c.ncgm");
+        NhlCreate(&wid,"cn02Work",
+                  NhlncgmWorkstationLayerClass,appid,srlist);
+    }
+    else {
+/*
+ * Create an X workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetInteger(srlist,NhlNwkPause,True);
+        NhlCreate(&wid,"cn02Work",NhlxWorkstationLayerClass,appid,srlist);
+    }
+/*
+ * Create a ScalarField data object using the data set defined above.
+ * By default the array bounds will define the data boundaries (zero-based,
+ * as in C language conventions)
+ */
+
+    NhlRLClear(srlist);
+    len_dims[0] = N;
+    len_dims[1] = M;
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,T,2,len_dims);
+    NhlCreate(&dataid,"bullseye",NhlscalarFieldLayerClass,appid,
+              srlist);
+/*
+ * Create a Contour object, supplying the ScalarField object as data
+ */
+    NhlRLClear(srlist);
+    NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
+    NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,srlist);
+
+/*
+ * Draw the plot; notice that it illustrates the basic default behavior of
+ * the Contour object. The contours appear as solid lines with unboxed
+ * labels in a linear coordinate system with the origin at the lower left. 
+ * Tickmarks with labels show the data coordinate range, and an 
+ * informational label at the lower right gives the minimum and maximum
+ * data values and the contour interval spacing. The title is NOT a default
+ * item; it appears because it is defined in the resource file.
+ */
+    NhlDraw(cnid);
+    NhlFrame(wid);
+/*
+ * In the Contour object, many resources that apply to the lines 
+ * representing the contour levels and the fill areas between the levels
+ * have both a scalar and an array form. You control which applies by 
+ * setting an associated boolean flag, indentified by the prefix "Mono".
+ * As an illustration, set NhlNcnMonoLineDashPattern and NhlNcnMonoLineColor
+ * false to use a different line dash pattern and line color at each level.
+ * At the same time set the line thickness of all lines to twice the
+ * default thickness.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetFloat(srlist,NhlNcnLineThicknessF,2.0);
+    NhlRLSetString(srlist,NhlNcnMonoLineDashPattern,"false");
+    NhlRLSetString(srlist,NhlNcnMonoLineColor,"false");
+    NhlSetValues(cnid,srlist);
+    NhlDraw(cnid);
+    NhlFrame(wid);
+/*
+ * Change back to a single solid line color and use pattern fill
+ */
+    NhlRLClear(srlist);
+    NhlRLSetFloat(srlist,NhlNcnLineThicknessF,1.0);
+    NhlRLSetString(srlist,NhlNcnMonoLineDashPattern,"true");
+    NhlRLSetString(srlist,NhlNcnMonoLineColor,"true");
+    NhlRLSetString(srlist,NhlNcnFillOn,"true");
+    NhlRLSetString(srlist,NhlNcnMonoFillColor,"true");
+    NhlRLSetString(srlist,NhlNcnMonoFillPattern,"false");
+    NhlSetValues(cnid,srlist);
+    NhlDraw(cnid);
+    NhlFrame(wid);
+/*
+ * Get the fill scale array to illustrate how you would modify the
+ * values of an array resource. By default all elements of this array
+ * are set to 1.0, resulting in all fill patterns appearing at its
+ * 'standard' size.
+ * The user is responsible for freeing the memory allocated for this array.
+ * Modify the array to range from sparse (2.5) at the low data values 
+ * to dense (0.5) at high values, and set the new values, turning off
+ * the "mono" flag resource at the same time. 
+ */
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLClear(grlist);
+    NhlRLGetFloatArray(grlist,NhlNcnFillScales,&fscales,&count);
+    NhlGetValues(cnid,grlist);
+
+    for (i = 0; i < count; i++) {
+        fscales[i] = 2.5 - 2.0 * i / (float) (count - 1);
+    }
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,NhlNcnMonoFillScale,"false");
+    NhlRLSetFloatArray(srlist,NhlNcnFillScales,fscales,count);
+    NhlSetValues(cnid,srlist);
+    NhlDraw(cnid);
+    NhlFrame(wid);
+/*
+ * Use solid multi-colored fill instead of single-colored pattern fill.
+ * Change the contour lines to use the background color using the scalar
+ * form of the line color resource.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetInteger(srlist,NhlNcnLineColor,NhlBACKGROUND);
+    NhlRLSetString(srlist,NhlNcnMonoFillColor,"false");
+    NhlRLSetString(srlist,NhlNcnMonoFillPattern,"true");
+    NhlSetValues(cnid,srlist);
+    NhlDraw(cnid);
+    NhlFrame(wid);
+
+/*
+ * Invert the fill colors.
+ * First get the current array contents, reverse their order, 
+ * then re-set the resource using the modified array. Note that the user 
+ * is responsible for freeing the memory allocated for the array. 
+ * Turn lines off altogether and also turn off the line and high/low labels.
+ */
+    NhlRLClear(grlist);
+    NhlRLGetIntegerArray(grlist,NhlNcnFillColors,&colors,&count);
+    NhlGetValues(cnid,grlist);
+
+    for (i = 0; i < count / 2; i++) {
+        itmp = colors[i];
+        colors[i] = colors[count - 1 - i];
+        colors[count - 1 - i] = itmp;
+    }
+
+    NhlRLClear(srlist);
+    NhlRLSetIntegerArray(srlist,NhlNcnFillColors,colors,count);
+    NhlRLSetString(srlist,NhlNcnLinesOn,"false");
+    NhlRLSetString(srlist,NhlNcnLineLabelsOn,"false");
+    NhlRLSetString(srlist,NhlNcnHighLabelsOn,"false");
+    NhlRLSetString(srlist,NhlNcnLowLabelsOn,"false");
+    NhlSetValues(cnid,srlist);
+    NhlDraw(cnid);
+    NhlFrame(wid);
+    
+/*
+ * Destroy the objects created, close the HLU library and exit.
+ */
+    NhlFree(fscales);
+    NhlFree(colors);
+    NhlDestroy(dataid);
+    NhlDestroy(cnid);
+    NhlDestroy(wid);
+    NhlDestroy(appid);
+
+    NhlClose();
+    exit(0);
+}

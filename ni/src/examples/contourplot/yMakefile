@@ -1,0 +1,40 @@
+#
+#   $Id: yMakefile,v 1.1 1995-03-31 21:54:56 haley Exp $
+#
+#   Makefile for HLU ContourPlot examples
+#
+
+MYNAME      = contourplot
+
+PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  = $(XMOTIFCLIENTLIBS)
+SYS_LIBS    = $(CTOFLIBS) -lm
+
+CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c
+FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f
+NSRCS       = cn02n.ncl cn04n.ncl
+COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o
+FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o
+SRCS        = $(CSRCS) $(FSRCS)
+OBJS        = $(COBJS) $(FOBJS)
+INCLUDES    = cn01c.h cn03c.h
+RESFILES    = cn01.res cn02.res cn03.res cn04.res
+ASCDATA     = cn01f.asc cn03f.asc
+EXFILES     = $(SRCS) $(INCLUDES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
+
+HLUCExampleTarget(cn01c,cn01c.o)
+HLUCExampleTarget(cn02c,cn02c.o)
+HLUCExampleTarget(cn03c,cn03c.o)
+HLUCExampleTarget(cn04c,cn04c.o)
+HLUFExampleTarget(cn01f,cn01f.o)
+HLUFExampleTarget(cn02f,cn02f.o)
+HLUFExampleTarget(cn03f,cn03f.o)
+HLUFExampleTarget(cn04f,cn04f.o)
+
+CleanFilesTarget($(OBJS))
+DependTarget($(CSRCS))
