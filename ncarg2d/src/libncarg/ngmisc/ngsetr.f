@@ -1,5 +1,5 @@
 C
-C	$Id: ngsetr.f,v 1.1 1994-04-26 18:22:48 fred Exp $
+C	$Id: ngsetr.f,v 1.2 1996-01-10 18:51:13 fred Exp $
 C
       SUBROUTINE NGSETR (CNP,RVP)
 C
@@ -112,7 +112,7 @@ C
      +         CNP(1:2).EQ.'No') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETR - set a workstation ID using WO before setting MI'
+     +      'NGSETR - set a workstation ID using WO before setting NO'
           CALL SETER (CTM(1:60), 7, 1)
           GO TO 120
         ENDIF
