@@ -1,5 +1,5 @@
 /*
- *  $Id: c_vvex03.c,v 1.2 1995-06-14 14:00:16 haley Exp $
+ *  $Id: c_vvex03.c,v 1.3 2004-08-01 17:12:46 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -37,7 +37,7 @@ struct common {
 	int lnlg,invx,invy,itrt,iwct;
 	float fw2w,fh2h,dvmn,dvmx,rbig;
 	int ibig;
-} NGCALLF(vvmap,VVMAP);
+} NGCALLC(vvmap,VVMAP);
 
 main()
 {
@@ -472,7 +472,7 @@ int *ist;
  *
  * ---------------------------------------------------------------------
  */
-    if (NGCALLF(vvmap,VVMAP).imap == 3) {
+    if (NGCALLC(vvmap,VVMAP).imap == 3) {
 /*
  * mapping for irregular rectangular gridded vector data.
  * 
@@ -491,7 +491,7 @@ int *ist;
  * axis. therefore the following test ensures that i and j are within
  * the domain of the array dimensions.
  */
-        if (i < 1 || i > NGCALLF(vvmap,VVMAP).nxct || j < 1 || j > NGCALLF(vvmap,VVMAP).nyct) {
+        if (i < 1 || i > NGCALLC(vvmap,VVMAP).nxct || j < 1 || j > NGCALLC(vvmap,VVMAP).nyct) {
             *ist = -1;
             return(0);
         }
@@ -503,26 +503,26 @@ int *ist;
  * coordinate values in the array are within the current boundaries
  * of the user space.
  */
-        if (xt < NGCALLF(vvmap,VVMAP).wxmn || xt > NGCALLF(vvmap,VVMAP).wxmx || yt < NGCALLF(vvmap,VVMAP).wymn || yt > NGCALLF(vvmap,VVMAP).wymx) {
+        if (xt < NGCALLC(vvmap,VVMAP).wxmn || xt > NGCALLC(vvmap,VVMAP).wxmx || yt < NGCALLC(vvmap,VVMAP).wymn || yt > NGCALLC(vvmap,VVMAP).wymx) {
             *ist = -1;
             return(0);
         }
         *xb = c_cufx(xt);
         *yb = c_cufy(yt);
-        *xe = *xb + *u * NGCALLF(vvmap,VVMAP).sxdc;
-        *ye = *yb + *v * NGCALLF(vvmap,VVMAP).sydc;
+        *xe = *xb + *u * NGCALLC(vvmap,VVMAP).sxdc;
+        *ye = *yb + *v * NGCALLC(vvmap,VVMAP).sydc;
 /*
  * ---------------------------------------------------------------------
  */
     }
-    else if (NGCALLF(vvmap,VVMAP).imap == 4) {
+    else if (NGCALLC(vvmap,VVMAP).imap == 4) {
 /*
  * mapping for scattered vector data.
  */ 
         i = (int)(*x+.5);
         j = (int)(*y+.5);
         
-        if (i < 1 || i > NGCALLF(vvmap,VVMAP).nxct || j < 1 || j > NGCALLF(vvmap,VVMAP).nyct) {
+        if (i < 1 || i > NGCALLC(vvmap,VVMAP).nxct || j < 1 || j > NGCALLC(vvmap,VVMAP).nyct) {
             *ist = -1;
             return(0);
         }
@@ -531,22 +531,22 @@ int *ist;
  * convert the 2-d indexes supplied to vvumxy into their 1-d equivalent 
  * to index into the coordinate arrays.
  */
-        xt = xcoord[NGCALLF(vvmap,VVMAP).nxct*(j-1)+i-1];
-        yt = ycoord[NGCALLF(vvmap,VVMAP).nxct*(j-1)+i-1];
+        xt = xcoord[NGCALLC(vvmap,VVMAP).nxct*(j-1)+i-1];
+        yt = ycoord[NGCALLC(vvmap,VVMAP).nxct*(j-1)+i-1];
 
-        if (xt < NGCALLF(vvmap,VVMAP).wxmn || xt > NGCALLF(vvmap,VVMAP).wxmx ||  yt < NGCALLF(vvmap,VVMAP).wymn || yt > NGCALLF(vvmap,VVMAP).wymx) {
+        if (xt < NGCALLC(vvmap,VVMAP).wxmn || xt > NGCALLC(vvmap,VVMAP).wxmx ||  yt < NGCALLC(vvmap,VVMAP).wymn || yt > NGCALLC(vvmap,VVMAP).wymx) {
             *ist = -1;
             return(0);
         }
         *xb = c_cufx(xt);
         *yb = c_cufy(yt);
-        *xe = *xb + *u * NGCALLF(vvmap,VVMAP).sxdc;
-        *ye = *yb + *v * NGCALLF(vvmap,VVMAP).sydc;
+        *xe = *xb + *u * NGCALLC(vvmap,VVMAP).sxdc;
+        *ye = *yb + *v * NGCALLC(vvmap,VVMAP).sydc;
     }
 /*
  * ---------------------------------------------------------------------
  */
-    else if (NGCALLF(vvmap,VVMAP).imap == 5) {
+    else if (NGCALLC(vvmap,VVMAP).imap == 5) {
 /*
  * mapping for scattered vector data projected through ezmap. xcoord and
  * ycoord contain the longitude and latitude respectively of each vector
@@ -555,7 +555,7 @@ int *ist;
         i = (int)(*x+.5);
         j = (int)(*y+.5);
 
-        if (i < 1 || i > NGCALLF(vvmap,VVMAP).nxct || j < 1 || j > NGCALLF(vvmap,VVMAP).nyct) {
+        if (i < 1 || i > NGCALLC(vvmap,VVMAP).nxct || j < 1 || j > NGCALLC(vvmap,VVMAP).nyct) {
             *ist = -1;
             return(0);
         }
@@ -564,8 +564,8 @@ int *ist;
  * convert the 2-d indexes supplied to vvumxy into their 1-d equivalent 
  * to index into the coordinate arrays.
  */
-        xt = xcoord[NGCALLF(vvmap,VVMAP).nxct*(j-1)+i-1];
-        yt = ycoord[NGCALLF(vvmap,VVMAP).nxct*(j-1)+i-1];
+        xt = xcoord[NGCALLC(vvmap,VVMAP).nxct*(j-1)+i-1];
+        yt = ycoord[NGCALLC(vvmap,VVMAP).nxct*(j-1)+i-1];
 /*
  * the following code is adapted from the ezmap projection code in 
  * vvmpxy. an iterative technique is used that handles most vectors 
@@ -582,7 +582,7 @@ int *ist;
  * project the starting value: bail out if outside the window
  */
         c_maptrn (yt,xt,xb,yb);
-        if (*xb < NGCALLF(vvmap,VVMAP).wxmn || *xb > NGCALLF(vvmap,VVMAP).wxmx || *yb < NGCALLF(vvmap,VVMAP).wymn || *yb > NGCALLF(vvmap,VVMAP).wymx) {
+        if (*xb < NGCALLC(vvmap,VVMAP).wxmn || *xb > NGCALLC(vvmap,VVMAP).wxmx || *yb < NGCALLC(vvmap,VVMAP).wymn || *yb > NGCALLC(vvmap,VVMAP).wymx) {
             *ist=-5;
             return(0);
         }
@@ -611,7 +611,7 @@ twenty:
         c_maptrn(yt + sgn * *v * duv, xt + sgn * *u * duv/clt,&xt,&yt);
 
         dv1=sqrt((xt - *xb)*(xt - *xb)+(yt - *yb)*(yt - *yb));
-        if (dv1 > NGCALLF(vvmap,VVMAP).rlen) {
+        if (dv1 > NGCALLC(vvmap,VVMAP).rlen) {
             if (sgn == -1.0) {
                 *ist = -4;
                 return(0);
@@ -641,10 +641,10 @@ twenty:
 
         t   = sgn*((xt - *xb)/dv1)* (*uvm);
         *xb = c_cufx(*xb);
-        *xe = *xb + t * NGCALLF(vvmap,VVMAP).sxdc;
+        *xe = *xb + t * NGCALLC(vvmap,VVMAP).sxdc;
         t   = sgn*((yt - *yb)/dv1)* (*uvm);
         *yb = c_cufy(*yb);
-        *ye = *yb+t*NGCALLF(vvmap,VVMAP).sydc;
+        *ye = *yb+t*NGCALLC(vvmap,VVMAP).sydc;
     }
 /*
  * ---------------------------------------------------------------------
@@ -660,14 +660,14 @@ twenty:
  * the coordinates are reversed, you are guaranteed that wxmn < wxmx
  * and wymn < wymx. this eliminates the need to invoke min and max.
  */
-        if (*x < NGCALLF(vvmap,VVMAP).wxmn || *x > NGCALLF(vvmap,VVMAP).wxmx || *y < NGCALLF(vvmap,VVMAP).wymn || *y > NGCALLF(vvmap,VVMAP).wymx) {
+        if (*x < NGCALLC(vvmap,VVMAP).wxmn || *x > NGCALLC(vvmap,VVMAP).wxmx || *y < NGCALLC(vvmap,VVMAP).wymn || *y > NGCALLC(vvmap,VVMAP).wymx) {
             *ist = -1;
             return(0);
         }
         *xb = c_cufx(*x);
         *yb = c_cufy(*y);
-        *xe = *xb + *u * NGCALLF(vvmap,VVMAP).sxdc;
-        *ye = *yb + *v * NGCALLF(vvmap,VVMAP).sydc;
+        *xe = *xb + *u * NGCALLC(vvmap,VVMAP).sxdc;
+        *ye = *yb + *v * NGCALLC(vvmap,VVMAP).sydc;
     }
 /*
  * done.

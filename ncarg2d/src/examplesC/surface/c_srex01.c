@@ -1,5 +1,5 @@
 /*
- *	$Id: c_srex01.c,v 1.2 1995-06-14 14:00:09 haley Exp $
+ *	$Id: c_srex01.c,v 1.3 2004-08-01 17:12:45 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -14,7 +14,7 @@ struct common {
     int ifr,istp,irots,idrx,idry,idrz,iupper,iskirt,ncla;
     float theta,hskirt,chi,clo,cinc;
     int ispval;
-} NGCALLF(srfip1,SRFIP1);
+} NGCALLC(srfip1,SRFIP1);
 
 char *plbl = "Longs Peak relief using SRFACE";
 
@@ -124,9 +124,9 @@ main()
 /*
  * Set common variables for skirt and frame calls.
  */
-        NGCALLF(srfip1,SRFIP1).iskirt = 1;
-        NGCALLF(srfip1,SRFIP1).hskirt = 1100.0;
-        NGCALLF(srfip1,SRFIP1).ifr    = 0;
+        NGCALLC(srfip1,SRFIP1).iskirt = 1;
+        NGCALLC(srfip1,SRFIP1).hskirt = 1100.0;
+        NGCALLC(srfip1,SRFIP1).ifr    = 0;
 /*
  * Use SRFACE to draw a representation of the surface.
  */

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_cbex01.c,v 1.3 1997-04-21 14:38:16 haley Exp $
+ *  $Id: c_cbex01.c,v 1.4 2004-08-01 17:12:45 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -392,7 +392,7 @@ void dfclrs()
 
 struct common1 {
     int icll,iama[10000];
-} NGCALLF(amapra,AMAPRA);
+} NGCALLC(amapra,AMAPRA);
 
 NGCALLF(cpchhl,CPCHHL)(iflg)
 int *iflg;
@@ -407,11 +407,11 @@ int *iflg;
     int i,iaai[10],iagi[10],nair,ivis;
     float xpos, ypos;
 
-    if (NGCALLF(amapra,AMAPRA).icll == 0) return(1);
+    if (NGCALLC(amapra,AMAPRA).icll == 0) return(1);
     if ((*iflg >= 2 && *iflg <= 4) || (*iflg >= 6 && *iflg <= 8)) {
         c_cpgetr ("LBX",&xpos);
         c_cpgetr ("LBY",&ypos);
-        c_argtai (NGCALLF(amapra,AMAPRA).iama,xpos,ypos,iaai,iagi,10,&nair,1);
+        c_argtai (NGCALLC(amapra,AMAPRA).iama,xpos,ypos,iaai,iagi,10,&nair,1);
         ivis=1;
         for( i=0; i < nair; i++ ) {
             if (iagi[i] == 4 && iaai[i] < 0) ivis=0;
@@ -436,11 +436,11 @@ int *iflg;
     int i,iaai[10],iagi[10],nair,ivis;
     float xpos, ypos;
 
-    if (NGCALLF(amapra,AMAPRA).icll == 0) return(1);
+    if (NGCALLC(amapra,AMAPRA).icll == 0) return(1);
     if (*iflg >= 2 && *iflg <= 4) {
         c_cpgetr ("LBX",&xpos);
         c_cpgetr ("LBY",&ypos);
-        c_argtai (NGCALLF(amapra,AMAPRA).iama,xpos,ypos,iaai,iagi,10,&nair,1);
+        c_argtai (NGCALLC(amapra,AMAPRA).iama,xpos,ypos,iaai,iagi,10,&nair,1);
         ivis=1;
         for( i=0; i < nair; i++ ) {
             if (iagi[i] == 4 && iaai[i] < 0) ivis=0;
