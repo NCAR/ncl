@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.39 1997-01-30 15:23:46 haley Exp $
+#	$Id: yMakefile,v 1.40 1997-03-26 23:23:34 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -70,6 +70,8 @@ $(NHF_SCRIPT): nhlf77.csh Makefile
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<nhlf77.csh > $(NHF_SCRIPT)
@@ -86,8 +88,8 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
 	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.7 1997-03-05 19:53:05 haley Exp $
+#	$Id: nhlf77.csh,v 1.8 1997-03-26 23:23:34 haley Exp $
 #
 
 #*********************************************#
@@ -33,28 +33,33 @@ set incpath = "-I$incdir $sysincdir"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lncarg_gks"
+set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
 set libhlu      = "-lhlu"
-set ncarg_libs = "$libhlu $libcbind $libncarg $libgks $libncarg_c"
 set extra_libs
 
 foreach arg ($argv)
   switch ($arg)
 
+  case "-ngmath":
+    set libmath     = "-lngmath"
+    breaksw
+
   case "-netcdf":
   case "-cdf":
-    set extra_libs = "-lnetcdf"
+    set extra_libs = "$extra_libs SED_NCDFLIBS"
     breaksw
 
   case "-hdf":
-    set extra_libs = "$extra_libs -ldf"
+    set extra_libs = "$extra_libs SED_HDFLIB"
     breaksw
 
   default:
     set newargv = "$newargv $arg"
   endsw
 end
+set ncarg_libs = "$libhlu $libcbind $libncarg $libgks $libncarg_c $libmath"
 
 set newargv = "$newargv $libpath $incpath $extra_libs $ncarg_libs $xlibs $f77libs"
 
