@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.100 2001-04-11 23:13:23 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.101 2001-04-30 21:38:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5347,7 +5347,6 @@ static NhlErrorTypes InitCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlContourPlotLayerPart	*cnp = &cl->contourplot;
-        NhlContourPlotLayerPart	*ocnp = &ocl->contourplot;
         NhlTransformLayerPart	*tfp = &cl->trans;
 
 	cnp->do_low_level_log = False;
@@ -5387,8 +5386,7 @@ static NhlErrorTypes InitCoordBounds
         if (cnp->use_irr_trans) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! cnp->osfp || (cnp->data_changed  &&
-			    (cnp->sfp->changed & _NhlsfXARR_CHANGED))||
-				(ocnp->x_tension != cnp->x_tension))
+			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -5399,8 +5397,7 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (cnp->sfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! cnp->osfp || (cnp->data_changed  &&
-			    (cnp->sfp->changed & _NhlsfYARR_CHANGED))||
-				(ocnp->y_tension != cnp->y_tension))
+			    (cnp->sfp->changed & _NhlsfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
@@ -9499,6 +9496,8 @@ static NhlErrorTypes    ManageGenArray
 					  entry_name,resource_name);
 				return NhlFATAL;
 			}
+			memset((char*)datap + (*ga)->num_elements * size,0,
+			       (count-(*ga)->num_elements) * size);
 			(*ga)->data = datap;
 			(*ga)->num_elements = count;
 			*changed = True;
@@ -9515,6 +9514,7 @@ static NhlErrorTypes    ManageGenArray
 				  resource_name);
 			return NhlFATAL;
 		}
+		memset(datap,0,count * size);
 
 		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
 					     size,1,&count)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.69 2001-04-11 23:19:46 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.70 2001-04-30 21:38:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3719,7 +3719,6 @@ static NhlErrorTypes InitCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
-        NhlVectorPlotLayerPart	*ovcp = &ovcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
 	char		*e_text;
 
@@ -3760,8 +3759,7 @@ static NhlErrorTypes InitCoordBounds
         if (vcp->use_irr_trans) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)) ||
-			    (ovcp->x_tension != vcp->x_tension))
+			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -3772,8 +3770,7 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)) ||
-			    (ovcp->y_tension != vcp->y_tension))
+			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
@@ -7257,6 +7254,8 @@ static NhlErrorTypes    ManageGenArray
 					  entry_name,resource_name);
 				return NhlFATAL;
 			}
+			memset((char*)datap + (*ga)->num_elements * size,0,
+			       (count-(*ga)->num_elements) * size);
 			(*ga)->data = datap;
 			(*ga)->num_elements = count;
 			*changed = True;
@@ -7273,6 +7272,7 @@ static NhlErrorTypes    ManageGenArray
 				  resource_name);
 			return NhlFATAL;
 		}
+		memset(datap,0,count * size);
 
 		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
 					     size,1,&count)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.76 2001-04-03 23:33:57 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.77 2001-04-30 21:38:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3073,6 +3073,8 @@ static NhlErrorTypes    mpManageGenArray
 					  entry_name,resource_name);
 				return NhlFATAL;
 			}
+			memset((char*)datap + (*ga)->num_elements * size,0,
+			       (count-(*ga)->num_elements) * size);
 			(*ga)->data = datap;
 			(*ga)->num_elements = count;
 			*changed = True;
@@ -3089,6 +3091,7 @@ static NhlErrorTypes    mpManageGenArray
 				  resource_name);
 			return NhlFATAL;
 		}
+		memset(datap,0,count * size);
 
 		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
 					     size,1,&count)) == NULL) {
