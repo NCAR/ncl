@@ -196,7 +196,6 @@ CTRANSLIBSRC		$(NVIEWLIBSRC)/libctrans
 ICTRANSLIBSRC		$(NVIEWLIBSRC)/libictrans
 NCARGRASLIBSRC		$(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC		$(NILIBSRC)/hlu
-HLUUTILLIBSRC		$(NILIBSRC)/hlu_util
 
 THESE ARE VERY IMPORTANT!! They should be used instead of using the library
 directly so dependencies can be determined. They will use the libraries
@@ -212,14 +211,12 @@ CNCARGGKSLIB		dynamic -lncarg_gksC
 CGMLIB			dynamic -lcgm
 NCARGRASLIB		dynamic -lncarg_ras
 HLULIB			dynamic -lhlu
-HLUUTILLIB		dynamic -lhlu_util
 CTRANSLIB		dynamic libctrans.o
 ICTRANSLIB		dynamic libictrans.o
 ICTRANS_LIB		dynamic libictrans_.o
 
 These variable should be used with the new FortranProgram and CProgram Rules:
 
-DEPNCARGLOCLIB		dynamic
 DEPNCARGCLIB		dynamic
 DEPNCARGLIB		dynamic
 DEPCNCARGLIB		dynamic
@@ -228,19 +225,18 @@ DEPCNCARGGKSLIB		dynamic
 DEPCGMLIB		dynamic
 DEPNCARGRASLIB		dynamic
 DEPHLULIB		dynamic
-DEPHLUUTILLIB		dynamic
 DEPCTRANSLIB		$(CTRANSLIB)
 DEPICTRANSLIB		$(ICTRANSLIB)
 DEPICTRANS_LIB		$(ICTRANS_LIB)
 
 These are convenience symbols that include a number of the libs together.
 
-NCARGLIBS		$(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
+NCARGLIBS		$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 CNCARGLIBS		$(CNCARGLIB) $(CNCARGGKSLIB)
-HLULIBS			$(HLULIB) $(HLUUTILLIB)
-DEPNCARGLIBS		$(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGLOCLIB) $(DEPNCARGCLIB)
+HLULIBS			$(HLULIB)
+DEPNCARGLIBS		$(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
 DEPCNCARGLIBS		$(DEPCNCARGLIB) $(DEPCNCARGGKSLIB)
-DEPHLULIBS		$(DEPHLULIB) $(DEPHLUUTILLIB)
+DEPHLULIBS		$(DEPHLULIB)
 
 GRAPHC			Determines if it should use installed version or not
 FONTC			Determines if it should use installed version or not
@@ -346,7 +342,7 @@ $(EXTRA_LDFLAGS)	Used to add additional LD flags for the linking of
 $(PROG_LIBS)		Used to specify the libraries that need to be linked
 			into a program that are part of the distribution.
 			Only make symbols should be used to set this make
-			symbol. ex. PROG_LIBS = $(NCARGLIB) $(NCARGLOCLIB)
+			symbol. ex. PROG_LIBS = $(NCARGLIBS)
 
 $(EXTRA_LIBS)		Used to specify the libraries that need to be linked
 			into a program that are not part of the distribution,

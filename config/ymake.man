@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.12 1994-08-11 16:53:13 haley Exp $
+.\"	$Id: ymake.man,v 1.13 1994-08-11 23:44:45 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -325,8 +325,6 @@ the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .br
 	\fIHLULIB\fP	libhlu.a
 .br
-	\fIHLUUTILLIB\fP	libhlu_util.a
-.br
 	\fICTRANSLIB\fP	libctrans.o
 .br
 	\fIICTRANSLIB\fP	libictrans.o
@@ -337,11 +335,11 @@ Additionally, the following symbols have been defined that combine the above
 \fBmake\fP symbols into the groups they are usually used in:
 .RS .5i
 .IP \fINCARGLIBS\fP 1.5i
-$(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
+$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 .IP \fICNCARGLIBS\fP 1.5i
 $(CNCARGLIB) $(CNCARGGKSLIB)
 .IP \fIHLULIBS\fP 1.5i
-$(HLULIB) $(HLUUTILLIB)
+$(HLULIB)
 .RE
 .LP
 There are also a full set of \fBdependent\fP library symbols to go along with
@@ -367,8 +365,6 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 	\fIDEPNCARGRASLIB\fP
 .br
 	\fIDEPHLULIB\fP
-.br
-	\fIDEPHLUUTILLIB\fP
 .br
 	\fIDEPCTRANSLIB\fP
 .br
