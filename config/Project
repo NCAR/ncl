@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.53 2003-04-18 16:34:59 haley Exp $
+ *      $Id: Project,v 1.54 2003-05-25 17:24:51 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.3.2
+#define NcargVersion 4.4.0`
 
 #ifndef	BuildHDFEOS
 #define	BuildHDFEOS
