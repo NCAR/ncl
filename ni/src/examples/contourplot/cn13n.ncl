@@ -103,11 +103,13 @@ begin
 ;
   delete(ii)
   ii = new((/NCLS,NCLS/),float)
-  ii!0 = "x"
-  ii!1 = "y"
+
   do i = 0,NCLS-1
     ii(i,:) = i
   end do
+
+  ii!0 = "x"
+  ii!1 = "y"
 
   x = .05+.90*(ii(y | :,x | : )+.5)/NCLS
   y = .05+.90*(ii+.5)/NCLS
