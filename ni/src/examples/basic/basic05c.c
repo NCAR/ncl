@@ -1,10 +1,30 @@
 /*
- * This example demonstrates how to read and manipulate colormaps.
- *
- * The first frame displays the default colormap.
- * The second frame shows how to alter an entry in the colormap.
- * The third frame shows how to create a completely new colormap.
+ * $Id: basic05c.c,v 1.2 1995-03-20 18:41:22 haley Exp $
  */
+/***********************************************************************
+*                                                                      *
+*                            Copyright (C)  1995                       *
+*                 University Corporation for Atmospheric Research      *
+*                            All Rights Reserved                       *
+*                                                                      *
+************************************************************************
+*
+*      File:            basic05c.c
+*
+*      Author:          Tim Scheitlin (converted by Ed Stautler)
+*                       National Center for Atmospheric Research
+*                       PO 3000, Boulder, Colorado
+*
+*      Date:            Mon Mar 20 10:43:42 MST 1995
+*
+*      Description:     This example demonstrates how to read and
+*                       manipulate colormaps.
+*
+*                       The first frame displays the default colormap.
+*                       The second frame shows how to alter an entry
+*                       in the colormap. The third frame shows how to
+*                       create a completely new colormap.
+*/
 
 #include <strings.h>
 

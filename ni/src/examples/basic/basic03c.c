@@ -1,10 +1,29 @@
 /*
- * This example demonstrates how to:
- *   1. Create a scalar field data object and assign it to a plot.
- *   2. Set resources using a resource file.
- *   3. Set resources during object creation.
- *   3. Set resources after object creation.
+ * $Id: basic03c.c,v 1.2 1995-03-20 18:41:18 haley Exp $
  */
+/***********************************************************************
+*                                                                      *
+*                            Copyright (C)  1995                       *
+*                 University Corporation for Atmospheric Research      *
+*                            All Rights Reserved                       *
+*                                                                      *
+************************************************************************
+*
+*      File:            basic03c.c
+*
+*      Author:          Tim Scheitlin (converted by Ed Stautler)
+*                       National Center for Atmospheric Research
+*                       PO 3000, Boulder, Colorado
+*
+*      Date:            Mon Mar 20 10:43:42 MST 1995
+*
+*      Description:     This example demonstrates how to:
+*                       1. Create a scalar field data object and assign
+*                          it to a plot.
+*                       2. Set resources using a resource file.
+*                       3. Set resources during object creation.
+*                       4. Set resources after object creation.
+*/
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>

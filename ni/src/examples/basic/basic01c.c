@@ -1,17 +1,37 @@
 /*
- * This example demonstrates how to draw a contour plot using mostly
- * defaults.  Note: no data is used in this example, so the output appears
- * only as a bounding box with tickmarks.
- * 
- * The mininum set of steps needed for creating any plot involve the following:
- *
- *   1. Initialize the graphics libraries
- *   2. Choose the type of output 
- *   3. Create a plot object
- *   4. Draw the plot
- *   5. Call frame
- *   6. Clean up memory
+ * $Id: basic01c.c,v 1.2 1995-03-20 18:41:15 haley Exp $
  */
+/***********************************************************************
+*                                                                      *
+*                            Copyright (C)  1995                       *
+*                 University Corporation for Atmospheric Research      *
+*                            All Rights Reserved                       *
+*                                                                      *
+************************************************************************
+*
+*      File:            basic01c.c
+*
+*      Author:          Tim Scheitlin (converted by Ed Stautler)
+*                       National Center for Atmospheric Research
+*                       PO 3000, Boulder, Colorado
+*
+*      Date:            Mon Mar 20 10:43:42 MST 1995
+*
+*      Description:     This example demonstrates how to draw a contour
+*                       plot using mostly defaults.  Note: no data is
+*                       used in this example, so the output appears
+*                       only as a bounding box with tickmarks.
+* 
+*                       The mininum set of steps needed for creating
+*                       any plot involve the following:
+*
+*                       1. Initialize the graphics libraries
+*                       2. Choose the type of output 
+*                       3. Create a plot object
+*                       4. Draw the plot
+*                       5. Call frame
+*                       6. Clean up memory
+*/
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>

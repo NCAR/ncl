@@ -1,15 +1,34 @@
 /*
- * This example demonstrates how to select and change the workstation
- * device for drawing your output to an NCGM file or an X workstation window.
- * using the following steps.
- *
- *   1. Create output workstation objects.
- *   2. Create the data for the plots.
- *   3. Create the contour objects.
- *   4. Draw the contour objects.
- *   5. Call frame.
- *   6. Clean up memory.
+ * $Id: basic04c.c,v 1.2 1995-03-20 18:41:20 haley Exp $
  */
+/***********************************************************************
+*                                                                      *
+*                            Copyright (C)  1995                       *
+*                 University Corporation for Atmospheric Research      *
+*                            All Rights Reserved                       *
+*                                                                      *
+************************************************************************
+*
+*      File:            basic04c.c
+*
+*      Author:          Tim Scheitlin (converted by Ed Stautler)
+*                       National Center for Atmospheric Research
+*                       PO 3000, Boulder, Colorado
+*
+*      Date:            Mon Mar 20 10:43:42 MST 1995
+*
+*      Description:     This example demonstrates how to select and
+*                       change the workstation device for drawing your
+*                       output to an NCGM file or an X workstation
+*                       window using the following steps.
+*
+*                       1. Create output workstation objects.
+*                       2. Create the data for the plots.
+*                       3. Create the contour objects.
+*                       4. Draw the contour objects.
+*                       5. Call frame.
+*                       6. Clean up memory.
+*/
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>

@@ -1,81 +1,98 @@
 C
-C This example demonstrates how to:
-C   1. Create a scalar field data object and assign it to a plot.
-C   2. Set resources using a resource file.
-C   3. Set resources during object creation.
-C   3. Set resources after object creation.
+C $Id: basic03f.f,v 1.3 1995-03-20 18:41:19 haley Exp $
 C
+C***********************************************************************
+C                                                                      *
+C                            Copyright (C)  1995                       *
+C                 University Corporation for Atmospheric Research      *
+C                            All Rights Reserved                       *
+C                                                                      *
+C***********************************************************************
+C
+C      File:            basic03f.f
+C
+C      Author:          Tim Scheitlin (converted by Ed Stautler)
+C                       National Center for Atmospheric Research
+C                       PO 3000, Boulder, Colorado
+C
+C      Date:            Mon Mar 20 10:43:42 MST 1995
+C
+C      Description:     This example demonstrates how to:
+C                       1. Create a scalar field data object and assign
+C                          it to a plot.
+C                       2. Set resources using a resource file.
+C                       3. Set resources during object creation.
+C                       4. Set resources after object creation.
+C
+      program basic03f
+      implicit none
 
-	program basic03f
-	implicit none
+      external NhlFappLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFContourLayerClass
+      external NhlFScalarFieldLayerClass
 
-        external NhlFappLayerClass
-        external NhlFXWorkstationLayerClass
-        external NhlFContourLayerClass
-        external NhlFScalarFieldLayerClass
+      integer appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist,ierr
 
-        integer appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist,ierr
+      integer data1(5,5) 
+      data data1 / 3,4,4,5,5,
+     1      2,3,5,5,4,
+     2      2,4,5,4,4,
+     3      3,4,4,4,3,
+     4      3,3,3,3,3 /
 
-	integer data1(5,5) 
-	data data1 / 3,4,4,5,5,
-     $		     2,3,5,5,4,
-     $	             2,4,5,4,4,
-     $	             3,4,4,4,3,
-     $	             3,3,3,3,3 /
-
-	integer dims(2) 
-	data dims / 5, 5 /
-
+      integer dims(2) 
+      data dims / 5, 5 /
+C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
 C clear (empty) this list, and create an application object.  This
 C object manages multiple resource databases used by seperate objects.
+C
+      call NhlFInitialize
+      call NhlFRLCreate(rlist,'SETRL')
 
-        call NhlFInitialize
-        call NhlFRLCreate(rlist,'SETRL')
-
-        call NhlFRLClear(rlist)
-        call NhlFCreate(appid1,"appid1",NhlFappLayerClass,0,
-     $       rlist,ierr)
-
+      call NhlFRLClear(rlist)
+      call NhlFCreate(appid1,"appid1",NhlFappLayerClass,0,
+     1      rlist,ierr)
+C
 C ###########
 C # FRAME 1 #
 C ###########
-C This frame demonstrates how to create and assign data to a contour plot.
-C
+C This frame demonstrates how to create and assign data to a contour
+C plot.
 C Choose the type of output you want to create. 
-
-        call NhlFRLClear(rlist)
-        call NhlFCreate(wks,"wks",NhlFxWorkstationLayerClass,0,
-     $       rlist,ierr)
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFCreate(wks,"wks",NhlFxWorkstationLayerClass,0,
+     1      rlist,ierr)
+C
 C Create a scalar field object that will be used as a data set for a 
 C contour object.  The sfDataArray resource is used to assign a data
 C array to a scalar field data object.
-
-        call NhlFRLClear(rlist)
-        call NhlFRLSetMDIntegerArray(rlist,"sfDataArray",data1,2,
-     $       dims,ierr)
-        call NhlFCreate(field1,"field1",NhlFscalarFieldLayerClass,0,
-     $       rlist,ierr)
-
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetMDIntegerArray(rlist,"sfDataArray",data1,2,
+     1      dims,ierr)
+      call NhlFCreate(field1,"field1",NhlFscalarFieldLayerClass,0,
+     1      rlist,ierr)
+C
 C Create a contour plot object and assign the data using the
 C cnScalarFieldData resource.
-
-        call NhlFRLClear(rlist)
-        call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-        call NhlFCreate(con1,"con1",NhlFcontourLayerClass,wks,
-     $       rlist,ierr)
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
+      call NhlFCreate(con1,"con1",NhlFcontourLayerClass,wks,
+     1      rlist,ierr)
+C
 C Draw the plot. 
-
-	call NhlFDraw(con1,ierr)
-
+C
+      call NhlFDraw(con1,ierr)
+C
 C Update and clear the workstation.
-
-	call NhlFFrame(wks,ierr)
-
+C
+      call NhlFFrame(wks,ierr)
+C
 C ###########
 C # FRAME 2 #
 C ###########
@@ -86,39 +103,39 @@ C the first argument in the create call is "basic03". This resource file
 C is only read at the time an application object is created.
 C The resource file contains resource assignments that control the
 C characteristics of a plot.
-
-        call NhlFRLClear(rlist)
-        call NhlFCreate(appid2,"basic03",NhlFappLayerClass,0,
-     $       rlist,ierr)
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFCreate(appid2,"basic03",NhlFappLayerClass,0,
+     1      rlist,ierr)
+C
 C Create another workstation window and make it a child of the
 C new application object by using the appid2 variable as the argument
 C for the parent id.  By making this a child of the application
 C object, the resources that are set in the basic03.res resource
 C file will apply to this object and its children.
-
-        call NhlFRLClear(rlist)
-        call NhlFCreate(wks2,"wks2",NhlFxWorkstationLayerClass,
-     $       appid2,rlist,ierr)
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFCreate(wks2,"wks2",NhlFxWorkstationLayerClass,
+     1      appid2,rlist,ierr)
+C
 C Create another contour plot object and assign the data.
 C Notice that the parent id is wks2, making the contour object
 C a child of the new workstation.
-
-        call NhlFRLClear(rlist)
-        call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-        call NhlFCreate(con2,"con2",NhlFcontourLayerClass,wks2,
-     $       rlist,ierr)
-
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
+      call NhlFCreate(con2,"con2",NhlFcontourLayerClass,wks2,
+     1      rlist,ierr)
+C
 C The contour object is drawn with filled contours because there is
 C a resource in basic03.res that specifies that contour fill is on.
-
-	call NhlFDraw(con2,ierr)
-
+C
+      call NhlFDraw(con2,ierr)
+C
 C Updates and clear the workstation.
-
-	call NhlFFrame(wks2,ierr)
-
+C
+      call NhlFFrame(wks2,ierr)
+C
 C ###########
 C # FRAME 3 #
 C ###########
@@ -126,23 +143,23 @@ C This frame demonstrates how resources can be set when an object is
 C created.  
 C
 C A variable length list of resource name/value pairs specifies
-C a resource and its value.  In this example contour line labels are turned
-C off by setting the "cnLineLabelsOn" resource to "False".
-
-        call NhlFRLClear(rlist)
-        call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-        call NhlFRLSetString(rlist,"cnLineLabelsOn","False",ierr)
-        call NhlFCreate(con3,"con3",NhlFcontourLayerClass,wks2,
-     $       rlist,ierr)
-
+C a resource and its value.  In this example contour line labels are
+C turned off by setting the "cnLineLabelsOn" resource to "False".
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
+      call NhlFRLSetString(rlist,"cnLineLabelsOn","False",ierr)
+      call NhlFCreate(con3,"con3",NhlFcontourLayerClass,wks2,
+     1      rlist,ierr)
+C
 C Draw the contour object.
-
-	call NhlFDraw (con3,ierr)
-
+C
+      call NhlFDraw (con3,ierr)
+C
 C Update and clear the workstation.
-
-	call NhlFFrame(wks2,ierr)
-
+C
+      call NhlFFrame(wks2,ierr)
+C
 C ###########
 C # FRAME 4 #
 C ###########
@@ -153,32 +170,32 @@ C The setvalues expression is used to assign values to the resources
 C of a object whose id is given as the first argument in the expression.
 C In this example, that argument is "con3."
 C
-C Any resource that is valid for the con3 object can be set in the following
-C expression.  In this example, setting "cnFillOn" to "False" turns 
-C contour fill off.  By default, cnFillOn is "False", but since it
-C is set to "True" in the resource file, we can override that value by
-C using the setvalues expression.  
-
-        call NhlFRLClear(rlist)
-        call NhlFRLSetString(rlist,"cnFillOn","False",ierr)
-	call NhlFSetValues(con3,rlist,ierr)
-
+C Any resource that is valid for the con3 object can be set in the
+C following expression.  In this example, setting "cnFillOn" to
+C "False" turns contour fill off.  By default, cnFillOn is "False",
+C but since it is set to "True" in the resource file, we can override
+C that value by using the setvalues expression.  
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,"cnFillOn","False",ierr)
+      call NhlFSetValues(con3,rlist,ierr)
+C
 C Draw the contour object.
-
-	call NhlFDraw (con3,ierr)
-
+C
+      call NhlFDraw (con3,ierr)
+C
 C Update and clear the workstation
-
-	call NhlFFrame(wks2,ierr)
-
+C
+      call NhlFFrame(wks2,ierr)
+C
 C Clean up (deleting the parent object recursively deletes all of its 
 C children).
+C
+      call NhlFDestroy(wks,ierr)
+      call NhlFDestroy(appid1,ierr)
+      call NhlFDestroy(appid2,ierr)
 
-	call NhlFDestroy(wks,ierr)
-	call NhlFDestroy(appid1,ierr)
-	call NhlFDestroy(appid2,ierr)
+      call NhlFClose
 
-	call NhlFClose
-
-	stop
-	end
+      stop
+      end

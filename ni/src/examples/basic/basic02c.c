@@ -1,12 +1,31 @@
 /*
- * The first frame in this example demonstrates how to set the view port 
- * for a contour plot.
- * Note: no data is used in this example, so the output appears
- * only as a bounding box with tickmarks.
- *
- * The second frame in this example demonstrates how to produce multiple
- * plots on a single frame.
+ * $Id: basic02c.c,v 1.2 1995-03-20 18:41:17 haley Exp $
  */
+/***********************************************************************
+*                                                                      *
+*                            Copyright (C)  1995                       *
+*                 University Corporation for Atmospheric Research      *
+*                            All Rights Reserved                       *
+*                                                                      *
+************************************************************************
+*
+*      File:            basic02c.c
+*
+*      Author:          Tim Scheitlin (converted by Ed Stautler)
+*                       National Center for Atmospheric Research
+*                       PO 3000, Boulder, Colorado
+*
+*      Date:            Mon Mar 20 10:43:42 MST 1995
+*
+*      Description:     The first frame in this example demonstrates how
+*                       to set the view port for a contour plot.
+*                       Note: no data is used in this example, so the
+*                       output appears only as a bounding box with
+*                       tickmarks.
+*
+*                       The second frame in this example demonstrates how
+*                       to produce multiple plots on a single frame.
+*/
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
