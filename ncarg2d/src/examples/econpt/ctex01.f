@@ -145,7 +145,7 @@ C
 C
 C Declare real and integer workspaces needed by CONPACKT.
 C
-	PARAMETER (LRWK=10000,LIWK=1000)
+        PARAMETER (LRWK=10000,LIWK=1000)
 C
         DIMENSION RWRK(LRWK),IWRK(LIWK)
 C
