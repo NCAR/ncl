@@ -31,6 +31,7 @@ GRAPHCAPDIR       = graphcaps
 EXAMPLESDIR       = examples
 TUTORIALDIR       = tutorial
 TESTSDIR          = tests
+ROBJDIR           = robj
 XAPPDIR           = xapp
 CONFIGDIR         = config
 GENERICDIR        = generic
@@ -54,6 +55,7 @@ FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+ROBJPATH          = $(LIBNCARGPATH)/$(ROBJDIR)
 TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
 XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 
