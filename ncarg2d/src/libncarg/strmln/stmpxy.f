@@ -1,5 +1,5 @@
 C
-C	$Id: stmpxy.f,v 1.5 1993-03-31 00:31:22 dbrown Exp $
+C	$Id: stmpxy.f,v 1.6 1993-04-05 23:39:47 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -127,8 +127,10 @@ C
          CALL STUIXY(XUS,YUS,XDA,YDA,IST)
       END IF
 C
-      IF (XDA.LT.XLOV .OR. XDA.GT.XHIV
-     +     .OR. YDA.LT.YLOV .OR. YDA.GT.YHIV) THEN
+C Check for out of bound conditions
+C
+      IF (XDA.LT.MIN(XLOV,XHIV) .OR. XDA.GT.MAX(XHIV,XLOV)
+     +     .OR. YDA.LT.MIN(YLOV,YHIV) .OR. YDA.GT.MAX(YHIV,YLOV)) THEN
          IST=-1
       END IF
 C

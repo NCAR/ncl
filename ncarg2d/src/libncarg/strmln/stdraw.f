@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.8 1993-03-31 00:31:12 dbrown Exp $
+C	$Id: stdraw.f,v 1.9 1993-04-05 23:39:44 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -141,9 +141,11 @@ C PRZERO - the number 0.0
 C PTHREE - the number 3.0
 C PSMALL - a small floating point number, large enough to be 
 C          detectable by any standard processor
+C PMXITR - maximum iteration count for figuring when determining
+C          the streamline edge
 C
       PARAMETER (IPZERO=0, IPONE=1, IPTWO=2, PRZERO=0.0, PTHREE=3.0)
-      PARAMETER (PSMALL=0.000001)
+      PARAMETER (PSMALL=0.000001, PMXITR=32)
 C
 C Local variables
 C
@@ -181,6 +183,9 @@ C DUV      - The differential normalized interpolated vector magnitude
 C CSA,SNA  - Cosine and sine of the tangent angle
 C XN2,YN2  - The previous previous position in NDC space
 C TMG      - Temporary magnitude 
+C XT,YT    - Temporary x and y values
+C XU1,YU1  - Previous X and Y user coordinate values
+C NCT      - Iteration count for determining the streamline edge
 C LI       - Index into circular crossover checking list
 C
 C --------------------------------------------------------------------
@@ -458,10 +463,8 @@ C differential step.
 C
             XN2=XN1
             YN2=YN1
-            XN1=XND
-            YN1=YND
-            XN1=XN1+(XN2-XN1)/PTHREE
-            YN1=YN1+(YN2-YN1)/PTHREE
+            XN1=XND+(XN2-XND)/PTHREE
+            YN1=YND+(YN2-YND)/PTHREE
             XND=XN1+CSA*DFMG*DUV
             YND=YN1+SNA*DFMG*DUV
 C
@@ -502,14 +505,52 @@ C
 C Now that the new point has been found in NDC space, find its
 C coordinates in user, data, and grid space.
 C
+            XU1=XUS
+            YU1=YUS
             XUS=CFUX(XND)
             YUS=CFUY(YND)
 C
-            CALL STIMXY(XUS,YUS,XDA,YDA,IST)
-            IF (IST.NE.0) GO TO 50
+C Even if the point is within NDC and User boundaries it can still be 
+C outside the data area. In this case we use an iterative technique to
+C determine the end of the streamline.
 C
-            X=(XDA-XLOV)/XGDS+1.0
-            Y=(YDA-YLOV)/YGDS+1.0
+            CALL STIMXY(XUS,YUS,XDA,YDA,IST)
+            IF (IST.GE.0) THEN
+               X=(XDA-XLOV)/XGDS+1.0
+               Y=(YDA-YLOV)/YGDS+1.0
+            ELSE
+               NCT=1
+C
+C Loop to this point dividing the distance in half at each step
+C
+ 120           CONTINUE
+               XT=XU1+(XUS-XU1)/2.0
+               YT=YU1+(YUS-YU1)/2.0
+               IF (NCT.GE.PMXITR) GO TO 50
+               IF (ABS(XUS-XU1).LE.PSMALL .AND. 
+     +              ABS(YUS-YU1).LE.PSMALL) THEN
+                  XUS=XU1
+                  YUS=YU1
+                  CALL STIMXY(XUS,YUS,XDA,YDA,IST)
+                  IF (IST.LT.0) GO TO 50
+               ELSE
+                  CALL STIMXY(XT,YT,XDA,YDA,IST)
+                  NCT=NCT+1
+                  IF (IST.LT.0) THEN
+                     XUS=XT
+                     YUS=YT
+                  ELSE
+                     XU1=XT
+                     YU1=YT
+                  END IF
+                  GO TO 120
+               END IF
+C
+               XND=CUFX(XUS)
+               YND=CUFY(YUS)
+               LST=1
+            END IF
+C
 C
 C If on the top or right edge of the grid space, decrease the X and/or
 C Y value by a small amount so the interpolation routine still works.
