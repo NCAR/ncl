@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.90 2002-08-15 22:08:21 haley Exp $
+;      $Id: gsn_code.ncl,v 1.91 2002-08-23 20:40:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1065,7 +1065,8 @@ end
 ;                res : logical                                         ;
 ;                                                                      ;
 ; This function computes the viewport coordinates needed to optimize   ;
-; the size of a plot on a page.                                        ;
+; the size of a plot on a page. If the plot is too big for the         ;
+; viewport, then this function will decrease the plot size.            ;
 ;                                                                      ;
 ; plot : plot to maximize on the page.                                 ;
 ;                                                                      ;
@@ -1100,7 +1101,8 @@ begin
   uh = top - bot
 
 ;
-; Calculate scale factor needed to make plot larger.
+; Calculate scale factor needed to make plot larger (or smaller, if it's
+; outside the viewport).
 ;
   scale = (1 - 2*margin)/max((/uw,uh/))
 
@@ -1638,6 +1640,18 @@ begin
   if(maxbb) then
     class = NhlClassName(wks)
 
+;
+; First, optimize the plot size in the viewport. This may involve making
+; it bigger or smaller.
+;
+    coords = maximize_bb(plot,maxbb)
+    setvalues plot
+      "vpXF"      : coords(0)
+      "vpYF"      : coords(1)
+      "vpWidthF"  : coords(2)
+      "vpHeightF" : coords(3)
+    end setvalues
+
     if(class(0).eq."psWorkstationClass") then
 ;
 ; Compute device coordinates that will make plot fill the whole page.
@@ -1652,17 +1666,6 @@ begin
         "wkDeviceLowerY" : coords(1)
         "wkDeviceUpperX" : coords(2)
         "wkDeviceUpperY" : coords(3)
-      end setvalues
-    else
-;
-; If the workstation is NCGM or X11, then maximize the bounding box.
-;
-      coords = maximize_bb(plot,maxbb)
-      setvalues plot
-        "vpXF"      : coords(0)
-        "vpYF"      : coords(1)
-        "vpWidthF"  : coords(2)
-        "vpHeightF" : coords(3)
       end setvalues
     end if
   end if
@@ -3466,6 +3469,8 @@ begin
           tmp_range = x_rgt - x_lft
           set_attr(lbres,"vpXF",x_lft + (tmp_range - lbres@vpWidthF)/2.)
         end if
+        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
+        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
       else
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
@@ -3474,6 +3479,8 @@ begin
           tmp_range = y_top - y_bot
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
         end if
+        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
+        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
       end if
       set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ;

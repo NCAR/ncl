@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.101 2002-08-15 22:08:22 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.102 2002-08-23 20:40:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -761,38 +761,42 @@ begin
     prefix = "sf"
   end if
 
-  if(is_valid_xcoord(data))
+;
+; First check if "lon2d" is set, which must be the same dimension
+; as the data.  This special attribute indicates a 2D longitude
+; coordinate array.  If "lon2d" is not set, then check for
+; a regular coordinate array.  One of these will be used for 
+; sf/vf/XArray.
+;
+  if(isatt(data,"lon2d").and. \
+     all(dimsizes(data@lon2d).eq.dimsizes(data))) then
     if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
-      set_attr(res,prefix+"XArray",data&$data!1$)
+      set_attr(res,prefix+"XArray",data@lon2d)
     end if
   else
-;
-; If no X coordinate array exists, and the special attribute "lon2d"
-; is set and equal in dimension sizes to the data, then use this
-; for sf/vf/XArray.
-;
-    if(isatt(data,"lon2d").and. \
-       all(dimsizes(data@lon2d).eq.dimsizes(data))) then
+    if(is_valid_xcoord(data))
       if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
-        set_attr(res,prefix+"XArray",data@lon2d)
+        set_attr(res,prefix+"XArray",data&$data!1$)
       end if
     end if
   end if
 
-  if(is_valid_ycoord(data))
+;
+; First check if "lat2d" is set, which must be the same dimension
+; as the data.  This special attribute indicates a 2D latitude
+; coordinate array.  If "lat2d" is not set, then check for
+; a regular coordinate array.  One of these will be used for 
+; sf/vf/YArray.
+;
+  if(isatt(data,"lat2d").and. \
+     all(dimsizes(data@lat2d).eq.dimsizes(data))) then
     if(.not.(isatt(res,prefix+"YCStartV").and.isatt(res,prefix+"YCEndV")))
-      set_attr(res,prefix+"YArray",data&$data!0$)
+      set_attr(res,prefix+"YArray",data@lat2d)
     end if
   else
-;
-; If no Y coordinate array exists, and the special attribute "lat2d"
-; is set and equal in dimension sizes to the data, then use this
-; for sf/vf/YArray.
-;
-    if(isatt(data,"lat2d").and. \
-       all(dimsizes(data@lat2d).eq.dimsizes(data))) then
-      if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
-        set_attr(res,prefix+"XArray",data@lat2d)
+    if(is_valid_ycoord(data))
+      if(.not.(isatt(res,prefix+"YCStartV").and.isatt(res,prefix+"YCEndV")))
+        set_attr(res,prefix+"YArray",data&$data!0$)
       end if
     end if
   end if
@@ -1175,22 +1179,23 @@ begin
 ; lat names. The coordinate variable must also be one-dimensional to
 ; be valid.
 ;
-; If no coordinate data is set, then check for the special attribute
-; "lat2d", which must be the same dimension as the data.  This special
-; attribute indicates a 2D latitude coordinate array.
+; First check if "lat2d" is set, which must be the same dimension
+; as the data.  This special attribute indicates a 2D latitude
+; coordinate array. If "lat2d" is not set, then check for
+; a regular coordinate array.
 ;
-  if(is_valid_lat_ycoord(data))
-    if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data&$data!0$)
-      return
-    end if
+  if(isatt(data,"lat2d").and. \
+     all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
+     .not.(isatt(res,start_name).and.isatt(res,end_name)))
+    set_attr(res,array_name,data@lat2d)
+    return
   else
-    if(isatt(data,"lat2d").and. \
-       all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
-       .not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data@lat2d)
-      return
-    end if 
+    if(is_valid_lat_ycoord(data))
+      if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+        set_attr(res,array_name,data&$data!0$)
+        return
+      end if
+    end if
   end if 
 
   print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
@@ -1290,27 +1295,28 @@ begin
 
 ;
 ; Make sure user is not already setting his own *Start* and *End*
-; resources, and that the second dimension of the data actually contains
-; coordinate information.
+; resources, and that the second dimension of the data actually
+; contains coordinate information (or that "lon2d" is set).
 ;
 ; Check the name of the coordinate variable against the allowed
 ; lon names
 ;
-; If no coordinate data is set, then check for the special attribute
-; "lon2d", which must be the same dimension as the data.  This special
-; attribute indicates a 2D longitude coordinate array.
+; Frist check for the special attribute"lon2d", which must be the
+; same dimension as the data.  This special attribute indicates a
+; 2D longitude coordinate array.  Otherwise, check for a regular
+; coordinate array.
 ;
-  if(is_valid_lon_xcoord(data))
-    if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data&$data!1$)
-      return
-    end if
+  if(isatt(data,"lon2d").and. \
+     all(dimsizes(data@lon2d).eq.dimsizes(data)).and. \
+     .not.(isatt(res,start_name).and.isatt(res,end_name)))
+    set_attr(res,array_name,data@lon2d)
+    return
   else
-    if(isatt(data,"lon2d").and. \
-       all(dimsizes(data@lon2d).eq.dimsizes(data)).and. \
-       .not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data@lon2d)
-      return
+    if(is_valid_lon_xcoord(data))
+      if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+        set_attr(res,array_name,data&$data!1$)
+        return
+      end if
     end if 
   end if
 
@@ -2760,19 +2766,40 @@ begin
       first_val  = newdata&$newdata!1$(0)
       second_val = newdata&$newdata!1$(1)
       last_val   = newdata&$newdata!1$(mx-1)
+      delta      = second_val - first_val
+      range      = last_val - first_val
     else
       if(isatt(newdata,"lon2d").and. \
          all(dimsizes(data@lon2d).eq.dimsizes(data))) then
-        first_val  = newdata@lon2d(:,0)
-        second_val = newdata@lon2d(:,1)
-        last_val   = newdata@lon2d(:,mx-1)
+;
+; Have to store lon2d to a local variable, because NCL doesn't let you 
+; subscript attributes that are greater than one dimension.
+;
+        lon2d = newdata@lon2d
+;
+; We are not guaranteed that the lons start around 0, and end around
+; 359. In fact, we have no idea where the 0 to 360 jump might be.
+; So, to calculate the delta x, we should calculate it from both
+; ends of the data, just to be safe.  One of them has to be the
+; correct delta.  The correct delta will be the positive one, because
+; at the "split", the delta will be negative (i.e. 0.5 - 358.5).
+;
+        first_val            = lon2d(0,0)
+        second_val           = lon2d(0,1)
+        second_to_last_val   = lon2d(0,mx-2)
+        last_val             = lon2d(0,mx-1)
+        dx1 = second_val - first_val
+        dxn = last_val - second_to_last_val
+        if(dx1.gt.0) then
+          delta = lon2d(:,1) - lon2d(:,0)
+        else
+          delta = lon2d(:,mx-1) - lon2d(:,mx-2)
+        end if 
+        range = dim_max(lon2d) - dim_min(lon2d)
       else
         return(newdata)
       end if
     end if
-
-    delta = second_val - first_val
-    range = last_val - first_val
 
     if(any((range+delta).lt.359.))
       print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
@@ -2784,12 +2811,20 @@ begin
       newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
     else 
       lon2d               = newdata@lon2d
+      lat2d               = newdata@lat2d
       new_lon2d           = new((/ny,mx1/),typeof(lon2d))
+      new_lat2d           = new((/ny,mx1/),typeof(lat2d))
       new_lon2d(:,0:mx-1) = lon2d
       new_lon2d(:,mx)     = lon2d(:,0) + 360.
+      new_lat2d(:,0:mx-1) = lat2d
+      new_lat2d(:,mx)     = (new_lat2d(:,0) + new_lat2d(:,mx-1))/2.
+      delete(newdata@lon2d)
+      delete(newdata@lat2d)
       newdata@lon2d       = new_lon2d
+      newdata@lat2d       = new_lat2d
 
       delete(lon2d)
+      delete(lat2d)
     end if
 
     return(newdata)
