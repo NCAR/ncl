@@ -1,4 +1,4 @@
-C	$Id: ffex00.f,v 1.1 1993-04-08 22:35:39 haley Exp $
+C	$Id: ffex00.f,v 1.2 1993-04-13 23:32:03 dbrown Exp $
 C
       PROGRAM FFEX00
 C
@@ -17,8 +17,7 @@ C
       DIMENSION ICLR(NCLRS)
 C
       DIMENSION RGBV(3,NCLRS)
-      COMMON IFILIX
-      DATA IFILIX / 196 /
+      COMMON /CBFILL/ IFILIX
 C
       DATA ICLR / 2, 3, 64, 196 /
       DATA RGBV / 
@@ -26,6 +25,10 @@ C
      +     0.75,0.0,1.0,
      +     0.75,0.75,0.75,
      +     0.5,0.5,0.5 /
+C
+C Give initial value to fill color index stored common block CBFILL
+C
+      IFILIX = 196
 C
 C Open GKS, open workstation, activate workstation.
 C
@@ -133,7 +136,7 @@ C
 C
       DIMENSION XWRK(*),YWRK(*),IAREA(*),IGRP(*)
 C
-      COMMON IFILIX
+      COMMON /CBFILL/ IFILIX
 C
 C Retrieve area id for geographic area
 C
