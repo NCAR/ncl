@@ -1,5 +1,5 @@
 C
-C	$Id: bnchmk.f,v 1.1 1993-02-15 00:11:34 haley Exp $
+C	$Id: bnchmk.f,v 1.2 1993-03-05 18:28:01 dbrown Exp $
 C
       PROGRAM BNCHMK
 C
@@ -135,6 +135,7 @@ C
       ALTMN = 25.
       ALTMX = 50.
       CALL VVSETI('MAP -- Mapping Mode', 1)
+      CALL VVSETI('SET -- Do SET Call Flag', 0)
       CALL VVSETR('XC1 -- Lower X Bound', -120.0)
       CALL VVSETR('XCM -- Upper X Bound', -75.0)
       CALL VVSETR('YC1 -- Lower Y Bound', 25.0)
