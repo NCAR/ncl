@@ -2859,7 +2859,7 @@ unsigned int *nextoff;
 int *version;
 #endif
 {
-	int i,j,ret1,ret2,ret3,ret4;
+	int i,j,ret1,ret4;
 	unsigned char *is; /* pointer to indicator section */
 	unsigned char buf[1024];
 	int buflen = 1024;
@@ -2878,8 +2878,6 @@ int *version;
 #define LEN_HEADER_PDS (28+8)
 
 	ret1 = 0;
-	ret2 = 0;
-	ret3 = 0;
 	ret4 = 0;
 
 	test[4] = '\0';
@@ -2958,7 +2956,6 @@ int *version;
 					int has_bms,has_gds;
 					int pdssize, gdssize,bmssize,bdssize;
 					unsigned char *pds;
-					unsigned char ebuf[buflen];
 					unsigned char *cp;
 					int k;
 					int tsize;
