@@ -76,27 +76,33 @@ C NCLEND
 
       ! Check immediately to determine if R is an element of [1,N]:
 
+      IF (R.eq.0) then      ! djs
+          WRITE (*,"('SUB RHOMBOIDAL: R=0 no action taken')")
+          return
+      END IF
+
       IF ( .NOT. ( ( 1 .lt. R ) .AND. ( R .lt. N ) ) ) THEN
-c f90 IF ( .NOT. ( ( 1 < R )    .AND. ( R < N ) ) ) THEN
+c c c IF ( .NOT. ( ( 1 < R )    .AND. ( R < N ) ) ) THEN
 
        WRITE (*,'(A25,I3,A7,I2)') "R outside of OPEN set (1,
      +                            ", N, "); R = ", R
        WRITE (*,'(A43)') "Execution stopped in SUBROUTINE RHOMBOIDAL."
-       STOP
+       RETURN
 
       END IF
 
       ! Now zero out A according to rhomboidal truncation:
       
       IF ( M .ge. N ) THEN
-c f90 IF ( M >= N ) THEN           ! Case M greater than or equal to N. 
+c c c IF ( M >= N ) THEN
+
+        ! Case M greater than or equal to N. 
 
         DO im = 1, N - R           ! Loop over zonal wavenumber (i.e. rows).
 
           jn = im
 
-c f90     Ar( im, jn+R:N ) = 0.0   ! Zero out above diagonal band of width R.
-c f90     Ai( im, jn+R:N ) = 0.0    
+c c c     A( im, jn+R:N ) = 0.0    ! Zero out above diagonal band of width R.
           do j=jn+R,N
              Ar(im,j) = 0.0
              Ai(im,j) = 0.0
@@ -104,8 +110,7 @@ c f90     Ai( im, jn+R:N ) = 0.0
 
           km = im + 1
 
-c f90     Ar( km, 1:jn ) = 0.0     ! Zero out below diagonal band of width R.
-c f90     Ai( km, 1:jn ) = 0.0    
+c c c     A( km, 1:jn ) = 0.0      ! Zero out below diagonal band of width R.
           do j=1,jn
              Ar(km,j) = 0.0
              Ai(km,j) = 0.0
@@ -114,21 +119,23 @@ c f90     Ai( km, 1:jn ) = 0.0
         END DO
 
       ELSE IF ( M .lt. N ) THEN
-c f90 ELSE IF ( M < N ) THEN       ! Case M less than N.
+c c c ELSE IF ( M < N ) THEN
+
+        ! Case M less than N.
 
         im = 0
 
-c f90   DO 
+c c c   DO 
         DO WHILE ( ((im + R - 1) .ge. N) .OR. (im .gt. (M - 1)) ) 
 
-          im = im + 1              ! Loop over zonal wavenumber (i.e. rows).
+          im = im + 1
+          ! Loop over zonal wavenumber (i.e. rows).
 
-c f90     IF ( ( (im + R - 1) >= N ) .OR. ( im > (M - 1) ) ) EXIT
+c c c     IF ( ( (im + R - 1) >= N ) .OR. ( im > (M - 1) ) ) EXIT
 
           jn = im
 
-c f90     Ar( im, jn+R:N ) = 0.0   ! Zero out above diagonal band of width R.
-c f90     Ai( im, jn+R:N ) = 0.0  
+c c c     A( im, jn+R:N ) = 0.0    ! Zero out above diagonal band of width R.
           do j=jn+R,N
              Ar(im,j) = 0.0
              Ai(im,j) = 0.0
@@ -137,8 +144,7 @@ c f90     Ai( im, jn+R:N ) = 0.0
 
           km = im + 1
 
-c f90     Ar( km, 1:jn ) = 0.0     ! Zero out below diagonal band of width R.
-c f90     Ai( km, 1:jn ) = 0.0  
+c c c     A( km, 1:jn ) = 0.0      ! Zero out below diagonal band of width R.
           do j=1,jn
              Ar(km,j) = 0.0
              Ai(km,j) = 0.0
@@ -147,10 +153,9 @@ c f90     Ai( km, 1:jn ) = 0.0
         END DO
 
         IF ( (jn+R+1) .le. N ) THEN
-c f90   IF ( (jn+R+1) <= N ) THEN
+c c c   IF ( (jn+R+1) <= N ) THEN
 
-c f90     Ar( km, jn+R+1:N ) = 0.0 ! Zero out last row ABOVE diagonal.
-c f90     Ai( km, jn+R+1:N ) = 0.0 
+c c c     A( km, jn+R+1:N ) = 0.0  ! Zero out last row ABOVE diagonal.
           do j=jn+R+1,N
              Ar(km,j) = 0.0
              Ai(km,j) = 0.0
@@ -161,9 +166,8 @@ c f90     Ai( km, jn+R+1:N ) = 0.0
       END IF
 
       IF ( (km + 1) .le. M ) THEN
-c f90 IF ( (km + 1) <= M ) THEN
-c f90   Ar(km+1:M,:) = 0.          ! Zero out any remaining rows (if any).
-c f90   Ai(km+1:M,:) = 0.    
+c c c IF ( (km + 1) <= M ) THEN
+c c c   A(km+1:M,:) = 0.           ! Zero out any remaining rows (if any).
         do i=km+1,M
          do j=1,N
             Ar(i,j) = 0.0
@@ -175,75 +179,76 @@ c f90   Ai(km+1:M,:) = 0.
       return
       end
 c     END SUBROUTINE RHOMBOIDAL
-
-
+c ---------------------------------------------------------
       SUBROUTINE TRITRUNC( M, N, Ar, Ai, T )
 
-! Produces triangular truncation T of MxN spectral coefficient arrays Ar and Ai
-! (with the restriction that  1 < T < N-1 if M >=N  or 1 < T < M-1 if M < N).
-!                               -   -                    -   -
-! Ar contains the real part and Ai the corresponding imaginary part of the
-! spectral coefficients. 
+c NCL: ab = tri_trunc (ab, T)
 
-! Convention: 
+c Produces triangular truncation T of MxN spectral coefficient arrays Ar and Ai
+c (with the restriction that  1 < T < N-1 if M >=N  or 1 < T < M-1 if M < N).
+c                               -   -                    -   -
+c Ar contains the real part and Ai the corresponding imaginary part of the
+c spectral coefficients. 
 
-! Sectral coefficients Ar, Ai, are ordered m by n where
-! m is the zonal wavenumber and n is the total wave number.
-! For Gaussian grids the extents of the m and n dimensions
-! are nlat for both dimensions.
+c Convention: 
 
-! The spectral coefficent Ar(1,1) repesents zonal wavenumber
-! 0 and total wavenumber 0; the spectral coefficient
-! Ar(nlat,nlat) represents zonal wavenumber nlat-1 and
-! total wavenumber nlat-1. Similarly for Ai.
+c Sectral coefficients Ar, Ai, are ordered m by n where
+c m is the zonal wavenumber and n is the total wave number.
+c For Gaussian grids the extents of the m and n dimensions
+c are nlat for both dimensions.
 
-! Example; Ar and Ai are 18x18:
-! (Let m represent zonal wavenumber, and n total wavenumber.)
+c The spectral coefficent Ar(1,1) repesents zonal wavenumber
+c 0 and total wavenumber 0; the spectral coefficient
+c Ar(nlat,nlat) represents zonal wavenumber nlat-1 and
+c total wavenumber nlat-1. Similarly for Ai.
 
-! m, n->                                                                  N
-! |
-! v
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
-! M 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c Example; Ar and Ai are 18x18:
+c (Let m represent zonal wavenumber, and n total wavenumber.)
 
-! Example; Ar and Ai truncated at T12:
+c m, n->                                                                  N
+c |
+c v
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
+c M 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7
 
-!   (0)  1   2   3   4   5   6   7   8   9  10  11  12   
+c Example; Ar and Ai truncated at T12:
+
+c   (0)  1   2   3   4   5   6   7   8   9  10  11  12   
   
-!   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 0.0 0.0 0.0 0.0 0.0 
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 0.0 0.0 0.0 0.0 0.0 
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-!   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+c   7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 7.7 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 7.7 0.0 0.0 0.0 0.0 0.0 
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 7.7 0.0 0.0 0.0 0.0 0.0 
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+c   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 
       IMPLICIT NONE
 
@@ -259,6 +264,10 @@ C NCLEND
       INTEGER km   ! Zonal wavenumber place holder.
       INTEGER i,j  ! Loop variables
 
+      IF (T.eq.0) then      ! djs
+          WRITE (*,"('SUB TRIANGULAR: T=0 no action taken')")
+          return
+      END IF
 
       ! Check immediately to determine if T is a valid truncation:
 
@@ -280,7 +289,7 @@ c c c   IF ( .NOT. ( ( 1 <= T ) .AND. ( T <= M-1 ) ) ) THEN
             WRITE (*,'(A25)'   ) "Error for case M < N :"
             WRITE (*,'(A28,I3)') "T not in range [1,N-1]; T = ", T
             WRITE (*,'(A43)') "Exec stop in SUBROUTINE TRIANGULAR"
-          STOP
+          RETURN
 
         END IF
 
