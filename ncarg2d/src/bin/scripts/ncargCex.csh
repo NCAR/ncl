@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.9 1993-01-26 16:28:53 haley Exp $
+#	$Id: ncargCex.csh,v 1.10 1993-01-27 17:49:17 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -24,7 +24,7 @@ echo "See <man ncargCex>                                                   "
 exit
 endif
 
-set X11_option = "-noX11"
+set X11_option = ""
 
 set names
 
@@ -61,6 +61,11 @@ while ($#argv > 0)
         case "-*":
             echo "$0 : Unknown option <$1>"
             exit 1
+            breaksw
+
+        case "-noX11":
+            shift
+            set X11_option = "-noX11"
             breaksw
 
         default:

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.15 1993-01-26 16:29:00 haley Exp $
+#   $Id: ncargex.csh,v 1.16 1993-01-27 17:49:19 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -82,7 +82,7 @@ echo "See <man ncargex>                                             "
 exit
 endif
 
-set X11_option = "-noX11"
+set X11_option = ""
 set names
 
 while ($#argv > 0)
@@ -131,6 +131,11 @@ while ($#argv > 0)
         case "-unique"
             shift
             set Unique
+            breaksw
+
+        case "-noX11"
+            shift
+            set X11_option = "-noX11"
             breaksw
 
         case "-*":
