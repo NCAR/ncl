@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.13 1996-11-18 22:21:43 dbrown Exp $
+ *      $Id: Transform.h,v 1.14 1999-04-02 23:51:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,15 +29,17 @@
  * Public Transform instance resources
  */
 
-#define NhlNtfPlotManagerOn	"tfPlotManagerOn"
-#define NhlNtfDoNDCOverlay	"tfDoNDCOverlay"
+#define NhlNtfPlotManagerOn		"tfPlotManagerOn"
+#define NhlNtfDoNDCOverlay		"tfDoNDCOverlay"
+#define NhlNtfLineInterpolationOn 	"tfLineInterpolationOn"
 
 /*
  * Public Transform class resources
  */
 
-#define NhlCtfPlotManagerOn	"TfPlotManagerOn"
-#define NhlCtfDoNDCOverlay	"TfDoNDCOverlay"
+#define NhlCtfPlotManagerOn		"TfPlotManagerOn"
+#define NhlCtfDoNDCOverlay		"TfDoNDCOverlay"
+#define NhlCtfLineInterpolationOn 	"TfLineInterpolationOn"
 
 /*
  * Public Functions defined by the Transform Class

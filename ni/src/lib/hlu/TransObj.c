@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.31 1998-04-16 03:09:10 dbrown Exp $
+ *      $Id: TransObj.c,v 1.32 1999-04-02 23:51:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,11 @@ static NhlResource resources[] =  {
 
 /* End-documented-resources */
 
+	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
+		NhlTBoolean,sizeof(NhlBoolean),
+	        NhlOffset(NhlTransObjLayerRec,trobj.line_interpolation_on),
+		NhlTImmediate,
+	  	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
 	{ NhlNtrResolutionF, NhlCtrResolutionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.resolution),
 		NhlTString, _NhlUSET("0.002"),_NhlRES_PRIVATE,NULL },
@@ -430,9 +435,14 @@ TransSetTrans
 			     NULL);
 	if(ret < NhlWARNING)
 		return ret;
-	if (tp->resolution <= 0.0) tp->resolution = 0.002;
-	tp->point_count = (int) 
-		MAX(1.0,(tp->width + tp->height) / (2.0 * tp->resolution));
+	if (! tp->line_interpolation_on)
+		tp->point_count = 1;
+	else {
+		if (tp->resolution <= 0.0) tp->resolution = 0.002;
+		tp->point_count = (int) 
+			MAX(1.0,(tp->width + tp->height) / 
+			    (2.0 * tp->resolution));
+	}
 
 	return NhlNOERROR;
 }

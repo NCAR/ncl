@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.52 1999-03-29 18:31:34 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.53 1999-04-02 23:51:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2600,6 +2600,8 @@ static NhlErrorTypes SetUpLLTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
                 
 		sprintf(buffer,"%s",stnew->base.name);
 		strcat(buffer,".Trans");
@@ -2630,6 +2632,10 @@ static NhlErrorTypes SetUpLLTransObj
                         NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
                 if (tfp->y_log != stold->trans.y_log)
                         NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
+		if (tfp->line_interpolation_on != 
+		    stold->trans.line_interpolation_on)
+			NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+				   tfp->line_interpolation_on);
 
                 subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
                 if (nargs > 0) {
@@ -2742,7 +2748,9 @@ static NhlErrorTypes SetUpIrrTransObj
                 NhlSetSArg(&sargs[nargs++],NhlNtrDataYEndF,tfp->data_yend);
                 NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,stp->x_tension);
                 NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,stp->y_tension);
-                
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
+               
 		sprintf(buffer,"%s",stnew->base.name);
 		strcat(buffer,".Trans");
 
@@ -2797,6 +2805,10 @@ static NhlErrorTypes SetUpIrrTransObj
                 if (tfp->data_yend != stold->trans.data_yend)
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrDataYEndF,tfp->data_yend);
+		if (tfp->line_interpolation_on != 
+		    stold->trans.line_interpolation_on)
+			NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+				   tfp->line_interpolation_on);
         
                 if (stp->x_tension != ostp->x_tension)
                         NhlSetSArg(&sargs[nargs++],

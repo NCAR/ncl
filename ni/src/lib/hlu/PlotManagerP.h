@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.12 1998-11-18 19:21:09 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.13 1999-04-02 23:51:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,6 @@
 #define NhlOV_DEF_TITLE_ZONE	4
 #define NhlOV_DEF_LABELBAR_ZONE 6
 #define NhlOV_DEF_LEGEND_ZONE	7
-#define NhlOV_DEF_TITLE_HEIGHT  0.025
 
 /* private resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.43 1998-11-19 00:14:22 dbrown Exp $
+ *      $Id: Transform.c,v 1.44 1999-04-02 23:51:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -146,7 +146,11 @@ static NhlResource resources[] = {
         	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL },
 	{ NhlNtrDataYEndF, NhlCtrDataYEndF, NhlTFloat, sizeof(float),
 		Oset(data_yend),NhlTString, _NhlUSET("0.0"),
-        	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL }
+        	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL },
+	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
+		NhlTBoolean,sizeof(NhlBoolean),
+		Oset(line_interpolation_on),NhlTImmediate,
+	  	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL}
         
 };
 
