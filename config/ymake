@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.26 1996-11-16 19:03:29 haley Exp $
+#	$Id: ymake,v 1.27 1997-01-30 21:12:35 haley Exp $
 #
 ######################################################################
 #
@@ -461,7 +461,8 @@ case	UNICOS:
 			set arch = YMP
 		breaksw
         case	C90:
-			set arch = C90
+        case	J90:
+			set arch = $mach[1]
 		breaksw
 		default:
 			echo "$0 : Unknown machine type" > /dev/tty
