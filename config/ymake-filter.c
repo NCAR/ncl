@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.4 1994-03-10 00:54:55 boote Exp $
+ *	$Id: ymake-filter.c,v 1.5 1994-03-14 13:52:05 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -69,6 +69,12 @@ main()
 			else if(tchar != (char*)NULL && (tchar != line) &&
 				(*(tchar-1) == '\\')) {
 				(void) printf("\t");
+				/* eat escape char */
+				while(*tchar != '\0'){
+					*(tchar-1) = *tchar;
+					tchar++;
+				}
+				*(tchar-1) = *tchar;
 			}
 			/*
 			 * Need to add the tab if the ':' is escaped
@@ -78,6 +84,12 @@ main()
 			else if(tchar2 != (char*)NULL && (tchar2 != line) &&
 				(*(tchar2-1) == '\\')) {
 				(void) printf("\t");
+				/* eat escape char */
+				while(*tchar2 != '\0'){
+					*(tchar2-1) = *tchar;
+					tchar++;
+				}
+				*(tchar2-1) = *tchar2;
 			}
 
 			(void) printf("%s\n", line);

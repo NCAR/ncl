@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.7 1994-03-08 17:40:21 haley Exp $
+ *      $Id: yMakefile,v 1.8 1994-03-14 13:52:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,3 +47,14 @@ InstallTarget($(CONFIG-PROGRAMS),$(INSTALL_BIN),$(CONFIGPATH))
 InstallTarget(ymake ymkmf,$(INSTALL_BIN),$(BINPATH))
 InstallManPages(ymake,$(EXTENSION),$(MAN1PATH),$(MAN1_SECTION))
 #endif	/* InstallYmake */
+
+CleanFilesTarget(.home_made)
+
+#
+# This rule insures that ymake-filter gets remade with the real Makefile
+# once it is created.
+#
+.home_made:
+	touch .home_made
+
+ymake-filter.o: .home_made
