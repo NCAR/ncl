@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.115 1999-03-23 15:48:35 haley Exp $
+#   $Id: ncargex.csh,v 1.116 1999-09-23 14:36:52 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -381,19 +381,31 @@ set c_list = ($c_list $labelbar_clist)
 # set ngmath examples #
 #                     #
 #*********************#
-set ngmath_fex  = (csex01 csex02 csex03 csex04 csex05 csex06 csex07 \
-                   dsex01 dsex02 dsex03 dsex04 dsex05 dsex06 dsex01d nnex01 \
-                   nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09 \
-                   nnex01d ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
-set ngmath_flist = ($ngmath_fex)
+set csagrid_flist = (csex01 csex02 csex03 csex04 csex05 csex06 csex07)
+set cssgrid_flist = (cssex01 cssex02 cssex03)
+set dsgrid_flist  = (dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06)
+set fitgrid_flist = (ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
+set natgrid_flist = (nnex01 nnex01d nnex02 nnex03 nnex04 nnex05 nnex06 \
+                     nnex07 nnex08 nnex09) 
+set shgrid_flist  = (shex01 shex02 shex03)
 
-set ngmath_cex  = (c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 c_csex06 \
-                   c_csex07 c_dsex01 c_dsex02 c_dsex03 c_dsex04 c_dsex05 \
-                   c_dsex06 c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 \
-                   c_nnex01d c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 \
-                   c_ftex06)
-set ngmath_clist = ($ngmath_cex)
+set ngmath_flist  = ($csagrid_flist $cssgrid_flist $dsgrid_flist \
+                     $fitgrid_flist $natgrid_flist $shgrid_flist)
+                   
+set csagrid_clist = (c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 \
+                     c_csex06 c_csex07)
+set cssgrid_clist = (c_cssex01 c_cssex02 c_cssex03)
+set dsgrid_clist  = (c_dsex01 c_dsex01d c_dsex02 c_dsex03 c_dsex04 \
+                     c_dsex05 c_dsex06)
+set fitgrid_clist = (c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06)
+set natgrid_clist = (c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06)
+set shgrid_clist  = (c_shex01 c_shex02 c_shex03)
 
+set ngmath_clist  = ($csagrid_clist $cssgrid_clist $dsgrid_clist \
+                     $fitgrid_clist $natgrid_clist $shgrid_clist)
+                      
+set ngmath_fex    = ($ngmath_flist)
+set ngmath_cex    = ($ngmath_clist)
 set f_list = ($f_list $ngmath_flist)
 set c_list = ($c_list $ngmath_clist)
 
@@ -802,6 +814,16 @@ while ($#argv > 0)
       set names=($names ${cnrc_family_flist})
       breaksw
 
+    case "-csagrid":
+      shift
+      set names=($names $csagrid_flist $csagrid_clist)
+      breaksw
+
+    case "-cssgrid":
+      shift
+      set names=($names $cssgrid_flist $cssgrid_clist)
+      breaksw
+
     case "-dashline":
       shift
       set names=($names $dashline_flist $dashline_clist)
@@ -812,6 +834,11 @@ while ($#argv > 0)
       set names=($names $dashpack_flist $dashpack_clist)
       breaksw
 
+    case "-dsgrid":
+      shift
+      set names=($names $dsgrid_flist $dsgrid_clist)
+      breaksw
+
     case "-ezmap":
       shift
       set names=($names $ezmap_flist $ezmap_clist)
@@ -820,6 +847,11 @@ while ($#argv > 0)
     case "-field_flow":
       shift
       set names=($names $field_flist $field_clist)
+      breaksw
+
+    case "-fitgrid":
+      shift
+      set names=($names $fitgrid_flist $fitgrid_clist)
       breaksw
 
     case "-gflash":
@@ -862,6 +894,11 @@ while ($#argv > 0)
       set names=($names $labelbar_flist $labelbar_clist)
       breaksw
 
+    case "-natgrid":
+      shift
+      set names=($names $natgrid_flist $natgrid_clist)
+      breaksw
+
     case "-ngmath":
       shift
       set names=($names $ngmath_flist $ngmath_clist)
@@ -895,6 +932,11 @@ while ($#argv > 0)
     case "-seter":
       shift
       set names=($names $seter_flist)
+      breaksw
+
+    case "-shgrid":
+      shift
+      set names=($names $shgrid_flist $shgrid_clist)
       breaksw
 
     case "-softfill":
@@ -1515,20 +1557,6 @@ switch ($name)
         set data_files = (srex01.dat)
     breaksw
 
-    case c_csex01:
-    case c_csex02:
-    case c_csex03:
-    case c_csex04:
-    case c_csex05:
-    case c_csex06:
-    case c_csex07:
-    case c_dsex01:
-    case c_dsex01d:
-    case c_dsex02:
-    case c_dsex03:
-    case c_dsex04:
-    case c_dsex05:
-    case c_dsex06:
     case csex01:
     case csex02:
     case csex03:
@@ -1536,14 +1564,52 @@ switch ($name)
     case csex05:
     case csex06:
     case csex07:
-    case dsex01d:
+    case cssex01:
+    case cssex02:
+    case cssex03:
     case dsex01:
+    case dsex01d:
     case dsex02:
     case dsex03:
     case dsex04:
     case dsex05:
     case dsex06:
-        set comp_flags = ($comp_flags "-ngmath")
+    case ftex01:
+    case ftex02:
+    case ftex03:
+    case ftex04:
+    case ftex05:
+    case ftex06:
+    case shex01:
+    case shex02:
+    case shex03:
+    case c_csex01:
+    case c_csex02:
+    case c_csex03:
+    case c_csex04:
+    case c_csex05:
+    case c_csex06:
+    case c_csex07:
+    case c_cssex01:
+    case c_cssex02:
+    case c_cssex03:
+    case c_dsex01:
+    case c_dsex01d:
+    case c_dsex02:
+    case c_dsex03:
+    case c_dsex04:
+    case c_dsex05:
+    case c_dsex06:
+    case c_ftex01:
+    case c_ftex02:
+    case c_ftex03:
+    case c_ftex04:
+    case c_ftex05:
+    case c_ftex06:
+    case c_shex01:
+    case c_shex02:
+    case c_shex03
+       set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
     case nnex01:
@@ -1566,21 +1632,6 @@ switch ($name)
     case c_nnex06:
     case c_nnex01d:
         set extra_src_files = (nnplotc.c)
-        set comp_flags = ($comp_flags "-ngmath")
-    breaksw
-
-    case c_ftex01:
-    case c_ftex02:
-    case c_ftex03:
-    case c_ftex04:
-    case c_ftex05:
-    case c_ftex06:
-    case ftex01:
-    case ftex02:
-    case ftex03:
-    case ftex04:
-    case ftex05:
-    case ftex06:
         set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
