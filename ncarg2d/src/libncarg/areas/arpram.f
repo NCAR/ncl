@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.14 1995-11-14 23:46:05 kennison Exp $
+C $Id: arpram.f,v 1.15 1998-05-13 17:15:41 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -153,7 +153,7 @@ C
         IF (ICFELL('ARPRAM',3).NE.0) RETURN
 10002 CONTINUE
 C
-C First, find the average length of the projection on the x axis of the
+C First, find the average length of the projection on the X axis of the
 C line segments in the area map.
 C
 C
@@ -176,7 +176,7 @@ C
       IXL=INT(FXL/REAL(NXL))
 C
 C Decide what the maximum such length should be and save it.  Adjust
-C the x and y coordinates in the dummy nodes at the ends of the list.
+C the X and Y coordinates in the dummy nodes at the ends of the list.
 C
       IAM(2)=MAX(2,MIN(ILC,2*IXL))
       IAM(9)=-(IAM(2)+1)
@@ -185,7 +185,7 @@ C
       IAM(20)=ILC+(IAM(2)+1)
 C
 C
-C Now, break up any edge segments whose projections on the x axis are
+C Now, break up any edge segments whose projections on the X axis are
 C greater than the maximum.
 C
 C
@@ -278,7 +278,7 @@ C
 C
         ISP=IAM(ISP+5)
 C
-C Pull out the x and y coordinates of the point defining the current
+C Pull out the X and Y coordinates of the point defining the current
 C position of the sweep line.
 C
         ISX=IAM(ISP+1)
@@ -1085,7 +1085,7 @@ C
             FYQ=REAL(IYQ)
 C
 C Back up IPR to the beginning of the group of nodes which have the
-C same x and y coordinates as it does.
+C same X and Y coordinates as it does.
 C
 10169       CONTINUE
             IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.
@@ -1481,7 +1481,7 @@ C
           FYQ=REAL(IYQ)
 C
 C Back up IPR to the beginning of the group of nodes which have the
-C same x and y coordinates as it does.
+C same X and Y coordinates as it does.
 C
 10243     CONTINUE
           IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.IA

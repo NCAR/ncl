@@ -1,5 +1,5 @@
 C
-C $Id: argtai.f,v 1.9 1995-04-28 19:41:02 kennison Exp $
+C $Id: argtai.f,v 1.10 1998-05-13 17:15:40 kennison Exp $
 C
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
@@ -72,7 +72,7 @@ C Pull out the current value of the pointer IPX.
 C
       IPX=IAM(3)
 C
-C Use GETSET to set up parameters allowing us to map x and y coordinates
+C Use GETSET to set up parameters allowing us to map X and Y coordinates
 C from the user system to the local integer system.
 C
       IF (.NOT.(ICF.NE.0.OR.ILL.EQ.0)) GO TO 10003

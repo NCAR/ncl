@@ -1,5 +1,5 @@
 C
-C $Id: arscam.f,v 1.10 1995-11-14 23:46:05 kennison Exp $
+C $Id: arscam.f,v 1.11 1998-05-13 17:15:43 kennison Exp $
 C
       SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
 C
@@ -12,8 +12,8 @@ C
 C IAM is the array holding the area map, created by prior calls to the
 C routines ARINAM and AREDAM.
 C
-C The arrays XCS and YCS are used, in a call to APR, to hold the x
-C and y coordinates of the points defining a particular subarea.  Each
+C The arrays XCS and YCS are used, in a call to APR, to hold the X
+C and Y coordinates of the points defining a particular subarea.  Each
 C is dimensioned MCS.
 C
 C The arrays IAG and IAI are used, in a call to APR, to hold the
@@ -182,7 +182,7 @@ C
           FYQ=REAL(IYQ)
 C
 C Back up IPR to the beginning of the group of nodes which have the
-C same x and y coordinates as it does.
+C same X and Y coordinates as it does.
 C
 10010     CONTINUE
           IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.IA
@@ -536,7 +536,7 @@ C
 10080     CONTINUE
 C
 C If the group/area identifier information is incomplete and the current
-C edge segment spans a portion of the x axis of non-zero length, scan
+C edge segment spans a portion of the X axis of non-zero length, scan
 C outwards from the subarea for group/area identifier information.
 C
           IF (.NOT.(IAF.EQ.0.AND.IAM(IPQ+1).NE.IAM(IPR+1))) GO TO 10081
@@ -691,7 +691,7 @@ C
           FYQ=REAL(IYQ)
 C
 C Back up IPR to the beginning of the group of nodes which have the
-C same x and y coordinates as it does.
+C same X and Y coordinates as it does.
 C
 10109     CONTINUE
           IF (.NOT.(IAM(IPR+1).EQ.IAM(IAM(IPR+6)+1).AND.IAM(IPR+2).EQ.IA
