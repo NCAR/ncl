@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.6 1998-05-24 00:40:54 kennison Exp $
+C $Id: mplndm.f,v 1.7 1999-04-02 23:03:05 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -21,8 +21,8 @@ C
 C The following COMMON blocks are used to share information with various
 C other routines in EZMAPB or in EZMAP proper.
 C
-        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,
-     +                  URNG,VRNG,BLAM,SLAM,BLOM,SLOM,ISSL
+        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,
+     +                  SLAM,BLOM,SLOM,ISSL,PEPS
         SAVE   /MAPCM2/
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
@@ -127,10 +127,14 @@ C
 C
         END IF
 C
-C If EZMAP needs initialization, do nothing further.
+C If EZMAP needs initialization, do it.
 C
         CALL MPGETI ('IN',INTF)
-        IF (INTF.NE.0) RETURN
+C
+        IF (INTF.NE.0) THEN
+          CALL MAPINT
+          IF (ICFELL('MPLNDM',2).NE.0) RETURN
+        END IF
 C
 C Open the ".lines" file.  Again, look for a local version first and, if
 C that one can't be found, look in the NCAR Graphics database directory.
@@ -184,27 +188,27 @@ C
             IF (ILTS.NE.0) THEN
               CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-              IF (ICFELL('MPLNDM',2).NE.0) RETURN
+              IF (ICFELL('MPLNDM',3).NE.0) RETURN
             END IF
             CALL MAPCHM (IIII(MAX(2,MIN(4,ILTY))-1),
      +                                           IOR(ISHIFT(32767,1),1),
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-            IF (ICFELL('MPLNDM',3).NE.0) RETURN
+            IF (ICFELL('MPLNDM',4).NE.0) RETURN
             ILTS=ILTY
           END IF
           CALL MAPITM (PNTS(1),PNTS(2),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',4).NE.0) GO TO 907
+          IF (ICFELL('MPLNDM',5).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
             CALL MAPITM (PNTS(I),PNTS(I+1),1,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-            IF (ICFELL('MPLNDM',5).NE.0) GO TO 907
+            IF (ICFELL('MPLNDM',6).NE.0) GO TO 907
   107     CONTINUE
           CALL MAPITM (PNTS(NNMS-1),PNTS(NNMS),2,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',6).NE.0) GO TO 907
-          CALL MAPIQM (         IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
           IF (ICFELL('MPLNDM',7).NE.0) GO TO 907
+          CALL MAPIQM (         IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+          IF (ICFELL('MPLNDM',8).NE.0) GO TO 907
           CALL HLUMPCHLN (-2,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
@@ -217,7 +221,7 @@ C
         IF (ILTS.NE.0) THEN
           CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',8).NE.0) RETURN
+          IF (ICFELL('MPLNDM',9).NE.0) RETURN
         END IF
 C
 C Done.
@@ -226,24 +230,24 @@ C
 C
 C Error exits.
 C
-  901   CALL SETER ('MPLNDM - Can''t form name of ".names" file',9,1)
+  901   CALL SETER ('MPLNDM - Can''t form name of ".names" file',10,1)
         RETURN
 C
-  902   CALL SETER ('MPLNDM - Can''t open the ".names" file',10,1)
+  902   CALL SETER ('MPLNDM - Can''t open the ".names" file',11,1)
         RETURN
 C
-  903   CALL SETER ('MPLNDM - Read bad index from ".names" file',11,1)
+  903   CALL SETER ('MPLNDM - Read bad index from ".names" file',12,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  904   CALL SETER ('MPLNDM - Read error on ".names" file',12,1)
+  904   CALL SETER ('MPLNDM - Read error on ".names" file',13,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  905   CALL SETER ('MPLNDM - Can''t open the ".lines" file',13,1)
+  905   CALL SETER ('MPLNDM - Can''t open the ".lines" file',14,1)
         RETURN
 C
-  906   CALL SETER ('MPLNDM - Read error on ".lines" file',14,1)
+  906   CALL SETER ('MPLNDM - Read error on ".lines" file',15,1)
         CALL NGCLFI (IFDE)
         RETURN
 C

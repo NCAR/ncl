@@ -1,5 +1,5 @@
 C
-C $Id: mplndr.f,v 1.6 1998-05-24 00:40:54 kennison Exp $
+C $Id: mplndr.f,v 1.7 1999-04-02 23:03:05 kennison Exp $
 C
       SUBROUTINE MPLNDR (FLNM,ILVL)
 C
@@ -14,8 +14,8 @@ C
 C The following COMMON blocks are used to share information with various
 C other routines in EZMAPB or in EZMAP proper.
 C
-        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,
-     +                  URNG,VRNG,BLAM,SLAM,BLOM,SLOM,ISSL
+        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,
+     +                  SLAM,BLOM,SLOM,ISSL,PEPS
         SAVE   /MAPCM2/
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
@@ -120,10 +120,14 @@ C
 C
         END IF
 C
-C If EZMAP needs initialization, do nothing further.
+C If EZMAP needs initialization, do it.
 C
         CALL MPGETI ('IN',INTF)
-        IF (INTF.NE.0) RETURN
+C
+        IF (INTF.NE.0) THEN
+          CALL MAPINT
+          IF (ICFELL('MPLNDR',2).NE.0) RETURN
+        END IF
 C
 C Open the ".lines" file.  Again, look for a local version first and, if
 C that one can't be found, look in the NCAR Graphics database directory.
@@ -181,23 +185,23 @@ C
           IF (ILTY.NE.ILTS) THEN
             IF (ILTS.NE.0) THEN
               CALL MAPCHI (-IIII(MAX(2,MIN(4,ILTS))-1),0,0)
-              IF (ICFELL('MPLNDR',2).NE.0) RETURN
+              IF (ICFELL('MPLNDR',3).NE.0) RETURN
             END IF
             CALL MAPCHI (IIII(MAX(2,MIN(4,ILTY))-1),IDOT,
      +                                           IOR(ISHIFT(32767,1),1))
-            IF (ICFELL('MPLNDR',3).NE.0) RETURN
+            IF (ICFELL('MPLNDR',4).NE.0) RETURN
             ILTS=ILTY
           END IF
           CALL MAPIT (PNTS(1),PNTS(2),0)
-          IF (ICFELL('MPLNDR',4).NE.0) GO TO 907
+          IF (ICFELL('MPLNDR',5).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
             CALL MAPIT (PNTS(I),PNTS(I+1),1)
-            IF (ICFELL('MPLNDR',5).NE.0) GO TO 907
+            IF (ICFELL('MPLNDR',6).NE.0) GO TO 907
   107     CONTINUE
           CALL MAPIT (PNTS(NNMS-1),PNTS(NNMS),2)
-          IF (ICFELL('MPLNDR',6).NE.0) GO TO 907
-          CALL MAPIQ
           IF (ICFELL('MPLNDR',7).NE.0) GO TO 907
+          CALL MAPIQ
+          IF (ICFELL('MPLNDR',8).NE.0) GO TO 907
           CALL HLUMPCHLN (-3,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
@@ -209,7 +213,7 @@ C Reset the color index, dotting, and dash pattern, if necessary.
 C
         IF (ILTS.NE.0) THEN
           CALL MAPCHI (-IIII(MAX(2,MIN(4,ILTS))-1),0,0)
-          IF (ICFELL('MPLNDR',8).NE.0) RETURN
+          IF (ICFELL('MPLNDR',9).NE.0) RETURN
         END IF
 C
 C Done.
@@ -218,24 +222,24 @@ C
 C
 C Error exits.
 C
-  901   CALL SETER ('MPLNDR - Can''t form name of ".names" file',9,1)
+  901   CALL SETER ('MPLNDR - Can''t form name of ".names" file',10,1)
         RETURN
 C
-  902   CALL SETER ('MPLNDR - Can''t open the ".names" file',10,1)
+  902   CALL SETER ('MPLNDR - Can''t open the ".names" file',11,1)
         RETURN
 C
-  903   CALL SETER ('MPLNDR - Read bad index from ".names" file',11,1)
+  903   CALL SETER ('MPLNDR - Read bad index from ".names" file',12,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  904   CALL SETER ('MPLNDR - Read error on ".names" file',12,1)
+  904   CALL SETER ('MPLNDR - Read error on ".names" file',13,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  905   CALL SETER ('MPLNDR - Can''t open the ".lines" file',13,1)
+  905   CALL SETER ('MPLNDR - Can''t open the ".lines" file',14,1)
         RETURN
 C
-  906   CALL SETER ('MPLNDR - Read error on ".lines" file',14,1)
+  906   CALL SETER ('MPLNDR - Read error on ".lines" file',15,1)
         CALL NGCLFI (IFDE)
         RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mplnam.f,v 1.6 1998-05-24 00:40:53 kennison Exp $
+C $Id: mplnam.f,v 1.7 1999-04-02 23:03:04 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
@@ -15,8 +15,8 @@ C
 C The following COMMON blocks are used to share information with various
 C other routines in EZMAPB or in EZMAP proper.
 C
-        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,
-     +                  URNG,VRNG,BLAM,SLAM,BLOM,SLOM,ISSL
+        COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,
+     +                  SLAM,BLOM,SLOM,ISSL,PEPS
         SAVE   /MAPCM2/
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
@@ -126,10 +126,14 @@ C
 C
         END IF
 C
-C If EZMAP needs initialization, do nothing further.
+C If EZMAP needs initialization, do it.
 C
         CALL MPGETI ('IN',INTF)
-        IF (INTF.NE.0) RETURN
+C
+        IF (INTF.NE.0) THEN
+          CALL MAPINT
+          IF (ICFELL('MPLNAM',2).NE.0) RETURN
+        END IF
 C
 C Use the EZMAPA routine MAPBLA to generate limb lines (if any)
 C and a perimeter and send them to the area map.
@@ -137,7 +141,7 @@ C
         CALL MAPGTC ('OU',SVOU)
         CALL MAPSTC ('OU','NO')
         CALL MAPBLA (IAMA)
-        IF (ICFELL('MPLNAM',2).NE.0) RETURN
+        IF (ICFELL('MPLNAM',3).NE.0) RETURN
         CALL MAPSTC ('OU',SVOU)
 C
 C Open the ".lines" file.  Again, look for a local version first and, if
@@ -193,15 +197,15 @@ C
           CALL HLUMPCHLN (+1,ILTY,IOAL,IOAR,NPTS,PNTS)
           IF (NPTS.LE.1) GO TO 106
           CALL MAPITA (PNTS(1),PNTS(2),0,IAMA,IGI1,IOAL,IOAR)
-          IF (ICFELL('MPLNAM',3).NE.0) GO TO 907
+          IF (ICFELL('MPLNAM',4).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
             CALL MAPITA (PNTS(I),PNTS(I+1),1,IAMA,IGI1,IOAL,IOAR)
-            IF (ICFELL('MPLNAM',4).NE.0) GO TO 907
+            IF (ICFELL('MPLNAM',5).NE.0) GO TO 907
   107     CONTINUE
           CALL MAPITA (PNTS(NNMS-1),PNTS(NNMS),2,IAMA,IGI1,IOAL,IOAR)
-          IF (ICFELL('MPLNAM',5).NE.0) GO TO 907
-          CALL MAPIQA (IAMA,IGI1,IOAL,IOAR)
           IF (ICFELL('MPLNAM',6).NE.0) GO TO 907
+          CALL MAPIQA (IAMA,IGI1,IOAL,IOAR)
+          IF (ICFELL('MPLNAM',7).NE.0) GO TO 907
           CALL HLUMPCHLN (-1,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
@@ -246,7 +250,7 @@ C
                   YCRA(2)=VMAX
                   IAID=MPIOSA (IAID,ILVL)
                   CALL AREDAM (IAMA,XCRA,YCRA,2,IGI1,IAID,IAID)
-                  IF (ICFELL('MPLNAM',7).NE.0) GO TO 907
+                  IF (ICFELL('MPLNAM',8).NE.0) GO TO 907
                   GO TO 112
                 END IF
                 NTMS=NTMS-1
@@ -263,24 +267,24 @@ C
 C
 C Error exits.
 C
-  901   CALL SETER ('MPLNAM - Can''t form name of ".names" file',8,1)
+  901   CALL SETER ('MPLNAM - Can''t form name of ".names" file',9,1)
         RETURN
 C
-  902   CALL SETER ('MPLNAM - Can''t open the ".names" file',9,1)
+  902   CALL SETER ('MPLNAM - Can''t open the ".names" file',10,1)
         RETURN
 C
-  903   CALL SETER ('MPLNAM - Read bad index from ".names" file',10,1)
+  903   CALL SETER ('MPLNAM - Read bad index from ".names" file',11,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  904   CALL SETER ('MPLNAM - Read error on ".names" file',11,1)
+  904   CALL SETER ('MPLNAM - Read error on ".names" file',12,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  905   CALL SETER ('MPLNAM - Can''t open the ".lines" file',12,1)
+  905   CALL SETER ('MPLNAM - Can''t open the ".lines" file',13,1)
         RETURN
 C
-  906   CALL SETER ('MPLNAM - Read error on ".lines" file',13,1)
+  906   CALL SETER ('MPLNAM - Read error on ".lines" file',14,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
