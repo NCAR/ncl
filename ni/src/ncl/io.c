@@ -85,9 +85,11 @@ int arg;
 		if(ncl_input_buffer.buffer != NULL)
 			NclFree(ncl_input_buffer.buffer); 
 		ncl_input_buffer.buffer = readline(prmpt);
-		ncl_input_buffer.size = strlen(ncl_input_buffer.buffer);
+		if(ncl_input_buffer.buffer!=NULL){
+			ncl_input_buffer.size = strlen(ncl_input_buffer.buffer);
+			add_history(ncl_input_buffer.buffer);
+		}
 		ncl_input_buffer.ptr = ncl_input_buffer.buffer;
-		add_history(ncl_input_buffer.buffer);
 	} 
 }
 char ncl_getc
@@ -98,12 +100,16 @@ char ncl_getc
 FILE *fp;
 #endif
 {
-	if((ncl_input_buffer.using_buffer)&&(ncl_input_buffer.buffer != NULL)) {
-		if(*ncl_input_buffer.ptr == '\0') {
-			ncl_input_buffer.ptr++;
-			return('\n');
-		} else {
-			return(*ncl_input_buffer.ptr++);
+	if(ncl_input_buffer.using_buffer){
+		if(ncl_input_buffer.buffer != NULL) {
+			if(*ncl_input_buffer.ptr == '\0') {
+				ncl_input_buffer.ptr++;
+				return('\n');
+			} else {
+				return(*ncl_input_buffer.ptr++);
+			}
+		} else  {
+			return((char)0);
 		}
 	} else {
 		return(getc(fp));
