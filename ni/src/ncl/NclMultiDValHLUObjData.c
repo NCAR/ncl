@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.5 1995-01-28 01:51:43 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.6 1995-02-17 20:52:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1635,6 +1635,8 @@ NclSelectionRecord *sel_rec;
 	}
 	if(theclass != NULL) {
 		class_ptr = theclass;
+	} else {
+		class_ptr = nclMultiDValHLUObjDataClass;
 	}
 /*
 * Since no initialize functions exist for Obj and Data (meaningless because

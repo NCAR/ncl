@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.1 1995-02-17 01:04:51 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.2 1995-02-17 20:52:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1400,6 +1400,12 @@ NhlErrorTypes _Nclidsfft
 				} else if((arg[0])[i] < xmin) {
 					xmin = (arg[0])[i];
 				}
+			} else {
+				if((arg[0])[i] > xmax) {
+                                        xmax = (arg[0])[i];
+                                } else if((arg[0])[i] < xmin) {
+                                        xmin = (arg[0])[i];
+                                }
 			}
 			if(has_missing1) {
 				if((arg[1])[i] == missing1.floatval) {
@@ -1410,6 +1416,12 @@ NhlErrorTypes _Nclidsfft
 				} else if((arg[1])[i] < ymin) {
 					ymin = (arg[1])[i];
 				}
+			} else {
+				if((arg[1])[i] > ymax) {
+                                        ymax = (arg[1])[i];
+                                } else if((arg[1])[i] < ymin) {
+                                        ymin = (arg[1])[i];
+                                }
 			}
 			if(has_missing2) {
 				if((arg[2])[i] == missing2.floatval) {

@@ -118,10 +118,12 @@ static void HLUObjDestroy
 				_NclDelHLUChild(ptmp,self->obj.id);
 			}
 		}
+		if(hlu_obj->obj.status != STATIC) {
 #ifdef MAKEAPI
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
-		NhlDestroy(hlu_obj->hlu.hlu_id);
+			NhlDestroy(hlu_obj->hlu.hlu_id);
+		}
 		_NclUnRegisterObj(self);
 		NclFree(self);
 	}
@@ -253,7 +255,7 @@ NhlLayerClass class_ptr;
 #ifdef MAKEAPI
 	_NclAddToNewList(tmp->hlu.hlu_id,NrmStringToQuark(NhlName(tmp->hlu.hlu_id)),tmp->hlu.class_ptr);
 #endif /*MAKEAPI*/
-        (void)_NclObjCreate((NclObj)tmp , theclass , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
+        (void)_NclObjCreate((NclObj)tmp , (theclass==NULL ? nclHLUObjClass: theclass) , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);

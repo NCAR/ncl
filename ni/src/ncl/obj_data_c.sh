@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#      $Id: obj_data_c.sh,v 1.3 1995-02-17 01:01:31 ethan Exp $
+#      $Id: obj_data_c.sh,v 1.4 1995-02-17 20:52:45 ethan Exp $
 #
 #########################################################################
 #									#
@@ -86,7 +86,6 @@ sed \
 -e 's/Ncl_Type_obj_is_mono/NULL/' \
 -e 's/Ncl_Type_obj_coerce/NULL/' \
 -e 's/Ncl_Type_obj_cmpf/NULL/' \
--e 's/Ncl_Type_obj_InitClass/NULL/' \
 NclType.c.sed > NclTypeobj.c
 
 rm .tmp.$$

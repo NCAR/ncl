@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.2 1995-01-31 22:26:02 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.3 1995-02-17 20:52:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,10 @@
  *	Description:	
  */
 #include "NclTypelogical.h"
+#include "NclHLUObj.h"
+#include "NclMultiDValHLUObjData.h"
+#include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/DataComm.h>
 
 static void Ncl_Type_obj_print
 #if     NhlNeedProto
@@ -39,3 +43,113 @@ void *val;
 
 	_NclPrint(object,fp);
 }
+
+
+#include <ncarg/hlu/ConvertP.h>
+/*ARGSUSED*/
+static NhlErrorTypes CvtNhlTObjIdGenArrayToNclData
+#if	NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	NhlGenArray gen;
+	char func[] = "CvtNhlTObjIdGenArrayToNclData";
+	void *val;
+	NclMultiDValData tmp_md;
+	int i,id;
+	NclHLUObj tmp_hlu;
+	NhlLayer tmp_layer;
+	
+
+	if(nargs != 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong number of args",func);
+		to->size =0;
+		return(NhlFATAL);
+	}
+	gen = (NhlGenArray)from->data.ptrval;
+	if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTIntegerGenArray),from->typeQ)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
+		to->size =0;
+		return(NhlFATAL);
+	}
+	val = NclMalloc((unsigned)sizeof(int) * gen->num_elements);
+	for(i = 0; i < gen->num_elements; i++ ){
+		id = ((int*)gen->data)[i];
+		if(id >0 ) {
+			tmp_layer = _NhlGetLayer(id);
+			tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,id,-1,tmp_layer->base.layer_class);
+			if(tmp_hlu != NULL) {
+				((int*)val)[i] = tmp_hlu->obj.id;
+			} else {
+				((int*)val)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+			}
+		} else {
+			((int*)val)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+		}
+	}
+	tmp_md = _NclMultiDValHLUObjDataCreate(
+		NULL,NULL, Ncl_MultiDValHLUObjData,
+		0,val,NULL,gen->num_dimensions,
+		gen->len_dimensions,TEMPORARY,NULL);
+	if(to->size < sizeof(NclMultiDValData)) {
+		return(NhlFATAL);
+	} else {
+		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+        	return(NhlNOERROR);
+	}
+}
+/*ARGSUSED*/
+static NhlErrorTypes CvtNhlTObjIdToNclData
+#if	NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	void* tmp;
+	NclMultiDValData tmp_md;
+	int n_dims = 1,len_dims = 1;
+	NhlLayer tmp_layer;
+	NclHLUObj tmp_hlu;
+
+	tmp = NclMalloc((unsigned)sizeof(int));
+	tmp_layer = _NhlGetLayer(*(int*)&(from->data));
+	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,*(int*)&(from->data),-1,tmp_layer->base.layer_class);
+	*(int*)tmp = tmp_hlu->obj.id;
+	
+	
+	tmp_md = _NclMultiDValHLUObjDataCreate(
+		NULL,NULL, Ncl_MultiDValHLUObjData,
+		0,(void*)tmp,NULL,n_dims,
+		&len_dims,TEMPORARY,NULL);
+	if(to->size < sizeof(NclMultiDValData)) {
+		return(NhlFATAL);
+	} else {
+		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+        	return(NhlNOERROR);
+	}
+}
+
+static NhlErrorTypes Ncl_Type_obj_InitClass
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NhlRegisterConverter(NhlTObjIdGenArray,NhlTNclData,CvtNhlTObjIdGenArrayToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlTObjId,NhlTNclData,CvtNhlTObjIdToNclData,NULL,0,False,NULL);
+	nclTypeobjClassRec.type_class.default_mis.objval = -1;
+	return(NhlNOERROR);
+}
+
