@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.2 1991-01-09 10:52:21 clyne Exp $
+ *	$Id: display.c,v 1.3 1991-04-09 17:34:25 clyne Exp $
  */
 /*
  *	Display.c
@@ -31,6 +31,9 @@ static	int	hFD = -1;	/* history file fd	*/
 static	unsigned long	usedMask = 0;
 static	int		numUsed = 0;
 
+static	char	**tArgv;	/* translator command line	*/
+static	int	tArgc;
+
 static	PlotCommandValues	pcvs[MAX_DISPLAYS];	
 
 /*
@@ -43,16 +46,12 @@ static	PlotCommandValues	pcvs[MAX_DISPLAYS];
  *	by other routines to communicate with the appropriate translator.
  *	OpenDisplay also sets some of the default values for idt commands
  * on entry
- *	*device		: device option for translator
- *	*font		: font option for translator
  *	*metafile	: name of metafile to translate
  *
  * on exit
  *	return		: -1 => error spawning translator; else connection id 
  */
-int	OpenDisplay(device, font, metafile)
-	char	*device,
-		*font;
+int	OpenDisplay(metafile)
 	char	*metafile;
 {
 
@@ -70,7 +69,13 @@ int	OpenDisplay(device, font, metafile)
 	 */
         for(id = 0; id < MAX_DISPLAYS && ((usedMask >> id) & 1); id++);
 
-	if (OpenTranslator(id, device, font, metafile, hFD) < 0) {
+	/*
+	 * append the metafile name to the end of the translator command
+	 * line
+	 */
+	tArgv[tArgc - 1] = metafile;
+
+	if (OpenTranslator(id, tArgv, tArgc, hFD) < 0) {
 		return(-1);	/* can't get a translator for this metafile*/
 	}
 
@@ -133,11 +138,15 @@ void	CloseDisplay(id)
  * on entry
  *	*program_name	: the name of the program, used for generating error
  *			  messages
+ *	targv		: the translator command line
+ *	targc		: size of targv.
  *	history		: if true record all commands sent to translator to
  *			  a history file
  */
-void	InitDisplayModule(program_name, history)
+void	InitDisplayModule(program_name, targv, targc, history)
 	char	*program_name;
+	char	**targv;
+	int	targc;
 	short	history;
 {
 
@@ -150,6 +159,12 @@ void	InitDisplayModule(program_name, history)
 			perror(programName);
 		}
 	}
+
+	/*
+	 * record translator command line
+	 */
+	tArgv = targv;
+	tArgc = targc;
 }
 
 /*

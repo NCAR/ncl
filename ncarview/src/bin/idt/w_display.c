@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.2 1991-01-08 12:20:53 clyne Exp $
+ *	$Id: w_display.c,v 1.3 1991-04-09 17:34:19 clyne Exp $
  */
 /*
  *	w_display.c
@@ -37,8 +37,6 @@
 #include "display.h"
 #include "talkto.h"
 #include "bits.h"
-
-extern	AppData	App_Data;
 
 extern	void	Command1(), Command2(), Command3();
 
@@ -95,7 +93,7 @@ void	CreateDisplayPopup(button, metafile)
 	/*
 	 * open a connection to a translator
 	 */
-	if ((id = OpenDisplay(App_Data.device, App_Data.font, metafile)) < 0) {
+	if ((id = OpenDisplay(metafile)) < 0) {
 		(void) fprintf(stderr, "Translator aborted\n");
 		return;
 	}

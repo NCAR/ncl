@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.4 1991-02-06 15:10:22 clyne Exp $
+ *	$Id: talkto.c,v 1.5 1991-04-09 17:34:23 clyne Exp $
  */
 /*
  *	talkto.c
@@ -80,18 +80,16 @@ static	void	reaper()
  *	channel		: Communication channel. All future communication with
  *			  this process will use this unique channel id. channel
  *			  is an int in the range [0,MAX_DISPLAYS). 
- *	*device		: device arg for translator
- *	*font		: font arg for translator
- *	*metafile	: name of metafile to translate
+ *	targv		: process to exec with all its args
+ *	targc		: len of targv
  *	hfd		: history file fd, if -1 not open
  * on exit
  *	return		: < 0 => failure, else ok
  */
-OpenTranslator(channel, device, font, metafile, hfd)
+OpenTranslator(channel, argv, argc, hfd)
 	int	channel;
-	char	*device;
-	char	*font;
-	char	*metafile;
+	char	**argv;
+	int	argc;
 	int	hfd;
 {
 
@@ -100,31 +98,11 @@ OpenTranslator(channel, device, font, metafile, hfd)
 	int	to_child[2],		/* pipe descriptors to/from process */
 		stderr_to_parent[2];
 
-	static	char	*translator;
-
-	char	*argv[10];
-
 	static	short first	= 1;
 
 	if (first) {	/* one time initialization		*/
 		for (i = 0; i < MAX_DISPLAYS; i++)
 			Translators[i].pid = -1;
-			
-		/*
-		 * build path to the translator if we know it. Else we
-		 * hope its on the user's search path.
-		 */
-#ifdef	BINDIR
-		translator = icMalloc((unsigned) 
-				(strlen(BINDIR) + strlen(TRANSLATOR) + 2));
-
-		(void) strcpy(translator, BINDIR);
-		(void) strcat(translator, "/");
-		(void) strcat(translator, TRANSLATOR);
-#else
-		translator = icMalloc(strlen(TRANSLATOR) + 1);
-		(void) strcpy(translator, TRANSLATOR);
-#endif
 
 #ifdef	CRAY
 		/*
@@ -138,16 +116,6 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		first = 0;
 	}
 
-	argv[0] = translator;
-	argv[1] = "-d";			/* device specifier arg	*/
-	argv[2] = device;		/* device to translate to	*/
-	argv[3] = "-f";			/* font specifier arg	*/
-	argv[4] = font;			/* font for text in translation	*/
-	argv[5] = "-bell";		/* turn off the bloody bell	*/
-	argv[6] = metafile;		/* metafile to translate	*/
-	argv[7] = NULL;
-
-		
 	hFD = hfd;			/* the history file fd		*/
 
 	/*
