@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.71 2004-11-16 23:28:25 haley Exp $
+#      $Id: yMakefile,v 1.72 2005-03-07 17:05:15 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -138,6 +138,12 @@ triangle.o: triangle.c
 #if defined(IRIX64)
 cmpf.o: cmpf.c
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c cmpf.c
+#endif
+
+#if defined(linux) && defined(x86_64)
+Quarks.o: Quarks.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Quarks.c
+
 #endif
 
 #if defined(AIX)
