@@ -1,5 +1,5 @@
 C
-C $Id: cppklp.f,v 1.4 1994-09-12 22:10:40 kennison Exp $
+C $Id: cppklp.f,v 1.5 1995-04-26 22:44:58 kennison Exp $
 C
       SUBROUTINE CPPKLP (ZDAT,RWRK,IWRK)
 C

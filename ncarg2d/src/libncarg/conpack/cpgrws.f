@@ -1,5 +1,5 @@
 C
-C $Id: cpgrws.f,v 1.4 1994-09-12 22:10:28 kennison Exp $
+C $Id: cpgrws.f,v 1.5 1995-04-26 22:44:45 kennison Exp $
 C
       SUBROUTINE CPGRWS (RWRK,IOWS,LOWS,IERR)
 C

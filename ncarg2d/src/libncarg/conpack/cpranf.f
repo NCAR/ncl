@@ -1,5 +1,5 @@
 C
-C $Id: cpranf.f,v 1.4 1994-09-12 22:10:42 kennison Exp $
+C $Id: cpranf.f,v 1.5 1995-04-26 22:45:01 kennison Exp $
 C
       FUNCTION CPRANF ()
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cphllb.f,v 1.5 1994-09-12 22:10:30 kennison Exp $
+C $Id: cphllb.f,v 1.6 1995-04-26 22:44:47 kennison Exp $
 C
       SUBROUTINE CPHLLB (ZDAT,RWRK,IWRK,IACT,IAMA)
 C
@@ -389,7 +389,7 @@ C
         IF (IMPF.NE.0) THEN
           XTMP=XLBC
           YTMP=YLBC
-          CALL CPMPXY (IMPF,XTMP,YTMP,XLBC,YLBC)
+          CALL HLUCPMPXY (IMPF,XTMP,YTMP,XLBC,YLBC)
           IF (ICFELL('CPHLLB',9).NE.0) RETURN
           IF ((OORV.NE.0.).AND.(XLBC.EQ.OORV.OR.YLBC.EQ.OORV)) IVIS=0
         END IF
@@ -405,11 +405,11 @@ C
           ELSE
             CALL CPSBST(TXLO(1:LTLO),CTMA,LCTM)
           END IF
-          CALL CPCHHL (+1+4*IHOL)
+          CALL HLUCPCHHL (+1+4*IHOL)
           IF (ICFELL('CPHLLB',12).NE.0) RETURN
           CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
           IF (ICFELL('CPHLLB',13).NE.0) RETURN
-          CALL CPCHHL (-1-4*IHOL)
+          CALL HLUCPCHHL (-1-4*IHOL)
           IF (ICFELL('CPHLLB',14).NE.0) RETURN
           CALL PCGETR ('DL',DTOL)
           IF (ICFELL('CPHLLB',15).NE.0) RETURN
@@ -575,7 +575,7 @@ C
                 CALL GSFACI (JLBC)
                 JSFC=JLBC
               END IF
-              CALL CPCHHL (+2+4*IHOL)
+              CALL HLUCPCHHL (+2+4*IHOL)
               IF (ICFELL('CPHLLB',23).NE.0) RETURN
               IF (CTMA(1:LCTM).NE.' ') THEN
                 BFXC(1)=CFUX(XCLB-DTOL*CALB+DTOB*SALB)
@@ -596,7 +596,7 @@ C
                 IF (ICFELL('CPHLLB',31).NE.0) RETURN
                 CALL GFA (4,BFXC,BFYC)
               END IF
-              CALL CPCHHL (-2-4*IHOL)
+              CALL HLUCPCHHL (-2-4*IHOL)
               IF (ICFELL('CPHLLB',32).NE.0) RETURN
             END IF
             IF (IHOL.EQ.0) THEN
@@ -614,13 +614,13 @@ C
               CALL GSTXCI (JCOL)
               JSTC=JCOL
             END IF
-            CALL CPCHHL (+3+4*IHOL)
+            CALL HLUCPCHHL (+3+4*IHOL)
             IF (ICFELL('CPHLLB',34).NE.0) RETURN
             IF (CTMA(1:LCTM).NE.' ') THEN
               CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANHL,0.)
               IF (ICFELL('CPHLLB',35).NE.0) RETURN
             END IF
-            CALL CPCHHL (-3-4*IHOL)
+            CALL HLUCPCHHL (-3-4*IHOL)
             IF (ICFELL('CPHLLB',36).NE.0) RETURN
             IF (MOD(IBHL,2).NE.0) THEN
               WDTH=WLHL
@@ -634,7 +634,7 @@ C
                 IF (ICFELL('CPHLLB',38).NE.0) RETURN
                 CALL GSLWSC (WDTH)
               END IF
-              CALL CPCHHL (+4+4*IHOL)
+              CALL HLUCPCHHL (+4+4*IHOL)
               IF (ICFELL('CPHLLB',39).NE.0) RETURN
               IF (CTMA(1:LCTM).NE.' ') THEN
                 CALL PLOTIF (XCLB-DTOL*CALB+DTOB*SALB,
@@ -655,7 +655,7 @@ C
                 CALL PLOTIF (0.,0.,2)
                 IF (ICFELL('CPHLLB',45).NE.0) RETURN
               END IF
-              CALL CPCHHL (-4-4*IHOL)
+              CALL HLUCPCHHL (-4-4*IHOL)
               IF (ICFELL('CPHLLB',46).NE.0) RETURN
               IF (WDTH.GT.0.) THEN
                 CALL PLOTIF (0.,0.,2)

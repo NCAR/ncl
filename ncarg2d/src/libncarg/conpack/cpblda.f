@@ -1,5 +1,5 @@
 C
-C $Id: cpblda.f,v 1.4 1994-09-12 22:10:13 kennison Exp $
+C $Id: cpblda.f,v 1.5 1995-04-26 22:44:25 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C

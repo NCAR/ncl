@@ -1,5 +1,5 @@
 C
-C $Id: cpgeti.f,v 1.4 1994-09-12 22:10:26 kennison Exp $
+C $Id: cpgeti.f,v 1.5 1995-04-26 22:44:42 kennison Exp $
 C
       SUBROUTINE CPGETI (WHCH,IVAL)
 C

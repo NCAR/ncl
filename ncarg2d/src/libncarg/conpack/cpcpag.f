@@ -1,5 +1,5 @@
 C
-C $Id: cpcpag.f,v 1.4 1994-09-12 22:10:22 kennison Exp $
+C $Id: cpcpag.f,v 1.5 1995-04-26 22:44:37 kennison Exp $
 C
       SUBROUTINE CPCPAG (ZDAT,RWRK)
 C
@@ -254,7 +254,7 @@ C
           IF (IMPF.NE.0) THEN
             XTMP=XGD1
             YTMP=YGD1
-            CALL CPMPXY (IMPF,XTMP,YTMP,XGD1,YGD1)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XGD1,YGD1)
             IF (ICFELL('CPCPAG',1).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD1.EQ.OORV.OR.YGD1.EQ.OORV)) IVI1=0
           END IF
@@ -274,7 +274,7 @@ C
           IF (IMPF.NE.0) THEN
             XTMP=XGD2
             YTMP=YGD2
-            CALL CPMPXY (IMPF,XTMP,YTMP,XGD2,YGD2)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XGD2,YGD2)
             IF (ICFELL('CPCPAG',4).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD2.EQ.OORV.OR.YGD2.EQ.OORV)) IVI2=0
           END IF
@@ -294,7 +294,7 @@ C
           IF (IMPF.NE.0) THEN
             XTMP=XGD3
             YTMP=YGD3
-            CALL CPMPXY (IMPF,XTMP,YTMP,XGD3,YGD3)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XGD3,YGD3)
             IF (ICFELL('CPCPAG',7).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD3.EQ.OORV.OR.YGD3.EQ.OORV)) IVI3=0
           END IF

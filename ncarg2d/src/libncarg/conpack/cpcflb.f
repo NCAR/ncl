@@ -1,5 +1,5 @@
 C
-C $Id: cpcflb.f,v 1.4 1994-09-12 22:10:13 kennison Exp $
+C $Id: cpcflb.f,v 1.5 1995-04-26 22:44:26 kennison Exp $
 C
       SUBROUTINE CPCFLB (IACT,RWRK,IAMA)
 C
@@ -95,11 +95,11 @@ C
       IF (ICFELL('CPCFLB',3).NE.0) RETURN
       CALL PCSETI ('TE',1)
       IF (ICFELL('CPCFLB',4).NE.0) RETURN
-      CALL CPCHCF (+1)
+      CALL HLUCPCHCF (+1)
       IF (ICFELL('CPCFLB',5).NE.0) RETURN
       CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
       IF (ICFELL('CPCFLB',6).NE.0) RETURN
-      CALL CPCHCF (-1)
+      CALL HLUCPCHCF (-1)
       IF (ICFELL('CPCFLB',7).NE.0) RETURN
       CALL PCGETR ('DL',DSTL)
       IF (ICFELL('CPCFLB',8).NE.0) RETURN
@@ -158,7 +158,7 @@ C
             END IF
             IF (ISFC.NE.JLBC) CALL GSFACI (JLBC)
           END IF
-          CALL CPCHCF (+2)
+          CALL HLUCPCHCF (+2)
           IF (ICFELL('CPCFLB',16).NE.0) RETURN
           BFXC(1)=CFUX(XPFS-DSTL*COSA+DSTB*SINA)
           IF (ICFELL('CPCFLB',17).NE.0) RETURN
@@ -177,7 +177,7 @@ C
           BFYC(4)=CFUY(YPFS-DSTL*SINA+DSTT*COSA)
           IF (ICFELL('CPCFLB',24).NE.0) RETURN
           CALL GFA (4,BFXC,BFYC)
-          CALL CPCHCF (-2)
+          CALL HLUCPCHCF (-2)
           IF (ICFELL('CPCFLB',25).NE.0) RETURN
           IF (JLBC.GE.0) THEN
             IF (ISFC.NE.JLBC) CALL GSFACI (ISFC)
@@ -220,11 +220,11 @@ C
           IF (ICFELL('CPCFLB',30).NE.0) RETURN
           CALL GSCLIP (0)
         END IF
-        CALL CPCHCF (+3)
+        CALL HLUCPCHCF (+3)
         IF (ICFELL('CPCFLB',31).NE.0) RETURN
         CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANCF,0.)
         IF (ICFELL('CPCFLB',32).NE.0) RETURN
-        CALL CPCHCF (-3)
+        CALL HLUCPCHCF (-3)
         IF (ICFELL('CPCFLB',33).NE.0) RETURN
         IF (IGCF.NE.0) THEN
           CALL PLOTIF (0.,0.,2)
@@ -243,7 +243,7 @@ C
             IF (ICFELL('CPCFLB',36).NE.0) RETURN
             CALL GSLWSC (WDTH)
           END IF
-          CALL CPCHCF (+4)
+          CALL HLUCPCHCF (+4)
           IF (ICFELL('CPCFLB',37).NE.0) RETURN
           CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
      +                 YPFS-DSTL*SINA-DSTB*COSA,0)
@@ -262,7 +262,7 @@ C
           IF (ICFELL('CPCFLB',42).NE.0) RETURN
           CALL PLOTIF (0.,0.,2)
           IF (ICFELL('CPCFLB',43).NE.0) RETURN
-          CALL CPCHCF (-4)
+          CALL HLUCPCHCF (-4)
           IF (ICFELL('CPCFLB',44).NE.0) RETURN
           IF (WDTH.GT.0.) THEN
             CALL PLOTIF (0.,0.,2)

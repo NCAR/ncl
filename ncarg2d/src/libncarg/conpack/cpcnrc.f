@@ -1,5 +1,5 @@
 C
-C $Id: cpcnrc.f,v 1.9 1994-09-12 22:10:21 kennison Exp $
+C $Id: cpcnrc.f,v 1.10 1995-04-26 22:44:36 kennison Exp $
 C
       SUBROUTINE CPCNRC (ZDAT,KZDT,MZDT,NZDT,FLOW,FHGH,FINC,KSET,NHGH,
      +                   NDSH)
@@ -299,7 +299,7 @@ C
                 CALL PLCHHQ (XPOS,YPOS,CROZ(1:LCRZ),SIZE,ANGD,0.)
                 IF (ICFELL('CPCNRC',70).NE.0) RETURN
               ELSE
-                CALL CPMPXY (IMAP,XPOS,YPOS,XMPD,YMPD)
+                CALL HLUCPMPXY (IMAP,XPOS,YPOS,XMPD,YMPD)
                 IF (ICFELL('CPCNRC',71).NE.0) RETURN
                 IF (ORVA.EQ.0..OR.XMPD.NE.ORVA) THEN
                   CALL PLCHHQ (XMPD,YMPD,CROZ(1:LCRZ),SIZE,ANGD,0.)

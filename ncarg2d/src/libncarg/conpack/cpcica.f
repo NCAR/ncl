@@ -1,5 +1,5 @@
 C
-C $Id: cpcica.f,v 1.4 1994-09-12 22:10:17 kennison Exp $
+C $Id: cpcica.f,v 1.5 1995-04-26 22:44:31 kennison Exp $
 C
       SUBROUTINE CPCICA (ZDAT,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,
      +                                                      XCQF,YCQF)
@@ -107,7 +107,7 @@ C
         TST1=REAL(IMPF)
         TST2=0.
 C
-        CALL CPMPXY (0,TST1,TST2,TST3,TST4)
+        CALL HLUCPMPXY (0,TST1,TST2,TST3,TST4)
         IF (ICFELL('CPCICA',3).NE.0) RETURN
 C
         IF (TST2.NE.2..AND.TST2.NE.3.) THEN
@@ -180,7 +180,7 @@ C
             XCCI=1.+((XCCU-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
             YCCI=1.+((YCCU-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
           ELSE
-            CALL CPMPXY (-IMPF,XCCU,YCCU,XCCD,YCCD)
+            CALL HLUCPMPXY (-IMPF,XCCU,YCCU,XCCD,YCCD)
             IF (ICFELL('CPCICA',11).NE.0) RETURN
             IF ((OORV.EQ.0..OR.XCCD.NE.OORV).AND.XCCD.GE.XAT1.AND.XCCD.L
      +T.XATM.AND.YCCD.GE.YAT1.AND.YCCD.LT.YATN) THEN
@@ -277,8 +277,8 @@ C
           IF (ICAF.GE.0) THEN
             IF (ICAF+IAID.GT.0) ICRA(I,J)=ICAF+IAID
           ELSE
-            CALL CPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
-     +                                             I,J,ICAF,IAID)
+            CALL HLUCPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
+     +                                                I,J,ICAF,IAID)
             IF (ICFELL('CPCICA',12).NE.0) RETURN
           END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cpplar.f,v 1.4 1994-09-12 22:10:40 kennison Exp $
+C $Id: cpplar.f,v 1.5 1995-04-26 22:44:59 kennison Exp $
 C
       SUBROUTINE CPPLAR (RWRK,IPTX,IPTY,NXYC)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cpsp1a.f,v 1.6 1994-09-12 22:10:48 kennison Exp $
+C $Id: cpsp1a.f,v 1.7 1995-04-26 22:45:08 kennison Exp $
 C
       SUBROUTINE CPSP1A (ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cptrev.f,v 1.5 1995-04-19 17:04:55 kennison Exp $
+C $Id: cptrev.f,v 1.6 1995-04-26 22:45:16 kennison Exp $
 C
       SUBROUTINE CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -139,7 +139,7 @@ C Define the first search point.
 C
       IVBX=1
       IVBY=1
-      CALL CPMPXY (IMPF,XAT1,YAT1,XPRN,YPRN)
+      CALL HLUCPMPXY (IMPF,XAT1,YAT1,XPRN,YPRN)
       IF (ICFELL('CPTREV',2).NE.0) GO TO 102
 C
 C Search.
@@ -148,7 +148,7 @@ C
       IF (.NOT.(IVBX.LT.IIDM)) GO TO 10002
         IVBX=IVBX+1
         XPRP=XPRN
-        CALL CPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),YAT1,XPRN,YPRN)
+        CALL HLUCPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),YAT1,XPRN,YPRN)
         IF (ICFELL('CPTREV',3).NE.0) GO TO 102
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10003
           INCI=1
@@ -163,8 +163,9 @@ C
       IF (.NOT.(IVBY.LT.IIDN)) GO TO 10007
         IVBY=IVBY+1
         XPRP=XPRN
-        CALL CPMPXY (IMPF,XAT1+RIDM*REAL(IIDM-1),
-     +                    YAT1+RIDN*REAL(IVBY-1),XPRN,YPRN)
+        CALL HLUCPMPXY (IMPF,XAT1+RIDM*REAL(IIDM-1),
+     +                       YAT1+RIDN*REAL(IVBY-1),
+     +                                    XPRN,YPRN)
         IF (ICFELL('CPTREV',4).NE.0) GO TO 102
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10008
           INCI=7
@@ -179,8 +180,9 @@ C
       IF (.NOT.(IVBX.GT.1)) GO TO 10011
         IVBX=IVBX-1
         XPRP=XPRN
-        CALL CPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),
-     +                    YAT1+RIDN*REAL(IIDN-1),XPRN,YPRN)
+        CALL HLUCPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),
+     +                       YAT1+RIDN*REAL(IIDN-1),
+     +                                    XPRN,YPRN)
         IF (ICFELL('CPTREV',5).NE.0) GO TO 102
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10012
           INCI=5
@@ -195,7 +197,7 @@ C
       IF (.NOT.(IVBY.GT.1)) GO TO 10015
         IVBY=IVBY-1
         XPRP=XPRN
-        CALL CPMPXY (IMPF,XAT1,YAT1+RIDN*REAL(IVBY-1),XPRN,YPRN)
+        CALL HLUCPMPXY (IMPF,XAT1,YAT1+RIDN*REAL(IVBY-1),XPRN,YPRN)
         IF (ICFELL('CPTREV',6).NE.0) GO TO 102
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10016
           INCI=3
@@ -213,7 +215,7 @@ C
 10020   CONTINUE
         IF (IVBY .GT.(IIDN-1)) GO TO 10019
         RVBY=YAT1+RIDN*REAL(IVBY-1)
-        CALL CPMPXY (IMPF,XAT1,RVBY,XPRN,YPRN)
+        CALL HLUCPMPXY (IMPF,XAT1,RVBY,XPRN,YPRN)
         IF (ICFELL('CPTREV',7).NE.0) GO TO 102
           IVBX = 2
           GO TO 10023
@@ -222,7 +224,7 @@ C
 10023     CONTINUE
           IF (IVBX .GT.(IIDM)) GO TO 10022
           XPRP=XPRN
-          CALL CPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),RVBY,XPRN,YPRN)
+          CALL HLUCPMPXY (IMPF,XAT1+RIDM*REAL(IVBX-1),RVBY,XPRN,YPRN)
           IF (ICFELL('CPTREV',8).NE.0) GO TO 102
           IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10024
             IPXY=IIDN*IVBX+IVBY
@@ -288,8 +290,9 @@ C
           IF (IVEX.LT.1.OR.IVEX.GT.IIDM.OR.IVEY.LT.1.OR.IVEY.GT.IIDN)
      +    GO TO 10031
 C
-          CALL CPMPXY (IMPF,XAT1+RIDM*REAL(IVEX-1),
-     +                      YAT1+RIDN*REAL(IVEY-1),XTMP,YTMP)
+          CALL HLUCPMPXY (IMPF,XAT1+RIDM*REAL(IVEX-1),
+     +                         YAT1+RIDN*REAL(IVEY-1),
+     +                                      XTMP,YTMP)
           IF (ICFELL('CPTREV',10).NE.0) GO TO 102
           IF (.NOT.(XTMP.NE.OORV)) GO TO 10032
 C
@@ -348,7 +351,7 @@ C
 C
         XCVD=XAT1+RIDM*REAL(IVBX-1)
         YCVD=YAT1+RIDN*REAL(IVBY-1)
-        CALL CPMPXY (IMPF,XCVD,YCVD,XCVU,YCVU)
+        CALL HLUCPMPXY (IMPF,XCVD,YCVD,XCVU,YCVU)
         IF (ICFELL('CPTREV',12).NE.0) GO TO 102
 C
         XCID=XAT1+RIDM*REAL(IVEX-1)
@@ -359,7 +362,7 @@ C
 10039   CONTINUE
           XCHD=(XCVD+XCID)/2.
           YCHD=(YCVD+YCID)/2.
-          CALL CPMPXY (IMPF,XCHD,YCHD,XCHU,YCHU)
+          CALL HLUCPMPXY (IMPF,XCHD,YCHD,XCHU,YCHU)
           IF (ICFELL('CPTREV',13).NE.0) GO TO 102
           IF (.NOT.(XCHU.NE.OORV)) GO TO 10040
             IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10041
@@ -451,7 +454,7 @@ C
      +                                  XCVD+DELX))
         YCDN=MAX(MIN(YAT1,YATN),MIN(MAX(YAT1,YATN),
      +                                       YCVD))
-        CALL CPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
+        CALL HLUCPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
         IF (ICFELL('CPTREV',14).NE.0) GO TO 102
         DO 10056 I=1,8
           XCDP=XCDN
@@ -461,7 +464,7 @@ C
      +                            XCVD+DELX*XOUC(I)))
           YCDN=MAX(MIN(YAT1,YATN),MIN(MAX(YAT1,YATN),
      +                            YCVD+DELY*YOUC(I)))
-          CALL CPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
+          CALL HLUCPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
           IF (ICFELL('CPTREV',15).NE.0) GO TO 102
           IF (.NOT.(OORP.EQ.OORV.AND.OORN.NE.OORV)) GO TO 10057
             XCDI=XCDP
@@ -481,13 +484,13 @@ C
 10059     CONTINUE
             IF (.NOT.(NINT.LT.3)) GO TO 10063
               NINT=NINT+1
-              CALL CPMPXY (IMPF,XCDV,YCDV,XCUV(NINT),YCUV(NINT))
+              CALL HLUCPMPXY (IMPF,XCDV,YCDV,XCUV(NINT),YCUV(NINT))
               IF (ICFELL('CPTREV',16).NE.0) GO TO 102
               ITMP=0
 10064         CONTINUE
                 XCDH=(XCDV+XCDI)/2.
                 YCDH=(YCDV+YCDI)/2.
-                CALL CPMPXY (IMPF,XCDH,YCDH,XCUH,YCUH)
+                CALL HLUCPMPXY (IMPF,XCDH,YCDH,XCUH,YCUH)
                 IF (ICFELL('CPTREV',17).NE.0) GO TO 102
                 IF (.NOT.(XCUH.NE.OORV)) GO TO 10065
                   IF (XCDH.EQ.XCDV.AND.YCDH.EQ.YCDV) GO TO 10066

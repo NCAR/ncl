@@ -1,5 +1,5 @@
 C
-C $Id: cpsbst.f,v 1.4 1994-09-12 22:10:44 kennison Exp $
+C $Id: cpsbst.f,v 1.5 1995-04-26 22:45:03 kennison Exp $
 C
       SUBROUTINE CPSBST (CHSI,CHSO,NCHO)
 C

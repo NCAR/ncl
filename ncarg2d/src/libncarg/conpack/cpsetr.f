@@ -1,5 +1,5 @@
 C
-C $Id: cpsetr.f,v 1.6 1994-09-12 22:10:47 kennison Exp $
+C $Id: cpsetr.f,v 1.7 1995-04-26 22:45:06 kennison Exp $
 C
       SUBROUTINE CPSETR (WHCH,RVAL)
 C

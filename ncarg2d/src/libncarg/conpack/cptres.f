@@ -1,5 +1,5 @@
 C
-C $Id: cptres.f,v 1.4 1994-09-12 22:10:54 kennison Exp $
+C $Id: cptres.f,v 1.5 1995-04-26 22:45:15 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -667,8 +667,9 @@ C
           DSTO=ABS(XC2U-XC1U)+ABS(YC2U-YC1U)
           XC3D=(XC1D+XC2D)/2.
           YC3D=(YC1D+YC2D)/2.
-          CALL CPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),YAT1+RZDN*(YC3D-1.),
-     +                                                    XC3U,YC3U)
+          CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),
+     +                         YAT1+RZDN*(YC3D-1.),
+     +                                   XC3U,YC3U)
           IF (ICFELL('CPTRES',5).NE.0) GO TO 105
           IF (.NOT.(OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV)))
      +    GO TO 10114
@@ -775,8 +776,9 @@ C
 10128   CONTINUE
           XCHD=(XCVD+XCID)/2.
           YCHD=(YCVD+YCID)/2.
-          CALL CPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),YAT1+RZDN*(YCHD-1.),
-     +                                                    XCHU,YCHU)
+          CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),
+     +                         YAT1+RZDN*(YCHD-1.),
+     +                                   XCHU,YCHU)
           IF (ICFELL('CPTRES',6).NE.0) GO TO 105
           IF (.NOT.(XCHU.NE.OORV.AND.YCHU.NE.OORV)) GO TO 10129
             IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10130
@@ -843,8 +845,9 @@ C
 10138     CONTINUE
             XCPD=XCLD+RDST*(XCTD-XCLD)
             YCPD=YCLD+RDST*(YCTD-YCLD)
-            CALL CPMPXY (IMPF,XAT1+RZDM*(XCPD-1.),
-     +                        YAT1+RZDN*(YCPD-1.),XCPU,YCPU)
+            CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCPD-1.),
+     +                           YAT1+RZDN*(YCPD-1.),
+     +                                     XCPU,YCPU)
             IF (ICFELL('CPTRES',7).NE.0) GO TO 105
             IF (OORV.NE.0..AND.(XCPU.EQ.OORV.OR.YCPU.EQ.OORV)) GO TO 101
      +39
@@ -917,7 +920,7 @@ C
         IF (.NOT.(IMPF.NE.0)) GO TO 10145
           XTMP=XCNU
           YTMP=YCNU
-          CALL CPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
+          CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
           IF (ICFELL('CPTRES',8).NE.0) GO TO 105
           IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV)) IVNU=0
 10145   CONTINUE

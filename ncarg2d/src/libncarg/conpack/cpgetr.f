@@ -1,5 +1,5 @@
 C
-C $Id: cpgetr.f,v 1.6 1994-09-12 22:10:26 kennison Exp $
+C $Id: cpgetr.f,v 1.7 1995-04-26 22:44:43 kennison Exp $
 C
       SUBROUTINE CPGETR (WHCH,RVAL)
 C

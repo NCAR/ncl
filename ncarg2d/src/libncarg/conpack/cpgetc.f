@@ -1,5 +1,5 @@
 C
-C $Id: cpgetc.f,v 1.6 1994-09-12 22:10:25 kennison Exp $
+C $Id: cpgetc.f,v 1.7 1995-04-26 22:44:41 kennison Exp $
 C
       SUBROUTINE CPGETC (WHCH,CVAL)
 C

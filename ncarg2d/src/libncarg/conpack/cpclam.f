@@ -1,5 +1,5 @@
 C
-C $Id: cpclam.f,v 1.5 1995-04-19 17:04:52 kennison Exp $
+C $Id: cpclam.f,v 1.6 1995-04-26 22:44:32 kennison Exp $
 C
       SUBROUTINE CPCLAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -177,7 +177,7 @@ C
         TST1=REAL(IMPF)
         TST2=0.
 C
-        CALL CPMPXY (0,TST1,TST2,TST3,TST4)
+        CALL HLUCPMPXY (0,TST1,TST2,TST3,TST4)
         IF (ICFELL('CPCLAM',11).NE.0) RETURN
 C
         IF (TST2.NE.2..AND.TST2.NE.3.) THEN

@@ -1,5 +1,5 @@
 C
-C $Id: cpinit.f,v 1.4 1994-09-12 22:10:31 kennison Exp $
+C $Id: cpinit.f,v 1.5 1995-04-26 22:44:48 kennison Exp $
 C
       SUBROUTINE CPINIT (ZDAT,RWRK,IWRK)
 C
@@ -156,19 +156,19 @@ C
           IF (IMPF.NE.0) THEN
             XTMP=XCFP
             YTMP=YCFP
-            CALL CPMPXY (IMPF,XTMP,YTMP,XCFP,YCFP)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCFP,YCFP)
             IF (ICFELL('CPINIT',3).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCFP.EQ.OORV.OR.YCFP.EQ.OORV))
      +                                                       GO TO 101
             XTMP=XCLP
             YTMP=YCLP
-            CALL CPMPXY (IMPF,XTMP,YTMP,XCLP,YCLP)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCLP,YCLP)
             IF (ICFELL('CPINIT',4).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCLP.EQ.OORV.OR.YCLP.EQ.OORV))
      +                                                       GO TO 101
             XTMP=XCPR
             YTMP=YCPR
-            CALL CPMPXY (IMPF,XTMP,YTMP,XCPR,YCPR)
+            CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCPR,YCPR)
             IF (ICFELL('CPINIT',5).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCPR.EQ.OORV.OR.YCPR.EQ.OORV))
      +                                                       GO TO 101

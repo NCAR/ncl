@@ -1,5 +1,5 @@
 C
-C $Id: cpinrc.f,v 1.5 1994-09-12 22:10:32 kennison Exp $
+C $Id: cpinrc.f,v 1.6 1995-04-26 22:44:50 kennison Exp $
 C
       SUBROUTINE CPINRC
 C

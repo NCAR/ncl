@@ -1,5 +1,5 @@
 C
-C $Id: cplbdr.f,v 1.5 1994-09-12 22:10:34 kennison Exp $
+C $Id: cplbdr.f,v 1.6 1995-04-26 22:44:52 kennison Exp $
 C
       SUBROUTINE CPLBDR (ZDAT,RWRK,IWRK)
 C
@@ -251,18 +251,18 @@ C
             JSFC=JLBC
           END IF
           IF (ITYP.EQ.1) THEN
-            CALL CPCHIL (+2)
+            CALL HLUCPCHIL (+2)
             IF (ICFELL('CPLBDR',12).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
-            CALL CPCHHL (+2)
+            CALL HLUCPCHHL (+2)
             IF (ICFELL('CPLBDR',13).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
-            CALL CPCHHL (+6)
+            CALL HLUCPCHHL (+6)
             IF (ICFELL('CPLBDR',14).NE.0) RETURN
           ELSE
             IPAI=ICLB
             IF (IPAI.GT.256) IPAI=256-IPAI
-            CALL CPCHLL (+2)
+            CALL HLUCPCHLL (+2)
             IF (ICFELL('CPLBDR',15).NE.0) RETURN
           END IF
           IF (CTMA(1:LCTM).NE.' ') THEN
@@ -277,18 +277,18 @@ C
             CALL GFA (4,BFXC,BFYC)
           END IF
           IF (ITYP.EQ.1) THEN
-            CALL CPCHIL (-2)
+            CALL HLUCPCHIL (-2)
             IF (ICFELL('CPLBDR',16).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
-            CALL CPCHHL (-2)
+            CALL HLUCPCHHL (-2)
             IF (ICFELL('CPLBDR',17).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
-            CALL CPCHHL (-6)
+            CALL HLUCPCHHL (-6)
             IF (ICFELL('CPLBDR',18).NE.0) RETURN
           ELSE
             IPAI=ICLB
             IF (IPAI.GT.256) IPAI=256-IPAI
-            CALL CPCHLL (-2)
+            CALL HLUCPCHLL (-2)
             IF (ICFELL('CPLBDR',19).NE.0) RETURN
           END IF
         END IF
@@ -316,18 +316,18 @@ C
             IF (ICFELL('CPLBDR',22).NE.0) RETURN
             CALL GSCLIP (0)
           END IF
-          CALL CPCHIL (+3)
+          CALL HLUCPCHIL (+3)
           IF (ICFELL('CPLBDR',23).NE.0) RETURN
         ELSE IF (ITYP.EQ.2) THEN
-          CALL CPCHHL (+3)
+          CALL HLUCPCHHL (+3)
           IF (ICFELL('CPLBDR',24).NE.0) RETURN
         ELSE IF (ITYP.EQ.3) THEN
-          CALL CPCHHL (+7)
+          CALL HLUCPCHHL (+7)
           IF (ICFELL('CPLBDR',25).NE.0) RETURN
         ELSE
           IPAI=ICLB
           IF (IPAI.GT.256) IPAI=256-IPAI
-          CALL CPCHLL (+3)
+          CALL HLUCPCHLL (+3)
           IF (ICFELL('CPLBDR',26).NE.0) RETURN
         END IF
         IF (CTMA(1:LCTM).NE.' ') THEN
@@ -335,7 +335,7 @@ C
           IF (ICFELL('CPLBDR',27).NE.0) RETURN
         END IF
         IF (ITYP.EQ.1) THEN
-          CALL CPCHIL (-3)
+          CALL HLUCPCHIL (-3)
           IF (ICFELL('CPLBDR',28).NE.0) RETURN
           IF (IGCF.NE.0) THEN
             CALL PLOTIF (0.,0.,2)
@@ -343,15 +343,15 @@ C
             CALL GSCLIP (IGCF)
           END IF
         ELSE IF (ITYP.EQ.2) THEN
-          CALL CPCHHL (-3)
+          CALL HLUCPCHHL (-3)
           IF (ICFELL('CPLBDR',30).NE.0) RETURN
         ELSE IF (ITYP.EQ.3) THEN
-          CALL CPCHHL (-7)
+          CALL HLUCPCHHL (-7)
           IF (ICFELL('CPLBDR',31).NE.0) RETURN
         ELSE
           IPAI=ICLB
           IF (IPAI.GT.256) IPAI=256-IPAI
-          CALL CPCHLL (-3)
+          CALL HLUCPCHLL (-3)
           IF (ICFELL('CPLBDR',32).NE.0) RETURN
         END IF
 C
@@ -367,18 +367,18 @@ C
             CALL GSLWSC (WDTH)
           END IF
           IF (ITYP.EQ.1) THEN
-            CALL CPCHIL (+4)
+            CALL HLUCPCHIL (+4)
             IF (ICFELL('CPLBDR',35).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
-            CALL CPCHHL (+4)
+            CALL HLUCPCHHL (+4)
             IF (ICFELL('CPLBDR',36).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
-            CALL CPCHHL (+8)
+            CALL HLUCPCHHL (+8)
             IF (ICFELL('CPLBDR',37).NE.0) RETURN
           ELSE
             IPAI=ICLB
             IF (IPAI.GT.256) IPAI=256-IPAI
-            CALL CPCHLL (+4)
+            CALL HLUCPCHLL (+4)
             IF (ICFELL('CPLBDR',38).NE.0) RETURN
           END IF
           IF (CTMA(1:LCTM).NE.' ') THEN
@@ -401,18 +401,18 @@ C
             IF (ICFELL('CPLBDR',44).NE.0) RETURN
           END IF
           IF (ITYP.EQ.1) THEN
-            CALL CPCHIL (-4)
+            CALL HLUCPCHIL (-4)
             IF (ICFELL('CPLBDR',45).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
-            CALL CPCHHL (-4)
+            CALL HLUCPCHHL (-4)
             IF (ICFELL('CPLBDR',46).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
-            CALL CPCHHL (-8)
+            CALL HLUCPCHHL (-8)
             IF (ICFELL('CPLBDR',47).NE.0) RETURN
           ELSE
             IPAI=ICLB
             IF (IPAI.GT.256) IPAI=256-IPAI
-            CALL CPCHLL (-4)
+            CALL HLUCPCHLL (-4)
             IF (ICFELL('CPLBDR',48).NE.0) RETURN
           END IF
           IF (WDTH.GT.0.) THEN

@@ -1,5 +1,5 @@
 C
-C $Id: cphchr.f,v 1.5 1994-09-12 22:10:29 kennison Exp $
+C $Id: cphchr.f,v 1.6 1995-04-26 22:44:46 kennison Exp $
 C
       SUBROUTINE CPHCHR (RWRK,IPTX,IPTY,NXYC)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cptrcl.f,v 1.5 1995-04-19 17:04:54 kennison Exp $
+C $Id: cptrcl.f,v 1.6 1995-04-26 22:45:13 kennison Exp $
 C
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
@@ -686,8 +686,9 @@ C
           DSTO=ABS(XC2U-XC1U)+ABS(YC2U-YC1U)
           XC3D=(XC1D+XC2D)/2.
           YC3D=(YC1D+YC2D)/2.
-          CALL CPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),YAT1+RZDN*(YC3D-1.),
-     +                                                    XC3U,YC3U)
+          CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),
+     +                         YAT1+RZDN*(YC3D-1.),
+     +                                   XC3U,YC3U)
           IF (ICFELL('CPTRCL',4).NE.0) GO TO 102
           IF (.NOT.(OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV)))
      +    GO TO 10104
@@ -788,8 +789,9 @@ C
 10120   CONTINUE
           XCHD=(XCVD+XCID)/2.
           YCHD=(YCVD+YCID)/2.
-          CALL CPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),YAT1+RZDN*(YCHD-1.),
-     +                                                    XCHU,YCHU)
+          CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),
+     +                         YAT1+RZDN*(YCHD-1.),
+     +                                   XCHU,YCHU)
           IF (ICFELL('CPTRCL',5).NE.0) GO TO 102
           IF (.NOT.(XCHU.NE.OORV.AND.YCHU.NE.OORV)) GO TO 10121
             IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10122
@@ -856,8 +858,9 @@ C
 10130     CONTINUE
             XCPD=XCLD+RDST*(XCTD-XCLD)
             YCPD=YCLD+RDST*(YCTD-YCLD)
-            CALL CPMPXY (IMPF,XAT1+RZDM*(XCPD-1.),
-     +                        YAT1+RZDN*(YCPD-1.),XCPU,YCPU)
+            CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCPD-1.),
+     +                           YAT1+RZDN*(YCPD-1.),
+     +                                     XCPU,YCPU)
             IF (ICFELL('CPTRCL',6).NE.0) GO TO 102
             IF (OORV.NE.0..AND.(XCPU.EQ.OORV.OR.YCPU.EQ.OORV)) GO TO 101
      +31
@@ -927,7 +930,7 @@ C
         IF (.NOT.(IMPF.NE.0.AND.T2DS.GE.0.)) GO TO 10138
           XTMP=XCNU
           YTMP=YCNU
-          CALL CPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
+          CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
           IF (ICFELL('CPTRCL',7).NE.0) GO TO 102
           IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV)) IVNU=0
 10138   CONTINUE
@@ -1046,7 +1049,7 @@ C
 10159           CONTINUE
                 XTND=XTMP
                 YTND=YTMP
-                CALL CPMPXY (IMPF,XTND,YTND,XTNU,YTNU)
+                CALL HLUCPMPXY (IMPF,XTND,YTND,XTNU,YTNU)
                 IF (ICFELL('CPTRCL',10).NE.0) GO TO 102
                 IVSN=1
                 IF (OORV.NE.0..AND.
@@ -1228,7 +1231,7 @@ C
           DSTO=ABS(XT2U-XT1U)+ABS(YT2U-YT1U)
           XT3D=(XT1D+XT2D)/2.
           YT3D=(YT1D+YT2D)/2.
-          CALL CPMPXY (IMPF,XT3D,YT3D,XT3U,YT3U)
+          CALL HLUCPMPXY (IMPF,XT3D,YT3D,XT3U,YT3U)
           IF (ICFELL('CPTRCL',13).NE.0) GO TO 102
           IF (.NOT.(OORV.EQ.0..OR.(XT3U.NE.OORV.AND.YT3U.NE.OORV)))
      +    GO TO 10187
@@ -1334,7 +1337,7 @@ C
 10201   CONTINUE
           XTHD=(XTVD+XTID)/2.
           YTHD=(YTVD+YTID)/2.
-          CALL CPMPXY (IMPF,XTHD,YTHD,XTHU,YTHU)
+          CALL HLUCPMPXY (IMPF,XTHD,YTHD,XTHU,YTHU)
           IF (ICFELL('CPTRCL',14).NE.0) GO TO 102
           IF (.NOT.(XTHU.NE.OORV.AND.YTHU.NE.OORV)) GO TO 10202
             IF (XTHD.EQ.XTVD.AND.YTHD.EQ.YTVD) GO TO 10203
@@ -1401,7 +1404,7 @@ C
 10211     CONTINUE
             XTPD=XTLD+RDST*(XTTD-XTLD)
             YTPD=YTLD+RDST*(YTTD-YTLD)
-            CALL CPMPXY (IMPF,XTPD,YTPD,XTPU,YTPU)
+            CALL HLUCPMPXY (IMPF,XTPD,YTPD,XTPU,YTPU)
             IF (ICFELL('CPTRCL',15).NE.0) GO TO 102
             IF (OORV.NE.0..AND.(XTPU.EQ.OORV.OR.YTPU.EQ.OORV)) GO TO 102
      +12

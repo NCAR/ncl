@@ -1,5 +1,5 @@
 C
-C $Id: cpinrk.f,v 1.4 1994-09-12 22:10:33 kennison Exp $
+C $Id: cpinrk.f,v 1.5 1995-04-26 22:44:50 kennison Exp $
 C
       SUBROUTINE CPINRK (NSDR,TMP1,TMP2,TMP3)
 C

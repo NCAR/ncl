@@ -1,5 +1,5 @@
 C
-C $Id: cpnumb.f,v 1.4 1994-09-12 22:10:37 kennison Exp $
+C $Id: cpnumb.f,v 1.5 1995-04-26 22:44:55 kennison Exp $
 C
       SUBROUTINE CPNUMB (VALU,NDGD,LMSD,IEXP,LEXP,CEX1,CEX2,CEX3,LEX1,
      +                   LEX2,LEX3,IOMA,IODP,IOTZ,CBUF,NBUF,NDGS,IEVA)

@@ -1,5 +1,5 @@
 C
-C $Id: cprect.f,v 1.4 1994-09-12 22:10:43 kennison Exp $
+C $Id: cprect.f,v 1.5 1995-04-26 22:45:02 kennison Exp $
 C
       SUBROUTINE CPRECT (ZDAT,KZDT,MZDT,NZDT,RWRK,KRWK,IWRK,KIWK)
 C

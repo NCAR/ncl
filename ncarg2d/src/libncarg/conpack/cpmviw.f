@@ -1,5 +1,5 @@
 C
-C $Id: cpmviw.f,v 1.4 1994-09-12 22:10:36 kennison Exp $
+C $Id: cpmviw.f,v 1.5 1995-04-26 22:44:54 kennison Exp $
 C
       SUBROUTINE CPMVIW (IWKO,IWKN,LWKN)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cpcldr.f,v 1.6 1995-04-25 21:29:03 kennison Exp $
+C $Id: cpcldr.f,v 1.7 1995-04-26 22:44:34 kennison Exp $
 C
       SUBROUTINE CPCLDR (ZDAT,RWRK,IWRK)
 C
@@ -357,7 +357,7 @@ C
      +GO TO 10047
         TST1=REAL(IMPF)
         TST2=0.
-        CALL CPMPXY (0,TST1,TST2,TST3,TST4)
+        CALL HLUCPMPXY (0,TST1,TST2,TST3,TST4)
         IF (ICFELL('CPCLDR',38).NE.0) RETURN
         ICLV=259
         IF (.NOT.(IDUF.NE.0)) GO TO 10048
@@ -528,7 +528,7 @@ C
         END IF
         IPAI=ICLV
         IF (IPAI.GT.256) IPAI=256-IPAI
-        CALL CPCHCL (+1)
+        CALL HLUCPCHCL (+1)
         IF (ICFELL('CPCLDR',62).NE.0) RETURN
       GO TO (10041,10052,10063,10068) , L10042
 C
@@ -537,7 +537,7 @@ C
         IF (ICFELL('CPCLDR',63).NE.0) RETURN
         IPAI=ICLV
         IF (IPAI.GT.256) IPAI=256-IPAI
-        CALL CPCHCL (-1)
+        CALL HLUCPCHCL (-1)
         IF (ICFELL('CPCLDR',64).NE.0) RETURN
         IF (JCCL.GE.0) THEN
           CALL GSPLCI (ISLC)

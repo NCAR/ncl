@@ -1,5 +1,5 @@
 C
-C $Id: cpcltr.f,v 1.4 1994-09-12 22:10:20 kennison Exp $
+C $Id: cpcltr.f,v 1.5 1995-04-26 22:44:35 kennison Exp $
 C
       SUBROUTINE CPCLTR (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
