@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1992-11-30 16:42:49 kennison Exp $
+#	$Id: yMakefile,v 1.9 1993-01-12 16:53:08 kennison Exp $
 #
 NCARG	= ../../../..
 
@@ -11,7 +11,8 @@ GENERIC_SRCS = \
 	pcgtdi.f pcgtpi.f pcmqlq.f pcsort.f pcblda.f \
 	pcbdff.f pccfff.f pcffgd.f pcffgp.f pcffhl.f \
 	pcffme.f pcgneg.f tdblda.f tdgeti.f tdgetr.f tdinit.f tdpara.f \
-	tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f pcmpxy.f
+	tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f pcmpxy.f \
+	pcdlsc.f pcgpai.f pchiqu.f pcloqu.f pcmequ.f pcpnwi.f
 
 GENERIC_OBJS = \
 	plchhq.o plchmq.o plchlq.o pcgetc.o pcgeti.o pcgetr.o pcsetc.o \
@@ -19,7 +20,8 @@ GENERIC_OBJS = \
 	pcgtdi.o pcgtpi.o pcmqlq.o pcsort.o pcblda.o \
 	pcbdff.o pccfff.o pcffgd.o pcffgp.o pcffhl.o \
 	pcffme.o pcgneg.o tdblda.o tdgeti.o tdgetr.o tdinit.o tdpara.o \
-	tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o pcmpxy.o
+	tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o pcmpxy.o \
+	pcdlsc.o pcgpai.o pchiqu.o pcloqu.o pcmequ.o pcpnwi.o
 
 OTHER_SRCS = pcfcls.f pcfopn.f pcfred.f bofred.c pcbnrd.c
 
