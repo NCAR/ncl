@@ -1,5 +1,5 @@
 /*
- *	$Id: font.c,v 1.3 1994-06-08 16:57:24 boote Exp $
+ *	$Id: font.c,v 1.4 1994-08-11 18:40:26 haley Exp $
  */
 /*
  *	File		font.c
@@ -21,7 +21,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ncarg/c.h>
-#include <ncarg/ncarg_loc.h>
 #include "font.h"
 #include "gksc.h"
 #include "common.h"
