@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: config.perl,v 1.2 1992-10-14 16:26:09 clyne Exp $
+#      $Id: config.perl,v 1.3 1993-02-11 00:30:35 clyne Exp $
 #
 #########################################################################
 #									#
@@ -71,10 +71,16 @@ sub	head {
 #
 sub	get_system {
 
-	local($system_line, @result, $system);
+	local($line, @result, $system, $defines);
 
-	$system_line = `cc -E GetSystem | grep SYSTEM_INCLUDE`;
-	@result = split(/\s+/,$system_line);
+	$line = `uname -M -s`;
+	@result = split(/\s+/,$line);
+
+	#	get arch type and os
+	$defines = "-D$result[0] -D$result[1]";
+
+	$line = `cc -E GetSystem $defines | grep SYSTEM_INCLUDE`;
+	@result = split(/\s+/,$line);
 	$system = $result[2];
 
 	return($system);
