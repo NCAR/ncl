@@ -16,7 +16,7 @@
 ;
 ;   Description:    Combines a contour plot and an xy plot on a
 ;                   single frame.  Output goes to an X11 window,
-;                   an NCGM, *and* a PostScript file.
+;                   an NCGM, PostScript, *and* a PDF file.
 ;
 begin
   filedir = ncargpath("data")
@@ -90,17 +90,27 @@ begin
     "wkPSFileName" : "./cn15n.ps"      ; name the PostScript file
     "wkColorMap"   : cmap              ; assign the new color map
 ;
+; Since the plots are beside each other, use landscape mode and the
+; PostScript/PDF resources for positioning the plot on the paper.
+;
+    "wkOrientation"  : "landscape"
+    "wkDeviceLowerX" :   0
+    "wkDeviceLowerY" :  60  
+    "wkDeviceUpperX" : 600
+    "wkDeviceUpperY" : 700
+  end create
+;
 ; Create a PDFWorkstation object.
 ;
    pdf = create "cn15Work" pdfWorkstationClass defaultapp
-    "wkVisualType" : "color"
-    "wkPDFFileName" : "./cn15n.pdf"      ; name the PostScript file
-    "wkColorMap"   : cmap              ; assign the new color map
+    "wkVisualType"  : "color"
+    "wkPDFFileName" : "./cn15n.pdf"      ; name the PDF file
+    "wkColorMap"    : cmap               ; assign the new color map
 ;
 ; Since the plots are beside each other, use landscape mode and the
 ; PostScript/PDF resources for positioning the plot on the paper.
 ;
-    "wkOrientation" : "landscape"
+    "wkOrientation"  : "landscape"
     "wkDeviceLowerX" :   0
     "wkDeviceLowerY" :  60  
     "wkDeviceUpperX" : 600
