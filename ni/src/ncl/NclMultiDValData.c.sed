@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.30 1998-06-10 16:23:25 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.31 1999-02-23 23:32:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1832,6 +1832,7 @@ NclScalar *new_missing;
 	int n_dims = 0;
 	int step = 0,i;
 	int dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar tmp_missing;
 
 	if((self_md != NULL)&&(self_md->multidval.type != NULL)) {
 		from_type = self_md->multidval.type;
@@ -1895,20 +1896,39 @@ NclScalar *new_missing;
 							(self_md->multidval.missing_value.has_missing?&self_md->multidval.missing_value.value:NULL),
 							new_missing,
 							from_type) != NhlFATAL) {
+							if((self_md->multidval.missing_value.has_missing)&&(new_missing == NULL)) {
+
+								_NclScalarCoerce(&(self_md->multidval.missing_value.value),self_md->multidval.data_type,&tmp_missing, to_type->type_class.data_type);
+
 							
-							output_md = _NclCreateVal(
-								NULL,
-								NULL,
-								self_md->obj.obj_type,
-								self_md->obj.obj_type_mask,
-								result_val,
-								new_missing,
-								self_md->multidval.n_dims,
-								self_md->multidval.dim_sizes,
-								TEMPORARY,
-								NULL,
-								(NclObjClass)to_type
-								);
+								output_md = _NclCreateVal(
+									NULL,
+									NULL,
+									self_md->obj.obj_type,
+									self_md->obj.obj_type_mask,
+									result_val,
+									&tmp_missing,
+									self_md->multidval.n_dims,
+									self_md->multidval.dim_sizes,
+									TEMPORARY,
+									NULL,
+									(NclObjClass)to_type
+									);
+							}  else {
+								output_md = _NclCreateVal(
+									NULL,
+									NULL,
+									self_md->obj.obj_type,
+									self_md->obj.obj_type_mask,
+									result_val,
+									new_missing,
+									self_md->multidval.n_dims,
+									self_md->multidval.dim_sizes,
+									TEMPORARY,
+									NULL,
+									(NclObjClass)to_type
+									);
+							}
 							return((NclData)output_md);
 						} else {
 							NclFree(result_val);

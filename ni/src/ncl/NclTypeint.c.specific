@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeint.c.specific,v 1.4 1996-11-16 00:45:49 ethan Exp $
+ *      $Id: NclTypeint.c.specific,v 1.5 1999-02-23 23:32:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -83,7 +83,7 @@ NclTypeClass fc;
 	switch(fc->type_class.type) {
 	case Ncl_Typeint: {
 		int *fl = (int*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (int)*fl;
 			}
@@ -102,7 +102,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeshort: {
 		short *fl = (short*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (int)*fl;
 			}
@@ -122,7 +122,7 @@ NclTypeClass fc;
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
 
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (int)*fl;
 			}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.4 1996-11-16 00:45:47 ethan Exp $
+ *      $Id: NclTypebyte.c.specific,v 1.5 1999-02-23 23:32:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -77,7 +77,7 @@ NclTypeClass fc;
         switch(fc->type_class.type) {
         case Ncl_Typebyte: {
                 byte *fl = (byte*)from;
-                if(from_m == NULL) {
+                if((from_m == NULL)||(to_m==NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 *res = *fl;
                         }

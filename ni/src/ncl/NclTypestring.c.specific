@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.5 1998-03-30 20:43:23 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.6 1999-02-23 23:32:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -91,7 +91,7 @@ NclTypeClass fc;
 		string true = NrmStringToQuark("True");
 		string false = NrmStringToQuark("False");
 		logical *fl = (logical*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (*fl?true:false) ;
 			}
@@ -110,7 +110,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typestring: {
 		string *fl = (string*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = *fl;
 			}
@@ -129,7 +129,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typedouble: {
 		double *fl = (double*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%g",*fl);
 				*res = NrmStringToQuark(buffer);
@@ -150,7 +150,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typefloat: {
 		float *fl = (float*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%g",*fl);
 				*res = NrmStringToQuark(buffer);
@@ -171,7 +171,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typelong: {
 		long *fl = (long *)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%ld",*fl);
 				*res = (string)NrmStringToQuark(buffer);
@@ -192,7 +192,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeint: {
 		int *fl = (int*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%d",*fl);
 				*res = (string)NrmStringToQuark(buffer);
@@ -213,7 +213,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeshort: {
 		short *fl = (short*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%d",*fl);
 				*res = (string)NrmStringToQuark(buffer);
@@ -234,7 +234,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%o",*fl);
 				*res = (string)NrmStringToQuark(buffer);
@@ -264,7 +264,7 @@ NclTypeClass fc;
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Ncl_Type_string_coerce: attempt to coerce list of characters to a single string failed, number of characters exceeds maximum string length of (%d)",NCL_MAX_STRING);
 			return(NhlFATAL);
 		}
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,fl++)  {
 				buffer[i] = *fl;
 			}

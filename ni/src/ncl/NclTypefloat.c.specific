@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypefloat.c.specific,v 1.5 1997-04-11 17:27:29 ethan Exp $
+ *      $Id: NclTypefloat.c.specific,v 1.6 1999-02-23 23:32:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -86,7 +86,7 @@ NclTypeClass fc;
 	switch(fc->type_class.type) {
 	case Ncl_Typefloat: {
 		float *fl = (float*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (float)*fl;
 			}
@@ -105,7 +105,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typelong: {
 		long *fl = (long *)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (float)*fl;
 			}
@@ -124,7 +124,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeint: {
 		int *fl = (int*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (float)*fl;
 			}
@@ -143,7 +143,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeshort: {
 		short *fl = (short*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (float)*fl;
 			}
@@ -162,7 +162,7 @@ NclTypeClass fc;
 	}
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
-		if(from_m == NULL) {
+		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (float)*fl;
 			}
