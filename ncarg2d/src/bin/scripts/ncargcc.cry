@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.15 1993-02-08 16:18:34 haley Exp $
+#	$Id: ncargcc.cry,v 1.16 1993-02-08 17:01:29 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -19,7 +19,7 @@ if (! -d "$incdir") then
   exit 1
 endif
 
-set newargv = "$cc $incdir"
+set newargv = "$cc -I$incdir"
 
 set ctrans_libs = ""
 set stub_file   = ""
