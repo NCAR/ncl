@@ -1,5 +1,5 @@
 C
-C $Id: cphllb.f,v 1.6 1995-04-26 22:44:47 kennison Exp $
+C $Id: cphllb.f,v 1.7 1995-06-10 00:59:27 kennison Exp $
 C
       SUBROUTINE CPHLLB (ZDAT,RWRK,IWRK,IACT,IAMA)
 C
@@ -73,6 +73,32 @@ C Declare local arrays to hold coordinates for area fill of boxes.
 C
       DIMENSION BFXC(4),BFYC(4)
 C
+C Define some local arrays in which to retrieve information from GKS.
+C
+      DIMENSION VPRT(4),WIND(4)
+C
+C Define some arithmetic statement functions to get from the fractional
+C system to the world system.
+C
+      CFWX(X)=WIND(1)+(WIND(2)-WIND(1))*(X-VPRT(1))/(VPRT(2)-VPRT(1))
+      CFWY(Y)=WIND(3)+(WIND(4)-WIND(3))*(Y-VPRT(3))/(VPRT(4)-VPRT(3))
+C
+C Retrieve the definitions of the current GKS window and viewport.
+C
+      CALL GQCNTN (IGER,NCNT)
+C
+      IF (IGER.NE.0) THEN
+        CALL SETER ('CPHLLB - ERROR EXIT FROM GQCNTN',1,1)
+        RETURN
+      END IF
+C
+      CALL GQNT (NCNT,IGER,WIND,VPRT)
+C
+      IF (IGER.NE.0) THEN
+        CALL SETER ('CPHLLB - ERROR EXIT FROM GQNT',2,1)
+        RETURN
+      END IF
+C
 C If the text strings for high and low labels are blank, do nothing.
 C
       IF (TXHI(1:LTHI).EQ.' '.AND.TXLO(1:LTLO).EQ.' ') RETURN
@@ -117,17 +143,17 @@ C
 C
         CALL GQPLCI (IGER,ISLC)
         IF (IGER.NE.0) THEN
-          CALL SETER ('CPHLLB - ERROR EXIT FROM GQPLCI',1,1)
+          CALL SETER ('CPHLLB - ERROR EXIT FROM GQPLCI',3,1)
           RETURN
         END IF
         CALL GQTXCI (IGER,ISTC)
         IF (IGER.NE.0) THEN
-          CALL SETER ('CPHLLB - ERROR EXIT FROM GQTXCI',2,1)
+          CALL SETER ('CPHLLB - ERROR EXIT FROM GQTXCI',4,1)
           RETURN
         END IF
         CALL GQFACI (IGER,ISFC)
         IF (IGER.NE.0) THEN
-          CALL SETER ('CPHLLB - ERROR EXIT FROM GQFACI',3,1)
+          CALL SETER ('CPHLLB - ERROR EXIT FROM GQFACI',5,1)
           RETURN
         END IF
 C
@@ -164,15 +190,15 @@ C real workspace 1.
 C
       IF (IACT.EQ.3) THEN
         CALL CPGRWS (RWRK,1,10,IWSE)
-        IF (IWSE.NE.0.OR.ICFELL('CPHLLB',4).NE.0) RETURN
+        IF (IWSE.NE.0.OR.ICFELL('CPHLLB',6).NE.0) RETURN
       END IF
 C
 C Make PLOTCHAR compute text-extent quantities.
 C
       CALL PCGETI ('TE',ITMP)
-      IF (ICFELL('CPHLLB',5).NE.0) RETURN
+      IF (ICFELL('CPHLLB',7).NE.0) RETURN
       CALL PCSETI ('TE',1)
-      IF (ICFELL('CPHLLB',6).NE.0) RETURN
+      IF (ICFELL('CPHLLB',8).NE.0) RETURN
 C
 C Line loop follows.  The complete two-dimensional test for a minimum or
 C maximum of the field is only performed for points which are minima or
@@ -354,14 +380,14 @@ C
 C Return PLOTCHAR to its default state.
 C
   108 CALL PCSETI ('TE',ITMP)
-      IF (ICFELL('CPHLLB',7).NE.0) RETURN
+      IF (ICFELL('CPHLLB',9).NE.0) RETURN
 C
 C If necessary, return the color indices to their default values.
 C
       IF (IACT.EQ.2) THEN
         IF (JSLC.NE.ISLC) THEN
           CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('CPHLLB',8).NE.0) RETURN
+          IF (ICFELL('CPHLLB',10).NE.0) RETURN
           CALL GSPLCI (ISLC)
         END IF
         IF (JSTC.NE.ISTC) CALL GSTXCI (ISTC)
@@ -390,15 +416,15 @@ C
           XTMP=XLBC
           YTMP=YLBC
           CALL HLUCPMPXY (IMPF,XTMP,YTMP,XLBC,YLBC)
-          IF (ICFELL('CPHLLB',9).NE.0) RETURN
+          IF (ICFELL('CPHLLB',11).NE.0) RETURN
           IF ((OORV.NE.0.).AND.(XLBC.EQ.OORV.OR.YLBC.EQ.OORV)) IVIS=0
         END IF
 C
         IF (IVIS.NE.0) THEN
           XCLB=CUFX(XLBC)
-          IF (ICFELL('CPHLLB',10).NE.0) RETURN
+          IF (ICFELL('CPHLLB',12).NE.0) RETURN
           YCLB=CUFY(YLBC)
-          IF (ICFELL('CPHLLB',11).NE.0) RETURN
+          IF (ICFELL('CPHLLB',13).NE.0) RETURN
           ZDVL=ZDAT(IPNT,JPNT)
           IF (IHOL.EQ.0) THEN
             CALL CPSBST(TXHI(1:LTHI),CTMA,LCTM)
@@ -406,19 +432,19 @@ C
             CALL CPSBST(TXLO(1:LTLO),CTMA,LCTM)
           END IF
           CALL HLUCPCHHL (+1+4*IHOL)
-          IF (ICFELL('CPHLLB',12).NE.0) RETURN
-          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
-          IF (ICFELL('CPHLLB',13).NE.0) RETURN
-          CALL HLUCPCHHL (-1-4*IHOL)
           IF (ICFELL('CPHLLB',14).NE.0) RETURN
-          CALL PCGETR ('DL',DTOL)
+          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
           IF (ICFELL('CPHLLB',15).NE.0) RETURN
-          CALL PCGETR ('DR',DTOR)
+          CALL HLUCPCHHL (-1-4*IHOL)
           IF (ICFELL('CPHLLB',16).NE.0) RETURN
-          CALL PCGETR ('DB',DTOB)
+          CALL PCGETR ('DL',DTOL)
           IF (ICFELL('CPHLLB',17).NE.0) RETURN
-          CALL PCGETR ('DT',DTOT)
+          CALL PCGETR ('DR',DTOR)
           IF (ICFELL('CPHLLB',18).NE.0) RETURN
+          CALL PCGETR ('DB',DTOB)
+          IF (ICFELL('CPHLLB',19).NE.0) RETURN
+          CALL PCGETR ('DT',DTOT)
+          IF (ICFELL('CPHLLB',20).NE.0) RETURN
           DTOL=DTOL+WWFS
           DTOR=DTOR+WWFS
           DTOB=DTOB+WWFS
@@ -474,9 +500,9 @@ C
               YBLB=YBLB+DELY
               YTLB=YTLB+DELY
               XLBC=CFUX(XCLB)
-              IF (ICFELL('CPHLLB',19).NE.0) RETURN
+              IF (ICFELL('CPHLLB',21).NE.0) RETURN
               YLBC=CFUY(YCLB)
-              IF (ICFELL('CPHLLB',20).NE.0) RETURN
+              IF (ICFELL('CPHLLB',22).NE.0) RETURN
             END IF
 C
           END IF
@@ -543,7 +569,7 @@ C
               IF (IWSE.NE.0) THEN
                 NLBS=NLBS-1
                 GO TO 108
-              ELSE IF (ICFELL('CPHLLB',21).NE.0) THEN
+              ELSE IF (ICFELL('CPHLLB',23).NE.0) THEN
                 NLBS=NLBS-1
                 RETURN
               END IF
@@ -558,7 +584,7 @@ C
               IF (IWSE.NE.0) THEN
                 NLBS=NLBS-1
                 GO TO 108
-              ELSE IF (ICFELL('CPHLLB',22).NE.0) THEN
+              ELSE IF (ICFELL('CPHLLB',24).NE.0) THEN
                 NLBS=NLBS-1
                 RETURN
               END IF
@@ -576,28 +602,28 @@ C
                 JSFC=JLBC
               END IF
               CALL HLUCPCHHL (+2+4*IHOL)
-              IF (ICFELL('CPHLLB',23).NE.0) RETURN
+              IF (ICFELL('CPHLLB',25).NE.0) RETURN
               IF (CTMA(1:LCTM).NE.' ') THEN
-                BFXC(1)=CFUX(XCLB-DTOL*CALB+DTOB*SALB)
-                IF (ICFELL('CPHLLB',24).NE.0) RETURN
-                BFYC(1)=CFUY(YCLB-DTOL*SALB-DTOB*CALB)
-                IF (ICFELL('CPHLLB',25).NE.0) RETURN
-                BFXC(2)=CFUX(XCLB+DTOR*CALB+DTOB*SALB)
+                BFXC(1)=CFWX(XCLB-DTOL*CALB+DTOB*SALB)
                 IF (ICFELL('CPHLLB',26).NE.0) RETURN
-                BFYC(2)=CFUY(YCLB+DTOR*SALB-DTOB*CALB)
+                BFYC(1)=CFWY(YCLB-DTOL*SALB-DTOB*CALB)
                 IF (ICFELL('CPHLLB',27).NE.0) RETURN
-                BFXC(3)=CFUX(XCLB+DTOR*CALB-DTOT*SALB)
+                BFXC(2)=CFWX(XCLB+DTOR*CALB+DTOB*SALB)
                 IF (ICFELL('CPHLLB',28).NE.0) RETURN
-                BFYC(3)=CFUY(YCLB+DTOR*SALB+DTOT*CALB)
+                BFYC(2)=CFWY(YCLB+DTOR*SALB-DTOB*CALB)
                 IF (ICFELL('CPHLLB',29).NE.0) RETURN
-                BFXC(4)=CFUX(XCLB-DTOL*CALB-DTOT*SALB)
+                BFXC(3)=CFWX(XCLB+DTOR*CALB-DTOT*SALB)
                 IF (ICFELL('CPHLLB',30).NE.0) RETURN
-                BFYC(4)=CFUY(YCLB-DTOL*SALB+DTOT*CALB)
+                BFYC(3)=CFWY(YCLB+DTOR*SALB+DTOT*CALB)
                 IF (ICFELL('CPHLLB',31).NE.0) RETURN
+                BFXC(4)=CFWX(XCLB-DTOL*CALB-DTOT*SALB)
+                IF (ICFELL('CPHLLB',32).NE.0) RETURN
+                BFYC(4)=CFWY(YCLB-DTOL*SALB+DTOT*CALB)
+                IF (ICFELL('CPHLLB',33).NE.0) RETURN
                 CALL GFA (4,BFXC,BFYC)
               END IF
               CALL HLUCPCHHL (-2-4*IHOL)
-              IF (ICFELL('CPHLLB',32).NE.0) RETURN
+              IF (ICFELL('CPHLLB',34).NE.0) RETURN
             END IF
             IF (IHOL.EQ.0) THEN
               JCOL=JCHI
@@ -606,7 +632,7 @@ C
             END IF
             IF (JSLC.NE.JCOL) THEN
               CALL PLOTIF (0.,0.,2)
-              IF (ICFELL('CPHLLB',33).NE.0) RETURN
+              IF (ICFELL('CPHLLB',35).NE.0) RETURN
               CALL GSPLCI (JCOL)
               JSLC=JCOL
             END IF
@@ -615,80 +641,80 @@ C
               JSTC=JCOL
             END IF
             CALL HLUCPCHHL (+3+4*IHOL)
-            IF (ICFELL('CPHLLB',34).NE.0) RETURN
+            IF (ICFELL('CPHLLB',36).NE.0) RETURN
             IF (CTMA(1:LCTM).NE.' ') THEN
               CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANHL,0.)
-              IF (ICFELL('CPHLLB',35).NE.0) RETURN
+              IF (ICFELL('CPHLLB',37).NE.0) RETURN
             END IF
             CALL HLUCPCHHL (-3-4*IHOL)
-            IF (ICFELL('CPHLLB',36).NE.0) RETURN
+            IF (ICFELL('CPHLLB',38).NE.0) RETURN
             IF (MOD(IBHL,2).NE.0) THEN
               WDTH=WLHL
               IF (WDTH.GT.0.) THEN
                 CALL GQLWSC (IGER,SFLW)
                 IF (IGER.NE.0) THEN
-                  CALL SETER ('CPHLLB - ERROR EXIT FROM GQLWSC',37,1)
+                  CALL SETER ('CPHLLB - ERROR EXIT FROM GQLWSC',39,1)
                   RETURN
                 END IF
                 CALL PLOTIF (0.,0.,2)
-                IF (ICFELL('CPHLLB',38).NE.0) RETURN
+                IF (ICFELL('CPHLLB',40).NE.0) RETURN
                 CALL GSLWSC (WDTH)
               END IF
               CALL HLUCPCHHL (+4+4*IHOL)
-              IF (ICFELL('CPHLLB',39).NE.0) RETURN
+              IF (ICFELL('CPHLLB',41).NE.0) RETURN
               IF (CTMA(1:LCTM).NE.' ') THEN
                 CALL PLOTIF (XCLB-DTOL*CALB+DTOB*SALB,
      +                       YCLB-DTOL*SALB-DTOB*CALB,0)
-                IF (ICFELL('CPHLLB',40).NE.0) RETURN
+                IF (ICFELL('CPHLLB',42).NE.0) RETURN
                 CALL PLOTIF (XCLB+DTOR*CALB+DTOB*SALB,
      +                       YCLB+DTOR*SALB-DTOB*CALB,1)
-                IF (ICFELL('CPHLLB',41).NE.0) RETURN
+                IF (ICFELL('CPHLLB',43).NE.0) RETURN
                 CALL PLOTIF (XCLB+DTOR*CALB-DTOT*SALB,
      +                       YCLB+DTOR*SALB+DTOT*CALB,1)
-                IF (ICFELL('CPHLLB',42).NE.0) RETURN
+                IF (ICFELL('CPHLLB',44).NE.0) RETURN
                 CALL PLOTIF (XCLB-DTOL*CALB-DTOT*SALB,
      +                       YCLB-DTOL*SALB+DTOT*CALB,1)
-                IF (ICFELL('CPHLLB',43).NE.0) RETURN
+                IF (ICFELL('CPHLLB',45).NE.0) RETURN
                 CALL PLOTIF (XCLB-DTOL*CALB+DTOB*SALB,
      +                       YCLB-DTOL*SALB-DTOB*CALB,1)
-                IF (ICFELL('CPHLLB',44).NE.0) RETURN
-                CALL PLOTIF (0.,0.,2)
-                IF (ICFELL('CPHLLB',45).NE.0) RETURN
-              END IF
-              CALL HLUCPCHHL (-4-4*IHOL)
-              IF (ICFELL('CPHLLB',46).NE.0) RETURN
-              IF (WDTH.GT.0.) THEN
+                IF (ICFELL('CPHLLB',46).NE.0) RETURN
                 CALL PLOTIF (0.,0.,2)
                 IF (ICFELL('CPHLLB',47).NE.0) RETURN
+              END IF
+              CALL HLUCPCHHL (-4-4*IHOL)
+              IF (ICFELL('CPHLLB',48).NE.0) RETURN
+              IF (WDTH.GT.0.) THEN
+                CALL PLOTIF (0.,0.,2)
+                IF (ICFELL('CPHLLB',49).NE.0) RETURN
                 CALL GSLWSC (SFLW)
               END IF
             END IF
           ELSE
             RWRK(IR01+ 1)=CFUX(XCLB-DTOL*CALB+DTOB*SALB)
-            IF (ICFELL('CPHLLB',48).NE.0) RETURN
-            RWRK(IR01+ 2)=CFUX(XCLB+DTOR*CALB+DTOB*SALB)
-            IF (ICFELL('CPHLLB',49).NE.0) RETURN
-            RWRK(IR01+ 3)=CFUX(XCLB+DTOR*CALB-DTOT*SALB)
             IF (ICFELL('CPHLLB',50).NE.0) RETURN
-            RWRK(IR01+ 4)=CFUX(XCLB-DTOL*CALB-DTOT*SALB)
+            RWRK(IR01+ 2)=CFUX(XCLB+DTOR*CALB+DTOB*SALB)
             IF (ICFELL('CPHLLB',51).NE.0) RETURN
+            RWRK(IR01+ 3)=CFUX(XCLB+DTOR*CALB-DTOT*SALB)
+            IF (ICFELL('CPHLLB',52).NE.0) RETURN
+            RWRK(IR01+ 4)=CFUX(XCLB-DTOL*CALB-DTOT*SALB)
+            IF (ICFELL('CPHLLB',53).NE.0) RETURN
             RWRK(IR01+ 5)=RWRK(IR01+1)
             RWRK(IR01+ 6)=CFUY(YCLB-DTOL*SALB-DTOB*CALB)
-            IF (ICFELL('CPHLLB',52).NE.0) RETURN
-            RWRK(IR01+ 7)=CFUY(YCLB+DTOR*SALB-DTOB*CALB)
-            IF (ICFELL('CPHLLB',53).NE.0) RETURN
-            RWRK(IR01+ 8)=CFUY(YCLB+DTOR*SALB+DTOT*CALB)
             IF (ICFELL('CPHLLB',54).NE.0) RETURN
-            RWRK(IR01+ 9)=CFUY(YCLB-DTOL*SALB+DTOT*CALB)
+            RWRK(IR01+ 7)=CFUY(YCLB+DTOR*SALB-DTOB*CALB)
             IF (ICFELL('CPHLLB',55).NE.0) RETURN
+            RWRK(IR01+ 8)=CFUY(YCLB+DTOR*SALB+DTOT*CALB)
+            IF (ICFELL('CPHLLB',56).NE.0) RETURN
+            RWRK(IR01+ 9)=CFUY(YCLB-DTOL*SALB+DTOT*CALB)
+            IF (ICFELL('CPHLLB',57).NE.0) RETURN
             RWRK(IR01+10)=RWRK(IR01+6)
             IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.(XWDL.GT.XWDR.AND.YWD
      +B.GT.YWDT)) THEN
               CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
-              IF (ICFELL('CPHLLB',56).NE.0) RETURN
+              IF (ICFELL('CPHLLB',58).NE.0) RETURN
             ELSE
               CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
-              IF (ICFELL('CPHLLB',57).NE.0) RETURN
+              IF (ICFELL('CPHLLB',59).NE.0) RETURN
             END IF
           END IF
         END IF
