@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.1 1997-02-21 18:14:36 haley Exp $
+C      $Id: xy16f.f,v 1.2 1997-02-21 18:28:42 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -74,7 +74,6 @@ C Define HLU variables for creating objects.
 C
       integer appid,field1,field2,field3,xy1,xy2,xy3,xworkid
       integer grlist, srlist, spec1, spec2, spec3
-      integer length(NCURVE)
 C
 C Define variable for data file
 C
@@ -338,6 +337,7 @@ C
       call NhlFDraw(xy2,ierr)
       call NhlFDraw(xy3,ierr)
       call NhlFFrame(xworkid)
+      call NhlFClose
       stop
  104  write (6,*) 'error in opening file: ',filename
       end
