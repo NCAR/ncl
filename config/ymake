@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.6 1993-10-19 17:14:05 boote Exp $
+#	$Id: ymake,v 1.7 1993-10-21 17:21:49 haley Exp $
 #
 ######################################################################
 #
@@ -236,6 +236,7 @@ case	IRIX:
 	breaksw
 
 case	ULTRIX:
+case	OSF1:
 	set os = $opsys
 	set arch = $mach
 	breaksw

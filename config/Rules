@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.6 1993-10-19 17:13:34 boote Exp $
+ *	$Id: Rules,v 1.7 1993-10-21 17:21:39 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -120,7 +120,7 @@ clean::]\
 #define	InternalDistCleanSubdirs(dirs)\
 ]\
 dist-clean::]\
-	@if (test "$(CURRENT_DIR)" \= ".") then $(MAKE) $(MFLAGS) clean; fi]\
+	@if (test "$(CURRENT_DIR)" \= ".") then $(MAKE) $(MFLAGS) clean; else continue; fi]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\]\
 	done]
@@ -509,7 +509,7 @@ depend::]\
  *		it attempts to create it.
  */
 #ifndef	MakeDir
-#define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); else continue; fi
 #endif
 
 /*
@@ -578,7 +578,7 @@ all::]\
 install::]\
 	@if (test ! -f destdir/file.section) then \]\
 	echo "destdir/file.section must exist to create ManAliases to it";\]\
-	exit 1; fi]\
+	exit 1; else continue; fi]\
 	@(cd destdir;\]\
 	for alias in aliases ; do \]\
 	$(RM) $$alias.section;\]\
@@ -619,7 +619,7 @@ install::]\
 	@for name in appfiles; do \]\
 	if (test -f $(XAPPPATH)/$$name) then \]\
 		echo "Warning - replacing $(XAPPPATH)/$$name"; \]\
-		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; fi; \]\
+		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; else continue; fi; \]\
 	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \]\
 	done]
 #endif	/* InstallXappFiles */

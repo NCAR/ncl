@@ -1,5 +1,5 @@
 /*
- *      $Id: DECRISC,v 1.17 1993-10-19 17:13:21 boote Exp $
+ *      $Id: DECRISC,v 1.18 1993-10-21 17:21:31 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,3 +25,5 @@
 #define	StdDefines	-DByteSwapped
 #define	FCppCommand	/lib/cpp
 #define	InstallCommand	install -c
+#define ProjectDefines 
+

@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.1 1993-10-19 17:14:03 boote Exp $
+ *      $Id: yMakefile,v 1.2 1993-10-21 17:21:46 haley Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@ SRCS	=	ymake-filter.c
 OBJS	=	ymake-filter.o
 CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier
 
-ARCHFILES	=	AIX370 AIX_RS6000 Ardent Cray DECRISC \
+ARCHFILES	=	AIX370 AIX_RS6000 AlphaOSF1 Ardent Cray DECRISC \
 			HPUX_snake SGI4D Sun3 Sun386i Sun4 \
 			Sun4Solaris SystemV
 YMAKEFILES	=	Project Rules Site Template

@@ -1,0 +1,26 @@
+/*
+ *      $Id: AlphaOSF1,v 1.1 1993-10-21 17:21:28 haley Exp $
+ */
+/************************************************************************
+*			 															*
+*			     Copyright (C)  1993									*
+*	     University Corporation for Atmospheric Research				*
+*			     All Rights Reserved									*
+*																		*
+************************************************************************/
+/*
+ *	File:		AlphaOSF1
+ *
+ *	Author:		Mary L. Haley
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Oct 19 14:26:57 MDT 1993
+ *
+ *	Description:	This file contains the directives necessary to define
+ *			the DEC Alpha architecture running OSF1.
+ */
+#define ByteSwapped
+#define	HdfDefines	-DMIPSEL
+#define	StdDefines	-DByteSwapped -std1
+#define	FCppCommand	/lib/cpp

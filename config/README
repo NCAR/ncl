@@ -301,6 +301,7 @@ arch file		cpp symbol defined
 
 AIX370			AIX370Arch
 AIX_RS6000		AIX_RS6000Arch
+AlphaOSF1		AlphaOSF1Arch
 Ardent			ArdentArch
 Cray			CrayArch
 DECRISC			DECRISCArch
