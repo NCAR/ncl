@@ -89,10 +89,9 @@ C
 C
 C Fill area map
 C
-    INTEGER IDSIZE, PTS
+        INTEGER IDSIZE, PTS
 	INTEGER AREAID(IDSIZE), GRPID(IDSIZE)
 	REAL XC(PTS), YC(PTS)
-
 C
 C In this case, we have only one group, so we know that
 C AREAID(IDSIZE) is a unique area identifier.
