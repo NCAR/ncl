@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.36 1996-09-04 22:00:26 ethan Exp $
+ *      $Id: Symbol.c,v 1.37 1996-09-19 18:54:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1063,8 +1063,16 @@ void _NclAddSingleObj
 {
 	NclSymbol *s;
 
-	s = _NclAddSym(name,OBJTYPE);
-	s->u.obj_class_ptr = the_ptr;
+	s = _NclLookUp(name);
+	if(s == NULL) {
+		s = _NclAddSym(name,OBJTYPE);
+		s->u.obj_class_ptr = the_ptr;
+	} else if(s->type == OBJTYPE) {
+		s->u.obj_class_ptr = the_ptr;
+	} else {
+		_NclChangeSymbolType(s,OBJTYPE);
+		s->u.obj_class_ptr = the_ptr;
+	}
 	return;
 }
 
