@@ -1,5 +1,5 @@
 C
-C	$Id: lbblda.f,v 1.1.1.1 1992-04-17 22:32:58 ncargd Exp $
+C $Id: lbblda.f,v 1.2 1994-03-17 20:19:41 kennison Exp $
 C
       BLOCK DATA LBBLDA
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: lbseti.f,v 1.1.1.1 1992-04-17 22:32:58 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: lbseti.f,v 1.2 1994-03-17 20:19:52 kennison Exp $
 C
       SUBROUTINE LBSETI (WHCH,IVAL)
 C
@@ -16,9 +13,14 @@ C
 C IVAL is an integer variable containing the new value of the parameter.
 C
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('LBSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Float the integer value and pass it on to LBSETR.
 C
           CALL LBSETR (WHCH,REAL(IVAL))
+          IF (ICFELL('LBSETI',2).NE.0) RETURN
 C
 C Done.
 C

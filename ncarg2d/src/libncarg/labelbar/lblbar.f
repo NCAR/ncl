@@ -1,28 +1,5 @@
 C
-C	$Id: lblbar.f,v 1.4 1992-09-04 20:45:34 ncargd Exp $
-C
-C***********************************************************************
-C L A B E L B A R   -   I N T R O D U C T I O N
-C***********************************************************************
-C
-C This file contains materials for a package which draws "label bars" -
-C horizontal or vertical rectangles divided into boxes (each of which
-C is either colored or filled with a pattern), and having labels next
-C to it, which serves as a key for a solid-filled plot.
-C
-C***********************************************************************
-C L A B E L B A R   -   I M P L E M E N T A T I O N
-C***********************************************************************
-C
-C LABELBAR is written in standard FORTRAN 77.  No special effort should
-C be required to implement it.  It does require various other parts of
-C the NCAR Graphics package to have been implemented; in particular, it
-C requires the package SOFTFILL, the support routine SETER, and various
-C routines from SPPS.
-C
-C***********************************************************************
-C L A B E L B A R   -   U S E R - L E V E L   R O U T I N E S
-C***********************************************************************
+C $Id: lblbar.f,v 1.5 1994-03-17 20:19:50 kennison Exp $
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)
@@ -103,11 +80,17 @@ C Define local arrays for use as work arrays by the routine SFSGFA.
 C
         DIMENSION RWRK(6),IWRK(8)
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('LBLBAR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Save the current SET parameters and arrange for the use of normalized
 C device coordinates.
 C
         CALL GETSET (XLVP,XRVP,YBVP,YTVP,XLWD,XRWD,YBWD,YTWD,LNLG)
+        IF (ICFELL('LBLBAR',2).NE.0) RETURN
         CALL    SET (  0.,  1.,  0.,  1.,  0.,  1.,  0.,  1.,   1)
+        IF (ICFELL('LBLBAR',3).NE.0) RETURN
 C
 C Compute the width and height of each section of the bar and the
 C coordinates of the edges of the first solid-filled box.
@@ -152,15 +135,15 @@ C Draw the bar by filling all of the individual boxes.
 C
         CALL GQFACI (IERR,ISFC)
         IF (IERR.NE.0) THEN
-          CALL SETER ('LBLBAR - ERROR EXIT FROM GQFACI',1,2)
-          STOP
+          CALL SETER ('LBLBAR - ERROR EXIT FROM GQFACI',4,1)
+          RETURN
         END IF
 C
         IF (ICFL.GE.0) THEN
           CALL GQPLCI (IERR,ISPC)
           IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',2,2)
-            STOP
+            CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',5,1)
+            RETURN
           END IF
           CALL GSPLCI (ICFL)
         END IF
@@ -168,8 +151,8 @@ C
         IF (WOFL.GT.0.) THEN
           CALL GQLWSC (IERR,STLW)
           IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',3,2)
-            STOP
+            CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',6,1)
+            RETURN
           END IF
           CALL GSLWSC (WOFL)
         END IF
@@ -187,8 +170,10 @@ C
           YCRA(5)=YCRA(1)
           IF (IFTP.EQ.0) THEN
             CALL SFSGFA (XCRA,YCRA,4,RWRK,6,IWRK,8,LFIN(I))
+            IF (ICFELL('LBLBAR',7).NE.0) RETURN
           ELSE
             CALL LBFILL (IFTP,XCRA,YCRA,5,LFIN(I))
+            IF (ICFELL('LBLBAR',8).NE.0) RETURN
           END IF
   101   CONTINUE
 C
@@ -203,8 +188,8 @@ C
           IF (ICBL.GE.0) THEN
             CALL GQPLCI (IERR,ISPC)
             IF (IERR.NE.0) THEN
-              CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',4,2)
-              STOP
+              CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',9,1)
+              RETURN
             END IF
             CALL GSPLCI (ICBL)
           END IF
@@ -212,8 +197,8 @@ C
           IF (WOBL.GT.0.) THEN
             CALL GQLWSC (IERR,STLW)
             IF (IERR.NE.0) THEN
-              CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',5,2)
-              STOP
+              CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',10,1)
+              RETURN
             END IF
             CALL GSLWSC (WOBL)
           END IF
@@ -257,7 +242,9 @@ C ... save the current setting of the PLOTCHAR "text extent" parameter
 C and reset it to force computation of "text extent" quantities.
 C
           CALL PCGETI ('TE - TEXT EXTENT FLAG',ITEX)
+          IF (ICFELL('LBLBAR',11).NE.0) RETURN
           CALL PCSETI ('TE - TEXT EXTENT FLAG',1)
+          IF (ICFELL('LBLBAR',12).NE.0) RETURN
 C
 C Find the dimensions of the largest label in the list of labels.
 C
@@ -272,10 +259,15 @@ C
             END IF
             IF (NCLB.NE.0) THEN
               CALL PLCHHQ (.5,.5,LLBS(I)(1:NCLB),.01,360.,0.)
+              IF (ICFELL('LBLBAR',13).NE.0) RETURN
               CALL PCGETR ('DL - DISTANCE TO LEFT EDGE'  ,DSTL)
+              IF (ICFELL('LBLBAR',14).NE.0) RETURN
               CALL PCGETR ('DR - DISTANCE TO RIGHT EDGE' ,DSTR)
+              IF (ICFELL('LBLBAR',15).NE.0) RETURN
               CALL PCGETR ('DB - DISTANCE TO TOP EDGE'   ,DSTB)
+              IF (ICFELL('LBLBAR',16).NE.0) RETURN
               CALL PCGETR ('DT - DISTANCE TO BOTTOM EDGE',DSTT)
+              IF (ICFELL('LBLBAR',17).NE.0) RETURN
               WMAX=MAX(WMAX,DSTL+DSTR+.02)
               HMAX=MAX(HMAX,DSTB+DSTT+.02)
             END IF
@@ -304,13 +296,13 @@ C Draw the labels.
 C
           CALL GQPLCI (IERR,ISCL)
           IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',6,2)
-            STOP
+            CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',18,1)
+            RETURN
           END IF
           CALL GQTXCI (IERR,ISCT)
           IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQTXCI',7,2)
-            STOP
+            CALL SETER ('LBLBAR - ERROR EXIT FROM GQTXCI',19,1)
+            RETURN
           END IF
           IF (ICLB.LT.0) THEN
             CALL GSPLCI (ISCT)
@@ -321,8 +313,8 @@ C
           IF (WOLB.GT.0.) THEN
             CALL GQLWSC (IERR,STLW)
             IF (IERR.NE.0) THEN
-              CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',8,2)
-              STOP
+              CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',20,1)
+              RETURN
             END IF
             CALL GSLWSC (WOLB)
           END IF
@@ -346,16 +338,20 @@ C
                 IF (LBAB.EQ.1.OR.LBAB.GE.3)
      +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YBB1-DSTT,
      +                            LLBS(I)(1:NCLB),WCHR,0.,0.)
+                  IF (ICFELL('LBLBAR',21).NE.0) RETURN
                 IF (LBAB.EQ.2.OR.LBAB.GE.3)
      +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YTB1+DSTB,
      +                            LLBS(I)(1:NCLB),WCHR,0.,0.)
+                  IF (ICFELL('LBLBAR',22).NE.0) RETURN
               ELSE
                 IF (LBAB.EQ.1.OR.LBAB.GE.3)
      +            CALL PLCHHQ (XRB1+WCHR,YBB1+REAL(I-1)*HSOB,
      +                            LLBS(I)(1:NCLB),WCHR,0.,-1.)
+                  IF (ICFELL('LBLBAR',23).NE.0) RETURN
                 IF (LBAB.EQ.2.OR.LBAB.GE.3)
      +            CALL PLCHHQ (XLB1-WCHR,YBB1+REAL(I-1)*HSOB,
      +                            LLBS(I)(1:NCLB),WCHR,0.,+1.)
+                  IF (ICFELL('LBLBAR',24).NE.0) RETURN
               END IF
             END IF
   106     CONTINUE
@@ -367,12 +363,14 @@ C
 C Restore the original setting of the PLOTCHAR text extent flag.
 C
   107     CALL PCSETI ('TE - TEXT EXTENT FLAG',ITEX)
+          IF (ICFELL('LBLBAR',25).NE.0) RETURN
 C
         END IF
 C
 C Restore the original SET parameters.
 C
         CALL SET (XLVP,XRVP,YBVP,YTVP,XLWD,XRWD,YBWD,YTWD,LNLG)
+        IF (ICFELL('LBLBAR',26).NE.0) RETURN
 C
 C Done.
 C

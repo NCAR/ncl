@@ -1,8 +1,5 @@
 C
-C	$Id: lbfill.f,v 1.1.1.1 1992-04-17 22:32:57 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: lbfill.f,v 1.2 1994-03-17 20:19:44 kennison Exp $
 C
       SUBROUTINE LBFILL (IFTP,XCRA,YCRA,NCRA,INDX)
         DIMENSION XCRA(*),YCRA(*)

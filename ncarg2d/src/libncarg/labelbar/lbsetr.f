@@ -1,8 +1,5 @@
 C
-C	$Id: lbsetr.f,v 1.3 1992-09-04 20:45:36 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: lbsetr.f,v 1.4 1994-03-17 20:19:54 kennison Exp $
 C
       SUBROUTINE LBSETR (WHCH,RVAL)
 C
@@ -27,15 +24,19 @@ C
 C
 C Define a character temporary for use in forming error messages.
 C
-        CHARACTER*50 CTMP
+        CHARACTER*39 CTMP
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('LBSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check for a parameter name that is too short.
 C
         IF (LEN(WHCH).LT.3) THEN
-          CTMP(1:46)='LBSETI OR LBSETR - PARAMETER NAME TOO SHORT - '
-          CTMP(47:46+LEN(WHCH))=WHCH
-          CALL SETER (CTMP(1:46+LEN(WHCH)),1,2)
-          STOP
+          CTMP(1:36)='LBSETR - PARAMETER NAME TOO SHORT - '
+          CTMP(37:36+LEN(WHCH))=WHCH
+          CALL SETER (CTMP(1:36+LEN(WHCH)),2,1)
+          RETURN
         END IF
 C
 C Set the appropriate parameter value.
@@ -53,10 +54,10 @@ C
         ELSE IF (WHCH(1:3).EQ.'WLB'.OR.WHCH(1:3).EQ.'wlb') THEN
           WOLB=MAX(0.,RVAL)
         ELSE
-          CTMP(1:46)='LBSETI OR LBSETR - PARAMETER NAME NOT KNOWN - '
-          CTMP(47:49)=WHCH(1:3)
-          CALL SETER (CTMP(1:49),4,2)
-          STOP
+          CTMP(1:36)='LBSETR - PARAMETER NAME NOT KNOWN - '
+          CTMP(37:39)=WHCH(1:3)
+          CALL SETER (CTMP(1:39),3,1)
+          RETURN
         END IF
 C
 C Done.
