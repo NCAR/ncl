@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.36 1997-08-14 16:29:33 dbrown Exp $
+ *      $Id: App.c,v 1.37 1998-06-03 19:36:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -685,7 +685,8 @@ AppInitialize
 	}
 	ret = MIN(lret,ret);
 
-	if(!ac->app_class.current_app || anew->app.default_parent){
+	if((anew != ac->app_class.default_app) &&
+		(!ac->app_class.current_app || anew->app.default_parent)){
 		ac->app_class.current_app = anew;
 		anew->app.default_parent = True;
 	}
