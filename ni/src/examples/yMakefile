@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.16 1995-02-11 16:34:35 haley Exp $
+#      $Id: yMakefile,v 1.17 1995-02-15 22:33:48 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -21,44 +21,21 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= $(EXAMPLES)  basic annotation contour labelbar legend mapplot \
+SUBDIRS	= basic annotation contour labelbar legend mapplot \
 	textitem tickmark title xyplot
 
-EXAMPLES	= nhl01 nhl02 nhl03 nhl05 nhl06 nhl07 nhl08 nhl09 \
-		nhl10 nhl11 nhl12 nhl13 nhlf01 nhlf05 nhlf06 nhlf07 nhlf08 \
-		nhlf09 nhlf10 nhlf11 nhlf12 nhlf13
-SCRIPTS		= nhlex.old ng4ex 
-MANS		= nhlex.old.man ng4ex.man
-
-#ifdef	DEBUG
-DBFLAG	=	1
-#else
-DBFLAG	=	0
-#endif
-
-SCRIPT_DEBUG	=	$(DBFLAG)
-SCRIPT_VERBOSE	=	$(DBFLAG)
+SCRIPTS		= ng4ex 
+MANS		= ng4ex.man
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget($(SCRIPTS))
-InstallManPages(nhlex.old,.man,$(MAN1PATH),$(MAN1_SECTION))
 InstallManPages(ng4ex,.man,$(MAN1PATH),$(MAN1_SECTION))
-
-nhlex.old: nhlex.old.csh Makefile
-	@sed \
-	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
-	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_HLUDIR+$(HLUDIR)+' \
-	-e 's+SED_LIBROOT+$(LIBROOT)+' \
-	-e 's+SED_EXAMPLES+$(EXAMPLES)+' \
-	< nhlex.old.csh > nhlex.old
 
 ng4ex: ng4ex.csh Makefile
 	@sed \
-	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_HLUDIR+$(HLUDIR)+' \
-	-e 's+SED_LIBROOT+$(LIBROOT)+' \
+	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
+	-e 's+SED_NCLEXDIR+$(NCLEXDIR)+' \
+	-e 's+SED_RESDIR+$(RESDIR)+' \
+	-e 's+SED_DATADIR+$(DATADIR)+' \
 	< ng4ex.csh > ng4ex
 
