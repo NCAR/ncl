@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: c_csa1xs.m,v 1.1 1999-01-07 17:59:28 fred Exp $
+.\"	$Id: c_csa1xs.m,v 1.2 1999-01-29 01:40:59 fred Exp $
 .\"
 .TH c_csa1xs 3NCARG "January 1999" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,17 +7,17 @@ c_csa1xs - cubic spline approximation, expanded entry for one-dimensional input
 .SH FUNCTION PROTOTYPE
 .nf
 .cs R 24
-int c_csa1xs(int, float [], float [], float [], int,
-             float, int, int, float [], float []);
+float *c_csa1xs(int, float [], float [], float [], int,
+             float, int, int, float [], int *);
 .fi
 .cs R
 .sp
 .SH SYNOPSIS
 .nf
 .cs R 24
-int c_csa1xs(int n, float xi[], float yi[], float wts[],
-             int knots, float smth, int nderiv,
-             int m, float xo[], float yo[]);
+float *c_csa1xs(int n, float xi[], float yi[], float wts[],
+                int knots, float smth, int nderiv,
+                int m, float xo[], int *ier);
 .fi
 .cs R
 .sp
@@ -61,9 +61,11 @@ derivative values (nderiv=2).
 .IP xo 12
 (real, input) An array dimensioned for m
 containing the X coordinates of the output curve.
-.IP yo 12
-(real, output) An array dimensioned for m
-containing the calculated function values for the output curve.
+.IP ier 12
+(pointer to integer, output) An error return value. If *ier is
+returned as 0, then no errors were
+detected. If *ier is non-zero, then refer to the error list in the
+error table for details.
 .SH USAGE
 c_csa1xs is called to find an approximating cubic spline 
 for one-dimensional input data.
@@ -71,8 +73,8 @@ c_csa1xs is called if you want to weight the input data values,
 calculate derivatives, or handle data sparse areas specially. 
 If you do not want to do any of these three things, then use c_csa1s. 
 .sp
-c_csa1xs returns a value of zero if no error was detected, otherwise 
-the return value is as described in csagrid_errors. 
+c_csa1s returns a pointer to
+a linear array of data that is the approximated curve.
 .SH ACCESS
 To use c_csa1xs, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
