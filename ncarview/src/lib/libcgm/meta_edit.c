@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.23 2000-08-22 15:11:34 haley Exp $
+ *	$Id: meta_edit.c,v 1.24 2002-08-20 18:33:38 akash Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1353,11 +1353,16 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 		return(-1);
 	}
 
+	/* overwrite last record */
+	if (CGM_lseek(fd, -1, SEEK_END) < 0 ) {
+		(void) CGM_close(tmp_fd);
+		(void) CGM_close(fd);
+		return(-1);
+	}
 
 	/*
 	 *	append the desired frames to the file
 	 */
-	(void) CGM_lseek(fd, -1, SEEK_END);	/* overwrite last record*/
 	for (i = 0; i < num_frames; i++, start_frame++ ) {
 		if (write_frame(workingFd, fd, tmp_fd, workingList, 
 						saveDir,start_frame) < 0){

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.29 2000-08-22 15:11:33 haley Exp $
+ *	$Id: cgm_tools.c,v 1.30 2002-08-20 18:33:38 akash Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -168,7 +168,7 @@ static	int	stream_write(cgm_fd, buf)
 	int	r = cgmTab[cgm_fd].record_size;
 	FILE	*fp = cgmTab[cgm_fd].fp;
 
-	return(fwrite((char *) buf, 1, r, fp)); 
+	return(fwrite((char *) buf, 1, r, fp));
 }
 
 static	int	raw_write(cgm_fd, buf)
@@ -477,7 +477,8 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 #if defined(SYSV) || defined(cray)
 		if (! strcmp(type, "a")) {
 			if ((fd = open(metafile,a_mask, 0666)) < 0) return(-1);
-			if (! (fp = fdopen(fd, type))) return(-1);
+				/* Changed from instead passing type to now passing "w". */
+			if (! (fp = fdopen(fd, "w"))) return(-1);
 		}
 		else if (! strcmp(type, "a+")) {
 			if ((fd = open(metafile, arw_mask,0666))< 0) return(-1);
