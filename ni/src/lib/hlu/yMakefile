@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.49 1998-05-22 01:59:14 dbrown Exp $
+#      $Id: yMakefile,v 1.50 2000-06-28 19:04:08 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -50,7 +50,8 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Style.h StyleP.h GraphicStyle.h GraphicStyleP.h SubStylesP.h \
 		Callbacks.h CallbacksP.h ContourPlotI.h MapDataHandler.h \
 		MapDataHandlerP.h MapV40DataHandler.h MapV40DataHandlerP.h \
-		MapV41DataHandler.h MapV41DataHandlerP.h
+		MapV41DataHandler.h MapV41DataHandlerP.h \
+		Primitive.h PrimitiveP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -67,7 +68,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Palette.c VectorField.c VectorPlot.c VecAnno.c \
 		StreamlinePlot.c Style.c GraphicStyle.c SubStyles.c \
 		Callbacks.c MapDataHandler.c MapV40DataHandler.c \
-		MapV41DataHandler.c \
+		MapV41DataHandler.c Primitive.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
@@ -85,7 +86,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Palette.o VectorField.o VectorPlot.o VecAnno.o \
 		StreamlinePlot.o Style.o GraphicStyle.o SubStyles.o \
 		Callbacks.o MapDataHandler.o MapV40DataHandler.o \
-		MapV41DataHandler.o \
+		MapV41DataHandler.o Primitive.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.55 2000-02-08 01:18:10 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.56 2000-06-28 19:04:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1820,9 +1820,6 @@ static NhlErrorTypes stInitDraw
 	NhlTransformLayerPart		*tfp = &(stl->trans);
 	NhlString		e_text;
 
-	NhlVASetValues(stl->base.wkptr->base.id,
-		       _NhlNwkReset,	True,
-		       NULL);
 /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -2248,6 +2245,10 @@ static NhlErrorTypes stDraw
 	NhlTransformLayerPart	*tfp = &(stl->trans);
 	float			*u_data,*v_data,*p_data;
 	int			cix;
+
+	NhlVASetValues(stl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
 
 	subret = _NhlActivateWorkstation(stl->base.wkptr);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {

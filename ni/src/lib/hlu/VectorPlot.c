@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.65 2000-05-16 01:35:42 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.66 2000-06-28 19:04:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2836,9 +2836,6 @@ static NhlErrorTypes vcInitDraw
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	NhlString		e_text;
 
-	NhlVASetValues(vcl->base.wkptr->base.id,
-		       _NhlNwkReset,	True,
-		       NULL);
  /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -3268,6 +3265,10 @@ static NhlErrorTypes vcDraw
 	float			vfr,vlc,vrl,vhc,vrm;
 	float			*u_data,*v_data,*p_data;
         NhlBoolean		all_mono = False;
+
+	NhlVASetValues(vcl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
 
 	subret = _NhlActivateWorkstation(vcl->base.wkptr);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {

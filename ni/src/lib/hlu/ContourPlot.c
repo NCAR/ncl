@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.95 2000-05-16 01:35:22 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.96 2000-06-28 19:03:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3090,9 +3090,6 @@ static NhlErrorTypes cnInitDraw
                 cnp->ycn = ycount - 1;
         }
         
-	NhlVASetValues(cnl->base.wkptr->base.id,
-		       _NhlNwkReset,	True,
-		       NULL);
 	
 	return ret;
 }
@@ -3946,6 +3943,10 @@ static NhlErrorTypes cnDraw
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
+
+	NhlVASetValues(cnl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
 
         subret = _NhlActivateWorkstation(cnl->base.wkptr);
         if ((ret = MIN(subret,ret)) < NhlWARNING) {

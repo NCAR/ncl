@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.50 2000-05-16 01:35:39 dbrown Exp $
+ *      $Id: Transform.c,v 1.51 2000-06-28 19:04:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
  *			used.
  */
 
+#include <ncarg/hlu/Primitive.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
@@ -54,6 +55,13 @@ static NhlResource resources[] = {
 		NhlTOverlayMode,sizeof(NhlOverlayMode),
 		Oset(do_ndc_overlay),NhlTImmediate,
 	  	_NhlUSET((NhlPointer)NhlDATATRANSFORM),0,NULL},
+	{NhlNtfPolyDrawList,NhlCtfPolyDrawList,NhlTObjIdGenArray,
+         	sizeof(NhlPointer),Oset(poly_draw_list),
+	        NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,
+         	(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNtfPolyDrawOrder,NhlCtfPolyDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(poly_draw_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlPOSTDRAW),0,NULL},
 
 /* End-documented-resources */
 
@@ -283,6 +291,31 @@ static NhlErrorTypes TransformNDCPolymarker(
 #endif
 );
 
+static NhlErrorTypes TransformPreDraw(
+#if	NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
+static NhlErrorTypes TransformDraw(
+#if	NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
+static NhlErrorTypes TransformPostDraw(
+#if	NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
+static NhlErrorTypes    TransformGetValues(
+#if	NhlNeedProto
+	NhlLayer,       /* l */
+	_NhlArgList,    /* args */
+	int             /* num_args */
+#endif
+);
 NhlTransformClassRec NhltransformClassRec = {
         {
 /* class_name			*/      "transformClass",
@@ -305,17 +338,17 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_initialize		*/	TransformInitialize,
 /* layer_set_values		*/	TransformSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	TransformGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL,
 
 /* child_resources		*/	NULL,
 
-/* layer_draw			*/      NULL,
+/* layer_draw			*/      TransformDraw,
 
-/* layer_pre_draw		*/      NULL,
+/* layer_pre_draw		*/      TransformPreDraw,
 /* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/      NULL,
+/* layer_post_draw		*/      TransformPostDraw,
 /* layer_clear			*/      NULL
 
         },
@@ -337,6 +370,8 @@ NhlTransformClassRec NhltransformClassRec = {
 };
 	
 NhlClass NhltransformClass = (NhlClass)&NhltransformClassRec;
+
+static NrmQuark Qpolydrawlist;
 
 /*
  * Function:	TransformClassPartInit
@@ -408,6 +443,8 @@ TransformClassPartInit
 	if(tlc->trans_class.ndc_polymarker == NhlInheritPolyTransFunc)
 		tlc->trans_class.ndc_polymarker 
 			= sc->trans_class.ndc_polymarker;
+
+	Qpolydrawlist = NrmStringToQuark(NhlNtfPolyDrawList);
         
 	return NhlNOERROR;
 }
@@ -449,9 +486,7 @@ TransformInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "TransformInitialize";
-	char			*e_text;
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
 	NhlTransformLayerPart	*tfp = &(tnew->trans);
 
@@ -519,9 +554,15 @@ TransformInitialize
 	tfp->bw = tnew->view.width;
 	tfp->bh = tnew->view.height;
 
+	if (tfp->poly_draw_list)
+		tfp->poly_draw_list = 
+			_NhlCopyGenArray(tfp->poly_draw_list,True);
+
+	tfp->poly_clip_on = True;
+	
         return NhlNOERROR;
-        
 }
+
 /*
  * Function:	TransformSetValues
  *
@@ -558,12 +599,11 @@ static NhlErrorTypes TransformSetValues
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "TransformSetValues";
-	char			*e_text;
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
  	NhlTransformLayerPart	*tfp = &(tnew->trans);
 	NhlTransformLayer	told = (NhlTransformLayer) old;
+ 	NhlTransformLayerPart	*otfp = &(told->trans);
 
 	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF)) {
 		tfp->x_min_set = True;
@@ -636,9 +676,82 @@ static NhlErrorTypes TransformSetValues
 		tfp->bh = tnew->view.height;
 	}
 
+	if (tfp->poly_draw_list != otfp->poly_draw_list){
+		NhlGenArray gen = tfp->poly_draw_list;
+		tfp->poly_draw_list = _NhlCopyGenArray(gen,True);
+		if(gen && ! tfp->poly_draw_list){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		else{
+			NhlFreeGenArray(otfp->poly_draw_list);
+		}
+	}
 
         return NhlNOERROR;
 }
+
+/*
+ * Function:    TransformGetValues
+ *
+ * Description: Retrieves the current setting of one or more Transform
+ *      resources.
+ *      This routine only retrieves resources that require special methods
+ *      that the generic GetValues method cannot handle. For now this means
+ *      all the GenArray resources. Note that space is allocated; the user
+ *      is responsible for freeing this space.
+ *
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ *      Memory is allocated when any of the following resources are retrieved:
+ *              NhlNtfPolyDrawList
+ *      The caller is responsible for freeing this memory.
+ */
+
+static NhlErrorTypes    TransformGetValues
+#if	NhlNeedProto
+(NhlLayer l, _NhlArgList args, int num_args)
+#else
+(l,args,num_args)
+        NhlLayer        l;
+        _NhlArgList     args;
+        int     	num_args;
+#endif
+{
+        NhlTransformLayer tfl = (NhlTransformLayer)l;
+        NhlTransformLayerPart *tfp = &(tfl->trans);
+        NhlGenArray ga;
+        char *e_text;
+        int i;
+
+        for( i = 0; i< num_args; i++ ) {
+
+                ga = NULL;
+                if(args[i].quark == Qpolydrawlist) {
+                        ga = tfp->poly_draw_list;
+                }
+                if (ga != NULL) {
+                        if ((ga = _NhlCopyGenArray(ga,True)) == NULL) {
+                                e_text = "%s: error copying %s GenArray";
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+                                          "TransformGetValues",
+					  NrmQuarkToString(args[i].quark));
+                                return NhlFATAL;
+                        }
+                        *((NhlGenArray *)(args[i].value.ptrval)) = ga;
+			continue;
+                }
+        }
+
+        return(NhlNOERROR);
+}
+
 
 /*
  * Function:	TransformDataToNDC
@@ -906,6 +1019,7 @@ static NhlErrorTypes TransformDataPolyline
 	char			*entry_name = "TransformDataPolyline";
 	int			i;
 	NhlBoolean		ismaptrans = False;
+	NhlBoolean		isirtrans = False;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
@@ -936,6 +1050,9 @@ static NhlErrorTypes TransformDataPolyline
 	if (tocp->base_class.class_name == 
 	    NhlmapTransObjClass->base_class.class_name) 
 		ismaptrans = True;
+	else if (tocp->base_class.class_name == 
+	    NhlirregularTransObjClass->base_class.class_name) 
+		isirtrans = True;
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -957,8 +1074,8 @@ static NhlErrorTypes TransformDataPolyline
 		return(ret);
 	}
 
-
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on || ismaptrans || isirtrans)
+		gset_clip_ind(GIND_CLIP);
 /* Do a pen up to the first point */
 
 	subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
@@ -988,7 +1105,8 @@ static NhlErrorTypes TransformDataPolyline
 
 	c_plotif(0.0,0.0,2);
 
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on || ismaptrans || isirtrans)
+		gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
@@ -1035,7 +1153,6 @@ static NhlErrorTypes TransformNDCPolyline
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
- 	NhlTransObjClass 	tocp;
 	int			i;
 
 	if (n < 2) {
@@ -1062,7 +1179,6 @@ static NhlErrorTypes TransformNDCPolyline
 			return(ret);
 	        }
 	}
-	tocp = (NhlTransObjClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -1084,7 +1200,8 @@ static NhlErrorTypes TransformNDCPolyline
 		return(ret);
 	}
 
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_CLIP);
 
 /* Do a pen up to the first point */
 
@@ -1108,7 +1225,8 @@ static NhlErrorTypes TransformNDCPolyline
  */
 	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
 	c_plotif(0.0,0.0,2);
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_NO_CLIP);
 
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1164,6 +1282,8 @@ static NhlErrorTypes TransformDataPolygon
  	NhlTransObjClass 	tocp;
 	char			*e_text;
 	char			*entry_name = "TransformDataPolygon";
+	NhlBoolean		ismaptrans = False;
+	NhlBoolean		isirtrans = False;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
@@ -1191,6 +1311,13 @@ static NhlErrorTypes TransformDataPolygon
 	}
 
 	tocp = (NhlTransObjClass) (top->base.layer_class);
+	if (tocp->base_class.class_name == 
+	    NhlmapTransObjClass->base_class.class_name) 
+		ismaptrans = True;
+	else if (tocp->base_class.class_name == 
+	    NhlirregularTransObjClass->base_class.class_name) 
+		isirtrans = True;
+
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -1212,9 +1339,11 @@ static NhlErrorTypes TransformDataPolygon
 		return(ret);
 	}
 
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on || ismaptrans || isirtrans)
+		gset_clip_ind(GIND_CLIP);
 	subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on || ismaptrans || isirtrans)
+		gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
@@ -1261,7 +1390,6 @@ static NhlErrorTypes TransformNDCPolygon
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
- 	NhlTransObjClass 	tocp;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
@@ -1287,7 +1415,6 @@ static NhlErrorTypes TransformNDCPolygon
 			return(ret);
 	        }
 	}
-	tocp = (NhlTransObjClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -1309,9 +1436,11 @@ static NhlErrorTypes TransformNDCPolygon
 
 	_NhlSetFillInfo(tl->base.wkptr, plot);
 
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_CLIP);
 	subret = _NhlWorkstationFill(tl->base.wkptr,x,y,n);
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_NO_CLIP);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polygon";
@@ -1362,13 +1491,12 @@ static NhlErrorTypes TransformDataPolymarker
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
-	NhlTransObjLayer		top;
- 	NhlTransObjClass 	tocp;
 	char			*e_text;
 	char			*entry_name = "TransformDataPolymarker";
 	float			*xndc,*yndc;
 	int			status;
 	float			out_of_range; 
+	NhlTransObjLayer	top;
 
 	if (n < 1) {
 		e_text = "%s, polymarker is empty";
@@ -1432,8 +1560,6 @@ static NhlErrorTypes TransformDataPolymarker
 		}
 	}
 
-	tocp = (NhlTransObjClass) (top->base.layer_class);
-
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1456,9 +1582,11 @@ static NhlErrorTypes TransformDataPolymarker
 #endif
 	_NhlSetMarkerInfo(tl->base.wkptr, plot);
 
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_CLIP);
 	subret = _NhlWorkstationMarker(tl->base.wkptr,xndc,yndc,n);
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_NO_CLIP);
 
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1514,7 +1642,6 @@ static NhlErrorTypes TransformNDCPolymarker
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
- 	NhlTransObjClass 	tocp;
 
 	if (n < 1) {
 		e_text = "%s, polymarker is empty";
@@ -1540,7 +1667,6 @@ static NhlErrorTypes TransformNDCPolymarker
 			return(ret);
 	        }
 	}
-	tocp = (NhlTransObjClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -1563,9 +1689,11 @@ static NhlErrorTypes TransformNDCPolymarker
 
 	_NhlSetMarkerInfo(tl->base.wkptr, plot);
 
-	gset_clip_ind(GIND_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_CLIP);
 	subret = _NhlWorkstationMarker(tl->base.wkptr,x,y,n);
-	gset_clip_ind(GIND_NO_CLIP);
+	if (tfp->poly_clip_on)
+		gset_clip_ind(GIND_NO_CLIP);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polymarker";
@@ -1584,7 +1712,156 @@ static NhlErrorTypes TransformNDCPolymarker
 	return MIN(ret,subret);
 }
 
+static NhlErrorTypes PolyDraw
+#if	NhlNeedProto
+(
+	NhlLayer layer,
+	NhlString entry_name
+	)
+#else
+(l,entry_name)
+        NhlLayer l;
+	NhlString entry_name;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlTransformLayer tfl = (NhlTransformLayer) layer;
+	NhlTransformLayerPart	*tfp = &(tfl->trans);
+	int i;
+	int *poly_ids;
+	NhlPolyType ptype;
+	int	gs = NhlNULLOBJID;
 
+	poly_ids = (int *) tfp->poly_draw_list->data;
+
+	for (i = 0; i < tfp->poly_draw_list->num_elements; i++) {
+		NhlLayer l = _NhlGetLayer(poly_ids[i]);
+		NhlGenArray x_arr,y_arr;
+		float *x,*y;
+		int tmp_gs,count;
+
+		if (! l) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: %s element %d is invalid",entry_name,
+				  NhlNtfPolyDrawList,i);
+			ret = MIN(ret,NhlWARNING);
+			continue;
+		}
+		NhlVAGetValues(l->base.id,
+			       NhlNprXArray,&x_arr,
+			       NhlNprYArray,&y_arr,
+			       NhlNprPolyType,&ptype,
+			       NhlNprGraphicStyle,&tmp_gs,
+			       NULL);
+		if (_NhlGetLayer(tmp_gs))
+			gs = tmp_gs;
+		else if (gs == NhlNULLOBJID) {
+			NhlVAGetValues(tfl->base.wkptr->base.id,
+				       NhlNwkDefGraphicStyleId,&gs,
+				       NULL);
+			if (gs == NhlNULLOBJID) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				      "%s: could not get valid GraphicStyle",
+					  entry_name);
+				return NhlFATAL;
+			}
+		}
+		if (! (x_arr && y_arr)) { 
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: %s element %d contains no valid points",
+				  entry_name,NhlNtfPolyDrawList,i);
+			ret = MIN(ret,NhlWARNING);
+			continue;
+		}
+		x = (float *) x_arr->data;
+		y = (float *) y_arr->data;
+		count = MIN(x_arr->num_elements,y_arr->num_elements);
+		switch (ptype) {
+		case NhlPOLYLINE:
+			NhlDataPolyline(layer->base.id,gs,x,y,count);
+			break;
+ 		case NhlPOLYGON:
+			NhlDataPolygon(layer->base.id,gs,x,y,count);
+			break;
+		case NhlPOLYMARKER:
+			NhlDataPolymarker(layer->base.id,gs,x,y,count);
+			break;
+		}
+		NhlFreeGenArray(x_arr);
+		NhlFreeGenArray(y_arr);
+	}
+	return ret;
+}
+	
+
+/*
+ * Function:	TransformDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	Transform instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes TransformDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlTransformLayer	tfl = (NhlTransformLayer) layer;
+	NhlString	entry_name = "TransformDraw";
+
+	if (tfl->trans.poly_draw_list == NULL ||
+	    tfl->trans.poly_draw_order != NhlDRAW)
+		return NhlNOERROR;
+
+	return PolyDraw(layer,entry_name);
+}
+
+static NhlErrorTypes TransformPreDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlTransformLayer	tfl = (NhlTransformLayer) layer;
+	NhlString	entry_name = "TransformPreDraw";
+
+	if (tfl->trans.poly_draw_list == NULL ||
+	    tfl->trans.poly_draw_order != NhlPREDRAW)
+		return NhlNOERROR;
+
+	return PolyDraw(layer,entry_name);
+}
+
+static NhlErrorTypes TransformPostDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlTransformLayer	tfl = (NhlTransformLayer) layer;
+	NhlString	entry_name = "TransformPostDraw";
+
+	if (tfl->trans.poly_draw_list == NULL ||
+	    tfl->trans.poly_draw_order != NhlPOSTDRAW)
+		return NhlNOERROR;
+
+	return PolyDraw(layer,entry_name);
+}
+ 
 /*
  * Function:	_NhlIsOverlay
  *
@@ -1687,9 +1964,6 @@ _NhlIsPlotMember
 	int	pid;
 #endif
 {
-	NhlLayer		l = _NhlGetLayer(pid);
-	NhlViewLayer		vl = NULL;
-	NhlTransformLayer	tl = NULL;
 
 	if (_NhlIsAnnotation(pid) || _NhlIsOverlay(pid))
 		return True;
@@ -1724,7 +1998,6 @@ _NhlAnnotationBase
 {
 	NhlLayer		l = _NhlGetLayer(pid);
 	NhlViewLayer		vl = NULL;
-	NhlTransformLayer	tl = NULL;
 
 	if (! (l && _NhlIsView(l)))
 		return NhlNULLOBJID;
@@ -2115,7 +2388,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
         
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
         NhlTransformLayerPart	*tfp = &new->trans;
 	char		*e_text;
 	float		ftmp;
@@ -2274,4 +2547,174 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
         return ret;
 }
 
+NhlErrorTypes NhlAddPrimitive
+#if	NhlNeedProto
+(
+	int transform_id, 
+	int primitive_id, 
+	int before_id
+	)
+#else
+(transform_id, int primitive_id, int before_id)
+        int transform_id;
+	int primitive_id;
+	int before_id;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlAddPrimitive";
+	NhlLayer	transform = _NhlGetLayer(transform_id);
+	NhlLayer	primitive = _NhlGetLayer(primitive_id);
+	NhlLayer	after = _NhlGetLayer(before_id);
+	NhlTransformLayer tf;
+	NhlTransformLayerPart *tfp;
+	int i,j,count;
+	int *pids;
+	NhlGenArray gen;
 
+/*
+ * Check validity of the transform and primitive layers
+ */
+	if (transform == NULL || ! _NhlIsTransform(transform)) {
+		e_text = "%s: invalid transform id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (! NhlIsClass(primitive_id,NhlprimitiveClass)) {
+		e_text = "%s: invalid primitive id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (before_id > NhlNULLOBJID && 
+	    ! NhlIsClass(before_id,NhlprimitiveClass)) {
+		e_text = "%s: invalid after id, defaulting to end of list";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+	}
+
+	tf = (NhlTransformLayer) transform;
+	tfp = &tf->trans;
+
+	if (! tfp->poly_draw_list)
+		count = 1;
+	else
+		count = tfp->poly_draw_list->num_elements + 1;
+
+	if (count == 1) {
+		pids = NhlMalloc(sizeof(int));
+		if (! pids) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		pids[0] = primitive_id;
+		gen = _NhlCreateGenArray(pids,NhlTInteger,sizeof(int),1,
+					 &count,False);
+		if (! gen) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		tfp->poly_draw_list = gen;
+		return ret;
+	}
+	pids = (int *) NhlRealloc(tfp->poly_draw_list->data,
+				  count * sizeof(int));
+	if (! pids) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	if (before_id <= 0) {
+		/* goes at the end */
+		pids[count-1] = primitive_id;
+	}
+	else {
+		for (i = 0; i < count-1; i++) {
+			if (pids[i] == before_id) {
+				for (j = i; j < count-1; j++) 
+					pids[j+1] = pids[j];
+				pids[i] = primitive_id;
+				break;
+			}
+		}
+	}
+	tfp->poly_draw_list->num_elements = count;
+	tfp->poly_draw_list->data = pids;
+
+	return ret;
+}
+
+NhlErrorTypes NhlRemovePrimitive
+#if	NhlNeedProto
+(
+	int transform_id, 
+	int primitive_id
+)
+#else
+(transform_id, int primitive_id)
+        int transform_id;
+	int primitive_id;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlRemovePrimitive";
+	NhlLayer	transform = _NhlGetLayer(transform_id);
+	NhlLayer	primitive = _NhlGetLayer(primitive_id);
+	NhlTransformLayer tf;
+	NhlTransformLayerPart *tfp;
+	int i,j,count;
+	int *pids;
+		
+/*
+ * Check validity of the transform and primitive layers
+ */
+	if (transform == NULL || ! _NhlIsTransform(transform)) {
+		e_text = "%s: invalid transform id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (! NhlIsClass(primitive_id,NhlprimitiveClass)) {
+		e_text = "%s: invalid primitive id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	tf = (NhlTransformLayer) transform;
+	tfp = &tf->trans;
+
+	if (! tfp->poly_draw_list) {
+		e_text = "%s: primitive not found in draw list";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		return MIN(ret,NhlWARNING);
+	}
+	pids = (int *)tfp->poly_draw_list->data;
+	count = tfp->poly_draw_list->num_elements;
+
+	for (i = 0; i < count; i++) {
+		if (pids[i] == primitive_id) {
+			if (count == 1) {
+				NhlFreeGenArray(tfp->poly_draw_list);
+				tfp->poly_draw_list = NULL;
+			}
+			else {
+				for (j = i; j < count-1; j++) {
+					pids[j] = pids[j+1];
+				}
+				pids[count-1] = NhlNULLOBJID;
+				tfp->poly_draw_list->num_elements--;
+			}
+			return ret;
+		}
+	}
+
+	e_text = "%s: primitive not found in draw list";
+	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+	return MIN(ret,NhlWARNING);
+}
+
+		
+
+		

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.15 2000-05-16 01:35:41 dbrown Exp $
+ *      $Id: Transform.h,v 1.16 2000-06-28 19:04:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,8 @@ typedef enum _NhlOverlayMode {
 #define NhlNtfDoNDCOverlay		"tfDoNDCOverlay"
 #define NhlNtfOverlayMode		"tfOverlayMode"
 #define NhlNtfLineInterpolationOn 	"tfLineInterpolationOn"
+#define NhlNtfPolyDrawList	 	"tfPolyDrawList"
+#define NhlNtfPolyDrawOrder		"tfPolyDrawOrder"
 
 /*
  * Public Transform class resources
@@ -50,6 +52,8 @@ typedef enum _NhlOverlayMode {
 #define NhlCtfDoNDCOverlay		"TfDoNDCOverlay"
 #define NhlCtfOverlayMode		"TfOverlayMode"
 #define NhlCtfLineInterpolationOn 	"TfLineInterpolationOn"
+#define NhlCtfPolyDrawList	 	"TfPolyDrawList"
+#define NhlCtfPolyDrawOrder		"TfPolyDrawOrder"
 
 /*
  * Public Functions defined by the Transform Class
@@ -150,7 +154,8 @@ extern NhlBoolean NhlIsTransform(
 #endif
 );
 
-/* Overlay and Annotation access functions */
+
+/* Overlay, Annotation, and Primitive access functions */
 
 extern NhlErrorTypes NhlAddOverlay(
 #if	NhlNeedProto
@@ -179,6 +184,21 @@ extern NhlErrorTypes NhlRemoveAnnotation(
 #if	NhlNeedProto
         int	plot_id,
 	int	anno_manager_id
+#endif
+);
+
+NhlErrorTypes NhlAddPrimitive(
+#if	NhlNeedProto
+	int transform_id, 
+	int primitive_id, 
+	int before_id
+#endif
+);
+
+NhlErrorTypes NhlRemovePrimitive(
+#if	NhlNeedProto
+	int transform_id, 
+	int primitive_id
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.39 1999-08-14 01:25:49 dbrown Exp $
+ *      $Id: Create.c,v 1.40 2000-06-28 19:03:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -529,6 +529,16 @@ _NhlCreate
 			if(!_NhlIsApp(parent)){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 "%s:DataItem objects must have an App class object for their parent",func);
+				NhlFree(layer);
+				return NhlFATAL;
+			}
+		}
+		else if(_NhlIsStyle(layer)){
+			/* a workstation is okay but deprecated */
+			layer->base.wkptr = _NhlGetWorkstationLayer(parent);
+			if(! (layer->base.wkptr || _NhlIsApp(parent))){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+"%s:Style objects must have an App class object for their parent",func);
 				NhlFree(layer);
 				return NhlFATAL;
 			}

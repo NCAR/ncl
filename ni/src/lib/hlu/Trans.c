@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.16 1998-02-24 02:21:17 dbrown Exp $
+ *      $Id: Trans.c,v 1.17 2000-06-28 19:04:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -557,12 +557,19 @@ NhlErrorTypes NhlDataPolyline
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
-		NhlVASetValues(tl->base.wkptr->base.id,
+		ret = NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
 
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 		return (*tc->trans_class.data_polyline)(tl,x,y,n);
 	}
 
@@ -636,11 +643,19 @@ NhlErrorTypes NhlNDCPolyline
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
+
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 
 		return (*tc->trans_class.ndc_polyline)(tl,x,y,n);
 	}
@@ -709,12 +724,19 @@ NhlErrorTypes NhlDataPolygon
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
 
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 		return (*tc->trans_class.data_polygon)(tl,x,y,n);
 	}
 
@@ -788,11 +810,19 @@ NhlErrorTypes NhlNDCPolygon
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
+
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 
 		return (*tc->trans_class.ndc_polygon)(tl,x,y,n);
 	}
@@ -861,11 +891,19 @@ NhlErrorTypes NhlDataPolymarker
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
+
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 
 		return (*tc->trans_class.data_polymarker)(tl,x,y,n);
 	}
@@ -940,11 +978,19 @@ NhlErrorTypes NhlNDCPolymarker
                 tl = _NhlDefaultPlot(tl);
         }
 	if(tl && _NhlIsTransform(tl)) {
+		NhlErrorTypes	ret;
+		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
+		if (ret < NhlWARNING)
+			return ret;
+
+		NhlVAGetValues(gsid,
+			       NhlNgsClipOn,&tfl->trans.poly_clip_on,
+			       NULL);
 
 		return (*tc->trans_class.ndc_polymarker)(tl,x,y,n);
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.23 2000-05-16 01:35:42 dbrown Exp $
+ *      $Id: TransformP.h,v 1.24 2000-06-28 19:04:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,8 @@ typedef struct NhlTransformLayerPart {
 	NhlBoolean		plot_manager_on;
 	NhlOverlayMode		do_ndc_overlay;
 	NhlBoolean		line_interpolation_on;
+	NhlGenArray		poly_draw_list;
+	NhlDrawOrder		poly_draw_order;
 	NhlBoolean		x_min_set;
 	float 			x_min;
 	NhlBoolean		x_max_set;
@@ -107,6 +109,7 @@ typedef struct NhlTransformLayerPart {
 	NhlBoolean		sticky_y_min_set;
 	NhlBoolean		sticky_y_max_set;
         _NhlCBList		overlaystatuscb;
+	NhlBoolean		poly_clip_on;
 
 } NhlTransformLayerPart;
 
