@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.24 1993-03-24 23:04:28 haley Exp $
+#   $Id: ncargex.csh,v 1.25 1993-03-25 00:09:51 haley Exp $
 #
 
 #********************#
@@ -443,7 +443,7 @@ set fnd_list = ($fnd_areas $fnd_autograph $fnd_cbivar $fnd_colconv \
                 $fnd_conpack ${fnd_cnrn_family} ${fnd_cnrc_family} \
                 $fnd_dashline $fnd_ezmap $fnd_gflash $fnd_gridall \
                 $fnd_halftone $fnd_histogram $fnd_isosrfhr \
-                $fnd_isosurface $fnd_labelbar $fnd_ngmsic $fnd_plotchar \
+                $fnd_isosurface $fnd_labelbar $fnd_ngmisc $fnd_plotchar \
                 $fnd_pwritx $fnd_pwrity ${fnd_scrlld_title} $fnd_softfill \
                 $fnd_spps $fnd_streamlines $fnd_surface $fnd_threed \
                 $fnd_vectors $fnd_gks $fnd_misc)
