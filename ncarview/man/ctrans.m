@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.25 1996-01-18 14:38:17 boote Exp $
+.\"	$Id: ctrans.m,v 1.26 1997-08-11 13:35:42 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -479,7 +479,7 @@ option), then
 will create a private color map for the graphics window.  This will guarantee
 that 256 distinct colors are available to the window.  This means that
 the  X window will have a different color map than all the other windows on
-the screen, therefore; you usually have to have the mouse pointer in the
+the screen. Therefore, you usually have to have the mouse pointer in the
 window for the correct color table to be installed.  One disadvantage to
 this option is that there is usually a color flashing effect on the
 screen since the wrong color table will be installed for the other windows
@@ -700,7 +700,7 @@ in question to
 Consult the aforementioned publication for a discussion of 
 Graphcaps and Fontcaps as well.
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1997
 .br
 University Corporation for Atmospheric Research
 .br

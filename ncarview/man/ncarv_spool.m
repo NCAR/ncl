@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.11 1995-10-13 15:12:35 haley Exp $
+.\"	$Id: ncarv_spool.m,v 1.12 1997-08-11 13:35:45 haley Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH NCARV_SPOOL 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -116,7 +116,7 @@ overrides
 .BR NCARG_ROOT .
 .SH FILES
 .TP 40
-$NCARG_ROOT/lib/ncarv_spool
+$NCARG_ROOT/lib/ncarg/ncarv_spool
 - System spooler configuration file
 .TP 40
 $HOME/.ncarv_spool
@@ -128,7 +128,7 @@ $HOME/.ncarv_spool
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1997
 .br
 University Corporation for Atmospheric Research
 .br

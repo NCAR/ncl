@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.20 1995-10-13 15:12:30 haley Exp $
+.\"	$Id: ictrans.m,v 1.21 1997-08-11 13:35:43 haley Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -75,7 +75,7 @@ This option is not supported by all devices.
 .TP
 .BI \-d " device"
 Device name.
-.B ctrans
+.B ictrans
 will use the 
 .I Graphcap
 (if it exists) or the appropriate graphics library indicated by 
@@ -84,9 +84,9 @@ will use the
 If 
 .I device
 is preceded by a UNIX directory path then 
-.B ctrans
+.B ictrans
 will look in that directory for the specified graphcap. Otherwise 
-.B ctrans
+.B ictrans
 searches the directory $NCARG_ROOT/lib/ncarg/graphcaps for the graphcap.
 .IP
 For all device specifications
@@ -146,9 +146,9 @@ may also be used to specify a default fontcap.
 If 
 .I fontcap
 is preceded by a UNIX directory path then 
-.B ctrans
+.B ictrans
 will look in that directory for the specified fontcap. Otherwise 
-.B ctrans
+.B ictrans
 searches the directory $NCARG_ROOT/lib/ncarg/fontcaps for the fontcap.
 .IP
 See 
@@ -687,7 +687,7 @@ Metafile frames written to an existing file via the
 command will be subject to the effects of any global "attribute elements"
 contained within the file.
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1997
 .br
 University Corporation for Atmospheric Research
 .br

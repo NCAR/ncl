@@ -56,12 +56,12 @@ image.
 .SH "SEE ALSO"
 .LP
 rasview(1NCARG), rasls(1NCARG), rascat(1NCARG), rasgetpal(1NCARG),
-rasssplit(1NCARG)
+rassplit(1NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1997
 .br
 University Corporation for Atmospheric Research
 .br

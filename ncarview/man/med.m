@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.17 1995-10-13 15:12:33 haley Exp $
+.\"	$Id: med.m,v 1.18 1997-08-11 13:35:44 haley Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -93,7 +93,7 @@ commands attempt to have a syntactically identical form to those of
 .BR ed (1)
 or 
 .BR sed (1) .
-commands consist of an optional
+Commands consist of an optional
 .IR address 
 or two optional, comma separated, 
 .IR addresses ,
@@ -487,7 +487,7 @@ which is the product of the
 .B merge
 command may appear differently than expected.
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1997
 .br
 University Corporation for Atmospheric Research
 .br
