@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.43 1997-08-15 22:58:37 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.44 1997-09-08 19:26:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -645,6 +645,21 @@ PlotManagerClassPartInitialize
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 
+	subret = _NhlRegisterChildClass(lc,NhltitleClass,False,False,
+					NhlNtiMainOffsetXF,
+					NhlNtiXAxisOffsetXF, 
+					NhlNtiYAxisOffsetYF, 
+					NhlNtiXAxisPosition, 
+					NhlNtiYAxisPosition, 
+					NhlNtiMainPosition,
+					NhlNtiMainFontHeightF,
+					NhlNtiXAxisFontHeightF,
+					NhlNtiYAxisFontHeightF,
+					NULL);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING)
+		return ret;
+
 	subret = _NhlRegisterChildClass(lc,NhltickMarkClass,
 					False,False,
 					NhlNtmXBDataLeftF,
@@ -671,17 +686,12 @@ PlotManagerClassPartInitialize
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
-
-	subret = _NhlRegisterChildClass(lc,NhltitleClass,False,False,
-					NhlNtiMainOffsetXF,
-					NhlNtiXAxisOffsetXF, 
-					NhlNtiYAxisOffsetYF, 
-					NhlNtiXAxisPosition, 
-					NhlNtiYAxisPosition, 
-					NhlNtiMainPosition,
-					NhlNtiMainFontHeightF,
-					NhlNtiXAxisFontHeightF,
-					NhlNtiYAxisFontHeightF,
+        
+	subret = _NhlRegisterChildClass(lc,NhllegendClass,
+					False,False,
+					NhlNlgLegendOn,
+					NhlNlgJustification,
+					NhlNlgOrientation,
 					NULL);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
@@ -692,16 +702,6 @@ PlotManagerClassPartInitialize
 					NhlNlbLabelBarOn,
 					NhlNlbJustification,
 					NhlNlbOrientation,
-					NULL);
-
-	if ((ret = MIN(subret,ret)) < NhlWARNING)
-		return ret;
-
-	subret = _NhlRegisterChildClass(lc,NhllegendClass,
-					False,False,
-					NhlNlgLegendOn,
-					NhlNlgJustification,
-					NhlNlgOrientation,
 					NULL);
 
 	return MIN(subret,ret);
@@ -1037,7 +1037,8 @@ static NhlErrorTypes PlotManagerSetValues
 	ovnew->trans.trans_obj = ovnew->trans.overlay_trans_obj;
 	ovp->trans_change_count = trans_change_count;
 /* 
- * The annotation children can only be created during initialization
+ * The annotation children can only be created during initialization;
+ * If NOCREATE is set after annotation created, silently change it to NEVER
  */
 	if (ovp->display_tickmarks != NhlNOCREATE &&
 	    ovp->tickmarks == NULL) {
@@ -1048,6 +1049,9 @@ static NhlErrorTypes PlotManagerSetValues
 			  entry_name,NhlNpmTickMarkDisplayMode);
 		ovp->display_tickmarks = NhlNOCREATE;
 	}
+        else if (ovp->tickmarks && ovp->display_tickmarks == NhlNOCREATE)
+                ovp->display_tickmarks = NhlNEVER;
+        
 
 	if (ovp->display_titles != NhlNOCREATE &&
 	    ovp->titles == NULL) {
@@ -1058,6 +1062,8 @@ static NhlErrorTypes PlotManagerSetValues
 			  entry_name,NhlNpmTitleDisplayMode);
 		ovp->display_titles = NhlNOCREATE;
 	}
+        else if (ovp->titles && ovp->display_titles == NhlNOCREATE)
+                ovp->display_titles = NhlNEVER;
 
 	if (ovp->display_labelbar != NhlNOCREATE &&
 	    ovp->labelbar == NULL) {
@@ -1068,6 +1074,8 @@ static NhlErrorTypes PlotManagerSetValues
 			  entry_name,NhlNpmLabelBarDisplayMode);
 		ovp->display_labelbar = NhlNOCREATE;
 	}
+        else if (ovp->labelbar && ovp->display_labelbar == NhlNOCREATE)
+                ovp->display_labelbar = NhlNEVER;
 
 	if (ovp->display_legend != NhlNOCREATE &&
 	    ovp->legend == NULL) {
@@ -1078,6 +1086,8 @@ static NhlErrorTypes PlotManagerSetValues
 			  entry_name,NhlNpmLegendDisplayMode);
 		ovp->display_legend = NhlNOCREATE;
 	}
+        else if (ovp->legend && ovp->display_legend == NhlNOCREATE)
+                ovp->display_legend = NhlNEVER;
 
 /*
  * If the PlotManager records resource is set replace the old overlay record

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.63 1997-08-15 22:58:28 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.64 1997-09-08 19:26:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6044,10 +6044,16 @@ static NhlErrorTypes ManageTickMarks
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
-
- 	if (! tfp->plot_manager_on ||
-	    cnp->display_tickmarks == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (cnp->display_tickmarks == NhlNOCREATE) {
+                if (init || ocnp->display_tickmarks == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        cnp->display_tickmarks = NhlNEVER;
+        }
 
 	if (init || 
 	    cnp->display_tickmarks != ocnp->display_tickmarks) {
@@ -6101,10 +6107,16 @@ static NhlErrorTypes ManageTitles
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
-
- 	if (! tfp->plot_manager_on ||
-	    cnp->display_titles == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (cnp->display_titles == NhlNOCREATE) {
+                if (init || ocnp->display_titles == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        cnp->display_titles = NhlNEVER;
+        }
 
 	if (init || 
 	    cnp->display_titles != ocnp->display_titles) {
@@ -6170,10 +6182,16 @@ static NhlErrorTypes ManageLegend
 	
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
- 	if (! tfp->plot_manager_on ||
-	    cnp->display_legend == NhlNOCREATE) 
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
 
+        if (cnp->display_legend == NhlNOCREATE) {
+                if (init || ocnp->display_legend == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        cnp->display_legend = NhlNEVER;
+        }
+        
 	if (init || 
 	    cnp->display_legend != ocnp->display_legend ||
 	    cnp->const_field != ocnp->const_field ||
@@ -6657,10 +6675,16 @@ static NhlErrorTypes ManageLabelBar
 	NhlBoolean		set_all = False;
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
-
- 	if (! tfp->plot_manager_on ||
-	    cnp->display_labelbar == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (cnp->display_labelbar == NhlNOCREATE) {
+                if (init || ocnp->display_labelbar == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        cnp->display_labelbar = NhlNEVER;
+        }
 
 	if (init || 
 	    cnp->display_labelbar != ocnp->display_labelbar ||

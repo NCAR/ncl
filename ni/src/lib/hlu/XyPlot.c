@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.72 1997-08-14 16:30:59 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.73 1997-09-08 19:26:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4374,9 +4374,16 @@ SetUpTicks
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->plot_manager_on ||
-		nxp->display_tickmarks == NhlNOCREATE)
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (nxp->display_tickmarks == NhlNOCREATE) {
+                if (calledfrom == _NhlCREATE ||
+                    oxp->display_tickmarks == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        nxp->display_tickmarks = NhlNEVER;
+        }
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_tickmarks != oxp->display_tickmarks)){
@@ -4430,9 +4437,16 @@ static NhlErrorTypes SetUpTitles
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->plot_manager_on ||
-		nxp->display_titles == NhlNOCREATE)
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (nxp->display_titles == NhlNOCREATE) {
+                if (calledfrom == _NhlCREATE ||
+                    oxp->display_titles == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        nxp->display_titles = NhlNEVER;
+        }
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_titles != oxp->display_titles)){
@@ -4486,9 +4500,16 @@ static NhlErrorTypes SetUpLegend
 	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
-	if(!tfp->plot_manager_on ||
-		nxp->display_legend == NhlNOCREATE)
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (nxp->display_legend == NhlNOCREATE) {
+                if (calledfrom == _NhlCREATE ||
+                    oxp->display_legend == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        nxp->display_legend = NhlNEVER;
+        }
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_legend != oxp->display_legend)){

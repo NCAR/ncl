@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.33 1997-08-14 16:30:27 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.34 1997-09-08 19:26:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3348,9 +3348,15 @@ static NhlErrorTypes ManageTickMarks
 
 	entry_name = (init) ? InitName : SetValuesName;
 
- 	if (! tfp->plot_manager_on ||
-	    stp->display_tickmarks == NhlNOCREATE) 
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (stp->display_tickmarks == NhlNOCREATE) {
+                if (init || ostp->display_tickmarks == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        stp->display_tickmarks = NhlNEVER;
+        }
 
 	if (init || 
 	    stp->display_tickmarks != ostp->display_tickmarks) {
@@ -3404,10 +3410,16 @@ static NhlErrorTypes ManageTitles
 	NhlTransformLayerPart	*tfp = &(stnew->trans);
 
 	entry_name = (init) ? InitName : SetValuesName;
-
- 	if (! tfp->plot_manager_on ||
-	    stp->display_titles == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (stp->display_titles == NhlNOCREATE) {
+                if (init || ostp->display_titles == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        stp->display_titles = NhlNEVER;
+        }
 
 	if (init || 
 	    stp->display_titles != ostp->display_titles) {

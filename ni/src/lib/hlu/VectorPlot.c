@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.40 1997-08-14 16:30:46 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.41 1997-09-08 19:26:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4932,10 +4932,16 @@ static NhlErrorTypes ManageTickMarks
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 
 	entry_name = (init) ? InitName : SetValuesName;
-
- 	if (! tfp->plot_manager_on ||
-	    vcp->display_tickmarks == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (vcp->display_tickmarks == NhlNOCREATE) {
+                if (init || ovcp->display_tickmarks == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        vcp->display_tickmarks = NhlNEVER;
+        }
 
 	if (init || 
 	    vcp->display_tickmarks != ovcp->display_tickmarks) {
@@ -4989,10 +4995,16 @@ static NhlErrorTypes ManageTitles
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 
 	entry_name = (init) ? InitName : SetValuesName;
-
- 	if (! tfp->plot_manager_on ||
-	    vcp->display_titles == NhlNOCREATE) 
+        
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (vcp->display_titles == NhlNOCREATE) {
+                if (init || ovcp->display_titles == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        vcp->display_titles = NhlNEVER;
+        }
 
 	if (init || 
 	    vcp->display_titles != ovcp->display_titles) {
@@ -5051,9 +5063,15 @@ static NhlErrorTypes ManageLabelBar
 
 	entry_name = (init) ? InitName : SetValuesName;
 
- 	if (! tfp->plot_manager_on ||
-	    vcp->display_labelbar == NhlNOCREATE) 
+ 	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
+
+        if (vcp->display_labelbar == NhlNOCREATE) {
+                if (init || ovcp->display_labelbar == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        vcp->display_labelbar = NhlNEVER;
+        }
 
 	if (init || 
 	    vcp->display_labelbar != ovcp->display_labelbar ||

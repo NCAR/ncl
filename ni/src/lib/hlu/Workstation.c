@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.72 1997-09-05 15:52:09 dbrown Exp $
+ *      $Id: Workstation.c,v 1.73 1997-09-08 19:26:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -625,7 +625,27 @@ WorkstationClassInitialize
 	int status1,dummy = 6;
 	int i;
 	_NhlEnumVals	dashvals[] = {
-		{NhlSOLIDLINE,	"SolidLine"}
+		{NhlSOLIDLINE,	"SolidLine"},
+                {1,		"Dash"},
+		{1,             "D4U2"},
+                {2,		"Dot"},
+		{1,             "DU2"},
+                {3,		"DashDot"},
+		{1,             "D4U2DU2"},
+                {4,		"DashDotDot"},
+		{1,             "D4U2DUDU2"},
+                {5,		"D2U"},
+                {6,		"D3U"},
+                {7,		"DUD2U"},
+                {8,		"DUD3U"},
+                {9,		"D2UD4U"},
+                {10,		"D4UD2UDUD2U"},
+                {11,		"D2U2"},
+                {12,		"D6U2"},
+                {13,		"D3UD3U2"},
+                {14,		"D2U3"},
+                {15,		"DUDU3"},
+                {16,		"D5U5"},
 	};
 	NhlConvertArg	dashargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
@@ -643,9 +663,26 @@ WorkstationClassInitialize
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)}
 	};
 	_NhlEnumVals	fillvals[] = {
-		{NhlSOLIDFILL,	"SolidFill"},
 		{NhlHOLLOWFILL,	"HollowFill"},
-		{NhlNULLFILL,	"NullFill"}
+		{NhlNULLFILL,	"NullFill"},
+		{NhlSOLIDFILL,	"SolidFill"},
+		{1,		"HatchHorizontal"},
+		{2,		"HatchVertical"},
+		{3,		"Hatch_45"},
+		{4,		"Hatch_135"},
+		{5,		"CrossHatch"},
+		{6,		"CrossHatch_45"},
+		{7,		"Hatch_22"},
+		{8,		"Hatch_68"},
+		{9,		"Hatch_112"},
+		{10,		"Hatch_158"},
+		{11,		"CrossHatch_22"},
+		{12,		"CrossHatch_68"},
+		{13,		"CrossHatch_0_60"},
+		{14,		"CrossHatch_0_60_120"},
+		{15,		"CrossHatch_0_45_90"},
+		{16,		"CrossHatch_0_45_90_135"},
+		{17,		"Stippled"}
 	};
 	NhlConvertArg	fillargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
@@ -655,18 +692,18 @@ WorkstationClassInitialize
 	_NhlEnumVals	markervals[] = {
 		{0,	"default"},
 		{1,	"dot"},
-		{2,	"+"},
 		{2,	"plus"},
-		{3,	"*"},
+		{2,	"+"},
 		{3,	"asterisk"},
+		{3,	"*"},
 		{4,	"hollow_circle"},
 		{5,	"cross"},
 		{5,	"x"},
 		{6,	"hollow_square"},
 		{7,	"up_triangle"},
 		{8,	"down_triangle"},
-		{9,	"neil"},
 		{9,	"diamond"},
+		{9,	"neil"},
 		{10,	"left_triangle_filled"},
 		{11,	"right_triangle_filled"},
 		{12,	"star_5point"},
