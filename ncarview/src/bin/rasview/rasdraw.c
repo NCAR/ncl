@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.2 1991-06-18 14:55:18 clyne Exp $
+ *	$Id: rasdraw.c,v 1.3 1991-08-15 17:18:34 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -19,8 +19,18 @@
 #include <X11/StringDefs.h>     /* Get standard string definations. */
 #include <X11/Shell.h>
 #include <ncarg_ras.h>
+
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
 #include "rasdraw.h"
 
+extern	char	*malloc();
+
+/*LINTLIBRARY*/
 
 /*
  *	RasDrawOpen
@@ -54,19 +64,18 @@ Context	*RasDrawOpen(argc, argv, batch)
 {
 	Context		*context;
 	String		app_class;
-	Arg		args[10];
-	Cardinal	n;
 
 	Visual		*visual, *get_best_visual();
 	Colormap	create_colormap();
 	XImage		*create_ximage();
 	Widget		create_graphics_canvas();
 	
+
 	/*
 	 * use argv[0] as application class after converting argv[0][0]
 	 * to uppercase.
 	 */
-	if ((app_class = (String) malloc(strlen(argv[0] + 1))) == NULL) {
+	if ((app_class = (String) malloc((unsigned) strlen(argv[0] + 1))) == NULL) {
 		return ((Context *) NULL);
 	}
 	app_class = strcpy(app_class, argv[0]);
@@ -176,8 +185,6 @@ RasDraw(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
-	Cardinal	n;
-	Arg	args[10];
 	XEvent	event;
 	void	PassGo();
 	int	class = context->vis_class;
@@ -243,7 +250,7 @@ RasDraw(ras, context)
 		XtAppNextEvent(context->app_con, &event);
 		XtDispatchEvent(&event);
 	}
-		
+	return(1);		
 }
 
 /*
@@ -286,15 +293,15 @@ RasDrawSetPalette(context, red, green, blue, ncolor)
 	 * later use
 	 */
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) return(-1);
-	bcopy((char *) red, (char *) ucptr, ncolor);
+	bcopy((char *) red, (char *) ucptr, (int) ncolor);
 	context->default_pal.red = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) return(-1);
-	bcopy((char *) green, (char *) ucptr, ncolor);
+	bcopy((char *) green, (char *) ucptr, (int) ncolor);
 	context->default_pal.green = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) return(-1);
-	bcopy((char *) blue, (char *) ucptr, ncolor);
+	bcopy((char *) blue, (char *) ucptr, (int) ncolor);
 	context->default_pal.blue = ucptr;
 
 	context->default_pal.ncolor = ncolor;
@@ -359,6 +366,7 @@ RasDrawClose(context)
 	cfree((char *) context);
 }
 
+/*ARGSUSED*/
 static	load_24bit_image(ras, context)
 	Raster	*ras;
 	Context	*context;
@@ -408,10 +416,11 @@ load_8bit_image_(ras, context)
 			context->ximage, 0,0,0,0, ras->nx, ras->ny);
 	}
 	else {
-		fprintf(stderr, "Unsupported display depth\n");
+		(void) fprintf(stderr, "Unsupported display depth\n");
 	}
 }
 
+/*ARGSUSED*/
 load_static_8bit_image_(ras, context)
 	Raster	*ras;
 	Context	*context;
@@ -449,7 +458,7 @@ load_static_8bit_image_(ras, context)
 		context->ximage, 0,0,0,0, ras->nx, ras->ny);
 #endif
 
-	fprintf(stderr, "Unsupported color model\n");
+	(void) fprintf(stderr, "Unsupported color model\n");
 }
 
 
@@ -490,11 +499,11 @@ static	load_palette(ras, context)
 		 * load default palette.
 		 */
 		if (context->load_pal) {
-			load_palette_(ras->red, ras->green,
-					ras->blue, ras->ncolor,context);
+			(void) load_palette_(ras->red, ras->green, ras->blue, 
+						(unsigned) ras->ncolor,context);
 		}
 		else {
-			load_palette_(context->default_pal.red, 
+			(void) load_palette_(context->default_pal.red, 
 				context->default_pal.green, 
 				context->default_pal.blue,
 				context->default_pal.ncolor, context);
@@ -502,11 +511,11 @@ static	load_palette(ras, context)
 	}
 	else {
 		if (context->load_pal) {
-			load_static_pal_(ras->red, ras->green,
-					ras->blue, ras->ncolor,context);
+			(void)load_static_pal_(ras->red, ras->green, ras->blue, 
+						(unsigned) ras->ncolor,context);
 		}
 		else {
-			load_static_pal_(context->default_pal.red, 
+			(void) load_static_pal_(context->default_pal.red, 
 				context->default_pal.green, 
 				context->default_pal.blue,
 				context->default_pal.ncolor, context);
@@ -534,7 +543,7 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 		static_pal = (long *) malloc(256 * sizeof(long));
 
 		if (! static_pal) {
-			fprintf(stderr,"Error allocating color table\n");
+			(void) fprintf(stderr,"Error allocating color table\n");
 			return(-1);
 		}
 	}
@@ -558,6 +567,7 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 	}
 
 	context->cmap_info.static_pal = static_pal;
+	return(1);
 }
 
 static	load_palette_(red, green, blue, ncolor, context)
@@ -584,9 +594,11 @@ static	load_palette_(red, green, blue, ncolor, context)
 	if (context->xcolor_size < num_cols) {
 		if (context->xcolors) cfree((char *) context->xcolors);
 
-		context->xcolors = (XColor *) malloc(num_cols * sizeof(XColor));
+		context->xcolors = (XColor *) 
+				malloc((unsigned) num_cols * sizeof(XColor));
+
 		if (! context->xcolors) {
-			fprintf(stderr,"Error allocating color table\n");
+			(void) fprintf(stderr,"Error allocating color table\n");
 			return(-1);
 		}
 		context->xcolor_size = num_cols;
@@ -689,7 +701,7 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 	if ((ximage = XCreateImage(dpy, visual,
 		depth, ZPixmap, 0, NULL, nx, ny, 8, 0)) == NULL) {
 
-		fprintf(stderr, "Error allocating image memory\n");
+		(void) fprintf(stderr, "Error allocating image memory\n");
 		return(NULL);
 	}
 
@@ -730,7 +742,7 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 	 */
 
 	if (bytes_per_pixel != 1) {
-		image_buf = (char *) malloc (image_size);
+		image_buf = (char *) malloc ((unsigned) image_size);
 		if (! image_buf) {
 			perror("rasview");
 			return(NULL);
@@ -751,6 +763,7 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 /*
  * create a drawing canvas 
  */
+/*ARGSUSED*/
 static	Widget	create_graphics_canvas(parent, nx, ny, encoding_hint)
 	Widget	parent;
 	int	nx, ny;
@@ -759,6 +772,8 @@ static	Widget	create_graphics_canvas(parent, nx, ny, encoding_hint)
 	Widget		canvas;
 	Cardinal	n;
 	Arg		args[5];
+
+	extern	WidgetClass	widgetClass;
 
 	/*
 	 *      create drawing canvas
@@ -839,10 +854,11 @@ void	UnInstallCMap(w,client_data,call_data)
 }
 #endif
 
+/*ARGSUSED*/
 void PassGo(w,client_data,call_data)
-Widget w;
-caddr_t client_data;
-caddr_t call_data;
+	Widget w;
+	caddr_t client_data;
+	caddr_t call_data;
 {
 	int	*pass_go = (int *) client_data;
 
