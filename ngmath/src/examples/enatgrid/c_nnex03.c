@@ -3,13 +3,11 @@
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <ncarg/ngmath.h>
 
-extern float **c_natgrids(int, float [], float [], float [],
-                          int, int, float [], float [], int *);
-extern void drwsrfc (int, int, float *, float *, float *,
-              float, float, float, int *);
-extern void drwvctc (int, int, float *, float*);
-extern void drwconc (int, int, float *);
+void drwsrfc (int, int, float *, float *, float *, float, float, float, int *);
+void drwvctc (int, int, float *, float*);
+void drwconc (int, int, float *);
 
 #define NUMIN 171
 #define NUMXOUT 21

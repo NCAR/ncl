@@ -1,12 +1,9 @@
 #include <stdio.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <ncarg/ngmath.h>
 
-
-extern double **c_natgridd(int, double [], double [], double [],
-                          int, int, double [], double [], int *);
-extern void drwsrfc (int, int, float *, float *, float *,
-                     float, float, float, int *);
+void drwsrfc (int, int, float *, float *, float *, float, float, float, int *);
 
 #define NUMIN 6
 #define NUMXOUT 21
