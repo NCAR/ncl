@@ -114,7 +114,7 @@ main(argc, argv)
 
 	(void) strcpy(root, srcfile);
 	p = strchr(root, '.');
-	*p = '\0';
+	if (p) *p = '\0';
 
 	/*
 	** By default, the output file defaults to be the same but
