@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.17 1993-02-03 21:55:04 haley Exp $
+#   $Id: ncargex.csh,v 1.18 1993-02-15 00:08:13 haley Exp $
 #
 
 if ($#argv < 1) then
@@ -47,7 +47,7 @@ agex11 agex12 agex13 arex01 mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 \
 mpex07 mpex08 mpex09 mpex10 mpexfi cpex01 cpex02 cpex03 cpex04 cpex05 \
 cpex06 cpex07 cpex08 cpex09 eezmpa elblba epltch cbex01 coex01 coex02 \
 coex03 srex01 slex01 sfex01 sfex02 stex01 stex02 stex03 vvex01 vvex02 \
-example nglogy ngrevx ngset1 ngset2)
+example nglogy ngrevx ngset1 ngset2 bnchmk)
 
 set test_list=(\
 tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv tconan tconaq \
