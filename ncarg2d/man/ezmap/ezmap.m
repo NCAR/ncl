@@ -108,8 +108,8 @@ MAPFST - Does a "pen-up" move defining the start of a line to be
 projected and drawn. The line is defined by a series of lat/lon
 coordinates.
 .IP "\(bu" 4
-MAPVEC - Does a "pen-down" move defining the continuation of a line to be
-projected and drawn. The line is defined by a series of lat/lon
+MAPVEC - Does a "pen-down" move defining the continuation of a line to
+be projected and drawn. The line is defined by a series of lat/lon
 coordinates.
 .IP "\(bu" 4
 MAPIT - Does "pen-up" or "pen-down" moves. This routine is called by
@@ -292,55 +292,123 @@ ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use the
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
-Possible error-flag values are as shown in the following table:
-.RS 4
-.IP "Error" 8
-Associated error message
-.IP "1" 8
-MAPGTC - UNKNOWN PARAMETER NAME xx
-.IP "2" 8
-MAPGTI - UNKNOWN PARAMETER NAME xx
-.IP "3" 8
-MAPGTL - UNKNOWN PARAMETER NAME xx
-.IP "4" 8
-MAPGTR - UNKNOWN PARAMETER NAME xx
-.IP "5" 8
-MAPINT - ATTEMPT TO USE NON-EXISTENT PROJECTION
-.IP "6" 8
+When error conditions are detected, the support routine SETER
+is called. By default, SETER writes a message to the standard
+error file (as defined by I1MACH(4)) and then terminates
+execution.  It is possible to put SETER into recovery mode and
+regain control after a recoverable error (which includes
+all of the possible errors).
+.sp
+The possible error messages are listed below.  All errors are recoverable
+in the sense that a user program which has called ENTSR to set recovery
+mode will get control back after one of these errors occurs.
+.sp
+MAPBLA/XXXXXX (where XXXXXX is an error message from MAPITA, AREDAM,
+MAPIO, or MAPEOD)
+.sp
+MAPCHI - ERROR EXIT FROM GQPLCI
+.sp
+MAPCHI - ERROR EXIT FROM GQPMCI
+.sp
+MAPCHI - ERROR EXIT FROM GQTXCI
+.sp
+MAPCHI/XXXXXX (where XXXXXX is an error message from MAPIQ, DASHDB,
+or MAPUSR)
+.sp
+MAPDRW/XXXXXX (where XXXXXX is an error message from MAPINT,MAPGRD,
+MAPLBL, or MAPLOT)
+.sp
+MAPFST/XXXXXX (where XXXXXX is an error message from MAPIT)
+.sp
+MAPGRD/XXXXXX (where XXXXXX is an error message from MAPCHI, MAPIT,
+MAPTRN, or MAPLMB)
+.sp
+MAPGRM/XXXXXX (where XXXXXX is an error message from MAPITM, MAPIQM,
+MAPTRN, or AREDAM)
+.sp
 MAPINT - ANGULAR LIMITS TOO GREAT
-.IP "7" 8
+.sp
+MAPINT - ATTEMPT TO USE NON-EXISTENT PROJECTION
+.sp
 MAPINT - MAP HAS ZERO AREA
-.IP "8" 8
-MAP LIMITS INAPPROPRIATE
-.IP "9" 8
-MAPROJ - UNKNOWN PROJECTION NAME xx
-.IP "10" 8
-MAPSET - UNKNOWN MAP AREA SPECIFIER xx
-.IP "11" 8
-MAPSTC - UNKNOWN OUTLINE NAME xx
-.IP "12" 8
-MAPSTC - UNKNOWN PARAMETER NAME xx
-.IP "13" 8
-MAPSTI - UNKNOWN PARAMETER NAME xx
-.IP "14" 8
-MAPSTL - UNKNOWN PARAMETER NAME xx
-.IP "15" 8
-MAPSTR - UNKNOWN PARAMETER NAME xx
-.IP "16" 8
-MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION
-.IP "17" 8
-MAPIO - OUTLINE DATASET IS UNREADABLE
-.IP "18" 8
+.sp
+MAPINT - MAP LIMITS INAPPROPRIATE
+.sp
+MAPINT/XXXXXX (where XXXXXX is an error message from MAPTRN or SET)
+.sp
 MAPIO - EOF ENCOUNTERED IN OUTLINE DATASET
-.IP "19" 8
+.sp
+MAPIO - ERROR ON READ OF OUTLINE DATASET
+.sp
+MAPIO - OUTLINE DATASET IS UNREADABLE
+.sp
+MAPIQ/XXXXXX (where XXXXXX is an error message from POINTS or PLOTIF)
+.sp
+MAPIQA/XXXXXX (where XXXXXX is an error message from AREDAM)
+.sp
+MAPIQM/XXXXXX (where XXXXXX is an error message from ARDRLN)
+.sp
+MAPIT/XXXXXX (where XXXXXX is an error message from MAPTRN, MAPVP,
+or FRSTD)
+.sp
+MAPITA/XXXXXX (where XXXXXX is an error message from MAPTRN,
+or AREDAM)
+.sp
+MAPITM/XXXXXX (where XXXXXX is an error message from MAPTRN,
+or ARDRLN)
+.sp
+MAPLBL/XXXXXX (where XXXXXX is an error message from MAPCHI, MAPTRN,
+WTSTR, FRSTD, or MAPVP)
+.sp
+MAPLMB/XXXXXX (where XXXXXX is an error message from MAPCHI, MAPIT,
+MAPIQ, MAPVP, or FRSTD)
+.sp
+MAPLOT/XXXXXX (where XXXXXX is an error message from MAPIO, MAPEOD,
+MAPCHI, MAPIT, or MAPLMB)
+.sp
 MAPPOS - ARGUMENTS ARE INCORRECT
-.IP "20" 8
-MAPRST - ERROR ON READ
-.IP "21" 8
+.sp
+MAPROJ/XXXXXX (where XXXXXX is an error message from MAPSTR)
+.sp
+MAPRS/XXXXXX (where XXXXXX is an error message from SET)
+.sp
 MAPRST - EOF ON READ
-.IP "22" 8
+.sp
+MAPRST - ERROR ON READ
+.sp
+MAPRST/XXXXXX (where XXXXXX is an error message from MAPINT)
+.sp
 MAPSAV - ERROR ON WRITE
-.RE
+.sp
+MAPTRA/XXXXXX (where XXXXXX is an error message from MAPTRN)
+.sp
+MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION
+.sp
+MAPVEC/XXXXXX (where XXXXXX is an error message from MAPIT)
+.sp
+MAPVP/XXXXXX (where XXXXXX is an error message from VECTD or POINTS)
+.sp
+MPGETC/XXXXXX (where XXXXXX is an error message from MAPGTC)
+.sp
+MPGETI/XXXXXX (where XXXXXX is an error message from MAPGTI)
+.sp
+MPGETL/XXXXXX (where XXXXXX is an error message from MAPGTL)
+.sp
+MPGETR/XXXXXX (where XXXXXX is an error message from MAPGTR)
+.sp
+MPSETC/XXXXXX (where XXXXXX is an error message from MAPSTC)
+.sp
+MPSETI/XXXXXX (where XXXXXX is an error message from MAPSTI)
+.sp
+MPSETL/XXXXXX (where XXXXXX is an error message from MAPSTL)
+.sp
+MPSETR/XXXXXX (where XXXXXX is an error message from MAPSTR)
+.sp
+SUPCON/XXXXXX (where XXXXXX is an error message from MAPTRN)
+.sp
+SUPMAP/XXXXXX (where XXXXXX is an error message from MAPSTI, MAPSTC,
+MAPSTL, MAPROJ, MAPSET, or MAPDRW)
+.sp
 .SH SEE ALSO
 Online:
 ezmap_params,
