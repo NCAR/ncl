@@ -449,7 +449,6 @@ NhlErrorTypes eof_W( void )
  */
   if(call_transpose) {
     NclFree(teof);
-    NclFree(weval);
     NclFree(w2d);
     NclFree(wevec);
     NclFree(xdata);
@@ -1541,7 +1540,6 @@ NhlErrorTypes eofcov_tr_W( void )
   NclFree(iwork);
   NclFree(ifail);
   NclFree(teof);
-  NclFree(weval);
   NclFree(w2d);
   NclFree(wevec);
   NclFree(xdata);
