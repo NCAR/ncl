@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.5 1996-03-16 21:43:51 boote Exp $
+ *	$Id: xddi.h,v 1.6 1996-04-01 05:15:06 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -55,7 +55,9 @@ typedef	struct	Xddi_	{
 	Pixeltype	color_pal[MAX_COLORS];
 	int		color_info[MAX_COLORS];
 	XddpColorStatus	color_status[MAX_COLORS];
-	Boolean		color_def[MAX_COLORS];
+	Boolean		x_ref_count;
+	int		max_x_colors;
+	int		*color_def;
 	Colormap	cmap;
 	Boolean		cmap_ro;
 	Boolean		mycmap;

@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.7 1996-03-16 21:43:50 boote Exp $
+ *	$Id: xattribute.c,v 1.8 1996-04-01 05:15:05 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -605,7 +605,7 @@ X11_free_ci(
 {
 	int		*color_info = xi->color_info;
 	XddpColorStatus	*color_status = xi->color_status;
-	Boolean		*color_def = xi->color_def;
+	int		*color_def = xi->color_def;
 
 	if(color_info[index] > -1){
 		color_status[color_info[index]].ref_count--;
@@ -615,7 +615,9 @@ X11_free_ci(
 				XFreeColors(xi->dpy,xi->cmap,
 				&color_status[color_info[index]].xpixnum,1,0);
 			}
-			color_def[color_status[color_info[index]].xpixnum]--;
+			if(xi->x_ref_count)
+				color_def[color_status[
+						color_info[index]].xpixnum]--;
 			xi->mycmap_cells--;
 		}
 		color_info[index] = -1;
@@ -646,7 +648,7 @@ X11_SetColorRepresentation
 	Pixeltype	*color_pal = xi->color_pal;
 	int		*color_info = xi->color_info;
 	XddpColorStatus	*color_status = xi->color_status;
-	Boolean		*color_def = xi->color_def;
+	int		*color_def = xi->color_def;
 	float		color_error = 0;
 	int		i,xindx;
 	
@@ -662,7 +664,9 @@ X11_SetColorRepresentation
 	 */
 	X11_free_ci(xi,index);
 
-	if(xi->mycmap && !xi->cmap_ro){
+	if(xi->mycmap && !xi->cmap_ro && xi->x_ref_count){
+		Boolean	xindx_found = False;
+
 		/*
 		 * Find open color_status index (i)
 		 */
@@ -672,9 +676,13 @@ X11_SetColorRepresentation
 		/*
 		 * Find open X pixel (xindx)
 		 */
-		for(xindx=MAX_COLORS-1;xindx>=0;xindx--)
-			if(!color_def[xindx])
+		for(xindx=xi->max_x_colors-1;xindx>=0;xindx--){
+			if(!color_def[xindx]){
+				xindx_found = True;
 				break;
+			}
+		}
+		if(!xindx_found) goto TROUBLE;
 		color_info[index] = i;
 		rgbptr->pixel = xindx;
 		color_status[i].xpixnum = color_pal[index] = xindx;
@@ -702,7 +710,7 @@ X11_SetColorRepresentation
 		color_status[i].blue = rgbptr->blue;
 		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
 		xi->mycmap_cells++;
-		color_def[rgbptr->pixel]++;
+		if(xi->x_ref_count) color_def[rgbptr->pixel]++;
 	}
 	else if(xi->color_model == CM_MIXED){
 		/*
@@ -721,6 +729,7 @@ X11_SetColorRepresentation
 		float	curval;
 		float	tfloat;
 		int	j;
+TROUBLE:
 
 		for(j=0;j<MAX_COLORS;j++){
 			if(color_status[j].ref_count > 0){

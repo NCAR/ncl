@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.11 1996-03-16 21:43:50 boote Exp $
+ *	$Id: xcontrol.c,v 1.12 1996-04-01 05:15:06 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -73,7 +73,8 @@ X11_private_color
 	Xddp		*xi;
 #endif
 {
-	XColor		colors[MAX_COLORS];
+	Colormap	newcmap;
+	XColor		*colors;
 	int		i;
 
 	if(xi->mycmap)
@@ -89,6 +90,7 @@ X11_private_color
 		case TrueColor:
 		case StaticColor:
 		case StaticGray:
+		case DirectColor:
 
 		xi->cmap = XCopyColormapAndFree(xi->dpy,xi->cmap);
 		xi->cmap_ro = True;
@@ -100,16 +102,18 @@ X11_private_color
 		 */
 		default:
 
-		for(i=0;i<MAX_COLORS;i++){
-			colors[i].pixel = i;
+		newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
+		if(colors = malloc(sizeof(XColor)*xi->max_x_colors)){
+			for(i=0;i<xi->max_x_colors;i++)
+				colors[i].pixel = i;
+			XQueryColors(xi->dpy,xi->cmap,colors,xi->max_x_colors);
+			XStoreColors(xi->dpy,newcmap,colors,xi->max_x_colors);
+			free(colors);
 		}
-
-		XQueryColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
-		free_colors(xi->dpy,xi->cmap,xi->color_status);
-		xi->cmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
-		XStoreColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+	
+		XFreeColormap(xi->dpy,xi->cmap);
+		xi->cmap = newcmap;
 		xi->cmap_ro = False;
-
 		break;
 	}
 
@@ -148,11 +152,34 @@ init_color
 	int		i;
 	int		fg_indx;
 	XColor		tcolor;
-	XColor		colors[MAX_COLORS];
+	XColor		*colors;
 	XGCValues	gcv;		/* struc for manip. a GC*/
 
+	xi->max_x_colors = 2;
+	for(i=1;i<xi->depth;i++)
+		xi->max_x_colors *= 2;
 
-	memset(xi->color_def,0,sizeof(Boolean)*MAX_COLORS);
+	switch(xi->vis->class){
+		case TrueColor:
+		case StaticColor:
+		case StaticGray:
+		case DirectColor:
+			xi->x_ref_count = False;
+			break;
+		default:
+			xi->x_ref_count = True;
+	}
+
+	if(xi->x_ref_count){
+		xi->color_def = malloc(sizeof(int)*xi->max_x_colors);
+		if(xi->color_def)
+			memset(xi->color_def,0,sizeof(int)*xi->max_x_colors);
+		else
+			xi->x_ref_count = False;
+	}
+	else
+		xi->color_def = NULL;
+
 	xi->mycmap_cells = 0;
 
 	switch(xi->color_model){
@@ -180,12 +207,15 @@ init_color
 		 * See if we have to use a RO/RW color model
 		 */
 		switch(xi->vis->class){
+			Colormap	newcmap;
 			/*
 			 * RO model
 			 */
 			case TrueColor:
 			case StaticColor:
 			case StaticGray:
+			case DirectColor:
+
 			xi->cmap_ro = True;
 			xi->cmap = XCopyColormapAndFree(xi->dpy,xi->cmap);
 			break;
@@ -195,15 +225,20 @@ init_color
 			 */
 			default:
 
-			for(i=0;i<MAX_COLORS;i++){
-				colors[i].pixel = i;
+			newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
+								AllocAll);
+			if(colors = malloc(sizeof(XColor)*xi->max_x_colors)){
+				for(i=0;i<xi->max_x_colors;i++)
+					colors[i].pixel = i;
+				XQueryColors(xi->dpy,xi->cmap,colors,
+							xi->max_x_colors);
+				XStoreColors(xi->dpy,newcmap,colors,
+							xi->max_x_colors);
+				free(colors);
 			}
 	
-			XQueryColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
 			XFreeColormap(xi->dpy,xi->cmap);
-			xi->cmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
-								AllocAll);
-			XStoreColors(xi->dpy,xi->cmap,colors,MAX_COLORS);
+			xi->cmap = newcmap;
 			xi->cmap_ro = False;
 			break;
 		}
@@ -235,7 +270,8 @@ init_color
 	xi->color_status[0].red = tcolor.red;
 	xi->color_status[0].green = tcolor.green;
 	xi->color_status[0].blue = tcolor.blue;
-	xi->color_def[tcolor.pixel]++;
+	if(xi->x_ref_count)
+		xi->color_def[tcolor.pixel]++;
 	xi->mycmap_cells++;
 
 	/*
@@ -256,7 +292,8 @@ init_color
 	xi->color_status[1].red = tcolor.red;
 	xi->color_status[1].green = tcolor.green;
 	xi->color_status[1].blue = tcolor.blue;
-	xi->color_def[tcolor.pixel]++;
+	if(xi->x_ref_count)
+		xi->color_def[tcolor.pixel]++;
 	xi->mycmap_cells++;
 
 	/*
@@ -781,6 +818,7 @@ X11_CloseWorkstation
 	XFreeGC(dpy,xi->cell_gc);
 	XFreeGC(dpy,xi->text_gc);
 	XCloseDisplay(dpy);
+	if(xi->color_def) free(xi->color_def);
 	free((char *) xi);
 
 	return(0);
