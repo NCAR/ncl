@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.5 1996-04-04 19:17:09 dbrown Exp $
+ *      $Id: VectorField.c,v 1.6 1996-07-08 20:06:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -614,25 +614,25 @@ GetUVGenArrays
 		e_text = "%s: error converting %s data to float";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNvfUDataArray);
-		return NULL;
+		return NhlFATAL;
 	}
 	if ((*uga)->num_dimensions != 2 || (*uga)->typeQ != Qfloat) {
 		e_text = "%s: internal inconsistency in %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNvfUDataArray);
-		return NULL;
+		return NhlFATAL;
 	}
 	if ((*vga = GenToFloatGenArray(vfp->v_arr)) == NULL) {
 		e_text = "%s: error converting %s data to float";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNvfVDataArray);
-		return NULL;
+		return NhlFATAL;
 	}
 	if ((*vga)->num_dimensions != 2 || (*vga)->typeQ != Qfloat) {
 		e_text = "%s: internal inconsistency in %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNvfVDataArray);
-		return NULL;
+		return NhlFATAL;
 	}
 	if ((*uga) != vfp->u_arr && (*vga) != vfp->v_arr) *overwrite_ok = True;
 
