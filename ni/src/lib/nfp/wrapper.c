@@ -28,6 +28,7 @@ extern NhlErrorTypes eof_ts_W(void);
 extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
 extern NhlErrorTypes eofcov_tr_W(void);
+extern NhlErrorTypes eofcor_tr_W(void);
 extern NhlErrorTypes eofcov_pcmsg_W(void);
 extern NhlErrorTypes eofcor_pcmsg_W(void);
 extern NhlErrorTypes eofcov_ts_W(void);
@@ -688,6 +689,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(eofcov_tr_W,args,"eofcov_tr",nargs);
+/*
+ * Register "eofcor_tr".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcor_tr_W,args,"eofcor_tr",nargs);
 /*
  * Register "eofcov_pcmsg".
  *
