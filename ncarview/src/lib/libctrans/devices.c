@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.6 1991-08-16 10:49:44 clyne Exp $
+ *	$Id: devices.c,v 1.7 1991-10-04 15:19:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -104,7 +104,6 @@ Ct_err	Ras_PolyMarker(), Ras_CellArray();
 
 /*	Class 5	*/
 
-Ct_err	Ras_ColrTable();
 
 
 
@@ -130,7 +129,6 @@ Ct_err X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(),
     X11_CharSetList(); 
 
 /*	Class 2	*/
-Ct_err	X11_BackColr();
 
 
 /*	Class 3	*/
@@ -146,7 +144,7 @@ Ct_err X11_PolyLine(), X11_DisjtLine(), X11_PolyMarker(), X11_RestrText(),
 
 /*	Class 5	*/
 
-Ct_err X11_PatTable(), X11_ColrTable(), X11_ASF();
+Ct_err X11_PatTable(), X11_ASF();
 
 /*	Class 6	*/
 
@@ -447,7 +445,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
 	FillIndex,IntStyle,FillColr,HatchIndex,
 	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, PatTable, PatSize, Ras_ColrTable,
+	EdgeVis, FillRefPt, PatTable, PatSize, ColrTable,
 	ASF,
 	},
 	/* Class 6 */
@@ -491,7 +489,6 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	 *		Class 2
 	 *	X11_ScaleMode(), X11_ColrMode(), X11_LineWidthMode(),
 	 *	X11_MarkerSizeMode(), X11_EdgeWidthMode(), X11_VDCExt()
-	 *	X11_BackColr()
 	 *
 	 *		Class 3
 	 *	X11_VDCIntegerPrec(), X11_VDCRealPrec(), X11_Transpanrecy()
@@ -538,7 +535,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 2 */
 	{
 	NULL, ScaleMode, ColrMode, LineWidthMode, MarkerSizeMode,
-	EdgeWidthMode, VDCExt, X11_BackColr, NULL, NULL, 
+	EdgeWidthMode, VDCExt, BackColr, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -577,7 +574,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
 	FillIndex,IntStyle,FillColr,HatchIndex,
 	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, X11_PatTable, PatSize, X11_ColrTable,
+	EdgeVis, FillRefPt, X11_PatTable, PatSize, ColrTable,
 	X11_ASF,
 	},
 	/* Class 6 */
@@ -675,7 +672,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
 	FillIndex,IntStyle,FillColr,HatchIndex,
 	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, X11_PatTable, PatSize, X11_ColrTable,
+	EdgeVis, FillRefPt, X11_PatTable, PatSize, ColrTable,
 	X11_ASF,
 	},
 	/* Class 6 */

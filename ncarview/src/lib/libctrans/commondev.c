@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.7 1991-09-26 16:29:15 clyne Exp $
+ *	$Id: commondev.c,v 1.8 1991-10-04 15:18:51 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -18,12 +18,12 @@ static	ComDev	func_tab[] = {
 	{
 	"gcap", 	gcap_open,	gcap_close,	gcap_pointflush,
 	gcap_line,	gcap_devline,	gcap_linestyle,	gcap_linecolour,
-	gcap_fillcolour, gcap_linewidth
+	gcap_fillcolour, gcap_linewidth, gcap_update_color_table
 	},
 	{
 	"raster", 	rast_open,	rast_close,	rast_pointflush,
 	rast_line,	rast_devline,	rast_linestyle,	rast_linecolour,
-	rast_fillcolour, rast_linewidth
+	rast_fillcolour, rast_linewidth, rast_update_color_table
 	}
 };
 	
@@ -163,6 +163,11 @@ CGMC *c;
 	/*
 	 *	Make sure the line attributes are set
 	 */
+	if (COLOUR_TABLE_DAMAGE) {
+		dev->update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
 	if (LINE_COLOUR_DAMAGE) {
 		dev->setlinecolour(LINE_COLOUR.index);
 		LINE_COLOUR_DAMAGE = FALSE;
@@ -312,6 +317,10 @@ int	fat_dot;
 	VDCtype x,y;
 	VDCtype len;
 
+	if (COLOUR_TABLE_DAMAGE) {
+		dev->update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
 
 	line_colour = LINE_COLOUR.index;
 	line_width = LINE_WIDTH;
@@ -423,6 +432,10 @@ CGMC *c;
 
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
+	if (COLOUR_TABLE_DAMAGE) {
+		dev->update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
 
 	if (CLIP_DAMAGE) {	/* has clipping changed	*/
 		CoordRect	device_win_coord;

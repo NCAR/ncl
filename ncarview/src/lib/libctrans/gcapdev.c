@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.5 1991-08-16 10:53:53 clyne Exp $
+ *	$Id: gcapdev.c,v 1.6 1991-10-04 15:19:22 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -534,4 +534,184 @@ float	width;
 
 	buffer(LINE_WIDTH_TERM, LINE_WIDTH_TERM_SIZE);
 
+}
+
+
+/*
+ *
+ */
+/*
+ * defines for the markers in the strings
+ */
+#define MAD     -6      /* Colour Index */
+
+void	gcap_update_color_table()
+{
+	int	i,k;		/* loop var */
+	long	data[3];
+	boolean	skipping,
+		defining;
+	int	total_damage;
+
+
+	if (!COLOUR_AVAIL)
+		return;
+	if (!MAP_AVAIL)
+		return;
+
+        /*
+         * any time we change the colour table we "damage" the colour
+         * attributes
+         */
+        FILL_COLOUR_DAMAGE = TRUE;
+        MARKER_COLOUR_DAMAGE = TRUE;
+        LINE_COLOUR_DAMAGE = TRUE;
+
+
+	total_damage = COLOUR_TOTAL_DAMAGE;
+
+
+	if (MAP_INDIVIDUAL) {
+	for(i=0; i<total_damage; i++) {
+
+	if (COLOUR_INDEX_DAMAGE(i)) {
+
+		for (k=0;k<MAP_START_SIZE;k++) {
+			switch (MAP_START[k]) {
+			case (char)MAD:
+				(void)formatindex(i,FALSE);
+				break;
+			default: 
+				buffer(&MAP_START[k],1);
+				break;
+			}
+		}
+
+		switch (MAP_MODEL) {
+		case 0: /* mono */
+			data[0] = (0.3 * COLOUR_INDEX_RED(i)) + 
+				(0.6 * COLOUR_INDEX_GREEN(i)) +
+				(0.1 * COLOUR_INDEX_BLUE(i));
+
+			(void)formatintensity(data, 1);
+			break;
+		case 1:	/* RGB	*/
+			data[0] = COLOUR_INDEX_RED(i);
+			data[1] = COLOUR_INDEX_GREEN(i);
+			data[2] = COLOUR_INDEX_BLUE(i);
+
+			(void)formatintensity(data, 3);
+			break;
+		case 2:	/* BGR	*/
+			data[0] = COLOUR_INDEX_RED(i);
+			data[1] = COLOUR_INDEX_GREEN(i);
+			data[2] = COLOUR_INDEX_BLUE(i);
+
+			(void)formatintensity(data, 3);
+			break;
+		case  3: /* HLS */
+			RGBtoHLS ( COLOUR_INDEX_RED(i), 
+			   COLOUR_INDEX_GREEN(i), 
+			   COLOUR_INDEX_BLUE(i),
+			   &data[0],
+			   &data[1],
+			   &data[2]);
+
+			(void)formatintensity(data, 3);
+			break;
+		default:
+			ct_error(NT_NULL, "bad graphcap colour map model");
+			break;
+		}
+
+		COLOUR_TOTAL_DAMAGE--;
+		COLOUR_INDEX_DAMAGE(i) = FALSE;
+
+
+		buffer(MAP_TERM,MAP_TERM_SIZE);
+	}	/* if	damage */
+	}	/* for	*/
+	}	/* if individual	*/
+
+
+	/*
+	 * not individual
+	 */
+	else {
+
+
+	skipping = TRUE;
+	defining = FALSE;
+	for(i=0; i<total_damage; i++) {
+
+		if (COLOUR_INDEX_DAMAGE(i)) {
+			COLOUR_TOTAL_DAMAGE--;
+			COLOUR_INDEX_DAMAGE(i) = FALSE;
+			if (! defining) {
+				/*
+				 * begin a new run of colors
+				 */
+
+				for (k=0;k<MAP_START_SIZE;k++) {
+					switch (MAP_START[k]) {
+					case (char)MAD:
+						(void)formatindex(i,FALSE);
+						break;
+					default: 
+						buffer(&MAP_START[k],1);
+						break;
+					}
+				}
+				defining = TRUE;
+				skipping = FALSE;
+			}
+
+			switch (MAP_MODEL) {
+			case 0: /* mono */
+				data[0] = (0.3 * COLOUR_INDEX_RED(i)) + 
+					(0.6 * COLOUR_INDEX_GREEN(i)) +
+					(0.1 * COLOUR_INDEX_BLUE(i));
+
+			(void)formatintensity(data, 1);
+			break;
+			case 1:	/* RGB	*/
+				data[0] = COLOUR_INDEX_RED(i);
+				data[1] = COLOUR_INDEX_GREEN(i);
+				data[2] = COLOUR_INDEX_BLUE(i);
+
+				(void)formatintensity(data, 3);
+				break;
+			case 2:	/* BGR	*/
+				data[0] = COLOUR_INDEX_RED(i);
+				data[1] = COLOUR_INDEX_GREEN(i);
+				data[2] = COLOUR_INDEX_BLUE(i);
+
+				(void)formatintensity(data, 3);
+				break;
+			case  3: /* HLS */
+				RGBtoHLS ( COLOUR_INDEX_RED(i), 
+					   COLOUR_INDEX_GREEN(i), 
+					   COLOUR_INDEX_BLUE(i),
+					   &data[0],
+					   &data[1],
+					   &data[2]);
+
+				(void)formatintensity(data, 3);
+				break;
+			}
+
+			COLOUR_TOTAL_DAMAGE--;
+			COLOUR_INDEX_DAMAGE(i) = FALSE;
+
+
+		}	/* if	damage */
+		else {
+			if (! skipping) {
+				buffer(MAP_TERM,MAP_TERM_SIZE);
+				skipping = TRUE;
+				defining = FALSE;
+			}
+		}
+	}	/* for	*/
+	}	/* else if  individual	*/
 }

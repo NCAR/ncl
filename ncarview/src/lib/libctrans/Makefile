@@ -9,15 +9,15 @@
 
 SYSTEM_INCLUDE		= Sun4
 
-PARFIL_INIT     = /tmp/clyne/testlib/params3.1.2
-PARFIL_PERM     = /tmp/clyne/testlib/params3.1.2
+PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
+PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
 
-BINDIR		= /red/tmp/clyne/testbin
-LIBDIR		= /red/tmp/clyne/testlib
-MANDIR		= /red/tmp/clyne/testman
+BINDIR		= /u1/clyne/testbin
+LIBDIR		= /u1/clyne/testlib
+MANDIR		= /u1/clyne/testman
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /tmp/clyne/testlib
+XAPPDIR		= /u1/clyne/testlib
 BITSDIR         = /usr/include/X11/bitmaps
 
 INCLUDEDIR      = $(NCARG)/include
@@ -39,7 +39,7 @@ ARCH            =
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
-COPT            = -O
+COPT            = -g
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT)
@@ -99,12 +99,6 @@ X11DEFINES = -DX11
 CTXTSRCS = $(DCTXTSRCS)
 CTXTOBJS = $(DCTXTOBJS)
 CTXTDEFINES = -DCTXT
-
-SUNVSRCS = $(DSUNVSRCS)
-SUNVOBJS = $(DSUNVOBJS)
-SUNRSRCS = $(DSUNRSRCS)
-SUNROBJS = $(DSUNROBJS)
-SUNDEFINES = -DSunV -DSunR
 
 EQUALHACK	= =
 

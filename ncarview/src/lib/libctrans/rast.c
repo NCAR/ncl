@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.5 1991-09-26 16:29:44 clyne Exp $
+ *	$Id: rast.c,v 1.6 1991-10-04 15:19:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -274,6 +274,7 @@ CGMC *c;
 
 #define	PACKED_MODE	1
 
+	void	rast_update_color_table();
 
 	/*	
 	 *	programmers unfamiliar with CGM representation of Cell arrays
@@ -291,6 +292,10 @@ CGMC *c;
 
 	Ct_err	ras_cell_array(), ras_non_rect_cell_array();
 
+	if (COLOUR_TABLE_DAMAGE) {
+		rast_update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
 
 	/*
  	 *	extract data from cgmc
@@ -334,26 +339,6 @@ CGMC *c;
 }
 
 
-Ct_err	Ras_ColrTable(c)
-CGMC *c;
-{
-	int	i,
-		index;
-
-	/*
-	 * make sure color table does not exceed device capabilities
-	 */
-	if (c->ci[0] >= MAX_COLOR || c->ci[0] < 0) return(OK);
-
-	for (index=c->ci[0], i = 0 ;index< (c->ci[0] + c->CDnum); index++,i++) {
-		
-		colorTab.rgb[index].red =  c->cd[i].red;
-		colorTab.rgb[index].green =  c->cd[i].green;
-		colorTab.rgb[index].blue =  c->cd[i].blue;
-	}
-
-	return (OK);
-}
 
 clear_grid(grid)
 	Raster	*grid;

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.3 1991-04-04 16:01:07 clyne Exp $
+ *	$Id: devices.h,v 1.4 1991-10-04 15:19:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -112,8 +112,8 @@ static	OptDescRec	raster_opts[] = {
 #ifdef	X11
 static	OptDescRec	X11_opts[] = {
 	{"geometry", OptSepArg, NULL},
-	{"foreground", OptSepArg, "white"},
-	{"background", OptSepArg, "black"},
+	{"foreground", OptSepArg, NULL},
+	{"background", OptSepArg, NULL},
 	{"reverse", OptIsArg, "false"},
 	{NULL}
 	};

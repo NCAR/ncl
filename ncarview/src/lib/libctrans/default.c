@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.5 1991-07-19 12:24:50 clyne Exp $
+ *	$Id: default.c,v 1.6 1991-10-04 15:19:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,14 +32,95 @@ static	struct	{
 	boolean	max_line_width_set;
 	float	line_width_scale;
 	boolean	line_width_scale_set;
-	} Option = {1.0, FALSE, 1.0, FALSE, 1.0, FALSE};
+	} oPtion = {1.0, FALSE, 1.0, FALSE, 1.0, FALSE};
+
+static	ColorElement defaultCmap[] = {
+	{{  0,   0,   0}, TRUE, TRUE},	/* background color	*/
+	{{255, 255, 255}, TRUE, TRUE},	/* foreground color	*/
+	{{255,   0,   0}, TRUE, TRUE},	/* red			*/
+	{{  0, 255,   0}, TRUE, TRUE},	/* green 		*/
+	{{  0,   0, 255}, TRUE, TRUE},	/* blue 		*/
+	{{255, 255,   0}, TRUE, TRUE},	/* 			*/
+	{{  0, 255, 255}, TRUE, TRUE},	/* secondaries		*/
+	{{255,   0, 255}, TRUE, TRUE},	/* 			*/
+	}; 
+
+static	int	defaultCmapSize = sizeof (defaultCmap) / sizeof (ColorElement);
+
+/*
+ * the color lookup table
+ */
+static	ColorLUTable	colorLUTable;
+
+/*
+ *	DefaultColorTable contains the color lookup table which is defined
+ *	for the duration of the metafile
+ */
+static	ColorElement		*colorDefaultTable;
+
+/*
+ *	picColorDefaultTable only lives for the duration of a single 
+ *	metafile frame.	it is analogous to picdefaulttable.
+ */
+static	ColorElement		*picColorDefaultTable;
+
+InitDefault()
+{
+	boolean	isInit = FALSE;
+	int	i;
+
+	/*
+	 * do a one time memory allocation
+	 */
+	if (! isInit) {;
+
+		colorDefaultTable = (ColorElement *) icMalloc (
+				sizeof(ColorElement) * (MAX_C_I + 1)
+				);
+		picColorDefaultTable = (ColorElement *) icMalloc (
+				sizeof(ColorElement) * (MAX_C_I + 1)
+				);
+
+		colorLUTable.size = MAX_C_I + 1;
+	}
+	
+
+	/*
+	 * make 'colorDefaultTable' the defalt global table
+	 */
+	colorLUTable.ce = colorDefaultTable;
+
+	/*
+	 * copy in the initial color map which has a few entries defined
+	 */
+	for (i=0; i<defaultCmapSize; i++) {
+		colorLUTable.ce[i] = defaultCmap[i];
+	}
+	for (; i<=MAX_C_I; i++) {
+		colorLUTable.ce[i].damage = FALSE;
+		colorLUTable.ce[i].defined = FALSE;
+	}
+	colorLUTable.total_damage = defaultCmapSize;
+	colorLUTable.damage = TRUE;
+
+	/*
+	 * hook to the outside world
+	 */
+	clut = &colorLUTable;
+	isInit = TRUE;
+}
 
 SetInPic(value)
 boolean		value;
 {
+	int	i;
+
 	if (value) {
 
 #ifdef	RS6000
+		/*
+		 * AIX - hosed as usual
+		 */
 		bcopy((char *) &defaulttable, (char *) &picdefaulttable, 
 			sizeof (DEFAULTTABLE));
 #else
@@ -47,6 +128,26 @@ boolean		value;
 #endif
 
 		dt = &picdefaulttable;
+
+		/*
+		 * load globally set color table into current color
+		 * table.
+		 */
+		clut->total_damage = 0;
+		for(i=0; i < clut->size; i++) {
+			picColorDefaultTable[i] = colorDefaultTable[i];
+
+			/*
+			 * this probably isn't necessary since there won't
+			 * be any "undamaging" until drawing begins
+			 */ 
+			if (colorDefaultTable[i].defined) {
+				picColorDefaultTable[i].damage = TRUE;
+				clut->total_damage++;
+			}
+		}
+		COLOUR_TABLE_ACCESS = TRUE;
+		clut->ce = picColorDefaultTable;
 
 		/*	
 		 *	mark accessed attributes as damaged by last frame
@@ -63,6 +164,7 @@ boolean		value;
 		MARKER_SIZE_DAMAGE = MARKER_SIZE_ACCESS;
 		BACKCOLR_DAMAGE = BACKCOLR_ACCESS;
 		TEXT_F_IND_DAMAGE = TEXT_F_IND_ACCESS;
+		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
 
 		/*	clear access list for new frame	*/
 		LINE_TYPE_ACCESS	= 
@@ -75,10 +177,13 @@ boolean		value;
 		MARKER_TYPE_ACCESS	=
 		MARKER_SIZE_ACCESS	= 
 		BACKCOLR_ACCESS		= 
-		TEXT_F_IND_ACCESS	= FALSE;
+		TEXT_F_IND_ACCESS	=
+		COLOUR_TABLE_ACCESS	= FALSE;
 
-	} else 
+	} else {
 		dt = &defaulttable;
+		clut->ce = colorDefaultTable;
+	}
 }
 
 /* Functions called from the jumptable.  That change defaults */
@@ -333,6 +438,18 @@ CGMC *c;
 
 	dt->backcolr_damage = at->backcolr_access = TRUE;
 
+	clut->ce[0].rgb.red = (unsigned char) c->cd[0].red;
+	clut->ce[0].rgb.green = (unsigned char) c->cd[0].green;
+	clut->ce[0].rgb.blue = (unsigned char) c->cd[0].blue;
+	clut->ce[0].defined = TRUE;
+
+	if (! clut->ce[0].damage) {
+		clut->total_damage++;
+		clut->ce[0].damage = TRUE;
+	}
+
+	clut->damage = at->colour_table_access = TRUE;
+
 	return (OK);
 }
 
@@ -448,16 +565,16 @@ CGMC *c;
 {
 	float	line_width = c->r[0];
 
-	if (Option.line_width_scale_set) line_width *= Option.line_width_scale;
+	if (oPtion.line_width_scale_set) line_width *= oPtion.line_width_scale;
 
 	/*
 	 * make sure line width doesn't exceed bounds
 	 */
-	if (Option.min_line_width_set) 
-		line_width = MAX(line_width, Option.min_line_width);
+	if (oPtion.min_line_width_set) 
+		line_width = MAX(line_width, oPtion.min_line_width);
 
-	if (Option.max_line_width_set) 
-		line_width = MIN(line_width, Option.max_line_width);
+	if (oPtion.max_line_width_set) 
+		line_width = MIN(line_width, oPtion.max_line_width);
 
 	/*
 	 * record the line width
@@ -837,9 +954,33 @@ CGMC *c;
 	return (OK);
 }
 
-/*
- *  The ColrTable function has been moved to gcap.c
- */
+/*ARGSUSED*/
+Ct_err ColrTable(c)
+CGMC *c;
+{
+	int	color_index;
+	int	i;
+
+	color_index = c->ci[0];
+	if (color_index == 0) {
+		dt->backcolr_damage = at->backcolr_access = TRUE;
+	}
+
+	for (i=0; i < c->CDnum && i < MAX_C_I; i++, color_index++) {
+		clut->ce[color_index].rgb.red = (unsigned char) c->cd[i].red;
+		clut->ce[color_index].rgb.green = (unsigned char)c->cd[i].green;
+		clut->ce[color_index].rgb.blue = (unsigned char) c->cd[i].blue;
+		clut->ce[color_index].defined = TRUE;
+		if (! clut->ce[color_index].damage) {
+			clut->total_damage++;
+			clut->ce[color_index].damage = TRUE;
+		}
+	}
+
+	clut->damage = at->colour_table_access = TRUE;
+
+	return (OK);
+}
 
 /*ARGSUSED*/
 Ct_err ASF(c)
@@ -875,8 +1016,8 @@ SetMinLineWidthDefault(line_width)
 	/*
 	 * record the new minimum for future use
 	 */
-	Option.min_line_width = line_width;
-	Option.min_line_width_set = TRUE;;
+	oPtion.min_line_width = line_width;
+	oPtion.min_line_width_set = TRUE;;
 	
 }
 
@@ -890,8 +1031,8 @@ SetMaxLineWidthDefault(line_width)
 
 	LINE_WIDTH_ACCESS = TRUE;
 
-	Option.max_line_width = line_width;
-	Option.max_line_width_set = TRUE;;
+	oPtion.max_line_width = line_width;
+	oPtion.max_line_width_set = TRUE;;
 	
 }
 
@@ -905,6 +1046,6 @@ SetAdditionalLineScale(line_scale)
 
 	defaulttable.line_width = line_scale;
 
-	Option.line_width_scale = line_scale;
-	Option.line_width_scale_set = TRUE;;
+	oPtion.line_width_scale = line_scale;
+	oPtion.line_width_scale_set = TRUE;;
 }

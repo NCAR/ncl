@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.10 1991-08-16 10:51:31 clyne Exp $
+ *	$Id: gcap.c,v 1.11 1991-10-04 15:19:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -486,8 +486,13 @@ CGMC *c;
 	boolean	clip = FALSE;
 
 	Ct_err	cell_array(), non_rect_cell_array(), CellArray_();
-	void	gcap_line();
+	void	gcap_line(), gcap_update_color_table();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
+
+	if (COLOUR_TABLE_DAMAGE) {
+		gcap_update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
 
 	/*
 	 *	check any control elements
@@ -661,105 +666,6 @@ CGMC *c;
 Ct_err	ApplData(c)
 CGMC *c;
 {
-	return (OK);
-}
-
-/*
- *	The following Colour Table function has been moved from default.c
- *	to gcap.c because it's implementation is graphcap specific.
- */
-
-Ct_err	ColrTable(c)
-CGMC *c;
-{
-	int	i,k;		/* loop var */
-	long	data[3];
-
-
-	if (!COLOUR_AVAIL)
-		return(OK);
-	if (!MAP_AVAIL)
-		return(OK);
-
-	/*
-	 * make sure color table does not exceed device capabilities
-	 */
-	if (c->ci[0] >= MAP_INDEX_MAX) 
-		return(OK);
-
-	if ((c->ci[0] + c->CDnum - 1) > MAP_INDEX_MAX) {
-		c->CDnum = MAP_INDEX_MAX - c->ci[0];
-	}
-
-	if (!MAP_INDIVIDUAL)
-
-		for (k=0;k<MAP_START_SIZE;k++) 
-			switch (MAP_START[k]) {
-			case (char)MAD:
-				(void)formatindex(c->ci[0],FALSE);
-				break;
-			default: 
-				buffer(&MAP_START[k],1);
-				break;
-			}
-
-	for(i=0;i<c->CDnum;i++) {
-
-		if (MAP_INDIVIDUAL)
-			for (k=0;k<MAP_START_SIZE;k++) 
-				switch (MAP_START[k]) {
-				case (char)MAD:
-					(void)formatindex(c->ci[0],FALSE);
-					break;
-				default: 
-					buffer(&MAP_START[k],1);
-					break;
-				}
-
-		switch (MAP_MODEL) {
-		case 0: /* mono */
-			data[0] =	(0.3 * c->cd[i].red) + 
-					(0.6 * c->cd[i].green) +
-					(0.1 * c->cd[i].blue);
-
-			(void)formatintensity(data, 1);
-			break;
-		case 1:	/* RGB	*/
-			data[0] = c->cd[i].red;
-			data[1] = c->cd[i].green;
-			data[2] = c->cd[i].blue;
-
-			(void)formatintensity(data, 3);
-			break;
-		case 2:	/* BGR	*/
-			data[0] = c->cd[i].blue;
-			data[1] = c->cd[i].green;
-			data[2] = c->cd[i].red;
-
-			(void)formatintensity(data, 3);
-			break;
-		case  3: /* HLS */
-			RGBtoHLS ( c->cd[i].red, 
-				   c->cd[i].green, 
-				   c->cd[i].blue,
-				   &data[0],
-				   &data[1],
-				   &data[2]);
-
-			(void)formatintensity(data, 3);
-			break;
-		default:
-			ct_error(NT_NULL, "bad graphcap colour map model");
-			break;
-		}
-
-		if (MAP_INDIVIDUAL)
-			buffer(MAP_TERM,MAP_TERM_SIZE);
-	}
-
-	if (!MAP_INDIVIDUAL)
-		buffer(MAP_TERM,MAP_TERM_SIZE);
-
 	return (OK);
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.6 1991-08-16 10:55:36 clyne Exp $
+ *	$Id: X11_class5.c,v 1.7 1991-10-04 15:18:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,9 +55,6 @@ Pixeltype	max_colour;			/* maximum r or g or b value
 						 * specifiable in the CGM
 						 */
 
-static	XColor	color = {
-		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
-		};
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
@@ -72,122 +69,6 @@ CGMC *c;
 }
 
 
-/*ARGSUSED*/
-Ct_err	X11_ColrTable(c)
-CGMC *c;
-{
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ColrTable\n");
-#endif DEBUG
-
-	int		color_index,		/* current color index	*/
-			cgmc_index;		/* index into cgmc->cd[]*/
-
-	Pixeltype	planedummy[1];		/* not used	*/
-	Pixeltype	pixel_return[1];	/* device index	*/
-
-	Ct_err	X11_BackColr();
-
-	/* see if device supports colour	*/
-	if (!Color_ava)
-		return (OK);		/* punt!	*/
-
-
-	/*
-	 * any time we change the colour table we "damage" the colour
-	 * attributes
-	 */
-	FILL_COLOUR_DAMAGE = TRUE;
-	MARKER_COLOUR_DAMAGE = TRUE;
-	LINE_COLOUR_DAMAGE = TRUE;
-
-	cgmc_index = 0;
-	color_index = c->ci[0];
-	/*
-	 * This is a hack to ensure background color gets set correctly
-	 * in the case that colr table index 0 is changed *and* no
-	 * coresponding CGM BACKGROUND COLOUR is received
-	 */
-	if (color_index == 0) {
-		(void) X11_BackColr(c);
-		cgmc_index++;	/* skip index 0 for the rest of this func */
-		color_index++;	/* skip to next color index		*/
-	}
-
-	/* 
-	 *	see what type of visual we have (read only or read/write)
-	 */
-
-	if ((visual->class == TrueColor) || (visual->class == StaticColor)
-		|| (visual->class == StaticGray)) {
-
-
-		/*	load the colours from the cgmc into the colour map */
-		for( ; cgmc_index < c->CDnum; cgmc_index++,color_index++) {
-
-
-		/* convert CGM rgb values to X rgb values	*/
-		CGMrgb_2_Xrgb(c->cd[cgmc_index], &color);
-		
-                if (!XAllocColor(dpy, Cmap, &color)) {
-
-			/* error allocating color cell	*/
-			ct_error(NT_CAE,"Too many colors allocated");
-                        return (pre_err);
-		}
-
-		Colortab[color_index] = color.pixel;
-		Colordef[color_index] = TRUE;
-
-		}
-
-		return (OK);
-	}
- 
-	/*	
-	 * load the colours from the cgmc into the colour map 
-	 */
-	for( ; cgmc_index < c->CDnum; cgmc_index++,color_index++) {
-		/*
-		 * if this index has not had a cell allocated to it previously
-		 * we need to do it now.
-		 */
-		if (! Colordef[color_index]) {
-			/*
-			 * try and alloc a new cell in the color map
-			 */
-			if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
-					0, pixel_return, 1) == 0) {
-
-				/* error allocating color cell	*/
-				ct_error(NT_CAE,"Too many colors allocated");
-				return (SICK);
-			}
-
-			/* 
-			 *	record pixel in the colortable
-			 */
-			Colortab[color_index] = pixel_return[0];
-			Colordef[color_index] = TRUE;
-		}
-
-		/* 
-		 *	set cell index in the colour map
-		 */
-		color.pixel = Colortab[color_index];
-
-		/* 
-		 *	convert CGM rgb values to X rgb values
-		 */
-		CGMrgb_2_Xrgb(c->cd[cgmc_index], &color);
- 
-		/* 
-		 *	store the colour in the map
-		 */
-		XStoreColor(dpy, Cmap, &color);
-	}
-	return (OK);
-}
 
 /*ARGSUSED*/
 Ct_err	X11_ASF(c)
@@ -211,7 +92,6 @@ CGMC *c;
  *		fg, bg, bd	: set to default colours as described in name
  */
 
-#define		COL_2_ALLOC	5
 
 Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	char		*foreground,
@@ -223,14 +103,21 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	int	i;
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
-	char	*name[5];
+	char	*name[2];
+	int	col_2_alloc;
 
-	name[0] = background;
-	name[1] = foreground;
-	name[2] = "red";
-	name[3] = "green";
-	name[4] = "blue";
+	static	XColor	color = {
+		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
+		};
 
+	Ct_err	ColrTable();
+
+	col_2_alloc = 0;
+
+	if (foreground) name[col_2_alloc++] = foreground;
+	if (background) name[col_2_alloc++] = background;
+
+	
 
 
 	/*
@@ -274,7 +161,9 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	 */
 	Color_ava = TRUE;
 
+
 	Cmap = DefaultColormap(dpy, DefaultScreen(dpy));
+
 
 	/* 
 	 * find max direct colour, DCP is direct colour precision in the CGM
@@ -289,72 +178,45 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 		Colordef[i] = FALSE;
 	}
 
-
-
-	/* 
-	 *	allocate some default colours	
+	/*
+	 * if the user requested that the default foreground and/or background
+	 * colors be overriden do so now
 	 */
-	for (i=0; i < COL_2_ALLOC; i++) {
+	if (col_2_alloc) {
+		CGMC	cgmc;
+		cgmc.ci = (CItype *) icMalloc(sizeof(CItype));
+		cgmc.cd = (CDtype *) icMalloc(col_2_alloc * sizeof(CDtype));
 
-		if (!XParseColor(dpy, Cmap, name[i], &color))  {
-			/* color name s not in database	*/
-			ct_error(NT_CAE,name[i]);
+		for (i=0; i < col_2_alloc; i++) {
+
+			if (!XParseColor(dpy, Cmap, name[i], &color))  {
+				/* color name s not in database	*/
+				ct_error(NT_CAE,name[i]);
+			}
+			cgmc.cd[i].red = color.red / X_MAX_RGB * max_colour;
+			cgmc.cd[i].green = color.green / X_MAX_RGB* max_colour;
+			cgmc.cd[i].blue = color.blue / X_MAX_RGB * max_colour;
+		}
+		cgmc.CDnum = col_2_alloc;
+
+		if (background) {
+			cgmc.ci[0] = 0;
 		}
 		else {
-
-			/*
-			 * see if have read/write color model
-			 */
-			if ((visual->class == DirectColor)
-				|| (visual->class == PseudoColor)
-				|| (visual->class == GrayScale)) {
-				
-				if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
-                                        0, pixel_return, 1) == 0) {
-
-					/* 
-					 * Failed. try read only color model
-					 */
-					if (visual->class == DirectColor)
-						visual->class = TrueColor;
-					else if (visual->class == PseudoColor)
-						visual->class = StaticColor;
-					else if (visual->class == GrayScale)
-						visual->class = StaticGray;
-				}
-				else {
-					color.pixel = pixel_return[0];
-					/*
-					 *      store the colour in the map
-					 */
-					XStoreColor(dpy, Cmap, &color);
-
-				}
-
-			}
-			/*
-			 * read only color model
-			 */
-			if ((visual->class == TrueColor)
-				|| (visual->class == StaticColor)
-				|| (visual->class == StaticGray)) {
-
-
-
-				if (!XAllocColor(dpy, Cmap, &color)) {
-					ct_error(NT_CAE,"");
-					return(SICK);
-				}
-
-			}
-
-			/* 
-			 * record colour in the colour table
-			 */
-			Colortab[i] = color.pixel;
-			Colordef[i] = TRUE;
+			cgmc.ci[0] = 1;
 		}
+		cgmc.CInum = 1;;
+
+		ColrTable(&cgmc);
+		free ((char *) cgmc.ci);
+		free ((char *) cgmc.cd);
 	}
+
+	/*
+	 * load the default colors
+	 */
+	X11_UpdateColorTable_();
+	COLOUR_TABLE_DAMAGE = FALSE;
 
 	/*
 	 * set default foreground, background and border colour
@@ -364,6 +226,3 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 
 	return (OK);
 }
-
-
-

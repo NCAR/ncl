@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.9 1991-09-26 16:29:25 clyne Exp $
+ *	$Id: ctrans.c,v 1.10 1991-10-04 15:18:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.9 1991-09-26 16:29:25 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.10 1991-10-04 15:18:57 clyne Exp $";
 #endif
 
 
@@ -211,6 +211,10 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 		return(pre_err);
 	}
 
+	/*
+	 * intialize the default table
+	 */
+	InitDefault();	
 
 	ctransIsInit = TRUE;
 	return(OK);

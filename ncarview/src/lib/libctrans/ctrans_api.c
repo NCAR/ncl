@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.2 1991-09-26 16:29:31 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.3 1991-10-04 15:19:00 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -243,7 +243,7 @@ CtransSetMetafile(metafile)
 	/*
 	 *      open the metafile
 	 */
-	if ((cgm_fd = CGM_open(metafile, 1440, O_RDONLY)) < 0) {
+	if ((cgm_fd = CGM_open(metafile, 1440, "w")) < 0) {
 		CtransSetError_(ERR_OPEN_META);
 		return(-1);
 	}

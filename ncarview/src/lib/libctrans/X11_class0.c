@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.6 1991-08-16 10:54:40 clyne Exp $
+ *	$Id: X11_class0.c,v 1.7 1991-10-04 15:18:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -200,14 +200,6 @@ CGMC *c;
 		fontstruct = XLoadQueryFont(dpy, FONT);
 
 
-	/*
-	 *		intitialize color map if available
-	 *	select default colours for border, background and foreground 
-	 *	of window. These colours will be used if the user doesn't 
-	 *	supply his own colour table through the CGM.
-	 */
-	(void) init_color(commLineOpt.foreground, commLineOpt.background, 
-			(boolean) commLineOpt.reverse, &fg, &bg, &bd);
 
 
 	if (stand_Alone) {
@@ -260,6 +252,15 @@ CGMC *c;
 		XSetWindowBackground(dpy, win, bg);
 		XSetWindowBorder(dpy, win, bd);
 	}
+
+	/*
+	 *		intitialize color map if available
+	 *	select default colours for border, background and foreground 
+	 *	of window. These colours will be used if the user doesn't 
+	 *	supply his own colour table through the CGM.
+	 */
+	(void) init_color(commLineOpt.foreground, commLineOpt.background, 
+			(boolean) commLineOpt.reverse, &fg, &bg, &bd);
 
 	/*
 	 * Ensure that the window's colormap field points to the default
@@ -583,6 +584,7 @@ CGMC *c;
 
 	if (Batch) {
 		XFlush(dpy);
+		free_colors();
 		return(OK);
 	}
 
@@ -591,6 +593,7 @@ CGMC *c;
 	 */
 	if (!stand_Alone) {
 		XFlush(dpy);
+		free_colors();
 		return(OK);
 	}
 
@@ -659,6 +662,7 @@ CGMC *c;
 
 	} /* end while */
 
+	free_colors();
 	return(OK);
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.8 1991-09-26 16:28:56 clyne Exp $
+ *	$Id: X11_class4.c,v 1.9 1991-10-04 15:18:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -132,6 +132,11 @@ CGMC *c;
 	/*
 	 *	make sure line attributes are set
 	 */
+	if (Color_ava && COLOUR_TABLE_DAMAGE) {
+		X11_UpdateColorTable_();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
 	if (Color_ava && LINE_COLOUR_DAMAGE) {
 		(void) GCsetcolor(LINE_COLOUR, lineGC);
 		LINE_COLOUR_DAMAGE = FALSE;
@@ -245,6 +250,11 @@ CGMC *c;
 	/*
 	 *	make sure marker attributes are set
 	 */
+	if (Color_ava && COLOUR_TABLE_DAMAGE) {
+		X11_UpdateColorTable_();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
 	if (Color_ava && MARKER_COLOUR_DAMAGE) {
 		(void) GCsetcolor(MARKER_COLOUR, markerGC);
 		MARKER_COLOUR_DAMAGE = FALSE;
@@ -405,6 +415,11 @@ CGMC *c;
 	/*
 	 *	make sure polygon attributes are set
 	 */
+	if (Color_ava && COLOUR_TABLE_DAMAGE) {
+		X11_UpdateColorTable_();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
 	if (Color_ava && FILL_COLOUR_DAMAGE) { 
 		(void) GCsetcolor(FILL_COLOUR, polygonGC);
 		FILL_COLOUR_DAMAGE = FALSE;
@@ -697,16 +712,20 @@ CGMC *c;
 
 	Ct_err	x11_cell_array(), x11_non_rect_cell_array();
 
-
-	startedDrawing = TRUE;
-		
 	/*
 	 *	check any control elements
 	 */
+	if (Color_ava && COLOUR_TABLE_DAMAGE) {
+		X11_UpdateColorTable_();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
 	if (CLIP_DAMAGE) {
 		GCsetclipping();
 		CLIP_DAMAGE = FALSE;
 	}
+
+	startedDrawing = TRUE;
 
 	/*
  	 *	extract data from cgmc

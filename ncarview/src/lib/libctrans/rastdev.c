@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.3 1991-08-16 10:54:19 clyne Exp $
+ *	$Id: rastdev.c,v 1.4 1991-10-04 15:19:30 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -377,3 +377,34 @@ static	void	line_(x1, y1, x2, y2)
 	}
 }
 #endif
+
+
+void	rast_update_color_table()
+{
+	int	i,
+		total_damage;
+
+	extern	RasColrTab      colorTab;
+
+	/*
+	 * any time we change the colour table we "damage" the colour
+	 * attributes
+	 */
+	FILL_COLOUR_DAMAGE = TRUE;
+	MARKER_COLOUR_DAMAGE = TRUE;
+	LINE_COLOUR_DAMAGE = TRUE;
+
+	total_damage = COLOUR_TOTAL_DAMAGE;
+	for (i=0; i<total_damage && i<MAX_C_I && i<MAX_COLOR; i++) {
+
+		if (COLOUR_INDEX_DAMAGE(i)) {
+			colorTab.rgb[i].red =  COLOUR_INDEX_RED(i);
+			colorTab.rgb[i].green =  COLOUR_INDEX_GREEN(i);
+			colorTab.rgb[i].blue =  COLOUR_INDEX_BLUE(i);
+
+			COLOUR_TOTAL_DAMAGE--;
+			COLOUR_INDEX_DAMAGE(i) = FALSE;
+
+		}
+	}
+}
