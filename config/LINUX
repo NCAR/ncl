@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.15 2002-12-11 18:19:30 haley Exp $
+ *      $Id: LINUX,v 1.16 2003-08-04 04:17:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,7 +33,7 @@
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
-#define XLibrary -lXpm -lX11 -lXext
+#define XLibrary -lX11 -lXext
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include
