@@ -1352,18 +1352,23 @@ NhlErrorTypes _NclIDataPolyline
 ()
 #endif
 {
-	int nargs = 3;
+	int nargs = 4;
 	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
 	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
 	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        int total_=1;
+        int i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
+	NclScalar missing_;
 	NclScalar missing1;
 	NclScalar missing2;
 	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
 	float *x;
 	float *y;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -1378,8 +1383,18 @@ NhlErrorTypes _NclIDataPolyline
 			&type,
 			0);
 
-	x = (float*)NclGetArgValue(
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
 			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
 			nargs,
 			&n_dims1,
 			dimsizes1,
@@ -1389,7 +1404,7 @@ NhlErrorTypes _NclIDataPolyline
 			0);
 
 	y = (float*)NclGetArgValue(
-			2,
+			3,
 			nargs,
 			&n_dims2,
 			dimsizes2,
@@ -1398,49 +1413,107 @@ NhlErrorTypes _NclIDataPolyline
 			NULL,
 			0);
 
-	for(i = 0; i < n_dims; i++) {
-		total *= dimsizes[i];
-	}
-	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
-	if(has_missing) {
-		for( i = 0; i < total; i++) {
-			if(ncl_hlu_obj_ids[i] != missing.objval) {
-				tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
-				j++;
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlDataPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
 			}
 		}
 	} else {
-		for( i = 0; i < total; i++) {
-			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
-		}
-		j = total;
-	}
-	if(dimsizes1[0] != dimsizes2[0]) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: x and y parameters must have the same dimension size");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
-	}
-	if(has_missing1){
-		for( i = 0; i < n_dims1; i++) {
-			if(x[i] == missing1.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
-				return(NhlWARNING);
-			}
-		}
-	}
-	if(has_missing2){
-		for( i = 0; i < n_dims2; i++) {
-			if(y[i] == missing2.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
-				return(NhlWARNING);
-			}
-		}
-	}
-	for( i = 0; i < j; i++) {
-		if(tmp_hlu_ptr[i] != NULL) {
-			if(NhlDataPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,dimsizes1[0]) < NhlNOERROR) {
-				ret = NhlWARNING;
-			}
-		}
 	}
 	return(ret);
 }
@@ -1451,18 +1524,23 @@ NhlErrorTypes _NclINDCPolyline
 ()
 #endif
 {
-	int nargs = 3;
+	int nargs = 4;
 	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
 	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
 	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        int total_=1;
+        int i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
+	NclScalar missing_;
 	NclScalar missing1;
 	NclScalar missing2;
 	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
 	float *x;
 	float *y;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -1477,8 +1555,18 @@ NhlErrorTypes _NclINDCPolyline
 			&type,
 			0);
 
-	x = (float*)NclGetArgValue(
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
 			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
 			nargs,
 			&n_dims1,
 			dimsizes1,
@@ -1488,7 +1576,7 @@ NhlErrorTypes _NclINDCPolyline
 			0);
 
 	y = (float*)NclGetArgValue(
-			2,
+			3,
 			nargs,
 			&n_dims2,
 			dimsizes2,
@@ -1497,52 +1585,111 @@ NhlErrorTypes _NclINDCPolyline
 			NULL,
 			0);
 
-	for(i = 0; i < n_dims; i++) {
-		total *= dimsizes[i];
-	}
-	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
-	if(has_missing) {
-		for( i = 0; i < total; i++) {
-			if(ncl_hlu_obj_ids[i] != missing.objval) {
-				tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
-				j++;
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlNDCPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
 			}
 		}
 	} else {
-		for( i = 0; i < total; i++) {
-			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
-		}
-		j = total;
-	}
-	if(dimsizes1[0] != dimsizes2[0]) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: x and y parameters must have the same dimension size");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
-	}
-	if(has_missing1){
-		for( i = 0; i < n_dims1; i++) {
-			if(x[i] == missing1.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
-				return(NhlWARNING);
-			}
-		}
-	}
-	if(has_missing2){
-		for( i = 0; i < n_dims2; i++) {
-			if(y[i] == missing2.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
-				return(NhlWARNING);
-			}
-		}
-	}
-	for( i = 0; i < j; i++) {
-		if(tmp_hlu_ptr[i] != NULL) {
-			if(NhlNDCPolyline(tmp_hlu_ptr[i]->hlu.hlu_id,x,y,dimsizes1[0]) < NhlNOERROR) {
-				ret = NhlWARNING;
-			}
-		}
 	}
 	return(ret);
 }
+
 NhlErrorTypes _NclIClassName 
 #if	NhlNeedProto
 (void)
