@@ -1,191 +1,229 @@
 C
-C	$Id: cmpita.f,v 1.2 1993-01-13 23:16:30 haley Exp $
+C $Id: cmpita.f,v 1.3 1994-06-14 22:58:24 kennison Exp $
 C
-C
-C Declare fill routine external, or crash program
+C Declare fill routine external so compiler will know that it's a
+C subroutine instead of a real variable.
 C
         EXTERNAL FILL
-
-        PARAMETER(IGRD=15,IMAP=220000,NWRK=15000)
+C
+C IGRD specifies the number of degrees between each grid line and the
+C next.  IMAP specifies the size of the area-map array.  If you make
+C IGRD smaller than shown here, use a value which evenly divides both
+C 180 and 360 and remember to put the same value in the PARAMETER
+C statement in the routine FILL, below; in this case,  a larger value
+C of IMAP will be required and the program will run a lot longer.  For
+C IGRD=10, try IMAP=160000; for IGRD=5, try IMAP=220000; for IGRD=3,
+C try IMAP=390000; for IGRD=2, try IMAP=520000; for IGRD=1, IMAP=1500000
+C was not enough (and the program may have been stuck in a loop).
+C
+C NWRK specifies the sizes of the work arrays XWRK and YWRK, which are
+C passed to ARSCAM.
+C
+        PARAMETER(IGRD=15,IMAP=150000,NWRK=15000)
         PARAMETER(M=180/IGRD,N=360/IGRD)
-
+C
+C The global data array ZDAT is put in a common block so that it can be
+C accessed from the subroutine FILL.
+C
         COMMON /DAT1/ ZDAT(M,N)
-
-        INTEGER MAP(IMAP), IGRP(5), IAREA(5), ISPACE
+C
+C Declare the area-map array and the various other arrays required.
+C
+        INTEGER MAP(IMAP),IGRP(5),IAREA(5)
         REAL XWRK(NWRK),YWRK(NWRK),ZDAT
-        REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
-
+        REAL PLIM1(2),PLIM2(2),PLIM3(2),PLIM4(2)
+C
+C Define the contents of the map limits arrays.
+C
         DATA PLIM1 /0.,0./
         DATA PLIM2 /0.,0./
         DATA PLIM3 /0.,0./
         DATA PLIM4 /0.,0./
 C
-C Print out a warning about how time consuming this example is
+C If appropriate, print a warning about how time consuming this
+C example can be.
 C
-	WRITE (6,*) ' WARNING: This example may take 20 minutes'
-	WRITE (6,*) '          to execute on some machines.'
+        ITMP=IGRD
 C
-C Generate some data to base color fill on
+        IF (ITMP.LT.15) THEN
+          WRITE (6,*) ' WARNING: This example may take 20 minutes'
+          WRITE (6,*) '          to execute on some machines.'
+        END IF
 C
-        CALL GENDAT(ZDAT,M,M,N,1.,15.,1.,15.)
+C Generate some data to base color fill on.  Note that these data are
+C unrealistic in that no attempt has been made to achieve continuity
+C at the longitudes -180 and +180 or at the poles.
 C
-C Make sure that data at -180 is the same as data at +180
-C
-	DO 10, I=1,M
-	   ZDAT(I,N) = ZDAT (I,1)
- 10	CONTINUE
+        CALL GENDAT(ZDAT,M,M,N,25,25,1.,15.)
 C
 C Open GKS.
 C
         CALL OPNGKS
 C
-C Set up color table
+C Define the color table.
 C
         CALL COLOR
 C
-C Set the outline-dataset parameter.
-C
-      CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
-C
 C Set the projection-type parameters.
 C
-      CALL MAPROJ ('CE',0.,0.,0.)
+        CALL MAPROJ ('CE',0.,0.,0.)
 C
-C Set the limits parameters.
+C Set the Ezmap "limits" parameters.
 C
-      CALL MAPSET ('MA',PLIM1,PLIM2,PLIM3,PLIM4)
+        CALL MAPSET ('MA',PLIM1,PLIM2,PLIM3,PLIM4)
 C
-C Initalize areas, initialize ezmap
+C Change the Ezmap parameter 'MV' to prevent points from being dropped
+C when the final outline is drawn.
 C
-        CALL ARINAM (MAP, IMAP)
+        CALL MPSETI ('MV',1)
+C
+C Initalize Areas and Ezmap.
+C
+        CALL ARINAM (MAP,IMAP)
         CALL MAPINT
 C
-C Add geographic outlines to area map
+C Add geographic outlines to area map, using only continental outlines.
 C
+        CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','CO')
         CALL MAPBLA (MAP)
+C
+C Add latitude lines to the area map.
+C
+        DO 102 I=-90,90,IGRD
+          DO 101 J=-180,180-IGRD,IGRD
+            IDLFT = (I     +91) * 1000 + (J+181)
+            IDRGT = (I-IGRD+91) * 1000 + (J+181)
+            IF (I.EQ.-90) IDRGT=0
+            IF (I.EQ. 90) IDLFT=0
+            CALL MAPITA(REAL(I),REAL(J)     ,0,MAP,5,IDLFT,IDRGT)
+            CALL MAPITA(REAL(I),REAL(J+IGRD),1,MAP,5,IDLFT,IDRGT)
+            CALL MAPIQA(MAP,5,IDLFT,IDRGT)
+  101     CONTINUE
+  102   CONTINUE
 
 C
-C Add longitude lines at 2 degree intervals over the states to area map
+C Add longitude lines to the area map.
 C
-        DO 1, I=-90,90,IGRD
-          DO 2 J=-180, 180-IGRD,IGRD
-            LEFT  = (J+181)*1000 + (I+91)
-            CALL MAPITA(REAL(I),REAL(J)     ,0,MAP,5,LEFT,0)
-            CALL MAPITA(REAL(I),REAL(J+IGRD),1,MAP,5,LEFT,0)
-            CALL MAPIQA(MAP,5,LEFT,0)
- 2        CONTINUE
- 1      CONTINUE
-
+        DO 104 J=-180,180,IGRD
+          DO 103 I=-90,90-IGRD,IGRD
+            IDLFT = (I+91) * 1000 + (J-IGRD+181)
+            IDRGT = (I+91) * 1000 + (J     +181)
+            IF (J.EQ.-180) IDLFT=0
+            IF (J.EQ. 180) IDRGT=0
+            CALL MAPITA(REAL(I),     REAL(J),0,MAP,5,IDLFT,IDRGT)
+            CALL MAPITA(REAL(I+IGRD),REAL(J),1,MAP,5,IDLFT,IDRGT)
+            CALL MAPIQA(MAP,5,IDLFT,IDRGT)
+  103     CONTINUE
+  104   CONTINUE
 C
-C Add latitude lines at 2 degree intervals over the states to area map
-C
-        DO 3, I=-180, 180,IGRD
-          DO 4 J=-90,90-IGRD,IGRD
-            CALL MAPITA(REAL(J),     REAL(I),0,MAP,5,0,0)
-            CALL MAPITA(REAL(J+IGRD),REAL(I),1,MAP,5,0,0)
-            CALL MAPIQA(MAP,5,0,0)
- 4        CONTINUE
- 3      CONTINUE
-C
-C Fill in areas over land with colors
+C Fill in areas over land with colors.
 C
         CALL GSFAIS(1)
         CALL ARSCAM(MAP,XWRK,YWRK,NWRK,IAREA,IGRP,5,FILL)
 C
-C Draw perimeter
+C Draw the perimeter.
 C
         CALL MAPSTI('LA - LABEL FLAG',0)
         CALL MAPLBL
 C
-C Draw map over area plot
+C Draw a map over the output from Areas, using political outlines.
 C
+        CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
         CALL MAPLOT
 C
-C Report how much space was used in the area map
+C Report how much space was used in the area map.
 C
-        ISPACE=MAP(1) - MAP(6) + MAP(5)
-        WRITE (6,*) 'Area Map Workspace Used: ',ISPACE
+        ITMP=MAP(1)-MAP(6)+MAP(5)+1
+        WRITE (6,*) 'Area Map Workspace Used: ',ITMP
 C
 C Put the label at the top of the plot.
 C
-      CALL GETSET (VPL,VPR,VPB,VPT,WL,WR,WB,WT,LOG)
-      CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
-      CALL GSLWSC(2.)
-      CALL PLCHHQ (.5,VPT+.02,'Filling Gridded Data over Landmasses',
-     +          .017,0.,0.)
+        CALL GETSET (VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,LOG)
+        CALL GSLWSC(2.)
+        CALL PLCHHQ (CFUX(.5),CFUY(VPT+.02),
+     +               'Filling Gridded Data over Landmasses',.017,0.,0.)
 C
 C Advance the frame.
 C
-      CALL FRAME
+        CALL FRAME
 C
 C Close GKS.
 C
-      CALL CLSGKS
+        CALL CLSGKS
 C
 C Done.
 C
-      STOP
+        STOP
 C
       END
 
-        SUBROUTINE FILL(XWRK,YWRK,NWRK,IAREA,IGRP,NSIZE)
 
-        PARAMETER(IGRD=15,M=180/IGRD,N=360/IGRD)
 
-C bring in the data array to define colors
-        COMMON /DAT1/ ZDAT(M,N)
-
-        REAL XWRK(NWRK), YWRK(NWRK), ZDAT
-        INTEGER IAREA(NSIZE),IGRP(NSIZE)
-
+      SUBROUTINE FILL(XWRK,YWRK,NWRK,IAREA,IGRP,NSIZE)
 C
-C Group 5 is the group of 2 degree grid lines, group 1 are political and
+        PARAMETER(IGRD=15,M=180/IGRD,N=360/IGRD)
+C
+C Bring in the data array to define colors.
+C
+        COMMON /DAT1/ ZDAT(M,N)
+C
+        REAL XWRK(NWRK),YWRK(NWRK),ZDAT
+        INTEGER IAREA(NSIZE),IGRP(NSIZE)
+C
+C Group 5 is the group containing grid lines and group 1 contains
 C continental outlines.
 C
         IAREA1=-1
         IAREA5=-1
 C
-C If there are less than 3 points defining the area, return to arscam
+C If there are less than 3 points defining the area, return to ARSCAM.
 C
         IF (NWRK.LE.3) RETURN
 C
-C Check each of the group and area identifiers for the current area
+C Check each of the group and area identifiers for the current area.
 C
-        DO 10, I=1,NSIZE
-           IF (IGRP(I).EQ.1) IAREA1=IAREA(I)
-           IF (IGRP(I).EQ.5) IAREA5=IAREA(I)
- 10     CONTINUE
+        DO 101 I=1,NSIZE
+          IF (IGRP(I).EQ.1) IAREA1=IAREA(I)
+          IF (IGRP(I).EQ.5) IAREA5=IAREA(I)
+  101   CONTINUE
 C
-C If the area identifier is over the globe
+C If the area identifier is over the globe ...
 C
         IF (IAREA1.GT.0) THEN
 C
-C If the color id for the area is 1, then the area is over ocean and
-C don't fill area
+C If the color id for the area is 1, then the area is over ocean, so
+C we don't fill it; otherwise ...
 C
           IF (MAPACI(IAREA1).NE.1.AND.IAREA5.GT.0) THEN
 C
 C At this point you need to invert your area identifier function to 
 C retrieve your latitude and longitude values (or your data array
-C indicies) so that you can color fill based on them.
+C indices) so that you can color fill based on them.
 C
-             LAT = MOD(IAREA5,1000)
-             I = LAT/IGRD + 1
-             LON = IAREA5/1000
-             J = LON/IGRD + 1
+            LAT = IAREA5/1000
+            I = LAT/IGRD + 1
 C
-C Our data is predefined to have values between 1. and 15 (chosen
-C because we have 15 colors defined in subroutine COLOR.
-C color index 1 is white, so we set the color index to start at 2.
+            LON = MOD(IAREA5,1000)
+            J = LON/IGRD + 1
 C
-             ICLR = INT(ZDAT(I,J))+1
-             CALL GSFACI(ICLR)
-             CALL GFA(NWRK-1,XWRK,YWRK)
+C Our data is predefined to have values between 1 and 15 (chosen
+C because we have 15 colors defined in subroutine COLOR).  Color
+C index 1 is white, so we set the color index to start at 2.
+C
+            ICLR = INT(ZDAT(I,J))+1
+            CALL GSFACI(ICLR)
+            CALL GFA(NWRK-1,XWRK,YWRK)
+C
           ENDIF
+C
         ENDIF
-
+C
         RETURN
-        END
+C
+      END
+
+
+
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
 C This is a routine to generate test data for two-dimensional graphics
@@ -243,6 +281,9 @@ C
         RETURN
 C
       END
+
+
+
       FUNCTION FRAN ()
         DIMENSION RSEQ (100)
         SAVE ISEQ
@@ -261,47 +302,52 @@ C
         FRAN=RSEQ(ISEQ)
         RETURN
       END
+
+
+
       SUBROUTINE COLOR
 C
-C     BACKGROUND COLOR
-C     BLACK
+C Background color (black):
+C
       CALL GSCR(1,0,0.,0.,0.)
 C
-C     FORGROUND COLORS
+C Foreground colors:
+C
 C White
-      CALL GSCR(1,  1, 1.0, 1.0, 1.0)
+      CALL GSCR (1,  1, 1.00, 1.00, 1.00)
 C Red
-      CALL GSCR(1,  2, 0.9, 0.25, 0.0)
+      CALL GSCR (1,  2, 0.90, 0.25, 0.00)
 C OrangeRed
-      CALL GSCR(1,  3, 1.0, 0.0, 0.2)
+      CALL GSCR (1,  3, 1.00, 0.00, 0.20)
 C Orange
-      CALL GSCR(1,  4, 1.0, 0.65, 0.0)
+      CALL GSCR (1,  4, 1.00, 0.65, 0.00)
 C Yellow
-      CALL GSCR(1,  5, 1.0, 1.0, 0.0)
+      CALL GSCR (1,  5, 1.00, 1.00, 0.00)
 C GreenYellow
-      CALL GSCR(1,  6, 0.7, 1.0, 0.2)
+      CALL GSCR (1,  6, 0.70, 1.00, 0.20)
 C Chartreuse
-      CALL GSCR(1,  7, 0.5, 1.0, 0.0)
+      CALL GSCR (1,  7, 0.50, 1.00, 0.00)
 C Celeste
-      CALL GSCR(1,  8, 0.2, 1.0, 0.5)
+      CALL GSCR (1,  8, 0.20, 1.00, 0.50)
 C Green
-      CALL GSCR(1,  9, 0.2, 0.8, 0.2)
+      CALL GSCR (1,  9, 0.20, 0.80, 0.20)
 C Aqua
-      CALL GSCR(1, 10, 0.0, 0.9, 1.0)
+      CALL GSCR (1, 10, 0.00, 0.90, 1.00)
 C DeepSkyBlue
-      CALL GSCR(1, 11, 0.0, 0.75, 1.0)
+      CALL GSCR (1, 11, 0.00, 0.75, 1.00)
 C RoyalBlue
-      CALL GSCR(1, 12, 0.25, 0.45, 0.95)
+      CALL GSCR (1, 12, 0.25, 0.45, 0.95)
 C SlateBlue
-      CALL GSCR(1, 13, 0.4, 0.35, 0.8)
+      CALL GSCR (1, 13, 0.40, 0.35, 0.80)
 C DarkViolet
-      CALL GSCR(1, 14, 0.6, 0.0, 0.8)
+      CALL GSCR (1, 14, 0.60, 0.00, 0.80)
 C Orchid
-      CALL GSCR(1, 15, 0.85, 0.45, 0.8)
+      CALL GSCR (1, 15, 0.85, 0.45, 0.80)
 C Lavender
-      CALL GSCR(1, 16, 0.8, 0.8, 1.0)
+      CALL GSCR (1, 16, 0.80, 0.80, 1.00)
 C Gray
-      CALL GSCR(1, 17, 0.7, 0.7, 0.7)
+      CALL GSCR (1, 17, 0.70, 0.70, 0.70)
+C
 C Done.
 C
         RETURN
