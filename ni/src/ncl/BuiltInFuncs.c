@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.102 1998-09-02 22:19:39 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.103 1998-09-16 17:20:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -444,6 +444,10 @@ NhlErrorTypes _NclIGetFileVarNames
 	}
 */
 	tmp = _NclGetFileVarInfoList(file_q);
+	if(tmp==NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
+		return(NhlFATAL);
+	} 
 	step = tmp;
 	i = 0;
 	while(step != NULL) {
