@@ -1,5 +1,5 @@
 /*
- *	$Id: abekas.c,v 1.1 1992-09-10 20:10:03 don Exp $
+ *	$Id: abekas.c,v 1.2 1992-09-17 18:06:08 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -178,6 +178,14 @@ AbekasOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
+
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	ras->file_nx     = RAS_ABEKAS_NX;
 	ras->file_ny     = RAS_ABEKAS_NY;

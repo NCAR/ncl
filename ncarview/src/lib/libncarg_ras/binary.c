@@ -1,5 +1,5 @@
 /*
- *	$Id: binary.c,v 1.1 1992-09-14 22:18:07 don Exp $
+ *	$Id: binary.c,v 1.2 1992-09-17 18:06:50 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -190,6 +190,26 @@ int
 BinaryClose(ras)
 	Raster	*ras;
 {
+	int	status;
+
+	if (ras->fp != (FILE *) NULL) {
+		if(ras->fp != stdin && ras->fp != stdout) {
+			status = fclose(ras->fp);
+			if (status != 0) {
+				ESprintf(errno, "BinaryClose()");
+				return(RAS_ERROR);
+			}
+		}
+	}
+	else {
+		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
+			status = close(ras->fd);
+			if (status != 0) {
+				ESprintf(errno, "BinaryClose()");
+				return(RAS_ERROR);
+			}
+		}
+	}
 	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
 	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
 	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);

@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.6 1992-09-10 21:01:43 don Exp $ */
+/* $Id: avsraster.c,v 1.7 1992-09-17 18:06:27 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -219,8 +219,13 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
-	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
-	(void) strcpy(ras->text, comment);
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	ras->nx		= nx;
 	ras->ny		= ny;
