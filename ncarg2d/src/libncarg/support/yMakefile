@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1999-09-21 17:07:39 kennison Exp $
+#	$Id: yMakefile,v 1.12 2004-08-12 22:20:27 haley Exp $
 #
 MYNAME	= support
 
@@ -31,6 +31,12 @@ PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGllu.a,$(OBJECTS))
+
+#if defined(Darwin)
+idgrid.o: idgrid.f
+	$(F77) $(FCOPTIONS) -g -c idgrid.f
+#endif
+
 
 bcbkd.o : bccom.h
 bccurv.o : bccom.h
