@@ -1,8 +1,8 @@
-.TH CONRAN_FAMILY_PARAMS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Conran_family_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-conran_family_params - This document briefly describes all Conran
+Conran_family_params - This document briefly describes all Conran
 internal parameters.
 .SH DESCRIPTION 
 There are three Conran entries, CONRAN, CONRAQ, and CONRAS.  CONRAN
