@@ -1,178 +1,196 @@
+
 How to download and build NCAR Graphics 4.4.0 from source code
+==============================================================
 
-    The latest version of this file can be found at:
-        http://ngwww.ucar.edu/ng/installsrc.html
+The latest version of this document can be found at:
 
+    http://ngwwww.ucar.edu/ng/installsrc.html
 
-   * On what systems can you build NCAR Graphics?
-   * Download the source code for NCAR Graphics
-   * Download the source code or binaries for HDF Version 4
-   * Make sure you have other software libraries required
-   * Using compilers other than Fortran 77 and ANSI C
-   * Build NCAR Graphics from source code
-        o Run Configure script
-        o Modify configuration files to recognize your system (may not be
-          necessary)
-        o Modify system configuration file to change default values (may not
-          be necessary)
-             + Special note for AIX systems
-             + Special note for IRIX systems
-             + Special note for LINUX systems
-        o Start the build and install process
-   * Set up your environment to use NCAR Graphics
-   * Test the installation
-   * General information on build process
-        o Configuration files
-        o Restarting the installation
-        o ymake
-        o machine-dependent support routines
+Table of Contents
 
-------------------------------------------------------------------------
+ - On what systems can you build NCAR Graphics?
+ - Download the source code for NCAR Graphics
+ - Download the source code or binaries for HDF Version 4
+ - Make sure you have other software libraries required
+ - Using compilers other than Fortran 77 and ANSI C
+ - Build NCAR Graphics from source code
+   - Run Configure script
+   - Modify configuration files to recognize your system
+   - Modify system configuration file to change default values
+     - Special note for AIX systems
+     - Special note for IRIX systems
+     - Special note for Linux systems
+ - Start the build and install process
+ - Set up your environment to use NCAR Graphics
+ - Test the installation
+ - General information on build process
+   - Configuration files
+   - Restarting the installation
+   - ymake
+   - machine-dependent support routines
+
+----------------------------------------------------------------------
 
 On what systems can you build NCAR Graphics?
+============================================
 
 NCAR Graphics can only be build on UNIX systems. The source code
 provided here has been successfully built using native compilers on
 Suns, SGIs (32 or 64-bit mode), IBMs running AIX (32 or 64-bit mode),
-HPs, and Compaq Alphas.  It has also been built on PCs running Cygwin,
-Solaris, or LINUX (RedHat, Debian, Mandrake, SuSE) using the GNU
-or Portland Group compilers, and on a MacOSX system using the GNU or
-Absoft compilers.
+HPs, and Compaq Alphas. It has also been built on PCs running Cygwin,
+Solaris, or Linux (Fedora, RedHat, Debian, Suse, Mandrake, Yellow Dog)
+using several compilers (GNU, Portland Group, Intel, Pathscale,
+Lahey), and on a MacOSX system using the GNU or Absoft compilers.
 
-It has been built on Crays using Cray arithmetic, but not Crays with
-IEEE arithmetic.
+We have not built NCAR Graphics on a Cray for a few years now, so we
+can make no guarantees about Cray systems.
 
 If you don't see your system listed above, don't despair. If it's a
 UNIX system with a C and Fortran compiler, and it's similar in design
 to some of the UNIX systems listed above, then you probably won't have
 too much trouble porting NCAR Graphics.
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Download the source code for NCAR Graphics
+==========================================
 
 Please note that accessing, downloading, and/or using NCAR Graphics
 implies acceptance of the GNU General Public License. To download the
 NCAR Graphics source code, follow the instructions at the URL:
 
-     http://ngwww.ucar.edu/ng/download.html
+    http://ngwww.ucar.edu/ng/download.html
 
-The NCAR Graphics source code that you download will be a
-gzipped tar file.
+The NCAR Graphics source code that you download will be a single
+compressed tar file. Move the "ncarg-4.4.0.src.tar.gz" file to a
+temporary directory where you have plenty of disk space (around 250
+megabytes to hold all of the source code, object files, binaries, and
+so on). Then, uncompress and un-tar the file as follows:
 
-Once you download "ncarg-4.4.0.src.tar.gz", move it to a temporary
-directory where you have plenty of disk space (around 200 megabytes to
-hold all of the source code, object files, binaries, and so on). Then,
-gunzip and un-tar the file as follows:
+    gunzip ncarg-4.4.0.src.tar.gz
+    tar -xvf ncarg-4.4.0.src.tar
 
-     gunzip ncarg-4.4.0.src.tar.gz
-     tar -xvf ncarg-4.4.0.src.tar
-
-The above steps will create a directory called "ncarg-4.4.0". Set the
+The above steps will create a directory called "ncarg-4.4.0".  Set the
 environment variable NCARG to the name of this directory. For purposes
 of convenience, we use the notation $NCARG to mean the top level of
-the NCAR Graphics source tree. For example, if you untarred the files
-from the directory /usr/local/src, then you would do the following:
+the NCAR Graphics source tree.
 
-     setenv NCARG /usr/local/src/ncarg-4.4.0
+For example, if you untarred the files from the directory
+/usr/local/src, then you would do the following:
 
-------------------------------------------------------------------------
+    setenv NCARG /usr/local/src/ncarg-4.4.0
+
+----------------------------------------------------------------------
 
 Download the source code or binaries for HDF Version 4
+======================================================
 
 If you want HDF support built into NCAR Graphics, you will need to
 install the HDF Version 4 libraries and include files on your system
-first.  Including HDF support in NCAR Graphics enables you to convert
-NCGMs to HDF raster files. If you don't need HDF 4 support, or you
-don't care what HDF is, then you can skip this section.
+first. Including HDF support in NCAR Graphics enables you to convert
+NCGMs to HDF raster files. If you don't need HDF 4 support, or you don't
+care what HDF is, then you can skip this section.
 
 HDF Version 4 is available from NCSA at:
 
-     http://hdf.ncsa.uiuc.edu/hdf4.html
+    http://hdf.ncsa.uiuc.edu/hdf4.html
 
 Note that some of the NCAR Graphics source files include a few of the
 HDF include files, and they look for these include files in a
 subdirectory called "hdf". Make sure the HDF include files are indeed
 in a subdirectory called "hdf" before you build and install NCAR
-Graphics. When you run the NCAR Graphics Configure script and it asks
-you to enter local include search paths, be sure to list the include
-file path name leading up to the HDF libraries.
+Graphics.  When you run the NCAR Graphics
+"Configure" script and it asks you to enter local include search
+paths, be sure to list the include file path name leading up to the
+"hdf" subdirectory.
 
 For example, if the HDF include files are in /usr/local/include/hdf,
 then enter "/usr/local/include" when Configure asks you to enter local
-include search paths. The same is true for when it asks you to enter
-local library search paths. You must include the path that contains
-the HDF libraries.
+include search paths. If the HDF libraries are in /usr/local/lib, then
+enter "/usr/local/lib" when Configure asks you to enter the local
+library search path.
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Make sure you have other software libraries required
+====================================================
 
 In order to build some of the X applications that are part of NCAR
 Graphics, you must have some of the X11 libraries installed on your
 system. As a minimum, you should have the following libraries (and
 associated include files) installed on your system:
 
-   * X11
-   * Xaw
-   * Xext
-   * Xm
-   * Xmu
-   * Xt
 
-------------------------------------------------------------------------
+ - X11
+ - Xaw
+ - Xext
+ - Xm
+ - Xmu
+ - Xt
+
+----------------------------------------------------------------------
 
 Using compilers other than Fortran 77 and ANSI C
+================================================
 
 We recommend that you use the native Fortran 77 and ANSI C compilers
 to build NCAR Graphics. If you want to build NCARG using a different
 compiler (for example, f90), then you will need to modify the
 appropriate configuration file as mentioned below. You may also need
 to set the environment variables FC and CC to the compilers you want
-to use. For example:
+to use.  For example:
 
-     setenv FC f90
-     setenv CC gcc
 
-------------------------------------------------------------------------
+    setenv FC f90
+    setenv CC gcc
+
+----------------------------------------------------------------------
 
 Build NCAR Graphics from source code
+====================================
 
-In order to build NCAR Graphics from source, you must have a Fortran
-77 or 90 compiler and an ANSI C compiler.
+In order to build NCAR Graphics from source, you must have a
+Fortran 77 or 90 compiler and an ANSI C compiler. 
 
 Here are the general steps for building NCAR Graphics from source:
 
-  1. Run Configure script
-  2. Modify configuration files to recognize your system (only needed
-     if Configure doesn't recognize your system)
-  3. Modify system configuration file to change default values (won't
-     be necessary if you like all the default settings)
-  4. Start the build and install process
-  5. Set up your environment to use NCAR Graphics
-  6. Test the installation
+ - Run Configure script
 
-The full instructions are also available in a file called "INSTALL" in
-the $NCARG directory.
+ - Modify configuration files to recognize your system (only needed if
+   Configure doesn't recognize your system)
 
-------------------------------------------------------------------------
+ - Modify system configuration file to change default values (won't be
+   necessary if you like all the default settings)
+
+ - Start the build and install process
+
+ - Set up your environment to use NCAR Graphics
+
+ - Test the installation
+
+
+The full instructions are also available in a file called
+"INSTALL_README" in the $NCARG directory.
+
+----------------------------------------------------------------------
 
 Run Configure script
+====================
 
-Before you build and install NCAR Graphics, you need to run a script
-called "Configure" to see if your system is recognized by the NCAR
-Graphics make system. This script will ask you several questions, and
-it will also allow you to specify directories for installation.
+Before you build and install NCAR Graphics, you need to run a
+script called "Configure" to see if your system is recognized by the
+NCAR Graphics make system. This script will ask you several questions,
+and it will also allow you to specify directories for installation.
 
 Enter the following commands to run this script (you must be running
 csh):
 
-     cd $NCARG
-     ./Configure -v
+    cd $NCARG
+    ./Configure  -v
 
-If Configure doesn't recognize your system, it will quit right away
-with an error message. Otherwise, it will start asking you several
-questions.
+If Configure doesn't recognize your system, it will quit right
+away with an error message. Otherwise, it will start asking you
+several questions.
 
 If it quits with an error message that indicates it doesn't recognize
 your system, then you need to go to the section "Modify configuration
@@ -181,44 +199,51 @@ files to recognize your system" before running Configure again.
 If Configure does recognize your system, then answer all of the
 questions about where you want the software installed, whether you
 want to use a Fortran 90 compiler, whether you want X11 support and/or
-HDF support, and so on. Note: if you do not have the HDF libraries
+HDF support, and so on.  Note: if you do not have the HDF libraries
 installed on your system, and/or you don't think you'll be needing HDF
 support, then answer "no" to the question about building HDF support
 into the raster library.
 
 Once you have finished running Configure, you should get a message
 indicating that the configuration process is complete, and that you
-can start building and installing the software. First verify that you
-have the correct compilers, options, and paths by typing:
+can start building and installing the software.
 
-     make Info
+First verify that you have the correct compilers, options, and paths
+by typing:
+
+    make  Info
 
 If everything looks okay, then you can skip the next few sections and
 go directly to "Start the build and install process."
 
 If the installation paths look wrong, then rerun Configure and reenter
-the installation paths.
+the installation paths. 
 
 If something else looks wrong, like the name of the compilers or the
 compiler options listed, then go to the section "Modify system
 configuration file to change default values."
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Modify configuration files to recognize your system
+===================================================
 
 You only need to read this section if the Configure script did not
-recognize your system. (We'll refer to this as an unsupported system.)
-If the Configure script recognized your system, then skip to the
-section "Modify system configuration file to change default values".
+recognize your system. (We'll refer to this as an "unsupported
+system".) If the Configure script recognized your system, then skip to
+the section "Modify system configuration file to change default
+values".
 
 The four steps you'll need to follow before building NCAR Graphics on
 an unsupported system are:
 
-  1. Modify the "ymake" file to recognize your system.
-  2. Set up a configuration file.
-  3. Modify the "c.h" include file (if necessary).
-  4. Modify machine-dependent routines (if necessary).
+ 1. Modify the "ymake" file to recognize your system.
+
+ 2. Set up a configuration file.
+
+ 3. Modify the "c.h" include file (if necessary).
+
+ 4. Modify machine-dependent routines (if necessary).
 
 Once you've completed these four steps, then you need to run the
 Configure script again as described in the "Run Configure script"
@@ -226,8 +251,9 @@ section.
 
 1. Modify the "ymake" file to recognize your system
 
-For the first step, modify the file $NCARG/config/ymake and go to the
-lines that read:
+For the first step, modify the file $NCARG/config/ymake and go
+to the lines that read:
+
 
     #   Figure out what kind of system we are on. We need to know the OS
     #   and the machine architecture.
@@ -238,7 +264,7 @@ the various options that uname reports on your system, add your
 machine architecture and operating system names to the case statements
 that follow in the same manner as the other systems are done. You also
 need to come up with a name for your configuration file. This is the
-value you'll give to the "sysincs" variable.  An example will be
+value you'll give to the "sysincs" variable. An example will be
 provided below after step 2.
 
 2. Set up a configuration file
@@ -246,19 +272,19 @@ provided below after step 2.
 For the second step, cd to $NCARG/config and prepare a configuration
 file for your system that has the same name you used for the "sysincs"
 variable in the ymake file. Use one of the existing configuration
-files as a foundation (for example, "Sun4Solaris"). You will notice
+files as a foundation (for example, "Sun4Solaris").  You will notice
 several macros being defined in the configuration file. You only need
 to define a macro if you want it to be something different than what
 is defined in the "Template" file. The Template file is where all the
 default values are set. For example, the default Fortran compiler is
-set to "f77" in the Template file.  If your Fortran compiler is called
+set to "f77" in the Template file. If your Fortran compiler is called
 "g77", then you would add the following line to your configuration
 file:
 
     #define    FCompiler       g77
 
 To see what other macros are available and what the default values are
-set to, see the Template file. In particular, you may need to change
+set to, see the Template file.  In particular, you may need to change
 the following macros:
 
     CCompiler
@@ -266,6 +292,7 @@ the following macros:
     ExtraSysLibraries
     CcOptions
     FcOptions
+
 
 Example on how to modify ymake file and set up configuration file
 
@@ -310,20 +337,23 @@ where appropriate to get the correct major and minor operating system
 version numbers defined.
 
 Let's further assume that this system is similar to a Sun workstation
-running Solaris, so use the Sun4Solaris configuration file as a foundation:
+running Solaris, so use the Sun4Solaris configuration file as a
+foundation:
 
-     cd $NCARG/config
-     cp Sun4Solaris Sloth
+    cd  $NCARG/config
+    cp  Sun4Solaris  Sloth
 
 The file name "Sloth" is used because this is the value we gave to the
-"sysincs" variable above. Make any obvious changes to the file "Sloth". As
-mentioned above, you may need to change the following macros:
+"sysincs" variable above. Make any obvious changes to the file
+"Sloth". As mentioned above, you may need to change the following
+macros:
 
     CCompiler
     FCompiler
     ExtraSysLibraries
     CcOptions
     FcOptions
+
 
 3. Modify the "c.h" include file
 
@@ -334,9 +364,9 @@ require an underscore after a Fortran routine name, while others
 require the name to be in uppercase), the installation system is
 programmed to apply the macro "NGCALLF" to all Fortran-called C
 code. In porting to a new system, you may need to modify this macro in
-the "$NCARG/common/src/libncarg_c/c.h" include file. The default is to
-add an underscore after the Fortran routine name, so if this is what
-your system does, you don't need to modify this file.
+the "$NCARG/common/src/libncarg_c/c.h" include file.  The default
+is to add an underscore after the Fortran routine name, so if this
+is what your system does, you don't need to modify this file.
 
 4. Modify machine-dependent routines
 
@@ -356,16 +386,16 @@ The routines in question are:
 
 These routines are referred to as "low-level support routines" in the
 remainder of this section. Complete functional descriptions for these
-routines appear in the section "Machine-dependent support routines".
-Examples of implementations of all of these subroutines except G01MIO
-are given in the directory:
+routines appear in the section "Machine-dependent support
+routines". Examples of implementations of all of these subroutines
+except G01MIO are given in the directory:
 
-     $NCARG/common/src/libncarg_c
+    $NCARG/common/src/libncarg_c
 
 A Fortran implementation of the support routine G01MIO is contained in
 the directory:
 
-     $NCARG/ncarg2d/src/libncarg_gks/bwi
+    $NCARG/ncarg2d/src/libncarg_gks/bwi
 
 G01MIO is the basic I/O routine for NCAR's GKS package, and it is not
 used anywhere else but in that package.
@@ -374,21 +404,21 @@ The subroutines in the above two directories are examples only. These
 examples may help you, and some may actually run on your machine, but
 care must be taken to ensure that the implemented routines satisfy the
 functional descriptions as given in the "Machine-dependent support
-routines" section.  Some of the examples given are coded in C.
+routines" section. Some of the examples given are coded in C.
 
 There is source code for creating an executable for testing
 implementations of the low-level routines in the directory:
 
-     $NCARG/ncarg2d/src/bin/impltest
+    $NCARG/ncarg2d/src/bin/impltest
 
-The source in this directory may require changes only when moving to a
-machine with a word size other than 32 or 64.
+The source in this directory may require changes only when
+moving to a machine with a word size other than 32 or 64.
 
 This directory contains a program called "tlocal" that can be used to
 test the implementations of IOR, IAND, ISHIFT, GBYTES, and
 SBYTES. Read the prologue documentation in the code for tlocal for
 implementation instructions. Success or failure messages will be
-issued to Fortran unit 6.  There are no tests for I1MACH and R1MACH,
+issued to Fortran unit 6. There are no tests for I1MACH and R1MACH,
 but the success of the tlocal test depends on proper implementation of
 I1MACH and R1MACH. Constants for I1MACH and R1MACH for a large number
 of computers appear in the comment cards of I1MACH and R1MACH. If
@@ -403,33 +433,36 @@ Since many of the low-level support routines are executed frequently
 throughout the package, efficient versions are desirable. There are
 portable Fortran versions of GBYTES and SBYTES in the directory:
 
-     $NCARG/common/src/libncarg_c
+    $NCARG/common/src/libncarg_c
 
 but they run very slowly. GBYTES and SBYTES are used primarily in the
 NCGM translator; machine-language versions of these routines could
 greatly speed up the translator. Machine-language versions of IAND,
 IOR, and ISHIFT are also desirable.
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Modify system configuration file to change default values
+=========================================================
 
 Once you've run "./Configure" and it successfully recognizes your
 system, you can type:
 
-     cd $NCARG
-     make Info
+    cd $NCARG
+    make Info
 
-to make sure your configuration is set up properly. The "make Info"
-command will report the installation directories, what C and Fortran
-compilers are being used, and what options to the compilers are being
-set. The name of the system configuration file being used will also
-appear on the line that starts with "System File".
+to make sure your configuration is set up properly.  The "make Info"
+command will report the installation directories, what C and
+Fortran compilers are being used, and what options to the compilers
+are being set. The name of the system configuration file being used
+will also appear on the line that starts with "System File".
 
 If you need to change the compilers or the options used, then modify
-the file "$NCARG/config/system_file", where system_file is the system
-configuration file being used. In particular, you may want to pay
-attention to how the following macros are being set:
+the file "$NCARG/config/system_file", where "system_file" is the
+system configuration file being used.
+
+In particular, you may want to pay attention to how the following
+macros are being set:
 
     CCompiler
     FCompiler
@@ -437,19 +470,19 @@ attention to how the following macros are being set:
     CcOptions
     FcOptions
 
-and change them as desired.
+and change them as desired. 
 
 If you don't see these macros being defined in your system
 configuration file, then that means that the default value, which is
-defined in the $NCARG/config/Template file, is being used. To change
-the default, just add it to your system configuration file with the
-new value.
+defined in the $NCARG/config/Template file, is being used. To
+change the default, just add it to your system configuration file with
+the new value.
 
 For example, on Sun systems, the default "f77" compiler is used. If
 you want to change this to "g77", then modify the file
 $NCARG/config/Sun4Solaris, and add the line:
 
-#define FCompiler  g77
+    #define FCompiler  g77
 
 along with the other macro definitions.
 
@@ -457,139 +490,152 @@ Special note for AIX systems
 
 If you are going to build on an AIX system, then you need to decide if
 you want to build using the 32-bit option (-q32) or the 64-bit option
-(-q64).  The configuration is set up to default to 32-bit. If you want
-to compile using 64-bit, then copy the file
-$NCARG/config/AIX_RS6000.64 to $NCARG/config/AIX_RS6000, and make any
-necessary changes.
+(-q64). The AIX configuration file is set up to use whatever the
+default is on your system.  If you want to compile using a specific
+precision, then copy the appropriate
+$NCARG/config/AIX_RS6000.xx file to
+$NCARG/config/AIX_RS6000, and make any necessary changes.
 
 Special note for IRIX systems
 
 If you are going to build on an IRIX system, then you need to decide
 if you want to build using the 32-bit option (-n32) or the 64-bit
-option (-64). The configuration is set up to default to 32-bit. If you
-want to compile using 64-bit, then copy the file
-$NCARG/config/SGI_IRIX.64 to $NCARG/config/SGI_IRIX, and make any
-necessary changes.
+option (-64). The configuration file is set up to use whatever the
+default is on your systemm.  If you want to compile using a specific
+precision, then copy the appropriate $NCARG/config/SGI_IRIX.xx file to
+$NCARG/config/SGI_IRIX, and make any necessary changes.
 
-Special note for LINUX systems
+Special note for Linux systems
 
-If you want to use the Portland Group compilers, then copy the file
-$NCARG/config/LINUX.pgi to $NCARG/config/LINUX and make any necessary
-changes.  For example, if you want to use the "pgf90" compiler instead
-of the "pgf77" compiler, then change the line:
+The default configuration file for Linux assumes you have a 32-bit
+architecture and are using the GNU compilers (gcc and g77). If you
+have a different compiler or architecture (i.e. 64-bit) you want to
+use, you need to copy the appropriate $NCARG/config/LINUX.xxx
+file to $NCARG/config/LINUX. Some of the available configuration files
+include:
 
-#define FCompiler   pgf77
+ - LINUX.GNU - GNU compilers (32-bit architecture)
+ - LINUX.64.GNU - GNU compilers (64-bit architecture)
+ - LINUX.PGI - Portland Group compilers (32-bit architecture)
+ - LINUX.64.PGI - Portland Group compilers (64-bit architecture)
+ - LINUX.INTEL - Intel compilers (32-bit architecture)
+ - LINUX.64.INTEL - Intel compilers (64-bit architecture)
 
-to:
-
-#define FCompiler   pgf90
-
-If you want to use the Intel compilers, then copy the file
-$NCARG/config/LINUX.intel to $NCARG/config/LINUX and make any necessary
-changes.
-
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Start the build and install process
+===================================
 
 Once you've run "Configure", and "make Info" gives you the correct
-information, you can initiate the build and install process by typing:
+information, you can initiate the build and install process by
+typing:
 
-     cd $NCARG
-     make Everything >& make-output &
+    cd $NCARG
+    make  Everything  >&  make-output  &
 
 Be patient; this can take from thirty minutes to a few hours depending
 on your machine and its current load. During the installation, you may
 examine the contents of the make-output file with the command:
 
-     tail -f make-output
+    tail  -f  make-output
 
 If you encounter errors during the build process, you can restart
 without losing any of the work already accomplished. Refer to the
 section "Restarting the installation" for details about recovering
 from errors that occur during installation.
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Set up your environment to use NCAR Graphics
+============================================
 
 Once the build process is complete, you need to do the following
 before you can start using NCAR Graphics:
 
-  1. Set the environment variable NCARG_ROOT to the parent directory of
-     where you installed everything.
-  2. Make sure "$NCARG_ROOT/bin" is on your search path.
-  3. Make sure "$NCARG_ROOT/man" is on your man path.
+
+ - Set the environment variable NCARG_ROOT to the parent directory of
+   where you installed everything.
+
+ - Make sure "$NCARG_ROOT/bin" is on your search path.
+
+ - Make sure "$NCARG_ROOT/man" is on your man path.
 
 Here's an example (using csh) that assumes you installed everything to
-the parent directory /usr/local/ncarg:
+the parent directory /usr/local:
 
-     setenv   NCARG_ROOT   /usr/local/ncarg
-     setenv   PATH   $NCARG_ROOT/bin:$PATH
-     setenv   MANPATH   $NCARG_ROOT/man:$MANPATH
+    setenv &nbsp; NCARG_ROOT &nbsp; /usr/local
+    setenv &nbsp; PATH    &nbsp; $NCARG_ROOT/bin:$PATH
+    setenv &nbsp; MANPATH &nbsp; $NCARG_ROOT/man:$MANPATH
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 Test the installation
+=====================
 
 After the installation process has completed without aborting, you
 should test the installation. Since comprehensive testing not only
 requires you to run test programs but also to view the resulting
-graphics, you should refer to the NCAR Graphics Fundamentals. It will
-show you how to run examples and test programs, and how to view the
-resulting graphics. Using the ncargex and ctrans programs is the
-easiest way to test the installation and become familiar with the use
-of NCAR Graphics.
+graphics, you should refer to the NCAR Graphics
+Fundamentals. It will show you how to run examples and test
+programs, and how to view the resulting graphics. Using the
+ncargex and ctrans programs is the easiest way to test
+the installation and become familiar with the use of NCAR Graphics.
 
 You can read more about running examples and viewing the resultant
 graphics in the chapter "Five quick steps for creating and viewing
-your plot" of the NCAR Graphics Fundamentals.
+your plot" of the "NCAR Graphics Fundamentals."
 
 For a quick test, try the following:
 
-     ncargex cpex08
-     ctrans -d X11 cpex08.ncgm
+    ncargex cpex08
+    ctrans -d X11 cpex08.ncgm
 
-The first command will copy a file called cpex08.f into your current
-working directory, compile, link, and execute it, and create a
-graphics file called cpex08.ncgm. The second command will display the
-graphic on an X11 window on your screen. You must have your DISPLAY
-environment variable set correctly for this command to
-work. Right-click on the X11 window to make the graphic go away.
+The first command will copy a file called cpex08.f into your
+current working directory, compile, link, and execute it, and create a
+graphics file called cpex08.ncgm.  The second command will
+display the graphic on an X11 window on your screen. You must have
+your DISPLAY environment variable set correctly for this command to
+work.  Right-click on the X11 window to make the graphic go away.
 
 If you are having trouble running the ctrans command on a Sun system,
 you may need to add /usr/openwin/lib to your LD_LIBRARY_PATH
 environment variable:
 
-     setenv   LD_LIBRARY_PATH   $LD_LIBRARY_PATH:/usr/openwin/lib
+    setenv &nbsp; LD_LIBRARY_PATH &nbsp; $LD_LIBRARY_PATH:/usr/openwin/lib
 
 You can test the version number by typing:
 
-     ncargversion
+    ncargversion
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 General information on build process
+====================================
 
 This section contains general information on building NCAR Graphics
-that you may find useful. It includes information on:
+that you may find useful.  It includes information on:
 
-   * configuration files
-   * how to restart the installation if it bombs
-   * the ymake system
-   * machine-dependent support routines
+ - configuration files
+
+ - how to restart the installation if it bombs
+
+ - the ymake system
+
+ - machine-dependent support routines
+
 
 Configuration files
+===================
 
 Configuration files contain make macros. At installation time, these
 macros are used by ymake to construct all of the Makefiles for the
-NCAR Graphics release. Any change you make in your configuration file
+NCAR Graphics release.  Any change you make in your configuration file
 will be distributed throughout the entire system. Refer to the "ymake"
 section for more information.
 
 Configuration files reside in the directory $NCARG/config. They have
 names like Sun4Solaris and SGI_IRIX to indicate the machine on which
-they operate.  For example, If you are on a Sun running Solaris, you
+they operate. For example, If you are on a Sun running Solaris, you
 should make changes to the file $NCARG/config/SunSolaris. There is one
 other file, "Rules", which contains make macros. Generally, you would
 only change this file when you attempt to port the package to a new
@@ -601,11 +647,12 @@ some of these minor changes to the configuration file without editing
 it. You must be running csh in order to run Configure.
 
 Restarting the installation
+===========================
 
 The standard build process is initiated by telling make to build the
 "Everything" target, which results in a series of actions. First, a
 hierarchy of Makefiles is constructed, based on your system
-configuration.  Next, all old object code is removed, dependencies are
+configuration. Next, all old object code is removed, dependencies are
 created, and then compilation, the most time-consuming step,
 begins. Finally, libraries and executables are built and then
 installed. This can take from thirty minutes to a few hours. If you
@@ -622,59 +669,66 @@ restart the installation process:
 
 If a compilation fails halfway through the install process and you
 have already created the Makefiles, cleaned out old object code, and
-compiled a large number of files, you may first correct the problem
-and then restart the install process. To correct the problem, you need
-to first look carefully at the error message in the make-output
-file. By looking at the last several lines of the make-output file,
-you should be able to determine which directory the make stopped
-in. For example, let's say see the following in your make-output file:
+compiled a large number of files, you may first correct the problem and
+then restart the install process.
+
+To correct the problem, you need to first look carefully at the error
+message in the make-output file.  By looking at the last several lines
+of the make-output file, you should be able to determine which
+directory the make stopped in.  For example, let's say see the
+following in your make-output file:
 
 ...
 Making ./ncarview/src/lib/libncarg_ras
 cc -Xc  -O  -I../../../.././include -I/usr/openwin/include -I/usr/dt/include   -DBuildRasterHDF -DSUN -DBuildRasterHPPCL -DBuildRasterNrif -DBuildRasterSun  -DBuildRasterXWD  -DBuildRasterAVS -DBuildRasterSGI  -DBuildRasterAbekas  -DBuildRasterBinary -DBuildRasterYUV  -DNGTMPDIR='"tmp"' -Dsun4 -DSUN -DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D__EXTENSIONS__ -DNeedFuncProto   -c  raster.c
 cc -Xc  -O  -I../../../.././include -I/usr/openwin/include -I/usr/dt/include   -DBuildRasterHDF -DSUN -DBuildRasterHPPCL -DBuildRasterNrif -DBuildRasterSun  -DBuildRasterXWD  -DBuildRasterAVS -DBuildRasterSGI  -DBuildRasterAbekas  -DBuildRasterBinary -DBuildRasterYUV  -DNGTMPDIR='"tmp"' -Dsun4 -DSUN -DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D__EXTENSIONS__ -DNeedFuncProto   -c  hdf.c
-"hdf.c", line 44: cannot find include file: <hdf/hdf.h>
-"hdf.c", line 45: cannot find include file: <hdf/dfgr.h>
+"hdf.c", line 44: cannot find include file: &lt;hdf/hdf.h&gt;
+"hdf.c", line 45: cannot find include file: &lt;hdf/dfgr.h&gt;
 "hdf.c", line 192: cannot recover from previous errors
 cc: acomp failed for hdf.c
 *** Error code 2
 make: Fatal error: Command failed for target `hdf.o'
+
 
 You can see from the:
 
     Making ./ncarview/src/lib/libncarg_ras
 
 line that the make bombed in the directory
-"ncarview/src/lib/libncarg_ras".  The error message here indicates
-that it can't find the HDF include files.  To fix this problem, then,
-you would need to do one of three things:
+"ncarview/src/lib/libncarg_ras". The error message here indicates that
+it can't find the HDF include files.  To fix this problem, then, you
+would need to do one of three things:
 
-  1. Install HDF on your system (see the section "Download the source code
-     or binaries for HDF"), and then also follow step #2.
-  2. If HDF is already installed on your system, run "Configure" and include
-     the paths to HDF when it asks for local library and include directory
-     search paths.
-  3. Run "Configure" and answer no to the question: "Build HDF support into
-     raster library?".
+
+ - Install HDF on your system (see the section "Download the source
+   code or binaries for HDF"), and then also follow step #2.
+
+ - If HDF is already installed on your system, run "Configure" and
+   include the paths to HDF when it asks for local library and include
+   directory search paths.
+
+ - Run "Configure" and answer "no" to the question: "Build HDF
+   support into raster library?".
 
 In most cases, the fix just involves modifying source files and
-recompiling.  If this is the case, then after you fix the source
+recompiling. If this is the case, then after you fix the source
 file(s), you can restart the install process by typing:
 
-     cd $NCARG
-     make all install >& make-output &
+    cd $NCARG
+    make all install >& make-output &
 
 In our example above with the HDF software, the fix involved something
-that would affect the Makefiles. In this case, then, you need to
+that would affect the Makefiles.  In this case, then, you need to
 regenerate the Makefiles. To do this, type:
 
-     cd $NCARG
-     make All >& make-output &
+    cd $NCARG
+    make All >& make-output &
 
 ymake
+=====
 
-A utility named "ymake" is used by this package to generate the Makefile
-hierarchy.
+A utility named "ymake" is used by this package to generate the
+Makefile hierarchy.
 
 A file named yMakefile exists in each directory and is converted to a
 regular Makefile using the C preprocessor and a collection of general
@@ -686,16 +740,18 @@ is being employed in other systems, including MIT's X Window System.)
 If you need to change a Makefile, implement the changes in the
 yMakefile and then type:
 
-     make me
+    make me
 
-If you completely destroy a Makefile, you can usually recover by typing:
+If you completely destroy a Makefile, you can usually recover
+by typing:
 
-     $NCARG/config/ymkmf
+    $NCARG/config/ymkmf
 
-There is more information about ymake in the ymake man page which
-resides in the directory $NCARG/config.
+There is more information about ymake in the ymake man
+page which resides in the directory $NCARG/config.
 
 Machine-dependent support routines
+==================================
 
 Following are functional descriptions of the required
 locally-implemented support routines. A test suite is distributed for
@@ -707,53 +763,53 @@ FUNCTION I1MACH(I)
 
 This function is used to set up 16 machine constants.
 
-     I1MACH(1) = the standard input unit
-     I1MACH(2) = the standard output unit
-     I1MACH(3) = the standard punch unit
-     I1MACH(4) = the standard error message unit
-     I1MACH(5) = the number of bits per integer storage unit
-     I1MACH(6) = the number of characters per integer storage unit
+I1MACH(1) = the standard input unit
+I1MACH(2) = the standard output unit
+I1MACH(3) = the standard punch unit
+I1MACH(4) = the standard error message unit
+I1MACH(5) = the number of bits per integer storage unit
+I1MACH(6) = the number of characters per integer storage unit
 
 Assume that integers are represented in the S-digit, base-A form:
 
-     SIGN*(X(S-1)*A**(S-1)+...+X(1)*A+X(0))
+SIGN*(X(S-1)*A**(S-1)+...+X(1)*A+X(0))
 
 in which 0 .LT. X(I) .LT. A for I=0,...,S-1.
 
-     I1MACH(7) = A, the base
-     I1MACH(8) = S, the number of base-A digits
-     I1MACH(9) = A**S-1, the largest magnitude
+I1MACH(7) = A, the base
+I1MACH(8) = S, the number of base-A digits
+I1MACH(9) = A**S-1, the largest magnitude
 
-Assume that floating-point numbers are represented in the T-digit, base-B
-form:
+Assume that floating-point numbers are represented in the T-digit,
+base-B form:
 
-     SIGN*(B**E)*((X(1)/B+...+(X(T)/B**T))
+SIGN*(B**E)*((X(1)/B+...+(X(T)/B**T))
 
 in which 0 .LT. X(1), and EMIN .LE. E .LE. EMAX.
 
-     I1MACH(10) = B, the base
+I1MACH(10) = B, the base
 
 Single-precision constants
 
-     I1MACH(11) = T, the number of base-B digits
-     I1MACH(12) = EMIN, the smallest exponent E
-     I1MACH(13) = EMAX, the largest exponent E
+I1MACH(11) = T, the number of base-B digits
+I1MACH(12) = EMIN, the smallest exponent E
+I1MACH(13) = EMAX, the largest exponent E
 
 Double-precision constants
 
-     I1MACH(14) = T, the number of base-B digits
-     I1MACH(15) = EMIN, the smallest exponent E
-     I1MACH(16) = EMAX, the largest exponent E
+I1MACH(14) = T, the number of base-B digits
+I1MACH(15) = EMIN, the smallest exponent E
+I1MACH(16) = EMAX, the largest exponent E
 
 FUNCTION R1MACH(I)
 
 This function sets five single-precision machine constants:
 
-     R1MACH(1) = B**(EMIN-1), the smallest positive magnitude
-     R1MACH(2) = B**EMAX*(1-B**(-T)), the largest magnitude
-     R1MACH(3) = B**(-T), the smallest relative spacing
-     R1MACH(4) = B**(1-T), the largest relative spacing
-     R1MACH(5) = LOG10(B)
+R1MACH(1) = B**(EMIN-1), the smallest positive magnitude
+R1MACH(2) = B**EMAX*(1-B**(-T)), the largest magnitude
+R1MACH(3) = B**(-T), the smallest relative spacing
+R1MACH(4) = B**(1-T), the largest relative spacing
+R1MACH(5) = LOG10(B)
 
 FUNCTION ISHIFT(IWORD,N)
 
@@ -764,81 +820,80 @@ the right). If N < 0, a right end-off shift is performed (all bits are
 shifted right by N bits, and the bits that are shifted out of the
 right of the word are lost)-if the leftmost bit is 0, then the vacated
 positions are filled with zeros; if the leftmost bit is 1, then the
-vacated positions are undefined. The implementor may assume that
+vacated positions are undefined.  The implementor may assume that
 IABS(N) .LE. word_length.
 
 FUNCTION IAND(K1,K2)
 
 The bit-by-bit logical product of K1 and K2. If K3 = IAND(K1,K2), then
 the nth bit of K3 is 0 if the nth bit of either K1 or K2 is 0;
-otherwise the nth bit of K3 is 1. FUNCTION IOR(K1,K2) The bit-by-bit
-logical sum of K1 and K2.  If K3 = IOR(K1,K2), then the nth bit of K3
+otherwise the nth bit of K3 is 1.  FUNCTION IOR(K1,K2) The bit-by-bit
+logical sum of K1 and K2. If K3 = IOR(K1,K2), then the nth bit of K3
 is 0 if and only if the nth bit of both K1 and K2 is 0.
 
 SUBROUTINE G01MIO(IOP,IUNIT,FNAME,IBUFF,LENGTH,IERROR)
 
-This output routine is the central one for the metafile generator. A Fortran
-implementation of this subroutine is in the directory:
+This output routine is the central one for the metafile generator. A
+Fortran implementation of this subroutine is in the directory:
 
-     $NCARG/ncarg2d/src/libncarg_gks/bwi
+    $NCARG/ncarg2d/src/libncarg_gks/bwi
 
 Input arguments
 
-IOP
-     Indicates type of operation desired: IOP = 1 means OPEN workstation for
-     output on IABS(IUNIT). IOP = 2 means CLOSE workstation for output on
-     IABS(IUNIT). IOP = 3 means write IBUF to IABS(IUNIT). IOP = 4 means
-     read IABS(IUNIT) into IBUF. IOP = 5 means position the record pointer
-     to the beginning of the file. IOP = 6 means position the record pointer
-     to the beginning of the previous record.
-IUNIT
-     IABS(IUNIT) is the Fortran logical unit number on which IOP is to
-     occur.
-FNAME
-     The filename to be used for the open operation.
-IBUFF
-     Buffer containing data for a read or write operation.
-LENGTH
-     Length of data in IBUFF, in integer words.
+
+IOP - Indicates type of operation desired: IOP = 1 means OPEN
+workstation for output on IABS(IUNIT). IOP = 2 means CLOSE workstation
+for output on IABS(IUNIT). IOP = 3 means write IBUF to
+IABS(IUNIT). IOP = 4 means read IABS(IUNIT) into IBUF. IOP = 5 means
+position the record pointer to the beginning of the file. IOP = 6
+means position the record pointer to the beginning of the previous
+record.
+
+IUNIT - IABS(IUNIT) is the Fortran logical unit number on which IOP is
+to occur.
+
+FNAME - The filename to be used for the open operation. 
+
+IBUFF - Buffer containing data for a read or write operation.
+
+LENGTH - Length of data in IBUFF, in integer words.
+
 
 Output arguments
 
-IERROR
-     Error indicator that equals 0 if no errors.
+IERROR - Error indicator that equals 0 if no errors.
 
 SUBROUTINE GBYTES(NPACK,ISAM,IBIT,NBITS,NSKIP,ITER)
 
 This subroutine is used to unpack bit chunks from NPACK into the ISAM
-array.  A portable Fortran version of this routine is distributed, but
+array. A portable Fortran version of this routine is distributed, but
 the Fortran version is inefficient and should be replaced with a more
 efficient implementation.
 
-NPACK
-     Address of first word of the array to be unpacked. For the
-     purposes of this subroutine, NPACK is viewed as a bit stream.
-ISAM
-     Array to receive the unpacked bit chunks. They will be right
-     justified with zero-fill in this array. ISAM should be
-     dimensioned for ITER.
-IBIT
-     A bit-count offset to be used before the first bit chunk is
-     unpacked.  For example, if IBIT=3, and NBITS=5, then 3 bits in
-     NPACK will be skipped and the next 5 bits will be unpacked into
-     ISAM(1).
-NBITS
-     The number of bits in each bit chunk to be unpacked. An error
-     condition occurs if NBITS is larger than the number of
-     bits-per-word on the machine.
-NSKIP
-     The number of bits to skip between each bit chunk to be
-     unpacked. Bits are skipped only after the first bit chunk has
-     been unpacked.
-ITER
-     The number of bit chunks to be unpacked.
+NPACK - Address of first word of the array to be unpacked. For the
+purposes of this subroutine, NPACK is viewed as a bit stream.
+
+ISAM - Array to receive the unpacked bit chunks. They will be right
+justified with zero-fill in this array. ISAM should be dimensioned for
+ITER.
+
+IBIT - A bit-count offset to be used before the first bit chunk is
+unpacked. For example, if IBIT=3, and NBITS=5, then 3 bits in NPACK
+will be skipped and the next 5 bits will be unpacked into ISAM(1).
+
+NBITS - The number of bits in each bit chunk to be unpacked. An error
+condition occurs if NBITS is larger than the number of bits-per-word
+on the machine.
+
+NSKIP - The number of bits to skip between each bit chunk to be
+unpacked. Bits are skipped only after the first bit chunk has been
+unpacked.
+
+ITER - The number of bit chunks to be unpacked.
 
 For example:
 
-       CALL GBYTES(NPB,ISB,3,6,9,2)
+      CALL GBYTES(NPB,ISB,3,6,9,2)
 
 In this call, three bits would be skipped at the beginning of NPB; the
 next six bits would be unpacked into ISB(1) and right-justified with
@@ -848,17 +903,19 @@ zero-fill.
 
 SUBROUTINE SBYTES(NPACK,ISAM,IBIT,NBITS,NSKIP,ITER)
 
-This subroutine is the reverse of GBYTES as described
-above. NPACK-Address of first word of array to be packed. ISAM-Array
-to be packed into NPACK. The rightmost NBITS bits of each word will be
-packed. ISAM should be dimensioned for at least ITER. IBIT-A bit-count
-offset to be used before the first bits are packed into NPACK. For
-example, if IBIT=3, and NBITS=5, 3 bits in NPACK will be skipped
+This subroutine is the reverse of GBYTES as described above.
+NPACK-Address of first word of array to be packed.  ISAM-Array to be
+packed into NPACK. The rightmost NBITS bits of each word will be
+packed. ISAM should be dimensioned for at least ITER.  IBIT-A
+bit-count offset to be used before the first bits are packed into
+NPACK.
+
+For example, if IBIT=3, and NBITS=5, 3 bits in NPACK will be skipped
 before the rightmost 5 bits of ISAM(1) are packed into it.  NBITS-The
 number of bits in each word of ISAM to be unpacked. An error condition
-occurs if NBITS exceeds the word size on the machine. NSKIP-The number
-of bits to skip between each bit chunk packed. ITER-The number of bit
-chunks to be packed.
+occurs if NBITS exceeds the word size on the machine.  NSKIP-The
+number of bits to skip between each bit chunk packed.  ITER-The number
+of bit chunks to be packed.
 
 For example:
 
@@ -868,3 +925,5 @@ In this call, 45 bits would be skipped at the beginning of NPC; the
 rightmost 6 bits of ISB(1) would be packed into NPC; 3 bits would be
 skipped in NPC, and the rightmost 6 bits of ISB(2) would be packed
 into NPC.
+
+----------------------------------------------------------------------
