@@ -1,5 +1,5 @@
 /*
- *      $Id: shaperP.h,v 1.1 1997-06-04 18:08:32 dbrown Exp $
+ *      $Id: shaperP.h,v 1.2 1997-06-06 03:14:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@
 #include <ncarg/ngo/shaper.h>
 #include <ncarg/ngo/shapeinfogrid.h>
 #include <ncarg/ngo/vcrcontrol.h>
+
+#define DEBUG_SHAPER 0
 
 typedef struct _NgShaperRec {
 	Widget		form;

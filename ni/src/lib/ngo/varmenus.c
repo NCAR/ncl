@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.1 1997-06-04 18:08:34 dbrown Exp $
+ *      $Id: varmenus.c,v 1.2 1997-06-06 03:14:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -282,7 +282,7 @@ static void VarMenuCB
         NgVarMenus	vmenus = (NgVarMenus) udata;
 	VarMenusRec	*vp = (VarMenusRec *)vmenus->vmenu_data;
 	NgVarRec	*vrec;
-        int		i,count;
+        int		i,count,used;
         NgFileVarRec	*fvar;
 
 #if	DEBUG_VAR_MENUS & DEBUG_ENTRY
@@ -375,19 +375,25 @@ static void VarMenuCB
                 }
                 vrec->alloced = count;
         }
+        used = 0;
         for (i = 0; i < count; i++) {
                 XmString xmname;
-                xmname = NgXAppCreateXmString
-                        (vp->appmgr,NrmQuarkToString(vrec->qvars[i]));
+                char *name = NrmQuarkToString(vrec->qvars[i]);
+
+                if (strncmp(name,"_Ng",3) == 0)
+                        continue;
                 
-                XtVaSetValues(vrec->vbuttons[i],
+                xmname = NgXAppCreateXmString(vp->appmgr,name);
+                
+                XtVaSetValues(vrec->vbuttons[used],
                               XmNlabelString,xmname,
 			      XmNuserData,vrec->qvars[i],
                               NULL);
                 NgXAppFreeXmString(vp->appmgr,xmname);
+                used++;
         }
-        XtManageChildren(vrec->vbuttons,count);
-        vrec->in_use = count;
+        XtManageChildren(vrec->vbuttons,used);
+        vrec->in_use = used;
 	vrec->modified = False;
 
         return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.1 1997-06-04 18:08:31 dbrown Exp $
+ *      $Id: shaper.c,v 1.2 1997-06-06 03:14:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,14 +98,13 @@ UpdateCoordDataGrid
                               XmNcellBackground,background,
                               NULL);
 
-	shaper->datagrid->start = &shaper->start;
-	shaper->datagrid->finish = &shaper->finish;
-	shaper->datagrid->stride = &shaper->stride;
 	qsymbol = si->qfile ? si->qfile : si->vinfo->name;
 	if (si->vinfo->coordnames[dim_ix] == -1) {
 		char sval[32];
                 
-                NgUpdateDataGrid(shaper->datagrid,qsymbol,NULL);
+                NgUpdateDataGrid(shaper->datagrid,qsymbol,NULL,
+				 &shaper->start,
+				 &shaper->finish,&shaper->stride);
 		rowtype = XmALL_TYPES;
 	}
 	else {
@@ -125,7 +124,9 @@ UpdateCoordDataGrid
                              (si->vinfo->name,si->vinfo->coordnames[dim_ix]);
                 }
                 NgUpdateDataGrid(shaper->datagrid,qsymbol,
-                                         shaper->tgl_coord_dlist->u.var);
+				 shaper->tgl_coord_dlist->u.var,
+				 &shaper->start,&shaper->finish,
+				 &shaper->stride);
 		rowtype = XmCONTENT;
 	}
 
@@ -287,7 +288,7 @@ UpdateShaperCoord
 	XtVaGetValues(shaper->datagrid_toggle,
 		      XmNset,&set,
 		      NULL);
-
+        
 	if (set && shaper->datagrid)
 		UpdateCoordDataGrid(si);
 
@@ -314,7 +315,9 @@ UpdateShape
 
         dim_ix = shaper->tgl_coord;
         if (dim_ix == -1) {
-                printf("no shaping changes\n");
+#if	DEBUG_SHAPER
+                fprintf(stderr,"no shaping changes\n");
+#endif
                 return;
         }
         start = si->start[dim_ix];
@@ -398,6 +401,7 @@ DimSelectNotify
                 XtSetSensitive(shaper->synchro_step_tgl,False);
         }
                 
+        (*si->geo_notify)(si->geo_data);
 	return;
 }
 
@@ -470,8 +474,9 @@ ShaperCB
 		return;
 	}
 
-	printf("in shaper apply\n");
-
+#if	DEBUG_SHAPER
+        fprintf(stderr,"in ShaperCB\n");
+#endif
 	UpdateShape(si);
 
 #if 0
@@ -601,8 +606,9 @@ ToggleCoordGridCB
 	NgShaperRec 	*shaper = si->shaper;
 	Boolean		set;
 
-	printf("in toggle coord grid\n");
-
+#if	DEBUG_SHAPER
+        fprintf(stderr,"in ToggleCoordGridCB\n");
+#endif
 	XtVaGetValues(w,
 		      XmNset,&set,
 		      NULL);
@@ -634,12 +640,14 @@ ToggleCoordGridCB
 		XtVaSetValues(shaper->all_selected_tgl,
 			 XmNbottomAttachment,XmATTACH_WIDGET,
 			 XmNbottomWidget,shaper->datagrid->grid,
-			 XmNleftAttachment,XmATTACH_NONE,
+			 XmNleftAttachment,XmATTACH_WIDGET,
+			 XmNleftOffset,20,
 			 XmNleftWidget,shaper->datagrid_toggle,
-			 XmNrightAttachment,XmATTACH_OPPOSITE_WIDGET,
+			 XmNrightAttachment,XmATTACH_NONE,
                          XmNrightWidget,shaper->shapeinfogrid->grid,
 			 XmNtopAttachment,XmATTACH_NONE,
 			 NULL);
+                (*si->geo_notify)(si->geo_data);
 	}
 	else if (set) {
 		XtManageChild(shaper->datagrid->grid);
@@ -702,8 +710,13 @@ static void VcrCB
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = si->shaper;
         NgVcrControl    vcr = shaper->vcr;
+	Boolean		sensitive;
+        Boolean		synchro_mode_update;
 
-        printf("in VcrCB\n");
+#if	DEBUG_SHAPER
+        fprintf(stderr,"in VcrCB\n");
+#endif
+        synchro_mode_update = shaper->synchro_step_set ? True : False;
         
         if (shaper->edit_timer_set) {
                 XtRemoveTimeOut(shaper->edit_timer_id);
@@ -712,24 +725,27 @@ static void VcrCB
 
         if (w == vcr->begin) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_MIN_VAL);
+                                             NG_MIN_VAL,synchro_mode_update);
         }
         else if (w == vcr->reverse && shaper->synchro_step_set) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_DECREMENT);
+                                             NG_DECREMENT,True);
         }
         else if (w == vcr->start_stop) {
                 NgShapeInfoGridEditFocusCellComplete(shaper->shapeinfogrid);
         }
         else if (w == vcr->forward && shaper->synchro_step_set) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_INCREMENT);
+                                             NG_INCREMENT,True);
         }
         else if (w == vcr->end) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_MAX_VAL);
+                                             NG_MAX_VAL,synchro_mode_update);
         }
-        
+	sensitive = (si->start[shaper->tgl_coord] == 
+		     si->finish[shaper->tgl_coord]) ? True : False;
+	XtSetSensitive(shaper->synchro_step_tgl,sensitive);
+
         return;
 }
 static void EditTimeoutCB
@@ -741,18 +757,22 @@ static void EditTimeoutCB
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = si->shaper;
         NgVcrControl    vcr = shaper->vcr;
+	Boolean		sensitive;
         
-#if	DEBUG_ADDFILE
+#if	DEBUG_SHAPER
 	fprintf(stderr,"ListTimeoutCB(IN)\n");
 #endif
         if (shaper->edit_how == NG_DECREMENT) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_DECREMENT);
+                                             NG_DECREMENT,False);
         }
         else {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_INCREMENT);
+                                             NG_INCREMENT,False);
         }
+	sensitive = (si->start[shaper->tgl_coord] == 
+		     si->finish[shaper->tgl_coord]) ? True : False;
+	XtSetSensitive(shaper->synchro_step_tgl,sensitive);
 
         MAX(50,shaper->edit_timeout_value /= 1.1);
         shaper->edit_timer_set = True;
@@ -771,23 +791,27 @@ static void VcrArmCB
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = si->shaper;
         NgVcrControl    vcr = shaper->vcr;
+	Boolean		sensitive;
 
-        printf("in VcrArmCB\n");
+#if	DEBUG_SHAPER
+        fprintf(stderr,"in VcrArmCB\n");
+#endif
 
-        if (shaper->synchro_step_set)
-                return;
-        
         if (w == vcr->reverse) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_DECREMENT);
+                                             NG_DECREMENT,False);
                 shaper->edit_how = NG_DECREMENT;
         }
         else if (w == vcr->forward) {
                 NgShapeInfoGridEditFocusCell(shaper->shapeinfogrid,
-                                             NG_INCREMENT);
+                                             NG_INCREMENT,False);
                 shaper->edit_how = NG_INCREMENT;
         }
 
+	sensitive = (si->start[shaper->tgl_coord] == 
+		     si->finish[shaper->tgl_coord]) ? True : False;
+	XtSetSensitive(shaper->synchro_step_tgl,sensitive);
+	  
         shaper->edit_timer_set = True;
         shaper->edit_timer_id = XtAppAddTimeOut(si->go->go.x->app,
                                             250,EditTimeoutCB,si);
@@ -822,6 +846,16 @@ void NgDeactivateShaper
 
         NgDeactivateShapeInfoGrid(shaper->shapeinfogrid);
         
+        return;
+}
+
+void NgUpdateShaperCoordDataGrid
+(
+	NgShaper	*si
+)
+{
+        if (si->datagrid && XtIsManaged(si->datagrid->grid))
+                UpdateCoordDataGrid(si);
         return;
 }
 
@@ -932,10 +966,6 @@ void NgDoShaper
 /* indexes toggle */
 	nargs = 0;
 	if (new) {
-		XtSetArg(args[nargs],
-			 XmNbottomAttachment,XmATTACH_WIDGET); nargs++;
-		XtSetArg(args[nargs],
-			 XmNbottomWidget,bottom_widget); nargs++;
 		XtSetArg(args[nargs],XmNindicatorOn,True);nargs++;
 		XtSetArg(args[nargs],XmNheight,25);nargs++;
 		XtSetArg(args[nargs],XmNrecomputeSize,False);nargs++;
@@ -1148,7 +1178,9 @@ ShaperAction
 	Arg	args[10];
 	int	nargs;
 
-	printf("in shaper action\n");
+#if	DEBUG_SHAPER
+        fprintf(stderr,"in shaper action\n");
+#endif
 	nargs = 0;	
 	XtSetArg(args[nargs],XmNuserData,(void*)&si);nargs++;
 	XtGetValues(w,args,nargs);

@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.1 1997-06-04 18:08:23 dbrown Exp $
+ *      $Id: datagrid.c,v 1.2 1997-06-06 03:14:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,8 +57,8 @@ static void GridPosToArrayPos
         long size,trow;
 
         dgrp->array_pos[ndims-1] = dgrp->array_rev[ndims-1] ?
-                dgp->start[ndims-1] - grid_col * dgp->stride[ndims-1] :
-                dgp->start[ndims-1] + grid_col * dgp->stride[ndims-1];
+                dgrp->start[ndims-1] - grid_col * dgrp->stride[ndims-1] :
+                dgrp->start[ndims-1] + grid_col * dgrp->stride[ndims-1];
         if (ndims < 2)
                 return;
 
@@ -66,22 +66,22 @@ static void GridPosToArrayPos
         
         for (i=ndims-2; i > -1; i--) {
                 dgrp->array_pos[i] = 
-                        (dgp->start[i] +
+                        (dgrp->start[i] +
                          ((dgrp->array_rev[i] ? -trow : trow)
-                          %dgrp->array_size[i]) * dgp->stride[i])
+                          %dgrp->array_size[i]) * dgrp->stride[i])
                         % dgrp->vinfo->dim_info[i].dim_size;
                 trow /= dgrp->array_size[i];
                 if (trow == 0) {
                         for (j = 0; j < i; j++)
-                                dgrp->array_pos[j] = dgp->start[j];
+                                dgrp->array_pos[j] = dgrp->start[j];
                         break;
                 }
         }
 
-#if 0
+#if DEBUG_DATA_GRID
         for (i=0;i<ndims;i++)
-                printf("%ld, ",dgrp->array_pos[i]);
-        printf("\n");
+                fprintf(stderr,"%ld, ",dgrp->array_pos[i]);
+        fprintf(stderr,"\n");
 #endif
         
         return;
@@ -107,28 +107,28 @@ static NclExtValueRec *ReadMoreData
         }
         if (dgrp->array_rev[dgrp->col_dim]) {
                 dgrp->ifinish[dgrp->col_dim] =
-                        MAX(dgp->finish[dgrp->col_dim],
+                        MAX(dgrp->finish[dgrp->col_dim],
                             dgrp->istart[dgrp->col_dim] -
-                            dgp->stride[dgrp->col_dim] * dgrp->ncols-1);
+                            dgrp->stride[dgrp->col_dim] * dgrp->ncols-1);
         }
         else {
                 dgrp->ifinish[dgrp->col_dim] =
-                        MIN(dgp->finish[dgrp->col_dim],
+                        MIN(dgrp->finish[dgrp->col_dim],
                             dgrp->istart[dgrp->col_dim] +
-                            dgp->stride[dgrp->col_dim] * dgrp->ncols-1);
+                            dgrp->stride[dgrp->col_dim] * dgrp->ncols-1);
         }
         if (dgrp->row_dim > -1) {
                 if (dgrp->array_rev[dgrp->row_dim]) {
                         dgrp->ifinish[dgrp->row_dim] =
-                        MAX(dgp->finish[dgrp->row_dim],
+                        MAX(dgrp->finish[dgrp->row_dim],
                             dgrp->istart[dgrp->row_dim] -
-                            dgp->stride[dgrp->row_dim] * rows_to_go);
+                            dgrp->stride[dgrp->row_dim] * rows_to_go);
                 }
                 else {
                         dgrp->ifinish[dgrp->row_dim] =
-                        MIN(dgp->finish[dgrp->row_dim],
+                        MIN(dgrp->finish[dgrp->row_dim],
                             dgrp->istart[dgrp->row_dim] +
-                            dgp->stride[dgrp->row_dim] * rows_to_go);
+                            dgrp->stride[dgrp->row_dim] * rows_to_go);
                 }
         }
 	
@@ -136,27 +136,27 @@ static NclExtValueRec *ReadMoreData
             case FILEVAR:
                     val = NclReadFileVar
                             (dgrp->qsymbol,dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgp->stride);
+                             dgrp->istart,dgrp->ifinish,dgrp->stride);
                     break;
             case COORD:
                     val = NclReadVarCoord
                             (dgrp->qsymbol,dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgp->stride);
+                             dgrp->istart,dgrp->ifinish,dgrp->stride);
                     break;
             case NORMAL:
                     val = NclReadVar
                             (dgrp->vinfo->name,
-                             dgrp->istart,dgrp->ifinish,dgp->stride);
+                             dgrp->istart,dgrp->ifinish,dgrp->stride);
                     break;
             default:
-                    printf("invalid var type\n");
+                    fprintf(stderr,"invalid var type\n");
         }
 
         if (dgrp->row_dim > -1)
                 *last_row_read = row +
                         abs(dgrp->ifinish[dgrp->row_dim]
                             - dgrp->istart[dgrp->row_dim])
-                        / dgp->stride[dgrp->row_dim];
+                        / dgrp->stride[dgrp->row_dim];
         else
                 *last_row_read = row;
         
@@ -222,12 +222,14 @@ static void FillVisibleGrid
 			  dgrp->array_size[dgrp->col_dim] - start_col);
 
         for (i = ndims; i < dgrp->vinfo->n_dims; i++) {
-                dgrp->istart[i] = dgp->start[i];
-                dgrp->ifinish[i] = dgp->finish[i];
+                dgrp->istart[i] = dgrp->start[i];
+                dgrp->ifinish[i] = dgrp->finish[i];
         }
         
-        printf("topleft row %d column %d rows,cols %d %d\n",
-               start_row,start_col,nrows,dgrp->ncols);
+#if DEBUG_DATA_GRID
+        fprintf(stderr,"topleft row %d column %d rows,cols %d %d\n",
+                start_row,start_col,nrows,dgrp->ncols);
+#endif
 	
         last_row_read = start_row - 1;
 
@@ -343,11 +345,11 @@ static void SetIndexes
         NgDataGrid *dgp = &dgrp->datagrid;
         int i,len,total_len = 0;
         char tbuf[32];
-        int sign = dgp->start[0] > dgp->finish[0] ? -1 : 1;
+        int sign = dgrp->start[0] > dgrp->finish[0] ? -1 : 1;
         Dimension width = 0;
         int cols;
 
-        cols = 1 + abs(dgp->finish[0]-dgp->start[0]) / abs(dgp->stride[0]);
+        cols = 1 + abs(dgrp->finish[0]-dgrp->start[0]) / abs(dgrp->stride[0]);
         
         XtVaSetValues(dgp->grid,
                       XmNrows,1,
@@ -356,9 +358,9 @@ static void SetIndexes
                       NULL);
         
         strcpy(Buffer,"");
-        for (i = sign * dgp->start[0];
-             i <= sign * dgp->finish[0];
-             i += dgp->stride[0]) {
+        for (i = sign * dgrp->start[0];
+             i <= sign * dgrp->finish[0];
+             i += dgrp->stride[0]) {
                 sprintf(tbuf,"%d|",sign * i);
                 len = strlen(tbuf);
                 total_len += len;
@@ -418,10 +420,10 @@ static void SetData
 
         for (i = ndims-1; i > -1; i--) {
 		dgrp->array_size[i] =
-			1 + abs(dgp->finish[i] - dgp->start[i]) /
-				abs(dgp->stride[i]);
+			1 + abs(dgrp->finish[i] - dgrp->start[i]) /
+				abs(dgrp->stride[i]);
 		dgrp->array_rev[i] = 
-			(dgp->start[i] > dgp->finish[i]) ? True : False;
+			(dgrp->start[i] > dgrp->finish[i]) ? True : False;
                 if (cols == 0) {
                         if (dgrp->array_size[i] <= 1)
                                 continue;
@@ -431,10 +433,8 @@ static void SetData
                 else {
                         head_cols++;
                         rows *= dgrp->array_size[i];
-                        if (dgrp->array_size[i] > 1) {
-				if (dgrp->row_dim == -1)
+                        if (dgrp->row_dim == -1)
 				  dgrp->row_dim = i;
-                        }
                 }
         }
         if (dgrp->col_dim == -1) {
@@ -473,9 +473,9 @@ static void SetData
                        or this variable is a coordinate variable */
                 int sign = dgrp->array_rev[dgrp->col_dim] ? -1 : 1;
                 
-                for (i = sign * dgp->start[dgrp->col_dim];
-                     i <= sign * dgp->finish[dgrp->col_dim];
-                     i += dgp->stride[dgrp->col_dim]) {
+                for (i = sign * dgrp->start[dgrp->col_dim];
+                     i <= sign * dgrp->finish[dgrp->col_dim];
+                     i += dgrp->stride[dgrp->col_dim]) {
                         char tbuf[32];
                         int len;
                         sprintf(tbuf,"%d|",sign * i);
@@ -496,20 +496,20 @@ static void SetData
                             val = NclReadFileVarCoord
                                     (dgrp->qsymbol,dgrp->vinfo->name,
                                      dgrp->vinfo->coordnames[dgrp->col_dim],
-                                     &dgp->start[dgrp->col_dim],
-                                     &dgp->finish[dgrp->col_dim],
-                                     &dgp->stride[dgrp->col_dim]);
+                                     &dgrp->start[dgrp->col_dim],
+                                     &dgrp->finish[dgrp->col_dim],
+                                     &dgrp->stride[dgrp->col_dim]);
                             break;
                     case NORMAL:
                             val = NclReadVarCoord
                                     (dgrp->vinfo->name,
                                      dgrp->vinfo->coordnames[dgrp->col_dim],
-                                     &dgp->start[dgrp->col_dim],
-                                     &dgp->finish[dgrp->col_dim],
-                                     &dgp->stride[dgrp->col_dim]);
+                                     &dgrp->start[dgrp->col_dim],
+                                     &dgrp->finish[dgrp->col_dim],
+                                     &dgrp->stride[dgrp->col_dim]);
                             break;
                     default:
-                            printf("invalid var type\n");
+                            fprintf(stderr,"invalid var type\n");
                 }
                 for (i = 0; i < cols; i++) {
                         int len;
@@ -577,20 +577,20 @@ static void SetData
                                     val = NclReadFileVarCoord
                                             (dgrp->qsymbol,dgrp->vinfo->name,
                                              dgrp->vinfo->coordnames[i],
-                                             &dgp->start[i],
-                                             &dgp->finish[i],
-                                             &dgp->stride[i]);
+                                             &dgrp->start[i],
+                                             &dgrp->finish[i],
+                                             &dgrp->stride[i]);
                                     break;
                             case COORD:
                                     val = NclReadVarCoord
                                             (dgrp->vinfo->name,
                                              dgrp->vinfo->coordnames[i],
-                                             &dgp->start[i],
-                                             &dgp->finish[i],
-                                             &dgp->stride[i]);
+                                             &dgrp->start[i],
+                                             &dgrp->finish[i],
+                                             &dgrp->stride[i]);
                                     break;
                             default:
-                                    printf("invalid var type\n");
+                                    fprintf(stderr,"invalid var type\n");
                         }
 			vix = 0;
                         for (j = 0; j < rows; j++) {
@@ -642,17 +642,45 @@ NhlErrorTypes NgUpdateDataGrid
 (
         NgDataGrid		*data_grid,
         NrmQuark		qsymbol,
-        NclApiVarInfoRec	*vinfo
+        NclApiVarInfoRec	*vinfo,
+	long			*start,
+	long			*finish,
+	long			*stride
         )
 {
         static NhlBoolean first = True;
         NhlErrorTypes ret;
         NgDataGridRec *dgrp;
         NgDataGrid *dgp;
+	int ndims;
         
         dgrp = (NgDataGridRec *) data_grid;
         if (!dgrp) return NhlFATAL;
         dgp = &dgrp->datagrid;
+
+	if (!vinfo) /* non-coordinate dimension */
+		ndims = 1;
+	else
+		ndims = vinfo->n_dims;
+
+	if (dgrp->reinit > 2
+            && dgrp->qsymbol == qsymbol && dgrp->vinfo == vinfo) {
+		if (! memcmp(dgrp->start,start,ndims *sizeof(long)) &&
+		    ! memcmp(dgrp->finish,finish,ndims *sizeof(long)) &&
+		    ! memcmp(dgrp->stride,stride,ndims *sizeof(long))) {
+			return NhlNOERROR;
+		}
+	}
+	else if (!dgrp->start ||
+		 (dgrp->vinfo && ndims > dgrp->vinfo->n_dims) ||
+		 (vinfo && !dgrp->vinfo)) {
+		dgrp->start = NhlRealloc(dgrp->start,ndims * sizeof(long));
+		dgrp->finish = NhlRealloc(dgrp->finish,ndims * sizeof(long));
+		dgrp->stride = NhlRealloc(dgrp->stride,ndims * sizeof(long));
+	}
+	memcpy(dgrp->start,start,ndims *sizeof(long));
+	memcpy(dgrp->finish,finish,ndims *sizeof(long));
+	memcpy(dgrp->stride,stride,ndims *sizeof(long));
 
         if (dgrp->istart) {
                 NhlFree(dgrp->istart);
@@ -679,6 +707,7 @@ NhlErrorTypes NgUpdateDataGrid
                 dgrp->cell_widths = NULL;
         }
         
+        dgrp->reinit++;
         if (first) {
                 short		cw,ch;
                 XmFontList      fontlist;
@@ -774,13 +803,14 @@ NgDataGrid *NgCreateDataGrid
         if (!dgrp) return NULL;
         dgp = &dgrp->datagrid;
         dgrp->go = go;
+	dgrp->vinfo = NULL;
 
         nrows = headline_on ? 4 : 3;
         sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;
 
-        dgp->start = NULL;
-        dgp->finish = NULL;
-        dgp->stride = NULL;
+        dgrp->start = NULL;
+        dgrp->finish = NULL;
+        dgrp->stride = NULL;
         dgp->sub_width = 0;
         dgrp->istart = NULL;
         dgrp->ifinish = NULL;
@@ -788,6 +818,7 @@ NgDataGrid *NgCreateDataGrid
         dgrp->array_size = NULL;
         dgrp->array_rev = NULL;
 	dgrp->cell_widths = NULL;
+        dgrp->reinit = 0;
         dgp->grid = XtVaCreateManagedWidget("DataGrid",
                                             xmlGridWidgetClass,parent,
                                             XmNrows,1,
@@ -858,6 +889,8 @@ void NgDeactivateDataGrid
                 NhlFree(dgrp->cell_widths);
                 dgrp->cell_widths = NULL;
         }
+        dgrp->reinit = 1;
+        
         return;
 }
 
@@ -894,7 +927,9 @@ GridTraverseAction
 {
 
         NgDataGridRec *dgrp;
-	printf("in grid traverse action\n");
+#if DEBUG_DATA_GRID
+	fprintf(stderr,"in grid traverse action\n");
+#endif
 
 	XtVaGetValues(w,
 		      XmNuserData,&dgrp,

@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.h,v 1.1 1997-06-04 18:08:24 dbrown Exp $
+ *      $Id: datagrid.h,v 1.2 1997-06-06 03:14:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,9 +39,6 @@
 typedef struct _NgDataGrid 
 {
         Widget		grid;
-        long		*start;
-        long		*finish;
-        long		*stride;
         Dimension	sub_width;
 } NgDataGrid;
 
@@ -64,7 +61,10 @@ NhlErrorTypes NgUpdateDataGrid
 (
         NgDataGrid		*data_grid,
         NrmQuark		qsymbol,
-        NclApiVarInfoRec	*vinfo
+        NclApiVarInfoRec	*vinfo,
+	long			*start,
+	long			*finish,
+	long			*stride
         );
 
 void NgDeactivateDataGrid

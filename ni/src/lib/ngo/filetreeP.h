@@ -1,5 +1,5 @@
 /*
- *      $Id: filetreeP.h,v 1.1 1997-06-04 18:08:27 dbrown Exp $
+ *      $Id: filetreeP.h,v 1.2 1997-06-06 03:14:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,10 +27,7 @@
 #include <ncarg/ngo/filetree.h>
 
  
-#define DEBUG_ENTRY 1
-#define DEBUG_TREE 1 << 1
-#define DEBUG_FILETREE DEBUG_ENTRY | DEBUG_TREE
-
+#define DEBUG_FILETREE 0
 
 /* defines for each node of the file tree
  * -- not including the leaf nodes.

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.6 1997-06-04 18:08:18 dbrown Exp $
+ *      $Id: addfile.c,v 1.7 1997-06-06 03:14:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,7 @@
 
 #define _NgPreviewFile "_NgPreviewFile" /* the NCL file reference var name */
 static  NrmQuark QPreviewFile = NrmNULLQUARK;
+static Pixel Background;
 
 static XmString NoMatchString = NULL;
 static char Buffer[512];
@@ -498,9 +499,66 @@ static void SetApplyForm
 	size_t			len;
         Dimension		width1,width2;
         char			*vname;
+        NclApiDataList          *dlist,*dl;
+        NclApiFileInfoRec	*finfo;
+        NhlBoolean		added = False;
+        NrmQuark		symbol;
+        static NhlBoolean	first = True;
+        XmString		xmstring;
 
+        if (np->mapped && first) {
+                first = False;
+                XtVaGetValues(np->vname,
+                              XmNbackground,&Background,
+                              NULL);
+        }
+        
         item = np->dirspec;
+        if (item) {
+                dlist = NclGetFileList();
+                for (dl = dlist; dl != NULL; dl = dl->next) {
+                        finfo = dl->u.file;
+                        if (!strcmp(item,NrmQuarkToString(finfo->path))) {
+                                added = True;
+                                symbol = finfo->name;
+                                break;
+                        }
+                }
+                NclFreeDataList(dlist);
+        }
+        if (added) {
+                XtVaSetValues(np->vname,
+                              XmNeditable,False,
+                              XtVaTypedArg,XmNbackground,
+                              XmRString,"lightsalmon",12,
+                              NULL);
+                XmTextFieldSetString(np->vname,NrmQuarkToString(symbol));
+                if (!np->vname_added) {
+                        np->vname_added = True;
+                        xmstring = XmStringCreateLocalized("Added Var Name");
+                        XtVaSetValues(np->vname_label,
+                                      XmNlabelString,xmstring,
+                                      NULL);
+                }
+                XtSetSensitive(np->ok,False);
+                XtSetSensitive(np->apply,False);
+                return;
+        }
 
+        if (np->vname_added) {
+                np->vname_added = False;
+                xmstring = XmStringCreateLocalized("Input Var Name");
+                XtVaSetValues(np->vname_label,
+                              XmNlabelString,xmstring,
+                              NULL);
+                XtVaSetValues(np->vname,
+                              XmNbackground,Background,
+                              XmNeditable,True,
+                              NULL);
+                XtSetSensitive(np->ok,True);
+                XtSetSensitive(np->apply,True);
+        }
+        
 	if(item)
 		ptr = strrchr(item,'/');
 	if(ptr)
@@ -1819,7 +1877,7 @@ AddFileCreateWin
 	char		func[]="AddFileCreateWin";
 	NgAddFilePart	*np = &((NgAddFile)go)->addfile;
 	Widget		applyform,menu,menush,optmenu;
-	Widget		filterbutton,varinfobutton,applybutton;
+	Widget		filterbutton,varinfobutton;
         Widget		workareaform,varform,filterform,form,label;
         Widget		varlabel,filterlabel,sizelabel,datelabel;
         Widget		frame,frame1,sep,pb;
@@ -1846,6 +1904,7 @@ AddFileCreateWin
                       XmNcancelCallback,_NgGOPopdownCB,(XtPointer)go->base.id);
 	XtAddCallback(go->go.manager,
                       XmNokCallback,OkButtonCB,(XtPointer)go);
+        np->ok = XmMessageBoxGetChild(go->go.manager,XmDIALOG_OK_BUTTON);
         
  	XtUnmanageChild(XmMessageBoxGetChild(go->go.manager,
                                              XmDIALOG_HELP_BUTTON));
@@ -1854,11 +1913,11 @@ AddFileCreateWin
         XtAddEventHandler(go->go.manager,StructureNotifyMask,
                           False,ChangeSizeEH,(XtPointer)go);
 
-        applybutton =
+        np->apply =
                 XtVaCreateManagedWidget("Apply",
                                         xmPushButtonGadgetClass,go->go.manager,
                                         NULL);
-	XtAddCallback(applybutton,XmNactivateCallback,ApplyButtonCB,go);
+	XtAddCallback(np->apply,XmNactivateCallback,ApplyButtonCB,go);
         
         filterbutton =
                 XtVaCreateManagedWidget("Filter",
@@ -1885,12 +1944,13 @@ AddFileCreateWin
                                         NULL);
 
 	xmtmp = XmStringCreateLocalized("Input Var Name");
-	label =
+	np->vname_label =
                 XtVaCreateManagedWidget("input",xmLabelWidgetClass,applyform,
                                         XmNrightAttachment,XmATTACH_NONE,
                                         XmNlabelString,xmtmp,
                                         NULL);
 	XmStringFree(xmtmp);
+        np->vname_added = False;
         
             /* the read/write option menu */
 	menush =
@@ -1934,7 +1994,7 @@ AddFileCreateWin
 	np->vname =
                 XtVaCreateManagedWidget("vname",
                                         xmTextFieldWidgetClass,applyform,
-                                        XmNleftWidget,label,
+                                        XmNleftWidget,np->vname_label,
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNrightAttachment,XmATTACH_WIDGET,
                                         XmNrightWidget,np->rw_optmenu,

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.4 1997-06-04 18:08:20 dbrown Exp $
+ *      $Id: addfileP.h,v 1.5 1997-06-06 03:14:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,13 +76,16 @@ typedef struct _NgAddFilePart {
 	int	foo;
 
 /* private fields */
-	Widget	vname;
-	Widget	rw_optmenu;
-        Widget	write_label;
-        Widget	read_label;
-        Widget	info_optmenu;
-        Widget	info_frame;
-         
+	Widget		vname;
+        Widget  	vname_label;
+        NhlBoolean	vname_added;
+        Widget		ok;
+        Widget		apply;
+	Widget		rw_optmenu;
+        Widget		write_label;
+        Widget		read_label;
+        Widget		info_optmenu;
+        Widget		info_frame;
         Widget          filtertext;
         Widget          fselect_box;
         Widget          selecttext;

@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.1 1997-06-04 18:08:22 dbrown Exp $
+ *      $Id: browse.c,v 1.2 1997-06-06 03:14:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -573,7 +573,7 @@ CreateFolder
 		 XmNwidth,10,
                  NULL);
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        printf("folder %x pane %x\n", pane->folder,pane);
+        fprintf(stderr,"folder %x pane %x\n", pane->folder,pane);
 #endif
 
         XtAddCallback(pane->folder,XmNactivateCallback,ActiveTabCB,pane);
@@ -1163,7 +1163,7 @@ static brPage *AddPage
         page->tab = NULL;
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        printf("AddPage: %x -- pane %d %s\n",
+        fprintf(stderr,"AddPage: %x -- pane %d %s\n",
                page,PaneNumber(go,pane),PageString(pane,page));
 #endif
         
@@ -1174,7 +1174,9 @@ static brPage *AddPage
                       XmNheight,&h,
                       XmNwidth,&w,
                       NULL);
-        printf("clip window w,h: %d,%d\n",w,h);
+#if DEBUG_DATABROWSER
+        fprintf(stderr,"clip window w,h: %d,%d\n",w,h);
+#endif
         
         switch (type) {
         case _brREGVAR:
@@ -1231,7 +1233,7 @@ static void DeletePage(
 
 	if (pane->pagecount == 0) {
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-                printf("DeletePage: %x -- pane %d %s\n",
+                fprintf(stderr,"DeletePage: %x -- pane %d %s\n",
                        page,PaneNumber(go,pane),PageString(pane,page));
 #endif
                 page->pdata->in_use = False;
@@ -1245,7 +1247,7 @@ static void DeletePage(
 	UpdateTabs(go,pane,-1,_REMOVE);
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        printf("DeletePage: %x -- pane %d %s\n",
+        fprintf(stderr,"DeletePage: %x -- pane %d %s\n",
                page,PaneNumber(go,pane),PageString(pane,page));
 #endif
         if (page->pdata->deactivate_page)
@@ -1522,7 +1524,9 @@ AdjustPaneGeometry
         brPaneControl	*pcp = &np->pane_ctrl;
 	int i;
 
-	printf("in adjust pane geometry\n");
+#if DEBUG_DATABROWSER
+	fprintf(stderr,"in adjust pane geometry\n");
+#endif
 
 	for (i = 0; i < pcp->current_count; i++) {
 		brPane	*pane = pcp->panes[i];
@@ -1533,7 +1537,9 @@ AdjustPaneGeometry
 			continue;
 		page = XmLArrayGet(pane->pagelist,pane->active_pos);
 		if (!page) {
-			printf("error retrieving active page\n");
+#if DEBUG_DATABROWSER
+			fprintf(stderr,"error retrieving active page\n");
+#endif
 			return;
 		}
 		(*page->pdata->adjust_page_geo)(page);
@@ -1920,7 +1926,6 @@ static void TabFocusAction
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"TabFocusAction(IN)\n");
 #endif
-        printf("in tab action\n");
         
 	return;
 }

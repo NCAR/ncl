@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogridP.h,v 1.1 1997-06-04 18:08:31 dbrown Exp $
+ *      $Id: shapeinfogridP.h,v 1.2 1997-06-06 03:14:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,7 +58,8 @@ typedef struct _NgShapeInfoGridRec
         float			*start_coords;
         float			*finish_coords;
         Boolean			*float_types;
-        int			edit_row;     
+        int			edit_row;
+	Boolean			manual_edit_started;
 } NgShapeInfoGridRec;
 
 #endif	/* _NG_SHAPEINFOGRIDP_H_ */

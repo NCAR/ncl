@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.1 1997-06-04 18:08:35 dbrown Exp $
+ *      $Id: varpage.c,v 1.2 1997-06-06 03:14:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,8 @@ AdjustVarPageGeometry
 
         if (rec->datagrid_managed) {
 		NgUpdateDataGrid(rec->datagrid,
-				 page->qfile,pdp->dl->u.var);
+				 page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 XtVaGetValues(rec->datagrid->grid,
                               XmNy,&y,
                               XmNheight,&h,
@@ -85,7 +86,8 @@ AdjustVarPageGeometry
 	}
 	if (rec->datagrid_managed) {
 		NgUpdateDataGrid(rec->datagrid,
-				 page->qfile,pdp->dl->u.var);
+				 page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 XtVaSetValues(rec->datagrid->grid,
                               XmNwidth,avail_width - rec->datagrid->sub_width,
                               NULL);
@@ -106,10 +108,8 @@ static void UpdateDataCB
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
 
         if (rec->shaper && rec->shaper->new_shape) {
-                rec->datagrid->start = rec->start;
-                rec->datagrid->finish = rec->finish;
-                rec->datagrid->stride = rec->stride;
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var);
+		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 rec->new_data = False;
 		rec->shaper->new_shape = False;
         }
@@ -129,18 +129,17 @@ static void DataGridToggleCB
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
         Widget top;
-
-        printf("DataGridToggleCB(IN)\n");
-
+        
+#if	DEBUG_VARPAGE
+        fprintf(stderr,"DataGridToggleCB(IN)\n");
+#endif
         top = rec->shaper_managed ? rec->shaper->frame : rec->shaper_toggle;
         if (! rec->datagrid) {
                 rec->datagrid = NgCreateDataGrid
                         (page->go,pdp->form,
                          page->qfile,pdp->dl->u.var,False,False);
-                rec->datagrid->start = rec->start;
-                rec->datagrid->finish = rec->finish;
-                rec->datagrid->stride = rec->stride;
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var);
+		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 XtVaSetValues(rec->datagrid->grid,
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -152,10 +151,8 @@ static void DataGridToggleCB
                 rec->datagrid_managed = True;
         }
         else if (rec->new_data) {
-                rec->datagrid->start = rec->start;
-                rec->datagrid->finish = rec->finish;
-                rec->datagrid->stride = rec->stride;
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var);
+		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 rec->new_data = False;
                 if (rec->shaper)
                         rec->shaper->new_shape = False;
@@ -190,8 +187,9 @@ static void ShaperToggleCB
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
                 
-        printf("ShaperToggleCB(IN)\n");
-
+#if	DEBUG_VARPAGE
+        fprintf(stderr,"ShaperToggleCB(IN)\n");
+#endif
         if (! rec->shaper) {
                 rec->shaper = NhlMalloc(sizeof(NgShaper));
                 rec->shaper->go = page->go;
@@ -319,6 +317,9 @@ DeactivateVarPage
         if (rec->datagrid_managed) {
                 XtUnmanageChild(rec->datagrid->grid);
                 rec->datagrid_managed = False;
+                XtVaSetValues(rec->datagrid_toggle,
+                              XmNset,False,
+                              NULL);
         }
         rec->new_data = True;
         XtRemoveCallback(rec->datagrid_toggle,
@@ -413,11 +414,9 @@ NgGetVarPage
 		NgUpdateDimInfoGrid(rec->diminfogrid,
 				    page->qfile,pdp->dl->u.var);
                 if (copy_rec && copy_rec->datagrid_managed) {
-                        rec->datagrid->start = rec->start;
-                        rec->datagrid->finish = rec->finish;
-                        rec->datagrid->stride = rec->stride;
                         NgUpdateDataGrid(rec->datagrid,
-                                         page->qfile,pdp->dl->u.var);
+                                         page->qfile,pdp->dl->u.var,
+                                         rec->start,rec->finish,rec->stride);
                         XtManageChild(rec->datagrid->grid);
                         rec->datagrid_managed = True;
                         rec->new_data = False;
@@ -525,10 +524,8 @@ NgGetVarPage
                 rec->datagrid = NgCreateDataGrid
                         (page->go,pdp->form,
                          page->qfile,pdp->dl->u.var,False,False);
-                rec->datagrid->start = rec->start;
-                rec->datagrid->finish = rec->finish;
-                rec->datagrid->stride = rec->stride;
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var);
+		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
+                                 rec->start,rec->finish,rec->stride);
                 XtVaSetValues(rec->datagrid->grid,
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNrightAttachment,XmATTACH_NONE,

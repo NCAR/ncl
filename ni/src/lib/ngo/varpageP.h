@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.1 1997-06-04 18:08:35 dbrown Exp $
+ *      $Id: varpageP.h,v 1.2 1997-06-06 03:14:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/ngo/shaper.h>
 #include <ncarg/ngo/datagrid.h>
 
+#define DEBUG_VARPAGE 0
 
 typedef struct _brVarPageRec 
 {

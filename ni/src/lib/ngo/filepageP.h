@@ -1,5 +1,5 @@
 /*
- *      $Id: filepageP.h,v 1.1 1997-06-04 18:08:26 dbrown Exp $
+ *      $Id: filepageP.h,v 1.2 1997-06-06 03:14:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,8 @@
 
 #include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/filetree.h>
+
+#define DEBUG_FILEPAGE 0
 
 typedef struct _brFileRefPageRec 
 {

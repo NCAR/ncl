@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.h,v 1.1 1997-06-04 18:08:30 dbrown Exp $
+ *      $Id: shapeinfogrid.h,v 1.2 1997-06-06 03:14:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,7 +103,8 @@ void NgDeactivateShapeInfoGrid
 NhlErrorTypes NgShapeInfoGridEditFocusCell
 (
         NgShapeInfoGrid		*shape_info_grid,
-        unsigned char		how
+        unsigned char		how,
+        Boolean			synchro_mode_update
         );
 
 NhlErrorTypes NgShapeInfoGridEditFocusCellComplete

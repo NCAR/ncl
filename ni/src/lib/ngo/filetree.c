@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.1 1997-06-04 18:08:26 dbrown Exp $
+ *      $Id: filetree.c,v 1.2 1997-06-06 03:14:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,7 +58,7 @@ static void ExpandFileInfo
         int rowcount,i;
         char buf[256];
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandFileInfo(IN)\n");
 #endif
         
@@ -147,7 +147,7 @@ static void ExpandAttr
         XmString xmempty,xmlabel;
         XmLTreeRowDefinition *rowdefs;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandAttr(IN)\n");
 #endif
 
@@ -290,7 +290,7 @@ static NhlBoolean DoSingleLineAttrVal
         char	buf[256];
         char	*bufp;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandAttr(IN)\n");
 #endif
 
@@ -374,7 +374,7 @@ static void ExpandAttrList
         NrmQuark *ql;
         _ftNodeType subtype;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandAttrList(IN)\n");
 #endif
 
@@ -485,7 +485,7 @@ static void ExpandDim
         NhlBoolean is_coord_var = False;
         int size = 0,dim_ix;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandDim(IN)\n");
 #endif
         
@@ -703,7 +703,7 @@ static void ExpandDimList
         _ftNodeType subtype;
         NhlBoolean is_coord_var[256];
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandDimList(IN)\n");
 #endif
 
@@ -825,7 +825,7 @@ static void ExpandVar
         NrmQuark *ql;
         _ftNodeType subtype;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandVar(IN)\n");
 #endif
         
@@ -936,7 +936,7 @@ static void ExpandVarList
         NrmQuark *ql;
         _ftNodeType subtype;
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandVarList(IN)\n");
 #endif
 
@@ -1032,7 +1032,6 @@ static void ExpandTree
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
                 Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
-                printf("ch %d rh %d rh1 %d\n", ch,rh,h/nrows);
                 ftp->expand_called = True;
         }
 
@@ -1459,7 +1458,7 @@ static void Button3Action(
         NgFileTreeRec	*ftp;
         
         
-#if	DEBUG_FILETREE & DEBUG_ENTRY
+#if	DEBUG_FILETREE
 	fprintf(stderr,"Button3Action(IN)\n");
 #endif
         x = xev->xbutton.x;
@@ -1476,7 +1475,9 @@ static void Button3Action(
                       NULL);
         if (ndata->type == _ftLVar) {
                 NrmQuark qnames[2];
-                printf("file var %s\n",NrmQuarkToString(ndata->qname));
+#if DEBUG_FILETREE
+                fprintf(stderr,"file var %s\n",NrmQuarkToString(ndata->qname));
+#endif
                 qnames[0] = ndata->qname;
                 qnames[1] = ftp->qfileref;
                 NgBrowseOpenPage(ftp->go->base.id,

@@ -1,5 +1,5 @@
 /*
- *      $Id: datagridP.h,v 1.1 1997-06-04 18:08:24 dbrown Exp $
+ *      $Id: datagridP.h,v 1.2 1997-06-06 03:14:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,9 @@ typedef struct _NgDataGridRec
         int			max_col;
         int			max_row;
 	int			ncols;
+        long			*start;
+        long			*finish;
+        long			*stride;
         long			*istart;
         long			*ifinish;
         long			*array_pos;
@@ -58,6 +61,7 @@ typedef struct _NgDataGridRec
         NhlBoolean		*array_rev;
 	short			*cell_widths;
         int			cheight;
+        int			reinit;
 } NgDataGridRec;
 
 #endif	/* _NG_DATAGRIDP_H_ */

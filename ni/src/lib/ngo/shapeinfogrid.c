@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.1 1997-06-04 18:08:30 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.2 1997-06-06 03:14:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -434,11 +434,29 @@ SetSelectedDim
                       XmRString,"lightsalmon",12,
                       NULL);
 
-        sip->synchro_step = False;
-        sip->selected_dim = selected_dim;
+        if (selected_dim != sip->selected_dim) {
+                sip->synchro_step = False;
+                sip->selected_dim = selected_dim;
+        }
+        
 
-        if (sirp->edit_row > -1)
-                XmLGridSetFocus(sip->grid,sirp->edit_row,selected_dim);
+        if (sirp->edit_row > -1) {
+                if (sip->synchro_step && sirp->edit_row != STRIDE_ROW)
+                        XtVaSetValues(sip->grid,
+                                      XmNrowRangeStart,START_ROW,
+                                      XmNrowRangeEnd,FINISH_ROW,
+                                      XmNcolumn,sip->selected_dim,
+                                      XtVaTypedArg,XmNcellBackground,
+                                      XmRString,"lightsalmon",12,
+                                      NULL);
+                else
+                        XtVaSetValues(sip->grid,
+                                      XmNrow,sirp->edit_row,
+                                      XmNcolumn,sip->selected_dim,
+                                      XtVaTypedArg,XmNcellBackground,
+                                      XmRString,"lightsalmon",12,
+                                      NULL);
+        }
         
         return;
 
@@ -482,24 +500,17 @@ CellFocusCB
         int start_row,finish_row;
 
         if (cb->reason == XmCR_CELL_FOCUS_OUT) {
-                if (sip->synchro_step && cb->row != STRIDE_ROW) {
-                        start_row = START_ROW;
-                        finish_row = FINISH_ROW;
-                }
-                else {
-                        start_row = cb->row;
-                        finish_row = cb->row;
-                }
                 XtVaSetValues(sip->grid,
-                              XmNrowRangeStart,start_row,
-                              XmNrowRangeEnd,finish_row,
+                              XmNrowRangeStart,START_ROW,
+                              XmNrowRangeEnd,FINISH_ROW,
                               XmNcolumn,cb->column,
                               XtVaTypedArg,XmNcellBackground,
                               XmRString,"#d0d0d0",8,
                               NULL);
         }
         else {
-                if (sip->start[cb->column] != sip->finish[cb->column])
+                if (sip->start[cb->column] != sip->finish[cb->column] ||
+		    sip->selected_dim != cb->column)
                         sip->synchro_step = False;
                 if (sip->synchro_step && cb->row != STRIDE_ROW) {
                         start_row = START_ROW;
@@ -746,6 +757,50 @@ UpdateIndexValue
 }
 
 static void
+UpdateState
+(
+        NgShapeInfoGrid *sip,
+        int		row,
+        int		col
+        )
+{
+        NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) sip;
+        int start_row,finish_row;
+        
+        XmLGridSetStringsPos(sip->grid,XmHEADING,SELECTED_ROW,XmCONTENT,0,
+                             SelectedText(sirp));
+        XmLGridSetStringsPos(sip->grid,XmHEADING,SELECTED_ROW,XmFOOTER,0,
+                             TotalText(sirp));
+        XmLGridSetStringsPos
+                (sip->grid,XmCONTENT,STRIDE_ROW,XmFOOTER,0,ShapeText(sirp));
+        
+        XtVaSetValues(sip->grid,
+                      XmNsimpleWidths,ColumnWidths(sirp),
+                      NULL);
+        
+        if (sip->synchro_step &&
+            (row == START_ROW ||row == FINISH_ROW)) {
+                start_row = START_ROW;
+                finish_row = FINISH_ROW;
+        }
+        else {
+                start_row = row;
+                finish_row = row;
+                XtVaSetValues(sip->grid,
+                              XmNrowRangeStart,start_row,
+                              XmNrowRangeEnd,finish_row,
+                              XmNcolumn,col,
+                              XtVaTypedArg,
+                              XmNcellBackground,XmRString,"#d0d0d0",8,
+                              NULL);
+        }
+        
+        (*sip->shape_notify)(sip->notify_data);
+        return;
+        
+}
+
+static void
 DimEditCB
 (
 	Widget		w,
@@ -768,7 +823,9 @@ DimEditCB
         
         switch (cb->reason) {
             case XmCR_EDIT_BEGIN:
-                    printf("edit begin\n");
+#if DEBUG_SHAPE_INFO_GRID      
+                    fprintf(stderr,"edit begin\n");
+#endif
                     colptr = XmLGridGetColumn(sip->grid,XmCONTENT,cb->column);
                     rowptr = XmLGridGetRow(sip->grid,XmCONTENT,cb->row);
                     if (cell_string)
@@ -788,16 +845,26 @@ DimEditCB
                                   XmRString,"lightsalmon",12,
                                   NULL);
                     sirp->edit_row = cb->row;
+		    sirp->manual_edit_started = True;
                     return;
             case XmCR_EDIT_CANCEL:
-                    printf("edit cancel\n");
+#if DEBUG_SHAPE_INFO_GRID      
+                    fprintf(stderr,"edit cancel\n");
+#endif
                     update = False;
+		    sirp->manual_edit_started = False;
                     break;
             case XmCR_EDIT_COMPLETE:
-                    printf("edit complete\n");
+#if DEBUG_SHAPE_INFO_GRID      
+                    fprintf(stderr,"edit complete\n");
+#endif
+		    sirp->manual_edit_started = False;
                     break;
             case XmCR_EDIT_INSERT:
-                    printf("edit insert\n");
+#if DEBUG_SHAPE_INFO_GRID      
+                    fprintf(stderr,"edit insert\n");
+#endif
+		    sirp->manual_edit_started = True;
                     return;
         }
 
@@ -823,48 +890,15 @@ DimEditCB
                               XmNrow,cb->row,
                               XmNcolumn,cb->column,
                               XmNcellString,cell_string,
+			      XtVaTypedArg,
+			      XmNcellBackground,XmRString,"#d0d0d0",8,
                               NULL);
                 return;
         }
-        if (cb->reason == XmCR_EDIT_COMPLETE) {
-                int start_row,finish_row;
-
-                if (sip->synchro_step &&
-                    (cb->row == START_ROW || cb->row == FINISH_ROW)) {
-                        start_row = START_ROW;
-                        finish_row = FINISH_ROW;
-                }
-                else {
-                        start_row = cb->row;
-                        finish_row = cb->row;
-                }
-                XmLGridSetStringsPos(sip->grid,
-                                     XmHEADING,SELECTED_ROW,XmCONTENT,0,
-                                     SelectedText(sirp));
-                XmLGridSetStringsPos(sip->grid,
-                                     XmHEADING,SELECTED_ROW,XmFOOTER,0,
-                                     TotalText(sirp));
-                XmLGridSetStringsPos(sip->grid,
-                                     XmCONTENT,STRIDE_ROW,XmFOOTER,0,
-                                     ShapeText(sirp));
-        
-                XtVaSetValues(sip->grid,
-                              XmNsimpleWidths,ColumnWidths(sirp),
-                              NULL);
-        
-                (*sip->shape_notify)(sip->notify_data);
-                
-        
-                XtVaSetValues(sip->grid,
-                              XmNrowRangeStart,start_row,
-                              XmNrowRangeEnd,finish_row,
-                              XmNcolumn,cb->column,
-                              XtVaTypedArg,
-                              XmNcellBackground,XmRString,"#d0d0d0",8,
-                              NULL);
-                sirp->edit_row = -1;
-                
+        else if (cb->reason == XmCR_EDIT_COMPLETE) {
+		UpdateState(sip,cb->row,cb->column);
         }
+	sirp->edit_row = -1;
         
         return;
 }
@@ -1040,54 +1074,11 @@ NewCoordValue
         return sval;
 }
 
-static void
-UpdateState
-(
-        NgShapeInfoGrid *sip,
-        int		row,
-        int		col
-        )
-{
-        NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) sip;
-        int start_row,finish_row;
-        
-        XmLGridSetStringsPos(sip->grid,XmHEADING,SELECTED_ROW,XmCONTENT,0,
-                             SelectedText(sirp));
-        XmLGridSetStringsPos(sip->grid,XmHEADING,SELECTED_ROW,XmFOOTER,0,
-                             TotalText(sirp));
-        XmLGridSetStringsPos
-                (sip->grid,XmCONTENT,STRIDE_ROW,XmFOOTER,0,ShapeText(sirp));
-        
-        XtVaSetValues(sip->grid,
-                      XmNsimpleWidths,ColumnWidths(sirp),
-                      NULL);
-        
-        if (sip->synchro_step &&
-            (row == START_ROW ||row == FINISH_ROW)) {
-                start_row = START_ROW;
-                finish_row = FINISH_ROW;
-        }
-        else {
-                start_row = row;
-                finish_row = row;
-                XtVaSetValues(sip->grid,
-                              XmNrowRangeStart,start_row,
-                              XmNrowRangeEnd,finish_row,
-                              XmNcolumn,col,
-                              XtVaTypedArg,
-                              XmNcellBackground,XmRString,"#d0d0d0",8,
-                              NULL);
-        }
-        
-        (*sip->shape_notify)(sip->notify_data);
-        return;
-        
-}
-
 NhlErrorTypes NgShapeInfoGridEditFocusCell
 (
         NgShapeInfoGrid		*shape_info_grid,
-        unsigned char		how
+        unsigned char		how,
+        Boolean			synchro_mode_update
         )
 {
         NhlErrorTypes ret;
@@ -1101,11 +1092,8 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
         sip = &sirp->shapeinfogrid;
 
         if (sirp->edit_row == -1)
-                return;
-        
-        XmLGridGetFocus(sip->grid,&row,&col,&focus);
-        if (row < 0 || col < 0)
-                return NhlFATAL;
+                return NhlNOERROR;
+
         row = sirp->edit_row;
         col = sip->selected_dim;
         if (how < NG_INCREMENT || how > NG_MIN_VAL)
@@ -1129,6 +1117,10 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
                       XmRString,"lightsalmon",12,
                       NULL);
 
+        if (synchro_mode_update && how != NG_MIN_VAL && how != NG_MAX_VAL) {
+                UpdateState(shape_info_grid,row,col);
+                return NhlNOERROR;
+        }
         if (! sip->synchro_step || row == STRIDE_ROW) {
                 if (sip->index_mode ||
                     sirp->vinfo->coordnames[col] <= NrmNULLQUARK ||
@@ -1142,8 +1134,10 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
                         XmLGridSetStringsPos(sip->grid,XmCONTENT,row,
                                              XmCONTENT,col,Buffer);
                 }
-                return;
+                return NhlNOERROR;
         }
+            /* else if synchro_step */
+        
         if (how == NG_INCREMENT)
                 how = NG_STRIDE_INC;
         else if (how == NG_DECREMENT)
@@ -1166,8 +1160,10 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
                 XmLGridSetStringsPos(sip->grid,XmCONTENT,FINISH_ROW,
                                      XmCONTENT,col,Buffer);
         }
-        
-        UpdateState(shape_info_grid,row,col);
+
+        if (how == NG_MIN_VAL || how == NG_MAX_VAL) {
+                UpdateState(shape_info_grid,row,col);
+        }
         return NhlNOERROR;
 }
 
@@ -1186,12 +1182,18 @@ NhlErrorTypes NgShapeInfoGridEditFocusCellComplete
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
         sip = &sirp->shapeinfogrid;
-        
+
+        if (sirp->edit_row < 0)
+		return NhlFATAL;
+#if 0
         XmLGridGetFocus(sip->grid,&row,&col,&focus);
         if (row < 0 || col < 0)
                 return NhlFATAL;
+#endif
+	if (sirp->manual_edit_started)
+		XmLGridEditComplete(sip->grid);
 
-        UpdateState(shape_info_grid,row,col);
+        UpdateState(shape_info_grid,sirp->edit_row,sip->selected_dim);
         if (! sip->synchro_step)
                 sirp->edit_row = -1;
         
@@ -1211,7 +1213,9 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
         Boolean focus;
         int start_row,finish_row;
         
-        printf("synchro step mode %s\n",on ? "True" : "False");
+#if DEBUG_SHAPE_INFO_GRID      
+        fprintf(stderr,"synchro step mode %s\n",on ? "True" : "False");
+#endif
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
@@ -1219,9 +1223,15 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
 
         sip->synchro_step = on;
          
-        XmLGridGetFocus(sip->grid,&row,&col,&focus);
-        if (row < 0 || col < 0)
-                return NhlNOERROR;
+	if (sirp->edit_row < 0) {
+		XmLGridGetFocus(sip->grid,&row,&col,&focus);
+        	if (row < 0 || col < 0)
+                	return NhlNOERROR;
+	}
+	else {
+		row = sirp->edit_row;
+		col = sip->selected_dim;
+	}
         
         XtVaSetValues(sip->grid,
                       XmNrowRangeStart,START_ROW,
@@ -1230,8 +1240,20 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
                       XtVaTypedArg,
                       XmNcellBackground,XmRString,"#d0d0d0",8,
                       NULL);
+	if (! on) {
+		if (sirp->edit_row > -1) {
+			XtVaSetValues(sip->grid,
+				      XmNrow,sirp->edit_row,
+				      XmNcolumn,sip->selected_dim,
+				      XtVaTypedArg,XmNcellBackground,
+				      XmRString,"lightsalmon",12,
+				      NULL);
+		}
+		return NhlNOERROR;
+	}
         
-        if (sip->synchro_step && row != STRIDE_ROW) {
+	sirp->edit_row = row;
+        if (sip->synchro_step && sirp->edit_row != STRIDE_ROW) {
                 XtVaSetValues(sip->grid,
                               XmNrowRangeStart,START_ROW,
                               XmNrowRangeEnd,FINISH_ROW,
@@ -1239,10 +1261,8 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
                               XtVaTypedArg,XmNcellBackground,
                               XmRString,"lightsalmon",12,
                               NULL);
-                XmLGridSetFocus(sip->grid,row,sip->selected_dim);
+		UpdateState(shape_info_grid,sirp->edit_row,sip->selected_dim);
         }
-
-                
         return NhlNOERROR;
 }
         
@@ -1271,23 +1291,28 @@ NhlErrorTypes NgUpdateShapeInfoGrid
                 Buflen = BUFINC;
         }
 
-        if (sirp->qfileref != qfileref || sirp->vinfo != vinfo)
+/*
+ * a side-effect of this call is to set the focus, thus calling CellFocusCB,
+ * and setting the focus cell; put this first to avoid changing the background
+ * of the edit cell prematurely
+ */
+        XtVaSetValues(sip->grid,
+                      XmNcolumns,vinfo->n_dims,
+                      NULL);
+
+        if (sirp->qfileref != qfileref || sirp->vinfo != vinfo) {
                 sirp->edit_row = -1;
-        
+		sirp->manual_edit_started = False;
+	}
         sirp->qfileref = qfileref;
         sirp->vinfo = vinfo;
         
 #if DEBUG_SHAPE_INFO_GRID
-
         fprintf(stderr,"shapeinfo rows %d vis rows %d height %d\n",
                nrows, nvisrows,height);
 #endif
 
         UpdateCoordInfo(sip);
-        
-        XtVaSetValues(sip->grid,
-                      XmNcolumns,sirp->vinfo->n_dims,
-                      NULL);
         XtVaSetValues(sip->grid,
                       XmNcolumnRangeStart,0,
                       XmNcolumnRangeEnd,sirp->vinfo->n_dims-1,
