@@ -3081,11 +3081,17 @@ struct _NclSelectionRecord * sel_ptr;
 */
 			exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
 			if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
+				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
+				if(ret < NhlWARNING) {
+                                	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString( attname));
+                                	return(NhlFATAL);
+                        	}
+				tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
 				ret = (*thefile->file.format_funcs->write_var_att)(
 					thefile->file.private_rec,
 					var,
 					attname,
-					value->multidval.val
+					tmp_att_md->multidval.val
 				);
 				return(ret);
 			} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
