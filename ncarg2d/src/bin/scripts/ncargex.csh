@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.56 1994-02-04 17:22:12 haley Exp $
+#   $Id: ncargex.csh,v 1.57 1994-02-23 22:41:41 haley Exp $
 #
 
 #********************#
@@ -24,6 +24,13 @@ if ($#argv < 1) then
   echo "See <man ncargex>                                                   "
   exit
 endif
+
+#*********************************************#
+#                                             #
+# Make sure NCARG_ROOT is set for this script #
+#                                             #
+#*********************************************#
+setenv NCARG_ROOT  `ncargpath root`
 
 #*********************************#
 #                                 #

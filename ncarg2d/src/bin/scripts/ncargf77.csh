@@ -1,7 +1,28 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.12 1993-04-19 20:24:55 haley Exp $
+#   $Id: ncargf77.csh,v 1.13 1994-02-23 22:41:43 haley Exp $
 #
+
+#********************#
+#                    #
+#   NCARGF77 USAGE   #
+#                    #
+#********************#
+if ($#argv < 1) then
+  echo "usage: ncargf77 [-smooth] [-quick] [-super] [-agupwrtx] [-ictrans]"
+  echo "                [-noX11] [Fortran 77 options] ... filename        "
+  echo ""
+  echo "See <man ncargf77>                                                "
+  exit
+endif
+
+#*********************************************#
+#                                             #
+# Make sure NCARG_ROOT is set for this script #
+#                                             #
+#*********************************************#
+setenv NCARG_ROOT  `ncargpath root`
+
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_F77"
@@ -32,11 +53,7 @@ set stub_file   = ""
 #
 # set up default libraries
 #
-if ("$system" == "Ardent" || "$system" == "AIX370") then
-  set libncarg  =  "$ro/libncarbd.o $libdir/libncarg.a"
-else
-  set libncarg  =  "$libdir/libncarg.a"
-endif
+set libncarg  =  "$libdir/libncarg.a"
 set libgks     = "$libdir/libncarg_gks.a"
 set liblocal   = "$libdir/libncarg_loc.a"
 set libncarg_c = "$libdir/libncarg_c.a"
@@ -52,7 +69,7 @@ set libs
 
 foreach arg ($argv)
 
-  switch ($arg)
+    switch ($arg)
 
     case "-sungks":
         echo "Using Sun GKS"
@@ -129,7 +146,7 @@ foreach arg ($argv)
         echo "Normal Dash"
         breaksw
 
-    case "-ictrans"
+    case "-ictrans":
         echo "Output to ictrans"
         set ctrans_libs = `ctlib`
         set libX11   = ""
@@ -153,7 +170,7 @@ foreach arg ($argv)
         set newargv = "$newargv $arg"
         breaksw
 
-  endsw
+    endsw
 end
 
 set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libmath $libextra"

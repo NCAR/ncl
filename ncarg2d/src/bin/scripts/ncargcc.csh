@@ -1,13 +1,34 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.24 1993-03-11 05:39:00 haley Exp $
+#	$Id: ncargcc.csh,v 1.25 1994-02-23 22:41:38 haley Exp $
 #
+
+#*******************#
+#                   #
+#   NCARGCC USAGE   #
+#                   #
+#*******************#
+if ($#argv < 1) then
+  echo "usage: ncargcc [-smooth] [-quick] [-super] [-agupwrtx] [-ictrans]"
+  echo "               [-noX11] [cc options] ... filename                "
+  echo ""
+  echo "See <man ncargcc>                                                "
+  exit
+endif
+#*********************************************#
+#                                             #
+# Make sure NCARG_ROOT is set for this script #
+#                                             #
+#*********************************************#
+setenv NCARG_ROOT  `ncargpath root`
+
+
 set XLIBPATH = ""
-set system = "SED_SYSTEM_INCLUDE"
-set cc     = "SED_CC"
-set libdir = `ncargpath SED_LIBDIR`
-set incdir = `ncargpath SED_INCDIR`
-set ro     = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
+set system   = "SED_SYSTEM_INCLUDE"
+set cc       = "SED_CC"
+set libdir   = `ncargpath SED_LIBDIR`
+set incdir   = `ncargpath SED_INCDIR`
+set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 
 if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
@@ -19,35 +40,18 @@ if (! -d "$incdir") then
   exit 1
 endif
 
-set loadopts = ""
+set loadopts = "SED_ALLDEFINES"
 set libextra = ""
-
-if ("$system" == "Sun4") then
-  set loadopts = "-Xa -DNeedFuncProto"
-else if ("$system" == "Sun4Solaris") then
-  set loadopts = "-Xc -DNeedFuncProto"
-  set libextra = "/usr/ucblib/libucb.a"
-else if ("$system" == "SGI4D") then
-  set loadopts = "-ansiposix -DNeedFuncProto"
-else if ("$system" == "HPUX_snake") then
-  set loadopts = "-DNeedFuncProto -D_HPUX_SOURCE"
-else if ("$system" == "AIX_RS6000") then
-  set loadopts = "-DNeedFuncProto -D_POSIX_SOURCE"
-endif    
 
 set newargv = "$cc -I$incdir $loadopts"
 
 set ctrans_libs = ""
 set stub_file   = ""
 
+#
 # set up default libraries
-
-if ("$system" == "Ardent" || "$system" == "AIX370") then
-  set libncarg    =       "$ro/libncarbd.o $libdir/libncarg.a"
-else
-  set libncarg    =       "$libdir/libncarg.a"
-endif
-
+#
+set libncarg    =       "$libdir/libncarg.a"
 set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
 set liblocal    = "$libdir/libncarg_loc.a"
 set libncarg_c  = "$libdir/libncarg_c.a"

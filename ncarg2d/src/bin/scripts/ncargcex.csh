@@ -1,15 +1,32 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.5 1993-03-01 23:59:17 haley Exp $
+#	$Id: ncargcex.csh,v 1.6 1994-02-23 22:41:39 haley Exp $
 #
 
+#********************#
+#                    #
+#   NCARGCEX USAGE   #
+#                    #
+#********************#
 if ($#argv < 1) then
-echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
-echo "                                                                     "
-echo "See <man ncargcex>                                                   "
-exit
+  echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
+  echo "                                                                     "
+  echo "See <man ncargcex>                                                   "
+  exit
 endif
 
+#*********************************************#
+#                                             #
+# Make sure NCARG_ROOT is set for this script #
+#                                             #
+#*********************************************#
+setenv NCARG_ROOT  `ncargpath root`
+
+#*********************************#
+#                                 #
+# Check for existing directories  #
+#                                 #
+#*********************************#
 set example_dir = `ncargpath SED_EXAMPLESDIR`
 if ($status != 0) then
         exit 1
