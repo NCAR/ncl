@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.33 1994-05-03 13:54:37 haley Exp $
+#	$Id: ncargcc.csh,v 1.34 1994-08-11 16:51:31 haley Exp $
 #
 
 #*********************************************#
@@ -74,7 +74,6 @@ set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 #
 set libncarg    =       "$libdir/libncarg.a"
 set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
-set liblocal    = "$libdir/libncarg_loc.a"
 set libncarg_c  = "$libdir/libncarg_c.a"
 set libcbind    = "$libdir/libncargC.a"
 set libX11      = "$XLIBPATH -lX11"
@@ -177,7 +176,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11 $libextra"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $f77libs $libX11 $libextra"
 
 echo $newargv
 eval $newargv

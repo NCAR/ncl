@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.20 1994-04-19 14:58:33 haley Exp $
+#   $Id: ncargf77.csh,v 1.21 1994-08-11 16:51:33 haley Exp $
 #
 
 #*********************************************#
@@ -44,7 +44,6 @@ set stub_file   = ""
 #
 set libncarg  =  "$libdir/libncarg.a"
 set libgks     = "$libdir/libncarg_gks.a"
-set liblocal   = "$libdir/libncarg_loc.a"
 set libncarg_c = "$libdir/libncarg_c.a"
 
 set libmath  = "-lm"
@@ -162,7 +161,7 @@ foreach arg ($argv)
     endsw
 end
 
-set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libmath $libextra"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $libX11 $libmath $libextra"
 
 echo $newargv
 eval $newargv
