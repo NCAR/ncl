@@ -6,10 +6,13 @@
       INTEGER I,J,KR,M,N
       DOUBLE PRECISION T,PI,TWOPI,REPS,AA,BB,CC,DD,XN,XD,Y,CY,SY,TEMP
 
-      DOUBLE PRECISION SUMF,SCPF
+      DOUBLE PRECISION DSUMFR,DSCPFR
 
 c +++ very old fortran 66 ++++ used arithmetic "if"
 c         I have made some minor changes made
+
+c note: changed names SCPF=>DSCPFR and   SUMF=>DSUMFR
+c       to minimize possible name conflicts with other funtions/subroutines
 c
 c ***** This gives the same answers as IMSL's FROTA *****
 c *****      with w=1.0, norm=1, maxit=30           *****
@@ -57,7 +60,7 @@ C this matches IMSL
 
 C normalize the rows of v
       DO I = 1,NV
-          B(I) = SQRT(SUMF(V, (-I), (-NF),ND))
+          B(I) = SQRT(DSUMFR(V, (-I), (-NF),ND))
           DO J = 1,NF
               V(I,J) = V(I,J)/B(I)
           END DO
@@ -74,10 +77,10 @@ C compute angle of rotation
                       C(I) = 2.0D0*V(I,M)*V(I,N)
                   END DO
 
-                  AA = SUMF(A,1,NV,ND)
-                  BB = SUMF(C,1,NV,ND)
-                  CC = SUMF(A,1, (-NV),ND) - SUMF(C,1, (-NV),ND)
-                  DD = SCPF(A,C,1,1,NV,ND)*2.0D0
+                  AA = DSUMFR(A,1,NV,ND)
+                  BB = DSUMFR(C,1,NV,ND)
+                  CC = DSUMFR(A,1, (-NV),ND) - DSUMFR(C,1, (-NV),ND)
+                  DD = DSCPFR(A,C,1,1,NV,ND)*2.0D0
                   XN = DD - 2.0D0*AA*BB/T
 c compute angle of rotation
                   XD = CC - (AA*AA-BB*BB)/T
@@ -111,7 +114,7 @@ c denormailize rows of v
               V(I,J) = V(I,J)*B(I)
           END DO
 c % variation
-          A(J) = (SUMF(V,J, (-NV),ND)/T)*100.D0
+          A(J) = (DSUMFR(V,J, (-NV),ND)/T)*100.D0
       END DO
 
       DO I = 1,NV
@@ -122,7 +125,7 @@ C % communitalities
       RETURN
       END
 c ------------------------------------
-      DOUBLE PRECISION FUNCTION SUMF(X,KK,NN,ND)
+      DOUBLE PRECISION FUNCTION DSUMFR(X,KK,NN,ND)
       IMPLICIT NONE
       INTEGER KK,NN,ND
       DOUBLE PRECISION X(ND,1)
@@ -139,10 +142,12 @@ c       kk<0 means it is a   row  vector
 c nd  = actual first dimension of x in the
 c       aclling routine
 
+c note: changed name SUMF=>DSUMFR to minimize possible name conflicts
+
 C local
       INTEGER N,K,I
 
-      SUMF = 0.0D0
+      DSUMFR = 0.0D0
       N = IABS(NN)
       K = IABS(KK)
       IF (NN.LE.0) THEN
@@ -156,32 +161,32 @@ C local
       GO TO 45
    15 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(K,I)*X(K,I)
+          DSUMFR = DSUMFR + X(K,I)*X(K,I)
       END DO
       RETURN
 
    25 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(I,K)*X(I,K)
+          DSUMFR = DSUMFR + X(I,K)*X(I,K)
       END DO
       RETURN
 
    35 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(K,I)
+          DSUMFR = DSUMFR + X(K,I)
       END DO
       RETURN
 
    45 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(I,K)
+          DSUMFR = DSUMFR + X(I,K)
       END DO
    55 CONTINUE
       RETURN
 
       END
 c ------------------------------------------------
-      DOUBLE PRECISION FUNCTION SCPF(X,Y,KX,KY,N,ND)
+      DOUBLE PRECISION FUNCTION DSCPFR(X,Y,KX,KY,N,ND)
       IMPLICIT NONE
       INTEGER KX,KY,N,ND
       DOUBLE PRECISION X(ND,1),Y(ND,1)
@@ -199,9 +204,11 @@ c         if kx or ky is negative and not 1, it is a   row  vector
 c n     - the number of products to be summed, elements of each vector
 c nd    - actual first dimension of x in the calling routine
 
+c note: changed name SCPF=>DSCPFR to minimize possible name conflicts
+
       J = IABS(KX)
       K = IABS(KY)
-      SCPF = 0.0D0
+      DSCPFR = 0.0D0
 
       IF (KX.LE.0) THEN
           IF (KX.EQ.0) GO TO 55
@@ -214,25 +221,25 @@ c nd    - actual first dimension of x in the calling routine
       GO TO 45
    15 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(J,I)*Y(K,I)
+          DSCPFR = DSCPFR + X(J,I)*Y(K,I)
       END DO
       RETURN
 
    25 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(J,I)*Y(I,K)
+          DSCPFR = DSCPFR + X(J,I)*Y(I,K)
       END DO
       RETURN
 
    35 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(I,J)*Y(K,I)
+          DSCPFR = DSCPFR + X(I,J)*Y(K,I)
       END DO
       RETURN
 
    45 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(I,J)*Y(I,K)
+          DSCPFR = DSCPFR + X(I,J)*Y(I,K)
       END DO
       RETURN
 
