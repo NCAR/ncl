@@ -2723,7 +2723,7 @@ int rw_status;
 		for(i = 0; i < n_names; i++){
 			file_out->file.file_dim_info[i] = (*file_out->file.format_funcs->get_dim_info)(file_out->file.private_rec,name_list[i]);
 			index = FileIsVar(file_out,name_list[i]);
-			if(index > -1) {
+			if(index > -1 && file_out->file.var_info[index]->num_dimensions == 1) {
 				file_out->file.coord_vars[i] = file_out->file.var_info[index];
 			}
 		}
@@ -3666,7 +3666,7 @@ struct _NclSelectionRecord* sel_ptr;
 			ret = MyFileWriteVar(thefile,coord_name,value,sel_ptr,NULL,FILE_COORD_VAR_ACCESS);
 			if(thefile->file.coord_vars[dindex] == NULL) {
 				index = FileIsVar(thefile,coord_name);
-				if(index > -1) {
+				if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
 					thefile->file.coord_vars[dindex] = thefile->file.var_info[index];
 				} 
 			}	

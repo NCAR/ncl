@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.31 2004-02-23 20:16:42 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.32 2004-06-17 21:03:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -237,7 +237,7 @@ NetCdfAttInqRec* frec
 				continue;
 			break;
 		}
-		if (! vl)
+		if (! vl || vl->var_inq->n_dims > 1)
 			continue;
 	        vl->var_inq->value = NclMalloc(nctypelen(vl->var_inq->data_type) * dim_inq->size);
 		ret = ncvarget(ncid,vl->var_inq->varid,&start,&dim_inq->size,vl->var_inq->value);
@@ -443,7 +443,6 @@ NclQuark path;
 #endif
 {
 	int id = 0;
-
 	id = nccreate(NrmQuarkToString(path),(NC_WRITE|NC_NOCLOBBER));
 	if(id > -1) {
 		ncendef(id);
