@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.23 1996-05-16 23:46:23 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.24 1996-05-23 00:42:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2186,8 +2186,10 @@ int n;
 			}
 		}
 				
+#if 0
 		printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 		       count,pcount,npoints,ixout+1);
+#endif
 		ret = _NhlWorkstationFill(irinst->trobj.wkptr,
 					  xout,yout,ixout+1);
 
@@ -2300,7 +2302,10 @@ int n;
 						-.1 : 1.1;
 			}
 			if (status) {
-				printf("fatal\n");
+				e_text = "%s: internal error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
 			}
 		}
 		else {
@@ -2393,8 +2398,10 @@ int n;
 		yout[ixout] = yout[0];
 	}
 
+#if 0
 	printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 	       count,pcount,npoints,ixout+1);
+#endif
 	ret = _NhlWorkstationFill(irinst->trobj.wkptr,xout,yout,ixout+1);
 
 	NhlFree(xbuf);
