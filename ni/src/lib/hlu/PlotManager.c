@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.65 2000-10-25 18:54:46 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.66 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/PlotManagerP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
-#include <ncarg/hlu/MapTransObj.h>
+#include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
@@ -3857,33 +3857,83 @@ ManageTickMarks
 	}
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
-	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
-/*
- * Set the tickmarks to dummy values if the TickMark is just being
- * created. Otherwise leave its state intact (except that viewport
- * values may be updated). Set the
- * AnnoRec status to Never, to ensure that it does not actually get
- * displayed but do not disturb the TickMarkDisplaymode. That
- * way, it is possible to ensure that TickMark stays up to date.
- */
-		if (ovp->display_tickmarks > NhlNEVER) {
-			e_text = 
-	"%s: MAP tick mark style not yet implemented; turning tick marks off";
-			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+	if (trobj_name == NhlmapTransObjClass->base_class.class_name &&
+	    ! _NhlIsClass(ovnew->base.parent,NhlmapPlotClass)) {
+               if (ovp->display_tickmarks > NhlNEVER) {
+                       e_text = 
+       "%s: Map tick marks only supported for NhlmapPlotClass; turning tick marks off";
+                       NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+               }
+               anno_rec->status = NhlNEVER;
+	       x_min = 0.0;
+	       x_max = 1.0;
+	       x_log = False;
+	       x_reverse = False;
+	       y_min = 0.0;
+	       y_max = 1.0;
+	       y_log = False;
+	       y_reverse = False;
+	       ovp->x_tm_style = NhlLINEAR;
+	       ovp->y_tm_style = NhlLINEAR;
+	}
+	else if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
+		float lndc,rndc,bndc,tndc;
+		float lw,rw,bw,tw;
+		NhlViewLayerPart *vwp = &(((NhlViewLayer)ovnew)->view);
+		NhlVAGetValues(trobj->base.id,
+			       NhlNmpLeftWindowF,&lw,
+			       NhlNmpRightWindowF,&rw,
+			       NhlNmpBottomWindowF,&bw,
+			       NhlNmpTopWindowF,&tw,
+			       NhlNmpLeftNDCF,&lndc,
+			       NhlNmpRightNDCF,&rndc,
+			       NhlNmpBottomNDCF,&bndc,
+			       NhlNmpTopNDCF,&tndc,
+			       NULL);
+		if (_NhlCmpFAny(vwp->x,lndc,6) == 0.0 &&
+		    _NhlCmpFAny(vwp->y,tndc,6) == 0.0 &&
+		    _NhlCmpFAny(vwp->width,rndc-lndc,6) == 0.0 &&
+		    _NhlCmpFAny(vwp->height,tndc-bndc,6) == 0.0) {
+			x_min = lw;
+			x_max = rw;
+			y_min = bw;
+			y_max = tw;
 		}
-		anno_rec->status = NhlNEVER;
-		if (ovp->tickmarks == NULL) {
-			x_min = 0.0;
-			x_max = 1.0;
-			x_log = False;
-			x_reverse = False;
-			y_min = 0.0;
-			y_max = 1.0;
-			y_log = False;
-			y_reverse = False;
-			ovp->x_tm_style = NhlLINEAR;
-			ovp->y_tm_style = NhlLINEAR;
+		else {
+			float w_w = vwp->width * (rw - lw) / (rndc - lndc);
+			float w_h = vwp->height * (tw - bw) / (tndc - bndc);
+			if (lndc <= vwp->x)
+				x_min = lw;
+			else {
+				x_min = lw - w_w * 
+					(lndc - vwp->x) / vwp->width;
+			}
+			if (rndc >= vwp->x + vwp->width)
+				x_max = rw;
+			else {
+				x_max = rw + w_w *
+				      (vwp->x + vwp->width - rndc)/vwp->width;
+			}
+			if (bndc <= vwp->y - vwp->height)
+				y_min = bw;
+			else {
+				y_min = bw - w_h * 
+				   (bndc - vwp->y + vwp->height)/vwp->height;
+			}
+			if (tndc >= vwp->y)
+				y_max = tw;
+			else {
+				y_max = tw + w_h *
+				      (vwp->y - tndc) / vwp->height;
+			}
 		}
+
+		x_log = False;
+		x_reverse = False;
+		y_log = False;
+		y_reverse = False;
+		ovp->x_tm_style = NhlLINEAR;
+		ovp->y_tm_style = NhlLINEAR;
 	}
 	else if (trobj_name == 
 		 NhllogLinTransObjClass->base_class.class_name) {
@@ -3974,72 +4024,69 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-	if (ovp->tickmarks == NULL || 
-	    trobj_name != NhlmapTransObjClass->base_class.class_name) {
-		if (x_reverse) {
-			d_left = x_max; 
-			d_right = x_min;
-		}
-		else {
-			d_left = x_min; 
-			d_right = x_max;
-		}
-		if (y_reverse) {
-			d_bottom = y_max; 
-			d_top = y_min;
-		}
-		else {
-			d_bottom = y_min; 
-			d_top = y_max;
-		}
-		if (ovp->tickmarks == NULL) {
-			NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
-			NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
+	if (x_reverse) {
+		d_left = x_max; 
+		d_right = x_min;
+	}
+	else {
+		d_left = x_min; 
+		d_right = x_max;
+	}
+	if (y_reverse) {
+		d_bottom = y_max; 
+		d_top = y_min;
+	}
+	else {
+		d_bottom = y_min; 
+		d_top = y_max;
+	}
+	if (ovp->tickmarks == NULL) {
+		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNtmYLDataBottomF,d_bottom);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNtmYRDataBottomF,d_bottom);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
+	}
+	else {
+		NhlVAGetValues(ovp->tickmarks->base.id,
+			       NhlNtmXBDataLeftF,&xbd_left,
+			       NhlNtmXBDataRightF,&xbd_right,
+			       NhlNtmYLDataBottomF,&yld_bottom,
+			       NhlNtmYLDataTopF,&yld_top,
+			       NhlNtmXTDataLeftF,&xtd_left,
+			       NhlNtmXTDataRightF,&xtd_right,
+			       NhlNtmYRDataBottomF,&yrd_bottom,
+			       NhlNtmYRDataTopF,&yrd_top,
+			       NULL);
+		if (xbd_left != d_left)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXBDataLeftF,d_left);
+		if (xtd_left != d_left)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTDataLeftF,d_left);
+		if (xbd_right != d_right)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXBDataRightF,d_right);
+		if (xtd_right != d_right)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTDataRightF,d_right);
+		if (yld_bottom != d_bottom)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYLDataBottomF,d_bottom);
-			NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
-			NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
-			NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
+		if (yrd_bottom != d_bottom) 
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYRDataBottomF,d_bottom);
-			NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
-		}
-		else {
-			NhlVAGetValues(ovp->tickmarks->base.id,
-				       NhlNtmXBDataLeftF,&xbd_left,
-				       NhlNtmXBDataRightF,&xbd_right,
-				       NhlNtmYLDataBottomF,&yld_bottom,
-				       NhlNtmYLDataTopF,&yld_top,
-				       NhlNtmXTDataLeftF,&xtd_left,
-				       NhlNtmXTDataRightF,&xtd_right,
-				       NhlNtmYRDataBottomF,&yrd_bottom,
-				       NhlNtmYRDataTopF,&yrd_top,
-				       NULL);
-			if (xbd_left != d_left)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmXBDataLeftF,d_left);
-			if (xtd_left != d_left)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmXTDataLeftF,d_left);
-			if (xbd_right != d_right)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmXBDataRightF,d_right);
-			if (xtd_right != d_right)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmXTDataRightF,d_right);
-			if (yld_bottom != d_bottom)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmYLDataBottomF,d_bottom);
-			if (yrd_bottom != d_bottom) 
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmYRDataBottomF,d_bottom);
-			if (yld_top != d_top)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmYLDataTopF,d_top);
-			if (yrd_top != d_top)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtmYRDataTopF,d_top);
-		}
+		if (yld_top != d_top)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYLDataTopF,d_top);
+		if (yrd_top != d_top)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRDataTopF,d_top);
 	}
 		 
 /*

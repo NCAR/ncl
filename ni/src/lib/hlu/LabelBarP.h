@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.13 2000-08-30 00:38:01 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.14 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,7 @@ typedef struct _NhlLabelBarLayerPart {
 	NhlGenArray	label_strings;
 	NhlGenArray	box_fractions;
 
+	NhlBoolean cull_label_overlaps;
 	int	labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;

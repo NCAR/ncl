@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.22 1999-03-27 00:44:52 dbrown Exp $
+ *      $Id: MultiText.c,v 1.23 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/hlu/MultiTextP.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <math.h>
 
 /* Resources */
 #define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
@@ -49,6 +50,10 @@ static NhlResource resources[] = {
 	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
 		sizeof(float),Oset(max_len),NhlTString,"0.0",
 		 _NhlRES_GONLY,NULL},
+	{NhlNMtextCullOverlaps, NhlCMtextCullOverlaps, NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(cull_overlaps),NhlTImmediate,
+	 _NhlUSET((NhlPointer)True),0,NULL},
+
 	/*
 	 * These resources are actually resources in the TextItem object
 	 * that is used by this object.  If there are changes in the
@@ -299,6 +304,9 @@ CalculateGeometry
 
 	for(i=0;i < l->multitext.num_strings;i++){
 
+		if (l->multitext.cull_overlaps && ! l->multitext.do_draw[i])
+			continue;
+
 		if(l->multitext.orientation == NhlMTEXT_X_CONST){
 			NhlVASetValues(l->multitext.text_object,
 				NhlNtxString,l->multitext.text_strings[i],
@@ -369,19 +377,12 @@ GetMaxTextLength
 #endif
 {
 	int		i;
-	float		twidth;
-	float		angle;
+	float		twidth,theight;
 
 	
 	*maxlen = 0.0;
-	angle = l->multitext.direction == NhlDOWN ? 90.0 : 0.0;
-
-	/*
-	 * Set the angle to a standard value
-	 */
-	NhlVASetValues(l->multitext.text_object,
-		       NhlNtxAngleF,angle,       
-		       NULL);
+	l->multitext.max_extent = 0.0;
+	
 
 	for(i=0;i < l->multitext.num_strings;i++){
 
@@ -389,8 +390,8 @@ GetMaxTextLength
 			NhlVASetValues(l->multitext.text_object,
 				NhlNtxString,l->multitext.text_strings[i],
 				NhlNtxPosXF,l->multitext.const_pos,
+				NhlNtxAngleF,l->multitext.angle,
 				NhlNtxPosYF,l->multitext.pos_array[i],
-				NhlNtxAngleF,angle,       
 				NULL);
 		}
 		else{
@@ -398,7 +399,7 @@ GetMaxTextLength
 				NhlNtxString,l->multitext.text_strings[i],
 				NhlNtxPosXF,l->multitext.pos_array[i],
 				NhlNtxPosYF,l->multitext.const_pos,
-				NhlNtxAngleF,angle,
+				NhlNtxAngleF,l->multitext.angle,
 				NULL);
 		}
 
@@ -407,22 +408,152 @@ GetMaxTextLength
 		 */
 		NhlVAGetValues(l->multitext.text_object,
 			       NhlNvpWidthF,	&twidth,
+			       NhlNvpHeightF,	&theight,
 			       NULL);
 
-		if (twidth > *maxlen)
-			*maxlen = twidth;
+		if (l->multitext.direction == NhlDOWN) {
+			if (theight > *maxlen)
+				*maxlen = theight;
+		}
+		else {
+			if (twidth > *maxlen)
+				*maxlen = twidth;
+		}
 
+		if (l->multitext.cull_overlaps) {
+			if(l->multitext.orientation == NhlMTEXT_X_CONST)
+				l->multitext.extents[i] = theight;
+			else
+				l->multitext.extents[i] = twidth;
+
+			if (l->multitext.extents[i] > l->multitext.max_extent)
+				l->multitext.max_extent = 
+					l->multitext.extents[i];
+		}	
 	}
-	/*
-	 * Restore the the text angle
-	 */
-
-	NhlVASetValues(l->multitext.text_object,
-		       NhlNtxAngleF,l->multitext.angle,
-		       NULL);
-
 	return NhlNOERROR;
 }
+
+/*
+ * Function:	GetActualCharCount
+ *
+ * Description:	Counts only characters that are not function code directives
+ *              
+ *
+ * In Args:	
+ *		NhlMultiTextLayer	l,		The NhlLayer
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	char count
+ * Side Effect:	none
+ */
+static int
+GetActualCharCount
+#if	NhlNeedProto
+(
+	NhlString text,
+	char	fcode
+)
+#else
+(text, fcode)
+NhlString text;
+char	fcode;
+#endif
+{
+	char *cp;
+	int count = 0;
+	NhlBoolean in = False;
+
+	for (cp = text; *cp != '\0'; cp++) {
+		if (*cp == fcode) {
+			in = in ? False : True;
+			continue;
+		}
+		if (in)
+			continue;
+		count++;
+	}
+	return count;
+
+}
+/*
+ * Function:	SetDrawFlags
+ *
+ * Description:	If cull_overlaps is set on, this routine figures out
+ *               which text items to eliminate to avoid overlap
+ *
+ * In Args:	
+ *		NhlMultiTextLayer	l,		The NhlLayer
+ *
+ * Out Args:	
+ *		float		*maxlen,	max text length
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	none
+ */
+static NhlErrorTypes
+SetDrawFlags
+#if	NhlNeedProto
+(
+	NhlMultiTextLayer	l		/* The NhlLayer		*/
+)
+#else
+(l,maxlen)
+	NhlMultiTextLayer	l;		/* The NhlLayer		*/
+#endif
+{
+	NhlMultiTextLayerPart *mtp = &(l->multitext);
+	float sep = mtp->max_extent / 12.0;
+	int min_length = 10000;
+	int pivot,last;
+	int i;
+	NhlErrorTypes ret = NhlNOERROR;
+
+	if (mtp->num_strings < 1)
+		return ret;
+
+	sep = MAX(mtp->max_extent / 12.0, l->multitext.font_height / 2.0); 
+
+	for (i = 0; i < mtp->num_strings; i++) {
+		int len;
+		if (strchr(mtp->text_strings[i],mtp->func_code))
+			len = GetActualCharCount
+				(mtp->text_strings[i],mtp->func_code);
+		else	
+			len = strlen(mtp->text_strings[i]);
+
+		if (len < min_length) {
+			min_length = len;
+			pivot = i;
+		}
+	}
+	mtp->do_draw[pivot] = True;
+	last = pivot;
+	for (i = pivot - 1; i >= 0; i--) {
+		if ((0.5 * (mtp->extents[last] + mtp->extents[i]) + sep) >
+		    fabs(mtp->pos_array[last] - mtp->pos_array[i]))
+			mtp->do_draw[i] = False;
+		else {
+			mtp->do_draw[i] = True;
+			last = i;
+		}
+	}
+	last = pivot;
+	for (i = pivot + 1; i < mtp->num_strings; i++) {
+		if ((0.5 * (mtp->extents[last] + mtp->extents[i]) + sep) >
+		    fabs(mtp->pos_array[i] - mtp->pos_array[last]))
+			mtp->do_draw[i] = False;
+		else {
+			mtp->do_draw[i] = True;
+			last = i;
+		}
+	}
+	return ret;
+}
+	
 
 /*
  * Function:	MultiTextInitialize
@@ -469,7 +600,10 @@ MultiTextInitialize
 	char		**text_strings;
 	char		name[128];
 	float		x,y,width,height;
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	ret = NhlNOERROR,subret = NhlNOERROR;
+
+	mtnew->multitext.extents = NULL;
+	mtnew->multitext.do_draw = NULL;
 
 	if(num_strings > 0){
 
@@ -486,7 +620,7 @@ MultiTextInitialize
 					mtreq->multitext.text_strings[i]);
 		}
 
-		/* Allocat memory for Position Array */
+		/* Allocate memory for Position Array */
 
 		mtnew->multitext.pos_array =
 			(float*)NhlMalloc((unsigned)num_strings*sizeof(float));
@@ -494,6 +628,14 @@ MultiTextInitialize
 		for(i=0;i<num_strings;i++)
 			mtnew->multitext.pos_array[i] =
 						mtreq->multitext.pos_array[i];
+
+		if (mtnew->multitext.cull_overlaps) {
+			mtnew->multitext.extents = 
+				(float*)NhlMalloc(num_strings*sizeof(float));
+			mtnew->multitext.do_draw = 
+				(NhlBoolean*)NhlMalloc
+				(num_strings*sizeof(NhlBoolean));
+		}
 	} else {
 		mtnew->multitext.text_strings = NULL;
 		mtnew->multitext.pos_array = NULL;
@@ -503,7 +645,7 @@ MultiTextInitialize
 	strcpy(name,new->base.name);
 	strcat(name,"-TxtItm");
 
-	ret = _NhlVACreateChild(&mtnew->multitext.text_object,name,
+	subret = _NhlVACreateChild(&mtnew->multitext.text_object,name,
 						NhltextItemClass,new,
 		NhlNtxAngleF,		mtnew->multitext.angle,
 		NhlNtxFont,		mtnew->multitext.font,
@@ -517,13 +659,24 @@ MultiTextInitialize
 		NhlNtxFuncCode,		mtnew->multitext.func_code,
 		NULL);
 
+	ret = MIN(ret,subret);
 	if(num_strings > 0){
 
 		/*
 		 * Get the maximum text len
 		 */
 
-		ret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+		subret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+		ret = MIN(ret,subret);
+
+		/*
+		 * if cull overlaps is on set up the draw flag array
+		 */
+
+		if (mtnew->multitext.cull_overlaps) {
+			subret = SetDrawFlags(mtnew);
+			ret = MIN(ret,subret);
+		}
 
 		/*
 		 * Determine size based on font characterestics and text_object
@@ -595,6 +748,17 @@ MultiTextSetValues
 				"Multitext SetValues:Changing number of strings w/o changing strings or positions");
 			return NhlFATAL;
 		}
+		if (mtnew->multitext.cull_overlaps) {
+			int num_strings = mtreq->multitext.num_strings;
+			NhlFree(mtnew->multitext.extents);
+			mtnew->multitext.extents = 
+				(float*)NhlMalloc(num_strings*sizeof(float));
+			NhlFree(mtnew->multitext.do_draw);
+			mtnew->multitext.do_draw = 
+				(NhlBoolean*)NhlMalloc
+				(num_strings*sizeof(NhlBoolean));
+		}
+		
 	}
 
 	/*
@@ -714,13 +878,21 @@ MultiTextSetValues
 	}
 
 
-	if (text_changed || attrs_changed) {
+	if (text_changed || attrs_changed ||
+	    mtnew->multitext.cull_overlaps != mtold->multitext.cull_overlaps) {
 
 		/*
 		 * Get the maximum text len
 		 */
 		
-		ret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+		lret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+		ret = MIN(ret,lret);
+
+		if (mtnew->multitext.cull_overlaps) {
+			lret = SetDrawFlags(mtnew);
+			ret = MIN(ret,lret);
+		}
+
 	}
 	/*
 	 * If nothing has changed - then a change in view class resources
@@ -827,6 +999,9 @@ MultiTextDraw
 
 	for(i=0;i < mtl->multitext.num_strings;i++){
 
+		if (mtl->multitext.cull_overlaps 
+		    && ! mtl->multitext.do_draw[i])
+			continue;
 		if(mtl->multitext.orientation == NhlMTEXT_X_CONST){
 			NhlVASetValues(mtl->multitext.text_object,
 				NhlNtxString,mtl->multitext.text_strings[i],
@@ -880,6 +1055,10 @@ MultiTextSegDraw
 	int		i;
 
 	for(i=0;i < mtl->multitext.num_strings;i++){
+
+		if (mtl->multitext.cull_overlaps 
+		    && ! mtl->multitext.do_draw[i])
+			continue;
 
 		if(mtl->multitext.orientation == NhlMTEXT_X_CONST){
 			NhlVASetValues(mtl->multitext.text_object,
@@ -943,6 +1122,12 @@ MultiTextDestroy
 
 	if(mtl->multitext.pos_array != NULL)
 		(void)NhlFree(mtl->multitext.pos_array);
+
+	if(mtl->multitext.extents != NULL)
+		(void)NhlFree(mtl->multitext.extents);
+
+	if(mtl->multitext.do_draw != NULL)
+		(void)NhlFree(mtl->multitext.do_draw);
 
 	return NhlNOERROR;
 }

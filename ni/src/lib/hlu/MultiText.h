@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.h,v 1.4 1995-04-27 16:58:34 dbrown Exp $
+ *      $Id: MultiText.h,v 1.5 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,8 @@
 #define NhlCMtextPosArray	"Mtext.PosArray"
 #define NhlNMtextMaxLenF	"mtext.MaxLenF"
 #define NhlCMtextMaxLenF	"Mtext.MaxLenF"
+#define NhlNMtextCullOverlaps	"mtext.CullOverlaps"
+#define NhlCMtextCullOverlaps	"Mtext.CullOverlaps"
 
 /*
  * New type name definitions

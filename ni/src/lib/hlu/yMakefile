@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.52 2001-10-09 00:18:38 haley Exp $
+#      $Id: yMakefile,v 1.53 2001-11-28 02:47:51 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -51,6 +51,7 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Callbacks.h CallbacksP.h ContourPlotI.h MapDataHandler.h \
 		MapDataHandlerP.h MapV40DataHandler.h MapV40DataHandlerP.h \
 		MapV41DataHandler.h MapV41DataHandlerP.h \
+		MapRGDataHandler.h MapRGDataHandlerP.h \
 		Primitive.h PrimitiveP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
@@ -68,7 +69,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Palette.c VectorField.c VectorPlot.c VecAnno.c \
 		StreamlinePlot.c Style.c GraphicStyle.c SubStyles.c \
 		Callbacks.c MapDataHandler.c MapV40DataHandler.c \
-		MapV41DataHandler.c Primitive.c \
+		MapV41DataHandler.c MapRGDataHandler.c Primitive.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
 		cmpf.c nicevals.c
 
@@ -87,7 +88,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Palette.o VectorField.o VectorPlot.o VecAnno.o \
 		StreamlinePlot.o Style.o GraphicStyle.o SubStyles.o \
 		Callbacks.o MapDataHandler.o MapV40DataHandler.o \
-		MapV41DataHandler.o Primitive.o \
+		MapV41DataHandler.o MapRGDataHandler.o Primitive.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
 		cmpf.o nicevals.o
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.20 1998-11-12 21:40:03 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.21 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -160,8 +160,28 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpLineAttrs	perim;
 	NhlmpLabelAttrs labels;
 
+	/* intercepted resources */
+
+        NhlAnnotationDisplayMode display_tickmarks;
+	NhlTickMarkMode	xb_mode;
+	NhlGenArray	xb_values;
+	NhlGenArray	xb_labels;
+	char		xb_label_fcode;
+	NhlTickMarkMode	xt_mode;
+	NhlGenArray	xt_values;
+	NhlGenArray	xt_labels;
+	char		xt_label_fcode;
+	NhlTickMarkMode	yl_mode;
+	NhlGenArray	yl_values;
+	NhlGenArray	yl_labels;
+	char		yl_label_fcode;
+	NhlTickMarkMode	yr_mode;
+	NhlGenArray	yr_values;
+	NhlGenArray	yr_labels;
+	char		yr_label_fcode;
+
+
         /* Private resources */
-        
 	NhlBoolean	dump_area_map;
 
 	/* Private Fields */
@@ -181,6 +201,49 @@ typedef struct NhlMapPlotLayerPart {
         NhlLayer	map_data_handler;
         NhlBoolean	init_draw;
         NhlBoolean	view_changed;
+
+	NhlGenArray	xbvalues;
+	NhlGenArray	xblabels;
+	NhlGenArray	xtvalues;
+	NhlGenArray	xtlabels;
+	NhlGenArray	ylvalues;
+	NhlGenArray	yllabels;
+	NhlGenArray	yrvalues;
+	NhlGenArray	yrlabels;
+	NhlBoolean	xb_major_length_set;
+	float 		xb_major_length;
+	NhlBoolean	xt_major_length_set;
+	float 		xt_major_length;
+	NhlBoolean	yl_major_length_set;
+	float 		yl_major_length;
+	NhlBoolean	yr_major_length_set;
+	float 		yr_major_length;
+	NhlBoolean	xb_font_height_set;
+	float 		xb_font_height;
+	NhlBoolean	xt_font_height_set;
+	float 		xt_font_height;
+	NhlBoolean	yl_font_height_set;
+	float 		yl_font_height;
+	NhlBoolean	yr_font_height_set;
+	float 		yr_font_height;
+
+	NhlBoolean	xb_on_set;
+	NhlBoolean	xb_on;
+	NhlBoolean	xt_on_set;
+	NhlBoolean	xt_on;
+	NhlBoolean	yl_on_set;
+	NhlBoolean	yl_on;
+	NhlBoolean	yr_on_set;
+	NhlBoolean	yr_on;
+
+	NhlBoolean	xb_labels_on_set;
+	NhlBoolean	xb_labels_on;
+	NhlBoolean	xt_labels_on_set;
+	NhlBoolean	xt_labels_on;
+	NhlBoolean	yl_labels_on_set;
+	NhlBoolean	yl_labels_on;
+	NhlBoolean	yr_labels_on_set;
+	NhlBoolean	yr_labels_on;
 
 } NhlMapPlotLayerPart;
 

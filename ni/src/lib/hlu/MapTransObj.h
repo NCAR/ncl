@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.10 2000-05-16 01:35:27 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.11 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ typedef enum _NhlProjection {
 	NhlORTHOGRAPHIC = 0, NhlSTEREOGRAPHIC, NhlLAMBERTEQUALAREA,
 	NhlGNOMONIC, NhlAZIMUTHALEQUIDISTANT, NhlSATELLITE,
 	NhlMOLLWEIDE, NhlMERCATOR, NhlCYLINDRICALEQUIDISTANT,
-	NhlLAMBERTCONFORMAL } NhlProjection;
+	NhlLAMBERTCONFORMAL, NhlROBINSON } NhlProjection;
 
 #define NhlTProjection	"Projection"
 

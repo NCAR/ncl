@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.14 2000-11-11 02:35:31 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.15 2001-11-28 02:47:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -318,6 +318,28 @@ extern NhlErrorTypes _NhlMplndm(
 	char		*entry_name
 #endif
 );
+
+
+/* Dynamic Ezmap interface functions for high-res database */
+
+extern NhlErrorTypes _NhlMdrgol(
+#if	NhlNeedProto
+	int		irgl,
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlMdrgsf(
+#if	NhlNeedProto
+	int		irgl,
+	NhlWorkspace	*flt_ws,
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+#endif
+);
+
+
 
 
 /* Dynamic Vectors interface functions */

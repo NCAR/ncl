@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.77 2001-08-30 18:49:14 dbrown Exp $
+ *      $Id: TickMark.c,v 1.78 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,10 +27,12 @@
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
+#include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/MultiText.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/TransformP.h>
 
 
 /* resource list definition */
@@ -42,6 +44,14 @@ static NhlResource resources[] = {
 	{ NhlNtmSciNoteCutoff, NhlCtmSciNoteCutoff, NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTickMarkLayerRec, tick.sci_note_cutoff),
 		  NhlTImmediate,_NhlUSET((NhlPointer)6),0,NULL},
+	{ NhlNtmEqualizeXYSizes, NhlCtmEqualizeXYSizes, 
+	  NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlTickMarkLayerRec,tick.equalize_xy_sizes),
+	  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	{ NhlNtmCullLabelOverlaps, NhlCCullLabelOverlaps, 
+	  NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlTickMarkLayerRec,tick.cull_label_overlaps),
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtmXUseBottom, NhlCtmXUseBottom, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_use_bottom),
 		  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -6606,37 +6616,35 @@ static NhlErrorTypes CheckGeographic
 {
 	char * error_lead;
 	NhlErrorTypes ret = NhlNOERROR;
+	NhlBoolean xb_geo,yl_geo,xt_geo,yr_geo;
 	
 	if(c_or_s == CREATE) {
 		error_lead = "TickMarkInitialize";
 	} else {		
 		error_lead = "TickMarkSetValues";
 	}
-	
+
         if((tnew->tick.x_b_on)
                 &&(tnew->tick.x_b_style == NhlGEOGRAPHIC)) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default XB to NhlLINEAR",error_lead);
-                tnew->tick.x_b_style = NhlLINEAR;
-		ret = NhlWARNING;
+                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default XB to NhlLINEAR",error_lead);
+                 tnew->tick.x_b_style = NhlLINEAR;
         }
         if((tnew->tick.x_t_on)
                 &&(tnew->tick.x_t_style == NhlGEOGRAPHIC)) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default XT to NhlLINEAR",error_lead);
-                tnew->tick.x_t_style = NhlLINEAR;
-		ret = NhlWARNING;
+                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default XT to NhlLINEAR",error_lead);
+                 tnew->tick.x_t_style = NhlLINEAR;
         }
         if((tnew->tick.y_l_on)
                 &&(tnew->tick.y_l_style == NhlGEOGRAPHIC)) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default YL to NhlLINEAR",error_lead);
-                tnew->tick.y_l_style = NhlLINEAR;
-		ret = NhlWARNING;
+                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default YL to NhlLINEAR",error_lead);
+                 tnew->tick.y_l_style = NhlLINEAR;
         }
         if((tnew->tick.y_r_on)
                 &&(tnew->tick.y_r_style == NhlGEOGRAPHIC)) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default YR to NhlLINEAR",error_lead);
-                tnew->tick.y_r_style = NhlLINEAR;
-		ret = NhlWARNING;
+                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlGEOGRAPHIC tickmarks have not been implemented, default YR to NhlLINEAR",error_lead);
+                 tnew->tick.y_r_style = NhlLINEAR;
         }
+
 	return(ret);
 }
 
@@ -7817,12 +7825,15 @@ int		c_or_s;
 		if((c_or_s == CREATE)||(tnew->tick.xb_multi ==NULL)) {
 			strcpy(buffer,tnew->base.name);
 			strcat(buffer,".xb_Multi");
-			subret = NhlVACreate(&tmpid,buffer,NhlmultiTextClass,tnew->base.id,
+			subret = NhlVACreate
+				(&tmpid,buffer,
+				 NhlmultiTextClass,tnew->base.id,
                         NhlNMtextNumStrings,tmp,
                         NhlNMtextStrings,labels_for_multi,
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
                         NhlNMtextConstPosF,tnew->tick.x_b_ndc_label_y,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.x_b_label_angle,
                         NhlNtxFont,tnew->tick.x_b_label_font,
                         NhlNtxJust,tnew->tick.x_b_label_just,
@@ -7851,6 +7862,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
                         NhlNMtextConstPosF,tnew->tick.x_b_ndc_label_y,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.x_b_label_angle,
                         NhlNtxFont,tnew->tick.x_b_label_font,
                         NhlNtxJust,tnew->tick.x_b_label_just,
@@ -7975,6 +7987,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
                         NhlNMtextConstPosF,tnew->tick.x_t_ndc_label_y,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.x_t_label_angle,
                         NhlNtxFont,tnew->tick.x_t_label_font,
                         NhlNtxJust,tnew->tick.x_t_label_just,
@@ -8003,6 +8016,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
                         NhlNMtextConstPosF,tnew->tick.x_t_ndc_label_y,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.x_t_label_angle,
                         NhlNtxFont,tnew->tick.x_t_label_font,
                         NhlNtxJust,tnew->tick.x_t_label_just,
@@ -8123,6 +8137,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
                         NhlNMtextConstPosF,tnew->tick.y_l_ndc_label_x,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.y_l_label_angle,
                         NhlNtxFont,tnew->tick.y_l_label_font,
                         NhlNtxJust,tnew->tick.y_l_label_just,
@@ -8151,6 +8166,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
                         NhlNMtextConstPosF,tnew->tick.y_l_ndc_label_x,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.y_l_label_angle,
                         NhlNtxFont,tnew->tick.y_l_label_font,
                         NhlNtxJust,tnew->tick.y_l_label_just,
@@ -8271,6 +8287,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
                         NhlNMtextConstPosF,tnew->tick.y_r_ndc_label_x,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.y_r_label_angle,
                         NhlNtxFont,tnew->tick.y_r_label_font,
                         NhlNtxJust,tnew->tick.y_r_label_just,
@@ -8299,6 +8316,7 @@ int		c_or_s;
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
                         NhlNMtextConstPosF,tnew->tick.y_r_ndc_label_x,
                         NhlNMtextPosArray,locs_for_multi,
+			NhlNMtextCullOverlaps,tnew->tick.cull_label_overlaps,
                         NhlNtxAngleF,tnew->tick.y_r_label_angle,
                         NhlNtxFont,tnew->tick.y_r_label_font,
                         NhlNtxJust,tnew->tick.y_r_label_just,
@@ -8424,8 +8442,8 @@ int num_args;
 	int tmpid;
 	NhlErrorTypes ret = NhlNOERROR;
 
-
 	
+							  
 	if((tnew->tick.y_l_style == NhlIRREGULAR)||
 	   (tnew->tick.x_b_style == NhlIRREGULAR)) {
 		switch(tnew->tick.y_l_style) {
@@ -8707,7 +8725,11 @@ static NhlErrorTypes ScaleValuesForMove
 #endif
 {
 
+	NhlTickMarkLayerPart *tmp = &tnew->tick;
+	NhlTickMarkLayerPart *otmp = &told->tick;
 	float deltax,deltay;
+	float h;
+	NhlBoolean xbylset,xtyrset;
 
 	if(c_or_s == CREATE) {
 		deltax = tnew->view.width/NHL_DEFAULT_VIEW_WIDTH;
@@ -8716,57 +8738,309 @@ static NhlErrorTypes ScaleValuesForMove
 		deltax = tnew->view.width/told->view.width;
 		deltay = tnew->view.height/told->view.height;
 	}
-
 /*
  * X fonts and Y ticks change relative to the X-Axis
  */
 	if (_NhlCmpFAny2(deltax,1.0,4,_NhlMIN_NONZERO) != 0.0) {
-		if (! tnew->tick.x_b_label_font_height_set)
-			tnew->tick.x_b_label_font_height *= deltax;
-		if (! tnew->tick.x_t_label_font_height_set)
-			tnew->tick.x_t_label_font_height *= deltax;
-		if (! tnew->tick.y_l_major_length_set)
-			tnew->tick.y_l_major_length *= deltax;
-		if (! tnew->tick.y_l_major_outward_length_set)
-			tnew->tick.y_l_major_outward_length *= deltax;
-		if (! tnew->tick.y_l_minor_length_set)
-			tnew->tick.y_l_minor_length *= deltax;
-		if (! tnew->tick.y_l_minor_outward_length_set)
-			tnew->tick.y_l_minor_outward_length *= deltax;
-		if (! tnew->tick.y_r_major_length_set)
-			tnew->tick.y_r_major_length *= deltax;
-		if (! tnew->tick.y_r_major_outward_length_set)
-			tnew->tick.y_r_major_outward_length *= deltax;
-		if (! tnew->tick.y_r_minor_length_set)
-			tnew->tick.y_r_minor_length *= deltax;
-		if (! tnew->tick.y_r_minor_outward_length_set)
-			tnew->tick.y_r_minor_outward_length *= deltax;
+		if (! tmp->x_b_label_font_height_set)
+			tmp->x_b_label_font_height *= deltax;
+		if (! tmp->x_t_label_font_height_set)
+			tmp->x_t_label_font_height *= deltax;
+		if (! tmp->y_l_major_length_set)
+			tmp->y_l_major_length *= deltax;
+		if (! tmp->y_l_major_outward_length_set)
+			tmp->y_l_major_outward_length *= deltax;
+		if (! tmp->y_l_minor_length_set)
+			tmp->y_l_minor_length *= deltax;
+		if (! tmp->y_l_minor_outward_length_set)
+			tmp->y_l_minor_outward_length *= deltax;
+		if (! tmp->y_r_major_length_set)
+			tmp->y_r_major_length *= deltax;
+		if (! tmp->y_r_major_outward_length_set)
+			tmp->y_r_major_outward_length *= deltax;
+		if (! tmp->y_r_minor_length_set)
+			tmp->y_r_minor_length *= deltax;
+		if (! tmp->y_r_minor_outward_length_set)
+			tmp->y_r_minor_outward_length *= deltax;
 	}
 
 /*
  * Y fonts and X ticks change relative to the Y-Axis
  */
 	if (_NhlCmpFAny2(deltay,1.0,4,_NhlMIN_NONZERO) != 0.0) {
-		if (! tnew->tick.y_l_label_font_height_set)
-			tnew->tick.y_l_label_font_height *= deltay;
-		if (! tnew->tick.y_r_label_font_height_set)
-			tnew->tick.y_r_label_font_height *= deltay;
-		if (! tnew->tick.x_b_major_length_set)
-			tnew->tick.x_b_major_length *= deltay;
-		if (! tnew->tick.x_b_major_outward_length_set)
-			tnew->tick.x_b_major_outward_length *= deltay;
-		if (! tnew->tick.x_b_minor_length_set)
-			tnew->tick.x_b_minor_length *= deltay;
-		if (! tnew->tick.x_b_minor_outward_length_set)
-			tnew->tick.x_b_minor_outward_length *= deltay;
-		if (! tnew->tick.x_t_major_length_set)
-			tnew->tick.x_t_major_length *= deltay;
-		if (! tnew->tick.x_t_major_outward_length_set)
-			tnew->tick.x_t_major_outward_length *= deltay;
-		if (! tnew->tick.x_t_minor_length_set)
-			tnew->tick.x_t_minor_length *= deltay;
-		if (! tnew->tick.x_t_minor_outward_length_set)
-			tnew->tick.x_t_minor_outward_length *= deltay;
+		if (! tmp->y_l_label_font_height_set)
+			tmp->y_l_label_font_height *= deltay;
+		if (! tmp->y_r_label_font_height_set)
+			tmp->y_r_label_font_height *= deltay;
+		if (! tmp->x_b_major_length_set)
+			tmp->x_b_major_length *= deltay;
+		if (! tmp->x_b_major_outward_length_set)
+			tmp->x_b_major_outward_length *= deltay;
+		if (! tmp->x_b_minor_length_set)
+			tmp->x_b_minor_length *= deltay;
+		if (! tmp->x_b_minor_outward_length_set)
+			tmp->x_b_minor_outward_length *= deltay;
+		if (! tmp->x_t_major_length_set)
+			tmp->x_t_major_length *= deltay;
+		if (! tmp->x_t_major_outward_length_set)
+			tmp->x_t_major_outward_length *= deltay;
+		if (! tmp->x_t_minor_length_set)
+			tmp->x_t_minor_length *= deltay;
+		if (! tmp->x_t_minor_outward_length_set)
+			tmp->x_t_minor_outward_length *= deltay;
+	}
+
+	if (! tmp->equalize_xy_sizes)
+		return(NhlNOERROR);
+
+	xbylset = xtyrset = False;
+	if (tmp->x_b_label_font_height_set && 
+	    ! tmp->y_l_label_font_height_set) {
+		tmp->y_l_label_font_height = tmp->x_b_label_font_height;
+		xbylset = True;
+	}
+	else if (tmp->y_l_label_font_height_set &&
+		 ! tmp->x_b_label_font_height_set) {
+		tmp->x_b_label_font_height = tmp->y_l_label_font_height;
+		xbylset = True;
+	}
+	else {
+		h = (tmp->x_b_label_font_height + 
+		     tmp->y_l_label_font_height) / 2.0;
+		tmp->x_b_label_font_height = h;
+		tmp->y_l_label_font_height = h;
+	}
+	if (tmp->x_t_label_font_height_set && 
+	    ! tmp->y_r_label_font_height_set) {
+		tmp->y_r_label_font_height = tmp->x_t_label_font_height;
+		xtyrset = True;
+	}
+	else if (tmp->y_r_label_font_height_set &&
+		 ! tmp->x_t_label_font_height_set) {
+		tmp->x_t_label_font_height = tmp->y_r_label_font_height;
+		xtyrset = True;
+	}
+	else {
+		h = (tmp->x_t_label_font_height + 
+		     tmp->y_r_label_font_height) / 2.0;
+		tmp->x_t_label_font_height = h;
+		tmp->y_r_label_font_height = h;
+	}
+	if (xbylset && ! xtyrset) {
+		tmp->x_t_label_font_height = tmp->x_b_label_font_height;
+		tmp->y_r_label_font_height = tmp->x_b_label_font_height;
+	}
+	else if (xtyrset && ! xbylset) {
+		tmp->x_b_label_font_height = tmp->x_t_label_font_height;
+		tmp->y_l_label_font_height = tmp->x_t_label_font_height;
+	}
+	else {
+		h = (tmp->x_b_label_font_height + 
+		     tmp->x_t_label_font_height) / 2.0;
+		tmp->x_b_label_font_height = h;
+		tmp->x_t_label_font_height = h;
+		tmp->y_l_label_font_height = h;
+		tmp->y_r_label_font_height = h;
+	}
+
+	xbylset = xtyrset = False;
+	if (tmp->x_b_major_length_set && 
+	    ! tmp->y_l_major_length_set) {
+		tmp->y_l_major_length = tmp->x_b_major_length;
+		xbylset = True;
+	}
+	else if (tmp->y_l_major_length_set &&
+		 ! tmp->x_b_major_length_set) {
+		tmp->x_b_major_length = tmp->y_l_major_length;
+		xbylset = True;
+	}
+	else {
+		h = (tmp->x_b_major_length + 
+		     tmp->y_l_major_length) / 2.0;
+		tmp->x_b_major_length = h;
+		tmp->y_l_major_length = h;
+	}
+	if (tmp->x_t_major_length_set && 
+	    ! tmp->y_r_major_length_set) {
+		tmp->y_r_major_length = tmp->x_t_major_length;
+		xtyrset = True;
+	}
+	else if (tmp->y_r_major_length_set &&
+		 ! tmp->x_t_major_length_set) {
+		tmp->x_t_major_length = tmp->y_r_major_length;
+		xtyrset = True;
+	}
+	else {
+		h = (tmp->x_t_major_length + 
+		     tmp->y_r_major_length) / 2.0;
+		tmp->x_t_major_length = h;
+		tmp->y_r_major_length = h;
+	}
+	if (xbylset && ! xtyrset) {
+		tmp->x_t_major_length = tmp->x_b_major_length;
+		tmp->y_r_major_length = tmp->x_b_major_length;
+	}
+	else if (xtyrset && ! xbylset) {
+		tmp->x_b_major_length = tmp->x_t_major_length;
+		tmp->y_l_major_length = tmp->x_t_major_length;
+	}
+	else {
+		h = (tmp->x_b_major_length + 
+		     tmp->x_t_major_length) / 2.0;
+		tmp->x_b_major_length = h;
+		tmp->x_t_major_length = h;
+		tmp->y_l_major_length = h;
+		tmp->y_r_major_length = h;
+	}
+
+	xbylset = xtyrset = False;
+	if (tmp->x_b_minor_length_set && 
+	    ! tmp->y_l_minor_length_set) {
+		tmp->y_l_minor_length = tmp->x_b_minor_length;
+		xbylset = True;
+	}
+	else if (tmp->y_l_minor_length_set &&
+		 ! tmp->x_b_minor_length_set) {
+		tmp->x_b_minor_length = tmp->y_l_minor_length;
+		xbylset = True;
+	}
+	else {
+		h = (tmp->x_b_minor_length + 
+		     tmp->y_l_minor_length) / 2.0;
+		tmp->x_b_minor_length = h;
+		tmp->y_l_minor_length = h;
+	}
+	if (tmp->x_t_minor_length_set && 
+	    ! tmp->y_r_minor_length_set) {
+		tmp->y_r_minor_length = tmp->x_t_minor_length;
+		xtyrset = True;
+	}
+	else if (tmp->y_r_minor_length_set &&
+		 ! tmp->x_t_minor_length_set) {
+		tmp->x_t_minor_length = tmp->y_r_minor_length;
+		xtyrset = True;
+	}
+	else {
+		h = (tmp->x_t_minor_length + 
+		     tmp->y_r_minor_length) / 2.0;
+		tmp->x_t_minor_length = h;
+		tmp->y_r_minor_length = h;
+	}
+	if (xbylset && ! xtyrset) {
+		tmp->x_t_minor_length = tmp->x_b_minor_length;
+		tmp->y_r_minor_length = tmp->x_b_minor_length;
+	}
+	else if (xtyrset && ! xbylset) {
+		tmp->x_b_minor_length = tmp->x_t_minor_length;
+		tmp->y_l_minor_length = tmp->x_t_minor_length;
+	}
+	else {
+		h = (tmp->x_b_minor_length + 
+		     tmp->x_t_minor_length) / 2.0;
+		tmp->x_b_minor_length = h;
+		tmp->x_t_minor_length = h;
+		tmp->y_l_minor_length = h;
+		tmp->y_r_minor_length = h;
+	}
+
+	xbylset = xtyrset = False;
+	if (tmp->x_b_major_outward_length_set && 
+	    ! tmp->y_l_major_outward_length_set) {
+		tmp->y_l_major_outward_length = tmp->x_b_major_outward_length;
+		xbylset = True;
+	}
+	else if (tmp->y_l_major_outward_length_set &&
+		 ! tmp->x_b_major_outward_length_set) {
+		tmp->x_b_major_outward_length = tmp->y_l_major_outward_length;
+		xbylset = True;
+	}
+	else {
+		h = (tmp->x_b_major_outward_length + 
+		     tmp->y_l_major_outward_length) / 2.0;
+		tmp->x_b_major_outward_length = h;
+		tmp->y_l_major_outward_length = h;
+	}
+	if (tmp->x_t_major_outward_length_set && 
+	    ! tmp->y_r_major_outward_length_set) {
+		tmp->y_r_major_outward_length = tmp->x_t_major_outward_length;
+		xtyrset = True;
+	}
+	else if (tmp->y_r_major_outward_length_set &&
+		 ! tmp->x_t_major_outward_length_set) {
+		tmp->x_t_major_outward_length = tmp->y_r_major_outward_length;
+		xtyrset = True;
+	}
+	else {
+		h = (tmp->x_t_major_outward_length + 
+		     tmp->y_r_major_outward_length) / 2.0;
+		tmp->x_t_major_outward_length = h;
+		tmp->y_r_major_outward_length = h;
+	}
+	if (xbylset && ! xtyrset) {
+		tmp->x_t_major_outward_length = tmp->x_b_major_outward_length;
+		tmp->y_r_major_outward_length = tmp->x_b_major_outward_length;
+	}
+	else if (xtyrset && ! xbylset) {
+		tmp->x_b_major_outward_length = tmp->x_t_major_outward_length;
+		tmp->y_l_major_outward_length = tmp->x_t_major_outward_length;
+	}
+	else {
+		h = (tmp->x_b_major_outward_length + 
+		     tmp->x_t_major_outward_length) / 2.0;
+		tmp->x_b_major_outward_length = h;
+		tmp->x_t_major_outward_length = h;
+		tmp->y_l_major_outward_length = h;
+		tmp->y_r_major_outward_length = h;
+	}
+
+	xbylset = xtyrset = False;
+	if (tmp->x_b_minor_outward_length_set && 
+	    ! tmp->y_l_minor_outward_length_set) {
+		tmp->y_l_minor_outward_length = tmp->x_b_minor_outward_length;
+		xbylset = True;
+	}
+	else if (tmp->y_l_minor_outward_length_set &&
+		 ! tmp->x_b_minor_outward_length_set) {
+		tmp->x_b_minor_outward_length = tmp->y_l_minor_outward_length;
+		xbylset = True;
+	}
+	else {
+		h = (tmp->x_b_minor_outward_length + 
+		     tmp->y_l_minor_outward_length) / 2.0;
+		tmp->x_b_minor_outward_length = h;
+		tmp->y_l_minor_outward_length = h;
+	}
+	if (tmp->x_t_minor_outward_length_set && 
+	    ! tmp->y_r_minor_outward_length_set) {
+		tmp->y_r_minor_outward_length = tmp->x_t_minor_outward_length;
+		xtyrset = True;
+	}
+	else if (tmp->y_r_minor_outward_length_set &&
+		 ! tmp->x_t_minor_outward_length_set) {
+		tmp->x_t_minor_outward_length = tmp->y_r_minor_outward_length;
+		xtyrset = True;
+	}
+	else {
+		h = (tmp->x_t_minor_outward_length + 
+		     tmp->y_r_minor_outward_length) / 2.0;
+		tmp->x_t_minor_outward_length = h;
+		tmp->y_r_minor_outward_length = h;
+	}
+	if (xbylset && ! xtyrset) {
+		tmp->x_t_minor_outward_length = tmp->x_b_minor_outward_length;
+		tmp->y_r_minor_outward_length = tmp->x_b_minor_outward_length;
+	}
+	else if (xtyrset && ! xbylset) {
+		tmp->x_b_minor_outward_length = tmp->x_t_minor_outward_length;
+		tmp->y_l_minor_outward_length = tmp->x_t_minor_outward_length;
+	}
+	else {
+		h = (tmp->x_b_minor_outward_length + 
+		     tmp->x_t_minor_outward_length) / 2.0;
+		tmp->x_b_minor_outward_length = h;
+		tmp->x_t_minor_outward_length = h;
+		tmp->y_l_minor_outward_length = h;
+		tmp->y_r_minor_outward_length = h;
 	}
 
 	return(NhlNOERROR);

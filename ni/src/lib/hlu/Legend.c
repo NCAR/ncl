@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.66 2000-08-30 00:38:02 dbrown Exp $
+ *      $Id: Legend.c,v 1.67 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -239,7 +239,10 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlLegendLayerRec,legend.line_labels_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 
-	
+	{ NhlNlgCullLabelOverlaps, NhlCCullLabelOverlaps, 
+	  NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlLegendLayerRec,legend.cull_label_overlaps),
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},	
 {NhlNlgLabelsOn, NhlClgLabelsOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.labels_on),
 	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
@@ -4027,6 +4030,8 @@ static NhlErrorTypes    SetLabels
 				 NhlNMtextOrientation,mtext_orient,
 				 NhlNMtextConstPosF,lg_p->const_pos ,
 				 NhlNMtextPosArray,lg_p->label_locs,
+				 NhlNMtextCullOverlaps,
+				     lg_p->cull_label_overlaps,
 				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lg_p->label_font,
 				 NhlNtxJust,lg_p->label_just,
@@ -4047,6 +4052,7 @@ static NhlErrorTypes    SetLabels
 		olg_p->label_height = lg_p->label_height;
 		olg_p->label_just = lg_p->label_just;
 		olg_p->const_pos = lg_p->const_pos;
+		olg_p->cull_label_overlaps = lg_p->cull_label_overlaps;
 	} 
 	else {
 		/* 
@@ -4124,6 +4130,9 @@ static NhlErrorTypes    SetLabels
 	if (lg_p->label_color != olg_p->label_color)
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtxFontColor,lg_p->label_color);
+	if (lg_p->cull_label_overlaps != olg_p->cull_label_overlaps)
+		NhlSetSArg(&sargs[nargs++],NhlNMtextCullOverlaps,
+			   lg_p->cull_label_overlaps);
 
 	subret = NhlALSetValues(lg_p->labels_id,sargs,nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {

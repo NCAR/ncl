@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.43 2001-06-13 23:53:57 dbrown Exp $
+ *      $Id: Workspace.c,v 1.44 2001-11-28 02:47:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3918,6 +3918,177 @@ NhlErrorTypes _NhlMplndm
 
 	return NhlNOERROR;
 }
+
+/*
+ * Function:	_NhlMdrgol
+ *
+ * Description: Ezmap routine mdrgol
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMdrgol
+#if	NhlNeedProto
+(
+	int		irgl,
+	NhlWorkspace	*flt_ws,
+	char		*entry_name
+)
+#else
+(irgl,flt_ws,entry_name)
+	int		irgl;
+	NhlWorkspace	*flt_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_mdrgol(irgl,fwsrp->ws_ptr,(fwsrp->cur_size/sizeof(float)));
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlMdrgsf
+ *
+ * Description: Ezmap routine mdrgsf
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMdrgsf
+#if	NhlNeedProto
+(
+	int		irgl,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*amap_ws,
+	char		*entry_name
+)
+#else
+(irgl,flt_ws,amap_ws,entry_name)
+	int		irgl;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*amap_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "AREA-MAP ARRAY OVERFLOW";
+	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_mdrgsf(irgl,fwsrp->ws_ptr,(fwsrp->cur_size/sizeof(float)),
+			 awsrp->ws_ptr,(awsrp->cur_size/sizeof(float)));
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1) != NULL) {
+#if DEBUG_WS
+				printf("resizing amap old %d",awsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(awsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", awsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2) != NULL) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
 
 /*
  * Function:	_NhlVvinit

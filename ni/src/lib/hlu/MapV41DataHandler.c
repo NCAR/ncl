@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.13 1999-08-27 00:38:06 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.14 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -163,7 +163,7 @@ static int UsIdCount;
 static int LandId,WaterId,OceanId;
 static char OutBuf[512];
 
-static NhlString DefDataSetName = "Earth..1";
+static NhlString DefDataSetName = "Earth..2";
 
 /*
  * The following string manipulation routines help deal with Map entity

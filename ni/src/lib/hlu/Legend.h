@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.19 1999-03-27 00:44:51 dbrown Exp $
+ *      $Id: Legend.h,v 1.20 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -117,6 +117,7 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgLineLabelConstantSpacingF	"lgLineLabelConstantSpacingF"
 #define NhlNlgLineLabelFuncCode	"lgLineLabelFuncCode"
 
+#define NhlNlgCullLabelOverlaps		"lgCullLabelOverlaps"
 #define NhlNlgLabelsOn			"lgLabelsOn"
 #define NhlNlgLabelPosition		"lgLabelPosition"
 #define NhlNlgLabelAngleF		"lgLabelAngleF"

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.19 1999-03-29 18:31:34 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.20 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,8 @@ typedef enum _NhlMapShapeMode {
 #define NhlTMapDataBaseVersion	"MapDataBaseVersion"
 typedef enum _NhlMapDataBaseVersion {
 	NhlNCARG4_0 = 0,
-	NhlNCARG4_1
+	NhlNCARG4_1,
+	NhlRANGS_GSHHS
 } NhlMapDataBaseVersion;
 
 #define NhlmpNULLAREA		"nullarea"
@@ -188,23 +189,6 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlNmpLabelFontHeightF		"mpLabelFontHeightF"
 #define NhlNmpLabelFontColor		"mpLabelFontColor"
 
-/**************** NOT-IMPLEMENTED**********/
-
-#define NhlNmpLabelTextDirection	"mpLabelTextDirection"
-#define NhlNmpLabelFont			"mpLabelFont"
-#define NhlNmpLabelFontAspectF		"mpLabelFontAspectF"
-#define NhlNmpLabelFontThicknessF	"mpLabelFontThicknessF"
-#define NhlNmpLabelFontQuality		"mpLabelFontQuality"
-#define NhlNmpLabelConstantSpacingF	"mpLabelConstantSpacingF"
-#define NhlNmpLabelAngleF		"mpLabelAngleF"
-#define NhlNmpLabelFuncCode		"mpLabelFuncCode"
-#define NhlNmpLabelBackgroundColor	"mpLabelBackgroundColor"
-
-#define NhlNmpLabelPerimOn		"mpLabelPerimOn"
-#define NhlNmpLabelPerimSpaceF		"mpLabelPerimSpaceF"
-#define NhlNmpLabelPerimThicknessF	"mpLabelPerimThicknessF"
-#define NhlNmpLabelPerimColor		"mpLabelPerimColor"
-
 /*
  * MapPlot class resources
  */
@@ -307,23 +291,6 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpLabelsOn			"MpLabelsOn"
 #define NhlCmpLabelFontHeightF		"MpLabelFontHeightF"
 #define NhlCmpLabelFontColor		"MpLabelFontColor"
-
-/**************** NOT-IMPLEMENTED**********/
-
-#define NhlCmpLabelTextDirection	"MpLabelTextDirection"
-#define NhlCmpLabelFont			"MpLabelFont"
-#define NhlCmpLabelFontAspectF		"MpLabelFontAspectF"
-#define NhlCmpLabelFontThicknessF	"MpLabelFontThicknessF"
-#define NhlCmpLabelFontQuality		"MpLabelFontQuality"
-#define NhlCmpLabelConstantSpacingF	"MpLabelConstantSpacingF"
-#define NhlCmpLabelAngleF		"MpLabelAngleF"
-#define NhlCmpLabelFuncCode		"MpLabelFuncCode"
-#define NhlCmpLabelBackgroundColor	"MpLabelBackgroundColor"
-
-#define NhlCmpLabelPerimOn		"MpLabelPerimOn"
-#define NhlCmpLabelPerimSpaceF		"MpLabelPerimSpaceF"
-#define NhlCmpLabelPerimThicknessF	"MpLabelPerimThicknessF"
-#define NhlCmpLabelPerimColor		"MpLabelPerimColor"
 
 #endif
 

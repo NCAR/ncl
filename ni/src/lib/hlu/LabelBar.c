@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.67 2000-08-30 00:38:01 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.68 2001-11-28 02:47:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -140,6 +140,10 @@ static NhlResource resources[] = {
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	
+	{ NhlNlbCullLabelOverlaps, NhlCCullLabelOverlaps, 
+	  NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlLabelBarLayerRec,labelbar.cull_label_overlaps),
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 {NhlNlbLabelsOn, NhlClbLabelsOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -3075,6 +3079,8 @@ static NhlErrorTypes    SetLabels
 				 NhlNMtextOrientation,mtext_orient,
 				 NhlNMtextConstPosF,lb_p->const_pos,
 				 NhlNMtextPosArray,lb_p->label_locs,
+				 NhlNMtextCullOverlaps,
+				     lb_p->cull_label_overlaps,
 				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lb_p->label_font,
 				 NhlNtxJust,lb_p->label_just,
@@ -3095,6 +3101,7 @@ static NhlErrorTypes    SetLabels
 		olb_p->label_height = lb_p->label_height;
 		olb_p->label_just = lb_p->label_just;
 		olb_p->const_pos = lb_p->const_pos;
+		olb_p->cull_label_overlaps = lb_p->cull_label_overlaps;
 	}
 	else {
 		/* 
@@ -3172,6 +3179,9 @@ static NhlErrorTypes    SetLabels
 	if (lb_p->label_color != olb_p->label_color)
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtxFontColor,lb_p->label_color);
+	if (lb_p->cull_label_overlaps != olb_p->cull_label_overlaps)
+		NhlSetSArg(&sargs[nargs++],NhlNMtextCullOverlaps,
+			   lb_p->cull_label_overlaps);
 
 	subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiTextP.h,v 1.5 1996-01-19 18:06:30 dbrown Exp $
+ *      $Id: MultiTextP.h,v 1.6 2001-11-28 02:47:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@ typedef struct _NhlMultiTextLayerPart{
 	float			const_pos;
 	float			*pos_array;
 	float			max_len;	/* read-only */
+	NhlBoolean		cull_overlaps;
 
 	/* textItem resources that need to be managed */
 
@@ -62,7 +63,9 @@ typedef struct _NhlMultiTextLayerPart{
 	float			text_width;
 	float			text_height;
 
-
+	float			max_extent;
+	float			*extents;
+	NhlBoolean		*do_draw;
 }NhlMultiTextLayerPart;
 
 typedef struct _NhlMultiTextLayerRec{
