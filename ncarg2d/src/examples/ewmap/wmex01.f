@@ -1,5 +1,5 @@
 C
-C	$Id: wmex01.f,v 1.2 1994-10-14 01:28:20 fred Exp $
+C	$Id: wmex01.f,v 1.3 1994-10-25 23:33:55 fred Exp $
 C
       PROGRAM WMEX01
 C
@@ -514,8 +514,8 @@ C   TEMPUY  - Y user coordinates for daily hi/low locations.
         CALL MAPTRN(CITYUX(I),CITYUY(I),XO,YO)
         CALL WMLABS(XO,YO,'D')
         CALL MAPTRN(TEMPUX(I),TEMPUY(I),XO,YO)
-        LL = WMGTLN(ICITYS(I),LEN(ICITYS),0)
-        MM = WMGTLN(IDLYTS(I),LEN(IDLYTS),0)
+        LL = WMGTLN(ICITYS(I),LEN(ICITYS(I)),0)
+        MM = WMGTLN(IDLYTS(I),LEN(IDLYTS(I)),0)
         CALL WMLABC(XO,YO,ICITYS(I)(1:LL),IDLYTS(I)(1:MM))
   110 CONTINUE
 C
