@@ -3,13 +3,13 @@
 #include "wrapper.h"
 
 extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
-                         int*,double*,int*,int*,double*,
-                         int*);
+                                             int*,double*,int*,int*,double*,
+                                             int*);
 
 extern void NGCALLF(triple2grid,TRIPLE2GRID)(int*,double*,double*,double*,
-                         double*,int*,int*,double*,
-                         double*,double*,double*,
-                         logical*,int*);
+                                             double*,int*,int*,double*,
+                                             double*,double*,double*,
+                                             logical*,int*);
 
 extern void NGCALLF(triple2grid2d,TRIPLE2GRID2D)(double *,double *,double *,
                                                  int *,double *,double *,
@@ -450,7 +450,7 @@ NhlErrorTypes triple2grid2d_W( void )
 /*
  * Various
  */
-  int i, npts, ngx, ngy, size_grid, ier;
+  int i, npts, nlon, nlat, size_grid, ier;
   int mopt = 0;
   double distmx = 1.e20;
 /*
@@ -535,10 +535,10 @@ NhlErrorTypes triple2grid2d_W( void )
 /*
  * Check sizes of gridx and gridy.
  */
-  ngx = dsizes_gridx[0];
-  ngy = dsizes_gridx[1];
+  nlat = dsizes_gridx[0];
+  nlon = dsizes_gridx[1];
 
-  if(dsizes_gridy[0] != ngx || dsizes_gridy[1] != ngy) {
+  if(dsizes_gridy[0] != nlat || dsizes_gridy[1] != nlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two 2-dimensional arrays that define the output grid must be the same size");
     return(NhlFATAL);
   }
@@ -549,7 +549,7 @@ NhlErrorTypes triple2grid2d_W( void )
  * Remember, in NCL, the Y dimension is usually associated with dimension
  * '0, and the X dimension with dimension '1'.
  */
-  size_grid = ngy * ngx;
+  size_grid = nlat * nlon;
 /*
  * Get type of return variable. If z is double, then return
  * a double. Return float otherwise.
@@ -647,7 +647,8 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&npts,
                                        &missing_dz.doubleval,&distmx,&mopt,
-                                       tmp_gridy,tmp_gridx,tmp_grid,&ngy,&ngx);
+                                       tmp_gridy,tmp_gridx,tmp_grid,
+                                       &nlat,&nlon);
 /*
  * Coerce grid back to float if necessary.
  *
