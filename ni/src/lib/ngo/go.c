@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.26 1999-09-24 17:34:35 dbrown Exp $
+ *      $Id: go.c,v 1.27 1999-10-22 00:37:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -930,6 +930,8 @@ PPopup
 	NgGO	go = (NgGO)udata;
 
 	if(event->type != MapNotify)
+		return;
+	if (event->xmap.window != XtWindow(go->go.shell))
 		return;
 
 	go->go.pup = True;

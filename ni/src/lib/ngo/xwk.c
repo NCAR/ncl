@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.23 1999-10-18 22:12:39 dbrown Exp $
+ *      $Id: xwk.c,v 1.24 1999-10-22 00:37:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,10 @@ static NhlResource resources[] = {
 	 _NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL},
 	{NgNxwkAutoUpdate,NgCxwkAutoUpdate,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(auto_refresh),NhlTImmediate,
-	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL}
+	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL},
+	{NgNxwkRaiseOnDraw,NgCxwkRaiseOnDraw,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(raise_on_draw),NhlTImmediate,
+	 _NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL}
 };
 #undef	Oset
 
@@ -885,6 +888,27 @@ DrawSingleViewOptionCB
 	return;
 }
 
+
+void
+RaiseOnDrawOptionCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	XmToggleButtonCallbackStruct	*xmcb = 
+		(XmToggleButtonCallbackStruct*)cbdata;
+	NgXWk			xwk = (NgXWk)udata;
+
+#if DEBUG_XWK
+	fprintf(stderr,"raise on draw %s\n", xmcb->set ? "on" : "off");
+#endif
+	xwk->xwk.raise_on_draw = xmcb->set;
+
+	return;
+}
+
 void
 AutoRefreshOptionCB
 (
@@ -993,6 +1017,16 @@ XWkCreateWin
 		 XmNset,xp->draw_single_view,
 		 NULL);
 	XtAddCallback(w,XmNvalueChangedCallback,DrawSingleViewOptionCB,xwk);
+
+	XtVaSetValues(xwk->go.view,
+		XmNsensitive,	True,
+		NULL);
+	w = XtVaCreateManagedWidget
+		("raiseOnDrawOption",xmToggleButtonGadgetClass,
+		 xwk->go.omenu,
+		 XmNset,xp->raise_on_draw,
+		 NULL);
+	XtAddCallback(w,XmNvalueChangedCallback,RaiseOnDrawOptionCB,xwk);
 
 	XtVaSetValues(xwk->go.view,
 		XmNsensitive,	True,
@@ -1275,7 +1309,7 @@ XWkCreateWinHook
 	/*
 	 * Only until pixmap backup's are working in gks...
 	 */
-	xswa.backing_store = WhenMapped;
+	xswa.backing_store = Always;
 	XChangeWindowAttributes(x->dpy,XtWindow(xp->graphics),
 							CWBackingStore,&xswa);
 

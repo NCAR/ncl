@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.10 1999-10-13 17:15:56 dbrown Exp $
+ *      $Id: xinteract.c,v 1.11 1999-10-22 00:37:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1165,6 +1165,7 @@ extern void NgDrawXwkView
 	int vcount = 0, *iviews = NULL;
 	int i,j,k;
 	NhlBoolean cleared,entered = False;
+	XWindowAttributes xwa;
 
 	if (!xwk)
 		return;
@@ -1173,7 +1174,10 @@ extern void NgDrawXwkView
 	fprintf(stderr,"NgDrawXwkView: view_id %d, selected %d\n",
 		view_id,xwk->xwk.selected_view_id);
 #endif
-	NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
+	XGetWindowAttributes(XtDisplay(xwk->go.shell),XtWindow(xwk->go.shell),
+			     &xwa);
+	if (xwa.map_state < IsViewable || xwk->xwk.raise_on_draw)
+		NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
 
 	NhlVAGetValues(xwk->go.appmgr,
 		       NgNappWksState,&wks_state,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.9 1999-10-18 22:12:39 dbrown Exp $
+ *      $Id: xwkP.h,v 1.10 1999-10-22 00:37:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,9 @@ typedef struct _NgXWkPart {
 /* required fields */
 	NhlXWorkstationLayer	xwork;
 	int			selected_view_id;
+	NhlBoolean		draw_single_view;
+	NhlBoolean		auto_refresh;
+	NhlBoolean		raise_on_draw;
 
 /* private fields */
 	NhlBoolean		mapped;
@@ -68,8 +71,6 @@ typedef struct _NgXWkPart {
 	int			view_count;
 	int			view_alloc_count;
 
-	NhlBoolean		auto_refresh;
-	NhlBoolean		draw_single_view;
 	NhlBoolean		select_rect_vis;
 	NhlBoolean		manipulate_eh_active;
 	XPoint			xor_box[5];

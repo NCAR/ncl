@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.8 1999-10-18 22:12:36 dbrown Exp $
+ *      $Id: plotpage.c,v 1.9 1999-10-22 00:37:28 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -1736,12 +1736,12 @@ UpdateInstance
  * There is no auto callback for setvalues yet, so for updates the draw
  * must occur here
  */
-	if (do_draw && _NhlIsClass(wl,NhlxWorkstationClass) &&
+	if (wks && do_draw && _NhlIsClass(wl,NhlxWorkstationClass) &&
 		! wks->colormap_cb_pending) {
 		NgHluData hdata = (NgHluData) wl->base.gui_data2;
 		NgWksObj wks = hdata ? (NgWksObj) hdata->gdata : NULL;
 
-		if (wks && wks->auto_refresh) {
+		if (wks->auto_refresh) {
 			NgDrawGraphic(rec->go->base.id,
 				      NrmQuarkToString(page->qvar),True);
 		}

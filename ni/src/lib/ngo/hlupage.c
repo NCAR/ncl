@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.28 1999-10-18 22:12:31 dbrown Exp $
+ *      $Id: hlupage.c,v 1.29 1999-10-22 00:37:25 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -1700,6 +1700,8 @@ UpdateInstance
 	NhlLayer	wl = _NhlGetLayer(wk_id);
 	NgDataProfile	dprof = rec->data_profile;
 	int		i,count = 0;
+	NgHluData	whdata;
+	NgWksObj	wks;
 
 	if (! l)	
 		return NhlFATAL;
@@ -1750,33 +1752,46 @@ UpdateInstance
 	 * This can happen if a DataObj is created after the main object
 	 * is created 
 	 */
+
+	if (wl) {
+		whdata = (NgHluData) wl->base.wkptr->base.gui_data2;
+		wks = whdata ? (NgWksObj) whdata->gdata : NULL;
+	}
 /*
  * There is no auto callback for setvalues yet, so for updates the draw
  * must occur here
  */
-	if (do_draw && NhlClassIsSubclass(rec->class,NhlviewClass) &&
-	    _NhlIsClass(wl,NhlxWorkstationClass)) {
-		NgWksObj	wks = NULL;
+
+	if (wks && 
+	    do_draw && NhlClassIsSubclass(rec->class,NhlviewClass) &&
+	    _NhlIsClass(wl,NhlxWorkstationClass) && 
+	    ! wks->colormap_cb_pending) {
 		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
 		
-		if (draw_id && wl) {
-			NgHluData hdata = (NgHluData) wl->base.gui_data2;
-			wks = hdata ? (NgWksObj) hdata->gdata : NULL;
-		}
 		if (wks && wks->auto_refresh) {
 			NgDrawXwkView(wks->wks_wrap_id,draw_id,True);
 		}
 	}
 	else if (NhlClassIsSubclass(rec->class,NhlxWorkstationClass)) {
-		NgWksObj	wks = NULL;
 		wl = _NhlGetLayer(rec->hlu_id);
 		if (wl) {
-			NgHluData hdata = (NgHluData) wl->base.gui_data2;
-			wks = hdata ? (NgWksObj) hdata->gdata : NULL;
+			NgHluData whdata = (NgHluData) wl->base.gui_data2;
+			wks = whdata ? (NgWksObj) whdata->gdata : NULL;
 		}
 		if (wks) {
 			NgGO xl = (NgGO)_NhlGetLayer(wks->wks_wrap_id);
-			if (xl) 
+			XWindowAttributes xwa;
+			NhlBoolean raise_on_draw;
+			if (! xl) 
+				return ret;
+			XGetWindowAttributes(XtDisplay(xl->go.shell),
+					     XtWindow(xl->go.shell),
+					     &xwa);
+			NhlVAGetValues(wks->wks_wrap_id,
+				      NgNxwkRaiseOnDraw,&raise_on_draw,
+				      NULL);
+			if (xwa.map_state < IsViewable ||
+			    raise_on_draw)
 				NgXWorkPopup(xl->go.appmgr,xl->base.id);
 		}
 	}
