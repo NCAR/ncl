@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.39 1995-05-01 22:07:45 ethan Exp $
+ *      $Id: Execute.c,v 1.40 1995-05-02 15:39:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2422,7 +2422,7 @@ NclExecuteReturnStatus _NclExecute
 		
 				if((tmp_md != NULL)&&(parent.u.data_var != NULL)&&(parent.u.data_var->obj.status != PERMANENT))  {
 					_NclDestroyObj((NclObj)parent.u.data_var);
-				} else if((tmp_md != NULL)&&(tmp_md->obj.status != NULL)) {
+				} else if((tmp_md != NULL)&&(tmp_md->obj.status != PERMANENT)) {
 					_NclDestroyObj((NclObj)tmp_md);
 				}
 			}
