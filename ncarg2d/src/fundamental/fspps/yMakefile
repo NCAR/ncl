@@ -1,11 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-24 21:25:01 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-04-16 21:12:50 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= fspps
 
-GENERIC_SRCS = fspcurve.f fspline.f fsppoint.f fspponts.f
+GENERIC_SRCS = fspcurve.f fspline.f fsppoint.f fspponts.f fcoord.f fcoord1.f \
+		fcoord2.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
