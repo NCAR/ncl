@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.1 1994-12-05 17:23:31 haley Exp $
+#	$Id: nhlcc.csh,v 1.2 1995-03-27 14:17:16 haley Exp $
 #
 
 #*********************************************#
@@ -14,7 +14,7 @@ if ($status != 0) then
 	exit 1
 endif
 
-set xlibs = "SED_XMOTIFLIB SED_XTOOLLIB SED_XLIB"
+set xlibs = "SED_XTOOLLIB SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"

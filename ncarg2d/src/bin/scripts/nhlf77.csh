@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.1 1994-12-05 20:29:54 haley Exp $
+#	$Id: nhlf77.csh,v 1.2 1995-03-27 14:17:15 haley Exp $
 #
 
 #*********************************************#
@@ -14,7 +14,7 @@ if ($status != 0) then
 	exit 1
 endif
 
-set xlibs = "SED_XMOTIFLIB SED_XTOOLLIB SED_XLIB"
+set xlibs = "SED_XTOOLLIB SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set f77       = "SED_F77"
 set loadflags  = "SED_LDFFLAGS"
