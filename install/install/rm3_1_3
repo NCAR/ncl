@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_1_3,v 1.1 1993-02-20 00:11:33 clyne Exp $
+#      $Id: rm3_1_3,v 1.2 1993-03-29 17:30:50 clyne Exp $
 #
 #########################################################################
 #									#
@@ -49,13 +49,13 @@ set bins = 	(Copyright merge_frames ncargpar ncargsrc \
 set libs = 	(libagupwrtx.o libconraq.o libconras.o \
 		libconrcqck.o libconrcspr.o libctrans.o \
 		libdashline.o libdashsmth.o libdashsupr.o \
-		libhdf.a libictrans.o libictrans_.o \
+		libhdf.a libncarv.a libictrans.o libictrans_.o \
 		ncargsrc.stats srcagupwrtx.a srcconraq.a \
 		srcconras.a srcconrcqck.a srcconrcspr.a \
 		srcdashline.a srcdashsmth.a srcdashsupr.a \
 		srcncarg.a srcncarg_gks.a srcncarg_loc.a \
 		fontcaps graphcaps ezmapdata pwritdata \
-		ranfdata  ncargexamples params)
+		ranfdata  ncargexamples params ncargparams ncargtests)
 
 
 set mans = 	(areas autograph cgm cgm2ncgm cgm_edit \
