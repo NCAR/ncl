@@ -3184,12 +3184,21 @@ int* n_dims_lon;
 int** dimsizes_lon;
 #endif
 {
-			*lat = NULL;
-			*n_dims_lat = 0;
-			*dimsizes_lat = NULL;
-			*lon = NULL;
-			*n_dims_lon= 0;
-			*dimsizes_lon= NULL;
+	int i;
+			*lat = malloc(sizeof(float)*94);
+			*n_dims_lat = 1;
+			*dimsizes_lat = malloc(sizeof(int));
+			(*dimsizes_lat)[0] = 94;
+			*lon = malloc(sizeof(float)*192);
+			*n_dims_lon= 1;
+			*dimsizes_lon= malloc(sizeof(int));
+			(*dimsizes_lon)[0] = 192;
+			for(i=0; i < 94;i++) {
+				(*lat)[i] = i + 1;
+			}
+			for(i=0; i < 192;i++) {
+				(*lon)[i] = i + 1;
+			}
 }
 void GdsSTGrid
 #if NhlNeedProto

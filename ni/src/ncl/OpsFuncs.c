@@ -176,7 +176,7 @@ int operation;
 
 
 
-        if(lhs.kind == NclStk_VAL) {
+        if((lhs.kind == NclStk_VAL)&&(result->u.data_obj != NULL)) {
 		if(lhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(lhs_data_obj != lhs.u.data_obj) {
 				if(lhs_data_obj->obj.status != PERMANENT) {
@@ -191,7 +191,7 @@ int operation;
                                 _NclDestroyObj((NclObj)lhs.u.data_obj);
                         }
 		}	
-        } else if(lhs.kind == NclStk_VAR) {
+        } else if((lhs.kind == NclStk_VAR)&&(result->u.data_obj != NULL)) {
 		if(lhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(lhs_data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)lhs_data_obj);
@@ -209,8 +209,26 @@ int operation;
 				}
 			}
 		}
-        } 
-        if(rhs.kind == NclStk_VAL) {
+        } else if(result->u.data_obj == NULL){
+		if(lhs.kind == NclStk_VAR) {
+			if(lhs_data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)lhs_data_obj);
+			}
+			if(lhs.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)lhs.u.data_var);
+			} 
+		} else {
+			if(lhs_data_obj != lhs.u.data_obj) {
+				if(lhs_data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)lhs_data_obj);
+				}
+			}
+			if(lhs.u.data_obj->obj.status != PERMANENT) {
+                                _NclDestroyObj((NclObj)lhs.u.data_obj);
+                        }
+		}
+	}
+        if((rhs.kind == NclStk_VAL)&&(result->u.data_obj != NULL)) {
 		if(rhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(rhs_data_obj != rhs.u.data_obj) {
 				if(rhs_data_obj->obj.status != PERMANENT) {
@@ -225,7 +243,7 @@ int operation;
                                 _NclDestroyObj((NclObj)rhs.u.data_obj);
                         }
 		}	
-        } else if(rhs.kind == NclStk_VAR) {
+        } else if((rhs.kind == NclStk_VAR)&&(result->u.data_obj != NULL)) {
 		if(rhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(rhs_data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)rhs_data_obj);
@@ -243,7 +261,25 @@ int operation;
 				}
 			}
 		}
-        } 
+        } else if(result->u.data_obj == NULL){
+		if(rhs.kind == NclStk_VAR) {
+			if(rhs_data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_data_obj);
+			}
+			if(rhs.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs.u.data_var);
+			} 
+		} else {
+			if(rhs_data_obj != rhs.u.data_obj) {
+				if(rhs_data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)rhs_data_obj);
+				}
+			}
+			if(rhs.u.data_obj->obj.status != PERMANENT) {
+                                _NclDestroyObj((NclObj)rhs.u.data_obj);
+                        }
+		}
+	}
 
 
 	return(ret);
