@@ -141,7 +141,8 @@ c at the bottom boundary
           PTMP(KFLAG+1) = -PTMP(KFLAG-1)
 
 c streamfunction is obtained as average from its' values
-c at the intermediate half levels
+c at the intermediate half levels. The minus sign before
+c PTMP in the last loop is to conform to a CSM convention.
 
           DO KL = 1,KFLAG,2
               PTMP(KL) = (PTMP(KL+1)+PTMP(KL-1))*0.5D0
@@ -150,7 +151,7 @@ c at the intermediate half levels
           KNT = 0
           DO KL = 1,2*KLEV - 1,2
               KNT = KNT + 1
-              ZMPSI(NL,KNT) = PTMP(KL)
+              ZMPSI(NL,KNT) = -PTMP(KL)
           END DO
       END DO
 
