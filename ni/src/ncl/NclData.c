@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.9 1996-04-17 21:56:15 ethan Exp $
+ *      $Id: NclData.c,v 1.10 1996-05-02 23:30:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -586,8 +586,8 @@ NclStatus requested;
 }
 
 static int current_id = 0;
-static struct _NclObjList *objs  = NULL;
 #define  OBJ_LIST_START_SIZE 1021
+static struct _NclObjList objs[OBJ_LIST_START_SIZE];
 static int current_size = OBJ_LIST_START_SIZE;
 
 
@@ -677,7 +677,9 @@ FILE *fp;
 				tmp = tmp->next;			
 			}
 		}
+/*
 		NclFree(objs);
+*/
 	}
 }
 int _NclNumObjs
@@ -757,11 +759,19 @@ NclObj self;
 {
 	int tmp;
 	NclObjList *ptr;
-	
+	static int first = 1;
+
+	if(first) {
+		first  = 0;
+/*
 	if(objs == NULL) {
 		objs = (NclObjList*)NclMalloc((unsigned)sizeof(NclObjList)*current_size);
+*/
 		for(tmp = 0; tmp < current_size; tmp++) {
 			objs[tmp].id = -1;
+			objs[tmp].obj_type = Ncl_None;
+			objs[tmp].obj_type_mask = 0;
+			objs[tmp].theobj = NULL;
 			objs[tmp].next = NULL;
 		}
 	} 

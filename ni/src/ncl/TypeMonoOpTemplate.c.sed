@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeMonoOpTemplate.c.sed,v 1.1 1995-01-28 01:52:57 ethan Exp $
+ *      $Id: TypeMonoOpTemplate.c.sed,v 1.2 1996-05-02 23:30:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ int nrhs;
 		}
 	} else {
 		for(i = 0; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (THEOP *ls));
+			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( OUTMISSING ) : (THEOP *ls));
 		}
 	} 
 	return(NhlNOERROR);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.1 1995-01-28 01:51:05 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.2 1996-05-02 23:30:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,10 @@ NclData result;
 			(other_md->multidval.missing_value.has_missing?(void*)&other_md->multidval.missing_value.value:NULL),
 			self_md->multidval.totalelements,
 			other_md->multidval.totalelements) != NhlFATAL) {
+
+			if((the_type != self_md->multidval.type)&&(themissing.has_missing)) {
+				themissing.value = the_type->type_class.default_mis;
+			}
 
 			output_md = _NclCreateMultiDVal(
 				(NclObj)result_md,
@@ -171,6 +175,9 @@ NclData result;
 		if(result_val == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
 			return(NULL);
+		}
+		if((the_type != self_md->multidval.type)&&(themissing.has_missing)) {
+			themissing.value = the_type->type_class.default_mis;
 		}
 		if(_NclTFUNC(
 			self_md->multidval.type,

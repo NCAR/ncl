@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeFunctionOpTemplate.c.sed,v 1.1 1995-01-28 01:52:51 ethan Exp $
+ *      $Id: TypeFunctionOpTemplate.c.sed,v 1.2 1996-05-02 23:30:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,15 +63,15 @@ int nrhs;
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (FNAME((CAST)(*ls),(CAST)(*rs))));
+			*res = (OUTDATATYPE)((lhs_m->DATATYPEval == *ls) ? ( LEFTMISSING ) : (FNAME((CAST)(*ls),(CAST)(*rs))));
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( rhs_m->DATATYPEval) : (FNAME((CAST)(*ls),(CAST)(*rs))));
+			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( RIGHTMISSING ) : (FNAME((CAST)(*ls),(CAST)(*rs))));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( lhs_m->DATATYPEval) : (FNAME((CAST)(*ls),(CAST)(*rs))));
+			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( LEFTMISSING) : (FNAME((CAST)(*ls),(CAST)(*rs))));
 		}
 	}
 	return(NhlNOERROR);

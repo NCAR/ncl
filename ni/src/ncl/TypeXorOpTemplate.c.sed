@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeXorOpTemplate.c.sed,v 1.1 1995-01-28 01:53:17 ethan Exp $
+ *      $Id: TypeXorOpTemplate.c.sed,v 1.2 1996-05-02 23:31:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,15 +63,15 @@ int nrhs;
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (!*ls&&*rs)||(*ls&&!*rs));
+			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( LEFTMISSING ) : (!*ls&&*rs)||(*ls&&!*rs));
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( rhs_m->DATATYPEval) : (!*ls&&*rs)||(*ls&&!*rs));
+			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( RIGHTMISSING ) : (!*ls&&*rs)||(*ls&&!*rs));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( lhs_m->DATATYPEval) : (!*ls&&*rs)||(*ls&&!*rs));
+			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( LEFTMISSING == *rs)) ? ( lhs_m->DATATYPEval) : (!*ls&&*rs)||(*ls&&!*rs));
 		}
 	}
 	return(NhlNOERROR);

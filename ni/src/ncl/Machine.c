@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.46 1996-04-12 23:35:40 ethan Exp $
+ *      $Id: Machine.c,v 1.47 1996-05-02 23:30:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,7 @@ static void SetUpOpsStrings() {
 	ops_strings[DO_WHILE_OP] = "DO_WHILE_OP";
 	ops_strings[BREAK_OP] = "BREAK_OP";
 	ops_strings[CONTINUE_OP] = "CONTINUE_OP";
+	ops_strings[CREATE_OBJ_WP_OP] = "CREATE_OBJ_WP_OP";
 	ops_strings[CREATE_OBJ_OP] = "CREATE_OBJ_OP";
 	ops_strings[SET_OBJ_OP] = "SET_OBJ_OP";
 	ops_strings[GET_OBJ_OP] = "GET_OBJ_OP";

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.18 1996-02-29 01:03:33 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.19 1996-05-02 23:30:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -456,6 +456,12 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 0;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIqsort,args,"qsort",1,IPROC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].is_dimsizes = 0;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIqsort,args,"sqsort",1,IPROC);
 
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("numeric");

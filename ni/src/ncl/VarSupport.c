@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.13 1996-04-23 00:10:27 ethan Exp $
+ *      $Id: VarSupport.c,v 1.14 1996-05-02 23:31:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -213,6 +213,7 @@ NhlErrorTypes  _NclBuildCoordVSelection
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension name in variable (%s), could not determine dimension number",dim_name,v_name);
 				return(NhlFATAL);
 			}
+			cname = NrmStringToQuark(dim_name);
 		} else {
 			name_md = _NclReadDim(var,NULL,dim_num);
                         if(name_md != NULL) {

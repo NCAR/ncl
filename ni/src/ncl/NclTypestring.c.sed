@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.8 1996-01-24 19:59:35 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.9 1996-05-02 23:30:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -164,14 +164,9 @@ string mis;
 	char * rs_ptr;
 	string ret_val;
 
-	if(ls == -1) {
-		return(rs);
-	} else if(rs == -1){
-		return(ls);
-	}
-	if((mis_ls > 0)&&(mis_ls == ls)) {
+	if(mis_ls == ls) {
 		return(mis);
-	} else if((mis_rs > 0)&&(mis_rs == rs)) {
+	} else if(mis_rs == rs) {
 		return(mis);
 	} else {
 		ls_ptr = NrmQuarkToString(ls);
@@ -203,37 +198,32 @@ string mis;
 	char *rptr;
 	char *save_l;
 	char *save_r;
-	
-	if(ls < 1) {
-		return(-1);
-	} else if(rs < 1) {
-		return(ls);
+
+	if(ls == mis_ls) {
+		return(mis);
+	} else if(rs == mis_rs) {
+		return(mis);
 	}
+
 
 		
 	save_l = lptr = NrmQuarkToString(ls);
 	save_r = rptr = NrmQuarkToString(rs);
 	len = MIN(strlen(lptr),strlen(rptr));	
 
-	if((mis_ls > 0)&&(mis_ls == ls)) {
-		return(mis);
-	} else if((mis_rs > 0)&&(mis_rs == rs)) {
-		return(mis);
-	} else {
-		for(i = 0; i<len; i++) {
-			if((int)tolower(*lptr) < (int)tolower(*rptr)) {
-				return(ls);
-			} else if((int)tolower(*lptr) > (int)tolower(*rptr)){
-				return(rs);
-			}
-			lptr++;
-			rptr++;
-		}
-		if(strlen(save_l) < strlen(save_r)) {
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
 			return(ls);
-		} else {
+		} else if((int)tolower(*lptr) > (int)tolower(*rptr)){
 			return(rs);
 		}
+		lptr++;
+		rptr++;
+	}
+	if(strlen(save_l) < strlen(save_r)) {
+		return(ls);
+	} else {
+		return(rs);
 	}
 }
 static string select_string_gt
@@ -255,35 +245,29 @@ string mis;
 	char *save_l;
 	char *save_r;
 	
-	if(ls < 1) {
-		return(rs);
-	} else if(rs < 1) {
-		return(ls);
+	if(ls == mis_ls) {
+		return(mis);
+	} else if(rs == mis_rs) {
+		return(mis);
 	}
 
 	save_l = lptr = NrmQuarkToString(ls);
 	save_r = rptr = NrmQuarkToString(rs);
 	len = MIN(strlen(lptr),strlen(rptr));	
 
-	if((mis_ls > 0)&&(mis_ls==ls)) {
-		return(mis);
-	} else if((mis_rs > 0)&&(mis_rs == rs)) {
-		return(mis);
-	} else {
-		for(i = 0; i<len; i++) {
-			if((int)tolower(*lptr) > (int)tolower(*rptr)) {
-				return(ls);
-			} else if((int)tolower(*lptr) < (int)tolower(*rptr)){
-				return(rs);
-			}
-			lptr++;
-			rptr++;
-		}
-		if(strlen(save_l) > strlen(save_r)) {
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
 			return(ls);
-		} else {
+		} else if((int)tolower(*lptr) < (int)tolower(*rptr)){
 			return(rs);
 		}
+		lptr++;
+		rptr++;
+	}
+	if(strlen(save_l) > strlen(save_r)) {
+		return(ls);
+	} else {
+		return(rs);
 	}
 }
 static int cmp_string_lt
@@ -675,15 +659,15 @@ int nrhs;
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)((lhs_m->stringval == *ls) ? ((logical)NCL_DEFAULT_MISSING_VALUE) : *ls == *rs);
+			*res = (logical)((lhs_m->stringval == *ls) ? ((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval) : *ls == *rs);
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)((rhs_m->stringval == *rs) ? ( (logical)NCL_DEFAULT_MISSING_VALUE ) : *ls == *rs);
+			*res = (logical)((rhs_m->stringval == *rs) ? ( (logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)) : *ls == *rs);
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)(((lhs_m->stringval == *ls)||( rhs_m->stringval==*rs)) ? ((logical)NCL_DEFAULT_MISSING_VALUE) : *ls == *rs);
+			*res = (logical)(((lhs_m->stringval == *ls)||( rhs_m->stringval==*rs)) ? ((logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)) : *ls == *rs);
 		}
 	}
 	return(NhlNOERROR);
@@ -733,7 +717,7 @@ int nrhs;
 	if(nrhs > 1) {
 		rinc = 1;
 	}
-	
+
 
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
@@ -741,15 +725,15 @@ int nrhs;
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)(( lhs_m->stringval == *ls) ? ( (logical)NCL_DEFAULT_MISSING_VALUE) : !((*ls==*rs)));
+			*res = (logical)(( lhs_m->stringval == *ls) ? ( (logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)) : !((*ls==*rs)));
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)((lhs_m->stringval == *rs)?((logical)NCL_DEFAULT_MISSING_VALUE ):!(*ls==*rs));
+			*res = (logical)((lhs_m->stringval == *rs)?((logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)):!(*ls==*rs));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)((( lhs_m->stringval == *ls) ||( rhs_m->stringval==*rs)) ? ( (logical)NCL_DEFAULT_MISSING_VALUE) : !((*ls==*rs)));
+			*res = (logical)((( lhs_m->stringval == *ls) ||( rhs_m->stringval==*rs)) ? ( (logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)) : !((*ls==*rs)));
 		}
 	}
 	return(NhlNOERROR);

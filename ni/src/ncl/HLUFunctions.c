@@ -103,6 +103,7 @@ NhlErrorTypes _NclIChangeWorkstation
 			ret = NhlWARNING;
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclISetColor
@@ -265,6 +266,7 @@ NhlErrorTypes _NclISetColor
 			ret = NhlWARNING;
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclINewColor
@@ -419,6 +421,7 @@ NhlErrorTypes _NclINewColor
 		dimsizes[0] = j;
 		dimsizes[1] = total_c;
 	}
+	NclFree(tmp_hlu_ptr);
 	return(NclReturnValue(
                 colori_out,
                 n_dims,
@@ -515,6 +518,7 @@ NhlErrorTypes _NclIFreeColor
 			ret = NhlWARNING;
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIIsAllocatedColor
@@ -614,6 +618,7 @@ NhlErrorTypes _NclIIsAllocatedColor
 		dimsizes[0] = j;
 		dimsizes[1] = total_c;
 	}
+	NclFree(tmp_hlu_ptr);
 	return(NclReturnValue(
                 (void*)log_out,
                 n_dims,
@@ -700,6 +705,7 @@ NhlErrorTypes _NclIGetBB
 		dimsizes[0] = j;
 		dimsizes[1] = 4;
 	}
+	NclFree(tmp_hlu_ptr);
 	return(NclReturnValue(
                 (void*)out_val,
                 n_dims,
@@ -853,6 +859,8 @@ NhlErrorTypes _NclIAddData
                 0,(void*)out_dspec_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
                 len_dims,TEMPORARY,NULL);
 	_NclPlaceReturn(data_out);
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_data_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIRemoveData
@@ -954,6 +962,8 @@ NhlErrorTypes _NclIRemoveData
 			}
 		}
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_data_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIRemoveOverlay
@@ -1034,6 +1044,7 @@ NhlErrorTypes _NclIRemoveOverlay
 			}
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIAddToOverlay2
@@ -1216,6 +1227,7 @@ NhlErrorTypes _NclIAddAnnotation
 		0,(void*)out_anno_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
 		&len_dims,TEMPORARY,NULL);
 	_NclPlaceReturn(data_out);
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIRemoveAnnotation
@@ -1288,8 +1300,10 @@ NhlErrorTypes _NclIRemoveAnnotation
 		}
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIRemoveAnnotation: First paramter is a missing value, returning missing values");
+		NclFree(tmp_hlu_ptr);
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIUpdateData
@@ -1343,6 +1357,7 @@ NhlErrorTypes _NclIUpdateData
 			}
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIDataPolymarker
@@ -1434,6 +1449,8 @@ NhlErrorTypes _NclIDataPolymarker
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -1486,12 +1503,16 @@ NhlErrorTypes _NclIDataPolymarker
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1500,6 +1521,8 @@ NhlErrorTypes _NclIDataPolymarker
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1515,6 +1538,8 @@ NhlErrorTypes _NclIDataPolymarker
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIDataPolygon
@@ -1606,6 +1631,8 @@ NhlErrorTypes _NclIDataPolygon
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -1658,12 +1685,16 @@ NhlErrorTypes _NclIDataPolygon
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1672,6 +1703,8 @@ NhlErrorTypes _NclIDataPolygon
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1687,6 +1720,8 @@ NhlErrorTypes _NclIDataPolygon
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclIDataPolyline 
@@ -1778,6 +1813,8 @@ NhlErrorTypes _NclIDataPolyline
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -1830,12 +1867,16 @@ NhlErrorTypes _NclIDataPolyline
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1844,6 +1885,8 @@ NhlErrorTypes _NclIDataPolyline
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -1859,6 +1902,8 @@ NhlErrorTypes _NclIDataPolyline
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclINDCPolygon
@@ -1950,6 +1995,8 @@ NhlErrorTypes _NclINDCPolygon
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -2002,12 +2049,16 @@ NhlErrorTypes _NclINDCPolygon
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2016,6 +2067,8 @@ NhlErrorTypes _NclINDCPolygon
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2031,6 +2084,8 @@ NhlErrorTypes _NclINDCPolygon
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclINDCPolymarker
@@ -2122,6 +2177,8 @@ NhlErrorTypes _NclINDCPolymarker
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -2174,12 +2231,16 @@ NhlErrorTypes _NclINDCPolymarker
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2188,6 +2249,8 @@ NhlErrorTypes _NclINDCPolymarker
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2203,6 +2266,8 @@ NhlErrorTypes _NclINDCPolymarker
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 NhlErrorTypes _NclINDCPolyline 
@@ -2294,6 +2359,8 @@ NhlErrorTypes _NclINDCPolyline
 			} else {
 				if(style_hlu_obj_ids[0] == missing_.objval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: a missing value for the style object was detected, can't perform draw");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 				for( i = 0; i < total; i++) {
@@ -2346,12 +2413,16 @@ NhlErrorTypes _NclINDCPolyline
 		}
 		if(dimsizes1[0] != dimsizes2[0]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: x and y parameters must have the same dimension size");
+			NclFree(tmp_hlu_ptr);
+			NclFree(tmp_style_hlu_ptr);
 			return(NhlWARNING);
 		}
 		if(has_missing1){
 			for( i = 0; i < n_dims1; i++) {
 				if(x[i] == missing1.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2360,6 +2431,8 @@ NhlErrorTypes _NclINDCPolyline
 			for( i = 0; i < n_dims2; i++) {
 				if(y[i] == missing2.floatval) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolyLine: missing value detected,  x and y parameters must not contain any missing values");
+					NclFree(tmp_hlu_ptr);
+					NclFree(tmp_style_hlu_ptr);
 					return(NhlWARNING);
 				}
 			}
@@ -2375,6 +2448,8 @@ NhlErrorTypes _NclINDCPolyline
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
+	NclFree(tmp_hlu_ptr);
+	NclFree(tmp_style_hlu_ptr);
 	return(ret);
 }
 
@@ -2430,6 +2505,7 @@ NhlErrorTypes _NclIClassName
 			outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(NclReturnValue(
                 (void*)outpt,
                 1,
@@ -2491,6 +2567,7 @@ NhlErrorTypes _NclIName
 			outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 		}
 	}
+	NclFree(tmp_hlu_ptr);
 	return(NclReturnValue(
                 (void*)outpt,
                 1,

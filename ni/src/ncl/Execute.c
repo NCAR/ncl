@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.58 1996-04-25 00:58:53 ethan Exp $
+ *      $Id: Execute.c,v 1.59 1996-05-02 23:30:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -314,16 +314,32 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.range_rec = 
 							(NclRangeRec*)NclMalloc(
 							sizeof(NclRangeRec));
-						data1.u.range_rec->start = val;
-						data1.u.range_rec->finish = val;
-						data1.u.range_rec->stride=NULL;
+						if(val->obj.status != PERMANENT) {
+							data1.u.range_rec->start = val;
+							data1.u.range_rec->finish = val;
+							data1.u.range_rec->stride=NULL;
+						} else {
+							data1.u.range_rec->start = _NclCopyVal(val,NULL);
+							data1.u.range_rec->finish = data1.u.range_rec->start;
+							data1.u.range_rec->stride=NULL;
+							if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							}
+						}
 						estatus = _NclPush(data1);
 					} else if(val->multidval.n_dims == 1) {
 						data1.kind = NclStk_VECREC;
 						data1.u.vec_rec =
 							(NclVecRec*)NclMalloc(
 							sizeof(NclVecRec));
-						data1.u.vec_rec->vec = val;
+						if(val->obj.status != PERMANENT) {
+							data1.u.vec_rec->vec = val;
+						} else {
+							data1.u.vec_rec->vec = _NclCopyVal(val,NULL);
+							if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							}
+						}
 						estatus = _NclPush(data1);
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
