@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.11 2004-04-02 15:37:00 haley Exp $
+;      $Id: shea_util.ncl,v 1.12 2004-07-22 01:35:05 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2174,4 +2174,140 @@ begin
    txres@txJust        = "BottomLeft"
    gsn_text_ndc  (wks,"Created: "+TimeStamp , xLeft, yBot, txres)
 end
+; ----------------------------------------------------------
+; Adam Phillips
+;
+function landsea_mask (basemap[*][*]:byte,tlat:numeric,tlon:numeric)
+;
+;	Given a latitude and longitude array, this function will 
+;	return a field that contains a land sea mask. It is up to
+;	the user to apply the mask to his/her data. The data contains
+;	five types of values: 0=ocean, 1=land, 2=lake, 3=small island, 4=ice shelf
+;
+;	2D lat/lon fields are accepted. integer/float/doubles are accepted
+;	longitude arrays accepted from -180:359.999, if your longitudes
+;	are < -180, use the contributed function lonFlip to convert
+;	your longitudes to 0->360...
+;
+;	In all three examples it is assumed array@_FillValue is set for
+;	use in the ncl mask function.
+;
+;	Example 1 array is a 3D array w/coord vars (time,lat,lon)
+;		  Land,lakes, small islands, and ice shelves will be masked.
+;		  lsm = landsea_mask("landsea.nc",array&lat,array&lon)
+;	          array = mask(array,conform(array,lsm,(/1,2/)).ge.1,False)
+;		
+;	Example 2 array is a 2D array w/coord vars (lat,lon), land/small islands
+;		  will be masked, but not lakes
+;		  lsm = landsea_mask("landsea.nc",array&lat,array&lon)	  
+;	          array = mask(array,lsm.eq.1,False)
+;		  array = mask(array,lsm.eq.3,False)
+;	
+;	Example 3 array is a 2D array w/2D coordinate variables TLAT/TLON
+;		  Land,lakes, small islands, and ice shelves will be masked.
+;		  lsm = landsea_mask("landsea.nc",TLAT,TLON)
+;		  array = mask(array,lsm.ge.1,False)	
+;
+begin	
 
+        rank = dimsizes(dimsizes(tlon))         ; # of dimensions
+
+	if (rank.eq.2) then
+	   ulon = ndtooned(tlon)		;convert 2D lat/lon coords to 1D
+	   ulat = ndtooned(tlat)
+	   if (any(dimsizes(ulat).ne.dimsizes(ulon))) then
+	      print("landsea_mask:")
+	      print("Fatal error: 2D lat/lon arrays are different sizes, exiting")
+	      exit
+	   end if
+	   rdim = 1
+	else
+	   ulon = tlon
+	   ulat = tlat  	   
+	   rdim = 0
+	end if
+
+	ulat = ulat + 90			;add 90 to convert to index
+	if (min(ulon).lt.0) then
+	   ind_lt0 = ind(ulon.lt.0)
+	   ulon(ind_lt0) = ulon(ind_lt0)+360	;add 360 to those lons < 0
+	   delete(ind_lt0)
+	end if
+	
+	if (typeof(ulon).eq."integer") then		
+	   inlon = ulon
+	end if
+	if (typeof(ulat).eq."integer") then
+           inlat = ulat
+	end if
+	if (typeof(ulon).eq."float") then        ;lop off decimal pt. 
+	   inlon = floattointeger(ulon)		 ;I want 56.0->56.99999 to refer to data
+	end if					 ;pt at 56.5
+	if (typeof(ulat).eq."float") then		
+	   inlat = floattointeger(ulat)			
+	end if
+	if (typeof(ulon).eq."double") then
+	   inlon = doubletointeger(ulon)
+	end if	
+	if (typeof(ulat).eq."double") then
+	   inlat = doubletointeger(ulat)
+	end if	
+	
+	if (min(inlat).lt.0) then
+	   ind_lt0 = ind(inlat.lt.0)		;correction for all indices < 0 and > 179
+	   inlat(ind_lt0) = 0
+	   delete(ind_lt0)
+	end if
+
+	if (min(inlat).gt.179) then
+	   ind_gt179 = ind(inlat.gt.179)
+	   inlat(ind_gt179) = 179
+	   delete(ind_gt179)
+	end if
+
+	if (max(inlon).ge.360) then
+	   if (inlon.ge.361) then
+	      print("Fatal error: invalid longitude point > 360.999, outside valid longitude range")
+	      print("Exiting")
+	      exit
+	   end if
+	   ind_ge360 = ind(inlon.ge.360.) 
+	   inlon(ind_ge360) = 0
+	   delete(ind_ge360)
+	end if
+	
+	if (rdim.eq.0) then
+	   if (dimsizes(inlat).eq.1.and.dimsizes(inlon).eq.1) then		;user passed in 1 pt
+	      newarr = basemap(inlat,inlon)
+	   else
+              ninlat = dimsizes(inlat)
+              ninlon = dimsizes(inlon)
+	      newarr = new((/ninlat,ninlon/),"byte")
+	      newarr!0   = "lat"
+	      newarr&lat = tlat
+	      newarr!1   = "lon"
+	      newarr&lon = tlon
+	      do ss = 0,ninlat-1
+	         newarr(ss,: ) = (/ basemap(inlat(ss),inlon(:)) /) 
+	      end do
+	   end if
+	end if
+
+	if (rdim.eq.1) then
+	   tarr = new((/dimsizes(inlat)/),"byte")
+	   
+	  ;wcStrt = systemfunc("date")
+	   do ss = 0,dimsizes(inlat)-1
+	      tarr(ss) = (/ basemap(inlat(ss),inlon(ss)) /)
+	   end do
+	  ;wallClockElapseTime(wcStrt, "ss do loop", 0)
+	   dimt = dimsizes(tlat)
+	   newarr = onedtond(tarr,(/dimt(0),dimt(1)/))
+	   newarr@lat2d = tlat
+	   newarr@lon2d = tlon
+	   delete(tarr)
+	end if
+	return(newarr)	
+end
+	         
+	         
