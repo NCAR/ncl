@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRendererP.h,v 1.1 2004-03-11 02:00:26 dbrown Exp $
+ *      $Id: CnTriMeshRendererP.h,v 1.2 2004-07-23 21:24:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,12 @@
 
 #include <ncarg/hlu/CnTriMeshRenderer.h>
 #include <ncarg/hlu/CnRendererP.h>
+
+extern void _NhlSetCnl(
+#if	NhlNeedProto
+	NhlContourPlotLayer cnl
+#endif
+);
 
 typedef struct _NhlCnTriMeshRendererLayerPart {
 	float *rpnt;

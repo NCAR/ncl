@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.31 2004-03-11 02:00:30 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.32 2004-07-23 21:24:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -241,6 +241,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	fix_fill_bleed;
 	NhlBoolean      output_gridded_data;
 	NhlString       output_file_name;
+	NhlBoolean      verbose_triangle_info;
 	int		amap_crange;
 	NhlBoolean	update_req;
 	NhlBoolean	data_changed;

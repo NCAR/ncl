@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.8 2003-09-10 21:29:57 dbrown Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.9 2004-07-23 21:24:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -71,6 +71,10 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	int		fast_len;
 	int		slow_len;
 	int		changed;
+
+	NhlGenArray     element_nodes;
+	NhlGenArray     x_bounds;
+	NhlGenArray     y_bounds;
 } NhlScalarFieldFloatLayerPart;
 
 typedef struct _NhlScalarFieldFloatLayerRec{

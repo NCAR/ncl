@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.62 2004-03-20 00:16:33 dbrown Exp $
+#      $Id: yMakefile,v 1.63 2004-07-23 21:24:56 dbrown Exp $
 #
 #########################################################################
 #                                                                       #
@@ -59,7 +59,9 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CnRenderer.h CnRendererP.h CnStdRenderer.h CnStdRendererP.h \
 		CnTriMeshRenderer.h CnTriMeshRendererP.h \
 		TriMeshTransObj.h TriMeshTransObjP.h \
-		ImageWorkstation.h ImageWorkstationP.h
+		ImageWorkstation.h ImageWorkstationP.h \
+		MeshScalarField.h MeshScalarFieldP.h \
+		triangle.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -81,7 +83,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
-		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c
+		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
+		MeshScalarField.c triangle.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -103,7 +106,8 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
-		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o
+		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
+		MeshScalarField.o triangle.o
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
@@ -127,6 +131,9 @@ BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
+
+triangle.o: triangle.c
+	$(CC) -DTRILIBRARY -c triangle.c
 
 #if defined(IRIX64)
 cmpf.o: cmpf.c

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.40 2004-07-23 21:24:55 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.1 2004-07-23 21:24:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		ScalarField.c
+ *	File:		MeshScalarField.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -25,11 +25,11 @@
 #include <math.h>
 #include <float.h>
 #include <ncarg/hlu/hluutil.h>
-#include <ncarg/hlu/ScalarFieldP.h>
+#include <ncarg/hlu/MeshScalarFieldP.h>
 
 /************************************************************************
 *									*
-*	ScalarField Class declarations					*
+*	MeshScalarField Class declarations					*
 *									*
 ************************************************************************/
 
@@ -37,17 +37,35 @@
  * Resource Declarations
  */
 
-#define	Oset(field)	NhlOffset(NhlScalarFieldLayerRec,sfield.field)
+#define	Oset(field)	NhlOffset(NhlMeshScalarFieldLayerRec,msfield.field)
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
-
 	{NhlNsfDataArray,NhlCsfDataArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(d_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfXArray,NhlCsfXArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(x_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfYArray,NhlCsfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfElementNodes,NhlCsfElementNodes,
+	 NhlTIntegerGenArray,sizeof(NhlGenArray),
+	 Oset(element_nodes),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfNodeIndexes,NhlCsfNodeIndexes,
+	 NhlTIntegerGenArray,sizeof(NhlGenArray),
+	 Oset(node_indexes),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfFirstNodeIndex,NhlCsfFirstNodeIndex,NhlTInteger,sizeof(int),
+	 Oset(first_node_index),NhlTImmediate,_NhlUSET(0),0,NULL},
+	{NhlNsfXCellBounds,NhlCsfXCellBounds,NhlTGenArray,sizeof(NhlGenArray),
+	 Oset(x_bounds),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfYCellBounds,NhlCsfYCellBounds,NhlTGenArray,sizeof(NhlGenArray),
+	 Oset(y_bounds),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),0,NULL},
+
+	{NhlNsfMissingValueV,NhlCsfMissingValueV,NhlTVariable,
+		 sizeof(NhlGenArray),Oset(missing_value),NhlTImmediate,
+		 _NhlUSET(NULL),0,NULL},
+
 	{NhlNsfGridType,NhlCsfGridType,NhlTdiGridType,sizeof(NhldiGridType),
 	 	Oset(grid_type),NhlTImmediate,
 	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),0,NULL},
@@ -57,9 +75,6 @@ static NhlResource resources[] = {
 	{NhlNsfExchangeDimensions,NhlCsfExchangeDimensions,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(exchange_dimensions),NhlTImmediate,
 		 _NhlUSET((NhlPointer)False),0,NULL},
-	{NhlNsfMissingValueV,NhlCsfMissingValueV,NhlTVariable,
-		 sizeof(NhlGenArray),Oset(missing_value),NhlTImmediate,
-		 _NhlUSET(NULL),0,NULL},
 	{NhlNsfDataMinV,NhlCsfDataMinV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(data_min),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfDataMaxV,NhlCsfDataMaxV,NhlTVariable,sizeof(NhlGenArray),
@@ -124,31 +139,121 @@ static NhlResource resources[] = {
 		 Oset(yc_el_count),NhlTImmediate,
          	_NhlUSET(0),_NhlRES_GONLY,NULL},
 
-/* End-documented-resources */
-        
-	{NhlNsfSubsetByIndex,NhlCsfSubsetByIndex,
-		NhlTBoolean,sizeof(NhlBoolean),Oset(subset_by_index),
-		NhlTImmediate,
-         	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
+#undef Oset
+
+/*
+ * disable all resources at the superclass level
+ */
+#define	Oset(field)	NhlOffset(NhlMeshScalarFieldLayerRec,sfield.field)
+	{"no.res","No.res",NhlTGenArray,sizeof(NhlGenArray),
+		 Oset(d_arr),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTGenArray,sizeof(NhlGenArray),
+		 Oset(x_arr),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTGenArray,sizeof(NhlGenArray),
+		 Oset(y_arr),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTdiGridType,sizeof(NhldiGridType),
+	 	Oset(grid_type),NhlTImmediate,
+	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),_NhlRES_PRIVATE,NULL},
+	{"no.res",NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(copy_arrays),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(exchange_dimensions),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,
+		 sizeof(NhlGenArray),Oset(missing_value),NhlTImmediate,
+		 _NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(data_min),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(data_max),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(x_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(x_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(y_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
+		 Oset(y_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+
+	{"no.res","No.res",
+		 NhlTVariable,sizeof(NhlGenArray),
+		 Oset(x_subset_start),NhlTImmediate,_NhlUSET(NULL),
+	 	_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",
+		 NhlTVariable,sizeof(NhlGenArray),
+		 Oset(x_subset_end),NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",
+		 NhlTVariable,sizeof(NhlGenArray),
+		 Oset(y_subset_start),NhlTImmediate,_NhlUSET(NULL),
+	 	_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",
+		 NhlTVariable,sizeof(NhlGenArray),
+		 Oset(y_subset_end),NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_PRIVATE,NULL},
+
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(x_index_start),NhlTImmediate,
+		 _NhlUSET((NhlPointer)-1),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(x_index_end),NhlTImmediate,
+		 _NhlUSET((NhlPointer)-1),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(y_index_start),NhlTImmediate,
+		 _NhlUSET((NhlPointer)-1),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(y_index_end),NhlTImmediate,
+		 _NhlUSET((NhlPointer)-1),_NhlRES_PRIVATE,NULL},
+
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		Oset(x_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),
+	 	_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		Oset(y_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),
+	 	_NhlRES_PRIVATE,NULL},
+
+   	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 Oset(x_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 Oset(x_actual_end),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(xc_el_count),NhlTImmediate,
+         	 _NhlUSET(0),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 Oset(y_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 Oset(y_actual_end),NhlTString,
+         	_NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTInteger,sizeof(int),
+		 Oset(yc_el_count),NhlTImmediate,
+         	_NhlUSET(0),_NhlRES_PRIVATE,NULL},
 
 };
 #undef Oset
 
 /* base methods */
 
-static NhlErrorTypes ScalarFieldClassPartInitialize(
+static NhlErrorTypes MeshScalarFieldClassPartInitialize(
 #if	NhlNeedProto
 	NhlClass	lc	/* lc to init	*/
 #endif
 );
 
-static NhlErrorTypes ScalarFieldClassInitialize(
+static NhlErrorTypes MeshScalarFieldClassInitialize(
 #if	NhlNeedProto
 	void
 #endif
 );
 
-static NhlErrorTypes ScalarFieldInitialize(
+static NhlErrorTypes MeshScalarFieldInitialize(
 #if	NhlNeedProto
 	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -158,7 +263,7 @@ static NhlErrorTypes ScalarFieldInitialize(
 #endif
 );
 
-static NhlErrorTypes ScalarFieldSetValues(
+static NhlErrorTypes MeshScalarFieldSetValues(
 #if	NhlNeedProto
 	NhlLayer	old,		/* old		*/
 	NhlLayer	req,		/* requested	*/
@@ -168,7 +273,7 @@ static NhlErrorTypes ScalarFieldSetValues(
 #endif
 );
 
-static NhlErrorTypes    ScalarFieldGetValues(
+static NhlErrorTypes    MeshScalarFieldGetValues(
 #if	NhlNeedProto
         NhlLayer	layer,
         _NhlArgList	args,
@@ -176,7 +281,7 @@ static NhlErrorTypes    ScalarFieldGetValues(
 #endif
 );
 
-static NhlErrorTypes ScalarFieldDestroy(
+static NhlErrorTypes MeshScalarFieldDestroy(
 #if	NhlNeedProto
 	NhlLayer	layer
 #endif
@@ -192,48 +297,16 @@ static NhlErrorTypes    CheckCopyVType(
 #endif
 );
 
-NhlScalarFieldFloatClassRec NhlscalarFieldFloatClassRec = {
+
+NhlMeshScalarFieldClassRec NhlmeshScalarFieldClassRec = {
 	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"scalarFieldFloatClass",
+/* class_name			*/	"meshScalarFieldClass",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlScalarFieldFloatLayerRec),
-/* class_inited			*/	False,
-/* superclass			*/	(NhlClass)&NhlobjClassRec,
-/* cvt_table			*/	NULL,
-
-/* resources			*/	NULL,
-/* num_resources		*/	0,
-/* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
-/* class_callbacks		*/	NULL,
-/* num_class_callbacks		*/	0,
-
-/* class_part_initialize	*/	NULL,
-/* class_initialize		*/	NULL,
-/* layer_initialize		*/	NULL,
-/* layer_set_values		*/	NULL,
-/* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
-/* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
-	},
-	/* NhlScalarFieldFloatLayerPart */
-	{
-/* foo				*/	0
-	}
-};
-
-NhlScalarFieldClassRec NhlscalarFieldClassRec = {
-	/* NhlBaseClassPart */
-	{
-/* class_name			*/	"scalarFieldClass",
-/* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlScalarFieldLayerRec),
+/* layer_size			*/	sizeof(NhlMeshScalarFieldLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
-						&NhldataItemClassRec,
+						&NhlscalarFieldClassRec,
 /* cvt_table			*/	NULL,
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -243,14 +316,14 @@ NhlScalarFieldClassRec NhlscalarFieldClassRec = {
 /* class_callbacks		*/	NULL,
 /* num_class_callbacks		*/	0,
 
-/* class_part_initialize	*/	ScalarFieldClassPartInitialize,
-/* class_initialize		*/	ScalarFieldClassInitialize,
-/* layer_initialize		*/	ScalarFieldInitialize,
-/* layer_set_values		*/	ScalarFieldSetValues,
+/* class_part_initialize	*/	MeshScalarFieldClassPartInitialize,
+/* class_initialize		*/	MeshScalarFieldClassInitialize,
+/* layer_initialize		*/	MeshScalarFieldInitialize,
+/* layer_set_values		*/	MeshScalarFieldSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	ScalarFieldGetValues,
+/* layer_get_values		*/	MeshScalarFieldGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	ScalarFieldDestroy,
+/* layer_destroy		*/	MeshScalarFieldDestroy,
 
 /* child_resources		*/	NULL,
 
@@ -268,13 +341,15 @@ NhlScalarFieldClassRec NhlscalarFieldClassRec = {
 	/* NhlScalarFieldClassPart */
 	{
 /* foo				*/	0
+	},
+	/* NhlMeshScalarFieldClassPart */
+	{
+/* foo				*/	0
 	}
 };
 	
-NhlClass NhlscalarFieldClass = (NhlClass)
-					&NhlscalarFieldClassRec;
-NhlClass NhlscalarFieldFloatClass = (NhlClass)
-					&NhlscalarFieldFloatClassRec;
+NhlClass NhlmeshScalarFieldClass = (NhlClass)
+					&NhlmeshScalarFieldClassRec;
 
 static	NrmQuark	Qfloat  = NrmNULLQUARK;
 static	NrmQuark	Qint  = NrmNULLQUARK;
@@ -283,6 +358,10 @@ static	NrmQuark	Qfloat_gen_array  = NrmNULLQUARK;
 static	NrmQuark	Qd_arr  = NrmNULLQUARK;
 static	NrmQuark	Qx_arr  = NrmNULLQUARK;
 static	NrmQuark	Qy_arr  = NrmNULLQUARK;
+static	NrmQuark	Qx_bounds  = NrmNULLQUARK;
+static	NrmQuark	Qy_bounds  = NrmNULLQUARK;
+static  NrmQuark        Qelement_nodes = NrmNULLQUARK;
+static  NrmQuark        Qnode_indexes = NrmNULLQUARK;
 static	NrmQuark	Qmissing_value  = NrmNULLQUARK;
 static	NrmQuark	Qdata_min  = NrmNULLQUARK;
 static	NrmQuark	Qdata_max  = NrmNULLQUARK;
@@ -313,9 +392,9 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
 ************************************************************************/
 
 /*
- * Function:	nhlfscalarfieldclass
+ * Function:	nhlfmeshScalarfieldclass
  *
- * Description:	fortran ref to scalarfield class
+ * Description:	fortran ref to meshScalarfield class
  *
  * In Args:	
  *
@@ -326,7 +405,7 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
  * Side Effect:	
  */
 NhlClass
-_NHLCALLF(nhlfscalarfieldclass,NHLFSCALARFIELDCLASS)
+_NHLCALLF(nhlfmeshScalarfieldclass,NHLFMESHSCALARFIELDCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -335,7 +414,7 @@ _NHLCALLF(nhlfscalarfieldclass,NHLFSCALARFIELDCLASS)
 ()
 #endif
 {
-	return NhlscalarFieldClass;
+	return NhlmeshScalarFieldClass;
 }
 
 
@@ -445,7 +524,7 @@ static NhlGenArray
 DataToFloatArray
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
+ 	NhlMeshScalarFieldLayerPart *sfp,
 	NhlBoolean		do_minmax,
 	NhlBoolean		do_missing,
 	float			missing_value,
@@ -456,7 +535,7 @@ DataToFloatArray
 )
 #else
 (sfp,do_minmax,do_missing,missing_value,dmin,dmax,new_data,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
+ 	NhlMeshScalarFieldLayerPart *sfp;
 	NhlBoolean		do_minmax;
 	NhlBoolean		do_missing;
 	float			missing_value;
@@ -474,12 +553,8 @@ DataToFloatArray
 	float		*ifp,*fp;
 	int		inlen_1;
 	float		tmp;
-	int		ixstart = sfp->ix_start;
-	int		iystart = sfp->iy_start;
-	int		ixend = sfp->xc_is_bounds ? 
-				sfp->ix_end - 1 : sfp->ix_end;
-	int		iyend = sfp->yc_is_bounds ? 
-				sfp->iy_end - 1 : sfp->iy_end;
+	int		istart = sfp->istart;
+	int		iend = sfp->iend;
 	int		valid_data_count = 0;
 
 /*
@@ -490,7 +565,7 @@ DataToFloatArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
-	if (ga->num_dimensions != 2 || ga->typeQ != Qfloat) {
+	if (ga->num_dimensions != 1 || ga->typeQ != Qfloat) {
 		e_text = "%s: internal inconsistency in float data array";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
@@ -500,13 +575,13 @@ DataToFloatArray
 	*new_data = False;
 	*dmin = FLT_MAX;
 	*dmax = -FLT_MAX;
-	inlen_1 = ga->len_dimensions[1];
-	out_len[1] = (ixend - ixstart + 1) / sfp->x_stride +
-		((ixend - ixstart + 1) % sfp->x_stride > 0);
-	out_len[0] = (iyend - iystart + 1) / sfp->y_stride +
-		((iyend - iystart + 1) % sfp->y_stride > 0);
-	*new_data = sfp->x_stride > 1 || sfp->y_stride > 1;
+#if 0
+	out_len[0] = (iend - istart + 1) / sfp->istride +
+		((iend - istart + 1) % sfp->istride > 0);
+	*new_data = sfp->istride > 1;
+#endif
 	out_ga = ga;
+	out_len[0] = (iend - istart + 1);
 	
 	if (*new_data) {
 
@@ -516,8 +591,7 @@ DataToFloatArray
 			fp = ifp;
 		else {
 			if ((fp = (float *) 
-			     NhlConvertMalloc(out_len[1] * out_len[0] * 
-					      sizeof(float))) == NULL) {
+			     NhlConvertMalloc(out_len[0] * sizeof(float))) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
@@ -526,41 +600,29 @@ DataToFloatArray
 		}
 		if (do_minmax && do_missing) {
 			for (i = 0; i < out_len[0]; i++) {
-				for (j = 0; j < out_len[1]; j++) {
-					tmp = *(ifp + inlen_1 *
-						(iystart+i*sfp->y_stride) +
-						ixstart+j*sfp->x_stride);
-					if (tmp != missing_value) {
-						valid_data_count++;
-						if (tmp < *dmin) *dmin = tmp;
-						if (tmp > *dmax) *dmax = tmp;
-					}
-					*(fp+(i * out_len[1] + j)) = tmp;
+				tmp = *(ifp + istart+i*sfp->istride);
+				if (tmp != missing_value) {
+					valid_data_count++;
+					if (tmp < *dmin) *dmin = tmp;
+					if (tmp > *dmax) *dmax = tmp;
 				}
+				*(fp+i) = tmp;
 			}
 		}
 		else if (do_minmax) {
 			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
-				for (j = 0; j < out_len[1]; j++) {
-					tmp = *(ifp + inlen_1 *
-						(iystart+i*sfp->y_stride) +
-						ixstart+j*sfp->x_stride);
-					if (tmp < *dmin) *dmin = tmp;
-					if (tmp > *dmax) *dmax = tmp;
-					*(fp+(i * out_len[1] + j)) = tmp;
-				}
+				tmp = *(ifp + istart+i*sfp->istride);
+				if (tmp < *dmin) *dmin = tmp;
+				if (tmp > *dmax) *dmax = tmp;
+				*(fp+i) = tmp;
 			}
 		}
 		else {
 			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
-				for (j = 0; j < out_len[1]; j++) {
-					*(fp+(i * out_len[1] + j)) = 
-					     *(ifp + inlen_1 * 
-					       (iystart+i*sfp->y_stride) +
-					       ixstart+j*sfp->x_stride);
-				}
+				tmp = *(ifp + istart+i*sfp->istride);
+				*(fp+i) = tmp;
 			}
 		}
 		if (! overwrite_ok) {
@@ -572,17 +634,9 @@ DataToFloatArray
 					  e_text,entry_name);
 				return NULL;
 			}
-			out_ga->num_dimensions = 2;
-			if ((out_ga->len_dimensions = (int *)
-			     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NULL;
-			}
-			out_ga->len_dimensions[0] = out_len[0];
-			out_ga->len_dimensions[1] = out_len[1];
-			out_ga->num_elements = out_len[0] * out_len[1];
+			out_ga->num_dimensions = 1;
+			out_ga->num_elements = out_len[0];
+			out_ga->len_dimensions = &out_ga->num_elements;
 			out_ga->typeQ = Qfloat;
 			out_ga->size = sizeof(float);
 			out_ga->data = (NhlPointer)fp;
@@ -596,28 +650,20 @@ DataToFloatArray
 
 		if (do_minmax && do_missing) {
 			for (i = 0; i < out_len[0]; i++) {
-				for (j = 0; j < out_len[1]; j++) {
-					tmp = *(ifp + inlen_1 *
-						(iystart+i*sfp->y_stride) +
-						ixstart+j*sfp->x_stride);
-					if (tmp != missing_value) {
-						valid_data_count++;
-						if (tmp < *dmin) *dmin = tmp;
-						if (tmp > *dmax) *dmax = tmp;
-					}
+				tmp = *(ifp + istart+i*sfp->istride);
+				if (tmp != missing_value) {
+					valid_data_count++;
+					if (tmp < *dmin) *dmin = tmp;
+					if (tmp > *dmax) *dmax = tmp;
 				}
 			}
 		}
 		else if (do_minmax) {
 			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
-				for (j = 0; j < out_len[1]; j++) {
-					tmp = *(ifp + inlen_1 *
-						(iystart+i*sfp->y_stride) +
-						ixstart+j*sfp->x_stride);
-					if (tmp < *dmin) *dmin = tmp;
-					if (tmp > *dmax) *dmax = tmp;
-				}
+				tmp = *(ifp + istart+i*sfp->istride);
+				if (tmp < *dmin) *dmin = tmp;
+				if (tmp > *dmax) *dmax = tmp;
 			}
 		}
 		else {
@@ -635,262 +681,11 @@ DataToFloatArray
 
 
 /*
- * Function:	DataToFloatArrayExchDim
- *
- * Description:	This function converts the incoming Data GenArray of float
- *		type into the internal float GenArray type used by the
- *		ScalarFieldFloat object. The array dimensions are exchanged.
- *		New space is always allocated for the output data.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlGenArray
-DataToFloatArrayExchDim
-#if	NhlNeedProto
-(
- 	NhlScalarFieldLayerPart *sfp,
-	NhlBoolean		do_minmax,
-	NhlBoolean		do_missing,
-	float			missing_value,
-	float			*dmin,
-	float			*dmax,
-	NhlString		entry_name
-)
-#else
-(sfp,do_minmax,do_missing,missing_value,dmin,dmax,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	NhlBoolean		do_minmax;
-	NhlBoolean		do_missing;
-	float			missing_value;
-	float			*dmin;
-	float			*dmax;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	NhlGenArray	ga, out_ga;
-	int		out_len[2];
-	int		i,j;
-	float		*ifp,*fp;
-	int		inlen_1;
-	float		tmp;
-	NhlBoolean	overwrite_ok = False;
-	int		ixstart = sfp->ix_start;
-	int		iystart = sfp->iy_start;
-	int		ixend = sfp->xc_is_bounds ? 
-				sfp->ix_end - 1 : sfp->ix_end;
-	int		iyend = sfp->yc_is_bounds ? 
-				sfp->iy_end - 1 : sfp->iy_end;
-	int		x_stride = sfp->x_stride;
-	int		y_stride = sfp->y_stride;
-	int		valid_data_count = 0;
-
-/*
- * Convert the data array
- */
-	if ((ga = GenToFloatGenArray(sfp->d_arr)) == NULL) {
-		e_text = "%s: error converting data to float data";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NULL;
-	}
-	if (ga->num_dimensions != 2 || ga->typeQ != Qfloat) {
-		e_text = "%s: internal inconsistency in float data array";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NULL;
-	}
-	if (ga != sfp->d_arr) overwrite_ok = True;
-
-	*dmin = FLT_MAX;
-	*dmax = -FLT_MAX;
-	inlen_1 = ga->len_dimensions[1];
-/*
- * Assign the dimension length according to the lengths needed by
- * the new output array (0-slow,1-fast). This is , of course, the reverse
- * of the input array.
- */
-	out_len[1] = (iyend - iystart + 1) / y_stride +
-		((iyend - iystart + 1) % y_stride > 0);
-	out_len[0] = (ixend - ixstart + 1) / x_stride +
-		((ixend - ixstart + 1) % x_stride > 0);
-
-	ifp = ((float *) ga->data);
-
-/*
- * Eventually if overwrite is ok then the data will be exchanged in place.
- * But for now in this situation make a temporary copy of the 
- * output array, and after the exchange copy it over the original array.
- */
-
-	if (overwrite_ok) {
-		if ((fp = (float *) 
-		     NhlMalloc(out_len[1] * out_len[0] * 
-			       sizeof(float))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NULL;
-		}
-	}
-	else {
-		if ((fp = (float *) 
-		     NhlConvertMalloc(out_len[1] * out_len[0] * 
-				      sizeof(float))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NULL;
-		}
-	}
-	if (do_minmax && do_missing) {
-		for (i = 0; i < out_len[1]; i++) {
-			for (j = 0; j < out_len[0]; j++) {
-				tmp = *(ifp + 
-					inlen_1*(iystart+i*y_stride) +
-					ixstart+j*x_stride);
-				if (tmp != missing_value) {
-					valid_data_count++;
-					if (tmp < *dmin) *dmin = tmp;
-					if (tmp > *dmax) *dmax = tmp;
-				}
-				*(fp+(j * out_len[1] + i)) = tmp;
-			}
-		}
-	}
-	else if (do_minmax) {
-		valid_data_count = out_len[0] * out_len[1];
-		for (i = 0; i < out_len[1]; i++) {
-			for (j = 0; j < out_len[0]; j++) {
-				tmp = *(ifp + 
-					inlen_1*(iystart+i*y_stride) +
-					ixstart+j*x_stride);
-				if (tmp < *dmin) *dmin = tmp;
-				if (tmp > *dmax) *dmax = tmp;
-				*(fp+(j * out_len[1] + i)) = tmp;
-			}
-		}
-	}
-	else { 
-		/* nothing to check so it doesn't matter 
-		 * if there are missing values 
-		 */
-		valid_data_count = out_len[0] * out_len[1];
-		for (i = 0; i < out_len[1]; i++) {
-			for (j = 0; j < out_len[0]; j++) {
-				*(fp+(j * out_len[1] + i)) = 
-					*(ifp + 
-					  inlen_1*(iystart+i*sfp->y_stride) +
-					  ixstart+j*x_stride);
-			}
-		}
-		*dmin = 0.0;
-		*dmax = 1.0;
-	}
-
-	if (overwrite_ok) {
-		int num_el = out_len[1] * out_len[0];
-		memcpy(ifp,fp, num_el * sizeof(float));
-		NhlFree(fp);
-		out_ga = ga;
-		out_ga->len_dimensions[0] = out_len[0];
-		out_ga->len_dimensions[1] = out_len[1];
-		out_ga->num_elements = num_el;
-	}
-	else {
-		if ((out_ga = (NhlGenArray) 
-		     NhlConvertMalloc(sizeof(NhlGenArrayRec))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,entry_name);
-			return NULL;
-		}
-		out_ga->num_dimensions = 2;
-		if ((out_ga->len_dimensions = (int *)
-		     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,entry_name);
-			return NULL;
-		}
-		out_ga->len_dimensions[0] = out_len[0];
-		out_ga->len_dimensions[1] = out_len[1];
-		out_ga->num_elements = out_len[1] * out_len[0];
-		out_ga->typeQ = Qfloat;
-		out_ga->size = sizeof(float);
-		out_ga->data = (NhlPointer)fp;
-		out_ga->my_data = True;
-	}
-	if (valid_data_count == 0) {
-		*dmin = missing_value;
-		*dmax = missing_value;
-	}
-	return out_ga;
-}
-
-/*
- * Function:	Monotonic
- *
- * Description:	This function decides whether an array of floats is in
- *		monotonically ascending or descending order.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlBoolean
-Monotonic
-#if	NhlNeedProto
-(
-	float		*flts,
-	int		count
-)
-#else
-(flts,count)
-	float		*flts;
-	int		count;
-#endif
-{
-	int i;
-	NhlBoolean ascends = True;
-
-/* check ascending */
-
-	for (i = 1; i < count; i++) {
-		if (*(flts+i) < *(flts+i-1)) {
-			ascends = False;
-			break;
-		}
-	}
-	if (ascends)
-		return True;
-
-/* check descending */
-
-	for (i = count - 1; i > 0; i--) {
-		if (*(flts+i) > *(flts+i-1)) {
-			return False;
-		}
-	}
-	return True;
-			
-}
-
-/*
  * Function:	ValidCoordArray
  *
  * Description:	This function checks the coordinate arrays used to
- *		specify irregular scalar field grids. 
+ *		specify meshScalar field grids. 
  *              First it checks to ensure dimensionality is correct.
- *		1-d arrays are checked to ensure monotonicity.
  *              All arrays are checked to ensure that corresponding
  *		dimensions have equal numbers of elements.
  *
@@ -907,118 +702,52 @@ static NhlBoolean
 ValidCoordArray
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
+ 	NhlMeshScalarFieldLayerPart *sfp,
 	NhlGenArray		ga,
-	sfCoord			ctype,
+	NhlString               name,
 	NhlString		entry_name
 )
 #else
-(sfp,ga,ctype,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
+(sfp,ga,coord_name,entry_name)
+ 	NhlMeshScalarFieldLayerPart *sfp;
 	NhlGenArray		ga;
-	sfCoord			ctype;
+	NhlString               name;
 	NhlString		entry_name;
 #endif
 {
 	char *e_text;
-	int len_dim;
-	char *name;
 	NhlBoolean error = False;
 
 
-	if (ga->num_dimensions > 2 || ga->num_dimensions < 1) {
-		e_text = 
-          "%s: coordinate array %s has invalid dimensionality: defaulting %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
-		return False;
-	}
-	else if (ga->num_dimensions == 2) {
-		sfp->xc_is_bounds = False;
-		sfp->yc_is_bounds = False;
-		sfp->yc_el_count = ga->len_dimensions[0];
-		sfp->xc_el_count = ga->len_dimensions[1];
-		if (ctype == sfXCOORD) {
-			name = NhlNsfXArray;
-		}
-		else {
-			name = NhlNsfYArray;
-		}
-
-		if (sfp->yc_el_count == sfp->yd_el_count + 1 &&
-		    sfp->xc_el_count == sfp->xd_el_count + 1) {
-			/* in 2D bounds case assume both dimensions must
-			 * be cell boundaries 
-			 */
-			sfp->xc_is_bounds = True;
-			sfp->yc_is_bounds = True;
-		}
-		else if (sfp->yc_el_count != sfp->yd_el_count ||
-			 sfp->xc_el_count != sfp->xd_el_count) {
+	if (name == NhlNsfXCellBounds || name == NhlNsfYCellBounds) {
+		if (ga->num_dimensions != 2){
 			e_text = 
-   "%s: 2d coordinate array %s has an incorrect dimension size: defaulting %s";
-			NhlPError(NhlWARNING,
-				  NhlEUNKNOWN,e_text,entry_name,name,name);
-			return False;
+			 "%s: coordinate array %s has invalid dimensionality";
+			error = True;
 		}
-		if ((ctype == sfXCOORD && 
-		     !(sfp->y_arr && sfp->y_arr->num_dimensions == 2 &&
-		       sfp->y_arr->len_dimensions[0] == sfp->yc_el_count &&
-		       sfp->y_arr->len_dimensions[1] == sfp->xc_el_count)) ||
-		    (ctype == sfYCOORD && 
-		     !(sfp->x_arr && sfp->x_arr->num_dimensions == 2 &&
-		       sfp->x_arr->len_dimensions[0] == sfp->yc_el_count &&
-		       sfp->x_arr->len_dimensions[1] == sfp->xc_el_count))) {
+		else if (ga->len_dimensions[0] != sfp->d_el_count) {
 			e_text = 
-    "%s: 2d X and Y coordinate arrays must have matching shape: defaulting %s";
-			NhlPError(NhlWARNING,
-				  NhlEUNKNOWN,e_text,entry_name,name);
-			sfp->yc_el_count = sfp->yd_el_count;
-			sfp->xc_el_count = sfp->xd_el_count;
-			return False;
-		}
-			
-		/* for now at this point assume that grid is okay */
-		return True;
-	}
-
-	/* 1d case */
-
-	if (ctype == sfXCOORD) {
-		name = NhlNsfXArray;
-		sfp->xc_is_bounds = False;
-		sfp->xc_el_count = ga->len_dimensions[0];
-		if (sfp->xc_el_count == sfp->xd_el_count + 1)
-			sfp->xc_is_bounds = True;
-		else if (sfp->xc_el_count != sfp->xd_el_count) {
-			sfp->xc_el_count = sfp->xd_el_count;
+    "%s: first dimension of coordinate array %s requires the same number of elements as the data array";
 			error = True;
 		}
 	}
 	else {
-		name = NhlNsfYArray;
-		sfp->yc_is_bounds = False;
-		sfp->yc_el_count = ga->len_dimensions[0];
-		if (sfp->yc_el_count == sfp->yd_el_count + 1)
-			sfp->yc_is_bounds = True;
-		else if (sfp->yc_el_count != sfp->yd_el_count) {
-			sfp->yc_el_count = sfp->yd_el_count;
+		if (ga->num_dimensions != 1) {
+			e_text = 
+			 "%s: coordinate array %s has invalid dimensionality";
+			error = True;
+		}
+		else if (ga->len_dimensions[0] != sfp->d_el_count) {
+			e_text = 
+    "%s: coordinate array %s requires the same number of elements as the data array";
 			error = True;
 		}
 	}
 	if (error) {
-		e_text = 
-		  "%s: coordinate array %s requires %d elements: defaulting";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  e_text,entry_name,name,len_dim,name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name);
 		return False;
 	}
 
-	if (! Monotonic((float *)ga->data,ga->num_elements)) {
-		e_text = 
-             "%s: irregular coordinate array %s non-monotonic: defaulting %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
-		return False;
-	}
 	return True;
 	
 }
@@ -1027,8 +756,7 @@ ValidCoordArray
 /*
  * Function:	GetDataBounds
  *
- * Description:	Determines the data bounds of one coordinate axis of the
- *		data array
+ * Description:	determines the max and min coordinate values
  *
  * In Args:	
  *
@@ -1043,81 +771,46 @@ static NhlErrorTypes
 GetDataBounds
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
-	sfCoord			ctype,
-	float			*cstart,
-	float			*cend,
+ 	NhlMeshScalarFieldLayerPart *sfp,
+	float			*xmin,
+	float                   *ymin,
+	float                   *xmax,
+	float                   *ymax,
 	NhlString		entry_name
 )
 #else
-(sfp,ctype,cstart,cend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	sfCoord			ctype;
-	float			*cstart;
-	float			*cend;
+(sfp,xmin, ymin, xmax, ymax,entry_name)
+ 	NhlMeshScalarFieldLayerPart *sfp;
+	float			*xmin;
+	float                   *ymin;
+	float                   *xmax;
+	float                   *ymax;
 	NhlString		entry_name;
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
 	char		*e_text;
+	int             i;
+	float           *cdata;
 
-	if (ctype == sfXCOORD) {
+	cdata = (float*)sfp->x_arr->data;
 
-		if (sfp->x_start != NULL) {
-			subret = GetVTypeValue(sfp->x_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else 
-			*cstart = 0.0;
-
-		if (sfp->x_end != NULL) {
-			subret = GetVTypeValue(sfp->x_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else 
-			*cend = sfp->xc_is_bounds ? 
-				sfp->xd_el_count : sfp->xd_el_count - 1;
+	*xmin = *xmax = cdata[0];
+	for (i = 0; i < sfp->d_el_count; i++) {
+		if (cdata[i] > *xmax)
+			*xmax = cdata[i];
+		else if (cdata[i] < *xmin) 
+			*xmin = cdata[i];
 	}
-	else {
-		if (sfp->y_start != NULL) {
-			subret = GetVTypeValue(sfp->y_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else 
-			*cstart = 0.0;
-		
-		if (sfp->y_end != NULL) {
-			subret = GetVTypeValue(sfp->y_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else 
-			*cend = sfp->yc_is_bounds ? 
-				sfp->yd_el_count : sfp->yd_el_count - 1;
+	cdata = (float*)sfp->y_arr->data;
+	*ymin = *ymax = cdata[0];
+	for (i = 0; i < sfp->d_el_count; i++) {
+		if (cdata[i] > *ymax)
+			*ymax = cdata[i];
+		else if (cdata[i] < *ymin) 
+			*ymin = cdata[i];
 	}
+				
 	
 	return ret;
 }
@@ -1142,16 +835,14 @@ static NhlErrorTypes
 GetIndexBounds
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
-	sfCoord			ctype,
+ 	NhlMeshScalarFieldLayerPart *sfp,
 	int			*icstart,
 	int			*icend,
 	NhlString		entry_name
 )
 #else
 (sfp,ctype,icstart,icend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	sfCoord			ctype;
+ 	NhlMeshScalarFieldLayerPart *sfp;
 	int			*icstart;
 	int			*icend;
 	NhlString		entry_name;
@@ -1159,64 +850,23 @@ GetIndexBounds
 {
 	char			*e_text;
 	NhlErrorTypes		ret = NhlNOERROR;
-	int			max_index;
-			
-	if (ctype == sfXCOORD) {
+	int                     i;
 
-		max_index = sfp->xc_is_bounds ? 
-			sfp->xd_el_count : sfp->xd_el_count - 1;
-
-		*icstart = (sfp->x_index_start < 0) ? 
-			0 : MIN(sfp->x_index_start,max_index);
-		if (sfp->x_index_end > max_index) {
-			e_text = 
-		      "%s: X index end exceeds data boundaries: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(NhlWARNING,ret);
-			sfp->x_index_end = max_index;
+	if (sfp->node_indexes) {
+		int *indexes = (int *)sfp->node_indexes->data;
+		*icstart = *icend = indexes[0];
+		for (i = 0; i < sfp->d_el_count; i++) {
+			if (indexes[i] > *icend)
+				*icend = indexes[i];
+			else if (indexes[i] < *icstart)
+				*icstart = indexes[i];
 		}
-		*icend = (sfp->x_index_end < 0) ? 
-			max_index  :  sfp->x_index_end;
-
-		if (*icend - *icstart < 2) {
-			e_text = 
-	       "%s: X index end not enough greater than start: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(NhlWARNING,ret);
-			*icstart = sfp->x_index_start = 0;
-			*icend = sfp->x_index_end = max_index;
-		}
-
 	}
 	else {
-
-		max_index = sfp->yc_is_bounds ? 
-			sfp->yd_el_count : sfp->yd_el_count - 1;
-
-		*icstart = (sfp->y_index_start < 0) ? 
-			0 : MIN(sfp->y_index_start,max_index); 
-		if (sfp->y_index_end > max_index) {
-			e_text = 
-		      "%s: Y index end exceeds data boundaries: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(NhlWARNING,ret);
-			sfp->y_index_end = max_index;
-		}
-		*icend = (sfp->y_index_end < 0) ? 
-			max_index : sfp->y_index_end;
-
-		if (*icend - *icstart < 2) {
-			e_text = 
-	       "%s: Y index end not enough greater than start: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(NhlWARNING,ret);
-			*icstart = sfp->y_index_start = 0;
-			*icend = sfp->y_index_end = max_index;
-		}
+		*icstart = sfp->first_node_index;
+		*icend = sfp->first_node_index + sfp->d_el_count - 1;
 	}
-
 	return ret;
-
 }
 
 /*
@@ -1249,7 +899,7 @@ static NhlErrorTypes
 GetSubsetBounds
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
+ 	NhlMeshScalarFieldLayerPart *sfp,
 	sfCoord			ctype,
 	float			cstart,
 	float			cend,
@@ -1261,7 +911,7 @@ GetSubsetBounds
 )
 #else
 (sfp,ctype,cstart,cend,icstart,icend,scstart,scend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
+ 	NhlMeshScalarFieldLayerPart *sfp;
 	sfCoord			ctype;
 	float			cstart;
 	float			cend;
@@ -1285,8 +935,7 @@ GetSubsetBounds
 	int		stride,rem;
 
 	if (ctype == sfXCOORD) {
-		range = sfp->xc_is_bounds ? 
-			sfp->xd_el_count : sfp->xd_el_count - 1;
+		range =  sfp->d_el_count - 1;
 		subset_start = &sfp->x_subset_start;
 		subset_end = &sfp->x_subset_end;
 		stride = sfp->x_stride;
@@ -1295,8 +944,7 @@ GetSubsetBounds
 		c_name = "X coordinate";
 	}
 	else {
-		range = sfp->yc_is_bounds ? 
-			sfp->yd_el_count : sfp->yd_el_count - 1;
+		range = sfp->d_el_count - 1;
 		subset_start = &sfp->y_subset_start;
 		subset_end = &sfp->y_subset_end;
 		stride = sfp->y_stride;
@@ -1439,524 +1087,13 @@ GetSubsetBounds
 
 
 /*
- * Function:	GetSubsetBounds2D
- *
- * Description:	Depending on the value of the NhlNsfSubsetByIndex resource,
- *		determines one coordinate of the data array subset, 
- *		based either on the 
- *		IndexStart/End resources or the SubsetStart/End resources.
- *              Actually for now it only handles index subsetting.
- *		In either case the true clipping rectangle is determined
- *		based on the calculated or user assigned array index 
- *		start/end values. The clipping boundaries may not be exactly
- *		what the user asked for due to the truncation involved in
- *		converting from data points to integer array indexes, but
- *		the specified data points are guaranteed to be included.
- *
- * In Args:	sfp
- *		ctypef
- *		cstart,cend
- *		entry_name
- * In/Out Args: icstart,icend
- * Out Args:	sxstart,sxend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetSubsetBounds2D
-#if	NhlNeedProto
-(
- 	NhlScalarFieldLayerPart *sfp,
-	NhlGenArray		*c_array,
-	sfCoord			ctype,
-	NhlBoolean		overwrite_ok,
-	int			xistart,
-	int			xiend,
-	int			yistart,
-	int			yiend,
-	float			*cstart,
-	float			*cend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-(sfp,c_array,ctype,overwrite_ok,
- xistart,xiend,yistart,yiend,overwrite_ok,cstart,cend,scstart,scend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	NhlGenArray		*c_array;
-	sfCoord			ctype;
-	NhlBoolean		overwrite_ok;
-	int			xistart;
-	int			xiend;
-	int			yistart;
-	int			yiend;
-	float			*cstart;
-	float			*cend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
-	NhlBoolean      do_subset = False;
-	NhlBoolean	rev;
-	NhlGenArray	*subset_start,*subset_end;
-        NhlGenArray     out_ga;
-	NhlBoolean	nullstart = False,nullend = False;
-        NhlBoolean	start_byindex,end_byindex;
-	char		*c_name;
-	float		*fp, *nfp;
-	int		rem,stride;
-	float           min, max;
-	int		yi,xi;
-	int		yimin,yimax,ximin,ximax;
-	int		out_len[2];
-
-	fp = (float *) (*c_array)->data;
-
-	min = FLT_MAX;
-	max = -FLT_MAX;
-	yimin = yimax = ximin = ximax = 0;
-	for (yi = 0; yi < sfp->yc_el_count; yi++) {
-		for (xi = 0; xi < sfp->xc_el_count; xi++) {
-			float val = *(fp + yi * sfp->xc_el_count + xi);
-			if (val < min) {
-				min = val;
-				yimin = yi;
-				ximin = xi;
-			}
-			if (val > max) {
-				max = val;
-				yimax = yi;
-				ximax = xi;
-			}
-		}
-	}
-	if (ctype == sfXCOORD) {
-		if (ximin == ximax) 
-			rev = yimin > yimax;
-		else
-			rev = ximin > ximax;
-		c_name = "X coordinate";
-		rev = False;
-		if (rev) {
-			*cstart = max;
-			*cend = min;
-			sfp->xc_start_el = yimax * sfp->xc_el_count + ximax; 
-			sfp->xc_end_el = yimin * sfp->xc_el_count + ximin; 
-		}
-		else {
-			*cstart = min;
-			*cend = max;
-			sfp->xc_start_el = yimin * sfp->xc_el_count + ximin; 
-			sfp->xc_end_el = yimax * sfp->xc_el_count + ximax; 
-		}
-	}
-	else {
-		if (yimin == yimax)
-			rev = ximin > ximax;
-		else
-			rev = yimin > yimax;
-		c_name = "Y coordinate";
-		rev = False;
-		if (rev) {
-			*cstart = max;
-			*cend = min;
-			sfp->yc_start_el = yimax * sfp->xc_el_count + ximax; 
-			sfp->yc_end_el = yimin * sfp->xc_el_count + ximin; 
-		}
-		else {
-			*cstart = min;
-			*cend = max;
-			sfp->yc_start_el = yimin * sfp->xc_el_count + ximin; 
-			sfp->yc_end_el = yimax * sfp->xc_el_count + ximax; 
-		}
-	}
-
-	if (xistart > 0 || yistart > 0 || 
-	    xiend < sfp->xc_el_count - 1 || yiend < sfp->yc_el_count - 1 ||
-	    sfp->x_stride > 1 || sfp->y_stride > 1)
-		do_subset = True;
-
-	if (! do_subset) {
-		*scstart = *cstart;
-		*scend = *cend;
-		return NhlNOERROR;
-	}
-	min = FLT_MAX;
-	max = -FLT_MAX;
-	yimin = yimax = ximin = ximax = 0;
-	for (yi = yistart; yi <= yiend; yi++) {
-		for (xi = xistart; xi <= xiend; xi++) {
-			float val = *(fp + yi * sfp->xc_el_count + xi);
-			if (val < min) {
-				min = val;
-				yimin = yi;
-				ximin = xi;
-			}
-			if (val > max) {
-				max = val;
-				yimax = yi;
-				ximax = xi;
-			}
-		}
-	}
-	if (rev) {
-		*scstart = max;
-		*scend = min;
-	}
-	else {
-		*scstart = min;
-		*scend = max;
-	}
-	out_len[0] =  yiend - yistart + 1;
-	out_len[1] =  xiend - xistart + 1;
-	if (overwrite_ok) 
-		nfp = fp;
-	else {
-		if ((nfp = (float *) 
-		     NhlConvertMalloc(out_len[1] * out_len[0] * 
-				      sizeof(float))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	for (yi = 0; yi < out_len[0]; yi++) {
-		for (xi = 0; xi < out_len[1]; xi++) {
-			*(nfp+(yi * out_len[1] + xi)) = 
-				*(fp + sfp->xc_el_count * (yistart+yi) +
-				  xistart+xi);
-		}
-	}
-
-	if ((out_ga = (NhlGenArray) 
-	     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
-	    == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name);
-		return NhlFATAL;
-	}
-	out_ga->num_dimensions = 2;
-	if ((out_ga->len_dimensions = (int *)
-	     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name);
-		return NhlFATAL;
-	}
-	out_ga->len_dimensions[0] = out_len[0];
-	out_ga->len_dimensions[1] = out_len[1];
-	out_ga->num_elements = out_len[0] * out_len[1];
-	out_ga->typeQ = Qfloat;
-	out_ga->size = sizeof(float);
-	out_ga->data = (NhlPointer)nfp;
-	out_ga->my_data = True;
-	*c_array = out_ga;
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	GetSubsetBoundsIrregular
- *
- * Description:	Depending on the value of the NhlNsfSubsetByIndex resource,
- *		determines one coordinate of the data array subset, 
- *		based either on the 
- *		IndexStart/End resources or the SubsetStart/End resources.
- *		In either case the true clipping rectangle is determined
- *		based on the calculated or user assigned array index 
- *		start/end values. The clipping boundaries may not be exactly
- *		what the user asked for due to the truncation involved in
- *		converting from data points to integer array indexes, but
- *		the specified data points are guaranteed to be included.
- *
- * In Args:	sfp
- *		ctypef
- *		cstart,cend
- *		entry_name
- * In/Out Args: icstart,icend
- * Out Args:	sxstart,sxend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetSubsetBoundsIrregular
-#if	NhlNeedProto
-(
- 	NhlScalarFieldLayerPart *sfp,
-	NhlGenArray		*c_array,
-	sfCoord			ctype,
-	NhlBoolean		overwrite_ok,
-	float			*cstart,
-	float			*cend,
-	int			*icstart,
-	int			*icend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-(sfp,c_array,ctype,overwrite_ok,
- cstart,cend,icstart,icend,scstart,scend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	NhlGenArray		*c_array;
-	sfCoord			ctype;
-	float			*cstart;
-	float			*cend;
-	int			*icstart;
-	int			*icend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
-	NhlBoolean	rev;
-	int		i, len;
-	NhlGenArray	*subset_start,*subset_end;
-        NhlGenArray     out_ga;
-	NhlBoolean	nullstart = False,nullend = False;
-        NhlBoolean	start_byindex,end_byindex;
-	char		*c_name;
-	float		*fp, *nfp;
-	int		rem,stride;
-
-	len = (*c_array)->len_dimensions[0];
-	fp = (float *) (*c_array)->data;
-	*cstart = fp[0];
-	*cend = fp[len-1];
-
-	if (ctype == sfXCOORD) {
-		subset_start = &sfp->x_subset_start;
-		subset_end = &sfp->x_subset_end;
-		stride = sfp->x_stride;
-                start_byindex = sfp->xstart_byindex;
-                end_byindex = sfp->xend_byindex;
-		c_name = "X coordinate";
-		sfp->xc_start_el = 0;
-		sfp->xc_end_el = len - 1;
-	}
-	else {
-		subset_start = &sfp->y_subset_start;
-		subset_end = &sfp->y_subset_end;
-		stride = sfp->y_stride;
-                start_byindex = sfp->ystart_byindex;
-                end_byindex = sfp->yend_byindex;
-		c_name = "Y coordinate";
-		sfp->yc_start_el = 0;
-		sfp->yc_end_el = len - 1;
-	}
-
-	
-
-	if (! sfp->subset_by_index) {
-		float fval;
-
-		rev = *cstart > *cend;
-		if (*subset_start != NULL && ! start_byindex) {
-			subret = GetVTypeValue(*subset_start,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				      "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-                        if ((! rev && fval < *cstart) ||
-                            (rev && fval > *cstart)) {
-				e_text = 
-			      "%s: %s subset start out of range: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                          e_text,entry_name,c_name);
-                                ret = MIN(NhlWARNING,ret);
-                                *scstart = *cstart;
-                                NhlFreeGenArray(*subset_start);
-                                *subset_start = NULL;
-                        }
-                        else {
-                                *scstart = fval;
-                        }
-		}
-		else {
-			*scstart = *cstart;
-			nullstart = True;
-		}
-
-		if (*subset_end != NULL && ! end_byindex) {
-			subret = GetVTypeValue(*subset_end,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				      "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-                        if ((! rev && fval > *cend) ||
-                            (rev && fval < *cend)) {
-				e_text = 
-			      "%s: %s subset end out of range: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                          e_text,entry_name,c_name);
-                                ret = MIN(NhlWARNING,ret);
-                                *scend = *cend;
-                                NhlFreeGenArray(*subset_end);
-                                *subset_end = NULL;
-                        }
-                        else {
-                                *scend = fval;
-                        }
-		}
-		else {
-			*scend = *cend;
-			nullend = True;
-		}
-
-		if (rev != (*scstart > *scend)) {
-                        NhlGenArray tmp_ga;
-                        float fval;
-			e_text = 
-"%s: %s start/end subset order opposed to start/end order: reversing subset order";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-                        tmp_ga = *subset_start;
-                        *subset_start = *subset_end;
-                        *subset_end = tmp_ga;
-                        fval = *scstart;
-                        *scstart = *scend;
-                        *scend = fval;
-		}
-
-		if (! rev) {
-                        if (! start_byindex) {
-                                for (i = 0; i < len; i++) {
-                                        if (*scstart < *(fp + i)) {
-                                                *icstart = MAX(i-1,0);
-                                                break;
-                                        }
-                                }
-                        }
-                        if (! end_byindex) {
-                                for (i = len - 1; i >= 0; i--) {
-                                        if (*scend > *(fp + i)) {
-                                                *icend = MIN(i+1,len-1);
-                                                break;
-                                        }
-                                }
-                        }
-                        
-		}
-		else {
-                        if (! start_byindex) {
-                                for (i = 0; i < len; i++) {
-                                        if (*scstart > *(fp + i)) {
-                                                *icstart = MAX(i-1,0);
-                                                break;
-                                        }
-                                }
-                        }
-                        if (! end_byindex) {
-                                for (i = len - 1; i >= 0; i--) {
-                                        if (*scend < *(fp + i)) {
-                                                *icend = MIN(i+1,len-1);
-                                                break;
-                                        }
-                                }
-                        }
-                }
-
-		if (*icend - *icstart < 2) {
-			e_text = 
-		        "%s: %s subset data range not large enough: ignoring";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-			*scstart = *cstart;
-			*scend = *cend;
-			*icstart = 0;
-			*icend = len - 1;
-		}
-	}
-
-/* 
- * if a stride is specified, the end index must be a multiple of the stride 
- * value. Increas the specified end index if necessary, unless it 
- * would exceed the max index. In this case subtract -- it is not possible
- * to include the complete data range.
- */
-	rem = (*icend - *icstart) % stride;
-	if (rem  > 0) {
-		if (*icend + stride - rem <= len -1)
-			*icend += stride - rem;
-		else
-			*icend -= rem;
-	}
-	*scstart = fp[*icstart];
-	*scend = fp[*icend];
-/*
- * If the data is a subset of the complete array, copy the relevant
- * part of the irregular coordinate array to a new array. The old data
- * space will eventually be freed (I think) by the Converter 
- * memory management routines.
- */
-	if (*icstart > 0 || *icend < len - 1 || stride > 1) {
-		int nlen = (*icend - *icstart) / stride + 1;
-		if (overwrite_ok) {
-			for (i = 0; i < nlen; i++) {
-				fp[i] = fp[*icstart+i*stride];
-			}
-			(*c_array)->num_elements = nlen;
-		}
-		else {
-			if ((nfp = (float *)
-			     NhlConvertMalloc(nlen * 
-					      sizeof(float))) == NULL) { 
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			for (i = 0; i < nlen; i++) {
-				nfp[i] = fp[*icstart+i*stride];
-			}
-			if ((out_ga = (NhlGenArray) 
-			     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
-			    == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			out_ga->num_dimensions = 1;
-			out_ga->len_dimensions = &out_ga->num_elements;
-			out_ga->num_elements = nlen;
-			out_ga->typeQ = Qfloat;
-			out_ga->size = sizeof(float);
-			out_ga->data = (NhlPointer)nfp;
-			out_ga->my_data = True;
-			*c_array = out_ga;
-		}
-	}
-
-	return ret;
-}
-
-/*
  * Function:	GetCoordBounds
  *
- * Description:	
+ * Description:	For irregular coordinates, the first and last array elements
+ *		define the start and end of the data space; the x/y start/end 
+ *		resources are ignored. However, it is still possible to create
+ *		subsets of the 	data using either the index or the subset 
+ *		start/end resources.
  *
  * In Args:	sfp
  *              ctype
@@ -1975,207 +1112,34 @@ static NhlErrorTypes
 GetCoordBounds
 #if	NhlNeedProto
 (
- 	NhlScalarFieldLayerPart *sfp,
-	sfCoord			ctype,
-	float			*cstart,
-	float			*cend,
+ 	NhlMeshScalarFieldLayerPart *sfp,
 	int			*icstart,
 	int			*icend,
-	float			*scstart,
-	float			*scend,
+	float			*xmin,
+	float                   *ymin,
+	float                   *xmax,
+	float                   *ymax,
 	NhlString		entry_name
 )
 #else
-(sfp,ctype,cstart,cend,icstart,icend,scstart,scend,entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	sfCoord			ctype;
-	float			*cstart;
-	float			*cend;
+( sfp, icstart, icend, xmin, ymin, xmax, ymax, entry_name)
+ 	NhlMeshScalarFieldLayerPart *sfp;
 	int			*icstart;
 	int			*icend;
-	float			*scstart;
-	float			*scend;
+	float			*xmin;
+	float                   *ymin;
+	float                   *xmax;
+	float                   *ymax;
 	NhlString		entry_name;
 #endif
 {
 	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
 
-	subret = GetDataBounds(sfp,ctype,cstart,cend,entry_name);
+	subret = GetIndexBounds(sfp,icstart,icend,entry_name);
 	if ((ret = MIN(ret,subret))  < NhlWARNING) 
 		return ret;
 
-	subret = GetIndexBounds(sfp,ctype,icstart,icend,entry_name);
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-
-	subret = GetSubsetBounds(sfp,ctype,*cstart,*cend,
-				 icstart,icend,scstart,scend,entry_name);
-
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-
-	return ret;
-}
-
-/*
- * Function:	GetCoordBounds2D
- *
- * Description:	For 2D coordinate arrays, the max and min coord array elements
- *		define the start and end of the data space; the x/y start/end 
- *		resources are ignored. However, it is still possible to create
- *		subsets of the 	data using either the index or the subset 
- *		start/end resources.
- *              For now, only subsetting by index is allowed.
- *              The resources are given somewhat different meanings from
- *              the 1D case: 
- *              The XC{Start|End}Index, and XCStride resources apply to the
- *              X axis of both coordinate arrays, while the 
- *              YC{Start|End}Index and YCStride resources apply to the 
- *              Y Axis of both coordinate arrays.
- *              In contast, the XC{Start|End}V and XC{Start|End}SubsetV
- *              arrays apply only to the XArray, while the
- *              the YC{Start|End}V and YC{Start|End}SubsetV arrays apply
- *              only to the YArray.
- *
- * In Args:	sfp
- *              ctype
- *		entry_name
- *
- * Out Args:	cstart,cend
- *		icstart,icend
- *		scstart,scend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetCoordBounds2D
-#if	NhlNeedProto
-(
- 	NhlScalarFieldLayerPart *sfp,
-	NhlGenArray		*c_array,
-	sfCoord			ctype,
-	NhlBoolean		overwrite_ok,
-	float			*cstart,
-	float			*cend,
-	int			*icstart,
-	int			*icend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-( sfp, c_array, ctype, overwrite_ok, cstart, cend, icstart, icend, scstart, scend, entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	NhlGenArray		*c_array;
-	sfCoord			ctype;
-	NhlBoolean		overwrite_ok;
-	float			*cstart;
-	float			*cend;
-	int			*icstart;
-	int			*icend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
-	int xistart,xiend,yistart,yiend;
-
-	subret = GetIndexBounds(sfp,sfXCOORD,&xistart,&xiend,entry_name);
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-	subret = GetIndexBounds(sfp,sfYCOORD,&yistart,&yiend,entry_name);
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-
-	subret = GetSubsetBounds2D(sfp,c_array,ctype,overwrite_ok,
-				   xistart,xiend,yistart,yiend,
-				   cstart,cend,scstart,scend,entry_name);
-
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-	
-	switch (ctype) {
-	case sfXCOORD:
-		*icstart = xistart;
-		*icend = xiend;
-		break;
-	case sfYCOORD:
-		*icstart = yistart;
-		*icend = yiend;
-		break;
-	}
-	return ret;
-}
-
-
-/*
- * Function:	GetCoordBoundsIrregular
- *
- * Description:	For irregular coordinates, the first and last array elements
- *		define the start and end of the data space; the x/y start/end 
- *		resources are ignored. However, it is still possible to create
- *		subsets of the 	data using either the index or the subset 
- *		start/end resources.
- *		The irregular coordinate array is valid in that it is known
- *		to be monotonic and has the correct number of elements
- *
- * In Args:	sfp
- *              ctype
- *		entry_name
- *
- * Out Args:	cstart,cend
- *		icstart,icend
- *		scstart,scend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetCoordBoundsIrregular
-#if	NhlNeedProto
-(
- 	NhlScalarFieldLayerPart *sfp,
-	NhlGenArray		*c_array,
-	sfCoord			ctype,
-	NhlBoolean		overwrite_ok,
-	float			*cstart,
-	float			*cend,
-	int			*icstart,
-	int			*icend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-( sfp, c_array, ctype, overwrite_ok, cstart, cend, icstart, icend, scstart, scend, entry_name)
- 	NhlScalarFieldLayerPart *sfp;
-	NhlGenArray		*c_array;
-	sfCoord			ctype;
-	NhlBoolean		overwrite_ok;
-	float			*cstart;
-	float			*cend;
-	int			*icstart;
-	int			*icend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
-
-	subret = GetIndexBounds(sfp,ctype,icstart,icend,entry_name);
-	if ((ret = MIN(ret,subret))  < NhlWARNING) 
-		return ret;
-
-	subret = GetSubsetBoundsIrregular(sfp,c_array,ctype,overwrite_ok,
-					  cstart,cend,icstart,icend,
-					  scstart,scend,entry_name);
+	subret = GetDataBounds(sfp,xmin,ymin,xmax,ymax,entry_name);
 	if ((ret = MIN(ret,subret))  < NhlWARNING) 
 		return ret;
 	
@@ -2185,7 +1149,7 @@ GetCoordBoundsIrregular
 /*
  * Function:	CvtGenSFObjToFloatSFObj
  *
- * Description:	This function is used to convert a Generic ScalarField
+ * Description:	This function is used to convert a Generic MeshScalarField
  *		to a ScalarFieldFloat object.
  * 		Note that the ScalarFieldFloat object has no resources 
  *		of its own. Its private fields are set directly by the 
@@ -2220,11 +1184,14 @@ CvtGenSFObjToFloatSFObj
 	char			*entry_name="CvtGenSFObjToFloatSFObj";
 	char			*e_text;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlScalarFieldLayer	sfl;
-	NhlScalarFieldLayerPart *sfp;
+	NhlMeshScalarFieldLayer	sfl;
+	NhlMeshScalarFieldLayerPart *sfp;
 	NhlSArg			sargs[30];
 	int			nargs=0;
 	NhlGenArray		d_arr = NULL, x_arr = NULL, y_arr = NULL;
+	NhlGenArray             x_bounds = NULL, y_bounds = NULL;
+	int                     istart,iend;
+	float                   xmin,xmax,ymin,ymax;
 	float			xstart,xend,ystart,yend;
 	float			sxstart,sxend,systart,syend;
 	int			ixstart,ixend,iystart,iyend;
@@ -2243,17 +1210,17 @@ CvtGenSFObjToFloatSFObj
 		return NhlFATAL;
 	}
 
-	sfl = (NhlScalarFieldLayer)_NhlGetLayer(from->data.intval);
+	sfl = (NhlMeshScalarFieldLayer)_NhlGetLayer(from->data.intval);
 	if ((sfl == NULL) ||
-	    (sfl->base.layer_class != NhlscalarFieldClass)){
+	    (sfl->base.layer_class != NhlmeshScalarFieldClass)){
 		e_text = "%s:Called w/ improper \"from\" object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 
-	sfp = (NhlScalarFieldLayerPart *) &sfl->sfield;
+	sfp = (NhlMeshScalarFieldLayerPart *) &sfl->msfield;
 
-	if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2) {
+	if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 1) {
 		e_text = "%s: invalid data array";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -2274,131 +1241,70 @@ CvtGenSFObjToFloatSFObj
 	}
 	sffp = &sffl->sfieldfloat;
 	sfp->sffloat = sffl;
-	sffp->element_nodes = NULL;
-	sffp->x_bounds = NULL;
-	sffp->y_bounds = NULL;
 
 /*
- * Convert, validate, and set the X and Y irregular coordinate arrays,
+ * Convert and validate the X and Y coordinate arrays,
  * if defined.
  */
 	sffp->x_arr = NULL;
-	if (sfp->x_arr != NULL && sfp->x_arr->num_elements > 0) {
-		if ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL) {
-			e_text = 
-			  "%s: error converting %s to float; defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,NhlNsfXArray);
-			ret = MIN(ret,NhlWARNING);
-			NhlFreeGenArray(sfp->x_arr);
-			sfp->x_arr = NULL;
-		}
-		if (ValidCoordArray(sfp,x_arr,sfXCOORD,entry_name)) {
-			xirr = True;
-		}
-		else {
-			ret = MIN(ret,NhlWARNING);
-			NhlFreeGenArray(sfp->x_arr);
-			sfp->x_arr = NULL;
-		}
+	if ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL) {
+		e_text = "%s: error converting %s to float";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,NhlNsfXArray);
+		return(NhlFATAL);
 	}
-
-	if (! xirr) {
-		subret = GetCoordBounds(sfp,sfXCOORD,&xstart,&xend,
-					&ixstart,&ixend,&sxstart,&sxend,
-					entry_name);
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
-	else {
-		overwrite_ok = x_arr != sfp->x_arr;
-		if (x_arr->num_dimensions == 2) {
-			subret = GetCoordBounds2D(sfp,&x_arr,sfXCOORD,
-						  overwrite_ok,
-						  &xstart,&xend,
-						  &ixstart,&ixend,
-						  &sxstart,&sxend,
-						  entry_name);
-		}
-		else {
-			subret = GetCoordBoundsIrregular(sfp,&x_arr,sfXCOORD,
-							 overwrite_ok,
-							 &xstart,&xend,
-							 &ixstart,&ixend,
-							 &sxstart,&sxend,
-							 entry_name);
-		}
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
-	sffp->ix_start = sfp->ix_start = ixstart;
-	sffp->ix_end = sfp->ix_end = ixend;
-	sffp->xc_is_bounds = sfp->xc_is_bounds;
-	sfp->x_actual_start = sxstart;
-	sfp->x_actual_end = sxend;
-	
-        if (! sfp->subset_by_index) {
-                sfp->x_index_start = sfp->ix_start;
-                sfp->x_index_end = sfp->ix_end;
-        }
 
 	sffp->y_arr = NULL;
-	if (sfp->y_arr != NULL && sfp->y_arr->num_elements > 0) {
-		if ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL) {
-			e_text = 
-			  "%s: error converting %s to float; defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,NhlNsfYArray);
-			ret = MIN(ret,NhlWARNING);
-			NhlFreeGenArray(sfp->y_arr);
-			sfp->y_arr = NULL;
+	if ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL) {
+		e_text = "%s: error converting %s to float; defaulting";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,NhlNsfYArray);
+		return(NhlFATAL);
+	}
+
+	sffp->x_bounds = NULL;
+	if (sfp->x_bounds) {
+		if ((x_bounds = GenToFloatGenArray(sfp->x_bounds)) == NULL) {
+			e_text = "%s: error converting %s to float";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNsfXCellBounds);
+			return(NhlFATAL);
 		}
-		if (ValidCoordArray(sfp,y_arr,sfYCOORD,entry_name)) {
-			yirr = True;
-		}
-		else {
-			ret = MIN(ret,NhlWARNING);
-			NhlFreeGenArray(sfp->y_arr);
-			sfp->y_arr = NULL;
+	}
+	sffp->y_bounds = NULL;
+	if (sfp->y_bounds) {
+		if ((y_bounds = GenToFloatGenArray(sfp->y_bounds)) == NULL) {
+			e_text = "%s: error converting %s to float";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNsfYCellBounds);
+			return(NhlFATAL);
 		}
 	}
 
-	if (! yirr) {
-		subret = GetCoordBounds(sfp,sfYCOORD,&ystart,&yend,
-					&iystart,&iyend,&systart,&syend,
-					entry_name);
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
-	else {
-		overwrite_ok = y_arr != sfp->y_arr;
-		if (y_arr->num_dimensions == 2) {
-			subret = GetCoordBounds2D(sfp,&y_arr,sfYCOORD,
-						  overwrite_ok,
-						  &ystart,&yend,
-						  &iystart,&iyend,
-						  &systart,&syend,
-						  entry_name);
-		}
-		else {
-			subret = GetCoordBoundsIrregular(sfp,&y_arr,sfYCOORD,
-							 overwrite_ok,
-							 &ystart,&yend,
-							 &iystart,&iyend,
-							 &systart,&syend,
-							 entry_name);
-		}
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
-	sffp->iy_start = sfp->iy_start = iystart;
-	sffp->iy_end = sfp->iy_end = iyend;
+	subret = GetCoordBounds(sfp,&istart,&iend,
+				&xmin,&ymin,&xmax,&ymax,entry_name);
+	if ((ret = MIN(ret,subret))  < NhlWARNING) 
+		return ret;
+
+	sfp->istart = istart;
+	sfp->iend = iend;
+	sfp->x_actual_start = xmin;
+	sfp->x_actual_end = xmax;
+	sfp->y_actual_start = ymin;
+	sfp->y_actual_end = ymax;
+
+	sffp->ix_start = sfp->istart;
+	sffp->ix_end = sfp->istart;
+	sffp->xc_is_bounds = sfp->xc_is_bounds;
+	sffp->iy_start = sfp->istart;
+	sffp->iy_end = sfp->istart;
 	sffp->yc_is_bounds = sfp->yc_is_bounds;
-	sfp->y_actual_start = systart;
-	sfp->y_actual_end = syend;
+
         if (! sfp->subset_by_index) {
-                sfp->y_index_start = sfp->iy_start;
-                sfp->y_index_end = sfp->iy_end;
+                sfp->y_index_start = sfp->istart;
+                sfp->y_index_end = sfp->iend;
+        }
+        if (! sfp->subset_by_index) {
+                sfp->x_index_start = sfp->istart;
+                sfp->x_index_end = sfp->iend;
         }
 /*
  * Set flags to tell the array conversion routines whether to find
@@ -2425,54 +1331,28 @@ CvtGenSFObjToFloatSFObj
 	do_minmax =  (sfp->data_max == NULL || sfp->data_min == NULL) ?
 		True : False;
 
-	if (! sfp->exchange_dimensions) {
-		if ((d_arr = DataToFloatArray(sfp,
-					      do_minmax,do_missing,
-					      missing_value,&dmin,&dmax,
-					      &new_data,
-					      entry_name)) == NULL) {
+	if ((d_arr = DataToFloatArray(sfp,do_minmax,do_missing,
+				      missing_value,&dmin,&dmax,
+				      &new_data,entry_name)) == NULL) {
 			return NhlFATAL;
-		}
-		sffp->x_start = sfp->x_actual_start;
-		sffp->x_end = sfp->x_actual_end;
-		sffp->y_start = sfp->y_actual_start;
-		sffp->y_end = sfp->y_actual_end;
-		sffp->ix_start = sfp->ix_start;
-		sffp->ix_end = sfp->ix_end;
-		sffp->xc_is_bounds = sfp->xc_is_bounds;
-		sffp->iy_start = sfp->iy_start;
-		sffp->iy_end = sfp->iy_end;
-		sffp->yc_is_bounds = sfp->yc_is_bounds;
-		if (xirr)
-			sffp->x_arr = x_arr;
-		if (yirr)
-			sffp->y_arr = y_arr;
 	}
-	else {
-		if ((d_arr = 
-		     DataToFloatArrayExchDim(sfp,
-					     do_minmax,do_missing,
-					     missing_value,&dmin,&dmax,
-					     entry_name)) == NULL) {
-			return NhlFATAL;
-		}
-		new_data = True;
-		sffp->x_start = sfp->y_actual_start;
-		sffp->x_end = sfp->y_actual_end;
-		sffp->y_start = sfp->x_actual_start;
-		sffp->y_end = sfp->x_actual_end;
-		sffp->ix_start = sfp->iy_start;
-		sffp->ix_end = sfp->iy_end;
-		sffp->xc_is_bounds = sfp->yc_is_bounds;
-		sffp->iy_start = sfp->ix_start;
-		sffp->iy_end = sfp->ix_end;
-		sffp->yc_is_bounds = sfp->xc_is_bounds;
-		if (xirr)
-			sffp->y_arr = x_arr;
-		if (yirr)
-			sffp->x_arr = y_arr;
-	}
+	sffp->x_start = sfp->x_actual_start;
+	sffp->x_end = sfp->x_actual_end;
+	sffp->y_start = sfp->y_actual_start;
+	sffp->y_end = sfp->y_actual_end;
+	sffp->ix_start = sfp->istart;
+	sffp->ix_end = sfp->iend;
+	sffp->xc_is_bounds = sfp->xc_is_bounds;
+	sffp->iy_start = sfp->istart;
+	sffp->iy_end = sfp->iend;
+	sffp->yc_is_bounds = sfp->yc_is_bounds;
+	sffp->x_arr = x_arr;
+	sffp->y_arr = y_arr;
 	sffp->d_arr = d_arr;
+	sffp->x_bounds = x_bounds;
+	sffp->y_bounds = y_bounds;
+	sffp->element_nodes = sfp->element_nodes;
+
 
 /*
  * If the user passed in a float array and stride values are all unity,
@@ -2481,18 +1361,16 @@ CvtGenSFObjToFloatSFObj
  * If a copy was made, the entire array will be utilitized.
  */
 	if (! new_data) {
-		sffp->begin = iystart * d_arr->len_dimensions[1] + ixstart;
-		sffp->fast_dim = d_arr->len_dimensions[1];
-		sffp->fast_len = sfp->xc_is_bounds ? 
-			 ixend - ixstart : ixend - ixstart + 1;
-		sffp->slow_len = sfp->yc_is_bounds ? 
-			 iyend - iystart : iyend - iystart + 1;
+		sffp->begin = istart;
+		sffp->fast_dim = d_arr->len_dimensions[0];
+		sffp->fast_len = iend - istart + 1;
+		sffp->slow_len = 0;
 	}
 	else {
 		sffp->begin = 0;
-		sffp->fast_dim = d_arr->len_dimensions[1];
-		sffp->fast_len = d_arr->len_dimensions[1];
-		sffp->slow_len = d_arr->len_dimensions[0];
+		sffp->fast_dim = d_arr->len_dimensions[0];
+		sffp->fast_len = d_arr->len_dimensions[0];
+		sffp->slow_len = 0;
 	}
 /*
  * If the user explicitly sets the data min/max values, make sure the max
@@ -2533,7 +1411,7 @@ CvtGenSFObjToFloatSFObj
 
 	sffp->data_min = dmin;
 	sffp->data_max = dmax;
-	sffp->grid_type = sfp->grid_type; /* only matters if 2D coords */
+	sffp->grid_type = NhlMESHGRID;
 	sffp->changed = sfp->changed;
         sfp->up_to_date = True;
         
@@ -2548,10 +1426,10 @@ CvtGenSFObjToFloatSFObj
 
 
 /*
- * Function:	ScalarFieldClassInitialize
+ * Function:	MeshScalarFieldClassInitialize
  *
  * Description:	This function does one time initialization needed by the
- *		ScalarFieldClass.
+ *		MeshScalarFieldClass.
  *
  * In Args:	
  *
@@ -2562,7 +1440,7 @@ CvtGenSFObjToFloatSFObj
  * Side Effect:	
  */
 static NhlErrorTypes
-ScalarFieldClassInitialize
+MeshScalarFieldClassInitialize
 #if	NhlNeedProto
 (
 	void
@@ -2580,6 +1458,10 @@ ScalarFieldClassInitialize
 	Qd_arr  = NrmStringToQuark(NhlNsfDataArray);
 	Qx_arr  = NrmStringToQuark(NhlNsfXArray);
 	Qy_arr  = NrmStringToQuark(NhlNsfYArray);
+	Qx_bounds  = NrmStringToQuark(NhlNsfXCellBounds);
+	Qy_bounds  = NrmStringToQuark(NhlNsfYCellBounds);
+	Qelement_nodes = NrmStringToQuark(NhlNsfElementNodes);
+	Qnode_indexes = NrmStringToQuark(NhlNsfNodeIndexes);
 	Qmissing_value  = NrmStringToQuark(NhlNsfMissingValueV);
 	Qdata_min  = NrmStringToQuark(NhlNsfDataMinV);
 	Qdata_max  = NrmStringToQuark(NhlNsfDataMaxV);
@@ -2603,7 +1485,7 @@ ScalarFieldClassInitialize
 	Qyc_el_count  = NrmStringToQuark(NhlNsfYCElementCount);
 
 	ret = NhlRegisterConverter(NhlbaseClass,
-			NhlscalarFieldClass->base_class.class_name,
+			NhlmeshScalarFieldClass->base_class.class_name,
 			NhlscalarFieldFloatClass->base_class.class_name,
 			CvtGenSFObjToFloatSFObj,NULL,0,False,NULL);
 	return ret;
@@ -2611,7 +1493,7 @@ ScalarFieldClassInitialize
 
 
 /*
- * Function:	ScalarFieldClassPartInitialize
+ * Function:	MeshScalarFieldClassPartInitialize
  *
  * Description:	This function is used to init the sfield_class part 
  *		of the layer class record of this class and of all sub-classes.
@@ -2626,7 +1508,7 @@ ScalarFieldClassInitialize
  * Side Effect:	
  */
 static NhlErrorTypes
-ScalarFieldClassPartInitialize
+MeshScalarFieldClassPartInitialize
 #if	NhlNeedProto
 (
 	NhlClass	lc	/* pointer to class structure	*/
@@ -2637,6 +1519,16 @@ ScalarFieldClassPartInitialize
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
+	NhlMeshScalarFieldClass msfc = (NhlMeshScalarFieldClass) lc;
+	NhlScalarFieldClass     sfc = (NhlScalarFieldClass) msfc->base_class.superclass;
+
+	/*
+	 * override the superclass create, setvalues, getvalues, and destroy
+	 */
+	sfc->base_class.layer_initialize = NULL;
+	sfc->base_class.layer_set_values = NULL;
+	sfc->base_class.layer_get_values = NULL;
+	sfc->base_class.layer_destroy = NULL;
 
 	return ret;
 }
@@ -2699,9 +1591,9 @@ VTypeValuesEqual
 }
 
 /*
- * Function:	ScalarFieldInitialize
+ * Function:	MeshScalarFieldInitialize
  *
- * Description:	This function initializes an instance of a ScalarField
+ * Description:	This function initializes an instance of a MeshScalarField
  *		class object.
  *
  * In Args:	
@@ -2719,7 +1611,7 @@ VTypeValuesEqual
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-ScalarFieldInitialize
+MeshScalarFieldInitialize
 #if	NhlNeedProto
 (
 	NhlClass	lc,	/* class	*/
@@ -2737,14 +1629,13 @@ ScalarFieldInitialize
 	int		nargs;	/* nargs	*/
 #endif
 {
-	char			*entry_name = "ScalarFieldInitialize";
+	char			*entry_name = "MeshScalarFieldInitialize";
 	char			*e_text;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)new;
-	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
+	NhlMeshScalarFieldLayer	sfl = (NhlMeshScalarFieldLayer)new;
+	NhlMeshScalarFieldLayerPart	*sfp = &(sfl->msfield);
 	NhlGenArray		ga;
         _NhlConvertContext	context = NULL;
-	NhlBoolean		has_2d_coords = False;
 	
 
 	sfp->changed = 0;
@@ -2758,6 +1649,7 @@ ScalarFieldInitialize
         sfp->yend_byindex = False;
 	sfp->xc_is_bounds = False;
 	sfp->yc_is_bounds = False;
+	sfp->istride = 1;
         
 	if (sfp->d_arr == NULL) {
 		e_text = 
@@ -2766,6 +1658,14 @@ ScalarFieldInitialize
 			  entry_name,NhlNsfDataArray,_NhlClassName(lc));
 		return NhlFATAL;
 	}
+	else if (sfp->d_arr->num_dimensions != 1) {
+		e_text = 
+		 "%s:The %s resource must have only 1 dimension to create a %s object";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfDataArray,_NhlClassName(lc));
+		return NhlFATAL;
+	}
+
 	if ((sfp->d_arr = 
 	     _NhlCopyGenArray(sfp->d_arr,sfp->copy_arrays)) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
@@ -2773,10 +1673,9 @@ ScalarFieldInitialize
 		return NhlFATAL;
 	}
 	sfp->changed |= _NhlsfDARR_CHANGED;
-	sfp->xd_el_count = sfp->d_arr->len_dimensions[1];
-	sfp->yd_el_count = sfp->d_arr->len_dimensions[0];
+	sfp->d_el_count = sfp->d_arr->len_dimensions[0];
 
-	if (sfp->xd_el_count < 2 || sfp->yd_el_count < 2) {
+	if (sfp->d_el_count < 2) {
 		e_text = "%s: Insufficient number of elements in %s",
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNsfDataArray);
@@ -2795,12 +1694,13 @@ ScalarFieldInitialize
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_arr = NULL;
-                else if (! ValidCoordArray(sfp,fltga,sfXCOORD,entry_name)) {
+                else if (! ValidCoordArray
+			 (sfp,fltga,NhlNsfXArray,entry_name)) {
                         sfp->x_arr = NULL;
                 }
                 else {
                         if ((sfp->x_arr = _NhlCopyGenArray
-                             (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                             (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -2808,6 +1708,13 @@ ScalarFieldInitialize
                         }
 			sfp->changed |= _NhlsfXARR_CHANGED;
                 }
+	}
+	if (sfp->x_arr == NULL) {
+		e_text = 
+		 "%s:The %s resource must be valid to create a %s object";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfXArray,_NhlClassName(lc));
+		return NhlFATAL;
 	}
 
         if (sfp->y_arr) {
@@ -2822,12 +1729,13 @@ ScalarFieldInitialize
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_arr = NULL;
-                else if (! ValidCoordArray(sfp,fltga,sfYCOORD,entry_name)) {
+                else if (! ValidCoordArray
+			 (sfp,fltga,NhlNsfYArray,entry_name)) {
                         sfp->y_arr = NULL;
                 }
                 else {
                         if ((sfp->y_arr = _NhlCopyGenArray
-                             (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+                             (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -2836,8 +1744,111 @@ ScalarFieldInitialize
 			sfp->changed |= _NhlsfYARR_CHANGED;
                 }
 	}
-	if (sfp->x_arr && sfp->y_arr && sfp->x_arr->num_dimensions == 2) {
-		has_2d_coords = True;
+	if (sfp->y_arr == NULL) {
+		e_text = 
+		 "%s:The %s resource must be valid to create a %s object";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfYArray,_NhlClassName(lc));
+		return NhlFATAL;
+	}
+#if 0
+	if (sfp->element_nodes == NULL && 
+		! (sfp->x_bounds && sfp->y_bounds)) {
+		e_text = 
+	 "%s:Either %s or %s and %s  must be specified to create a %s object";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfElementNodes,
+			  NhlNsfXCellBounds, NhlNsfYCellBounds,_NhlClassName(lc));
+		return NhlFATAL;
+	}
+#endif
+	if (sfp->element_nodes) {
+		if (sfp->element_nodes->num_dimensions != 2) {
+			e_text = 
+	 "%s:The %s resource must have 2 dimensions to create a %s object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNsfElementNodes,_NhlClassName(lc));
+			return NhlFATAL;
+		}
+		if ((sfp->element_nodes = 
+		     _NhlCopyGenArray(sfp->element_nodes,
+				      sfp->copy_arrays)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (sfp->x_bounds) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->x_bounds;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->x_bounds = NULL;
+                else if (! ValidCoordArray
+			 (sfp,fltga,NhlNsfXCellBounds,entry_name)) {
+                        sfp->x_bounds = NULL;
+                }
+                else {
+                        if ((sfp->x_bounds = _NhlCopyGenArray
+                             (fltga,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+			sfp->changed |= _NhlsfXARR_CHANGED;
+                }
+	}
+	if (sfp->y_bounds) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->y_bounds;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->y_bounds = NULL;
+                else if (! ValidCoordArray
+			 (sfp,fltga,NhlNsfYCellBounds,entry_name)) {
+                        sfp->y_bounds = NULL;
+                }
+                else {
+                        if ((sfp->y_bounds = _NhlCopyGenArray
+                             (fltga,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+			sfp->changed |= _NhlsfYARR_CHANGED;
+                }
+	}
+	if ((sfp->x_bounds && ! sfp->y_bounds) ||
+	    sfp->y_bounds && ! sfp->x_bounds) {
+		e_text = 
+       "%s:If either %s or %s is specified, both must be specified and valid";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfXCellBounds, NhlNsfYCellBounds);
+		return NhlFATAL;
+	}
+
+        if (sfp->node_indexes) {
+		if ((sfp->node_indexes = 
+		     _NhlCopyGenArray(
+			     sfp->node_indexes,sfp->copy_arrays)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
 	}
 
 	if (sfp->missing_value != NULL) {
@@ -2926,7 +1937,7 @@ ScalarFieldInitialize
                 sfp->x_subset_end = NULL;
         }
 	if (sfp->x_subset_start != NULL) {
-                if (sfp->subset_by_index || has_2d_coords)
+                if (sfp->subset_by_index)
                         sfp->x_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -2942,7 +1953,7 @@ ScalarFieldInitialize
                 sfp->xstart_byindex = True;
                 
 	if (sfp->x_subset_end != NULL) {
-                if (sfp->subset_by_index || has_2d_coords)
+                if (sfp->subset_by_index)
                         sfp->x_subset_end = NULL;
                 else {
                         ga = NULL;
@@ -2967,7 +1978,7 @@ ScalarFieldInitialize
                 sfp->y_subset_end = NULL;
         }
 	if (sfp->y_subset_start != NULL) {
-                if (sfp->subset_by_index || has_2d_coords)
+                if (sfp->subset_by_index)
                         sfp->y_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -2983,7 +1994,7 @@ ScalarFieldInitialize
                 sfp->ystart_byindex = True;
                 
 	if (sfp->y_subset_end != NULL) {
-                if (sfp->subset_by_index || has_2d_coords)
+                if (sfp->subset_by_index)
                         sfp->y_subset_end = NULL;
                 else {
                         ga = NULL;
@@ -3003,7 +2014,7 @@ ScalarFieldInitialize
 }
 
 /*
- * Function:	ScalarFieldSetValues
+ * Function:	MeshScalarFieldSetValues
  *
  * Description:	...
  *
@@ -3017,7 +2028,7 @@ ScalarFieldInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-ScalarFieldSetValues
+MeshScalarFieldSetValues
 #if	NhlNeedProto
 (
 	NhlLayer	old,		/* old		*/
@@ -3035,35 +2046,33 @@ ScalarFieldSetValues
 	int		nargs;		/* nargs	*/
 #endif
 {
-	char			*entry_name = "ScalarFieldSetValues";
+	char			*entry_name = "MeshScalarFieldSetValues";
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char 			*e_text;
-	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)new;
-	NhlScalarFieldLayer	osfl = (NhlScalarFieldLayer)old;
-	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
-	NhlScalarFieldLayerPart	*osfp = &(osfl->sfield);
+	NhlMeshScalarFieldLayer	sfl = (NhlMeshScalarFieldLayer)new;
+	NhlMeshScalarFieldLayer	osfl = (NhlMeshScalarFieldLayer)old;
+	NhlMeshScalarFieldLayerPart	*sfp = &(sfl->msfield);
+	NhlMeshScalarFieldLayerPart	*osfp = &(osfl->msfield);
 	NhlGenArray		ga;
 	NhlBoolean		status = False;
         _NhlConvertContext	context = NULL;
         NhlBoolean		x_arr_changed = False, y_arr_changed = False;
-	NhlBoolean		x_dim_changed = False, y_dim_changed = False;
+	NhlBoolean		dim_changed = False;
         NhlBoolean		x_start_changed = False, x_end_changed = False;
         NhlBoolean		y_start_changed = False, y_end_changed = False;
-	NhlBoolean		has_2d_coords = False;
 
 /*
  * The changed bit field records changes to the X and Y coordinate array
- * as passed to the ScalarFieldFloat object. Changes to the array itself
+ * as passed to the MeshScalarFieldFloat object. Changes to the array itself
  * count, but also subsection and stride changes.
  */
 	sfp->changed = 0;
         context = _NhlCreateConvertContext(new);
 	if (sfp->d_arr != osfp->d_arr) {
-		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2 ||
-			sfp->d_arr->len_dimensions[1] < 2 ||
-			sfp->d_arr->len_dimensions[0] < 2) {
+		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 1 ||
+			sfp->d_arr->len_dimensions[0] < 3) {
 			e_text = 
-			   "%s: invalid %s value: restoring previous value";
+			   "%s: %s is missing or has more than 1 dimension: restoring previous value";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNsfDataArray);
 			ret = NhlWARNING;
@@ -3081,21 +2090,20 @@ ScalarFieldSetValues
 			sfp->d_arr = ga;
 			NhlFreeGenArray(osfp->d_arr);
 			status = True;
-			if (sfp->d_arr->len_dimensions[1] != sfp->xd_el_count)
-				x_dim_changed = True;
-			if (sfp->d_arr->len_dimensions[0] != sfp->yd_el_count)
-				y_dim_changed = True;
-			sfp->xd_el_count = sfp->d_arr->len_dimensions[1];
-			sfp->yd_el_count = sfp->d_arr->len_dimensions[0];
+			if (sfp->d_arr->len_dimensions[0] != sfp->d_el_count)
+				dim_changed = True;
+			sfp->d_el_count = sfp->d_arr->len_dimensions[0];
 			sfp->changed |= _NhlsfDARR_CHANGED;
 		}
 	}
 
 
-	if (!sfp->x_arr && (sfp->x_arr != osfp->x_arr)) {
-                NhlFreeGenArray(osfp->x_arr);
-                status = True;
-                x_arr_changed = True;
+	if (!sfp->x_arr) {
+		e_text = "%s: invalid %s value: restoring previous value";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNsfXArray);
+		ret = NhlWARNING;
+		sfp->x_arr = osfp->x_arr;
         }
         else if (sfp->x_arr != osfp->x_arr) {
                 NrmValue from, to;
@@ -3109,24 +2117,21 @@ ScalarFieldSetValues
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_arr = osfp->x_arr;
-                else if (! ValidCoordArray(sfp,fltga,sfXCOORD,entry_name)) {
+                else if (! ValidCoordArray(
+				 sfp,fltga,NhlNsfXArray,entry_name)) {
                         sfp->x_arr = osfp->x_arr;
                 }
                 else {
-		        if ( (! osfp->x_arr) || x_dim_changed || 
+		        if (dim_changed || 
 			    sfp->x_arr->size != osfp->x_arr->size ||
 			    sfp->x_arr->typeQ != osfp->x_arr->typeQ ||
-			    sfp->x_arr->num_dimensions != 
-			    osfp->x_arr->num_dimensions ||
-			    (sfp->x_arr->num_dimensions == 2 &&
-			     y_dim_changed) ||
 			    memcmp(sfp->x_arr->data,osfp->x_arr->data,
 				   sfp->x_arr->size 
 				   * sfp->x_arr->num_elements) )
 				x_arr_changed = True;
 
                         if ((sfp->x_arr = _NhlCopyGenArray
-                             (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                             (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -3137,14 +2142,13 @@ ScalarFieldSetValues
                         status = True;
                 }
 	}
-	if (sfp->xc_is_bounds != osfp->xc_is_bounds)
-		x_dim_changed = True;
 
-
-	if (!sfp->y_arr && (sfp->y_arr != osfp->y_arr)) {
-                NhlFreeGenArray(osfp->y_arr);
-                y_arr_changed = True;
-                status = True;
+	if (!sfp->y_arr) {
+		e_text = "%s: invalid %s value: restoring previous value";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNsfYArray);
+		ret = NhlWARNING;
+		sfp->y_arr = osfp->y_arr;
         }
         else if (sfp->y_arr != osfp->y_arr) {
                 NrmValue from, to;
@@ -3158,23 +2162,21 @@ ScalarFieldSetValues
                                          Qfloat_gen_array,&from,&to);
                 if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_arr = osfp->y_arr;
-                else if (! ValidCoordArray(sfp,fltga,sfYCOORD,entry_name)) {
+                else if (! ValidCoordArray
+			 (sfp,fltga,NhlNsfYArray,entry_name)) {
                         sfp->y_arr = osfp->y_arr;
                 }
                 else {
-		        if ((! osfp->y_arr) || y_dim_changed || 
+		        if (dim_changed || 
 			    sfp->y_arr->size != osfp->y_arr->size ||
 			    sfp->y_arr->typeQ != osfp->y_arr->typeQ ||
-			    sfp->y_arr->num_dimensions != 
-			    osfp->y_arr->num_dimensions ||
-			    (sfp->y_arr->num_dimensions == 2 &&
-			     x_dim_changed) ||
 			    memcmp(sfp->y_arr->data,osfp->y_arr->data,
-				   sfp->y_arr->size * 
-				   sfp->y_arr->num_elements) )
+				   sfp->y_arr->size 
+				   * sfp->y_arr->num_elements) )
 				y_arr_changed = True;
+
                         if ((sfp->y_arr = _NhlCopyGenArray
-                             (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+                             (fltga,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -3185,26 +2187,157 @@ ScalarFieldSetValues
                         status = True;
                 }
 	}
-	if (sfp->yc_is_bounds != osfp->yc_is_bounds)
-		y_dim_changed = True;
+
 /*
  * If dimension lengths have changed then subsetting returns to default
  */
-	if (x_dim_changed) {
+	if (dim_changed) {
 		if (! _NhlArgIsSet(args,nargs,NhlNsfXCStartIndex))
 			sfp->x_index_start = -1;
 		if (! _NhlArgIsSet(args,nargs,NhlNsfXCEndIndex))
 			sfp->x_index_end = -1;
-	}
-	
-	if (y_dim_changed) {
 		if (! _NhlArgIsSet(args,nargs,NhlNsfYCStartIndex))
 			sfp->y_index_start = -1;
 		if (! _NhlArgIsSet(args,nargs,NhlNsfYCEndIndex))
 			sfp->y_index_end = -1;
 	}
-	if (sfp->x_arr && sfp->y_arr && sfp->x_arr->num_dimensions == 2) {
-		has_2d_coords = True;
+
+	if (sfp->element_nodes && sfp->element_nodes->num_dimensions != 2) {
+		e_text = 
+			"%s: invalid %s value: restoring previous value";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNsfElementNodes);
+		ret = NhlWARNING;
+		sfp->element_nodes = osfp->element_nodes;
+	}
+	if (sfp->element_nodes != osfp->element_nodes) {
+		if (sfp->element_nodes) {
+			if ((ga = _NhlCopyGenArray(
+				     sfp->element_nodes,
+				     sfp->copy_arrays)) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			sfp->element_nodes = ga;
+		}
+		NhlFreeGenArray(osfp->element_nodes);
+		status = True;
+	}
+
+        if (sfp->node_indexes != osfp->node_indexes) {
+		if (sfp->node_indexes) {
+			if ((ga = _NhlCopyGenArray(
+				     sfp->node_indexes,
+				     sfp->copy_arrays)) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			sfp->node_indexes = ga;
+		}
+		NhlFreeGenArray(osfp->node_indexes);
+		status = True;
+	}
+
+	if ((sfp->x_bounds && ! sfp->y_bounds) ||
+	    sfp->y_bounds && ! sfp->x_bounds) {
+		sfp->x_bounds = osfp->x_bounds;
+		sfp->y_bounds = osfp->y_bounds;
+		e_text = 
+      "%s:If either %s or %s is specified, both must be specified and valid: restoring previous values";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNsfXCellBounds, NhlNsfYCellBounds);
+		return NhlWARNING;
+	}
+	if (! sfp->x_bounds) {
+		if (osfp->x_bounds) {
+			NhlFreeGenArray(osfp->x_bounds);
+			status = True;
+		}
+	}
+        else if (sfp->x_bounds && sfp->x_bounds != osfp->x_bounds) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->x_bounds;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->x_bounds = osfp->x_bounds;
+                else if (! ValidCoordArray(
+				 sfp,fltga,NhlNsfXCellBounds,entry_name)) {
+                        sfp->x_bounds = osfp->x_bounds;
+                }
+                else {
+		        if (dim_changed || 
+			    sfp->x_bounds->size != osfp->x_bounds->size ||
+			    sfp->x_bounds->typeQ != osfp->x_bounds->typeQ ||
+			    memcmp(sfp->x_bounds->data,osfp->x_bounds->data,
+				   sfp->x_bounds->size 
+				   * sfp->x_bounds->num_elements) )
+				x_arr_changed = True;
+
+                        if ((sfp->x_bounds = _NhlCopyGenArray
+                             (fltga,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                        NhlFreeGenArray(osfp->x_bounds);
+			sfp->changed |= _NhlsfXARR_CHANGED;
+                        status = True;
+                }
+	}
+
+	if (! sfp->y_bounds) {
+		if (osfp->y_bounds) {
+			NhlFreeGenArray(osfp->y_bounds);
+			status = True;
+		}
+	}
+        if (sfp->y_bounds && sfp->y_bounds != osfp->y_bounds) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->y_bounds;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->y_bounds = osfp->y_bounds;
+                else if (! ValidCoordArray(
+				 sfp,fltga,NhlNsfYCellBounds,entry_name)) {
+                        sfp->y_bounds = osfp->y_bounds;
+                }
+                else {
+		        if (dim_changed || 
+			    sfp->y_bounds->size != osfp->y_bounds->size ||
+			    sfp->y_bounds->typeQ != osfp->y_bounds->typeQ ||
+			    memcmp(sfp->y_bounds->data,osfp->y_bounds->data,
+				   sfp->y_bounds->size 
+				   * sfp->y_bounds->num_elements) )
+				y_arr_changed = True;
+
+                        if ((sfp->y_bounds = _NhlCopyGenArray
+                             (fltga,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                        NhlFreeGenArray(osfp->y_bounds);
+			sfp->changed |= _NhlsfYARR_CHANGED;
+                        status = True;
+                }
 	}
 
 	if (sfp->missing_value != osfp->missing_value) {
@@ -3327,7 +2460,6 @@ ScalarFieldSetValues
 	}
         else if (x_arr_changed || sfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
-		 has_2d_coords ||  
                  sfp->x_index_start != osfp->x_index_start) {
                 NhlFreeGenArray(osfp->x_subset_start);
                 sfp->x_subset_start = NULL;
@@ -3345,7 +2477,6 @@ ScalarFieldSetValues
 	}
         else if (x_arr_changed || sfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
-		 has_2d_coords ||  
                  sfp->x_index_end != osfp->x_index_end) {
                	NhlFreeGenArray(osfp->x_subset_end);
                 sfp->x_subset_end = NULL;
@@ -3374,7 +2505,6 @@ ScalarFieldSetValues
 	}
         else if (y_arr_changed || sfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
-		 has_2d_coords ||  
                  sfp->y_index_start != osfp->y_index_start) {
                	NhlFreeGenArray(osfp->y_subset_start);
                 sfp->y_subset_start = NULL;
@@ -3393,7 +2523,6 @@ ScalarFieldSetValues
 	}
         else if (y_arr_changed || sfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
-		 has_2d_coords ||  
                  sfp->y_index_end != osfp->y_index_end) {
                	NhlFreeGenArray(osfp->y_subset_end);
                 sfp->y_subset_end = NULL;
@@ -3437,13 +2566,9 @@ ScalarFieldSetValues
 	}
 	if (sfp->subset_by_index != osfp->subset_by_index)
 		status = True;
-	/* 
-	 * 2-D coordinates are interdependent so if one is changed the
-	 * other changes as well
-	 */
-	if (sfp->x_arr && sfp->x_arr->num_dimensions == 2 &&
-	    (sfp->changed & _NhlsfXARR_CHANGED ||
-	     sfp->changed & _NhlsfYARR_CHANGED)) {
+
+	if (sfp->changed & _NhlsfXARR_CHANGED ||
+	     sfp->changed & _NhlsfYARR_CHANGED) {
 		sfp->changed |= _NhlsfXARR_CHANGED;
 		sfp->changed |= _NhlsfYARR_CHANGED;
 	}
@@ -3485,7 +2610,7 @@ static NhlPointer CopyData
 	NrmQuark resQ;
 #endif
 {
-	char *e_text, *entry_name = "ScalarFieldGetValues";
+	char *e_text, *entry_name = "MeshScalarFieldGetValues";
 	NhlPointer new;
 
 	if ((new = NhlMalloc(ga->num_elements * ga->size)) == NULL) {
@@ -3528,7 +2653,7 @@ static NhlPointer CreateVData
 	NrmQuark resQ;
 #endif
 {
-	char *e_text, *entry_name = "ScalarFieldGetValues";
+	char *e_text, *entry_name = "MeshScalarFieldGetValues";
 	NhlPointer new;
 
 	if ((new = NhlMalloc(size)) == NULL) {
@@ -3546,7 +2671,7 @@ static NhlPointer CreateVData
 /*
  * Function:    ForceConvert
  *
- * Description: Explicitly forces the conversion to NhlScalarFieldFloat
+ * Description: Explicitly forces the conversion to NhlMeshScalarFieldFloat
  *		when required in order to provide GetValues information
  *		that is not available before the conversion occurs.
  *
@@ -3562,31 +2687,31 @@ static NhlPointer CreateVData
 static NhlErrorTypes ForceConvert
 #if	NhlNeedProto
 (
-	NhlScalarFieldLayer sfl
+	NhlMeshScalarFieldLayer sfl
 )
 #else
 (sfl)
-	NhlScalarFieldLayer sfl;
+	NhlMeshScalarFieldLayer sfl;
 #endif
 {
-	char *e_text, *entry_name = "ScalarFieldGetValues";
-        NhlScalarFieldLayerPart *sfp = &(sfl->sfield);
+	char *e_text, *entry_name = "MeshScalarFieldGetValues";
+        NhlMeshScalarFieldLayerPart *sfp = &(sfl->msfield);
 	int id;
 	NhlScalarFieldFloatLayer sffl = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
 	NrmValue from, to;
 
-	from.size = sizeof(NhlScalarFieldLayerRec);
+	from.size = sizeof(NhlMeshScalarFieldLayerRec);
 	from.data.intval = sfl->base.id;
 	to.size = sizeof(NhlScalarFieldFloatLayerRec);
 	to.data.ptrval = &id;
 	ret = NhlConvertData(NhlDEFAULT_APP,
-			NhlscalarFieldClass->base_class.class_name,
+			NhlmeshScalarFieldClass->base_class.class_name,
 			NhlscalarFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||
 	    (sffl = (NhlScalarFieldFloatLayer) _NhlGetLayer(id)) == NULL) {
-		e_text = "%s: error converting NhlScalarFieldLayer";
+		e_text = "%s: error converting NhlMeshScalarFieldLayer";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
                 return ret;
 	}
@@ -3596,19 +2721,19 @@ static NhlErrorTypes ForceConvert
 }
 
 /*
- * Function:    ScalarFieldGetValues
+ * Function:    MeshScalarFieldGetValues
  *
- * Description: Retrieves the current setting of one or more ScalarField 
+ * Description: Retrieves the current setting of one or more MeshScalarField 
  *      resources.This routine only retrieves resources that require 
  *	special methods that the generic GetValues method cannot handle. 
  *      This includes all resources implemented as GenArrays, including
- *	the variable type scalar resources (VTypes). In general space is 
+ *	the variable type meshScalar resources (VTypes). In general space is 
  *	allocated; the user is responsible for freeing this space. However,
  *	if the CopyArrays resource is False, Data array and the X/Y
  *	coordinate arrays (if they exist) are NOT copied, since the user
  *	is assumed to be keeping a valid copy of them around. 
  *	If the user does a GetValues on the data min or max before a
- *	the conversion to ScalarFieldFloat object has taken place, then
+ *	the conversion to MeshScalarFieldFloat object has taken place, then
  *	the converter is called explicitly, since most of the converter
  * 	code needs to be executed in order to determine the max and min.
  *
@@ -3623,7 +2748,7 @@ static NhlErrorTypes ForceConvert
  *      The caller is responsible for freeing this memory.
  */
 
-static NhlErrorTypes    ScalarFieldGetValues
+static NhlErrorTypes    MeshScalarFieldGetValues
 #if	NhlNeedProto
 (NhlLayer layer, _NhlArgList args, int num_args)
 #else
@@ -3633,12 +2758,12 @@ static NhlErrorTypes    ScalarFieldGetValues
         int     	num_args;
 #endif
 {
-        NhlScalarFieldLayer sfl = (NhlScalarFieldLayer)layer;
-        NhlScalarFieldLayerPart *sfp = &(sfl->sfield);
+        NhlMeshScalarFieldLayer sfl = (NhlMeshScalarFieldLayer)layer;
+        NhlMeshScalarFieldLayerPart *sfp = &(sfl->msfield);
 	NhlScalarFieldFloatLayerPart *sffp = NULL;
 	NhlErrorTypes subret = NhlNOERROR,ret = NhlNOERROR;
         NhlGenArray ga;
-        char *e_text, *entry_name = "ScalarFieldGetValues";
+        char *e_text, *entry_name = "MeshScalarFieldGetValues";
         int i;
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
@@ -3673,7 +2798,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 2;
 			dlen[0] = sfp->d_arr->len_dimensions[0];
-			dlen[1] = sfp->d_arr->len_dimensions[1];
 			if (sfp->copy_arrays) {
 				if ((data = CopyData(sfp->d_arr,resQ))
 				    == NULL)
@@ -3686,17 +2810,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 			typeQ = sfp->d_arr->typeQ;
 			size = sfp->d_arr->size;
                 }
-                else if (resQ == Qx_arr && sfp->x_arr) {
+                else if (resQ == Qx_arr) {
                         do_genarray = True;
-			if (sfp->x_arr->num_dimensions == 2) {
-				ndim = 2;
-				dlen[0] = sfp->x_arr->len_dimensions[0];
-				dlen[1] = sfp->x_arr->len_dimensions[1];
-			}
-			else {
-				ndim = 1;
-				dlen[0] = sfp->x_arr->len_dimensions[0];
-			}
+			ndim = 1;
+			dlen[0] = sfp->x_arr->len_dimensions[0];
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData(sfp->x_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -3708,27 +2825,10 @@ static NhlErrorTypes    ScalarFieldGetValues
                         typeQ = sfp->x_arr->typeQ;
                         size = sfp->x_arr->size;
                 }
-                else if (resQ == Qx_arr) {
-                            /* may be set NULL during the force convert,
-                               but still would have had a value during
-                               _NhlGetValues
-                             */
-			*(NhlGenArray *)args[i].value.ptrval = NULL;
-			*args[i].type_ret = Qgen_array;
-			*args[i].size_ret = sizeof(NhlGenArray);
-			*args[i].free_func = NULL;
-                }
-                else if (resQ == Qy_arr && sfp->y_arr) {
+                else if (resQ == Qy_arr) {
                         do_genarray = True;
-			if (sfp->y_arr->num_dimensions == 2) {
-				ndim = 2;
-				dlen[0] = sfp->y_arr->len_dimensions[0];
-				dlen[1] = sfp->y_arr->len_dimensions[1];
-			}
-			else {
-				ndim = 1;
-				dlen[0] = sfp->y_arr->len_dimensions[0];
-			}
+			ndim = 1;
+			dlen[0] = sfp->y_arr->len_dimensions[0];
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData(sfp->y_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -3740,15 +2840,102 @@ static NhlErrorTypes    ScalarFieldGetValues
                         typeQ = sfp->y_arr->typeQ;
                         size = sfp->y_arr->size;
                 }
-                else if (resQ == Qy_arr) {
-                            /* may be set NULL during the force convert,
-                               but still would have had a value during
-                               _NhlGetValues
-                             */
+                else if (resQ == Qx_bounds && sfp->x_bounds) {
+                        do_genarray = True;
+			ndim = 2;
+			dlen[0] = sfp->x_bounds->len_dimensions[0];
+			dlen[1] = sfp->x_bounds->len_dimensions[1];
+                        if (sfp->copy_arrays) {
+                                if ((data = CopyData
+				     (sfp->x_bounds,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = sfp->y_arr->data;
+                        }
+                        typeQ = sfp->x_bounds->typeQ;
+                        size = sfp->x_bounds->size;
+                }
+		else if (resQ == Qx_bounds) {
 			*(NhlGenArray *)args[i].value.ptrval = NULL;
 			*args[i].type_ret = Qgen_array;
 			*args[i].size_ret = sizeof(NhlGenArray);
 			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qy_bounds && sfp->y_bounds) {
+                        do_genarray = True;
+			ndim = 2;
+			dlen[0] = sfp->y_bounds->len_dimensions[0];
+			dlen[1] = sfp->y_bounds->len_dimensions[1];
+                        if (sfp->copy_arrays) {
+                                if ((data = CopyData
+				     (sfp->y_bounds,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = sfp->y_arr->data;
+                        }
+                        typeQ = sfp->y_bounds->typeQ;
+                        size = sfp->y_bounds->size;
+                }
+		else if (resQ == Qy_bounds) {
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qelement_nodes && sfp->element_nodes) {
+                        do_genarray = True;
+			ndim = 2;
+			dlen[0] = sfp->element_nodes->len_dimensions[0];
+			dlen[1] = sfp->element_nodes->len_dimensions[1];
+                        if (sfp->copy_arrays) {
+                                if ((data = CopyData
+				     (sfp->element_nodes,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = sfp->y_arr->data;
+                        }
+                        typeQ = sfp->element_nodes->typeQ;
+                        size = sfp->element_nodes->size;
+                }
+		else if (resQ == Qelement_nodes) {
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qnode_indexes && sfp->node_indexes) {
+                        do_genarray = True;
+			ndim = 1;
+			dlen[0] = sfp->node_indexes->len_dimensions[0];
+                        if (sfp->copy_arrays) {
+                                if ((data = 
+				     CopyData(sfp->node_indexes,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = sfp->node_indexes->data;
+                        }
+                        typeQ = sfp->node_indexes->typeQ;
+                        size = sfp->node_indexes->size;
+                }
+                else if (resQ == Qnode_indexes) {
+			int j;
+                        do_genarray = True;
+			ndim = 1;
+			dlen[0] = sfp->d_el_count;
+			data = NhlMalloc(dlen[0] * sizeof(int));
+			for (j = 0; j < sfp->d_el_count; j++) {
+				((int *)data)[j] = j + sfp->first_node_index;
+			}
+                        typeQ = Qint;
+                        size = sizeof(int);
                 }
                 else if (resQ == Qmissing_value && sfp->missing_value) {
                         do_genarray = True;
@@ -3799,6 +2986,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sizeof(float);
 			}
                 }
+#if 0
                 else if (resQ == Qx_start) {
 			do_genarray = True;
 			ndim = 1;
@@ -4052,6 +3240,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].size_ret = sizeof(int);
 			*args[i].free_func = NULL;
                 }
+#endif
                 else if (resQ == Qx_actual_start) {
 			fval = sfp->x_actual_start;
 			*(float*)args[i].value.ptrval = fval;
@@ -4119,10 +3308,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 }
 
 /*
- * Function:	ScalarFieldDestroy
+ * Function:	MeshScalarFieldDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlScalarFieldClass.
+ *		on behalf of this instance of the NhlMeshScalarFieldClass.
  *
  * In Args:	NhlLayer	l
  *
@@ -4133,7 +3322,7 @@ static NhlErrorTypes    ScalarFieldGetValues
  * Side Effect:	
  */
 static NhlErrorTypes
-ScalarFieldDestroy
+MeshScalarFieldDestroy
 #if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
@@ -4144,10 +3333,10 @@ ScalarFieldDestroy
 #endif
 {
 /*
- *	char			*entry_name = "ScalarFieldDestroy";
+ *	char			*entry_name = "MeshScalarFieldDestroy";
  */
-	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)l;
-	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
+	NhlMeshScalarFieldLayer	sfl = (NhlMeshScalarFieldLayer)l;
+	NhlMeshScalarFieldLayerPart	*sfp = &(sfl->msfield);
 
 	NhlFreeGenArray(sfp->d_arr);
 	NhlFreeGenArray(sfp->x_arr);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.18 2004-03-11 02:00:30 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.19 2004-07-23 21:24:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -306,6 +306,7 @@ typedef enum _NhlcnFillMode {
 #define NhlNcnConpackParams		"cnConpackParams"
 #define NhlNcnOutputGriddedData		"cnOutputGriddedData"
 #define NhlNcnOutputFileName		"cnOutputFileName"
+#define NhlNcnVerboseTriangleInfo       "cnVerboseTriangleInfo"
 
 /*
  * ContourPlot class resources
@@ -412,6 +413,7 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnConpackParams		"CnConpackParams"
 #define NhlCcnOutputGriddedData		"CnOutputGriddedData"
 #define NhlCcnOutputFileName		"CnOutputFileName"
+#define NhlCcnVerboseTriangleInfo       "CnVerboseTriangleInfo"
 
 
 /*

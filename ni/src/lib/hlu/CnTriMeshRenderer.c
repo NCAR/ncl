@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.1 2004-03-11 02:00:18 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.2 2004-07-23 21:24:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *	Description:	
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/CnTriMeshRendererP.h>
@@ -29,6 +30,8 @@
 #include <ncarg/hlu/CurvilinearTransObj.h>
 #include <ncarg/hlu/SphericalTransObj.h>
 #include <ncarg/hlu/TriMeshTransObj.h>
+#define REAL double
+#include <ncarg/hlu/triangle.h>
 
 #define Oset(field) \
     NhlOffset(NhlCnTriMeshRendererLayerRec,cntrimeshrenderer.field)
@@ -133,7 +136,7 @@ extern void   (_NHLCALLF(hluctmxyz,HLUCTMXYZ))(
 #endif
 );
 
-extern int   (_NHLCALLF(rtmi,RTMI))(
+static int   (_NHLCALLF(rtmi,RTMI))(
 #if	NhlNeedProto
 	int	*idim,
 	int	*jdim,
@@ -269,7 +272,7 @@ static int Lotn = 4;
  */
 
 /*ARGSUSED*/
-int (_NHLCALLF(rtmi,RTMI))
+static int (_NHLCALLF(rtmi,RTMI))
 #if	NhlNeedProto
 (
 	int	*idim,
@@ -317,12 +320,14 @@ static NhlErrorTypes BuildTriangularMesh
 #if	NhlNeedProto
 (
 	NhlCnTriMeshRendererLayerPart *tmp,
-	NhlContourPlotLayer     cnl
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
 )
 #else
-(tmp,cnl)
+(tmp,cnl,entry_name)
         NhlCnTriMeshRendererLayerPart *tmp;
 	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
@@ -467,7 +472,728 @@ static NhlErrorTypes BuildTriangularMesh
 	return NhlNOERROR;
 
 }
+
+#define DEGTORAD 0.017453292519943
+
+static NhlErrorTypes BuildNativeMesh 
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	float missing_val;
+	int coords_alloced = 0;
+	int mnot  = cnp->sfp->element_nodes->len_dimensions[0];
+	int mnop = cnp->sfp->fast_len;
+	int mnoe = 3 * mnot;
+	int mpnt = mnop * Lopn;
+	int medg = mnoe * Loen;
+	int mtri = mnot * Lotn;
+	float *rpnt;
+	int *el;
+	int *iedg, *itri;
+	int *ippp,*ippe;
+	int npnt,nedg;
+	float *rlat,*rlon,*rdat;
+	float tbuf[5021][12];
+	int kbuf = 173;
+	int mbuf = 5021;
+	int nppp = 0;
+	int nppe = 0;
+	int nbuf = 0;
+	int ntri = 0;
+	int i,j;
+	int ix_offset = cnp->sfp->ix_start;
+	int err_num;
+	char *e_msg;
+	char *e_text;
+	
+	if (tmp->npnt > 0)
+		NhlFree(tmp->rpnt);
+	if (tmp->nedg > 0)
+		NhlFree(tmp->iedg);
+	if (tmp->ntri > 0)
+		NhlFree(tmp->itri);
+
+	rpnt = NhlMalloc(mpnt * sizeof(float));
+	iedg = NhlMalloc(medg * sizeof(int));
+	itri = NhlMalloc(mtri * sizeof(int));
+	ippp = NhlMalloc(2 * mnop * sizeof(int));
+	ippe = NhlMalloc(2 * mnoe * sizeof(int));
+	
+	if (! (rpnt && iedg && itri && ippp && ippe )) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	    
+	missing_val = cnp->sfp->missing_value_set ?
+		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
+	    
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+	el = (int*) cnp->sfp->element_nodes->data;
+
+	    
+
+	for (i = 0; i < mnot; i++) {
+		int *ep;
+		int e0,e1,e2;
+		if (nbuf >= mbuf) 
+			_NHLCALLF(cttmtl,CTTMTL)
+				(&kbuf,tbuf,&mbuf,&nbuf,
+				 ippp,&mnop,&nppp,
+				 ippe,&mnoe,&nppe,
+				 rpnt,&mpnt,&npnt,&Lopn,
+				 iedg,&medg,&nedg,&Loen,
+				 itri,&mtri,&ntri,&Lotn);
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+
+		ep = el + i * 3;
+		e0 = *ep - ix_offset;
+		e1 = *(ep+1) - ix_offset;
+		e2 = *(ep+2) - ix_offset;
+		if (tmp->ezmap) {
+			tbuf[nbuf][0] = cos(DEGTORAD * rlat[e0]) *
+				cos(DEGTORAD * rlon[e0]);
+			tbuf[nbuf][1] = cos(DEGTORAD * rlat[e0]) *
+				sin(DEGTORAD * rlon[e0]);
+			tbuf[nbuf][2] = sin(DEGTORAD * rlat[e0]);
+			tbuf[nbuf][3] = rdat[e0];
+			tbuf[nbuf][4] = cos(DEGTORAD * rlat[e1]) *
+				cos(DEGTORAD * rlon[e1]);
+			tbuf[nbuf][5] = cos(DEGTORAD * rlat[e1]) *
+				sin(DEGTORAD * rlon[e1]);
+			tbuf[nbuf][6] = sin(DEGTORAD * rlat[e1]);
+			tbuf[nbuf][7] = rdat[e1];
+			tbuf[nbuf][8] = cos(DEGTORAD * rlat[e2]) *
+				cos(DEGTORAD * rlon[e2]);
+			tbuf[nbuf][9] = cos(DEGTORAD * rlat[e2]) *
+				sin(DEGTORAD * rlon[e2]);
+			tbuf[nbuf][10] = sin(DEGTORAD * rlat[e2]);
+			tbuf[nbuf][11] = rdat[e2];
+		}
+		else {
+			tbuf[nbuf][0] = rlon[e0];
+			tbuf[nbuf][1] = rlat[e0];
+			tbuf[nbuf][2] = 0.0;
+			tbuf[nbuf][3] = rdat[e0];
+
+			tbuf[nbuf][4] = rlon[e1];
+			tbuf[nbuf][5] = rlat[e1];
+			tbuf[nbuf][6] = 0.0;
+			tbuf[nbuf][7] = rdat[e1];
+
+			tbuf[nbuf][8] = rlon[e2];
+			tbuf[nbuf][9] = rlat[e2];
+			tbuf[nbuf][10] = 0.0;
+			tbuf[nbuf][11] = rdat[e2];
+		}			
+		nbuf++;
+	}
+	if (nbuf > 0) {
+		_NHLCALLF(cttmtl,CTTMTL)
+			(&nbuf,tbuf,&mbuf,&nbuf,
+			 ippp,&mnop,&nppp,
+			 ippe,&mnoe,&nppe,
+			 rpnt,&mpnt,&npnt,&Lopn,
+			 iedg,&medg,&nedg,&Loen,
+			 itri,&mtri,&ntri,&Lotn);
+
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+	}
+	tmp->npnt = npnt;
+	tmp->nedg = nedg;
+	tmp->ntri = ntri;
+	tmp->rpnt = rpnt;
+	tmp->iedg = iedg;
+	tmp->itri = itri;
+	tmp->update_mode = TRIMESH_NOUPDATE;
+	NhlFree(ippp);
+	NhlFree(ippe);
+
+	return NhlNOERROR;
+
+}
+
+typedef struct _vertex {
+	float x;
+	float y;
+	int node;
+	int vert;
+} Vertex;
+
+static int vcomp(const void *vv1, const void *vv2)
+{
+	Vertex *v1 = (Vertex *) vv1;
+	Vertex *v2 = (Vertex *) vv2;
+
+	if (v1->x < v2->x)
+		return -1;
+	if (v1->x > v2->x)
+		return 1;
+	if (v1->y < v2->y)
+		return -1;
+	if (v1->y > v2->y)
+		return 1;
+	if (v1->node < v2->node)
+		return -1;
+	if (v1->node > v2->node)
+		return 1;
+	return 0;
+}
+
+static void AddElement
+#if	NhlNeedProto
+(
+	int *el,
+	Vertex *v,
+	int vcount,
+	NhlBoolean ezmap,
+	float *x,
+	float *y
+	)
+#else 
+(el,v,vcount,ezmap,x,y)
+	int *el;
+	Vertex *v;
+	int vcount;
+	NhlBoolean ezmap;
+	float *x;
+	float *y;
+#endif       
+{
+	int n0,n1,n2,n3;
+	float detleft, detright,det;
+	float xt[3],yt[3];
+	int i;
+
+	n0 = v->node;
+	n1 = (v+1)->node;
+	n2 = (v+2)->node;
+	if (vcount > 3) { /* extra node */
+		if (n1 == n0) {
+			n1 = (v+3)->node;
+		}
+		else if (n2 == n1 || n2 == n0) {
+			n2 = (v+3)->node;
+		}
+	}
+	xt[0] = x[n0];
+	xt[1] = x[n1];
+	xt[2] = x[n2];
+	yt[0] = y[n0];
+	yt[1] = y[n1];
+	yt[2] = y[n2];
+
+	if (ezmap) {
+		float min, max;
+		min = max = xt[0];
+		for (i = 1; i < 3; i++) {
+			if (xt[i] < min)
+				min = xt[i];
+			if (xt[i] > max) 
+				max = xt[i];
+		}
+		if (max - min > 180) {
+			for (i = 0; i < 3; i++) {
+				if (xt[i] - min > 180) {
+					xt[i] -= 360;
+				}
+			}
+		}
+	}
+			
+	detleft = (xt[0] - xt[2]) * (yt[1] - yt[2]);
+       	detright = (yt[0] - yt[2]) * (xt[1] - xt[2]);
+	det = detleft - detright;
+	if (det > 0) {
+	    el[0] = n0;
+	    el[1] = n1;
+	    el[2] = n2;
+	}
+	else {
+		el[0] = n0;
+		el[1] = n2;
+		el[2] = n1;
+	}
+	return;
+}
+
+
+static int *GetTriangleNodes
+#if	NhlNeedProto
+(
+	NhlGenArray xnodes,
+	NhlGenArray ynodes,
+	NhlGenArray xbounds,
+	NhlGenArray ybounds,
+	NhlBoolean ezmap,
+	int *ntri
+)
+#else
+(xnodes,ynodes,xbounds,ybounds,ezmap,ntri)
+	NhlGenArray xnodes;
+	NhlGenArray ynodes;
+	NhlGenArray xbounds;
+	NhlGenArray ybounds;
+	NhlBoolean ezmap;
+	int *ntri;
+#endif
+{
+	int ncount = xnodes->len_dimensions[0];
+	int nvert = xbounds->len_dimensions[1];
+	int tcount = xbounds->len_dimensions[0] * xbounds->len_dimensions[1];
+	Vertex *verts;
+	float *x = (float *) xnodes->data;
+	float *y = (float *) ynodes->data;
+	float *xb = (float *) xbounds->data;
+	float *yb = (float *) ybounds->data;
+	int i,j;
+	int *el;
+	int nmatched;
+	int tfound;
+
+	verts = NhlMalloc(tcount * sizeof(Vertex));
+
+	for (i = 0; i < ncount; i++) {
+		for (j = 0; j < nvert; j++) {
+			int ix = i * nvert +j;
+			Vertex *v = verts + ix;
+			v->node = i;
+			v->vert = j;
+			v->x = *(xb + ix);
+			v->y = *(yb + ix);
+		}
+	}
+	qsort(verts,ncount * nvert,sizeof(Vertex),vcomp);
+	
+	/*
+	 * There should now be sets of three vertices in a row that 
+	 * are co-located. However, because of possible boundaries there 
+	 * may be singles or doubles interspersed. Each set of three
+	 * represents a triangle in the mesh, with the vertex as its 
+	 * center. Put the nodes into the triangle element list. 
+	 * There should be at most ncount * nvert / 3 triangles with
+	 * three elements each.
+	 */
+	
+	el = (int *) NhlMalloc(sizeof(int) * ncount * nvert);
+
+	tfound = 0;
+	for (i = 0; i < ncount * nvert; ) {
+		nmatched = 0;
+		for (j = i + 1;;j++) {
+			if (j == ncount * nvert)
+				break;
+			if (! (verts[j].x == verts[i].x &&
+			       verts[j].y == verts[i].y))
+				break;
+			nmatched++;
+		}
+		if (nmatched > 1) {
+			AddElement(el + 3 * tfound,
+				   &verts[i],nmatched+1,ezmap,x,y);
+			tfound++;
+		}
+		else {
+			printf("unmatched node %d %d %f %f\n",verts[i].node,
+			       verts[i].vert, verts[i].x, verts[i].y);
+			if (nmatched == 1) {
+				printf("unmatched node %d %d %f %f\n",
+				       verts[i+1].node,verts[i+1].vert,
+				       verts[i+1].x, verts[i+1].y);
+			}
+		}
+		i = j;
+	}
+	NhlFree(verts);
+
+	*ntri = tfound;
+	return el;
+}
+static NhlErrorTypes BuildNativeMeshFromBounds 
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	float missing_val;
+	int coords_alloced = 0;
+	int mnot;
+	int mtri;
+	int mnop = cnp->sfp->fast_len;
+	int mnoe;
+	int mpnt = mnop * Lopn;
+	int medg;
+	float *rpnt;
+	int *el;
+	int *iedg, *itri;
+	int *ippp,*ippe;
+	int npnt,nedg;
+	float *rlat,*rlon,*rdat;
+	float tbuf[5021][12];
+	int kbuf = 173;
+	int mbuf = 5021;
+	int nppp = 0;
+	int nppe = 0;
+	int nbuf = 0;
+	int ntri = 0;
+	int i,j;
+	int ix_offset = 0;
+	int err_num;
+	char *e_msg;
+	char *e_text;
+	
+	if (tmp->npnt > 0)
+		NhlFree(tmp->rpnt);
+	if (tmp->nedg > 0)
+		NhlFree(tmp->iedg);
+	if (tmp->ntri > 0)
+		NhlFree(tmp->itri);
+
+	el = GetTriangleNodes(cnp->sfp->x_arr,cnp->sfp->y_arr,
+			      cnp->sfp->x_bounds,cnp->sfp->y_bounds,
+			      tmp->ezmap,&mnot);
+	mtri = mnot * Lotn;
+	mnoe = 3 * mnot;
+	medg = mnoe * Loen;
+
+	rpnt = NhlMalloc(mpnt * sizeof(float));
+	iedg = NhlMalloc(medg * sizeof(int));
+	itri = NhlMalloc(mtri * sizeof(int));
+	ippp = NhlMalloc(2 * mnop * sizeof(int));
+	ippe = NhlMalloc(2 * mnoe * sizeof(int));
+	
+	if (! (rpnt && iedg && itri && ippp && ippe )) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	    
+	missing_val = cnp->sfp->missing_value_set ?
+		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
+	    
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+
+
+	for (i = 0; i < mnot; i++) {
+		int *ep;
+		int e0,e1,e2;
+		if (nbuf >= mbuf) 
+			_NHLCALLF(cttmtl,CTTMTL)
+				(&kbuf,tbuf,&mbuf,&nbuf,
+				 ippp,&mnop,&nppp,
+				 ippe,&mnoe,&nppe,
+				 rpnt,&mpnt,&npnt,&Lopn,
+				 iedg,&medg,&nedg,&Loen,
+				 itri,&mtri,&ntri,&Lotn);
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+
+		ep = el + i * 3;
+		e0 = *ep - ix_offset;
+		e1 = *(ep+1) - ix_offset;
+		e2 = *(ep+2) - ix_offset;
+		if (tmp->ezmap) {
+			tbuf[nbuf][0] = cos(DEGTORAD * rlat[e0]) *
+				cos(DEGTORAD * rlon[e0]);
+			tbuf[nbuf][1] = cos(DEGTORAD * rlat[e0]) *
+				sin(DEGTORAD * rlon[e0]);
+			tbuf[nbuf][2] = sin(DEGTORAD * rlat[e0]);
+			tbuf[nbuf][3] = rdat[e0];
+			tbuf[nbuf][4] = cos(DEGTORAD * rlat[e1]) *
+				cos(DEGTORAD * rlon[e1]);
+			tbuf[nbuf][5] = cos(DEGTORAD * rlat[e1]) *
+				sin(DEGTORAD * rlon[e1]);
+			tbuf[nbuf][6] = sin(DEGTORAD * rlat[e1]);
+			tbuf[nbuf][7] = rdat[e1];
+			tbuf[nbuf][8] = cos(DEGTORAD * rlat[e2]) *
+				cos(DEGTORAD * rlon[e2]);
+			tbuf[nbuf][9] = cos(DEGTORAD * rlat[e2]) *
+				sin(DEGTORAD * rlon[e2]);
+			tbuf[nbuf][10] = sin(DEGTORAD * rlat[e2]);
+			tbuf[nbuf][11] = rdat[e2];
+		}
+		else {
+			tbuf[nbuf][0] = rlon[e0];
+			tbuf[nbuf][1] = rlat[e0];
+			tbuf[nbuf][2] = 0.0;
+			tbuf[nbuf][3] = rdat[e0];
+
+			tbuf[nbuf][4] = rlon[e1];
+			tbuf[nbuf][5] = rlat[e1];
+			tbuf[nbuf][6] = 0.0;
+			tbuf[nbuf][7] = rdat[e1];
+
+			tbuf[nbuf][8] = rlon[e2];
+			tbuf[nbuf][9] = rlat[e2];
+			tbuf[nbuf][10] = 0.0;
+			tbuf[nbuf][11] = rdat[e2];
+		}			
+		nbuf++;
+	}
+	if (nbuf > 0) {
+		_NHLCALLF(cttmtl,CTTMTL)
+			(&nbuf,tbuf,&mbuf,&nbuf,
+			 ippp,&mnop,&nppp,
+			 ippe,&mnoe,&nppe,
+			 rpnt,&mpnt,&npnt,&Lopn,
+			 iedg,&medg,&nedg,&Loen,
+			 itri,&mtri,&ntri,&Lotn);
+
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+	}
+	tmp->npnt = npnt;
+	tmp->nedg = nedg;
+	tmp->ntri = ntri;
+	tmp->rpnt = rpnt;
+	tmp->iedg = iedg;
+	tmp->itri = itri;
+	tmp->update_mode = TRIMESH_NOUPDATE;
+	NhlFree(ippp);
+	NhlFree(ippe);
+	NhlFree(el);
+
+	return NhlNOERROR;
+
+}
 		 
+static NhlErrorTypes BuildDelaunayMesh 
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *dyp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(dyp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *dyp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	float missing_val;
+	int coords_alloced = 0;
+	int mnop = cnp->sfp->fast_len;
+	int mpnt = mnop * Lopn;
+	int mnot;
+	int mnoe;
+	int medg;
+	int mtri;
+	float *rpnt;
+	int *el;
+	int *iedg, *itri;
+	int *ippp,*ippe;
+	int npnt,nedg;
+	float *rlat,*rlon,*rdat;
+	double *points;
+	double *ddat;
+	int pcount;
+	float tbuf[5021][12];
+	int kbuf = 173;
+	int mbuf = 5021;
+	int nppp = 0;
+	int nppe = 0;
+	int nbuf = 0;
+	int ntri = 0;
+	int i,j;
+	int ix_offset = 0;
+	int err_num;
+	char *e_msg;
+	char *e_text;
+	struct triangulateio in,out;
+	char *flags;
+	
+	if (dyp->npnt > 0)
+		NhlFree(dyp->rpnt);
+	if (dyp->nedg > 0)
+		NhlFree(dyp->iedg);
+	if (dyp->ntri > 0)
+		NhlFree(dyp->itri);
+
+	    
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+	points = (double *)NhlMalloc(2 * mnop * sizeof(double));
+	ddat = (double *) NhlMalloc(mnop * sizeof(double));
+	pcount = 0;
+	if (dyp->ezmap) { /* transform points into projection space
+			   throwing away points outside the map limits */ 
+		for (i = 0; i < mnop; i++) {
+			float xt,yt;
+			j = pcount * 2;
+			c_maptrn(rlat[i],rlon[i],&xt,&yt);
+			if (xt > 1e10 || yt > 1e10)
+				continue;
+			points[j] = (double)xt;
+			points[j+1] = (double)yt;
+			ddat[pcount] = (double)rdat[i];
+			pcount++;
+		}
+	}
+	else {
+		for (i = 0; i < mnop; i++) {
+			j = pcount * 2;
+			points[j] = (double)rlon[i];
+			points[j+1] = (double)rlat[i];
+			ddat[pcount] = (double)rdat[i];
+			pcount++;
+		}
+	}
+	memset(&in,0,sizeof(struct triangulateio));
+	memset(&out,0,sizeof(struct triangulateio));
+	in.pointlist = points;
+	in.pointattributelist = ddat;
+	in.trianglelist = NULL;
+	in.numberofpoints = pcount;
+	in.numberofpointattributes = 1;
+	in.numberoftriangles = 0;
+
+	out.pointlist = NULL;
+	out.pointattributelist = NULL;
+	out.trianglelist = NULL;
+
+	if (cnp->verbose_triangle_info) {
+		flags = "IBzV";
+	}
+	else {
+		flags = "IBzQ";
+	}
+	triangulate(flags,&in,&out,NULL);
+
+	points = out.pointlist;
+	ddat = out.pointattributelist;
+	el = out.trianglelist;
+	mnop = out.numberofpoints;
+	mnot = out.numberoftriangles;
+	mnoe = 3 * mnot;
+	mpnt = mnop * Lopn;
+	medg = mnoe * Loen;
+	mtri = mnot * Lotn;
+	rpnt = NhlMalloc(mpnt * sizeof(float));
+	iedg = NhlMalloc(medg * sizeof(int));
+	itri = NhlMalloc(mtri * sizeof(int));
+	ippp = NhlMalloc(2 * mnop * sizeof(int));
+	ippe = NhlMalloc(2 * mnoe * sizeof(int));
+	
+	if (! (rpnt && iedg && itri && ippp && ippe )) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	    
+	missing_val = cnp->sfp->missing_value_set ?
+		cnp->sfp->missing_value : cnp->min_level_val / 2.0;
+	for (i = 0; i < mnot; i++) {
+		int *ep;
+		int e0,e1,e2;
+		if (nbuf >= mbuf) 
+			_NHLCALLF(cttmtl,CTTMTL)
+				(&kbuf,tbuf,&mbuf,&nbuf,
+				 ippp,&mnop,&nppp,
+				 ippe,&mnoe,&nppe,
+				 rpnt,&mpnt,&npnt,&Lopn,
+				 iedg,&medg,&nedg,&Loen,
+				 itri,&mtri,&ntri,&Lotn);
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+
+		ep = el + i * 3;
+		e0 = *ep - ix_offset;
+		e1 = *(ep+1) - ix_offset;
+		e2 = *(ep+2) - ix_offset;
+		tbuf[nbuf][0] = (float)points[2*e0];
+		tbuf[nbuf][1] = (float)points[2*e0+1];
+		tbuf[nbuf][2] = 0.0;
+		tbuf[nbuf][3] = (float)ddat[e0];
+
+		tbuf[nbuf][4] = points[2*e1];
+		tbuf[nbuf][5] = points[2*e1+1];
+		tbuf[nbuf][6] = 0.0;
+		tbuf[nbuf][7] = ddat[e1];
+
+		tbuf[nbuf][8] = points[2*e2];
+		tbuf[nbuf][9] = points[2*e2+1];
+		tbuf[nbuf][10] = 0.0;
+		tbuf[nbuf][11] = ddat[e2];
+		nbuf++;
+	}
+	if (nbuf > 0) {
+		_NHLCALLF(cttmtl,CTTMTL)
+			(&nbuf,tbuf,&mbuf,&nbuf,
+			 ippp,&mnop,&nppp,
+			 ippe,&mnoe,&nppe,
+			 rpnt,&mpnt,&npnt,&Lopn,
+			 iedg,&medg,&nedg,&Loen,
+			 itri,&mtri,&ntri,&Lotn);
+
+		if (c_nerro(&err_num) != 0) {
+			e_msg = c_semess(0);
+			e_text = "%s: %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
+			return NhlFATAL;
+		}
+	}
+	dyp->npnt = npnt;
+	dyp->nedg = nedg;
+	dyp->ntri = ntri;
+	dyp->rpnt = rpnt;
+	dyp->iedg = iedg;
+	dyp->itri = itri;
+	dyp->update_mode = TRIMESH_NOUPDATE;
+	NhlFree(ippp);
+	NhlFree(ippe);
+	NhlFree(points);
+	NhlFree(ddat);
+
+	return NhlNOERROR;
+
+}
+
 
 /*
  * Function:	CnTriMeshRendererInitialize
@@ -1709,8 +2435,13 @@ static NhlErrorTypes GetDataBound
         
 	*xlinear = True;
         *ylinear = True;
-	*mcount = cnp->sfp->fast_len;
-	*ncount = cnp->sfp->slow_len;
+	if (cnp->sfp->d_arr->num_dimensions == 1) {
+		/* x and y cells are meaningless, but we need something */
+		*mcount = *ncount = sqrt(cnp->sfp->fast_len);
+	} else {
+		*mcount = cnp->sfp->fast_len;
+		*ncount = cnp->sfp->slow_len;
+	}
 
 
 	cxd[0] = cnp->xlb;
@@ -2238,7 +2969,21 @@ static NhlErrorTypes InitMesh
         NhlErrorTypes ret = NhlNOERROR;
 
 	if (tmp->update_mode > TRIMESH_NOUPDATE || ! tmp->npnt) {
-		ret = BuildTriangularMesh(tmp,cnl);
+		if (cnp->sfp->grid_type == NhlMESHGRID) {
+			if (cnp->sfp->element_nodes) {
+				ret = BuildNativeMesh(tmp,cnl,entry_name);
+			}
+			else if (cnp->sfp->x_bounds && cnp->sfp->y_bounds) {
+				ret = BuildNativeMeshFromBounds
+					(tmp,cnl,entry_name);
+			}				
+			else {
+				ret = BuildDelaunayMesh(tmp,cnl,entry_name);
+			}
+		}
+		else {
+			ret = BuildTriangularMesh(tmp,cnl,entry_name);
+		}
 	}
 
 	_NhlCtmesh(tmp->rpnt,tmp->npnt,Lopn,
@@ -2299,9 +3044,17 @@ static NhlErrorTypes CnTriMeshRender
 		NhlVAGetValues(cnp->trans_obj->base.id, 
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
-		c_ctsetr("ORV",cnp->out_of_range_val);
 		tmp->ezmap = 1;
-		c_ctseti("MAP",NhlcnMAPVAL);
+		if (cnp->sfp->d_arr->num_dimensions == 1 &&
+		    ! (cnp->sfp->element_nodes ||
+		       (cnp->sfp->x_bounds && cnp->sfp->y_bounds))) {
+			c_ctseti("MAP",0);
+			tmp->update_mode = TRIMESH_NEWMESH;
+		}
+		else {
+			c_ctsetr("ORV",cnp->out_of_range_val);
+			c_ctseti("MAP",NhlcnMAPVAL);
+		}
 	}
 	else {
 		tmp->ezmap = 0;
@@ -2633,6 +3386,691 @@ static NhlErrorTypes CnTriMeshRender
 	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	return MIN(subret,ret);
+}
+
+
+
+#define HERO(A,B,C) \
+	sqrt(MAX(0.,((A)+(B)+(C))*((B)+(C)-(A))*((A)+(C)-(B))*((A)+(B)-(C))))
+/*
+ * Function:  _NhlTriMeshRasterFill
+ *
+ * Description: performs a discrete raster fill - 
+ * replaces Conpack routine CPCICA - Conpack must be initialized, etc.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes _NhlTriMeshRasterFill
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	int		*cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,cell,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,entry_name)
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	int		*cell;
+	int		ica1;
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+
+	float		xmn,xmx,ymn,ymx;
+	int		i,j,k,n,indx,indy,icaf,map,iaid;
+	float		xccf,xccd,xcci,yccf,yccd,ycci;
+	float		zval,orv,spv;
+        float		*levels;
+	float		cxstep,cystep,dxstep,dystep;
+	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	NhlBoolean      x_isbound,y_isbound;
+
+	float           tol1,tol2;
+	int             ipp1,ipp2,ipp3;
+	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
+	float           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
+	float           xd12,xd23,xd31,yd12,yd23,yd31;
+	float           fva1,fva2,fva3;
+	float           dn12,dn23,dn31;
+	float           area;
+	int             bound1,bound2;
+	int             ibeg,iend,jbeg,jend;
+
+	
+        if (Cnp == NULL) {
+		e_text = "%s: invalid call to _NhlRasterFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+        levels = (float*) Cnp->levels->data;
+        
+/* 
+ * replacement for CPCICA
+ */
+	c_ctgetr("ORV",&orv);
+	c_ctgeti("CAF",&icaf);
+	c_ctgeti("MAP",&map);
+
+
+	cxstep = (xcqf-xcpf)/(float)icam;
+	cystep = (ycqf-ycpf)/(float)ican;
+	xoff = .5;
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	yoff = .5;
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
+ 	x_isbound = Cnp->sfp->xc_is_bounds;
+ 	y_isbound = Cnp->sfp->yc_is_bounds;
+
+	tol1 = 0.0001 * MIN(Cnl->view.width,Cnl->view.height);
+	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
+	
+/*
+ *      initialize cell array.
+ */      
+	for (j = 0; j < ican; j++) {
+		for (i = 0; i < icam; i++) {
+			*(cell + j * ica1 + i) = NhlBACKGROUND;
+		}
+	}
+/*
+ * examine each triangle in turn
+ */
+
+	for (n = 0; n <= Tmp->ntri - Lotn; n += Lotn) {
+	     if (itri[n+3] != 0)
+		     continue;
+
+/*
+ * project point 1; if invisible skip it.
+ */
+	     if (iedg[itri[n]] == iedg[itri[n+1]] ||
+		 iedg[itri[n]] == iedg[itri[n+1]+1]) {
+		     ipp1 = iedg[itri[n]];
+	     }
+	     else {
+		     ipp1 = iedg[itri[n]+1];
+	     }
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp1],&rpnt[ipp1+1],&rpnt[ipp1+2],
+		      &xcu1,&ycu1);
+	     if (orv != 0.0 && (xcu1 == orv || ycu1 == orv))
+		     continue;
+
+/*
+ * project point 2; if invisible skip the triangle
+ */
+	     
+	     if (iedg[itri[n+1]] == iedg[itri[n+2]] ||
+		 iedg[itri[n+1]] == iedg[itri[n+2]+1]) {
+		     ipp2 = iedg[itri[n+1]];
+	     }
+	     else {
+		     ipp2 = iedg[itri[n+1]+1];
+	     }
+	     
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp2],&rpnt[ipp2+1],&rpnt[ipp2+2],
+		      &xcu2,&ycu2);
+	     if (orv != 0.0  && (xcu2 == orv || ycu2 == orv))
+		     continue;	     
+
+/*
+ * project point 3; if invisible skip the triangle
+ */
+	     
+	     if (iedg[itri[n+2]] == iedg[itri[n]] ||
+		 iedg[itri[n+2]] == iedg[itri[n]+1]) {
+		     ipp3 = iedg[itri[n+2]];
+	     }
+	     else {
+		     ipp3 = iedg[itri[n+2]+1];
+	     }
+	     
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
+		      &xcu3,&ycu3);
+	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
+		     continue;	     
+
+	     xcf1 = c_cufx(xcu1);
+	     ycf1 = c_cufy(ycu1);
+	     xcf2 = c_cufx(xcu2);
+	     ycf2 = c_cufy(ycu2);
+	     xcf3 = c_cufx(xcu3);
+	     ycf3 = c_cufy(ycu3);
+
+	     
+	     xd12 = xcf2 - xcf1;
+	     yd12 = ycf2 - ycf1;
+	     xd23 = xcf3 - xcf2;
+	     yd23 = ycf3 - ycf2;
+	     xd31 = xcf1 - xcf3;
+	     yd31 = ycf1 - ycf3;
+
+/*
+ * skip triangle if too small or too large
+ */
+	     if ((fabs(xd12) < tol1 && fabs(yd12) < tol1) ||
+		 (fabs(xd23) < tol1 && fabs(yd23) < tol1) ||
+		 (fabs(xd31) < tol1 && fabs(yd31) < tol1))
+		     continue;
+
+	     if ((fabs(xd12) > tol2 || fabs(yd12) > tol2) ||
+		 (fabs(xd23) > tol2 || fabs(yd23) > tol2) ||
+		 (fabs(xd31) > tol2 || fabs(yd31) > tol2))
+		     continue;
+
+/*
+ * get the field values at the 3 points of the triangle
+ */
+	     fva1 = rpnt[ipp1+3];
+	     fva2 = rpnt[ipp2+3];
+	     fva3 = rpnt[ipp3+3];
+
+/*
+ * compute triangle lengths and the area
+ */
+	     dn12 = sqrt(xd12*xd12 + yd12 * yd12);
+	     dn23 = sqrt(xd23*xd23 + yd23 * yd23);
+	     dn31 = sqrt(xd31*xd31 + yd31 * yd31);
+
+/*
+ * Now set loop limits to examine center points of all cells that overlap
+ * the bounding box of the triangle
+ */
+	     
+	     bound1 = MAX(0,
+			  MIN(icam-1,(int)
+			      ((MIN(xcf1,MIN(xcf2,xcf3)) - xcpf) /
+			       (xcqf-xcpf) * (float) icam)));
+	     bound2 = MAX(0,
+			  MIN(icam-1,(int)
+			      ((MAX(xcf1,MAX(xcf2,xcf3)) - xcpf) /
+			       (xcqf-xcpf) * (float) icam)));
+
+	     ibeg = MIN(bound1,bound2);
+	     iend = MAX(bound1,bound2);
+
+	     bound1 = MAX(0,
+			  MIN(ican-1,(int)
+			      ((MIN(ycf1,MIN(ycf2,ycf3)) - ycpf) /
+			       (ycqf-ycpf) * (float) ican)));
+	     bound2 = MAX(0,
+			  MIN(ican-1,(int)
+			      ((MAX(ycf1,MAX(ycf2,ycf3)) - ycpf) /
+			       (ycqf-ycpf) * (float) ican)));
+
+	     jbeg = MIN(bound1,bound2);
+	     jend = MAX(bound1,bound2);
+
+/*
+ * find each cell whose center point lies within the triangle and
+ * set its color index appropriately
+ */
+	     for (j = jbeg; j <= jend; j++) {
+		     float ts12,ts23,ts31;
+		     float dnc1,dnc2,dnc3;
+		     float yfp,xfp;
+		     int jplus = j+1;
+		     float a1,a2,a3;
+
+		     yfp = ycpf + ((float)j+.5)/ican * (ycqf - ycpf);
+
+		     for (i = ibeg; i <= iend; i++) {
+			     float atot;
+			     int iplus = i+1;
+			     xfp = xcpf + ((float)i+.5)/icam * (xcqf - xcpf);
+			     ts12 = (yd12*xfp-xd12*yfp-yd12*xcf1+xd12*ycf1)/
+				     dn12;
+			     ts23 = (yd23*xfp-xd23*yfp-yd23*xcf2+xd23*ycf2)/
+				     dn23;
+			     ts31 = (yd31*xfp-xd31*yfp-yd31*xcf3+xd31*ycf3)/
+				     dn31;
+			     if ((ts12 < 0.00001 && ts23 < 0.00001 &&
+				  ts31 < 0.00001) ||
+				 (ts12 > -0.00001 && ts23 > -0.00001 &&
+				  ts31 > -0.00001)) {
+				     float xd1,xd2,xd3,yd1,yd2,yd3;
+				     float fvali;
+				     xd1 = xfp - xcf1;
+				     xd2 = xfp - xcf2;
+				     xd3 = xfp - xcf3;
+				     yd1 = yfp - ycf1;
+				     yd2 = yfp - ycf2;
+				     yd3 = yfp - ycf3;
+				     dnc1 = sqrt(xd1*xd1 + yd1*yd1);
+				     dnc2 = sqrt(xd2*xd2 + yd2*yd2);
+				     dnc3 = sqrt(xd3*xd3 + yd3*yd3);
+				     a1 = HERO(dn23,dnc2,dnc3);
+				     a2 = HERO(dn31,dnc3,dnc1);
+				     a3 = HERO(dn12,dnc1,dnc2);
+				     atot = a1 + a2 + a3;
+				     if (atot == 0.0) 
+					     continue;
+
+				     if (a1 > a2 && a1 > a3)
+					     fvali = fva1;
+				     else if (a2 > a1 && a2 > a3)
+					     fvali = fva2;
+				     else
+					     fvali = fva3;
+#if 0				     
+						     
+				     fvali = (fva1 * a1 + 
+					      fva2 * a2 + fva3 * a3) / atot;
+#endif
+				     iaid = -1;
+				     for (k=0; k < Cnp->level_count; k++) {
+					     if (fvali <= levels[k]) {
+						  iaid = NhlcnAREAID_OFFSET+k;
+						  break;
+					     }
+				     }
+				     if (iaid == -1)
+					     iaid = NhlcnAREAID_OFFSET +
+						     Cnp->level_count;     
+				     (_NHLCALLF(hluctscae,HLUCTSCAE))
+					     (cell,&ica1,&icam,&ican,
+					      &xcpf,&ycpf,&xcqf,&ycqf,
+					      &iplus,&jplus,&icaf,&iaid);
+			     }
+		     }
+	     }
+	}
+
+	return ret;
+}
+
+/*
+ * Function:  CnTriMeshWriteCellData
+ *
+ * Description: Writes out the interpolated data associated with each
+ * cell. This is a way of interpolating from one grid to another.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes CnTriMeshWriteCellData
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,entry_name)
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+
+	double		xmn,xmx,ymn,ymx;
+	int		i,j,k,n,indx,indy,icaf,map,iaid;
+	double		xccf,xccd,xcci,yccf,yccd,ycci;
+	float		zval,orv,spv;
+        float		*levels;
+	double		cxstep,cystep,dxstep,dystep;
+	double           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	NhlBoolean      x_isbound,y_isbound;
+
+	double           tol1,tol2;
+	int             ipp1,ipp2,ipp3;
+	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
+	double           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
+	double           xd12,xd23,xd31,yd12,yd23,yd31;
+	double           fva1,fva2,fva3;
+	double           dn12,dn23,dn31;
+	double           area;
+	int             bound1,bound2;
+	int             ibeg,iend,jbeg,jend;
+	float           *data;
+	float           *xarray;
+	float           *yarray;
+	float           init_val;
+	FILE 		*fp;
+	float           out_of_range;
+	int             count;
+	float wlx,wrx,wby,wuy,wxstep,wystep;
+	int licam,lican;
+
+	printf("in CnWriteCellData\n");
+        if (Cnp == NULL) {
+		e_text = "%s: invalid call to _NhlRasterFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+	NhlVAGetValues(Cnp->trans_obj->base.id,
+		       NhlNtrOutOfRangeF,&out_of_range,NULL);
+
+	if (Cnp->sfp->missing_value_set) {
+		init_val = Cnp->sfp->missing_value;
+	}
+	else {
+		init_val = 1E32;
+	}
+
+        levels = (float*) Cnp->levels->data;
+	wlx = c_cfux(xcpf);
+	wrx = c_cfux(xcqf);
+	wby = c_cfuy(ycpf);
+	wuy = c_cfuy(ycqf);
+	wxstep = (wrx - wlx) / (icam); 
+	wystep = (wuy - wby) / (ican); 
+
+        
+/* 
+ * replacement for CTCICA
+ */
+	c_ctgetr("ORV",&orv);
+	c_ctgeti("CAF",&icaf);
+	c_ctgeti("MAP",&map);
+
+
+	cxstep = (xcqf-xcpf)/(double)icam;
+	cystep = (ycqf-ycpf)/(double)ican;
+	xoff = .5;
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	yoff = .5;
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
+ 	x_isbound = Cnp->sfp->xc_is_bounds;
+ 	y_isbound = Cnp->sfp->yc_is_bounds;
+
+	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
+	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
+	
+/*
+ *      initialize data array.
+ *      make the data array larger by 2 because the outer edges
+ *      never get written using this algorithm.
+ */      
+	
+	licam = icam + 2;
+	lican = ican + 2;
+	data = NhlMalloc(licam * lican * sizeof(float));
+	if (!data) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	for (j = 0; j < lican; j++) {
+		for (i = 0; i < licam; i++) {
+			*(data + j * licam + i) = init_val;
+		}
+	}
+/*
+ * examine each triangle in turn
+ */
+
+	for (n = 0; n < Tmp->ntri - Lotn; n += Lotn) {
+	     if (itri[n+3] != 0)
+		     continue;
+
+/*
+ * project point 1; if invisible skip it.
+ */
+	     if (iedg[itri[n]] == iedg[itri[n+1]] ||
+		 iedg[itri[n]] == iedg[itri[n+1]+1]) {
+		     ipp1 = iedg[itri[n]];
+	     }
+	     else {
+		     ipp1 = iedg[itri[n]+1];
+	     }
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp1],&rpnt[ipp1+1],&rpnt[ipp1+2],
+		      &xcu1,&ycu1);
+	     if (orv != 0.0 && (xcu1 == orv || ycu1 == orv))
+		     continue;
+
+/*
+ * project point 2; if invisible skip the triangle
+ */
+	     
+	     if (iedg[itri[n+1]] == iedg[itri[n+2]] ||
+		 iedg[itri[n+1]] == iedg[itri[n+2]+1]) {
+		     ipp2 = iedg[itri[n+1]];
+	     }
+	     else {
+		     ipp2 = iedg[itri[n+1]+1];
+	     }
+	     
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp2],&rpnt[ipp2+1],&rpnt[ipp2+2],
+		      &xcu2,&ycu2);
+	     if (orv != 0.0  && (xcu2 == orv || ycu2 == orv))
+		     continue;	     
+
+/*
+ * project point 3; if invisible skip the triangle
+ */
+	     
+	     if (iedg[itri[n+2]] == iedg[itri[n]] ||
+		 iedg[itri[n+2]] == iedg[itri[n]+1]) {
+		     ipp3 = iedg[itri[n+2]];
+	     }
+	     else {
+		     ipp3 = iedg[itri[n+2]+1];
+	     }
+	     
+	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
+		      &xcu3,&ycu3);
+	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
+		     continue;	     
+
+	     xcf1 = (double)c_cufx(xcu1);
+	     ycf1 = (double)c_cufy(ycu1);
+	     xcf2 = (double)c_cufx(xcu2);
+	     ycf2 = (double)c_cufy(ycu2);
+	     xcf3 = (double)c_cufx(xcu3);
+	     ycf3 = (double)c_cufy(ycu3);
+
+	     
+	     xd12 = xcf2 - xcf1;
+	     yd12 = ycf2 - ycf1;
+	     xd23 = xcf3 - xcf2;
+	     yd23 = ycf3 - ycf2;
+	     xd31 = xcf1 - xcf3;
+	     yd31 = ycf1 - ycf3;
+
+/*
+ * skip triangle if too small or too large
+ */
+	     if ((fabs(xd12) < tol1 && fabs(yd12) < tol1) ||
+		 (fabs(xd23) < tol1 && fabs(yd23) < tol1) ||
+		 (fabs(xd31) < tol1 && fabs(yd31) < tol1))
+		     continue;
+
+	     if ((fabs(xd12) > tol2 || fabs(yd12) > tol2) ||
+		 (fabs(xd23) > tol2 || fabs(yd23) > tol2) ||
+		 (fabs(xd31) > tol2 || fabs(yd31) > tol2))
+		     continue;
+
+/*
+ * get the field values at the 3 points of the triangle
+ */
+	     fva1 = rpnt[ipp1+3];
+	     fva2 = rpnt[ipp2+3];
+	     fva3 = rpnt[ipp3+3];
+
+/*
+ * compute triangle lengths and the area
+ */
+	     dn12 = sqrt(xd12*xd12 + yd12 * yd12);
+	     dn23 = sqrt(xd23*xd23 + yd23 * yd23);
+	     dn31 = sqrt(xd31*xd31 + yd31 * yd31);
+
+/*
+ * Now set loop limits to examine center points of all cells that overlap
+ * the bounding box of the triangle
+ */
+	     
+	     bound1 = MAX(0,
+			  MIN(licam-1,(int)
+			      ((MIN(xcf1,MIN(xcf2,xcf3)) - xcpf) /
+			       (xcqf-xcpf) * (float) licam)));
+	     bound2 = MAX(0,
+			  MIN(licam-1,(int)
+			      ((MAX(xcf1,MAX(xcf2,xcf3)) - xcpf) /
+			       (xcqf-xcpf) * (float) licam)));
+
+	     ibeg = MIN(bound1,bound2);
+	     iend = MAX(bound1,bound2);
+
+	     bound1 = MAX(0,
+			  MIN(lican-1,(int)
+			      ((MIN(ycf1,MIN(ycf2,ycf3)) - ycpf) /
+			       (ycqf-ycpf) * (float) lican)));
+	     bound2 = MAX(0,
+			  MIN(lican-1,(int)
+			      ((MAX(ycf1,MAX(ycf2,ycf3)) - ycpf) /
+			       (ycqf-ycpf) * (float) lican)));
+
+	     jbeg = MIN(bound1,bound2);
+	     jend = MAX(bound1,bound2);
+
+/*
+ * find each cell whose center point lies within the triangle and
+ * set its color index appropriately
+ */
+	     for (j = jbeg; j <= jend; j++) {
+		     double ts12,ts23,ts31;
+		     double dnc1,dnc2,dnc3;
+		     double yfp,xfp;
+		     int jplus = j+1;
+		     double a1,a2,a3;
+
+		     yfp = ycpf + ((double)j+.5)/lican * (ycqf - ycpf);
+
+		     for (i = ibeg; i <= iend; i++) {
+			     int iplus = i+1;
+			     double atot;
+			     xfp = xcpf + ((float)i+.5)/licam * (xcqf - xcpf);
+			     ts12 = (yd12*xfp-xd12*yfp-yd12*xcf1+xd12*ycf1)/
+				     dn12;
+			     ts23 = (yd23*xfp-xd23*yfp-yd23*xcf2+xd23*ycf2)/
+				     dn23;
+			     ts31 = (yd31*xfp-xd31*yfp-yd31*xcf3+xd31*ycf3)/
+				     dn31;
+			     if ((ts12 < 0.00001 && ts23 < 0.00001 &&
+				  ts31 < 0.00001) ||
+				 (ts12 > -0.00001 && ts23 > -0.00001 &&
+				  ts31 > -0.00001)) {
+				     float xd1,xd2,xd3,yd1,yd2,yd3;
+				     float fvali;
+				     xd1 = xfp - xcf1;
+				     xd2 = xfp - xcf2;
+				     xd3 = xfp - xcf3;
+				     yd1 = yfp - ycf1;
+				     yd2 = yfp - ycf2;
+				     yd3 = yfp - ycf3;
+				     dnc1 = sqrt(xd1*xd1 + yd1*yd1);
+				     dnc2 = sqrt(xd2*xd2 + yd2*yd2);
+				     dnc3 = sqrt(xd3*xd3 + yd3*yd3);
+				     a1 = HERO(dn23,dnc2,dnc3);
+				     a2 = HERO(dn31,dnc3,dnc1);
+				     a3 = HERO(dn12,dnc1,dnc2);
+				     atot = a1 + a2 + a3;
+#if 0
+				     if (a1 > a2 && a1 > a3)
+					     fvali = fva1;
+				     else if (a2 > a1 && a2 > a3)
+					     fvali = fva2;
+				     else
+					     fvali = fva3;
+#endif
+				     if (atot == 0.0)
+					     continue;
+
+				     fvali = (fva1 * a1 +
+					      fva2 * a2 + fva3 * a3) / atot;
+
+				     *(data + j * licam + i) = (float)fvali;
+			     }
+		     }
+	     }
+	}
+        fp = fopen("tmp.bin","w");
+	for (j = 1; j <= ican; j++) {
+		float           *d = data + j * licam + 1;
+		count = fwrite(d,sizeof(float),icam,fp);
+		if (count < icam) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "Error writing output file\n");
+			return NhlFATAL;
+		}
+	}
+	fclose(fp);
+
+	fp = fopen("tmp-lon.bin","w");
+	for (i = 0; i < icam; i++) {
+		float lon = wlx + i * wxstep;
+		fwrite(&lon,sizeof(float),1,fp);
+	}
+	fclose(fp);
+	fp = fopen("tmp-lat.bin","w");
+	for (j = 0; j < ican; j++) {
+		float lat = wby + j * wystep;
+		fwrite(&lat,sizeof(float),1,fp);
+	}
+	fclose(fp);
+
+	NhlFree(data);
+
+	return ret;
 }
 
 /*
@@ -3565,686 +5003,25 @@ static void   load_hluct_routines
 	return;
 }
 
-
-
-#define HERO(A,B,C) sqrt(MAX(0.,((A)+(B)+(C))*((B)+(C)-(A))*((A)+(C)-(B))*((A)+(B)-(C))))
-/*
- * Function:  _NhlTriMeshRasterFill
- *
- * Description: performs a discrete raster fill - 
- * replaces Conpack routine CPCICA - Conpack must be initialized, etc.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-NhlErrorTypes _NhlTriMeshRasterFill
+void _NhlSetCnl
 #if	NhlNeedProto
 (
-	float		*rpnt,
-	int             *iedg,
-	int             *itri,
-	int		*cell,
-	int		ica1,
-	int		icam,
-	int		ican,
-	float		xcpf,
-	float		ycpf,
-	float		xcqf,
-	float		ycqf,
-	char		*entry_name
+	NhlContourPlotLayer cnl
 )
 #else
-(rpnt,iedg,itri,cell,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,entry_name)
-	float		*rpnt,
-	int             *iedg,
-	int             *itri,
-	int		*cell;
-	int		ica1;
-	int		icam;
-	int		ican;
-	float		xcpf;
-	float		ycpf;
-	float		xcqf;
-	float		ycqf;
-	char		*entry_name;
+(cnl)
+	NhlContourPlotLayer cnl;
+
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
 
-	float		xmn,xmx,ymn,ymx;
-	int		i,j,k,n,indx,indy,icaf,map,iaid;
-	float		xccf,xccd,xcci,yccf,yccd,ycci;
-	float		zval,orv,spv;
-        float		*levels;
-	float		cxstep,cystep,dxstep,dystep;
-	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
-	NhlBoolean      x_isbound,y_isbound;
-
-	float           tol1,tol2;
-	int             ipp1,ipp2,ipp3;
-	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
-	float           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
-	float           xd12,xd23,xd31,yd12,yd23,yd31;
-	float           fva1,fva2,fva3;
-	float           dn12,dn23,dn31;
-	float           area;
-	int             bound1,bound2;
-	int             ibeg,iend,jbeg,jend;
-
-	
-        if (Cnp == NULL) {
-		e_text = "%s: invalid call to _NhlRasterFill";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-        }
-        levels = (float*) Cnp->levels->data;
-        
-/* 
- * replacement for CPCICA
- */
-	c_ctgetr("ORV",&orv);
-	c_ctgeti("CAF",&icaf);
-	c_ctgeti("MAP",&map);
-
-
-	cxstep = (xcqf-xcpf)/(float)icam;
-	cystep = (ycqf-ycpf)/(float)ican;
-	xoff = .5;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	yoff = .5;
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
- 	x_isbound = Cnp->sfp->xc_is_bounds;
- 	y_isbound = Cnp->sfp->yc_is_bounds;
-
-	tol1 = 0.0001 * MIN(Cnl->view.width,Cnl->view.height);
-	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
-	
-/*
- *      initialize cell array.
- */      
-	for (j = 0; j < ican; j++) {
-		for (i = 0; i < icam; i++) {
-			*(cell + j * ica1 + i) = NhlBACKGROUND;
-		}
-	}
-/*
- * examine each triangle in turn
- */
-
-	for (n = 0; n < Tmp->ntri - Lotn; n += Lotn) {
-	     if (itri[n+3] != 0)
-		     continue;
-
-/*
- * project point 1; if invisible skip it.
- */
-	     if (iedg[itri[n]] == iedg[itri[n+1]] ||
-		 iedg[itri[n]] == iedg[itri[n+1]+1]) {
-		     ipp1 = iedg[itri[n]];
-	     }
-	     else {
-		     ipp1 = iedg[itri[n]+1];
-	     }
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp1],&rpnt[ipp1+1],&rpnt[ipp1+2],
-		      &xcu1,&ycu1);
-	     if (orv != 0.0 && (xcu1 == orv || ycu1 == orv))
-		     continue;
-
-/*
- * project point 2; if invisible skip the triangle
- */
-	     
-	     if (iedg[itri[n+1]] == iedg[itri[n+2]] ||
-		 iedg[itri[n+1]] == iedg[itri[n+2]+1]) {
-		     ipp2 = iedg[itri[n+1]];
-	     }
-	     else {
-		     ipp2 = iedg[itri[n+1]+1];
-	     }
-	     
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp2],&rpnt[ipp2+1],&rpnt[ipp2+2],
-		      &xcu2,&ycu2);
-	     if (orv != 0.0  && (xcu2 == orv || ycu2 == orv))
-		     continue;	     
-
-/*
- * project point 3; if invisible skip the triangle
- */
-	     
-	     if (iedg[itri[n+2]] == iedg[itri[n]] ||
-		 iedg[itri[n+2]] == iedg[itri[n]+1]) {
-		     ipp3 = iedg[itri[n+2]];
-	     }
-	     else {
-		     ipp3 = iedg[itri[n+2]+1];
-	     }
-	     
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
-		      &xcu3,&ycu3);
-	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
-		     continue;	     
-
-	     xcf1 = c_cufx(xcu1);
-	     ycf1 = c_cufy(ycu1);
-	     xcf2 = c_cufx(xcu2);
-	     ycf2 = c_cufy(ycu2);
-	     xcf3 = c_cufx(xcu3);
-	     ycf3 = c_cufy(ycu3);
-
-	     
-	     xd12 = xcf2 - xcf1;
-	     yd12 = ycf2 - ycf1;
-	     xd23 = xcf3 - xcf2;
-	     yd23 = ycf3 - ycf2;
-	     xd31 = xcf1 - xcf3;
-	     yd31 = ycf1 - ycf3;
-
-/*
- * skip triangle if too small or too large
- */
-	     if ((fabs(xd12) < tol1 && fabs(yd12) < tol1) ||
-		 (fabs(xd23) < tol1 && fabs(yd23) < tol1) ||
-		 (fabs(xd31) < tol1 && fabs(yd31) < tol1))
-		     continue;
-
-	     if ((fabs(xd12) > tol2 || fabs(yd12) > tol2) ||
-		 (fabs(xd23) > tol2 || fabs(yd23) > tol2) ||
-		 (fabs(xd31) > tol2 || fabs(yd31) > tol2))
-		     continue;
-
-/*
- * get the field values at the 3 points of the triangle
- */
-	     fva1 = rpnt[ipp1+3];
-	     fva2 = rpnt[ipp2+3];
-	     fva3 = rpnt[ipp3+3];
-
-/*
- * compute triangle lengths and the area
- */
-	     dn12 = sqrt(xd12*xd12 + yd12 * yd12);
-	     dn23 = sqrt(xd23*xd23 + yd23 * yd23);
-	     dn31 = sqrt(xd31*xd31 + yd31 * yd31);
-
-/*
- * Now set loop limits to examine center points of all cells that overlap
- * the bounding box of the triangle
- */
-	     
-	     bound1 = MAX(0,
-			  MIN(icam-1,(int)
-			      ((MIN(xcf1,MIN(xcf2,xcf3)) - xcpf) /
-			       (xcqf-xcpf) * (float) icam)));
-	     bound2 = MAX(0,
-			  MIN(icam-1,(int)
-			      ((MAX(xcf1,MAX(xcf2,xcf3)) - xcpf) /
-			       (xcqf-xcpf) * (float) icam)));
-
-	     ibeg = MIN(bound1,bound2);
-	     iend = MAX(bound1,bound2);
-
-	     bound1 = MAX(0,
-			  MIN(ican-1,(int)
-			      ((MIN(ycf1,MIN(ycf2,ycf3)) - ycpf) /
-			       (ycqf-ycpf) * (float) ican)));
-	     bound2 = MAX(0,
-			  MIN(ican-1,(int)
-			      ((MAX(ycf1,MAX(ycf2,ycf3)) - ycpf) /
-			       (ycqf-ycpf) * (float) ican)));
-
-	     jbeg = MIN(bound1,bound2);
-	     jend = MAX(bound1,bound2);
-
-/*
- * find each cell whose center point lies within the triangle and
- * set its color index appropriately
- */
-	     for (j = jbeg; j <= jend; j++) {
-		     float ts12,ts23,ts31;
-		     float dnc1,dnc2,dnc3;
-		     float yfp,xfp;
-		     int jplus = j+1;
-		     float a1,a2,a3;
-
-		     yfp = ycpf + ((float)j+.5)/ican * (ycqf - ycpf);
-
-		     for (i = ibeg; i <= iend; i++) {
-			     float atot;
-			     int iplus = i+1;
-			     xfp = xcpf + ((float)i+.5)/icam * (xcqf - xcpf);
-			     ts12 = (yd12*xfp-xd12*yfp-yd12*xcf1+xd12*ycf1)/
-				     dn12;
-			     ts23 = (yd23*xfp-xd23*yfp-yd23*xcf2+xd23*ycf2)/
-				     dn23;
-			     ts31 = (yd31*xfp-xd31*yfp-yd31*xcf3+xd31*ycf3)/
-				     dn31;
-			     if ((ts12 < 0.00001 && ts23 < 0.00001 &&
-				  ts31 < 0.00001) ||
-				 (ts12 > -0.00001 && ts23 > -0.00001 &&
-				  ts31 > -0.00001)) {
-				     float xd1,xd2,xd3,yd1,yd2,yd3;
-				     float fvali;
-				     xd1 = xfp - xcf1;
-				     xd2 = xfp - xcf2;
-				     xd3 = xfp - xcf3;
-				     yd1 = yfp - ycf1;
-				     yd2 = yfp - ycf2;
-				     yd3 = yfp - ycf3;
-				     dnc1 = sqrt(xd1*xd1 + yd1*yd1);
-				     dnc2 = sqrt(xd2*xd2 + yd2*yd2);
-				     dnc3 = sqrt(xd3*xd3 + yd3*yd3);
-				     a1 = HERO(dn23,dnc2,dnc3);
-				     a2 = HERO(dn31,dnc3,dnc1);
-				     a3 = HERO(dn12,dnc1,dnc2);
-				     atot = a1 + a2 + a3;
-				     if (atot == 0.0) 
-					     continue;
-
-				     if (a1 > a2 && a1 > a3)
-					     fvali = fva1;
-				     else if (a2 > a1 && a2 > a3)
-					     fvali = fva2;
-				     else
-					     fvali = fva3;
-#if 0				     
-						     
-				     fvali = (fva1 * a1 + 
-					      fva2 * a2 + fva3 * a3) / atot;
-#endif
-				     iaid = -1;
-				     for (k=0; k < Cnp->level_count; k++) {
-					     if (fvali <= levels[k]) {
-						  iaid = NhlcnAREAID_OFFSET+k;
-						  break;
-					     }
-				     }
-				     if (iaid == -1)
-					     iaid = NhlcnAREAID_OFFSET +
-						     Cnp->level_count;     
-				     (_NHLCALLF(hluctscae,HLUCTSCAE))
-					     (cell,&ica1,&icam,&ican,
-					      &xcpf,&ycpf,&xcqf,&ycqf,
-					      &iplus,&jplus,&icaf,&iaid);
-			     }
-		     }
-	     }
-	}
-
-	return ret;
-}
-
-/*
- * Function:  CnTriMeshWriteCellData
- *
- * Description: Writes out the interpolated data associated with each
- * cell. This is a way of interpolating from one grid to another.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-NhlErrorTypes CnTriMeshWriteCellData
-#if	NhlNeedProto
-(
-	float		*rpnt,
-	int             *iedg,
-	int             *itri,
-	int		icam,
-	int		ican,
-	float		xcpf,
-	float		ycpf,
-	float		xcqf,
-	float		ycqf,
-	char		*entry_name
-)
-#else
-(rpnt,iedg,itri,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,entry_name)
-	float		*rpnt,
-	int             *iedg,
-	int             *itri,
-	int		icam;
-	int		ican;
-	float		xcpf;
-	float		ycpf;
-	float		xcqf;
-	float		ycqf;
-	char		*entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-
-	double		xmn,xmx,ymn,ymx;
-	int		i,j,k,n,indx,indy,icaf,map,iaid;
-	double		xccf,xccd,xcci,yccf,yccd,ycci;
-	float		zval,orv,spv;
-        float		*levels;
-	double		cxstep,cystep,dxstep,dystep;
-	double           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
-	NhlBoolean      x_isbound,y_isbound;
-
-	double           tol1,tol2;
-	int             ipp1,ipp2,ipp3;
-	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
-	double           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
-	double           xd12,xd23,xd31,yd12,yd23,yd31;
-	double           fva1,fva2,fva3;
-	double           dn12,dn23,dn31;
-	double           area;
-	int             bound1,bound2;
-	int             ibeg,iend,jbeg,jend;
-	float           *data;
-	float           *xarray;
-	float           *yarray;
-	float           init_val;
-	FILE 		*fp;
-	float           out_of_range;
-	int             count;
-	float wlx,wrx,wby,wuy,wxstep,wystep;
-	int licam,lican;
-
-	printf("in CnWriteCellData\n");
-        if (Cnp == NULL) {
-		e_text = "%s: invalid call to _NhlRasterFill";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-        }
-	NhlVAGetValues(Cnp->trans_obj->base.id,
-		       NhlNtrOutOfRangeF,&out_of_range,NULL);
-
-	if (Cnp->sfp->missing_value_set) {
-		init_val = Cnp->sfp->missing_value;
+	if (! cnl) {
+		Cnl = NULL;
+		Cnp = NULL;
 	}
 	else {
-		init_val = 1E32;
+		Cnl = cnl;
+		Cnp = &cnl->contourplot;
 	}
-
-        levels = (float*) Cnp->levels->data;
-	wlx = c_cfux(xcpf);
-	wrx = c_cfux(xcqf);
-	wby = c_cfuy(ycpf);
-	wuy = c_cfuy(ycqf);
-	wxstep = (wrx - wlx) / (icam); 
-	wystep = (wuy - wby) / (ican); 
-
-        
-/* 
- * replacement for CTCICA
- */
-	c_ctgetr("ORV",&orv);
-	c_ctgeti("CAF",&icaf);
-	c_ctgeti("MAP",&map);
-
-
-	cxstep = (xcqf-xcpf)/(double)icam;
-	cystep = (ycqf-ycpf)/(double)ican;
-	xoff = .5;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	yoff = .5;
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
- 	x_isbound = Cnp->sfp->xc_is_bounds;
- 	y_isbound = Cnp->sfp->yc_is_bounds;
-
-	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
-	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
-	
-/*
- *      initialize data array.
- *      make the data array larger by 2 because the outer edges
- *      never get written using this algorithm.
- */      
-	
-	licam = icam + 2;
-	lican = ican + 2;
-	data = NhlMalloc(licam * lican * sizeof(float));
-	if (!data) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return NhlFATAL;
-	}
-	for (j = 0; j < lican; j++) {
-		for (i = 0; i < licam; i++) {
-			*(data + j * licam + i) = init_val;
-		}
-	}
-/*
- * examine each triangle in turn
- */
-
-	for (n = 0; n < Tmp->ntri - Lotn; n += Lotn) {
-	     if (itri[n+3] != 0)
-		     continue;
-
-/*
- * project point 1; if invisible skip it.
- */
-	     if (iedg[itri[n]] == iedg[itri[n+1]] ||
-		 iedg[itri[n]] == iedg[itri[n+1]+1]) {
-		     ipp1 = iedg[itri[n]];
-	     }
-	     else {
-		     ipp1 = iedg[itri[n]+1];
-	     }
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp1],&rpnt[ipp1+1],&rpnt[ipp1+2],
-		      &xcu1,&ycu1);
-	     if (orv != 0.0 && (xcu1 == orv || ycu1 == orv))
-		     continue;
-
-/*
- * project point 2; if invisible skip the triangle
- */
-	     
-	     if (iedg[itri[n+1]] == iedg[itri[n+2]] ||
-		 iedg[itri[n+1]] == iedg[itri[n+2]+1]) {
-		     ipp2 = iedg[itri[n+1]];
-	     }
-	     else {
-		     ipp2 = iedg[itri[n+1]+1];
-	     }
-	     
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp2],&rpnt[ipp2+1],&rpnt[ipp2+2],
-		      &xcu2,&ycu2);
-	     if (orv != 0.0  && (xcu2 == orv || ycu2 == orv))
-		     continue;	     
-
-/*
- * project point 3; if invisible skip the triangle
- */
-	     
-	     if (iedg[itri[n+2]] == iedg[itri[n]] ||
-		 iedg[itri[n+2]] == iedg[itri[n]+1]) {
-		     ipp3 = iedg[itri[n+2]];
-	     }
-	     else {
-		     ipp3 = iedg[itri[n+2]+1];
-	     }
-	     
-	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
-		      &xcu3,&ycu3);
-	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
-		     continue;	     
-
-	     xcf1 = (double)c_cufx(xcu1);
-	     ycf1 = (double)c_cufy(ycu1);
-	     xcf2 = (double)c_cufx(xcu2);
-	     ycf2 = (double)c_cufy(ycu2);
-	     xcf3 = (double)c_cufx(xcu3);
-	     ycf3 = (double)c_cufy(ycu3);
-
-	     
-	     xd12 = xcf2 - xcf1;
-	     yd12 = ycf2 - ycf1;
-	     xd23 = xcf3 - xcf2;
-	     yd23 = ycf3 - ycf2;
-	     xd31 = xcf1 - xcf3;
-	     yd31 = ycf1 - ycf3;
-
-/*
- * skip triangle if too small or too large
- */
-	     if ((fabs(xd12) < tol1 && fabs(yd12) < tol1) ||
-		 (fabs(xd23) < tol1 && fabs(yd23) < tol1) ||
-		 (fabs(xd31) < tol1 && fabs(yd31) < tol1))
-		     continue;
-
-	     if ((fabs(xd12) > tol2 || fabs(yd12) > tol2) ||
-		 (fabs(xd23) > tol2 || fabs(yd23) > tol2) ||
-		 (fabs(xd31) > tol2 || fabs(yd31) > tol2))
-		     continue;
-
-/*
- * get the field values at the 3 points of the triangle
- */
-	     fva1 = rpnt[ipp1+3];
-	     fva2 = rpnt[ipp2+3];
-	     fva3 = rpnt[ipp3+3];
-
-/*
- * compute triangle lengths and the area
- */
-	     dn12 = sqrt(xd12*xd12 + yd12 * yd12);
-	     dn23 = sqrt(xd23*xd23 + yd23 * yd23);
-	     dn31 = sqrt(xd31*xd31 + yd31 * yd31);
-
-/*
- * Now set loop limits to examine center points of all cells that overlap
- * the bounding box of the triangle
- */
-	     
-	     bound1 = MAX(0,
-			  MIN(licam-1,(int)
-			      ((MIN(xcf1,MIN(xcf2,xcf3)) - xcpf) /
-			       (xcqf-xcpf) * (float) licam)));
-	     bound2 = MAX(0,
-			  MIN(licam-1,(int)
-			      ((MAX(xcf1,MAX(xcf2,xcf3)) - xcpf) /
-			       (xcqf-xcpf) * (float) licam)));
-
-	     ibeg = MIN(bound1,bound2);
-	     iend = MAX(bound1,bound2);
-
-	     bound1 = MAX(0,
-			  MIN(lican-1,(int)
-			      ((MIN(ycf1,MIN(ycf2,ycf3)) - ycpf) /
-			       (ycqf-ycpf) * (float) lican)));
-	     bound2 = MAX(0,
-			  MIN(lican-1,(int)
-			      ((MAX(ycf1,MAX(ycf2,ycf3)) - ycpf) /
-			       (ycqf-ycpf) * (float) lican)));
-
-	     jbeg = MIN(bound1,bound2);
-	     jend = MAX(bound1,bound2);
-
-/*
- * find each cell whose center point lies within the triangle and
- * set its color index appropriately
- */
-	     for (j = jbeg; j <= jend; j++) {
-		     double ts12,ts23,ts31;
-		     double dnc1,dnc2,dnc3;
-		     double yfp,xfp;
-		     int jplus = j+1;
-		     double a1,a2,a3;
-
-		     yfp = ycpf + ((double)j+.5)/lican * (ycqf - ycpf);
-
-		     for (i = ibeg; i <= iend; i++) {
-			     int iplus = i+1;
-			     double atot;
-			     xfp = xcpf + ((float)i+.5)/licam * (xcqf - xcpf);
-			     ts12 = (yd12*xfp-xd12*yfp-yd12*xcf1+xd12*ycf1)/
-				     dn12;
-			     ts23 = (yd23*xfp-xd23*yfp-yd23*xcf2+xd23*ycf2)/
-				     dn23;
-			     ts31 = (yd31*xfp-xd31*yfp-yd31*xcf3+xd31*ycf3)/
-				     dn31;
-			     if ((ts12 < 0.00001 && ts23 < 0.00001 &&
-				  ts31 < 0.00001) ||
-				 (ts12 > -0.00001 && ts23 > -0.00001 &&
-				  ts31 > -0.00001)) {
-				     float xd1,xd2,xd3,yd1,yd2,yd3;
-				     float fvali;
-				     xd1 = xfp - xcf1;
-				     xd2 = xfp - xcf2;
-				     xd3 = xfp - xcf3;
-				     yd1 = yfp - ycf1;
-				     yd2 = yfp - ycf2;
-				     yd3 = yfp - ycf3;
-				     dnc1 = sqrt(xd1*xd1 + yd1*yd1);
-				     dnc2 = sqrt(xd2*xd2 + yd2*yd2);
-				     dnc3 = sqrt(xd3*xd3 + yd3*yd3);
-				     a1 = HERO(dn23,dnc2,dnc3);
-				     a2 = HERO(dn31,dnc3,dnc1);
-				     a3 = HERO(dn12,dnc1,dnc2);
-				     atot = a1 + a2 + a3;
-#if 0
-				     if (a1 > a2 && a1 > a3)
-					     fvali = fva1;
-				     else if (a2 > a1 && a2 > a3)
-					     fvali = fva2;
-				     else
-					     fvali = fva3;
-#endif
-				     if (atot == 0.0)
-					     continue;
-
-				     fvali = (fva1 * a1 +
-					      fva2 * a2 + fva3 * a3) / atot;
-
-				     *(data + j * licam + i) = (float)fvali;
-			     }
-		     }
-	     }
-	}
-        fp = fopen("tmp.bin","w");
-	for (j = 1; j <= ican; j++) {
-		float           *d = data + j * licam + 1;
-		count = fwrite(d,sizeof(float),icam,fp);
-		if (count < icam) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "Error writing output file\n");
-			return NhlFATAL;
-		}
-	}
-	fclose(fp);
-
-	fp = fopen("tmp-lon.bin","w");
-	for (i = 0; i < icam; i++) {
-		float lon = wlx + i * wxstep;
-		fwrite(&lon,sizeof(float),1,fp);
-	}
-	fclose(fp);
-	fp = fopen("tmp-lat.bin","w");
-	for (j = 0; j < ican; j++) {
-		float lat = wby + j * wystep;
-		fwrite(&lat,sizeof(float),1,fp);
-	}
-	fclose(fp);
-
-	NhlFree(data);
-
-	return ret;
+	return;
 }

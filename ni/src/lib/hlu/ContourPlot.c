@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.124 2004-03-11 02:00:26 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.125 2004-07-23 21:24:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/CnStdRenderer.h>
 #include <ncarg/hlu/CnTriMeshRenderer.h>
+#include <ncarg/hlu/CnDelaunayRenderer.h>
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
@@ -764,6 +765,9 @@ static NhlResource resources[] = {
 
 /* Private resources */
 
+	{NhlNcnVerboseTriangleInfo, NhlCcnVerboseTriangleInfo,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(verbose_triangle_info),NhlTImmediate,
+		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 	{NhlNcnDumpAreaMap, NhlCcnDumpAreaMap,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(dump_area_map),NhlTImmediate,
 		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
@@ -3867,8 +3871,11 @@ static NhlErrorTypes cnDraw
 		sprintf(buffer,"%s",cnl->base.name);
 		strcat(buffer,".Renderer");
 		if (tfp->grid_type == NhltrTRIANGULARMESH) {
+			NhlClass class;
+			class = NhlcnTriMeshRendererClass;
+
 			subret = NhlALCreate(&tmp_id,buffer,
-					     NhlcnTriMeshRendererClass,
+					     class,
 					     cnl->base.id,NULL,0);
 			intwstype = NhlwsCTINT;
 			floatwstype = NhlwsCTFLOAT;
@@ -4090,7 +4097,10 @@ static NhlErrorTypes InitCoordBounds
 		/* leave the set flag as is */
 	}
 	else if (cnp->sfp->x_arr && cnp->sfp->y_arr) {
-		if (! tfp->grid_type_set) {
+		if (cnp->sfp->grid_type == NhlMESHGRID) {
+			tfp->grid_type = NhltrTRIANGULARMESH;
+		}
+		else if (! tfp->grid_type_set) {
 			tfp->grid_type = NhltrIRREGULAR;
 		}
 		else if (tfp->grid_type < NhltrTRIANGULARMESH) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.9 2003-09-10 21:29:53 dbrown Exp $
+ *      $Id: DataItem.h,v 1.10 2004-07-23 21:24:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,10 @@
 
 typedef enum _NhldiGridType {
 	NhlBASICGRID,
-	NhlSPHERICALGRID
+	NhlSPHERICALGRID,
+	NhlMESHGRID,
+	NhlCELLGRID,
+	NhlSEAMGRID
 } NhldiGridType;
 
 #define NhlTdiGridType "diGridType"
