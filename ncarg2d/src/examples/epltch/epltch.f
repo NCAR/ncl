@@ -1,5 +1,5 @@
 C
-C	$Id: epltch.f,v 1.1.1.1 1992-04-17 22:33:21 ncargd Exp $
+C $Id: epltch.f,v 1.2 1992-11-11 01:55:27 kennison Exp $
 C
       PROGRAM EXMPLS
 C
@@ -34,11 +34,25 @@ C
      +           '+(45)','-(46)','*(47)','/(50)','((51)',')(52)',
      +           '$(53)','=(54)',' (55)',',(56)','.(57)','     '/
 C
+C Define character arrays needed for example 1-10.  These are used
+C to sidestep problems on various machines with backslashes in
+C FORTRAN code.
+C
+      CHARACTER*1  SPCH(32)
+      CHARACTER*32 SOSC
+C
 C Define a flag which says, if 0, that the first eight plots are to
 C occupy eight separate frames and, if 1, that those plots are to be
 C compressed onto two frames.
 C
       DATA ICMP / 1 /
+C
+C Define the special characters needed in example 1-10.
+C
+      DATA SPCH / '!', '"', '#', '$', '%', '&', '''','(', ')', '*',
+     +            '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
+     +            '?', '@', '[', '\\',']', '^', '_', '`', '{', '|',
+     +            '}', '~'                                        /
 C
 C ---------------------------------------------------------------------
 C
@@ -308,6 +322,10 @@ C
 C
 C Produce five groups of characters.
 C
+      DO 111 I=1,32
+        SOSC(I:I)=SPCH(I)
+  111 CONTINUE
+C
       DO 106 I=1,5
         YPOS=1.-.18*REAL(I)
         CALL PCSETR ('HW',2.-1.5*REAL(I-1)/4.)
@@ -315,8 +333,7 @@ C
      +                                                        .02,0.,0.)
         CALL PLCHMQ (.5,YPOS    ,'abcdefghijklmnopqrstuvwxyz0123456789',
      +                                                        .02,0.,0.)
-        CALL PLCHMQ (.5,YPOS-.04,'!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~',
-     +                                                        .02,0.,0.)
+        CALL PLCHMQ (.5,YPOS-.04,SOSC(1:32),.02,0.,0.)
   106 CONTINUE
 C
 C Advance the frame.
