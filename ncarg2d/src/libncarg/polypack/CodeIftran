@@ -5,18 +5,17 @@ I ---------------------------------------------------------------------
 I   I F T R A N   C O N T R O L S
 I ---------------------------------------------------------------------
 I
-I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $" comment in each routine, use ".DE A"; else,
+I To include a CVS "$Id: CodeIftran,v 1.2 2004-06-28 23:51:29 kennison Exp $" comment in each routine, use ".DE A"; else,
 I use ".EL A".
 I
 .DE A
-I
+
+
 I ---------------------------------------------------------------------
 I   P O L Y G O N   M A N I P U L A T I O N   R O U T I N E S
 I ---------------------------------------------------------------------
-I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPDIPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPP,IERR)
 C
@@ -1645,9 +1644,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPINPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPP,IERR)
 C
@@ -3270,9 +3268,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPUNPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPP,IERR)
 C
@@ -4894,9 +4891,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPDITR (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPT,IERR)
 C
@@ -6420,9 +6416,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPINTR (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPT,IERR)
 C
@@ -7946,9 +7941,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPUNTR (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,URPT,IERR)
 C
@@ -9673,13 +9667,13 @@ C
         END BLOCK
 C
       END
-I
+
+
 I ---------------------------------------------------------------------
 I   P O L Y G O N   P R E P R O C E S S I N G   R O U T I N E
 I ---------------------------------------------------------------------
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPPPAP (XCOP,YCOP,NCOP,NBTS)
 C
 C This routine may be called to pre-process a polygon that is to be
@@ -9726,9 +9720,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       FUNCTION PPZBTS (RVAL,NBTS)
 C
 C The function reference "PPZBTS(RVAL,NBTS)" has the value of the real
@@ -9788,13 +9781,13 @@ C
         RETURN
 C
       END
-I
+
+
 I ---------------------------------------------------------------------
 I   P O L Y L I N E   C L I P P I N G   R O U T I N E
 I ---------------------------------------------------------------------
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:09:23 kennison Exp $
-A
+
+
       SUBROUTINE PPPLCL (XMIN,XMAX,YMIN,YMAX,XCPL,YCPL,NCPL,
      +                                  RWRK,LRWK,URPF,IERR)
 C

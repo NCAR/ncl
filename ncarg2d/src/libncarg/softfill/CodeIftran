@@ -1,18 +1,21 @@
 .OP LS=10001 LI=1 CB RT OC UC=0 BI=66
 .EL I
+
+
 I***********************************************************************
 I S O F T F I L L   -   I N T R O D U C T I O N
 I***********************************************************************
-I
+
 I This file contains materials for a software area-fill package called
 I SOFTFILL.  Double-spaced headers like the one above set off major
 I portions of the file.  Included are implementation instructions, a
 I write-up, user-level routines, and internal routines.
-I
+
+
 I***********************************************************************
 I S O F T F I L L   -   I M P L E M E N T A T I O N
 I***********************************************************************
-I
+
 I The master version of SOFTFILL is written in IFTRAN, an extended form
 I of FORTRAN which provides many conveniences.  Running it through the
 I IFTRAN preprocessor yields a standard FORTRAN 77 file, which is the
@@ -21,22 +24,13 @@ I
 I SOFTFILL requires various parts of the NCAR Graphics package to have
 I been implemented (in particular, it uses the support routine SETER
 I and various routines from SPPS).
-I
-I***********************************************************************
-I S O F T F I L L   -   I F T R A N   P R E A M B L E
-I***********************************************************************
-I
-I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $" comment in each routine, use ".DE A"; else,
-I use ".EL A".
-I
-.DE A
-I
+
+
 I***********************************************************************
 I S O F T F I L L   -   U S E R - L E V E L   R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSGFA (XRA,YRA,NRA,DST,NST,IND,NND,ICI)
 C
 C Declare the dimensions of argument arrays.
@@ -127,9 +121,8 @@ C
       RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFWRLD (XRA,YRA,NRA,DST,NST,IND,NND)
 C
 C Declare the dimensions of argument arrays.
@@ -167,9 +160,8 @@ C
       RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
 C
 C Declare the dimensions of argument arrays.
@@ -551,9 +543,8 @@ C
       END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFGETC (CNP,CVP)
 C
         CHARACTER*(*) CNP,CVP
@@ -612,9 +603,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFGETI (CNP,IVP)
 C
         CHARACTER*(*) CNP
@@ -644,9 +634,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFGETP (IDP)
 C
 C Dimension the argument array.
@@ -678,9 +667,8 @@ C
       RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFGETR (CNP,RVP)
 C
         CHARACTER*(*) CNP
@@ -747,9 +735,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSETC (CNP,CVP)
 C
         CHARACTER*(*) CNP,CVP
@@ -803,9 +790,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSETI (CNP,IVP)
 C
         CHARACTER*(*) CNP
@@ -833,9 +819,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSETP (IDP)
 C
 C Dimension the argument array.
@@ -867,9 +852,8 @@ C
       RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSETR (CNP,RVP)
 C
         CHARACTER*(*) CNP
@@ -935,13 +919,13 @@ C
         RETURN
 C
       END
-I
+
+
 I***********************************************************************
 I S O F T F I L L   -   I N T E R N A L   R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       SUBROUTINE SFSORT (RVL,NVL,IOR,IPR)
 C
         DIMENSION RVL(NVL),IPR(NVL)
@@ -1014,9 +998,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
-A
+
+
       BLOCK DATA SFBLDA
 C
 C Specify default values for the internal parameters.
