@@ -1,8 +1,7 @@
 /*
- *  $Id: c_shex01.c,v 1.1 1999-08-20 23:29:23 fred Exp $
+ *  $Id: c_shex01.c,v 1.2 1999-08-21 20:20:07 fred Exp $
  */
 
-#include "lib/shproto.h"
 #include <math.h>
 #include <stdlib.h>
 #include <ncarg/ncargC.h>

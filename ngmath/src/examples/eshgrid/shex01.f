@@ -1,3 +1,6 @@
+C
+C  $Id: shex01.f,v 1.3 1999-08-21 20:20:07 fred Exp $
+C
       PROGRAM SHEX01
 C
 C  Test SHGETNP in package Shgrid.
