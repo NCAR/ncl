@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.41 1995-06-05 19:08:55 dbrown Exp $
+ *      $Id: Legend.c,v 1.42 1995-06-23 22:37:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4748,7 +4748,7 @@ static NhlErrorTypes    AdjustGeometry
 	switch (lg_p->just) {
 	case NhlBOTTOMLEFT:
 		x_off = lg_p->perim.lxtr - lg_p->lg_x;
-		y_off = lg_p->perim.bxtr - (lg_p->lg_y - lg_p->lg_width);
+		y_off = lg_p->perim.bxtr - (lg_p->lg_y - lg_p->lg_height);
 		break;
 	case NhlCENTERLEFT:
 		x_off = lg_p->perim.lxtr - lg_p->perim.l;
