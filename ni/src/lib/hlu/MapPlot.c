@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.67 1998-06-01 17:46:01 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.68 1998-06-04 22:44:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1046,10 +1046,8 @@ MapPlotInitialize
 	Mpp->spec_fill_scale_count = 0;
 	Mpp->trans_change_count = 0;
         Mpp->view_changed = True;
-        if (! Mpp->area_masking_on_set && Mpp->mask_area_specs)
+        if ((! Mpp->area_masking_on_set )&& (Mpp->mask_area_specs != NULL))
                 Mpp->area_masking_on = True;
-        else
-                Mpp->area_masking_on = False;
         
         if (Mpp->grid_spacing_set)
                 Mpp->grid_lat_spacing = Mpp->grid_lon_spacing =
