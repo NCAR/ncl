@@ -1,4 +1,7 @@
 C
+C $Id: issetr.f,v 1.3 1993-02-05 18:35:59 kennison Exp $
+C
+C
 C The subroutine ISSETR.
 C --- ---------- -------
 C

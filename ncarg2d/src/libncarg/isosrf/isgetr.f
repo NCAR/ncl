@@ -1,4 +1,7 @@
 C
+C $Id: isgetr.f,v 1.3 1993-02-05 18:35:57 kennison Exp $
+C
+C
 C The subroutine ISGETR.
 C --- ---------- -------
 C
@@ -39,7 +42,7 @@ C
       IF (LEN(IPN).LT.2) THEN
         CTM(1:46)='ISGETI OR ISGETR - PARAMETER NAME TOO SHORT - '
         CTM(47:46+LEN(IPN))=IPN
-        CALL SETER (CTM(1:36+LEN(IPN)),1,2)
+        CALL SETER (CTM(1:46+LEN(IPN)),1,2)
         STOP
       END IF
 C
