@@ -20,6 +20,7 @@ extern "C" {
 FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
+extern int cmd_line_is_set;
 extern int cur_line_number;
 extern char *cur_line_text;
 extern int cur_line_maxsize;
@@ -112,6 +113,7 @@ main() {
 		InitializeReadLine(1);
 		NclSetPromptFunc(nclprompt,NULL);
 		cmd_line = 1;
+		cmd_line_is_set = 1;
 	} else {
 		InitializeReadLine(0);
 	}

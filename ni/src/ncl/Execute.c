@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.97 1997-09-02 20:26:06 ethan Exp $
+ *      $Id: Execute.c,v 1.98 1997-09-12 20:27:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2080,12 +2080,17 @@ void CallCONVERT_TO_LOCAL(void) {
 */
 								if(data.u.data_var->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)data.u.data_var);
-								}
+								} 
 							} else {
 								tmp_md = NULL;
 							}
-							if(estatus != NhlFATAL) 
+							if ((estatus != NhlWARNING)&&(estatus!=NhlFATAL)) {
                                                 		_NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
+							} else if((estatus == NhlWARNING)&&(tmp_md != NULL)) {
+                                                		_NclAddObjToParamList((NclObj)tmp_md,arg_num);
+							} else {
+								estatus = NhlFATAL;
+							}
 							if((thesym->type != IPROC)&&(thesym->type != PIPROC) && (thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 /*
 * Variable subsections also point to the symbol of the main variable so the AddObjToParamList just
@@ -2263,7 +2268,7 @@ void CallCONVERT_TO_LOCAL(void) {
 							}
 							if((thesym->type != IPROC)&&(thesym->type != PIPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 								argsym = pfinfo->theargs[arg_num].arg_sym;
-								_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
+								_NclAddObjToParamList((NclObj)tmp_md,arg_num);
                                                 		if(estatus != NhlFATAL) {
 	
 									if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
@@ -2320,8 +2325,10 @@ void CallCONVERT_TO_LOCAL(void) {
                                                         		estatus = _NclPush(data);
                                                 		}
 							} else if(estatus != NhlFATAL) {
+                                                        	data.kind = NclStk_VAL;
+                                                        	data.u.data_obj = tmp_md;
 								argsym = pfinfo->theargs[arg_num].arg_sym;
-								_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
+								_NclAddObjToParamList((NclObj)tmp_md,arg_num);
 
                                                        		estatus = _NclPush(data);
 							}

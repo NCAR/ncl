@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.25 1997-09-02 20:26:35 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.26 1997-09-12 20:27:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -373,8 +373,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	long strider[NCL_MAX_DIMENSIONS];
 	int output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int *dim_sizes_value = value_md->multidval.dim_sizes;
-	int n_dims_value = value_md->multidval.n_dims;
+	int dim_sizes_value [NCL_MAX_DIMENSIONS];
+	int n_dims_value = 0;
 	int n_dims_sel = 0;
 	int total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
@@ -425,6 +425,13 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 			return(NhlFATAL);
 		}
 	}
+        for(i = 0; i < value_md->multidval.n_dims; i++) {
+                if(value_md->multidval.dim_sizes[i] > 1) {
+                        dim_sizes_value[n_dims_value] = value_md->multidval.dim_sizes[i];
+                        n_dims_value++;
+                }
+        }
+
 	for(i = 0 ; i < n_dims_target; i++) {
 		switch(sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:

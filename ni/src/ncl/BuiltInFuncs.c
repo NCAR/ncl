@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.84 1997-09-11 00:52:01 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.85 1997-09-12 20:27:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -871,6 +871,7 @@ NhlErrorTypes _Nclsystemfunc
 		if(nelem < 1) {
 			data.kind = NclStk_VAL;
 			data.u.data_obj = _NclCreateMissing();
+			NclFree(qbuffer);
 			_NclPlaceReturn(data);
 		} else {
 			data.kind = NclStk_VAL;

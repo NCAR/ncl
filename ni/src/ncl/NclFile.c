@@ -3521,6 +3521,21 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 				if(ret < NhlWARNING) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(rhs_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
 					ret = NhlWARNING;
+				} else {
+					if(tmp_coord_var->var.att_id != -1) {
+						theatt = (NclAtt)_NclGetObj(tmp_coord_var->var.att_id);
+						step = theatt->att.att_list;
+		                        	while(step != NULL) {
+							ret = FileWriteVarAtt(thefile,rhs_var->var.dim_info[i].dim_quark,step->quark,step->attvalue,NULL);
+							if(ret < NhlWARNING){
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not attribute (%s) to file (%s), continuing anyway",NrmQuarkToString(step->quark),NrmQuarkToString(thefile->file.fname));
+								ret = NhlWARNING;
+							}
+							step = step->next;
+	
+						}
+	
+					}
 				}
 			}
 		}
@@ -3622,7 +3637,9 @@ struct _NclSelectionRecord * sel_ptr;
 					if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 						if(value->multidval.data_type == NCL_string) {
 							tmp_md = _NclStringMdToCharMd(value);
-							return(_NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr));
+							ret = _NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr);
+							_NclDestroyObj((NclObj)tmp_md);
+							return(ret);
 						} else {
 							from_type = value->multidval.data_type;
 							to_type = _NclPromoteType(from_type);
@@ -3831,7 +3848,9 @@ struct _NclSelectionRecord *sel_ptr;
 				if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 					if(value->multidval.data_type == NCL_string) {
 						tmp_md = _NclStringMdToCharMd(value);
-						return(_NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr));
+						ret = _NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr);
+						_NclDestroyObj((NclObj)tmp_md);
+						return(ret);
 					} else {
 						from_type = value->multidval.data_type;
 						to_type = _NclPromoteType(from_type);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.46 1997-09-02 20:26:49 ethan Exp $
+ *      $Id: NclVar.c,v 1.47 1997-09-12 20:27:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1836,6 +1836,55 @@ struct _NclVarRec *storage;
 	return(tmp_var);
 }
 
+static NhlErrorTypes AttCopyWrite
+#if	NhlNeedProto
+(struct _NclVarRec *to,struct _NclVarRec* from)
+#else
+(to,from)
+struct _NclVarRec *to;
+struct _NclVarRec* from;
+#endif
+{
+	NclAtt tmp_att;
+	NclAttList *att_list;
+	int i;
+	NhlErrorTypes ret = NhlNOERROR;
+
+	if((to->var.att_id != -1)&&(from->var.att_id != -1)&&(to->var.att_id != from->var.att_id)) {
+/*
+* Need to merge lists
+*/
+		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
+		att_list = tmp_att->att.att_list;
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			if(_NclIsAtt(to->var.att_id,att_list->attname)) {
+				if(NrmStringToQuark(att_list->attname) != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
+					_NclDeleteAtt(to->var.att_id,att_list->attname);
+				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			} else {
+				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			}
+		}
+	}else if((from->var.att_id != -1)&&(to->var.att_id == -1)) {
+/*
+* Simple case just copy atts
+*/
+		to->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)to);
+		to->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(to->var.att_id),(NclObj)to,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
+		
+		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
+		att_list = tmp_att->att.att_list;		
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+			att_list = att_list->next;
+		}
+		
+	}
+	return(ret);
+}
+
 static NhlErrorTypes VarVarWrite
 #if	NhlNeedProto
 (struct _NclVarRec * lhs, struct _NclSelectionRecord * lhs_sel_ptr, struct _NclVarRec * rhs, struct _NclSelectionRecord * rhs_sel_ptr)
@@ -1858,6 +1907,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	void *tmp_coord;
 	char *tmp_ptr;
 	NclMultiDValData *tmp_coord_array;
+	NclVar *tmp_coord_vars,cvar;
 	NclQuark *tmp_name_array;
 	NclAtt tmp_att;
 	NclAttList *att_list;
@@ -1926,6 +1976,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 		if((lhs_sel_ptr !=NULL) &&(rhs_sel_ptr == NULL)) {
 			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_coord_vars = (NclVar*)NclMalloc(lhs->var.n_dims * sizeof(NclVar));
 			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
 			for(i = 0; i< lhs->var.n_dims; i++) {
 				tmp_name_array[i] = rhs->var.dim_info[i].dim_quark;
@@ -1934,10 +1985,12 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 * Have to copy it since _NclWriteCoord uses WriteVar which would destroy value pointer causing
 * free memory reads when dimension reordering occurs.
 */
-					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL),NULL);
+					tmp_coord_vars[i] = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(tmp_coord_vars[i],NULL,NULL),NULL);
 					
 				} else {
 					tmp_coord_array[i] = NULL;
+					tmp_coord_vars[i] = NULL;
 				}
 			} 
 			for(i = 0; i < lhs->var.n_dims; i++) {
@@ -1948,13 +2001,16 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				tmp_sel.selection[0].dim_num = 0;
 				if(tmp_coord_array[i] != NULL) {
                                 	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),&tmp_sel);
+					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 				
 			NclFree(tmp_coord_array);
+			NclFree(tmp_coord_vars);
 			NclFree(tmp_name_array);
 		} else if((lhs_sel_ptr == NULL)&&(rhs_sel_ptr != NULL)) {
 			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_coord_vars = (NclVar*)NclMalloc(lhs->var.n_dims * sizeof(NclVar));
 			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
 			for(i = 0; i< lhs->var.n_dims; i++) {
 				tmp_name_array[i] = rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark;
@@ -1965,13 +2021,15 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 					tmp_sel.selection[0] = rhs_sel_ptr->selection[i];
 					tmp_sel.selection[0].dim_num = 0;
-					tmp_coord_array[i] = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),NULL),&tmp_sel,NULL);
+					tmp_coord_vars[i] = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),NULL);
+					tmp_coord_array[i] = _NclVarValueRead(tmp_coord_vars[i],&tmp_sel,NULL);
 					if((tmp_coord_array[i] != NULL)&&(tmp_coord_array[i]->obj.status == PERMANENT)) {
 						tmp_coord_array[i] = _NclCopyVal(tmp_coord_array[i],NULL);
 					}
 					
 				} else {
 					tmp_coord_array[i] = NULL;
+					tmp_coord_vars[i] = NULL;
 				}
 			} 
 			for(i = 0; i < lhs->var.n_dims; i++) {
@@ -1981,13 +2039,16 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			for(i = 0; i < lhs->var.n_dims; i++) {
 				if(tmp_coord_array[i] != NULL) {
                                 	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
+					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 			NclFree(tmp_name_array);
 			NclFree(tmp_coord_array);
+			NclFree(tmp_coord_vars);
 
 		} else if((lhs_sel_ptr != NULL) &&(rhs_sel_ptr != NULL)) {
 			tmp_coord_array = (NclMultiDValData*)NclMalloc(lhs->var.n_dims * sizeof(NclMultiDValData));
+			tmp_coord_vars = (NclVar*)NclMalloc(lhs->var.n_dims * sizeof(NclVar));
 			tmp_name_array = (NclQuark*)NclMalloc(lhs->var.n_dims * sizeof(NclQuark));
 			for(i = 0; i< lhs->var.n_dims; i++) {
 				tmp_name_array[i] = rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark;
@@ -1998,7 +2059,8 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 					tmp_sel.selection[0] = rhs_sel_ptr->selection[i];
 					tmp_sel.selection[0].dim_num = 0;
-					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),&tmp_sel),NULL,NULL),NULL);
+					tmp_coord_vars[i] = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),&tmp_sel);
+					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(tmp_coord_vars[i],NULL,NULL),NULL);
 					
 				} else {
 					tmp_coord_array[i] = NULL;
@@ -2011,10 +2073,12 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			for(i = 0; i < lhs->var.n_dims; i++) {
 				if(tmp_coord_array[i] != NULL) {
                         		_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
+					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 			NclFree(tmp_name_array);
 			NclFree(tmp_coord_array);
+			NclFree(tmp_coord_vars);
 
 		}
 /*
@@ -2100,7 +2164,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 							if(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 1\n");
+								fprintf(stdout,"case 1\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs and overwriting coordinate variable, use \"(/../)\" if this change is not desired",lhs_sel_ptr->selection[i].dim_num);
 								ret = NhlWARNING;
@@ -2112,7 +2176,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] = -1;
 							} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 2\n");
+								fprintf(stdout,"case 2\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs, use \"(/../)\" if this change is not desired",lhs_sel_ptr->selection[i].dim_num);
 								ret = NhlWARNING;
@@ -2124,21 +2188,23 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 						if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] == -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 3\n");
+							fprintf(stdout,"case 3\n");
 #endif
 							tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 							tmp_sel.selection[0].dim_num = 0;
-							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+							cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 							tmp_sel.selection[0].dim_num = 0;
 							if((val_md != NULL) &&(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 4\n");
+								fprintf(stdout,"case 4\n");
 #endif
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 							} else if(val_md != NULL) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 5\n");
+								fprintf(stdout,"case 5\n");
 #endif
 /*
 * Missing values need to be filled in
@@ -2150,8 +2216,15 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 									tmp_ptr = tmp_ptr + val_md->multidval.type->type_class.size;
 
 								}
-								_NclWriteCoordVar(lhs,_NclCreateMultiDVal( NULL, NULL, Ncl_MultiDValData, 0, tmp_coord, &val_md->multidval.type->type_class.default_mis, 1, &lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size, TEMPORARY, NULL, val_md->multidval.type),NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
-								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+								_NclWriteCoordVar(lhs,
+									_NclCreateMultiDVal( NULL, NULL, Ncl_MultiDValData, 0, tmp_coord, &val_md->multidval.type->type_class.default_mis, 1, &lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size, TEMPORARY, NULL, val_md->multidval.type),
+									NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
+									NULL);
+								_NclWriteCoordVar(lhs,
+									val_md,
+									NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
+									&tmp_sel);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 								
 							}
 
@@ -2165,11 +2238,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 						tmp_sel.selection[0].dim_num = 0;
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 						tmp_sel.selection[0].dim_num = 0;
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 /*
 * dimension names match and only rhs has coord var
@@ -2181,17 +2256,19 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 						tmp_sel.selection[0].dim_num = 0;
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 						tmp_sel.selection[0].dim_num = 0;
 						if((val_md != NULL)&&(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 8\n");
+							fprintf(stdout,"case 8\n");
 #endif
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						} else if(val_md != NULL){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 9\n");
+							fprintf(stdout,"case 9\n");
 #endif
 	/*
 	* Missing values need to be filled in
@@ -2220,6 +2297,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
 								NULL);
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else  if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1) &&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] == -1)) {
 #ifdef NCLVARDEBUG
@@ -2296,11 +2374,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		for(i = 0; i < lhs->var.n_dims; i++) {
 			if(rhs->var.dim_info[i].dim_quark>0) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 14\n");
+				fprintf(stdout,"case 14\n");
 #endif
 				if(lhs->var.dim_info[i].dim_quark != rhs->var.dim_info[i].dim_quark) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 15\n");
+					fprintf(stdout,"case 15\n");
 #endif
 					if(lhs->var.dim_info[i].dim_quark == -1) {
 #ifdef NCLVARDEBUG
@@ -2309,17 +2387,19 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 						_NclWriteDim(lhs,i,NrmQuarkToString(rhs->var.dim_info[i].dim_quark));
 						if(rhs->var.coord_vars[i] != -1) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 17\n");
+							fprintf(stdout,"case 17\n");
 #endif
-							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL);
+							cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 							}
 						} 	 
 					} else {
 						if(lhs->var.coord_vars[i] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 18\n");
+							fprintf(stdout,"case 18\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs and overwriting coordinate variable, use \"(/../)\" if this change is not desired",i);
 							ret = NhlWARNING;
@@ -2331,7 +2411,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							lhs->var.coord_vars[i] = -1;
 						} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 19\n");
+							fprintf(stdout,"case 19\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs, use \"(/../)\" if this change is not desired",i);
 							ret = NhlWARNING;
@@ -2339,11 +2419,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 						}
 						if(rhs->var.coord_vars[i] != -1) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 19.5\n");
+							fprintf(stdout,"case 19.5\n");
 #endif
-							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL);
+							cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 							}
 						} 	 
 					} 
@@ -2352,9 +2434,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #ifdef NCLVARDEBUG
 						fprintf(stdout,"case 20\n");
 #endif
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 						}
 					} else if(lhs->var.coord_vars[i] != -1) {
 #ifdef NCLVARDEBUG
@@ -2371,11 +2455,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				}
 			} else if(lhs->var.dim_info[i].dim_quark > 0) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 22\n");
+					fprintf(stdout,"case 22\n");
 #endif
 				if(lhs->var.coord_vars[i] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 23\n");
+					fprintf(stdout,"case 23\n");
 #endif
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs and overwriting coordinate variable, use \"(/../)\" if this change is not desired",i);
 					ret = NhlWARNING;
@@ -2387,7 +2471,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 					lhs->var.coord_vars[i] = -1;
 				} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 24\n");
+					fprintf(stdout,"case 24\n");
 #endif
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs, use \"(/../)\" if this change is not desired",i);
 					ret = NhlWARNING;
@@ -2437,7 +2521,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))) {
 				if(rhs->var.dim_info[j].dim_quark > 0) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 25\n");
+					fprintf(stdout,"case 25\n");
 #endif
 					if((lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_quark != rhs->var.dim_info[j].dim_quark)){
 #ifdef NCLVARDEBUG
@@ -2445,13 +2529,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						if(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_quark == -1) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 27\n");
+							fprintf(stdout,"case 27\n");
 #endif
 							_NclWriteDim(lhs,lhs_sel_ptr->selection[i].dim_num,NrmQuarkToString(rhs->var.dim_info[j].dim_quark));
 						} else {
 							if(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 28\n");
+								fprintf(stdout,"case 28\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs and overwriting coordinate variable, use \"(/../)\" if this change is not desired",lhs_sel_ptr->selection[i].dim_num);
 								ret = NhlWARNING;
@@ -2463,7 +2547,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] = -1;
 							} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 29\n");
+								fprintf(stdout,"case 29\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs, use \"(/../)\" if this change is not desired",lhs_sel_ptr->selection[i].dim_num);
 								ret = NhlWARNING;
@@ -2473,19 +2557,21 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				
 						if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] == -1)&&(rhs->var.coord_vars[j] != -1)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 30\n");
+							fprintf(stdout,"case 30\n");
 #endif
-							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),NULL,NULL);
+							cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL);
+							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 							tmp_sel.selection[0].dim_num = 0;
 							if((val_md != NULL) &&(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 31\n");
+								fprintf(stdout,"case 31\n");
 #endif
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 							} else if(val_md != NULL)  {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 32\n");
+								fprintf(stdout,"case 32\n");
 #endif
 								tmp_coord = NclMalloc(lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size*val_md->multidval.type->type_class.size);
 								tmp_ptr = (char*)tmp_coord;
@@ -2510,33 +2596,38 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 									NrmQuarkToString(rhs->var.dim_info[j].dim_quark),
 									NULL);
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 							}
 						} 
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1)&&(rhs->var.coord_vars[j] != -1)) {
 #ifdef NCLVARDEBUG
 						fprintf(stdout,"case 33\n");
 #endif
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 						tmp_sel.selection[0].dim_num = 0;
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] == -1)&&(rhs->var.coord_vars[j] != -1)) {
 #ifdef NCLVARDEBUG
 						fprintf(stdout,"case 34\n");
 #endif
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						tmp_sel.selection[0]= lhs_sel_ptr->selection[i];
 						tmp_sel.selection[0].dim_num = 0;
 						if((val_md != NULL) &&(lhs_n_elem == lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_size)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 35\n");
+							fprintf(stdout,"case 35\n");
 #endif
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						} else if(val_md != NULL)  {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 36\n");
+							fprintf(stdout,"case 36\n");
 #endif
 	/*
 	* Missing values need to be filled in
@@ -2565,6 +2656,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								NrmQuarkToString(rhs->var.dim_info[j].dim_quark),
 								NULL);
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num]!= -1)&&(rhs->var.coord_vars[j] == -1)) {
 #ifdef NCLVARDEBUG
@@ -2585,7 +2677,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						if(lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 39\n");
+							fprintf(stdout,"case 39\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: rhs has no dimension name or coordinate variable, deleting name of lhs dimension number (%d) and destroying coordinate var,  use \"(/../)\" if this is not desired outcome",lhs_sel_ptr->selection[i].dim_num);
 							ret = NhlWARNING;
@@ -2596,7 +2688,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] = -1;
 						} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 40\n");
+							fprintf(stdout,"case 40\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: lhs has dimension name and rhs doesn't, deleting name of lhs dimension number(%d), use \"(/../)\" if this is not desired outcome",lhs_sel_ptr->selection[i].dim_num);
 							ret = NhlWARNING;
@@ -2660,7 +2752,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			if((rhs_n_elem != 1)||((lhs->var.n_dims ==1)&&(rhs_n_elem==1)&&(lhs->var.dim_info[0].dim_size == 1))){
 				if(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 41\n");
+					fprintf(stdout,"case 41\n");
 #endif
 					if((lhs->var.dim_info[i].dim_quark != rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark)){
 #ifdef NCLVARDEBUG
@@ -2674,7 +2766,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 							if(lhs->var.coord_vars[i] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 43\n");
+								fprintf(stdout,"case 43\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs and overwriting coordinate variable, use \"(/../)\" if this change is not desired",i);
 								ret = NhlWARNING;
@@ -2686,7 +2778,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								lhs->var.coord_vars[i] = -1;
 							} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 43.5\n");
+								fprintf(stdout,"case 43.5\n");
 #endif
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: Dimension names for dimension number (%d) don't match, assigning name of rhs dimension to lhs, use \"(/../)\" if this change is not desired",i);
 								ret = NhlWARNING;
@@ -2698,13 +2790,15 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 						if((lhs->var.coord_vars[i] == -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 44\n");
+							fprintf(stdout,"case 44\n");
 #endif
 							tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 							tmp_sel.selection[0].dim_num = 0;
-							val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+							cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
+								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 							}
 
 						}  
@@ -2715,9 +2809,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 						tmp_sel.selection[0].dim_num = 0;
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL ) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[i] == -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
 #ifdef NCLVARDEBUG
@@ -2725,9 +2821,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						tmp_sel.selection[0] = rhs_sel_ptr->selection[j];
 						tmp_sel.selection[0].dim_num = 0;
-						val_md = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel),NULL,NULL);
+						cvar = _NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
+						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL ) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
+							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[i] != -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] == -1)) {
 #ifdef NCLVARDEBUG
@@ -2750,7 +2848,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 						if(lhs->var.coord_vars[i] != -1){
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 49\n");
+							fprintf(stdout,"case 49\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: rhs has no dimension name or coordinate variable, deleting name of lhs dimension number (%d) and destroying coordinate var,  use \"(/../)\" if this is not desired outcome",i);
 							ret = NhlWARNING;
@@ -2761,7 +2859,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							lhs->var.coord_vars[i] = -1;
 						} else {
 #ifdef NCLVARDEBUG
-						fprintf(stdout,"case 50\n");
+							fprintf(stdout,"case 50\n");
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"VarVarWrite: lhs has dimension name and rhs doesn't, deleting name of lhs dimension number(%d), use \"(/../)\" if this is not desired outcome",i);
 							ret = NhlWARNING;
