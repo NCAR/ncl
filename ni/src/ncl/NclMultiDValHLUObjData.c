@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.16 1997-02-27 20:18:46 boote Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.17 1997-05-09 21:38:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,6 @@
 #include "NclVar.h"
 #include <math.h>
 
-
 /*
 * udata is the record containing the index and the parent_id.
 * cbdata contains the id of the HLUObj child being deleted
@@ -65,6 +64,8 @@ NhlArgVal udata;
 	int dim_size = 1;
 	int replaced = 0;
 	NclObj pobj;
+	NhlArgVal vcbdata;
+	NhlArgVal vcselector;
 
 	self_md = (NclMultiDValHLUObjData)_NclGetObj(parent);
 	
@@ -77,6 +78,16 @@ NhlArgVal udata;
 			replaced = 1;
 		}
 		if(obj_ids[index] == value) {
+			vcselector.lngval = HLUVALCHANGE;
+			vcbdata.ptrval = NclMalloc(sizeof(NclHLUCbData));
+			((NclHLUCbData*)vcbdata.ptrval)->ncl_id = mis.objval;
+			((NclHLUCbData*)vcbdata.ptrval)->off = index;
+			((NclHLUCbData*)vcbdata.ptrval)->prev_id = obj_ids[index];
+			((NclHLUCbData*)vcbdata.ptrval)->kind = 1;
+			_NhlCBCallCallbacks(self_md->obj.cblist,vcselector,vcbdata);
+			NclFree(vcbdata.ptrval);
+
+
 			obj_ids[index] = mis.objval;
 			_NhlCBDelete(self_md->multi_obj.cbs[index]);
 			self_md->multi_obj.cbs[index] = NULL;
@@ -465,6 +476,8 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 	int inc_done = 0;
 	int chckmiss = 0;
 	NclHLUObj tmp_ho = NULL;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
 
 /*
 * preconditions:
@@ -476,6 +489,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 * 	*****Value is a multidimensional array***** 
 *	number of dimensions >= 1 && size > 1
 */
+	selector.lngval = HLUVALCHANGE;
 
 	if((target_md->multidval.missing_value.has_missing)&&
 		(value_md->multidval.missing_value.has_missing)) {
@@ -496,6 +510,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 		sel_ptr = sel->selection;
 	} else {
 		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
+			cbdata.ptrval = NclMalloc(sizeof(NclHLUCbData));
 			val = (obj*)value_md->multidval.val;
 			for(i = 0; i< target_md->multidval.totalelements; i++) {
 				if(chckmiss) {
@@ -513,10 +528,27 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 					tmp_ho = NULL;
 					if(value_md->multidval.missing_value.value.objval != val[i]) {
 						tmp_ho = (NclHLUObj)_NclGetObj((int)val[i]);
+						((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)val[i];
+						((NclHLUCbData*)cbdata.ptrval)->off = i;
+						((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[i];
+						((NclHLUCbData*)cbdata.ptrval)->kind = 0;
 						((obj*)target_md->multidval.val)[i] = val[i];
+/*
+* ADD HLUVALCHANGE
+*/
+						
 					} else {
+						((NclHLUCbData*)cbdata.ptrval)->ncl_id = target_md->multidval.missing_value.value.objval;
+						((NclHLUCbData*)cbdata.ptrval)->off = i;
+						((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[i];
+						((NclHLUCbData*)cbdata.ptrval)->kind = 1;
 						((obj*)target_md->multidval.val)[i] = target_md->multidval.missing_value.value.objval;
+/*
+* ADD HLUVALCHANGE
+*/
 					}
+					selector.lngval = HLUVALCHANGE;
+					_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
 					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 			               		(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
 						target_md->multi_obj.cbs[i] = AddDestroyNotify(target_md,i);
@@ -546,9 +578,19 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                 			} else {
 						target_md->multi_obj.cbs[i] = NULL;
 					}
+					((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)val[i];
+					((NclHLUCbData*)cbdata.ptrval)->off = i;
+					((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[i];
+					((NclHLUCbData*)cbdata.ptrval)->kind = 0;
 					((obj*)target_md->multidval.val)[i] = val[i];
+					selector.lngval = HLUVALCHANGE;
+					_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
+/*
+* ADD HLUVALCHANGE
+*/
 				}
 			}
+			NhlFree(cbdata.ptrval);
 			return(NhlNOERROR);
 		} else {
 			return(NhlFATAL);
@@ -726,11 +768,25 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                 		} else {
 					target_md->multi_obj.cbs[to] = NULL;
 				}
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 0;
+			} else {
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 1;
 			}
 			((obj*)target_md->multidval.val)[to] = 
 				((val[from] == value_md->multidval.missing_value.value.objval) ? 
 				target_md->multidval.missing_value.value.objval 
 				: val[from]);
+			selector.lngval = HLUVALCHANGE;
+			_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
+/*
+* ADD HLUVALCHANGE
+*/
 		} else {
 			
 			tmp_ho = NULL;
@@ -754,7 +810,16 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                 	} else {
 				target_md->multi_obj.cbs[to] = NULL;
 			}
+			((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)val[from];
+			((NclHLUCbData*)cbdata.ptrval)->off = to;
+			((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[to];
+			((NclHLUCbData*)cbdata.ptrval)->kind = 0;
 			((obj*)target_md->multidval.val)[to] = val[from];
+			selector.lngval = HLUVALCHANGE;
+			_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
+/*
+* ADD HLUVALCHANGE
+*/
 		}
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
@@ -867,6 +932,8 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 	int inc_done = 0;
 	int chckmiss = 0;
 	NclHLUObj tmp_ho;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
 
 /*
 * preconditions:
@@ -1025,6 +1092,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 			*val = target_md->multidval.missing_value.value.objval;
 		}
 	}
+	cbdata.ptrval = NclMalloc(sizeof(NclHLUCbData));
 	while(!done) {
 		to = 0;
 		for(i = 0; i < n_dims_target;i++) {
@@ -1039,8 +1107,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 				}
 				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
 			}
-		} 
-		((obj*)target_md->multidval.val)[to] = *val;
+		}  
+/*
+* ADD HLUVALCHANGE
+*/
 		if(*val != target_md->multidval.missing_value.value.objval) {
 			tmp_ho = (NclHLUObj)_NclGetObj((int)*val);
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
@@ -1049,7 +1119,19 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 			} else {
 				target_md->multi_obj.cbs[to] = NULL;
 			}
+			((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)*val;
+			((NclHLUCbData*)cbdata.ptrval)->off = to;
+			((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[to];
+			((NclHLUCbData*)cbdata.ptrval)->kind = 0;
+		}  else {
+			((NclHLUCbData*)cbdata.ptrval)->ncl_id = (int)*val;
+			((NclHLUCbData*)cbdata.ptrval)->off = to;
+			((NclHLUCbData*)cbdata.ptrval)->prev_id = ((obj*)target_md->multidval.val)[to];
+			((NclHLUCbData*)cbdata.ptrval)->kind = 1;
 		}
+		((obj*)target_md->multidval.val)[to] = *val;
+		selector.lngval = HLUVALCHANGE;
+		_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
 		} else {
@@ -1125,6 +1207,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 			break;
 		}
 	}
+	NclFree(cbdata.ptrval);
 	return(NhlNOERROR);
 }
 
@@ -1190,7 +1273,7 @@ NclSelectionRecord *from_selection;
 * mapping from the value object into target. 
 */
 
-	int i,k;
+	int j,i,k;
 	long from,to;
 	NclSelection *to_sel_ptr = NULL;
 	obj *to_val;
@@ -1209,10 +1292,10 @@ NclSelectionRecord *from_selection;
 	long from_strider[NCL_MAX_DIMENSIONS];
 	int from_output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int n_dims_value = 0;
+	int n_dims_value = 0,n_dims_value_orig = 0;
 	int total_elements_value = 1;
 	int total_elements_target = 1;
-	int n_dims_target = 0;
+	int n_dims_target = 0,n_dims_target_orig = 0;
 	int n_elem_target=0;
 	int n_elem_value=0;
 
@@ -1220,13 +1303,29 @@ NclSelectionRecord *from_selection;
 	int inc_done = 0;
 	int chckmiss = 0;
 	NclHLUObj tmp_ho;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
+
+        for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
+                to_current_index[i] = 0;
+                to_multiplier[i] = 0;
+                to_compare_sel[i] = 0;
+                to_strider[i]=0;
+                to_output_dim_sizes[i]=0;
+                from_current_index[i]=0;
+                from_multiplier[i]=0;
+                from_compare_sel[i]=0;
+                from_strider[i]=0;
+                from_output_dim_sizes[i]=0;
+        }
+
 
 	if((target_md == NULL)||(value_md == NULL) ) {
 		return(NhlFATAL);
 	}
 
-	n_dims_value = value_md->multidval.n_dims;
-	n_dims_target = target_md->multidval.n_dims;
+	n_dims_value_orig = n_dims_value = value_md->multidval.n_dims;
+	n_dims_target_orig = n_dims_target = target_md->multidval.n_dims;
 	
 	
 
@@ -1429,7 +1528,20 @@ NclSelectionRecord *from_selection;
 					(from_sel_ptr->u.sub.finish 
 					- from_sel_ptr->u.sub.start))
 					/((float)from_sel_ptr->u.sub.stride)) + 1;
-				from_compare_sel[i] = -2;
+
+                                if(from_sel_ptr->u.sub.stride < 0){
+                                        from_compare_sel[i] = -1;
+                                        from_current_index[i] = from_sel_ptr->u.sub.finish - (from_sel_ptr->u.sub.finish - from_sel_ptr->u.sub.start) % abs(from_sel_ptr->u.sub.stride);
+                                        from_sel_ptr->u.sub.finish = from_sel_ptr->u.sub.start;
+                                        from_sel_ptr->u.sub.start = from_current_index[i];
+                                        from_strider[i] = from_sel_ptr->u.sub.stride;
+
+                                } else {
+                                        from_compare_sel[i] = -2;
+                                        from_current_index[i] = from_sel_ptr->u.sub.start;
+                                        from_strider[i] = from_sel_ptr->u.sub.stride;
+                                }
+
 			}
 			if((from_sel_ptr->u.sub.start > value_md->multidval.dim_sizes[from_sel_ptr->dim_num] - 1)||(from_sel_ptr->u.sub.start < 0)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
@@ -1476,28 +1588,63 @@ NclSelectionRecord *from_selection;
 		total_elements_value =total_elements_value * n_elem_value;
 		from_sel_ptr++;
 	}
-	if(n_dims_target != n_dims_value) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
-		return(NhlFATAL);
-	}
-	for(i = 0; i< n_dims_target; i++) {
-		if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side does not have the same size as the right hand side.",i);
-			return(NhlFATAL);
-		}
-	}
+        i = 0;
+        while(i < n_dims_value) {
+                if(from_output_dim_sizes[i] == 1) {
+                        for(j = i; j  < n_dims_value; j++) {
+                                from_output_dim_sizes[j] = from_output_dim_sizes[j+1];
+                        }
+                        n_dims_value--;
+                } else {
+                        i++;
+                }
+        }
+        if(n_dims_value == 0) {
+                n_dims_value = 1;
+                from_output_dim_sizes[0] = 1;
+        }
+        i = 0;
+        while( i < n_dims_target ) {
+                if(to_output_dim_sizes[i] == 1) {
+                        for(j = i; j  < n_dims_target; j++) {
+                                to_output_dim_sizes[j] = to_output_dim_sizes[j+1];
+                        }
+                        n_dims_target--;
+                } else {
+                        i++;
+                }
+        }
+        if(n_dims_target == 0) {
+                n_dims_target = 1;
+                to_output_dim_sizes[0] = 1;
+        }
+
+        if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
+                if(n_dims_target != n_dims_value) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
+                        return(NhlFATAL);
+                }
+                for(i = 0; i< n_dims_target; i++) {
+                        if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",i);
+                                return(NhlFATAL);
+                        }
+                }
+        }
+
 
 	to_sel_ptr = to_selection->selection;
 	from_sel_ptr = from_selection->selection;
 	to_val = (obj*)target_md->multidval.val;
 	from_val = (obj*)value_md->multidval.val;
+	cbdata.ptrval = NclMalloc(sizeof(NclHLUCbData));
 	while(!done) {
 		to = 0;
 		from = 0;
-		for(i = 0; i < n_dims_target;i++) {
+		for(i = 0; i < n_dims_target_orig;i++) {
 			to = to + (to_current_index[i] * to_multiplier[i]);
 		}
-		for(i = 0; i < n_dims_value;i++) {
+		for(i = 0; i < n_dims_value_orig;i++) {
 			from = from + (from_current_index[i] * from_multiplier[i]);
 		}
 		if(chckmiss) {
@@ -1521,11 +1668,26 @@ NclSelectionRecord *from_selection;
 				} else {
 					target_md->multi_obj.cbs[to] = NULL;
 				}
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = from_val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = to_val[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 0;
+			} else {
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = from_val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = to_val[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 1;
 			}
 			to_val[to] = 
 				((from_val[from] == value_md->multidval.missing_value.value.objval) ? 
 				target_md->multidval.missing_value.value.objval 
 				: from_val[from]);
+	
+/*
+* ADD HLUVALCHANGE
+*/
+			selector.lngval = HLUVALCHANGE;
+			_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
 		} else {
 			tmp_ho = NULL;
 			if(!(target_md->multidval.missing_value.has_missing)||(to_val[to] != target_md->multidval.missing_value.value.objval)) {
@@ -1547,20 +1709,36 @@ NclSelectionRecord *from_selection;
 				} else {
 					target_md->multi_obj.cbs[to] = NULL;
 				}
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = from_val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = to_val[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 0;
+			} else {
+				((NclHLUCbData*)cbdata.ptrval)->ncl_id = from_val[from];
+				((NclHLUCbData*)cbdata.ptrval)->off = to;
+				((NclHLUCbData*)cbdata.ptrval)->prev_id = to_val[to];
+				((NclHLUCbData*)cbdata.ptrval)->kind = 1;
 			}
 			to_val[to] = from_val[from];
+/*
+* ADD HLUVALCHANGE
+*/
+			selector.lngval = HLUVALCHANGE;
+			_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
 		}
-		if(to_compare_sel[n_dims_target-1] <0) {
-			to_current_index[n_dims_target -1 ] += to_strider[n_dims_target-1];
+		if(to_compare_sel[n_dims_target_orig-1] <0) {
+			to_current_index[n_dims_target_orig -1 ] += to_strider[n_dims_target_orig-1];
 		} else {
-			to_compare_sel[n_dims_target-1]++;
+			to_compare_sel[n_dims_target_orig-1]++;
 		}
-		if(from_compare_sel[n_dims_value -1] <0) {
-			from_current_index[n_dims_value -1 ] += from_strider[n_dims_value-1];
-		} else {
-			from_compare_sel[n_dims_value-1]++;
+		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
+			if(from_compare_sel[n_dims_value_orig -1] <0) {
+				from_current_index[n_dims_value_orig -1 ] += from_strider[n_dims_value_orig-1];
+			} else {
+				from_compare_sel[n_dims_value_orig-1]++;
+			}
 		}
-		for(k = n_dims_target-1; k >0; k--) {
+		for(k = n_dims_target_orig-1; k >0; k--) {
 			switch(to_compare_sel[k]) {
 			case -2: 
 				if(to_current_index[k] > to_sel_ptr[k].u.sub.finish) {
@@ -1625,72 +1803,76 @@ NclSelectionRecord *from_selection;
 			}
 			break;
 		}
-		for(k = n_dims_value -1; k >0; k--) {
-			switch(from_compare_sel[k]) {
-			case -2: 
-				if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
-					from_current_index[k] = from_sel_ptr[k].u.sub.start;
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
+		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
+
+			for(k = n_dims_value_orig -1; k >0; k--) {
+				switch(from_compare_sel[k]) {
+				case -2: 
+					if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
+						from_current_index[k] = from_sel_ptr[k].u.sub.start;
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
 					} else {
-						from_compare_sel[k-1]++;
+						inc_done = 1;
 					}
-				} else {
-					inc_done = 1;
+					break;
+				case -1:
+					if(from_current_index[k] < from_sel_ptr[k].u.sub.finish) {
+						from_current_index[k] = from_sel_ptr[k].u.sub.start;
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
+					} else {
+						inc_done = 1;
+					}
+					break;
+				default:
+					if(from_compare_sel[k] >= from_sel_ptr[k].u.vec.n_ind) {
+						from_compare_sel[k] = 0;
+						from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
+	
+					} else {
+						from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
+						inc_done = 1;
+					}
+					break;
 				}
+	
+				if(inc_done) {
+					inc_done = 0;
+					break;
+				}		
+			}
+			switch(from_compare_sel[0]) {
+			case -2:
+				if(from_current_index[0] > from_sel_ptr[0].u.sub.finish)
+						done = 1;
 				break;
 			case -1:
-				if(from_current_index[k] < from_sel_ptr[k].u.sub.finish) {
-					from_current_index[k] = from_sel_ptr[k].u.sub.start;
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
-					} else {
-						from_compare_sel[k-1]++;
-					}
-				} else {
-					inc_done = 1;
-				}
+				if(from_current_index[0] < from_sel_ptr[0].u.sub.finish)
+						done = 1;
 				break;
 			default:
-				if(from_compare_sel[k] >= from_sel_ptr[k].u.vec.n_ind) {
-					from_compare_sel[k] = 0;
-					from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
-					} else {
-						from_compare_sel[k-1]++;
-					}
-
+				if(from_compare_sel[0] >= from_sel_ptr[0].u.vec.n_ind) {
+						done = 1;
 				} else {
-					from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
-					inc_done = 1;
+					from_current_index[0] = from_sel_ptr[0].u.vec.ind[from_compare_sel[0]];
 				}
 				break;
 			}
-
-			if(inc_done) {
-				inc_done = 0;
-				break;
-			}
-		}
-		switch(from_compare_sel[0]) {
-		case -2:
-			if(from_current_index[0] > from_sel_ptr[0].u.sub.finish)
-					done = 1;
-			break;
-		case -1:
-			if(from_current_index[0] < from_sel_ptr[0].u.sub.finish)
-					done = 1;
-			break;
-		default:
-			if(from_compare_sel[0] >= from_sel_ptr[0].u.vec.n_ind) {
-					done = 1;
-			} else {
-				from_current_index[0] = from_sel_ptr[0].u.vec.ind[from_compare_sel[0]];
-			}
-			break;
 		}
 	}
+	NclFree(cbdata.ptrval);
 	return(NhlNOERROR);
 }
 
@@ -1812,6 +1994,20 @@ void
 #endif
 );
 
+static NhlErrorTypes HLUMultiDValAddParent(
+#if NhlNeedProto
+NclObj, 
+NclObj
+#endif
+);
+static NhlErrorTypes HLUMultiDValDelParent(
+#if NhlNeedProto
+NclObj, 
+NclObj
+#endif
+);
+
+
 NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 	{
 /* char *class_name; 		*/	"MultiDValHLUObjData",
@@ -1822,8 +2018,8 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
 /* NclInitClassFunction initialize_class; 	*/	InitializeHLUObjDataClass,
-	(NclAddParentFunction)NULL,
-                (NclDelParentFunction)NULL,
+	(NclAddParentFunction)HLUMultiDValAddParent,
+                (NclDelParentFunction)HLUMultiDValDelParent,
 	/* NclPrintFunction print; 	*/	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
@@ -1880,10 +2076,17 @@ static NhlErrorTypes InitializeHLUObjDataClass
 ()
 #endif
 {
+	int i;
 	_NclRegisterClassPointer(
 		Ncl_MultiDValHLUObjData,
 		(NclObjClass)&nclMultiDValHLUObjDataClassRec
 	);
+	nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table =(HLURefTableNode*) NclMalloc(sizeof(HLURefTableNode)*NCL_SYM_TAB_SIZE);
+	for(i = 0; i < NCL_SYM_TAB_SIZE;i++) {
+		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].id = -1;
+		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].thelist = NULL;
+		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].next = NULL;
+	}
 	return(NhlNOERROR);
 }
 
@@ -1953,4 +2156,73 @@ NclSelectionRecord *sel_rec;
 	}
 	
 	return((NclMultiDValData)thevalobj);
+}
+
+static NhlErrorTypes HLUMultiDValAddParent
+#if     NhlNeedProto
+(NclObj theobj, NclObj parent)
+#else
+(theobj, parent)
+NclObj theobj;
+NclObj parent;
+#endif
+{
+        NclRefList * tmp = NULL;
+
+        tmp = theobj->obj.parents;
+        theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
+        theobj->obj.parents->next = tmp;
+        theobj->obj.parents->pid= parent->obj.id;
+        theobj->obj.ref_count++;
+        return(NhlNOERROR);
+}
+
+static NhlErrorTypes HLUMultiDValDelParent
+#if     NhlNeedProto
+(NclObj theobj, NclObj parent)
+#else
+(theobj, parent)
+NclObj theobj;
+NclObj parent;
+#endif
+{
+        NclRefList *tmp,*tmp1;
+        int found = 0;
+        NclObj pobj;
+
+        if(theobj->obj.parents == NULL) {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
+                return(NhlFATAL);
+        }
+
+        tmp = theobj->obj.parents;
+        while((tmp!=NULL)&&(tmp->pid == parent->obj.id)) {
+                theobj->obj.parents = theobj->obj.parents->next;
+                NclFree(tmp);
+                tmp = theobj->obj.parents;
+                found = 1;
+                theobj->obj.ref_count--;
+        }
+        if((tmp == NULL)&&(found)) {
+                _NclDestroyObj(theobj);
+                return(NhlNOERROR);
+        }
+        while(tmp->next != NULL) {
+                if(tmp->next->pid == parent->obj.id) {
+                        found = 1;
+                        tmp1 = tmp->next;
+                        tmp->next = tmp->next->next;
+                        NclFree(tmp1);
+                        theobj->obj.ref_count--;
+                } else {
+                        tmp = tmp->next;
+                }
+        }
+        if(found) {
+                if(theobj->obj.ref_count <= 0)
+                        _NclDestroyObj(theobj);
+                return(NhlNOERROR);
+        } else {
+                return(NhlWARNING);
+        }
 }

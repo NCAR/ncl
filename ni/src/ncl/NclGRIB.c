@@ -1496,7 +1496,7 @@ GribFileRecord *therec;
 			}
 			tmpstep = step;
 			step = step->next;
-			_GribFreeParamRec0(tmpstep);
+			_GribFreeParamRec(tmpstep);
 			therec->n_vars--;
 		}
 	}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.29 1997-04-14 23:57:11 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.30 1997-05-09 21:37:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,35 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+/*
+extern NhlErrorTypes _NclIdim_stddev(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstddev(
+#if NhlNeedProto
+void
+#endif
+);
 
+*/
+
+extern NhlErrorTypes _NclIvinth2p(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdim_variance(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIvariance(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _NclIgaus(
 #if NhlNeedProto
@@ -1170,6 +1198,30 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"integer",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIgaus,args,"gaus",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIvariance,args,"variance",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIdim_variance,args,"dim_variance",nargs);
+
+	nargs = 0;
+	args = NewArgs(9);
+	SetArgTemplate(args,0,"float",3,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"float",2,NclANY);nargs++;
+	dimsizes[0] = 1;
+	SetArgTemplate(args,5,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,6,"float",1,dimsizes);nargs++;
+	SetArgTemplate(args,7,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,8,"logical",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIvinth2p,args,"vinth2p",nargs);
+	
 
 	nargs = 0;
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);

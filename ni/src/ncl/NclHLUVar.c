@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.10 1996-10-07 15:22:09 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.11 1997-05-09 21:38:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #include "NclHLUVar.h"
 #include "NclHLUObj.h"
 #include "NclCallBacksI.h"
+#include "HLUSupport.h"
 
 static NhlErrorTypes InitializeHLUVarClass(
 #if  NhlNeedProto
@@ -45,6 +46,28 @@ NclObj /* obj */,
 unsigned int /* type */
 #endif
 );
+static void HLUVarDestroy
+#if     NhlNeedProto
+(struct _NclObjRec*     self)
+#else
+(self)
+struct _NclObjRec*      self;
+#endif
+{
+	int i;
+	NclHLUVar self_var = (NclHLUVar)self;
+	NclMultiDValData tmp_md = (NclMultiDValData)_NclGetObj(self_var->var.thevalue_id);
+
+	if((self_var->var.var_type == NORMAL)||(self_var->var.var_type == HLUOBJ)) {
+		_NhlCBDelete(self_var->hvar.cb);
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			_NclDelHLURef(((obj*)tmp_md->multidval.val)[i],self_var->var.var_quark,-1,i);
+		}
+	}
+	(*(self_var->obj.class_ptr->obj_class.super_class->obj_class.destroy))(self);
+
+	
+}
 
 NclHLUVarClassRec nclHLUVarClassRec = {
 	{
@@ -52,7 +75,7 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 		sizeof(NclHLUVarRec),
 		(NclObjClass)&nclVarClassRec,
 		0,
-		(NclGenericFunction)NULL,
+		(NclGenericFunction)HLUVarDestroy,
 		(NclSetStatusFunction)NULL,
 		(NclInitPartFunction)NULL,
 		(NclInitClassFunction)InitializeHLUVarClass,
@@ -162,7 +185,24 @@ static NhlErrorTypes InitializeHLUVarClass
 	);
 }
 
+void _NclHLUVarValChange
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	NclHLUUData *ud = (NclHLUUData*)udata.ptrval;
+	NclHLUCbData *cb = (NclHLUCbData*)cbdata.ptrval;
 
+	_NclDelHLURef(cb->prev_id,ud->vq,ud->aq,cb->off);
+	if(!cb->kind) {
+		_NclAddHLURef(cb->ncl_id,ud->vq,ud->aq,cb->off);
+	}
+	
+}
 struct _NclVarRec *_NclHLUVarCreate
 #if	NhlNeedProto
 (NclVar inst,
@@ -195,6 +235,9 @@ NclStatus status)
 {
 	NclHLUVar hvar = NULL;
 	NclObjClass	cptr = (theclass ? theclass : nclHLUVarClass);
+	int *ncl_hlu_ids;
+	NhlArgVal udata;
+	int i;
 
 	if(inst != NULL) {
 		hvar = (NclHLUVar) inst;
@@ -202,6 +245,22 @@ NclStatus status)
 		hvar = (NclHLUVar) NclMalloc(sizeof(NclHLUVarRec));
 	}
 	_NclVarCreate((NclVar)hvar,cptr,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
+
+
+	if(((thesym != NULL)||(var_name != NULL))&&((var_type == NORMAL)||(var_type == HLUOBJ))) {
+		udata.ptrval = NclMalloc(sizeof(NclHLUUData));
+		if(thesym != NULL) {
+			((NclHLUUData*)udata.ptrval)->vq =NrmStringToQuark(thesym->name);
+		} else {
+			((NclHLUUData*)udata.ptrval)->vq =NrmStringToQuark(var_name);
+		}
+	
+		((NclHLUUData*)udata.ptrval)->aq = -1;
+		hvar->hvar.cb = _NclAddCallback((NclObj)value,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
+		for(i = 0; i < value->multidval.totalelements; i++) {
+			_NclAddHLURef(((obj*)value->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i);
+		}
+	}
 	if(cptr == nclHLUVarClass) {
 		_NclCallCallBacks((NclObj)hvar,CREATED);
 	}

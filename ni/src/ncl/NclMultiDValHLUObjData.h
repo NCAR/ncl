@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.6 1996-07-16 20:58:39 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.7 1997-05-09 21:38:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,18 @@ typedef struct _HLUMDCalRec {
         int index;
 }HLUMDCalRec;
 
+typedef struct _HLURefNameListNode {
+	NclQuark vname;
+	NclQuark aname;
+	int count;
+	struct _HLURefNameListNode *next;
+}HLURefNameListNode;
 
+typedef struct _HLURefTableNode {
+	int id;
+	struct _HLURefNameListNode *thelist;
+	struct _HLURefTableNode *next;
+}HLURefTableNode;
 
 typedef struct _NclMultiDValHLUObjDataPart {
 	_NhlCB *cbs;
@@ -46,7 +57,7 @@ typedef struct _NclMultiDValHLUObjDataRec {
 }NclMultiDValHLUObjDataRec;
 
 typedef struct _NclMultiDValHLUObjDataClassPart {
-	char *foo;
+	HLURefTableNode *ref_table;
 }NclMultiDValHLUObjDataClassPart;
 
 typedef struct _NclMultiDValHLUObjDataClassRec {

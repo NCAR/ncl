@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.18 1997-02-27 20:18:45 boote Exp $
+ *      $Id: NclApi.h,v 1.19 1997-05-09 21:37:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -353,6 +353,23 @@ extern void NclSetOutputStream(
 extern NhlBoolean NclSymbolDefined(
 #if	NhlNeedProto
 	char	*sym
+#endif
+);
+
+typedef struct _NclHLUStruct {
+	int hlu_id;
+	int	n_refs;
+	NclQuark var_quark;
+	NclQuark att_quark;
+	int	offset;
+	int	n_offsets;
+	void    *private;
+}NclHLUStruct;
+
+extern NhlErrorTypes NclHLUStringRef(
+#if	NhlNeedProto
+int	/* id */,
+NclHLUStruct * /* output */
 #endif
 );
 

@@ -109,15 +109,18 @@ static void HLUObjDestroy
 	NhlArgVal cbdata;
 	NhlArgVal selector;
 	NclRefList *parents,*tmpptr,*tmpptr2;
+	int id;
 
 	NhlINITVAR(cbdata);
 	NhlINITVAR(selector);
 
+	
 	if(hlu_obj != NULL) {
 /*
 * All of the HLU objects children will be destroyed by the NhlDestroy call
 * Therefore, all NclHLUObjs that point to children must be deleted.
 */
+		id = hlu_obj->hlu.hlu_id;
 		if(hlu_obj->obj.ref_count > 0) {
 			parents = hlu_obj->obj.parents;
 			while(parents != NULL) {
@@ -220,6 +223,7 @@ static void HLUObjDestroy
 #ifdef MAKEAPI
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
+			_NclRemoveAllRefs(hlu_obj->hlu.hlu_id);
 			NhlDestroy(hlu_obj->hlu.hlu_id);
 		}
 		if(self->obj.cblist != NULL) {
@@ -490,24 +494,27 @@ NhlClass class_ptr;
 	NclHLUObj tmp,ptmp;
 	NclObjClass	cptr = (theclass ? theclass : nclHLUObjClass);
 
-	if(inst == NULL) {
-		tmp = (NclHLUObj)NclMalloc((unsigned)sizeof(NclHLUObjRec));
-	} else {
-		tmp = (NclHLUObj)inst;
-	}
-	tmp->hlu.parent_hluobj_id = -1;
-	tmp->hlu.hlu_id = id;
-	tmp->hlu.hlu_name = NrmStringToQuark(NhlName(tmp->hlu.hlu_id));
-	tmp->hlu.c_list = NULL;
-	tmp->hlu.exp_list = NULL;
-	tmp->hlu.cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
-	tmp->hlu.apcb = NULL;
-	tmp->hlu.class_ptr = class_ptr;
+	tmp = _NclLookUpHLU(id);
+	if(tmp == NULL) {
+		if(inst == NULL) {
+			tmp = (NclHLUObj)NclMalloc((unsigned)sizeof(NclHLUObjRec));
+		} else {
+			tmp = (NclHLUObj)inst;
+		}
+		tmp->hlu.parent_hluobj_id = -1;
+		tmp->hlu.hlu_id = id;
+		tmp->hlu.hlu_name = NrmStringToQuark(NhlName(tmp->hlu.hlu_id));
+		tmp->hlu.c_list = NULL;
+		tmp->hlu.exp_list = NULL;
+		tmp->hlu.cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
+		tmp->hlu.apcb = NULL;
+		tmp->hlu.class_ptr = class_ptr;
 #ifdef MAKEAPI
-	_NclAddToNewList(tmp->hlu.hlu_id,tmp->hlu.hlu_name,tmp->hlu.class_ptr);
+		_NclAddToNewList(tmp->hlu.hlu_id,tmp->hlu.hlu_name,tmp->hlu.class_ptr);
 #endif /*MAKEAPI*/
-        (void)_NclObjCreate((NclObj)tmp , cptr , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
-	tmp->hlu.parent_hluobj_id = parentid;
+		(void)_NclObjCreate((NclObj)tmp , cptr , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
+		tmp->hlu.parent_hluobj_id = parentid;
+	}
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);

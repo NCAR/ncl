@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.41 1997-02-27 20:18:44 boote Exp $
+ *      $Id: NclApi.c,v 1.42 1997-05-09 21:37:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,7 @@ extern "C" {
 #include "NclVar.h"
 #include "NclFile.h"
 #include "NclFileVar.h"
+#include "HLUSupport.h"
 
 int force_reset = 0;
 int start_state = 0;
@@ -55,6 +56,51 @@ char * /*str*/,
 int  /*reset*/
 #endif
 );
+
+NhlErrorTypes NclHLUStringRef
+#if 	NhlNeedProto
+(int id , NclHLUStruct *ptr)
+#else
+( id , ptr)
+int id;
+NclHLUStruct *ptr;
+#endif
+{
+	NclHLULookUpTableNode* tmp;
+
+	tmp = _NclGetHLURefInfo(id);
+
+	if(tmp == NULL) {
+		ptr->hlu_id = -1;
+		ptr->var_quark = -1;
+		ptr->att_quark = -1;
+		ptr->offset = -1;
+		ptr->n_offsets = 0;
+		ptr->n_refs = 0;
+		ptr->private = NULL;
+		return(NhlFATAL);
+	} else {
+		ptr->hlu_id = tmp->hlu_id;
+		if(tmp->n_entries > 0) {
+			ptr->var_quark = tmp->ref_list[0].vq;
+			ptr->att_quark = tmp->ref_list[0].aq;
+			ptr->n_refs = tmp->n_entries;
+			ptr->n_offsets = tmp->ref_list[0].n_refs;
+			ptr->offset = tmp->ref_list[0].refs[0];
+			ptr->private = (void*)tmp;
+		} else {
+			ptr->var_quark = -1;
+			ptr->offset = -1;
+			ptr->n_offsets = 0;
+			ptr->n_refs = 0;
+			ptr->offset = -1;
+			ptr->private = NULL;
+			return(NhlWARNING);
+		}
+	}
+	
+}
+
 
 NhlErrorTypes NclApiRegisterCallback
 #if	NhlNeedProto

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.9 1996-07-16 20:58:19 ethan Exp $
+ *      $Id: NclData.h,v 1.10 1997-05-09 21:37:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ struct _NclObjRec *	/*parent*/
 #define HLUDESTROYED	5
 #define ATTDESTROYED	6
 #define COORDDESTROYED	7
+#define HLUVALCHANGE	8
 
 
 typedef struct _NclObjPart {

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.89 1997-04-01 23:45:25 ethan Exp $
+ *      $Id: Execute.c,v 1.90 1997-05-09 21:37:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,10 +45,17 @@ extern "C" {
 #include "OpsFuncs.h"
 #include "parser.h"
 #include "NclAtt.h"
+#include "NclHLUObj.h"
+#include "HLUSupport.h"
 #include <errno.h>
 
 extern int cmd_line;
 
+extern void _NclHLUVarValChange(
+#if     NhlNeedProto
+NhlArgVal cbdata, NhlArgVal udata
+#endif
+);
 
 NclExecuteReturnStatus _NclExecute
 #if	NhlNeedProto
@@ -1762,6 +1769,7 @@ NclExecuteReturnStatus _NclExecute
 				int i,nsubs;	
 				NclSymbol *sym = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
+				NhlArgVal udata;
 			
 
 			ptr++;lptr++;fptr++;
@@ -1871,6 +1879,17 @@ NclExecuteReturnStatus _NclExecute
 							}
 							_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);
 							_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+							if(lhs_var->u.data_var->obj.obj_type_mask & Ncl_HLUVar) {
+								udata.ptrval = NclMalloc(sizeof(NclHLUUData));
+								((NclHLUUData*)udata.ptrval)->vq = lhs_var->u.data_var->var.var_quark;
+								((NclHLUUData*)udata.ptrval)->aq = -1;
+								tmp_md = (NclMultiDValData)_NclGetObj(lhs_var->u.data_var->var.thevalue_id);
+								((NclHLUVar)lhs_var->u.data_var)->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
+
+								for(i = 0; i < tmp_md->multidval.totalelements;i++) {
+									_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i);
+								}
+							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
 							estatus = NhlFATAL;
@@ -4812,6 +4831,9 @@ NclExecuteReturnStatus _NclExecute
 				NclSelectionRecord *rhs_sel_ptr = NULL;
 				NclSelectionRecord rhs_sel;
 				struct _NclVarRec *tmp_var;
+				NclMultiDValData tmp_md;
+				NhlArgVal udata;
+
 
 	
 				ptr++;lptr++;fptr++;
@@ -4889,17 +4911,34 @@ NclExecuteReturnStatus _NclExecute
 								if(lhs_var->u.data_var->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)tmp_var);
 								}
-							}
+								lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
+								lhs_var->u.data_var->var.thesym = lhs_sym;
+								(void)_NclChangeSymbolType(lhs_sym,VAR);
+								lhs_var->u.data_var->var.var_type = NORMAL;
+								_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+							} else {
+							
 /*
 * ----> May want to encapsulate the following into the NclVar object
 * 	A likely function interface would be: _NclChangeVar(int quark,NclSymbol *thesym, NclVarTypes var_type); 
 * 	which would be a method.
 */
-							lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
-							lhs_var->u.data_var->var.thesym = lhs_sym;
-							(void)_NclChangeSymbolType(lhs_sym,VAR);
-							lhs_var->u.data_var->var.var_type = NORMAL;
-							_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+								lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
+								lhs_var->u.data_var->var.thesym = lhs_sym;
+								(void)_NclChangeSymbolType(lhs_sym,VAR);
+								lhs_var->u.data_var->var.var_type = NORMAL;
+								_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+								if(lhs_var->u.data_var->obj.obj_type_mask & Ncl_HLUVar) {
+									udata.ptrval = NclMalloc(sizeof(NclHLUUData));
+									((NclHLUUData*)udata.ptrval)->vq = lhs_var->u.data_var->var.var_quark;
+									((NclHLUUData*)udata.ptrval)->aq = -1;
+									tmp_md = (NclMultiDValData)_NclGetObj(lhs_var->u.data_var->var.thevalue_id);
+									((NclHLUVar)lhs_var->u.data_var)->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
+									for(i = 0; i < tmp_md->multidval.totalelements;i++) {
+										_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i);
+									}
+								}
+							}
 						}
 /*
 *-----> end of questionable code
