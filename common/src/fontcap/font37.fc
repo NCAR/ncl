@@ -1,5 +1,5 @@
 /*
-/*	$Id: font37.fc,v 1.5 1994-10-27 00:27:17 fred Exp $
+/*	$Id: font37.fc,v 1.6 1994-12-09 17:46:31 fred Exp $
 /*
 FONT_NAME
 NCAR:WEATHER2
@@ -1267,9 +1267,9 @@ END_HOLE
 640 501 602 645 549 800
 END_REGION
 END_CHAR
-BEGIN_CHAR                                                                      
-/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY     
-/*    h        104     1040   120     0   920   800   120     0   920   800     
+BEGIN_CHAR
+/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
+/*    h        104     1040   120     0   920   800   120     0   920   800
 BEGIN_REGION
 920 418
 563 418
@@ -1297,7 +1297,7 @@ BEGIN_REGION
 920 382
 920 418
 END_REGION
-END_CHAR                                                                        
+END_CHAR
 BEGIN_CHAR
 /*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
 /*    i       105      1040   120   380   120   420   120   380   920   420
@@ -1402,82 +1402,82 @@ BEGIN_REGION
 120 540
 END_REGION
 END_CHAR
-BEGIN_CHAR                                                                      
-/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY     
-/*    o        111      910   180    28   906   300   180    28   906   300     
-BEGIN_LINE                                                                      
-190 300                                                                         
-236 222                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-220 300                                                                         
-310 144                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-260 300                                                                         
-328 184                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-340 300                                                                         
-430 144                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-380 300                                                                         
-516 66                                                                          
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-460 300                                                                         
-490 248                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-498 236                                                                         
-528 184                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-534 170                                                                         
-564 118                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-500 300                                                                         
-658 28                                                                          
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-540 300                                                                         
-608 184                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-580 300                                                                         
-670 144                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-640 300                                                                         
+BEGIN_CHAR
+/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
+/*    o        111      910   180    28   906   300   180    28   906   300
+BEGIN_LINE
+190 300
+236 222
+END_LINE
+BEGIN_LINE
+220 300
+310 144
+END_LINE
+BEGIN_LINE
+260 300
+328 184
+END_LINE
+BEGIN_LINE
+340 300
+430 144
+END_LINE
+BEGIN_LINE
+380 300
+516 66
+END_LINE
+BEGIN_LINE
+460 300
+490 248
+END_LINE
+BEGIN_LINE
+498 236
+528 184
+END_LINE
+BEGIN_LINE
+534 170
+564 118
+END_LINE
+BEGIN_LINE
+500 300
+658 28
+END_LINE
+BEGIN_LINE
+540 300
+608 184
+END_LINE
+BEGIN_LINE
+580 300
+670 144
+END_LINE
+BEGIN_LINE
+640 300
 686 222
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-700 300                                                                         
-782 160                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-740 300                                                                         
-888 42                                                                          
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-780 300                                                                         
-816 238                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-824 222                                                                         
-860 160                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-870 144                                                                         
-906 82                                                                          
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-820 300                                                                         
-852 246                                                                         
-END_LINE                                                                        
-END_CHAR                                                                        
+END_LINE
+BEGIN_LINE
+700 300
+782 160
+END_LINE
+BEGIN_LINE
+740 300
+888 42
+END_LINE
+BEGIN_LINE
+780 300
+816 238
+END_LINE
+BEGIN_LINE
+824 222
+860 160
+END_LINE
+BEGIN_LINE
+870 144
+906 82
+END_LINE
+BEGIN_LINE
+820 300
+852 246
+END_LINE
+END_CHAR
 BEGIN_CHAR
 /*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
 /*    p       112       743   120  -100   623   900   120  -100   623   900
@@ -1507,56 +1507,80 @@ BEGIN_LINE
 END_LINE
 END_CHAR
 BEGIN_CHAR
-/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY     
-/*    q        113      920   109     0   801   800   109     0   801   800     
-BEGIN_LINE                                                                      
-455 0                                                                           
-455 800                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-109 600                                                                         
-801 200                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-109 200                                                                         
-801 600                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-340 720                                                                         
-455 640                                                                         
-570 720                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-675 660                                                                         
-663 520                                                                         
-790 460                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-675 140                                                                         
-663 280                                                                         
-790 340                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-340 80                                                                          
-455 160                                                                         
-570 80                                                                          
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-120 340                                                                         
-247 280                                                                         
-235 140                                                                         
-END_LINE                                                                        
-BEGIN_LINE                                                                      
-120 460                                                                         
-247 520                                                                         
-235 660                                                                         
-END_LINE                                                                        
-END_CHAR                                                                        
+/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
+/*    q        113      920   109     0   801   800   109     0   801   800
+BEGIN_LINE
+455 0
+455 800
+END_LINE
+BEGIN_LINE
+109 600
+801 200
+END_LINE
+BEGIN_LINE
+109 200
+801 600
+END_LINE
+BEGIN_LINE
+340 720
+455 640
+570 720
+END_LINE
+BEGIN_LINE
+675 660
+663 520
+790 460
+END_LINE
+BEGIN_LINE
+675 140
+663 280
+790 340
+END_LINE
+BEGIN_LINE
+340 80
+455 160
+570 80
+END_LINE
+BEGIN_LINE
+120 340
+247 280
+235 140
+END_LINE
+BEGIN_LINE
+120 460
+247 520
+235 660
+END_LINE
+END_CHAR
 BEGIN_CHAR
 /*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
-/*    r       114      1040   120     0   120     0   120     0   120     0
-BEGIN_REGION
-END_REGION
+/*    r        114      940   120   191   820   609   120   191   820   611
+BEGIN_LINE
+434 264
+439 216 485 191 516 191
+594 191 626 232 634 275
+774 246 820 303 820 356
+820 390 808 457 702 422
+745 478 757 544 706 576
+656 611 586 582 549 497
+573 572 535 608 503 609
+461 607 440 556 437 485
+432 511 421 531 402 531
+372 529 349 495 351 471
+351 442 369 420 391 401
+END_LINE
+BEGIN_LINE
+141 401
+311 401
+END_LINE
+BEGIN_LINE
+120 329
+483 329
+END_LINE
+BEGIN_LINE
+121 264
+369 264
+END_LINE
 END_CHAR
 BEGIN_CHAR
 /*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY

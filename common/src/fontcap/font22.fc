@@ -1,5 +1,5 @@
 /*
-/*	$Id: font22.fc,v 1.1 1992-11-09 18:55:25 fred Exp $
+/*	$Id: font22.fc,v 1.2 1994-12-09 17:46:28 fred Exp $
 /*
 FONT_NAME
 NCAR:HELVETICA-BOLD
@@ -823,6 +823,7 @@ BEGIN_REGION
 343 70
 343 0
 44 0
+44 400
 END_REGION
 END_CHAR
 BEGIN_CHAR
