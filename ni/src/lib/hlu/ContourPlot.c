@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.85 1999-04-05 23:30:02 ethan Exp $
+ *      $Id: ContourPlot.c,v 1.86 1999-04-06 23:46:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6555,6 +6555,28 @@ static NhlErrorTypes ManageLabelBar
 		}
 	}
 
+	/*
+	 * Moved explicit label before the zero field return, so that explicit
+	 * labels will be set even if the current data represents a 
+	 * constant field
+	 */
+	if (cnp->explicit_lbar_labels_on && cnp->lbar_labels_res_set) {
+		NhlGenArray ga;
+		if (cnp->lbar_labels != NULL) 
+			NhlFreeGenArray(cnp->lbar_labels);
+
+		if ((ga = _NhlCopyGenArray(cnp->lbar_labels_res,
+					   True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		cnp->lbar_labels = ga;
+		ocnp->lbar_labels = NULL;
+		cnp->lbar_labels_set = True;
+	}
+
 	if (cnp->const_field) return ret;
 
 	if (! cnp->explicit_lbar_labels_on) {
@@ -6571,29 +6593,12 @@ static NhlErrorTypes ManageLabelBar
 		else
 			cnp->lbar_alignment = NhlINTERIOREDGES;
 	}
-	else {
-		if (cnp->lbar_labels_res_set) {
-			NhlGenArray ga;
-			if (cnp->lbar_labels != NULL) 
-				NhlFreeGenArray(cnp->lbar_labels);
-
-			if ((ga = _NhlCopyGenArray(cnp->lbar_labels_res,
-						   True)) == NULL) {
-				e_text = "%s: error copying GenArray";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			cnp->lbar_labels = ga;
-			ocnp->lbar_labels = NULL;
-		}
-		else if (! cnp->lbar_labels_set) {
-			copy_line_label_strings = True;
-			if (cnp->lbar_end_labels_on)
-				cnp->lbar_alignment = NhlEXTERNALEDGES;
-			else
-				cnp->lbar_alignment = NhlINTERIOREDGES;
-		}
+	else if (! cnp->lbar_labels_set) {
+		copy_line_label_strings = True;
+		if (cnp->lbar_end_labels_on)
+			cnp->lbar_alignment = NhlEXTERNALEDGES;
+		else
+			cnp->lbar_alignment = NhlINTERIOREDGES;
 		cnp->lbar_labels_set = True;
 	}
 
