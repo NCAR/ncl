@@ -4,20 +4,19 @@
 
 
 /*   
- * This wrapper takes three arguments: an array of any dimensionality (x), 
- * an nD array (or scalar) that's a subset (in size) of x, and an
- * array of dimensions to be conformed. 
+ * This wrapper takes three arguments: an array of any dimensionality
+ * (x),  an nD array (or scalar) that's a subset (in size) of x,
+ * and an array of dimensions to be conformed. 
  * 
  * The scalar case is a special case. For example, if
- * x(ntim,klvl,nlat,mlon) and dp = a scalar:
+ * x(ntim,klvl,nlat,mlon) and dp (scalar), then the
+ * third argument must be equal to -1. A new array of
+ * size ntim x klvl x nlat x mlon will be created, and
+ * dp will be copied to every element.
  *
- *     dpConform1 = conform (x, dp, 1)      ;  x(ntim,klvl,nlat,mlon)
- *     dpConform2 = conform (x, dp, (/0,2/) ;  x(ntim,klvl,nlat,mlon)
+ *     dpConform = conform (x, dp, -1)      ;  x(ntim,klvl,nlat,mlon)
  *                                          ;      0   1    2    3
  *
- *  then in the first case, the scalar dp will be copied to every
- *  element of a klvl array called "dpConform1" and in the second case
- *  to an ntim x nlat array called "dpConform2".
  *
  * If dp is NOT a scalar, say x(ntim,klvl,nlat,mlon) and dp(klvl):
  *
@@ -64,7 +63,7 @@ NhlErrorTypes conform_W( void )
 /*
  * various
  */
-  int i, j, new_position, conform_pos, scalar_tmp_md;
+  int i, j, new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
   int size_conform, type_size;
   int *skip_x, *skip_c, *indices;
 /*
@@ -102,49 +101,58 @@ NhlErrorTypes conform_W( void )
            NULL,
            NULL,
            2);
+
 /*
- * The ncomform-th dimension of x and dp both must be the same size.
+ * Check if we're dealing with the special case of where the second
+ * argument is a scalar, and the third argument is -1.  If this 
+ * is true, then the scalar value will be copied to every 
+ * element of the new array.
  */
   scalar_tmp_md = is_scalar(tmp_md->multidval.n_dims,
                             tmp_md->multidval.dim_sizes);
 
-  if( !scalar_tmp_md && tmp_md->multidval.n_dims != dsizes_conform[0] ) {
+  if(scalar_tmp_md && conform_dims[0] == -1) copy_scalar = 1;
+
+/*
+ * If not dealing with the special scalar case, then the number of
+ * dimensions of the second argument must be the same as the length
+ * of the third argument.
+ */
+  if(!copy_scalar && tmp_md->multidval.n_dims != dsizes_conform[0]) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The array to be conformed must have the same number of dimensions as indicated by the length of the last argument");
     return(NhlFATAL);
   }
+
 /*
- * Check dimension sizes:
+ * If not a scalar situation, check for errors:
  *
- *    1. The dimensions indicated by the third argument must actually be
- *       one of the dimensions of x, or -1 (which indicates all 
- *       dimensions of x)
- *    2. The dimensions indicated by the third argument must be increasing.
+ *    1. The dimension indices indicated by the third argument must
+ *       be in the range of the dimension indices of x (i.e. if x is
+ *       only 3-dimensional, then one of the indices in the 3rd
+ *       argument cannot be a "4").
+ *    2. The dimensions indices indicated by the third argument must
+ *       be unique and increasing.
  *    4. The dimensions sizes of the second argument must be the same
  *       as those indicated by the third argument.
  */
-  if(!scalar_tmp_md || (scalar_tmp_md && conform_dims[0] != -1)) {
-	for(i = 0; i < dsizes_conform[0]; i++ ) {
-	  if(conform_dims[i] < 0 || conform_dims[i] > (ndims_x-1)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the third argument contains a dimension that is out-of-range of the dimensions of x");
-		return(NhlFATAL);
-	  }
-	  if(i > 0) {
-		if(conform_dims[i-1] >= conform_dims[i]) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The dimensions specified by the third argument must be increasing");
-		  return(NhlFATAL);
-		}
-	  }
-	  if(!scalar_tmp_md && dsizes_x[conform_dims[i]] != 
-		 tmp_md->multidval.dim_sizes[i] ) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimensions sizes of the second argument do not match those indicated by the third argument");
-		return(NhlFATAL);
-	  }
-	}
-  }
-  if(!scalar_tmp_md) {
+  if(!copy_scalar) {
+    for(i = 0; i < dsizes_conform[0]; i++ ) {
+      if(conform_dims[i] < 0 || conform_dims[i] > (ndims_x-1)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the third argument contains a dimension that is out-of-range of the dimensions of x");
+        return(NhlFATAL);
+      }
+      if(i > 0) {
+        if(conform_dims[i-1] >= conform_dims[i]) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The dimensions specified by the third argument must be increasing");
+          return(NhlFATAL);
+        }
+      }
+      if(dsizes_x[conform_dims[i]] != tmp_md->multidval.dim_sizes[i] ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimensions sizes of the second argument do not match those indicated by the third argument");
+        return(NhlFATAL);
+      }
+    }
 /*
- * This is the non-scalar case.
- *
  * Create an array to hold the number of linear elements you have to
  * skip over when you increment a particular index.
  *
@@ -175,27 +183,16 @@ NhlErrorTypes conform_W( void )
   else {
 /*
  * This is the scalar case. The output array will be the size of
- * the dimensions given.  If conform_dims[0] == -1, then this
- * means to use all dimensions of the data. 
+ * the dimensions given.
  */
-    if(conform_dims[0] == -1) {
-	  ndims  = ndims_x;
-	  dsizes = dsizes_x;
-	  size_conform = 1;
-	  for(i = 0; i < ndims_x; i++) {
-		size_conform *= dsizes_x[i];
-	  }
-	}
-	else {
-	  size_conform = 1;
-	  dsizes = (int*)calloc(dsizes_conform[0],sizeof(int));
-	  for(i = 0; i < dsizes_conform[0]; i++) {
-		size_conform *= dsizes_x[conform_dims[i]];
-		dsizes[i]     = dsizes_x[conform_dims[i]];
-	  }
-	  ndims = dsizes_conform[0];
-	}
+    ndims  = ndims_x;
+    dsizes = dsizes_x;
+    size_conform = 1;
+    for(i = 0; i < ndims_x; i++) {
+      size_conform *= dsizes_x[i];
+    }
   }
+
 /*
  * Allocate space for output array.
  */
@@ -206,7 +203,7 @@ NhlErrorTypes conform_W( void )
   }
 
   type_size = tmp_md->multidval.type->type_class.size;
-  if(!scalar_tmp_md) {
+  if(!copy_scalar) {
 /*
  * This is the non-scalar case.
  *
@@ -232,8 +229,7 @@ NhlErrorTypes conform_W( void )
   }
   else {
 /*
- * This is the scalar case. Just copy the scalar value to the output
- * array.
+ * This is the scalar case. Copy the scalar value to the output array.
  */
     for(i = 0; i < size_conform; i++) {
       memcpy((void*)((char*)conform + i*type_size),
