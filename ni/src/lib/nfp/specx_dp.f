@@ -525,6 +525,7 @@ c --------------------------------------------------------------------
 
 c initilize some constants
 
+      DF   = 1.0D0/DBLE(NX)
       NXP1 = NX + 1
       NXM1 = NX - 1
       NSPCM1 = NSPC - 1
@@ -623,12 +624,10 @@ c .   (1) for both spc and x and nspcm1 to nspc.
 
 c sum the smoothed spectral estimates
 
-c        xinfo(5) = 0.0
 C only half the width
-          XINFO(5) = (SPC(2)+SPC(NSPC))*0.5D0
-C n=2,nspc
-          DO 150 N = 3,NSPC - 1
-  150     XINFO(5) = XINFO(5) + SPC(N)
+          XINFO(5) = (SPC(2)+SPC(NSPC))*0.5D0*DF
+          DO 150 N = 3,NSPC-1
+  150     XINFO(5) = XINFO(5) + SPC(N)*DF
 
       END IF
 
@@ -651,7 +650,7 @@ C white noise level
 c        xinfo(7) = 1.0*float(nx)/float(nspc)
       ELSE IF (SCL.EQ.2.D0) THEN
 C area under curve=total variance
-          XINFO(6) = XINFO(3)*DBLE(NX)/XINFO(5)
+          XINFO(6) = XINFO(3)/XINFO(5)
 C white noise level
           XINFO(7) = XINFO(3)/DBLE(NSPC)
       ELSE
