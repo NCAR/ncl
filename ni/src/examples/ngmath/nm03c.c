@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.1 1997-12-15 18:24:46 haley Exp $
+ *      $Id: nm03c.c,v 1.2 1997-12-16 15:42:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,8 +42,6 @@
 #define NumXOut  21
 #define NumYOut  21
 #define RAD2DEG 57.29578
-
-extern void drwvctc (int WKID, int lx, int ly, float *u, float *v);
 
 main(int argc, char *argv[])
 {
@@ -102,9 +100,10 @@ main(int argc, char *argv[])
   int   len_dims[2];
   int   appid,wid,dataid,cnid,vfid,vcid,gkswid;
   int   srlist, grlist;
-  int   i, j, ier;
+  int   i, j, ier, iam;
   int   NCGM=0, X11=1, PS=0;
   float cnlevels[7];
+  float p, wrk;
 /*
  * Initialize the high level utility library
  */
@@ -127,7 +126,7 @@ main(int argc, char *argv[])
 	NhlRLClear(srlist);
 	NhlRLSetString(srlist,NhlNwkMetaName,"./nm03c.ncgm");
 	NhlCreate(&wid,"nm03Work",
-			  NhlncgmWorkstationClass,appid,srlist);
+			  NhlncgmWorkstationClass,NhlDEFAULT_APP,srlist);
   }
   else if (X11) {
 /*
@@ -135,7 +134,7 @@ main(int argc, char *argv[])
  */
 	NhlRLClear(srlist);
 	NhlRLSetInteger(srlist,NhlNwkPause,True);
-	NhlCreate(&wid,"nm03Work",NhlxWorkstationClass,appid,srlist);
+	NhlCreate(&wid,"nm03Work",NhlxWorkstationClass,NhlDEFAULT_APP,srlist);
   }
   else if (PS) {
 /*
@@ -143,7 +142,7 @@ main(int argc, char *argv[])
  */
 	NhlRLClear(srlist);
 	NhlRLSetString(srlist,NhlNwkPSFileName,"./nm03c.ps");
-	NhlCreate(&wid,"nm03Work",NhlpsWorkstationClass,appid,srlist);
+	NhlCreate(&wid,"nm03Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
   }
 
   for (i = 0 ; i < NumIn ; i++) {
@@ -183,6 +182,20 @@ main(int argc, char *argv[])
       v[j][i] = cos(uvtmp);
     }
   }
+/*
+ * Use the LLUs to draw a vector plot.
+ */
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(wid,grlist);
+
+  gactivate_ws (gkswid);
+  c_vvinit(&u[0][0], NumXOut, &v[0][0], NumYOut, &p, 1, NumXOut, NumYOut, &wrk, 1);
+  c_vvsetc("mnt"," ");
+  c_vvsetc("mxt"," ");
+  c_vvectr(&u[0][0], &v[0][0], &p, &iam, 0, &wrk);
+  gdeactivate_ws (gkswid);
+  NhlFrame(wid);
 
 /*
  * Create a VectorField object; then use its id as the value of
@@ -190,25 +203,18 @@ main(int argc, char *argv[])
  */
   len_dims[0] = NumXOut;
   len_dims[1] = NumYOut;
+
   NhlRLClear(srlist);
   NhlRLSetMDFloatArray(srlist,NhlNvfUDataArray,&u[0][0],2,len_dims);
   NhlRLSetMDFloatArray(srlist,NhlNvfVDataArray,&v[0][0],2,len_dims);
   NhlCreate(&vfid,"vectorfield",NhlvectorFieldClass,appid,srlist);
-  /*
+
   NhlRLClear(srlist);
   NhlRLSetInteger(srlist,NhlNvcVectorFieldData,vfid);
   NhlCreate(&vcid,"vector",NhlvectorPlotClass,wid,srlist);
-  */
 
-  NhlRLClear(grlist);
-  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
-  NhlGetValues(wid,grlist);
-
-  drwvctc(gkswid,NumXOut,NumYOut,&u[0][0],&v[0][0]);
-  /*
   NhlDraw(vcid);
   NhlFrame(wid);
-  */
 /*
  *  Get the slopes.
  */
@@ -249,192 +255,9 @@ main(int argc, char *argv[])
  * Destroy the objects created, close the HLU library and exit.
  */
     NhlDestroy(cnid);
-    NhlDestroy(vcid);
     NhlDestroy(wid);
     NhlDestroy(appid);
 
     NhlClose();
     exit(0);
 }
-
-float armn(int, float *);
-float armx(int, float *);
-
-/*
- *  Define the workstation type.  If not an X11 window, then
- *  appropritate metafile names will be generated for each plot
- *  in the subsequent code.
- */
-#define IWTYPE 8
-
-/*
- * Procedure drwsrfc uses the NCAR Graphics function c_srface to
- * draw a surface plot of the data values in z.
- *
- * The point of observation is calculated from the 3D coordinate 
- * (s1, s2, s3); the point looked at is the center of the surface.
- *
- *  nx     -  Dimension of the X-axis variable x.
- *  ny     -  Dimension of the Y-axis variable y.
- *  x      -  An array of X-axis values.
- *  y      -  An array of Y-axis values.
- *  z      -  An array dimensioned for nx x ny containing data
- *            values for each (X,Y) coordinate.
- *  s1     -  X value for the eye position.
- *  s2     -  Y value for the eye position.
- *  s3     -  Z value for the eye position.
- *  iwk    -  Work space dimensioned for at least 2*nx*ny.
- *
- */
-
-void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
-              float s1, float s2, float s3, int *iwk)
-{
-    Gcolr_rep colval;
-    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6], *fz;
-    int i,j;
-
-	if (IWTYPE == 1) {
-	  c_ngsetc("me","srf.ncgm");
-	}
-	else if ( (IWTYPE >= 20) && (IWTYPE <= 31) ) {
-	  c_ngsetc("me","srf.ps");
-	}
-	gactivate_ws (WKID);
-	colval.rgb.red = 1.;
-	colval.rgb.green = 1.;
-	colval.rgb.blue = 1.;
-	gset_colr_rep(WKID,0,&colval);
-	colval.rgb.red = 0.;
-	colval.rgb.green = 0.;
-	colval.rgb.blue = 0.;
-	gset_colr_rep(WKID,1,&colval);
-/*
- *  Find the extreme data values.
- */
-    xmn = armn(nx, x);
-    xmx = armx(nx, x);
-    ymn = armn(ny, y);
-    ymx = armx(ny, y);
-    zmn = armn(nx * ny, z);
-    zmx = armx(nx * ny, z);
-
-    if ( (s1 == 0.) &&  (s2 == 0.) &&  (s3 == 0.) ) {
-       s1 = -3.;
-       s2 = -1.5;
-       s3 = 0.75;
-    }
-    eye[0] = 5. * s1 * (xmx-xmn);
-    eye[1] = 5. * s2 * (ymx-ymn);
-    eye[2] = 5. * s3 * (zmx-zmn);
-    eye[3] = 0.5 * (xmx-xmn);
-    eye[4] = 0.5 * (ymx-ymn);
-    eye[5] = 0.5 * (zmx-zmn);
-
-
-/*
- *  Rearrange the array, since c_srface expects an array ordered as 
- *  per Fortran.
- */
-    fz = (float *) calloc(nx*ny,sizeof(float));
-
-    for (i = 0; i < nx; i++) {
-       for (j = 0; j < ny; j++) {
-           
-          fz[j*nx+i] = z[i*ny+j];
-       }
-    }
-
-/*
- *  Plot the surface.
- */
-    c_srface (x,y,fz,iwk,nx,nx,ny,eye,0.);
-    free(fz);
-/*
- *  Deactivate and close workstation, close GKS.
- */
-	gdeactivate_ws(WKID);
-}
-
-float armn(int num, float *x)
-{
-   int i;
-   float amin;
-   amin = x[0];
-   for (i = 1 ; i < num ; i++)
-      if (x[i] < amin) amin = x[i];
-   return(amin);
-}
-float armx(int num, float *x)
-{
-   int i;
-   float amax;
-   amax = x[0];
-   for (i = 1 ; i < num ; i++)
-      if (x[i] > amax) amax = x[i];
-   return(amax);
-}
-/*
- * Procedure drwvctc uses the NCAR Graphics functions c_vvinit and
- * c_vvectr to draw a vector plot.
- *
- * Where u and v are 2D arrays, this procedure draws a vector plot
- * of the vectors (u[i,j],v[i,j]) for i=1,lx AND j=1,ly.
- *
- */
-
-void drwvctc (int WKID, int lx, int ly, float *u, float *v)
-{
-    Gcolr_rep colval;
-    float *fu, *fv;
-    float p,wrk;
-    int i,j,iam;
-
-/*
- *  If GKS is not open, open GKS, open workstation and activate a
- *  workstation.  Set the background color to white and the
- *  foreground color to balck.
- */
-	if (IWTYPE == 1) {
-	  c_ngsetc("me","vct.ncgm");
-	}
-	else if ( (IWTYPE >= 20) && (IWTYPE <= 31) ) {
-	  c_ngsetc("me","vct.ps");
-	}
-	gactivate_ws (WKID);
-	colval.rgb.red = 1.;
-	colval.rgb.green = 1.;
-	colval.rgb.blue = 1.;
-	gset_colr_rep(WKID,0,&colval);
-	colval.rgb.red = 0.;
-	colval.rgb.green = 0.;
-	colval.rgb.blue = 0.;
-	gset_colr_rep(WKID,1,&colval);
-/*
- *  Rearrange the arrays, since c_vvinit expects an array ordered as 
- *  per Fortran.
- */
-    fu = (float *) calloc(lx*ly,sizeof(float));
-    fv = (float *) calloc(lx*ly,sizeof(float));
-
-    for (i = 0; i < lx; i++) {
-       for (j = 0; j < ly; j++) {
-          fu[j*lx+i] = u[i*ly+j];
-          fv[j*lx+i] = v[i*ly+j];
-       }
-    }
-    c_vvinit(fu, lx, fv, ly, &p, 1, lx, ly, &wrk, 1);
-    c_vvsetc("mnt"," ");
-    c_vvsetc("mxt"," ");
-    c_vvectr(fu, fv, &p, &iam, 0, &wrk);
-    c_frame();
-    free(fu);
-    free(fv);
-
-/*
- *  Deactivate and close workstation, close GKS.
- */
-	gdeactivate_ws(WKID);
-}
-
-

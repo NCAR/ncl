@@ -1,5 +1,5 @@
 /*
- *      $Id: nm01c.c,v 1.3 1997-12-16 15:42:10 haley Exp $
+ *      $Id: nm02c.c,v 1.1 1997-12-16 15:42:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9,15 +9,15 @@
 *                                                                       *
 ************************************************************************/
 /*
- *  File:       nm01c.c
+ *  File:       nm02c.c
  *
  *  Author:     Mary Haley (taken from one of Fred Clare's examples)
  *          National Center for Atmospheric Research
  *          PO 3000, Boulder, Colorado
  *
- *  Date:       Thu Dec  4 14:01:23 MST 1997
+ *  Date:       Mon Dec 15 16:01:30 MST 1997
  *
- *  Description: Simple example of natural neighbor linear interpolation.
+ *  Description:  Simple example of natural neighbor linear regridding.
  */
 
 #include <math.h>
@@ -50,6 +50,7 @@ main(int argc, char *argv[])
     float z[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
 	float  xc, yc;
 	int    ier;
+    int    len_dims[2];
     int    appid,wid,gkswid;
     int    srlist, grlist;
     int    i,j;
@@ -68,15 +69,15 @@ main(int argc, char *argv[])
     grlist = NhlRLCreate(NhlGETRL);
     NhlRLClear(srlist);
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"nm01",NhlappClass,NhlDEFAULT_APP,srlist);
+    NhlCreate(&appid,"nm02",NhlappClass,NhlDEFAULT_APP,srlist);
 
     if (NCGM) {
 /*
  * Create a meta file workstation.
  */
         NhlRLClear(srlist);
-        NhlRLSetString(srlist,NhlNwkMetaName,"./nm01c.ncgm");
-        NhlCreate(&wid,"nm01Work",
+        NhlRLSetString(srlist,NhlNwkMetaName,"./nm02c.ncgm");
+        NhlCreate(&wid,"nm02Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,srlist);
     }
     else if (X11) {
@@ -85,15 +86,15 @@ main(int argc, char *argv[])
  */
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNwkPause,True);
-        NhlCreate(&wid,"nm01Work",NhlxWorkstationClass,NhlDEFAULT_APP,srlist);
+        NhlCreate(&wid,"nm02Work",NhlxWorkstationClass,NhlDEFAULT_APP,srlist);
     }
     else if (PS) {
 /*
  * Create a meta file workstation.
  */
         NhlRLClear(srlist);
-        NhlRLSetString(srlist,NhlNwkPSFileName,"./nm01c.ps");
-        NhlCreate(&wid,"nm01Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+        NhlRLSetString(srlist,NhlNwkPSFileName,"./nm02c.ps");
+        NhlCreate(&wid,"nm02Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
     }
 	xc = 1./(NumXOut-1.);
 	for( i = 0; i < NumXOut; i++ ) {
@@ -103,6 +104,7 @@ main(int argc, char *argv[])
 	for( i = 0; i < NumYOut; i++ ) {
 	  yo[i] = i * yc;
 	}
+	c_nnseti("IGR",1);
 	out = c_natgrids(Npts, y, x, z, NumXOut, NumYOut, xo, yo ,&ier);
 /*
  * Get Workstation ID.

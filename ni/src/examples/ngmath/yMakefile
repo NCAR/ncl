@@ -1,13 +1,19 @@
 #
-#   $Id: yMakefile,v 1.1 1997-12-15 18:24:49 haley Exp $
+#   $Id: yMakefile,v 1.2 1997-12-16 15:42:15 haley Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
 
 MYNAME      = ngmath
 
+CSRCS = nm01c.c nm02c.c nm03c.c
 NSRCS = nm01n.ncl nm02n.ncl nm03n.ncl nm04n.ncl nm05n.ncl nm06n.ncl \
 		nm07n.ncl nm08n.ncl nm09n.ncl
+SRCS  = $(CSRCS) $(FSRCS)
 
-
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+
+CExampleTarget(nm01c,nm01c.o)
+CExampleTarget(nm02c,nm02c.o)
+CExampleTarget(nm03c,nm03c.o)
