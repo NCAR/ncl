@@ -72,12 +72,38 @@ angular limits specifying a square, in which case
 the ellipse becomes a circle, but it will work for
 any map. The default value is false (zero).
 .IP "\&'GD' - Real"
-The distance between points used to draw the grid,
-in degrees. The default value is 1.; user values
-must fall between 0.001 and 10.0.
+The distance between points used to draw the grid, in degrees. The default
+value is 1.; user values must fall between 0.001 and 10.0.
+.IP "\&'GP' - Integer or Real"
+Specifies the way in which the grid, if drawn, is to be modified near the poles
+on projections which map the poles into single points; 'GP' is given a value of
+the form "1000*GLAT+GLON", where GLAT is an integer between 0 and 90 and GLON
+is a positive real between 0 and 360.
+.sp
+If GLAT is zero, all the latitude lines of the grid are drawn; if GLAT is
+non-zero, latitude lines at latitudes from GLAT to 90, inclusive (South or
+North) are omitted.
+.sp
+If GLON is zero, no longitude lines are drawn near the poles; if GLON is
+non-zero, only longitude lines of the grid at multiples of GLON are drawn
+near the poles.
+.sp
+Examples: "'GP'=0" says "draw all the latitude lines of the grid; omit
+longitude lines of the grid near the poles."  "'GP'=1" says "draw entire
+grid."  "'GP'=75045" says "suppress latitude lines of the grid above 75N
+and below 75S; near the poles, draw the longitude lines of the grid only at
+multiples of 45 degrees."  The default is "'GP'=90", which says "draw all
+latitude lines of the grid; near the poles, omit longitude lines of the grid
+except those at multiples of 90 degrees".
 .IP "\&'GR' - Integer or Real"
-The desired grid spacing. A zero suppresses the
-grid. The default is 10 degrees.
+The desired grid spacing, in degrees.  (Note that, when 'GT' and/or 'GN' have
+values greater than zero, they are used in place of 'GR'.)  Giving 'GR' a value
+less than or equal to zero suppresses the grid.  The default value of 'GR' is
+10 degrees.
+.IP "\&'GT' and \&'GN' - Integer or Real"
+The desired spacings of latitude and longitude grid lines, respectively (in
+degrees); if either is less than or equal to zero, the value of 'GR' is used
+instead.
 .IP "\&'G1' - Integer"
 The group identifier to be used by MAPBLA or MPLNAM
 when putting into the area map the group of edges that
@@ -145,7 +171,7 @@ the distance of the satellite from the center of the
 earth, in multiples of the earth's radius. The
 default value is zero. See also 'S1' and 'S2',
 below.
-.IP "\&'S1', 'S2' - Integer or Real"
+.IP "\&'S1' and 'S2' - Integer or Real"
 Used only when 'SA' is greater than 1. Both are
 angles, in degrees. 'S1' measures the angle between
 the line to the center of the earth and the line of
