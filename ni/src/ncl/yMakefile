@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.53 1997-04-11 21:16:14 haley Exp $
+#      $Id: yMakefile,v 1.54 1997-04-17 16:25:18 haley Exp $
 #
 #########################################################################
 #									#
@@ -46,7 +46,7 @@ EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 
 API_DEFS	=	-DMAKEAPI
 
-PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
+PROG_LIBS	=	$(HLULIBS) $(CNCARGLIB) $(NCARGLIBS)
 DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
 EXTRA_LIBS	=	-ll $(NCDFLIBS) $(HDFLIB)
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS)
