@@ -79,7 +79,7 @@ int /*status*/
 );
 
 
-main() {
+main(int argc, char* argv[]) {
 
 	int errid = -1;
 	int appid;
@@ -244,7 +244,19 @@ stdin_fp = stdin;
 	nclparse(1);
 #else
 */
-	yyparse(reset);
+	if(argc==1) {
+		yyparse(reset);
+	} else if(argc ==2 ) {
+		strcpy(buffer,_NGResolvePath(argv[1]));
+                if(_NclPreLoadScript(buffer,0) == NhlFATAL) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Error loading default script");
+                } else {
+                        yyparse(reset);
+                }
+        } else {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"To many arguments, NCL only accepts a single script for execution");
+        }
+
 /*
 #endif
 */
