@@ -77,7 +77,7 @@ c
           A(I) = CF*WSAVE(2*I)
           B(I) = CFM*WSAVE(2*I+1)
       END DO
-      B(NS2) = 0.D0
+C      B(NS2) = 0.D0
       IF (MOD(N,2).EQ.1) RETURN
       A(NS2) = .5D0*CF*WSAVE(N)
       B(NS2) = 0.D0

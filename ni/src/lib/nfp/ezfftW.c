@@ -40,7 +40,7 @@ NhlErrorTypes ezfftf_W( void )
  * various
  */
   double *work;
-  int i, j, npts, npts2, lnpts2, npts22, index_x, index_cf;
+  int i, j, npts, npts2, lnpts2, npts22, index_x, index_cf1, index_cf2;
   int found_missing, any_missing, size_leftmost, size_cf;
 /*
  * Retrieve parameters
@@ -128,7 +128,9 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Call the f77 version of 'dezfftf' with the full argument list.
  */
-  index_x = index_cf = 0;
+  index_x   = 0;
+  index_cf1 = 0;
+  index_cf2 = lnpts2;
   any_missing = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) { 
@@ -146,9 +148,9 @@ NhlErrorTypes ezfftf_W( void )
     if(found_missing) {
       any_missing++;
       set_subset_output_missing(xbar,i,type_cf,1,missing_dx.doubleval);
-      set_subset_output_missing(cf,index_cf,type_cf,npts2,
+      set_subset_output_missing(cf,index_cf1,type_cf,npts2,
                                 missing_dx.doubleval);
-      set_subset_output_missing(cf,index_cf+lnpts2,type_cf,npts2,
+      set_subset_output_missing(cf,index_cf2,type_cf,npts2,
                                 missing_dx.doubleval);
     }
     else {
@@ -158,21 +160,22 @@ NhlErrorTypes ezfftf_W( void )
  * Copy results back into xbar and cf.
  */
       coerce_output_float_or_double(xbar,tmp_xbar,type_cf,1,i);
-      coerce_output_float_or_double(cf,tmp_cf1,type_cf,npts2,index_cf);
-      coerce_output_float_or_double(cf,tmp_cf2,type_cf,npts2,index_cf+lnpts2);
+      coerce_output_float_or_double(cf,tmp_cf1,type_cf,npts2,index_cf1);
+      coerce_output_float_or_double(cf,tmp_cf2,type_cf,npts2,index_cf2);
     }
-    index_x  += npts;
-    index_cf += npts2;
+    index_x   += npts;
+    index_cf1 += npts2;
+    index_cf2 += npts2;
   }
 
 /*
  * Free up memory.
  */
-  if(type_x != NCL_double) NclFree(tmp_x);
-  NclFree(work);
-  NclFree(tmp_cf1);
-  NclFree(tmp_cf2);
-  NclFree(tmp_xbar);
+  if(type_x != NCL_double) free(tmp_x);
+  free(work);
+  free(tmp_cf1);
+  free(tmp_cf2);
+  free(tmp_xbar);
 /*
  * Set up variable to return.
  */
@@ -531,12 +534,12 @@ NhlErrorTypes ezfftb_W( void )
  * Free up memory.
  */
   if(type_cf != NCL_double) {
-    NclFree(tmp_cf1);
-    NclFree(tmp_cf2);
+    free(tmp_cf1);
+    free(tmp_cf2);
   }
-  if(type_xbar != NCL_double) NclFree(tmp_xbar);
-  NclFree(tmp_x);
-  NclFree(work);
+  if(type_xbar != NCL_double) free(tmp_xbar);
+  free(tmp_x);
+  free(work);
 
   if(any_missing) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"ezfftb: %d input arrays contained missing values. No calculations performed on these arrays.",any_missing);
