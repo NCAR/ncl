@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.9 2001-03-06 23:05:14 fred Exp $
+ * $Id: nncrunchd.c,v 1.10 2002-04-01 18:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -318,7 +318,7 @@ data_limits:
    }
    else
    {  
-      ErrorHnd(1, "ReadData", filee, "\n");
+      ErrorHnd(1, "ReadData", stderr, "\n");
       error_status = 1;
       return (error_status);
    }
@@ -333,7 +333,7 @@ data_limits:
                (points[i0][1] == points[i1][1]) )
             {
                sprintf(emsg,"\n  Coordinates %d and %d are identical.\n",i0,i1);
-               ErrorHnd(2, "ReadData", filee, emsg);
+               ErrorHnd(2, "ReadData", stderr, emsg);
                error_status = 2;
                return (error_status);
             }
@@ -503,7 +503,7 @@ void c_nngetsloped(int row, int col, double *slope, int *ier)
 {
    if (asflag == 0) {
      error_status = 28;
-     ErrorHnd(error_status, "c_nngetsloped", filee, "\n");
+     ErrorHnd(error_status, "c_nngetsloped", stderr, "\n");
      *ier = 28;
      *slope = -999.;
      return;
@@ -515,14 +515,14 @@ void c_nngetsloped(int row, int col, double *slope, int *ier)
                   "         magx = %f\n         magy = %f\n"
                   "         magz = %f\n\n",
                   magx_auto, magy_auto, magz_auto);
-     ErrorHnd(26, "c_nngetsloped", filee, emsg);
+     ErrorHnd(26, "c_nngetsloped", stderr, emsg);
      *ier = 26;
      *slope = -999.;
      return;
    }
    if (curasd.crows == 0) 
    {
-     ErrorHnd(19, "c_nngetsloped", filee, "\n");
+     ErrorHnd(19, "c_nngetsloped", stderr, "\n");
      *ier = 19;
      *slope = -999.;
      return;
@@ -530,7 +530,7 @@ void c_nngetsloped(int row, int col, double *slope, int *ier)
    if (row >= curasd.crows || row < 0) 
    {
      sprintf(emsg,"\n  Requested row = %d (indices starting with one)\n",row+1);
-     ErrorHnd(20, "c_nngetsloped", filee, emsg);
+     ErrorHnd(20, "c_nngetsloped", stderr, emsg);
      *ier = 20;
      *slope = -999.;
      return;
@@ -539,7 +539,7 @@ void c_nngetsloped(int row, int col, double *slope, int *ier)
    {
      sprintf(emsg,"\n  Requested column = %d (indices starting with one)\n",
                col+1);
-     ErrorHnd(21, "c_nngetsloped", filee, emsg);
+     ErrorHnd(21, "c_nngetsloped", stderr, emsg);
      *ier = 21;
      *slope = -999.;
      return;
@@ -551,7 +551,7 @@ void c_nngetaspectd(int row, int col, double *aspect, int *ier)
 {
    if (asflag == 0) {
      error_status = 28;
-     ErrorHnd(error_status, "c_nngetaspectd", filee, "\n");
+     ErrorHnd(error_status, "c_nngetaspectd", stderr, "\n");
      *ier = 28;
      *aspect = -999.;
      return;
@@ -563,14 +563,14 @@ void c_nngetaspectd(int row, int col, double *aspect, int *ier)
                   "         magx = %f\n         magy = %f\n"
                   "         magz = %f\n\n",
                   magx_auto, magy_auto, magz_auto);
-     ErrorHnd(25, "c_nngetaspectd", filee, emsg);
+     ErrorHnd(25, "c_nngetaspectd", stderr, emsg);
      *ier = 25;
      *aspect = -999.;
      return;
    }
    if (curasd.crows == 0)
    {
-     ErrorHnd(22, "c_nngetaspectd", filee, "\n");
+     ErrorHnd(22, "c_nngetaspectd", stderr, "\n");
      *ier = 22;
      *aspect = -999.;
      return;
@@ -578,7 +578,7 @@ void c_nngetaspectd(int row, int col, double *aspect, int *ier)
    if (row >= curasd.crows || row < 0)
    {
      sprintf(emsg,"\n  Requested row = %d (indices starting with one)\n",row+1);
-     ErrorHnd(20, "c_nngetaspectd", filee, emsg);
+     ErrorHnd(20, "c_nngetaspectd", stderr, emsg);
      *ier = 20;
      *aspect = -999.;
      return;
@@ -587,7 +587,7 @@ void c_nngetaspectd(int row, int col, double *aspect, int *ier)
    {
      sprintf(emsg,"\n  Requested column = %d (indices starting with one)\n",
                col);
-     ErrorHnd(21, "c_nngetaspectd", filee, emsg);
+     ErrorHnd(21, "c_nngetaspectd", stderr, emsg);
      *ier = 21;
      *aspect = -999.;
      return;
@@ -635,7 +635,7 @@ void c_nnpntinitd(int n, double x[], double y[], double z[])
 
    if (ReadDatad(n,x,y,z) != 0) 
    {
-      ErrorHnd(error_status, "c_nnpntinitd", filee, "\n");
+      ErrorHnd(error_status, "c_nnpntinitd", stderr, "\n");
    }
 }
 void c_nnpntd(double x, double y, double *point)
@@ -650,7 +650,7 @@ void c_nnpntd(double x, double y, double *point)
    if ( (x < xstart) || (x > xend) || (y < ystart) || (y > yend) )
    {
       sprintf(emsg,"\n  Coordinate = (%f, %f)\n", x, y);
-      ErrorHnd(27, "c_nnpntd", filee, emsg);
+      ErrorHnd(27, "c_nnpntd", stderr, emsg);
       return;
    } 
  
@@ -668,7 +668,7 @@ void c_nnpntd(double x, double y, double *point)
    out = c_natgridd(idum, xdum, ydum, zdum, nxi, nyi, xi, yi, &ierr);
    if (ierr != 0)
    {
-      ErrorHnd(28, "c_nnpntd", filee, "\n");
+      ErrorHnd(28, "c_nnpntd", stderr, "\n");
       error_status = ierr;
       *point = -999.;
    }

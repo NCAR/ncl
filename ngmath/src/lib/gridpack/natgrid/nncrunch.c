@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunch.c,v 1.7 2000-08-25 23:29:44 fred Exp $
+ * $Id: nncrunch.c,v 1.8 2002-04-01 18:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -466,7 +466,7 @@ void CircOut()
 
       if ((filer = fopen(tri_file,"w")) EQ (FILE *) NULL) 
       {
-         ErrorHnd(3, "CircOut", filee, "\n");
+         ErrorHnd(3, "CircOut", stderr, "\n");
          error_status = 3;
          return;
       }
@@ -783,17 +783,17 @@ double Meld(double asurf, double wxd, double wyd)
 }
 void TooSteep()
 {  
-   ErrorHnd(4,"TooSteep", filee, "\n");
+   ErrorHnd(4,"TooSteep", stderr, "\n");
    igrad = 0;
 }
 void TooShallow()
 {  
-   ErrorHnd(5,"TooShallow", filee, "\n");
+   ErrorHnd(5,"TooShallow", stderr, "\n");
    igrad = 0;
 }
 void TooNarrow()
 {  
-   ErrorHnd(6, "TooNarrow", filee, "\n");
+   ErrorHnd(6, "TooNarrow", stderr, "\n");
    igrad = 0;
 }
 int *IntVect(int ncols)
@@ -802,7 +802,7 @@ int *IntVect(int ncols)
    if ((vectptr = (int *) malloc(ncols * sizeof(int))) EQ (int *) NULL)
    {  
       error_status = 7;
-      ErrorHnd(error_status, "IntVect", filee, "\n");
+      ErrorHnd(error_status, "IntVect", stderr, "\n");
       vectptr = (int *) NULL;
    }
    return vectptr;
@@ -818,7 +818,7 @@ double *DoubleVect(int ncols)
       malloc(ncols * sizeof(double))) EQ (double *) NULL)
    {
       error_status = 8;
-      ErrorHnd(error_status, "DoubleVect", filee, "\n");
+      ErrorHnd(error_status, "DoubleVect", stderr, "\n");
       return ( (double *) NULL);
    }
    return vectptr;
@@ -836,14 +836,14 @@ int **IntMatrix(int nrows, int ncols)
       malloc(nrows * sizeof(int *))) EQ (int **) NULL)
    {  
       error_status = 9;
-      ErrorHnd(error_status, "IntMatrix", filee, "\n");
+      ErrorHnd(error_status, "IntMatrix", stderr, "\n");
       return ( (int **) NULL);
    }
    if ((matptr[0] = (int *) 
       malloc(nrows * ncols * sizeof(int))) EQ (int *) NULL)
    {
       error_status = 10;
-      ErrorHnd(error_status, "IntMatrix", filee, "\n");
+      ErrorHnd(error_status, "IntMatrix", stderr, "\n");
       return ( (int **) NULL);
    }
    for (i0=1; i0<nrows; i0++) 
@@ -864,14 +864,14 @@ float **FloatMatrix(int nrows, int ncols)
       malloc(nrows * sizeof(float *))) EQ (float **) NULL)
    {
       error_status = 11;
-      ErrorHnd(error_status, "FloatMatrix", filee, "\n");
+      ErrorHnd(error_status, "FloatMatrix", stderr, "\n");
       return ( (float **) NULL);
    }
    if ((matptr[0] = (float *) 
       malloc(nrows * ncols * sizeof(float))) EQ (float *) NULL)
    {
       error_status = 12;
-      ErrorHnd(error_status, "FloatMatrix", filee, "\n");
+      ErrorHnd(error_status, "FloatMatrix", stderr, "\n");
       return ( (float **) NULL);
    }
    for (i0=1; i0<nrows; i0++) 
@@ -893,14 +893,14 @@ double **DoubleMatrix(int nrows, int ncols)
       malloc(nrows * sizeof(double *))) EQ (double **) NULL)
    {  
       error_status = 13;
-      ErrorHnd(error_status, "DoubleMatrix", filee, "\n");
+      ErrorHnd(error_status, "DoubleMatrix", stderr, "\n");
       return ( (double **) NULL);
    }
    if ((matptr[0] = (double *) 
       malloc(nrows * ncols * sizeof(double))) EQ (double *) NULL)
    {
       error_status = 14;
-      ErrorHnd(error_status, "DoubleMatrix", filee, "\n");
+      ErrorHnd(error_status, "DoubleMatrix", stderr, "\n");
       return ( (double **) NULL);
    }
    for (i0 = 1; i0 < nrows; i0++) 
@@ -919,7 +919,7 @@ struct datum *IMakeDatum()
       malloc(sizeof(struct datum))) EQ (struct datum *) NULL)
    {  
       error_status = 15;
-      ErrorHnd(error_status, "IMakeDatum", filee, "\n");
+      ErrorHnd(error_status, "IMakeDatum", stderr, "\n");
       return ((struct datum *) NULL);
    }
    datptr->nextdat = NULL;
@@ -932,7 +932,7 @@ struct simp *IMakeSimp()
       malloc(sizeof(struct simp))) EQ (struct simp *) NULL)
    {
       error_status = 16;
-      ErrorHnd(error_status, "IMakeSimp", filee, "\n");
+      ErrorHnd(error_status, "IMakeSimp", stderr, "\n");
       return ((struct simp *) NULL);
    }
    simpptr->nextsimp = NULL;
@@ -945,7 +945,7 @@ struct temp *IMakeTemp()
       malloc(sizeof(struct temp))) EQ (struct temp *) NULL)
    {
       error_status = 17;
-      ErrorHnd(error_status, "IMakeTemp", filee, "\n");
+      ErrorHnd(error_status, "IMakeTemp", stderr, "\n");
       return ((struct temp *) NULL);
    }
    tempptr->nexttemp = NULL;
@@ -958,7 +958,7 @@ struct neig *IMakeNeig()
       malloc(sizeof(struct neig))) EQ (struct neig *) NULL)
    {
       error_status = 18;
-      ErrorHnd(error_status, "IMakeNeig", filee, "\n");
+      ErrorHnd(error_status, "IMakeNeig", stderr, "\n");
       return ((struct neig *) NULL);
    }
    neigptr->nextneig = NULL;

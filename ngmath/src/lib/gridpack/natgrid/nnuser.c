@@ -1,5 +1,5 @@
 /*
- * $Id: nnuser.c,v 1.6 2000-08-22 15:19:42 haley Exp $
+ * $Id: nnuser.c,v 1.7 2002-04-01 18:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,7 +41,7 @@ void c_nngetc(char *pnam, char *vnam)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngetc", filee, emsg);
+      ErrorHnd(23, "c_nngetc", stderr, emsg);
       return;
    }
    for ( ;  *s != '\0'; ++s, ++vnam) {
@@ -87,7 +87,7 @@ void c_nngeti(char *pnam, int *ival)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngeti", filee, emsg);
+      ErrorHnd(23, "c_nngeti", stderr, emsg);
    }
 }
 
@@ -106,27 +106,9 @@ void c_nnsetc(char *pnam, char *vnam)
       }
          *s = '\0';
    }
-   else if (!strncmp(pnam,"erf",3) OR !strncmp(pnam,"ERF",3)) {
-      if (!strncmp(vnam,"stderr",6)) {
-         filee = stderr;
-         strcpy(error_file,"stderr");
-      }
-      else if (!strncmp(vnam,"stdout",6)) {
-         filee = stdout;
-         strcpy(error_file,"stdout");
-      }
-      else {
-         if ((filee = fopen(vnam,"w")) EQ (FILE *) NULL)
-         {
-            ErrorHnd(24, "c_nnsetc", stderr, "\n");
-            return;
-         }
-         strcpy(error_file,vnam);
-      }
-   }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nnsetc", filee, emsg);
+      ErrorHnd(23, "c_nnsetc", stderr, emsg);
    }
 }
 
@@ -167,7 +149,7 @@ void c_nnseti(char *pnam, int ival)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nnseti", filee, emsg);
+      ErrorHnd(23, "c_nnseti", stderr, emsg);
    }
 }
 

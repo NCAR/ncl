@@ -1,5 +1,5 @@
 /*
- * $Id: nnuhead.h,v 1.5 2000-08-25 23:29:45 fred Exp $
+ * $Id: nnuhead.h,v 1.6 2002-04-01 18:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,7 +42,6 @@ extern double    bI,        bJ,         magx,       magy,
                  vertlap_save;
 
 extern char      tri_file[], error_file[], emsg[];
-extern FILE      *filee;
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate

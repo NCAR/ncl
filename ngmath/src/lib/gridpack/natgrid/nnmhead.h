@@ -1,5 +1,5 @@
 /*
- * $Id: nnmhead.h,v 1.10 2002-02-23 01:25:36 haley Exp $
+ * $Id: nnmhead.h,v 1.11 2002-04-01 18:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -60,12 +60,6 @@ int     datcnt, datcnt3, numtri, imag, numnei, iscale,
 
 char    tri_file[256] = {"nnalg.dat"}, error_file[256] = {"stderr"},
         emsg[256];
-
-#ifdef __linux__
-FILE    *fopen(), *filee = _IO_stderr;
-#else
-FILE    *fopen(), *filee = stderr;
-#endif
 
 extern void   Gradient();
 extern void   ErrorHnd(int, char *, FILE *, char *);

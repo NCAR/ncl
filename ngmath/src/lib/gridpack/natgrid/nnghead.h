@@ -1,5 +1,5 @@
 /*
- * $Id: nnghead.h,v 1.7 2002-02-23 01:25:36 haley Exp $
+ * $Id: nnghead.h,v 1.8 2002-04-01 18:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -59,8 +59,6 @@ extern  int     datcnt, datcnt3, numtri, imag, numnei, iscale,
                 error_status, *nbrs, jwts, num_wts;
 
 extern  char    tri_file[256], error_file[256], emsg[256];
-
-extern  FILE    *fopen(), *filee;
 
 extern void   Gradient();
 extern void   ErrorHnd(int, char *, FILE *, char *);

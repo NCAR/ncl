@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.10 2001-03-06 23:05:14 fred Exp $
+ * $Id: nncrunchs.c,v 1.11 2002-04-01 18:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -319,7 +319,7 @@ data_limits:
    }
    else
    {  
-      ErrorHnd(1, "ReadData", filee, "\n");
+      ErrorHnd(1, "ReadData", stderr, "\n");
       error_status = 1;
       return (error_status);
    }
@@ -334,7 +334,7 @@ data_limits:
                (points[i0][1] == points[i1][1]) )
             {
                sprintf(emsg,"\n  Coordinates %d and %d are identical.\n",i0,i1);
-               ErrorHnd(2, "ReadData", filee, emsg);
+               ErrorHnd(2, "ReadData", stderr, emsg);
                error_status = 2;
                return (error_status);
             }
@@ -504,7 +504,7 @@ void c_nngetslopes(int row, int col, float *slope, int *ier)
 {
    if (asflag == 0) {
      error_status = 28;
-     ErrorHnd(error_status, "c_nngetslopes", filee, "\n");
+     ErrorHnd(error_status, "c_nngetslopes", stderr, "\n");
      *ier = 28;
      *slope = -999.;
      return;
@@ -516,14 +516,14 @@ void c_nngetslopes(int row, int col, float *slope, int *ier)
                   "         magx = %f\n         magy = %f\n"
                   "         magz = %f\n\n",
                   magx_auto, magy_auto, magz_auto);
-     ErrorHnd(26, "c_nngetslopes", filee, emsg);
+     ErrorHnd(26, "c_nngetslopes", stderr, emsg);
      *ier = 26;
      *slope = -999.;
      return;
    }
    if (curas.crows == 0) 
    {
-     ErrorHnd(19, "c_nngetslopes", filee, "\n");
+     ErrorHnd(19, "c_nngetslopes", stderr, "\n");
      *ier = 19;
      *slope = -999.;
      return;
@@ -531,7 +531,7 @@ void c_nngetslopes(int row, int col, float *slope, int *ier)
    if (row >= curas.crows || row < 0) 
    {
      sprintf(emsg,"\n  Requested row = %d (indices starting with one)\n",row+1);
-     ErrorHnd(20, "c_nngetslopes", filee, emsg);
+     ErrorHnd(20, "c_nngetslopes", stderr, emsg);
      *ier = 20;
      *slope = -999.;
      return;
@@ -540,7 +540,7 @@ void c_nngetslopes(int row, int col, float *slope, int *ier)
    {
      sprintf(emsg,"\n  Requested column = %d (indices starting with one)\n",
                col+1);
-     ErrorHnd(21, "c_nngetslopes", filee, emsg);
+     ErrorHnd(21, "c_nngetslopes", stderr, emsg);
      *ier = 21;
      *slope = -999.;
      return;
@@ -552,7 +552,7 @@ void c_nngetaspects(int row, int col, float *aspect, int *ier)
 {
    if (asflag == 0) {
      error_status = 28;
-     ErrorHnd(error_status, "c_nngetaspects", filee, "\n");
+     ErrorHnd(error_status, "c_nngetaspects", stderr, "\n");
      *ier = 28;
      *aspect = -999.;
      return;
@@ -564,14 +564,14 @@ void c_nngetaspects(int row, int col, float *aspect, int *ier)
                   "         magx = %f\n         magy = %f\n"
                   "         magz = %f\n\n",
                   magx_auto, magy_auto, magz_auto);
-     ErrorHnd(25, "c_nngetaspects", filee, emsg);
+     ErrorHnd(25, "c_nngetaspects", stderr, emsg);
      *ier = 25;
      *aspect = -999.;
      return;
    }
    if (curas.crows == 0)
    {
-     ErrorHnd(22, "c_nngetaspects", filee, "\n");
+     ErrorHnd(22, "c_nngetaspects", stderr, "\n");
      *ier = 22;
      *aspect = -999.;
      return;
@@ -579,7 +579,7 @@ void c_nngetaspects(int row, int col, float *aspect, int *ier)
    if (row >= curas.crows || row < 0)
    {
      sprintf(emsg,"\n  Requested row = %d (indices starting with one)\n",row+1);
-     ErrorHnd(20, "c_nngetaspects", filee, emsg);
+     ErrorHnd(20, "c_nngetaspects", stderr, emsg);
      *ier = 20;
      *aspect = -999.;
      return;
@@ -588,7 +588,7 @@ void c_nngetaspects(int row, int col, float *aspect, int *ier)
    {
      sprintf(emsg,"\n  Requested column = %d (indices starting with one)\n",
                col);
-     ErrorHnd(21, "c_nngetaspects", filee, emsg);
+     ErrorHnd(21, "c_nngetaspects", stderr, emsg);
      *ier = 21;
      *aspect = -999.;
      return;
@@ -636,7 +636,7 @@ void c_nnpntinits(int n, float x[], float y[], float z[])
 
    if (ReadData(n,x,y,z) != 0) 
    {
-      ErrorHnd(error_status, "c_nnpntinits", filee, "\n");
+      ErrorHnd(error_status, "c_nnpntinits", stderr, "\n");
    }
 }
 void c_nnpnts(float x, float y, float *point)
@@ -652,7 +652,7 @@ void c_nnpnts(float x, float y, float *point)
  *   if ( (x < xstart) || (x > xend) || (y < ystart) || (y > yend) )
  *   {
  *      sprintf(emsg,"\n  Coordinate = (%f, %f)\n", x, y);
- *      ErrorHnd(27, "c_nnpnts", filee, emsg);
+ *      ErrorHnd(27, "c_nnpnts", stderr, emsg);
  *      return;
  *   } 
  */
@@ -671,7 +671,7 @@ void c_nnpnts(float x, float y, float *point)
    out = c_natgrids(idum, xdum, ydum, zdum, nxi, nyi, xi, yi, &ierr);
    if (ierr != 0)
    {
-      ErrorHnd(28, "c_nnpnts", filee, "\n");
+      ErrorHnd(28, "c_nnpnts", stderr, "\n");
       error_status = ierr;
       *point = -999.;
    }

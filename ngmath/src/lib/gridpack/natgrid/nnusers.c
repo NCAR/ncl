@@ -1,5 +1,5 @@
 /*
- * $Id: nnusers.c,v 1.6 2000-08-25 23:29:45 fred Exp $
+ * $Id: nnusers.c,v 1.7 2002-04-01 18:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -70,7 +70,7 @@ void c_nngetr(char *pnam, float *dval)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngetr", filee, emsg);
+      ErrorHnd(23, "c_nngetr", stderr, emsg);
    }
 }
 
@@ -123,7 +123,7 @@ void c_nnsetr(char *pnam, float dval)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngetc", filee, emsg);
+      ErrorHnd(23, "c_nngetc", stderr, emsg);
    }
 }
 
@@ -186,7 +186,7 @@ void NGCALLF(nngetwts,NNGETWTS) (int *numw, int *neighs, float *wts, float *px, 
    int i;
 
    if (igrad || !single_point) {
-      ErrorHnd(31, "c_nngetwts", filee, emsg);
+      ErrorHnd(31, "c_nngetwts", stderr, emsg);
    }
    c_nngetwts(numw, neighs, wts, px, py, pz);
 
@@ -202,7 +202,7 @@ void NGCALLF(nngetwtsd,NNGETWTSD) (int *numw, int *neighs, double *wts, double *
    int i;
 
    if (igrad || !single_point) {
-      ErrorHnd(31, "c_nngetwtsd", filee, emsg);
+      ErrorHnd(31, "c_nngetwtsd", stderr, emsg);
    }
    c_nngetwtsd(numw, neighs, wts, px, py, pz);
 

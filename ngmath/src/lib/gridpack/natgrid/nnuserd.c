@@ -1,5 +1,5 @@
 /*
- * $Id: nnuserd.c,v 1.7 2000-08-22 15:19:42 haley Exp $
+ * $Id: nnuserd.c,v 1.8 2002-04-01 18:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -71,7 +71,7 @@ void c_nngetrd(char *pnam, double *dval)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngetrd", filee, emsg);
+      ErrorHnd(23, "c_nngetrd", stderr, emsg);
    }
 }
 
@@ -124,7 +124,7 @@ void c_nnsetrd(char *pnam, double dval)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nnsetrd", filee, emsg);
+      ErrorHnd(23, "c_nnsetrd", stderr, emsg);
    }
 }
 
@@ -137,7 +137,7 @@ void NGCALLF(natgridd,NATGRIDD) (int *n, double *x, double *y, double *z,
                 int *nxg, int *nyg, double *xg, double *yg, double *zg,
                 int *ier)
 {
-   ErrorHnd(29, "natgridd", filee, "\n");
+   ErrorHnd(29, "natgridd", stderr, "\n");
    *ier = error_status;
    return;
 }
@@ -167,7 +167,7 @@ void NGCALLF(natgridd,NATGRIDD) (int *n, double *x, double *y, double *z,
 #ifdef UNICOS
 void NGCALLF(nnsetrd,NNSETRD) (char *pnam, double *rval)
 {
-   ErrorHnd(29, "nnsetrd", filee, "\n");
+   ErrorHnd(29, "nnsetrd", stderr, "\n");
 }
 #else
 void NGCALLF(nnsetrd,NNSETRD) (char *pnam, double *rval)
@@ -179,7 +179,7 @@ void NGCALLF(nnsetrd,NNSETRD) (char *pnam, double *rval)
 #ifdef UNICOS
 void NGCALLF(nngetrd,NNGETRD) (char *pnam, double *rval)
 {
-   ErrorHnd(29, "nngetrd", filee, "\n");
+   ErrorHnd(29, "nngetrd", stderr, "\n");
 }
 #else
 void NGCALLF(nngetrd,NNGETRD) (char *pnam, double *rval)
@@ -192,7 +192,7 @@ void NGCALLF(nngetrd,NNGETRD) (char *pnam, double *rval)
 void NGCALLF(nngetsloped,NNGETSLOPED) (int *row, int *col, 
              double *slope, int *ier)
 {
-   ErrorHnd(29, "nngetsloped", filee, "\n");
+   ErrorHnd(29, "nngetsloped", stderr, "\n");
    *ier = error_status;
 }
 #else
@@ -207,7 +207,7 @@ void NGCALLF(nngetsloped,NNGETSLOPED) (int *row, int *col,
 void NGCALLF(nngetaspectd,NNGETASPECTD) (int *row, int *col, 
              double *aspect, int *ier)
 {
-   ErrorHnd(29, "nngetaspectd", filee, "\n");
+   ErrorHnd(29, "nngetaspectd", stderr, "\n");
    *ier = error_status;
 }
 #else
@@ -221,7 +221,7 @@ void NGCALLF(nngetaspectd,NNGETASPECTD) (int *row, int *col,
 #ifdef UNICOS
 void NGCALLF(nnpntinitd,NNPNTINITD) (int *n, double *x, double *y, double *z)
 {
-   ErrorHnd(29, "nnpntinitd", filee, "\n");
+   ErrorHnd(29, "nnpntinitd", stderr, "\n");
 }
 #else
 void NGCALLF(nnpntinitd,NNPNTINITD) (int *n, double *x, double *y, double *z)
@@ -233,7 +233,7 @@ void NGCALLF(nnpntinitd,NNPNTINITD) (int *n, double *x, double *y, double *z)
 #ifdef UNICOS
 void NGCALLF(nnpntd,NNPNTD) (double *x, double *y, double *point)
 {
-   ErrorHnd(29, "nnpntd", filee, "\n");
+   ErrorHnd(29, "nnpntd", stderr, "\n");
 }
 #else
 void NGCALLF(nnpntd,NNPNTD) (double *x, double *y, double *point)
@@ -245,7 +245,7 @@ void NGCALLF(nnpntd,NNPNTD) (double *x, double *y, double *point)
 #ifdef UNICOS
 void NGCALLF(nnpntendd,NNPNTENDD) ()
 {
-   ErrorHnd(29, "nnpntendd", filee, "\n");
+   ErrorHnd(29, "nnpntendd", stderr, "\n");
 }
 #else
 void NGCALLF(nnpntendd,NNPNTENDD) ()
