@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.12 2004-07-22 01:35:05 shea Exp $
+;      $Id: shea_util.ncl,v 1.13 2004-07-22 17:06:04 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2184,30 +2184,49 @@ function landsea_mask (basemap[*][*]:byte,tlat:numeric,tlon:numeric)
 ;	the user to apply the mask to his/her data. The data contains
 ;	five types of values: 0=ocean, 1=land, 2=lake, 3=small island, 4=ice shelf
 ;
+;	If the user is not happy with the default data file, the user may modify it 
+;	for their own use. Note! This function expects the input array to be of type byte.
+;
 ;	2D lat/lon fields are accepted. integer/float/doubles are accepted
 ;	longitude arrays accepted from -180:359.999, if your longitudes
 ;	are < -180, use the contributed function lonFlip to convert
 ;	your longitudes to 0->360...
 ;
-;	In all three examples it is assumed array@_FillValue is set for
-;	use in the ncl mask function.
+;	For all four examples:
+;	1.  It is assumed array@_FillValue is set for use in the ncl mask function. 
+;	2.  The data file must be loaded prior to the function call. The data
+;	    file is located in: $NCARG_ROOT/lib/ncarg/data/cdf
+;	    To read in the data file: 
+;	       data_d = ncargpath("data") + "/cdf/landsea.nc"
+;    	       f        = addfile(data_d,"r")
+;	       bmap  = f->LSMASK
+;
+;	    The data file may also be downloaded from the ncl web site at:
+;	    http://www.ncl.ucar.edu/Document/Functions/list_func_doc.shtml
+;	    and read into your script. 
+;	3.  "bmap" is the name of the data array that contains the original land-sea mask.
+;	    (see 2. above)
 ;
 ;	Example 1 array is a 3D array w/coord vars (time,lat,lon)
 ;		  Land,lakes, small islands, and ice shelves will be masked.
-;		  lsm = landsea_mask("landsea.nc",array&lat,array&lon)
+;		  lsm = landsea_mask(bmap,array&lat,array&lon)
 ;	          array = mask(array,conform(array,lsm,(/1,2/)).ge.1,False)
 ;		
 ;	Example 2 array is a 2D array w/coord vars (lat,lon), land/small islands
 ;		  will be masked, but not lakes
-;		  lsm = landsea_mask("landsea.nc",array&lat,array&lon)	  
+;		  lsm = landsea_mask(bmap,array&lat,array&lon)	  
 ;	          array = mask(array,lsm.eq.1,False)
 ;		  array = mask(array,lsm.eq.3,False)
 ;	
 ;	Example 3 array is a 2D array w/2D coordinate variables TLAT/TLON
 ;		  Land,lakes, small islands, and ice shelves will be masked.
-;		  lsm = landsea_mask("landsea.nc",TLAT,TLON)
+;		  lsm = landsea_mask(bmap,TLAT,TLON)
 ;		  array = mask(array,lsm.ge.1,False)	
 ;
+;	Example 4 single point: lat1 and lon1 represent a single point. 
+;	          lsm = landsea_mask(bmap,lat1,lon1)
+;	          print("Value returned = "+lsm)
+;	
 begin	
 
         rank = dimsizes(dimsizes(tlon))         ; # of dimensions
@@ -2296,11 +2315,11 @@ begin
 	if (rdim.eq.1) then
 	   tarr = new((/dimsizes(inlat)/),"byte")
 	   
-	  ;wcStrt = systemfunc("date")
+	   wcStrt = systemfunc("date")
 	   do ss = 0,dimsizes(inlat)-1
 	      tarr(ss) = (/ basemap(inlat(ss),inlon(ss)) /)
 	   end do
-	  ;wallClockElapseTime(wcStrt, "ss do loop", 0)
+	   wallClockElapseTime(wcStrt, "ss do loop", 0)
 	   dimt = dimsizes(tlat)
 	   newarr = onedtond(tarr,(/dimt(0),dimt(1)/))
 	   newarr@lat2d = tlat
