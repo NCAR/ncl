@@ -59,6 +59,7 @@ struct _NclApiVarInfoRec {
 	NclVarTypes 	type;	/* value, hlu, file */
 	int	n_dims;
 	NclDimRec *dim_info;
+	NclQuark	coordnames[NCL_MAX_DIMENSIONS];
 	int	n_atts;
 	NclQuark	*attnames;
 };

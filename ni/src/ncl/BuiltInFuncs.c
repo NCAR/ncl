@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.39 1996-07-16 20:58:04 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.40 1996-07-20 00:39:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -440,7 +440,7 @@ NhlErrorTypes _NclIGetFileVarNames
 		}
 	}
 */
-	tmp = _NclGetFileVarInfo(file_q);
+	tmp = _NclGetFileVarInfoList(file_q);
 	step = tmp;
 	i = 0;
 	while(step != NULL) {
@@ -490,7 +490,7 @@ NhlErrorTypes _NclIListFileVariables
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
-	tmp = _NclGetFileVarInfo(file_q);
+	tmp = _NclGetFileVarInfoList(file_q);
 	step = tmp;
 	while(step != NULL) {
 		ret = nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));

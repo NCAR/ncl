@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.9 1995-06-03 00:45:25 ethan Exp $
+ *      $Id: NclApi.h,v 1.10 1996-07-20 00:39:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -178,6 +178,141 @@ extern void NclFreeExtValue(
 NclExtValueRec * /*val*/
 #endif
 );
+
+
+extern NclQuark *NclGetFileSymNames(
+#if NhlNeedProto
+int * /*num_names*/
+#endif
+);
+
+extern NclQuark *NclGetVarSymNames(
+#if NhlNeedProto
+int * /*num_names*/
+#endif
+);
+
+extern NclQuark *NclGetHLUVarSymNames(
+#if NhlNeedProto
+int * /*num_names*/
+#endif
+);
+
+extern NclQuark *NclGetProcFuncSymNames(
+#if NhlNeedProto
+int * /*num_names*/
+#endif
+);
+
+extern struct _NclApiDataList* NclGetFileInfo(
+#if NhlNeedProto
+NclQuark  /*file_sym_name*/
+#endif
+);
+
+extern struct _NclExtValueRec *NclReadFileAtt(
+#if NhlNeedProto
+NclQuark /* file_sym_name */,
+NclQuark /* attname */,
+int /*copy_data*/
+#endif
+);
+
+extern NclQuark* NclGetFileVarNames(
+#if NhlNeedProto
+NclQuark /*file_sym_name*/,
+int * /*num_names*/
+#endif
+);
+
+extern struct _NclApiDataList* NclGetFileVarInfo(
+#if NhlNeedProto
+NclQuark /*file_sym_name*/,
+NclQuark /*file_var_name*/
+#endif
+);
+
+extern struct _NclApiDataList* NclGetFileVarCoordInfo(
+#if NhlNeedProto
+NclQuark /*file_sym_name*/,
+NclQuark /*file_var_name*/,
+NclQuark /*coordname*/
+#endif
+);
+
+extern struct _NclExtValueRec *NclReadFileVar(
+#if NhlNeedProto
+NclQuark /*file_sym_name */,
+NclQuark /*file_var_name */,
+int	/*copy_data*/
+#endif
+);
+
+extern struct _NclExtValueRec *NclReadFileVarAtt(
+#if NhlNeedProto
+NclQuark /*file_sym_name */,
+NclQuark /*file_var_name */,
+NclQuark /*attname */,
+int	/*copy_data*/
+#endif
+);
+
+extern struct _NclExtValueRec *NclReadFileVarCoord(
+#if NhlNeedProto
+NclQuark /*file_sym_name */,
+NclQuark /*file_var_name */,
+NclQuark /*coordname*/,
+int     /*copy_data*/
+#endif
+);
+
+extern struct _NclApiDataList* NclGetVarInfo(
+#if NhlNeedProto
+NclQuark /*var_sym_name */
+#endif
+);
+extern struct _NclApiDataList* NclGetVarCoordInfo(
+#if NhlNeedProto
+NclQuark /*var_sym_name */,
+NclQuark /*coordname*/
+#endif
+);
+
+extern struct _NclExtValueRec* NclReadVar(
+#if NhlNeedProto
+NclQuark /*var_sym_name */,
+int	/*copy_data*/
+#endif
+);
+
+extern struct _NclExtValueRec* NclReadVarAtt(
+#if NhlNeedProto
+NclQuark /*var_sym_name */,
+NclQuark /*attname*/,
+int	/*copy_data*/
+#endif
+);
+
+extern struct _NclExtValueRec* NclReadVarCoord(
+#if NhlNeedProto
+NclQuark /*var_sym_name */,
+NclQuark /*coordname*/,
+int	/*copy_data*/
+#endif
+);
+
+extern struct _NclExtValueRec* NclReadVarCoordAtt(
+#if NhlNeedProto
+NclQuark /*var_sym_name */,
+NclQuark /*coordname*/,
+NclQuark /*attname*/,
+int	/*copy_data*/
+#endif
+);
+
+
+
+
 
 #ifdef __cplusplus
 }

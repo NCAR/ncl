@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.30 1996-05-17 23:34:37 ethan Exp $
+ *      $Id: Symbol.c,v 1.31 1996-07-20 00:40:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,7 @@ extern "C" {
 #include "DataSupport.h"
 #include "NclHLUObj.h"
 #include "NclApi.h"
-
+#include "FileSupport.h"
 extern void NclAddUserFileFormats(
 #if	NhlNeedProto
 void
@@ -919,7 +919,7 @@ void _NclAddSingleObj
 	return;
 }
 
-NclApiDataList *_NclGetFileVarInfo
+NclApiDataList *_NclGetFileVarInfoList
 #if	NhlNeedProto
 (NclQuark file_var)
 #else
@@ -952,10 +952,17 @@ NclApiDataList *_NclGetFileVarInfo
 				tmp->u.var->type = FILEVAR;
 				tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
 				tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+
 				for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
 					tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 					tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
 					tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
+					if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
+						tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+
+					} else {
+						tmp->u.var->coordnames[j] = -1;
+					}
 				}
 				if(thefile->file.var_att_info[i] != NULL) {
 					j = 0;
@@ -984,6 +991,617 @@ NclApiDataList *_NclGetFileVarInfo
 		}
 	}
 	return(thelist);
+}
+NclApiDataList *_NclGetFileVarInfo
+#if	NhlNeedProto
+(NclQuark file_sym_name,NclQuark file_var_name)
+#else
+(file_sym_name,file_var_name)
+NclQuark file_sym_name;
+NclQuark file_var_name;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclSymbol *s = NULL;
+	int i,j;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid = NULL;
+	NclFileAttInfoList *step;
+
+
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		thevar = _NclRetrieveRec(s,DONT_CARE);
+		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+		if(thefile != NULL) {
+			for(i = 0; i < thefile->file.n_vars; i++) {
+				if(thefile->file.var_info[i]->var_name_quark == file_var_name) {
+					tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+					tmp->kind = VARIABLE_LIST;
+					tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+					tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
+					tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type));
+					tmp->u.var->type = FILEVAR;
+					tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
+					tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+					for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
+						tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+						tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
+						tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
+						if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {	
+							tmp->u.var->coordnames[j] =  thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+						} else {
+							tmp->u.var->coordnames[j] = -1;
+						}
+					}
+					if(thefile->file.var_att_info[i] != NULL) {
+						j = 0;
+						step = thefile->file.var_att_info[i];
+						while(step != NULL) {
+							step = step->next;
+							j++;
+						}
+						tmp->u.var->n_atts = j;
+						tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
+						step = thefile->file.var_att_info[i];
+						j = 0;
+						while(step != NULL) {
+							tmp->u.var->attnames[j]= step->the_att->att_name_quark;
+							j++;
+							step = step->next;
+						}
+					} else {
+						tmp->u.var->n_atts = 0;
+						tmp->u.var->attnames = NULL;
+					}
+					tmp->next = NULL;
+					return(tmp);
+				}
+			}
+		}
+	}
+	return(NULL);
+}
+
+
+NclApiDataList *_NclGetFileVarCoordInfo
+#if	NhlNeedProto
+(NclQuark file_sym_name,NclQuark file_var_name,NclQuark coordname)
+#else
+(file_sym_name,file_var_name,coordname)
+NclQuark file_sym_name;
+NclQuark file_var_name;
+NclQuark coordname;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclSymbol *s = NULL;
+	int i,j,k;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid = NULL;
+	NclFileAttInfoList *step;
+
+
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		thevar = _NclRetrieveRec(s,DONT_CARE);
+		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+		if((thefile != NULL)&&(_NclFileVarIsCoord(thefile,coordname) != -1)) {
+			for(i = 0; i < thefile->file.n_file_dims; i++) {
+				if((thefile->file.coord_vars[i] != NULL)&&(thefile->file.coord_vars[i]->var_name_quark == coordname)) {
+					tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+					tmp->kind = VARIABLE_LIST;
+					tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+					tmp->u.var->name = thefile->file.coord_vars[i]->var_name_quark;
+					tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(thefile->file.coord_vars[i]->data_type));
+					tmp->u.var->type = COORD;
+					tmp->u.var->n_dims = 1;
+					tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec));
+					tmp->u.var->dim_info->dim_quark = coordname;
+					tmp->u.var->dim_info->dim_num = thefile->file.coord_vars[i]->file_dim_num[0];
+					tmp->u.var->dim_info->dim_size = thefile->file.coord_vars[i]->dim_sizes[0];	
+					tmp->u.var->coordnames[0] = -1;	
+					for(j = 0; j < thefile->file.n_vars; j++) {
+						if(thefile->file.var_info[j]->var_name_quark == coordname) {
+							if(thefile->file.var_att_info[j] != NULL) {
+								k = 0;
+								step = thefile->file.var_att_info[j];
+								while(step != NULL) {
+									step = step->next;
+									k++;
+								}
+								tmp->u.var->n_atts = k;
+								tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*k);
+								step = thefile->file.var_att_info[j];
+								k = 0;
+								while(step != NULL) {
+									tmp->u.var->attnames[k]= step->the_att->att_name_quark;
+									k++;
+									step = step->next;
+								}
+							} else {
+								tmp->u.var->n_atts = 0;
+								tmp->u.var->attnames = NULL;
+							}
+							break;
+						} else {
+								tmp->u.var->n_atts = 0;
+								tmp->u.var->attnames = NULL;
+						}
+					}
+					tmp->next = NULL;
+					return(tmp);
+				}
+			}
+		}
+	}
+	return(NULL);
+}
+NclQuark *_NclGetFileVarNames
+#if	NhlNeedProto
+(NclQuark file_sym_name,int *num_names)
+#else
+(file_sym_name,num_names)
+NclQuark file_sym_name;
+int *num_names;
+#endif
+{
+	NclSymbol *s = NULL;
+	int i;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid = NULL;
+	NclQuark *names_out;
+
+
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		thevar = _NclRetrieveRec(s,DONT_CARE);
+		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+		if(thefile != NULL) {
+			*num_names = thefile->file.n_vars;
+			if(thefile->file.n_vars > 0) {
+				names_out = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
+				for(i = 0; i < thefile->file.n_vars; i++) {
+					names_out[i] = thefile->file.var_info[i]->var_name_quark;
+				}
+				return(names_out);
+			} else {
+				return(NULL);
+			}
+		}
+	}
+	*num_names = 0;
+	return(NULL);
+}
+NclQuark *_NclGetFileSymNames
+#if	NhlNeedProto
+(int    *num_names)
+#else
+(num_names)
+int     *num_names;
+#endif
+{
+	NclSymTableListNode *st;
+	int i = 0;
+	NclQuark *tmp_out;
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	int current_size = NCL_SYM_TAB_SIZE;
+
+	*num_names = 0;
+/*
+* Start out with a guess
+*/
+	tmp_out = (NclQuark*)NclMalloc(sizeof(NclQuark)*current_size);
+	st = thetablelist;
+	while(st != NULL) {
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+                        if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+                                while(s != NULL) {
+					if(s->type == VAR) {
+						thevar = _NclRetrieveRec(s,DONT_CARE);
+						if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+							if(*num_names < current_size) {
+								tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+							} else {
+								tmp_out = NclRealloc(tmp_out,current_size * 2);
+								current_size *= 2;
+								tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+							}
+							*num_names++;
+						}
+					}
+					s = s->symnext;
+				}
+			}
+		}
+                st = st->previous;
+	}
+	if(*num_names == 0) {
+		NclFree(tmp_out);
+		return(NULL);
+	}
+	return(tmp_out);
+}
+
+NclQuark *_NclGetProcFuncSymNames
+#if	NhlNeedProto
+(int    *num_names)
+#else
+(num_names)
+int     *num_names;
+#endif
+{
+	NclSymTableListNode *st;
+	int i = 0;
+	NclQuark *tmp_out;
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	int current_size = NCL_SYM_TAB_SIZE;
+
+	*num_names = 0;
+/*
+* Start out with a guess
+*/
+	tmp_out = (NclQuark*)NclMalloc(sizeof(NclQuark)*current_size);
+	st = thetablelist;
+	while(st != NULL) {
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+                        if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+                                while(s != NULL) {
+					switch(s->type) {
+					case FUNC:
+					case NPROC: 
+					case PROC:
+					case NFUNC:
+					case IPROC: 
+					case IFUNC: {
+						if(*num_names < current_size) {
+							tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+						} else {
+							tmp_out = NclRealloc(tmp_out,current_size * 2);
+							current_size *= 2;
+							tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+						}
+						*num_names++;
+						break;
+					}
+					case EPROC:
+					case EFUNC:
+					default:
+
+						break;
+					}
+					s = s->symnext;
+				}
+			}
+		}
+                st = st->previous;
+	}
+	if(*num_names == 0) {
+		NclFree(tmp_out);
+		return(NULL);
+	}
+	return(tmp_out);
+}
+
+struct _NclExtValueRec *_NclReadFileVar
+#if	NhlNeedProto
+(NclQuark file_sym_name, NclQuark file_var_name, int copy_data)
+#else
+(file_sym_name, file_var_name, copy_data)
+NclQuark file_sym_name;
+NclQuark file_var_name;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+	
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					tmp_md = _NclFileReadVarValue(thefile,file_var_name,NULL);
+					if(tmp_md != NULL) {
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						} else {
+							tmp_md = _NclCopyVal(tmp_md,NULL);
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						}
+						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+						out_data->constant = 0;
+						if(copy_data) {
+							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+						} else {
+							out_data->value = tmp_md->multidval.val;
+						}
+						out_data->totalelements = tmp_md->multidval.totalelements;
+						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+						out_data->type = (int)tmp_md->multidval.data_type;
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						_NclDestroyObj((NclObj)tmp_md);
+						return(out_data);
+					}
+				}
+			}
+		}	
+	}
+	return(NULL);
+}
+
+struct _NclExtValueRec *_NclReadFileVarCoord
+#if     NhlNeedProto
+(NclQuark file_sym_name, NclQuark file_var_name, NclQuark coordname,int copy_data)
+#else
+(file_sym_name, file_var_name, coordname, copy_data)
+NclQuark file_sym_name;
+NclQuark file_var_name;
+NclQuark coordname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclVar tmp_var = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					tmp_var = _NclFileReadCoord(thefile,coordname,NULL);
+					if(tmp_var != NULL) {
+						tmp_md = _NclVarValueRead(tmp_var,NULL,NULL);
+					} else {
+						return(NULL);
+					}
+					if(tmp_md != NULL) {
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						} else {
+							tmp_md = _NclCopyVal(tmp_md,NULL);
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						}
+						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+						out_data->constant = 0;
+						if(copy_data) {
+							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+						} else {
+							out_data->value = tmp_md->multidval.val;
+						}
+						out_data->totalelements = tmp_md->multidval.totalelements;
+						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+						out_data->type = (int)tmp_md->multidval.data_type;
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						if(tmp_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp_var);
+						}
+						_NclDestroyObj((NclObj)tmp_md);
+						return(out_data);
+					}
+				}
+			} 
+		}
+	}
+	return(NULL);
+}
+
+
+struct _NclExtValueRec *_NclReadFileVarAtt
+#if     NhlNeedProto
+(NclQuark file_sym_name, NclQuark file_var_name, NclQuark attname,int copy_data)
+#else
+(file_sym_name, file_var_name, attname, copy_data)
+NclQuark file_sym_name;
+NclQuark file_var_name;
+NclQuark attname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					tmp_md = _NclFileReadVarAtt(thefile,file_var_name,attname,NULL);
+					if(tmp_md != NULL) {
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						} else {
+							tmp_md = _NclCopyVal(tmp_md,NULL);
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						}
+						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+						out_data->constant = 0;
+						if(copy_data) {
+							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+						} else {
+							out_data->value = tmp_md->multidval.val;
+						}
+						out_data->totalelements = tmp_md->multidval.totalelements;
+						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+						out_data->type = (int)tmp_md->multidval.data_type;
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						_NclDestroyObj((NclObj)tmp_md);
+						return(out_data);
+					}
+				}
+			} 
+		}
+	}
+	return(NULL);
+}
+
+struct _NclExtValueRec *_NclReadFileAtt
+#if	NhlNeedProto
+(NclQuark file_sym_name, NclQuark attname,int copy_data)
+#else
+(file_sym_name, attname,copy_data)
+NclQuark file_sym_name;
+NclQuark attname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					tmp_md = _NclFileReadAtt(thefile,attname,NULL);
+					if(tmp_md != NULL) {
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						} else {
+							tmp_md = _NclCopyVal(tmp_md,NULL);
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						}
+						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+						out_data->constant = 0;
+						if(copy_data) {
+							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+						} else {
+							out_data->value = tmp_md->multidval.val;
+						}
+						out_data->totalelements = tmp_md->multidval.totalelements;
+						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+						out_data->type = (int)tmp_md->multidval.data_type;
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						_NclDestroyObj((NclObj)tmp_md);
+						return(out_data);
+					}
+				}
+			} 
+		}
+	}
+	return(NULL);
+}
+NclApiDataList *_NclGetFileInfo
+#if	NhlNeedProto
+(NclQuark file_sym_name)
+#else
+(file_sym_name)
+NclQuark file_sym_name;
+#endif
+{
+	NclApiDataList *tmp = NULL;
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int i,j;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid;
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+				tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+				tmp->kind = FILE_LIST;
+				tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					tmp->u.file->name = thevar->u.data_var->var.var_quark;
+					tmp->u.file->path = thefile->file.fpath;
+					tmp->u.file->wr_status = thefile->file.wr_status;
+					tmp->u.file->file_type = thefile->file.file_type;
+					tmp->u.file->n_dims = thefile->file.n_file_dims;
+					tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
+					for(j = 0; j < tmp->u.file->n_dims; j++) {
+						tmp->u.file->dim_info[j].dim_num = j;
+						tmp->u.file->dim_info[j].dim_quark = thefile->file.file_dim_info[j]->dim_name_quark;
+						tmp->u.file->dim_info[j].dim_size = thefile->file.file_dim_info[j]->dim_size;
+					}
+					if(thefile->file.n_vars > 0) {
+						tmp->u.file->n_vars = thefile->file.n_vars;
+						tmp->u.file->var_names = (NclQuark*)NclMalloc(sizeof(NclQuark)*thefile->file.n_vars);
+						for(j = 0; j < thefile->file.n_vars; j++) {
+							tmp->u.file->var_names[j] = thefile->file.var_info[j]->var_name_quark;
+						}
+					}
+					if(thefile->file.n_file_atts > 0) {
+						tmp->u.file->n_atts = thefile->file.n_file_atts;
+						tmp->u.file->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*thefile->file.n_file_atts);
+						for(j = 0; j < thefile->file.n_file_atts; j++) {
+							tmp->u.file->attnames[j] = thefile->file.file_atts[j]->att_name_quark;
+						}
+									
+					} else {
+						tmp->u.file->n_atts = 0;
+						tmp->u.file->attnames = NULL;
+					}
+					tmp->next = NULL;
+					return(tmp);
+				}
+			}
+		}
+	}
+	return(NULL);
 }
 
 NclApiDataList *_NclGetDefinedFileInfo
@@ -1291,6 +1909,244 @@ NclApiDataList * _NclGetDefinedHLUInfo
 	}
 	return(thelist);
 }
+NclQuark *_NclGetHLUVarSymNames
+#if	NhlNeedProto
+(int *num_names)
+#else
+(num_names)
+int *num_names;
+#endif
+{
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	NclStackEntry *the_var;
+	int i,j;
+	int current_size = NCL_SYM_TAB_SIZE;
+	NclQuark *tmp_out;
+	
+	*num_names = 0;
+
+	tmp_out = (NclQuark*)NclMalloc(sizeof(NclQuark)*current_size);
+
+	st = thetablelist;
+
+	while(st != NULL) {
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+			if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+				while(s != NULL) {
+					if(s->type == VAR) {
+						the_var = _NclRetrieveRec(s,DONT_CARE);	
+						if((the_var->kind == NclStk_VAR)&&(the_var->u.data_var->obj.obj_type_mask & (Ncl_HLUVar))) {
+							if(*num_names < current_size) {
+								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
+							} else {
+								tmp_out = NclRealloc(tmp_out,current_size * 2);
+								current_size *= 2;
+								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
+							}
+							*num_names++;
+						}
+					}
+					s = s->symnext;
+				}
+			}
+		}
+		st = st->previous;
+	}
+	if(*num_names == 0) {
+		NclFree(tmp_out);
+		return(NULL);
+	}
+	return(tmp_out);
+	
+}
+NclQuark *_NclGetVarSymNames
+#if	NhlNeedProto
+(int *num_names)
+#else
+(num_names)
+int *num_names;
+#endif
+{
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	NclStackEntry *the_var;
+	int i,j;
+	int current_size = NCL_SYM_TAB_SIZE;
+	NclQuark *tmp_out;
+	
+	*num_names = 0;
+
+	tmp_out = (NclQuark*)NclMalloc(sizeof(NclQuark)*current_size);
+
+	st = thetablelist;
+
+	while(st != NULL) {
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+			if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+				while(s != NULL) {
+					if(s->type == VAR) {
+						the_var = _NclRetrieveRec(s,DONT_CARE);	
+						if((the_var->kind == NclStk_VAR)&&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar|Ncl_HLUVar)))) {
+							if(*num_names < current_size) {
+								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
+							} else {
+								tmp_out = NclRealloc(tmp_out,current_size * 2);
+								current_size *= 2;
+								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
+							}
+							*num_names++;
+						}
+					}
+					s = s->symnext;
+				}
+			}
+		}
+		st = st->previous;
+	}
+	if(*num_names == 0) {
+		NclFree(tmp_out);
+		return(NULL);
+	}
+	return(tmp_out);
+	
+}
+
+NclApiDataList *_NclGetVarCoordInfo
+#if	NhlNeedProto
+(NclQuark var_sym_name,NclQuark coordname)
+#else
+(var_sym_name,coordname)
+NclQuark var_sym_name;
+NclQuark coordname;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclAtt tmp_att = NULL;
+	NclAttList *att_list = NULL;
+	NclMultiDValData the_value = NULL;
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int i,j;
+	NclStackEntry *the_var;
+	NclVar tmp_var;
+
+	s = _NclLookUp(NrmQuarkToString(var_sym_name));
+	if(s->type == VAR) {
+		the_var = _NclRetrieveRec(s,DONT_CARE);	
+		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar|Ncl_HLUVar)))) {
+			tmp_var = _NclReadCoordVar(the_var->u.data_var,NrmQuarkToString(coordname),NULL);	
+
+			tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+			tmp->kind = VARIABLE_LIST;
+			tmp->u.var = (NclApiVarInfoRec*) NclMalloc(sizeof(NclApiVarInfoRec));
+			tmp->u.var->name = tmp_var->var.var_quark;
+			the_value = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+			tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(the_value->multidval.data_type));
+			tmp->u.var->type = tmp_var->var.var_type;
+			tmp->u.var->n_dims = tmp_var->var.n_dims;
+			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp_var->var.n_dims);
+			for(j = 0; j < tmp_var->var.n_dims; j++) {
+				tmp->u.var->dim_info[j]= tmp_var->var.dim_info[j];
+					if(tmp_var->var.coord_vars[i] != -1) {
+						tmp->u.var->coordnames[j]= tmp_var->var.dim_info[j].dim_quark;
+					} else {
+						tmp->u.var->coordnames[j]= -1;
+					}
+			}
+			if(tmp_var->var.att_id != -1) {
+	
+				tmp_att= (NclAtt)_NclGetObj(tmp_var->var.att_id);
+				att_list = tmp_att->att.att_list;
+				tmp->u.var->n_atts = tmp_att->att.n_atts;
+				tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*tmp_att->att.n_atts);
+					
+				j = 0;	
+				while(att_list != NULL) {
+					tmp->u.var->attnames[j] = att_list->quark;
+					att_list = att_list->next;
+					j++;
+				}
+			} else {
+				tmp->u.var->n_atts = 0;
+				tmp->u.var->attnames = NULL;
+			}
+			tmp->next = NULL;
+			if(tmp_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)tmp_var);
+			}
+			return(tmp);
+		}
+	}
+	return(NULL);
+}
+
+NclApiDataList *_NclGetVarInfo
+#if	NhlNeedProto
+(NclQuark var_sym_name)
+#else
+(var_sym_name)
+NclQuark var_sym_name;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclAtt tmp_att = NULL;
+	NclAttList *att_list = NULL;
+	NclMultiDValData the_value = NULL;
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int i,j;
+	NclStackEntry *the_var;
+
+	s = _NclLookUp(NrmQuarkToString(var_sym_name));
+	if(s->type == VAR) {
+		the_var = _NclRetrieveRec(s,DONT_CARE);	
+		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar|Ncl_HLUVar)))) {
+
+			tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+			tmp->kind = VARIABLE_LIST;
+			tmp->u.var = (NclApiVarInfoRec*) NclMalloc(sizeof(NclApiVarInfoRec));
+			tmp->u.var->name = the_var->u.data_var->var.var_quark;
+			the_value = (NclMultiDValData)_NclGetObj(the_var->u.data_var->var.thevalue_id);
+			tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(the_value->multidval.data_type));
+			tmp->u.var->type = the_var->u.data_var->var.var_type;
+			tmp->u.var->n_dims = the_var->u.data_var->var.n_dims;
+			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
+			for(j = 0; j < the_var->u.data_var->var.n_dims; j++) {
+				tmp->u.var->dim_info[j]= the_var->u.data_var->var.dim_info[j];
+					if(the_var->u.data_var->var.coord_vars[i] != -1) {
+						tmp->u.var->coordnames[j]= the_var->u.data_var->var.dim_info[j].dim_quark;
+					} else {
+						tmp->u.var->coordnames[j]= -1;
+					}
+			}
+			if(the_var->u.data_var->var.att_id != -1) {
+	
+				tmp_att= (NclAtt)_NclGetObj(the_var->u.data_var->var.att_id);
+				att_list = tmp_att->att.att_list;
+				tmp->u.var->n_atts = tmp_att->att.n_atts;
+				tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*tmp_att->att.n_atts);
+					
+				j = 0;	
+				while(att_list != NULL) {
+					tmp->u.var->attnames[j] = att_list->quark;
+					att_list = att_list->next;
+					j++;
+				}
+			} else {
+				tmp->u.var->n_atts = 0;
+				tmp->u.var->attnames = NULL;
+			}
+			tmp->next = NULL;	
+			return(tmp);
+		}
+	}
+	return(NULL);
+}
+
+
 NclApiDataList *_NclGetDefinedVarInfo
 #if	NhlNeedProto
 (void)
@@ -1332,6 +2188,11 @@ NclApiDataList *_NclGetDefinedVarInfo
 							tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
 							for(j = 0; j < the_var->u.data_var->var.n_dims; j++) {
 								tmp->u.var->dim_info[j]= the_var->u.data_var->var.dim_info[j];
+								if(the_var->u.data_var->var.coord_vars[i] != -1) {
+									tmp->u.var->coordnames[j]= the_var->u.data_var->var.dim_info[j].dim_quark;
+								} else {
+									tmp->u.var->coordnames[j]= -1;
+								}
 							}
 							if(the_var->u.data_var->var.att_id != -1) {
 	
@@ -1452,6 +2313,169 @@ int copy_data;
 }
 
 
+
+extern struct _NclExtValueRec *_NclReadVarAtt
+#if	NhlNeedProto
+(NclQuark var_sym_name, NclQuark attname, int copy_data)
+#else
+(the_sym, attname, copy_data)
+NclQuark var_sym_name;
+NclQuark attname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(var_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if(thevar->kind == NclStk_VAR) {
+				tmp_md= _NclReadAtt(thevar->u.data_var,NrmQuarkToString(attname),NULL);
+				if(tmp_md != NULL) {
+					if(tmp_md->obj.status == TEMPORARY) {
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					} else {
+						tmp_md = _NclCopyVal(tmp_md,NULL);
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					}
+					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+					out_data->constant = 0;
+					if(copy_data) {
+					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+					} else {
+						out_data->value = tmp_md->multidval.val;
+					}
+					out_data->totalelements = tmp_md->multidval.totalelements;
+					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+					out_data->type = (int)tmp_md->multidval.data_type;
+					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+					}
+					_NclDestroyObj((NclObj)tmp_md);
+					return(out_data);
+				}
+			}
+		} 
+	}
+	return(NULL);
+}
+
+extern struct _NclExtValueRec *_NclReadVarCoord
+#if	NhlNeedProto
+(NclQuark var_sym_name, NclQuark coordname, int copy_data)
+#else
+(the_sym, coordname, copy_data)
+NclQuark var_sym_name;
+NclQuark coordname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(var_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if(thevar->kind == NclStk_VAR) {
+				tmp_md= _NclVarValueRead(_NclReadCoordVar(thevar->u.data_var,NrmQuarkToString(coordname),NULL),NULL,NULL);
+				if(tmp_md != NULL) {
+					if(tmp_md->obj.status == TEMPORARY) {
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					} else {
+						tmp_md = _NclCopyVal(tmp_md,NULL);
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					}
+					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+					out_data->constant = 0;
+					if(copy_data) {
+					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+					} else {
+						out_data->value = tmp_md->multidval.val;
+					}
+					out_data->totalelements = tmp_md->multidval.totalelements;
+					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+					out_data->type = (int)tmp_md->multidval.data_type;
+					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+					}
+					_NclDestroyObj((NclObj)tmp_md);
+					return(out_data);
+				}
+			}
+		} 
+	}
+	return(NULL);
+}
+
+extern struct _NclExtValueRec *_NclReadVarCoordAtt
+#if	NhlNeedProto
+(NclQuark var_sym_name, NclQuark coordname, NclQuark attname, int copy_data)
+#else
+(the_sym, coordname, attname, copy_data)
+NclQuark var_sym_name;
+NclQuark coordname;
+NclQuark attname;
+int copy_data;
+#endif
+{
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md;
+	NclExtValueRec *out_data = NULL;
+	NclMultiDValData theid;
+	int i;
+
+	s = _NclLookUp(NrmQuarkToString(var_sym_name));
+	if(s != NULL) {
+		if(s->type == VAR) {
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if(thevar->kind == NclStk_VAR) {
+				tmp_md= _NclReadAtt(_NclReadCoordVar(thevar->u.data_var,NrmQuarkToString(coordname),NULL),NrmQuarkToString(attname),NULL);
+				if(tmp_md != NULL) {
+					if(tmp_md->obj.status == TEMPORARY) {
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					} else {
+						tmp_md = _NclCopyVal(tmp_md,NULL);
+						_NclSetStatus((NclObj)tmp_md,STATIC);
+					}
+					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
+					out_data->constant = 0;
+					if(copy_data) {
+					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+					} else {
+						out_data->value = tmp_md->multidval.val;
+					}
+					out_data->totalelements = tmp_md->multidval.totalelements;
+					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+					out_data->type = (int)tmp_md->multidval.data_type;
+					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+					}
+					_NclDestroyObj((NclObj)tmp_md);
+					return(out_data);
+				}
+			}
+		} 
+	}
+	return(NULL);
+}
 #ifdef __cplusplus
 }
 #endif
