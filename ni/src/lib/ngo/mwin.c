@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.30 2000-01-24 20:56:18 dbrown Exp $
+ *      $Id: mwin.c,v 1.31 2000-01-28 17:25:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2195,6 +2195,7 @@ AddViewNode
 			else if (wks->auto_refresh) {
 				NgDrawXwkView
 					(wks->wks_wrap_id,vwnode->id,False);
+				hdata->draw_req = False;
 			}
 			/*
 			 * the last plot created should always be the 
