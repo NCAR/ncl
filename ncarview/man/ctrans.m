@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.19 1993-05-04 22:03:37 haley Exp $
+.\"	$Id: ctrans.m,v 1.20 1994-03-07 17:03:42 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -108,6 +108,10 @@ may be supported by your particular configuration of
 For a list of supported devices see the
 .BR gcaps(1NCARG)
 command.
+.PP
+.B ctrans
+will read from the standard input if no metafile name is specified or the
+the name specified is `-'.
 .PP
 .SH OPTIONS
 .TP
