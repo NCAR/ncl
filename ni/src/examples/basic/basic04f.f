@@ -1,5 +1,5 @@
 C
-C $Id: basic04f.f,v 1.3 1995-03-20 18:41:21 haley Exp $
+C $Id: basic04f.f,v 1.4 1995-03-31 21:31:27 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -32,7 +32,7 @@ C
       program basic04f
       implicit none
 
-      external NhlFappLayerClass
+      external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
       external NhlFNcgmWorkstationLayerClass
       external NhlFContourLayerClass
@@ -62,7 +62,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid,'appid',NhlFappLayerClass,0,
+      call NhlFCreate(appid,'appid',NhlFAppLayerClass,0,
      $     rlist,ierr)
 C
 C ##########
@@ -72,7 +72,7 @@ C For each type of output you must create a workstation object using
 C create.  The first argument, xwks, is a variable that identifies the
 C object. The second argument, "xwks", to the create call sets the
 C name of the object being created. The third argument,
-C "NhlFxWorkstationLayerClass", or "NhlFncgmWorkstationLayerClass"
+C "NhlFXWorkstationLayerClass", or "NhlFNcgmWorkstationLayerClass"
 C identifies the type or class of the object to create. In this case
 C an X workstation or an NCGM workstation. The fourth argument, 0,
 C specifies the id of the objects parent.  In this  case, the object
@@ -81,7 +81,7 @@ C "rlist", is the resource list modifiers to be used  when creating
 C the object. The final argument, ierr, is used to return an error code.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(xwks,'xwks',NhlFxWorkstationLayerClass,0,
+      call NhlFCreate(xwks,'xwks',NhlFXWorkstationLayerClass,0,
      $     rlist,ierr)
 C
 C The resource, wkMetaName, lets you specify the name of the output NCGM
@@ -90,7 +90,7 @@ C default name, gmeta,  will be used.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkMetaName','basic04.ncgm',ierr)
-      call NhlFCreate(nwks,'nwks',NhlFncgmWorkstationLayerClass,0,
+      call NhlFCreate(nwks,'nwks',NhlFNcgmWorkstationLayerClass,0,
      $     rlist,ierr)
 C
 C Create a scalar field object that will be used as a data set for a
@@ -100,7 +100,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetMDIntegerArray(rlist,'sfDataArray',data1,2,
      $     dims,ierr)
-      call NhlFCreate(field1,'field1',NhlFscalarFieldLayerClass,0,
+      call NhlFCreate(field1,'field1',NhlFScalarFieldLayerClass,0,
      $     rlist,ierr)
 C
 C ##########
@@ -113,7 +113,7 @@ C Assign data using the cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'cnScalarFieldData',field1,ierr)
-      call NhlFCreate(xcon,'xcon',NhlFcontourLayerClass,xwks,
+      call NhlFCreate(xcon,'xcon',NhlFContourLayerClass,xwks,
      $     rlist,ierr)
 C
 C Create an empty contour object to draw into the ncgm workstation.
@@ -121,7 +121,7 @@ C Assign data using the cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'cnScalarFieldData',field1,ierr)
-      call NhlFCreate(ncon,'ncon',NhlFcontourLayerClass,nwks,
+      call NhlFCreate(ncon,'ncon',NhlFContourLayerClass,nwks,
      $     rlist,ierr)
 C
 C ##########

@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.3 1995-03-20 18:41:23 haley Exp $
+C $Id: basic05f.f,v 1.4 1995-03-31 21:31:28 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -25,7 +25,7 @@ C                       The second frame shows how to alter an entry
 C                       in the colormap. The third frame shows how to
 C                       create a completely new colormap.
 C
-      external NhlFappLayerClass
+      external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
       external NhlFLabelBarLayerClass
 
@@ -64,12 +64,12 @@ C
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid,'appid',NhlFappLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,'appid',NhlFAppLayerClass,0,rlist,ierr)
 C
 C Create an XWorkstation object.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks,'wks',NhlFxWorkstationLayerClass,0,
+      call NhlFCreate(wks,'wks',NhlFXWorkstationLayerClass,0,
      1     rlist,ierr)
 C
 C Create a labelbar object. 
@@ -125,7 +125,7 @@ C
       call NhlFRLSetFloat(rlist,'vpHeightF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',1.0,ierr)
 
-      call NhlFCreate(lbar,'lbar',NhlFlabelBarLayerClass,wks,
+      call NhlFCreate(lbar,'lbar',NhlFLabelBarLayerClass,wks,
      1      rlist,ierr)
 C
 C Draw and frame the labelbar

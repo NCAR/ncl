@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.3 1995-03-20 18:41:18 haley Exp $
+C $Id: basic02f.f,v 1.4 1995-03-31 21:31:25 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -29,7 +29,7 @@ C
       program basic02f
       implicit none
 
-      external NhlFappLayerClass
+      external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
       external NhlFContourLayerClass
 
@@ -44,7 +44,7 @@ C
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
-      call NhlFCreate(appid,"basic02",NhlFappLayerClass,0,rlist,ierr)
+      call NhlFCreate(appid,"basic02",NhlFAppLayerClass,0,rlist,ierr)
 C
 C ###########
 C # FRAME 1 #
@@ -54,7 +54,7 @@ C output to an NCGM, file, X workstation window, or a PostScript file.
 C This example writes to an X Workstation.
 C 
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks,"wks",NhlFxWorkstationLayerClass,0,
+      call NhlFCreate(wks,"wks",NhlFXWorkstationLayerClass,0,
      $     rlist,ierr)
 C
 C Create a plot object.  In this example, we will create a contour plot.
@@ -72,7 +72,7 @@ C specifies the uper-right corner of a plot.
       call NhlFRLSetFloat(rlist,"vpYF",0.95,ierr) 
       call NhlFRLSetFloat(rlist,"vpWidthF",0.4,ierr) 
       call NhlFRLSetFloat(rlist,"vpHeightF",0.4,ierr) 
-      call NhlFCreate(con1,"con1",NhlFcontourLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourLayerClass,wks,
      $     rlist,ierr)
 C
 C Draw the plot. 
