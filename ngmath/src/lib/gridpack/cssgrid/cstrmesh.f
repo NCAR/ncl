@@ -182,10 +182,6 @@ C             IER =  0 if no errors were encountered.
 C             IER = -1 if N < 3 on input.
 C             IER = -2 if the first three nodes are
 C                      collinear.
-C             IER = -3 if an error flag was returned by a
-C                      call to CSSWAP in CSADDNOD.  This is an
-C                      internal error and should be reported
-C                      to the programmer.
 C             IER =  L if nodes L and M coincide for some
 C                      M > L.  The data structure represents
 C                      a triangulation of nodes 1 to M-1 in

@@ -35,7 +35,7 @@ C    FF   = NI by NJ array containing the interpolated values.
 C
 C    IWK  = An integer workspace of length 15*N.
 C
-C    RWK  = A real workspace of length N.
+C    WK   = A real workspace of length 4*N.
 C
 C  On output:
 C
@@ -65,11 +65,17 @@ C  For this routine we select a uniform tension factor of 1.
 C
       PARAMETER (IFLGS=0, SIGMA=1.)
 C
+C  Parameters for random number usage.
+C
+      PARAMETER (EPSILON=0.00001, IRMAX=32767)
+      DATA IX,IY,IZ/1,2,3/
+C
 C  Choose to estimate gradients at each triangle vertex and not
 C  save them.
 C
       PARAMETER (IFL=0)
 C
+      INTEGER CSJRAND
       INTEGER I, J, IERR, IST, NN, NST, NX, NY
       DATA    NST/1/
 C
@@ -83,6 +89,7 @@ C NST =   Initial value for IST
 C NX,NY = Local copies of NI and NJ
 C
       NN = N
+      NNEW = N
       NX = NI
       NY = NJ
       IF (NN .LT. 3) THEN
@@ -92,12 +99,38 @@ C
       ELSE IF (NY .LT. 1) THEN
         GO TO 210
       ENDIF
+C
+C  Introduce a random perturbation in the 5th decimal place
+C  to avoid duplicate input points.  The original input points 
+C  are copied into the real workspace so that they will not be 
+C  tampered with.
+C
+      DO 300 I=1,N
+        WK(  N+I) = X(I) + 
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))       
+        WK(2*N+I) = Y(I) +
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))
+        WK(3*N+I) = Z(I) +
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))        
+C
+C  Renormalize the vector so that it is still a unit vector.
+C
+        UN =    WK(  N+I)**2 
+        UN = UN+WK(2*N+I)**2 
+        UN = UN+WK(3*N+I)**2 
+        UN = SQRT(UN)
+        WK(  N+I) = 0.99999*WK(  N+I)/UN
+        WK(2*N+I) = 0.99999*WK(2*N+I)/UN
+        WK(3*N+I) = 0.99999*WK(3*N+I)/UN
+  300 CONTINUE
+C
       IST = NST
 C
 C  Do the triangulation.
 C
-      CALL CSTRMESH (NN,X,Y,Z, IWK(1),IWK(6*NN+1),IWK(12*NN+1), LNEW,
-     +             IWK(13*N+1),IWK(14*N+1),WK(1),IER)
+      CALL CSTRMESH (NNEW,WK(N+1),WK(2*N+1),WK(3*N+1), 
+     +              IWK(1),IWK(6*NN+1),IWK(12*NN+1), 
+     +              LNEW,IWK(13*N+1),IWK(14*N+1),WK(1),IER)
       IF (IER .EQ. 0) THEN
         GO TO 100
       ELSE IF (IER .EQ. -1) THEN
@@ -119,8 +152,9 @@ C Compute uniform grid points and interpolated values.
 C
       DO 3 J = 1,NY
         DO 2 I = 1,NX
-          CALL CSINTRC1 (NN,PLAT(I),PLON(J),X,Y,Z,F,
-     +                   IWK(1),IWK(6*NN+1),IWK(12*NN+1),
+          CALL CSINTRC1 (NNEW,PLAT(I),PLON(J),
+     +                   WK(N+1),WK(2*N+1),WK(3*N+1),       
+     +                   F,IWK(1),IWK(6*NN+1),IWK(12*NN+1),
      +                   IFLGS,SIGMA,IFL,GRAD,IST,FF(I,J),IERR)
           IF (IERR .EQ. 0) THEN
             GO TO 2

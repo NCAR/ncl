@@ -1,6 +1,14 @@
       SUBROUTINE CSSTRI (N,X,Y,Z, NT,NTRI, IWK,WK,IER)
+C
       INTEGER N, NT, NTRI(3,*), IWK(*), IER
       REAL    X(N), Y(N), Z(N), WK(*)
+C
+C  Parameters for random number usage.
+C
+      INTEGER CSJRAND
+      PARAMETER (EPSILON=0.00001, IRMAX=32767)
+      DATA IX,IY,IZ/1,2,3/
+      
 C
 C***********************************************************
 C
@@ -31,7 +39,7 @@ C               in the triangulation (NT is at most 2*N).
 C
 C       IWK  =  An integer workspace of length 27*N.
 C
-C       RWK  =  A real workspace of length N.
+C       WK   =  A real workspace of length 4*N.
 C
 C On output:
 C
@@ -63,9 +71,34 @@ C Modules required by CSSTRI:  CSTRMESH, CSTRLIST
 C
 C***********************************************************
 C
+C  Introduce a random perturbation in the 5th decimal place
+C  to avoid duplicate input points.  The original input points
+C  are copied into the real workspace so that they will not be
+C  tampered with.
+C
+      DO 300 I=1,N
+        WK(  N+I) = X(I) +
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))
+        WK(2*N+I) = Y(I) +
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))
+        WK(3*N+I) = Z(I) +
+     +       EPSILON*(0.5 - REAL(CSJRAND(IRMAX,IX,IY,IZ))/REAL(IRMAX))
+C
+C  Renormalize the vector so that it is still a unit vector.
+C
+        UN =    WK(  N+I)**2 
+        UN = UN+WK(2*N+I)**2 
+        UN = UN+WK(3*N+I)**2 
+        UN = SQRT(UN)
+        WK(  N+I) = 0.99999*WK(  N+I)/UN
+        WK(2*N+I) = 0.99999*WK(2*N+I)/UN
+        WK(3*N+I) = 0.99999*WK(3*N+I)/UN
+  300 CONTINUE
+C
 C  Triangulate.
 C
-      CALL CSTRMESH(N,X,Y,Z, IWK(1),IWK(6*N+1),IWK(12*N+1),LNEW,
+      CALL CSTRMESH(N,WK(N+1),WK(2*N+1),WK(3*N+1),
+     +              IWK(1),IWK(6*N+1),IWK(12*N+1),LNEW,
      +              IWK(13*N+1),IWK(14*N+1),WK(1),IER)
       IF (IER .EQ. 0) THEN
         GO TO 210
@@ -109,7 +142,7 @@ C
       RETURN
 C
   200 CONTINUE
-      CALL CSSERR('CSVORO',IER)
+      CALL CSSERR('CSSTRI',IER)
       NT = 0
       RETURN
 C

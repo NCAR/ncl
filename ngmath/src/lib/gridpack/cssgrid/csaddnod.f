@@ -10,7 +10,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   07/28/98
+C                                                   07/08/99
 C
 C   This subroutine adds node K to a triangulation of the
 C convex hull of nodes 1,...,K-1, producing a triangulation
@@ -66,9 +66,6 @@ C             IER = -2 if all nodes (including K) are col-
 C                      linear (lie on a common geodesic).
 C             IER =  L if nodes L and K coincide for some
 C                      L < K.
-C             IER = -3 if an error flag is returned by CSSWAP
-C                      implying that the triangulation
-C                      (geometry) was bad on input.
 C
 C Modules required by CSADDNOD:  CSBDYADD, CSCOVSPH, CSINSERT,
 C                                CSINTADD, CSJRAND, CSLSTPTR,
@@ -81,7 +78,7 @@ C***********************************************************
 C
       INTEGER CSLSTPTR
       INTEGER I1, I2, I3, IO1, IO2, IN1, IST, KK, KM1, L,
-     .        LP, LPF, LPO1
+     .        LP, LPF, LPO1, LPO1S
       LOGICAL CSSWPTST
       REAL    B1, B2, B3, P(3)
 C
@@ -103,6 +100,7 @@ C              if node K coincides with a vertex
 C LP =       LIST pointer
 C LPF =      LIST pointer to the first neighbor of K
 C LPO1 =     LIST pointer to IO1
+C LPO1S =    Saved value of LPO1
 C P =        Cartesian coordinates of node K
 C
       KK = K
@@ -166,9 +164,20 @@ C
 C Swap test:  if a swap occurs, two new arcs are
 C             opposite K and must be tested.
 C
+        LPO1S = LPO1
         IF ( .NOT. CSSWPTST(IN1,KK,IO1,IO2,X,Y,Z) ) GO TO 2
         CALL CSSWAP (IN1,KK,IO1,IO2, LIST,LPTR,LEND, LPO1)
-        IF (LPO1 .EQ. 0) GO TO 6
+        IF (LPO1 .EQ. 0) THEN
+C
+C  A swap is not possible because KK and IN1 are already
+C  adjacent.  This error in SWPTST only occurs in the
+C  neutral case and when there are nearly duplicate
+C  nodes.
+C
+          LPO1 = LPO1S
+          GO TO 2
+        ENDIF
+
         IO1 = IN1
         GO TO 1
 C
@@ -194,10 +203,5 @@ C
 C Nodes L and K coincide.
 C
     5 IER = L
-      RETURN
-C
-C Zero pointer returned by CSSWAP.
-C
-    6 IER = -3
       RETURN
       END

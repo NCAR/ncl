@@ -32,7 +32,7 @@ int *c_csstri(int n, float xi[], float yi[], float zi[],
     *ier = 300;
     return((int *)NULL);
   }
-  rwork = (float *) calloc(nit, sizeof(float));
+  rwork = (float *) calloc(4*nit, sizeof(float));
   if (rwork == NULL) {
     printf("Unable to allocate work space in c_csstri\n");
     *ier = 300;
@@ -117,7 +117,7 @@ float *c_cssgrid(int ni, float xi[], float yi[], float zi[], float f[],
     *ier = 300;
     return((float *)NULL);
   }
-  rwork = (float *) calloc(nit, sizeof(float));
+  rwork = (float *) calloc(4*nit, sizeof(float));
   if (rwork == NULL) {
     printf("Unable to allocate work space in c_cssgrid\n");
     *ier = 300;
