@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.5 1995-04-07 10:53:50 boote Exp $
+C $Id: basic05f.f,v 1.6 1995-05-01 21:50:27 scheitln Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -17,109 +17,118 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Mon Mar 20 10:43:42 MST 1995
 C
-C      Description:     This example demonstrates how to read and
+C      Description:     This example demonstrates how to read, display, and
 C                       manipulate colormaps.
 C
-C                       The first frame displays the default colormap.
-C                       The second frame shows how to alter an entry
-C                       in the colormap. The third frame shows how to
-C                       create a completely new colormap.
+C             The NG 4.x HLU software supports several different predefined
+C             colormaps of various sizes.  This example demonstrates how to
+C             display each of those colormaps using the labelbar utility.
+C             This example also shows how to change entries in a colormap
+C             and create a completely new colormap.
 C
       external NhlFAppClass
       external NhlFXWorkstationClass
+      external NhlFNcgmWorkstationClass
       external NhlFLabelBarClass
+      external NhlFTextItemClass
 
       integer i,j,ierr
-      integer num_dims,len_dims(100)
-      integer appid,wks,lbar,rlist,glist
-      character*3 colorindices(114)
+      integer num_dims,len_dims(2)
+      integer appid,wks,lbar,rlist,glist,text
+      integer NCGM
+      character*3 colorindices(232)
 
-      real cmap(1000,1000)
-      real newcmap(3,114)
+      real cmap(3,8)
+      real newcmap(3,100)
+
 C
-C ###########
-C # Frame 1 #
-C ###########
-C Display the default colormap.
+C Default is to display output to an X workstation
 C
-C Initialize labels for the color map entries
-C
-      data colorindices / 
-     $  '  0','  1','  2','  3','  4','  5','  6','  7','  8','  9',
-     $  ' 10',' 11',' 12',' 13',' 14',' 15',' 16',' 17',' 18',' 19',
-     $  ' 20',' 21',' 22',' 23',' 24',' 25',' 26',' 27',' 28',' 29',
-     $  ' 30',' 31',' 32',' 33',' 34',' 35',' 36',' 37',' 38',' 39',
-     $  ' 40',' 41',' 42',' 43',' 44',' 45',' 46',' 47',' 48',' 49',
-     $  ' 50',' 51',' 52',' 53',' 54',' 55',' 56',' 57',' 58',' 59',
-     $  ' 60',' 61',' 62',' 63',' 64',' 65',' 66',' 67',' 68',' 69',
-     $  ' 70',' 71',' 72',' 73',' 74',' 75',' 76',' 77',' 78',' 79',
-     $  ' 80',' 81',' 82',' 83',' 84',' 85',' 86',' 87',' 88',' 89',
-     $  ' 90',' 91',' 92',' 93',' 94',' 95',' 96',' 97',' 98',' 99',
-     $  '100','101','102','103','104','105','106','107','108','109',
-     $  '110','111','112','113' /
-C
+      NCGM=0
+
 C Initialize libraries and create a resource list.
-C
+
       call NhlFInitialize
       call NhlFRLCreate(rlist,'SETRL')
 
       call NhlFRLClear(rlist)
       call NhlFCreate(appid,'appid',NhlFAppClass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
 C
-C Create an XWorkstation object.
+C Create an NCGM workstation.
 C
-      call NhlFRLClear(rlist)
-      call NhlFCreate(wks,'wks',NhlFXWorkstationClass,0,
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkMetaName','./basic05f.ncgm',ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',
+     1        NhlFNcgmWorkstationClass,0,rlist,ierr)
+      else
+C Create an XWorkstation object that uses the default colormap.
+
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetString(rlist,'wkPause','True',ierr)
+
+C Set color mode to private so that there is no contention for colors
+        call NhlFRLSetString(rlist,'wkXColorMode','private',ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',NhlFXWorkstationClass,0,
      1     rlist,ierr)
-C
+
+      endif
+
+C Initialize labels for the colormap entries
+
+      do 100 i=1,232
+           write (colorindices(i),111) i
+ 111       format (I3)
+ 100  continue
+
 C Create a labelbar object. 
-C
+
       call NhlFRLClear(rlist)
-C
+
 C Assign the labels
-C
       call NhlFRLSetStringArray(rlist,'lbLabelStrings',
-     1      colorindices,114,ierr)
-C
-C Label every 17th entry 
-C
-      call NhlFRLSetInteger(rlist,'lbLabelStride',17,ierr)
-C
+     1      colorindices,232,ierr)
+
+C Label every other entry 
+      call NhlFRLSetInteger(rlist,'lbLabelStride',2,ierr)
+
 C Single pattern used for fill
-C
       call NhlFRLSetString(rlist,'lbMonoFillPattern','True',ierr)
-C
+
 C Set fill pattern to solid
-C
       call NhlFRLSetString(rlist,'lbFillPattern','SolidFill',ierr)
-C
+
 C No lines between colors
-C
       call NhlFRLSetString(rlist,'lbBoxLinesOn','False',ierr)
-C
-C Display 114 entries
-C
-      call NhlFRLSetInteger(rlist,'lbBoxCount',114,ierr)
-C
+
+C Display 131 entries
+      call NhlFRLSetInteger(rlist,'lbBoxCount',31,ierr)
+
 C Turn off labelbar perimeter
-C
       call NhlFRLSetString(rlist,'lbPerimOn','False',ierr)
-C
+
 C Plot title
-C
       call NhlFRLSetString(rlist,'lbTitleString',
      1      'Default Colormap',ierr)
-C
+
 C Title font
-C
       call NhlFRLSetString(rlist,'lbTitleFont','Helvetica-bold',ierr)
-C
+
 C Label font
-C
       call NhlFRLSetString(rlist,'lbLabelFont','Helvetica',ierr)
-C
+
 C Set viewport to max size
-C
       call NhlFRLSetFloat(rlist,'vpXF',0.0,ierr)
       call NhlFRLSetFloat(rlist,'vpYF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpHeightF',1.0,ierr)
@@ -127,32 +136,229 @@ C
 
       call NhlFCreate(lbar,'lbar',NhlFLabelBarClass,wks,
      1      rlist,ierr)
-C
+
+C Create a text label
+      call NhlFRLClear(rlist)
+
+C Set the font
+      call NhlFRLSetString(rlist,'txFont','Helvetica-bold',ierr)
+
+C Set position and height
+      call NhlFRLSetFloat(rlist,'txPosXF',.5,ierr)
+      call NhlFRLSetFloat(rlist,'txPosYF',.03,ierr)
+      call NhlFRLSetFloat(rlist,'txFontHeightF',.035,ierr)
+
+C Set the function code to the "*" character so that the 
+C default function code character, the colon, can be used
+C in the "txString" resource.
+      call NhlFRLSetString(rlist,'txFuncCode','*',ierr)
+
+C Set the text value
+      call NhlFRLSetString(rlist,'txString','Note: Entry 0 is the backgr
+     $ound color',ierr)
+
+      call NhlFCreate(text,'text',NhlFtextItemClass,wks,
+     1      rlist,ierr)
+
+
 C Draw and frame the labelbar
-C     
       call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
       call NhlFFrame(wks,ierr)
-C
-C ###########
-C # Frame 2 #
-C ###########
-C Alter a single entry in the colormap.
-C
-C Get the current colormap for the workstation pointed to by wks.
-C The colormap is stored in a 3xN variable where N is the length of
-C the colormap.  Each entry in the color map consists of a vector
-C of 3 normalized red-green-blue color values.
-C
-C Note:  At the time of writing this script, most of the NCL functions
-C for color map manipulation were not yet available.  So, the rest
-C of this example may no longer be the most effective and simplest
-C way to change color map entries.
-C
-C Set variable to large values previous to GetValues call
-C
-      num_dims = 100
-      len_dims(1) = 1000
-      len_dims(2) = 1000
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','cyclic',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Cyclic Colormap',ierr)
+
+C Label every entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',1,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',7,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','gscyclic',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Gscyclic Colormap',
+     $     ierr)
+
+C Label every entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',1,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',7,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','gsltod',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Gsltod Colormap',
+     $     ierr)
+
+C Label every other entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',2,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',32,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','gsdtol',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Gsdtol Colormap',
+     $     ierr)
+
+C Label every other entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',2,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',32,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','uniform',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Uniform Colormap',
+     $     ierr)
+
+C Label every 10th entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',10,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',171,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','temp1',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Temp1 Colormap',
+     $     ierr)
+
+C Label every 5th entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',5,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',62,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+
+C Change the colormap to one of the predefined colormaps
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','psgcap',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+C Change the labelbar title, annotation, and number of entries.
+      call NhlFRLClear(rlist)
+
+C Labelbar title 
+      call NhlFRLSetString(rlist,'lbTitleString','Psgcap Colormap',
+     $     ierr)
+
+C Label every 15th entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',15,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',230,ierr)
+
+      call NhlFSetValues(lbar,rlist,ierr)
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C  This next example changes three entries in the colormap.  Changing the
+C  first entry (colormap index 0) in the colormap, sets the background
+C  color for a plot. The second entry (color index 1) sets the foreground
+C  color for a plot.
+C 
+C  The colormap is stored in a 3xN variable where N is the length of
+C  the colormap.  Each entry in the color map consists of a vector
+C  of 3 normalized red-green-blue color values.
+
+C Assign gray scale colormap
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','gscyclic',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+      num_dims = 2
+      len_dims(1) = 3
+      len_dims(2) = 8
 
       call NhlFRLCreate(glist,'GETRL')
       call NhlFRLClear(glist)
@@ -160,70 +366,110 @@ C
      1      len_dims,ierr)
       call NhlFGetValues(wks,glist,ierr)
 
-      do 20,i=1,len_dims(2)
-         do 20,j=1,len_dims(1)
-            newcmap(j,i) = cmap(j,i)
- 20   continue
-C     
-C Change the first entry in the colormap array to red.
-C
-      newcmap(1,1) = 1.0
-      newcmap(2,1) = 0.0
-      newcmap(3,1) = 0.0
-C
+C  Change the first entry in the colormap array to blue, the
+C  second to green, and the fourth to red.
+
+
+C Background color
+      cmap(1,1) = 0.0
+      cmap(2,1) = 0.0
+      cmap(3,1) = 1.0
+
+C Foreground color 
+      cmap(1,2) = 0.0
+      cmap(2,2) = 1.0
+      cmap(3,2) = 0.0
+
+C Colormap entry 3
+      cmap(1,4) = 1.0
+      cmap(2,4) = 0.0
+      cmap(3,4) = 0.0
+
 C Assign the new color map to the workstation object.
-C
+      num_dims=2
+      len_dims(1)=3
+      len_dims(2)=8
       call NhlFRLClear(rlist)
-      call NhlFRLSetMDFloatArray(rlist,'wkColorMap',newcmap,
+      call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,
      1      num_dims,len_dims,ierr) 
       call NhlFSetValues(wks,rlist,ierr)
-C
+
 C Add a different title.
-C
       call NhlFRLClear(rlist)
+
+C Set the title
       call NhlFRLSetString(rlist,'lbTitleString',
-     1      'Entry 0 set to Red',ierr)
+     1      'Changing colormap entries',ierr)
+
+C Label every entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',1,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',7,ierr)
+
       call NhlFSetValues(lbar,rlist,ierr)
-C
-C Draw and frame the labelbar.
-C
-      call NhlFDraw(lbar,ierr)
-      call NhlFFrame(wks,ierr)
-C
-C ###########
-C # Frame 3 #
-C ###########
-C Create and assign a new colormap.
-C
-C Assign new RGB values to each entry of the colormap.
-C
-      j = 0
-      do 10, i=1,114*3,3
-         j = j + 1
-         newcmap(1,j) = 1.0-(((i-1)/3)/113.0)
-         newcmap(2,j) = ((i-1)/3)/113.0
-         newcmap(3,j) = ((i-1)/3)/113.0
- 10   continue
-C
-C Assign the new color map to the workstation object.
-C
+
+C Change the textual annotation at bottom of frame
       call NhlFRLClear(rlist)
+
+C Set the title for the labelbar 
+      call NhlFRLSetString(rlist,'txString','Entry 0 (background) set to
+     $ Blue',ierr)
+
+      call NhlFSetValues(text,rlist,ierr)
+
+C Draw and frame the labelbar.
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C This example demonstrates how to create and assign a new colormap.
+C
+C First we will initialize a new array with RGB entries.  For this
+C example we are choosing an arbitrary colormap size of 100.
+C 
+C Assign new RGB values to each entry of the colormap.
+C The first entry (background color) is black.  The rest of
+C the colormap is a smooth table that ranges from red to blue.
+
+
+      newcmap(1,1) = 0.
+      newcmap(2,1) = 0.
+      newcmap(3,1) = 0.
+      do 10, i=2,100
+         newcmap(1,i) = 1.-(i/99.)
+         newcmap(2,i) = i/99.
+         newcmap(3,i) = i/99.
+ 10   continue
+
+C Assign the new color map to the workstation object.
+      call NhlFRLClear(rlist)
+      num_dims=2
+      len_dims(1)=3
+      len_dims(2)=100
       call NhlFRLSetMDFloatArray(rlist,'wkColorMap',newcmap,
      1      num_dims,len_dims,ierr)
       call NhlFSetValues(wks,rlist,ierr)
-C
+
 C Assign a new title.
-C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'lbTitleString','New colormap',ierr)
+
+C Label every 10th entry
+      call NhlFRLSetInteger(rlist,'lbLabelStride',10,ierr)
+
+C Number of entries to display
+      call NhlFRLSetInteger(rlist,'lbBoxCount',99,ierr)
       call NhlFSetValues(lbar,rlist,ierr)
-C
+
 C Draw and frame the labelbar
-C
       call NhlFDraw(lbar,ierr)
       call NhlFFrame(wks,ierr)
 
+C Cleanup
       call NhlFDestroy(lbar,ierr)
+      call NhlFDestroy(text,ierr)
+      call NhlFDestroy(wks,ierr)
       call NhlFClose
 
       stop
