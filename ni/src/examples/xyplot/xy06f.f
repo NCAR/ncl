@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.10 1997-02-21 18:14:36 haley Exp $
+C      $Id: xy06f.f,v 1.11 1997-05-22 17:07:24 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -233,7 +233,7 @@ C
          call gngpat(filename,"data",ierr)
          write(dir,31)nhour-1
  31      format('/cdf/950318',i2.2,'_sao.cdf' )
-         flen = len(dir)
+         flen = 20
          do 32 i=1,256
             if( filename(i:i).eq.char(0) ) then
                filename(i:i+flen)=dir

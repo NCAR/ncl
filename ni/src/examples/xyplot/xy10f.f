@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.6 1996-12-12 14:49:53 haley Exp $
+C      $Id: xy10f.f,v 1.7 1997-05-22 17:07:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -31,8 +31,8 @@ C
 C Define the day and the hour for which we are getting data values.
 C (March 18, 1995, hour 0).
 C
-      character*16 file
-      data file/'95031800_sao.cdf'/
+      character*21 file
+      data file/'/cdf/95031800_sao.cdf'/
 C
 C Declare variables for the HLU routine calls.
 C
@@ -44,7 +44,7 @@ C
 C
 C Declare variables for getting information from netCDF file.
 C
-      character*50 dir, recname
+      character*50 recname
       character*256 filename
       integer ncid, latid, lonid, recid
       integer ndims, nvars, ngatts, rec_len
@@ -101,12 +101,9 @@ C
 C Open the netCDF file.
 C
       call gngpat(filename,"data",ierr)
-      write(dir,31)file
- 31   format('/cdf/',a16 )
-      ilen = len(dir)
       do 32 i=1,256
          if( filename(i:i).eq.char(0) ) then
-            filename(i:i+ilen)=dir
+            filename(i:i+20)=file
             goto 34
          endif
  32   continue
@@ -130,8 +127,8 @@ C Get lat/lon data values.
 C
       start(1) = 1
       count(1) = rec_len
-      call ncvgtc(ncid,latid,start,count,lat,3000,ierr)
-      call ncvgtc(ncid,lonid,start,count,lon,3000,ierr)
+      call ncvgt(ncid,latid,start,count,lat,3000,ierr)
+      call ncvgt(ncid,lonid,start,count,lon,3000,ierr)
 C
 C Close the netCDF file.
 C
