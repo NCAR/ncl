@@ -1,9 +1,11 @@
-.\"
-.\"	$Id: dashline.m,v 1.1 1993-04-06 19:38:37 haley Exp $
-.\"
-.TH DASHLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Dashline 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-DASHLINE - draws and smoothes dashed lines.
+Dashline - A set of line drawing routines which can be used to
+generate various dashed line patterns (including solid), can add
+labels to the lines, can smooth the lines, and can suppress
+crowding of lines.
 .SH SYNOPSIS
 CALL DASHDC - choose a dash pattern with labels 
 .br
@@ -35,25 +37,100 @@ c_vectd
 c_lined
 .br
 c_lastd
-.SH ACCESS 
-To use DASHLINE routines load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use the
-DASHLINE C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC,
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+.SH USAGE
+The Dashline utility allows one to create various kinds of lines.
+In all of the quick, normal, smooth and super incantantations of
+this utility you can create an arbitrary dash pattern for a line
+including a solid line.  In all but the quick option, you can also
+add interspersed labels to the lines for purposes such as naming
+lines in an XY plot, or assigning contour levels to contour lines.
+In the smooth and super options the lines can also be smoothed using
+splines under tension.
 .sp
-To get the smooth version of CURVED, load libdashsmth.o, or add
-the -dashsmooth option to your ncargf77 command.  To get the
-super version of CURVED, load libdashsupr.o, or add the
--dashsuper option to your ncargf77 command.
+.nf
+Warning:  You must be careful when using the smoothing option.
+	  If you allow a high degree of smoothing it can create
+	  some serious side effects such as XY curves with
+	  multiple valued loops and contours which cross over
+	  other contours.  Crossed contours can produce color
+	  fill leakage anomalies.
+.fi
+.sp
+The super option additionally allows for the culling of crowded lines.
+See the ACCESS Section for details on how to invoke the various options.
+.SH ACCESS 
+The Dashline entries can be invoked in four different ways to create
+line draws which vary considerably in appearance.  The four variations
+include quick, normal, smooth, and super lines.  These variations are
+specified through selected command line options of the ncargf77 command.
+.sp
+To use the normal version of line draws in the Dashline utility
+load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  Other optional libraries
+to create the quick, smooth, and super line draws will
+automatically be linked by the ncargf77 command.
+To run a code called mycode.f which has one or more calls to
+Dashline entries, issue one of the commands:
+.sp
+.IP NORMAL 10
+Command:  "ncargf77 mycode.f"
+.sp
+The lines will be drawn as unsmoothed
+dashed or solid lines that can include characters along the lines.
+.sp 2
+.IP QUICK 10
+Command:  "ncargf77 -quick mycode.f"
+.sp
+The lines will be drawn as unsmoothed
+dashed or solid lines without characters along the lines.
+.sp 2
+.IP SMOOTH 10
+Command:  "ncargf77 -smooth mycode.f"
+.sp
+The lines will be drawn as smoothed
+dashed or solid lines using splines under tension.  There may be
+characters along the lines.
+.sp 2
+.IP SUPER 10
+Command:  "ncargf77 -super mycode.f"
+.sp
+The lines will be drawn as smoothed
+dashed or solid lines using splines under tension.  There may be
+characters along the lines.  Crowded lines can be thinned.
+.SH MESSAGES
+When error conditions are detected, the support routine SETER 
+is called in such a way that it writes a message to the standard
+error file (as defined by I1MACH(4)) and then terminates 
+execution. The possible error messages are as follows:
+.sp
+CFVLD  -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD.
+.sp
+A FRSTD call must preceed the first VECTD call.
+.sp
+DASHDB -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY.
+.sp
+If you have used the ncargf77 command options as discussed in
+the ACCESS Section, see your system administrator.
+.sp
+DASHDC -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY.
+.sp
+If you have used the ncargf77 command options as discussed in
+the ACCESS Section, see your system administrator.
+.sp
+FDVDLD -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD.
+.sp
+A FRSTD call must preceed the first VECTD call.
 .SH SEE ALSO
 Online:
-curved, dashline, dashdb, dashdc, frstd, lined, vectd, ncarg_cbind
+dashline_params, curved, dashdb, dashdc, frstd,
+lastd, lined, reset, vectd, ncarg_cbind
 .sp
-Hardcopy:
-"NCAR Graphics User's Guide, Version 2.00"
+Hardcopy:  
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version;
+User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-
