@@ -1,5 +1,5 @@
 /*
- *      $Id: ListSupport.h,v 1.3 2000-10-17 19:55:12 ethan Exp $
+ *      $Id: ListSupport.h,v 1.4 2004-04-28 17:02:12 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -19,6 +19,7 @@
  *
  *      Description:
  */
+
 #ifndef _ListSupport_h
 #define _ListSupport_h
 

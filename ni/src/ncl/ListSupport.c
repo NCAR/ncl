@@ -1,4 +1,21 @@
+/*
+ * $Id: ListSupport.c,v 1.3 2004-04-28 17:02:12 grubin Exp $
+ */
 
+/************************************************************************
+*                                                                       *
+*                            Copyright (C)  1993                        *
+*            University Corporation for Atmospheric Research            *
+*                            All Rights Reserved                        *
+*                                                                       *
+************************************************************************/
+/*
+ *      Author:         Ethan Alpert
+ *                      National Center for Atmospheric Research
+ *                      POB 3000, Boulder, Colorado
+ *
+ *      $Date: 2004-04-28 17:02:12 $
+ */
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
