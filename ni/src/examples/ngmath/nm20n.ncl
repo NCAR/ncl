@@ -79,7 +79,7 @@ begin
 ;  storing the Cartesian coordinate equivalents to the lat/lon input;
 ;  calculate the Cartesian coordinates.
 ;  
-  fsize = sizeof(rlat)/sizeof("float")
+  fsize = sizeof(rlat)/sizeof(rlat(0))
   x = new(fsize,float)
   y = new(fsize,float)
   z = new(fsize,float)
@@ -90,7 +90,7 @@ begin
 ;  a two dimensional array dimensioned for fsize x 3.
 ;
   triangles = csstri(x,y,z)
-  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
+  num_triangles = sizeof(triangles)/(3*sizeof(triangles(0,0)))
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store

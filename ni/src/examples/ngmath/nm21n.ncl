@@ -71,7 +71,7 @@ procedure genrs(rlat[*]:float, rlon[*]:float)
 local size, tmpa, rslt, rz
 
 begin
-  size = (sizeof(rlat)/sizeof("float"))
+  size = sizeof(rlat)/sizeof(rlat(0))
   tmpa = new(1,integer)
   rslt = new(1,float)
   nrand(0,tmpa,rslt)
@@ -395,7 +395,7 @@ begin
 ;  Create the triangulation.
 ;
   triangles = csstri(x,y,z)
-  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
+  num_triangles = sizeof(triangles)/(3*sizeof(triangles(0,0)))
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store
