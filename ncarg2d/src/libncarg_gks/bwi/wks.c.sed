@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.17 1994-09-15 00:26:11 fred Exp $
+ *      $Id: wks.c.sed,v 1.18 1994-10-11 17:21:32 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -158,7 +158,7 @@ int	opnwks_(unit, openf, fname, status)
 	char		*fname;
 
 	fname = (char *)malloc(sizeof(char)*(length+1));
-	strcpy( fname, _fcdtocp(fname_), length );
+	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 
 	/* Initialize the table that is used to track LU's. */
@@ -899,7 +899,7 @@ int	delfil_(fname, status)
 	char		*fname;
 
 	fname = (char *)malloc(sizeof(char)*(length+1));
-	strcpy( fname, _fcdtocp(fname_), length );
+	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 	/*
 	 *  Any errors are ignored since this function may possibly
@@ -913,7 +913,7 @@ int	delfil_(fname, status)
 	(void) remove(tname);
 	free(tname);
 #ifdef cray
-	free(fname)
+	free(fname);
 #endif
 	*status = 0;
 	return(0);
