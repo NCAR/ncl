@@ -18,11 +18,11 @@ main()
   double x[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75},
          y[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65},
          z[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
-  double **out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
-  float outd[NUMXOUT][NUMYOUT], xp[NUMXOUT], yp[NUMYOUT];
+  double *out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
+  float outd[NUMXOUT * NUMYOUT], xp[NUMXOUT], yp[NUMYOUT];
   Gcolr_rep rgb;
 
-  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(char));
+  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(float));
 
   xc = 1./(NUMXOUT-1.);
   for (i = 0 ; i < NUMXOUT ; i++) {
@@ -43,7 +43,7 @@ main()
     xp[i] = xo[i];
     for (j = 0; j < NUMYOUT; j++) {
       yp[j] = yo[j];
-      outd[i][j] = (float) out[i][j];
+      outd[i*NUMYOUT+j] = (float) out[i*NUMYOUT+j];
     }
   }
 
@@ -59,7 +59,7 @@ main()
   rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 0.;
   gset_colr_rep(WKID,1,&rgb);
 
-  drwsrfc (NUMXOUT, NUMYOUT, xp, yp, &outd[0][0], 15.,-25.,90., iwk);
+  drwsrfc (NUMXOUT, NUMYOUT, xp, yp, outd, 15.,-25.,90., iwk);
 
   gdeactivate_ws(WKID);
   gclose_ws(WKID);

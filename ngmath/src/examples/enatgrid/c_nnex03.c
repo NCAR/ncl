@@ -69,12 +69,12 @@ float y[] = {
             };
 
   float z[NUMIN];
-  float **out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
+  float *out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
   float u[NUMXOUT][NUMYOUT], v[NUMXOUT][NUMYOUT], uvtmp;
 
   Gcolr_rep rgb;
 
-  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(char));
+  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(float));
 
   for (i = 0 ; i < NUMIN ; i++) {
     z[i] = (x[i]-0.25)*(x[i]-0.25) + (y[i]-0.50)*(y[i]-0.50);
@@ -122,7 +122,7 @@ float y[] = {
 /*
  *  Draw the surface plot.
  */
-  drwsrfc (NUMXOUT, NUMYOUT, xo, yo, &out[0][0], 15.,-25.,90., iwk);
+  drwsrfc (NUMXOUT, NUMYOUT, xo, yo, out, 15.,-25.,90., iwk);
 
 /*
  *  Get the aspects.

@@ -18,11 +18,11 @@ main()
   float x[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75},
         y[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65},
         z[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
-  float **out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
+  float *out, xo[NUMXOUT], yo[NUMYOUT], xc, yc;
 
   Gcolr_rep rgb;
 
-  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(char));
+  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(float));
 
   xc = 1./(NUMXOUT-1.);
   for (i = 0 ; i < NUMXOUT ; i++) {
@@ -55,7 +55,7 @@ main()
   rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 0.;
   gset_colr_rep(WKID,1,&rgb);
 
-  drwsrfc (NUMXOUT, NUMYOUT, xo, yo, &out[0][0], 15.,-25.,90., iwk);
+  drwsrfc (NUMXOUT, NUMYOUT, xo, yo, out, 15.,-25.,90., iwk);
 
   gdeactivate_ws(WKID);
   gclose_ws(WKID);
