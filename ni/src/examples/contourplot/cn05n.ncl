@@ -103,8 +103,27 @@ datafile=datadir + "/cdf/meccatemp.cdf"
 ; Load a file record from the netCDF file as a read only data set.
 mfile =  addfile (datafile,"r")
 
-; Create an ncgm workstation using the defaults.
-wks = create "wks" ncgmWorkstationClass noparent end create
+;
+; Default is to create an NCGM file.
+;
+NCGM=1
+
+if (NCGM.eq.1) then
+;
+; Create an ncgm workstation.
+;
+  wks = create "cn05Work" ncgmWorkstationClass noparent
+    "wkMetaName" : "./cn05n.ncgm"
+  end create
+else
+;
+; Create an X workstation.
+;
+  wks = create "cn05Work" xWorkstationClass noparent
+    "wkPause" : "True"
+  end create
+end if
+
 
 ; Create a 64x3 array for the colormap (the first dimension is arbitrary).
 ; The second dimension represents each component of an RGB triple.
