@@ -45,7 +45,7 @@ C
 C Create an XWorkstation object.
 C
       call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'wkPause',true,ierr)
+      call nhlfrlsetstring(rlist,'wkPause','True',ierr)
       call nhlfcreate(wid,'lb01Work',nhlfxworkstationlayerclass,
      $     0,rlist,ierr)
 C
