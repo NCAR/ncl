@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.10 1993-12-15 23:19:29 clyne Exp $
+ *	$Id: soft_fill.c,v 1.11 1994-03-05 00:09:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -144,8 +144,7 @@ static	add_line(x1, y1, x2, y2, yoff)
 				plotx >= minX && plotx <= maxX) {
 
 				/* insert	*/
-			fillTable.x_coord[ploty-yoff][fillTable.x_count[ploty-yoff]] = 
-									plotx;
+			fillTable.x_coord[ploty-yoff][fillTable.x_count[ploty-yoff]] = plotx;
 			fillTable.x_count[ploty-yoff]++;
 			}
 
@@ -298,6 +297,7 @@ static	int	alloc_fill_table(ys, xs)
 	int	ys, xs;
 {
 	int	i;
+	xs++;
 
 	fillTable.x_coord = (DCtype **) malloc (
 		(unsigned) (ys * sizeof(DCtype *))
@@ -359,7 +359,7 @@ static	print_fill_table ()
  * on exit
  *	fillTable	: is returned to initial state.
  */
-static	free_fill_table()
+static void	free_fill_table()
 {
 	int	i;
 
@@ -497,9 +497,9 @@ FillTable	*buildFillTable(point_list, count)
 	 * edges
 	 */
 	bzero((char *) tableWidths, (int) yExtent * sizeof(int));
-	for(i=1; i<count; i++) {
-		inc = point_list[i-1].y < point_list[i].y ? 1 : -1;
-		for(j=point_list[i-1].y; j!=point_list[i].y; j+=inc) {
+	for(i=1; i<=count; i++) {
+		inc = point_list[i-1].y < point_list[i % count].y ? 1 : -1;
+		for(j=point_list[i-1].y; j!=point_list[i % count].y; j+=inc) {
 			if (j >= ymin && j <= ymax) {
 				tableWidths[j-ymin]++;
 			}
