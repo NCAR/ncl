@@ -11,10 +11,10 @@ using the routine IDSETI or IDSETR.
 The Bivar parameter descriptions appear below in alphabetical
 order. Each description begins with a line giving the parameter name 
 and the intrinsic FORTRAN type of the parameter.
-.IP "\&'IT' - Integer"
+.IP "\&'ITY' - Integer"
 Interpolation Type.  The default value, 0, says that quintic interpolation
 should be done.  The value 1 says to use linear interpolation.
-.IP "\&'TT' - Integer"
+.IP "\&'TTY' - Integer"
 Triangulation Type.  The default value, 0, says to use a triangulation due
 to C. L. Lawson that maximizes the minimum angle occurring in the triangles.
 The value 1 says to use the Delaunay triangulation, which ensures triangles
