@@ -1,5 +1,5 @@
 C
-C	$Id: veldat.f,v 1.1.1.1 1992-04-17 22:31:51 ncargd Exp $
+C       $Id: veldat.f,v 1.2 1993-12-03 21:27:08 kennison Exp $
 C
       BLOCK DATA VELDAT
 C

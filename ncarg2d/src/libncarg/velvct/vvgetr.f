@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetr.f,v 1.9 1993-02-24 01:24:54 dbrown Exp $
+C       $Id: vvgetr.f,v 1.10 1993-12-03 21:27:42 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -55,14 +55,14 @@ C
 C
 C Arrow size/shape parameters
 C
-	COMMON / VVARO /
+        COMMON / VVARO /
      +                HDSZ       ,HINF       ,HANG       ,
-     +	              HSIN       ,HCOS       ,FAMN       ,FAMX
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX
 
 C
 C Text related parameters
 C
-	COMMON /VVTXP /
+        COMMON /VVTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,

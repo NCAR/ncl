@@ -1,5 +1,5 @@
 C
-C	$Id: velvec.f,v 1.2 1993-03-15 22:57:01 dbrown Exp $
+C       $Id: velvec.f,v 1.3 1993-12-03 21:27:18 kennison Exp $
 C
       SUBROUTINE VELVEC (U,LU,V,LV,M,N,FLO,HI,NSET,ISPV,SPV)
 C

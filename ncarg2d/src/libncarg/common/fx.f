@@ -1,6 +1,6 @@
 C
-C	$Id: fx.f,v 1.1.1.1 1992-04-17 22:32:25 ncargd Exp $
+C       $Id: fx.f,v 1.2 1993-12-03 21:29:55 kennison Exp $
 C
-	function fx(x,y)
-	fx = x
-	end
+        function fx(x,y)
+        fx = x
+        end

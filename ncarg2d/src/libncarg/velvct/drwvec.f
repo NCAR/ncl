@@ -1,5 +1,5 @@
 C
-C	$Id: drwvec.f,v 1.1.1.1 1992-04-17 22:31:51 ncargd Exp $
+C       $Id: drwvec.f,v 1.2 1993-12-03 21:26:59 kennison Exp $
 C
       SUBROUTINE DRWVEC (M1,M2,M3,M4,LABEL,NC)
 C

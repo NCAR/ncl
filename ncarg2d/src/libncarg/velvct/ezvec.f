@@ -1,5 +1,5 @@
 C
-C	$Id: ezvec.f,v 1.2 1993-03-15 22:56:55 dbrown Exp $
+C       $Id: ezvec.f,v 1.3 1993-12-03 21:27:04 kennison Exp $
 C
       SUBROUTINE EZVEC (U,V,M,N)
 C

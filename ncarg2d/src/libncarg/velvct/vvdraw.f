@@ -1,5 +1,5 @@
 C
-C	$Id: vvdraw.f,v 1.4 1993-10-01 19:22:29 dbrown Exp $
+C       $Id: vvdraw.f,v 1.5 1993-12-03 21:27:26 kennison Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -58,14 +58,14 @@ C
 C
 C Arrow size/shape parameters
 C
-	COMMON / VVARO /
+        COMMON / VVARO /
      +                HDSZ       ,HINF       ,HANG       ,
-     +	              HSIN       ,HCOS       ,FAMN       ,FAMX
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX
 
 C
 C Text related parameters
 C
-	COMMON /VVTXP /
+        COMMON /VVTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,

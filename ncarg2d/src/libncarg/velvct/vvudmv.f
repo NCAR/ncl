@@ -1,5 +1,5 @@
 C
-C	$Id: vvudmv.f,v 1.3 1993-01-15 22:47:13 dbrown Exp $
+C       $Id: vvudmv.f,v 1.4 1993-12-03 21:28:13 kennison Exp $
 C
       SUBROUTINE VVUDMV(XCS,YCS,NCS,IAI,IAG,NAI)
 C
