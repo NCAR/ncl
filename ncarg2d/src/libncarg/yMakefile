@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.16 1998-04-16 22:53:12 kennison Exp $
+#       $Id: yMakefile,v 1.17 1999-04-02 22:56:03 kennison Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -10,8 +10,8 @@
 
 SUBDIRS = \
 	areas autogrph colconv common concom conpack conran conrec \
-	conterp dashchar dashpack ezmap ezmapa ezmapb gflash gridal \
-	hafton histgr isosrf isosrfhr labelbar ngmisc plotchar \
+	conterp dashchar dashpack ezmap ezmapa ezmapb ezmapc gflash \
+	gridal hafton histgr isosrf isosrfhr labelbar ngmisc plotchar \
 	polypack pwritx pwrity pwrzi pwrzs pwrzt softfill spps \
 	srface stitle strmln support tdpack threed velvct wmap \
 	areasC autogrphC colconvC conpackC \
