@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.18 1992-03-23 19:59:11 clyne Exp $
+#	$Id: yMakefile,v 1.19 1992-03-27 21:00:10 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -10,6 +10,7 @@
 #define	BuildRasterNrif
 #define	BuildRasterSun
 #define BuildRasterAVS
+#define BuildParallax
 
 #ifdef	BuildParallax
 #define BuildRasterParallax

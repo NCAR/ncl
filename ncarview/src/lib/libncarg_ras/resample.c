@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.5 1992-03-20 18:43:54 don Exp $
+ *	$Id: resample.c,v 1.6 1992-03-27 21:00:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,7 +55,7 @@
  *		Gives nice results but is damn slow.
  *		
  *********************************************************************/
-RasterResampleBilinear(src, dst, verbose)
+int	RasterResampleBilinear(src, dst, verbose)
 	Raster	*src;
 	Raster	*dst;
 	int	verbose;
@@ -215,7 +215,7 @@ RasterResampleBilinear(src, dst, verbose)
  *		divisor of the input image.
  *		
  *********************************************************************/
-RasterResampleNearestNeighbor(src, dst, verbose)
+int	RasterResampleNearestNeighbor(src, dst, verbose)
 	Raster	*src;
 	Raster	*dst;
 	int	verbose;

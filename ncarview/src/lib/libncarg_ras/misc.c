@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.6 1992-03-23 21:45:31 clyne Exp $
+ *	$Id: misc.c,v 1.7 1992-03-27 20:59:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -134,7 +134,7 @@ ImageCount_(name, format)
 	char	*name;
 	char	*format;
 {
-	Raster	*ras;
+	Raster	*ras, *RasterOpen();
 	int	count;
 	int	rc;
 

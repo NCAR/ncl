@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.7 1992-03-23 21:45:34 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.8 1992-03-27 21:00:03 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -163,5 +163,122 @@ typedef	struct	RasStatStruct	RasStat;
 #define DIRECT_UV(ras, x, y) \
 	(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 1]
 
+
+extern	int	RasterInit(
+#ifdef	NeedFuncProto
+	int	*argc,
+	char	*argv[]
+#endif
+	);
+
+extern	int	RasterPrintOptions();
+
+extern	Raster *RasterOpen(
+#ifdef	NeedFuncProto
+        char    *name,
+        char    *format
+#endif
+	);
+
+extern	Raster *RasterOpenWrite(
+#ifdef	NeedFuncProto
+        char    *name,
+        int     nx,
+        int     ny,
+        char    *comment,
+        int     encoding,
+        char    *format
+#endif
+	);
+
+extern	int RasterWrite(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+
+extern	int RasterRead(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+
+extern	int RasterClose(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+
+extern	int RasterPrintInfo(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+
+extern	int RasterLoadPalette(
+#ifdef	NeedFuncProto
+        Raster  *ras,
+        unsigned char	*colors
+#endif
+	);
+
+extern	int RasterPrintColors(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+
+extern	int RasterCopyColormap(
+#ifdef	NeedFuncProto
+        Raster  *src,
+        Raster  *dst
+#endif
+	);
+
+extern	Raster *RasterCreate(
+#ifdef	NeedFuncProto
+	int	nx,
+	int	ny,
+	int	encoding
+#endif
+	);
+
+
+extern	int RasterDestroy(
+#ifdef	NeedFuncProto
+        Raster  *ras
+#endif
+	);
+extern	int	RasterStat(
+#ifdef	NeedFuncProto
+	char	*path,
+	char	*format,
+	RasStat	*ras_stat,
+	int	*icount
+#endif
+	);
+
+extern	int RasterResampleBilinear(
+#ifdef	NeedFuncProto
+        Raster  *src,
+        Raster  *dst,
+	int	verbose
+#endif
+	);
+
+extern	int RasterResampleNearestNeighbor(
+#ifdef	NeedFuncProto
+        Raster  *src,
+        Raster  *dst,
+	int	verbose
+#endif
+	);
+
+extern	Raster	*RasterScale(
+#ifdef	NeedFuncProto
+        Raster  *src,
+	int	scale
+#endif
+	);
 
 #endif /* _RASTER_ */
