@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.9 1994-06-24 00:40:07 dbrown Exp $
+ *      $Id: Workspace.c,v 1.10 1994-06-28 01:18:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -847,6 +847,13 @@ void _NhlFreeWorkspace
 		case NhlwsDISK:
 			RemoveFromIdleList(wsrp,&DiskHead,
 					   &DiskTail,entry_name);
+			if (wsrp->tmp_fp != NULL &&
+			    fclose(wsrp->tmp_fp) == EOF) {
+				e_text ="%s: error closing workspace tmpfile";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
 			break;
 		default:
 			e_text = "%s: invalid persistence type";
@@ -2199,6 +2206,11 @@ NhlErrorTypes _NhlDumpAreaMap
 		fprintf(fp,"%10d%10d\n",i+1,ip[i]);
 	}
 
+	if (fclose(fp) == EOF) {
+		e_text ="%s: error areamap dump file %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,buffer);
+		return NhlFATAL;
+	}
 	return NhlNOERROR;
 }
 
