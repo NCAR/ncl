@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.4 2004-08-24 21:07:58 kennison Exp $
+I $Id: CodeIftran,v 1.5 2004-09-22 21:48:13 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -14650,7 +14650,9 @@ C
         XCPS=XCPC-OFFS*YDBC/DFBC
         YCPS=YCPC+OFFS*XDBC/DFBC
         DNOM=(XCPP-XCPQ)*(YCPR-YCPS)-(XCPR-XCPS)*(YCPP-YCPQ)
-        IF (DNOM.EQ.0.)
+        TEMP=((XCPP-XCPQ)**2+(YCPP-YCPQ)**2)*
+     +       ((XCPR-XCPS)**2+(YCPR-YCPS)**2)
+        IF (DNOM*DNOM.LE..0001*TEMP) THEN
           XNXT=.5*(XCPQ+XCPR)
           YNXT=.5*(YCPQ+YCPR)
         ELSE
