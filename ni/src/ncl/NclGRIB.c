@@ -2210,7 +2210,12 @@ GribFileRecord *therec;
 				is_err = NhlFATAL;
 			}
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unsupported grid number (%d) can't decode",step->grid_number);
+			if (step->has_gds && step->grid_number == 255) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unsupported GDS grid type (%d) can't decode",step->gds_type);
+			}
+			else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unsupported grid number (%d) can't decode",step->grid_number);
+			}
 			is_err = NhlFATAL;
 		}
 		if(is_err == NhlNOERROR) {
