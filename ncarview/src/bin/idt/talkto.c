@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.10 1992-04-03 23:21:09 clyne Exp $
+ *	$Id: talkto.c,v 1.11 1992-04-03 23:29:04 clyne Exp $
  */
 /*
  *	talkto.c
@@ -430,12 +430,14 @@ Message(id, s)
 	char	*s;
 {
 	char	buf[132];
+	char	msg[132];
 	char	*format = "Display(%1d): %s\n";
 	int	max_len = sizeof(buf) - strlen(format) - 1;
 	char	*t;
 
 	void	AppendText();
 
+	s = strncpy(msg, s, sizeof(buf)-1);
 	/*
 	 * remove any newlines.
 	 */
@@ -463,12 +465,14 @@ ErrorMessage(id, s)
 	char	*s;
 {
 	char	buf[132];
+	char	msg[132];
 	char	*format = "Display(%1d) Error: %s\n";
 	int	max_len = sizeof(buf) - strlen(format) - 1;
 	char	*t;
 
 	void	AppendText();
 
+	s = strncpy(msg, s, sizeof(buf)-1);
 	/*
 	 * remove any newlines.
 	 */
