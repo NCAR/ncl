@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.53 2001-11-28 02:47:50 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.54 2003-02-27 18:26:50 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1276,10 +1276,22 @@ static NhlErrorTypes MapWinToData
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
-			else if (xout[i] < mtp->data_xmin) 
+			else if (xout[i] < mtp->data_xmin) {
 				xout[i] += 360.0;
-			else if (xout[i] > mtp->data_xmax)
+				if (xout[i] > mtp->data_xmax) {
+					*status = 1;
+					xout[i]=yout[i]=
+						minstance->trobj.out_of_range;
+				}
+			}
+			else if (xout[i] > mtp->data_xmax) {
 				xout[i] -= 360.0;
+				if (xout[i] < mtp->data_xmin) {
+					*status = 1;
+					xout[i]=yout[i]=
+						minstance->trobj.out_of_range;
+				}
+			}
 		}
 	}
 	return(ret);

@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalTransObj.c,v 1.3 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: SphericalTransObj.c,v 1.4 2003-02-27 18:26:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1227,35 +1227,31 @@ static NhlBoolean IsNearby
 	double *sc;
 #endif
 {
-	double angle;
+	int icdp;
 
 	if (! (spp->ixe == spp->ixb+1 && spp->iye == spp->iyb+1))
 		return False;
 
-	/* angle > 180 means the point (represented by its sins and coss)
-	 * is inside the specified grid boundaries.
-	 */
-
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
-		return True;
+	if (icdp == 0)        
+		return True; /* same box */
 	spp->ixb = MAX(0,spp->ixb-1);
 	spp->ixe = MIN(spp->xaxis_size-1,spp->ixe+1);
 	spp->iyb = MAX(0,spp->iyb-1);
 	spp->iye = MIN(spp->yaxis_size-1,spp->iye+1);
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
-		return True;
+	if (icdp == 0)       
+		return True; /* adjacent box */
 	spp->ixb = MAX(0,spp->ixb-1);
 	spp->ixe = MIN(spp->xaxis_size-1,spp->ixe+1);
 	spp->iyb = MAX(0,spp->iyb-1);
 	spp->iye = MIN(spp->yaxis_size-1,spp->iye+1);
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
-		return True;
+	if (icdp == 0)
+		return True; /* near-by box */
 
 	return False;
 }
@@ -1289,20 +1285,16 @@ static NhlBoolean SetQuadrant
 	double *sc;
 #endif
 {
-	double angle;
-
-	/* angle > 180 means the point (represented by its sins and coss)
-	 * is inside the specified grid boundaries.
-	 */
+	int icdp;
 
  	/* lower left quadrant */
 	spp->ixb = 0;
 	spp->ixe = (int) (spp->xaxis_size / 2.0);
 	spp->iyb = 0;
 	spp->iye = (int) (spp->yaxis_size / 2.0);
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
+	if (icdp == 0)        
 		return True;
 
 	/* lower right quadrant */
@@ -1310,9 +1302,9 @@ static NhlBoolean SetQuadrant
 	spp->ixe = spp->xaxis_size - 1;
 	spp->iyb = 0;
 	spp->iye = (int) (spp->yaxis_size / 2.0);
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
+	if (icdp == 0)        
 		return True;
 
  	/* upper left quadrant */
@@ -1320,9 +1312,9 @@ static NhlBoolean SetQuadrant
 	spp->ixe = (int) (spp->xaxis_size / 2.0);
 	spp->iyb = (int) (spp->yaxis_size / 2.0);
 	spp->iye = spp->yaxis_size - 1;
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
+	if (icdp == 0)        
 		return True;
 
  	/* upper right quadrant */
@@ -1330,9 +1322,9 @@ static NhlBoolean SetQuadrant
 	spp->ixe = spp->xaxis_size - 1;
 	spp->iyb = (int) (spp->yaxis_size / 2.0);
 	spp->iye = spp->yaxis_size - 1;
-	angle = acegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
+	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
 		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (angle >= 180.0)
+	if (icdp == 0)        
 		return True;
 
 	return False;
@@ -1377,7 +1369,7 @@ static NhlBoolean GetFracCoords
 
 #endif
 {
-	double angle;
+	double icdp;
 	int mid;
 	double xf,yf;
 	LLCosSin *llcs = spp->llcs;
@@ -1389,24 +1381,31 @@ static NhlBoolean GetFracCoords
 				break;
 			}
 			mid = (spp->ixb + spp->ixe) / 2;
-			angle = acegdp(sc,(double *)spp->llcs,
+			icdp = icegdp(sc,(double *)spp->llcs,
 				       spp->xaxis_size,spp->yaxis_size,
 				       spp->ixb,mid,spp->iyb,spp->iye);
-			if (angle < 180)
+			if (icdp != 0)        
 				spp->ixb = mid;
 			else
 				spp->ixe = mid;
 		}
 		else {
 			mid = (spp->iyb + spp->iye) / 2;
-			angle = acegdp(sc,(double *)spp->llcs,
+			icdp = icegdp(sc,(double *)spp->llcs,
 				       spp->xaxis_size,spp->yaxis_size,
 				       spp->ixb,spp->ixe,spp->iyb,mid);
-			if (angle < 180)
+			if (icdp != 0)        
 				spp->iyb = mid;
 			else
 				spp->iye = mid;
 		}
+	}
+	icdp = icegdp(sc,(double *)spp->llcs,
+		      spp->xaxis_size,spp->yaxis_size,
+		      spp->ixb,spp->ixe,spp->iyb,spp->iye);
+	if (icdp != 0) {
+		*xout = *yout = oor;
+		return False;
 	}
 
 	fpiqdp(&((llcs+xsz*spp->iyb+spp->ixb)->latcos),

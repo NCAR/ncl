@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalGeometry.c,v 1.2 2002-11-07 00:33:19 dbrown Exp $
+ *      $Id: SphericalGeometry.c,v 1.3 2003-02-27 18:26:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 
 #include <float.h>
 #include <ncarg/hlu/SphericalGeometryP.h>
+
 
 double abgcdp
 /*
@@ -361,46 +362,45 @@ void fpiqdp
   xfr1=0.;
   dst1=dpgcdp(aqdp,cqdp,eqdp);
 
-  if (dst1>=0.) {
+  xfr2=1.;
+  dst2=dpgcdp(bqdp,dqdp,eqdp);
 
-    *xfra=0.;
-    pqdp=aqdp;
-    qqdp=cqdp;
+  if (dst1*dst2>=0.) {
 
-  } else {
-
-    xfr2=1.;
-    dst2=dpgcdp(bqdp,dqdp,eqdp);
-
-    if (dst2<=0.) {
-
+    if ((dst1>=0.?dst1:-dst1)<(dst2>=0.?dst2:-dst2)) {
+      *xfra=0.;
+      pqdp=aqdp;
+      qqdp=cqdp;
+    } else {
       *xfra=1.;
       pqdp=bqdp;
       qqdp=dqdp;
-
-    } else {
-
-      do {
-
-        *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
-        ipgcdp(aqdp,bqdp,xfra,pqdp);
-        ipgcdp(cqdp,dqdp,xfra,qqdp);
-	if (*xfra - xfr1 < DBL_EPSILON ||
-	    *xfra - xfr2 > -DBL_EPSILON) 
-		break;
-        dsta=dpgcdp(pqdp,qqdp,eqdp);
-        if (dsta==0.) break;
-        if (dst1*dsta>0.) {
-          xfr1=*xfra;
-          dst1=dsta;
-        } else {
-          xfr2=*xfra;
-          dst2=dsta;
-        }
-
-      } while (xfr2-xfr1>1.E-12);
-
     }
+
+  } else {
+
+    do {
+
+      *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
+      ipgcdp(aqdp,bqdp,xfra,pqdp);
+      ipgcdp(cqdp,dqdp,xfra,qqdp);
+/* original
+      if (*xfra<=xfr1||*xfra>=xfr2) break;
+*/
+      if (*xfra - xfr1 < DBL_EPSILON ||
+	  *xfra - xfr2 > -DBL_EPSILON) 
+	      break;
+      dsta=dpgcdp(pqdp,qqdp,eqdp);
+      if (dsta==0.) break;
+      if (dst1*dsta>0.) {
+        xfr1=*xfra;
+        dst1=dsta;
+      } else {
+        xfr2=*xfra;
+        dst2=dsta;
+      }
+
+    } while (xfr2-xfr1>1.E-12);
 
   }
 
@@ -881,46 +881,45 @@ void fpiqsp
   xfr1=0.f;
   dst1=dpgcsp(aqsp,cqsp,eqsp);
 
-  if (dst1>=0.f) {
+  xfr2=1.f;
+  dst2=dpgcsp(bqsp,dqsp,eqsp);
 
-    *xfra=0.f;
-    pqsp=aqsp;
-    qqsp=cqsp;
+  if (dst1*dst2>=0.f) {
 
-  } else {
-
-    xfr2=1.f;
-    dst2=dpgcsp(bqsp,dqsp,eqsp);
-
-    if (dst2<=0.f) {
-
+    if ((dst1>=0.f?dst1:-dst1)<(dst2>=0.f?dst2:-dst2)) {
+      *xfra=0.f;
+      pqsp=aqsp;
+      qqsp=cqsp;
+    } else {
       *xfra=1.f;
       pqsp=bqsp;
       qqsp=dqsp;
-
-    } else {
-
-      do {
-
-        *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
-        ipgcsp(aqsp,bqsp,xfra,pqsp);
-        ipgcsp(cqsp,dqsp,xfra,qqsp);
-	if (*xfra - xfr1 < FLT_EPSILON ||
-	    *xfra - xfr2 > -FLT_EPSILON) 
-		break;
-        dsta=dpgcsp(pqsp,qqsp,eqsp);
-        if (dsta==0.f) break;
-        if (dst1*dsta>0.f) {
-          xfr1=*xfra;
-          dst1=dsta;
-        } else {
-          xfr2=*xfra;
-          dst2=dsta;
-        }
-
-      } while (xfr2-xfr1>1.E-6f);
-
     }
+
+  } else {
+
+    do {
+
+      *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
+      ipgcsp(aqsp,bqsp,xfra,pqsp);
+      ipgcsp(cqsp,dqsp,xfra,qqsp);
+/* original
+      if (*xfra<=xfr1||*xfra>=xfr2) break;
+*/
+      if (*xfra - xfr1 < FLT_EPSILON ||
+	  *xfra - xfr2 > -FLT_EPSILON) 
+	      break;
+      dsta=dpgcsp(pqsp,qqsp,eqsp);
+      if (dsta==0.f) break;
+      if (dst1*dsta>0.f) {
+        xfr1=*xfra;
+        dst1=dsta;
+      } else {
+        xfr2=*xfra;
+        dst2=dsta;
+      }
+
+    } while (xfr2-xfr1>1.E-6f);
 
   }
 
@@ -1073,4 +1072,177 @@ void ipiqsp
   ipgcsp(aqsp,bqsp,xfra,pqsp);
   ipgcsp(cqsp,dqsp,xfra,qqsp);
   ipgcsp(pqsp,qqsp,yfra,eqsp);
+}
+
+
+int icegsp
+/*
+ *
+ * (ICEGSP = Integer Check along Edge of Grid, Single Precision)
+ *
+ *       DIMENSION PQSP(4),QQSP(4,IDIM,JDIM)
+ *
+ * The value of this function is zero if and only if the point P is
+ * inside the smaller of the two portions of the sphere formed by the
+ * boundary Q, which is the outer edge of a "grid" defined by the points
+ * (QQSP(I,J)), for I from IBEG to IEND and J from JBEG to JEND.  (The
+ * edge of the grid is formed of shortest great circle routes from point
+ * to point.)
+ *
+ * All variables with names of the form XQSP are four-element arrays
+ * containing the cosine and sine of the latitude and the cosine and
+ * sine of the longitude, in that order, of the point X.  Describing
+ * the point positions in this way makes this routine execute faster
+ * than if the latitudes and longitudes themselves are used.
+ *
+ * If the total angle swept out by a vector tangent to the sphere at the
+ * point P and pointing in the direction of the shortest great circle
+ * route to a point tracing Q is near zero, then both the point P and its
+ * antipodal point P' are in the same area, which must therefore be the
+ * larger of the two areas created by Q.
+ */
+#ifdef NeedFuncProto
+  (
+  float *pqsp,
+  float *qqsp,
+  int   idim,
+  int   jdim,
+  int   ibeg,
+  int   iend,
+  int   jbeg,
+  int   jend
+  )
+#else
+  (pqsp,qqsp,idim,jdim,ibeg,iend,jbeg,jend)
+  float *pqsp;
+  float *qqsp;
+  int   idim;
+  int   jdim;
+  int   ibeg;
+  int   iend;
+  int   jbeg;
+  int   jend;
+#endif
+{
+  float atmp;
+  float *qtmp;
+  int i,j;
+
+  atmp=acegsp(pqsp,qqsp,idim,jdim,ibeg,iend,jbeg,jend);
+
+  if ((atmp<0.f?-atmp:atmp)<180.f) return 1;
+
+  atmp=0.f;
+
+  qtmp=qqsp+4*(ibeg+idim*jbeg);
+
+  for (i=ibeg;i<iend;i++) {
+    qtmp+=4;
+    atmp+=adgcsp(pqsp,qtmp);
+  }
+
+  for (j=jbeg;j<jend;j++) {
+    qtmp+=4*idim ;
+    atmp+=adgcsp(pqsp,qtmp);
+  }
+
+  for (i=ibeg;i<iend;i++) {
+    qtmp-=4;
+    atmp+=adgcsp(pqsp,qtmp);
+  }
+
+  for (j=jbeg;j<jend;j++) {
+    qtmp-=4*idim ;
+    atmp+=adgcsp(pqsp,qtmp);
+  }
+
+  atmp=atmp/(float)(2*(iend-ibeg+jend-jbeg));
+
+  if (atmp<90.)
+    return 0;
+  else
+    return 1;
+}
+
+
+int icegdp
+/*
+ * (ICEGDP = Integer Check along Edge of Grid, Double Precision)
+ *
+ *       DOUBLE PRECISION PQDP(4),QQDP(4,IDIM,JDIM)
+ *
+ * The value of this function is zero if and only if the point P is
+ * inside the smaller of the two portions of the sphere formed by the
+ * boundary Q, which is the outer edge of a "grid" defined by the points
+ * (QQDP(I,J)), for I from IBEG to IEND and J from JBEG to JEND.  (The
+ * edge of the grid is formed of shortest great circle routes from point
+ * to point.)
+ *
+ * All variables with names of the form XQDP are four-element arrays
+ * containing the cosine and sine of the latitude and the cosine and
+ * sine of the longitude, in that order, of the point X.  Describing
+ * the point positions in this way makes this routine execute faster
+ * than if the latitudes and longitudes themselves are used.
+ */
+#ifdef NeedFuncProto
+  (
+  double *pqdp,
+  double *qqdp,
+  int    idim,
+  int    jdim,
+  int    ibeg,
+  int    iend,
+  int    jbeg,
+  int    jend
+  )
+#else
+  (pqdp,qqdp,idim,jdim,ibeg,iend,jbeg,jend)
+  double *pqdp;
+  double *qqdp;
+  int    idim;
+  int    jdim;
+  int    ibeg;
+  int    iend;
+  int    jbeg;
+  int    jend;
+#endif
+{
+  double atmp;
+  double *qtmp;
+  int i,j;
+
+  atmp=acegdp(pqdp,qqdp,idim,jdim,ibeg,iend,jbeg,jend);
+
+  if ((atmp<0.?-atmp:atmp)<180.) return 1;
+
+  atmp=0.;
+
+  qtmp=qqdp+4*(ibeg+idim*jbeg);
+
+  for (i=ibeg;i<iend;i++) {
+    qtmp+=4;
+    atmp+=adgcdp(pqdp,qtmp);
+  }
+
+  for (j=jbeg;j<jend;j++) {
+    qtmp+=4*idim ;
+    atmp+=adgcdp(pqdp,qtmp);
+  }
+
+  for (i=ibeg;i<iend;i++) {
+    qtmp-=4;
+    atmp+=adgcdp(pqdp,qtmp);
+  }
+
+  for (j=jbeg;j<jend;j++) {
+    qtmp-=4*idim ;
+    atmp+=adgcdp(pqdp,qtmp);
+  }
+
+  atmp=atmp/(double)(2*(iend-ibeg+jend-jbeg));
+
+  if (atmp<90.)
+    return 0;
+  else
+    return 1;
 }

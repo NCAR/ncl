@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalGeometryP.h,v 1.1 2002-07-02 01:26:41 dbrown Exp $
+ *      $Id: SphericalGeometryP.h,v 1.2 2003-02-27 18:26:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@ float  dpgcsp(float*,float*,float*);
 void   fpiqsp(float*,float*,float*,float*,float*,float*,float*);
 void   ipgcsp(float*,float*,float*,float*);
 void   ipiqsp(float*,float*,float*,float*,float*,float*,float*);
+int    icegsp(float*,float*,int,int,int,int,int,int);
 
 double abgcdp(double*,double*,double*);
 double adgcdp(double*,double*);
@@ -38,5 +39,6 @@ double dpgcdp(double*,double*,double*);
 void   fpiqdp(double*,double*,double*,double*,double*,double*,double*);
 void   ipgcdp(double*,double*,double*,double*);
 void   ipiqdp(double*,double*,double*,double*,double*,double*,double*);
+int    icegdp(double*,double*,int,int,int,int,int,int);
 
 #endif /* _NSphericalGeometryP_h */
