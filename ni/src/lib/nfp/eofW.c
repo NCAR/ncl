@@ -403,24 +403,24 @@ NhlErrorTypes eofcov_W( void )
   *eof_function = 0;
   dsizes[0] = 1;
   att_md = _NclCreateVal(
-						 NULL,
-						 NULL,
-						 Ncl_MultiDValData,
-						 0,
-						 (void*)eof_function,
-						 NULL,
-						 1,
-						 dsizes,
-						 TEMPORARY,
-						 NULL,
-						 (NclObjClass)nclTypeintClass
-						 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)eof_function,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
   _NclAddAtt(
-			 att_id,
-			 "eof_function",
-			 att_md,
-			 NULL
-			 );
+             att_id,
+             "eof_function",
+             att_md,
+             NULL
+             );
 
 
   tmp_var = _NclVarCreate(
@@ -826,24 +826,24 @@ NhlErrorTypes eofcor_W( void )
   *eof_function = 1;
   dsizes[0] = 1;
   att_md = _NclCreateVal(
-						 NULL,
-						 NULL,
-						 Ncl_MultiDValData,
-						 0,
-						 (void*)eof_function,
-						 NULL,
-						 1,
-						 dsizes,
-						 TEMPORARY,
-						 NULL,
-						 (NclObjClass)nclTypeintClass
-						 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)eof_function,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
   _NclAddAtt(
-			 att_id,
-			 "eof_function",
-			 att_md,
-			 NULL
-			 );
+             att_id,
+             "eof_function",
+             att_md,
+             NULL
+             );
 
 
   tmp_var = _NclVarCreate(
@@ -880,6 +880,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
+  NclTypeClass type_pcrit_class;
   int nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 0, i, ier = 0;
 /*
@@ -1267,30 +1268,57 @@ NhlErrorTypes eofcov_pcmsg_W( void )
                );
   }
 /*
+ * pcmsg is returned as the attribute "pcrit" and is returned as its
+ * original type.
+ */
+  dsizes[0] = 1;
+  type_pcrit_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_pcmsg)));
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         pcmsg,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_pcrit_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "pcrit",
+             att_md,
+             NULL
+             );
+
+
+/*
  * eof_function is returned to indicate which function was used.
  */
   eof_function = (int *)calloc(1,sizeof(int));
   *eof_function = 2;
   dsizes[0] = 1;
   att_md = _NclCreateVal(
-						 NULL,
-						 NULL,
-						 Ncl_MultiDValData,
-						 0,
-						 (void*)eof_function,
-						 NULL,
-						 1,
-						 dsizes,
-						 TEMPORARY,
-						 NULL,
-						 (NclObjClass)nclTypeintClass
-						 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)eof_function,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
   _NclAddAtt(
-			 att_id,
-			 "eof_function",
-			 att_md,
-			 NULL
-			 );
+             att_id,
+             "eof_function",
+             att_md,
+             NULL
+             );
 
 
   tmp_var = _NclVarCreate(
@@ -1327,6 +1355,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
+  NclTypeClass type_pcrit_class;
   int nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 1, i, ier = 0;
 /*
@@ -1714,30 +1743,56 @@ NhlErrorTypes eofcor_pcmsg_W( void )
                );
   }
 /*
+ * pcmsg is returned as the attribute "pcrit" and is returned as its
+ * original type.
+ */
+  dsizes[0] = 1;
+  type_pcrit_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_pcmsg)));
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         pcmsg,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_pcrit_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "pcrit",
+             att_md,
+             NULL
+             );
+
+/*
  * eof_function is returned to indicate which function was used.
  */
   eof_function = (int *)calloc(1,sizeof(int));
   *eof_function = 3;
   dsizes[0] = 1;
   att_md = _NclCreateVal(
-						 NULL,
-						 NULL,
-						 Ncl_MultiDValData,
-						 0,
-						 (void*)eof_function,
-						 NULL,
-						 1,
-						 dsizes,
-						 TEMPORARY,
-						 NULL,
-						 (NclObjClass)nclTypeintClass
-						 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)eof_function,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
   _NclAddAtt(
-			 att_id,
-			 "eof_function",
-			 att_md,
-			 NULL
-			 );
+             att_id,
+             "eof_function",
+             att_md,
+             NULL
+             );
 
 
   tmp_var = _NclVarCreate(
