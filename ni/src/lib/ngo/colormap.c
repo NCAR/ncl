@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.1 1998-10-19 20:25:52 boote Exp $
+ *      $Id: colormap.c,v 1.2 1998-11-20 21:51:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -427,9 +427,11 @@ Grab
 
 	if(event->type != MapNotify)
 		return;
-
+	if (event->xmap.window != XtWindow(cm->go.shell))
+		return;
 	if(cm->colormap.focus)
 		return;
+
 	NgAppGrabFocus(cm->go.appmgr,cm->base.id);
 	cm->colormap.focus = True;
 	(void)UpdateCmap(cm);
@@ -901,7 +903,7 @@ ColorMapCreateWin
 	int		num_pname;
 	XColor		wcol,bcol;
 
-	XtAddEventHandler(go->go.shell,SubstructureNotifyMask,False,Grab,go);
+	XtAddEventHandler(go->go.shell,StructureNotifyMask,False,Grab,go);
 	XtAddCallback(go->go.shell,XmNpopdownCallback,Release,go);
 	if(!XcbAllocNamedColor(go->go.xcb,"white",&wcol) ||
 				!XcbAllocNamedColor(go->go.xcb,"black",&bcol)){

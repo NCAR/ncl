@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.3 1998-09-18 23:47:39 boote Exp $
+ *      $Id: print.c,v 1.4 1998-11-20 21:51:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1879,7 +1879,7 @@ UpdateDialog
         return;
 }
 static void
-VisibilityEH
+MapEH
 (
 	Widget		w,
 	XtPointer	udata,
@@ -1891,8 +1891,13 @@ VisibilityEH
         
 
 #if DEBUG_PRINT
-        printf("in visibility eh\n");
+        printf("in map eh\n");
 #endif        
+	if(event->type != MapNotify)
+		return;
+	if (event->xmap.window != XtWindow(l->go.shell))
+		return;
+	
 
         if (! l->print.up) {
 		UpdateDialog(l);
@@ -2423,8 +2428,8 @@ PrintCreateWin
                       (XtPointer)go);
 	XtAddCallback(go->go.manager,XmNcancelCallback,CancelCB,
                       (XtPointer)go);
-        XtAddEventHandler(go->go.manager,VisibilityChangeMask,
-                          False,VisibilityEH,(XtPointer)go);
+        XtAddEventHandler(go->go.shell,StructureNotifyMask,
+                          False,MapEH,(XtPointer)go);
 #if 0
         form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,go->go.manager,NULL);
