@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.2 1991-01-09 11:13:14 clyne Exp $
+ *	$Id: glob.c,v 1.3 1991-07-19 18:01:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <ncarv.h>
-#include "ictrans.h"
 
 extern	char	*strcpy();
 extern	char	*strcat();
@@ -31,6 +30,7 @@ extern	char	*strcat();
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
 
+#define	MAX_LINE_LEN	80
 
 #define	ACK	"echo ''\n"
 
@@ -41,7 +41,7 @@ static int	to_child[2],
  *	perform filename expansion on a string. glob allocates memory as
  *	necessary and returns a pointer to that memory. glob uses the command
  *	specified by the enviroment variable "SHELL" to do expansion. If 
- *	SHELL is not set glob uses /bin/csh by default.
+ *	SHELL is not set glob uses /bin/sh by default.
  * on entry
  *	*s		: the string
  * on exit
@@ -58,14 +58,15 @@ glob(s, r_argv, r_argc)
 	static	char	**argv;
 	static	int	argc;
 	static	int	args;	/* memory alloced to argv	*/
-	static	char	inBuf[BUFSIZ];
+	static	char	inBuf[4*BUFSIZ];
 
 	int	i;
 	char	outbuf[MAX_LINE_LEN];
 	char	*cptr;
 	int	nbytes;
-	char	*shell;
-	extern	char	*getenv();
+	char	*shell_argv[3];
+	char	*t;
+	extern	char	*getenv(), *strrchr();
 
 	*r_argv = NULL;
 	*r_argc = argc = 0;
@@ -79,11 +80,22 @@ glob(s, r_argv, r_argc)
 		 * try and find out what shell the user like so we can spawn
 		 * it to parse it to do globbing.
 		 */
-		if ((shell = getenv ("SHELL")) == NULL) {
-			shell = "csh";
+		if ((shell_argv[0] = getenv ("SHELL")) == NULL) {
+			shell_argv[0] = "/bin/sh";	/* default	*/
+		}
+		shell_argv[1] = NULL;
+
+		/*
+		 * if using csh then use csh with the fast option, '-f'
+		 */
+        	t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
+		if (!(strcmp(t, "csh"))) {
+			shell_argv[1] = "-f";
+			shell_argv[2] = NULL;
 		}
 
-		talkto(shell);		/* spawn shell to talk to	*/
+
+		talkto(shell_argv);	/* spawn shell to talk to	*/
 		is_init = 1;
 
 
@@ -117,8 +129,8 @@ glob(s, r_argv, r_argc)
 	nbytes = 0;
 	while (1) {	/* read until receive ack or buffer is full	*/
 		cptr = inBuf + nbytes;
-		nbytes += read(to_parent[0], cptr, BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '') || nbytes == BUFSIZ) break; 
+		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
+		if ((inBuf[nbytes - 2] == '') || nbytes == 4*BUFSIZ) break; 
 	}
 
 
@@ -164,13 +176,13 @@ glob(s, r_argv, r_argc)
  *	set up communictions between invoking process and the desired
  *	command;
  * on entry
- *	*cmd		: name of command to talk to
+ *	**argv		: name of command to talk to
  * on exit
  *	to_child[1]	: fd for writing to spawned process
  *	to_parent[0]	: fd for reading from spawned process
  */
-static	talkto(cmd) 
-	char	*cmd;
+static	talkto(argv) 
+	char	**argv;
 {
 	int	pid;
 
@@ -197,12 +209,10 @@ static	talkto(cmd)
 		/* 
 		 * exec the command to talk to	
 		 */
-		execlp(cmd, cmd, NULL);
+		execvp(argv[0], argv);
 
-		/* should never return from execlp	*/
-		perror((char *) NULL);
+		perror((char *) NULL);	/* shouldn't get here	*/
 		exit(1);
-	
 
 	}
 	else if (pid > 0) {		/* we're the parent		*/
