@@ -1,5 +1,5 @@
 C
-C	$Id: thstgr.f,v 1.2 1993-03-05 00:12:22 haley Exp $
+C $Id: thstgr.f,v 1.3 1994-03-22 23:07:49 kennison Exp $
 C
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -94,6 +94,11 @@ C
      -           1.00, 1.00, 1.00 /
 C
       DATA TX /.5/, TY/.9765/
+C
+C Turn off recognition of function codes by PLCHHQ so that we can use
+C colons in labels.
+C
+      CALL PCSETC ('FC - FUNCTION CODE CHARACTER',CHAR(0))
 C
 C  Define 15 color indices, 14 spaced throughout the color
 C  spectrum, and the last one being white.
