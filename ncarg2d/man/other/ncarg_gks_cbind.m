@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.1 1993-03-11 15:22:53 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.2 1993-03-29 23:16:32 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -15,15 +15,92 @@ Graphics utilities, please see \fBncarg_cbind(3NCARG)\fP or the man
 page for any of the NCAR Graphics routines.
 .sp
 The NCAR Graphics GKS C-binding adheres to the ISO/IEC standard.  Only
-the functions at level 0A have been implemented.  In the future, as
-higher level GKS Fortran functions are implemented, there may be
-C-bindings created for them as well.
+the functions at level 0A have been implemented.  At the time,
+not all of these functions are supported; only the ones that have
+man pages associated with them are supported.  Below is a list
+of the currently supported NCAR Graphics GKS C-bindings:
 .sp
 Since the NCAR Graphics GKS C-binding adheres to the standard, the
 names for the C-bindings are not like the Fortran names.  Instead, the
 functions names are more descriptive, like \fBgset_fill_colr_ind\fP
-for \fBGSFACI\fP.  To get the name and usage of the C-binding, please
-see the man page for the corresponding Fortran routine.
+which corresponds to the Fortran routine \fBGSFACI\fP.
+.sp
+.nf
+gaccum_tran_matrix
+gactivate_ws
+gcell_array
+gclear_ws
+gclose_gks
+gclose_seg
+gclose_ws
+gcopy_seg_ws
+gcreate_seg
+gdeactivate_ws
+gdel_seg
+gescape
+geval_tran_matrix
+gfill_area
+ginq_asfs
+ginq_char_expan
+ginq_char_ht
+ginq_char_space
+ginq_char_up_vec
+ginq_clip
+ginq_colr_rep
+ginq_cur_norm_tran_num
+ginq_fill_colr_ind
+ginq_fill_int_style
+ginq_fill_style_ind
+ginq_line_colr_ind
+ginq_linetype
+ginq_linewidth
+ginq_marker_colr_ind
+ginq_marker_size
+ginq_marker_type
+ginq_max_norm_tran_num
+ginq_name_open_seg
+ginq_norm_tran
+ginq_op_st
+ginq_set_seg_names
+ginq_text_align
+ginq_text_colr_ind
+ginq_text_font_prec
+ginq_text_path
+gopen_gks
+gopen_ws
+gpolyline
+gpolymarker
+gsel_norm_tran
+gset_asfs
+gset_char_expan
+gset_char_ht
+gset_char_space
+gset_char_up_vec
+gset_clip_ind
+gset_colr_rep
+gset_fill_colr_ind
+gset_fill_int_style
+gset_fill_style_ind
+gset_line_colr_ind
+gset_linetype
+gset_linewidth
+gset_marker_colr_ind
+gset_marker_size
+gset_marker_type
+gset_seg_tran
+gset_text_align
+gset_text_colr_ind
+gset_text_font_prec
+gset_text_path
+gset_vp
+gset_win
+gtext
+gupd_ws
+.sp
+.fi
+Please see the man page for any of these for more information on that
+particular function.  In the future, as higher level GKS Fortran functions 
+are implemented, there may be C-bindings created for them as well.
 .SH ARGUMENT LISTS
 The argument list of each GKS C-binding closely corresponds with the
 argument list of the Fortran routine, but in many cases, the arguments

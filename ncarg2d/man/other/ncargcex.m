@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.1 1993-03-11 15:22:58 haley Exp $
+.\"	$Id: ncargcex.m,v 1.2 1993-03-29 23:16:37 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "January 1993" NCAR "NCAR GRAPHICS"
@@ -97,7 +97,9 @@ testing of new releases at NCAR.
 .fi
 .SH SEE ALSO
 Online:
-ncargex (1NCARG), ncargcc (1NCARG), ncarg_cbind (3NCARG)
+.BR ncargex(1NCARG),
+.BR ncargcc(1NCARG),
+.BR ncarg_cbind(3NCARG)
 .sp
 Hardcopy:
 Using NCAR Graphics in a UNIX Environment; NCAR Graphics 

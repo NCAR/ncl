@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ncargex.m,v 1.2 1993-03-12 04:43:04 haley Exp $
+.\"	$Id: ncargex.m,v 1.3 1993-03-29 23:16:40 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH NCARGEX 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
+.TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargex \- NCAR Graphics Fortran Examples and Tests
 .SH SYNOPSIS
@@ -28,6 +28,7 @@ ncargex \- NCAR Graphics Fortran Examples and Tests
 [\f\B\-isosrfhr\fR]
 [\f\B\-isosurface\fR]
 [\f\B\-labelbar\fR]
+[\f\B\-ngmisc\fR]
 [\f\B\-plotchar\fR]
 [\f\B\-pwritx\fR]
 [\f\B\-pwrity\fR]
@@ -125,6 +126,9 @@ Generate all isosurface examples.
 .sp
 .IP "\-labelbar\fR"
 Generate all labelbar examples.
+.sp
+.IP "\-ngmisc\fR"
+Generate all ngmisc examples.
 .sp
 .IP "\-plotchar\fR"
 Generate all plotchar examples.
@@ -260,8 +264,29 @@ testing of new releases at NCAR.
 	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
 	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
 .sp
+.I "Fundamental DASHLINE Examples:"
+	fdlcurvd fdldashc fdldashd fdlsmth
+.sp
+.I "Fundamental GKS Examples:"
+	fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth
+.sp
+.I "Fundamental ISOSURFACE Examples:"
+	fiseziso fisissrf fispwrzi
+.sp
+.I "Fundamental NGMISC Examples:"
+	fngngdts fngwsym
+.sp
+.I "Fundamental PLOTCHAR Examples:"
+	fpchiqu fpcloqu
+.sp
 .I "Fundamental SOFTFILL Examples:"
 	fsfwrld fsfsgfa
+.sp
+.I "Fundamental SPPS  Examples:"
+	fspcurve fspline fsppoint fspponts
+.sp
+.I "Fundamental SURFACE Examples:"
+	fsrezsrf fsrpwrzs fsrsrfac
 .sp
 .I "AREAS Test Programs:"
     tareas
@@ -338,11 +363,10 @@ testing of new releases at NCAR.
 .fi
 .SH SEE ALSO
 Online:
-ncargcex (1NCARG), ncargf77 (1NCARG)
+ncargf77(1NCARG), ncargcex(1NCARG)
 .sp
 Hardcopy:
-Using NCAR Graphics in a UNIX Environment; NCAR Graphics 
-Fundamentals, UNIX Version
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

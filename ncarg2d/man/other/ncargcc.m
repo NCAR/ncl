@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcc.m,v 1.1 1993-03-11 15:22:56 haley Exp $
+.\"	$Id: ncargcc.m,v 1.2 1993-03-29 23:16:35 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCC 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
@@ -36,11 +36,11 @@ executable will, upon invocation, send its metafile output to the translator
 \fBictrans\fR . The environment variable GRAPHCAP must be set to a valid
 graphics output device whenever the executable is executed.
 .sp
-By default, \fIncargcc\fR will load the X library when linking your
+By default, \fIncargcc\fR will load the X11 library when linking your
 C program.  If you try running \fIncargcc\fR and the compiler
-complains that it cannot find the library for -lX11, then try running
+complains that it cannot find the library for X11, then try running
 \fIncargcc -L/xxx/yyy/zzz program.c\fP where \fI/xxx/yyy/zzz\fP is the
-path leading to your X library.  If you do not have the X library, or
+path leading to your X11 library.  If you do not have the X11 library, or
 else you just don't want to link it in, you can use the \fB\-noX11\fR
 option.
 .SH SEE ALSO
