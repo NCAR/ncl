@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.26 1997-05-15 22:44:03 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.27 1997-05-22 23:55:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3391,7 +3391,7 @@ static NhlErrorTypes SetUpIrrTransObj
 		stp->do_low_level_log = True;
 
 	if (init || tfp->trans_obj == NULL ||
-	    stp->ovfp == NULL ||
+	    stp->ovfp == NULL || ! ostp->data_init ||
 	    stp->vfp->x_arr != stp->ovfp->x_arr ||
 	    stp->vfp->x_start != stp->ovfp->x_start ||
 	    stp->vfp->x_end != stp->ovfp->x_end ||
@@ -3423,7 +3423,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
-	    stp->ovfp == NULL ||
+	    stp->ovfp == NULL || ! ostp->data_init ||
 	    stp->vfp->y_arr != stp->ovfp->y_arr ||
 	    stp->vfp->y_start != stp->ovfp->y_start ||
 	    stp->vfp->y_end != stp->ovfp->y_end ||

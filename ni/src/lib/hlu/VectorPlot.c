@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.32 1997-05-15 22:44:06 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.33 1997-05-22 23:55:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4228,7 +4228,7 @@ static NhlErrorTypes SetUpIrrTransObj
 		vcp->do_low_level_log = True;
 
 	if (init || tfp->trans_obj == NULL ||
-	    vcp->ovfp == NULL ||
+	    vcp->ovfp == NULL || ! ovcp->data_init ||
 	    vcp->vfp->x_arr != vcp->ovfp->x_arr ||
 	    vcp->vfp->x_start != vcp->ovfp->x_start ||
 	    vcp->vfp->x_end != vcp->ovfp->x_end ||
@@ -4260,7 +4260,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
-	    vcp->ovfp == NULL ||
+	    vcp->ovfp == NULL || ! ovcp->data_init ||
 	    vcp->vfp->y_arr != vcp->ovfp->y_arr ||
 	    vcp->vfp->y_start != vcp->ovfp->y_start ||
 	    vcp->vfp->y_end != vcp->ovfp->y_end ||
@@ -7728,6 +7728,14 @@ static NhlErrorTypes    SetupLevels
 		vcp->level_spacing = 5.0;
 	}
 	
+	if (vcp->max_level_count < 1) {
+		e_text = 
+			"%s: %s must be greater than 0: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvcMaxLevelCount);
+		ret = MIN(ret,NhlWARNING);
+		vcp->max_level_count = 16.0;
+	}
 
 	if (! vcp->use_scalar_array) {
 		min = vcp->zmin;
@@ -7746,7 +7754,9 @@ static NhlErrorTypes    SetupLevels
 		max = vcp->scalar_max;
 	}
 		
-	if (vcp->min_level_val >= vcp->max_level_val) {
+	if ((vcp->min_level_val > vcp->max_level_val) ||
+            (vcp->level_count > 1 &&
+             vcp->min_level_val == vcp->max_level_val)) {
 		e_text =
 		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -8223,13 +8233,28 @@ static NhlErrorTypes    SetupLevelsExplicit
 /*
  * Find the average spacing
  */
-	ftmp = 0;
-	for (i = 1; i < count; i++) {
-		ftmp += fp[i] - fp[i-1];
-	}
-
-	vcp->level_spacing = ftmp / (count - 1);
-	vcp->min_level_val = fp[0];
+        if (count > 1) {
+                ftmp = 0;
+                for (i = 1; i < count; i++) {
+                        ftmp += fp[i] - fp[i-1];
+                }
+                vcp->level_spacing = ftmp / (count - 1);
+        }
+        else {
+                float min,max;
+                if (vcp->use_scalar_array && vcp->scalar_data_init) {
+                        min = vcp->scalar_min;
+                        max = vcp->scalar_max;
+                }
+                else {
+                        min = vcp->zmin;
+                        max = vcp->zmax;
+                }
+                vcp->level_spacing =
+                        (fabs(fp[0] - min) + fabs(max - fp[0]))
+                        / 2.0;
+        }
+ 	vcp->min_level_val = fp[0];
 	vcp->max_level_val = fp[count - 1];
 
 	vcp->level_count = count;

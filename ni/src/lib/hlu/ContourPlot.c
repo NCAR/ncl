@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.52 1997-05-15 01:08:22 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.53 1997-05-22 23:55:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5280,7 +5280,7 @@ static NhlErrorTypes SetUpIrrTransObj
 		cnp->do_low_level_log = True;
 
 	if (init || tfp->trans_obj == NULL ||
-	    cnp->osfp == NULL ||
+	    cnp->osfp == NULL || ! ocnp->data_init ||
 	    cnp->sfp->x_arr != cnp->osfp->x_arr ||
 	    cnp->sfp->x_start != cnp->osfp->x_start ||
 	    cnp->sfp->x_end != cnp->osfp->x_end ||
@@ -5312,7 +5312,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
-	    cnp->osfp == NULL ||
+	    cnp->osfp == NULL || ! ocnp->data_init ||
 	    cnp->sfp->y_arr != cnp->osfp->y_arr ||
 	    cnp->sfp->y_start != cnp->osfp->y_start ||
 	    cnp->sfp->y_end != cnp->osfp->y_end ||
@@ -5739,9 +5739,23 @@ static NhlErrorTypes SetLabelScale
 	    (cnp->label_scaling_mode == ocnp->label_scaling_mode) &&
 	    (cnp->label_scale_value == ocnp->label_scale_value))
 		return ret;
-
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
+	if (cnp->max_data_format.left_sig_digit_flag == NhlffDYNAMIC) {
+                float test_val;
+
+		test_val = MAX(fabs(cnp->zmax),fabs(cnp->zmin)) 
+                        / cnp->label_scale_factor;
+		subret = _NhlGetScaleInfo(test_val,
+					  &divpwr,&sig_digits,entry_name);
+		cnp->max_data_format.left_sig_digit = divpwr - 1;
+	}
+#if 0 /* possible way to fix problem w/ left sig digits */       
+	if (cnp->max_data_format.sig_digits_flag == NhlffDYNAMIC) {
+                cnp->max_data_format.sig_digits =
+                        MAX(4,MIN(6,cnp->max_data_format.left_sig_digit + 1));
+        }
+#endif
 	switch (cnp->label_scaling_mode) {
 	case NhlSCALEFACTOR:
 		if (cnp->label_scale_value <= 0.0) {
@@ -5857,13 +5871,6 @@ static NhlErrorTypes SetLabelScale
 		return(ret);
 	}
 
-	if (cnp->max_data_format.left_sig_digit_flag == NhlffDYNAMIC) {
-		float	test_val = MAX(fabs(cnp->zmax),fabs(cnp->zmin)) /
-			cnp->label_scale_factor;
-		subret = _NhlGetScaleInfo(test_val,
-					  &divpwr,&sig_digits,entry_name);
-		cnp->max_data_format.left_sig_digit = divpwr - 1;
-	}
 	return ret;
 }
 /*
@@ -9461,8 +9468,18 @@ static NhlErrorTypes    SetupLevels
 		ret = MIN(ret,NhlWARNING);
 		cnp->level_spacing = 5.0;
 	}
+	if (cnp->max_level_count < 1) {
+		e_text = 
+			"%s: %s must be greater than 0: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNcnMaxLevelCount);
+		ret = MIN(ret,NhlWARNING);
+		cnp->max_level_count = 16.0;
+	}
 	
-	if (cnp->min_level_val >= cnp->max_level_val) {
+	if ((cnp->min_level_val > cnp->max_level_val) ||
+            (cnp->level_count > 1 &&
+             cnp->min_level_val == cnp->max_level_val)) {
 		e_text =
 		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -9591,6 +9608,12 @@ static NhlErrorTypes    SetupLevelsManual
 	float			lmin,lmax,rem,spacing;
 	float			*fp;
 
+	if (cnp->level_spacing <= 0.0) {
+		e_text = "%s: Invalid level spacing value: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		cnp->level_spacing = 5.0;
+        }
 	spacing = cnp->level_spacing;
 	if (! cnp->min_level_set) {
        e_text =  "%s: cnMinLevelValF must be set before Manual mode is called";
@@ -9923,12 +9946,17 @@ static NhlErrorTypes    SetupLevelsExplicit
 /*
  * Find the average spacing
  */
-	ftmp = 0;
-	for (i = 1; i < count; i++) {
-		ftmp += fp[i] - fp[i-1];
-	}
-
-	cnp->level_spacing = ftmp / (count - 1);
+        if (count > 1) {
+                ftmp = 0;
+                for (i = 1; i < count; i++) {
+                        ftmp += fp[i] - fp[i-1];
+                }
+                cnp->level_spacing = ftmp / (count - 1);
+        }
+        else {
+                cnp->level_spacing = 0.0;
+        }
+        
 	cnp->min_level_val = fp[0];
 	cnp->max_level_val = fp[count - 1];
 
