@@ -13,7 +13,7 @@ C NCLEND
 c nomenclature
 c .   x,y   - 1D coord variables dimensioned (mx and ny)
 c .   z     - 2D grid containing functional values z(x,y)
-c .   mx,ny - length od x and y; dimensions of z(mx,ny)
+c .   mx,ny - length of x and y; dimensions of z(mx,ny)
 c .   d     - 2D vector of size (ldmax,3)
 c .   ldmax - mx*ny
 c .   ld    - actual number of non-missing values

@@ -283,29 +283,33 @@ c
 c-----------------------------------------------------------------------
 c
       DO I = 1,IMAX
+         IF (ABS(PHIS(I)/G) .LT. 1.D-4) THEN
+            PSL(I) = PS(I)
+         ELSE
 c pg 7 eq 5
-          TSTAR = T(I,KMAX)* (1.D0+ALPHA* (PS(I)/PRES(I,KMAX)-1.D0))
+            TSTAR = T(I,KMAX)* (1.D0+ALPHA* (PS(I)/PRES(I,KMAX)-1.D0))
 
 c pg 8 eq 13
-          T0 = TSTAR + XLAPSE*PHIS(I)/G
+            T0 = TSTAR + XLAPSE*PHIS(I)/G
 
 c pg 8 eq 14.1
-          IF (TSTAR.LE.290.5D0 .AND. T0.GT.290.5D0) THEN
-              ALPH = RD/PHIS(I)* (290.5D0-TSTAR)
+            IF (TSTAR.LE.290.5D0 .AND. T0.GT.290.5D0) THEN
+               ALPH = RD/PHIS(I)* (290.5D0-TSTAR)
 c pg 8 eq 14.2
-          ELSE IF (TSTAR.GT.290.5D0 .AND. T0.GT.290.5D0) THEN
-              ALPH = 0.D0
-              TSTAR = 0.5D0* (290.5D0+TSTAR)
-          ELSE
-              ALPH = ALPHA
-          END IF
-          IF (TSTAR.LT.255.D0) THEN
+            ELSE IF (TSTAR.GT.290.5D0 .AND. T0.GT.290.5D0) THEN
+               ALPH = 0.D0
+               TSTAR = 0.5D0* (290.5D0+TSTAR)
+            ELSE
+               ALPH = ALPHA
+            END IF
+            IF (TSTAR.LT.255.D0) THEN
 c pg 8 eq 14.3
-              TSTAR = 0.5D0* (255.D0+TSTAR)
-          END IF
-          BETA = PHIS(I)/ (RD*TSTAR)
-          PSL(I) = PS(I)*EXP(BETA* (1.D0-ALPH*BETA/2.D0+
-     +             ((ALPH*BETA)**2)/3.D0))
+               TSTAR = 0.5D0* (255.D0+TSTAR)
+            END IF
+            BETA = PHIS(I)/ (RD*TSTAR)
+            PSL(I) = PS(I)*EXP(BETA* (1.D0-ALPH*BETA/2.D0+
+     +           ((ALPH*BETA)**2)/3.D0))
+         END IF
       END DO
       RETURN
       END

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.67 2003-02-12 15:03:41 haley Exp $
+#      $Id: yMakefile,v 1.68 2003-02-25 00:51:34 haley Exp $
 #
 #########################################################################
 #									#
@@ -68,9 +68,10 @@ FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
 	relhum_dp.f remap.f rhombtri_dp.f rmStndx_dp.f rmsd.f round.f \
 	runave_dp.f rvdv.f s2h.f setrig.f skewT.f smth9_dp.f sp2_util.f \
 	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
-	svd_util_dp.f taper.f tdez1d.f trssphx.f trvsphx.f ttest.f upsl_dp.f \
-	varimax_dp.f vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f \
-	volRmse.f wavelet.f writematrix.f wrunave_dp.f zon_mpsi.f
+	svd_util_dp.f taper.f tdez1d.f triple2grid.f trssphx.f trvsphx.f \
+	ttest.f upsl_dp.f varimax_dp.f vibeta_dp.f vinth2p_dp.f \
+	vinth2p_ecmwf.f volAve.f volRmse.f wavelet.f writematrix.f \
+	wrunave_dp.f zon_mpsi.f
 
 FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
 	cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
@@ -85,9 +86,10 @@ FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
 	relhum_dp.o remap.o rhombtri_dp.o rmStndx_dp.o rmsd.o round.o \
 	runave_dp.o rvdv.o s2h.o setrig.o skewT.o smth9_dp.o sp2_util.o \
 	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
-	svd_util_dp.o taper.o tdez1d.o trssphx.o trvsphx.o ttest.o upsl_dp.o \
-	varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o \
-	volRmse.o wavelet.o writematrix.o wrunave_dp.o zon_mpsi.o
+	svd_util_dp.o taper.o tdez1d.o triple2grid.o trssphx.o trvsphx.o \
+	ttest.o upsl_dp.o varimax_dp.o vibeta_dp.o vinth2p_dp.o \
+	vinth2p_ecmwf.o volAve.o volRmse.o wavelet.o writematrix.o \
+	wrunave_dp.o zon_mpsi.o
 
 OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
 
