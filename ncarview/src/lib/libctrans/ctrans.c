@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.31 1993-02-17 20:36:47 clyne Exp $
+ *	$Id: ctrans.c,v 1.32 1993-02-24 18:17:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -290,6 +290,17 @@ void	free_cgmc(cgmc)
 }
 
 
+static	void	decode_err(status)
+	int	status;
+{
+	if (status < 0) {
+		elog(ErrGetMsg());
+	}
+	else if (status == 0) {
+		elog("Premature end of metafile");
+	}
+}
+
 
 /*
  *	Process
@@ -516,6 +527,7 @@ CtransRC	init_metafile(record, cgm_fd)
 
 	CtransRC	rc;
 	CtransRC	rcx = OK;
+	int		status;
 	int	devnum = devices[currdev].number;	
 
 	int	noop();
@@ -555,10 +567,10 @@ CtransRC	init_metafile(record, cgm_fd)
 
 	/*
 	 *	Make sure first elements is a BEGIN METAFILE
-	 *	Instr_Dec returns 0 of EOF, -1 on error.
+	 *	Instr_Dec returns 0 on EOF, -1 on error.
 	 */
-	if (Instr_Dec(&command) < 1) {
-		elog(ErrGetMsg());
+	if ((status = Instr_Dec(&command)) < 1) {
+		decode_err(status);
 		return(FATAL);
 	}
 	DoEscapes(&command);
@@ -595,9 +607,9 @@ CtransRC	init_metafile(record, cgm_fd)
 	/*
 	 * 	process until the first frame or an end of metafile element	
 	 */
-	if (Instr_Dec(&command) < 1) {
-		elog(ErrGetMsg());
-		return (FATAL);
+	if ((status = Instr_Dec(&command)) < 1) {
+		decode_err(status);
+		return(FATAL);
 	}
 	while((command.class != DEL_ELEMENT || command.command != BEG_PIC_ID) &&
 		(command.class != DEL_ELEMENT || command.command != END_MF_ID)){
@@ -605,9 +617,9 @@ CtransRC	init_metafile(record, cgm_fd)
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
-			return (FATAL);
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
+			return(FATAL);
 		}
 	}	 
 
@@ -659,8 +671,8 @@ CtransRC	ctrans(record)
 			elog(ErrGetMsg());
 			return (WARN);
 		}
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
 			return(FATAL);
 		}
 	}
@@ -710,7 +722,7 @@ CtransRC	ctrans(record)
 	}
 
 	if (status < 1) {
-		elog(ErrGetMsg());
+		decode_err(status);
 		return(FATAL);
 	}
 
@@ -719,8 +731,8 @@ CtransRC	ctrans(record)
 	 * get the next instruction. It should be either a Begin Pic or 
 	 * an End MF or an escape
 	 */
-	if (Instr_Dec(&command) < 1) {
-		elog(ErrGetMsg());
+	if ((status = Instr_Dec(&command)) < 1) {
+		decode_err(status);
 		return(FATAL);
 	}
 
@@ -749,6 +761,7 @@ CtransRC	ctrans_merge(record1, record2)
 {
 	CtransRC	rc;
 	CtransRC	rcx;
+	int		status;
 	/*
 	 * 	make sure we've been initialized
 	 */
@@ -766,8 +779,8 @@ CtransRC	ctrans_merge(record1, record2)
 		elog(ErrGetMsg());
 		return (WARN);
 	}
-	if (Instr_Dec(&command) < 1) {
-		elog(ErrGetMsg());
+	if ((status = Instr_Dec(&command)) < 1) {
+		decode_err(status);
 		return(FATAL);
 	}
 
@@ -783,8 +796,8 @@ CtransRC	ctrans_merge(record1, record2)
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
 			return(FATAL);
 		}
 	}
@@ -805,9 +818,9 @@ CtransRC	ctrans_merge(record1, record2)
 	 */
 	do {
 
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
-			return (FATAL);
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
+			return(FATAL);
 		}
 	}while(
 		(command.class != DEL_ELEMENT || 
@@ -819,9 +832,9 @@ CtransRC	ctrans_merge(record1, record2)
 	/*
 	 * get the next command
 	 */
-	if (Instr_Dec(&command) < 1) {
-		elog(ErrGetMsg());
-		return (FATAL);
+	if ((status = Instr_Dec(&command)) < 1) {
+		decode_err(status);
+		return(FATAL);
 	}
 
 	/*
@@ -835,8 +848,8 @@ CtransRC	ctrans_merge(record1, record2)
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
 			return(FATAL);
 		}
 	}
@@ -856,8 +869,8 @@ CtransRC	ctrans_merge(record1, record2)
 		 * end of a single frame. Get BEG_PIC command for next 
 		 * invocation of  ctrans()
 		 */
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
+		if ((status = Instr_Dec(&command)) < 1) {
+			decode_err(status);
 			return(FATAL);
 		}
 		return(rcx);
