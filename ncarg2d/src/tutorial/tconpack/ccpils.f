@@ -18,6 +18,15 @@ C
       CALL GACWK (IWKID)
       CALL GSCLIP (0)
 C
+C Turn off the flag that causes CONPACK to look for overlap problems
+C as high/low labels are generated.  This will cause the output to
+C look as it did when the tutorial was written.  (A bug fix affected
+C the output of this example by causing CONPACK to look for overlap;
+C prior to that, it had been erroneously failing to do so.)  - DJK
+C (03/08/96).
+C
+      CALL CPSETI('HLO - HIGH/LOW LABEL OVERLAP FLAG',0)
+C
 C Set label sizes 
 C
       CALL CPSETR('HLS - HIGH/LOW LABEL SIZE',.030)
