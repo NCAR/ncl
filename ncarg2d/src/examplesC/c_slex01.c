@@ -1,5 +1,5 @@
 /*
- *	$Id: c_slex01.c,v 1.1 1993-01-15 22:39:49 haley Exp $
+ *	$Id: c_slex01.c,v 1.2 1993-02-08 23:39:40 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -44,9 +44,7 @@ main()
 /*
  *  Open GKS.
  */
-    gopen_gks("stdout", 0);
-    gopen_ws(1, "", 1);
-    gactivate_ws(1);
+    c_opngks();
 /*
  *  Invoke STITLE example.
  */
@@ -54,9 +52,7 @@ main()
 /*
  *  Close GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
-    gclose_gks();
+    c_clsgks();
 }
 
 exstl0()
