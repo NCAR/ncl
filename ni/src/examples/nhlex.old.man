@@ -1,0 +1,108 @@
+.\" The first line of this file must contain the '\"[e][r][t][v] line
+.\" to tell man to run the appropriate filter "t" for table.
+.\"
+.\"	$Id: nhlex.old.man,v 1.1 1995-01-29 19:32:03 haley Exp $
+.\"
+.\"######################################################################
+.\"#									#
+.\"#			   Copyright (C)  1993				#
+.\"#		University Corporation for Atmospheric Research		#
+.\"#			   All Rights Reserved				#
+.\"#                                                                    #
+.\"######################################################################
+.\"
+.\"     File:		nhlex.old.man
+.\"
+.\"     Author:		Jeff W. Boote
+.\"			National Center for Atmospheric Research
+.\"			PO 3000, Boulder, Colorado
+.\"
+.\"     Date:		Wed Apr 7 10:29:48 MDT 1993
+.\"
+.\"     Description:	Describes the nhlex.old script and the example programs.
+.\"
+.TH nhlex.old 1Nhl "Prototype Release" "Nhl Prototype" "NCARG Nhl EXAMPLES"
+.SH NAME
+.nh
+nhlex.old \- NCAR Graphics High Level Utilities Example Programs
+.ny
+.SH SYNOPSIS
+\fBnhlex.old\fP 
+[\fI\-A\fP]
+[\fI\-clean\fP]
+[\fI\-n\fP]
+\fIname ...\fP
+.SH DESCRIPTION
+.I nhlex.old
+provides the user with access to several C and Fortran examples
+illustrating the use of the NCAR Graphics HLUs (High Level Utilities).
+\fInhlex.old\fP copies the source code for the specified
+example(s) into the current directory and then compiles, links, and
+executes the example.  Depending on the example, the output may be
+sent to an NCGM (NCAR Graphics Metafile) file and/or displayed to an X
+window on your screen.  You must be running X and have your DISPLAY
+environment set correctly in order for the X window examples to
+execute properly.
+.sp
+If the requested example creates an NCGM file, it will have the same
+name as the example, suffixed with ".ncgm". An option allows you to
+request that only the source code be copied to your directory, without
+compiling or running the example.  Another option
+allows you to request that only the NCGM file be left in your
+directory and that all other files created by \fBnhlex.old\fP be deleted.
+The argument \fIname\fP may be selected from the lists that appear
+below.
+.sp
+Since the HLU library is available on Suns and SGIs only, these
+examples will only execute on those machines.  In the future, the HLUs
+and their examples will be ported to other systems.
+.SH OPTIONS
+.IP "\-A\fP" 1i
+Copy and execute all available examples.
+.IP \-\fIclean\fP 1i
+Remove everything but the ".ncgm" file.
+.IP \-\fIn\fP 1i
+Specifies that the example should just be copied over, and not
+linked or executed.
+.IP \fIname\fP 1i
+List of example programs to retrieve.
+.SH "EXAMPLES AVAILABLE"
+Please notice that the Fortran examples are the ones with the letter 'f'
+before the example number.
+.IP nhl01,nhlf01 1i
+Demonstrates how to display an XyPlot to an X Window, and then
+copy it to a meta file.
+.IP nhl02 1i
+Demonstrates how to incorporate the HLU library with a GUI.
+It uses an X/Motif interface, and also allows the user to copy frames from
+the X Window to a meta file.
+.IP nhl03 1i
+Shows how to interactively retrieve data values from a plot by pointing
+and clicking on the plot.
+.IP nhl05,nhlf05 1i
+Shows how to use the TextItem object of the HLU library.
+.IP nhl06,nhlf06 1i
+Demonstrates how to use HLU objects with low level NCAR Graphics
+library calls. 
+.IP nhl07,nhlf07 1i
+Demonstrates basic features of the Contour object.
+.IP nhl08,nhlf08 1i
+Demonstrates basic features of the Contour object.  The first
+frame emulates the contour plot drawn in nhl06 using low-level NCARG calls.
+.IP nhl09,nhlf09 1i
+Emulates the output of the ncargex example "cpex02".
+.IP nhl10,nhlf10 1i
+Demonstrates basic MapPlot capabilities.
+.IP nhl11,nhlf11 1i
+Demonstrates individual control of MapPlot areas.
+.IP nhl12,nhlf12 1i
+Demonstrates MapPlot masking; loosely emulates the ncargex example "colcon".
+.IP nhl13,nhlf13 1i
+Illustrates the use of Annotation objects.
+.SH SEE ALSO
+ncargex(1NCARG),  ncargcex(1NCARG)
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993, 1994, 1995 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
