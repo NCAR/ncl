@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.35 1995-05-10 16:07:48 clyne Exp $
+ *	$Id: main.c,v 1.36 1999-07-27 21:11:54 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
  */
 
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<ctype.h>
 #include	<errno.h>
 #include	<sys/types.h>
