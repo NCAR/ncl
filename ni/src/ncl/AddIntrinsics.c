@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.21 1996-11-19 22:46:08 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.22 1997-01-31 22:24:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "parser.h"
+
 
 extern NhlErrorTypes _NclINhlDataToNDC(
 #if	NhlNeedProto

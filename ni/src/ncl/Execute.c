@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.83 1997-01-28 00:38:46 ethan Exp $
+ *      $Id: Execute.c,v 1.84 1997-01-31 22:24:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1600,6 +1600,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = *(int*)ptr;
 				if((var == NULL)||(var->u.data_var == NULL)) {
+					sym = _NclLookUp(sym->name);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
 					_NclCleanUpStack(nsubs);
 					estatus = NhlFATAL;

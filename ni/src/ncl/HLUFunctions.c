@@ -15,6 +15,497 @@
 #include "NclBuiltInSupport.h"
 #include "Machine.h"
 
+NhlErrorTypes _NclINhlIsApp
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsApp(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+
+NhlErrorTypes _NclINhlIsDataComm
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsDataComm(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+NhlErrorTypes _NclINhlIsDataItem
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsDataItem(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+NhlErrorTypes _NclINhlIsDataSpec
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsDataSpec(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+NhlErrorTypes _NclINhlIsTransform
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsTransform(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+NhlErrorTypes _NclINhlIsView
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsView(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
+NhlErrorTypes _NclINhlIsWorkstation
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 1;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int i,j=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	logical *outpt;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	if(type == NCL_obj) {
+		if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				} else {
+					tmp_hlu_ptr[i] = NULL;
+				}
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			}
+		}
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			if(tmp_hlu_ptr[i] != NULL ) {
+				outpt[i] = (NhlIsWorkstation(tmp_hlu_ptr[i]->hlu.hlu_id)?1:0);
+			} else {
+				outpt[i] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			}
+		}
+		NclFree(tmp_hlu_ptr);
+	} else {
+		outpt = (logical*)NclMalloc(sizeof(logical)*total);
+		for( i = 0; i < total; i++) {
+			outpt[i] = 0;
+		}
+	}
+	
+	return(NclReturnValue(
+                (void*)outpt,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypelogicalClass)->type_class.default_mis),
+		NCL_logical,
+                0
+        ));
+}
 NhlErrorTypes _NclIChangeWorkstation
 #if	NhlNeedProto
 (void)
@@ -2581,4 +3072,64 @@ NhlErrorTypes _NclIName
 		NCL_string,
                 0
         ));
+}
+NhlErrorTypes _NclINhlGetWorkspaceObjectId
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        int n_dims_ = 1, len_dims = 1;
+        int tmp;
+	obj *out_ids;
+	struct _NclHLUObjRec *tmp_hlu;
+	NclStackEntry data_out;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlLayer tmp_layer;
+
+
+	
+	tmp = NhlGetWorkspaceObjectId();
+	tmp_layer = _NhlGetLayer(tmp);
+	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+	out_ids = (obj*)NclMalloc(sizeof(obj));
+	*out_ids = tmp_hlu->obj.id;
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+		NULL,NULL, Ncl_MultiDValHLUObjData,
+		0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
+		&len_dims,TEMPORARY,NULL);
+	_NclPlaceReturn(data_out);
+	return(ret);
+}
+NhlErrorTypes _NclINhlAppGetDefaultParentId
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        int n_dims_ = 1, len_dims = 1;
+        int tmp;
+	obj *out_ids;
+	struct _NclHLUObjRec *tmp_hlu;
+	NclStackEntry data_out;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlLayer tmp_layer;
+
+
+	
+	tmp = NhlAppGetDefaultParentId();
+	tmp_layer = _NhlGetLayer(tmp);
+	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+	out_ids = (obj*)NclMalloc(sizeof(obj));
+	*out_ids = tmp_hlu->obj.id;
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+		NULL,NULL, Ncl_MultiDValHLUObjData,
+		0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
+		&len_dims,TEMPORARY,NULL);
+	_NclPlaceReturn(data_out);
+	return(ret);
 }

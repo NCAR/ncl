@@ -70,7 +70,7 @@ char *cur_load_file = NULL;
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
-%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT
+%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE
@@ -445,7 +445,7 @@ vcreate : VSBLKCREATE expr OBJTYPE v_parent resource_list END VSBLKCREATE	{
 								}
 ;
 
-vset :  VSBLKSET identifier resource END VSBLKSET		{
+vset :  VSBLKSET expr resource END VSBLKSET		{
 									NclSrcListNode * tmp = NULL;
 									if($3 != NULL) {
 						 				tmp = _NclMakeNewListNode();
@@ -454,14 +454,14 @@ vset :  VSBLKSET identifier resource END VSBLKSET		{
 									}
 									$$ = _NclMakeSGVis($2,tmp,Ncl_VISBLKSET); 
 								}
-	| VSBLKSET identifier resource_list END VSBLKSET	{
+	| VSBLKSET expr resource_list END VSBLKSET	{
 									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKSET);
 								}
 	| VSBLKSET error 					{
 										$$ = NULL;
 								}
 ;
-vget : VSBLKGET identifier get_resource END VSBLKGET		{
+vget : VSBLKGET expr get_resource END VSBLKGET		{
 									NclSrcListNode * tmp = NULL;
 									if($3 != NULL) {
 						 				tmp = _NclMakeNewListNode();
@@ -470,7 +470,7 @@ vget : VSBLKGET identifier get_resource END VSBLKGET		{
 									}
 									$$ = _NclMakeSGVis($2,tmp,Ncl_VISBLKGET); 
 								}
-	| VSBLKGET identifier get_resource_list END VSBLKGET  	{
+	| VSBLKGET expr get_resource_list END VSBLKGET  	{
 									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKGET);
 								}
 	| VSBLKGET error {

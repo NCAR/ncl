@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.26 1996-12-17 18:41:11 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.27 1997-01-31 22:24:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -260,6 +260,31 @@ extern NhlErrorTypes _NclIchartoint(
 void
 #endif
 );
+extern NhlErrorTypes _NclIstringtointeger(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtolong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtodouble(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtofloat(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIstringtochar(
 #if NhlNeedProto
 void
@@ -282,47 +307,185 @@ void
 #endif
 );
 
-NhlErrorTypes _NclIIsVar(
+extern NhlErrorTypes _NclIIsVar(
 #if     NhlNeedProto
 void
 #endif
 );
 
-NhlErrorTypes _NclIIsFileVar(
+extern NhlErrorTypes _NclIIsFileVar(
 #if     NhlNeedProto
 void
 #endif
 );
 
-NhlErrorTypes _NclIIsCoord(
+extern NhlErrorTypes _NclIIsCoord(
 #if     NhlNeedProto
 void
 #endif
 );
-NhlErrorTypes _NclIIsAtt(
-#if     NhlNeedProto
-void
-#endif
-);
-
-NhlErrorTypes _NclIIsFileVarAtt(
+extern NhlErrorTypes _NclIIsAtt(
 #if     NhlNeedProto
 void
 #endif
 );
 
-NhlErrorTypes _NclIIsDim(
+extern NhlErrorTypes _NclIIsFileVarAtt(
 #if     NhlNeedProto
 void
 #endif
 );
 
-NhlErrorTypes _NclIIsFileVarDim(
+extern NhlErrorTypes _NclIIsDim(
 #if     NhlNeedProto
 void
 #endif
 );
 
+extern NhlErrorTypes _NclIIsFileVarDim(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIIsDefined(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsProc(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsFunc(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIExit(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIIsNumeric(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsDouble(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsFloat(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsGraphic(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsFile(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsString(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsChar(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsByte(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsLong(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsShort(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsInteger(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsLogical(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclITypeOf(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIUnDef(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsApp(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsDataComm(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsDataItem(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsDataSpec(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsTransform(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsView(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINhlIsWorkstation(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclINhlGetWorkspaceObjectId(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclINhlAppGetDefaultParentId(
+#if     NhlNeedProto
+void
+#endif
+);
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -708,6 +871,26 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtoshort,args,"stringtoshort",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtodouble,args,"stringtodouble",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtolong,args,"stringtolong",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtointeger,args,"stringtointeger",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtofloat,args,"stringtofloat",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtochar,args,"stringtochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
@@ -859,6 +1042,127 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_min,args,"dim_min",nargs);
 
+	nargs = 0;
+	NclRegisterProc( _NclIExit,args,"exit",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFunc,args,"isfunc",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsProc,args,"isproc",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsDefined,args,"isdefined",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsInteger,args,"isinteger",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsByte,args,"isbyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsShort,args,"isshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsLong,args,"islong",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFloat,args,"isfloat",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsDouble,args,"isdouble",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsString,args,"isstring",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsChar,args,"ischar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsNumeric,args,"isnumeric",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFile,args,"isfile",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsGraphic,args,"isgraphic",nargs);
+	
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsLogical,args,"islogical",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclITypeOf,args,"typeof",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterProc( _NclIUnDef,args,"undef",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsApp,args,"NhlIsApp",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsDataComm,args,"NhlIsDataComm",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsDataItem,args,"NhlIsDataItem",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsDataSpec,args,"NhlIsDataSpec",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsTransform,args,"NhlIsTransform",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsView,args,"NhlIsView",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlIsWorkstation,args,"NhlIsWorkstation",nargs);
+
+	nargs = 0;
+	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);
+	nargs = 0;
+	NclRegisterFunc(_NclINhlAppGetDefaultParentId,args,"NhlAppGetDefaultParentId",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);
