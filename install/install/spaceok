@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: spaceok,v 1.1 1993-02-20 00:11:46 clyne Exp $
+#      $Id: spaceok,v 1.2 1994-05-09 16:40:55 haley Exp $
 #
 #########################################################################
 #									#
@@ -127,7 +127,7 @@ while ($i < $next)
 
 	echo "" > /dev/tty
 	echo -n "	$dir_size_array[$i] KBytes required for " > /dev/tty
-	echo "in file system $fs_array[$i]." > /dev/tty
+	echo "file system $fs_array[$i]." > /dev/tty
 
 	if ($fs_size_array[$i] < $dir_size_array[$i]) then
 		cat > /dev/tty <<EOF
