@@ -673,8 +673,8 @@ C
      +                                                       .012,0.,0.)
 C
           CALL PLCHHQ (CFUX(.50),CFUY(.074), 'derived triangular mesh fr
-     +om the user-provided data of "ctgeo3" are in red and green, repect
-     +ively.',
+     +om the user-provided data of "ctgeo3" are in red and green, respec
+     +tively.',
      +                                                       .012,0.,0.)
 C
           IF (IFRA.EQ.1) THEN
