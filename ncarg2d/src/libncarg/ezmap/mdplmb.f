@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.2 2001-11-02 22:37:11 kennison Exp $
+C $Id: mdplmb.f,v 1.3 2002-02-25 18:02:42 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -84,18 +84,18 @@ C
 C
 C Declare arithmetic statement functions.
 C
-        DOUBLE PRECISION CLING,FLOOR
+        DOUBLE PRECISION CEIL,FLOR
 C
 C Declare external functions.
 C
         DOUBLE PRECISION RBGDFE,RBGLEN
 C
-C The arithmetic statement functions FLOOR and CLING give, respectively,
+C The arithmetic statement functions FLOR and CEIL give, respectively,
 C the "floor" of X - the largest integer less than or equal to X - and
 C the "ceiling" of X - the smallest integer greater than or equal to X.
 C
-        FLOOR(X)=DINT(X+1.D4)-1.D4
-        CLING(X)=-FLOOR(-X)
+        FLOR(X)=DINT(X+1.D4)-1.D4
+        CEIL(X)=-FLOR(-X)
 C
 C Check for an uncleared prior error.
 C
@@ -129,7 +129,7 @@ C
      +        IPRF.EQ.21) THEN
             DLON=GRDR
             RLAT=-89.998D0
-            K=CLING(360.D0/DLON)
+            K=CEIL(360.D0/DLON)
             DO 202 I=1,2
               RLON=UTPA(5)-180.D0
               CALL MDPIT (RLAT,RLON,0)
@@ -154,7 +154,7 @@ C
           END IF
           DLAT=GRDR
           RLON=UTPA(5)+DLON
-          K=CLING(180.D0/DLAT)
+          K=CEIL(180.D0/DLAT)
           DO 204 I=1,2
             RLAT=-90.D0
             CALL MDPIT (RLAT,RLON,0)
@@ -175,7 +175,7 @@ C
         ELSE IF (IPRF.EQ.9) THEN
           DLON=GRDR
           RLAT=-.001D0
-          K=CLING(180.D0/DLON)
+          K=CEIL(180.D0/DLON)
           DO 206 I=1,2
             RLON=UTPA(5)+90.D0
             CALL MDPIT (RLAT,RLON,0)
@@ -266,7 +266,7 @@ C Lambert conformal conic with two standard parallels.
 C
   101   DLAT=GRDR
         RLON=PHOC+179.999999D0
-        K=CLING(180.D0/DLAT)
+        K=CEIL(180.D0/DLAT)
         DO 103 I=1,2
           RLAT=-90.D0
           CALL MDPIT (RLAT,RLON,0)

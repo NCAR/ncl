@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.2 2001-11-02 22:37:03 kennison Exp $
+C $Id: mdpgrd.f,v 1.3 2002-02-25 18:02:42 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -60,14 +60,14 @@ C
 C Declare the type of two local arithmetic statement functions and the
 C argument used with them.
 C
-        DOUBLE PRECISION CLING,FLOOR
+        DOUBLE PRECISION CEIL,FLOR
 C
-C The arithmetic statement functions FLOOR and CLING give, respectively,
+C The arithmetic statement functions FLOR and CEIL give, respectively,
 C the "floor" of X - the largest integer less than or equal to X - and
 C the "ceiling" of X - the smallest integer greater than or equal to X.
 C
-        FLOOR(X)=DINT(X+1.D4)-1.D4
-        CLING(X)=-FLOOR(-X)
+        FLOR(X)=DINT(X+1.D4)-1.D4
+        CEIL(X)=-FLOR(-X)
 C
 C Check for an uncleared prior error.
 C
@@ -123,13 +123,13 @@ C
 C RLON is the smallest longitude for which a meridian is to be drawn,
 C XLON the biggest.  Avoid drawing a given meridian twice.
 C
-        RLON=GLON*FLOOR(SLON/GLON)
-        XLON=GLON*CLING(BLON/GLON)
+        RLON=GLON*FLOR(SLON/GLON)
+        XLON=GLON*CEIL(BLON/GLON)
 C
         IF (XLON-RLON.GT.359.999999D0) THEN
           IF (IPRJ.EQ.1) THEN
-            RLON=GLON*CLING((PHOC-179.999999D0)/GLON)
-            XLON=GLON*FLOOR((PHOC+179.999999D0)/GLON)
+            RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
+            XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
           ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.10) THEN
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
@@ -143,9 +143,9 @@ C
           OLAT=90.D0
         ELSE
           IF (DINT(GRPO/1000.D0).EQ.0.D0) THEN
-            OLAT=GLAT*FLOOR(89.999999D0/GLAT)
+            OLAT=GLAT*FLOR(89.999999D0/GLAT)
           ELSE
-            OLAT=GLAT*FLOOR(MIN(89.999999D0,DINT(GRPO/1000.D0))/GLAT)
+            OLAT=GLAT*FLOR(MIN(89.999999D0,DINT(GRPO/1000.D0))/GLAT)
           END IF
         END IF
 C
@@ -159,7 +159,7 @@ C
         END IF
         RLAT=MAX(SLAT,-XLAT)
         XLAT=MIN(BLAT, XLAT)
-        DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
+        DLAT=(XLAT-RLAT)/CEIL((XLAT-RLAT)/GRDR)
         CALL MDPIT (RLAT,RLON,0)
         IF (ICFELL('MDPGRD',4).NE.0) RETURN
   102   RLAT=RLAT+DLAT
@@ -172,9 +172,9 @@ C
 C
 C Round the latitude limits to appropriate multiples of GLAT.
 C
-        SLAT=GLAT*FLOOR(SLAT/GLAT)
+        SLAT=GLAT*FLOR(SLAT/GLAT)
         IF (SLAT.LE.-90.D0) SLAT=SLAT+GLAT
-        BLAT=GLAT*CLING(BLAT/GLAT)
+        BLAT=GLAT*CEIL(BLAT/GLAT)
         IF (BLAT.GE.+90.D0) BLAT=BLAT-GLAT
 C
 C If a fast-path cylindrical equidistant projection is in use and either
@@ -199,9 +199,9 @@ C
         RLAT=MAX(-90.D0,MIN(+90.D0,XLAT))
         IF (DINT(GRPO/1000.D0).EQ.0.D0.OR.
      +      ABS(RLAT).LE.DINT(GRPO/1000.D0)) THEN
-          RLON=FLOOR(SLON)
-          XLON=MIN(CLING(BLON),RLON+360.D0)
-          DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
+          RLON=FLOR(SLON)
+          XLON=MIN(CEIL(BLON),RLON+360.D0)
+          DLON=(XLON-RLON)/CEIL((XLON-RLON)/GRDR)
           CALL MDPIT (RLAT,RLON,0)
           IF (ICFELL('MDPGRD',9).NE.0) RETURN
   104     RLON=RLON+DLON
