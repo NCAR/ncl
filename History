@@ -833,3 +833,9 @@
 	more efficient in the binary-halving process that they go through when
 	trying to find exactly where a line being drawn disappears around the
 	edge of the globe, at the limb.
+10/13/92 - In PLOTCHAR, the routines PLCHHQ and PCCFFC have been changed.  
+	In each case, the original unit number is saved prior to a call to 
+	PCFOPN and restored following a matching call to PCFCLS, so that 
+	temporary changes made in the unit number during the reading of one 
+	font will not affect the unit number subsequently used in reading 
+	another font.
