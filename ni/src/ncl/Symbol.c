@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.27 1996-03-16 05:07:07 ethan Exp $
+ *      $Id: Symbol.c,v 1.28 1996-04-09 22:06:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -395,6 +395,22 @@ NclSymTableListNode * _NclPopScope
 	tmp->previous = NULL;
 	thetablelist = tmp1;
 	return(tmp);
+}
+
+void _NclPushScope 
+#if	NhlNeedProto
+(NclSymTableListNode * the_scope)
+#else
+(the_scope)
+NclSymTableListNode * the_scope;
+#endif
+{
+	NclSymTableListNode *tmp;
+	
+
+	tmp = the_scope;
+	tmp->previous = thetablelist;
+	thetablelist = tmp;
 }
 
 

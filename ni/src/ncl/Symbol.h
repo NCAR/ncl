@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.16 1995-05-23 15:54:30 ethan Exp $
+ *      $Id: Symbol.h,v 1.17 1996-04-09 22:06:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -205,6 +205,11 @@ void
 #endif
 );
 
+extern void _NclPushScope(
+#if	NhlNeedProto
+NclSymTableListNode * /* new_scope */
+#endif
+);
 extern NclSymTableListNode *_NclPopScope(
 #if	NhlNeedProto
 void

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.27 1996-04-05 00:59:18 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.28 1996-04-09 22:06:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -408,8 +408,8 @@ NhlErrorTypes _NclIGetFileVarNames
 {
 	NclStackEntry data;
 	NclApiDataList *tmp,*step;
-	NclQuark file_q;
 	NclQuark *var_names = NULL;
+	NclQuark file_q;
 	int i,ret =0;
 	int dimsize = 0;
 	
@@ -417,11 +417,28 @@ NhlErrorTypes _NclIGetFileVarNames
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
-		 file_q = data.u.data_var->var.var_quark;
+/*
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+*/
+		file_q = data.u.data_var->var.var_quark;
 		break;
 	case NclStk_VAL:
 		return(NhlFATAL);
 	}
+/*
+	thefile = _NclGetObj(*(int*)tmp_md->val);
+	
+	var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->n_vars);
+	dimsize = thefile->n_vars;
+	
+	for(i = 0; i< thefile->file.n_vars;i++ 	) {
+		if(thefile->file.var_info[i] != NULL) {
+			var_names[i] = thefile->file.var_info[i]->var_name_quark;
+		} else {
+			var_names[i] = 0;
+		}
+	}
+*/
 	tmp = _NclGetFileVarInfo(file_q);
 	step = tmp;
 	i = 0;

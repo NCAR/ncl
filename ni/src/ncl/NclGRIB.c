@@ -415,7 +415,7 @@ int** valid_lv_vals1;
 	int n_nodes;
 	int current_offset;
 	FTLIST header;
-	FTLIST *the_end;
+	FTLIST *the_end,*tmp;
 	int *tmp_lvs = NULL;
 	int *tmp_lvs1 = NULL;
 	int tmp_n_lvs = 0;
@@ -475,9 +475,9 @@ int** valid_lv_vals1;
 	the_end->ft = current_offset;
 	the_end->thelist = strt;
 	the_end->next = NULL;
-			the_end->lv_vals = NULL;
-			the_end->lv_vals1 = NULL;
-			the_end->n_lv = 0;
+	the_end->lv_vals = NULL;
+	the_end->lv_vals1 = NULL;
+	the_end->n_lv = 0;
 	the_end->n_lv = GetLVList(thevar,strt,&the_end->lv_vals,&the_end->lv_vals1);
 	if((strt->rec_inq->level0 != -1)&&(strt->rec_inq->level1 == -1)){
 		if(tmp_lvs != NULL) {
@@ -1294,6 +1294,7 @@ GribFileRecord *therec;
                                         								TEMPORARY,
                                         								NULL,
                                         								nclTypefloatClass),lon_att_list_ptr,nlonatts);
+					NclFree(dimsizes_lon);
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 					} else {
@@ -1327,6 +1328,7 @@ GribFileRecord *therec;
                                         								TEMPORARY,
                                         								NULL,
                                         								nclTypefloatClass),lat_att_list_ptr,nlatatts);
+					NclFree(dimsizes_lat);
 					therec->total_dims += 2;
 
 
@@ -1378,6 +1380,7 @@ GribFileRecord *therec;
                                         								TEMPORARY,
                                         								NULL,
                                         								nclTypefloatClass),lon_att_list_ptr,nlonatts);
+					NclFree(dimsizes_lon);
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 					} else {
@@ -1416,6 +1419,7 @@ GribFileRecord *therec;
                                         								TEMPORARY,
                                         								NULL,
                                         								nclTypefloatClass),lat_att_list_ptr,nlatatts);
+					NclFree(dimsizes_lat);
 					therec->total_dims += 2;
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
@@ -1472,11 +1476,20 @@ GribParamList* step;
 	int n_tmp_it_vals = 0;
 	NclQuark *it_vals_q = NULL;
 	int total;
+	char *name;
 	NhlErrorTypes returnval = NhlNOERROR;
 	
 	
 
 	the_end = &header;
+	header.next = NULL;
+	header.thelist = NULL;
+	header.ft_vals = NULL;
+	header.lv_vals1 = NULL;
+	header.lv_vals = NULL;
+	header.n_lv = 0;
+	header.n_ft = 0;
+	
 
 
 	if(step->n_entries > 1) {
@@ -1511,6 +1524,7 @@ GribParamList* step;
 		the_end->it = strt->rec_inq->initial_time;
 		the_end->thelist = GetFTList(step,strt,&the_end->n_ft,&the_end->ft_vals,&the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 		n_it++;
+		name = NrmQuarkToString(strt->rec_inq->var_name_q);
 
 		the_end = header.next;
 
@@ -1575,6 +1589,7 @@ GribParamList* step;
 */
 		
 	} else {
+/*
 		if((step->thelist->rec_inq->level0 != -1)&&(step->thelist->rec_inq->level1 == -1)) {
 			n_tmp_lv_vals = 1;
 			tmp_lv_vals = (int*)NclMalloc(sizeof(int));
@@ -1589,12 +1604,19 @@ GribParamList* step;
 		n_tmp_ft_vals = 1;
 		tmp_ft_vals = (int*)NclMalloc(sizeof(int));
 		*tmp_ft_vals = step->thelist->rec_inq->time_offset;
+*/
 		n_tmp_it_vals = 1;
 		tmp_it_vals = (GIT*)NclMalloc((unsigned)sizeof(GIT));
 		*tmp_it_vals = step->minimum_it;
 		it_vals_q = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*it_vals_q = GetItQuark(&step->minimum_it);
-		GetFTList(step,step->thelist,&n_tmp_ft_vals,&tmp_ft_vals,&n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
+		header.next = (ITLIST*)NclMalloc((unsigned)sizeof(ITLIST));
+		header.next->lv_vals = NULL;
+		header.next->lv_vals1 = NULL;
+		header.next->ft_vals = NULL;
+		header.next->next = NULL;
+		header.next->it = step->minimum_it;
+		header.next->thelist = GetFTList(step,step->thelist,&n_tmp_ft_vals,&tmp_ft_vals,&n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
 /*
 		fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
 			(int)step->thelist->rec_inq->pds[13],
@@ -1815,7 +1837,7 @@ GribParamList* step;
 		}
 		strt = (GribRecordInqRecList*)NclMalloc((unsigned)sizeof(GribRecordInqRecList)*total);
 		for (i = 0; i < total; i++) {
-			strt[i].rec_inq = NULL;
+			strt[i].rec_inq = (GribRecordInqRec*)10;
 			strt[i].next = NULL;
 		}
 		the_end = header.next;
@@ -1841,7 +1863,7 @@ GribParamList* step;
 								k++;
 							} else {
 								strt[i].rec_inq = NULL;
-								fprintf(stdout,"missing ft: %d lv: %d\n",tmp_ft_vals[j],tmp_lv_vals[k]);
+								fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,tmp_ft_vals[j],tmp_lv_vals[k]);
 								k++;
 							}
 							i++;
@@ -1849,8 +1871,7 @@ GribParamList* step;
 						if((rstep == NULL)&&(k < n_tmp_lv_vals)) {
 							for( ;k < n_tmp_lv_vals; k++) {
 								strt[i].rec_inq = NULL;
-								fprintf(stdout,"missing ft: %d lv: %d\n",tmp_ft_vals[j],tmp_lv_vals[k]);
-								k++;
+								fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,tmp_ft_vals[j],tmp_lv_vals[k]);
 								i++;
 							}
 						}
@@ -1864,7 +1885,7 @@ GribParamList* step;
 								k++;
 							} else {
 								strt[i].rec_inq = NULL;
-								fprintf(stdout,"missing ft: %d lv: (%d,%d)\n",tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
+								fprintf(stdout,"%s is missing ft: %d lv: (%d,%d)\n",name,tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
 								k++;
 							}
 							i++;
@@ -1872,8 +1893,7 @@ GribParamList* step;
 						if((rstep == NULL)&&(k < n_tmp_lv_vals)) {
 							for( ;k < n_tmp_lv_vals; k++) {
 								strt[i].rec_inq = NULL;
-								fprintf(stdout,"missing ft: %d lv: (%d,%d)\n",tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
-								k++;
+								fprintf(stdout,"%s is missing ft: %d lv: (%d,%d)\n",name,tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
 								i++;
 							}
 						}
@@ -1890,18 +1910,22 @@ GribParamList* step;
 					if(!step->levels_has_two) {
 						for( k = 0 /* i already set */; k < n_tmp_lv_vals; i++,k++) {
 							strt[i].rec_inq = NULL;
-							fprintf(stdout,"missing ft: %d lv: %d\n",tmp_ft_vals[j],tmp_lv_vals[k]);
+							fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,tmp_ft_vals[j],tmp_lv_vals[k]);
 						}
 						j++;
 					} else {
 						for( k = 0 /* i already set */; k < n_tmp_lv_vals; i++,k++) {
 							strt[i].rec_inq = NULL;
-							fprintf(stdout,"missing ft: %d lv: (%d,%d)\n",tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
+							fprintf(stdout,"%s is missing ft: %d lv: (%d,%d)\n",name,tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
 						}
 						j++;
 					}
 				}
 			}
+			if(i != total) {
+				fprintf(stdout,"HELLO?\n");
+			}
+			
 			free_it = the_end;
 			the_end = the_end->next;
 			if(free_it->lv_vals != NULL) 
@@ -1910,10 +1934,29 @@ GribParamList* step;
 				NclFree(free_it->lv_vals1);
 			if(free_it->ft_vals != NULL) 
 				NclFree(free_it->ft_vals);
+			NclFree(free_it);
 		
 		}
 		step->thelist = strt;
 		step->n_entries = total;
+	} else {
+		if(header.next != NULL) {
+			free_it = header.next;
+			if(free_it->lv_vals != NULL) 
+				NclFree(free_it->lv_vals);
+			if(free_it->lv_vals1 != NULL) 
+				NclFree(free_it->lv_vals1);
+			if(free_it->ft_vals != NULL) 
+				NclFree(free_it->ft_vals);
+			if(free_it->thelist != NULL) {
+				if(free_it->thelist->lv_vals != NULL)
+					NclFree(free_it->thelist->lv_vals);
+				if(free_it->thelist->lv_vals1 != NULL)
+					NclFree(free_it->thelist->lv_vals1);
+				NclFree(free_it->thelist);
+			}
+			NclFree(free_it);
+		}
 	}
 	
 
@@ -3017,7 +3060,8 @@ void *therec;
 			tmp = theatts;
 			theatts = theatts->next;
 			NclFree(tmp);
-		}
+		}	
+		NclFree(ivars->int_var);
 		itmp = ivars;	
 		ivars = ivars->next;
 		NclFree(itmp);
@@ -3352,6 +3396,7 @@ void* storage;
 							((int*)tmp)[i] = DEFAULT_MISSING_INT;
 							
 						}
+						missingv.intval = DEFAULT_MISSING_INT;
 						step->thelist[offset].rec_inq = _MakeMissingRec();
 						current_rec = step->thelist[offset].rec_inq;
 						current_rec->the_dat = _NclCreateVal(
@@ -3360,7 +3405,7 @@ void* storage;
 									Ncl_MultiDValData,
 									0,
 									tmp,
-									(missing == NULL) ? NULL : &missingv,
+									&missingv,
 									n_grid_dims,
 									grid_dim_sizes,
 									PERMANENT,
@@ -3372,6 +3417,8 @@ void* storage;
 						for( i = 0; i < grid_dim_sizes[0] * grid_dim_sizes[1]; i++){
 							((float*)tmp)[i] = DEFAULT_MISSING_FLOAT;
 						}
+						missingv.floatval = DEFAULT_MISSING_FLOAT;
+
 						step->thelist[offset].rec_inq = _MakeMissingRec();
 						current_rec = step->thelist[offset].rec_inq;
 						current_rec->the_dat = _NclCreateVal(
@@ -3380,7 +3427,7 @@ void* storage;
 									Ncl_MultiDValData,
 									0,
 									tmp,
-									(missing == NULL) ? NULL : &missingv,
+									&missingv,
 									n_grid_dims,
 									grid_dim_sizes,
 									PERMANENT,
@@ -3404,7 +3451,9 @@ void* storage;
 						if(int_or_float) {
 							if(missing != NULL) {
 								missingv.intval = *(int*)missing;
-							} 
+							} else {
+								missingv.intval = DEFAULT_MISSING_INT;
+							}
 
 						current_rec->the_dat = _NclCreateVal(
 									NULL,
@@ -3419,10 +3468,13 @@ void* storage;
 									NULL,
 									nclTypeintClass
 								);
+							NclFree(missing);
 						} else {
 							if(missing != NULL) {
 								missingv.floatval = *(float*)missing;
-							} 
+							} else {
+								missingv.floatval = DEFAULT_MISSING_FLOAT;
+							}
 
 							current_rec->the_dat = _NclCreateVal(
 									NULL,
@@ -3437,6 +3489,7 @@ void* storage;
 									NULL,
 									nclTypefloatClass
 								);
+							NclFree(missing);
 						}
 					} else {
 /*

@@ -670,6 +670,7 @@ NhlErrorTypes _NclProcCallOp
 		break;
 	}
 	(void)_NclPopMachine();
+	(void)_NclPopScope();
 	previous_fp = _NclLeaveFrame(caller_level);
 /*
 * Temporary stack management code
@@ -735,6 +736,7 @@ NhlErrorTypes _NclFuncCallOp
 		break;
 	}
 	(void)_NclPopMachine();
+	(void)_NclPopScope();
 	previous_fp = _NclLeaveFrame(caller_level);
 
 	if(ret != NhlFATAL) {

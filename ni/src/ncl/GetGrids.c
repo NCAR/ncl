@@ -518,8 +518,7 @@ int ny;
 	for(j = 0; j < nx; j++) {
 		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
 	}
-	
-
+	NclFree(dummy);
 }
 
 void GetGrid_210
@@ -2493,9 +2492,13 @@ GribParamList* thevarrec;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size);
+	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4); /* 4 added so that array bounds will never be ovewitten*/
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
+	bds[therec->bds_size] = (char)0;
+	bds[therec->bds_size +1] = (char)0;
+	bds[therec->bds_size + 2] = (char)0;
+	bds[therec->bds_size + 3] = (char)0;
 
         if(therec->has_bms) {
                 bms = (char*)NclMalloc((unsigned)therec->bms_size);
@@ -2642,6 +2645,8 @@ GribParamList* thevarrec;
 		*outdat = NULL;
 		*missing_value = NULL;
 	}
+	NclFree(bds);
+	NclFree(bms);
 	return(integer);
 }
 
@@ -2684,9 +2689,13 @@ GribParamList* thevarrec;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size);
+	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
+	bds[therec->bds_size] = (char)0;
+	bds[therec->bds_size +1] = (char)0;
+	bds[therec->bds_size + 2] = (char)0;
+	bds[therec->bds_size + 3] = (char)0;
 
 	spherical_harm = (int)(bds[3] & (char)0200) ? 1 : 0;
 	second_order = (int)(bds[3] & (char)0100) ? 1 : 0;
@@ -2847,6 +2856,7 @@ GribParamList* thevarrec;
 		*outdat = NULL;
 		*missing_value = NULL;
 	}
+	NclFree(bds);
 	return(integer);
 }
 
@@ -2894,9 +2904,13 @@ GribParamList* thevarrec;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size);
+	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
+	bds[therec->bds_size] = (char)0;
+	bds[therec->bds_size +1] = (char)0;
+	bds[therec->bds_size + 2] = (char)0;
+	bds[therec->bds_size + 3] = (char)0;
 
 	if(therec->has_bms) {
 		bms = (char*)NclMalloc((unsigned)therec->bms_size);
@@ -3101,6 +3115,7 @@ GribParamList* thevarrec;
 		*missing_value = NULL;
 	}
 	NclFree(bms);
+	NclFree(bds);
 	return(integer);
 }
 

@@ -55,6 +55,11 @@ main() {
 
 	error_fp = stderr;
 	stdout_fp = stdout;
+
+/*
+	stdout_fp = fopen("/dev/null","w");
+*/
+
 	stdin_fp = stdin;
 	cur_line_text = NclMalloc((unsigned)512);
 	cur_line_maxsize = 512;

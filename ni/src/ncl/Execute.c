@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.52 1996-02-14 23:11:49 ethan Exp $
+ *      $Id: Execute.c,v 1.53 1996-04-09 22:06:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1027,6 +1027,9 @@ NclExecuteReturnStatus _NclExecute
 					if(ret < NhlWARNING) {
 						estatus = ret;
 					}
+					if(((NclSymbol*)*ptr)->u.bfunc->thescope != NULL) {
+						_NclPopScope();
+					}
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_FUNC_CALL);
@@ -1080,6 +1083,9 @@ NclExecuteReturnStatus _NclExecute
 /*
 * should actually map values back
 */
+					if(((NclSymbol*)*ptr)->u.bproc->thescope != NULL) {
+						_NclPopScope();
+					}
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_PROC_CALL);
@@ -1788,6 +1794,9 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				offset = (int)(*ptr);
 				if((proc->u.procfunc != NULL)&&(offset >= 0)) {
+					if(proc->u.procfunc->thescope != NULL) {	
+						_NclPushScope(proc->u.procfunc->thescope);
+					}
 					estatus = _NclPushFrame(proc,offset);
 				} else {
 					estatus = NhlFATAL;
