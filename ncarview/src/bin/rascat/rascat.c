@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.12 1992-09-10 21:47:47 don Exp $
+ *      $Id: rascat.c,v 1.13 1992-09-16 14:22:08 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -94,6 +94,7 @@ static	struct	{
 	char		*srcformat;
 	char		*dstformat;
 	float		scale;
+	float		rgbscale;
 	Dimension2D	resolution;
 	boolean		do_help;
 	int		(*resample)();
@@ -108,6 +109,7 @@ static  OptDescRec      set_options[] = {
 	{"ifmt", 1, NULL, "Specify format of input file"},
 	{"ofmt", 1, NULL, "Specify format of output file"},
 	{"scale", 1, "0.0", "Specify image scaling factor"},
+	{"rgbscale", 1, "1.0", "Specify color intensity scaling factor"},
 	{"resolution", 1, "0x0", "Specify output image resolution"},
 	{"help", 0, "NULL", "Print this message and exit"},
 	{"ralgo", 1, "NN", "Specify resampling algo, NN or BL"},
@@ -135,6 +137,9 @@ static	Option get_options[] = {
 	},
 	{"scale", NCARGCvtToFloat, (Voidptr) &opt.scale, sizeof(opt.scale)
 	},
+	{"rgbscale", NCARGCvtToFloat, (Voidptr) &opt.rgbscale, 
+							sizeof(opt.rgbscale)
+	},
 	{"resolution", NCARGCvtToDimension2D, (Voidptr) &opt.resolution, 
 							sizeof(opt.resolution)
 	},
@@ -158,7 +163,7 @@ static	int	oD;
 static	void	Usage(msg) 
 	char	*msg;
 {
-	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ralgo NN | BL]] [ - | file... ]";
+	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ralgo NN | BL]] [-rgbscale  factor] [ - | file... ]";
 
 	if (msg) {
 		(void) fprintf(stderr, "%s: %s\n", progName, msg);
@@ -191,7 +196,7 @@ main(argc, argv)
 	int		pipe_count = 0;	/* number filters in pipeline	*/
 	Raster	*win_ras = (Raster *) NULL;
 	Raster	*sca_ras = (Raster *) NULL;
-	int		err;		/* exit rc			*/
+	int		err = 0;	/* exit rc			*/
 	int		i;
 
 
@@ -282,7 +287,7 @@ main(argc, argv)
 		src = RasterOpen(rfiles[i], opt.srcformat);
 		if (src == (Raster *) NULL) {
 			(void) fprintf(
-				stderr, "RasterOpen(%s, %s) [ %s ]", 
+				stderr, "RasterOpen(%s, %s) [ %s ]\n",
 				rfiles[i],opt.srcformat, ErrGetMsg()
 			);
 			err++;
@@ -292,7 +297,7 @@ main(argc, argv)
 		rc = RasterRead(src);
 		if (rc != RAS_OK) {
 			fprintf(
-				stderr, "Reading input file(%s) [ %s ]",
+				stderr, "Reading input file(%s) [ %s ]\n",
 				rfiles[i], ErrGetMsg()
 			);
 			(void) RasterClose(src);
@@ -376,7 +381,7 @@ main(argc, argv)
 			);
 			if (dst == (Raster *) NULL) {
 				(void) fprintf(stderr, 
-					"RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]",
+					"RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]\n",
 					opt.dstfile, nx, ny, Comment, 
 					src->type, opt.dstformat,ErrGetMsg()
 				);
@@ -435,11 +440,22 @@ main(argc, argv)
 				tmp = sca_ras;
 			}
 
+			if (opt.rgbscale != 1.0) {
+				if (RasterRGBScale(dst, opt.rgbscale) < 0) {
+					(void) fprintf(
+						stderr, 
+						"%s: Color scaling failed : %s\n",
+						progName, RasterGetError()
+						);
+					err++;
+				}
+			}
+
 			rc = RasterWrite(dst);
 			if (rc != RAS_OK) {
 				(void) fprintf(
 					stderr, 
-					"Writing output file(%s) [ %s ]", 
+					"Writing output file(%s) [ %s ]\n", 
 					opt.dstfile, ErrGetMsg()
 				);
 				exit(1);
@@ -459,7 +475,7 @@ main(argc, argv)
 
 		if (rc == RAS_ERROR) {
 			(void) fprintf(
-				stderr,"Reading source file(%s) [ %s ]",
+				stderr,"Reading source file(%s) [ %s ]\n",
 				rfiles[i], ErrGetMsg()
 			);
 		}
