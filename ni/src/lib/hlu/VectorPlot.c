@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.63 2000-01-27 17:31:19 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.64 2000-02-08 01:18:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6490,7 +6490,7 @@ static NhlErrorTypes    ManageVectorData
 		if (! vcp->data_init) {
 			e_text = 
           "%s: no valid values in vector field; VectorPlot not possible";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			NhlPError(NhlWARNING,NhlENODATA,e_text,entry_name);
 			if (vcp->min_level_set)
 				vcp->mag_scale.min_val = 
 					vcp->zmin = vcp->min_level_val;
@@ -6528,7 +6528,7 @@ static NhlErrorTypes    ManageVectorData
 	if (vcp->zero_field) {
 		e_text = 
 		 "%s: zero vector field; VectorPlot not possible";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROFIELD,e_text,entry_name);
 		ret = MIN(NhlWARNING,ret);
 	}
 
@@ -6652,7 +6652,7 @@ static NhlErrorTypes    ManageScalarData
 	else if (vcp->sfp->missing_value_set && 
 		 vcp->sfp->data_max == vcp->sfp->missing_value) {
 		e_text = "%s: ignoring %s: no valid data";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+		NhlPError(NhlWARNING,NhlENODATA,e_text,entry_name,
 			  NhlNvcScalarFieldData);
 		ret = NhlWARNING;
 		vcp->scalar_data_init = False;

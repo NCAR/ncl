@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.54 2000-01-27 17:31:17 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.55 2000-02-08 01:18:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3893,7 +3893,7 @@ static NhlErrorTypes    ManageVectorData
 		if (! stp->data_init) {
 			e_text = 
           "%s: no valid values in vector field; StreamlinePlot not possible";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			NhlPError(NhlWARNING,NhlENODATA,e_text,entry_name);
 			stp->zmin = 0.01;
 			stp->zmax = MAX(1.0,stp->zmin * 10.0);
 			stp->data_changed = True;
@@ -3911,7 +3911,7 @@ static NhlErrorTypes    ManageVectorData
 	if (stp->zero_field) {
 		e_text = 
 		 "%s: zero vector field; StreamlinePlot not possible";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROFIELD,e_text,entry_name);
 		ret = MIN(NhlWARNING,ret);
 	}
 
