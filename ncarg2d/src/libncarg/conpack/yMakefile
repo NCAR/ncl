@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.16 2002-06-20 22:21:55 haley Exp $
+#       $Id: yMakefile,v 1.17 2004-05-11 17:03:17 kennison Exp $
 #
 
 MYNAME	= conpack
  
-GENERIC_SRCS = \
+SOURCES = \
 	cpblda.f cpback.f cpchcf.f cpchcl.f cpchhl.f cpchil.f cpchll.f \
 	cpclam.f cpcldm.f cpcldr.f cpcnrc.f cpdrpl.f cpezct.f cpgetc.f \
 	cpgeti.f cpgetr.f cpgvai.f cpinrk.f cplbam.f cplbdr.f cpmpxy.f \
@@ -18,7 +18,7 @@ GENERIC_SRCS = \
 	hlucpmpxy.f hlucpscae.f cphlso.f cphls2.f
 
 
-GENERIC_OBJS	= \
+OBJECTS = \
 	cpblda.o cpback.o cpchcf.o cpchcl.o cpchhl.o cpchil.o cpchll.o \
 	cpclam.o cpcldm.o cpcldr.o cpcnrc.o cpdrpl.o cpezct.o cpgetc.o \
 	cpgeti.o cpgetr.o cpgvai.o cpinrk.o cplbam.o cplbdr.o cpmpxy.o \
@@ -31,14 +31,21 @@ GENERIC_OBJS	= \
 	cpwlam.o hlucpchcf.o hlucpchcl.o hlucpchhl.o hlucpchil.o hlucpchll.o \
 	hlucpmpxy.o hlucpscae.o cphlso.o cphls2.o
 
-SOURCES = $(GENERIC_SRCS)
-
-OBJECTS = $(GENERIC_OBJS)
-
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
+
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGcn.a,$(OBJECTS))
+
+CleanFilesTarget($(SOURCES) IftranRun)
+
+$(SOURCES) : IftranRun
+
+IftranRun : CodeIftran
+	@../Iftran/Iftran < CodeIftran > CodeFortran
+	@../Iftran/Fsplit CodeFortran
+	-@$(RM) CodeFortran
+	touch IftranRun
 
 #if defined(linux) || defined(LINUX) || defined(Linux)
 cptres.o: cptres.f
