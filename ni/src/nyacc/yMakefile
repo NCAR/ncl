@@ -1,0 +1,11 @@
+MYBIN		= nyacc
+
+SRCS		= closure.c lalr.c main.c output.c skeleton.c verbose.c \
+		error.c lr0.c mkpar.c reader.c symtab.c warshall.c
+
+OBJS		= closure.o lalr.o main.o output.o skeleton.o verbose.o \
+		error.o lr0.o mkpar.o reader.o symtab.o warshall.o
+
+LIBS		=
+
+CProgram($(MYBIN),$(OBJS),$(LIBS))

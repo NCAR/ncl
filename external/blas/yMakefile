@@ -1,0 +1,41 @@
+MYLIB = libblas
+
+SRCS = caxpy.f ccopy.f cdotc.f cdotu.f cgbmv.f cgemm.f cgemv.f cgerc.f \
+	cgeru.f chbmv.f chemm.f chemv.f cher.f cher2.f cher2k.f cherk.f \
+	chpmv.f chpr.f chpr2.f crotg.f cscal.f csscal.f cswap.f csymm.f \
+	csyr2k.f csyrk.f ctbmv.f ctbsv.f ctpmv.f ctpsv.f ctrmm.f ctrmv.f \
+	ctrsm.f ctrsv.f dasum.f daxpy.f dcabs1.f dcopy.f ddot.f dgbmv.f \
+	dgemm.f dgemv.f dger.f dnrm2.f drot.f drotg.f dsbmv.f dscal.f dspmv.f \
+	dspr.f dspr2.f dswap.f dsymm.f dsymv.f dsyr.f dsyr2.f dsyr2k.f \
+	dsyrk.f dtbmv.f dtbsv.f dtpmv.f dtpsv.f dtrmm.f dtrmv.f dtrsm.f \
+	dtrsv.f dzasum.f dznrm2.f icamax.f idamax.f isamax.f izamax.f lsame.f \
+	sasum.f saxpy.f scasum.f scnrm2.f scopy.f sdot.f sgbmv.f sgemm.f \
+	sgemv.f sger.f snrm2.f srot.f srotg.f ssbmv.f sscal.f sspmv.f sspr.f \
+	sspr2.f sswap.f ssymm.f ssymv.f ssyr.f ssyr2.f ssyr2k.f ssyrk.f \
+	stbmv.f stbsv.f stpmv.f stpsv.f strmm.f strmv.f strsm.f strsv.f \
+	xerbla.f yMakefile zaxpy.f zcopy.f zdotc.f zdotu.f zdscal.f zgbmv.f \
+	zgemm.f zgemv.f zgerc.f zgeru.f zhbmv.f zhemm.f zhemv.f zher.f \
+	zher2.f zher2k.f zherk.f zhpmv.f zhpr.f zhpr2.f zrotg.f zscal.f \
+	zswap.f zsymm.f zsyr2k.f zsyrk.f ztbmv.f ztbsv.f ztpmv.f ztpsv.f \
+	ztrmm.f ztrmv.f ztrsm.f ztrsv.f 
+
+OBJS = caxpy.o ccopy.o cdotc.o cdotu.o cgbmv.o cgemm.o cgemv.o cgerc.o \
+	cgeru.o chbmv.o chemm.o chemv.o cher.o cher2.o cher2k.o cherk.o \
+	chpmv.o chpr.o chpr2.o crotg.o cscal.o csscal.o cswap.o csymm.o \
+	csyr2k.o csyrk.o ctbmv.o ctbsv.o ctpmv.o ctpsv.o ctrmm.o ctrmv.o \
+	ctrsm.o ctrsv.o dasum.o daxpy.o dcabs1.o dcopy.o ddot.o dgbmv.o \
+	dgemm.o dgemv.o dger.o dnrm2.o drot.o drotg.o dsbmv.o dscal.o dspmv.o \
+	dspr.o dspr2.o dswap.o dsymm.o dsymv.o dsyr.o dsyr2.o dsyr2k.o \
+	dsyrk.o dtbmv.o dtbsv.o dtpmv.o dtpsv.o dtrmm.o dtrmv.o dtrsm.o \
+	dtrsv.o dzasum.o dznrm2.o icamax.o idamax.o isamax.o izamax.o lsame.o \
+	sasum.o saxpy.o scasum.o scnrm2.o scopy.o sdot.o sgbmv.o sgemm.o \
+	sgemv.o sger.o snrm2.o srot.o srotg.o ssbmv.o sscal.o sspmv.o sspr.o \
+	sspr2.o sswap.o ssymm.o ssymv.o ssyr.o ssyr2.o ssyr2k.o ssyrk.o \
+	stbmv.o stbsv.o stpmv.o stpsv.o strmm.o strmv.o strsm.o strsv.o \
+	xerbla.o yMakefile zaxpy.o zcopy.o zdotc.o zdotu.o zdscal.o zgbmv.o \
+	zgemm.o zgemv.o zgerc.o zgeru.o zhbmv.o zhemm.o zhemv.o zher.o \
+	zher2.o zher2k.o zherk.o zhpmv.o zhpr.o zhpr2.o zrotg.o zscal.o \
+	zswap.o zsymm.o zsyr2k.o zsyrk.o ztbmv.o ztbsv.o ztpmv.o ztpsv.o \
+	ztrmm.o ztrmv.o ztrsm.o ztrsv.o 
+
+LibraryTarget($(MYLIB),$(OBJS))  
