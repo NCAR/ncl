@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.17 1993-02-18 00:01:40 don Exp $
+ *	$Id: xwd.c,v 1.18 1993-03-18 19:56:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -187,8 +187,7 @@ XWDRead(ras)
 
 	status = fread( (char *)dep, 1, sizeof(XWDFileHeader), ras->fp);
 	if (status == 0) {
-		(void) ESprintf(E_UNKNOWN, "\"%s\" is empty", ras->name);
-		return(RAS_ERROR);
+		return(RAS_EOF);
 	}
 	else if (status != sizeof(XWDFileHeader)) {
 		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
