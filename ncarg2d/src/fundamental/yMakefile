@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:24:20 boote Exp $
+#	$Id: yMakefile,v 1.5 1993-11-02 22:02:46 haley Exp $
 #
 
 #define IHaveSubdirs
 
 SUBDIRS = \
 	fautograph fcolconv fdashline ffield_flow fgks fisosurface \
-	fngmisc fplotchar fscrolled_title fsoftfill fspps fstreamlines \
-	fsurface fthreed
+	flabelbar fngmisc fplotchar fscrolled_title fsoftfill fspps \
+	fstreamlines fsurface fthreed
