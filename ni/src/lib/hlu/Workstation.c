@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.63 1997-02-27 20:13:06 boote Exp $
+ *      $Id: Workstation.c,v 1.64 1997-03-19 18:30:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1940,7 +1940,7 @@ DrawChildren
 	_NhlAllChildList	children;
 #endif
 {
-	NhlErrorTypes	ret,ret1;
+	NhlErrorTypes	ret = NhlNOERROR,ret1 = NhlNOERROR;
 
 	if(!children)
 		return NhlNOERROR;
