@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.22 2000-08-22 15:12:19 haley Exp $
+ *	$Id: xwd.c,v 1.23 2002-11-25 22:43:24 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -59,6 +59,10 @@
 
 #include <fcntl.h>
 #include <sys/types.h>
+
+#if defined(NGLONG2XINT)
+#define LONG64;
+#endif 
 
 #include <X11/Intrinsic.h>
 #include <X11/XWDFile.h>
