@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.30 1995-03-08 23:59:23 boote Exp $
+ *      $Id: Converters.c,v 1.31 1995-03-10 01:48:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1912,14 +1912,13 @@ CvtArgs									\
 	}								\
 									\
 	fromgen = from->data.ptrval;					\
-	fromval = fromgen->data;					\
 									\
 	if((from->typeQ == to->typeQ) || (fromgen == NULL)){		\
-		togen = from->data.ptrval;				\
+		togen = fromgen;					\
 		togen->size = sizeof(totype);				\
 	}								\
 	else{								\
-									\
+		fromval = fromgen->data;				\
 		toval = (totype *)NhlConvertMalloc(sizeof(totype) *	\
 						fromgen->num_elements);	\
 		if(toval == NULL){					\
