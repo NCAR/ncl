@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.20 1993-03-05 00:41:37 haley Exp $
+#   $Id: ncargex.csh,v 1.21 1993-03-05 15:12:56 haley Exp $
 #
 
 if ($#argv < 1) then
@@ -528,47 +528,6 @@ echo "NCAR Graphics Test Program <$name.f>"
 if ($?Unique && -f $name.ncgm) goto theend
 
 rm -f $alias_name.f
-
-if ($name != tcolcv) then
-cat <<'EOF' >>$alias_name.f
-C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
-C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
-'EOF'
-endif
-
-cat <<'EOF' >>$alias_name.f
-C
-C INVOKE DEMO DRIVER
-C
-'EOF'
-
-if ($name == tisohr) then
-cat <<EOF >>$alias_name.f
-      CALL ISOSCR()
-EOF
-endif
-
-echo "      call $name(ierr)" >>$alias_name.f
-
-if ($name != tcolcv) then
-cat <<'EOF' >>$alias_name.f
-C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
-C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
-      CALL GCLKS
-'EOF'
-endif
-
-cat <<'EOF' >>$alias_name.f
-      STOP
-      END
-'EOF'
 
 echo ""
 echo "Copying source code..."
