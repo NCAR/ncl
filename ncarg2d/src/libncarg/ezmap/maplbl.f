@@ -1,8 +1,5 @@
 C
-C	$Id: maplbl.f,v 1.1.1.1 1992-04-17 22:32:04 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maplbl.f,v 1.2 1993-12-21 00:33:11 kennison Exp $
 C
       SUBROUTINE MAPLBL
 C
@@ -41,6 +38,7 @@ C
 C Reset the color index, dotting, and dash pattern for labelling.
 C
         CALL MAPCHI (3,1,0)
+        IF (ICFELL('MAPLBL',1).NE.0) RETURN
 C
 C First, the North pole.
 C
@@ -64,6 +62,7 @@ C
         DO 101 I=1,36
           RLON=RLON+10.
           CALL MAPTRN (0.,RLON,U,V)
+          IF (ICFELL('MAPLBL',2).NE.0) RETURN
           IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                                   .AND.V.LE.VMAX)
      +     .OR.(ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
@@ -71,6 +70,10 @@ C
   101   CONTINUE
         GO TO 103
   102   CALL WTSTR (U,V,'EQ',ILCW,0,0)
+        IF (ICFELL('MAPLBL',3).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
 C
 C The Greenwich meridian.
 C
@@ -78,6 +81,7 @@ C
         DO 104 I=1,16
           RLAT=RLAT-10.
           CALL MAPTRN (RLAT,0.,U,V)
+          IF (ICFELL('MAPLBL',4).NE.0) RETURN
           IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                                   .AND.V.LE.VMAX)
      +     .OR.(ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
@@ -85,6 +89,10 @@ C
   104   CONTINUE
         GO TO 106
   105   CALL WTSTR (U,V,'GM',ILCW,0,0)
+        IF (ICFELL('MAPLBL',5).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
 C
 C International date line.
 C
@@ -92,6 +100,7 @@ C
         DO 107 I=1,16
           RLAT=RLAT-10.
           CALL MAPTRN (RLAT,180.,U,V)
+          IF (ICFELL('MAPLBL',6).NE.0) RETURN
           IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                                   .AND.V.LE.VMAX)
      +     .OR.(ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
@@ -99,10 +108,15 @@ C
   107   CONTINUE
         GO TO 109
   108   CALL WTSTR (U,V,'ID',ILCW,0,0)
+        IF (ICFELL('MAPLBL',7).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
 C
 C Restore the color index, dotting, and dash pattern.
 C
   109   CALL MAPCHI (-3,0,0)
+        IF (ICFELL('MAPLBL',8).NE.0) RETURN
 C
       END IF
 C
@@ -113,6 +127,7 @@ C
 C Reset the color index, dotting, and dash pattern for the perimeter.
 C
         CALL MAPCHI (1,0,IOR(ISHIFT(32767,1),1))
+        IF (ICFELL('MAPLBL',9).NE.0) RETURN
 C
 C The perimeter is either an ellipse or a rectangle, depending on ELPF.
 C
@@ -121,6 +136,10 @@ C
           V=0.
           IF (IDTL.EQ.0) THEN
             CALL FRSTD (UCEN+U,VCEN)
+            IF (ICFELL('MAPLBL',10).NE.0) THEN
+              IIER=-1
+              RETURN
+            END IF
           ELSE
             DATL=0.
           END IF
@@ -131,6 +150,7 @@ C
             V=SIN1*UOLD+COS1*VOLD
             CALL MAPVP (UCEN+UOLD,VCEN+VOLD*VRNG/URNG,
      +                  UCEN+U   ,VCEN+V   *VRNG/URNG)
+            IF (ICFELL('MAPLBL',11).NE.0) RETURN
   110     CONTINUE
         ELSE
           UMINX=UMIN+.9999*(UMAX-UMIN)
@@ -139,18 +159,27 @@ C
           VMAXX=VMAX-.9999*(VMAX-VMIN)
           IF (IDTL.EQ.0) THEN
             CALL FRSTD (UMINX,VMINX)
+            IF (ICFELL('MAPLBL',12).NE.0) THEN
+              IIER=-1
+              RETURN
+            END IF
           ELSE
             DATL=0.
           END IF
           CALL MAPVP (UMINX,VMINX,UMAXX,VMINX)
+          IF (ICFELL('MAPLBL',13).NE.0) RETURN
           CALL MAPVP (UMAXX,VMINX,UMAXX,VMAXX)
+          IF (ICFELL('MAPLBL',14).NE.0) RETURN
           CALL MAPVP (UMAXX,VMAXX,UMINX,VMAXX)
+          IF (ICFELL('MAPLBL',15).NE.0) RETURN
           CALL MAPVP (UMINX,VMAXX,UMINX,VMINX)
+          IF (ICFELL('MAPLBL',16).NE.0) RETURN
         END IF
 C
 C Restore the color index, dotting, and dash pattern.
 C
         CALL MAPCHI (-1,0,0)
+        IF (ICFELL('MAPLBL',17).NE.0) RETURN
 C
       END IF
 C

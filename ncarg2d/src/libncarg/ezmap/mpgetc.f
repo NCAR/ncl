@@ -1,11 +1,9 @@
 C
-C	$Id: mpgetc.f,v 1.2 1992-09-04 20:38:34 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mpgetc.f,v 1.3 1993-12-21 00:34:01 kennison Exp $
 C
       SUBROUTINE MPGETC (WHCH,CVAL)
       CHARACTER*(*) WHCH,CVAL
       CALL MAPGTC (WHCH,CVAL)
+      IF (ICFELL('MPGETC',1).NE.0) RETURN
       RETURN
       END

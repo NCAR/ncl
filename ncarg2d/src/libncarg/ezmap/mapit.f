@@ -1,8 +1,5 @@
 C
-C	$Id: mapit.f,v 1.1.1.1 1992-04-17 22:32:04 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapit.f,v 1.2 1993-12-21 00:33:08 kennison Exp $
 C
       SUBROUTINE MAPIT (XLAT,XLON,IFST)
 C
@@ -26,6 +23,8 @@ C
       SAVE /MAPCM8/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
 C
       DIMENSION CPRJ(3)
 C
@@ -112,6 +111,7 @@ C
 C Project the point (RLAT,RLON) to (U,V).
 C
       CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPIT',1).NE.0) RETURN
 C
 C For the sake of efficiency, execute one of two parallel algorithms,
 C depending on whether an elliptical or a rectangular perimeter is in
@@ -167,6 +167,7 @@ C the line to that point, and quit.
 C
           CALL MAPTRE (UOLD,VOLD,U,V,UINT,VINT)
           CALL MAPVP (UOLD,VOLD,UINT,VINT)
+          IF (ICFELL('MAPIT',2).NE.0) RETURN
           GO TO 108
 C
         END IF
@@ -215,6 +216,7 @@ C
           END IF
 C
           CALL MAPVP (UOLD,VOLD,UTMP,VTMP)
+          IF (ICFELL('MAPIT',3).NE.0) RETURN
 C
         END IF
 C
@@ -263,6 +265,7 @@ C
 C
           CALL MAPTRP (UOLD,VOLD,U,V,UINT,VINT)
           CALL MAPVP (UOLD,VOLD,UINT,VINT)
+          IF (ICFELL('MAPIT',4).NE.0) RETURN
           GO TO 108
 C
         END IF
@@ -289,6 +292,7 @@ C
           END IF
 C
           CALL MAPVP (UOLD,VOLD,UTMP,VTMP)
+          IF (ICFELL('MAPIT',5).NE.0) RETURN
         END IF
 C
         UOLD=POLD-SIGN(CPRJ(JPRJ-6),POLD)
@@ -305,11 +309,16 @@ C Draw the visible portion of the line joining the old point to the new.
 C
   105 IF (IDTL.EQ.0) THEN
         CALL FRSTD (UOLD,VOLD)
+        IF (ICFELL('MAPIT',6).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
       ELSE
         DATL=0.
       END IF
 C
       CALL MAPVP (UOLD,VOLD,U,V)
+      IF (ICFELL('MAPIT',7).NE.0) RETURN
 C
       GO TO 108
 C
@@ -317,6 +326,10 @@ C Start a new line.
 C
   106 IF (IDTL.EQ.0) THEN
         CALL FRSTD (U,V)
+        IF (ICFELL('MAPIT',8).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
       ELSE
         DATL=0.
       END IF
@@ -328,6 +341,7 @@ C
   107 IF (IFST.LT.2.AND.((U-UOLD)**2+(V-VOLD)**2)*DSSQ.LE.DPSQ)GO TO 109
 C
       CALL MAPVP (UOLD,VOLD,U,V)
+      IF (ICFELL('MAPIT',9).NE.0) RETURN
 C
 C Save information about the current point for the next call and quit.
 C

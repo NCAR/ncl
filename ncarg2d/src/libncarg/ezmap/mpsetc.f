@@ -1,11 +1,9 @@
 C
-C	$Id: mpsetc.f,v 1.2 1992-09-04 20:38:41 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mpsetc.f,v 1.3 1993-12-21 00:34:09 kennison Exp $
 C
       SUBROUTINE MPSETC (WHCH,CVAL)
       CHARACTER*(*) WHCH,CVAL
       CALL MAPSTC (WHCH,CVAL)
+      IF (ICFELL('MPSETC',1).NE.0) RETURN
       RETURN
       END

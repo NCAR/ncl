@@ -1,8 +1,5 @@
 C
-C	$Id: mapchi.f,v 1.1.1.1 1992-04-17 22:31:58 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapchi.f,v 1.2 1993-12-21 00:32:34 kennison Exp $
 C
       SUBROUTINE MAPCHI (IPRT,IDTG,IDPT)
 C
@@ -40,6 +37,8 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
       COMMON /MAPCMQ/ ICIN(7)
       SAVE /MAPCMQ/
 C
@@ -55,6 +54,7 @@ C
 C Flush all buffers before changing anything.
 C
       CALL MAPIQ
+      IF (ICFELL('MAPCHI',1).NE.0) RETURN
 C
 C Set/reset color index, dotting, and dash pattern.  The user has the
 C last word.
@@ -64,24 +64,53 @@ C
         ISMO=1
         IDTS=IDTL
         IDTL=IDTG
-        IF (IDTL.EQ.0) CALL DASHDB (IDPT)
+        IF (IDTL.EQ.0) THEN
+          CALL DASHDB (IDPT)
+          IF (ICFELL('MAPCHI',2).NE.0) THEN
+            IIER=-1
+            RETURN
+          END IF
+        END IF
         IF (ICIN(IPRT).GE.0) THEN
           CALL GQPLCI (IGER,IPLS)
+          IF (IGER.NE.0) THEN
+            IIER=-1
+            CALL SETER ('MAPCHI - ERROR EXIT FROM GQPLCI',IIER,1)
+            RETURN
+          END IF
           CALL GQPMCI (IGER,IPMS)
+          IF (IGER.NE.0) THEN
+            IIER=-1
+            CALL SETER ('MAPCHI - ERROR EXIT FROM GQPMCI',IIER,1)
+            RETURN
+          END IF
           CALL GQTXCI (IGER,ITXS)
+          IF (IGER.NE.0) THEN
+            IIER=-1
+            CALL SETER ('MAPCHI - ERROR EXIT FROM GQTXCI',IIER,1)
+            RETURN
+          END IF
           CALL GSPLCI (ICIN(IPRT))
           CALL GSPMCI (ICIN(IPRT))
           CALL GSTXCI (ICIN(IPRT))
         END IF
         CALL MAPUSR (IPRT)
+        IF (ICFELL('MAPCHI',3).NE.0) RETURN
       ELSE
         CALL MAPUSR (IPRT)
+        IF (ICFELL('MAPCHI',4).NE.0) RETURN
         IF (ICIN(-IPRT).GE.0) THEN
           CALL GSPLCI (IPLS)
           CALL GSPMCI (IPMS)
           CALL GSTXCI (ITXS)
         END IF
-        IF (IDTL.EQ.0) CALL DASHDB (IOR(ISHIFT(32767,1),1))
+        IF (IDTL.EQ.0) THEN
+          CALL DASHDB (IOR(ISHIFT(32767,1),1))
+          IF (ICFELL('MAPCHI',5).NE.0) THEN
+            IIER=-1
+            RETURN
+          END IF
+        END IF
         IDTL=IDTS
         ISMO=ISMS
       END IF

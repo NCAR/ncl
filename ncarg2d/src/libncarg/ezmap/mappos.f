@@ -1,8 +1,5 @@
 C
-C	$Id: mappos.f,v 1.1.1.1 1992-04-17 22:32:05 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mappos.f,v 1.2 1993-12-21 00:33:18 kennison Exp $
 C
       SUBROUTINE MAPPOS (ARG1,ARG2,ARG3,ARG4)
 C
@@ -40,7 +37,7 @@ C
 C Error exit.
 C
   901 IIER=19
-      CALL SETER (' MAPPOS - ARGUMENTS ARE INCORRECT',IIER,1)
+      CALL SETER ('MAPPOS - ARGUMENTS ARE INCORRECT',IIER,1)
       RETURN
 C
       END

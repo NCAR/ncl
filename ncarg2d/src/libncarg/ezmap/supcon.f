@@ -1,10 +1,8 @@
 C
-C	$Id: supcon.f,v 1.1.1.1 1992-04-17 22:32:07 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: supcon.f,v 1.2 1993-12-21 00:34:17 kennison Exp $
 C
       SUBROUTINE SUPCON (RLAT,RLON,UVAL,VVAL)
       CALL MAPTRN (RLAT,RLON,UVAL,VVAL)
+      IF (ICFELL('SUPCON',1).NE.0) RETURN
       RETURN
       END

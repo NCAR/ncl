@@ -1,8 +1,5 @@
 C
-C	$Id: maptre.f,v 1.1.1.1 1992-04-17 22:32:06 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maptre.f,v 1.2 1993-12-21 00:33:44 kennison Exp $
 C
       SUBROUTINE MAPTRE (UINS,VINS,UOUT,VOUT,UINT,VINT)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: maptri.f,v 1.1.1.1 1992-04-17 22:31:56 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maptri.f,v 1.2 1993-12-21 00:33:46 kennison Exp $
 C
       SUBROUTINE MAPTRI (UVAL,VVAL,RLAT,RLON)
 C
@@ -27,9 +24,9 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
-C Define various required constants.  DTOR is pi over 180, DTRH is half of
-C DTOR, PIOT is pi over 2, RTDD is RTOD doubled, RTOD is 180 over pi, and
-C TOPI is 2 over pi.
+C Define various required constants.  DTOR is pi over 180, DTRH is half
+C of DTOR, PIOT is pi over 2, RTDD is RTOD doubled, RTOD is 180 over pi,
+C and TOPI is 2 over pi.
 C
       DATA DTOR / .017453292519943 /
       DATA DTRH / .008726646259971 /

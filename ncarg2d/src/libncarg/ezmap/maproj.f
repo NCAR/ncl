@@ -1,8 +1,5 @@
 C
-C	$Id: maproj.f,v 1.3 1992-09-04 20:38:23 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maproj.f,v 1.4 1993-12-21 00:33:20 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -19,6 +16,8 @@ C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -35,9 +34,13 @@ C
 C
       IF (JPRJ.EQ.3) THEN
         CALL MAPSTR ('SA',0.)
+        IF (ICFELL('MAPROJ',1).NE.0) RETURN
       ELSE IF (JPRJ.EQ.10) THEN
         JPRJ=3
-        IF (ABS(SALT).LE.1.) CALL MAPSTR ('SA',6.631)
+        IF (ABS(SALT).LE.1.) THEN
+          CALL MAPSTR ('SA',6.631)
+          IF (ICFELL('MAPROJ',2).NE.0) RETURN
+        END IF
       END IF
 C
       PHIA=ARG2

@@ -1,8 +1,5 @@
 C
-C	$Id: mapgti.f,v 1.3 1992-09-04 20:38:16 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapgti.f,v 1.4 1993-12-21 00:32:52 kennison Exp $
 C
       SUBROUTINE MAPGTI (WHCH,IVAL)
 C

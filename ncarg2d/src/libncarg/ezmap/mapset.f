@@ -1,8 +1,5 @@
 C
-C	$Id: mapset.f,v 1.3 1992-09-04 20:38:26 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapset.f,v 1.4 1993-12-21 00:33:30 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C

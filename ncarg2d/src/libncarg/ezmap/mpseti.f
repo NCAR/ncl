@@ -1,11 +1,9 @@
 C
-C	$Id: mpseti.f,v 1.2 1992-09-04 20:38:42 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mpseti.f,v 1.3 1993-12-21 00:34:11 kennison Exp $
 C
       SUBROUTINE MPSETI (WHCH,IVAL)
       CHARACTER*(*) WHCH
       CALL MAPSTI (WHCH,IVAL)
+      IF (ICFELL('MPSETI',1).NE.0) RETURN
       RETURN
       END

@@ -1,8 +1,5 @@
 C
-C	$Id: mapusr.f,v 1.1.1.1 1992-04-17 22:32:07 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapusr.f,v 1.2 1993-12-21 00:33:54 kennison Exp $
 C
       SUBROUTINE MAPUSR (IPRT)
       RETURN

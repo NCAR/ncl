@@ -1,8 +1,5 @@
 C
-C	$Id: mapstl.f,v 1.3 1992-09-04 20:38:31 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapstl.f,v 1.4 1993-12-21 00:33:36 kennison Exp $
 C
       SUBROUTINE MAPSTL (WHCH,LVAL)
 C

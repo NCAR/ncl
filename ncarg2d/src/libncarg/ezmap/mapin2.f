@@ -1,8 +1,5 @@
 C
-C	$Id: mapin2.f,v 1.1 1992-09-09 17:20:19 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapin2.f,v 1.2 1993-12-21 00:32:58 kennison Exp $
 C
       SUBROUTINE MAPIN2 (TST1,TST2,TST3)
       TST1=1.

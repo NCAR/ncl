@@ -1,8 +1,5 @@
 C
-C	$Id: maplot.f,v 1.1.1.1 1992-04-17 22:32:05 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maplot.f,v 1.2 1993-12-21 00:33:16 kennison Exp $
 C
       SUBROUTINE MAPLOT
 C
@@ -53,11 +50,13 @@ C
 C Position to the user-selected portion of the outline dataset.
 C
       CALL MAPIO (1)
+      IF (ICFELL('MAPLOT',1).NE.0) RETURN
       NSEG=0
 C
 C Read the next record (group of points).
 C
   101 CALL MAPIO (2)
+      IF (ICFELL('MAPLOT',2).NE.0) RETURN
       NSEG=NSEG+1
 C
 C Check for the end of the desired data.
@@ -78,6 +77,7 @@ C
 C See if the user wants to omit this point group.
 C
       CALL MAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,IDOS(NOUT)+IDRS,NPTS,PNTS)
+      IF (ICFELL('MAPLOT',3).NE.0) RETURN
       IF (NPTS.LE.1) GO TO 101
 C
 C If we've switched to a new group, set the color index, dotting, and
@@ -86,18 +86,22 @@ C
       IF (IGID.NE.IGIS) THEN
         IF (IGIS.NE.0) CALL MAPCHI (-4-IGIS,0,0)
         CALL MAPCHI (4+IGID,IDOT,IOR(ISHIFT(32767,1),1))
+        IF (ICFELL('MAPLOT',4).NE.0) RETURN
         IGIS=IGID
       END IF
 C
 C Plot the group.
 C
       CALL MAPIT (PNTS(1),PNTS(2),0)
+      IF (ICFELL('MAPLOT',5).NE.0) RETURN
 C
       DO 102 K=2,NPTS-1
         CALL MAPIT (PNTS(2*K-1),PNTS(2*K),1)
+        IF (ICFELL('MAPLOT',6).NE.0) RETURN
   102 CONTINUE
 C
       CALL MAPIT (PNTS(2*NPTS-1),PNTS(2*NPTS),2)
+      IF (ICFELL('MAPLOT',7).NE.0) RETURN
 C
 C Go get another group.
 C
@@ -105,11 +109,17 @@ C
 C
 C Reset the color index, dotting, and dash pattern, if necessary.
 C
-  103 IF (IGIS.NE.0) CALL MAPCHI (-4-IGIS,0,0)
+  103 IF (IGIS.NE.0) THEN
+        CALL MAPCHI (-4-IGIS,0,0)
+        IF (ICFELL('MAPLOT',8).NE.0) RETURN
+      END IF
 C
 C If the limb lines have not already been drawn, do it now.
 C
-      IF (GRID.LE.0.) CALL MAPLMB
+      IF (GRID.LE.0.) THEN
+        CALL MAPLMB
+        IF (ICFELL('MAPLOT',9).NE.0) RETURN
+      END IF
 C
 C Done.
 C

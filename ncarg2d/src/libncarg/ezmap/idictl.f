@@ -1,8 +1,5 @@
 C
-C	$Id: idictl.f,v 1.1.1.1 1992-04-17 22:31:57 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: idictl.f,v 1.2 1993-12-21 00:32:26 kennison Exp $
 C
       INTEGER FUNCTION IDICTL (ISTR,IDCT,NDCT)
 C

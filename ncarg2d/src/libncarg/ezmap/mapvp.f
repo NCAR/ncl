@@ -1,8 +1,5 @@
 C
-C	$Id: mapvp.f,v 1.1.1.1 1992-04-17 22:32:07 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapvp.f,v 1.2 1993-12-21 00:33:59 kennison Exp $
 C
       SUBROUTINE MAPVP (UOLD,VOLD,U,V)
 C
@@ -20,6 +17,8 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
       SAVE /MAPCMP/
 C
@@ -30,6 +29,10 @@ C
 C Use a single vector.
 C
         CALL VECTD (U,V)
+        IF (ICFELL('MAPVP',1).NE.0) THEN
+          IIER=-1
+          RETURN
+        END IF
 C
       ELSE
 C
@@ -48,6 +51,10 @@ C
   101   IF (DATL.LT.VLEN) THEN
           IF (NPTB.GE.50) THEN
             CALL POINTS (XPTB,YPTB,NPTB,0,0)
+            IF (ICFELL('MAPVP',2).NE.0) THEN
+              IIER=-1
+              RETURN
+            END IF
             NPTB=0
           END IF
           NPTB=NPTB+1

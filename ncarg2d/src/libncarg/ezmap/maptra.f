@@ -1,8 +1,5 @@
 C
-C	$Id: maptra.f,v 1.1.1.1 1992-04-17 22:32:06 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maptra.f,v 1.2 1993-12-21 00:33:41 kennison Exp $
 C
       SUBROUTINE MAPTRA (RLAT,RLON,UVAL,VVAL)
 C
@@ -18,6 +15,7 @@ C returned are checked to see if the point lies outside the perimeter;
 C if so, the value 1.E12 is substituted for UVAL.
 C
       CALL MAPTRN (RLAT,RLON,UVAL,VVAL)
+      IF (ICFELL('MAPTRA',1).NE.0) RETURN
 C
       IF (ELPM) THEN
         IF (((UVAL-UCNM)/URNM)**2+

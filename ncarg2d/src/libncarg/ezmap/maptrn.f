@@ -1,8 +1,5 @@
 C
-C	$Id: maptrn.f,v 1.1.1.1 1992-04-17 22:32:06 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maptrn.f,v 1.2 1993-12-21 00:33:49 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -316,8 +313,8 @@ C Error exit.
 C
   901 IF (IIER.NE.0) GO TO 118
       IIER=16
-      CALL SETER (' MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION',
-     +              IIER,1)
+      CALL SETER ('MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION',
+     +                                                       IIER,1)
       GO TO 118
 C
       END

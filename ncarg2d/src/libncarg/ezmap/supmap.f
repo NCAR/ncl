@@ -1,8 +1,5 @@
 C
-C	$Id: supmap.f,v 1.3 1992-09-04 20:38:48 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: supmap.f,v 1.4 1993-12-21 00:34:19 kennison Exp $
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
      +                   JGRD,IOUT,IDOT,IERR)
@@ -26,6 +23,7 @@ C
 C Set EZMAP's grid-spacing parameter.
 C
       CALL MAPSTI ('GR',MOD(IABS(JGRD),1000))
+      IF (ICFELL('SUPMAP',1).NE.0) RETURN
 C
 C Set EZMAP's outline-selection parameter.
 C
@@ -36,32 +34,39 @@ C
       END IF
 C
       CALL MAPSTC ('OU',DDCT(I))
+      IF (ICFELL('SUPMAP',2).NE.0) RETURN
 C
 C Set EZMAP's perimeter-drawing flag.
 C
       CALL MAPSTL ('PE',JGRD.GE.0)
+      IF (ICFELL('SUPMAP',3).NE.0) RETURN
 C
 C Set EZMAP's grid-line-labelling flag.
 C
       CALL MAPSTL ('LA',MOD(IABS(JGRD),1000).NE.0)
+      IF (ICFELL('SUPMAP',4).NE.0) RETURN
 C
 C Set EZMAP's dotted-outline flag.
 C
       CALL MAPSTI ('DO',MAX(0,MIN(1,IDOT)))
+      IF (ICFELL('SUPMAP',5).NE.0) RETURN
 C
 C Set EZMAP's projection-selection parameters.
 C
       I=MAX(1,MIN(10,IABS(JPRJ)))
       CALL MAPROJ (PDCT(LPRJ(I)),PLAT,PLON,ROTA)
+      IF (ICFELL('SUPMAP',6).NE.0) RETURN
 C
 C Set EZMAP's rectangular-limits-selection parameters.
 C
       I=LLTS(MAX(1,MIN(5,IABS(JLTS))))
       CALL MAPSET (LDCT(I),PLM1,PLM2,PLM3,PLM4)
+      IF (ICFELL('SUPMAP',7).NE.0) RETURN
 C
 C Draw the map.
 C
       CALL MAPDRW
+      IF (ICFELL('SUPMAP',8).NE.0) RETURN
 C
 C Return the error flag to the user.
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: maprst.f,v 1.1.1.1 1992-04-17 22:32:05 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: maprst.f,v 1.2 1993-12-21 00:33:25 kennison Exp $
 C
       SUBROUTINE MAPRST (IFNO)
 C
@@ -44,6 +41,7 @@ C
 C Re-initialize EZMAP.
 C
       CALL MAPINT
+      IF (ICFELL('MAPRST',1).NE.0) RETURN
 C
 C Done.
 C

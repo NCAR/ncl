@@ -1,8 +1,5 @@
 C
-C	$Id: mapgtc.f,v 1.3 1992-09-04 20:38:14 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: mapgtc.f,v 1.4 1993-12-21 00:32:50 kennison Exp $
 C
       SUBROUTINE MAPGTC (WHCH,CVAL)
 C
