@@ -1,5 +1,5 @@
 C
-C $Id: maptri.f,v 1.8 1999-04-02 22:59:40 kennison Exp $
+C $Id: maptri.f,v 1.9 1999-04-19 21:29:50 kennison Exp $
 C
       SUBROUTINE MAPTRI (UVAL,VVAL,RLAT,RLON)
 C
@@ -33,6 +33,10 @@ C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE   /MAPDPS/
+C
+C Declare a couple of double-precision temporary variables.
+C
+      DOUBLE PRECISION DLAT,DLON
 C
 C Define various required constants.  DTOR is pi over 180, DTRH is half
 C of DTOR, PIOT is pi over 2, RTDD is RTOD doubled, RTOD is 180 over pi,
@@ -78,7 +82,13 @@ C
 C
 C USGS transformations.
 C
-  100 CALL MPTRUI (UVAL,VVAL,RLAT,RLON)
+  100 IF (IROD.EQ.0) THEN
+        CALL MPUTIS (UVAL,VVAL,RLAT,RLON)
+      ELSE
+        CALL MPUTID (DBLE(UVAL),DBLE(VVAL),DLAT,DLON)
+        RLAT=REAL(DLAT)
+        RLON=REAL(DLON)
+      END IF
       IF (RLAT.NE.1.E12) GO TO 201
       RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: maptrn.f,v 1.8 1999-04-02 22:59:41 kennison Exp $
+C $Id: maptrn.f,v 1.9 1999-04-19 21:29:51 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -34,14 +34,16 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE   /MAPDPS/
 C
-      COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
-        DOUBLE PRECISION UTPA
+      COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+        DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+        INTEGER IPRF
       SAVE   /USGSC1/
 C
 C Declare some things double precision.
 C
       DOUBLE PRECISION TMP1,TMP2,SINPH,SINLA,COSPH,COSLA,TCOS,COSA,SINA,
-     +                 COSB,SINB,UTM1,VTM1,UTM2,VTM2,UTM3,VTM3,MPGCAN
+     +                 COSB,SINB,UTM1,VTM1,UTM2,VTM2,UTM3,VTM3,MPGDDP,
+     +                 UDBL,VDBL
 C
 C Define required constants.  DTOR is pi over 180, DTRH is half of DTOR
 C or pi over 360, TOPI is 2 over pi, and OOPI is 1 over pi.
@@ -90,7 +92,13 @@ C USGS projections.
 C
   101 IF (IPRF.EQ.0) GO TO 901
 C
-      CALL MPTRUF (RLAT,RLON,U,V)
+      IF (IROD.EQ.0) THEN
+        CALL MPUTFS (RLAT,RLON,U,V)
+      ELSE
+        CALL MPUTFD (DBLE(RLAT),DBLE(RLON),UDBL,VDBL)
+        U=REAL(UDBL)
+        V=REAL(VDBL)
+      END IF
 C
       IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.
      +    IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
@@ -101,7 +109,7 @@ C
       ELSE IF (IPRF.EQ.9) THEN
         P=V
       ELSE IF (IPRF.EQ.11.OR.IPRF.EQ.12) THEN
-        IF (MPGCAN(DBLE(RLAT),DBLE(RLON),
+        IF (MPGDDP(DBLE(RLAT),DBLE(RLON),
      +             UTPA(   6),UTPA(   5)).GT.179.99D0) GO TO 200
       ELSE IF (IPRF.EQ.20) THEN
         P=U*SIN(DTOR*REAL(UTPA(4)))+V*COS(DTOR*REAL(UTPA(4)))

@@ -1,5 +1,5 @@
 C
-C $Id: maplmb.f,v 1.8 1999-04-02 22:59:35 kennison Exp $
+C $Id: maplmb.f,v 1.9 1999-04-19 21:29:50 kennison Exp $
 C
       SUBROUTINE MAPLMB
 C
@@ -40,8 +40,9 @@ C
       COMMON /MAPWNC/ WXMN,WXMX,WYMN,WYMX
       SAVE   /MAPWNC/
 C
-      COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
-        DOUBLE PRECISION UTPA
+      COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+        DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+        INTEGER IPRF
       SAVE   /USGSC1/
 C
 C Declare a couple of temporary arrays to hold coordinates of a circle.

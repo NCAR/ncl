@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.11 1999-04-02 22:59:32 kennison Exp $
+C $Id: mapint.f,v 1.12 1999-04-19 21:29:48 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -33,8 +33,9 @@ C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE   /MAPSAT/
 C
-      COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
-        DOUBLE PRECISION UTPA
+      COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+        DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+        INTEGER IPRF
       SAVE   /USGSC1/
 C
 C Set up alternate names for some of the variables in common.
@@ -74,10 +75,10 @@ C
 C
 C USGS transformations.
 C
-  100 UMIN=UUMN  !  ???
-      UMAX=UUMX  !  ???
-      VMIN=UVMN  !  ???
-      VMAX=UVMX  !  ???
+  100 UMIN=REAL(UUMN)  !  ???
+      UMAX=REAL(UUMX)  !  ???
+      VMIN=REAL(UVMN)  !  ???
+      VMAX=REAL(UVMX)  !  ???
 C
       GO TO 107
 C
@@ -258,10 +259,10 @@ C
 C
 C USGS transformations.
 C
-  410 UMIN=UUMN  !  ???
-      UMAX=UUMX  !  ???
-      VMIN=UVMN  !  ???
-      VMAX=UVMX  !  ???
+  410 UMIN=REAL(UUMN)  !  ???
+      UMAX=REAL(UUMX)  !  ???
+      VMIN=REAL(UVMN)  !  ???
+      VMAX=REAL(UVMX)  !  ???
 C
       GO TO 600
 C
