@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.7 1993-03-30 22:03:57 clyne Exp $
+#      $Id: build,v 1.8 1993-04-02 17:42:39 haley Exp $
 #
 #########################################################################
 #									#
@@ -170,19 +170,23 @@ EOF
 sub	create_tars {
 	local($system, $build_dir, $version, @dirs) = @_;
 
-	local($cmd, $dir, $tar, $DIR);
+	local($cmd, $dir, $tar, $DIR, $format);
 
 	if ($system eq "AIX_RS6000") {
-		$tar = "/bin/tar -c -b 20 -f";
+		$format = "/bin/tar -c -b 20 -f %s %s";
+	}
+	elsif ($system eq "UNICOS_YMP") {
+		$format = "/bin/tar -cfb %s 20 %s";
 	}
 	else {
-		$tar = "/bin/tar -cbf 20";
+		$format = "/bin/tar -cbf 20 %s %s";
 	}
 
 	foreach $dir (@dirs) {
 		$DIR = $dir;
 		$DIR =~ tr/[a-z]/[A-Z]/;
-		$cmd = "cd $build_dir/$dir; $tar ../$DIR.TAR .";
+		$tar = sprintf($format, "../$DIR.TAR", ".");
+		$cmd = "cd $build_dir/$dir; $tar";
 		system($cmd);
 		if ($? != 0) {
 			print "\"$cmd\" exited with error\n";
