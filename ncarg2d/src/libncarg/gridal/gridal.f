@@ -1,6 +1,6 @@
 C
-C $Id: gridal.f,v 1.7 2000-08-22 15:04:36 haley Exp $
-C                                                                      
+C $Id: gridal.f,v 1.8 2000-10-25 22:27:37 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -708,12 +708,20 @@ C
                       CALL WTSTR  (XDUM,YDUM,LABL(MLBL:NLBL),
      +                             ICHW,IORI,ICEN)
                       IF (ICFELL('GRIDAL',35).NE.0) RETURN
-                    ELSE
+                    ELSE IF (ILTY.EQ.1) THEN
                       XDUM=CFUX(PMJX+DLBX)
                       IF (ICFELL('GRIDAL',36).NE.0) RETURN
                       YDUM=CFUY(PMJY+DLBY)
                       IF (ICFELL('GRIDAL',37).NE.0) RETURN
                       CALL PLCHHQ (XDUM,YDUM,LABL(MLBL:NLBL),
+     +                             RCHW,REAL(IORI),REAL(ICEN))
+                      IF (ICFELL('GRIDAL',38).NE.0) RETURN
+                    ELSE
+                      XDUM=CFUX(PMJX+DLBX)
+                      IF (ICFELL('GRIDAL',36).NE.0) RETURN
+                      YDUM=CFUY(PMJY+DLBY)
+                      IF (ICFELL('GRIDAL',37).NE.0) RETURN
+                      CALL GAPLCH (XDUM,YDUM,LABL(MLBL:NLBL),
      +                             RCHW,REAL(IORI),REAL(ICEN))
                       IF (ICFELL('GRIDAL',38).NE.0) RETURN
                     END IF

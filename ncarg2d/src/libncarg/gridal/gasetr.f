@@ -1,6 +1,6 @@
 C
-C $Id: gasetr.f,v 1.5 2000-08-22 15:04:36 haley Exp $
-C                                                                      
+C $Id: gasetr.f,v 1.6 2000-10-25 22:27:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -54,7 +54,7 @@ C
         ELSE IF (PNAM(1:3).EQ.'CMN'.OR.PNAM(1:3).EQ.'cmn') THEN
           ICMN=INT(RVAL)
         ELSE IF (PNAM(1:3).EQ.'LTY'.OR.PNAM(1:3).EQ.'lty') THEN
-          ILTY=INT(RVAL)
+          ILTY=MAX(0,MIN(2,INT(RVAL)))
         ELSE IF (PNAM(1:3).EQ.'WAX'.OR.PNAM(1:3).EQ.'wax') THEN
           RWAX=RVAL
         ELSE IF (PNAM(1:3).EQ.'WLB'.OR.PNAM(1:3).EQ.'wlb') THEN

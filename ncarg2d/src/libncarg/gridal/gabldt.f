@@ -1,6 +1,6 @@
 C
-C $Id: gabldt.f,v 1.6 2000-08-22 15:04:34 haley Exp $
-C                                                                      
+C $Id: gabldt.f,v 1.7 2000-10-25 22:27:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -58,7 +58,10 @@ C
         DATA ICAX,ICLB,ICMJ,ICMN / -1,-1,-1,-1 /
 C
 C ILTY says what type of labels are to be written.  The value 0 says
-C that WTSTR is to be called, the value 1 that PLCHHQ is to be called.
+C that WTSTR is to be called, the value 1 that PLCHHQ is to be called,
+C and the value 2 that GAPLCH is to be called (which preprocesses the
+C numeric string to force the use of superscript exponents and then
+C calls PLCHHQ).
 C
         DATA ILTY / 0 /
 C

@@ -1,17 +1,17 @@
 #
-#	$Id: yMakefile,v 1.8 1996-10-25 21:43:59 boote Exp $
+#	$Id: yMakefile,v 1.9 2000-10-25 22:27:38 kennison Exp $
 #
 MYNAME	= gridal
 
 GENERIC_SRCS = \
 	gabldt.f gacolr.f gagetc.f gageti.f gagetr.f gagtrn.f galbex.f \
-	gasetc.f gaseti.f gasetr.f grid.f gridal.f gridl.f halfax.f labmod.f \
-	perim.f periml.f tick4.f ticks.f
+	gaplch.f gasetc.f gaseti.f gasetr.f grid.f gridal.f gridl.f halfax.f \
+	labmod.f perim.f periml.f tick4.f ticks.f
 
 GENERIC_OBJS = \
 	gabldt.o gacolr.o gagetc.o gageti.o gagetr.o gagtrn.o galbex.o \
-	gasetc.o gaseti.o gasetr.o grid.o gridal.o gridl.o halfax.o labmod.o \
-	perim.o periml.o tick4.o ticks.o
+	gaplch.o gasetc.o gaseti.o gasetr.o grid.o gridal.o gridl.o halfax.o \
+	labmod.o perim.o periml.o tick4.o ticks.o
 
 SOURCES = $(GENERIC_SRCS)
 
