@@ -9,9 +9,9 @@ C
       INTEGER IFILL1(11), IFILL2(14)
       
       DATA LAB1 /'.','here','go','can',':G:font','any','in',
-    1      'number','or','word','Any'/
+     +      'number','or','word','Any'/
       DATA LAB2 /'.','boxes','between','lines','the','or','boxes',
-    1      'either','match','can','labels','that','Notice'/
+     +      'either','match','can','labels','that','Notice'/
       DATA IFILL1 /11,10,9,8,7,6,5,4,3,2,1/
       DATA IFILL2 /3,4,5,6,7,8,9,10,2,11,12,13,14,15/
 C

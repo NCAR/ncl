@@ -8,12 +8,18 @@ C
       CHARACTER*12 LABELS(18)
       
       DATA INDEX /1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 
-    1      15, 16, 17, 18 /
+     +      15, 16, 17, 18 /
 
       DATA LABELS /'White', 'Orchid', 'Red', 'OrangeRed', 'Orange',
-    1      'Gold', 'Yellow', 'GreenYellow', 'Chartreuse',       
-    2      'Green', 'Celeste', 'Aqua','DeepSkyBlue','RoyalBlue',
-    3      'SlateBlue', 'DarkViolet', 'Lavender', 'Grey' /
+     +      'Gold', 'Yellow', 'GreenYellow', 'Chartreuse',       
+     +      'Green', 'Celeste', 'Aqua','DeepSkyBlue','RoyalBlue',
+     +      'SlateBlue', 'DarkViolet', 'Lavender', 'Grey' /
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
       CALL COLOR (IWKID)
       CALL GSFAIS(1)
