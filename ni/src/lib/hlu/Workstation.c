@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.90 1998-11-19 17:00:42 boote Exp $
+ *      $Id: Workstation.c,v 1.91 1998-12-08 19:48:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -823,7 +823,7 @@ FindCIMatch
 }
 
 int
-NhlGetNamedColor
+NhlGetNamedColorIndex
 #if	NhlNeedProto
 (
 	int		pid,
@@ -835,7 +835,7 @@ NhlGetNamedColor
 	Const char	*name;
 #endif
 {
-	char			func[]="NhlGetNamedColor";
+	char			func[]="NhlGetNamedColorIndex";
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)_NhlGetLayer(pid);
 	NGRGB			rgb;
 	int			index;
