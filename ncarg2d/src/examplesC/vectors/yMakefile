@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1994-08-05 21:55:22 stautler Exp $
+#	$Id: yMakefile,v 1.7 1994-08-16 19:35:18 stautler Exp $
 #
 
 CSRCS = c_tvelvc.c c_ffex02.c
@@ -29,4 +29,4 @@ c_vvex02.c: c_vvex02.c.sed Makefile
 
 c_vvex03.c: c_vvex03.c.sed Makefile
 	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvmap
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvmap vvumxy
