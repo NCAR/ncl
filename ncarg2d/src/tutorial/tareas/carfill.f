@@ -1,4 +1,3 @@
-c23456789112345678921234567893123456789412345678951234567896123456789712
         PROGRAM ARFILL
 
         PARAMETER (LMAP=5000, NMAP=43, NPTS=50, NCNTR=5, NGRPS=2)
@@ -83,7 +82,6 @@ C
         DO 20 I=1,12
            CALL ARGTAI(MAP, X(I), Y(I), IAREA, IGRP, NGRPS, NAI, 0)
            DO 30 J=1,2
-	      CALL GSLWSC (3.)
 	      IF ((I.LE.6).OR.(I.EQ.12)) CALL GSPLCI(3)
 	      IF (I.EQ.7) CALL GSPLCI(0)
 	      IF (I.EQ.8) CALL GSPLCI(3)
@@ -97,7 +95,6 @@ C
               IF (IGRP(J).EQ.3) THEN
                  CALL PLCHHQ (X(I), Y(I)-.02, STRING, .01, 0., 0.)
               ENDIF
-	      CALL GSLWSC (1.)
  30        CONTINUE
  20     CONTINUE
 C
@@ -174,3 +171,4 @@ C area identifier info.
 
         RETURN
         END
+
