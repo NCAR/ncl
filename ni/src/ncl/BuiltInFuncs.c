@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.44 1996-10-02 22:33:54 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.45 1996-10-25 15:42:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -854,7 +854,73 @@ NhlErrorTypes _NclIIsMissing
 }
 
 
+NhlErrorTypes _NclIAddToOverlayAfter
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{	
+	NclStackEntry base;
+	NclStackEntry over;
+	NclStackEntry after;
+	int baseid;
+	int overid;
+	int afterid;
+	NclMultiDValData tmp_md = NULL;
+	NclHLUObj base_hl = NULL;
+	NclHLUObj over_hl = NULL;
+	NclHLUObj after_hl = NULL;
+	
 
+	
+	base =  _NclGetArg(0,3,DONT_CARE);
+	over =  _NclGetArg(1,3,DONT_CARE);
+	after =  _NclGetArg(2,3,DONT_CARE);
+
+	switch(base.kind) {
+	case NclStk_VAL:
+		baseid = *(int*)base.u.data_obj->multidval.val;
+		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(base.u.data_var,NULL,NULL);
+		baseid = *(int*)tmp_md->multidval.val;
+		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	switch(over.kind) {
+	case NclStk_VAL:
+		overid = *(int*)over.u.data_obj->multidval.val;
+		over_hl = (NclHLUObj)_NclGetObj(overid);
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(over.u.data_var,NULL,NULL);
+		overid = *(int*)tmp_md->multidval.val;
+		over_hl = (NclHLUObj)_NclGetObj(overid);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	switch(after.kind) {
+	case NclStk_VAL:
+		afterid = *(int*)after.u.data_obj->multidval.val;
+		after_hl = (NclHLUObj)_NclGetObj(afterid);
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(after.u.data_var,NULL,NULL);
+		afterid = *(int*)tmp_md->multidval.val;
+		after_hl = (NclHLUObj)_NclGetObj(afterid);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,after_hl->hlu.hlu_id);
+	_NclAddHLUToExpList(base_hl,over_hl->obj.id);
+	return(NhlNOERROR);
+}
 NhlErrorTypes _NclIAddToOverlay
 #if	NhlNeedProto
 (void)

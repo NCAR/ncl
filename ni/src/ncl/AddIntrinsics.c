@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.19 1996-05-02 23:30:39 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.20 1996-10-25 15:42:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,11 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclIAddToOverlayAfter(
+#if	NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIAddToOverlay(
 #if	NhlNeedProto
 void
@@ -360,6 +365,20 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].n_dims = 1;
 	_NclRegisterProc(_NclIAddToOverlay,args,"overlay",2,IPROC);
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("graphic");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("graphic");
+	args[1].is_dimsizes = 1;
+	args[1].dim_sizes[0] = 1;
+	args[1].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("graphic");
+	args[1].is_dimsizes = 1;
+	args[1].dim_sizes[0] = 1;
+	args[1].n_dims = 1;
+	_NclRegisterProc(_NclIAddToOverlayAfter,args,"NhlAddOverlay",3,IPROC);
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 1;
