@@ -1,105 +1,141 @@
-.\"
-.\"	$Id: stitle.m,v 1.1 1993-03-11 16:30:19 haley Exp $
-.\"
 .TH STITLE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-STITLE - produces scrolled movie titles.
+STITLE - 
+Creates scrolled movie titles. It receives all
+input through the argument list.
+.SH UTILITY
+This routine is part of the Scrolled_title utility in NCAR Graphics.  To
+see the overview man page for this utility, type "man scrolled_title".
 .SH SYNOPSIS
-CALL STITLE (CARDS, NCARDS, NYST, NYFIN, TST, TMV, TFIN, MV)
+ CALL STITLE (CARDS, NCARDS, NYST, NYFIN, TST, TMV, TFIN, 
+.br
++ MOVIE)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stitle (char *cards[], int ncards, int nyst, int nyfin, float tst, float tmv, float tfin, int mv)
+void c_stitle (char *cards[], int ncards, int nyst, \\
+.br
+int nyfin, float tst, float tmv, float tfin, int movie)
 .SH DESCRIPTION
-.IP CARDS(80,NCARDS) 12
-A CHARACTER*80 array dimensioned for NCARDS.
-This array must be filled prior to calling STITLE.
+.IP CARDS 12
+(an input array, dimensioned NCARDS, of type
+CHARACTER*n, where "n" is greater than or equal to 21) is
+the "card input buffer". This array must be filled, prior
+to calling STITLE, either by internal manipulations or by
+reading n-character "cards". Each element of the array
+CARDS represents one line on the scroll (or, sometimes, a
+continuation of a previous line) and contains the following:
+.RS
+.IP \(bu
+Columns 1-5: MX, the X coordinate of the line of text on
+the scroll. This is normally a value between 1 and 1024,
+inclusive. Exactly how the line of text is positioned
+relative to the specified X coordinate depends on the value
+of ICNTR (in columns 11-15).
 .sp
-Each element of the CARDS array specifies text, sizing,
-and positioning information for the text. STITLE uses a
-local coordinate system for positioning its text. The
-coordinates for positioning text in the horizontal, or
-X, direction range from 1 to 1024 with coordinate 1
-corresponding to the left edge and coordinate 1024
-corresponding to the right edge.  The coordinates in
-the vertical, or Y, direction range from 1 at the
-bottom to any positive integer at the top. In this
-coordinate system the default characters are
-approximately 21 units high and 16 units wide.
+If the value -9999 is used for MX, it indicates a
+continuation line: characters from columns 21 through "n"
+are just appended to the characters from the previous card
+to form the line of text. Any number of continuation cards
+may be used, but the total number of characters in a line
+of text must not be greater than 512.
 .sp
-Columns	Description
+Trailing blanks are omitted from each card, including those
+that are followed by a continuation card; thus, if there
+are to be blanks between the characters from one card and
+the characters from a continuation card, those blanks must
+be placed in columns 21 and following of the continuation
+card.
 .sp
-1-5     An integer, called MX for this discussion,
-which denotes the X coordinate of this line of
-text on the scroll, or an indicator that this
-line of text is a continuation of the previous
-line. MX is the coordinate of the middle of the
-line if ICNTR is 1, and the coordinate of the
-left edge of the first character if ICNTR is 0.
-(See columns 11-15 for ICNTR.)
-.sp
-MX = -9999 is the continuation card indicator.
-Any number of continuation cards may be used.
-Trailing blanks are omitted from each line,
-including those followed by a continuation
-card. MX should be right justified in columns
-1-5 with blank fill to the left.
-.sp
-6-10    An integer, called MY for this discussion,
-which denotes the Y coordinate of this line of
-text on the scroll. In the case of a continue
-line, columns 6-20 are ignored.
-.sp
-11-15   The value of ICNTR, which is the centering option.
-.sp
-= 0 to start the text at MX.
-= 1 to center the text about MX.
-= 2 to end the text at MX.
-.sp
-16-20   The relative size of characters.  This
-multiplies the PLOTCHAR character height.  The
-recommended range is 1. to 2.5 (you can also
-use PLOTCHAR function codes to change sizes).
-.sp
-21-80   The text for this line, or the continuation of
-a line when X = -9999.  These columns must be
-legal PLOTCHAR character strings.
-.sp
+On a continuation card, columns 6-20 are ignored.
+.IP \(bu
+Columns 6-10: MY, the Y coordinate of the line of text on
+the scroll. MY may range from -9999 to 99999.
+.IP \(bu
+Columns 11-15: ICNTR, the centering option:
+.RS
+.IP 0 
+means "start the text at MX".
+.IP 1 
+means "center the text about MX".
+.IP 2 
+means "end the text at MX".
+.RE
+.IP \(bu
+Columns 16-20: SIZE, the desired size of the characters to
+be used in writing the line. SIZE is given as a multiplier
+of a default height specified by the value of the internal
+parameter \'PSZ\', the default value of which is 21 (out of
+1024). Values of SIZE from .75 to 2.5 are recommended.
+.IP \(bu
+Columns 21-n: Text for this line (or for continuation of a
+line when MX = -9999).
+.RE
 .IP NCARDS 12
-The second dimension of CARDS (the number of lines in CARDS).
+(an input expression of type INTEGER) is the
+dimension of the array CARDS (i.e., the number of card
+images in it).
 .IP NYST 12
-The STITLE coordinate that will be at the center of the
-screen when the text is first displayed.
+(an input expression of type INTEGER) is the Y
+coordinate that will be at the center of the screen when
+the text is first displayed.
 .IP NYFIN 12
-The coordinate that will be at the center of the screen
-when text is last displayed.
+(an input expression of type INTEGER) is the Y
+coordinate that will be at the center of the screen when
+the text is last displayed.
 .IP TST 12
-The time, in seconds, that the scroll will be
-stationary at NYST. One second is recommended.
+(an input expression of type REAL) is the time in
+seconds that the scroll will be stationary at NYST. One
+second is recommended.
 .IP TMV 12
-The time, in seconds, to move the scroll from NYST to
-NYFIN. This should be the time required to read the
-text aloud at slow to normal speed.
-.IP TFIN  12
-The time, in seconds, that the scroll will be
-stationary at NYFIN. One second is recommended.
-.IP MV 12
-A switch to indicate whether this is a movie production
-run or a practice run. Set this variable to 0 (zero) if
-a movie is in production; set it to 1 if you are making
-a practice run.
+(an input expression of type REAL) is the time to move
+the scroll from NYST to NYFIN. This should be the time
+required to read the text aloud at slow to normal speed.
+.IP TFIN 12
+(an input expression of type REAL) is the time that
+the scroll will be stationary at NYFIN. One second is
+recommended.
+.IP MOVIE 12
+(an input expression of type INTEGER) is a switch to
+indicate whether this is a "real" run or a "practice" run.
+.RS
+.IP 0
+means "real run".
+.IP 1 
+means "practice run".
+.RE
+.IP ""
+During real runs, frames are created for the fade-in
+sequence (if the user has turned on fade-in by setting the
+internal parameter \'FIN\' non-zero), the stationary sequence
+at the start (if TST is non-zero), the scrolling time (if
+TMV is non-zero), the stationary sequence at the end (if
+TFIN is non-zero), and the fade-out sequence (if the user
+has turned on fade-out by setting the internal parameter
+\'FOU\' non-zero).
 .sp
-A practice run will display a legend indicating the
-number of seconds the frame will be shown at the start
-or finish or the number of seconds into the total
-moving time that a particular frame represents. A
-representative outline of frames from the scroll is
-output during a practice run. When the movie is being
-made, this practice output is suppressed.
+During practice runs, only selected frames are created: a
+frame for the fade-in sequence (if fade-in is turned on), a
+frame for the stationary time at the start, a set of frames
+representing the scrolling sequence, a frame for the
+stationary time at the end, and a frame for the fade-out
+sequence (if fade-out is turned on). Each has a legend
+indicating either for how many seconds the frame will be
+shown or, if it is part of a scroll sequence, how many
+seconds into the scroll time it occurs; during real runs,
+these legends are omitted, of course.
+.sp
+Fade-in and fade-out are also affected by the values of the
+internal parameters \'SBK\', which can be set in such a way
+as to allow or to suppress fade-in and fade-out of the
+background color, and \'SFG\', which serves the same function
+for the foreground color.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE
+.SH USAGE@@@
 STITLE takes input through its argument list and generates
 graphic output that moves a body of text up through the viewing
 window. This is done by outputting the appropriate number of
@@ -109,20 +145,30 @@ specified by you.
 At each frame STITLE skips plotting lines of text that are
 completely outside of the viewing window and clips those that
 are partially outside the window.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+stex01,
+tstitl.
 .SH ACCESS
-To use STITLE load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_stitle load 
+To use STITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_stitle, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the scrolled_title man page for a description of all Scrolled_title error
+messages and/or informational messages.
 .SH SEE ALSO
-Online: 
-ftitle movies slgeti slgetr slseti slsetr stitle ncarg_cbind
-.sp
-Hardcopy:
-"NCAR Graphics User's Guide, Version 2.00"
+Online:
+ftitle,
+scrolled_title,
+slgeti,
+slgetr,
+slseti,
+slsetr,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-
