@@ -569,7 +569,7 @@ NhlErrorTypes wmlabs_W( void )
  */
   gactivate_ws (gkswid);
   for (i = 0; i < dsizes_x[0]; i++) {
-    c_wmlabs(*x, *y, arg1);
+    c_wmlabs(*(x+i), *(y+i), arg1);
   }
   gdeactivate_ws (gkswid);
 
