@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.6 1997-08-20 20:49:06 dbrown Exp $
+ *      $Id: nclstate.h,v 1.7 1997-08-25 20:24:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -225,8 +225,15 @@ NgNclEnumerateObj(
  */
 extern NhlString
 NgNclGetSymName(
+	int		nclstate,
 	NhlString	basename,
         NhlBoolean	add_zero
+);
+
+extern NhlString
+NgNclGetHLURef(
+	int		nclstate,
+	int		hluid
 );
 
 /*
@@ -241,6 +248,7 @@ NgNclGetSymName(
  
 extern int
 NgNclGetHluObjId(
+	int		nclstate,
 	NhlString	hlu_varname,
         int		**id_array
         );

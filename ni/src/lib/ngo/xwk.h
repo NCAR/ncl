@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.h,v 1.1 1997-02-27 20:25:47 boote Exp $
+ *      $Id: xwk.h,v 1.2 1997-08-25 20:24:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,5 @@ extern NhlClass NgxWkClass;
 
 #define	NgNxwkWork		"ngxwkWork"
 #define	NgCxwkWork		"ngXwkWork"
-#define	NgNxwkSize		"ngxwkSize"
-#define	NgCxwkSize		"ngXwkSize"
 
 #endif	/* _NG_XWK_H */

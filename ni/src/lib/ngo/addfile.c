@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.11 1997-07-23 22:23:29 dbrown Exp $
+ *      $Id: addfile.c,v 1.12 1997-08-25 20:24:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -577,7 +577,7 @@ static void SetApplyForm
 	else
 		bname[0] = '\0';
 
-        vname = NgNclGetSymName(bname,False);
+        vname = NgNclGetSymName(np->nsid,bname,False);
 	XmTextFieldSetString(np->vname,vname);
                 
 	return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.6 1997-08-20 20:49:03 dbrown Exp $
+ *      $Id: hlupage.c,v 1.7 1997-08-25 20:24:27 boote Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -379,7 +379,7 @@ ContourCreateUpdate
 	if (rec->data_objects[0] <= NrmNULLQUARK) {
                 char *name;
 		sprintf(buf,"%s_%s",NrmQuarkToString(page->qvar),"sf");
-                name = NgNclGetSymName(buf,True);
+                name = NgNclGetSymName(rec->nclstate,buf,True);
                 
 		rec->data_objects[0] = NrmStringToQuark(name);
 		create = True;
@@ -664,7 +664,9 @@ static void SetValuesCB
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
 
+#if	0
 	NgResTreeSetValues(rec->res_tree);
+#endif
 	return;
 }
 static void
@@ -942,8 +944,13 @@ NgGetHluPage
         int			i;
         static int		first = True;
 	int			hlu_id, *hlu_array = NULL;
+	int			nclstate;
 
-	hlu_id = NgNclGetHluObjId(NrmQuarkToString(page->qvar),&hlu_array);
+	NhlVAGetValues(go->go.appmgr,
+		NgNappNclState,	&nclstate,
+		NULL);
+
+	hlu_id = NgNclGetHluObjId(nclstate,NrmQuarkToString(page->qvar),&hlu_array);
 	if (hlu_id < NhlNOERROR)
 		return NULL;
 	if (hlu_array) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.2 1997-06-11 20:47:26 boote Exp $
+ *      $Id: xwkP.h,v 1.3 1997-08-25 20:24:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,6 @@ typedef struct _NgXWkRec *NgXWk;
 typedef struct _NgXWkPart {
 /* required fields */
 	NhlXWorkstationLayer	xwork;
-	int			size;
 
 /* private fields */
 	NhlBoolean		mapped;
@@ -52,6 +51,7 @@ typedef struct _NgXWkPart {
 	Dimension		grw;
 	Dimension		grh;
 
+	Widget			size;
 } NgXWkPart;
 
 typedef struct _NgXWkRec {

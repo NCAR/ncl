@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.3 1997-06-11 20:47:26 boote Exp $
+ *      $Id: xwk.c,v 1.4 1997-08-25 20:24:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
+#include <ncarg/ngo/nclstate.h>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
@@ -39,9 +40,6 @@ static NhlResource resources[] = {
 	{NgNxwkWork,NgCxwkWork,NhlTPointer,sizeof(NhlPointer),
 		Oset(xwork),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_CONLY,NULL},
-	{NgNxwkSize,NgCxwkSize,NhlTInteger,sizeof(int),
-		Oset(size),NhlTImmediate,_NhlUSET((NhlPointer)0),
-		_NhlRES_DEFAULT,NULL},
 };
 #undef	Oset
 
@@ -146,10 +144,6 @@ NgXWorkPreOpenCB
 	if(wk->xwork.window_id_set)
 		return;
 
-	/*
-	 * TODO - retrieve "size" from workstation -
-	 *	(workstation doesn't currently support size)
-	 */
 	appmgr = (int)wk->base.gui_data;
 	NhlVACreate(&xwkid,"xwork",NgxWkClass,NhlGetParentId(appmgr),
 		NgNxwkWork,	wk,
@@ -294,12 +288,16 @@ XWkInitialize
 	 * Set size of graphics window - should eventually retrieve
 	 * this from (xwork).
 	 */
-	if(np->size){
-		np->grw = np->grh = (Dimension)np->size;
-	}
-	else{
-		np->size = np->grw = np->grh = 500;
-	}
+	if(np->xwork->xwork.xwinconfig.width > 0)
+		np->grw = np->xwork->xwork.xwinconfig.width;
+	else
+		np->grw = 500;
+	if(np->xwork->xwork.xwinconfig.height > 0)
+		np->grh = np->xwork->xwork.xwinconfig.height;
+	else
+		np->grh = 500;
+
+	np->size = NULL;
 
 	return NhlNOERROR;
 }
@@ -310,17 +308,33 @@ XWkDestroy
 	NhlLayer	l
 )
 {
+	char		func[]="XWkDestroy";
 	NgXWk		xwk = (NgXWk)l;
 	NgXWkPart	*xp = &((NgXWk)l)->xwk;
+	int		nclstate=NhlDEFAULT_APP;
+
+	NhlVAGetValues(xwk->go.appmgr,
+		NgNappNclState,	&nclstate,
+		NULL);
+	if(!NhlIsClass(nclstate,NgnclStateClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate object %d",
+								func,nclstate));
+		return NhlFATAL;
+	}
 
 	NgCBWPDestroy(xp->xwork_destroycb);
 
 	if(xp->xwork){
-/*
- * TODO: When "ref_strings" are available from ncl - submit a block to
- *	destroy "xwork" instead of calling this.
- */
-		NhlDestroy(xp->xwork->base.id);
+		char	*ref;
+		char	cmdbuff[1024];
+
+ 		ref = NgNclGetHLURef(nclstate,xp->xwork->base.id);
+		if(ref){
+			sprintf(cmdbuff,"destroy(%s)\n",ref);
+			(void)NgNclSubmitBlock(nclstate,cmdbuff);
+		}
+		else
+			NhlDestroy(xp->xwork->base.id);
 	}
 
 	_NhlCBDelete(xp->broker_destroyCB);

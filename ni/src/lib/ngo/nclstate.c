@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.10 1997-08-20 20:49:05 dbrown Exp $
+ *      $Id: nclstate.c,v 1.11 1997-08-25 20:24:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1325,6 +1325,7 @@ NgNclEnumerateObj
 NhlString
 NgNclGetSymName
 (
+	int		nclstate,
 	NhlString	basename,
         NhlBoolean	add_zero
 )
@@ -1339,6 +1340,97 @@ NgNclGetSymName
         
         for(; NclSymbolDefined(buff); ++i,sprintf(buff,"%s%d",basename,i));
         
+	return buff;
+}
+
+
+/*
+ * Function:	NgNclGetHLURef
+ *
+ * Description:	
+ *		returns a string that can be used as a reference to
+ *		the given hlu object in ncl.  NULL is returned if
+ *		a reference can't be found.  The string is a pointer
+ *		to internal memory, and should be copied immediately.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlString
+NgNclGetHLURef(
+	int	nclstate,
+	int	hluid
+)
+{
+	char			func[]="NgNclGetHLURef";
+	static char		buff[NCL_MAX_STRING*3];
+	char			*ptr;
+	NclHLUStruct		nhs;
+	struct _NclApiDataList	*nvi;
+	NclApiVarInfoRec	*vinfo;
+	int			i,mult;
+
+	if((NclHLUStringRef(hluid,&nhs)< NhlNOERROR) || (nhs.var_quark<=0))
+		return NULL;
+
+	strcpy(buff,NrmQuarkToString(nhs.var_quark));
+	ptr = buff + strlen(buff);
+
+	if(nhs.att_quark>0){
+		sprintf(ptr,"@%s",NrmQuarkToString(nhs.att_quark));
+		ptr += strlen(ptr);
+		if(nhs.n_offsets>0)
+			sprintf(ptr,"(%d)",nhs.offset);
+		return buff;
+	}
+
+	nvi = NclGetVarInfo(nhs.var_quark);
+	if(!nvi || (nvi->u.var->type != HLUOBJ)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Var Info mis-match",func));
+		NclFreeDataList(nvi);
+		return NULL;
+	}
+
+	vinfo = nvi->u.var;
+
+	/*
+	 * Assume scalar if n_dims is 0 - although ncl currently returns
+	 * 1 dim of length 1.
+	 */
+	if((vinfo->n_dims == 0) ||
+		((vinfo->n_dims == 1) && (vinfo->dim_info[0].dim_size == 1))){
+		NclFreeDataList(nvi);
+		if(nhs.offset == 0)
+			return buff;
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Var Dimension mis-match",
+									func));
+		return NULL;
+	}
+
+	strcpy(ptr,"(");
+	ptr++;
+
+	mult=1;
+	for(i=0;i<vinfo->n_dims;i++)
+		mult *= vinfo->dim_info[i].dim_size;
+
+	for(i=0;i<vinfo->n_dims;i++){
+		mult /= vinfo->dim_info[i].dim_size;
+		sprintf(ptr,"%d",nhs.offset/mult);
+		if(i == (vinfo->n_dims-1))
+			strcat(ptr,")");
+		else
+			strcat(ptr,",");
+		ptr += strlen(ptr);
+		nhs.offset %= mult;
+	}
+	NclFreeDataList(nvi);
+
 	return buff;
 }
 
@@ -1368,6 +1460,7 @@ NgNclGetSymName
 
 int
 NgNclGetHluObjId(
+	int		nclstate,
 	NhlString	hlu_varname,
         int		**id_array
         )
@@ -1622,11 +1715,3 @@ NgNclVisBlockAddResList
         }
         return NhlNOERROR;
 }
-
-
-        
-
-        
-
-
-

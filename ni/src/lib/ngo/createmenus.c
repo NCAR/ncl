@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.5 1997-08-20 20:49:02 dbrown Exp $
+ *      $Id: createmenus.c,v 1.6 1997-08-25 20:24:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,11 +109,11 @@ static void CopyShapedVar
         int i;
 
         if (pub->qsymbol)
-                sprintf(buf,"%s = %s->%s(",NgNclGetSymName(varname,False),
+                sprintf(buf,"%s = %s->%s(",NgNclGetSymName(priv->nsid,varname,False),
                         NrmQuarkToString(pub->qsymbol),
                         NrmQuarkToString(pub->vinfo->name));
         else
-                sprintf(buf,"%s = %s(",NgNclGetSymName(varname,False),
+                sprintf(buf,"%s = %s(",NgNclGetSymName(priv->nsid,varname,False),
                         NrmQuarkToString(pub->qsymbol),
                         NrmQuarkToString(pub->vinfo->name));
         for (i = 0; i < pub->vinfo->n_dims; i++) 
@@ -159,7 +159,7 @@ static void CreateCB
         }
         else {
                 char buf[256];
-                NhlString varname = NgNclGetSymName(vartext,False);
+                NhlString varname = NgNclGetSymName(priv->nsid,vartext,False);
                 
                     /* create the NCL graphic variable using this name now
                        in order that it won't be "stolen" before the hlu
@@ -239,14 +239,14 @@ static void CreateDialog
                          form,
                          XmNleftAttachment,XmATTACH_WIDGET,
                          XmNleftWidget,label,
-                         XmNvalue,NgNclGetSymName(sink->def_name,True),
+                         XmNvalue,NgNclGetSymName(priv->nsid,sink->def_name,True),
                          XmNresizeWidth,True,
                          NULL);
         }
 	else {
 		XtSetValues(priv->create_dialog,args,nargs);
                 XtVaSetValues(priv->dialog_text,
-                              XmNvalue,NgNclGetSymName(sink->def_name,True),
+                              XmNvalue,NgNclGetSymName(priv->nsid,sink->def_name,True),
                               NULL);
 	}
 	XmStringFree(xmname);

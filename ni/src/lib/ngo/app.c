@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.7 1997-08-20 20:48:58 dbrown Exp $
+ *      $Id: app.c,v 1.8 1997-08-25 20:24:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1290,7 +1290,7 @@ NgAppGetSelectedWork
                     /*
                      * Submit to nclstate
                      */
-                name = NgNclGetSymName("Xwk",True);
+                name = NgNclGetSymName(app->app.nclstate,"Xwk",True);
                 sprintf(line,
                "%s = create \"%s\" xWorkstationClass defaultapp\nend create\n",
                         name,name);
@@ -1299,7 +1299,7 @@ NgAppGetSelectedWork
                 (void)NgNclSubmitBlock(app->app.nclstate,line);
                 *created = True;
         }
-        selected_id = NgNclGetHluObjId(Ng_SELECTED_WORK,&ids);
+        selected_id = NgNclGetHluObjId(app->app.nclstate,Ng_SELECTED_WORK,&ids);
         if (ids) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
                            "%s:selected workstation variable is an array",
