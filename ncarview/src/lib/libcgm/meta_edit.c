@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.18 1993-02-01 21:20:23 clyne Exp $
+ *	$Id: meta_edit.c,v 1.19 1993-02-03 22:17:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -82,7 +82,7 @@ static	FILE *verboseFP = NULL;	/* operate in verbose mode		*/
 #define	ABS(X)		((X) < 0 ? (-(X)) : (X))
 
 static	char	*tempFile = NULL;	/* name of temp scratch file	*/
-static	char	writeFile[] = WRITEFILE;	/* name of scratch file for writes */
+static	char	*writeFile = NULL;	/* name of scratch file for writes */
 
 
 static	unsigned char	*tmpBuf;	/* tmp storage for r/w metafile	*/
@@ -1026,6 +1026,14 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	}
 
 	(void) strcat(tempFile, TMPFILE);
+
+	if (writeFile) (void) free (writeFile);
+	writeFile = malloc(strlen(WRITEFILE) + 1);
+	if (! writeFile) {
+		return(ERR);
+	}
+	strcpy(writeFile, WRITEFILE);
+
 	(void) mktemp(tempFile);
 	(void) mktemp(writeFile);
 	if ((workingList.tmp_fd = CGM_open(tempFile, r, "w"))<0) {
