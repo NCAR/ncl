@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.3 1991-08-15 17:18:34 clyne Exp $
+ *	$Id: rasdraw.c,v 1.4 1991-12-08 15:55:57 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -69,7 +69,15 @@ Context	*RasDrawOpen(argc, argv, batch)
 	Colormap	create_colormap();
 	XImage		*create_ximage();
 	Widget		create_graphics_canvas();
+	char		*prog_name;
 	
+	char		*strrchr();
+
+	/*
+	 * remove path to argv[0]
+	 */
+	prog_name = (prog_name = strrchr(*argv, '/')) ? ++prog_name : *argv;
+	argv[0] = prog_name;
 
 	/*
 	 * use argv[0] as application class after converting argv[0][0]
