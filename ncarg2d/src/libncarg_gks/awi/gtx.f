@@ -1,5 +1,5 @@
 C
-C	$Id: gtx.f,v 1.6 2000-08-22 15:08:24 haley Exp $
+C	$Id: gtx.f,v 1.7 2004-12-16 19:10:11 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -37,7 +37,7 @@ C
       CALL GZCKST(5,ETX,IER)
       IF (IER .NE. 0) RETURN
 C
-C  Transform position coordinates to NDC space and set up
+C  Transform the position coordinates to NDC space and set up
 C  the real arrays in the workstation interface common block.
 C
       CALL GZROI(0)
