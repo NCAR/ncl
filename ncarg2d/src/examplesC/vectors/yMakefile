@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.5 1994-08-01 14:22:14 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-08-05 21:55:22 stautler Exp $
 #
 
-CSRCS = c_tvelvc.c c_vvex02.c c_ffex02.c
+CSRCS = c_tvelvc.c c_ffex02.c
 
-SED_SRCS = c_fcover.c c_ffex05.c c_vvex01.c c_vvex03.c
+SED_SRCS = c_fcover.c c_ffex05.c c_vvex01.c c_vvex02.c c_vvex03.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
@@ -22,6 +22,10 @@ c_ffex05.c: c_ffex05.c.sed Makefile
 c_vvex01.c: c_vvex01.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv gngpat
+
+c_vvex02.c: c_vvex02.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ gngpat
 
 c_vvex03.c: c_vvex03.c.sed Makefile
 	@-$(RM) $@
