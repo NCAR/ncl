@@ -1,9 +1,9 @@
-C	$Id: ffex03.f,v 1.1 1993-04-08 22:35:43 haley Exp $
+C	$Id: ffex03.f,v 1.2 1993-04-08 23:41:08 haley Exp $
 C
       PROGRAM FFEX03
 C
-C This program requires the input data file 'ffex.dat'
-C It reads the data from standard input, e.g.: ffex03 < ffex.dat
+C This program requires the input data file 'ffex02.dat'
+C It reads the data from standard input, e.g.: ffex03 < ffex02.dat
 C
       PARAMETER (MSIZE=36, NSIZE=33)
       PARAMETER (ISTWKL=2*MSIZE*NSIZE)
