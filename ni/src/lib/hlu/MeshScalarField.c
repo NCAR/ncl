@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.3 2004-08-13 22:00:15 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.4 2004-08-13 22:19:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1645,7 +1645,21 @@ MeshScalarFieldInitialize
 	sfp->xc_is_bounds = False;
 	sfp->yc_is_bounds = False;
 	sfp->istride = 1;
+/*
+ * initialize unsupported resources
+ */
 	sfp->node_indexes = NULL;
+	sfp->exchange_dimensions = False;
+	sfp->x_start = sfp->x_end = sfp->y_start = sfp->y_end = NULL;
+	sfp->x_subset_start = sfp->x_subset_end = 
+		sfp->y_subset_start = sfp->y_subset_end = NULL;
+	sfp->x_index_start = sfp->x_index_end = 
+		sfp->y_index_start = sfp->y_index_end = -1;
+	sfp->x_stride = sfp->y_stride = 1;
+/*
+ * end unsupported resource initialization
+ */
+
         
 	if (sfp->d_arr == NULL) {
 		e_text = 
