@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.5 1998-12-18 20:24:39 haley Exp $
+;      $Id: gsn_code.ncl,v 1.6 1999-02-11 00:44:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -44,6 +44,7 @@ undef("gsn_open_ncgm")
 undef("gsn_open_wks")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
+undef("gsn_panel")
 undef("gsn_contour")
 undef("gsn_contour_map")
 undef("gsn_labelbar")
@@ -64,73 +65,6 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
-
-function hsv2rgb (h[*]:float,s[*]:float,v[*]:float)
-begin
-        ; This procedure converts between HSV and RGB color space
-        ; Input: h [0.0-360.0], s [0.0-1.0], v [0.0-1.0]
-        ; Output: r [0.0-1.0], g [0.0-1.0], b [0.0-1.0]
-	    r_g_b = new((/3,dimsizes(h)/),float)
-	    r_g_b!0 = "rgb"
-	    r_g_b!1 = "cmap_len"
- 
-            if (any((s .eq. 0.0).and.(h.eq.0.0.or.h.eq.360))) then
-	        indexs = ind((h.eq.0.0.or.h.eq.360).and.s.eq.0.0)
-	        r_g_b(:,indexs) = (/v(indexs),v(indexs),v(indexs)/)
-		delete(indexs)
-	    end if
-
-            f = new(dimsizes(h),float)
-            p = new(dimsizes(h),float)
-            q = new(dimsizes(h),float)
-            t = new(dimsizes(h),float)
-            i = new(dimsizes(h),integer)
-            if any(h.eq.360.0)  
-		h(ind(h.eq.360.0)) = 0.0
-            end if
-
-            h = h/60.0
-            i = floattoint(floor(h))
-            f = h - i
-            p = v*(1.0 - s)
-            q = v*(1.0 - (s*f))
-            t = v*(1.0 - (s*(1.0 - f)))
-            if any(i.eq.0) then
-		indexs = ind(i.eq.0)
-		r_g_b(:,indexs) = (/v(indexs),t(indexs),p(indexs)/)
-		delete(indexs)
-	    end if
-            if any(i.eq.1) then
-		indexs = ind(i.eq.1)
-		r_g_b(:,indexs) = (/q(indexs),v(indexs),p(indexs)/)
-		delete(indexs)
-	    end if
-            if any(i.eq.2) then
-		indexs = ind(i.eq.2)
-		r_g_b(:,indexs) = (/p(indexs),v(indexs),t(indexs)/)
-		delete(indexs)
-	    end if
-	    if any(i.eq.3) then
-		indexs = ind(i.eq.3)
-		r_g_b(:,indexs) = (/p(indexs),q(indexs),v(indexs)/)
-		delete(indexs)
-	    end if
-	    if any(i.eq.4) then
-		indexs = ind(i.eq.4)
-		r_g_b(:,indexs) = (/t(indexs),p(indexs),v(indexs)/)
-		delete(indexs)
-	    end if
-	    if any(i.eq.5) then
-		indexs = ind(i.eq.5)
-		r_g_b(:,indexs) = (/v(indexs),p(indexs),q(indexs)/)
-		delete(indexs)
-            end if
-	    if(any(ismissing(r_g_b)))
-		print("WARNING: Some invalid HSV values were passed to hsv2rgb")
-	    end if
-	    return(r_g_b(cmap_len|:,rgb|:))
-end
-
 
     new_width  = width * (xrange/yrange)
   end if
@@ -277,6 +211,166 @@ begin
 
     appid = create res_file appClass defaultapp
         "appDefaultParent" : True
+        "appUsrDir"        : res_dir
+    end create
+
+; Procedure : gsn_panel                                                 ;
+;                 wks: workstation object                               ;
+;               plot : array of plots to put on one page.               ;
+;               dims : a 2-D array indicating number of rows and columns;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This procedure takes the array of plots and draws them all on one     ;
+; workstation in the configuration specified by dims.                   ;
+;                                                                       ;
+; For example, if you have six plots and dims is (/2,3/), then the six  ;
+; plots will be drawn in 2 rows and 3 columns.                          ;
+        else
+    end if
+procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[2]:float,\
+                    resources:logical )
+local rows, cols, xrows, xcols, top, bottom, left, right, \
+vpx, vpy, vpwidth, vpheight, bb, plot_width, plot_height, \
+xwsp_perc, ywsp_perc, xwsp, ywsp, dx, dy, total_width, total_height, \
+col_scale, row_scale, scale, xpos, ypos, xsp, ysp, \
+new_plot_height, new_plot_width, new_total_height, new_total_width, \
+i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
+
+    rows = floattointeger(dims(0))
+    cols = floattointeger(dims(1))
+    xrows = dims(0)
+    xcols = dims(1)
+    xwsp_perc = 0.05     ; White space is 5% of total length of plot.
+    ywsp_perc = 0.05     ; This can be changed with an attribute.
+    callframe = True
+;***********************************************************************;
+	if(resources)
+      if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
+          callframe = False
+      end if
+      if(isatt(resources,"gsnXSpacePercent"))
+        xwsp_perc = resources@gsnXSpacePercent
+        if(xwsp_perc.lt.0.or.xwsp_perc.ge.1.)
+          print("Warning: attribute gsnXSpacePercent must be >= 0 and < 1.")
+          print("Defaulting to 0.05.")
+          xwsp_perc = 0.05
+        end if
+      end if
+      if(isatt(resources,"gsnYSpacePercent"))
+        ywsp_perc = resources@gsnYSpacePercent
+        if(ywsp_perc.lt.0.or.ywsp_perc.ge.1.)
+          print("Warning: attribute gsnYSpacePercent must be >= 0 and < 1.")
+          print("Defaulting to 0.05.")
+          ywsp_perc = 0.05
+        end if
+      end if
+    end if
+end
+;
+; Make sure we have enough panels to fit all of the plots.
+;
+    nplots  = dimsizes(plot)      ; Total number of plots.
+    npanels = rows*cols           ; Total number of panels.
+    if(nplots.gt.npanels)
+      print("Warning: you have more plots than you have panels.")
+      print("Only " + npanels + " plots will be drawn.")
+    end if
+
+    getvalues plot(0)
+      "vpXF"      : vpx       ; Get original view port coordinates.
+      "vpYF"      : vpy
+      "vpWidthF"  : vpwidth
+      "vpHeightF" : vpheight
+;***********************************************************************;
+; Procedure : gsn_polygon_ndc                                           ;
+    bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
+    top    = bb(0)           ; all of its annotations.
+    bottom = bb(1)
+    left   = bb(2)
+    right  = bb(3)
+
+;                   wks: workstation object                             ;
+; plot_width  : total width of plot with all of its annotations
+; total_width : plot_width plus white space on both sides
+;               resources: optional resources                           ;
+    plot_width  = right - left     ; Calculate total width of plot.
+    plot_height = top - bottom     ; Calculate total height of plot.
+procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+    xwsp = xwsp_perc * plot_width     ; White space is a percentage of total
+    ywsp = ywsp_perc * plot_height    ; width and height.
+begin
+    total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
+    total_height = 2.*ywsp + plot_height  ; with white space added.
+;
+; We want:
+;
+;   ncols * scale * total_width  <= 1.0 (the viewport width)
+;   nrows * scale * total_height <= 1.0 (the viewport height)
+;
+; By taking the minimum of these two, we get the scale
+; factor that we need to fit all plots on a page.
+;
+    col_scale = min((/1./(xcols*total_width),1./))
+    row_scale = min((/1./(xrows*total_height),1./))
+    scale = min((/col_scale,row_scale/))
+
+    new_plot_width  = scale*plot_width    ; Calculate new width
+    new_plot_height = scale*plot_height   ; and height.
+
+    xwsp = xwsp_perc * new_plot_width   ; Calculate new white space.
+    ywsp = ywsp_perc * new_plot_height
+
+    new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
+    new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
+
+    xsp = 1. - new_total_width*cols   ; Calculate total amt of white space
+    ysp = 1. - new_total_height*rows  ; left in both X and Y directions.
+
+    dx = scale * (vpx - left) ; Calculate distance from plot's left position
+                              ; to its leftmost annotation
+    dy = scale * (top - vpy) ; Calculate distance from plot's top position
+                             ; to its topmost annotation.
+
+    xpos =      xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
+    ypos = 1. - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
+
+  ywsp = ywsp_perc/100. * new_plot_height
+; Loop through each plot and draw it in the new scaled-down size.
+    end if
+    do i = 0,rows-1
+      do j = 0,cols-1
+        if(i*cols+j .lt. dimsizes(plot))
+          if(.not.ismissing(plot(i*cols+j)))
+            getvalues plot(i*cols+j)
+              "vpXF"      : old_vpx
+              "vpYF"      : old_vpy
+              "vpWidthF"  : old_vpwidth
+              "vpHeightF" : old_vpheight
+            end getvalues
+
+            setvalues plot(i*cols+j)
+              "vpXF"      : xpos(j)
+              "vpYF"      : ypos(i)
+              "vpWidthF"  : scale*old_vpwidth 
+              "vpHeightF" : scale*old_vpheight
+            end setvalues
+    new_ncols = min((/num_plots_left,row_spec(nr)/))
+            draw(plot(i*cols+j))  ; Draw the scaled down plot.
+
+            setvalues plot(i*cols+j)
+              "vpXF"      : old_vpx
+              "vpYF"      : old_vpy
+              "vpWidthF"  : old_vpwidth
+              "vpHeightF" : old_vpheight
+            end setvalues
+          end if
+        end if
+      end do  ; end of columns
+    end do    ; end of rows
+
+    if(callframe)
+        frame(wks)   ; Advance the frame.
+    end if
 end
 
 procedure draw_bb(wks:graphic,plot:graphic)
