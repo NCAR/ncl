@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.14 1996-01-24 19:59:37 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.15 1996-02-28 02:11:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -395,17 +395,19 @@ void _NclAddBuiltIns
 	NclRegisterProc(_NclIUpdateData,args,"NhlUpdateData",nargs);
 
 	nargs = 0;
-	args = NewArgs(3);
+	args = NewArgs(4);
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
-	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
 	NclRegisterProc(_NclIDataPolyline,args,"NhlDataPolyline",nargs);
 
 	nargs = 0;
-	args = NewArgs(3);
+	args = NewArgs(4);
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
-	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
 	NclRegisterProc(_NclINDCPolyline,args,"NhlNDCPolyline",nargs);
 	
 
