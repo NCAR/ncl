@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.5 1997-10-03 20:08:33 dbrown Exp $
+ *      $Id: varpageP.h,v 1.6 1998-01-08 01:19:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,8 @@ typedef struct _vpReceiverPage
 
 typedef struct _brVarPageRec 
 {
+        NgGO		go;
+        NgPageId	page_id;
         NgDimInfoGrid	*diminfogrid;
         NgVarTree	*vartree;
         NgShaper	*shaper;

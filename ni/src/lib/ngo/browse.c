@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.14 1997-10-23 00:27:00 dbrown Exp $
+ *      $Id: browse.c,v 1.15 1998-01-08 01:19:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -480,8 +480,8 @@ static void ActiveTabCB
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
-        brPage		*page;
-        int		ix = 0;
+        brPage		*page,*oldpage = NULL;
+        int		i;
         char		*string;
         
         XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)cb_data;
@@ -498,13 +498,18 @@ static void ActiveTabCB
                 return;
 	}
         page = XmLArrayGet(pane->pagelist,cbs->pos);
-        
-        string = PageString(pane,page);
-        
+        if (pane->active_page)
+                oldpage = XmLArrayGet(pane->pagelist,pane->active_pos);
+
+        if (pane->active_page && pane->active_page != page)
+                NgReleasePageHtmlViews(go->base.id,pane->active_page->id);
+
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
+        string = PageString(pane,page);
         fprintf(stderr,"tab # %d activated for %s\n",cbs->pos,string);
 #endif
         pane->active_pos = cbs->pos;
+        pane->active_page = page;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"setting keyboard focus to %s\n",
@@ -512,6 +517,8 @@ static void ActiveTabCB
 #endif
 
         SetTabFocus(go,pane,page);
+        if (page->pdata->page_focus_notify)
+                (*page->pdata->page_focus_notify)(page,True);
 	(*page->pdata->adjust_page_geo)(page);
         
         return;
@@ -578,8 +585,9 @@ CreateFolder
         brPane	 	*pane
 )
 {
-	int left,right;
-
+        WidgetList	children;
+        int		i,num_children;
+        
         pane->folder = XtVaCreateManagedWidget
                 ("Folder",xmlFolderWidgetClass,
                  pane->form,
@@ -593,7 +601,14 @@ CreateFolder
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"folder %x pane %x\n", pane->folder,pane);
 #endif
-
+        XtVaGetValues(pane->form,
+                      XmNchildren,&children,
+                      XmNnumChildren,&num_children,
+                      NULL);
+        for (i = 0; i < num_children; i++) {
+                fprintf(stderr,"Form child %s\n",XtName(children[i]));
+        }
+        
         XtAddCallback(pane->folder,XmNactivateCallback,ActiveTabCB,pane);
 
 	XtVaCreateManagedWidget("BogusWidget",
@@ -660,6 +675,21 @@ DestroyFolder
         pane->active_pos = 0;
 }
 
+static Cardinal FolderFirstProc
+(
+        Widget form_child
+        )
+{
+        int num_children;
+        
+        if (XtClass(form_child) == xmlFolderWidgetClass)
+                return 0;
+        XtVaGetValues(XtParent(form_child),
+                      XmNnumChildren,&num_children,
+                      NULL);
+        return num_children;
+}
+        
 static void
 InitPane
 (
@@ -682,8 +712,15 @@ InitPane
                  XmNscrollBarDisplayPolicy,	XmAS_NEEDED,
                  XmNscrollingPolicy,		XmAUTOMATIC,
                  NULL);
+        XtVaGetValues(pane->scroller,
+                      XmNclipWindow,&pane->clip_window,
+                      XmNhorizontalScrollBar,&pane->hsb,
+                      XmNverticalScrollBar,&pane->vsb,
+                      NULL);
+        
         pane->form = XtVaCreateManagedWidget
                 ("form", xmFormWidgetClass,pane->scroller,
+                 XmNinsertPosition,FolderFirstProc,
                  NULL);
 
         pane->has_folder = False;
@@ -697,6 +734,9 @@ InitPane
 	pane->var_pages = NULL;
 	pane->hlu_pages = NULL;
         pane->active_pos = 0;
+        pane->active_page = NULL;
+	pane->htmlview_count = 0;
+	pane->htmlview_list = NULL;
 
         return;
 }
@@ -990,7 +1030,7 @@ UpdateTabs
 					pane->pagecount,PaneNumber(go,pane));
 #endif
                                 XmLFolderSetActiveTab(
-                                        pane->folder,pane->pagecount,True);
+                                        pane->folder,pane->pagecount,False);
                         }
                         else {
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
@@ -999,7 +1039,7 @@ UpdateTabs
 					pane->pagecount-1,PaneNumber(go,pane));
 #endif
                                 XmLFolderSetActiveTab(
-                                        pane->folder,pane->pagecount-1,True);
+                                        pane->folder,pane->pagecount-1,False);
                         }
                 }
                 else {
@@ -1009,7 +1049,7 @@ UpdateTabs
 				pane->pagecount,PaneNumber(go,pane));
 #endif
                         XmLFolderSetActiveTab(
-                                pane->folder,pane->pagecount,True);
+                                pane->folder,pane->pagecount,False);
                 }
                         
         }
@@ -1081,7 +1121,7 @@ UpdateTabs
                 fprintf(stderr,"setting tab %d active for pane %d\n",
                         pane->pagecount-1,PaneNumber(go,pane));
 #endif
-                XmLFolderSetActiveTab(pane->folder,tmppos,True);
+                XmLFolderSetActiveTab(pane->folder,tmppos,False);
         }
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,
@@ -1230,7 +1270,9 @@ VarDeleteCB
 	NgGO go = (NgGO) udata.ptrval;
         NgNclAny node = (NgNclAny)cbdata.ptrval;
 
-        printf("deleting %s\n", node->name);
+#if	DEBUG_DATABROWSER
+        fprintf(stderr,"deleting %s\n", node->name);
+#endif        
         UpdatePanes(go,_brREGVAR,NrmStringToQuark(node->name),NULL,True);
                 
 	return;
@@ -1253,7 +1295,9 @@ FileRefDeleteCB
         int		i,j;
         NrmQuark	qfile;
 
-        printf("deleting %s\n", node->name);
+#if	DEBUG_DATABROWSER
+        fprintf(stderr,"deleting %s\n", node->name);
+#endif        
         qfile = NrmStringToQuark(node->name);
          
         for (i = 0; i < pcp->alloc_count; i++) {
@@ -1286,7 +1330,9 @@ HluVarDeleteCB
 	NgGO go = (NgGO) udata.ptrval;
         NgNclAny node = (NgNclAny)cbdata.ptrval;
 
-        printf("deleting %s\n", node->name);
+#if	DEBUG_DATABROWSER
+        fprintf(stderr,"deleting %s\n", node->name);
+#endif        
         
         UpdatePanes(go,_brHLUVAR,NrmStringToQuark(node->name),NULL,True);
         
@@ -1322,6 +1368,7 @@ static brPage *AddPage
         page->qvar = qvar;
         page->qfile = qfile;
         page->tab = NULL;
+        pos = InsertPage(pane,page);
         
         if (copy_page) /* assumes the 'copy_page' will be deleted */
                 page->id = copy_page->id;
@@ -1365,8 +1412,6 @@ static brPage *AddPage
         }
         page->pdata->pane = pane;
 	
-        pos = InsertPage(pane,page);
-	
         UpdateTabs(go,pane,pos,_ADD);
         
 	(*page->pdata->adjust_page_geo)(page);
@@ -1388,6 +1433,7 @@ RemovePage
 {
         brPage	*page = XmLArrayGet(pane->pagelist,pos);
 
+        NgReleasePageHtmlViews(go->base.id,page->id);
         XmLArrayDel(pane->pagelist,pos,1);
         pane->pagecount--;
 
@@ -1397,10 +1443,23 @@ RemovePage
 static void DeletePage(
 	NgGO		go,
         brPane		*pane,
-        int		pos
+        brPage		*page
         )
 {
-	brPage *page = RemovePage(go,pane,pos);
+        int i;
+
+#if 0        
+        for (i = 0; i < pane->htmlview_count; i++) {
+                NgHtmlView *hv = XmLArrayGet(pane->htmlview_list,i);
+                if (page->id == hv->user_page_id) {
+                        _NgUnmapHtmlView(hv);
+                        hv->user_page_id = NgNoPage;
+                }
+        }
+#endif        
+        
+        if (pane->active_page == page)
+                pane->active_page = NULL;
 
 	if (pane->pagecount == 0) {
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
@@ -1443,6 +1502,9 @@ ShufflePage
 {
         brPage	*page;
         int	newpos;
+
+        if (pane->pagecount <= 1)
+                return;
         
         page = RemovePage(go,pane,pos);
 
@@ -1495,18 +1557,29 @@ UpdatePanes
                         }
                 }
         }
+/*
+ * In order for functions that depend on getting the pane based on the
+ * page id to work, it is necessary to update the page lists before the page is
+ * actually created. The page will be added to its new pane in the AddPage
+ * function, before the NgGet...Page call. Note the page cannot actually
+ * be deleted until the new page is created, so that the data structures can
+ * be copied.
+ */
+        if (delete_pane)
+                RemovePage(go,delete_pane,delete_pane->remove_pos);
+        
 	if (! delete) {
 		if (! page_found) {
                 	page = AddPage
                                 (go,CurrentPane(go),type,qvar,qfile,copy_page);
         	}
                 if (delete_pane)
-                        DeletePage(go,delete_pane,delete_pane->remove_pos);
+                        DeletePage(go,delete_pane,copy_page);
                 SetTabFocus(go,CurrentPane(go),page);
         	NextPane(go);
 	}
         else if (delete_pane)
-                DeletePage(go,delete_pane,delete_pane->remove_pos);
+                DeletePage(go,delete_pane,copy_page);
         
         return page;
 }
@@ -2064,6 +2137,10 @@ BrowseCreateWin
 	NhlLayer	ncl = _NhlGetLayer(np->nsid);
                 
 	np->mapped = False;
+
+	XtVaSetValues(go->go.shell,
+		      XmNkeyboardFocusPolicy,XmEXPLICIT,
+		      NULL);
 	XtAppAddActions(go->go.x->app,
                         browseactions,NhlNumber(browseactions));
 
@@ -2121,6 +2198,65 @@ BrowseCreateWin
 	return True;
 }
 
+extern void _NgGetPaneVisibleArea(
+        NhlLayer go,
+        brPane *pane,
+        XRectangle *rect
+        )
+{
+        Position form_x, form_y, clip_x, clip_y;
+        Dimension clip_width, clip_height;
+        
+        XtVaGetValues(pane->form,
+                      XmNx,&form_x,
+                      XmNy,&form_y,
+                      NULL);
+        XtVaGetValues(pane->clip_window,
+                      XmNx,&clip_x,
+                      XmNy,&clip_y,
+                      XmNwidth,&clip_width,
+                      XmNheight,&clip_height,
+                      NULL);
+        rect->x = clip_x - form_x;
+        rect->y = clip_y - form_y;
+        rect->width = clip_width;
+        rect->height = clip_height;
+        return;
+}
+
+extern brPane *_NgGetPaneOfPage(
+        int		goid,
+        NgPageId	page_id
+        )
+{
+        char func[] = "_NgGetPaneOfPage";
+        NhlLayer go = _NhlGetLayer(goid);
+	NgBrowse	browse;
+	NgBrowsePart	*np;
+        brPane *pane;
+        int i,j;
+        
+        if (! go) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: invalid layer id",
+                           func));
+                return NULL;
+        }
+        browse  = (NgBrowse)go;
+        np = &browse->browse;
+
+            /* find the pane */
+
+        for (i = 0; i < np->pane_ctrl.current_count; i++) {
+                pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+                        if (page->id == page_id)
+                                return pane;
+                }
+        }
+        return NULL;
+}
+        
 extern NgPageId NgOpenPage(
         int		goid,
         brPageType	type,
@@ -2259,16 +2395,98 @@ NgGetPageId
                 pane = pcp->panes[i];
                 for (j = 0; j < pane->pagecount; j++) {
                         page = XmLArrayGet(pane->pagelist,j);
-                        if (qsym2 > NrmNULLQUARK) 
-                            if (page->qvar == qsym1 && page->qfile == qsym2)
-                                    return page->id;
-                        else if (page->qvar == qsym1)
+                        if (qsym2 > NrmNULLQUARK) {
+                                if (page->qvar == qsym1 &&
+                                    page->qfile == qsym2) {
+                                        return page->id;
+                                }
+                        }
+                        else if (page->qvar == qsym1) {
                                 return page->id;
+                        }
                 }
         }
         return NgNoPage;
 }
 
+extern NhlErrorTypes NgPageSetVisible(
+        int		goid,
+        NgPageId	page_id,
+        Widget		requestor,
+        XRectangle	*rect
+        )
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+        brPane 		*pane;
+        XRectangle	pvis_rect,rvis_rect;
+        Position	pane_x,pane_y,req_x,req_y;
+        Dimension	pane_height,pane_width;
+        int		min,max,ssize,value,inc,page_inc;
+
+        if (! page) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid page specified"));
+                return NhlWARNING;
+        }
+                
+        pane = page->pdata->pane;
+        if (! pane->form)
+                return NhlNOERROR;
+/*
+ * This routine adjusts the scrollbars to make as much of the specified
+ * rectangle visible as possible. The rectangle is specified relative to
+ * the "requestor" widget.
+ */
+        
+	_NgGetPaneVisibleArea((NhlLayer) go,pane,&pvis_rect);
+        
+        XtTranslateCoords(pane->form,(Position) 0,(Position) 0,
+                          &pane_x,&pane_y);
+        XtTranslateCoords(requestor,(Position) 0,(Position) 0,
+                          &req_x,&req_y);
+
+        rvis_rect.x = req_x - pane_x + rect->x;
+        rvis_rect.y = req_y - pane_y + rect->y;
+        rvis_rect.height = rect->height;
+        rvis_rect.width = rect->width;
+
+        XtVaGetValues(pane->form,
+                      XmNheight,&pane_height,
+                      XmNwidth,&pane_width,
+                      NULL);
+
+        XtVaGetValues(pane->vsb,
+                      XmNminimum,&min,
+                      XmNmaximum,&max,
+                      XmNsliderSize,&ssize,
+                      XmNvalue,&value,
+                      XmNincrement,&inc,
+                      XmNpageIncrement,&page_inc,
+                      NULL);
+
+        printf("min %d max %d ssize %d value %d\n",min,max,ssize,value);
+        if (rvis_rect.height > pvis_rect.height ||
+            rvis_rect.y < pvis_rect.y) {
+                value = min + ((float)rvis_rect.y)/pane_height *
+                        (max - min);
+                value = MAX(min,MIN(value,max-ssize));
+                XmScrollBarSetValues
+                        (pane->vsb,value,ssize,inc,page_inc,True);
+        }
+        else if (rvis_rect.y + rvis_rect.height  > 
+                 pvis_rect.y + pvis_rect.height) {
+                value = (((float)rvis_rect.y + rvis_rect.height) / pane_height)
+                        * (max - min) + min - ssize;
+                value = MAX(min,MIN(value,max-ssize));
+                XmScrollBarSetValues
+                        (pane->vsb,value,ssize,inc,page_inc,True);
+        }
+        printf("new value %d\n",value);
+        
+
+        return NhlNOERROR;
+
+}
 
 static void TabFocusAction
 (

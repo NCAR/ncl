@@ -1,5 +1,5 @@
 /*
- *      $Id: filetreeP.h,v 1.2 1997-06-06 03:14:52 dbrown Exp $
+ *      $Id: filetreeP.h,v 1.3 1998-01-08 01:19:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,8 @@ typedef struct _NgFileTreeRec
         
             /* private fields */
         NgGO			go;
+        NgPageId		page_id;
+        Widget			text;
         NrmQuark		qfileref;
  	NclApiDataList		*dlist;
         Dimension		c2_width;

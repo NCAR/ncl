@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.5 1997-10-23 00:27:10 dbrown Exp $
+ *      $Id: vartree.c,v 1.6 1998-01-08 01:19:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,54 @@ static NrmQuark Qlong_name;
 static Dimension Row_Height;
 static Dimension Char_Height;
 static NhlString Unnamed = "<unnamed>";
+
+
+static void AdjustTextWidget
+(
+        NgVarTreeRec *vtp,
+	int row,
+	int col
+        )
+{
+        Widget parent = vtp->tree;
+        Position x,y,tx=0,ty=0;
+        int i;
+
+        for (i=0; i < 4; i++) {
+                XtVaGetValues(parent,
+                              XmNx,&x,
+                              XmNy,&y,
+                              NULL);
+                tx += x;
+                ty += y;
+                parent = XtParent(parent);
+        }
+        x = MAX(0,-tx);
+        y = MAX(0,-ty);
+        
+        XtMoveWidget(vtp->text,x,y);
+
+        return;
+}
+
+static void MakeRowsVisible
+(
+        NgVarTreeRec	*vtp,
+        int top_row,
+        int bottom_row
+        )         
+{
+	XRectangle	rect;
+        
+	XmLGridRowColumnToXY
+                (vtp->tree,
+                 XmCONTENT,top_row,XmCONTENT,0,False,&rect);
+        rect.height = (bottom_row - top_row + 1) * Row_Height;
+        
+        NgPageSetVisible(
+                vtp->go->base.id,vtp->page_id,vtp->tree,&rect);
+        return;
+}
 
 static char *GetLongName(
         NrmQuark qfile,
@@ -870,6 +918,7 @@ static void ExpandTree
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
                 Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
+                Row_Height = 20;
                 printf("ch %d rh %d rh1 %d\n", ch,rh,h/nrows);
                 vtp->expand_called = True;
         }
@@ -896,6 +945,27 @@ static void ExpandTree
         return;
 }
         
+        
+static int FindRowChange
+(
+        NgVarTreeRec	*vtp,
+        vtNodeData	*ndata
+        )
+{
+        int i;
+        int rows = 0;
+
+        if (! ndata->subdata)
+                return ndata->subcount;
+
+        for (i = 0; i < ndata->subcount; i++) {
+                rows += 1;
+                if (ndata->subdata[i].expanded) {
+                        rows += FindRowChange(vtp,&ndata->subdata[i]);
+                }
+        }
+        return rows;
+}
 
 static void ExpandCB 
 (
@@ -908,7 +978,7 @@ static void ExpandCB
         XmLGridCallbackStruct *cbs;
         XmLGridRow	row;
         vtNodeData	*ndata;
-        int		pos;
+        int		pos,row_change;
         
         cbs = (XmLGridCallbackStruct *)cb_data;
         row = XmLGridGetRow(w,XmCONTENT,cbs->row);
@@ -919,15 +989,20 @@ static void ExpandCB
         
         if (ndata->subcount > 0) {
                 ndata->expanded = True;
+                row_change = FindRowChange(vtp,ndata);
                 if (vtp->geo_notify && vtp->geo_data)
                         (*vtp->geo_notify)(vtp->geo_data);
+                MakeRowsVisible(vtp,cbs->row,cbs->row + row_change);
                 return;
         }
         
         ExpandTree(vtp,ndata,cbs->row);
+        row_change = FindRowChange(vtp,ndata);
         
         if (vtp->geo_notify && vtp->geo_data)
                 (*vtp->geo_notify)(vtp->geo_data);
+        MakeRowsVisible(vtp,cbs->row,cbs->row + row_change);
+        AdjustTextWidget(vtp,cbs->row,0);
         
         return;
 }
@@ -955,6 +1030,24 @@ static void CollapseCB
         
         if (vtp->geo_notify && vtp->geo_data)
                 (*vtp->geo_notify)(vtp->geo_data);
+}
+
+static void FocusCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgVarTreeRec *vtp = (NgVarTreeRec *) udata;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+        
+        if (cb->reason == XmCR_CELL_FOCUS_IN) {
+                MakeRowsVisible(vtp,cb->row,cb->row);
+                AdjustTextWidget(vtp,cb->row,0);
+        }
+        
+        return;
 }
 
 static void FreeSubNodes
@@ -1169,7 +1262,6 @@ NhlErrorTypes NgUpdateVarTree
         return NhlNOERROR;
 }
 
-
 NgVarTree *NgCreateVarTree
 (
         NgGO			go,
@@ -1199,6 +1291,8 @@ NgVarTree *NgCreateVarTree
         vtp->go = go;
         vtp->var.subdata = NULL;
         vtp->var.subcount = 0;
+        vtp->page_id = NgGetPageId
+                (vtp->go->base.id,NrmNULLQUARK,vtp->qfileref);
         
         vtp->tree = XtVaCreateManagedWidget("VarTree",
                                             xmlTreeWidgetClass,parent,
@@ -1217,9 +1311,17 @@ NgVarTree *NgCreateVarTree
         
         XtAddCallback(vtp->tree,XmNexpandCallback,ExpandCB,vtp);
         XtAddCallback(vtp->tree,XmNcollapseCallback,CollapseCB,vtp);
+        XtVaGetValues(vtp->tree,
+                      XmNtextWidget,&vtp->text,
+                      NULL);
         
         ret = NgUpdateVarTree((NgVarTree*) vtp,qfileref,qvar,dlist);
 
+/*
+ * wait until rows are initialized before adding focus callback; otherwise
+ * we get core dumps.
+ */
+        XtAddCallback(vtp->tree,XmNcellFocusCallback,FocusCB,vtp);
         if (ret < NhlWARNING) {
                 NhlFree(vtp);
                 return NULL;

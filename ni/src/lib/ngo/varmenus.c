@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.4 1997-10-03 20:08:28 dbrown Exp $
+ *      $Id: varmenus.c,v 1.5 1998-01-08 01:19:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,13 @@ CreateCB
 )
 {
 	NgVarRec	*vrec = (NgVarRec *)udata.ptrval;
-
+        NgNclAny	sym = (NgNclAny) cbdata.ptrval;
+                
+#if	DEBUG_VAR_MENUS & DEBUG_ENTRY
+	fprintf(stderr,"CreateCB - symbol: %s\n",sym->name);
+#endif
+        if (! strncmp(sym->name,"_Ng",3))
+                return;
         if (! vrec->varcount)
               XtSetSensitive(vrec->mbutton,True);  
         vrec->varcount++;
@@ -65,7 +71,13 @@ DeleteCB
 )
 {
 	NgVarRec	*vrec = (NgVarRec *)udata.ptrval;
-
+        NgNclAny	sym = (NgNclAny) cbdata.ptrval;
+                
+#if	DEBUG_VAR_MENUS & DEBUG_ENTRY
+	fprintf(stderr,"DeleteCB - symbol: %s\n",sym->name);
+#endif
+        if (! strncmp(sym->name,"_Ng",3))
+                return;
         vrec->varcount--;
 	vrec->modified = True;
 
@@ -95,7 +107,7 @@ FileVarMenuEH
                       NULL);
         
 #if	DEBUG_VAR_MENUS & DEBUG_MENUS
-	fprintf(stderr"%s filevars\n", NrmQuarkToString(qfile));
+	fprintf(stderr,"%s filevars\n", NrmQuarkToString(qfile));
 #endif
         
         FileVarMenu(vmenus,qfile);

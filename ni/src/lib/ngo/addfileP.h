@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.7 1997-10-23 00:26:59 dbrown Exp $
+ *      $Id: addfileP.h,v 1.8 1998-01-08 01:19:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,7 @@ typedef struct _NgAddFilePart {
 
 /* private fields */
         int		nsid;
+        Widget		workareaform;
 	Widget		vname;
         Widget  	vname_label;
         NhlBoolean	vname_added;
@@ -125,6 +126,7 @@ typedef struct _NgAddFilePart {
         NhlBoolean	adjust_event;
 	Dimension	vlist_resize_width;
 	NhlBoolean	cleared;
+        NhlBoolean	lists_mapped;
 } NgAddFilePart;
 
 typedef struct _NgAddFileRec {

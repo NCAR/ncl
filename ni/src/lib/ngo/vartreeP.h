@@ -1,5 +1,5 @@
 /*
- *      $Id: vartreeP.h,v 1.1 1997-06-04 18:08:37 dbrown Exp $
+ *      $Id: vartreeP.h,v 1.2 1998-01-08 01:19:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,8 @@ typedef struct _NgVarTreeRec
         
             /* private fields */
         NgGO			go;
+        NgPageId		page_id;
+        Widget			text;
         NrmQuark		qfileref;
         NrmQuark		qvar;
  	NclApiDataList		*dlist;

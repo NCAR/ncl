@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.2 1997-10-23 00:27:01 dbrown Exp $
+ *      $Id: createmenu.c,v 1.3 1998-01-08 01:19:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,7 @@
 #include <ncarg/hlu/DataItem.h>
 #include <ncarg/hlu/ResourcesP.h>
 
+static NhlBoolean
 GetBrowser
 (
 	int		goid,

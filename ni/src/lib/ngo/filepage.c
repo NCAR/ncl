@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.4 1997-06-27 07:20:17 dbrown Exp $
+ *      $Id: filepage.c,v 1.5 1998-01-08 01:19:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -107,6 +107,7 @@ NewFileRefPage
         pdp->page_input_notify = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
+        pdp->page_focus_notify = NULL;
         
         return pdp;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.6 1997-10-23 00:27:03 dbrown Exp $
+ *      $Id: filetree.c,v 1.7 1998-01-08 01:19:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,53 @@ static void Button3Action(
 static XtActionsRec filetreeactions[] = {
 	{ "Button3Action", Button3Action }
 };
+
+static void AdjustTextWidget
+(
+        NgFileTreeRec *ftp,
+	int row,
+	int col
+        )
+{
+        Widget parent = ftp->tree;
+        Position x,y,tx=0,ty=0;
+        int i;
+
+        for (i=0; i < 4; i++) {
+                XtVaGetValues(parent,
+                              XmNx,&x,
+                              XmNy,&y,
+                              NULL);
+                tx += x;
+                ty += y;
+                parent = XtParent(parent);
+        }
+        x = MAX(0,-tx);
+        y = MAX(0,-ty);
+        
+        XtMoveWidget(ftp->text,x,y);
+
+        return;
+}
+
+static void MakeRowsVisible
+(
+        NgFileTreeRec	*ftp,
+        int top_row,
+        int bottom_row
+        )         
+{
+	XRectangle	rect;
+        
+	XmLGridRowColumnToXY
+                (ftp->tree,
+                 XmCONTENT,top_row,XmCONTENT,0,False,&rect);
+        rect.height = (bottom_row - top_row + 1) * Row_Height;
+        
+        NgPageSetVisible(
+                ftp->go->base.id,ftp->page_id,ftp->tree,&rect);
+        return;
+}
 
 static void ExpandFileInfo
 (
@@ -1032,6 +1079,7 @@ static void ExpandTree
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
                 Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
+                Row_Height = 20;
                 ftp->expand_called = True;
         }
 
@@ -1078,6 +1126,26 @@ static void ExpandTree
         return;
 }
         
+static int FindRowChange
+(
+        NgFileTreeRec	*ftp,
+        ftNodeData	*ndata
+        )
+{
+        int i;
+        int rows = 0;
+
+        if (! ndata->subdata)
+                return ndata->subcount;
+
+        for (i = 0; i < ndata->subcount; i++) {
+                rows += 1;
+                if (ndata->subdata[i].expanded) {
+                        rows += FindRowChange(ftp,&ndata->subdata[i]);
+                }
+        }
+        return rows;
+}
 
 static void ExpandCB 
 (
@@ -1090,7 +1158,7 @@ static void ExpandCB
         XmLGridCallbackStruct *cbs;
         XmLGridRow	row;
         ftNodeData	*ndata;
-        int		pos;
+        int		pos,row_change;
         
         cbs = (XmLGridCallbackStruct *)cb_data;
         row = XmLGridGetRow(w,XmCONTENT,cbs->row);
@@ -1101,8 +1169,10 @@ static void ExpandCB
         
         if (ndata->subcount > 0) {
                 ndata->expanded = True;
+                row_change = FindRowChange(ftp,ndata);
                 if (ftp->geo_notify && ftp->geo_data)
                         (*ftp->geo_notify)(ftp->geo_data);
+                MakeRowsVisible(ftp,cbs->row,cbs->row + row_change);
                 return;
         }
         
@@ -1111,9 +1181,13 @@ static void ExpandCB
         XSync(ftp->go->go.x->dpy,False);
         ExpandTree(ftp,ndata,cbs->row);
         XUndefineCursor(ftp->go->go.x->dpy,XtWindow(ftp->go->go.manager));
-        
+
+        row_change = FindRowChange(ftp,ndata);
         if (ftp->geo_notify && ftp->geo_data)
                 (*ftp->geo_notify)(ftp->geo_data);
+        MakeRowsVisible(ftp,cbs->row,cbs->row + row_change);
+        AdjustTextWidget(ftp,cbs->row,0);
+        
         return;
 }
 
@@ -1141,6 +1215,24 @@ static void CollapseCB
         if (ftp->geo_notify && ftp->geo_data)
                 (*ftp->geo_notify)(ftp->geo_data);
         
+}
+
+static void FocusCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgFileTreeRec *ftp = (NgFileTreeRec *) udata;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+        
+        if (cb->reason == XmCR_CELL_FOCUS_IN) {
+                MakeRowsVisible(ftp,cb->row,cb->row);
+                AdjustTextWidget(ftp,cb->row,0);
+        }
+        
+        return;
 }
 
 static void FreeSubNodes
@@ -1267,6 +1359,8 @@ NhlErrorTypes NgUpdateFileTree
         ftp->geo_data = NULL;
         ftp->qfileref = qfileref;
         ftp->dlist = dlist;
+        ftp->page_id = NgGetPageId
+                (ftp->go->base.id,NrmNULLQUARK,ftp->qfileref);
 
         finfo = dlist->u.file;
         nattrs = finfo->n_atts;
@@ -1413,8 +1507,16 @@ NgFileTree *NgCreateFileTree
         
         XtAddCallback(ftp->tree,XmNexpandCallback,ExpandCB,ftp);
         XtAddCallback(ftp->tree,XmNcollapseCallback,CollapseCB,ftp);
+        XtVaGetValues(ftp->tree,
+                      XmNtextWidget,&ftp->text,
+                      NULL);
         
         ret = NgUpdateFileTree((NgFileTree*) ftp,qfileref,dlist);
+/*
+ * wait until rows are initialized before adding focus callback; otherwise
+ * we get core dumps.
+ */
+        XtAddCallback(ftp->tree,XmNcellFocusCallback,FocusCB,ftp);
 
         if (ret < NhlWARNING) {
                 NhlFree(ftp);

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.6 1997-10-03 20:08:31 dbrown Exp $
+ *      $Id: varpage.c,v 1.7 1998-01-08 01:19:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -220,7 +220,25 @@ static void DataGridToggleCB
         }
         
         (*pdp->adjust_page_geo)(page);
-        
+
+        if (rec->datagrid_managed) {
+                Position  x,y;
+                Dimension width,height;
+                XRectangle rect;
+                XtVaGetValues(rec->datagrid->grid,
+                              XmNwidth,&width,
+                              XmNheight,&height,
+                              XmNx,&x,
+                              XmNy,&y,
+                              NULL);
+                rect.x = x;
+                rect.y = y;
+                rect.width = width;
+                rect.height = height;
+                
+                NgPageSetVisible
+                        (rec->go->base.id,rec->page_id,pdp->form,&rect);
+        }
         return;
         
 }
@@ -307,6 +325,31 @@ static void ShaperToggleCB
         
         (*pdp->adjust_page_geo)(page);
         
+        if (rec->shaper_managed) {
+                Position  x,y;
+                Dimension width,height;
+                XRectangle rect;
+                XtVaGetValues(rec->shaper->frame,
+                              XmNwidth,&width,
+                              XmNheight,&height,
+                              XmNx,&x,
+                              XmNy,&y,
+                              NULL);
+                rect.x = x;
+                rect.y = y;
+                rect.width = width;
+                rect.height = height;
+                XtVaGetValues(rec->plotspecmenu->menubar,
+                              XmNwidth,&width,
+                              XmNheight,&height,
+                              XmNx,&x,
+                              XmNy,&y,
+                              NULL);
+                rect.height = y - rect.y + height;
+                
+                NgPageSetVisible
+                        (rec->go->base.id,rec->page_id,pdp->form,&rect);
+        }
         return;
         
 }
@@ -476,6 +519,7 @@ NewVarPage
         rec->receiver_count = 0;
         rec->receiver_pages = NULL;
         rec->output = NULL;
+        rec->go = go;
         
         pdp->type_rec = (NhlPointer) rec;
         pdp->pane = pane;
@@ -493,6 +537,7 @@ NewVarPage
         pdp->page_input_notify = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
+        pdp->page_focus_notify = NULL;
         
         return pdp;
 }
@@ -544,6 +589,7 @@ NgGetVarPage
                           NrmQuarkToString(page->qvar));
         }
         rec = (brVarPageRec *) pdp->type_rec;
+        rec->page_id = page->id;
         InitializeDimInfo(rec,copy_rec,pdp->dl,
                           copy_page ? copy_page->pdata->dl : NULL);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.11 1997-10-23 02:17:53 dbrown Exp $
+ *      $Id: hlupage.c,v 1.12 1998-01-08 01:19:26 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -34,6 +34,19 @@
 #include <ncarg/hlu/DataItem.h>
 
 static NrmQuark QFillValue = NrmNULLQUARK;
+
+static void HluPageFocusNotify (
+        brPage *page,
+        NhlBoolean in
+        )
+{
+        brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
+        
+        if (in && rec->res_tree)
+                NgRestoreResTreeOverlays(rec->res_tree);
+        return;
+}
 
 static void
 SetValCB
@@ -940,7 +953,7 @@ DeactivateHluPage
 {
 	brHluPageRec *rec = (brHluPageRec *)page->pdata->type_rec;
         int i;
-
+        
         if (rec->create_update)
                 XtRemoveCallback(rec->create_update,
                                  XmNactivateCallback,CreateUpdateCB,page);
@@ -949,6 +962,7 @@ DeactivateHluPage
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
 
         rec->state = _hluNOTCREATED;
+        rec->hlu_id = NhlNULLOBJID;
         rec->do_auto_update = False;
         rec->public.data_info = NULL;
         rec->public.class_name = NULL;
@@ -1198,6 +1212,7 @@ NewHluPage
         pdp->page_input_notify = HluPageInputNotify;
         pdp->public_page_data = PublicHluPageData;
         pdp->update_page = UpdateHluPage;
+        pdp->page_focus_notify = HluPageFocusNotify;
         pdp->pane = pane;
         
         rec->data_sink_grid = NgCreateDataSinkGrid
@@ -1334,18 +1349,22 @@ NgGetHluPage
                 return pdp;
         }
         rec->public.data_info = copy_rec->public.data_info;
+        rec->class = copy_rec->class;
+        rec->public.class_name = copy_rec->public.class_name;
+        rec->hlu_id = copy_rec->hlu_id;
+        rec->state = copy_rec->state;
         
 /* ResTree */
         
         if (rec->res_tree) {
                  NgDupResTree(page->go,pdp->form,page->qvar,
-                              rec->class,rec->hlu_id,
+                              copy_rec->class,copy_rec->hlu_id,
                               rec->res_tree,copy_rec->res_tree);
         }
         else {
                 rec->res_tree = NgDupResTree
                         (page->go,pdp->form,page->qvar,
-                         rec->class,rec->hlu_id,
+                         copy_rec->class,copy_rec->hlu_id,
                          NULL,copy_rec->res_tree);
                 XtVaSetValues(rec->res_tree->tree,
                               XmNrightAttachment,XmATTACH_NONE,

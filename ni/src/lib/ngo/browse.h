@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.4 1997-08-20 20:49:02 dbrown Exp $
+ *      $Id: browse.h,v 1.5 1998-01-08 01:19:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,13 @@ extern int NgGetPageId(
         int		goid,
         NrmQuark	qsym1,
         NrmQuark	qsym2
+        );
+
+extern NhlErrorTypes NgPageSetVisible(
+        int		goid,
+        NgPageId	page_id,
+        Widget		requestor,
+        XRectangle	*rect
         );
 
 

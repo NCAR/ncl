@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.4 1997-10-03 20:07:55 dbrown Exp $
+ *      $Id: browseP.h,v 1.5 1998-01-08 01:19:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/vcrcontrol.h>
 #include <ncarg/ngo/varmenus.h>
+#include <ncarg/ngo/htmlviewI.h>
 #include <ncarg/ngo/XmL.h>
 
 #define DEBUG_ENTRY 1
@@ -36,10 +37,9 @@
 */
 #define DEBUG_DATABROWSER 0
 #define brMAX_PANES 16
-
+        
 typedef struct _brTab
 {
-	struct _brTab		*next;
         Widget			tab;
         NhlBoolean		managed;
 } brTab, *brTabList;       
@@ -61,6 +61,9 @@ typedef struct _brPane
         NhlBoolean		managed;
         Widget			topform;
         Widget			scroller;
+        Widget			clip_window;
+        Widget			hsb;
+        Widget			vsb;
         Widget			form;
         NhlBoolean		has_folder;
         Widget			folder;
@@ -76,6 +79,9 @@ typedef struct _brPane
         NhlBoolean		changed;
         int			remove_pos;
         int			active_pos;
+        brPage			*active_page;
+        int			htmlview_count;
+        XmLArray		htmlview_list;
 } brPane;
 
 typedef void (*DestroyPageFunc) (
@@ -84,6 +90,11 @@ typedef void (*DestroyPageFunc) (
 
 typedef void (*DeactivatePageFunc) (
 	brPage	*page
+);
+
+typedef void (*PageFocusNotify) (
+        brPage *page,
+        NhlBoolean in /* False if FocusOut, True if FocusIn */
 );
 
 typedef void (*PageInputNotify) (
@@ -113,6 +124,7 @@ typedef struct _brPageData
 	DeactivatePageFunc	deactivate_page;
         PageOutputNotify	page_output_notify;
         PageInputNotify		page_input_notify;
+        PageFocusNotify		page_focus_notify;
         PublicPageData		public_page_data;
         UpdatePage		update_page;
 } brPageData, *brPageDataList;
@@ -176,6 +188,17 @@ NgSetFolderSize(
         Dimension page_height,
         Dimension *avail_width,
         Dimension *avail_height
+        );
+
+extern brPane *_NgGetPaneOfPage(
+        int		goid,
+        NgPageId	page_id
+        );
+
+extern void _NgGetPaneVisibleArea(
+        NhlLayer go,
+        brPane *pane,
+        XRectangle *rect
         );
 
 extern NgBrowseClassRec	NgbrowseClassRec;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.3 1997-10-23 00:26:56 dbrown Exp $
+ *      $Id: Grid.c,v 1.4 1998-01-08 01:19:18 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -1464,6 +1464,7 @@ Cardinal *narg;
 	GridReg *reg;
 	int i, valid, hc, c, fc, hr, r, fr;
 	Boolean layoutFrozen;
+
 #ifdef POINTER_FOCUS_CHECK
 	unsigned char kfp;
 	Widget shell;
@@ -7857,6 +7858,9 @@ XtPointer clientData, callData;
 		g->grid.focusIn = 0;
 	focusRow = g->grid.focusRow;
 	focusCol = g->grid.focusCol;
+	if (g->grid.debugLevel > 2)
+	  fprintf(stderr, "XmLGrid: focus %s %d %d\n", 
+		  g->grid.focusIn ? "in" : "out", focusRow,focusCol);
 	if (focusRow != -1 && focusCol != -1)
 		{
 		if (g->grid.highlightRowMode == True)

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.15 1997-10-23 02:17:53 dbrown Exp $
+ *      $Id: addfile.c,v 1.16 1998-01-08 01:19:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ static XmString NoFileXmString;
 static XmString NoMatchString = NULL;
 static char Buffer[512];
 
-#define MIN_VLIST_WIDTH 90
+#define MIN_VLIST_WIDTH 70
 
 #define	Oset(field)	NhlOffset(NgAddFileRec,addfile.field)
 static NhlResource resources[] = {
@@ -371,7 +371,7 @@ static void AdjustSize
         Dimension w, cwidth,add,vwidth,fwidth,formwidth;
         Dimension formheight,h;
 	int		vis_items, h_add = 0;
-
+        
 	np->adjust_event = False;
         if (! np->mapped)
                 return;
@@ -492,6 +492,7 @@ static void AdjustSize
 		      XmNpageIncrement,&pinc,
                       NULL);
 	XmScrollBarSetValues(hscroll,max-ssize,ssize,inc,pinc,True);
+
 
 	return;
 }
@@ -1480,13 +1481,6 @@ static void Filter
 		NhlFree(filtertext);
 	}
 
-        XtVaGetValues(np->filelist,
-                      XmNwidth,&cwidth,
-                      NULL);
-        XtVaSetValues(np->vname,
-                      XmNwidth,cwidth,
-                      NULL);
-
         XmListSelectPos(np->filelist,1,True);
 
 	SetSelectText(go);
@@ -1887,6 +1881,7 @@ ChangeSizeEH
 #if	DEBUG_ADDFILE
                 fprintf(stderr,"user-generated ConfigureNotify\n");
 #endif
+		XtUnmapWidget(np->workareaform);
                 XtVaGetValues(XtParent(np->dirlist),
                               XmNwidth,&np->user_dir_width,
                               NULL);
@@ -1894,11 +1889,11 @@ ChangeSizeEH
                               XmNwidth,np->vlist_resize_width,
                               NULL);
                 AdjustSize(go);
+		XtMapWidget(np->workareaform);
         }
         else if (event->type == MapNotify) {
 		String dirmask_text;
                 np->mapped = True;
-
 		XmStringGetLtoR
 			(np->dirmask,XmFONTLIST_DEFAULT_TAG,&dirmask_text);
 		XtVaSetValues(np->filtertext,
@@ -1908,9 +1903,14 @@ ChangeSizeEH
 		XtFree(dirmask_text);
 		Filter(go);
                 AdjustSize(go);
+                if ( !np->lists_mapped) {
+                        XtMapWidget(np->workareaform);
+                        np->lists_mapped = True;
+                }
 #if	DEBUG_ADDFILE
                 fprintf(stderr,"MapNotify\n");
 #endif
+
                 return;
         }
 
@@ -1965,7 +1965,7 @@ AddFileCreateWin
 	NgAddFilePart	*np = &((NgAddFile)go)->addfile;
 	Widget		applyform,menu,menush,optmenu;
 	Widget		filterbutton,varinfobutton;
-        Widget		workareaform,varform,filterform,form,label;
+        Widget		varform,filterform,form,label;
         Widget		varlabel,filterlabel,sizelabel,datelabel;
         Widget		frame,frame1,sep,pb;
 	XmString	dirspec,xmtmp;
@@ -1980,6 +1980,7 @@ AddFileCreateWin
         XtTranslations	translations;
 	char		*cp;
 	static NhlBoolean first = True;
+        
         char		vlist_trans[] =
 	"Button3<Motion>:        ListButtonMotion() \
                                 CheckInfoPopupAction(1) \n\
@@ -2097,15 +2098,18 @@ AddFileCreateWin
                                         NULL);
 	XtAddCallback(varinfobutton,XmNactivateCallback,SelectTextCB,go);
         
-        workareaform =
-                XtVaCreateManagedWidget("workareaform",
-                                        xmFormWidgetClass,go->go.manager,
-                                        NULL);
+        np->workareaform =
+                XtVaCreateWidget("workareaform",
+                                 xmFormWidgetClass,go->go.manager,
+                                 NULL);
+        XtSetMappedWhenManaged(np->workareaform,False);
+        XtManageChild(np->workareaform);
+
 /* bottom line */
 
 	applyform =
                 XtVaCreateManagedWidget("applyform",xmFormWidgetClass,
-					workareaform,
+					np->workareaform,
                                         XmNtopAttachment,XmATTACH_NONE,
                                         NULL);
 
@@ -2175,7 +2179,8 @@ AddFileCreateWin
 
 	sep = 
                 XtVaCreateManagedWidget("sep",
-                                        xmSeparatorGadgetClass,workareaform,
+                                        xmSeparatorGadgetClass,
+                                        np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,applyform,
                                         XmNtopAttachment,XmATTACH_NONE,
@@ -2184,7 +2189,7 @@ AddFileCreateWin
 	xmtmp = XmStringCreateLocalized("Date");
 	datelabel = 
                 XtVaCreateManagedWidget("datelabel",
-                                        xmLabelGadgetClass,workareaform,
+                                        xmLabelGadgetClass,np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,sep,
                                         XmNtopAttachment,XmATTACH_NONE,
@@ -2195,7 +2200,7 @@ AddFileCreateWin
 
 	frame1 = 
                 XtVaCreateManagedWidget("dateframe",
-                                        xmFrameWidgetClass,workareaform,
+                                        xmFrameWidgetClass,np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,sep,
                                         XmNtopAttachment,XmATTACH_NONE,
@@ -2227,7 +2232,7 @@ AddFileCreateWin
 	xmtmp = XmStringCreateLocalized("Size");
 	sizelabel = 
                 XtVaCreateManagedWidget("sizelabel",
-                                        xmLabelGadgetClass,workareaform,
+                                        xmLabelGadgetClass,np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,frame1,
                                         XmNtopAttachment,XmATTACH_NONE,
@@ -2238,7 +2243,7 @@ AddFileCreateWin
 
 	frame = 
                 XtVaCreateManagedWidget("sizeframe",
-                                        xmFrameWidgetClass,workareaform,
+                                        xmFrameWidgetClass,np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,frame1,
                                         XmNtopAttachment,XmATTACH_NONE,
@@ -2265,7 +2270,7 @@ AddFileCreateWin
             /* var sort options option menu */
 	menush =
                 XtVaCreatePopupShell("varSortMenuSh",xmMenuShellWidgetClass,
-                                     workareaform,
+                                     np->workareaform,
                                      XmNwidth,5,
                                      XmNheight,5,
                                      XmNallowShellResize,True,
@@ -2312,7 +2317,8 @@ AddFileCreateWin
         
 	optmenu =
                 XtVaCreateManagedWidget("varSortMenu",
-                                        xmRowColumnWidgetClass,workareaform,
+                                        xmRowColumnWidgetClass,
+                                        np->workareaform,
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNleftWidget,frame,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
@@ -2336,7 +2342,7 @@ AddFileCreateWin
 
 	np->info_frame = 
                 XtVaCreateManagedWidget("vcrframe",
-                                        xmFrameWidgetClass,workareaform,
+                                        xmFrameWidgetClass,np->workareaform,
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNleftWidget,optmenu,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
@@ -2442,7 +2448,7 @@ AddFileCreateWin
 
         np->listform =
                 XtVaCreateManagedWidget("listform",
-                                        xmFormWidgetClass,workareaform,
+                                        xmFormWidgetClass,np->workareaform,
                                         XmNresizePolicy,XmRESIZE_NONE,
                                         XmNtopAttachment,XmATTACH_NONE,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
@@ -2477,6 +2483,7 @@ AddFileCreateWin
         
         np->vlist = XmCreateScrolledList(varform,"VarList",args,n);
         XtManageChild(np->vlist);
+        np->lists_mapped = False;
 
         translations = XtParseTranslationTable(vlist_trans);
         XtOverrideTranslations(np->vlist,translations);
@@ -2512,17 +2519,14 @@ AddFileCreateWin
 	/* get the wid's of the dirlist and filelist and set the 
 	 * np as user data
 	 */
+
 	np->filelist = XmFileSelectionBoxGetChild(np->fselect_box,
                                                   XmDIALOG_LIST);
 
         XtVaSetValues(XtParent(np->filelist),
 		      XmNscrollBarDisplayPolicy,XmSTATIC,
                       NULL);
-
-        XtVaSetValues(np->filelist,
-		      XmNscrollBarDisplayPolicy,XmSTATIC,
-                      NULL);
-
+        
         translations = XtParseTranslationTable(filelist_trans);
         XtOverrideTranslations(np->filelist,translations);
 	np->dirlist = XmFileSelectionBoxGetChild(np->fselect_box,
@@ -2555,7 +2559,7 @@ AddFileCreateWin
  */
 	filterform = 
                 XtVaCreateManagedWidget("filterform",
-                                        xmFormWidgetClass,workareaform,
+                                        xmFormWidgetClass,np->workareaform,
                                         XmNbottomAttachment,XmATTACH_WIDGET,
                                         XmNbottomWidget,np->listform,
                                         NULL);
@@ -2594,10 +2598,56 @@ AddFileCreateWin
         sel.lngval = NgNclCBDELETE_FILEVAR;
 	_NhlAddObjCallback(_NhlGetLayer(np->nsid),
                            NgCBnsObject,sel,FileRefDeleteCB,user_data);
-
         Filter(go);
         ClearVarList(go);
+#if 0        
+        {
+/* begin debug */
+        int	max,ssize,inc,pinc;
+        Widget  hscroll;
+                
+        XtVaGetValues(XtParent(np->dirlist),
+                      XmNhorizontalScrollBar,&hscroll,
+                      NULL);
+        XtVaGetValues(hscroll,
+                      XmNmaximum,&max,
+		      XmNsliderSize,&ssize,
+		      XmNincrement,&inc,
+		      XmNpageIncrement,&pinc,
+                      NULL);
         
+        printf("dirlist max %d, ssize %d, inc %d, pageinc %d\n",
+               max,ssize,inc,pinc);
+        XtVaSetValues(hscroll,
+		      XmNpageIncrement,40,
+                      NULL);
+        XtVaGetValues(XtParent(np->filelist),
+                      XmNhorizontalScrollBar,&hscroll,
+                      NULL);
+        XtVaGetValues(hscroll,
+                      XmNmaximum,&max,
+		      XmNsliderSize,&ssize,
+		      XmNincrement,&inc,
+		      XmNpageIncrement,&pinc,
+                      NULL);
+        printf("filelist max %d, ssize %d, inc %d, pageinc %d\n",
+               max,ssize,inc,pinc);
+        XtVaGetValues(XtParent(np->vlist),
+                      XmNhorizontalScrollBar,&hscroll,
+                      NULL);
+        XtVaGetValues(hscroll,
+                      XmNmaximum,&max,
+		      XmNsliderSize,&ssize,
+		      XmNincrement,&inc,
+		      XmNpageIncrement,&pinc,
+                      NULL);
+        
+        printf("vlist max %d, ssize %d, inc %d, pageinc %d\n",
+               max,ssize,inc,pinc);
+/* end debug */
+        }
+        XSync(go->go.x->dpy,False);
+#endif        
 	return True;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.5 1997-10-03 20:07:58 dbrown Exp $
+ *      $Id: datasinkgrid.c,v 1.6 1998-01-08 01:19:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,7 @@ DataText
                                 NrmQuarkToString(ditem->qfile),
                                 NrmQuarkToString(ditem->qvar));
                 else
-                        sprintf(&Buffer[cwidth0],"%s",
+                        sprintf(&Buffer[cwidth0],"%s(",
                                 NrmQuarkToString(ditem->qvar));
                 for (i=0; i< ditem->ndims; i++) {
                         if ((ditem->finish[i] - ditem->start[i])

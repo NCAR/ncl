@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.h,v 1.2 1997-10-03 20:08:21 dbrown Exp $
+ *      $Id: restree.h,v 1.3 1998-01-08 01:19:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -101,6 +101,11 @@ extern void NgDestroyResTree
 (
         NgResTree		*res_tree
         );
-        
+
+extern void NgRestoreResTreeOverlays
+(
+        NgResTree		*res_tree
+        );
+
 
 #endif	/* _NG_RESTREE_H */

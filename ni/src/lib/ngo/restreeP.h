@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.5 1997-10-23 00:27:07 dbrown Exp $
+ *      $Id: restreeP.h,v 1.6 1998-01-08 01:19:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,9 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ResourcesP.h>
 
+#include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/restree.h>
+#include <ncarg/ngo/htmlview.h>
 
  
 #define DEBUG_ENTRY 1
@@ -44,12 +46,15 @@
 #define _rtLevel2	20
 #define _rtLevel3	30
 #define _rtLevel4	40
+#define _rtLevel5	40
 
-
+#define _rtNoGroup	00
 #define _rtClassGroup   01
 #define _rtClass	02
 #define _rtResGroup	03
 #define _rtRes		04
+#define _rtResArray	05
+#define _rtResDoc	06
 
 #define _rtSuperClassGroup 0
 #define _rtChildClassGroup 1
@@ -133,6 +138,15 @@ typedef struct _rtClassInfo
         rtCntrlInfo		*cntrl_info;
         rtNodeData		*ndata;
 } rtClassInfo;
+
+typedef struct _rtHtmlViewInfo
+{
+        int		id;
+        Boolean		open;
+        Position	y;
+        Dimension	height;
+        rtNodeData	*ndata;
+} rtHtmlViewInfo;
         
 typedef struct _NgResTreeRec 
 {
@@ -141,6 +155,7 @@ typedef struct _NgResTreeRec
         
             /* private fields */
         NgGO			go;
+        NgPageId		page_id;
         int			nclstate;
         NrmQuark		qhlu;
         NhlClass		class;
@@ -159,12 +174,16 @@ typedef struct _NgResTreeRec
         rtNodeData		top;
         XmString		selected_row_xmstr;
         int			edit_row;
+        int			focus_row;
 	Boolean			manual_edit_started;
         rtSetValNode		*set_val_list;
         Boolean			scroll_cbs_installed;
         Widget			text;
   	rtEnumInfoRec		enum_info;
         Boolean			size_update_req;
+        int			htmlview_count;
+        XmLArray		htmlview_list;
+        Boolean			duping_data_list;
 } NgResTreeRec;
 
 #endif	/* _NG_RESTREEP_H_ */

@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.1 1997-10-03 20:08:03 dbrown Exp $
+ *      $Id: graphic.c,v 1.2 1998-01-08 01:19:25 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -261,10 +261,11 @@ NhlErrorTypes NgDrawGraphic
         )
 {
         char buf[512];
-        int i,hlu_id,wk_id,count,*id_array;
+        int i,hlu_id,wk_id,base_id,count,*id_array;
         NhlBoolean has_drawable = False;
         NhlLayer layer;
         NhlString wk_name;
+	char base_name[512];
         NgGO go = (NgGO)_NhlGetLayer(goid);
 
         if (!go) {
@@ -296,12 +297,15 @@ NhlErrorTypes NgDrawGraphic
                            "graphic not drawable %s",ncl_graphic));
                 return NhlWARNING;
         }
+	base_id = _NhlBasePlot(hlu_id);
+	strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
+
         wk_name = NgNclGetHLURef(go->go.nclstate,wk_id);
 
         if (clear)
-                sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,ncl_graphic);
+                sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,base_name);
         else
-                sprintf(buf,"draw(%s)\n",wk_name,ncl_graphic);
+                sprintf(buf,"draw(%s)\n",wk_name,base_name);
         
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
 
