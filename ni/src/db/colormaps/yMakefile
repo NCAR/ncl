@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 2002-04-10 15:10:19 haley Exp $
+#       $Id: yMakefile,v 1.2 2002-06-27 22:53:35 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -27,6 +27,7 @@ FILES		= \
 		WhViBlGrYeOrRe.rgb \
 		WhViBlGrYeOrReWh.gp \
 		WhViBlGrYeOrReWh.rgb \
+		amwg.rgb \
 		cosam.rgb \
 		cosam12.rgb \
 		default.rgb \
