@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.21 2000-03-20 22:15:12 haley Exp $
+ *      $Id: Sun4Solaris,v 1.22 2002-11-21 21:14:01 haley Exp $
  */
 /************************************************************************
 *									*
@@ -19,11 +19,11 @@
  *
  *	Description:	
  */
-#define	CtoFLibraries	-lF77 -lM77 -lnsl -lsunmath -lm
+#define	CtoFLibraries	-lF77 -lM77 -lsunmath -lm
 #define HdfDefines	-DSUN
 #define	Cstatic	-Bstatic
 #define	Cdynamic -Bdynamic
-#define ExtraSysLibraries	-Bdynamic -lnsl -lintl -lsocket -ldl -lw
+#define ExtraSysLibraries	-lnsl -lintl -lsocket -ldl -lw
 #define	CcOptions	-Xc
 #define	CppCommand	/usr/ccs/lib/cpp
 #define	FCppCommand	/usr/ccs/lib/cpp
@@ -31,12 +31,12 @@
 #define	LintCommand	alint
 #define StdDefines      -DSYSV  -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D__EXTENSIONS__
 
-#define	ArchRecLibSearch	-L/usr/local/lib -L/usr/openwin/lib -L/usr/dt/lib
-#define	ArchRecIncSearch	-I/usr/local/include -I/usr/openwin/include -I/usr/dt/include
+#define	ArchRecLibSearch	-L/usr/openwin/lib
+#define	ArchRecIncSearch	-I/usr/openwin/include
 
 #define XLibrary -lX11 -lXext
-#define XmotifLibrary -Bdynamic -lXm -Bstatic
-#define XToolLibrary      -lXt -Bdynamic -lSM -lICE -Bstatic
+#define XmotifLibrary -lXm
+#define XToolLibrary      -lXt -lSM -lICE
 
 #define UseCatDirs        YES
 

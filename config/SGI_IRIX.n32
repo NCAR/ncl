@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI_IRIX.n32,v 1.2 2002-02-22 03:20:34 haley Exp $
+ *      $Id: SGI_IRIX.n32,v 1.3 2002-11-21 21:14:01 haley Exp $
  */
 /************************************************************************
 *									*
@@ -43,9 +43,6 @@ SGIWARNSUPPRESS = SgiWarnSuppress
 #define CtoFLibraries	-lftn -lm
 #define COptimizeFlag    -O3
 #define FOptimizeFlag    -O3
-
-#define	ArchRecLibSearch	-L/usr/local/lib
-#define	ArchRecIncSearch	-I/usr/local/include
 
 #ifdef	sgi
 #undef	sgi

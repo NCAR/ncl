@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX_alpha,v 1.1 2002-03-18 21:11:14 haley Exp $
+ *      $Id: LINUX_alpha,v 1.2 2002-11-21 21:14:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -29,14 +29,14 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   cc
 #define FCompiler   fort
-#define CtoFLibraries   -Wl,-Bstatic '-L/usr/lib/gcc-lib/alpha-redhat-linux/2.96' -lg2c -Wl,-Bdynamic -lm -lfor -lots
+#define CtoFLibraries   -lg2c -lfor -lots
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib -L/usr/local/lib
-#define ArchRecIncSearch    -I/usr/X11R6/include -I/usr/local/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include
 
 FC = $(F77)
 
