@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.3 1993-11-20 01:05:55 dbrown Exp $
+ *      $Id: DataComm.c,v 1.4 1994-01-05 22:34:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,14 +35,14 @@
 
 #define	Oset(field)	NhlOffset(DataCommLayerRec,datacomm.field)
 static NhlResource dcresources[] = {
-	{NhlNdelayCompute,NhlCdelayCompute,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNdcDelayCompute,NhlCdcDelayCompute,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(delay_compute),NhlTImmediate,(NhlPointer)False}
 };
 #undef	Oset
 
 #define Oset(field)	NhlOffset(DataSpecLayerRec,dataspec.field)
 static NhlResource dsresources[] = {
-	{NhlNdataItem,NhlCdataItem,NhlTInteger,sizeof(int),
+	{NhlNdsDataItem,NhlCdsDataItem,NhlTInteger,sizeof(int),
 /*SUPPRESS 25*/
 		Oset(data_item),NhlTImmediate,(NhlPointer)NULL_LAYER}
 };
@@ -1870,7 +1870,7 @@ NhlRemoveData
 	_NhlExtArg	larg;
 	Layer		dcl = _NhlGetLayer(dcommid);
 
-	if((dcl == NULL) || !_NhlIsDataComm(dcl)){
+	if((dcl == NULL) || !(_NhlIsDataComm(dcl) || _NhlIsDataSpec(dcl))){
 		NhlPError(FATAL,E_UNKNOWN,
 				"NhlRemoveData:Invalid DataComm id %d",dcommid);
 		return FATAL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.2 1993-10-19 17:50:20 boote Exp $
+ *      $Id: DataComm.h,v 1.3 1994-01-05 22:34:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,11 @@
 #define _NDataComm_h
 #include <ncarg/hlu/Transform.h>
 
-#define	NhlNdelayCompute	"delayCompute"
-#define	NhlCdelayCompute	"DelayCompute"
+#define	NhlNdcDelayCompute	"dcDelayCompute"
+#define	NhlCdcDelayCompute	"DcDelayCompute"
 
-#define NhlNdataItem	"dataItem"
-#define NhlCdataItem	"DataItem"
+#define NhlNdsDataItem	"dsDataItem"
+#define NhlCdsDataItem	"DsDataItem"
 
 /*
  * Class declarations
