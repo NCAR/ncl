@@ -1,5 +1,5 @@
 C
-C $Id: cpcica.f,v 1.6 1995-06-02 00:24:01 kennison Exp $
+C $Id: cpcica.f,v 1.7 1996-07-09 20:09:11 kennison Exp $
 C
       SUBROUTINE CPCICA (ZDAT,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,
      +                                                      XCQF,YCQF)
@@ -152,6 +152,14 @@ C Get indices for the contour levels in ascending order.
 C
       CALL CPSORT (CLEV,NCLV,ICLP)
 C
+C Compute the minimum and maximum values that user X and Y coordinates
+C can have.
+C
+      XUMN=MIN(XAT1,XATM)
+      XUMX=MAX(XAT1,XATM)
+      YUMN=MIN(YAT1,YATN)
+      YUMX=MAX(YAT1,YATN)
+C
 C Loop through each cell in the cell array.  Find the center point of
 C each cell in the fractional system (coordinates XCFS and YCFS) and
 C then in the user system (coordinates XCUS and YCUS).
@@ -182,8 +190,8 @@ C
           ELSE
             CALL HLUCPMPXY (-IMPF,XCCU,YCCU,XCCD,YCCD)
             IF (ICFELL('CPCICA',11).NE.0) RETURN
-            IF ((OORV.EQ.0..OR.XCCD.NE.OORV).AND.XCCD.GE.XAT1.AND.XCCD.L
-     +T.XATM.AND.YCCD.GE.YAT1.AND.YCCD.LT.YATN) THEN
+            IF ((OORV.EQ.0..OR.XCCD.NE.OORV).AND.XCCD.GE.XUMN.AND.XCCD.L
+     +E.XUMX.AND.YCCD.GE.YUMN.AND.YCCD.LE.YUMX) THEN
               XCCI=1.+((XCCD-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
               YCCI=1.+((YCCD-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
             ELSE
