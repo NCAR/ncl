@@ -24,6 +24,8 @@
  */
 #include "NclHLUObj.h"
 
+NhlErrorTypes wmfndn(float, float, float, float, float *, float *);
+
 NhlErrorTypes wmsetp_W(void)
 {
 
@@ -41,7 +43,7 @@ NhlErrorTypes wmsetp_W(void)
                       "nms", "pai", "rbs", "rc1", "rc2", "rc3",
                       "rc4", "rc5", "rev", "rfc", "rls", "ros",
                       "sc1", "sc2", "sc3", "sc4", "slf", "sty",
-                      "t1c", "t2c", "wbf", "wfc", "wty",
+                      "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
                       "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
                       "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
                       "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
@@ -49,7 +51,7 @@ NhlErrorTypes wmsetp_W(void)
                       "NMS", "PAI", "RBS", "RC1", "RC2", "RC3",
                       "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
                       "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
-                      "T1C", "T2C", "WBF", "WFC", "WTY"
+                      "T1C", "T2C", "WBF", "WFC", "WTY", "EZF"
                      };
 
   char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
@@ -215,11 +217,39 @@ NhlErrorTypes wmgetp_W(void)
  *  List the integer and float parameter names.  To add new ones,
  *  all that needs to be done is add the names to this list.
  */
-  char *params_i[] = {"wbf", "col",
-                      "WBF", "COL"};
-  char *params_f[] = {"wba", "wbc", "wbd", "wbr", "wbs", "wbt",
-                      "WBA", "WBC", "WBD", "WBR", "WBS", "WBT"};
-  char *params_c[] = {"erf", "ERF"};
+  char *params_i[] = {"alo", "aoc", "asc", "awc", "cbc", "cc1", 
+                      "cc2", "cc3", "cfc", "col", "dbc", "dtc",
+                      "hib", "hic", "hif", "his", "lc1", "lc2",
+                      "lc3", "lob", "lof", "los", "mxs", "nbz",
+                      "nms", "pai", "rbs", "rc1", "rc2", "rc3",
+                      "rc4", "rc5", "rev", "rfc", "rls", "ros",
+                      "sc1", "sc2", "sc3", "sc4", "slf", "sty",
+                      "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
+                      "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
+                      "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
+                      "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
+                      "LC3", "LOB", "LOF", "LOS", "MXS", "NBZ",
+                      "NMS", "PAI", "RBS", "RC1", "RC2", "RC3",
+                      "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
+                      "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
+                      "T1C", "T2C", "WBF", "WFC", "WTY", "EZF"
+                     };
+
+  char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
+                      "cht", "cmg", "cs1", "cs2", "dts", "dwd",
+                      "end", "lin", "lwd", "rht", "rmg", "sht",
+                      "sl1", "sl2", "swi", "tht", "wba", "wbc",
+                      "wbd", "wbl", "wbr", "wbs", "wbt", "wht",
+                      "ARC", "ARD", "ARL", "ARS", "BEG", "BET",
+                      "CHT", "CMG", "CS1", "CS2", "DTS", "DWD",
+                      "END", "LIN", "LWD", "RHT", "RMG", "SHT",
+                      "SL1", "SL2", "SWI", "THT", "WBA", "WBC",
+                      "WBD", "WBL", "WBR", "WBS", "WBT", "WHT"
+                     };
+
+  char *params_c[] = {"erf", "fro",
+                      "ERF", "FRO",
+                     };
 
 /*
  * Input array variable
@@ -405,7 +435,8 @@ NhlErrorTypes wmbarb_W( void )
 NhlErrorTypes wmdrft_W( void )
 {
   int grlist,gkswid,i;
-  int *nwid,nid;
+  int *nwid,nid,ezf,j,indx,numi;
+  float *xd,*yd,*ud,*vd,xt,yt,mval=1.e12;
 
 /*
  *  Definte a variable to store the HLU object identifier.
@@ -461,26 +492,180 @@ NhlErrorTypes wmdrft_W( void )
   NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
   NhlGetValues(nid,grlist);
 
+
 /*
  * The following section calls the c_wmdrft function.
  */
   gactivate_ws (gkswid);
-  for (i = 0; i < dsizes_x[0]; i++) {
+/*
+ *  If wmdrft is being used in conjunction with a 
+ *  currently existing map projection, then the
+ *  input is assumed to be in degrees and it must
+ *  be determined what parts of the front line are
+ *  projectable.  If one point is projectable and
+ *  its neighbor is not, then you need to figure
+ *  out where between those two points the closest
+ *  projectable point is.
+ */
+  c_wmgeti("ezf",&ezf);
+  if (ezf != -1) {
+    numi = dsizes_x[0];
+    xd = (float *) malloc(numi*sizeof(float));
+    yd = (float *) malloc(numi*sizeof(float));
+    ud = (float *) calloc(numi,sizeof(float));
+    vd = (float *) calloc(numi,sizeof(float));
+    xd = (float *) memcpy(xd,x,numi*sizeof(float));
+    yd = (float *) memcpy(yd,y,numi*sizeof(float));
+  
+    for (i = 0; i < numi; i++) {
+      if (i == numi-1) {
+        free(xd);
+        free(yd);
+        free(ud);
+        free(vd);
+        gdeactivate_ws (gkswid);
+        NhlRLDestroy(grlist);
+        return(NhlNOERROR);
+      }
+      c_maptrn(xd[i],yd[i],&xt,&yt);
+      if (xt != mval) {
+        indx = 0;
+        ud[0] = xt;
+        vd[0] = yt;
+        for (j = i+1; j < numi; j++) {
+          indx++;
+          c_maptrn(xd[j],yd[j],&xt,&yt);
+          if (xt != mval) {
+            ud[indx] = xt;
+            vd[indx] = yt;
+            if (j == numi-1) {
+              c_wmdrft(indx+1,ud,vd);
+              free(xd);
+              free(yd);
+              free(ud);
+              free(vd);
+              gdeactivate_ws (gkswid);
+              NhlRLDestroy(grlist);
+              return(NhlNOERROR);
+            }
+          }
+          else {
+            wmfndn(xd[j-1],yd[j-1],xd[j],yd[j],&xt,&yt);
+            c_maptrn(xt,yt,ud+indx,vd+indx);
+            c_wmdrft(indx+1,ud,vd);
+            i = i+indx;
+            j = numi;
+            indx = 0;
+          }
+        }
+      }
+      else {
+        indx = 0;
+        for (j = i+1; j < numi; j++) {
+          indx++;
+          if (j == numi-1) {
+            free(xd);
+            free(yd);
+            free(ud);
+            free(vd);
+            gdeactivate_ws (gkswid);
+            NhlRLDestroy(grlist);
+            return(NhlNOERROR);
+          }
+          c_maptrn(xd[j],yd[j],&xt,&yt);
+          if (xt != mval) {
+            wmfndn(xd[j-1],yd[j-1],xd[j],yd[j],&xt,&yt);
+            xd[j-1] = xt;
+            yd[j-1] = yt;
+            i = j-2;
+            j = numi;
+          }
+        }
+      }
+    }
+  }
+  else { 
     c_wmdrft(dsizes_x[0], x, y);
   }
+
   gdeactivate_ws (gkswid);
-
   NhlRLDestroy(grlist);
-
   return(NhlNOERROR);
   
+}
+
+/*
+ *  wmfndn takes two input lat/lon coordinate pairs (expressed in
+ *  degrees) where one of the points produces an invalid projection
+ *  point and the other produces a valid projection point.  The function
+ *  returns a point in between the two input points that represents where
+ *  the changeover from valid projection point to invalid occurs.
+ *  The returned point produces a valid projection point.  
+ */
+NhlErrorTypes wmfndn(float x1, float y1, float x2, float y2, 
+                     float *xp, float *yp)
+{
+/*
+ *  Specify the flag value indicating an invalid projection point.
+ */
+  float mval=1.e12;
+/*
+ *  Specify the tolerance for convergence.
+ */
+  float eps=0.000001;
+  
+  float xl,yl,xr,yr,xh,yh,xho,yho,x1t,y1t,x2t,y2t,xht,yht,u1,v1,u2,v2;
+
+  c_maptrn(x1,y1,&u1,&v1);
+  c_maptrn(x2,y2,&u2,&v2);
+  if ( (u1 == mval) && (u2 != mval)) {
+    x1t = x2;
+    y1t = y2; 
+    x2t = x1;
+    y2t = y1; 
+  }
+  else if ( (u1 != mval) && (u2 == mval)) {
+    x1t = x1;
+    y1t = y1;
+    x2t = x2;
+    y2t = y2; 
+  }
+  else {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+        "wmfndn - arguments must produce one valid projection point \n"
+        "         and one invalid projection point\n");
+    return(NhlFATAL);
+  }
+  xh  = 0.5*(x1t+x2t);
+  yh  = 0.5*(y1t+y2t);
+
+  do {
+    c_maptrn(xh,yh,&xht,&yht);
+    if (xht != mval) {
+      x1t = xh;
+      y1t = yh;
+    }
+    else {
+      x2t = xh;
+      y2t = yh;
+    }
+    xho = xh;
+    yho = yh;
+    xh = 0.5*(x1t+x2t);
+    yh = 0.5*(y1t+y2t);
+  } while ( ((xho-xh)*(xho-xh) + (yho-yh)*(xho-xh)) > eps);
+
+  *xp = x1t;
+  *yp = y1t;
+
 }
 
 NhlErrorTypes wmlabs_W( void )
 {
   int grlist,gkswid,i;
-  int *nwid,nid;
+  int *nwid,nid,ezf;
   char *arg1;
+  float xt,yt;
 
 /*
  *  Definte a variable to store the HLU object identifier.
@@ -565,11 +750,22 @@ NhlErrorTypes wmlabs_W( void )
   NhlGetValues(nid,grlist);
 
 /*
- * The following section calls the c_wmdrft function.
+ * The following section calls the c_wmwmlabs function.
  */
   gactivate_ws (gkswid);
-  for (i = 0; i < dsizes_x[0]; i++) {
-    c_wmlabs(*(x+i), *(y+i), arg1);
+  c_wmgeti("ezf",&ezf);
+  if (ezf != -1) {
+    for (i = 0; i < dsizes_x[0]; i++) {
+      c_maptrn(x[i],y[i],&xt,&yt);
+      if (xt != 1.e12) {
+        c_wmlabs(xt, yt, arg1);
+      }
+    }
+  }
+  else {
+    for (i = 0; i < dsizes_x[0]; i++) {
+      c_wmlabs(*(x+i), *(y+i), arg1);
+    }
   }
   gdeactivate_ws (gkswid);
 
