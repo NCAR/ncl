@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.34 1997-02-27 20:18:42 boote Exp $
+ *      $Id: DataSupport.c,v 1.35 1997-10-02 20:54:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1295,7 +1295,7 @@ NhlArgVal *udata;
 	}
 	selector.lngval = cbsel;
 	if(theobj->obj.cblist == NULL) {
-		theobj->obj.cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
+		theobj->obj.cblist = _NhlCBCreate(1,NULL,NULL,NULL,NULL);
 	}
 	return(_NhlCBAdd(theobj->obj.cblist, selector, cbfunc, mudata));
 }
