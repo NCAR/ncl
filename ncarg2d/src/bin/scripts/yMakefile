@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 1993-01-26 16:29:06 haley Exp $
+#	$Id: yMakefile,v 1.14 1993-01-26 16:50:16 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -27,7 +27,7 @@ sedscript:      Makefile
 ncargf77: ncargf77.cry Makefile
 	@sed \
 	-e 's+SED_F77+$(F77)+' \
-	-e 's+SED_FFLAGS+$(FFLAGS)+' \
+	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
@@ -37,7 +37,7 @@ ncargf77: ncargf77.cry Makefile
 ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_F77+$(F77)+' \
-	-e 's+SED_FFLAGS+$(FFLAGS)+' \
+	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
@@ -49,7 +49,7 @@ ncargf77: ncargf77.csh Makefile
 ncargcc: ncargcc.cry Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
-	-e 's+SED_CFLAGS+$(CFLAGS)+' \
+	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
@@ -59,7 +59,7 @@ ncargcc: ncargcc.cry Makefile
 ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
-	-e 's+SED_CFLAGS+$(CFLAGS)+' \
+	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \

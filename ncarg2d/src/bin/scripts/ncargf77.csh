@@ -1,11 +1,11 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.6 1993-01-26 16:29:04 haley Exp $
+#	$Id: ncargf77.csh,v 1.7 1993-01-26 16:50:14 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set fortran="SED_F77"
-set loadopts = "SED_FFLAGS"
+set loadopts = "SED_LD_FFLAGS"
 set l = `ncargpath SED_LIBDIR`
 
 if ($status != 0) then

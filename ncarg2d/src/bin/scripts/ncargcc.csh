@@ -1,11 +1,11 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.15 1993-01-26 16:28:58 haley Exp $
+#	$Id: ncargcc.csh,v 1.16 1993-01-26 16:50:10 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
-set loadopts = "SED_CFLAGS"
+set loadopts = "SED_LD_CFLAGS"
 set l = `ncargpath SED_LIBDIR`
 if ($status != 0) then
         exit 1
