@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cttmrg.c,v 1.1 2003-09-29 23:05:55 kennison Exp $
+ *      $Id: c_cttmrg.c,v 1.2 2003-10-06 21:44:03 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,7 @@
 #include <ncarg/ncargC.h>
 
 extern void NGCALLF(cttmrg,CTTMRG)(int*,int*,float*,float*,float*,int*,
-                                   float*,void (*rtmi_)(),
+                                   float*,int (*rtmi_)(),
                                    float*,int*,int*,int*,
                                      int*,int*,int*,int*,
                                      int*,int*,int*,int*);
@@ -43,14 +43,13 @@ void c_cttmrg
     float *rdat,
     int *iscr,
     float sval,
-    void (*rtmi_) (
-            int *idim,
-            int *jdim,
-            int *iini,
-            int *jini,
-            int *iino,
-            int *jino
-            ),
+    int (*rtmi_) (
+        int *idim,
+        int *jdim,
+        int *iini,
+        int *jini,
+        int *iino,
+        int *jino),
     float *rpnt,
     int mpnt,
     int *npnt,
@@ -74,7 +73,7 @@ void c_cttmrg
     float *rdat;
     int *iscr;
     float sval;
-    void (*rtmi_) ();
+    int (*rtmi_) ();
     float *rpnt;
     int mpnt;
     int *npnt;

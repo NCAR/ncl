@@ -1,5 +1,5 @@
 /*
- *      $Id: c_ctcldm.c,v 1.1 2003-09-29 23:05:53 kennison Exp $
+ *      $Id: c_ctcldm.c,v 1.2 2003-10-06 21:44:03 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,8 +44,7 @@ void c_ctcldm
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-              )
+        int *nagi)
 )
 #else
 (rpnt,iedg,itri,rwrk,iwrk,iama,rtpl_)
