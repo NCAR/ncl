@@ -153,6 +153,33 @@ void _NclTransTerminate
 {
 			_NclPutInstr(STOPSEQ,0,NULL);
 }
+int number_of_constants = 0;
+
+static struct _NclMultiDValDataRec *CreateConst
+#if     NhlNeedProto
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
+#else
+(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type)
+NclObj inst;
+NclObjClass theclass;
+NclObjTypes obj_type;
+unsigned int obj_type_mask;
+void *val;
+NclScalar *missing_value;
+int n_dims;
+int *dim_sizes;
+NclStatus status;
+NclSelectionRecord *sel_rec;
+NclTypeClass type;
+#endif
+{
+	number_of_constants++;
+	return(_NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type));
+
+}
+
+
+
 
 /*
  * Function:	_NclTranslate
@@ -385,7 +412,7 @@ if(groot != NULL) {
                         	off1 = _NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
 				tmp_val = NclMalloc(sizeof(int));
 				*(int*)tmp_val = 1;
-				tmp_md = _NclCreateMultiDVal(NULL,
+				tmp_md = CreateConst(NULL,
                                                 NULL,Ncl_MultiDValData,0,
                                                 (void*)tmp_val,NULL,1,&dim_size,
                                                 PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
@@ -402,7 +429,7 @@ if(groot != NULL) {
 				_NclPutInstr(PUSH_LOGICAL_LIT_OP,dofromto->line,dofromto->file);
 				tmp_val = NclMalloc(sizeof(logical));
                         	*(logical*)tmp_val = 0;
-                        	tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                        	tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
                                 	(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 				_NclPutIntInstr(tmp_md->obj.id,dofromto->line,dofromto->file);
 
@@ -657,7 +684,7 @@ if(groot != NULL) {
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
 				tmp_val = NclMalloc(sizeof(NclQuark));
 				*(NclQuark*)tmp_val = subscript->dimname_q;
-				tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
 					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
 				_NclTranslate(subscript->subexpr,fp);
@@ -676,7 +703,7 @@ if(groot != NULL) {
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
 				tmp_val = NclMalloc(sizeof(NclQuark));
 				*(NclQuark*)tmp_val = subscript->dimname_q;
-				tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
 					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
 				_NclTranslate(subscript->subexpr,fp);
@@ -894,7 +921,7 @@ if(groot != NULL) {
 			off1 = _NclPutInstr(PUSH_REAL_LIT_OP,real->line,real->file);
 			tmp_val = NclMalloc(sizeof(float));
                         *(float*)tmp_val = real->real;
-                        tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                        tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
                                 (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
 			_NclPutIntInstr(tmp_md->obj.id,real->line,real->file);
 			break;
@@ -905,7 +932,7 @@ if(groot != NULL) {
 			off1 = _NclPutInstr(PUSH_LOGICAL_LIT_OP,integer->line,integer->file);
 			tmp_val = NclMalloc(sizeof(logical));
                         *(logical*)tmp_val = integer->integer;
-                        tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+                        tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
                                 (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 
 			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
@@ -918,7 +945,7 @@ if(groot != NULL) {
 			off1 = _NclPutInstr(PUSH_INT_LIT_OP,integer->line,integer->file);
 			tmp_val = NclMalloc(sizeof(int));
 			*(int*)tmp_val = integer->integer;
-			tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0, 
+			tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0, 
 				(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
 			break;
@@ -930,7 +957,7 @@ if(groot != NULL) {
 			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,string->line,string->file);
 			tmp_val = NclMalloc(sizeof(NclQuark));
 			*(NclQuark*)tmp_val = string->string_q;
-			tmp_md = _NclCreateMultiDVal(NULL, NULL,Ncl_MultiDValData,0,
+			tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
 				(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 			_NclPutIntInstr(tmp_md->obj.id,string->line,string->file);
 			break;

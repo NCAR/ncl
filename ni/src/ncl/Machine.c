@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.58 1997-01-28 00:38:54 ethan Exp $
+ *      $Id: Machine.c,v 1.59 1997-03-06 00:20:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -319,6 +319,7 @@ void _NclNewMachine
 #endif
 {
 	_NclMachineRec* tmp;
+	int i;
 	tmp = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
 	tmp->themachine = (NclValue*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(NclValue));
 	tmp->thefiles = (char**)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(char*));
@@ -661,6 +662,7 @@ void _NclAbortFrame
 {
 	struct _NclFrameList *tmp;
 	struct _NclFrame *tmp_fp;
+	int n = sb_off - 5;
 
 	if(flist.next != NULL) {
 		while(flist.next != NULL) {
@@ -676,20 +678,27 @@ void _NclAbortFrame
 /*
 * May need to reset sb_off
 */
-		_NclCleanUpStack( (int)( (NclStackEntry*) (thestack + (sb + sb_off))  - (NclStackEntry*) (tmp_fp)));
-		sb_off = 0;
-		sb = (unsigned int)((NclStackEntry*)tmp_fp - thestack);
+		_NclLeaveFrame(current_scope_level-1);
+		_NclCleanUpStack(n);
+		_NclPopFrame(BPROC_CALL_OP);
 	}
 }
 
 void _NclClearToStackBase
 #if	NhlNeedProto
-(void)
+(int caller_level)
 #else
-()
+(caller_level)
+int caller_level;
 #endif
 {
-	_NclCleanUpStack(sb_off);
+	int n = sb_off - 5;
+
+	_NclPopScope();
+	_NclLeaveFrame(caller_level);
+	_NclCleanUpStack(n);
+	_NclPopFrame(BPROC_CALL_OP);
+	
 }
 
 
@@ -704,13 +713,16 @@ static int SetNextFramePtrNLevel
 	int tmp_level;
 
 	tmp_level = current_scope_level;
-
 	tmp = flist.next;
 	if(tmp != NULL) {
 		flist.next = flist.next->next;
 		fp = tmp->fp;
-		sb = tmp->sb;
+		sb_off = sb + sb_off - fp + (tmp->sb);
+		sb = fp;
+/*
 		sb_off = 0;
+		sb = tmp->sb;
+*/
 		current_scope_level = tmp->level;
 		NclFree(tmp);
 	}
@@ -799,10 +811,11 @@ NhlErrorTypes _NclPushFrame
 
 	if(the_sym->u.procfunc->thescope != NULL) {
 		new_scope_level = the_sym->u.procfunc->thescope->level; 
-		new_scope_cur_off = the_sym->u.procfunc->thescope->cur_offset;
+		new_scope_cur_off = (the_sym->u.procfunc->thescope->cur_offset) - the_sym->u.procfunc->nargs;
 	} else {
 		new_scope_level = current_scope_level + 1;
 		new_scope_cur_off = the_sym->u.procfunc->nargs;
+		new_scope_cur_off = 0;
 	}
 
 
@@ -859,8 +872,10 @@ NhlErrorTypes _NclPushFrame
 		tmp->parameter_map.u.the_list = NULL;
 	}
 	tmp_fp = tmp;
-	
+
+	sb = (unsigned int)((NclStackEntry*)tmp - thestack);
 	tmp++;
+	sb_off =  (unsigned int)((NclStackEntry*)tmp - thestack) - sb;
 /*
 * The stack frame has to be temporarily set to this 
 * since the frame pointer can't be set until the
@@ -870,9 +885,9 @@ NhlErrorTypes _NclPushFrame
 * for the _NclRetrieveRec and _NclPush to be used to
 * implement CONVERT_TO_LOCAL the stack base must 
 * be temporarily save with the new frame pointer information
-*/
 	sb = (unsigned int)((NclStackEntry*)tmp - thestack);
 	sb_off = 0;
+*/
 	
 
 /* 
@@ -882,7 +897,7 @@ NhlErrorTypes _NclPushFrame
 * referenced by the instruction sequence. Same goes for the current scope
 * level.
 */
-	SaveFramePtrNLevel((unsigned int)((NclStackEntry*)tmp_fp - thestack),new_scope_level,(sb + (sb_off + new_scope_cur_off)));
+	SaveFramePtrNLevel((unsigned int)((NclStackEntry*)tmp_fp - thestack),new_scope_level,new_scope_cur_off);
 	return(NhlNOERROR);
 }
 
@@ -905,11 +920,16 @@ void *_NclLeaveFrame
 #endif
 {
 	NclFrame * prev;
+	int tfp;
 /*
 	sb = &(fp->func_ret_value);
+	sb_off = (sb - fp);
+	sb = fp;
 */
 	prev = (NclFrame*)(thestack + fp);
 	fp = ((NclFrame*)(thestack + fp))->dynamic_link.u.offset;
+	sb_off = sb - fp + sb_off;
+	sb = fp;
 	current_scope_level = caller_level;
 	return((void*)prev);
 }
@@ -944,7 +964,13 @@ NclStackEntry _NclPop
 #endif
 {
         NclStackEntry tmp;
-        NclStackEntry *tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+        NclStackEntry *tmp0 = NULL;
+	if(sb_off == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Pop: Stack underflow\n");
+		tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+	} else {
+		tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+	}
         if(tmp0 + 1 <= thestack) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
                 tmp.kind = NclStk_NOVAL;
@@ -1241,9 +1267,9 @@ void _NclPrintMachine
 /*
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
-*/
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case VAR_COORD_OP:

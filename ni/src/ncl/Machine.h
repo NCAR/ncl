@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.19 1996-12-20 00:42:09 ethan Exp $
+ *      $Id: Machine.h,v 1.20 1997-03-06 00:20:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -374,9 +374,10 @@ void
 
 extern void _NclClearToStackBase(
 #if	NhlNeedProto
-void
+int
 #endif
 );
+
 
 extern int _NclPutRealInstr(
 #if	NhlNeedProto

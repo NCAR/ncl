@@ -79,7 +79,15 @@ typedef struct ccmr {
 typedef struct _CcmDimInqRecList CcmDimInqRecList;
 typedef struct _CcmAttInqRecList CcmAttInqRecList;
 typedef struct _CcmVarInqRecList CcmVarInqRecList;
+typedef struct _CcmIntVarInqRecList CcmIntVarInqRecList;
 typedef struct _CcmHeader CcmHeader;
+
+struct _CcmIntVarInqRecList {
+	NclQuark var_name_q;
+	NclFVarRec var_info;
+	int n_atts;
+	CcmAttInqRecList *theatts;
+};
 
 struct _CcmVarInqRecList {
 	NclQuark var_name_q;		/*
@@ -107,6 +115,7 @@ struct _CcmVarInqRecList {
 					 * other atts mimic observed
 					 * ccm netCdf files.
 					 */
+	int 	ccm_var_index;
 	int	offset;			/*
 					 * offset in words from begining
 					 * of latitude record.
@@ -157,7 +166,10 @@ typedef struct ccm_file_rec {
 					 * number of time records in file iheader.MFILTH
 					 */
 	CcmHeader 	header;
+	NclMultiDValData *coords;
 	CcmVarInqRecList *vars;
+	int 	n_int_vars;
+	CcmIntVarInqRecList *int_vars;
 	int 	n_dims;
 	CcmDimInqRecList *dims;
 	int	n_file_atts;		 
@@ -166,6 +178,12 @@ typedef struct ccm_file_rec {
 					 * file headers
 					 */
 } CCMFileRec;
+
+
+typedef struct ncl_q_list {
+	NclQuark var_quark;
+	int	var_q_index;
+}NclQList;
 
 #define BLOCK_SIZE 4096
 #define WORD_SIZE 8
@@ -181,3 +199,22 @@ typedef struct ccm_file_rec {
 #define ILEV_DIM_NUMBER 2
 #define MLEV_DIM_NUMBER 3
 #define LONGITUDE_DIM_NUMBER 4
+
+typedef struct {
+  unsigned int type  :  4;
+  unsigned int junk  : 27;
+  unsigned int bnhi  :  1;
+  unsigned int bnlo  : 23;
+  unsigned int fwi   :  9;
+} BCW;
+
+/*
+  The BCW bitfield is used to extract the type of control word and the
+  block number from a block control word.  In an 8 byte Cray control word
+  the block number would be read as a single 24 bit piece of data.  In
+  BCW the block number is split into two pieces, bnhi and bnlo, so that
+  the block number field does not span a word boundary on a machine with
+  4-byte words.
+
+  See the Cray manpage BLOCKED(4F) for more information.
+*/

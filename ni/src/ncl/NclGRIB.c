@@ -1119,7 +1119,7 @@ GribFileRecord *therec;
 */
 
 
-		if(((!step->has_gds)&&(step->grid_number != 255))&&(grid[step->grid_tbl_index].get_grid != NULL)) {
+		if((step->grid_tbl_index != -1)&&(grid[step->grid_tbl_index].get_grid != NULL)) {
 /* 
 * Search for both gridlat_## and gridx_## grid number will always be added in sequence so finding lat or x means
 * you have the lon and y file dimension numbers.
@@ -1128,7 +1128,7 @@ GribFileRecord *therec;
 			gridx_q = NrmStringToQuark(buffer);
 			sprintf(buffer,"lat_%d",step->grid_number);
 			lat_q = NrmStringToQuark(buffer);
-		} else if((step->has_gds)/*&&(step->grid_number == 255)*/) { 
+		} else if((step->has_gds)&&(step->grid_gds_tbl_index != -1)/*&&(step->grid_number == 255)*/) { 
 			
 			if((grid_gds[step->grid_gds_tbl_index].un_pack == NULL)&&(grid_gds[step->grid_gds_tbl_index].get_grid == NULL)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Parameter (%d) has an unsupported GDS type (%d), GDS's are not currently supported",step->param_number,step->gds_type);

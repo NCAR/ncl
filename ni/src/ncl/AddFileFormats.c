@@ -25,6 +25,11 @@ extern NclFormatFunctionRecPtr GribAddFileFormat(
 void
 #endif
 );
+extern NclFormatFunctionRecPtr CcmAddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
 
 void _NclAddFileFormats
 #if	NhlNeedProto
@@ -38,6 +43,7 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
+	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 	return;
 }
 

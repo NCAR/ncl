@@ -785,25 +785,9 @@ NhlErrorTypes _NclProcCallOp
 		(void)_NclPopScope();
 		_NclRemapParameters(proc->u.procfunc->nargs,proc->u.procfunc->thescope->cur_offset,previous_fp,PROC_CALL_OP);
 		_NclPopFrame(PROC_CALL_OP);
-	} /* else {
-		for(i = 0; i<proc->u.procfunc->thescope->cur_offset; i++) {
-			data = _NclPop();
-			switch(data.kind) {
-			case NclStk_VAL: {
-				_NclDestroyObj((NclObj)data.u.data_obj);
-			}
-				break;
-			case NclStk_VAR: {
-				_NclDestroyObj((NclObj)data.u.data_var);
-			}
-				break;
-			default:
-				break;
-			}
-		}
+	}  else {
+		_NclClearToStackBase(caller_level);
 	}
-	*/
-	
 	return(ret);
 }
 NhlErrorTypes _NclFuncCallOp
@@ -848,28 +832,9 @@ NhlErrorTypes _NclFuncCallOp
 		(void)_NclPopScope();
 		_NclRemapParameters(func->u.procfunc->nargs,func->u.procfunc->thescope->cur_offset,previous_fp,FUNC_CALL_OP);
 		_NclPopFrame(FUNC_CALL_OP);
-	} /* else {
-
-this not needed since _NclAbortFrame and _NclClearToStackBase are called from _NclExecute
-when an error is detected.
-
-		for(i = 0; i<func->u.procfunc->thescope->cur_offset; i++) {
-			data = _NclPop();
-			switch(data.kind) {
-			case NclStk_VAL: {
-				_NclDestroyObj((NclObj)data.u.data_obj);
-			}
-				break;
-			case NclStk_VAR: {
-				_NclDestroyObj((NclObj)data.u.data_var);
-			}
-				break;
-			default:
-				break;
-			}
-		}
+	}   else {
+		_NclClearToStackBase(caller_level);
 	}
-*/
 /*
 * Doesn't leave return value on stack if an error has occured. Probably
 * should check it to see if it needs to be freed

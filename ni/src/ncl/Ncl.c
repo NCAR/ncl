@@ -43,6 +43,7 @@ extern int yyparse(int);
 extern FILE *error_fp;
 extern FILE *stdout_fp ;
 extern FILE *stdin_fp ;
+extern int number_of_constants;
 
 
 main() {
@@ -108,6 +109,7 @@ main() {
 	_NclObjsSize(stdout);
 	_NclNumGetObjCals(stdout);
 	_NclPrintUnfreedObjs(theoptr);
+	fprintf(stdout,"Number of constants used %d\n",number_of_constants);
 	fclose(theoptr);
 #endif
 	NhlClose();

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.85 1997-02-27 20:18:43 boote Exp $
+ *      $Id: Execute.c,v 1.86 1997-03-06 00:20:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1002,7 +1002,7 @@ NclExecuteReturnStatus _NclExecute
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_FUNC_CALL);
-					 _NclPopFrame(INTRINSIC_FUNC_CALL);
+					_NclPopFrame(INTRINSIC_FUNC_CALL);
 
 
 /*
@@ -1162,42 +1162,51 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 					tmp_ptr = _NclRetrieveRec(l_dir,DONT_CARE);
-					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
-					dir = *(logical*)tmp_md->multidval.val;
-					tmp_ptr = _NclRetrieveRec(l_inc,DONT_CARE);
-					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
-					
-					if(tmp_md->multidval.kind != SCALAR) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be scalar, can't execute loop");
-						estatus = NhlFATAL;
-					} else if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
-						tmp2_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
-						_Nclle(tmp2_md->multidval.type,&result,tmp2_md->multidval.val,&zero,NULL,NULL,1,1);
-						if(result) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be possitive, can't execute loop");
-							estatus = NhlFATAL;
-						}
-						if(tmp2_md->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)tmp2_md);
-						}
+					if(tmp_ptr->u.data_var != NULL) {
+						tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+						dir = *(logical*)tmp_md->multidval.val;
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be numeric values, can't execute loop");
-						estatus = NhlFATAL;
-					} 
-					if(end_md->multidval.kind != SCALAR) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be scalar, can't execute loop");
-						estatus = NhlFATAL;
-					} else if(!(end_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be numeric value, can't execute loop");
 						estatus = NhlFATAL;
 					}
-					if(inc_md->multidval.kind != SCALAR) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be scalar, can't execute loop");
+					tmp_ptr = _NclRetrieveRec(l_inc,DONT_CARE);
+					if(tmp_ptr->u.data_var != NULL) {
+						tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+					} else {
 						estatus = NhlFATAL;
-					} else if(!(inc_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be numeric value, can't execute loop");
-						estatus = NhlFATAL;
-					} 
+					}
+					if(estatus != NhlFATAL) {	
+						if(tmp_md->multidval.kind != SCALAR) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be scalar, can't execute loop");
+							estatus = NhlFATAL;
+						} else if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
+							tmp2_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+							_Nclle(tmp2_md->multidval.type,&result,tmp2_md->multidval.val,&zero,NULL,NULL,1,1);
+							if(result) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be possitive, can't execute loop");
+								estatus = NhlFATAL;
+							}
+							if(tmp2_md->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)tmp2_md);
+							}
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be numeric values, can't execute loop");
+							estatus = NhlFATAL;
+						} 
+						if(end_md->multidval.kind != SCALAR) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be scalar, can't execute loop");
+							estatus = NhlFATAL;
+						} else if(!(end_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be numeric value, can't execute loop");
+							estatus = NhlFATAL;
+						}
+						if(inc_md->multidval.kind != SCALAR) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be scalar, can't execute loop");
+							estatus = NhlFATAL;
+						} else if(!(inc_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be numeric value, can't execute loop");
+							estatus = NhlFATAL;
+						} 
+					}
 					if(estatus != NhlFATAL) {
 						if(inc_md->multidval.type->type_class.type != end_md->multidval.type->type_class.type) {
 							tmp_md = _NclCoerceData(inc_md,Ncl_Typedouble,NULL) ;
@@ -5007,14 +5016,9 @@ NclExecuteReturnStatus _NclExecute
 /*
 * need to clean up stack !!! for current level
 */
-				_NclAbortFrame();
-/*
-* Probably still need more stack freeing for other types of errors 
-* this really only handles left overs from failed function and 
-* procedure calls
-*/
-				_NclClearToStackBase();
-
+				if(level > 1) {
+					_NclAbortFrame();
+				}
 				level--;
 				return(Ncl_ERRORS);
 			}

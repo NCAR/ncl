@@ -34,6 +34,10 @@
 ** There probably is a cleaner way to manage this, however we are now
 ** stuck with this documented (and widely used) interface.
 **
+**
+**
+**
+**
 ** By doing this, the interfaces are the same for SUNs and RS6000s
 */
 
