@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: c_natgrids.m,v 1.2 1997-03-31 23:15:34 fred Exp $
+.\"     $Id: c_natgrids.m,v 1.3 1997-05-06 23:37:21 fred Exp $
 .\"
 .TH c_natgrids 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -64,7 +64,7 @@ c_nngetr,
 c_nnsetc, 
 c_nngetc.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

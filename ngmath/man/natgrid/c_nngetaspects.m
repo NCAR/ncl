@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: c_nngetaspects.m,v 1.1 1997-03-07 22:58:46 fred Exp $
+.\"     $Id: c_nngetaspects.m,v 1.2 1997-05-06 23:37:24 fred Exp $
 .\"
 .TH c_nngetaspects 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
@@ -35,7 +35,7 @@ natgrid,
 natgrid_params,
 c_nngetslopes.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

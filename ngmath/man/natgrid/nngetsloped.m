@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: nngetsloped.m,v 1.1 1997-03-07 22:59:21 fred Exp $
+.\"     $Id: nngetsloped.m,v 1.2 1997-05-06 23:37:56 fred Exp $
 .\"
 .TH NNGETSLOPED 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -27,7 +27,7 @@ natgrid,
 natgridd,
 natgrid_params.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: nnpntendd.m,v 1.1 1997-03-07 22:59:25 fred Exp $
+.\"     $Id: nnpntendd.m,v 1.2 1997-05-06 23:38:01 fred Exp $
 .\"
 .TH NNPNTENDD 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,7 +18,7 @@ natgridd,
 nnpntinitd,
 nnpntd.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

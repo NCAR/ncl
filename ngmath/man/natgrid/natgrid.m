@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: natgrid.m,v 1.1 1997-03-07 22:59:06 fred Exp $
+.\"     $Id: natgrid.m,v 1.2 1997-05-06 23:37:44 fred Exp $
 .\"
 .TH Natgrid 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
@@ -127,7 +127,7 @@ To use Natgrid entries, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
 Individual entries, natgrid_params, natgrid_errors.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: nngetaspects.m,v 1.1 1997-03-07 22:59:14 fred Exp $
+.\"     $Id: nngetaspects.m,v 1.2 1997-05-06 23:37:50 fred Exp $
 .\"
 .TH NNGETASPECTS 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -26,7 +26,7 @@ To use NNGETASPECTS, load the NCAR Graphics library ngmath.
 natgrids,
 natgrid_parameters.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

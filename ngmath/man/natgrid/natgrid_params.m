@@ -1,12 +1,12 @@
 .\"
-.\"     $Id: natgrid_params.m,v 1.1 1997-03-07 22:59:09 fred Exp $
+.\"     $Id: natgrid_params.m,v 1.2 1997-05-06 23:37:45 fred Exp $
 .\"
 .TH natgrid_params 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
 natgrid_params - This document briefly describes all the
-internal parameters of Natgird.
+internal parameters of Natgrid.
 .SH DESCRIPTION 
 Each entry below includes the name of a parameter, its Fortran type
 (use the obvious equivalents for C), 

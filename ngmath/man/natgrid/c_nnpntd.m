@@ -27,7 +27,7 @@ c_natgrids,
 c_nnpntinitd,
 c_nnpntendd.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT

@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: nngeti.m,v 1.1 1997-03-07 22:59:17 fred Exp $
+.\"     $Id: nngeti.m,v 1.2 1997-05-06 23:37:53 fred Exp $
 .\"
 .TH NNGETI 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
@@ -30,7 +30,7 @@ natgrid_params,
 natgrids,
 nnseti.
 .sp
-Complete documentation for Natgird is available at URL
+Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT
