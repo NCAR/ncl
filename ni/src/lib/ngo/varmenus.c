@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.14 1999-10-05 23:16:27 dbrown Exp $
+ *      $Id: varmenus.c,v 1.15 1999-11-19 02:10:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,13 +96,15 @@ FileVarMenuEH
 {
         NgVarMenus	vmenus = (NgVarMenus) udata;
 	NrmQuark	qfile;
+	XtPointer	userdata;
         
 #if	DEBUG_VAR_MENUS & DEBUG_ENTRY
 	fprintf(stderr,"FileVarMenuEH(IN)\n");
 #endif
         XtVaGetValues(w,
-                      XmNuserData,&qfile,
+                      XmNuserData,&userdata,
                       NULL);
+	qfile = (NrmQuark) userdata;
         
 #if	DEBUG_VAR_MENUS & DEBUG_MENUS
 	fprintf(stderr,"%s filevars\n", NrmQuarkToString(qfile));
@@ -123,13 +125,15 @@ static void FileVarMenuCB
 {
         NgVarMenus	vmenus = (NgVarMenus) udata;
 	NrmQuark	qfile;
+	XtPointer	userdata;
         
 #if	DEBUG_VAR_MENUS & DEBUG_ENTRY
 	fprintf(stderr,"FileVarMenuCB(IN)\n");
 #endif
         XtVaGetValues(w,
-                      XmNuserData,&qfile,
+                      XmNuserData,&userdata,
                       NULL);
+	qfile = (NrmQuark) userdata;
 #if	DEBUG_VAR_MENUS & DEBUG_MENUS
 	fprintf(stderr,"%s filevars\n", NrmQuarkToString(qfile));
 #endif

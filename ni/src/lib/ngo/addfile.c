@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.27 1999-11-03 20:29:20 dbrown Exp $
+ *      $Id: addfile.c,v 1.28 1999-11-19 02:10:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1612,6 +1612,7 @@ static void UpdatePopupTypeCB
 	NgGO	go = (NgGO)data;
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
+	XtPointer	udata;
         int		type;
 
 #if	DEBUG_ADDFILE
@@ -1619,8 +1620,9 @@ static void UpdatePopupTypeCB
 #endif
         
 	XtVaGetValues(w,
-		XmNuserData,&type,
+		XmNuserData,&udata,
 		NULL);
+	type = (int) udata;
         if (type == DIM_INFO_POPUP || type == VAR_ATTRS_POPUP) {
                 np->cur_list = np->vlist;
                 if (np->readable && np->vlist_empty) {
@@ -2266,7 +2268,7 @@ AddFileCreateWin
 				     NULL);
         XtAddCallback(pb,XmNactivateCallback,VarSortOptionsCB,go);
 
-        pb = XtVaCreateManagedWidget("No",
+        pb = XtVaCreateManagedWidget("No Sort",
 				     xmPushButtonGadgetClass,menu,
 				     XmNalignment,	XmALIGNMENT_CENTER,
 				     XmNuserData,(XtPointer)NgNO_SORT,

@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.6 1999-09-11 01:06:48 dbrown Exp $
+ *      $Id: print.c,v 1.7 1999-11-19 02:10:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -264,10 +264,12 @@ BasicErrorCB
         NgGO go = (NgGO) udata;
 	NgPrint	l = (NgPrint)go;
 	NhlBoolean close_dialog;
+	XtPointer	userdata;
 
 	XtVaGetValues(w,
-		      XmNuserData,&close_dialog,
+		      XmNuserData,&userdata,
 		      NULL);
+	close_dialog = (NhlBoolean) userdata;
 
 	XtDestroyWidget(XtParent(w));
 	NgGOSensitive(go->base.id,True);
@@ -344,15 +346,15 @@ static void Message(
 	NgGOSensitive(go->base.id,False);
 	xmmessage = NgXAppCreateXmString(go->go.appmgr,message);
 
-	if ((int) ok_text > 1) {
+	if ((long) ok_text > 1) {
 		xmok = NgXAppCreateXmString(go->go.appmgr,ok_text);
 		XtSetArg(ar[ac],XmNokLabelString,xmok); ac++;
 	}
-	if ((int) cancel_text > 1) {
+	if ((long) cancel_text > 1) {
 		xmcancel = NgXAppCreateXmString(go->go.appmgr,cancel_text);
 		XtSetArg(ar[ac],XmNcancelLabelString,xmcancel); ac++;
 	}
-	if ((int) help_text > 1) {
+	if ((long) help_text > 1) {
 		xmhelp = NgXAppCreateXmString(go->go.appmgr,help_text);
 		XtSetArg(ar[ac],XmNhelpLabelString,xmhelp); ac++;
 	}
@@ -365,13 +367,13 @@ static void Message(
 	dialog = XmCreateMessageDialog(go->go.manager,"Message",ar,ac);
 
 	NgXAppFreeXmString(go->go.appmgr,xmmessage);
-	if ((int) ok_text > 1) {
+	if ((long) ok_text > 1) {
 		NgXAppFreeXmString(go->go.appmgr,xmok);
 	}
-	if ((int) cancel_text > 1) {
+	if ((long) cancel_text > 1) {
 		NgXAppFreeXmString(go->go.appmgr,xmcancel);
 	}
-	if ((int) help_text > 1) {
+	if ((long) help_text > 1) {
 		NgXAppFreeXmString(go->go.appmgr,xmhelp);
 	}
 
@@ -1214,12 +1216,14 @@ SelectFileTypeCB
 {
 	NgPrint	l = (NgPrint)udata;
         NgPrintPart *pp = &l->print;
+	XtPointer	userdata;
 	int	file_type;
         String  pathname;
         
         XtVaGetValues(w,
-                      XmNuserData,&file_type,
+                      XmNuserData,&userdata,
                       NULL);
+	file_type = (int) userdata;
         XtVaGetValues(pp->file_text,
                       XmNvalue,&pathname,
                       NULL);
@@ -1354,10 +1358,13 @@ SelectPaperSizeCB
         )
 {
 	int	paper_type;
+	XtPointer	userdata;
 
         XtVaGetValues(w,
-                      XmNuserData,&paper_type,
+                      XmNuserData,&userdata,
                       NULL);
+
+	paper_type = (int) userdata;
 	Paper_Type = paper_type;
 	return;
 }
@@ -1370,12 +1377,13 @@ SelectOrientationCB
 	XtPointer	cbdata
         )
 {
-	int	orient;
+	XtPointer	userdata;
 
         XtVaGetValues(w,
-                      XmNuserData,&orient,
+                      XmNuserData,&userdata,
                       NULL);
-	Orient = orient;
+
+	Orient = (int) userdata;
 	return;
 }
 
@@ -1500,14 +1508,17 @@ SelectWorkstationCB
 {
 	NgPrint	l = (NgPrint)udata;
         NgPrintPart *pp = &l->print;
+	XtPointer	userdata;
         NrmQuark qsym;
         int i,id,id_count;
         int *id_array;
 	NhlBoolean sensitive;
 
         XtVaGetValues(w,
-                      XmNuserData,&qsym,
+                      XmNuserData,&userdata,
                       NULL);
+	qsym = (NrmQuark) userdata;
+
         id = NgNclGetHluObjId
                 (l->go.nclstate,NrmQuarkToString(qsym),
                  &id_count,&id_array);
@@ -2213,7 +2224,6 @@ CreateDestinationDialog(
 		      XmNleftOffset,max_width,
 		      XmNrightAttachment,XmATTACH_NONE,
 		      XmNorientation,XmHORIZONTAL,
-		      XmNuserData,prPRINTER,
 		      XmNset,To_Printer ? True : False,
 		      XmNindicatorType,XmONE_OF_MANY,
 		      NULL);
@@ -2225,7 +2235,6 @@ CreateDestinationDialog(
 		      XmNleftAttachment,XmATTACH_WIDGET,
 		      XmNleftWidget,printer,
 		      XmNrightAttachment,XmATTACH_NONE,
-		      XmNuserData,prPRINTER,
 		      XmNset,To_Printer ? False : True,
 		      XmNindicatorType,XmONE_OF_MANY,
 		      NULL);

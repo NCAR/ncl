@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.22 1999-09-11 01:06:40 dbrown Exp $
+ *      $Id: nclstate.c,v 1.23 1999-11-19 02:10:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1864,8 +1864,8 @@ NgNclCopyShapedVar
                         NgNclGetSymName(nclstate,to_varname,False),
                         NrmQuarkToString(qvar));
         for (i = 0; i < ndims; i++) 
-		sprintf(&ns->buffer[strlen(ns->buffer)],"%d:%d:%d,",start[i],
-			finish[i],stride[i]);
+		sprintf(&ns->buffer[strlen(ns->buffer)],"%ld:%ld:%ld,",
+			start[i],finish[i],stride[i]);
         
         	/* backup 1 to remove last comma */
 	sprintf(&ns->buffer[strlen(ns->buffer)-1],")\n");

@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.26 1999-10-13 17:15:52 dbrown Exp $
+ *      $Id: restree.c,v 1.27 1999-11-19 02:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -501,7 +501,7 @@ static int ExpandClassGroup
         )
 {
         NgResTree *pub_rtp = &rtp->restree;
-        int class_group = (int) ndata->info;
+        long class_group = (long) ndata->info;
         int nclasses,show_classes, i,j,start_ix;
         int new_level = 10 * (ndata->type / 10) + 10;
         XmLTreeRowDefinition *rowdefs;
@@ -1907,7 +1907,7 @@ static void CheckCntrlRes
                 cip->display_mode = _rtEXPANDABLE;
                 UpdateClassFolderState(rtp,cip->ndata);
         }
-        if ((int) cip->layer == -1 ||
+        if ((long) cip->layer == -1 ||
             _NhlIsObj(cip->layer) || ! cip->layer->base.all_children)
                 return;
         for (i = rtp->super_class_count+1; i < rtp->class_count; i++) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.9 1999-11-03 20:29:24 dbrown Exp $
+ *      $Id: datagrid.c,v 1.10 1999-11-19 02:10:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -568,7 +568,7 @@ static void SetData
                                 char tbuf[32];
                                 int len;
 				GridPosToArrayPos(dgrp,0,j,dgrp->col_dim);
-                                sprintf(tbuf,"%d\n",dgrp->array_pos[i]);
+                                sprintf(tbuf,"%ld\n",dgrp->array_pos[i]);
                                 len = strlen(tbuf);
                                 total_len += len;
                                 if (total_len > Buflen-2) {
