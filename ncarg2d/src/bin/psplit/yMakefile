@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1999-01-14 19:10:29 fred Exp $
+#	$Id: yMakefile,v 1.2 1999-03-22 22:43:36 haley Exp $
 #
 #
 # Makefile for "psplit" (splits multi-frame PostScript files into
@@ -12,6 +12,4 @@ SOURCES  = psplit.c
 
 OBJECTS  = psplit.o
 
-#ifdef BuildNCARGSourceLibrary
 CTarget(psplit,$(OBJECTS))
-#endif
