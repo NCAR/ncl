@@ -307,6 +307,7 @@ extern NhlErrorTypes output_gif_W(void);
 extern NhlErrorTypes nice_mnmxintvl_W(void);
 extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
+extern NhlErrorTypes conform_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -3670,6 +3671,17 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
     NclRegisterFunc(getbitsone_W, args, "getbitsone", nargs);
+
+/*
+ *  Register conform.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    NclRegisterFunc(conform_W, args, "conform", nargs);
 
     return;
 }

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.40 2000-12-21 20:38:40 haley Exp $
+#      $Id: yMakefile,v 1.41 2001-01-26 07:55:21 haley Exp $
 #
 #########################################################################
 #									#
@@ -28,7 +28,7 @@ EXFOBJS = d1mach_sun.o
 
 HDRS = wrapper.h
 
-CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c csagridW.c \
+CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c conformW.c csagridW.c \
 	cssgridW.c cz2ccmW.c datesW.c drwvctc.c dsgridW.c dtrendW.c \
 	eofW.c ezfftW.c finitediffW.c fitgridW.c fluxEddyW.c fourinfoW.c \
 	gausW.c hydroW.c int2pW.c julGregW.c linint2W.c linmsgW.c linroodW.c \
@@ -39,7 +39,7 @@ CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c csagridW.c \
 	trvsphW.c varimaxW.c vibetaW.c wgneW.c wmapW.c wrunaveW.c wrapper.c \
 	vinth2pW.c vinth2peW.c
 
-COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o csagridW.o \
+COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o csagridW.o \
 	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o \
 	eofW.o ezfftW.o finitediffW.o fitgridW.o fluxEddyW.o fourinfoW.o \
 	gausW.o hydroW.o int2pW.o julGregW.o linint2W.o linmsgW.o linroodW.o \
