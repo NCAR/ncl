@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.16 1995-08-22 18:32:04 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.17 1995-09-20 23:26:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -968,14 +968,22 @@ static NhlErrorTypes PlotManagerSetValues
 	int			trans_change_count;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
-	    ovp->lbar_width_set = True;
+		ovp->lbar_width_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarHeightF))
-	    ovp->lbar_height_set = True;
+		ovp->lbar_height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNpmLegendWidthF))
-	    ovp->lgnd_width_set = True;
+		ovp->lgnd_width_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNpmLegendHeightF))
-	    ovp->lgnd_height_set = True;
-		
+		ovp->lgnd_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNpmLegendHeightF))
+		ovp->lgnd_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtiMainFontHeightF))
+		ovp->ti_main_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtiXAxisFontHeightF))
+		ovp->ti_x_axis_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtiYAxisFontHeightF))
+		ovp->ti_y_axis_font_height_set = True;
+
 	if (ovnew->view.use_segments != ovold->view.use_segments) {
 		ovnew->view.use_segments = ovold->view.use_segments;
 		ret = MIN(ret,NhlWARNING);
@@ -2230,10 +2238,18 @@ static NhlErrorTypes SetTitleView
 		NhlSetSArg(&sargs[nargs++],NhlNvpXF,x_pos);
 	if (y_pos != y_vp)
 		NhlSetSArg(&sargs[nargs++],NhlNvpYF,y_pos);
-	if (width != width_vp)
+	if (width != width_vp) {
 		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,width);
-	if (height != height_vp)
+		NhlSetSArg(&sargs[nargs++],NhlNtiMainFontHeightF,
+			   an_ovl->plotmanager.ti_main_font_height);
+		NhlSetSArg(&sargs[nargs++],NhlNtiXAxisFontHeightF,
+			   an_ovl->plotmanager.ti_x_axis_font_height);
+	}
+	if (height != height_vp) {
 		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,height);
+		NhlSetSArg(&sargs[nargs++],NhlNtiYAxisFontHeightF,
+			   an_ovl->plotmanager.ti_y_axis_font_height);
+	}
 	
 	if (set_main_off_x != get_main_off_x)
 	    NhlSetSArg(&sargs[nargs++],NhlNtiMainOffsetXF,set_main_off_x);
@@ -2958,6 +2974,9 @@ ManageAnnotations
 	ovp->lbar_height_set = False;
 	ovp->lgnd_width_set = False;
 	ovp->lgnd_height_set = False;
+	ovp->ti_main_font_height_set = False;
+	ovp->ti_x_axis_font_height_set = False;
+	ovp->ti_y_axis_font_height_set = False;
 
 	return MIN(subret,ret);
 		
@@ -3366,6 +3385,8 @@ ManageTickMarks
  * Update the annotation record (tickmarks do not use all the fields).
  */
 	anno_rec->status = ovp->display_tickmarks;
+	anno_rec->zone = ovp->tickmark_zone > NhlOV_DEF_TICKMARK_ZONE ?
+		NhlOV_DEF_TICKMARK_ZONE : ovp->tickmark_zone;
 
 	if (ovnew->view.x != ovold->view.x ||
 	    ovnew->view.y != ovold->view.y ||
@@ -3672,6 +3693,7 @@ ManageTitles
  * Update the annotation record (titles do not use all the fields).
  */
 	anno_rec->status = ovp->display_titles;
+	anno_rec->zone = ovp->title_zone > 0 ? ovp->title_zone : 0;
 
 /*
  * If not displaying titles just call the SetValues function --
@@ -3695,17 +3717,6 @@ ManageTitles
  * care of this at SetValues time
  */
 
-	if (init) {
-		if (! ovp->ti_main_font_height_set) 
-			ovp->ti_main_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
-		if (! ovp->ti_x_axis_font_height_set)
-			ovp->ti_x_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
-		if (! ovp->ti_y_axis_font_height_set)
-			ovp->ti_y_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.height / NhlOV_STD_VIEW_HEIGHT;
-	}
 
 /*
  * Get the bounding box, then set the title positions with respect to it.
@@ -3723,7 +3734,30 @@ ManageTitles
 	ovp->ti_y = bbox.t;
 	ovp->ti_width = bbox.r - bbox.l; 
 	ovp->ti_height = bbox.t - bbox.b;
-	
+
+	if (init) {
+		if (! ovp->ti_main_font_height_set) 
+			ovp->ti_main_font_height = NhlOV_DEF_TITLE_HEIGHT *
+				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
+		if (! ovp->ti_x_axis_font_height_set)
+			ovp->ti_x_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
+				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
+		if (! ovp->ti_y_axis_font_height_set)
+			ovp->ti_y_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
+				ovnew->view.height / NhlOV_STD_VIEW_HEIGHT;
+	}
+	else {
+		if (! ovp->ti_main_font_height_set) 
+			ovp->ti_main_font_height *=
+				ovnew->view.width / ovold->view.width;
+		if (! ovp->ti_x_axis_font_height_set)
+			ovp->ti_x_axis_font_height *=
+				ovnew->view.width / ovold->view.width;
+		if (! ovp->ti_y_axis_font_height_set)
+			ovp->ti_y_axis_font_height *=
+				ovnew->view.height / ovold->view.height;
+	}
+
 	switch(ovp->ti_main_position) {
 	case NhlTOP:
 	case NhlBOTTOM:
@@ -3861,17 +3895,18 @@ ManageTitles
 		if (ovp->ti_height != oovp->ti_height)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovp->ti_height);
-		if (ovp->ti_main_font_height != oovp->ti_main_font_height)
+		if ((ovp->ti_main_font_height != oovp->ti_main_font_height)
+		    || (ovp->ti_width != oovp->ti_width))
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtiMainFontHeightF,
 				   ovp->ti_main_font_height);
-		if (ovp->ti_x_axis_font_height != 
-		    oovp->ti_x_axis_font_height)
+		if ((ovp->ti_x_axis_font_height != oovp->ti_x_axis_font_height)
+		    || (ovp->ti_width != oovp->ti_width))
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtiXAxisFontHeightF,
 				   ovp->ti_x_axis_font_height);
-		if (ovp->ti_y_axis_font_height != 
-		    oovp->ti_y_axis_font_height)
+		if ((ovp->ti_y_axis_font_height != oovp->ti_y_axis_font_height)
+		    || (ovp->ti_height != oovp->ti_height))
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtiYAxisFontHeightF,
 				   ovp->ti_y_axis_font_height);
@@ -3968,6 +4003,7 @@ ManageLabelBar
  * Update the annotation record
  */
 	anno_rec->side = ovp->lbar_side;
+	anno_rec->zone = ovp->labelbar_zone > 0 ? ovp->labelbar_zone : 0;
 	anno_rec->para_pos = ovp->lbar_para_pos;
 	anno_rec->ortho_pos = ovp->lbar_ortho_pos;
 	anno_rec->status = ovp->display_labelbar;
@@ -4249,6 +4285,7 @@ ManageLegend
  * Update the annotation record
  */
 	anno_rec->side = ovp->lgnd_side;
+	anno_rec->zone = ovp->legend_zone > 0 ? ovp->legend_zone : 0;
 	anno_rec->para_pos = ovp->lgnd_para_pos;
 	anno_rec->ortho_pos = ovp->lgnd_ortho_pos;
 	anno_rec->status = ovp->display_legend;
