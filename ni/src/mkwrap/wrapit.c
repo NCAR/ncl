@@ -136,6 +136,8 @@ WCentry *WNewVDef(char* name,int datatype,int isptr,char* array_spec,int order)
 		if(array_spec != NULL) {
 			tmp->next->def->array_spec= malloc(strlen(array_spec)+1);
 			strcpy(tmp->next->def->array_spec,array_spec);
+		} else {
+			tmp->next->def->array_spec = NULL;
 		}
 		tmp->next->def->isptr = isptr;
 		s = _NclAddInScope(current->crec,name,CVAR);
