@@ -284,7 +284,7 @@ if(groot != NULL) {
 				off1 = _NclTranslate(ret->expr,fp);
 				_NclPutInstr(RETURN_OP,ret->line,ret->file);
 			} else {
-				_NclPutInstr(CRETURN_OP,ret->line,ret->file);
+				off1 = _NclPutInstr(CRETURN_OP,ret->line,ret->file);
 			}
 /*
 * All that is needed is the return op to tell machine that top of
