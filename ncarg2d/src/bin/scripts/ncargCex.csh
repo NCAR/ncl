@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.4 1993-01-15 21:33:59 haley Exp $
+#	$Id: ncargCex.csh,v 1.5 1993-01-15 22:41:25 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -14,8 +14,8 @@ if (! -d "$example_dir") then
 endif
 
 set example_list=(\
-c_agex07 c_coex01 c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 c_stex01 \
-c_sfex02)
+c_agex07 c_coex01 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
+c_slex01 c_sfex02)
 
 if ($#argv < 1) then
 echo "usage: ncargCex [-all] [-clean] [-n] [-onebyone] names               "
