@@ -58,13 +58,14 @@ float    _NhlCmpF
         NhlCompareDat *b;
 #endif
 {
-        float   a_final;
+        float   a_final,b_final;
         long a_int,b_int;
         int signa;
 
 	if((a==0.0)&&(!b->is_zero)&&(b->lg_abs <= 0.0)){
 		a_int = 0;
-		b_int = b->b_final;
+		b_final = b->orig_val * (float)pow(10.0,b->sig_dig);
+		b_int = (long)b_final;
 		return((float)a_int-b_int);
 	} else if((a!=0.0)&&(b->is_zero)&&(log10(fabs(a)) <= 0.0)){
 		b_int = 0;
@@ -137,6 +138,7 @@ NhlCompareDat *_NhlCmpFSetup
 		sign = 1;
 	tmp->b_final = fabs(val);
 	dummy = (float)log10(tmp->b_final);
+	tmp->lg_abs = dummy;
 	tmp->exp = (long)ceil(log10(tmp->b_final));
 	if((float) tmp->exp == dummy) {
 		tmp->exp++;
