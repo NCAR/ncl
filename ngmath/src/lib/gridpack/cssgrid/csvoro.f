@@ -67,11 +67,11 @@ C      counter-clockwise order.
 C    IER (Output)
 C      An error return value as per:
 C         IER =  0  no error.
-C         IER = -1  NPTS < 3.
-C         IER = -2  first three coordinates are collinear.
-C         IER = -3  internal error
-C         IER =  L  if coordinates L and M coincide for some
-C                   M > L.
+C         IER =  1  NPTS < 3.
+C         IER =  4  first three coordinates are collinear.
+C         IER =  6  internal error
+C         IER = -L  if coordinates L and M coincide for some
+C                   M > L >= 1 .
 C
       DIMENSION X(NPTS),Y(NPTS),Z(NPTS),IWK(*),RWK(NPTS),
      +          XC(NC),YC(NC),ZC(NC),RC(NC),NV(NPTS)
@@ -92,7 +92,26 @@ C      IWK(21*NPTS+1)            LISTC           6*NPTS
 C
         CALL CSTRMESH(NPTS,X,Y,Z,IWK(1),IWK(6*NPTS+1),IWK(12*NPTS+1),
      +                LNEW,IWK(13*NPTS+1),IWK(14*NPTS+1),RWK(1),IER)
-        IF (IER .NE. 0) RETURN
+        IF (IER .EQ. 0) THEN
+          IER = 0 
+          GO TO 200
+        ELSE IF (IER .EQ. -1) THEN
+          IER = 1
+          GO TO 200
+        ELSE IF (IER .EQ. -2) THEN
+          IER = 4
+          GO TO 200
+        ELSE IF (IER .EQ. -3) THEN
+          IER = 6
+          GO TO 200
+        ELSE IF (IER .GT. 0) THEN
+          IER = -IER
+          GO TO 200
+        ELSE
+          IER = 6
+          GO TO 200
+        ENDIF
+C
         N2 = NPTS*2
         DO 10 I=1,N2
           XC(I) = -99999.
@@ -103,7 +122,20 @@ C
         CALL CSCRLIST(NPTS,NPTS,X,Y,Z,IWK(1),IWK(12*NPTS+1),
      +                IWK(6*NPTS+1),LNEW,IWK(15*NPTS+1),
      +                IWK(21*NPTS+1),NB,XC,YC,ZC,RC,IER)
-        IF (IER .NE. 0) RETURN
+        IF (IER .EQ. 0) THEN
+          GO TO 200
+        ELSE IF (IER .EQ. 1) THEN
+          GO TO 200
+        ELSE IF (IER .EQ. 2) THEN
+          IER = 10
+          GO TO 200
+        ELSE IF (IER .EQ. 3) THEN
+          IER = 11
+          GO TO 200
+        ELSE
+          IER = 6
+          GO TO 200
+        ENDIF
 C
 C  Determine the number of circumcenters returned.
 C
@@ -123,11 +155,20 @@ C
       NUMV = 1
       NV(NUMV) = IWK(21*NPTS+LPL)
       LP  = LPL
-  100 CONTINUE
+   30 CONTINUE
         LP = IWK(6*NPTS+LP)
         NUMV = NUMV+1
         NV(NUMV) = IWK(21*NPTS+LP)
-      IF (LP .NE. LPL) GO TO 100
+      IF (LP .NE. LPL) GO TO 30
 C
-      RETURN
+  200 CONTINUE
+      IF (IER .EQ. 0) THEN
+        RETURN
+      ELSE 
+        CALL CSSERR('CSVORO',IER)
+        NCA = 0
+        NUMV = 0  
+        RETURN
+      ENDIF
+C 
       END

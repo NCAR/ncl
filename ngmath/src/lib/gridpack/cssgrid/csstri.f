@@ -45,23 +45,19 @@ C              The nodes for the Jth triangle are NTRI(1,J),
 C              NTRI(2,J) and NTRI(3,J) where node I references
 C              the coordinate (X(I),Y(I),Z(I)).
 C
-C       IER  = Error indicator:
-C              IER = 2  if the triangulation data structure
-C                       (LIST,LPTR,LEND) is invalid.  Note,
-C                       however, that these arrays are not
-C                       completely tested for validity.
-C              IER =  0 if no errors were encountered.
-C              IER = -1 if N < 3 on input.
-C              IER = -2 if the first three nodes are
-C                       collinear.
-C              IER = -3 if an error flag was returned by a
-C                       call to CSSWAP in CSADDNOD.  This is an
-C                       internal error and should be reported
-C                       to the programmer.
-C              IER =  L if nodes L and M coincide for some
-C                       M > L.  The data structure represents
-C                       a triangulation of nodes 1 to M-1 in
-C                       this case.
+C       IER = Error indicator:
+C                =  0 - no error.
+C                =  1 - invalid number of input points (must be 
+C                       greater than 3).
+C                =  4 - first three nodes are collinear.
+C                =  6 - internal algorithm error - please report this.
+C                = 10 - insufficient space for the triangulation 
+C                       (must be >= number of boundary nodes minus 2).
+C                = 11 - degenerate triangle (two vertices lie on 
+C                       same geodesic).
+C                = -L - coordinates L and M coincide for some 
+C                       M  > L >= 1 (coordinate numbering 
+C                       starting at 1).
 C
 C Modules required by CSSTRI:  CSTRMESH, CSTRLIST
 C
@@ -71,13 +67,34 @@ C  Triangulate.
 C
       CALL CSTRMESH(N,X,Y,Z, IWK(1),IWK(6*N+1),IWK(12*N+1),LNEW,
      +              IWK(13*N+1),IWK(14*N+1),WK(1),IER)
-      IF (IER .NE. 0) RETURN
+      IF (IER .EQ. 0) THEN
+        GO TO 200
+      ELSE IF (IER .EQ. -1) THEN
+        IER = 1
+        GO TO 200
+      ELSE IF (IER .EQ. -2) THEN
+        IER = 4
+        GO TO 200
+      ELSE IF (IER .EQ. -3) THEN
+        IER = 6
+        GO TO 200
+      ELSE IF (IER .GT. 0) THEN
+        IER = -IER
+        GO TO 200
+      ELSE
+        IER = 6
+        GO TO 200
+      ENDIF
 C
 C  Determine the triangle nodes.
 C
       CALL CSTRLIST(N,IWK(1),IWK(6*N+1),IWK(12*N+1),
      +              6,NT,IWK(15*N+1),IER)
-      IF (IER .NE. 0) RETURN
+      IF (IER .NE. 0) THEN
+        NT = 0
+        IER = 6
+        GO TO 200
+      ENDIF
 C
 C  Copy off the triangle nodes and return.
 C
@@ -87,5 +104,13 @@ C
         NTRI(3,J) = IWK(15*N+6*(J-1)+3) 
    10 CONTINUE
 C
-      RETURN
+  200 CONTINUE
+      IF (IER .EQ. 0) THEN
+        RETURN
+      ELSE 
+        CALL CSSERR('CSVORO',IER)
+        NT = 0
+        RETURN
+      ENDIF
+C
       END

@@ -86,16 +86,17 @@ C       FP = Value of F at P unless IER < 0, in which case
 C            FP is not defined.
 C
 C       IER = Error indicator and information flag:
-C             IER = 0 if no errors were encountered and P is
-C                     contained in a triangle.
-C             IER = 1 if no errors were encountered and
-C                     extrapolation was required.
-C             IER = -1 if N or IST is outside its valid
-C                      range.
-C             IER = -2 if the nodes are collinear.
-C             IER = -3 if the angular distance between P and
-C                      the nearest point of the triangula-
-C                      tion is at least 90 degrees.
+C               =  0 - no error.
+C               =  1 - invalid number of input points (must be 
+C                      greater than 3).
+C               =  4 - first three nodes are collinear.
+C               =  7 - vertex of a triangle containing an interpolation
+C                      point is outside its valid range.
+C               =  8 - the angular distance between an interpolated 
+C                      point and the nearest point of the 
+C                      triangulation is at least 90 degrees.
+C               =  9 - not enough input points to calculate a gradient.
+C
 C
 C STRIPACK modules required by CSINTRC1: CSJRAND, CSLSTPTR, CSSTORE,
 C                                        CSTRFIND
@@ -158,8 +159,13 @@ C SUM =      Quantity used to normalize the barycentric
 C              coordinates
 C
       NN = N
-      IF (NN .LT. 3  .OR.  (IFLGG .LE. 0  .AND.  NN .LT. 7)
-     .    .OR.  IST .LT. 1  .OR.  IST .GT. NN) GO TO 11
+      IF (NN .LT. 3) THEN
+        GO TO 100
+      ELSE IF (IFLGG .LE. 0  .AND.  NN .LT. 7) THEN
+        GO TO 110
+      ELSE IF (IST .LT. 1  .OR.  IST .GT. NN) THEN
+        GO TO 120
+      ENDIF
 C
 C Transform (PLAT,PLON) to Cartesian coordinates.
 C
@@ -171,7 +177,7 @@ C Locate P with respect to the triangulation.
 C
       CALL CSTRFIND (IST,P,NN,X,Y,Z,LIST,LPTR,LEND, B1,B2,B3,
      .             I1,I2,I3)
-      IF (I1 .EQ. 0) GO TO 12
+      IF (I1 .EQ. 0) GO TO 130
       IST = I1
       IF (I3 .NE. 0) THEN
 C
@@ -202,11 +208,11 @@ C
 C   Compute gradient estimates at the vertices.
 C
           CALL CSGRADL (NN,I1,X,Y,Z,F,LIST,LPTR,LEND, G1,IERR)
-          IF (IERR .LT. 0) GO TO 12
+          IF (IERR .LT. 0) GO TO 130
           CALL CSGRADL (NN,I2,X,Y,Z,F,LIST,LPTR,LEND, G2,IERR)
-          IF (IERR .LT. 0) GO TO 12
+          IF (IERR .LT. 0) GO TO 130
           CALL CSGRADL (NN,I3,X,Y,Z,F,LIST,LPTR,LEND, G3,IERR)
-          IF (IERR .LT. 0) GO TO 12
+          IF (IERR .LT. 0) GO TO 130
         ENDIF
 C
         IF (IFLGS .GT. 0) THEN
@@ -289,7 +295,7 @@ C   termination.
 C
         LP = LEND(N2)
         N1 = -LIST(LP)
-        IF (N1 .EQ. I1) GO TO 13
+        IF (N1 .EQ. I1) GO TO 140
 C
 C Compute inner products (N1,N2) and (P,N1).
 C
@@ -318,7 +324,7 @@ C
     4       CONTINUE
         ELSE
           CALL CSGRADL (NN,N2,X,Y,Z,F,LIST,LPTR,LEND, GQ,IERR)
-          IF (IERR .LT. 0) GO TO 12
+          IF (IERR .LT. 0) GO TO 130
         ENDIF
 C
 C Extrapolate to P:  FP = FQ + A*(GQ,Q X (PXQ)/SIN(A)),
@@ -329,7 +335,7 @@ C
         PTGQ = P(1)*GQ(1) + P(2)*GQ(2) + P(3)*GQ(3)
         FP = FQ
         IF (A .NE. 0.) FP = FP + PTGQ*A/SIN(A)
-        IER = 1
+        IER = 0
         RETURN
       ENDIF
 C
@@ -366,9 +372,9 @@ C
     7     CONTINUE
       ELSE
         CALL CSGRADL (NN,N1,X,Y,Z,F,LIST,LPTR,LEND, G1,IERR)
-        IF (IERR .LT. 0) GO TO 12
+        IF (IERR .LT. 0) GO TO 130
         CALL CSGRADL (NN,N2,X,Y,Z,F,LIST,LPTR,LEND, G2,IERR)
-        IF (IERR .LT. 0) GO TO 12
+        IF (IERR .LT. 0) GO TO 130
       ENDIF
 C
       IF (IFLGS .LE. 0) S1 = SIGMA(1)
@@ -383,22 +389,35 @@ C Extrapolate to P:  the normal gradient component GQN is
 C   the negative of the component in the direction Q->P.
 C
       FP = FQ - GQN*CSARCLEN(Q,P)
+      IER = 0
+C
+C  Invalid number of input points (must be greater than 3).
+C
+  100 CONTINUE
       IER = 1
       RETURN
 C
-C N or IST is outside its valid range.
+C  Not enough input points to calculate a gradient.
 C
-   11 IER = -1
+  110 CONTINUE
+      IER = 9
       RETURN
 C
-C Collinear nodes encountered.
+C  Vertex of a triangle containing an interpolation point is outside 
+C  its valid range.
 C
-   12 IER = -2
+  120 CONTINUE
+      IER = 7
       RETURN
 C
-C The distance between P and the closest boundary point
-C   is at least 90 degrees.
+C  First three nodes are collinear.
 C
-   13 IER = -3
+  130 CONTINUE
+      IER = 4
       RETURN
+C
+  140 CONTINUE
+      IER = 8
+      RETURN
+C
       END

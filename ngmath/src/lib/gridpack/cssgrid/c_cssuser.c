@@ -43,6 +43,10 @@ int *c_csstri(int n, float xi[], float yi[], float zi[],
  */
   NGCALLF(csstri,CSSTRI)(&nit, xi, yi, zi, &num_tri, trlist, 
           iwork, rwork, ier);
+  if (*ier != 0) {
+    printf("Error number %d returned from c_csstri\n",*ier);
+    return((int *)NULL);
+  }
   *nt = num_tri;
 
 /*
@@ -124,6 +128,10 @@ float *c_cssgrid(int ni, float xi[], float yi[], float zi[], float f[],
  */
   NGCALLF(cssgrid,CSSGRID)(&nit, xi, yi, zi, f, &nlat, &nlon, 
           plat, plon, ff, iwork, rwork, ier);
+  if (*ier != 0) {
+    printf("Error number %d returned from c_cssgrid\n",*ier);
+    return((float *)NULL);
+  }
 
   free(iwork);
   free(rwork);
@@ -205,6 +213,10 @@ void c_csvoro(int npts, float x[], float y[], float z[],
   NGCALLF(csvoro,CSVORO)(&nit, x, y, z, &nj, &nf, iwork, rwork, &nc,
                          xc, yc, zc, rc, nca, numv, nv, ier);
 
+  if (*ier != 0) {
+    printf("Error number %d returned from c_csvoro\n",*ier);
+    return;
+  }
 /*
  *  Adjust the indices in nv to be compatible with C.
  */

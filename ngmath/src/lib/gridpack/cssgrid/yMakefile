@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.2 1999-05-07 18:19:44 fred Exp $
+#       $Id: yMakefile,v 1.3 1999-06-18 18:24:00 fred Exp $
 #
  
 MYNAME  = cssgrid
@@ -14,7 +14,8 @@ csjrand.o   csleft.o    cslstptr.o  csnbcnt.o   csnearnd.o  csoptim.o  \
 csrotate.o  csscoord.o  cssetup.o   cssgprnt.o  cssig0.o    cssig1.o   \
 cssig2.o    cssmsgs.o   cssmsurf.o  cssnhcsh.o  csstore.o   csswap.o   \
 csswptst.o  cstrans.o   cstrfind.o  cstrlist.o  cstrlprt.o  cstrmesh.o \
-cstrprnt.o  csunif.o    csstri.o    cssgrid.o   c_cssuser.o csvoro.o
+cstrprnt.o  csunif.o    csstri.o    cssgrid.o   c_cssuser.o csvoro.o   \
+csserr.o
  
 SOURCES =  \
 csaddnod.f  csaplyr.f   csaplyrt.f  csarcint.f  csarclen.f  csareas.f  \
@@ -26,7 +27,8 @@ csjrand.f   csleft.f    cslstptr.f  csnbcnt.f   csnearnd.f  csoptim.f  \
 csrotate.f  csscoord.f  cssetup.f   cssgprnt.f  cssig0.f    cssig1.f   \
 cssig2.f    cssmsgs.f   cssmsurf.f  cssnhcsh.f  csstore.f   csswap.f   \
 csswptst.f  cstrans.f   cstrfind.f  cstrlist.f  cstrlprt.f  cstrmesh.f \
-cstrprnt.f  csunif.f    csstri.f    cssgrid.f   c_cssuser.c csvoro.f
+cstrprnt.f  csunif.f    csstri.f    cssgrid.f   c_cssuser.c csvoro.f   \
+csserr.f
  
 PartialLibraryTarget(../libngmath.a,$(OBJECTS))
 DependTarget($(SOURCES))
