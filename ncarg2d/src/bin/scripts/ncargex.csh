@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.32 1993-04-12 14:49:04 haley Exp $
+#   $Id: ncargex.csh,v 1.33 1993-04-12 16:03:55 haley Exp $
 #
 
 #********************#
@@ -329,12 +329,13 @@ set field_list = ($ex_field $tst_field $fnd_field)
 # set gks examples #
 #                  #
 #******************#
-set fnd_gks  = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth fgke01 fgke02 fgke03 \
-                fgke04 fcell fcell0 fgpm01)
-set pdc_gks  = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
-                pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
-                pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21)
-set gks_list = ($fnd_gks $pdc_gks)
+set fnd_gks    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
+                  fgklnclr fgklnwth)
+set fnd_intgks = (fgke01 fgke04)
+set pdc_gks    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
+                  pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
+                  pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21)
+set gks_list   = ($fnd_gks $pdc_gks)
 
 #****************************#
 #                            #
@@ -359,22 +360,20 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #*********************************************************************#
 set ex_list  = ($ex_areas $ex_autograph $ex_conpack $ex_ezmap $ex_field \
                 $ex_labelbar $ex_plotchar ${ex_scrlld_title} $ex_softfill \
-                $ex_spps ${ex_streamlines} $ex_surface $ex_vectors $ex_misc)
+                $ex_spps $ex_surface $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
                 $tst_plotchar $tst_pwrite ${tst_scrlld_title} \
-                $tst_softfill ${tst_streamlines} $tst_surface $tst_threed \
-                $tst_vectors)
+                $tst_softfill $tst_surface $tst_threed)
 
 set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
 
 set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
                 $fnd_isosurface $fnd_ngmisc $fnd_plotchar ${fnd_scrlld_title} \
-                $fnd_softfill $fnd_spps ${fnd_streamlines} $fnd_surface \
-                $fnd_threed $fnd_vectors $fnd_misc)
+                $fnd_softfill $fnd_spps $fnd_surface $fnd_threed $fnd_misc)
 
 set pdc_list = ($pdc_gks)
 
@@ -400,7 +399,6 @@ while ($#argv > 0)
         case "-A":
             shift
             set names=($ex_list $tst_list $ttr_list $fnd_list $pdoc_list)
-            set NoInteractiveGKS
             breaksw
 
         case "-allexamples":
@@ -425,7 +423,6 @@ while ($#argv > 0)
         case "-F":
             shift
             set names=($fnd_list)
-            set NoInteractiveGKS
             breaksw
         
         case "-allpdocexamples":
@@ -572,7 +569,6 @@ while ($#argv > 0)
         case "-gks":
             shift
             set names=($gks_list)
-            set NoInteractiveGKS
             breaksw
 
         case "-misc":
@@ -658,6 +654,12 @@ foreach known ($ttr_list)
 end
 
 foreach known ($fnd_list)
+    if ("$name" == "$known") then
+        set type="Fundamentals"
+    endif
+end
+
+foreach known ($fnd_intgks)
     if ("$name" == "$known") then
         set type="Fundamentals"
     endif
@@ -924,16 +926,6 @@ if (! $?NoRunOption) then
         breaksw
         case ffex05:
             ncargrun -o $name.ncgm $name < ffex05.dat
-        breaksw
-        case fgke01:
-        case fgke04:
-#
-# We don't want to execute these two examples if the person is running an
-# "all" target of some kind because generally you want to go away and come 
-# back when the "all" is done.  Since these are interactive examples, they 
-# will sit and wait for a mouse click before continuing on to the next example.
-#
-            if (! $?NoInteractiveGKS) $name
         breaksw
         case fgke03:
             $name
