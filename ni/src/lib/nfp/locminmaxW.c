@@ -31,7 +31,7 @@ NhlErrorTypes local_min_W( void )
   void   *x, *delta;
   logical *cyclic;
   double *tmp_x, *tmp_delta;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_delta;
@@ -45,9 +45,9 @@ NhlErrorTypes local_min_W( void )
 /*
  * Output array variables
  */
-  int *nmin, *tmp_xi, *tmp_yi, *xi, *yi;
-  double *tmp_minvals, *dminvals;
-  float  *rminvals;
+  int tmp_nmin, *tmp_xi, *tmp_yi;
+  void *xi, *yi, *minvals, *nmin;
+  double *tmp_minvals;
 /*
  * Declare various variables for random purposes.
  */
@@ -65,7 +65,7 @@ NhlErrorTypes local_min_W( void )
   x = (void*)NclGetArgValue(
           0,
           3,
-          &ndims_x,
+          NULL,
           dsizes_x,
           &missing_x,
           &has_missing_x,
@@ -99,8 +99,8 @@ NhlErrorTypes local_min_W( void )
 /*
  * Get size of input array.
  */
-  nx = dsizes_x[ndims_x-1];
-  ny = dsizes_x[ndims_x-2];
+  nx = dsizes_x[1];
+  ny = dsizes_x[0];
   if( nx < 3 || ny < 3 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: The input array must have more than 3 elements in each dimension");
     return(NhlFATAL);
@@ -113,10 +113,10 @@ NhlErrorTypes local_min_W( void )
 /*
  * Create arrays to hold X and Y coordinate arrays and min values.
  */
-  tmp_xi      = (int*)calloc(nx,sizeof(int));
-  tmp_yi      = (int*)calloc(ny,sizeof(int));
+  tmp_xi      = (int*)calloc(nxny,sizeof(int));
+  tmp_yi      = (int*)calloc(nxny,sizeof(int));
   tmp_minvals = (double*)calloc(nxny,sizeof(double));
-  nmin        = (int*)calloc(1,sizeof(int));
+  nmin        = (void*)calloc(1,sizeof(int));
   if( tmp_xi == NULL || tmp_yi == NULL || tmp_minvals == NULL || nmin == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for output arrays");
     return(NhlFATAL);
@@ -169,45 +169,47 @@ NhlErrorTypes local_min_W( void )
  */
   NGCALLF(dlocalmn,DLOCALMN)(tmp_x,&nx,&ny,&missing_dx.doubleval,cyclic,
                              tmp_xi,tmp_yi,&nxny,tmp_minvals,tmp_delta,
-                             nmin,&ier);
+                             &tmp_nmin,&ier);
+  ((int*)nmin)[0] = tmp_nmin;
+
 /*
  * If number of local minimums is zero, then don't bother returning
  * any attributes.
  */
-  if(*nmin == 0) {
+  if(tmp_nmin == 0) {
     dsizes[0] = 1;
     return(NclReturnValue(nmin,1,dsizes,NULL,NCL_int,0));
   }
 /*
  * Allocate space for coorindate array indices and minimum values.
  */
-  xi = (int*)calloc(*nmin,sizeof(int));
-  yi = (int*)calloc(*nmin,sizeof(int));
+  xi = (void*)calloc(tmp_nmin,sizeof(int));
+  yi = (void*)calloc(tmp_nmin,sizeof(int));
+  if( xi == NULL || yi == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
   if(type_x != NCL_double) {
-    rminvals = (float*)calloc(*nmin,sizeof(float));
-    if( xi == NULL || yi == NULL || rminvals == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for output arrays");
-      return(NhlFATAL);
-    }
+    minvals = (void*)calloc(tmp_nmin,sizeof(float));
   }
   else {
-    dminvals = (double*)calloc(*nmin,sizeof(double));
-    if( xi == NULL || yi == NULL || dminvals == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for output arrays");
-      return(NhlFATAL);
-    }
+    minvals = (void*)calloc(tmp_nmin,sizeof(double));
+  }
+  if(minvals == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
   }
 /*
  * Copy output values.
  */
-  for(i = 0; i < *nmin; i++) {
-    xi[i] = tmp_xi[i];
-    yi[i] = tmp_yi[i];
+  for(i = 0; i < tmp_nmin; i++) {
+    ((int*)xi)[i] = tmp_xi[i];
+    ((int*)yi)[i] = tmp_yi[i];
     if(type_x != NCL_double) {
-      rminvals[i] = (float)tmp_minvals[i];
+      ((float*)minvals)[i] = (float)tmp_minvals[i];
     }
     else {
-      dminvals[i] = tmp_minvals[i];
+      ((double*)minvals)[i] = tmp_minvals[i];
     }
   }
 /*
@@ -241,7 +243,7 @@ NhlErrorTypes local_min_W( void )
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-  dsizes[0] = *nmin;  
+  dsizes[0] = tmp_nmin;  
 
   att_md = _NclCreateVal(
                          NULL,
@@ -283,7 +285,7 @@ NhlErrorTypes local_min_W( void )
              NULL
              );
 
-  dsizes[0] = *nmin;  
+  dsizes[0] = tmp_nmin;  
 
   if(type_x != NCL_double) {
 /*
@@ -294,7 +296,7 @@ NhlErrorTypes local_min_W( void )
                            NULL,
                            Ncl_MultiDValData,
                            0,
-                           rminvals,
+                           minvals,
                            NULL,
                            1,
                            dsizes,
@@ -312,7 +314,7 @@ NhlErrorTypes local_min_W( void )
                            NULL,
                            Ncl_MultiDValData,
                            0,
-                           dminvals,
+                           minvals,
                            NULL,
                            1,
                            dsizes,
@@ -358,7 +360,7 @@ NhlErrorTypes local_max_W( void )
   void   *x, *delta;
   logical *cyclic;
   double *tmp_x, *tmp_delta;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_delta;
@@ -372,9 +374,9 @@ NhlErrorTypes local_max_W( void )
 /*
  * Output array variables
  */
-  int *nmax, *tmp_xi, *tmp_yi, *xi, *yi;
-  double *tmp_maxvals, *dmaxvals;
-  float  *rmaxvals;
+  int tmp_nmax, *tmp_xi, *tmp_yi;
+  void *xi, *yi, *maxvals, *nmax;
+  double *tmp_maxvals;
 /*
  * Declare various variables for random purposes.
  */
@@ -392,7 +394,7 @@ NhlErrorTypes local_max_W( void )
   x = (void*)NclGetArgValue(
           0,
           3,
-          &ndims_x,
+          NULL,
           dsizes_x,
           &missing_x,
           &has_missing_x,
@@ -426,8 +428,8 @@ NhlErrorTypes local_max_W( void )
 /*
  * Get size of input array.
  */
-  nx = dsizes_x[ndims_x-1];
-  ny = dsizes_x[ndims_x-2];
+  nx = dsizes_x[1];
+  ny = dsizes_x[0];
   if( nx < 3 || ny < 3 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: The input array must have more than 3 elements in each dimension");
     return(NhlFATAL);
@@ -440,10 +442,10 @@ NhlErrorTypes local_max_W( void )
 /*
  * Create arrays to hold X and Y coordinate arrays and max values.
  */
-  tmp_xi      = (int*)calloc(nx,sizeof(int));
-  tmp_yi      = (int*)calloc(ny,sizeof(int));
+  tmp_xi      = (int*)calloc(nxny,sizeof(int));
+  tmp_yi      = (int*)calloc(nxny,sizeof(int));
   tmp_maxvals = (double*)calloc(nxny,sizeof(double));
-  nmax        = (int*)calloc(1,sizeof(int));
+  nmax        = (void*)calloc(1,sizeof(int));
   if( tmp_xi == NULL || tmp_yi == NULL || tmp_maxvals == NULL || nmax == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for output arrays");
     return(NhlFATAL);
@@ -496,45 +498,46 @@ NhlErrorTypes local_max_W( void )
  */
   NGCALLF(dlocalmx,DLOCALMX)(tmp_x,&nx,&ny,&missing_dx.doubleval,cyclic,
                              tmp_xi,tmp_yi,&nxny,tmp_maxvals,tmp_delta,
-                             nmax,&ier);
+                             &tmp_nmax,&ier);
+  ((int*)nmax)[0] = tmp_nmax;
 /*
  * If number of local maximums is zero, then don't bother returning
  * any attributes.
  */
-  if(*nmax == 0) {
+  if(tmp_nmax == 0) {
     dsizes[0] = 1;
     return(NclReturnValue(nmax,1,dsizes,NULL,NCL_int,0));
   }
 /*
  * Allocate space for coorindate array indices and maximum values.
  */
-  xi = (int*)calloc(*nmax,sizeof(int));
-  yi = (int*)calloc(*nmax,sizeof(int));
+  xi = (void*)calloc(tmp_nmax,sizeof(int));
+  yi = (void*)calloc(tmp_nmax,sizeof(int));
+  if( xi == NULL || yi == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
   if(type_x != NCL_double) {
-    rmaxvals = (float*)calloc(*nmax,sizeof(float));
-    if( xi == NULL || yi == NULL || rmaxvals == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for output arrays");
-      return(NhlFATAL);
-    }
+    maxvals = (void*)calloc(tmp_nmax,sizeof(float));
   }
   else {
-    dmaxvals = (double*)calloc(*nmax,sizeof(double));
-    if( xi == NULL || yi == NULL || dmaxvals == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for output arrays");
-      return(NhlFATAL);
-    }
+    maxvals = (void*)calloc(tmp_nmax,sizeof(double));
+  }
+  if( maxvals == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
   }
 /*
  * Copy output values.
  */
-  for(i = 0; i < *nmax; i++) {
-    xi[i] = tmp_xi[i];
-    yi[i] = tmp_yi[i];
+  for(i = 0; i < tmp_nmax; i++) {
+    ((int*)xi)[i] = tmp_xi[i];
+    ((int*)yi)[i] = tmp_yi[i];
     if(type_x != NCL_double) {
-      rmaxvals[i] = (float)tmp_maxvals[i];
+      ((float*)maxvals)[i] = (float)tmp_maxvals[i];
     }
     else {
-      dmaxvals[i] = tmp_maxvals[i];
+      ((double*)maxvals)[i] = tmp_maxvals[i];
     }
   }
 /*
@@ -568,7 +571,7 @@ NhlErrorTypes local_max_W( void )
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-  dsizes[0] = *nmax;  
+  dsizes[0] = tmp_nmax;  
 
   att_md = _NclCreateVal(
                          NULL,
@@ -610,7 +613,7 @@ NhlErrorTypes local_max_W( void )
              NULL
              );
 
-  dsizes[0] = *nmax;  
+  dsizes[0] = tmp_nmax;  
 
   if(type_x != NCL_double) {
 /*
@@ -621,7 +624,7 @@ NhlErrorTypes local_max_W( void )
                            NULL,
                            Ncl_MultiDValData,
                            0,
-                           rmaxvals,
+                           maxvals,
                            NULL,
                            1,
                            dsizes,
@@ -639,7 +642,7 @@ NhlErrorTypes local_max_W( void )
                            NULL,
                            Ncl_MultiDValData,
                            0,
-                           dmaxvals,
+                           maxvals,
                            NULL,
                            1,
                            dsizes,

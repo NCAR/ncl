@@ -5,7 +5,7 @@
 C input
       INTEGER LWRAP,NI,NJ,NINJ
 C input
-      INTEGER XI(NI),YJ(NJ)
+      INTEGER XI(NINJ),YJ(NINJ)
 C input
       DOUBLE PRECISION X(NI,NJ),XMSG,DELTA
 C output
@@ -99,13 +99,7 @@ c initialize to missing and zero
       NMIN = 0
       DO N = 1,NINJ
           LOCMIN(N) = XMSG
-      END DO
-
-      DO N = 1,NI
           XI(N) = -999
-      END DO
-
-      DO N = 1,NJ
           YJ(N) = -999
       END DO
 
@@ -164,7 +158,7 @@ c ----------------------------------------------------------
 C input
       INTEGER LWRAP,NI,NJ,NINJ
 C input
-      INTEGER XI(NI),YJ(NJ)
+      INTEGER XI(NINJ),YJ(NINJ)
 C input
       DOUBLE PRECISION X(NI,NJ),XMSG,DELTA
 C output
@@ -189,13 +183,7 @@ c initialize to missing and zero
       NMAX = 0
       DO N = 1,NINJ
           LOCMAX(N) = XMSG
-      END DO
-
-      DO N = 1,NI
           XI(N) = -999
-      END DO
-
-      DO N = 1,NJ
           YJ(N) = -999
       END DO
 
