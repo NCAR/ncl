@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.97 1998-04-20 21:49:28 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.98 1998-05-22 16:17:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11084,17 +11084,19 @@ NhlErrorTypes _NclIvinth2p
 		plevo_has_missing = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.missing_value.has_missing;
 		plevo_type = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.data_type;
 		plevo_quark = NrmStringToQuark("lev");
+		plevo = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val;
 		break;
 	case NclStk_VAR:
+                tmp_md = _NclVarValueRead(plevo_val.u.data_var,NULL,NULL);
 		plevo_n_dims = ((NclVarRec*)(plevo_val.u.data_var))->var.n_dims;
 		plevo_dimsizes = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_size;
-                tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
 		plevo_missing = tmp_md->multidval.missing_value.value;
 		plevo_has_missing = tmp_md->multidval.missing_value.has_missing;
 		plevo_type = tmp_md->multidval.data_type;
 		plevo_quark = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_quark;
 		if(plevo_quark == -1) 
 			plevo_quark = NrmStringToQuark("lev");
+		plevo = tmp_md->multidval.val;
 		break;
 	}
 
@@ -11104,7 +11106,7 @@ NhlErrorTypes _NclIvinth2p
                         3,
                         9,
                         &plevo_n_dims,
-                        &plevo_dimsizes,
+                        &plevo_di_val msizes,
                         &plevo_missing,
                         &plevo_has_missing,
                         &plevo_type,
