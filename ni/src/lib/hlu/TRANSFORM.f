@@ -1,5 +1,5 @@
 C
-C $Id: TRANSFORM.f,v 1.2 1995-02-17 10:23:27 boote Exp $
+C $Id: TRANSFORM.f,v 1.3 1996-04-10 16:37:10 dbrown Exp $
 C
 C****************************************************************
 C								*
@@ -38,17 +38,41 @@ C
 	call nhl_fdatatondc(ipid,x,y,n,xout,yout,xmiss,ymiss,ixmiss,
      %		iymiss,istat,routrange,ierr)
       end
-      subroutine nhlfdatapolyline(ipid,x,y,n,ierr)
-	integer ipid,n,ierr
+      subroutine nhlfdatapolyline(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
 	real	x(n),y(n)
 
-	call nhl_fdatapolyline(ipid,x,y,n,ierr)
+	call nhl_fdatapolyline(ipid,igid,x,y,n,ierr)
       end
-      subroutine nhlfndcpolyline(ipid,x,y,n,ierr)
-	integer ipid,n,ierr
+      subroutine nhlfndcpolyline(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
 	real	x(n),y(n)
 
-	call nhl_fndcpolyline(ipid,x,y,n,ierr)
+	call nhl_fndcpolyline(ipid,igid,x,y,n,ierr)
+      end
+      subroutine nhlfdatapolygon(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
+	real	x(n),y(n)
+
+	call nhl_fdatapolygon(ipid,igid,x,y,n,ierr)
+      end
+      subroutine nhlfndcpolygon(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
+	real	x(n),y(n)
+
+	call nhl_fndcpolygon(ipid,igid,x,y,n,ierr)
+      end
+      subroutine nhlfdatapolymarker(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
+	real	x(n),y(n)
+
+	call nhl_fdatapolymarker(ipid,igid,x,y,n,ierr)
+      end
+      subroutine nhlfndcpolymarker(ipid,igid,x,y,n,ierr)
+	integer ipid,igid,n,ierr
+	real	x(n),y(n)
+
+	call nhl_fndcpolymarker(ipid,igid,x,y,n,ierr)
       end
       subroutine nhlfistransform(id,istat)
 
