@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.15 1996-01-15 17:22:43 boote Exp $
+ *      $Id: XWorkstation.c,v 1.16 1996-03-16 21:37:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,7 @@
  *
  *	Description:	Responsible for managing the X workstation element
  */
+#include <ncarg/gksP.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/XWorkstationP.h>
@@ -88,6 +89,11 @@ static NhlErrorTypes XWorkstationClear(
 #endif
 );
 
+static NhlErrorTypes XWorkstationAllocateColors(
+#if  NhlNeedProto
+	NhlLayer l
+#endif
+);
 
 NhlXWorkstationClassRec NhlxWorkstationClassRec = {
         {
@@ -127,7 +133,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,
 /* deactivate_work	*/	NhlInheritDeactivate,
-/* alloc_colors		*/	NhlInheritAllocateColors,
+/* alloc_colors		*/	XWorkstationAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	XWorkstationClear,
 /* lineto_work 		*/	NhlInheritLineTo,
@@ -469,4 +475,220 @@ XWorkstationOpen
 	}
 
 	return _NhlAllocateColors(l);
+}
+
+/*
+ * Function:	XWorkstationAllocateColors
+ *
+ * Description: Used to allocate colors.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+XWorkstationAllocateColors
+#if  NhlNeedProto
+(
+	NhlLayer l
+)
+#else
+(l)
+	NhlLayer l;
+#endif
+{
+	char				func[] = "XWorkstationAllocateColors";
+	NhlXWorkstationLayer		wl = (NhlXWorkstationLayer)l;
+	NhlWorkstationClassPart	*wcp =
+		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
+	Gcolr_rep			tcrep;
+	int				i, max_col = 0;
+	NhlPrivateColor			*pcmap = wl->work.private_color_map;
+	NhlXPixel			*xpixnums = wl->xwork.xpixels;
+	NhlErrorTypes			ret = NhlNOERROR;
+	_NGCXGetXPix			getxpix;
+	_NGCXFreeCi			freeci;
+	Gescape_in_data			gesc_in_getxpix;
+	Gescape_in_data			gesc_in_freeci;
+
+	gesc_in_getxpix.escape_r1.data = &getxpix;
+	gesc_in_getxpix.escape_r1.size = 0;
+	gesc_in_freeci.escape_r1.data = &freeci;
+	gesc_in_freeci.escape_r1.size = 0;
+	getxpix.type = NGC_XGETXPIX;
+	freeci.type = NGC_XFREECI;
+	getxpix.work_id = freeci.work_id = wl->work.gkswksid;
+
+	for ( i = 0; i < _NhlMAX_COLOR_MAP; i++) {
+		switch(pcmap[i].cstat){
+			case _NhlCOLNEW:
+			case _NhlCOLCHANGE:
+				tcrep.rgb.red = pcmap[i].red;
+				tcrep.rgb.green = pcmap[i].green;
+				tcrep.rgb.blue= pcmap[i].blue;
+				gset_colr_rep(wl->work.gkswksid,i,&tcrep);
+				if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+					ret = NhlWARNING;
+					pcmap[i].cstat = _NhlCOLUNSET;
+					freeci.gksci = i;
+					gescape(NGESC_CNATIVE,&gesc_in_freeci,
+						NULL,NULL);
+					(void)_NhlLLErrCheckPrnt(NhlWARNING,
+									func);
+				}
+				else {
+					pcmap[i].cstat = _NhlCOLSET;
+					pcmap[i].ci = i;
+					max_col = i;
+					getxpix.gksci = i;
+					gescape(NGESC_CNATIVE,&gesc_in_getxpix,
+						NULL,NULL);
+					if(!_NhlLLErrCheckPrnt(NhlWARNING,func))
+						xpixnums[i] = getxpix.xpixnum;
+				}
+				break;
+
+			case _NhlCOLREMOVE:
+				pcmap[i].cstat = _NhlCOLUNSET;
+				freeci.gksci = i;
+				gescape(NGESC_CNATIVE,&gesc_in_freeci,
+								NULL,NULL);
+				(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			case _NhlCOLUNSET:
+				pcmap[i].red = -1.0;
+				pcmap[i].green = -1.0;
+				pcmap[i].blue = -1.0;
+				break;
+
+			case _NhlCOLSET:
+				max_col = i;
+				break;
+		}
+	}
+
+	/*
+	 * The background and the foreground MUST be defined.
+	 */
+	if(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET){
+		tcrep.rgb.red = pcmap[NhlBACKGROUND].red =
+							wcp->def_background[0];
+		tcrep.rgb.green = pcmap[NhlBACKGROUND].green =
+							wcp->def_background[1];
+		tcrep.rgb.blue = pcmap[NhlBACKGROUND].blue =
+							wcp->def_background[2];
+		gset_colr_rep(wl->work.gkswksid,NhlBACKGROUND,&tcrep);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+			ret = NhlWARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Problems setting Background:Undefined results",
+				func);
+		}
+		pcmap[NhlBACKGROUND].cstat = _NhlCOLSET;
+		getxpix.gksci = NhlBACKGROUND;
+		gescape(NGESC_CNATIVE,&gesc_in_getxpix,NULL,NULL);
+		if(!_NhlLLErrCheckPrnt(NhlWARNING,func))
+			xpixnums[NhlBACKGROUND] = getxpix.xpixnum;
+	}
+
+	if(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET){
+		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
+		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
+		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue
+		    < .75) {
+			tcrep.rgb.red = pcmap[NhlFOREGROUND].red =
+			tcrep.rgb.green = pcmap[NhlFOREGROUND].green =
+			tcrep.rgb.blue = pcmap[NhlFOREGROUND].blue = 1.0;
+		}
+		else {
+			tcrep.rgb.red = pcmap[NhlFOREGROUND].red =
+			tcrep.rgb.green = pcmap[NhlFOREGROUND].green =
+			tcrep.rgb.blue = pcmap[NhlFOREGROUND].blue = 0.0;
+		}
+		gset_colr_rep(wl->work.gkswksid,NhlFOREGROUND,&tcrep);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+			ret = NhlWARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Problems setting Foreground:Undefined results",
+				func);
+		}
+		pcmap[NhlFOREGROUND].cstat = _NhlCOLSET;
+		getxpix.gksci = NhlFOREGROUND;
+		gescape(NGESC_CNATIVE,&gesc_in_getxpix,NULL,NULL);
+		if(!_NhlLLErrCheckPrnt(NhlWARNING,func))
+			xpixnums[NhlFOREGROUND] = getxpix.xpixnum;
+	}
+
+	max_col = MAX(max_col,1);
+	wl->work.color_map_len = max_col + 1;
+	
+	return ret;
+}
+
+NhlErrorTypes
+_NhlGetXPixel
+#if  NhlNeedProto
+(
+	NhlLayer	l,
+	int		hlu_indx,
+	NhlXPixel	*xpix
+)
+#else
+(l,hlu_indx,xpix)
+	NhlLayer	l;
+	int		hlu_indx;
+	NhlXPixel	*xpix;
+#endif
+{
+	char	func[] = "_NhlGetXPixel";
+	NhlXWorkstationLayer	wl = (NhlXWorkstationLayer)l;
+
+	if(!l || !_NhlIsXWorkstation(l)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid XWorkstation object",
+			func);
+		return NhlFATAL;
+	}
+
+
+	if(hlu_indx < 0){
+		*xpix = wl->xwork.xpixels[NhlFOREGROUND];
+		return NhlWARNING;
+	}
+
+	if(hlu_indx >= wl->work.color_map_len){
+		hlu_indx = hlu_indx % (wl->work.color_map_len - 1);
+		if(!hlu_indx)
+			hlu_indx = wl->work.color_map_len - 1;
+	}
+
+	if(wl->work.private_color_map[hlu_indx].cstat != _NhlCOLSET){
+		*xpix = wl->xwork.xpixels[NhlFOREGROUND];
+		return NhlWARNING;
+	}
+
+	*xpix = wl->xwork.xpixels[hlu_indx];
+	return NhlNOERROR;
+}
+
+NhlErrorTypes
+NhlGetXPixel
+#if  NhlNeedProto
+(
+	int		id,
+	int		hlu_indx,
+	NhlXPixel	*xpix
+)
+#else
+(id,hlu_indx,xpix)
+	int		id;
+	int		hlu_indx;
+	NhlXPixel	*xpix;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(id);
+
+	return (l && _NhlGetXPixel(l,hlu_indx,xpix));
 }

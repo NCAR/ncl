@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.21 1996-02-26 21:45:52 dbrown Exp $
+ *      $Id: Create.c,v 1.22 1996-03-16 21:37:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,7 @@
 #include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/DataMgr.h>
 #include <ncarg/hlu/DataItem.h>
+#include <ncarg/hlu/XWorkstation.h>
 
 /*
  * Function:	CallClassPartInit
@@ -146,6 +147,8 @@ InitializeClass
 			inited |= (_NhlAppClassFlag);
 		else if(step == NhlstyleClass)
 			inited |= (_NhlStyleClassFlag);
+		else if(step == NhlxWorkstationClass)
+			inited |= (_NhlXWorkstationClassFlag);
 		step = step->base_class.superclass;
 	}
 

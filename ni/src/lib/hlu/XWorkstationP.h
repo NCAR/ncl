@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.4 1995-04-22 01:02:17 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.5 1996-03-16 21:37:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,11 @@ typedef struct _NhlXWorkstationLayerPart {
 	NhlBoolean	pause_set;
 	NhlBoolean	pause;
 
+	/*
+	 * Private Fields...
+	 */
+	NhlXPixel	xpixels[_NhlMAX_COLOR_MAP];
+
 } NhlXWorkstationLayerPart;
 
 typedef struct _NhlXWorkstationLayerRec {
@@ -62,5 +67,14 @@ typedef struct _NhlXWorkstationLayerRec *NhlXWorkstationLayer;
 typedef struct _NhlXWorkstationClassRec *NhlXWorkstationClass;
 
 extern NhlXWorkstationClassRec NhlxWorkstationClassRec;
+
+extern NhlErrorTypes
+_NhlGetXPixel(
+#if	NhlNeedProto
+	NhlLayer	l,
+	int		hluci,
+	NhlXPixel	*xpix
+#endif
+);
 
 #endif /* _XWorkstation_h */

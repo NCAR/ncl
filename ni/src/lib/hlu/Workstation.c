@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.47 1996-03-07 21:49:01 boote Exp $
+ *      $Id: Workstation.c,v 1.48 1996-03-16 21:37:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -884,7 +884,9 @@ DoCmap
 		tcp = &wcp->def_background;
 	}
 	if(tcp){
-		pcmap[NhlBACKGROUND].cstat = _NhlCOLNEW;
+		pcmap[NhlBACKGROUND].cstat =
+			(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET)?
+			_NhlCOLNEW:_NhlCOLCHANGE;
 		pcmap[NhlBACKGROUND].red = (*tcp)[0];
 		pcmap[NhlBACKGROUND].green = (*tcp)[1];
 		pcmap[NhlBACKGROUND].blue = (*tcp)[2];
@@ -920,7 +922,9 @@ DoCmap
 		tcp = &tc;
 	}
 	if(tcp){
-		pcmap[NhlFOREGROUND].cstat = _NhlCOLNEW;
+		pcmap[NhlFOREGROUND].cstat =
+			(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET)?
+			_NhlCOLNEW:_NhlCOLCHANGE;
 		pcmap[NhlFOREGROUND].red = (*tcp)[0];
 		pcmap[NhlFOREGROUND].green = (*tcp)[1];
 		pcmap[NhlFOREGROUND].blue = (*tcp)[2];
@@ -2756,6 +2760,80 @@ void _NHLCALLF(nhl_ffreecolor,NHL_FFREECOLOR)
 	*err = NhlFreeColor(*wid,*indx);
 
 	return;
+}
+
+int
+_NhlGetColor
+#if	NhlNeedProto
+(
+        NhlLayer	l,
+	int		ci,
+        float		*red,
+        float		*green,
+        float		*blue
+)
+#else
+(l,ci,red,green,blue)
+        NhlLayer	l;
+	int		ci;
+        float		*red;
+        float		*green;
+        float		*blue;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "_NhlGetColor";
+	NhlPrivateColor		*pcmap = wl->work.private_color_map;
+	int			maxi = wl->work.color_map_len - 1;
+
+	if(ci < 0){
+		ci = NhlFOREGROUND;
+	}
+
+	if(ci > maxi){
+		ci = ci % maxi;
+		if(!ci)
+			ci = maxi;
+	}
+
+	if(pcmap[ci].cstat == _NhlCOLUNSET){
+		ci = NhlFOREGROUND;
+	}
+
+	*red = pcmap[ci].red;
+	*green = pcmap[ci].green;
+	*blue = pcmap[ci].blue;
+
+	return ci;
+}
+
+int
+NhlGetColor
+#if	NhlNeedProto
+(
+        int		pid,
+	int		ci,
+        float		*red,
+        float		*green,
+        float		*blue
+)
+#else
+(pid,ci,red,green,blue)
+        int		pid;
+	int		ci;
+        float		*red;
+        float		*green;
+        float		*blue;
+#endif
+{
+	char		func[]="NhlGetColor";
+	NhlLayer	wl = _NhlGetLayer(pid);
+
+	if(wl && _NhlIsWorkstation(wl))
+	 	return _NhlGetColor(wl,ci,red,green,blue);	
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation id=%d",func,pid);
+	return NhlFATAL;
 }
 
 int _NhlNewColor

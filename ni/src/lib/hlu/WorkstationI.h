@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.7 1996-02-26 21:46:18 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.8 1996-03-16 21:37:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -235,7 +235,7 @@ extern int _NhlGetGksCi(
 #endif
 );
 
-extern int _NhlIsAllocatedColor(
+extern NhlBoolean _NhlIsAllocatedColor(
 #if	NhlNeedProto
         NhlLayer   /* workstation*/,
         int /* ci*/
@@ -256,6 +256,16 @@ extern NhlErrorTypes _NhlFreeColor(
 #if	NhlNeedProto
         NhlLayer   /* inst */,
         int     /* ci */
+#endif
+);
+
+extern int _NhlGetColor(
+#if	NhlNeedProto
+        NhlLayer	l,
+	int		ci,
+        float		*red,
+        float		*green,
+        float		*blue
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.18 1996-02-26 21:46:18 dbrown Exp $
+ *      $Id: Workstation.h,v 1.19 1996-03-16 21:37:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -209,6 +209,20 @@ extern NhlErrorTypes NhlFreeColor(
 #endif
 );
 
+/*
+ * Returns the actual hlu ci used - values less then 0 indicate
+ * an error.
+ */
+extern int NhlGetColor(
+#if	NhlNeedProto
+        int		pid,
+	int		ci,
+        float		*red,
+        float		*green,
+        float		*blue
+#endif
+);
+
 extern int NhlNewColor(
 #if	NhlNeedProto
         int     /* pid*/,
@@ -225,7 +239,7 @@ extern int NhlGetGksCi(
 #endif
 );
 
-extern int NhlIsAllocatedColor(
+extern NhlBoolean NhlIsAllocatedColor(
 #if	NhlNeedProto
         int     /* pid */,
         int     /* ci   */

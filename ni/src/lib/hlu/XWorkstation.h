@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.h,v 1.6 1996-01-15 17:22:44 boote Exp $
+ *      $Id: XWorkstation.h,v 1.7 1996-03-16 21:37:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,17 @@ typedef enum _NhlXColorMode{
 	NhlPRIVATE = 1,
 	NhlMIXED = 2
 } NhlXColorMode;
+
+typedef unsigned long NhlXPixel;
+
+extern NhlErrorTypes
+NhlGetXPixel(
+#if	NhlNeedProto
+	int		id,
+	int		hluci,
+	NhlXPixel	*xpix
+#endif
+);
 
 extern NhlClass NhlxWorkstationClass;
 
