@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.8 1991-09-18 17:44:15 clyne Exp $
+.\"	$Id: ictrans.m,v 1.9 1992-02-14 11:38:30 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -26,6 +26,8 @@ ictrans \- user interface to the CGM translator
 .BI \-lscale " scale"
 ] [
 .BI \-pal " pal_fname"
+] [
+.B \-Version
 ] [
 .I device\-specific options
 ] 
@@ -129,6 +131,9 @@ Unconditionally perform software filling of all filled polygons. This
 option may be useful for devices which have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
+.TP
+.BI \-Version
+Print the version number and then exit.
 .SH DEVICE SPECIFIC OPTIONS
 Some ictrans options are only available for a subset of the supported 
 devices. The following is a list of such options.
@@ -221,8 +226,9 @@ and
 .B xwd.
 .TP 
 .B \-reverse
-Simulate reverse video by swapping background and foreground colors. Only 
-works under X11.
+On monochrome devices reverse  video  is  simulated  by
+swapping the foreground and background colors.
+Only works under X11.
 .TP
 .BI \-Ws " width height"
 .br

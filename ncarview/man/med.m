@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.4 1991-08-15 17:12:07 clyne Exp $
+.\"	$Id: med.m,v 1.5 1992-02-14 11:38:35 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -15,6 +15,8 @@ med \- NCAR CGM metafile frame editor
 .BI \-f " sfilename"
 ] [
 .BI \-l " local_dir"
+] [
+.B \-V
 ] [
 .IR filename ]
 .SH DESCRIPTION
@@ -51,11 +53,14 @@ Each command must be separated by a newline.
 Take the script from
 .IR sfilename .
 .TP
-.BI \-f " local_dir"
+.BI \-l " local_dir"
 Use 
 .I local_dir 
 as the tmp directory for scratch disk space instead of the default
 .IR /tmp .
+.TP
+.B \-V
+Print the version number and then exit.
 .SH USAGE
 .SS "Command Structure"
 .LP

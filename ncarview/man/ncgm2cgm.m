@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncgm2cgm.m,v 1.2 1991-01-09 10:49:00 clyne Exp $
+.\"	$Id: ncgm2cgm.m,v 1.3 1992-02-14 11:38:37 clyne Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCAR2CGM 1NCARV "JULY 1988" NCAR "NCAR View 3.01"
@@ -8,9 +8,11 @@ cgm2ncgm ncgm2cgm \- filter \fBNCAR CGM\fR to/from vanilla \fBCGM\fR
 .SH SYNOPSIS
 .B ncgm2cgm
 [\ \fB\-s\ \fIoutput record size\fR\ ]
+[\ \fB\-V\ ]
 .LP
 .B cgm2ncgm
 [\ \fB\-s\ \fIinput record size\fR\ ]
+[\ \fB\-V\ ]
 .PP
 .SH DESCRIPTION
 \fBncgm2cgm\fR and \fBcgm2ncgm\fR are filters for converting back and forth
@@ -21,6 +23,8 @@ restores. I/O is done from standard in/out respectively.
 .SH OPTIONS
 .IP \fB\-s\fP\fI\ size\fP
 Set vanilla CGM record size. The default, if not specified, is 1440.
+.IP \fB\-V\fR
+Print the version number and then exit.
 .SH SEE ALSO
 .nf
 \fIISO/DIS 8632 CGM Functional Specification\fR (Nov. 1985)

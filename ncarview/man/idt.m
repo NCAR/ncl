@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.5 1991-08-15 17:11:40 clyne Exp $
+.\"	$Id: idt.m,v 1.6 1992-02-14 11:38:32 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -28,6 +28,8 @@ idt \- X window interactive image display tool
 .BI \-pal " pal_fname"
 ] [
 .B \-soft
+] [
+.B \-Version
 ] [
 .BI metafile
 ]
@@ -97,6 +99,8 @@ text during metafile translation. The default font is
 .IP \fB\-history\fP
 Write a record of all commands sent to the translator to the file
 .BR ./.idthist .
+.IP \fB\-Version\fP
+Print the version number and then exit.
 .PP
 The following options are ignored by \fBidt\fR and are passed on to the
 metafile translator \fBictrans\fR. See the man page for \fBictrans\fR for

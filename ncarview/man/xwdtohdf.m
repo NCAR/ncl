@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: xwdtohdf.m,v 1.3 1991-08-19 15:19:27 clyne Exp $
+.\"	$Id: xwdtohdf.m,v 1.4 1992-02-14 11:38:44 clyne Exp $
 .\"
 .TH XWDTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
 .SH NAME
@@ -10,6 +10,9 @@ xwdtohdf \- Filter to convert from X11 raster file to hdf format.
 .IR "hdf_file " ]
 [ 
 .BR - ( c | r )
+]
+[ 
+.B \-V
 ]
 .RI [ " xdump_file " ".\|.\|." ]
 .SH DESCRIPTION
@@ -31,6 +34,9 @@ Compress the output.
 .TP
 .B \-r
 Use run length encoding for data.
+.TP
+.B \-V
+Print the version number and then exit.
 .SH "SEE ALSO"
 .BR x11tab (1-local),
 .BR xwd (1),

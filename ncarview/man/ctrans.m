@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.7 1991-08-22 14:14:31 clyne Exp $
+.\"	$Id: ctrans.m,v 1.8 1992-02-14 11:38:27 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
@@ -27,6 +27,8 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .BI \-lscale " scale" 
 ] [
 .BI \-pal " pal_fname" 
+] [
+.B \-Version
 ] [
 .I device\-specific options
 ] 
@@ -242,6 +244,9 @@ color map defined by the CGM being translated. For a description of
 the format of 
 .I pal_fname
 see ncarg_ras(1NCARG).
+.TP
+.BI \-Version
+Print the version number and then exit.
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
 .PP

@@ -1,4 +1,7 @@
 NCARG	= ../..
+#
+#	$Id: yMakefile,v 1.4 1992-02-14 11:38:46 clyne Exp $
+#
 
 
 MAN	= \ 

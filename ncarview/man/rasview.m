@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasview.m,v 1.1 1991-06-18 14:44:59 clyne Exp $
+.\"	$Id: rasview.m,v 1.2 1992-02-14 11:38:42 clyne Exp $
 .\"
 .TH XTOHDF 1-local "March 1991" NCAR "NCAR Local Command"
 .SH NAME
@@ -9,6 +9,9 @@ rasview \- X11 windows raster file previewer.
 .RB [ " \-pal"
 .IR "palette " ]
 .RI [ " rasterfile.ext " ".\|.\|." ]
+[
+.B \-Version
+]
 .SH DESCRIPTION
 .LP
 .B rasview
@@ -29,6 +32,9 @@ Use the color palette contained in the file
 .IR palette .
 for displaying images. This palette will override the color palette stored
 with the image.
+.TP
+.B \-Version
+Print the version number and then exit.
 .SH "SEE ALSO"
 .BR palette (local),
 .BR ctrans (local),
