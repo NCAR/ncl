@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.103 2002-08-26 15:37:19 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.104 2002-09-06 22:36:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -836,7 +836,7 @@ end
 function get_allowed_latnames()
 begin
   return((/"lat","Lat","Latitude","LAT","latitude","LATITUDE","hlat",\
-           "lat_u","lat_t","lat_98","lat1", "lat2", "yc"/))
+           "lat_u","lat_t","lat_98","lat1","lat2","yc"/))
 end
 
 ;***********************************************************************;
@@ -848,7 +848,7 @@ end
 ;***********************************************************************;
 function get_allowed_latnames_without_units()
 begin
-  return((/"g0_lat_2","g0_lat_3","g0_lat_4"/))
+  return((/"g0_lat_2","g0_lat_3","g0_lat_4","g4_lat_0"/))
 end
 
 ;***********************************************************************;
@@ -860,7 +860,7 @@ end
 function get_allowed_lonnames()
 begin
   return((/"lon","Lon","Longitude","LON","longitude","LONGITUDE","hlon",\
-           "long","lon_u","lon_t","lon_98","xc"/))
+           "long","lon_u","lon_t","lon_98","lon1","lon2","xc"/))
 end
 
 ;***********************************************************************;
@@ -872,7 +872,7 @@ end
 ;***********************************************************************;
 function get_allowed_lonnames_without_units()
 begin
-  return((/"g0_lon_2","g0_lon_3","g0_lon_4"/))
+  return((/"g0_lon_2","g0_lon_3","g0_lon_4","g4_lon_1"/))
 end
 
 ;***********************************************************************;

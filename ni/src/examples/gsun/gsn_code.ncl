@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.91 2002-08-23 20:40:07 haley Exp $
+;      $Id: gsn_code.ncl,v 1.92 2002-09-06 22:36:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1636,22 +1636,29 @@ end
 ;***********************************************************************;
 procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
                          callframe:logical,maxbb:logical)
+local nplots, class, coords, dims
 begin
   if(maxbb) then
-    class = NhlClassName(wks)
-
+;
+; If dealing with multiple plots, then this means we have a
+; panel plot, and we don't need to maximize the space.
+;
+    dims = dimsizes(plot)
+    if(dimsizes(dims).eq.1 .and. dims(0).eq.1) then
 ;
 ; First, optimize the plot size in the viewport. This may involve making
 ; it bigger or smaller.
 ;
-    coords = maximize_bb(plot,maxbb)
-    setvalues plot
-      "vpXF"      : coords(0)
-      "vpYF"      : coords(1)
-      "vpWidthF"  : coords(2)
-      "vpHeightF" : coords(3)
-    end setvalues
+      coords = maximize_bb(plot,maxbb)
+      setvalues plot
+        "vpXF"      : coords(0)
+        "vpYF"      : coords(1)
+        "vpWidthF"  : coords(2)
+        "vpHeightF" : coords(3)
+      end setvalues
+    end if
 
+    class = NhlClassName(wks)
     if(class(0).eq."psWorkstationClass") then
 ;
 ; Compute device coordinates that will make plot fill the whole page.
@@ -3126,11 +3133,16 @@ begin
     end if
   end if
 ;
-; We used to assume all plots were the same size. Now, we figure out
-; what the largest width and height are, and scale the plots based
-; on this size.
+; We assume all plots are the same size. Eventually we might
+; want to allow different sized plots, so this code will eventually
+; allow for that case.
 ;
-  bb  = NhlGetBB(plot)   ; Get bounding box of each plot with
+  if(nplots.eq.1) then
+    bb = new((/1,4/),float)
+    bb(0,:) = NhlGetBB(plot)   ; Get bounding box of each plot with
+  else
+    bb = NhlGetBB(plot)   ; Get bounding box of each plot with
+  end if
   top    = bb(:,0)       ; all of its annotations.
   bottom = bb(:,1)
   left   = bb(:,2)
@@ -3472,6 +3484,8 @@ begin
         lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
         lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
       else
+        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
+        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
           set_attr(lbres,"vpYF",ypos(0)-(scaled_height - lbres@vpHeightF)/2.)
@@ -4771,7 +4785,7 @@ end
 ;***********************************************************************;
 function compute_hist_vals(x:numeric,bins:numeric,nbins[1]:integer, \
                            bin_width:numeric,setendpts:logical,setmidpts:logical, \
-                           isnice:logical,compare:logical)
+                           isnice:logical,compare:logical,isdebug:logical)
 local xmin, xmax, sprd, nbuckets, buckets, xx, i
 begin
   xmin = tofloat(min(x))
@@ -4925,6 +4939,9 @@ begin
   else
     num_in_bins@NumMissing = num_missing
   end if
+  if(isdebug) then	
+    print(num_in_bins)
+  end if
   return(num_in_bins)
 end 
 
@@ -4982,6 +4999,7 @@ begin
 
   calldraw   = get_res_value(res2,"gsnDraw", True)
   callframe  = get_res_value(res2,"gsnFrame",True)
+  isdebug    = get_res_value(res2,"gsnDebug",False)
   maxbb      = get_bb_res(res2)
   nbins      = get_res_value(res2,"gsnHistogramNumberOfBins",-1)
   bin_width  = get_res_value(res2,"gsnHistogramBinWidth",-1)
@@ -5063,7 +5081,7 @@ begin
 ; Get number of values in each bin and bin values (buck@sprd).
 ;
   buck = compute_hist_vals(xdata,bins,nbins,bin_width,setendpts,setmidpts, \
-                           isnice,compare)
+                           isnice,compare,isdebug)
 
   buck@horizontal = horizontal    ; horizontal or vertical bars
 
