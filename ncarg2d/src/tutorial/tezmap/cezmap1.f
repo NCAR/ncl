@@ -1,5 +1,5 @@
 C
-C   $Id: cezmap1.f,v 1.3 1994-07-11 14:10:37 haley Exp $
+C   $Id: cezmap1.f,v 1.4 1994-11-11 18:12:44 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -28,7 +28,7 @@ C
 
       SUBROUTINE CEZMAP(PROJ,PLAT,PLON,ROTA)
 
-      CHARACTER*2 PROJ, OUTLN
+      CHARACTER*2 PROJ
       REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
       DATA PLIM1 /0.,0./
