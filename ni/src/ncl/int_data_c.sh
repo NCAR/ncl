@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: int_data_c.sh,v 1.1 1994-07-21 23:16:23 boote Exp $
+#      $Id: int_data_c.sh,v 1.2 1994-08-25 18:01:18 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh int > .tmp.$$
+sh op_funcs.sh int NhlTInteger NhlTIntegerGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e 's/DATATYPE/int/g' \
 -e 's/HLUTYPEREP/NhlTInteger/g' \
+-e 's/HLUGENTYPEREP/NhlTIntegerGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValintData.c.specific' \

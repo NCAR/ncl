@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_ops.c.sed,v 1.2 1994-07-28 23:34:17 ethan Exp $
+ *      $Id: string_ops.c.sed,v 1.3 1994-08-25 18:01:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Convert.h>
 #include "defs.h"
 #include "Symbol.h"
 #include <errno.h>
@@ -1850,7 +1851,8 @@ NclSelectionRecord *sel_rec;
 		thevalobj->multidval.sel_rec = NULL;
 	}
 
-	thevalobj->multidval.hlu_type_rep = HLUTYPEREP;
+	thevalobj->multidval.hlu_type_rep[0] = HLUTYPEREP;
+	thevalobj->multidval.hlu_type_rep[1] = HLUGENTYPEREP;
 	return((NclMultiDValData)thevalobj);
 }
 

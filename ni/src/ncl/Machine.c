@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.21 1994-08-09 17:06:14 ethan Exp $
+ *      $Id: Machine.c,v 1.22 1994-08-25 18:00:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,11 +48,11 @@ extern "C" {
 #endif
 
 #ifndef NCL_STACK_SIZE
-#define NCL_STACK_SIZE 2048
+#define NCL_STACK_SIZE 1024
 #endif
 
 #ifndef NCL_MACHINE_SIZE
-#define NCL_MACHINE_SIZE 4096
+#define NCL_MACHINE_SIZE 16384
 #endif
 
 /*
@@ -60,7 +60,7 @@ extern "C" {
 * whole programs.
 */
 #ifndef NCL_FUNC_MACHINE_SIZE
-#define NCL_FUNC_MACHINE_SIZE 512
+#define NCL_FUNC_MACHINE_SIZE 2048
 #endif
 
 NclStackEntry thestack[NCL_STACK_SIZE];
@@ -997,12 +997,12 @@ void _NclPrintMachine
 			case CONTINUE_OP:
 			case ENDSTMNT_OP:
 			case DUP_TOFS:
+			case GET_OBJ_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				break;
 			case JMP :
 			case JMPFALSE :
 			case SET_OBJ_OP :
-			case GET_OBJ_OP :
 			case PUSH_INT_LIT_OP :
 			case PUSH_LOG_LIT_OP :
 			case ARRAY_LIT_OP :

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.8 1994-07-14 20:46:04 ethan Exp $
+ *      $Id: Memory.c,v 1.9 1994-08-25 18:00:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@ extern "C" {
 #include "Machine.h"
 #include "NclMultiDValData.h"
 
+unsigned long total = 0;
 
 void
 *NclMalloc
@@ -45,6 +46,7 @@ void
 #endif
 {
         void *ptr;
+	total += size;
 
         if(size == 0)
                 return NULL;

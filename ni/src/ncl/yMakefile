@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.16 1994-07-28 23:34:19 ethan Exp $
+#      $Id: yMakefile,v 1.17 1994-08-25 18:01:35 ethan Exp $
 #
 #########################################################################
 #									#
@@ -172,13 +172,15 @@ NUM_OP_TMPL	=	NclMultiDValData.c.sed \
 			MultiDValSelectOpTemplate.c.sed \
 			MultiDValDivOpTemplate.c.sed \
 			MultiDValXorOpTemplate.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed
+			MultiDValSelectFuncsTemplate.c.sed \
+			MultiDValIsMisFuncOpTemplate.c.sed
 
 STR_OP_TMPL	=	string_ops.c.sed string_sel.c.sed string_cmp.c.sed \
 			MultiDValSelectFuncsTemplate.c.sed
 
 FILE_OP_TMPL	=	NclMultiDValData.c.sed MultiDValSimpleOpTemplate.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed
+			MultiDValSelectFuncsTemplate.c.sed \
+			MultiDValInitClassTemplate.c.sed
 
 
 MultiDValDataRule(double,$(NUM_OP_TMPL))

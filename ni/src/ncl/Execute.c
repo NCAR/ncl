@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.23 1994-08-08 22:34:53 ethan Exp $
+ *      $Id: Execute.c,v 1.24 1994-08-25 18:00:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -655,6 +655,50 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(1);
 			}
 			break;
+			case GET_OBJ_OP :
+			{
+				NclStackEntry obj_name;
+				NclStackEntry res_name;
+				NclStackEntry data_out;
+				NclMultiDValData name;
+				NclMultiDValData res;
+
+				res_name = _NclPop();
+				if(res_name.kind == NclStk_VAL) {
+					res = res_name.u.data_obj;
+				} else if(res_name.kind == NclStk_VAR) {
+					res = _NclVarValueRead(res_name.u.data_var,NULL,NULL);
+				}
+				
+
+				obj_name = _NclPop();
+				if(obj_name.kind == NclStk_VAL) {
+					name = obj_name.u.data_obj;
+				} else if(obj_name.kind == NclStk_VAR) {
+					name = _NclVarValueRead(obj_name.u.data_var,NULL,NULL);
+				}
+
+/*
+* Guarenteed by grammar that res is reference to string object
+*/
+				data_out = _NclGetHLUObjOp(name,*(NclQuark*)res->multidval.val);
+				if((data_out.kind != NclStk_NOVAL)&&(data_out.u.data_obj != NULL)){
+					_NclPush(data_out);	
+				}
+
+				if((res_name.kind == NclStk_VAL)&&(res_name.u.data_obj->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)res_name.u.data_obj);
+				} else if((res_name.kind == NclStk_VAR)&&(res_name.u.data_var->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)res_name.u.data_var);
+				}
+				if((obj_name.kind == NclStk_VAL)&&(obj_name.u.data_var->obj.status != PERMANENT)) { 
+					_NclDestroyObj((NclObj)obj_name.u.data_obj);
+				} else if((obj_name.kind == NclStk_VAR)&&(obj_name.u.data_var->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)obj_name.u.data_var);
+				}
+				
+			}
+			break;
 /***************************
 * One Operand Instructions *
 ***************************/
@@ -769,12 +813,18 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 					break;
 				}
+				
 				if((val->obj.obj_type_mask & Ncl_MultiDVallogicalData)&&(val->multidval.kind == SCALAR)) {
-					if(!(*(logical*)val->multidval.val)) {
-						machine = _NclGetCurrentMachine();
-						ptr = machine + offset - 1;
-						lptr = _NclGetCurrentLineRec() + offset - 1;
-						fptr = _NclGetCurrentFileNameRec() + offset - 1;
+					if(!_NclIsMissing(val,val->multidval.val)) {
+						if(!(*(logical*)val->multidval.val)) {
+							machine = _NclGetCurrentMachine();
+							ptr = machine + offset - 1;
+							lptr = _NclGetCurrentLineRec() + offset - 1;
+							fptr = _NclGetCurrentFileNameRec() + offset - 1;
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"If: the result of the conditional expression yields a missing value can not determine branch, see ismissing and clearmissing functions");
+						estatus = NhlFATAL;
 					}
 					if(val->obj.status != PERMANENT) 
 						_NclDestroyObj((NclObj)val);
@@ -806,9 +856,6 @@ NclExecuteReturnStatus _NclExecute
 					estatus = _NclSetHLUObjOp(val,nres);
 				}
 			}
-				break;
-			case GET_OBJ_OP :
-				ptr++;lptr++;fptr++;
 				break;
 			case PROC_CALL_OP:{
 				NclSymbol *proc = NULL;
@@ -1527,7 +1574,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *thesym = NULL;
 				NclGenProcFuncInfo *pfinfo = NULL;
 				NclSymbol *argsym = NULL;
-				NclStackEntry data;
+				NclStackEntry data,tmp_data;
 				unsigned int obj_type_param;
 				unsigned int obj_type_arg;
 				NclMultiDValData tmp_md = NULL;
@@ -1609,7 +1656,10 @@ NclExecuteReturnStatus _NclExecute
                                                         if(tmp_md == NULL) {
                                                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
                                                                 estatus = NhlFATAL;
-                                                        }
+                                                        } else {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Argument %d of the current function or procedure was coerced to the appropriate type and thus will not change if the function or procedure modifies its value",arg_num);
+								estatus = NhlWARNING;
+							}
 /*
 * Attention: missing value may be different type than variable data until code is put here to fix it
 */
@@ -1679,7 +1729,13 @@ NclExecuteReturnStatus _NclExecute
                                                         	_NclPush(data);
                                                 	}
 						} else if(estatus != NhlFATAL){
-                                                        _NclPush(data);
+							if(tmp_md == NULL) {
+                                                        	_NclPush(data);
+							} else {
+								tmp_data.kind = NclStk_VAL;
+								tmp_data.u.data_obj = tmp_md;
+								_NclPush(tmp_data);
+							}
 						}
 					}
 					break;

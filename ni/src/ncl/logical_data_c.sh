@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: logical_data_c.sh,v 1.1 1994-07-21 23:16:25 boote Exp $
+#      $Id: logical_data_c.sh,v 1.2 1994-08-25 18:01:19 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh logical > .tmp.$$
+sh op_funcs.sh logical NhlTBoolean NhlTBooleanGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -41,6 +41,7 @@ sed \
 -e '/PRINTFORMAT/d' \
 -e 's/DATATYPE/logical/g' \
 -e 's/HLUTYPEREP/NhlTBoolean/g' \
+-e 's/HLUGENTYPEREP/NhlTBooleanGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDVallogicalData.c.specific' \

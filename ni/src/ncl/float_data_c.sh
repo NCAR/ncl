@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: float_data_c.sh,v 1.1 1994-07-21 23:16:22 boote Exp $
+#      $Id: float_data_c.sh,v 1.2 1994-08-25 18:01:16 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh float > .tmp.$$
+sh op_funcs.sh float NhlTFloat NhlTFloatGenArray > .tmp.$$
 
 if [  ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%g\\n/' \
 -e 's/DATATYPE/float/g' \
 -e 's/HLUTYPEREP/NhlTFloat/g' \
+-e 's/HLUGENTYPEREP/NhlTFloatGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValfloatData.c.specific' \

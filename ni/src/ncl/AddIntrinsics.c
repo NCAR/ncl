@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.7 1994-08-08 22:34:50 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.8 1994-08-25 18:00:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,18 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "parser.h"
+
+extern NhlErrorTypes _NclINhlDataToNDC(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclINhlNDCToData(
+#ifdef NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _NclIAddFile(
 #ifdef NhlNeedProto
@@ -103,7 +115,13 @@ void
 );
 
 extern NhlErrorTypes _NclIAddToOverlay(
-#ifdef NhlNeedProtot
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIIsMissing(
+#ifdef NhlNeedProto
 void
 #endif
 );
@@ -177,12 +195,52 @@ void _NclAddIntrinsics
 	args[0].arg_data_type = _NclLookUp("logical");
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIAll,args,"all",1,IFUNC);
-	args = NclCalloc(3,sizeof(NclArgTemplate));
+	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	args[1].arg_data_type = NULL;
 	args[1].is_dimsizes = 0;
 	_NclRegisterProc(_NclIAddToOverlay,args,"overlay",2,IPROC);
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = NULL;
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIIsMissing,args,"ismissing",1,IFUNC);
+	args = NclCalloc(5,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("graphic");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("float");
+	args[1].is_dimsizes = 0;
+	args[1].n_dims = 1;
+	args[2].arg_data_type = _NclLookUp("float");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	args[3].arg_data_type = _NclLookUp("float");
+	args[3].is_dimsizes = 0;
+	args[3].n_dims = 1;
+	args[4].arg_data_type = _NclLookUp("float");
+	args[4].is_dimsizes = 0;
+	args[4].n_dims = 1;
+	_NclRegisterProc(_NclINhlDataToNDC,args,"datatondc",5,IPROC);
+	args = NclCalloc(5,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("graphic");
+	args[0].is_dimsizes = 0;
+	args[1].arg_data_type = _NclLookUp("float");
+	args[1].is_dimsizes = 0;
+	args[1].n_dims = 1;
+	args[2].arg_data_type = _NclLookUp("float");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	args[3].arg_data_type = _NclLookUp("float");
+	args[3].is_dimsizes = 0;
+	args[3].n_dims = 1;
+	args[4].arg_data_type = _NclLookUp("float");
+	args[4].is_dimsizes = 0;
+	args[4].n_dims = 1;
+	_NclRegisterProc(_NclINhlNDCToData,args,"ndctodata",5,IPROC);
 	return;
 }
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.1 1994-07-14 20:46:40 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.2 1994-08-25 18:00:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,8 +22,9 @@
  */
 
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Convert.h>
 #include "defs.h"
 #include <errno.h>
 #include "NclMultiDValDATATYPEData.h"
@@ -66,6 +67,7 @@ NclScalar * /*new_missing*/
 #endif
 );
 
+
 NclMultiDValDATATYPEDataClassRec nclMultiDValDATATYPEDataClassRec = {
 	{
 /* char *class_name; 		*/	"MultiDValDATATYPEData",
@@ -75,7 +77,7 @@ NclMultiDValDATATYPEDataClassRec nclMultiDValDATATYPEDataClassRec = {
 /* NclGenericFunction destroy; 	*/	MultiDValDestroy, 
 /* NclSetStatusFunction set_status; 	*/	NULL,
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	MultiDVal_DATATYPE_InitClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 /* NclPrintFunction print; 	*/	NclMultiDValDATATYPEPrint,
@@ -209,10 +211,11 @@ NclMultiDValDATATYPEDataClassRec nclMultiDValDATATYPEDataClassRec = {
 						MultiDVal_DATATYPE_mds_Xor,
 						MultiDVal_DATATYPE_smd_Xor,
 						MultiDVal_DATATYPE_ss_Xor
-					}
+					},
+/* NclIsMissingFunction is_mis */	MultiDVal_DATATYPE_is_mis
 	},
 	{
-		NULL
+		HLUGENTYPEREP
 	},
 	{
 		NULL
@@ -298,7 +301,8 @@ NclSelectionRecord *sel_rec;
 	} else {
 		thevalobj->multidval.sel_rec = NULL;
 	}
-	thevalobj->multidval.hlu_type_rep = HLUTYPEREP;
+	thevalobj->multidval.hlu_type_rep[0] = HLUTYPEREP;
+	thevalobj->multidval.hlu_type_rep[1] = HLUGENTYPEREP;
 	return((NclMultiDValData)thevalobj);
 }
 

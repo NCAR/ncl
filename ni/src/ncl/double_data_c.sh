@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: double_data_c.sh,v 1.1 1994-07-21 23:16:20 boote Exp $
+#      $Id: double_data_c.sh,v 1.2 1994-08-25 18:01:15 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh double > .tmp.$$ 
+sh op_funcs.sh double NhlTDouble NhlTDoubleGenArray > .tmp.$$ 
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%lg\\n/' \
 -e 's/DATATYPE/double/g' \
 -e 's/HLUTYPEREP/NhlTDouble/g' \
+-e 's/HLUGENTYPEREP/NhlTDoubleGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValdoubleData.c.specific' \

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: long_data_c.sh,v 1.1 1994-07-21 23:16:27 boote Exp $
+#      $Id: long_data_c.sh,v 1.2 1994-08-25 18:01:21 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh long > .tmp.$$
+sh op_funcs.sh long NhlTLong NhlTLongGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%ld\\n/' \
 -e 's/DATATYPE/long/g' \
 -e 's/HLUTYPEREP/NhlTLong/g' \
+-e 's/HLUGENTYPEREP/NhlTLongGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDVallongData.c.specific' \

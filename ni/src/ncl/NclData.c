@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.1 1994-07-14 20:46:23 ethan Exp $
+ *      $Id: NclData.c,v 1.2 1994-08-25 18:00:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -99,7 +99,8 @@ NclDataClassRec nclDataClassRec = {
 /* NclOperatorFunction     eq;		*/	{NULL,NULL,NULL,NULL},
 /* NclOperatorFunction     and;		*/	{NULL,NULL,NULL,NULL},
 /* NclOperatorFunction     or;		*/	{NULL,NULL,NULL,NULL},
-/* NclOperatorFunction     xor;		*/	{NULL,NULL,NULL,NULL}
+/* NclOperatorFunction     xor;		*/	{NULL,NULL,NULL,NULL},
+/* NclIsMissingFunction    is_mis;	*/	{NULL}
 	}
 };
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: char_data_c.sh,v 1.1 1994-07-27 18:15:12 ethan Exp $
+#      $Id: char_data_c.sh,v 1.2 1994-08-25 18:01:11 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh  char > .tmp.$$
+sh op_funcs.sh  char NhlTCharacter NhlTCharacterGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%c\\n/' \
 -e 's/DATATYPE/char/g' \
 -e 's/HLUTYPEREP/NhlTCharacter/g' \
+-e 's/HLUGENTYPEREP/NhlTCharacterGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValcharData.c.specific' \

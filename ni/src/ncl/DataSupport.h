@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.2 1994-07-27 18:14:03 ethan Exp $
+ *      $Id: DataSupport.h,v 1.3 1994-08-25 18:00:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,12 @@
  */
 #ifndef _DataSupport_h
 #define _DataSupport_h
+
+extern void _NclInitDataClasses(
+#if	NhlNeedProto
+void
+#endif
+);
 
 extern struct _NclMultiDValDataRec *_NclCharMdToStringMd(
 #if	NhlNeedProto
@@ -141,6 +147,12 @@ struct _NclSymbol * /*keywd*/
 extern unsigned int _NclKeywordToObjType(
 #if  NhlNeedProto 
 struct _NclSymbol * /*keywd*/
+#endif
+);
+
+extern int _NclIsMissing(
+#if NhlNeedProto 
+NclMultiDValData self, void* val
 #endif
 );
 

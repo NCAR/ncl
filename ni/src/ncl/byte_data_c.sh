@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: byte_data_c.sh,v 1.1 1994-07-27 18:15:11 ethan Exp $
+#      $Id: byte_data_c.sh,v 1.2 1994-08-25 18:01:10 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh byte > .tmp.$$
+sh op_funcs.sh byte NhlTByte NhlTByteGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%c\\n/' \
 -e 's/DATATYPE/byte/g' \
 -e 's/HLUTYPEREP/NhlTByte/g' \
+-e 's/HLUGENTYPEREP/NhlTByteGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValbyteData.c.specific' \

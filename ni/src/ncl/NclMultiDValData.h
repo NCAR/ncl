@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h,v 1.1 1994-07-14 20:46:42 ethan Exp $
+ *      $Id: NclMultiDValData.h,v 1.2 1994-08-25 18:00:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@ typedef struct _NclMultiDValDataPart {
 	int totalelements; /* number of values*/
 	NclSelectionRecord *sel_rec; /* Set only when creating data as a 
 					subsection */
-	NhlString hlu_type_rep;
+	NhlString hlu_type_rep[2];
 }NclMultiDValDataPart;
 
 typedef struct _NclMultiDValDataRec {
@@ -57,13 +57,13 @@ typedef struct _NclMultiDValDataRec {
 }NclMultiDValDataRec;
 
 typedef struct _NclMultiDValDataClassPart {
-	char *foo;
+	NhlString	hlu_gen_type_rep;
 }NclMultiDValDataClassPart;
 
 typedef struct _NclMultiDValDataClassRec {
 	NclObjClassPart	obj_class;
 	NclDataClassPart data_class;
-	NclMultiDValDataPart multid_class;
+	NclMultiDValDataClassPart multid_class;
 }NclMultiDValDataClassRec;
 
 typedef struct _NclMultiDValDataClassRec* NclMultiDValDataClass;

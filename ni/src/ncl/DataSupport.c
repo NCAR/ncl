@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.4 1994-07-28 23:34:00 ethan Exp $
+ *      $Id: DataSupport.c,v 1.5 1994-08-25 18:00:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,26 @@
 #include "NclMdInc.h"
 #include "parser.h"
 #include "OpsList.h"
+
+extern void _NclInitDataClasses
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	_NclInitClass(nclMultiDValdoubleDataClass);
+	_NclInitClass(nclMultiDValfloatDataClass);
+	_NclInitClass(nclMultiDValintDataClass);
+	_NclInitClass(nclMultiDValshortDataClass);
+	_NclInitClass(nclMultiDVallongDataClass);
+	_NclInitClass(nclMultiDVallogicalDataClass);
+	_NclInitClass(nclMultiDValbyteDataClass);
+	_NclInitClass(nclMultiDValcharDataClass);
+	_NclInitClass(nclMultiDValstringDataClass);
+}
+
+
 
 NclMultiDValData _NclStringMdToCharMd
 #if __STDC__
@@ -683,6 +703,31 @@ int operation;
 
 
 
+int _NclIsMissing 
+#if __STDC__
+(NclMultiDValData self, void* val)
+#else 
+(self, val)
+NclMultiDValData self;
+void* val;
+#endif
+{
+	NclDataClass dc;
+	
+	if(self == NULL) {
+		return(NULL);
+	}  else {
+		dc = (NclDataClass)self->obj.class_ptr;
+	}
+	while((NclObjClass)dc != nclObjClass){
+		if(dc->data_class.dup != NULL) {
+			return((*dc->data_class.is_mis)((NclData)self,val));
+		} else {
+			dc = (NclDataClass)dc->obj_class.super_class;
+		}
+	}
+	return(0);
+}
 struct _NclMultiDValDataRec* _NclCopyVal
 #if     __STDC__
 (struct _NclMultiDValDataRec * self,NclScalar *new_missing)

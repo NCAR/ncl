@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.1 1994-07-14 20:46:46 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.2 1994-08-25 18:00:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1576,7 +1576,8 @@ NclSelectionRecord *sel_rec;
 	} else {
 		thevalobj->multidval.sel_rec = NULL;
 	}
-	thevalobj->multidval.hlu_type_rep = NULL;
+	thevalobj->multidval.hlu_type_rep[0] = NULL;
+	thevalobj->multidval.hlu_type_rep[1] = NULL;
 	obj_ids = (int*)thevalobj->multidval.val;
 	for(i = 0; i<thevalobj->multidval.totalelements; i++) {
 		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);

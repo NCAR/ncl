@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: op_funcs.sh,v 1.2 1994-07-27 18:14:16 ethan Exp $
+#      $Id: op_funcs.sh,v 1.3 1994-08-25 18:01:27 ethan Exp $
 #
 #########################################################################
 #									#
@@ -69,8 +69,17 @@ MultiDValXorOpTemplate.c.sed
 
 sed \
 -e "s/DATATYPE/logical/g" \
+MultiDValIsMisFuncOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/logical/g" \
 MultiDValSelectFuncsTemplate.c.sed
 
+sed \
+-e "s/DATATYPE/logical/g" \
+-e "s/HLUTYPEREP/NhlTBoolean/g" \
+-e "s/HLUGENTYPEREP/NhlTBooleanGenArray/g" \
+MultiDValInitClassTemplate.c.sed
 exit 0
 
 fi
@@ -115,6 +124,15 @@ sed \
 -e 's/DATATYPE/string/g' \
 MultiDValSelectFuncsTemplate.c.sed
 
+sed \
+-e "s/DATATYPE/string/g" \
+MultiDValIsMisFuncOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/string/g" \
+-e "s/HLUTYPEREP/NhlTQuark/g" \
+-e "s/HLUGENTYPEREP/NhlTQuarkGenArray/g" \
+MultiDValInitClassTemplate.c.sed
 exit 0
 
 fi
@@ -137,6 +155,9 @@ sed \
 -e "s/DATATYPE/nclfile/g" \
 MultiDValSelectFuncsTemplate.c.sed
 
+sed \
+-e "s/DATATYPE/nclfile/g" \
+MultiDValIsMisFuncOpTemplate.c.sed
 exit 0
 
 fi
@@ -218,6 +239,16 @@ MultiDValSelectOpTemplate.c.sed
 sed \
 -e "s/DATATYPE/$1/g" \
 MultiDValSelectFuncsTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+MultiDValIsMisFuncOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+-e "s/HLUTYPEREP/NhlTCharacter/g" \
+-e "s/HLUGENTYPEREP/NhlTCharacterGenArray/g" \
+MultiDValInitClassTemplate.c.sed
 
 exit 0
 fi
@@ -373,6 +404,16 @@ MultiDValDivOpTemplate.c.sed
 sed \
 -e "s/DATATYPE/$1/g" \
 MultiDValSelectFuncsTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+MultiDValIsMisFuncOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+-e "s/HLUTYPEREP/$2/g" \
+-e "s/HLUGENTYPEREP/$3/g" \
+MultiDValInitClassTemplate.c.sed
 
 if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
 then

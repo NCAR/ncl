@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.1 1994-07-14 20:46:25 ethan Exp $
+ *      $Id: NclData.h,v 1.2 1994-08-25 18:00:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -190,6 +190,13 @@ typedef NhlErrorTypes (*NclWriteSubSecFunction)(
 #endif
 );
 
+typedef int (*NclIsMissingFunction) (
+#if	NhlNeedProto
+	NclData /*self*/,
+	void *v_one
+#endif
+);
+
 
 typedef struct _NclDataClassPart {
 	NclCopyFunction		dup;
@@ -218,6 +225,7 @@ typedef struct _NclDataClassPart {
 	NclOperatorFunction	and[4];
 	NclOperatorFunction	or[4];
 	NclOperatorFunction	xor[4];
+	NclIsMissingFunction	is_mis;
 } NclDataClassPart;
  
 typedef struct _NclDataClassRec{

@@ -8,7 +8,9 @@ extern "C" {
 #include "Symbol.h"
 #include "NclData.h"
 #include "Machine.h"
+#include "DataSupport.h"
 #include <unistd.h>
+#include <ncarg/hlu/Convert.h>
 
 FILE *thefptr;
 FILE *theoptr;
@@ -25,6 +27,34 @@ extern int yyparse();
 
 #define BUFF_SIZE 512
 
+static NhlErrorTypes 
+NclCvtGenArrayToNclData
+#if NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	return(NhlNOERROR);
+}
+static NhlErrorTypes 
+NclCvtScalarToNclData
+#if NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	return(NhlNOERROR);
+}
 
 main() {
 
@@ -47,6 +77,13 @@ main() {
 	NhlOpen();
 	_NclInitMachine();
 	_NclInitSymbol();	
+	_NclInitDataClasses();
+
+	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
+/*
+	NhlRegisterConverter(NhlTScalar,NhlTNclData,NclCvtScalarToDataObj,NULL,0,False,NULL);
+	NhlRegisterConverter(NhlTGenArray,NhlTNclData,NclCvtGenArrayToData,NULL,0,False,NULL);
+*/
 
 	if(cmd_line)	
 		fprintf(stdout,"ncl %d> ",0);
@@ -63,6 +100,11 @@ main() {
 	NhlClose();
 	exit(0);
 }
+
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: short_data_c.sh,v 1.1 1994-07-21 23:16:32 boote Exp $
+#      $Id: short_data_c.sh,v 1.2 1994-08-25 18:01:28 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh short > .tmp.$$
+sh op_funcs.sh short NhlTShort NhlTShortGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e 's/DATATYPE/short/g' \
 -e 's/HLUTYPEREP/NhlTShort/g' \
+-e 's/HLUGENTYPEREP/NhlTShortGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValshortData.c.specific' \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.15 1994-07-18 15:46:51 ethan Exp $
+ *      $Id: SrcTree.c,v 1.16 1994-08-25 18:01:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -337,11 +337,11 @@ void _NclGResDestroy
  */
 void *_NclMakeGetResource
 #if __STDC__
-(char *resname, NclSymbol *var)
+(char *resname, void *target_idn)
 #else
-(resname , var)
+(resname , target_idn)
 	char *resname;
-	NclSymbol *var;
+	NclSymbol *target_idn;
 #endif
 {
 	NclGetResource *tmp = (NclGetResource*)NclMalloc((unsigned)sizeof(NclGetResource));
@@ -352,7 +352,7 @@ void *_NclMakeGetResource
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGResDestroy;
 	tmp->res_name_q = NrmStringToQuark(resname);
-	tmp->var = var;
+	tmp->target_idn = target_idn;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 	
@@ -2092,7 +2092,7 @@ if(groot != NULL) {
 			putspace(i,fp);
 			fprintf(fp,"%s\n",NrmQuarkToString(resource->res_name_q));
 			putspace(i,fp);
-			_NclPrintSymbol(resource->var,fp);
+			_NclPrintTree(resource->target_idn,fp);
 			i--;
 		}
 			break;

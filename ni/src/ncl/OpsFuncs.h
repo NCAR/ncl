@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.6 1994-05-28 00:13:01 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.7 1994-08-25 18:00:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,12 @@ NclSymbol * /*the_hlu_obj_class*/,
 NclMultiDValData /*the_hlu_obj_parent*/
 #endif
 );
-
+NclStackEntry _NclGetHLUObjOp(
+#ifdef NhlNeedProto
+NclMultiDValData /*the_hlu_data_obj*/,
+NclQuark /*res_name*/
+#endif
+);
 
 NhlErrorTypes _NclSetHLUObjOp(
 #ifdef NhlNeedProto

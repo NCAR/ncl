@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: string_data_c.sh,v 1.1 1994-07-21 23:16:33 boote Exp $
+#      $Id: string_data_c.sh,v 1.2 1994-08-25 18:01:30 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh string > .tmp.$$
+sh op_funcs.sh string NhlTString NhlTStringGenArray > .tmp.$$
 
 if [ ! $? ]
 then
@@ -47,6 +47,7 @@ sed \
 -e "/INSERTTMPSTRING/r .tmp.$$" \
 -e '/INSERTTMPSTRING/d' \
 -e 's/HLUTYPEREP/NhlTQuark/g' \
+-e 's/HLUGENTYPEREP/NhlTQuarkGenArray/g' \
 string_ops.c.sed > NclMultiDValstringData.c
 
 if [ ! $? ]

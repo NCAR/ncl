@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.14 1994-07-14 20:47:44 ethan Exp $
+ *      $Id: defs.h,v 1.15 1994-08-25 18:01:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,8 @@ extern "C" {
 #define NCL_MAX_SYMS_PER_STMNT 300
 #define NCL_SRC_TREE_NODE_LIST_SIZE 1000
 #define NCL_MISSING_VALUE_ATT "_FillValue"
+
+#define NhlTNclData "nclData"
 
 /*
 * Maximum number of error messages to be printed

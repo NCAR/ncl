@@ -18,6 +18,216 @@ extern "C" {
 #include "parser.h"
 #include "OpsList.h"
 
+NhlErrorTypes _NclINhlDataToNDC
+#ifdef __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry args[5];
+	NclMultiDValData tmp_mds[5];
+	int i;
+	int ncl_id;
+	NclHLUObj hlu_ptr;
+	int status;
+	NclScalar* missing;
+	NclScalar tmp_mis;
+
+	for(i = 0 ; i < 5; i++) {
+		args[i] = _NclGetArg(i,5);
+		switch(args[i].kind) {
+		case NclStk_VAL:
+			tmp_mds[i] = args[i].u.data_obj;
+			break;
+		case NclStk_VAR:
+			tmp_mds[i] = _NclVarValueRead(args[i].u.data_var,
+					NULL,NULL);
+			break;
+		default:
+			return(NhlFATAL);
+		}
+	}
+	ncl_id = *(int*)tmp_mds[0]->multidval.val;
+	hlu_ptr = (NclHLUObj)_NclGetObj(ncl_id);
+	if(hlu_ptr != NULL) {
+		if(tmp_mds[1]->multidval.totalelements != tmp_mds[2]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 2 and 3 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[1]->multidval.totalelements != tmp_mds[3]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 2 and 4 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[2]->multidval.totalelements != tmp_mds[4]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 3 and 5 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[1]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[1]->multidval.missing_value.value;
+		} else if(tmp_mds[2]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[2]->multidval.missing_value.value;
+		} else if(tmp_mds[3]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[3]->multidval.missing_value.value;
+		} else if(tmp_mds[4]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[4]->multidval.missing_value.value;
+		} else {
+			tmp_mis.floatval = 1e12;
+			missing = &tmp_mis;
+		}
+		status = 0;
+		NhlDataToNDC(hlu_ptr->hlu.hlu_id,
+			(float*)tmp_mds[1]->multidval.val,
+			(float*)tmp_mds[2]->multidval.val,
+			tmp_mds[1]->multidval.totalelements,
+			(float*)tmp_mds[3]->multidval.val,
+			(float*)tmp_mds[4]->multidval.val,
+			(float*)(tmp_mds[1]->multidval.missing_value.has_missing ?
+				&tmp_mds[1]->multidval.missing_value.value :
+				NULL),
+			(float*)(tmp_mds[2]->multidval.missing_value.has_missing ?
+				&tmp_mds[2]->multidval.missing_value.value :
+				NULL),
+			&status,
+			(float*)missing);
+		if(status) {
+			_NclResetMissingValue(tmp_mds[3],missing);
+			_NclResetMissingValue(tmp_mds[4],missing);
+		}
+		return(NhlEUNKNOWN);	
+	} else {
+		return(NhlFATAL);
+	}
+}
+
+NhlErrorTypes _NclINhlNDCToData
+#ifdef __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry args[5];
+	NclMultiDValData tmp_mds[5];
+	int i;
+	int ncl_id;
+	NclHLUObj hlu_ptr;
+	int status;
+	NclScalar* missing;
+	NclScalar tmp_mis;
+
+	for(i = 0 ; i < 5; i++) {
+		args[i] = _NclGetArg(i,5);
+		switch(args[i].kind) {
+		case NclStk_VAL:
+			tmp_mds[i] = args[i].u.data_obj;
+			break;
+		case NclStk_VAR:
+			tmp_mds[i] = _NclVarValueRead(args[i].u.data_var,
+					NULL,NULL);
+			break;
+		default:
+			return(NhlFATAL);
+		}
+	}
+	ncl_id = *(int*)tmp_mds[0]->multidval.val;
+	hlu_ptr = (NclHLUObj)_NclGetObj(ncl_id);
+	if(hlu_ptr != NULL) {
+		if(tmp_mds[1]->multidval.totalelements != tmp_mds[2]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 2 and 3 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[1]->multidval.totalelements != tmp_mds[3]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 2 and 4 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[2]->multidval.totalelements != tmp_mds[4]->multidval.totalelements) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"datatondc: Arguments 3 and 5 must have identical dimension sizes");
+			return(NhlFATAL);
+		}
+		if(tmp_mds[1]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[1]->multidval.missing_value.value;
+		} else if(tmp_mds[2]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[2]->multidval.missing_value.value;
+		} else if(tmp_mds[3]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[3]->multidval.missing_value.value;
+		} else if(tmp_mds[4]->multidval.missing_value.has_missing) {
+			missing = &tmp_mds[4]->multidval.missing_value.value;
+		} else {
+			tmp_mis.floatval = 1e12;
+			missing = &tmp_mis;
+		}
+		status = 0;
+		NhlNDCToData(hlu_ptr->hlu.hlu_id,
+			(float*)tmp_mds[1]->multidval.val,
+			(float*)tmp_mds[2]->multidval.val,
+			tmp_mds[1]->multidval.totalelements,
+			(float*)tmp_mds[3]->multidval.val,
+			(float*)tmp_mds[4]->multidval.val,
+			(float*)(tmp_mds[1]->multidval.missing_value.has_missing ?
+				(float*)&tmp_mds[1]->multidval.missing_value.value :
+				NULL),
+			(float*)(tmp_mds[2]->multidval.missing_value.has_missing ?
+				(float*)&tmp_mds[2]->multidval.missing_value.value :
+				NULL),
+			&status,
+			(float*)missing);
+		if(status) {
+			_NclResetMissingValue(tmp_mds[3],missing);
+			_NclResetMissingValue(tmp_mds[4],missing);
+		}
+		return(NhlEUNKNOWN);	
+	} else {
+		return(NhlFATAL);
+	}
+}
+NhlErrorTypes _NclIIsMissing
+#ifdef __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry val,data;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData logical_md = NULL;
+	logical *lval;
+	int dimsize = 1;
+	
+	val = _NclGetArg(0,1);
+/*
+* Should be constrained to be a SCALAR md
+*/	
+	switch(val.kind) {
+	case NclStk_VAL:
+		tmp_md = val.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+
+	if(tmp_md != NULL) {
+		lval = (logical*)NclMalloc((unsigned)sizeof(logical));
+		if(tmp_md->multidval.missing_value.has_missing) {
+			*lval = _NclIsMissing(tmp_md,tmp_md->multidval.val);
+			data.kind = NclStk_VAL;
+			data.u.data_obj = _NclCreateVal(NULL,NULL,Ncl_MultiDVallogicalData,0,(void*)lval,NULL,1,&dimsize,TEMPORARY,NULL);
+			_NclPlaceReturn(data);
+		} else {
+			*lval = 0;
+			data.kind = NclStk_VAL;
+			data.u.data_obj = _NclCreateVal(NULL,NULL,Ncl_MultiDVallogicalData,0,(void*)lval,NULL,1,&dimsize,TEMPORARY,NULL);
+			_NclPlaceReturn(data);
+		}
+	}
+	return(NhlNOERROR);
+}
+
+
+
 NhlErrorTypes _NclIAddToOverlay
 #if  __STDC__
 (void)
@@ -1565,14 +1775,14 @@ NclStackEntry _NclCreateHLUObjOp
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
 		}
-		if(tmp_md->multidval.hlu_type_rep != NULL) {
+		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
 			gen_array[i] = _NhlCreateGenArray(
 					(NhlPointer)tmp_md->multidval.val,
-					tmp_md->multidval.hlu_type_rep,
+					tmp_md->multidval.hlu_type_rep[0],
 					(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
 					tmp_md->multidval.n_dims,
 					tmp_md->multidval.dim_sizes,
-					1);
+					0);
 			NhlRLSet(rl_list,NrmQuarkToString(
 				*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
 				NhlTGenArray,
@@ -1642,6 +1852,82 @@ NclStackEntry _NclCreateHLUObjOp
 	return(data_out);
 }
 
+NclStackEntry _NclGetHLUObjOp
+#if __STDC__
+(NclMultiDValData the_hlu_data_obj,NclQuark res_name)
+#else
+(the_hlu_data_obj,res_name)
+NclMultiDValData the_hlu_data_obj;
+NclQuark res_name;
+#endif
+{
+	NclStackEntry out_data;
+	int *obj_ids = NULL;
+	NclHLUObj hlu_ptr;
+	int i,n_items = 0;
+	NclMultiDValData tmp_md= NULL;
+	NclStackEntry tmp_data;
+	NhlErrorTypes ret = NhlNOERROR;
+	int rl_list;
+
+	rl_list = NhlRLCreate(NhlGETRL);	
+
+
+
+	obj_ids = (int*)the_hlu_data_obj->multidval.val;
+	if(the_hlu_data_obj->multidval.totalelements > 1) {
+		NhlRLGet(rl_list,NrmQuarkToString(res_name),NhlTNclData,&tmp_md);
+		for(i = 0; i < the_hlu_data_obj->multidval.totalelements; i++ ) {
+			hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+			if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+/*
+* Problem here when hlu_ptr is null positions of return values may be intractable since they won't corespond
+* with hlu id in input array. Probably need to keep track of sizes and types and use the new function to
+* create object containing missing values.
+*/
+				NhlGetValues(hlu_ptr->hlu.hlu_id,rl_list);
+				if(tmp_md != NULL) {	
+					tmp_data.kind = NclStk_VAL;
+					tmp_data.u.data_obj = tmp_md;
+					_NclPush(tmp_data);
+					n_items++;	
+				}
+			}
+			if(n_items != 0) {
+				ret = _NclBuildArray(n_items,&out_data);
+				if(ret > NhlWARNING) {
+					out_data = _NclPop();
+					return(out_data);
+				} else {
+					out_data.kind = NclStk_NOVAL;
+					out_data.u.data_obj = NULL;
+					return(out_data);
+				}
+			}
+		}
+		NhlRLDestroy(rl_list);
+	} else {
+		hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[0]);
+		NhlRLGet(rl_list,NrmQuarkToString(res_name),NhlTNclData,&tmp_md);
+		if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+			NhlGetValues(hlu_ptr->hlu.hlu_id,rl_list);
+			if(tmp_md != NULL) {
+				out_data.kind = NclStk_VAL;
+				out_data.u.data_obj = tmp_md;
+				return(out_data);
+			} else {
+				out_data.kind = NclStk_NOVAL;
+				out_data.u.data_obj = NULL;
+				return(out_data);
+			}
+		}
+		NhlRLDestroy(rl_list);
+	} 
+	out_data.kind = NclStk_NOVAL;
+	out_data.u.data_obj = NULL;
+	return(out_data);
+}
+
 NhlErrorTypes _NclSetHLUObjOp
 #if __STDC__
 (NclMultiDValData the_hlu_data_obj, int nres)
@@ -1685,7 +1971,7 @@ int nres;
 		}
 		gen_array[i] = _NhlCreateGenArray(
 				(NhlPointer)tmp_md->multidval.val,
-				tmp_md->multidval.hlu_type_rep,
+				tmp_md->multidval.hlu_type_rep[0],
 				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
 				tmp_md->multidval.n_dims,
 				tmp_md->multidval.dim_sizes,

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: nclfile_data_c.sh,v 1.1 1994-07-21 23:16:28 boote Exp $
+#      $Id: nclfile_data_c.sh,v 1.2 1994-08-25 18:01:25 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #	Options:
 
-sh op_funcs.sh nclfile > .tmp.$$
+sh op_funcs.sh nclfile NULL NULL > .tmp.$$
 
 if [ ! $? ]
 then
@@ -41,10 +41,12 @@ sed \
 -e '/PRINTFORMAT/d' \
 -e 's/DATATYPE/nclfile/g' \
 -e 's/HLUTYPEREP/NULL/g' \
+-e 's/HLUGENTYPEREP/NULL/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclMultiDValnclfileData.c.specific' \
 -e '/DSPECIFIC/d' \
+-e 's/MultiDVal_nclfile_InitClass/NULL/' \
 -e 's/MultiDVal_nclfile_md_Not/NULL/' \
 -e 's/MultiDVal_nclfile_s_Not/NULL/' \
 -e 's/MultiDVal_nclfile_mdmd_And/NULL/' \

@@ -201,23 +201,25 @@ if(groot != NULL) {
 		case Ncl_VISBLKGET:
 		{
 			NclSGVisblk *vblk = (NclSGVisblk*)root;
-			int nres = 0;
 			step = vblk->resource_list;
+/* 
+* Translating objname each time produces a lot of extra calls but is
+* probably better than duplicating it on the top of the stack each
+* iteration. Need to come up with POP_OP before any alternatives 
+* can be investigated. With a POP_OP GET_OBJ_OP could always 
+* push the object referenc back on the stack when done and then
+* when the visblock is over it could pop it off the stack.
+*/
 			if(step != NULL) {
-				off1 = _NclTranslate(step->node,fp);
-				step = step->next;
-				nres++;
-			}
-			while(step != NULL) {
+				off1 = _NclTranslate(vblk->objname,fp);
 				_NclTranslate(step->node,fp);
 				step = step->next;
-				nres++;
 			}
-			off2 = _NclTranslate(vblk->objname,fp);
-			if(off1 == -1) 
-				off1 = off2;
-			_NclPutInstr(GET_OBJ_OP,vblk->line,vblk->file);
-			_NclPutInstr((NclValue)nres,vblk->line,vblk->file);
+			while(step != NULL) {
+				_NclTranslate(vblk->objname,fp);
+				_NclTranslate(step->node,fp);
+				step = step->next;
+			}
 			break;
 		}
 		case Ncl_RESOURCE:
@@ -230,12 +232,18 @@ if(groot != NULL) {
 		}
 		case Ncl_GETRESOURCE:
 		{
+/*
+* obj refernce is on top of stack when this 
+* block starts.
+*/
 			NclGetResource *resource = (NclGetResource*)root;
 			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,resource->line,resource->file);
 			_NclPutInstr((NclValue)resource->res_name_q,resource->line,resource->file);
-			_NclPutInstr(VAR_READ_OP,resource->line,resource->file);
-			_NclPutInstr((NclValue)resource->var,resource->line,resource->file);
-			_NclPutInstr((NclValue)0,resource->line,resource->file);
+			_NclPutInstr((NclValue)GET_OBJ_OP,resource->line,resource->file);
+/*
+* This allows full range of assignment possibilities.
+*/
+			_NclTranslate(resource->target_idn,fp);
 			break;
 		}
 		case Ncl_DOFROMTO:

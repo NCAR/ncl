@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.2 1994-07-27 20:30:33 ethan Exp $
+ *      $Id: NclVar.c,v 1.3 1994-08-25 18:00:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -963,6 +963,9 @@ NclSelectionRecord *sel_ptr;
 					tmp_md = _NclCoerceData(value,
 						thevalue->obj.obj_type,
 						NULL);
+					if(tmp_md == NULL) {	
+						return(NhlFATAL);
+					}
 				} else {
 					tmp_md = value;
 				}
@@ -1001,6 +1004,9 @@ NclSelectionRecord *sel_ptr;
 					tmp_md = _NclCoerceData(value,
 						thevalue->obj.obj_type,
 						NULL);
+					if(tmp_md == NULL) {	
+						return(NhlFATAL);
+					}
 				} else {
 					tmp_md = value;
 				}

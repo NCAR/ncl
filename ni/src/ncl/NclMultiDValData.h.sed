@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h.sed,v 1.1 1994-07-14 20:46:44 ethan Exp $
+ *      $Id: NclMultiDValData.h.sed,v 1.2 1994-08-25 18:00:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,8 +45,8 @@ typedef struct _NclMultiDValDATATYPEDataClassPart {
 typedef struct _NclMultiDValDATATYPEDataClassRec {
 	NclObjClassPart	obj_class;
 	NclDataClassPart data_class;
-	NclMultiDValDataPart multid_class;
-	NclMultiDValDATATYPEDataPart FIELDNAME_class;
+	NclMultiDValDataClassPart multid_class;
+	NclMultiDValDATATYPEDataClassPart FIELDNAME_class;
 }NclMultiDValDATATYPEDataClassRec;
 
 typedef struct _NclMultiDValDATATYPEDataRec* NclMultiDValDATATYPEData;
