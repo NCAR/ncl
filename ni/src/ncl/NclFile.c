@@ -3760,7 +3760,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 /*
 * right hand side has no dimension name and hence no coordinate variable so give warning and proceed
 */
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"Right hand side has no dimension name can not delete dimension of a file, use (/ .. /) to avoid this message");
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"Right hand side has no coordinate variable can not delete coordinate variable of a file, use (/ .. /) to avoid this message");
 						ret = NhlWARNING;
 					}
 				}
