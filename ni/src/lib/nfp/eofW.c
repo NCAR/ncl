@@ -8,11 +8,13 @@ extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      long long int *, double *,int *,
                                      double *,int *,int *,int *,int *,int *);
 
-extern void NGCALLF(tdrvprc,TDRVPRDC)(double *x,int *nrow, int *ncol,
-                                      int *nrobs, int *ncsta, double *xmsg,
-                                      int *neval, double *eval, double *evec,
-                                      double *pcvar, double *trace, int *iopt, 
-                                      int *jopt, double *pcrit, int *ier); 
+extern void NGCALLF(xrveoft,XRVEOFT)(double *dx_strip, int *nrow,
+                                      int *ncol, int *nrobs, int *mcsta,
+                                      double *xmsg, int *neval,
+                                      double *eval, double *evec,
+                                      double *pcvar, double *trace,
+                                      double *xdvar, double *xave, 
+                                      int *jopt, int *ier); 
 
 
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
@@ -56,7 +58,7 @@ NhlErrorTypes eof_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, nc, nr, kntx, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
   int *neval, ne;
 /*
  * Various.
@@ -71,6 +73,7 @@ NhlErrorTypes eof_W( void )
 /*
  * Work array variables.
  */
+  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
@@ -336,16 +339,83 @@ NhlErrorTypes eof_W( void )
   if(debug) {
     printf("eofunc: pcrit = %g\n", *pcrit);
   }
+
+/*
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
+ */
+  dx_strip = (double *)calloc(nrow * ncol,sizeof(double));
+  xave     = (double *)calloc(ncol,sizeof(double));
+  xvar     = (double *)calloc(ncol,sizeof(double));
+  xdvar    = (double *)calloc(ncol,sizeof(double));
+  if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+/*
+ * Strip all grid points that have less that "PCRIT" valid values.
+ * Create "dx_strip". This may have fewer columns/grid-pts
+ * than the original "dx" array, if not all columns 
+ * had the minimun number of valid values.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < ncol; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    con = 1.0;
+    if(jopt == 1 && xave[nc] != missing_dx.doubleval && xsd > 0.0) {
+      con = 1./xsd;
+    }     
+/*
+ * Work with anomalies: xdave=0.0 [or standardized anomalies]
+ */
+    if (xave[nc] != missing_dx.doubleval) {
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          dx_strip[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
 /*
  * Depending on the size of the rightmost 2D arrays being processed, we
  * one of two different Fortran routines. These routines basically behave
  * the same, except one operates on a transposed version of the 2d array.
  */
   if(debug) {
-    printf("eofunc: msta = %d nobs = %d\n", msta, nobs);
+    printf("eofunc: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
   }
   if(!tr_setbyuser) {
-    if(msta <= nrow) {
+    if(mcsta <= nrow) {
       transpose = False;
       if(debug) {
         printf("eofunc: transpose set to False\n");
@@ -402,7 +472,6 @@ NhlErrorTypes eof_W( void )
     }
   }
 
-
 /*
  * Initialize to missing.
  */
@@ -431,10 +500,10 @@ NhlErrorTypes eof_W( void )
  * just calculated slightly differently.
  */
   if(!transpose) {
-    llcssm = msta*(msta+1)/2;
-    lwork  = 8*msta;
-    liwork = 5*msta;
-    lifail = msta;
+    llcssm = mcsta*(mcsta+1)/2;
+    lwork  = 8*mcsta;
+    liwork = 5*mcsta;
+    lifail = mcsta;
     lweval = lifail;
     cssm   = (double *)calloc(llcssm,sizeof(double));
     work   = (double *)calloc(lwork,sizeof(double));
@@ -452,15 +521,12 @@ NhlErrorTypes eof_W( void )
  * Call the Fortran 77 version of appropriate routine.
  */
   if(transpose) {
-    NGCALLF(tdrvprc,TDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                              &missing_dx.doubleval,neval,eval,evec,
-                              pcvar,trace,&iopt,&jopt,pcrit,&ier);
-/*
- * Free memory only used by transpose version of routine.
- */
+    NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+							 &missing_dx.doubleval,neval,eval,evec,
+							 pcvar,trace,xdvar,xave,&jopt,&ier);
   }
   else {
-    NGCALLF(ddrveof,DDRVEOF)(dx,&nrow,&ncol,&nobs,&msta,
+    NGCALLF(ddrveof,DDRVEOF)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
                              &missing_dx.doubleval,neval,eval,evec,rpcvar,
                              trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
                              weval,iwork,&liwork,ifail,&lifail,&ier);
@@ -484,9 +550,13 @@ NhlErrorTypes eof_W( void )
   }
 
 /*
- * Free unneeded memory common to both routines.
+ * Free unneeded memory.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(dx_strip);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
   if(!transpose) {
     NclFree(work);
     NclFree(cssm);
@@ -1263,11 +1333,12 @@ NhlErrorTypes eofcov_tr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
   int *neval, ne;
 /*
  * Various.
  */
+  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
   double *pcrit;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
@@ -1530,9 +1601,77 @@ NhlErrorTypes eofcov_tr_W( void )
     printf("eofcov_tr: pcrit = %g\n", *pcrit);
   }
 
-  NGCALLF(tdrvprc,TDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                            &missing_dx.doubleval,neval,eval,evec,
-                            pcvar,trace,&iopt,&jopt,pcrit,&ier);
+
+/*
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
+ */
+  dx_strip = (double *)calloc(nrow * ncol,sizeof(double));
+  xave     = (double *)calloc(ncol,sizeof(double));
+  xvar     = (double *)calloc(ncol,sizeof(double));
+  xdvar    = (double *)calloc(ncol,sizeof(double));
+  if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+/*
+ * Strip all grid points that have less that "PCRIT" valid values.
+ * Create "dx_strip". This may have fewer columns/grid-pts
+ * than the original "dx" array, if not all columns 
+ * had the minimun number of valid values.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < ncol; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    con = 1.0;
+    if(jopt == 1 && xave[nc] != missing_dx.doubleval && xsd > 0.0) {
+      con = 1./xsd;
+    }     
+/*
+ * Work with anomalies: xdave=0.0 [or standardized anomalies]
+ */
+    if (xave[nc] != missing_dx.doubleval) {
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          dx_strip[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+						   &missing_dx.doubleval,neval,eval,evec,
+						   pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
@@ -1556,6 +1695,10 @@ NhlErrorTypes eofcov_tr_W( void )
  * Free unneeded memory common to both routines.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(dx_strip);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
 
 /*
  * Return values. 
@@ -1894,11 +2037,12 @@ NhlErrorTypes eofcor_tr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
   int *neval, ne;
 /*
  * Various.
  */
+  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
   double *pcrit;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
@@ -2161,9 +2305,76 @@ NhlErrorTypes eofcor_tr_W( void )
     printf("eofcor_tr: pcrit = %g\n", *pcrit);
   }
 
-  NGCALLF(tdrvprc,TDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                            &missing_dx.doubleval,neval,eval,evec,
-                            pcvar,trace,&iopt,&jopt,pcrit,&ier);
+ /*
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
+ */
+  dx_strip = (double *)calloc(nrow * ncol,sizeof(double));
+  xave     = (double *)calloc(ncol,sizeof(double));
+  xvar     = (double *)calloc(ncol,sizeof(double));
+  xdvar    = (double *)calloc(ncol,sizeof(double));
+  if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+/*
+ * Strip all grid points that have less that "PCRIT" valid values.
+ * Create "dx_strip". This may have fewer columns/grid-pts
+ * than the original "dx" array, if not all columns 
+ * had the minimun number of valid values.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < ncol; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    con = 1.0;
+    if(jopt == 1 && xave[nc] != missing_dx.doubleval && xsd > 0.0) {
+      con = 1./xsd;
+    }     
+/*
+ * Work with anomalies: xdave=0.0 [or standardized anomalies]
+ */
+    if (xave[nc] != missing_dx.doubleval) {
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          dx_strip[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+						   &missing_dx.doubleval,neval,eval,evec,
+						   pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
@@ -2187,6 +2398,10 @@ NhlErrorTypes eofcor_tr_W( void )
  * Free unneeded memory common to both routines.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(dx_strip);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
 
 /*
  * Return values. 
