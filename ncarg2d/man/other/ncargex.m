@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.30 1996-01-29 17:35:43 haley Exp $
+.\"	$Id: ncargex.m,v 1.31 1996-02-29 18:06:56 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -348,7 +348,7 @@ ccppc3 ccppc4 ccppkcl ccppole ccprc ccprect ccprwc ccprwu
 ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccpt2d ccptitle
 ccpvp ccpvs cidsfft colcon cpex01 cpex02 cpex03 cpex04
 cpex05 cpex06 cpex07 cpex08 cpex09 cpex10 cpex11 cpex12 cpex13
-cpex14 tconpa c_cbex01 c_colcon
+cpex14 cpex15 tconpa c_cbex01 c_colcon
 .sp
 .I "CONRAN FAMILY Examples:"
 .sp
