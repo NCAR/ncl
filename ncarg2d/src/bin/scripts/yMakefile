@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:44 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-22 14:41:08 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -7,10 +7,10 @@ MYNAME	= scripts
 
 #if ! defined BuildNCARGSourceLibrary
 SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
-	ncargrun ftrans ncargex pre2ncgm
+	ncargrun ncargfile ftrans ncargex pre2ncgm
 #else
 SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
-	ncargrun ftrans ncargex pre2ncgm ncargsrc ncargsrcy
+	ncargrun ncargfile ftrans ncargex pre2ncgm ncargsrc ncargsrcy
 #endif
 
 all:: $(SCRIPTS)
@@ -21,6 +21,7 @@ ncargf77: ncargf77.cry Makefile
 	-e 's+SED_F77+$(F77)+' \
 	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	<ncargf77.cry >ncargf77
 #else
 ncargf77: ncargf77.csh Makefile
@@ -28,6 +29,7 @@ ncargf77: ncargf77.csh Makefile
 	-e 's+SED_F77+$(F77)+' \
 	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	<ncargf77.csh >ncargf77
 #endif
 
@@ -37,6 +39,7 @@ ncargcc: ncargcc.cry Makefile
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	<ncargcc.cry >ncargcc
 #else
 ncargcc: ncargcc.csh Makefile
@@ -44,10 +47,34 @@ ncargcc: ncargcc.csh Makefile
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	<ncargcc.csh >ncargcc
 #endif
 
-InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINDIR))
+ncargex: ncargex.csh Makefile
+	@sed \
+	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
+	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
+	<ncargex.csh >ncargex
+
+ncargfile: ncargfile.csh Makefile
+	@sed \
+	-e 's+SED_FILESDIR+$(FILESDIR)+' \
+	<ncargfile.csh >ncargfile
+
+#if ! defined BuildNCARGSourceLibrary
+ncargsrc: ncargsrc.csh Makefile
+	@sed \
+	-e 's+SED_BINDIR+$(BINDIR)+' \
+	<ncargsrc.csh >ncargsrc
+
+ncargsrcy: ncargsrcy.csh Makefile
+	@sed \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	<ncargsrcy.csh >ncargsrcy
+#endif
+
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 
 MakefileTarget
 CleanTarget

@@ -1,12 +1,13 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.4 1992-06-04 21:18:08 ncargd Exp $
+#	$Id: ncargcc.csh,v 1.5 1992-09-22 14:40:55 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
 set loadopts = "SED_LD_CFLAGS"
-set l = `ncargpar LIBDIR`
+set l = `ncargpath SED_LIBDIR`
+if ($status != 0) exit 1
 
 if (! -d "$l") then
   echo "Library directory <$l> does not exist."
@@ -27,11 +28,14 @@ endif
 
 set libgks	=	"$l/libncarg_gks.a"
 set liblocal	=	"$l/libncarg_loc.a"
+set libcbind    = "$l/libc_ncarg.a $l/libc_ncarg_gks.a $l/libc_common.a"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
-  set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 -lm"
+  set f77libs     =       "-Bstatic -L/usr/lang/SC1.0 -lF77 -lV77 -lm"
+else if ($system == "Sun3") then
+  set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
 else if ($system == "RS6000") then
   set f77libs     =       "-lm -lxlf"
 else if ($system == "DECRISC") then
@@ -87,11 +91,13 @@ foreach arg ($argv)
 	case "-conranquick":
 		echo "Quick Conran"
 		set libs = "$libs $l/libconraq.o"
+        set libcbind = "$libcbind"
 		breaksw
 
 	case "-conransuper":
 		echo "Super Conran"
 		set libs = "$libs $l/libconras.o $l/libdashsupr.o"
+        set libcbind = "$libcbind"
 		breaksw
 
 	case "-conrecsmooth":
@@ -137,7 +143,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libncarg $libgks $liblocal $f77libs"
+set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $liblocal $f77libs"
 
 echo $newargv
 eval $newargv
