@@ -489,10 +489,11 @@ NhlErrorTypes specxy_anal_W( void )
   NclStackEntry return_data;
   double *frq_tmp, *spcx_tmp, *spcy_tmp;
   double *cospc_tmp, *quspc_tmp, *coher_tmp, *phase_tmp;
-  double sinfo[50];
+  double prob_tmp[4], sinfo[50];
   void *bw, *frq, *spcx, *spcy, *cospc, *quspc, *coher, *phase;
   void *xavei, *xvari, *xvaro, *xlag1, *xslope;
   void *yavei, *yvari, *yvaro, *ylag1, *yslope; 
+  void *prob;
 /*
  * Declare variables for random purposes.
  */
@@ -641,6 +642,7 @@ NhlErrorTypes specxy_anal_W( void )
     coher    = (void *)calloc(nspcmx-1,sizeof(float));
     phase    = (void *)calloc(nspcmx-1,sizeof(float));
     bw       = (void *)calloc(1,sizeof(float));
+    prob     = (void *)calloc(4,sizeof(float));
     xavei    = (void *)calloc(1,sizeof(float));
     xvari    = (void *)calloc(1,sizeof(float));
     xvaro    = (void *)calloc(1,sizeof(float));
@@ -660,6 +662,7 @@ NhlErrorTypes specxy_anal_W( void )
  */
     dof     = (void *)calloc(1,sizeof(double));
     bw      = (void *)calloc(1,sizeof(double));
+    prob    = (void *)calloc(4,sizeof(double));
     frq     = (void *)calloc(nspcmx-1,sizeof(double));
     spcx    = (void *)calloc(nspcmx-1,sizeof(double));
     spcy    = (void *)calloc(nspcmx-1,sizeof(double));
@@ -682,7 +685,7 @@ NhlErrorTypes specxy_anal_W( void )
         frq == NULL ||  spcx == NULL ||  spcy == NULL || cospc == NULL ||
       quspc == NULL || coher == NULL || phase == NULL || xvaro == NULL ||
       xlag1 == NULL ||xslope == NULL || yavei == NULL || yvari == NULL ||
-      yvaro == NULL || ylag1 == NULL | yslope == NULL ) {
+      yvaro == NULL || ylag1 == NULL | yslope == NULL ||  prob == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
@@ -724,11 +727,20 @@ NhlErrorTypes specxy_anal_W( void )
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specxy_anal: 'x' and/or 'y' contains all constant values");
   }
+/*
+ * Calculate coherence corresponding to the 90, 95, 99, and 99.9% levels.
+ */
+  prob_tmp[0] = 1.-pow((1.-0.900),(sinfo[0]/2.-1.));
+  prob_tmp[1] = 1.-pow((1.-0.950),(sinfo[0]/2.-1.));
+  prob_tmp[2] = 1.-pow((1.-0.990),(sinfo[0]/2.-1.));
+  prob_tmp[3] = 1.-pow((1.-0.999),(sinfo[0]/2.-1.));
+
 
   coerce_output_float_or_double(   dof,    &sinfo[0],type_dof,1,0);
   coerce_output_float_or_double( xlag1,    &sinfo[1],type_dof,1,0);
   coerce_output_float_or_double( ylag1,    &sinfo[2],type_dof,1,0);
   coerce_output_float_or_double(    bw,    &sinfo[5],type_dof,1,0);
+  coerce_output_float_or_double(  prob,     prob_tmp,type_dof,4,0);
   coerce_output_float_or_double( xavei,   &sinfo[10],type_dof,1,0);
   coerce_output_float_or_double( xvari,   &sinfo[11],type_dof,1,0);
   coerce_output_float_or_double( xvaro,   &sinfo[12],type_dof,1,0);
@@ -930,6 +942,28 @@ NhlErrorTypes specxy_anal_W( void )
              NULL
              );
   
+  dsizes[0] = 4;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         prob,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "coher_probability",
+             att_md,
+             NULL
+             );
+  
+  dsizes[0] = 1;
   att_md = _NclCreateVal(
                          NULL,
                          NULL,

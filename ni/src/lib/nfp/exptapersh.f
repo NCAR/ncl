@@ -48,7 +48,7 @@ c      ab = exp_tapershC (ab, n0, r)
 c     perform an exponential taper on the spherical harmonic coef
 
       INTEGER M,N,KER
-      DOUBLE PRECISION S(2*NB),CON
+      DOUBLE PRECISION S(2*NB)
 
       JER = 0
       IF ((N0+2).GT.NB) THEN

@@ -169,8 +169,8 @@ NhlErrorTypes g2gshv_W( void )
  * igrida describes the array going in, and igridb describes the array 
  * coming out.
  */
-  igrida[0] = igridb[0] = -2;
-  igrida[1] = igridb[1] =  0;
+  igrida[0] = igridb[0] = 2;
+  igrida[1] = igridb[1] = 0;
 
   intl = 0;
 /*
@@ -482,8 +482,8 @@ NhlErrorTypes f2gshv_W( void )
  * igrida describes the array going in, and igridb describes the array 
  * coming out.
  */
-  igrida[0] = -1;
-  igridb[0] = -2;
+  igrida[0] = 1;
+  igridb[0] = 2;
   igrida[1] = igridb[1] =  0;
 
   intl = 0;
@@ -764,8 +764,8 @@ NhlErrorTypes g2fshv_W( void )
  * igrida describes the array going in, and igridb describes the array 
  * coming out.
  */
-  igrida[0] = -2;
-  igridb[0] = -1;
+  igrida[0] = 2;
+  igridb[0] = 1;
   igrida[1] = igridb[1] =  0;
 
   intl = 0;
@@ -1045,8 +1045,8 @@ NhlErrorTypes f2fshv_W( void )
  * igrida describes the array going in, and igridb describes the array 
  * coming out.
  */
-  igrida[0] = igridb[0] = -1;
-  igrida[1] = igridb[1] =  0;
+  igrida[0] = igridb[0] = 1;
+  igrida[1] = igridb[1] = 0;
 
   intl = 0;
 /*
