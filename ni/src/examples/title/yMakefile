@@ -1,17 +1,17 @@
 #
-#   $Id: yMakefile,v 1.4 1995-01-31 16:44:55 stautler Exp $
+#   $Id: yMakefile,v 1.5 1995-02-08 17:26:26 haley Exp $
 #
 #   Makefile for HLU Title examples
 #
-
-NCGMS   =   ti01c.ncgm ti02c.ncgm ti03c.ncgm ti01f.ncgm ti02f.ncgm ti03f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = ti01c.c ti02c.c ti03c.c ti01f.f ti02f.f ti03f.f
-RES	    = ti01.res ti02.res ti03.res
+SRCS        = ti01c.c ti02c.c ti03c.c ti01f.f ti02f.f ti03f.f ti01n.ncl \
+				ti02n.ncl ti03n.ncl
+OBJS        = ti01c.o ti02c.o ti03c.o ti01f.o ti02f.o ti03f.o
+RES	        = ti01.res ti02.res ti03.res
 EXFILES     = $(SRCS) $(RES) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
@@ -23,6 +23,6 @@ HLUFExampleTarget(ti01f,ti01f.o)
 HLUFExampleTarget(ti02f,ti02f.o)
 HLUFExampleTarget(ti03f,ti03f.o)
 
-CleanFilesTarget($(NCGMS))
+CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
 
