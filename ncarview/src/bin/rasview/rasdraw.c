@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.6 1992-03-26 22:13:03 clyne Exp $
+ *	$Id: rasdraw.c,v 1.7 1992-04-02 22:57:06 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -564,7 +564,7 @@ load_static_24bit_image_(ras, context)
 	if (! context->image_info.lsbFirst) t++;
 
 	for(i=0; i<ras->ny; i++)
-	for(j=0; j<ras->ny; j++, s+=3, t+=4) {
+	for(j=0; j<ras->nx; j++, s+=3, t+=4) {
 		bcopy((char *) s, (char *) t, 3);
 	}
 
