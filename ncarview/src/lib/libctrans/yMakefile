@@ -1,10 +1,10 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.14 1992-12-11 16:04:08 clyne Exp $
+#	$Id: yMakefile,v 1.15 1993-01-19 23:39:58 haley Exp $
 #
 
 
-MYNAME		= $(LIBPATH)/libctrans.o
+MYNAME		= $(ROBJPATH)/libctrans.o
 
 INCLUDES	= ctrans.h
 
