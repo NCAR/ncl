@@ -1,5 +1,5 @@
 /*
- *      $Id: cn01c.c,v 1.3 1995-04-07 10:53:53 boote Exp $
+ *      $Id: cn01c.c,v 1.4 1995-06-14 17:17:19 stautler Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -60,8 +60,8 @@ main()
  * so the application looks for a resource file in the working directory.
  * In this example the resource file supplies the plot title only.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn01",NhlappClass,NhlDEFAULT_APP,rlist);
 

@@ -56,7 +56,7 @@ C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(srlist)
-	 call NhlFRLSetString(srlist,'wkMetaName','basic07.ncgm',ierr)
+	 call NhlFRLSetString(srlist,'wkMetaName','basic07f.ncgm',ierr)
 	 call NhlFCreate(widn,'basic07ncgm',NhlFNcgmWorkstationClass,0,
      1        srlist,ierr)
 C

@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.7 1995-06-14 15:08:51 stautler Exp $
+; $Id: basic02n.ncl,v 1.8 1995-06-14 17:16:50 stautler Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -17,10 +17,28 @@ begin
 ; ###########
 ; Choose the type of output you want to create.  You may write your
 ; output to an NCGM, file, X workstation window, or a PostScript file. 
-; This example writes to an X Workstation.
+; This example writes to a meta file or an X Workstation.
 
-wks = create "wks" xWorkstationClass defaultapp 
-      end create
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM.eq.1) then
+;
+; Create an NCGM workstation.
+;
+  wks = create "wks" ncgmWorkstationClass defaultapp
+        "wkMetaName" : "./basic02n.ncgm"
+  end create
+else
+;
+; Create an X workstation.
+;
+  wks = create "wks" xWorkstationClass defaultapp
+        "wkPause" : "True"
+  end create
+end if
 
 ; Create a plot object.  In this example, we will create a contour plot.
 ;

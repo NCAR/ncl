@@ -1,4 +1,4 @@
-; $Id: basic04n.ncl,v 1.5 1995-04-07 10:53:49 boote Exp $
+; $Id: basic04n.ncl,v 1.6 1995-06-14 17:16:57 stautler Exp $
 ;
 ; This example demonstrates how to select and change the workstation
 ; device for drawing your output to an NCGM file or an X workstation window.
@@ -31,11 +31,11 @@ xwks = create "xwks" xWorkstationClass defaultapp
 end create
 
 ; The resource, wkMetaName, lets you specify the name of the output NCGM
-; file.  In this example, it is called basic04.ncgm.  If omitted, the 
+; file.  In this example, it is called basic04n.ncgm.  If omitted, the 
 ; default name, gmeta,  will be used.
 
 nwks = create "nwks" ncgmWorkstationClass defaultapp 
-        "wkMetaName" : "basic04.ncgm"
+        "wkMetaName" : "basic04n.ncgm"
 end create
 
 ; ##########

@@ -1,5 +1,5 @@
 C
-C $Id: basic04f.f,v 1.7 1995-06-14 15:08:55 stautler Exp $
+C $Id: basic04f.f,v 1.8 1995-06-14 17:16:55 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -85,11 +85,11 @@ C
      $     rlist,ierr)
 C
 C The resource, wkMetaName, lets you specify the name of the output NCGM
-C file.  In this example, it is called basic04.ncgm.  If omitted, the 
+C file.  In this example, it is called basic04f.ncgm.  If omitted, the 
 C default name, gmeta,  will be used.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkMetaName','basic04.ncgm',ierr)
+      call NhlFRLSetString(rlist,'wkMetaName','basic04f.ncgm',ierr)
       call NhlFCreate(nwks,'nwks',NhlFNcgmWorkstationClass,0,
      $     rlist,ierr)
 C

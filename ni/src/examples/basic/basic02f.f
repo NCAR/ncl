@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.7 1995-06-14 15:08:50 stautler Exp $
+C $Id: basic02f.f,v 1.8 1995-06-14 17:16:48 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -30,10 +30,12 @@ C
       implicit none
 
       external NhlFAppClass
+      external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
+      integer NCGM	
 C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
@@ -51,11 +53,31 @@ C # FRAME 1 #
 C ###########
 C Choose the type of output you want to create.  You may write your
 C output to an NCGM, file, X workstation window, or a PostScript file. 
-C This example writes to an X Workstation.
+C This example writes to a meta file or an X Workstation.
 C 
-      call NhlFRLClear(rlist)
-      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
-     $     rlist,ierr)
+
+C
+C Default is to display output to an X workstation
+C
+      NCGM = 0
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./basic02f.ncgm',ierr)
+         call NhlFCreate(wks,"wks",NhlFNcgmWorkstationClass,0,
+     1        rlist,ierr)
+      else
+C
+C Create an X workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
+     1        rlist,ierr)
+      endif
 C
 C Create a plot object.  In this example, we will create a contour plot.
 C

@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.5 1995-06-14 15:08:46 stautler Exp $
+ * $Id: basic01c.c,v 1.6 1995-06-14 17:16:43 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,6 +35,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -43,6 +44,7 @@ main()
 {
 	int appid,wks,con1,rlist;
 
+	int NCGM = 0;
 
 /*
  * ##########
@@ -80,9 +82,9 @@ main()
  * Choose the type of output you want to create.  You may write your
  * output to an NCAR Computer Graphics Metafile (NCGM) and view it later using
  * the NCAR Graphics utilities ctrans or idt.  You may also write your
- * output directly into a window of a workstation running the X Window system
- * (as demonstrated in this example), or you can write your ouput into 
- * a PostScript file.  
+ * output directly into a window of a workstation running the X Window system.
+ * Another option, although not shown in this example, is to write your ouput 
+ * into a PostScript file.
  *
  * The first argument, "&wks", is a variable that identifies the object.
  * The second argument, '"wks"', sets the name of the object being created.
@@ -95,9 +97,23 @@ main()
  * when creating the object.  In this example, no modifications are made to
  * default values.
  */
-
-        NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        if (NCGM) {
+	/*
+	 * Create a meta file workstation.
+	 */
+		NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkMetaName,"./basic01c.ncgm");
+		NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+			  rlist);
+        }
+        else {
+	/*
+	 * Create an X workstation.
+	 */
+		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        }
 
 /*
  * ##########

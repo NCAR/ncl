@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.5 1995-06-14 15:08:52 stautler Exp $
+ * $Id: basic03c.c,v 1.6 1995-06-14 17:16:51 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -43,6 +44,8 @@ main()
 	                    {3,3,3,3,3} };
 
 	int dims[2] = { 5, 5 };
+
+	int NCGM = 0;
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -64,8 +67,23 @@ main()
  *
  * Choose the type of output you want to create. 
  */
-        NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        if (NCGM) {
+        /*
+         * Create a meta file workstation.
+         */
+                NhlRLClear(rlist);
+                NhlRLSetString(rlist,NhlNwkMetaName,"./basic03c.ncgm");
+                NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+                          rlist);
+        }
+        else {
+        /*
+         * Create an X workstation.
+         */
+                NhlRLClear(rlist);
+                NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        }
 
 /*
  * Create a scalar field object that will be used as a data set for a 

@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.7 1995-06-14 15:08:47 stautler Exp $
+C $Id: basic01f.f,v 1.8 1995-06-14 17:16:45 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -36,10 +36,13 @@ C
       implicit none
 
       external NhlFAppClass
+      external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
+
+      integer NCGM
 C
 C ##########
 C # STEP 1 #
@@ -91,9 +94,30 @@ C list modifiers to be used when creating the object.  In this
 C example, no modifications are made to default values.
 C The sixth argument, "ierr", is used to return an error code.
 C
-      call NhlFRLClear(rlist)
-      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
-     1      rlist,ierr)
+
+C
+C Default is to display output to an X workstation
+C
+      NCGM = 0
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./basic01f.ncgm',ierr)
+         call NhlFCreate(wks,"wks",NhlFNcgmWorkstationClass,0,
+     1        rlist,ierr)
+      else
+C
+C Create an X workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
+     1        rlist,ierr)
+      endif
+
 C
 C ##########
 C # STEP 3 #

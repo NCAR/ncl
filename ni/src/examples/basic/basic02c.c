@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.5 1995-06-14 15:08:49 stautler Exp $
+ * $Id: basic02c.c,v 1.6 1995-06-14 17:16:47 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -36,6 +37,8 @@
 main()
 {
         int appid,wks,con1,rlist;
+
+	int NCGM = 0;
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -55,10 +58,25 @@ main()
  * ###########
  * Choose the type of output you want to create.  You may write your
  * output to an NCGM, file, X workstation window, or a PostScript file. 
- * This example writes to an X Workstation.
+ * This example writes to a meta file or an X Workstation.
  */
-        NhlRLClear(rlist);
-        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        if (NCGM) {
+        /*
+         * Create a meta file workstation.
+         */
+                NhlRLClear(rlist);
+                NhlRLSetString(rlist,NhlNwkMetaName,"./basic02c.ncgm");
+                NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+                          rlist);
+        }
+        else {
+        /*
+         * Create an X workstation.
+         */
+                NhlRLClear(rlist);
+                NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        }
 
 /*
  * Create a plot object.  In this example, we will create a contour plot.

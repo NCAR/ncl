@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.5 1995-06-14 15:08:54 stautler Exp $
+ * $Id: basic04c.c,v 1.6 1995-06-14 17:16:54 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -84,11 +84,11 @@ main ()
         NhlCreate(&xwks,"xwks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * The resource, wkMetaName, lets you specify the name of the output NCGM
- * file.  In this example, it is called basic04.ncgm.  If omitted, the 
+ * file.  In this example, it is called basic04c.ncgm.  If omitted, the 
  * default name, gmeta,  will be used.
  */
         NhlRLClear(rlist);
-        NhlRLSetString(rlist,"wkMetaName","basic04.ncgm");
+        NhlRLSetString(rlist,"wkMetaName","basic04c.ncgm");
         NhlCreate(&nwks,"nwks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
 /*
