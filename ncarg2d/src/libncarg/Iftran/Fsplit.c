@@ -1,3 +1,6 @@
+/*
+ *      $Id: Fsplit.c,v 1.2 2004-06-29 19:01:35 kennison Exp $
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,7 +124,10 @@ main(int argc, char **argv) {
             fprintf(stderr,"%s: Can't open file \"%s\".\n",objectname,pkeyword);
             return errorflag=5;
           } else printf("%s: Opening file \"%s\".\n",objectname,pkeyword);
-          if (cvs==2||cvs==3) fprintf(pdst,"C\nC $Id: Fsplit.c,v 1.1 2004-05-11 16:49:13 kennison Exp $\nC\n");
+	  if (cvs==2||cvs==3) {
+	    fprintf(pdst,"C\nC $I");
+	    fprintf(pdst,       "d$\nC\n");
+	  }
           if (cvs==1||cvs==3) {
             fprintf(pdst,"C                Copyright (C)  2000\n");
             fprintf(pdst,"C        University Corporation for Atmospheric Research\n");

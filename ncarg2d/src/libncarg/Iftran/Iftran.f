@@ -1,5 +1,7 @@
       PROGRAM IFTRAN
-C                                                                      C
+C
+C $Id: Iftran.f,v 1.2 2004-06-29 19:01:35 kennison Exp $
+C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C                       Copyright (C) 1989 by UCAR                     C
@@ -9,7 +11,6 @@ C                                                                      C
 C                          IFTRAN Version 1.00                         C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
       COMMON /IFTCM1/ DBLS,DSOK,IBIT,ICRB,ICRI,ICRJ,ICRK,ICRL,ICUB,IFIN,
      +                IFOC,IFOF,IFOI,IFON,IFOS,IFVA(16),IFVI,IGND,
      +          IGNI,IGNN,IINP,INCL,INCP,INCU,IOCC,IOCP,IOTC,IOTX,
