@@ -1,5 +1,5 @@
 /*
- *      $Id: mp01c.c,v 1.3 1995-02-11 03:07:12 dbrown Exp $
+ *      $Id: mp01c.c,v 1.4 1995-02-11 07:26:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,7 +103,7 @@ main(int argc, char *argv[])
 	NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNtiMainString,"mp01c - Frame 3");
 	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"national");
-	NhlRLSetString(rlist,NhlNmpMapLimitMode,"latlon");
+	NhlRLSetString(rlist,NhlNmpLimitMode,"latlon");
 	NhlRLSetFloat(rlist,NhlNmpMinLatF,-60.0);
 	NhlRLSetFloat(rlist,NhlNmpMaxLatF,60.0);
 	NhlRLSetFloat(rlist,NhlNmpMinLonF,-135.0);
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
 	NhlRLSetString(rlist,NhlNtiMainString,"mp01c - Frame 5");
 	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"geophysicalAndUSStates");
 	NhlRLSetString(rlist,NhlNmpProjection,"satellite");
-	NhlRLSetString(rlist,NhlNmpMapLimitMode,"angles");
+	NhlRLSetString(rlist,NhlNmpLimitMode,"angles");
 	NhlRLSetFloat(rlist,NhlNmpLeftAngleF,45.0);
 	NhlRLSetFloat(rlist,NhlNmpRightAngleF,45.0);
 	NhlRLSetFloat(rlist,NhlNmpBottomAngleF,45.0);

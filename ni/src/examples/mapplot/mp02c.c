@@ -1,6 +1,6 @@
 
 /*
- *      $Id: mp02c.c,v 1.3 1995-02-11 03:07:13 dbrown Exp $
+ *      $Id: mp02c.c,v 1.4 1995-02-11 07:26:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,7 +96,7 @@ main(int argc, char *argv[])
 	NhlRLSetFloat(rlist,NhlNmpCenterLatF,10.0);
 	NhlRLSetFloat(rlist,NhlNmpCenterLonF,-90.0);
 	NhlRLSetFloat(rlist,NhlNmpCenterRotF,45.0);
-	NhlRLSetString(rlist,NhlNmpMapLimitMode,"LatLon");
+	NhlRLSetString(rlist,NhlNmpLimitMode,"LatLon");
 	NhlRLSetFloat(rlist,NhlNmpMinLatF,-60.0);
 	NhlRLSetFloat(rlist,NhlNmpMaxLatF,60.0);
 	NhlRLSetFloat(rlist,NhlNmpMinLonF,-135.0);
