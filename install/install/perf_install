@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.3 1993-03-22 18:20:37 clyne Exp $
+#      $Id: perf_install,v 1.4 1993-05-25 19:39:20 clyne Exp $
 #
 #########################################################################
 #									#
@@ -37,7 +37,13 @@
 #	Files:
 #
 #
+#
+#
 #	Options:
+#
+#
+#
+#
 
 onintr cleanup
 
@@ -150,35 +156,35 @@ case	"cdrom":
 	switch ("$SYSTEM")
 
 	case	"HPUX_HP9000_7xx"
-		set cd_system = "HPUX.7XX"
+		set cd_system = "HPUX_7XX"
 		breaksw
 
 	case	"AIX_RS6000"
-		set cd_system = "AIX.R6K"
+		set cd_system = "AIX_R6K"
 		breaksw
 
 	case	"SunOS_sun4"
-		set cd_system = "SUNOS.SN4"
+		set cd_system = "SUNOS_S4"
 		breaksw
 
 	case	"SunOS_sun3"
-		set cd_system = "SUNOS.SN3"
+		set cd_system = "SUNOS_S3"
 		breaksw
 
 	case	"Solaris_sun4"
-		set cd_system = "SOLARIS.SN4"
+		set cd_system = "SOLARIS"
 		breaksw
 
 	case	"ULRTIX_RISC"
-		set cd_system = "ULTRIX.RIS"
+		set cd_system = "ULTRIX"
 		breaksw
 
 	case	"IRIX_IP"
-		set cd_system = "IRIX.IP"
+		set cd_system = "IRIX_IP"
 		breaksw
 
 	case	"UNICOS_YMP"
-		set cd_system = "UNICOS.YMP"
+		set cd_system = "UCOS_YMP"
 		breaksw
 	endsw
 
