@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.19 2003-08-28 17:23:12 shea Exp $
+;      $Id: contributed.ncl,v 1.20 2003-09-12 16:50:52 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1105,8 +1105,15 @@ begin
  copy_VarAtts   (xS, xF)
  copy_VarCoords (xS, xF)
                                      ; added 19 Dec 2002
+                                     ; the type stuff added Sept 2003
  if (isatt(xS,"missing_value") .and. .not.isatt(xS,"_FillValue")) then
-           xS@_FillValue = xS@missing_value
+     type_missing_value = typeof(xS@missing_value)
+     if (type_missing_value.eq."short") then
+         xS@_FillValue = xS@missing_value
+     end if
+     if (type_missing_value.eq."integer") then
+         xS@_FillValue = integertoshort(xS@missing_value)
+     end if
  end if
 
           ; should data be 'scaled' and/or 'offset' ?
