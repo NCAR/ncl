@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.2 1995-01-25 22:07:25 haley Exp $
+C     $Id: mp02f.f,v 1.3 1995-02-28 23:13:03 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -73,7 +73,7 @@ C
       call nhlfrlsetfloat(rlist,'mpCenterLatF',10.0,ierr)
       call nhlfrlsetfloat(rlist,'mpCenterLonF',-90.0,ierr)
       call nhlfrlsetfloat(rlist,'mpCenterRotF',45.0,ierr)
-      call nhlfrlsetstring(rlist,'mpMapLimitMode','latlon',ierr)
+      call nhlfrlsetstring(rlist,'mpLimitMode','latlon',ierr)
       call nhlfrlsetfloat(rlist,'mpMinLatF',-60.0,ierr)
       call nhlfrlsetfloat(rlist,'mpMaxLatF',60.0,ierr)
       call nhlfrlsetfloat(rlist,'mpMinLonF',-135.0,ierr)

@@ -1,5 +1,5 @@
 C
-C     $Id: mp01f.f,v 1.2 1995-01-25 22:07:24 haley Exp $
+C     $Id: mp01f.f,v 1.3 1995-02-28 23:13:01 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -85,7 +85,7 @@ C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'tiMainString','mp01f - Frame 3',ierr)
       call nhlfrlsetstring(rlist,'mpFillBoundarySets','national',ierr)
-      call nhlfrlsetstring(rlist,'mpMapLimitMode','latlon',ierr)
+      call nhlfrlsetstring(rlist,'mpLimitMode','latlon',ierr)
       call nhlfrlsetfloat(rlist,'mpMinLatF',-60.0,ierr)
       call nhlfrlsetfloat(rlist,'mpMaxLatF',60.0,ierr)
       call nhlfrlsetfloat(rlist,'mpMinLonF',-135.0,ierr)
@@ -121,7 +121,7 @@ C
       call nhlfrlsetstring(rlist,'mpFillBoundarySets',
      1       'geophysicalAndUSStates',ierr)
       call nhlfrlsetstring(rlist,'mpProjection','satellite',ierr)
-      call nhlfrlsetstring(rlist,'mpMapLimitMode','angles',ierr)
+      call nhlfrlsetstring(rlist,'mpLimitMode','angles',ierr)
       call nhlfrlsetfloat(rlist,'mpLeftAngleF',45.0,ierr)
       call nhlfrlsetfloat(rlist,'mpRightAngleF',45.0,ierr)
       call nhlfrlsetfloat(rlist,'mpBottomAngleF',45.0,ierr)
