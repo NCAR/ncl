@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.9 1994-10-27 01:36:54 dbrown Exp $
+ *      $Id: Legend.h,v 1.10 1995-02-02 17:34:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +51,7 @@ typedef enum _NhllgItemType {
 
 /* Instance resources */
 
-#define NhlNlgLegend			"lgLegend"
+#define NhlNlgLegendOn			"lgLegendOn"
 #define NhlNlgOrientation		"lgOrientation"
 #define NhlNlgJustification		"lgJustification"
 #define NhlNlgBoxMajorExtentF		"lgBoxMajorExtentF"
@@ -61,7 +61,6 @@ typedef enum _NhllgItemType {
 
 #define NhlNlgAutoManage		"lgAutoManage"
 #define NhlNlgBarMode			"lgBarMode"
-#define NhlNlgMaxLabelAngleAdditionF	"lgMaxLabelAngleAdditionF"
 #define NhlNlgLabelOffsetF		"lgLabelOffsetF"
 #define NhlNlgTitleOffsetF		"lgTitleOffsetF"
 #define NhlNlgLeftMarginF		"lgLeftMarginF"
@@ -72,23 +71,30 @@ typedef enum _NhllgItemType {
 
 /* arrays */
 #define NhlNlgMonoItemType		"lgMonoItemType"
+#define NhlNlgItemType			"lgItemType"
 #define NhlNlgItemTypes			"lgItemTypes"
+#define NhlNlgMonoItemIndex		"lgMonoItemIndex"
+#define NhlNlgItemIndex			"lgItemIndex"
 #define NhlNlgItemIndexes		"lgItemIndexes"
 #define NhlNlgItemStrings		"lgItemStrings"
 #define NhlNlgMonoItemColor		"lgMonoItemColor"
+#define NhlNlgItemColor			"lgItemColor"
 #define NhlNlgItemColors		"lgItemColors"
 #define NhlNlgMonoItemThickness		"lgMonoItemThickness"
+#define NhlNlgItemThicknessF		"lgItemThicknessF"
 #define NhlNlgItemThicknesses		"lgItemThicknesses"
-#define NhlNlgMonoItemTextHeight	"lgMonoItemTextHeight"
-#define NhlNlgItemTextHeights		"lgItemTextHeights"
+#define NhlNlgMonoItemFontHeight	"lgMonoItemFontHeight"
+#define NhlNlgItemFontHeightF		"lgItemFontHeightF"
+#define NhlNlgItemFontHeights		"lgItemFontHeights"
 #define NhlNlgLabelStrings		"lgLabelStrings"
 #define NhlNlgItemPositions		"lgItemPositions"
 #define NhlNlgMonoItemStringColor	"lgMonoItemStringColor"
+#define NhlNlgItemStringColor		"lgItemStringColor"
 #define NhlNlgItemStringColors		"lgItemStringColors"
 
 /*end of arrays */
 
-#define NhlNlgDrawLineLabels		"lgDrawLineLabels"
+#define NhlNlgLineLabelsOn		"lgLineLabelsOn"
 #define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
 #define NhlNlgItemStringFont		"lgItemStringFont"
 #define NhlNlgItemStringFontColor	"lgItemStringFontColor"
@@ -98,7 +104,7 @@ typedef enum _NhllgItemType {
 #define NhlNlgItemStringConstantSpacingF	"lgItemStringConstantSpacingF"
 #define NhlNlgItemStringFuncCode	"lgItemStringFuncCode"
 
-#define NhlNlgDrawLabels		"lgDrawLabels"
+#define NhlNlgLabelsOn			"lgLabelsOn"
 #define NhlNlgLabelPosition		"lgLabelPosition"
 #define NhlNlgLabelAngleF		"lgLabelAngleF"
 #define NhlNlgLabelJust			"lgLabelJust"
@@ -114,7 +120,7 @@ typedef enum _NhllgItemType {
 #define NhlNlgLabelFuncCode		"lgLabelFuncCode"
 #define NhlNlgLabelStride		"lgLabelStride"
 
-#define NhlNlgDrawTitle			"lgDrawTitle"
+#define NhlNlgTitleOn			"lgTitleOn"
 #define NhlNlgTitleString		"lgTitleString"
 #define NhlNlgTitlePosition		"lgTitlePosition"
 #define NhlNlgMaxTitleExtentF		"lgMaxTitleExtentF"
@@ -131,13 +137,13 @@ typedef enum _NhllgItemType {
 #define NhlNlgTitleFuncCode		"lgTitleFuncCode"
 
 #define NhlNlgBoxBackground		"lgBoxBackground"
-#define NhlNlgDrawBoxLines		"lgDrawBoxLines"
+#define NhlNlgBoxLinesOn		"lgBoxLinesOn"
 #define NhlNlgBoxLineColor		"lgBoxLineColor"
 #define NhlNlgBoxLineThicknessF		"lgBoxLineThicknessF"
 #define NhlNlgBoxLineDashPattern	"lgBoxLineDashPattern"
 #define NhlNlgBoxLineDashSegLenF	"lgBoxLineDashSegLenF"
 
-#define NhlNlgDrawPerim			"lgDrawPerim"
+#define NhlNlgPerimOn			"lgPerimOn"
 #define NhlNlgPerimColor		"lgPerimColor"
 #define NhlNlgPerimFill			"lgPerimFill"
 #define NhlNlgPerimFillColor		"lgPerimFillColor"
@@ -147,7 +153,7 @@ typedef enum _NhllgItemType {
 
 /* Class resources */
 
-#define NhlClgLegend			"LgLegend"
+#define NhlClgLegendOn			"LgLegendOn"
 #define NhlClgOrientation		"LgOrientation"
 #define NhlClgJustification		"LgJustification"
 #define NhlClgBoxMajorExtentF		"LgBoxMajorExtentF"
@@ -168,24 +174,31 @@ typedef enum _NhllgItemType {
 #define NhlClgMarginMode		"LgMarginMode"
 
 /* arrays */
+#define NhlClgMonoItemType		"LgMonoItemType"
+#define NhlClgItemType			"LgItemType"
+#define NhlClgItemTypes			"LgItemTypes"
+#define NhlClgMonoItemIndex		"LgMonoItemIndex"
+#define NhlClgItemIndex			"LgItemIndex"
 #define NhlClgItemIndexes		"LgItemIndexes"
 #define NhlClgItemStrings		"LgItemStrings"
-#define NhlClgMonoItemType		"LgMonoItemType"
-#define NhlClgItemTypes			"LgItemTypes"
 #define NhlClgMonoItemColor		"LgMonoItemColor"
+#define NhlClgItemColor			"LgItemColor"
 #define NhlClgItemColors		"LgItemColors"
 #define NhlClgMonoItemThickness		"LgMonoItemThickness"
+#define NhlClgItemThicknessF		"LgItemThicknessF"
 #define NhlClgItemThicknesses		"LgItemThicknesses"
-#define NhlClgMonoItemTextHeight	"LgMonoItemTextHeight"
-#define NhlClgItemTextHeights		"LgItemTextHeights"
+#define NhlClgMonoItemFontHeight	"LgMonoItemFontHeight"
+#define NhlClgItemFontHeightF		"LgItemFontHeightF"
+#define NhlClgItemFontHeights		"LgItemFontHeights"
 #define NhlClgLabelStrings		"LgLabelStrings"
 #define NhlClgItemPositions		"LgItemPositions"
 #define NhlClgMonoItemStringColor	"LgMonoItemStringColor"
+#define NhlClgItemStringColor		"LgItemStringColor"
 #define NhlClgItemStringColors		"LgItemStringColors"
 
 /*end of arrays */
 
-#define NhlClgDrawLineLabels		"LgDrawLineLabels"
+#define NhlClgLineLabelsOn		"LgLineLabelsOn"
 #define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
 #define NhlClgItemStringFont		"LgItemStringFont"
 #define NhlClgItemStringFontColor	"LgItemStringFontColor"
@@ -195,7 +208,7 @@ typedef enum _NhllgItemType {
 #define NhlClgItemStringConstantSpacingF	"LgItemStringConstantSpacingF"
 #define NhlClgItemStringFuncCode	"LgItemStringFuncCode"
 
-#define NhlClgDrawLabels		"LgDrawLabels"
+#define NhlClgLabelsOn			"LgLabelsOn"
 #define NhlClgLabelPosition		"LgLabelPosition"
 #define NhlClgLabelAngleF		"LgLabelAngleF"
 #define NhlClgLabelJust			"LgLabelJust"
@@ -210,7 +223,7 @@ typedef enum _NhllgItemType {
 #define NhlClgLabelFuncCode		"LgLabelFuncCode"
 #define NhlClgLabelStride		"LgLabelStride"
 
-#define NhlClgDrawTitle			"LgDrawTitle"
+#define NhlClgTitleOn			"LgTitleOn"
 #define NhlClgTitleString		"LgTitleString"
 #define NhlClgTitlePosition		"LgTitlePosition"
 #define NhlClgMaxTitleExtentF		"LgMaxTitleExtentF"
@@ -226,13 +239,13 @@ typedef enum _NhllgItemType {
 #define NhlClgTitleFuncCode		"LgTitleFuncCode"
 
 #define NhlClgBoxBackground		"LgBoxBackground"
-#define NhlClgDrawBoxLines		"LgDrawBoxLines"
+#define NhlClgBoxLinesOn		"LgBoxLinesOn"
 #define NhlClgBoxLineColor		"LgBoxLineColor"
 #define NhlClgBoxLineThicknessF		"LgBoxLineThicknessF"
 #define NhlClgBoxLineDashPattern	"LgBoxLineDashPattern"
 #define NhlClgBoxLineDashSegLenF	"LgBoxLineDashSegLenF"
 
-#define NhlClgDrawPerim			"LgDrawPerim"
+#define NhlClgPerimOn			"LgPerimOn"
 #define NhlClgPerimColor		"LgPerimColor"
 #define NhlClgPerimFill			"LgPerimFill"
 #define NhlClgPerimFillColor		"LgPerimFillColor"

@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.11 1994-11-04 21:06:33 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.12 1995-02-02 17:34:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -124,7 +124,9 @@ typedef struct _NhlOverlayLayerPart {
 
 	NhlBoolean		lbar_on;
 	NhlOrientation		lbar_orient;
+	NhlBoolean		lbar_width_set;
 	float			lbar_width;
+	NhlBoolean		lbar_height_set;
 	float			lbar_height;
 	NhlPosition		lbar_side;
 	float			lbar_para_pos;
@@ -140,7 +142,9 @@ typedef struct _NhlOverlayLayerPart {
 
 	NhlBoolean		lgnd_on;
 	NhlOrientation		lgnd_orient;
+	NhlBoolean		lgnd_width_set;
 	float			lgnd_width;
+	NhlBoolean		lgnd_height_set;
 	float			lgnd_height;
 	NhlPosition		lgnd_side;
 	float			lgnd_para_pos;

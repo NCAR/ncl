@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.5 1994-03-02 01:44:02 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.6 1995-02-02 17:34:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,10 +45,13 @@ typedef struct _NhlLabelBarLayerPart {
 	int	margin_mode;
 
 	NhlBoolean	mono_fill_color;
+	NhlColorIndex	fill_color;
 	NhlGenArray	fill_colors;
 	NhlBoolean	mono_fill_pattern;
+	NhlFillIndex	fill_pattern;
 	NhlGenArray	fill_patterns;
 	NhlBoolean	mono_fill_scale;
+	float		fill_scale;
 	NhlGenArray	fill_scales;
 	NhlGenArray	label_strings;
 	NhlGenArray	box_fractions;
@@ -91,7 +94,7 @@ typedef struct _NhlLabelBarLayerPart {
 	int	box_line_color;
 	float	box_line_thickness;
 	int	box_line_dash_pattern;
-	float	box_line_dash_length;
+	float	box_line_dash_seglen;
 	
 	int	perim_on;
 	int	perim_color;
@@ -99,7 +102,7 @@ typedef struct _NhlLabelBarLayerPart {
 	int	perim_fill_color;
 	float	perim_thickness;
 	int	perim_dash_pattern;
-	float	perim_dash_length;
+	float	perim_dash_seglen;
 
 	int	fill_background;
 	float	fill_line_thickness;
@@ -116,7 +119,6 @@ typedef struct _NhlLabelBarLayerPart {
 	NhlBoundingBox	real_perim;	/* perimeter after accounting for
 					   excess label and title extent */
 
-	int 		*gks_colors;
 	int		current_label_count;
 	int		label_draw_count;
 	int		max_label_draw_count;

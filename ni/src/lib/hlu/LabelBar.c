@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.25 1995-01-12 22:50:51 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.26 1995-02-02 17:34:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,7 @@ SetTitleOn
 static int def_patterns[] = { 
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 static int def_colors[] = { 
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 /* SUPPRESS 112 */
 
@@ -70,7 +70,7 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean,sizeof(NhlBoolean),
+{NhlNlbLabelBarOn, NhlClbLabelBarOn, NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.labelbar_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}, 
 {NhlNlbOrientation, NhlClbOrientation, NhlTOrientation,sizeof(NhlOrientation),
@@ -97,18 +97,6 @@ static NhlResource resources[] = {
 {NhlNlbAutoManage, NhlClbAutoManage, NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.auto_manage),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-{NhlNlbMonoFillColor, NhlClbMonoFillColor, NhlTBoolean,
-	 sizeof(NhlBoolean), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_color),
-	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-{NhlNlbMonoFillPattern, NhlClbMonoFillPattern, NhlTBoolean,
-	 sizeof(NhlBoolean), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_pattern),
-	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-{NhlNlbMonoFillScale, NhlClbMonoFillScale, NhlTBoolean,
-	 sizeof(NhlBoolean), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_scale),
-	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlbLabelOffsetF, NhlClbLabelOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_off),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -128,16 +116,37 @@ static NhlResource resources[] = {
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.t),
 	 NhlTString,_NhlUSET("0.05"),0,NULL},
 
-{NhlNlbFillPatterns, NhlClbFillPatterns, NhlTFillIndexGenArray,
-	 sizeof(NhlPointer), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_patterns),
-	 NhlTImmediate,
-	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+{NhlNlbMonoFillColor, NhlClbMonoFillColor, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_color),
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+{NhlNlbFillColor,NhlClbFillColor,NhlTColorIndex,sizeof(NhlColorIndex),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_color),
+	 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
 {NhlNlbFillColors, NhlClbFillColors, NhlTColorIndexGenArray,
 	 sizeof(NhlPointer),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_colors),
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+{NhlNlbMonoFillPattern, NhlClbMonoFillPattern, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_pattern),
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+{NhlNlbFillPattern,NhlClbFillPattern,NhlTFillIndex,sizeof(NhlFillIndex),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_pattern),
+	 NhlTImmediate,_NhlUSET((NhlPointer)NhlSOLIDFILL),0,NULL},
+{NhlNlbFillPatterns, NhlClbFillPatterns, NhlTFillIndexGenArray,
+	 sizeof(NhlPointer), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_patterns),
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+{NhlNlbMonoFillScale, NhlClbMonoFillScale, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_scale),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+{NhlNlbFillScaleF,NhlClbFillScaleF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_scale),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
 {NhlNlbFillScales, NhlClbFillScales, NhlTFloatGenArray,
 	 sizeof(NhlPointer),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_scales),
@@ -154,7 +163,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	
-{NhlNlbDrawLabels, NhlClbDrawLabels, NhlTInteger, 
+{NhlNlbLabelsOn, NhlClbLabelsOn, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
 {NhlNlbLabelPosition, NhlClbLabelPosition, NhlTPosition, 
@@ -177,7 +186,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 {NhlNlbLabelFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.label_font),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 {NhlNlbLabelFontColor, NhlClbLabelFontColor, NhlTColorIndex, 
 	sizeof(NhlColorIndex),
 	NhlOffset(NhlLabelBarLayerRec,labelbar.label_color),
@@ -187,7 +196,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.02"),0,NULL},
 {NhlNlbLabelFontAspectF, NhlClbLabelFontAspectF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_aspect),
-	 NhlTString,_NhlUSET("1.0"),0,NULL},
+	 NhlTString,_NhlUSET("1.3125"),0,NULL},
 {NhlNlbLabelFontThicknessF, NhlClbLabelFontThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_thickness),
@@ -210,7 +219,7 @@ static NhlResource resources[] = {
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
 	 NhlTImmediate,_NhlUSET(lbDefTitle),0,(NhlFreeFunc)NhlFree},
-{NhlNlbDrawTitle, NhlClbDrawTitle, NhlTInteger, 
+{NhlNlbTitleOn, NhlClbTitleOn, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
 	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
@@ -229,7 +238,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 {NhlNlbTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.title_font),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 {NhlNlbTitleFontColor, NhlClbTitleFontColor, NhlTColorIndex, 
 	sizeof(NhlColorIndex),
 	NhlOffset(NhlLabelBarLayerRec,labelbar.title_color),
@@ -242,7 +251,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.025"),0,NULL},
 {NhlNlbTitleFontAspectF, NhlClbTitleFontAspectF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_aspect),
-	 NhlTString,_NhlUSET("1.0"),0,NULL},
+	 NhlTString,_NhlUSET("1.3125"),0,NULL},
 {NhlNlbTitleFontThicknessF, NhlClbTitleFontThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_thickness),
@@ -259,8 +268,9 @@ static NhlResource resources[] = {
 	 sizeof(char), NhlOffset(NhlLabelBarLayerRec,labelbar.title_func_code),
 	 NhlTString,_NhlUSET(":"),0,NULL},
 	
-{NhlNlbDrawBoxLines,NhlClbDrawBoxLines,NhlTBoolean, 
-	 sizeof(NhlBoolean),NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_on),
+{NhlNlbBoxLinesOn,NhlClbBoxLinesOn,NhlTBoolean, 
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
 {NhlNlbBoxLineColor, NhlClbBoxLineColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
@@ -274,12 +284,12 @@ static NhlResource resources[] = {
 	 sizeof(NhlDashIndex), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_pattern),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-{NhlNlbBoxLineDashLengthF, NhlClbBoxLineDashLengthF, NhlTFloat, 
+{NhlNlbBoxLineDashSegLenF, NhlClbBoxLineDashSegLenF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_length),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_seglen),
 	 NhlTString,_NhlUSET("0.15"),0,NULL},
 
-{NhlNlbDrawPerim, NhlClbDrawPerim, NhlTBoolean,
+{NhlNlbPerimOn, NhlClbPerimOn, NhlTBoolean,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
 {NhlNlbPerimColor, NhlClbPerimColor, NhlTColorIndex, 
@@ -301,9 +311,9 @@ static NhlResource resources[] = {
 {NhlNlbPerimDashPattern, NhlClbPerimDashPattern, NhlTDashIndex,sizeof(int), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_dash_pattern),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-{NhlNlbPerimDashLengthF, NhlClbPerimDashLengthF, NhlTFloat, 
+{NhlNlbPerimDashSegLenF, NhlClbPerimDashSegLenF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_dash_length),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_dash_seglen),
 	 NhlTString,_NhlUSET("0.15"),0,NULL},
 
 {NhlNlbFillBackground, NhlClbFillBackground, NhlTColorIndex,
@@ -320,10 +330,6 @@ static NhlResource resources[] = {
 {NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.margin_mode),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-{NhlNlbMaxLabelAngleAdditionF, NhlClbMaxLabelAngleAdditionF, NhlTFloat,
-	 sizeof(float), 
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle_add),
-	 NhlTString,_NhlUSET("0.15"),0,NULL}
 
 };
 
@@ -785,7 +791,6 @@ static NhlErrorTypes LabelBarSetValues
 	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
 	lb_p->title_angle = fmod(lb_p->title_angle,360.0);
 
-
 	ret1 = ManageDynamicArrays(new,old,args,num_args);
 	ret = MIN(ret,ret1);
 
@@ -967,8 +972,6 @@ static NhlErrorTypes    InitializeDynamicArrays
  * Then if the user has supplied a generic array copy it over the 
  * created array. Then check each element to ensure that
  * it is a valid color index.
- * Finally, create a private array for GKS color indices, convert each
- * workstation index into a GKS index, and copy into the GKS array.
  */
 
 	NhlVAGetValues(tnew->base.wkptr->base.id,
@@ -1006,18 +1009,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	lb_p->fill_colors = ga;
 
-	/* check for validity, and copy the GKS index into a private array */
-
-	if ((lb_p->gks_colors = 
-	     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
-		e_text = "%s: error creating private storage array";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
 	i_p = (int *) lb_p->fill_colors->data;
 	for (i=0; i<count; i++) {
-		if (i_p[i] < 0 || i_p[i] > len) {
+		if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 			e_text =
 	       "%s: %s index %d holds an invalid color value, %d: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -1025,8 +1019,6 @@ static NhlErrorTypes    InitializeDynamicArrays
 		        ret = MIN(ret, NhlWARNING);
 			i_p[i] = NhlLB_DEF_COLOR;
 		}
-		lb_p->gks_colors[i] =
-			_NhlGetGksCi(tnew->base.wkptr,i_p[i]);
 	}
 
 /*=======================================================================*/
@@ -1057,7 +1049,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	ga->my_data = True;
 
-/* If an item types resource array has been passed in, copy it to the ga */
+/* If a fill_patterns resource array has been passed in, copy it to the ga */
 
 	if (lb_p->fill_patterns != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->fill_patterns,
@@ -1108,7 +1100,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	ga->my_data = True;
 
-/* If an item types resource array has been passed in, copy it to the ga */
+/* If a fill scales resource array has been passed in, copy it to the ga */
 
 	if (lb_p->fill_scales != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->fill_scales,
@@ -1310,14 +1302,14 @@ static NhlErrorTypes    ManageDynamicArrays
 /*=======================================================================*/
 /*
  * Manage the colors array: if the array has changed copy the new
- * array elements, check them for validity and get the GKS index.
+ * array elements, check them for validity.
  * Then if the box count is greater than the current array size, enlarge
  * the array and give initial values to the new elements.
  */
 
 	NhlVAGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkColorMapLen, &len, NULL);
-	count = lb_p->mono_fill_color ? 1 : lb_p->box_count;
+	count = lb_p->box_count;
 
 	if (lb_p->fill_colors != olb_p->fill_colors) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->fill_colors),
@@ -1329,10 +1321,11 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lb_p->fill_colors = olb_p->fill_colors;
+		olb_p->fill_colors = NULL;
 		i_p = (int *) lb_p->fill_colors->data;
 
 		for (i=0;i<MIN(count,lb_p->fill_colors->num_elements); i++) {
-			if (i_p[i] < 0 || i_p[i] > len) {
+			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -1353,22 +1346,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				  NhlNlbFillColors);
 			return NhlFATAL;
 		}
-		if ((lb_p->gks_colors = (int *)
-		     NhlRealloc(lb_p->gks_colors, 
-				count * sizeof (int))) == NULL) {
-			e_text = "%s: error allocating private %s data";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNlbFillColors);
-			return NhlFATAL;
-		}
-		for (i=0;i<lb_p->fill_colors->num_elements; i++) {
-			lb_p->gks_colors[i] =
-				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
-		}
 		for (i=lb_p->fill_colors->num_elements; i<count; i++) {
 			i_p[i] = i < len ? i : NhlLB_DEF_COLOR;
-			lb_p->gks_colors[i] =
-				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
 		}
 
 		lb_p->fill_colors->data = (NhlPointer) i_p;
@@ -1380,7 +1359,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * Manage the fill pattern array
  */
 
-	count = lb_p->mono_fill_pattern ? 1 : lb_p->box_count;
+	count = lb_p->box_count;
 	NhlVAGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkFillTableLength, &len, NULL);
 
@@ -1395,6 +1374,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lb_p->fill_patterns = olb_p->fill_patterns;
+		olb_p->fill_patterns = NULL;
 		i_p = (int *) lb_p->fill_patterns->data;
 		for (i=0; i<MIN(count,
 				lb_p->fill_patterns->num_elements); i++) {
@@ -1433,7 +1413,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * Handle the fill scales
  */
 
-	count = lb_p->mono_fill_scale ? 1 : lb_p->box_count;
+	count = lb_p->box_count;
 
 	if (lb_p->fill_scales != olb_p->fill_scales) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->fill_scales),
@@ -1446,6 +1426,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lb_p->fill_scales = olb_p->fill_scales;
+		olb_p->fill_scales = NULL;
 		f_p = (float *) lb_p->fill_scales->data;
 		for (i=0; i<MIN(count,lb_p->fill_scales->num_elements); i++) {
 			if (f_p[i] <= 0.0) {
@@ -1506,6 +1487,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lb_p->label_strings = olb_p->label_strings;
+		olb_p->label_strings = NULL;
 	}
 
 	if (lb_p->label_strings->num_elements < count) {
@@ -1560,6 +1542,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 			return ret;
 		lb_p->box_fractions = olb_p->box_fractions;
+		olb_p->box_fractions = NULL;
 	}
 	
 	if (lb_p->box_fractions->num_elements < count) {
@@ -3792,17 +3775,17 @@ static NhlErrorTypes	LabelBarGetValues
 		ga = NULL;
 		if(args[i].quark == Qfill_patterns) {
 			ga = lb_p->fill_patterns;
-			count = lb_p->mono_fill_pattern ? 1 : lb_p->box_count;
+			count = lb_p->box_count;
 			type = NhlNlbFillPatterns;
 		}
 		else if (args[i].quark == Qfill_colors) {
 			ga = lb_p->fill_colors;
-			count = lb_p->mono_fill_color ? 1 : lb_p->box_count;
+			count = lb_p->box_count;
 			type = NhlNlbFillColors;
 		}
 		else if (args[i].quark == Qfill_scales) {
 			ga = lb_p->fill_scales;
-			count = lb_p->mono_fill_scale ? 1 : lb_p->box_count;
+			count = lb_p->box_count;
 			type = NhlNlbFillScales; 
 		}
 		else if (args[i].quark == Qlabel_strings) {
@@ -3817,9 +3800,11 @@ static NhlErrorTypes	LabelBarGetValues
 		} 
 		else if(args[i].quark == Qtitle_string) {
 			if(lb_p->title_string != NULL) {
-				(*(NhlString*)args[i].value.ptrval) = (NhlString)
-					NhlMalloc(strlen(lb_p->title_string) +1);
-				strcpy((*(NhlString*)args[i].value.ptrval),lb_p->title_string);
+				(*(NhlString*)args[i].value.ptrval) = 
+					(NhlString)
+				     NhlMalloc(strlen(lb_p->title_string) +1);
+				strcpy((*(NhlString*)args[i].value.ptrval),
+				       lb_p->title_string);
 			} else {
 				(*(NhlString*)args[i].value.ptrval) = NULL;
 			}
@@ -3988,7 +3973,7 @@ static NhlErrorTypes    LabelBarDraw
 			     NhlNwkDrawEdges, 1,
 			     NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
 			     NhlNwkEdgeThicknessF, lb_p->perim_thickness,
-			     NhlNwkEdgeDashSegLenF, lb_p->perim_dash_length,
+			     NhlNwkEdgeDashSegLenF, lb_p->perim_dash_seglen,
 			     NhlNwkEdgeColor, lb_p->perim_color,
 			     NhlNwkFillColor, lb_p->perim_fill_color,
 			     NhlNwkFillIndex, lb_p->perim_fill,
@@ -4008,7 +3993,7 @@ static NhlErrorTypes    LabelBarDraw
 		     NhlNwkDrawEdges, lb_p->box_line_on,
 		     NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
 		     NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
-		     NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_length,
+		     NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_seglen,
 		     NhlNwkEdgeColor, lb_p->box_line_color,
 		     NhlNwkFillLineThicknessF, lb_p->fill_line_thickness,
 		     NhlNwkFillBackground, lb_p->fill_background,
@@ -4038,17 +4023,17 @@ static NhlErrorTypes    LabelBarDraw
 			xpoints[4] = xpoints[0];
 			
 			if (lb_p->mono_fill_color)
-				fill_color = colors[0];
+				fill_color = lb_p->fill_color;
 			else
 				fill_color = colors[i];
 
 			if (lb_p->mono_fill_pattern)
-				fill_pattern = patterns[0];
+				fill_pattern = lb_p->fill_pattern;
 			else
 				fill_pattern = patterns[i];
 			
 			if (lb_p->mono_fill_scale)
-				fill_scale = fill_scales[0];
+				fill_scale = lb_p->fill_scale;
 			else
 				fill_scale = fill_scales[i];
 
@@ -4080,17 +4065,17 @@ static NhlErrorTypes    LabelBarDraw
 
 			
 			if (lb_p->mono_fill_color)
-				fill_color = colors[0];
+				fill_color = lb_p->fill_color;
 			else
 				fill_color = colors[i];
 
 			if (lb_p->mono_fill_pattern)
-				fill_pattern = patterns[0];
+				fill_pattern = lb_p->fill_pattern;
 			else
 				fill_pattern = patterns[i];
 			
 			if (lb_p->mono_fill_scale)
-				fill_scale = fill_scales[0];
+				fill_scale = lb_p->fill_scale;
 			else
 				fill_scale = fill_scales[i];
 
@@ -4208,7 +4193,6 @@ static NhlErrorTypes    LabelBarDestroy
 	NhlLabelBarLayer tinst = (NhlLabelBarLayer) inst;
 	NhlLabelBarLayerPart *lb_p = &(tinst->labelbar);
 	
-	NhlFree(lb_p->gks_colors);
 	if (lb_p->stride_labels != NULL)
 		NhlFree(lb_p->stride_labels);
 	if (lb_p->label_locs != NULL)

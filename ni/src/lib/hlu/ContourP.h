@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.21 1995-01-11 00:46:26 boote Exp $
+ *      $Id: ContourP.h,v 1.22 1995-02-02 17:34:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,8 @@ typedef struct _NhlcnLabelAttrs {
 	NhlTextDirection	direction;
 	NhlFont			font;
 	NhlBoolean		mono_color;
-	NhlColorIndex		*colors;
+	NhlColorIndex		color;
+	NhlColorIndex		*colors; /* cast to use for scalar gks ci */
 	float			aspect;
 	float			thickness;
 	NhlFontQuality		quality;
@@ -94,13 +95,6 @@ typedef struct _NhlcnRegionAttrs {
 	float		fill_scale;
 } NhlcnRegionAttrs;
 
-typedef struct _NhlcnFillAttrs {
-	NhlBoolean	on;
-	NhlColorIndex	color;
-	NhlFillIndex	pattern;
-	float		scale;
-} NhlcnFillAttrs;
-
 typedef struct _NhlContourDataDepLayerPart{
 	/* Public resources	*/
 
@@ -129,8 +123,6 @@ typedef struct _NhlContourLayerPart {
 	float		min_level_val;
 	NhlBoolean	max_level_set;
 	float		max_level_val;
-	NhlcnFillAttrs	below_min;
-	NhlcnFillAttrs  above_max;
 	NhlBoolean	llabel_interval_set;
 	int		llabel_interval;
 	NhlDrawOrder	label_order;
@@ -151,30 +143,37 @@ typedef struct _NhlContourLayerPart {
         NhlBoolean	check_point_distance;
         float		max_point_distance;
 
-	NhlBoolean	mono_level_flag;
-	NhlBoolean	mono_fill_color;
-	NhlBoolean	mono_fill_pattern;
-	NhlBoolean	mono_fill_scale;
-	NhlBoolean	mono_line_color;
-	NhlBoolean	mono_line_dash_pattern;
-	NhlBoolean	mono_line_thickness;
-	NhlBoolean	mono_llabel_color;
-
 	NhlGenArray	levels;
+	NhlBoolean	mono_level_flag;
+	NhlcnLevelUseMode	level_flag;
 	NhlGenArray	level_flags;
+	NhlBoolean	mono_fill_color;
+	NhlColorIndex	fill_color;
 	NhlGenArray	fill_colors;
+	NhlBoolean	mono_fill_pattern;
+	NhlFillIndex	fill_pattern;
 	NhlGenArray	fill_patterns;
+	NhlBoolean	mono_fill_scale;
+	float		fill_scale;
 	NhlGenArray	fill_scales;
 
+	NhlBoolean	mono_line_color;
 	NhlGenArray	line_colors;
+	NhlColorIndex	line_color;
+	NhlBoolean	mono_line_dash_pattern;
+	NhlDashIndex	line_dash_pattern;
 	NhlGenArray	line_dash_patterns;
+	NhlBoolean	mono_line_thickness;
+	float		line_thickness;
 	NhlGenArray	line_thicknesses;
-	NhlGenArray	llabel_strings;
+	NhlBoolean	mono_llabel_color;
+	float		llabel_color;
 	NhlGenArray	llabel_colors;
+	NhlGenArray	llabel_strings;
 
 	NhlBoolean	line_dash_seglen_set;
 	float		line_dash_seglen;
-	NhlcnLineLabelSpacingMode	llabel_spacing;
+	NhlcnLineLabelPlacementMode	llabel_placement;
 
 	NhlBoolean	low_use_high_attrs;
 	NhlBoolean	high_use_line_attrs;
@@ -236,10 +235,6 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	cprect_call_req;
 	int		ref_level;
 	float		*real_levels;
-	int		real_fill_count;
-	NhlColorIndex	*real_fill_colors;
-	NhlFillIndex	*real_fill_patterns;
-	float		*real_fill_scales;
 	NhlColorIndex	*gks_line_colors;
 	NhlColorIndex	*gks_llabel_colors;
 	NhlGenArray	dash_table;

@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.7 1994-09-23 23:36:47 dbrown Exp $
+ *      $Id: LegendP.h,v 1.8 1995-02-02 17:34:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,19 +63,26 @@ typedef struct _NhlLegendLayerPart {
 	float		title_off;
 	NhlBoundingBox	margin;
 
-	NhlGenArray	item_indexes;
 	NhlGenArray	item_strings;
 	NhlBoolean	mono_item_type;
+	NhllgItemType	item_type;
 	NhlGenArray	item_types;
+	NhlBoolean	mono_item_index;
+	int		item_index;
+	NhlGenArray	item_indexes;
 	NhlBoolean 	mono_item_color;
+	NhlColorIndex	item_color;
 	NhlGenArray	item_colors;
 	NhlBoolean	mono_item_thickness;
+	float		item_thickness;
 	NhlGenArray	item_thicknesses;
-	NhlBoolean 	mono_item_text_height;
-	NhlGenArray	item_text_heights;
+	NhlBoolean 	mono_item_font_height;
+	float		item_font_height;
+	NhlGenArray	item_font_heights;
 	NhlGenArray	label_strings;
 	NhlGenArray	item_positions;
 	NhlBoolean 	mono_item_string_color;
+	NhlColorIndex	item_string_color;
 	NhlGenArray	item_string_colors;
 
 	NhlBoolean	line_labels_on;

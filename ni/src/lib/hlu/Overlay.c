@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.30 1994-12-16 23:35:21 dbrown Exp $
+ *      $Id: Overlay.c,v 1.31 1995-02-02 17:34:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -120,13 +120,19 @@ static NhlResource resources[] = {
 	{ NhlNovLabelBarZone,NhlCovLabelBarZone,NhlTInteger,sizeof(int),
 		  Oset(labelbar_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LABELBAR_ZONE),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lbar_width_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
 		  Oset(lbar_width),
-		  NhlTString,_NhlUSET("0.2" ),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lbar_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lbar_height),
-		  NhlTString,_NhlUSET("0.5" ),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
 		 sizeof(NhlJustification),
 		 Oset(lbar_side),
@@ -149,13 +155,19 @@ static NhlResource resources[] = {
 	{ NhlNovLegendZone,NhlCovLegendZone,NhlTInteger,sizeof(int),
 		  Oset(legend_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LEGEND_ZONE),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lgnd_width_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
 		  Oset(lgnd_width),
-		  NhlTString,_NhlUSET("0.45" ),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lgnd_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lgnd_height),
-		  NhlTString,_NhlUSET("0.175" ),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
 		 sizeof(NhlPosition),
 		 Oset(lgnd_side),
@@ -273,7 +285,7 @@ static NhlResource resources[] = {
 
 /* intercepted LabelBar resources */
 
-	{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean, 
+	{NhlNlbLabelBarOn, NhlClbLabelBarOn, NhlTBoolean, 
 		 sizeof(NhlBoolean),
 		 Oset(lbar_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
@@ -288,7 +300,7 @@ static NhlResource resources[] = {
 
 /* intercepted Legend resources */
 
-	{NhlNlgLegend, NhlClgLegend, NhlTBoolean, 
+	{NhlNlgLegendOn, NhlClgLegendOn, NhlTBoolean, 
 		 sizeof(NhlBoolean),
 		 Oset(lgnd_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
@@ -707,7 +719,7 @@ OverlayClassPartInitialize
 
 	subret = _NhlRegisterChildClass(lc,NhllabelBarLayerClass,
 					False,False,
-					NhlNlbLabelBar,
+					NhlNlbLabelBarOn,
 					NhlNlbJustification,
 					NhlNlbOrientation,
 					NULL);
@@ -717,7 +729,7 @@ OverlayClassPartInitialize
 
 	subret = _NhlRegisterChildClass(lc,NhllegendLayerClass,
 					False,False,
-					NhlNlgLegend,
+					NhlNlgLegendOn,
 					NhlNlgJustification,
 					NhlNlgOrientation,
 					NULL);
@@ -780,6 +792,19 @@ OverlayInitialize
 	ovp->legend = NULL;
 	ovp->x_irr = NULL;
 	ovp->y_irr = NULL;
+
+/*
+ * Initialize unitialized resource values
+ */
+
+	if (! ovp->lbar_width_set)
+		ovp->lbar_width = 0.2;
+	if (! ovp->lbar_height_set)
+		ovp->lbar_height = 0.5;
+	if (! ovp->lgnd_width_set)
+		ovp->lgnd_width = 0.45;
+	if (! ovp->lgnd_height_set)
+		ovp->lgnd_height = 0.175;
 
 /*
  * Make sure the transformation supplied is valid
@@ -932,6 +957,15 @@ static NhlErrorTypes OverlaySetValues
 	int			i;
 	NhlBoolean		update_req = False;
 
+	if (_NhlArgIsSet(args,num_args,NhlNovLabelBarWidthF))
+	    ovp->lbar_width_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNovLabelBarHeightF))
+	    ovp->lbar_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNovLegendWidthF))
+	    ovp->lgnd_width_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNovLegendHeightF))
+	    ovp->lgnd_height_set = True;
+		
 	if (ovnew->view.use_segments != ovold->view.use_segments) {
 		ovnew->view.use_segments = ovold->view.use_segments;
 		ret = MIN(ret,NhlWARNING);
@@ -2571,6 +2605,12 @@ ManageAnnotations
 		}
 		anlp = anlp->next;
 	}
+
+	ovp->lbar_width_set = False;
+	ovp->lbar_height_set = False;
+	ovp->lgnd_width_set = False;
+	ovp->lgnd_height_set = False;
+
 	return MIN(subret,ret);
 		
 }
@@ -3658,9 +3698,9 @@ ManageLabelBar
 	}
 	if (init || ovp->display_labelbar != oovp->display_labelbar) {
 		if (ovp->display_labelbar > NhlNEVER)
-			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBar,True);
+			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,True);
 		else {
-			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBar,False);
+			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,False);
 			if (! init) 
 				return _NhlALSetValuesChild(
 						    ovp->labelbar->base.id,
@@ -3678,10 +3718,13 @@ ManageLabelBar
 
 	wold = init ? NhlOV_STD_VIEW_WIDTH : ovold->view.width;
 	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
-	if (! _NhlArgIsSet(args,num_args,NhlNovLabelBarWidthF) &&
-	    ! _NhlArgIsSet(args,num_args,NhlNovLabelBarHeightF)) {
+	if (! ovp->lbar_width_set)
 		ovp->lbar_width *= ovnew->view.width / wold;
+	if (! ovp->lbar_height_set)
 		ovp->lbar_height *= ovnew->view.height / hold;
+
+	if (! ovp->lbar_width_set && ! ovp->lbar_height_set) {
+
 		if (init || ovp->lbar_orient != oovp->lbar_orient) {
 			float t;
 
@@ -3920,9 +3963,9 @@ ManageLegend
 	}
 	if (init || ovp->display_legend != oovp->display_legend) {
 		if (ovp->display_legend > NhlNEVER)
-			NhlSetSArg(&sargs[nargs++],NhlNlgLegend,True);
+			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,True);
 		else {
-			NhlSetSArg(&sargs[nargs++],NhlNlgLegend,False);
+			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,False);
 			if (! init) 
 				return _NhlALSetValuesChild(
 						ovp->legend->base.id,
@@ -3935,12 +3978,10 @@ ManageLegend
  */
 	wold = init ? NhlOV_STD_VIEW_WIDTH : ovold->view.width;
 	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
-	if (! _NhlArgIsSet(args,num_args,NhlNovLegendWidthF) &&
-	    ! _NhlArgIsSet(args,num_args,NhlNovLegendHeightF)) {
+	if (! ovp->lgnd_width_set)
 		ovp->lgnd_width *= ovnew->view.width / wold;
+	if (! ovp->lgnd_height_set)
 		ovp->lgnd_height *= ovnew->view.height / hold;
-	}
-
 
 /*
  * Get the bounding box for the zone inside the annotation zone, 
