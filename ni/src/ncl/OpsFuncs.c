@@ -985,9 +985,9 @@ NclStackEntry _NclCreateHLUObjOp
 		break;
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+		break;
 		case NclStk_NOVAL:
 			tmp_md = NULL;
-		break;
 		break;
 		}
 		switch(resname->kind) {
