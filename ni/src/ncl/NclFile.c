@@ -585,6 +585,16 @@ int vtype;
 					has_stride = 1;
 				tmpf = (float)fabs(((float)sel->u.sub.stride));
 				n_elem =(int)(fabs(((float)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
+				if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+					return(NULL);
+				}
+				if((sel->u.sub.finish> thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.finish< 0)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+					return(NULL);
+				}
+				
+
 /*
 * set when normal subscript
 */
@@ -1047,6 +1057,9 @@ struct _NclSelectionRecord* sel_ptr;
 	index = FileIsVar(thefile,var_name);
 	if(index > -1) {
 		tmp_md = MyFileReadVarValue(thefile,var_name,sel_ptr,dim_info,FILE_VAR_ACCESS);
+		if(tmp_md == NULL) {
+			return(NULL);
+		}
 
 
 		if(thefile->file.var_att_ids[index] != -1) {
@@ -1100,10 +1113,14 @@ struct _NclSelectionRecord* sel_ptr;
 					tmp_sel.selection[0] = sel[i];
 					tmp_sel.selection[0].dim_num = 0;
 					tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_name_quark,&tmp_sel);
-					if((tmp_var->var.n_dims == 1)&&(tmp_var->var.dim_info[0].dim_size == 1)) {
-						single = 1;
+					if(tmp_var != NULL) {
+						if((tmp_var->var.n_dims == 1)&&(tmp_var->var.dim_info[0].dim_size == 1)) {
+							single = 1;
+						}
+						coords[j] = tmp_var->obj.id;
+					} else {
+						return(NULL);
 					}
-					coords[j] = tmp_var->obj.id;
 				} else {
 					coords[j] = -1;
 				}
@@ -2732,6 +2749,8 @@ struct _NclSelectionRecord* sel_ptr;
 		index = FileIsVar(thefile,coord_name);
 		tmp_md = MyFileReadVarValue(thefile,coord_name,sel_ptr,dim_info,
 			FILE_COORD_VAR_ACCESS);
+		if(tmp_md == NULL) 
+			return(NULL);
 		if(thefile->file.var_att_ids[index] != -1) {
 			att_id = thefile->file.var_att_ids[index];
 			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
