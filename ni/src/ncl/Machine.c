@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.75 1999-04-12 22:00:38 ethan Exp $
+ *      $Id: Machine.c,v 1.76 1999-06-11 22:14:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2133,7 +2133,28 @@ if(the_list != NULL) {
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 					} else {
-						_NclDestroyObj((NclObj)data.u.data_var);
+/*
+* 6/99
+* By the time it gets here the variable is a parameter that needs to be destroyed.
+* however certain conditions could exist that would require the value to not be
+* destroyed. That's what all this code is about.
+*/
+
+ 
+						if(check_ret_status) {
+							tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
+							if((tmp_md->obj.id == tmp_fp->func_ret_value.u.data_var->obj.id)&&(value_ref_count ==1)) {
+
+								data.u.data_var->obj.status = TEMPORARY;
+								tmp_md = _NclStripVarData(data.u.data_var);
+								_NclDestroyObj((NclObj)data.u.data_var);
+								
+							} else {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							}
+						} else {
+							_NclDestroyObj((NclObj)data.u.data_var);
+						}
 					}
 				} else {
 					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {

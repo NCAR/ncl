@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.56 1999-04-01 20:27:24 ethan Exp $
+ *      $Id: NclVar.c,v 1.57 1999-06-11 22:14:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1182,7 +1182,7 @@ char *dim_name;
 					tmp_var = (NclVar)_NclGetObj(self->var.coord_vars[dim_num]);
 					if(tmp_var != NULL) {
 						tmp_var->var.var_quark = dim_quark;
-						tmp_var->var.dim_info[dim_num].dim_quark = dim_quark;
+						tmp_var->var.dim_info[0].dim_quark = dim_quark;
 					}
 				}
 					
