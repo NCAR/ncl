@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.11 1995-04-19 17:20:04 kennison Exp $
+C $Id: ardbpa.f,v 1.12 1995-04-28 19:40:57 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
@@ -18,7 +18,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C The common block ARCOM1 is used to communicate with the arrow-drawing

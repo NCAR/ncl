@@ -1,5 +1,5 @@
 C
-C $Id: ardrln.f,v 1.8 1995-04-19 17:20:06 kennison Exp $
+C $Id: ardrln.f,v 1.9 1995-04-28 19:40:58 kennison Exp $
 C
       SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -42,7 +42,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

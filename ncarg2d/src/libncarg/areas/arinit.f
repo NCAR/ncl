@@ -1,5 +1,5 @@
 C
-C $Id: arinit.f,v 1.10 1995-04-19 17:20:13 kennison Exp $
+C $Id: arinit.f,v 1.11 1995-04-28 19:41:05 kennison Exp $
 C
       SUBROUTINE ARINIT (IER)
 C
@@ -9,7 +9,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

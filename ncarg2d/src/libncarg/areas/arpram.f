@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.10 1995-04-19 17:20:17 kennison Exp $
+C $Id: arpram.f,v 1.11 1995-04-28 19:41:08 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -36,7 +36,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to
@@ -1440,6 +1440,10 @@ C Pull out the group identifier for the segment.
 C
         IGI=ABS(IAM(IPT+7))
 C
+C Decide how contradictory area identifiers are to be reconciled.
+C
+        JRC=IRC(MAX(1,MIN(16,IAM(IGI)/2)))
+C
 C Decide whether to scan the subarea to the left of the edge being
 C traced (IPU=1) or the one to the right (IPU=2) and initialize the
 C area identifier.
@@ -1456,7 +1460,7 @@ C
         IAP=0
         IAX=0
 C
-        IF (.NOT.(IRC.NE.0)) GO TO 10246
+        IF (.NOT.(JRC.NE.0)) GO TO 10246
           ICN=0
           ICZ=0
           IOS=LAM-IAM(6)
@@ -1695,7 +1699,7 @@ C
 C
           IF (.NOT.(IAM(IAQ).LE.0.OR.IAM(IAQ).GE.IAM(6))) GO TO 10294
 C
-            IF (.NOT.(IRC.EQ.0)) GO TO 10295
+            IF (.NOT.(JRC.EQ.0)) GO TO 10295
 C
               IF (.NOT.(IAM(IAQ).LT.0)) GO TO 10296
                 IAI=-1
@@ -1744,12 +1748,12 @@ C If the new way of reconciling contradictory area-identifier info was
 C requested, set IAI accordingly, using the counts that were generated
 C while tracing the boundary of the area.
 C
-        IF (.NOT.(IRC.NE.0)) GO TO 10305
+        IF (.NOT.(JRC.NE.0)) GO TO 10305
           IF (.NOT.(ICN.GT.IAX)) GO TO 10306
             IAI=-1
             IAX=ICN
 10306     CONTINUE
-          IF (.NOT.(ICZ.GT.IAX.AND.IRC.EQ.2)) GO TO 10307
+          IF (.NOT.(ICZ.GT.IAX.AND.JRC.EQ.2)) GO TO 10307
             IAI= 0
             IAX=ICZ
 10307     CONTINUE

@@ -1,18 +1,18 @@
 #
-#	$Id: yMakefile,v 1.6 1993-10-19 17:26:50 boote Exp $
+#	$Id: yMakefile,v 1.7 1995-04-28 19:41:12 kennison Exp $
 #
 
 MYNAME	= areas
 
 GENERIC_SRCS = \
 	arblda.f arrat2.f ardat2.f ardbda.f ardbpa.f ardrln.f aredam.f \
-	argeti.f argetr.f argtai.f arinam.f arini2.f arinit.f armpia.f \
-	armvam.f arpram.f arscam.f arseti.f arsetr.f
+	argeti.f argetr.f argpai.f argtai.f arinam.f arini2.f arinit.f \
+	armpia.f armvam.f arpram.f arscam.f arseti.f arsetr.f
 
 GENERIC_OBJS = \
 	arblda.o arrat2.o ardat2.o ardbda.o ardbpa.o ardrln.o aredam.o \
-	argeti.o argetr.o argtai.o arinam.o arinit.o arini2.o armpia.o \
-	armvam.o arpram.o arscam.o arseti.o arsetr.o
+	argeti.o argetr.o argpai.o argtai.o arinam.o arinit.o arini2.o \
+	armpia.o armvam.o arpram.o arscam.o arseti.o arsetr.o
 
 SOURCES = $(GENERIC_SRCS)
 

@@ -1,5 +1,5 @@
 C
-C $Id: arblda.f,v 1.11 1995-04-19 17:20:01 kennison Exp $
+C $Id: arblda.f,v 1.12 1995-04-28 19:40:55 kennison Exp $
 C
       BLOCK DATA ARBLDA
 C
@@ -9,7 +9,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Below are descriptions of all the common variables and default values
@@ -65,15 +65,16 @@ C 2 if the polygon is traced clockwise (interior to the right).
 C
       DATA IDI / 0 /
 C
-C IRC is the internal parameter 'RC', which says how to reconcile
-C contradictory area-identifier information.  The default value, 0,
-C says to do it the original way, using the most recently-provided
-C piece of information for a given area.  The value 1 says to do it
-C a new way, using that area identifier seen most frequently for the
-C area, but ignoring zeroes.  The value 2 says to do it the new way,
-C but not ignore zeroes.
+C IRC is the internal parameter 'RC'.  For IGI = 1 to 16, IRC(IGI) says
+C how to reconcile contradictory area-identifier information for group
+C IGI.  (Groups with group identifiers greater than 16 are affected by
+C IRC(16).)  The default value of IRC(IGI) is zero, which says to do it
+C the original way, using the most recently-provided information for a
+C given area; the value 1 says to do it a new way, using that area
+C identifier seen most frequently for the area, but to ignore zeroes;
+C the value 2 says to do it the new way, but not to ignore zeroes.
 C
-      DATA IRC / 0 /
+      DATA IRC / 16*0 /
 C
 C RLA is the internal parameter 'AL', which specifies the length of the
 C arrowheads to be used on debug plots, stated as a fraction of the
