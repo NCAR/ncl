@@ -7,19 +7,19 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dfourinfo,DFOURINFO)(double*,int*,int*,double*,double*,
-                                         double*);
+                                         double*,double*);
 
 NhlErrorTypes fourier_info_W( void )
 {
 /*
  * Input array variables
  */
-  void *x;
-  double *tmp_x;
+  void *x, *sclphase;
+  double *tmp_x, *tmp_sclphase;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int found_missing, found_any_missing;
   NclScalar missing_x, missing_dx, missing_rx;
-  NclBasicDataTypes type_x;
+  NclBasicDataTypes type_x, type_sclphase;
   int *nhret, nht;
 /*
  * Output array variables
@@ -38,7 +38,7 @@ NhlErrorTypes fourier_info_W( void )
  */
   x = (void*)NclGetArgValue(
           0,
-          2,
+          3,
           &ndims_x,
           dsizes_x,
           &missing_x,
@@ -48,12 +48,22 @@ NhlErrorTypes fourier_info_W( void )
 
   nhret = (int*)NclGetArgValue(
           1,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  sclphase = (void*)NclGetArgValue(
           2,
+          3,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_sclphase,
           2);
 
 /*
@@ -86,8 +96,7 @@ NhlErrorTypes fourier_info_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
- * Coerce data to double no matter what, since input array also becomes
- * output array. 
+ * Coerce input array and constant to double if necessary.
  */
   if(type_x != NCL_double) {
     tmp_x = (double*)calloc(npts,sizeof(double));
@@ -95,6 +104,22 @@ NhlErrorTypes fourier_info_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
+  }
+
+  if(type_sclphase != NCL_double) {
+    tmp_sclphase = (double*)calloc(1,sizeof(double));
+    if( tmp_sclphase == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Unable to allocate memory for coercing input to double precision");
+      return(NhlFATAL);
+    }
+    coerce_subset_input_double(sclphase,tmp_sclphase,0,type_sclphase,1,0,
+			       NULL,NULL);
+  }
+  else {
+/*
+ * Point temporary array to appropriate location.
+ */
+    tmp_sclphase = &((double*)sclphase)[0];
   }
 /*
  * Allocate space for output array and other output variables. 
@@ -169,7 +194,8 @@ NhlErrorTypes fourier_info_W( void )
     }
     else {
 
-      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,tmp_amp,tmp_pha,tmp_pcv);
+      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,tmp_sclphase,tmp_amp,
+				   tmp_pha,tmp_pcv);
 
       if(type_finfo != NCL_double) {
         for(j = 0; j < nht; j++) {
