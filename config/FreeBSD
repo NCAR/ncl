@@ -1,0 +1,54 @@
+/*
+ *      $Id: FreeBSD,v 1.1 2003-11-26 21:59:33 grubin Exp $
+ */
+/************************************************************************
+*                                                                       *
+*                Copyright (C)  2003                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
+************************************************************************/
+/*
+ *  File:           FreeBSD
+ *
+ *  Author:         Rick Grubin 
+ *          	    National Center for Atmospheric Research
+ *          	    POB 3000, Boulder, Colorado
+ *
+ *  Date:           $Date: 2003-11-26 21:59:33 $ 
+ *
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how FreeBSD is different from a
+ *                  default setup.
+ */
+
+# define    HdfDefines  -DFreeBSD
+# define    StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -DFreeBSD -DUNIX386 -D__EMX__
+# define    ByteSwapped
+# define    Cstatic
+# define    Cdynamic
+# define    CppCommand  '/usr/bin/cpp -traditional'
+# define    CCompiler   gcc
+# define    FCompiler   g77
+# define    CtoFLibraries   -lg2c -lgcc -lm
+# define    CcOptions       -ansi -Df2cFortran
+# define    XToolLibrary    -lXt -lSM -lICE
+# define    BuildShared NO
+# define    XLibrary    -lX11 -lXext
+
+# define    ArchRecLibSearch    -L/usr/X11R6/lib -L/custom/lib
+# define    ArchRecIncSearch    -I/usr/X11R6/include -I/custom/include
+
+FC = $(F77)
+
+/*************** Redefine Macros from Rules ********************************/
+
+/*
+ * Macro:       MakeDir
+ *
+ * Description: This rule creates a directory - if a parent dir doesn't exist
+ *              it attempts to create it.
+ */
+# ifndef MakeDir
+# define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+# endif /* MakeDir */

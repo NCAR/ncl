@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.42 2002-06-20 22:17:18 haley Exp $
+#	$Id: ymake,v 1.43 2003-11-26 21:59:33 grubin Exp $
 #
 ######################################################################
 #
@@ -30,6 +30,7 @@
 #		Revised November 1989
 #		Significant re-write/additions to allow an installed
 #			version May 93 (boote)
+#		Added option for FreeBSD operating system 2003 (grubin)
 #
 # Warning:	This script WILL overwrite the existing
 #		Makefile IF a yMakefile exists!
@@ -266,6 +267,7 @@ case ULTRIX:
 case HP-UX:
 case OSF1:
 case Linux:
+case FreeBSD:
 case Darwin:
         set opsys = $foo
         breaksw
@@ -371,6 +373,25 @@ case    Linux:
             set arch    = $mach
             set sysincs = YDLINUX
             set vendor  = APPLE
+            breaksw
+        default:
+            echo "$0 : Unknown machine type" > /dev/tty
+            exit 1
+        endsw
+
+        breaksw
+
+case    FreeBSD:
+        set os = $opsys
+
+        switch ("$mach")
+        case    i*86:
+        case    i*64:
+        case    alpha:
+            set model   = $mach
+            set arch    = $mach
+            set sysincs = FreeBSD
+            set vendor  = IBM
             breaksw
         default:
             echo "$0 : Unknown machine type" > /dev/tty
@@ -617,6 +638,7 @@ case    UNICOS:
         set cppopt = -N
         breaksw
 case    Linux:
+case	FreeBSD:
 case    CYGWIN:
         set cppopt = -traditional
         breaksw

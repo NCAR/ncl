@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.19 2003-10-31 00:34:04 haley Exp $
+ *      $Id: yMakefile,v 1.20 2003-11-26 21:59:33 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@ CONFIG-PROGRAMS	= ymake-filter fcpp callconv ymake-install ldrel
 
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray \
 			HPUX_snake Sun4 SGI_IRIX \
-			Sun4Solaris Darwin LINUX SystemV
+			Sun4Solaris Darwin LINUX FreeBSD SystemV
 LIBFILES	=	SGILib LinuxLib
 YMAKEFILES	=	Project Rules SiteFileName Template
 CONFIGFILES	=	$(ARCHFILES) $(LIBFILES) $(YMAKEFILES)
