@@ -128,6 +128,7 @@ struct _GribParamList {
 	int level_indicator;
 	GIT minimum_it;
 	NclGribFVarRec var_info;
+	NrmQuark aux_coords[2];
 	int yymmddhh_isatt;
 	NclOneDValCoordData yymmddhh;
 	GIT *it_vals;

@@ -1098,6 +1098,27 @@ GribFileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 
+/*
+ * if 2D coordinates, this adds the CF compliant attribute "coordinates", to point to the
+ * auxiliary coordinate variables
+ */
+
+		if (step->aux_coords[0] != NrmNULLQUARK) {
+			char buffer[80];
+
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("coordinates");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			sprintf(buffer,"%s %s",NrmQuarkToString(step->aux_coords[0]),
+				NrmQuarkToString(step->aux_coords[1]));
+			*tmp_string = NrmStringToQuark(buffer);		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
 		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
@@ -1407,7 +1428,7 @@ GribFileRecord *therec;
 
 	while(step != NULL) {
 		current_dim = 0;
-
+		step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
 		if(!step->yymmddhh_isatt) {
 			dstep = therec->it_dims;
 			for(i = 0; i < therec->n_it_dims; i++) {
@@ -1988,6 +2009,7 @@ GribFileRecord *therec;
 						} else {
 							sprintf(buffer,"gridlon_%d",step->grid_number);
 						}
+						step->aux_coords[1] = NrmStringToQuark(buffer);
 						tmp_file_dim_numbers[0] = therec->total_dims;
 						tmp_file_dim_numbers[1] = therec->total_dims+ 1;
 
@@ -2011,6 +2033,7 @@ GribFileRecord *therec;
 														NULL,
 														nclTypefloatClass),lon_att_list_ptr,nlonatts);
 						NclFree(dimsizes_lon);
+						
 						if((step->has_gds)&&(step->grid_number == 255)) {
 							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 						} else {
@@ -2034,6 +2057,7 @@ GribFileRecord *therec;
 						} else {
 							sprintf(buffer,"gridlat_%d",step->grid_number);
 						}
+						step->aux_coords[0] = NrmStringToQuark(buffer);
 						tmp_float = NclMalloc((unsigned)sizeof(float)*4);
 						tmp_float[0] = tmp_lat[0];
 						tmp_float[1] = tmp_lat[dimsizes_lat[1]-1];
@@ -2060,20 +2084,35 @@ GribFileRecord *therec;
 						is_err = NhlFATAL;
 					}
 				} else {
+					GribInternalVarList	*iv;
+					int dnum1, dnum2;
+					int count = 0;
 					if(dstep->dim_inq->is_gds==50) {
 						step->var_info.dim_sizes[current_dim+1] = dstep->dim_inq->size;
-						step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
+						dnum1 = step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
 						step->var_info.dim_sizes[current_dim+2] = dstep->next->dim_inq->size;
-						step->var_info.file_dim_num[current_dim+2] = dstep->next->dim_inq->dim_number;
+						dnum2 = step->var_info.file_dim_num[current_dim+2] = dstep->next->dim_inq->dim_number;
 						step->var_info.dim_sizes[current_dim] = 2;
 						step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number-1;
 						step->var_info.doff = 2;
 					} else {
 						step->var_info.dim_sizes[current_dim] = dstep->dim_inq->size;
-						step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+						dnum1 = step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
 						step->var_info.dim_sizes[current_dim+1] = dstep->next->dim_inq->size;
-						step->var_info.file_dim_num[current_dim+1] = dstep->next->dim_inq->dim_number;
+						dnum2 = step->var_info.file_dim_num[current_dim+1] = dstep->next->dim_inq->dim_number;
 						step->var_info.doff = 1;
+					}
+					/* find the auxiliary coordinate variables if they exist */
+					for (iv = therec->internal_var_list; iv != NULL; iv = iv->next) {
+						if (iv->int_var->var_info.num_dimensions != 2)
+							continue;
+						if ( !(iv->int_var->var_info.file_dim_num[0] == dnum1 &&
+						       iv->int_var->var_info.file_dim_num[1] == dnum2)) 
+							continue;
+						if (count < 2) {
+							step->aux_coords[count] = iv->int_var->var_info.var_name_quark;
+							count++;
+						}
 					}
 				}
 			}
