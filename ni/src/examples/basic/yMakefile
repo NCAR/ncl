@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.10 1995-08-22 15:50:59 haley Exp $
+#   $Id: yMakefile,v 1.11 1995-09-19 15:26:15 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -13,13 +13,13 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c basic06c.c \
            basic07c.c
 FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f basic06f.f \
-           basic07f.f
+           basic07f.f basic08f.f
 NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl \
 	   basic06n.ncl basic07n.ncl basic08n.ncl
 COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o basic06c.o \
            basic07c.o
 FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o basic06c.o \
-           basic07f.o
+           basic07f.o basic08f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
 RESFILES = basic03.res basic07.res
@@ -43,6 +43,7 @@ FExampleTarget(basic04f,basic04f.o)
 FExampleTarget(basic05f,basic05f.o)
 FExampleTarget(basic06f,basic06f.o)
 FExampleTarget(basic07f,basic07f.o)
+FExampleTarget(basic08f,basic08f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
