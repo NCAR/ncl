@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.2 1994-10-31 14:31:34 haley Exp $
+#	$Id: yMakefile,v 1.3 1995-06-13 23:54:18 haley Exp $
 #
 
-TUTOR = c_colcon.c
+SRCS = c_colcon.c
+OBJS = c_colcon.o
 
-InstallTarget($(TUTOR),$(INSTALL_LIB),$(TUTORIALPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+
+CExampleTarget(c_colcon,c_colcon.o)

@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.6 1994-11-03 21:01:01 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-13 23:54:58 haley Exp $
 #
 
-EXAMPLES = c_fcoord2.c
+SRCS = c_fcoord2.c
+OBJS = c_fcoord2.o
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_fcoord2,c_fcoord2.o)

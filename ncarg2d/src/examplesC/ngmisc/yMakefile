@@ -1,8 +1,16 @@
 #
-#	$Id: yMakefile,v 1.3 1994-11-03 20:51:57 haley Exp $
+#	$Id: yMakefile,v 1.4 1995-06-13 23:54:43 haley Exp $
 #
 
-EXAMPLES = c_fngwsym.c
+SRCS = c_fngwsym.c
+OBJS = c_fngwsym.o
 
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_fngwsym,c_fngwsym.o)

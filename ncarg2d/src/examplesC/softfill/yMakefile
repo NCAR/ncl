@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.2 1994-10-31 04:04:08 haley Exp $
+#	$Id: yMakefile,v 1.3 1995-06-13 23:54:55 haley Exp $
 #
 
-EXAMPLES = c_sfex02.c
+SRCS = c_sfex02.c
+OBJS = c_sfex02.o
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_sfex02,c_sfex02.o)

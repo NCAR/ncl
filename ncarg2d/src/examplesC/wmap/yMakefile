@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.7 1994-12-22 16:31:14 haley Exp $
+#	$Id: yMakefile,v 1.8 1995-06-13 23:55:14 haley Exp $
 #
 
-EXAMPLES = c_wmex09.c
+SRCS = c_wmex09.c
+OBJS = c_wmex09.o
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_wmex09,c_wmex09.o)

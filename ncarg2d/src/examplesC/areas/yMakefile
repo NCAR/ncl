@@ -1,9 +1,15 @@
 #
-#	$Id: yMakefile,v 1.7 1994-11-03 18:22:37 haley Exp $
+#	$Id: yMakefile,v 1.8 1995-06-13 23:54:05 haley Exp $
 #
 
-TESTS = c_tareas.c
+SRCS = c_tareas.c
+OBJS = c_tareas.o
 
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
 
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
 
+CExampleTarget(c_tareas,c_tareas.o)

@@ -1,9 +1,15 @@
 #
-#	$Id: yMakefile,v 1.6 1994-11-03 18:49:36 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-13 23:54:16 haley Exp $
 #
 
-EXAMPLES = c_coex02.c
+SRCS = c_coex02.c
+OBJS = c_coex02.o
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
 
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
+CExampleTarget(c_coex02,c_coex02.o)

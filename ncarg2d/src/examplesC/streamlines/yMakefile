@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.6 1994-11-03 21:05:01 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-13 23:55:00 haley Exp $
 #
 
-EXAMPLES = c_ffex03.c
+SRCS = c_ffex03.c
+OBJS = c_ffex03.o
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_ffex03,c_ffex03.o)

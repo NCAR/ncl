@@ -1,7 +1,15 @@
 #
-#	$Id: yMakefile,v 1.2 1994-10-31 03:23:37 haley Exp $
+#	$Id: yMakefile,v 1.3 1995-06-13 23:54:24 haley Exp $
 #
 
-TESTS = c_tdshpk.c
+SRCS = c_tdshpk.c
+OBJS = c_tdshpk.o
 
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
+PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
+
+CExampleTarget(c_tdshpk,c_tdshpk.o)
