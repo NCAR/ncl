@@ -1,3 +1,6 @@
+C
+C	$Id: periml.f,v 1.3 1992-09-04 20:41:01 ncargd Exp $
+C
 
       SUBROUTINE PERIML (MJRX,MNRX,MJRY,MNRY)
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,1,1,5,0.,0.)

@@ -1,3 +1,6 @@
+C
+C	$Id: tick4.f,v 1.3 1992-09-04 20:41:02 ncargd Exp $
+C
 
       SUBROUTINE TICK4 (LMJX,LMNX,LMJY,LMNY)
 C

@@ -1,4 +1,7 @@
 C
+C	$Id: arini2.f,v 1.2 1992-09-04 20:31:25 ncargd Exp $
+C
+C
 C The subroutine ARINI2.
 C --- ---------- -------
 C

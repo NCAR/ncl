@@ -1,3 +1,6 @@
+C
+C	$Id: grid.f,v 1.3 1992-09-04 20:40:49 ncargd Exp $
+C
 
       SUBROUTINE GRID (MJRX,MNRX,MJRY,MNRY)
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,0,0,0,0.,0.)

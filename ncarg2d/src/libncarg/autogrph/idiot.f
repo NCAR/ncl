@@ -1,4 +1,7 @@
 C
+C	$Id: idiot.f,v 1.3 1992-09-04 20:33:19 ncargd Exp $
+C
+C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE IDIOT (XDRA,YDRA,NPTS,LTYP,LDSH,LABX,LABY,LABG,LFRA)

@@ -1,3 +1,6 @@
+C
+C	$Id: gabldt.f,v 1.3 1992-09-04 20:40:34 ncargd Exp $
+C
 
 
       BLOCK DATA GABLDT

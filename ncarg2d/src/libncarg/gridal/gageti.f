@@ -1,3 +1,6 @@
+C
+C	$Id: gageti.f,v 1.2 1992-09-04 20:40:39 ncargd Exp $
+C
 
       SUBROUTINE GAGETI (PNAM,IVAL)
 C

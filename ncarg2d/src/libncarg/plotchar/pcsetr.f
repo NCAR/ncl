@@ -1,4 +1,7 @@
 C
+C	$Id: pcsetr.f,v 1.3 1992-09-04 20:46:18 ncargd Exp $
+C
+C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE PCSETR (WHCH,RVAL)

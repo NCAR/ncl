@@ -1,4 +1,7 @@
 C
+C	$Id: ezmxy.f,v 1.3 1992-09-04 20:33:12 ncargd Exp $
+C
+C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE EZMXY (XDRA,YDRA,IDXY,MANY,NPTS,LABG)

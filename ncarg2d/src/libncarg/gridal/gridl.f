@@ -1,3 +1,6 @@
+C
+C	$Id: gridl.f,v 1.3 1992-09-04 20:40:53 ncargd Exp $
+C
 
       SUBROUTINE GRIDL (MJRX,MNRX,MJRY,MNRY)
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,1,1,0,0.,0.)

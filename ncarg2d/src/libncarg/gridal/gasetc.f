@@ -1,3 +1,6 @@
+C
+C	$Id: gasetc.f,v 1.2 1992-09-04 20:40:44 ncargd Exp $
+C
 
       SUBROUTINE GASETC (PNAM,CVAL)
 C

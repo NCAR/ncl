@@ -1,3 +1,6 @@
+C
+C	$Id: gaseti.f,v 1.2 1992-09-04 20:40:46 ncargd Exp $
+C
 
       SUBROUTINE GASETI (PNAM,IVAL)
 C

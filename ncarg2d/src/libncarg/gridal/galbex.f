@@ -1,3 +1,6 @@
+C
+C	$Id: galbex.f,v 1.3 1992-09-04 20:40:42 ncargd Exp $
+C
 
       SUBROUTINE GALBEX (LABL,MLBL,NLBL)
 C

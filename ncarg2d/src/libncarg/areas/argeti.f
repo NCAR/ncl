@@ -1,4 +1,7 @@
 C
+C	$Id: argeti.f,v 1.3 1992-09-04 20:31:23 ncargd Exp $
+C
+C
 C The subroutine ARGETI.
 C --- ---------- -------
 C

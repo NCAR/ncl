@@ -1,3 +1,6 @@
+C
+C	$Id: gacolr.f,v 1.3 1992-09-04 20:40:36 ncargd Exp $
+C
 
       SUBROUTINE GACOLR (KAXS,KLBL,KMJT,KMNT)
 C

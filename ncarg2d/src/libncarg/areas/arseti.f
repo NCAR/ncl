@@ -1,4 +1,7 @@
 C
+C	$Id: arseti.f,v 1.3 1992-09-04 20:31:31 ncargd Exp $
+C
+C
 C The subroutine ARSETI.
 C --- ---------- -------
 C

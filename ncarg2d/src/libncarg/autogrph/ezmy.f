@@ -1,4 +1,7 @@
 C
+C	$Id: ezmy.f,v 1.3 1992-09-04 20:33:14 ncargd Exp $
+C
+C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE EZMY (YDRA,IDXY,MANY,NPTS,LABG)

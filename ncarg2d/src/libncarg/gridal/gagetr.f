@@ -1,3 +1,6 @@
+C
+C	$Id: gagetr.f,v 1.2 1992-09-04 20:40:41 ncargd Exp $
+C
 
       SUBROUTINE GAGETR (PNAM,RVAL)
 C

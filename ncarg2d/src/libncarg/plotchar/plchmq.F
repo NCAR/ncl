@@ -1,4 +1,7 @@
 C
+C	$Id: plchmq.F,v 1.3 1992-09-04 20:46:25 ncargd Exp $
+C
+C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)

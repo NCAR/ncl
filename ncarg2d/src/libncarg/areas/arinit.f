@@ -1,4 +1,7 @@
 C
+C	$Id: arinit.f,v 1.3 1992-09-04 20:31:26 ncargd Exp $
+C
+C
 C The subroutine ARINIT
 C --- ---------- -------
 C

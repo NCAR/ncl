@@ -1,4 +1,7 @@
 C
+C	$Id: supmap.f,v 1.3 1992-09-04 20:38:48 ncargd Exp $
+C
+C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,

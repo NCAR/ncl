@@ -1,3 +1,6 @@
+C
+C	$Id: gasetr.f,v 1.2 1992-09-04 20:40:47 ncargd Exp $
+C
 
       SUBROUTINE GASETR (PNAM,RVAL)
 C

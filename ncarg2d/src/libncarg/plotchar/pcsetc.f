@@ -1,4 +1,7 @@
 C
+C	$Id: pcsetc.f,v 1.3 1992-09-04 20:46:16 ncargd Exp $
+C
+C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE PCSETC (WHCH,CVAL)

@@ -1,4 +1,7 @@
 C
+C	$Id: ardbpa.f,v 1.3 1992-09-04 20:31:21 ncargd Exp $
+C
+C
 C The subroutine ARDBPA.
 C --- ---------- -------
 C
