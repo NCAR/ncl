@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.17 1999-11-19 02:10:06 dbrown Exp $
+ *      $Id: ncledit.c,v 1.18 2000-02-08 01:29:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,9 @@
 
 static char RSTSTR[] = "You must finish entering block, or press reset";
 static char ERRSTR[] = "Error!";
+
+static int ErrSuppressions[] = 
+{ NhlENODATA,NhlECONSTFIELD,NhlEZEROFIELD,NhlEZEROSPAN,0 };
 
 #define	Oset(field)	NhlOffset(NgNclEditRec,ncledit.field)
 static NhlResource resources[] = {
@@ -167,6 +170,8 @@ NEInitialize
 					np->outputcb = np->erroutputcb = NULL;
 
 	np->error_bell_on = np->error_popup_on = True;
+	np->suppress_err = False;
+	np->err_suppressions = ErrSuppressions;
 
 	return NhlNOERROR;
 }
@@ -574,11 +579,19 @@ ErrOutputCB
 	char		buffer[NhlERRMAXMSGLEN+1];
 	char		*nl;
 	int		len;
+	NhlErrMsg	*emsg = (NhlErrMsg*)cbdata.ptrval;
+	int		errno,i;
 
 	if(!np->do_output)
 		return;
-
-	NhlErrSPrintMsg(buffer,(NhlErrMsg*)cbdata.ptrval);
+	for (i = 0; np->err_suppressions[i] != 0; i++) {
+		if (emsg->errorno == np->err_suppressions[i]) {
+			np->suppress_err = True;
+			break;
+		}
+	}
+	NhlErrSPrintMsg(buffer,emsg);
+	
 	len = strlen(buffer);
 	if(len < 1)
 		return;
@@ -723,10 +736,13 @@ PromptCB
 	msg = np->cstr;
 
 	if(prompt->err){
-		if (np->error_bell_on)
-			XBell(ncl->go.x->dpy,0);
-		if (np->error_popup_on)
-			NgGOPopup(ncl->base.id);
+		if (! np->suppress_err) {
+			if (np->error_bell_on)
+				XBell(ncl->go.x->dpy,0);
+			if (np->error_popup_on)
+				NgGOPopup(ncl->base.id);
+		}
+		np->suppress_err = False;
 		msg = np->estr;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.21 2000-01-27 17:44:37 dbrown Exp $
+ *      $Id: plotapp.c,v 1.22 2000-02-08 01:29:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2992,7 +2992,6 @@ static NhlBoolean MatchPattern
 	NhlString	*patterns = NULL;
 	int		pat_count = 0;
 	_NhlConvertContext context = NULL;
-	int i;
 	NhlBoolean matched = False;
 	
 	for (datares = appdata->datares; datares; datares = datares->next) {
@@ -4035,8 +4034,6 @@ static NhlString SetFuncInfo
 	for (i = 0; i < finfo->nparams; i++) {
 		AppResSymRef sref = NULL;
 		NclApiArgTemplate *arg = &finfo->theargs[i];
-		char *name = "unknown";
-		char *type = "any";
 		NhlBoolean single_term_param = False;
 		NgArgInfo arginfo = &rinfo->args[i];
 
@@ -4248,29 +4245,47 @@ static void SubstituteVarSyms
 		AppObjRes res;
 		AppResSymRef sref;
 		ResFunc rfuncs = NULL;
-		ResFunc	rfunc;
 		int single_term = False;
 		NhlBoolean	init = False;
+		NgVarDataSetState set_state;
+		NhlString bogus_str = NULL;
+		NhlBoolean bogus_val = False;
+		NhlString newval = NULL;
+		NhlBoolean is_func = False;
 
-/*
- * Eventually we will try to figure out whether user expressions contain
- * references to the plot app objects or data, but for now just leave them
- * alone.
- */		
 		if (! (rinfo && rinfo->rdata))
 			continue;
 		res = (AppObjRes) rinfo->rdata;
+		set_state = ditem->vdata->set_state;
 
 		if (res->bogus ||
-		    ditem->vdata->set_state == _NgBOGUS_EXPRESSION ||
-		    ditem->vdata->set_state == _NgUSER_DISABLED)
+		    set_state == _NgUSER_DISABLED)
 			continue;
-
-		if (ditem->vdata->set_state == _NgVAR_UNSET)
+		/*
+		 * If it's bogus currently, a change in a symref substitution
+		 * could make it okay (the user has taken corrective action),
+		 * so go through the substitution and see if the value
+		 * changes. If it does change the set_state.
+		 */
+		if (set_state == _NgBOGUS_EXPRESSION) {
+			if (! res->symrefs)
+				continue;
+			bogus_val = True;
+			if (ditem->vdata->expr_val) {
+				bogus_str = NhlMalloc
+					(strlen(ditem->vdata->expr_val)+1);
+				if (! bogus_str) {
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return;
+				}
+				strcpy(bogus_str,ditem->vdata->expr_val);
+			}
+			set_state = rinfo->last_state;
+		}
+		if (set_state == _NgVAR_UNSET)
 			init = True;
-		if (ditem->vdata->set_state == _NgUSER_EXPRESSION) {
+		if (set_state == _NgUSER_EXPRESSION) {
 			int bogus, bogus_pos;
-			NhlString newval = NULL;
 			NhlString inval;
 
 			if (rinfo->edata) {
@@ -4285,6 +4300,8 @@ static void SubstituteVarSyms
 				 inval,&bogus_pos,&rfuncs);
 			if (bogus) {
 				FreeResFuncs(rfuncs);
+				if (bogus_str)
+					NhlFree(bogus_str);
 				continue;
 			}
 			if (rfuncs) {
@@ -4292,80 +4309,83 @@ static void SubstituteVarSyms
 					(papp,rfuncs,rinfo,plotname,
 					 inval,True);
 				if (newval) {
-					rinfo->valtype = _NgFUNC;
+					is_func = True;
 					FreeResFuncs(rfuncs);
 					NgSetExpressionVarData
 						(papp->go_id,ditem->vdata,
 						 newval,_NgNOEVAL,True);
-					NhlFree(newval);
-					if (init) {
-						rinfo->init_state = 
-							rinfo->last_state = 
-						      ditem->vdata->set_state;
-					}
-					continue;
 				}
 			}
-			if (rinfo->edata) {
-				EditInfo einfo = (EditInfo) rinfo->edata;
-
-				newval = SubstituteExpression
-					(papp,plotname,rinfo,einfo->srefs,
-					 rfuncs,einfo->value,NULL,
-					 &single_term,&sref);
+			if (newval) {
+				NhlFree(newval);
 			}
 			else {
-				newval = inval;
-			}
-			if (newval) {
-				NgSetExpressionVarData
-					(papp->go_id,ditem->vdata,
-					 newval,_NgNOEVAL,True);
-				NhlFree(newval);
+				if (rinfo->edata) {
+					EditInfo einfo = 
+						(EditInfo) rinfo->edata;
+
+					newval = SubstituteExpression
+						(papp,plotname,rinfo,
+						 einfo->srefs,
+						 rfuncs,einfo->value,NULL,
+						 &single_term,&sref);
+				}
+				else {
+					newval = inval;
+				}
+				if (newval) {
+					NgSetExpressionVarData
+						(papp->go_id,ditem->vdata,
+						 newval,_NgNOEVAL,True);
+					NhlFree(newval);
+				}
 			}
 			if (rfuncs)
 				FreeResFuncs(rfuncs);
 		}
 		else {
 			if (res->rfuncs) {	
-				NhlString newval;
-
 				newval = SetFuncInfo
 					(papp,res->rfuncs,
 					 rinfo,plotname,res->value,False);
 				if (newval) {
-					rinfo->valtype = _NgFUNC;
+					is_func = True;
 					NgSetExpressionVarData
 						(papp->go_id,
 						 ditem->vdata,newval,
 						 _NgNOEVAL,False);
-					NhlFree(newval);
-					if (init) {
-						rinfo->init_state = 
-							rinfo->last_state = 
-						     ditem->vdata->set_state;
-					}
-					continue;
 				}
 			}
-			if (! UpdateBufSize(strlen(res->value),
-					    &Buffer,&BufSize))
-				return;
-			strcpy(Buffer,res->value);
-			for (sref = res->symrefs; sref; sref = sref->next) {
-				status = ReplaceSymRef
-					(papp,sref,plotname,-1,
-					 &Buffer,&BufSize,&single_term);
-				if (! status || single_term)
-					break;
+			if (newval) {
+				NhlFree(newval);
 			}
-			if (status) {
-				NgSetExpressionVarData
-					(papp->go_id,
-					 ditem->vdata,Buffer,_NgNOEVAL,False);
+			else {
+				if (! UpdateBufSize(strlen(res->value),
+					    &Buffer,&BufSize))
+					return;
+				strcpy(Buffer,res->value);
+				for (sref = res->symrefs; 
+				     sref; sref = sref->next) {
+					status = ReplaceSymRef
+						(papp,sref,plotname,-1,
+						 &Buffer,&BufSize,
+						 &single_term);
+					if (! status || single_term)
+						break;
+				}
+				if (status) {
+					NgSetExpressionVarData
+						(papp->go_id,
+						 ditem->vdata,Buffer,
+						 _NgNOEVAL,False);
+				}
 			}
 		}
-		if (single_term && sref) {
+
+		if (is_func) {
+			rinfo->valtype = _NgFUNC;
+		}
+		else if (single_term && sref) {
 			if (sref->kind == OBJ_REF) 
 				rinfo->valtype = _NgOBJ_REF;
 			else if (sref->rtype == REF_REGULAR)
@@ -4382,6 +4402,14 @@ static void SubstituteVarSyms
 		}
 		else {
 			rinfo->valtype = _NgEXPR;
+		}
+		if (bogus_val) {
+			if (bogus_str) {
+				if (! strcmp(bogus_str,ditem->vdata->expr_val))
+					ditem->vdata->set_state =
+						_NgBOGUS_EXPRESSION;
+				NhlFree(bogus_str);
+			}
 		}
 		if (init) {
 			rinfo->init_state = rinfo->last_state = 
@@ -4853,7 +4881,7 @@ AppResSymRef BackSubstitute
 )
 {
 	char *rcp;
-	int offset,i,ix;
+	int offset,i;
 	AppObjRes 	res;
 	int	newlen;
 	AppResSymRef 	sref = NULL;
@@ -4868,7 +4896,6 @@ AppResSymRef BackSubstitute
 	for (i = 0; i < sri->count; i++) {
 		if (offset == sri->rep_offset[i]) {
 			sref = sri->sref[i];
-			ix = i;
 			break;
 		}
 	}
@@ -4929,7 +4956,6 @@ static int symref_comp
 {
         const AppResSymRef sref1 = *(AppResSymRef *) p1;
         const AppResSymRef sref2 = *(AppResSymRef *) p2;
-        int ret;
 
 	if (sref1->offset < sref2->offset)
 		return 1;
@@ -4962,7 +4988,6 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 {
 	PlotApp		papp = PlotAppList;
 	int		i;
-	NhlString	value_out = value;
 	NhlString	new_value = NULL;
 	int		size_out = 0;
 	int		value_len;
@@ -4972,7 +4997,6 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 	AppObjRes 	res;
 	ResFunc 	res_func;
 	NhlString	ref_val;
-	int		ref_val_size;
 	NhlBoolean	single_term = False;
 	AppResSymRef 	sref = NULL;
 	SymRefInfoRec 	symref_info;
@@ -5059,7 +5083,6 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 
 	for (i = 0; i < dprof->plotdata_count; i++) {
 		NgPlotData	plotdata = &dprof->plotdata[i];
-		NhlString 	vname,fname = NULL;
 		char		*cp,*endp;
 		NhlBoolean	is_subsection;
 
@@ -5076,7 +5099,6 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 		       (cp,plotdata->vdata,&endp,&is_subsection)) {
 			int len = endp - cp;
 			int newlen;
-			NhlString varsym;
 			int j,lendiff,n_to_move;
 
 			if (! UpdateBufSize(len,&buf,&bufsize))

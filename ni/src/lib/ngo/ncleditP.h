@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.8 1999-02-27 03:18:33 dbrown Exp $
+ *      $Id: ncleditP.h,v 1.9 2000-02-08 01:29:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,6 +89,8 @@ typedef struct _NgNclEditPart {
 
 	NhlBoolean	error_bell_on;
 	NhlBoolean	error_popup_on;
+	NhlBoolean	suppress_err;
+	int		*err_suppressions;
 
 } NgNclEditPart;
 
