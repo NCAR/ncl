@@ -1,5 +1,5 @@
 ;
-;      $Id: xy10n.ncl,v 1.3 1996-05-03 00:42:15 ethan Exp $
+;      $Id: xy10n.ncl,v 1.4 1996-05-03 00:43:53 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -64,14 +64,12 @@ begin
     lat = lat < 90.0
     lat@_FillValue = 90.0
     lat@_FillValue = spvlt
-    print(lat)
 
     lon = lon > -180.0
     lon@_FillValue = -180.0
     lon = lon < 180.0
     lon@_FillValue = 180.0
     lon@_FillValue = spvln
-    print(lon)
     
 end
 
