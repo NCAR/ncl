@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.92 1998-01-20 22:48:08 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.93 1998-02-03 00:26:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5427,18 +5427,27 @@ NhlErrorTypes _NclIstringtolong
                 total *= dimsizes[i];
         }
 	out_val = (long*) NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
+	missing2 = ((NclTypeClass)nclTypelongClass)->type_class.default_mis;
 	if(has_missing) {
-		missing2 = ((NclTypeClass)nclTypelongClass)->type_class.default_mis;
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.longval;
 			} else {
-				sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]));
+				if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+					out_val[i] = missing2.longval;
+
+				}
 			}
 		}
 	}  else {
 		for(i = 0; i < total; i++) {
-			sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]));
+			if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+				has_missing = 1;
+				out_val[i] = missing2.longval;
+		
+			}
 		}
 	}
 	return(NclReturnValue(
@@ -5478,18 +5487,28 @@ NhlErrorTypes _NclIstringtoshort
                 total *= dimsizes[i];
         }
 	out_val = (short*) NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	missing2 = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis;
 	if(has_missing) {
-		missing2 = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis;
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.shortval;
 			} else {
-				sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]));
+				if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contains numeric digits, replacing with missing value");
+                                        out_val[i] = missing2.shortval;
+
+				}
 			}
 		}
 	}  else {
 		for(i = 0; i < total; i++) {
-			sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]));
+			if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contains numeric digits, replacing with missing value");
+                                has_missing = 1;
+                                out_val[i] = missing2.shortval;
+ 
+
+			}
 		}
 	}
 	return(NclReturnValue(
@@ -5529,18 +5548,25 @@ NhlErrorTypes _NclIstringtointeger
                 total *= dimsizes[i];
         }
 	out_val = (int*) NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
+	missing2 = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
 	if(has_missing) {
-		missing2 = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.intval;
 			} else {
-				sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]));
+				if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contains numeric digits, replacing with missing value");
+					out_val[i] = missing2.intval;
+				}
 			}
 		}
 	}  else {
 		for(i = 0; i < total; i++) {
-			sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]));
+			if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contains numeric digits, replacing with missing value");
+				has_missing = 1;
+				out_val[i] = missing2.intval;
+			}
 		}
 	}
 	return(NclReturnValue(
@@ -5580,18 +5606,27 @@ NhlErrorTypes _NclIstringtodouble
                 total *= dimsizes[i];
         }
 	out_val = (double*) NclMalloc(((NclTypeClass)nclTypedoubleClass)->type_class.size *total);
+	missing2 = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
 	if(has_missing) {
-		missing2 = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.doubleval;
 			} else {
-				sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]));
+				if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contains numeric digits, replacing with missing value");
+					out_val[i] = missing2.doubleval;
+
+				}
 			}
 		}
 	}  else {
 		for(i = 0; i < total; i++) {
-			sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]));
+			if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contains numeric digits, replacing with missing value");
+                                has_missing = 1;
+                                out_val[i] = missing2.doubleval;
+
+			}
 		}
 	}
 	return(NclReturnValue(
@@ -5632,18 +5667,26 @@ NhlErrorTypes _NclIstringtofloat
                 total *= dimsizes[i];
         }
 	out_val = (float*)NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
+	missing2 = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
 	if(has_missing) {
-		missing2 = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.floatval;
 			} else {
-				sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]));
+				if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
+					 NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtofloat, input strings must contains numeric digits, replacing with missing value");
+					out_val[i] = missing2.floatval;
+
+				}
 			}
 		}
 	}  else {
 		for(i = 0; i < total; i++) {
-			sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]));
+			if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+				has_missing = 1;
+				out_val[i] = missing2.floatval;
+			}
 		}
 	}
 	return(NclReturnValue(
