@@ -7,18 +7,21 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= Sun4
+SYSTEM_INCLUDE		= DECRISC
 
-PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
-PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
+VERSION         = 3.1.3
+PARFIL_INIT     = /tmp/clyne/lib/param
+PARFIL_PERM     = /tmp/clyne/lib/param
 
-BINDIR		= /u1/clyne/testbin
-LIBDIR		= /u1/clyne/testlib
-MANDIR		= /u1/clyne/testman
+BINDIR          = /tmp/clyne/bin
+LIBDIR          = /tmp/clyne/lib
+MANDIR          = /tmp/clyne/man
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /u1/clyne/testlib
-BITSDIR         = /usr/include/X11/bitmaps
+
+XLIBDIR         = /usr/lib
+XINCDIR         = /usr/include
+XAPPDIR         = /tmp/lib
 
 INCLUDEDIR      = $(NCARG)/include
 DBDIR           = $(LIBDIR)
@@ -35,22 +38,24 @@ YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 MAKE            = make
 FLOAT_OPT       =
 OS              =
-ARCH            =
+ARCH            = -DByteSwapped
+XPATH           = -I$(XINCDIR) -L$(XLIBDIR)
+VDEFINE         = -DVERSION='"$(VERSION)"'
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
-COPT            = -g
+COPT            = -O
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-	$(FLOAT_OPT)
+	$(FLOAT_OPT) $(XPATH) $(VDEFINE)
 LD_CFLAGS       = $(CFLAGS)
 CPP             = /lib/cpp
 FCPP            = /lib/cpp
 F77             = f77
 F77_LD          = $(F77)
 FDEBUG          =
-FOPT            = -O
-FMISC           = -Bstatic
+FOPT            =
+FMISC           =
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
 	$(FLOAT_OPT)
 LD_FFLAGS       = $(FFLAGS)
@@ -73,20 +78,19 @@ INSTALL_RM      = $(RM)
 INSTALL_BIN     = 0755
 INSTALL_MAN     = 0644
 INSTALL_APP     = 0644
-INSTALL_BIT     = 0644
 INSTALL_LIB     = 0644
 INSTALL_DB      = 0644
 
 GRAPHC          = $(BINDIR)/graphc
 FONTC           = $(BINDIR)/fontc
-
-FSPLIT          = fsplit
 CALLCONV        = $(NCARG)/utils/callconv
 SHELL           = /bin/sh
 
+GKS_BUFFER_SIZE = 0
+
 NCARG	= ../../../..
 #
-#	$Id: Makefile,v 1.11 1992-02-20 12:45:30 clyne Exp $
+#	$Id: Makefile,v 1.12 1992-02-20 14:47:14 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -121,14 +125,14 @@ GENSRCS =  \
 	fill.c fontlist.c format.c gcap.c gcread.c in.c rast.c \
 	readfont.c rgbtohls.c text.c translate.c env.c \
 	soft_fill.c cell.c bsd-sysv.c commondev.c gcapdev.c gcaprast.c \
-	rastdev.c hatch.c pal.c ctrans_api.c error.c
+	rastdev.c hatch.c pal.c ctrans_api.c error.c cgmmisc.c
 
 GENOBJS	= \
 	bitops.o buffer.o clip.o ctrans.o default.o \
 	fill.o fontlist.o format.o gcap.o gcread.o in.o rast.o \
 	readfont.o rgbtohls.o text.o translate.o env.o \
 	soft_fill.o cell.o bsd-sysv.o commondev.o gcapdev.o gcaprast.o \
-	rastdev.o hatch.o pal.o ctrans_api.o error.o
+	rastdev.o hatch.o pal.o ctrans_api.o error.o cgmmisc.o
 
 DEVSRCS	= cterror.c devices.c
 DEVOBJS	= cterror.o devices.o
@@ -192,7 +196,7 @@ local-Makefile:
 clean::
 	@-$(RM) *.o core
 
-cleanbin:: clean
+cleanbin::	clean
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)

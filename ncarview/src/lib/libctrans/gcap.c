@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.14 1992-02-20 12:45:42 clyne Exp $
+ *	$Id: gcap.c,v 1.15 1992-02-20 14:47:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -514,12 +514,14 @@ CGMC *c;
 
 	if (CSM != INDEXED) {
 		ct_error(NT_CAFE, "direct color not supported");
+		(void) MunchCGM(c);
 		return (SICK);
 	}
 
 	if (mode != PACKED_MODE) {
 		(void) fprintf(stderr, 
 		"ctrans: run length encoded cell arrays not supported\n");
+		(void) MunchCGM(c);
 		return(OK);
 	}
 
@@ -538,6 +540,7 @@ CGMC *c;
          */
         if (c->p[2].x != c->p[1].x || c->p[0].y != c->p[2].y) {
 		ct_error(NT_NULL, "non rectangular cell array");
+		(void) MunchCGM(c);
 		return(OK);
         }
 
@@ -560,11 +563,12 @@ CGMC *c;
 		gcap_line(c->p[1].x,c->p[1].y,c->p[0].x,c->p[1].y);
 		gcap_line(c->p[0].x,c->p[1].y,c->p[0].x,c->p[0].y);
 
-	} else  	/* cell array simulation */
+	} else {  	/* cell array simulation */
 		(void)cellsim(c);
+	}
 
+	(void) MunchCGM(c);
 	return (OK);
-
 }
 
 /*ARGSUSED*/
