@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.21 1996-09-30 23:36:12 fred Exp $
+C	$Id: gesc.f,v 1.22 1996-10-07 19:14:13 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -9,6 +9,7 @@ C
       PARAMETER (EESC=11)
 C
       include 'gkscom.h'
+      include 'trstat.h'
 C
       INTEGER FCTID, LIDR, IBUF(46), TBUF(720)
       REAL    UBUF(26)
@@ -40,6 +41,8 @@ C       CALL GERHND(180,EESC,ERF)
       ENDIF
 C
 C  Process legal escape function ID'S:
+C      -1386  --  Flag for disabling clipping to the clip rectangle in
+C                 a segment (1 = disable; 0 = enable)
 C      -1387  --  Temporarily close an NCGM, no matter what the status 
 C                 of the file.
 C      -1388  --  Set/save/restore attributes.
@@ -612,6 +615,8 @@ C
         IF (SOPWK(1) .EQ. -1) THEN
           OPS = GGKOP
         ENDIF
+      ELSE IF (FCTID .EQ. -1386) THEN
+        READ (IDR,501,ERR=130) IGSGCP
 C
 C
 C  PostScript escapes.

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.16 1996-09-30 23:36:21 fred Exp $
+#	$Id: yMakefile,v 1.17 1996-10-07 19:14:20 fred Exp $
 #
 
 MYNAME	= awi
@@ -108,7 +108,7 @@ gacwk.o : gkscom.h
 gaspar.o : trstat.h trpars.h trinst.h 
 gatelm.o : trinst.h trcode.h 
 gca.o : gkscom.h 
-gcelcd.o : trinst.h trpars.h trstat.h trcode.h 
+gcelcd.o : trinst.h trpars.h trstat.h trcode.h gkscom.h
 gceldc.o : trinst.h 
 gceldr.o : trpars.h gkscom.h ../bwi/g01io.h 
 gclks.o : gkscom.h 
@@ -116,14 +116,14 @@ gclrwk.o : gkscom.h
 gclsg.o : gkscom.h 
 gclwk.o : gkscom.h 
 gcrsg.o : gkscom.h 
-gcsgwk.o : gkscom.h 
+gcsgwk.o : gkscom.h trstat.h
 gdawk.o : gkscom.h 
 gdsg.o : gkscom.h 
 geclks.o : gkscom.h 
 gelms.o : trinst.h trcode.h 
 gerhnd.o : gkscom.h 
 gerlog.o : gkscom.h 
-gesc.o : gkscom.h 
+gesc.o : gkscom.h trstat.h
 gescfn.o : trinst.h trpars.h 
 gevtm.o : gevtm.f 
 gfa.o : gkscom.h 

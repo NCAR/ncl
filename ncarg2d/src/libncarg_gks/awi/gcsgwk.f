@@ -1,5 +1,5 @@
 C
-C	$Id: gcsgwk.f,v 1.4 1994-04-29 00:44:48 fred Exp $
+C	$Id: gcsgwk.f,v 1.5 1996-10-07 19:14:11 fred Exp $
 C
       SUBROUTINE GCSGWK(WKID,SGNA)
 C
@@ -9,6 +9,7 @@ C
       PARAMETER (ECSGWK=62)
 C
       include 'gkscom.h'
+      include 'trstat.h'
 C
       INTEGER WKID,SGNA,WKTP,WKCT,FCODEO,CONTO
 C
@@ -133,7 +134,8 @@ C
         ENDIF
    60 CONTINUE
    70 CONTINUE
-      IF (WKTP.NE.GCGM .OR. CURTM(1,1).NE.1. .OR.CURTM(1,2).NE.0.
+      IF (WKTP.NE.GCGM .OR. IGSGCP.NE.0 
+     +                 .OR. CURTM(1,1).NE.1. .OR.CURTM(1,2).NE.0.
      +                 .OR. CURTM(1,3).NE.0. .OR.CURTM(2,1).NE.0.
      +                 .OR. CURTM(2,2).NE.1. .OR.CURTM(2,3).NE.0.
      +                 ) THEN

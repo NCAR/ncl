@@ -1,5 +1,5 @@
 C
-C	$Id: gopks.f,v 1.3 1993-01-15 17:44:26 fred Exp $
+C	$Id: gopks.f,v 1.4 1996-10-07 19:14:15 fred Exp $
 C
       SUBROUTINE GOPKS(ERRFIL,BUFA)
 C
@@ -7,7 +7,7 @@ C  OPEN GKS
 C
 C  Force load of all BLOCKDATAs.
 C
-      EXTERNAL GKSBD,G01BKD,GWIBKD
+      EXTERNAL GKSBD,G01BKD,GWIBKD,GSEGDT
       INTEGER EOPKS
       PARAMETER (EOPKS=0)
       INTEGER ERRFIL,BUFA

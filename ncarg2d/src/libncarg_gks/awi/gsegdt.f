@@ -1,5 +1,5 @@
 C
-C	$Id: gsegdt.f,v 1.1 1993-01-09 02:02:31 fred Exp $
+C	$Id: gsegdt.f,v 1.2 1996-10-07 19:14:16 fred Exp $
 C
       BLOCKDATA GSEGDT
 C
@@ -48,6 +48,10 @@ C
 C  Control element codes.
 C
         DATA CELMVI, CELMCR, CELMCI /1,5,6/
+C
+C  Flag controlling whether to ignore clipping in segments.
+C
+        DATA IGSGCP/0/
 C
 C  Graphical primitive element codes.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gcelcd.f,v 1.1 1993-01-09 01:57:49 fred Exp $
+C	$Id: gcelcd.f,v 1.2 1996-10-07 19:14:09 fred Exp $
 C
         SUBROUTINE GCELCD(WKID,IOS,STATUS)
 C
@@ -15,6 +15,7 @@ C
       include 'trpars.h'
       include 'trstat.h'
       include 'trcode.h'
+      include 'gkscom.h'
 C
       INTEGER WKID, IOS, STATUS
       INTEGER TMP, XMIN, XMAX, YMIN, YMAX, CLPDAT(4)
@@ -29,7 +30,8 @@ C
       ELSE IF (OPID .EQ. CELMCR) THEN
 C
 C  Set the clip rectangle for normalization transformation 1 that
-C  we are currently using.
+C  we are currently using.  Transform the clipping rectangle if
+C  IGSGCP is non-zero.
 C
         CALL GOPDEC(CLPDAT,MOPLEN,4,IOS,STATUS)
         XMIN = CLPDAT(1)
@@ -40,10 +42,27 @@ C
         YMIN = MIN(YMIN,CLPDAT(4))
         YMAX = CLPDAT(4)
         YMAX = MAX(YMAX,CLPDAT(2))
-        CALL GSWN(1,REAL(XMIN)/32767.,REAL(XMAX)/32767.,
-     +                 REAL(YMIN)/32767.,REAL(YMAX)/32767.)
-        CALL GSVP(1,REAL(XMIN)/32767.,REAL(XMAX)/32767.,
-     +                 REAL(YMIN)/32767.,REAL(YMAX)/32767.)
+        IF (IGSGCP .EQ. 0) THEN
+          CALL GSWN(1,REAL(XMIN)/32767.,REAL(XMAX)/32767.,
+     +                   REAL(YMIN)/32767.,REAL(YMAX)/32767.)
+          CALL GSVP(1,REAL(XMIN)/32767.,REAL(XMAX)/32767.,
+     +                   REAL(YMIN)/32767.,REAL(YMAX)/32767.)
+        ELSE
+          XMN = REAL(XMIN)/32767.
+          XMX = REAL(XMAX)/32767.
+          YMN = REAL(YMIN)/32767.
+          YMX = REAL(YMAX)/32767.
+          XM1 = CURTM(1,1)*XMN + CURTM(1,2)*YMN + CURTM(1,3)
+          YM1 = CURTM(2,1)*XMN + CURTM(2,2)*YMN + CURTM(2,3)
+          XM2 = CURTM(1,1)*XMX + CURTM(1,2)*YMX + CURTM(1,3)
+          YM2 = CURTM(2,1)*XMX + CURTM(2,2)*YMX + CURTM(2,3)
+          XM1 = MAX(0.,XM1)
+          XM2 = MIN(1.,XM2)
+          YM1 = MAX(0.,YM1)
+          YM2 = MIN(1.,YM2)
+          CALL GSWN(1,XM1,XM2,YM1,YM2)
+          CALL GSVP(1,XM1,XM2,YM1,YM2)
+        ENDIF
 C
       ELSE IF (OPID.EQ.CELMCI) THEN
 C
