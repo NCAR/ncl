@@ -18,6 +18,10 @@
 ;
 
 begin
+  appid = create "mp06" appClass defaultapp
+      "appUsrDir" : "./"
+      "appDefaultParent" : True
+  end create
 ;
 ; Default is to display output to an X workstation
 ;
@@ -31,8 +35,6 @@ begin
 ;
       wid = create "mp06Work" ncgmWorkstationClass defaultapp
          "wkMetaName" : "./mp06n.ncgm"
-         "wkBackgroundColor" : "white"
-         "wkForegroundColor" : "black"
       end create
   else
     if (X11 .eq. 1) then
@@ -41,8 +43,6 @@ begin
 ;
       wid = create "mp06Work" xWorkstationClass defaultapp
           "wkPause" : True
-           "wkBackgroundColor" : "white"
-           "wkForegroundColor" : "black"
       end create
     else
       if (PS .eq. 1) then
@@ -51,8 +51,6 @@ begin
 ;
         wid = create "mp06Work" psWorkstationClass defaultapp
          "wkPSFileName" : "./mp06n.ps"
-         "wkBackgroundColor" : "white"
-         "wkForegroundColor" : "black"
         end create
       end if
     end if
@@ -64,22 +62,13 @@ begin
     "vpXF"                 : 0.05
     "vpYF"                 : 0.95
 
-    "mpDataBaseVersion"    : "Ncarg4_1"  ; Change to new map database,
-    "mpDataSetName"        : "Earth..2"  ; the one with county lines.
-
     "mpOutlineBoundarySets": "AllBoundaries" ; Draw county lines.
 
-    "mpGridAndLimbOn"      : False        ; Don't draw lat/lon lines.
-
-    "mpLimitMode"          : "LatLon"    ; Limit view of map to
-    "mpMinLatF"            :   25.       ; USA.
+    "mpMinLatF"            :   25.
     "mpMaxLatF"            :   50.
     "mpMinLonF"            : -130.
     "mpMaxLonF"            :  -60. 
 
-    "mpPerimOn"            : True
-
-    "pmTitleDisplayMode"   : "Always"
     "tiMainString"         : ":F22:US with all counties outlined"
   end create
 
@@ -87,12 +76,12 @@ begin
   frame(wid)
 
 ;
-; Draw all counties in the United States that have the name "Washington".
+; Draw all counties in the United States that have the name "Adams".
 ;
   setvalues mapid
     "mpOutlineBoundarySets" : "GeophysicalAndUSStates"
-    "mpOutlineSpecifiers"   : "Washington"
-    "tiMainString"          : ":F22:US with Washington counties outlined"
+    "mpOutlineSpecifiers"   : "Adams"
+    "tiMainString"          : ":F22:US with Adams counties outlined"
   end setvalues
 
   draw(mapid)
@@ -119,7 +108,7 @@ begin
                "Union", "Volusia", "Wakulla", "Walton", "Washington" /)
 
 ;
-; By putting the string "florida . " in front of each county name, only
+; By putting the string "Florida . " in front of each county name, only
 ; those counties in Florida will get drawn. Otherwise, if any of these
 ; counties existed in other states, those counties would get drawn as well.
 ;
@@ -129,7 +118,7 @@ begin
     "vpXF"                 : 0.05
     "vpYF"                 : 0.95
 
-    "mpOutlineSpecifiers" : "florida . " + florida_counties
+    "mpOutlineSpecifiers" : "Florida . " + florida_counties
     "mpMinLatF"            :  25.
     "mpMaxLatF"            :  32.
     "mpMinLonF"            : -90.
