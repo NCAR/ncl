@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.1 1992-11-04 02:47:49 clyne Exp $
+.\"	$Id: rascat.m,v 1.2 1992-11-06 19:42:36 clyne Exp $
 .\"
 .TH RASCAT 1-local "November 1992" NCAR "NCAR Local Command"
 .SH NAME
@@ -37,6 +37,7 @@ Rascat \- concatenate, convert raster files
 reads each 
 .I file
 in sequence and copies its contents to the standard output performing
+format conversion and 
 any data massaging necessary as specified by the command line options.
 By default, 
 .B rascat
@@ -49,18 +50,20 @@ the resulting concatenated file will be in the format
 of the first file processed. 
 .B rascat 
 understands the following file name extensions: 
+.BR .avs , 
 .BR .hdf ,
 .BR .nrif ,
 .BR .sgi ,
 .BR .sun ,
+and
 .BR .xwd .
-.LP
-Currently, only 8-bit-indexed and 24-bit-direct color encodings are supported.
 .LP
 Input files must all have the same spatial resolution and have the 
 same depth; 8-bit and 24-bit files may not be intermixed. Furthermore,
 if an input file contains multiple images each image in that file must
 have the same spatial resolution and be of the same depth.
+.LP
+Currently, only 8-bit-indexed and 24-bit-direct color encodings are supported.
 .SH OPTIONS
 .TP
 .B \-help
@@ -69,8 +72,11 @@ Print a usage message and exit.
 .BI \-ifmt " format"
 Specify the input file format. 
 .I format
-is one of the aforementioned file name extensions. When this option is 
+is one of the aforementioned file name extensions (without the ".", e.g. 
+.BR xwd). 
+When this option is 
 specified file name extensions are not necessary and are ignored if present.
+All input files must have the same format.
 .TP
 .BI \-ira " algorithm" 
 Specify the image resampling algorithm to be used when 
@@ -82,10 +88,10 @@ command line option is used.
 .I algorithm
 may be either
 .BR NN ,
-specifying a "nearest neighbor"  algorithm, 
+indicating a "nearest neighbor"  algorithm, 
 or
 .BR BL ,
-specifying a "bilinear interplation" algorithm. The default is to do
+indicating a "bilinear interplation" algorithm. The default is to do
 "nearest neighbor" interpolation.
 .TP
 .BI \-ofmt " format"
@@ -108,7 +114,7 @@ option is not specified
 .I file
 must have a file name extension recognized by
 .B rascat.
-The file name extension will determine the output format.
+In which case the file name extension will determine the output format.
 .TP
 .BI \-resolution " resolution"
 Resample the spatial resolution of input imagery to 
@@ -180,12 +186,12 @@ On some systems the default is
 .BR /usr/tmp .
 .SH EXAMPLES
 In the following example a NRIF file, a Sun raster image file, and a
-XWD file are concatenated into a single NRIF file:
+XWD file are concatenated and converted into a single NRIF file:
 .sp
 .IP
 % rascat file1.nrif file2.sun file3.xwd > file123.nrif
 .LP
-In this example the same files are concatenated into a sun file. 
+In this example the same files are concatenated into a sun file:
 .sp
 .IP
 % rascat -ofmt sun file1.nrif file2.sun file3.xwd > file123.sun
@@ -197,7 +203,7 @@ option is necessary in this example because the first file
 .B rascat
 encounters is an NRIF file.
 .LP
-Finally, in this example the upper, left 512 by 512 rectangle of the
+Finally, in this example the upper left 512 by 512 rectangle of the
 file 
 .B foo.sun
 is extracted and written to the file
@@ -209,5 +215,11 @@ is extracted and written to the file
 Aspect ratios are not preserved by the 
 .B \-resolution
 option.
-.SH BUGS
+.LP
+.B rascat can read 
+.B .sgi
+files, but cannot write them.
+.LP
+Not all formats support both 8-bit and 24-bit encodings.
+.LP
 Indexed and direct color encodings cannot be mixed.
