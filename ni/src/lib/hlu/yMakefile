@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.41 1996-11-24 22:25:33 boote Exp $
+#      $Id: yMakefile,v 1.42 1996-11-27 15:50:51 boote Exp $
 #
 #########################################################################
 #									#
@@ -18,6 +18,7 @@
 #	Date:		Tue Apr 27 15:05:52 MDT 1993
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
+
 MYNAME		= libhlu
 
 EXTRA_CDEFINES	=	$(OS_DEF)
