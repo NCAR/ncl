@@ -2350,6 +2350,7 @@ int rw_status;
 		file_out->file.var_info[i] = NULL;
 		file_out->file.file_atts[i] = NULL;
 		file_out->file.var_att_info[i] = NULL;
+		file_out->file.var_att_cb[i] = NULL;
 		file_out->file.var_att_ids[i] = -1;
 		file_out->file.file_dim_info[i] = NULL;
 		file_out->file.coord_vars[i] = NULL;
