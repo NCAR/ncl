@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.28 1999-04-02 23:51:03 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.29 2002-09-16 22:03:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -284,7 +284,6 @@ IrregularPlotClassPartInitialize
                                         NhlNtrXMaxF,NhlNtrYMaxF,
                                         NhlNtrXAxisType,NhlNtrYAxisType,
                                         NhlNtrXReverse,NhlNtrYReverse,
-                                        NhlNtrXTensionF,NhlNtrYTensionF,
 					NhlNtrLineInterpolationOn,
                                         NULL);
 
