@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: ras_palette.m,v 1.1 1992-12-14 23:49:06 don Exp $
+.\"	$Id: ras_palette.m,v 1.2 1992-12-15 17:24:16 don Exp $
 .\"
-.TH RAS_PALETTE 1NCARG "November 1992" NCARG "NCARG GRAPHICS"
+.TH RAS_PALETTE 5NCARG "November 1992" NCARG "NCAR GRAPHICS"
 .SH NAME
 ras_palette \- format descriptions for palette files for NCAR View
 .SH SYNOPSIS
@@ -16,8 +16,9 @@ palettes.
 .LP
 The binary format is compatible with NCSA HDF and must have a file
 extension of ".pal". The palette has a red, a green, and a blue
-table, each with 256 single-byte entries. In the file, the palette is stored
-as:
+table, each with 256 single unsigned byte entries. A 0 represents
+no intensity for a given color, and a 255 full intensity. In the file,
+the palette is stored as:
 .LP
 .in +1.0i
 .nf
@@ -30,7 +31,8 @@ for a total of 768 bytes.
 The textual format can be created by a program or manually with
 a text editor. It provides for 256 RGB entries but also allows
 for a sparse color table. In the latter case, missing values are
-calculated from those provided using linear interpolation. Each
+calculated from those provided using linear interpolation. If unspecified,
+the 0 entry defaults to black and the 255 entry to white.  Each
 color palette entry has the following format:
 .LP
 .in +1.0i
@@ -72,6 +74,10 @@ are specified, the remaining indicies are interpolated.
 255 255 255 255
 .fi
 .in -1.0i
+.IP
+(\fINote\fP: An empty palette file (e.g. "empty.txt") is legal and,
+since the 0 index defaults to black and the 255 index to white,
+produces a grayscale ramp just as in the above example.)
 .TP
 Temperature Color Scale
 .IP
