@@ -1,5 +1,5 @@
 /*
- * $Id: nnghead.h,v 1.6 2000-08-25 23:29:45 fred Exp $
+ * $Id: nnghead.h,v 1.7 2002-02-23 01:25:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <malloc.h>
 #include <time.h>
 
 #define RANSEED        367367

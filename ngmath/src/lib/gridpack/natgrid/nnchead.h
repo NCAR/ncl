@@ -1,5 +1,5 @@
 /*
- * $Id: nnchead.h,v 1.7 2000-08-25 23:29:43 fred Exp $
+ * $Id: nnchead.h,v 1.8 2002-02-23 01:25:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <malloc.h>
 
 #define SQ(x)   (x) * (x)
 #define BIGNUM  1E37
