@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.2 1997-03-21 17:24:22 haley Exp $
+C      $Id: cn15f.f,v 1.3 1997-04-09 14:07:20 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -35,7 +35,7 @@ C
 C
 C Declare variables for the HLU routine calls.
 C
-      integer appid, x, ncgm, ps, jan, cn, ice, mp, tx, srlist
+      integer appid, jan, cn, ice, mp, tx, srlist
 C
 C Declare variables for color map
 C
@@ -76,6 +76,7 @@ C
 C
 C Output to all three workstations.
 C
+      integer ncgm1, x1, ps1
       integer NCGM, X11, PS
       NCGM=1
       X11=1
@@ -153,7 +154,7 @@ C
       call NhlFRLSetString(srlist,'wkMetaName','./cn15f.ncgm',ierr)
       call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +     ierr)
-      call NhlFCreate(ncgm,'cn15Work',
+      call NhlFCreate(ncgm1,'cn15Work',
      +     NhlFNcgmWorkstationClass,0,srlist,ierr)
 C
 C Create an XWorkstation object.
@@ -162,7 +163,7 @@ C
       call NhlFRLSetString(srlist,'wkPause','True',ierr)
       call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +     ierr)
-      call NhlFCreate(x,'cn15Work',NhlFXWorkstationClass,
+      call NhlFCreate(x1,'cn15Work',NhlFXWorkstationClass,
      +     0,srlist,ierr)
 C
 C Create a PostScript workstation.
@@ -181,7 +182,7 @@ C
       call NhlFRLSetInteger(srlist,'wkDeviceUpperY',700,ierr)
       call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +     ierr)
-      call NhlFCreate(ps,'cn15Work',
+      call NhlFCreate(ps1,'cn15Work',
      +     NhlFPSWorkstationClass,0,srlist,ierr)
 C
 C Open and read NetCDF file.
@@ -280,7 +281,7 @@ C
       call NhlFRLSetString(srlist,'tmXTMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYLMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYRMinorOn','False',ierr)
-      call NhlFCreate(cn,'cn',NhlFcontourPlotClass,x,
+      call NhlFCreate(cn,'cn',NhlFcontourPlotClass,x1,
      +     srlist,ierr)
 C
 C Create another ContourPlot object.
@@ -311,7 +312,7 @@ C
       call NhlFRLSetString(srlist,'cnMonoFillColor','False',ierr)
       call NhlFRLSetString(srlist,'cnInfoLabelOn','False',ierr)
       call NhlFRLSetString(srlist,'cnHighLabelsOn','False',ierr)
-      call NhlFCreate(ice,'ice',NhlFcontourPlotClass,x,
+      call NhlFCreate(ice,'ice',NhlFcontourPlotClass,x1,
      +     srlist,ierr)
 C
 C Create a MapPlot object.
@@ -334,7 +335,7 @@ C
       call NhlFRLSetFloat(srlist,'mpMinLonF',0.,ierr)
       call NhlFRLSetFloat(srlist,'mpMaxLonF',360.,ierr)
       call NhlFRLSetFloat(srlist,'mpCenterLonF',180.,ierr)
-      call NhlFCreate(mp,'mp',nhlfmapplotclass,x,srlist,
+      call NhlFCreate(mp,'mp',nhlfmapplotclass,x1,srlist,
      +     ierr)
 C
 C Create a TextItem object.
@@ -347,7 +348,7 @@ C
      +     'January Climatological Surface Temperature',ierr)
       call NhlFRLSetFloat(srlist,'txFontHeightF',.030,ierr)
       call NhlFRLSetInteger(srlist,'txFont',25,ierr)
-      call NhlFCreate(tx,'tx',nhlftextitemclass,x,srlist,ierr)
+      call NhlFCreate(tx,'tx',nhlftextitemclass,x1,srlist,ierr)
 C
 C  Read the ocean(1)/land(2) mask ascii dataset created by Areas/Ezmap.
 C
@@ -415,7 +416,7 @@ C
       call NhlFRLSetString(srlist,'tmXBMode','EXPLICIT',ierr)
       call NhlFRLSetFloatArray(srlist,'tmXBValues',xbvalues2,11,ierr)
       call NhlFRLSetStringArray(srlist,'tmXBLabels',xblabels2,11,ierr)
-      call NhlFCreate(xy_plot,'xy_plot',nhlfxyplotclass,x,srlist,
+      call NhlFCreate(xy_plot,'xy_plot',nhlfxyplotclass,x1,srlist,
      +     ierr)
 C
 C Draw all objects to X11 window.
@@ -425,15 +426,15 @@ C
       call NhlFDraw(mp,ierr)
       call NhlFDraw(xy_plot,ierr)
       call NhlFDraw(tx,ierr)
-      call NhlFFrame(x,ierr)
+      call NhlFFrame(x1,ierr)
 C
 C Reassign the workstation to save an ncgm.
 C
-      call NhlFChangeWorkstation (ice,ncgm,ierr)
-      call NhlFChangeWorkstation (cn,ncgm,ierr)
-      call NhlFChangeWorkstation (mp,ncgm,ierr)
-      call NhlFChangeWorkstation (xy_plot,ncgm,ierr)
-      call NhlFChangeWorkstation (tx,ncgm,ierr)
+      call NhlFChangeWorkstation (ice,ncgm1,ierr)
+      call NhlFChangeWorkstation (cn,ncgm1,ierr)
+      call NhlFChangeWorkstation (mp,ncgm1,ierr)
+      call NhlFChangeWorkstation (xy_plot,ncgm1,ierr)
+      call NhlFChangeWorkstation (tx,ncgm1,ierr)
 C
 C Draw all objects to the NCGM.
 C
@@ -442,15 +443,15 @@ C
       call NhlFDraw(mp,ierr)
       call NhlFDraw(xy_plot,ierr)
       call NhlFDraw(tx,ierr)
-      call NhlFFrame(ncgm,ierr)
+      call NhlFFrame(ncgm1,ierr)
 C
 C Reassign the workstation to save PS.
 C
-      call NhlFChangeWorkstation (ice,ps,ierr)
-      call NhlFChangeWorkstation (cn,ps,ierr)
-      call NhlFChangeWorkstation (mp,ps,ierr)
-      call NhlFChangeWorkstation (xy_plot,ps,ierr)
-      call NhlFChangeWorkstation (tx,ps,ierr)
+      call NhlFChangeWorkstation (ice,ps1,ierr)
+      call NhlFChangeWorkstation (cn,ps1,ierr)
+      call NhlFChangeWorkstation (mp,ps1,ierr)
+      call NhlFChangeWorkstation (xy_plot,ps1,ierr)
+      call NhlFChangeWorkstation (tx,ps1,ierr)
 C
 C Draw all objects to PostScript.
 C
@@ -459,10 +460,10 @@ C
       call NhlFDraw(mp,ierr)
       call NhlFDraw(xy_plot,ierr)
       call NhlFDraw(tx,ierr)
-      call NhlFFrame(ps,ierr)
-      call NhlFDestroy(ncgm,ierr)
-      call NhlFDestroy(x,ierr)
-      call NhlFDestroy(ps,ierr)
+      call NhlFFrame(ps1,ierr)
+      call NhlFDestroy(ncgm1,ierr)
+      call NhlFDestroy(x1,ierr)
+      call NhlFDestroy(ps1,ierr)
       call NhlFDestroy(appid,ierr)
       stop
       end

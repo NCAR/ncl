@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.2 1997-03-21 17:24:19 haley Exp $
+ *      $Id: cn15c.c,v 1.3 1997-04-09 14:07:18 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -59,32 +59,33 @@ main()
 /*
  * Declare variables for the HLU routine calls.
  */
-  int appid, x, ncgm, ps, jan, cn, ice, xy_plot, mp, tx, srlist;
+    int appid, jan, cn, ice, xy_plot, mp, tx, srlist;
 /*
  * Declare variables for color map
  */
-  int length[2];
-  float cmap[NCOLORS][3];
+    int length[2];
+    float cmap[NCOLORS][3];
 /*
  * Declare variables to hold contour and xy plot data.
  */
-  float sstjan[NLAT][NLON], lat[NLAT], zoneave[NLAT];
-  int ocean1;
-  float cellsize;
+    float sstjan[NLAT][NLON], lat[NLAT], zoneave[NLAT];
+    int ocean1;
+    float cellsize;
 /*
  * Declare variables for getting information from netCDF file.
  */
-  int  ncid, lon_id, lat_id, stid;
-  int start[3], count[3];
-  long lonlen, latlen;
-  char filename[256];
-  char recname[50];
-  const char *dir = _NGGetNCARGEnv("data");
-  FILE *fp;
+    int  ncid, lon_id, lat_id, stid;
+    int start[3], count[3];
+    long lonlen, latlen;
+    char filename[256];
+    char recname[50];
+    const char *dir = _NGGetNCARGEnv("data");
+    FILE *fp;
 /*
  * Output to all three workstations.
  */
-    int NCGM=1, X11=1, PS=1;
+    int ncgm1,x1,ps1;
+    int NCGM=1, X111=1, PS=1;
     int nlt, nln, zonal, ksst;
     float sstzon;
 /*
@@ -158,14 +159,14 @@ main()
     NhlRLClear(srlist);
     NhlRLSetString(srlist,NhlNwkMetaName,"./cn15c.ncgm");
     NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-    NhlCreate(&ncgm,"cn15Work",NhlncgmWorkstationClass,0,srlist);
+    NhlCreate(&ncgm1,"cn15Work",NhlncgmWorkstationClass,0,srlist);
 /*
  * Create an XWorkstation object.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPause,"True");
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&x,"cn15Work",NhlxWorkstationClass,0,srlist);
+      NhlCreate(&x1,"cn15Work",NhlxWorkstationClass,0,srlist);
 /*
  * Create a PostScript workstation.
  */
@@ -182,7 +183,7 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&ps,"cn15Work",NhlpsWorkstationClass,0,srlist);
+      NhlCreate(&ps1,"cn15Work",NhlpsWorkstationClass,0,srlist);
 /*
  * Open and read NetCDF file.
  */
@@ -263,7 +264,7 @@ main()
       NhlRLSetString(srlist,NhlNtmXTMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmYLMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmYRMinorOn,"False");
-      NhlCreate(&cn,"cn",NhlcontourPlotClass,x,srlist);
+      NhlCreate(&cn,"cn",NhlcontourPlotClass,x1,srlist);
 /*
  * Create another ContourPlot object.
  */
@@ -292,7 +293,7 @@ main()
       NhlRLSetString(srlist,NhlNcnMonoFillColor,"False");
       NhlRLSetString(srlist,NhlNcnInfoLabelOn,"False");
       NhlRLSetString(srlist,NhlNcnHighLabelsOn,"False");
-      NhlCreate(&ice,"ice",NhlcontourPlotClass,x,srlist);
+      NhlCreate(&ice,"ice",NhlcontourPlotClass,x1,srlist);
 /*
  * Create a MapPlot object.
  */
@@ -314,7 +315,7 @@ main()
       NhlRLSetFloat(srlist,NhlNmpMinLonF,0.);
       NhlRLSetFloat(srlist,NhlNmpMaxLonF,360.);
       NhlRLSetFloat(srlist,NhlNmpCenterLonF,180.);
-      NhlCreate(&mp,"mp",NhlmapPlotClass,x,srlist);
+      NhlCreate(&mp,"mp",NhlmapPlotClass,x1,srlist);
 /*
  * Create a TextItem object.
  */
@@ -325,7 +326,7 @@ main()
       NhlRLSetString(srlist,NhlNtxString,"January Climatological Surface Temperature");
       NhlRLSetFloat(srlist,NhlNtxFontHeightF,.030);
       NhlRLSetInteger(srlist,NhlNtxFont,25);
-      NhlCreate(&tx,"tx",NhltextItemClass,x,srlist);
+      NhlCreate(&tx,"tx",NhltextItemClass,x1,srlist);
 /*
  *  Read the ocean(1)/land(2) mask ascii dataset created by Areas/Ezmap.
  */
@@ -387,7 +388,7 @@ main()
       NhlRLSetString(srlist,NhlNtmXBMode,"EXPLICIT");
       NhlRLSetFloatArray(srlist,NhlNtmXBValues,xbvalues2,11);
       NhlRLSetStringArray(srlist,NhlNtmXBLabels,xblabels2,11);
-      NhlCreate(&xy_plot,"xy_plot",NhlxyPlotClass,x,srlist);
+      NhlCreate(&xy_plot,"xy_plot",NhlxyPlotClass,x1,srlist);
 /*
  * Draw all objects to X11 window.
  */
@@ -396,15 +397,15 @@ main()
       NhlDraw(mp);
       NhlDraw(xy_plot);
       NhlDraw(tx);
-      NhlFrame(x);
+      NhlFrame(x1);
 /*
  * Reassign the workstation to save an ncgm.
  */
-      NhlChangeWorkstation (ice,ncgm);
-      NhlChangeWorkstation (cn,ncgm);
-      NhlChangeWorkstation (xy_plot,ncgm);
-      NhlChangeWorkstation (tx,ncgm);
-      NhlChangeWorkstation (mp,ncgm);
+      NhlChangeWorkstation (ice,ncgm1);
+      NhlChangeWorkstation (cn,ncgm1);
+      NhlChangeWorkstation (xy_plot,ncgm1);
+      NhlChangeWorkstation (tx,ncgm1);
+      NhlChangeWorkstation (mp,ncgm1);
 /*
  * Draw all objects to the NCGM.
  */
@@ -413,15 +414,15 @@ main()
       NhlDraw(mp);
       NhlDraw(xy_plot);
       NhlDraw(tx);
-      NhlFrame(ncgm);
+      NhlFrame(ncgm1);
 /*
  * Reassign the workstation to save PS.
  */
-      NhlChangeWorkstation (ice,ps);
-      NhlChangeWorkstation (cn,ps);
-      NhlChangeWorkstation (mp,ps);
-      NhlChangeWorkstation (xy_plot,ps);
-      NhlChangeWorkstation (tx,ps);
+      NhlChangeWorkstation (ice,ps1);
+      NhlChangeWorkstation (cn,ps1);
+      NhlChangeWorkstation (mp,ps1);
+      NhlChangeWorkstation (xy_plot,ps1);
+      NhlChangeWorkstation (tx,ps1);
 /*
  * Draw all objects to PostScript.
  */
@@ -430,10 +431,10 @@ main()
       NhlDraw(mp);
       NhlDraw(xy_plot);
       NhlDraw(tx);
-      NhlFrame(ps);
-      NhlDestroy(ncgm);
-      NhlDestroy(x);
-      NhlDestroy(ps);
+      NhlFrame(ps1);
+      NhlDestroy(ncgm1);
+      NhlDestroy(x1);
+      NhlDestroy(ps1);
       NhlDestroy(appid);
 }
 
