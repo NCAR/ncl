@@ -1,0 +1,39 @@
+#
+#
+#	$Id: yMakefile,v 1.1 1992-02-13 17:49:21 clyne Exp $
+#
+#
+#	Makefile for rascat
+#
+#
+
+NCARG = ../../../..
+BINDIR_LOCAL = ../../../bin
+
+MYNAME	= rascat
+
+LOCLIBDIR	= ../../../lib
+LOCINCDIR	= ../../include
+
+LIBS		= $(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a \
+		$(LIBDIR)/libncarv.a
+
+CDEFINES	= -I$(LOCINCDIR)
+
+OBJS		= rascat.o
+SRCS		= rascat.c
+
+all::	$(MYNAME)
+
+CBinTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
