@@ -1,0 +1,5 @@
+#
+#	$Id: yMakefile,v 1.1 1997-02-24 14:40:44 haley Exp $
+#
+#define IHaveSubdirs
+SUBDIRS = lib
