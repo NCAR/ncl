@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.5 1999-03-29 18:31:32 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.6 2003-06-04 19:04:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,7 @@
 #define NhlNgsFillBackgroundColor    	"gsFillBackgroundColor"
 #define NhlNgsFillScaleF		"gsFillScaleF"
 #define NhlNgsFillLineThicknessF 	"gsFillLineThicknessF"
+#define NhlNgsFillDotSizeF 		"gsFillDotSizeF"
 
 /* edge resources */
 

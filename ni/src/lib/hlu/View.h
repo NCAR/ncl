@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.16 2001-12-05 00:19:05 dbrown Exp $
+ *      $Id: View.h,v 1.17 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,7 @@ extern NhlBoolean NhlIsView(
 #define NhlCFillBackgroundColor		"FillBackgroundColor"
 #define NhlCFillScaleF			"FillScaleF"
 #define NhlCFillLineThicknessF		"FillLineThicknessF"
+#define NhlCFillDotSizeF		"FillDotSizeF"
 #define NhlCEdgesOn			"EdgesOn"
 #define NhlCEdgeDashPattern		"EdgeDashPattern"
 #define NhlCEdgeThicknessF		"EdgeThicknessF"

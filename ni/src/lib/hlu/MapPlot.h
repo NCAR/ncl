@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.21 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.22 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -156,6 +156,7 @@ typedef enum _NhlMapDataResolution {
 #define NhlNmpMonoFillScale		"mpMonoFillScale"
 #define NhlNmpFillScaleF		"mpFillScaleF"
 #define NhlNmpFillScales		"mpFillScales"
+#define NhlNmpFillDotSizeF		"mpFillDotSizeF"
 
 #define NhlNmpDefaultFillColor		"mpDefaultFillColor"
 #define NhlNmpDefaultFillPattern	"mpDefaultFillPattern"

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.27 2002-03-18 21:20:06 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.28 2003-06-04 19:04:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -175,6 +175,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	mono_fill_scale;
 	float		fill_scale;
 	NhlGenArray	fill_scales;
+	float           fill_dot_size;
 
 	NhlBoolean	mono_line_color;
 	NhlGenArray	line_colors;

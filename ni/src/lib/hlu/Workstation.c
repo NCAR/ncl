@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.99 2003-05-31 00:32:25 dbrown Exp $
+ *      $Id: Workstation.c,v 1.100 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -392,6 +392,9 @@ static NhlResource resources[] = {
 	{_NhlNwkFillLineThicknessF,_NhlCwkFillLineThicknessF,NhlTFloat,
 		sizeof(float),POset(fill_line_thickness),NhlTString,
 		_NhlUSET("1.0"),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+	{_NhlNwkFillDotSizeF,_NhlCwkFillDotSizeF,NhlTFloat,
+		sizeof(float),POset(fill_dot_size),NhlTString,
+		_NhlUSET("0.0"),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkEdgesOn,_NhlCwkEdgesOn,NhlTBoolean,sizeof(NhlBoolean),
 		POset(edges_on),NhlTImmediate,_NhlUSET(False),
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
@@ -4404,11 +4407,18 @@ WorkstationFill
 		c_sfseti("DO", Fill_Specs[ix].dots_on);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		if (Fill_Specs[ix].dots_on) {
+			/*
 			gset_marker_colr_ind(fill_color);
+			*/
+			if (wkfp->fill_dot_size > 0.0) {
+				c_sfseti("DO", -1);
+				c_sfsetr("DS",wkfp->fill_dot_size);
+			}
+			c_sfseti("DC",fill_color);
 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,-1);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
-		if (Fill_Specs[ix].type > 0) { 
+		else if (Fill_Specs[ix].type > 0) { 
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
@@ -5949,7 +5959,7 @@ _NhlSetFillInfo
 	else if (ix > wk_p->fill_table_len) {
 		/* NhlINFO - but it's a void function right now */
 		NhlPError(NhlINFO,NhlEUNKNOWN,
-	 "_NhlSetLineInfo: using mod function on fill index: %d", ix);
+	 "_NhlSetFillInfo: using mod function on fill index: %d", ix);
 
 		ix = 1 + (ix - 1) % wk_p->fill_table_len;
 	}

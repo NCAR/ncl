@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.24 2002-08-14 19:34:11 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.25 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -143,6 +143,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlBoolean	mono_fill_scale;
 	float		fill_scale;
 	NhlGenArray	fill_scales;
+	float		fill_dot_size;
 
 	NhlmpFillAttrs	fill_default;
 	NhlmpFillAttrs	ocean;

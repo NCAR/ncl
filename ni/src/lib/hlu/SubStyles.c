@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.6 1999-03-27 00:44:55 dbrown Exp $
+ *      $Id: SubStyles.c,v 1.7 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -427,6 +427,9 @@ static NhlResource fillresources[] = {
 	{NhlNgsFillLineThicknessF,NhlCFillLineThicknessF,NhlTFloat,
 		sizeof(float),Oset(fill_line_thickness),NhlTString,
 		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
+	{NhlNgsFillDotSizeF,NhlCFillDotSizeF,NhlTFloat,
+		sizeof(float),Oset(fill_dot_size),NhlTString,
+		_NhlUSET("0.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsEdgesOn,NhlCEdgesOn,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(edges_on),NhlTImmediate,_NhlUSET(False),_NhlRES_DEFAULT,
 		NULL},

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.117 2003-05-31 00:32:07 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.118 2003-06-04 19:03:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -234,6 +234,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(fill_scales),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnFillDotSizeF, NhlCFillDotSizeF, NhlTFloat,
+		 sizeof(float),Oset(fill_dot_size),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
 /* General label resources */
 
@@ -7416,7 +7419,6 @@ static NhlErrorTypes ManageLabelBar
 	}
 
 	if (init || set_all) {
-
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -7443,6 +7445,8 @@ static NhlErrorTypes ManageLabelBar
 			   NhlNlbFillScaleF,cnp->fill_scale);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillScales,cnp->fill_scales);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
 		return ret;
 	}
 
@@ -7485,6 +7489,9 @@ static NhlErrorTypes ManageLabelBar
 	if (cnp->fill_scales != ocnp->fill_scales)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillScales,cnp->fill_scales);
+	if (cnp->fill_dot_size != ocnp->fill_dot_size)
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
 
 	return ret;
 }
@@ -10744,6 +10751,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				       _NhlNwkFillScaleFactorF,fscale,
 				       _NhlNwkFillBackground,
 				       Cnp->fill_background_color,
+				       _NhlNwkFillDotSizeF,Cnp->fill_dot_size,
 				       _NhlNwkEdgesOn,0,
 				       NULL);
 			
@@ -10920,10 +10928,6 @@ void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 	 */
 	_NHLCALLF(dprset,DPRSET)();
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-#if 0
-	c_dpsetc("CRG","'");
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-#endif
 
 	if (dpix < 0) 
 		dpix = NhlSOLIDLINE;

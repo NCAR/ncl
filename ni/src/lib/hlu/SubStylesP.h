@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStylesP.h,v 1.2 1996-04-26 23:38:16 dbrown Exp $
+ *      $Id: SubStylesP.h,v 1.3 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -87,6 +87,7 @@ typedef struct __NhlFillStyleInfo{
 	NhlColorIndex   fill_background;
 	float		fill_scale_factor;
 	float		fill_line_thickness;
+	float		fill_dot_size;
 	NhlBoolean	edges_on;
 	NhlDashIndex	edge_dash_pattern;
 	float		edge_thickness;

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.15 2001-12-05 00:19:03 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.16 2003-06-04 19:04:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -74,6 +74,7 @@ typedef struct _NhlLabelBarLayerPart {
 	NhlBoolean	mono_fill_scale;
 	float		fill_scale;
 	NhlGenArray	fill_scales;
+	float		fill_dot_size;
 	NhlGenArray	label_strings;
 	NhlGenArray	box_fractions;
 

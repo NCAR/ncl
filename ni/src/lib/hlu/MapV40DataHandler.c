@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.9 1999-03-19 22:05:49 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.10 2003-06-04 19:04:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2721,6 +2721,7 @@ static int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 		       _NhlNwkFillIndex, pat_ix,
 		       _NhlNwkFillColor, col_ix,
 		       _NhlNwkFillScaleFactorF,fscale,
+		       _NhlNwkFillDotSizeF,Mpp->fill_dot_size,
 		       _NhlNwkEdgesOn,0,
 		       NULL);
 	

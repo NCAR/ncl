@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.15 2001-07-09 23:56:48 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.16 2003-06-04 19:04:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,6 +139,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnMonoFillScale		"cnMonoFillScale"
 #define NhlNcnFillScaleF		"cnFillScaleF"
 #define NhlNcnFillScales		"cnFillScales"
+#define NhlNcnFillDotSizeF		"cnFillDotSizeF"
 
 #define NhlNcnMonoLineColor		"cnMonoLineColor"
 #define NhlNcnLineColor			"cnLineColor"

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.12 1999-10-18 22:25:53 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.13 2003-06-04 19:04:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -138,6 +138,9 @@ struct _NhlworkColorChangeDataRec{
 
 #define _NhlNwkFillLineThicknessF ".wkFillLineThicknessF"
 #define _NhlCwkFillLineThicknessF ".WkFillLineThicknessF"
+
+#define _NhlNwkFillDotSizeF 	  ".wkFillDotSizeF"
+#define _NhlCwkFillDotSizeF 	  ".WkFillDotSizeF"
 
 #define _NhlNwkEdgesOn		 ".wkEdgesOn"
 #define _NhlCwkEdgesOn		 ".WkEdgesOn"

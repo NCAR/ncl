@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.91 2003-05-31 00:32:23 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.92 2003-06-04 19:04:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -184,6 +184,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(fill_scales),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpFillDotSizeF, NhlCFillDotSizeF, NhlTFloat,
+		 sizeof(float),Oset(fill_dot_size),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
 /* default area resources */
 
