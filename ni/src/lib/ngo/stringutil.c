@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.c,v 1.5 2000-03-10 01:12:57 dbrown Exp $
+ *      $Id: stringutil.c,v 1.6 2000-06-07 21:45:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -124,7 +124,7 @@ extern char *NgTypedValueToString
                     *vlen = strlen(buffer);
                     return buffer;
             case NCLAPI_byte:
-                    sprintf(buffer,"0x%x",*(char*)valp);
+                    sprintf(buffer,"0x%x",*(unsigned char*)valp);
                     *vlen = strlen(buffer);
                     return buffer;
             default:

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.17 2000-05-16 01:59:21 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.18 2000-06-07 21:45:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -814,6 +814,8 @@ ValToDouble
                     dout = *(double*)valp;
                     return dout;
             case NCLAPI_byte:
+                    dout = (double)*(unsigned char*)valp;
+                    return dout;
             case NCLAPI_char:
                     dout = (double)*(char*)valp;
                     return dout;

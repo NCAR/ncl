@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.12 2000-05-16 01:59:16 dbrown Exp $
+ *      $Id: datagrid.c,v 1.13 2000-06-07 21:45:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -197,7 +197,7 @@ static void FillVisibleGrid
 		cell_width = MAX(1,cell_width);
 		break;
 	case NCLAPI_byte:
-		cell_width = MAX(2,cell_width);
+		cell_width = MAX(4,cell_width);
 		break;
 	case NCLAPI_short:
 	case NCLAPI_int:

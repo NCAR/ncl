@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.17 2000-05-19 00:12:51 dbrown Exp $
+ *      $Id: plotpage.c,v 1.18 2000-06-07 21:45:47 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -90,6 +90,8 @@ ValToDouble
                     dout = *(double*)valp;
                     return dout;
             case NCLAPI_byte:
+                    dout = (double)*(unsigned char*)valp;
+                    return dout;
             case NCLAPI_char:
                     dout = (double)*(char*)valp;
                     return dout;

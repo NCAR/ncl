@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.19 2000-05-16 01:59:17 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.20 2000-06-07 21:45:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -947,6 +947,8 @@ ValToDouble
                     dout = *(double*)valp;
                     return dout;
             case NCLAPI_byte:
+                    dout = (double)*(unsigned char*)valp;
+                    return dout;
             case NCLAPI_char:
                     dout = (double)*(char*)valp;
                     return dout;

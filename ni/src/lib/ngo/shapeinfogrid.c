@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.24 2000-05-16 01:59:34 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.25 2000-06-07 21:45:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -367,6 +367,8 @@ ValToDouble
                     dout = *(double*)valp;
                     return dout;
             case NCLAPI_byte:
+                    dout = (double)*(unsigned char*)valp;
+                    return dout;
             case NCLAPI_char:
                     dout = (double)*(char*)valp;
                     return dout;
