@@ -1,5 +1,5 @@
 /*
- *	$Id: med.c,v 1.5 1993-02-03 22:16:15 clyne Exp $
+ *	$Id: med.c,v 1.6 1994-03-05 00:31:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
 #include	<stdlib.h>
 #include	<ctype.h>
 #include	<string.h>
+#include	<signal.h>
 #include	"med.h"
 
 /*
@@ -395,6 +396,22 @@ static	char	*parse_command(med_data, line)
 	return (line);
 }
 
+/*
+ *	interupt signal handler
+ */
+static  void    sigint_handler(sig)
+        int     sig;
+{
+	medData.command_data.name = "quit!";
+	medData.command_data.add1 =
+	medData.command_data.add2 =
+	medData.command_data.add3 = -1;
+	medData.command_data.file = NULL;
+	medData.c = getcmd(medData.command_data.name);
+
+	medQuit(&medData);
+}
+
 		
 static	usage(message) 
 	char	*message;
@@ -514,6 +531,8 @@ main (argc, argv)
 	
 		medEdit(&medData);
 	}
+
+	(void)signal(SIGINT,&sigint_handler);
 		
 
 	/*
