@@ -44,9 +44,8 @@ begin
 ;
 ; Exponent equals 0.5
 ;
-  dssetr("exp", 0.5)
-  xexp = new(1,float)
-  dsgetr("exp",xexp)
+  dssetp("exp", 0.5)
+  xexp = dsgetp("exp")
   if (xexp.ne.0.5) then
     print("xexp should equal 0.5")
   end if
@@ -94,7 +93,7 @@ begin
 ;
 ; Exponent equals 1.0
 ;
-  dssetr("exp", 1.0)
+  dssetp("exp", 1.0)
   output = dsgrid2s(xi, yi, zi, xo, yo )
 
   drwtd2(gkswid, xo, yo, output, xeye, yeye, zeye, -6)
@@ -102,7 +101,7 @@ begin
 ;
 ; Exponent equals 5.0
 ;
-  dssetr("exp", 5.0)
+  dssetp("exp", 5.0)
   output = dsgrid2s(xi, yi, zi, xo, yo)
 
   drwtd2(gkswid, xo, yo, output, xeye, yeye, zeye, -6)

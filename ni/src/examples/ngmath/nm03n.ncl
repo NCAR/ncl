@@ -81,9 +81,9 @@ begin
 ;  aspects and slopes, set flag to return aspects and slopes in
 ;  radians.
 ;
-  nnseti("SDI - compute slopes and aspects",1)
-  nnseti("IGR - use gradient estimates",1)
-  nnseti("RAD - return results in radians",1)
+  nnsetp("SDI - compute slopes and aspects",1)
+  nnsetp("IGR - use gradient estimates",1)
+  nnsetp("RAD - return results in radians",1)
 ;
 ;  Do the interpolation.
 ;

@@ -30,7 +30,7 @@ begin
   yc = 1./(NUMYOUT-1.) 
   yi = ispan(0,NUMYOUT-1,1) * yc
 
-  nnseti("igr",1)
+  nnsetp("igr",1)
   zi = natgrids(x, y, z, xi, yi)
 
   NCGM=1
