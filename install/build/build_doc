@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build_doc,v 1.1 1995-06-06 18:12:00 haley Exp $
+#      $Id: build_doc,v 1.2 1995-06-07 14:14:13 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -129,7 +129,7 @@ $buildDirRoot = "/cyclone/ncargd/dist/binaries";	# default build repository
 $Version; 				# NCAR G version number
 $sizesFile; 				# path to size requirements file
 $install_dir = "INSTALL";       # where the INSTALL script lives
-$doc_dir = "doc";             # documentation directory
+$doc_dir = "NGDOC";             # documentation directory
 
 $SIG{'INT'} = 'sigint_handler';
 
