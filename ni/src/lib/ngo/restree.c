@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.1 1997-08-21 16:33:03 dbrown Exp $
+ *      $Id: restree.c,v 1.2 1997-08-21 16:35:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1208,7 +1208,7 @@ static void SelectCB
 
         if (editable && cb->column == 1)
                 off = CheckToggleSetState(rtp,cb->row);
-
+#if 0
         XtVaGetValues(pub_rtp->tree,
                       XmNrowPtr,rowptr,
                       XmNrowUserData,&ndata,
@@ -1217,7 +1217,7 @@ static void SelectCB
 
 	if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type))
 		EditEnum(rtp,cb->row,resp);
-
+#endif
         if (rtp->edit_row > -1) {
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
