@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.3 1991-08-15 17:18:50 clyne Exp $
+ *	$Id: rasview.c,v 1.4 1991-09-10 09:23:23 clyne Exp $
  */
 /*
  *	rasview.c
@@ -85,12 +85,6 @@ main(argc, argv)
 	pal_name = commLineOpt.palette;
 	verbose = ! commLineOpt.quiet;
 
-	/*
-	 * make sure nothing left on command line execpt file names
-	 */
-	for (i=0; i<argc; i++) {
-		if (*argv[i] == '-') usage(program_name, (char *) NULL);
-	}
 
 
 	/*
@@ -101,6 +95,13 @@ main(argc, argv)
 	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
 		perror(program_name);
 		exit(1);
+	}
+
+	/*
+	 * make sure nothing left on command line execpt file names
+	 */
+	for (i=0; i<argc; i++) {
+		if (*argv[i] == '-') usage(program_name, (char *) NULL);
 	}
 
 	/*
