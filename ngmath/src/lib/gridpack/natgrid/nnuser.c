@@ -154,7 +154,7 @@ void NGCALLF(nngeti,NNGETI) (char *pnam, int *ival)
    c_nngeti(pnam, ival);
 }
 
-void NGCALLF(f_nnsetc,F_NNSETC) (char *pnam, char *cval, int *clen)
+void NGCALLF(fnnsetc,FNNSETC) (char *pnam, char *cval, int *clen)
 {
    char cdum[256];
    int i;
@@ -166,7 +166,7 @@ void NGCALLF(f_nnsetc,F_NNSETC) (char *pnam, char *cval, int *clen)
    cdum[i] = '\0';
    c_nnsetc(pnam, cdum);
 }
-void NGCALLF(f_nngetc,F_NNGETC) (char *pnam, char *cval, int *clen)
+void NGCALLF(fnngetc,FNNGETC) (char *pnam, char *cval, int *clen)
 {
    char cdum[256] = {" "};
    int i,jf;
