@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_ws.m,v 1.4 1993-05-12 17:18:39 haley Exp $
+.\"	$Id: gopen_ws.m,v 1.5 1994-04-27 21:39:26 fred Exp $
 .\"
 .TH GOPEN_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -22,10 +22,9 @@ below).
 (Input) - An identifier specifying
 the specific type of output device targeted.  Each GKS package has
 an implementation-dependent set of workstation types that the
-package supports.  There are five
-legal workstation types in NCAR GKS:
+package supports.  The legal workstation types in NCAR GKS are:
 .IP "             1" 18
--  CGM
+-  NCGM
 .IP "             3" 18
 -  WISS
 .IP "             7" 18
@@ -34,6 +33,30 @@ legal workstation types in NCAR GKS:
 -  non-existing X11 window.
 .IP "            10" 18
 -  text dump of graphics output.
+.IP "            20" 18
+-  color PostScript in portrait mode.
+.IP "            21" 18
+-  color Encapsulated PostScript (EPS) in portrait mode.
+.IP "            22" 18
+-  color Encapsulated PostScript Interchange format (EPSI) in portrait mode.
+.IP "            23" 18
+-  monochrome PostScript in portrait mode.
+.IP "            24" 18
+-  monochrome Encapsulated PostScript (EPS) in portrait mode.
+.IP "            25" 18
+-  monochrome Encapsulated PostScript Interchange format (EPSI) in portrait mode.
+.IP "            26" 18
+-  color PostScript in landscape mode.
+.IP "            27" 18
+-  color Encapsulated PostScript (EPS) in landscape mode.
+.IP "            28" 18
+-  color Encapsulated PostScript Interchange format (EPSI) in landscape mode.
+.IP "            29" 18
+-  monochrome PostScript in landscape mode.
+.IP "            30" 18
+-  monochrome Encapsulated PostScript (EPS) in landscape mode.
+.IP "            31" 18
+-  monochrome Encapsulated PostScript Interchange format (EPSI) in landscape mode.
 .SH USAGE
 For workstation types of 1 (CGM)
 the connection ID is the name of the CGM file.
