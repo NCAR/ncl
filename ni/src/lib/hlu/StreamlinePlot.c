@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.36 1997-09-30 01:13:21 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.37 1997-10-03 20:34:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -357,7 +357,6 @@ static NhlResource resources[] = {
 	{NhlNstMinLineLengthF,NhlCstMinLineLengthF,
 		  NhlTFloat,sizeof(float),Oset(min_line_length),NhlTProcedure,
 		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
-
 /* General numerical string format option */
 
 	{NhlNstMagnitudeScalingMode,NhlCstMagnitudeScalingMode,
@@ -1240,7 +1239,9 @@ StreamlinePlotInitialize
         if (! stp->step_size_set) stp->step_size = 0.012;
 	if (! stp->min_line_spacing_set) stp->min_line_spacing = 0.01;
 	if (! stp->min_arrow_spacing_set) stp->min_arrow_spacing = 0.0;
+#if 0        
 	if (! stp->min_line_length_set) stp->min_line_length = 0.0;
+#endif        
 	       
 	if (! stp->zerof_lbl.height_set) 
 		stp->zerof_lbl.height = 0.01;
@@ -1364,7 +1365,9 @@ StreamlinePlotInitialize
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
 	stp->min_arrow_spacing_set = False;
+#if 0        
 	stp->min_line_length_set = False;
+#endif        
 
 	return ret;
 }
@@ -1491,8 +1494,10 @@ static NhlErrorTypes StreamlinePlotSetValues
 		stp->min_line_spacing_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNstMinArrowSpacingF))
 		stp->min_arrow_spacing_set = True;
+#if 0        
 	if (_NhlArgIsSet(args,num_args,NhlNstMinLineLengthF))
 		stp->min_line_length_set = True;
+#endif        
 
 	if (_NhlArgIsSet(args,num_args,NhlNstZeroFLabelFontHeightF))
 		stp->zerof_lbl.height_set = True;
@@ -1585,7 +1590,9 @@ static NhlErrorTypes StreamlinePlotSetValues
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
 	stp->min_arrow_spacing_set = False;
+#if 0        
 	stp->min_line_length_set = False;
+#endif        
 
 	return ret;
 }
@@ -4285,6 +4292,7 @@ static NhlErrorTypes    ManageViewDepResources
 				stnew->view.width / stold->view.width;
 		}
 	}
+#if 0        
 	if (! stp->min_line_length_set) {
 		if (init) {
 			stp->min_line_length *= 
@@ -4295,6 +4303,7 @@ static NhlErrorTypes    ManageViewDepResources
 				stnew->view.width / stold->view.width;
 		}
 	}
+#endif        
 
 	subret = AdjustText(&stp->zerof_lbl,stnew,stold,init);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
