@@ -3,7 +3,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C  Define two triangles.
 C
@@ -27,10 +27,10 @@ C
 C
 C  Set up a color table.
 C
-      CALL GSCR (1, 0, 1., 1., 1.)
-      CALL GSCR (1, 1, 1., 0., 0.)
-      CALL GSCR (1, 2, 0., 0., 1.)
-      CALL GSCR (1, 3, 0., 0., 0.)
+      CALL GSCR (IWKID, 0, 1., 1., 1.)
+      CALL GSCR (IWKID, 1, 1., 0., 0.)
+      CALL GSCR (IWKID, 2, 0., 0., 1.)
+      CALL GSCR (IWKID, 3, 0., 0., 0.)
 C
 C  Set fill area interior style to solid.
 C
@@ -69,3 +69,4 @@ C
 C
       STOP
       END
+

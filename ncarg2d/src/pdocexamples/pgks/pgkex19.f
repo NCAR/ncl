@@ -3,7 +3,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       DIMENSION X(100),Y(100)
 C
 C  Open GKS, open and activate a workstation.
@@ -14,9 +14,9 @@ C
 C
 C  Define a small color table for the CGM workstation.
 C
-      CALL GSCR(1, 0, 1.0, 1.0, 1.0)
-      CALL GSCR(1, 1, 0.4, 0.0, 0.4)
-      CALL GSCR(1, 2, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID 0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID 1, 0.4, 0.0, 0.4)
+      CALL GSCR(IWKID 2, 0.0, 0.0, 1.0)
 C
 C  Turn clipping off
 C
