@@ -5,4 +5,4 @@
 #define IHaveSubdirs
 
 SUBDIRS = \
-        ecsagrid edsgrid efitgrid enatgrid eshgrid
+        ecsagrid ecssgrid edsgrid efitgrid enatgrid eshgrid
