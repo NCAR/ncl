@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.84 2003-01-10 20:21:36 dbrown Exp $
+#      $Id: yMakefile,v 1.85 2003-02-05 21:43:57 haley Exp $
 #
 #########################################################################
 #									#
@@ -59,14 +59,14 @@ PROG_LIBS	=	$(NFPLIB) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIB) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
 #if defined(SUN)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3_dp -llapack -lblas -lxlf90 -lxlopt
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -llapack -lblas -lxlf90 -lxlopt
 EXTRA_CLDFLAGS	= -bexpall -brtl
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) -lsphere3_dp -lcomplib.sgimath
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -lcomplib.sgimath
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) -lsphere3_dp -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -llapack -lblas
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
@@ -111,7 +111,7 @@ EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 APISRCS		=	$(API_SRCS) $(SRCS)
 EXESRCS		=	$(EXE_SRCS) $(SRCS)
 ALLSRCS		=	$(EXESRCS)
-SRCS		=	$(GEN_SRCS) $(STATIC_SRCS) $(HDFEOS_SRC)
+SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
 GEN_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypeint.c NclTypelogical.c \
@@ -131,18 +131,10 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c NclHDF.c NclGRIB.c date.c \
+			HLUFunctions.c NclHDF.c NclHDFEOS.c NclGRIB.c date.c \
 			yywrap.c GetGrids.c NclCCM.c craybin.c ctoiee.c \
 			complete.c editline.c sysunix.c ListSupport.c \
 			NclList.c NclMultiDVallistData.c NclTypelist.c
-
-#if defined(AIX)
-HDFEOS_SRC	=
-HDFEOS_OBJ	=
-#else
-HDFEOS_SRC	=	NclHDFEOS.c
-HDFEOS_OBJ	=	NclHDFEOS.o
-#endif
 
 FSRCS		=	fortranio.f gaus.f QU2REG.f
 FOBJS		=	fortranio.o gaus.o QU2REG.o
@@ -163,13 +155,12 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o NclHDF.o NclGRIB.o date.o \
+			HLUFunctions.o NclHDF.o NclHDFEOS.o NclGRIB.o date.o \
 			yywrap.o GetGrids.o NclCCM.o craybin.o ctoiee.o \
 			complete.o editline.o sysunix.o ListSupport.o \
 			NclList.o NclMultiDVallistData.o NclTypelist.o
 
-
-OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(HDFEOS_OBJ) $(FOBJS)
+OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
@@ -180,7 +171,7 @@ EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS)
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
-BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
