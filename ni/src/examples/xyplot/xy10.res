@@ -33,6 +33,7 @@
 !
 ! Map Resources
 !
+*mpPerimOn:                      True
 *mpFillOn:                       True
 *mpGridAndLimbOn:                False
 *mpOutlineOn:                    False
