@@ -8,7 +8,7 @@ C Get some data
 C Open GKS
         CALL OPNGKS
 C Call CPEZCT
-        CALL CPCNRC (ZREG,M,M,N,-40.,50.,10.,0,0,-4745)
+        CALL CPCNRC (ZREG,M,M,N,-40.,50.,10.,0,0,-366)
 C Close GKS
         CALL CLSGKS
 
