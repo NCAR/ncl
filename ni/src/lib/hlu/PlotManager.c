@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.15 1995-07-28 22:51:44 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.16 1995-08-22 18:32:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -822,6 +822,7 @@ PlotManagerInitialize
 	}
 	ovnew->trans.overlay_object = new;
 	ovnew->trans.trans_obj = parent->trans.trans_obj;
+	ovnew->trans.overlay_trans_obj = ovnew->trans.trans_obj;
 	ovp->trans_change_count = 0;
 	ovp->trans_changed = True;
 /*
@@ -982,7 +983,7 @@ static NhlErrorTypes PlotManagerSetValues
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
 
-	subret = NhlVAGetValues(ovnew->trans.trans_obj->base.id,
+	subret = NhlVAGetValues(ovnew->trans.overlay_trans_obj->base.id,
 				NhlNtrChangeCount,&trans_change_count,
 				NULL);
 	if (trans_change_count != ovp->trans_change_count ||
