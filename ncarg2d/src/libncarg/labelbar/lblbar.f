@@ -1,5 +1,5 @@
 C
-C $Id: lblbar.f,v 1.7 1994-05-16 18:36:43 kennison Exp $
+C $Id: lblbar.f,v 1.8 1994-08-22 15:34:37 kennison Exp $
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)
@@ -304,20 +304,20 @@ C
               CALL PCGETR ('DT - DISTANCE TO TOP EDGE'   ,DSTT)
               IF (ICFELL('LBLBAR',17).NE.0) RETURN
               IF (IHOV.EQ.0) THEN
-                IF ((1.-HSFB)*HSOB.LT.RMUL*(DSTB+DSTT+2.*WCHO))
-     +          WCHR=WCHO*(((1.-HSFB)*HSOB)/(RMUL*(DSTB+DSTT+2.*WCHO)))
+                IF ((1.-HSFB)*HSOB.LT.RMUL*(DSTB+DSTT+WCHO))
+     +          WCHR=WCHO*(((1.-HSFB)*HSOB)/(RMUL*(DSTB+DSTT+WCHO)))
                 IF (1.-XPB1.LT.DSTR+WCHO)
      +          WCHR=MIN(WCHR,WCHO*((1.-XPB1)/(DSTR+WCHO)))
                 IF (XPB1-XPLL.LT.DRLL+DSTL+2.*WCHO)
      +          WCHR=MIN(WCHR,WCHO*((XPB1-XPLL)/(DRLL+DSTL+2.*WCHO)))
-                HMAX=MAX(HMAX,DSTB+DSTT+2.*WCHO)*(WCHR/WCHO)
+                HMAX=MAX(HMAX,DSTB+DSTT+WCHO)*(WCHR/WCHO)
               ELSE
                 IF ((1.-WSFB)*WSOB.LT.RMUL*(DSTL+DSTR+2.*WCHO))
      +          WCHR=WCHO*(((1.-WSFB)*WSOB)/(RMUL*(DSTL+DSTR+2.*WCHO)))
-                IF (1.-YPB1.LT.DSTT+WCHO)
-     +          WCHR=MIN(WCHR,WCHO*((1.-YPB1)/(DSTT+WCHO)))
-                IF (YPB1-YPLL.LT.DTLL+DSTB+2.*WCHO)
-     +          WCHR=MIN(WCHR,WCHO*((YPB1-YPLL)/(DTLL+DSTB+2.*WCHO)))
+                IF (1.-YPB1.LT.DSTT+.5*WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((1.-YPB1)/(DSTT+.5*WCHO)))
+                IF (YPB1-YPLL.LT.DTLL+DSTB+WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((YPB1-YPLL)/(DTLL+DSTB+WCHO)))
               END IF
               XPLL=XPB1
               YPLL=YPB1
