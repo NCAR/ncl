@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.49 2004-08-26 15:38:39 asphilli Exp $
+;      $Id: contributed.ncl,v 1.50 2004-10-01 22:24:13 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5126,6 +5126,29 @@ begin
   system(cmd)
   print ("msrcp_mss2local: "+dims(0)+" files: tEnd  = "+systemfunc("date"))
 end 
+;*************************************************************************
+; D. Shea
+;
+; given, say, yyyymm = (/ 197901 , 198407, 200112 /)
+;       yrFrac = yyyymm2yyyyFrac (yyyymm)
+;       yrFrac ==> [1979.0 , 1979.5 , 2001.917]
+;
+; yyyymm       - scalar or array of dates
+; 
+function yyyymm2yyyyFrac (yyyymm:integer)
+local year, mon
+begin
+  year = yyyymm/100 
+  mon  = yyyymm-year*100  
+  yrFrac = year + (mon-1)/12.
+
+  yrFrac@long_name = "Time"
+  yrFrac@units     = "YYYY + fractional portion of year"
+  yrFrac@info      = "derived using: function yyyymm2yyyyFrac"
+     
+  return(yrFrac)
+end
+
 
 ;*************************************************************************
 ; D. Shea
