@@ -61,6 +61,10 @@ NhlErrorTypes filwgts_lancos_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be >= 3");
     return(NhlFATAL);
   }
+  if(!(*nwgt % 2)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be odd");
+    return(NhlFATAL);
+  }
   nfreq = (*nwgt*2)+3;
   nwgt2 = *nwgt + 2;    /* We will strip off the first and last
                             points later. */
