@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.7 1994-07-12 20:51:13 boote Exp $
+ *      $Id: Convert.h,v 1.8 1994-12-16 20:03:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -112,7 +112,7 @@ NhlErrorTypes NhlConvertData(
  */
 
 NhlPointer NhlConvertMalloc(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	unsigned int	size	/* size of memory requested	*/
 #endif
 );

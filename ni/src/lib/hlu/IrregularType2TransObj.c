@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.13 1994-11-23 22:41:47 ethan Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.14 1994-12-16 20:04:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -115,7 +115,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes  IrTransSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -125,7 +125,7 @@ static NhlErrorTypes  IrTransSetValues(
 );
 
 static NhlErrorTypes IrTransInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -136,7 +136,7 @@ static NhlErrorTypes IrTransInitialize(
 
 
 static NhlErrorTypes IrTransDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        /* inst */
 #endif
 );
@@ -147,7 +147,7 @@ static NhlErrorTypes IrTransDestroy(
 */
 
 static NhlErrorTypes IrSetTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer  /*parent*/
 #endif
@@ -155,7 +155,7 @@ NhlLayer  /*parent*/
 
 
 static NhlErrorTypes IrWinToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer	/* parent */,
 float*	/*x*/,
@@ -171,7 +171,7 @@ int * 	/* status */
 
 
 static NhlErrorTypes IrNDCToWin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer	/*parent */,
 float*	/*x*/,
@@ -187,7 +187,7 @@ int *   /* status */
 
 
 static NhlErrorTypes IrDataToCompc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance */,
 NhlLayer   /*parent */,
 float*  /*x*/,
@@ -202,7 +202,7 @@ int *   /* status */
 );
 
 static NhlErrorTypes IrCompcToData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance */,
 NhlLayer   /*parent */,
 float*  /*x*/,
@@ -217,7 +217,7 @@ int *   /* status */
 );
 
 static NhlErrorTypes IrWinToCompc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance */,
 NhlLayer   /*parent */,
 float*  /*x*/,
@@ -366,7 +366,7 @@ NhlLayerClass NhlirregularType2TransObjLayerClass =
  */
 /*ARGSUSED*/
 static NhlErrorTypes IrTransSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference, new,args,num_args)
@@ -397,7 +397,7 @@ static NhlErrorTypes IrTransSetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes IrTransInitialize
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
@@ -425,7 +425,7 @@ static NhlErrorTypes IrTransInitialize
  * Side Effects:	NONE
  */
 static NhlErrorTypes IrTransDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -448,7 +448,7 @@ NhlLayer inst;
 }
 
 static NhlErrorTypes SetUpTrans
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer new, NhlLayer old, int c_or_s,_NhlArgList args, int nargs)
 #else
 (new,old,c_or_s,args, nargs)
@@ -813,7 +813,7 @@ static NhlErrorTypes SetUpTrans
  */
 
 static NhlErrorTypes IrSetTrans
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent) 
 #else
 (instance, parent)
@@ -862,7 +862,7 @@ NhlLayer   parent;
  * Side Effects:
  */
 static NhlBoolean compare_check
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlIrregularType2TransObjLayerPart *irp,
 	float	*x,
@@ -936,7 +936,7 @@ static NhlBoolean compare_check
  * Side Effects:
  */
 static NhlBoolean compare_view
-#if  __STDC__
+#if	NhlNeedProto
 (
         float *x,
         float *y,
@@ -1000,7 +1000,7 @@ static NhlBoolean compare_view
  */
 
 static NhlErrorTypes IrWinToNDC
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -1102,7 +1102,7 @@ static NhlErrorTypes IrWinToNDC
  * Side Effects:
  */
 static NhlErrorTypes IrNDCToWin
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float * xmissing, float *ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -1203,7 +1203,7 @@ static NhlErrorTypes IrNDCToWin
  */
 /*ARGSUSED*/
 static NhlErrorTypes IrDataToCompc
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing, int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -1264,7 +1264,7 @@ static NhlErrorTypes IrDataToCompc
  */
 /*ARGSUSED*/
 static NhlErrorTypes IrCompcToData
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -1311,7 +1311,7 @@ static NhlErrorTypes IrCompcToData
 
 
 static NhlErrorTypes IrDataLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
@@ -1390,7 +1390,7 @@ int upordown;
 
 /*ARGSUSED*/
 static NhlErrorTypes IrWinLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)
@@ -1463,7 +1463,7 @@ int upordown;
 
 /*ARGSUSED*/
 static NhlErrorTypes IrNDCLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
@@ -1539,7 +1539,7 @@ int upordown;
 
 /*ARGSUSED*/
 static NhlErrorTypes IrWinToCompc
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -1582,7 +1582,7 @@ int* status;
         return(ret);
 }
 static NhlErrorTypes IrTransGetValues
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int nargs)
 #else
 (l, args, nargs)

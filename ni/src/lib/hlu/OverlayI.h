@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.6 1994-06-07 18:54:22 dbrown Exp $
+ *      $Id: OverlayI.h,v 1.7 1994-12-16 20:04:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ typedef struct	_NhlAnnotationRec {
  */
 
 extern NhlErrorTypes _NhlManageOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	*overlay_object,
 	NhlLayer	lnew,
 	NhlLayer	lold,
@@ -76,7 +76,7 @@ extern NhlErrorTypes _NhlManageOverlay(
 );
 
 extern void _NhlovCpMapXY(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xin,
 	float *yin,
 	float* xout,
@@ -85,7 +85,7 @@ extern void _NhlovCpMapXY(
 );
 
 extern void _NhlovCpInvMapXY(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xin,
 	float *yin,
 	float* xout,

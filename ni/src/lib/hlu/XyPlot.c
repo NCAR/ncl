@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.27 1994-12-16 19:22:24 boote Exp $
+ *      $Id: XyPlot.c,v 1.28 1994-12-16 20:05:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,7 @@ typedef enum _CallType{
 /*ARGSUSED*/
 static NhlErrorTypes
 CompXMin
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -88,7 +88,7 @@ CompXMin
 /*ARGSUSED*/
 static NhlErrorTypes
 SetXMin
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -113,7 +113,7 @@ SetXMin
 /*ARGSUSED*/
 static NhlErrorTypes
 CompXMax
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -138,7 +138,7 @@ CompXMax
 /*ARGSUSED*/
 static NhlErrorTypes
 SetXMax
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -163,7 +163,7 @@ SetXMax
 /*ARGSUSED*/
 static NhlErrorTypes
 CompYMax
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -188,7 +188,7 @@ CompYMax
 /*ARGSUSED*/
 static NhlErrorTypes
 SetYMax
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -213,7 +213,7 @@ SetYMax
 /*ARGSUSED*/
 static NhlErrorTypes
 CompYMin
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -238,7 +238,7 @@ CompYMin
 /*ARGSUSED*/
 static NhlErrorTypes
 SetYMin
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	cname,
@@ -431,7 +431,7 @@ static NhlResource resources[] = {
 /* base methods */
 
 static NhlErrorTypes XyDataSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -441,7 +441,7 @@ static NhlErrorTypes XyDataSetValues(
 );
 
 static NhlErrorTypes XyPlotSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -451,7 +451,7 @@ static NhlErrorTypes XyPlotSetValues(
 );
 
 static NhlErrorTypes XyDataGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	l,
         _NhlArgList	args,
         int		nargs
@@ -459,7 +459,7 @@ static NhlErrorTypes XyDataGetValues(
 );
 
 static NhlErrorTypes XyPlotGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	l,
         _NhlArgList	args,
         int		nargs
@@ -467,7 +467,7 @@ static NhlErrorTypes XyPlotGetValues(
 );
 
 static NhlErrorTypes XyDataInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* cname */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -477,7 +477,7 @@ static NhlErrorTypes XyDataInitialize(
 );
 
 static NhlErrorTypes XyPlotInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* cptr */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -487,31 +487,31 @@ static NhlErrorTypes XyPlotInitialize(
 );
 
 static NhlErrorTypes XyPlotClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes XyDataClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes XyPlotClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes XyPlotDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes XyPlotDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
@@ -521,7 +521,7 @@ static NhlErrorTypes XyPlotDraw(
 */
 
 static NhlErrorTypes XyPlotGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
@@ -532,7 +532,7 @@ static NhlErrorTypes XyPlotGetBB(
 */
 
 static NhlErrorTypes XyPlotDataToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -547,7 +547,7 @@ static NhlErrorTypes XyPlotDataToNDC(
 );
 
 static NhlErrorTypes XyPlotNDCToData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -562,14 +562,14 @@ static NhlErrorTypes XyPlotNDCToData(
 );
 
 static NhlErrorTypes XyPlotUpdateData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlDataCommLayer	new,
 	NhlDataCommLayer	old
 #endif
 );
 
 static NhlErrorTypes CheckValues(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
@@ -577,7 +577,7 @@ static NhlErrorTypes CheckValues(
 );
 
 static NhlErrorTypes InternalizePointers(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
@@ -585,7 +585,7 @@ static NhlErrorTypes InternalizePointers(
 );
 
 static NhlErrorTypes ComputeDataExtents(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
@@ -593,7 +593,7 @@ static NhlErrorTypes ComputeDataExtents(
 );
 
 static NhlErrorTypes SetUpTransObjs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
@@ -601,14 +601,14 @@ static NhlErrorTypes SetUpTransObjs(
 );
 
 static NhlErrorTypes SetUpTicks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 static NhlErrorTypes SetUpTitles(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
@@ -616,7 +616,7 @@ static NhlErrorTypes SetUpTitles(
 );
 
 static NhlErrorTypes DrawCurves(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlXyPlotLayer	xlayer
 #endif
 );
@@ -729,7 +729,7 @@ NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlfxydatadeplayerclass,NHLFXYDATADEPLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -755,7 +755,7 @@ _NHLCALLF(nhlfxydatadeplayerclass,NHLFXYDATADEPLAYERCLASS)
  */
 NhlLayerClass
 _NHLCALLF(nhlfxyplotlayerclass,NHLFXYPLOTLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -801,7 +801,7 @@ static NrmQuark Qlabels = NrmNULLQUARK;
  */
 static NhlErrorTypes
 XyDataClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -852,7 +852,7 @@ XyDataClassInitialize
  */
 static NhlErrorTypes
 XyPlotClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -912,7 +912,7 @@ XyPlotClassInitialize
  */
 static NhlErrorTypes
 XyPlotClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
@@ -974,7 +974,7 @@ XyPlotClassPartInitialize
  */
 static NhlErrorTypes
 XyPlotChanges
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -1047,7 +1047,7 @@ XyPlotChanges
 /*ARGSUSED*/
 static NhlErrorTypes
 XyDataInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	cptr,
 	NhlLayer		req,
@@ -1201,7 +1201,7 @@ XyDataInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 XyPlotInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	cptr,
 	NhlLayer		req,
@@ -1250,7 +1250,7 @@ XyPlotInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 XyDataSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,
 	NhlLayer		reference,
@@ -1405,7 +1405,7 @@ XyDataSetValues
 /*ARGSUSED*/
 static NhlErrorTypes
 XyPlotSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,
 	NhlLayer		reference,
@@ -1606,7 +1606,7 @@ XyPlotGetValues
  */
 static NhlErrorTypes
 DrawCurves
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xlayer
 )
@@ -2313,7 +2313,7 @@ DrawCurves
  */	
 
 static NhlErrorTypes XyPlotDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2392,7 +2392,7 @@ static NhlErrorTypes XyPlotDraw
  * Side Effects:	NhlNONE
  */
 static NhlErrorTypes XyPlotDataToNDC
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status,float* out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing, status, out_of_range)
@@ -2476,7 +2476,7 @@ static NhlErrorTypes XyPlotDataToNDC
  * Side Effects:	 NhlNONE
  */
 static NhlErrorTypes XyPlotNDCToData
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status, float* out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
@@ -2563,7 +2563,7 @@ static NhlErrorTypes XyPlotNDCToData
  * Side Effects:	NhlNONE
  */
 static NhlErrorTypes XyPlotDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -2613,7 +2613,7 @@ NhlLayer inst;
  * Side Effects:   NhlNONE.
  */
 static NhlErrorTypes XyPlotGetBB
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox* thebox)
 #else
 (instance,thebox)
@@ -2655,7 +2655,7 @@ static NhlErrorTypes XyPlotGetBB
  */
 static NhlErrorTypes
 XyPlotUpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayer	new,
 	NhlDataCommLayer	old
@@ -2711,7 +2711,7 @@ XyPlotUpdateData
  */
 static NhlErrorTypes
 CheckExtent
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlBoolean	extent_change,
 	NhlBoolean	compute_change,
@@ -2768,7 +2768,7 @@ CheckExtent
  */
 static NhlErrorTypes
 CheckValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -2975,7 +2975,7 @@ CheckValues
  */
 static NhlErrorTypes
 InternalizePointers
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -3257,7 +3257,7 @@ InternalizePointers
  */
 static NhlErrorTypes
 ComputeDataExtents
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -3487,7 +3487,7 @@ ComputeDataExtents
  */
 static NhlErrorTypes
 SetUpTransObjs
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -3874,7 +3874,7 @@ SetUpTransObjs
 /*ARGSUSED*/
 static NhlErrorTypes
 SetUpTicks
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
@@ -4117,7 +4117,7 @@ SetUpTicks
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetUpTitles
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.23 1994-12-16 19:22:19 boote Exp $
+ *      $Id: TickMark.c,v 1.24 1994-12-16 20:04:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -629,27 +629,27 @@ static NhlResource resources[] = {
 };
 
 static NhlErrorTypes DrawLabels (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer /*tlayer*/
 #endif 
 );
 static NhlErrorTypes DrawTicks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer /*tlayer*/
 #endif 
 );
 static NhlErrorTypes	DrawGrid(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer /*tlayer*/
 #endif 
 );
 static NhlErrorTypes	DrawBorder(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer /*tlayer*/
 #endif 
 );
 static NhlErrorTypes ComputeMinorTickMarks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int minorpermajor,
 	float spacing,
 	float tstart,
@@ -665,7 +665,7 @@ static NhlErrorTypes ComputeMinorTickMarks(
 #endif 
 );
 static NhlErrorTypes AutoComputeMajorTickMarks(
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
         NhlTickMarkStyles  /* style*/,
         float */*array*/,
         char** /*larray*/,
@@ -681,7 +681,7 @@ static NhlErrorTypes AutoComputeMajorTickMarks(
 #endif
 );
 static NhlErrorTypes ManualComputeMajorTickMarks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlTickMarkStyles /*style*/,
         float */*array*/,
         char** /*larray*/,
@@ -697,7 +697,7 @@ static NhlErrorTypes ManualComputeMajorTickMarks(
 #endif
 );
 static NhlErrorTypes ChooseSpacingLin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float * /*tstart*/,
 float * /*tend*/,
 float * /*spacing*/,
@@ -706,7 +706,7 @@ int /*max_ticks*/
 #endif
 );
 static NhlErrorTypes ChooseSpacingLog(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float * /*tstart*/,
 float * /*tend*/,
 float * /*spacing*/,
@@ -716,7 +716,7 @@ int /* max_ticks */
 );
 
 static NhlErrorTypes ExplicitComputeMajorTickMarks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkStyles /*style*/,
 float */*array*/,
 char** /*larray*/,
@@ -737,7 +737,7 @@ int /* n_requested */
 /* Method function declarations */
 
 static NhlErrorTypes	TickMarkSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -747,7 +747,7 @@ static NhlErrorTypes	TickMarkSetValues(
 );
 
 static NhlErrorTypes	TickMarkInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -757,25 +757,25 @@ static NhlErrorTypes	TickMarkInitialize(
 );
 
 static NhlErrorTypes	TickMarkDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes	TickMarkClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes	TickMarkDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes TickMarkGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        l,
         _NhlArgList     args,
         int             nargs
@@ -784,31 +784,31 @@ static NhlErrorTypes TickMarkGetValues(
 );
 
 static void SetTop(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */
 #endif
 );
 static void SetRight(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */
 #endif
 );
 static NhlErrorTypes CheckKeyVals(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckManual(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckExplicit(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 _NhlArgList	/* args */,
@@ -817,21 +817,21 @@ int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckNotAuto(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckLog(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckIrregular(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 _NhlArgList	/* args */,
@@ -840,21 +840,21 @@ int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckTime(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes CheckGeographic(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
 static NhlErrorTypes ComputeTickInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
@@ -862,7 +862,7 @@ int		/* c_or_s */
 );
 
 static NhlErrorTypes TransformLocations(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
@@ -873,7 +873,7 @@ int		/* c_or_s */
 #define SET 0
 
 static NhlErrorTypes ComputeAndSetLabelInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer 	/* told */,
 int		/* cors */
@@ -881,7 +881,7 @@ int		/* cors */
 );
 
 static NhlErrorTypes CreateXTYRTransformInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	tnew,
 _NhlArgList	args,
 int		num_args
@@ -889,7 +889,7 @@ int		num_args
 );
 
 static NhlErrorTypes ChangeTransformInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	tnew,
 NhlTickMarkLayer 	told,
 _NhlArgList	args,
@@ -898,7 +898,7 @@ int		num_args
 );
 
 static NhlErrorTypes CreateXBYLTransformInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	tnew,
 _NhlArgList	args,
 int		num_args
@@ -906,7 +906,7 @@ int		num_args
 );
 
 static NhlErrorTypes ScaleValuesForMove(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
 NhlTickMarkLayer 	/* treq*/,
 _NhlArgList	/* args */,
@@ -921,14 +921,14 @@ int		/* c_or_s */
 */
 
 static NhlErrorTypes TickMarkGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
 );
 
 static char *ConvertToString(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		value,
 	int		convert_precision,
 	int		compare_precision,
@@ -994,7 +994,7 @@ NhlLayerClass NhltickMarkLayerClass = (NhlLayerClass)&NhltickMarkLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlftickmarklayerclass,NHLFTICKMARKLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1054,7 +1054,7 @@ static NrmQuark QYRLabels;
  */
 /*ARGSUSED*/
 static NhlErrorTypes	TickMarkSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -1294,7 +1294,7 @@ static NhlErrorTypes	TickMarkSetValues
 
 /*ARGSUSED*/
 static NhlErrorTypes	TickMarkInitialize
-#if	__STDC__
+#if	NhlNeedProto
 ( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
@@ -1561,7 +1561,7 @@ static NhlErrorTypes	TickMarkInitialize
  * Side Effects: Objects have been destroyed and all internal memory freed.
  */
 static NhlErrorTypes	TickMarkDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -1682,7 +1682,7 @@ static NhlErrorTypes	TickMarkDestroy
  * Side Effects:	Two new quark values assigned.
  */
 static NhlErrorTypes	TickMarkClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()
@@ -1745,7 +1745,7 @@ static NhlErrorTypes	TickMarkClassInitialize
  * Side Effects:	GKS state changes 
  */
 static NhlErrorTypes	TickMarkDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -1853,7 +1853,7 @@ static NhlErrorTypes	TickMarkDraw
  * Side Effects: GKS state changes
  */
 static NhlErrorTypes DrawGrid 
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tlayer)
 #else
 (tlayer)
@@ -2018,7 +2018,7 @@ NhlTickMarkLayer tlayer;
  * Side Effects: Change in GKS state.
  */
 static NhlErrorTypes DrawTicks
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tlayer)
 #else
 (tlayer)
@@ -2169,7 +2169,7 @@ NhlTickMarkLayer tlayer;
  * Side Effects:	GKS state changes
  */
 static NhlErrorTypes DrawBorder
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tlayer)
 #else
 (tlayer)
@@ -2254,7 +2254,7 @@ static NhlErrorTypes DrawBorder
  * Side Effects:	GKS state  changes
  */
 static NhlErrorTypes DrawLabels
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tlayer)
 #else
 (tlayer)
@@ -2334,7 +2334,7 @@ NhlTickMarkLayer tlayer;
  */
 /*ARGSUSED*/
 static NhlErrorTypes TickMarkGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -2395,7 +2395,7 @@ static NhlErrorTypes TickMarkGetBB
  * Side Effects: NONE
  */
 static NhlErrorTypes AutoComputeMajorTickMarks
-#if   __STDC__ 
+#if	NhlNeedProto
 (
 	NhlTickMarkStyles  style,
 	float *array,
@@ -2593,7 +2593,7 @@ int		cutoff;
  */
 /*ARGSUSED*/
 static NhlErrorTypes ManualComputeMajorTickMarks
-#if   __STDC__
+#if	NhlNeedProto
 (
 	NhlTickMarkStyles style,
 	float *array,
@@ -2777,7 +2777,7 @@ int		cutoff;
  */
 /*ARGSUSED*/
 static NhlErrorTypes ExplicitComputeMajorTickMarks
-#if   __STDC__
+#if	NhlNeedProto
 (NhlTickMarkStyles style,float *array,char** larray,float dmax,float dmin,float tstart,float tend,int convert_precision,float *requested_points,char** requested_labels,int *nmajor,int n_requested)
 #else
 (style,array,larray,dmax,dmin,tstart,tend,convert_precision,requested_points,requested_labels,nmajor,n_requested)
@@ -2884,7 +2884,7 @@ int n_requested;
  * Side Effects: NONE
  */
 static NhlErrorTypes ChooseSpacingLin
-#if	__STDC__
+#if	NhlNeedProto
 (float *tstart,float *tend,float *spacing,int convert_precision,int max_ticks)
 #else
 (tstart,tend,spacing,convert_precision,max_ticks)
@@ -2955,7 +2955,7 @@ int	max_ticks;
  * Side Effects: NONE
  */
 static NhlErrorTypes ChooseSpacingLog
-#if	__STDC__
+#if	NhlNeedProto
 (float *tstart,float *tend,float *spacing,int convert_precision,int max_ticks)
 #else
 (tstart,tend,spacing,convert_precision,max_ticks)
@@ -3031,7 +3031,7 @@ int	max_ticks;
  * Side Effects: NONE
  */
 static char *ConvertToString
-#if __STDC__
+#if	NhlNeedProto
 (
 	float		value,
 	int		convert_precision,
@@ -3163,7 +3163,7 @@ int	cutoff;
  * Side Effects:	NONE
  */
 static NhlErrorTypes ComputeMinorTickMarks
-#if __STDC__
+#if	NhlNeedProto
 (
 	int minorpermajor,
 	float spacing,
@@ -3513,7 +3513,7 @@ static NhlErrorTypes ComputeMinorTickMarks
  * Side Effects:	NONE
  */
 static void SetTop
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew)
 #else
 (tnew)
@@ -3584,7 +3584,7 @@ static void SetTop
  *
  */
 static void SetRight
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer	tnew)
 #else
 (tnew)
@@ -3643,7 +3643,7 @@ NhlTickMarkLayer	tnew;
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckKeyVals
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew,NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -3751,7 +3751,7 @@ static NhlErrorTypes CheckKeyVals
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckManual
-#if	__STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer	tnew, NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -3875,7 +3875,7 @@ static NhlErrorTypes CheckManual
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckNotAuto
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer  tnew,NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -3971,7 +3971,7 @@ static NhlErrorTypes CheckNotAuto
  */
 NhlGenArray
 CopyLabelArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray	oldarr,
 	NhlGenArray	minarr
@@ -4042,7 +4042,7 @@ CopyLabelArray
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckExplicit
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew,NhlTickMarkLayer told,_NhlArgList args, int num_args, int c_or_s)
 #else
 (tnew,told,args,num_args,c_or_s)
@@ -4553,7 +4553,7 @@ static NhlErrorTypes CheckExplicit
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckLog
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer	tnew,NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -4756,7 +4756,7 @@ static NhlErrorTypes CheckLog
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckIrregular
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, NhlTickMarkLayer told, _NhlArgList args, int num_args, int c_or_s)
 #else
 (tnew,told,args,num_args,c_or_s)
@@ -5151,7 +5151,7 @@ static NhlErrorTypes CheckIrregular
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckTime
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -5214,7 +5214,7 @@ static NhlErrorTypes CheckTime
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckGeographic
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew,NhlTickMarkLayer told,int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -5284,7 +5284,7 @@ static NhlErrorTypes CheckGeographic
  */
 /*ARGSUSED*/
 static NhlErrorTypes ComputeTickInfo
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew,NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -5673,7 +5673,7 @@ static NhlErrorTypes ComputeTickInfo
  */
 /*ARGSUSED*/
 static NhlErrorTypes TransformLocations
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -6169,7 +6169,7 @@ static NhlErrorTypes TransformLocations
  */
 /*ARGSUSED*/
 static NhlErrorTypes ComputeAndSetLabelInfo
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew,NhlTickMarkLayer told, int c_or_s)
 #else
 (tnew,told,c_or_s)
@@ -6668,7 +6668,7 @@ int		c_or_s;
  */
 /*ARGSUSED*/
 static NhlErrorTypes CreateXBYLTransformInfo
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, _NhlArgList args, int num_args)
 #else
 (tnew,  args, num_args)
@@ -6866,7 +6866,7 @@ int num_args;
  */
 /*ARGSUSED*/
 static NhlErrorTypes CreateXTYRTransformInfo
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, _NhlArgList args, int num_args)
 #else
 (tnew,  args, num_args)
@@ -7055,7 +7055,7 @@ int num_args;
  */
 /*ARGSUSED*/
 static NhlErrorTypes ScaleValuesForMove
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, NhlTickMarkLayer told,_NhlArgList args, int num_args, int c_or_s)
 #else
 (tnew,told,args,num_args,c_or_s)
@@ -7216,7 +7216,7 @@ static NhlErrorTypes ScaleValuesForMove
  *		---> Important: This uses fields set in CheckIrregular <---- 
  */
 static NhlErrorTypes ChangeTransformInfo
-#if __STDC__
+#if	NhlNeedProto
 (NhlTickMarkLayer tnew, NhlTickMarkLayer told,_NhlArgList args, int num_args)
 #else
 (tnew, told, args, num_args)
@@ -7750,7 +7750,7 @@ int num_args;
 }
 
 static NhlErrorTypes TickMarkGetValues
-#if     __STDC__ 
+#if	NhlNeedProto
 (
         NhlLayer        l,
         _NhlArgList     args,

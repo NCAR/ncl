@@ -6,7 +6,7 @@
 
 
 void linaprox
-#if __STDC__
+#if	NhlNeedProto
 (int n,float *x,float *y,float *c)
 #else
 (n,x,y,c)
@@ -25,7 +25,7 @@ void linaprox
 }
 
 void evallinaprox
-#if __STDC__
+#if	NhlNeedProto
 (int n, float *x, float* y,float *c,float xval, float *yval)
 #else
 (n,x,y,c,xval,yval)

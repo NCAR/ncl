@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.4 1994-05-12 23:50:25 boote Exp $
+ *      $Id: BoundingBox.c,v 1.5 1994-12-16 20:03:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@
  * Side Effects: NONE
  */
 static NhlErrorTypes CallGetBB
-#if __STDC__
+#if	NhlNeedProto
 (
 NhlLayer instance,
 NhlLayerClass class,
@@ -96,7 +96,7 @@ NhlBoundingBox *thebox
  * Side Effects: NONE
  */
 NhlErrorTypes _NhlGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer instance,
 	NhlBoundingBox *thebox
@@ -134,7 +134,7 @@ NhlErrorTypes _NhlGetBB
  */
 
 NhlErrorTypes NhlGetBB
-#if 	__STDC__
+#if	NhlNeedProto
 (int pid,NhlBoundingBox *thebox)
 #else
 (pid,thebox)

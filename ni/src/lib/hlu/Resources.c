@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.14 1994-10-07 21:45:05 boote Exp $
+ *      $Id: Resources.c,v 1.15 1994-12-16 20:04:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,7 @@ static NrmQuark QString = NrmNULLQUARK;
  */
 void
 _NhlCopyFromArgVal
-#if __STDC__
+#if	NhlNeedProto
 (
 	_NhlArgVal	src,	/* source	*/
 	void *		dst,	/* destination	*/
@@ -117,7 +117,7 @@ _NhlCopyFromArgVal
  */
 void
 _NhlCopyFromArg
-#if __STDC__
+#if	NhlNeedProto
 (
 	_NhlArgVal	src,	/* source	*/
 	void *		dst,	/* destination	*/
@@ -164,7 +164,7 @@ _NhlCopyFromArg
  */
 void
 _NhlCopyToArg
-#if __STDC__
+#if	NhlNeedProto
 (
 	void *		src,	/* source	*/
 	_NhlArgVal *	dst,	/* destination	*/
@@ -208,7 +208,7 @@ _NhlCopyToArg
  */
 static int
 GetNamesAndClasses
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer,		/* layer instance		*/
 	NrmNameList	names,		/* Quarkarray of names OUT	*/
@@ -284,7 +284,7 @@ GetNamesAndClasses
  */
 static NhlErrorTypes
 GetResources
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlConvertContext	context,/* context for converter allocs	*/
 	NrmDatabase		resdb,	/* db				*/
@@ -763,7 +763,7 @@ _NhlGetResources
  */
 void
 _NhlCompileResourceList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlResourceList	resources,	/* resources		*/
 	int		num_resources	/* number of resources	*/
@@ -813,7 +813,7 @@ _NhlCompileResourceList
  */
 void
 _NhlGroupResources
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass lc	/* Class to create full reslist	for	*/
 )
@@ -919,7 +919,7 @@ _NhlGroupResources
  */
 void
 _NhlResourceListInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 ) 
@@ -957,7 +957,7 @@ _NhlResourceListInitialize
  */
 void
 _NhlMergeArgLists
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlArgList	ret_args,	/* return args		*/
 	int		*num_ret_args,	/* num ret_args		*/
@@ -1037,7 +1037,7 @@ _NhlMergeArgLists
  */
 NhlBoolean
 _NhlResInClass
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class to check for res	*/
 	NrmQuark	res	/* resource to look for		*/
@@ -1085,7 +1085,7 @@ _NhlResInClass
  */
 NhlErrorTypes
 _NhlSortChildArgs
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,		/* layer		*/
 	_NhlArgList		args_in,	/* args to sort		*/
@@ -1286,7 +1286,7 @@ _NhlSortChildArgs
  */
 void
 _NhlFreeChildArgs
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlChildArgList	list	/* child arg list to free	*/
 )

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.20 1994-12-16 19:22:11 boote Exp $
+ *      $Id: LabelBar.c,v 1.21 1994-12-16 20:04:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -301,7 +301,7 @@ static NhlResource resources[] = {
 
 
 static NhlErrorTypes    LabelBarInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -311,7 +311,7 @@ static NhlErrorTypes    LabelBarInitialize(
 );
 
 static NhlErrorTypes LabelBarSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -321,7 +321,7 @@ static NhlErrorTypes LabelBarSetValues(
 );
 
 static NhlErrorTypes 	LabelBarGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
@@ -329,13 +329,13 @@ static NhlErrorTypes 	LabelBarGetValues(
 );
 
 static NhlErrorTypes	LabelBarDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	LabelBarDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
@@ -348,7 +348,7 @@ static NhlErrorTypes 	LabelBarClassInitialize();
 
 
 static NhlErrorTypes    InitializeDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
@@ -357,7 +357,7 @@ static NhlErrorTypes    InitializeDynamicArrays(
 );
 
 static NhlErrorTypes    ManageDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
@@ -366,7 +366,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 );
 
 static NhlErrorTypes    SetLabelBarGeometry(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -374,7 +374,7 @@ static NhlErrorTypes    SetLabelBarGeometry(
 );
 
 static NhlErrorTypes    SetTitle(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -384,7 +384,7 @@ static NhlErrorTypes    SetTitle(
 );
 
 static NhlErrorTypes    SetBoxLocations(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -394,14 +394,14 @@ static NhlErrorTypes    SetBoxLocations(
 );
 
 static NhlErrorTypes    ManageBoxFractionsArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float	*box_fractions,
 	int	count
 #endif
 );
 
 static void CreateIntermediates(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float*,		/* *flist */
 	int,		/* start  */
 	int		/* end    */
@@ -409,7 +409,7 @@ static void CreateIntermediates(
 );
 
 static NhlErrorTypes    SetLabels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -419,7 +419,7 @@ static NhlErrorTypes    SetLabels(
 );
 
 static NhlErrorTypes   	AdjustLabels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLabelBarLayerPart *lb_p,
 	float		height,
 	float		avail_space,
@@ -430,7 +430,7 @@ static NhlErrorTypes   	AdjustLabels(
 );
 
 static NhlErrorTypes    AdjustGeometry(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -440,7 +440,7 @@ static NhlErrorTypes    AdjustGeometry(
 );
 
 static NhlGenArray GenArraySubsetCopy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray	ga,
 	int		length
 #endif
@@ -448,7 +448,7 @@ static NhlGenArray GenArraySubsetCopy(
 
 #if 0
 static NhlBoolean    	LabelBarChanged(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -514,7 +514,7 @@ NhlLayerClass NhllabelBarLayerClass = (NhlLayerClass)&NhllabelBarLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlflabelbarlayerclass,NHLFLABELBARLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -556,7 +556,7 @@ static NrmQuark	Qtitle_string = NrmNULLQUARK;
  */
 /*ARGSUSED*/
 static NhlErrorTypes    LabelBarInitialize
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayerClass class, 
 	 NhlLayer req, 
 	 NhlLayer new, 
@@ -703,7 +703,7 @@ static NhlErrorTypes    LabelBarInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes LabelBarSetValues
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer old,
 	NhlLayer reference,
 	NhlLayer new,
@@ -898,7 +898,7 @@ static NhlErrorTypes LabelBarSetValues
 
 /*ARGSUSED*/
 static NhlErrorTypes    InitializeDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	_NhlArgList	args,
@@ -1248,7 +1248,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	_NhlArgList	args,
@@ -1593,7 +1593,7 @@ static NhlErrorTypes    ManageDynamicArrays
  
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabelBarGeometry
-#if __STDC__
+#if	NhlNeedProto
 	 (NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
@@ -2063,7 +2063,7 @@ static NhlErrorTypes    SetLabelBarGeometry
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetTitle
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -2279,7 +2279,7 @@ static NhlErrorTypes    SetTitle
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetBoxLocations
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		new, 
 	NhlLayer		old,
@@ -2413,7 +2413,7 @@ static NhlErrorTypes    SetBoxLocations
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageBoxFractionsArray
-#if __STDC__
+#if	NhlNeedProto
 	(float *box_fractions, 
 	 int count) 
 #else
@@ -2512,7 +2512,7 @@ static NhlErrorTypes    ManageBoxFractionsArray
  */
 
 static void CreateIntermediates
-#if __STDC__
+#if	NhlNeedProto
 	(float		*flist,
 	 int		start,
 	 int		end)
@@ -2557,7 +2557,7 @@ static void CreateIntermediates
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabels
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -3001,7 +3001,7 @@ static NhlErrorTypes    SetLabels
 
 #define NhlLB_TRANSITIONANGLE 7.5
 static NhlErrorTypes   	AdjustLabels
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLabelBarLayerPart *lb_p,
 	 float		height,
 	 float		avail_space,
@@ -3355,7 +3355,7 @@ static NhlErrorTypes   	AdjustLabels
 
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustGeometry
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -3737,7 +3737,7 @@ static NhlErrorTypes    AdjustGeometry
  */
 
 static NhlErrorTypes	LabelBarGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -3827,7 +3827,7 @@ static NhlErrorTypes	LabelBarGetValues
  */
 
 static NhlGenArray GenArraySubsetCopy
-#if __STDC__
+#if	NhlNeedProto
 	(NhlGenArray	ga,
 	int		length)
 #else
@@ -3887,7 +3887,7 @@ static NhlGenArray GenArraySubsetCopy
  */
 
 static NhlErrorTypes    LabelBarDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -4112,7 +4112,7 @@ static NhlErrorTypes    LabelBarDraw
  * Side Effects: 	NONE
  */
 static NhlErrorTypes    LabelBarClassInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -4164,7 +4164,7 @@ static NhlErrorTypes    LabelBarClassInitialize
  */
 
 static NhlErrorTypes    LabelBarDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer  inst)
 #else
 (inst)

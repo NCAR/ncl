@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.4 1994-01-27 21:25:51 boote Exp $
+ *      $Id: SplineCoord.c,v 1.5 1994-12-16 20:04:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/CoordApprox.h>
 static NhlOrdering GetOrdering(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float * /*v*/,
 int   /*nv*/,
 float * /* min */,
@@ -34,7 +34,7 @@ float * /* max */
 #endif
 );
 static void reverse(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float	* /*a*/,
 int	  /*n*/
 #endif
@@ -86,7 +86,7 @@ int	  /*n*/
 */
 
 NhlErrorTypes _NhlCreateSplineCoordApprox
-#if __STDC__
+#if	NhlNeedProto
 (NhlCoordDat *thedat,
 int	x_use_log,
 float *x, 
@@ -447,7 +447,7 @@ NOTYET
  * Side Effects:
  */
 NhlErrorTypes _NhlDestroySplineCoordApprox
-#if __STDC__
+#if	NhlNeedProto
 ( NhlCoordDat * thedat )
 #else 
 (thedat)
@@ -485,7 +485,7 @@ NhlErrorTypes _NhlDestroySplineCoordApprox
  */
 
 NhlErrorTypes _NhlEvalSplineCoordForward
-#if	__STDC__
+#if	NhlNeedProto
 (NhlCoordDat *thedat,float x,float y,float *xout,float *yout,float *xmissing,
 	float *ymissing)
 #else
@@ -591,7 +591,7 @@ NhlErrorTypes _NhlEvalSplineCoordForward
  * Side Effects:	NhlNONE
  */
 NhlErrorTypes _NhlEvalSplineCoordInverse
-#if	__STDC__
+#if	NhlNeedProto
 (NhlCoordDat *thedat,float x,float y,float *xout,float *yout,float *xmissing,float *ymissing)
 #else
 (thedat,x,y,xout,yout,xmissing,ymissing)
@@ -695,7 +695,7 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
  * Side Effects:
  */
 NhlErrorTypes _NhlMultiEvalSplineCoordForward
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlCoordDat	*thedat,
 	float		*x,
@@ -804,7 +804,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordForward
  * Side Effects:
  */
 NhlErrorTypes _NhlMultiEvalSplineCoordInverse
-#if __STDC__
+#if	NhlNeedProto
 (NhlCoordDat *thedat,float *x, float *y,float *xout, float *yout, int xnpts, int ynpts, float *xmissing, float *ymissing)
 #else
 (thedat,x,y,xout,yout,xnpts,ynpts,xmissing,ymissing)
@@ -890,7 +890,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 
 
 static NhlOrdering GetOrdering
-#if __STDC__
+#if	NhlNeedProto
 (float *v,int nv,float* min, float*max) 
 #else
 (v,nv,min,max)
@@ -927,7 +927,7 @@ static NhlOrdering GetOrdering
 }
 
 static void reverse
-#if __STDC__
+#if	NhlNeedProto
 (float *a,int n)
 #else
 (a,n)

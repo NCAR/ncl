@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.19 1994-11-07 03:10:43 ethan Exp $
+ *      $Id: Workstation.c,v 1.20 1994-12-16 20:05:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -412,7 +412,7 @@ static NhlErrorTypes WorkstationClassPartInitialize(
 );
 
 static NhlErrorTypes WorkstationInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,	/* class */
         NhlLayer,	/* req */
         NhlLayer,	/* new */
@@ -425,13 +425,13 @@ static NhlErrorTypes WorkstationClassInitialize();
 
 
 static NhlErrorTypes WorkstationDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes    WorkstationSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,	/* old */
         NhlLayer,	/* reference */
         NhlLayer,	/* new */
@@ -441,7 +441,7 @@ static NhlErrorTypes    WorkstationSetValues(
 );
 
 static NhlErrorTypes 	WorkstationGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,	/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
@@ -454,25 +454,25 @@ static NhlErrorTypes 	WorkstationGetValues(
 
 
 static NhlErrorTypes WorkstationOpen(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationClose(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationActivate(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationDeactivate(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	/* instance */
 #endif
 );
@@ -520,13 +520,13 @@ static NhlErrorTypes WorkstationMarker(
 * Private functions
 */
 static NhlErrorTypes AllocateColors(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/* instance */
 #endif
 ); 
 
 static NhlErrorTypes DeallocateColors(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/* instance */
 #endif
 ); 

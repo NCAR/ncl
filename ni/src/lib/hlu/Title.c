@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.15 1994-12-16 19:22:21 boote Exp $
+ *      $Id: Title.c,v 1.16 1994-12-16 20:04:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@ static char	YAxis[] = "YAxis";
 /*ARGSUSED*/
 static NhlErrorTypes
 SetMainOn
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -57,7 +57,7 @@ SetMainOn
 /*ARGSUSED*/
 static NhlErrorTypes
 SetXAxisOn
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -82,7 +82,7 @@ SetXAxisOn
 /*ARGSUSED*/
 static NhlErrorTypes
 SetYAxisOn
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -382,7 +382,7 @@ NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlftitlelayerclass,NHLFTITLELAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -411,7 +411,7 @@ static NrmQuark	Qyaxis = NrmNULLQUARK;
  * Side Effects:	NhlNOERROR
  */
 static NhlErrorTypes    TitleClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -464,7 +464,7 @@ static NhlErrorTypes    TitleClassInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes    TitleInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayerClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
@@ -921,7 +921,7 @@ static NhlErrorTypes    TitleInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes    TitleSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args,int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -1501,7 +1501,7 @@ TitleGetValues
  * Side Effects:	NONE
  */
 static NhlErrorTypes     TitleDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
         NhlLayer	inst
 )
@@ -1538,7 +1538,7 @@ static NhlErrorTypes     TitleDestroy
  * Side Effects:	NONE
  */
 static NhlErrorTypes TitleDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance)
 #else
 (instance)
@@ -1613,7 +1613,7 @@ static NhlErrorTypes TitleDraw
  * Side Effects:        NONE
  */
 static NhlErrorTypes TitleGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.20 1994-11-07 03:09:11 ethan Exp $
+ *      $Id: CoordArrTable.c,v 1.21 1994-12-16 20:04:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -655,7 +655,7 @@ FlushObject
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtGenObjToFloatObj
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from_val,
 	NrmValue		*to_val,
@@ -820,7 +820,7 @@ CvtGenObjToFloatObj
  */
 static NhlErrorTypes
 CoordArrTableClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1040,7 +1040,7 @@ GetTypeSize
 /*ARGSUSED*/
 static NhlErrorTypes
 CoordArrTableInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -1201,7 +1201,7 @@ CoordArrTableInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 CoordArrTableSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,		/* old		*/
 	NhlLayer	req,		/* requested	*/
@@ -1821,7 +1821,7 @@ CoordArrTableGetValues
  */
 static NhlErrorTypes
 CoordArrTableDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )

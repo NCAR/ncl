@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.2 1994-04-05 00:51:41 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.3 1994-12-16 20:05:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,14 +30,14 @@
  * Private Functions to support Workstation Class Objects
  */
 extern void _NhlSetLineInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* instance */,
         NhlLayer   /* plot */
 #endif
 );
 
 extern NhlErrorTypes _NhlWorkstationLineTo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */,
 float   /* x */,
 float   /* y */,
@@ -46,14 +46,14 @@ int     /* upordown */
 );
 
 extern void _NhlSetFillInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer instance,
 NhlLayer plot
 #endif
 );
 
 extern NhlErrorTypes _NhlWorkstationFill(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */,
 float*   /* x */,
 float*   /* y */,
@@ -62,14 +62,14 @@ int     /* num_points */
 );
 
 extern void _NhlSetMarkerInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer instance,
 NhlLayer plot
 #endif
 );
 
 extern NhlErrorTypes _NhlWorkstationMarker(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */,
 float*   /* x */,
 float*   /* y */,
@@ -96,33 +96,33 @@ extern NhlErrorTypes _NhlCloseWorkstation(
 );
 
 extern NhlErrorTypes _NhlOpenWorkstation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /*layer*/
 #endif
 );
 
 extern  int  _NhlWorkstationId(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /*instance */
 #endif
 );
 
 extern int _NhlGetGksCi(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* workstation*/,
         int /* ci*/
 #endif
 );
 
 extern int _NhlIsAllocatedColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* workstation*/,
         int /* ci*/
 #endif
 );
 
 extern NhlErrorTypes _NhlSetColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* inst */,
 int     /* ci */,
 float   /* red */,
@@ -132,14 +132,14 @@ float   /* blue */
 );
 
 extern NhlErrorTypes _NhlFreeColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* inst */,
         int     /* ci */
 #endif
 );
 
 extern int _NhlNewColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* inst */,
         float   /* red */,
         float   /* green */,

@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.12 1994-11-03 05:17:35 boote Exp $
+ *      $Id: GetValues.c,v 1.13 1994-12-16 20:04:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,7 +53,7 @@ static	NrmQuark	genQ;
  */
 static NhlErrorTypes 
 GetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
  	char*		base,		/* base address to copy vals from */
 	NrmResourceList	resources,	/* resource list with offsets	*/
@@ -133,7 +133,7 @@ GetValues
  */
 static NhlErrorTypes 
 CallGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class pointer	*/
 	NhlLayer	l,	/* instance pointer	*/
@@ -183,7 +183,7 @@ CallGetValues
 NhlDOCTAG(_NhlGetValues)
 static NhlErrorTypes
 _NhlGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,		/* layer instance	*/
 	_NhlArgList	args,		/* args to retrieve	*/
@@ -319,7 +319,7 @@ _NhlGetValues
  */
 static void
 CopyArgToArgptr
-#if __STDC__
+#if	NhlNeedProto
 (
 	_NhlArgVal	src,	/* source	*/
 	void *		dst,	/* destination	*/
@@ -394,7 +394,7 @@ NhlDOCTAG(NhlGetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		pid,		/* id for layer instance	*/
 	int		rlid		/* RL id			*/
@@ -576,7 +576,7 @@ NhlGetValues
  */
 void
 _NHLCALLF(nhl_fgetvalues,NHL_FGETVALUES)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*id,
 	int	*rlid,
@@ -688,7 +688,7 @@ NhlVAGetValues
 NhlDOCTAG(NhlALGetValues)
 NhlErrorTypes
 NhlALGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		pid,		/* id for layer instance	*/
 	NhlGArgList	gargs,		/* GArg list 			*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.1 1994-08-11 23:17:27 boote Exp $
+ *      $Id: hluutil.h,v 1.2 1994-12-16 20:05:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,16 +23,15 @@
 #include <ncarg/c.h>
 #include <ncarg/gks.h>
 
-#if     __STDC__
+#ifndef	NhlNeedProto
+#ifdef	__STDC__
 #define Const const
 #define NhlNeedProto 1
 #else
-#ifdef  __STDC__
-#define Const const
-#else
 #define Const
+#define NhlNeedProto 0
 #endif
-#endif
+#endif	/* NhlNeedProto */
 
 #ifndef	_NHLCALLF
 #define	_NHLCALLF(reg,cap)	NGCALLF(reg,cap)

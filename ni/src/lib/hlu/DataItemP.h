@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItemP.h,v 1.4 1994-02-01 18:22:34 boote Exp $
+ *      $Id: DataItemP.h,v 1.5 1994-12-16 20:04:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ extern NhlDataItemLayerClassRec NhldataItemLayerClassRec;
  * Private API for DataItem sub-classes
  */
 extern void _NhlDataChanged(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlDataItemLayer	l,
 	NhlBoolean		status
 #endif

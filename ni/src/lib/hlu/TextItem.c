@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.15 1994-12-16 19:22:18 boote Exp $
+ *      $Id: TextItem.c,v 1.16 1994-12-16 20:04:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -193,7 +193,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes TextItemSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -211,7 +211,7 @@ static NhlErrorTypes TextItemGetValues(
 );
 
 static NhlErrorTypes    TextItemInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -221,19 +221,19 @@ static NhlErrorTypes    TextItemInitialize(
 );
 
 static NhlErrorTypes	TextItemDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	TextItemSegDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	TextItemDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
@@ -245,13 +245,13 @@ static NhlErrorTypes 	TextItemClassInitialize();
 */
 
 static NhlErrorTypes FigureAndSetTextBBInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlTextItemLayer /*tnew;*/
 #endif
 );
 
 static void RotEval(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float	* /*tmat */,
 float	/* x */,
 float   /* y */,
@@ -316,7 +316,7 @@ NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlftextitemlayerclass,NHLFTEXTITEMLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -343,7 +343,7 @@ static NrmQuark txstrQ = NrmNULLQUARK;
  * Side Effects: 	NONE
  */
 static NhlErrorTypes    TextItemClassInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -446,7 +446,7 @@ DoPcCalc
  */
 /*ARGSUSED*/
 static NhlErrorTypes    TextItemInitialize
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
 #else
 (class,req,new,args,num_args)
@@ -571,7 +571,7 @@ static NhlErrorTypes    TextItemInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes TextItemSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old,NhlLayer reference,NhlLayer new,_NhlArgList args,int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -751,7 +751,7 @@ TextItemGetValues
  *		Does do a get_set before makeing internal set.
  */
 static NhlErrorTypes    TextItemDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -841,7 +841,7 @@ static NhlErrorTypes    TextItemDraw
  *		Does do a get_set before makeing internal set.
  */
 static NhlErrorTypes    TextItemSegDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -898,7 +898,7 @@ static NhlErrorTypes    TextItemSegDraw
  * Side Effects: NONE
  */
 static NhlErrorTypes    TextItemDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer  inst)
 #else
 (inst)
@@ -928,7 +928,7 @@ static NhlErrorTypes    TextItemDestroy
  * Side Effects:
  */
 static void RotEval
-#if __STDC__
+#if	NhlNeedProto
 (float *tmat,float x,float y,float *xot,float *yot)
 #else
 (tmat,x,y,xot,yot)
@@ -966,7 +966,7 @@ static void RotEval
  * Side Effects: Lots of fields in tnew are set, Also performs set.
  */
 static NhlErrorTypes FigureAndSetTextBBInfo
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTextItemLayer tnew)
 #else
 (tnew)

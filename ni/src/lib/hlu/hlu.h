@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.22 1994-11-07 03:10:58 ethan Exp $
+ *      $Id: hlu.h,v 1.23 1994-12-16 20:05:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,22 +28,21 @@
 
 #include <ncarg/hlu/defs.h>
 
+#ifndef	NhlNeedProto
 #ifdef	__STDC__
+#define Const const
+#define NhlNeedProto 1
+#else
+#define Const
+#define NhlNeedProto 0
+#endif
+#endif	/* NhlNeedProto */
+
+#if	NhlNeedProto
 #define NhlNeedVarArgProto	True 
 #include <stdlib.h>
 #else
 #define NhlNeedVarArgProto	False
-#endif
-
-#if	__STDC__
-#define Const const
-#define NhlNeedProto 1
-#else
-#ifdef	__STDC__
-#define Const const
-#else
-#define Const
-#endif
 #endif
 
 #include <ncarg/c.h>
@@ -192,7 +191,7 @@ typedef struct _NhlLayerClassRec *NhlLayerClass;
 NhlDOCTAG(NhlCreateGenArray)
 NhlSRCREF(hlu/hlu.c#NhlCreateGenArray)
 extern NhlGenArray NhlCreateGenArray(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlPointer	data,		/* data array		*/
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
@@ -204,7 +203,7 @@ extern NhlGenArray NhlCreateGenArray(
 NhlDOCTAG(NhlFreeGenArray)
 NhlSRCREF(hlu/hlu.c#NhlFreeGenArray)
 extern void NhlFreeGenArray(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray	gen	/* GenArray description record to free	*/
 #endif
 );
@@ -214,33 +213,33 @@ extern void NhlFreeGenArray(
  */
 
 extern void *NhlMalloc(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	unsigned int	size
 #endif
 );
 
 extern void *NhlCalloc( 
-#ifdef  NhlNeedProto 
+#if	NhlNeedProto
 	unsigned int    num, 
 	unsigned int    size 
 #endif 
 );
 
 extern void *NhlRealloc(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void*,		/* pointer to copy		*/
 	unsigned int	/* size of requested memory	*/
 #endif
 );
 
 extern NhlErrorTypes NhlFree(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void*		/* pointer to memory to free	*/
 #endif
 );
 
 extern Const char *NhlName(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int	pid	/* id of an object	*/
 #endif
 );
@@ -317,27 +316,27 @@ extern NhlErrorTypes NhlDestroy(
 
 NhlDOCTAG(NhlDraw)
 extern NhlErrorTypes NhlDraw(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int	/* id */
 #endif
 );
 
 NhlDOCTAG(NhlOpen)
 extern void NhlOpen(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 extern void NhlInitialize(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 NhlDOCTAG(NhlClose)
 extern void NhlClose(
-#ifdef	NhlNeedProto 
+#if	NhlNeedProto
 	void 
 #endif 
 ); 

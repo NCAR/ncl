@@ -1,6 +1,6 @@
 
 /*
- *      $Id: simpletrans.c,v 1.1 1994-08-11 23:17:34 boote Exp $
+ *      $Id: simpletrans.c,v 1.2 1994-12-16 20:05:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/hluutil.h>
 
 void strans
-#if __STDC__
+#if	NhlNeedProto
 (float froml, float fromr, float fromb, float fromt, float tol, float tor,float tob, float tot, float x, float y, float *xout, float *yout)
 #else
 (froml,fromr,fromb,fromt,tol,tor,tob,tot,x,y,xout,yout) 

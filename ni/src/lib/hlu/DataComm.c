@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.18 1994-11-07 08:29:58 boote Exp $
+ *      $Id: DataComm.c,v 1.19 1994-12-16 20:04:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -271,7 +271,7 @@ static void FreeDataNode(
 /*ARGSUSED*/
 static NhlErrorTypes
 AddData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -415,7 +415,7 @@ AddData
 /*ARGSUSED*/
 static NhlErrorTypes
 RemoveData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -529,7 +529,7 @@ RemoveData
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtGenToData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -569,7 +569,7 @@ CvtGenToData
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtScalarToData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -620,7 +620,7 @@ CvtScalarToData
  */
 static NhlErrorTypes
 DataCommClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class structure to update */
 )
@@ -658,7 +658,7 @@ static NrmQuark	QGenArray = NrmNULLQUARK;
  */
 static NhlErrorTypes
 DataCommClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -705,7 +705,7 @@ DataCommClassInitialize
  */
 static _NhlDataNodePtr
 CreateDataNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayer	dcl,	/* DataComm subclass using data	*/
 	_NhlDataOffset		oset,	/* oset ptr - Data Description	*/
@@ -816,7 +816,7 @@ CreateDataNode
  */
 static NhlErrorTypes
 CompileDataList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayer	dcl,	/* DataComm object	*/
 	_NhlDataOffset		oset	/* offset record	*/
@@ -943,7 +943,7 @@ CompileDataList
 /*ARGSUSED*/
 static NhlErrorTypes
 DataCommInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -1003,7 +1003,7 @@ DataCommInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 DataCommSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,	/* old		*/
 	NhlLayer	req,	/* requested	*/
@@ -1078,7 +1078,7 @@ DataCommSetValues
 /*ARGSUSED*/
 static NhlErrorTypes
 DataCommGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* layer	*/
 	_NhlArgList	args,	/* args		*/
@@ -1158,7 +1158,7 @@ DataCommGetValues
  */
 static void
 FreeInternDataList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray		gen	/* list to free	*/
 )
@@ -1207,7 +1207,7 @@ FreeInternDataList
 /*ARGSUSED*/
 static NhlErrorTypes
 DataCommSetValuesHook
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,	/* old		*/
 	NhlLayer	req,	/* requested	*/
@@ -1263,7 +1263,7 @@ DataCommSetValuesHook
  */
 static void
 ReleaseDSpec
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 (
 	NhlDataSpecLayer	dsl,
 	_NhlDCommList		dclist
@@ -1303,7 +1303,7 @@ ReleaseDSpec
  */
 static void
 FreeDataNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDataNodePtr	node	/* node to free	*/
 )
@@ -1359,7 +1359,7 @@ FreeDataNode
  */
 static NhlErrorTypes
 CallUpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayerClass	lc,		/* class pointer	*/
 	NhlDataCommLayer	l,		/* instance pointer	*/
@@ -1405,7 +1405,7 @@ CallUpdateData
  */
 static NhlErrorTypes
 UpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayer	dcomm
 )
@@ -1459,7 +1459,7 @@ UpdateData
  */
 static NhlErrorTypes
 DataCommDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* id of a datacomm object	*/
 )
@@ -1489,7 +1489,7 @@ DataCommDraw
  */
 static NhlErrorTypes
 DataCommDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -1538,7 +1538,7 @@ DataCommDestroy
 /*ARGSUSED*/
 static NhlErrorTypes
 DataSpecInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -1594,7 +1594,7 @@ DataSpecInitialize
  */
 static void
 ReleaseDataComms
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		dspecid,
 	_NhlDCommList	dc_list
@@ -1639,7 +1639,7 @@ ReleaseDataComms
 /*ARGSUSED*/
 static NhlErrorTypes
 DataSpecSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,	/* old		*/
 	NhlLayer	req,	/* requested	*/
@@ -1701,7 +1701,7 @@ DataSpecSetValues
  */
 static NhlErrorTypes
 DataSpecDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -1899,7 +1899,7 @@ _NhlRegisterDataRes
 /*ARGSUSED*/
 int
 _NhlGetDataInfo
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray		gen,		/* pointer to datalist	*/
 	_NhlDataNodePtr		**dinfo		/* data info RET	*/
@@ -1945,7 +1945,7 @@ _NhlGetDataInfo
  */
 NhlLayer
 _NhlGetDataSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDataNodePtr		dnode,		/* datanode	*/
 	NhlBoolean		*new_ret	/* is data new?	*/
@@ -2000,7 +2000,7 @@ _NhlGetDataSet
  */
 NhlErrorTypes
 _NhlUpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	dcommid		/* id of datacomm class	*/
 )
@@ -2050,7 +2050,7 @@ _NhlUpdateData
  */
 NhlErrorTypes
 NhlAddData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
@@ -2094,7 +2094,7 @@ NhlAddData
  */
 void
 _NHLCALLF(nhlf_adddata,NHLF_ADDDATA)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,
 	_NhlFString	fname,
@@ -2144,7 +2144,7 @@ _NHLCALLF(nhlf_adddata,NHLF_ADDDATA)
  */
 NhlErrorTypes
 NhlRemoveData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
@@ -2188,7 +2188,7 @@ NhlRemoveData
  */
 void
 _NHLCALLF(nhlf_removedata,NHLF_REMOVEDATA)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,
 	_NhlFString	fname,
@@ -2243,7 +2243,7 @@ _NHLCALLF(nhlf_removedata,NHLF_REMOVEDATA)
  */
 NhlErrorTypes
 NhlUpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	dcommid		/* id of dcomm object	*/
 )
@@ -2278,7 +2278,7 @@ NhlUpdateData
  */
 void
 _NHLCALLF(nhlf_updatedata,NHLF_UPDATEDATA)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*id,
 	int	*err
@@ -2314,7 +2314,7 @@ _NHLCALLF(nhlf_updatedata,NHLF_UPDATEDATA)
  */
 void
 _NhlReleaseDMgr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	dspecid,
 	int	ditemid

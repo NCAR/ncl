@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.8 1994-08-11 21:37:04 boote Exp $
+ *      $Id: Open.c,v 1.9 1994-12-16 20:04:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,7 @@
  */
 /*ARGSUSED*/
 static void _NhlOpen
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlC_OR_F	init_type
 )
@@ -73,7 +73,7 @@ static void _NhlOpen
  * Side Effect:	
  */
 void NhlOpen
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -101,7 +101,7 @@ void NhlOpen
  */
 void
 _NHLCALLF(nhl_fopen,NHL_FOPEN)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -130,7 +130,7 @@ _NHLCALLF(nhl_fopen,NHL_FOPEN)
  */
 /*ARGSUSED*/
 static void _NhlInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlC_OR_F	init_type
 )
@@ -158,7 +158,7 @@ static void _NhlInitialize
  * Side Effect:	
  */
 void NhlInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -186,7 +186,7 @@ void NhlInitialize
  */
 void
 _NHLCALLF(nhl_finitialize,NHL_FINITIALIZE)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )

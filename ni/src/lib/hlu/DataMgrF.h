@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrF.h,v 1.3 1994-01-27 21:22:47 boote Exp $
+ *      $Id: DataMgrF.h,v 1.4 1994-12-16 20:04:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
  */
 
 extern _NhlDHandle _NhlInitDataConnection(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	item,		/* DataItem sub-class	*/
 	int		dcommid,	/* id for datacomm layer	*/
 	NrmQuark	res_name,	/* resource name		*/
@@ -42,7 +42,7 @@ extern _NhlDHandle _NhlInitDataConnection(
 );
 
 extern NhlLayer _NhlRetrieveData(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		item,		/* dataItem sub-class	*/
 	_NhlDHandle		dhandle,	/* id for Connection	*/
 	NhlBoolean		*new		/* is data new/changed	*/
@@ -50,7 +50,7 @@ extern NhlLayer _NhlRetrieveData(
 );
 
 extern void _NhlCloseDataConnection(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	item,	/* DataItem sub-class	*/
 	_NhlDHandle		dhandle	/* id for Connection	*/
 #endif
@@ -61,14 +61,14 @@ extern void _NhlCloseDataConnection(
  */
 
 extern NhlBoolean _NhlRegisterDSpec(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	item,		/* dataitem sub-class	*/
 	int			dspecid		/* id for dataspec layer*/
 #endif
 );
 
 extern void _NhlUnRegisterDSpec(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	item,	/* dataitem sub-class		*/
 	int			dspecid	/* id for dataspec layer	*/
 #endif
@@ -79,13 +79,13 @@ extern void _NhlUnRegisterDSpec(
  */
 
 extern void _NhlDataItemModified(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	mgr	/* DataMgr	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlNotifyDataComm(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	mgr	/* DataMgr	*/
 #endif
 );

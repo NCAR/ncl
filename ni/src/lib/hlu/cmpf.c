@@ -5,7 +5,7 @@
 
 
 float _NhlRndIt
-#if     __STDC__
+#if	NhlNeedProto
 (float a,int sig_digit)
 #else
 (a,sig_digit)
@@ -52,7 +52,7 @@ int sig_digit;
 }
 
 float    _NhlCmpF
-#if     __STDC__
+#if	NhlNeedProto
 (float a, NhlCompareDat *b)
 #else
 (a,b)
@@ -105,7 +105,7 @@ float    _NhlCmpF
 }
 
 NhlCompareDat *_NhlCmpFSetup
-#if     __STDC__
+#if	NhlNeedProto
 (float val, int sig_dig)
 #else
 (val,sig_dig)
@@ -162,7 +162,7 @@ NhlCompareDat *_NhlCmpFSetup
  * Side Effects: NONE
  */
 float	_NhlCmpFAny
-#if	__STDC__
+#if	NhlNeedProto
 (float a, float b, int sig_dig)
 #else
 (a,b,sig_dig)

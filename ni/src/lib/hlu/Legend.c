@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.19 1994-12-16 19:22:12 boote Exp $
+ *      $Id: Legend.c,v 1.20 1994-12-16 20:04:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -338,7 +338,7 @@ static NhlResource resources[] = {
 
 
 static NhlErrorTypes    LegendInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -348,7 +348,7 @@ static NhlErrorTypes    LegendInitialize(
 );
 
 static NhlErrorTypes LegendSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -358,7 +358,7 @@ static NhlErrorTypes LegendSetValues(
 );
 
 static NhlErrorTypes 	LegendGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
@@ -366,13 +366,13 @@ static NhlErrorTypes 	LegendGetValues(
 );
 
 static NhlErrorTypes	LegendDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	LegendDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
@@ -384,7 +384,7 @@ static NhlErrorTypes 	LegendClassInitialize();
 */
 
 static NhlErrorTypes    InitializeDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
@@ -393,7 +393,7 @@ static NhlErrorTypes    InitializeDynamicArrays(
 );
 
 static NhlErrorTypes    ManageDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
@@ -402,7 +402,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 );
 
 static NhlErrorTypes    SetLegendGeometry(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -410,7 +410,7 @@ static NhlErrorTypes    SetLegendGeometry(
 );
 
 static NhlErrorTypes    SetTitle(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -420,7 +420,7 @@ static NhlErrorTypes    SetTitle(
 );
 
 static NhlErrorTypes    SetBoxLocations(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -431,7 +431,7 @@ static NhlErrorTypes    SetBoxLocations(
 
 
 static NhlErrorTypes    ManageItemPositionsArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float	*item_positions,
 	int	count
 #endif
@@ -439,7 +439,7 @@ static NhlErrorTypes    ManageItemPositionsArray(
 
 
 static void CreateIntermediates(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	 float		*flist,
 	 float		base_val,
 	 int		start,
@@ -449,7 +449,7 @@ static void CreateIntermediates(
 );
 
 static NhlErrorTypes    SetLabels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -460,7 +460,7 @@ static NhlErrorTypes    SetLabels(
 
 
 static NhlErrorTypes   	AdjustLabels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLegendLayerPart *lg_p,
 	float		height,
 	float		avail_space,
@@ -471,7 +471,7 @@ static NhlErrorTypes   	AdjustLabels(
 );
 
 static NhlErrorTypes    AdjustGeometry(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,		/* new		*/ 
 	NhlLayer,		/* old		*/
 	int,            /* init         */
@@ -482,7 +482,7 @@ static NhlErrorTypes    AdjustGeometry(
 
 
 static NhlGenArray GenArraySubsetCopy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray	ga,
 	int		length
 #endif
@@ -544,7 +544,7 @@ NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
  */
 NhlLayerClass
 _NHLCALLF(nhlflegendlayerclass,NHLFLEGENDLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -588,7 +588,7 @@ static NrmQuark	Qitem_positions = NrmNULLQUARK;
  */
 /*ARGSUSED*/
 static NhlErrorTypes    LegendInitialize
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayerClass class, 
 	 NhlLayer req, 
 	 NhlLayer new, 
@@ -721,7 +721,7 @@ static NhlErrorTypes    LegendInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes LegendSetValues
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer old,
 	NhlLayer reference,
 	NhlLayer new,
@@ -885,7 +885,7 @@ static NhlErrorTypes LegendSetValues
 
 /*ARGSUSED*/
 static NhlErrorTypes    InitializeDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	_NhlArgList	args,
@@ -1493,7 +1493,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	_NhlArgList	args,
@@ -2071,7 +2071,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetLegendGeometry
-#if __STDC__
+#if	NhlNeedProto
 	 (NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
@@ -2563,7 +2563,7 @@ static NhlErrorTypes    SetLegendGeometry
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetTitle
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -2762,7 +2762,7 @@ static NhlErrorTypes    SetTitle
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetBoxLocations
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		new, 
 	NhlLayer		old,
@@ -2910,7 +2910,7 @@ static NhlErrorTypes    SetBoxLocations
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageItemPositionsArray
-#if __STDC__
+#if	NhlNeedProto
 	(float *item_positions, 
 	 int count) 
 #else
@@ -3019,7 +3019,7 @@ static NhlErrorTypes    ManageItemPositionsArray
  */
 
 static void CreateIntermediates
-#if __STDC__
+#if	NhlNeedProto
 	(float		*flist,
 	 float		base_val,
 	 int		start,
@@ -3094,7 +3094,7 @@ static void CreateIntermediates
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabels
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -3550,7 +3550,7 @@ static NhlErrorTypes    SetLabels
 
 #define NhlLG_TRANSITIONANGLE 7.5
 static NhlErrorTypes   	AdjustLabels
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLegendLayerPart *lg_p,
 	 float		height,
 	 float		avail_space,
@@ -3905,7 +3905,7 @@ static NhlErrorTypes   	AdjustLabels
 
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustGeometry
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	int		init,
@@ -4290,7 +4290,7 @@ static NhlErrorTypes    AdjustGeometry
  */
 
 static NhlErrorTypes	LegendGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -4388,7 +4388,7 @@ static NhlErrorTypes	LegendGetValues
  */
 
 static NhlGenArray GenArraySubsetCopy
-#if __STDC__
+#if	NhlNeedProto
 	(NhlGenArray	ga,
 	int		length)
 #else
@@ -4446,7 +4446,7 @@ static NhlGenArray GenArraySubsetCopy
  * Side Effects: 
  */
 static NhlErrorTypes    LegendDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -4806,7 +4806,7 @@ static NhlErrorTypes    LegendDraw
  * Side Effects: 	NONE
  */
 static NhlErrorTypes    LegendClassInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -4867,7 +4867,7 @@ static NhlErrorTypes    LegendClassInitialize
  * Side Effects: NONE
  */
 static NhlErrorTypes    LegendDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer  inst)
 #else
 (inst)

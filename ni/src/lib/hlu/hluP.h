@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.19 1994-09-06 21:51:32 boote Exp $
+ *      $Id: hluP.h,v 1.20 1994-12-16 20:05:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -213,7 +213,7 @@ extern NhlGenArray _NhlCopyGenArray(
 );
 
 extern NhlErrorTypes _NhlValidatedGenArrayCopy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	 NhlGenArray	*gto, 		/* destination gen array */
 	 NhlGenArray	gfrom,		/* source gen array */
 	 int		max_el,	      /* maximum number of elements allowed */
@@ -354,7 +354,7 @@ extern NhlErrorTypes _NhlReparent(
 );
 
 extern NhlLayer _NhlGetWorkstationLayer(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	/*parent */
 #endif
 );
@@ -364,25 +364,25 @@ extern NhlLayer _NhlGetWorkstationLayer(
  */
 
 extern NhlErrorTypes _NhlPreDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlPostDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlSegDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
@@ -392,7 +392,7 @@ extern NhlErrorTypes _NhlSegDraw(
  */
 
 extern  NhlErrorTypes _NhlInitializeLayerClass(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayerClass /* lc */
 #endif
 );

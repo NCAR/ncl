@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.8 1994-12-16 19:22:22 boote Exp $
+ *      $Id: XWorkstation.c,v 1.9 1994-12-16 20:05:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,7 @@
 /*ARGSUSED*/
 static NhlErrorTypes
 WindowSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -65,7 +65,7 @@ WindowSet
 /*ARGSUSED*/
 static NhlErrorTypes
 CMapSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -91,7 +91,7 @@ CMapSet
 /*ARGSUSED*/
 static NhlErrorTypes
 PauseSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -142,7 +142,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes XWorkstationInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -152,7 +152,7 @@ static NhlErrorTypes XWorkstationInitialize(
 );
 
 static NhlErrorTypes XWorkstationSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,	/* old */
         NhlLayer,	/* reference */
         NhlLayer,	/* new */
@@ -236,7 +236,7 @@ NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
  */
 NhlLayerClass
 _NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -262,7 +262,7 @@ _NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
  */
 /*ARGSUSED*/
 static NhlErrorTypes XWorkstationInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer	req,
@@ -326,7 +326,7 @@ static NhlErrorTypes XWorkstationInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes XWorkstationSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -377,7 +377,7 @@ static NhlErrorTypes XWorkstationSetValues
  */
 static NhlErrorTypes
 XWorkstationClear
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* workstation layer to clear	*/
 )

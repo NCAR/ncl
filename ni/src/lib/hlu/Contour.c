@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.42 1994-12-16 19:22:07 boote Exp $
+ *      $Id: Contour.c,v 1.43 1994-12-16 20:03:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,7 @@
 /*ARGSUSED*/
 static NhlErrorTypes
 ResourceUnset
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -835,19 +835,19 @@ typedef enum _cnLabelType {
 /* base methods */
 
 static NhlErrorTypes ContourClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes ContourClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes ContourInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,  /* class */
         NhlLayer,       /* req */
         NhlLayer,       /* new */
@@ -857,7 +857,7 @@ static NhlErrorTypes ContourInitialize(
 );
 
 static NhlErrorTypes ContourSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,       /* old */
         NhlLayer,       /* reference */
         NhlLayer,       /* new */
@@ -868,7 +868,7 @@ static NhlErrorTypes ContourSetValues(
 
 
 static NhlErrorTypes    ContourGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,       /* l */
 	_NhlArgList,    /* args */
 	int             /* num_args */
@@ -876,46 +876,46 @@ static NhlErrorTypes    ContourGetValues(
 );
 
 static NhlErrorTypes ContourDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        /* inst */
 #endif
 );
 
 static NhlErrorTypes ContourGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        instance,
         NhlBoundingBox	*thebox
 #endif
 );
 
 static NhlErrorTypes ContourPreDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	/* layer */
 #endif
 );
 
 static NhlErrorTypes ContourDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	/* layer */
 #endif
 );
 
 static NhlErrorTypes ContourPostDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	/* layer */
 #endif
 );
 
 
 static NhlErrorTypes cnDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlContourLayer	cnl,
 	NhlDrawOrder	order
 #endif
 );
 
 static NhlErrorTypes cnInitSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnl,
 	NhlTransDat	**seg_dat,
 	NhlString	entry_name
@@ -923,28 +923,28 @@ static NhlErrorTypes cnInitSegment(
 );
 
 static NhlErrorTypes cnSegDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnl,
 	NhlDrawOrder	order
 #endif
 );
 
 static NhlErrorTypes cnInitDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnl,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes cnInitAreamap(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnl,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes ContourUpdateData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlDataCommLayer	new,
 	NhlDataCommLayer	old
 #endif
@@ -952,13 +952,13 @@ static NhlErrorTypes ContourUpdateData(
 
 
 static NhlErrorTypes ContourDataClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes ContourDataInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass	class,
         NhlLayer	req,
         NhlLayer	new,
@@ -970,21 +970,21 @@ static NhlErrorTypes ContourDataInitialize(
 /* internal static functions */
 
 static NhlErrorTypes AddDataBoundToAreamap(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cl,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes SetCoordBounds(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlContourLayerPart	*cnp,
 	char			*entry_name
 #endif
 );
 
 static NhlErrorTypes SetUpLLTransObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init
@@ -992,7 +992,7 @@ static NhlErrorTypes SetUpLLTransObj(
 );
 
 static NhlErrorTypes SetIrrCoordBounds(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayerPart	*cnp,
 	cnCoord			ctype,
 	int			count,
@@ -1001,7 +1001,7 @@ static NhlErrorTypes SetIrrCoordBounds(
 );
 
 static NhlErrorTypes SetUpIrrTransObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init
@@ -1009,7 +1009,7 @@ static NhlErrorTypes SetUpIrrTransObj(
 );
 
 static NhlErrorTypes SetLabelFormats(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
 	NhlBoolean	init
@@ -1017,7 +1017,7 @@ static NhlErrorTypes SetLabelFormats(
 );
 
 static NhlErrorTypes ManageLabels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
 	NhlBoolean	init,
@@ -1027,7 +1027,7 @@ static NhlErrorTypes ManageLabels(
 );
 
 static NhlErrorTypes SetLabelScale(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
 	NhlBoolean	init
@@ -1035,7 +1035,7 @@ static NhlErrorTypes SetLabelScale(
 );
 
 static NhlErrorTypes ManageOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
 	NhlBoolean	init,
@@ -1045,7 +1045,7 @@ static NhlErrorTypes ManageOverlay(
 );
 
 static NhlErrorTypes ManageTickMarks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1056,7 +1056,7 @@ static NhlErrorTypes ManageTickMarks(
 
 
 static NhlErrorTypes ManageTitles(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1067,7 +1067,7 @@ static NhlErrorTypes ManageTitles(
 
 
 static NhlErrorTypes ManageLegend(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1077,7 +1077,7 @@ static NhlErrorTypes ManageLegend(
 );
 
 static NhlErrorTypes ManageLabelBar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1087,7 +1087,7 @@ static NhlErrorTypes ManageLabelBar(
 );
 
 static NhlErrorTypes SetLabelString(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlString *dest_str,
 	NhlString source_str,
 	NhlString def_str,
@@ -1096,7 +1096,7 @@ static NhlErrorTypes SetLabelString(
 );
 
 static NhlErrorTypes ManageInfoLabel(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1106,7 +1106,7 @@ static NhlErrorTypes ManageInfoLabel(
 );
 
 static NhlErrorTypes ManageConstFLabel(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew,
 	NhlContourLayer	cold,
 	NhlBoolean	init,
@@ -1116,7 +1116,7 @@ static NhlErrorTypes ManageConstFLabel(
 );
 
 static NhlErrorTypes ManageAnnotation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
 	NhlBoolean		init,
@@ -1125,7 +1125,7 @@ static NhlErrorTypes ManageAnnotation(
 );
 
 static NhlErrorTypes SetTextPosition(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
 	_cnAnnoType		atype,
@@ -1135,7 +1135,7 @@ static NhlErrorTypes SetTextPosition(
 );
 
 static NhlErrorTypes ReplaceSubstitutionChars(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayerPart	*cnp,
 	NhlContourLayerPart	*ocnp,
 	NhlBoolean		init,
@@ -1146,7 +1146,7 @@ static NhlErrorTypes ReplaceSubstitutionChars(
 );
 
 static void Substitute(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char		*buf,
 	int		replace_count,
 	char		*subst
@@ -1155,7 +1155,7 @@ static void Substitute(
 
 
 static NhlErrorTypes SetFormatRec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlFormatRec	*format,
 	NhlString	resource,
 	NhlString	entry_name
@@ -1163,7 +1163,7 @@ static NhlErrorTypes SetFormatRec(
 );
 
 static char *ContourFormat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayerPart	*cnp,
 	cnValueType		vtype,
 	NhlFormatRec		*format,
@@ -1172,7 +1172,7 @@ static char *ContourFormat(
 );
 
 static NhlErrorTypes    cnComputeRefLevel(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayerPart	*cnp,
 	float			*levels,
 	NhlString		entry_name
@@ -1180,7 +1180,7 @@ static NhlErrorTypes    cnComputeRefLevel(
 );
 
 static NhlErrorTypes    SetupLevels(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	new,
 	NhlLayer	old,
         NhlBoolean	init,					    
@@ -1190,7 +1190,7 @@ static NhlErrorTypes    SetupLevels(
 );
 
 static NhlErrorTypes    SetupLevelsManual(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew, 
 	NhlContourLayer	cold,
 	float		**levels,
@@ -1199,7 +1199,7 @@ static NhlErrorTypes    SetupLevelsManual(
 );
 
 static NhlErrorTypes    SetupLevelsEqual(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew, 
 	NhlContourLayer	cold,
 	float		**levels,
@@ -1208,7 +1208,7 @@ static NhlErrorTypes    SetupLevelsEqual(
 );
 
 static NhlErrorTypes    SetupLevelsAutomatic(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew, 
 	NhlContourLayer	cold,
 	float		**levels,
@@ -1217,7 +1217,7 @@ static NhlErrorTypes    SetupLevelsAutomatic(
 );
 
 static NhlErrorTypes    SetupLevelsExplicit(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnew, 
 	NhlContourLayer	cold,
 	float		**levels,
@@ -1226,7 +1226,7 @@ static NhlErrorTypes    SetupLevelsExplicit(
 );
 
 static NhlErrorTypes ChooseSpacingLin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*tstart,
 	float		*tend,
 	float		*spacing,
@@ -1237,7 +1237,7 @@ static NhlErrorTypes ChooseSpacingLin(
 );
 
 static NhlErrorTypes    ManageData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cnnew, 
 	NhlContourLayer	cnold,
 	NhlBoolean	init,
@@ -1247,7 +1247,7 @@ static NhlErrorTypes    ManageData(
 );
 
 static NhlErrorTypes    ManageViewDepResources(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	new,
 	NhlLayer	old,
         NhlBoolean	init,					    
@@ -1257,7 +1257,7 @@ static NhlErrorTypes    ManageViewDepResources(
 );
 
 static NhlErrorTypes    CopyTextAttrs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlcnLabelAttrs *dest,
 	NhlcnLabelAttrs *source,
 	NhlString	entry_name
@@ -1265,7 +1265,7 @@ static NhlErrorTypes    CopyTextAttrs(
 );
 
 static NhlErrorTypes    AdjustText(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlcnLabelAttrs *lbl_attrp,
 	NhlContourLayer	new, 
 	NhlContourLayer	old,
@@ -1274,7 +1274,7 @@ static NhlErrorTypes    AdjustText(
 );
 
 static NhlErrorTypes    ManageDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	new,
 	NhlLayer	old,
         NhlBoolean	init,					    
@@ -1284,7 +1284,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 );
 
 static NhlErrorTypes    ManageGenArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray	*ga,
 	int		count,
 	NhlGenArray	copy_ga,
@@ -1300,7 +1300,7 @@ static NhlErrorTypes    ManageGenArray(
 );
 
 static NhlErrorTypes	CheckColorArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cl,
 	NhlGenArray	ga,
 	int		count,
@@ -1313,14 +1313,14 @@ static NhlErrorTypes	CheckColorArray(
 );
 
 static NhlGenArray GenArraySubsetCopy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlGenArray     ga,
         int             length
 #endif
 );
 
 static NhlErrorTypes GetData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer	cl,
 	float		**scalar_field,
 	int		*first_dim,
@@ -1329,7 +1329,7 @@ static NhlErrorTypes GetData(
 );
 
 static NhlErrorTypes UpdateLineAndLabelParams(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer cl,
 	NhlBoolean	*do_lines,
 	NhlBoolean	*do_fill
@@ -1337,7 +1337,7 @@ static NhlErrorTypes UpdateLineAndLabelParams(
 );
 
 static void SetRegionAttrs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer cl,
 	NhlcnRegionAttrs *reg_attrs, 
 	int cpix
@@ -1345,14 +1345,14 @@ static void SetRegionAttrs(
 );
 
 static NhlErrorTypes UpdateFillInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlContourLayer cl,
 	NhlBoolean	*do_fill
 #endif
 );
 
 extern int (_NHLCALLF(cpdrpl,CPDRPL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xcs, 
 	float *ycs,
 	int *ncs,
@@ -1363,7 +1363,7 @@ extern int (_NHLCALLF(cpdrpl,CPDRPL))(
 );
 
 extern int (_NHLCALLF(nhlfll,NHLFLL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xcs, 
 	float *ycs, 
 	int *ncs, 
@@ -1374,25 +1374,25 @@ extern int (_NHLCALLF(nhlfll,NHLFLL))(
 );
 
 extern void   (_NHLCALLF(cpchcl,CPCHCL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
 extern void   (_NHLCALLF(cpchhl,CPCHHL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
 extern void   (_NHLCALLF(cpchll,CPCHLL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
 extern void   (_NHLCALLF(cpmpxy,CPMPXY))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	*imap,
 	float	*xinp,
 	float	*yinp,
@@ -1540,7 +1540,7 @@ static NhlContourLayerPart	*Cnp;
  */
 NhlLayerClass
 _NHLCALLF(nhlfcontourlayerclass,NHLFCONTOURLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1566,7 +1566,7 @@ _NHLCALLF(nhlfcontourlayerclass,NHLFCONTOURLAYERCLASS)
  */
 NhlLayerClass
 _NHLCALLF(nhlfcontourdatadeplayerclass,NHLFCONTOURDATADEPLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1593,7 +1593,7 @@ _NHLCALLF(nhlfcontourdatadeplayerclass,NHLFCONTOURDATADEPLAYERCLASS)
  */
 static NhlErrorTypes
 ContourDataClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1628,7 +1628,7 @@ ContourDataClassInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ContourDataInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer		req,
@@ -1670,7 +1670,7 @@ ContourDataInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ContourUpdateData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataCommLayer	new,
 	NhlDataCommLayer	old
@@ -1707,7 +1707,7 @@ ContourUpdateData
  */
 static NhlErrorTypes
 ContourClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1817,7 +1817,7 @@ ContourClassInitialize
 
 static NhlErrorTypes
 ContourClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* Layer Class to init	*/
 )
@@ -1908,7 +1908,7 @@ ContourClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ContourInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer		req,
@@ -2133,7 +2133,7 @@ ContourInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes ContourSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -2323,7 +2323,7 @@ static NhlErrorTypes ContourSetValues
  */
 
 static NhlErrorTypes    ContourGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -2470,7 +2470,7 @@ static NhlErrorTypes    ContourGetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetCoordBounds
-#if  __STDC__
+#if	NhlNeedProto
 (
         NhlContourLayerPart	*cnp,
 	char			*entry_name
@@ -2584,7 +2584,7 @@ static NhlErrorTypes SetCoordBounds
  */
 
 static NhlGenArray GenArraySubsetCopy
-#if __STDC__
+#if	NhlNeedProto
         (NhlGenArray    ga,
         int             length)
 #else
@@ -2639,7 +2639,7 @@ static NhlGenArray GenArraySubsetCopy
  * Side Effects:	NONE
  */
 static NhlErrorTypes ContourDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -2778,7 +2778,7 @@ NhlLayer inst;
  * Side Effects:        NONE
  */
 static NhlErrorTypes ContourGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -2857,7 +2857,7 @@ static NhlErrorTypes ContourGetBB
  */	
 
 static NhlErrorTypes cnSegDraw
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnl,
 	NhlDrawOrder	order
@@ -2922,7 +2922,7 @@ static NhlErrorTypes cnSegDraw
  */	
 
 static NhlErrorTypes cnInitDraw
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnl,
 	NhlString	entry_name
@@ -2976,7 +2976,7 @@ static NhlErrorTypes cnInitDraw
  */	
 
 static NhlErrorTypes cnInitAreamap
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnl,
 	NhlString	entry_name
@@ -3037,7 +3037,7 @@ static NhlErrorTypes cnInitAreamap
  */	
 
 static NhlErrorTypes cnInitSegment
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnl,
 	NhlTransDat	**seg_dat,
@@ -3078,7 +3078,7 @@ static NhlErrorTypes cnInitSegment
  */	
 
 static NhlErrorTypes ContourPreDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -3123,7 +3123,7 @@ static NhlErrorTypes ContourPreDraw
  */	
 
 static NhlErrorTypes ContourDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -3159,7 +3159,7 @@ static NhlErrorTypes ContourDraw
  */	
 
 static NhlErrorTypes ContourPostDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -3224,7 +3224,7 @@ static NhlErrorTypes ContourPostDraw
  */	
 
 static NhlErrorTypes cnDraw
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnl,
 	NhlDrawOrder	order
@@ -3434,7 +3434,7 @@ static NhlErrorTypes cnDraw
  */	
 
 static NhlErrorTypes AddDataBoundToAreamap
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cl,
 	NhlString	entry_name
@@ -3659,7 +3659,7 @@ static NhlErrorTypes AddDataBoundToAreamap
  */	
 
 static NhlErrorTypes GetData
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cl,
 	float		**scalar_field,
@@ -3717,7 +3717,7 @@ static NhlErrorTypes GetData
  */	
 
 static void SetRegionAttrs
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cl,
 	NhlcnRegionAttrs *reg_attrs, 
@@ -3761,7 +3761,7 @@ static void SetRegionAttrs
  */	
 
 static NhlErrorTypes UpdateLineAndLabelParams
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cl,
 	NhlBoolean	*do_lines,
@@ -3981,7 +3981,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
  */	
 
 static NhlErrorTypes UpdateFillInfo
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cl,
 	NhlBoolean	*do_fill
@@ -4028,7 +4028,7 @@ static NhlErrorTypes UpdateFillInfo
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes SetUpLLTransObj
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -4216,7 +4216,7 @@ static NhlErrorTypes SetUpLLTransObj
  */
 
 static NhlErrorTypes SetIrrCoordBounds
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayerPart	*cnp,
 	cnCoord			ctype,
@@ -4319,7 +4319,7 @@ static NhlErrorTypes SetIrrCoordBounds
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes SetUpIrrTransObj
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -4539,7 +4539,7 @@ static NhlErrorTypes SetUpIrrTransObj
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes SetLabelFormats
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -4650,7 +4650,7 @@ static NhlErrorTypes SetLabelFormats
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageLabels
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -4767,7 +4767,7 @@ static NhlErrorTypes ManageLabels
  * Side Effects:	
  */
 static NhlErrorTypes SetLabelScale
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -4935,7 +4935,7 @@ static NhlErrorTypes SetLabelScale
  * Side Effects:	
  */
 static NhlErrorTypes ManageOverlay
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5030,7 +5030,7 @@ static NhlErrorTypes ManageOverlay
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageTickMarks
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5087,7 +5087,7 @@ static NhlErrorTypes ManageTickMarks
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageTitles
-#if  __STDC__
+#if	NhlNeedProto
 (
  	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5144,7 +5144,7 @@ static NhlErrorTypes ManageTitles
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageLegend
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5388,7 +5388,7 @@ static NhlErrorTypes ManageLegend
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageLabelBar
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5514,7 +5514,7 @@ static NhlErrorTypes ManageLabelBar
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes SetLabelString
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlString *dest_str,
 	NhlString source_str,
@@ -5572,7 +5572,7 @@ static NhlErrorTypes SetLabelString
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageInfoLabel
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5769,7 +5769,7 @@ static NhlErrorTypes ManageInfoLabel
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageConstFLabel
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew,
 	NhlContourLayer	cnold,
@@ -5971,7 +5971,7 @@ static NhlErrorTypes ManageConstFLabel
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ManageAnnotation
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
@@ -6095,7 +6095,7 @@ static NhlErrorTypes ManageAnnotation
  * Side Effects:	Objects created and destroyed.
  */
 static NhlErrorTypes ReplaceSubstitutionChars
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayerPart	*cnp,
 	NhlContourLayerPart	*ocnp,
@@ -6246,7 +6246,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
  * Side Effects:	Objects created and destroyed.
  */
 static void Substitute
-#if  __STDC__
+#if	NhlNeedProto
 (
 	char		*buf,
 	int		replace_count,
@@ -6296,7 +6296,7 @@ static void Substitute
  * Side Effects: 
  */
 static NhlErrorTypes SetFormatRec
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlFormatRec	*format,
 	NhlString	resource,
@@ -6371,7 +6371,7 @@ static NhlErrorTypes SetFormatRec
  * Side Effects:	Objects created and destroyed.
  */
 static char *ContourFormat
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayerPart	*cnp,
 	cnValueType		vtype,
@@ -6441,7 +6441,7 @@ static char *ContourFormat
  */
 static NhlJustification
 ConstrainJustification
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlAnnotationRec	*anno_rec
 )
@@ -6537,7 +6537,7 @@ ConstrainJustification
  * Side Effects:
  */
 static NhlErrorTypes SetTextPosition
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
@@ -6678,7 +6678,7 @@ static NhlErrorTypes SetTextPosition
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageData
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayer	cnnew, 
 	NhlContourLayer	cnold,
@@ -6773,7 +6773,7 @@ static NhlErrorTypes    ManageData
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageViewDepResources
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer	new, 
 	NhlLayer	old,
 	NhlBoolean	init,
@@ -6848,7 +6848,7 @@ static NhlErrorTypes    ManageViewDepResources
 
 /*ARGSUSED*/
 static NhlErrorTypes    CopyTextAttrs
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlcnLabelAttrs *dest,
 	NhlcnLabelAttrs *source,
@@ -6919,7 +6919,7 @@ static NhlErrorTypes    CopyTextAttrs
 
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustText
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlcnLabelAttrs *lbl_attrp,
 	NhlContourLayer	new, 
@@ -6998,7 +6998,7 @@ static NhlErrorTypes    AdjustText
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer		new, 
 	NhlLayer		old,
 	NhlBoolean	init,
@@ -7754,7 +7754,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /*ARGSUSED*/
 static NhlErrorTypes    ManageGenArray
-#if __STDC__
+#if	NhlNeedProto
 	(NhlGenArray	*ga,
 	 int		count,
 	 NhlGenArray	copy_ga,
@@ -7949,7 +7949,7 @@ static NhlErrorTypes    ManageGenArray
 /*ARGSUSED*/
 
 static NhlErrorTypes	CheckColorArray
-#if __STDC__
+#if	NhlNeedProto
 	(NhlContourLayer	cl,
 	NhlGenArray	ga,
 	int		count,
@@ -8029,7 +8029,7 @@ static NhlErrorTypes	CheckColorArray
 
 /*ARGSUSED*/
 static NhlErrorTypes    cnComputeRefLevel
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlContourLayerPart	*cnp,
 	float			*levels,
@@ -8103,7 +8103,7 @@ static NhlErrorTypes    cnComputeRefLevel
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevels
-#if __STDC__
+#if	NhlNeedProto
 	(NhlLayer	new, 
 	 NhlLayer	old,
 	 NhlBoolean	init,
@@ -8247,7 +8247,7 @@ static NhlErrorTypes    SetupLevels
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevelsManual
-#if __STDC__
+#if	NhlNeedProto
 	(NhlContourLayer	cnew, 
 	 NhlContourLayer	cold,
 	 float		**levels,
@@ -8336,7 +8336,7 @@ static NhlErrorTypes    SetupLevelsManual
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevelsEqual
-#if __STDC__
+#if	NhlNeedProto
 	(NhlContourLayer	cnew,
 	 NhlContourLayer	cold,
 	 float		**levels,
@@ -8396,7 +8396,7 @@ static NhlErrorTypes    SetupLevelsEqual
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevelsAutomatic
-#if __STDC__
+#if	NhlNeedProto
 	(NhlContourLayer	cnew, 
 	 NhlContourLayer	cold,
 	 float		**levels,
@@ -8502,7 +8502,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevelsExplicit
-#if __STDC__
+#if	NhlNeedProto
 	(NhlContourLayer	cnew, 
 	 NhlContourLayer	cold,
 	 float			**levels,
@@ -8611,7 +8611,7 @@ static NhlErrorTypes    SetupLevelsExplicit
  * Side Effects: NONE
  */
 static NhlErrorTypes ChooseSpacingLin
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float *tstart,
 	float *tend,
@@ -8679,7 +8679,7 @@ static NhlErrorTypes ChooseSpacingLin
 
 /*ARGSUSED*/
 int (_NHLCALLF(nhlfll,NHLFLL))
-#if __STDC__
+#if	NhlNeedProto
 (
 	float *xcs, 
 	float *ycs, 
@@ -8774,7 +8774,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 
 /*ARGSUSED*/
 void   (_NHLCALLF(cpchcl,CPCHCL))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int	*iflg
 )
@@ -8884,7 +8884,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 /*ARGSUSED*/
 void   (_NHLCALLF(cpchhl,CPCHHL))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int	*iflg
 )
@@ -9066,7 +9066,7 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 
 /*ARGSUSED*/
 void   (_NHLCALLF(cpchll,CPCHLL))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int	*iflg
 )
@@ -9133,7 +9133,7 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 
 /*ARGSUSED*/
 void   (_NHLCALLF(cpmpxy,CPMPXY))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int	*imap,
 	float	*xinp,

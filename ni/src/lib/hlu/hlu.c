@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.22 1994-11-07 03:10:55 ethan Exp $
+ *      $Id: hlu.c,v 1.23 1994-12-16 20:05:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -523,7 +523,7 @@ NhlName
 /*ARGSUSED*/
 void
 _NHLCALLF(nhl_fname,NHL_FNAME)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*id,
 	_NhlFString	name,
@@ -590,7 +590,7 @@ int pid;
  */
 void
 _NHLCALLF(nhl_fclassname,NHL_FCLASSNAME)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*id,
 	_NhlFString	name,
@@ -1568,7 +1568,7 @@ _NhlLLErrCheckPrnt
  * Side Effect:	
  */
 int NhlIsWorkstation
-#if __STDC__
+#if	NhlNeedProto
 (int plotid)
 #else
 (plotid)

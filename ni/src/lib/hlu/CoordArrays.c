@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.18 1994-12-16 19:22:08 boote Exp $
+ *      $Id: CoordArrays.c,v 1.19 1994-12-16 20:04:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -58,7 +58,7 @@ typedef enum _NhlcaDType_{
 /*ARGSUSED*/
 static NhlErrorTypes
 XCastSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -83,7 +83,7 @@ XCastSet
 /*ARGSUSED*/
 static NhlErrorTypes
 YCastSet
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -261,7 +261,7 @@ NhlLayerClass NhlcoordArraysLayerClass = (NhlLayerClass)
  */
 NhlLayerClass
 _NHLCALLF(nhlfcoordarrayslayerclass,NHLFCOORDARRAYSLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -292,7 +292,7 @@ _NHLCALLF(nhlfcoordarrayslayerclass,NHLFCOORDARRAYSLAYERCLASS)
  */
 static NhlErrorTypes
 CreateFloatTable
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString	cast_res,
 	NhlString	other_cast_res,
@@ -748,7 +748,7 @@ FlushObj
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtCArrToCArrTabFlt
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -920,7 +920,7 @@ CvtCArrToCArrTabFlt
  */
 static NhlErrorTypes
 CoordArraysClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1110,7 +1110,7 @@ CopyArray
 /*ARGSUSED*/
 static NhlErrorTypes
 CoordArraysInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -1247,7 +1247,7 @@ CoordArraysInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 CoordArraysSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,		/* old		*/
 	NhlLayer	req,		/* requested	*/
@@ -1435,7 +1435,7 @@ CoordArraysSetValues
  */
 static NhlErrorTypes
 CoordArraysGetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,		/* l		*/
 	_NhlArgList	args,		/* args to set	*/
@@ -1609,7 +1609,7 @@ CoordArraysGetValues
 /*ARGSUSED*/
 static NhlErrorTypes
 CoordArraysDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )

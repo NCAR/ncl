@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.6 1994-10-27 01:37:01 dbrown Exp $
+ *      $Id: View.h,v 1.7 1994-12-16 20:04:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -94,7 +94,7 @@ typedef struct _NhlBoundingBox {
 } NhlBoundingBox;
 
 extern NhlErrorTypes NhlGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int,		/* pid */
 	NhlBoundingBox*	/* thebox */
 #endif

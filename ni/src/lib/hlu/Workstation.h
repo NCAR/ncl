@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.8 1994-07-12 20:53:30 boote Exp $
+ *      $Id: Workstation.h,v 1.9 1994-12-16 20:05:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -187,7 +187,7 @@ extern NhlErrorTypes   NhlFrame(
 
 
 extern NhlErrorTypes NhlSetColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int 	/* pid */,
 int     /* ci */,
 float   /* red */,
@@ -197,14 +197,14 @@ float   /* blue */
 );
 
 extern NhlErrorTypes NhlFreeColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int 	/* pid */,
         int     /* ci */
 #endif
 );
 
 extern int NhlNewColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int     /* pid*/,
         float   /* red */,
         float   /* green */,
@@ -213,27 +213,27 @@ extern int NhlNewColor(
 );
 
 extern int NhlGetGksCi(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int     /* pid */,
         int     /* ci   */
 #endif
 );
 
 extern int NhlIsAllocatedColor(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int     /* pid */,
         int     /* ci   */
 #endif
 );
 
 int NhlGetGksWorkId(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /* workid */
 #endif
 );
 
 int NhlNewMarker(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int instance, 
 	char *marker_string, 
 	float x_off, 
@@ -244,7 +244,7 @@ int NhlNewMarker(
 );
 
 NhlErrorTypes NhlSetMarker(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int instance, 
 	int	index,
 	char	*marker_string, 

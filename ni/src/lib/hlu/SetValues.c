@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.11 1994-11-03 05:17:35 boote Exp $
+ *      $Id: SetValues.c,v 1.12 1994-12-16 20:04:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@
  */
 static NhlErrorTypes
 CallSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl,		/* NhlLayer w/ old values	*/
@@ -106,7 +106,7 @@ CallSetValues
  */
 static NhlErrorTypes
 CallSetValuesHook
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl,		/* NhlLayer w/ old values	*/
@@ -160,7 +160,7 @@ CallSetValuesHook
  */
 static NhlErrorTypes 
 SetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlConvertContext	context,/* convert context for mem	*/
 	char*			base,	/* base address to write values to*/
@@ -263,7 +263,7 @@ SetValues
 NhlDOCTAG(_NhlSetValues)
 NhlErrorTypes
 _NhlSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,		/* layer instance	*/
 	_NhlArgList	args,		/* args to change	*/
@@ -535,7 +535,7 @@ NhlDOCTAG(NhlALSetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlALSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		id,		/* plot id		*/
 	NhlSArgList	args_in,	/* SArg's to set	*/
@@ -584,7 +584,7 @@ NhlALSetValues
 /*VARARGS1*/
 NhlErrorTypes
 NhlSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		id,		/* plot id		*/
 	int		rlid		/* RL id		*/
@@ -630,7 +630,7 @@ NhlSetValues
  */
 void
 _NHLCALLF(nhl_fsetvalues,NHL_FSETVALUES)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/
 	int		*rlid,		/* RL list of resources		*/
@@ -670,7 +670,7 @@ _NHLCALLF(nhl_fsetvalues,NHL_FSETVALUES)
  */
 static NhlErrorTypes
 SetValuesChild
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		pid,		/* pid			*/
 	NhlLayer	parent,		/* parent of child	*/

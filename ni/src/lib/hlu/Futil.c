@@ -1,5 +1,5 @@
 /*
- *      $Id: Futil.c,v 1.2 1994-06-03 16:37:59 ethan Exp $
+ *      $Id: Futil.c,v 1.3 1994-12-16 20:04:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,7 @@
  */
 static NhlString
 FptrToCstr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString		cstr,
 	unsigned int		cstr_len,
@@ -103,7 +103,7 @@ FptrToCstr
  */
 NhlString
 _NhlFstrToCstr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString		cstr,
 	unsigned int		cstr_len,
@@ -140,7 +140,7 @@ _NhlFstrToCstr
  */
 NhlString *
 _NhlMDFstrToCstrtbl
-#if	__STDC__
+#if	NhlNeedProto
 (
 	Const _NhlFString	fstr,
 	unsigned int		num_strings,
@@ -188,7 +188,7 @@ _NhlMDFstrToCstrtbl
  */
 NhlErrorTypes
 _NhlCstrToFptr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString	fptr,
 	unsigned int	fstr_len,
@@ -241,7 +241,7 @@ _NhlCstrToFptr
  */
 NhlErrorTypes
 _NhlCstrToFstr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlFString	fstr,
 	unsigned int	fstr_len,
@@ -278,7 +278,7 @@ _NhlCstrToFstr
  */
 NrmQuark
 _NhlFstrToQuark
-#if	__STDC__
+#if	NhlNeedProto
 (
 	Const _NhlFString	fstr,
 	unsigned int		fstr_len
@@ -337,7 +337,7 @@ _NhlFstrToQuark
  */
 NhlGenArray
 _NhlCreateFGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlPointer	data,
 	NhlString	type,

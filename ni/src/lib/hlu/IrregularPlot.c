@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.11 1994-12-16 19:22:10 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.12 1994-12-16 20:04:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,19 +33,19 @@
 
 
 static NhlErrorTypes IrregularPlotClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes IrregularPlotClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes IrregularPlotInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -55,7 +55,7 @@ static NhlErrorTypes IrregularPlotInitialize(
 );
 
 static NhlErrorTypes IrregularPlotSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -65,13 +65,13 @@ static NhlErrorTypes IrregularPlotSetValues(
 );
 
 static NhlErrorTypes IrregularPlotDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes IrregularPlotGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        instance,
         NhlBoundingBox	*thebox
 #endif
@@ -79,13 +79,13 @@ static NhlErrorTypes IrregularPlotGetBB(
 
 
 static NhlErrorTypes IrregularPlotDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes SetUpTransObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlIrregularPlotLayer	xnew,
 	NhlIrregularPlotLayer	xold,
 	NhlBoolean	init
@@ -157,7 +157,7 @@ NhlLayerClass NhlirregularPlotLayerClass = (NhlLayerClass)
  */
 NhlLayerClass
 _NHLCALLF(nhlfirregularplotlayerclass,NHLFIRREGULARPLOTLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -183,7 +183,7 @@ _NHLCALLF(nhlfirregularplotlayerclass,NHLFIRREGULARPLOTLAYERCLASS)
  */
 static NhlErrorTypes
 IrregularPlotClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -215,7 +215,7 @@ IrregularPlotClassInitialize
 
 static NhlErrorTypes
 IrregularPlotClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
@@ -275,7 +275,7 @@ IrregularPlotClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 IrregularPlotInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer	req,
@@ -339,7 +339,7 @@ IrregularPlotInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes IrregularPlotSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -392,7 +392,7 @@ static NhlErrorTypes IrregularPlotSetValues
  * Side Effects:	NONE
  */
 static NhlErrorTypes IrregularPlotDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -445,7 +445,7 @@ NhlLayer inst;
  * Side Effects:        NONE
  */
 static NhlErrorTypes IrregularPlotGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -496,7 +496,7 @@ static NhlErrorTypes IrregularPlotGetBB
 
 /*ARGSUSED*/
 static NhlErrorTypes IrregularPlotDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -526,7 +526,7 @@ static NhlErrorTypes IrregularPlotDraw
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetUpTransObj
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlIrregularPlotLayer	irnew,
 	NhlIrregularPlotLayer	irold,

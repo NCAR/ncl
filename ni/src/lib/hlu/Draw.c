@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.7 1994-05-12 23:51:05 boote Exp $
+ *      $Id: Draw.c,v 1.8 1994-12-16 20:04:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@
  */
 static NhlErrorTypes
 CallPreDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
 	NhlLayerClass	class	/* class or super-class of object	*/
@@ -95,7 +95,7 @@ CallPreDraw
  */
 static NhlErrorTypes
 CallDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
 	NhlLayerClass	class	/* class or super-class of object	*/
@@ -142,7 +142,7 @@ CallDraw
  */
 static NhlErrorTypes
 CallPostDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
 	NhlLayerClass	class	/* class or super-class of object	*/
@@ -191,7 +191,7 @@ CallPostDraw
 NhlDOCTAG(NhlDraw)
 NhlErrorTypes
 NhlDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	id	/* id of object to draw	*/
 )
@@ -278,7 +278,7 @@ NhlDraw
  */
 void
 _NHLCALLF(nhl_fdraw,NHL_FDRAW)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*id_obj,
 	int	*err_ret
@@ -311,7 +311,7 @@ _NHLCALLF(nhl_fdraw,NHL_FDRAW)
  */
 NhlErrorTypes
 _NhlPreDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer	/* layer of object to draw	*/
 )
@@ -347,7 +347,7 @@ _NhlPreDraw
  */
 NhlErrorTypes
 _NhlDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer	/* layer of object to draw	*/
 )
@@ -384,7 +384,7 @@ _NhlDraw
  */
 NhlErrorTypes
 _NhlPostDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer	/* layer of object to draw	*/
 )
@@ -425,7 +425,7 @@ _NhlPostDraw
  */
 static NhlErrorTypes
 CallSegDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
 	NhlLayerClass	class	/* class or super-class of object	*/
@@ -470,7 +470,7 @@ CallSegDraw
  */
 NhlErrorTypes
 _NhlSegDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer	/* layer of object to draw	*/
 )

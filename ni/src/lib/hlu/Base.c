@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.7 1994-11-07 03:08:55 ethan Exp $
+ *      $Id: Base.c,v 1.8 1994-12-16 20:03:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -132,7 +132,7 @@ NhlLayerClass NhlobjLayerClass = (NhlLayerClass)&NhlobjLayerClassRec;
  */
 static NhlErrorTypes
 BaseLayerClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class structure to update	*/
 )
@@ -169,7 +169,7 @@ BaseLayerClassPartInitialize
  */
 static NhlErrorTypes
 FreeAndDestroyChildList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlChildList	list	/* list to free	*/
 )
@@ -210,7 +210,7 @@ FreeAndDestroyChildList
  */
 static NhlErrorTypes
 ReparentChildren
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer 	*/
 )
@@ -254,7 +254,7 @@ ReparentChildren
  */
 static NhlErrorTypes
 BaseLayerReparent
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* layer to reparent	*/
 	NhlLayer	parent	/* new parent		*/
@@ -291,7 +291,7 @@ BaseLayerReparent
  */
 static NhlErrorTypes
 ObjLayerDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -331,7 +331,7 @@ ObjLayerDestroy
  */
 static NhlErrorTypes
 BaseLayerDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -371,7 +371,7 @@ BaseLayerDestroy
  */
 NhlLayer
 _NhlGetWorkstationLayer
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer	/* Layer to get workstation pointer from*/
 )
@@ -384,7 +384,7 @@ _NhlGetWorkstationLayer
 }
 
 int NhlGetParentWorkstation
-#if	__STDC__
+#if	NhlNeedProto
 (int plotid)
 #else
 (plotid)

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.28 1994-11-07 03:10:07 ethan Exp $
+ *      $Id: Overlay.c,v 1.29 1994-12-16 20:04:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,7 @@
 /*ARGSUSED*/
 static NhlErrorTypes
 ResourceUnset
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -307,19 +307,19 @@ static NhlResource resources[] = {
 
 
 static NhlErrorTypes OverlayClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes OverlayClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes OverlayInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass	class,
         NhlLayer	req,
         NhlLayer	new,
@@ -329,7 +329,7 @@ static NhlErrorTypes OverlayInitialize(
 );
 
 static NhlErrorTypes OverlaySetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	old,
         NhlLayer	reference,
         NhlLayer	new,
@@ -339,7 +339,7 @@ static NhlErrorTypes OverlaySetValues(
 );
 
 static NhlErrorTypes 	OverlayGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	layer,
 	_NhlArgList	args,
 	int		num_args
@@ -347,31 +347,31 @@ static NhlErrorTypes 	OverlayGetValues(
 );
 
 static NhlErrorTypes OverlayDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	inst
 #endif
 );
 
 static NhlErrorTypes OverlayDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayPreDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayPostDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        instance,
         NhlBoundingBox	*thebox
 #endif
@@ -380,7 +380,7 @@ static NhlErrorTypes OverlayGetBB(
 /* internal static functions */
 
 static NhlErrorTypes InternalGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	instance,
 	NhlBoundingBox	*thebox,
         int  	        include_types,   
@@ -389,7 +389,7 @@ static NhlErrorTypes InternalGetBB(
 );
 
 static NhlAnnoRec *RecordAnnotation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer ovl,
 	ovAnnoType	type,
 	int		status,
@@ -398,7 +398,7 @@ static NhlAnnoRec *RecordAnnotation(
 );
 
 static NhlErrorTypes ManageAnnotations(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,				       
@@ -408,7 +408,7 @@ static NhlErrorTypes ManageAnnotations(
 );
 
 static NhlErrorTypes ManageExtAnnotation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
@@ -417,13 +417,13 @@ static NhlErrorTypes ManageExtAnnotation(
 );
 
 static NhlJustification ConstrainJustification(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlAnnoRec	*anno_rec
 #endif
 );
 
 static NhlErrorTypes UpdateAnnoData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlAnnoRec	*anno_list,
 	int		*max_zone,
 	NhlString	entry_name
@@ -431,7 +431,7 @@ static NhlErrorTypes UpdateAnnoData(
 );
 
 static NhlErrorTypes ManageTitles(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
@@ -440,7 +440,7 @@ static NhlErrorTypes ManageTitles(
 );
 
 static NhlErrorTypes ManageTickMarks(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
@@ -449,7 +449,7 @@ static NhlErrorTypes ManageTickMarks(
 );
 
 static NhlErrorTypes ManageLabelBar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
@@ -460,7 +460,7 @@ static NhlErrorTypes ManageLabelBar(
 );
 
 static NhlErrorTypes ManageLegend(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
@@ -471,7 +471,7 @@ static NhlErrorTypes ManageLegend(
 );
 
 static NhlErrorTypes SetAnnoViews(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_list,
 	int		zone,
@@ -481,7 +481,7 @@ static NhlErrorTypes SetAnnoViews(
 );
 
 static NhlErrorTypes SetTickMarkView(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
@@ -489,7 +489,7 @@ static NhlErrorTypes SetTickMarkView(
 );
 
 static NhlErrorTypes SetTitleView(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
@@ -497,7 +497,7 @@ static NhlErrorTypes SetTitleView(
 );
 
 static NhlErrorTypes SetExternalView(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
@@ -505,7 +505,7 @@ static NhlErrorTypes SetExternalView(
 );
 
 static NhlErrorTypes SetViewTracking(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
@@ -513,21 +513,21 @@ static NhlErrorTypes SetViewTracking(
 );
 
 static NhlErrorTypes RestoreOverlayBase(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 #endif
 );
 
 static NhlErrorTypes RemoveOverlayBase(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 #endif
 );
 
 static NhlErrorTypes DissolveOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		overlay_object
 #endif
 );
@@ -608,7 +608,7 @@ static NhlLayer Overlay_Plot = NULL;
  */
 static NhlErrorTypes
 OverlayClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -652,7 +652,7 @@ OverlayClassInitialize
 
 static NhlErrorTypes
 OverlayClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
@@ -746,7 +746,7 @@ OverlayClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 OverlayInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer		req,
@@ -903,7 +903,7 @@ OverlayInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes OverlaySetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,
 	NhlLayer		reference,
@@ -1121,7 +1121,7 @@ static NhlErrorTypes OverlaySetValues
  */
 
 static NhlErrorTypes	OverlayGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -1230,7 +1230,7 @@ static NhlErrorTypes	OverlayGetValues
  * Side Effects:	NONE
  */
 static NhlErrorTypes OverlayDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -1299,7 +1299,7 @@ NhlLayer inst;
  */	
 
 static NhlErrorTypes OverlayPreDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -1392,7 +1392,7 @@ static NhlErrorTypes OverlayPreDraw
  */	
 
 static NhlErrorTypes OverlayDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -1460,7 +1460,7 @@ static NhlErrorTypes OverlayDraw
  */	
 
 static NhlErrorTypes OverlayPostDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -1588,7 +1588,7 @@ static NhlErrorTypes OverlayPostDraw
  * Side Effects:        NONE
  */
 static NhlErrorTypes OverlayGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -1655,7 +1655,7 @@ static NhlErrorTypes OverlayGetBB
  */
 /*ARGSUSED*/
 static NhlAnnoRec *RecordAnnotation
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer ovl,
 	ovAnnoType	type,
@@ -1741,7 +1741,7 @@ static NhlAnnoRec *RecordAnnotation
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetAnnoViews
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_list,
@@ -1853,7 +1853,7 @@ static NhlErrorTypes SetAnnoViews
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetTickMarkView
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
@@ -1884,7 +1884,7 @@ static NhlErrorTypes SetTickMarkView
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetTitleView
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
@@ -2075,7 +2075,7 @@ static NhlErrorTypes SetTitleView
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetViewTracking
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
@@ -2202,7 +2202,7 @@ static NhlErrorTypes SetViewTracking
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetExternalView
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_rec,
@@ -2369,7 +2369,7 @@ static NhlErrorTypes SetExternalView
  * Side Effects:        NONE
  */
 static NhlErrorTypes InternalGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	instance,
 	NhlBoundingBox	*thebox,
@@ -2499,7 +2499,7 @@ static NhlErrorTypes InternalGetBB
  */
 static NhlErrorTypes
 ManageAnnotations
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -2583,7 +2583,7 @@ ManageAnnotations
  */
 static NhlJustification
 ConstrainJustification
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlAnnoRec	*anno_rec
 )
@@ -2679,7 +2679,7 @@ ConstrainJustification
  */
 static NhlErrorTypes
 ManageExtAnnotation
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -2866,7 +2866,7 @@ ManageExtAnnotation
  */
 static NhlErrorTypes
 UpdateAnnoData
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlAnnoRec	*anno_list,
 	int		*max_zone,
@@ -2928,7 +2928,7 @@ UpdateAnnoData
  */
 static NhlErrorTypes
 ManageTickMarks
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -3306,7 +3306,7 @@ ManageTickMarks
  */
 static NhlErrorTypes
 ManageTitles
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -3592,7 +3592,7 @@ ManageTitles
  */
 static NhlErrorTypes
 ManageLabelBar
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -3853,7 +3853,7 @@ ManageLabelBar
  */
 static NhlErrorTypes
 ManageLegend
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
@@ -4078,7 +4078,7 @@ ManageLegend
 /* low level overlay mapping functions */
 
 void _NhlovCpMapXY
-#if __STDC__
+#if	NhlNeedProto
 (float *xin,float *yin, float* xout, float* yout)
 #else
 (xin,yin,xout,yout)
@@ -4116,7 +4116,7 @@ void _NhlovCpMapXY
 
 
 void _NhlovCpInvMapXY
-#if __STDC__
+#if	NhlNeedProto
 (float *xin,float *yin, float* xout, float* yout)
 #else
 (xin,yin,xout,yout)
@@ -4179,7 +4179,7 @@ void _NhlovCpInvMapXY
  */	
 
 NhlErrorTypes NhlAddToOverlay
-#if  __STDC__
+#if	NhlNeedProto
 (int base_id, int plot_id, int after_id)
 #else
 (base_id, plot_id, after_id)
@@ -4441,7 +4441,7 @@ NhlErrorTypes NhlAddToOverlay
  */
 void
 _NHLCALLF(nhlf_addtooverlay,NHLF_ADDTOOVERLAY)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*base,
 	int	*plot,
@@ -4481,7 +4481,7 @@ _NHLCALLF(nhlf_addtooverlay,NHLF_ADDTOOVERLAY)
  */	
 
 NhlErrorTypes NhlRemoveFromOverlay
-#if  __STDC__
+#if	NhlNeedProto
 (int base_id, int plot_id, NhlBoolean restore)
 #else
 (base_id, plot_id,restore)
@@ -4624,7 +4624,7 @@ NhlErrorTypes NhlRemoveFromOverlay
  */
 void
 _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*base,
 	int	*plot,
@@ -4674,7 +4674,7 @@ _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
  */	
 
 NhlErrorTypes NhlRegisterAnnotation
-#if  __STDC__
+#if	NhlNeedProto
 (int overlay_base_id, int annotation_id)
 #else
 (overlay_base_id, annotation_id)
@@ -4801,7 +4801,7 @@ NhlErrorTypes NhlRegisterAnnotation
  */
 void
 _NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*overlay_base,
 	int	*annotation,
@@ -4836,7 +4836,7 @@ _NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
  */	
 
 NhlErrorTypes NhlUnregisterAnnotation
-#if  __STDC__
+#if	NhlNeedProto
 (int overlay_base_id, int annotation_id)
 #else
 (overlay_base_id, annotation_id)
@@ -4933,7 +4933,7 @@ NhlErrorTypes NhlUnregisterAnnotation
  */
 void
 _NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*overlay_base,
 	int	*annotation,
@@ -4967,7 +4967,7 @@ _NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
  */
 static NhlErrorTypes
 DissolveOverlay
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		overlay_object
 )
@@ -5032,7 +5032,7 @@ DissolveOverlay
  */
 static NhlErrorTypes
 RemoveOverlayBase
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayerPart	*ovp,
 	int			plot_number
@@ -5135,7 +5135,7 @@ RemoveOverlayBase
  */
 static NhlErrorTypes
 RestoreOverlayBase
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlOverlayLayerPart	*ovp,
 	int			plot_number
@@ -5290,7 +5290,7 @@ RestoreOverlayBase
  * Side Effects:	Objects created and destroyed.
  */
 extern NhlErrorTypes _NhlManageOverlay
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	*overlay_object,
 	NhlLayer	lnew,

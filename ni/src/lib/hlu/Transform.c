@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.11 1994-11-07 03:10:34 ethan Exp $
+ *      $Id: Transform.c,v 1.12 1994-12-16 20:04:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes TransformDataToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -78,7 +78,7 @@ static NhlErrorTypes TransformDataToNDC(
 );
 
 static NhlErrorTypes TransformNDCToData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -93,7 +93,7 @@ static NhlErrorTypes TransformNDCToData(
 );
 
 static NhlErrorTypes TransformDataPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -102,7 +102,7 @@ static NhlErrorTypes TransformDataPolyline(
 );
 
 static NhlErrorTypes TransformNDCPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
@@ -185,7 +185,7 @@ NhlLayerClass NhltransformLayerClass = (NhlLayerClass)&NhltransformLayerClassRec
  * Side Effects:	NONE
  */
 static NhlErrorTypes TransformDataToNDC
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n,
  float* xout,float* yout,float* xmissing,float* ymissing, 
  int *status, float * out_of_range)
@@ -286,7 +286,7 @@ static NhlErrorTypes TransformDataToNDC
  * Side Effects:	 NONE
  */
 static NhlErrorTypes TransformNDCToData
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n,
  float* xout,float* yout,float *xmissing,float *ymissing,
  int *status, float * out_of_range)
@@ -378,7 +378,7 @@ static NhlErrorTypes TransformNDCToData
  * Side Effects:	 NONE
  */
 static NhlErrorTypes TransformDataPolyline
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n)
 #else
 (plot,x,y,n)
@@ -497,7 +497,7 @@ static NhlErrorTypes TransformDataPolyline
  * Side Effects:	 NONE
  */
 static NhlErrorTypes TransformNDCPolyline
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer plot,float* x,float* y,int n)
 #else
 (plot,x,y,n)

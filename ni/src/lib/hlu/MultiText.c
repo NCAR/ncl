@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.9 1994-11-07 03:10:01 ethan Exp $
+ *      $Id: MultiText.c,v 1.10 1994-12-16 20:04:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -188,7 +188,7 @@ NhlLayerClass NhlmultiTextLayerClass = (NhlLayerClass)&NhlmultiTextLayerClassRec
  */
 static NhlErrorTypes
 MultiTextClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayerClass being inited	*/
 )
@@ -225,7 +225,7 @@ MultiTextClassPartInitialize
  */
 static void
 CalculateGeometry
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlMultiTextLayer	l,		/* The NhlLayer		*/
 	float			*x,		/* x return		*/
@@ -316,7 +316,7 @@ CalculateGeometry
 /*ARGSUSED*/
 static NhlErrorTypes
 MultiTextInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -448,7 +448,7 @@ MultiTextInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 MultiTextSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,		/* old		*/
 	NhlLayer		req,		/* requested	*/
@@ -747,7 +747,7 @@ MultiTextSetValues
  */
 static NhlErrorTypes
 MultiTextDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to draw	*/
 )
@@ -801,7 +801,7 @@ MultiTextDraw
  */
 static NhlErrorTypes
 MultiTextSegDraw
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to draw	*/
 )
@@ -855,7 +855,7 @@ MultiTextSegDraw
  */
 static NhlErrorTypes
 MultiTextDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )

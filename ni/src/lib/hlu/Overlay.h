@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.10 1994-09-30 01:11:04 dbrown Exp $
+ *      $Id: Overlay.h,v 1.11 1994-12-16 20:04:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -110,7 +110,7 @@ extern NhlLayerClass NhloverlayLayerClass;
 
 /* Public functions defined by the Overlay Class	*/
 NhlErrorTypes NhlAddToOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int		base_id,
 	int		plot_id,
 	int		after_id
@@ -118,7 +118,7 @@ NhlErrorTypes NhlAddToOverlay(
 );
 
 NhlErrorTypes NhlRemoveFromOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int		base_id,
 	int		plot_id,
 	NhlBoolean	restore
@@ -126,14 +126,14 @@ NhlErrorTypes NhlRemoveFromOverlay(
 );
 
 NhlErrorTypes NhlRegisterAnnotation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int	overlay_base_id,
 	int	annotation_id
 #endif
 );
 
 NhlErrorTypes NhlUnregisterAnnotation(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         int	overlay_base_id,
 	int	annotation_id
 #endif

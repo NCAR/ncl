@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.7 1994-11-07 03:09:22 ethan Exp $
+ *      $Id: DataMgr.c,v 1.8 1994-12-16 20:04:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -117,7 +117,7 @@ NhlLayerClass NhldataMgrLayerClass = (NhlLayerClass)&NhldataMgrLayerClassRec;
 /*ARGSUSED*/
 static NhlErrorTypes
 DataMgrInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -164,7 +164,7 @@ DataMgrInitialize
  */
 static void
 ReleaseDSpecs
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDSpec	list,	/* list of nodes to free	*/
 	int		ditemid	/* dataitem parent of mgr	*/
@@ -203,7 +203,7 @@ ReleaseDSpecs
  */
 static void
 FreeHandles
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDHandle	list	/* list of handles to free	*/
 )
@@ -246,7 +246,7 @@ FreeHandles
  */
 static void
 ReleaseHandles
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDHandle	list,	/* list of handles to free	*/
 	int		ditemid	/* dataitem parent of mgr	*/
@@ -285,7 +285,7 @@ ReleaseHandles
  */
 static void
 FreeCache
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDCache	list	/* list to free	*/
 )
@@ -326,7 +326,7 @@ FreeCache
  */
 static NhlErrorTypes
 DataMgrDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -384,7 +384,7 @@ DataMgrDestroy
  */
 _NhlDHandle
 _NhlInitDataConnection
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,		/* DataItem sub-class	*/
 	int			dcommid,	/* id for datacomm layer*/
@@ -465,7 +465,7 @@ _NhlInitDataConnection
  */
 static void
 ReleaseCache
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataMgrLayer	mgr,	/* manager			*/
 	_NhlDCache	cache	/* ptr to node to release	*/
@@ -516,7 +516,7 @@ ReleaseCache
  */
 static _NhlDCache
 CreateCache
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataMgrLayer	mgr,	/* data manager		*/
 	NrmQuark	type	/* convert to type	*/
@@ -605,7 +605,7 @@ CreateCache
  */
 static _NhlDCache
 UpdateCacheList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDCache	node	/* node to update	*/
 )
@@ -670,7 +670,7 @@ UpdateCacheList
  */
 NhlLayer
 _NhlRetrieveData
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,		/* dataItem sub-class	*/
 	_NhlDHandle		dhandle,	/* id for Connection	*/
@@ -781,7 +781,7 @@ _NhlRetrieveData
  */
 void
 _NhlCloseDataConnection
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,	/* DataItem sub-class	*/
 	_NhlDHandle		dhandle	/* id for Connection	*/
@@ -842,7 +842,7 @@ _NhlCloseDataConnection
  */
 void
 _NhlDataItemModified
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* DataMgr	*/
 )
@@ -879,7 +879,7 @@ _NhlDataItemModified
  */
 NhlErrorTypes
 _NhlNotifyDataComm
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* dmgr layer */
 )
@@ -923,7 +923,7 @@ _NhlNotifyDataComm
  */
 static NhlBoolean
 PushDSpec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDSpec	*listptr,	/* ptr to dspec_list	*/
 	int		dspecid		/* dspecid		*/
@@ -968,7 +968,7 @@ PushDSpec
  */
 NhlBoolean
 _NhlRegisterDSpec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,		/* DataItem sub-class	*/
 	int			dspecid		/* id for dataspec layer*/
@@ -1006,7 +1006,7 @@ _NhlRegisterDSpec
  */
 static NhlBoolean
 PopDSpec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlDSpec	*listptr,	/* ptr to dspec_list	*/
 	int		dspecid		/* dspecid		*/
@@ -1050,7 +1050,7 @@ PopDSpec
  */
 void
 _NhlUnRegisterDSpec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		l,		/* DataItem sub-class	*/
 	int			dspecid		/* id for dataspec layer*/

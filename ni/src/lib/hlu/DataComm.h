@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.4 1994-01-27 21:22:30 boote Exp $
+ *      $Id: DataComm.h,v 1.5 1994-12-16 20:04:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,7 @@ NhlErrorTypes NhlUpdateData(
 );
 
 NhlErrorTypes NhlAddData(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
 	int		ditemid		/* id of data to add		*/
@@ -54,7 +54,7 @@ NhlErrorTypes NhlAddData(
 );
 
 NhlErrorTypes NhlRemoveData(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
 	int		ditemid		/* id of data item to remove	*/

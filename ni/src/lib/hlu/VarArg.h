@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.h,v 1.4 1994-02-18 02:55:00 boote Exp $
+ *      $Id: VarArg.h,v 1.5 1994-12-16 20:04:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 
 #include <ncarg/hlu/hluP.h>
 
-#ifdef	__STDC__
+#if	NhlNeedProto
 #include <stdarg.h>
 #define VA_START(ap,last)       va_start(ap,last) 
 #else
@@ -35,7 +35,7 @@
 #endif
 
 extern int _NhlVarToSetArgList(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	va_list		ap,		/* vararg list			*/ 
 	_NhlArgList	args		/* pointer to return arglist in	*/ 
 #endif

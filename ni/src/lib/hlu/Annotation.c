@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.7 1994-12-16 19:22:04 boote Exp $
+ *      $Id: Annotation.c,v 1.8 1994-12-16 20:03:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes AnnotationSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	old,
         NhlLayer	reference,
         NhlLayer	new,
@@ -81,7 +81,7 @@ static NhlErrorTypes AnnotationSetValues(
 );
 
 static NhlErrorTypes    AnnotationInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass	class,
         NhlLayer	req,
         NhlLayer	new,
@@ -91,7 +91,7 @@ static NhlErrorTypes    AnnotationInitialize(
 );
 
 static NhlErrorTypes	AnnotationDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	layer
 #endif
 );
@@ -142,7 +142,7 @@ NhlLayerClass NhlannotationLayerClass =
  */
 NhlLayerClass
 _NHLCALLF(nhlfannotationlayerclass,NHLFANNOTATIONLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -170,7 +170,7 @@ _NHLCALLF(nhlfannotationlayerclass,NHLFANNOTATIONLAYERCLASS)
 /*ARGSUSED*/
 static NhlErrorTypes
 AnnotationInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer	req,
@@ -219,7 +219,7 @@ AnnotationInitialize
 /*ARGSUSED*/
 static NhlErrorTypes 
 AnnotationSetValues
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -267,7 +267,7 @@ AnnotationSetValues
  */
 static NhlErrorTypes
 AnnotationDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	layer)
 #else
@@ -301,7 +301,7 @@ AnnotationDestroy
  * Side Effects: 	NONE
  */
 static NhlErrorTypes    AnnotationClassInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()

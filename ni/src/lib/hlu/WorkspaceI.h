@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.6 1994-09-08 01:34:46 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.7 1994-12-16 20:05:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ typedef struct _NhlWorkspace {
 } NhlWorkspace;
 
 extern int _NhlNewWorkspace(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlwsType	type,
 	NhlPersistence	persistence,			    
 	int		req_size
@@ -58,19 +58,19 @@ extern int _NhlNewWorkspace(
 );
 
 extern void _NhlFreeWorkspace(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int		ws_id
 #endif
 );
 
 extern NhlWorkspace *_NhlUseWorkspace(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int		ws_id
 #endif
 );
 
 extern NhlErrorTypes _NhlIdleWorkspace(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace *ws
 #endif
 );
@@ -78,14 +78,14 @@ extern NhlErrorTypes _NhlIdleWorkspace(
 /* Dyanamic Areas interface functions */
 
 extern NhlErrorTypes _NhlArinam(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	char		*entry_name
 #endif
 );
 
 extern NhlErrorTypes _NhlArpram(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		flag1,
 	int		flag2,
@@ -95,7 +95,7 @@ extern NhlErrorTypes _NhlArpram(
 );
 
 extern NhlErrorTypes _NhlAredam(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	float		*x,
 	float		*y,
@@ -108,7 +108,7 @@ extern NhlErrorTypes _NhlAredam(
 );
 
 extern NhlErrorTypes _NhlArscam(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		(*apr)(float *xcs, 
 			       float *ycs, 
@@ -121,7 +121,7 @@ extern NhlErrorTypes _NhlArscam(
 );
 
 extern NhlErrorTypes _NhlArdbpa(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		igi,
 	char		*label,
@@ -130,7 +130,7 @@ extern NhlErrorTypes _NhlArdbpa(
 );
 
 extern NhlErrorTypes _NhlDumpAreaMap(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	char		*entry_name
 #endif
@@ -140,7 +140,7 @@ extern NhlErrorTypes _NhlDumpAreaMap(
 
 
 extern NhlErrorTypes _NhlCpback(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -149,7 +149,7 @@ extern NhlErrorTypes _NhlCpback(
 );
 
 extern NhlErrorTypes _NhlCpclam(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -159,7 +159,7 @@ extern NhlErrorTypes _NhlCpclam(
 );
 
 extern NhlErrorTypes _NhlCpcldm(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -175,7 +175,7 @@ extern NhlErrorTypes _NhlCpcldm(
 );
 
 extern NhlErrorTypes _NhlCpcldr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -184,7 +184,7 @@ extern NhlErrorTypes _NhlCpcldr(
 );
 
 extern NhlErrorTypes _NhlCplbam(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -194,7 +194,7 @@ extern NhlErrorTypes _NhlCplbam(
 );
 
 extern NhlErrorTypes _NhlCplbdr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -203,7 +203,7 @@ extern NhlErrorTypes _NhlCplbdr(
 );
 
 extern NhlErrorTypes _NhlCprect(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*zdat,
 	int		kzdt,
 	int		mzdt,
@@ -215,7 +215,7 @@ extern NhlErrorTypes _NhlCprect(
 );
 
 extern NhlErrorTypes _NhlMapbla(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
  	NhlWorkspace	*amap_ws,
 	char		*entry_name
 #endif
@@ -223,7 +223,7 @@ extern NhlErrorTypes _NhlMapbla(
 
 
 extern NhlErrorTypes _NhlMapita(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	float		x,
 	float		y,
@@ -236,7 +236,7 @@ extern NhlErrorTypes _NhlMapita(
 );
 
 extern NhlErrorTypes _NhlMapiqa(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		group_id,
 	int		left_id,
@@ -246,7 +246,7 @@ extern NhlErrorTypes _NhlMapiqa(
 );
 
 extern NhlErrorTypes _NhlMapblm(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		(*ulpr)(float *xcra, 
 			       float *ycra, 
@@ -260,7 +260,7 @@ extern NhlErrorTypes _NhlMapblm(
 
 
 extern NhlErrorTypes _NhlMapgrm(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
 	int		(*ulpr)(float *xcra, 
 			       float *ycra, 

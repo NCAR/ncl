@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.19 1994-12-16 19:22:14 boote Exp $
+ *      $Id: MapPlot.c,v 1.20 1994-12-16 20:04:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -62,7 +62,7 @@
 /*ARGSUSED*/
 static NhlErrorTypes
 ResourceUnset
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmName		name,
 	NrmClass	class,
@@ -425,19 +425,19 @@ static NhlResource resources[] = {
 
 
 static NhlErrorTypes MapPlotClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes MapPlotClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes MapPlotInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -447,7 +447,7 @@ static NhlErrorTypes MapPlotInitialize(
 );
 
 static NhlErrorTypes MapPlotSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -457,7 +457,7 @@ static NhlErrorTypes MapPlotSetValues(
 );
 
 static NhlErrorTypes    MapPlotGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer,       /* l */
 	_NhlArgList,    /* args */
 	int             /* num_args */
@@ -465,13 +465,13 @@ static NhlErrorTypes    MapPlotGetValues(
 );
 
 static NhlErrorTypes MapPlotDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes MapPlotGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        instance,
         NhlBoundingBox	*thebox
 #endif
@@ -479,26 +479,26 @@ static NhlErrorTypes MapPlotGetBB(
 
 
 static NhlErrorTypes MapPlotPreDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes MapPlotDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 
 static NhlErrorTypes MapPlotPostDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlGenArray mpGetNewGenArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	NrmQuark		quark,
 	NhlString		type
@@ -506,42 +506,42 @@ static NhlGenArray mpGetNewGenArray(
 );
 
 static NhlGenArray mpGenArraySubsetCopy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray    ga,
         int             length
 #endif
 );
 
 static NhlErrorTypes mpDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlMapPlotLayer	mpl,
 	NhlDrawOrder	order
 #endif
 );
 
 static NhlErrorTypes mpFill(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes mpGrid(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes mpOutline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
 #endif
 );
 
 static NhlErrorTypes mpSetUpAreamap(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mp,
 	NhlWorkspace	**aws,
 	int 		amap_type,
@@ -550,7 +550,7 @@ static NhlErrorTypes mpSetUpAreamap(
 );
 
 static NhlErrorTypes mpSetUpDrawIds(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
 	NhlString		entry_name
@@ -558,7 +558,7 @@ static NhlErrorTypes mpSetUpDrawIds(
 );
 
 static NhlErrorTypes mpSetUpStateDrawIds(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
 	NhlString		entry_name
@@ -566,7 +566,7 @@ static NhlErrorTypes mpSetUpStateDrawIds(
 );
 
 static NhlErrorTypes mpExpandId(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	int			ix,
 	int			draw_mode,
@@ -576,7 +576,7 @@ static NhlErrorTypes mpExpandId(
 );
 
 static NhlErrorTypes    mpManageViewDepResources(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer mpnew,
 	NhlMapPlotLayer	mpold,
         NhlBoolean	init					    
@@ -584,7 +584,7 @@ static NhlErrorTypes    mpManageViewDepResources(
 );
 
 static NhlErrorTypes    SetLineAttrs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer mpnew,
 	NhlMapPlotLayer	mpold,
         NhlBoolean	init					    
@@ -592,7 +592,7 @@ static NhlErrorTypes    SetLineAttrs(
 );
 
 static NhlErrorTypes    mpManageDynamicArrays(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
 	NhlBoolean	init,
@@ -602,7 +602,7 @@ static NhlErrorTypes    mpManageDynamicArrays(
 );
 
 static NhlErrorTypes    mpBuildFillDrawList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
 	NhlBoolean	init,
@@ -612,7 +612,7 @@ static NhlErrorTypes    mpBuildFillDrawList(
 );
 
 static NhlErrorTypes    mpBuildOutlineDrawList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
 	NhlBoolean	init,
@@ -622,7 +622,7 @@ static NhlErrorTypes    mpBuildOutlineDrawList(
 );
 
 static NhlErrorTypes    mpUpdateDrawGroups(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
 	int			draw_mode,
@@ -633,7 +633,7 @@ static NhlErrorTypes    mpUpdateDrawGroups(
 );
 
 static NhlErrorTypes mpUpdateNameRecs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
 	NhlString		name,
@@ -644,7 +644,7 @@ static NhlErrorTypes mpUpdateNameRecs(
 );
 
 static NhlErrorTypes    mpManageGenArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlGenArray	*ga,
 	int		count,
 	NhlGenArray	copy_ga,
@@ -660,7 +660,7 @@ static NhlErrorTypes    mpManageGenArray(
 );
 
 static void mpAdjustDashSegLen(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float		*seglen,
 	NhlBoolean	init,
 	float		new_vpwidth,
@@ -669,7 +669,7 @@ static void mpAdjustDashSegLen(
 );
 
 static NhlErrorTypes    mpAdjustText(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlmpLabelAttrs *lbl_attrs,
 	NhlMapPlotLayer	new, 
 	NhlMapPlotLayer	old,
@@ -678,7 +678,7 @@ static NhlErrorTypes    mpAdjustText(
 );
 
 static NhlErrorTypes mpSetUpTransObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlMapPlotLayer	mpnew,
 	NhlMapPlotLayer	mpold,
 	NhlBoolean	init
@@ -686,13 +686,13 @@ static NhlErrorTypes mpSetUpTransObj(
 );
 
 extern void   (_NHLCALLF(mapusr,MAPUSR))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	*iprt
 #endif
 );
 
 void   (_NHLCALLF(mapeod,MAPEOD))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int *nout,
 	int *nseg,
 	int *idls,
@@ -703,7 +703,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))(
 );
 
 extern int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xcs, 
 	float *ycs, 
 	int *ncs, 
@@ -714,7 +714,7 @@ extern int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))(
 );
 
 extern int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float *xcra, 
 	float *ycra, 
 	int *ncra, 
@@ -1003,7 +1003,7 @@ static int NatCOSegs[] = {
  */
 NhlLayerClass
 _NHLCALLF(nhlfmapplotlayerclass,NHLFMAPPLOTLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1029,7 +1029,7 @@ _NHLCALLF(nhlfmapplotlayerclass,NHLFMAPPLOTLAYERCLASS)
  */
 static NhlErrorTypes
 MapPlotClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1106,7 +1106,7 @@ MapPlotClassInitialize
 
 static NhlErrorTypes
 MapPlotClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
@@ -1325,7 +1325,7 @@ NhlErrorTypes Init_Outline_Recs(NhlString entry_name)
 /*ARGSUSED*/
 static NhlErrorTypes
 MapPlotInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer	req,
@@ -1464,7 +1464,7 @@ MapPlotInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapPlotSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -1605,7 +1605,7 @@ static NhlErrorTypes MapPlotSetValues
  */
 
 static NhlErrorTypes    MapPlotGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -1722,7 +1722,7 @@ static NhlErrorTypes    MapPlotGetValues
  */	
 
 static NhlGenArray mpGetNewGenArray
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	NrmQuark		quark,
@@ -1835,7 +1835,7 @@ static NhlGenArray mpGetNewGenArray
  */
 
 static NhlGenArray mpGenArraySubsetCopy
-#if __STDC__
+#if	NhlNeedProto
         (NhlGenArray    ga,
         int             length)
 #else
@@ -1889,7 +1889,7 @@ static NhlGenArray mpGenArraySubsetCopy
  * Side Effects:	NONE
  */
 static NhlErrorTypes MapPlotDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -1946,7 +1946,7 @@ NhlLayer inst;
  * Side Effects:        NONE
  */
 static NhlErrorTypes MapPlotGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -1996,7 +1996,7 @@ static NhlErrorTypes MapPlotGetBB
  */	
 
 static NhlErrorTypes MapPlotPreDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2023,7 +2023,7 @@ static NhlErrorTypes MapPlotPreDraw
  */	
 
 static NhlErrorTypes MapPlotDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2049,7 +2049,7 @@ static NhlErrorTypes MapPlotDraw
  */	
 
 static NhlErrorTypes MapPlotPostDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2079,7 +2079,7 @@ static NhlErrorTypes MapPlotPostDraw
  */	
 
 static NhlErrorTypes mpDraw
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
 	NhlDrawOrder	order
@@ -2256,7 +2256,7 @@ static NhlErrorTypes mpDraw
  */	
 
 static NhlErrorTypes mpOutline
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
@@ -2323,7 +2323,7 @@ static NhlErrorTypes mpOutline
  */	
 
 static NhlErrorTypes mpFill
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
@@ -2413,7 +2413,7 @@ static NhlErrorTypes mpFill
  */	
 
 static NhlErrorTypes mpGrid
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
 	NhlString	entry_name
@@ -2518,7 +2518,7 @@ static NhlErrorTypes mpGrid
  */	
 
 static NhlErrorTypes mpSetUpAreamap
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
 	NhlWorkspace	**aws,
@@ -2607,7 +2607,7 @@ static NhlErrorTypes mpSetUpAreamap
  */	
 
 static NhlErrorTypes mpSetUpDrawIds
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
@@ -2829,7 +2829,7 @@ static NhlErrorTypes mpSetUpDrawIds
  */	
 
 static NhlErrorTypes mpSetUpStateDrawIds
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
@@ -2964,7 +2964,7 @@ static NhlErrorTypes mpSetUpStateDrawIds
  */	
 
 static NhlErrorTypes mpExpandId
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	int			id,
@@ -3063,7 +3063,7 @@ static NhlErrorTypes mpExpandId
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpAdjustText
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlmpLabelAttrs *lbl_attrs,
 	NhlMapPlotLayer	new, 
@@ -3140,7 +3140,7 @@ static NhlErrorTypes    mpAdjustText
 
 /*ARGSUSED*/
 static void mpAdjustDashSegLen
-#if __STDC__
+#if	NhlNeedProto
 (
 	float		*seglen,
 	NhlBoolean	init,
@@ -3181,7 +3181,7 @@ static void mpAdjustDashSegLen
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpManageViewDepResources
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer mpnew, 
 	NhlMapPlotLayer mpold,
@@ -3250,7 +3250,7 @@ static NhlErrorTypes    mpManageViewDepResources
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetLineAttrs
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer mpnew, 
 	NhlMapPlotLayer mpold,
@@ -3302,7 +3302,7 @@ static NhlErrorTypes    SetLineAttrs
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpManageDynamicArrays
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
@@ -3790,7 +3790,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpUpdateDrawGroups
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
@@ -3956,7 +3956,7 @@ static NhlErrorTypes    mpUpdateDrawGroups
  */	
 
 static NhlErrorTypes mpUpdateNameRecs
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
@@ -4156,7 +4156,7 @@ static NhlErrorTypes mpUpdateNameRecs
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpBuildFillDrawList
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
@@ -4350,7 +4350,7 @@ static NhlErrorTypes    mpBuildFillDrawList
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpBuildOutlineDrawList
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mpnew, 
 	NhlMapPlotLayer	mpold,
@@ -4517,7 +4517,7 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 
 /*ARGSUSED*/
 static NhlErrorTypes    mpManageGenArray
-#if __STDC__
+#if	NhlNeedProto
 	(NhlGenArray	*ga,
 	 int		count,
 	 NhlGenArray	copy_ga,
@@ -4703,7 +4703,7 @@ static NhlErrorTypes    mpManageGenArray
  */
 /*ARGSUSED*/
 static NhlErrorTypes mpSetUpTransObj
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapPlotLayer	mpnew,
 	NhlMapPlotLayer	mpold,
@@ -4789,7 +4789,7 @@ static NhlErrorTypes mpSetUpTransObj
 
 /*ARGSUSED*/
 void   (_NHLCALLF(mapusr,MAPUSR))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int	*iprt
 )
@@ -4878,7 +4878,7 @@ void   (_NHLCALLF(mapusr,MAPUSR))
 
 /*ARGSUSED*/
 void   (_NHLCALLF(mapeod,MAPEOD))
-#if __STDC__
+#if	NhlNeedProto
 (
 	int *nout,
 	int *nseg,
@@ -4980,7 +4980,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 /*ARGSUSED*/
 
 int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
-#if __STDC__
+#if	NhlNeedProto
 (
 	float *xcra, 
 	float *ycra, 
@@ -5147,7 +5147,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 
 /*ARGSUSED*/
 int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
-#if __STDC__
+#if	NhlNeedProto
 (
 	float *xcs, 
 	float *ycs, 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.6 1994-10-31 01:08:45 boote Exp $
+ *      $Id: ViewP.h,v 1.7 1994-12-16 20:05:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -107,41 +107,41 @@ extern NhlViewLayerClassRec NhlviewLayerClassRec;
 #define NhlDEFAULT_SEG_WKS_TYPE 3
 
 extern void _NhlAddViewChildLayer(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */,
 NhlLayer   /* child */
 #endif
 );
  
 extern void _NhlDeleteViewChildLayer(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */,
 NhlLayer   /* child */
 #endif
 );
 
 extern NhlTransDat *_NhlNewViewSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /* instance */
 #endif
 );
 
 extern void _NhlDeleteViewSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer,  /* instance */
 NhlTransDat*    /*trandat */
 #endif
 );
 
 extern NhlErrorTypes _NhlResetViewSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer,  /* instance */
 NhlTransDat */* segdat */
 #endif
 );
 
 extern void _NhlAddBBInfo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float,		/*t */
 float,		/*b */
 float,		/*r */
@@ -151,7 +151,7 @@ NhlBoundingBox*	/*thebox*/
 );
 
 extern void _NhlInternalSetView(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlViewLayer	/* theview */,
 float		/* x */,
 float		/* y */,
@@ -162,7 +162,7 @@ int		/* keep_asp */
 );
 
 extern NhlErrorTypes _NhlGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer	instance,
 	NhlBoundingBox* /* thebox */
 #endif

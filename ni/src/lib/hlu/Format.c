@@ -705,7 +705,7 @@ static char *find_exp(char *start)
  */
 
 NhlFormatRec *_NhlScanFString
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlString	fstring,
 	NhlString	entry_name
@@ -772,7 +772,7 @@ NhlFormatRec *_NhlScanFString
  */
 
 NhlString _NhlFormatFloat
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlFormatRec	*format,
 	float		value,
@@ -1115,7 +1115,7 @@ NhlString _NhlFormatFloat
  */
 
 NhlErrorTypes _NhlGetScaleInfo
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		value,
 	int		*div_pwr,

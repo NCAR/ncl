@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.7 1994-10-04 01:02:09 boote Exp $
+ *      $Id: ResourcesP.h,v 1.8 1994-12-16 20:04:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,13 +59,13 @@ extern NhlErrorTypes _NhlGetResources(
 );
 
 extern void _NhlResourceListInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void	/* none	*/
 #endif
 );
 
 extern void _NhlGroupResources(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass lc	/* Class to create full reslist for	*/
 #endif
 );
@@ -78,7 +78,7 @@ extern void _NhlCompileResourceList(
 );
 
 extern void _NhlCopyFromArgVal(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	_NhlArgVal,	/* src	*/
 	void*,		/* dst	*/
 	unsigned int	/* size	*/
@@ -86,7 +86,7 @@ extern void _NhlCopyFromArgVal(
 );
 
 extern void _NhlCopyFromArg(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	_NhlArgVal,	/* src	*/
 	void*,		/* dst	*/
 	unsigned int	/* size	*/
@@ -94,7 +94,7 @@ extern void _NhlCopyFromArg(
 );
 
 extern void _NhlCopyToArg(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void*,		/* src	*/
 	_NhlArgVal*,	/* dst	*/
 	unsigned int	/* size	*/

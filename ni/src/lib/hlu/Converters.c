@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.23 1994-11-07 08:29:57 boote Exp $
+ *      $Id: Converters.c,v 1.24 1994-12-16 20:03:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -99,7 +99,7 @@ static NrmQuark genQ;
  */
 static int
 comparestring
-#if	__STDC__
+#if	NhlNeedProto
 (
 	char	*s1,	/* string one	*/
 	char	*s2	/* string two	*/
@@ -183,7 +183,7 @@ comparestring
  */
 static NhlErrorTypes
 NhlCvtStringToEnum
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,	/* ptr to from data	*/
 	NrmValue		*to,	/* ptr to to data	*/
@@ -249,7 +249,7 @@ NhlCvtStringToEnum
 /*ARGSUSED*/
 static NhlErrorTypes
 NhlCvtEnumToString
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,	/* ptr to from data		*/
 	NrmValue		*to,	/* ptr to to data		*/
@@ -312,7 +312,7 @@ NhlCvtEnumToString
 /*ARGSUSED*/
 static NhlErrorTypes
 NhlCvtScalarToEnum
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,	/* ptr to from data		*/
 	NrmValue		*to,	/* ptr to to data		*/
@@ -477,7 +477,7 @@ _NhlRegisterEnumType
 *									*
 ************************************************************************/
 
-#if	__STDC__
+#if	NhlNeedProto
 #define	CvtArgs \
 (									\
 	NrmValue		*from,					\
@@ -2063,7 +2063,7 @@ CvtArgs
 /*ARGSUSED*/
 void
 _NhlConvertersInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )

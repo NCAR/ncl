@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.6 1994-12-16 19:22:05 boote Exp $
+ *      $Id: App.c,v 1.7 1994-12-16 20:03:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -281,7 +281,7 @@ InitBaseDB
 /*ARGSUSED*/
 static NhlErrorTypes
 AppLayerClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class structure to update	*/
 )
@@ -685,7 +685,7 @@ AppGetValues
 /*ARGSUSED*/
 static NhlErrorTypes
 AppLayerDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.11 1994-12-16 19:22:13 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.12 1994-12-16 20:04:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,19 +39,19 @@ static NhlResource resources[] = {
 
 
 static NhlErrorTypes LogLinPlotClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes LogLinPlotClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes LogLinPlotInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -61,7 +61,7 @@ static NhlErrorTypes LogLinPlotInitialize(
 );
 
 static NhlErrorTypes LogLinPlotSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -71,13 +71,13 @@ static NhlErrorTypes LogLinPlotSetValues(
 );
 
 static NhlErrorTypes LogLinPlotDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes LogLinPlotGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer        instance,
         NhlBoundingBox	*thebox
 #endif
@@ -85,13 +85,13 @@ static NhlErrorTypes LogLinPlotGetBB(
 
 
 static NhlErrorTypes LogLinPlotDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes SetUpTransObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLogLinPlotLayer	xnew,
 	NhlLogLinPlotLayer	xold,
 	NhlBoolean	init
@@ -164,7 +164,7 @@ NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
  */
 NhlLayerClass
 _NHLCALLF(nhlfloglinplotlayerclass,NHLFLOGLINPLOTLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -190,7 +190,7 @@ _NHLCALLF(nhlfloglinplotlayerclass,NHLFLOGLINPLOTLAYERCLASS)
  */
 static NhlErrorTypes
 LogLinPlotClassInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -221,7 +221,7 @@ LogLinPlotClassInitialize
 
 static NhlErrorTypes
 LogLinPlotClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
@@ -281,7 +281,7 @@ LogLinPlotClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 LogLinPlotInitialize
-#if     __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	class,
 	NhlLayer	req,
@@ -343,7 +343,7 @@ LogLinPlotInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes LogLinPlotSetValues
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -405,7 +405,7 @@ static NhlErrorTypes LogLinPlotSetValues
  * Side Effects:	NONE
  */
 static NhlErrorTypes LogLinPlotDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -457,7 +457,7 @@ NhlLayer inst;
  * Side Effects:        NONE
  */
 static NhlErrorTypes LogLinPlotGetBB
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -507,7 +507,7 @@ static NhlErrorTypes LogLinPlotGetBB
 
 /*ARGSUSED*/
 static NhlErrorTypes LogLinPlotDraw
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -539,7 +539,7 @@ static NhlErrorTypes LogLinPlotDraw
  */
 /*ARGSUSED*/
 static NhlErrorTypes SetUpTransObj
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlLogLinPlotLayer	llnew,
 	NhlLogLinPlotLayer	llold,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.6 1994-05-12 23:51:03 boote Exp $
+ *      $Id: Destroy.c,v 1.7 1994-12-16 20:04:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -164,7 +164,7 @@ NhlDestroy
  */
 void
 _NHLCALLF(nhl_fdestroy,NHL_FDESTROY)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*id_obj,
 	int	*err_ret

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: wksisopn.c,v 1.1 1994-08-11 23:17:39 boote Exp $
+ *      $Id: wksisopn.c,v 1.2 1994-12-16 20:05:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
  * Side Effects:
  */
 int	wksisopn
-#if __STDC__
+#if	NhlNeedProto
 (int	n)
 #else
 (n)

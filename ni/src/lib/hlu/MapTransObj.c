@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.12 1994-11-07 03:09:58 ethan Exp $
+*      $Id: MapTransObj.c,v 1.13 1994-12-16 20:04:27 boote Exp $
 */
 /************************************************************************
 *									*
@@ -180,7 +180,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes MapTransInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayerClass,     /* class */
 NhlLayer,          /* req */
 NhlLayer,          /* new */
@@ -190,13 +190,13 @@ int             /* num_args */
 );
 
 static NhlErrorTypes    MapTransClassInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static NhlErrorTypes  MapTransSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer,          /* old */
 NhlLayer,          /* reference */
 NhlLayer,          /* new */
@@ -210,14 +210,14 @@ int             /* num_args*/
 */
 
 static NhlErrorTypes MapSetTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance*/,
 NhlLayer   /*parent */
 #endif
 );
 
 static NhlErrorTypes MapWinToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance*/,
 NhlLayer   /* parent */,
 float*  /*x*/,
@@ -231,7 +231,7 @@ int* 	/*status*/
 #endif
 );
 static NhlErrorTypes MapNDCToWin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance*/,
 NhlLayer   /*parent */,
 float*  /*x*/,
@@ -247,7 +247,7 @@ int*	/*status*/
 
 
 static NhlErrorTypes MapDataToWin(
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
 NhlLayer   /*instance */, 
 NhlLayer   /*parent */, 
 float*  /*x*/, 
@@ -262,7 +262,7 @@ int*	/*status*/
 ); 
 
 static NhlErrorTypes MapWinToData(
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
 NhlLayer   /*instance */, 
 NhlLayer   /*parent */, 
 float*  /*x*/, 
@@ -277,7 +277,7 @@ int*	/*status*/
 ); 
 
 static NhlErrorTypes MapDataToCompc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer   /*instance */, 
 NhlLayer   /*parent */, 
 float*  /*x*/, 
@@ -400,7 +400,7 @@ NhlLayerClass NhlmapTransObjLayerClass = (NhlLayerClass) &NhlmapTransObjLayerCla
 * Side Effects:
 */
 static NhlErrorTypes MapSetTrans
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent )
 #else
 (instance,parent)
@@ -633,7 +633,7 @@ NhlLayer parent;
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapWinToNDC
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -706,7 +706,7 @@ int* status;
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapNDCToWin
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -757,7 +757,7 @@ static NhlErrorTypes MapNDCToWin
 
 /*ARGSUSED*/
 static NhlErrorTypes MapDataToCompc
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -814,7 +814,7 @@ static NhlErrorTypes MapDataToCompc
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapDataToWin
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -872,7 +872,7 @@ static NhlErrorTypes MapDataToWin
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapWinToData
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer instance,NhlLayer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing, int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -942,7 +942,7 @@ static NhlErrorTypes MapWinToData
  */
 /*ARGSUSED*/
 static NhlErrorTypes  MapTransSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old,NhlLayer reference,NhlLayer new,_NhlArgList args,int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -991,7 +991,7 @@ static NhlErrorTypes  MapTransSetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes MapTransInitialize
-#if  __STDC__
+#if	NhlNeedProto
 ( NhlLayerClass class,NhlLayer req,NhlLayer new,_NhlArgList args,int num_args)
 #else
 (class,req,new,args,num_args)
@@ -1036,7 +1036,7 @@ static NhlErrorTypes MapTransInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes GetWindowLimits
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapTransObjLayer	mnew,
 	float			*wl,
@@ -1112,7 +1112,7 @@ static NhlErrorTypes GetWindowLimits
  */
 /*ARGSUSED*/
 static NhlErrorTypes CheckMapLimits
-#if  __STDC__
+#if	NhlNeedProto
 (
 	NhlMapTransObjLayer	mnew,
 	NhlString		entry_name
@@ -1323,7 +1323,7 @@ static NhlErrorTypes CheckMapLimits
  * Side Effects:        NONE
  */
 static NhlErrorTypes    MapTransClassInitialize
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1360,7 +1360,7 @@ static NhlErrorTypes    MapTransClassInitialize
 
 /*ARGSUSED*/
 static NhlErrorTypes MapDataLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)
@@ -1380,7 +1380,7 @@ int upordown;
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MapWinLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)
@@ -1449,7 +1449,7 @@ int upordown;
         }
 }
 static NhlErrorTypes MapNDCLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)

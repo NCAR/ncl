@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.7 1994-11-07 03:09:20 ethan Exp $
+ *      $Id: DataItem.c,v 1.8 1994-12-16 20:04:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -157,7 +157,7 @@ NhlLayerClass NhldataItemLayerClass = (NhlLayerClass)&NhldataItemLayerClassRec;
  */
 static NhlErrorTypes
 DataItemClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc
 )
@@ -196,7 +196,7 @@ DataItemClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 DataItemInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -265,7 +265,7 @@ DataItemInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 DataItemSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,	/* old		*/
 	NhlLayer		req,	/* requested	*/
@@ -305,7 +305,7 @@ DataItemSetValues
 /*ARGSUSED*/
 static NhlErrorTypes
 DataItemSetValuesHook
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,	/* old		*/
 	NhlLayer		req,	/* requested	*/
@@ -349,7 +349,7 @@ DataItemSetValuesHook
  */
 static NhlErrorTypes
 DataItemDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -392,7 +392,7 @@ DataItemDestroy
  */
 void
 _NhlDataChanged
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlDataItemLayer	l,	/* data item layer	*/
 	NhlBoolean		status

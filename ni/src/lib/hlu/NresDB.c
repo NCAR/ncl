@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.4 1994-07-12 20:52:35 boote Exp $
+ *      $Id: NresDB.c,v 1.5 1994-12-16 20:04:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +59,7 @@ SOFTWARE.
 #include	<ncarg/hlu/NresDB.h>
 #include	<ncarg/hlu/Convert.h>
 
-#if __STDC__ && !defined(VMS)
+#if	NhlNeedProto && !defined(VMS)
 #define RConst const
 #else
 #define RConst /**/
@@ -323,7 +323,7 @@ static NrmBits Const xrmtypes[256] = {
 
 void
 _NrmInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1466,7 +1466,7 @@ static void GetDatabase(db, permstr, filename, doall)
 
 void
 NrmPutStringRes
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmDatabase	*pdb,
 	Const char	*specifier,
@@ -1612,7 +1612,7 @@ NrmDatabase NrmGetFileDB
 
 int
 NrmCombineFileDB
-#if	__STDC__
+#if	NhlNeedProto
 (
     Const char    *filename,
     NrmDatabase     *target,
@@ -2220,7 +2220,7 @@ NhlBoolean NrmQGetSearchList(db, names, classes, searchList, listLength)
 
 NhlBoolean
 NrmGetQResFromList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmSearchList		searchList,
 	register NrmName	name,
@@ -2580,7 +2580,7 @@ char *NrmLocaleOfDatabase(db)
 
 void
 NrmDestroyDB
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmDatabase	db
 )
@@ -2625,7 +2625,7 @@ NrmDestroyDB
  */
 NhlBoolean
 NrmQinQList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmQuarkList	qlist,	/* NrmNULLQUARK terminated quark list	*/
 	NrmQuark	q	/* quark to search for in list		*/

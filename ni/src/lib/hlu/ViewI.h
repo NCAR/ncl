@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.1 1994-01-27 21:27:13 boote Exp $
+ *      $Id: ViewI.h,v 1.2 1994-12-16 20:04:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,27 +30,27 @@
 * Globally callable functions from Segments.c
 */
 extern void _NhlDestroySegTransDat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*    /* transdat */
 #endif
 );
 
 extern NhlTransDat      *_NhlInitSegTransDat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float*, /* x */
 float*  /* y */
 #endif
 );
 
 extern void _NhlResetSegTransDat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*,   /* transdat */
 float*,         /* x */
 float*          /* y */
 #endif
 );
 extern void _NhlComputeSegTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*,   /* transdat */
 float   *,      /* transform */
 float   *,      /* xprime */
@@ -59,13 +59,13 @@ float   *       /* yprime */
 );
 
 extern NhlErrorTypes _NhlDrawSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*,   /* transdat */
 int             /* wksid */
 #endif
 );
 extern void _NhlEvalTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float *,        /*transform */
 float,          /* x */
 float,          /* y */
@@ -75,13 +75,13 @@ float *         /* yprime */
 );
 
 extern void _NhlStartSegment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*    /* transdat */
 #endif
 );
 
 extern void _NhlSetSegTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlTransDat*,   /* transdat */
 float*          /* transform */
 #endif

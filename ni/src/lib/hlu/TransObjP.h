@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.5 1994-01-27 21:26:54 boote Exp $
+ *      $Id: TransObjP.h,v 1.6 1994-12-16 20:04:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -111,7 +111,7 @@ extern NhlTransObjLayerClassRec NhltransObjLayerClassRec;
 
 
 extern void _NhlTransClipLine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 float /*xl*/,
 float /*xr*/,
 float /*yt*/,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.19 1994-11-07 03:10:38 ethan Exp $
+ *      $Id: Workspace.c,v 1.20 1994-12-16 20:05:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,7 @@ static NhlErrorTypes WorkspaceSetValues(
 );
 
 static NhlErrorTypes    WorkspaceGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,       /* l */
         _NhlArgList,    /* args */
         int             /* num_args */
@@ -85,14 +85,14 @@ static NhlErrorTypes WorkspaceDestroy(
 /* private static function declarations */
 
 static NhlWorkspaceRec	*wsFindNode(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int		ws_id,
 	char		*entry_name
 #endif
 );
 
 static void		wsDeleteNode(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
@@ -100,49 +100,49 @@ static void		wsDeleteNode(
 
 
 static NhlErrorTypes	ReduceCurrentAlloc(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	int		over,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	GetScratchSpace(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	GetCorePreservedSpace(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	GetDiskPreservedSpace(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	EnlargeWorkspace(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	TrimWorkspace(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes AddToIdleList(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	NhlwsIdleRec	**head,
 	NhlwsIdleRec	**tail,
@@ -151,7 +151,7 @@ static NhlErrorTypes AddToIdleList(
 );
 
 static NhlErrorTypes RemoveFromIdleList(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	NhlwsIdleRec	**head,
 	NhlwsIdleRec	**tail,
@@ -160,26 +160,26 @@ static NhlErrorTypes RemoveFromIdleList(
 );
 
 static NhlwsIdleRec	*GetIdleRec(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 static void PutBackIdleRec(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlwsIdleRec	*idlep
 #endif
 );
 
 static NhlErrorTypes	RestoreFromFile(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
 );
 
 static NhlErrorTypes	SaveToFile(
-#ifdef	NhlNeedProto
+#if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
 #endif
@@ -279,7 +279,7 @@ static NrmQuark Qcurrent_size = NrmNULLQUARK;
  */
 static NhlErrorTypes
 WorkspaceClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -314,7 +314,7 @@ WorkspaceClassInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 WorkspaceInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -408,7 +408,7 @@ WorkspaceInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 WorkspaceSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,		/* old		*/
 	NhlLayer		req,		/* requested	*/
@@ -482,7 +482,7 @@ WorkspaceSetValues
  */
 
 static NhlErrorTypes    WorkspaceGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -531,7 +531,7 @@ static NhlErrorTypes    WorkspaceGetValues
  */
 static NhlErrorTypes
 WorkspaceDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer l	/* layer to ready for destruction	*/
 )
@@ -594,7 +594,7 @@ WorkspaceDestroy
  */
 int
 NhlGetWorkspaceObjectID
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -661,7 +661,7 @@ void _NHLCALLF(nhl_fgetworkspaceobjectid,NHL_FGETWORKSPACEOBJECTID)
  * Side Effect:	
  */
 int _NhlNewWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlwsType	type,
 	NhlPersistence	persistence,			    
@@ -720,7 +720,7 @@ int _NhlNewWorkspace
  * Side Effect:	
  */
 void _NhlFreeWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		ws_id
 )
@@ -795,7 +795,7 @@ void _NhlFreeWorkspace
  */
 /*ARGSUSED*/
 static NhlWorkspaceRec	*wsFindNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		ws_id,
 	char		*entry_name
@@ -831,7 +831,7 @@ static NhlWorkspaceRec	*wsFindNode
  * Side Effect:	
  */
 static void wsDeleteNode
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -878,7 +878,7 @@ static void wsDeleteNode
  * Side Effect:	
  */
 NhlWorkspace *_NhlUseWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		ws_id
 )
@@ -981,7 +981,7 @@ NhlWorkspace *_NhlUseWorkspace
  * Side Effect:	
  */
 static NhlErrorTypes ReduceCurrentAlloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		over,
 	char		*entry_name
@@ -1058,7 +1058,7 @@ static NhlErrorTypes ReduceCurrentAlloc
  * Side Effect:	
  */
 static NhlErrorTypes	SaveToFile
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1121,7 +1121,7 @@ static NhlErrorTypes	SaveToFile
  * Side Effect:	
  */
 static NhlErrorTypes	RestoreFromFile
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1159,7 +1159,7 @@ static NhlErrorTypes	RestoreFromFile
  * Side Effect:	
  */
 static NhlErrorTypes	GetScratchSpace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1200,7 +1200,7 @@ static NhlErrorTypes	GetScratchSpace
  * Side Effect:	
  */
 static NhlErrorTypes	GetCorePreservedSpace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1245,7 +1245,7 @@ static NhlErrorTypes	GetCorePreservedSpace
  * Side Effect:	
  */
 static NhlErrorTypes	GetDiskPreservedSpace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1295,7 +1295,7 @@ static NhlErrorTypes	GetDiskPreservedSpace
  * Side Effect:	
  */
 NhlErrorTypes _NhlIdleWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*ws
 )
@@ -1366,7 +1366,7 @@ NhlErrorTypes _NhlIdleWorkspace
  * Side Effect:	
  */
 static NhlErrorTypes AddToIdleList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	NhlwsIdleRec	**head,
@@ -1416,7 +1416,7 @@ static NhlErrorTypes AddToIdleList
  */
 /*ARGSUSED*/
 static NhlErrorTypes RemoveFromIdleList
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	NhlwsIdleRec	**head,
@@ -1471,7 +1471,7 @@ static NhlErrorTypes RemoveFromIdleList
  * Side Effect:	
  */
 static NhlwsIdleRec	*GetIdleRec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -1530,7 +1530,7 @@ static NhlwsIdleRec	*GetIdleRec
  * Side Effect:	
  */
 static void PutBackIdleRec
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlwsIdleRec	*idlep
 )
@@ -1559,7 +1559,7 @@ static void PutBackIdleRec
  * Side Effect:	
  */
 static NhlErrorTypes	TrimWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1638,7 +1638,7 @@ static NhlErrorTypes	TrimWorkspace
  * Side Effect:	
  */
 static NhlErrorTypes	EnlargeWorkspace
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspaceRec	*wsrp,
 	char		*entry_name
@@ -1720,7 +1720,7 @@ static NhlErrorTypes	EnlargeWorkspace
  * Side Effect:	
  */
 NhlErrorTypes _NhlArinam
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	char		*entry_name
@@ -1768,7 +1768,7 @@ NhlErrorTypes _NhlArinam
  * Side Effect:	
  */
 NhlErrorTypes _NhlArpram
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		flag1,
@@ -1844,7 +1844,7 @@ NhlErrorTypes _NhlArpram
  * Side Effect:	
  */
 NhlErrorTypes _NhlAredam
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	float		*x,
@@ -1924,7 +1924,7 @@ NhlErrorTypes _NhlAredam
  * Side Effect:	
  */
 NhlErrorTypes _NhlArscam
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		(*apr)(float *xcs, 
@@ -2009,7 +2009,7 @@ NhlErrorTypes _NhlArscam
  * Side Effect:	
  */
 NhlErrorTypes _NhlArdbpa
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		igi,
@@ -2081,7 +2081,7 @@ NhlErrorTypes _NhlArdbpa
  * Side Effect:	
  */
 NhlErrorTypes _NhlDumpAreaMap
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlWorkspace	*amap_ws,
 	char		*entry_name
@@ -2145,7 +2145,7 @@ NhlErrorTypes _NhlDumpAreaMap
  * Side Effect:	
  */
 NhlErrorTypes _NhlCpback
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2198,7 +2198,7 @@ NhlErrorTypes _NhlCpback
  * Side Effect:	
  */
 NhlErrorTypes _NhlCpclam
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2300,7 +2300,7 @@ NhlErrorTypes _NhlCpclam
  * Side Effect:	
  */
 NhlErrorTypes _NhlCpcldm
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2409,7 +2409,7 @@ NhlErrorTypes _NhlCpcldm
  * Side Effect:	
  */
 NhlErrorTypes _NhlCpcldr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2497,7 +2497,7 @@ NhlErrorTypes _NhlCpcldr
  * Side Effect:	
  */
 NhlErrorTypes _NhlCplbam
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2599,7 +2599,7 @@ NhlErrorTypes _NhlCplbam
  * Side Effect:	
  */
 NhlErrorTypes _NhlCplbdr
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
@@ -2686,7 +2686,7 @@ NhlErrorTypes _NhlCplbdr
  * Side Effect:	
  */
 NhlErrorTypes _NhlCprect
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*zdat,
 	int		kzdt,
@@ -2781,7 +2781,7 @@ NhlErrorTypes _NhlCprect
  * Side Effect:	
  */
 NhlErrorTypes _NhlMapbla
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlWorkspace	*amap_ws,
 	char		*entry_name
@@ -2859,7 +2859,7 @@ NhlErrorTypes _NhlMapbla
  * Side Effect:	
  */
 NhlErrorTypes _NhlMapita
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	float		x,
@@ -2940,7 +2940,7 @@ NhlErrorTypes _NhlMapita
  * Side Effect:	
  */
 NhlErrorTypes _NhlMapiqa
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		group_id,
@@ -3014,7 +3014,7 @@ NhlErrorTypes _NhlMapiqa
  * Side Effect:	
  */
 NhlErrorTypes _NhlMapblm
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		(*ulpr)(float *xcra, 
@@ -3093,7 +3093,7 @@ NhlErrorTypes _NhlMapblm
  * Side Effect:	
  */
 NhlErrorTypes _NhlMapgrm
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlWorkspace	*amap_ws,
 	int		(*ulpr)(float *xcra, 

@@ -4,7 +4,7 @@
 
 
 int searchb
-#if __STDC__
+#if	NhlNeedProto
 (float *a,int n,float value)
 #else
 (a,n,value)

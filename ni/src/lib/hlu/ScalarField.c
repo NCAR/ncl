@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.12 1994-12-16 19:22:17 boote Exp $
+ *      $Id: ScalarField.c,v 1.13 1994-12-16 20:04:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -143,7 +143,7 @@ static NhlErrorTypes ScalarFieldSetValues(
 );
 
 static NhlErrorTypes    ScalarFieldGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer	layer,
         _NhlArgList	args,
         int		num_args
@@ -284,7 +284,7 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
  */
 NhlLayerClass
 _NHLCALLF(nhlfscalarfieldlayerclass,NHLFSCALARFIELDLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -315,7 +315,7 @@ _NHLCALLF(nhlfscalarfieldlayerclass,NHLFSCALARFIELDLAYERCLASS)
 /*ARGSUSED*/
 static NhlGenArray
 GenToFloatGenArray
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray		ga
 )
@@ -360,7 +360,7 @@ GenToFloatGenArray
 /*ARGSUSED*/
 static NhlErrorTypes
 GetVTypeValue
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray	ga,
 	float		*fval
@@ -400,7 +400,7 @@ GetVTypeValue
 /*ARGSUSED*/
 static NhlGenArray
 DataToFloatArray
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	NhlBoolean		do_minmax,
@@ -594,7 +594,7 @@ DataToFloatArray
 /*ARGSUSED*/
 static NhlGenArray
 DataToFloatArrayExchDim
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	NhlBoolean		do_minmax,
@@ -768,7 +768,7 @@ DataToFloatArrayExchDim
 /*ARGSUSED*/
 static NhlBoolean
 Monotonic
-#if	__STDC__
+#if	NhlNeedProto
 (
 	float		*flts,
 	int		count
@@ -824,7 +824,7 @@ Monotonic
 /*ARGSUSED*/
 static NhlBoolean
 ValidCoordArray
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	NhlGenArray		ga,
@@ -892,7 +892,7 @@ ValidCoordArray
 /*ARGSUSED*/
 static NhlErrorTypes
 GetDataBounds
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	sfCoord			ctype,
@@ -1033,7 +1033,7 @@ GetDataBounds
 /*ARGSUSED*/
 static NhlErrorTypes
 GetIndexBounds
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	sfCoord			ctype,
@@ -1142,7 +1142,7 @@ GetIndexBounds
 /*ARGSUSED*/
 static NhlErrorTypes
 GetSubsetBounds
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	sfCoord			ctype,
@@ -1297,7 +1297,7 @@ GetSubsetBounds
 /*ARGSUSED*/
 static NhlErrorTypes
 GetSubsetBoundsIrregular
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	NhlGenArray		*c_array,
@@ -1507,7 +1507,7 @@ GetSubsetBoundsIrregular
 /*ARGSUSED*/
 static NhlErrorTypes
 GetCoordBounds
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	sfCoord			ctype,
@@ -1578,7 +1578,7 @@ GetCoordBounds
 /*ARGSUSED*/
 static NhlErrorTypes
 GetCoordBoundsIrregular
-#if	__STDC__
+#if	NhlNeedProto
 (
  	NhlScalarFieldLayerPart *sfp,
 	NhlGenArray		*c_array,
@@ -1642,7 +1642,7 @@ GetCoordBoundsIrregular
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtGenSFObjToFloatSFObj
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NrmValue		*from,
 	NrmValue		*to,
@@ -1952,7 +1952,7 @@ CvtGenSFObjToFloatSFObj
  */
 static NhlErrorTypes
 ScalarFieldClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -2008,7 +2008,7 @@ ScalarFieldClassInitialize
  */
 static NhlErrorTypes
 ScalarFieldClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class structure	*/
 )
@@ -2048,7 +2048,7 @@ ScalarFieldClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ScalarFieldInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -2219,7 +2219,7 @@ ScalarFieldInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ScalarFieldSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,		/* old		*/
 	NhlLayer	req,		/* requested	*/
@@ -2429,7 +2429,7 @@ ScalarFieldSetValues
  */
 
 static NhlPointer CopyData
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray ga, 
 	NrmQuark resQ
@@ -2470,7 +2470,7 @@ static NhlPointer CopyData
  */
 
 static NhlPointer CreateData
-#if __STDC__
+#if	NhlNeedProto
 (
 	float fval, 
 	NrmQuark resQ
@@ -2513,7 +2513,7 @@ static NhlPointer CreateData
  */
 
 static NhlScalarFieldFloatLayer ForceConvert
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlScalarFieldLayer sfl
 )
@@ -2573,7 +2573,7 @@ static NhlScalarFieldFloatLayer ForceConvert
  */
 
 static NhlErrorTypes    ScalarFieldGetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer layer, _NhlArgList args, int num_args)
 #else
 (layer,args,num_args)
@@ -3075,7 +3075,7 @@ static NhlErrorTypes    ScalarFieldGetValues
  */
 static NhlErrorTypes
 ScalarFieldDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
 )
@@ -3129,7 +3129,7 @@ ScalarFieldDestroy
 
 /*ARGSUSED*/
 static NhlErrorTypes    CheckCopyVType
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlGenArray	*ga,
 	NhlGenArray	copy_ga,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.6 1994-05-12 23:52:09 boote Exp $
+ *      $Id: Reparent.c,v 1.7 1994-12-16 20:04:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
  */
 static NhlErrorTypes
 CallReparent
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l,	/* layer to call reparent for	*/
 	NhlLayer	parent,	/* layer to call reparent for	*/
@@ -91,7 +91,7 @@ CallReparent
  */
 static NhlErrorTypes
 Reparent
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	child,	/* child to re-parent	*/
 	NhlLayer	parent	/* new parent		*/
@@ -173,7 +173,7 @@ Reparent
 NhlDOCTAG(_NhlReparent)
 NhlErrorTypes
 _NhlReparent
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	child,
 	NhlLayer	parent
@@ -214,7 +214,7 @@ _NhlReparent
 NhlDOCTAG(NhlChangeWorkstation)
 NhlErrorTypes
 NhlChangeWorkstation
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	plotid,		/* Id of plot to reparent	*/
 	int	workid		/* Id of new Workstation parent	*/
@@ -265,7 +265,7 @@ NhlChangeWorkstation
  */
 void
 _NHLCALLF(nhlf_changeworkstation,NHLF_CHANGEWORKSTATION)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	*pid,
 	int	*wid,

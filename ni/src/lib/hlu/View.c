@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.12 1994-11-07 03:10:36 ethan Exp $
+ *      $Id: View.c,v 1.13 1994-12-16 20:04:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -195,7 +195,7 @@ static NhlErrorTypes ViewSetValues(
 
 
 static NhlErrorTypes	ViewInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass,	/* class */
 	NhlLayer,		/* req */
 	NhlLayer,		/* new */
@@ -205,7 +205,7 @@ static NhlErrorTypes	ViewInitialize(
 );
 
 static NhlErrorTypes	 ViewDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		/* inst */
 #endif
 );
@@ -213,7 +213,7 @@ static NhlErrorTypes	 ViewDestroy(
 static NhlErrorTypes	ViewClassInitialize();
 
 static NhlErrorTypes	ViewClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayerClass	/* lc */
 #endif
 );
@@ -223,7 +223,7 @@ static NhlErrorTypes	ViewClassPartInitialize(
 */
 
 static NhlErrorTypes    ViewGetBB(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer		instance,
 	NhlBoundingBox *thebox
 #endif
@@ -300,7 +300,7 @@ NhlLayerClass NhlviewLayerClass = (NhlLayerClass)&NhlviewLayerClassRec;
  */
 /*ARGSUSED*/
 static NhlErrorTypes	ViewSetValues 
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	old,
 	NhlLayer	reference,
@@ -487,7 +487,7 @@ p2 = (x[2],y[2])
  */
 /*ARGSUSED*/
 static NhlErrorTypes	ViewInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass 	class,
 	NhlLayer	req,
@@ -552,7 +552,7 @@ static NhlErrorTypes	ViewInitialize
  * Side Effects: 
  */
 static NhlErrorTypes	ViewClassPartInitialize
-#if __STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc
 )
@@ -666,7 +666,7 @@ static NhlErrorTypes	ViewClassInitialize()
  */
 
 static NhlErrorTypes	ViewDestroy
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer inst )
 #else
 (inst)
@@ -716,7 +716,7 @@ static NhlErrorTypes	ViewDestroy
  */
 
 void _NhlAddViewChildLayer
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayer  instance , NhlLayer  child )
 #else
 (instance,child)
@@ -761,7 +761,7 @@ void _NhlAddViewChildLayer
  */
 
 void _NhlDeleteViewChildLayer
-#if	__STDC__
+#if	NhlNeedProto
 ( NhlLayer instance , NhlLayer child )
 #else
 (instance,child)
@@ -810,7 +810,7 @@ void _NhlDeleteViewChildLayer
  */
 
 NhlTransDat *_NhlNewViewSegment
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance )
 #else
 (instance)
@@ -875,7 +875,7 @@ NhlTransDat *_NhlNewViewSegment
  */
 
 void _NhlDeleteViewSegment
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer    instance, NhlTransDat*  transdat )
 #else
 (instance,transdat)
@@ -929,7 +929,7 @@ void _NhlDeleteViewSegment
  *		transformations can be compute from segdat.
  */
 NhlErrorTypes _NhlResetViewSegment
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlTransDat *segdat )
 #else
 (instance,segdat)
@@ -1002,7 +1002,7 @@ NhlErrorTypes _NhlResetViewSegment
  * Side Effects: thebox  changes.
  */
 void	_NhlAddBBInfo
-#if __STDC__
+#if	NhlNeedProto
 (float t, float b, float r, float l, NhlBoundingBox *thebox)
 #else
 (t,b,r,l,thebox)
@@ -1053,7 +1053,7 @@ void	_NhlAddBBInfo
  * Side Effects: thebox is modified
  */
 static NhlErrorTypes ViewGetBB
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
@@ -1088,7 +1088,7 @@ static NhlErrorTypes ViewGetBB
  * Side Effects: theview values changed.
  */
 void _NhlInternalSetView
-#if __STDC__
+#if	NhlNeedProto
 (NhlViewLayer theview,float x, float y, float width, float height, 
  NhlBoolean keep_asp)
 #else

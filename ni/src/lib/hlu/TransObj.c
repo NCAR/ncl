@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.8 1994-11-07 03:10:31 ethan Exp $
+ *      $Id: TransObj.c,v 1.9 1994-12-16 20:04:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -84,7 +84,7 @@ NhlLayerClass NhltransObjLayerClass = (NhlLayerClass)&NhltransObjLayerClassRec;
 #define CLEFT  01
 /*ARGSUSED*/
 void _NhlTransClipLine
-#if __STDC__
+#if	NhlNeedProto
 (float xmin, float xmax, float ymin, float ymax, float *x0, float *y0, float *x1, float *y1,float missing)
 #else
 (xmin, xmax, ymin, ymax, x0, y0, x1, y1,missing)
@@ -211,7 +211,7 @@ float missing;
 }
 
 static NhlErrorTypes CallDataLineTo 
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
@@ -239,7 +239,7 @@ int upordown;
 
 
 NhlErrorTypes _NhlDataLineTo 
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
@@ -254,7 +254,7 @@ int upordown;
 }
 
 static NhlErrorTypes CallWinLineTo 
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
@@ -282,7 +282,7 @@ int upordown;
 
 
 NhlErrorTypes _NhlWinLineTo 
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
@@ -297,7 +297,7 @@ int upordown;
 }
 
 static NhlErrorTypes CallCompcLineTo 
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
@@ -325,7 +325,7 @@ int upordown;
 
 
 NhlErrorTypes _NhlCompcLineTo 
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
@@ -340,7 +340,7 @@ int upordown;
 }
 
 static NhlErrorTypes CallNDCLineTo 
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
@@ -368,7 +368,7 @@ int upordown;
 
 
 NhlErrorTypes _NhlNDCLineTo 
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)

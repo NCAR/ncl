@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.4 1994-10-27 01:36:58 dbrown Exp $
+ *      $Id: Transform.h,v 1.5 1994-12-16 20:04:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
  * Public Functions defined by the Transform Class
  */
 extern NhlErrorTypes NhlNDCToData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	/*pid*/,
 	float* /*x*/,
 	float* /*y*/,
@@ -56,7 +56,7 @@ extern NhlErrorTypes NhlNDCToData(
 );
 
 extern NhlErrorTypes NhlDataToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int	/*pid*/,
 	float* /*x*/,
 	float* /*y*/,
@@ -71,7 +71,7 @@ extern NhlErrorTypes NhlDataToNDC(
 );
 
 extern NhlErrorTypes NhlDataPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int		/* pid */,
 	float*		/* x */,
 	float*		/* y */,
@@ -80,7 +80,7 @@ extern NhlErrorTypes NhlDataPolyline(
 );
 
 extern NhlErrorTypes NhlNDCPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int		/* pid */,
 	float*		/* x */,
 	float*		/* y */,

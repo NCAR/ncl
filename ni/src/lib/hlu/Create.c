@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.12 1994-10-28 03:13:41 boote Exp $
+ *      $Id: Create.c,v 1.13 1994-12-16 20:04:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -58,7 +58,7 @@
  */
 static NhlErrorTypes
 CallClassPartInit
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	ancestor,	/* ancestor		*/
 	NhlLayerClass	lc		/* class to update	*/
@@ -103,7 +103,7 @@ CallClassPartInit
  */
 static NhlErrorTypes
 InitializeLayerClass
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class to be initalized	*/
 ) 
@@ -195,7 +195,7 @@ InitializeLayerClass
 NhlDOCTAG(_NhlInitializeLayerClass)
 NhlErrorTypes
 _NhlInitializeLayerClass
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* pointer to class to be initalized	*/
 ) 
@@ -227,7 +227,7 @@ _NhlInitializeLayerClass
  */
 static NhlErrorTypes
 CallInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* Class of NhlLayer being initialized	*/
 	NhlLayer	req,	/* NhlLayer with requested values in it	*/
@@ -285,7 +285,7 @@ CallInitialize
 NhlDOCTAG(_NhlCreate)
 static NhlErrorTypes
 _NhlCreate
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name to identify instance	*/
@@ -665,7 +665,7 @@ NhlVACreate
 NhlDOCTAG(NhlCreate)
 NhlErrorTypes
 NhlCreate
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/
 	Const char	*name,		/* name of instance		*/
@@ -723,7 +723,7 @@ NhlCreate
  */
 void
 _NHLCALLF(nhl_fcreate,NHL_FCREATE)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/
 	_NhlFString	fname,		/* name of instance		*/
@@ -804,7 +804,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 NhlDOCTAG(NhlALCreate)
 NhlErrorTypes
 NhlALCreate
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/
 	Const char	*name,		/* name of instance		*/
@@ -872,7 +872,7 @@ NhlALCreate
  */
 static NhlErrorTypes
 InitAllResources
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc	/* Class to init all_resources 	*/
 )
@@ -1136,7 +1136,7 @@ _NhlRegisterChildClass
 NhlDOCTAG(CreateChild)
 static NhlErrorTypes
 CreateChild
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
@@ -1389,7 +1389,7 @@ _NhlVACreateChild
 NhlDOCTAG(_NhlALCreateChild)
 NhlErrorTypes
 _NhlALCreateChild
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/

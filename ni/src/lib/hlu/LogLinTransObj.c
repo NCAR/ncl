@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.13 1994-11-07 03:09:51 ethan Exp $
+ *      $Id: LogLinTransObj.c,v 1.14 1994-12-16 20:04:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes  LlTransSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -75,7 +75,7 @@ static NhlErrorTypes  LlTransSetValues(
 );
 
 static NhlErrorTypes LlTransInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -114,14 +114,14 @@ int     /* upordown */
 
 
 static NhlErrorTypes LlSetTrans(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer  /*parent*/
 #endif
 );
 
 static NhlErrorTypes LlDataToWin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer	/* parent */,
 float*	/*x*/,
@@ -135,7 +135,7 @@ int* 	/*status*/
 #endif
 );
 static NhlErrorTypes LlWinToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer	/* parent */,
 float*	/*x*/,
@@ -151,7 +151,7 @@ int* 	/*status*/
 
 
 static NhlErrorTypes LlNDCToWin(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer	/*parent */,
 float*	/*x*/,
@@ -228,7 +228,7 @@ NhlLayerClass NhllogLinTransObjLayerClass = (NhlLayerClass)&NhllogLinTransObjLay
  */
 /*ARGSUSED*/
 static NhlErrorTypes LlTransSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference, new,args,num_args)
@@ -301,7 +301,7 @@ static NhlErrorTypes LlTransSetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes LlTransInitialize
-#if __STDC__
+#if	NhlNeedProto
 ( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
@@ -377,7 +377,7 @@ static NhlErrorTypes LlTransInitialize
  */
 
 static NhlErrorTypes LlSetTrans
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent) 
 #else
 (instance, parent)
@@ -412,7 +412,7 @@ NhlLayer   parent;
 
 /*ARGSUSED*/
 static NhlErrorTypes LlDataToWin
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -473,7 +473,7 @@ static NhlErrorTypes LlDataToWin
  */
 
 static NhlErrorTypes LlWinToNDC
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -666,7 +666,7 @@ static NhlErrorTypes LlWinToNDC
  * Side Effects:
  */
 static NhlErrorTypes LlNDCToWin
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
@@ -830,7 +830,7 @@ static NhlErrorTypes LlNDCToWin
 
 /*ARGSUSED*/
 static NhlErrorTypes LlDataLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
@@ -900,7 +900,7 @@ int upordown;
 
 /*ARGSUSED*/
 static NhlErrorTypes LlNDCLineTo
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)

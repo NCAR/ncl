@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.4 1994-03-03 22:34:46 ethan Exp $
+ *      $Id: VarArg.c,v 1.5 1994-12-16 20:04:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
  */ 
 int 
 _NhlVarToSetArgList 
-#if     __STDC__ 
+#if	NhlNeedProto
 ( 
 	va_list		list,		/* vararg list  */ 
 	_NhlArgList	args		/* pointer to return arglist in */ 

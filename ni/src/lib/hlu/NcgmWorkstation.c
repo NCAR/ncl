@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.10 1994-12-16 19:22:16 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.11 1994-12-16 20:04:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes NcgmWorkstationInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -54,19 +54,19 @@ static NhlErrorTypes NcgmWorkstationInitialize(
 
 
 static NhlErrorTypes NcgmWorkstationClassPartInitialize(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayerClass      /* lc */
 #endif
 );
 
 static NhlErrorTypes NcgmWorkstationDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes NcgmWorkstationSetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NhlLayer,		/* old */
         NhlLayer,		/* reference */
         NhlLayer,		/* new */
@@ -76,7 +76,7 @@ static NhlErrorTypes NcgmWorkstationSetValues(
 );
 
 static NhlErrorTypes NcgmWorkstationGetValues(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer, /*l */
 	_NhlArgList, /* args */
 	int	/*nargs*/
@@ -88,7 +88,7 @@ static NhlErrorTypes NcgmWorkstationGetValues(
 */
 
 static NhlErrorTypes NcgmWorkstationOpen(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer /* instance */
 #endif
 );
@@ -164,7 +164,7 @@ NhlLayerClass NhlncgmWorkstationLayerClass = (NhlLayerClass)&NhlncgmWorkstationL
  */
 NhlLayerClass
 _NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -192,7 +192,7 @@ _NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
  */
 /*ARGSUSED*/
 static NhlErrorTypes NcgmWorkstationInitialize
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
@@ -244,7 +244,7 @@ static NhlErrorTypes NcgmWorkstationInitialize
  */
 
 static NhlErrorTypes NcgmWorkstationClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayerClass lc)
 #else
 (lc)
@@ -275,7 +275,7 @@ static NhlErrorTypes NcgmWorkstationClassPartInitialize
  * Side Effects:
  */
 static NhlErrorTypes NcgmWorkstationDestroy
-#if     __STDC__
+#if	NhlNeedProto
 (NhlLayer inst)
 #else
 (inst)
@@ -307,7 +307,7 @@ static NhlErrorTypes NcgmWorkstationDestroy
  */
 /*ARGSUSED*/
 static NhlErrorTypes NcgmWorkstationSetValues
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -342,7 +342,7 @@ static NhlErrorTypes NcgmWorkstationSetValues
  * Side Effects:
  */
 static NhlErrorTypes NcgmWorkstationOpen
-#if __STDC__
+#if	NhlNeedProto
 (NhlLayer instance)
 #else
 (instance)
@@ -361,7 +361,7 @@ static NhlErrorTypes NcgmWorkstationOpen
 	return(NhlNOERROR);
 }
 static NhlErrorTypes NcgmWorkstationGetValues
-#if  __STDC__
+#if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int nargs)
 #else
 (l, args, nargs)

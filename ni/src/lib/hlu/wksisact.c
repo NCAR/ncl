@@ -1,6 +1,6 @@
 
 /*
- *      $Id: wksisact.c,v 1.1 1994-08-11 23:17:38 boote Exp $
+ *      $Id: wksisact.c,v 1.2 1994-12-16 20:05:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
  * Side Effects: NONE
  */
 int	wksisact
-#if __STDC__
+#if	NhlNeedProto
 (int	n)
 #else
 (n)

@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.3 1994-01-27 21:25:44 boote Exp $
+ *      $Id: Segments.c,v 1.4 1994-12-16 20:04:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,7 +83,7 @@ p2 = (x[2],y[2])
  * Side Effects: NONE
  */
 void	_NhlDestroySegTransDat
-#if  __STDC__
+#if	NhlNeedProto
 (NhlTransDat	*transdat)
 #else
 (transdat) 
@@ -129,7 +129,7 @@ void	_NhlDestroySegTransDat
  */
 
 NhlTransDat *_NhlInitSegTransDat
-#if	__STDC__
+#if	NhlNeedProto
 (float* x,float* y)
 #else
 (x,y)
@@ -205,7 +205,7 @@ NhlTransDat *_NhlInitSegTransDat
  *	will not be reset to identity.
  */
 void	_NhlResetSegTransDat
-#if __STDC__
+#if	NhlNeedProto
 (NhlTransDat *transdat, float *x, float *y)
 #else
 (transdat,x,y) 
@@ -274,7 +274,7 @@ void	_NhlResetSegTransDat
  */
 
 void	_NhlComputeSegTrans
-#if __STDC__
+#if	NhlNeedProto
 (NhlTransDat	*transdat, float *transform, float *xprime, float *yprime)
 #else
 (transdat,transform,xprime,yprime) 
@@ -329,7 +329,7 @@ void	_NhlComputeSegTrans
  */
 
 NhlErrorTypes _NhlDrawSegment
-#if __STDC__
+#if	NhlNeedProto
 (NhlTransDat	*transdat,int	wksid)
 #else
 (transdat,wksid)
@@ -382,7 +382,7 @@ NhlErrorTypes _NhlDrawSegment
  * Side Effects: NONE
  */
 void	_NhlEvalTrans
-#if	__STDC__
+#if	NhlNeedProto
 (float	*transform,float x,float y, float *xprime, float *yprime)
 #else
 (transform,x,y,xprime,yprime)
@@ -415,7 +415,7 @@ void	_NhlEvalTrans
  */
 
 void	_NhlStartSegment
-#if __STDC__
+#if	NhlNeedProto
 (NhlTransDat	*transdat)
 #else
 (transdat)
@@ -445,7 +445,7 @@ void	_NhlStartSegment
  */
 
 void _NhlSetSegTrans
-#if __STDC__
+#if	NhlNeedProto
 (NhlTransDat	*transdat, float *transform)
 #else
 (transdat,transform)

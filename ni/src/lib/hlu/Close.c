@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.8 1994-10-28 03:13:41 boote Exp $
+ *      $Id: Close.c,v 1.9 1994-12-16 20:03:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@
  */
 /*ARGSUSED*/
 static void _NhlClose
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlC_OR_F	close_type
 )
@@ -81,7 +81,7 @@ static void _NhlClose
  */
 void
 NhlClose
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -109,7 +109,7 @@ NhlClose
  */
 void
 _NHLCALLF(nhl_fclose,NHL_FCLOSE)
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )

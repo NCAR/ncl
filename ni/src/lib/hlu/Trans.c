@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.8 1994-05-12 23:52:43 boote Exp $
+ *      $Id: Trans.c,v 1.9 1994-12-16 20:04:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 
 
 static NhlErrorTypes CallDataPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer layer,
 	NhlLayerClass class,
 	float	*x,
@@ -45,7 +45,7 @@ static NhlErrorTypes CallDataPolyline(
 );
 
 static NhlErrorTypes CallNDCPolyline(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NhlLayer layer,
 	NhlLayerClass class,
 	float	*x,
