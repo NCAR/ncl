@@ -55,7 +55,7 @@ NhlErrorTypes svdcov_W( void )
  * Work array variables
  */
   double *w;
-  int lwk;
+  int lwk, nsvmx;
 /*
  * Output array variables
  */
@@ -159,11 +159,12 @@ NhlErrorTypes svdcov_W( void )
   ncoly  = dsizes_y[0];
   ntimes = dsizes_x[1];
   lab    = ntimes * *nsvd;
+  nsvmx  = min(ncolx,ncoly);
 
 /*
  * Check nsvd, the number of SVD patterns to be calculated.
  */
-  if (*nsvd > min(ncolx,ncoly)) {
+  if (*nsvd > nsvmx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: nsvx exceeds maximum possible patterns");
     return(NhlFATAL);
   }
@@ -172,16 +173,13 @@ NhlErrorTypes svdcov_W( void )
  * dimension must be the same as the first dimension of x (or y if
  * it's the rgt arrays).
  */
-  if( dsizes_homlft[0] != *nsvd || 
-      dsizes_hetlft[0] != *nsvd ||
-      dsizes_homlft[1] != dsizes_x[0] || 
-      dsizes_hetlft[1] != dsizes_x[0]) {
+  if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
+      dsizes_homlft[1] != ncolx || dsizes_hetlft[1] != ncolx ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The second dimension of the homlft/hetlft arrays must be the same as the first dimension of x, and the first dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_homrgt[0] != *nsvd || dsizes_hetrgt[0] != *nsvd ||
-      dsizes_homrgt[1] != dsizes_y[0] ||
-      dsizes_hetrgt[1] != dsizes_y[0]) {
+      dsizes_homrgt[1] != ncoly || dsizes_hetrgt[1] != ncoly ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The second dimension of the homrgt/hetrgt arrays must be the same as the first dimension of y, and the first dimension must be nsvx");
     return(NhlFATAL);
   }
@@ -261,21 +259,27 @@ NhlErrorTypes svdcov_W( void )
     svdpcv      = (void *)calloc(*nsvd,sizeof(double));
     ak          = (void *)calloc(lab,sizeof(double));
     bk          = (void *)calloc(lab,sizeof(double));
-    svdpcv_tmp  = (double*)svdpcv;
-    ak_tmp      = (double *)ak;
-    bk_tmp      = (double *)bk;
     if( svdpcv == NULL || ak == NULL || bk == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output values");
       return(NhlFATAL);
     }
+    svdpcv_tmp  = (double *)svdpcv;
+    ak_tmp      = (double *)ak;
+    bk_tmp      = (double *)bk;
   }
 
 /*
- * Allocate memory for work array.
+ * Allocate memory for work array. Note that this work array is actually
+ * serving as a work array, plus memory for 6 other arrays in the 
+ * Fortran routine (CRV, U, VT, SV, AK, BK).
+ *
+ * Originally we had "5*min(ncolx,ncoly)-4", but the SGI version of 
+ * the DGESVD routine recommends "5*min(ncolx,ncoly)", so we decided
+ * to take the bigger of the two, and go with "5*min(ncolx,ncoly)".
  */
-  lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
-        ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
-        max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
+  lwk = ncolx*ncoly + nsvmx*ncolx + nsvmx*ncoly +
+        ntimes*ncolx + ntimes*ncoly + nsvmx +
+        max(3*nsvmx + max(ncolx,ncoly), 5*nsvmx);
   w = (double *)calloc(lwk,sizeof(double));
   if( w == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for work array");
@@ -523,7 +527,7 @@ NhlErrorTypes svdstd_W( void )
  * Work array variables
  */
   double *w;
-  int lwk;
+  int lwk, nsvmx;
 /*
  * Output array variables
  */
@@ -627,11 +631,12 @@ NhlErrorTypes svdstd_W( void )
   ncoly  = dsizes_y[0];
   ntimes = dsizes_x[1];
   lab    = ntimes * *nsvd;
+  nsvmx  = min(ncolx,ncoly);
 
 /*
  * Check nsvd, the number of SVD patterns to be calculated.
  */
-  if (*nsvd > min(ncolx,ncoly)) {
+  if (*nsvd > nsvmx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: nsvx exceeds maximum possible patterns");
     return(NhlFATAL);
   }
@@ -640,16 +645,13 @@ NhlErrorTypes svdstd_W( void )
  * dimension must be the same as the first dimension of x (or y if
  * it's the rgt arrays).
  */
-  if( dsizes_homlft[0] != *nsvd || 
-      dsizes_hetlft[0] != *nsvd ||
-      dsizes_homlft[1] != dsizes_x[0] || 
-      dsizes_hetlft[1] != dsizes_x[0]) {
+  if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
+      dsizes_homlft[1] != ncolx || dsizes_hetlft[1] != ncolx ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The second dimension of the homlft/hetlft arrays must be the same as the first dimension of x, and the first dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_homrgt[0] != *nsvd || dsizes_hetrgt[0] != *nsvd ||
-      dsizes_homrgt[1] != dsizes_y[0] ||
-      dsizes_hetrgt[1] != dsizes_y[0]) {
+      dsizes_homrgt[1] != ncoly || dsizes_hetrgt[1] != ncoly ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The second dimension of the homrgt/hetrgt arrays must be the same as the first dimension of y, and the first dimension must be nsvx");
     return(NhlFATAL);
   }
@@ -739,11 +741,17 @@ NhlErrorTypes svdstd_W( void )
   }
 
 /*
- * Allocate memory for work array.
+ * Allocate memory for work array. Note that this work array is actually
+ * serving as a work array, plus memory for 6 other arrays in the 
+ * Fortran routine (CRV, U, VT, SV, AK, BK).
+ *
+ * Originally we had "5*min(ncolx,ncoly)-4", but the SGI version of 
+ * the DGESVD routine recommends "5*min(ncolx,ncoly)", so we decided
+ * to take the bigger of the two, and go with "5*min(ncolx,ncoly)".
  */
-  lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
-        ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
-        max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
+  lwk = ncolx*ncoly + nsvmx*ncolx + nsvmx*ncoly +
+        ntimes*ncolx + ntimes*ncoly + nsvmx +
+        max(3*nsvmx + max(ncolx,ncoly), 5*nsvmx);
   w = (double *)calloc(lwk,sizeof(double));
   if( w == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for work array");

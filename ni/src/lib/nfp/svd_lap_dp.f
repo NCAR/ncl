@@ -31,7 +31,7 @@ c .              (fnorm, condition number, calculated rank, LAPACK error
 c .               code)
 c .   lwk      - length of work (let nsvmx = min(ncx,ncy) then   lwk >=
 c .              ncx*ncy + nsvmx*ncx + nsvmx*ncy + mrt*ncx + mrt*ncy + nsvmx
-c .            + max(3*nsvmx+max(ncx,ncy) , 5*nsvmx-4)
+c .            + max(3*nsvmx+max(ncx,ncy) , 5*nsvmx)
 c .   pcvar    - percent variance explained by the modes (dimensioned
 c .              nsv)
 c .   ak(lab)  - output: expansion coeff
@@ -58,7 +58,7 @@ c Note: in many cases ldxy=mrt (Max Rows allocated for Time dimension)
       NSVMX = MIN(NCX,NCY)
 
       LW = NCX*NCY + NSVMX*NCX + NSVMX*NCY + MRT*NCX + MRT*NCY + NSVMX +
-     +     MAX(3*NSVMX+MAX(NCX,NCY),5*NSVMX-4)
+     +     MAX(3*NSVMX+MAX(NCX,NCY),5*NSVMX)
       IF (LW.GT.LWK) IER = IER + 100
       IF (IER.NE.0) RETURN
 
