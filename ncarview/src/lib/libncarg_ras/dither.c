@@ -1,16 +1,33 @@
 /*
- *	$Id: dither.c,v 1.6 1992-09-11 20:17:18 clyne Exp $
+ *	$Id: dither.c,v 1.7 1995-01-10 17:22:47 clyne Exp $
  */
+#include <stdlib.h>
+#include "options.h"
 #include "ncarg_ras.h"
-
-extern int	OptionDitherPopular;
-extern int	OptionDitherBits;
-extern int	OptionDitherColors;
 
 #define MAXBITS		6
 #define MAXBINS		(1 << MAXBITS)
 
 /*LINTLIBRARY*/
+
+typedef	struct CMapEntry_ {
+		int		index;
+		unsigned char	r,g,b;
+	} CMapEntry;
+
+static int	compare_rgb(const void *ptr1, const void *ptr2)
+{
+	CMapEntry  *ce1ptr = (CMapEntry *) ptr1;
+	CMapEntry  *ce2ptr = (CMapEntry *) ptr2;
+	int	i1, i2;
+
+	i1 = ce1ptr->r + ce1ptr->g + ce1ptr->b;
+	i2 = ce2ptr->r + ce2ptr->g + ce2ptr->b;
+
+	if (i1 < i2) return(-1);
+	if (i1 > i2) return (1);
+	return(0);
+}
 
 int
 RasterDither(src, dst, verbose)
@@ -58,6 +75,37 @@ RasterDither(src, dst, verbose)
 }
 
 int
+Raster8to24bit(src, dst, verbose)
+	Raster	*src;
+	Raster	*dst;
+	int	verbose;
+{
+	int	i;
+	int	x, y;
+	int	r, g, b;
+	int	pixel;
+
+
+	if (src == (Raster *) NULL || dst == (Raster *) NULL) {
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterDither() - NULL argument");
+		return(RAS_ERROR);
+	}
+
+	for(y=0; y<src->ny; y++) {
+		for(x=0; x<src->nx; x++) {
+			pixel = INDEXED_PIXEL(src, x, y);
+
+			DIRECT_RED(dst, x, y) = src->red[pixel];
+			DIRECT_GREEN(dst, x, y) = src->green[pixel];
+			DIRECT_BLUE(dst, x, y) = src->blue[pixel];
+
+		}
+	}
+	return(RAS_OK);
+}
+
+int
 RasterDitherPopular(src, dst, verbose)
 	Raster	*src;
 	Raster	*dst;
@@ -72,7 +120,9 @@ RasterDitherPopular(src, dst, verbose)
 	int		cmapsize;
 	int		hist[MAXBINS][MAXBINS][MAXBINS];
 	int		chist[256];
+	int		imap[256];
 	int		orig_colors;
+	CMapEntry	sorted_cmap[256];
 
 	if (src == (Raster *) NULL || dst == (Raster *) NULL) {
 		(void) ESprintf(RAS_E_PROGRAMMING,
@@ -171,10 +221,20 @@ RasterDitherPopular(src, dst, verbose)
 	if (verbose) (void) fprintf(stderr, "Encoding color table...");
 	for(i=0; i<cmapsize; i++) {
 		hist[dst->red[i]][dst->green[i]][dst->blue[i]] = -1 - i;
-		dst->red[i] = dst->red[i] << shift;
-		dst->green[i] = dst->green[i] << shift;
-		dst->blue[i] = dst->blue[i] << shift;
+		sorted_cmap[i].r = dst->red[i] = dst->red[i] << shift;
+		sorted_cmap[i].g = dst->green[i] = dst->green[i] << shift;
+		sorted_cmap[i].b = dst->blue[i] = dst->blue[i] << shift;
+		sorted_cmap[i].index = i;
 	}
+
+	/*
+	 * sort the color map into a sorted color map
+	 */
+	qsort(sorted_cmap, cmapsize, sizeof(sorted_cmap[0]), compare_rgb);
+	for(i=0; i<cmapsize; i++) {
+		imap[sorted_cmap[i].index] = i;
+	}
+
 	if (verbose) (void) fprintf(stderr, "Done\n");
 
 	/*
@@ -183,6 +243,7 @@ RasterDitherPopular(src, dst, verbose)
 	early; others are matched with a color table entry based on
 	distance in RGB space.
 	*/
+
 		
 	if (verbose) (void) fprintf(stderr, "Remapping the image...\n");
 	for(y=0; y<src->ny; y++) {
@@ -196,7 +257,7 @@ RasterDitherPopular(src, dst, verbose)
 			b = DIRECT_BLUE(src, x, y);
 			count = hist[r>>shift][g>>shift][b>>shift];
 			if (count < 0) {
-				INDEXED_PIXEL(dst, x, y) = abs(count+1);
+				INDEXED_PIXEL(dst, x, y) = imap[abs(count+1)];
 			}
 			else {
 				mindist = 1000; mini = -1;
@@ -209,9 +270,14 @@ RasterDitherPopular(src, dst, verbose)
 						mini = i;
 					}
 				}
-				INDEXED_PIXEL(dst, x, y) = mini;
+				INDEXED_PIXEL(dst, x, y) = imap[mini];
 			}
 		}
+	}
+	for(i=0; i<cmapsize; i++) {
+		dst->red[i] = sorted_cmap[i].r;
+		dst->green[i] = sorted_cmap[i].g;
+		dst->blue[i] = sorted_cmap[i].b;
 	}
 	if (verbose) (void) fprintf(stderr, "Done\n");
 
