@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.6 2002-11-01 18:47:02 kennison Exp $
+C $Id: mdrgsq.f,v 1.7 2002-11-04 15:26:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -63,7 +63,9 @@ C
 C Define an amended version of the FORTRAN function ICHAR that will work
 C on machines like the IBM, which sign-extend eight-bit characters.
 C
-        ICHARF(CHAR)=MOD(ICHAR(CHAR)+256,256)
+        CHARACTER*1 CARG
+C
+        ICHARF(CARG)=MOD(ICHAR(CARG)+256,256)
 C
 C Compute the values of the parameters DLON and DLAT from the values of
 C NILN and NILT in COMMON.
