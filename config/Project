@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.63 2005-03-02 20:03:47 haley Exp $
+ *      $Id: Project,v 1.64 2005-03-24 00:02:11 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-03-02 20:03:47 $
+ *	$Date: 2005-03-24 00:02:11 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -178,6 +178,7 @@ NCLEXDIR		= nclex
 PYNGLEXDIR		= pynglex
 NGODIR			= ngo
 NFPDIR			= nfp
+NFPFORTDIR		= nfpfort
 DATADIR			= data
 DBDIR			= database
 FONTCAPDIR		= fontcaps
@@ -338,6 +339,7 @@ HLULIBSRC	= $(NILIBSRC)/hlu
 NGOLIBSRC	= $(NILIBSRC)/ngo
 XCBLIBSRC	= $(NILIBSRC)/xcb
 NFPLIBSRC	= $(NILIBSRC)/nfp
+NFPFORTLIBSRC	= $(NILIBSRC)/nfpfort
 NCLLIBSRC	= $(NISRC)/ncl
 
 #ifdef	BuildShared
@@ -352,6 +354,7 @@ HLULIB		= -lNGhlu
 NGOLIB		= -lNGgo
 XCBLIB		= -lXcb
 NFPLIB		= -lnfp
+NFPFORTLIB	= -lnfpfort
 NCLLIB		=
 NCLAPILIB	= -lNGncl
 
@@ -369,6 +372,7 @@ DEPNGOLIB	=
 DEPNCLLIB	=
 DEPNCLAPILIB	=
 DEPNFPLIB	=
+DEPNFPFORTLIB	=
 
 DEPCTRANSLIB	=
 DEPICTRANS_LIB	=
@@ -383,6 +387,7 @@ NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
 NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NFPLIB		= _UseLib(-L$(NFPLIBSRC),-lnfp)
+NFPFORTLIB	= _UseLib(-L$(NFPFORTLIBSRC),-lnfpfort)
 XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
@@ -399,6 +404,7 @@ DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBROOT),libncarg_ras.a)
 DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
 DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNFPLIB	= _DepLib($(NFPLIBSRC),$(LIBROOT),libnfp.a)
+DEPNFPFORTLIB	= _DepLib($(NFPFORTLIBSRC),$(LIBROOT),libnfpfort.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
 
@@ -413,10 +419,12 @@ NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 NGMATHLIBS	= $(NGMATHLIB)
 HLULIBS		= $(HLULIB)
 NCLLIBS		= $(NCLAPILIB)
+NFPLIBS		= $(NFPLIB) $(NFPFORTLIB)
 
 DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
 DEPHLULIBS	= $(DEPHLULIB)
 DEPNCLLIBS	= $(DEPHLULIB) $(DEPNCLAPILIB)
+DEPNFPLIBS	= $(DEPNFPLIB) $(DEPNFPFORTLIB)
 
 GRAPHCSRC	= $(COMMONSRC)/graphcap
 FONTCSRC	= $(COMMONSRC)/fontcap
