@@ -114,7 +114,7 @@ static int _RaslsPrint(name)
 				"%s: \"%s\" is in an unknown format\n");
 		}
 		else {
-			(void) PrintLine(name, 0, 0, RAS_INVALID_ENCODING,
+			(void) PrintLine(name, 0, 0, RAS_UNKNOWN,
 					"Unknown Format");
 		}
 		return(RAS_ERROR);

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.13 1992-09-17 18:20:13 don Exp $
+ *	$Id: sunraster.c,v 1.14 1992-09-24 22:55:37 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -117,7 +117,7 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = fileno(stdout);
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
+		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (ras->fd == -1) {
 			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );
@@ -131,11 +131,17 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) calloc((unsigned) (strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
 		ras->text = (char *) NULL;
+	}
+
+	if (encoding != RAS_INDEXED) {
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+		"Sun true color output not available");
+		return( (Raster *) NULL );
 	}
 
 	ras->nx	= nx;
@@ -154,14 +160,7 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	*/
 	ras->data	= (unsigned char *)calloc((unsigned)(ras->length+4),1);
 
-	if (encoding != RAS_INDEXED) {
-		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
-		"NCAR Graphics does not support Sun true color output");
-		return( (Raster *) NULL );
-	}
-	else {
-		ras->type = RAS_INDEXED;
-	}
+	/* Set up Sun header structure. */
 
 	dep->ras_magic		= RAS_MAGIC;
 	dep->ras_width		= ras->nx;
@@ -219,8 +218,8 @@ SunWrite(ras)
 	/* Code below handles only indexed files, no compression. */
 
 	if (ras->nx % 2 == 0) {
-		nb = write(ras->fd, (char *) ras->data, ras->nx * ras->ny);
-		if (nb != ras->nx * ras->ny) return(RAS_EOF);
+		nb = write(ras->fd, (char *) ras->data, ras->length);
+		if (nb != ras->length) return(RAS_EOF);
 	}
 	else {
 		for(p = ras->data, y=0; y<ras->ny; y++, p += ras->nx) {
@@ -273,6 +272,7 @@ SunRead(ras)
 	static int		tmpbuf_size = 0;
 	unsigned char		rgb_buf[256];
 	unsigned char		*p;
+	unsigned char		dummy;
 
 	/* Allocate the raster format dependent (header) structure. */
 
@@ -289,7 +289,13 @@ SunRead(ras)
 	/* Read the Sun raster file header and swap bytes if necessary. */
 
 	status = fread((char *) dep, 1, SUN_HEADER_SIZE, ras->fp);
-	if (status != sizeof(SunInfo)) return(RAS_EOF);
+	if (status == 0) {
+		return(RAS_EOF);
+	}
+	else if (status != sizeof(SunInfo)) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
 
 	if (*(char *) &swaptest) {
 		_swaplong((char *) dep, SUN_HEADER_SIZE);
@@ -396,18 +402,31 @@ SunRead(ras)
 
 	if (!ras->map_forced) {
 		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
-		if (status != ras->ncolor) return(RAS_EOF);
+		if (status != ras->ncolor) {
+			(void)ESprintf(RAS_E_PREMATURE_EOF, errmsg, ras->name);
+			return(RAS_ERROR);
+		}
 
 		status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
-		if (status != ras->ncolor) return(RAS_EOF);
+		if (status != ras->ncolor) {
+			(void)ESprintf(RAS_E_PREMATURE_EOF, errmsg, ras->name);
+			return(RAS_ERROR);
+		}
 
 		status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
-		if (status != ras->ncolor) return(RAS_EOF);
+		if (status != ras->ncolor) {
+			(void)ESprintf(RAS_E_PREMATURE_EOF, errmsg, ras->name);
+			return(RAS_ERROR);
+		}
 	}
 	else {
 		for(i=0; i<3; i++) {
 		  status=fread((char *)rgb_buf,1,ras->ncolor,ras->fp);
-		  if (status != ras->ncolor) return(RAS_EOF);
+		  if (status != ras->ncolor) {
+			  (void)ESprintf(RAS_E_PREMATURE_EOF,
+					  errmsg, ras->name);
+			  return(RAS_ERROR);
+		  }
 		}
 	}
 
@@ -420,16 +439,43 @@ SunRead(ras)
 
 		/* Indexed color encoding - handle 16bit padding. */
 
-		length = ras->nx;
-		if (ras->nx % 2 != 0) length++;
-
-		for(p=ras->data, y=0; y<ras->ny-1; y++, p+=ras->nx) {
-			status = fread( (char *) p, 1, length, ras->fp);
-			if (status != length) return(RAS_EOF);
+		if (ras->nx % 2 == 0) {
+			status = fread( (char *) ras->data, 1,
+					ras->length, ras->fp);
+			if (status != ras->length) {
+				(void) ESprintf(RAS_E_PREMATURE_EOF,
+						errmsg, ras->name);
+				return(RAS_ERROR);
+			}
 		}
-		status = fread( (char *) p, 1, ras->nx, ras->fp);
-		if (status != ras->nx) return(RAS_EOF);
+		else {
+			/* Odd X dimension so pad to 16-bits. */
+			length = ras->nx + 1;
 
+			for(p=ras->data, y=0; y<ras->ny-1; y++, p+=ras->nx) {
+				status = fread((char *) p, 1, length, ras->fp);
+				if (status != length) {
+					(void) ESprintf(RAS_E_PREMATURE_EOF,
+							errmsg, ras->name);
+					return(RAS_ERROR);
+				}
+			}
+
+			status = fread( (char *) p, 1, ras->nx, ras->fp);
+			if (status != ras->nx) {
+				(void) ESprintf(RAS_E_PREMATURE_EOF,
+						errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+
+			/* Read that last, hateful byte. */
+			status = fread( &dummy, 1, 1, ras->fp);
+			if (status != 1) {
+				(void) ESprintf(RAS_E_PREMATURE_EOF,
+						errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+		}
 	}
 	else if (dep->ras_type == RT_STANDARD && dep->ras_depth == 32) {
 		/*
@@ -446,7 +492,11 @@ SunRead(ras)
 		}
 		status = fread( (char *) tmpbuf, 1,
 			(int) dep->ras_length, ras->fp);
-		if (status != dep->ras_length) return(RAS_EOF);
+		if (status != dep->ras_length) {
+			(void) ESprintf(RAS_E_PREMATURE_EOF,
+					errmsg, ras->name);
+			return(RAS_ERROR);
+		}
 
 		ptmp = tmpbuf;
 

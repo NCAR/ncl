@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.7 1992-09-17 18:06:27 don Exp $ */
+/* $Id: avsraster.c,v 1.8 1992-09-24 22:55:28 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -206,7 +206,7 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = fileno(stdout);
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
+		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (ras->fd == -1) {
 			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );

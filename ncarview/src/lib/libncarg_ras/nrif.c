@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.11 1992-09-17 18:18:09 don Exp $
+ *	$Id: nrif.c,v 1.12 1992-09-24 22:55:32 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -568,7 +568,7 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) calloc((unsigned) (strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {

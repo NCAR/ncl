@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.6 1992-09-10 21:28:13 don Exp $
+ *	$Id: hplj.c,v 1.7 1992-09-24 22:55:30 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -176,7 +176,7 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = fileno(stdout);
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
+		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
 		if (ras->fd == -1) {
 			(void) ESprintf(errno, "HPLJOpenWrite(\"%s\")",name);

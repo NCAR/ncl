@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.2 1992-09-17 18:19:58 don Exp $
+ *	$Id: sgiraster.c,v 1.3 1992-09-24 22:55:35 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -509,7 +509,7 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = fileno(stdout);
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
+		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (ras->fd == -1) {
 			(void) ESprintf(errno, "SGIOpenWrite(\"%s\")", name);
 			return( (Raster *) NULL );

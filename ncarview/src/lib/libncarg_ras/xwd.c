@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.11 1992-09-17 18:20:29 don Exp $
+ *	$Id: xwd.c,v 1.12 1992-09-24 22:55:39 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -369,7 +369,7 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = fileno(stdout);
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
+		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
 		if (ras->fd == -1) {
 			(void) ESprintf(errno, "XWDOpenWrite(\"%s\")", name);
