@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.16 2002-02-01 16:11:34 haley Exp $
+#      $Id: uname,v 1.17 2002-03-18 03:47:41 haley Exp $
 #
 #########################################################################
 #									#
@@ -76,6 +76,10 @@ case Linux:
 case IRIX:
 case IRIX64:
 	set os = "IRIX"
+	breaksw
+
+case CYGWIN*:
+	set os = "CYGWIN"
 	breaksw
 
 default:
@@ -165,6 +169,9 @@ while($#argv)
 		case	Linux:
 			set operating_system = LINUX
 			breaksw
+		case	CYGWIN:
+			set operating_system = CYGWIN
+			breaksw
 		default:
 			set operating_system = $os
 			breaksw
@@ -233,6 +240,17 @@ while($#argv)
 				breaksw
 			case alpha
 				set arch = alpha
+				breaksw
+			breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+
+		case	CYGWIN:
+			switch ("$mach")
+			case	*86:
+				set arch = PC
 				breaksw
 			breaksw
 			default:
