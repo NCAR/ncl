@@ -1,13 +1,14 @@
 #
-#       $Id: yMakefile,v 1.4 1999-01-01 00:51:30 fred Exp $
+#       $Id: yMakefile,v 1.5 2002-08-03 00:33:11 fred Exp $
 #
 
 MAN = fitgrid fitgrid_params curv1 curv2 curvd curvi curvp1 curvp2          \
 	curvpi curvs curvps kurv1 kurv2 kurvd kurvp1 kurvp2 kurvpd          \
-	surf1 surf2 c_ftcurv c_ftcurvd c_ftcurvi c_ftcurvp c_ftcurvpi       \
+	surf1 surf2 curvs1 curvs2                                           \
+	c_ftcurv c_ftcurvd c_ftcurvi c_ftcurvp c_ftcurvpi                   \
 	c_ftcurvs c_ftcurvps c_ftkurv c_ftkurvp c_ftkurvd c_ftkurvpd        \
 	c_ftsurf c_ftseti c_ftgeti c_ftsetr c_ftgetr c_ftsetc c_ftgetc      \
-	c_ftsetfa c_ftgetfa_size c_ftgetfa_data
+	c_ftsetfa c_ftgetfa_size c_ftgetfa_data c_ftcurvs1
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
