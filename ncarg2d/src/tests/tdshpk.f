@@ -1,5 +1,5 @@
 C
-C $Id: tdshpk.f,v 1.4 1994-09-22 22:13:40 kennison Exp $
+C $Id: tdshpk.f,v 1.5 1994-10-25 13:55:28 haley Exp $
 C
 C Define error file number, Fortran logical unit number, workstation type, and
 C workstation ID.
@@ -58,6 +58,8 @@ C
 C
 C Define some colors to use.
 C
+        CALL GSCR   (IWID,0,0.,0.,0.)
+        CALL GSCR   (IWID,1,1.,1.,1.)
         CALL GSCR   (IWID,2,1.,0.,1.)
         CALL GSCR   (IWID,3,1.,1.,0.)
 C

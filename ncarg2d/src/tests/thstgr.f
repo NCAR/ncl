@@ -1,5 +1,5 @@
 C
-C	$Id: thstgr.f,v 1.5 1994-07-08 19:41:33 stautler Exp $
+C	$Id: thstgr.f,v 1.6 1994-10-25 13:55:29 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -104,6 +104,7 @@ C
 C  Define 15 color indices, 14 spaced throughout the color
 C  spectrum, and the last one being white.
 C
+      CALL GSCR(IWKID,0,0.,0.,0.)
       DO 100 I = 1,15
       CALL GSCR(IWKID,I,RGB(1,I),RGB(2,I),RGB(3,I))
   100 CONTINUE

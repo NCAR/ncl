@@ -1,5 +1,5 @@
 C
-C	$Id: tareas.f,v 1.3 1994-07-08 19:41:19 stautler Exp $
+C	$Id: tareas.f,v 1.4 1994-10-25 13:55:27 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -136,6 +136,7 @@ C
 C
 C Define 15 different color indices.
 C
+        CALL GSCR(IWKID,0,0.,0.,0.)
         DO 101 J=1,15
           I=IOC(J)
           CALL GSCR(IWKID,J,RGB(1,I),RGB(2,I),RGB(3,I))
