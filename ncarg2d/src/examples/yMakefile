@@ -1,9 +1,10 @@
 #
-#	$Id: yMakefile,v 1.13 1994-06-20 20:07:56 kennison Exp $
+#	$Id: yMakefile,v 1.14 1994-09-10 00:01:40 fred Exp $
 #
 
 #define IHaveSubdirs
 
 SUBDIRS = \
 	eareas eautog ecolcv econpa eezmap eezmpa elblba emisc \
-	epltch eppack esoftf espps esrfac estitl estrml evelvc
+	epltch eppack esoftf espps esrfac estitl estrml evelvc \
+	ewmap
