@@ -1,5 +1,5 @@
 C
-C $Id: ppex01.f,v 1.1 1994-06-20 20:06:30 kennison Exp $
+C $Id: ppex01.f,v 1.2 1994-06-22 22:37:54 kennison Exp $
 C
       PROGRAM TESTIT
 C
@@ -541,22 +541,58 @@ C
 C
 C Copy the coordinates of the latest polygon into the merge polygon
 C coordinate arrays and, if the polygon is not the first of the group,
-C repeat the first point of the first polygon.
+C repeat the first point of the first polygon.  (Actually, the code
+C below does something a little more complicated: if necessary, it
+C interpolates points to ensure that the connecting lines between
+C polygons consist of horizontal and/or vertical steps; this tends
+C to prevent problems caused by deficiencies in the fill algorithms
+C on some devices.)
 C
-        IF (NCMP+NCRA+1.LE.999) THEN
+        NTMP=NCMP
+C
+        IF (NTMP+NCRA+4.LE.999) THEN
+          IF (NCMP.NE.0) THEN
+            IF (XCMP(NTMP).NE.XCRA(1).AND.YCMP(NTMP).NE.YCRA(1)) THEN
+              IF (YCMP(NTMP).LT.YCRA(1)) THEN
+                NTMP=NTMP+1
+                XCMP(NTMP)=XCRA(1)
+                YCMP(NTMP)=YCMP(NTMP-1)
+              ELSE
+                NTMP=NTMP+1
+                XCMP(NTMP)=XCMP(NTMP-1)
+                YCMP(NTMP)=YCRA(1)
+              END IF
+            END IF
+            NTMP=NTMP+1
+            XCMP(NTMP)=XCRA(1)
+            YCMP(NTMP)=YCRA(1)
+          END IF
           DO 101 ICRA=1,NCRA
-            XCMP(NCMP+ICRA)=XCRA(ICRA)
-            YCMP(NCMP+ICRA)=YCRA(ICRA)
+            XCMP(NTMP+ICRA)=XCRA(ICRA)
+            YCMP(NTMP+ICRA)=YCRA(ICRA)
   101     CONTINUE
-          NCMP=NCMP+NCRA
-          IF (NCMP.NE.NCRA) THEN
-            NCMP=NCMP+1
-            XCMP(NCMP)=XCMP(1)
-            YCMP(NCMP)=YCMP(1)
+          NTMP=NTMP+NCRA
+          IF (NCMP.NE.0) THEN
+            IF (XCMP(NTMP).NE.XCMP(1).AND.YCMP(NTMP).NE.YCMP(1)) THEN
+              IF (YCMP(NTMP).LT.YCMP(1)) THEN
+                NTMP=NTMP+1
+                XCMP(NTMP)=XCMP(1)
+                YCMP(NTMP)=YCMP(NTMP-1)
+              ELSE
+                NTMP=NTMP+1
+                XCMP(NTMP)=XCMP(NTMP-1)
+                YCMP(NTMP)=YCMP(1)
+              END IF
+            END IF
+            NTMP=NTMP+1
+            XCMP(NTMP)=XCMP(1)
+            YCMP(NTMP)=YCMP(1)
           END IF
         ELSE
-          NCMP=1000
+          NTMP=1000
         END IF
+C
+        NCMP=NTMP
 C
 C Done.
 C
