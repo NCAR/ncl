@@ -1,5 +1,5 @@
 /*
- *	$Id: ctxt.c,v 1.1 1994-03-30 02:11:16 fred Exp $
+ *	$Id: ctxt.c,v 1.2 1997-02-27 20:08:05 boote Exp $
  */
 /*
  *      File:		ctxt.c
@@ -14,6 +14,8 @@
  *			device driver.
  */
 #include <stdio.h>
+#include <ncarg/gksP.h>
+#include <ncarg/c.h>
 #include "gksc.h"
 #include "ctxt.h"
 #include "gks.h"
@@ -38,7 +40,12 @@ static	void	print_points(points, num)
 ctxt_OpenWorkstation(gksc)
 	GKSC	*gksc;
 {
+	_NGCesc	*cesc;
+
 	(void) printf("OpenWorkstation\n");
+	while(cesc = _NGGetCEscInit()){
+		gerr_hand(182,11,NULL);
+	}
 	return(0);
 }
 

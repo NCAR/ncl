@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.h,v 1.1 1996-03-16 21:43:47 boote Exp $
+ *      $Id: gksP.h,v 1.2 1997-02-27 20:08:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 
 #define	NGC_XGETXPIX	1
 #define	NGC_XFREECI	2
+#define NGC_XALLOCCOLOR	3
 
 typedef struct {
 	int		type;
@@ -46,6 +47,25 @@ typedef struct {
 	unsigned long	gksci;
 } _NGCXFreeCi;
 
+typedef void (*_NGCXAllocColorProc)(
+	void	*cref,
+	void	*color_def	/* really (XColor*) */
+);
+
+typedef void (*_NGCXFreeColorsProc)(
+	void		*cref,
+	unsigned long	*pixels,
+	int		npixels
+);
+
+typedef struct {
+	int			type;
+	int			work_id;
+	_NGCXAllocColorProc	xalloc_color;
+	_NGCXFreeColorsProc	xfree_colors;
+	void			*cref;
+} _NGCXAllocColor;
+
 typedef struct {
 	int		type;
 	int		work_id;
@@ -56,6 +76,7 @@ typedef union _NGCescapeRec_ {
 	_NGCAny		any;
 	_NGCXGetXPix	xgetxpix;
 	_NGCXFreeCi	xfreeci;
+	_NGCXAllocColor	xalloccolor;
 } _NGCesc;
 
 /*
@@ -65,6 +86,16 @@ int _NGCescape(
 #ifdef NeedFuncProto
 	int	func_id,
 	_NGCesc	*cesc
+#endif
+);
+
+/*
+ * This function should only be called from individual output drivers.
+ */
+_NGCesc *
+_NGGetCEscInit(
+#ifdef	NeedFuncProto
+	void
 #endif
 );
 

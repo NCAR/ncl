@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.7 1996-08-24 19:38:12 boote Exp $
+ *	$Id: xddi.h,v 1.8 1997-02-27 20:08:08 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -17,6 +17,7 @@
 #ifndef	_xddi_
 #define	_xddi_
 
+#include <ncarg/gksP.h>
 #include "x.h"
 #include "gks.h"
 #include "common.h"
@@ -53,6 +54,9 @@ typedef	struct	Xddi_	{
 			bg_index;
 	Boolean		color_ava;
 	XColModel	color_model;
+	_NGCXAllocColorProc	alloc_color;
+	_NGCXFreeColorsProc	free_colors;
+	void		*cref;
 	Pixeltype	color_pal[MAX_COLORS];
 	int		color_info[MAX_COLORS];
 	XddpColorStatus	color_status[MAX_COLORS];
@@ -62,7 +66,6 @@ typedef	struct	Xddi_	{
 	Colormap	cmap;
 	Boolean		cmap_ro;
 	Boolean		mycmap;
-	int		mycmap_cells;
 	int		marker_type,
 			marker_size;
 	int		fill_style,

@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.15 1997-01-21 21:26:39 boote Exp $
+ *	$Id: xcontrol.c,v 1.16 1997-02-27 20:08:08 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -29,26 +29,6 @@
 #include "x_device.h"
 #include "xddi.h"
 
-static void
-free_colors
-(
-	Display		*dpy,
-	Colormap	cmap,
-	XddpColorStatus	color_status[]
-)
-{
-	int		i,j;
-	Pixeltype	free_pixels[MAX_COLORS];
-
-	for (i=0,j=0; i<MAX_COLORS; i++)
-		if(color_status[i].ref_count > 0)
-			free_pixels[j++] = color_status[i].xpixnum;
-
-	XFreeColors(dpy,cmap,free_pixels,j,(Pixeltype)0);
-
-	return;
-}
-
 /*
  * Function:	X11_private_color
  *
@@ -77,7 +57,7 @@ X11_private_color
 	XColor		*colors;
 	int		i;
 
-	if(xi->mycmap)
+	if(xi->mycmap || xi->alloc_color)
 		return;
 
 	/*
@@ -159,15 +139,21 @@ init_color
 	for(i=1;i<xi->depth;i++)
 		xi->max_x_colors *= 2;
 
-	switch(xi->vis->class){
-		case TrueColor:
-		case StaticColor:
-		case StaticGray:
-		case DirectColor:
-			xi->x_ref_count = False;
-			break;
-		default:
-			xi->x_ref_count = True;
+	if(xi->alloc_color){
+		xi->x_ref_count = False;
+		xi->color_model = CM_SHARED;
+	}
+	else{
+		switch(xi->vis->class){
+			case TrueColor:
+			case StaticColor:
+			case StaticGray:
+			case DirectColor:
+				xi->x_ref_count = False;
+				break;
+			default:
+				xi->x_ref_count = True;
+		}
 	}
 
 	if(xi->x_ref_count){
@@ -179,8 +165,6 @@ init_color
 	}
 	else
 		xi->color_def = NULL;
-
-	xi->mycmap_cells = 0;
 
 	switch(xi->color_model){
 
@@ -258,7 +242,9 @@ init_color
 	tcolor.red = (unsigned short)0;
 	tcolor.green = (unsigned short)0;
 	tcolor.blue = (unsigned short)0;
-	if(xi->cmap_ro)
+	if(xi->alloc_color)
+		(*xi->alloc_color)(xi->cref,&tcolor);
+	else if(xi->cmap_ro)
 		XAllocColor(xi->dpy, xi->cmap, &tcolor);
 	else{
 		tcolor.pixel = BlackPixelOfScreen(xi->scr);
@@ -272,7 +258,6 @@ init_color
 	xi->color_status[0].blue = tcolor.blue;
 	if(xi->x_ref_count)
 		xi->color_def[tcolor.pixel]++;
-	xi->mycmap_cells++;
 
 	/*
 	 * Foreground
@@ -280,7 +265,9 @@ init_color
 	tcolor.red = (unsigned short)MAX_INTENSITY;
 	tcolor.green = (unsigned short)MAX_INTENSITY;
 	tcolor.blue = (unsigned short)MAX_INTENSITY;
-	if(xi->cmap_ro)
+	if(xi->alloc_color)
+		(*xi->alloc_color)(xi->cref,&tcolor);
+	else if(xi->cmap_ro)
 		XAllocColor(xi->dpy, xi->cmap, &tcolor);
 	else{
 		tcolor.pixel = WhitePixelOfScreen(xi->scr);
@@ -294,7 +281,6 @@ init_color
 	xi->color_status[1].blue = tcolor.blue;
 	if(xi->x_ref_count)
 		xi->color_def[tcolor.pixel]++;
-	xi->mycmap_cells++;
 
 	/*
 	 * Set all remaining colors in the gks colormap to the same color
@@ -620,6 +606,7 @@ X11_OpenWorkstation
 	XWindowAttributes	xwa;		/* Get Attributes	*/
 	CoordSpace		square_screen;
         int			*iptr = (int *) gksc->i.list;
+	_NGCesc			*cesc;
 
 	if((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL){
 		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
@@ -638,6 +625,25 @@ X11_OpenWorkstation
 	}
 
 	gksc->ddp = (GKSC_Ptr) xi;
+
+	xi->alloc_color = NULL;
+	xi->free_colors = NULL;
+	xi->cref = NULL;
+
+	while(cesc = _NGGetCEscInit()){
+		_NGCXAllocColor	*xac;
+		switch(cesc->type){
+			case NGC_XALLOCCOLOR:
+				xac = (_NGCXAllocColor*)cesc;
+				xi->alloc_color = xac->xalloc_color;
+				xi->free_colors = xac->xfree_colors;
+				xi->cref = xac->cref;
+				break;
+			
+			default:
+				gerr_hand(182,11,NULL);
+		}
+	}
 
 	/*
 	 * only get the DISPLAY env. var the first time we get called.

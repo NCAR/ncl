@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.13 1997-01-21 21:26:37 boote Exp $
+ *	$Id: ps.c,v 1.14 1997-02-27 20:08:07 boote Exp $
  */
 /*
  *
@@ -20,6 +20,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <ncarg/gksP.h>
 #include <ncarg/c.h>
 #include "gksc.h"
 #include "gks.h"
@@ -1946,6 +1947,7 @@ ps_OpenWorkstation(GKSC *gksc)
 	FILE    *fp;
 	int	*pint, wks_type;
 	extern	int	orig_wks_id;
+	_NGCesc	*cesc;
 
 	psa = (PSddp *) malloc (sizeof (PSddp));
         if (psa == (PSddp *) NULL) {
@@ -1954,6 +1956,14 @@ ps_OpenWorkstation(GKSC *gksc)
 	}
 
 	gksc->ddp = (GKSC_Ptr) psa;
+
+	/*
+	 * Handle Initial C Escape Elements.
+	 *	(none currently defined for ps - so all of them cause gerhnd.)
+	 */
+	while(cesc = _NGGetCEscInit()){
+		gerr_hand(182,11,NULL);
+	}
 
         pint = (int *)(gksc->i.list);
 	wks_type = *(pint+1);        

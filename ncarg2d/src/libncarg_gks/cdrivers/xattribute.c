@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.10 1997-01-21 21:26:38 boote Exp $
+ *	$Id: xattribute.c,v 1.11 1997-02-27 20:08:07 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -611,14 +611,17 @@ X11_free_ci(
 		color_status[color_info[index]].ref_count--;
 
 		if(color_status[color_info[index]].ref_count < 1){
-			if(xi->cmap_ro){
+			if(xi->free_colors){
+				(*xi->free_colors)(xi->cref,
+				&color_status[color_info[index]].xpixnum,1);
+			}
+			else if(xi->cmap_ro){
 				XFreeColors(xi->dpy,xi->cmap,
 				&color_status[color_info[index]].xpixnum,1,0);
 			}
 			if(xi->x_ref_count)
 				color_def[color_status[
 						color_info[index]].xpixnum]--;
-			xi->mycmap_cells--;
 		}
 		color_info[index] = -1;
 	}
@@ -664,7 +667,29 @@ X11_SetColorRepresentation
 	 */
 	X11_free_ci(xi,index);
 
-	if(xi->mycmap && !xi->cmap_ro && xi->x_ref_count){
+	if(xi->alloc_color){
+		/*
+		 * This function is not allowed to fail to get a color.
+		 * If it can't allocate a new color, it needs to return
+		 * the next best value.
+		 */
+		(*xi->alloc_color)(xi->cref,&rgbptr[0]);
+		/*
+		 * Color Allocation succeded - place all the color information
+		 * in the color_pal, color_info and color_status arrays.
+		 */
+
+		for(i=0;i < MAX_COLORS;i++)
+			if(color_status[i].ref_count == 0)
+				break;
+		color_info[index] = i;
+		color_status[i].ref_count = 1;
+		color_status[i].red = rgbptr->red;
+		color_status[i].green = rgbptr->green;
+		color_status[i].blue = rgbptr->blue;
+		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
+	}
+	else if(xi->mycmap && !xi->cmap_ro && xi->x_ref_count){
 		Boolean	xindx_found = False;
 
 		/*
@@ -691,7 +716,6 @@ X11_SetColorRepresentation
 		color_status[i].red = rgbptr->red;
 		color_status[i].green = rgbptr->green;
 		color_status[i].blue = rgbptr->blue;
-		xi->mycmap_cells++;
 		color_def[xindx]++;
 	}
 	else if(xi->cmap_ro && XAllocColor(dpy, cmap, &rgbptr[0])){
@@ -709,7 +733,6 @@ X11_SetColorRepresentation
 		color_status[i].green = rgbptr->green;
 		color_status[i].blue = rgbptr->blue;
 		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
-		xi->mycmap_cells++;
 		if(xi->x_ref_count) color_def[rgbptr->pixel]++;
 	}
 	else if(xi->color_model == CM_MIXED){

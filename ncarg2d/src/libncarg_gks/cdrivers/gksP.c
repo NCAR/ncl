@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.c,v 1.1 1996-03-16 21:43:47 boote Exp $
+ *      $Id: gksP.c,v 1.2 1997-02-27 20:08:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,11 @@ void NGCALLF(gzxid,GZXID)(
 #endif
 );
 
+#define MaxEsc	10
+
+static _NGCesc init_escape[MaxEsc];
+static int	num_init=0;
+
 /*
  * Function:	_NGCescape
  *
@@ -68,6 +73,17 @@ int _NGCescape
 	/*
 	 * Get local id for workstation.
 	 */
+	if(escape->work_id == -1){
+		/*
+		 * escape applies to next workstation created.
+		 */
+		if(num_init >= (MaxEsc - 1))
+			return 300;
+		init_escape[num_init++] = *cesc;
+
+		return 0;
+	}
+
 	NGCALLF(gzxid,GZXID)(&escape->work_id,&lid,&ierr);
 	if(ierr != 0) return ierr;
 
@@ -90,4 +106,15 @@ int _NGCescape
 	gksc->native = NULL;
 
 	return ierr;
+}
+
+_NGCesc	*
+_NGGetCEscInit
+(
+	void
+)
+{
+	if(!num_init)
+		return NULL;
+	return &init_escape[--num_init];
 }
