@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.5 1993-01-17 05:05:20 haley Exp $
+.\"	$Id: ncargex.m,v 1.6 1993-02-16 18:26:26 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
@@ -123,7 +123,7 @@ testing of new releases at NCAR.
 .LP
 .I "Miscellaneous Examples:"
 .nf
-	arex01 cbex01 coex01 coex02 coex03 slex01
+	arex01 cbex01 coex01 coex02 coex03 slex01 bnchmk
 .fi
 .LP
 .I "Tutorial Areas Examples:"
