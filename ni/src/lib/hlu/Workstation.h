@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.31 1999-09-23 19:47:05 dbrown Exp $
+ *      $Id: Workstation.h,v 1.32 1999-09-30 21:34:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -349,7 +349,8 @@ extern NhlErrorTypes NhlPalSetColormap(
 
 extern NhlErrorTypes NhlPalLoadColormapFiles(
 #if	NhlNeedProto
-	NhlClass	lc
+	NhlClass	lc,
+	NhlBoolean	suppress_path_message
 #endif
 );
 

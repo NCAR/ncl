@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.7 1999-09-23 19:47:02 dbrown Exp $
+ *      $Id: Palette.c,v 1.8 1999-09-30 21:34:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1634,8 +1634,9 @@ static NhlErrorTypes GetColormapsInPath
 
 static NhlErrorTypes ReadUserColormaps
 (
-	NhlClass lc,
-	char	 *func
+	NhlClass 	lc,
+	NhlBoolean	suppress_path_message,
+	char	 	*func
 )
 {
 	NhlErrorTypes subret,ret = NhlNOERROR;
@@ -1647,11 +1648,12 @@ static NhlErrorTypes ReadUserColormaps
 	if (! path)
 		path = getenv(NCARG_COLORMAP_PATH);
 	if (! path) {
-		fprintf(stderr,
+		if (! suppress_path_message) {
+			fprintf(stderr,
 		     "%s environment variable not set:\n\tdefaulting to %s\n",
-			NDV_COLORMAP_PATH,DEFAULT_COLORMAP_PATH);
+				NDV_COLORMAP_PATH,DEFAULT_COLORMAP_PATH);
+		}
 		path = DEFAULT_COLORMAP_PATH;
-		
 	}
 	if (! path) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1707,11 +1709,13 @@ NhlErrorTypes
 NhlPalLoadColormapFiles
 #if	NhlNeedProto
 (
-	NhlClass	lc
+	NhlClass	lc,
+	NhlBoolean	suppress_path_message
 )
 #else
-(lc)
+(lc,suppress_path_message)
 	NhlClass	lc;
+	NhlBoolean	suppress_path_message;
 
 #endif
 {
@@ -1724,5 +1728,5 @@ NhlPalLoadColormapFiles
 		return NhlFATAL;
 	}
 
-	return ReadUserColormaps(lc,func);
+	return ReadUserColormaps(lc,suppress_path_message,func);
 }
