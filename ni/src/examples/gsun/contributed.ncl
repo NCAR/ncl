@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.7 2003-05-07 15:41:56 shea Exp $
+;      $Id: contributed.ncl,v 1.8 2003-05-07 21:28:01 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -842,7 +842,7 @@ begin
 ; value does not exist in array, so we insert it
 
   size = dimsizes(array2ck)            ; get size of original array
-  narray = new( (/size + 1/),float)    ; create new array 
+  narray = new( (/size + 1/),typeof(array2ck)) ; create new array 
 
   narray(0:size-1) = array2ck(:)
   narray(size) = var2ck                ; add value to new array
