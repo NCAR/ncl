@@ -1,0 +1,18 @@
+#
+#       $Id: yMakefile,v 1.1 1998-10-30 22:49:06 fred Exp $
+#
+ 
+MYNAME  = csagrid
+ 
+SOURCES = bascmp.f   csa1s.f    csa1xs.f   csa2s.f    csa2xs.f  \
+          csa2ls.f   csa2lxs.f  csa3s.f    csa3xs.f   csa3ls.f  \
+          csa3lxs.f  splcw.f    splfe.f    splcc.f    splde.f   \
+          suprls.f   cfaerr.f   c_csauser.c
+ 
+OBJECTS = bascmp.o   csa1s.o    csa1xs.o   csa2s.o    csa2xs.o  \
+          csa2ls.o   csa2lxs.o  csa3s.o    csa3xs.o   csa3ls.o  \
+          csa3lxs.o  splcw.o    splfe.o    splcc.o    splde.o   \
+          suprls.o   cfaerr.o   c_csauser.o
+ 
+PartialLibraryTarget(../libngmath.a,$(OBJECTS))
+DependTarget($(SOURCES))
