@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.16 1997-05-29 17:33:35 fred Exp $
+ *	$Id: ps.c,v 1.17 1998-06-28 18:52:41 fred Exp $
  */
 /*
  *
@@ -2080,6 +2080,7 @@ ps_CloseWorkstation(gksc)
 
         (void) fflush(psa->file_pointer);
 	psa->pict_empty = TRUE;
+        fclose(psa->file_pointer);
 	return(0);
 }
 
