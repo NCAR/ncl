@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngckop.c,v 1.3 2000-08-22 15:05:15 haley Exp $
+ *	$Id: c_ngckop.c,v 1.4 2001-09-20 04:10:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern int NGCALLF(ngckop,NGCKOP)(int*);
+
 int c_ngckop
 #ifdef NeedFuncProto
 (
@@ -36,6 +38,5 @@ int c_ngckop
     int wkid;
 #endif
 {
-    extern int NGCALLF(ngckop,NGCKOP)();
     return(NGCALLF(ngckop,NGCKOP)(&wkid));
 }

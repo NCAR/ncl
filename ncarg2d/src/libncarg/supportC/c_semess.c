@@ -1,5 +1,5 @@
 /*
- *	$Id: c_semess.c,v 1.3 2000-08-22 15:07:04 haley Exp $
+ *	$Id: c_semess.c,v 1.4 2001-09-20 04:10:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,13 +39,14 @@ char *c_semess
     int len = 113;
     static char buff[114];
 #if defined(cray)
-    extern _fcd NGCALLF(semess,SEMESS)();
+    extern NGstring NGCALLF(semess,SEMESS)(_fcd,int*);
     _fcd ft_str;
 
     ft_str = _cptofcd(buff,len);
     NGCALLF(semess,SEMESS)(ft_str,&itrim);
     strcpy( buff, _fcdtocp(ft_str));
 #else
+    extern NGstring NGCALLF(semess,SEMESS)(char*,int,int*);
     NGCALLF(semess,SEMESS)(buff,len,&itrim);
 #endif
     buff[c_icloem(buff)] = '\0';

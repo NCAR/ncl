@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngpswk.c,v 1.4 2000-08-22 15:05:17 haley Exp $
+ *	$Id: c_ngpswk.c,v 1.5 2001-09-20 04:10:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -28,6 +28,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern int NGCALLF(ngpswk,NGPSWK)(NGstring,NGstring,NGstring,int,int,int);
+
 int c_ngpswk
 #ifdef NeedFuncProto
 (
@@ -45,7 +47,6 @@ int c_ngpswk
     NGstring pstype2;
     NGstring orient2;
     NGstring color2;
-    extern int NGCALLF(ngpswk,NGPSWK)();
     int plen, clen, olen;
 
     if( !orient ) {

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcpnwi.c,v 1.3 2000-08-22 15:05:31 haley Exp $
+ *	$Id: c_pcpnwi.c,v 1.4 2001-09-20 04:10:17 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -40,15 +40,16 @@ char *c_pcpnwi
 {
     int len = 16;
     char buff[17];
-    extern NGstring NGCALLF(pcpnwi,PCPNWI)();
 #if defined(cray)
     _fcd cftwhch, ft_str;
+    extern NGstring NGCALLF(pcpnwi,PCPNWI)(_fcd,_fcd,int*);
 
     ft_str = NGCstrToFstr(buff,len);
     cftwhch = NGCstrToFstr(whch,NGSTRLEN(whch));
     NGCALLF(pcpnwi,PCPNWI)(ft_str,cftwhch,&ipai);
     strcpy( buff, NGFstrToCstr(ft_str));
 #else
+    extern NGstring NGCALLF(pcpnwi,PCPNWI)(char*,int,char*,int*,int);
     NGCALLF(pcpnwi,PCPNWI)(buff,len,whch,&ipai,NGSTRLEN(whch));
 #endif
     buff[len] = '\0';

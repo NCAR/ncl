@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agbnch.c,v 1.3 2000-08-22 15:02:22 haley Exp $
+ *	$Id: c_agbnch.c,v 1.4 2001-09-20 04:10:07 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -38,14 +38,15 @@ char *c_agbnch
 {
     int len = 16;
     static char buff[17];
-    extern NGstring NGCALLF(agbnch,AGBNCH)();
 #if defined(cray)
     _fcd ft_str;
+    extern NGstring NGCALLF(agbnch,AGBNCH)(_fcd,int*);
 
     ft_str = _cptofcd(buff,len);
     NGCALLF(agbnch,AGBNCH)(ft_str,&idsh);
     strcpy( buff, _fcdtocp(ft_str));
 #else
+    extern NGstring NGCALLF(agbnch,AGBNCH)(char*,int,int*);
     NGCALLF(agbnch,AGBNCH)(buff,len,&idsh);
 #endif
     buff[c_icloem(buff)] = '\0';
