@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.33 1993-03-25 01:48:46 clyne Exp $
+ *	$Id: ctrans.c,v 1.34 1993-07-19 22:29:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -301,6 +301,17 @@ static	void	decode_err(status)
 	}
 }
 
+static	const char	*element_name(class, id)
+	int	class, id;
+{
+	const	char	*name;
+
+	name = CGM_ElementLookup((unsigned int) class, (unsigned int) id);
+
+	if (! name) name = "Unknown";
+
+	return(name);
+}
 
 /*
  *	Process
@@ -316,9 +327,12 @@ CtransRC	Process(c)
 	int	rc;
 
 	if ((c->class > MAXCLASS) || (c->command > MAXFUNCPERCLASS)) {
+		const char	*name = element_name(c->class, c->command);
+
 		ESprintf(
-			EINVAL, "Illegal metafile element(class=%d, id=%d)",
-			c->class, c->command
+			EINVAL, 
+			"Illegal metafile element(class=%d, id=%d, name=\"%s\")",
+			c->class, c->command, name
 		);
 		elog(ErrGetMsg());
 		return(WARN);
@@ -327,12 +341,14 @@ CtransRC	Process(c)
 		rc = (*cmdtab[devnum][c->class][c->command])(c);
 	}
 	else {
+		const char	*name = element_name(c->class, c->command);
 		/*
 		 * no function for element
 		 */
 		ESprintf(
-			E_UNKNOWN, "Illegal metafile element(class=%d, id=%d)",
-			c->class, c->command
+			EINVAL, 
+			"Illegal metafile element(class=%d, id=%d, name=\"%s\")",
+			c->class, c->command, name
 		);
 		elog(ErrGetMsg());
 		return(WARN);
@@ -345,10 +361,12 @@ CtransRC	Process(c)
 	 * fatal if descriptor or delimiter element
 	 */
 	else if (c->class == DEL_ELEMENT || c->class == DES_ELEMENT) {
+		const char	*name = element_name(c->class, c->command);
+
 		ESprintf(
 			E_UNKNOWN, 
-			"Could not process CGM element(class=%d, id=%d) [ %s ]",
-			c->class, c->command, ErrGetMsg()
+			"Could not process CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
+			c->class, c->command, name, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
 		return(FATAL);
@@ -357,10 +375,12 @@ CtransRC	Process(c)
 	 * non-fatal error (we hope)
 	 */
 	else {
+		const char	*name = element_name(c->class, c->command);
+
 		ESprintf(
 			E_UNKNOWN, 
-			"Could not process CGM element(class=%d, id=%d) [ %s ]",
-			c->class, c->command, ErrGetMsg()
+			"Could not process CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
+			c->class, c->command, name, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
 		return(WARN);
