@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.40 1997-03-26 23:23:34 haley Exp $
+#	$Id: yMakefile,v 1.41 1998-02-04 17:11:27 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -15,7 +15,7 @@ NHF_SCRIPT	=	nhlf77
 #endif
 
 SCRIPTS = ncargfile ncargcc nhlcc  ncargversion ncargrun ncargex ncargcex \
-	pre2ncgm cgmtrans ftrans $(SRC_SCRIPTS) $(NGF_SCRIPT) $(NHF_SCRIPT)
+	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPT) $(NHF_SCRIPT)
 
 FILES = ngurl
 
