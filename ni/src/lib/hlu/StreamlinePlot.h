@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.1 1996-02-01 20:42:57 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.2 1996-02-06 19:59:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,7 @@
 #define NhlNstLineColor			"stLineColor"
 #define NhlNstArrowLengthF		"stArrowLengthF"	/* ARL */
 #define NhlNstStepSizeF			"stStepSizeF"		/* DFM */
-#define NhlNstMinStepFactor		"stMinStepFactor"    	/* CDS */
+#define NhlNstMinStepFactorF		"stMinStepFactorF"    	/* CDS */
 #define NhlNstLengthCheckCount		"stLengthCheckCount" 	/* CKP */
 #define NhlNstCrossoverCheckCount	"stCrossoverCheckCount" /* CKX */
 
@@ -127,7 +127,7 @@
 #define NhlCstLineColor			"StLineColor"
 #define NhlCstArrowLengthF		"StArrowLengthF"	/* ARL */
 #define NhlCstStepSizeF			"StStepSizeF"		/* DFM */
-#define NhlCstMinStepFactor		"StMinStepFactor"    	/* CDS */
+#define NhlCstMinStepFactorF		"StMinStepFactorF"    	/* CDS */
 #define NhlCstLengthCheckCount		"StLengthCheckCount" 	/* CKP */
 #define NhlCstCrossoverCheckCount	"StCrossoverCheckCount" /* CKX */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.1 1996-02-01 20:42:56 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.2 1996-02-06 19:59:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -142,7 +142,7 @@ static NhlResource resources[] = {
 	{NhlNstMinLineSpacingF,NhlCstMinLineSpacingF,
 		  NhlTFloat,sizeof(float),Oset(min_line_spacing),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{NhlNstMinStepFactor,NhlCstMinStepFactor,NhlTFloat,sizeof(float),
+	{NhlNstMinStepFactorF,NhlCstMinStepFactorF,NhlTFloat,sizeof(float),
 		  Oset(min_step_factor),NhlTString,
 		  _NhlUSET("2.0"),0,NULL},
 	{NhlNstLengthCheckCount,NhlCstLengthCheckCount,NhlTInteger,sizeof(int),
