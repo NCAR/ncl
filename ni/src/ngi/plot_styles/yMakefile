@@ -1,9 +1,10 @@
 #
-#       $Id: yMakefile,v 1.1 1999-02-27 03:14:05 dbrown Exp $
+#       $Id: yMakefile,v 1.2 1999-08-18 20:41:04 haley Exp $
 #
 FILES		= DiscreteRasterContour.res FillContour.res FillVector.res \
 		LineContour.res LineVector.res LineXy.res ScatterXy.res \
-		SmoothedRasterContour.res Streamline.res
+		SmoothedRasterContour.res Streamline.res test_style.ncl \
+		TestStyle.res TestStyle2.res
 
 PSPATH	= $(LIBNCARGPATH)/plot_styles
 INSTALL_PS = $(INSTALL_DB)
