@@ -17,21 +17,19 @@
 ;   Date:       Tue Oct  4 18:48:08 MDT 1994
 ;
 ;   Description:     Given a simple mathematically generated data set,
-;		     demonstrates ContourPlot with all resources (other than
-;		     cnScalarFieldData) set to their default value.
+;            demonstrates ContourPlot with all resources (other than
+;            cnScalarFieldData) set to their default value.
 ;
 
 begin
 
-M=25
-N=25
-
-T = new((/N,M/),float)
-len_dims = new((/2/),integer)
-
 ;
 ; create a simple bull's eye pattern test data set
 ;
+M = 25
+N = 25
+
+T = new((/N,M/),float)
 T = onedtond(ispan(-M/2,(M-1)/2,1),(/N,M/))
 T!0 = "x"
 T!1 = "y"
@@ -86,8 +84,6 @@ end if
 ; By default the array bounds will define the data boundaries (zero-based,
 ; as in C language conventions)
 ;
-len_dims(0) = N
-len_dims(1) = M
 
 dataid = create "bullseye" scalarFieldClass appid
         "sfDataArray" : T

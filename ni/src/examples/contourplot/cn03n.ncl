@@ -27,7 +27,6 @@ begin
 M=73
 N=10
 
-len_dims = new((/2/),integer)
 T = new((/N,M/),float)
 T = (/\
   (/-29.403778, -26.403778, -22.403778, -18.403778, -16.903778, -16.903778, \
@@ -170,8 +169,8 @@ labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0/)
 ; Create an application object.
 ;
 appid = create "cn03" appClass defaultapp
-    "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+    "appUsrDir"        : "./"
+    "appDefaultParent" : "True"
 end create
 
 ;
@@ -213,16 +212,14 @@ end if
 ; latitude and an irregular Y dimension representing geopotential height.
 ; Define the start and end points of the data, based on the dataset.
 ;
-len_dims(0) = N
-len_dims(1) = M
 
 dataid = create "mydata" scalarFieldClass appid
     "sfDataArray" : T
-    "sfYArray":     level
-    "sfXCStartV":   -90.0
-    "sfXCEndV":   90.0
-    "sfYCStartV":   1000.0
-    "sfYCEndV":   100.0
+    "sfYArray"    : level
+    "sfXCStartV"  : -90.0
+    "sfXCEndV"    : 90.0
+    "sfYCStartV"  : 1000.0
+    "sfYCEndV"    : 100.0
 end create
 
 ;
@@ -231,17 +228,17 @@ end create
 ; object.
 ;
 cnid = create "ContourPlot1" contourPlotClass wid
-    "tiMainString":   "Profile @ 105:S:o:N:W - Frame 1"
-    "cnScalarFieldData" :   dataid
-    "vpXF":             0.125
-    "vpYF":             0.85
-    "vpWidthF":         0.6
-    "vpHeightF":        0.6
-    "cnLevelSpacingF":  5.0
-    "tmXBMode":         "explicit"
-    "tmXBMinorOn":      False
-    "tmXBValues":       labellocs
-    "tmXBLabels":       labels
+    "tiMainString"      : "Profile @ 105:S:o:N:W - Frame 1"
+    "cnScalarFieldData" : dataid
+    "vpXF"              : 0.125
+    "vpYF"              : 0.85
+    "vpWidthF"          : 0.6
+    "vpHeightF"         : 0.6
+    "cnLevelSpacingF"   : 5.0
+    "tmXBMode"          : "explicit"
+    "tmXBMinorOn"       : False
+    "tmXBValues"        : labellocs
+    "tmXBLabels"        : labels
 end create
 
 draw(cnid)
@@ -256,10 +253,10 @@ frame(wid)
 ; prefix 'pm' rather than 'cn'. 
 ;
 setvalues cnid
-    "tiMainString":           "Profile @ 105:S:o:N:W - Frame 2"
-    "cnMonoLineColor":        False
-    "cnMonoLineDashPattern":  False
-    "pmLegendDisplayMode":    "always"
+    "tiMainString"         : "Profile @ 105:S:o:N:W - Frame 2"
+    "cnMonoLineColor"      : False
+    "cnMonoLineDashPattern": False
+    "pmLegendDisplayMode"  : "always"
 end setvalues
 
 draw(cnid)
@@ -270,14 +267,14 @@ frame(wid)
 ; Turn off line and high/low labels.
 ;
 setvalues cnid
-    "tiMainString":          "Profile @ 105:S:o:N:W - Frame 3"
-    "cnLinesOn":             False
-    "cnFillOn":              True
-    "pmLegendDisplayMode":   "never"
+    "tiMainString"         : "Profile @ 105:S:o:N:W - Frame 3"
+    "cnLinesOn"            : False
+    "cnFillOn"             : True
+    "pmLegendDisplayMode"  : "never"
     "pmLabelBarDisplayMode": "always"
-    "cnLineLabelsOn":        False
-    "cnHighLabelsOn":        False
-    "cnLowLabelsOn":         False
+    "cnLineLabelsOn"       : False
+    "cnHighLabelsOn"       : False
+    "cnLowLabelsOn"        : False
 end setvalues
 
 draw(cnid)
@@ -294,22 +291,22 @@ setvalues cnid
 end setvalues
 
 getvalues cnid
-    "vpXF":      xvp
-    "vpYF":      yvp
-    "vpWidthF":  widthvp
-    "vpHeightF": heightvp
+    "vpXF"      : xvp
+    "vpYF"      : yvp
+    "vpWidthF"  : widthvp
+    "vpHeightF" : heightvp
 end getvalues
 
 llid = create "LogLin1" logLinPlotClass wid
-    "vpXF":       xvp
-    "vpYF":       yvp
-    "vpWidthF":   widthvp
-    "vpHeightF":  heightvp
-    "trXMinF":    -90.0
-    "trXMaxF":    90.0
-    "trYMaxF":    1000.0
-    "trYMinF":    100.0
-    "trYReverse": True
+    "vpXF"       : xvp
+    "vpYF"       : yvp
+    "vpWidthF"   : widthvp
+    "vpHeightF"  : heightvp
+    "trXMinF"    : -90.0
+    "trXMaxF"    : 90.0
+    "trYMaxF"    : 1000.0
+    "trYMinF"    : 100.0
+    "trYReverse" : True
 end create
 ;
 ; The LogLinPlot becomes the Base Plot, since it controls the coordinate
