@@ -1,5 +1,5 @@
 C
-C	$Id: gtxtat.f,v 1.2 1994-04-30 00:05:25 fred Exp $
+C	$Id: gtxtat.f,v 1.3 1994-05-07 00:51:22 fred Exp $
 C
         SUBROUTINE GTXTAT(IOS,STATUS)
 C
@@ -101,13 +101,20 @@ C
         IF (STATUS .NE. 0) RETURN
         CALL GOPDEC(TEMP,MOPLEN,1,IOS,STATUS)
         CALL GENNEG(TEMP,YB)
-        RXU = REAL(XU)/32767.
-        RYU = REAL(YU)/32767.
 C
 C  Modify the up vector by the current segment transformation.
 C
-        RXUT = CURTM(1,1)*RXU+CURTM(1,2)*RYU
-        RYUT = CURTM(2,1)*RXU+CURTM(2,2)*RYU
+        RXUT = CURTM(1,1)*REAL(XU)+CURTM(1,2)*REAL(YU)
+        RYUT = CURTM(2,1)*REAL(XU)+CURTM(2,2)*REAL(YU)
+C
+C  If the modified values are both zero, then the transformation 
+C  scaling is such as to make the character orientation of no 
+C  observable consequence, so set it to horizontal.
+C
+        IF (RXUT.EQ.0. .AND. RYUT.EQ.0.) THEN
+          RXUT = 0.
+          RYUT = 1.
+        ENDIF
         CALL GSCHUP(RXUT,RYUT)
       ELSE IF (OPID.EQ.ATELTH) THEN
 C

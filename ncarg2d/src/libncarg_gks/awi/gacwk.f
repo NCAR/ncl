@@ -1,11 +1,10 @@
 C
-C	$Id: gacwk.f,v 1.2 1993-01-09 01:57:40 fred Exp $
+C	$Id: gacwk.f,v 1.3 1994-05-07 00:51:04 fred Exp $
 C
       SUBROUTINE GACWK(WKID)
 C
 C  ACTIVATE WORKSTATION
 C
-
       INTEGER EACWK
       PARAMETER (EACWK=4)
 C

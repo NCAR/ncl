@@ -1,5 +1,5 @@
 C
-C	$Id: gdsg.f,v 1.4 1993-01-15 18:24:41 fred Exp $
+C	$Id: gdsg.f,v 1.5 1994-05-07 00:51:09 fred Exp $
 C
       SUBROUTINE GDSG(SGNA)
 C
@@ -11,6 +11,7 @@ C
       include 'gkscom.h'
 C
       INTEGER SGNA
+      CHARACTER*80 CSNAME
 C
 C  This subroutine is here solely as support for the SPPS GFLASn
 C  entries.  Full segmentation is not a part of the NCAR GKS
@@ -36,18 +37,14 @@ C
 C
 C  Check if the segment exists.
 C
-      NXST = 0
       DO 200 I=1,NUMSEG
-        IF (SEGS(I) .EQ. SGNA) THEN
-          NXST = 1
-        ENDIF
+        IF (SEGS(I) .EQ. SGNA) GO TO 210
   200 CONTINUE
-      IF (NXST .EQ. 0) THEN
-        ERS = 1
-        CALL GERHND(122,EDSG,ERF)
-        ERS = 0
-        RETURN
-      ENDIF
+      ERS = 1
+      CALL GERHND(122,EDSG,ERF)
+      ERS = 0
+      RETURN
+  210 CONTINUE
 C
 C  Check if the segment is open.
 C
@@ -65,10 +62,8 @@ C
         DO 201 I=1,NUMSEG
           IF (SEGS(I) .EQ. SGNA) THEN
 C
-C  Define the segment name for the interface call.
-C
-            STR = ' '
-            STR = SEGNAM(SGNA)
+            CSNAME = ' '
+            CSNAME = SEGNAM(I)
             IP1 = I+1
             DO 202 J=IP1,NUMSEG
               SEGS(J-1) = SEGS(J)
@@ -96,6 +91,21 @@ C
   201   CONTINUE
       ENDIF
    10 CONTINUE
+C
+C  Make the interface call.
+C
+      FCODE = 79
+      CALL GZROI(0)
+      CONT  = 0
+      STRL1 = 80
+      STRL2 = 80
+      STR = CSNAME
+      CALL GZTOWK
+      IF (RERR.NE.0) THEN
+        ERS = 1
+        CALL GERHND(RERR,ECRSG,ERF)
+        ERS = 0
+      ENDIF
 C
       RETURN
       END

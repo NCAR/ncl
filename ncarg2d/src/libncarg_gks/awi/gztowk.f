@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.6 1994-04-05 19:21:45 fred Exp $
+C	$Id: gztowk.f,v 1.7 1994-05-07 00:51:24 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -101,14 +101,16 @@ C
      +     (FCODE.EQ. -2 .OR. FCODE.EQ.  0 .OR. FCODE.EQ.  1 .OR.
      +      FCODE.EQ.  3 .OR. FCODE.EQ.  6 .OR. FCODE.EQ. 61 .OR.
      +      FCODE.EQ. 56 .OR. FCODE.EQ. 71 .OR. FCODE.EQ. 72 .OR.
-     +      FCODE.EQ. 82 .OR. FCODE.EQ. 84 .OR. FCODE.EQ.102 .OR. 
-     +      FCODE.EQ.103 .OR. FCODE.EQ.104 .OR. FCODE.EQ. 92 .OR. 
+     +      FCODE.EQ. 79 .OR. FCODE.EQ. 82 .OR. FCODE.EQ. 84 .OR. 
+     +      FCODE.EQ.102 .OR. FCODE.EQ.103 .OR. FCODE.EQ.104 .OR. 
+     +      FCODE.EQ. 92 .OR. 
      +     (FCODE.GE. 21.AND. FCODE.LE.43))) THEN
             IF (SWKTP(I) .EQ. GCGM) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
-C  workstation.
+C  workstation.  FCODE of 79 applies only to WISS.
 C
+              IF (FCODE .EQ. 79) GO TO 10
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 50
               CALL G01WDR(SOPWK(I),' ')
    50         CONTINUE
@@ -119,6 +121,7 @@ C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
+              IF (FCODE .EQ. 79) GO TO 10
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10 
 C
 C  Get the local workstation ID and convert characters to ADE 
@@ -143,10 +146,14 @@ C
                 ERS = 0
                 RERR = 0
               ENDIF
-            ELSE IF (SWKTP(I).EQ.GWSS .AND. FCODE.EQ.0) THEN
-              IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10 
-              CALL GZSRAT(3,ICNTX,RCNTX)
-              CALL GWIWDR(ICNTX,RCNTX)
+            ELSE IF (SWKTP(I) .EQ. GWSS) THEN
+              IF (FCODE .EQ. 0) THEN
+                IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10
+                CALL GZSRAT(3,ICNTX,RCNTX)
+                CALL GWIWDR(ICNTX,RCNTX)
+              ELSE IF (FCODE .EQ. 79) THEN
+                CALL GWIWDR(ICNTX,RCNTX)
+              ENDIF
             ENDIF
           ENDIF
    10   CONTINUE

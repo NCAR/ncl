@@ -1,5 +1,5 @@
 C
-C	$Id: gqsgus.f,v 1.2 1993-01-09 02:01:35 fred Exp $
+C	$Id: gqsgus.f,v 1.3 1994-05-07 00:51:21 fred Exp $
 C
       SUBROUTINE GQSGUS(N,ERRIND,OL,SGNA)
 C
@@ -20,6 +20,7 @@ C
         ERRIND = 2002
         GOTO 100
       ENDIF
+      IF (NUMSEG .EQ. 0) GO TO 100
       OL   = NUMSEG
       IF (N .EQ. 0) RETURN
       SGNA = SEGS(N)

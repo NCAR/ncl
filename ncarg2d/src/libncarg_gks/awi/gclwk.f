@@ -1,5 +1,5 @@
 C
-C	$Id: gclwk.f,v 1.2 1993-01-09 01:58:03 fred Exp $
+C	$Id: gclwk.f,v 1.3 1994-05-07 00:51:07 fred Exp $
 C
       SUBROUTINE GCLWK(WKID)
 C
@@ -65,6 +65,18 @@ C
           ERS = 0
         ENDIF
         CUFLAG = -1
+      ELSE
+C
+C  Delete all segments in WISS, unless requested not to.
+C
+        IF (SEGDEL .NE. 0) THEN
+  210     CONTINUE
+          CALL GQSGUS(1,IER,NUMS,ISGNM)
+          IF (NUMS .LE. 0) GO TO 215
+          CALL GDSG(ISGNM)
+          GO TO 210
+        ENDIF
+  215   CONTINUE
       ENDIF
 C
 C  Remove the workstation identifier from the set of open 

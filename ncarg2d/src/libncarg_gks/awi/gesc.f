@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.9 1994-04-29 20:26:39 fred Exp $
+C	$Id: gesc.f,v 1.10 1994-05-07 00:51:13 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -35,7 +35,7 @@ C
       IF (FCTID.LT.0.AND.FCTID.NE.-1391 .AND. FCTID.NE.-1392 .AND.
      -                   FCTID.NE.-1393 .AND. FCTID.NE.-1394 .AND.
      -                   FCTID.NE.-1395 .AND. FCTID.NE.-1396 .AND.
-     -                   FCTID.NE.-1397) THEN
+     -                   FCTID.NE.-1397 .AND. FCTID.NE.-1398) THEN
         ERS = 1
 C       CALL GERHND(180,EESC,ERF)
         ERS = 0
@@ -45,10 +45,12 @@ C  Process legal escape function ID'S:
 C      -1391  --  Metafile name
 C      -1392  --  FLASH4 support
 C      -1393  --  Picture name
-C      -1394  --  Currently undefined.
+C      -1394  --  Flags whether segments should be deleted when WISS
+C                 is closed (0 = no; 1 = yes)
 C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
 C      -1397  --  Color table identifier for use by NCAR Interactive.
+C      -1398  --  Maximum number of error messages before abort.
 C
 C  PostScript specific escapes.
 C
@@ -66,7 +68,19 @@ C      -1520  --  Miter limit.
 C      -1521  --  Coordinate points for picture positioning.
 C      -1522  --  Scale factor for PS coordintaes
 C
-      IF (FCTID .EQ. -1396) THEN
+      IF (FCTID .EQ. -1398) THEN
+C
+C  Get maximum number of allowable error messages.
+C
+        READ (IDR,500,ERR=135) MXERMG
+        MXERMG = MAX(0,MXERMG)
+        RETURN
+  135   CONTINUE
+        ERS = 1
+        CALL GERHND(182,EESC,ERF)
+        ERS = 0
+        RETURN
+      ELSE IF (FCTID .EQ. -1396) THEN
 C
 C  Decode the workstation ID.
 C
@@ -121,26 +135,12 @@ C
           ERS = 0
           RETURN
         ENDIF
-C     ELSE IF (FCTID.EQ.-1394) THEN
+      ELSE IF (FCTID .EQ. -1394) THEN
 C
-C  This ESCAPE function supports the interaction of issuing
-C  picture initialization and the GFLASH package.
+C  Value to flag deletion of all created segments at CLOSE GKS time 
+C  (0 = no; 1 = yes).
 C
-C       IF (IDR(1)(1:1) .EQ. '1') THEN
-C         MODEF = 1
-C       ELSE IF (IDR(1)(1:1) .EQ. '0') THEN
-C         MODEF = 0
-C       ELSE IF (IDR(1)(1:1) .EQ. '2') THEN
-C
-C  Put out new picture initialization if the picture is empty.
-C
-C         READ(IDR(1)(2:9),230) IDWK 
-C 230     FORMAT(I8)
-C         IF (NOPICT .LE. 0) THEN
-C           CALL G01SNP(RERR)
-C           NOPICT = 1
-C         ENDIF
-C       ENDIF
+        READ(IDR(1), 501) SEGDEL
       ELSE IF (FCTID.EQ.-1393) THEN
 C
 C  Picture name.
@@ -167,7 +167,8 @@ C
         ENDIF
       ELSE IF (FCTID .EQ. -1392) THEN
 C
-C  FLASH4 support.
+C  FLASH4 support (segment number is in columns 11-20; segment
+C  name is in columns 24-80.
 C
 C
 C  Check if the input data record is dimensioned properly.
@@ -303,7 +304,10 @@ C
 C  Return if not a PostScript workstation.
 C
         CALL GQWKC(IWKID,IER,ICONID,ITYP)
-        IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) RETURN 
+        IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
+          CUFLAG = -1
+          RETURN 
+        ENDIF
 C
         FCODE = 6
         CALL GZROI(0)
@@ -327,7 +331,30 @@ C
           ENDIF
           CUFLAG = -1
         ELSE IF (LIDR .GT. 1) THEN
-
+          CONT = 1
+          STRL1 = 80*LIDR
+          STRL2 = 80
+          LDRM1 = LIDR-1
+          DO 220 I=1,LDRM1
+            STR(1:80) = IDR(I)
+            IF (I .GT. 1) IL2 = 0
+            CALL GZTOWK
+            IF (RERR .NE. 0) THEN
+              ERS = 1
+              CALL GERHND(RERR,EESC,ERF)
+              ERS = 0
+              RETURN
+            ENDIF
+  220     CONTINUE
+          CONT = 0
+          STR(1:80) = IDR(LIDR)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
         ENDIF
       ELSE
 C

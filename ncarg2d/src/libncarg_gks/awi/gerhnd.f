@@ -1,5 +1,5 @@
 C
-C	$Id: gerhnd.f,v 1.2 1993-01-09 01:58:23 fred Exp $
+C	$Id: gerhnd.f,v 1.3 1994-05-07 00:51:10 fred Exp $
 C
       SUBROUTINE GERHND(ERRNR,FCTID,ERRFIL)
 C
@@ -20,10 +20,10 @@ C
 C  Record number of error message and maximum number of allowable
 C  errors before abort.
 C
-      DATA MNERR,MAXERR/0,10/
+      DATA MNERR/0/
 C
       IF (CUFLAG.EQ.-1 .OR. ERRNR.NE.-109) MNERR = MNERR+1
-      IF (MNERR .GT. MAXERR) THEN
+      IF (MNERR .GT. MXERMG) THEN
         CALL GERLOG(-107,FCTID,ERRFIL)
         STOP
       ENDIF

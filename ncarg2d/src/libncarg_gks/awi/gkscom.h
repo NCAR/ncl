@@ -2,9 +2,9 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       PARAMETER(MXNWK=15,NSEG=100)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
-     +               SEGT(NSEG,2,3), CURTM(2,3)
+     +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
-     +               SEGLEN, MXSREC
+     +               SEGLEN, MXSREC, SEGDEL
       COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(17)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
@@ -28,8 +28,8 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
      +               CPSCL
       REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF   , CUFLAG, XERMSG(160)
-      INTEGER        ERS   , ERF   , CUFLAG, XERMSG
+      COMMON/GKEROR/ ERS   , ERF   , CUFLAG, XERMSG(160)   , MXERMG
+      INTEGER        ERS   , ERF   , CUFLAG, XERMSG        , MXERMG
       COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,

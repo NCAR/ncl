@@ -1,5 +1,5 @@
 C
-C	$Id: gevtm.f,v 1.1 1993-01-09 01:58:34 fred Exp $
+C	$Id: gevtm.f,v 1.2 1994-05-07 00:51:15 fred Exp $
 C
       SUBROUTINE GEVTM(X0,Y0,DX,DY,PHI,SX,SY,SW,MOUT)
 C
@@ -19,11 +19,15 @@ C
 C  The transformation takes place in NDC space, so do the
 C  appropriate conversions.
 C
-      IF (SW .EQ. 1) THEN
+      IF (SW .EQ. 0) THEN
         CALL GZW2NX(1,X0,XN0)
         CALL GZW2NY(1,Y0,YN0)
-        CALL GZW2NX(1,DX,DNX)
-        CALL GZW2NX(1,DY,DNY)
+        CALL GZW2NX(1,DX,DTX)
+        CALL GZW2NX(1,DY,DTY)
+        CALL GZW2NX(1,0.,D0X)
+        CALL GZW2NX(1,0.,D0Y)
+        DNX = DTX - D0X
+        DNY = DTY - D0Y
       ELSE
         XN0 = X0
         YN0 = Y0

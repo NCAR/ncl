@@ -1,11 +1,11 @@
 C
-C	$Id: gceldc.f,v 1.1 1993-01-09 01:57:51 fred Exp $
+C	$Id: gceldc.f,v 1.2 1994-05-07 00:51:05 fred Exp $
 C
       SUBROUTINE GCELDC(OPRNS,OPNLEN,COUNT,IOS,STATUS)
 C
 C  This subroutine will extract the requested number of operands from
 C  the segment and decode them according to the required format.
-C  It will cross pratition boundries without intervention from a 
+C  It will cross partition boundries without intervention from a 
 C  higher level.
 C
 C  The LEN variable which higher level routines utilize for knowlage of

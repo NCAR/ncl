@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.3 1994-03-30 02:06:00 fred Exp $
+C	$Id: gksbd.f,v 1.4 1994-05-07 00:51:17 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -25,6 +25,8 @@ C                  IN A COPY TO A WORKSTATION
 C       SEGT    -- AN ARRAY OF SEGMENT TRANSFORMATION MATRICES
 C       CURTM   -- THE CURRENT SEGMET TRANSFORMATION WHEN COPYING A
 C                  SEGMENT
+C       SEGDEL  -- FLAG TO INDICATE WHETHER ALL SEGMENTS SHOULD BE
+C                  REMOVED AT CLOSE GKS TIME (0 = NO; 1 = YES)
 C-----------------------------------------------------------------------
 C
 C     GKOPDT:  OPERATING STATE AND DESCRIPTION TABLE VARIABLES
@@ -112,6 +114,7 @@ C                  WORKSTATION FOR WHICH INSTRUCTIONS ARE TARGETED;
 C                  IF CUFLAG = -1, THEN INSTRUCTIONS SHOULD GO TO ALL
 C                  APPROPRIAT WORKSTATIONS; IF CUFLAG = -2, SUSPEND
 C                  PROCESSING OF ERROR -109.
+C       MXERMG --  MAXIMUM NUMBER OF ERROR MESSAGES TO ISSUE BEFORE ABORT
 C                   
 C-----------------------------------------------------------------------
 C
@@ -181,12 +184,12 @@ C-----------------------------------------------------------------------
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
       DATA OPS/0/
-      DATA ERS,ERF,CUFLAG/0,6,-1/
+      DATA ERS,ERF,CUFLAG,MXERMG/0,6,-1,10/
       DATA GBUNDL,GINDIV/0,1/
       DATA GGKCL,GGKOP,GWSOP,GWSAC,GSGOP/0,1,2,3,4/
       DATA GOUTPT,GINPUT,GOUTIN,GWISS,GMO,GMI/0,1,2,3,4,5/
       DATA GCGM,GWSS,GXWE,GXWC,GDMP,GPSMIN,GPSMAX/1,3,7,8,10,20,31/       
-      DATA NOPWK,NACWK,NUMSEG,CURSEG /0,0,0,-1/
+      DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL/0,0,0,-1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-1,-1,-1,-1,-1/
