@@ -620,7 +620,7 @@ NhlErrorTypes dim_median_W( void )
 /*
  * various
  */
-  int i, l1, total_elements, ier = 0, npts;
+  int i, l1, total_elements, ier = 0, ier_count, npts;
   double *work;
 /*
  * Retrieve parameter.
@@ -700,9 +700,10 @@ NhlErrorTypes dim_median_W( void )
     if(type_x != NCL_double) ((float*)xmedian)[i] = (float)(*tmp_xmedian);
 
     l1 += npts;
-    if (ier == 2) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_median: The input array contains all missing values");
-    }
+    if (ier == 2) ier_count++;
+  }
+  if (ier_count) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_median: %d input array(s) contained all missing values",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -746,7 +747,7 @@ NhlErrorTypes dim_rmvmean_W( void )
 /*
  * various
  */
-  int i, j, l1, total_size_x, total_size_x1, ier = 0, npts;
+  int i, l1, total_size_x, total_size_x1, ier = 0, ier_count = 0, npts;
 /*
  * Retrieve parameter.
  */
@@ -809,10 +810,13 @@ NhlErrorTypes dim_rmvmean_W( void )
     coerce_output_float_or_double(rmvmean,tmp_x,type_x,npts,l1);
 
     l1 += npts;
-    if (ier == 2) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmean: The input array contains all missing values");
-    }
+    if (ier == 2) ier_count++;
   }
+
+  if (ier_count) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmean: %d input array(s) contained all missing values",ier_count);
+  }
+
 /*
  * Free temp array.
  */
@@ -855,7 +859,7 @@ NhlErrorTypes dim_rmvmed_W( void )
 /*
  * various
  */
-  int i, j, l1, total_size_x1, total_size_x, ier = 0, npts;
+  int i, l1, total_size_x1, total_size_x, ier=0, ier_count=0, npts;
 /*
  * Retrieve parameter.
  */
@@ -926,10 +930,12 @@ NhlErrorTypes dim_rmvmed_W( void )
     coerce_output_float_or_double(rmvmed,tmp_x,type_x,npts,l1);
 
     l1 += npts;
-    if (ier == 2) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmed: The input array contains all missing values");
-    }
+    if (ier == 2) ier_count++;
   }
+  if (ier_count) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmed: %d input array(s) contained all missing values",ier_count);
+  }
+
 /*
  * Free work array.
  */
@@ -972,7 +978,7 @@ NhlErrorTypes dim_standardize_W( void )
 /*
  * various
  */
-  int i, j, l1, total_size_x1, total_size_x, ier = 0, npts;
+  int i, l1, total_size_x1, total_size_x, ier=0, ier_count=0, npts;
 /*
  * Retrieve parameter.
  */
@@ -1047,9 +1053,10 @@ NhlErrorTypes dim_standardize_W( void )
     coerce_output_float_or_double(standardize,tmp_x,type_x,npts,l1);
 
     l1 += npts;
-    if (ier == 2) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_standardize: The input array contains all missing values");
-    }
+    if (ier == 2) ier_count++;
+  }
+  if (ier_count) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_standardize: %d input array(s) contained all missing values",ier_count);
   }
 /*
  * Free temp array.
@@ -1099,7 +1106,7 @@ NhlErrorTypes dim_rmsd_W( void )
 /*
  * various
  */
-  int i, total_elements, ier = 0, npts, index_xy;
+  int i, total_elements, ier = 0, ier_count = 0, npts, index_xy;
 /*
  * Retrieve parameters.
  */
@@ -1231,9 +1238,10 @@ NhlErrorTypes dim_rmsd_W( void )
     if(type_rmsd != NCL_double) ((float*)rmsd)[i] = (float)(*tmp_rmsd);
 
     index_xy += npts;
-    if (ier == 2) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmsd: The input array contains all missing values");
-    }
+    if (ier == 2) ier_count++;
+  }
+  if (ier_count) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmsd: %d input array(s) contained all missing values",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -1275,7 +1283,7 @@ NhlErrorTypes esacr_W( void )
 /*
  * various
  */
-  int i, j, index_x, index_acr, total_size_x1, total_size_x, total_size_acr;
+  int i, j, index_x, index_acr, total_size_x1, total_size_acr;
   int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
   double xmean, xvar;
 /*
@@ -1326,7 +1334,6 @@ NhlErrorTypes esacr_W( void )
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
-  total_size_x = total_size_x1 * npts;
 /* 
  * Get size of output variables.
  */
@@ -1402,10 +1409,10 @@ NhlErrorTypes esacr_W( void )
  * Check errors.
  */
   if (ier_count2) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %i input array(s) contained all missing values",ier_count2);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %d input array(s) contained all missing values",ier_count2);
   }
   if (ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %i input array(s)",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %d input array(s)",ier_count5);
   }
 /*
  * free memory.
@@ -1452,7 +1459,7 @@ NhlErrorTypes esacv_W( void )
 /*
  * various
  */
-  int i, j, index_x, index_acv, total_size_x1, total_size_x, total_size_acv;
+  int i, j, index_x, index_acv, total_size_x1, total_size_acv;
   int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
   double xmean, xvar;
 /*
@@ -1503,7 +1510,6 @@ NhlErrorTypes esacv_W( void )
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
-  total_size_x = total_size_x1 * npts;
 /* 
  * Get size of output variables.
  */
@@ -1579,10 +1585,10 @@ NhlErrorTypes esacv_W( void )
  * Check errors.
  */
   if (ier_count2) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %i input array(s) contained all missing values",ier_count2);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %d input array(s) contained all missing values",ier_count2);
   }
   if (ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %i input array(s)",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %d input array(s)",ier_count5);
   }
 /*
  * free memory.
@@ -1635,7 +1641,7 @@ NhlErrorTypes esccr_W( void )
  * various
  */
   int i, j, k, index_x, index_y, index_ccr;
-  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int total_size_x1, total_size_y1;
   int total_size_ccr;
   int ier = 0, ier_count, npts, dimsizes_same;
   double xmean, xsd, ymean, ysd;
@@ -1718,11 +1724,9 @@ NhlErrorTypes esccr_W( void )
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
-  total_size_x = total_size_x1 * npts;
 
   total_size_y1 = 1;
   for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
-  total_size_y = total_size_y1 * npts;
 /* 
  * Get size of output variables.
  */
@@ -1954,7 +1958,7 @@ NhlErrorTypes esccv_W( void )
  * various
  */
   int i, j, k, index_x, index_y, index_ccv;
-  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int total_size_x1, total_size_y1;
   int total_size_ccv;
   int ier = 0, ier_count, npts, dimsizes_same;
   double xmean, xsd, ymean, ysd;
@@ -2037,11 +2041,9 @@ NhlErrorTypes esccv_W( void )
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
-  total_size_x = total_size_x1 * npts;
 
   total_size_y1 = 1;
   for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
-  total_size_y = total_size_y1 * npts;
 /* 
  * Get size of output variables.
  */
