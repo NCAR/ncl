@@ -1,5 +1,5 @@
 /*
- *      $Id: cn03c.c,v 1.1 1995-03-31 21:54:50 haley Exp $
+ *      $Id: cn03c.c,v 1.2 1995-04-01 22:20:41 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,7 @@
  *
  *  Date:       Mon Oct  3 11:35:03 MDT 1994
  *
- *  Description:    Demonstrates basic features of the Contour object.
+ *  Description:    Demonstrates basic features of the ContourPlot object.
  *          The first frame emulates the contour plot drawn 
  *          in cn01c using low-level NCARG calls. 
  *          
@@ -36,7 +36,7 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
 /*
@@ -82,8 +82,8 @@ main()
  * so the application looks for the resource file the directory it executes
  * from. 
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
     
@@ -111,37 +111,37 @@ main()
  * Define the start and end points of the data, based on the dataset.
  */
 
-        NhlRLClear(rlist);
+    NhlRLClear(rlist);
     len_dims[0] = N, len_dims[1] = M;
-        NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,T,2,len_dims);
-        NhlRLSetFloatArray(rlist,NhlNsfYArray,level,NhlNumber(level));
-        NhlRLSetFloat(rlist,NhlNsfXCStartV,-90.0);
-        NhlRLSetFloat(rlist,NhlNsfXCEndV,90.0);
-        NhlRLSetFloat(rlist,NhlNsfYCStartV,1000.0);
-        NhlRLSetFloat(rlist,NhlNsfYCEndV,100.0);
-        NhlCreate(&dataid,"mydata",NhlscalarFieldLayerClass,NhlDEFAULT_APP,
-          rlist);
+    NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,T,2,len_dims);
+    NhlRLSetFloatArray(rlist,NhlNsfYArray,level,NhlNumber(level));
+    NhlRLSetFloat(rlist,NhlNsfXCStartV,-90.0);
+    NhlRLSetFloat(rlist,NhlNsfXCEndV,90.0);
+    NhlRLSetFloat(rlist,NhlNsfYCStartV,1000.0);
+    NhlRLSetFloat(rlist,NhlNsfYCEndV,100.0);
+    NhlCreate(&dataid,"mydata",NhlscalarFieldLayerClass,NhlDEFAULT_APP,
+              rlist);
 /*
- * Create a Contour object. Since Contour contains a TickMark object by
- * default, the non-default TickMark resources can be set in the Contour
+ * Create a ContourPlot object. Since ContourPlot contains a TickMark object by
+ * default, the non-default TickMark resources can be set in the ContourPlot
  * object.
  */
-        NhlRLClear(rlist);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-               "Profile @ 105:S:o:N:W - Frame 1");
-        NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
-        NhlRLSetFloat(rlist,NhlNvpXF,0.12);
-        NhlRLSetFloat(rlist,NhlNvpYF,0.85);
-        NhlRLSetFloat(rlist,NhlNvpWidthF,0.6);
-        NhlRLSetFloat(rlist,NhlNvpHeightF,0.6);
+                   "Profile @ 105:S:o:N:W - Frame 1");
+    NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
+    NhlRLSetFloat(rlist,NhlNvpXF,0.12);
+    NhlRLSetFloat(rlist,NhlNvpYF,0.85);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,0.6);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,0.6);
     NhlRLSetFloat(rlist,NhlNcnLevelSpacingF,5.0);
     NhlRLSetInteger(rlist,NhlNtmXBMode,NhlEXPLICIT);
     NhlRLSetInteger(rlist,NhlNtmXBMinorOn,False);
     NhlRLSetFloatArray(rlist,
-               NhlNtmXBValues,labellocs,NhlNumber(labellocs));
+                       NhlNtmXBValues,labellocs,NhlNumber(labellocs));
     NhlRLSetStringArray(rlist,
-                NhlNtmXBLabels,labels,NhlNumber(labels));
-    NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,rlist);
+                        NhlNtmXBLabels,labels,NhlNumber(labels));
+    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotLayerClass,wid,rlist);
 
     NhlDraw(cnid);
     NhlFrame(wid);
@@ -150,19 +150,17 @@ main()
  * Color and add dash patterns to the lines, then display a legend
  * listing the line types. The position of the Legend is controlled by
  * resources set in the resource file. Thicken lines.
- * Note that the Legend and LabelBar are provided to the Contour object
- * by an Overlay object (created by default when the Contour object is
- * initialized). Therefore the resources to control them have the prefix 'ov'
- * rather than 'cn'. 
- * (***>>> Legend control still needs work, and this part of the example
- *  will change)
+ * Note that the Legend and LabelBar are provided to the ContourPlot object
+ * by its PlotManager (created by default when the ContourPlot object
+ * is initialized). Therefore the resources to control them have the 
+ * prefix 'pm' rather than 'cn'. 
  */
-        NhlRLClear(rlist);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-               "Profile @ 105:S:o:N:W - Frame 2");
+                   "Profile @ 105:S:o:N:W - Frame 2");
     NhlRLSetInteger(rlist,NhlNcnMonoLineColor,False);
     NhlRLSetInteger(rlist,NhlNcnMonoLineDashPattern,False);
-        NhlRLSetString(rlist,NhlNovLegendDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNpmLegendDisplayMode,"always");
     NhlSetValues(cnid,rlist);
 
     NhlDraw(cnid);
@@ -172,13 +170,13 @@ main()
  * Remove the Legend and display a LabelBar.
  * Turn off line and high/low labels.
  */
-        NhlRLClear(rlist);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-               "Profile @ 105:S:o:N:W - Frame 3");
+                   "Profile @ 105:S:o:N:W - Frame 3");
     NhlRLSetString(rlist,NhlNcnLinesOn,"false");
     NhlRLSetString(rlist,NhlNcnFillOn,"true");
-        NhlRLSetString(rlist,NhlNovLegendDisplayMode,"never");
-        NhlRLSetString(rlist,NhlNovLabelBarDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNpmLegendDisplayMode,"never");
+    NhlRLSetString(rlist,NhlNpmLabelBarDisplayMode,"always");
     NhlRLSetString(rlist,NhlNcnLineLabelsOn,"false");
     NhlRLSetString(rlist,NhlNcnHighLabelsOn,"false");
     NhlRLSetString(rlist,NhlNcnLowLabelsOn,"false");
@@ -190,42 +188,42 @@ main()
 /*
  * Now show the plot with the Y-Axis linearized, by overlaying the
  * plot on a LogLinPlot object. Retrieve the current view coordinates
- * of the Contour object and pass them on to the LogLinPlot object.
+ * of the ContourPlot object and pass them on to the LogLinPlot object.
  * Note the LogLinPlot needs to be told the data boundaries. 
  */
 
-        NhlRLClear(rlist);
+    NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-               "Profile @ 105:S:o:N:W - Frame 4");
+                   "Profile @ 105:S:o:N:W - Frame 4");
     NhlSetValues(cnid,rlist);
 
-        grlist = NhlRLCreate(NhlGETRL);
-        NhlRLClear(grlist);
-        NhlRLGetFloat(grlist,NhlNvpXF,&xvp);
-        NhlRLGetFloat(grlist,NhlNvpYF,&yvp);
-        NhlRLGetFloat(grlist,NhlNvpWidthF,&widthvp);
-        NhlRLGetFloat(grlist,NhlNvpHeightF,&heightvp);
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLClear(grlist);
+    NhlRLGetFloat(grlist,NhlNvpXF,&xvp);
+    NhlRLGetFloat(grlist,NhlNvpYF,&yvp);
+    NhlRLGetFloat(grlist,NhlNvpWidthF,&widthvp);
+    NhlRLGetFloat(grlist,NhlNvpHeightF,&heightvp);
     NhlGetValues(cnid,grlist);
 
-        NhlRLClear(rlist);
-        NhlRLSetFloat(rlist,NhlNvpXF,xvp);
-        NhlRLSetFloat(rlist,NhlNvpYF,yvp);
-        NhlRLSetFloat(rlist,NhlNvpWidthF,widthvp);
-        NhlRLSetFloat(rlist,NhlNvpHeightF,heightvp);
-        NhlRLSetFloat(rlist,NhlNtrXMinF,-90.0);
-        NhlRLSetFloat(rlist,NhlNtrXMaxF,90.0);
-        NhlRLSetFloat(rlist,NhlNtrYMaxF,1000.0);
-        NhlRLSetFloat(rlist,NhlNtrYMinF,100.0);
-    NhlRLSetFloat(rlist,NhlNtrYReverse,True);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,xvp);
+    NhlRLSetFloat(rlist,NhlNvpYF,yvp);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,widthvp);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,heightvp);
+    NhlRLSetFloat(rlist,NhlNtrXMinF,-90.0);
+    NhlRLSetFloat(rlist,NhlNtrXMaxF,90.0);
+    NhlRLSetFloat(rlist,NhlNtrYMaxF,1000.0);
+    NhlRLSetFloat(rlist,NhlNtrYMinF,100.0);
+    NhlRLSetString(rlist,NhlNtrYReverse,"True");
     NhlCreate(&llid,"LogLin1",NhllogLinPlotLayerClass,wid,rlist);
 
 /*
- * The LogLinPlot becomes the overlay base, since it controls the coordinate
- * system that we are mapping to. Overlay the Contour object on the base,
- * then plot the LogLinPlot object. (You cannot draw the Contour object
- * directly, while it is an overlay member.
+ * The LogLinPlot becomes the Base Plot, since it controls the coordinate
+ * system that we are mapping to. Overlay the ContourPlot object on the base,
+ * then plot the LogLinPlot object. Note that you cannot draw the ContourPlot 
+ * object directly, once it becomes an Overlay Plot.
  */
-    NhlAddToOverlay(llid,cnid,-1);
+    NhlAddOverlay(llid,cnid,-1);
     NhlDraw(llid);
     NhlFrame(wid);
 

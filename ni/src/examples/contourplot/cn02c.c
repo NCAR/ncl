@@ -1,5 +1,5 @@
 /*
- *      $Id: cn02c.c,v 1.1 1995-03-31 21:54:47 haley Exp $
+ *      $Id: cn02c.c,v 1.2 1995-04-01 22:20:39 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,7 @@
  *
  *  Date:       Tue Oct  4 18:48:08 MDT 1994
  *
- *  Description:    Demonstrates basic features of the Contour object
+ *  Description:    Demonstrates basic features of the ContourPlot object
  */
 
 #include <math.h>
@@ -34,7 +34,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 
 static const int M=25, N=25;
 
@@ -106,15 +106,15 @@ main(int argc, char *argv[])
     NhlCreate(&dataid,"bullseye",NhlscalarFieldLayerClass,appid,
               srlist);
 /*
- * Create a Contour object, supplying the ScalarField object as data
+ * Create a ContourPlot object, supplying the ScalarField object as data
  */
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
-    NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,srlist);
+    NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotLayerClass,wid,srlist);
 
 /*
  * Draw the plot; notice that it illustrates the basic default behavior of
- * the Contour object. The contours appear as solid lines with unboxed
+ * the ContourPlot object. The contours appear as solid lines with unboxed
  * labels in a linear coordinate system with the origin at the lower left. 
  * Tickmarks with labels show the data coordinate range, and an 
  * informational label at the lower right gives the minimum and maximum
@@ -124,7 +124,7 @@ main(int argc, char *argv[])
     NhlDraw(cnid);
     NhlFrame(wid);
 /*
- * In the Contour object, many resources that apply to the lines 
+ * In the ContourPlot object, many resources that apply to the lines 
  * representing the contour levels and the fill areas between the levels
  * have both a scalar and an array form. You control which applies by 
  * setting an associated boolean flag, indentified by the prefix "Mono".

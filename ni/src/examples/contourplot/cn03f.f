@@ -1,13 +1,13 @@
 C
-C     $Id: cn03f.f,v 1.1 1995-03-31 21:54:52 haley Exp $
+C     $Id: cn03f.f,v 1.2 1995-04-01 22:20:42 dbrown Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+C***********************************************************************
+C                                                                      *
+C                            Copyright (C)  1995                       *
+C                 University Corporation for Atmospheric Research      *
+C                            All Rights Reserved                       *
+C                                                                      *
+C***********************************************************************
 C
 C      File:            cn03f.f
 C
@@ -17,9 +17,9 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 09:34:24 MST 1995
 C
-C      Description: Demonstrates basic features of the Contour object.
-C                   The first frame emulates the contour plot drawn 
-C                   in cn01c using low-level NCARG calls. 
+C      Description: Demonstrates basic features of the ContourPlot 
+C                   object. The first frame emulates the contour plot 
+C                   drawn in cn01c using low-level NCARG calls. 
 C
 C External functions
 C
@@ -27,7 +27,7 @@ C
       external NhlFNcgmWorkstationLayerClass
       external NhlFXWorkstationLayerClass
       external nhlfscalarfieldlayerclass
-      external nhlfcontourlayerclass
+      external nhlfcontourplotlayerclass
       external nhlfloglinplotlayerclass
 C
 C Data array
@@ -120,9 +120,9 @@ C
       call NhlFCreate(dataid,'mydata',nhlfscalarfieldlayerclass,0,rlist,
      1      ierr)
 C
-C Create a Contour object. Since Contour contains a TickMark object by
-C default, the non-default TickMark resources can be set in the Contour
-C object.
+C Create a ContourPlot object. Since ContourPlot contains a TickMark 
+C object by default, the non-default TickMark resources can be set 
+C in the ContourPlot object.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
@@ -137,27 +137,25 @@ C
       call NhlFRLSetstring(rlist,'tmXBMinorOn','FALSE',ierr)
       call NhlFRLSetfloatarray(rlist,'tmXBValues',labellocs,7,ierr)
       call NhlFRLSetstringarray(rlist,'tmXBLabels',labels,7,ierr)
-      call NhlFCreate(cnid,'Contour1',nhlfcontourlayerclass,wid,rlist,
-     1      ierr)
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+     1      wid,rlist,ierr)
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
 C
 C Color and add dash patterns to the lines, then display a legend
 C listing the line types. The position of the Legend is controlled by
 C resources set in the resource file. Thicken lines.
-C Note that the Legend and LabelBar are provided to the Contour object
-C by an Overlay object (created by default when the Contour object is
-C initialized). Therefore the resources to control them have the
-C prefix 'ov' rather than 'cn'. 
-C (***>>> Legend control still needs work, and this part of the example
-C  will change)
+C Note that the Legend and LabelBar are provided to the ContourPlot 
+C object by its PlotManager (created by default when the ContourPlot 
+C object is initialized). Therefore the resources to control them have
+C  the prefix 'pm' rather than 'cn'. 
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
      1      'Profile @ 105:S:o:N:W - Frame 2',ierr)
       call NhlFRLSetstring(rlist,'cnMonoLineColor','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnMonoLineDashPattern','FALSE',ierr)
-      call NhlFRLSetstring(rlist,'ovLegendDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'pmLegendDisplayMode','always',ierr)
       call NhlFSetValues(cnid,rlist,ierr)
 
       call NhlFDraw(cnid,ierr)
@@ -172,8 +170,8 @@ C
      1      'Profile @ 105:S:o:N:W - Frame 3',ierr)
       call NhlFRLSetstring(rlist,'cnLinesOn','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnFillOn','TRUE',ierr)
-      call NhlFRLSetstring(rlist,'ovLegendDisplayMode','never',ierr)
-      call NhlFRLSetstring(rlist,'ovLabelBarDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'pmLegendDisplayMode','never',ierr)
+      call NhlFRLSetstring(rlist,'pmLabelBarDisplayMode','always',ierr)
       call NhlFRLSetstring(rlist,'cnLineLabelsOn','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnHighLabelsOn','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnLowLabelsOn','FALSE',ierr)
@@ -184,7 +182,7 @@ C
 C
 C Now show the plot with the Y-Axis linearized, by overlaying the
 C plot on a LogLinPlot object. Retrieve the current view coordinates
-C of the Contour object and pass them on to the LogLinPlot object.
+C of the ContourPlot object and pass them on to the LogLinPlot object.
 C Note the LogLinPlot needs to be told the data boundaries. 
 C
       call NhlFRLClear(rlist)
@@ -209,17 +207,19 @@ C
       call NhlFRLSetfloat(rlist,'trXMaxF',90.0,ierr)
       call NhlFRLSetfloat(rlist,'trYMaxF',1000.0,ierr)
       call NhlFRLSetfloat(rlist,'trYMinF',100.0,ierr)
-      call NhlFRLSetstring(rlist,'trYReverse','TRUE',ierr)
+      call NhlFRLSetstring(rlist,'trYReverse','True',ierr)
       call NhlFCreate(llid,'LogLin1',nhlfloglinplotlayerclass,wid,
      1      rlist,ierr)
 
+
 C
-C The LogLinPlot becomes the overlay base, since it controls the
-C coordinate system that we are mapping to. Overlay the Contour
-C object on the base, then plot the LogLinPlot object. (You cannot
-C draw the Contour object directly, while it is an overlay member.
+C The LogLinPlot becomes the Base Plot, since it controls the 
+C coordinate system that we are mapping to. Overlay the ContourPlot 
+C object on the Base Plot, then plot the LogLinPlot object. 
+C Note that you cannot draw the ContourPlot object directly, once 
+C it becomes an Overlay Plot.
 C
-      call NhlFAddToOverlay(llid,cnid,-1,ierr)
+      call NhlFAddOverlay(llid,cnid,-1,ierr)
       call NhlFDraw(llid,ierr)
       call NhlFFrame(wid,ierr)
 

@@ -1,17 +1,18 @@
 C
-C     $Id: cn01f.f,v 1.1 1995-03-31 21:54:46 haley Exp $
+C     $Id: cn01f.f,v 1.2 1995-04-01 22:20:37 dbrown Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+C***********************************************************************
+C                                                                      *
+C                            Copyright (C)  1995                       *
+C                 University Corporation for Atmospheric Research      *
+C                            All Rights Reserved                       *
+C                                                                      *
+C***********************************************************************
 C
 C      File:            cn01f.f
 C
-C      Author:          Ethan Alpert (converted to Fortran by Ed Stautler)
+C      Author:          Ethan Alpert 
+C                                (converted to Fortran by Ed Stautler)
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
@@ -73,9 +74,10 @@ C  initialize the high level utility library
 C  
       call NhlFInitialize
 C  
-C  create an application context. set the app dir to the current directory
-C  so the application looks for a resource file in the working directory.
-C  in this example the resource file supplies the plot title only.
+C  Create an application context. set the app dir to the current 
+C  directory so the application looks for a resource file in the 
+C  working directory. In this example the resource file supplies 
+C  the plot title only.
 C  
       call NhlFRLCreate(rlist,'setrl')
       call NhlFRLClear(rlist)
@@ -108,7 +110,7 @@ C
       call NhlFRLGetinteger(grlist,'wkGksWorkId',gkswid,ierr)
       call NhlFGetValues(wid,grlist,ierr)
 C     
-C  the following are calls to the low level ncar graphics library to
+C  The following are calls to the low level ncar graphics library to
 C  draw labeled contour lines
 C  
       call gacwk(gkswid)
@@ -121,17 +123,17 @@ C
       call cpsetr('dps',.02)
       call cpseti('lis',2)
 C  
-C  note that y axis user coordinates are set to grid coordinates rather than
-C  data coordinates. this is done because the input data is irregularly spaced
-C  in the y direction. basicly this 'tricks' conpack into thinking the grid
-C  points are evenly spaced.
+C  Note that y axis user coordinates are set to grid coordinates 
+C  rather than data coordinates. this is done because the input 
+C  data is irregularly spaced in the y direction. Basicly this 
+C  'tricks' Conpack into thinking the grid points are evenly spaced.
 C  
       call set(0.2,0.8,0.2,0.8,-90.0,90.0,0.0,9.0,1)
       call cprect(t,73,73,10,rwrk,5000,iwrk,1000)
       call cpcldr(t,rwrk,iwrk)
       call gdawk(gkswid)
 C  
-C  end of ncar graphics section. note deactivation of gks workstation
+C  End of ncar graphics section. Note deactivation of gks workstation
 C  
       call NhlFRLClear(rlist)
       call NhlFRLSetfloat(rlist,'vpXF',.2,ierr)
@@ -148,13 +150,14 @@ C
       call NhlFRLSetfloatarray(rlist,'tmXBValues',
      1      labellocs,7,ierr)
 C  
-C  array 'level' contains original grid point data locations in y direction.
-C  providing the grid points to the tickmark object as the control points
-C  for the irregular style transformation, means that these points will be
-C  evenly spaced along the y axis. since this is how conpack thinks the
-C  points are spaced, the tick marks will correctly correspond with the 
-C  data coordinates. see the hlu user's guide prototype document for a complete
-C  discussion of irregular style transformations.
+C  Array 'level' contains original grid point data locations in 
+C  y direction. Providing the grid points to the tickmark object as 
+C  the control points for the irregular style transformation, means 
+C  that these points will be evenly spaced along the y axis. Since 
+C  this is how conpack thinks the points are spaced, the tick marks 
+C  will correctly correspond with the data coordinates. See the hlu 
+C  user's guide prototype document for a complete discussion of 
+C  irregular style transformations.
 C  
       call NhlFRLSetstringarray(rlist,'tmXBLabels',
      1      labels,7,ierr)
@@ -163,8 +166,8 @@ C
       call NhlFCreate(pid,'TickMarksForContour',
      1      nhlftickmarklayerclass,wid,rlist,ierr)
 C  
-C  retrieves bounding box information from tick mark object so title object
-C  can be correctly configured.
+C  Retrieves bounding box information from tick mark object so 
+C  title object can be correctly configured.
 C  
       call NhlFGetBB(pid,top,bottom,left,right) 
       
@@ -174,9 +177,10 @@ C
       call NhlFRLSetfloat(rlist,'vpWidthF',right-left,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',top-bottom,ierr)
 C  
-C  these offsets are computed in order to center the labels around the plot
-C  viewport rather than the bounding box of the tickmark object.
-C  
+C  These offsets are computed in order to center the labels around 
+C  the plot viewport rather than the bounding box of the TickMark 
+C  object.
+C
       call NhlFRLSetfloat(rlist,'tiMainOffsetXF',
      1      (.2 - left)/2.0,ierr)
       call NhlFRLSetfloat(rlist,'tiXAxisOffsetXF',

@@ -1,13 +1,13 @@
 C
-C     $Id: cn04f.f,v 1.1 1995-03-31 21:54:54 haley Exp $
+C     $Id: cn04f.f,v 1.2 1995-04-01 22:20:45 dbrown Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+C***********************************************************************
+C                                                                      *
+C                            Copyright (C)  1995                       *
+C                 University Corporation for Atmospheric Research      *
+C                            All Rights Reserved                       *
+C                                                                      *
+C***********************************************************************
 C
 C      File:            cn04f.f
 C
@@ -25,7 +25,7 @@ C
       external NhlFXWorkstationLayerClass
       external NhlFNcgmWorkstationLayerClass
       external nhlfscalarfieldlayerclass
-      external nhlfcontourlayerclass
+      external nhlfcontourplotlayerclass
 
       integer appid,wid,dataid,cnid,txid
       integer rlist,grlist
@@ -48,17 +48,14 @@ C
 C
 C Default is to display output to an X workstation
 C
-      NCGM=0
+     NCGM=0
 C
 C This program emulates the output of cpex02 with a few differences:
-C 1) The information label displays the actual max and min data values
-C    rather than the values of the highest and lowest displayed contour
-C    lines. (This may change.)
-C 2) Because the information label is implemented as an HLU Annotation
-C    object, Conpack is unaware of its existence, much less its
-C    location.
-C    Therefore it is not possible to have Conpack remove the high/low
-C    labels that occupy the same space as the info label.
+C 1. Because the information label is implemented as an HLU Annotation
+C    object, Conpack is unaware of its existence, much less its 
+C    location. Therefore it is not possible to have Conpack remove 
+C    the high/low labels that occupy the same space as the info label.
+C 2. Line labels do not appear in the same positions.
 C
 C Initialize the high level utility library
 C
@@ -66,8 +63,9 @@ C
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
-C working directory.  The resource file sets most of the Contour
-C resources that remain fixed throughout the life of the Contour object.
+C working directory.  The resource file sets most of the ContourPlot
+C resources that remain fixed throughout the life of the ContourPlot 
+C object.
 C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
@@ -92,7 +90,7 @@ C
      1        0,rlist,ierr) 
       endif
 C
-C Call the Fortran routine 'GENDAT' to create the first array of contour
+C Call the routine 'GENDAT' to create the first array of contour
 C data. Create a ScalarField data object and hand it the data created by
 C 'GENDAT'.
 C
@@ -104,7 +102,7 @@ C
       call NhlFCreate(dataid,'Gendat',nhlfscalarfieldlayerclass,appid,
      1                rlist,ierr)
 C
-C Create a Contour object, supplying the ScalarField object as data,
+C Create a ContourPlot object, supplying the ScalarField object as data,
 C and setting the size of the viewport.
 C
       call NhlFRLClear(rlist)
@@ -112,17 +110,17 @@ C
       call NhlFRLSetstring(rlist,'tiMainString','EXAMPLE 2-1',ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',0.4625,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',0.4625,ierr)
-      call NhlFCreate(cnid,'Contour1',nhlfcontourlayerclass,wid,rlist,
-     1   ierr)
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+     1   wid,rlist,ierr)
 C
 C In order to set the contour array resources of interest, you must 
 C allocate memory for the arrays and fill in the correct value for each
-C element. But by calling GetValues for the arrays the Contour object 
-C allocates the space and fills in the current values for you. Then all
-C that is necessary is to modify the values that need changing. 
-C Remember, however, that you are responsible for freeing the memory
-C after you are done with it. Note that a GetValues resource list is
-C different that a SetValues list.
+C element. But by calling GetValues for the arrays the ContourPlot 
+C object allocates the space and fills in the current values for you. 
+C Then all that is necessary is to modify the values that need 
+C changing. Remember, however, that you are responsible for freeing 
+C the memory after you are done with it. Note that a GetValues resource
+C list is different than a SetValues list.
 C
       call NhlFRLCreate(grlist,'GETRL')
       call NhlFRLClear(grlist)
@@ -138,25 +136,27 @@ C
 C 
 C Depending on the level flag for each contour line, widen the line if
 C there is a label on the line. Also set the fill style to pattern #6
-C if the level is between certain values. Note that there is one less
-C fill area than there are Contour line levels, since both the minimum
-C and maximum data values are assigned contour levels. (This may change
-C before the release of 4.0)
+C if the level is between certain values. Note that there is always one
+C more element in the fill resource arrays than there are ContourPlot
+C line levels: the first element of these arrays specifies the 
+C attributes of areas less than the minimum contour level and the last 
+C element specifies attributes of areas greater than the maximum contour
+C level.
 C
       do 10 i = 1,level_count
          if (lvlflags(i) .eq. 3) then
             thicknesses(i) = 2.0
          endif
-         if (levels(i) .ge. 0.000045 .and. levels(i) .lt. 0.0000525
-     1.and.(i-1) .lt. pat_count) then
+         if (levels(i) .ge. 0.000045 .and. levels(i) .lt. 0.000055) then
             pats(i) = 6
-         else if ((i-1) .lt. pat_count) then
+         else
             pats(i) = -1
          endif
  10   continue
+      pats(pat_count) = -1
 C
 C Now that the arrays are correctly filled in set the arrays that have
-C been modified. Also set the position of the first Contour plot and
+C been modified. Also set the position of the first ContourPlot plot and
 C the label scaling mode.
 C
       call NhlFRLClear(rlist)
@@ -174,7 +174,7 @@ C
       call NhlFDraw(cnid,ierr)
 C
 C Plot 2 - Set the Scalar Field object with a newly generated data set
-C Set the Contour object with a new title, position, and a new label
+C Set the ContourPlot object with a new title, position, and a new label
 C scaling mode.
 C
       call NhlFRLClear(rlist)
@@ -192,7 +192,7 @@ C
       call NhlFDraw(cnid,ierr)
 C
 C Plot 3 - Set the Scalar Field object with a newly generated data set
-C Set the Contour object with a new title, position, and a new label
+C Set the ContourPlot object with a new title, position, and a new label
 C scaling mode.
 C
       call NhlFRLClear(rlist)
@@ -210,7 +210,7 @@ C
       call NhlFDraw(cnid,ierr)
 C
 C Plot 4 - Set the Scalar Field object with a newly generated data set
-C Set the Contour object with a new title, position, and a new label
+C Set the ContourPlot object with a new title, position, and a new label
 C scaling mode.
 C
       call NhlFRLClear(rlist)

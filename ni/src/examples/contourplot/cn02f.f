@@ -1,13 +1,13 @@
 C
-C     $Id: cn02f.f,v 1.1 1995-03-31 21:54:48 haley Exp $
+C     $Id: cn02f.f,v 1.2 1995-04-01 22:20:40 dbrown Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+C***********************************************************************
+C                                                                      *
+C                            Copyright (C)  1995                       *
+C                 University Corporation for Atmospheric Research      *
+C                            All Rights Reserved                       *
+C                                                                      *
+C***********************************************************************
 C
 C      File:            cn02f.f
 C
@@ -17,7 +17,7 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 09:34:23 MST 1995
 C
-C      Description:     Demonstrates basic features of the Contour object
+C      Description:     Demonstrates basic features of ContourPlot
 C
 C
 C Extern declarations for Types of objects that will be used
@@ -25,10 +25,8 @@ C
       external NhlFAppLayerClass
       external NhlFNcgmWorkstationLayerClass
       external NhlFXWorkstationLayerClass
-      external NhlFXyPlotLayerClass
-      external nhlfcoordarrayslayerclass
       external nhlfscalarfieldlayerclass
-      external nhlfcontourlayerclass
+      external nhlfcontourplotlayerclass
 
       parameter(M=25,N=25)
       parameter(PI=3.14159)
@@ -102,25 +100,26 @@ C
       call NhlFCreate(dataid,'bullseye',nhlfscalarfieldlayerclass,
      1      appid, srlist,ierr)
 C
-C Create a Contour object, supplying the ScalarField object as data
+C Create a ContourPlot object, supplying the ScalarField object as data
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetinteger(srlist,'cnScalarFieldData',dataid,ierr)
-      call NhlFCreate(cnid,'Contour1',nhlfcontourlayerclass,wid,srlist,
-     1      ierr)
+      call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotlayerclass,
+     1      wid,srlist,ierr)
 C
 C Draw the plot.  Notice that it illustrates the basic default behavior
-C of the Contour object. The contours appear as solid lines with unboxed
-C labels in a linear coordinate system with the origin at the lower 
-C left. Tickmarks with labels show the data coordinate range, and an 
-C informational label at the lower right gives the minimum and maximum
-C data values and the contour interval spacing. The title is NOT a 
-C default item it appears because it is defined in the resource file.
+C of the ContourPlot object. The contours appear as solid lines with 
+C unboxed labels in a linear coordinate system with the origin at the 
+C lower left. Tickmarks with labels show the data coordinate range, and
+C an informational label at the lower right gives the minimum and 
+C maximum data values and the contour interval spacing. The title is 
+C NOT a default item: it appears because it is defined in the 
+C resource file.
 C
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
 C
-C In the Contour object, you can treat most of resources controlling
+C In the ContourPlot object, you can treat most of resources controlling
 C contour level attributes either individually or collectively depending
 C on the setting of an associated 'mono' flag resource. If the 'mono'
 C flag is true, the resource is treated as a scalar: its first element
