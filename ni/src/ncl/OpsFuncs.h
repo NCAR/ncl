@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.4 1994-04-18 17:11:01 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.5 1994-05-06 23:37:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ NhlErrorTypes _NclCreateHLUObjOp(
 int /*nres*/,
 NclSymbol * /*the_hlu_obj*/,
 NclSymbol * /*the_hlu_obj_class*/,
-int /*the_hlu_obj_parent*/
+NclMultiDValData /*the_hlu_obj_parent*/
 #endif
 );
 

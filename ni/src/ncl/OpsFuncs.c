@@ -9,6 +9,7 @@ extern "C" {
 #include <data_objs/NclMultiDValintData.h>
 #include <data_objs/NclMultiDValshortData.h>
 #include <data_objs/NclMultiDValstringData.h>
+#include <data_objs/NclMultiDValHLUObjData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -45,6 +46,34 @@ void _NclIDraw
 ()
 #endif
 {
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	int *obj_ids,i;
+
+	data = _NclGetArg(0,1);
+
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var->var.var_type != HLUOBJ) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to draw, ignoring request");
+			return;
+		} else {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
+				obj_ids = (int*)tmp_md->multidval.val;
+				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+					NhlDraw(obj_ids[i]);
+				}
+			}
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+			obj_ids = (int*)tmp_md->multidval.val;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+				NhlDraw(obj_ids[i]);
+			}
+		}
+	}
 }
 
 void _NclIPrint
@@ -735,22 +764,28 @@ NhlErrorTypes _NclFuncCallOp
 
 NhlErrorTypes _NclCreateHLUObjOp
 #if __STDC__
-(int nres,NclSymbol *the_hlu_obj, NclSymbol *the_hlu_obj_class, int parent_id)
+(int nres,NclSymbol *the_hlu_obj, NclSymbol *the_hlu_obj_class, NclMultiDValData parent)
 #else
-(nres,the_hlu_obj, the_hlu_obj_class, parent_id)
+(nres,the_hlu_obj, the_hlu_obj_class, parent)
 	int nres;
 	NclSymbol *the_hlu_obj;
 	NclSymbol *the_hlu_obj_class;
-	int parent_id;
+	NclMultiDValData parent;
 #endif
 {
 	int i,j;
 	NclStackEntry *data,*resname;
+	NclStackEntry *obj_out;
 	int rl_list;
 	NhlGenArray gen_array;
 	NclMultiDValData tmp_md = NULL;
 	int dim_lens[NCL_MAX_DIMENSIONS];
-	int tmp_id;
+	int *tmp_id = NULL;
+	int dim_size = 1;
+	int parent_id = -1;
+
+	if(parent != NULL) 	
+		parent_id = *(int*)parent->multidval.val;
 
 
 	rl_list = NhlRLCreate(NhlSETRL);	
@@ -778,7 +813,7 @@ NhlErrorTypes _NclCreateHLUObjOp
 		gen_array = _NhlCreateGenArray(
 				(NhlPointer)tmp_md->multidval.val,
 				tmp_md->multidval.hlu_type_rep,
-				_NclSizeOf(tmp_md->multidval.data_type),
+				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
 				tmp_md->multidval.n_dims,
 				tmp_md->multidval.dim_sizes,
 				0);
@@ -788,10 +823,47 @@ NhlErrorTypes _NclCreateHLUObjOp
 			gen_array);
 	}
 
-	NhlCreate(&tmp_id,the_hlu_obj->name,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
+	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
+	NhlCreate(tmp_id,the_hlu_obj->name,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
 	(void)_NclChangeSymbolType(the_hlu_obj,OBJVAR);
+	tmp_md = _NclMultiDValHLUObjDataCreate(
+		NULL,
+		NULL,
+		Ncl_MultiDValHLUObjData,
+		0,
+		tmp_id,
+		NULL,
+		1,
+		&dim_size,
+		TEMPORARY,
+		NULL
+	);
+	obj_out = _NclRetrieveRec(the_hlu_obj);
+	obj_out->kind = NclStk_VAR;
+	obj_out->u.data_var = _NclVarCreate(
+		NULL,
+		NULL,
+		Ncl_Var,
+		0,
+		the_hlu_obj,
+		tmp_md,
+		NULL,
+		-1,
+		NULL,
+		HLUOBJ,
+		the_hlu_obj->name
+	);
 	_NclCleanUpStack(2*nres);
-	return(NhlNOERROR);
+	if(obj_out->u.data_var == NULL) {
+		if(*tmp_id >=0) 
+			NhlDestroy(*tmp_id);
+		if(tmp_md != NULL) 
+			_NclDestroyObj((NclObj)tmp_md);
+		obj_out->kind = NclStk_NOVAL;
+		return(NhlFATAL);
+	} else {
+		return(NhlNOERROR);
+	}
 }
 
 #ifdef __cplusplus

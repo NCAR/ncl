@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.13 1994-04-18 17:10:53 ethan Exp $
+ *      $Id: Machine.c,v 1.14 1994-05-06 23:37:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -867,7 +867,6 @@ void _NclPrintMachine
 				break;
 			case JMP :
 			case JMPFALSE :
-			case CREATE_OBJ_OP :
 			case SET_OBJ_OP :
 			case GET_OBJ_OP :
 			case PUSH_INT_LIT_OP :
@@ -1051,6 +1050,18 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr));
 				break;
+			case CREATE_OBJ_WP_OP:
+			case CREATE_OBJ_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\tnres:%d",(*ptr));
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				break;	
 			default:
 				break;
 		}
@@ -1547,7 +1558,7 @@ NhlErrorTypes _NclPlaceReturn
 (struct _NclStackEntry data)
 #else
 (data)
-	struct NclStackEntry data;
+	struct _NclStackEntry data;
 #endif
 {
 	fp->func_ret_value = data;

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.1 1994-03-03 23:41:18 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.2 1994-05-06 23:37:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,11 @@ extern void _NclIDelete(
 void
 #endif
 );
+extern void _NclIDraw(
+#ifdef NhlNeedProto
+void
+#endif
+);
 
 void _NclAddIntrinsics
 #if  __STDC__
@@ -60,6 +65,10 @@ void _NclAddIntrinsics
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterProc(_NclIDelete,args,"delete",1,IPROC);
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("graphic");
+	args[0].is_dimsizes = 0;
+	_NclRegisterProc(_NclIDraw,args,"draw",1,IPROC);
 	return;
 }
 

@@ -211,6 +211,9 @@ statement_list :  statement eoln			{
 										loading = 0;
 									}
 								}
+								if(cmd_line) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
+								}
 							}
 	| statement_list LOAD STRING eoln				{
 								FILE *tmp_file;
@@ -232,6 +235,9 @@ statement_list :  statement eoln			{
 										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
 										loading = 0;
 									}
+								}
+								if(cmd_line) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
 #endif
 							}
@@ -565,6 +571,9 @@ get_resource_list : get_resource eoln		{
 							} else {
 								$$ = NULL;
 							}
+							if(cmd_line) {
+								fprintf(stdout,"ncl %d> ",cur_line_number);
+							}
 						}
 	| get_resource_list get_resource eoln	{
 							if($1 == NULL) {
@@ -581,6 +590,9 @@ get_resource_list : get_resource eoln		{
 								$$->node = $2;
 							} else {
 								$$ = $1;
+							}
+							if(cmd_line) {
+								fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 						}
 ;
@@ -608,6 +620,9 @@ resource_list : resource eoln			{
 							} else {
 								$$ = NULL;
 							}
+							if(cmd_line) {
+								fprintf(stdout,"ncl %d> ",cur_line_number);
+							}
 						}
 						
 	| resource_list resource eoln		{
@@ -626,7 +641,17 @@ resource_list : resource eoln			{
 							} else {
 								$$ = $1;
 							}
+							if(cmd_line) {
+								fprintf(stdout,"ncl %d> ",cur_line_number);
+							}
 						}	
+	| resource_list error eoln		{
+							$$ = $1;
+							is_error -= 1;
+							if(cmd_line) {
+								fprintf(stdout,"ncl %d> ",cur_line_number);
+							}
+						}
 ;
 
 resource : 					{
@@ -655,9 +680,6 @@ resource : 					{
 						 		$$ = NULL;
 							}
 */
-	| error					{
-							$$ = NULL;
-						}
 ;
 
 do_stmnt : block_statement_list						{

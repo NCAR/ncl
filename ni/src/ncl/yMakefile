@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.8 1994-04-18 17:11:21 ethan Exp $
+#      $Id: yMakefile,v 1.9 1994-05-06 23:37:29 ethan Exp $
 #
 #########################################################################
 #									#
@@ -64,8 +64,8 @@ API_OBJS	= NclApi.o
 EXE_OBJS	= Ncl.o
 
 OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
-	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o \
-	AddIntrinsics.o AddHLUOBjs.o
+	y.tab.o lex.yy.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o \
+	AddIntrinsics.o AddHLUObjs.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)

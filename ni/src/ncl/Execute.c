@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.13 1994-04-18 17:10:48 ethan Exp $
+ *      $Id: Execute.c,v 1.14 1994-05-06 23:37:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1351,19 +1351,36 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *objname;
 				NclSymbol *objtype;
 				NclStackEntry parent;
-				int parent_id = -1;
+				NclMultiDValData tmp_md;
 				if(*ptr == CREATE_OBJ_WP_OP) {
-				/*--->Code to retrieve parent<---*/
-					parent_id = -1;
+					parent = _NclPop();
+					if(parent.kind == NclStk_VAR) {
+						tmp_md = _NclVarValueRead(parent.u.data_var,NULL,NULL);
+					} else if(parent.kind == NclStk_VAL) {
+						tmp_md = parent.u.data_obj;
+					} else {
+						status = NhlFATAL;
+					}
+					if(tmp_md->multidval.kind != SCALAR) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"HLU Object can only have one parent, Parent objects must be scalar");
+						status = NhlFATAL;
+					}
+				} else {
+					tmp_md = NULL;
 				}
+			
 				ptr++;lptr++;fptr++;
 				nres = (int)*ptr;
 				ptr++;lptr++;fptr++;
 				objname =(NclSymbol*)*ptr ;
 				ptr++;lptr++;fptr++;
 				objtype =(NclSymbol*)*ptr ;
-
-				status = _NclCreateHLUObjOp(nres,objname,objtype,parent_id);
+	
+				if(status != NhlFATAL) {
+					status = _NclCreateHLUObjOp(nres,objname,objtype,tmp_md);
+				} else {
+					_NclCleanUpStack(2*nres);
+				}
 			}
 			break;
 			case PARAM_VARATT_OP:

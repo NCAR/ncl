@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.1 1994-04-18 17:10:46 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.2 1994-05-06 23:37:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,7 @@ extern NhlLayerClass NhlxyPlotLayerClass;
 extern NhlLayerClass NhlxyDataDepLayerClass;
 extern NhlLayerClass NhllabelBarLayerClass;
 extern NhlLayerClass NhllegendLayerClass;
+extern NhlLayerClass NhlcoordArraysLayerClass;
 
 
 void _NclAddHLUObjs
@@ -63,6 +64,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj("xyDataDepLayerClass",NhlxyDataDepLayerClass);
 	_NclAddSingleObj("labelBarLayerClass",NhllabelBarLayerClass);
 	_NclAddSingleObj("legendLayerClass",NhllegendLayerClass);
+	_NclAddSingleObj("coordArraysLayerClass",NhlcoordArraysLayerClass);
 	return;
 	
 }
