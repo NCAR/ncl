@@ -1,5 +1,5 @@
 C
-C	$Id: coex02.f,v 1.1.1.1 1992-04-17 22:33:18 ncargd Exp $
+C	$Id: coex02.f,v 1.2 1992-05-13 16:03:06 ncargd Exp $
 C
       PROGRAM SMPCOL
 C
@@ -67,7 +67,7 @@ C
       DO 20 I=1,NX
       CALL GSCR(1,NX*(J-1)+I+1,RGB(1,I,J),RGB(2,I,J),RGB(3,I,J))
       WRITE(BLAB(I,J),500) RGB(1,I,J),RGB(2,I,J),RGB(3,I,J)
-  500 FORMAT('R=',F4.2,' G=',F4.2,' B=',F4.2,)
+  500 FORMAT('R=',F4.2,' G=',F4.2,' B=',F4.2)
    20 CONTINUE
    10 CONTINUE
 C
