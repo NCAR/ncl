@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.57 2005-01-28 18:41:40 shea Exp $
+;      $Id: contributed.ncl,v 1.58 2005-02-16 00:31:19 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4116,6 +4116,14 @@ begin
 
   mlon  = dimx(nDim-1)
   mlon2 = mlon/2
+
+  if (mlon%2.ne.0) then
+      print("=======================")
+      print("Currently, lonFlip requires that the number")
+      print("of longitudes be even. mlon="+mlon          )
+      print("=======================")
+      exit
+  end if
 
   temp = x
   if (nDim.eq.1) then
