@@ -22,7 +22,6 @@ C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
 
-		
       integer appid, wid, pid
       integer rlist, ierr
 

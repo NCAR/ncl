@@ -1,4 +1,3 @@
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -24,25 +23,25 @@
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "lb01" appLayerClass defaultapp
-	"appDefaultParent" : "True"
-	"appUsrDir" : "./"
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
 wid = create "lb01Work" xWorkstationLayerClass defaultapp
-	"wkPause" : "True"
+    "wkPause" : "True"
 end create
 
 ;
 ; Specify the viewport extent of the object.
 ;
 pid = create "LabelBar" labelBarLayerClass wid
-	"vpXF" : 0.
-	"vpYF" : 1.
-	"vpWidthF" : 1.
-	"vpHeightF" : 1.
+    "vpXF" : 0.
+    "vpYF" : 1.
+    "vpWidthF" : 1.
+    "vpHeightF" : 1.
 end create
 
 draw(pid)
