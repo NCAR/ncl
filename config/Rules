@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.13 1993-12-09 22:12:19 boote Exp $
+ *	$Id: Rules,v 1.14 1993-12-09 23:18:11 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -521,7 +521,7 @@ depend:: depend-local]\
 	if (test -d $$dir) then \]\
 	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) depend);\]\
-	else echo "NOT Depending in $(CURRENT_DIR)/$$dir";\]\
+	else echo "NOT Depending in $(CURRENT_DIR)/$$dir"; fi; \]\
 	done]
 #endif	/* InternalDependSubdirs */
 
@@ -569,7 +569,7 @@ includes:: includes-local]\
 	if (test -d $$dir) then \]\
 	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) includes);\]\
-	else echo "NOT including in $(CURRENT_DIR)/$$dir";\]\
+	else echo "NOT including in $(CURRENT_DIR)/$$dir"; fi;\]\
 	done]
 #endif	/* InternalIncludesSubdirs */
 
@@ -586,7 +586,7 @@ all-local::]\
 install-local::]\
 	MakeDir(destdir)]\
 	@for file in files; do \]\
-	echo "Installing $${file}.section" \]\
+	echo "Installing $${file}.section"; \]\
 	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\]\
 	done
 #endif	/* InstallManPages */
