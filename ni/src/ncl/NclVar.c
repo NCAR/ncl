@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.11 1995-02-04 01:41:39 ethan Exp $
+ *      $Id: NclVar.c,v 1.12 1995-03-09 20:45:08 haley Exp $
  */
 /************************************************************************
 *									*
@@ -695,7 +695,7 @@ struct _NclSelectionRecord *sel_ptr;
 	if(att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT)) {
 		if(value->multidval.kind == SCALAR) {
 /*
-* This function is convienient for providing a type idependent way og
+* This function is convenient for providing a type independent way of
 * copying the value into the missing_value structure.
 */
 			if(_NclScalarCoerce((void*)(value->multidval.val),value->multidval.data_type,(void*)&tmp_mis,thevalue->multidval.data_type)) {
@@ -984,7 +984,7 @@ NclSelectionRecord *sel_ptr;
 				if(value->multidval.dim_sizes[i] != 
 					thevalue->multidval.dim_sizes[i]) {
 					
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assigment do not match");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
 					return(NhlFATAL);
 				}
 			}
@@ -1002,7 +1002,7 @@ NclSelectionRecord *sel_ptr;
 						thevalue->multidval.type->type_class.type,
 						&thevalue->multidval.missing_value.value); 
 					if(tmp_md==NULL) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 						return(NhlFATAL);
 					}
 			} else if(value->multidval.missing_value.has_missing) {
@@ -1104,7 +1104,7 @@ NclSelectionRecord *sel_ptr;
 					thevalue->multidval.type->type_class.type,
 					NULL);
 				if(tmp_md==NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 					return(NhlFATAL);
 				}
 			} else {
@@ -1134,7 +1134,7 @@ NclSelectionRecord *sel_ptr;
 					thevalue->multidval.type->type_class.type,
 					NULL);
 				if(tmp_md==NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 					return(NhlFATAL);
 				}
 			} else {
