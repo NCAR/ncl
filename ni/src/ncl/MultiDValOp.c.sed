@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.6 1996-11-19 00:34:06 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.7 1996-11-23 00:55:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -213,7 +213,7 @@ NclData result;
                                 _NclDestroyObj((NclObj)result_md);
                                 result_md = NULL;
                         }
-                        result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
+                        result_val = (void*)NclMalloc(total * the_type->type_class.size);
                         if(result_val == NULL) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
                                 return(NULL);

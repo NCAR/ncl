@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.29 1996-10-11 23:17:03 ethan Exp $
+ *      $Id: DataSupport.c,v 1.30 1996-11-23 00:55:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -325,6 +325,7 @@ NclMultiDValData str_md;
 		strcpy(&(val[to]),buffer[i]);
 		to += max_len;
 	}
+	NclFree(buffer);
 	return(_NclCreateMultiDVal(
 		NULL,
 		NULL,

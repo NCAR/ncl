@@ -356,6 +356,7 @@ NclQuark var;
 			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
 			((FileCallBackRec*)udata.ptrval)->thevar = var;
 			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			thefile->file.var_att_udata[index] = (FileCallBackRec*)udata.ptrval;
 			thefile->file.var_att_ids[index] = att_id;
 			return;
 		}
@@ -500,6 +501,7 @@ NclObj self;
 	for(i =0 ; i < thefile->file.n_vars; i++) {
 		NclFree(thefile->file.var_info[i]);
 		if(thefile->file.var_att_cb[i] != NULL) {
+			NclFree(thefile->file.var_att_udata[i]);
 			_NhlCBDelete(thefile->file.var_att_cb[i]);
 		}
 		if(thefile->file.var_att_info[i] != NULL) {
@@ -519,6 +521,7 @@ NclObj self;
 		NclFree(thefile->file.file_dim_info[i]);
 	}
 	if(thefile->file.file_atts_id != -1) {
+		NclFree(thefile->file.file_att_udata);
 		_NhlCBDelete(thefile->file.file_att_cb);
 		_NclDelParent(_NclGetObj(thefile->file.file_atts_id),self);
 	}
@@ -2364,6 +2367,7 @@ int rw_status;
 		file_out->file.var_info[i] = NULL;
 		file_out->file.file_atts[i] = NULL;
 		file_out->file.var_att_info[i] = NULL;
+		file_out->file.var_att_udata[i] = NULL;
 		file_out->file.var_att_cb[i] = NULL;
 		file_out->file.var_att_ids[i] = -1;
 		file_out->file.file_dim_info[i] = NULL;
@@ -3489,6 +3493,7 @@ struct _NclSelectionRecord *sel_ptr;
 			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
 			((FileCallBackRec*)udata.ptrval)->thevar = -1;
 			thefile->file.file_att_cb = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			thefile->file.file_att_udata = (FileCallBackRec*)udata.ptrval;
 			if(att_id != -1) {	
 				thefile->file.file_atts_id = att_id;
 				return(_NclGetAtt(thefile->file.file_atts_id,NrmQuarkToString(attname),sel_ptr));
@@ -3539,6 +3544,7 @@ struct _NclSelectionRecord *sel_ptr;
 			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
 			((FileCallBackRec*)udata.ptrval)->thevar = -1;
 			thefile->file.file_att_cb = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			thefile->file.file_att_udata = (FileCallBackRec*)udata.ptrval;
 		}  else {
 			att_id = thefile->file.file_atts_id;
 		}

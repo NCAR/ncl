@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.53 1996-09-27 21:27:02 ethan Exp $
+ *      $Id: Machine.c,v 1.54 1996-11-23 00:55:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1813,8 +1813,14 @@ if(the_list != NULL) {
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			} else {
-				if(data.u.data_obj->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)data.u.data_obj);
+				if(check_ret_status) {
+					if((data.u.data_obj->obj.status != PERMANENT)&&(data.u.data_obj->obj.id != tmp_fp->func_ret_value.u.data_obj->obj.id)) {
+						_NclDestroyObj((NclObj)data.u.data_obj);
+					}
+				} else {
+					if(data.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)data.u.data_obj);
+					}
 				}
 			}
 		}
@@ -2271,7 +2277,15 @@ if(the_list != NULL) {
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			} else {
-				_NclDestroyObj((NclObj)data.u.data_var);
+				if(check_ret_status) {
+					if((data.u.data_obj->obj.status != PERMANENT)&&(data.u.data_obj->obj.id != tmp_fp->func_ret_value.u.data_obj->obj.id)) {
+						_NclDestroyObj((NclObj)data.u.data_obj);
+					}
+				} else {
+					if(data.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)data.u.data_obj);
+					}
+				}
 			}
 		}
 	}

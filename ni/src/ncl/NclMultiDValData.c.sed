@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.22 1996-10-11 23:17:08 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.23 1996-11-23 00:55:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2004,6 +2004,7 @@ static void MultiDValDestroy
         NclMultiDValData self_md = (NclMultiDValData)self;
 	NhlArgVal selector;
 	NhlArgVal cbdata;
+	int i;
 
 	cbdata.intval = self->obj.id;
 	selector.lngval = DESTROYED;
@@ -2014,7 +2015,12 @@ static void MultiDValDestroy
         _NclUnRegisterObj(self);
 
         if(self_md->multidval.sel_rec != NULL) {
-                NclFree(self_md->multidval.sel_rec);
+		for(i = 0; i <  self_md->multidval.sel_rec->n_entries; i++) {
+			if(self_md->multidval.sel_rec->selection[i].sel_type == Ncl_VECSUBSCR){
+				NclFree(self_md->multidval.sel_rec->selection[i].u.vec.ind);
+			}
+		}
+		NclFree(self_md->multidval.sel_rec);
         }
 
         if((self_md->obj.status != STATIC)&&(self_md->multidval.val != NULL)) {
@@ -2283,6 +2289,12 @@ NclTypeClass type;
 	if(sel_rec != NULL) {
 		thevalobj->multidval.sel_rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
 		memcpy((char*)thevalobj->multidval.sel_rec,(char*)sel_rec,sizeof(NclSelectionRecord));
+		for(i = 0; i <  sel_rec->n_entries; i++) {
+                 	if(sel_rec->selection[i].sel_type == Ncl_VECSUBSCR){
+                        	thevalobj->multidval.sel_rec->selection[i].u.vec.ind = (long*) NclMalloc(sizeof(long)*(sel_rec->selection[i].u.vec.n_ind));
+				memcpy(thevalobj->multidval.sel_rec->selection[i].u.vec.ind,sel_rec->selection[i].u.vec.ind,sizeof(long)*(sel_rec->selection[i].u.vec.n_ind));
+        	        }
+		}
 	} else {
 		thevalobj->multidval.sel_rec = NULL;
 	}
