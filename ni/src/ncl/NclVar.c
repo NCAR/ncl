@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.47 1997-09-12 20:27:18 ethan Exp $
+ *      $Id: NclVar.c,v 1.48 1997-10-02 22:44:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1288,6 +1288,7 @@ NclSelectionRecord *sel_ptr;
 							thevalue->multidval.type->type_class.type,
 							NULL);
 						if(tmp_md == NULL) {	
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 							return(NhlFATAL);
 						}
 					} else {
@@ -1330,6 +1331,7 @@ NclSelectionRecord *sel_ptr;
 							thevalue->multidval.type->type_class.type,
 							NULL);
 						if(tmp_md == NULL) {	
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 							return(NhlFATAL);
 						}
 					} else {
@@ -1603,7 +1605,7 @@ NclSelectionRecord *sel_ptr;
 						tmp_sel.selection[0].sel_type = sel_ptr->selection[i].sel_type;
 						tmp_sel.selection[0].u.sub = sel_ptr->selection[i].u.sub;
 						if(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish) {
-							single = 1;
+							single = sel_ptr->selection[i].u.sub.is_single;
 						}
 					}
 /*
@@ -1625,22 +1627,22 @@ NclSelectionRecord *sel_ptr;
                                                 break;
                                         case Ncl_SUB_ALL:
                                                 if(self->var.dim_info[sel_ptr->selection[i].dim_num].dim_size == 1) {
-                                                        single = 1;
+                                                        single = 0;
                                                 }
                                                 break;
                                         case Ncl_SUB_VAL_DEF:
                                                 if(sel_ptr->selection[i].u.sub.start == self->var.dim_info[sel_ptr->selection[i].dim_num].dim_size -1) {
-                                                        single = 1;
+                                                        single = 0;
                                                 }
                                                 break;
                                         case Ncl_SUB_DEF_VAL:
                                                 if(sel_ptr->selection[i].u.sub.finish== 0) {
-                                                        single = 1;
+                                                        single = 0;
                                                 }
                                                 break;
                                         case Ncl_SUBSCR:
                                                 if(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish) {
-                                                        single = 1;
+                                                        single = sel_ptr->selection[i].u.sub.is_single;
                                                 }
                                                 break;
                                         }
@@ -2093,7 +2095,21 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 * Taking advatage that the following call fills in the extents for each selection
 */
 		if(lhs_md->obj.id != rhs_md->obj.id) {
-			ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+			if(rhs_type != lhs_type) {
+				rhs_md = _NclCoerceData(rhs_md,
+					lhs_type,
+					NULL);
+				if(rhs_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
+					ret = NhlFATAL;
+					
+				} else {
+					ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+					_NclDestroyObj((NclObj)rhs_md);
+				}
+			} else {
+				ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+			}
 			if(ret < NhlINFO) {
 				return(ret);
 			}
@@ -2518,7 +2534,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				}
 				break;
 			}
-			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))) {
+			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))||((lhs_n_elem == 1)&&(rhs_md->multidval.n_dims >= i)&&(rhs_md->multidval.dim_sizes[i] == 1))){
 				if(rhs->var.dim_info[j].dim_quark > 0) {
 #ifdef NCLVARDEBUG
 					fprintf(stdout,"case 25\n");
@@ -2749,7 +2765,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				break;
 			}
 
-			if((rhs_n_elem != 1)||((lhs->var.n_dims ==1)&&(rhs_n_elem==1)&&(lhs->var.dim_info[0].dim_size == 1))){
+			if((rhs_n_elem != 1)||((rhs_n_elem==1)&&(lhs->var.dim_info[i].dim_size == 1))){
 				if(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark > 0) {
 #ifdef NCLVARDEBUG
 					fprintf(stdout,"case 41\n");
