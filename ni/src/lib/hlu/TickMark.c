@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.75 2000-05-16 01:35:36 dbrown Exp $
+ *      $Id: TickMark.c,v 1.76 2001-04-10 23:44:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9217,6 +9217,103 @@ int num_args;
 	return ret;
 }
 
+static NhlGenArray CreateGetValuesData
+#if	NhlNeedProto
+(
+        NhlLayer        l,
+        _NhlArg     	*arg
+)
+#else
+(l,args,nargs)
+        NhlLayer        l;
+        _NhlArg		*arg;
+#endif
+{
+	NhlString type;
+	NhlPointer data;
+	int	size;
+	int 	count;
+	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
+	NhlGenArray gen;
+	
+	if(arg->quark == QXBValues) {
+		data = (NhlPointer) tmp->x_b_major_data_locs; 
+		count = tmp->x_b_nmajor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QXBMinorValues) {
+		data = (NhlPointer) tmp->x_b_minor_data_locs; 
+		count = tmp->x_b_nminor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QXBLabels) {
+		data = tmp->x_b_major_labels;
+		count = tmp->x_b_nmajor;
+		type = NhlTString;
+		size = sizeof(NhlString);
+	}
+	else if(arg->quark == QXTValues) {
+		data = (NhlPointer) tmp->x_t_major_data_locs; 
+		count = tmp->x_t_nmajor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QXTMinorValues) {
+		data = (NhlPointer) tmp->x_t_minor_data_locs; 
+		count = tmp->x_t_nminor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QXTLabels) {
+		data = tmp->x_t_major_labels;
+		count = tmp->x_t_nmajor;
+		type = NhlTString;
+		size = sizeof(NhlString);
+	}
+	else if(arg->quark == QYLValues) {
+		data = (NhlPointer) tmp->y_l_major_data_locs; 
+		count = tmp->y_l_nmajor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QYLMinorValues) {
+		data = (NhlPointer) tmp->y_l_minor_data_locs; 
+		count = tmp->y_l_nminor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QYLLabels) {
+		data = tmp->y_l_major_labels;
+		count = tmp->y_l_nmajor;
+		type = NhlTString;
+		size = sizeof(NhlString);
+	}
+	else if(arg->quark == QYRValues) {
+		data = (NhlPointer) tmp->y_r_major_data_locs; 
+		count = tmp->y_r_nmajor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QYRMinorValues) {
+		data = (NhlPointer) tmp->y_r_minor_data_locs; 
+		count = tmp->y_r_nminor;
+		type = NhlTFloat;
+		size = sizeof(float);
+	}
+	else if(arg->quark == QYRLabels) {
+		data = tmp->y_r_major_labels;
+		count = tmp->y_r_nmajor;
+		type = NhlTString;
+		size = sizeof(NhlString);
+	}
+	if (! data || count == 0)
+		return NULL;
+
+	return _NhlCreateGenArray(data,type,size,1,&count,True);
+}
+
 static NhlErrorTypes TickMarkGetValues
 #if	NhlNeedProto
 (
@@ -9231,13 +9328,14 @@ static NhlErrorTypes TickMarkGetValues
         int             nargs;
 #endif
 {
-
 	int		i;
 	NhlGenArray	ga;
 	NhlString	ts;
+	NhlBoolean      create_ok;
 	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
 
 	for(i = 0; i < nargs; i++) {
+		create_ok = False;
 		ga = NULL;
 		if(args[i].quark == QXBIrregularPoints) {
 			ga = tmp->x_b_irregular_points;
@@ -9253,51 +9351,75 @@ static NhlErrorTypes TickMarkGetValues
 		}
 		if(args[i].quark == QXBValues) {
 			ga = tmp->x_b_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QXBMinorValues) {
 			ga = tmp->x_b_minor_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QXTValues) {
 			ga = tmp->x_t_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QXTMinorValues) {
 			ga = tmp->x_t_minor_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYLValues) {
 			ga = tmp->y_l_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYLMinorValues) {
 			ga = tmp->y_l_minor_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYRValues) {
 			ga = tmp->y_r_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYRMinorValues) {
 			ga = tmp->y_r_minor_values;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QXBLabels) {
 			ga = tmp->x_b_labels;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QXTLabels) {
 			ga = tmp->x_t_labels;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYLLabels) {
 			ga = tmp->y_l_labels;
+ 			create_ok = True;
 		}
 		if(args[i].quark == QYRLabels) {
 			ga = tmp->y_r_labels;
+ 			create_ok = True;
 		}
 
 		if(ga != NULL) {
-			*((NhlGenArray *)args[i].value.ptrval) = _NhlCopyGenArray(ga,True);
+			*((NhlGenArray *)args[i].value.ptrval) = 
+				_NhlCopyGenArray(ga,True);
 			if(!*(NhlGenArray *)args[i].value.ptrval){
-                                NhlPError(NhlWARNING,ENOMEM,
-                                        "TickMarkGetValues:Unable to retrieve %s",
-                                        NrmQuarkToString(args[i].quark));
+                                NhlPError(NhlFATAL,ENOMEM,
+                                     "TickMarkGetValues:Unable to retrieve %s",
+					  NrmQuarkToString(args[i].quark));
+				return NhlFATAL;
                         }
 			continue;
 		}
-
+		else if (create_ok) {
+			*((NhlGenArray *)args[i].value.ptrval) = 
+				CreateGetValuesData(l,&args[i]);
+			if(!*(NhlGenArray *)args[i].value.ptrval){
+                                NhlPError(NhlFATAL,ENOMEM,
+                                     "TickMarkGetValues:Unable to retrieve %s",
+					  NrmQuarkToString(args[i].quark));
+				return NhlFATAL;
+                        }
+			continue;
+		}
 		ts = NULL;
 		if(args[i].quark == QXBFormat){
 			ts = tmp->x_b_format.fstring;
@@ -9315,7 +9437,7 @@ static NhlErrorTypes TickMarkGetValues
 			*((NhlString*)(args[i].value.ptrval)) =
 				NhlMalloc(strlen(ts)+1);
 			if(!*((NhlString*)(args[i].value.ptrval))){
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlFATAL,ENOMEM,
 					  "%s: error retrieving %s",
 					  "TickMarkGetValues",
 					  NrmQuarkToString(args[i].quark));
