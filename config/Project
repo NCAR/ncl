@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.22 1995-06-13 17:32:38 haley Exp $
+ *      $Id: Project,v 1.23 1995-06-13 17:56:15 haley Exp $
  */
 /************************************************************************
 *									*
@@ -244,6 +244,7 @@ NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"config",NULL,"ncarg",NULL,NULL,		\
 		"data",NULL,"ncarg",NULL,NULL,			\
 		"database",NULL,"ncarg",NULL,NULL,		\
+		"doc",NULL,"ncarg",NULL,NULL,			\
 		"fontcaps",NULL,"ncarg",NULL,NULL,		\
 		"graphcaps",NULL,"ncarg",NULL,NULL,		\
 		"examples",NULL,"ncarg",NULL,NULL,		\
