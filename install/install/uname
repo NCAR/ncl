@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.7 1996-01-17 22:06:17 haley Exp $
+#      $Id: uname,v 1.8 1996-02-08 22:59:26 haley Exp $
 #
 #########################################################################
 #									#
@@ -72,7 +72,7 @@ case ULTRIX:
 case HP-UX:
 case OSF1:
 case Linux:
-	set os = LINUX
+	set os = $foo
 	breaksw
 
 default:
