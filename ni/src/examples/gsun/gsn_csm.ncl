@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.114 2002-12-13 20:41:54 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.115 2003-01-03 00:48:52 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4622,6 +4622,12 @@ begin
 
     res2 = get_resources(resources)
 
+    if(isatt(res2,"vcRefAnnoOrthogonalPosF")) then
+      user_set_ref_orth = True
+    else
+      user_set_ref_orth = False
+    end if
+
 ; Check for cyclic point (default is True).
 
     if(get_res_value(res2,"gsnAddCyclic",True))
@@ -4720,7 +4726,18 @@ begin
 ;
     refanno_on = get_res_value_keep(vcres,"vcRefAnnoOn",True)
     if(refanno_on)
-      lbar_zone    = annolabel_zone + 1
+;
+; If the user is moving the vector annotation around, then 
+; the labelbar will no longer be in the zone outside the ref anno.
+; This is to avoid the problem of the user moving the ref anno into
+; the plot, and then having the labelbar follow it up too far, and
+; running into the tickmarks.
+;
+      if(user_set_ref_orth) then
+        lbar_zone = annolabel_zone
+      else
+        lbar_zone = annolabel_zone + 1
+      end if
     end if
 
 ; Before we create the objects, turn off draw and frame for them.
@@ -6387,6 +6404,11 @@ begin
     lbar_on        = True
     mpres          = True
     res2           = get_resources(resources)
+    if(isatt(res2,"vcRefAnnoOrthogonalPosF")) then
+      user_set_ref_orth = True
+    else
+      user_set_ref_orth = False
+    end if
 
 ; Check for cyclic point (default is True).
 
@@ -6608,7 +6630,18 @@ begin
       if(.not.refanno_on.and..not.infolabel_on)
         lbar_zone = 2
       else
-        lbar_zone = 3
+;
+; If the user is moving the vector annotation around, then 
+; the labelbar will no longer be in the zone outside the ref anno.
+; This is to avoid the problem of the user moving the ref anno into
+; the plot, and then having the labelbar follow it up too far, and
+; running into the tickmarks.
+;
+        if(user_set_ref_orth) then
+          lbar_zone = 2
+        else
+          lbar_zone = 3
+        end if
       end if
 
       if(scalar_contour)
