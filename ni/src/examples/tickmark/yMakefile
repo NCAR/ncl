@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-15 22:40:27 haley Exp $
+#   $Id: yMakefile,v 1.6 1995-04-21 00:25:02 haley Exp $
 #
 #   Makefile for HLU TickMark examples
 #
@@ -7,7 +7,7 @@
 MYNAME  = tickmark
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+EXTRA_LIBS  =   $(XLIB)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = tm01c.c tm02c.c tm03c.c
