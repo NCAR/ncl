@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.112 1998-06-19 20:54:47 haley Exp $
+#   $Id: ncargex.csh,v 1.113 1998-06-25 16:05:59 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1518,7 +1518,6 @@ switch ($name)
     case dsex05:
     case dsex06:
     case dsex01d:
-        set extra_src_files = (dsplotf.f)
         set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
@@ -1529,7 +1528,6 @@ switch ($name)
     case c_dsex05:
     case c_dsex06:
     case c_dsex01d:
-        set extra_src_files = (dsplotc.c)
         set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
