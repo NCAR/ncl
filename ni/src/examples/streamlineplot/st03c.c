@@ -1,5 +1,5 @@
 /*
- *      $Id: st03c.c,v 1.1 1996-06-27 15:11:22 haley Exp $
+ *      $Id: st03c.c,v 1.2 1996-06-27 15:35:55 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,7 +45,7 @@
 
 main(int argc, char *argv[])
 {
-    int NCGM=1, X11=0, PS=0;
+    int NCGM=0, X11=1, PS=0;
     int appid, wid, dataid, stid, vfid, mpid;
     int rlist, grlist;
     int len_dims[2];
