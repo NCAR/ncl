@@ -1,5 +1,5 @@
 C
-C      $Id: cn14f.f,v 1.1 1997-02-27 20:43:03 haley Exp $
+C      $Id: cn14f.f,v 1.2 1999-03-22 17:17:57 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -315,11 +315,11 @@ C
       call NhlFRLSetFloat(srlist,'vpWidthF',.80,ierr)
       call NhlFRLSetFloat(srlist,'vpHeightF',.40,ierr)
       call NhlFRLSetString(srlist,'mpFillOn','True',ierr)
-      call NhlFRLSetInteger(srlist,'mpLandFillColor',1,ierr)
+      call NhlFRLSetString(srlist,'mpLandFillColor','Black',ierr)
       call NhlFRLSetString(srlist,'mpOceanFillColor','Transparent',ierr)
-      call NhlFRLSetInteger(srlist,'mpInlandWaterFillColor',1,ierr)
-      call NhlFRLSetInteger(srlist,'mpGridLineColor',14,ierr)
-      call NhlFRLSetInteger(srlist,'mpGeophysicalLineColor',1,ierr)
+      call NhlFRLSetString(srlist,'mpInlandWaterFillColor','Black',ierr)
+      call NhlFRLSetString(srlist,'mpGridLineColor','LightGray',ierr)
+      call NhlFRLSetString(srlist,'mpGeophysicalLineColor','Black',ierr)
       call NhlFRLSetFloat(srlist,'mpGeophysicalLineThicknessF',1.,ierr)
       call NhlFCreate(map,'map',nhlfmapplotclass,workid,srlist,
      +     ierr)

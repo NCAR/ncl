@@ -1,5 +1,5 @@
 /*
- *      $Id: cn14c.c,v 1.4 1997-12-01 22:34:02 haley Exp $
+ *      $Id: cn14c.c,v 1.5 1999-03-22 17:17:55 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -306,11 +306,11 @@ main()
 	NhlRLSetFloat(srlist,NhlNvpWidthF,.80);
 	NhlRLSetFloat(srlist,NhlNvpHeightF,.40);
 	NhlRLSetString(srlist,NhlNmpFillOn,"True");
-	NhlRLSetInteger(srlist,NhlNmpLandFillColor,1);
+	NhlRLSetString(srlist,NhlNmpLandFillColor,"Black");
 	NhlRLSetString(srlist,NhlNmpOceanFillColor,"Transparent");
-	NhlRLSetInteger(srlist,NhlNmpInlandWaterFillColor,1);
-	NhlRLSetInteger(srlist,NhlNmpGridLineColor,14);
-	NhlRLSetInteger(srlist,NhlNmpGeophysicalLineColor,1);
+	NhlRLSetString(srlist,NhlNmpInlandWaterFillColor,"Black");
+	NhlRLSetString(srlist,NhlNmpGridLineColor,"LightGray");
+	NhlRLSetString(srlist,NhlNmpGeophysicalLineColor,"Black");
 	NhlRLSetFloat(srlist,NhlNmpGeophysicalLineThicknessF,1.);
 	NhlCreate(&map,"map",NhlmapPlotClass,workid,srlist);
 /*

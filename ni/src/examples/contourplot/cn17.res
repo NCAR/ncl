@@ -18,8 +18,8 @@
 ; 
 ; Set the line thickness and color for circle.
 ;
-*gsLineColor:         3
-*gsMarkerColor:       6
+*gsLineColor:         black
+*gsMarkerColor:       yellow
 *gsMarkerSizeF:       0.014
 *gsMarkerThicknessF:  2.
 *gsLineThicknessF:    2.
@@ -43,10 +43,10 @@
 *MapPlot.vpWidthF:    .85
 *MapPlot.vpHeightF:   .85
 
-*mpFillColor:           5
+*mpFillColor:           gray40
 *mpFillOn:              True
 *mpGridAndLimbDrawOrder: draw
-*mpGridLineColor:       2
+*mpGridLineColor:       gray60
 *mpGridLineThicknessF:  2.0
 *mpGridSpacingF:        1.0
 *mpMonoFillColor:       True
