@@ -1,5 +1,5 @@
 /*
- *	$Id: binary.c,v 1.2 1992-09-17 18:06:50 don Exp $
+ *	$Id: binary.c,v 1.3 1993-01-17 06:51:36 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,7 +47,7 @@ BinaryOpen(name)
 {
 	Raster	*ras;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "BinaryOpen(\"%s\")", name);
 		return( (Raster *) NULL );
@@ -73,12 +73,12 @@ BinaryOpen(name)
 
 	/* Record the name of the file. */
 
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
 	/* Record the format. */
 
-	ras->format=(char *)calloc((unsigned)(strlen(BINARY_FORMAT_NAME)+1),1);
+	ras->format=(char *)ras_calloc((unsigned)(strlen(BINARY_FORMAT_NAME)+1),1);
 	(void) strcpy(ras->format, BINARY_FORMAT_NAME);
 
 	BinarySetFunctions(ras);
@@ -117,7 +117,7 @@ BinaryRead(ras)
 
 		/* Allocate image storage. */
 
-		ras->data = (unsigned char *) calloc(ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc(ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "BinaryRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
@@ -154,6 +154,7 @@ BinaryRead(ras)
 	return(RAS_OK);
 }
 
+/* ARGSUSED */
 Raster *
 BinaryOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -179,6 +180,7 @@ BinaryWrite(ras)
 	return(RAS_ERROR);
 }
 
+/* ARGSUSED */
 int
 BinaryPrintInfo(ras)
 	Raster		*ras;
@@ -192,30 +194,8 @@ BinaryClose(ras)
 {
 	int	status;
 
-	if (ras->fp != (FILE *) NULL) {
-		if(ras->fp != stdin && ras->fp != stdout) {
-			status = fclose(ras->fp);
-			if (status != 0) {
-				ESprintf(errno, "BinaryClose()");
-				return(RAS_ERROR);
-			}
-		}
-	}
-	else {
-		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
-			status = close(ras->fd);
-			if (status != 0) {
-				ESprintf(errno, "BinaryClose()");
-				return(RAS_ERROR);
-			}
-		}
-	}
-	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
-	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
-	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
-	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
-
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 int

@@ -1,5 +1,5 @@
 /*
- *	$Id: cleartext.c,v 1.5 1992-09-10 21:07:59 don Exp $
+ *	$Id: cleartext.c,v 1.6 1993-01-17 06:51:37 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,16 +45,16 @@ ClearTextOpen(name)
 
 	(void) fprintf(stderr, "ClearTextOpen(%s)\n", name);
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "ClearTextOpen(%s)", name);
 		return( (Raster *) NULL );
 	}
 
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned)(strlen(FormatName) + 1),1);
 	(void) strcpy(ras->format, FormatName);
 
 	(void) ClearTextSetFunctions(ras);
@@ -78,7 +78,7 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "ClearTextOpenWrite(%s)", name);
 		return( (Raster *) NULL );
@@ -86,10 +86,10 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->dep = (char *) NULL;
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName)+1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (encoding == RAS_INDEXED) {
@@ -98,10 +98,10 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 		ras->ny		= ny;
 		ras->length	= ras->nx * ras->ny;
 		ras->ncolor	= 256;
-		ras->red = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-		ras->green = (unsigned char *) calloc((unsigned)ras->ncolor, 1);
-		ras->blue = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+		ras->red=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue=(unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->data=(unsigned char *)ras_calloc((unsigned) ras->length,1);
 	}
 	else if (encoding == RAS_DIRECT) {
 		ras->type	= RAS_DIRECT;
@@ -112,7 +112,8 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 		ras->red	= (unsigned char *) NULL;
 		ras->green	= (unsigned char *) NULL;
 		ras->blue	= (unsigned char *) NULL;
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+		ras->data       = (unsigned char *)
+				  ras_calloc((unsigned) ras->length, 1);
 	}
 	else {
 		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
@@ -153,8 +154,11 @@ int
 ClearTextClose(ras)
 	Raster	*ras;
 {
+	int	status;
+
 	(void) fprintf(stderr, "ClearTextClose(%s)\n", ras->name);
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 int

@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.15 1992-12-10 23:46:49 don Exp $
+ *	$Id: xwd.c,v 1.16 1993-01-17 06:52:02 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,13 +58,13 @@ XWDOpen(name)
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(XWDFileHeader),1);
+	ras->dep = ras_calloc(sizeof(XWDFileHeader),1);
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 		return( (Raster *) NULL );
@@ -96,10 +96,10 @@ XWDOpen(name)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	XWDSetFunctions(ras);
@@ -239,15 +239,15 @@ XWDRead(ras)
 
 	if (ras->data == (unsigned char *) NULL) {
 		buffer_size = image_size(dep);
-		ras->data = (unsigned char *) malloc (buffer_size);
+		ras->data = (unsigned char *) ras_malloc (buffer_size);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "XWDRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
 
-		ras->red = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-		ras->green = (unsigned char *) calloc((unsigned) ras->ncolor,1);
-		ras->blue = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+		ras->red = (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
+		ras->green = (unsigned char *) ras_calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
 	}
 	else {
 		if (dep->pixmap_width != old_dep.pixmap_width) {
@@ -266,7 +266,7 @@ XWDRead(ras)
 	/* Read in the window name (not used) */
 
 	win_name_size = (dep->header_size - sizeof(XWDFileHeader));
-	if ((ras->text = malloc((unsigned) win_name_size)) == NULL) {
+	if ((ras->text = ras_malloc((unsigned) win_name_size)) == NULL) {
 		(void) ESprintf(errno, "XWDRead(\"%s\")", ras->name);
 		return(RAS_ERROR);
 	}
@@ -353,9 +353,9 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 
-	ras->dep = calloc(sizeof(XWDFileHeader),1);
+	ras->dep = ras_calloc(sizeof(XWDFileHeader),1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "XWDOpenWrite(\"%s\")", name);
 		return( (Raster *) NULL );
@@ -375,14 +375,14 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -394,10 +394,10 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
+	ras->red	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
+	ras->green	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
+	ras->blue	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
+	ras->data	= (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
 		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
@@ -454,7 +454,7 @@ XWDWrite(ras)
 
 	if (*(char *) &swaptest) {
 		if (swapbuf == (char *) NULL) {
-			swapbuf = calloc(sizeof(XWDFileHeader),1);
+			swapbuf = ras_calloc(sizeof(XWDFileHeader),1);
 			if (swapbuf == (char *) NULL) {
 				(void) ESprintf(errno,
 					"XWDWrite(\"%s\")", ras->name);
@@ -517,13 +517,10 @@ int
 XWDClose(ras)
 	Raster	*ras;
 {
-	free((char *) ras->data);
-	free((char *) ras->red);
-	free((char *) ras->green);
-	free((char *) ras->blue);
-	if (ras->fd >= 0) (void) close(ras->fd);
-	free((char *) ras);
-	return(RAS_OK);
+	int	status;
+
+	status = GenericClose(ras);
+	return(status);
 }
 
 int

@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.7 1992-09-24 22:55:30 don Exp $
+ *	$Id: hplj.c,v 1.8 1993-01-17 06:51:43 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -114,14 +114,14 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	}
 		
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "HPLJOpenWrite()");
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = (char *) calloc(sizeof(HPLJ_Info),1);
+	ras->dep = (char *) ras_calloc(sizeof(HPLJ_Info),1);
 
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "HPLJOpenWrite()");
@@ -137,20 +137,19 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	 */
 	dep->dpi = dpi;
 
-	rdep->reset = malloc((unsigned) strlen(HPLJ_RESET) + 1);
+	rdep->reset = ras_malloc((unsigned) strlen(HPLJ_RESET) + 1);
 	(void) strcpy(rdep->reset, HPLJ_RESET);
 	
 	if (orientation == RAS_LANDSCAPE) { /* landscape or portrait mode? */
-		rdep->orientation = malloc((unsigned) strlen(HPLJ_LANDSCAPE)+1);
-		(void) strcpy(rdep->orientation, HPLJ_LANDSCAPE);
+	    rdep->orientation=ras_malloc((unsigned)strlen(HPLJ_LANDSCAPE)+1);
+	    (void) strcpy(rdep->orientation, HPLJ_LANDSCAPE);
 	} 
 	else {
-		rdep->orientation = malloc((unsigned) strlen(HPLJ_PORTRAIT) +1);
-		(void) strcpy(rdep->orientation, HPLJ_PORTRAIT);
-
+	    rdep->orientation = ras_malloc((unsigned) strlen(HPLJ_PORTRAIT) +1);
+	    (void) strcpy(rdep->orientation, HPLJ_PORTRAIT);
 	}
 
-	rdep->encoding = malloc((unsigned) strlen(HPLJ_ENCODING) + 1);
+	rdep->encoding = ras_malloc((unsigned) strlen(HPLJ_ENCODING) + 1);
 	(void) strcpy(rdep->encoding, HPLJ_ENCODING);
 
 	/* 
@@ -158,7 +157,7 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	 */
 	rdep->position = _HPLJPosition(nx, ny, dpi, orientation);
 
-	rdep->start_graph = malloc((unsigned) strlen(HPLJ_START) + 1);
+	rdep->start_graph = ras_malloc((unsigned) strlen(HPLJ_START) + 1);
 	(void) strcpy(rdep->start_graph, HPLJ_START);
 
 	if (create_data_space(dep, nx, ny) < 0) {
@@ -166,10 +165,10 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	rdep->end_graph = malloc((unsigned) strlen(HPLJ_END) + 1);
+	rdep->end_graph = ras_malloc((unsigned) strlen(HPLJ_END) + 1);
 	(void) strcpy(rdep->end_graph, HPLJ_END);
 	
-	rdep->eject = malloc((unsigned) strlen(HPLJ_EJECT) + 1);
+	rdep->eject = ras_malloc((unsigned) strlen(HPLJ_EJECT) + 1);
 	(void) strcpy(rdep->eject, HPLJ_EJECT);
 
 	if (!strcmp(name, "stdout")) {
@@ -184,10 +183,10 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	ras->text = Comment;
@@ -197,10 +196,10 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
+	ras->red	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
+	ras->green	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
+	ras->blue	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
+	ras->data	= (unsigned char *)ras_calloc((unsigned)ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
 		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
@@ -347,28 +346,22 @@ int
 HPLJClose(ras)
 	Raster	*ras;
 {
+	int		status;
 	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;
 
-	free((char *) ras->data);
-	free((char *) ras->red);
-	free((char *) ras->green);
-	free((char *) ras->blue);
-	if (ras->fd >= 0) (void) close(ras->fd);
 	if (dep) {
-		if (dep->ras.reset) free(dep->ras.reset);
-		if (dep->ras.orientation) free(dep->ras.orientation);
-		if (dep->ras.encoding) free(dep->ras.encoding);
-		if (dep->ras.position) free(dep->ras.position);
-		if (dep->ras.start_graph) free(dep->ras.start_graph);
-		if (dep->ras.data) free((char *) dep->ras.data);
-		if (dep->ras.end_graph) free(dep->ras.end_graph);
-		if (dep->ras.eject) free(dep->ras.eject);
-
-		if (dep->trans_data) free(dep->trans_data);
-		free((char *) dep);
+		if (dep->ras.reset) ras_free(dep->ras.reset);
+		if (dep->ras.orientation) ras_free(dep->ras.orientation);
+		if (dep->ras.encoding) ras_free(dep->ras.encoding);
+		if (dep->ras.position) ras_free(dep->ras.position);
+		if (dep->ras.start_graph) ras_free(dep->ras.start_graph);
+		if (dep->ras.data) ras_free((char *) dep->ras.data);
+		if (dep->ras.end_graph) ras_free(dep->ras.end_graph);
+		if (dep->ras.eject) ras_free(dep->ras.eject);
+		if (dep->trans_data) ras_free(dep->trans_data);
 	}
-	free((char *) ras);
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 /*ARGSUSED*/
@@ -432,7 +425,7 @@ static	char	*_HPLJPosition(nx, ny, dpi, orientation)
 	bzero(buf, 80);
 	(void) sprintf(buf, "*p%dx%dY", x_start, y_start);
 
-	if ((cptr = malloc((unsigned) strlen(buf) + 1)) == NULL) return(NULL);
+	if ((cptr = ras_malloc((unsigned)strlen(buf) + 1)) == NULL)return(NULL);
 
 	(void) strcpy(cptr, buf);
 	return(cptr);
@@ -468,7 +461,7 @@ static	create_data_space(hplj, nx, ny)
 	 */
 	bzero(buf, 80);
 	(void) sprintf(buf, "*b%dW", num_bytes);
-	if ((trans_data = malloc((unsigned)strlen(buf)+1)) == NULL) return(-1);
+	if ((trans_data = ras_malloc((unsigned)strlen(buf)+1))==NULL)return(-1);
 	(void) strcpy(trans_data, buf);
 
 	/*
@@ -476,7 +469,7 @@ static	create_data_space(hplj, nx, ny)
 	 */
 	row_size = num_bytes + strlen(trans_data);
 
-	data = (unsigned char *) malloc ((unsigned) (row_size * ny));
+	data = (unsigned char *) ras_malloc ((unsigned) (row_size * ny));
 	if (! data) return(-1);
 
 	bzero((char *) data, row_size * ny);

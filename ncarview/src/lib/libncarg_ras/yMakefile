@@ -125,11 +125,11 @@ DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 		dither.o resample.o composite.o ntsc.o color.o \
-		rasterop.o $(DEVICE_OBJS)
+		rasterop.o generic.o memory.o $(DEVICE_OBJS)
 
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 		dither.c resample.c composite.c ntsc.c color.c \
-		rasterop.c $(DEVICE_SRCS)
+		rasterop.c generic.c memory.c $(DEVICE_SRCS)
 			
 OBJS		= $(GENERIC_OBJS)
 SRCS		= $(GENERIC_SRCS)
@@ -147,7 +147,7 @@ misc.o:		ncarg_ras.h
 hdf.o:		ncarg_ras.h hdf.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h
-rasinfo.o:	ncarg_ras.h
+rasls.o:	ncarg_ras.h
 rascopy.o:	ncarg_ras.h
 raster.o:	ncarg_ras.h raster.h options.h devices.h Makefile
 sunraster.o:	ncarg_ras.h sunraster.h
@@ -175,9 +175,9 @@ saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS)
 	#load $(OBJS) -ldf
 
-test: rasinfo.o rascopy.o
-	$(CC) $(CFLAGS) -o rasinfo rasinfo.o $(LOCLIB)
-	$(CC) $(CFLAGS) -o rascopy rascopy.o $(LOCLIB)
+test: rasls.o rascopy.o
+	$(CC) $(CFLAGS) -o rasls rasls.o $(LOCLIB) -lmalloc
+	$(CC) $(CFLAGS) -o rascopy rascopy.o $(LOCLIB) -lmalloc
 
 lint:
 	lint -I$(CINC) $(SRCS) 1> lint.out 2>&1

@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.12 1992-09-17 18:17:40 don Exp $
+ *	$Id: hdf.c,v 1.13 1993-01-17 06:51:41 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -77,15 +77,15 @@ HDFOpen(name)
 	Raster		*ras;
 	HDFInfo		*dep;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) ESprintf(errno, "calloc()");
+		(void) ESprintf(errno, "ras_calloc()");
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(HDFInfo),1);
+	ras->dep = ras_calloc(sizeof(HDFInfo),1);
 	if (ras->dep == (char *) NULL) {
-		(void) ESprintf(E_UNKNOWN, "calloc()");
+		(void) ESprintf(E_UNKNOWN, "ras_calloc()");
 		return( (Raster *) NULL );
 	}
 	dep = (HDFInfo *) ras->dep;
@@ -95,10 +95,10 @@ HDFOpen(name)
 		return( (Raster *) NULL );
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	/* Insidious bugs unless these initializations are done. */
@@ -165,9 +165,9 @@ HDFOpen(name)
 
 	/* Allocate memory for image storage. */
 	
-	ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+	ras->data = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 	if (ras->data == (unsigned char *) NULL) {
-		(void) ESprintf(errno, "calloc()");
+		(void) ESprintf(errno, "ras_calloc()");
 		return( (Raster *) NULL );
 	}
 
@@ -175,13 +175,13 @@ HDFOpen(name)
 	
 	if (ras->type == RAS_INDEXED) {
 		ras->ncolor = RAS_DEFAULT_NCOLORS;
-		ras->red   = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
-		ras->green = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
-		ras->blue  = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
+		ras->red   = (unsigned char *) ras_calloc(RAS_DEFAULT_NCOLORS, 1);
+		ras->green = (unsigned char *) ras_calloc(RAS_DEFAULT_NCOLORS, 1);
+		ras->blue  = (unsigned char *) ras_calloc(RAS_DEFAULT_NCOLORS, 1);
 		if (ras->red   == (unsigned char *) NULL ||
 		    ras->green == (unsigned char *) NULL ||
 		    ras->blue  == (unsigned char *) NULL) {
-			(void) ESprintf(errno, "calloc()");
+			(void) ESprintf(errno, "ras_calloc()");
 			return( (Raster *) NULL );
 		}
 	}
@@ -219,20 +219,20 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 		/*
 		 * hdf routines will only write to a disk file
 		 */
-		name = malloc (strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		name = ras_malloc (strlen(TMPDIR) + strlen(TMPFILE) + 1);
 		(void) strcpy(name, TMPDIR);
 		(void) strcat(name, TMPFILE);
 		(void) mktemp(name);
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -390,9 +390,6 @@ HDFRead(ras)
 	int		i;
 	int		retry;
 	int		status;
-	HDFInfo		*dep;
-
-	dep = (HDFInfo *) ras->dep;
 
 	for(retry = 0, status = EOF; status == EOF; retry++) {
 		if (retry == 4) return(RAS_EOF);
@@ -460,8 +457,8 @@ HDFClose(ras)
 		char	*buf;
 		int	tmp_fd;
 
-		if ((buf = malloc (BUFSIZ)) == NULL) {
-			(void) ESprintf(errno, "malloc()");
+		if ((buf = ras_malloc (BUFSIZ)) == NULL) {
+			(void) ESprintf(errno, "ras_malloc()");
 			return(RAS_ERROR);
 		}
 
@@ -478,14 +475,10 @@ HDFClose(ras)
 		}
 		(void) close(tmp_fd);
 		(void) unlink(ras->name);
-		(void) free(buf);
+		(void) ras_free(buf);
         }
 
-	free( (char *) ras->data);
-	free( (char *) ras->red);
-	free( (char *) ras->green);
-	free( (char *) ras->blue);
-	if ( ras->dep != (char *) NULL ) free( (char *) ras->dep);
+	status = GenericClose(ras);
 
 	return(status);
 }

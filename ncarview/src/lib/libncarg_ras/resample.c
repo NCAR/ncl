@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.9 1992-09-21 17:49:35 don Exp $
+ *	$Id: resample.c,v 1.10 1993-01-17 06:51:55 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -94,8 +94,8 @@ int	RasterResampleBilinear(src, dst, verbose)
 	"fx" and "fy" are coordinates in the continuous input
 	image space. The vector "fx" is precomputed for efficiency.
 	*/
-	x1v = (int *) malloc(dst->nx*sizeof(int));
-	fracxv = (float *) malloc(dst->nx*sizeof(float));
+	x1v = (int *) ras_malloc(dst->nx*sizeof(int));
+	fracxv = (float *) ras_malloc(dst->nx*sizeof(float));
 
 	for(dx=0; dx<dst->nx; dx++) {
 		fx = (float)dx*(((float)src->nx - 1)/((float)dst->nx - 1));
@@ -177,8 +177,8 @@ int	RasterResampleBilinear(src, dst, verbose)
 				(int) (i1 + fracx * (i2 - i1));
 	}}
 
-	(void) free((char *) x1v);
-	(void) free((char *) fracxv);
+	(void) ras_free((char *) x1v);
+	(void) ras_free((char *) fracxv);
 
 	return(RAS_OK);
 }
@@ -252,7 +252,7 @@ int	RasterResampleNearestNeighbor(src, dst, verbose)
 	for efficiency.
 	*/
 
-	sx = (int *) malloc(dst->nx*sizeof(int));
+	sx = (int *) ras_malloc(dst->nx*sizeof(int));
 
 	for(dx=0; dx<dst->nx; dx++) {
 		fx = (float)dx*(((float)src->nx - 1)/((float)dst->nx - 1));
@@ -286,7 +286,7 @@ int	RasterResampleNearestNeighbor(src, dst, verbose)
 		}
 	}
 
-	(void) free((char *) sx);
+	(void) ras_free((char *) sx);
 
 	return(RAS_OK);
 }
@@ -422,10 +422,7 @@ int
 RasterAverage(src, dst)
 	Raster	*src, *dst;
 {
-	Raster		*new = (Raster *) NULL;
-	Raster		*result;
 	int		sx, sy, dx, dy;
-	int		pixel;
 	unsigned char	ip00, ip10, ip01, ip11;
 	unsigned char	red, green, blue;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.12 1992-09-24 22:55:32 don Exp $
+ *	$Id: nrif.c,v 1.13 1993-01-17 06:51:49 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -74,13 +74,13 @@ NrifOpen(name)
 	char		*errmsg = "NrifOpen(\"%s\")";
 	Raster		*ras;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(NrifInfo),1);
+	ras->dep = ras_calloc(sizeof(NrifInfo),1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
@@ -104,10 +104,10 @@ NrifOpen(name)
 		}
 	}
 
-	ras->name = (char *) calloc( (unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc( (unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	NrifSetFunctions(ras);
@@ -172,7 +172,7 @@ NrifRead(ras)
 	/* Comment Field */
 
 	if (dep->cmtlen > 0) {
-		ras->text = calloc(dep->cmtlen, 1);
+		ras->text = ras_calloc(dep->cmtlen, 1);
 		status = fread((char *)ras->text, 1, (int)dep->cmtlen, ras->fp);
 		if (status != dep->cmtlen) return(RAS_EOF);
 	}
@@ -183,7 +183,7 @@ NrifRead(ras)
 	/* Device Information (nobody cares) */
 
 	if (dep->devlen > 0) {
-		dep->device_info = calloc(dep->devlen, 1);
+		dep->device_info = ras_calloc(dep->devlen, 1);
 		status = fread( (char *) dep->device_info, 1,
 			 (int) dep->devlen,ras->fp);
 		if (status != dep->devlen) return(RAS_EOF);
@@ -312,10 +312,10 @@ _NrifReadIndexed(ras)
 	/* Allocate space for color tables and image. */
 	
 	if (ras->data == (unsigned char *) NULL) {
-		ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
+		ras->red = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->green =(unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->data = (unsigned char *)ras_calloc((unsigned) ras->length,1);
 	}
 
 	/* Read color table and image frame. */
@@ -394,10 +394,10 @@ _NrifReadIndexedRLE(ras)
 	/* Allocate space for color tables and image. */
 	
 	if (ras->data == (unsigned char *) NULL) {
-		ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
+		ras->red = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->green =(unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->data = (unsigned char *)ras_calloc((unsigned) ras->length,1);
 	}
 
 	/* Read color table and image frame. */
@@ -462,7 +462,7 @@ _NrifReadDirect(ras)
 	ras->length = ras->nx * ras->ny * 3;
 
 	if (ras->data == (unsigned char *) NULL) {
-		ras->data = (unsigned char *) calloc((unsigned)ras->length,1);
+		ras->data = (unsigned char *) ras_calloc((unsigned)ras->length,1);
 	}
 	
 	status = fread((char *)ras->data, 1, ras->length, ras->fp);
@@ -505,7 +505,7 @@ _NrifReadDirectRLE(ras)
 	ras->length	= ras->nx * ras->ny * 3;
 
 	if (ras->data == (unsigned char *) NULL) {
-		ras->data = (unsigned char *)calloc ((unsigned) ras->length, 1);
+		ras->data = (unsigned char *)ras_calloc ((unsigned) ras->length, 1);
 	}
 
 	for(length=0, y=0; y<ras->ny; y++)
@@ -536,13 +536,13 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 	Raster		*ras;
 	NrifInfo	*dep;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(NrifInfo),1);
+	ras->dep = ras_calloc(sizeof(NrifInfo),1);
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
@@ -561,14 +561,14 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment)+1),1);
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -589,13 +589,13 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 			ras->ncolor	= RAS_DEFAULT_NCOLORS;
 			ras->type	= RAS_INDEXED;
 			ras->red	= (unsigned char *) 
-					  calloc((unsigned) ras->ncolor, 1);
+					  ras_calloc((unsigned) ras->ncolor, 1);
 			ras->green	= (unsigned char *) 
-					  calloc((unsigned) ras->ncolor, 1);
+					  ras_calloc((unsigned) ras->ncolor, 1);
 			ras->blue	= (unsigned char *) 
-					  calloc((unsigned) ras->ncolor, 1);
+					  ras_calloc((unsigned) ras->ncolor, 1);
 			ras->data	= (unsigned char *) 
-					  calloc((unsigned) ras->length, 1);
+					  ras_calloc((unsigned) ras->length, 1);
 
 			break;
 		
@@ -616,7 +616,7 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 			ras->length	= nx * ny * 3;
 
 			ras->data = (unsigned char *) 
-				calloc ((unsigned) ras->length, 1);
+				ras_calloc ((unsigned) ras->length, 1);
 
 			break;
 		
@@ -636,42 +636,13 @@ NrifClose(ras)
 {
 	int	status;
 
-	if (ras->fp != (FILE *) NULL) {
-		if(ras->fp != stdin && ras->fp != stdout) {
-			status = fclose(ras->fp);
-			if (status != 0) {
-				ESprintf(errno, "NrifClose()");
-				return(RAS_ERROR);
-			}
-		}
-	}
-	else {
-		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
-			status = close(ras->fd);
-			if (status != 0) {
-				ESprintf(errno, "NrifClose()");
-				return(RAS_ERROR);
-			}
-		}
-	}
-	switch(ras->type) {
-		case RAS_INDEXED:
-			free((char *) ras->data);
-			free((char *) ras->red);
-			free((char *) ras->green);
-			free((char *) ras->blue);
-			break;
-		
-		case RAS_DIRECT:
-			free((char *) ras->data);
-			break;
-	}
-
 	if (tmpbuf != (unsigned char *) NULL) {
-		(void) free(tmpbuf);
+		(void) ras_free( (Voidptr) tmpbuf);
 	}
 
-	return(RAS_OK);
+	status = GenericClose(ras);
+
+	return(status);
 }
 
 int
@@ -1138,7 +1109,7 @@ _NrifTmpbuf(size)
 	}
 	else {
 		if (tmpbuf == (unsigned char *) NULL) {
-			p = (unsigned char *) malloc(size);
+			p = (unsigned char *) ras_malloc(size);
 		}
 		else {
 			p = (unsigned char *) realloc(tmpbuf, size);

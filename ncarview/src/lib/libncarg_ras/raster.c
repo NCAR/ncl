@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.21 1993-01-13 20:18:14 don Exp $
+ *	$Id: raster.c,v 1.22 1993-01-17 06:51:54 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -580,9 +580,9 @@ RasterCreate(nx, ny, encoding)
 	RasterEncoding	encoding;
 {
 	Raster	*ras;
-	char	*calloc();
+	char	*comment = "Memory raster structure";
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(RAS_E_NULL_NAME, "RasterCreate()");
@@ -591,16 +591,17 @@ RasterCreate(nx, ny, encoding)
 
 	if (encoding == RAS_INDEXED) {
 		ras->written = False;
-		ras->text    = "Memory raster structure";
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;
 		ras->length  = ras->nx * ras->ny;
 		ras->ncolor  = RAS_DEFAULT_NCOLORS;
 		ras->type    = RAS_INDEXED;
 
-		ras->red     = (unsigned char *)calloc((unsigned)ras->ncolor,1);
-		ras->green   = (unsigned char *)calloc((unsigned)ras->ncolor,1);
-		ras->blue    = (unsigned char *)calloc((unsigned)ras->ncolor,1);
+		ras->red     = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green   = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue    = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
 
 		if (ras->red == (unsigned char *) NULL ||
 		    ras->green == (unsigned char *) NULL ||
@@ -609,7 +610,7 @@ RasterCreate(nx, ny, encoding)
 			return( (Raster *) NULL );
 		}
 
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
@@ -617,14 +618,15 @@ RasterCreate(nx, ny, encoding)
 	}
 	else if (encoding == RAS_DIRECT) {
 		ras->written = False;
-		ras->text    = "Memory raster structure";
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;
 		ras->length  = ras->nx * ras->ny * 3;
 		ras->ncolor  = 256 * 256 * 256;
 		ras->type    = RAS_DIRECT;
 
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
@@ -649,16 +651,16 @@ RasterDestroy(ras)
 {
 	if (ras != (Raster *) NULL) {
 		if (ras->red != (unsigned char *) NULL)
-			free( (char *) ras->red);
+			ras_free( (char *) ras->red);
 		if (ras->green != (unsigned char *) NULL)
-			free( (char *) ras->green);
+			ras_free( (char *) ras->green);
 		if (ras->blue != (unsigned char *) NULL)
-			free( (char *) ras->blue);
+			ras_free( (char *) ras->blue);
 		if (ras->data != (unsigned char *) NULL)
-			free( (char *) ras->data);
+			ras_free( (char *) ras->data);
 
 		if (ras != (Raster *) NULL)
-			free( (char *) ras);
+			ras_free( (char *) ras);
 	}
 	return(True);
 }

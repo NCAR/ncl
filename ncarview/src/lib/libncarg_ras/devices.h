@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.9 1992-09-14 22:17:32 don Exp $
+ *	$Id: devices.h,v 1.10 1993-01-17 06:51:39 don Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -137,7 +137,7 @@ static RasterDevice rasdevices[] = {
 },
 #ifdef BuildRasterNrif
 {
-	"nrif", "NCAR NRIF",
+	"nrif", "NRIF",
 	NrifOpen, NrifOpenWrite, 
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo,
 	ImageCount_

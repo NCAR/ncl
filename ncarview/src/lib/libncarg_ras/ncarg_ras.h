@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.13 1992-09-28 16:19:17 don Exp $
+ *	$Id: ncarg_ras.h,v 1.14 1993-01-17 06:51:46 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -305,6 +305,25 @@ extern	int RasterDestroy(
 #endif
 	);
 
+extern	Voidptr	ras_malloc(
+#ifdef	NeedFuncProto
+	unsigned	len
+#endif
+	);
+
+extern	Voidptr	ras_calloc(
+#ifdef NeedFuncProto
+	unsigned	nelem,
+	unsigned	elsize
+#endif
+	);
+
+extern	void	ras_free(
+#ifdef NeedFuncProto
+	Voidptr		p
+#endif
+	);
+
 extern	int	RasterStat(
 #ifdef	NeedFuncProto
 	char	*path,
@@ -376,7 +395,15 @@ extern	int RasterCenterCrop(
 #endif
 );
 
-/********* Function deinitions for SGI semi-public interface ***********/
+/********* Function definitions for Generic driver ********************/
+
+extern int GenericClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function definitions for SGI semi-public interface ***********/
 
 extern Raster *SGIOpen(
 #ifdef NeedFuncProto
@@ -424,7 +451,7 @@ extern int SGISetFunctions(
 #endif
 	);
 
-/********* Function deinitions for NRIF semi-public interface ***********/
+/********* Function definitions for NRIF semi-public interface ***********/
 
 extern Raster *NrifOpen(
 #ifdef NeedFuncProto
@@ -472,7 +499,7 @@ extern int NrifSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for Sun semi-public interface ***********/
+/********* Function definitions for Sun semi-public interface ***********/
 
 extern Raster *SunOpen(
 #ifdef NeedFuncProto
@@ -520,7 +547,7 @@ extern int SunSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for XWD semi-public interface ***********/
+/********* Function definitions for XWD semi-public interface ***********/
 
 extern Raster *XWDOpen(
 #ifdef NeedFuncProto
@@ -568,7 +595,7 @@ extern int XWDSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for HDF semi-public interface ***********/
+/********* Function definitions for HDF semi-public interface ***********/
 
 extern Raster *HDFOpen(
 #ifdef NeedFuncProto
@@ -616,7 +643,7 @@ extern int HDFSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for AVS semi-public interface ***********/
+/********* Function definitions for AVS semi-public interface ***********/
 
 extern Raster *AVSOpen(
 #ifdef NeedFuncProto
@@ -664,7 +691,7 @@ extern int AVSSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for Parallax semi-public interface ***********/
+/********* Function definitions for Parallax semi-public interface ***********/
 
 extern Raster *ParallaxOpen(
 #ifdef NeedFuncProto
@@ -712,7 +739,7 @@ extern int ParallaxSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for HPLJ semi-public interface ***********/
+/********* Function definitions for HPLJ semi-public interface ***********/
 
 extern Raster *HPLJOpen(
 #ifdef NeedFuncProto
@@ -760,7 +787,7 @@ extern int HPLJSetFunctions(
 #endif
 	);
 
-/********* Function deinitions for Abekas semi-public interface ***********/
+/********* Function definitions for Abekas semi-public interface ***********/
 
 extern Raster *AbekasOpen(
 #ifdef NeedFuncProto

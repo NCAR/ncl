@@ -3,7 +3,7 @@
 
 
 #define SGI_FORMAT_NAME		"sgi"
-#define SGI_MAGIC 	0732
+#define SGI_MAGIC 		0732
 
 typedef enum {
 	SGI_CM_NORMAL,		/* file contains rows of values which 
@@ -34,13 +34,6 @@ typedef enum {
 #define	IBUFSIZE(pixels)	((pixels+(pixels>>6))<<2)
 #define	RLE_NOP			0x00
 
-#define	ierror(p)		(((p)->flags&_IOERR)!=0)
-#define	ifileno(p)		((p)->file)
-#define	getpix(p)		(--(p)->cnt>=0 ? *(p)->ptr++ : ifilbuf(p))
-#define putpix(p,x)		(--(p)->cnt>=0 \
-				    ? ((int)(*(p)->ptr++=(unsigned)(x))) \
-				    : iflsbuf(p,(unsigned)(x)))
-
 /*
 SGI reserves 512 bytes for the header, but the structure itself
 is not (yet) that large.
@@ -49,35 +42,33 @@ is not (yet) that large.
 #define RAS_SGI_RESERVED	512
 
 typedef struct {
-    unsigned short	imagic;		/* stuff saved on disk . . */
-    unsigned short 	type;
-    unsigned short 	dim;
-    unsigned short 	xsize;
-    unsigned short 	ysize;
-    unsigned short 	zsize;
-    unsigned long 	min;
-    unsigned long 	max;
-    unsigned long	wastebytes;	
-    char 		name[80];
-    SgiColormapType	colormap;
-
-    long 		file;		/* stuff used in core only */
-    unsigned short 	flags;
-    short		dorev;
-    short		x;
-    short		y;
-    short		z;
-    short		cnt;
-    unsigned short	*ptr;
-    unsigned short	*base;
-    unsigned short	*tmpbuf;
-    unsigned long	offset;
-    unsigned long	rleend;		/* for rle images */
-    unsigned long	*rowstart;	/* for rle images */
-    long		*rowsize;	/* for rle images */
+	/* Saved on disk. */
+	unsigned short	imagic;
+	unsigned short 	type;
+	unsigned short 	dim;
+	unsigned short 	xsize;
+	unsigned short 	ysize;
+	unsigned short 	zsize;
+	unsigned long 	min;
+	unsigned long 	max;
+	unsigned long	wastebytes;	
+	char 		name[80];
+	SgiColormapType	colormap;
+	/* Used in memory. */
+	long 		file;
+	unsigned short 	flags;
+	short		dorev;
+	short		x;
+	short		y;
+	short		z;
+	short		cnt;
+	unsigned short	*ptr;
+	unsigned short	*base;
+	unsigned short	*tmpbuf;
+	unsigned long	offset;
+	unsigned long	rleend;		/* for rle images */
+	unsigned long	*rowstart;	/* for rle images */
+	long		*rowsize;	/* for rle images */
 } SGIInfo;
 
-unsigned short *ibufalloc();
-
-#define IMAGEDEF		/* for backwards compatibility */
 #endif	/* !__SGIRASTER_H__ */

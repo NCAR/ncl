@@ -1,3 +1,7 @@
+Sun
+---
+The 24-bit RGB RLE portion of the driver needs work.
+
 Parallax
 --------
 Compiling parallax.c with the Sun "acc" compiler results in problems
@@ -6,16 +10,18 @@ ANSI-compatible.
 
 HDF
 ---
-The new driver is built upon HDF3.2r1.  The HDF driver needs to have
-updated error messages, both internally and in error.h. 24-bit imagery
-does not yet appear to work properly.
+The new driver is built upon HDF3.2r3.  24-bit imagery needs to be
+checked out thoroughly.
 
 SGI
 ---
-Support for compressed and uncompressed SGI image input is provided but
-output is not in yet.
+The SGI rasterfile driver supports compressed and uncompressed input,
+and uncompressed output. The driver needs to be modified so that it
+can deal with INDEXED color on output.
 
 A60
 ---
-Support for input and output of Abekas RGB images is provided. YUV
-images are not yet supported.
+There is currently a bug in the output of Abekas RGB images but support
+for input and output of Abekas RGB images is provided. YUV images are
+not yet supported. The driver needs to be modified so that it can
+deal with INDEXED color on output.

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.16 1992-12-14 22:01:21 don Exp $
+ *	$Id: sunraster.c,v 1.17 1993-01-17 06:52:00 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,7 +47,7 @@ SunOpen(name)
 {
 	Raster	*ras;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
@@ -71,10 +71,10 @@ SunOpen(name)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	SunSetFunctions(ras);
@@ -99,13 +99,13 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(SunInfo),1);
+	ras->dep = ras_calloc(sizeof(SunInfo),1);
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
@@ -124,14 +124,14 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName)+1),1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment)+1),1);
+		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -149,16 +149,16 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->red	= (unsigned char *) ras_calloc((unsigned)ras->ncolor,1);
+	ras->green	= (unsigned char *) ras_calloc((unsigned)ras->ncolor,1);
+	ras->blue	= (unsigned char *) ras_calloc((unsigned)ras->ncolor,1);
 
 	/*
 	Allocate a few extra bytes at the end of the image, so that the 
 	output routines can pad to 16 bits without referencing bogus
 	memory.
 	*/
-	ras->data	= (unsigned char *)calloc((unsigned)(ras->length+4),1);
+	ras->data = (unsigned char *)ras_calloc((unsigned)(ras->length+4),1);
 
 	/* Set up Sun header structure. */
 
@@ -273,11 +273,12 @@ SunRead(ras)
 	unsigned char		rgb_buf[256];
 	unsigned char		*p;
 	unsigned char		dummy;
+	int			do_pad;
 
 	/* Allocate the raster format dependent (header) structure. */
 
 	if (ras->dep == (char *) NULL) {
-		ras->dep =  (char *) calloc(sizeof(SunInfo),1);
+		ras->dep =  (char *) ras_calloc(sizeof(SunInfo),1);
 		if (ras->dep == (char *) NULL) {
 			(void) ESprintf(errno, errmsg, ras->name);
 			return(RAS_ERROR);
@@ -375,7 +376,7 @@ SunRead(ras)
 
 	if (ras->data == (unsigned char *) NULL) {
 
-		ras->data = (unsigned char *) calloc( ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc( ras->length, 1);
 
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "");
@@ -385,9 +386,9 @@ SunRead(ras)
 		/* Allocate memory for colormap if necessary. */
 
 		if (dep->ras_maptype == RMT_EQUAL_RGB) {
-			ras->red = (unsigned char *) calloc(256, 1);
-			ras->green = (unsigned char *) calloc(256, 1);
-			ras->blue = (unsigned char *) calloc(256, 1);
+			ras->red = (unsigned char *) ras_calloc(256, 1);
+			ras->green = (unsigned char *) ras_calloc(256, 1);
+			ras->blue = (unsigned char *) ras_calloc(256, 1);
 			if (ras->red == (unsigned char *) NULL ||
 			    ras->green == (unsigned char *) NULL ||
 			    ras->blue == (unsigned char *) NULL) {
@@ -486,7 +487,7 @@ SunRead(ras)
 
 		if (tmpbuf == (unsigned char *) NULL) {
 			tmpbuf = (unsigned char *) 
-				calloc( (unsigned) dep->ras_length, 1);
+				ras_calloc( (unsigned) dep->ras_length, 1);
 			if (tmpbuf == (unsigned char *) NULL) {
 				(void) ESprintf(errno, "");
 				return(RAS_ERROR);
@@ -515,7 +516,7 @@ SunRead(ras)
 		image_size = dep->ras_length;
 		if (image_size > tmpbuf_size) {
 			if (tmpbuf == (unsigned char *) NULL) {
-			  tmpbuf=(unsigned char *) malloc(image_size);
+			  tmpbuf=(unsigned char *) ras_malloc(image_size);
 			  tmpbuf_size = image_size;
 			}
 			else {
@@ -535,6 +536,14 @@ SunRead(ras)
 #endif
 		if (status != image_size) image_size = status;
 
+		if (ras->nx % 2) {
+			do_pad = True;
+		}
+		else {
+			do_pad = False;
+		}
+		x = 0; y = 0;
+
 		for(datap = ras->data, rlep = tmpbuf;
 		rlep < (tmpbuf+image_size) ; ) {
 			if (*rlep == RAS_SUN_ESC) {
@@ -542,57 +551,104 @@ SunRead(ras)
 				if (*rlep == 0) {
 					*datap++ = RAS_SUN_ESC;
 					rlep++;
+					if (do_pad) {
+						if (x == ras->nx) {
+							datap--;
+							x = 0;
+							y++;
+						}
+						else {
+							x++;
+						}
+					}
+					else {
+						if (x == ras->nx-1) {
+							x = 0;
+							y++;
+						}
+						else {
+							x++;
+						}
+					}
 				}
 				else {
 					count = *rlep++ + 1;
 					value = *rlep++;
 					for(i=0; i<count; i++) {
 						*datap++=value;
+						if (do_pad) {
+							if (x == ras->nx) {
+								datap--;
+								x = 0;
+								y++;
+							}
+							else {
+								x++;
+							}
+						}
+						else {
+							if (x == ras->nx-1) {
+								x = 0;
+								y++;
+							}
+							else {
+								x++;
+							}
+						}
 					}
 				}
 			}
 			else {
 				*datap++ = *rlep++;
+				if (do_pad && x == ras->nx) {
+					datap--;
+					x = 0; y++;
+				}
+				else if (!do_pad && x == ras->nx-1) {
+					x = 0; y++;
+				}
+				else {
+					x++;
+				}
 			}
 		}
+#ifdef DEBUG
+		(void) fprintf(stderr, "x = %d   y = %d\n", x, y);
+		(void) fprintf(stderr, "sizeof(rle) = %d\n", dep->ras_length);
+		(void) fprintf(stderr, "sizeof(ras) = %d\n", ras->length);
+		(void) fprintf(stderr, "datap start = %x\n", ras->data);
+		(void) fprintf(stderr, "datap end   = %x\n", datap-1);
+		(void) fprintf(stderr, "diff        = %d\n", datap-ras->data);
+		(void) fprintf(stderr, "datap = %x\n", datap);
+#endif
 	}
 
 	return(RAS_OK);
 }
+
+#ifdef DEAD
+int
+_SunSetRLEPixel(do_pad, data, nx, ny, x, y)
+	int		do_pad;
+	unsigned char	*data;
+	int		*x;
+	int		*y;
+{
+	if (do_pad) {
+	}
+	else {
+	}
+}
+#endif
 
 int
 SunClose(ras)
 	Raster	*ras;
 {
 	int		status;
-	char		*errmsg = "SunClose(\"%s\")";
+	status = GenericClose(ras);
 
-	if (ras->fp != (FILE *) NULL) {
-		if(ras->fp != stdin && ras->fp != stdout) {
-			status = fclose(ras->fp);
-			if (status != 0) {
-				ESprintf(errno, errmsg, ras->name);
-				return(RAS_ERROR);
-			}
-		}
-	}
-	else {
-		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
-			status = close(ras->fd);
-			if (status != 0) {
-				ESprintf(errno, errmsg, ras->name);
-				return(RAS_ERROR);
-			}
-		}
-	}
-
-	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
-	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
-	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
-	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
-	if (ras->dep   !=  (char *) NULL)         free( (char *) ras->dep);
-
-	return(RAS_OK);
+	return(status);
 }
 
 int

@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.4 1992-12-14 22:01:22 don Exp $
+ *	$Id: sgiraster.c,v 1.5 1993-01-17 06:51:57 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -53,7 +53,7 @@ SGIOpen(name)
 {
 	Raster	*ras;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "SGIOpen(\"%s\")", name);
 		return( (Raster *) NULL );
@@ -79,12 +79,12 @@ SGIOpen(name)
 
 	/* Record the name of the file. */
 
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
 	/* Record the format. */
 
-	ras->format = (char *)calloc((unsigned)(strlen(SGI_FORMAT_NAME)+1),1);
+	ras->format=(char *)ras_calloc((unsigned)(strlen(SGI_FORMAT_NAME)+1),1);
 	(void) strcpy(ras->format, SGI_FORMAT_NAME);
 
 	SGISetFunctions(ras);
@@ -107,7 +107,7 @@ SGIRead(ras)
 	/* Allocate the raster format dependent (header) structure. */
 
 	if (ras->dep == (char *) NULL) {
-		ras->dep =  (char *) calloc(sizeof(SGIInfo),1);
+		ras->dep =  (char *) ras_calloc(sizeof(SGIInfo),1);
 		if (ras->dep == (char *) NULL) {
 			(void) ESprintf(errno, "SGIRead()");
 			return(RAS_ERROR);
@@ -192,7 +192,7 @@ SGIRead(ras)
 
 		/* Allocate image storage. */
 
-		ras->data = (unsigned char *) calloc(ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc(ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "SGIRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
@@ -205,7 +205,7 @@ SGIRead(ras)
 		just to be safe.
 		*/
 
-		dep->tmpbuf = (unsigned short *) calloc(3*dep->xsize, 1);
+		dep->tmpbuf = (unsigned short *) ras_calloc(3*dep->xsize, 1);
 		if (dep->tmpbuf == (unsigned short *) NULL) {
 			(void) ESprintf(errno, "SGIRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
@@ -254,8 +254,8 @@ SGIRead(ras)
 
 		/* Allocate memory for RLE tables. */
 		tablesize = dep->ysize * dep->zsize * sizeof(long);
-		dep->rowstart = (unsigned long *) calloc(tablesize, 1);
-		dep->rowsize  = (long *) calloc(tablesize, 1);
+		dep->rowstart = (unsigned long *) ras_calloc(tablesize, 1);
+		dep->rowsize  = (long *) ras_calloc(tablesize, 1);
 
 		if (dep->rowstart == (unsigned long *) NULL ||
 		    dep->rowsize  == (long *) NULL) {
@@ -476,30 +476,24 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 	char		*errmsg = "SGIOpenWrite(\"%s\")";
 	Raster		*ras;
 
-	ras = (Raster *) NULL;
-	if (ras == (Raster *) NULL) {
-		(void) ESprintf(RAS_E_UNSUPPORTED_FUNCTION,errmsg,name);
-		return(ras);
-	}
-
 	if (name == (char *) NULL) {
-		(void) ESprintf(RAS_E_NULL_NAME, "SGIOpenWrite(\"%s\")", name);
+		(void) ESprintf(RAS_E_NULL_NAME, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
-	if (encoding != RAS_INDEXED) {
+	if (encoding != RAS_DIRECT) {
 		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
 		"Only DIRECT color is supported for SGI rasterfiles");
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) ESprintf(errno, "SGIOpenWrite(\"%s\")", name);
+		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(SGIInfo),1);
+	ras->dep = ras_calloc(sizeof(SGIInfo),1);
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "SGIOpenWrite(\"%s\")", name);
 		return( (Raster *) NULL );
@@ -516,14 +510,14 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *)calloc((unsigned)(strlen(SGI_FORMAT_NAME)+1),1);
+	ras->format=(char *)ras_calloc((unsigned)(strlen(SGI_FORMAT_NAME)+1),1);
 	(void) strcpy(ras->format, SGI_FORMAT_NAME);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -535,8 +529,7 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny * 3;
 	ras->ncolor	= 256 * 256 * 256;
 	ras->type	= RAS_DIRECT;
-
-	ras->data	= (unsigned char *)calloc((unsigned)(ras->length),1);
+	ras->data	=(unsigned char *)ras_calloc((unsigned)(ras->length),1);
 
 	(void) SGISetFunctions(ras);
 
@@ -547,10 +540,77 @@ int
 SGIWrite(ras)
 	Raster	*ras;
 {
-	char		*errmsg = "SGIWrite(\"%s\")";
+	char			*errmsg = "SGIWrite(\"%s\")";
+	SGIInfo			*dep;
+	int			x, y, i, nb;
+	unsigned long		swaptest = 1;
+	static unsigned char	*tmpbuf;
+	static int		tmpbuf_size = 0;
+	unsigned char		*iptr, *optr;
 
-	(void) ESprintf(RAS_E_UNSUPPORTED_FUNCTION, errmsg, ras->name);
-	return(RAS_ERROR);
+	dep = (SGIInfo *) ras->dep;
+
+	if (tmpbuf == (unsigned char *) NULL) {
+		if (ras->nx > RAS_SGI_RESERVED) {
+			tmpbuf_size = ras->nx;
+		}
+		else {
+			tmpbuf_size = RAS_SGI_RESERVED;
+		}
+		tmpbuf = (unsigned char *) calloc(tmpbuf_size, 1);
+		if (tmpbuf == (unsigned char *) NULL) {
+			(void) ESprintf(errno, errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+	}
+
+	dep->imagic     = SGI_MAGIC;
+	dep->type       = SGI_TYPE_VERBATIM | 1;
+	dep->dim        = 3;
+	dep->xsize      = ras->nx; 
+	dep->ysize      = ras->ny;
+	dep->zsize      = 3; /* RGB image. */
+	dep->min        = 0;
+	dep->max        = 255;
+	dep->wastebytes = 0;
+	dep->colormap   = SGI_CM_NORMAL;
+
+	/* Write the header, swapping bytes if necessary. */
+
+	if (*(char *) &swaptest)
+		_swaplong((char *) dep, sizeof(SGIInfo));
+
+	nb = write(ras->fd, (char *) ras->dep, sizeof(SGIInfo));
+	if (nb != sizeof(SGIInfo)) return(RAS_EOF);
+
+	ras->written = True;
+
+	/* Write bytes remaining before actual image data. */
+
+	nb = write(ras->fd, (char *)tmpbuf, (RAS_SGI_RESERVED-sizeof(SGIInfo)));
+	if (nb != (RAS_SGI_RESERVED-sizeof(SGIInfo))) return(RAS_EOF);
+
+	/*
+	** SGI_VERBATIM rasterfiles are scan-plane interleaved,
+	** so we write out the red plane, the green plane, and then
+	** the blue plane. There is no compression done here.
+	*/
+
+	for(i=0; i<3; i++) {
+		for(y=0; y<ras->ny; y++) {
+			iptr = &DIRECT_RED(ras, 0, ras->ny-y-1)+i;
+			optr = tmpbuf;
+			for(x=0; x<ras->nx; x++) {
+				*optr = *iptr;
+				optr += 1;
+				iptr += 3;
+			}
+			nb = write(ras->fd, (char *) tmpbuf, ras->nx);
+			if (nb != ras->nx) return(RAS_EOF);
+		}
+	}
+
+	return(RAS_OK);
 }
 
 int
@@ -605,18 +665,18 @@ SGIClose(ras)
 		}
 	}
 
-	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
-	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
-	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
-	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
+	if (ras->data  != (unsigned char *) NULL) ras_free( (char *) ras->data);
+	if (ras->red   != (unsigned char *) NULL) ras_free( (char *) ras->red);
+	if (ras->green != (unsigned char *) NULL) ras_free( (char *) ras->green);
+	if (ras->blue  != (unsigned char *) NULL) ras_free( (char *) ras->blue);
 
 	/* Free up file-dependent memory. */
 
 	dep = (SGIInfo *) ras->dep;
 
-	if (dep->rowstart != (unsigned long *)NULL) free((void *)dep->rowstart);
-	if (dep->rowsize  != (long *) NULL)	  free( (void *) dep->rowsize);
-	if (ras->dep      !=  (char *) NULL)      free( (char *) ras->dep);
+	if (dep->rowstart != (unsigned long *)NULL) ras_free((void *)dep->rowstart);
+	if (dep->rowsize  != (long *) NULL)	  ras_free( (void *) dep->rowsize);
+	if (ras->dep      !=  (char *) NULL)      ras_free( (char *) ras->dep);
 	return(RAS_OK);
 }
 

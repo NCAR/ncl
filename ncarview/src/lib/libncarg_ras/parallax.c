@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.12 1992-11-11 23:19:29 don Exp $
+ *	$Id: parallax.c,v 1.13 1993-01-17 06:51:50 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -103,7 +103,7 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
 	Raster		*ras;
 	int		status;
@@ -113,14 +113,14 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 
 	ras = RasterCreate(nx, ny, encoding);
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, FormatName);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -283,6 +283,7 @@ ParallaxPrintInfo(ras)
 	return(RAS_OK);
 }
 
+/* ARGSUSED */
 int
 ParallaxRead(ras)
 	Raster	*ras;
@@ -295,20 +296,13 @@ int
 ParallaxClose(ras)
 	Raster	*ras;
 {
+	int		status;
+
 	parallax_fd	= -1;
 	parallax_vmefd	= -1;
 
-	if (ras != (Raster *) NULL) {
-		if (ras->data != (unsigned char *) NULL) {
-			free( (char *) ras->data);
-		}
-	}
-
-	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
-	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
-	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
-
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 int
@@ -521,7 +515,6 @@ ParallaxClear(r, g, b)
 
 ParallaxPrintStatus()
 {
-	static int	arg;
 	static int	format;
 	static int	out;
 	static int	compout;

@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.8 1992-09-24 22:55:28 don Exp $ */
+/* $Id: avsraster.c,v 1.9 1993-01-17 06:51:35 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -48,7 +48,7 @@ AVSOpen(name)
 {
 	Raster	*ras;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "AVSOpen(%s)", name);
 		return( (Raster *) NULL );
@@ -74,10 +74,10 @@ AVSOpen(name)
 
 	ras->dep = (char *) NULL;
 
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	(void) AVSSetFunctions(ras);
@@ -101,7 +101,7 @@ AVSRead(ras)
 	/* Allocate the raster format dependent (header) structure. */
 
 	if (ras->dep == (char *) NULL) {
-		ras->dep =  (char *) calloc(sizeof(AVSInfo),1);
+		ras->dep =  (char *) ras_calloc(sizeof(AVSInfo),1);
 		if (ras->dep == (char *) NULL) {
 			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
@@ -132,7 +132,7 @@ AVSRead(ras)
 	if (ras->data == (unsigned char *) NULL) {
 		image_size = ras->nx * ras->ny * 3;
 
-		ras->data = (unsigned char *) calloc( (unsigned) image_size, 1);
+		ras->data = (unsigned char *) ras_calloc( (unsigned) image_size, 1);
 
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "");
@@ -144,7 +144,7 @@ AVSRead(ras)
 
 	if (tmpbuf == (unsigned char *) NULL) {
 		tmplen = ras->nx * ras->ny * 4;
-		tmpbuf = (unsigned char *) calloc( (unsigned) tmplen, 1);
+		tmpbuf = (unsigned char *) ras_calloc( (unsigned) tmplen, 1);
 		if (tmpbuf == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
@@ -188,13 +188,13 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(AVSInfo),1);
+	ras->dep = ras_calloc(sizeof(AVSInfo),1);
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
@@ -213,14 +213,14 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -235,7 +235,7 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->red	= (unsigned char *) NULL;
 	ras->green	= (unsigned char *) NULL;
 	ras->blue	= (unsigned char *) NULL;
-	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
+	ras->data	= (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 
 	dep->unused1	= 0;
 	dep->nx		= nx;
@@ -272,7 +272,7 @@ AVSWrite(ras)
 
 	if (tmpbuf == (unsigned char *) NULL) {
 		tmplen = ras->nx * ras->ny * 4;
-		tmpbuf = (unsigned char *) calloc( (unsigned) tmplen, 1);
+		tmpbuf = (unsigned char *) ras_calloc( (unsigned) tmplen, 1);
 		if (tmpbuf == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
@@ -312,19 +312,10 @@ int
 AVSClose(ras)
 	Raster	*ras;
 {
-	if (ras->data != (unsigned char *) NULL) {
-		(void) free( (char *) ras->data);
-	}
-	if (ras->dep != (char *) NULL) {
-		(void) free( (char *) ras->dep);
-	}
+	int	status;
 
-	if (ras->type == RAS_INDEXED) {
-		(void) free( (char *) ras->red);
-		(void) free( (char *) ras->green);
-		(void) free( (char *) ras->blue);
-	}
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 int

@@ -1,5 +1,5 @@
 /*
- *	$Id: netcdf.c,v 1.1 1992-09-10 21:19:21 don Exp $
+ *	$Id: netcdf.c,v 1.2 1993-01-17 06:51:47 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,13 +57,13 @@ NetcdfOpen(name)
 	Raster		*ras;
 	NetcdfInfo	*dep;
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
+	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
-	ras->dep = calloc(sizeof(NetcdfInfo),1);
+	ras->dep = ras_calloc(sizeof(NetcdfInfo),1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
@@ -85,10 +85,10 @@ NetcdfOpen(name)
 		return( (Raster *) NULL );
 	}
 
-	ras->name = (char *) calloc( (unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) ras_calloc( (unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	NetcdfSetFunctions(ras);
@@ -205,16 +205,16 @@ NetcdfRead(ras)
 	vectors[1]  = ras->nx;
 
 	if (ras->data == (unsigned char *) NULL) {
-		ras->data = (unsigned char *) calloc(ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc(ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno,
 				"NetcdfRead(\"%s\")", ras->name);
 			(void) ncclose(dep->cdfid);
 			return(RAS_ERROR);
 		}
-		ras->red   = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->green = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		ras->blue  = (unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->red   = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->green = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->blue  = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
 	}
 
 	for(i=0; i<RAS_DEFAULT_NCOLORS; i++) {
@@ -276,7 +276,7 @@ NetcdfRead(ras)
 	ras->length = RAS_ABEKAS_NX * RAS_ABEKAS_NY * 3;
 
 	if (ras->data == (unsigned char *) NULL) {
-		ras->data = (unsigned char *) calloc((unsigned)ras->length, 1);
+		ras->data = (unsigned char *) ras_calloc((unsigned)ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, errmsg, ras->name);
 			return(RAS_ERROR);
@@ -327,19 +327,6 @@ NetcdfClose(ras)
 
 	dep = (NetcdfInfo *) ras->dep;
 	
-	switch(ras->type) {
-		case RAS_INDEXED:
-			free((char *) ras->data);
-			free((char *) ras->red);
-			free((char *) ras->green);
-			free((char *) ras->blue);
-			break;
-		
-		case RAS_DIRECT:
-			free((char *) ras->data);
-			break;
-	}
-
 	status = ncclose(dep->cdfid);
 	if (status == -1) {
 		(void) ESprintf(E_UNKNOWN,
@@ -348,7 +335,8 @@ NetcdfClose(ras)
 		return(RAS_ERROR);
 	}
 
-	return(RAS_OK);
+	status = GenericClose(ras);
+	return(status);
 }
 
 NetcdfPrintInfo(ras)
