@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.19 1994-03-11 19:36:24 boote Exp $
+ *	$Id: Rules,v 1.20 1994-04-08 19:37:09 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -515,9 +515,14 @@ InstallTarget(sources, $(INSTALL_INC), $(HLUEXPATH))
  * Description:	This rule is used to add dependencies to the Makefile.
  */
 #ifndef	DependTarget
+#ifdef	NoMakeDepend
+#define	DependTarget(srcs)\
+depend-local::]
+#else
 #define	DependTarget(srcs)\
 depend-local:: srcs]\
 	$(DEPEND) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs
+#endif /* NoMakeDepend */
 #endif /* DependTarget */
 
 /*
@@ -526,6 +531,10 @@ depend-local:: srcs]\
  * Description:	Used internally in ymake - It should not be used in a yMakefile.
  */
 #ifndef	InternalDependSubdirs
+#ifdef	NoMakeDepend
+#define InternalDependSubdirs(dirs)\
+depend:: depend-local]
+#else
 #define InternalDependSubdirs(dirs)\
 ]\
 depend:: depend-local]\
@@ -535,6 +544,7 @@ depend:: depend-local]\
 	$(MAKE) $(MFLAGS) depend);\ ]\
 	else echo "NOT Depending in $(CURRENT_DIR)/$$dir"; fi; \ ]\
 	done]
+#endif	/* NoMakeDepend */
 #endif	/* InternalDependSubdirs */
 
 /*
