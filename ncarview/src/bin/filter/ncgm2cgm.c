@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.4 1992-02-13 18:22:08 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.5 1992-02-18 10:23:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -138,7 +138,14 @@ main (argc,argv)
 		/*
 		 * write the record sans the header to a buffer
 		 */
+#ifdef	DEAD
 		(void) put(buf+HEADERSIZE, data_count);
+#else
+		if (fwrite(buf+HEADERSIZE, sizeof(char), data_count, stdout)<0){
+			perror(argv[0]);
+			exit(1);
+		}
+#endif
 	}
 
 	if (status != 0) {	/* if read did not fail because EOF	*/
@@ -150,10 +157,13 @@ main (argc,argv)
 		}
 	}
 
+#ifdef	DEAD
 	(void) flush();
+#endif
 	exit(0);
 }
 
+#ifdef	DEAD
 /*
  *	put
  *	[internal]
@@ -196,6 +206,7 @@ static void	put(buf, count)
 	}
 }
 
+
 /*
  *	flush
  *	[internal]
@@ -217,6 +228,7 @@ static void	flush()
 		}
 	}
 }
+#endif
 
 usage()
 {
