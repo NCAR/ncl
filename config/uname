@@ -1,0 +1,247 @@
+#!/bin/csh -f
+#
+#      $Id: uname,v 1.1 1993-02-11 00:29:24 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		uname
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Feb 10 12:30:40 MST 1993
+#
+#	Description:	Return system name. This command is a restricted
+#			version of the POSIX defined uname utility which
+#			elimininates some of the ambiguity allowed by
+#			the POSIX standard. 
+#
+#	Usage:		uname [-a | ([-m|M] [-n] [-r] [-s] [-v]]
+#
+#	Environment:
+#
+#	Files:		/bin/uname - the native uname command
+#
+#
+#	Options:	All options are identical to those defined by
+#			the POSIX standard with the execption of the -M
+#			option which is not part of the POSIX definition
+#
+#			-M :	Like the -m option except the "generic"
+#				machine type is reported. It is the intent
+#				that machines with the same machine type
+#				as reported by the -M option are binary
+#				compatable. For example, the -M option on 
+#				a sun4c, or sun4, or sun4m  reports 'sun4'.
+
+if ($#argv == 0) then
+	set argv = (-s)		# default behaviour
+endif
+
+if ("$argv[1]" == "-a") then
+	set argv = (-M -n -r -s -v)
+endif
+
+set	arch = ""		# archictecture (-M opt)
+set	machine_type = ""	# machine type (-m opt)
+set	node_name = ""		# host name (-n opt)
+set	release = ""		# current release (-r opt)
+set	operating_system = ""	# OS (-s opt)
+set	version = ""		# version level (-v opt)
+
+#
+# figure out what we are running on so we can deal with implementation
+# specific details. Thank god for standards.
+#
+set foo = `/bin/uname -s`
+if ($status != 0) exit 1
+
+switch ("$foo")
+case SunOS:
+case AIX:
+case IRIX:
+case ULTRIX:
+case HP-UX:
+	set os = $foo
+	breaksw
+
+default:
+	set foo = `/bin/uname -m`
+	if ($status != 0) exit 1
+	switch ("$foo")
+	case	CRAY*
+		set os = UNICOS
+		breaksw
+	default:
+		echo "$0 : system unknown" > /dev/tty
+		exit 1
+	endsw
+
+	breaksw
+endsw
+
+while($#argv)
+
+	switch ("$argv[1]")
+
+	case	-m:
+		set machine_type = `/bin/uname -m`
+		if ($status != 0) exit 1
+		breaksw
+
+	case	-n:
+		switch ("$os")
+		case	UNICOS:
+			set node_name = `/bin/hostname`;
+			if ($status != 0) exit 1
+			breaksw
+		default:
+			
+			set node_name = `/bin/uname -n`
+			if ($status != 0) exit 1
+			breaksw
+		endsw
+		breaksw
+
+	case	-r:
+		switch ("$os")
+		case	AIX:
+			set foo = `/bin/uname -a`
+			if ($status != 0) exit 1
+
+			set release = $foo[4].$foo[3]
+			breaksw
+		default:
+			
+			set release = `/bin/uname -r`
+			if ($status != 0) exit 1
+			breaksw
+		endsw
+		breaksw
+
+	case	-s:
+		switch ("$os")
+		case	SunOS:
+			set foo = `/bin/uname -r`
+			if ($status != 0) exit 1
+
+			switch ("$foo")
+			case	5*:
+				set operating_system = Solaris
+				breaksw
+			default:
+				set operating_system = $os
+				breaksw
+			endsw
+
+			breaksw
+		case	HP-UX:
+			set operating_system = HP_UX
+			breaksw
+		default:
+			set operating_system = $os
+			breaksw
+		endsw
+
+		breaksw
+
+	case	-v:
+		set version = `/bin/uname -v`
+		if ($status != 0) exit 1
+		breaksw
+
+	case	-M:
+		
+		set mach = `/bin/uname -m`
+		if ($status != 0) exit 1
+
+		switch ("$os")
+		case	SunOS:
+			switch ("$mach")
+			case	sun4*:
+				set arch = sun4
+				breaksw
+			case	sun3*:
+				set arch = sun3
+				breaksw
+			case	sun2*:
+				set arch = sun2
+				breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+			breaksw
+
+		case	AIX:
+			switch ("$mach")
+			case	00*:
+				set arch = RS6000
+				breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+			breaksw
+
+		case	IRIX:
+			switch ("$mach")
+			case	IP*:
+				set arch = IP
+				breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+			breaksw
+
+		case	ULTRIX:
+			set arch = $mach
+			breaksw
+
+		case	HP-UX:
+			switch ("$mach")
+			case	9000/7*:
+				set arch = HP9000_7xx
+				breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+			breaksw
+
+		case	UNICOS:
+			switch ("$mach[2]")
+			case	Y*:
+				set arch = Y_MP
+				breaksw
+			default:
+				echo "$0 : Unknown machine type" > /dev/tty
+				exit 1
+			endsw
+			breaksw
+
+		endsw
+		breaksw
+
+	default:
+		echo "Usage: $0 [-a | ([-m|M] [-n] [-r] [-s] [-v]]" > /dev/tty
+		exit 1
+		breaksw
+	endsw
+
+
+
+	shift
+end
+
+echo $arch $machine_type $node_name $release $operating_system $version
+
+exit 0

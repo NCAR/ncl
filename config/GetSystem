@@ -1,9 +1,9 @@
-#if defined(hpux)
+#if defined(HP_UX) && defined(HP9000_7xx)
 #define SystemIncludes		"HPUX"
 #define SystemIncludesName	HPUX
 #endif
 
-#if defined(_IBMR2) && defined(_AIX)
+#if defined(AIX) && defined(RS6000)
 #define SystemIncludes		"RS6000"
 #define SystemIncludesName	RS6000
 #endif
@@ -18,14 +18,19 @@
 #define SystemIncludesName	Sun386i
 #endif
 
-#if defined(sun) && defined(sparc)
+#if defined(SunOS) && defined(sun4)
 #define SystemIncludes		"Sun4"
 #define SystemIncludesName	Sun4
 #endif
 
-#if defined(sun) && defined(mc68000)
+#if defined(SunOS) && defined(sun3)
 #define SystemIncludes		"Sun3"
 #define SystemIncludesName	Sun3
+#endif
+
+#if defined(Solaris) && defined(sun4)
+#define SystemIncludes		"Sun4Solaris"
+#define SystemIncludesName	Sun4Solaris
 #endif
 
 #if defined(pyr) || defined(pyramid)
@@ -33,7 +38,7 @@
 #define SystemIncludesName	Pyramid
 #endif
 
-#if defined(ultrix) && defined(mips)
+#if defined(ULTRIX) && defined(RISC)
 #define SystemIncludes		"DECRISC"
 #define SystemIncludesName	DECRISC
 #endif
@@ -55,7 +60,7 @@
 #define SystemIncludesName	Masscomp
 #endif
 
-#if defined(sgi) && defined(mips)
+#if defined(IRIX) && defined(IP)
 #define SystemIncludes		"SGI4D"
 #define SystemIncludesName	SGI4D
 #endif
@@ -65,7 +70,7 @@
 #define SystemIncludesName	Cray2
 #endif
 
-#if defined(cray)
+#if defined(UNICOS) && defined(Y_MP)
 #define SystemIncludes          "Cray"
 #define SystemIncludesName      Cray
 #endif
@@ -81,4 +86,3 @@
 #endif
 
 SYSTEM_INCLUDE		= SystemIncludesName
-
