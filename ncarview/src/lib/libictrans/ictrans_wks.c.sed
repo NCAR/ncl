@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.7 1993-02-02 21:54:09 clyne Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.8 1993-02-02 22:25:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,20 +26,6 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include "ictrans_wks.h"
-
-#ifndef L_SET
-#define L_SET 0
-#endif
-
-#ifndef L_INCR
-#define L_INCR 1
-#endif
-
-#ifdef	SYSV
-extern	int	lseek();
-#else
-extern	off_t	lseek();
-#endif
 
 /*LINTLIBRARY*/
 
@@ -488,7 +474,7 @@ begwks_(unit, status)
 	}
 
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		if (lseek(mftab[*unit].fd, 0L, L_SET) == -1)
+		if (lseek(mftab[*unit].fd, 0L, SEEK_SET) == -1)
 		{
 			(void) fprintf(stderr, 
 				"Error in begwks_() : Seek failed\n");
@@ -497,7 +483,7 @@ begwks_(unit, status)
 		}
 	}
 	else {
-		if (CGM_lseek(mftab[*unit].fd, 0, L_SET) == -1) {
+		if (CGM_lseek(mftab[*unit].fd, 0, SEEK_SET) == -1) {
 			(void) fprintf(stderr, 
 				"Error in begwks_() : Seek failed\n");
 			*status = 304;
@@ -531,7 +517,7 @@ lstwks_(unit, status)
 	}
 
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		if ( lseek(mftab[*unit].fd, -1440L, L_INCR) == -1)
+		if ( lseek(mftab[*unit].fd, -1440L, SEEK_CUR) == -1)
 		{
 			(void) fprintf(stderr, 
 				"Error in lstwks_() : Seek failed\n");
@@ -540,7 +526,7 @@ lstwks_(unit, status)
 		}
 	} 
 	else {
-		if ( lseek(mftab[*unit].fd, -1L, L_INCR) == -1) {
+		if ( lseek(mftab[*unit].fd, -1L, SEEK_CUR) == -1) {
 			(void) fprintf(stderr, 
 				"Error in lstwks_() : Seek failed\n");
 			*status = 304;
