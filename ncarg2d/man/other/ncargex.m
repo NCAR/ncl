@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.1 1993-03-11 15:23:01 haley Exp $
+.\"	$Id: ncargex.m,v 1.2 1993-03-12 04:43:04 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
@@ -9,8 +9,37 @@ ncargex \- NCAR Graphics Fortran Examples and Tests
 \fBncargex\fP 
 [\fB\-all, -A\fR]
 [\fB\-allexamples, -E\fR]
+[\fB\-allfundamental, -F\fR]
 [\fB\-alltests, -T\fR]
 [\fB\-alltutorial, -U\fR]
+[\f\B\-areas]
+[\f\B\-autograph\fR]
+[\f\B\-bivar\fR]
+[\f\B\-colconv\fR]
+[\f\B\-conpack\fR]
+[\f\B\-conran_family\fR]
+[\f\B\-conrec_family\fR]
+[\f\B\-dashline\fR]
+[\f\B\-ezmap\fR]
+[\f\B\-gflash\fR]
+[\f\B\-gridall\fR]
+[\f\B\-halftone\fR]
+[\f\B\-histogram\fR]
+[\f\B\-isosrfhr\fR]
+[\f\B\-isosurface\fR]
+[\f\B\-labelbar\fR]
+[\f\B\-plotchar\fR]
+[\f\B\-pwritx\fR]
+[\f\B\-pwrity\fR]
+[\f\B\-scrolled_title\fR]
+[\f\B\-softfill\fR]
+[\f\B\-spps\fR]
+[\f\B\-streamlines\fR]
+[\f\B\-surface\fR]
+[\f\B\-threed\fR]
+[\f\B\-vectors\fR]
+[\f\B\-gks\fR]
+[\f\B\-misc\fR]
 [\fB\-clean\fR]
 [\fB\-n\fR]
 [\fB\-noX11\fR]
@@ -40,11 +69,98 @@ Generate all available examples, tests, and tutorial examples.
 .IP "\-allexamples, \-E"
 Generate all available examples.
 .sp
+.IP "\-allfundamental, \-F"
+Generate all available fundamental examples.
+.sp
 .IP "\-alltests, \-T"
 Generate all available tests.
 .sp
 .IP "\-alltutorial, \-U"
 Generate all available tutorial examples.
+.sp
+.IP "\-areas"
+Generate all areas examples.
+.sp
+.IP "\-autograph\fR"
+Generate all autograph examples.
+.sp
+.IP "\-bivar\fR"
+Generate all bivar examples.
+.sp
+.IP "\-colconv\fR"
+Generate all colconv examples.
+.sp
+.IP "\-conpack\fR"
+Generate all conpack examples.
+.sp
+.IP "\-conran_family\fR"
+Generate all conran examples.
+.sp
+.IP "\-conrec_family\fR"
+Generate all conrec examples.
+.sp
+.IP "\-dashline\fR"
+Generate all dashline examples.
+.sp
+.IP "\-ezmap\fR"
+Generate all ezmap examples.
+.sp
+.IP "\-gflash\fR"
+Generate all gflash examples.
+.sp
+.IP "\-gridall\fR"
+Generate all gridall examples.
+.sp
+.IP "\-halftone\fR"
+Generate all halftone examples.
+.sp
+.IP "\-histogram\fR"
+Generate all histogram examples.
+.sp
+.IP "\-isosrfhr\fR"
+Generate all isosrfhr examples.
+.sp
+.IP "\-isosurface\fR"
+Generate all isosurface examples.
+.sp
+.IP "\-labelbar\fR"
+Generate all labelbar examples.
+.sp
+.IP "\-plotchar\fR"
+Generate all plotchar examples.
+.sp
+.IP "\-pwritx\fR"
+Generate all pwritx examples.
+.sp
+.IP "\-pwrity\fR"
+Generate all pwrity examples.
+.sp
+.IP "\-scrolled_title\fR"
+Generate all scrolled examples.
+.sp
+.IP "\-softfill\fR"
+Generate all softfill examples.
+.sp
+.IP "\-spps\fR"
+Generate all spps examples.
+.sp
+.IP "\-streamlines\fR"
+Generate all streamlines examples.
+.sp
+.IP "\-surface\fR"
+Generate all surface examples.
+.sp
+.IP "\-threed\fR"
+Generate all threed examples.
+.sp
+.IP "\-vectors\fR"
+Generate all vectors examples.
+.sp
+.IP "\-gks\fR"
+Generate all gks examples.
+.sp
+.IP "\-misc\fR"
+Generate all miscellaneous examples.
 .sp
 .IP \-clean " " ""
 Remove everything but the ".ncgm" file.
@@ -63,77 +179,72 @@ testing of new releases at NCAR.
 .sp
 .I "EXAMPLES AND TESTS AVAILABLE"
 .sp
+.I "AREAS Examples:"
+.nf
+	arex01
+.sp
 .I "AUTOGRAPH Examples:"
 .nf
 	agex01 agex02 agex03 agex04 agex05
 	agex06 agex07 agex08 agex09 agex10
 	agex11 agex12 agex13
-.fi
 .sp
-.I "EZMAP Examples:"
+.I "BIVAR Examples:"
 .nf
-	mpex01 mpex02 mpex03 mpex04 mpex05
-	mpex06 mpex07 mpex08 mpex09 mpex10
-	mpexfi
-.fi
-.sp
-.I "EZMAPA Examples:"
-.nf
-	eezmpa
-.fi
+	cbex01
 .sp
 .I "CONPACK Examples:"
 .nf
 	cpex01 cpex02 cpex03 cpex04 cpex05
 	cpex06 cpex07 cpex08 cpex09
-.fi
+.sp
+.I "EZMAP Examples:"
+.nf
+	mpex01 mpex02 mpex03 mpex04 mpex05
+	mpex06 mpex07 mpex08 mpex09 mpex10
+	mpexfi eezmpa
 .sp
 .I "LABELBAR Examples:"
 .nf
 	elblba
-.fi
-.sp
-.I "SOFTFILL Examples:"
-.nf
-	sfex01 sfex02
-.fi
-.sp
-.I "STRMLN Examples:"
-.nf
-	stex01 stex02 stex03
-.fi
-.sp
-.I "SURFACE Examples:"
-.nf
-	srex01
-.fi
 .sp
 .I "PLOTCHAR Examples:"
 .nf
 	epltch
-.fi
+.sp
+.I "SCROLLED_TITLE Examples:"
+.nf
+	slex01
+.sp
+.I "SOFTFILL Examples:"
+.nf
+	sfex01 sfex02
 .sp
 .I "SPPS Examples:"
 .nf
-	nglogy ngrevx ngset1 ngset2
-.fi
+	splogy sprevx spset1 spset2
+.sp
+.I "STRMLN Examples:"
+.nf
+	stex01 stex02 stex03
+.sp
+.I "SURFACE Examples:"
+.nf
+	srex01
 .sp
 .I "VELVCT Examples:"
 .nf
 	vvex01 vvex02
-.fi
 .sp
 .I "Miscellaneous Examples:"
 .nf
-	arex01 cbex01 coex01 coex02 coex03 slex01 bnchmk
-.fi
+	coex01 coex02 coex03 bnchmk
 .sp
-.I "Tutorial Areas Examples:"
+.I "Tutorial AREAS Examples:"
 .nf
 	cardb1 caredg carline cardb2 carfill carmap
-.fi
 .sp
-.I "Tutorial Conpack Examples:"
+.I "Tutorial CONPACK Examples:"
 .nf
 	ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld
 	ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt ccpezct ccpfil 
@@ -142,60 +253,88 @@ testing of new releases at NCAR.
 	ccpllw ccpmap ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 
 	ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu ccpscam 
 	ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon
-.fi
 .sp
-.I "Tutorial Ezmap Examples:"
+.I "Tutorial EZMAP Examples:"
 .nf
 	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
 	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
 	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
-.fi
 .sp
-.I "Tutorial Softfill Examples:"
-.nf
-	csfwrld csfsgfa
-.fi
+.I "Fundamental SOFTFILL Examples:"
+	fsfwrld fsfsgfa
 .sp
-.I "Test Programs:"
+.I "AREAS Test Programs:"
+    tareas
 .sp
-.nf
-tagupw |  aguprwtx - AUTOGRAPH with PWRITX
-tareas | areas     - AREAS
-tautog | autograph - AUTOGRAPH
-tcolcv | colconv   - COLCONV (color conversion program)
-tconre | conrec    - CONREC (standard version)
-tcnqck | conrecq   - CONREC (quick version)
-tcnsmt | conrecs   - CONREC (smooth version)
-tcnsup | conrecsup - CONREC (super Version)
-tconan | conran    - CONRAN (standard version)
-tconaq | conranq   - CONRAN (quick version)
-tconas | conransup - CONRAN (super version)
-tconpa | conpack   - CONPACK
-tdashc | dashchar  - DASHCHAR (standard version)
-tdashl | dashline  - DASHCHAR (quick version)
-tdashp | dashsup   - DASHCHAR (super version)
-tdashs | dashsmth  - DASHCHAR (smooth version)
-tezmap | ezmap     - EZMAP
-tezmpa | ezmapa    - EZMAPA (ezmap with areas)
-tgflas | gflash    - GFLASH
-tgrida | gridal    - GRIDAL
-thafto | hafton    - HAFTONE
-thstgr | histgr    - HISTGR
-tisosr | isosrf    - ISOSRF
-tisohr | isosrfhr  - ISOSRFHR
-tlblba | labelbar  - LABELBAR
-tpltch | plotchar  - PLOTCHAR
-tpwrtx | pwritx    - PWRITX
-tpwry  | pwrity    - PWRITY
-tpwrzi | pwrzi     - PWRZI
-tpwrzs | pwrzs     - PWRZS
-tpwrzt | pwrzt     - PWRZT
-tsoftf | softfill  - SOFTFILL
-tsrfac | srface    - SRFACE
-tstitl | stitle    - STITLE
-tstrml | strmln    - STRMLN
-tthree | threed    - THREED
-tvelvc | velvct    - VELVCT
+.I "AUTOGRAPH Test Programs:"
+    tagupw tautog
+.sp
+.I "COLCONV Test Programs:"
+    tcolcv
+.sp
+.I "CONPACK Test Programs:"
+    tconpa
+.sp
+.I "CONRAN Test Programs:"
+    tconan tconaq tconas
+.sp
+.I "CONREC Test Programs:"
+    tconre tcnqck tcnsmt tcnsup
+.sp
+.I "CONREC Test Programs:"
+    tdashc tdashl tdashp tdashs
+.sp
+.I "EZMAP Test Programs:"
+    tezmap tezmpa
+.sp
+.I "GFLASH Test Programs:"
+    tgflas
+.sp
+.I "GRIDALL Test Programs:"
+    tgrida
+.sp
+.I "HALFTONE Test Programs:"
+    thafto
+.sp
+.I "HISTOGRAM Test Programs:"
+    thstgr
+.sp
+.I "ISOSRFHR Test Programs:"
+    tisohr
+.sp
+.I "ISOSURFACE Test Programs:"
+    tisosr tpwrzi
+.sp
+.I "LABELBAR Test Programs:"
+    tlblba
+.sp
+.I "PLOTCHAR Test Programs:"
+    tpltch
+.sp
+.I "PWRITX Test Programs:"
+    tpwrtx
+.sp
+.I "PWRITY Test Programs:"
+    tpwry
+.sp
+.I "SCROLLED_TITLE Test Programs:"
+    tstitl
+.sp
+.I "SOFTFILL Test Programs:"
+    tsoftf
+.sp
+.I "STREAMLINES Test Programs:"
+    tstrml
+.sp
+.I "SURFACE Test Programs:"
+    tsrfac tpwrzs
+.sp
+.I "THREED Test Programs:"
+    tthree tpwrzt
+.sp
+.I "VECTORS Test Programs:"
+    tvelvc
+.sp
 .fi
 .SH SEE ALSO
 Online:
