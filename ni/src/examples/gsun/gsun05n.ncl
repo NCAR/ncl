@@ -1,224 +1,182 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
-
-;***********************************************************************;
-; gsun05n.ncl : contour and XY plots                                    ;
-;                                                                       ;
-; This example reads an ASCII file of seismic data, interpolates it to  ;
-; a 3D grid, and creates a contour and an XY plot.                      ;
-;                                                                       ;
-; This example also shows how to write your graphical output to an NCGM ;
-; file and a PostScript file.                                           ;
-;***********************************************************************;
+load "gsn_code.ncl"
 
 begin
+  data_dir  = ncargpath("data")   ; Get ready to open three netCDF files.
+  cdf_file1 = addfile(data_dir + "/cdf/941110_P.cdf","r")
+  cdf_file2 = addfile(data_dir + "/cdf/sstdata_netcdf.nc","r")
+  cdf_file3 = addfile(data_dir + "/cdf/Pstorm.cdf","r")
 
-;***********************************************************************;
-; Read seismic data provided by Dave Watson.  The data is in three      ;
-; where the first column is x values, the second y values, and the third;
-; z values.                                                             ;
-;                                                                       ;
-; Read in these values (52 of them) with "asciiread" into one 2D array  ;
-; that is 52 x 3 and then extract the x, y, and z arrays.               ;
-;***********************************************************************;
+  psl = cdf_file1->Psl    ; Store some data from the three netCDF
+  sst = cdf_file2->sst    ; files to local variables.
+  pf  = cdf_file3->p
 
-  ascii_filename = "$NCARG_ROOT/lib/ncarg/data/asc/seismic.asc"
-  seismic = asciiread(ascii_filename,(/52,3/),"float")
-  x = seismic(:,0)
-  y = seismic(:,1)
-  z = seismic(:,2)
+  psl@nlon = dimsizes(psl&lon)  ; Store the sizes of the lat/lon
+  psl@nlat = dimsizes(psl&lat)  ; arrays as attributes of the psl
+  pf@nlon  = dimsizes(pf&lon)   ; and pf variables.
+  pf@nlat  = dimsizes(pf&lat)
 
+  sst!1    = "lat"                 ; Name dimensions 0 and 1 of sst
+  sst!2    = "lon"                 ; "lat" and "lon.
+  sst&lat  = cdf_file2->lat        ; Create coordinate variables
+  sst&lon  = cdf_file2->lon        ; for sst and store the sizes
+  sst@nlon = dimsizes(sst&lon)     ; of the arrays as attributes 
+  sst@nlat = dimsizes(sst&lat)     ; of sst.
 
-;***********************************************************************;
-; Define an output grid for our interpolation.  Use the "ispan" function;
-; to get a range of evenly-spaced values.                               ;
-;***********************************************************************;
+  wks = gsn_open_wks("x11","gsun05n") ; Open a workstation.
 
-  numxout = 20
-  numyout = 20
-  xmin = min(x)
-  ymin = min(y)
-  xmax = max(x)
-  ymax = max(y)
-  xc = (xmax-xmin)/(numxout-1)
-  yc = (ymax-ymin)/(numyout-1)
-  xo = xmin + ispan(0,numxout-1,1)*xc
-  yo = ymin + ispan(0,numyout-1,1)*yc
+;----------- Begin first plot -----------------------------------------
 
-;***********************************************************************;
-; Interpolate our random data to a 2D grid using "natgrids", Dave       ;
-; Watson's nearest neighbor interpolation. "zo" will be returned as a 2D;
-; array dimensioned numxout x numyout.                                  ;
-;***********************************************************************;
+  resources = True
+  
+  resources@sfXCStartV = min(psl&lon)   ; Define where contour plot
+  resources@sfXCEndV   = max(psl&lon)   ; should lie on the map plot.
+  resources@sfYCStartV = min(psl&lat)
+  resources@sfYCEndV   = max(psl&lat)
 
-  zo = natgrids(x, y, z, xo, yo)
+  map = gsn_contour_map(wks,psl,resources) ; Draw contours over a map.
 
-  xo@name = "x values"                      ; Name the xo variable
-  yo@name = "y values"                      ; Name the yo variable
-  zo@name = "depth of a subsurface stratum" ; Name the zo variable
+;----------- Begin second plot -----------------------------------------
 
-;***********************************************************************;
-; We want our graphical output to go to multiple output devices, so     ;
-; create them here.                                                     ;
-;***********************************************************************;
+  getvalues wks                   ; Retrieve the default color map.
+    "wkColorMap" : cmap
+  end getvalues
 
-  xwks   = ncl_open_wks( "x11","gsun05n")
-  cgmwks = ncl_open_wks("ncgm","gsun05n")
-  pswks  = ncl_open_wks(  "ps","gsun05n")
+  cmap(0,:) = (/1.,1.,1./)        ; Change background to white.
+  cmap(1,:) = (/0.,0.,0./)        ; and foreground to black.
+  gsn_define_colormap(wks, cmap)
 
-;***********************************************************************;
-; Define a color table with 18 entries. For each output device that we  ;
-; want the color table to take effect for, we have to call the          ;
-; ncl_define_colormap procedure.                                        ;
-;***********************************************************************;
+  resources@mpProjection = "Orthographic" ; Change the map projection.
+  resources@mpCenterLonF = 180.           ; Rotate the projection.
+  resources@mpFillOn     = True           ; Turn on map fill.
+  resources@mpFillColors = (/0,-1,28,-1/) ; Fill land and leave oceans
+                                          ; and inland water transparent.
 
-  cmap = (/(/1.,1.,1./),(/0.,0.,0./),(/1.,0.,0./),(/1.,0.,.4/),\
-           (/1.,0.,.8/),(/1.,.2,1./),(/1.,.6,1./),(/.6,.8,1./),\
-           (/.2,.8,1./),(/.2,.8,.6/),(/.2,.8,0./),(/.2,.4,.0/),\
-           (/.2,.4,.4/),(/.2,.4,.8/),(/.6,.4,.8/),(/.6,.8,.8/),\
-           (/.6,.8,.4/),(/1.,.6,.8/)/)
+  resources@vpXF      = 0.1    ; Change the size and location of the 
+  resources@vpYF      = 0.9    ; plot on the viewport.
+  resources@vpWidthF  = 0.7
+  resources@vpHeightF = 0.7
 
-  ncl_define_colormap(  xwks,cmap)
-  ncl_define_colormap(cgmwks,cmap)
-  ncl_define_colormap( pswks,cmap)
+  mnlvl = 0                        ; Minimum contour level.
+  mxlvl = 28                       ; Maximum contour level.
+  spcng = 2                        ; Contour level spacing.
+  ncn   = (mxlvl-mnlvl)/spcng + 1  ; Number of contour levels.
 
-;***********************************************************************;
-; Set some contour data resources so that our x and y axis values will  ;
-; be the values of our output grid that we defined, rather than index   ;
-; values (which is the default).                                        ;
-;                                                                       ;
-; In NCL, contour plot data is called a "scalar field", thus the data   ;
-; resources start with "sf" and are documented at the URL:              ;
-;                                                                       ;
-;  http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/ScalarField.res.html      ;
-;                                                                       ;
-;***********************************************************************;
+  resources@cnLevelSelectionMode = "ManualLevels" ; Define your own
+  resources@cnMinLevelValF       = mnlvl          ; contour levels.
+  resources@cnMaxLevelValF       = mxlvl
+  resources@cnLevelSpacingF      = spcng
 
-  resources                       = True
-  resources@sfXArray              = xo
-  resources@sfYArray              = yo
+  resources@cnLineThicknessF     = 2.0   ; Double the line thickness.
 
-  resources@tiMainString          = zo@name  ; Define some title
-  resources@tiXAxisString         = xo@name  ; resources.
-  resources@tiYAxisString         = yo@name
+  resources@cnFillOn           = True  ; Turn on contour level fill.
+  resources@cnMonoFillColor    = True  ; Use one fill color.
+  resources@cnMonoFillPattern  = False ; Use multiple fill patterns.
+  resources@cnFillPatterns     = new((/ncn+1/),integer) ; Only fill
+  resources@cnFillPatterns(:)  = -1                     ; last two
+  resources@cnFillPatterns(ncn-1:ncn) = 17              ; contour levels.
+
+  resources@cnLineDrawOrder      = "Predraw" ; Draw lines and filled
+  resources@cnFillDrawOrder      = "Predraw" ; areas before map gets
+                                             ; drawn.
+
+  resources@tiMainString = ":F26:" + cdf_file2@title
+  
+  resources@sfXCStartV = min(sst&lon)   ; Define where contour plot
+  resources@sfXCEndV   = max(sst&lon)   ; should lie on the map plot.
+  resources@sfYCStartV = min(sst&lat)
+  resources@sfYCEndV   = max(sst&lat)
+
+  map = gsn_contour_map(wks,sst(0,:,:),resources) ; Draw contours over a map.
+
+;----------- Begin third plot -----------------------------------------
+
+  delete(resources)  ; Start with a new list of resources.
+  resources = True
+
+  resources@tiXAxisString = ":F25:longitude"
+  resources@tiYAxisString = ":F25:latitude"
 
   resources@cnFillOn              = True     ; Turn on contour fill.
-  resources@cnInfoLabelOn         = False    ; Turn off info label.
   resources@cnLineLabelsOn        = False    ; Turn off line labels.
+  resources@cnInfoLabelOn         = False    ; Turn off info label.
+  resources@pmLabelBarDisplayMode = "Always" ; Turn on a label bar.
+  resources@lbPerimOn             = False    ; Turn off label bar perim.
 
-;***********************************************************************;
-; Turn on the drawing of a labelbar.  By default, the labelbar is       ;
-; vertical and centered at the right side of the plot. In this case, we ;
-; want to draw it at the bottom and horizontally. Since the drawing of a;
-; labelbar associated with a plot is controlled by the Plot Manager     ;
-; (PM), the PM also controls the location of it.  Thus, we use PM       ;
-; resources to change the location of the labelbar.                     ;
-;***********************************************************************;
+  resources@sfXCStartV = min(pf&lon)   ; Define where contour plot
+  resources@sfXCEndV   = max(pf&lon)   ; should lie on the map plot.
+  resources@sfYCStartV = min(pf&lat)
+  resources@sfYCEndV   = max(pf&lat)
 
-  resources@lbOrientation         = "horizontal" ; Draw it horizontally.
-  resources@lbPerimOn             = False        ; Turn off perimeter.
-  resources@pmLabelBarDisplayMode = "always"     ; Turn on a label bar.
-  resources@pmLabelBarSide        = "bottom"     ; Change location of 
-                                                 ; labelbar.
+  resources@mpProjection = "LambertEqualArea"  ; Change the map projection.
+  resources@mpCenterLonF = (pf&lon(pf@nlon-1) + pf&lon(0))/2
+  resources@mpCenterLatF = (pf&lat(pf@nlat-1) + pf&lat(0))/2
 
-;***********************************************************************;
-; Drawing a labelbar at the bottom causes our plot to go off the view   ;
-; port window, so adjust the plot on the view port by moving it up.     ;
-;***********************************************************************;
+  resources@mpLimitMode = "LatLon"    ; Limit the map view.
+  resources@mpMinLonF   = min(pf&lon)
+  resources@mpMaxLonF   = max(pf&lon)
+  resources@mpMinLatF   = min(pf&lat)
+  resources@mpMaxLatF   = max(pf&lat)
+  resources@mpPerimOn   = True        ; Turn on map perimeter.
 
-  resources@vpYF = 0.9
+  resources@tiMainString = ":F26:January 1996 storm" ; Set a title.
 
-;***********************************************************************;
-; Create a contour plot.  Natgrids returns zo(i,j) as the interpolated  ;
-; value at the coordinate (x(i),y(j)) for 0 < i < numxout and 0 < j <   ;
-; numyout. For the purpose of drawing a contour plot, NCL identifies the;
-; fastest varying dimension (the second dimension of a 2D in NCL) with  ;
-; the Cartesian X-axis; if it is desired to have the xo values along the;
-; Cartesian X-axis, we need to swap the indices before contouring.      ;
-;***********************************************************************;
+  resources@vpXF      = 0.1    ; Change the size and location of the 
+  resources@vpYF      = 0.9    ; plot on the viewport.
+  resources@vpWidthF  = 0.7
+  resources@vpHeightF = 0.7
 
-  zo!0 = "x"
-  zo!1 = "y"
-  contour = ncl_contour(xwks,zo(y|:,x|:),resources)
+  resources@gsnScale = True  ; Force X/Y axes labels to be the same size.
+  resources@gsnFrame = False ; Don't advance frame.
 
-;***********************************************************************;
-; For our next plot, take some slices of the data and generate an XY    ;
-; plot with several of these slices.  Since we previously used the      ;
-; "resources" variable to define some contour plot resources, we need to;
-; start with a new list of resources for our XY plot, and thus should   ;
-; delete the variable before we redefine it.                            ;
-;                                                                       ;
-; XY plot resources start with "xy" and are defined at the URL:         ;
-;                                                                       ;
-;   http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/XyPlot.res.html          ;
-;***********************************************************************;
+  map = gsn_contour_map(wks,pf(0,:,:)*0.01,resources) ; Convert pf to "mb" and
+                                                     ; draw contours over map.
+  txres               = True   ; Set some resources
+  txres@txFontHeightF = 0.025  ; for a text string.
+  txres@txFontColor   = 4
+  gsn_text_ndc(wks,":F25:Pressure (mb)",.45,.25,txres) ; Draw a text string.
+                                                       ; on the viewport.
+  frame(wks)   ; Advance the frame.
+  
+;---------- Begin fourth plot ------------------------------------------
 
+  delete(resources@tiXAxisString)  ; Delete some resources you don't
+  delete(resources@tiYAxisString)  ; need anymore.
+  delete(resources@gsnFrame)
+
+  delete(cmap)
+  cmap = (/(/1.00, 1.00, 1.00/), (/0.00, 0.00, 0.00/), \
+           (/.560, .500, .700/), (/.300, .300, .700/), \
+           (/.100, .100, .700/), (/.000, .100, .700/), \
+           (/.000, .300, .700/), (/.000, .500, .500/), \
+           (/.000, .400, .200/), (/.000, .600, .000/), \
+           (/.000, 1.00, 0.00/), (/.550, .550, .000/), \
+           (/.570, .420, .000/), (/.700, .285, .000/), \
+           (/.700, .180, .000/), (/.870, .050, .000/), \
+           (/1.00, .000, .000/), (/0.00, 1.00, 1.00/), \
+           (/.700, .700, .700/)/)
+
+  gsn_define_colormap(wks, cmap)  ; Define a new color map.
+
+  resources@mpFillOn              = True         ; Turn on map fill.
+  resources@mpFillAreaSpecifiers  = (/"Water","Land","USStatesWater"/)
+  resources@mpSpecifiedFillColors = (/17,18,17/)
+  resources@mpAreaMaskingOn       = True            ; Indicate we want to 
+  resources@mpMaskAreaSpecifiers  = "USStatesLand"  ; mask land.
+  resources@mpPerimOn             = True            ; Turn on a perimeter.
+  resources@mpGridMaskMode        = "MaskLand"      ; Mask grid over land.
+  resources@cnFillDrawOrder       = "Predraw"       ; Draw contours first.
+
+  resources@cnLevelSelectionMode = "ExplicitLevels" ; Define own levels.
+  resources@cnLevels             = fspan(985.,1045.,13)
+
+  resources@lbTitleString  = ":F25:pressure (mb)" ; Title for label bar.
+  resources@cnLinesOn      = False         ; Turn off contour lines.
+  resources@pmLabelBarSide = "Bottom"      ; Change orientation of
+  resources@lbOrientation  = "Horizontal"  ; label bar.
+
+  map = gsn_contour_map(wks,pf(1,:,:)*0.01,resources)
+
+  delete(map)          ; Clean up.
   delete(resources)
-  resources                     = True
-  resources@tiMainString        = "slices"        ; Set some titles.
-  resources@tiYAxisString       = zo@name
-  resources@tiXAxisString       = xo@name
-
-  resources@xyLineColors        = (/2,8,10,14/)   ; Define line colors.
-  resources@xyLineThicknesses   = (/3.,3.,3.,3./) ; Define line
-                                                  ; thicknesses.
-
-;***********************************************************************;
-; Turn on the drawing of a legend.  By default, the legend is centered  ;
-; below the plot. In this case, we want to draw it in the upper right   ;
-; corner. As with the labelbar above, we use PM resources to control    ;
-; where the legend is drawn.                                            ;
-;                                                                       ;
-; Legend resources start with "lg" and are defined at the URL:          ;
-;                                                                       ;
-;   http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/Legend.res.html          ;
-;                                                                       ;
-;***********************************************************************;
-
-  resources@pmLegendDisplayMode    = "always"     ; Turn on the drawing
-                                                  ; of a legend.
-
-  resources@pmLegendSide           = "top"        ; Change location of 
-                                                  ; legend.
-  resources@lgJustification        = "bottomleft" ; Move legend to right.
-  resources@lgPerimOn              = False        ; Turn off perimeter.
-
-  resources@xyExplicitLegendLabels = (/"y=2","y=4","y=6","y=8"/)
-
-;***********************************************************************;
-; Drawing a legend at the top causes our plot to go off the view port   ;
-; window, so adjust the plot on the view port by moving it down.        ;
-;***********************************************************************;
-
-  resources@vpYF = 0.75
-
-;***********************************************************************;
-; We are taking slices of the data at y=2, 4, 6, and 8, so use NCL's    ;
-; array stride capability to do this.                                   ;
-;***********************************************************************;
-
-  xy = ncl_xy(xwks,xo,zo(y|2:8:2,x|:),resources)  
-
-;***********************************************************************;
-; We want to draw the plots to the other workstations that we opened    ;
-; (an NCGM file and a PostScript file), so we need to change the        ;
-; current workstation being drawn to to an NCGM and redraw the plots.   ;
-; Do the same for the PostScript workstation. We are using the functions;
-; "draw" and "frame" to draw the plots and advance the frames.          ;
-;***********************************************************************;
-
-  NhlChangeWorkstation(contour,cgmwks)
-  NhlChangeWorkstation(xy,cgmwks)
-  draw(contour)
-  frame(cgmwks)
-  draw(xy)
-  frame(cgmwks)
-
-  NhlChangeWorkstation(xy,pswks)
-  NhlChangeWorkstation(contour,pswks)
-  draw(contour)
-  frame(pswks)
-  draw(xy)
-  frame(pswks)
-
+  delete(txres)
 end
-

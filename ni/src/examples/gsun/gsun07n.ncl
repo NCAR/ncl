@@ -1,207 +1,133 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
-
-;***********************************************************************;
-; gsun07n.ncl : contour plot animation                                  ;
-;                                                                       ;
-; This example opens a netCDF file of storm data and produces a contour ;
-; over a map animation. It also shows how to use ncl_polyline,          ;
-; ncl_polymarker, and ncl_text to draw primitives on a plot.            ;
-;                                                                       ;
-; This example introduces the use of a "resource file" for setting      ;
-; resources.  In the call to "ncl_open_wks", the second argument will be;
-; the name of your resource file, with a ".res" appended.  If there is  ;
-; no file by this name, then NCL will not try to load it in. In this    ;
-; example, the resource file is called "gsun07n.res".  Only resources   ;
-; that don't depend on programmatic results can be set in a resource    ;
-; file. The rest of the resources will be set in this script, as you'll ;
-; see below.                                                            ;
-;                                                                       ;
-; Resources in a resource file are set much in the same way that X      ;
-; resources in a .Xdefaults or .Xresources file are set.  For now, you  ;
-; can just look at the file "gsun07n.res" to get a pretty good idea     ;
-; of how resource files work.  There are some comments in the           ;
-; "gsun07n.res to help explain some of the concepts. Or, you can get    ;
-; more information than you probably need at the URL:                   ;
-;                                                                       ;
-;    http://ngwww.ucar.edu/ngdoc/ng/ug/hlu/hluimplmt/howrescwk.html     ;
-;                                                                       ;
-;***********************************************************************;
+load "gsn_code.ncl"
 
 begin
+                                     ; Initialize some data.
 
-;***********************************************************************;
-; Define two arrays giving the approximate center of all 50 states in   ;
-; the United States.                                                    ;
-;***********************************************************************;
+  xi = (/  0.000, 0.210, 0.360, 0.540, 1.000, 1.500, 1.970, 2.300, \
+           2.500, 2.700  /)
+  yi = (/  0.000, 2.600, 3.000, 2.500, 0.000,-1.000, 0.000, 0.800, \
+           0.920, 0.700  /)
 
-  slat = (/33.0, 65.0, 34.7, 35.0, 37.5, 39.0, 41.6, 39.0, 28.5, 32.5, \
-           20.0, 43.5, 40.2, 40.0, 42.0, 38.5, 37.4, 31.2, 45.5, 39.2, \
-           42.3, 44.0, 46.0, 32.5, 38.5, 47.0, 41.5, 39.8, 43.2, 39.7, \
-           34.7, 43.0, 35.5, 47.5, 40.2, 35.6, 44.0, 40.8, 41.7, 34.0, \
-           44.5, 36.0, 32.0, 39.5, 44.2, 37.6, 47.5, 38.5, 44.5, 43.0 /)
+  npts   = 201
+  xl     = -1.0
+  xr     =  5.0
+  xo     = fspan(xl,xr,npts)  ; Create the output X coordinate array.
 
-  slon = (/-86.5,-152.0,-111.5, -92.5,-120.5,-105.8, -72.6, -75.5, \
-           -82.0, -83.0,-157.0,-114.0, -89.2, -86.0, -93.2, -98.2, \
-           -84.5, -92.5, -69.0, -76.5, -72.0, -85.0, -94.5, -89.5, \
-           -92.5,-109.5, -99.5,-117.0, -71.6, -74.5,-106.0, -75.0, \
-           -79.5,-100.5, -82.5, -97.5,-120.2, -77.6, -71.5, -80.5, \
-          -100.5, -86.5,-100.0,-111.5, -72.5, -78.6,-120.5, -80.8, \
-           -89.5,-107.5 /)
+  period = 3.0
+  yo = ftcurvp(xi, yi, period, xo)  ; Interpolate.
 
-  wks = ncl_open_wks("ncgm","gsun07n") ; Open an X11 workstation.
-
-;***********************************************************************;
-; Define a color table.                                                 ;
-;***********************************************************************;
-
-  cmap = (/(/0.00,0.00,0.00/),(/1.00,1.00,1.00/),(/.600,.600,.600/),\
-           (/0.00,0.00,0.00/),(/1.00,1.00,1.00/),(/.400,.400,.400/),\
-           (/1.00,1.00,0.00/),(/1.00,.000,.000/),(/.950,.010,.000/),\
-           (/.870,.050,.000/),(/.800,.090,.000/),(/.700,.090,.000/),\
-           (/.700,.120,.000/),(/.700,.180,.000/),(/.700,.260,.000/),\
-           (/.700,.285,.000/),(/.680,.330,.000/),(/.570,.420,.000/),\
-           (/.560,.530,.000/),(/.550,.550,.000/),(/.130,.570,.000/),\
-           (/.060,.680,.000/),(/.000,.690,.000/),(/.000,.700,.100/),\
-           (/.000,.600,.300/),(/.000,.500,.500/),(/.000,.400,.700/),\
-           (/.000,.300,.700/),(/.000,.200,.700/),(/.000,.100,.700/),\
-           (/.000,.000,.700/),(/.100,.100,.700/),(/.200,.200,.700/),\
-           (/.300,.300,.700/),(/.420,.400,.700/),(/.560,.500,.700/),\
-           (/.610,.600,.700/),(/.700,.700,.700/)/)
-
-  ncl_define_colormap(wks,cmap)
-
-;***********************************************************************;
-; Open netCDF file and then read temperature and lat/lon data.          ;
-;***********************************************************************;
-
-  datadir  = ncargpath("data")
-  datafile = datadir + "/cdf/meccatemp.cdf"
-  cdffile  = addfile (datafile,"r")
-
-  temp = cdffile->t - 273.15  ; Read temperature and convert to celsius.
-  lon  = cdffile->lon
-  lat  = cdffile->lat
-  nlat = dimsizes(lat)
-  nlon = dimsizes(lon)
-
-;***********************************************************************;
-; Restrict the contour plot to an area bounded by a rectangle specified ;
-; in lat/lon coordinates. We do this by setting the temperature values  ;
-; to a missing value wherever they fall outside the defined rectangle.  ;
-;***********************************************************************;
-
-  cminlat =   28.
-  cminlon = -120.
-  cmaxlat =   51.
-  cmaxlon =  -90.
-  temp@_FillValue = -999.   ; Define the missing-value value.
-  do i = 0,nlon-1
-    do j = 0,nlat-1
-      if(lon(i).lt.cminlon.or.lon(i).gt.cmaxlon.or. \
-         lat(j).lt.cminlat.or.lat(j).gt.cmaxlat) then
-        temp(:,j,i) = temp@_FillValue
-      end if
-    end do
+  yint = new( (/ npts /), float)    ; Find the integrals
+  do i = 0, npts-1                  ; starting from x = 0.
+    yint(i) = ftcurvpi(0., xo(i), period, xi, yi)
   end do
 
-  clon = (/cminlon,cmaxlon,cmaxlon,cminlon,cminlon/) ; Define a rectangle
-  clat = (/cminlat,cminlat,cmaxlat,cmaxlat,cminlat/) ; of lat/lon 
-                                                     ; coordinates.
+  wks = gsn_open_wks("x11","gsun07n") ; Open an X11 workstation.
 
-;***********************************************************************;
-; The only resources we are setting here are the ones that depend on    ;
-; programmatic values.  The others are set in a resource file called    ;
-; "gsun07.res".                                                         ;
-;***********************************************************************;
+  cmap = (/(/1.,1.,1./),(/0.,0.,0./),(/1.,0.,0./),(/0.,1.,0./),\
+           (/0.,0.,1./),(/1.,1.,0./)/)
 
-  resources                 = True
-  resources@sfXCStartV      = lon(0)
-  resources@sfXCEndV        = lon(nlon-1)
-  resources@sfYCStartV      = lat(0)
-  resources@sfYCEndV        = lat(nlat-1)
+  gsn_define_colormap(wks,cmap) ; Define your own color map.
 
-;***********************************************************************;
-; We want to draw some polymarkers, lines, and text on our plot before  ;
-; we advance the frame, so set "Frame" to False.                        ;
-;***********************************************************************;
+  txres = True   ; Set up some variables for 
+  xyres = True   ; creating three different
+  gsres = True   ; resource lists.
 
-  resources@Frame           = False
+  xyres@gsnFrame               = False     ; Don't advance the frame.
 
-  contour = ncl_contour_map(wks,temp(0,:,:),resources)
+  xyres@tmXTBorderOn           = False     ; Don't draw top axis.
+  xyres@tmXTOn                 = False     ; Don't draw top axis tick marks.
+  xyres@tmBorderThicknessF     = 1.0       ; Default thickness is 2.0
 
-;***********************************************************************;
-; Draw a polyline around the area that we are limiting our contours to, ;
-; and draw a polymarker at the center of each state in the United       ;
-; States. ncl_polyline and ncl_polymarker take as arguments the         ;
-; workstation to draw to, the plot whose data space you want to draw in,;
-; the x,y coordinates of the line, and a set of resources (optional).   ;
-; The x,y coordinates must be in the same data space as the data in the ;
-; plot, so in this case, we are giving both routines lat/lon            ;
-; coordinates.                                                          ;
-;                                                                       ;
-; Notice that we have defined polymarkers for all states, but if the    ;
-; polymarker falls outside the limits of our projection, it won't get   ;
-; drawn.                                                                ;
-;                                                                       ;
-; Resources for changing polymarkers and polylines start with "gs"      ;
-; (stands for GraphicStyle) and are documented at the URL:              ;
-;                                                                       ;
-;  http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/GraphicStyle.res.html     ;
-;                                                                       ;
-;***********************************************************************;
+  xyres@tmXBLabelFont          = 21        ; Change font and size of 
+  xyres@tmXBLabelFontHeightF   = 0.025     ; X axis labels.
+  xyres@tmXBMajorLengthF       = 0.015     ; Default is 0.02.
+  xyres@tmXBMajorThicknessF    = 1.0       ; Default is 2.
+  xyres@tmXBMinorLengthF       = 0.0075    ; Default is 0.01.
+  xyres@tmXBMinorPerMajor      = 4         ; # of minor tick marks per major.
+  xyres@tmXBMode               = "Manual"  ; Set tick mark mode.
+  xyres@tmXBTickStartF         = -1.0
+  xyres@tmXBTickEndF           = 5.0
+  xyres@tmXBTickSpacingF       = 1.0
+  xyres@tmXMajorGridThicknessF = 1.0       ; Default is 2.0
 
-  ncl_polyline(wks,contour,clon,clat,False)
-  ncl_polymarker(wks,contour,slon,slat,False)
+  xyres@tmYLLabelFont          = 21        ; See explanations for X axes
+  xyres@tmYLLabelFontHeightF   = 0.025     ; resources.
+  xyres@tmYLMajorLengthF       = 0.015
+  xyres@tmYLMajorThicknessF    = 1.0
+  xyres@tmYLMinorPerMajor      = 0
+  xyres@tmYLMode               = "Manual"
+  xyres@tmYLTickStartF         = -2.0
+  xyres@tmYLTickEndF           = 3.0
+  xyres@tmYLTickSpacingF       = 1.0
+  xyres@tmYRBorderOn           = False    ; Don't draw right axis.
+  xyres@tmYROn                 = False    ; Don't draw right axis tick marks.
 
-;***********************************************************************;
-; Draw some text at the bottom of the plot using "ncl_text".  This      ;
-; procedure is different from ncl_polyline and ncl_polytext in that the ;
-; x,y coordinates for drawing the text should be specified in viewport  ;
-; coordinates and not data space coordinates.  The viewport goes from 0 ;
-; to 1 in both directions, where 0,0 is the lower left corner. By       ;
-; default, the text is centered about the x position. Text resources    ;
-; start with "tx" and are defined at the URL:
-;                                                                       ;
-;    http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/TextItem.res.html       ;
-;                                                                       ;
-; The text resources in this example are defined in the "gsun07.res"    ;
-; file.                                                                 ;
-;                                                                       ;
-; Notice the syntax ":S:o:N:".; The ':' character is a special "function;
-; code" notifying NCL that we want to go into a different text mode.  In;
-; this case, we follow the colon with "S:" to indicate we want to go    ;
-; into superscript mode before drawing an 'o' character (as a degree    ;
-; symbol).  The ":N:" puts us back in normal text mode.  For other      ;
-; special characters that you can get this way, see the URL:            ;
-;                                                                       ;
-;    http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/FunctionCodes.html          ;
-;                                                                       ;
-;***********************************************************************;
+  xyres@trXMaxF   = xr  ; Specify data limits for X and Y axes.
+  xyres@trXMinF   = xl
+  xyres@trYMaxF   =  3.0
+  xyres@trYMinF   = -2.0
 
-  text = "Contours limit to rectangle bounded by (120:S:o:N:W, 90:S:o:N:W) and (28:S:o:N:N, 51:S:o:N:N)"
+  xyres@vpHeightF = .25 ; Define height, width, and location of plot.
+  xyres@vpWidthF  = .8
+  xyres@vpXF      = .13
+  xyres@vpYF      = .85
 
-  ncl_text(wks,text,.5,.1,False)
+  xy = gsn_xy(wks,xo,yo,xyres) ; Plot the interpolated values.
 
-  frame(wks)      ; Now advance the frame.
+  xyres@xyMarkLineMode = "Markers"  ; Set line mode to "Markers".
+  xyres@xyMarkerColor  = 4          ; Set markers to blue.
+  xyres@xyMarkerSizeF  = 0.025      ; Make markers larger.
 
-;***********************************************************************;
-; Loop through the rest of the time values in the netCDF file and create;
-; an animation of the contour plot we just set up.  The only thing we   ;
-; need to change in each contour plot is the data, so we use "setvalues";
-; to do this, which is much more efficient than calling ncl_contour_map ;
-; for each plot.                                                        ;
-;***********************************************************************;
- 
-  ntime = dimsizes(cdffile->time)
-  do k=1,ntime-1
-    setvalues contour@data
-      "sfDataArray" : temp(k,:,:)
-    end setvalues
-    draw(contour)
-    ncl_polyline(wks,contour,clon,clat,False)
-    ncl_polymarker(wks,contour,slon,slat,False)
-    ncl_text(wks,text,.5,.1,False)
-    frame(wks)
-  end do
+  xy = gsn_xy(wks,xi,yi,xyres) ; Plot the original points with markers.
 
+  txres@txFont        = 21                  ; Change the default font.
+  txres@txFontHeightF = 0.03                ; Set the font height.
+  gsn_text(wks,xy,"Function",1.5,2.5,txres) ; Label the plot.
+
+  xx = (/xl,xr/) ; Create data for a polyline for 
+  yy = (/0.,0./) ; marking the Y = 0.0 line in each graph.
+
+  gsres@gsLineColor = 2                ; Set polyline color to red.
+  gsn_polyline(wks,xy,xx,yy,gsres)     ; Draw polyline at Y=0.
+
+;----------- Begin second plot, same frame--------------------------------
+
+  xyres@vpYF             = 0.37    ; Set Y location of plot.
+
+  xyres@trYMinF          = -1.0    ; Set minimum Y axis value.
+  xyres@trYMaxF          =  4.0    ; Set maximum Y axis value.
+
+  xyres@tmYLTickStartF   = -1.0    ; Define tick mark spacing
+  xyres@tmYLTickSpacingF =  1.0    ; along Y axis.
+  xyres@tmYLTickEndF     =  4.0
+
+  xyres@xyMarkLineMode   = "Lines" ; Set line mode to "Lines".
+
+  xy = gsn_xy(wks,xo,yint,xyres)  ; Plot the integrals.
+
+  txres@txFontHeightF = 0.03                              ; Set font height.
+  gsn_text(wks,xy,"Integral (from X = 0.)",0.8,3.5,txres) ; Label plot.
+
+  gsn_polyline(wks,xy,xx,yy,gsres) ; Draw polyline at Y=0.
+
+  txres@txFontHeightF = 0.04  ; Change the font height.
+
+  gsn_text_ndc(wks,"Demo for ftcurvp, ftcurvpi",.5,.95,txres) 
+
+  xperiod1 = (/.41,   .2633, .2633, .2633, .2833, .2633, .2833, .2633, .2633/)
+  xperiod2 = (/.5166, .6633, .6633, .6633, .6433, .6633, .6433, .6633, .6633/)
+  yperiod  = (/.503,  .503,  .523,  .503,  .513,  .503,  .493,  .503,  .483/)
+
+  gsn_polyline_ndc(wks,xperiod1,yperiod,gsres)  ; Draw a period legend.
+  gsn_polyline_ndc(wks,xperiod2,yperiod,gsres)  ; between the two plots.
+
+  txres@txFontHeightF = 0.024                ; Set font height.
+  gsn_text_ndc(wks,"Period",0.465,0.5,txres) ; Label the period legend.
+
+  frame(wks)        ; Advance the frame.
+
+  delete(xy)        ; Clean up.
+  delete(txres)
+  delete(gsres)
+  delete(xyres)
 end

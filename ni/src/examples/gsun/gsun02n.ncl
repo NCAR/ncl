@@ -1,25 +1,27 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
+load "gsn_code.ncl"
 
 begin
 
   cdf_file = addfile("$NCARG_ROOT/lib/ncarg/data/cdf/contour.cdf","r")
 
-  temp = cdf_file->T(0,0,:,:) - 273.15      ; Convert temperature from 
-                                            ; kelvin to celsius.
+  temp = cdf_file->T(0,0,:,:)               ; temperature
   Z    = cdf_file->Z(0,0,:,:)               ; geopotential height
   pres = cdf_file->Psl(0,:,:)               ; pressure at mean sea level
-  pres = pres * 0.01                        ; Convert from Pa to mb.
+  lat  = cdf_file->lat                      ; latitude
+  lon  = cdf_file->lon                      ; longitude
 
-  lat  = cdf_file->lat                      ; Get latitude values.
-  lon  = cdf_file->lon                      ; Get longitude values.
+  temp = temp - 273.15                      ; Convert Kelvin -> Celsius
+  pres = pres * 0.01                        ; Convert Pa -> mb
+  temp@units = "(C)"                        ; Change units to reflect
+  pres@units = "(mb)"                       ; conversion done.
 
-  xwks = ncl_open_wks("ncgm","gsun02n")    ; Open an X11 workstation.
+  xwks = gsn_open_wks("x11","gsun02n")      ; Open an X11 workstation.
 
-  plot = ncl_contour(xwks,temp,False)       ; Draw a contour plot.
+  plot = gsn_contour(xwks,temp,False)       ; Draw a contour plot.
 
-; Begin second plot.
+;----------- Begin second plot -----------------------------------------
 
-  resources                 = True       ; Indicate we want to set some
+  resources                 = True       ; Indicate you want to set some
                                          ; resources.
 
   resources@cnMonoLineColor = False      ; Turn off the drawing of
@@ -27,9 +29,9 @@ begin
 
   resources@tiMainString    = "Temperature (C)"  ; Create a title.
 
-  plot = ncl_contour(xwks,temp,resources)  ; Draw a contour plot.
+  plot = gsn_contour(xwks,temp,resources)  ; Draw a contour plot.
 
-; Begin third plot.
+;----------- Begin third plot -----------------------------------------
 
   resources@cnFillOn          = True        ; Turn on contour line fill.
   resources@cnMonoFillPattern = False       ; Turn off using a single fill
@@ -42,9 +44,9 @@ begin
   resources@sfXArray         = lon
   resources@sfYArray         = lat
 
-  plot = ncl_contour(xwks,temp,resources)   ; Draw a contour plot.
+  plot = gsn_contour(xwks,temp,resources)   ; Draw a contour plot.
 
-; Begin fourth plot.
+;---------- Begin fourth plot ------------------------------------------
 
   resources@cnMonoFillPattern     = True     ; Turn solid fill back on.
   resources@cnMonoFillColor       = False    ; Use multiple colors.
@@ -53,17 +55,18 @@ begin
                                              ; label.
   resources@cnLinesOn             = False    ; Turn off contour lines.
 
-  resources@pmLabelBarDisplayMode = "always" ; Turn on labelbar.
+  resources@pmLabelBarDisplayMode = "Always" ; Turn on label bar.
   resources@lbPerimOn             = False    ; Turn off perimeter on
-                                             ; labelbar.
+                                             ; label bar.
 
   resources@tiMainString    = Z@long_name
   resources@tiMainFont      = 26
   resources@tiXAxisFont     = 26
   resources@tiYAxisFont     = 26
-  plot = ncl_contour(xwks,Z,resources)    ; Draw a contour plot.
 
-; Begin fifth plot.
+  plot = gsn_contour(xwks,Z,resources)    ; Draw a contour plot.
+
+;---------- Begin fifth plot ------------------------------------------
 
   cmap = (/(/0.,0.,0./),(/1.,1.,1./),(/.1,.1,.1/),(/.15,.15,.15/),\
          (/.2,.2,.2/),(/.25,.25,.25/),(/.3,.3,.3/),(/.35,.35,.35/),\
@@ -71,22 +74,26 @@ begin
          (/.6,.6,.6/),(/.65,.65,.65/),(/.7,.7,.7/),(/.75,.75,.75/),\
          (/.8,.8,.8/),(/.85,.85,.85/)/)
 
-  ncl_define_colormap(xwks,cmap)          ; Define a new color map.
+  gsn_define_colormap(xwks,cmap)          ; Define a new color map.
 
   resources@tiMainString    = pres@long_name
-  plot = ncl_contour(xwks,pres,resources) ; Draw a contour plot.
 
-  print(temp(2:5,7:9))                    ; Print subset of "temp"
-                                          ; variable.
+  plot = gsn_contour(xwks,pres,resources) ; Draw a contour plot.
 
-  print(cdf_file&level)                   ; Print coordinate variable
-                                          ; "level".
-  print(cdf_file->T@long_name)            ; Print "long_name" and "units"
-  print(cdf_file->T@units)                ; attributes of "T".
+  print(temp(2:5,7:9))             ; Print subset of "temp" variable.
 
+  print(temp!0)                    ; Print the dimension names for the
+  print(temp!1)                    ; first two dimensions of T.
+  print(temp@long_name)            ; Print "long_name" and "units"
+  print(temp@units)                ; attributes of "T".
+  print(temp&lat)                  ; Print coordinate variables "lat"
+  print(temp&lon)                  ; and "lon".
 
   ascii_file = "data.asc"                 ; Create name of ASCII file.
   system("/bin/rm -f " + ascii_file)      ; Remove ASCII file.
   asciiwrite(ascii_file,temp(7:3:2,0:4))  ; Write part of temp to ASCII 
                                           ; file.
+  delete(plot)       ; Clean up.
+  delete(temp)
+  delete(resources)
 end

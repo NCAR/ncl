@@ -1,98 +1,81 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
+load "gsn_code.ncl"
 
 begin
-  nlat =  64
-  nlon = 129
-  grid_dims = (/nlat,nlon/)
+  dir = ncargpath("data")
+  uf = addfile(dir+"/cdf/Ustorm.cdf","r")  ; Open two netCDF files.
+  vf = addfile(dir+"/cdf/Vstorm.cdf","r")
 
-  filedir = ncargpath("data") + "/bin/"
-  filename = filedir + "ex01B1_uv300.hs.mdl"
+  u   = uf->u(0,:,:)   ; Get u, v, latitude, and longitude data.
+  v   = vf->v(0,:,:)
+  lat = uf->u&lat
+  lon = uf->u&lon
 
-  num_records = fbinnumrec(filename)         ; Get the number of Fortran
-                                             ; records in this file.
+  wks = gsn_open_wks("x11","gsun03n") ; Open a workstation.
 
-  num_timesteps = num_records/2              ; 2 records per timestep
+  vc = gsn_vector(wks,u,v,False)    ; Draw a vector plot of u and v.
 
-  u = new( (/num_timesteps,nlat,nlon/), float )
-  v = new( (/num_timesteps,nlat,nlon/), float )
+;----------- Begin second plot -----------------------------------------
 
-  u(0,:,:) = fbinrecread(filename,0,grid_dims,"float")
-  v(0,:,:) = fbinrecread(filename,1,grid_dims,"float")
-  u(1,:,:) = fbinrecread(filename,2,grid_dims,"float")
-  v(1,:,:) = fbinrecread(filename,3,grid_dims,"float")
+  resources = True 
 
-  u@units = "m/sec"                         ; Define a "units" attribute
-  v@units = "m/sec"                         ; for both u and v.
+  resources@vcMinFracLengthF = 0.33
+  resources@vcRefMagnitudeF  = 20.0
+  resources@vcRefLengthF     = 0.045
+  resources@vcMonoLineArrowColor  = False   ; Draw vectors in color.
 
-  lat = fspan(-88.,88.,nlat)
-  lon = fspan(-180.,180.,nlon)
-  u!1 = "lat"
-  u!2 = "lon"
-  v!1 = "lat"
-  v!2 = "lon"
-  umsk = mask(u,(u.gt.0),True)
-  vmsk = mask(v,(v.gt.0),True)
+  vc = gsn_vector(wks,u,v,resources)
 
-  wks = ncl_open_wks("ncgm","gsun03n") ; open an X11 workstation
+;----------- Begin third plot -----------------------------------------
 
-  resources = True
-  resources@vpWidthF  = 0.7
-  resources@vpHeightF = 0.7 * dimsizes(u(0,:,0))/dimsizes(u(0,0,:))
-
-  resources@vfXCStartV = -180.
-  resources@vfXCEndV   =  180.
-  resources@vfYCStartV =  -88.
-  resources@vfYCEndV   =   88.
-
-  resources@tiYAxisString = "latitude"
+  resources@tiMainString  = ":F26:wind velocity vectors - January 1996"
   resources@tiXAxisString = "longitude"
-  titles = (/"January wind", "July wind"/)
+  resources@tiYAxisString = "latitude"
 
-  resources@vcLineArrowThicknessF =  2.0
+  resources@vfXCStartV  = lon(0)               ; Define X/Y axes range
+  resources@vfXCEndV    = lon(dimsizes(lon)-1) ; for vector plot.
+  resources@vfYCStartV  = lat(0)
+  resources@vfYCEndV    = lat(dimsizes(lat)-1)
 
-  do i=0,num_timesteps-1
-    resources@tiMainString = titles(i)
+  resources@pmLabelBarDisplayMode    = "Always"   ; Turn on a label bar.
+  resources@pmLabelBarWidthF         = 0.1
+  resources@lbPerimOn                = False
 
-    vector = ncl_vector(wks,u(i,::4,::4),v(i,::4,::4),resources)
+  vc = gsn_vector(wks,u,v,resources)
 
-    resources@tiMainString = titles(i) + " (with masked values)"
-    vector_mask = ncl_vector(wks,umsk(i,::4,::4),vmsk(i,::4,::4),\
-                             resources)
+;---------- Begin fourth plot ------------------------------------------
 
-  end do   ; End of "do" statement.
+  tf = addfile(dir+"/cdf/Tstorm.cdf","r")    ; Open a netCDF file.
+  temp  = (tf->t(0,:,:)-273.15)*9.0/5.0+32.0 ; Read in temp data and
+                                             ; convert from K to F.
+  temp@units = "(deg F)"
 
-  resources@Draw = False
-  resources@Frame = False
-  resources@vcMonoLineArrowColor = False     ; Indicate we want color
-                                             ; vectors.
-  resources@mpGridAndLimbOn  =     False
-  vector_map = ncl_vector_map(wks,u(0,::2,::2),v(0,::2,::2),resources)
+  cmap = (/(/1.00, 1.00, 1.00/), (/0.00, 0.00, 0.00/), \
+           (/.560, .500, .700/), (/.300, .300, .700/), \
+           (/.100, .100, .700/), (/.000, .100, .700/), \
+           (/.000, .300, .700/), (/.000, .500, .500/), \
+           (/.000, .700, .100/), (/.060, .680, .000/), \
+           (/.550, .550, .000/), (/.570, .420, .000/), \
+           (/.700, .285, .000/), (/.700, .180, .000/), \
+           (/.870, .050, .000/), (/1.00, .000, .000/), \
+           (/.700, .700, .700/)/)
 
-                                             ; Set some resources to
-                                             ; take effect after the
-                                             ; plot is created.
-  setvalues vector_map@vector
-    "tiMainString"         : titles(0)
-    "tiMainFont"           : 25
-    "tiXAxisFont"          : 25
-    "tiYAxisFont"          : 25
-    "tiMainFontHeightF"    : 0.035
-    "tiXAxisFontHeightF"   : 0.026
-    "tiYAxisFontHeightF"   : 0.026
-  end setvalues
+  gsn_define_colormap(wks, cmap)  ; Define a new color map.
 
-  draw(vector_map)
-  frame(wks)
+  resources@vcFillArrowsOn           = True  ; Fill the vector arrows
+  resources@vcMonoFillArrowFillColor = False ; in different colors
+  resources@vcFillArrowEdgeColor     = 1     ; Draw the edges in black.
+  resources@vcFillArrowWidthF        = 0.055 ; Make vectors thinner.
 
-  hdf_filename = "ex01B1_uv300.hs.mdl.hdf"
-  system("/bin/rm -f " + hdf_filename)
-  hdf_file = addfile(hdf_filename,"c")
+  resources@tiMainString      = ":F26:wind velocity vectors colored by temperature " + temp@units
+  resources@tiMainFontHeightF = 0.02  ; Make font slightly smaller.
+  resources@lbLabelFont       = 21    ; Change font of label bar labels.
 
-  hdf_file@title = "Wind vectors in January and July at 300 mb"
-  hdf_file->ujan = u(0,:,:)
-  hdf_file->vjan = v(0,:,:)
-  hdf_file->ujul = u(1,:,:)
-  hdf_file->vjul = v(1,:,:)
-  hdf_file&lat = lat
-  hdf_file&lon = lon
+  vc = gsn_vector_scalar(wks,u,v,temp,resources) ; Draw a vector plot of
+                                                 ; u and v and color them
+                                                 ; according to the scalar
+                                                 ; field "temp."
+  delete(vc)    ; Clean up.
+  delete(u)
+  delete(v)
+  delete(temp)
 end
