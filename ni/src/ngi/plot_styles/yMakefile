@@ -1,10 +1,12 @@
 #
-#       $Id: yMakefile,v 1.2 1999-08-18 20:41:04 haley Exp $
+#       $Id: yMakefile,v 1.3 1999-09-21 00:11:24 dbrown Exp $
 #
-FILES		= DiscreteRasterContour.res FillContour.res FillVector.res \
-		LineContour.res LineVector.res LineXy.res ScatterXy.res \
-		SmoothedRasterContour.res Streamline.res test_style.ncl \
-		TestStyle.res TestStyle2.res
+
+#define IHaveSubdirs
+
+SUBDIRS		= contour streamline vector xy test
+
+FILES		= DIRECTORY.res
 
 PSPATH	= $(LIBNCARGPATH)/plot_styles
 INSTALL_PS = $(INSTALL_DB)
