@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_2,v 1.1 1993-02-20 00:11:35 clyne Exp $
+#      $Id: rm3_2,v 1.2 1994-05-03 14:02:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -74,8 +74,7 @@ set bins = 	(bnchmk cgm2ncgm cgm_edit cgmtrans \
 set incs = 	(ncarg)
 
 set libs = 	(libcgm.a libncarg.a libncargC.a libncarg_c.a \
-		libncarg_gks.a libncarg_gksC.a \
-		libncarg_gksCO.a libncarg_loc.a libncarg_ras.a \
+		libncarg_gks.a libncarg_gksC.a libncarg_loc.a libncarg_ras.a \
 		ncarg)
 
 set man1s = 	(cgm2ncgm cgm_edit cgmtrans ctrans fcaps gcaps ictrans idt \
