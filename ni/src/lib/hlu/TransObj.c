@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.25 1997-08-14 16:30:44 dbrown Exp $
+ *      $Id: TransObj.c,v 1.26 1997-09-22 19:32:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,15 @@ static NhlResource resources[] =  {
 		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL }
 
 };
+static NhlErrorTypes TransInitialize(
+#if	NhlNeedProto
+        NhlClass,     	/* class */
+        NhlLayer,       /* req */
+        NhlLayer,       /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args */
+#endif
+);
 
 static NhlErrorTypes  TransSetValues(
 #if	NhlNeedProto
@@ -170,7 +179,7 @@ NhlTransObjClassRec NhltransObjClassRec = {
 
 /* class_part_initialize */     TransObjClassPartInit,
 /* class_initialize */  NULL,
-/* layer_initialize */  NULL,
+/* layer_initialize */  TransInitialize,
 /* layer_set_values */  TransSetValues,
 /* layer_set_values_hook */  NULL,
 /* layer_get_values */  NULL,
@@ -236,6 +245,79 @@ TransObjClassPartInit
 
 
 /*
+ * Function:	TransInitialize
+ *
+ * Description: 
+ *
+ * In Args: 	class	objects layer_class
+ *		req	instance record of requested values
+ *		new	instance record of new object
+ *		args	list of resources and values for reference
+ *		num_args 	number of elements in args.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+TransInitialize
+#if	NhlNeedProto
+(
+	NhlClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(class,req,new,args,num_args)
+        NhlClass   class;
+        NhlLayer        req;
+        NhlLayer        new;
+        _NhlArgList     args;
+        int             num_args;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "TransInitialize";
+	char			*e_text;
+	NhlTransObjLayer	tnew = (NhlTransObjLayer) new;
+	NhlTransObjLayerPart	*tp = &tnew->trobj;
+
+
+        if (! tp->x_min_set) {
+                tp->x_min = tp->x_log ? 0.1 : 0.0;
+        }
+        else if (tp->x_log && tp->x_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for X Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+                tp->x_log = False;
+                ret = NhlWARNING;
+	}
+        if (! tp->x_max_set) {
+                tp->x_max = 1.0;
+        }
+        if (! tp->y_min_set) {
+                tp->y_min = tp->y_log ? 0.1 : 0.0;
+        }
+        if (tp->y_log && tp->y_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for Y Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+                tp->y_log = False;
+                ret = NhlWARNING;
+	}
+        if (! tp->y_max_set) {
+                tp->y_max = 1.0;
+        }
+        
+}
+
+/*
  * Function:	TransSetValues
  *
  * Description:	SetValues method for IrregularTrans Objects
@@ -261,6 +343,9 @@ static NhlErrorTypes TransSetValues
 	int	num_args;
 #endif
 {
+        NhlErrorTypes		ret = NhlNOERROR;
+	char			*entry_name  = "TransSetValues";
+	char			*e_text;
 	NhlTransObjLayer tnew = (NhlTransObjLayer) new;
 	NhlTransObjLayerPart *tp = &tnew->trobj;
 
@@ -272,7 +357,22 @@ static NhlErrorTypes TransSetValues
                 tp->y_min_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
                 tp->y_max_set = True;
-        
+
+        if (tp->x_log && tp->x_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for X Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+                tp->x_log = False;
+                ret = NhlWARNING;
+	}
+        if (tp->y_log && tp->y_min <= 0.0) {
+                e_text =
+                    "%s: invalid range for Y Axis log mode; setting %s off";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+                tp->y_log = False;
+                ret = NhlWARNING;
+	}
+                        
         return NhlNOERROR;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.9 1997-08-11 18:22:26 dbrown Exp $
+ *      $Id: TransObj.h,v 1.10 1997-09-22 19:32:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,23 +26,23 @@
 
 #include <ncarg/hlu/Base.h>
 
-#define NhlNtrXLog	"trXLog"
-#define NhlCtrXLog	"TrXLog"
-#define NhlNtrXMinF	"trXMinF"
-#define NhlCtrXMinF	"TrXMinF"
-#define NhlNtrXMaxF	"trXMaxF"
-#define NhlCtrXMaxF	"TrXMaxF"
-#define NhlNtrXReverse	"trXReverse"
-#define NhlCtrXReverse	"TrXReverse"
+#define NhlNtrXLog		"trXLog"
+#define NhlCtrXLog		"TrXLog"
+#define NhlNtrXMinF		"trXMinF"
+#define NhlCtrXMinF		"TrXMinF"
+#define NhlNtrXMaxF		"trXMaxF"
+#define NhlCtrXMaxF		"TrXMaxF"
+#define NhlNtrXReverse		"trXReverse"
+#define NhlCtrXReverse		"TrXReverse"
 
-#define NhlNtrYLog	"trYLog"
-#define NhlCtrYLog	"TrYLog"
-#define NhlNtrYMinF	"trYMinF"
-#define NhlCtrYMinF	"TrYMinF"
-#define NhlNtrYMaxF	"trYMaxF"
-#define NhlCtrYMaxF	"TrYMaxF"
-#define NhlNtrYReverse	"trYReverse"
-#define NhlCtrYReverse	"TrYReverse"
+#define NhlNtrYLog		"trYLog"
+#define NhlCtrYLog		"TrYLog"
+#define NhlNtrYMinF		"trYMinF"
+#define NhlCtrYMinF		"TrYMinF"
+#define NhlNtrYMaxF		"trYMaxF"
+#define NhlCtrYMaxF		"TrYMaxF"
+#define NhlNtrYReverse		"trYReverse"
+#define NhlCtrYReverse		"TrYReverse"
 
 #define NhlNtrOutOfRangeF	"trOutOfRangeF"
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"
