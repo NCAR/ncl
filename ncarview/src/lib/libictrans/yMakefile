@@ -59,7 +59,7 @@ lex.yy.c: lex.l sedscript
 	lex lex.l
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
-	@$(RM) lex.yy.c.sed
+	@$(RM) lex.yy.c.sed sedscript
 
 sedscript:      Makefile
 	@echo '1a\' >$@
@@ -67,6 +67,8 @@ sedscript:      Makefile
 	@echo 's/yylex/my_yylex/g' >> $@
 	@echo 's/getc/my_getc/g' >> $@
 
+clean::
+	@$(RM) lex.yy.c.sed sedscript
 
 lint: $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 
