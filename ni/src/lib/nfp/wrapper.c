@@ -87,6 +87,8 @@ extern NhlErrorTypes linrood_wgt_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
+extern NhlErrorTypes dv2uvF_W(void);
+extern NhlErrorTypes dv2uvG_W(void);
 extern NhlErrorTypes gradsf_W(void);
 extern NhlErrorTypes gradsg_W(void);
 extern NhlErrorTypes igradsf_W(void);
@@ -109,8 +111,12 @@ extern NhlErrorTypes lderuvf_W(void);
 extern NhlErrorTypes lderuvg_W(void);
 extern NhlErrorTypes uv2sfvpf_W(void);
 extern NhlErrorTypes uv2sfvpg_W(void);
+extern NhlErrorTypes uv2sfvpF_W(void);
+extern NhlErrorTypes uv2sfvpG_W(void);
 extern NhlErrorTypes uv2vrdvf_W(void);
 extern NhlErrorTypes uv2vrdvg_W(void);
+extern NhlErrorTypes uv2vrdvF_W(void);
+extern NhlErrorTypes uv2vrdvG_W(void);
 extern NhlErrorTypes uv2dvf_W(void);
 extern NhlErrorTypes uv2dvg_W(void);
 extern NhlErrorTypes uv2dvF_W(void);
@@ -121,6 +127,8 @@ extern NhlErrorTypes uv2vrF_W(void);
 extern NhlErrorTypes uv2vrG_W(void);
 extern NhlErrorTypes vr2uvf_W(void);
 extern NhlErrorTypes vr2uvg_W(void);
+extern NhlErrorTypes vr2uvF_W(void);
+extern NhlErrorTypes vr2uvG_W(void);
 extern NhlErrorTypes vrdv2uvf_W(void);
 extern NhlErrorTypes vrdv2uvg_W(void);
 
@@ -321,12 +329,16 @@ extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes zonal_mpsi_W(void);
 extern NhlErrorTypes taper_W(void);
 extern NhlErrorTypes hydro_W(void);
+extern NhlErrorTypes mixhum_ptrh_W(void);
+extern NhlErrorTypes dewtemp_trh_W(void);
+extern NhlErrorTypes lclvl_W(void);
 extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes rcm2rgrid_W(void);
 extern NhlErrorTypes rgrid2rcm_W(void);
+extern NhlErrorTypes rcm2points_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
@@ -388,6 +400,7 @@ extern NhlErrorTypes random_chi_W(void);
 extern NhlErrorTypes random_gamma_W(void);
 extern NhlErrorTypes random_normal_W(void);
 extern NhlErrorTypes random_uniform_W(void);
+extern NhlErrorTypes ind_resolve_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -1019,6 +1032,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterProc(dv2uvg_W,args,"dv2uvg",nargs);
 /*
+ * Register "dv2uvF".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dv2uvF_W,args,"dv2uvF",nargs);
+
+/*
+ * Register "dv2uvG".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dv2uvG_W,args,"dv2uvG",nargs);
+
+/*
  * Register "gradsf".
  *
  * Create private argument array.
@@ -1260,6 +1295,30 @@ void NclAddUserFuncs(void)
     NclRegisterProc(uv2sfvpf_W,args,"uv2sfvpf",nargs);
 
 /*
+ * Register "uv2sfvpF".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(uv2sfvpF_W,args,"uv2sfvpF",nargs);
+
+/*
+ * Register "uv2sfvpG".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(uv2sfvpG_W,args,"uv2sfvpG",nargs);
+
+/*
  * Register "uv2sfvpg".
  *
  * Create private argument array.
@@ -1286,6 +1345,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrdvg_W,args,"uv2vrdvg",nargs);
+/*
+ * Register "uv2vrdvG".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(uv2vrdvG_W,args,"uv2vrdvG",nargs);
 
 /*
  * Register "uv2vrdvf".
@@ -1300,6 +1370,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrdvf_W,args,"uv2vrdvf",nargs);
+/*
+ * Register "uv2vrdvF".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(uv2vrdvF_W,args,"uv2vrdvF",nargs);
 
 /*
  * Register "lderuvf".
@@ -1454,6 +1535,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vr2uvg_W,args,"vr2uvg",nargs);
+
+/*
+ * Register "vr2uvF".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vr2uvF_W,args,"vr2uvF",nargs);
+
+/*
+ * Register "vr2uvG".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vr2uvG_W,args,"vr2uvG",nargs);
 
 /*
  * Register "vrdv2uvf".
@@ -4127,6 +4230,37 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(hydro_W,args,"hydro",nargs);
 
 /*
+ * Register "mixhum_ptrh".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(mixhum_ptrh_W,args,"mixhum_ptrh",nargs);
+
+/*
+ * Register "dewtemp_trh".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    NclRegisterFunc(dewtemp_trh_W,args,"dewtemp_trh",nargs);
+
+/*
+ * Register "lclvl".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    NclRegisterFunc(lclvl_W,args,"lclvl",nargs);
+
+/*
  * Register "linmsg".
  */
     nargs = 0;
@@ -4212,6 +4346,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(rgrid2rcm_W,args,"rgrid2rcm",nargs);
+
+/*
+ * Register "rcm2points".
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(rcm2points_W,args,"rcm2points",nargs);
 
 /*
  * Register "pres_hybrid".
@@ -4908,6 +5055,18 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(random_uniform_W, args, "random_uniform", nargs);
 
+/*
+ *  Register ind_resolve.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+
+    NclRegisterFunc(ind_resolve_W, args, "ind_resolve", nargs);
+
     return;
 }
 
@@ -5351,7 +5510,7 @@ NclBasicDataTypes type_x
 }
 
 /*
- * Copy double data back to double or float array, using a void array. 
+ * Copy double data back to a float array, using a void array. 
  */
 void coerce_output_float_only(
 void   *x,

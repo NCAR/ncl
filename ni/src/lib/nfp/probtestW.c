@@ -52,7 +52,7 @@ NhlErrorTypes ttest_W( void )
  */
   int i, index_s1, index_s2, size_ave1, size_prob, ier;
   int is_missing_ave1, is_missing_ave2, is_missing_var1, is_missing_var2;
-  int is_missing_s1, is_missing_s2;
+  int is_missing_s1, is_missing_s2, ncount1, ncount2;
 /*
  * Retrieve parameters
  *
@@ -375,6 +375,7 @@ NhlErrorTypes ttest_W( void )
 
   output_contains_msg = 0;   /* Flag to keep track of whether output contains
                                 any missing values.*/
+  ncount1 = ncount2 = 0;     /* Flag to keep track of # of error msgs. */
   for( i = 0; i < size_ave1; i++ ) {
     ier = 0;
     if(type_ave1 != NCL_double) {
@@ -478,12 +479,12 @@ NhlErrorTypes ttest_W( void )
     }
     if(!ier) {
       if(*tmp_s1 < 2. || *tmp_s2 < 2.) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: s1 and/or s2 is less than 2; setting output to missing");
+        ncount1++;
         ier = 1;
         output_contains_msg = 1;
       }
       if(*tmp_var1 <= 0. || *tmp_var2 <= 0.) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: var1 and/or var2 is less than or equal to 0; setting output to missing");
+        ncount2++;
         ier = 1;
         output_contains_msg = 1;
       }
@@ -494,7 +495,7 @@ NhlErrorTypes ttest_W( void )
 
       coerce_output_float_or_double(prob,tmp_alpha,type_prob,1,i);
       if(*tval_opt) {
-	coerce_output_float_or_double(prob,tmp_tval,type_prob,1,i+size_ave1);
+        coerce_output_float_or_double(prob,tmp_tval,type_prob,1,i+size_ave1);
       }
     }
     else {
@@ -512,6 +513,12 @@ NhlErrorTypes ttest_W( void )
  */
     if(!scalar_s1) index_s1++;
     if(!scalar_s2) index_s2++;
+  }
+  if(ncount1 > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: encountered %d cases where s1 and/or s2 were less than 2. Output set to missing values in these cases",ncount1);
+  }
+  if(ncount2 > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: encountered %d cases where var1 and/or var2 were less than or equal to 0. Output set to missing values in these cases",ncount2);
   }
 /*
  * free memory.
