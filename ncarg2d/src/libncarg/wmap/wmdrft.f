@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.6 2000-03-07 00:38:31 fred Exp $
+C	$Id: wmdrft.f,v 1.7 2000-04-08 00:06:24 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -156,7 +156,7 @@ C
 C
 C  If NUMSYM is "1", and the front is occluded or stationary, see
 C  if we can adjust the spacing between symbols so that two symbols
-C  can be put out.  If not, issue an error.
+C  can be put out.  If not, issue a warning.
 C
         IF (IFRONT.EQ.3. OR. IFRONT.EQ.4) THEN
           IF (BEGDST+ENDDST+2.*SYMWID .LT. CRVLEN) THEN
@@ -164,13 +164,13 @@ C
             DSTBTW = CRVLEN-BEGDST-ENDDST-NUMSYM*SYMWID
           ELSE
             IF (IFRONT .EQ. 3) THEN
-              CALL SETER ('WMDRFT - not enough space along the input cur
-     +ve to draw two symbols for a stationary front', 2, 1)       
-              RETURN
+              PRINT *,    'WMDRFT - Warning: not enough space along the 
+     +input curve to draw two symbols for a stationary front'
+              NUMSYM = 0
             ELSE
-              CALL SETER ('WMDRFT - not enough space along the input cur
-     +ve to draw two symbols for an occluded front', 3, 1)       
-              RETURN
+              PRINT *,    'WMDRFT - Warning: not enough space along the 
+     +input curve to draw two symbols for an occluded front'
+              NUMSYM = 0
             ENDIF
           ENDIF
         ENDIF
@@ -224,7 +224,9 @@ C
               ICOLOR = IWARMC
             ENDIF
             IBR = (IPOSIT(J+1)+IPOSIT(J))/2
-            CALL WMLGPL(IBR-IBL+1,XOUT(IBL),YOUT(IBL))
+            IF (IBR-IBL .GE. 1) THEN
+              CALL WMLGPL(IBR-IBL+1,XOUT(IBL),YOUT(IBL))
+            ENDIF
             IBL = IBR
    70     CONTINUE 
           IF (IABS(ISTYPE(NUMSYM)) .EQ. 1) THEN
