@@ -1,5 +1,5 @@
 C
-C $Id: shgetnp.f,v 1.3 2000-08-22 15:19:46 haley Exp $
+C $Id: shgetnp.f,v 1.4 2000-08-23 21:21:34 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,6 +65,8 @@ C  Define defaults for the parameter values if they have not
 C  been set.
 C
       COMMON /SHCOMI/ NMLSTQ, NMINFL, NMCELS
+C
+      EXTERNAL SHBLDA
 C
       IF (NMLSTQ .LT. 0) THEN
         NMLSTQ = MIN(17,N-1)
