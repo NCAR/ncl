@@ -1,5 +1,5 @@
 C
-C $Id: cphllb.f,v 1.2 1994-03-17 01:51:07 kennison Exp $
+C $Id: cphllb.f,v 1.3 1994-03-18 22:27:11 kennison Exp $
 C
       SUBROUTINE CPHLLB (ZDAT,RWRK,IWRK,IACT,IAMA)
 C
@@ -540,9 +540,12 @@ C
             NLBS=NLBS+1
             IF (4*NLBS.GT.LR03) THEN
               CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
-              IF (IWSE.NE.0.OR.ICFELL('CPHLLB',21).NE.0) THEN
+              IF (IWSE.NE.0) THEN
                 NLBS=NLBS-1
                 GO TO 108
+              ELSE IF (ICFELL('CPHLLB',21).NE.0) THEN
+                NLBS=NLBS-1
+                RETURN
               END IF
             END IF
             RWRK(IR03+4*(NLBS-1)+1)=XCLB
@@ -552,9 +555,12 @@ C
             NR04=NR04+6
             IF (NR04.GT.LR04) THEN
               CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
-              IF (IWSE.NE.0.OR.ICFELL('CPHLLB',22).NE.0) THEN
+              IF (IWSE.NE.0) THEN
                 NLBS=NLBS-1
                 GO TO 108
+              ELSE IF (ICFELL('CPHLLB',22).NE.0) THEN
+                NLBS=NLBS-1
+                RETURN
               END IF
             END IF
             RWRK(IR04+NR04-5)=REAL(IHOL+1)

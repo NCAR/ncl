@@ -1,5 +1,5 @@
 C
-C $Id: cpsp1a.f,v 1.3 1994-03-17 01:52:02 kennison Exp $
+C $Id: cpsp1a.f,v 1.4 1994-03-18 22:27:13 kennison Exp $
 C
       SUBROUTINE CPSP1A (ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
@@ -91,15 +91,17 @@ C
             IF (ZSPS(ISPS,JSPS).EQ.SVAL) THEN
               IF (NSVS.GE.LI01) THEN
                 CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-                IF (IWSE.NE.0.OR.ICFELL('CPSPS1',4).NE.0) THEN
+                IF (IWSE.NE.0) THEN
                   GO TO 10006
                 END IF
+                IF (ICFELL('CPSPS1',4).NE.0) RETURN
               END IF
               IF (NSVS.GE.LR01) THEN
                 CALL CPGRWS (RWRK,1,LR01+100,IWSE)
-                IF (IWSE.NE.0.OR.ICFELL('CPSPS1',5).NE.0) THEN
+                IF (IWSE.NE.0) THEN
                   GO TO 10006
                 END IF
+                IF (ICFELL('CPSPS1',5).NE.0) RETURN
               END IF
               NSVS=NSVS+1
               IWRK(II01+NSVS)=NSPS*(ISPS-1)+(JSPS-1)
@@ -197,9 +199,10 @@ C Do the interpolation from the sparse array to the dense array.
 C
       CALL CPGRWS (RWRK,1,3*MSPS*NSPS+MAX(MSPS+NSPS+NSPS,4*IZDM),IWSE)
 C
-      IF (IWSE.NE.0.OR.ICFELL('CPSPS1',7).NE.0) THEN
+      IF (IWSE.NE.0) THEN
         GO TO 10006
       END IF
+      IF (ICFELL('CPSPS1',7).NE.0) RETURN
 C
       CALL MSBSF1 (MSPS,NSPS,1.,REAL(MSPS),1.,REAL(NSPS),ZSPS,KSPS,
      +             RWRK(IR01+1),RWRK(IR01+1+3*MSPS*NSPS),T3DS)
