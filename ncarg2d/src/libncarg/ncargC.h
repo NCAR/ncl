@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.4 1998-05-11 21:26:29 kennison Exp $
+ *  $Id: ncargC.h,v 1.5 1998-05-24 01:16:32 kennison Exp $
  */
 
 #ifndef _ncargC_h
@@ -1248,7 +1248,14 @@ extern int c_mpilnb(
 #endif    
 );
 
-extern int c_mpioar(
+extern int c_mpiola(
+#ifdef NeedFuncProto
+    int iaid,
+    int ilvl
+#endif    
+);
+
+extern int c_mpiosa(
 #ifdef NeedFuncProto
     int iaid,
     int ilvl
