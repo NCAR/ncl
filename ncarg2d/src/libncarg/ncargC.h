@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.17 2004-03-19 23:04:03 kennison Exp $
+ *  $Id: ncargC.h,v 1.18 2004-03-26 21:46:14 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -930,13 +930,28 @@ extern void c_ctsetr(
 #endif
 );
 
-extern void c_cttdbi(
+extern void c_cttdbf(
 #ifdef  NeedFuncProto
     float *rpnt,
     int *iedg,
     int *itri,
     float *rwrk,
-    int *iwrk
+    int *iwrk,
+    int iflg,
+    float atol
+#endif
+);
+
+extern void c_cttdbm(
+#ifdef  NeedFuncProto
+    int ihbx,
+    int iebx,
+    int iwbx,
+    int iubx,
+    int ihba,
+    int ieba,
+    int iwba,
+    int iuba
 #endif
 );
 
@@ -955,6 +970,17 @@ extern void c_cttdca(
     float ycpf,
     float xcqf,
     float ycqf
+#endif
+);
+
+extern void c_cttddm(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    int idia
 #endif
 );
 
