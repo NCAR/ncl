@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.8 1995-03-29 03:11:26 boote Exp $
+ *	$Id: ymake-filter.c,v 1.9 1995-03-31 10:45:15 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -84,10 +84,11 @@ main()
 			/* don't tab if Make comment or tab'd already */
 			if((line[0] == '#') || (line[0] == '\t'))
 				do_tab = FALSE;
-			else{
-				/*
-				 * Impliment ## concat for bsd cpp's.
-				 */
+
+			/*
+			 * Impliment ## concat for bsd cpp's.
+			 */
+			if(line[0] != '#'){
 				char	*tchar;
 
 				while((tchar = strstr(line,"##")) != NULL){
