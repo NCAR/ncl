@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.23 1999-11-05 17:42:41 haley Exp $
+#      $Id: yMakefile,v 1.24 2000-02-27 18:59:10 haley Exp $
 #
 #########################################################################
 #									#
@@ -47,13 +47,13 @@ DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPNFPLIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) -lXpm $(HDFLIB)
 #if defined(SUN)
-EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3_dp -fast -xlic_lib=sunperf
 #elif defined(AIX)
-EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -llapack -lessl -lxlf90
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3_dp -llapack -lessl -lxlf90
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -lcomplib.sgimath
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3_dp -lcomplib.sgimath
 #else
-EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -llapack -lblas
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3_dp -llapack -lblas
 #endif
 
 #ifdef Linux
