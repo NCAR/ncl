@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkca.f,v 1.2 1993-01-09 02:01:58 fred Exp $
+C	$Id: gqwkca.f,v 1.3 1993-01-10 23:29:05 fred Exp $
 C
       SUBROUTINE GQWKCA(WTYPE,ERRIND,WKCAT)
 C
@@ -25,7 +25,9 @@ C
         WKCAT = GWISS
       ELSE IF (WTYPE.EQ.GCGM) THEN
         WKCAT = GMO
-      ELSE IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP) THEN       
+      ELSE IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE) THEN       
+        WKCAT = GOUTIN
+      ELSE IF (WTYPE .EQ. GDMP) THEN
         WKCAT = GOUTPT
       ELSE
         WKCAT = -1
