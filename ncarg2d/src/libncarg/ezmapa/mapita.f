@@ -1,5 +1,5 @@
 C
-C $Id: mapita.f,v 1.3 1993-12-21 00:44:53 kennison Exp $
+C $Id: mapita.f,v 1.4 1994-03-17 00:04:32 kennison Exp $
 C
       SUBROUTINE MAPITA (XLAT,XLON,IFST,IAMP,IGRP,IDLT,IDRT)
 C
@@ -39,6 +39,10 @@ C
 C
       DATA DTOR / .017453292519943 /
       DATA RTOD / 57.2957795130823 /
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPITA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Initialize the variables that control interpolation.
 C
@@ -128,7 +132,7 @@ C
 C Project the point (RLAT,RLON) to (U,V).
 C
       CALL MAPTRN (RLAT,RLON,U,V)
-      IF (ICFELL('MAPITA',1).NE.0) RETURN
+      IF (ICFELL('MAPITA',2).NE.0) RETURN
 C
 C For the sake of efficiency, execute one of two parallel algorithms,
 C depending on whether an elliptical or a rectangular perimeter is in
@@ -501,7 +505,7 @@ C
       RLTH=RLATI(1)
       RLNH=RLONI(1)
       CALL MAPTRN (RLTH,RLNH,UINH,VINH)
-      IF (ICFELL('MAPITA',2).NE.0) RETURN
+      IF (ICFELL('MAPITA',3).NE.0) RETURN
       IF (.NOT.(UINH.LT.1.E12)) GO TO 10061
       IF (.NOT.(RLTH.NE.RLTV.OR.RLNH.NE.RLNV)) GO TO 10062
       RLTV=RLTH
@@ -535,7 +539,7 @@ C
 10033 CONTINUE
       IF (.NOT.(NCRA.GT.1)) GO TO 10068
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPITA',3).NE.0)) GO TO 10069
+      IF (.NOT.(ICFELL('MAPITA',4).NE.0)) GO TO 10069
       IIER=-1
       RETURN
 10069 CONTINUE
@@ -550,7 +554,7 @@ C
 10024 CONTINUE
       IF (.NOT.(NCRA.EQ.100)) GO TO 10070
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPITA',4).NE.0)) GO TO 10071
+      IF (.NOT.(ICFELL('MAPITA',5).NE.0)) GO TO 10071
       IIER=-1
       RETURN
 10071 CONTINUE

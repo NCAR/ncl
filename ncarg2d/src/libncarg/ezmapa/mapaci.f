@@ -1,5 +1,5 @@
 C
-C $Id: mapaci.f,v 1.4 1993-12-21 00:44:41 kennison Exp $
+C $Id: mapaci.f,v 1.5 1994-03-17 00:04:22 kennison Exp $
 C
       FUNCTION MAPACI (IAI)
 C
@@ -80,6 +80,10 @@ C
      +    4,5,5,5,4 , 2,4,4,4,5 , 5,5,4,2,5 , 5,4,5,5,5 , 3,3,5,5,3 ,
      +    5,3,5,5,3 , 6,6,3,6,6 , 3,6,3,6,6 , 3,6,3,3,3 , 6,3,3,6,3 ,
      +    7,6,3,3,6 , 3,6,6,3,3 , 2 /
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPACI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Pull out the appropriate color index, taking precautions to prevent
 C an out-of-array reference.

@@ -1,5 +1,5 @@
 C
-C $Id: mapiqm.f,v 1.2 1993-12-21 00:44:51 kennison Exp $
+C $Id: mapiqm.f,v 1.3 1994-03-17 00:04:30 kennison Exp $
 C
       SUBROUTINE MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -13,11 +13,15 @@ C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPIQM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Terminate the line, if any.
 C
       IF (.NOT.(NCRA.GT.1)) GO TO 10000
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPIQM',1).NE.0)) GO TO 10001
+      IF (.NOT.(ICFELL('MAPIQM',2).NE.0)) GO TO 10001
       IIER=-1
       RETURN
 10001 CONTINUE
