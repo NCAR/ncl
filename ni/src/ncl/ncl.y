@@ -1022,6 +1022,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 /*---------------------------------------------ERROR HANDLING BELOW THIS LINE-----------------------------------------------------*/
 	| func_identifier error {
 			is_error += 1;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: Possibly expecting a 'begin' or 'local'");
 /*
 * Need to call this before new scope is poped so symbols can be found and freed
 */
