@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.4 1994-01-29 00:29:30 boote Exp $
+ *      $Id: Create.c,v 1.5 1994-02-08 20:15:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -611,6 +611,13 @@ NhlVACreate
 	num_args = _NhlCountSetVarList(ap);
 	va_end(ap);
 
+	if(num_args > _NhlMAXARGLIST){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlVACreate:Only %d args can be passed in at a time",
+								_NhlMAXARGLIST);
+		return NhlFATAL;
+	}
+
 	VA_START(ap,parentid); 
 	_NhlVarToSetArgList(ap,args,num_args);
 	va_end(ap);
@@ -621,6 +628,70 @@ NhlVACreate
 	*pid = NhlNULL_LAYER;
 
 	ret = _NhlCreate(pid, name, lc, parentid, args, num_args, NULL);
+
+	return(ret);
+}
+
+/*
+ * Function:	NhlCreate
+ *
+ * Description:	This function is used to create an instance of the given
+ *		NhlLayerClass.  This function is identical to NhlVACreate
+ *		except that it takes an RL list instead of using varargs.
+ *
+ * In Args:	Const NhlString	name;		name of instance
+ *		NhlLayerClass	lc;		NhlLayerClass to create
+ *		int		parentid;	id of parent
+ *		NhlArgList	args,
+ *		int		nargs
+ *
+ * Out Args:	int		*pid,		return plot id
+ *
+ * Scope:	Global Public
+ * Returns:	valid id of created layer instance - a negative number on error.
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlCreate
+#if	__STDC__
+(
+	int		*pid,		/* plot id <return>		*/
+	Const char	*name,		/* name of instance		*/
+	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
+	int		parentid,	/* parent's id			*/
+	int		rlid		/* RL list of resources		*/
+)
+#else
+(pid,name,lc,parentid,rlid)
+	int		*pid;		/* plot id <return>		*/
+	Const char	*name;		/* name of instance		*/
+	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
+	int		parentid;	/* parent's id			*/
+	int		rlid;		/* RL list of resources		*/
+#endif
+{
+	_NhlExtArg	args[_NhlMAXARGLIST];
+	int		nargs;
+	NhlErrorTypes	ret;
+
+	if(pid == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlCreate:arg pid must not be NULL");
+		return NhlFATAL;
+	}
+
+	if(!_NhlRLToArgList(rlid,NhlSETRL,args,&nargs)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlCreate:Invalid RL id %d",rlid);
+		return NhlFATAL;
+	}
+
+/*
+ * Initialize pid in case user didn't
+ */
+	*pid = NhlNULL_LAYER;
+
+	ret = _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 
 	return(ret);
 }
@@ -672,6 +743,13 @@ NhlALCreate
 	if(pid == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"NhlALCreate:arg pid must not be NULL");
+		return NhlFATAL;
+	}
+
+	if(nargs > _NhlMAXARGLIST){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlALCreate:Only %d args can be passed in at a time",
+								_NhlMAXARGLIST);
 		return NhlFATAL;
 	}
 

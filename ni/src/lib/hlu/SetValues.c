@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.4 1994-01-27 21:25:47 boote Exp $
+ *      $Id: SetValues.c,v 1.5 1994-02-08 20:15:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -576,6 +576,56 @@ NhlALSetValues
 	ret = _NhlSetValues(l, args, nargs);
 
 	return(ret);
+}
+
+/*
+ * Function:	NhlSetValues
+ *
+ * Description:	This function sets the resources specified by the RL List
+ *		passed to it.
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
+ *
+ * In Args:
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	The layer indexed by id, is modified to set the requested values
+ */
+NhlDOCTAG(NhlSetValues)
+/*VARARGS1*/
+NhlErrorTypes
+NhlSetValues
+#if	__STDC__
+(
+	int		id,		/* plot id		*/
+	int		rlid		/* RL id		*/
+)
+#else
+(id,rlid)
+	int		id;		/* plot id		*/
+	int		rlid;		/* RL id		*/
+#endif
+{
+	_NhlExtArg	args[_NhlMAXARGLIST];
+	int		nargs;
+	NhlLayer	l = _NhlGetLayer(id);
+
+	if(l == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"PID #%d can't be found in NhlALSetValues",id);
+		return(NhlFATAL);
+	}
+
+	/* create an arglist from the sargs */
+	if(!_NhlRLToArgList(rlid,NhlSETRL,args,&nargs)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlSetValues:Invalid RL id %d",rlid);
+		return NhlFATAL;
+	}
+
+	return _NhlSetValues(l, args, nargs);
 }
 
 /*

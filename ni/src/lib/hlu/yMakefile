@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.7 1994-02-01 18:22:40 boote Exp $
+#      $Id: yMakefile,v 1.8 1994-02-08 20:16:33 boote Exp $
 #
 #########################################################################
 #									#
@@ -50,7 +50,7 @@ SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		XWorkstation.c hlu.c DataComm.c DataItem.c DataMgr.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
 		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
-		XyPlot.c
+		XyPlot.c ResList.c
 
 OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -62,7 +62,7 @@ OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		XWorkstation.o hlu.o DataComm.o DataItem.o DataMgr.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
 		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
-		XyPlot.o
+		XyPlot.o ResList.o
 
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
@@ -70,9 +70,10 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(SRCS))
 
-#if	defined(DEBUG) && defined(SunOS)
+#if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 
-DependTarget(CoordArrTable.tmp.c)
+/* This is used to expand the huge macros in this file	*/
+
 CleanFilesTarget(CoordArrTable.tmp.o CoordArrTable.tmp.c CoordArrTable.sed.c)
 
 CoordArrTable.o:	CoordArrTable.tmp.o

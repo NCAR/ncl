@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.4 1994-01-27 21:25:37 boote Exp $
+ *      $Id: Resources.c,v 1.5 1994-02-08 20:15:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,6 @@
 static NrmQuark QImmediate = NrmNULLQUARK;
 static NrmQuark QProcedure = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
-static NrmQuark QExtraLayer = NrmNULLQUARK;
 
 /*
  * Resource Database
@@ -95,8 +94,6 @@ _NhlCopyFromArg
     else if (size == sizeof(char))	*(char *)dst = (char)src;
     else if (size == sizeof(char*))	*(char **)dst = (char*)src;
     else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
-    else if (size > sizeof(_NhlArgVal))
-        memcpy((void*)dst,(void*)src,size);
     else
         memcpy((void*)dst,(void*)&src,size);
 }
@@ -143,8 +140,6 @@ _NhlCopyToArg
     else if (size == sizeof(char*))	*((char **)*dst) = *(char**)src;
     else if (size == sizeof(_NhlArgVal))
 				*((_NhlArgVal *)*dst) = *(_NhlArgVal*)src;
-    else if (size > sizeof(_NhlArgVal))
-        memcpy((char*)dst,(char*)src,size);
     else
         memcpy((char*)dst,(char*)&src,size);
 }
@@ -667,7 +662,7 @@ _NhlGetResources
 #if	__STDC__
 (
 	_NhlConvertContext	context,
-	NhlLayer			l,	/* layer to set resources of	*/
+	NhlLayer		l,	/* layer to set resources of	*/
 	_NhlExtArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* layer is auto-managed chld	*/
@@ -675,7 +670,7 @@ _NhlGetResources
 #else
 (context,l,args,num_args,child)
 	_NhlConvertContext	context;
-	NhlLayer			l;	/* layer to set resources of	*/
+	NhlLayer		l;	/* layer to set resources of	*/
 	_NhlExtArgList		args;	/* args to override res defaults*/
 	int			num_args;/* number of args		*/
 	NrmQuarkList		child;	/* layer is auto-managed chld	*/
@@ -735,6 +730,13 @@ _NhlCompileResourceList
 #define PSToQ NrmPermStringToQuark
 	for(i=0; i < num_resources; nrmres++,resources++,i++){
 
+		if(resources->resource_size > sizeof(_NhlArgVal)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"resource %s has an invalid size",
+						resources->resource_name);
+			nrmres->nrm_size = sizeof(_NhlArgVal);
+		}
+
 		nrmres->nrm_name	= PSToQ(resources->resource_name);
 		nrmres->nrm_class	= PSToQ(resources->resource_class);
 		nrmres->nrm_type	= PSToQ(resources->resource_type);
@@ -763,11 +765,11 @@ void
 _NhlGroupResources
 #if	__STDC__
 (
-	NhlLayerClass lc	/* NhlLayerClass to create full resource list for	*/
+	NhlLayerClass lc	/* Class to create full reslist	for	*/
 )
 #else
 (lc)
-	NhlLayerClass lc;	/* NhlLayerClass to create full resource list for	*/
+	NhlLayerClass lc;	/* Class to create full reslist	for	*/
 #endif
 {
 	NrmResourceList	rlist;
@@ -886,7 +888,6 @@ _NhlResourceListInitialize
 	QImmediate = NrmStringToName(NhlTImmediate);
 	QProcedure = NrmStringToName(NhlTProcedure);
 	QString = NrmStringToName(NhlTString);
-	QExtraLayer = NrmStringToName(NhlTExtraLayer);
 
 	return; 
 }

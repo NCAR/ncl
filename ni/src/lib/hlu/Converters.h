@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.h,v 1.1 1993-07-14 18:39:46 boote Exp $
+ *      $Id: Converters.h,v 1.2 1994-02-08 20:15:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,24 +25,6 @@
 
 #include <ncarg/hlu/Convert.h>
 
-extern NhlErrorTypes NhlCvtStringToFloat(
-#ifdef	NhlNeedProto
-	NrmValue		*from,	/* ptr to from data	*/
-	NrmValue		*to,	/* ptr to to data	*/
-	NhlConvertArgList	args,	/* add'n args for conv	*/
-	int			nargs	/* number of args	*/
-#endif
-);
-
-extern NhlErrorTypes NhlCvtStringToInteger(
-#ifdef	NhlNeedProto
-	NrmValue		*from,	/* ptr to from data	*/
-	NrmValue		*to,	/* ptr to to data	*/
-	NhlConvertArgList	args,	/* add'n args for conv	*/
-	int			nargs	/* number of args	*/
-#endif
-);
-
 extern NhlErrorTypes NhlCvtStringToEnum(
 #ifdef	NhlNeedProto
 	NrmValue		*from,	/* ptr to from data	*/
@@ -52,7 +34,16 @@ extern NhlErrorTypes NhlCvtStringToEnum(
 #endif
 );
 
-extern NhlErrorTypes NhlCvtStringToChar(
+extern NhlErrorTypes NhlCvtIntToEnum(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCvtFloatToEnum(
 #ifdef	NhlNeedProto
 	NrmValue		*from,	/* ptr to from data	*/
 	NrmValue		*to,	/* ptr to to data	*/

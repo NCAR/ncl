@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.11 1994-01-27 21:26:09 boote Exp $
+ *      $Id: TickMark.c,v 1.12 1994-02-08 20:15:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1594,6 +1594,12 @@ static NhlErrorTypes	TickMarkClassInitialize
 				{NhlSTRENUM,	NhlEXPLICIT,	"explicit"}
 				};
 
+	NhlConvertArg	inttmarkmodes[] = {
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlAUTOMATIC},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlMANUAL},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlEXPLICIT}
+				};
+
 	NhlConvertArg	tmarkstyles[] = {
 				{NhlSTRENUM,	NhlLOG,		"log"},
 				{NhlSTRENUM,	NhlLINEAR,	"linear"},
@@ -1602,13 +1608,29 @@ static NhlErrorTypes	TickMarkClassInitialize
 				{NhlSTRENUM,	NhlGEOGRAPHIC,	"geographic"}
 				};
 
+	NhlConvertArg	inttmarkstyles[] = {
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLOG},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLINEAR},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlIRREGULAR},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlTIME},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlGEOGRAPHIC}
+				};
+
 	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
 
 	NhlRegisterConverter(NhlTString,NhlTTickMarkModes,NhlCvtStringToEnum,
 				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
-	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,
-					NhlCvtStringToEnum,tmarkstyles,
-					NhlNumber(tmarkstyles),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTTickMarkModes,NhlCvtIntToEnum,
+			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTTickMarkModes,NhlCvtFloatToEnum,
+			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
+
+	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,NhlCvtStringToEnum,
+				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTTickMarkStyles,NhlCvtIntToEnum,
+			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTTickMarkStyles,NhlCvtFloatToEnum,
+			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qstring = NrmStringToQuark(NhlTString);

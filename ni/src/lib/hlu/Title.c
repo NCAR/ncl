@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.4 1994-01-27 21:26:33 boote Exp $
+ *      $Id: Title.c,v 1.5 1994-02-08 20:16:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1350,8 +1350,21 @@ static NhlErrorTypes    TitleClassInitialize
 				{NhlSTRENUM,	NhlCENTER,	"center"}
 				};
 
+	NhlConvertArg	inttitlepos[] = {
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlTOP},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlBOTTOM},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLEFT},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlRIGHT},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlCENTER}
+				};
+
 	NhlRegisterConverter(NhlTString,NhlTTitlePositions,NhlCvtStringToEnum,
 				titlepos,NhlNumber(titlepos),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTTitlePositions,NhlCvtIntToEnum,
+				inttitlepos,NhlNumber(inttitlepos),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTTitlePositions,NhlCvtFloatToEnum,
+				inttitlepos,NhlNumber(inttitlepos),False,NULL);
+
 	return(NhlNOERROR);
 }
 

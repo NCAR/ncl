@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.8 1994-01-27 21:28:00 boote Exp $
+ *      $Id: hlu.c,v 1.9 1994-02-08 20:16:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -365,6 +365,46 @@ _NhlRemoveLayer
 	num_layers--;
 
 	return(NhlNOERROR);
+}
+
+/*
+ * Function:	_NhlDestroyLayerTable
+ *
+ * Description:	This function is used to clean the LayerTable for close.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlDestroyLayerTable
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	int i;
+
+	for(i=0;i < table_len && num_layers > 0;i++)
+		if(LayerTable[i] != NULL)
+			NhlDestroy(i);
+
+	if (num_layers > 0)
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all Layers destroyed?");
+
+	table_len = 0;
+	num_layers = 0;
+	(void)NhlFree(LayerTable);
+	LayerTable = NULL;
+
+	return;
 }
 
 /************************************************************************

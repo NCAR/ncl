@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.6 1994-01-29 00:29:33 boote Exp $
+ *      $Id: Error.c,v 1.7 1994-02-08 20:15:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -167,13 +167,22 @@ ErrorClassInitialize
 				{NhlSTRENUM,	NhlINFO,	"info"},
 				{NhlSTRENUM,	NhlNOERROR,	"noerror"}
 				};
+	NhlConvertArg	interrtypes[] = {
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlFATAL},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlWARNING},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlINFO},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNOERROR}
+				};
 
 	/*
-	 * should install string to Errortypes type converter so that
-	 * resources can be specifed in a resource file.
+	 *	Install converters to the NhlErrorTypes enum.
 	 */
 	NhlRegisterConverter(NhlTString,NhlTErrorTypes,NhlCvtStringToEnum,
 				errtypes,NhlNumber(errtypes),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTErrorTypes,NhlCvtIntToEnum,
+				interrtypes,NhlNumber(interrtypes),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTErrorTypes,NhlCvtFloatToEnum,
+				interrtypes,NhlNumber(interrtypes),False,NULL);
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.10 1994-01-27 21:28:04 boote Exp $
+ *      $Id: hlu.h,v 1.11 1994-02-08 20:16:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -153,6 +153,11 @@ typedef struct _NhlLayerClassRec *NhlLayerClass;
 #include <ncarg/hlu/Error.h>
 
 /*
+ * This type is used when allocating an RL list.
+ */
+typedef enum NhlRLType_ { NhlSETRL, NhlGETRL } NhlRLType;
+
+/*
  * These functions are used to create and destroy NhlGenArray description
  * records.
  */
@@ -265,6 +270,152 @@ extern NhlErrorTypes NhlALCreate(
 #endif
 );
 
+extern int NhlRLCreate(
+#if	NhlNeedProto
+	NhlRLType	type	/* type of RL list to create */
+#endif
+);
+
+extern void NhlRLDestroy(
+#if	NhlNeedProto
+	int	id	/* RL list to destroy	*/
+#endif
+);
+
+extern void NhlRLClear(
+#if	NhlNeedProto
+	int	id	/* RL list to destroy	*/
+#endif
+);
+
+extern void NhlRLUnSet(
+#if	NhlNeedProto
+	int		id,	/* RL list 		*/
+	NhlString	name	/* resname to unset	*/
+#endif
+);
+
+extern NhlBoolean NhlRLIsSet(
+#if	NhlNeedProto
+	int		id,	/* RL list		*/
+	NhlString	name	/* resname to unset	*/
+#endif
+);
+
+/*VARARGS3*/
+extern NhlErrorTypes NhlRLSet(
+#if	NeedVarArgProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	NhlString	type,		/* type of value		*/
+	...				/* value to set resname to	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetInt(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	int		value		/* value to set resname to	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetFloat(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	float		value		/* value to set resname to	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetString(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	NhlString	value		/* value to set resname to	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetMDArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	NhlPointer	data,		/* array			*/
+	NhlString	type,		/* type of elements of array	*/
+	unsigned int	size,		/* size of elements of array	*/
+	int		num_dimensions,	/* number dimensions in array	*/
+	int		*len_dimensions	/* len each dimension in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetMDIntArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	int		*data,		/* array			*/
+	int		num_dimensions,	/* number dimensions in array	*/
+	int		*len_dimensions	/* len each dimension in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetMDFloatArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	float		*data,		/* array			*/
+	int		num_dimensions,	/* number dimensions in array	*/
+	int		*len_dimensions	/* len each dimension in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	NhlPointer	data,		/* array			*/
+	NhlString	type,		/* type of elements of array	*/
+	unsigned int	size,		/* size of elements of array	*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetIntArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	int		*data,		/* array			*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetFloatArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	float		*data,		/* array			*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetStringArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	NhlString	*data,		/* array			*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCreate(
+#if	NhlNeedProto
+	int*,			/* return plot id	*/
+	Const char*,		/* name			*/
+	NhlLayerClass,		/* requested class	*/
+	int,			/* parent's id		*/
+	int			/* RL list id		*/
+#endif
+);
+
 NhlDOCTAG(NhlDestroy)
 extern NhlErrorTypes NhlDestroy(
 #if	NhlNeedProto
@@ -311,6 +462,13 @@ extern NhlErrorTypes NhlALSetValues(
 #endif
 );
 
+extern NhlErrorTypes NhlSetValues(
+#if	NhlNeedProto
+	int	pid,	/* id of object	*/
+	int	rlid	/* RL list id	*/
+#endif
+);
+
 NhlDOCTAG(NhlVAGetValues)
 /*VARARGS1*/
 extern NhlErrorTypes NhlVAGetValues(
@@ -325,6 +483,13 @@ extern NhlErrorTypes NhlALGetValues(
 	int		pid,	/* id			*/
 	NhlGArgList	args,	/* args to retrieve	*/
 	int		nargs	/* num args		*/
+#endif
+);
+
+extern NhlErrorTypes NhlGetValues(
+#if	NhlNeedProto
+	int	pid,	/* id of object	*/
+	int	rlid	/* RL list id	*/
 #endif
 );
 

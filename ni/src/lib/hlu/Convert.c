@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.3 1994-01-27 21:21:39 boote Exp $
+ *      $Id: Convert.c,v 1.4 1994-02-08 20:15:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1243,6 +1243,52 @@ NhlConvertData
 	free_list = tptr;
 
 	return ret;
+}
+
+/*
+ * Function:	NhlReConvertData
+ *
+ * Description:	This function should be used by converters that need to
+ *		call a converter.  This allows the lower level converter
+ *		to use the same convert context.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public (only used in "Converter" functions)
+ * Returns:	NhlPointer
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlReConvertData
+#if	__STDC__
+(
+	NhlString		fname,	/* from type			*/
+	NhlString		tname,	/* to type			*/
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(fname,tname,from,to,args,nargs)
+	NhlString		fname;	/* from type			*/
+	NhlString		tname;	/* to type			*/
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlReConvertData:Context not active");
+		return NhlFATAL;
+	}
+
+	return ConvertData(ctxt_stack->context,NrmNULLQUARK,
+		NrmStringToQuark(fname),NrmStringToQuark(tname),from,to);
 }
 
 /*

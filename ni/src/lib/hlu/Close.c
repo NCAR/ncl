@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.2 1993-10-19 17:49:49 boote Exp $
+ *      $Id: Close.c,v 1.3 1994-02-08 20:15:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,4 +51,6 @@ void NhlClose
 	/* free error handling	*/
 	_NhlCloseError();
 	_NhlDestroyResDatabase();
+	_NhlDestroyLayerTable();
+	_NhlDestroyRLList();
 }

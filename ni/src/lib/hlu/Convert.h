@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.3 1994-01-27 21:21:43 boote Exp $
+ *      $Id: Convert.h,v 1.4 1994-02-08 20:15:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -107,10 +107,10 @@ NhlBoolean NhlConverterExists(
 
 NhlErrorTypes NhlConvertData(
 #if	NhlNeedProto
-	NhlString,		/* from type - usually a NHLT*** constant*/
-	NhlString,		/* to type - usually a NHLT*** constant	*/
-	NrmValue*,	/* from data				*/
-	NrmValue*	/* to data				*/
+	NhlString,	/* from type - usually a NHLT*** constant	*/
+	NhlString,	/* to type - usually a NHLT*** constant		*/
+	NrmValue*,	/* from data					*/
+	NrmValue*	/* to data					*/
 #endif
 );
 
@@ -121,6 +121,22 @@ NhlErrorTypes NhlConvertData(
 NhlPointer NhlConvertMalloc(
 #ifdef	NhlNeedProto
 	unsigned int	size	/* size of memory requested	*/
+#endif
+);
+
+/*
+ * This function is used as an indirection of the converter.  If two
+ * types are equivalent (but have different names), this is one way to call
+ * a previously installed converter to convert the data.
+ */
+NhlErrorTypes NhlReConvertData(
+#if	NhlNeedProto
+	NhlString		fname,	/* from type			*/
+	NhlString		tname,	/* to type			*/
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
 #endif
 );
 

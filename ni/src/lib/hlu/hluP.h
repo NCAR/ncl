@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.8 1994-01-27 21:28:08 boote Exp $
+ *      $Id: hluP.h,v 1.9 1994-02-08 20:16:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -120,7 +120,31 @@ struct _NhlChildArgRec{
 	_NhlChildArgList	next; 
 }; 
 
-typedef struct NhlGenArrayRec_ NhlGenArrayRec;
+/*
+ * these types are used by the RL interface
+ */
+typedef struct _NhlRLNode_ _NhlRLNodeRec, *_NhlRLNode;
+typedef struct _NhlRLHead_ _NhlRLHeadRec, *_NhlRLHead;
+typedef void (*_NhlFreeFunc)(
+#if	NhlNeedProto
+	NhlPointer	ptr
+#endif
+);
+
+struct _NhlRLNode_ {
+	NrmQuark	nameQ;
+	NrmQuark	typeQ;
+	_NhlArgVal	value;
+	_NhlFreeFunc	free_func;
+	_NhlRLNode	left;
+	_NhlRLNode	right;
+};
+
+struct _NhlRLHead_ {
+	int		num;
+	NhlRLType	list_type;
+	_NhlRLNode	list;
+};
 
 /*
  * The len_dimensions member of the following struct points to an array
@@ -132,7 +156,7 @@ typedef struct NhlGenArrayRec_ NhlGenArrayRec;
  * the total number of elements of the array viewed as a single
  * dimensional array.
  */
-
+typedef struct NhlGenArrayRec_ NhlGenArrayRec;
 struct NhlGenArrayRec_{
 	int		num_dimensions;
 	int		*len_dimensions;
@@ -195,6 +219,38 @@ extern void _NhlGArgToGetArgList(
 	_NhlExtArgList	args,	/* args <return>	*/
 	NhlGArgList	gargs,	/* args to retrieve	*/
 	int		nargs	/* number of args	*/
+#endif
+);
+
+extern NhlBoolean _NhlRLToArgList(
+#if	NhlNeedProto
+	int		id,	/* RL list			*/
+	NhlRLType	action,	/* type of RL action		*/
+	_NhlExtArgList	args,	/* args <return>		*/
+	int		*nargs	/* number of args <return>	*/
+#endif
+);
+
+extern void _NhlInitRLList(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern void _NhlDestroyRLList(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern NhlBoolean _NhlRLInsert(
+#if	NhlNeedProto
+	int		id,
+	NhlRLType	type_action,
+	int		nameQ,
+	int		typeQ,
+	_NhlArgVal	value,
+	_NhlFreeFunc	free_func
 #endif
 );
 
@@ -289,6 +345,12 @@ extern NhlErrorTypes _NhlRemoveLayer(
 extern NhlLayer _NhlGetLayer(
 #if	NhlNeedProto
 	int	id		/* id of layer to retrieve	*/
+#endif
+);
+
+extern void _NhlDestroyLayerTable(
+#if	NhlNeedProto
+	void
 #endif
 );
 

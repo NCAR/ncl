@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.9 1994-01-27 21:22:25 boote Exp $
+ *      $Id: DataComm.c,v 1.10 1994-02-08 20:15:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -492,6 +492,89 @@ RemoveData
 	return NhlNOERROR;
 }
 
+/*
+ * Function:	CvtGenToData
+ *
+ * Description:	This function converts a GenArray to an NhlTDataList -
+ *		actually does nothing.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtGenToData
+#if	__STDC__
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"CvtGenToData:called incorrectly???");
+		return NhlFATAL;
+	}
+
+	*(NhlGenArray*)(to->addr) = (NhlGenArray)from->addr;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	CvtIntToData
+ *
+ * Description:	This function converts an int to an NhlTDataList -
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtIntToData
+#if	__STDC__
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"CvtIntToData:called incorrectly???");
+		return NhlFATAL;
+	}
+
+	return NhlReConvertData(NhlTInteger,NhlTGenArray,from,to,args,nargs);
+}
+
 
 /************************************************************************
 *									*
@@ -563,16 +646,22 @@ DataCommClassInitialize
 ()
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
 	QListCompiled = NrmStringToQuark(_NhlTDListCompiled);
 
 	ret = NhlRegisterConverter(_NhlTAddData,_NhlTDataList,AddData,NULL,0,
 								False,NULL);
-	ret = NhlRegisterConverter(_NhlTRemoveData,_NhlTDataList,RemoveData,
+	lret = NhlRegisterConverter(_NhlTRemoveData,_NhlTDataList,RemoveData,
+							NULL,0,False,NULL);
+	ret = MIN(ret,lret);
+	lret = NhlRegisterConverter(NhlTGenArray,_NhlTDataList,CvtGenToData,
+							NULL,0,False,NULL);
+	ret = MIN(ret,lret);
+	lret = NhlRegisterConverter(NhlTInteger,_NhlTDataList,CvtIntToData,
 							NULL,0,False,NULL);
 
-	return ret;
+	return MIN(ret,lret);
 }
 
 /*

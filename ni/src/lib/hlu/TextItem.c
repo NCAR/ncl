@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.5 1994-01-29 00:29:39 boote Exp $
+ *      $Id: TextItem.c,v 1.6 1994-02-08 20:15:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -564,16 +564,37 @@ static NhlErrorTypes    TextItemClassInitialize
 				{NhlSTRENUM,	NhlLOW,		"low"}
 				};
 
+	NhlConvertArg	intfontqlist[] = {
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlHIGH},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlMEDIUM},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLOW}
+				};
+
 	NhlConvertArg	textdirlist[] = {
 				{NhlSTRENUM,	NhlDOWN,	"down"},
 				{NhlSTRENUM,	NhlACROSS,	"across"},
 				{NhlSTRENUM,	NhlUP,		"up"}
 				};
 
+	NhlConvertArg	inttextdirlist[] = {
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlDOWN},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlACROSS},
+			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlUP}
+				};
+
 	NhlRegisterConverter(NhlTString,NhlTFQuality,NhlCvtStringToEnum,
 				fontqlist,NhlNumber(fontqlist),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTFQuality,NhlCvtIntToEnum,
+			intfontqlist,NhlNumber(intfontqlist),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTFQuality,NhlCvtFloatToEnum,
+			intfontqlist,NhlNumber(intfontqlist),False,NULL);
+
 	NhlRegisterConverter(NhlTString,NhlTTextDirection,NhlCvtStringToEnum,
 				textdirlist,NhlNumber(textdirlist),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTTextDirection,NhlCvtIntToEnum,
+			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTTextDirection,NhlCvtFloatToEnum,
+			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
 
 	return(NhlNOERROR);	
 }

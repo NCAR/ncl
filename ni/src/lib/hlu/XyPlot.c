@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.15 1994-01-27 21:27:46 boote Exp $
+ *      $Id: XyPlot.c,v 1.16 1994-02-08 20:16:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -715,16 +715,39 @@ XyPlotClassInitialize
 				{NhlSTRENUM,	NhlBOTTOMAXIS,	"bottomaxis"}
 				};
 
+	NhlConvertArg	intaltplace[] = {
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNONE},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLEFTAXIS},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlRIGHTAXIS},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlTOPAXIS},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlBOTTOMAXIS}
+				};
+
 	NhlConvertArg	lblmode[] = {
 				{NhlSTRENUM,	NhlNOLABELS,	"nolabels"},
 				{NhlSTRENUM,	NhlLETTERED,	"lettered"},
 				{NhlSTRENUM,	NhlCUSTOM,	"custom"}
 				};
 
+	NhlConvertArg	intlblmode[] = {
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNOLABELS},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLETTERED},
+		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlCUSTOM}
+				};
+
 	NhlRegisterConverter(NhlTString,NhlTAlternatePlace,NhlCvtStringToEnum,
 				altplace,NhlNumber(altplace),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTAlternatePlace,NhlCvtIntToEnum,
+				intaltplace,NhlNumber(intaltplace),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTAlternatePlace,NhlCvtFloatToEnum,
+				intaltplace,NhlNumber(intaltplace),False,NULL);
+
 	NhlRegisterConverter(NhlTString,NhlTLineLabelModes,NhlCvtStringToEnum,
 					lblmode,NhlNumber(lblmode),False,NULL);
+	NhlRegisterConverter(NhlTInteger,NhlTLineLabelModes,NhlCvtIntToEnum,
+				intlblmode,NhlNumber(intlblmode),False,NULL);
+	NhlRegisterConverter(NhlTFloat,NhlTLineLabelModes,NhlCvtFloatToEnum,
+				intlblmode,NhlNumber(intlblmode),False,NULL);
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 
