@@ -114,7 +114,7 @@ C
 C  Create a meta file workstation.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkMetaName','./pr01.ncgm',ierr)
+      call NhlFRLSetString(rlist,'wkMetaName','./pr01f.ncgm',ierr)
       call NhlFCreate(wid,'pr01Work',NhlFncgmWorkstationClass,
      1    NhlFDEFAULT_APP,rlist,ierr)
     

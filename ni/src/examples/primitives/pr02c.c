@@ -80,7 +80,7 @@ main(int argc, char *argv[])
  * Create a meta file workstation.
  */
         NhlRLClear(rlist);
-        NhlRLSetString(rlist,NhlNwkMetaName,"./pr02.ncgm");
+        NhlRLSetString(rlist,NhlNwkMetaName,"./pr02c.ncgm");
         NhlCreate(&wid,"pr02Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
