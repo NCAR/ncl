@@ -1,5 +1,5 @@
 ;
-;      $Id: nm22n.ncl,v 1.2 2003-03-01 00:42:50 grubin Exp $
+;      $Id: nm22n.ncl,v 1.3 2003-06-12 16:33:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -25,43 +25,6 @@ load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 ;
 ; Main program.
 ;
-procedure nrand(first:integer, nextn:integer, result:float)
-;
-;  Portable random number generator.  This is here in place
-;  of the built-in random number generator "rand"
-;  so that the results for this example will be the same
-;  as for the equivalent Fortran and C examples.
-;
-;  Arguments
-;    first  - is 0 if this is the first call to the procedure, 1 otherwise
-;    nextn  - a temporary storage variable that should be the same for
-;             all calls.
-;    result - the desired random number
-;
-local mplier, modlus, mobymp, momdmp, hvlue, lvlue, testv
-begin
- 
-  mplier =      16807
-  modlus = 2147483647
-  mobymp =     127773
-  momdmp =       2836
- 
-  if (first .eq. 0) then
-    nextn = 9
-  end if
- 
-  hvlue = nextn / mobymp
-  lvlue = nextn%mobymp;
-  testv = mplier*lvlue - momdmp*hvlue;
-  if (testv .gt. 0) then
-    nextn = testv;
-  else
-    nextn = testv + modlus;
-  end if
- 
-  result = (1. * nextn) / (1. * modlus)
-end
-
 begin
 ;
 ;  Create the input arrays.
@@ -78,18 +41,11 @@ begin
   nz = 41
  
   ndata = 1000
-  xi = new(ndata,float)
-  yi = new(ndata,float)
-  zi = new(ndata,float)
-  fval = new(ndata,float)
- 
-  do i=0,ndata-1
-      xi(i) = xmin + (xmax-xmin)*rand()/32767.
-      yi(i) = ymin + (ymax-ymin)*rand()/32767.
-      zi(i) = zmin + (zmax-zmin)*rand()/32767.
-      fval(i) = 0.75*xi(i)*xi(i) - 1.6*yi(i)*yi(i) + 2.*zi(i)*zi(i)
-  end do
-
+  xi    = xmin + (xmax-xmin) * random_uniform(0.,1.0,ndata)
+  yi    = ymin + (ymax-ymin) * random_uniform(0.,1.0,ndata)
+  zi    = zmin + (zmax-zmin) * random_uniform(0.,1.0,ndata)
+  fval  = 0.75*xi*xi - 1.6*yi*yi + 2.*zi*zi
+  
 ;
 ;  Set up the output grid.
 ;

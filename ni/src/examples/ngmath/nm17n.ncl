@@ -37,17 +37,10 @@ begin
   nz = 21
 
   ndata = 1000
-  xi = new(ndata,float)
-  yi = new(ndata,float)
-  zi = new(ndata,float)
-  ui = new(ndata,float)
-
-  do i=0,ndata-1
-      xi(i) = xmin + (xmax-xmin)*rand()/32767.
-      yi(i) = ymin + (ymax-ymin)*rand()/32767.
-      zi(i) = zmin + (zmax-zmin)*rand()/32767.
-      ui(i) = xi(i)*xi(i) + yi(i)*yi(i) + zi(i)*zi(i)
-  end do
+  xi    = xmin + (xmax-xmin) * random_uniform(0.,1.0,ndata)
+  yi    = ymin + (ymax-ymin) * random_uniform(0.,1.0,ndata)
+  zi    = zmin + (zmax-zmin) * random_uniform(0.,1.0,ndata)
+  ui    = xi*xi + yi*yi + zi*zi
 
 ;
 ;  Set up the output grid.

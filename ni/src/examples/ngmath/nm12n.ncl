@@ -28,11 +28,7 @@ nyi = 17
 xi = fspan(0.,1.,nxi)
 yi = fspan(0.,1.,nyi)
 zi = new((/nxi,nyi/),float)
-
-do i=0,nxi-1
-    zi(i,:) = sin(-7.*xi(i)) + cos(5.*yi)
-end do
-zi = .5 + .25 * zi
+zi = 0.5 + 0.25  * (sin(-7.*conform(zi,xi,0)) + cos(5.*conform(zi,yi,1)))
 
 ;
 ;  Set up the output grid.

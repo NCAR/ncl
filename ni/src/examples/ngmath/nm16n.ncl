@@ -34,19 +34,13 @@ begin
   nx = 29
   ny = 25
 
-  ndata = 1000
-  xi = new(ndata,float)
-  yi = new(ndata,float)
-  zi = new(ndata,float)
-
 ;
 ;  Generate input data using the function f(x,y) = y**2 - 0.5*y*x**2
 ;
-  do i=0,ndata-1
-      xi(i) = xmin + (xmax-xmin)*rand()/32767.
-      yi(i) = ymin + (ymax-ymin)*rand()/32767.
-      zi(i) = yi(i)*yi(i) - 0.5*xi(i)*xi(i)*yi(i)
-  end do
+  ndata = 1000
+  xi    = xmin + (xmax-xmin) * random_uniform(0.,1.0,ndata)
+  yi    = ymin + (ymax-ymin) * random_uniform(0.,1.0,ndata)
+  zi    = yi*yi - 0.5*xi*xi*xi
 
 ;
 ;  Set up the output grid.

@@ -31,18 +31,16 @@ ymin = -1.2
 ymax =  1.2
 
 ndata = 500
-xi = new(ndata,float)
-yi = new(ndata,float)
-zi = new(ndata,float)
 
-do i=0,ndata-1
-    xi(i) = xmin + (xmax-xmin)*rand()/32767.
-    yi(i) = ymin + (ymax-ymin)*rand()/32767.
-    zi(i) = xi(i) + yi(i)
-    t1 = 1.0/((fabs(xi(i)-0.1))^2.75 + fabs(yi(i))^2.75 + 0.09)
-    t2 = 1.0/((fabs(xi(i)+0.1))^2.75 + fabs(yi(i))^2.75 + 0.09)
-    zi(i) = 0.3*(zi(i)+t1-t2)
-end do
+xi = xmin + (xmax-xmin)*random_uniform(0.,1.,ndata)
+yi = ymin + (ymax-ymin)*random_uniform(0.,1.,ndata)
+t1 = 1.0/((fabs(xi-0.1))^2.75 + fabs(yi)^2.75 + 0.09)
+t2 = 1.0/((fabs(xi+0.1))^2.75 + fabs(yi)^2.75 + 0.09)
+zi = 0.3 * ((xi + yi) + t1 - t2)
+
+delete(t1)
+delete(t2)
+
 
 ;
 ;  Set up a list of output points that corresponds to a 2D grid.
