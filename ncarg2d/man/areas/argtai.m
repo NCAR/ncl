@@ -45,7 +45,7 @@ Dimension of each of the arrays IAI and
 IAG. MAI must be greater than or equal to NAI.
 .IP "NAI" 12
 (an output expression of type INTEGER) - 
-Number of values returned in IAI and 
+The number of values returned in IAI and 
 IAG. NAI equals the number of groups of edges that you 
 put in the area map.
 .IP "ICF" 12
@@ -58,7 +58,7 @@ flag to zero, Areas assumes that the information
 retrieved previously is still correct and skips calls to 
 GETSET. This option is valuable if you are 
 planning to make thousands of calls to ARGTAI 
-with the same area map: Do the first one with ICF = 1 and the
+with the same area map: do the first one with ICF = 1 and the
 rest with ICF = 0.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 

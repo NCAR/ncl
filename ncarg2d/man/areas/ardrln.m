@@ -32,7 +32,7 @@ The Y coordinates, in the user
 coordinate system, of the points defining the polyline.
 .IP "NCD" 12
 (an input expression of type INTEGER) - 
-Number of points defining the polyline.
+The number of points defining the polyline.
 .IP "XCS" 12
 (a workspace array, dimensioned MCS, of type REAL) - 
 Used by ARDRLN in calls to LPR, the user-supplied 

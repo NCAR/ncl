@@ -32,7 +32,7 @@ ARPRAM locates coincident edge segments
 (edge segments with identical endpoints).  If two such
 coincident edge segments belong to the same group, one
 of them is removed; if they belong to different groups,
-one if them is modified in such a way that it will appear
+one of them is modified in such a way that it will appear
 to be present when looking for areas defined by edge segments
 in a particular group, but absent when looking for areas
 defined by all edge segments.
