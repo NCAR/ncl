@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.10 2002-06-20 22:23:27 haley Exp $
+#       $Id: yMakefile,v 1.11 2003-05-22 16:17:41 haley Exp $
 #
 
 MYNAME  = nnalg
@@ -7,9 +7,7 @@ MYNAME  = nnalg
 SRCS = nadisp.F  nadraw.f  naskln.f  nasort.f
 OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
-FCPP_OBJS       = nadisp.f
-EXTRA_LIBS = $(CTOFLIBS)
-
+FCPP_OBJS = nadisp.f
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
 SYS_LIBS = $(XLIB)
