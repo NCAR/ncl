@@ -1,5 +1,5 @@
 /*
- *	$Id: psfill.c,v 1.1 1994-03-30 02:11:31 fred Exp $
+ *	$Id: psfill.c,v 1.2 1994-05-11 23:29:56 fred Exp $
  */
 /*
  *      File:           ps_fill.c
@@ -288,6 +288,10 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
             if (((ocounter-1) % POINTS_PER_LINE == 0) || 
 			(ocounter % POINTS_PER_LINE == 0))
                     		fprintf(psa->file_pointer, "\n");
+	    if (ocounter >= MAX_PATH ) {
+		fprintf(psa->file_pointer, " K\n");
+		ocounter = 0;
+	    }		
           }
           in1 = in2 + 1;
         }
@@ -320,6 +324,10 @@ void ps_SoftFill (GKSC *gksc, float angle, float spl)
             if (((ocounter-1) % POINTS_PER_LINE == 0) ||
                         (ocounter % POINTS_PER_LINE == 0))
                                 fprintf(psa->file_pointer, "\n");
+	    if (ocounter >= MAX_PATH ) {
+		fprintf(psa->file_pointer, " K\n");
+		ocounter = 0;
+	    }		
           }
           in1 = in2 + 1;
         }
