@@ -1,5 +1,5 @@
 /*
- *      $Id: an01c.c,v 1.2 1995-01-27 22:40:16 haley Exp $
+ *      $Id: an01c.c,v 1.3 1995-02-21 23:13:30 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -101,6 +101,7 @@ main(int argc, char *argv[])
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
+	NhlRLSetString(rlist,NhlNappDefaultParent,"True");
 	NhlCreate(&appid,"an01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 #if XWORK
@@ -108,7 +109,7 @@ main(int argc, char *argv[])
  * Create an X workstation
  */
         NhlRLClear(rlist);
-	NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,appid,rlist);
+	NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
 #else
 /*
  * Create a meta file workstation

@@ -1,5 +1,5 @@
 C
-C     $Id: an01f.f,v 1.1 1995-01-24 23:21:43 haley Exp $
+C     $Id: an01f.f,v 1.2 1995-02-21 23:13:31 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -68,6 +68,7 @@ C
       call nhlfrlcreate(rlist,'SETRL')
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'an01',nhlfapplayerclass,0,rlist,ierr)
 C
 C Create a meta file workstation
