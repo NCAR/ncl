@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCNSMT(IERR)
+      CALL CNSMT(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TCNSMT (IERROR)
+      SUBROUTINE CNSMT (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the CONRECSMTH package.
 C
-C USAGE                  CALL TCNSMT (IERROR)
+C USAGE                  CALL CNSMT (IERROR)
 C
 C ARGUMENTS
 C

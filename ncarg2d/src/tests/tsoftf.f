@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TSOFTF(IERR,IWKID)
+      CALL SOFTF(IERR,IWKID)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,14 +30,14 @@ C
       STOP
       END
 C
-      SUBROUTINE TSOFTF (IERR,IWKID)
+      SUBROUTINE SOFTF (IERR,IWKID)
 C
 C LATEST REVISION       July, 1989
 C
 C PURPOSE               To provide a simple demonstration of software
 C                       fill of polygons using the SOFTFILL package.
 C
-C USAGE                 CALL TSOFTF (IERR,IWKID)
+C USAGE                 CALL SOFTF (IERR,IWKID)
 C
 C ARGUMENTS (OUTPUT)    IERR
 C

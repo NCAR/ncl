@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TAUTOG(IERR)
+      CALL AUTOG(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TAUTOG (IERROR)
+      SUBROUTINE AUTOG (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the AUTOGRPH package.
 C
-C USAGE                  CALL TAUTOG (IERROR)
+C USAGE                  CALL AUTOG (IERROR)
 C
 C ARGUMENTS
 C

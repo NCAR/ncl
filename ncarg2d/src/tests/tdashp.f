@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TDASHP(IERR)
+      CALL DASHP(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TDASHP (IERROR)
+      SUBROUTINE DASHP (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of DASHSUPR
 C
-C USAGE                  CALL TDASHP (IERROR)
+C USAGE                  CALL DASHP (IERROR)
 C
 C ARGUMENTS
 C

@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TPLTCH(IERR)
+      CALL PLTCH(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,14 +30,14 @@ C
       STOP
       END
 C
-      SUBROUTINE TPLTCH (IERR)
+      SUBROUTINE PLTCH (IERR)
 C
 C LATEST REVISION        November, 1992.
 C
 C PURPOSE                To provide a minimal demo and test of routines
 C                        in the package PLOTCHAR.
 C
-C USAGE                  CALL TPLTCH (IERR)
+C USAGE                  CALL PLTCH (IERR)
 C
 C ARGUMENTS
 C

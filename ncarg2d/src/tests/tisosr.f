@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TISOSR(IERR)
+      CALL ISOSR(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TISOSR (IERROR)
+      SUBROUTINE ISOSR (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of ISOSRF.
 C
-C USAGE                  CALL TISOSR (IERROR)
+C USAGE                  CALL ISOSR (IERROR)
 C
 C ARGUMENTS
 C

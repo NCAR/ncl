@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TLBLBA(IERR,IWKID)
+      CALL LBLBA(IERR,IWKID)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,14 +30,14 @@ C
       STOP
       END
 C
-      SUBROUTINE TLBLBA (IERR,IWKID)
+      SUBROUTINE LBLBA (IERR,IWKID)
 C
 C LATEST REVISION       July, 1989
 C
 C PURPOSE               To provide a simple demonstration of the use of
 C                       LABELBAR to draw various kinds of labelled bars.
 C
-C USAGE                 CALL TLBLBA (IERR,IWKID)
+C USAGE                 CALL LBLBA (IERR,IWKID)
 C
 C ARGUMENTS (OUTPUT)    IERR
 C

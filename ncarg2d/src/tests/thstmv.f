@@ -17,7 +17,7 @@ C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 
-      CALL THSTMV(IERR)
+      CALL HSTMV(IERR)
 C
 C Deactivate and close the workstation, close GKS.
 C
@@ -26,13 +26,13 @@ C
       CALL GCLKS
       STOP
       END
-      SUBROUTINE THSTMV (IERROR)
+      SUBROUTINE HSTMV (IERROR)
 C
 C PURPOSE                To provide a demonstration of the Histogram
 C                        utility when special flagged values occur in
 C                        the input data.
 C
-C USAGE                  CALL THSTMV (IERROR)
+C USAGE                  CALL HSTMV (IERROR)
 C
 C ARGUMENTS
 C

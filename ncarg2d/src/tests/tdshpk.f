@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver.
 C
-        CALL TDSHPK (IERR,IWKID)
+        CALL DSHPK (IERR,IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -33,9 +33,7 @@ C
 C
       END
 
-
-
-      SUBROUTINE TDSHPK (IERR,IWID)
+      SUBROUTINE DSHPK (IERR,IWID)
 C
 C Declare arrays in which to put coordinates for calls to DPCURV.
 C

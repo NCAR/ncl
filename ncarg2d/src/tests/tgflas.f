@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TGFLAS(IERR)
+      CALL GFLAS(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TGFLAS (IERROR)
+      SUBROUTINE GFLAS (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of the
 C                        GFLASH package.
 C
-C USAGE                  CALL TGFLAS (IERROR)
+C USAGE                  CALL GFLAS (IERROR)
 C
 C ARGUMENTS
 C

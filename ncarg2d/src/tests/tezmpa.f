@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver.
 C
-      CALL TEZMPA (IERR,IWKID)
+      CALL EZMPA (IERR,IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -31,14 +31,12 @@ C
 C
       END
 
-
-
-      SUBROUTINE TEZMPA (IERR,IWKID)
+      SUBROUTINE EZMPA (IERR,IWKID)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of EZMAPA.
 C
-C USAGE                  CALL TEZMPA (IERR,IWKID)
+C USAGE                  CALL EZMPA (IERR,IWKID)
 C
 C ARGUMENTS
 C

@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONAS(IERR)
+      CALL CONAS(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,13 +30,13 @@ C
       STOP
       END
 C
-      SUBROUTINE TCONAS (IERROR)
+      SUBROUTINE CONAS (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        CONRAS, the super entry of the CONRAN
 C                        package.
 C
-C USAGE                  CALL TCONAS (IERROR)
+C USAGE                  CALL CONAS (IERROR)
 C
 C ARGUMENTS
 C

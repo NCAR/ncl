@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TAREAS(IERR,IWKID)
+      CALL AREAS(IERR,IWKID)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TAREAS (IERROR, IWKID)
+      SUBROUTINE AREAS (IERROR, IWKID)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of AREAS.
 C
-C USAGE                  CALL TAREAS (IERROR)
+C USAGE                  CALL AREAS (IERROR)
 C
 C ARGUMENTS
 C

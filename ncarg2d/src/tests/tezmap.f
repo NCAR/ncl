@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TEZMAP(IERR)
+      CALL EZMAP(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TEZMAP (IERROR)
+      SUBROUTINE EZMAP (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the mapping utility, EZMAP.
 C
-C USAGE                  CALL TEZMAP (IERROR)
+C USAGE                  CALL EZMAP (IERROR)
 C
 C ARGUMENTS
 C

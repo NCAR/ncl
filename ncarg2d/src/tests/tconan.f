@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONAN(IERR)
+      CALL CONAN(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,13 +30,13 @@ C
       STOP
       END
 C
-      SUBROUTINE TCONAN (IERROR)
+      SUBROUTINE CONAN (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        standard contouring of irregularly spaced
 C                        data using the CONRAN package.
 C
-C USAGE                  CALL TCONAN (IERROR)
+C USAGE                  CALL CONAN (IERROR)
 C
 C ARGUMENTS
 C

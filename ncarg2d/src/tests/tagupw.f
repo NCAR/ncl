@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TAGUPW(IERR)
+      CALL AGUPW(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TAGUPW (IERROR)
+      SUBROUTINE AGUPW (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of AGUPWRTX with AUTOGRAPH.
 C
-C USAGE                  CALL TAGUPW (IERROR)
+C USAGE                  CALL AGUPW (IERROR)
 C
 C ARGUMENTS
 C

@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TSTRML(IERR)
+      CALL STRML(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TSTRML (IERROR)
+      SUBROUTINE STRML (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of STRMLN.
 C
-C USAGE                  CALL TSTRML (IERROR)
+C USAGE                  CALL STRML (IERROR)
 C
 C ARGUMENTS
 C

@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONPA(IERR,IWKID)
+      CALL CONPA(IERR,IWKID)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,13 +30,13 @@ C
       STOP
       END
 C
-      SUBROUTINE TCONPA (IERR,IWKID)
+      SUBROUTINE CONPA (IERR,IWKID)
 C
 C PURPOSE               To provide a simple demonstration of the use of
 C                       CONPACK to contour regularly-spaced rectangular
 C                       data.
 C
-C USAGE                 CALL TCONPA (IERR)
+C USAGE                 CALL CONPA (IERR)
 C
 C ARGUMENTS (OUTPUT)    IERR
 C

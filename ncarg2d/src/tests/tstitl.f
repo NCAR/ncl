@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TSTITL(IERR)
+      CALL STITL(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TSTITL (IERROR)
+      SUBROUTINE STITL (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of the
 C                        routine STITLE.
 C
-C USAGE                  CALL TSTITL (IERROR)
+C USAGE                  CALL STITL (IERROR)
 C
 C ARGUMENTS
 C

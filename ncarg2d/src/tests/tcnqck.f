@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCNQCK(IERR)
+      CALL CNQCK(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TCNQCK (IERROR)
+      SUBROUTINE CNQCK (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the CONRECQCK package.
 C
-C USAGE                  CALL TCNQCK (IERROR)
+C USAGE                  CALL CNQCK (IERROR)
 C
 C ARGUMENTS
 C

@@ -1,17 +1,17 @@
 
       PROGRAM TCOLCV
 
-      CALL TCOLCV(IERR)
+      CALL COLCV(IERR)
 C
       STOP
       END
 C
-      SUBROUTINE TCOLCV (IERR)
+      SUBROUTINE COLCV (IERR)
 C
 C PURPOSE                To provide a demonstration of the routines in
 C                        the package COLCONV and to test them.
 C
-C USAGE                  CALL TCOLCV (IERR)
+C USAGE                  CALL COLCV (IERR)
 C
 C ARGUMENTS
 C

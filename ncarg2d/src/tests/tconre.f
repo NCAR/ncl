@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONRE(IERR)
+      CALL CONRE(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,13 +30,13 @@ C
       STOP
       END
 C
-      SUBROUTINE TCONRE (IERROR)
+      SUBROUTINE CONRE (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of standard
 C                        contouring of regularly spaced data using
 C                        the CONREC package.
 C
-C USAGE                  CALL TCONRE (IERROR)
+C USAGE                  CALL CONRE (IERROR)
 C
 C ARGUMENTS
 C

@@ -20,7 +20,7 @@ C
 C INVOKE DEMO DRIVER
 C
       CALL ISOSCR()
-      CALL TISOHR(IERR)
+      CALL ISOHR(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -31,11 +31,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TISOHR (IERROR)
+      SUBROUTINE ISOHR (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of ISOSRFHR.
 C
-C USAGE                  CALL TISOHR (IERROR)
+C USAGE                  CALL ISOHR (IERROR)
 C
 C ARGUMENTS
 C

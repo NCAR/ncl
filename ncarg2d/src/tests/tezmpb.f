@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver.
 C
-      CALL TEZMPB (IERR,IWKID)
+      CALL EZMPB (IERR,IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -31,14 +31,12 @@ C
 C
       END
 
-
-
-      SUBROUTINE TEZMPB (IERR,IWKID)
+      SUBROUTINE EZMPB (IERR,IWKID)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of EZMAPB.
 C
-C USAGE                  CALL TEZMPB (IERR,IWKID)
+C USAGE                  CALL EZMPB (IERR,IWKID)
 C
 C ARGUMENTS
 C

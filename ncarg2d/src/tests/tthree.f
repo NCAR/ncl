@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TTHREE(IERR)
+      CALL THREE(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TTHREE (IERROR)
+      SUBROUTINE THREE (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of THREED.
 C
-C USAGE                  CALL TTHREE (IERROR)
+C USAGE                  CALL THREE (IERROR)
 C
 C ARGUMENTS
 C

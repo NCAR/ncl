@@ -19,7 +19,7 @@ C
 C
 C Invoke the demo driver.
 C
-        CALL TPPACK(IERR)
+        CALL PPACK(IERR)
 C
 C Deactivate and close the workstation and close GKS.
 C
@@ -33,14 +33,12 @@ C
 C
       END
 
-
-
-      SUBROUTINE TPPACK (IERR)
+      SUBROUTINE PPACK (IERR)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of a couple of the POLYPACK routines.
 C
-C USAGE                  CALL TPPACK (IERR)
+C USAGE                  CALL PPACK (IERR)
 C
 C ARGUMENTS
 C

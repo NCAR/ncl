@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONAQ(IERR)
+      CALL CONAQ(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TCONAQ (IERROR)
+      SUBROUTINE CONAQ (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the CONRAQ package.
 C
-C USAGE                  CALL TCONAQ (IERROR)
+C USAGE                  CALL CONAQ (IERROR)
 C
 C ARGUMENTS
 C

@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL THAFTO(IERR)
+      CALL HAFTO(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE THAFTO (IERROR)
+      SUBROUTINE HAFTO (IERROR)
 C
 C PURPOSE                Provides a simple demonstration of HAFTON
 C
-C USAGE                  CALL THAFTO (IERROR)
+C USAGE                  CALL HAFTO (IERROR)
 C
 C ARGUMENTS
 C ON OUTPUT              IERROR

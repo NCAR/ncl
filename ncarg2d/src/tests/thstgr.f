@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL THSTGR(IERR,IWKID)
+      CALL HSTGR(IERR,IWKID)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,13 +30,13 @@ C
       STOP
       END
 C
-      SUBROUTINE THSTGR (IERROR,IWKID)
+      SUBROUTINE HSTGR (IERROR,IWKID)
 C
 C PURPOSE                To provide a demonstration of the HISTGR
 C                        utility and to test each of the four IFLAG
 C                        options.
 C
-C USAGE                  CALL THSTGR (IERROR,IWKID)
+C USAGE                  CALL HSTGR (IERROR,IWKID)
 C
 C ARGUMENTS
 C

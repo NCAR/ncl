@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCNSUP(IERR)
+      CALL CNSUP(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TCNSUP (IERROR)
+      SUBROUTINE CNSUP (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        the CONRECSPR package.
 C
-C USAGE                  CALL TCNSUP (IERROR)
+C USAGE                  CALL CNSUP (IERROR)
 C
 C ARGUMENTS
 C

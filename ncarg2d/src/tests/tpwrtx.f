@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TPWRTX(IERR)
+      CALL TPWRTX1(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TPWRTX (IERROR)
+      SUBROUTINE TPWRTX1(IERROR)
 C
 C PURPOSE                To provide a demonstration of PWRITX
 C                        and to test PWRITX with an example.
 C
-C USAGE                  CALL TPWRTX (IERROR)
+C USAGE                  CALL TPWRTX1 (IERROR)
 C
 C ARGUMENTS
 C

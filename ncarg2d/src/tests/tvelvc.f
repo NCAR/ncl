@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TVELVC(IERR)
+      CALL TVELVC1 (IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,11 +30,11 @@ C
       STOP
       END
 C
-      SUBROUTINE TVELVC (IERROR)
+      SUBROUTINE VELVC (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of VELVCT.
 C
-C USAGE                  CALL TVELVC (IERROR)
+C USAGE                  CALL TVELVC1 (IERROR)
 C
 C ARGUMENTS
 C

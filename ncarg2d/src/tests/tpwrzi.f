@@ -19,7 +19,7 @@ C
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TPWRZI(IERR)
+      CALL TPWRZI1(IERR)
 C
 C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -30,12 +30,12 @@ C
       STOP
       END
 C
-      SUBROUTINE TPWRZI (IERROR)
+      SUBROUTINE TPWRZI1 (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        entry PWRZI with the ISOSRF utility.
 C
-C USAGE                  CALL TPWRZI (IERROR)
+C USAGE                  CALL TPWRZI1 (IERROR)
 C
 C ARGUMENTS
 C
