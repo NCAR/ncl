@@ -1215,8 +1215,8 @@ NhlErrorTypes regline_W( void )
 /*
  * Output array variables
  */
-  double *rcoef, *tval, *xave, *yave;
-  float *rrcoef, *rtval,*rxave,*ryave;
+  double *rcoef, *tval, *xave, *yave, *yint;
+  float *rrcoef, *rtval, *rxave, *ryave, *ryint;
   int *nptxy, ier = 0;
 
 /*
@@ -1327,7 +1327,9 @@ NhlErrorTypes regline_W( void )
     rtval  = (float *)calloc(1,sizeof(float));
     rxave  = (float *)calloc(1,sizeof(float));
     ryave  = (float *)calloc(1,sizeof(float));
-    if( rrcoef == NULL || rtval == NULL || rxave == NULL || ryave == NULL ) {
+    ryint  = (float *)calloc(1,sizeof(float));
+    if( rrcoef == NULL || rtval == NULL || rxave == NULL || ryave == NULL ||
+        ryint == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing output values back to floating point");
       return(NhlFATAL);
     }
@@ -1338,6 +1340,7 @@ NhlErrorTypes regline_W( void )
     *rtval  = (float)*tval;
     *rxave  = (float)*xave;
     *ryave  = (float)*yave;
+    *ryint  = *ryave - *rrcoef*(*rxave);
 /*
  * Free up variables holding double precision values.
  */
@@ -1439,14 +1442,44 @@ NhlErrorTypes regline_W( void )
                    NULL,
                    (NclObjClass)nclTypefloatClass
                    );
+
     _NclAddAtt(
                att_id,
                "yave",
                att_md,
                NULL
                );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   ryint,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "yintercept",
+               att_md,
+               NULL
+               );
   }
   else {
+/*
+ * Calculate y intercept.
+ */
+    yint = (double *)calloc(1,sizeof(double));
+    if(yint == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for yintercept attribute value");
+      return(NhlFATAL);
+    }
+    *yint  = *yave - *rcoef*(*xave);
 /* 
  * Either x and/or y are double, so return doubles.
  *
@@ -1546,6 +1579,26 @@ NhlErrorTypes regline_W( void )
     _NclAddAtt(
                att_id,
                "yave",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   yint,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "yintercept",
                att_md,
                NULL
                );
