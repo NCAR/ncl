@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.10 1995-06-22 21:07:30 haley Exp $
+; $Id: basic05n.ncl,v 1.11 1997-06-04 16:53:28 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -29,9 +29,7 @@ begin
 
 ; Initialize numeric labels for the labelbar annotation.
 colorindices=new(232,integer)
-do i = 1, 232
-   colorindices(i-1) = i
-end do
+colorindices = ispan(1,232,1)
 
 ;
 ; Set the display. Default is to display output to an X workstation
@@ -46,7 +44,7 @@ if (NCGM .eq. 1) then
 ;
   wks = create "wks" ncgmWorkstationClass defaultapp
       "wkMetaName" : "basic05n.ncgm"
-      "wkColorMap" : "default"	      ; Set Colormap to default. Note,
+      "wkColorMap" : "default"        ; Set Colormap to default. Note,
                                       ; this assignment is redundant.
   end create
 else
@@ -58,7 +56,7 @@ else
       "wkPause" : "True"
       "wkXColorMode" : "private"      ; Set color mode to private to avoid
                                       ; contention for colors from other apps.
-      "wkColorMap" : "default"	      ; Set Colormap to default. Note,
+      "wkColorMap" : "default"        ; Set Colormap to default. Note,
                                       ; this assignment is redundant.
     end create
   else
@@ -68,7 +66,7 @@ else
 ;
       wks = create "wks" psWorkstationClass defaultapp
         "wkPSFileName" : "basic05n.ps"
-        "wkColorMap" : "default"	   ; Set Colormap to default. Note,
+        "wkColorMap" : "default"       ; Set Colormap to default. Note,
                                        ; this assignment is redundant.
       end create
     end if
@@ -78,20 +76,20 @@ end if
 ; Create a labelbar object. 
 
 lbar = create "LabelBar" labelBarClass wks
-	"lbLabelStrings" : colorindices       ; Assign the labels
-	"lbLabelStride" :  5                  ; Label every 5th entry
-	"lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill
-	"lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
-	"lbBoxLinesOn" : "FALSE"              ; Turn off lines between colors
-	"lbBoxCount" : 31                     ; Display 31 entries
-	"lbPerimOn" : "FALSE"                 ; Turn off labelbar perimeter
-	"lbTitleString" : "Default Colormap"  ; Plot title
-	"lbTitleFont" : "Helvetica-bold"      ; Title font
-	"lbLabelFont" : "Helvetica"           ; Label font
-	"vpXF" : 0.                           ; Set the viewport to max size
-	"vpYF" : 1.
-	"vpWidthF" : 1.
-	"vpHeightF" : 1.
+    "lbLabelStrings" : colorindices       ; Assign the labels
+    "lbLabelStride" :  5                  ; Label every 5th entry
+    "lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill
+    "lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
+    "lbBoxLinesOn" : "FALSE"              ; Turn off lines between colors
+    "lbBoxCount" : 31                     ; Display 31 entries
+    "lbPerimOn" : "FALSE"                 ; Turn off labelbar perimeter
+    "lbTitleString" : "Default Colormap"  ; Plot title
+    "lbTitleFont" : "Helvetica-bold"      ; Title font
+    "lbLabelFont" : "Helvetica"           ; Label font
+    "vpXF" : 0.                           ; Set the viewport to max size
+    "vpYF" : 1.
+    "vpWidthF" : 1.
+    "vpHeightF" : 1.
 end create
 
 ; Create a text label
@@ -113,14 +111,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "cyclic"
+    "wkColorMap" : "cyclic"
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Cyclic Colormap"   ; Labelbar title
-	"lbLabelStride" :  1                  ; Label every entry
-        "lbBoxCount"    :  7                  ; Number of entries to display
+    "lbTitleString" : "Cyclic Colormap"   ; Labelbar title
+    "lbLabelStride" :  1                  ; Label every entry
+    "lbBoxCount"    :  7                  ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -130,14 +128,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "gscyclic"   ; gray scale cyclic
+    "wkColorMap" : "gscyclic"   ; gray scale cyclic
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Gscyclic Colormap" ; Labelbar title
-	"lbLabelStride" :  1                  ; Label every entry
-        "lbBoxCount"    :  7                  ; Number of entries to display
+    "lbTitleString" : "Gscyclic Colormap" ; Labelbar title
+    "lbLabelStride" :  1                  ; Label every entry
+    "lbBoxCount"    :  7                  ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -147,14 +145,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "gsltod"	      ;gray scale light to dark
+    "wkColorMap" : "gsltod"       ;gray scale light to dark
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Gsltod Colormap"   ; Labelbar title
-	"lbLabelStride" :  2                  ; Label every other entry
-        "lbBoxCount"    :  32                 ; Number of entries to display
+    "lbTitleString" : "Gsltod Colormap"   ; Labelbar title
+    "lbLabelStride" :  2                  ; Label every other entry
+    "lbBoxCount"    :  32                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -164,14 +162,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "gsdtol"	      ; 
+    "wkColorMap" : "gsdtol"       ; 
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Gsdtol Colormap"   ; Labelbar title
-	"lbLabelStride" :  2                  ; Label every other entry
-        "lbBoxCount"    :  32                 ; Number of entries to display
+    "lbTitleString" : "Gsdtol Colormap"   ; Labelbar title
+    "lbLabelStride" :  2                  ; Label every other entry
+    "lbBoxCount"    :  32                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -181,14 +179,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "uniform"	      ; 
+    "wkColorMap" : "uniform"          ; 
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Uniform Colormap"   ; Labelbar title
-	"lbLabelStride" :  10                  ; Label every 10th entry
-        "lbBoxCount"    :  112                 ; Number of entries to display
+    "lbTitleString" : "Uniform Colormap"   ; Labelbar title
+    "lbLabelStride" :  10                  ; Label every 10th entry
+    "lbBoxCount"    :  112                 ; Number of entries to display
 end setvalues
   
 ; Draw the labelbar and textual annotation
@@ -198,14 +196,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "temp1"	      ; temperature (cold to warm)
+    "wkColorMap" : "temp1"        ; temperature (cold to warm)
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Temp1 Colormap"    ; Labelbar title
-	"lbLabelStride" :  5                  ; Label every 5th entry
-        "lbBoxCount"    :  62                 ; Number of entries to display
+    "lbTitleString" : "Temp1 Colormap"    ; Labelbar title
+    "lbLabelStride" :  5                  ; Label every 5th entry
+    "lbBoxCount"    :  62                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -215,14 +213,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "psgcap"	      ; PostScript graphcap
+    "wkColorMap" : "psgcap"       ; PostScript graphcap
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Psgcap Colormap"    ; Labelbar title
-	"lbLabelStride" :  15                  ; Label every 15th entry
-        "lbBoxCount"    :  230                 ; Number of entries to display
+    "lbTitleString" : "Psgcap Colormap"    ; Labelbar title
+    "lbLabelStride" :  15                  ; Label every 15th entry
+    "lbBoxCount"    :  230                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -232,14 +230,14 @@ frame(wks)
 
 ; Change the colormap to one of the predefined colormaps
 setvalues wks
-   	"wkColorMap" : "example"	      ; Example colormap
+    "wkColorMap" : "example"          ; Example colormap
 end setvalues
 
 ; Change the labelbar title, annotation, and number of entries.
 setvalues lbar
-	"lbTitleString" : "Example Colormap"    ; Labelbar title
-	"lbLabelStride" :  10                  ; Label every 10th entry
-        "lbBoxCount"    :  114                 ; Number of entries to display
+    "lbTitleString" : "Example Colormap"    ; Labelbar title
+    "lbLabelStride" :  10                  ; Label every 10th entry
+    "lbBoxCount"    :  114                 ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
@@ -258,7 +256,7 @@ frame(wks)
 
 ; Assign a new colormap
 setvalues wks
-   	"wkColorMap" : "gscyclic" ; Assign grayscale colormap	      
+    "wkColorMap" : "gscyclic" ; Assign grayscale colormap         
 end setvalues
 
 ; Copy the colormap rgb values into the variable cmap
@@ -275,18 +273,18 @@ cmap(3,:) = (/1.0,0.0,0.0/)   ; Colormap entry 3
 
 ; Reassign the colormap 
 setvalues wks
-   	"wkColorMap" : cmap
+    "wkColorMap" : cmap
 end setvalues
 
 ; Set the annotation for the label bar
 setvalues lbar
-	"lbTitleString" : "Changing colormap entries"
-	"lbLabelStride" :  1                  ; Label every entry
-        "lbBoxCount"    :  7                  ; Number of entries to display
+    "lbTitleString" : "Changing colormap entries"
+    "lbLabelStride" :  1                  ; Label every entry
+    "lbBoxCount"    :  7                  ; Number of entries to display
 end setvalues
 
 setvalues text
-	"txString" : "Entry 0 (background) set to Blue"
+    "txString" : "Entry 0 (background) set to Blue"
 end setvalues
    
 ; Draw the labelbar and textual annotation.
@@ -305,21 +303,21 @@ newcmap = new((/100,3/), float)
 ; Set the first entry (background color) to black
 newcmap(0,:) = (/0.,0.,0./)
 
-do i = 1, 99
-   newcmap(i,:) = (/1.-(i/99.),(i/99.), (i/99.)/)
-end do
-
+ff = fspan(1.,99.,1)
+newcmap(:,0) = 1.-(ff/99.)
+newcmap(:,1) = ff/99.
+newcmap(:,2) = ff/99.
 
 ; Assign the new color map to the workstation object.
 setvalues wks
-   	"wkColorMap" : newcmap
+    "wkColorMap" : newcmap
 end setvalues
 
 ; Assign a new title.
 setvalues lbar
-	"lbTitleString" : "New colormap"       ; Labelbar title
-	"lbLabelStride" :  10                  ; Label every 10th entry
-        "lbBoxCount"    :  99                  ; Number of entries to display
+    "lbTitleString" : "New colormap"       ; Labelbar title
+    "lbLabelStride" :  10                  ; Label every 10th entry
+    "lbBoxCount"    :  99                  ; Number of entries to display
 end setvalues
 
 ; Draw the labelbar and textual annotation
