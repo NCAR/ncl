@@ -1,6 +1,6 @@
 
 /*
- *      $Id: usleep.c,v 1.4 1997-02-05 15:35:52 haley Exp $
+ *      $Id: usleep.c,v 1.5 1997-02-11 18:33:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 void	USleep(usec)
 	unsigned	usec;
 {
-#ifdef	__sun
+#ifdef	SUN
 	(void) usleep(usec);
 #else
 	struct timeval	tv;

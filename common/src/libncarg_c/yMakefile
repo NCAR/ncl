@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.27 1996-11-01 15:40:10 boote Exp $
+#	$Id: yMakefile,v 1.28 1997-02-11 18:33:23 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -58,7 +58,7 @@ OBJS		= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o \
 MY_DEFINES = -D_BSD_TYPES
 #endif
 
-EXTRA_CDEFINES =	$(OS_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
+EXTRA_CDEFINES =	$(OS_DEF) $(VENDOR_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
 
 REQLIBS = $(CTOFLIBS) -lc
 
