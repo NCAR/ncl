@@ -1,18 +1,20 @@
 C
-C $Id: pcfred.f,v 1.2 1992-11-17 18:46:30 kennison Exp $
+C $Id: pcfred.f,v 1.3 1994-03-17 22:04:58 kennison Exp $
 C
       SUBROUTINE PCFRED (IBNU,NFNT,IBUF,LBUF)
+        CHARACTER*32 CTMP
         DIMENSION IBUF(LBUF)
         IF (NFNT.EQ.0) THEN
           READ (IBNU,ERR=101) (IBUF(I),I=1,LBUF)
         ELSE
           CALL PCBNRD (IBNU,LBUF,IBUF,IOST,ISTA)
           IF (ISTA.NE.0) THEN
-            PRINT * , 'PCFRED - ERROR READING FONT ',NFNT
-            STOP
+            WRITE (CTMP,'(''PCFRED - ERROR READING FONT'',I5)') NFNT
+            CALL SETER (CTMP,1,1)
+            RETURN
           END IF
         END IF
         RETURN
-  101   PRINT * , 'PCFRED - ERROR READING PWRITX DATABASE'
-        STOP
+  101   CALL SETER ('PCFRED - ERROR READING PWRITX DATABASE',2,1)
+        RETURN
       END
