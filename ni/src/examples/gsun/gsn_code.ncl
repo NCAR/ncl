@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.128 2004-01-06 21:15:55 haley Exp $
+;      $Id: gsn_code.ncl,v 1.129 2004-01-06 21:40:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6296,11 +6296,15 @@ begin
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
 ;
-; "pmTitleDisplayMode" is one of those resources that has to be
-; set when the object is created, so we need to get its value
-; here and set it.  
+; Check if the user is setting tiMainString. If so, then set
+; pmTitleDisplayMode to "Always" (unless the user is also setting
+; this himself).  Otherwise, just use the default value of "NoCreate".
 ;
-    title_display = get_res_value(res2,"pmTitleDisplayMode","Always")
+    if(res2.and.isatt(res2,"tiMainString")) then
+      title_display = get_res_value(res2,"pmTitleDisplayMode","Always")
+    else
+      title_display = get_res_value(res2,"pmTitleDisplayMode","NoCreate")
+    end if
 
     plot_object = create wksname + "_map" mapPlotClass wks
         "mpProjection"       : projection
