@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.8 1993-01-25 15:37:01 haley Exp $
+#	$Id: ncargCex.csh,v 1.9 1993-01-26 16:28:53 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -23,6 +23,8 @@ echo "                                                                     "
 echo "See <man ncargCex>                                                   "
 exit
 endif
+
+set X11_option = "-noX11"
 
 set names
 
@@ -105,7 +107,7 @@ end
 if (! $?NoRunOption) then
     echo ""
     echo "Compiling and Linking..."
-    ncargcc -o $name $c_files
+    ncargcc $X11_option -o $name $c_files
     if ($status != 0) then
             echo ""
             echo "The compile and link failed"

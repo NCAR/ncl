@@ -1,14 +1,12 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.10 1993-01-20 04:36:48 haley Exp $
+#	$Id: ncargcc.cry,v 1.11 1993-01-26 16:28:56 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
-set loadopts = "SED_LD_CFLAGS"
+set loadopts = "SED_CFLAGS"
 set l = `ncargpath SED_LIBDIR`
-if ($status != 0) exit 1
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
 if ($status != 0) exit 1
 
 if (! -d "$l") then
@@ -16,9 +14,11 @@ if (! -d "$l") then
   exit 1
 endif
 
+set ro = $l/SED_NCARGDIR/SED_ROBJDIR
 set newargv = "$cc $loadopts"
 
 set ctrans_libs = ""
+set stub_file   = ""
 
 # set up default libraries
 
@@ -27,8 +27,7 @@ set libgks      =       "-lncarg_gksC,-lncarg_gks"
 set liblocal    =       "-lncarg_loc"
 set libncarg_c  =       "-lncarg_c"
 set libcbind    =       "-libncargC"
-set lib_extern  =       "-lX11"
-
+set libX11      =       "-lX11"
 set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 
 set smooth = "$ro/libdashsmth.o"
@@ -116,6 +115,10 @@ foreach arg ($argv)
 		set ctrans_libs = `ctlib`
 		breaksw
 
+    case "-noX11"
+        set stub_file = $ro/ggkwdr_stub.o
+        set libX11 = ""
+        breaksw
 
 	default:
 		set newargv = "$newargv $arg"
@@ -124,7 +127,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv -L$l $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $lib_extern"
+set newargv = "$newargv -L$l $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
 
 echo $newargv
 eval $newargv

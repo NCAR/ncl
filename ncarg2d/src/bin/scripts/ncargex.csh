@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.14 1993-01-22 16:31:58 haley Exp $
+#   $Id: ncargex.csh,v 1.15 1993-01-26 16:29:00 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -82,6 +82,7 @@ echo "See <man ncargex>                                             "
 exit
 endif
 
+set X11_option = "-noX11"
 set names
 
 while ($#argv > 0)
@@ -232,7 +233,7 @@ end
 if (! $?NoRunOption) then
     echo ""
     echo "Compiling and Linking..."
-    ncargf77 -o $name $f_files
+    ncargf77 $X11_option -o $name $f_files
     if ($status != 0) then
         echo ""
         echo "The compile and link failed"
@@ -317,7 +318,7 @@ end
 if (! $?NoRunOption) then
     echo ""
     echo "Compiling and Linking..."
-    ncargf77 -o $name $f_files
+    ncargf77 $X11_option -o $name $f_files
     if ($status != 0) then
         echo ""
         echo "The compile and link failed"
@@ -595,7 +596,7 @@ endsw
 echo ""
 echo "Compiling and Linking..."
 
-ncargf77 $ncargf77flags -o $alias_name $alias_name.f
+ncargf77 $X11_option $ncargf77flags -o $alias_name $alias_name.f
 
 if ($status != 0) then
     echo ""

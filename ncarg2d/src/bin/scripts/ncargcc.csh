@@ -1,28 +1,28 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.14 1993-01-20 04:36:50 haley Exp $
+#	$Id: ncargcc.csh,v 1.15 1993-01-26 16:28:58 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
-set loadopts = "SED_LD_CFLAGS"
+set loadopts = "SED_CFLAGS"
 set l = `ncargpath SED_LIBDIR`
 if ($status != 0) then
         exit 1
 endif
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
-if ($status != 0) then
-        exit 1
-endif
+
 
 if (! -d "$l") then
   echo "Library directory <$l> does not exist."
   exit 1
 endif
 
+set ro = $l/SED_NCARGDIR/SED_ROBJDIR
+
 set newargv = "$cc $loadopts"
 
 set ctrans_libs = ""
+set stub_file   = ""
 
 # set up default libraries
 
@@ -36,8 +36,7 @@ set libgks      = "$l/libncarg_gksC.a $l/libncarg_gks.a"
 set liblocal    = "$l/libncarg_loc.a"
 set libncarg_c  = "$l/libncarg_c.a"
 set libcbind    = "$l/libncargC.a"
-
-set lib_extern = "-lX11"
+set libX11      = "-lX11"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
@@ -142,6 +141,10 @@ foreach arg ($argv)
 		set ctrans_libs = `ctlib`
 		breaksw
 
+    case "-noX11"
+        set stub_file = $ro/ggkwdr_stub.o
+        set libX11 = ""
+        breaksw
 
 	default:
 		set newargv = "$newargv $arg"
@@ -150,7 +153,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $lib_extern"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
 
 echo $newargv
 eval $newargv

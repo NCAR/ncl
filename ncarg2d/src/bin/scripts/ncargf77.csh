@@ -1,13 +1,12 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.5 1993-01-20 04:36:54 haley Exp $
+#	$Id: ncargf77.csh,v 1.6 1993-01-26 16:29:04 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set fortran="SED_F77"
-set loadopts = "SED_LD_FFLAGS"
+set loadopts = "SED_FFLAGS"
 set l = `ncargpath SED_LIBDIR`
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
 
 if ($status != 0) then
         exit 1
@@ -18,9 +17,12 @@ if (! -d "$l") then
   exit 1
 endif
 
+set ro = $l/SED_NCARGDIR/SED_ROBJDIR
+
 set newargv = "$fortran $loadopts"
 
 set ctrans_libs = ""
+set stub_file = ""
 
 #
 # set up default libraries
@@ -34,11 +36,12 @@ set libgks     = "$l/libncarg_gks.a"
 set liblocal   = "$l/libncarg_loc.a"
 set libncarg_c = "$l/libncarg_c.a"
 
-set lib_extern = "-lX11 -lm"
+set libextern  = "-lm"
+set libX11     = "-lX11"
 
 set smooth = "$ro/libdashsmth.o"
-set quick = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
-set super = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set libs
 
@@ -126,6 +129,11 @@ foreach arg ($argv)
         set ctrans_libs = `ctlib`
         breaksw
 
+    case "-noX11"
+        set stub_file = $ro/ggkwdr_stub.o
+        set libX11 = ""
+        breaksw
+
     case "-*":
         set newargv = "$newargv $arg"
         breaksw
@@ -137,7 +145,7 @@ foreach arg ($argv)
   endsw
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $lib_extern"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libextern"
 
 echo $newargv
 eval $newargv
