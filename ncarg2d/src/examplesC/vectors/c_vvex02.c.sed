@@ -511,7 +511,7 @@ FILE* Openr ()
 	** Cray machine dependencies require
 	** extra variables.
 	*/
-#if defined(UNICOS)
+#if defined (cray)
     	int len;		/* path length */
     	_fcd cftfilenm;	/* full path */
     	_fcd cftfilenm2;	/* append file name */
@@ -523,15 +523,15 @@ FILE* Openr ()
 		/*
 		** Take care of Cray machine dependencies
 		*/
-#if defined(UNICOS)
+#if !defined (cray)
+      		gngpat_(filenm,filenm2,&stat,119,9);
+#else
           	cftfilenm = _cptofcd(filenm, strlen(filenm));
         	cftfilenm2 = _cptofcd(filenm2, strlen(filenm2));
         	gngpat_(cftfilenm,cftfilenm2,&stat);
         	len = _fcdlen(cftfilenm);
         	filenm = (char*)malloc(len*sizeof(char));
         	filenm = _fcdtocp(cftfilenm);
-#else
-      		gngpat_(filenm,filenm2,&stat,119,9);
 #endif
 
       		if (stat != -1)
