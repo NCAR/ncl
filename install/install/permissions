@@ -1,0 +1,149 @@
+#!/bin/csh -f
+#
+#      $Id: permissions,v 1.1 1993-02-20 00:11:23 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		permissions
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Sep 30 14:51:50 MDT 1992
+#
+#	Description:	Inquire permissions of a file or directory. Permission
+#			operator options are similar to those provied by 
+#			the C shell. A '+' operator option tests for the 
+#			condition to be true. A '-' operator option tests for
+#			the condition to be false. When multiple opererators 
+#			are specified they are effectively anded together.
+#			If the specified file has the given permissions
+#			exit status is zero. Else exit status is non-zero.
+#
+#			For example, 
+#
+#				% permissions +d -w /tmp
+#
+#			exits with zero status if /tmp is both a directory
+#			and NOT writable.
+#
+#			If the file fails the specified operators permissions
+#			silently exits with a non-zero exit status. permissions
+#			also exits with a non-zero exit status if invoked
+#			with illegal syntax. In this case an error message
+#			is issued
+#
+#
+#	Usage:		permissions ((+|-)(r|w|x|e|o|z|f|d))+ <file>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	(+|-)r	: is (is not) file readable
+#			(+|-)w	: is (is not) file writable
+#			(+|-)x	: is (is not) file executable
+#			(+|-)e	: does (does not) file exist
+#			(+|-)o	: is (is not) file owned by invoking user
+#			(+|-)z	: is (is not) file zero length
+#			(+|-)f	: is (is not) file a plain file 
+#			(+|-)d	: is (is not) file a directory
+#
+
+onintr cleanup
+
+if ($#argv < 2) then 
+	echo "Usage: $0 ((+|-)(r|w|x|e|o|z|f|d))+ <file>"
+	exit 1
+endif
+
+set file = $argv[$#argv]
+
+while ($#argv > 1)
+	switch ("$argv[1]")
+	case +r:
+		if (! -r "$file") exit 1
+		breaksw
+
+	case -r:
+		if (-r "$file") exit 1
+		breaksw
+
+	case +w:
+		if (! -w "$file") exit 1
+		breaksw
+
+	case -w:
+		if (-w "$file") exit 1
+		breaksw
+
+	case +x:
+		if (! -x "$file") exit 1
+		breaksw
+
+	case -x:
+		if (-x "$file") exit 1
+		breaksw
+
+	case +e:
+		if (! -e "$file") exit 1
+		breaksw
+
+	case -e:
+		if (-e "$file") exit 1
+		breaksw
+
+	case +o:
+		if (! -o "$file") exit 1
+		breaksw
+
+	case -o:
+		if (-o "$file") exit 1
+		breaksw
+
+	case +z:
+		if (! -z "$file") exit 1
+		breaksw
+
+	case -z:
+		if (-z "$file") exit 1
+		breaksw
+
+	case +f:
+		if (! -f "$file") exit 1
+		breaksw
+
+	case -f:
+		if (-f "$file") exit 1
+		breaksw
+
+	case +d:
+		if (! -d "$file") exit 1
+		breaksw
+
+	case -d:
+		if (-d "$file") exit 1
+		breaksw
+
+	default:
+		echo "Invalid option <$argv[1]>"
+		echo "Usage: $0 ((+|-)(r|w|x|e|o|z|f|d))+ <file>"
+		exit 1
+
+	endsw
+
+	shift
+end
+
+exit 0
+
+cleanup:
+exit 1

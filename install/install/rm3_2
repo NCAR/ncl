@@ -1,0 +1,279 @@
+#!/bin/csh -f
+#
+#      $Id: rm3_2,v 1.1 1993-02-20 00:11:35 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		rm3_2
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Feb 4 10:45:57 MST 1993
+#
+#	Description:	Remove a post 3.1.3a version of NCAR Graphics. This
+#			script removes a particular version of NCAR Graphics
+#			but does not remove any sym links pointing to that
+#			version
+#			
+#
+#	Usage:		rm3_2 <version> [-bin <bindir>] [-inc <incdir> [-man[1,3,5,8,l] <mandir>] [-lib <libdir>]
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+#			-bin	: Remove old bin installables from 'bindir'
+#			-inc	: Remove old include installables from 'incdir'
+#			-lib	: Remove old lib installables from 'libdir'
+#			-man1	: Remove old man 1 installables from 'mandir'
+#			-man3	: Remove old man 3 installables from 'mandir'
+#			-man5	: Remove old man 5 installables from 'mandir'
+#			-man8	: Remove old man 8 installables from 'mandir'
+#			-manl	: Remove old man l installables from 'mandir'
+#
+
+set bins = ()
+set incs = ()
+set libs = ()
+set man1s = ()
+set man3s = ()
+set man5s = ()
+set man8s = ()
+set manls = ()
+
+if ($#argv < 3) then 
+	echo "Invalid option <$argv[1]>"
+	echo "Usage: $0 <version> [-bin <bindir>] [-inc <incdir> [-man[1,3,5,8,l] <mandir>] [-lib <libdir>]"
+	exit 1
+endif
+
+set version = $argv[1]
+shift;
+
+set bins = 	(bnchmk cgm2ncgm cgm_edit cgmtrans \
+		cgmtrans.hplj cgmtrans.nolj ctlib ctrans fcaps \
+		findg fontc ftrans gcaps graphc ictrans idt \
+		med ncargcc ncargcex ncargex ncargf77 \
+		ncargfile ncargmv ncargpath ncargrun ncargtar \
+		ncargversion ncarvversion ncgm2cgm ncgmstat \
+		nriftohdf plt pre2ncgm pre2ncgm.prog psblack \
+		pswhite rascat rasgetpal rasls rassplit \
+		rasstat rasview sunplot tgks0a tlocal tplot \
+		tspps xwdtohdf)
+
+set incs = 	(ncarg)
+
+set libs = 	(libcgm.a libncarg.a libncargC.a libncarg_c.a \
+		libncarg_gks.a libncarg_gksC.a \
+		libncarg_gksCO.a libncarg_loc.a libncarg_ras.a \
+		ncarg)
+
+set man1s = 	(cgm2ncgm cgm_edit cgmtrans ctrans fcaps gcaps ictrans idt \
+		med ncarvversion ncgm2cgm ncgmstat nriftohdf rascat \
+		rasgetpal rasls rassplit rasstat rasview xwdtohdf \
+		graphc fontc \
+		ncarg_gks ncarg_cbind ncarg_gks_cbind ncargcex ncargcc \
+		ncargex ncargf77 ncargpath ncargrun ncargversion pre2ncgm \
+		psblack pswhite ftrans)
+
+set man3s =	(cgm \
+		areas areas_params ardbpa ardrln \
+		aredam argeti argtai arinam \
+		arpram arscam arseti autograph autograph_params agback \
+		agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc \
+		aggetf aggeti aggetp aggetr agpwrt agrstr agsave agsetc agsetf \
+		agseti agsetp agsetr agstup agutol anotat displa ezmxy ezmy \
+		ezxy ezy bivar idsfft idbvip colconv hlsrgb hsvrgb rgbhls \
+		rgbhsv rgbyiq yiqrgb conpack conpack_params cpback cpchcf \
+		cpchcl cpchhl cpchil cpchll cpcica cpclam cpcldm cpcldr \
+		cpcltr cpcnrc cpdrpl cpezct cpgetc cpgeti cpgetr cplbam \
+		cplbdr cpmpxy cppkcl cppklb cprect cprset cpscae cpsetc cpseti \
+		cpsetr cpsprs cpsps1 cpsps2 dashline dashline_params dashchar \
+		dashsmth dashsupr curved dashdb dashdc frstd lastd lined \
+		reset vectd ezmap ezmap_params ezmapa mapaci mapbla mapdrw \
+		mapeod mapfst mapgci mapgrd mapgrm mapgtc mapgti mapgtl \
+		mapgtr mapint mapiq mapiqa mapiqm mapit mapita mapitm maplbl \
+		maplot mappos maproj maprs maprst mapsav mapset mapstc \
+		mapsti mapstl mapstr maptra maptri maptrn mapusr mapvec \
+		mpgetc mpgeti mpgetl mpgetr mpsetc mpseti mpsetl mpsetr \
+		supmap supcon gflash gflas1 gflas2 gflas3 gflas4 gks \
+		gacwk gca gclks gclrwk gclwk gdawk gesc gfa gopks gopwk \
+		gpl gpm gqasf gqchh gqchsp gqchup gqchxp gqclip gqcntn \
+		gqcr gqfaci gqfais gqfasi gqln gqlwsc gqmk gqmksc gqmntn \
+		gqnt gqops gqplci gqpmci gqtxal gqtxci gqtxfp gqtxp gsasf \
+		gschh gschsp gschup gschxp gsclip gscr gselnt gsfaci gsfais \
+		gsfasi gsln gslwsc gsmk gsmksc gsplci gspmci gstxal gstxci \
+		gstxfp gstxp gsvp gswn gtx gridall gridall_params gacolr \
+		gagetc gageti gagetr gasetc gaseti gasetr grid gridal \
+		gridl halfax labmod perim periml tick4 ticks histogram \
+		histogram_params histgr hstopc hstopi hstopl hstopr \
+		isosurface isosurface_params ezisos isgeti isgetr isosrf \
+		isseti issetr pwrzi labelbar labelbar_params lbfill lbgeti \
+		lbgetr lblbar lbseti lbsetr plotchar plotchar_params pcdlsc \
+		pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi \
+		pcsetc pcseti pcsetr plchhq plchlq plchmq softfill \
+		softfill_params sfgetc sfgeti sfgetp sfgetr sfnorm \
+		sfsetc sfseti sfsetp sfsetr sfsgfa sfwrld spps spps_params \
+		spps_converters cfux cfuy clsgks cmfx cmfy cmux cmuy cpfx \
+		cpfy cpux cpuy cufx cufy curve fl2int frame frstpt getset \
+		getsi getusv kfmx kfmy kfpx kfpy kmpx kmpy kpmx kpmy kumx \
+		kumy kupx kupy line mxmy opngks plotif plotit point points \
+		pwrit set seti setusv sflush vector wtstr surface ezsrfc \
+		pwrzs srface scrolled_title scrolled_title_params ftitle \
+		slgeti slgetr slseti slsetr stitle streamlines \
+		streamlines_params ezstrm fx fy stgeti stgetr stinit \
+		stream strmln strset stseti stsetr studmv stuixy stumta \
+		stumxy threed threed_params curve3 fence3 frst3 line3 \
+		perim3 point3 psym3 pwrz pwrzt set3 tick3 tick43 \
+		vect3 vectors vectors_params ezvec fx fy velvct velvec \
+		vvectr vvgetc vvgeti vvgetr vvinit vvrset vvsetc vvseti \
+		vvsetr vvudmv vvumxy conran_family conran_family_params conran \
+		conraq conras conran conop1 conop2 conop3 conop4 \
+		conrec_family conrec conrecqck conrecspr conrec ezcntr \
+		halftone ezhftn hafton isosrfhr dandr init3d isoscr pwritx \
+		pwritx pwrity pwrity)
+
+set man5s = 	(fontcap graphcap ncarv_spool ras_formats ras_palette)
+
+set man8s =	(ncargmv ncargtar)
+
+set manls =	($man1s $man3s $man5s $man8s)
+
+
+while ($#argv) 
+	switch ("$argv[1]")
+	case -bin:
+
+		shift
+		set bindir = $argv[1];
+		breaksw
+
+	case -inc:
+
+		shift
+		set incdir = $argv[1];
+		breaksw
+
+	case -lib:
+
+		shift
+		set libdir = $argv[1];
+		breaksw
+
+	case -man1:
+
+		shift
+		set man1dir = $argv[1];
+		breaksw
+
+	case -man3:
+
+		shift
+		set man3dir = $argv[1];
+		breaksw
+
+	case -man5:
+
+		shift
+		set man5dir = $argv[1];
+		breaksw
+
+	case -man8:
+
+		shift
+		set man8dir = $argv[1];
+		breaksw
+
+	case -manl:
+
+		shift
+		set manldir = $argv[1];
+		breaksw
+
+	default:
+		echo "Invalid option <$argv[1]>"
+		echo "Usage: $0 <version> [-bin <bindir>] [-inc <incdir> [-man[1,3,5,8,l] <mandir>] [-lib <libdir>]"
+		exit 1
+
+	endsw
+
+	shift
+end
+
+
+if ($?bindir) then
+	foreach file ($bins)
+		if (-e "$bindir/$file.$version") then
+			/bin/rm -r $bindir/$file.$version
+		endif
+	end
+endif
+
+if ($?incdir) then
+	foreach file ($incs)
+		if (-e "$incdir/$file.$version") then
+			/bin/rm -r $incdir/$file.$version
+		endif
+	end
+endif
+
+if ($?libdir) then
+	foreach file ($libs)
+		if (-e "$libdir/$file.$version") then
+			/bin/rm -r $libdir/$file.$version
+		endif
+	end
+endif
+
+if ($?man1dir) then
+	foreach file ($man1s)
+		if (-e "$man1dir/$file.1.$version") then
+			/bin/rm -r $man1dir/$file.1.$version
+		endif
+	end
+endif
+
+if ($?man3dir) then
+	foreach file ($man3s)
+		if (-e "$man3dir/$file.3.$version") then
+			/bin/rm -r $man3dir/$file.3.$version
+		endif
+	end
+endif
+
+if ($?man5dir) then
+	foreach file ($man5s)
+		if (-e "$man5dir/$file.5.$version") then
+			/bin/rm -r $man5dir/$file.5.$version
+		endif
+	end
+endif
+
+if ($?man8dir) then
+	foreach file ($man8s)
+		if (-e "$man8dir/$file.8.$version") then
+			/bin/rm -r $man8dir/$file.8.$version
+		endif
+	end
+endif
+
+if ($?manldir) then
+	foreach file ($manls)
+		if (-e "$manldir/$file.l.$version") then
+			/bin/rm -r $manldir/$file.l.$version
+		endif
+	end
+endif
+
+
+exit 0

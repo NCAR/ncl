@@ -1,0 +1,126 @@
+#!/bin/csh -f
+#
+#      $Id: select_src,v 1.1 1993-02-20 00:11:44 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		select_src
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Nov 11 16:15:38 MST 1992
+#
+#	Description:	Prompt the user for an input source for the 
+#			distribution. Upon success (exit 0) select_src
+#			write the installation souce type to standard output.
+#			The source type may be one of (cdrom, tar-file, tape).
+#
+#	Usage:		select_src
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+set done = 0
+while (! $done) 
+	clear > /dev/tty
+cat <<EOF > /dev/tty
+
+
+				NCAR Graphics
+			        Version $VERSION
+			     Copyright (C)  1992
+		University Corporation for Atmospheric Research
+			     All Rights Reserved
+
+
+
+
+
+Please select the type of installation that you wish to perform. 
+	
+	1.  Install from cdrom
+	2.  Install from tape
+	3.  Install from tar file
+	4.  Help
+
+	0.  Return to previous menu
+
+EOF
+
+	echo -n "    Select: " > /dev/tty
+	set answer =  $<
+
+	switch ("$answer")
+
+	case "1":
+		clear > /dev/tty
+		set source = cdrom
+		cat <<EOF > /dev/tty
+
+
+	Installation from CD is not supported yet.
+EOF
+		$LOCALDIR/pause
+		breaksw
+
+	case "2":
+		set source = tape
+		set done = 1
+		breaksw
+
+	case "3":
+		set source = tar-file
+		set done = 1
+		breaksw
+
+	case "4":
+		clear > /dev/tty
+		cat <<EOF > /dev/tty
+
+
+	If your NCAR Graphics distribution is contained on a CD-ROM select 
+	"1" (Install from cdrom).
+
+	If your NCAR Graphics distribution is contained on a tape select 
+	"2" (Install from tape).
+
+	If your NCAR Graphics distribution is contained in a UNIX tar file
+	select "3" (Install from tar file).
+EOF
+		$LOCALDIR/pause
+		breaksw
+
+	case "0":
+		exit 1
+		breaksw
+
+	case ""
+		breaksw
+
+	default
+		echo "Invalid option <$answer>" > /dev/tty
+		$LOCALDIR/pause
+	endsw
+end
+
+echo $source
+
+exit 0
+
+
+cleanup:
+exit 1

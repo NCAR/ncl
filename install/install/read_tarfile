@@ -1,0 +1,137 @@
+#!/bin/csh -f
+#
+#      $Id: read_tarfile,v 1.1 1993-02-20 00:11:29 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		read_tarfile
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Dec 15 13:09:18 MST 1992
+#
+#	Description:	Read and un-tar a tar file into the specified 
+#			directory.
+#
+#	Usage:		read_tarfile <filename> <directory>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	filename	: specifies the tarfile 
+#					and is of one of the following 
+#					forms:
+#
+#						user@host:path
+#
+#						host:path
+#
+#						path
+#
+#			directory	: Directory where tar file should
+#					be unpacked.
+#
+
+
+if  ($#argv != 2) then 
+	echo "Usage: $0 <filename> <directory>" > /dev/tty
+        exit 1
+endif
+
+
+set filename = $argv[1]	# the tarfile 
+set directory = $argv[2]# destination directory
+set rsh  = ""		# rsh command to use (possibly null)
+set ruser = ""		# the remote user (possibly null)
+set rhost = ""		# remote host (possibly null)
+set tar	= "$TAR_READ"	# tar command for reading from a pipe (block size = 20)
+
+#
+#	parse the user if specified from $filename
+#
+set ruser = `expr $filename : '\(.*\)@.*'`
+if ($ruser != "") then
+	set ruser = "-l $ruser"
+endif
+
+#
+#	parse the remote host if defined
+#
+set rhost = `expr \( $filename : '.*@\(.*\):.*' \)`
+if ("$rhost" == "") then 
+	set rhost = `expr \( $filename : '\(.*\):.*' \)`
+endif
+
+#
+#	parse the filename path
+#
+set devpath = `expr \( $filename : '.*:\(.*\)' \) \| \( $filename : '\(.*\)' \)`
+if ($status != 0) then 
+	echo "$0 : invalid filename <$filename>" > /dev/tty
+	exit 1
+endif
+
+#echo ruser=$ruser
+#echo rhost=$rhost
+#echo devpath=$devpath
+#echo filename=$filename
+
+#
+#	Is the tarfile on a remote system?
+#
+if ("$rhost" != "") then 
+	set rsh = $RSH
+	set rarch = `rarch $ruser $rhost`
+	if ($status != 0) then
+		exit 1
+	endif
+
+	#
+	# config env to use remote system commands. Warning: any commands
+	# we snarf from the env now will be configured for the remote system.
+	# So we had better have stashed away anything we'll need on the
+	# local system.
+	#
+	source $LOCALDIR/env.cf
+	if (-e "$LOCALDIR/config/env.$rarch") then
+		source $LOCALDIR/config/env.$rarch
+	endif
+
+endif
+
+
+
+#cd $directory > /dev/null
+#if ($status != 0) then
+#	echo "Couldn't change directories to $directory" > /dev/tty
+#	exit 1
+#endif
+
+if (! -w "$directory") then
+	echo "Directory <$directory> not writable" > /dev/tty
+	exit 1
+endif
+
+$rsh $ruser $rhost dd if=$devpath bs=20b | (cd $directory; $tar)
+
+#
+#	Seem to get inconsistent exit codes from brain-damaged dd. Blow
+#	off error checking so we don't alarm the installer needlessly.
+#
+#if ($status != 0) then
+#	echo "Possible error reading tarfile ." > /dev/tty
+#	echo "You might want to try reading from another device :-(" > /dev/tty
+#	exit 1
+#endif
+	
+exit 0

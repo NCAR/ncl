@@ -1,0 +1,108 @@
+#!/bin/csh -f
+#
+#      $Id: cray_mv,v 1.1 1993-02-20 00:11:02 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		cray_mv
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Dec 9 20:52:23 MST 1992
+#
+#	Description:	Brain-damaged unicos version of mv does not
+#			allow you to move a directory to another directory.
+#			This nasty hack uses tar to get the job done. Ugh!
+#
+#	Usage:		mv f1 f2 or mv f1 ... fn d1 "(<fn> is a file or dir)
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	none
+
+if (! -d "$argv[$#argv]") then
+	if ($#argv != 2) then 
+		echo -n "Usage: mv f1 f2 or mv f1 ... fn d1 " > /dev/tty
+		echo "(<fn> is a file or directory)" > /dev/tty
+		exit 1
+
+	endif
+endif
+
+#
+#	mv file1 file2, where file1 and file2 are plain files
+#	N.B. If the last file is a plain file we know there are only two
+#	from the above
+#
+if (-f "$argv[$#argv]") then 	
+	/bin/mv $argv[1] $argv[2]
+	exit 1
+endif
+
+
+#
+#	destination is a directory and it already exists. If we're moving
+#	a plain file we can simply use /bin/mv. If we're moving a directory
+#	we need to tar it. We generate an absolute path name for the 
+#	destination directory so we don't get lost when we're moving
+#	around.
+#
+switch("$argv[$#argv]")
+case /*:
+	set destdir = $argv[$#argv]
+	breaksw
+default:
+	set destdir = `pwd`/$argv[$#argv]
+	breaksw
+endsw
+	
+while ($#argv > 1)
+        switch ("$argv[1]")
+
+	case -*:
+		echo -n "Usage: mv f1 f2 or mv f1 ... fn d1 " > /dev/tty
+		echo "(<fn> is a file or directory)" > /dev/tty
+		exit 1
+		breaksw
+	default:
+		if (-f "$argv[1]") then
+			/bin/mv $argv[1] $destdir
+			if ($status != 0) then
+				exit 1
+			endif
+		else
+			set pushed = 0
+			if ("$argv[1]:t" != "$argv[1]") then
+				pushd $argv[1]:t
+				set pushed = 1
+			endif
+			set dir = $argv[1]:h
+			tar -cf - $dir | (cd $destdir; tar -xf -);
+			if ($status != 0) then
+				exit 1
+			endif
+			/bin/rm -r $dir
+			if ($status != 0) then
+				exit 1
+			endif
+
+			if ("$pushed") then
+				popd
+			endif
+			
+		endif
+	endsw
+	shift
+end
+

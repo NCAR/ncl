@@ -1,0 +1,92 @@
+#!/bin/csh -f
+#
+#      $Id: freespace,v 1.1 1993-02-20 00:11:06 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		freespace
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Oct 1 14:20:52 MDT 1992
+#
+#	Description:	Print the available free disk space in Kbytes
+#			for a given file system. 
+#
+#	Usage:		freespace <directory>
+#
+#	Environment:	DF - If DF is defined it is used in place of the 
+#			df command to report free space of the file system.
+#
+#			AWK - If AWK is defined it is used in place of the 
+#			awk command.
+#
+#			SED - If SED is defined it is used in place of the 
+#			sed command.
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+if ($#argv != 1) then
+	echo "Usage: $0 : <directory>" > /dev/tty
+	exit 1
+endif
+
+set dir = $argv[1]
+
+if ($?DF) then
+	set df = "$DF"
+else
+	set df = df
+endif
+
+if ($?AWK) then
+	set awk = "$AWK"
+else
+	set awk = awk
+endif
+
+if ($?SED) then
+	set sed = "$SED"
+else
+	set sed = sed
+endif
+
+if (! -e "$dir") then
+	echo "Directory <$dir> does not exist" > /dev/tty
+	exit 1
+endif
+
+set disk_free_tmp = `$df $dir`
+if ($status != 0) then
+	echo "$0 : $df $dir - failed" > /dev/tty
+	exit 1
+endif
+
+#
+#	Free space is always given as the third field from the end
+#	by df
+#
+set free_space = `echo $disk_free_tmp | $awk '{ print $(NF - 2) }'`
+if ($status != 0) then
+	echo "$0 : $awk - failed" > /dev/tty
+	exit 1
+endif
+
+echo $free_space
+exit 0
+
+cleanup:
+exit 1

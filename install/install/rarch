@@ -1,0 +1,110 @@
+#!/bin/csh -f
+#
+#      $Id: rarch,v 1.1 1993-02-20 00:11:25 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		rarch
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Fri Dec 11 14:09:51 MST 1992
+#
+#	Description:	Determine the architecture of a remote host using
+#			rsh and the uname command. On success, rarch writes
+#			the remote architecture type to stdout and exits
+#			with a zero exit status.
+#
+#	Usage:		rarch [-l <remote_user>] <rhost>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	remote_user	: login to the remote machine as
+#					$remote_user
+
+set ruser = ""
+
+while ($#argv)
+	switch ("$argv[1]")
+	case -l:
+		shift
+		set ruser = "-l $argv[1]"
+		breaksw
+	case -*:
+		echo "Usage: rarch  [-l <remote_user>] <rhost>" > /dev/tty
+		exit 1
+		breaksw
+	default:
+		set rhost = "$argv[1]"
+		breaksw
+	endsw
+
+	shift
+end
+
+if (! $?rhost) then 
+	echo "Usage: rarch  [-l <remote_user>] <rhost>" > /dev/tty
+	exit 1
+endif
+		
+
+#set a = `$RSH $host $ruser /bin/uname -a`
+set a = `$LOCALDIR/rshe $RSH $ruser $rhost /bin/uname -a`
+if ($status != 0) then
+	exit 1
+endif
+
+switch ("$a[1]")
+case AIX:
+	echo AIX_RS6000
+	exit 0
+
+case IRIX:
+	echo IRIX_IP
+	exit 0
+
+case ULTRIX:
+	echo ULTRIX_RISC
+	exit 0
+
+case HP-UX:
+	echo HPUX_HP9000_7xx
+	exit 0
+case SunOS:
+	switch ("$a[3]")
+	case	5*:
+		echo Solaris_Sun4
+		exit 0
+	default:
+		switch("$a[5]")
+		case	sun4*
+			echo SunOS_Sun4
+			exit 0
+		case	sun3*
+			echo SunOS_Sun3
+			exit 0
+		endsw
+	endsw
+	
+endsw
+
+switch ("$a[5]")
+case CRAY
+	echo UNICOS_YMP
+	exit 0
+endsw
+
+echo unknown
+exit 1
+

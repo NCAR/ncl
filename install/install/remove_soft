@@ -1,0 +1,179 @@
+#!/bin/csh -f
+#
+#      $Id: remove_soft,v 1.1 1993-02-20 00:11:31 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		remove_soft
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 08:31:24 MDT 1992
+#
+#	Description:	Configure the installation and install software
+#
+#	Usage:		install_soft
+#
+#	Environment:	LOCALDIR		path to install system
+#
+#	Files:		$LOCALDIR/env.cf		generic config
+#			$LOCALDIR/config/env.$system	system specific config
+#
+#
+#	Options:
+#
+#
+
+set	pre3_2 = "" 	# Is a pre 3.2 version of NCAR G installed
+set	instbls = "" 	# 3.2 and later version of NCAR G which are installed
+set	menu_title = "Choose the software version(s) that you wish to delete"
+
+onintr cleanup
+
+clear
+cat << EOF
+
+
+	Removing a version of NCAR Graphics requires you to specify
+	the installation paths for the executables, C include files,
+	libraries and databases, and man pages. This information may
+	vary from system to system but typically the defaults presented 
+	in the following question and answer session are valid. Providing
+	incorrect information is generally harmless.  This script can be 
+	run again at any time.
+EOF
+$LOCALDIR/pause
+
+#
+#       get default paths for this directory. paths.$SYSTEM sets the
+#       bin_path, lib_path, inc_path, and man_path variables
+#
+source $LOCALDIR/config/paths.$SYSTEM
+
+
+
+set bin_prompt = "Directory where NCARG executables were installed"
+set inc_prompt = "Directory where NCARG C include files were installed"
+set lib_prompt = "Directory where NCARG libraries were installed"
+set man_prompt = "Directory where NCARG man pages were installed"
+
+set done = 0
+while (! $done)
+	clear
+
+	set bin_path = `$LOCALDIR/get_path "$bin_prompt" $bin_path`
+	if ($status) goto cleanup
+
+	set inc_path = `$LOCALDIR/get_path "$inc_prompt" $inc_path`
+	if ($status) goto cleanup
+
+	set lib_path = `$LOCALDIR/get_path "$lib_prompt" $lib_path`
+	if ($status) goto cleanup
+
+	set man_path = `$LOCALDIR/get_path "$man_prompt" $man_path`
+	if ($status) goto cleanup
+
+	cat << EOF
+
+
+
+	You have specified the following paths:
+
+
+
+	Executables			$bin_path
+	C includes			$inc_path
+	Libraries and databases		$lib_path
+	Man pages			$man_path
+
+
+
+EOF
+	echo -n "       Is this correct [y/n](y) ? "
+	set answer = $<
+	if ("$answer" == "y" || "$answer" == "") then
+		set done = 1
+	endif
+end
+
+#
+#	Look for a pre 3.2 installation of NCAR G. Prior to 3.2 NCAR G files
+#	were not appended with a version number. So we just just look
+#	for a key file or two that is no longer installed in the same
+#	location in 3.2. We'll look for pwritdata or exampdata data bases
+#	in $lib_path since in 3.2 these files moved to $lib_path/ncarg/database
+if (-e "$lib_path/ezmapdata" || -e "$lib_path/pwritdata") then
+	set pre3_2 = "3.1.x"
+endif
+
+#
+#	Now look for 3.2 or later versions of NCAR G. Multiple 3.2 or later
+#	versions may exist simultaneously. They are distinguished by the
+#	file name extension which is the version number
+#	N.B. csh doesn't let you redirect stderr without molesting
+#	output to stdout. Hence the ugly kludge with echo
+#
+/bin/csh -c echo $lib_path/ncarg.* >& /dev/null
+if ($status == 0) then
+	set files = `echo $lib_path/ncarg.*`
+	foreach file ($files)
+		set version = `echo $file | sed -e s@$lib_path/ncarg.@@`
+		set instbls = ($instbls $version)
+	end
+endif
+
+set select_vector = `$LOCALDIR/list_menu -t "$menu_title" $pre3_2 $instbls`
+if ($status != 0) then
+	exit 1
+endif
+
+
+#
+# remove a pre 3.2 version if one is installed and the user has selected
+# it for removal
+#
+if ("$pre3_2" != "") then
+	if ("$select_vector[1]") then
+		$LOCALDIR/rm3_1_3 -bin $bin_path -man $man_path -lib $lib_path
+		if ($status != 0) then
+			exit 1
+		endif
+	endif
+	shift select_vector
+endif
+
+
+#
+#	find out where 3.2 or later man pages are installed. It varies 
+#	from system to system
+#
+if ($?manl_path) then
+	set manopt = "-manl $man_path/$manl"
+else
+	set manopt = "-man1 $man_path/$man1 -man3 $man_path/$man3 -man5 $man_path/$man5 -man8 $man_path/$man8"
+endif
+
+#
+#	delete each requested version of NCARG
+#
+foreach version ($instbls)
+	if ("$select_vector[1]") then
+		$LOCALDIR/rm3_2 $version -bin $bin_path -inc $inc_path $manopt -lib $lib_path
+		if ($status != 0) then
+			exit 1
+		endif
+	endif
+	shift select_vector
+end
+
+
+cleanup:
+exit 0

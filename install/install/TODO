@@ -1,0 +1,14 @@
+test install on cray and hp
+---------
+test script when "." is not on search path
+---------
+need to warn user that by default oldER versions are not removed.
+---------
+main menu should have option to read release notes?
+---------
+test with default INSTALL_DEVICE on all systems
+---------
+verify that non-byte swapped tape drive is available on all sgis and
+it works. Also, make sure release notes tell user to use it.
+---------
+test reading from tapes on all supported systems

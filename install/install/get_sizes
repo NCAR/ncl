@@ -1,0 +1,99 @@
+#!/bin/csh -f
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		get_sizes
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Mon Nov 9 16:07:53 MST 1992
+#
+#	Description:	Report the size requirements for the installation.
+#			If get_sizes exits with a zero exit status then
+#			the minimum size requirements for bin, include, 
+#			lib, and man directories are written to stdout
+#			as a space-separated, single line, in that order.
+#
+#			If the -t option is used only the total for
+#			bin, include, lib and man directories will be
+#			reported.
+#
+#
+#	Usage:		get_sizes [-t]
+#
+#	Environment:	SYSTEM		: system type
+#			LOCALDIR	: path to install system
+#
+#	Files:		$LOCALDIR/var/sizes.$system	space requirements
+#					for system $SYSTEM
+#
+#
+#	Options:
+
+onintr cleanup:
+
+set do_total = 0
+
+if ($#argv > 1) then
+	echo "Usage: get_sizes [-t]" > /dev/tty
+	exit 1
+endif
+
+if ($#argv == 1) then
+	if ("$argv[1]" != "-t") then
+		echo "Usage: get_sizes [-t]" > /dev/tty
+		exit 1
+	endif
+	set do_total = 1
+endif
+
+	set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
+		exit 1
+	endif
+	set bin_size = $size_line[2]
+
+	set cmd = "grep include $LOCALDIR/var/sizes.$SYSTEM"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
+		exit 1
+	endif
+	set inc_size = $size_line[2]
+
+	set cmd = "grep lib $LOCALDIR/var/sizes.$SYSTEM"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
+		exit 1
+	endif
+	set lib_size = $size_line[2]
+
+	set cmd = "grep man $LOCALDIR/var/sizes.$SYSTEM"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
+		exit 1
+	endif
+	set man_size = $size_line[2]
+
+	if ("$do_total") then
+		@ total = $bin_size + $inc_size + $lib_size + $man_size
+		echo $total
+	else
+		echo "$bin_size $inc_size $lib_size $man_size"
+	endif
+
+exit 0
+
+cleanup:
+exit 1

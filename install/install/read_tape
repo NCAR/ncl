@@ -1,0 +1,196 @@
+#!/bin/csh -f
+#
+#      $Id: read_tape,v 1.1 1993-02-20 00:11:27 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		read_tarfile
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Dec 15 13:09:18 MST 1992
+#
+#	Description:	Read and un-tar tar files into 
+#			the specified directories. 
+#
+#	Usage:		read_tarfile <device> <directory>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	device		: device specifies the tar file
+#					and is of one of the following 
+#					forms:
+#
+#						user@host:path
+#
+#						host:path
+#
+#						path
+#
+#			directory	: Directory to untar $device into.
+#
+
+
+if  ($#argv != 2) then 
+	echo "Usage: $0 <device> <directory>" > /dev/tty
+        exit 1
+endif
+
+
+set device = $argv[1]	# the tape device
+set fsf = $argv[2]	# location of first file
+set rsh  = ""		# rsh command to use (possibly null)
+set ruser = ""		# the remote user (possibly null)
+set rhost = ""		# remote host (possibly null)
+set tar	= "$TAR_READ"	# tar command for reading from a pipe (block size = 20)
+
+#
+#	parse the user if specified from $device
+#
+set ruser = `expr $device : '\(.*\)@.*'`
+if ($ruser != "") then
+	set ruser = "-l $ruser"
+endif
+
+#
+#	parse the remote host if defined
+#
+set rhost = `expr \( $device : '.*@\(.*\):.*' \)`
+if ($rhost == "") then 
+	set rhost = `expr \( $device : '\(.*\):.*' \)`
+endif
+
+#
+#	parse the device path
+#
+set devpath = `expr \( $device : '.*:\(.*\)' \) \| \( $device : '\(.*\)' \)`
+if ($status != 0) then 
+	echo "$0 : invalid device <$device>" > /dev/tty
+	exit 1
+endif
+
+#echo ruser=$ruser
+#echo rhost=$rhost
+#echo devpath=$devpath
+#echo device=$device
+
+#
+#	Is the tape drive remote?
+#
+if ("$rhost" != "") then 
+	set rsh = $RSH
+	set rarch = `rarch $ruser $rhost`
+	if ($status != 0) then
+		exit 1
+	endif
+
+	#
+	# config env to use remote system commands. Warning: any commands
+	# we snarf from the env now will be configured for the remote system.
+	# So we had better have stashed away anything we'll need on the
+	# local system.
+	#
+	source $LOCALDIR/env.cf
+	if (-e "$LOCALDIR/config/env.$rarch") then
+		source $LOCALDIR/config/env.$rarch
+	endif
+
+endif
+
+echo "Place tape in device and hit <RETURN> when ready. Ctrl-C to abort" > /dev/tty
+set answer = $<
+sleep	10	# play it safe - wait for tape to mount
+
+
+#
+#	rewind the tape. The rshe script executes a command remotely
+#	*and* returns its exit status (unlike rsh). Unfortunately we
+#	can only use rshe if the remote command doesn't write to stdout
+#
+echo "" > /dev/tty
+echo "" > /dev/tty
+echo "" > /dev/tty
+echo "Rewinding the tape..... Hang on." > /dev/tty
+if ("$rhost" != "") then
+	$LOCALDIR/rshe $rsh $ruser $rhost $MT $devpath rewind
+else
+	$MT $devpath rewind
+endif
+if ($status != 0) then
+	exit 1
+endif
+
+#
+#	advance the tape if necessary
+#
+echo "" > /dev/tty
+echo "" > /dev/tty
+echo "" > /dev/tty
+echo "Looking for your files..... Just a sec." > /dev/tty
+if ("$fsf" != 0) then
+	if ("$fsf" > 8) then 
+		echo "" > /dev/tty
+		echo "" > /dev/tty
+		echo "" > /dev/tty
+		echo "Whoa. Bummer Dude. Your files are at the end of the tape" > /dev/tty
+		echo "This is gonna take longer than I thought." > /dev/tty
+	endif
+	if ("$rhost" != "") then
+		$LOCALDIR/rshe $rsh $ruser $rhost $MT $devpath fsf $fsf
+	else
+		$MT $devpath fsf $fsf
+	endif
+	if ($status != 0) then
+		exit 1
+	endif
+endif
+
+shift; shift;
+while ($#argv) 
+	set directory = $argv[1]
+	shift
+
+	if ("$directory" != "/dev/null") then
+		pushd $directory > /dev/null
+		$rsh $rhost $ruser dd if=$devpath bs=20b | $tar
+#
+#	Seem to get inconsistent exit codes from dd. However, files
+#	are usually unpacked ok
+#
+#		if ($status != 0) then
+#			echo "" > /dev/tty
+#			echo "" > /dev/tty
+#			echo "" > /dev/tty
+#			echo "Possible error reading tape drive." > /dev/tty
+#			echo "You might want to try reading from another device :-(" > /dev/tty
+#		endif
+		popd > /dev/null
+	else
+		#
+		# skip the file if it is to be read into /dev/null.
+		# N.B. this isn't the most efficient way to do a seek on 
+		# a tape but it seems to be the most reliable.
+		#
+		echo "" > /dev/tty
+		echo "" > /dev/tty
+		echo "" > /dev/tty
+		echo "Skipping unselected file... " > /dev/tty
+		$rsh $rhost $ruser dd if=$devpath bs=20b of=/dev/null
+		if ($status != 0) then
+			exit 1
+		endif
+	endif
+end
+	
+exit 0

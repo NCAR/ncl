@@ -1,0 +1,290 @@
+#!/bin/csh -f
+#
+#      $Id: get_paths,v 1.1 1993-02-20 00:11:10 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		get_paths
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 09:27:42 MDT 1992
+#
+#	Description:	Get the installation paths for bin, include, lib
+#			and man directories. If get_paths exits with a
+#			0 exit status then the bin, include, lib, and man
+#			paths are written to stdout as a space-separated 
+#			single line in that order. If the user requests that
+#			a particular component of NCAR G not be installed the
+#			coresponding path for that component is set to 
+#			"/dev/null".
+#
+#			get_paths verifies that the given directories
+#			have appropriate permissions and that the file
+#			systems they are part of have enough space.
+#
+#			get_paths also warns the user if he tries to select
+#			installation paths with different parents such that
+#			multiple NCARG_* variables would be required to
+#			use NCAR G.
+#			
+#
+#			When invoked with the -default option the user
+#			is not prompted for individual installation 
+#			directories. Instead the default installation paths
+#			are assumed. get_paths simply checks the permissions
+#			of the default directories and verifies that there
+#			is enough space.
+#
+#	Usage:		get_paths [ -default ]
+#
+#	Environment:	SYSTEM		: system type
+#			LOCALDIR	: path to install system
+#
+#	Files:
+#
+#
+#	Options:	-default	: force default installation paths
+
+onintr cleanup
+
+set do_default = 0	# do default installation?
+set do_bin = 1		# do install executables?
+set do_inc = 1		# do install C includes?
+set do_lib = 1		# do install libraries?
+set do_man = 1		# do install man pages?
+
+if ($#argv > 1) then
+	echo "Usage: get_paths [-default]" > /dev/tty
+	exit 1
+endif
+
+if ($#argv == 1) then
+	if ("$argv[1]" != "-default") then
+		echo "Usage: get_paths [-default]" > /dev/tty
+		exit 1
+	endif
+	set do_default = 1
+endif
+
+
+#
+#	get default paths for this directory. paths.$SYSTEM sets the
+#	bin_path, lib_path, inc_path, and man_path variables
+#
+source $LOCALDIR/config/paths.$SYSTEM
+
+
+if (! "$do_default") then
+
+	set bin_item = "Install executables"
+	set inc_item = "Install C include files"
+	set lib_item = "Install libraries"
+	set man_item = "Install man pages"
+
+	#
+	# find out which software components the user wants to install
+	#
+	set select_vector = `$LOCALDIR/list_menu "$bin_item" "$inc_item" "$lib_item" "$man_item"`
+
+	if ($status != 0) then
+		exit 1
+	endif 
+
+	set do_bin = $select_vector[1]
+	set do_inc = $select_vector[2]
+	set do_lib = $select_vector[3]
+	set do_man = $select_vector[4]
+
+	#
+	# fake out the compare_paths script by setting unused installation
+	# directories to /dev/null
+	#
+	if (! "$do_bin") set bin_path = "/dev/null"
+	if (! "$do_inc") set inc_path = "/dev/null"
+	if (! "$do_lib") set lib_path = "/dev/null"
+	if (! "$do_man") set man_path = "/dev/null"
+	
+	clear > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "	The default installation directories for your system" > /dev/tty
+	echo "	are:" > /dev/tty
+	echo "" > /dev/tty
+
+	if ("$do_bin") then
+		echo "	Executables 			: $bin_path">/dev/tty
+	endif
+
+	if ("$do_inc") then
+		echo "	C include files			: $inc_path">/dev/tty
+	endif
+
+	if ("$do_lib") then
+		echo "	Libraries 			: $lib_path">/dev/tty
+	endif
+
+	if ("$do_man") then
+		echo "	Man pages			: $man_path">/dev/tty
+	endif
+
+	echo "" > /dev/tty
+
+	echo "	It is highly recommended that you use the default" > /dev/tty
+	echo "	installation path(s). Do you wish to use the" > /dev/tty
+	echo "	default (y)?" > /dev/tty
+	echo "" > /dev/tty
+
+	echo -n "Enter Return(default), y(yes), n(no), or p(previous menu) > "> /dev/tty
+	set answer = $<
+
+	if ("$answer" == "p") goto cleanup
+
+	if ("$answer" == "n") then
+	get_path_from_user:
+		set done = 0
+		set bin_prompt = "Executables installation directory"
+		set inc_prompt = "C include file installation directory"
+		set lib_prompt = "Libraries installation directory"
+		set man_prompt = "Man page installation directory"
+		while (! "$done") 
+			clear > /dev/tty
+
+			if ("$do_bin") then
+
+			set bin_path = `$LOCALDIR/get_path "$bin_prompt" $bin_path`
+			if ($status != 0) goto cleanup
+
+			endif	# if ("do_bin")
+
+			if ("$do_inc") then
+
+			set inc_path = `$LOCALDIR/get_path "$inc_prompt" $inc_path`
+			if ($status != 0) goto cleanup
+
+			$LOCALDIR/compare_paths $bin_path $inc_path NCARG_INC
+			set rc = $status
+			if ($rc != 0) then
+				if ($rc == 1) continue
+				if ($rc == 2) goto cleanup
+			endif
+
+			endif	# if (do_inc)
+				
+
+			if ("$do_lib") then
+
+			set lib_path = `$LOCALDIR/get_path "$lib_prompt" $lib_path`
+			if ($status != 0) goto cleanup
+			$LOCALDIR/compare_paths $bin_path $lib_path NCARG_LIB
+			set rc = $status
+			if ($rc != 0) then
+				if ($rc == 1) continue
+				if ($rc == 2) goto cleanup
+			endif
+
+			endif	# if (do_lib)
+
+			if ("$do_man") then
+
+			set man_path = `$LOCALDIR/get_path "$man_prompt" $man_path`
+			if ($status != 0) goto cleanup
+	#		$LOCALDIR/compare_paths $bin_path $man_path
+	#		set rc = $status
+	#		if ($rc != 0) then
+	#			if ($rc == 1) continue
+	#			if ($rc == 2) goto cleanup
+	#		endif
+
+			endif	# if (do_man)
+
+			set done = 1
+		end
+	endif
+
+endif	# if (! do_default)
+
+foreach dir ("$bin_path" "$inc_path" "$lib_path" "$man_path")
+	if ("$dir" != "/dev/null") then
+		$LOCALDIR/permissions +d +w $dir
+		if ($status != 0) then
+			mkdir $dir
+			if ($status != 0) then
+				cat > /dev/tty <<EOF
+
+
+		The directory path $dir either does not exist 
+		and could not be created, or it exists but is not writable.  
+		Please create $dir and try again, or 
+		select another path.
+EOF
+				$LOCALDIR/pause
+				if ("$do_default") then
+					exit 1
+				endif
+				goto get_path_from_user
+			endif
+		endif
+	endif	# if  (/dev/null)
+end
+
+#
+#       get size requirements for each installed directory
+#
+set sizes = `$LOCALDIR/get_sizes`
+if ($status != 0) then
+        exit 1
+endif
+
+if ("$do_bin") then
+	set bin_size = $sizes[1]
+else
+	set bin_size = 0
+endif
+
+if ("$do_inc") then
+	set inc_size = $sizes[2]
+else
+	set inc_size = 0
+endif
+if ("$do_lib") then
+	set lib_size = $sizes[3]
+else
+	set lib_size = 0
+endif
+if ("$do_man") then
+	set man_size = $sizes[4]
+else
+	set man_size = 0
+endif
+
+echo "" > /dev/tty
+echo "" > /dev/tty
+echo "	Calculating disk space... This may take a couple of minutes" >> /dev/tty
+
+$LOCALDIR/spaceok $bin_path $bin_size $inc_path $inc_size $lib_path $lib_size $man_path $man_size
+
+if ($status != 0) then
+
+	$LOCALDIR/pause
+	if ("$do_default") then
+		exit 1
+	endif
+	goto get_path_from_user
+endif
+
+
+echo "$bin_path $inc_path $lib_path $man_path"
+exit 0
+
+cleanup:
+exit 1

@@ -1,0 +1,164 @@
+#!/bin/csh -f
+#
+#      $Id: select_config,v 1.1 1993-02-20 00:11:40 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		select_config
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 09:05:18 MDT 1992
+#
+#	Description:	Select an installation configuration. On success,
+#			exit status == 0, select_config writes the installation
+#			type (Basic-Installation or Custom-Installation), 
+#			the bin, include, lib, and man paths, in that order,
+#			to the standard output. If no selection was made
+#			select_config will not write anything to stdout.
+#			If an error occurs exit status will be 1.
+#
+#	Usage:		select_config
+#
+#	Environment:	SYSTEM		: system type
+#			LOCALDIR	: path to install system
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+clear > /dev/tty
+
+set total_size = `$LOCALDIR/get_sizes -t`
+if ($status != 0) then
+	exit 1
+endif
+
+set done = 0
+while (! $done) 
+	clear > /dev/tty
+cat <<EOF > /dev/tty
+
+
+				NCAR Graphics
+			        Version $VERSION
+			     Copyright (C)  1992
+		University Corporation for Atmospheric Research
+			     All Rights Reserved
+
+
+
+
+
+Please select the type of installation that you wish to perform. 
+	
+	1.  Basic Installation			[ $total_size KB required ]
+	    The Basic Installation is recommended.
+
+        2.  Custom Installation			[ required disk space varies ]
+	    Optional software components and installation directories
+
+        3.  Help on Installation Choices
+
+
+
+	0.  Return to previous menu
+
+EOF
+
+	echo -n "    Select: " > /dev/tty
+	set answer =  $<
+	switch ("$answer")
+		case "1":
+			clear > /dev/tty
+			#
+			# We already know the installation directories. We
+			# call get_paths to determine if there is enough 
+			# disk space
+			#
+			set paths = `$LOCALDIR/get_paths -default`
+			if ($status == 0) then
+				set done = 1
+				set type = "Basic-Installation"
+			else
+				$LOCALDIR/pause
+			endif
+			breaksw
+
+		case "2":
+			clear > /dev/tty
+			#
+			# get the installation directory paths
+			#
+			set paths = `$LOCALDIR/get_paths`
+			if ($status == 0) then
+				set done = 1
+				set type = "Custom-Installation"
+			else
+				$LOCALDIR/pause
+			endif
+			breaksw
+
+		case "3":
+			source $LOCALDIR/config/paths.$SYSTEM
+			clear > /dev/tty
+			cat <<EOF > /dev/tty
+
+
+	The Basic Installation installs all components of NCAR Graphics
+	Version $VERSION:
+
+		Executables are installed to $bin_path. 
+		Include files are installed to $inc_path.
+		Libraries are installed to $lib_path. 
+		Man pages are installed to $man_path.
+
+	The Custom Installation allows you some freedom in choosing which 
+	components of NCAR Graphics are installed. For example, if you only
+	need to install the man pages you should select the Custom 
+	Installation. In addition, the custom installation allows you
+	to choose the installation paths of the bin, lib, man, and 
+	include directories.
+EOF
+			$LOCALDIR/pause
+
+			breaksw
+
+		case "0":
+			exit 0
+			breaksw
+
+		case ""
+			breaksw
+
+		default
+			echo "Invalid option <$answer>" > /dev/tty
+			$LOCALDIR/pause
+	endsw
+end
+
+
+
+
+set bin_path = $paths[1]
+set inc_path = $paths[2]
+set lib_path = $paths[3]
+set man_path = $paths[4]
+
+echo $type $bin_path $inc_path $lib_path $man_path
+
+exit 0
+
+cleanup:
+exit 1

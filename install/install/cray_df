@@ -1,0 +1,59 @@
+#!/bin/csh -f
+#
+#      $Id: cray_df,v 1.1 1993-02-20 00:11:00 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		cray_df
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Oct 1 16:06:30 MDT 1992
+#
+#	Description:	Try and make Cray df behave like Berkely df
+#
+#	Usage:		cray_df <directory>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+if ($#argv != 1) then
+	echo "Usage: cray_df <directory>" > /dev/tty
+	exit 1
+endif
+
+set dir = $argv[1]
+
+if (! -e "$dir") then
+	echo "$0 : Directory <$dir does not exist" > /dev/tty
+	exit 1
+endif
+
+while (1) 
+	df $dir >& /dev/null
+	if ($status == 0) then
+		df -S $dir | /usr/bin/awk ' { total = $7 * $4 / 1024; free = $3 * $4 / 1024; used = total - free; print $2, total, used, free, $5, $1 }'
+		exit 0
+	endif
+	set dir = $dir:h
+	if ("$dir" == "") then
+		set dir = "/"
+	endif
+end
+
+cleanup:
+exit 1

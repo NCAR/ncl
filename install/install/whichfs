@@ -1,0 +1,85 @@
+#!/bin/csh -f
+#
+#      $Id: whichfs,v 1.1 1993-02-20 00:11:53 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		whichfs
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Oct 1 14:20:52 MDT 1992
+#
+#	Description:	Print the file system that a given directory
+#			resides in.
+#
+#	Usage:		whichfs <directory>
+#
+#	Environment:	DF - If DF is defined it is used in place of the 
+#			df command to report free space of the file system.
+#
+#			AWK - If AWK is defined it is used in place of the 
+#			awk command.
+#
+#			SED - If SED is defined it is used in place of the 
+#			sed command.
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+if ($#argv != 1) then
+	echo "Usage: whichfs <directory>" > /dev/tty
+	exit 1
+endif
+
+set directory = $argv[1]
+
+if ($?DF) then
+	set df = "$DF"
+else
+	set df = df
+endif
+
+if ($?AWK) then
+	set awk = "$AWK"
+else
+	set awk = awk
+endif
+
+if ($?SED) then
+	set sed = "$SED"
+else
+	set sed = sed
+endif
+
+if (! -e "$directory") then
+	echo "Directory <$directory> does not exist" > /dev/tty
+	exit 1
+endif
+
+#
+#	mount point is always the last field of the last line
+#
+set mt_pt = `$df $directory | $sed -n '$p' | $awk '{ print $NF }'`
+if ($status != 0) then
+	echo "$0 failed" > /dev/tty
+	exit 1
+endif
+
+echo $mt_pt
+exit 0
+
+cleanup:
+exit 1

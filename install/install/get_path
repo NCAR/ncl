@@ -1,0 +1,80 @@
+#!/bin/csh -f
+#
+#      $Id: get_path,v 1.1 1993-02-20 00:11:08 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		get_path
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 10:25:56 MDT 1992
+#
+#	Description:	Prompt the user for a path name. If get_path
+#			exits with a zero exit status the path is written
+#			to stdout. get_path gaurantees that the path
+#			returned will have the same leaf name as the 
+#			default given on the command line. 
+#
+#	Usage:		get_path <comment> <default>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	comment : A comment used to prompt the user
+#			default : The default path
+
+onintr cleanup:
+
+if ($#argv != 2) then
+	echo "Usage: get_path <comment> <default>" > /dev/tty
+	exit 1
+endif
+
+set comment = "$argv[1]"
+set directory = $argv[2]
+
+set done = 0
+set tail = $directory:t
+while (! $done) 
+
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "$comment : $directory" > /dev/tty
+	echo -n "Enter Return (default), new directory, or p(previous menu) > " >/dev/tty
+	set answer = $<
+	if ("$answer" == "p") exit 1
+
+	if ("$answer" != "") then
+		if ("$answer:t" != "$tail") then
+			echo "" > /dev/tty
+			echo "" > /dev/tty
+			echo $comment must end with \"$tail\" > /dev/tty
+		else
+			set directory = $answer
+			set done = 1
+		endif
+	else
+		# default directory
+		set done = 1
+		
+	endif
+end
+
+
+echo $directory
+exit 0
+
+cleanup:
+exit 1

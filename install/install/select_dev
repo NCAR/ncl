@@ -1,0 +1,194 @@
+#!/bin/csh -f
+#
+#      $Id: select_dev,v 1.1 1993-02-20 00:11:42 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		select_dev
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Nov 12 08:54:35 MST 1992
+#
+#	Description:	Select the installation device. On success (exit 0)
+#			select_dev writes the installation source to the
+#			standard output. source has the form user@rhost:path,
+#			where user, if present, is the user id to use, rhost,
+#			if present, is the remote host, and path is the device
+#			path.
+#
+#	Usage:		select_dev -<t|c|f> <default_dev>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	-t		device is a tape device
+#			-c		device is a cdrom
+#			-f		device is a tar file
+#			default_dev	default installation device
+
+onintr cleanup
+
+if ($#argv != 2) then
+	echo "Usage: $0 select_dev -<t|c|f> <default_dev>" > /dev/tty
+	exit 1
+endif
+
+set dev_type = $argv[1]
+set default_source = $argv[2]
+
+set done = 0
+while (! $done) 
+	clear > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "Read software from where <source>? : $default_source" > /dev/tty
+	echo -n "Enter Return (default), " > /dev/tty
+	echo -n "new device, h(help), or p(previous menu) > " > /dev/tty
+
+	set answer = $<
+
+	switch ("$answer")
+
+	case	"p":
+		exit 1
+		breaksw
+
+	case	""
+		echo $default_source
+		exit 0
+		breaksw
+
+	case	"h"
+
+		clear > /dev/tty
+
+		switch ("$dev_type") 
+
+		case	"-t":
+			cat <<EOF | more > /dev/tty
+
+
+
+	Use this menu selection to specify the location (or "source") 
+	of the tape drive containing the tape with your software distribution.
+	The source may be either a local or remote tape.
+
+	The currently defined source is printed in [] next to this 
+	menu item. 
+
+	The syntax of source depends on the tape drive's physical location 
+	(local or remote), and the user id you want to use:
+
+	<path>			Local no-rewind device name.
+
+	<rhost>:<path>		Remote no-rewind tape device with the 
+				user ID that you invoked this process with.
+
+	<user>@<rhost>:<path>	Remote no-rewind tape device with user 
+				ID <user>
+	
+	<path> is a no-rewind tape device.
+	<rhost> is the name of a remote workstation and <usr> is a
+	user ID that has been configured for installation. Some possible
+	values for <path> are:
+
+		On this                 A no-rewind device
+                architecture:           type would be:
+                -------------           ------------------
+                Sun                     /dev/nrst8
+                DECstation              /dev/nrmt0h
+                HP 9000                 /dev/rmt/0mn
+                IBM RS/6000             /dev/rmt0.1
+                SGI 			/dev/nrtapens	
+
+
+	Some examples of "source" are:
+
+	/dev/nrst8			Read from a local Sun SCSI tape drive
+
+	redcloud:/dev/nrst8		Read from a Sun SCSI tape drive on
+					the remote Sun system redcloud.
+
+	don@antero:/dev/nrtapens	Read from a SGI ISI tape drive on
+					the remote SGI system antero as
+					user don.
+EOF
+
+			$LOCALDIR/pause
+			breaksw
+
+		case	"-c":
+			breaksw
+
+		case	"-f":
+
+			cat <<EOF | more > /dev/tty
+
+
+
+	Use this menu selection to specify the location (or "source") 
+	of the directory containing your software distribution tar files. The 
+	directory file may be on either a local or remote system.
+	The directory rarely needs to be changed from the default:
+	../$SYSTEM
+
+	The currently defined source is printed in [] next to this 
+	menu item. 
+
+	The syntax of source depends on the physical location of the
+	tar file (local or remote), and the user id you want to use:
+
+	<path>			Local directory.
+
+	<rhost>:<path>		Remote directory with the user ID that you
+				invoked this process with.
+
+	<user>@<rhost>:<path>	Remote directory with user ID <user>
+
+	
+	<rhost> is the name of a remote workstation and <usr> is a
+	user ID that has been configured for installation. Some possible
+	values for <path> are:
+
+	../$SYSTEM			For a local directory
+
+	Some examples of "source" are:
+
+	/tmp/$SYSTEM			Read from the directory 
+					/tmp/ncarg.$VERSION.tar
+
+	antero:/tmp/$SYSTEM		Read from the directory /tmp/$SYSTEM 
+					on the remote system antero.
+
+	don@antero:/tmp/$SYSTEM		Read from the directory /tmp/$SYSTEM 
+					on the remote system antero as 
+					user don.
+EOF
+			$LOCALDIR/pause
+			breaksw
+		endsw
+		breaksw
+
+	default:
+		echo $answer
+		exit 0
+	endsw
+end
+
+exit 0
+
+
+cleanup:
+exit 1

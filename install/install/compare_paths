@@ -1,0 +1,81 @@
+#!/bin/csh -f
+#
+#      $Id: compare_paths,v 1.1 1993-02-20 00:10:58 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		compare_paths
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 16:20:26 MDT 1992
+#
+#	Description:	Verify that two paths have the same parents. If
+#			so exit with 0 exit status. If not inform the installer
+#			that this is a bad idea and ask him if he wants to 
+#			change his mind. If not exit status will be zero. If
+#			so exit status will be 1. An exit status of 2 implies
+#			an error
+#
+#			If one (or both) of the paths are /dev/null 
+#			compare_paths exits with a 0 exit status
+#
+#	Usage:		compare_paths <path1> <path2> <env_var>
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:	path1 	: First path
+#			path2 	: Second path
+#			env_var	: The name of the environment variable 
+#				  which will require setting if $path2 is
+#				  different from $path1
+
+onintr cleanup
+
+if ($#argv != 3) then
+	echo "Usage: compare_paths <path1> <path2> <env_var>" > /dev/tty
+	exit 2
+endif
+
+set path1 = $argv[1]
+set path2 = $argv[2]
+set env_var = $argv[3]
+
+if ("$path1" == "/dev/null" || "$path2" == "/dev/null") then
+	exit 0
+endif
+
+if ("$path1:h" == "$path2:h") then
+	exit 0	# parents are the same
+endif
+
+cat > /dev/tty <<EOF
+
+
+***Warning: the directories paths <$path1> and <$path2>
+have different parents. Users of NCAR Graphics will be required
+to set the environment variable $env_var to <$path2:h> in addition
+to setting the NCARG_ROOT environment variable to <$path1:h>
+
+Are you sure you want to do this (n)?
+EOF
+echo -n "Enter Return(default), y(yes), n(no), or p(previous menu) > "> /dev/tty
+
+set answer = $<
+if ("$answer" == "y") exit 0
+if ("$answer" == "p") exit 2
+
+cleanup:
+exit 1
+

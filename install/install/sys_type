@@ -1,0 +1,96 @@
+#!/bin/csh -f
+#
+#      $Id: sys_type,v 1.1 1993-02-20 00:11:48 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		sys_type
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Fri Sep 25 11:32:32 MDT 1992
+#
+#	Description:	Determine system type. If the system type cannot
+#			be determined either automatically or interactively
+#			sys_type exits with a non-zero exit status. Otherwise
+#			exit status is zero and the system type is written
+#			to the standard output. The systems that this script
+#			recognizes are given by the $systems variable.
+#
+#
+#	Usage:		sys_type
+#
+#	Environment:	LOCALDIR	path to installation system.
+#
+#	Files:		
+#
+#
+#	Options:
+
+# systems we know about
+set systems = ( \
+		HPUX_HP9000_7xx AIX_RS6000 SunOS_Sun4 SunOS_Sun3 \
+		Solaris_Sun4 ULTRIX_RISC IRIX_IP UNICOS_YMP)
+
+#
+# auto-detect the system type
+#
+set line = `$LOCALDIR/uname -M -s`
+if ($status == 0) then
+        echo "$line[2]_$line[1]"
+        exit 0
+endif
+
+#
+#	uname failed for some reason. Try to get system name from user
+#
+
+		
+cat > /dev/tty << EOF
+
+	I cannot determine your system type. 
+	I only know about the following systems:
+
+
+
+EOF
+
+while ( 1 )
+	set i = 1
+	while ($i <= $#systems) 
+
+		echo "	$i	$systems[$i]" > /dev/tty
+		@ i++
+	end
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+
+	echo -n "Enter the number of your system or 0 to exit : " > /dev/tty
+	set answer=$<
+	switch ("$answer")
+	case	0:
+		exit 1
+		breaksw
+	case	[1-$#systems]:
+		echo $systems[$answer]
+		exit 0
+		breaksw
+	default:
+	endsw
+
+	echo "" > /dev/tty
+	echo "I do not understand <$answer>" > /dev/tty
+	echo "Enter a number between 1 and $#systems or 0 to exit" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+	echo "" > /dev/tty
+end

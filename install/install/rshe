@@ -1,0 +1,114 @@
+#!/bin/csh -f
+#
+#      $Id: rshe,v 1.1 1993-02-20 00:11:38 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		rshe
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Dec 16 10:22:44 MST 1992
+#
+#	Description:	rshe executes a command on a remote machine via
+#			rsh and, unlike rsh,  attempts to exit with the 
+#			status of the remote command. 
+#
+#			The exit status of 
+#			the remote command is caught by executing the
+#			the remote command in a Bourne shell script on 
+#			the remote machine which echos the exit status of
+#			the last command in the script. Hence, it is ill-advised
+#			to try and run a remote command which writes anything
+#			to stdout other than newline-terminated ASCII.
+#
+#
+#	Usage:		rshe <rshcmd> [-l <ruser>] <rhost> <cmd [arg...]*>
+#
+#	Environment:
+#
+#	Files:		/tmp/rshe.$$	stdout of remote command followed by
+#					its exit status. 
+#
+#
+#	Options:	The order of the options is fixed.
+#
+#			rshcmd		The command used to execute the remote
+#					command. Typically this is 
+#					'/usr/ucb/rsh'. On some systems it might
+#					be '/usr/bsd/rsh' or even 
+#					'/usr/bin/remsh', under HPUX. 
+#
+#			[-l <ruser>]	Execute the remote command as user 
+#					$ruser
+#
+#			rhost		The name of the remote host
+#
+#			cmd [arg]*	The remote command. The remaining
+#					arguments on the command line are
+#					treated as arguments for the remote
+#					command.	
+
+set usage = "$0 : <rshcmd> [-l <ruser> ] <rhost> <cmd [arg...]>*"
+set ruser = ""
+
+if ($#argv < 3) then
+	echo "Usage: $usage" > /dev/tty
+	exit 1
+endif
+
+set tmpfile = /tmp/$0.$$
+
+set rsh = "$argv[1]"
+shift
+
+if ("$argv[1]" == "-l") then
+	shift
+	set ruser = "-l $argv[1]"
+	shift
+endif
+
+set rhost = "$argv[1]"
+shift
+
+#
+#	Execute the remote command via the Bourne shell on the remote system.
+#	The stdout of the remote command along with its exit status are
+#	written to $tmpfile. We'll need to strip off the exit status
+#	later. We use the 'hear' document format to avoid problems 
+#	with special character interpretation on the local or remote shell.
+#
+$rsh $rhost $ruser sh <<EOF > $tmpfile
+	$argv
+	echo \$?
+EOF
+
+#
+# check to see if *rsh* failed. Status of remote command is written to $tmpfile
+#
+if ($status != 0) then
+	/bin/rm $tmpfile
+	exit 1	
+endif
+
+#
+# write stdout of remote command sans the exit status to stdout
+#
+sed < $tmpfile -e '$d'
+
+#
+# snarf the exit status
+#
+set rstatus = `sed -n < $tmpfile -e '$p'`
+
+/bin/rm $tmpfile
+
+exit $rstatus

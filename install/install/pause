@@ -1,0 +1,44 @@
+#!/bin/csh -f
+#
+#      $Id: pause,v 1.1 1993-02-20 00:11:19 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		pause
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Nov 24 14:43:42 MST 1992
+#
+#	Description:	Pause until a user hits return and then exit
+#
+#	Usage:		pause
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+onintr cleanup
+
+cat <<EOF > /dev/tty
+
+
+
+Press <RETURN> to continue.
+EOF
+set answer = $<
+exit 0
+
+cleanup:
+exit	1
