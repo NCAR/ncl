@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.102 2003-02-27 21:51:06 haley Exp $
+;      $Id: gsn_code.ncl,v 1.103 2003-02-27 22:29:54 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -74,6 +74,7 @@ undef("gsn_open_ncgm")
 undef("gsn_open_x11")
 undef("create_labelbar")
 undef("gsn_open_ps")
+undef("gsn_open_pdf")
 undef("gsn_open_wks")
 undef("gsn_polygon")
 undef("gsn_add_primitive")
@@ -1632,8 +1633,8 @@ end
 ; advance the frame, unless the special resources gsnDraw and/or        ;
 ; gsnFrame are set to False. This procedure checks if these resources   ;
 ; had been set, and calls draw and/or frame accordingly.                ;
-; If maxbb is True, then the plot is maximized in the NCGM, X11, or PS  ;
-; window.                                                               ; 
+; If maxbb is True, then the plot is maximized in the NCGM, X11, PS     ;
+; or PDF window.                                                        ; 
 ;***********************************************************************;
 procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
                          callframe:logical,maxbb:logical)
@@ -1660,7 +1661,7 @@ begin
     end if
 
     class = NhlClassName(wks)
-    if(class(0).eq."psWorkstationClass") then
+    if((class(0).eq."psWorkstationClass").or.(class(0).eq."pdfWorkstationClass")) then
 ;
 ; Compute device coordinates that will make plot fill the whole page.
 ;
@@ -1692,7 +1693,7 @@ end
 ;               res : list of resources                                 ;
 ;                                                                       ;
 ; Get list of resources for use with maximizing the plots within an     ;
-; X11, NCGM, or PS window.                                              ;
+; X11, NCGM, PS or PDF window.                                          ;
 ;***********************************************************************;
 function get_bb_res(res:logical)
 begin
@@ -1871,17 +1872,54 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_open_pdf                                               ;
+;               name : name of PDF file                                 ;
+;                                                                       ;
+; This function opens a PDF file called "<name>.pdf" and returns        ;
+; the workstation id. If "name" is an empty string, then the PDF file   ;
+; is called "gmeta.pdf".                                                ;
+;***********************************************************************;
+function gsn_open_pdf(type:string, name[1]:string)
+local pdf, res_file
+begin
+    res_file = get_res_value_keep(name,"res_file","gsnapp")
+    resltn   = get_res_value_keep(type,"wkPDFResolution",1800)
+    orient   = get_res_value_keep(type,"wkOrientation","portrait")
+    lower_x  = get_res_value_keep(type,"wkDeviceLowerX",36)
+    lower_y  = get_res_value_keep(type,"wkDeviceLowerY",126)
+    upper_x  = get_res_value_keep(type,"wkDeviceUpperX",576)
+    upper_y  = get_res_value_keep(type,"wkDeviceUpperY",666)
+    cmap     = get_res_value_keep(type,"wkColorMap","default")
+    cmodel   = get_res_value_keep(type,"wkColorModel","rgb")
+
+    pdf = create res_file pdfWorkstationClass defaultapp
+      "wkColorMap"      : cmap
+      "wkColorModel"    : cmodel
+      "wkOrientation"   : orient
+      "wkPDFResolution" : resltn
+      "wkPDFFileName"   : name
+      "wkPDFFormat"     : type
+      "wkDeviceLowerX"  : lower_x
+      "wkDeviceLowerY"  : lower_y
+      "wkDeviceUpperX"  : upper_x
+      "wkDeviceUpperY"  : upper_y
+    end create
+
+    return(pdf)
+end
+
+;***********************************************************************;
 ; Function : gsn_open_wks                                               ;
 ;               type : type of workstation to open                      ;
 ;               name : name of workstation                              ;
 ;                                                                       ;
-; This function opens either an X11 window, an NCGM file, or a          ;
-; PostScript file depending on "type", which can be "x11", "ncgm", or   ;
-; "ps". If "type" is a PS file or an NCGM, then it will be named        ;
-; <name>.ps or <name>.ncgm respectively. This function also looks for a ;
-; resource file called "name.res". If it exists, then it loads the      ;
-; resources defined in that file. This function returns the workstation ;
-; id.                                                                   ;
+; This function opens either an X11 window, an NCGM file, a Postscript  ;
+; or a PDF file depending on "type", which can be "x11", "ncgm", "ps"   ;
+; or "pdf". If "type" is a PS or PDF file or an NCGM, then it will be   ;
+; named <name>.ps or <name>.pdf <name>.ncgm respectively. This function ;
+; also looks for a resource file called "name.res". If it exists, then  ;
+; it loads the resources defined in that file. This function returns    ;
+; the workstation id.                                                   ;
 ;***********************************************************************;
 function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir
@@ -1917,10 +1955,13 @@ begin
     ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
     ps_file@res_file = res_file
 
+    pdf_file = get_res_value_keep(type,"wkPDFFileName",res_file + "." + type)
+    pdf_file@res_file = res_file
+
     x_file = res_file
 
 ;
-; Check if color map being set.  The PostScript color map will get 
+; Check if color map being set.  The PostScript or PDF color map will get 
 ; passed automatically through "type".
 ;
     if(isatt(type,"wkColorMap"))
@@ -1943,8 +1984,12 @@ begin
             if(type.eq."ncgm".or.type.eq."NCGM") then
                 wks = gsn_open_ncgm(res_dir+ncgm_file)
             else
-                 print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
-                 exit
+                if (type.eq."pdf".or.type.eq."PDF") then
+                    wks = gsn_open_pdf(type, res_dir+pdf_file)
+                else
+                    print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
+                    exit
+                end if
             end if
         end if
     end if
@@ -3099,12 +3144,12 @@ begin
                                       ; objects.
 ;
 ; We only need to set maxbb to True if the plots are being drawn to
-; a PostScript workstation, because the bounding box is already
+; a PostScript or PDF workstation, because the bounding box is already
 ; maximized for an NCGM/X11 window.
 ; 
   if(maxbb) then
     class = NhlClassName(wks)
-    if(class(0).ne."psWorkstationClass") then
+    if((class(0).ne."psWorkstationClass").or.(class(0).ne."pdfWorkstationClass")) then
       maxbb = False
     end if
     delete(class)
