@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.14 1994-11-07 03:02:24 ethan Exp $
+ *      $Id: Symbol.c,v 1.15 1994-11-12 00:58:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -881,7 +881,7 @@ NclApiDataList *_NclGetDefinedFileInfo
 							tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
 							theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 							thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-							tmp->u.file->name = thefile->file.fname;
+							tmp->u.file->name = thevar->u.data_var->var.var_quark;
 							tmp->u.file->path = thefile->file.fpath;
 							tmp->u.file->wr_status = thefile->file.wr_status;
 							tmp->u.file->file_type = thefile->file.file_type;
