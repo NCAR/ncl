@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.12 2002-11-21 14:43:50 haley Exp $
+ *      $Id: AIX_RS6000.64,v 1.1 2002-11-21 14:43:51 haley Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		AIX_RS6000.32
+ *	File:		AIX_RS6000.64
  *
  *	Author:		Jeff W. Boote
  *			National Center for Atmospheric Research
@@ -22,16 +22,15 @@
  *			default setup.
  */
 #define HdfDefines    -DIBM6000
-#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
+#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT
 #define CCompiler     xlc
 #define FCompiler     xlf
-#define CcOptions     -q32 -qalign=natural
-#define FcOptions     -q32
-#define LdCommand     ld -b32
-#define ArCommand     ar -X 32
+#define CcOptions     -q64
+#define FcOptions     -q64
+#define LdCommand     ld -b64
+#define ArCommand     ar -X 64
 #define COptimizeFlag -O3 -qstrict
 #define FOptimizeFlag -O3 -qstrict
 #define Cstatic       -bnso
 #define Cdynamic      -bso
 #define CtoFLibraries -lm -lxlf90 -lxlopt
-
