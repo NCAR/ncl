@@ -7,8 +7,8 @@ MYNAME  = nnalg
 SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
 OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
-PROG_LIBS = $(NCARGLIBS) $(CNCARGLIBS)
-DEP_LIBS = $(DEPNCARGLIBS) $(DEPCNCARGLIBS)
+PROG_LIBS = $(NCARGLIBS)
+DEP_LIBS = $(DEPNCARGLIBS)
 SYS_LIBS = $(XLIB)
 
 FortranProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
