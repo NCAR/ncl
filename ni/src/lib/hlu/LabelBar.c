@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.52 1997-02-24 22:12:26 boote Exp $
+ *      $Id: LabelBar.c,v 1.53 1997-06-03 00:30:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2208,7 +2208,8 @@ static NhlErrorTypes    SetTitle
 		string_changed = True;
         }
 	else if (lb_p->title_string != olb_p->title_string) {
-		NhlFree(olb_p->title_string);
+		if(olb_p->title_string != lbDefTitle)
+			NhlFree(olb_p->title_string);
 		c_p = lb_p->title_string;
 		lb_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
 		strcpy(lb_p->title_string, c_p);
