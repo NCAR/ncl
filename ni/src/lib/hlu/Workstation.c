@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.88 1998-10-28 00:46:59 dbrown Exp $
+ *      $Id: Workstation.c,v 1.89 1998-10-28 03:32:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2762,6 +2762,8 @@ static NhlErrorTypes WorkstationInitialize
 	wp->gkswkstype = (int)NhlFATAL;
 	wp->gkswksconid = (int)NhlFATAL;
 	wp->def_plot_id = NhlNULLOBJID;
+	wp->def_graphic_style_id = NhlNULLOBJID;
+	wp->def_gs_destroy_cb = NULL;
 
 	/*
 	 * Initialize colormap with _NhlCOLUNSET, then call DoCmap to fill cmap
@@ -2902,6 +2904,7 @@ GSDestroyCB
 	NhlWorkstationLayer  wl = (NhlWorkstationLayer) udata.ptrval;
 
 	wl->work.def_graphic_style_id = NhlNULLOBJID;
+	wl->work.def_gs_destroy_cb = NULL;
 
 	return;
 }
@@ -3677,8 +3680,10 @@ static NhlErrorTypes WorkstationDestroy
 	if(wp->private_lineinfo.line_label_string != NULL)
 		NhlFree(wp->private_lineinfo.line_label_string);
 
-	_NhlCBDelete(wp->def_gs_destroy_cb);
- 
+	if (wp->def_gs_destroy_cb) {
+		_NhlCBDelete(wp->def_gs_destroy_cb);
+		wp->def_gs_destroy_cb = NULL;
+	}
 	if (_NhlGetLayer(wp->def_graphic_style_id) != NULL) {
 		NhlDestroy(wp->def_graphic_style_id);
 	}
