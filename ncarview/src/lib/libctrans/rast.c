@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.13 1992-07-16 18:08:13 clyne Exp $
+ *	$Id: rast.c,v 1.14 1992-07-28 22:31:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -71,6 +71,31 @@ RasColrTab	colorTab;	/* the color table			*/
 
 Raster	*rastGrid;		/* struct for creating output file	*/
 boolean	rasIsDirect;		/* direct encoded image?		*/
+static	CoordRect	VDCExtent;
+
+static	boolean	ras_is_clipped(offset)
+	long	offset;
+{
+	extern	long	clipxmin, clipxmax, clipymin, clipymax;
+	int	x,y;
+	int	xmin = XConvert(clipxmin);
+	int	xmax = XConvert(clipxmax);
+	int	ymin = YConvert(clipymax); /* CGM and rast origin switched */
+	int	ymax = YConvert(clipymin); /* CGM and rast origin switched */
+
+	if (offset < 0) return (TRUE);
+
+	if (rasIsDirect) {
+		offset /= 3;
+	}
+	y = offset / rastGrid->nx;
+	x = offset % rastGrid->nx;
+
+	if (x < xmin || x > xmax) return (TRUE);
+	if (y < ymin || y > ymax) return (TRUE);
+	return(FALSE);
+}
+	
 
 /*
  * 	Class 0 Function
@@ -264,6 +289,12 @@ CGMC *c;
 int	Ras_BegPicBody(c)
 CGMC *c;
 {
+        VDCExtent.llx = XMIN;
+        VDCExtent.lly = YMIN;
+        VDCExtent.urx = XMAX;
+        VDCExtent.ury = YMAX;
+
+
 	if (BACKCOLR_DAMAGE) {
 		set_back_color(BACKCOLR);
 		BACKCOLR_DAMAGE = FALSE;
@@ -356,6 +387,13 @@ CGMC *c;
 		rast_update_color_table();
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
+	if (CLIP_DAMAGE) {
+		CoordRect       device_win_coord;
+		GetDevWin(&device_win_coord);
+		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		CLIP_DAMAGE = FALSE;
+	}
+
 
 	/*
  	 *	extract data from cgmc
@@ -628,6 +666,11 @@ static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 				 */
 				index = index_array[k];
 				for (l=0; l<cols[k]; l++) {
+
+				if (!ras_is_clipped(
+					(long) (cptr - rastGrid->data))
+					) {
+
 				if (rasIsDirect) {
 					cptr[0] = colorTab.rgb[index].red;
 					cptr[1] = colorTab.rgb[index].green;
@@ -636,6 +679,8 @@ static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 				else {
 					*cptr = index;
 				}
+				}	/* clipped	*/
+
 				cptr += step_x;
 				}	/* for	*/
 			

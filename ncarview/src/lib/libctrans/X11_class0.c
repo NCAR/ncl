@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.14 1992-07-16 18:06:38 clyne Exp $
+ *	$Id: X11_class0.c,v 1.15 1992-07-28 22:31:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -197,7 +197,7 @@ CGMC *c;
 		 *	establish connection to sever
 		 */
 		if ((dpy_name = getenv(dpy_env)) == NULL) {
-			ESprintf(E_UNKNOWN,"% env variable not set", dpy_env);
+			ESprintf(E_UNKNOWN,"%s env. variable not set", dpy_env);
 			return(-1);
 		}
 
