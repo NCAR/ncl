@@ -1,4 +1,4 @@
 APP	= \ 
-	Cgm_edit Idt
+	Idt
 
 InstallXappFiles($(APP))
