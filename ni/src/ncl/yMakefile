@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.90 2003-11-26 22:03:24 grubin Exp $
+#      $Id: yMakefile,v 1.91 2003-12-02 21:54:50 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2003-11-26 22:03:24 $
+#	$Date: 2003-12-02 21:54:50 $
 #
 #	Description:	
 #
@@ -31,8 +31,7 @@
 MYBIN		=	ncl
 MYLIB		=	libncl
 MYLIB_API	=	libnclapi
-#YACC		=	nyacc
-YACC		=	yacc
+YACC		=	nyacc
 LEX			=	flex
 
 
