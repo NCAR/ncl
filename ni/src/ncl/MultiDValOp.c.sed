@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.4 1996-10-11 23:17:05 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.5 1996-11-14 23:43:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,8 @@ NclData result;
 				);
 				return((NclData)output_md);
 			} else {
+				if(themissing.has_missing)
+					result_md->multidval.missing_value = themissing;
 				return((NclData)result_md);
 			}
 		} else {
@@ -177,9 +179,7 @@ NclData result;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TFUNC for scalar values was called with non scalar value, this should not happen");
 		return(NULL);
 	}
-	if(result_md != NULL) {
-		result_val = result_md->multidval.val;
-	}
+
 	total = self_md->multidval.totalelements;
 	n_dims = self_md->multidval.n_dims;
 	dim_sizes = self_md->multidval.dim_sizes;
@@ -196,16 +196,28 @@ NclData result;
 */
 
 		the_type = _NclTFUNC_type(self_md->multidval.type);
-		if(result_md == NULL) {
-			result_val = (void*)NclMalloc(total * the_type->type_class.size);
-			if(result_val == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
-				return(NULL);
-			}
-		}
-		if((the_type != self_md->multidval.type)&&(themissing.has_missing)) {
-			themissing.value = the_type->type_class.default_mis;
-		}
+
+                if((result_md != NULL)&&(result_md->multidval.data_type== the_type->type_class.data_type)) {
+                        result_val = result_md->multidval.val;
+                } else if((result_md != NULL)&&(result_md->multidval.type->type_class.size >= the_type->type_class.size)) {
+                        result_val = result_md->multidval.val;
+                        result_md->multidval.type = the_type;
+                        result_md->multidval.data_type = the_type->type_class.data_type;
+                        result_md->multidval.hlu_type_rep[0] = the_type->type_class.hlu_type_rep[0];
+                        result_md->multidval.hlu_type_rep[1] = the_type->type_class.hlu_type_rep[1];
+                        result_md->multidval.totalsize = result_md->multidval.totalelements * the_type->type_class.size;
+                } else {
+                        if(result_md != NULL)  {
+                                _NclDestroyObj((NclObj)result_md);
+                                result_md = NULL;
+                        }
+                        result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
+                        if(result_val == NULL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+                                return(NULL);
+                        }
+                }
+
 		if(_NclTFUNC(
 			self_md->multidval.type,
 			result_val,
@@ -232,6 +244,8 @@ NclData result;
 				);
 				return((NclData)output_md);
 			} else {
+				if(themissing.has_missing)
+					result_md->multidval.missing_value = themissing;
 				return((NclData)result_md);
 			}
 		} else {

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.14 1996-08-29 23:39:12 ethan Exp $
+ *      $Id: NclAtt.c,v 1.15 1996-11-14 23:43:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -525,8 +525,8 @@ char *attname;
 			if(tmp1->attname != NULL) {
 				NclFree(tmp1->attname);
 			}
-			if(tmp->cb != NULL) {
-				_NhlCBDelete(tmp->cb);
+			if(tmp1->cb != NULL) {
+				_NhlCBDelete(tmp1->cb);
 			}
 			_NclDelParent((NclObj)tmp1->attvalue,(NclObj)theattobj);
 			NclFree(tmp1);
