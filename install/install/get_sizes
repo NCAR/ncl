@@ -1,59 +1,96 @@
 #!/bin/csh -f
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
-#	File:		get_sizes
+#   File:       get_sizes
 #
-#	Author:		John Clyne
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     John Clyne
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Mon Nov 9 16:07:53 MST 1992
+#   Date:       Mon Nov 9 16:07:53 MST 1992
 #
-#	Description:	Report the size requirements for the installation.
-#			If get_sizes exits with a zero exit status then
-#			the minimum size requirements for bin, include, 
-#			lib, and man directories are written to stdout
-#			as a space-separated, single line, in that order.
+#   Description:    Report the size requirements for the installation.
+#           If get_sizes exits with a zero exit status then
+#           the minimum size requirements for bin, include, 
+#           lib, and man directories are written to stdout
+#           as a space-separated, single line, in that order.
 #
-#			If the -t option is used only the total for
-#			bin, include, lib and man directories will be
-#			reported.
-#
-#
-#	Usage:		get_sizes [-t]
-#
-#	Environment:	SYSTEM		: system type
-#			LOCALDIR	: path to install system
-#
-#	Files:		$LOCALDIR/var/sizes.$system	space requirements
-#					for system $SYSTEM
+#           If the -t option is used only the total for
+#           bin, include, lib and man directories will be
+#           reported.  If the -d option is used, only sizes
+#           for documentation will be reported.
 #
 #
-#	Options:
+#	Usage:		get_sizes [-t] [-d]
+#
+#   Environment:    SYSTEM      : system type
+#           LOCALDIR    : path to install system
+#
+#   Files:      $LOCALDIR/var/sizes.$system space requirements
+#                   for system $SYSTEM
+#
+#
+#   Options:
 
 onintr cleanup
 
 set do_total = 0
+set do_doc = 0
 
-if ($#argv > 1) then
-	echo "Usage: get_sizes [-t]" > /dev/tty
+if ($#argv > 2) then
+	echo "Usage: get_sizes [-t] [-d]" > /dev/tty
 	exit 1
 endif
 
-if ($#argv == 1) then
-	if ("$argv[1]" != "-t") then
-		echo "Usage: get_sizes [-t]" > /dev/tty
+while ($#argv > 0) 
+  switch ($1)
+    case "-t":
+	set do_total = 1
+    shift
+    breaksw
+
+    case "-d":
+    set do_doc = 1
+    shift
+    breaksw
+
+    default:
+	echo "Usage: get_sizes [-t] [-d]" > /dev/tty
+	exit 1
+    breaksw
+  endsw
+end
+
+if ("$do_doc") then
+	set cmd = "grep html $LOCALDIR/var/sizes.$DOC"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
 		exit 1
 	endif
-	set do_total = 1
-endif
+	set htmldoc_size = $size_line[2]
 
+	set cmd = "grep ps $LOCALDIR/var/sizes.$DOC"
+	set size_line = `$cmd`
+	if ($status != 0) then
+		echo "$0 : <$cmd> - failed" > /dev/tty
+		exit 1
+	endif
+	set psdoc_size = $size_line[2]
+
+	if ("$do_total") then
+		@ total = $psdoc_size + $htmldoc_size
+		echo "$total"
+	else
+		echo " $htmldoc_size $psdoc_size"
+	endif
+else
 	set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM"
 	set size_line = `$cmd`
 	if ($status != 0) then
@@ -88,10 +125,11 @@ endif
 
 	if ("$do_total") then
 		@ total = $bin_size + $inc_size + $lib_size + $man_size
-		echo $total
+		echo "$total"
 	else
 		echo "$bin_size $inc_size $lib_size $man_size"
 	endif
+endif
 
 exit 0
 

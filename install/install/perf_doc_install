@@ -1,0 +1,186 @@
+#!/bin/csh -f
+#
+#      $Id: perf_doc_install,v 1.1 1995-06-07 17:17:39 haley Exp $
+#
+#########################################################################
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
+#########################################################################
+#
+#   File:       perf_doc_install
+#
+#   Author:     John Clyne/Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Tue Nov 17 14:01:17 MST 1992
+#
+#   Description:    Perform the documentation installation. If no
+#			arguments are given perf_doc_install attempts to use the
+# 			default directory paths. Otherwise perf_doc_install expects
+#			the HTML and the PostScript paths to be given on the command
+#           line in that order. If a path is set to "/dev/null"
+#           the coresponding software component is not installed.
+#
+#   Usage:      perf_doc_install [ htmldoc_path psdoc_path ]
+#
+#   Environment:    LOCALDIR    path to installation system
+#           INSTALL_SOURCE  one of (tape,cdrom,tarfile)
+#			SYSTEM		system type
+#           INSTALL_TAPE_DEV    tape dev path for tape installs
+#           INSTALL_CD_DEV      cdrom dev path for cd installs
+#           INSTALL_DOCFILE_DEV    tar file path for documentation installs
+#
+#   Files:
+#
+#
+#   Options:
+#
+
+onintr cleanup
+
+if ($#argv == 0) then
+	set paths = `$LOCALDIR/get_paths -default -doc`
+	if ($status != 0) then
+		exit 1
+	endif
+	set htmldoc_path = $paths[1]
+	set psdoc_path = $paths[2]
+
+else if ($#argv == 2) then
+	set htmldoc_path = $argv[1]
+	set psdoc_path = $argv[2]
+
+else
+	echo "Usage : perf_doc_install [ htmldoc_path psdoc_path ]" > /dev/tty
+	exit 1
+endif
+
+set instbls = ("$htmldoc_path" "$psdoc_path")
+
+#
+#	AGGGGGGGH!!!  DEC and HP systems map CD-ROM HSF file names into
+#	caps. Sun, SGI, and IBM systems map names into all lower case.
+#
+set utars = ("HTML.TAR" "PS.TAR")
+set ltars = ("html.tar" "ps.tar")
+#
+# upper case by default
+#
+set tars = ($utars)
+
+if ("$htmldoc_path" != "/dev/null") then
+	set htmldoc_line = "	HTML documentation	$htmldoc_path"
+
+else
+	set htmldoc_line = ""
+endif
+
+if ("$psdoc_path" != "/dev/null") then
+	set psdoc_line = "	PostScript documentation	$psdoc_path"
+else
+	set psdoc_line = ""
+endif
+
+clear > /dev/tty
+cat <<EOF > /dev/tty
+
+
+
+	The following components will be installed:
+
+	$htmldoc_line
+	$psdoc_line
+
+EOF
+echo -n "	Is this correct [y/n](y) ? " > /dev/tty
+set answer = $<
+if ("$answer" != "y" && "$answer" != "") then
+	exit 1
+endif
+
+switch ("$INSTALL_SOURCE") 
+
+case	"tape":
+	set line = (`grep "NGDOC" $LOCALDIR/var/TOC`)
+	if ($status != 0) then
+		echo "Can't find documentation files on tape device $INSTALL_TAPE_DEV" > /dev/tty
+		echo "Installation from $INSTALL_SOURCE failed" > /dev/tty
+		exit 1
+	endif
+	set fsf = $line[1]	# location of documentation files on tape
+	
+	$LOCALDIR/read_tape $INSTALL_TAPE_DEV $fsf $instbls > /dev/tty
+	if ($status != 0) then
+		exit 1
+	endif
+	breaksw
+
+case	"cdrom":
+
+	#
+	# Ugh! ISO 9660 restricts file names to eight upper case characters,
+	# followed by a '.', followed by three more upper case characters.
+	# Need to map $SYSTEM into something that conforms.
+	#
+	switch ("$SYSTEM")
+
+	case	"AIX_RS6000"
+	case	"SunOS_sun4"
+	case	"Solaris_sun4"
+	case	"IRIX_IP"
+		set tars = ($ltars)
+		breaksw
+    endsw
+
+	# 
+	# read the tar file off the CDROM
+	#
+	while ($#instbls)
+		if ("$instbls[1]" != "/dev/null") then
+			set tarfile = $INSTALL_CD_DEV/$DOC/$tars[1]
+			$LOCALDIR/read_tarfile $tarfile $instbls[1] > /dev/tty
+			if ($status != 0) then
+				exit 1
+			endif
+		endif
+
+		shift instbls
+		shift tars
+	end
+
+	breaksw
+
+case	"tar-file":
+	while ($#instbls)
+		if ("$instbls[1]" != "/dev/null") then
+			$LOCALDIR/read_tarfile $INSTALL_DOCFILE_DEV/$tars[1] $instbls[1] > /dev/tty
+			if ($status != 0) then
+				exit 1
+			endif
+		endif
+
+		shift instbls
+		shift tars
+	end
+	breaksw
+
+default:
+	echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
+	exit 1
+endsw
+
+echo ""> /dev/tty
+echo ""> /dev/tty
+echo ""> /dev/tty
+echo "Installation is complete" > /dev/tty
+
+$LOCALDIR/pause
+
+exit 0
+
+cleanup:
+exit 1

@@ -1,49 +1,66 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.6 1995-04-08 16:24:43 haley Exp $
+#      $Id: install_soft,v 1.7 1995-06-07 17:17:38 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
-#	File:		install_soft
+#   File:       install_soft
 #
-#	Author:		John Clyne
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     John Clyne
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Tue Sep 29 08:31:24 MDT 1992
+#   Date:       Tue Sep 29 08:31:24 MDT 1992
 #
-#	Description:	Configure the installation and install software
+#   Description:    Configure the installation and install software
 #
-#	Usage:		install_soft
+#   Usage:      install_soft -doc
 #
-#	Environment:	LOCALDIR		path to install system
-#			SYSTEM (exported)	The system type
-#			RSH (exported)		rsh command
-#			MT (exported)		mt command
-#			AWK (exported)		awk command
-#			SED (exported)		sed command
-#			DF (exported)		df command
-#			INSTALL_SOURCE (exported)	installation source
-#			INSTALL_TYPE (exported)		installation type
-#			INSTALL_FILE_DEV (exported)	installation file device
-#			INSTALL_CD_DEV (exported)	installation cd device
-#			INSTALL_TAPE_DEV (exported)	installation tape device
+#   Environment:    LOCALDIR        path to install system
+#           SYSTEM (exported)   The system type
+#           RSH (exported)      rsh command
+#           MT (exported)       mt command
+#           AWK (exported)      awk command
+#           SED (exported)      sed command
+#           DF (exported)       df command
+#           INSTALL_SOURCE (exported)   installation source
+#           INSTALL_TYPE (exported)     installation type
+#           INSTALL_FILE_DEV (exported) installation file device
+#           INSTALL_DOCFILE_DEV (exported) installation doc file device
+#           INSTALL_CD_DEV (exported)   installation cd device
+#           INSTALL_TAPE_DEV (exported) installation tape device
 #
-#	Files:		$LOCALDIR/env.cf		generic config
-#			$LOCALDIR/config/env.$system	system specific config
+#   Files:      $LOCALDIR/env.cf        generic config
+#           $LOCALDIR/config/env.$system    system specific config
 #
 #
-#	Options:
+#   Options:    -doc      : Install documentation
 #
 #
 
 onintr cleanup
+
+set do_doc = 0
+
+if ($#argv > 1) then
+	echo "Usage: install_soft [-doc]" > /dev/tty
+	exit 1
+endif
+
+if ($#argv == 1) then
+  if ("$argv[1]" == "-doc") then
+    set do_doc = 1
+  else
+	echo "Usage: install_soft [-doc]" > /dev/tty
+	exit 1
+  endif
+endif
 
 source $LOCALDIR/env.cf
 if (-e "$LOCALDIR/config/env.$SYSTEM") then
@@ -57,7 +74,8 @@ set bin_path =
 set inc_path = 
 set lib_path = 
 set man_path = 
-
+set htmldoc_path =
+set psdoc_path =
 
 
 while (1) 
@@ -72,7 +90,11 @@ while (1)
 		breaksw
 
 	case	"tar-file":
-		set device = $INSTALL_FILE_DEV
+        if ($do_doc) then
+			set device = $INSTALL_DOCFILE_DEV
+		else
+			set device = $INSTALL_FILE_DEV
+		endif
 		breaksw
 
 	default:
@@ -137,9 +159,17 @@ EOF
 			breaksw
 
 		case	"tar-file":
-			set device = `$LOCALDIR/select_dev -f $INSTALL_FILE_DEV`
+			if ($do_doc) then
+				set device = `$LOCALDIR/select_dev -f $INSTALL_DOCFILE_DEV`
+			else
+				set device = `$LOCALDIR/select_dev -f $INSTALL_FILE_DEV`
+			endif
 			if ($status == 0) then
-				setenv INSTALL_FILE_DEV $device
+				if ($do_doc) then
+					setenv INSTALL_DOCFILE_DEV $device
+				else
+					setenv INSTALL_FILE_DEV $device
+				endif
 			else
 				$LOCALDIR/pause
 			endif
@@ -154,14 +184,24 @@ EOF
 		breaksw
 
 	case "3":
-		set config_line = `$LOCALDIR/select_config`
+        if ("$do_doc") then
+		  set config_line = `$LOCALDIR/select_config -doc`
+        else
+		  set config_line = `$LOCALDIR/select_config`
+        endif
 		if ($status == 0) then
 			if ("$config_line" != "") then
+              if ("$do_doc") then
+				setenv INSTALL_TYPE $config_line[1]
+				set htmldoc_path = $config_line[2]
+				set psdoc_path = $config_line[3]
+              else
 				setenv INSTALL_TYPE $config_line[1]
 				set bin_path = $config_line[2]
 				set inc_path = $config_line[3]
 				set lib_path = $config_line[4]
 				set man_path = $config_line[5]
+			  endif
 			endif
 		else 
 			$LOCALDIR/pause
@@ -182,18 +222,27 @@ EOF
 		echo "	Installation type:	$INSTALL_TYPE" > /dev/tty
 		echo "" > /dev/tty
 
-		if ("$bin_path" != "/dev/null") then
+        if ("$do_doc") then
+		  if ("$htmldoc_path" != "/dev/null") then
+			echo "		Install HTML documentation to:	$htmldoc_path" > /dev/tty
+		  endif
+  		  if ("$psdoc_path" != "/dev/null") then
+			echo "		Install PostScript documentation to:	$psdoc_path" > /dev/tty
+		  endif
+        else
+    	  if ("$bin_path" != "/dev/null") then
 			echo "		Install executables to:		$bin_path" > /dev/tty
-		endif
-		if ("$inc_path" != "/dev/null") then
+		  endif
+		  if ("$inc_path" != "/dev/null") then
 			echo "		Install C include files to:	$inc_path" > /dev/tty
-		endif
-		if ("$lib_path" != "/dev/null") then
+		  endif
+		  if ("$lib_path" != "/dev/null") then
 			echo "		Install libraries to:		$lib_path" > /dev/tty
-		endif
-		if ("$man_path" != "/dev/null") then
+		  endif
+		  if ("$man_path" != "/dev/null") then
 			echo "		Install man pages to:		$man_path" > /dev/tty
-		endif
+		  endif
+        endif
 		
 		$LOCALDIR/pause
 		breaksw
@@ -212,7 +261,11 @@ EOF
 			breaksw
 		endif
 
-		$LOCALDIR/perf_install $bin_path $inc_path $lib_path $man_path
+        if ("$do_doc") then
+  		  $LOCALDIR/perf_doc_install $htmldoc_path $psdoc_path
+        else
+   		  $LOCALDIR/perf_install $bin_path $inc_path $lib_path $man_path
+        endif
 		if ($status != 0) then
 			$LOCALDIR/pause
 		endif

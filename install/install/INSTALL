@@ -1,35 +1,35 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.6 1995-04-08 16:24:42 haley Exp $
+#      $Id: INSTALL,v 1.7 1995-06-07 17:17:34 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
-#	File:		INSTALL
+#   File:       INSTALL
 #
-#	Author:		John Clyne
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     John Clyne
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Tue Sep 29 08:31:24 MDT 1992
+#   Date:       Tue Sep 29 08:31:24 MDT 1992
 #
-#	Description:	Present the NCAR Graphics installation menu
+#   Description:    Present the NCAR Graphics installation menu
 #
-#	Usage:		INSTALL
+#   Usage:      INSTALL
 #
-#	Environment:	
-#  	  		LOCALDIR (exported) 	path to install scripts. 
-#  	  		VERSION (exported) 	NCAR Graphics version number
+#   Environment:    
+#           LOCALDIR (exported)     path to install scripts. 
+#           VERSION (exported)  NCAR Graphics version number
 #
-#	Files:		$LOCALDIR/var/version	contains version number
+#   Files:      $LOCALDIR/var/version   contains version number
 #
 #
-#	Options:
+#   Options:
 #
 #
 
@@ -68,8 +68,9 @@ cat <<EOF
 
 	1.  Ordering information
         2.  Install software
-        3.  Remove installed software
-        4.  Help
+        3.  Install documentation
+        4.  Remove installed software
+        5.  Help
 
 	0.  Exit
 
@@ -110,13 +111,20 @@ EOF
 		breaksw
 
 	case "3":
-		$LOCALDIR/remove_soft
+		$LOCALDIR/install_soft -doc
 		if ($status != 0) then
 			$LOCALDIR/pause
 		endif
 		breaksw
 
 	case "4":
+		$LOCALDIR/remove_soft
+		if ($status != 0) then
+			$LOCALDIR/pause
+		endif
+		breaksw
+
+	case "5":
 
 		clear
 		cat <<EOF

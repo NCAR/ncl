@@ -1,13 +1,13 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.4 1995-04-08 16:24:43 haley Exp $
+#      $Id: select_config,v 1.5 1995-06-07 17:17:40 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1992                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
 #	File:		select_config
@@ -21,12 +21,12 @@
 #	Description:	Select an installation configuration. On success,
 #			exit status == 0, select_config writes the installation
 #			type (Basic-Installation or Custom-Installation), 
-#			the bin, include, lib, and man paths, in that order,
-#			to the standard output. If no selection was made
-#			select_config will not write anything to stdout.
-#			If an error occurs exit status will be 1.
+#			the bin, include, lib, and man paths (or the documentation
+#			paths) in that order, to the standard output. If no
+#			selection was made select_config will not write anything
+#			to stdout.  If an error occurs exit status will be 1.
 #
-#	Usage:		select_config
+#	Usage:		select_config [-d]
 #
 #	Environment:	SYSTEM		: system type
 #			LOCALDIR	: path to install system
@@ -34,13 +34,34 @@
 #	Files:
 #
 #
-#	Options:
+#   Options:    -doc        : look up documentation paths
+#
 
 onintr cleanup
 
+set do_doc = 0
+
+if ($#argv > 1) then
+	echo "Usage: select_config [-doc]" > /dev/tty
+	exit 1
+endif
+
+if ($#argv == 1) then
+  if ("$argv[1]" == "-doc") then
+    set do_doc = 1
+  else
+	echo "Usage: select_config [-doc]" > /dev/tty
+	exit 1
+  endif
+endif
+
 clear > /dev/tty
 
-set total_size = `$LOCALDIR/get_sizes -t`
+if ("$do_doc") then
+  set total_size = `$LOCALDIR/get_sizes -t -d`
+else
+  set total_size = `$LOCALDIR/get_sizes -t`
+endif
 if ($status != 0) then
 	exit 1
 endif
@@ -87,7 +108,11 @@ EOF
 			# call get_paths to determine if there is enough 
 			# disk space
 			#
-			set paths = `$LOCALDIR/get_paths -default`
+            if ("$do_doc") then
+			  set paths = `$LOCALDIR/get_paths -default -doc`
+            else
+			  set paths = `$LOCALDIR/get_paths -default`
+            endif
 			if ($status == 0) then
 				set done = 1
 				set type = "Basic-Installation"
@@ -101,7 +126,11 @@ EOF
 			#
 			# get the installation directory paths
 			#
-			set paths = `$LOCALDIR/get_paths`
+            if ("$do_doc") then
+  			  set paths = `$LOCALDIR/get_paths -doc`
+            else
+  			  set paths = `$LOCALDIR/get_paths`
+            endif
 			if ($status == 0) then
 				set done = 1
 				set type = "Custom-Installation"
@@ -111,10 +140,28 @@ EOF
 			breaksw
 
 		case "3":
-			source $LOCALDIR/config/paths.$SYSTEM
+		  	source $LOCALDIR/config/paths.$SYSTEM
 			clear > /dev/tty
-			cat <<EOF > /dev/tty
+            if ("$do_doc") then
+  			  cat <<EOF > /dev/tty
 
+	The Basic Documentation Installation installs all documentation
+	components of NCAR Graphics Version $VERSION:
+
+		HTML documents are installed to $htmldoc_path.
+		PostScript documents are installed to $psdoc_path. 
+
+	The Custom Installation allows you some freedom in choosing which 
+	components of the NCAR Graphics documentation are installed. For
+	example, if you only need to install the HTML documentation, you
+	should select the Custom Installation. In addition, the custom
+	installation allows you to choose the installation paths of the
+	PostScript and HTML documentation directories.  It is recommended
+	that you install the PostScript documentation to the directory
+	NCARG_ROOT/lib/ncarg/doc, just for the sake of consistency.
+EOF
+            else
+  			  cat <<EOF > /dev/tty
 
 	The Basic Installation installs all components of NCAR Graphics
 	Version $VERSION:
@@ -134,6 +181,8 @@ EOF
 	It is highly recommended that less experienced installers choose
 	the basic installation.
 EOF
+            endif
+       
 			$LOCALDIR/pause
 
 			breaksw
@@ -152,14 +201,22 @@ EOF
 end
 
 
+if ("$do_doc") then
+  set htmldoc_path = $paths[1]
+  set psdoc_path = $paths[2]
 
+  echo $type $htmldoc_path $psdoc_path
 
-set bin_path = $paths[1]
-set inc_path = $paths[2]
-set lib_path = $paths[3]
-set man_path = $paths[4]
+else
+  set bin_path = $paths[1]
+  set inc_path = $paths[2]
+  set lib_path = $paths[3]
+  set man_path = $paths[4]
 
-echo $type $bin_path $inc_path $lib_path $man_path
+  echo $type $bin_path $inc_path $lib_path $man_path
+
+endif
+
 
 exit 0
 
