@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.21 1994-10-26 14:53:45 haley Exp $
+.\"	$Id: ncargex.m,v 1.22 1994-12-16 18:31:36 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "October 1994" NCAR "NCAR GRAPHICS"
@@ -468,7 +468,8 @@ vvex03
 .sp
 .I "WEATHER MAP Examples:"
 .sp
-wmex01 wmex02 wmex03 wmex04
+wmex01 wmex02 wmex03 wmex04 wmex05 wmex06 wmex07
+wmex08 wmex09 wmex10 wmex11 wmex12 wmex13 wmex14
 .sp
 .I "Miscellaneous Examples:"
 .sp
