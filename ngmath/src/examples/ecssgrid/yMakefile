@@ -1,0 +1,21 @@
+#
+#	$Id: yMakefile,v 1.1 1999-05-24 23:57:34 fred Exp $
+#
+
+MYNAME	= ecssgrid
+
+SRCS = \
+	c_cssex01.c    c_cssex02.c   cssex01.f    cssex02.f
+
+OBJS = \
+	c_cssex01.o    c_cssex02.o   cssex01.o    cssex02.o
+
+PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
+SYS_LIBS		= $(XLIB) $(CTOFLIBS)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(cssex01,cssex01.o)
+FExampleTarget(cssex02,cssex02.o)
+CExampleTarget(c_cssex01,c_cssex01.o)
+CExampleTarget(c_cssex02,c_cssex02.o)
