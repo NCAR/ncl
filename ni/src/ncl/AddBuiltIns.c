@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.50 2000-04-13 20:57:16 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.51 2000-06-28 19:05:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -894,7 +894,20 @@ void _NclAddBuiltIns
 	nargs = 0;
 	NclRegisterFunc(_NclINhlPalGetDefined,NULL,"NhlPalGetDefined",nargs);
 
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"graphic",1,dimsizes);nargs++;
+	NclRegisterProc(_NclIAddPrimitive,args,"NhlAddPrimitive",nargs);
 
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	NclRegisterProc(_NclIRemovePrimitive,args,"NhlRemovePrimitive",nargs);
 	
 
 	nargs = 0;

@@ -110,4 +110,17 @@ extern NhlErrorTypes _NclINhlPalGetDefined(
 void
 #endif
 );
+
+extern NhlErrorTypes _NclIAddPrimitive(
+#if	NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIRemovePrimitive(
+#if	NhlNeedProto
+void
+#endif
+);
+
 #endif /*_NCHLUFunctions_h*/
