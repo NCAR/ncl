@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.6 1996-06-22 01:27:37 dbrown Exp $
+ *      $Id: TransObjI.h,v 1.7 1996-12-09 20:55:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,12 +39,12 @@
  */
 
 #define NhlNtrDataXMinF		".trDataXMinF"
-#define NhlNtrDataYMinF		".trDataXMinF"
-#define NhlNtrDataXMaxF		".trDataYMaxF"
+#define NhlNtrDataYMinF		".trDataYMinF"
+#define NhlNtrDataXMaxF		".trDataXMaxF"
 #define NhlNtrDataYMaxF		".trDataYMaxF"
 #define NhlCtrDataXMinF		".TrDataXMinF"
-#define NhlCtrDataYMinF		".TrDataXMinF"
-#define NhlCtrDataXMaxF		".TrDataYMaxF"
+#define NhlCtrDataYMinF		".TrDataYMinF"
+#define NhlCtrDataXMaxF		".TrDataXMaxF"
 #define NhlCtrDataYMaxF		".TrDataYMaxF"
 
 /*
