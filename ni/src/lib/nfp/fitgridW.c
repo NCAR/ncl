@@ -262,7 +262,7 @@ NhlErrorTypes ftcurv_W(void)
  * Input array variables
  */
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *xo;
@@ -275,25 +275,25 @@ NhlErrorTypes ftcurv_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
 
 /*
- * Retrieve argument #1
+ * Retrieve xi.
  */
   xi = (float *) NclGetArgValue(
           0,
           3,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #2
+ * Retrieve yi.
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -306,16 +306,34 @@ NhlErrorTypes ftcurv_W(void)
           2);
 
 /*
- * Check last dimension of argument #1.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurv: The last dimension of argument #1 must be the same length as argument #0");
+              "ftcurv: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
   }
 
 /*
- * Retrieve argument #3
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurv: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurv: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
+  }
+
+/*
+ * Retrieve xo.
  */
   xo = (float *) NclGetArgValue(
           2,
@@ -355,13 +373,14 @@ NhlErrorTypes ftcurv_W(void)
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurv(npts, xi, &yi[index_in], nxo, xo, &yo[index_out]);
+    fterr = c_ftcurv(npts, &xi[index_xi], &yi[index_yi], nxo, xo, &yo[index_out]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurv: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in  += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi  += npts;
     index_out += nxo;
   }
 
@@ -508,7 +527,7 @@ NhlErrorTypes ftcurvi_W(void)
   float *xl;
   float *xr;
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
 /*
@@ -520,7 +539,7 @@ NhlErrorTypes ftcurvi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_in = 0;
+  int i, npts, size_leftmost, index_xi = 0, index_yi = 0;
 
 /*
  * Retrieve argument #1
@@ -549,22 +568,22 @@ NhlErrorTypes ftcurvi_W(void)
           2);
 
 /*
- * Retrieve argument #3
+ * Retrieve xi.
  */
   xi = (float *) NclGetArgValue(
           2,
           4,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #4
+ * Retrieve yi.
  */
   yi = (float *) NclGetArgValue(
           3,
@@ -577,13 +596,32 @@ NhlErrorTypes ftcurvi_W(void)
           2);
 
 /*
- * Check last dimension of argument #4.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvi: The last dimension of argument #4 must be the same length as argument #3");
+              "ftcurvi: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
   }
+
+/*
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvi: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvi: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
+  }
+
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -615,13 +653,14 @@ NhlErrorTypes ftcurvi_W(void)
  *  Calculate the integral values.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvi(*xl, *xr, npts, xi, &yi[index_in], &integral[i]);
+    fterr = c_ftcurvi(*xl, *xr, npts, &xi[index_xi], &yi[index_yi], &integral[i]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvi: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in += npts;
+	if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
   }
 
   return(NclReturnValue((void *) integral, ndims_int, dsizes_int, NULL,
@@ -635,7 +674,7 @@ NhlErrorTypes ftcurvp_W(void)
  * Input array variables
  */
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *p;
@@ -650,25 +689,25 @@ NhlErrorTypes ftcurvp_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
 
 /*
- * Retrieve argument #1 (X coordinate input values)
+ * Retrieve xi (X coordinate input values)
  */
   xi = (float *) NclGetArgValue(
           0,
           4,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #2 (Y coordinate input values)
+ * Retrieve yi (Y coordinate input values)
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -681,14 +720,31 @@ NhlErrorTypes ftcurvp_W(void)
           2);
 
 /*
- * Check last dimension of argument #4.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvp: The last dimension of argument #4 must be the same length as argument #3");
+              "ftcurvp: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
   }
 
+/*
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvp: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvp: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
+  }
 
 /*
  * Retrieve argument #3 (The period)
@@ -704,7 +760,7 @@ NhlErrorTypes ftcurvp_W(void)
           2);
 
 /*
- * Retrieve argument #4
+ * Retrieve xo.
  */
   xo = (float *) NclGetArgValue(
           3,
@@ -743,15 +799,15 @@ NhlErrorTypes ftcurvp_W(void)
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvp(npts, xi, &yi[index_in], *p, nxo, xo, &yo[index_out]);
+    fterr = c_ftcurvp(npts, &xi[index_xi], &yi[index_yi], *p, nxo, xo, &yo[index_out]);
 
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvp: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-
-    index_in  += npts;
+	if(ndims_xi > 1) index_xi += npts;
+    index_yi  += npts;
     index_out += nxo;
   }
   return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
@@ -768,7 +824,7 @@ NhlErrorTypes ftcurvpi_W(void)
   float *xr;
   float *p;
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
 
@@ -781,7 +837,7 @@ NhlErrorTypes ftcurvpi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_in = 0;
+  int i, npts, size_leftmost, index_xi = 0, index_yi = 0;
 
 /*
  * Retrieve argument #1 (left integral limit).
@@ -823,22 +879,22 @@ NhlErrorTypes ftcurvpi_W(void)
           2);
 
 /*
- * Retrieve argument #4 (the X coordinate input values).
+ * Retrieve xi (the X coordinate input values).
  */
   xi = (float *) NclGetArgValue(
           3,
           5,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #5 (the Y coordinate input values).
+ * Retrieve yi (the Y coordinate input values).
  */
   yi = (float *) NclGetArgValue(
           4,
@@ -851,12 +907,30 @@ NhlErrorTypes ftcurvpi_W(void)
           2);
 
 /*
- * Check last dimension of argument #4.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvpi: The last dimension of argument #4 must be the same length as argument #3");
+              "ftcurvpi: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
+  }
+
+/*
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvpi: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvpi: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
   }
 
 /*
@@ -889,13 +963,14 @@ NhlErrorTypes ftcurvpi_W(void)
  *  Return the integral value.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvpi(*xl, *xr, *p, npts, xi, &yi[index_in], &integral[i]);
+    fterr = c_ftcurvpi(*xl, *xr, *p, npts, &xi[index_xi], &yi[index_yi], &integral[i]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvpi: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
   }
   return(NclReturnValue((void *) integral, ndims_int, dsizes_int, NULL,
                         NCL_float, 0));
@@ -908,7 +983,7 @@ NhlErrorTypes ftcurvs_W(void)
  * Input variables.
  */
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *d;
@@ -924,26 +999,26 @@ NhlErrorTypes ftcurvs_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
   int isw;
 
 /*
- * Retrieve argument #1 (X coordinate input points).
+ * Retrieve xi (X coordinate input points).
  */
   xi = (float *) NclGetArgValue(
           0,
           4,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #2 (Y coordinate input values).
+ * Retrieve yi (Y coordinate input values).
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -956,12 +1031,30 @@ NhlErrorTypes ftcurvs_W(void)
           2);
 
 /*
- * Check last dimension of argument #1.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: The last dimension of argument #1 must be the same length as argument #0");
+              "ftcurvs: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
+  }
+
+/*
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvs: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvs: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
   }
 
 /*
@@ -978,7 +1071,7 @@ NhlErrorTypes ftcurvs_W(void)
           2);
 
 /*
- * Retrieve argument #3 (the X coordinate output values).
+ * Retrieve xo (the X coordinate output values).
  */
   xo = (float *) NclGetArgValue(
           3,
@@ -1018,14 +1111,15 @@ NhlErrorTypes ftcurvs_W(void)
   if (dsizes_d[0] > 1) isw = 0;
   isw = 1;
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvs(npts, xi, &yi[index_in], isw, d, nxo, xo, 
+    fterr = c_ftcurvs(npts, &xi[index_xi], &yi[index_yi], isw, d, nxo, xo, 
                       &yo[index_out]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvs: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in  += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi  += npts;
     index_out += nxo;
   }
   return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
@@ -1039,7 +1133,7 @@ NhlErrorTypes ftcurvps_W(void)
  * Input variables.
  */
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *p;
@@ -1057,26 +1151,26 @@ NhlErrorTypes ftcurvps_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
   int isw;
 
 /*
- * Retrieve argument #0 (X coordinate input points).
+ * Retrieve xi (X coordinate input points).
  */
   xi = (float *) NclGetArgValue(
           0,
           5,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #1 (Y coordinate input values).
+ * Retrieve yi (Y coordinate input values).
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -1089,12 +1183,30 @@ NhlErrorTypes ftcurvps_W(void)
           2);
 
 /*
- * Check last dimension of argument #1.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvps: The last dimension of argument #1 must be the same length as argument #0");
+              "ftcurvps: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
+  }
+
+/*
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvps: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvps: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
   }
 
 /*
@@ -1124,7 +1236,7 @@ NhlErrorTypes ftcurvps_W(void)
           2);
 
 /*
- * Retrieve argument #4 (the X coordinate output values).
+ * Retrieve xo (the X coordinate output values).
  */
   xo = (float *) NclGetArgValue(
           4,
@@ -1164,14 +1276,15 @@ NhlErrorTypes ftcurvps_W(void)
   isw = 1;
   if (dsizes_d[0] > 1) isw = 0;
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvps(npts, xi, &yi[index_in], *p, isw, d, nxo, xo,
+    fterr = c_ftcurvps(npts, &xi[index_xi], &yi[index_yi], *p, isw, d, nxo, xo,
                        &yo[index_out]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvps: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in  += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi  += npts;
     index_out += nxo;
   }
   return(NclReturnValue((void *) yo, ndims_yi, dsizes_yo, NULL, 
