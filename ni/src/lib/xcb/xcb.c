@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.8 1998-11-06 00:51:19 boote Exp $
+ *      $Id: xcb.c,v 1.9 1998-11-19 16:59:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -139,9 +139,12 @@ Visual
 		 */
 		if(((best_depth < 24) && (vinfo[i].depth > best_depth))	||
 			(best_gray && !curr_gray)		||
-			(!best_rw && curr_rw)			||
-			(vinfo[i].class == DirectColor)		||
-			(!best_rw && (vinfo[i].class == TrueColor))){
+			(vinfo[i].class == TrueColor)		||
+			(!((best_depth >= 24) &&
+				(vinfo[best].class == TrueColor)) &&
+					!best_rw && curr_rw)	||
+			((vinfo[best].class != TrueColor) &&
+				(vinfo[i].class == DirectColor))){
 			best = i;
 			best_depth = vinfo[i].depth;
 			best_rw = curr_rw;
