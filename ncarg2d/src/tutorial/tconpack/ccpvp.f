@@ -28,7 +28,7 @@ C
 C Draw second plot in upper right corner of plot
 C
         CALL MKDAT(2,Z,M,N)
-        CALL CPSETR('VPL - VIEWPORT BOTTOM',0.52)
+        CALL CPSETR('VPL - VIEWPORT LEFT',0.52)
         CALL CPSETR('VPR - VIEWPORT RIGHT',0.98)
         CALL CPSETR('VPB - VIEWPORT BOTTOM',0.52)
         CALL CPSETR('VPT - VIEWPORT TOP',0.98)
