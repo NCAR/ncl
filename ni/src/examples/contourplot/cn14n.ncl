@@ -180,11 +180,11 @@ map = create "map" mapPlotClass wks
    "vpWidthF" : .80                     ; and size
    "vpHeightF" : .40
    "mpFillOn"  :  True                ; fill the map
-   "mpLandFillColor" :  1               ; black
-   "mpOceanFillColor" : "Transparent"
-   "mpInlandWaterFillColor" :  1        ; black
-   "mpGridLineColor" :  14              ; light gray
-   "mpGeophysicalLineColor" : 1         ; black continental outlines
+   "mpLandFillColor"        : "Black"
+   "mpOceanFillColor"       : "Transparent"
+   "mpInlandWaterFillColor" : "Black"
+   "mpGridLineColor"        : "LightGray"
+   "mpGeophysicalLineColor" : "Black"
    "mpGeophysicalLineThicknessF" : 1.
 end create
 draw(cn_plot)                                   ; draw the contour plot

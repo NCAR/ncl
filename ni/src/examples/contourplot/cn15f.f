@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.4 1998-11-24 16:29:23 haley Exp $
+C      $Id: cn15f.f,v 1.5 1999-03-15 18:05:48 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -324,8 +324,9 @@ C
       call NhlFRLSetFloat(srlist,'vpHeightF',.30,ierr)
       call NhlFRLSetString(srlist,'mpFillOn','True',ierr)
       call NhlFRLSetString(srlist,'mpLabelsOn','False',ierr)
-      call NhlFRLSetInteger(srlist,'mpDefaultFillColor',13,ierr)
-      call NhlFRLSetInteger(srlist,'mpLandFillColor',13,ierr)
+      call NhlFRLSetString(srlist,'mpDefaultFillColor','DarkSalmon',
+     +     ierr)
+      call NhlFRLSetString(srlist,'mpLandFillColor','DarkSalmon',ierr)
       call NhlFRLSetString(srlist,'mpOutlineOn','False',ierr)
       call NhlFRLSetString(srlist,'mpAreaMaskingOn','True',ierr)
       call NhlFRLSetString(srlist,'mpMaskAreaSpecifiers','Oceans',ierr)

@@ -177,8 +177,8 @@ begin
     "vpHeightF"              : .30
     "mpFillOn"               : True
     "mpLabelsOn"             : False
-    "mpDefaultFillColor"     : 13
-    "mpLandFillColor"        : 13
+    "mpDefaultFillColor"     : "DarkSalmon"
+    "mpLandFillColor"        : "DarkSalmon"
     "mpOutlineOn"            : False
     "mpAreaMaskingOn"        : True
     "mpMaskAreaSpecifiers"   : "Oceans"

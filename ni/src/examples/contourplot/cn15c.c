@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.5 1998-02-17 15:35:32 haley Exp $
+ *      $Id: cn15c.c,v 1.6 1999-03-15 18:05:48 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -306,8 +306,8 @@ main()
       NhlRLSetFloat(srlist,NhlNvpHeightF,.30);
       NhlRLSetString(srlist,NhlNmpFillOn,"True");
       NhlRLSetString(srlist,NhlNmpLabelsOn,"False");
-      NhlRLSetInteger(srlist,NhlNmpDefaultFillColor,13);
-      NhlRLSetInteger(srlist,NhlNmpLandFillColor,13);
+      NhlRLSetString(srlist,NhlNmpDefaultFillColor,"DarkSalmon");
+      NhlRLSetString(srlist,NhlNmpLandFillColor,"DarkSalmon");
       NhlRLSetString(srlist,NhlNmpOutlineOn,"False");
       NhlRLSetString(srlist,NhlNmpAreaMaskingOn,"True");
       NhlRLSetString(srlist,NhlNmpMaskAreaSpecifiers,"Oceans");

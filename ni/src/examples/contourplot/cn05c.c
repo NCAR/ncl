@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.5 1996-04-04 15:46:32 haley Exp $
+**      $Id: cn05c.c,v 1.6 1999-03-15 18:05:46 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -224,7 +224,7 @@ main()
  */
     NhlRLSetString(srlist,NhlNlbTitleString,"Day 1");
     NhlRLSetInteger(srlist,NhlNlbTitleFont,22);
-    NhlRLSetInteger(srlist,NhlNlbTitleFontColor,28);
+    NhlRLSetString(srlist,NhlNlbTitleFontColor,"PaleGreen4");
 /*
  * Turn off the labelbar perimeter box 
  */
@@ -277,7 +277,7 @@ main()
     NhlRLSetString(srlist,NhlNtiMainString,
                    "January Global Surface Temperature");
     NhlRLSetInteger(srlist,NhlNtiMainFont,22);
-    NhlRLSetInteger(srlist,NhlNtiMainFontColor,28);
+    NhlRLSetString(srlist,NhlNtiMainFontColor,"PaleGreen4");
     NhlCreate(&mapid,"map",NhlmapPlotClass,workid,srlist);
     NhlAddOverlay(mapid,con1,-1);
 /*
@@ -288,7 +288,7 @@ main()
     NhlRLSetFloat(srlist,NhlNtxPosXF,0.05);
     NhlRLSetFloat(srlist,NhlNtxPosYF,0.03);
     NhlRLSetInteger(srlist,NhlNtxFont,22);
-    NhlRLSetInteger(srlist,NhlNtxFontColor,28);
+    NhlRLSetString(srlist,NhlNtxFontColor,"PaleGreen4");
     NhlRLSetFloat(srlist,NhlNtxFontHeightF,0.03);
     NhlRLSetString(srlist,NhlNtxJust,"CENTERLEFT");
     NhlCreate(&lb1id,"lbarlo",NhltextItemClass,workid,srlist);
@@ -298,7 +298,7 @@ main()
     NhlRLSetFloat(srlist,NhlNtxPosXF,0.85);
     NhlRLSetFloat(srlist,NhlNtxPosYF,0.03);
     NhlRLSetInteger(srlist,NhlNtxFont,22);
-    NhlRLSetInteger(srlist,NhlNtxFontColor,28);
+    NhlRLSetString(srlist,NhlNtxFontColor,"PaleGreen4");
     NhlRLSetFloat(srlist,NhlNtxFontHeightF,0.03);
     NhlRLSetString(srlist,NhlNtxJust,"CENTERLEFT");
     NhlCreate(&lb2id,"lbarhi",NhltextItemClass,workid,srlist);

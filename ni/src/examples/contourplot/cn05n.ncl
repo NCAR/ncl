@@ -205,7 +205,7 @@ con1 = create "con1" contourPlotClass wks
          ; Set the lablebar title, font, and color.
          "lbTitleString" : "Day 1"
          "lbTitleFont" : 22  ; Helvetica-bold
-         "lbTitleFontColor" : 28
+         "lbTitleFontColor" : "PaleGreen4"
          ; Turn off the labelbar perimeter box 
          "lbPerimOn" : False
          ; Turn off lines that separate each color in the labelbar.
@@ -238,7 +238,7 @@ map = create "map" mapPlotClass wks
         "pmTitleDisplayMode" : "Always"
         "tiMainString" : "January Global Surface Temperature"
         "tiMainFont" : 22
-        "tiMainFontColor" : 28
+        "tiMainFontColor" : "PaleGreen4"
 end create
 
 ; Overlay function used to assign the object "con1" to
@@ -252,7 +252,7 @@ lbarlo = create "lbarlo" textItemClass wks
         "txPosXF": .05
         "txPosYF": .03
         "txFont": 22
-        "txFontColor": 28
+        "txFontColor": "PaleGreen4"
         "txFontHeightF": .03
         "txJust": "CENTERLEFT"
 end create
@@ -262,7 +262,7 @@ lbarhi = create "lbarhi" textItemClass wks
         "txPosXF": .85
         "txPosYF": .03
         "txFont": 22
-        "txFontColor": 28
+        "txFontColor": "PaleGreen4"
         "txFontHeightF": .03
         "txJust": "CENTERLEFT"
 end create

@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.4 1997-09-08 14:02:57 haley Exp $
+C      $Id: cn05f.f,v 1.5 1999-03-15 18:05:47 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -251,7 +251,7 @@ C Set the lablebar title, font, and color.
 C
       call NhlFRLSetString(srlist,'lbTitleString','Day 1',ierr)
       call NhlFRLSetInteger(srlist,'lbTitleFont',22,ierr)
-      call NhlFRLSetInteger(srlist,'lbTitleFontColor',28,ierr)
+      call NhlFRLSetString(srlist,'lbTitleFontColor','PaleGreen4',ierr)
 C
 C Turn off the labelbar perimeter box 
 C
@@ -306,7 +306,7 @@ C
       call NhlFRLSetString(srlist,'tiMainString',
      +     'January Global Surface Temperature',ierr)
       call NhlFRLSetInteger(srlist,'tiMainFont',22,ierr)
-      call NhlFRLSetInteger(srlist,'tiMainFontColor',28,ierr)
+      call NhlFRLSetString(srlist,'tiMainFontColor','PaleGreen4',ierr)
       call NhlFCreate(mapid,'map',NhlFmapPlotClass,workid,srlist,ierr)
       call NhlFAddOverlay(mapid,con1,-1,ierr)
 C
@@ -317,7 +317,7 @@ C
       call NhlFRLSetFloat(srlist,'txPosXF',0.05,ierr)
       call NhlFRLSetFloat(srlist,'txPosYF',0.03,ierr)
       call NhlFRLSetInteger(srlist,'txFont',22,ierr)
-      call NhlFRLSetInteger(srlist,'txFontColor',28,ierr)
+      call NhlFRLSetString(srlist,'txFontColor','PaleGreen4',ierr)
       call NhlFRLSetFloat(srlist,'txFontHeightF',0.03,ierr)
       call NhlFRLSetString(srlist,'txJust','CENTERLEFT',ierr)
       call NhlFCreate(lb1id,'lbarlo',NhlFtextItemClass,workid,srlist,
@@ -328,7 +328,7 @@ C
       call NhlFRLSetFloat(srlist,'txPosXF',0.85,ierr)
       call NhlFRLSetFloat(srlist,'txPosYF',0.03,ierr)
       call NhlFRLSetInteger(srlist,'txFont',22,ierr)
-      call NhlFRLSetInteger(srlist,'txFontColor',28,ierr)
+      call NhlFRLSetString(srlist,'txFontColor','PaleGreen4',ierr)
       call NhlFRLSetFloat(srlist,'txFontHeightF',0.03,ierr)
       call NhlFRLSetString(srlist,'txJust','CENTERLEFT',ierr)
       call NhlFCreate(lb2id,'lbarhi',NhlFtextItemClass,workid,srlist,
