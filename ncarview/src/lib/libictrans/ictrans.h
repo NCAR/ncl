@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.h,v 1.7 1994-03-08 23:21:36 clyne Exp $
+ *	$Id: ictrans.h,v 1.8 1994-03-09 00:44:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -90,6 +90,7 @@ typedef	struct	{
 typedef	struct {
 	int	quiet;		/* operate in quiet mode?		*/	
 	int	batch;		/* are we in batch mode?		*/
+	int	force_prompt;	/* force issuing of prompt?		*/
 	FILE	*fp;		/* file pointer for user prompts	*/
 	int	current_frame,	/* current frame in the file		*/
 		last_frame;	/* last frame in the file		*/

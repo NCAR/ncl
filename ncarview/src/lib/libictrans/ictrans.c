@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.22 1994-03-08 23:21:35 clyne Exp $
+ *	$Id: ictrans.c,v 1.23 1994-03-09 00:44:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -329,6 +329,7 @@ ICTrans(argc, argv, mem_cgm)
 			return(-1);
 		}
 		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
+		icommand.force_prompt = TRUE;
 	}
 	else {
 		if ((fp = fopen(dev_tty, "w")) == NULL) {
@@ -336,6 +337,7 @@ ICTrans(argc, argv, mem_cgm)
 			return(-1);
 		}
 		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
+		icommand.force_prompt = FALSE;
 	}
 	icommand.fp = fp;
 	icommand.quiet = opt.quiet;
