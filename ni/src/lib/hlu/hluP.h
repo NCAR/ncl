@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.32 1996-03-16 21:37:48 boote Exp $
+ *      $Id: hluP.h,v 1.33 1996-09-14 17:07:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Segments.h>
+#include <ncarg/hlu/Callbacks.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
@@ -471,6 +472,21 @@ extern NhlErrorTypes _NhlResUnset(
 	NhlPointer	base,
 	unsigned int	offset
 #endif
+);
+
+extern _NhlCB _NhlAddObjCallback(
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	func,
+	NhlArgVal	udata
+);
+
+extern void _NhlCallObjCallbacks(
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	NhlArgVal	cbdata
 );
 
 #endif /* HLUP_H */

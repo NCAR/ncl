@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.44 1996-07-24 02:14:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.45 1996-09-14 17:05:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1495,6 +1495,8 @@ NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -1528,6 +1530,8 @@ NhlContourPlotClassRec NhlcontourPlotClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	ContourPlotClassPartInitialize,
 /* class_initialize		*/	ContourPlotClassInitialize,

@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.6 1996-04-05 21:15:36 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.7 1996-09-14 17:07:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,8 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	PSWorkstationClassPartInitialize,
 /* class_initialize		*/	PSWorkstationClassInitialize,

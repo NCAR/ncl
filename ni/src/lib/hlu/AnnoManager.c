@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManager.c,v 1.3 1995-12-19 20:38:53 boote Exp $
+ *      $Id: AnnoManager.c,v 1.4 1996-09-14 17:05:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -111,6 +111,8 @@ NhlAnnoManagerClassRec NhlannoManagerClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	AnnoManagerClassInitialize,

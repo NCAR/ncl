@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.33 1996-04-05 21:15:40 boote Exp $
+ *      $Id: hlu.c,v 1.34 1996-09-14 17:07:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1711,4 +1711,135 @@ NhlClassOfObject
 		return NULL;
 
 	return _NhlClass(l);
+}
+
+/*
+ * Function:	_NhlGetWorkstationLayer
+ *
+ * Description:	This function is used to retrieve the Workstation pointer
+ *		from a layer object.
+ *
+ * In Args:	
+ *		NhlLayer	layer	Layer to get workstation pointer from
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	NhlLayer
+ * Side Effect:	
+ */
+NhlLayer
+_NhlGetWorkstationLayer
+#if	NhlNeedProto
+(
+	NhlLayer	layer
+)
+#else
+(layer)
+	NhlLayer	layer;
+#endif
+{
+	if(_NhlIsBase(layer))
+		return layer->base.wkptr;
+	return NULL;
+}
+
+int
+NhlGetParentWorkstation
+(
+	int	plotid
+)
+{
+	NhlLayer	plot_ptr = _NhlGetLayer(plotid);
+
+	if(!plot_ptr || !_NhlIsBase(plot_ptr) || !plot_ptr->base.wkptr)
+		return -1;
+
+	return plot_ptr->base.wkptr->base.id;
+}
+
+static _NhlCBList
+GetObjCBList
+(
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlBoolean	create
+)
+{
+	NhlClass		lc = l->base.layer_class;
+	_NhlCookedObjCBList	cbl =
+				(_NhlCookedObjCBList)lc->base_class.callbacks;
+	int			ncbl = lc->base_class.num_callbacks;
+	int			i;
+	_NhlCBList		*cblptr;
+	NrmQuark		cbquark = NrmStringToQuark(cbname);
+
+	if(!ncbl || !cbl)
+		return NULL;
+
+	for(i=0;i<ncbl;i++){
+		if(cbl[i].cbquark == cbquark){
+			cblptr = (_NhlCBList *)((char*)l + cbl[i].offset);
+			if(create && !*cblptr){
+				*cblptr = _NhlCBCreate(cbl[i].hash_mult,
+							cbl[i].add_hash,
+							cbl[i].call_hash);
+			}
+			return *cblptr;
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * Function:	_NhlAddObjCallback
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+_NhlCB
+_NhlAddObjCallback
+(
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	func,
+	NhlArgVal	udata
+)
+{
+	return _NhlCBAdd(GetObjCBList(l,cbname,True),sel,func,udata);
+}
+
+/*
+ * Function:	_NhlCallObjCallbacks
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlCallObjCallbacks
+(
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	NhlArgVal	cbdata
+)
+{
+	_NhlCBCallCallbacks(GetObjCBList(l,cbname,False),sel,cbdata);
+	return;
 }

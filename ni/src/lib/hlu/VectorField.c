@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.7 1996-07-24 02:14:13 dbrown Exp $
+ *      $Id: VectorField.c,v 1.8 1996-09-14 17:07:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -215,6 +215,8 @@ NhlVectorFieldFloatClassRec NhlvectorFieldFloatClassRec = {
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -244,6 +246,8 @@ NhlVectorFieldClassRec NhlvectorFieldClassRec = {
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	VectorFieldClassPartInitialize,
 /* class_initialize		*/	VectorFieldClassInitialize,

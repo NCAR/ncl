@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.54 1996-06-04 00:01:54 dbrown Exp $
+ *      $Id: Workstation.c,v 1.55 1996-09-14 17:07:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -521,6 +521,8 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	WorkstationClassPartInitialize,
 /* class_initialize		*/	WorkstationClassInitialize,

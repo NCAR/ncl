@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.37 1996-04-06 03:49:10 dbrown Exp $
+ *      $Id: DataComm.c,v 1.38 1996-09-14 17:06:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,8 @@ NhlDataCommClassRec NhldataCommClassRec = {
 /* layer_resources		*/	dcresources,
 /* num_resources		*/	NhlNumber(dcresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	DataCommClassPartInitialize,
 /* class_initialize		*/	DataCommClassInitialize,
@@ -199,6 +201,8 @@ NhlDataSpecClassRec NhldataSpecClassRec = {
 /* layer_resources		*/	dsresources,
 /* num_resources		*/	NhlNumber(dsresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -951,8 +955,7 @@ DataCommInitialize
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlErrorTypes		lret = NhlNOERROR;
-	NhlDataCommClass	cc = (NhlDataCommClass)
-							req->base.layer_class;
+	NhlDataCommClass	cc = (NhlDataCommClass)req->base.layer_class;
 	_NhlDataOffset		oset = cc->datacomm_class.data_offsets;
 	
 	while(oset != NULL){

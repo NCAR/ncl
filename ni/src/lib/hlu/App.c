@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.23 1996-05-10 09:31:51 boote Exp $
+ *      $Id: App.c,v 1.24 1996-09-14 17:05:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -173,6 +173,8 @@ NhlAppClassRec NhlappClassRec = {
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	AppClassPartInitialize,
 /* class_initialize		*/	AppClassInitialize,

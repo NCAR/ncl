@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.9 1996-01-04 21:47:55 dbrown Exp $
+ *      $Id: Base.h,v 1.10 1996-09-14 17:05:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,11 +59,5 @@ typedef enum _NhlJustification {
 	NhlCENTERRIGHT,
 	NhlBOTTOMRIGHT
 } NhlJustification;
-
-extern int NhlGetParentWorkstation(
-#if	NhlNeedProto
-	int	pid
-#endif
-);
 
 #endif  /* _NBase_h */

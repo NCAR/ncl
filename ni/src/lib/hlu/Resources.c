@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.28 1995-10-12 21:33:42 boote Exp $
+ *      $Id: Resources.c,v 1.29 1996-09-14 17:07:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -901,6 +901,10 @@ _NhlGroupResources
 
 	rlist = (NrmResourceList)NhlMalloc(
 				(unsigned)(sizeof(NrmResource) * num_rlist));
+	if(!rlist){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
 
 	memcpy((char*)rlist,(char*)(sc->base_class.resources),
 			sc->base_class.num_resources * sizeof(NrmResource));

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.34 1996-06-13 23:32:34 boote Exp $
+ *      $Id: CoordArrays.c,v 1.35 1996-09-14 17:06:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -221,6 +221,8 @@ NhlCoordArraysClassRec NhlcoordArraysClassRec = {
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	CoordArraysClassInitialize,

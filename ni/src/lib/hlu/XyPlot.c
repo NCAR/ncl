@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.62 1996-07-20 00:37:54 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.63 1996-09-14 17:07:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -552,6 +552,8 @@ NhlXyDataSpecClassRec NhlxyDataSpecClassRec = {
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	XyDataClassInitialize,
@@ -586,6 +588,8 @@ NhlXyPlotClassRec NhlxyPlotClassRec = {
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize        */      XyPlotClassPartInitialize,
 /* class_initialize             */      XyPlotClassInitialize,

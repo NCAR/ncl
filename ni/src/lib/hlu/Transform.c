@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.27 1996-07-12 18:54:13 dbrown Exp $
+ *      $Id: Transform.c,v 1.28 1996-09-14 17:07:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -164,6 +164,8 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	TransformClassPartInit,
 /* class_initialize		*/	NULL,

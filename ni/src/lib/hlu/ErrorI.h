@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorI.h,v 1.3 1995-01-24 01:25:11 boote Exp $
+ *      $Id: ErrorI.h,v 1.4 1996-09-14 17:06:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,5 +33,10 @@
 #define	_NhlGKSERRNUM	(-9998)
 #define	_NhlGKSERRMSG	"GKS ERROR REPORTED FROM libhlu.a(Error.o)"
 #define	_NhlGKSMAXMSGLEN	(128)
+
+/*
+ * Callback name
+ */
+#define	_NhlCBerrPError	"CBerrPError"
 
 #endif	/* _NErrorI_h */

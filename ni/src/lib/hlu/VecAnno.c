@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.8 1996-06-13 02:05:58 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.9 1996-09-14 17:07:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -182,6 +182,8 @@ NhlVecAnnoClassRec NhlvecAnnoClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	VecAnnoClassPartInitialize,
 /* class_initialize		*/	NULL,

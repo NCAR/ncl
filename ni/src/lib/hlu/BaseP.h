@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.9 1995-12-19 20:38:55 boote Exp $
+ *      $Id: BaseP.h,v 1.10 1996-09-14 17:05:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/ConvertP.h>
-#include <ncarg/hlu/Base.h>
+#include <ncarg/hlu/BaseI.h>
 
 /*
  * Class name for resources that are used to determine which programming lang.
@@ -70,6 +70,7 @@ typedef struct _NhlObjLayerPart {
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
 	NhlBoolean	being_destroyed;
+	_NhlCBList	destroycb;
 	_NhlAllChildList	all_children;
 } NhlObjLayerPart;
 
@@ -85,6 +86,7 @@ typedef struct _NhlBaseLayerPart {
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
 	NhlBoolean	being_destroyed;
+	_NhlCBList	destroycb;
 	_NhlAllChildList	all_children;
 
 /* NOTHING CAN BE ADDED BEFORE HERE UNLESS IT IS ALSO ADDED IN ObjLayerPart */
@@ -113,6 +115,23 @@ struct _NhlChildResRec {
 	NrmNameList		resources;
 	_NhlChildResList	next;
 };
+
+typedef struct _NhlRawObjCBRec{
+	NhlString	cbname;
+	unsigned int	offset;
+	int		hash_mult;
+	_NhlCBAddHash	add_hash;
+	_NhlCBCallHash	call_hash;
+} _NhlRawObjCB, *_NhlRawObjCBList;
+
+typedef struct _NhlCookedObjCBRec{
+	NrmQuark	cbquark;
+	unsigned int	offset;
+	int		hash_mult;
+	_NhlCBAddHash	add_hash;
+	_NhlCBCallHash	call_hash;
+} _NhlCookedObjCB, *_NhlCookedObjCBList;
+
 
 typedef NhlErrorTypes (*NhlClassPartInitProc)(
 #if	NhlNeedProto
@@ -184,6 +203,8 @@ typedef struct _NhlObjClassPart {
 	NhlResourceList		resources;
 	int			num_resources;
 	NrmNameList		all_resources;
+	_NhlRawObjCBList	callbacks;
+	int			num_callbacks;
 
 	NhlClassPartInitProc	class_part_initialize;
 	NhlClassInitProc	class_initialize;
@@ -210,6 +231,8 @@ typedef struct _NhlBaseClassPart {
 	NhlResourceList		resources;
 	int			num_resources;
 	NrmNameList		all_resources;
+	_NhlRawObjCBList	callbacks;
+	int			num_callbacks;
 
 	NhlClassPartInitProc	class_part_initialize;
 	NhlClassInitProc	class_initialize;

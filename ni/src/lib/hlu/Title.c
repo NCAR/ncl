@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.27 1996-07-20 00:37:51 dbrown Exp $
+ *      $Id: Title.c,v 1.28 1996-09-14 17:07:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -344,6 +344,8 @@ NhlTitleClassRec NhltitleClassRec = {
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize        */      NULL,
 /* class_initialize             */      TitleClassInitialize,

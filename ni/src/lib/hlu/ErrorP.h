@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.8 1995-04-07 10:41:48 boote Exp $
+ *      $Id: ErrorP.h,v 1.9 1996-09-14 17:06:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,8 @@ typedef struct _NhlErrorLayerPart {
 	_NhlC_OR_F	error_mode;
 
 	/* Internal private fields */
+
+	_NhlCBList	perrcb;
 	int		child;
 	int		num_emsgs;
 	int		len_emsgs;

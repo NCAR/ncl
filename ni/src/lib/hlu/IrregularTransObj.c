@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.25 1996-06-19 16:56:19 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.26 1996-09-14 17:06:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -411,6 +411,8 @@ NhlIrregularTransObjClassRec NhlirregularTransObjClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	IrTransClassInitialize,

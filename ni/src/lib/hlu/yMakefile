@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.35 1996-05-05 22:10:27 boote Exp $
+#      $Id: yMakefile,v 1.36 1996-09-14 17:08:00 boote Exp $
 #
 #########################################################################
 #									#
@@ -22,7 +22,7 @@ MYNAME		= libhlu.a
 
 EXTRA_CDEFINES	=	$(OS_DEF)
 
-HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
+HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
 		IrregularTransObjP.h IrregularType2TransObj.h \
 		IrregularType2TransObjP.h LogLinTransObj.h LogLinTransObjP.h \

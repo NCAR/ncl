@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.35 1996-02-26 21:46:10 dbrown Exp $
+ *      $Id: TextItem.c,v 1.36 1996-09-14 17:07:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -224,6 +224,8 @@ NhlTextItemClassRec NhltextItemClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	TextItemClassInitialize,

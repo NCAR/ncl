@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.16 1996-01-19 18:06:30 dbrown Exp $
+ *      $Id: MultiText.c,v 1.17 1996-09-14 17:06:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,8 @@ NhlMultiTextClassRec NhlmultiTextClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	MultiTextClassPartInitialize,
 /* class_initialize		*/	NULL,

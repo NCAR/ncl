@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.15 1996-01-04 21:47:54 dbrown Exp $
+ *      $Id: Base.c,v 1.16 1996-09-14 17:05:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,13 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/BaseP.h>
 
+static _NhlRawObjCB bcallbacks[] = {
+	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),0,NULL,NULL}
+};
+static _NhlRawObjCB ocallbacks[] = {
+	{_NhlCBobjDestroy,NhlOffset(NhlObjLayerRec,base.destroycb),0,NULL,NULL}
+};
+
 static NhlErrorTypes BaseClassInitialize(
 #if	NhlNeedProto
 	void
@@ -39,6 +46,14 @@ static NhlErrorTypes BaseClassPartInitialize(
 #if	NhlNeedProto
 	NhlClass
 #endif
+);
+
+static NhlErrorTypes BaseInitialize(
+	NhlClass	lc,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		nargs
 );
 
 static NhlErrorTypes ObjLayerDestroy(
@@ -72,10 +87,12 @@ NhlObjClassRec NhlobjClassRec = {
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* callbacks			*/	ocallbacks,
+/* num_callbacks		*/	NhlNumber(ocallbacks),
 
 /* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
-/* layer_initialize		*/	NULL,
+/* layer_initialize		*/	BaseInitialize,
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
@@ -96,10 +113,12 @@ NhlClassRec NhllayerClassRec = {
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* callbacks			*/	bcallbacks,
+/* num_callbacks		*/	NhlNumber(bcallbacks),
 
 /* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
-/* layer_initialize		*/	NULL,
+/* layer_initialize		*/	BaseInitialize,
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
@@ -192,6 +211,88 @@ BaseClassInitialize
 	return MIN(ret,lret);
 }
 
+static void
+CompileObjCallbackList
+(
+	_NhlRawObjCBList	cbls,
+	int			num_cbls
+)
+{
+	register int	i;
+	register _NhlCookedObjCB	*cooked=(_NhlCookedObjCB *)&cbls[0];
+
+	for(i=0;i<num_cbls;cbls++,cooked++,i++)
+		cooked->cbquark = NrmPermStringToQuark(cbls->cbname);
+
+	return;
+}
+
+static void
+GroupObjCallbacks
+(
+	NhlClass	lc
+)
+{
+	_NhlCookedObjCBList	local;
+	_NhlCookedObjCBList	clist;
+	int			num_clist,i,j,k;
+	NhlClass		sc = lc->base_class.superclass;
+
+	if(!sc || sc->base_class.num_callbacks < 1)
+		return;
+
+	if(lc->base_class.num_callbacks < 1){
+		lc->base_class.callbacks = sc->base_class.callbacks;
+		lc->base_class.num_callbacks = sc->base_class.num_callbacks;
+
+		return;
+	}
+
+	num_clist = lc->base_class.num_callbacks + sc->base_class.num_callbacks;
+	clist = (_NhlCookedObjCBList)NhlMalloc(
+					sizeof(_NhlCookedObjCB)*num_clist);
+
+	if(!clist){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+
+	memcpy((char*)clist,(char*)sc->base_class.callbacks,
+			sizeof(_NhlCookedObjCB)*sc->base_class.num_callbacks);
+
+	local = (_NhlCookedObjCBList)lc->base_class.callbacks;
+	k = sc->base_class.num_callbacks;
+
+	for(i=0;i<lc->base_class.num_callbacks;i++){
+		NhlBoolean	override;
+
+		override = False;
+
+		if(local[i].offset < sc->base_class.layer_size){
+
+			for(j=0;j<sc->base_class.num_callbacks;j++){
+				if(local[i].offset == clist[j].offset){
+					/*
+					 * Over-ride cb definition.
+					 */
+					clist[j] = local[i];
+					num_clist--;
+					override = True;
+					break;
+				}
+			}
+		}
+
+		if(!override)
+			clist[k++] = local[i];
+	}
+
+	lc->base_class.callbacks = (_NhlRawObjCBList)clist;
+	lc->base_class.num_callbacks = num_clist;
+
+	return;
+}
+
 /*
  * Function:	BaseClassPartInitialize
  *
@@ -229,7 +330,51 @@ BaseClassPartInitialize
 					lc->base_class.num_resources);
 
 	_NhlGroupResources(lc);
+
+	if(lc->base_class.callbacks)
+		CompileObjCallbackList(lc->base_class.callbacks,
+						lc->base_class.num_callbacks);
+	GroupObjCallbacks(lc);
+
 	return(NhlNOERROR);
+}
+
+/*
+ * Function:	BaseInitialize
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+BaseInitialize
+(
+	NhlClass	lc,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		nargs
+)
+{
+	NhlClass		cc = new->base.layer_class;
+	_NhlCookedObjCBList	cbs =
+				(_NhlCookedObjCBList)cc->base_class.callbacks;
+	int			ncbs = cc->base_class.num_callbacks;
+	int			i;
+
+	/*
+	 * Initialize all object callbacks to NULL.
+	 */
+	for(i=0;i<ncbs;i++)
+		*(_NhlCBList*)((char*)new + cbs[i].offset) = NULL;
+
+	return NhlNOERROR;
 }
 
 /*
@@ -381,7 +526,18 @@ ObjLayerDestroy
 	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	NhlErrorTypes	ret=NhlNOERROR,lret=NhlNOERROR;
+	NhlErrorTypes		ret=NhlNOERROR,lret=NhlNOERROR;
+	NhlClass		lc = l->base.layer_class;
+	_NhlCookedObjCBList	cbs =
+				(_NhlCookedObjCBList)lc->base_class.callbacks;
+	int			ncbs = lc->base_class.num_callbacks;
+	int			i;
+
+	/*
+	 * Destroy all object callbacks
+	 */
+	for(i=0;i<ncbs;i++)
+		_NhlCBDestroy(*(_NhlCBList*)((char*)l + cbs[i].offset));
 
 	/*
 	 * Now free any children that are still around
@@ -433,51 +589,4 @@ BaseLayerDestroy
 	lret = ObjLayerDestroy(l);
 
 	return MIN(ret,lret);
-}
-
-/*
- * Function:	_NhlGetWorkstationLayer
- *
- * Description:	This function is used to retrieve the Workstation pointer
- *		from a layer object.
- *
- * In Args:	
- *		NhlLayer	layer	Layer to get workstation pointer from
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	NhlLayer
- * Side Effect:	
- */
-NhlLayer
-_NhlGetWorkstationLayer
-#if	NhlNeedProto
-(
-	NhlLayer	layer
-)
-#else
-(layer)
-	NhlLayer	layer;
-#endif
-{
-	if(_NhlIsBase(layer))
-		return layer->base.wkptr;
-	return NULL;
-}
-
-int NhlGetParentWorkstation
-#if	NhlNeedProto
-(int plotid)
-#else
-(plotid)
-	int plotid;
-#endif
-{
-	NhlLayer plot_ptr = _NhlGetLayer(plotid);
-
-	if(!plot_ptr || !_NhlIsBase(plot_ptr) || !plot_ptr->base.wkptr)
-		return -1;
-
-	return plot_ptr->base.wkptr->base.id;
 }

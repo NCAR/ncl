@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.26 1996-05-17 07:54:09 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.27 1996-09-14 17:07:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -558,6 +558,8 @@ NhlPlotManagerClassRec NhlplotManagerClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	PlotManagerClassPartInitialize,
 /* class_initialize		*/	PlotManagerClassInitialize,

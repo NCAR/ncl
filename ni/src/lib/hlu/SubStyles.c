@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.2 1996-03-26 21:48:57 dbrown Exp $
+ *      $Id: SubStyles.c,v 1.3 1996-09-14 17:07:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -135,6 +135,8 @@ NhlLineStyleClassRec NhllineStyleClassRec = {
 /* layer_resources		*/	lineresources,
 /* num_resources		*/	NhlNumber(lineresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -471,6 +473,8 @@ NhlFillStyleClassRec NhlfillStyleClassRec = {
 /* layer_resources		*/	fillresources,
 /* num_resources		*/	NhlNumber(fillresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -620,6 +624,8 @@ NhlMarkerStyleClassRec NhlmarkerStyleClassRec = {
 /* layer_resources		*/	markerresources,
 /* num_resources		*/	NhlNumber(markerresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -793,6 +799,8 @@ NhlTextStyleClassRec NhltextStyleClassRec = {
 /* layer_resources		*/	textresources,
 /* num_resources		*/	NhlNumber(textresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,

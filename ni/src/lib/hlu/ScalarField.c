@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.20 1996-07-24 02:14:11 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.21 1996-09-14 17:07:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -191,6 +191,8 @@ NhlScalarFieldFloatClassRec NhlscalarFieldFloatClassRec = {
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -220,6 +222,8 @@ NhlScalarFieldClassRec NhlscalarFieldClassRec = {
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	ScalarFieldClassPartInitialize,
 /* class_initialize		*/	ScalarFieldClassInitialize,

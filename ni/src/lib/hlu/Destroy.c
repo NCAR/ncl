@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.9 1995-04-07 10:41:42 boote Exp $
+ *      $Id: Destroy.c,v 1.10 1996-09-14 17:06:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -102,8 +102,9 @@ NhlDestroy
 	int	pid;	/* id associated with the object to delete	*/
 #endif
 {
-	NhlErrorTypes ret, lret;
-	NhlLayer l = _NhlGetLayer(pid);
+	NhlErrorTypes	ret, lret;
+	NhlLayer	l = _NhlGetLayer(pid);
+	NhlArgVal	cbdata,dummy;
 
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to Destroy (Bad PID#%d)",
@@ -115,6 +116,14 @@ NhlDestroy
 		return NhlNOERROR;
 
 	l->base.being_destroyed = True;
+
+#ifdef	DEBUG
+	memset(&dummy,0,sizeof(NhlArgVal));
+	memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+
+	cbdata.ptrval = l;
+	_NhlCallObjCallbacks(l,_NhlCBobjDestroy,dummy,cbdata);
 
 	if(_NhlIsWorkstation(l) ) {
 		_NhlCloseWorkstation(l);

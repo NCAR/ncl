@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.18 1996-07-12 18:54:10 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.19 1996-09-14 17:06:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -111,6 +111,8 @@ NhlLogLinPlotClassRec NhllogLinPlotClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	LogLinPlotClassPartInitialize,
 /* class_initialize		*/	LogLinPlotClassInitialize,

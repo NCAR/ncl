@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.21 1995-12-19 20:39:06 boote Exp $
+ *      $Id: Error.c,v 1.22 1996-09-14 17:06:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -100,6 +100,11 @@ static NhlResource fresources[] = {
 };
 #undef Oset
 
+static _NhlRawObjCB callbacks[] = {
+
+	{_NhlCBerrPError,NhlOffset(NhlErrorLayerRec,error.perrcb),0,NULL,NULL}
+};
+
 /* Methode declarations	*/
 
 static NhlErrorTypes ErrorClassPartInitialize(
@@ -163,6 +168,8 @@ NhlErrorClassRec NhlerrorClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	callbacks,
+/* num_callbacks		*/	NhlNumber(callbacks),
 
 /* class_part_initialize	*/	ErrorClassPartInitialize,
 /* class_initialize		*/	ErrorClassInitialize,
@@ -198,6 +205,8 @@ static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 /* layer_resources		*/	cresources,
 /* num_resources		*/	NhlNumber(cresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -227,6 +236,8 @@ static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
 /* layer_resources		*/	fresources,
 /* num_resources		*/	NhlNumber(fresources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -1165,7 +1176,8 @@ AddErrMsg
 	Const NhlErrMsg	*msg;	/* message to add	*/
 #endif
 {
-	static char buffer[MAXERRMSGLEN];
+	NhlArgVal	cbdata,dummy;
+	static char	buffer[MAXERRMSGLEN];
 
 	/* if error instance not init'ed - print to sterr */
 	if(errorLayer == NULL)
@@ -1180,6 +1192,13 @@ AddErrMsg
 	if(errorLayer->error.buffer_errors){
 		BufferMsg(msg);
 	}
+
+#ifdef	DEBUG
+	memset(&dummy,0,sizeof(NhlArgVal));
+	memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+	cbdata.ptrval = (NhlPointer)msg;
+	_NhlCallObjCallbacks((NhlLayer)errorLayer,_NhlCBerrPError,dummy,cbdata);
 
 	/* print out message */
 	if(errorLayer->error.print_errors)
@@ -1271,6 +1290,7 @@ static Const char *printerror
 #endif
 {
 	NhlErrMsg	tmp;
+	char		fname[_NhlMAXFNAMELEN];
 
 	tmp.severity = severity;
 	tmp.errorno = errnum;
@@ -1283,12 +1303,12 @@ static Const char *printerror
 
 	if(HackUsed){
 		tmp.line = HackInfo.line;
-		tmp.fname = NhlMalloc(strlen(HackInfo.fname) + 1);
+		tmp.fname = fname;
 		strcpy(tmp.fname,HackInfo.fname);
 		HackUsed = False;
 	}
 	else{
-		tmp.line = -1;
+		tmp.line = 0;
 		tmp.fname = NULL;
 	}
 
@@ -1845,6 +1865,8 @@ NhlErrSPrintMsg
 #endif
 {
 	char tbuf[MAXERRMSGLEN];
+	int	space = MAXERRMSGLEN-1;
+	int	tmp;
 
 	if(msg->severity == NhlNOERROR)
 		strcpy(buffer,"noerror");
@@ -1854,25 +1876,40 @@ NhlErrSPrintMsg
 		strcpy(buffer,"warning");
 	else
 		strcpy(buffer,"fatal");
+	space -= strlen(buffer);
 	
 	if((msg->line > 0) && (msg->fname != NULL)){
 		sprintf(tbuf,":[\"%s\":%d]",msg->fname,msg->line);
-		strcat(buffer,tbuf);
+		tmp = strlen(tbuf);
+		strncat(buffer,tbuf,space);
+		space -= tmp;
 	}
 
+	if(space <= 0) return buffer;
+
 	if(msg->msg != NULL){
-		strcat(buffer,":");
-		strcat(buffer,msg->msg);
+		tmp = strlen(msg->msg);
+		strncat(buffer,":",space--);
+		if(space <= 0) return buffer;
+		strncat(buffer,msg->msg,space);
+		space -= tmp;
 	}
+
+	if(space <= 0) return buffer;
 
 	if(msg->errorno != NhlEUNKNOWN){
 		sprintf(tbuf,":[errno=%d]",msg->errorno);
-		strcat(buffer,tbuf);
+		tmp = strlen(tbuf);
+		strncat(buffer,tbuf,space);
+		space -= tmp;
 	}
 
+	if(space <= 0) return buffer;
+
 	if(msg->sysmsg != NULL){
-		strcat(buffer,":");
-		strcat(buffer,msg->sysmsg);
+		strncat(buffer,":",space--);
+		if(space <= 0) return buffer;
+		strncat(buffer,msg->sysmsg,space);
 	}
 
 	return buffer;

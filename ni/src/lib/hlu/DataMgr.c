@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.12 1995-12-19 20:39:04 boote Exp $
+ *      $Id: DataMgr.c,v 1.13 1996-09-14 17:06:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,8 @@ NhlDataMgrClassRec NhldataMgrClassRec = {
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,

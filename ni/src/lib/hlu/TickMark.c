@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.49 1996-07-20 00:37:49 dbrown Exp $
+ *      $Id: TickMark.c,v 1.50 1996-09-14 17:07:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1193,6 +1193,8 @@ NhlTickMarkClassRec NhltickMarkClassRec = {
 /* layer_resources	*/      resources,
 /* num_resources	*/      NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize*/      NULL,
 /* class_initialize	*/      TickMarkClassInitialize,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.50 1996-07-20 00:37:44 dbrown Exp $
+ *      $Id: Legend.c,v 1.51 1996-09-14 17:06:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -670,6 +670,8 @@ NhlLegendClassRec NhllegendClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	LegendClassInitialize,

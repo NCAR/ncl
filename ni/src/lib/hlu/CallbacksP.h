@@ -1,5 +1,5 @@
 /*
- *      $Id: CallbacksP.h,v 1.1 1996-05-05 22:10:26 boote Exp $
+ *      $Id: CallbacksP.h,v 1.2 1996-09-14 17:05:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@ struct _NhlCBRec {
 	_NhlCBList	cblist;
 	int		index;
 	_NhlCBFunc	cbfunc;
-	_NhlArgVal	udata;
+	NhlArgVal	udata;
 	_NhlCB		next;
 };
 

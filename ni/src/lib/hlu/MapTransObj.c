@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.30 1996-07-20 00:37:45 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.31 1996-09-14 17:06:55 boote Exp $
 */
 /************************************************************************
 *									*
@@ -447,6 +447,8 @@ NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	MapTransClassInitialize,

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.49 1996-07-20 00:37:42 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.50 1996-09-14 17:06:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -557,6 +557,8 @@ NhlLabelBarClassRec NhllabelBarClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	LabelBarClassInitialize,

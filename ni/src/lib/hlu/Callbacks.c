@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.2 1996-05-08 14:37:48 boote Exp $
+ *      $Id: Callbacks.c,v 1.3 1996-09-14 17:05:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,6 @@
  *			from the list, and execute the callback list with
  *			a given set of data.
  */
-
 #include <ncarg/hlu/CallbacksP.h>
 
 _NhlCBList
@@ -131,11 +130,17 @@ _NhlCBAdd
 	NhlArgVal	udata;
 #endif
 {
-	_NhlCB		cb = NhlMalloc(sizeof(_NhlCBRec));
+	_NhlCB		cb;
 	_NhlCB		*cbptr;
 
+	if(!cblist){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid cblist..."));
+		return NULL;
+	}
+
+	cb = NhlMalloc(sizeof(_NhlCBRec));
 	if(!cb){
-		NhlPError(NhlFATAL,ENOMEM,NULL);
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NULL;
 	}
 
@@ -215,6 +220,9 @@ _NhlCBCallCallbacks
 {
 	long	index;
 	_NhlCB	cb,tcb;
+
+	if(!cblist)
+		return;
 
 	if(cblist->call_hash)
 		index = (*cblist->call_hash)(selector,cbdata);

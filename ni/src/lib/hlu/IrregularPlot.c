@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.19 1996-07-12 18:54:10 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.20 1996-09-14 17:06:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,8 @@ NhlIrregularPlotClassRec NhlirregularPlotClassRec = {
 /* layer_resources		*/	resources, /* resources */
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
+/* callbacks			*/	NULL,
+/* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	IrregularPlotClassPartInitialize,
 /* class_initialize		*/	IrregularPlotClassInitialize,
