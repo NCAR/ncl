@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.9 2000-07-12 16:27:02 haley Exp $
+C	$Id: wmcomn.h,v 1.10 2000-07-20 19:28:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -156,3 +156,4 @@ C
       COMMON /WMARRS/XO(NPTS),YO(NPTS),TEMP(NPTS),S(NPTS),
      +               XS(NPTS),YS(NPTS),XOUT(NPTS),YOUT(NPTS),
      +               ALEN(NPTS),RWORK(NWRK)
+      COMMON /IMARRS/IWORK(NWRK)

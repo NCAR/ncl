@@ -1,5 +1,5 @@
 C
-C	$Id: wmrgwt.f,v 1.6 2000-07-12 16:27:05 haley Exp $
+C	$Id: wmrgwt.f,v 1.7 2000-07-20 19:28:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,8 +38,6 @@ C
       PARAMETER (MDGU=7000,MDGUH=MDGU/2,MDGUP1=MDGU+1,
      +           MDGUP=MDGU+MDGUH+1,MDGU2=2*MDGU,MDGU2P=MDGU2+1)
       DIMENSION X(N),Y(N)
-      DIMENSION IWORK(NWRK)
-      EQUIVALENCE (IWORK,RWORK)
       EXTERNAL WMLGFA
 C
 C  Check error status.

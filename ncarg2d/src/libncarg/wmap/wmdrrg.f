@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.5 2000-07-19 05:39:05 fred Exp $
+C	$Id: wmdrrg.f,v 1.6 2000-07-20 19:28:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,8 +46,6 @@ C
 C
 C  Define necessary arrays and functions for the clipping calls.
 C
-      DIMENSION IWORK(NWRK)
-      EQUIVALENCE (IWORK,RWORK)
       COMMON /WMLGCM/IDRFLG
       EXTERNAL WMLGFA
 C
