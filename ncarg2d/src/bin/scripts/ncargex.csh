@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.36 1993-04-12 20:00:30 haley Exp $
+#   $Id: ncargex.csh,v 1.37 1993-04-12 21:22:15 haley Exp $
 #
 
 #********************#
@@ -205,7 +205,7 @@ set isosrfhr_list = ($tst_isosrfhr)
 #                         #
 #*************************#
 set tst_isosurface  = (tisosr tpwrzi)
-set fnd_isosurface  = (fiseziso fisissrf fispwrzi)
+set fnd_isosurface  = (fisissrf fispwrzi)
 set isosurface_list = ($tst_isosurface $fnd_isosurface)
 
 #***********************#
