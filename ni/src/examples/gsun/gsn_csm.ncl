@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.44 2000-07-24 21:04:09 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.45 2000-07-27 15:06:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1634,25 +1634,29 @@ begin
     lon_labels(lon_index) = 540-lon_values(lon_index) + "W"  ; west
   end if
   delete(lon_index)
-;                                                                       ;
+
 ; lon = +/-180 or lon=540 (180)
 
   lon_index = ind(fabs(lon_values).eq.180.or.lon_values.eq.540)
   if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = "180"
   end if
-                         range_array,lonspacing_array,mlonspacing_array)
+  delete(lon_index)
 
+; lon=0, lon=360, or lon=720 (0)
+
+  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+  if(.not.all(ismissing(lon_index)))
   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,\
                            range_array,lonspacing_array,mlonspacing_array)
   lonlabels = get_lon_labels(lonvalues)
   return(lon_labels)
-  setvalues plot
-    "tmXBMode"         : "Explicit" ; Indicate that we want to 
-    "tmXBLabels"       : lonlabels    ; explicitly label the X axis.
-    "tmXBValues"       : lonvalues
-    "tmXBMinorValues"  : lonvalues@minor
-  end setvalues
+end
+
+;***********************************************************************;
+; Function : get_lat_labels                                             ;
+;                lat_values[*]: numeric                                 ;
+
 ; Create labels for latitude tick marks.
   lat_labels = new(dimsizes(lat_values),string)
 
@@ -1663,6 +1667,7 @@ begin
   delete(lat_index)
 
   lat_index = ind(lat_values.gt.0)
+  if(.not.all(ismissing(lat_index)))
     lat_labels(lat_index) = lat_values(lat_index) + "N"    ; north
   end if
   delete(lat_index)
@@ -1670,17 +1675,21 @@ begin
   lat_index = ind(lat_values.eq.0)
   if(.not.all(ismissing(lat_index)))
     lat_labels(lat_index) = lat_values(lat_index)          ; equator
-                               lat_spacing:numeric,mlat_spacing:numeric)
+  end if
+  delete(lat_index)
+ 
   return(lat_labels)
+  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+
   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
 ;             max_lon: numeric                                          ;
-  setvalues plot
-    "tmXBMode"         : "Explicit" ; Indicate that we want to 
-    "tmXBLabels"       : latlabels    ; explicitly label the Y axis.
-    "tmXBValues"       : latvalues
-    "tmXBMinorValues"  : latvalues@minor
-  end setvalues
+  tmres = True
+  set_attr(tmres,"tmXBMode"         , "Explicit")
+  set_attr(tmres,"tmXBLabels"       , latlabels)
+  set_attr(tmres,"tmXBValues"       , latvalues)
+  set_attr(tmres,"tmXBMinorValues"  , latvalues@minor)
+  attsetvalues(plot,tmres)
 
   lon_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
   lonvalues   = get_lon_values(min_lon,max_lon,lon_spacing2,mlon_spacing,\
@@ -1691,27 +1700,87 @@ begin
   set_attr(tmres,"tmXBMode"         , "Explicit")
   set_attr(tmres,"tmXBLabels"       , lonlabels)
   set_attr(tmres,"tmXBValues"       , lonvalues)
-;                                                                       ;
+  set_attr(tmres,"tmXBMinorValues"  , lonvalues@minor)
 ;
 ; If the user has set tiXAxisString explicitly, then don't set tiXAxisOn
 ; to False.
 ;
   if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
     set_attr(tmres,"tiXAxisOn"      , False)
-                               lat_spacing:numeric,mlat_spacing:numeric)
+  end if
+  attsetvalues(plot,tmres)
+  return
 end
+  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+;***********************************************************************;
   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
 ;         lat_spacing: numeric                                          ;
-  setvalues plot
-    "tmYLMode"         : "Explicit" ; Indicate that we want to 
-    "tmYLLabels"       : latlabels    ; explicitly label the Y axis.
-    "tmYLValues"       : latvalues
-    "tmYLMinorValues"  : latvalues@minor
-  end setvalues
+  tmres = True
+  set_attr(tmres,"tmYLMode"         , "Explicit")
+  set_attr(tmres,"tmYLLabels"       , latlabels)
+  set_attr(tmres,"tmYLValues"       , latvalues)
+  set_attr(tmres,"tmYLMinorValues"  , latvalues@minor)
+  attsetvalues(plot,tmres)
 
   lat_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lat_spacing)
   latvalues    = get_lat_values(min_lat,max_lat,lat_spacing2,mlat_spacing)
+  if(.not.any(ismissing(latvalues)))
+    latlabels    = get_lat_labels(latvalues)
+
+    tmres = True
+    set_attr(tmres,"tmXBMode"         , "Explicit")
+    set_attr(tmres,"tmXBLabels"       , latlabels)
+    set_attr(tmres,"tmXBValues"       , latvalues)
+    set_attr(tmres,"tmXBMinorValues"  , latvalues@minor)
+;
+; If the user has set tiXAxisString explicitly, then don't set tiXAxisOn
+; to False.
+local min_lat, max_lat, min_lon, max_lon
+    if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
+  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+     any(data!1.eq.get_allowed_latnames()))
+;                 res: logical                                          ;
+;                                                                       ;
+; Add "nice" latitude labels ("90S", "30N", etc) to the Y axis in       ;
+; "plot".                                                               ;
+;***********************************************************************;
+
+procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
+    add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res)
+  tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
+
+  if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
+     any(data!0.eq.get_allowed_latnames()))
+    latlabels    = get_lat_labels(latvalues)
+
+    tmres = True
+    set_attr(tmres,"tmYLMode"         , "Explicit")
+    set_attr(tmres,"tmYLLabels"       , latlabels)
+    set_attr(tmres,"tmYLValues"       , latvalues)
+    set_attr(tmres,"tmYLMinorValues"  , latvalues@minor)
+    add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res)
+    attsetvalues(plot,tmres)
+  end if
+  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+     any(data!1.eq.get_allowed_lonnames()))
+;***********************************************************************;
+; Procedure : add_latlon_labels                                         ;
+;               plot: graphic                                           ;
+;               data: numeric                                           ;
+;                res: logical                                           ;
+;                                                                       ;
+; Add "nice" latitude/longitude labels ("90S", "30N", etc) to the X/Y   ;
+; axes if the appropriate lat/lon coordinate arrays exist.              ;
+;                                                                       ;
+;***********************************************************************;
+procedure add_latlon_labels(plot:graphic,data:numeric,res:logical)
+local min_lat, max_lat, min_lon, max_lon, lat_spacing
+begin
+; If the plot coming in is an XY plot, then it won't have 
+                   lon_spacing_arr,mlon_spacing_arr,res)
+  end if
+  is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
   is_xaxis  = get_res_value_keep(res,"gsnXAxis", False)
   is_yaxis  = get_res_value_keep(res,"gsnYAxis", False)
   set_xaxis = False
@@ -4615,6 +4684,10 @@ begin
       contour_plot = contour_object
     end if
     lbar_on       = False     ; Labelbar flag
+    main_zone     = 2         ; Zone for main title (may change later)
+    res2          = get_resources(resources)
+    add_latlon_labels(contour_plot,data,res2)
+; This section tests for more special resources: those that start
 ; with "gsn."
 
 ; The default is to not add a cyclic point.
@@ -4757,7 +4830,7 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
     end if
 
 ; Create a labelbar.
-                     lon_range,lon_spacing_arr,mlon_spacing_arr)
+
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
       add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
@@ -4827,8 +4900,9 @@ begin
     res2           = True
     res2@gsnDraw   = False
     res2@gsnFrame  = False
+
     contour_object = gsn_csm_contour(wks,data,res2) ; Create a contour plot.
-                         lat_spacing,mlat_spacing)
+
 ; Check if we should label X axis with nice longitude labels.
 
     draw_and_frame(wks,contour_object,calldraw,callframe)
@@ -4896,8 +4970,9 @@ begin
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
     if((res2).and..not.any(ismissing(getvaratts(res2))))
+      set_attr(res2,"tiYAxisString","")
     end if
-                                                     mlat_spacing)
+
 ; Use coordinate variable for Y if it exists.
 
     draw_and_frame(wks,contour_object,calldraw,callframe)
@@ -5046,7 +5121,8 @@ begin
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
     if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
        any(data!1.eq.get_allowed_latnames()))
-      add_lat_labels_xaxis(contour_plot,xmin,xmax,lat_spacing,mlat_spacing)
+
+;
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
 ;
     if(is_valid_ycoord(data))
@@ -5216,6 +5292,10 @@ begin
 ; This function behaves differently from gsn_vector in that it will     ;
 ; add additional titles to the top of the plot if any of the special    ;
 ; GSUN resources "gsnLeftString," "gsnCenterString," and/or             ;
+; "gsnRightString" are set, They are used to title the top left, center,;
+; and right of the plot (in addition, the regular resource              ;
+; "tiMainString" can be set to create a regular title).                 ;
+;                                                                       ;
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
     getvalues vector_object
@@ -5375,6 +5455,10 @@ begin
   return(contour)
 end
 
+;***********************************************************************;
+; Function : gsn_csm_streamline                                         ;
+;                     wks: workstation object                           ;
+;                     u: 2-dimensional data                             ;
 ;                     v: 2-dimensional data                             ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
