@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.2 1993-04-05 17:12:54 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.3 1993-04-08 15:05:04 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -25,15 +25,15 @@ function is the same as the Fortran routine name with a "c_"
 prepended.  For example, the name of the C-binding for the CONPACK
 routine \fBCPBACK\fP is \fBc_cpback\fP.  This naming convention does
 not apply to the GKS C-bindings.  Instead, the C-binding names are
-more descriptive, like \fBgset_fill_colr_ind\fP for which is
+more descriptive, like \fBgset_fill_colr_ind\fP which is
 equivalent to the Fortran routine \fBGSFACI\fP.  Please see the man
-page for the GKS Fortran routine to get the name of the corresponding
-C-binding name.
+page for ncarg_gks_cbind(3NCARG) the GKS Fortran routine to get the name 
+of the corresponding GKS C-binding name.
 .sp
-The C programming language is case sensitive, so for programming
+The C programming language is case sensitive, so for
 convenience the utility C-binding names and their arguments are all in
-lower case, while the Fortran routines and their arguments will be
-referred to in upper-case.
+lower case.  In this man page, the Fortran routines and their arguments 
+will be referred to in upper-case.
 .SH ARGUMENT LISTS
 The argument list of each utility C-binding corresponds with the
 argument list of the corresponding Fortran routine except in some 
@@ -61,8 +61,8 @@ c_plchhq(float x, float y, char *chrs, float sz, float ang, float cntr)
 One of the exceptions to the utility C-binding argument lists has to do 
 with multi-dimensioned arrays.  In Fortran, arrays are stored in
 column-major order, while in C they are stored in row-major order.
-This means that the subscripts of the array need to be switched before 
-sending it to a Fortran routine from a C program.
+This means that the subscripts of a multi-dimensioned array need to 
+be switched before passing the array to a Fortran routine from C.
 .sp
 As an example, the \fBCONPACK\fP routine \fBCPRECT\fP takes as one of
 its arguments a two-dimensional array, \fIZDAT\fP.  If the Fortran
@@ -71,14 +71,17 @@ must dimension \fIZDAT\fP to be 14 x 25 before calling the C-binding
 \fBc_cprect\fP.  The next three arguments of \fBCPRECT\fP describe the
 array in question.  The first of these three arguments, \fIKZDT\fP, is
 the first dimension of the array \fIZDAT\fP as it is declared in the
-calling program.  For \fBCPRECT\fP this value would be 25, while for
-the C-binding \fBc_cprect\fP, it would be 14.  The second and third
-of these three arguments (\fIMZDT\fP and \fINZDT\fP) specify the
-number of elements in each row and column (respectively) to be contoured.
-If you only want to contour 20 x 10 of the array \fIZDAT\fP, then
-\fIMZDT\fP and \fINZDT\fP should be 20 and 10 respectively in
-\fBCPRECT\fP.  For \fBc_cprect\fP, the values would be 10 and 20
-respectively.
+Fortran calling program.  For \fBCPRECT\fP this value would be 25.  For
+the C-binding \fBc_cprect\fP, however, this argument is the second 
+dimension of the array as declared in the C program.  This value would 
+be 25 as well since the subscripts had to be switched in the C program.
+The second and third of these three arguments (\fIMZDT\fP and 
+\fINZDT\fP) specify the number of elements in each row and column 
+(respectively) to be contoured.  If you only want to contour 20 x 10 
+of the array \fIZDAT\fP, then \fIMZDT\fP and \fINZDT\fP should be 20 
+and 10 respectively in \fBCPRECT\fP.  For \fBc_cprect\fP, these variables
+specify the columns and rows, so again, the values would be 20 and 10 
+(because the subscripts have to be switched).
 .SH CHARACTER STRINGS
 Another exception to the argument lists for the utility C-bindings has
 to do with routines that return character strings.  The NCAR Graphics
@@ -125,16 +128,25 @@ have been provided for your convenience.  You may be familiar with the
 output from these C programs as they were modeled after the Fortran
 programs that you can get with the \fBncargex\fP command.  To copy
 any one of these C programs in your directory, and then compile, link, 
-and run it,  type \fBncargcex\fP \fIxxxx\fP, where \fIxxxx\fP is the 
-name of the example you wish to look at.  The following examples are 
-available:
+and run it,  type 
+.sp
+\fBncargcex\fP \fIxxxx\fP
+.sp
+where \fIxxxx\fP is the name of the example you wish to generate.
+The following C examples are available:
 .sp
 .nf
 .in .5i
 c_agex07 c_cbex01 c_colcon c_eezmpa c_elblba
 c_epltch c_mpex05 c_sfex02 c_slex01
 .sp
-If you want to generate all of these examples, type \fBncargcex -A\fP.
+.in -.5i
+If you want to generate all of these examples, type 
+.in .5i
+.sp
+\fBncargcex -A\fP
+.in -.5i
+.sp
 \fBncargcex\fP uses \fBncargcc\fP to compile and link the C-binding
 example programs.
 .sp
@@ -145,15 +157,17 @@ C-bindings have not been provided for user entry points in the
 following obsolete utilities:
 .sp
 .in .5i
-CONRAN, CONREC, CONTERP, HAFTON, ISOSFHR, PWRITX, PWRITY
+CONRAN, CONREC, CONTERP, HAFTON, ISOSFHR, PWRITX, and PWRITY
 .in -.5i
 .SH CAVEATS
-You may not be able to pass a NULL pointer in place of a character string.
+You cannot pass a NULL pointer in place of a character string.
 If you do not wish to pass a string, just pass "", which is a valid
 character string of length zero.
 .SH SEE ALSO
 Online: 
-ncargcc (1NCARG), ncargex (1NCARG), ncarg_gks_cbind (3NCARG), 
+.BR ncargcc(1NCARG),
+.BR ncargcex(1NCARG),
+.BR ncarg_gks_cbind(3NCARG), 
 man pages for any of the user entry points and/or GKS routines.
 .sp
 Hardcopy:
