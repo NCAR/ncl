@@ -1,5 +1,5 @@
 C
-C $Id: ngdots.f,v 1.12 2000-08-22 15:05:10 haley Exp $
+C $Id: ngdots.f,v 1.13 2000-10-25 18:41:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,8 +48,6 @@ C
       DIMENSION X(NUM),Y(NUM),TWIN(4),TVPT(4)
       DIMENSION CIRCX(513),CIRCY(513),CIRCXX(513),CIRCYY(513)
       INTEGER   OLDASF(13),NEWASF(13)
-C
-      SAVE IFIRST
 C
 C  PI and number of points per unit of arc length.
 C
