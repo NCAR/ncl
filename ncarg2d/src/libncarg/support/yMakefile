@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:18:06 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1992-11-17 18:37:19 fred Exp $
 #
 NCARG	= ../../../..
 
@@ -8,17 +8,33 @@ MYNAME	= support
 GENERIC_SRCS = \
 	 encd.f entsr.f retsr.f nerro.f errof.f seter.f eprin.f e9rin.f\
 	 i8sav.f fdum.f uerrbd.f q8qst4.f mskrv1.f mskrv2.f msbsf1.f\
-	 msbsf2.f mssrf1.f mssrf2.f msceez.f mstrms.f msshch.f msntvl.f
+	 msbsf2.f mssrf1.f mssrf2.f msceez.f mstrms.f msshch.f msntvl.f\
+	 bzbkd.f   bzcurv.f  bzdp2l.f  bzfcrv.f  bzftol.f  bzgeti.f  bzgetr.f\
+	 bzseti.f bzsetr.f  bzsubd.f
 
 GENERIC_OBJS = \
 	 encd.o entsr.o retsr.o nerro.o errof.o seter.o eprin.o e9rin.o\
 	 i8sav.o fdum.o uerrbd.o q8qst4.o mskrv1.o mskrv2.o msbsf1.o\
-	 msbsf2.o mssrf1.o mssrf2.o msceez.o mstrms.o msshch.o msntvl.o
+	 msbsf2.o mssrf1.o mssrf2.o msceez.o mstrms.o msshch.o msntvl.o\
+	 bzbkd.o   bzcurv.o  bzdp2l.o  bzfcrv.o  bzftol.o  bzgeti.o  bzgetr.o\
+	 bzseti.o bzsetr.o  bzsubd.o
 
 SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
+bzbkd.o : bzcom.h
+ 
+bzcurv.o : bzcom.h
+ 
+bzgeti.o : bzcom.h
+ 
+bzgetr.o : bzcom.h
+ 
+bzseti.o : bzcom.h
+ 
+bzsetr.o : bzcom.h
+ 
 PartialLibrary(libncarg.a,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary

@@ -1,0 +1,2 @@
+      COMMON /BZCOM/FRATIO,NPPC
+      SAVE   /BZCOM/
