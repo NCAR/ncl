@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlpage.c,v 1.1 1999-03-05 16:53:30 dbrown Exp $
+ *      $Id: htmlpage.c,v 1.2 1999-03-08 21:42:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,9 +30,14 @@ static void DestroyHtmlPage
 	NhlPointer data
 )
 {
-	brHtmlPageRec	*fr_rec = (brHtmlPageRec	*)data;
+	brHtmlPageRec	*rec = (brHtmlPageRec	*)data;
 
-        NhlFree(data);
+/* 
+ * Don't need to do anything about the htmlview because it is destroyed
+ * in the browser
+ */
+
+        NhlFree(rec);
         
 	return;
 }
@@ -165,11 +170,11 @@ NgGetHtmlPage
 	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
 	brPageData		*pdp;
-	brHtmlPageRec		*rec;
+	brHtmlPageRec		*rec,*copy_rec;
+	
 
 	if (copy_page) {
-		brHtmlPageRec *copy_rec = 
-			 (brHtmlPageRec *) copy_page->pdata->type_rec;
+		copy_rec = (brHtmlPageRec *) copy_page->pdata->type_rec;
 	}
 	for (pdp = pane->html_pages; pdp != NULL; pdp = pdp->next) {
 		if (!pdp->in_use)
@@ -189,6 +194,9 @@ NgGetHtmlPage
 		rec->qurl = page->qvar;
 	}
         page->pdata = pdp;
+
+	if (copy_page)
+		rec->qurl = copy_rec->qurl;
         
 
         GetHtmlView(page);
