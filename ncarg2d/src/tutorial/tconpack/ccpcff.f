@@ -21,8 +21,12 @@ C Draw Contours
 C Close frame and close GKS
 	CALL FRAME
 	CALL CLSGKS
+	STOP
 
- 101	STOP
+ 101	WRITE (6,*) 'The field is constant.'
+ 	WRITE (6,*) 'This program does not create a valid CGM file.'
+ 
+	STOP
 	END
 
 	SUBROUTINE GETDAT (Z, M, N)
