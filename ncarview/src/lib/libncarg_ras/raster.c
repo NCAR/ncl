@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.16 1992-09-10 21:24:18 don Exp $
+ *	$Id: raster.c,v 1.17 1992-09-14 22:16:34 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,10 +40,19 @@ int	OptionDotsPerInch = 75;
 int	OptionDitherPopular = False;
 int	OptionDitherColors = 256;
 int	OptionDitherBits = 5;
+int	OptionInX = 0;
+int	OptionInY = 0;
+int	OptionInInvert = False;
 
 char	*NrtProgramName;
 
 static int	argdel();
+
+RasterDevice *_RasterGetDevice(
+#ifdef NeedFuncProto
+	const char	*format
+#endif
+	);
 
 /*LINTLIBRARY*/
 
@@ -140,6 +149,30 @@ RasterInit(argc, argv)
 			OptionDotsPerInch = atoi(argv[i]);
 			(void) argdel(argc, argv, i);
 		}
+		else if (!strcmp(argv[i], "-inx")) {
+			if (i >= (*argc-1)) {
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
+				return(RAS_ERROR);
+			}
+			(void) argdel(argc, argv, i);
+			OptionInX = atoi(argv[i]);
+			(void) argdel(argc, argv, i);
+		}
+		else if (!strcmp(argv[i], "-iny")) {
+			if (i >= (*argc-1)) {
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
+				return(RAS_ERROR);
+			}
+			(void) argdel(argc, argv, i);
+			OptionInY = atoi(argv[i]);
+			(void) argdel(argc, argv, i);
+		}
+		else if (!strcmp(argv[i], "-in_invert")) {
+			OptionInInvert = True;
+			(void) argdel(argc, argv, i);
+		}
 		else {
 			i++;
 		}
@@ -224,43 +257,35 @@ RasterOpen(name, format)
 	char	*name;
 	char	*format;
 {
-	Raster	*ras = (Raster *) NULL;
-	int	i;
+	Raster		*ras = (Raster *) NULL;
+	RasterDevice	*rasdev;
+	const char	*locformat;
 
 	if (name == (char *) NULL) {
 		(void) ESprintf(RAS_E_NULL_NAME, "RasterOpen(\"%s\")", name);
 		return ((Raster *) NULL);
 	}
-
-	if (!strcmp(name, "parallax") || !strcmp(name, "Parallax")) {
-		format = "parallax";
-	}
-
-	if (!strcmp(name, "cleartext") || !strcmp(name, "ClearText")) {
-		format = "cleartext";
-	}
-
+	
 	if (format == (char *) NULL) {
-		format = strrchr(name, '.');
-		if (format != (char *) NULL) {
-			format++;
-		}
-		else {
-			(void) ESprintf(RAS_E_NO_FORMAT_SPECIFIED,
+		locformat = RasterGetFormatFromName(name);
+	}
+	else {
+		locformat = format;
+	}
+
+	if (locformat == (char *) NULL) {
+		(void) ESprintf(RAS_E_NO_FORMAT_SPECIFIED,
 				"RasterOpen(\"%s\")", name);
 			return ((Raster *) NULL);
-		}
 	}
 
-	for(i=0; i<NumberOfDevices; i++) {
-		if (!strcmp(rasdevices[i].name, format)) {
-			ras = rasdevices[i].Open(name);
-			return(ras);
-		}
+	rasdev = _RasterGetDevice(locformat);
+	if (rasdev == (RasterDevice *) NULL) {
+		return((Raster *) NULL);
 	}
 
-	(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", format);
-	return( (Raster *) NULL);
+	ras = rasdev->Open(name);
+	return(ras);
 }
 
 /**********************************************************************
@@ -300,42 +325,34 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 	char	*format;
 {
 	Raster	*ras = (Raster *) NULL;
-	int	i;
+	RasterDevice	*rasdev;
+	const char	*locformat;
 
 	if (name == (char *) NULL) {
 		(void) ESprintf(RAS_E_NULL_NAME,"RasterOpenWrite(\"%s\")",name);
 		return ((Raster *) NULL);
 	}
-
-	if (!strcmp(name, "parallax") || !strcmp(name, "Parallax")) {
-		format = "parallax";
-	}
-
-	if (!strcmp(name, "cleartext") || !strcmp(name, "ClearText")) {
-		format = "cleartext";
-	}
-
+	
 	if (format == (char *) NULL) {
-		format = strrchr(name, '.');
-		if (format != (char *) NULL) {
-			format++;
-		}
-		else {
-			(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", name);
+		locformat = RasterGetFormatFromName(name);
+	}
+	else {
+		locformat = format;
+	}
+
+	if (locformat == (char *) NULL) {
+		(void) ESprintf(RAS_E_NO_FORMAT_SPECIFIED,
+				"RasterOpen(\"%s\")", name);
 			return ((Raster *) NULL);
-		}
 	}
 
-	for(i=0; i<NumberOfDevices; i++) {
-		if (!strcmp(rasdevices[i].name, format)) {
-			ras = rasdevices[i].OpenWrite(name, nx, ny,
-						      comment, encoding);
-			return(ras);
-		}
+	rasdev = _RasterGetDevice(locformat);
+	if (rasdev == (RasterDevice *) NULL) {
+		return((Raster *) NULL);
 	}
 
-	(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", format);
-	return( (Raster *) NULL);
+	ras = rasdev->OpenWrite(name, nx, ny, comment, encoding);
+	return(ras);
 }
 
 /**********************************************************************
@@ -761,6 +778,52 @@ int RasterGetValues(ras, va_alist)
 		}
 	}
 	return(RAS_OK);
+}
+
+const char *
+RasterGetFormatFromName(name)
+	const char	*name;
+{
+	char	*format = (char *) NULL;
+
+	if (name == (char *) NULL) {
+		(void) ESprintf(RAS_E_NULL_NAME,
+			"RasterGetFormatFromName(NULL)");
+		return((char *) NULL);
+	}
+
+	if (!strcmp(name, "parallax") || !strcmp(name, "Parallax")) {
+		format = "parallax";
+	}
+	else if (!strcmp(name, "cleartext") || !strcmp(name, "ClearText")) {
+		format = "cleartext";
+	}
+	else {
+		format = strrchr(name, '.');
+		if (format != (char *) NULL) {
+			format++;
+		}
+	}
+
+	return(format);
+}
+
+/********************** Private Functions **************************/
+
+RasterDevice *
+_RasterGetDevice(format)
+	const char	*format;
+{
+	int	i;
+
+	for(i=0; i<NumberOfDevices; i++) {
+		if (!strcmp(rasdevices[i].name, format)) {
+			return(&rasdevices[i]);
+		}
+	}
+
+	(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", format);
+	return( (RasterDevice *) NULL );
 }
 
 char *
