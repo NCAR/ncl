@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.6 1994-02-18 02:54:50 boote Exp $
+ *      $Id: Resources.c,v 1.7 1994-04-01 20:08:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,11 +56,61 @@ static NrmQuark QString = NrmNULLQUARK;
 static NrmDatabase NhlResDB = NULL;
 
 /*
+ * Function:	_NhlCopyFromArgVal
+ *
+ * Description:	This function takes memory of a given size and copies it into
+ *		another location. It doesn't actually change dst - it sets
+ *		the memory pointed to by dst. ie. *dst = the value.
+ *		This differs from _NhlCopyFromArg in that it expects the
+ *		src values to be "left" justified - correctly placed in the
+ *		enum.
+ *
+ * In Args:	_NhlArgVal	src;	source
+ *		unsigned int	size;	size
+ *
+ * Out Args:	int		*dst;	destination
+ *
+ * Scope:	Global Private
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlCopyFromArgVal
+#if __STDC__
+(
+	_NhlArgVal	src,	/* source	*/
+	void *		dst,	/* destination	*/
+	unsigned int	size	/* size		*/
+) 
+#else
+(src,dst,size) 
+	_NhlArgVal	src;	/* source	*/
+	void*		dst;	/* destination	*/
+	unsigned int	size;	/* size		*/
+#endif
+{
+	if(size == sizeof(long))	*(long *)dst = src.lngval;
+	else if (size == sizeof(short))	*(short *)dst = src.shrtval;
+	else if (size == sizeof(NhlPointer))
+					*(NhlPointer *)dst = src.ptrval;
+	else if (size == sizeof(char))	*(char *)dst = src.charval;
+	else if (size == sizeof(char*))	*(char **)dst = src.strval;
+	else if (size == sizeof(_NhlArgVal))
+					*(_NhlArgVal *)dst = src;
+	else
+		memcpy((void*)dst,(void*)&src,size);
+}
+
+/*
  * Function:	_NhlCopyFromArg
  *
  * Description:	This function takes memory of a given size and copies it into
  *		another location. It doesn't actually change dst - it sets
  *		the memory pointed to by dst. ie. *dst = the value.
+ *		This differs from _NhlCopyFromArgVal in that it assumes the
+ *		values to be "right" justified in the enum because they
+ *		were all placed in as .lngval in the VA and AL interfaces.
+ *		So they need to be retrieved as "lngval" here.
  *
  * In Args:	_NhlArgVal	src;	source
  *		unsigned int	size;	size
@@ -87,12 +137,14 @@ _NhlCopyFromArg
 #endif
 {
 
-    if      (size == sizeof(long))	*(long *)dst = src.lngval;
-    else if (size == sizeof(short))	*(short *)dst = src.shrtval;
+    if	(size == sizeof(char))	*(char *)dst = (char)src.lngval;
+    else if (size == sizeof(short))	*(short *)dst = (short)src.lngval;
+    else if (size == sizeof(int))	*(int *)dst = (int)src.lngval;
+    else if(size == sizeof(long))	*(long *)dst = src.lngval;
     else if (size == sizeof(NhlPointer))
-					*(NhlPointer *)dst = src.ptrval;
-    else if (size == sizeof(char))	*(char *)dst = src.charval;
-    else if (size == sizeof(char*))	*(char **)dst = src.strval;
+				*(NhlPointer *)dst = (NhlPointer)src.lngval;
+    else if (size == sizeof(NhlString))
+				*(NhlString *)dst = (NhlString)src.lngval;
     else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
     else
         memcpy((void*)dst,(void*)&src,size);
@@ -285,10 +337,14 @@ GetResources
 	for (i=0; i < num_args; i++){
 		for(j=0; j < num_res; j++) {
 			if(args[i].quark == resources[j].nrm_name) {
-				if((args[i].type == NrmNULLQUARK) ||
-					(args[i].type==resources[j].nrm_type)){
-
+				if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
+					(char*)(base + resources[j].nrm_offset),
+					resources[j].nrm_size);
+					resfound[j] = True;
+				}
+				else if(args[i].type==resources[j].nrm_type){
+					_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 					resfound[j] = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.6 1994-02-18 02:54:56 boote Exp $
+ *      $Id: SetValues.c,v 1.7 1994-04-01 20:08:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -195,10 +195,13 @@ SetValues
 	for(i=0; i < nargs; i++){
 		for(j=0; j < num_res; j++){
 			if(args[i].quark == resources[j].nrm_name) {
-				if((args[i].type == NrmNULLQUARK) ||
-					(args[i].type==resources[j].nrm_type)){
-
+				if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
+				(char*)((char*)base + resources[j].nrm_offset),
+					resources[j].nrm_size);
+				}
+				else if(args[i].type==resources[j].nrm_type){
+					_NhlCopyFromArgVal(args[i].value,
 				(char*)((char*)base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 				}
@@ -585,7 +588,6 @@ NhlALSetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer indexed by id, is modified to set the requested values
  */
-NhlDOCTAG(NhlSetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlSetValues
@@ -606,11 +608,11 @@ NhlSetValues
 
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"PID #%d can't be found in NhlALSetValues",id);
+				"PID #%d can't be found in NhlSetValues",id);
 		return(NhlFATAL);
 	}
 
-	/* create an arglist from the sargs */
+	/* create an arglist from the reslist */
 	if(!_NhlRLToArgList(rlid,NhlSETRL,args,&nargs)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"NhlSetValues:Invalid RL id %d",rlid);
@@ -618,6 +620,39 @@ NhlSetValues
 	}
 
 	return _NhlSetValues(l, args, nargs);
+}
+
+/*
+ * Function:	nhl_fsetvalues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Fortran
+ * Returns:	err_ret gets NhlErrorTypes.
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fsetvalues,NHL_FSETVALUES)
+#if	__STDC__
+(
+	int		*pid,		/* plot id <return>		*/
+	int		*rlid,		/* RL list of resources		*/
+	int		*err_ret	/* error return			*/
+)
+#else
+(pid,rlid,err_ret)
+	int		*pid;		/* plot id <return>		*/
+	int		*rlid;		/* RL list of resources		*/
+	int		*err_ret;	/* error return			*/
+#endif
+{
+	*err_ret = NhlSetValues(*pid,*rlid);
+
+	return;
 }
 
 /*

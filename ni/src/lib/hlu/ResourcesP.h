@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.4 1994-02-18 02:54:53 boote Exp $
+ *      $Id: ResourcesP.h,v 1.5 1994-04-01 20:08:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,14 @@ extern void _NhlCompileResourceList(
 #if	NhlNeedProto
 	NhlResourceList,	/* resource list	*/
 	int			/* number of resources	*/
+#endif
+);
+
+extern void _NhlCopyFromArgVal(
+#ifdef	NhlNeedProto
+	_NhlArgVal,	/* src	*/
+	void*,		/* dst	*/
+	unsigned int	/* size	*/
 #endif
 );
 

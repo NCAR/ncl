@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.7 1994-03-23 15:27:25 boote Exp $
+ *      $Id: GetValues.c,v 1.8 1994-04-01 20:08:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -308,6 +308,49 @@ _NhlGetValues
 }
 
 /*
+ * Function:	CopyArgToArgptr
+ *
+ * Description:	This function takes memory of a given size and copies it into
+ *		another location. It doesn't actually change dst - it sets
+ *		the memory pointed to by dst. ie. *dst = the value.
+ *
+ * In Args:	_NhlArgVal	src;	source
+ *		unsigned int	size;	size
+ *
+ * Out Args:	int		*dst;	destination
+ *
+ * Scope:	static
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+CopyArgToArgptr
+#if __STDC__
+(
+	_NhlArgVal	src,	/* source	*/
+	void *		dst,	/* destination	*/
+	unsigned int	size	/* size		*/
+) 
+#else
+(src,dst,size) 
+	_NhlArgVal	src;	/* source	*/
+	void*		dst;	/* destination	*/
+	unsigned int	size;	/* size		*/
+#endif
+{
+
+    if      (size == sizeof(long))	*(long *)dst = src.lngval;
+    else if (size == sizeof(short))	*(short *)dst = src.shrtval;
+    else if (size == sizeof(NhlPointer))
+					*(NhlPointer *)dst = src.ptrval;
+    else if (size == sizeof(char))	*(char *)dst = src.charval;
+    else if (size == sizeof(char*))	*(char **)dst = src.strval;
+    else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
+    else
+        memcpy((void*)dst,(void*)&src,size);
+}
+
+/*
  * Function:	NhlGetValues
  *
  * Description:	This function retrieves the resources specified by the
@@ -367,6 +410,7 @@ NhlGetValues
 		gargs[i].value.ptrval = &gextra[i].value_ret;
 		gargs[i].type = args[i].type;
 		gextra[i].type_ret = NrmNULLQUARK;
+		gextra[i].size_ret = 0;
 		gextra[i].free_func = NULL;
 		gargs[i].type_ret = &gextra[i].type_ret;
 		gargs[i].size_ret = &gextra[i].size_ret;
@@ -387,7 +431,7 @@ NhlGetValues
 		 */
 		if((gargs[i].type == NrmNULLQUARK) ||
 					(gargs[i].type == gextra[i].type_ret)){
-			_NhlCopyFromArg(gextra[i].value_ret,
+			CopyArgToArgptr(gextra[i].value_ret,
 				args[i].value.ptrval,gextra[i].size_ret);
 		}
 		else if(_NhlConverterExists(gextra[i].type_ret,args[i].type)){
@@ -422,6 +466,7 @@ NhlGetValues
 					NrmQuarkToString(args[i].quark));
 
 				ret = MIN(ret,NhlWARNING);
+				continue;
 			}
 
 			/*
@@ -462,6 +507,39 @@ NhlGetValues
 	_NhlFreeConvertContext(context);
 
 	return ret;
+}
+
+/*
+ * Function:	nhl_fgetvalues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	err_ret gets NhlErrorTypes
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fgetvalues,NHL_FGETVALUES)
+#if	__STDC__
+(
+	int	*id,
+	int	*rlid,
+	int	*err_ret
+)
+#else
+(id,rlid,err_ret)
+	int	*id;
+	int	*rlid;
+	int	*err_ret;
+#endif
+{
+	*err_ret = NhlGetValues(*id,*rlid);
+
+	return;
 }
 
 /*
