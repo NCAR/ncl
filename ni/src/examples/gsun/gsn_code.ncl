@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.103 2003-02-27 22:29:54 grubin Exp $
+;      $Id: gsn_code.ncl,v 1.104 2003-03-03 20:31:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -151,12 +151,12 @@ begin
 
   output = output + (coef * var) 
         
-  if(isnameddim(var,0).and.iscoord(var,var!0))  then
+  if(isdimnamed(var,0).and.iscoord(var,var!0))  then
     output!0 = var!0
     output&$var!0$ = var&$var!0$
   end if
 
-  if(isnameddim(var,1).and.iscoord(var,var!1))  then
+  if(isdimnamed(var,1).and.iscoord(var,var!1))  then
     output!1 = var!1
     output&$var!1$ = var&$var!1$
   end if
@@ -195,16 +195,16 @@ begin
 
   output = output + (coef * var) 
         
-  if(isnameddim(var,0).and.iscoord(var,var!0))  then
+  if(isdimnamed(var,0).and.iscoord(var,var!0))  then
     output!0 = var!0
     output&$var!0$ = var&$var!0$
   end if
 
-  if(isnameddim(var,1).and.iscoord(var,var!1))  then
+  if(isdimnamed(var,1).and.iscoord(var,var!1))  then
     output!1 = var!1
     output&$var!1$ = var&$var!1$
   end if
-  if(isnameddim(var,2).and.iscoord(var,var!2))  then
+  if(isdimnamed(var,2).and.iscoord(var,var!2))  then
     output!2 = var!2
     output&$var!2$ = var&$var!2$
   end if

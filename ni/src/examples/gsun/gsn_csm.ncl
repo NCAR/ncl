@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.119 2003-02-27 18:05:09 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.120 2003-03-03 20:31:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -607,7 +607,7 @@ end
 function is_valid_xcoord(data:numeric)
 local dims1
 begin
-  if(isnameddim(data,1).and.iscoord(data,data!1))
+  if(isdimnamed(data,1).and.iscoord(data,data!1))
     dims1 = dimsizes(dimsizes(data&$data!1$))
     if(dims1.eq.1) then
       return(True)
@@ -628,7 +628,7 @@ end
 function is_valid_ycoord(data:numeric)
 local dims0
 begin
-  if(isnameddim(data,0).and.iscoord(data,data!0))
+  if(isdimnamed(data,0).and.iscoord(data,data!0))
     dims0 = dimsizes(dimsizes(data&$data!0$))
     if(dims0.eq.1) then
       return(True)
@@ -2826,7 +2826,7 @@ begin
 ; array. It is possible that if we have a 2D longitudate "coordinate"
 ; array, it will not be 360 in range, so we don't want to check 2D arrays.
 ;
-    if(isnameddim(newdata,1).and.iscoord(newdata,newdata!1)) then 
+    if(isdimnamed(newdata,1).and.iscoord(newdata,newdata!1)) then 
       first_val  = newdata&$newdata!1$(0)
       second_val = newdata&$newdata!1$(1)
       last_val   = newdata&$newdata!1$(mx-1)
@@ -2848,7 +2848,7 @@ begin
       end if
     end if
 
-    if(isnameddim(newdata,1).and.iscoord(newdata,newdata!1)) then 
+    if(isdimnamed(newdata,1).and.iscoord(newdata,newdata!1)) then 
       newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
     else 
 ;
@@ -4106,9 +4106,9 @@ begin
 ; Check if a zonal mean plot is desired.
 
     if(res2.and.isatt(res2,"gsnZonalMean"))
-      if((isnameddim(datanew,0).and. \
+      if((isdimnamed(datanew,0).and. \
          any(datanew!0.eq.get_allowed_latnames())).and.\
-         (isnameddim(datanew,1).and.\
+         (isdimnamed(datanew,1).and.\
          any(datanew!1.eq.get_allowed_lonnames())))
         if(res2@gsnZonalMean)
           if(isatt(res2,"vpHeightF"))
@@ -4319,7 +4319,7 @@ begin
       end getvalues
 
 ; Create data object.
-      if(isnameddim(datanew,0).and.any(datanew!0.eq.get_allowed_latnames()))
+      if(isdimnamed(datanew,0).and.any(datanew!0.eq.get_allowed_latnames()))
         data_object = create "data" coordArraysClass noparent
           "caXArray" : zmeans
           "caYArray" : datanew&$datanew!0$
