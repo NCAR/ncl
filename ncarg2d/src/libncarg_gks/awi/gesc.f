@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.22 1996-10-07 19:14:13 fred Exp $
+C	$Id: gesc.f,v 1.23 1996-10-07 19:24:08 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -41,8 +41,9 @@ C       CALL GERHND(180,EESC,ERF)
       ENDIF
 C
 C  Process legal escape function ID'S:
-C      -1386  --  Flag for disabling clipping to the clip rectangle in
-C                 a segment (1 = disable; 0 = enable)
+C      -1386  --  Flag for indicating whether the clip rectangle within
+C                 a segment will be transformed as per the segment 
+C                 transformation. (1 = transform; 0 = do not transform)
 C      -1387  --  Temporarily close an NCGM, no matter what the status 
 C                 of the file.
 C      -1388  --  Set/save/restore attributes.
