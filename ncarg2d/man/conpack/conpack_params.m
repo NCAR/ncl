@@ -599,6 +599,27 @@ supply the desired value for 'HLC'. To have highs and low
 labels which are colored differently, set 'HIC' and 'LOC'.
 .sp
 The default values of 'HLC', 'HIC', and 'LOC' are all -1's.
+.IP "'HLE' - High/Low Equal-Value Search - Integer"
+If 'HLE' has the value zero, only the "normal" search for highs and lows, as
+described in the programmer document for CONPACK (in the section "Searching
+for Highs and Lows") is performed.
+.sp
+If 'HLE' has the value one, and if the "normal" search for highs and lows sees
+evidence that an additional search should be performed, then the additional
+search is performed.  See the section "Extended High/Low Search Algorithm", in
+the programmer document for CONPACK.
+.sp
+If 'HLE' has the value two or greater, and if the "normal" search for highs and
+lows sees evidence that an additional search should be performed, then the
+additional search is performed, but the candidate regions considered are
+limited to those containing no more than 'HLE' grid points.
+.sp
+Whenever 'HLE' is given a non-zero value, care should be taken to provide
+enough space in the integer work array to hold an additional M*N elements,
+where M and N are the dimensions of the array being contoured.  This space
+will be needed during a call to CPHLLB.
+.sp
+The default value of 'HLE' is zero.
 .IP "'HLL' - High/Low Line Width - Real"
 If 'HLL' has a value less than or equal to zero, line width 
 will not be set before drawing boxes around high and low 
