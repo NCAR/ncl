@@ -3,7 +3,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C This program creates a colorful picture to serve as a test for the
 C translator.  It is based on EZMAP example 10 and parts of the new
