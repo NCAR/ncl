@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.1 1995-11-21 20:19:02 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.2 1995-12-01 04:15:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -805,9 +805,10 @@ VecAnnoDraw
 
 	_NhlDeactivateWorkstation(l->base.wkptr);
 
-
-	NhlDraw(vap->textitem1);
-	NhlDraw(vap->textitem2);
+	if (vap->string1_on)
+		NhlDraw(vap->textitem1);
+	if (vap->string2_on)
+		NhlDraw(vap->textitem2);
 
 	return(ret);
 }

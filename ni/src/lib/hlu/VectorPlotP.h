@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.1 1995-11-21 20:19:09 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.2 1995-12-01 04:15:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -255,6 +255,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	int		minvec_anno_id;
 	int		zerof_anno_id;
 	NhlColorIndex	*gks_vector_colors;
+	float		real_ref_length;
 
 	NhlLayer	trans_obj;
 	NhlBoolean	wk_active;

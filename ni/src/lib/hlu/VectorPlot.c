@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.2 1995-11-30 02:33:07 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.3 1995-12-01 04:15:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1327,6 +1327,7 @@ static NrmQuark	Qref_magnitude = NrmNULLQUARK;
 static NrmQuark	Qmin_magnitude = NrmNULLQUARK;
 static NrmQuark	Qmax_magnitude = NrmNULLQUARK;
 static NrmQuark	Qmin_frac_len = NrmNULLQUARK;
+static NrmQuark	Qref_length = NrmNULLQUARK;
 
 static char *InitName = "VectorPlotInitialize";
 static char *SetValuesName = "VectorPlotSetValues";
@@ -1528,6 +1529,7 @@ VectorPlotClassInitialize
 	Qmin_magnitude = NrmStringToQuark(NhlNvcMinMagnitudeF);
 	Qmax_magnitude = NrmStringToQuark(NhlNvcMaxMagnitudeF);
 	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFractionalLenF);
+	Qref_length = NrmStringToQuark(NhlNvcRefLengthF);
 
 	{
 		int i,j;
@@ -1958,6 +1960,7 @@ static NhlErrorTypes VectorPlotSetValues
 	NhlVectorPlotLayer		vcnew = (NhlVectorPlotLayer) new;
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	NhlVectorPlotLayer		vcold = (NhlVectorPlotLayer) old;
+ 	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	/* Note that ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -1992,10 +1995,20 @@ static NhlErrorTypes VectorPlotSetValues
 		vcp->y_max_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlbLabelStrings))
 		vcp->lbar_labels_res_set = True;
+
 	if (_NhlArgIsSet(args,num_args,NhlNvcMinLevelValF))
 		vcp->min_level_set = True;
+	else if (vcp->use_scalar_array != ovcp->use_scalar_array) {
+		vcp->min_level_val = -FLT_MAX;
+		vcp->min_level_set = False;
+	}
+
 	if (_NhlArgIsSet(args,num_args,NhlNvcMaxLevelValF))
 		vcp->max_level_set = True;
+	else if (vcp->use_scalar_array != ovcp->use_scalar_array) {
+		vcp->max_level_val = FLT_MAX;
+		vcp->max_level_set = False;
+	}
 
 /*
  * Constrain resources
@@ -2261,6 +2274,10 @@ static NhlErrorTypes    VectorPlotGetValues
 		else if (args[i].quark == Qmax_magnitude) {
 			if (vcp->max_magnitude == 0.0)
 				*((float *)args[i].value.ptrval) = vcp->zmax;
+		}
+		else if (args[i].quark == Qref_length) {
+			*((float *)args[i].value.ptrval) 
+				= vcp->real_ref_length;
 		}
         }
 
@@ -2783,6 +2800,7 @@ static NhlErrorTypes vcInitDraw
 	vcp->wk_active = False;
 	vcp->seg_open = False;
 
+#if 0
 	subret = GetVectorData(vcl);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2790,7 +2808,7 @@ static NhlErrorTypes vcInitDraw
 		subret = GetScalarData(vcl);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
-
+#endif
 	return ret;
 }
 
@@ -3255,7 +3273,7 @@ static NhlErrorTypes vcDraw
 	c_vvsetr("VHC",-vhc);
 	vrm = MAX(0.0,vcp->ref_magnitude);
 	c_vvsetr("VRM",vrm);
-	vrl = MAX(0.0,vcp->ref_length / vcl->view.width);
+	vrl = MAX(0.0,vcp->real_ref_length / vcl->view.width);
 	c_vvsetr("VRL",vrl);
 	amn = MAX(0.0,vcp->arrow_min_size);
 	c_vvsetr("AMN",amn);
@@ -3712,8 +3730,10 @@ static NhlErrorTypes SetUpLLTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,vcp->y_log);
 
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-	if (nargs > 0)
+	if (nargs > 0) {
 		vcp->new_draw_req = True;
+		vcp->update_req = True;
+	}
 	return MIN(ret,subret);
 
 }
@@ -4058,8 +4078,10 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
-	if (nargs > 0)
+	if (nargs > 0) {
 		vcp->new_draw_req = True;
+		vcp->update_req = True;
+	}
 	return MIN(ret,subret);
 
 }
@@ -4300,7 +4322,7 @@ static NhlErrorTypes ManageLabels
 /* Manage the vector annotations */
 
 
-	vcp->refvec_anno.aap->vec_len = vcp->ref_length;
+	vcp->refvec_anno.aap->vec_len = vcp->real_ref_length;
 	if (vcp->refvec_anno.aap->vec_mag <= 0.0) {
 		if (vcp->ref_magnitude > 0.0)
 			vcp->refvec_anno.aap->real_vec_mag 
@@ -4312,19 +4334,20 @@ static NhlErrorTypes ManageLabels
 		vcp->refvec_anno.aap->real_vec_mag = 
 			vcp->refvec_anno.aap->vec_mag;
 		if (vcp->min_frac_len > 0.0) {
-			float minlen = vcp->min_frac_len * vcp->ref_length;
+			float minlen = 
+				vcp->min_frac_len * vcp->real_ref_length;
 			float refmag = (vcp->ref_magnitude > 0.0) ?
 				vcp->ref_magnitude : vcp->zmax;
 
 			vcp->refvec_anno.aap->vec_len = minlen +
-				(vcp->ref_length - minlen) *
+				(vcp->real_ref_length - minlen) *
 				 (vcp->refvec_anno.aap->vec_mag - vcp->zmin) / 
 					(refmag - vcp->zmin);
 		}
 		else {
 			float refmag = (vcp->ref_magnitude > 0.0) ?
 				vcp->ref_magnitude : vcp->zmax;
-			vcp->refvec_anno.aap->vec_len = vcp->ref_length *
+			vcp->refvec_anno.aap->vec_len = vcp->real_ref_length *
 				vcp->refvec_anno.aap->vec_mag / refmag;
 		}
 			
@@ -4345,37 +4368,39 @@ static NhlErrorTypes ManageLabels
 
 	if (vcp->min_frac_len > 0.0) {
 		vcp->minvec_anno.aap->vec_len = 
-			vcp->min_frac_len * vcp->ref_length;
+			vcp->min_frac_len * vcp->real_ref_length;
 	}
 	else if (vcp->ref_magnitude > 0.0) {
-		vcp->minvec_anno.aap->vec_len = vcp->ref_length *
+		vcp->minvec_anno.aap->vec_len = vcp->real_ref_length *
 			MAX(vcp->zmin,vcp->min_magnitude) / vcp->ref_magnitude;
 	}
 	else {
-		vcp->minvec_anno.aap->vec_len = vcp->ref_length *
-			vcp->zmin / vcp->zmax;
+		vcp->minvec_anno.aap->vec_len = vcp->real_ref_length *
+			MAX(vcp->zmin,vcp->min_magnitude) / vcp->zmax;
 	}
 
 	if (vcp->minvec_anno.aap->vec_mag <= 0.0) {
-		vcp->minvec_anno.aap->real_vec_mag = vcp->zmin;
+		vcp->minvec_anno.aap->real_vec_mag = 
+			MAX(vcp->zmin,vcp->min_magnitude);
 	}
 	else {
 		vcp->minvec_anno.aap->real_vec_mag = 
 			vcp->minvec_anno.aap->vec_mag;
 		if (vcp->min_frac_len > 0.0) {
-			float minlen = vcp->min_frac_len * vcp->ref_length;
+			float minlen = 
+				vcp->min_frac_len * vcp->real_ref_length;
 			float refmag = (vcp->ref_magnitude > 0.0) ?
 				vcp->ref_magnitude : vcp->zmax;
 
 			vcp->minvec_anno.aap->vec_len = minlen +
-				(vcp->ref_length - minlen) *
+				(vcp->real_ref_length - minlen) *
 				 (vcp->minvec_anno.aap->vec_mag - vcp->zmin) / 
 					(refmag - vcp->zmin);
 		}
 		else {
 			float refmag = (vcp->ref_magnitude > 0.0) ?
 				vcp->ref_magnitude : vcp->zmax;
-			vcp->minvec_anno.aap->vec_len = vcp->ref_length *
+			vcp->minvec_anno.aap->vec_len = vcp->real_ref_length *
 				vcp->minvec_anno.aap->vec_mag / refmag;
 		}
 			
@@ -5228,16 +5253,14 @@ static NhlErrorTypes ManageVecAnno
 	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	NhlBoolean		text_changed;
-	NhlSArg			targs[24];
+	NhlSArg			targs[32];
 	int			targc = 0;
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
+	NhlBoolean		on;			
 	
 
 	entry_name = (init) ? InitName : SetValuesName;
-
-	if (! ilp->on && (init || ! oilp->on))
-		return NhlNOERROR;
 
 	subret = PrepareAnnoString(vcp,ovcp,init,
 				   ilp->aap->real_vec_mag,
@@ -5288,8 +5311,12 @@ static NhlErrorTypes ManageVecAnno
 	}
 
 	if (init || anrp->id == NhlNULLOBJID) {
+		NhlSetSArg(&targs[(targc)++],NhlNvaString1On,
+			   ilp->string1_on);
 		NhlSetSArg(&targs[(targc)++],NhlNvaString1,
 			   ilp->text1);
+		NhlSetSArg(&targs[(targc)++],NhlNvaString2On,
+			   ilp->string2_on);
 		NhlSetSArg(&targs[(targc)++],NhlNvaString2,
 			   ilp->text2);
 		NhlSetSArg(&targs[(targc)++],NhlNvaVectorLenF,
@@ -5348,18 +5375,22 @@ static NhlErrorTypes ManageVecAnno
 			/* go on so that text position can be set */
 		}
 		else {
+			on = ilp->on && ! vcp->display_zerof_no_data;
 			subret = ManageAnnotation(vcnew,True,
-						  anrp,
-						  &ovcp->refvec_anno_rec,
-						  &vcp->refvec_anno_id,
-						  !vcp->display_zerof_no_data);
+						  anrp,oanrp,idp,on);
 			return MIN(ret,subret);
 		}
 	}
 	if (! init) {
+		if (ilp->string1_on != oilp->string1_on)
+			NhlSetSArg(&targs[(targc)++],NhlNvaString1On,
+				   ilp->string1_on);
 		if (ilp->text1 != oilp->text1)
 			NhlSetSArg(&targs[(targc)++],NhlNvaString1,
 				   ilp->text1);
+		if (ilp->string2_on != oilp->string2_on)
+			NhlSetSArg(&targs[(targc)++],NhlNvaString2On,
+				   ilp->string2_on);
 		if (ilp->text2 != oilp->text2)
 			NhlSetSArg(&targs[(targc)++],NhlNvaString2,
 				   ilp->text2);
@@ -5432,11 +5463,8 @@ static NhlErrorTypes ManageVecAnno
 	}
 
 	if (tfp->overlay_status != _tfNotInOverlay) {
-		subret = ManageAnnotation(vcnew,True,
-					  &vcp->refvec_anno_rec,
-					  &ovcp->refvec_anno_rec,
-					  &vcp->refvec_anno_id,
-					  !vcp->display_zerof_no_data);
+		on = ilp->on && ! vcp->display_zerof_no_data;
+		subret = ManageAnnotation(vcnew,True,anrp,oanrp,idp,on);
 		ret = MIN(ret,subret);
 	}
 	return ret;
@@ -6557,11 +6585,14 @@ static NhlErrorTypes    ManageViewDepResources
 
 /* adjust the reference length if it is not set */
 
-	if (! vcp->data_init && ! vcp->ref_length_set) {
-		vcp->ref_length = vcnew->view.width * 0.05;
+	if (vcp->ref_length > 0.0) {
+		vcp->real_ref_length = vcp->ref_length;
 	}
-	else if (! vcp->ref_length_set) {
-		if (init || vcp->data_changed || vcp->ref_length <= 0.0) {
+	else {
+		if (! vcp->data_init) {
+			vcp->real_ref_length = vcnew->view.width * 0.05;
+		}
+		else if (init || vcp->data_changed) {
 			int nx,ny;
 			float sx,sy;
 
@@ -6569,16 +6600,21 @@ static NhlErrorTypes    ManageViewDepResources
 			ny = vcp->vfp->slow_len;
 			sx = vcnew->view.width / nx;
 			sy = vcnew->view.height / ny;
-			vcp->ref_length = sqrt((sx*sx + sy*sy) / 2.0);
+			vcp->real_ref_length = sqrt((sx*sx + sy*sy) / 2.0);
 		}
-		else if (vcnew->view.width != vcold->view.width ||
-			 vcnew->view.height != vcold->view.height) {
+		vcp->ref_length_set = True;
+	}
+	if (! vcp->ref_length_set) {
+		if (vcnew->view.width != vcold->view.width ||
+		    vcnew->view.height != vcold->view.height) {
 			float ratio;
 			ratio = sqrt((vcnew->view.width * vcnew->view.width
 				   + vcnew->view.height * vcnew->view.height) /
 				  (vcold->view.width * vcold->view.width
 				   + vcold->view.height * vcold->view.height));
-			vcp->ref_length *= ratio;
+			vcp->real_ref_length *= ratio;
+			if (vcp->ref_length > 0.0)
+				vcp->ref_length = vcp->real_ref_length;
 		}
 	}
 
@@ -8054,12 +8090,18 @@ void vvumxy_
 
 		_NhlCompcToWin(trans_p,x,y,1,
 			       &xout,&yout,&status,NULL,NULL);
+#if 0
 		if(status) {
 			xout = *x;
 			yout = *y;
 		}
 		if (xout < wxmn || xout > wxmx || 
 		    yout < wymn || yout > wymx) {
+			*ist = -5;
+			return;
+		}
+#endif
+		if(status) {
 			*ist = -5;
 			return;
 		}
@@ -8080,6 +8122,10 @@ void vvumxy_
 			xdata = *x;
 			ydata = *y;
 		}
+		if(status) {
+			*ist = -5;
+			return;
+		}
 #if 0
 		printf("data %f %f\n", xdata,ydata);
 #endif
@@ -8093,6 +8139,10 @@ void vvumxy_
 			xdata = *x;
 			ydata = *y;
 		}
+		if(status) {
+			*ist = -5;
+			return;
+		}
 
 		_NhlDataToWin(overlay_trans_obj,
 			      &xdata, &ydata,1,&xout,&yout,
@@ -8103,6 +8153,10 @@ void vvumxy_
 		}
 		if (xout < wxmn || xout > wxmx || 
 		    yout < wymn || yout > wymx) {
+			*ist = -5;
+			return;
+		}
+		if(status) {
 			*ist = -5;
 			return;
 		}

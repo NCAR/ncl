@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.26 1995-11-21 20:18:54 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.27 1995-12-01 04:15:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4923,8 +4923,10 @@ static NhlErrorTypes SetUpLLTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,cnp->y_log);
 
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-	if (nargs > 0)
+	if (nargs > 0) {
 		cnp->new_draw_req = True;
+		cnp->update_req = True;
+	}
 	return MIN(ret,subret);
 
 }
@@ -5268,8 +5270,10 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
-	if (nargs > 0)
+	if (nargs > 0) {
 		cnp->new_draw_req = True;
+		cnp->update_req = True;
+	}
 	return MIN(ret,subret);
 
 }
@@ -5973,7 +5977,7 @@ static NhlErrorTypes ManageLegend
 				copy_ll_font_colors = False,
 				copy_ll_strings = False,
 				copy_l_labels = False,
-				set_all = True;
+				set_all = False;
 	
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -5992,7 +5996,6 @@ static NhlErrorTypes ManageLegend
 			ret = MIN(ret,NhlINFO);
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmLegendDisplayMode,NhlNEVER);
-			return ret;
 		}
 		else {
 			NhlSetSArg(&sargs[(*nargs)++],
@@ -6473,7 +6476,6 @@ static NhlErrorTypes ManageLabelBar
 			ret = MIN(ret,NhlINFO);
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmLabelBarDisplayMode,NhlNEVER);
-			return ret;
 		}
 		else {
 			NhlSetSArg(&sargs[(*nargs)++],
