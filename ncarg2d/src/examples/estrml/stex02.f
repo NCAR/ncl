@@ -36,7 +36,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL STREAM(IERR)
+      CALL DOST02(IERR)
 C
 C     Deactivate and close workstation, close GKS.
 C
@@ -46,7 +46,7 @@ C
       STOP
       END
 C
-      SUBROUTINE STREAM (IERROR)
+      SUBROUTINE DOST02 (IERROR)
 C
 C
       PARAMETER (M=25,N=25)
