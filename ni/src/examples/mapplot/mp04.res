@@ -22,4 +22,6 @@ mp04.mp04Work.Map0*amTrackData : true
 mp04.mp04Work.Map0*amJust : centerleft
 
 mp04.mp04Work*txFontHeightF : 0.009
-mp04.mp04Work*txFontColor : 18
+mp04.mp04Work*txFontColor : 5
+mp04.mp04Work*mpOceanFillColor:  10
+mp04.mp04Work*mpLandFillColor:   26
