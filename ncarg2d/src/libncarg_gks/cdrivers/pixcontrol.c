@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.4 2004-08-03 21:53:14 fred Exp $
+ *      $Id: pixcontrol.c,v 1.5 2004-12-15 23:04:38 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -695,7 +695,7 @@ PIX_OpenWorkstation
         xi->size_change = NULL;
         xi->sref = NULL;
 	xi->format = 1;
-	xi->filename = NULL;
+        xi->filename = "gmeta";
 	xi->clear = 1;
 
         while(cesc = _NGGetCEscInit()){
