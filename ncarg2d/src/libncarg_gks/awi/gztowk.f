@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.15 2003-01-06 23:26:56 fred Exp $
+C	$Id: gztowk.f,v 1.16 2004-03-16 18:50:28 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C
             CALL G01WDR(ID(1),GFNAME)
             RETURN
           ELSE IF (ID(3).EQ.GXWC  .OR. ID(3).EQ.GXWE .OR. 
-     +             ID(3).EQ.GDMP  .OR. 
+     +             ID(3).EQ.GDMP  .OR. ID(3).EQ.GPIX .OR.
      +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX) .OR.
      +             ID(3).EQ.GPDFP .OR. ID(3).EQ.GPDFL) THEN
       
@@ -140,7 +140,7 @@ C
               CALL G01WDR(SOPWK(I),' ')
    50         CONTINUE
             ELSE IF (SWKTP(I).EQ.GXWC  .OR. SWKTP(I).EQ.GXWE .OR.
-     +               SWKTP(I).EQ.GDMP  .OR. 
+     +               SWKTP(I).EQ.GDMP  .OR. SWKTP(I).EQ.GPIX .OR.
      +              (SWKTP(I).GE.GPSMIN .AND. SWKTP(I).LE.GPSMAX) .OR.
      +               SWKTP(I).EQ.GPDFP .OR. SWKTP(I).EQ.GPDFL) THEN
 C
@@ -208,7 +208,7 @@ C
               CALL G01WDR(SACWK(I),' ')
    60         CONTINUE
             ELSE IF (ITYP.EQ.GXWC  .OR. ITYP.EQ.GXWE .OR.
-     +               ITYP.EQ.GDMP  .OR. 
+     +               ITYP.EQ.GDMP  .OR. ITYP.EQ.GPIX .OR.
      +              (ITYP.GE.GPSMIN .AND. ITYP.LE.GPSMAX) .OR.
      +               ITYP.EQ.GPDFP .OR. ITYP.EQ.GPDFL) THEN
 C

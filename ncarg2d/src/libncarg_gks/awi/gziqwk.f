@@ -1,5 +1,5 @@
 C
-C	$Id: gziqwk.f,v 1.7 2003-01-06 23:26:55 fred Exp $
+C	$Id: gziqwk.f,v 1.8 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -39,7 +39,7 @@ C
         CALL G01WDR(WKID,' ')
         RETURN
       ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
-     +         WTYPE.EQ.GXWE  .OR.
+     +         WTYPE.EQ.GXWE  .OR. WTYPE.EQ.GPIX  .OR.
      +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
      +        (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) ) THEN
         CALL GZXID(WKID,XID,RERR)
@@ -58,7 +58,7 @@ C
           RERR = 0
         ENDIF
         RETURN
-      ELSE IF (WTYPE .NE. GXWC) THEN
+      ELSE IF (WTYPE.NE.GXWC) THEN
         RERR = 22
         RETURN
       ELSE

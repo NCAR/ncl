@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.h,v 1.7 2003-01-06 23:30:13 fred Exp $
+ *	$Id: gks_device.h,v 1.8 2004-03-16 18:50:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -116,6 +116,12 @@ extern GKSdev	*GKS_GetCTXTdev(
 );
 
 extern GKSdev	*GKS_GetX11dev(
+#ifdef	NeedFuncProto
+	void
+#endif
+);
+
+extern GKSdev	*GKS_GetPIXdev(
 #ifdef	NeedFuncProto
 	void
 #endif

@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.23 2003-02-26 23:58:13 fred Exp $
+C	$Id: gksbd.f,v 1.24 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -166,6 +166,7 @@ C       GCGM   -- WORKSTATION TYPE CGM
 C       GWSS   -- WORKSTATION TYPE WISS
 C       GXWE   -- WORKSTATION TYPE EXISTING COLOUR X WINDOW
 C       GXWC   -- WORKSTATION TYPE COLOUR X WINDOW
+C       GPIX   -- Workstation type for PIX map.
 C       GPSMIN -- MINIMUM TYPE FOR THE POSTSCRIPT DRIVERS
 C       GPSMAX -- MAXIMUM TYPE FOR THE POSTSCRIPT DRIVERS
 C       GPDFP  -- Workstation type for PDF portrait.
@@ -213,7 +214,7 @@ C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
       DATA KSLEV,WK/0, 17/
-      DATA LSWK/1,3,7,8,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
+      DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
       DATA OPS/0/
@@ -221,8 +222,8 @@ C-----------------------------------------------------------------------
       DATA GBUNDL,GINDIV/0,1/
       DATA GGKCL,GGKOP,GWSOP,GWSAC,GSGOP/0,1,2,3,4/
       DATA GOUTPT,GINPUT,GOUTIN,GWISS,GMO,GMI/0,1,2,3,4,5/
-      DATA GCGM,GWSS,GXWE,GXWC,GDMP,GPDFP,GPDFL,GPSMIN,GPSMAX
-     +    /1,3,7,8,10,11,12,20,31/       
+      DATA GCGM,GWSS,GXWE,GXWC,GPIX, GDMP,GPDFP,GPDFL,GPSMIN,GPSMAX
+     +    /   1,   3,   7,   8,   9,   10,   11,   12,    20,    31/       
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/

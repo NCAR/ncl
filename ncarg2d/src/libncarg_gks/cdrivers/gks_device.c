@@ -1,5 +1,5 @@
 /*
- *      $Id: gks_device.c,v 1.7 2003-01-06 23:30:13 fred Exp $
+ *      $Id: gks_device.c,v 1.8 2004-03-16 18:50:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,6 +82,8 @@ GKSdev  *GKS_GetDevByName(name)
                 return GKS_GetPSdev();
         else if(!strcmp(name,"pdf"))
                 return GKS_GetPDFdev();
+        else if(!strcmp(name,"PIX"))
+                return GKS_GetPIXdev();
 
         /*
          * device not found

@@ -1,5 +1,5 @@
 C
-C	$Id: gqcf.f,v 1.4 2000-08-22 15:08:04 haley Exp $
+C	$Id: gqcf.f,v 1.5 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,8 @@ C
 C
       IF (ERRIND .NE. 0) GO TO 100
       ERRIND = 0
-      IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP) THEN
+      IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP .OR.
+     +    WTYPE.EQ.GPIX) THEN
         NCOLI  = 256
         COLA   = 1
         NPCI   = 4

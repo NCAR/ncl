@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.9 2003-02-26 23:58:14 fred Exp $
+C	$Id: gzopwk.f,v 1.10 2004-03-16 18:50:28 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -152,7 +152,8 @@ C
 C  Flag for portrait/landscape mode (0 or non-zero)
 C
           ID(11) = CPTLD
-	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN
+	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC .OR. 
+     +           WTYPE.EQ.GPIX) THEN
 	  IL1   = 4
 	  IL2   = 4
           ID(1) = WKID
@@ -206,7 +207,7 @@ C  PostScript drivers are treated the same as X windows for this
 C  purpose.
 C
         IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR. 
-     +      WTYPE.EQ.GXWE  .OR. 
+     +      WTYPE.EQ.GXWE  .OR. WTYPE.EQ.GPIX  .OR.
      +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR. 
      +         WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
           LXWKID(NOPWK) = IL2

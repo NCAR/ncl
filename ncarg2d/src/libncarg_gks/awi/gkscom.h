@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.22 2003-09-21 00:44:33 fred Exp $
+C $Id: gkscom.h,v 1.23 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,7 +28,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(19)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(20)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,
@@ -60,11 +60,11 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX, GPDFP , GPDFL
+     +               GPSMIN, GPSMAX, GPDFP , GPDFL , GPIX
       INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX, GPDFP , GPDFL
+     +               GPSMIN, GPSMAX, GPDFP , GPDFL , GPIX
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
       CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*256    ,
      +               GSEGRT*80

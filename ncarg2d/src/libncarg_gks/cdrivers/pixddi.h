@@ -1,5 +1,5 @@
 /*
- *	$Id: x.h,v 1.6 2004-03-16 18:50:42 fred Exp $
+ *	$Id: pixddi.h,v 1.1 2004-03-16 18:50:41 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,7 +25,7 @@
 ************************************************************************/
 
 /*
- *      File:		x.h
+ *      File:		pixddi.h
  *
  *      Author:		John Clyne
  *			National Center for Atmospheric Research
@@ -33,41 +33,84 @@
  *
  *      Date:		Wed May  1 17:49:30 MDT 1991
  *
- *      Description:	Some common defines for the x device driver
- *
+ *      Description:	This file defines the device dependent structure for
+ *			gksc.ddp field for a PIX device
  */
-#ifndef	_x_h_
-#define	_x_h_
 
-#define	DEFAULT_WIDTH	512
-#define	DEFAULT_HEIGHT	512
+#ifndef	_pixddi_
+#define	_pixddi_
 
-#define	MIN_WIDTH	10
-#define	MIN_HEIGHT	10
+#include <ncarg/gksP.h>
+#include "x.h"
+#include "gks.h"
+#include "common.h"
+#include "transform.h"
 
-/*
- * maximum X11 color intensity
- */
-#define	MAX_INTENSITY	(65535)
-/*
- * max distance in RGB space ie.
- *	SQRT(MAX_INTENSITY^2 + MAX_INTENSITY^2 + MAX_INTENSITY^2)
- */
-#define	MAX_INTEN_DIST	(113509)
+typedef	struct PIXddi_ColorStatus_ {
+	int		ref_count;
+	unsigned short	red,green,blue;
+	Pixeltype	xpixnum;
+} PIXddpColorStatus;
 
-#define	MAX_DPY_LEN	(80)
+typedef	struct	PIXddi_	{
+	XWorkType	xwtype;
+	int		dead;
+	Display		*dpy;
+	Screen		*scr;
+	Visual		*vis;
+	Window		win;
+	unsigned int	depth;
+	unsigned 	dim;
+	Transform2D	transform;
+	GC		line_gc,
+			marker_gc,
+			text_gc,
+			fill_gc,
+			cell_gc,
+			bg_gc,
+			hatch_gc;
+	int		line_index,
+			marker_index,
+			text_index,
+			fill_index,
+			cell_index,
+			bg_index;
+	Boolean		color_ava;
+	XColModel	color_model;
+	_NGCXAllocColorProc	alloc_color;
+	_NGCXFreeColorsProc	free_colors;
+	void		*cref;
+	_NGCXGetSizeProc	size_change;
+	void			*sref;
+	Pixeltype	color_pal[MAX_COLORS];
+	int		color_info[MAX_COLORS];
+	PIXddpColorStatus	color_status[MAX_COLORS];
+	Boolean		x_ref_count;
+	int		max_x_colors;
+	int		*color_def;
+	Colormap	cmap;
+	Boolean		cmap_ro;
+	Boolean		mycmap;
+	int		marker_type,
+			marker_size;
+	int		fill_style,
+			hatch_index;
+	TransSystem	tsystem;
+	int		percent_colerr;
+	float		pcerr_sqr;
+} PIXddp;
 
-typedef	unsigned long	Pixeltype;
+extern void PIX_private_color(
+#ifdef	NeedFuncProto
+	PIXddp	*xi
+#endif
+);
 
-enum XWorkType_ { XREG = 8, XUSRWIN = 7, XPIX = 9 };
+extern void PIX_free_ci(
+#ifdef	NeedFuncProto
+	PIXddp		*xi,
+	unsigned	index
+#endif
+);
 
-typedef enum XWorkType_ XWorkType;
-
-typedef enum XColModel_{
-	CM_UNDEFINED = -1,
-	CM_SHARED = 0,
-	CM_PRIVATE = 1,
-	CM_MIXED = 2
-} XColModel;
-
-#endif	/*	_x_h_	*/
+#endif	/*	_pixddi_	*/

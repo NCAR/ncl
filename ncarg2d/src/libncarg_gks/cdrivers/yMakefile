@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 2003-01-06 23:30:18 fred Exp $
+#	$Id: yMakefile,v 1.9 2004-03-16 18:50:42 fred Exp $
 #
 
 MYNAME		= cdrivers
@@ -12,6 +12,9 @@ XSRC		= xdevice.c font.c text.c x_conv.c xattribute.c xcontrol.c \
 PSSRC		= psdevice.c ps.c ps_conv.c psfill.c 
 PDFSRC          = pdf.c pdfdevice.c pdf_conv.c pdffill.c
 
+PIXSRC 		= pixcontrol.c     pixoutput.c pixdevice.c \
+		pix_conv.c       pixattribute.c  pixinquiry.c
+
 BASICOBJ	= fort_c.o gks_device.o gksc.o transform.o gksP.o
 CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
 XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
@@ -19,10 +22,13 @@ XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
 PSOBJ		= psdevice.o ps.o ps_conv.o psfill.o
 PDFOBJ          = pdf.o pdfdevice.o pdf_conv.o pdffill.o
 
-SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC)
-OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ)
+PIXOBJ 		= pixcontrol.o     pixoutput.o pixdevice.o  \
+		pix_conv.o       pixattribute.o  pixinquiry.o
 
-EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS -DPDF
+SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC)
+OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ)
+
+EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS -DPDF -DPIX
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))

@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.9 2003-01-06 23:30:13 fred Exp $
+ *      $Id: fort_c.c,v 1.10 2004-03-16 18:50:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -241,6 +241,9 @@ err_msg)
                 case    DEV_X11:
                 case    DEV_X11P:
                         dev_name = "X11";
+                        break;
+                case    DEV_PIX:
+                        dev_name = "PIX";
                         break;
                 case    DEV_WISS:
                         dev_name = "WISS";

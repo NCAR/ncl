@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.h,v 1.8 2004-03-16 18:50:40 fred Exp $
+ *      $Id: pixinquiry.c,v 1.1 2004-03-16 18:50:42 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -18,46 +18,52 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software          *
+* along with this software; if not, write to the Free Software         *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
 ************************************************************************/
 
 /*
- *      File:           fort_c.h
+ *      File:           pixinquiry.c
  *
  *      Author:         John Clyne
  *                      National Center for Atmospheric Research
  *                      PO 3000, Boulder, Colorado
  *
- *      Date:           Fri May  3 11:51:44 MDT 1991
+ *      Date:           Thu May 16 15:49:12 MDT 1991
  *
- *      Description:    Header file for Fortran/C interface.
- *              
- *      
- *
+ *      Description:    This file contains routines for handling gks inquiry
+ *                      functions for the x device driver
  */
-#ifndef _fort_c_
-#define _fort_c_
-
-#include <ncarg/c.h>
-/*
- *      supported output device identifiers
- */
-#define DEV_CGM         1       /* not supported in this directory   */
-#define DEV_WISS        3       /* not supported in this directory   */
-#define DEV_X11P        7       /* X11 private          */
-#define DEV_X11         8       /* X11 regular          */
-#define DEV_PIX         9       /* pixmap               */
-#define DEV_CTXT       10
-#define DEV_PDF_P      11       /* PDF portrait */
-#define DEV_PDF_L      12       /* PDF landscape */
-#define DEV_PS         20       /* generic id for all PS drivers */
-#define DEV_PS_MIN     20       /* smallest id for the PS drivers */
-#define DEV_PS_MAX     31       /* largest id for the PS drivers */
+#include <stdio.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include "common.h"
+#include "gksc.h"
+#include "gks.h"
+#include "x.h"
+#include "pix_device.h"
+#include "pixddi.h"
 
 
-#define ERR_MSG_MAX     160     /* maximum error message size   */
+/*ARGSUSED*/
+PIX_GetColorRepresentation(gksc)
+        GKSC    *gksc;
+{
+        PIXddp            *xi = (PIXddp *) gksc->ddp;
+        Display         *dpy = xi->dpy;
+        Colormap        cmap = xi->cmap;
 
-#endif  /*      _fort_c_         */
+        int             *xptr = (int *) gksc->x.list;
+        XColor          *rgbptr = (XColor *) gksc->rgb.list;
+
+        unsigned        index   = (unsigned) xptr[0];
+        Pixeltype       *color_pal = xi->color_pal;
+
+        rgbptr->pixel = color_pal[index];
+
+        XQueryColor(dpy, cmap, rgbptr);
+
+        return(0);
+}

@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkca.f,v 1.7 2003-01-06 23:26:55 fred Exp $
+C	$Id: gqwkca.f,v 1.8 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -52,6 +52,8 @@ C
         WKCAT = GOUTIN
       ELSE IF (WTYPE .EQ. GDMP) THEN
         WKCAT = GOUTPT
+      ELSE IF (WTYPE .EQ. GPIX) THEN
+        WKCAT = GOUTIN
       ELSE
         WKCAT = -1
       ENDIF

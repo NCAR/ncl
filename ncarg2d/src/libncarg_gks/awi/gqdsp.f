@@ -1,5 +1,5 @@
 C
-C	$Id: gqdsp.f,v 1.6 2003-01-06 23:26:54 fred Exp $
+C	$Id: gqdsp.f,v 1.7 2004-03-16 18:50:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -58,7 +58,8 @@ C
         GO TO 100
       ENDIF
 C
-      IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP) THEN
+      IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GXWE .OR. WTYPE.EQ.GDMP .OR.
+     +    WTYPE.EQ.GPIX) THEN
         DCUNIT = 1
         RXP = 1.
         RYP = 1.
