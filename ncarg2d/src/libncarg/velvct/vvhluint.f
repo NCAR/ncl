@@ -1,5 +1,5 @@
 C
-C       $Id: vvhluint.f,v 1.7 1998-01-16 20:43:52 dbrown Exp $
+C       $Id: vvhluint.f,v 1.8 1999-08-06 20:04:03 haley Exp $
 C
 C This module contains interface routines for VectorPlot and VecAnno
 C
@@ -60,7 +60,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

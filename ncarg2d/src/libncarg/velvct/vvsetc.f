@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetc.f,v 1.11 1998-01-16 20:43:54 dbrown Exp $
+C       $Id: vvsetc.f,v 1.12 1999-08-06 20:04:04 haley Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -64,7 +64,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

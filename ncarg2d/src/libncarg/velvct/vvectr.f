@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.16 1998-08-26 19:13:56 dbrown Exp $
+C       $Id: vvectr.f,v 1.17 1999-08-06 20:04:02 haley Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -80,7 +80,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

@@ -1,5 +1,5 @@
 C
-C       $Id: vvtext.f,v 1.11 1998-01-16 20:43:55 dbrown Exp $
+C       $Id: vvtext.f,v 1.12 1999-08-06 20:04:04 haley Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -98,7 +98,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

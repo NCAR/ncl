@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.11 1998-01-16 20:43:52 dbrown Exp $
+C       $Id: vvinit.f,v 1.12 1999-08-06 20:04:03 haley Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -75,7 +75,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

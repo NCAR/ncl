@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrfl.f,v 1.5 1998-01-16 20:43:49 dbrown Exp $
+C       $Id: vvdrfl.f,v 1.6 1999-08-06 20:04:02 haley Exp $
 C
       SUBROUTINE VVDRFL (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -71,7 +71,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C

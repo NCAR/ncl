@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetr.f,v 1.14 1998-01-16 20:43:54 dbrown Exp $
+C       $Id: vvsetr.f,v 1.15 1999-08-06 20:04:04 haley Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -63,7 +63,7 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                IACM       ,IAFO       ,WBAD       ,WBTF       ,
      +                WBCF       ,WBDF       ,WBSC
 C
 C
