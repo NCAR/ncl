@@ -1,3 +1,6 @@
+C
+C $Id: dpline.f,v 1.3 1994-09-22 22:06:21 kennison Exp $
+C
       SUBROUTINE DPLINE (XCP1,YCP1,XCP2,YCP2)
 C
 C Given the user coordinates of the two points (XCP1,YCP1) and

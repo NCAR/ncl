@@ -1,3 +1,6 @@
+C
+C $Id: dpsetr.f,v 1.3 1994-09-22 22:06:23 kennison Exp $
+C
       SUBROUTINE DPSETR (PNAM,RVAL)
 C
 C This routine, given a real value, sets the value of an internal

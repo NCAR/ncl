@@ -1,3 +1,6 @@
+C
+C $Id: dpgetr.f,v 1.3 1994-09-22 22:06:19 kennison Exp $
+C
       SUBROUTINE DPGETR (PNAM,RVAL)
 C
 C This routine is used to get the real value of an internal parameter

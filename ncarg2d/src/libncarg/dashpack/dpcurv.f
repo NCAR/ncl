@@ -1,3 +1,6 @@
+C
+C $Id: dpcurv.f,v 1.3 1994-09-22 22:06:14 kennison Exp $
+C
       SUBROUTINE DPCURV (XCPU,YCPU,NPTS)
 C
 C The routine DPCURV, given the user-system coordinates of NPTS points

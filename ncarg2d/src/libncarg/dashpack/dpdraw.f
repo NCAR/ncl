@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.5 1994-09-09 20:56:40 kennison Exp $
+C $Id: dpdraw.f,v 1.6 1994-09-22 22:06:15 kennison Exp $
 C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
@@ -143,7 +143,7 @@ C
               IBIT=IAND(ISHIFT(INDP,I-NBTS),1)
 C
               IF (IBIT.NE.LBIT) THEN
-                IF (NDPE.GE.LDPA) GO TO 107
+                IF (NDPE.GE.LDPA) GO TO 105
                 NDPE=NDPE+1
                 IDPE(NDPE)=IBIT-1
                 RDPE(NDPE)=0.
@@ -268,7 +268,7 @@ C
               CALL PCSETI ('TE - TEXT EXTENT COMPUTATION FLAG',1)
               IF (ICFELL('DPDRAW',3).NE.0) RETURN
 C
-              DO 106 I=1,NDPE
+              DO 104 I=1,NDPE
 C
                 IF (IDPE(I).GT.1) THEN
 C
@@ -278,33 +278,17 @@ C
                   CALL PLCHHQ (0.,0.,CHDP(IFCH:ILCH),WCHR,360.,0.)
                   IF (ICFELL('DPDRAW',4).NE.0) RETURN
 C
-                  CALL PCGETR ('DL - DISTANCE TO LEFT END',DLFT)
+                  CALL PCGETR ('XB - X COORDINATE AT BEGINNING',XBEG)
                   IF (ICFELL('DPDRAW',5).NE.0) RETURN
 C
-                  CALL PCGETR ('DR - DISTANCE TO RIGHT END',DRGT)
+                  CALL PCGETR ('XE - X COORDINATE AT END',XEND)
                   IF (ICFELL('DPDRAW',6).NE.0) RETURN
 C
-                  RDPE(I)=RLS2*WCHR+MAX(0.,DLFT+DRGT)
-C
-  104             IF (IFCH.LE.ILCH) THEN
-                    IF (CHDP(IFCH:IFCH).EQ.' ') THEN
-                      RDPE(I)=RDPE(I)+WCHR
-                      IFCH=IFCH+1
-                      GO TO 104
-                    END IF
-                  END IF
-C
-  105             IF (ILCH.GE.IFCH) THEN
-                    IF (CHDP(ILCH:ILCH).EQ.' ') THEN
-                      RDPE(I)=RDPE(I)+WCHR
-                      ILCH=ILCH-1
-                      GO TO 105
-                    END IF
-                  END IF
+                  RDPE(I)=RLS2*WCHR+MAX(0.,XEND-XBEG)
 C
                 END IF
 C
-  106         CONTINUE
+  104         CONTINUE
 C
               CALL PCSETI ('TE - TEXT EXTENT COMPUTATION FLAG',ITEF)
               IF (ICFELL('DPDRAW',7).NE.0) RETURN
@@ -316,7 +300,7 @@ C
 C Set the fast-path flag to -1 if the pattern is nothing but gap, to
 C +1 if the pattern is nothing but solid, and to 0 otherwise.
 C
-  107     IF (NDPE.EQ.1.AND.IDPE(1).LT.0) THEN
+  105     IF (NDPE.EQ.1.AND.IDPE(1).LT.0) THEN
             IFPF=-1
           ELSE IF (NDPE.EQ.1.AND.IDPE(1).EQ.0) THEN
             IFPF=+1
@@ -347,7 +331,7 @@ C
             ISPE=ICPE
             WCPE=0.
 C
-            DO 110 I=2,NPSB
+            DO 108 I=2,NPSB
 C
               XCLF=XCNF
               YCLF=YCNF
@@ -357,7 +341,7 @@ C
 C
               DIST=SQRT((XCNF-XCLF)**2+(YCNF-YCLF)**2)
 C
-  108         IF (ICPE.EQ.ISPE.OR.IDPE(ICPE).EQ.0) THEN
+  106         IF (ICPE.EQ.ISPE.OR.IDPE(ICPE).EQ.0) THEN
                 CALL PLOTIF (XCLF,YCLF,0)
                 IF (ICFELL('DPDRAW',8).NE.0) RETURN
               END IF
@@ -385,8 +369,8 @@ C
 C
                 ISPE=ICPE
 C
-  109           ICPE=MOD(ICPE,NDPE)+1
-                IF (ICPE.NE.ISPE.AND.IDPE(ICPE).GT.0) GO TO 109
+  107           ICPE=MOD(ICPE,NDPE)+1
+                IF (ICPE.NE.ISPE.AND.IDPE(ICPE).GT.0) GO TO 107
 C
                 IF (IDPE(ICPE).LE.0.AND.RDPE(ICPE).GT.0.) THEN
                   ISPE=0
@@ -396,11 +380,11 @@ C
                   WCPE=1.
                 END IF
 C
-                GO TO 108
+                GO TO 106
 C
               END IF
 
-  110       CONTINUE
+  108       CONTINUE
 C
           END IF
 C
@@ -460,7 +444,7 @@ C
 C
             DIST=SQRT((XCPF-XCLF)**2+(YCPF-YCLF)**2)
 C
-  111       IF (IDPE(ICPE).EQ.0.OR.(ILTL.NE.0.AND.IDPE(ICPE).GT.0)) THEN
+  109       IF (IDPE(ICPE).EQ.0.OR.(ILTL.NE.0.AND.IDPE(ICPE).GT.0)) THEN
               CALL PLOTIF (XCLF,YCLF,0)
               IF (ICFELL('DPDRAW',14).NE.0) RETURN
             END IF
@@ -485,22 +469,22 @@ C
                   DMIN=SQRT((RSPX(3)-RSPX(2))**2+
      +                      (RSPY(3)-RSPY(2))**2)
 C
-                  DO 112 I=2,NPSB-2
+                  DO 110 I=2,NPSB-2
                     DTMP=SQRT((RSPX(I+1)-RSPX(I))**2+
      +                        (RSPY(I+1)-RSPY(I))**2)
                     IF (DTMP.LT.DMIN) THEN
                       IMIN=I
                       DMIN=DTMP
                     END IF
-  112             CONTINUE
+  110             CONTINUE
 C
                   RSPX(IMIN)=.5*(RSPX(IMIN)+RSPX(IMIN+1))
                   RSPY(IMIN)=.5*(RSPY(IMIN)+RSPY(IMIN+1))
 C
-                  DO 113 I=IMIN+1,NPSB-1
+                  DO 111 I=IMIN+1,NPSB-1
                     RSPX(I)=RSPX(I+1)
                     RSPY(I)=RSPY(I+1)
-  113             CONTINUE
+  111             CONTINUE
 C
                   NPSB=NPSB-1
 C
@@ -565,10 +549,10 @@ C
 C
                   NUDE=0
 C
-                  DO 114 I=1,NSSB
+                  DO 112 I=1,NSSB
                     ANGD=MOD(RSSA(I)-ANGF+3780.,360.)-180.
                     IF (ANGD.LT.-90..OR.ANGD.GT.90.) NUDE=NUDE+1
-  114             CONTINUE
+  112             CONTINUE
 C
                   IF (NUDE.GT.NSSB/2) THEN
 C
@@ -585,11 +569,11 @@ C
 C
                     DTMP=SQRT((XC3F-XC2F)**2+(YC3F-YC2F)**2)
 C
-                    DO 116 I=1,NSSB
+                    DO 114 I=1,NSSB
 C
                       WTMP=RDPE(ISSP(I))
 C
-  115                 IF (WTMP.GE.DTMP) THEN
+  113                 IF (WTMP.GE.DTMP) THEN
 C
                         WTMP=WTMP-DTMP
 C
@@ -613,7 +597,7 @@ C
 C
                         DTMP=SQRT((XC3F-XC2F)**2+(YC3F-YC2F)**2)
 C
-                        GO TO 115
+                        GO TO 113
 C
                       END IF
 C
@@ -634,7 +618,7 @@ C
                       XC1F=XC2F
                       YC1F=YC2F
 C
-  116               CONTINUE
+  114               CONTINUE
 C
                   END IF
 C
@@ -643,7 +627,7 @@ C
                 CALL PLOTIF (0.,0.,2)
                 IF (ICFELL('DPDRAW',18).NE.0) RETURN
 C
-                DO 117 I=1,NSSB
+                DO 115 I=1,NSSB
 C
                   XTMP=CFUX(RSSX(I))
                   IF (ICFELL('DPDRAW',19).NE.0) RETURN
@@ -689,7 +673,7 @@ C
                     IF (ICFELL('DPDRAW',23).NE.0) RETURN
                   END IF
 C
-  117           CONTINUE
+  115           CONTINUE
 C
                 NPSB=0
                 NSSB=0
@@ -706,7 +690,7 @@ C
                 NPSB=0
               END IF
 C
-              GO TO 111
+              GO TO 109
 C
             END IF
 C

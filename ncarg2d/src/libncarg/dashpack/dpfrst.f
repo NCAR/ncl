@@ -1,3 +1,6 @@
+C
+C $Id: dpfrst.f,v 1.3 1994-09-22 22:06:16 kennison Exp $
+C
       SUBROUTINE DPFRST (XCPU,YCPU)
 C
 C Given the user coordinates of the point (XCPU,YCPU), this routine

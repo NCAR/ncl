@@ -1,3 +1,6 @@
+C
+C $Id: dpgetc.f,v 1.3 1994-09-22 22:06:17 kennison Exp $
+C
       SUBROUTINE DPGETC (PNAM,CVAL)
 C
 C This routine is used to get the value of an internal parameter of

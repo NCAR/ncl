@@ -1,3 +1,6 @@
+C
+C $Id: dpblda.f,v 1.3 1994-09-22 22:06:14 kennison Exp $
+C
       BLOCK DATA DPBLDA
 C
 C This is the BLOCK DATA routine for DASHPACK; it provides initial
@@ -179,7 +182,7 @@ C substring written by a single call to PLCHHQ/MQ/LQ (in addition to
 C the length of the string itself).  Both are stated as multipliers of
 C the current character width.
 C
-        DATA RLS1,RLS2 / .5 , .25 /
+        DATA RLS1,RLS2 / .5 , 0. /
 C
 C RMFS is the internal parameter 'MFS' (for "Multiplier for First
 C Solid").  If the first element of a dash pattern specifies a solid

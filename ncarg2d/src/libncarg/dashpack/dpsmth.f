@@ -1,3 +1,6 @@
+C
+C $Id: dpsmth.f,v 1.3 1994-09-22 22:06:24 kennison Exp $
+C
       SUBROUTINE DPSMTH (XCPF,YCPF,IFVL)
 C
 C DPSMTH is called just like DPDRAW, but it arranges for the curve

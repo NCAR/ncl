@@ -1,3 +1,6 @@
+C
+C $Id: dplast.f,v 1.3 1994-09-22 22:06:20 kennison Exp $
+C
       SUBROUTINE DPLAST
 C
 C This routine generates the appropriate call to terminate a curve

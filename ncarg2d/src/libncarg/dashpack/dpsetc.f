@@ -1,3 +1,6 @@
+C
+C $Id: dpsetc.f,v 1.3 1994-09-22 22:06:21 kennison Exp $
+C
       SUBROUTINE DPSETC (PNAM,CVAL)
 C
 C This routine is used to set the value of an internal parameter of
