@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.5 1991-11-07 11:51:41 clyne Exp $
+ *	$Id: rastdev.c,v 1.6 1991-12-16 11:07:53 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -118,6 +118,7 @@ void	rast_linewidth(line_width)
 	rasLineWidth = line_width;
 }
 
+#ifdef	DEAD
 /*
  * line_:	scan convert a line from (x1, y1) to (x2, y2), using
  *		the macro PUTPIX to put each pixel. Does no clipping. Uses
@@ -139,6 +140,15 @@ static	void	line_(a1, b1, a2, b2)
 
 	dx = ABSOLUTE3(a2, a1, sign_x);
 	dy = ABSOLUTE3(b2, b1, sign_y);
+
+	/*
+	 * symetric double-step draws a line instead of a point if line
+	 * is actually a point.
+	 */
+	if (a1 == a2 && a1 == b1 && a1 == b2) {
+		PLOT(a1, a1, 1);
+		return;
+	}
 
 	/*
 	 * decide increment sign by the slope sign
@@ -330,11 +340,11 @@ static	void	line_(a1, b1, a2, b2)
 		}
 	}
 }
+#endif
 
 
 		
 		
-#ifdef	DEAD
 
 
 /*
@@ -379,7 +389,6 @@ static	void	line_(x1, y1, x2, y2)
 		}
 	}
 }
-#endif
 
 
 void	rast_update_color_table()
