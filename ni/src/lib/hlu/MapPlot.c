@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.10 1994-09-08 01:34:17 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.11 1994-09-08 17:15:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1989,7 +1989,7 @@ static NhlErrorTypes mpDraw
 	NhlDrawOrder	order
 )
 #else
-(layer,order)
+(mp,order)
         NhlMapPlotLayer mp;
 	NhlDrawOrder	order;
 #endif
@@ -2166,7 +2166,7 @@ static NhlErrorTypes mpOutline
 	NhlString	entry_name
 )
 #else
-(layer,entry_name)
+(mp,entry_name)
         NhlMapPlotLayer mp;
 	NhlString	entry_name;
 #endif
@@ -2233,7 +2233,7 @@ static NhlErrorTypes mpFill
 	NhlString	entry_name
 )
 #else
-(layer,entry_name)
+(mp,entry_name)
         NhlMapPlotLayer mp;
 	NhlString	entry_name;
 #endif
@@ -2323,7 +2323,7 @@ static NhlErrorTypes mpGrid
 	NhlString	entry_name
 )
 #else
-(layer,entry_name)
+(mp,entry_name)
         NhlMapPlotLayer mp;
 	NhlString	entry_name;
 #endif
@@ -2428,7 +2428,7 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlString	entry_name
 )
 #else
-(layer,amap_type,entry_name)
+(mp,aws,amap_type,entry_name)
         NhlMapPlotLayer mp;
 	NhlWorkspace	**aws;
 	int		amap_type;
@@ -2974,7 +2974,7 @@ static NhlErrorTypes    mpAdjustText
 )
 #else
 (lbl_attrs,new,old,init)
-	NhlcnLabelAttrs *lbl_attrs;
+	NhlmpLabelAttrs *lbl_attrs;
 	NhlLayer	new;
 	NhlLayer	old;
 	NhlBoolean	init;
@@ -3091,8 +3091,8 @@ static NhlErrorTypes    mpManageViewDepResources
 )
 #else
 (mpnew,mpold,init)
-	NhlMapPlotLayer mpnew, 
-	NhlMapPlotLayer mpold,
+	NhlMapPlotLayer mpnew; 
+	NhlMapPlotLayer mpold;
 	NhlBoolean	init;
 #endif
 
@@ -3160,8 +3160,8 @@ static NhlErrorTypes    SetLineAttrs
 )
 #else
 (mpnew,mpold,init)
-	NhlMapPlotLayer mpnew, 
-	NhlMapPlotLayer mpold,
+	NhlMapPlotLayer mpnew; 
+	NhlMapPlotLayer mpold;
 	NhlBoolean	init;
 #endif
 
@@ -4067,8 +4067,8 @@ static NhlErrorTypes    mpBuildFillDrawList
 	int		num_args)
 #else
 (mpnew,mpold,init,args,num_args)
-	NhlLayer	mpnew;
-	NhlLayer	mpold;
+	NhlMapPlotLayer	mpnew;
+	NhlMapPlotLayer	mpold;
 	NhlBoolean	init;
 	_NhlArgList	args;
 	int		num_args;
@@ -4261,8 +4261,8 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 	int		num_args)
 #else
 (mpnew,mpold,init,args,num_args)
-	NhlLayer	mpnew;
-	NhlLayer	mpold;
+	NhlMapPlotLayer	mpnew;
+	NhlMapPlotLayer	mpold;
 	NhlBoolean	init;
 	_NhlArgList	args;
 	int		num_args;

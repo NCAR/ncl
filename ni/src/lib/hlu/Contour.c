@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.22 1994-09-08 01:34:04 dbrown Exp $
+ *      $Id: Contour.c,v 1.23 1994-09-08 17:15:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2616,7 +2616,7 @@ static NhlErrorTypes cnSegDraw
 	NhlDrawOrder	order
 )
 #else
-(layer,order)
+(cnl,order)
         NhlContourLayer cnl;
 	NhlDrawOrder	order;
 #endif
@@ -2681,7 +2681,7 @@ static NhlErrorTypes cnInitDraw
 	NhlString	entry_name
 )
 #else
-(layer,entry_name)
+(cnl,entry_name)
         NhlContourLayer cnl;
 	NhlString	entry_name;
 #endif
@@ -2768,7 +2768,7 @@ static NhlErrorTypes cnInitAreamap
 	NhlString	entry_name
 )
 #else
-(layer,entry_name)
+(cnl,entry_name)
         NhlContourLayer cnl;
 	NhlString	entry_name;
 #endif
@@ -2827,9 +2827,9 @@ static NhlErrorTypes cnInitSegment
 	NhlString	entry_name
 )
 #else
-(layer,seg_dat,entry_name)
+(cnl,seg_dat,entry_name)
         NhlContourLayer cnl;
-	NhlTransDat	*seg_dat;
+	NhlTransDat	**seg_dat;
 	NhlString	entry_name;
 #endif
 {
@@ -3004,7 +3004,7 @@ static NhlErrorTypes cnDraw
 	NhlDrawOrder	order
 )
 #else
-(layer,order)
+(cnl,order)
         NhlContourLayer cnl;
 	NhlDrawOrder	order;
 #endif

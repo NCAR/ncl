@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.15 1994-09-08 01:34:42 dbrown Exp $
+ *      $Id: Workspace.c,v 1.16 1994-09-08 17:15:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3014,7 +3014,7 @@ NhlErrorTypes _NhlMapblm
 	char		*entry_name
 )
 #else
-(amap_ws,apr,entry_name)
+(amap_ws,ulpr,entry_name)
 	NhlWorkspace	*amap_ws;
 	int		(*ulpr)();
 	char		*entry_name;
@@ -3093,7 +3093,7 @@ NhlErrorTypes _NhlMapgrm
 	char		*entry_name
 )
 #else
-(amap_ws,apr,entry_name)
+(amap_ws,ulpr,entry_name)
 	NhlWorkspace	*amap_ws;
 	int		(*ulpr)();
 	char		*entry_name;
