@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: graphcap.m,v 1.3 1992-09-04 19:41:01 ncargd Exp $
+.\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
 .SH NAME
