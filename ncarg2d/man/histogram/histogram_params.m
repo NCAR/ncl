@@ -20,6 +20,10 @@ A label for the class interval (histogram bar) axis.
 Default value is \'CLASS INTERVALS\' when
 the HSTOPL option \'MID=OFF\' is selected, and \'CLASS
 MIDVALUES\' when \'MID=ON\'.
+.IP PTI 12
+The percent axis label.  Default value when \'PTI=OFF\'
+is \'PERCENT OCCURRENCE\' when IFLAG = 0, or 1, and
+\'PERCENT of MAXIMUM\' when IFLAG = 2, or 3.
 .IP FQN 12
 The frequency axis label.  Default value is \'FREQUENCY\'.
 .IP CHR 12
@@ -102,6 +106,12 @@ Default values: spacing = 2.0, overlap = -1.0
 This will yield spacing between bars on a single
 histogram and overlap of bars in the comparison
 of two histograms.
+.IP MVA 12
+Defines a special value which can be inserted in the data
+stream to indicate that the true data value is missing, and
+a testing tolerance which allows the special values to be
+detected.  See also parameters PMV, and NMV.
+Default values: special value = -9999., tolerance = 1.E-10.
 .SH SEE ALSO
 Online:
 histogram, histgr, hstopc, hstopi, hstopl, hstopr, ncarg_cbind

@@ -23,6 +23,8 @@ possibilities are:
 .br
   \'LAB=ON\' or \'LAB=OFF\'
 .br
+  \'PTI=ON\' or \'PTI=OFF\'
+.br
   \'FQN=ON\' or \'FQN=OFF\'
 .br
   \'CHR=ON, or \'CHR=OFF\'
@@ -54,6 +56,10 @@ MIDVALUES\' when \'MID=ON\'.
 .sp
 In order to delete this axis label, select \'LAB=ON\' for
 STRING and \'NOLABEL\' for STRNG2.
+.IP PTI 8
+The percent axis label.  Default value when \'PTI=OFF\'
+is \'PERCENT OCCURRENCE\' when IFLAG = 0, or 1, and
+\'PERCENT of MAXIMUM\' when IFLAG = 2, or 3.
 .IP FQN 8
 The frequency axis label.  The \'FQN=OFF\' default value
 is \'FREQUENCY\'.
@@ -73,6 +79,8 @@ Character, input -- A string of up to 45 characters.
  \'TIT=ON\', STRNG2 is a histogram main title.
 .sp
  \'LAB=ON\', STRNG2 is a label for the class interval axis.
+.sp
+ \'PTI=ON\', STRNG2 is a label for the percentage axis.
 .sp
  \'FQN=ON\', STRNG2 is a label for the frequency axis.
 .sp
