@@ -1207,9 +1207,11 @@ NclStackEntry missing_expr;
 					_NclDestroyObj((NclObj)missing_md);
 				}
 				missing_md = tmp_md;
-				memcpy((void*)&missing_val,(void*)missing_md->multidval.val,_NclSizeOf(the_type));
+				memcpy((void*)&missing_val,(void*)missing_md->multidval.val,missing_md->multidval.type->type_class.size);
 			}
-		} 
+		} else {
+			memcpy((void*)&missing_val,(void*)missing_md->multidval.val,missing_md->multidval.type->type_class.size);
+		}
 	} else {
 		if(the_obj_type & NCL_VAL_TYPE_MASK) {
 			tmp_val = (void*)NclMalloc((unsigned)_NclSizeOf(the_type));
