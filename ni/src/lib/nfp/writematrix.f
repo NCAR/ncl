@@ -1,6 +1,6 @@
 C NCLFORTSTART
 
-      subroutine writematrixi(fname,ncol,nrow,x,fmtx,title,titsp,iopt)
+      subroutine writematrixi(fname,nrow,ncol,x,fmtx,title,titsp,iopt)
       implicit      none
 
 C NCL procedure: writematrixi(fname, x, fmtx, title, titsp, iopt)
@@ -69,7 +69,7 @@ c write to standard out
 
 C NCLFORTSTART
 
-      subroutine writematrixf(fname,ncol,nrow,x,fmtx,title,titsp,iopt)
+      subroutine writematrixf(fname,nrow,ncol,x,fmtx,title,titsp,iopt)
       implicit      none
 
 C NCL procedure: writematrixf(fname, x, fmtx, title, titsp, iopt)
@@ -143,7 +143,7 @@ c write to standard out
 
 C NCLFORTSTART
 
-      subroutine writematrixd(fname,ncol,nrow,x,fmtx,title,titsp,iopt)
+      subroutine writematrixd(fname,nrow,ncol,x,fmtx,title,titsp,iopt)
       implicit      none
 
 C NCL procedure: writematrixd(fname, x, fmtx, title, titsp, iopt)
