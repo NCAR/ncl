@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.4 2003-03-03 20:20:54 grubin Exp $
+C  $Id: vc09f.f,v 1.5 2003-03-06 18:14:23 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -120,7 +120,7 @@ C
 
       else if (PS .eq. 1) then
          call NhlFRLClear (rlist)
-         call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09n.ps', ierr)
+         call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09f.ps', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFPSWorkstationClass, 0,
      +        rlist,  ierr)
@@ -130,7 +130,7 @@ C
 
       else if (PDF .eq. 1) then
          call NhlFRLClear (rlist)
-         call NhlFRLSetString (rlist, 'wkPDFFileName', 'vc09n.pdf',
+         call NhlFRLSetString (rlist, 'wkPDFFileName', 'vc09f.pdf',
      +        ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFPDFWorkstationClass, 0,
