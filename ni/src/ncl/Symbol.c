@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.37 1996-09-19 18:54:59 ethan Exp $
+ *      $Id: Symbol.c,v 1.38 1996-09-27 22:44:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@ extern "C" {
 #include "NclHLUObj.h"
 #include "NclApi.h"
 #include "FileSupport.h"
+#include "NclTypeobj.h"
 extern void NclAddUserFileFormats(
 #if	NhlNeedProto
 void
@@ -2458,6 +2459,7 @@ long*stride;
 	NclStackEntry *the_var;
 	NclMultiDValData the_val; 
 	NclSelectionRecord *sel_ptr = NULL;
+	NclHLUObj tmp_ho;
 	int i;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 
@@ -2473,22 +2475,44 @@ long*stride;
 			NclFree(sel_ptr);
 		}
 		tmp->constant = 0;
-		if(the_val->obj.status == TEMPORARY) {
-			_NclSetStatus((NclObj)the_val,STATIC);
-		} else {
-			the_val = _NclCopyVal(the_val,NULL);
-			_NclSetStatus((NclObj)the_val,STATIC);
-		}
-		tmp->value = the_val->multidval.val;
 		tmp->totalelements = the_val->multidval.totalelements;
-		tmp->elem_size = the_val->multidval.totalsize/the_val->multidval.totalelements;
 		tmp->type = (int)the_val->multidval.data_type;
+		tmp->has_missing = the_val->multidval.missing_value.has_missing;
+		tmp->missing = *(NclApiScalar*)&(the_val->multidval.missing_value.value);
+		if((the_val->multidval.data_type != NCL_obj)&&!(the_val->obj.obj_type_mask & Ncl_MultiDValHLUObjData)){
+			tmp->elem_size = the_val->multidval.totalsize/the_val->multidval.totalelements;
+			if(the_val->obj.status == TEMPORARY) {
+				_NclSetStatus((NclObj)the_val,STATIC);
+			} else {
+				the_val = _NclCopyVal(the_val,NULL);
+				_NclSetStatus((NclObj)the_val,STATIC);
+			}
+			tmp->value = the_val->multidval.val;
+		} else {
+			tmp->elem_size = sizeof(int);
+			tmp->value = (void*)NclMalloc(sizeof(int)*the_val->multidval.totalelements);
+			for(i = 0; i < the_val->multidval.totalelements; i++) {
+				if((the_val->multidval.missing_value.has_missing)&&(((obj*)the_val->multidval.val)[i] == the_val->multidval.missing_value.value.objval)) {
+					((int*)tmp->value)[i] = the_val->multidval.missing_value.value.objval;
+				} else {
+					tmp_ho = (NclHLUObj)_NclGetObj(((obj*)the_val->multidval.val)[i]);
+					if(tmp_ho != NULL) {
+						((int*)tmp->value)[i] = tmp_ho->hlu.hlu_id;
+					} else if(the_val->multidval.missing_value.has_missing) {
+						((int*)tmp->value)[i] = the_val->multidval.missing_value.value.objval;
+					} else {
+						((int*)tmp->value)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+						tmp->has_missing = 1;
+						tmp->missing.objval = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+					}
+				}
+				
+			}
+		}
 		tmp->n_dims= the_val->multidval.n_dims;
 		for(i = 0; i < the_val->multidval.n_dims; i++) {
 			tmp->dim_sizes[i] = the_val->multidval.dim_sizes[i];
 		}
-		tmp->has_missing = the_val->multidval.missing_value.has_missing;
-		tmp->missing = *(NclApiScalar*)&(the_val->multidval.missing_value.value);
 		_NclDestroyObj((NclObj)the_val);
 		return(tmp);
 	} 
@@ -2551,6 +2575,7 @@ NclQuark attname;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
 	NclMultiDValData theid;
+	NclHLUObj tmp_ho;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
@@ -2560,24 +2585,46 @@ NclQuark attname;
 			if(thevar->kind == NclStk_VAR) {
 				tmp_md= _NclReadAtt(thevar->u.data_var,NrmQuarkToString(attname),NULL);
 				if(tmp_md != NULL) {
-					if(tmp_md->obj.status == TEMPORARY) {
-						_NclSetStatus((NclObj)tmp_md,STATIC);
-					} else {
-						tmp_md = _NclCopyVal(tmp_md,NULL);
-						_NclSetStatus((NclObj)tmp_md,STATIC);
-					}
 					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 					out_data->constant = 0;
-					out_data->value = tmp_md->multidval.val;
 					out_data->totalelements = tmp_md->multidval.totalelements;
 					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 					out_data->type = (int)tmp_md->multidval.data_type;
 					out_data->n_dims= tmp_md->multidval.n_dims;
+					out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+					out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
+					if((tmp_md->multidval.data_type != NCL_obj)&&!(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData)){
+						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						} else {
+							tmp_md = _NclCopyVal(tmp_md,NULL);
+							_NclSetStatus((NclObj)tmp_md,STATIC);
+						}
+						out_data->value = tmp_md->multidval.val;
+					} else {
+						 out_data->elem_size = sizeof(int);
+						out_data->value = (void*)NclMalloc(sizeof(int)*tmp_md->multidval.totalelements);
+						for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+							if((tmp_md->multidval.missing_value.has_missing)&&(((obj*)tmp_md->multidval.val)[i] == tmp_md->multidval.missing_value.value.objval)) {
+								((int*)out_data->value)[i] = tmp_md->multidval.missing_value.value.objval;
+							} else {
+								tmp_ho = (NclHLUObj)_NclGetObj(((obj*)tmp_md->multidval.val)[i]);
+								if(tmp_ho != NULL) {
+									((int*)out_data->value)[i] = tmp_ho->hlu.hlu_id;
+								} else if(tmp_md->multidval.missing_value.has_missing) {
+									((int*)out_data->value)[i] = tmp_md->multidval.missing_value.value.objval;
+								} else {
+									((int*)out_data->value)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+									out_data->has_missing = 1;
+									out_data->missing.objval = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+								}
+							}
+						}
+					}
 					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 					}
-					out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
-					out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 					_NclDestroyObj((NclObj)tmp_md);
 					return(out_data);
 				}
