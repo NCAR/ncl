@@ -1,5 +1,5 @@
 C
-C	$Id: gupdva.f,v 1.2 1993-01-09 02:07:46 fred Exp $
+C	$Id: gupdva.f,v 1.3 1993-03-23 19:30:57 fred Exp $
 C
       SUBROUTINE GUPDVA
 C
@@ -122,10 +122,12 @@ C
          AGPEND(IPRIM) = AGPEND(IPRIM) .OR. VALCHG(I)
   160 CONTINUE
 C
-C     UPDATE ASPECT SOURCE FLAG CONTEXT
+C  Update aspect source flag context (ID contains the GKS Aspect
+C  Source Flag values which are the complements of the CGM values
+C  that MRASF contains).
 C
       DO 190 I=1,13
-         ID(I) = MRASF(I)
+         ID(I) = 1-MRASF(I)
   190 CONTINUE
       CALL GUPASF
 C
