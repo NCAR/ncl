@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.15 2003-03-05 19:56:15 fred Exp $
+ *      $Id: pdf.c,v 1.16 2003-03-07 00:25:47 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -70,6 +70,7 @@ void adjust_lines(void);
  *
  */
 char **page_lines;
+/* int maximum_lines=1000000; */
 int maximum_lines=100000;
 int  starting_page_object_number, stream_size, object_number, 
      byte_count, num_page_lines;
@@ -3541,14 +3542,14 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
  */
 int PDFPutStream(FILE *fp) {
   int i;
-  fprintf(fp, "%6d 0 obj\n<< /Length %7d >>\nstream\n",object_number+1,
+  fprintf(fp, "%6d 0 obj\n<< /Length %10d >>\nstream\n",object_number+1,
                stream_size);
   for (i = 0; i < num_page_lines+1; i++) {
     fprintf(fp,page_lines[i]);
     fflush(fp);
   }
   fprintf(fp, "endstream\nendobj\n");
-  byte_count = byte_count + 42 + stream_size + 17;
+  byte_count = byte_count + 45 + stream_size + 17;
 }
 /*
  *  Write out a single line segment.
