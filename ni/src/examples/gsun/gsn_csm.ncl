@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.125 2003-04-30 22:06:04 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.126 2003-05-09 16:17:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1062,7 +1062,7 @@ begin
 ; and if so, then the units attribute isn't even checked.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 
   if(is_valid_xcoord(data)) then
@@ -1105,7 +1105,7 @@ begin
 ; and if so, then the units attribute isn't even checked.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 
   if(is_valid_xcoord(data))
@@ -1148,7 +1148,7 @@ begin
 ; and if so, then the units attribute isn't even checked.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 
   if(is_valid_ycoord(data))
@@ -1290,7 +1290,7 @@ begin
 ; printed out if no coordinate arrays are set.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 ;
 ; Determine what kind of plot we need to set the data field resources for.
@@ -1361,7 +1361,7 @@ begin
 ; printed out if no coordinate arrays are set.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 ;
 ; Determine what kind of plot we need to set the data field resources for.
@@ -1430,7 +1430,7 @@ begin
 ; printed out if no coordinate arrays are set.
 ;
   if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return
+    return(False)
   end if
 
 ;
