@@ -1,5 +1,5 @@
 C
-C $Id: mdrset.f,v 1.2 2001-11-02 22:37:17 kennison Exp $
+C $Id: mdrset.f,v 1.3 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -54,8 +54,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),
-     +                   PDCL(12)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
+     +                   PDCL(13)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.3 2001-11-02 22:37:15 kennison Exp $
+C $Id: mdptrn.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -103,7 +103,8 @@ C
 C If a fast-path projection is in use and the rotation angle is 180,
 C adjust U and V.
 C
-        IF (IPRJ.GE.11.AND.ABS(ROTA).GT.179.999999D0) THEN
+        IF (IPRJ.GE.11.AND.IPRJ.LE.14.AND.
+     +      ABS(ROTA).GT.179.999999D0) THEN
           U=-U
           V=-V
         END IF
@@ -193,7 +194,7 @@ C
 C
 C Jump to code appropriate for the chosen projection.
 C
-C Projection: ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
         GO TO (104,105,106,107,108,109,110,111,112) , IPRJ-1
 C
@@ -284,7 +285,9 @@ C
 C
 C Fast-path cylindrical projections (with PLAT=0, ROTA=0 or 180).
 C
-  113   IF (IPRJ-13) 114,115,116
+C Projection:   ME  MO  RO  RM
+C
+  113   GO TO (114,115,116,117) , IPRJ-11
 C
 C Fast-path Mercator.
 C
@@ -306,6 +309,17 @@ C
         U=P*RBGLEN(V)
         V=RBGDFE(V)
         GO TO 198
+C
+C Rotated Mercator.
+C
+  117   IF (ABS(V).GT.89.999999D0) GO TO 200
+        UTM1=U*DTOR
+        VTM1=LOG(TAN((V+90.D0)*DTRH))
+        P=U
+        Q=V
+        U=UTM1*COSR+VTM1*SINR
+        V=VTM1*COSR-UTM1*SINR
+        GO TO 199
 C
 C Common terminal code for certain projections.
 C

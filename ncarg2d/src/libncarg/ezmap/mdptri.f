@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.3 2002-08-19 21:52:45 kennison Exp $
+C $Id: mdptri.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,10 +108,11 @@ C
 C
 C Jump to the proper piece of code, depending on the projection type.
 C
-C Projection: US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
         GO TO (100,101,102,103,104,105,106,107,108,109,110,
-     +                                     111,112,113,114) , IPRJ+1
+     +                                     111,112,113,114,
+     +                                         115        ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -325,6 +326,15 @@ C
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
         RLAT=VVTM
         RLON=PHOC+180.D0*UTMP/RBGLEN(VVTM)
+        GO TO 200
+C
+C Rotated Mercator.
+C
+  115   CONTINUE
+        UTM1=UTMP*COSR-VTMP*SINR
+        VTM1=VTMP*COSR+UTMP*SINR
+        RLAT=RTDD*ATAN(EXP(VTM1))-90.D0
+        RLON=PHOC+RTOD*UTM1
         GO TO 200
 C
 C The following code is common to all of the azimuthal projections when

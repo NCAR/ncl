@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.17 2001-11-02 22:36:31 kennison Exp $
+C $Id: mapbd.f,v 1.18 2005-01-10 21:19:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,8 +71,8 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),
-     +                   PDCL(12)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
+     +                   PDCL(13)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -176,7 +176,7 @@ C
 C
 C Variables in MAPCM1:
 C
-C IPRJ is an integer between 0 and 14, specifying what projection is
+C IPRJ is an integer between 0 and 15, specifying what projection is
 C currently in use.  The values 11, 12, 13, and 14 specify fast-path
 C versions of the values 7, 8, 9, and 10, respectively.  The meanings
 C of the various possible values of IPRJ are as follows:
@@ -198,6 +198,7 @@ C      11     Cylindrical Equidistant (fast-path)    Cylindrical
 C      12     Mercator (fast-path)                   Cylindrical
 C      13     Mollweide (fast-path)                  Cylindrical
 C      14     Robinson (fast-path)                   Cylindrical
+C      15     Rotated Mercator (fast-path)           Cylindrical
 C
 C PHOC is just a copy of PHIO, from the common block MAPCM4.  IROD is
 C a flag which, if non-zero, says that we have to use double precision
@@ -347,9 +348,9 @@ C
      +        / 'ma','co','po','an','li','gr' /
 C
       DATA PDCT
-     +   / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO','RO','SV' /
+     +/'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO','RO','SV','RM'/
       DATA PDCL
-     +   / 'ut','lc','st','or','le','gn','ae','ce','me','mo','ro','sv' /
+     +/'ut','lc','st','or','le','gn','ae','ce','me','mo','ro','sv','rm'/
 C
 C Variables in MAPCM6:
 C
@@ -509,7 +510,7 @@ C and cosines of ALFA and BETA.  The sign of SALT says whether a normal
 C projection (positive) or an extended projection (negative) is to be
 C used.  The latter makes it easier to overlay CONREC output on one of
 C these projections, by projecting points out of sight around the limb
-C to point just outside the limb on the projected view.
+C to points just outside the limb on the projected view.
 C
       DATA SALT,ALFA,BETA / 0.D0,0.D0,0.D0 /
 C

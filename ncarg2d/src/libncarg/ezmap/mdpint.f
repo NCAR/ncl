@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.3 2002-08-21 20:28:19 kennison Exp $
+C $Id: mdpint.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -100,10 +100,6 @@ C Check for an uncleared prior error.
 C
         IF (ICFELL('MDPINT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Check for an error in the projection specifier.
-C
-        IF (JPRJ.LT.0.OR.JPRJ.GE.11) GO TO 901
-C
 C Jump to a subroutine that is responsible for pre-computing constants
 C required by MDPTRN.  The same subroutine may, on occasion, need to be
 C called by MDPTRN itself.  (MDPTRN may not call MDPINT because MDPINT
@@ -120,10 +116,11 @@ C
 C Set UMIN, UMAX, VMIN, and VMAX to correspond to the maximum useful
 C area produced by the projection.
 C
-C Projection: US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
         GO TO (100,101,102,101,102,102,103,104,103,105,106,
-     +                                     104,103,105,106) , IPRJ+1
+     +                                     104,103,105,106,
+     +                                         107        ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -132,7 +129,7 @@ C
         VMIN=UVMN  !  ???
         VMAX=UVMX  !  ???
 C
-        GO TO 107
+        GO TO 108
 C
 C Lambert conformal conic and orthographic.  The quantity "R" which is
 C used below is the largest acceptable ratio of the lengths of the major
@@ -177,7 +174,7 @@ C
           END IF
         END IF
 C
-        GO TO 107
+        GO TO 108
 C
 C Stereographic, Lambert equal area, and Gnomonic.
 C
@@ -185,7 +182,7 @@ C
         UMAX=+2.D0
         VMIN=-2.D0
         VMAX=+2.D0
-        GO TO 107
+        GO TO 108
 C
 C Azimuthal equidistant and Mercator.
 C
@@ -193,7 +190,7 @@ C
         UMAX=+PI
         VMIN=-PI
         VMAX=+PI
-        GO TO 107
+        GO TO 108
 C
 C Cylindrical equidistant.
 C
@@ -201,7 +198,7 @@ C
         UMAX=+180.D0
         VMIN= -90.D0
         VMAX= +90.D0
-        GO TO 107
+        GO TO 108
 C
 C Mollweide.
 C
@@ -209,7 +206,7 @@ C
         UMAX=+2.D0
         VMIN=-1.D0
         VMAX=+1.D0
-        GO TO 107
+        GO TO 108
 C
 C Robinson.
 C
@@ -217,11 +214,20 @@ C
         UMAX=+1.0000D0
         VMIN= -.5072D0
         VMAX= +.5072D0
+        GO TO 108
+C
+C Rotated Mercator.
+C
+  107   UMIN=-PI/(ABS(SINR)+ABS(COSR))
+        UMAX=+PI/(ABS(SINR)+ABS(COSR))
+        VMIN=-PI/(ABS(SINR)+ABS(COSR))
+        VMAX=+PI/(ABS(SINR)+ABS(COSR))
+        GO TO 108
 C
 C Compute the quantity used by MAPIT in checking for crossover.  The
 C USGS and conical projections are oddballs.
 C
-  107   IF (IPRJ.EQ.0) THEN
+  108   IF (IPRJ.EQ.0) THEN
           IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.
      +        IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
      +        IPRF.EQ.19.OR.IPRF.EQ.21) THEN
@@ -267,7 +273,7 @@ C
         UMAX=MAX(TEM1,TEM2)
         VMIN=MIN(TEM3,TEM4)
         VMAX=MAX(TEM3,TEM4)
-        IF (UMAX.GE.1.D12) GO TO 904
+        IF (UMAX.GE.1.D12) GO TO 903
         GO TO 600
 C
 C ILTS=3    Four edge points are given.
@@ -290,7 +296,7 @@ C
         UMAX=MAX(TEM1,TEM2,TEM3,TEM4)
         VMIN=MIN(TEM5,TEM6,TEM7,TEM8)
         VMAX=MAX(TEM5,TEM6,TEM7,TEM8)
-        IF (UMAX.GE.1.D12) GO TO 904
+        IF (UMAX.GE.1.D12) GO TO 903
         GO TO 600
 C
 C ILTS=4    Angular distances are given.
@@ -305,14 +311,15 @@ C
         CVMA=COS(AVMX*DTOR)
         SVMA=SIN(AVMX*DTOR)
 C
-C Projection: US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
-        GO TO (410,904,401,402,403,404,405,406,407,408,409,
-     +                                     406,407,408,409) , IPRJ+1
+        GO TO (401,903,402,403,404,405,406,407,408,409,410,
+     +                                     407,408,409,410,
+     +                                         411        ) , IPRJ+1
 C
 C USGS transformations.
 C
-  410   UMIN=UUMN  !  ???
+  401   UMIN=UUMN  !  ???
         UMAX=UUMX  !  ???
         VMIN=UVMN  !  ???
         VMAX=UVMX  !  ???
@@ -321,7 +328,7 @@ C
 C
 C Stereographic.
 C
-  401   IF (SUMI.LT..000001D0) THEN
+  402   IF (SUMI.LT..000001D0) THEN
           IF (CUMI.GT.0.D0) UMIN=0.D0
         ELSE
           UMIN=-(1.D0-CUMI)/SUMI
@@ -345,14 +352,14 @@ C
 C
 C Orthographic or satellite-view.
 C
-  402   IF (ABS(SALT).LE.1.D0) THEN
-          IF (MAX(AUMN,AUMX,AVMN,AVMX).GT.90.D0) GO TO 902
+  403   IF (ABS(SALT).LE.1.D0) THEN
+          IF (MAX(AUMN,AUMX,AVMN,AVMX).GT.90.D0) GO TO 901
           UMIN=-SUMI
           UMAX=+SUMA
           VMIN=-SVMI
           VMAX=+SVMA
         ELSE
-          IF (MAX(AUMN,AUMX,AVMN,AVMX).GE.90.D0) GO TO 902
+          IF (MAX(AUMN,AUMX,AVMN,AVMX).GE.90.D0) GO TO 901
           UMIN=-SRSS*SUMI/CUMI
           UMAX=+SRSS*SUMA/CUMA
           VMIN=-SRSS*SVMI/CVMI
@@ -362,7 +369,7 @@ C
 C
 C Lambert equal area.
 C
-  403   IF (SUMI.LT..000001D0) THEN
+  404   IF (SUMI.LT..000001D0) THEN
           IF (CUMI.GT.0.D0) UMIN=0.D0
         ELSE
           UMIN=-2.D0/SQRT(1.D0+((1.D0+CUMI)/SUMI)**2)
@@ -386,7 +393,7 @@ C
 C
 C Gnomonic.
 C
-  404   IF (MAX(AUMN,AUMX,AVMN,AVMX).GE.89.999999D0) GO TO 902
+  405   IF (MAX(AUMN,AUMX,AVMN,AVMX).GE.89.999999D0) GO TO 901
         UMIN=-SUMI/CUMI
         UMAX=+SUMA/CUMA
         VMIN=-SVMI/CVMI
@@ -395,7 +402,7 @@ C
 C
 C Azimuthal equidistant.
 C
-  405   UMIN=-AUMN*DTOR
+  406   UMIN=-AUMN*DTOR
         UMAX=+AUMX*DTOR
         VMIN=-AVMN*DTOR
         VMAX=+AVMX*DTOR
@@ -403,7 +410,7 @@ C
 C
 C Cylindrical equidistant.
 C
-  406   UMIN=-AUMN
+  407   UMIN=-AUMN
         UMAX=+AUMX
         VMIN=-AVMN
         VMAX=+AVMX
@@ -411,7 +418,7 @@ C
 C
 C Mercator.
 C
-  407   IF (MAX(AVMN,AVMX).GE.89.999999D0) GO TO 902
+  408   IF (MAX(AVMN,AVMX).GE.89.999999D0) GO TO 901
         UMIN=-AUMN*DTOR
         UMAX=+AUMX*DTOR
         VMIN=-LOG((1.D0+SVMI)/CVMI)
@@ -420,7 +427,7 @@ C
 C
 C Mollweide.
 C
-  408   UMIN=-AUMN/90.D0
+  409   UMIN=-AUMN/90.D0
         UMAX=+AUMX/90.D0
         VMIN=-SVMI
         VMAX=+SVMA
@@ -428,11 +435,17 @@ C
 C
 C Robinson.
 C
-  409   UMIN=-AUMN/180.D0
+  410   UMIN=-AUMN/180.D0
         UMAX=+AUMX/180.D0
         VMIN=-RBGDFE(MAX(-90.D0,MIN(+90.D0,AVMN)))
         VMAX=+RBGDFE(MAX(-90.D0,MIN(+90.D0,AVMX)))
         GO TO 600
+C
+C Rotated Mercator.  ???   The code here treats angular limit-setting as
+C equivalent to maximal limit-setting.  This is because I'm not sure how
+C to make angular limit-setting for this projection work.
+C
+  411   GO TO 600
 C
 C ILTS=5    Values in the u/v plane are given.
 C ------
@@ -490,7 +503,7 @@ C
 C
 C Error if map has zero area.
 C
-        IF (DU.LE.0.D0.OR.DV.LE.0.D0) GO TO 903
+        IF (DU.LE.0.D0.OR.DV.LE.0.D0) GO TO 902
 C
 C Position the map on the plotter frame.
 C
@@ -508,7 +521,7 @@ C
 C
 C Error if map has essentially zero area.
 C
-        IF (MIN(UROW-ULOW,VTOW-VBOW)*PLTR.LT.RESL) GO TO 903
+        IF (MIN(UROW-ULOW,VTOW-VBOW)*PLTR.LT.RESL) GO TO 902
 C
 C Compute the quantities used by MAPIT to see if points are far enough
 C apart to draw the line between them and the quantities used by MDPVP
@@ -728,17 +741,13 @@ C
 C
 C Error returns.
 C
-  901   CALL SETER ('MDPINT - ATTEMPT TO USE NON-EXISTENT PROJECTION',
-     +                                                           15,1)
+  901   CALL SETER ('MDPINT - ANGULAR LIMITS TOO GREAT',16,1)
         GO TO 999
 C
-  902   CALL SETER ('MDPINT - ANGULAR LIMITS TOO GREAT',16,1)
+  902   CALL SETER ('MDPINT - MAP HAS ZERO AREA',17,1)
         GO TO 999
 C
-  903   CALL SETER ('MDPINT - MAP HAS ZERO AREA',17,1)
-        GO TO 999
-C
-  904   CALL SETER ('MDPINT - MAP LIMITS INAPPROPRIATE',18,1)
+  903   CALL SETER ('MDPINT - MAP LIMITS INAPPROPRIATE',18,1)
         GO TO 999
 C
   999   INTF=.TRUE.

@@ -1,5 +1,5 @@
 C
-C $Id: idictl.f,v 1.10 2001-11-02 22:36:30 kennison Exp $
+C $Id: idictl.f,v 1.11 2005-01-10 21:19:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,7 +31,7 @@ C IDCT of the string ISTR.  Only the first two characters of ISTR and
 C IDCT(I) are compared.  If ISTR is not found in the dictionary, the
 C function value is zero.
 C
-C Declare local variables
+C Declare local variables.
 C
         INTEGER       I
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.2 2001-11-02 22:37:13 kennison Exp $
+C $Id: mdproj.f,v 1.3 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -39,8 +39,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),
-     +                   PDCL(12)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
+     +                   PDCL(13)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -58,11 +58,15 @@ C
 C
 C Transfer the parameters defining the projection.
 C
-        I=IDICTL(ARG1,PDCT,12)
-        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,12)
+        I=IDICTL(ARG1,PDCT,13)
+        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,13)
         IF (I.EQ.0) GO TO 901
 C
         JPRJ=I-1
+C
+        PHIA=MAX(-90.D0,MIN(90.D0,ARG2))
+        PHIO=ARG3-SIGN(180.D0,ARG3+180.D0)+SIGN(180.D0,180.D0-ARG3)
+        ROTA=ARG4-SIGN(180.D0,ARG4+180.D0)+SIGN(180.D0,180.D0-ARG4)
 C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)
@@ -73,11 +77,10 @@ C
             CALL MDSETD ('SA',6.631D0)
             IF (ICFELL('MDPROJ',3).NE.0) RETURN
           END IF
+        ELSE IF (JPRJ.EQ.12) THEN
+          JPRJ=15
+          PHIA=0.D0
         END IF
-C
-        PHIA=MAX(-90.D0,MIN(90.D0,ARG2))
-        PHIO=ARG3-SIGN(180.D0,ARG3+180.D0)+SIGN(180.D0,180.D0-ARG3)
-        ROTA=ARG4-SIGN(180.D0,ARG4+180.D0)+SIGN(180.D0,180.D0-ARG4)
 C
 C Set the flag to indicate that initialization is now required.
 C

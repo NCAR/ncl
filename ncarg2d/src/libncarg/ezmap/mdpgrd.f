@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.3 2002-02-25 18:02:42 kennison Exp $
+C $Id: mdpgrd.f,v 1.4 2005-01-10 21:19:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -139,7 +139,7 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14) THEN
+        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14.OR.IPRJ.EQ.15) THEN
           OLAT=90.D0
         ELSE
           IF (DINT(GRPO/1000.D0).EQ.0.D0) THEN

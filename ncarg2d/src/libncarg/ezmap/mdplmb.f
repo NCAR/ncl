@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.3 2002-02-25 18:02:42 kennison Exp $
+C $Id: mdplmb.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -115,10 +115,11 @@ C
 C
 C Draw limb lines, the nature of which depends on the projection.
 C
-C Projection: US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
         GO TO (100,101,110,104,105,110,106,112,112,107,112,
-     +                                     112,112,107,112) , IPRJ+1
+     +                                     112,112,107,112,
+     +                                         112        ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -410,10 +411,16 @@ C
           IF (IPRJ.EQ.7.OR.IPRJ.EQ.11) THEN
             U=RLON-UOFF
             V=RLAT-VOFF
-          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12) THEN
+          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15) THEN
             U=DTOR*RLON-UOFF
             V=LOG(TAN((MAX(-89.999999D0,
      +                 MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
+            IF (IPRJ.EQ.15) THEN
+              UTMP=U*COSR+V*SINR
+              VTMP=V*COSR-U*SINR
+              U=UTMP
+              V=VTMP
+            END IF
           ELSE
             U=(RLON/180.D0)*RBGLEN(RLAT)-UOFF
             V=RBGDFE(RLAT)-VOFF
