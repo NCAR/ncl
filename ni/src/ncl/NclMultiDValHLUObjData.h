@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.2 1994-09-01 17:41:42 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.3 1995-01-28 01:51:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -38,64 +38,15 @@ typedef struct _NclMultiDValHLUObjDataRec {
 	NclMultiDValHLUObjDataPart multi_obj;
 }NclMultiDValHLUObjDataRec;
 
-typedef NhlErrorTypes (*NclDrawFunc) (
-#if NhlNeedProto
-NclMultiDValData /*self*/
-#endif
-);
-
-typedef NhlErrorTypes (*NclSetFunc) (
-#if  NhlNeedProto
-NclMultiDValData /* self */,
-int /* rl_list */
-#endif
-);
-
-/* temporary typedef until GetValues written*/
-typedef void* (*NclGetFunc) (
-#if NhlNeedProto
-void
-#endif
-);
-
-typedef NhlErrorTypes (*NclUpdateFunc)(
-#if NhlNeedProto
-NclMultiDValData /* self */
-#endif
-);
-
-typedef NhlErrorTypes (*NclClearFunc)(
-#if NhlNeedProto
-NclMultiDValData /* self */
-#endif
-);
-typedef NhlErrorTypes (*NclFrameFunc)(
-#if NhlNeedProto
-NclMultiDValData /* self */
-#endif
-);
-typedef NhlErrorTypes (*NclDestroyFunc)(
-#if NhlNeedProto
-NclMultiDValData /* self */
-#endif
-);
-
-
 typedef struct _NclMultiDValHLUObjDataClassPart {
-	NclDrawFunc	draw;
-	NclSetFunc	setval;
-	NclGetFunc	getval;
-	NclUpdateFunc	update;
-	NclClearFunc	clear;
-	NclFrameFunc	frame;
-	NclDestroyFunc	destroy_objs;
+	char *foo;
 }NclMultiDValHLUObjDataClassPart;
 
 typedef struct _NclMultiDValHLUObjDataClassRec {
 	NclObjClassPart	obj_class;
 	NclDataClassPart data_class;
 	NclMultiDValDataClassPart multid_class;
-	NclMultiDValHLUObjDataClassPart multi_obj_class;
+	NclMultiDValHLUObjDataClassPart multid_obj_class;
 }NclMultiDValHLUObjDataClassRec;
 
 typedef struct _NclMultiDValHLUObjDataRec* NclMultiDValHLUObjData;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.2 1994-11-07 03:02:18 ethan Exp $
+ *      $Id: NclVar.h,v 1.3 1995-01-28 01:52:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -169,7 +169,8 @@ struct _NclVarRec *_NclVarCreate(
 	int		/*att_id*/,
 	int* 		/*coords*/,
 	NclVarTypes /* var_type */,
-	char * /*var_name*/
+	char * /*var_name*/,
+	NclStatus /*status*/
 #endif
 );
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: char_data_c.sh,v 1.2 1994-08-25 18:01:11 ethan Exp $
+#      $Id: char_data_c.sh,v 1.3 1995-01-28 01:53:30 ethan Exp $
 #
 #########################################################################
 #									#
@@ -43,46 +43,33 @@ sed \
 -e 's/HLUGENTYPEREP/NhlTCharacterGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
--e '/DSPECIFIC/r NclMultiDValcharData.c.specific' \
+-e '/DSPECIFIC/r NclTypechar.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/MultiDVal_char_mdmd_Mod/NULL/' \
--e 's/MultiDVal_char_smd_Mod/NULL/' \
--e 's/MultiDVal_char_mds_Mod/NULL/' \
--e 's/MultiDVal_char_ss_Mod/NULL/' \
--e 's/MultiDVal_char_mdmd_Div/NULL/' \
--e 's/MultiDVal_char_smd_Div/NULL/' \
--e 's/MultiDVal_char_mds_Div/NULL/' \
--e 's/MultiDVal_char_ss_Div/NULL/' \
--e 's/MultiDVal_char_mdmd_Mul/NULL/' \
--e 's/MultiDVal_char_smd_Mul/NULL/' \
--e 's/MultiDVal_char_mds_Mul/NULL/' \
--e 's/MultiDVal_char_ss_Mul/NULL/' \
--e 's/MultiDVal_char_mdmd_Minus/NULL/' \
--e 's/MultiDVal_char_smd_Minus/NULL/' \
--e 's/MultiDVal_char_mds_Minus/NULL/' \
--e 's/MultiDVal_char_ss_Minus/NULL/' \
--e 's/MultiDVal_char_mdmd_Exp/NULL/' \
--e 's/MultiDVal_char_smd_Exp/NULL/' \
--e 's/MultiDVal_char_mds_Exp/NULL/' \
--e 's/MultiDVal_char_ss_Exp/NULL/' \
--e 's/MultiDVal_char_md_Neg/NULL/' \
--e 's/MultiDVal_char_s_Neg/NULL/' \
--e 's/MultiDVal_char_md_Not/NULL/' \
--e 's/MultiDVal_char_s_Not/NULL/' \
--e 's/MultiDVal_char_mdmd_And/NULL/' \
--e 's/MultiDVal_char_mds_And/NULL/' \
--e 's/MultiDVal_char_smd_And/NULL/' \
--e 's/MultiDVal_char_ss_And/NULL/' \
--e 's/MultiDVal_char_mdmd_Or/NULL/' \
--e 's/MultiDVal_char_mds_Or/NULL/' \
--e 's/MultiDVal_char_smd_Or/NULL/' \
--e 's/MultiDVal_char_ss_Or/NULL/' \
--e 's/MultiDVal_char_mdmd_Xor/NULL/' \
--e 's/MultiDVal_char_mds_Xor/NULL/' \
--e 's/MultiDVal_char_smd_Xor/NULL/' \
--e 's/MultiDVal_char_ss_Xor/NULL/' \
-NclMultiDValData.c.sed > NclMultiDValcharData.c
+-e 's/Ncl_Type_char_mat_type/NULL/' \
+-e 's/Ncl_Type_char_mat/NULL/' \
+-e 's/Ncl_Type_char_mod_type/NULL/' \
+-e 's/Ncl_Type_char_mod/NULL/' \
+-e 's/Ncl_Type_char_divide_type/NULL/' \
+-e 's/Ncl_Type_char_divide/NULL/' \
+-e 's/Ncl_Type_char_multiply_type/NULL/' \
+-e 's/Ncl_Type_char_multiply/NULL/' \
+-e 's/Ncl_Type_char_minus_type/NULL/' \
+-e 's/Ncl_Type_char_minus/NULL/' \
+-e 's/Ncl_Type_char_exponent_type/NULL/' \
+-e 's/Ncl_Type_char_exponent/NULL/' \
+-e 's/Ncl_Type_char_neg_type/NULL/' \
+-e 's/Ncl_Type_char_neg/NULL/' \
+-e 's/Ncl_Type_char_not_type/NULL/' \
+-e 's/Ncl_Type_char_not/NULL/' \
+-e 's/Ncl_Type_char_and_type/NULL/' \
+-e 's/Ncl_Type_char_and/NULL/' \
+-e 's/Ncl_Type_char_or_type/NULL/' \
+-e 's/Ncl_Type_char_or/NULL/' \
+-e 's/Ncl_Type_char_xor_type/NULL/' \
+-e 's/Ncl_Type_char_xor/NULL/' \
+-e 's/Ncl_Type_char_coerce/NULL/' \
+NclType.c.sed > NclTypechar.c
 
 rm .tmp.$$
 
-echo "created NclMultiDValcharData.c"
+echo "created NclTypechar.c"

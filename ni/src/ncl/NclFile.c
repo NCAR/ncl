@@ -13,6 +13,11 @@
 #include "NclMultiDValData.h"
 #include "NclAtt.h"
 #include "AttSupport.h"
+#include "NclType.h"
+#include "TypeSupport.h"
+#include "FileSupport.h"
+#include "NclMdInc.h"
+#include "NclCoordVar.h"
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -505,7 +510,7 @@ int vtype;
 	NclMultiDValData mis_md = NULL;
 	NclScalar missing_value;
 	int has_missing = 0;
-	void *val,*ret;
+	void *val;
 	int index;
 	long start[NCL_MAX_DIMENSIONS];
 	long finish[NCL_MAX_DIMENSIONS];
@@ -664,7 +669,7 @@ int vtype;
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
 			if(vtype == FILE_VAR_ACCESS) {
-				ret = (*thefile->file.format_funcs->read_var)(
+				(*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					start,
@@ -672,7 +677,7 @@ int vtype;
 					stride,
 					val);
 			} else {
-				ret = (*thefile->file.format_funcs->read_coord)(
+				(*thefile->file.format_funcs->read_coord)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					start,
@@ -737,7 +742,7 @@ int vtype;
 				}
 			}
 			if(vtype == FILE_VAR_ACCESS) {
-				ret = (*thefile->file.format_funcs->read_var)(
+				(*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					current_index,
@@ -745,7 +750,7 @@ int vtype;
 					real_stride,
 					(void*)val);
 			} else {
-				ret = (*thefile->file.format_funcs->read_coord)(
+				(*thefile->file.format_funcs->read_coord)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					current_index,
@@ -814,7 +819,7 @@ int vtype;
                         }
 			while(!done) {
 				if(vtype == FILE_VAR_ACCESS) {
-					ret = (*thefile->file.format_funcs->read_var)(
+					(*thefile->file.format_funcs->read_var)(
 						thefile->file.private_rec,
 						thefile->file.var_info[index]->var_name_quark,
 						current_index,
@@ -822,7 +827,7 @@ int vtype;
 						real_stride,
 						(void*)&(((char*)val)[to]));
 				} else {
-					ret = (*thefile->file.format_funcs->read_coord)(
+					(*thefile->file.format_funcs->read_coord)(
 						thefile->file.private_rec,
 						thefile->file.var_info[index]->var_name_quark,
 						current_index,
@@ -925,14 +930,14 @@ int vtype;
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(!has_stride)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
 			if(vtype == FILE_VAR_ACCESS) {
-				ret = (*thefile->file.format_funcs->read_var_ns)(
+				(*thefile->file.format_funcs->read_var_ns)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					start,
 					finish,
 					val);
 			} else {
-				ret = (*thefile->file.format_funcs->read_coord_ns)(
+				(*thefile->file.format_funcs->read_coord_ns)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
 					start,
@@ -964,17 +969,35 @@ int vtype;
 			has_missing = 1;
 		}
 	} 
-	tmp_md = _NclCreateVal(
-		NULL,
-		NULL,
-		_NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type),
-		0,
-		val,
-		(has_missing ? &missing_value:NULL),
-		n_dims_output,
-		output_dim_sizes,
-		TEMPORARY,
-		sel_ptr);
+	if(vtype == FILE_COORD_VAR_ACCESS) {
+		tmp_md = _NclOneDValCoordDataCreate(
+			NULL,
+			NULL,
+			Ncl_OneDValCoordData,
+			0,
+			val,
+			(has_missing ? &missing_value:NULL),
+			n_dims_output,
+			output_dim_sizes,
+			TEMPORARY,
+			sel_ptr,
+			_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type))
+			);
+	} else {
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			val,
+			(has_missing ? &missing_value:NULL),
+			n_dims_output,
+			output_dim_sizes,
+			TEMPORARY,
+			sel_ptr,
+			_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type))
+			);
+	}
 	return(tmp_md);
 }
 static struct _NclMultiDValDataRec* FileReadVarValue
@@ -1008,11 +1031,13 @@ struct _NclSelectionRecord* sel_ptr;
 	NclFileAttInfoList *step = NULL;
 	NclVar tmp_var = NULL;
 	int index;
-	int att_id;
-	
+	int att_id,i,j=0;
+	NclSelectionRecord tmp_sel;
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
+	int coords[NCL_MAX_DIMENSIONS];
 	NclSelection *sel = NULL;
 	NclObj  att_obj = NULL;
+	int single;
 /*
 * By the the time it gets here the file suport routines in that build the selection
 * record have made sure var_name is valid and all the demensions in sel_ptr
@@ -1051,9 +1076,51 @@ struct _NclSelectionRecord* sel_ptr;
 		} else {
 			att_id = -1;
 		}
-		if(sel_ptr != NULL) {
+		if(sel_ptr == NULL) {
+			for(i = 0 ; i < thefile->file.var_info[index]->num_dimensions; i++){
+				if(_NclFileVarIsCoord(thefile,
+					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark)!= -1) {
+					tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark,NULL);
+                                	coords[i] = tmp_var->obj.id;
+				} else {
+					coords[i] = -1;
+				}
+			}
+			sel = NULL;
+		} else {
 			sel = sel_ptr->selection;
+			tmp_sel.n_entries = 1;
+			tmp_sel.selected_from_sym = NULL;
+			tmp_sel.selected_from_var = NULL;
+			tmp_sel.selection[0].dim_num = 0;
+			j = 0;
+			for(i = 0 ; i < thefile->file.var_info[index]->num_dimensions; i++){
+				if(_NclFileVarIsCoord(thefile,
+					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark)!= -1) {
+					tmp_sel.selection[0] = sel[i];
+					tmp_sel.selection[0].dim_num = 0;
+					tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_name_quark,&tmp_sel);
+					if((tmp_var->var.n_dims == 1)&&(tmp_var->var.dim_info[0].dim_size == 1)) {
+						single = 1;
+					}
+					coords[j] = tmp_var->obj.id;
+				} else {
+					coords[j] = -1;
+				}
+				if(single) {
+					if(coords[j] != -1) {
+						if(att_id == -1) {
+							att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+						} 
+						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark),_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
+					}
+					single = 0;
+				} else {
+					j++;
+				}
+			}
 		}
+		tmp_var = NULL;
 		
 		
 	
@@ -1067,9 +1134,9 @@ struct _NclSelectionRecord* sel_ptr;
 				tmp_md,
 				dim_info,
 				att_id,
-				NULL,
+				coords,
 				(sel == NULL ? FILEVAR : FILEVARSUBSEL),
-				NrmQuarkToString(var_name));
+				NrmQuarkToString(var_name),TEMPORARY);
 			if(tmp_var == NULL) {
 				_NclDestroyObj((NclObj)tmp_md);
 				if(att_id != -1) {
@@ -1145,17 +1212,19 @@ struct _NclSelectionRecord *sel_ptr;
 					step->the_att->att_name_quark,
 					val
 					);
-				tmp_md = _NclCreateVal(
+				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
-						_NclBasicDataTypeToObjType(step->the_att->data_type),
+						Ncl_MultiDValData,
 						0,
 						val,
 						NULL,
 						1,
 						&step->the_att->num_elements,
 						TEMPORARY,
-						NULL);
+						NULL,
+						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(step->the_att->data_type))
+						);
 				if(tmp_md != NULL) {
 					_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_md,NULL);
 				}
@@ -1601,7 +1670,7 @@ int type;
 			} 
 			lhs_type = _NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type);
 	
-			rhs_type = value->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
+			rhs_type = value->multidval.type->type_class.type ;
 
 			has_missing = (FileIsVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT)) > -1 ? 1 :  0);
 
@@ -1627,7 +1696,7 @@ int type;
 				} else if(value->multidval.missing_value.has_missing) {
 					tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 					*tmp_mis = value->multidval.missing_value.value;
-					mis_md = _NclCreateVal(
+					mis_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
 						lhs_type,
@@ -1637,7 +1706,8 @@ int type;
 						1,
 						&tmp_size,
 						TEMPORARY,
-						NULL);
+						NULL,
+						_NclTypeEnumToTypeClass(lhs_type));
 					FileWriteVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),mis_md,NULL);
 					tmp_md = value;
 				} else {
@@ -2045,9 +2115,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	struct _NclVarRec* tmp_var;
 	int i;
 	NclQuark dim_names[NCL_MAX_DIMENSIONS];
-	int tmp_att_id;
 	NclAtt theatt;
-	NclVar coord_var;
 	NclAttList *step;
 	
 	if(!thefile->file.wr_status) {
@@ -2264,17 +2332,18 @@ struct _NclSelectionRecord *sel_ptr;
 					thefile->file.file_atts[i]->att_name_quark,
 					val
 					);
-				tmp_md = _NclCreateVal(
+				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
-						_NclBasicDataTypeToObjType(thefile->file.file_atts[i]->data_type),
+						Ncl_MultiDValData,
 						0,
 						val,
 						NULL,
 						1,
 						&thefile->file.file_atts[i]->num_elements,
 						TEMPORARY,
-						NULL);
+						NULL,
+						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[i]->data_type)));
 				if(tmp_md != NULL) {
 					_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_md,NULL);
 				}
@@ -2449,34 +2518,36 @@ long dim_num;
 				if(FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[i]) == dim_name) {
 					tmpi = (int*)NclMalloc(sizeof(int));
 					*tmpi = i;
-					return( _NclCreateVal(
+					return( _NclCreateMultiDVal(
 						NULL,
 						NULL,
-						Ncl_MultiDValintData,
+						Ncl_MultiDValData,
 						0,
 						(void*)tmpi,
 						NULL,
 						1,
 						&output_dim_sizes,
 						TEMPORARY,
-						NULL));
+						NULL,
+						(NclTypeClass)nclTypeintClass));
 				}
 			}
 		} else if ( dim_num > -1) {
 			if(dim_num < thefile->file.var_info[index]->num_dimensions) {
 				tmpq = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				*tmpq = FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[dim_num]);	
-				return( _NclCreateVal(
+				return( _NclCreateMultiDVal(
 					NULL,
 					NULL,
-					Ncl_MultiDValstringData,
+					Ncl_MultiDValData,
 					0,
 					(void*)tmpq,
 					NULL,
 					1,
 					&output_dim_sizes,
 					TEMPORARY,
-					NULL));
+					NULL,
+					(NclTypeClass)nclTypestringClass));
 			}
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension number (%d) is out of range for variable (%s->%s)",dim_num,NrmQuarkToString(thefile->file.fname),NrmQuarkToString(var));
 			return(NULL);
@@ -2549,17 +2620,18 @@ long dim_num;
 			if(thefile->file.file_dim_info[i]->dim_name_quark) {
 				tmpl = (int*)NclMalloc(sizeof(int));
 				*tmpl = i;
-				return( _NclCreateVal(
+				return( _NclCreateMultiDVal(
 					NULL,
 					NULL,
-					Ncl_MultiDValintData,
+					Ncl_MultiDValData,
 					0,
 					(void*)tmpl,
 					NULL,
 					1,
 					&output_dim_sizes,
 					TEMPORARY,
-					NULL));
+					NULL,
+					(NclTypeClass)nclTypeintClass));
 			}
 		}
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) is not a defined dimension in file (%s)",NrmQuarkToString(dim_name),NrmQuarkToString(thefile->file.fname));
@@ -2568,17 +2640,18 @@ long dim_num;
 		if(dim_num < thefile->file.n_file_dims) {
 			tmps = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			*tmps = thefile->file.file_dim_info[dim_num]->dim_name_quark;
-			return( _NclCreateVal(
+			return( _NclCreateMultiDVal(
 				NULL,
 				NULL,
-				Ncl_MultiDValstringData,
+				Ncl_MultiDValData,
 				0,
 				(void*)tmps,
 				NULL,
 				1,
 				&output_dim_sizes,
 				TEMPORARY,
-				NULL));
+				NULL,
+				(NclTypeClass)nclTypestringClass));
 		}
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension #%ld is out of range",dim_num);
 		return(NULL);
@@ -2680,18 +2753,19 @@ struct _NclSelectionRecord* sel_ptr;
 			sel = NULL;
 		}
 		if(tmp_md != NULL) {
-			tmp_var = _NclVarCreate(
+			tmp_var = _NclCoordVarCreate(
 					NULL,
 					NULL,
-					Ncl_Var,
+					Ncl_CoordVar,
 					0,
 					NULL,
 					tmp_md,
 					dim_info,
 					att_id,
 					NULL,
-					(sel == NULL ? COORD : COORDSUBSEL),
-					NrmQuarkToString(coord_name));
+					((sel== NULL)? COORD:COORDSUBSEL),
+					NrmQuarkToString(coord_name),
+					TEMPORARY);
 			if(tmp_var == NULL) {
 				_NclDestroyObj((NclObj)tmp_md);
 				if(att_id != -1) {

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.4 1994-12-22 01:42:23 ethan Exp $
+ *      $Id: NclData.h,v 1.5 1995-01-28 01:51:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -239,8 +239,6 @@ typedef struct _NclDataClassPart {
 	NclOperatorFunction	or[4];
 	NclOperatorFunction	xor[4];
 	NclIsMissingFunction	is_mis;
-	NclScalarFindFunction   find;
-	NclMonotonicTestFunction is_mono;
 } NclDataClassPart;
  
 typedef struct _NclDataClassRec{

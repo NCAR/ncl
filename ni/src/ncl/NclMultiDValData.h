@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h,v 1.3 1994-09-01 17:41:36 ethan Exp $
+ *      $Id: NclMultiDValData.h,v 1.4 1995-01-28 01:51:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #ifndef NclMultiDValData_h
 #define NclMultiDValData_h
 #include "NclData.h"
+#include "NclType.h"
 
 #define NCL_DEFAULT_MISSING_VALUE -9999.0
 
@@ -48,6 +49,7 @@ typedef struct _NclMultiDValDataPart {
 	NclSelectionRecord *sel_rec; /* Set only when creating data as a 
 					subsection */
 	NhlString hlu_type_rep[2];
+	NclTypeClass type;
 }NclMultiDValDataPart;
 
 typedef struct _NclMultiDValDataRec {
@@ -72,9 +74,19 @@ typedef struct _NclMultiDValDataClassRec* NclMultiDValDataClass;
 extern NclObjClass nclMultiDValDataClass;
 extern NclMultiDValDataClassRec nclMultiDValDataClassRec;
 
-extern struct _NclMultiDValDataRec *_NclMultiDValDataCreate(
+extern struct _NclMultiDValDataRec *_NclCreateMultiDVal(
 #if	NhlNeedProto
-NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status
+NclObj  /* inst */,
+NclObjClass  /* theclass */,
+NclObjTypes  /* obj_type */,
+unsigned int  /* obj_type_mask */,
+void * /* val */,
+NclScalar * /* missing_value */,
+int  /* n_dims */,
+int * /* dim_sizes */,
+NclStatus  /* status */,
+NclSelectionRecord * /* sel_rec */,
+NclTypeClass /* type */
 #endif
 );
 

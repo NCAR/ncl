@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.2 1994-12-23 01:17:27 ethan Exp $
+ *      $Id: FileSupport.c,v 1.3 1995-01-28 01:50:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,8 +30,274 @@
 #include "DataSupport.h"
 #include "Symbol.h"
 #include "Machine.h"
+#include "NclCoordVar.h"
+#include "FileSupport.h"
+#include "VarSupport.h"
 
 
+NhlErrorTypes _NclBuildFileCoordRSelection
+#if	NhlNeedProto
+(struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
+#else
+(file,var,range,sel,dim_num,dim_name)
+	struct _NclFileRec *file;
+	NclQuark var;
+	struct _NclRangeRec* range;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{
+	NclQuark cname;
+        NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
+        long start = 0,finish = 0;
+        NclCoordVar cvar = NULL;
+        NclObjTypes the_type;
+	char * v_name;
+	char * f_name;
+	
+	int index = -1;
+	int vindex = -1;
+/*
+* Preconditions: subscripts are SCALAR and integer guarenteed!!!!
+*/
+	v_name = NrmQuarkToString(var);
+	f_name = NrmQuarkToString(file->file.fname);
+	vindex = _NclFileIsVar(file,var);
+
+	if(range != NULL) {
+		if(dim_name != NULL) {
+			cname = NrmStringToQuark(dim_name);
+			index = _NclFileVarIsDim(file,var,cname);
+			if((index >= 0)&&(index < file->file.var_info[vindex]->num_dimensions)){
+				sel->dim_num = index;
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension name in variable (%s->%s), could not determine dimension number",dim_name,f_name,v_name);
+				return(NhlFATAL);
+			}
+		} else {
+			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
+			if(name_md != NULL) {
+				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
+					cname = *(string*)name_md->multidval.val;
+					_NclDestroyObj((NclObj)name_md);
+				} else {
+					return(NhlFATAL);
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of file (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,f_name);
+                                return(NhlFATAL);
+
+			}
+			sel->dim_num = dim_num;
+		}
+		if(_NclFileVarIsCoord(file,cname) == -1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of file (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),f_name);
+                        return(NhlFATAL);
+
+		}
+		if((range->start == NULL)&&(range->finish == NULL)) {
+
+			sel->sel_type = Ncl_SUB_ALL;
+			sel->u.sub.start = 0;
+			sel->u.sub.finish = 0;
+			sel->u.sub.stride = 1;
+
+		} else if(range->start == NULL) {
+
+			sel->sel_type = Ncl_SUB_DEF_VAL;
+			sel->u.sub.start = 0;
+			sel->u.sub.stride = 1;
+		
+			cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+			if(!(the_type & range->finish->multidval.type->type_class.type)) {
+				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+                                        return(NhlFATAL);
+
+				} else {
+					if(range->finish->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->finish);
+						range->finish = tmp_md;
+					}
+				}
+			}
+			if(_NclGetCoordRange(coord_md,NULL,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                                return(NhlFATAL);
+                        }
+		} else if(range->finish == NULL) {
+
+			sel->sel_type = Ncl_SUB_VAL_DEF;
+			sel->u.sub.finish = 0;
+			sel->u.sub.stride = 1;
+
+			cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+			if(!(the_type & range->start->multidval.type->type_class.type)) {
+				tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+                                        return(NhlFATAL);
+
+				} else {
+					if(range->start->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->start);
+						range->start= tmp_md;
+					}
+				}
+			}
+			if(_NclGetCoordRange(coord_md,range->finish->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript (%d)",dim_num);
+                                return(NhlFATAL);
+                        }
+		} else {
+
+			sel->sel_type = Ncl_SUBSCR;
+			cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+
+			if(!(the_type & range->start->multidval.type->type_class.type)) {
+				tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+                                        return(NhlFATAL);
+
+				} else {
+					if(range->start->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->start);
+						range->start= tmp_md;
+					}
+				}
+			}
+
+			tmp_md = NULL;
+			if(!(the_type & range->finish->multidval.type->type_class.type)) {
+				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+                                        return(NhlFATAL);
+
+				} else {
+					if(range->finish->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->finish);
+						range->finish = tmp_md;
+					}
+				}
+			}
+			if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                                return(NhlFATAL);
+                        }
+
+			if(sel->u.sub.start <= sel->u.sub.finish) {
+				sel->u.sub.stride = 1;
+			} else {
+				sel->u.sub.stride = -1;
+			}
+
+		}
+		if(range->stride != NULL) {
+			if(!_NclScalarCoerce(
+				range->stride->multidval.val,
+				range->stride->multidval.data_type,
+				&(sel->u.sub.stride),NCL_long)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+				return(NhlFATAL);
+			}
+
+		} 
+	} 
+	return(NhlNOERROR);
+}
+
+
+NhlErrorTypes  _NclBuildFileCoordVSelection
+#if	NhlNeedProto
+(struct _NclFileRec *file , NclQuark var,struct _NclVecRec * vec, struct _NclSelection* sel,int  dim_num,char* dim_name)
+#else
+(file,var,vec,sel,dim_num,dim_name)
+	struct _NclFileRec *file;
+	NclQuark var;
+	struct _NclVecRec* vec;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{	
+	NclMultiDValData vect_md;
+	NclMultiDValData tmp_md;
+	long *thevector;
+	int i;
+	char * v_name;
+	char * f_name;
+	int index = -1;
+	int vindex = -1;
+/*
+* Preconditions: subscripts are SCALAR and integer guarenteed!!!!
+*/
+	v_name = NrmQuarkToString(var);
+	f_name = NrmQuarkToString(file->file.fname);
+	vindex = _NclFileIsVar(file,var);
+
+/*
+* vec is guarenteed to be one dimensional, and of an integer type
+*/
+	vect_md = vec->vec;
+
+	if(vect_md != NULL) {
+		if(dim_name != NULL) {
+			index = _NclFileVarIsDim(file,var,NrmStringToQuark(dim_name));
+			if((index >= 0)&&(index < file->file.var_info[vindex]->num_dimensions)){
+				sel->dim_num = index;
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension name in variable (%s->%s), could not determine dimension number",dim_name,f_name,v_name);
+				return(NhlFATAL);
+			}
+		} else {
+			sel->dim_num = dim_num;
+		}
+/*
+* I don;t think there is anyway to get arround having to allocate the 
+* vector again. Since I don't want to make any assumptions about how
+* to free the objects without freeing the val field which I need to keep
+* arround untill the actual ValueRead happens
+*/
+		if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
+			tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
+			
+		}  else {
+			tmp_md = vect_md;
+		}
+		thevector = (long*)NclMalloc((unsigned)vect_md->multidval.totalelements * sizeof(long));
+	
+		memcpy((char*)thevector,(char*)tmp_md->multidval.val,vect_md->multidval.totalelements * sizeof(long));
+		sel->sel_type = Ncl_VECSUBSCR;
+		sel->u.vec.n_ind = vect_md->multidval.totalelements;
+		sel->u.vec.min = thevector[0];
+		sel->u.vec.max = thevector[0];
+		sel->u.vec.ind = thevector;
+		for(i = 0; i < sel->u.vec.n_ind; i++) {
+			if(thevector[i] > sel->u.vec.max) {
+				sel->u.vec.max = thevector[i];
+			}
+			if(thevector[i] < sel->u.vec.min) {
+				sel->u.vec.max = thevector[i];
+			}
+		}
+		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)tmp_md);
+		}
+		return(NhlNOERROR);
+	} else {
+		return(NhlFATAL);
+	}
+}
 NhlErrorTypes _NclBuildFileRSelection
 #if	NhlNeedProto
 (struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
@@ -59,9 +325,6 @@ NhlErrorTypes _NclBuildFileRSelection
 
 	if(range != NULL) {
 		if(dim_name != NULL) {
-/*
-*---------> code needed here <-------------------
-*/
 			index = _NclFileVarIsDim(file,var,NrmStringToQuark(dim_name));
 			if((index >= 0)&&(index < file->file.var_info[vindex]->num_dimensions)){
 				sel->dim_num = index;
@@ -206,8 +469,8 @@ NhlErrorTypes  _NclBuildFileVSelection
 * to free the objects without freeing the val field which I need to keep
 * arround untill the actual ValueRead happens
 */
-		if(!(vect_md->obj.obj_type_mask & Ncl_MultiDVallongData)) {
-			tmp_md = _NclCoerceData(vect_md,Ncl_MultiDVallongData,NULL);
+		if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
+			tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
 			
 		}  else {
 			tmp_md = vect_md;
@@ -236,7 +499,6 @@ NhlErrorTypes  _NclBuildFileVSelection
 		return(NhlFATAL);
 	}
 }
-
 NclObjTypes _NclFileVarRepValue
 #if	NhlNeedProto
 (NclFile thefile, NclQuark var)

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.5 1994-12-23 01:18:07 ethan Exp $
+ *      $Id: NclAtt.c,v 1.6 1995-01-28 01:51:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -110,7 +110,8 @@ NclSelectionRecord * sel_ptr;
                 return(NULL);
         } else {
                 if(sel_ptr != NULL) {
-                        tmp_md = (NclMultiDValData)(((NclDataClass) thelist->attvalue->obj.class_ptr)->data_class.r_subsection)((NclData)thelist->attvalue,sel_ptr,NULL);
+			tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)thelist->attvalue,sel_ptr,NULL);
+
                         if(tmp_md == NULL) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not read attribute (%s)",attname);
                                 return(NULL);
@@ -173,10 +174,10 @@ NclSelectionRecord * sel_ptr;
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign value with more than one dimension to attribute, attributes are restricted to having only one dimension");
                         return(NhlFATAL);
                 } else if(sel_ptr == NULL) {
-                        lhs_type = targetdat->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
-                        rhs_type = value->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
+                        lhs_type = targetdat->multidval.type->type_class.type;
+                        rhs_type = value->multidval.type->type_class.type;
                         if(lhs_type != rhs_type) {
-                                tmp_md = _NclCoerceData(value,lhs_type,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
+                                tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type ,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
                                 if(tmp_md == NULL) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
                                         return(NhlFATAL);
@@ -226,10 +227,10 @@ NclSelectionRecord * sel_ptr;
 /*
 * subscript exists
 */
-                        lhs_type = targetdat->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
-                        rhs_type = value->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
+                        lhs_type = targetdat->multidval.type->type_class.type & NCL_VAL_TYPE_MASK;
+                        rhs_type = value->multidval.type->type_class.type & NCL_VAL_TYPE_MASK;
                         if(lhs_type != rhs_type) {
-                                tmp_md = _NclCoerceData(value,lhs_type,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
+                                tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
                                 if(tmp_md == NULL) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
                                         return(NhlFATAL);
@@ -246,7 +247,8 @@ NclSelectionRecord * sel_ptr;
                         } else {
                                 tmp_md = value;
                         }
-                        ret = (((NclDataClass)targetdat->obj.class_ptr)->data_class.w_subsection[tmp_md->multidval.kind])((NclData)targetdat,sel_ptr,(NclData)tmp_md);
+			ret = _NclWriteSubSection((NclData)targetdat,sel_ptr,(NclData)tmp_md);
+
                         if((tmp_md->obj.status != PERMANENT)&&(tmp_md != value)) {
                                 _NclDestroyObj((NclObj)tmp_md);
                         }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.17 1994-12-23 01:19:15 ethan Exp $
+ *      $Id: Symbol.c,v 1.18 1995-01-28 01:52:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -794,7 +794,6 @@ NclApiDataList *_NclGetFileVarInfo
 #endif
 {
 	NclApiDataList *tmp = NULL,*thelist = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s = NULL;
 	int i,j;
 	NclStackEntry *thevar = NULL;
@@ -1053,8 +1052,6 @@ NclApiDataList * _NclGetDefinedHLUInfo
 #endif
 {
 	NclApiDataList *tmp = NULL,*thelist = NULL;
-	NclAtt tmp_att = NULL;
-	NclAttList *att_list = NULL;
 	NclMultiDValData the_hlu = NULL;
 	NclHLUObj hlu = NULL;
 	NclSymTableListNode *st;

@@ -9,8 +9,10 @@ extern "C" {
 #include "NclData.h"
 #include "Machine.h"
 #include "DataSupport.h"
+#include "NclType.h"
+#include "TypeSupport.h"
 #include <unistd.h>
-#include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Error.h>
 #include <netcdf.h>
 
@@ -62,6 +64,7 @@ main() {
 		NhlNerrFilePtr,stdout,NULL);
 	_NclInitMachine();
 	_NclInitSymbol();	
+	_NclInitTypeClasses();
 	_NclInitDataClasses();
 
 	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);

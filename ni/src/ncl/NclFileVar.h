@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.h,v 1.2 1994-07-27 18:14:11 ethan Exp $
+ *      $Id: NclFileVar.h,v 1.3 1995-01-28 01:51:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,8 @@ extern struct _NclVarRec *_NclFileVarCreate(
         int             /*att_id*/,
         int*            /*coords*/,
         NclVarTypes /* var_type */,
-        char * /*var_name*/
+        char * /*var_name*/,
+	NclStatus /*status*/
 #endif
 );
 

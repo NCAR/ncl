@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.30 1995-01-04 01:55:39 ethan Exp $
+ *      $Id: Machine.c,v 1.31 1995-01-28 01:50:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1347,7 +1347,7 @@ int from;
 							tmp_var1->var.att_id,
 							tmp_var1->var.coord_vars,
 							RETURNVAR,
-							NULL);
+							NULL,TEMPORARY);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 					} else {
@@ -1437,7 +1437,8 @@ void _NclRemapParameters
 						tmp_var1->var.att_id,
 						tmp_var1->var.coord_vars,
 						RETURNVAR,
-						NULL
+						NULL,
+						TEMPORARY
 						);
 					_NclDestroyObj((NclObj)tmp_var1);
 					tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1553,7 +1554,8 @@ void _NclRemapParameters
 								tmp_var1->var.att_id,
 								tmp_var1->var.coord_vars,
 								RETURNVAR,
-								NULL
+								NULL,
+								TEMPORARY
 								);
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1581,7 +1583,8 @@ void _NclRemapParameters
 							(tmp_att == NULL ? -1:tmp_att->obj.id),
 							coord_ids,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1657,7 +1660,8 @@ void _NclRemapParameters
 							tmp_var1->var.att_id,
 							tmp_var1->var.coord_vars,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1686,7 +1690,8 @@ void _NclRemapParameters
 							(tmp_att == NULL ? -1:tmp_att->obj.id),
 							coord_ids,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1715,7 +1720,8 @@ void _NclRemapParameters
 							tmp_var1->var.att_id,
 							tmp_var1->var.coord_vars,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1744,7 +1750,8 @@ void _NclRemapParameters
 							(tmp_att == NULL ? -1:tmp_att->obj.id),
 							coord_ids,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1777,7 +1784,8 @@ void _NclRemapParameters
 							tmp_var1->var.att_id,
 							tmp_var1->var.coord_vars,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1806,7 +1814,8 @@ void _NclRemapParameters
 							(tmp_att == NULL ? -1:tmp_att->obj.id),
 							coord_ids,
 							RETURNVAR,
-							NULL
+							NULL,
+							TEMPORARY
 							);
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
@@ -1848,7 +1857,11 @@ void _NclDumpStack
 			break;
 		case 	NclStk_VAL:
 			fprintf(fp,"NclStk_VAL\t");
-			fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
+			if(tmp_ptr->u.data_obj->obj.obj_type_mask & (Ncl_MultiDValHLUObjData | Ncl_MultiDValnclfileData))
+				fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
+			else 
+				fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->multidval.type->type_class.type)));
+				
 			for(i = 0; i< tmp_ptr->u.data_obj->multidval.n_dims; i++) {
 				fprintf(fp,"[%d]",tmp_ptr->u.data_obj->multidval.dim_sizes[i]);
 				if(i !=  tmp_ptr->u.data_obj->multidval.n_dims - 1) {

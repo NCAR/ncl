@@ -1,33 +1,4 @@
 #!/bin/sh
-#
-#      $Id: short_data_c.sh,v 1.2 1994-08-25 18:01:28 ethan Exp $
-#
-#########################################################################
-#									#
-#			   Copyright (C)  1994				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
-#########################################################################
-#
-#	File:		short_data_c.sh
-#
-#	Author:		Jeff W. Boote
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
-#
-#	Date:		Wed Jul 20 17:34:05 MDT 1994
-#
-#	Description:	
-#
-#	Usage:
-#
-#	Environment:
-#
-#	Files:
-#
-#
-#	Options:
 
 sh op_funcs.sh short NhlTShort NhlTShortGenArray > .tmp.$$
 
@@ -43,12 +14,14 @@ sed \
 -e 's/HLUGENTYPEREP/NhlTShortGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
--e '/DSPECIFIC/r NclMultiDValshortData.c.specific' \
+-e '/DSPECIFIC/r NclTypeshort.c.specific' \
 -e '/DSPECIFIC/d' \
-NclMultiDValData.c.sed > NclMultiDValshortData.c
+-e 's/Ncl_Type_short_mat_type/NULL/' \
+-e 's/Ncl_Type_short_mat/NULL/' \
+NclType.c.sed > NclTypeshort.c
 
 rm .tmp.$$
 
-echo "created NclMultiDValshortData.c"
+echo "created NclTypeshort.c"
 
 exit 0

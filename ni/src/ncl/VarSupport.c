@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.6 1994-12-23 01:19:23 ethan Exp $
+ *      $Id: VarSupport.c,v 1.7 1995-01-28 01:53:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,9 +36,9 @@
 
 struct _NclVarRec* _NclVarNclCreate
 #if	NhlNeedProto
-(struct _NclVarRec * inst, struct _NclObjClassRec * theclass, NclObjTypes obj_type, unsigned int obj_type_mask, struct _NclSymbol  *thesym, struct _NclMultiDValDataRec *value, struct _NclDimRec *dim_info, int att_id, int* coords, NclVarTypes var_type, char *var_name)
+(struct _NclVarRec * inst, struct _NclObjClassRec * theclass, NclObjTypes obj_type, unsigned int obj_type_mask, struct _NclSymbol  *thesym, struct _NclMultiDValDataRec *value, struct _NclDimRec *dim_info, int att_id, int* coords, NclVarTypes var_type, char *var_name,NclStatus status)
 #else
-(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name)
+(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name,status)
 struct _NclVarRec * inst;
 struct _NclObjClassRec * theclass;
 NclObjTypes obj_type;
@@ -50,16 +50,17 @@ int att_id;
 int* coords;
 NclVarTypes var_type;
 char *var_name;
+NclStatus status;
 #endif
 {
 	if(obj_type == Ncl_FileVar) {
-		return(_NclFileVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+		return(_NclFileVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name,status));
 	} else if(obj_type == Ncl_CoordVar) {
-		return(_NclCoordVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+		return(_NclCoordVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name,status));
 	} else if(obj_type == Ncl_HLUVar) {
-		return(_NclHLUVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+		return(_NclHLUVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name,status));
 	} else {
-		return(_NclVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+		return(_NclVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name,status));
 	}
 }
 
@@ -165,6 +166,311 @@ NclScalar *new_missing;
 	return(NULL);
 }
 
+NhlErrorTypes  _NclBuildCoordVSelection
+#if	NhlNeedProto
+(struct _NclVarRec *var,struct _NclVecRec * vec, struct _NclSelection* sel,int  dim_num,char* dim_name)
+#else
+(var,vec,sel,dim_num,dim_name)
+	struct _NclVarRec *var;
+	struct _NclVecRec* vec;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{	
+	NclMultiDValData vect_md;
+	long *thevector;
+	int i;
+	char * v_name;
+	int index = -1;
+	NclQuark cname;
+	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
+	long start = 0,finish = 0;
+	NclCoordVar cvar = NULL;
+	NclObjTypes the_type;
+/*
+* Preconditions: subscripts are SCALAR guarenteed!!!!
+*/
+	if(var->var.var_quark != -1) {
+		v_name = NrmQuarkToString(var->var.var_quark);
+	} else if(var->var.thesym != NULL) {
+		v_name = var->var.thesym->name;
+	} else {
+		v_name = "unnamed";
+	}
+
+/*
+* vec is guarenteed to be one dimensional, and of an integer type
+*/
+	vect_md = vec->vec;
+
+	if(vect_md != NULL) {
+		if(dim_name != NULL) {
+			index = _NclIsDim(var,dim_name);
+			if((index >= 0)&&(index < var->var.n_dims)){
+				sel->dim_num = index;
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension name in variable (%s), could not determine dimension number",dim_name,v_name);
+				return(NhlFATAL);
+			}
+		} else {
+			name_md = _NclReadDim(var,NULL,dim_num);
+                        if(name_md != NULL) {
+                                if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
+                                        cname = *(string*)name_md->multidval.val;
+                                        _NclDestroyObj((NclObj)name_md);
+                                } else {
+                                        return(NhlFATAL);
+                                }
+                        } else {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,v_name);
+                                return(NhlFATAL);
+                        }
+			sel->dim_num = dim_num;
+		}
+/*
+* I don;t think there is anyway to get arround having to allocate the 
+* vector again. Since I don't want to make any assumptions about how
+* to free the objects without freeing the val field which I need to keep
+* arround untill the actual ValueRead happens
+*/
+		if(!_NclIsCoord(var,NrmQuarkToString(cname))) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),v_name);
+                        return(NhlFATAL);
+                }
+		cvar = (NclCoordVar)_NclReadCoordVar(var,NrmQuarkToString(cname),NULL);
+		coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+		the_type = _NclGetVarRepValue((NclVar)cvar);
+		if(!(the_type & vect_md->multidval.type->type_class.type)){
+			tmp_md = _NclCoerceData(vect_md,the_type,NULL);
+			if(tmp_md == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
+			return(NhlFATAL);
+			} 
+		} else {
+			tmp_md = vect_md;
+		}
+
+
+
+		thevector = (long*)NclMalloc((unsigned)tmp_md->multidval.totalelements * sizeof(long));
+		sel->sel_type = Ncl_VECSUBSCR;
+		sel->u.vec.n_ind = tmp_md->multidval.totalelements;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if(_NclGetCoordClosestIndex(coord_md,(void*)((char*)tmp_md->multidval.val + i * tmp_md->multidval.type->type_class.size),&(thevector[i])) == NhlFATAL) {
+				return(NhlFATAL);
+			}
+		}
+		sel->u.vec.min = thevector[0];
+		sel->u.vec.max = thevector[0];
+		sel->u.vec.ind = thevector;
+		for(i = 0; i < sel->u.vec.n_ind; i++) {
+			if(thevector[i] > sel->u.vec.max) {
+				sel->u.vec.max = thevector[i];
+			}
+			if(thevector[i] < sel->u.vec.min) {
+				sel->u.vec.max = thevector[i];
+			}
+		}
+		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)tmp_md);
+		}
+		return(NhlNOERROR);
+	} else {
+		return(NhlFATAL);
+	}
+}
+NhlErrorTypes _NclBuildCoordRSelection
+#if	NhlNeedProto
+(struct _NclVarRec *var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
+#else
+(var,range,sel,dim_num,dim_name)
+	struct _NclVarRec *var;
+	struct _NclRangeRec* range;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{
+	char * v_name = NULL;
+	int index = -1;
+	NclQuark cname;
+	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
+	long start = 0,finish = 0;
+	NclCoordVar cvar = NULL;
+	NclObjTypes the_type;
+/*
+* Preconditions: subscripts are SCALAR guarenteed!!!!
+*/
+	if(var->var.var_quark != -1) {
+		v_name = NrmQuarkToString(var->var.var_quark);
+	} else if(var->var.thesym != NULL) {
+		v_name = var->var.thesym->name;
+	} else {
+		v_name = "unnamed";
+	}
+
+	if(range != NULL) {
+		if(dim_name != NULL) {
+			index = _NclIsDim(var,dim_name);
+			if((index >= 0)&&(index < var->var.n_dims)){
+				sel->dim_num = index;
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension name in variable (%s), could not determine dimension number",dim_name,v_name);
+				return(NhlFATAL);
+			}
+			cname = NrmStringToQuark(dim_name);
+		} else {
+			name_md = _NclReadDim(var,NULL,dim_num);
+			if(name_md != NULL) {
+				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
+					cname = *(string*)name_md->multidval.val;
+					_NclDestroyObj((NclObj)name_md);
+				} else {
+					return(NhlFATAL);
+				}	
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,v_name);
+				return(NhlFATAL);
+			}
+			sel->dim_num = dim_num;
+		}
+		if(!_NclIsCoord(var,NrmQuarkToString(cname))) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),v_name);
+			return(NhlFATAL);
+		}
+		if((range->start == NULL)&&(range->finish == NULL)) {
+
+			sel->sel_type = Ncl_SUB_ALL;
+			sel->u.sub.start = 0;
+			sel->u.sub.finish = 0;
+			sel->u.sub.stride = 1;
+
+		} else if(range->start == NULL) {
+
+			sel->sel_type = Ncl_SUB_DEF_VAL;
+			sel->u.sub.start = 0;
+			sel->u.sub.stride = 1;
+/*
+* Compute sel->u.sub.finish from coordinate info
+*/
+			cvar = (NclCoordVar)_NclReadCoordVar(var,NrmQuarkToString(cname),NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+
+			if(!(the_type & range->finish->multidval.type->type_class.type)){
+				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					return(NhlFATAL);
+				} else {
+					if(range->finish->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->finish);
+						range->finish = tmp_md;
+					}
+				}
+			}
+			if(_NclGetCoordRange(coord_md,NULL,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				return(NhlFATAL);
+			}
+
+		} else if(range->finish == NULL) {
+/*
+* Compute sel->u.sub.start from coordinate info
+*/
+
+			sel->sel_type = Ncl_SUB_VAL_DEF;
+
+			sel->u.sub.finish = 0;
+			sel->u.sub.stride = 1;
+
+
+			cvar = (NclCoordVar)_NclReadCoordVar(var,NrmQuarkToString(cname),NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+
+			if(!(the_type & range->start->multidval.type->type_class.type)){
+				tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					return(NhlFATAL);
+				} else {
+					if(range->start->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->start);
+						range->start = tmp_md;
+					}
+				}
+			}
+			if(_NclGetCoordRange(coord_md,range->start->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				return(NhlFATAL);
+			}
+
+		} else {
+
+/*
+* Compute sel->u.sub.start and sel->u.sub.finish from coordinate info
+* Have to check when they are equal so only one value is selected
+*/
+			sel->sel_type = Ncl_SUBSCR;
+			cvar = (NclCoordVar)_NclReadCoordVar(var,NrmQuarkToString(cname),NULL);
+			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+			the_type = _NclGetVarRepValue((NclVar)cvar);
+			if(!(the_type & range->start->multidval.type->type_class.type)){
+				tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					return(NhlFATAL);
+				} else {
+					if(range->start->obj.status != PERMANENT) {
+						if(range->start == range->finish) {	
+							range->finish = tmp_md;
+						}
+						_NclDestroyObj((NclObj)range->start);
+						range->start = tmp_md;
+					}
+				}
+			}
+			tmp_md = NULL;
+			if(!(the_type & range->finish->multidval.type->type_class.type)){
+				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					return(NhlFATAL);
+				} else {
+					if(range->finish->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)range->finish);
+						range->finish = tmp_md;
+					}
+				}
+			}
+
+			if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+				return(NhlFATAL);
+			}
+
+			if(sel->u.sub.start <= sel->u.sub.finish) {
+				sel->u.sub.stride = 1;
+			} else {
+				sel->u.sub.stride = -1;
+			}
+
+		}
+		if(range->stride != NULL) {
+			if(!_NclScalarCoerce(
+				range->stride->multidval.val,
+				range->stride->multidval.data_type,
+				&(sel->u.sub.stride),NCL_long)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+				return(NhlFATAL);
+			}
+
+		} 
+	} 
+	return(NhlNOERROR);
+}
 NhlErrorTypes _NclBuildRSelection
 #if	NhlNeedProto
 (struct _NclVarRec *var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
@@ -636,8 +942,8 @@ NhlErrorTypes  _NclBuildVSelection
 * to free the objects without freeing the val field which I need to keep
 * arround untill the actual ValueRead happens
 */
-		if(!(vect_md->obj.obj_type_mask & Ncl_MultiDVallongData)) {
-			tmp_md = _NclCoerceData(vect_md,Ncl_MultiDVallongData,NULL);
+		if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
+			tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
 			
 		}  else {
 			tmp_md = vect_md;

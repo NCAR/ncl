@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.2 1994-12-23 01:18:09 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.3 1995-01-28 01:51:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include "Machine.h"
 #include "DataSupport.h"
 #include "NclCoordVar.h"
+#include "NclOneDValCoordData.h"
 
 
 NclCoordVarClassRec nclCoordVarClassRec = {
@@ -92,9 +93,10 @@ NclDimRec *dim_info,
 int att_id,
 int *coords,
 NclVarTypes var_type,
-char *var_name)
+char *var_name,
+NclStatus status)
 #else
-(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name)
+(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name,status)
 	NclVar inst;
 	NclObjClass theclass;
 	NclObjTypes obj_type;
@@ -106,10 +108,51 @@ char *var_name)
 	int *coords;
 	NclVarTypes var_type;
 	char *var_name;
+	NclStatus status;
 #endif
 {
-	NclCoordVar cvar = NULL;
-	
-	return(_NclVarCreate(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name));
+	NclMultiDValData tmp_md;
+	void *tmp_val;
+	NclCoordVar tmp_var;
+	NclObjClass  the_class;
+
+	if(inst == NULL) {
+		tmp_var = (NclCoordVar)NclMalloc(sizeof(NclCoordVarRec));
+	} else {
+		tmp_var = (NclCoordVar)inst;
+	}
+	if(theclass != NULL) {
+		the_class = theclass;
+	} else {
+		the_class = (NclObjClass)&nclCoordVarClassRec;
+	}
+
+	if(!(value->obj.obj_type_mask & NCL_COORD_MASK )) {
+		tmp_val = (void*)NclMalloc(value->multidval.type->type_class.size * value->multidval.dim_sizes[0]);
+		memcpy(tmp_val,value->multidval.val,value->multidval.type->type_class.size * value->multidval.dim_sizes[0]);
+		tmp_md = _NclOneDValCoordDataCreate(
+			NULL,
+			nclOneDValCoordDataClass,
+			Ncl_OneDValCoordData,
+			Ncl_OneDValCoordData,
+			tmp_val,
+			(value->multidval.missing_value.has_missing ? &value->multidval.missing_value.value:NULL),
+			value->multidval.n_dims,
+			value->multidval.dim_sizes,
+			TEMPORARY,
+			value->multidval.sel_rec,
+			value->multidval.type
+		);
+		if(tmp_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCoordVarCreate: Could not create coordinate variable");
+			return(NULL);
+		}
+	} else if(value->obj.status == PERMANENT) {
+		tmp_md = _NclCopyVal(value,NULL);
+	} else {
+		tmp_md = value;
+	}
+
+	return(_NclVarCreate(inst,theclass,obj_type,(obj_type_mask | Ncl_CoordVar),thesym,tmp_md,dim_info,att_id,coords,var_type,var_name,status));
 }
 

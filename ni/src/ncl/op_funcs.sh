@@ -1,85 +1,69 @@
 #!/bin/sh
-#
-#      $Id: op_funcs.sh,v 1.4 1994-09-01 17:42:18 ethan Exp $
-#
-#########################################################################
-#									#
-#			   Copyright (C)  1994				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
-#########################################################################
-#
-#	File:		op_funcs.sh
-#
-#	Author:		Jeff W. Boote
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
-#
-#	Date:		Wed Jul 20 16:14:26 MDT 1994
-#
-#	Description:	
-#
-#	Usage:
-#
-#	Environment:
-#
-#	Files:
-#
-#
-#	Options:
 
 #
 # Begin "logical" section
 #
 
+sed \
+-e "s/DATATYPE/$1/g" \
+TypeResetMissing.c.sed
+
 if [ $1 = "logical" ]
 then
+
+sed \
+-e "s/HLUGENTYPEREP/$3/g" \
+-e "s/HLUTYPEREP/$2/g" \
+-e "s/DATATYPE/logical/g" \
+TypeInitClassTemplate.c.sed
+
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
 -e "s/THEOP/\&\&/g" \
 -e "s/OPER/\.and\./g" \
--e "s/FUNCNAME/And/g" \
-MultiDValSimpleOpTemplate.c.sed
+-e "s/FUNCNAME/and/g" \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
 -e "s/THEOP/\!/g" \
 -e "s/OPER/\.not\./g" \
--e "s/FUNCNAME/Not/g" \
-MultiDValMonoOpTemplate.c.sed
+-e "s/FUNCNAME/not/g" \
+TypeMonoOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
 -e "s/THEOP/||/g" \
 -e "s/OPER/\.or\./g" \
--e "s/FUNCNAME/Or/g" \
-MultiDValSimpleOpTemplate.c.sed
+-e "s/FUNCNAME/or/g" \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
 -e "s/OPER/\.xor\./g" \
--e "s/FUNCNAME/Xor/g" \
-MultiDValXorOpTemplate.c.sed
+-e "s/FUNCNAME/xor/g" \
+TypeXorOpTemplate.c.sed
 
 sed \
+-e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
-MultiDValIsMisFuncOpTemplate.c.sed
+-e "s/THEOP/==/g" \
+-e "s/OPER/\.eq\./g" \
+-e "s/FUNCNAME/eq/g" \
+TypeSimpleOpTemplate.c.sed
 
 sed \
+-e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
-MultiDValSelectFuncsTemplate.c.sed
-
-sed \
--e "s/DATATYPE/logical/g" \
--e "s/HLUTYPEREP/NhlTBoolean/g" \
--e "s/HLUGENTYPEREP/NhlTBooleanGenArray/g" \
-MultiDValInitClassTemplate.c.sed
+-e "s/THEOP/!=/g" \
+-e "s/OPER/\.ne\./g" \
+-e "s/FUNCNAME/ne/g" \
+TypeSimpleOpTemplate.c.sed
 exit 0
 
 fi
@@ -91,164 +75,155 @@ if [ $1 = "string" ]
 then
 
 sed \
+-e "s/HLUGENTYPEREP/$3/g" \
+-e "s/HLUTYPEREP/$2/g" \
+-e "s/DATATYPE/string/g" \
+TypeInitClassTemplate.c.sed
+
+sed \
 -e 's/SELFUNC/select_string_gt/g' \
--e 's/FUNCNAME/SelGt/' \
-string_sel.c.sed
+-e 's/FUNCNAME/sel_gt/' \
+TypestringSelectOpTemplate.c.sed
 
 sed \
 -e 's/SELFUNC/select_string_lt/g' \
--e 's/FUNCNAME/SelLt/' \
-string_sel.c.sed
+-e 's/FUNCNAME/sel_lt/' \
+TypestringSelectOpTemplate.c.sed
 
 sed \
 -e 's/CMPFUNC/cmp_string_lt/g' \
--e 's/FUNCNAME/Lt/' \
-string_cmp.c.sed
+-e 's/FUNCNAME/lt/' \
+TypestringCompareOpTemplate.c.sed
 
 sed \
 -e 's/CMPFUNC/cmp_string_gt/g' \
--e 's/FUNCNAME/Gt/' \
-string_cmp.c.sed
+-e 's/FUNCNAME/gt/' \
+TypestringCompareOpTemplate.c.sed
 
 sed \
 -e 's/CMPFUNC/cmp_string_ge/g' \
--e 's/FUNCNAME/Ge/' \
-string_cmp.c.sed
+-e 's/FUNCNAME/ge/' \
+TypestringCompareOpTemplate.c.sed
 
 sed \
 -e 's/CMPFUNC/cmp_string_le/g' \
--e 's/FUNCNAME/Le/' \
-string_cmp.c.sed
+-e 's/FUNCNAME/le/' \
+TypestringCompareOpTemplate.c.sed
 
-sed \
--e 's/DATATYPE/string/g' \
-MultiDValSelectFuncsTemplate.c.sed
-
-sed \
--e "s/DATATYPE/string/g" \
-MultiDValIsMisFuncOpTemplate.c.sed
-
-sed \
--e "s/DATATYPE/string/g" \
--e "s/HLUTYPEREP/NhlTQuark/g" \
--e "s/HLUGENTYPEREP/NhlTQuarkGenArray/g" \
-MultiDValInitClassTemplate.c.sed
 exit 0
 
 fi
 
 #
-# Begin "nclfile" section
+# Begin "obj" section
 #
-if [ $1 = "nclfile" ]
+if [ $1 = "obj" ]
 then
 
 sed \
--e "s/OUTDATATYPE/nclfile/g" \
--e "s/DATATYPE/nclfile/g" \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/obj/g" \
 -e "s/THEOP/==/g" \
 -e "s/OPER/\.eq\./g" \
--e "s/FUNCNAME/Eq/g" \
-MultiDValSimpleOpTemplate.c.sed
+-e "s/FUNCNAME/eq/g" \
+TypeSimpleOpTemplate.c.sed
 
 sed \
--e "s/DATATYPE/nclfile/g" \
-MultiDValSelectFuncsTemplate.c.sed
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/obj/g" \
+-e "s/THEOP/!=/g" \
+-e "s/OPER/\.ne\./g" \
+-e "s/FUNCNAME/ne/g" \
+TypeSimpleOpTemplate.c.sed
 
-sed \
--e "s/DATATYPE/nclfile/g" \
-MultiDValIsMisFuncOpTemplate.c.sed
 exit 0
 
 fi
 
 if [ $1 = "char" ]
 then
+sed \
+-e "s/HLUGENTYPEREP/$3/g" \
+-e "s/HLUTYPEREP/$2/g" \
+-e "s/DATATYPE/char/g" \
+TypeInitClassTemplate.c.sed
+
 sed  \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/+/' \
 -e 's/OPER/\+/' \
--e 's/FUNCNAME/Plus/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/plus/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/</' \
 -e 's/OPER/\.lt\./' \
--e 's/FUNCNAME/Lt/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/lt/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/>/' \
 -e 's/OPER/\.gt\./' \
--e 's/FUNCNAME/Gt/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/gt/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/<=/' \
 -e 's/OPER/\.le\./' \
--e 's/FUNCNAME/Le/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/le/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/>=/' \
 -e 's/OPER/\.ge\./' \
--e 's/FUNCNAME/Ge/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/ge/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/==/' \
 -e 's/OPER/\.eq\./' \
--e 's/FUNCNAME/Eq/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/eq/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/!=/' \
 -e 's/OPER/\.ne\./' \
--e 's/FUNCNAME/Ne/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/ne/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\</' \
 -e 's/OPER/\</' \
--e 's/FUNCNAME/SelLt/' \
-MultiDValSelectOpTemplate.c.sed
+-e 's/FUNCNAME/sel_lt/' \
+TypeSelectOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\>/' \
 -e 's/OPER/\>/' \
--e 's/FUNCNAME/SelGt/' \
-MultiDValSelectOpTemplate.c.sed
+-e 's/FUNCNAME/sel_gt/' \
+TypeSelectOpTemplate.c.sed
 
 sed \
 -e "s/DATATYPE/$1/g" \
-MultiDValSelectFuncsTemplate.c.sed
+TypeIsMonoFunc.c.sed
 
-sed \
--e "s/DATATYPE/$1/g" \
-MultiDValIsMisFuncOpTemplate.c.sed
-
-sed \
--e "s/DATATYPE/$1/g" \
--e "s/HLUTYPEREP/NhlTCharacter/g" \
--e "s/HLUGENTYPEREP/NhlTCharacterGenArray/g" \
-MultiDValInitClassTemplate.c.sed
 
 exit 0
 fi
@@ -257,93 +232,103 @@ fi
 # Begin "numeric" section
 #
 
+sed \
+-e "s/HLUGENTYPEREP/$3/g" \
+-e "s/HLUTYPEREP/$2/g" \
+-e "s/DATATYPE/$1/g" \
+TypeInitClassTemplate.c.sed
+
 sed  \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/+/' \
 -e 's/OPER/\+/' \
--e 's/FUNCNAME/Plus/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/plus/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/-/' \
 -e 's/OPER/\-/' \
--e 's/FUNCNAME/Minus/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/minus/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/*/' \
 -e 's/OPER/\*/' \
--e 's/FUNCNAME/Mul/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/multiply/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/</' \
 -e 's/OPER/\.lt\./' \
--e 's/FUNCNAME/Lt/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/lt/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/>/' \
 -e 's/OPER/\.gt\./' \
--e 's/FUNCNAME/Gt/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/gt/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/<=/' \
 -e 's/OPER/\.le\./' \
--e 's/FUNCNAME/Le/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/le/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/>=/' \
 -e 's/OPER/\.ge\./' \
--e 's/FUNCNAME/Ge/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/ge/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/==/' \
 -e 's/OPER/\.eq\./' \
--e 's/FUNCNAME/Eq/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/eq/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/!=/' \
 -e 's/OPER/\.ne\./' \
--e 's/FUNCNAME/Ne/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/ne/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\&\&/' \
 -e 's/OPER/\.and\./' \
--e 's/FUNCNAME/And/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/and/' \
+TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/||/' \
 -e 's/OPER/\.or\./' \
--e 's/FUNCNAME/Or/' \
-MultiDValSimpleOpTemplate.c.sed
+-e 's/FUNCNAME/or/' \
+TypeSimpleOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+TypeIsMonoFunc.c.sed
 
 if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
 then
@@ -352,20 +337,20 @@ sed \
 -e "s/DATATYPE/$1/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
--e 's/FUNCNAME/Exp/' \
+-e 's/FUNCNAME/exponent/' \
 -e 's/CAST/double/g' \
 -e 's/INCLUDE/math/' \
-MultiDValFunctionOpTemplate.c.sed
+TypeFunctionOpTemplate.c.sed
 else
 sed \
 -e "s/OUTDATATYPE/float/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
--e 's/FUNCNAME/Exp/' \
+-e 's/FUNCNAME/exponent/' \
 -e 's/CAST/double/g' \
 -e 's/INCLUDE/math/' \
-MultiDValFunctionOpTemplate.c.sed
+TypeFunctionOpTemplate.c.sed
 fi
 
 
@@ -374,60 +359,47 @@ sed \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\!/' \
 -e 's/OPER/\.not\./' \
--e 's/FUNCNAME/Not/' \
-MultiDValMonoOpTemplate.c.sed
+-e 's/FUNCNAME/not/' \
+TypeMonoOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\-/' \
 -e 's/OPER/neg/' \
--e 's/FUNCNAME/Neg/' \
-MultiDValMonoOpTemplate.c.sed
+-e 's/FUNCNAME/neg/' \
+TypeMonoOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\</' \
 -e 's/OPER/\</' \
--e 's/FUNCNAME/SelLt/' \
-MultiDValSelectOpTemplate.c.sed
+-e 's/FUNCNAME/sel_lt/' \
+TypeSelectOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\>/' \
 -e 's/OPER/\>/' \
--e 's/FUNCNAME/SelGt/' \
-MultiDValSelectOpTemplate.c.sed
+-e 's/FUNCNAME/sel_gt/' \
+TypeSelectOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/OPER/\.xor\./' \
--e 's/FUNCNAME/Xor/' \
-MultiDValXorOpTemplate.c.sed
+-e 's/FUNCNAME/xor/' \
+TypeXorOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\//' \
--e 's/FUNCNAME/Div/' \
-MultiDValDivOpTemplate.c.sed
+-e 's/FUNCNAME/divide/' \
+TypeDivOpTemplate.c.sed
 
-sed \
--e "s/DATATYPE/$1/g" \
-MultiDValSelectFuncsTemplate.c.sed
-
-sed \
--e "s/DATATYPE/$1/g" \
-MultiDValIsMisFuncOpTemplate.c.sed
-
-sed \
--e "s/DATATYPE/$1/g" \
--e "s/HLUTYPEREP/$2/g" \
--e "s/HLUGENTYPEREP/$3/g" \
-MultiDValInitClassTemplate.c.sed
 
 if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
 then
@@ -436,8 +408,8 @@ sed \
 -e "s/DATATYPE/$1/g" \
 -e 's/THEOP/\%/' \
 -e 's/OPER/mod/' \
--e 's/FUNCNAME/Mod/' \
-MultiDValDivOpTemplate.c.sed
+-e 's/FUNCNAME/mod/' \
+TypeDivOpTemplate.c.sed
 fi
 
 exit 0

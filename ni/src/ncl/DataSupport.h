@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.3 1994-08-25 18:00:23 ethan Exp $
+ *      $Id: DataSupport.h,v 1.4 1995-01-28 01:50:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,6 +67,31 @@ FILE * /* fp*/
 #endif
 );
 
+extern struct _NclDataRec* _NclReadSubSection(
+#if	NhlNeedProto
+struct _NclDataRec * /*self*/,
+struct _NclSelectionRecord * /*selection*/,
+NclScalar * /*missing*/
+#endif
+);
+
+extern NhlErrorTypes _NclReadThenWriteSubSection(
+#if	NhlNeedProto
+struct _NclDataRec * /*to_data*/,
+struct _NclSelectionRecord * /*to_selection*/,
+struct _NclDataRec * /*from_data*/,
+struct _NclSelectionRecord* /* from_selection*/
+#endif
+);
+
+extern NhlErrorTypes _NclWriteSubSection(
+#if	NhlNeedProto
+struct _NclDataRec * /*self*/,
+struct _NclSelectionRecord * /*selection*/,
+struct _NclDataRec * /*value*/
+#endif
+);
+
 extern NhlErrorTypes _NclCallMonoOp(
 #if	NhlNeedProto
 struct _NclMultiDValDataRec* /* operand*/,
@@ -118,7 +143,8 @@ NclScalar * /*missing_value*/,
 int /*n_dims*/, 
 int * /*dim_sizes*/, 
 NclStatus /*status*/, 
-NclSelectionRecord * /*sel_rec*/
+NclSelectionRecord * /*sel_rec*/,
+NclObjClass  /*type*/
 #endif
 );
 
@@ -171,6 +197,24 @@ NclObjTypes /*obj_type*/
 extern NclObjTypes _NclBasicDataTypeToObjType(
 #if NhlNeedProto
 NclBasicDataTypes /*dt*/
+#endif
+);
+
+extern NhlErrorTypes _NclGetCoordRange(
+#if	NhlNeedProto
+NclMultiDValData /* coord_md*/,
+void *		/* start_md */,
+void *		/* finish_md */,
+long*		 /* start */,
+long*		 /* finish */
+#endif
+);
+
+extern NhlErrorTypes _NclGetCoordClosestIndex(
+#if	NhlNeedProto
+NclMultiDValData /* coord_md*/,
+void *		/* ind_md */,
+long*		 /* ind*/
 #endif
 );
 

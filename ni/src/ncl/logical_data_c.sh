@@ -1,33 +1,4 @@
 #!/bin/sh
-#
-#      $Id: logical_data_c.sh,v 1.2 1994-08-25 18:01:19 ethan Exp $
-#
-#########################################################################
-#									#
-#			   Copyright (C)  1994				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
-#########################################################################
-#
-#	File:		logical_data_c.sh
-#
-#	Author:		Jeff W. Boote
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
-#
-#	Date:		Wed Jul 20 18:12:12 MDT 1994
-#
-#	Description:	
-#
-#	Usage:
-#
-#	Environment:
-#
-#	Files:
-#
-#
-#	Options:
 
 sh op_funcs.sh logical NhlTBoolean NhlTBooleanGenArray > .tmp.$$
 
@@ -44,70 +15,42 @@ sed \
 -e 's/HLUGENTYPEREP/NhlTBooleanGenArray/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
--e '/DSPECIFIC/r NclMultiDVallogicalData.c.specific' \
+-e '/DSPECIFIC/r NclTypelogical.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/MultiDVal_logical_mdmd_Mod/NULL/' \
--e 's/MultiDVal_logical_smd_Mod/NULL/' \
--e 's/MultiDVal_logical_mds_Mod/NULL/' \
--e 's/MultiDVal_logical_ss_Mod/NULL/' \
--e 's/MultiDVal_logical_mdmd_Div/NULL/' \
--e 's/MultiDVal_logical_smd_Div/NULL/' \
--e 's/MultiDVal_logical_mds_Div/NULL/' \
--e 's/MultiDVal_logical_ss_Div/NULL/' \
--e 's/MultiDVal_logical_mdmd_Mul/NULL/' \
--e 's/MultiDVal_logical_smd_Mul/NULL/' \
--e 's/MultiDVal_logical_mds_Mul/NULL/' \
--e 's/MultiDVal_logical_ss_Mul/NULL/' \
--e 's/MultiDVal_logical_mdmd_Plus/NULL/' \
--e 's/MultiDVal_logical_smd_Plus/NULL/' \
--e 's/MultiDVal_logical_mds_Plus/NULL/' \
--e 's/MultiDVal_logical_ss_Plus/NULL/' \
--e 's/MultiDVal_logical_mdmd_Minus/NULL/' \
--e 's/MultiDVal_logical_smd_Minus/NULL/' \
--e 's/MultiDVal_logical_mds_Minus/NULL/' \
--e 's/MultiDVal_logical_ss_Minus/NULL/' \
--e 's/MultiDVal_logical_mdmd_Exp/NULL/' \
--e 's/MultiDVal_logical_smd_Exp/NULL/' \
--e 's/MultiDVal_logical_mds_Exp/NULL/' \
--e 's/MultiDVal_logical_ss_Exp/NULL/' \
--e 's/MultiDVal_logical_mdmd_SelLt/NULL/' \
--e 's/MultiDVal_logical_smd_SelLt/NULL/' \
--e 's/MultiDVal_logical_mds_SelLt/NULL/' \
--e 's/MultiDVal_logical_ss_SelLt/NULL/' \
--e 's/MultiDVal_logical_mdmd_SelGt/NULL/' \
--e 's/MultiDVal_logical_smd_SelGt/NULL/' \
--e 's/MultiDVal_logical_mds_SelGt/NULL/' \
--e 's/MultiDVal_logical_ss_SelGt/NULL/' \
--e 's/MultiDVal_logical_md_Neg/NULL/' \
--e 's/MultiDVal_logical_s_Neg/NULL/' \
--e 's/MultiDVal_logical_mdmd_Gt/NULL/' \
--e 's/MultiDVal_logical_smd_Gt/NULL/' \
--e 's/MultiDVal_logical_mds_Gt/NULL/' \
--e 's/MultiDVal_logical_ss_Gt/NULL/' \
--e 's/MultiDVal_logical_mdmd_Lt/NULL/' \
--e 's/MultiDVal_logical_smd_Lt/NULL/' \
--e 's/MultiDVal_logical_mds_Lt/NULL/' \
--e 's/MultiDVal_logical_ss_Lt/NULL/' \
--e 's/MultiDVal_logical_mdmd_Ge/NULL/' \
--e 's/MultiDVal_logical_smd_Ge/NULL/' \
--e 's/MultiDVal_logical_mds_Ge/NULL/' \
--e 's/MultiDVal_logical_ss_Ge/NULL/' \
--e 's/MultiDVal_logical_mdmd_Le/NULL/' \
--e 's/MultiDVal_logical_smd_Le/NULL/' \
--e 's/MultiDVal_logical_mds_Le/NULL/' \
--e 's/MultiDVal_logical_ss_Le/NULL/' \
--e 's/MultiDVal_logical_mdmd_Ne/NULL/' \
--e 's/MultiDVal_logical_smd_Ne/NULL/' \
--e 's/MultiDVal_logical_mds_Ne/NULL/' \
--e 's/MultiDVal_logical_ss_Ne/NULL/' \
--e 's/MultiDVal_logical_mdmd_Eq/NULL/' \
--e 's/MultiDVal_logical_smd_Eq/NULL/' \
--e 's/MultiDVal_logical_mds_Eq/NULL/' \
--e 's/MultiDVal_logical_ss_Eq/NULL/' \
-NclMultiDValData.c.sed > NclMultiDVallogicalData.c
+-e 's/Ncl_Type_logical_mat_type/NULL/' \
+-e 's/Ncl_Type_logical_mat/NULL/' \
+-e 's/Ncl_Type_logical_mod_type/NULL/' \
+-e 's/Ncl_Type_logical_mod/NULL/' \
+-e 's/Ncl_Type_logical_divide_type/NULL/' \
+-e 's/Ncl_Type_logical_divide/NULL/' \
+-e 's/Ncl_Type_logical_multiply_type/NULL/' \
+-e 's/Ncl_Type_logical_multiply/NULL/' \
+-e 's/Ncl_Type_logical_plus_type/NULL/' \
+-e 's/Ncl_Type_logical_plus/NULL/' \
+-e 's/Ncl_Type_logical_minus_type/NULL/' \
+-e 's/Ncl_Type_logical_minus/NULL/' \
+-e 's/Ncl_Type_logical_exponent_type/NULL/' \
+-e 's/Ncl_Type_logical_exponent/NULL/' \
+-e 's/Ncl_Type_logical_sel_lt_type/NULL/' \
+-e 's/Ncl_Type_logical_sel_lt/NULL/' \
+-e 's/Ncl_Type_logical_sel_gt_type/NULL/' \
+-e 's/Ncl_Type_logical_sel_gt/NULL/' \
+-e 's/Ncl_Type_logical_neg_type/NULL/' \
+-e 's/Ncl_Type_logical_neg/NULL/' \
+-e 's/Ncl_Type_logical_gt_type/NULL/' \
+-e 's/Ncl_Type_logical_gt/NULL/' \
+-e 's/Ncl_Type_logical_lt_type/NULL/' \
+-e 's/Ncl_Type_logical_lt/NULL/' \
+-e 's/Ncl_Type_logical_ge_type/NULL/' \
+-e 's/Ncl_Type_logical_ge/NULL/' \
+-e 's/Ncl_Type_logical_le_type/NULL/' \
+-e 's/Ncl_Type_logical_le/NULL/' \
+-e 's/Ncl_Type_logical_is_mono/NULL/' \
+-e 's/Ncl_Type_logical_cmpf/NULL/' \
+NclType.c.sed > NclTypelogical.c
 
 rm .tmp.$$
 
-echo "created NclMultiDVallogicalData.c"
+echo "created NclTypelogical.c"
 
 exit 0

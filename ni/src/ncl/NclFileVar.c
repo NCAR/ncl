@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.4 1994-12-23 01:18:23 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.5 1995-01-28 01:51:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -206,9 +206,9 @@ NclDimRec *dim_info,
 int att_id,
 int *coords,
 NclVarTypes var_type,
-char *var_name)
+char *var_name,NclStatus status)
 #else
-(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name)
+(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name,status)
 	NclVar inst;
 	NclObjClass theclass;
 	NclObjTypes obj_type;
@@ -220,6 +220,7 @@ char *var_name)
 	int *coords;
 	NclVarTypes var_type;
 	char *var_name;
+	NclStatus status;
 #endif
 {
 	NclFileVar fvar = NULL;
@@ -232,9 +233,9 @@ char *var_name)
 		fvar = (NclFileVar) NclMalloc(sizeof(NclFileVarRec));
 	}
 	if(theclass != NULL) {
-		_NclVarCreate((NclVar)fvar,theclass,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name);
+		_NclVarCreate((NclVar)fvar,theclass,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	} else {
-		_NclVarCreate((NclVar)fvar,(NclObjClass)&nclFileVarClassRec,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name);
+		_NclVarCreate((NclVar)fvar,(NclObjClass)&nclFileVarClassRec,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	}
 	_NclAddParent((NclObj)thefile,(NclObj)fvar);
 	return((NclVar)fvar);

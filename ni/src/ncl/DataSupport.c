@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.9 1994-12-23 01:17:19 ethan Exp $
+ *      $Id: DataSupport.c,v 1.10 1995-01-28 01:50:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,70 @@
 #include "parser.h"
 #include "OpsList.h"
 
+extern NhlErrorTypes _NclGetCoordClosestIndex
+#if     NhlNeedProto
+(NclMultiDValData coord_md, void * ind_val, long* ind)
+#else
+(coord_md, ind_val, ind)
+NclMultiDValData coord_md;
+void *ind_val;
+long* ind;
+#endif
+{
+	NclOneDValCoordDataClass dc;
+	
+	if(coord_md == NULL) {
+		return(NhlFATAL);
+	}  else {
+		dc = (NclOneDValCoordDataClass)coord_md->obj.class_ptr;
+	}
+	if(!(coord_md->obj.obj_type_mask & NCL_COORD_MASK) ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclGetCoordRange: Non coordinate value passed, can't continue");
+		return(NhlFATAL);
+	}
+	while((NclObjClass)dc != nclMultiDValDataClass){
+		if(dc->oned_class.get_closest_ind!= NULL) {
+			return((*dc->oned_class.get_closest_ind)(coord_md, ind_val, ind));
+		} else {
+			dc = (NclOneDValCoordDataClass)dc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+NhlErrorTypes _NclGetCoordRange
+#if     NhlNeedProto
+(NclMultiDValData coord_md, void * start_val, void *finish_val, long* start, long* finish) 
+#else
+(coord_md, start_val, finish_val, start, finish) 
+NclMultiDValData coord_md;
+void *start_val;
+void *finish_val;
+long* start;
+long* finish; 
+#endif
+{
+	NclOneDValCoordDataClass dc;
+	
+	if(coord_md == NULL) {
+		return(NhlFATAL);
+	}  else {
+		dc = (NclOneDValCoordDataClass)coord_md->obj.class_ptr;
+	}
+	if(!(coord_md->obj.obj_type_mask & NCL_COORD_MASK) ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclGetCoordRange: Non coordinate value passed, can't continue");
+		return(NhlFATAL);
+	}
+	while((NclObjClass)dc != nclMultiDValDataClass){
+		if(dc->oned_class.get_range_ind != NULL) {
+			return((*dc->oned_class.get_range_ind)(coord_md, start_val, finish_val, start, finish));
+		} else {
+			dc = (NclOneDValCoordDataClass)dc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+
+
 extern void _NclInitDataClasses
 #if     NhlNeedProto
 (void)
@@ -35,6 +99,7 @@ extern void _NclInitDataClasses
 ()
 #endif
 {
+/*
 	_NclInitClass(nclMultiDValdoubleDataClass);
 	_NclInitClass(nclMultiDValfloatDataClass);
 	_NclInitClass(nclMultiDValintDataClass);
@@ -44,6 +109,7 @@ extern void _NclInitDataClasses
 	_NclInitClass(nclMultiDValbyteDataClass);
 	_NclInitClass(nclMultiDValcharDataClass);
 	_NclInitClass(nclMultiDValstringDataClass);
+*/
 }
 
 
@@ -87,17 +153,18 @@ NclMultiDValData str_md;
 		strcpy(&(val[to]),buffer[i]);
 		to += max_len;
 	}
-	return(_NclMultiDValcharCreate(
+	return(_NclCreateMultiDVal(
 		NULL,
 		NULL,
-		Ncl_MultiDValcharData,
+		Ncl_MultiDValData,
 		0,
 		val,
 		NULL,
 		n_dims,
 		dim_sizes,
 		TEMPORARY,
-		NULL));
+		NULL,
+		(NclTypeClass)nclTypecharClass));
 }
 NclMultiDValData _NclCharMdToStringMd
 #if	NhlNeedProto
@@ -130,7 +197,7 @@ NclMultiDValData char_md;
 	}
 	NclFree(buffer);
 	if(char_md->multidval.n_dims != 1) {
-		return(_NclMultiDValstringCreate(
+		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
 			NCL_string,
@@ -140,9 +207,10 @@ NclMultiDValData char_md;
 			char_md->multidval.n_dims -1,
 			char_md->multidval.dim_sizes,
 			TEMPORARY,
-			NULL));
+			NULL,
+			(NclTypeClass)nclTypestringClass));
 	} else {
-		return(_NclMultiDValstringCreate(
+		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
 			NCL_string,
@@ -152,7 +220,8 @@ NclMultiDValData char_md;
 			char_md->multidval.n_dims,
 			&(char_md->multidval.n_dims),
 			TEMPORARY,
-			NULL));
+			NULL,
+			(NclTypeClass)nclTypestringClass));
 	}
 }
 
@@ -170,28 +239,26 @@ long _NclObjTypeToName
 #endif
 {
 	switch(obj) {
-	case Ncl_MultiDValintData:
-		return(NrmStringToQuark("Ncl_MultiDValintData"));
-	case Ncl_MultiDValdoubleData:
-		return(NrmStringToQuark("Ncl_MultiDValdoubleData"));
-	case Ncl_MultiDValbyteData:
-		return(NrmStringToQuark("Ncl_MultiDValbyteData"));
-	case Ncl_MultiDVallongData:
-		return(NrmStringToQuark("Ncl_MultiDVallongData"));
-	case Ncl_MultiDValshortData:
-		return(NrmStringToQuark("Ncl_MultiDValshortData"));
-	case Ncl_MultiDValfloatData:
-		return(NrmStringToQuark("Ncl_MultiDValfloatData"));
-	case Ncl_MultiDValcharData:
-		return(NrmStringToQuark("Ncl_MultiDValcharData"));
-	case Ncl_MultiDValstringData:
-		return(NrmStringToQuark("Ncl_MultiDValstringData"));
-	case Ncl_MultiDValHLUObjData:
-		return(NrmStringToQuark("Ncl_MultiDValHLUObjData"));
-	case Ncl_MultiDVallogicalData:
-		return(NrmStringToQuark("Ncl_MultiDVallogicalData"));
-	case Ncl_MultiDValnclfileData:
-		return(NrmStringToQuark("Ncl_MultiDValnclfileData"));
+	case Ncl_Typeint:
+		return(NrmStringToQuark("Ncl_Typeint"));
+	case Ncl_Typedouble:
+		return(NrmStringToQuark("Ncl_Typedouble"));
+	case Ncl_Typebyte:
+		return(NrmStringToQuark("Ncl_Typebyte"));
+	case Ncl_Typelong:
+		return(NrmStringToQuark("Ncl_Typelong"));
+	case Ncl_Typeshort:
+		return(NrmStringToQuark("Ncl_Typeshort"));
+	case Ncl_Typefloat:
+		return(NrmStringToQuark("Ncl_Typefloat"));
+	case Ncl_Typechar:
+		return(NrmStringToQuark("Ncl_Typechar"));
+	case Ncl_Typestring:
+		return(NrmStringToQuark("Ncl_Typestring"));
+	case Ncl_Typelogical:
+		return(NrmStringToQuark("Ncl_Typelogical"));
+	case Ncl_Typeobj:
+		return(NrmStringToQuark("Ncl_Typeobj"));
 	default:
 		return(-1);
 	}
@@ -207,27 +274,27 @@ unsigned int _NclKeywordToObjType
 	if(keywd != NULL) {
 		switch(keywd->type) {
 		case INTEGER:
-			return((unsigned int)Ncl_MultiDValintData);
+			return((unsigned int)Ncl_Typeint);
 		case DOUBLE:
-			return((unsigned int)Ncl_MultiDValdoubleData);
+			return((unsigned int)Ncl_Typedouble);
 		case BYTE:
-			return((unsigned int)Ncl_MultiDValbyteData);
+			return((unsigned int)Ncl_Typebyte);
 		case LONG:
-			return((unsigned int)Ncl_MultiDVallongData);
+			return((unsigned int)Ncl_Typelong);
 		case SHORT:
-			return((unsigned int)Ncl_MultiDValshortData);
+			return((unsigned int)Ncl_Typeshort);
 		case FLOAT:
-			return((unsigned int)Ncl_MultiDValfloatData);
+			return((unsigned int)Ncl_Typefloat);
 		case CHARACTER:
-			return((unsigned int)Ncl_MultiDValcharData);
+			return((unsigned int)Ncl_Typechar);
 		case STRNG:
-			return((unsigned int)Ncl_MultiDValstringData);
+			return((unsigned int)Ncl_Typestring);
 		case NUMERIC:
-			return(NCL_VAL_NUMERIC_MASK);
+			return(NCL_TYPE_NUMERIC_MASK);
 		case GRAPHIC:
 			return((unsigned int)Ncl_MultiDValHLUObjData);
 		case LOGICAL:
-			return((unsigned int)Ncl_MultiDVallogicalData);
+			return((unsigned int)Ncl_Typelogical);
 		case FILETYPE:
 			return((unsigned int)Ncl_MultiDValnclfileData);
 		default:
@@ -248,25 +315,25 @@ NclObjTypes _NclBasicDataTypeToObjType
 {
 	switch(dt) {
 	case NCL_short:
-		return(Ncl_MultiDValshortData);
+		return(Ncl_Typeshort);
 	case NCL_int:
-		return(Ncl_MultiDValintData);
+		return(Ncl_Typeint);
 	case NCL_long:
-		return(Ncl_MultiDVallongData);
+		return(Ncl_Typelong);
 	case NCL_float:
-		return(Ncl_MultiDValfloatData);
+		return(Ncl_Typefloat);
 	case NCL_double:
-		return(Ncl_MultiDValdoubleData);
+		return(Ncl_Typedouble);
 	case NCL_char:
-		return(Ncl_MultiDValcharData);
+		return(Ncl_Typechar);
 	case NCL_byte:
-		return(Ncl_MultiDValbyteData);
+		return(Ncl_Typebyte);
 	case NCL_string:
-		return(Ncl_MultiDValstringData);
+		return(Ncl_Typestring);
 	case NCL_logical:
-		return(Ncl_MultiDVallogicalData);
-	case NCL_nclfile:
-		return(Ncl_MultiDValnclfileData);
+		return(Ncl_Typelogical);
+	case NCL_obj:
+		return(Ncl_Typeobj);
 	default:
 		return(Ncl_Obj);
 	}
@@ -284,7 +351,6 @@ NclBasicDataTypes _NclKeywordToDataType
 	if(keywd != NULL) {
 		switch(keywd->type) {
 		case INTEGER:
-		case GRAPHIC:
 			return(NCL_int);
 		case DOUBLE:
 			return(NCL_double);
@@ -304,8 +370,9 @@ NclBasicDataTypes _NclKeywordToDataType
 			return(NCL_numeric);
 		case LOGICAL:
 			return(NCL_logical);
+		case GRAPHIC:
 		case FILETYPE:
-			return(NCL_nclfile);
+			return(NCL_obj);
 		default:
 			return(NCL_none);
 		}
@@ -339,7 +406,9 @@ NclBasicDataTypes data_type;
 		case NCL_byte:
 			return(sizeof(char));
 		case NCL_string:
-			return(sizeof(int));	
+			return(sizeof(NclQuark));	
+		case NCL_obj:
+			return(sizeof(obj));	
 		case NCL_logical:
 			return(sizeof(int));	
 		default:
@@ -736,7 +805,7 @@ void* val;
 		dc = (NclDataClass)self->obj.class_ptr;
 	}
 	while((NclObjClass)dc != nclObjClass){
-		if(dc->data_class.dup != NULL) {
+		if(dc->data_class.is_mis != NULL) {
 			return((*dc->data_class.is_mis)((NclData)self,val));
 		} else {
 			dc = (NclDataClass)dc->obj_class.super_class;
@@ -798,12 +867,11 @@ void _NclResetMissingValue
 	return;
 }
 
-
 struct _NclMultiDValDataRec * _NclCreateVal
 #if	NhlNeedProto
-( NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec)
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)
 #else 
-( inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec)
+( inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec,type)
 NclObj inst;
 NclObjClass theclass;
 NclObjTypes obj_type;
@@ -814,142 +882,64 @@ int n_dims;
 int *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
+NclObjClass type;
 #endif
 {
+	NclTypeClass tmp;
 
 	switch(obj_type) {
-        case Ncl_MultiDValdoubleData:
-	        return(_NclMultiDValdoubleCreate(
+	case Ncl_MultiDValData:
+		return(_NclCreateMultiDVal(
 			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
+			nclMultiDValDataClass,
+			Ncl_MultiDValData,
+			Ncl_MultiDValData,
 			val,
 			missing_value,
 			n_dims,
 			dim_sizes,
 			status,
-			sel_rec));
-        case Ncl_MultiDValfloatData:
-        	return(_NclMultiDValfloatCreate(
+			sel_rec,
+			(NclTypeClass)type));
+        case Ncl_OneDValCoordData:
+		return(_NclOneDValCoordDataCreate(
 			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
+			nclOneDValCoordDataClass,
+			Ncl_OneDValCoordData,
+			Ncl_OneDValCoordData,
 			val,
 			missing_value,
 			n_dims,
 			dim_sizes,
 			status,
-			sel_rec));
-        case Ncl_MultiDVallongData:
-	        return(_NclMultiDVallongCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
-        case Ncl_MultiDValintData:
-        	return(_NclMultiDValintCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
-        case Ncl_MultiDValshortData:
-        	return(_NclMultiDValshortCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
-        case Ncl_MultiDValstringData:
-       		return(_NclMultiDValstringCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
+			sel_rec,
+			(NclTypeClass)type));
 	case Ncl_MultiDValHLUObjData:
-       		return(_NclMultiDValHLUObjDataCreate(
+		return(_NclMultiDValHLUObjDataCreate(
 			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
+			nclMultiDValHLUObjDataClass,
+			Ncl_MultiDValHLUObjData,
+			Ncl_MultiDValHLUObjData,
 			val,
 			missing_value,
 			n_dims,
 			dim_sizes,
 			status,
-			sel_rec));
-	case Ncl_MultiDVallogicalData:
-       		return(_NclMultiDVallogicalCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
+			sel_rec
+			));
 	case Ncl_MultiDValnclfileData:
-       		return(_NclMultiDValnclfileCreate(
+		return(_NclMultiDValnclfileDataCreate(
 			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
+			nclMultiDValnclfileDataClass,
+			Ncl_MultiDValnclfileData,
+			Ncl_MultiDValnclfileData,
 			val,
 			missing_value,
 			n_dims,
 			dim_sizes,
 			status,
-			sel_rec));
-	case Ncl_MultiDValcharData:
-       		return(_NclMultiDValcharCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
-	case Ncl_MultiDValbyteData:
-       		return(_NclMultiDValbyteCreate(
-			inst,
-			theclass,
-			obj_type,
-			obj_type_mask,
-			val,
-			missing_value,
-			n_dims,
-			dim_sizes,
-			status,
-			sel_rec));
+			sel_rec
+			));
         default:
                 return(NULL);
         }
@@ -1104,4 +1094,89 @@ NclBasicDataTypes dt;
 	}
 	return(NCL_none);
 }
+struct _NclDataRec* _NclReadSubSection
+#if     NhlNeedProto
+(struct _NclDataRec *self, struct _NclSelectionRecord *selection, NclScalar *missing)
+#else
+(self, selection, missing)
+struct _NclDataRec *self;
+struct _NclSelectionRecord *selection;
+NclScalar *missing;
+#endif
+{
+	NclDataClass dc ;
+	
+	if(self == NULL) {
+		return(NULL);
+	} else {
+		dc  = (NclDataClass)self->obj.class_ptr;
+	}
+	while((NclObjClass)dc != nclObjClass) {
 
+		if(dc->data_class.r_subsection != NULL) {
+			return((*dc->data_class.r_subsection)(self, selection, missing));
+		} else {
+			dc = (NclDataClass)dc->obj_class.super_class;
+		}
+	}
+	return(NULL);
+}
+
+NhlErrorTypes _NclReadThenWriteSubSection
+#if     NhlNeedProto
+(struct _NclDataRec *to_data, struct _NclSelectionRecord *to_selection, struct _NclDataRec *from_data, struct _NclSelectionRecord* from_selection)
+#else
+(to_data, to_selection, from_data, from_selection)
+struct _NclDataRec *to_data;
+struct _NclSelectionRecord *to_selection;
+struct _NclDataRec *from_data;
+struct _NclSelectionRecord* from_selection;
+#endif
+{
+	NclDataClass dc ;
+	
+	if(to_data == NULL) {
+		return(NhlFATAL);
+	} else {
+		dc  = (NclDataClass)to_data->obj.class_ptr;
+	}
+	while((NclObjClass)dc != nclObjClass) {
+
+		if(dc->data_class.r_then_w_subsection != NULL) {
+			return((*dc->data_class.r_then_w_subsection)(to_data, to_selection, from_data, from_selection));
+		} else {
+			dc = (NclDataClass)dc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+
+NhlErrorTypes _NclWriteSubSection
+#if     NhlNeedProto
+(struct _NclDataRec *self, struct _NclSelectionRecord * selection, struct _NclDataRec *value)
+#else
+(self, selection, value)
+struct _NclDataRec *self;
+struct _NclSelectionRecord * selection;
+struct _NclDataRec *value;
+#endif
+{
+        NclDataClass oc;
+        int f_selection;
+
+        if((self == NULL)||!(self->obj.obj_type_mask & NCL_MD_MASK)) {
+                return(NULL);
+        } else {
+                oc = (NclDataClass)self->obj.class_ptr;
+        }
+
+        f_selection = (int)((NclMultiDValData)value)->multidval.kind;
+        while((NclObjClass)oc != nclObjClass) {
+                if( oc->data_class.w_subsection[f_selection] != NULL) {
+                        return((NclMultiDValData)((*oc->data_class.w_subsection[f_selection])(self, selection, value)));
+                } else {
+                        oc = (NclDataClass)oc->obj_class.super_class;
+                }
+        }
+
+}

@@ -1,0 +1,653 @@
+
+/*
+ *      $Id: NclTypestring.c.sed,v 1.1 1995-01-28 01:52:29 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Oct 29 11:36:10 MDT 1993
+ *
+ *	Description:	
+ */
+
+#include <stdio.h>
+#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Convert.h>
+#include "defs.h"
+#include "Symbol.h"
+#include <errno.h>
+#include <math.h>
+#include "NclTypeint.h"
+#include "NclTypestring.h"
+#include "NclMultiDValData.h"
+
+
+
+
+/* 0 on match, non zero on non-match just like real strcmp */
+/*
+static int my_strcmp
+#if	NhlNeedProto
+(string s1,string s2)
+#else 
+(s1,s2)
+string s1;
+string s2;
+#endif
+{
+	if((s1 < 1)&&(s2 < 1)) {
+		return(0);
+	} else if((s1 < 1)||(s2 < 1)) {
+		return(1);
+	} else {
+		return(strcmp(NrmQuarkToString(s1),NrmQuarkToString(s2)));
+	}
+}
+*/
+
+static string combine_strings
+#if	NhlNeedProto
+(string ls,string rs,string mis_ls, string mis_rs,string mis)
+#else
+(ls,rs,mis_ls,mis_rs,mis)
+string ls;
+string rs;
+string mis_ls;
+string mis_rs;
+string mis;
+#endif
+{
+	char *tmp;
+	char * ls_ptr;
+	char * rs_ptr;
+	string ret_val;
+
+	if(ls == -1) {
+		return(rs);
+	} else if(rs == -1){
+		return(ls);
+	}
+	if((mis_ls > 0)&&(mis_ls == ls)) {
+		return(mis);
+	} else if((mis_rs > 0)&&(mis_rs == rs)) {
+		return(mis);
+	} else {
+		ls_ptr = NrmQuarkToString(ls);
+		rs_ptr = NrmQuarkToString(rs);
+		tmp = (char*)NclMalloc(strlen(ls_ptr)+strlen(rs_ptr)+1);
+		strcpy(tmp,ls_ptr);
+		strcat(tmp,rs_ptr);
+		ret_val = NrmStringToQuark(tmp);
+		NclFree(tmp);
+		return(ret_val);
+	}
+}
+
+static string select_string_lt
+#if	NhlNeedProto
+(string ls,string rs,string mis_ls, string mis_rs,string mis)
+#else
+(ls,rs,mis_ls,mis_rs,mis)
+string ls;
+string rs;
+string mis_ls;
+string mis_rs;
+string mis;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+	
+	if(ls < 1) {
+		return(-1);
+	} else if(rs < 1) {
+		return(ls);
+	}
+
+		
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	if((mis_ls > 0)&&(mis_ls == ls)) {
+		return(mis);
+	} else if((mis_rs > 0)&&(mis_rs == rs)) {
+		return(mis);
+	} else {
+		for(i = 0; i<len; i++) {
+			if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+				return(ls);
+			} else if((int)tolower(*lptr) > (int)tolower(*rptr)){
+				return(rs);
+			}
+			lptr++;
+			rptr++;
+		}
+		if(strlen(save_l) < strlen(save_r)) {
+			return(ls);
+		} else {
+			return(rs);
+		}
+	}
+}
+static string select_string_gt
+#if	NhlNeedProto
+(string ls,string rs,string mis_ls, string mis_rs,string mis)
+#else
+(ls,rs,mis_ls,mis_rs,mis)
+string ls;
+string rs;
+string mis_ls;
+string mis_rs;
+string mis;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+	
+	if(ls < 1) {
+		return(rs);
+	} else if(rs < 1) {
+		return(ls);
+	}
+
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	if((mis_ls > 0)&&(mis_ls==ls)) {
+		return(mis);
+	} else if((mis_rs > 0)&&(mis_rs == rs)) {
+		return(mis);
+	} else {
+		for(i = 0; i<len; i++) {
+			if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+				return(ls);
+			} else if((int)tolower(*lptr) < (int)tolower(*rptr)){
+				return(rs);
+			}
+			lptr++;
+			rptr++;
+		}
+		if(strlen(save_l) > strlen(save_r)) {
+			return(ls);
+		} else {
+			return(rs);
+		}
+	}
+}
+static int cmp_string_lt
+#if	NhlNeedProto
+(string ls,string rs)
+#else
+(ls,rs)
+string ls;
+string rs;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+	
+	if(rs <1 ) {
+		return(0);
+	} else if(ls <1) {
+		return(1);
+	}
+	
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+			return(1);
+		} else if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+			return(0);
+		}
+		lptr++;	
+		rptr++;
+	}
+	if(strlen(save_l) < strlen(save_r)) {
+		return(1);
+	} else {
+		return(0);
+	}
+}
+
+static int cmp_string_gt
+#if	NhlNeedProto
+(string ls,string rs)
+#else
+(ls,rs)
+string ls;
+string rs;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+
+	if(ls <1) {
+		return(0);
+	} else if(rs <1) {
+		return(1);
+	}
+	
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+			return(1);
+		} else if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+			return(0);
+		}
+		lptr++;	
+		rptr++;
+	}
+	if(strlen(save_l) > strlen(save_r)) {
+		return(1);
+	} else {
+		return(0);
+	}
+}
+
+static int cmp_string_le
+#if	NhlNeedProto
+(string ls,string rs)
+#else
+(ls,rs)
+string ls;
+string rs;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+
+	if(ls <1) {
+		return(1);
+	} else if(rs <1) {
+		return(0);
+	}
+	
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+			return(1);
+		} else if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+			return(0);
+		}
+		lptr++;	
+		rptr++;
+	}
+	if(strlen(save_l) <= strlen(save_r)) {
+		return(1);
+	} else {
+		return(0);
+	}
+}
+static int cmp_string_ge
+#if	NhlNeedProto
+(string ls,string rs)
+#else
+(ls,rs)
+string ls;
+string rs;
+#endif
+{
+	int len;
+	int i;
+	char *lptr;
+	char *rptr;
+	char *save_l;
+	char *save_r;
+
+	if(rs <1) {
+		return(1);
+	} else if(ls <1) {
+		return(0);
+	}
+
+	save_l = lptr = NrmQuarkToString(ls);
+	save_r = rptr = NrmQuarkToString(rs);
+	len = MIN(strlen(lptr),strlen(rptr));	
+
+	for(i = 0; i<len; i++) {
+		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+			return(1);
+		} else if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+			return(0);
+		}
+		lptr++;	
+		rptr++;
+	}
+	if(strlen(save_l) >= strlen(save_r)) {
+		return(1);
+	} else {
+		return(0);
+	}
+}
+
+INSERTTMPSTRING
+
+
+NhlErrorTypes Ncl_Type_string_plus
+#if	NhlNeedProto
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+#else
+(result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
+void *result;
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar* rhs_m;
+int nlhs;
+int nrhs;
+#endif
+{
+        string *ls,*rs;
+	string *res;
+	int stopi = 1;
+	int linc = 0;
+	int rinc = 0;
+	int i;
+
+	ls = (string*)lhs;
+	rs = (string*)rhs;
+	res = (string*)result;
+
+	if(nlhs > nrhs) 
+		stopi = nlhs;
+	else
+		stopi = nrhs;
+	if(nlhs > 1) {
+		linc = 1;
+	}
+	if(nrhs > 1) {
+		rinc = 1;
+	}
+	
+
+	if((lhs_m == NULL)&&(rhs_m == NULL)) {
+		for(i = 0; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = combine_strings(*ls,*rs,-1,-1,-1);
+		}
+	} else if(rhs_m == NULL) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = combine_strings(*ls,*rs, lhs_m->stringval, -1,lhs_m->stringval);
+		}
+	} else if(lhs_m == NULL ) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = combine_strings(*ls,*rs,-1, rhs_m->stringval, rhs_m->stringval);
+		}
+	} else {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = combine_strings(*ls,*rs, lhs_m->stringval, rhs_m->stringval, lhs_m->stringval);
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NclTypeClass Ncl_Type_string_plus_type
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	return((NclTypeClass)nclTypestringClass);
+}
+
+NhlErrorTypes Ncl_Type_string_eq
+#if	NhlNeedProto
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+#else
+(result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
+void *result;
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar* rhs_m;
+int nlhs;
+int nrhs;
+#endif
+{
+        string *ls,*rs;
+	logical *res;
+	int stopi = 1;
+	int linc = 0;
+	int rinc = 0;
+	int i;
+
+	ls = (string*)lhs;
+	rs = (string*)rhs;
+	res = (logical*)result;
+
+	if(nlhs > nrhs) 
+		stopi = nlhs;
+	else
+		stopi = nrhs;
+	if(nlhs > 1) {
+		linc = 1;
+	}
+	if(nrhs > 1) {
+		rinc = 1;
+	}
+	
+
+	if((lhs_m == NULL)&&(rhs_m == NULL)) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = *ls == *rs;
+		}
+	} else if(rhs_m == NULL) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)((lhs_m->stringval == *ls) ? ((logical)NCL_DEFAULT_MISSING_VALUE) : *ls == *rs);
+		}
+	} else if(lhs_m == NULL ) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)((rhs_m->stringval == *rs) ? ( (logical)NCL_DEFAULT_MISSING_VALUE ) : *ls == *rs);
+		}
+	} else {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)(((lhs_m->stringval == *ls)||( rhs_m->stringval==*rs)) ? ((logical)NCL_DEFAULT_MISSING_VALUE) : *ls == *rs);
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NclTypeClass Ncl_Type_string_eq_type
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	return((NclTypeClass)nclTypelogicalClass);
+}
+NhlErrorTypes Ncl_Type_string_ne
+#if	NhlNeedProto
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+#else
+(result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
+void *result;
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar* rhs_m;
+int nlhs;
+int nrhs;
+#endif
+{
+        string *ls,*rs;
+	logical *res;
+	int stopi = 1;
+	int linc = 0;
+	int rinc = 0;
+	int i;
+
+	ls = (string*)lhs;
+	rs = (string*)rhs;
+	res = (logical*)result;
+
+	if(nlhs > nrhs) 
+		stopi = nlhs;
+	else
+		stopi = nrhs;
+	if(nlhs > 1) {
+		linc = 1;
+	}
+	if(nrhs > 1) {
+		rinc = 1;
+	}
+	
+
+	if((lhs_m == NULL)&&(rhs_m == NULL)) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = !((*ls==*rs));
+		}
+	} else if(rhs_m == NULL) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)(( lhs_m->stringval == *ls) ? ( (logical)NCL_DEFAULT_MISSING_VALUE) : !((*ls==*rs)));
+		}
+	} else if(lhs_m == NULL ) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)((lhs_m->stringval == *rs)?((logical)NCL_DEFAULT_MISSING_VALUE ):!(*ls==*rs));
+		}
+	} else {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (logical)((( lhs_m->stringval == *ls) ||( rhs_m->stringval==*rs)) ? ( (logical)NCL_DEFAULT_MISSING_VALUE) : !((*ls==*rs)));
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NclTypeClass Ncl_Type_string_ne_type
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	return((NclTypeClass)nclTypelogicalClass);
+}
+
+NclTypestringClassRec nclTypestringClassRec = {
+	{
+		"NclTypeClass",
+		sizeof(NclTypeRec),
+		(NclObjClass)&nclTypeClassRec,
+		0,
+		NULL,
+		NULL,
+		NULL,
+		Ncl_Type_string_InitClass,
+		NULL,
+		NULL,
+		NULL
+	},
+	{
+/* NclObjTypes type 			*/ Ncl_Typestring,
+/* NclBasicDataTypes data_type		*/ NCL_string,
+/* int size 				*/ sizeof(string),
+/* char *hlu_rep_type			*/ {NhlTQuark,NhlTQuarkGenArray},
+/* NclTypePrint print ; 		*/ Ncl_Type_string_print,
+/* NclTypeResetMissing reset_mis; 	*/ Ncl_Type_string_reset_mis,
+/* NclTypeCoerceFunction coerce; 	*/ Ncl_Type_string_coerce,
+/* NclTypeOp multiply; 			*/ NULL,
+/* NclTypeOutSize multiply_type;        */ NULL,
+/* NclTypeOp plus; 			*/ Ncl_Type_string_plus,
+/* NclTypeOutSize plus_type;            */ Ncl_Type_string_plus_type,
+/* NclTypeOp minus; 			*/ NULL,
+/* NclTypeOutSize minus_type;           */ NULL,
+/* NclTypeOp divide; 			*/ NULL,
+/* NclTypeOutSize divide_type;          */ NULL,
+/* NclTypeOp exponent; 			*/ NULL,
+/* NclTypeOutSize exponent_type;        */ NULL,
+/* NclTypeOp mod; 			*/ NULL,
+/* NclTypeOutSize mod_type;             */ NULL,
+/* NclTypeOp mat; 			*/ NULL,
+/* NclTypeOutSize mat_type;             */ NULL,
+/* NclTypeOp sel_lt; 			*/ Ncl_Type_string_sel_lt,
+/* NclTypeOutSize sel_lt_type;          */ Ncl_Type_string_sel_lt_type,
+/* NclTypeOp sel_gt; 			*/ Ncl_Type_string_sel_gt,
+/* NclTypeOutSize sel_gt_type;          */ Ncl_Type_string_sel_gt_type,
+/* NclTypeOp not; 			*/ NULL,
+/* NclTypeOutSize not_type;             */ NULL,
+/* NclTypeOp neg; 			*/ NULL,
+/* NclTypeOutSize neg_type;             */ NULL,
+/* NclTypeOp gt; 			*/ Ncl_Type_string_gt,
+/* NclTypeOutSize gt_type;              */ Ncl_Type_string_gt_type,
+/* NclTypeOp lt; 			*/ Ncl_Type_string_lt,
+/* NclTypeOutSize lt_type;              */ Ncl_Type_string_lt_type,
+/* NclTypeOp ge; 			*/ Ncl_Type_string_ge,
+/* NclTypeOutSize ge_type;              */ Ncl_Type_string_ge_type,
+/* NclTypeOp le; 			*/ Ncl_Type_string_le,
+/* NclTypeOutSize le_type;              */ Ncl_Type_string_le_type,
+/* NclTypeOp ne; 			*/ Ncl_Type_string_ne,
+/* NclTypeOutSize ne_type;              */ Ncl_Type_string_ne_type,
+/* NclTypeOp eq; 			*/ Ncl_Type_string_eq,
+/* NclTypeOutSize eq_type;              */ Ncl_Type_string_eq_type,
+/* NclTypeOp and; 			*/ NULL,
+/* NclTypeOutSize and_type;             */ NULL,
+/* NclTypeOp or; 			*/ NULL,
+/* NclTypeOutSize or_type;              */ NULL,
+/* NclTypeOp xor; 			*/ NULL,
+/* NclTypeOp xor;                       */ NULL,
+/* NclNumScalarCompareFunc cmpf; 	*/ NULL /*Ncl_Type_string_cmpf*/,
+/* NclMonotonicTestFunction is_mono; 	*/ Ncl_Type_string_is_mono
+	},
+	{
+		NULL
+	}
+};
+
+NclObjClass nclTypestringClass = (NclObjClass)&nclTypestringClassRec;
+
+NclType _NclTypestringCreate
+#if	NhlNeedProto
+(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status)
+#else
+(inst , theclass , obj_type ,obj_type_mask, status)
+NclObj inst ;
+NclObjClass theclass ;
+NclObjTypes obj_type ;
+unsigned int obj_type_mask;
+NclStatus status;
+#endif
+{
+	return((NclType)_NclTypeCreate(inst,theclass,obj_type,(obj_type_mask | Ncl_Typestring), status));
+}

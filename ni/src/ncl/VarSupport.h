@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.3 1994-07-27 20:30:39 ethan Exp $
+ *      $Id: VarSupport.h,v 1.4 1995-01-28 01:53:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,25 @@ NclScalar *             /*new_missing*/
 #endif
 );
 
+extern NhlErrorTypes  _NclBuildCoordRSelection(
+#if     NhlNeedProto
+NclVar  /*var*/,
+NclRangeRec* /*range*/,
+NclSelection* /*sel*/,
+int /*dim_num*/,
+char * /*dim_name*/
+#endif
+);
+
+extern NhlErrorTypes _NclBuildCoordVSelection(
+#if     NhlNeedProto
+struct _NclVarRec * /*var*/,
+struct _NclVecRec * /*vec*/,
+struct _NclSelection* /*sel*/,
+int /*dim_num*/ ,
+char * /*dim_name*/
+#endif
+);
 extern NhlErrorTypes  _NclBuildRSelection(
 #if     NhlNeedProto
 NclVar  /*var*/,
@@ -187,7 +206,8 @@ extern struct _NclVarRec * _NclVarNclCreate(
         int             /*att_id*/,
         int*            /*coords*/,
         NclVarTypes /* var_type */,
-        char * /*var_name*/
+        char * /*var_name*/,
+	NclStatus /*status*/
 #endif
 );
 #endif /* _VarSupport_h */

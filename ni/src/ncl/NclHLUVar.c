@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.2 1994-12-23 01:18:28 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.3 1995-01-28 01:51:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -92,9 +92,10 @@ NclDimRec *dim_info,
 int att_id,
 int *coords,
 NclVarTypes var_type,
-char *var_name)
+char *var_name,
+NclStatus status)
 #else
-(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name)
+(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name,status)
 	NclVar inst;
 	NclObjClass theclass;
 	NclObjTypes obj_type;
@@ -106,6 +107,7 @@ char *var_name)
 	int *coords;
 	NclVarTypes var_type;
 	char *var_name;
+	NclStatus status;
 #endif
 {
 	NclHLUVar hvar = NULL;
@@ -116,9 +118,9 @@ char *var_name)
 		hvar = (NclHLUVar) NclMalloc(sizeof(NclHLUVarRec));
 	}
 	if(theclass != NULL) {
-		_NclVarCreate((NclVar)hvar,theclass,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name);
+		_NclVarCreate((NclVar)hvar,theclass,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	} else {
-		_NclVarCreate((NclVar)hvar,(NclObjClass)&nclHLUVarClassRec,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name);
+		_NclVarCreate((NclVar)hvar,(NclObjClass)&nclHLUVarClassRec,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	}
 	return((NclVar)hvar);
 }

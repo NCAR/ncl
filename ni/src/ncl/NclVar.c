@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.8 1994-12-23 01:18:59 ethan Exp $
+ *      $Id: NclVar.c,v 1.9 1995-01-28 01:52:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #include "DataSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-
+#include "NclCoordVar.h"
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto
 	struct _NclVarRec * /* self */,
@@ -275,12 +275,7 @@ NclScalar *new_missing;
 				}
 			}
 			
-			return(
-				(*((NclDataClass)
-					thevalue->obj.class_ptr)
-					->data_class.r_subsection)
-					((NclData)thevalue,sel_ptr,new_missing)
-			);
+			return(_NclReadSubSection((NclData)thevalue,sel_ptr,new_missing));
 		} else {
 			return((NclData)thevalue);
 		}
@@ -421,9 +416,10 @@ NclDimRec *dim_info,
 int att_id,
 int *coords,
 NclVarTypes var_type,
-char *var_name)
+char *var_name,
+NclStatus status)
 #else
-(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name)
+(inst,theclass,obj_type,obj_type_mask,thesym,value,dim_info,att_id,coords,var_type,var_name,status)
 	NclVar inst;
 	NclObjClass theclass;
 	NclObjTypes obj_type;
@@ -435,15 +431,15 @@ char *var_name)
 	int *coords;
 	NclVarTypes var_type;
 	char *var_name;
+	NclStatus status;
 #endif
 {
-	NclVar var_out;
+	NclVar var_out,tmp_var;
 	int var_out_free = 0;
 	int i;
 	char *v_name;
 	NclObjClass class_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
-	NclStatus status = TEMPORARY;
 	NclMultiDValData tmp = NULL,tmp_md = NULL;
 	NclScalar *tmp_s = NULL;
 	int tmp_dim_size =1;
@@ -471,7 +467,7 @@ char *var_name)
 	} else {
 		var_out = inst;
 	}
-
+/*
  	switch(var_type) {
 	case PARAM:
 	case NORMAL:
@@ -488,6 +484,7 @@ char *var_name)
 		status = TEMPORARY;	
 		break;
 	}
+*/
 	(void)_NclObjCreate((NclObj)var_out,class_ptr,obj_type ,(obj_type_mask | Ncl_Var),status);
 
 	var_out->var.thesym = thesym;
@@ -537,7 +534,7 @@ char *var_name)
 			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 			tmp_s = (NclScalar*)NclMalloc(sizeof(NclScalar));
 			*tmp_s = value->multidval.missing_value.value;
-			tmp_md = _NclCreateVal(
+			tmp_md = _NclCreateMultiDVal(
 					NULL,
 					NULL,
 					value->obj.obj_type,
@@ -547,12 +544,13 @@ char *var_name)
 					1,
 					&tmp_dim_size,
 					TEMPORARY,
-					NULL);
+					NULL,
+					value->multidval.type);
 			_NclAddAtt(att_id,NCL_MISSING_VALUE_ATT,tmp_md,NULL);
 		} else if(att_id != -1) {
 			tmp_s = (NclScalar*)NclMalloc(sizeof(NclScalar));
 			*tmp_s = value->multidval.missing_value.value;
-			tmp_md = _NclCreateVal(
+			tmp_md = _NclCreateMultiDVal(
 					NULL,
 					NULL,
 					value->obj.obj_type,
@@ -562,7 +560,8 @@ char *var_name)
 					1,
 					&tmp_dim_size,
 					TEMPORARY,
-					NULL);
+					NULL,
+					value->multidval.type);
 			_NclAddAtt(att_id,NCL_MISSING_VALUE_ATT,tmp_md,NULL);
 		}
 	}
@@ -572,9 +571,19 @@ char *var_name)
 	} 
 	if(coords != NULL) {
 		for(i = 0; i<var_out->var.n_dims; i++) {
-			var_out->var.coord_vars[i] = coords[i];
 			if(coords[i] != -1) {
-				_NclAddParent(_NclGetObj(coords[i]),(NclObj)var_out);
+				tmp_var = (NclVar)_NclGetObj(coords[i]);
+				if(!_NclSetStatus((NclObj)tmp_var,PERMANENT)) {
+					tmp_var = _NclCopyVar(tmp_var,NULL,NULL);
+					_NclSetStatus((NclObj)tmp_var,PERMANENT);
+					var_out->var.coord_vars[i] = tmp_var->obj.id;
+					_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
+				} else {
+					_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
+					var_out->var.coord_vars[i] = coords[i];
+				}
+			} else {
+				var_out->var.coord_vars[i] = coords[i];
 			}
 		}
 	}
@@ -646,7 +655,7 @@ static NclObjTypes VarValRep
 {
 	NclMultiDValData thevalue  = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	if(thevalue != NULL) {
-		return((NclObjTypes)(thevalue->obj.obj_type_mask & NCL_MD_MASK));
+		return((NclObjTypes)(thevalue->multidval.type->type_class.type ));
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"VarValRep: NULL variable passed");
 		return(Ncl_Obj);
@@ -695,7 +704,7 @@ struct _NclSelectionRecord *sel_ptr;
 * Need to do this cast in addition to above because value still needs to be
 * inserted into the att_list
 */
-				value_md =  _NclCoerceData(value,thevalue->obj.obj_type,NULL);
+				value_md =  _NclCoerceData(value,thevalue->multidval.type->type_class.type ,NULL);
 				if(value_md == NULL) {
 
 /*
@@ -800,12 +809,12 @@ long dim_num;
 			numptr = (int*)malloc((unsigned)sizeof(int));
 			*numptr = index;
 			return(
-				_NclMultiDValintCreate(
-              			  NULL,NULL,Ncl_MultiDValintData,0,(void*)numptr,
+				_NclCreateMultiDVal(
+              			  NULL,NULL,Ncl_MultiDValData,0,(void*)numptr,
                 		  NULL,
                 		  1,
                 		  &(dim_size),
-                		  TEMPORARY,NULL)
+                		  TEMPORARY,NULL,(NclTypeClass)nclTypeintClass)
 			);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension name (%s) is not defined for variable (%s)",dim_name,v_name);
@@ -821,12 +830,12 @@ long dim_num;
 			*nameptr = self->var.dim_info[dim_num].dim_quark;
 	
 			return(
-				_NclMultiDValstringCreate(
-              			  NULL,NULL,Ncl_MultiDValstringData,0,(void*)nameptr,
+				_NclCreateMultiDVal(
+              			  NULL,NULL,Ncl_MultiDValData,0,(void*)nameptr,
                	 		  NULL,
                	 		  1,
                	 		  &(dim_size),
-               		 	  TEMPORARY,NULL)
+               		 	  TEMPORARY,NULL,(NclTypeClass)nclTypestringClass)
 			);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension number (%d) does not have a defined name",dim_num);
@@ -990,7 +999,7 @@ NclSelectionRecord *sel_ptr;
 * is used by the coerce functions.
 */
 					tmp_md = _NclCoerceData(value,
-						thevalue->obj.obj_type,
+						thevalue->multidval.type->type_class.type,
 						&thevalue->multidval.missing_value.value); 
 					if(tmp_md==NULL) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
@@ -1001,9 +1010,9 @@ NclSelectionRecord *sel_ptr;
 * Only input value has missing values. In this situation a missing value 
 * attribute must be created and inserted into the attlist.
 */
-				if(value->obj.obj_type != thevalue->obj.obj_type) {
+				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 					tmp_md = _NclCoerceData(value,
-						thevalue->obj.obj_type,
+						thevalue->multidval.type->type_class.type,
 						NULL);
 					if(tmp_md == NULL) {	
 						return(NhlFATAL);
@@ -1020,7 +1029,7 @@ NclSelectionRecord *sel_ptr;
 				*missing_ptr = tmp_md->multidval.missing_value.value;
 				miss_dim_sizes[0] = 1;
 				
-				attvalue = _NclCreateVal(
+				attvalue = _NclCreateMultiDVal(
 					NULL,
 					thevalue->obj.class_ptr,
 					thevalue->obj.obj_type,
@@ -1030,7 +1039,8 @@ NclSelectionRecord *sel_ptr;
 					1,
 					miss_dim_sizes,
 					PERMANENT,
-					NULL);
+					NULL,
+					thevalue->multidval.type);
 				if(self_var->var.att_id == -1) {
 					self_var->var.att_id =
 						_NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
@@ -1040,11 +1050,10 @@ NclSelectionRecord *sel_ptr;
 /*
 * Case where neither have missing values
 */
-				if(value->obj.obj_type 
-					!= thevalue->obj.obj_type) {
+				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 
 					tmp_md = _NclCoerceData(value,
-						thevalue->obj.obj_type,
+						thevalue->multidval.type->type_class.type,
 						NULL);
 					if(tmp_md == NULL) {	
 						return(NhlFATAL);
@@ -1086,13 +1095,13 @@ NclSelectionRecord *sel_ptr;
 
 	} else {
 		if(sel_ptr->n_entries == thevalue->multidval.n_dims) {
-			if(value->obj.obj_type!= thevalue->obj.obj_type) {
+			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 /*
-* Don't care about the missing values here because the w_subsection function 
+* Don't care about the missing values here because the _subsection function 
 * handles differences in missing values
 */
 				tmp_md = _NclCoerceData(value,
-					thevalue->obj.obj_type,
+					thevalue->multidval.type->type_class.type,
 					NULL);
 				if(tmp_md==NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
@@ -1106,26 +1115,23 @@ NclSelectionRecord *sel_ptr;
 			}
 /*
 * Number of subscripts is already guarenteed to be the same in Execute
-* w_subsection function handle the differences in missing values so no need 
+* _subsection function handle the differences in missing values so no need 
 * to have Coerce convert it before this call
 */
-			ret = (((NclDataClass)thevalue->obj.class_ptr)->data_class.w_subsection[tmp_md->multidval.kind])(
-					(NclData)thevalue,
-					sel_ptr,
-					(NclData)tmp_md);
+			ret = _NclWriteSubSection((NclData)thevalue,sel_ptr,(NclData)tmp_md);
 			if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
 				_NclDestroyObj((NclObj)tmp_md);
 			}
 
 			return(ret);
 		} else if( value->multidval.kind == SCALAR) {
-			if(value->obj.obj_type!= thevalue->obj.obj_type) {
+			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 /*
-* Don't care about the missing values here because the w_subsection function 
+* Don't care about the missing values here because the _subsection function 
 * handles differences in missing values
 */
 				tmp_md = _NclCoerceData(value,
-					thevalue->obj.obj_type,
+					thevalue->multidval.type->type_class.type,
 					NULL);
 				if(tmp_md==NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mistmatch, right hand side can't be coerced to type of left hand side");
@@ -1137,10 +1143,7 @@ NclSelectionRecord *sel_ptr;
 */
 				tmp_md = value;
 			}
-			ret = (((NclDataClass)thevalue->obj.class_ptr)->data_class.w_subsection[value->multidval.kind])(
-				(NclData)thevalue,
-				sel_ptr,
-				(NclData)tmp_md);
+			_NclWriteSubSection((NclData)thevalue, sel_ptr, (NclData)tmp_md);
 			return(ret);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
@@ -1174,9 +1177,6 @@ struct _NclSelectionRecord *sel_ptr;
 	if((index>=0)&&(index < self->var.n_dims))  {
 		if(self->var.coord_vars[index] != -1) {
 			tmp = _NclVarRead((NclVar)_NclGetObj(self->var.coord_vars[index]),sel_ptr);
-			if(sel_ptr != NULL) {
-				tmp->var.var_type = COORDSUBSEL;
-			} 
 			return(tmp);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"No coordinate variable exists for dimension (%s) in variable (%s)",coord_name,v_name);
@@ -1213,7 +1213,7 @@ struct  _NclSelectionRecord *sel_ptr;
 			return(_NclAssignToVar((NclVar)_NclGetObj(self->var.coord_vars[index]),value,sel_ptr));
 		} else {
 			tmp.dim_quark = NrmStringToQuark(coord_name);
-			tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,value,&tmp,-1,NULL,COORD,coord_name);
+			tmp_obj = (NclObj)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,value,&tmp,-1,NULL,COORD,coord_name,PERMANENT);
 			_NclAddParent(tmp_obj,(NclObj)self);
 			self->var.coord_vars[index] = tmp_obj->obj.id;
 			if(self->var.coord_vars[index] == -1) {
@@ -1237,7 +1237,7 @@ NclSelectionRecord *sel_ptr;
 #endif
 {
 	NclMultiDValData val;
-	int i;
+	int i,j;
 	NclSelectionRecord tmp_sel;
 	NclVar coord_var;
 	int coords[NCL_MAX_DIMENSIONS];
@@ -1245,6 +1245,7 @@ NclSelectionRecord *sel_ptr;
 	NclObj tmp_obj;
 	NclAtt tmp_att = NULL;
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
+	int single = 0;
 
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 
@@ -1257,10 +1258,7 @@ NclSelectionRecord *sel_ptr;
 * get attributes followed by reading coordinate
 * vars
 */
-			val = (NclMultiDValData)(*((NclDataClass)
-					thevalue->obj.class_ptr)
-					->data_class.r_subsection)
-					((NclData)thevalue,sel_ptr,NULL);
+			val = (NclMultiDValData)_NclReadSubSection((NclData)thevalue,sel_ptr,NULL);
 			if(val == NULL) {
 				return(NULL);
 			}
@@ -1268,6 +1266,8 @@ NclSelectionRecord *sel_ptr;
 			tmp_sel.selected_from_sym = NULL;
 			tmp_sel.selected_from_var = NULL;
 			tmp_sel.selection[0].dim_num = 0;
+			j = 0;
+			tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(self->var.att_id),NULL);
 			for(i = 0; i< sel_ptr->n_entries; i++) {
 				if((self->var.coord_vars[sel_ptr->selection[i].dim_num] != -1)||(_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]) != NULL)) {
 					if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) {
@@ -1275,9 +1275,15 @@ NclSelectionRecord *sel_ptr;
 						tmp_sel.selection[0].u.vec= sel_ptr->selection[i].u.vec;
 						tmp_sel.selection[0].u.vec.ind = NclMalloc((unsigned)sizeof(long)*sel_ptr->selection[i].u.vec.n_ind);
 						memcpy((void*)tmp_sel.selection[0].u.vec.ind,(void*)sel_ptr->selection[i].u.vec.ind,sizeof(long)*sel_ptr->selection[i].u.vec.n_ind);
+						if(sel_ptr->selection[i].u.vec.n_ind == 1) {
+							single = 1;
+						}
 					} else {
 						tmp_sel.selection[0].sel_type = sel_ptr->selection[i].sel_type;
 						tmp_sel.selection[0].u.sub = sel_ptr->selection[i].u.sub;
+						if(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish) {
+							single = 1;
+						}
 					}
 /*
 * Since tmp_sel is not null the _NclVarRead function will create a new
@@ -1285,16 +1291,32 @@ NclSelectionRecord *sel_ptr;
 * the coordinate array is not possible
 */
 					coord_var = _NclVarRead((NclVar)_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]),&tmp_sel);
-					coords[i] = coord_var->obj.id; 
+					coords[j] = coord_var->obj.id; 
 				} else {
-					coords[i] = -1;
+					coords[j] = -1;
 				}
-				dim_info[i].dim_num = 0;
-				dim_info[i].dim_quark = self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark;
-				dim_info[i].dim_size = val->multidval.dim_sizes[i];
+				if(single){ 
+					if(coords[j] != -1) {
+						if(tmp_att == NULL) {
+							tmp_att = (NclAtt)_NclGetObj(_NclAttCreate(NULL,NULL,Ncl_Att,0,NULL));
+						}
+						_NclAddAtt(tmp_att->obj.id,NrmQuarkToString(self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark),_NclVarValueRead(coord_var,NULL,NULL),NULL);
+					}
+					single = 0;
+				} else {
+					dim_info[j].dim_num = 0;
+					dim_info[j].dim_quark = self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark;
+					dim_info[j].dim_size = val->multidval.dim_sizes[j];
+					j++;
+				}
 			}
-			tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(self->var.att_id),NULL);
-			tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,self->var.thesym,val,dim_info,((tmp_att == NULL) ? -1:tmp_att->obj.id),coords,VARSUBSEL,NrmQuarkToString(self->var.var_quark));
+			if(j == 0) {
+				dim_info[j].dim_num = 0;
+				dim_info[j].dim_quark = -1;
+				dim_info[j].dim_size = val->multidval.dim_sizes[j];
+				coords[j] = -1;
+			}
+			tmp_obj = (NclObj)_NclVarNclCreate(NULL,NULL,self->obj.obj_type,self->obj.obj_type_mask,self->var.thesym,val,dim_info,((tmp_att == NULL) ? -1:tmp_att->obj.id),coords,(self->obj.obj_type_mask & Ncl_CoordVar ?COORDSUBSEL:VARSUBSEL),NrmQuarkToString(self->var.var_quark),TEMPORARY);
 			for(i = 0; i< sel_ptr->n_entries;i++) {
 				if(((NclVar)tmp_obj)->var.coord_vars[i] != -1){
 					_NclAddParent(
@@ -1410,12 +1432,12 @@ struct _NclVarRec *storage;
 	if(storage != NULL) {
 		tmp_var = storage;
 	} else {
-		tmp_var = (NclVar)NclMalloc(sizeof(NclVarRec));
+		tmp_var = (NclVar)NclMalloc(thevar->obj.class_ptr->obj_class.obj_size);
 	}
 	if(tmp_var == NULL) {
 		return(NULL);
 	}
-	(void)_NclObjCreate((NclObj)tmp_var,thevar->obj.class_ptr,thevar->obj.obj_type ,(thevar->obj.obj_type_mask | Ncl_Var),TEMPORARY);
+	(void)_NclObjCreate((NclObj)tmp_var,thevar->obj.class_ptr,thevar->obj.obj_type ,thevar->obj.obj_type_mask,TEMPORARY);
 	
 	tmp_var->var = thevar->var;
 
@@ -1521,12 +1543,8 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		}
 		return(ret);
 	} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr != NULL)) {
-		(*((NclDataClass)lhs_md->obj.class_ptr)->data_class.r_then_w_subsection)(
-			(NclData)lhs_md,
-			lhs_sel_ptr,
-			(NclData)rhs_md,
-			rhs_sel_ptr
-		);
+		_NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+
 	} else if(rhs_sel_ptr == NULL) {
 		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 		if(ret < NhlWARNING){

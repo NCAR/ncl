@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.4 1994-12-23 01:18:35 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.5 1995-01-28 01:51:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,8 @@
 #include "NclHLUObj.h"
 #include "NclMultiDValHLUObjData.h"
 #include "DataSupport.h"
+#include "NclTypeobj.h"
+#include <math.h>
 
 
 static struct _NclDataRec *MultiDVal_HluObj_ReadSection
@@ -44,7 +46,7 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclData output_md;
 	NclSelection *sel_ptr;
-	int *val;
+	obj *val;
 	int i,k,from,to;
 	NclScalar *tmp = NULL;
 
@@ -191,7 +193,7 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 * index >= 0 into the integer vector array.
 */
 
-	val = (int*)NclMalloc(total_elements * sizeof(int));
+	val = (obj*)NclMalloc(total_elements * sizeof(obj));
 	to = 0;
 	while(!done) {
 		from = 0;
@@ -199,9 +201,9 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 			from = from + (current_index[i] * multiplier[i]);
 		}
 		if(!chckmiss) {
-			val[to] = ((int*)self_md->multidval.val)[from];
+			val[to] = ((obj*)self_md->multidval.val)[from];
 		} else {
-			val[to] = (((int*)self_md->multidval.val)[from] == missing->intval) ? missing->intval:((int*)self_md->multidval.val)[from];
+			val[to] = (((obj*)self_md->multidval.val)[from] == missing->objval) ? missing->objval:((obj*)self_md->multidval.val)[from];
 		}
 		if(compare_sel[n_dims_input-1] <0) {
 			current_index[n_dims_input -1 ] += strider[n_dims_input-1];
@@ -334,7 +336,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 * mapping from the value object into target. 
 */
 	NclSelection *sel_ptr = NULL;
-	int *val;
+	obj *val;
 	int i,k;
 	long from,to;
 
@@ -353,6 +355,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
+	NclHLUObj tmp_ho = NULL;
 
 /*
 * preconditions:
@@ -367,8 +370,8 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 
 	if((target_md->multidval.missing_value.has_missing)&&
 		(value_md->multidval.missing_value.has_missing)) {
-		if(target_md->multidval.missing_value.value.intval ==
-			value_md->multidval.missing_value.value.intval) {
+		if(target_md->multidval.missing_value.value.objval ==
+			value_md->multidval.missing_value.value.objval) {
 /*
 * No need to check when missing values are equal
 */
@@ -384,18 +387,46 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 		sel_ptr = sel->selection;
 	} else {
 		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
-			if(chckmiss) {
-				val = (int*)value_md->multidval.val;
-				for(i = 0; i< target_md->multidval.totalelements; i++) {
-					((int*)target_md->multidval.val)[i] = 
-						((val[i] == value_md->multidval.missing_value.value.intval) ? 
-						target_md->multidval.missing_value.value.intval 
-						: val[i]);
+			val = (obj*)value_md->multidval.val;
+			for(i = 0; i< target_md->multidval.totalelements; i++) {
+				if(chckmiss) {
+					tmp_ho = NULL;
+					if(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[i]) {
+						tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[i]);
+					} 
+					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+						(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                			}
+					tmp_ho = NULL;
+					if(value_md->multidval.missing_value.value.objval != val[i]) {
+						tmp_ho = (NclHLUObj)_NclGetObj((int)val[i]);
+						((obj*)target_md->multidval.val)[i] = val[i];
+					} else {
+						((obj*)target_md->multidval.val)[i] = target_md->multidval.missing_value.value.objval;
+					}
+					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+			               		(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+                			}
+
+				} else {
+					tmp_ho = NULL;
+					if(!(value_md->multidval.missing_value.has_missing) ||(value_md->multidval.missing_value.value.objval != val[i])) {
+						tmp_ho = (NclHLUObj)_NclGetObj((int)val[i]);
+					}
+					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+			               		(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+                			}
+					tmp_ho = NULL;
+					if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[i])) {
+						tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[i]);
+					}
+					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+						(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                			}
+					((obj*)target_md->multidval.val)[i] = val[i];
 				}
-			} else {
-				memcpy(target_md->multidval.val,value_md->multidval.val,value_md->multidval.totalsize);
-				return(NhlNOERROR);
 			}
+			return(NhlNOERROR);
 		} else {
 			return(NhlFATAL);
 		}
@@ -523,7 +554,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 * index >= 0 into the integer vector array.
 */
 
-	val = (int*)value_md->multidval.val;
+	val = (obj*)value_md->multidval.val;
 	from = 0;
 	while(!done) {
 		to = 0;
@@ -531,12 +562,41 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 			to = to + (current_index[i] * multiplier[i]);
 		}
 		if(chckmiss) {
-			((int*)target_md->multidval.val)[to] = 
-				((val[from] == value_md->multidval.missing_value.value.intval) ? 
-				target_md->multidval.missing_value.value.intval 
+			tmp_ho = NULL;
+			if(((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval){
+				tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[to]);
+				if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+					(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                		}
+			}
+			tmp_ho = NULL;
+			if(val[from] != value_md->multidval.missing_value.value.objval){
+				tmp_ho = (NclHLUObj)_NclGetObj(val[from]);
+				if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+					(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+                		}
+			}
+			((obj*)target_md->multidval.val)[to] = 
+				((val[from] == value_md->multidval.missing_value.value.objval) ? 
+				target_md->multidval.missing_value.value.objval 
 				: val[from]);
 		} else {
-			((int*)target_md->multidval.val)[to] = val[from];
+			
+			tmp_ho = NULL;
+			if(!(value_md->multidval.missing_value.has_missing) ||(value_md->multidval.missing_value.value.objval != val[from])) {
+				tmp_ho = (NclHLUObj)_NclGetObj((int)val[from]);
+			}
+			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+                	}
+			tmp_ho = NULL;
+			if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[to])) {
+				tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[to]);
+			}
+			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                	}
+			((obj*)target_md->multidval.val)[to] = val[from];
 		}
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
@@ -633,7 +693,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 * mapping from the value object into target. 
 */
 	NclSelection *sel_ptr = sel->selection;
-	int *val;
+	obj *val;
 	int i,k,to;
 
 	int current_index[NCL_MAX_DIMENSIONS];
@@ -648,6 +708,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
+	NclHLUObj tmp_ho;
 
 /*
 * preconditions:
@@ -660,8 +721,8 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 */
 	if((target_md->multidval.missing_value.has_missing)&&
 		(value_md->multidval.missing_value.has_missing)) {
-		if(target_md->multidval.missing_value.value.intval ==
-			value_md->multidval.missing_value.value.intval) {
+		if(target_md->multidval.missing_value.value.objval ==
+			value_md->multidval.missing_value.value.objval) {
 /*
 * No need to check when missing values are equal
 */
@@ -779,10 +840,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 * index >= 0 into the integer vector array.
 */
 
-	val = (int*)value_md->multidval.val;
+	val = (obj*)value_md->multidval.val;
 	if(chckmiss) {
-		if(*val == value_md->multidval.missing_value.value.intval){
-			*val = target_md->multidval.missing_value.value.intval;
+		if(*val == value_md->multidval.missing_value.value.objval){
+			*val = target_md->multidval.missing_value.value.objval;
 		}
 	}
 	while(!done) {
@@ -790,7 +851,19 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
-		((int*)target_md->multidval.val)[to] = *val;
+		if(!(target_md->multidval.missing_value.has_missing)||(((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval)) {
+			tmp_ho = (NclHLUObj)_NclGetObj((int)((obj*)target_md->multidval.val)[to]);
+			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+			}
+		} 
+		((obj*)target_md->multidval.val)[to] = *val;
+		if(*val != target_md->multidval.missing_value.value.objval) {
+			tmp_ho = (NclHLUObj)_NclGetObj((int)*val);
+			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+			}
+		}
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
 		} else {
@@ -881,28 +954,28 @@ static void MultiDVal_HLUObj_ResetMissing
 #endif
 {
 	NclMultiDValData self_md = (NclMultiDValData)self;
-	int theval;
-	int oldval;
-	int *step;
+	obj theval;
+	obj oldval;
+	obj *step;
 	int i;
 
 	if(missing == NULL) {	
 		return;
 	} else {
 		if(self_md->multidval.missing_value.has_missing) {
-			oldval = self_md->multidval.missing_value.value.intval;
-			theval = missing->intval;
-			step = (int*)self_md->multidval.val;
+			oldval = self_md->multidval.missing_value.value.objval;
+			theval = missing->objval;
+			step = (obj*)self_md->multidval.val;
 			for(i = 0; i< self_md->multidval.totalelements; i++) {
 				if(*step == oldval) {
 					*step = theval;
 				}
 				step++;
 			}
-			self_md->multidval.missing_value.value.intval = theval;
+			self_md->multidval.missing_value.value.objval = theval;
 			self_md->multidval.missing_value.has_missing = 1;
 		} else {
-			self_md->multidval.missing_value.value.intval = missing->intval;
+			self_md->multidval.missing_value.value.objval = missing->objval;
 			self_md->multidval.missing_value.has_missing = 1;
 /*
 * Since didn't have missing value before then there are no missing values to
@@ -934,9 +1007,9 @@ NclSelectionRecord *from_selection;
 	int i,k;
 	long from,to;
 	NclSelection *to_sel_ptr = NULL;
-	int *to_val;
+	obj *to_val;
 	NclSelection *from_sel_ptr = NULL;
-	int *from_val;
+	obj *from_val;
 
 	long to_current_index[NCL_MAX_DIMENSIONS];
 	long to_multiplier[NCL_MAX_DIMENSIONS];
@@ -960,6 +1033,7 @@ NclSelectionRecord *from_selection;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
+	NclHLUObj tmp_ho;
 
 	if((target_md == NULL)||(value_md == NULL) ) {
 		return(NhlFATAL);
@@ -983,8 +1057,8 @@ NclSelectionRecord *from_selection;
 
 	if((target_md->multidval.missing_value.has_missing)&&
 		(value_md->multidval.missing_value.has_missing)) {
-		if(target_md->multidval.missing_value.value.intval ==
-			value_md->multidval.missing_value.value.intval) {
+		if(target_md->multidval.missing_value.value.objval ==
+			value_md->multidval.missing_value.value.objval) {
 /*
 * No need to check when missing values are equal
 */
@@ -1198,8 +1272,8 @@ NclSelectionRecord *from_selection;
 
 	to_sel_ptr = to_selection->selection;
 	from_sel_ptr = from_selection->selection;
-	to_val = (int*)target_md->multidval.val;
-	from_val = (int*)value_md->multidval.val;
+	to_val = (obj*)target_md->multidval.val;
+	from_val = (obj*)value_md->multidval.val;
 	while(!done) {
 		to = 0;
 		from = 0;
@@ -1210,11 +1284,39 @@ NclSelectionRecord *from_selection;
 			from = from + (from_current_index[i] * from_multiplier[i]);
 		}
 		if(chckmiss) {
+			tmp_ho = NULL;
+			if(to_val[to] != target_md->multidval.missing_value.value.objval) {
+				tmp_ho = (NclHLUObj)_NclGetObj((int)to_val[to]);
+				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+				}
+			}
+			tmp_ho = NULL;
+			if(from_val[from] != value_md->multidval.missing_value.value.objval) {
+				tmp_ho = (NclHLUObj)_NclGetObj((int)from_val[from]);
+				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+				}
+			}
 			to_val[to] = 
-				((from_val[from] == value_md->multidval.missing_value.value.intval) ? 
-				target_md->multidval.missing_value.value.intval 
+				((from_val[from] == value_md->multidval.missing_value.value.objval) ? 
+				target_md->multidval.missing_value.value.objval 
 				: from_val[from]);
 		} else {
+			tmp_ho = NULL;
+			if(!(target_md->multidval.missing_value.has_missing)||(to_val[to] != target_md->multidval.missing_value.value.objval)) {
+				tmp_ho = (NclHLUObj)_NclGetObj((int)to_val[to]);
+				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+				}
+			}
+			tmp_ho = NULL;
+			if(!(value_md->multidval.missing_value.has_missing)||(from_val[from] != value_md->multidval.missing_value.value.objval)) {
+				tmp_ho = (NclHLUObj)_NclGetObj((int)from_val[from]);
+				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+				}
+			}
 			to_val[to] = from_val[from];
 		}
 		if(to_compare_sel[n_dims_target-1] <0) {
@@ -1371,7 +1473,7 @@ static void MultiDVal_HLUObj_Destroy
 {
         NclMultiDValData self_md = (NclMultiDValData)self;
 	NclHLUObj tmp_ho;
-	int *obj_ids,i;
+	obj *obj_ids,i;
 
 	_NclUnRegisterObj(self);
 	
@@ -1379,7 +1481,7 @@ static void MultiDVal_HLUObj_Destroy
 		NclFree(self_md->multidval.sel_rec);
 	}
 
-	obj_ids = (int*)self_md->multidval.val;	
+	obj_ids = (obj*)self_md->multidval.val;	
 	for(i = 0; i< self_md->multidval.totalelements; i++) {
 		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
 		(void)_NclDelParent((NclObj)tmp_ho,self);
@@ -1402,13 +1504,13 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValData self_md = (NclMultiDValData) self;
-	int *toval;
-	int *frval;
-	int missing;
+	obj *toval;
+	obj *frval;
+	obj missing;
 	NclScalar themissing;
 	int i;
-	toval = (int*)NclMalloc(self_md->multidval.totalsize);
-	frval = (int*)self_md->multidval.val;
+	toval = (obj*)NclMalloc(self_md->multidval.totalsize);
+	frval = (obj*)self_md->multidval.val;
 	if(toval == NULL) {
 		return(NULL);
         }
@@ -1416,10 +1518,10 @@ NclScalar *new_missing;
 		memcpy((char*)toval,(char*)frval,self_md->multidval.totalsize);
 		themissing = self_md->multidval.missing_value.value;
 	} else {
-		missing = self_md->multidval.missing_value.value.intval;
+		missing = self_md->multidval.missing_value.value.objval;
 		for(i = 0; i < self_md->multidval.totalelements; i++) {
 			toval[i] = (frval[i] == missing ?
-				new_missing->intval :
+				new_missing->objval :
 				frval[i]);
 		}
 		themissing = *new_missing;
@@ -1489,16 +1591,9 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 	{	
 		NULL
 	},
-	{
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
+	{		
 		NULL
 	}
-	
 };
 
 NclObjClass nclMultiDValHLUObjDataClass = (NclObjClass)&nclMultiDValHLUObjDataClassRec;
@@ -1525,8 +1620,7 @@ NclSelectionRecord *sel_rec;
 	NclObjClass class_ptr= nclMultiDValHLUObjDataClass;
 	int i;
 	NhlErrorTypes ret1= NhlNOERROR;
-	int nelem;
-	int *obj_ids;
+	obj *obj_ids;
 	NclHLUObj tmp_ho;
 
 	ret1 = _NclInitClass(nclMultiDValHLUObjDataClass);
@@ -1546,44 +1640,13 @@ NclSelectionRecord *sel_rec;
 * Since no initialize functions exist for Obj and Data (meaningless because
 * data has not instance record) fields must be assign manually here
 */
-	_NclMultiDValDataCreate((NclObj)thevalobj,class_ptr,obj_type,(obj_type_mask | Ncl_MultiDValHLUObjData),status);
+	_NclCreateMultiDVal((NclObj)thevalobj,class_ptr,obj_type,(obj_type_mask | Ncl_MultiDValHLUObjData),val,missing_value,n_dims,dim_sizes,status,sel_rec,(NclTypeClass)nclTypeobjClass);
+
 
 
 	thevalobj->multidval.data_type = NCL_obj;
-	thevalobj->multidval.val = val;
 
-	if(missing_value != NULL ) {
-		thevalobj->multidval.missing_value.has_missing = 1;
-			thevalobj->multidval.missing_value.value = *missing_value;
-	} else {
-		thevalobj->multidval.missing_value.has_missing = 0;
-	}
-
-
-
-	thevalobj->multidval.n_dims = n_dims;
-	nelem = 1;
-	if((n_dims == 1) &&(dim_sizes[0]== 1)) {
-		thevalobj->multidval.kind = SCALAR;
-		thevalobj->multidval.dim_sizes[0] = 1;
-	} else {
-		thevalobj->multidval.kind = MULTID;
-		for(i = 0; i<n_dims; i++) {
-			thevalobj->multidval.dim_sizes[i] = dim_sizes[i];
-			nelem *= dim_sizes[i];
-		}
-	}
-	thevalobj->multidval.totalelements = nelem;
-	thevalobj->multidval.totalsize = nelem * _NclSizeOf(NCL_int);
-	if(sel_rec != NULL) {
-		thevalobj->multidval.sel_rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
-		memcpy((char*)thevalobj->multidval.sel_rec,(char*)sel_rec,sizeof(NclSelectionRecord));
-	} else {
-		thevalobj->multidval.sel_rec = NULL;
-	}
-	thevalobj->multidval.hlu_type_rep[0] = NULL;
-	thevalobj->multidval.hlu_type_rep[1] = NULL;
-	obj_ids = (int*)thevalobj->multidval.val;
+	obj_ids = (obj*)thevalobj->multidval.val;
 	for(i = 0; i<thevalobj->multidval.totalelements; i++) {
 		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
 		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){

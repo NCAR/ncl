@@ -1,0 +1,265 @@
+
+/*
+ *      $Id: NclTypestring.c.specific,v 1.1 1995-01-28 01:52:31 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Jan 27 18:28:03 MST 1995
+ *
+ *	Description:	
+ */
+#include "NclTypelogical.h"
+#include "NclTypefloat.h"
+
+static void Ncl_Type_string_print
+#if     NhlNeedProto
+(FILE *fp, void * val)
+#else
+(fp,val)
+FILE *fp;
+void *val;
+#endif
+{
+        string *sp = (string*)val;
+
+        nclfprintf(fp,"%s",NrmQuarkToString(*sp));
+}
+
+
+
+
+
+
+
+
+
+static NhlErrorTypes Ncl_Type_string_coerce
+#if	NhlNeedProto
+(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+#else
+(result, from, n, from_m, to_m, fc)
+void * result;
+void* from;
+int n;
+NclScalar* from_m;
+NclScalar *to_m;
+NclTypeClass fc;
+#endif
+{
+	int i;
+	string *res = (string*)result;
+	int tmp;
+	NclTypeOp eq;
+	char buffer[NCL_MAX_STRING];
+	
+
+        if((fc == NULL)||(fc->type_class.eq == NULL)
+                ||(result == NULL)
+                ||(from==NULL))
+                return(NhlFATAL);
+        else
+                eq = fc->type_class.eq;
+
+        if((to_m == NULL)&&(from_m != NULL)) {  
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Coerce: From has missing value, but To missing value not set");
+                return(NhlFATAL);
+        }
+
+	switch(fc->type_class.type) {
+	case Ncl_Typelogical: {
+		string true = NrmStringToQuark("True");
+		string false = NrmStringToQuark("False");
+		logical *fl = (logical*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (*fl?true:false) ;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					*res = (*fl?true:false) ;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typedouble: {
+		double *fl = (double*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%g",*fl);
+				*res = NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%g",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typefloat: {
+		float *fl = (float*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%g",*fl);
+				*res = NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%g",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typelong: {
+		long *fl = (long *)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%ld",*fl);
+				*res = (string)NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%ld",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typeint: {
+		int *fl = (int*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%d",*fl);
+				*res = (string)NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%d",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typeshort: {
+		short *fl = (short*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%d",*fl);
+				*res = (string)NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%d",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typebyte: {
+		byte *fl = (byte*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				sprintf(buffer,"%o",*fl);
+				*res = (string)NrmStringToQuark(buffer);
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->stringval;
+				} else {
+					sprintf(buffer,"%o",*fl);
+					*res = (string)NrmStringToQuark(buffer);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+/*
+* By definition the entire vector of characters is turned into a
+* single string
+*/
+	case Ncl_Typechar: {
+		char *fl = (char*)from;
+		int is_mis = 0;
+		if(n > NCL_MAX_STRING -1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Ncl_Type_string_coerce: attempt to coerce list of characters to a single string failed, number of characters exceeds maximum string length of (%d)",NCL_MAX_STRING);
+			return(NhlFATAL);
+		}
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,fl++)  {
+				buffer[i] = *fl;
+			}
+			buffer[n] = '\0';
+			*res = (string)NrmStringToQuark(buffer);
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				buffer[i] = *fl;
+				if(tmp) {
+					is_mis = 1;
+				} 
+			}
+			if(is_mis) {
+				*res = to_m->stringval;
+			} else {
+				*res = NrmStringToQuark(buffer);
+			}
+		}
+		return(NhlNOERROR);
+	}
+	default:
+		return(NhlFATAL);
+	}
+}

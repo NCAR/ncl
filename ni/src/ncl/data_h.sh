@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: data_h.sh,v 1.1 1994-07-21 23:16:18 boote Exp $
+#      $Id: data_h.sh,v 1.2 1995-01-28 01:53:31 ethan Exp $
 #
 #########################################################################
 #									#
@@ -33,8 +33,8 @@ sed \
 -e "s/FIELDNAME/${1}val/" \
 -e "s/DATATYPE/$1/g" \
 -e "/DSPECIFIC/d" \
-NclMultiDValData.h.sed > NclMultiDVal${1}Data.h
+NclType.h.sed > NclType${1}.h
 
-echo "created NclMultiDVal${1}Data.h"
+echo "created NclType${1}.h"
 
 exit 0

@@ -1,0 +1,183 @@
+
+/*
+ *      $Id: NclTypefloat.c.specific,v 1.1 1995-01-28 01:52:17 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Jan 27 18:26:19 MST 1995
+ *
+ *	Description:	
+ */
+#include "NclTypelogical.h"
+#include "NclTypefloat.h"
+#include <ncarg/hlu/hluutil.h>
+
+static void Ncl_Type_float_print
+#if     NhlNeedProto
+(FILE *fp, void * val)
+#else
+(fp,val)
+FILE *fp;
+void *val;
+#endif
+{
+        float *fpt = (float*)val;
+
+        nclfprintf(fp,"%g",*fpt);
+}
+
+
+
+
+
+
+
+static NhlErrorTypes Ncl_Type_float_coerce
+#if	NhlNeedProto
+(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+#else
+(result, from, n, from_m, to_m, fc)
+void * result;
+void* from;
+int n;
+NclScalar* from_m;
+NclScalar *to_m;
+NclTypeClass fc;
+#endif
+{
+	int i;
+	float *res = (float*)result;
+	logical tmp;
+	NclTypeOp eq;
+	
+
+        if((fc == NULL)||(fc->type_class.eq == NULL)
+                ||(result == NULL)
+                ||(from==NULL))
+                return(NhlFATAL);
+        else
+                eq = fc->type_class.eq;
+
+	if((to_m == NULL)&&(from_m != NULL)) {	
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Coerce: From has missing value, but To missing value not set");
+		return(NhlFATAL);
+	}
+
+	switch(fc->type_class.type) {
+	case Ncl_Typelong: {
+		long *fl = (long *)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (float)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->floatval;
+				} else {
+					*res = (float)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typeint: {
+		int *fl = (int*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (float)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->floatval;
+				} else {
+					*res = (float)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typeshort: {
+		short *fl = (short*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (float)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->floatval;
+				} else {
+					*res = (float)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typebyte: {
+		byte *fl = (byte*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (float)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = to_m->floatval;
+				} else {
+					*res = (float)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	default:
+		return(NhlFATAL);
+	}
+}
+
+
+static NhlErrorTypes Ncl_Type_float_cmpf
+#if     NhlNeedProto
+(void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
+#else
+(lhs, rhs, lhs_m, rhs_m, digits, result)
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar *rhs_m;
+int digits;
+double* result;
+#endif
+{
+	if((lhs_m != NULL)&&(lhs_m->intval == *(int*)lhs)) {
+                return(NhlFATAL);
+        } else if((rhs_m != NULL)&&(rhs_m->intval == *(int*)rhs)) {
+                return(NhlFATAL);
+        } else {
+		*result = (double)_NhlCmpFAny(*(float*)lhs,*(float*)rhs,7);
+	}
+	return(NhlFATAL);
+}
+

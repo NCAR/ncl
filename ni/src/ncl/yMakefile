@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.26 1995-01-04 01:55:18 ethan Exp $
+#      $Id: yMakefile,v 1.27 1995-01-28 01:54:06 ethan Exp $
 #
 #########################################################################
 #									#
@@ -58,18 +58,20 @@ SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
 
-GEN_HDRS	=	NclMultiDValnclfileData.h NclMultiDVallogicalData.h \
-			NclMultiDValdoubleData.h NclMultiDValfloatData.h \
-			NclMultiDValintData.h NclMultiDVallongData.h \
-			NclMultiDValshortData.h NclMultiDValstringData.h \
-			parser.h NclMultiDValbyteData.h NclMultiDValcharData.h
+GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
+			NclTypedouble.h NclTypefloat.h \
+			NclTypeint.h NclTypelong.h \
+			NclTypeshort.h NclTypestring.h \
+			parser.h NclTypebyte.h NclTypechar.h TypeSupport.h
 
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			Machine.h NclAtt.h NclData.h NclDataDefs.h \
 			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
-			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h
+			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
+			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
+			NclOneDValCoordData.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h
 
@@ -81,21 +83,23 @@ EXESRCS		=	$(EXE_SRCS) $(SRCS)
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
-GEN_SRCS	=	NclMultiDValdoubleData.c NclMultiDValfloatData.c \
-			NclMultiDValintData.c NclMultiDVallogicalData.c \
-			NclMultiDVallongData.c NclMultiDValnclfileData.c \
-			NclMultiDValshortData.c NclMultiDValstringData.c \
-			scanner.c parser.c NclMultiDValbyteData.c \
-			NclMultiDValcharData.c scanapi.c parseapi.c
+GEN_SRCS	=	NclTypedouble.c NclTypefloat.c \
+			NclTypeint.c NclTypelogical.c \
+			NclTypelong.c NclTypeobj.c \
+			NclTypeshort.c NclTypestring.c \
+			scanner.c parser.c NclTypebyte.c \
+			NclTypechar.c scanapi.c parseapi.c TypeSupport.c NclMultiDValData.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
 			FileSupport.c Formats.c InitData.c Machine.c Memory.c \
 			NclAtt.c NclData.c NclFile.c NclHLUObj.c \
-			NclMultiDValData.c NclMultiDValHLUObjData.c \
+			NclType.c  \
 			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
-			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c
+			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
+			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
+			NclOneDValCoordData.c
 
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
@@ -105,20 +109,22 @@ EXEOBJS		=	$(EXE_OBJS) $(OBJS)
 ALLOBJS		=	$(EXEOBJS)
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS)
 
-GEN_OBJS	=	NclMultiDValdoubleData.o NclMultiDValfloatData.o \
-			NclMultiDValintData.o NclMultiDVallogicalData.o \
-			NclMultiDVallongData.o NclMultiDValnclfileData.o \
-			NclMultiDValshortData.o NclMultiDValstringData.o \
-			NclMultiDValbyteData.o NclMultiDValcharData.o
+GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
+			NclTypeint.o NclTypelogical.o \
+			NclTypelong.o NclTypeobj.o \
+			NclTypeshort.o NclTypestring.o \
+			NclTypebyte.o NclTypechar.o NclMultiDValData.o \
+			TypeSupport.o
 
 STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
 			FileSupport.o Formats.o InitData.o Machine.o Memory.o \
 			NclAtt.o NclData.o NclFile.o \
-			NclMultiDValData.o NclMultiDValHLUObjData.o \
 			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
-			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o
+			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
+			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
+			NclOneDValCoordData.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
@@ -185,51 +191,60 @@ $(YACC):
 y.tab.c y.tab.h: ncl.y $(YACC)
 	$(YACC) -d -t ncl.y
 
+TypeSupport.h: TypeSupport.h.sed
+	@$(SHELL) type_support_h.sh
+
+TypeSupport.c: TypeSupport.c.sed
+	@$(SHELL) type_support_c.sh
+
+NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h
+	@$(SHELL) multid_data_c.sh
+
 #
 # Data Object dependancies
 #
 
-#define	MultiDValDataRule_h(type)\
+#define	NclTypeRule_h(type)\
 ]\
-NclMultiDVal/**/type/**/Data.h:	data_h.sh NclMultiDValData.h.sed]\
+NclType/**/type/**/.h:	data_h.sh NclType.h.sed]\
 	@$(SHELL) data_h.sh type]
 
-#define MultiDValDataRule_c(type,xtra_dep)\
+#define NclTypeRule_c(type,xtra_dep)\
 ]\
-NclMultiDVal/**/type/**/Data.c:	type/**/_data_c.sh op_funcs.sh NclMultiDVal/**/type/**/Data.c.specific xtra_dep]\
+NclType/**/type/**/.c:	type/**/_data_c.sh op_funcs.sh NclType/**/type/**/.c.specific xtra_dep]\
 	@$(SHELL) type/**/_data_c.sh]
 
-#define MultiDValDataRule(type,xtra_dep)\
-MultiDValDataRule_h(type)\
-MultiDValDataRule_c(type,xtra_dep)
+#define NclTypeRule(type,xtra_dep)\
+NclTypeRule_h(type)\
+NclTypeRule_c(type,xtra_dep)
 
-NUM_OP_TMPL	=	NclMultiDValData.c.sed \
-			MultiDValSimpleOpTemplate.c.sed \
-			MultiDValMonoOpTemplate.c.sed \
-			MultiDValSelectOpTemplate.c.sed \
-			MultiDValDivOpTemplate.c.sed \
-			MultiDValXorOpTemplate.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed \
-			MultiDValIsMisFuncOpTemplate.c.sed \
-			MultiDValFunctionOpTemplate.c.sed \
-			MultiDValInitClassTemplate.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed
+NUM_OP_TMPL	=	TypeDivOpTemplate.c.sed \
+			TypeFunctionOpTemplate.c.sed \
+			TypeIsMonoFunc.c.sed \
+			TypeMonoOpTemplate.c.sed \
+			TypeResetMissing.c.sed \
+			TypeSelectOpTemplate.c.sed \
+			TypeSimpleOpTemplate.c.sed \
+			TypeXorOpTemplate.c.sed \
+			TypeInitClassTemplate.c.sed \
+			NclType.c.sed \
+			NclType.h.sed
 
-STR_OP_TMPL	=	string_ops.c.sed string_sel.c.sed string_cmp.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed
+STR_OP_TMPL	=	TypestringCompareOpTemplate.c.sed \
+			TypestringSelectOpTemplate.c.sed \
+			TypeInitClassTemplate.c.sed \
+			NclTypestring.c.sed
 
-FILE_OP_TMPL	=	NclMultiDValData.c.sed MultiDValSimpleOpTemplate.c.sed \
-			MultiDValSelectFuncsTemplate.c.sed \
-			MultiDValInitClassTemplate.c.sed
+FILE_OP_TMPL	=	NclMultiDValData.c.sed MultiDValOp.c.sed 
 
 
-MultiDValDataRule(double,$(NUM_OP_TMPL))
-MultiDValDataRule(float,$(NUM_OP_TMPL))
-MultiDValDataRule(int,$(NUM_OP_TMPL))
-MultiDValDataRule(long,$(NUM_OP_TMPL))
-MultiDValDataRule(short,$(NUM_OP_TMPL))
-MultiDValDataRule(logical,$(NUM_OP_TMPL))
-MultiDValDataRule(string,$(STR_OP_TMPL))
-MultiDValDataRule(nclfile,$(FILE_OP_TMPL))
-MultiDValDataRule(char,$(NUM_OP_TMPL))
-MultiDValDataRule(byte,$(NUM_OP_TMPL))
+NclTypeRule(double,$(NUM_OP_TMPL))
+NclTypeRule(float,$(NUM_OP_TMPL))
+NclTypeRule(int,$(NUM_OP_TMPL))
+NclTypeRule(long,$(NUM_OP_TMPL))
+NclTypeRule(short,$(NUM_OP_TMPL))
+NclTypeRule(logical,$(NUM_OP_TMPL))
+NclTypeRule(string,$(STR_OP_TMPL))
+NclTypeRule(obj,$(NUM_OP_TMPL))
+NclTypeRule(char,$(NUM_OP_TMPL))
+NclTypeRule(byte,$(NUM_OP_TMPL))

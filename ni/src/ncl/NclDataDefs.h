@@ -25,7 +25,31 @@ Ncl_None =                      00,
 Ncl_Obj = 			01,
 Ncl_Data = 			02, 
 Ncl_MultiDValData = 		04,
+Ncl_Typedouble =		010,
+Ncl_Typefloat = 	  	020,
+Ncl_Typelong = 	  		040,
+Ncl_Typeint = 		 	0100,
+Ncl_Typeshort = 	 	0200,
+Ncl_Typebyte = 	 		0400,
+Ncl_Typestring = 		01000,
+Ncl_Typechar= 			02000,
+Ncl_Typeobj= 			04000,
+Ncl_Var = 			010000,
+Ncl_Att = 			020000,
+Ncl_Typelogical =    		040000,
+Ncl_HLUObj = 			0100000,
+Ncl_File = 			0200000,
+Ncl_FileVar = 			0400000,
+Ncl_HLUVar = 			01000000,
+Ncl_CoordVar = 			02000000,
+Ncl_Type = 			04000000,
+Ncl_MultiDValnclfileData =	010000000,
+Ncl_MultiDValHLUObjData = 	020000000,
+Ncl_OneDValCoordData = 		040000000
+} NclObjTypes;
 
+/*
+typdef enum {
 Ncl_MultiDValdoubleData = 	  010,
 Ncl_MultiDValfloatData = 	  020,
 Ncl_MultiDVallongData = 	  040,
@@ -34,60 +58,56 @@ Ncl_MultiDValshortData = 	 0200,
 Ncl_MultiDValbyteData = 	 0400,
 Ncl_MultiDValstringData = 	01000,
 Ncl_MultiDValcharData = 	02000,
-
-Ncl_Var = 	04000,
-Ncl_Att = 	010000,
-Ncl_MultiDValnclfileData = 	020000,
-Ncl_MultiDValHLUObjData =    040000,
-Ncl_MultiDVallogicalData =    0100000,
-Ncl_HLUObj = 0200000,
-Ncl_File = 0400000,
-Ncl_FileVar = 01000000,
-Ncl_HLUVar = 02000000,
-Ncl_CoordVar = 04000000
-} NclObjTypes;
+Ncl_MultiDVallogicalData = 	0100000,
+Ncl_MultiDValnclfileData =     020000,
+Ncl_MultiDValHLUObjData =      040000
+} NclMultiDValDataTypes;
+*/
 
 /*
 * allows for selection of basic data value type
 */
-#define NCL_VAL_TYPE_MASK ((unsigned int)(Ncl_MultiDValdoubleData | Ncl_MultiDValfloatData | Ncl_MultiDVallongData | Ncl_MultiDValintData | Ncl_MultiDValshortData | Ncl_MultiDValbyteData | Ncl_MultiDValstringData | Ncl_MultiDValcharData | Ncl_MultiDVallogicalData))
+#define NCL_VAL_TYPE_MASK ((unsigned int)(Ncl_Typedouble | Ncl_Typefloat | Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort | Ncl_Typebyte | Ncl_Typestring | Ncl_Typechar| Ncl_Typelogical))
 
 /*
 * allows for selection of basic variable data value type 
 */
 #define NCL_VAR_TYPE_MASK ((unsigned int) Ncl_Var | Ncl_FileVar | Ncl_CoordVar) 
 
+#define NCL_COORD_MASK ((unsigned int) Ncl_OneDValCoordData)
+
 /*
 * allows for selection of numeric value types which represent one 
 * group of data types that can be coerced
 */
+#define NCL_TYPE_NUMERIC_MASK ((unsigned int)(Ncl_Typeint | Ncl_Typedouble | Ncl_Typebyte | Ncl_Typelong | Ncl_Typeshort | Ncl_Typefloat))
 
-#define NCL_VAL_NUMERIC_MASK ((unsigned int)(Ncl_MultiDValdoubleData | Ncl_MultiDValfloatData | Ncl_MultiDVallongData | Ncl_MultiDValintData | Ncl_MultiDValshortData | Ncl_MultiDValbyteData))
-#define NCL_VAL_CHARSTR_MASK ((unsigned int)(Ncl_MultiDValstringData | Ncl_MultiDValcharData))
+#define NCL_VAL_NUMERIC_MASK ((unsigned int)(Ncl_Typedouble | Ncl_Typefloat | Ncl_Typelong | Ncl_Typeint | Ncl_Typeshort | Ncl_Typebyte))
+
+#define NCL_VAL_CHARSTR_MASK ((unsigned int)(Ncl_Typestring | Ncl_Typechar))
 #define NCL_HLU_MASK ((unsigned int)Ncl_MultiDValHLUObjData)
 
-#define NCL_MD_MASK (NCL_HLU_MASK | NCL_VAL_TYPE_MASK | Ncl_MultiDValnclfileData)
+#define NCL_MD_MASK (NCL_HLU_MASK | Ncl_MultiDValData | Ncl_MultiDValnclfileData | NCL_COORD_MASK)
 
 typedef enum  {
-NCL_none,
-NCL_short,
-NCL_int,
-NCL_long,
-NCL_float,
-NCL_double,
-NCL_char,
-NCL_byte,
-NCL_string,
-NCL_numeric,
-NCL_logical,
-NCL_nclfile,
-NCL_obj
+NCL_none = 	0,
+NCL_short = 	01,
+NCL_int = 	02,
+NCL_long = 	04,
+NCL_float =	010,
+NCL_double =	020,
+NCL_char = 	040,
+NCL_byte = 	0100,
+NCL_string = 	0200,
+NCL_numeric = 	0400,
+NCL_logical = 	01000,
+NCL_obj = 	02000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
 typedef char byte;
 typedef int logical;
-typedef int nclfile;
+typedef int obj;
 
 typedef union _NclScalar {
 	double 	doubleval;
@@ -99,7 +119,7 @@ typedef union _NclScalar {
 	string	stringval;
 	byte    byteval;
 	logical	logicalval;
-	nclfile nclfileval;
+	obj 	objval;
 }NclScalar;
 
 typedef struct _NclRefList{

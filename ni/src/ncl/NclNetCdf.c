@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.9 1994-12-23 01:18:57 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.10 1995-01-28 01:51:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1052,7 +1052,7 @@ int size;
 	}
 	return(NhlFATAL);
 }
-
+/*ARGSUSED*/
 static NhlErrorTypes NetAddVar
 #if	NhlNeedProto
 (void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, long* dim_sizes)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.10 1994-12-23 01:17:44 ethan Exp $
+ *      $Id: Memory.c,v 1.11 1995-01-28 01:51:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,9 @@ NclFree
         void            *ptr;   /* pointer to memory to free    */
 #endif
 {
+/*
         register int ret;
+*/
 
         if(ptr == NULL)
                 return(NhlNOERROR);

@@ -6,6 +6,7 @@
 #include "defs.h"
 #include <errno.h>
 #include "NclHLUObj.h"
+#include "HLUSupport.h"
 #ifdef MAKEAPI
 extern void _NclAddToDelList(
 #if	NhlNeedProto
@@ -96,7 +97,6 @@ static void HLUObjDestroy
 #endif
 {
 	NclHLUObj hlu_obj = (NclHLUObj) self,ptmp;
-	NclHLUChildList *step,*tmp;
  
 	NclObj tmp_obj;
 	if(hlu_obj != NULL) {

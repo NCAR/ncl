@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.2 1994-12-23 01:17:29 ethan Exp $
+ *      $Id: FileSupport.h,v 1.3 1995-01-28 01:50:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,26 @@
 #define _FileSupport_h
 
 
+extern NhlErrorTypes  _NclBuildFileCoordRSelection(
+#if	NhlNeedProto
+NclFile /*file*/,
+NclQuark  /*var*/,
+struct _NclRangeRec * /*range*/,
+struct _NclSelection* /*sel*/,
+int /*dim_num*/,
+char * /*dim_name*/
+#endif
+);
+extern NhlErrorTypes _NclBuildFileCoordVSelection(
+#if	NhlNeedProto
+struct _NclFileRec * /*file*/,
+NclQuark  /*var*/,
+struct _NclVecRec * /*vec*/,
+struct _NclSelection* /*sel*/,
+int /*dim_num*/	,
+char * /*dim_name*/
+#endif
+);
 extern NhlErrorTypes  _NclBuildFileRSelection(
 #if	NhlNeedProto
 NclFile /*file*/,

@@ -1692,7 +1692,7 @@ expr_list :  expr				{
 	| expr_list ',' expr   		{ 
 						/* pushed on backwards so they can be popped of in correct order*/
 							if($1 == NULL) {
-								$$ == _NclMakeRowList();
+								$$ = _NclMakeRowList();
 								$$->nelem = 1;
 								$$->list = _NclMakeNewListNode();
 								$$->list->next = NULL;

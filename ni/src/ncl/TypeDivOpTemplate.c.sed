@@ -1,0 +1,95 @@
+
+/*
+ *      $Id: TypeDivOpTemplate.c.sed,v 1.1 1995-01-28 01:52:49 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Jan 27 18:28:35 MST 1995
+ *
+ *	Description:	
+ */
+NhlErrorTypes Ncl_Type_DATATYPE_FUNCNAME
+#if	NhlNeedProto
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+#else
+(result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
+void *result;
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar* rhs_m;
+int nlhs;
+int nrhs;
+#endif
+{
+        DATATYPE *ls,*rs;
+	OUTDATATYPE *res;
+	int stopi = 1;
+	int linc = 0;
+	int rinc = 0;
+	int i;
+
+        rs = (DATATYPE*)rhs;
+	ls = (DATATYPE*)lhs;
+	res = (OUTDATATYPE*)result;
+        for(i = 0; i< nrhs ; i++) {
+                if((rs[i] == (DATATYPE)0)&&((rhs_m == NULL) || (rhs_m->DATATYPEval != rs[i]))) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Division by 0, Can't continue");
+                        return(NhlFATAL);
+                }
+        }
+
+
+	if(nlhs > nrhs) 
+		stopi = nlhs;
+	else
+		stopi = nrhs;
+	if(nlhs > 1) {
+		linc = 1;
+	}
+	if(nrhs > 1) {
+		rinc = 1;
+	}
+	
+
+	if((lhs_m == NULL)&&(rhs_m == NULL)) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (OUTDATATYPE)(*ls THEOP *rs);
+		}
+	} else if(rhs_m == NULL) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs));
+		}
+	} else if(lhs_m == NULL ) {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( rhs_m->DATATYPEval) : (*ls THEOP *rs));
+		}
+	} else {
+		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
+			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs));
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NclTypeClass Ncl_Type_DATATYPE_FUNCNAME_type
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	return((NclTypeClass)nclTypeOUTDATATYPEClass);
+}
