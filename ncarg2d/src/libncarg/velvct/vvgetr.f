@@ -1,19 +1,19 @@
 C
-C	$Id: vvgetr.f,v 1.6 1993-01-20 22:02:49 dbrown Exp $
+C	$Id: vvgetr.f,v 1.7 1993-01-27 20:59:51 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE VVGETR (WHCH,RVAL)
+      SUBROUTINE VVGETR (CNM,RVL)
 C
-      CHARACTER*(*) WHCH
+      CHARACTER*(*) CNM
 C
 C This subroutine is called to retrieve the real value of a specified
 C parameter.
 C
-C WHCH is the name of the parameter whose value is to be retrieved.
+C CNM is the name of the parameter whose value is to be retrieved.
 C
-C RVAL is a real variable in which the desired value is to be returned
+C RVL is a real variable in which the desired value is to be returned
 C by VVGETR.
 C
 C ---------------------------------------------------------------------
@@ -106,20 +106,20 @@ C --------------------------------------------------------------------
 C
 C Check for a parameter name that is too short.
 C
-      IF (LEN(WHCH).LT.3) THEN
+      IF (LEN(CNM).LT.3) THEN
         CSTR(1:46)='VVGETI OR VVGETR - PARAMETER NAME TOO SHORT - '
-        CSTR(47:46+LEN(WHCH))=WHCH
-        CALL SETER (CSTR(1:46+LEN(WHCH)),1,2)
+        CSTR(47:46+LEN(CNM))=CNM
+        CALL SETER (CSTR(1:46+LEN(CNM)),1,2)
         STOP
       END IF
 C
 C Check for incorrect use of the index parameter.
 C
-      IF (WHCH(1:3).EQ.'CLR'.OR.WHCH(1:3).EQ.'clr'
-     +    .OR.WHCH(1:3).EQ.'TVL'.OR.WHCH(1:3).EQ.'tvl') THEN
+      IF (CNM(1:3).EQ.'CLR'.OR.CNM(1:3).EQ.'clr'
+     +    .OR.CNM(1:3).EQ.'TVL'.OR.CNM(1:3).EQ.'tvl') THEN
          IF (IPAI.LT.1.OR.IPAI.GT.NLVL) THEN
             CSTR(1:46)='VVGETI OR VVGETR - GETTING XXX - PAI INCORRECT'
-            CSTR(28:30)=WHCH(1:3)
+            CSTR(28:30)=CNM(1:3)
             CALL SETER (CSTR(1:46),2,2)
             STOP
          END IF
@@ -129,179 +129,179 @@ C Get the appropriate parameter value.
 C
 C Values in VVCOM
 C
-      IF (WHCH(1:3).EQ.'UD1'.OR. WHCH(1:3).EQ.'ud1') THEN
-         RVAL=REAL(IUD1)
-      ELSE IF (WHCH(1:3).EQ.'VD1'.OR. WHCH(1:3).EQ.'vd1') THEN
-         RVAL=REAL(IVD1)
-      ELSE IF (WHCH(1:3).EQ.'PD1'.OR. WHCH(1:3).EQ.'pd1') THEN
-         RVAL=REAL(IPD1)
-      ELSE IF (WHCH(1:3).EQ.'XDM'.OR. WHCH(1:3).EQ.'xdm') THEN
-         RVAL=REAL(IXDM)
-      ELSE IF (WHCH(1:3).EQ.'YDN'.OR. WHCH(1:3).EQ.'ydn') THEN
-         RVAL=REAL(IYDN)
-      ELSE IF (WHCH(1:3).EQ.'VLM'.OR.WHCH(1:3).EQ.'vlm') THEN
-        RVAL=VLOM
-      ELSE IF (WHCH(1:3).EQ.'VHM'.OR.WHCH(1:3).EQ.'vhm') THEN
-        RVAL=VHIM
-      ELSE IF (WHCH(1:3).EQ.'SET'.OR. WHCH(1:3).EQ.'set') THEN
-         RVAL=REAL(ISET)
-      ELSE IF (WHCH(1:3).EQ.'VML'.OR. WHCH(1:3).EQ.'vml') THEN
-         RVAL=VMXL
-      ELSE IF (WHCH(1:3).EQ.'VFR'.OR. WHCH(1:3).EQ.'vfr') THEN
-         RVAL=VFRC
-      ELSE IF (WHCH(1:3).EQ.'SVF'.OR. WHCH(1:3).EQ.'svf') THEN
-         RVAL=REAL(ISVF)
-      ELSE IF (WHCH(1:3).EQ.'USV'.OR.WHCH(1:3).EQ.'usv') THEN
-         RVAL=UUSV
-      ELSE IF (WHCH(1:3).EQ.'VSV'.OR.WHCH(1:3).EQ.'vsv') THEN
-         RVAL=UVSV
-      ELSE IF (WHCH(1:3).EQ.'PSV'.OR.WHCH(1:3).EQ.'psv') THEN
-         RVAL=UPSV
-      ELSE IF (WHCH(1:3).EQ.'CPM'.OR. WHCH(1:3).EQ.'cpm') THEN
-         RVAL=REAL(ICPM)
-      ELSE IF (WHCH(1:3).EQ.'WML'.OR. WHCH(1:3).EQ.'wml') THEN
-         RVAL=RLEN
-      ELSE IF (WHCH(1:3).EQ.'MSK'.OR. WHCH(1:3).EQ.'msk') THEN
-         RVAL=REAL(IMSK)
-      ELSE IF (WHCH(1:3).EQ.'VPS'.OR. WHCH(1:3).EQ.'vps') THEN
-         RVAL=REAL(UVPS)
-      ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl') THEN
-         RVAL=UVPL
-      ELSE IF (WHCH(1:3).EQ.'VPR'.OR.WHCH(1:3).EQ.'vpr') THEN
-         RVAL=UVPR
-      ELSE IF (WHCH(1:3).EQ.'VPB'.OR.WHCH(1:3).EQ.'vpb') THEN
-         RVAL=UVPB
-      ELSE IF (WHCH(1:3).EQ.'VPT'.OR.WHCH(1:3).EQ.'vpt') THEN
-         RVAL=UVPT
-      ELSE IF (WHCH(1:3).EQ.'WDL'.OR.WHCH(1:3).EQ.'wdl') THEN
-         RVAL=UWDL
-      ELSE IF (WHCH(1:3).EQ.'WDR'.OR.WHCH(1:3).EQ.'wdr') THEN
-         RVAL=UWDR
-      ELSE IF (WHCH(1:3).EQ.'WDB'.OR.WHCH(1:3).EQ.'wdb') THEN
-         RVAL=UWDB
-      ELSE IF (WHCH(1:3).EQ.'WDT'.OR.WHCH(1:3).EQ.'wdt') THEN
-         RVAL=UWDT
-      ELSE IF (WHCH(1:3).EQ.'XC1'.OR.WHCH(1:3).EQ.'xc1') THEN
-         RVAL=UXC1
-      ELSE IF (WHCH(1:3).EQ.'XCM'.OR.WHCH(1:3).EQ.'xcm') THEN
-         RVAL=UXCM
-      ELSE IF (WHCH(1:3).EQ.'YC1'.OR.WHCH(1:3).EQ.'yc1') THEN
-         RVAL=UYC1
-      ELSE IF (WHCH(1:3).EQ.'YCN'.OR.WHCH(1:3).EQ.'ycn') THEN
-         RVAL=UYCN
-      ELSE IF (WHCH(1:3).EQ.'NLV'.OR.WHCH(1:3).EQ.'nlv') THEN
-        RVAL=REAL(NLVL)
-      ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai') THEN
-        RVAL=REAL(IPAI)
-      ELSE IF (WHCH(1:3).EQ.'CTV'.OR.WHCH(1:3).EQ.'ctv') THEN
-        RVAL=REAL(ICTV)
-      ELSE IF (WHCH(1:3).EQ.'LWD'.OR.WHCH(1:3).EQ.'lwd') THEN
-        RVAL=WDLV
-      ELSE IF (WHCH(1:3).EQ.'VMN'.OR.WHCH(1:3).EQ.'vmn') THEN
-        RVAL=UVMN
-      ELSE IF (WHCH(1:3).EQ.'VMX'.OR.WHCH(1:3).EQ.'vmx') THEN
-        RVAL=UVMX
-      ELSE IF (WHCH(1:3).EQ.'DMN'.OR.WHCH(1:3).EQ.'dmn') THEN
-        RVAL=DVMN
-      ELSE IF (WHCH(1:3).EQ.'DMX'.OR.WHCH(1:3).EQ.'dmx') THEN
-        RVAL=DVMX
-      ELSE IF (WHCH(1:3).EQ.'PMN'.OR.WHCH(1:3).EQ.'pmn') THEN
-        RVAL=PMIN
-      ELSE IF (WHCH(1:3).EQ.'PMX'.OR.WHCH(1:3).EQ.'pmx') THEN
-        RVAL=PMAX
-      ELSE IF (WHCH(1:3).EQ.'SPC'.OR. WHCH(1:3).EQ.'spc') THEN
-         RVAL=REAL(ISPC)
-      ELSE IF (WHCH(1:3).EQ.'THN'.OR. WHCH(1:3).EQ.'thn') THEN
-         RVAL=REAL(ITHN)
-      ELSE IF (WHCH(1:3).EQ.'MAP'.OR. WHCH(1:3).EQ.'map') THEN
-         RVAL=REAL(IMAP)
-      ELSE IF (WHCH(1:3).EQ.'PLR'.OR. WHCH(1:3).EQ.'plr') THEN
-         RVAL=REAL(IPLR)
-      ELSE IF (WHCH(1:3).EQ.'VST'.OR. WHCH(1:3).EQ.'vst') THEN
-         RVAL=REAL(IVST)
-      ELSE IF (WHCH(1:3).EQ.'VPO'.OR. WHCH(1:3).EQ.'vpo') THEN
-         RVAL=REAL(IVPO)
-      ELSE IF (WHCH(1:3).EQ.'LBL'.OR. WHCH(1:3).EQ.'lbl') THEN
-         RVAL=REAL(ILBL)
-      ELSE IF (WHCH(1:3).EQ.'DPF'.OR. WHCH(1:3).EQ.'dpf') THEN
-         RVAL=REAL(IDPF)
-      ELSE IF (WHCH(1:3).EQ.'MSG'.OR. WHCH(1:3).EQ.'msg') THEN
-         IMSG=INT(RVAL)
+      IF (CNM(1:3).EQ.'UD1'.OR. CNM(1:3).EQ.'ud1') THEN
+         RVL=REAL(IUD1)
+      ELSE IF (CNM(1:3).EQ.'VD1'.OR. CNM(1:3).EQ.'vd1') THEN
+         RVL=REAL(IVD1)
+      ELSE IF (CNM(1:3).EQ.'PD1'.OR. CNM(1:3).EQ.'pd1') THEN
+         RVL=REAL(IPD1)
+      ELSE IF (CNM(1:3).EQ.'XDM'.OR. CNM(1:3).EQ.'xdm') THEN
+         RVL=REAL(IXDM)
+      ELSE IF (CNM(1:3).EQ.'YDN'.OR. CNM(1:3).EQ.'ydn') THEN
+         RVL=REAL(IYDN)
+      ELSE IF (CNM(1:3).EQ.'VLM'.OR.CNM(1:3).EQ.'vlm') THEN
+        RVL=VLOM
+      ELSE IF (CNM(1:3).EQ.'VHM'.OR.CNM(1:3).EQ.'vhm') THEN
+        RVL=VHIM
+      ELSE IF (CNM(1:3).EQ.'SET'.OR. CNM(1:3).EQ.'set') THEN
+         RVL=REAL(ISET)
+      ELSE IF (CNM(1:3).EQ.'VML'.OR. CNM(1:3).EQ.'vml') THEN
+         RVL=VMXL
+      ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
+         RVL=VFRC
+      ELSE IF (CNM(1:3).EQ.'SVF'.OR. CNM(1:3).EQ.'svf') THEN
+         RVL=REAL(ISVF)
+      ELSE IF (CNM(1:3).EQ.'USV'.OR.CNM(1:3).EQ.'usv') THEN
+         RVL=UUSV
+      ELSE IF (CNM(1:3).EQ.'VSV'.OR.CNM(1:3).EQ.'vsv') THEN
+         RVL=UVSV
+      ELSE IF (CNM(1:3).EQ.'PSV'.OR.CNM(1:3).EQ.'psv') THEN
+         RVL=UPSV
+      ELSE IF (CNM(1:3).EQ.'CPM'.OR. CNM(1:3).EQ.'cpm') THEN
+         RVL=REAL(ICPM)
+      ELSE IF (CNM(1:3).EQ.'WML'.OR. CNM(1:3).EQ.'wml') THEN
+         RVL=RLEN
+      ELSE IF (CNM(1:3).EQ.'MSK'.OR. CNM(1:3).EQ.'msk') THEN
+         RVL=REAL(IMSK)
+      ELSE IF (CNM(1:3).EQ.'VPS'.OR. CNM(1:3).EQ.'vps') THEN
+         RVL=REAL(UVPS)
+      ELSE IF (CNM(1:3).EQ.'VPL'.OR.CNM(1:3).EQ.'vpl') THEN
+         RVL=UVPL
+      ELSE IF (CNM(1:3).EQ.'VPR'.OR.CNM(1:3).EQ.'vpr') THEN
+         RVL=UVPR
+      ELSE IF (CNM(1:3).EQ.'VPB'.OR.CNM(1:3).EQ.'vpb') THEN
+         RVL=UVPB
+      ELSE IF (CNM(1:3).EQ.'VPT'.OR.CNM(1:3).EQ.'vpt') THEN
+         RVL=UVPT
+      ELSE IF (CNM(1:3).EQ.'WDL'.OR.CNM(1:3).EQ.'wdl') THEN
+         RVL=UWDL
+      ELSE IF (CNM(1:3).EQ.'WDR'.OR.CNM(1:3).EQ.'wdr') THEN
+         RVL=UWDR
+      ELSE IF (CNM(1:3).EQ.'WDB'.OR.CNM(1:3).EQ.'wdb') THEN
+         RVL=UWDB
+      ELSE IF (CNM(1:3).EQ.'WDT'.OR.CNM(1:3).EQ.'wdt') THEN
+         RVL=UWDT
+      ELSE IF (CNM(1:3).EQ.'XC1'.OR.CNM(1:3).EQ.'xc1') THEN
+         RVL=UXC1
+      ELSE IF (CNM(1:3).EQ.'XCM'.OR.CNM(1:3).EQ.'xcm') THEN
+         RVL=UXCM
+      ELSE IF (CNM(1:3).EQ.'YC1'.OR.CNM(1:3).EQ.'yc1') THEN
+         RVL=UYC1
+      ELSE IF (CNM(1:3).EQ.'YCN'.OR.CNM(1:3).EQ.'ycn') THEN
+         RVL=UYCN
+      ELSE IF (CNM(1:3).EQ.'NLV'.OR.CNM(1:3).EQ.'nlv') THEN
+        RVL=REAL(NLVL)
+      ELSE IF (CNM(1:3).EQ.'PAI'.OR.CNM(1:3).EQ.'pai') THEN
+        RVL=REAL(IPAI)
+      ELSE IF (CNM(1:3).EQ.'CTV'.OR.CNM(1:3).EQ.'ctv') THEN
+        RVL=REAL(ICTV)
+      ELSE IF (CNM(1:3).EQ.'LWD'.OR.CNM(1:3).EQ.'lwd') THEN
+        RVL=WDLV
+      ELSE IF (CNM(1:3).EQ.'VMN'.OR.CNM(1:3).EQ.'vmn') THEN
+        RVL=UVMN
+      ELSE IF (CNM(1:3).EQ.'VMX'.OR.CNM(1:3).EQ.'vmx') THEN
+        RVL=UVMX
+      ELSE IF (CNM(1:3).EQ.'DMN'.OR.CNM(1:3).EQ.'dmn') THEN
+        RVL=DVMN
+      ELSE IF (CNM(1:3).EQ.'DMX'.OR.CNM(1:3).EQ.'dmx') THEN
+        RVL=DVMX
+      ELSE IF (CNM(1:3).EQ.'PMN'.OR.CNM(1:3).EQ.'pmn') THEN
+        RVL=PMIN
+      ELSE IF (CNM(1:3).EQ.'PMX'.OR.CNM(1:3).EQ.'pmx') THEN
+        RVL=PMAX
+      ELSE IF (CNM(1:3).EQ.'SPC'.OR. CNM(1:3).EQ.'spc') THEN
+         RVL=REAL(ISPC)
+      ELSE IF (CNM(1:3).EQ.'THN'.OR. CNM(1:3).EQ.'thn') THEN
+         RVL=REAL(ITHN)
+      ELSE IF (CNM(1:3).EQ.'MAP'.OR. CNM(1:3).EQ.'map') THEN
+         RVL=REAL(IMAP)
+      ELSE IF (CNM(1:3).EQ.'PLR'.OR. CNM(1:3).EQ.'plr') THEN
+         RVL=REAL(IPLR)
+      ELSE IF (CNM(1:3).EQ.'VST'.OR. CNM(1:3).EQ.'vst') THEN
+         RVL=REAL(IVST)
+      ELSE IF (CNM(1:3).EQ.'VPO'.OR. CNM(1:3).EQ.'vpo') THEN
+         RVL=REAL(IVPO)
+      ELSE IF (CNM(1:3).EQ.'LBL'.OR. CNM(1:3).EQ.'lbl') THEN
+         RVL=REAL(ILBL)
+      ELSE IF (CNM(1:3).EQ.'DPF'.OR. CNM(1:3).EQ.'dpf') THEN
+         RVL=REAL(IDPF)
+      ELSE IF (CNM(1:3).EQ.'MSG'.OR. CNM(1:3).EQ.'msg') THEN
+         RVL=REAL(IMSG)
 C
 C arrow min, max
 C
-      ELSE IF (WHCH(1:3).EQ.'AMN'.OR.WHCH(1:3).EQ.'amn') THEN
-        RVAL=FAMN
-      ELSE IF (WHCH(1:3).EQ.'AMX'.OR.WHCH(1:3).EQ.'amx') THEN
-        RVAL=FAMX
+      ELSE IF (CNM(1:3).EQ.'AMN'.OR.CNM(1:3).EQ.'amn') THEN
+        RVL=FAMN
+      ELSE IF (CNM(1:3).EQ.'AMX'.OR.CNM(1:3).EQ.'amx') THEN
+        RVL=FAMX
 C
 C character multiplier
 C
-      ELSE IF (WHCH(1:3).EQ.'CWM'.OR.WHCH(1:3).EQ.'cwm') THEN
-        RVAL=FCWM
+      ELSE IF (CNM(1:3).EQ.'CWM'.OR.CNM(1:3).EQ.'cwm') THEN
+        RVL=FCWM
 C
 C character attributes
 C
-      ELSE IF (WHCH(1:3).EQ.'MNS'.OR.WHCH(1:3).EQ.'mns') THEN
-         RVAL=FMNS
-      ELSE IF (WHCH(1:3).EQ.'MNX'.OR.WHCH(1:3).EQ.'mnx') THEN
-         RVAL=FMNX
-      ELSE IF (WHCH(1:3).EQ.'MNY'.OR.WHCH(1:3).EQ.'mny') THEN
-         RVAL=FMNY
-      ELSE IF (WHCH(1:3).EQ.'MNP'.OR. WHCH(1:3).EQ.'mnp') THEN
-         RVAL=REAL(IMNP)
-      ELSE IF (WHCH(1:3).EQ.'MNC'.OR. WHCH(1:3).EQ.'mnc') THEN
-         RVAL=REAL(IMNC)
+      ELSE IF (CNM(1:3).EQ.'MNS'.OR.CNM(1:3).EQ.'mns') THEN
+         RVL=FMNS
+      ELSE IF (CNM(1:3).EQ.'MNX'.OR.CNM(1:3).EQ.'mnx') THEN
+         RVL=FMNX
+      ELSE IF (CNM(1:3).EQ.'MNY'.OR.CNM(1:3).EQ.'mny') THEN
+         RVL=FMNY
+      ELSE IF (CNM(1:3).EQ.'MNP'.OR. CNM(1:3).EQ.'mnp') THEN
+         RVL=REAL(IMNP)
+      ELSE IF (CNM(1:3).EQ.'MNC'.OR. CNM(1:3).EQ.'mnc') THEN
+         RVL=REAL(IMNC)
 C
-      ELSE IF (WHCH(1:3).EQ.'MXS'.OR.WHCH(1:3).EQ.'mxs') THEN
-         RVAL=FMXS
-      ELSE IF (WHCH(1:3).EQ.'MXX'.OR.WHCH(1:3).EQ.'mxx') THEN
-         RVAL=FMXX
-      ELSE IF (WHCH(1:3).EQ.'MXY'.OR.WHCH(1:3).EQ.'mxy') THEN
-         RVAL=FMXY
-      ELSE IF (WHCH(1:3).EQ.'MXP'.OR. WHCH(1:3).EQ.'mxp') THEN
-         RVAL=REAL(IMXP)
-      ELSE IF (WHCH(1:3).EQ.'MXC'.OR. WHCH(1:3).EQ.'mxc') THEN
-         RVAL=REAL(IMXC)
+      ELSE IF (CNM(1:3).EQ.'MXS'.OR.CNM(1:3).EQ.'mxs') THEN
+         RVL=FMXS
+      ELSE IF (CNM(1:3).EQ.'MXX'.OR.CNM(1:3).EQ.'mxx') THEN
+         RVL=FMXX
+      ELSE IF (CNM(1:3).EQ.'MXY'.OR.CNM(1:3).EQ.'mxy') THEN
+         RVL=FMXY
+      ELSE IF (CNM(1:3).EQ.'MXP'.OR. CNM(1:3).EQ.'mxp') THEN
+         RVL=REAL(IMXP)
+      ELSE IF (CNM(1:3).EQ.'MXC'.OR. CNM(1:3).EQ.'mxc') THEN
+         RVL=REAL(IMXC)
 C
-      ELSE IF (WHCH(1:3).EQ.'ZFS'.OR.WHCH(1:3).EQ.'zfs') THEN
-         RVAL=FZFS
-      ELSE IF (WHCH(1:3).EQ.'ZFX'.OR.WHCH(1:3).EQ.'zfx') THEN
-         RVAL=FZFX
-      ELSE IF (WHCH(1:3).EQ.'ZFY'.OR.WHCH(1:3).EQ.'zfy') THEN
-         RVAL=FZFY
-      ELSE IF (WHCH(1:3).EQ.'ZFP'.OR. WHCH(1:3).EQ.'zfp') THEN
-         RVAL=REAL(IZFP)
-      ELSE IF (WHCH(1:3).EQ.'ZFC'.OR. WHCH(1:3).EQ.'zfc') THEN
-         RVAL=REAL(IZFC)
+      ELSE IF (CNM(1:3).EQ.'ZFS'.OR.CNM(1:3).EQ.'zfs') THEN
+         RVL=FZFS
+      ELSE IF (CNM(1:3).EQ.'ZFX'.OR.CNM(1:3).EQ.'zfx') THEN
+         RVL=FZFX
+      ELSE IF (CNM(1:3).EQ.'ZFY'.OR.CNM(1:3).EQ.'zfy') THEN
+         RVL=FZFY
+      ELSE IF (CNM(1:3).EQ.'ZFP'.OR. CNM(1:3).EQ.'zfp') THEN
+         RVL=REAL(IZFP)
+      ELSE IF (CNM(1:3).EQ.'ZFC'.OR. CNM(1:3).EQ.'zfc') THEN
+         RVL=REAL(IZFC)
 C
-      ELSE IF (WHCH(1:3).EQ.'LBS'.OR.WHCH(1:3).EQ.'lbs') THEN
-         RVAL=FLBS
-      ELSE IF (WHCH(1:3).EQ.'LBC'.OR. WHCH(1:3).EQ.'lbc') THEN
-         RVAL=REAL(ILBC)
+      ELSE IF (CNM(1:3).EQ.'LBS'.OR.CNM(1:3).EQ.'lbs') THEN
+         RVL=FLBS
+      ELSE IF (CNM(1:3).EQ.'LBC'.OR. CNM(1:3).EQ.'lbc') THEN
+         RVL=REAL(ILBC)
 C
-      ELSE IF (WHCH(1:3).EQ.'ILS'.OR.WHCH(1:3).EQ.'ils') THEN
-         RVAL=FILS
-      ELSE IF (WHCH(1:3).EQ.'ILX'.OR.WHCH(1:3).EQ.'ilx') THEN
-         RVAL=FILX
-      ELSE IF (WHCH(1:3).EQ.'ILY'.OR.WHCH(1:3).EQ.'ily') THEN
-         RVAL=FILY
-      ELSE IF (WHCH(1:3).EQ.'ILP'.OR. WHCH(1:3).EQ.'ilp') THEN
-         RVAL=REAL(IILP)
-      ELSE IF (WHCH(1:3).EQ.'ILC'.OR. WHCH(1:3).EQ.'ilc') THEN
-         RVAL=REAL(IILC)
+      ELSE IF (CNM(1:3).EQ.'ILS'.OR.CNM(1:3).EQ.'ils') THEN
+         RVL=FILS
+      ELSE IF (CNM(1:3).EQ.'ILX'.OR.CNM(1:3).EQ.'ilx') THEN
+         RVL=FILX
+      ELSE IF (CNM(1:3).EQ.'ILY'.OR.CNM(1:3).EQ.'ily') THEN
+         RVL=FILY
+      ELSE IF (CNM(1:3).EQ.'ILP'.OR. CNM(1:3).EQ.'ilp') THEN
+         RVL=REAL(IILP)
+      ELSE IF (CNM(1:3).EQ.'ILC'.OR. CNM(1:3).EQ.'ilc') THEN
+         RVL=REAL(IILC)
 C
 C color field parameters
 C
-      ELSE IF (WHCH(1:3).EQ.'CLR'.OR.WHCH(1:3).EQ.'clr') THEN
-         RVAL=REAL(ICLR(IPAI))
-      ELSE IF (WHCH(1:3).EQ.'TVL'.OR.WHCH(1:3).EQ.'tvl') THEN
-         RVAL=TVLU(IPAI)
-      ELSE IF (WHCH(1:3).EQ.'TRT'.OR. WHCH(1:3).EQ.'trt') THEN
-         RVAL=REAL(ITRT)
+      ELSE IF (CNM(1:3).EQ.'CLR'.OR.CNM(1:3).EQ.'clr') THEN
+         RVL=REAL(ICLR(IPAI))
+      ELSE IF (CNM(1:3).EQ.'TVL'.OR.CNM(1:3).EQ.'tvl') THEN
+         RVL=TVLU(IPAI)
+      ELSE IF (CNM(1:3).EQ.'TRT'.OR. CNM(1:3).EQ.'trt') THEN
+         RVL=REAL(ITRT)
       ELSE
          CSTR(1:46)='VVGETI OR VVGETR - PARAMETER NAME NOT KNOWN - '
-         CSTR(47:49)=WHCH(1:3)
+         CSTR(47:49)=CNM(1:3)
          CALL SETER (CSTR(1:49),3,2)
          STOP
       END IF

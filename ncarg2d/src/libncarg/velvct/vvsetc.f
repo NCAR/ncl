@@ -1,19 +1,19 @@
 C
-C	$Id: vvsetc.f,v 1.5 1993-01-20 19:58:52 dbrown Exp $
+C	$Id: vvsetc.f,v 1.6 1993-01-27 20:59:54 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE VVSETC (WHCH,CVAL)
+      SUBROUTINE VVSETC (CNM,CVL)
 C
-      CHARACTER*(*) WHCH,CVAL
+      CHARACTER*(*) CNM,CVL
 C
 C This subroutine is called to give a specified character value to a
 C specified parameter.
 C
-C WHCH is the name of the parameter whose value is to be set.
+C CNM is the name of the parameter whose value is to be set.
 C
-C CVAL is a character variable containing the new value of the
+C CVL is a character variable containing the new value of the
 C parameter.
 C
 C ---------------------------------------------------------------------
@@ -106,27 +106,27 @@ C --------------------------------------------------------------------
 C
 C Check for a parameter name that is too short.
 C
-      IF (LEN(WHCH).LT.3) THEN
+      IF (LEN(CNM).LT.3) THEN
         CSTR(1:36)='VVSETC - PARAMETER NAME TOO SHORT - '
-        CSTR(37:36+LEN(WHCH))=WHCH
-        CALL SETER (CSTR(1:36+LEN(WHCH)),1,2)
+        CSTR(37:36+LEN(CNM))=CNM
+        CALL SETER (CSTR(1:36+LEN(CNM)),1,2)
         STOP
       END IF
 C
 C Set the proper parameter.
 C
-      IF (WHCH(1:3).EQ.'MNT'.OR.WHCH(1:3).EQ.'mnt') THEN
-         CMNT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'MXT'.OR.WHCH(1:3).EQ.'mxt') THEN
-         CMXT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft') THEN
-         CZFT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
-         CILT=CVAL
+      IF (CNM(1:3).EQ.'MNT'.OR.CNM(1:3).EQ.'mnt') THEN
+         CMNT=CVL
+      ELSE IF (CNM(1:3).EQ.'MXT'.OR.CNM(1:3).EQ.'mxt') THEN
+         CMXT=CVL
+      ELSE IF (CNM(1:3).EQ.'ZFT'.OR.CNM(1:3).EQ.'zft') THEN
+         CZFT=CVL
+      ELSE IF (CNM(1:3).EQ.'ILT'.OR.CNM(1:3).EQ.'ilt') THEN
+         CILT=CVL
       ELSE
 C
          CSTR(1:36)='VVSETC - PARAMETER NAME NOT KNOWN - '
-         CSTR(37:39)=WHCH(1:3)
+         CSTR(37:39)=CNM(1:3)
          CALL SETER (CSTR(1:39),3,2)
          STOP
 C

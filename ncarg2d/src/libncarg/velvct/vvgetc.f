@@ -1,19 +1,19 @@
 C
-C	$Id: vvgetc.f,v 1.5 1993-01-20 19:58:43 dbrown Exp $
+C	$Id: vvgetc.f,v 1.6 1993-01-27 20:59:45 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE VVGETC (WHCH,CVAL)
+      SUBROUTINE VVGETC (CNM,CVL)
 C
-      CHARACTER*(*) WHCH,CVAL
+      CHARACTER*(*) CNM,CVL
 C
 C This subroutine is called to retrieve the character value of a
 C specified parameter.
 C
-C WHCH is the name of the parameter whose value is to be retrieved.
+C CNM is the name of the parameter whose value is to be retrieved.
 C
-C CVAL is a character variable in which the desired value is to be
+C CVL is a character variable in which the desired value is to be
 C returned by VVGETC.
 C
 C ---------------------------------------------------------------------
@@ -106,31 +106,31 @@ C --------------------------------------------------------------------
 C
 C Check for a parameter name that is too short.
 C
-      IF (LEN(WHCH).LT.3) THEN
+      IF (LEN(CNM).LT.3) THEN
         CSTR(1:36)='VVGETC - PARAMETER NAME TOO SHORT - '
-        CSTR(37:36+LEN(WHCH))=WHCH
-        CALL SETER (CSTR(1:36+LEN(WHCH)),1,2)
+        CSTR(37:36+LEN(CNM))=CNM
+        CALL SETER (CSTR(1:36+LEN(CNM)),1,2)
       STOP
       END IF
 C
 C Get the proper parameter.
 C
-      IF (WHCH(1:3).EQ.'MNT'.OR.WHCH(1:3).EQ.'mnt') THEN
+      IF (CNM(1:3).EQ.'MNT'.OR.CNM(1:3).EQ.'mnt') THEN
          CALL VVTXLN(CMNT,IPCHSZ,IB,IE)
-         CVAL=CMNT(IB:IE)
-      ELSE IF (WHCH(1:3).EQ.'MXT'.OR.WHCH(1:3).EQ.'mxt') THEN
+         CVL=CMNT(IB:IE)
+      ELSE IF (CNM(1:3).EQ.'MXT'.OR.CNM(1:3).EQ.'mxt') THEN
          CALL VVTXLN(CMXT,IPCHSZ,IB,IE)
-         CVAL=CMXT(IB:IE)
-      ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft') THEN
+         CVL=CMXT(IB:IE)
+      ELSE IF (CNM(1:3).EQ.'ZFT'.OR.CNM(1:3).EQ.'zft') THEN
          CALL VVTXLN(CZFT,IPCHSZ,IB,IE)
-         CVAL=CZFT(IB:IE)
-      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
+         CVL=CZFT(IB:IE)
+      ELSE IF (CNM(1:3).EQ.'ILT'.OR.CNM(1:3).EQ.'ilt') THEN
          CALL VVTXLN(CILT,IPCHSZ,IB,IE)
-         CVAL=CILT(IB:IE)
+         CVL=CILT(IB:IE)
       ELSE
 C
          CSTR(1:36)='VVGETC - PARAMETER NAME NOT KNOWN - '
-         CSTR(37:39)=WHCH(1:3)
+         CSTR(37:39)=CNM(1:3)
          CALL SETER (CSTR(1:39),3,2)
          STOP
 C
