@@ -4,67 +4,55 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include "Machine.h"
-#include <ncarg/ncl/NclVar.h>
-#include "DataSupport.h"
-#include "VarSupport.h"
-#include "NclCoordVar.h"
-#include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
-extern void NGCALLF(popremap,POPREMAP)(float *,float *,int *,int *,float *,
-                                       int *,int *, int *, int *, float *);
+extern void NGCALLF(dpopremap,DPOPREMAP)(double *,double *,int *,int *,
+                                         double *,int *,int *, int *, 
+                                         int *, double *);
 
 NhlErrorTypes pop_remap_W( void )
 {
 /*
  * Input variables
  */
-  float *dst_array, *map_wts, *src_array, xmsg;
+  void *dst_array, *map_wts, *src_array;
+  double *dst, *map, *src;
   int has_missing_src_array, *dst_add, *src_add, ndst, nlink, nw, nsrc;
-  int ndims_dst_array, dsizes_dst_array[NCL_MAX_DIMENSIONS];
-  int ndims_map_wts, dsizes_map_wts[NCL_MAX_DIMENSIONS];
-  int ndims_src_array, dsizes_src_array[NCL_MAX_DIMENSIONS];
-  int ndims_dst_add, dsizes_dst_add[NCL_MAX_DIMENSIONS];
-  int ndims_src_add, dsizes_src_add[NCL_MAX_DIMENSIONS];
-  NclScalar missing_src_array;
+  int dsizes_dst_array[1], dsizes_map_wts[2], dsizes_src_array[1];
+  int dsizes_dst_add[1], dsizes_src_add[1];
+  NclBasicDataTypes type_dst_array, type_map_wts, type_src_array;
+  NclScalar missing_src_array, missing_dsrc_array;
+  int i;
 /*
  * Retrieve parameters
  *
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
  */
-  dst_array = (float*)NclGetArgValue(
+  dst_array = (void*)NclGetArgValue(
           0,
           5,
-          &ndims_dst_array, 
+          NULL,
           dsizes_dst_array,
           NULL,
           NULL,
-          NULL,
+          &type_dst_array,
           2);
 
-  map_wts = (float*)NclGetArgValue(
+  map_wts = (void*)NclGetArgValue(
           1,
           5,
-          &ndims_map_wts,
+          NULL,
           dsizes_map_wts,
           NULL,
           NULL,
-          NULL,
+          &type_map_wts,
           2);
 
   dst_add = (int*)NclGetArgValue(
           2,
           5,
-          &ndims_dst_add, 
+          NULL,
           dsizes_dst_add,
           NULL,
           NULL,
@@ -74,31 +62,28 @@ NhlErrorTypes pop_remap_W( void )
   src_add = (int*)NclGetArgValue(
           3,
           5,
-          &ndims_src_add, 
+          NULL,
           dsizes_src_add,
           NULL,
           NULL,
           NULL,
           2);
 
-  src_array = (float*)NclGetArgValue(
+  src_array = (void*)NclGetArgValue(
           4,
           5,
-          &ndims_src_array, 
+          NULL,
           dsizes_src_array,
           &missing_src_array,
           &has_missing_src_array,
-          NULL,
+          &type_src_array,
           2);
 /*
- * Check that src_array has a missing value set.
+ * Check type of dst_array.
  */
-  if(!has_missing_src_array) {
-	NhlPError(NhlWARNING,NhlEUNKNOWN,"pop_remap: No missing values are being set.\nDefault missing values will be used.\nBe careful of results.");
-    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-  }
-  else {
-    xmsg = missing_src_array.floatval;
+  if(type_dst_array != NCL_float && type_dst_array != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: dst_array must be of type float or double");
+    return(NhlFATAL);
   }
 /*
  * Check dimensions and calculate total size of arrays.
@@ -109,17 +94,54 @@ NhlErrorTypes pop_remap_W( void )
   nsrc  = dsizes_src_array[0];
 
   if( dsizes_dst_add[0] != nlink || dsizes_src_add[0] != nlink ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: The size of the dst_add and src_add arrays must be the same as the first dimension of map_wts");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: The size of the dst_add and src_add arrays must be the same as the first dimension of map_wts");
+    return(NhlFATAL);
+  }
+/*
+ * Check that src_array has a missing value set.
+ */
+  if(!has_missing_src_array) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"pop_remap: No missing values are being set.\nDefault missing values will be used.\nBe careful of results.");
+  }
+  coerce_missing(type_src_array,has_missing_src_array,&missing_src_array,
+                 &missing_dsrc_array,NULL);
+/*
+ * Coerce input to double.
+ */
+  map = coerce_input_double(map_wts,type_map_wts,nlink*nw,0,NULL,NULL);
+  src = coerce_input_double(src_array,type_src_array,nsrc,
+                            has_missing_src_array,&missing_src_array,NULL);
+
+  if(map == NULL || src == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Calloc space for output array if necessary.
+ */
+  if(type_dst_array == NCL_float) {
+    dst = (double*)calloc(ndst,sizeof(double));
+    if(dst == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: Unable to allocate memory for output array"); 
+      return(NhlFATAL);
+    }
+  }
+  else {
+    dst = (double*)dst_array;
   }
 
 /*
  * Call Fortran popremap.
  */
-  NGCALLF(popremap,POPREMAP)(dst_array,map_wts,dst_add,src_add,src_array,
-  			     &ndst,&nlink,&nw,&nsrc,&xmsg);
+  NGCALLF(dpopremap,DPOPREMAP)(dst,map,dst_add,src_add,src,&ndst,&nlink,&nw,
+                               &nsrc,&missing_dsrc_array.doubleval);
 
+  if(type_dst_array == NCL_float) {
+    for(i = 0; i < ndst; i++ ) {
+      ((float*)dst_array)[i] = (float)dst[i];
+    }
+    NclFree(dst);
+  }
   return(NhlNOERROR);
 }
-
 

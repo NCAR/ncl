@@ -1613,11 +1613,11 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(5);
 
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterProc(pop_remap_W,args,"pop_remap",nargs);
 

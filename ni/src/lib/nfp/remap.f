@@ -1,35 +1,37 @@
 C NCLFORTSTART
-      subroutine popremap 
-     &          (dst_array, map_wts, dst_add ,src_add, src_array
-     &          ,ndst,nlink,nw,nsrc,xmsg)
+      SUBROUTINE DPOPREMAP(DST_ARRAY,MAP_WTS,DST_ADD,SRC_ADD,SRC_ARRAY,
+     +                     NDST,NLINK,NW,NSRC,XMSG)
 
 c written in f77 for the GNU f77 compiler for portability reasons
 
-      implicit none
-      integer  nlink, nw, ndst, nsrc
-      real     map_wts(nw,nlink)
-      real     dst_array(ndst)
-      real     src_array(nsrc)
-      integer  dst_add(nlink)
-      integer  src_add(nlink)
-      real     xmsg                 
+      IMPLICIT NONE
+      INTEGER NLINK,NW,NDST,NSRC
+      DOUBLE PRECISION MAP_WTS(NW,NLINK)
+      DOUBLE PRECISION DST_ARRAY(NDST)
+      DOUBLE PRECISION SRC_ARRAY(NSRC)
+      INTEGER DST_ADD(NLINK)
+      INTEGER SRC_ADD(NLINK)
+      DOUBLE PRECISION XMSG
 C NCLEND
-      integer  n
+      INTEGER N
 
-      do n=1,ndst
-         dst_array(n) = xmsg                        ! initilize
-      end do
+      DO N = 1,NDST
+c initialize
+          DST_ARRAY(N) = XMSG
+      END DO
 
-      do n=1,nlink    
-         if (src_array(src_add(n)).ne.xmsg) then    
-          if (dst_array(dst_add(n)).eq.xmsg) then
-              dst_array(dst_add(n)) = src_array(src_add(n))*map_wts(1,n)
-          else
-              dst_array(dst_add(n)) = dst_array(dst_add(n)) + 
-     &                                src_array(src_add(n))*map_wts(1,n)
-          end if
-         end if
-      end do
+      DO N = 1,NLINK
+          IF (SRC_ARRAY(SRC_ADD(N)).NE.XMSG) THEN
+              IF (DST_ARRAY(DST_ADD(N)).EQ.XMSG) THEN
+                  DST_ARRAY(DST_ADD(N)) = SRC_ARRAY(SRC_ADD(N))*
+     +                                    MAP_WTS(1,N)
+              ELSE
+                  DST_ARRAY(DST_ADD(N)) = DST_ARRAY(DST_ADD(N)) +
+     +                                    SRC_ARRAY(SRC_ADD(N))*
+     +                                    MAP_WTS(1,N)
+              END IF
+          END IF
+      END DO
 
-      return
-      end
+      RETURN
+      END
