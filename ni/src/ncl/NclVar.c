@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.40 1997-02-14 19:50:30 ethan Exp $
+ *      $Id: NclVar.c,v 1.41 1997-02-18 18:33:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1845,7 +1845,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 /*
 * Same Variable
 */
-		if(rhs_sel_ptr == NULL) {
+		if(rhs_sel_ptr != NULL) {
 			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
 			if(rhs_md == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
@@ -1862,7 +1862,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			if(ret < NhlWARNING) {
 				return(ret);
 			}
-		} else if(lhs_sel_ptr != NULL) {
+		} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr == NULL)) {
 			rhs_md = _NclCopyVal(rhs_md,NULL); 
 			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 			if(rhs_md->obj.status != PERMANENT) {
