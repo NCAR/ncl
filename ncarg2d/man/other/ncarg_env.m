@@ -27,6 +27,11 @@ database files are installed.  This environment variable takes precedence
 over NCARG_ROOT and doesn't need to be set unless
 you want to override the default ($NCARG_ROOT/lib/ncarg/database).
 .sp
+\fBNCARG_DOC\fP, if set, indicates where the NCAR Graphics PostScript
+documentation is installed.  This environment variable takes
+precedence over NCARG_ROOT and doesn't need to be set unless you want
+to override the default ($NCARG_ROOT/lib/ncarg/doc).
+.sp
 \fBNCARG_EXAMPLES\fP, if set, indicates where some of the NCAR
 Graphics examples are installed.  This environment variable takes
 precedence over NCARG_ROOT and doesn't need to be set unless
@@ -93,6 +98,17 @@ unless you want to override the default ($NCARG_ROOT/lib/ncarg).
 NCL examples are installed.  This environment variable takes
 precedence over NCARG_ROOT and doesn't need to be set unless
 you want to override the default ($NCARG_ROOT/lib/ncarg/nclex).
+.sp
+\fBNCARG_NGURL\fP, if set, indicates where the file that
+contains the URL to the NCAR Graphics documentation is installed.
+This environment variable takes
+precedence over NCARG_ROOT and doesn't need to be set unless
+you want to override the default ($NCARG_ROOT/lib/ncarg/ngwww/ngurl).
+.sp
+\fBNCARG_NGWWW\fP, if set, indicates where the NCAR Graphics HTML
+documentation is installed.  This environment variable takes
+precedence over NCARG_ROOT and doesn't need to be set unless you want
+to override the default ($NCARG_ROOT/lib/ncarg/ngwww).
 .sp
 \fBNCARG_RESFILES\fP, if set, indicates where the NCAR Graphics
 resource files are installed.  This environment variable takes
