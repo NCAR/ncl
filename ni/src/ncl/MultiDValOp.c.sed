@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.11 1997-09-05 22:13:06 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.12 1998-06-10 16:23:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -105,7 +105,7 @@ NclData result;
 			other_md->multidval.totalelements) != NhlFATAL) {
 
 			if((the_type != operand_type)&&(themissing.has_missing)) {
-				if(!_NclScalarCoerce(&themissing.value,operand_type->type_class.data_type,&themissing.value,the_type->type_class.data_type) ) {
+				if((the_type->type_class.data_type == NCL_logical)||(!_NclScalarCoerce(&themissing.value,operand_type->type_class.data_type,&themissing.value,the_type->type_class.data_type) )) {
 
 					themissing.value = the_type->type_class.default_mis;
 				}
@@ -225,8 +225,7 @@ NclData result;
                         }
                 }
 		if((the_type != operand_type)&&(themissing.has_missing)) {
-			if(!_NclScalarCoerce(&themissing.value,operand_type->type_class.data_type,&themissing.value,the_type->type_class.data_type) ) {
-
+			if((the_type->type_class.data_type == NCL_logical)||(!_NclScalarCoerce(&themissing.value,operand_type->type_class.data_type,&themissing.value,the_type->type_class.data_type) )) {
 				themissing.value = the_type->type_class.default_mis;
 			}
 		}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.29 1998-05-27 21:39:56 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.30 1998-06-10 16:23:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1687,6 +1687,9 @@ NclData result;
 */
 
                 the_type = _Nclnot_type(self_md->multidval.type);
+		if((the_type->type_class.data_type == NCL_logical)&&(themissing.has_missing)) {
+			themissing.value = the_type->type_class.default_mis;
+		}
                 result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
                 if(result_val == NULL) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Not: Could not allocate memory for result type, can't continue\n");
