@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.1 1995-09-25 21:59:07 haley Exp $
+**      $Id: cn10c.c,v 1.2 1995-09-26 15:26:46 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -426,12 +426,9 @@ main()
  */
     ncclose(ncid);
 /*
- * NhlDestroy destroys the given id and all of its children so
- * destroying "appid" will destroy "work_id" which will also destroy
- * "plotid".
+ * NhlDestroy destroys the given id and all of its children.
  */
     NhlRLDestroy(srlist);
-    NhlDestroy(work_id);
     NhlDestroy(appid);
 /*
  * Restores state.
