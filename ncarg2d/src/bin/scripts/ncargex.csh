@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.113 1998-06-25 16:05:59 haley Exp $
+#   $Id: ncargex.csh,v 1.114 1999-03-18 18:01:27 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1320,6 +1320,7 @@ switch($name)
 
     case nnex08:
     case nnex09:
+    case mpex12:
       unset tmp_ws_type
       set tmp_msg = "   "
       echo ""
