@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.25 1993-01-13 22:50:55 clyne Exp $
+ *	$Id: X11_class0.c,v 1.26 1993-01-19 15:00:20 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -395,7 +395,7 @@ CGMC *c;
 			dpy, (Window) drawable, &textprop, 
 			(XTextProperty *) NULL, 
 			Argv, Argc, (XSizeHints *) NULL,
-			xwmh, &class_hint
+			&xwmh, &class_hint
 		);
 
 		/*
