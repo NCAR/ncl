@@ -329,10 +329,10 @@ void color (int n)
     icnt=0;
     hues=360./n;
     for( i = 0; i < n; i++ ) {
-        xhue=i*hues;
+        xhue=(i+1)*hues;
         c_hlsrgb(xhue,60.,75.,&rgb.rgb.red,&rgb.rgb.green,&rgb.rgb.blue);
         if (xhue<=36.0) {
-            gset_colr_rep(1,n+4-i,&rgb);
+            gset_colr_rep(1,n+2-i,&rgb);
             icnt=icnt+1;
         }
         else {
