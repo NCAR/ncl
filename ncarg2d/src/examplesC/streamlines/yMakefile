@@ -1,27 +1,11 @@
 #
-#	$Id: yMakefile,v 1.4 1994-07-28 20:13:28 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-10-31 04:08:17 haley Exp $
 #
 
-CSRCS = c_ffex00.c c_ffex01.c c_ffex04.c c_fstream.c c_tstrml.c c_tstrm2.c \
-	c_stex02.c c_stex03.c
-	
-SED_SRCS = c_stex01.c c_ffex03.c
+EXAMPLES = c_ffex00.c c_ffex01.c c_ffex04.c c_fstream.c c_stex02.c c_stex03.c \
+	c_stex01.c c_ffex03.c
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
+TESTS = c_tstrml.c c_tstrm2.c 
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_stex01.c: c_stex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ stumsl
-
-c_ffex03.c: c_ffex03.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ stumsl
-
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
