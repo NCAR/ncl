@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-12 14:37:03 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= pgks
+
+GENERIC_SRCS =	pgkex01.f pgkex02.f pgkex03.f pgkex04.f pgkex05.f pgkex06.f \
+				pgkex07.f pgkex08.f pgkex09.f pgkex10.f pgkex11.f pgkex12.f \
+				pgkex13.f pgkex14.f pgkex15.f pgkex16.f pgkex17.f pgkex18.f \
+				pgkex19.f pgkex20.f pgkex21.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

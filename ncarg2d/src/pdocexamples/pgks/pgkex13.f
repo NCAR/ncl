@@ -1,0 +1,88 @@
+      PROGRAM SPCEXP
+C
+C  Illustrate character spacings and expansion factors.
+C
+      DIMENSION XP(2)
+      CHARACTER*16 LABEL
+      DATA XP(1),XP(2)/.5,2./
+C
+C  Open GKS, open and activate the metafile workstation.
+C
+      CALL GOPKS (6,IDUM)
+      CALL GOPWK (1, 2, 1)
+      CALL GACWK (1)
+C
+C  Define necessary color indices.
+C
+      CALL GSCR(1,0,0.,0.,.6)
+      CALL GSCR(1,1,1.,1.,1.)
+      CALL GSCR(1,2,1.,1.,0.)
+C
+C  Alignment = [center, center]
+C
+      CALL GSTXAL(2,3)
+C
+C  Character spacings.
+C
+      Y = .95
+      DO 10 I=0,2,1
+      SPACNG = 0.5*REAL(I)
+      WRITE(LABEL,100) SPACNG
+  100 FORMAT(' Spacing = ',F4.1,' ')
+C
+C  Attributes for the label for the demo text string.
+C
+      CALL GSTXFP(-12,2)
+      CALL GSCHH(.033)
+      CALL GSTXCI(2)
+      CALL GSCHSP(0.)
+      CALL GTX(.5,Y,LABEL)
+      Y = Y-.08
+C
+C  Attributes for the demo string.
+C
+      CALL GSCHH(.04)
+      CALL GSCHSP(SPACNG)
+      CALL GSTXFP(-13,2)
+      CALL GSTXCI(1)
+      CALL GTX(.5,Y,'NCAR Graphics')
+      Y = Y-.12
+   10 CONTINUE
+C
+C  Character expansion factors.
+C
+      DO 20 I=1,2
+      CEXP = XP(I)
+      WRITE(LABEL,200) CEXP
+  200 FORMAT('Expansion = ',F4.1)
+C
+C  Attributes for the label for the demo text string.
+C
+      CALL GSTXFP(-12,2)
+      CALL GSCHH(.033)
+      CALL GSTXCI(2)
+      CALL GSCHSP(0.)
+      CALL GSCHXP(1.)
+      CALL GTX(.5,Y,LABEL)
+      Y = Y-.08
+C
+C  Attributes for the demo string.
+C
+      CALL GSCHH(.04)
+      CALL GSCHXP(CEXP)
+      CALL GSTXFP(-13,2)
+      CALL GSTXCI(1)
+      CALL GTX(.5,Y,'NCAR Graphics')
+      Y = Y-.12
+   20 CONTINUE
+C
+      CALL FRAME
+C
+C  Deactivate and close the workstation, close GKS.
+C
+      CALL GDAWK (1)
+      CALL GCLWK (1)
+      CALL GCLKS
+C
+      STOP
+      END
