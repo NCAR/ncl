@@ -40,11 +40,11 @@ C
 C
 C  Tell EZXY that the SET ordering of the window is to be used.
 C
-      CALL ANOTAT('','',1,4,0,'')
+      CALL ANOTAT(' ',' ',1,4,0,' ')
 C
 C  Output the polyline (X,Y) using EZXY.
 C
-      CALL EZXY(X,Y,100,'')
+      CALL EZXY(X,Y,100,' ')
 C
 C  Establish the identity transformation for character plotting.
 C

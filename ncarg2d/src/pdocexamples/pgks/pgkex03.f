@@ -43,7 +43,7 @@ C
 C
 C  Output the polyline (X,Y) using EZXY.
 C
-      CALL EZXY(X,Y,100,'')
+      CALL EZXY(X,Y,100,' ')
 C
 C  Put out a couple of labels (DRWTXT uses NDC space).
 C
