@@ -43,7 +43,6 @@
 !       of the XyPlot.
 ! *xy01Work.XYPlot.xyDashSegmentLengthF        : 0.15
 !
-!
 !       This allows the user to set the size of the characters used for the
 !       curve labels when the Data Dependent resource 'xyLabelMode' is set to
 !       LETTERED or CUSTOM. The size of the font is expressed in NDC and

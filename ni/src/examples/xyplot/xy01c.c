@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.1 1995-02-03 16:24:49 haley Exp $
+**      $Id: xy01c.c,v 1.2 1995-02-03 18:16:23 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -35,13 +35,13 @@
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
-#define NPTS  501
+#define NPTS  500
 #define PI100 .031415926535898
 
 main()
 {
 	int     appid,xworkid,plotid,dataid;
-	int     rlist
+	int     rlist;
 	int     i, j;
 	float   ydra[NPTS], theta;
 /*
@@ -61,13 +61,13 @@ main()
  * is used to determine the name of the resource file, which will be
  * "xy01.res" in this case.
  */
-	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
 	NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
- * Define the data object.  The id for this object will then later be used
- * as the value for the XYPlot data resource, "xyCurveData".
+ * Define the data object.  Since only the Y values are specified here, the
+ * Y values will be paired with their integer array index.  The id for this
+ * object will later be used as the value for the XYPlot data resource,
+ * "xyCurveData".
  */
 	NhlRLClear(rlist);
 	NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));

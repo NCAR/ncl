@@ -1,5 +1,5 @@
 /*
-**      $Id: xy02c.c,v 1.2 1995-02-03 18:16:25 haley Exp $
+**      $Id: xy03c.c,v 1.1 1995-02-03 18:16:27 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
-**  File:       xy02c.c
+**  File:       xy03c.c
 **
 **  Author:     Mary Haley
 **          National Center for Atmospheric Research
@@ -18,10 +18,12 @@
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
 **  Description:    This program shows how to create an XY plot with some
-**                  of the XY Plot axis resources tweaked.  A resource file
+**                  of the XY Plot line resources tweaked.  A resource file
 **                  is used to changed the resources except in those cases
 **                  where a resource has to be change programmatically, like
-**                  array resources.
+**                  array resources.  This program uses the same dataset as
+**                  the example "xy02c", but this time values for the X axis
+**                  are specified, changing the look of the plot.
 */
 
 
@@ -42,12 +44,13 @@ main()
 	int		appid,xworkid,plotid,dataid,datadepid;
 	int		rlist;
 	int		i, j;
-	float	ydra[NPTS], theta;
+	float	xdra[NPTS],ydra[NPTS], theta;
 /*
  * Initialize some data for the XY plot
  */
 	for( i = 0; i < NPTS; i++ ) {
         theta=PI100*(float)(i);
+        xdra[i]=500.+.9*(float)(i)*cos(theta);
         ydra[i]=500.+.9*(float)(i)*sin(theta);
     }
 /*
@@ -58,22 +61,21 @@ main()
 /*
  * Create application and X workstation object.  The application name
  * is used to determine the name of the resource file, which will be
- * "xy02.res" in this case.
+ * "xy03.res" in this case.
  */
-	NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
-	NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
- * Define the data object.  Since only the Y values are specified here, the
- * Y values will be paired with their integer array index.  The id for this
- * object will later be used as the value for the XYPlot data resource,
- * "xyCurveData".
+ * Define the data object.  The id for this object will then later be used
+ * as the value for the XYPlot data resource, "xyCurveData".
  */
 	NhlRLClear(rlist);
+	NhlRLSetFloatArray(rlist,NhlNcaXArray,xdra,NhlNumber(xdra));
 	NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
 	NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
 /*
  * Create the Plot object which is created as a child of the X workstation
- * object.  The resources that are being changed are done in the "xy02.res"
+ * object.  The resources that are being changed are done in the "xy03.res"
  * file, and they affect this Plot object.
  */
 	NhlRLClear(rlist);
