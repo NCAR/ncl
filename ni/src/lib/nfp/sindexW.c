@@ -147,8 +147,7 @@ NhlErrorTypes sindex_yrmo_W( void )
   NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
                            work,&lwork,soi,soi_noise,&ler);
   if (ler == 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
   }
 /*
  * free memory.
@@ -464,8 +463,7 @@ NhlErrorTypes snindex_yrmo_W( void )
   NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
                            work,&lwork,soi,dsoi_noise,&ler);
   if (ler == 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
   }
 /*
  * Free memory.

@@ -231,8 +231,7 @@ NhlErrorTypes vibeta_W( void )
                              linlog,&tmp_psfc[i],&xsfc,tmp_pbot,tmp_ptop,
                              &plvcrt,tmp_vint,&ier);
     if(ier == -999) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: there must be at least three levels with data above the surface" );
-      return(NhlFATAL);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"vibeta: there must be at least three levels with data above the surface" );
     }
 /*
  * Coerce output to float if necessary.

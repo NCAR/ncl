@@ -109,7 +109,7 @@ NhlErrorTypes vinth2p_W
 		datai_type = datai_md->multidval.data_type;
 		datai_n_dims = datai_md->multidval.n_dims;
 		if((datai_n_dims < 3)||(datai_n_dims>4)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minium of 3 dimensions [lev]x[lat]x[lon] and maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
 			return(NhlFATAL);
 		} else {
 			if(datai_n_dims == 3)  {
@@ -128,7 +128,7 @@ NhlErrorTypes vinth2p_W
                 datai_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
 		datai_n_dims = datai_md->multidval.n_dims;
 		if((datai_n_dims < 3)||(datai_n_dims>4)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minium of 3 dimensions [lev]x[lat]x[lon] and maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
 			return(NhlFATAL);
 		} else {
 			if(datai_n_dims == 3)  {
@@ -277,11 +277,11 @@ NhlErrorTypes vinth2p_W
 				return(NhlFATAL);
 			}
 		}
-		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 2] != psfc_dimsizes[1]) {
+		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 2] != psfc_dimsizes[psfc_n_dims - 2]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of latitude elements as input.");
 			return(NhlFATAL);
 		}
-		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 1] != psfc_dimsizes[2]) {
+		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 1] != psfc_dimsizes[psfc_n_dims - 1]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of longitude elements as input.");
 			return(NhlFATAL);
 		}

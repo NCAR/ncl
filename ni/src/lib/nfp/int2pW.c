@@ -263,8 +263,7 @@ NhlErrorTypes int2p_W( void )
                            tmp_pout,tmp_xout,&npout,linlog,
                            &missing_dx.doubleval,&ier);
     if (ier >= 1000) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: One of the input arrays contains all missing data");
-      return(NhlFATAL);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"int2p: One of the input arrays contains all missing data");
     }
 /*
  * Copy output values from temporary tmp_zh to zh.

@@ -31,7 +31,7 @@ NhlErrorTypes regcoef_W( void )
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
   NclBasicDataTypes type_x, type_y;
-  int ndims_extra, has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y, npts;
 /*
  * Output array variables
  */
@@ -45,9 +45,10 @@ NhlErrorTypes regcoef_W( void )
 /*
  * various
  */
-  int i, j, k, ly, lx, ln, ier = 0;
-  int total_size_x1, total_size_y1, total_size_x, total_size_y;
-  int total_size_rcoef;
+  int i, j, k, ly, lx, ln, dimsizes_same;
+  int total_size_leftmost_x, total_size_leftmost_y; 
+  int total_size_x, total_size_y, total_size_rcoef;
+  int ier = 0, ier_count5 = 0, ier_count6 = 0;
 /*
  * Retrieve parameters
  *
@@ -103,14 +104,24 @@ NhlErrorTypes regcoef_W( void )
   }
 /*
  * Check the dimensions of x and y and see if they are the same.
+ *
+ * If all the dimensions of x and y are the same, then we don't treat
+ * the dimensions differently:  i.e. if x is 64 x 128 x 21 and y is
+ * 64 x 128 x 21, then what gets returned will be 64 x 128, and NOT
+ * 64 x 128 x 64 x 128 x (mxlag+1).
  */
-  ndims_extra = ndims_y - ndims_x;
-  for(i = 0; i < ndims_x; i++ ) {
-    if( dsizes_x[i] != dsizes_y[ndims_extra + i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The rightmost dimensions of y must the same dimensions as x");
-      return(NhlFATAL);
+  if(ndims_x == ndims_y) {
+    dimsizes_same = 1;
+    for(i = 0; i < ndims_x; i++) {
+      if(dsizes_x[i] != dsizes_y[i]) {
+        dimsizes_same = 0;
+      }
     }
   }
+  else {
+    dimsizes_same = 0;
+  }
+
 /*
  * Get and check number of input points.
  */
@@ -119,38 +130,65 @@ NhlErrorTypes regcoef_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The rightmost dimension of x must be at least 2");
     return(NhlFATAL);
   }  
-/*
- * Compute the total number of elements in our x and y arrays.
- * total_size_x1 is the total number of elements in the X array minus
- * the last dimension (npts). total_size_y1 is the total number of elements
- * in the Y array that go beyond the size of the X array.  For example, if
- * X is dimensioned 2 x 3 x 4, and Y is dimensioned 5 x 2 x 3 x 4, then
- * total_size_x1 is 6 (2x3), total_size_y1 is 5, and npts is 4.
+  total_size_leftmost_x = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_leftmost_x *= dsizes_x[i];
+  total_size_x = total_size_leftmost_x * npts;
+
+  total_size_leftmost_y = 1;
+  for(i = 0; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];
+  total_size_y = total_size_leftmost_y * npts;
+
+/* 
+ * Get size of output variable, which is equal to the product of all but
+ * the last dimension of x and y (unless the dimension sizes of x and y
+ * are the same, in which case the output will be the product of the all
+ * but the last dimension of x).
  */
-  ndims_rcoef = max(ndims_y-1,1);
-  dsizes_rcoef = (int *)calloc(ndims_rcoef,sizeof(int));
-  total_size_x1 = 1;
-  total_size_y1 = 1;
-  dsizes_rcoef[0] = 1;
+  if(dimsizes_same) {
+    ndims_rcoef = max(1,ndims_x-1);
+    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    if(dsizes_rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    total_size_rcoef = total_size_leftmost_x;
+    if(ndims_x == 1) {
+      dsizes_rcoef[0] = 1;
+    }
+    else {
+      for( i = 0; i < ndims_x-1; i++ ) {
+        dsizes_rcoef[i] = dsizes_x[i];
+      }
+    }
+  }
+  else {
+    total_size_rcoef = total_size_leftmost_x * total_size_leftmost_y;
+    ndims_rcoef = max(1,ndims_x + ndims_y - 2);
+    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    if(dsizes_rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    dsizes_rcoef[0] = 1;
 
-  for(i = 0; i < ndims_x-1; i++)   total_size_x1 *= dsizes_x[i];
-  for(i = 0; i < ndims_extra; i++) total_size_y1 *= dsizes_y[i];
-  for(i = 0; i < ndims_y-1; i++)   dsizes_rcoef[i] = dsizes_y[i];
-
-  total_size_x     = total_size_x1 * npts;
-  total_size_y     = total_size_x1 * total_size_y1 * npts;
-  total_size_rcoef = total_size_x1 * total_size_y1;
+    for( i = 0; i < ndims_x-1; i++ ) {
+      dsizes_rcoef[i] = dsizes_x[i];
+    }
+    for( i = 0; i < ndims_y-1; i++ ) {
+      dsizes_rcoef[ndims_x-1+i] = dsizes_y[i];
+    }
+  }
 /*
  * dimension sizes of tval, nptxy must be the same as rcoef.
  */
   if( ndims_tval != ndims_rcoef || ndims_nptxy != ndims_rcoef ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The number of dimensions of tval and nptxy must be one less than the number of dimensions of y (or they must both be scalar if y is just a 1-d array)");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The number of dimensions of tval and nptxy must be the same as rcoef");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_rcoef; i++ ) {
     if( dsizes_tval[i]  != dsizes_rcoef[i] || 
         dsizes_nptxy[i] != dsizes_rcoef[i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The dimensions of tval and nptxy must be the same as the leftmost dimensions of y");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The dimensions of tval and nptxy must be the same as rcoef");
       return(NhlFATAL);
     }
   }
@@ -230,30 +268,35 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Call the f77 version of 'regcoef' with the full argument list.
  */
-  ly = ln = 0;
-  for(i = 1; i <= total_size_y1; i++) {
-    lx = 0;
-    for(j = 1; j <= total_size_x1; j++) {
+  if(dimsizes_same) {
+    lx = ln = 0;
+    for(i = 1; i <= total_size_leftmost_x; i++) {
       if(type_x != NCL_double) {
 /*
- * Coerce npts subsection of x (tmp_x) to double.
+ * Coerce nxy subsection of x (tmp_x) to double.
  */
         coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
                                    &missing_x,&missing_dx);
       }
       else {
-        tmp_x  = &((double*)x)[lx];
+/*
+ * Point tmp_x to appropriate locations in x.
+ */
+        tmp_x = &((double*)x)[lx];
       }
 
       if(type_y != NCL_double) {
 /*
- * Coerce npts subsection of y (tmp_y) to double.
+ * Coerce nxy subsection of y (tmp_y) to double.
  */
-        coerce_subset_input_double(y,tmp_y,ly,type_y,npts,0,
+        coerce_subset_input_double(y,tmp_y,lx,type_y,npts,0,
                                    &missing_y,&missing_dy);
       }
       else {
-        tmp_y  = &((double*)y)[ly];
+/*
+ * Point tmp_y to appropriate locations in y.
+ */
+        tmp_y = &((double*)y)[lx];
       }
 
       if(type_tval  == NCL_double) tmp_tval  = &((double*)tval)[ln];
@@ -262,24 +305,73 @@ NhlErrorTypes regcoef_W( void )
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
                                  tmp_rcoef,tmp_tval,&nptxy[ln],
                                  &xave,&yave,&ier);
-      if (ier == 5) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains all missing values");
-        return(NhlFATAL);
-      }
-      if (ier == 6) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains less than 3 non-missing values");
-        return(NhlFATAL);
-      }
+      if (ier == 5) ier_count5++;
+      if (ier == 6) ier_count6++;
 /*
  * Coerce output to float if necessary.
  */
       if(type_tval  != NCL_double) ((float*)tval)[ln]  = (float)*tmp_tval;
       if(type_rcoef != NCL_double) ((float*)rcoef)[ln] = (float)*tmp_rcoef;
 
-      ly += npts;
       lx += npts;
       ln ++;
     }
+  }
+  else {
+    lx = ln = 0;
+    for(i = 1; i <= total_size_leftmost_x; i++) {
+      ly = 0;
+      for(j = 1; j <= total_size_leftmost_y; j++) {
+        if(type_x != NCL_double) {
+/*
+ * Coerce npts subsection of x (tmp_x) to double.
+ */
+          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+                                     &missing_x,&missing_dx);
+        }
+        else {
+          tmp_x  = &((double*)x)[lx];
+        }
+        
+        if(type_y != NCL_double) {
+/*
+ * Coerce npts subsection of y (tmp_y) to double.
+ */
+          coerce_subset_input_double(y,tmp_y,ly,type_y,npts,0,
+                                     &missing_y,&missing_dy);
+        }
+        else {
+          tmp_y  = &((double*)y)[ly];
+        }
+        
+        if(type_tval  == NCL_double) tmp_tval  = &((double*)tval)[ln];
+        if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
+        
+        NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                   tmp_rcoef,tmp_tval,&nptxy[ln],
+                                   &xave,&yave,&ier);
+        if (ier == 5) ier_count5++;
+        if (ier == 6) ier_count6++;
+/*
+ * Coerce output to float if necessary.
+ */
+        if(type_tval  != NCL_double) ((float*)tval)[ln]  = (float)*tmp_tval;
+        if(type_rcoef != NCL_double) ((float*)rcoef)[ln] = (float)*tmp_rcoef;
+        
+        ly += npts;
+        ln ++;
+      }
+      lx += npts;
+    }
+  }
+/*
+ * Handle error messages.
+ */
+  if(ier_count5) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %i array(s) contained all missing values",ier_count5);
+  }
+  if (ier_count6) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %s array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.
@@ -317,13 +409,14 @@ NhlErrorTypes regline_W( void )
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
   NclBasicDataTypes type_x, type_y;
-  int ndims_extra, has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y, npts;
 /*
  * Output array variables
  */
   double *rcoef, *tval, *xave, *yave;
   float *rrcoef, *rtval,*rxave,*ryave;
-  int *nptxy, ier;
+  int *nptxy, ier = 0;
+
 /*
  * Attribute variables
  */
@@ -412,12 +505,10 @@ NhlErrorTypes regline_W( void )
   NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&npts,&missing_dx.doubleval,
                              rcoef,tval,nptxy,xave,yave,&ier);
   if (ier == 5) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
   }
   if (ier == 6) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The x and/or y array contains less than 3 non-missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regline: The x and/or y array contains less than 3 non-missing values");
   }
 /*
  * free memory.
