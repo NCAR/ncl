@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.15 1993-02-03 04:26:22 clyne Exp $
+.\"	$Id: ctrans.m,v 1.16 1993-03-11 00:18:14 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -509,11 +509,12 @@ raster devices except the HP LaserJet,
 .BR hppcl .
 By default the LaserJet uses portrait mode.
 .TP
-.BI \-resolution " width" " x" " height"
+.BI \-resolution " width" "x" "height"
 .I width
 and
 .I height
 specify the spatial resolution in pixels of the raster file to be created.
+The default is 512x512.
 .SH EXAMPLES
 .PP
 To process a metafile named
