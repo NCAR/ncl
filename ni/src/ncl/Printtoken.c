@@ -138,12 +138,6 @@ void printtoken
 		case QUIT:
 			fprintf(stdout,"QUIT\n");
 			break;
-		case PROC:
-			fprintf(stdout,"PROC\n");
-			break;
-		case EPROC:
-			fprintf(stdout,"EPROC\n");
-			break;
 		case NPROC:
 			fprintf(stdout,"NPROC\n");
 			break;
@@ -152,12 +146,6 @@ void printtoken
 			break;
 		case END:
 			fprintf(stdout,"END\n");
-			break;
-		case FUNC:
-			fprintf(stdout,"FUNC\n");
-			break;
-		case EFUNC:
-			fprintf(stdout,"EFUNC\n");
 			break;
 		case NFUNC:
 			fprintf(stdout,"NFUNC\n");
