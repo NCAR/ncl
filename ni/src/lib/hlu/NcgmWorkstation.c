@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.36 1998-03-31 05:45:36 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.37 1998-03-31 16:49:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1027,7 +1027,7 @@ static void NcgmWorkstationNotify(
                     break;
             case _NhlwkLLUDeactivate:
                     UpdateGKSState(l,func);
-                    _NHLCALLF(gzdawk,GDACWK)(&wl->work.gkswksid);
+                    _NHLCALLF(gzdawk,GZDAWK)(&wl->work.gkswksid);
                     TempClose(l,func);
                     break;
             case _NhlwkLLUClear:
