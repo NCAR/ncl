@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.32 1997-04-25 22:25:19 haley Exp $
+#   $Id: yMakefile,v 1.33 1997-04-25 22:35:01 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -28,7 +28,7 @@ FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o cn05f.o cn06f.o cn07f.o cn08f.o \
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 INCLUDES    = cn03c.h cn11c.h
-RESFILES    = cn01.res cn02.res cn03.res cn04.res cn11.res cn12.res cn13.res
+RESFILES    = cn01.res cn02.res cn03.res cn04.res cn11.res cn12.res cn13.res cn17.res
 ASCDATA     = cn03f.asc cn04n.asc cn11f.asc cn12n.asc
 EXFILES     = $(SRCS) $(INCLUDES)
 
