@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.81 2002-08-13 22:13:34 dbrown Exp $
+ *      $Id: TickMark.c,v 1.82 2002-11-21 00:11:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2377,6 +2377,12 @@ static NhlErrorTypes	TickMarkDraw
 	NhlTickMarkLayer tlayer = (NhlTickMarkLayer) layer;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
+        float	fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll;
+	Gint		err_ind;
+	Gint		save_linecolor;
+	Gint		save_linetype;
+	Gdouble		save_linewidth;
 
 	if (! tlayer->tick.x_b_on && ! tlayer->tick.x_t_on &&
 	    ! tlayer->tick.y_l_on && ! tlayer->tick.y_r_on  &&
@@ -2396,6 +2402,10 @@ static NhlErrorTypes	TickMarkDraw
 		return MIN(ret,realret);
 	}
 	tlayer->tick.new_draw_req = False;
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	ginq_line_colr_ind(&err_ind, &save_linecolor);
+	ginq_linewidth(&err_ind, &save_linewidth);
+	ginq_linetype(&err_ind, &save_linetype);
 
 	if (tlayer->view.use_segments) {
 		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
@@ -2460,6 +2470,11 @@ static NhlErrorTypes	TickMarkDraw
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while deactivating the workstation, can not continue");
 	}
+
+	gset_line_colr_ind(save_linecolor);
+	gset_linewidth(save_linewidth);
+	gset_linetype(save_linetype);
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	if(ret < realret)
 		realret = ret;
 	return(realret);
