@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.56 1999-06-29 22:06:01 ethan Exp $
+ *      $Id: Symbol.c,v 1.57 1999-10-26 05:17:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1488,7 +1488,7 @@ int     *num_names;
 						if(*num_names < current_size) {
 							tmp_out[*num_names] = NrmStringToQuark(s->name);
 						} else {
-							tmp_out = NclRealloc(tmp_out,current_size * 2);
+							tmp_out = NclRealloc(tmp_out,sizeof(NclQuark) * current_size * 2);
 							current_size *= 2;
 							tmp_out[*num_names] = NrmStringToQuark(s->name);
 						}
