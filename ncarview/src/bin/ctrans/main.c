@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.4 1991-03-12 17:05:42 clyne Exp $
+ *	$Id: main.c,v 1.5 1991-04-03 18:54:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,6 +64,7 @@ static	struct	{
 	BoolType_       soft_fill;	/* software fill of polygons	*/
 	BoolType_       debug;		/* software fill of polygons	*/
 	BoolType_       bell_off;	/* turn off the bell		*/
+	BoolType_       read_stdin;	/* read metafile from stdin	*/
 	FloatType_ 	min_line_width;	/* minimum line width		*/
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
@@ -77,6 +78,7 @@ static	OptDescRec	set_options[] = {
         {"softfill", OptIsArg, "false"},
         {"Debug", OptIsArg, "false"},
         {"bell", OptIsArg, "false"},
+        {"", OptIsArg, "false"},
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
@@ -95,6 +97,8 @@ static	Option	get_options[] = {
         {"Debug", BoolType, (unsigned long) &commLineOpt.debug, 
 							sizeof (BoolType_ )},
         {"bell", BoolType, (unsigned long) &commLineOpt.bell_off, 
+							sizeof (BoolType_ )},
+        {"", BoolType, (unsigned long) &commLineOpt.read_stdin, 
 							sizeof (BoolType_ )},
         {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
 							sizeof (FloatType_ )},
