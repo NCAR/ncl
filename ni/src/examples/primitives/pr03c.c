@@ -1,5 +1,5 @@
 /*
- *      $Id: pr03c.c,v 1.6 2003-03-03 16:15:33 grubin Exp $
+ *      $Id: pr03c.c,v 1.7 2003-03-04 22:12:52 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
  * The polyline call uses the default GraphicStyle; Polygon and
  * Polymarker use the explicitly created GraphicStyle.
  */
-    NhlNDCPolyline(canvas,0,plx,ply,4);
+    NhlNDCPolyline(canvas,gsid,plx,ply,4);
     NhlNDCPolygon(canvas,gsid,pgx,pgy,4);
     NhlNDCPolymarker(canvas,gsid,pmx,pmy,4);
     NhlFrame(wid);

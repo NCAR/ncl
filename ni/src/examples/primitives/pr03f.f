@@ -1,5 +1,5 @@
 C
-C      $Id: pr03f.f,v 1.4 2003-03-04 20:34:20 grubin Exp $
+C      $Id: pr03f.f,v 1.5 2003-03-04 22:12:52 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -142,7 +142,7 @@ C
 C The polyline call uses the default GraphicStyle. Polygon and
 C Polymarker use the explicitly created GraphicStyle.
 C
-      call NhlFNDCPolyline(canvas,0,plx,ply,4,ierr)
+      call NhlFNDCPolyline(canvas,gsid,plx,ply,4,ierr)
       call NhlFNDCPolygon(canvas,gsid,pgx,pgy,4,ierr)
       call NhlFNDCPolymarker(canvas,gsid,pmx,pmy,4,ierr)
       call NhlFFrame(wid,ierr)
