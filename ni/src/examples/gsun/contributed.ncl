@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.50 2004-10-01 22:24:13 shea Exp $
+;      $Id: contributed.ncl,v 1.51 2004-10-26 23:41:41 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5474,7 +5474,6 @@ begin
      ntim = nmos*nyrs
 
      time = new ( ntim, TYPE)
-     delete(time@_FillValue)
      n = 0
      do yr=yrStrt,yrLast
         time(n:n+nmos-1) = yr*100 + ispan(1,nmos,1)
@@ -5483,9 +5482,12 @@ begin
 
      time@long_name = "time"
      time@units     = "yyyymm"
-       
+
+     if (isatt(time,"_FillValue")) then
+         delete(time@_FillValue)
+     end if
      time!0    = "time"
-     time&time = time
+     time&time =  time
 
      return (time)
 end
