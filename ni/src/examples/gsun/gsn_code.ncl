@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.2 1998-11-11 21:45:12 haley Exp $
+;      $Id: gsn_code.ncl,v 1.3 1998-12-17 21:23:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -523,6 +523,7 @@ cn_res_index, res2
     calldraw = True
     callframe = True
     scale     = False
+    shape     = False
 ; an optional list of resources. The id of the contour plot is returned.;
 ;                                                                       ;
 ;   gsnScale                                                            ;
@@ -577,6 +578,15 @@ begin
             end if
             delete(res2@gsnScale)
         end if
+
+        if(isatt(res2,"gsnShape"))
+            if(res2@gsnShape)
+                shape = True
+                scale = True
+            end if
+            delete(res2@gsnShape)
+        end if
+
     end if
     end create
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -619,29 +629,63 @@ begin
                 attsetvalues(plot_object,cnres)
             end if
         end if
-        if(scale)
-            getvalues plot_object
-              "tiXAxisFontHeightF"   : xfontf
-              "tiYAxisFontHeightF"   : yfontf
-              "tmXBLabelFontHeightF" : xbfontf
-              "tmXBMajorLengthF"     : xlengthf
-              "tmXBMinorLengthF"     : xmlengthf
-              "tmYLLabelFontHeightF" : ylfontf
-              "tmYLMajorLengthF"     : ylengthf
-              "tmYLMinorLengthF"     : ymlengthf
-            end getvalues
+    scale     = get_res_value(res2,"gsnScale",shape)
 
-            setvalues plot_object
-              "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-              "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-            end setvalues
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
+        getvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+          "trXMinF"   : trxmin
+          "trXMaxF"   : trxmax
+          "trYMinF"   : trymin
+          "trYMaxF"   : trymax
+        end getvalues
+
+        xrange = trxmax - trxmin
+        yrange = trymax - trymin
+
+        if(xrange.lt.yrange)
+          width = width * (xrange/yrange)
+        else
+          height = height * (yrange/xrange)
         end if
+
+        setvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+        end setvalues
+    check_for_tickmarks_off(res2)
+
+
+    cnres = get_res_ne(res2,"sf")
+    attsetvalues_check(plot_object,cnres)
+
+    if(sprdcols)
+        getvalues plot_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues plot_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,plot_object,min_index,max_index))
     if(calldraw)
@@ -705,7 +749,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
             "sfMissingValueV" :data@_FillValue
         end setvalues
     end if
-        setvalues plot_object
+        setvalues contour_object
             "tiMainString" : data@long_name
         end setvalues
     sfres = get_res_eq(res2,"sf")
@@ -804,6 +848,10 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 
     overlay(map_object,contour_object)
 
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+; 
     if(scale)
         getvalues contour_object
           "tiXAxisFontHeightF"   : xfontf
@@ -1457,6 +1505,7 @@ local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, res2
     calldraw = True
     callframe = True
     scale     = False
+    shape     = False
 ; This function creates and draws a streamline plot to the workstation  ;
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
 ;                                                                       ;
@@ -1509,6 +1558,14 @@ begin
             delete(res2@gsnScale)
         end if
 
+        if(isatt(res2,"gsnShape"))
+            if(res2@gsnShape)
+                shape = True
+                scale = True
+            end if
+            delete(res2@gsnShape)
+        end if
+
     end if
     if(isatt(v,"_FillValue")) then
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -1548,29 +1605,63 @@ begin
                 attsetvalues(plot_object,stres)
             end if
         end if
-        if(scale)
-            getvalues plot_object
-              "tiXAxisFontHeightF"   : xfontf
-              "tiYAxisFontHeightF"   : yfontf
-              "tmXBLabelFontHeightF" : xbfontf
-              "tmXBMajorLengthF"     : xlengthf
-              "tmXBMinorLengthF"     : xmlengthf
-              "tmYLLabelFontHeightF" : ylfontf
-              "tmYLMajorLengthF"     : ylengthf
-              "tmYLMinorLengthF"     : ymlengthf
-            end getvalues
+    plot_object = create wksname + "_stream" streamlinePlotClass wks
+        "stVectorFieldData" : data_object
+    end create
 
-            setvalues plot_object
-              "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-              "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-            end setvalues
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+        getvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+          "trXMinF"   : trxmin
+          "trXMaxF"   : trxmax
+          "trYMinF"   : trymin
+          "trYMaxF"   : trymax
+        end getvalues
+
+        xrange = trxmax - trxmin
+        yrange = trymax - trymin
+
+        if(xrange.lt.yrange)
+          width = width * (xrange/yrange)
+        else
+          height = height * (yrange/xrange)
         end if
+
+        setvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+        end setvalues
+    scale     = get_res_value(res2,"gsnScale",shape)
+
+    check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
+                                force_x_log,force_y_log)
+    check_for_tickmarks_off(res2)
+
+    vfres = get_res_eq(res2,"vf")
+        getvalues plot_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues plot_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(plot_object,stres)
     if(calldraw)
@@ -1665,7 +1756,6 @@ begin
             end if
             delete(res2@gsnScale)
         end if
-
     end if
         setvalues data_object
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -1732,6 +1822,10 @@ begin
         "stVectorFieldData" : data_object
     end create
 
+; Create map object.
+
+    map_object = create wksname + "_map" mapPlotClass wks
+    end create
 
         getvalues stream_object
           "tiXAxisFontHeightF"   : xfontf
@@ -1935,6 +2029,7 @@ local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, res2
     calldraw = True
     callframe = True
     scale     = False
+    shape     = False
 ; is an optional list of resources. The id of the vector plot is        ;
 ; returned.                                                             ;
 ;   gsnShape                                                            ;
@@ -1987,6 +2082,14 @@ begin
             delete(res2@gsnScale)
         end if
 
+        if(isatt(res2,"gsnShape"))
+            if(res2@gsnShape)
+                shape = True
+                scale = True
+            end if
+            delete(res2@gsnShape)
+        end if
+
     end if
         end setvalues
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -2026,29 +2129,63 @@ begin
                 attsetvalues(plot_object,vcres)
             end if
         end if
-        if(scale)
-            getvalues plot_object
-              "tiXAxisFontHeightF"   : xfontf
-              "tiYAxisFontHeightF"   : yfontf
-              "tmXBLabelFontHeightF" : xbfontf
-              "tmXBMajorLengthF"     : xlengthf
-              "tmXBMinorLengthF"     : xmlengthf
-              "tmYLLabelFontHeightF" : ylfontf
-              "tmYLMajorLengthF"     : ylengthf
-              "tmYLMinorLengthF"     : ymlengthf
-            end getvalues
+    end if
 
-            setvalues plot_object
-              "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-              "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-            end setvalues
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
+                                force_x_log,force_y_log)
+        getvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+          "trXMinF"   : trxmin
+          "trXMaxF"   : trxmax
+          "trYMinF"   : trymin
+          "trYMaxF"   : trymax
+        end getvalues
+
+        xrange = trxmax - trxmin
+        yrange = trymax - trymin
+
+        if(xrange.lt.yrange)
+          width = width * (xrange/yrange)
+        else
+          height = height * (yrange/xrange)
         end if
+
+        setvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+        end setvalues
+
+    vfres = get_res_eq(res2,"vf")
+    vcres = get_res_ne(res2,"vf")
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      llres = get_res_eq(res2,(/"tr","vp"/))
+    end if
+
+        getvalues plot_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues plot_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
     attsetvalues_check(plot_object,vcres)
     if(sprdcols)
     if(calldraw)
@@ -2266,6 +2403,10 @@ begin
 
     overlay(map_object,vector_object)
     attsetvalues_check(vfdata_object,vfres)
+    attsetvalues_check(sfdata_object,sfres)
+    attsetvalues_check(map_object,mpres)
+    attsetvalues_check(contour_object,cnres)
+    attsetvalues_check(vector_object,vcres)
 
         getvalues vector_object
           "tiXAxisFontHeightF"   : xfontf
@@ -2451,6 +2592,10 @@ begin
 ; Create map object.
     shape     = get_res_value(res2,"gsnShape",False)
 
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
         getvalues vector_object
           "tiXAxisFontHeightF"   : xfontf
@@ -2513,6 +2658,7 @@ vf_res_index, vc_res_index, sf_res_index, res2
     calldraw = True
     callframe = True
     scale     = False
+    shape     = False
 ; optional list of resources. The id of the vector plot is returned.    ;
 ;                                                                       ;
 ;   gsnScale                                                            ;
@@ -2582,6 +2728,14 @@ begin
             delete(res2@gsnScale)
         end if
 
+        if(isatt(res2,"gsnShape"))
+            if(res2@gsnShape)
+                shape = True
+                scale = True
+            end if
+            delete(res2@gsnShape)
+        end if
+
     end if
 ; Create plot object.
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -2636,29 +2790,63 @@ begin
                 attsetvalues(plot_object,vcres)
             end if
         end if
-        if(scale)
-            getvalues plot_object
-              "tiXAxisFontHeightF"   : xfontf
-              "tiYAxisFontHeightF"   : yfontf
-              "tmXBLabelFontHeightF" : xbfontf
-              "tmXBMajorLengthF"     : xlengthf
-              "tmXBMinorLengthF"     : xmlengthf
-              "tmYLLabelFontHeightF" : ylfontf
-              "tmYLMajorLengthF"     : ylengthf
-              "tmYLMinorLengthF"     : ymlengthf
-            end getvalues
+    end if
 
-            setvalues plot_object
-              "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-              "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-            end setvalues
+    check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
+                                force_x_log,force_y_log)
+    check_for_tickmarks_off(res2)
+
+    vfres = get_res_eq(res2,"vf")
+        getvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+          "trXMinF"   : trxmin
+          "trXMaxF"   : trxmax
+          "trYMinF"   : trymin
+          "trYMaxF"   : trymax
+        end getvalues
+
+        xrange = trxmax - trxmin
+        yrange = trymax - trymin
+
+        if(xrange.lt.yrange)
+          width = width * (xrange/yrange)
+        else
+          height = height * (yrange/xrange)
         end if
+
+        setvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+        end setvalues
+    vcres = get_res_ne(res2,(/"sf","vf"/))
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      llres = get_res_eq(res2,(/"tr","vp"/))
+    end if
+
+    attsetvalues_check(vfdata_object,vfres)
+        getvalues plot_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues plot_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
       delete(plot_object)
 
     if(calldraw)
@@ -2856,6 +3044,10 @@ begin
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    vfres = get_res_eq(res2,"vf")
+    sfres = get_res_eq(res2,"sf")
     mpres = get_res_eq(res2,(/"mp","vp"/))
         getvalues vector_object
           "tiXAxisFontHeightF"   : xfontf
@@ -2917,6 +3109,7 @@ xy_res_index, xydp_res_index, dspec, res2
     calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
     res2      = resources
 ;                                                                       ;
 ; This function creates and draws an xy plot to the workstation "wks"   ;
@@ -2995,6 +3188,14 @@ begin
                 scale = True
             end if
             delete(res2@gsnScale)
+        end if
+
+        if(isatt(res2,"gsnShape"))
+            if(res2@gsnShape)
+                shape = True
+                scale = True
+            end if
+            delete(res2@gsnShape)
         end if
 
     end if
@@ -3086,29 +3287,62 @@ begin
                                 chartostring(res(:,0:2)).eq."xyY")))
             xydp_res_index = ind(chartostring(res(:,0:1)).eq."xy".and.\
                                 (chartostring(res(:,0:3)).ne."xyCo".and.\
-        if(scale)
-            getvalues plot_object
-              "tiXAxisFontHeightF"   : xfontf
-              "tiYAxisFontHeightF"   : yfontf
-              "tmXBLabelFontHeightF" : xbfontf
-              "tmXBMajorLengthF"     : xlengthf
-              "tmXBMinorLengthF"     : xmlengthf
-              "tmYLLabelFontHeightF" : ylfontf
-              "tmYLMajorLengthF"     : ylengthf
-              "tmYLMinorLengthF"     : ymlengthf
-            end getvalues
+                                 chartostring(res(:,0:2)).ne."xyX".and.\
+                                 chartostring(res(:,0:2)).ne."xyY"))
+            if(.not.all(ismissing(xy_res_index)))
+              xyres = True
+              do i = 0,dimsizes(xy_res_index)-1
+                  xyres@$attnames(xy_res_index(i))$ = res2@$attnames(xy_res_index(i))$
+        getvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+          "trXMinF"   : trxmin
+          "trXMaxF"   : trxmax
+          "trYMinF"   : trymin
+          "trYMaxF"   : trymax
+        end getvalues
 
-            setvalues plot_object
-              "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
-              "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-              "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
-              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
-              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
-            end setvalues
+        xrange = trxmax - trxmin
+        yrange = trymax - trymin
+
+        if(xrange.lt.yrange)
+          width = width * (xrange/yrange)
+        else
+          height = height * (yrange/xrange)
         end if
+
+        setvalues plot_object
+          "vpWidthF"  : width
+          "vpHeightF" : height
+        end setvalues
+              attsetvalues_check(plot_object,xyres)
+            end if
+            if(.not.all(ismissing(xydp_res_index)))
+                getvalues plot_object
+                    "xyCoordDataSpec" : dspec
+                end getvalues
+                xydpres = True
+        getvalues plot_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues plot_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
                     xydpres@$attnames(xydp_res_index(i))$ = res2@$attnames(xydp_res_index(i))$
                 end do
     if(calldraw)
