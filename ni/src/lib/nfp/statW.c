@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 /*
@@ -34,6 +35,9 @@ extern void NGCALLF(drmvmed,DRMVMED)(double*, double*, int*, double*, int*);
 extern void NGCALLF(dmedmrng,DMEDMRNG)(double*, double*, int*, double*, 
                                        double*, double*, double*, int*, 
                                        int*); 
+
+extern void NGCALLF(drmsd,DRMSD)(double *, double *, int *, double *, 
+                                 double *, double *, int *, int *);
 
 extern void NGCALLF(dxstnd,DXSTND)(double*, int*, double*, int*, int*);
 
@@ -1085,6 +1089,186 @@ NhlErrorTypes dim_standardize_W( void )
  */
     return(NclReturnValue(standardize,ndims_x,dsizes_x,&missing_dx,
                           NCL_double,0));
+  }
+}
+
+
+NhlErrorTypes dim_rmsd_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  double *tmp_x, *tmp_y;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  NclScalar missing_x, missing_dx, missing_rx;
+  NclScalar missing_y, missing_dy, missing_ry;
+  NclBasicDataTypes type_x, type_y;
+/*
+ * Output array variables
+ */
+  void *rmsd;
+  double *tmp_rmsd;
+  int dsizes_rmsd[NCL_MAX_DIMENSIONS];
+  int nptused, ndims_rmsd;
+  NclScalar missing_rmsd;
+  NclBasicDataTypes type_rmsd;
+/*
+ * various
+ */
+  int i, total_elements, ier = 0, npts, index_xy;
+/*
+ * Retrieve parameters.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           2,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+  y = (void*)NclGetArgValue(
+           1,
+           2,
+           &ndims_y, 
+           dsizes_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
+           2);
+/*
+ * x and y must be the same size.
+ */
+  if(ndims_x != ndims_y) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: x and y must have the same dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_x; i++ ) {
+    if(dsizes_x[i] != dsizes_y[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: x and y must have the same dimension sizes");
+    return(NhlFATAL);
+    }
+  }
+
+/*
+ * Compute the total number of elements in output and input.
+ */
+  ndims_rmsd = max(ndims_x-1,1);
+  dsizes_rmsd[0] = 1;
+
+  total_elements = 1;
+  for(i = 0; i < ndims_x-1; i++) {
+    total_elements *= dsizes_x[i];
+    dsizes_rmsd[i] = dsizes_x[i];
+  }    
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_rmsd    = NCL_float;
+    missing_rmsd = missing_rx;
+    rmsd         = (void*)calloc(total_elements,sizeof(float));
+    tmp_rmsd     = (double*)calloc(1,sizeof(double));
+    if(rmsd == NULL || tmp_rmsd == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_rmsd    = NCL_double;
+    missing_rmsd = missing_dx;
+    rmsd         = (void*)calloc(total_elements,sizeof(double));
+    if (rmsd == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: Unable to allocate memory for output array" );
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for coercing input arrays to double, if necessary.
+ */
+  npts = dsizes_x[ndims_x-1];
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  if(type_y != NCL_double) {
+    tmp_y = (double*)calloc(npts,sizeof(double));
+    if(tmp_y == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Call the f77 double version of 'rmsd' with the full argument list.
+ */
+  index_xy = 0;
+  for(i = 0; i < total_elements; i++) {
+    if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double(x,tmp_x,index_xy,type_x,npts,
+                                 has_missing_x,&missing_x,&missing_dx);
+    }
+    else {
+      tmp_x = &((double*)x)[index_xy];
+    }
+
+    if(type_y != NCL_double) {
+/*
+ * Coerce subsection of y (tmp_y) to double.
+ */
+      coerce_subset_input_double(y,tmp_y,index_xy,type_y,npts,
+                                 has_missing_y,&missing_y,&missing_dy);
+    }
+    else {
+      tmp_y = &((double*)y)[index_xy];
+    }
+
+    if(type_rmsd == NCL_double) {
+      tmp_rmsd = &((double*)rmsd)[i];
+    }
+
+    NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                         &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+
+    if(type_rmsd != NCL_double) ((float*)rmsd)[i] = (float)(*tmp_rmsd);
+
+    index_xy += npts;
+    if (ier == 2) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmsd: The input array contains all missing values");
+    }
+  }
+/*
+ * Free unneeded memory.
+ */
+  if(type_x    != NCL_double) NclFree(tmp_x);
+  if(type_y    != NCL_double) NclFree(tmp_y);
+  if(type_rmsd != NCL_double) NclFree(tmp_rmsd);
+
+/*
+ * Return.
+ */
+  if(has_missing_x || has_missing_y) {
+    return(NclReturnValue(rmsd,ndims_rmsd,dsizes_rmsd,&missing_rmsd,
+                          type_rmsd,0));
+  }
+  else {
+    return(NclReturnValue(rmsd,ndims_rmsd,dsizes_rmsd,NULL,type_rmsd,0));
   }
 }
 
