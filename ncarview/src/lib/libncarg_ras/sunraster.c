@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.18 1993-02-10 19:19:15 don Exp $
+ *	$Id: sunraster.c,v 1.19 1993-03-25 22:18:02 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,7 +44,7 @@ static char	*FormatName = "sun";
 /* Private function declarations. */
 static int	SunReadRGB();
 static int	SunReadRGBFOP();
-static int	SunReadRGBRLE();
+static int	SunReadRLE();
 
 Raster *
 SunOpen(name)
@@ -527,7 +527,16 @@ SunRead(ras)
 	else if (dep->ras_type == RT_BYTE_ENCODED) {
 		/* Run-length encoded. */
 
-		status = SunReadRGBRLE(ras);
+		if (dep->ras_depth == 24 || dep->ras_depth == 8) {
+			status = SunReadRLE(ras);
+		}
+		else {
+			(void) ESprintf(E_UNKNOWN,
+"SunRead(\"%s\") - Only 8 and 24-bit encoding supported; \"%s\" is %d",
+			ras->name, ras->name, dep->ras_depth);
+			status = RAS_ERROR;
+		}
+
 		return(status);
 	}
 	else {
@@ -647,7 +656,7 @@ SunReadRGBFOP(ras)
 }
 
 /*
- * Function:		SunReadRGBRLE(ras)
+ * Function:		SunReadRLE(ras)
  *
  * Description:		This function reads in a 24-bit RGB raster
  *			that is run-length encoded.
@@ -661,11 +670,11 @@ SunReadRGBFOP(ras)
  * Side Effects:	ras->data is loaded with the image.
  */
 static int
-SunReadRGBRLE(ras)
+SunReadRLE(ras)
 	Raster		*ras;
 {
 	int		status;
-	char		*errmsg = "SunReadRGBRLE(\"%s\")";
+	char		*errmsg = "SunReadRLE(\"%s\")";
 	unsigned int	image_size;
 	unsigned char	*rlebuf, *rlep, *datap, tmp;
 	int		i, rowlength, count, value, do_pad, x, y;
