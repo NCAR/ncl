@@ -4,11 +4,7 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
+#include "wrapper.h"
 #include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
@@ -17,10 +13,7 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
 #include <math.h>
-#include <ncarg/gks.h>
 
 extern void NGCALLF(dspecx,DSPECX)(double *,int *,int *,int *,double *,
                                    double *,double *,int *,double *,double *,
@@ -52,6 +45,7 @@ NhlErrorTypes specx_anal_W( void )
  */
   double *dof;
   float *rdof;
+  NclBasicDataTypes type_dof;
 /*
  * Attribute variables
  */
@@ -66,7 +60,7 @@ NhlErrorTypes specx_anal_W( void )
 /*
  * Declare variables for random purposes.
  */
-  int i, j, l, nspcmx, nspc, total_size_x, ier, any_double;
+  int i, j, l, nspcmx, nspc, total_size_x, ier;
 
 /*
  * Retrieve arguments.
@@ -139,65 +133,30 @@ NhlErrorTypes specx_anal_W( void )
 /*
  * Check for missing values.
  */
-  if(has_missing_x) {
-/*
- * Coerce missing value to double so we can check our data to see if
- * it contains any missing values.
- */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 /*
  * Coerce x to double precision if necessary.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dx,
-               x,
-               total_size_x,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  if( dx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for coercing x array to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Input is already double.
+/*  
+ * Check if x contains missing values.
  */
-    dx = (double*)x;
+  if(contains_missing(dx,total_size_x,has_missing_x,missing_dx.doubleval)) {
+     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: 'x' cannot contain any missing values");
+     return(NhlFATAL);
   }
 /*
  * Coerce pct to double precision if necessary.
  */
-  if(type_pct != NCL_double) {
-    dpct = (double*)NclMalloc(sizeof(double));
-    if( dpct == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for coercing pct array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dpct,
-               pct,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pct)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    dpct = (double*)pct;
+  dpct = coerce_input_double(pct,type_pct,1,0,NULL,NULL);
+  if( dpct == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for coercing pct array to double precision");
+    return(NhlFATAL);
   }
 /*
  * Check pct.
@@ -206,46 +165,14 @@ NhlErrorTypes specx_anal_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: 'pct' must be between 0 and 1 inclusive");
     return(NhlFATAL);
   }
-/*  
- * Check if x contains missing values.
- */
-  if( has_missing_x ) {
-    for( i = 0; i < total_size_x; i++ ) {
-      if( dx[i] == missing_dx.doubleval ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: 'x' cannot contain any missing values");
-        return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Check if any input is double.
  */
   if(type_x != NCL_double && type_pct != NCL_double) {
-    any_double = 0;
-  }
-  else {
-    any_double = 1;
-  }
+    type_dof = NCL_float;
 /*
- * Allocate space for output variables.
+ * Allocate space for float output variables.
  */
-  dof     = (double *)calloc(1,sizeof(double));
-  frq     = (double *)calloc(nspcmx,sizeof(double));
-  spcx    = (double *)calloc(nspcmx,sizeof(double));
-  bw      = (double *)calloc(1,sizeof(double));
-  xavei   = (double *)calloc(1,sizeof(double));
-  xvari   = (double *)calloc(1,sizeof(double));
-  xvaro   = (double *)calloc(1,sizeof(double));
-  xlag1   = (double *)calloc(1,sizeof(double));
-  xslope  = (double *)calloc(1,sizeof(double));
-  if(   dof == NULL ||   frq == NULL ||  spcx == NULL ||    bw == NULL || 
-      xavei == NULL || xvari == NULL || xvaro == NULL || xlag1 == NULL ||
-     xslope == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
-    return(NhlFATAL);
-  }
-
-  if(!any_double) {
     rdof     = (float *)calloc(1,sizeof(float));
     rfrq     = (float *)calloc(nspcmx,sizeof(float));
     rspcx    = (float *)calloc(nspcmx,sizeof(float));
@@ -262,6 +189,34 @@ NhlErrorTypes specx_anal_W( void )
       return(NhlFATAL);
     }
   }
+  else {
+    type_dof = NCL_double;
+/*
+ * Allocate space for double output variables.
+ */
+    dof     = (double *)calloc(1,sizeof(double));
+    bw      = (double *)calloc(1,sizeof(double));
+    xavei   = (double *)calloc(1,sizeof(double));
+    xvari   = (double *)calloc(1,sizeof(double));
+    xvaro   = (double *)calloc(1,sizeof(double));
+    xlag1   = (double *)calloc(1,sizeof(double));
+    xslope  = (double *)calloc(1,sizeof(double));
+    if(   dof == NULL ||    bw == NULL || xavei == NULL || xvari == NULL || 
+        xvaro == NULL || xlag1 == NULL || xslope == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for stuff to be returned by dspecx.
+ */
+  frq     = (double *)calloc(nspcmx,sizeof(double));
+  spcx    = (double *)calloc(nspcmx,sizeof(double));
+  if( frq == NULL || spcx == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
+    return(NhlFATAL);
+  }
+
 /*
  * Allocate space for work array.
  */
@@ -273,7 +228,6 @@ NhlErrorTypes specx_anal_W( void )
   }
 /*
  * Call the Fortran version of this routine.
- *
  */
   scl = 2.0;
   NGCALLF(dspecx,DSPECX)(dx,&nx,iopt,jave,dpct,&scl,work,&lwork,
@@ -286,10 +240,10 @@ NhlErrorTypes specx_anal_W( void )
  * Free up memory.
  */
   NclFree(work);
-  if((void*)dx != x) NclFree(dx);
+  if((void*)dx   != x) NclFree(dx);
   if((void*)dpct != pct) NclFree(dpct);
 
-  if(!any_double) {
+  if(type_dof == NCL_float) {
 /*
  * Copy double values to float values.
  */
@@ -305,6 +259,11 @@ NhlErrorTypes specx_anal_W( void )
       rfrq[i] = (float)frq[i];
       rspcx[i] = (float)spcx[i];
     }
+/*
+ * Free up double precision vars we don't need anymore.
+ */
+    NclFree(frq);
+    NclFree(spcx);
 /*
  * Set up variable to return.
  */
@@ -725,6 +684,7 @@ NhlErrorTypes specxy_anal_W( void )
  */
   double *dof;
   float *rdof;
+  NclBasicDataTypes type_dof;
 /*
  * Attribute variables
  */
@@ -743,7 +703,6 @@ NhlErrorTypes specxy_anal_W( void )
  * Declare variables for random purposes.
  */
   int i, j, l, nspc, nspcmx, total_size_x, total_size_y, ier;
-  int any_double;
 /*
  * Retrieve arguments.
  */
@@ -832,105 +791,34 @@ NhlErrorTypes specxy_anal_W( void )
 /*
  * Check for missing values and coerce data if necessary.
  */
-  if(has_missing_x) {
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
- * Coerce missing value to double so we can check our data to see if
- * it contains any missing values.
+ * Coerce x/y to double precision if necessary.
  */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_y,has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL|| dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
-
-/*
- * Coerce x to double precision if necessary.
+/*  
+ * Check if x or y contains missing values.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dx,
-               x,
-               total_size_x,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    dx = (double*)x;
-  }
-/*
- * Do same for y array.
- */
-  if(has_missing_y) {
-/*
- * Coerce missing value to double so we can check our data to see if
- * it contains any missing values.
- */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-
-/*
- * Coerce y to double precision if necessary.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dy,
-               y,
-               total_size_y,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    dy = (double*)y;
+  if(contains_missing(dx,total_size_x,has_missing_x,missing_dx.doubleval) ||
+     contains_missing(dy,total_size_y,has_missing_y,missing_dy.doubleval)) {
+     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: x and y cannot contain any missing values");
+     return(NhlFATAL);
   }
 /*
  * Coerce pct to double precision if necessary.
  */
-  if(type_pct != NCL_double) {
-    dpct = (double*)NclMalloc(sizeof(double));
-    if( dpct == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for coercing pct array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dpct,
-               pct,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pct)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    dpct = (double*)pct;
+  dpct = coerce_input_double(pct,type_pct,1,0,NULL,NULL);
+  if( dpct == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for coercing pct array to double precision");
+    return(NhlFATAL);
   }
 /*
  * Check pct.
@@ -939,67 +827,16 @@ NhlErrorTypes specxy_anal_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: 'pct' must be between 0 and 1 inclusive");
     return(NhlFATAL);
   }
-/*  
- * Check if x and/or y contains missing values.
- */
-  if( has_missing_x ) {
-    for( i = 0; i < total_size_x; i++ ) {
-      if( dx[i] == missing_dx.doubleval ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: 'x' cannot contain any missing values");
-        return(NhlFATAL);
-      }
-    }
-  }
-  if( has_missing_y ) {
-    for( i = 0; i < total_size_y; i++ ) {
-      if( dy[i] == missing_dy.doubleval ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: 'y' cannot contain any missing values");
-        return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Check if any input is double.
  */
   if(type_x != NCL_double && type_y != NCL_double && 
      type_pct != NCL_double) {
-    any_double = 0;
-  }
-  else {
-    any_double = 1;
-  }
-/*
- * Allocate space for output variables.
+
+    type_dof = NCL_float;
+/* 
+ * Allocate space for float output variables.
  */
-  dof     = (double *)calloc(1,sizeof(double));
-  frq     = (double *)calloc(nspcmx,sizeof(double));
-  spcx    = (double *)calloc(nspcmx,sizeof(double));
-  spcy    = (double *)calloc(nspcmx,sizeof(double));
-  cospc   = (double *)calloc(nspcmx,sizeof(double));
-  quspc   = (double *)calloc(nspcmx,sizeof(double));
-  coher   = (double *)calloc(nspcmx,sizeof(double));
-  phase   = (double *)calloc(nspcmx,sizeof(double));
-  bw      = (double *)calloc(1,sizeof(double));
-  xavei   = (double *)calloc(1,sizeof(double));
-  xvari   = (double *)calloc(1,sizeof(double));
-  xvaro   = (double *)calloc(1,sizeof(double));
-  xlag1   = (double *)calloc(1,sizeof(double));
-  xslope  = (double *)calloc(1,sizeof(double));
-  yavei   = (double *)calloc(1,sizeof(double));
-  yvari   = (double *)calloc(1,sizeof(double));
-  yvaro   = (double *)calloc(1,sizeof(double));
-  ylag1   = (double *)calloc(1,sizeof(double));
-  yslope  = (double *)calloc(1,sizeof(double));
-  
-  if(   dof == NULL ||   frq == NULL ||  spcx == NULL ||  spcy == NULL || 
-      cospc == NULL || quspc == NULL || coher == NULL || phase == NULL || 
-         bw == NULL || xavei == NULL || xvari == NULL || xvaro == NULL || 
-      xlag1 == NULL ||xslope == NULL || yavei == NULL || yvari == NULL ||
-      yvaro == NULL || ylag1 == NULL | yslope == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
-    return(NhlFATAL);
-  }
-  if(!any_double) {
     rdof     = (float *)calloc(1,sizeof(float));
     rfrq     = (float *)calloc(nspcmx,sizeof(float));
     rspcx    = (float *)calloc(nspcmx,sizeof(float));
@@ -1029,6 +866,47 @@ NhlErrorTypes specxy_anal_W( void )
       return(NhlFATAL);
     }
   }
+  else {
+    type_dof = NCL_double;
+/*
+ * Allocate space for double output variables.
+ */
+    dof     = (double *)calloc(1,sizeof(double));
+    bw      = (double *)calloc(1,sizeof(double));
+    xavei   = (double *)calloc(1,sizeof(double));
+    xvari   = (double *)calloc(1,sizeof(double));
+    xvaro   = (double *)calloc(1,sizeof(double));
+    xlag1   = (double *)calloc(1,sizeof(double));
+    xslope  = (double *)calloc(1,sizeof(double));
+    yavei   = (double *)calloc(1,sizeof(double));
+    yvari   = (double *)calloc(1,sizeof(double));
+    yvaro   = (double *)calloc(1,sizeof(double));
+    ylag1   = (double *)calloc(1,sizeof(double));
+    yslope  = (double *)calloc(1,sizeof(double));
+  
+    if(   dof == NULL ||   bw == NULL || xavei == NULL || xvari == NULL ||
+        xvaro == NULL ||xlag1 == NULL ||xslope == NULL || yavei == NULL ||
+        yvari == NULL ||yvaro == NULL || ylag1 == NULL | yslope == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for stuff to be returned by dspecx.
+ */
+  frq     = (double *)calloc(nspcmx,sizeof(double));
+  spcx    = (double *)calloc(nspcmx,sizeof(double));
+  spcy    = (double *)calloc(nspcmx,sizeof(double));
+  cospc   = (double *)calloc(nspcmx,sizeof(double));
+  quspc   = (double *)calloc(nspcmx,sizeof(double));
+  coher   = (double *)calloc(nspcmx,sizeof(double));
+  phase   = (double *)calloc(nspcmx,sizeof(double));
+  if(  frq == NULL ||  spcx == NULL ||  spcy == NULL || cospc == NULL ||
+       quspc == NULL || coher == NULL || phase == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
+    return(NhlFATAL);
+  }
 
 /*
  * Allocate space for work array.
@@ -1041,7 +919,6 @@ NhlErrorTypes specxy_anal_W( void )
   }
 /*
  * Call the Fortran version of this routine.
- *
  */
   scl = 2.0;
   NGCALLF(dspecxy,DSPECXY)(dx,dy,&nx,iopt,jave,dpct,&scl,work,&lwork,
@@ -1056,11 +933,11 @@ NhlErrorTypes specxy_anal_W( void )
  * Free up memory.
  */
   NclFree(work);
-  if((void*)dx != x) NclFree(dx);
-  if((void*)dy != y) NclFree(dy);
+  if((void*)dx   != x) NclFree(dx);
+  if((void*)dy   != y) NclFree(dy);
   if((void*)dpct != pct) NclFree(dpct);
 
-  if(!any_double) {
+  if(type_dof == NCL_float) {
 /*
  * Copy double values to float values.
  */
@@ -1088,7 +965,16 @@ NhlErrorTypes specxy_anal_W( void )
       rcoher[i] = (float)coher[i];
       rphase[i] = (float)phase[i];
     }
-
+/*
+ * Free up double precision vars we don't need anymore.
+ */
+    NclFree(frq);
+    NclFree(spcx);
+    NclFree(spcy);
+    NclFree(cospc);
+    NclFree(quspc);
+    NclFree(coher);
+    NclFree(phase);
 /*
  * Set up variable to return.
  */

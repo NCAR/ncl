@@ -3,13 +3,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
+#include "wrapper.h"
 #include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
@@ -19,7 +13,6 @@
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
 #include <math.h>
-#include <ncarg/gks.h>
 
 #define min(x,y)  ((x) < (y) ? (x) : (y))
 #define max(x,y)  ((x) > (y) ? (x) : (y))
@@ -68,6 +61,7 @@ NhlErrorTypes svdcov_W( void )
   double *fnorm, *condn;
   float *rfnorm, *rcondn;
   int *lapack_err, ndims_svdpcv, dsizes_svdpcv[1];
+  NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
  */
@@ -79,7 +73,7 @@ NhlErrorTypes svdcov_W( void )
 /*
  * various
  */
-  int i, j, ipt7, any_double = 0;
+  int i, j, ipt7;
   int total_size_x, total_size_y, total_size_lft, total_size_rgt;
 /*
  * Retrieve input parameters.
@@ -221,120 +215,21 @@ NhlErrorTypes svdcov_W( void )
   total_size_lft = *nsvd * ncolx;
   total_size_rgt = *nsvd * ncoly;
 /*
- * Coerce x missing value to double.
+ * Coerce missing values, if any.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Coerce y missing value to double.
+ * Coerce x and y to double if necessary.
  */
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_y,has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-  }
-/*
- * Coerce x to double if necessary.
- */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * x is already double.
- */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double if necessary.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * y is already double.
- */
-    dy = (double*)y;
-  }
-
 
 /*
  * Allocate space for double precision hom/het. There's no need to do a
@@ -342,76 +237,29 @@ NhlErrorTypes svdcov_W( void )
  * values coming in).  hom/het can only be float or double, so only
  * allocate space for a d.p. array if hom/het is float.
  */
-  if(type_homlft != NCL_double) {
-    dhomlft = (double*)NclMalloc(sizeof(double)*total_size_lft);
-    if( dhomlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing homlft array to double precision");
-      return(NhlFATAL);
-    }
+  dhomlft = coerce_output_double(homlft,type_homlft,total_size_lft);
+  dhetlft = coerce_output_double(hetlft,type_hetlft,total_size_lft);
+  dhomrgt = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
+  dhetrgt = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
+  if(dhomlft == NULL || dhetlft == NULL || 
+     dhomrgt == NULL || dhetrgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing output arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Determine type of output array.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_svdpcv = NCL_float;
   }
   else {
-/*
- * homlft is already double.
- */
-    dhomlft = (double*)homlft;
+    type_svdpcv = NCL_double;
   }
-
-/*
- * Coerce hetlft to double if necessary.
- */
-  if(type_hetlft != NCL_double) {
-    dhetlft = (double*)NclMalloc(sizeof(double)*total_size_lft);
-    if( dhetlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing hetlft array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * hetlft is already double.
- */
-    dhetlft = (double*)hetlft;
-  }
-
-/*
- * Coerce homrgt to double if necessary.
- */
-  if(type_homrgt != NCL_double) {
-    dhomrgt = (double*)NclMalloc(sizeof(double)*total_size_rgt);
-    if( dhomrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing homrgt array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * homrgt is already double.
- */
-    dhomrgt = (double*)homrgt;
-  }
-
-/*
- * Coerce hetrgt to double if necessary.
- */
-  if(type_hetrgt != NCL_double) {
-    dhetrgt = (double*)NclMalloc(sizeof(double)*total_size_rgt);
-    if( dhetrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing hetrgt array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * hetrgt is already double.
- */
-    dhetrgt = (double*)hetrgt;
-  }
-
 /*
  * Allocate space for output array.
  */
   dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)NclMalloc(*nsvd*sizeof(double));
+  svdpcv = (double *)calloc(*nsvd,sizeof(double));
   if( svdpcv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -422,7 +270,7 @@ NhlErrorTypes svdcov_W( void )
   lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
         ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
         max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
-  w = (double *)NclMalloc(lwk*sizeof(double));
+  w = (double *)calloc(lwk,sizeof(double));
   if( w == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -476,11 +324,11 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Return output grid to NCL.
  */
-  if(!any_double) {
+  if(type_svdpcv == NCL_float) {
 /*
  * Copy double values to float values.
  */
-    rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
+    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
     if( rsvdpcv == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -515,9 +363,9 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Get attribute values.
  */
-    rfnorm     = (float *)NclMalloc(sizeof(float));
-    rcondn     = (float *)NclMalloc(sizeof(float));
-    lapack_err = (int *)NclMalloc(sizeof(int));
+    rfnorm     = (float *)calloc(1,sizeof(float));
+    rcondn     = (float *)calloc(1,sizeof(float));
+    lapack_err = (int *)calloc(1,sizeof(int));
     if( rfnorm == NULL || rcondn == NULL || lapack_err == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for attributes");
       return(NhlFATAL);
@@ -621,9 +469,9 @@ NhlErrorTypes svdcov_W( void )
  *
  * First allocate memory for them.
  */
-    fnorm      = (double *)NclMalloc(sizeof(double));
-    condn      = (double *)NclMalloc(sizeof(double));
-    lapack_err = (int *)NclMalloc(sizeof(int));
+    fnorm      = (double *)calloc(1,sizeof(double));
+    condn      = (double *)calloc(1,sizeof(double));
+    lapack_err = (int *)calloc(1,sizeof(int));
     if( fnorm == NULL || condn == NULL || lapack_err == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for attributes");
       return(NhlFATAL);
@@ -752,6 +600,7 @@ NhlErrorTypes svdstd_W( void )
   double *fnorm, *condn;
   float *rfnorm, *rcondn;
   int *lapack_err, ndims_svdpcv, dsizes_svdpcv[1];
+  NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
  */
@@ -763,7 +612,7 @@ NhlErrorTypes svdstd_W( void )
 /*
  * various
  */
-  int i, j, ipt7, any_double = 0;
+  int i, j, ipt7;
   int total_size_x, total_size_y, total_size_lft, total_size_rgt;
 /*
  * Retrieve input parameters.
@@ -905,120 +754,21 @@ NhlErrorTypes svdstd_W( void )
   total_size_lft = *nsvd * ncolx;
   total_size_rgt = *nsvd * ncoly;
 /*
- * Coerce x missing value to double.
+ * Coerce missing values, if any.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Coerce y missing value to double.
+ * Coerce x and y to double if necessary.
  */
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_y,has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-  }
-/*
- * Coerce x to double if necessary.
- */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * x is already double.
- */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double if necessary.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * y is already double.
- */
-    dy = (double*)y;
-  }
-
 
 /*
  * Allocate space for double precision hom/het. There's no need to do a
@@ -1026,76 +776,29 @@ NhlErrorTypes svdstd_W( void )
  * values coming in).  hom/het can only be float or double, so only
  * allocate space for a d.p. array if hom/het is float.
  */
-  if(type_homlft != NCL_double) {
-    dhomlft = (double*)NclMalloc(sizeof(double)*total_size_lft);
-    if( dhomlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing homlft array to double precision");
-      return(NhlFATAL);
-    }
+  dhomlft = coerce_output_double(homlft,type_homlft,total_size_lft);
+  dhetlft = coerce_output_double(hetlft,type_hetlft,total_size_lft);
+  dhomrgt = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
+  dhetrgt = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
+  if(dhomlft == NULL || dhetlft == NULL || 
+     dhomrgt == NULL || dhetrgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing output arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Determine type of output array.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_svdpcv = NCL_float;
   }
   else {
-/*
- * homlft is already double.
- */
-    dhomlft = (double*)homlft;
+    type_svdpcv = NCL_double;
   }
-
-/*
- * Coerce hetlft to double if necessary.
- */
-  if(type_hetlft != NCL_double) {
-    dhetlft = (double*)NclMalloc(sizeof(double)*total_size_lft);
-    if( dhetlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing hetlft array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * hetlft is already double.
- */
-    dhetlft = (double*)hetlft;
-  }
-
-/*
- * Coerce homrgt to double if necessary.
- */
-  if(type_homrgt != NCL_double) {
-    dhomrgt = (double*)NclMalloc(sizeof(double)*total_size_rgt);
-    if( dhomrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing homrgt array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * homrgt is already double.
- */
-    dhomrgt = (double*)homrgt;
-  }
-
-/*
- * Coerce hetrgt to double if necessary.
- */
-  if(type_hetrgt != NCL_double) {
-    dhetrgt = (double*)NclMalloc(sizeof(double)*total_size_rgt);
-    if( dhetrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing hetrgt array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * hetrgt is already double.
- */
-    dhetrgt = (double*)hetrgt;
-  }
-
 /*
  * Allocate space for output array.
  */
   dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)NclMalloc(*nsvd*sizeof(double));
+  svdpcv = (double *)calloc(*nsvd,sizeof(double));
   if( svdpcv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -1106,7 +809,7 @@ NhlErrorTypes svdstd_W( void )
   lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
         ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
         max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
-  w = (double *)NclMalloc(lwk*sizeof(double));
+  w = (double *)calloc(lwk,sizeof(double));
   if( w == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1160,11 +863,11 @@ NhlErrorTypes svdstd_W( void )
 /*
  * Return output grid to NCL.
  */
-  if(!any_double) {
+  if(type_svdpcv == NCL_float) {
 /*
  * Copy double values to float values.
  */
-    rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
+    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
     if( rsvdpcv == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -1199,9 +902,9 @@ NhlErrorTypes svdstd_W( void )
 /*
  * Get attribute values.
  */
-    rfnorm     = (float *)NclMalloc(sizeof(float));
-    rcondn     = (float *)NclMalloc(sizeof(float));
-    lapack_err = (int *)NclMalloc(sizeof(int));
+    rfnorm     = (float *)calloc(1,sizeof(float));
+    rcondn     = (float *)calloc(1,sizeof(float));
+    lapack_err = (int *)calloc(1,sizeof(int));
     if( rfnorm == NULL || rcondn == NULL || lapack_err == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for attributes");
       return(NhlFATAL);
@@ -1305,9 +1008,9 @@ NhlErrorTypes svdstd_W( void )
  *
  * First allocate memory for them.
  */
-    fnorm      = (double *)NclMalloc(sizeof(double));
-    condn      = (double *)NclMalloc(sizeof(double));
-    lapack_err = (int *)NclMalloc(sizeof(int));
+    fnorm      = (double *)calloc(1,sizeof(double));
+    condn      = (double *)calloc(1,sizeof(double));
+    lapack_err = (int *)calloc(1,sizeof(int));
     if( fnorm == NULL || condn == NULL || lapack_err == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for attributes");
       return(NhlFATAL);
@@ -1411,7 +1114,7 @@ NhlErrorTypes svdcov_sv_W( void )
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *dsvlft, *dsvrgt;
   float *rsvlft, *rsvrgt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS],has_missing_x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   int ndims_svlft, dsizes_svlft[NCL_MAX_DIMENSIONS];
   int ndims_svrgt, dsizes_svrgt[NCL_MAX_DIMENSIONS];
@@ -1431,6 +1134,7 @@ NhlErrorTypes svdcov_sv_W( void )
   double *svdpcv;
   float *rsvdpcv, *rsv;
   int ndims_svdpcv, dsizes_svdpcv[1];
+  NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
  */
@@ -1442,9 +1146,8 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Various
  */
-  int i, j, k, l, any_double = 0;
+  int i, j, k, l;
   int total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
-
 /*
  * Retrieve input parameters.
  */
@@ -1527,49 +1230,6 @@ NhlErrorTypes svdcov_sv_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce x missing value to double.
- */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Coerce y missing value to double.
- */
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-  }
-/*
  * Calculate total sizes of input arrays.
  */
   total_size_x     = ntimes * ncolx;
@@ -1577,75 +1237,20 @@ NhlErrorTypes svdcov_sv_W( void )
   total_size_svlft =  *nsvd * ncolx;
   total_size_svrgt =  *nsvd * ncoly;
 /*
- * Coerce x to double if necessary.
+ * Coerce missing values, if any.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-    any_double = 1;
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
- * x is already double.
+ * Coerce x and y to double if necessary.
  */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double if necessary.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * y is already double.
- */
-    dy = (double*)y;
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_y,has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
 /*
  * svlft and svrgt must be float or double. It doesn't matter what the input
@@ -1667,39 +1272,26 @@ NhlErrorTypes svdcov_sv_W( void )
  * values coming in).  svrgt/lft can only be float or double, so only
  * allocate space for a d.p. array if svrgt/lft is float.
  */
-  if(type_svlft != NCL_double) {
-    dsvlft = (double*)NclMalloc(sizeof(double)*total_size_svlft);
-    if( dsvlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing svLeft array to double precision");
-      return(NhlFATAL);
-    }
+  dsvlft = coerce_output_double(svlft,type_svlft,total_size_svlft);
+  dsvrgt = coerce_output_double(svrgt,type_svrgt,total_size_svrgt);
+  if(dsvlft == NULL || dsvrgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing output arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Determine type of output array.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_svdpcv = NCL_float;
   }
   else {
-/*
- * svlft is already double.
- */
-    dsvlft = (double*)svlft;
+    type_svdpcv = NCL_double;
   }
-
-  if(type_svrgt != NCL_double) {
-    dsvrgt = (double*)NclMalloc(sizeof(double)*total_size_svrgt);
-    if( dsvrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for coercing svRight array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * svrgt is already double.
- */
-    dsvrgt = (double*)svrgt;
-  }
-
 /*
  * Allocate space for output array.
  */
   dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)NclMalloc(*nsvd*sizeof(double));
+  svdpcv = (double *)calloc(*nsvd,sizeof(double));
   if( svdpcv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -1709,11 +1301,11 @@ NhlErrorTypes svdcov_sv_W( void )
  */
   nsvmx = min(ncolx,ncoly);
   lwork = max(3*nsvmx+max(ncolx,ncoly),5*min(ncolx,ncoly)-4);
-  w   = (double *)NclMalloc(lwork*sizeof(double));
-  u   = (double *)NclMalloc(nsvmx*ncolx*sizeof(double));
-  vt  = (double *)NclMalloc(nsvmx*ncoly*sizeof(double));
-  sv  = (double *)NclMalloc(nsvmx*sizeof(double));
-  crv = (double *)NclMalloc(ncolx*ncoly*sizeof(double));
+  w   = (double *)calloc(lwork,sizeof(double));
+  u   = (double *)calloc(nsvmx*ncolx,sizeof(double));
+  vt  = (double *)calloc(nsvmx*ncoly,sizeof(double));
+  sv  = (double *)calloc(nsvmx,sizeof(double));
+  crv = (double *)calloc(ncolx*ncoly,sizeof(double));
   if( w == NULL || crv == NULL || u == NULL || vt == NULL || sv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -1756,13 +1348,13 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Return values. 
  */
-  if(type_x != NCL_double && type_y != NCL_double) {
+  if(type_svdpcv != NCL_double) {
 /*
  * None of the input is double, so return floats.
  *
  * First copy double values to float values.
  */
-    rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
+    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
     for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
     NclFree(svdpcv);
 
@@ -1786,7 +1378,7 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Convert doubles to floats.
  */
-    rsv = (float *)NclMalloc(nsvmx*sizeof(float));
+    rsv = (float *)calloc(nsvmx,sizeof(float));
     if( rsv == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for attributes");
       return(NhlFATAL);
@@ -1893,7 +1485,7 @@ NhlErrorTypes svdstd_sv_W( void )
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *dsvlft, *dsvrgt;
   float *rsvlft, *rsvrgt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS],has_missing_x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   int ndims_svlft, dsizes_svlft[NCL_MAX_DIMENSIONS];
   int ndims_svrgt, dsizes_svrgt[NCL_MAX_DIMENSIONS];
@@ -1913,6 +1505,7 @@ NhlErrorTypes svdstd_sv_W( void )
   double *svdpcv;
   float *rsvdpcv, *rsv;
   int ndims_svdpcv, dsizes_svdpcv[1];
+  NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
  */
@@ -1924,9 +1517,8 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Various
  */
-  int i, j, k, l, any_double = 0;
+  int i, j, k, l;
   int total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
-
 /*
  * Retrieve input parameters.
  */
@@ -2009,49 +1601,6 @@ NhlErrorTypes svdstd_sv_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce x missing value to double.
- */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Coerce y missing value to double.
- */
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-  }
-/*
  * Calculate total sizes of input arrays.
  */
   total_size_x     = ntimes * ncolx;
@@ -2059,75 +1608,20 @@ NhlErrorTypes svdstd_sv_W( void )
   total_size_svlft =  *nsvd * ncolx;
   total_size_svrgt =  *nsvd * ncoly;
 /*
- * Coerce x to double if necessary.
+ * Coerce missing values, if any.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-    any_double = 1;
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
- * x is already double.
+ * Coerce x and y to double if necessary.
  */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double if necessary.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * y is already double.
- */
-    dy = (double*)y;
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_y,has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
 /*
  * svlft and svrgt must be float or double. It doesn't matter what the input
@@ -2149,39 +1643,26 @@ NhlErrorTypes svdstd_sv_W( void )
  * values coming in).  svrgt/lft can only be float or double, so only
  * allocate space for a d.p. array if svrgt/lft is float.
  */
-  if(type_svlft != NCL_double) {
-    dsvlft = (double*)NclMalloc(sizeof(double)*total_size_svlft);
-    if( dsvlft == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing svLeft array to double precision");
-      return(NhlFATAL);
-    }
+  dsvlft = coerce_output_double(svlft,type_svlft,total_size_svlft);
+  dsvrgt = coerce_output_double(svrgt,type_svrgt,total_size_svrgt);
+  if(dsvlft == NULL || dsvrgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing output arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Determine type of output array.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_svdpcv = NCL_float;
   }
   else {
-/*
- * svlft is already double.
- */
-    dsvlft = (double*)svlft;
+    type_svdpcv = NCL_double;
   }
-
-  if(type_svrgt != NCL_double) {
-    dsvrgt = (double*)NclMalloc(sizeof(double)*total_size_svrgt);
-    if( dsvrgt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for coercing svRight array to double precision");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * svrgt is already double.
- */
-    dsvrgt = (double*)svrgt;
-  }
-
 /*
  * Allocate space for output array.
  */
   dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)NclMalloc(*nsvd*sizeof(double));
+  svdpcv = (double *)calloc(*nsvd,sizeof(double));
   if( svdpcv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -2191,11 +1672,11 @@ NhlErrorTypes svdstd_sv_W( void )
  */
   nsvmx = min(ncolx,ncoly);
   lwork = max(3*nsvmx+max(ncolx,ncoly),5*min(ncolx,ncoly)-4);
-  w   = (double *)NclMalloc(lwork*sizeof(double));
-  u   = (double *)NclMalloc(nsvmx*ncolx*sizeof(double));
-  vt  = (double *)NclMalloc(nsvmx*ncoly*sizeof(double));
-  sv  = (double *)NclMalloc(nsvmx*sizeof(double));
-  crv = (double *)NclMalloc(ncolx*ncoly*sizeof(double));
+  w   = (double *)calloc(lwork,sizeof(double));
+  u   = (double *)calloc(nsvmx*ncolx,sizeof(double));
+  vt  = (double *)calloc(nsvmx*ncoly,sizeof(double));
+  sv  = (double *)calloc(nsvmx,sizeof(double));
+  crv = (double *)calloc(ncolx*ncoly,sizeof(double));
   if( w == NULL || crv == NULL || u == NULL || vt == NULL || sv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -2238,13 +1719,13 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Return values. 
  */
-  if(type_x != NCL_double && type_y != NCL_double) {
+  if(type_svdpcv != NCL_double) {
 /*
  * None of the input is double, so return floats.
  *
  * First copy double values to float values.
  */
-    rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
+    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
     for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
     NclFree(svdpcv);
 
@@ -2268,7 +1749,7 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Convert doubles to floats.
  */
-    rsv = (float *)NclMalloc(nsvmx*sizeof(float));
+    rsv = (float *)calloc(nsvmx,sizeof(float));
     if( rsv == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for attributes");
       return(NhlFATAL);

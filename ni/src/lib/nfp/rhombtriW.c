@@ -4,14 +4,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
 extern void NGCALLF(drhombtrunc,DRHOMBTRUNC)(int*,int*,double*,double*,
                                              int*);
@@ -23,16 +16,16 @@ NhlErrorTypes rhomb_trunC_W( void )
  * Input array variables
  */
   void *ab;
-  double *dab, *a, *b;
-  float *rab;
+  double *tmp_a, *tmp_b;
+  void *new_ab;
   int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ab;
-  int nt, m, n, total_size_ab;
+  int nt, m, n, nm, total_size_ab, total_size_ab2;
   int *T;
 /*
  * various
  */
-  int i, j, size, nbytes, start;
+  int i, j, index_nm, start;
 /*
  * Retrieve parameters
  *
@@ -76,97 +69,85 @@ NhlErrorTypes rhomb_trunC_W( void )
  */
   m  = dsizes_ab[ndims_ab-2];
   n  = dsizes_ab[ndims_ab-1];
+  nm = n * m;
 
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
 
-  total_size_ab = 2*nt*n*m;
+  total_size_ab  = nt*nm;
+  total_size_ab2 = 2*total_size_ab;
 /*
- * Coerce ab to double no matter what, because we need an extra copy of this
- * array anyway.
+ * Create space for temporary a and b arrays.
  */
-  dab = (double*)NclMalloc(sizeof(double)*total_size_ab);
-  if( dab == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: Unable to allocate memory for coercing ab array to double precision");
-    return(NhlFATAL);
-  }
-  _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             dab,
-             ab,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_ab)));
-/*
- * Create space for a and b arrays
- */
-  a   = (double*)calloc(n*m*sizeof(double),1);
-  b   = (double*)calloc(n*m*sizeof(double),1);
-  if( a == NULL || b == NULL ) {
+  tmp_a = (double*)calloc(nm,sizeof(double));
+  tmp_b = (double*)calloc(nm,sizeof(double));
+  if( tmp_a == NULL || tmp_b == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-
 /*
- * Call Fortran function
+ * Allocate space for output array.
  */
-  j      = 0;
-  size   = n*m;
-  nbytes = size*sizeof(double);
-  start  = nt*n*m;
+  if(type_ab != NCL_double) {
+    new_ab = (void*)calloc(total_size_ab2,sizeof(float));
+  }
+  else {
+    new_ab = (void*)calloc(total_size_ab2,sizeof(double));
+  }
+  if( new_ab == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: Unable to allocate memory for coercing ab array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Loop through nt and call Fortran function
+ */
+  index_nm = 0;
+  start    = nt*nm;
 
   for(i = 0; i < nt; i++) {
 /*
- * Copy ab array into individual a and b arrays.
+ * Coerce subsection of ab to temporary a and b.
  */
-    memcpy(&a[0],&dab[j],      nbytes);
-    memcpy(&b[0],&dab[start+j],nbytes);
+    coerce_subset_input_double(ab,tmp_a,index_nm,type_ab,nm,0,NULL,NULL);
+    coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
+                               NULL,NULL);
 
-    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&n,&m,&a[0],&b[0],T);
+    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&n,&m,tmp_a,tmp_b,T);
 /*
- * Copy a and b arrays back into ab array.
+ * Copy a and b arrays back into new_ab array.
  */
-    memcpy(&dab[j],      &a[0],nbytes);
-    memcpy(&dab[start+j],&b[0],nbytes);
-
-    j += size;
+    for(j = 0; j < nm; j++) {
+      if(type_ab != NCL_double) {
+        ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
+        ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
+      }
+      else {
+        ((double*)new_ab)[index_nm+j]       = tmp_a[j];
+        ((double*)new_ab)[start+index_nm+j] = tmp_b[j];
+      }
+    }
+    index_nm += nm;
   }
 
 /*
  * Free work arrays.
  */ 
-  NclFree(a);
-  NclFree(b);
+  NclFree(tmp_a);
+  NclFree(tmp_b);
 /*
  * Return values. 
  */
   if(type_ab != NCL_double) {
 /*
- * Input is not double, so return float values.
- *
- * First copy double values to float values.
- */
-    rab = (float*)NclMalloc(sizeof(float)*total_size_ab);
-    if( rab == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_ab; i++ ) rab[i] = (float)dab[i];
-
-/*
- * Free double precision values.
- */
-    NclFree(dab);
-/*
  * Return float values.
  */
-    return(NclReturnValue((void*)rab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
+    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
   }
   else {
 /*
  * Return double values.
  */
-    return(NclReturnValue((void*)dab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
+    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
   }
 }
 
@@ -177,16 +158,16 @@ NhlErrorTypes tri_trunC_W( void )
  * Input array variables
  */
   void *ab;
-  double *dab, *a, *b;
-  float *rab;
+  double *tmp_a, *tmp_b;
+  void *new_ab;
   int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ab;
-  int nt, m, n, total_size_ab;
+  int nt, m, n, nm, total_size_ab, total_size_ab2;
   int *T;
 /*
  * various
  */
-  int i, j, size, nbytes, start;
+  int i, j, index_nm, start;
 /*
  * Retrieve parameters
  *
@@ -230,95 +211,85 @@ NhlErrorTypes tri_trunC_W( void )
  */
   m = dsizes_ab[ndims_ab-2];
   n = dsizes_ab[ndims_ab-1];
+  nm = n * m;
 
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
-  total_size_ab = 2*nt*n*m;
+
+  total_size_ab  = nt*nm;
+  total_size_ab2 = 2*total_size_ab;
 /*
- * Coerce ab to double no matter what, because we need an extra copy of this
- * array anyway.
+ * Create space for temporary a and b arrays.
  */
-  dab = (double*)NclMalloc(sizeof(double)*total_size_ab);
-  if( dab == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: Unable to allocate memory for coercing ab array to double precision");
-    return(NhlFATAL);
-  }
-  _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             dab,
-             ab,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_ab)));
-/*
- * Create space for a and b arrays
- */
-  a   = (double*)calloc(n*m*sizeof(double),1);
-  b   = (double*)calloc(n*m*sizeof(double),1);
-  if( a == NULL || b == NULL ) {
+  tmp_a = (double*)calloc(nm,sizeof(double));
+  tmp_b = (double*)calloc(nm,sizeof(double));
+  if( tmp_a == NULL || tmp_b == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-
 /*
- * Call Fortran function
+ * Allocate space for output array.
  */
-  j      = 0;
-  size   = n*m;
-  nbytes = size*sizeof(double);
-  start  = nt*n*m;
+  if(type_ab != NCL_double) {
+    new_ab = (void*)calloc(total_size_ab2,sizeof(float));
+  }
+  else {
+    new_ab = (void*)calloc(total_size_ab2,sizeof(double));
+  }
+  if( new_ab == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: Unable to allocate memory for coercing ab array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Loop through nt and call Fortran function
+ */
+  index_nm = 0;
+  start    = nt*nm;
 
   for(i = 0; i < nt; i++) {
 /*
- * Copy ab array into individual a and b arrays.
+ * Coerce subsection of ab to temporary a and b.
  */
-    memcpy(&a[0],&dab[j],      nbytes);
-    memcpy(&b[0],&dab[start+j],nbytes);
+    coerce_subset_input_double(ab,tmp_a,index_nm,type_ab,nm,0,NULL,NULL);
+    coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
+                               NULL,NULL);
 
-    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,&a[0],&b[0],T);
+    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
 /*
- * Copy a and b arrays back into ab array.
+ * Copy a and b arrays back into new_ab array.
  */
-    memcpy(&dab[j],      &a[0],nbytes);
-    memcpy(&dab[start+j],&b[0],nbytes);
-
-    j += size;
+    for(j = 0; j < nm; j++) {
+      if(type_ab != NCL_double) {
+        ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
+        ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
+      }
+      else {
+        ((double*)new_ab)[index_nm+j]       = tmp_a[j];
+        ((double*)new_ab)[start+index_nm+j] = tmp_b[j];
+      }
+    }
+    index_nm += nm;
   }
 
 /*
  * Free work arrays.
  */ 
-  NclFree(a);
-  NclFree(b);
+  NclFree(tmp_a);
+  NclFree(tmp_b);
 /*
  * Return values. 
  */
   if(type_ab != NCL_double) {
 /*
- * Input is not double, so return float values.
- *
- * First copy double values to float values.
- */
-    rab = (float*)NclMalloc(sizeof(float)*total_size_ab);
-    if( rab == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_ab; i++ ) rab[i] = (float)dab[i];
-/*
- * Free double precision values.
- */
-    NclFree(dab);
-/*
  * Return float values.
  */
-    return(NclReturnValue((void*)rab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
+    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
   }
   else {
 /*
  * Return double values.
  */
-    return(NclReturnValue((void*)dab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
+    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
   }
 }
 
@@ -328,17 +299,16 @@ NhlErrorTypes rhomb_trunc_W( void )
  * Input array variables
  */
   void *a, *b;
-  double *da, *db, *a2, *b2;
-  float *ra, *rb;
+  double *tmp_a, *tmp_b;
   int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
   int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
-  int nt, m, n, total_size_ab;
+  int nt, m, n, nm, total_size_ab;
   int *T;
 /*
  * various
  */
-  int i, j, size, nbytes;
+  int i, j, index_nm;
 /*
  * Retrieve parameters
  *
@@ -394,10 +364,11 @@ NhlErrorTypes rhomb_trunc_W( void )
  */
   m = dsizes_a[ndims_a-2];
   n = dsizes_a[ndims_a-1];
+  nm = n * m;
 
   nt = 1;
   for(i = 0; i < ndims_a-2; nt*=dsizes_a[i],i++);
-  total_size_ab = nt*n*m;
+  total_size_ab = nt*nm;
 /*
  * a and b must be float or double.
  */
@@ -407,107 +378,63 @@ NhlErrorTypes rhomb_trunc_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce a to double.
+ * Create temporary a and b arrays.
  */
   if(type_a != NCL_double) {
-    da = (double*)NclMalloc(sizeof(double)*total_size_ab);
-    if( da == NULL ) {
+    tmp_a = (double*)calloc(nm,sizeof(double));
+    if( tmp_a == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: Unable to allocate memory for coercing a array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             da,
-             a,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_a)));
   }
-  else {
-/*
- * Input is already double.
- */
-    da = (double*)a;
-  }
-/*
- * Coerce b to double.
- */
   if(type_b != NCL_double) {
-    db = (double*)NclMalloc(sizeof(double)*total_size_ab);
-    if( db == NULL ) {
+    tmp_b = (double*)calloc(nm,sizeof(double));
+    if( tmp_b == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: Unable to allocate memory for coercing b array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             db,
-             b,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_b)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    db = (double*)b;
-  }
-/*
- * Create space for a, b arrays
- */
-  a2 = (double*)calloc(n*m*sizeof(double),1);
-  b2 = (double*)calloc(n*m*sizeof(double),1);
-  if( a2 == NULL || b2 == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
   }
 /*
  * Call Fortran function.
  */
-  j      = 0;
-  size   = n * m;
-  nbytes = size*sizeof(double);
-
+  index_nm = 0;
   for(i = 0; i < nt; i++) {
 /*
- * Copy original big a and b arrays into smaller a and b arrays.
+ * Coerce subsection of a and b to temporary a and b.
  */
-    memcpy(&a2[0],&da[j],nbytes);
-    memcpy(&b2[0],&db[j],nbytes);
+    if(type_a != NCL_double) {
+      coerce_subset_input_double(a,tmp_a,index_nm,type_a,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_a  = &((double*)a)[index_nm];
+    }
+    if(type_b != NCL_double) {
+      coerce_subset_input_double(b,tmp_b,index_nm,type_b,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_b  = &((double*)b)[index_nm];
+    }
 
-    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&n,&m,&a2[0],&b2[0],T);
-/*
- * Copy smaller a and b arrays back into original big a and b arrays.
- */
-    memcpy(&da[j],&a2[0],nbytes);
-    memcpy(&db[j],&b2[0],nbytes);
+    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&n,&m,tmp_a,tmp_b,T);
 
-    j += size;
+    if(type_a != NCL_double) {
+      for(j = 0; j < nm; j++ ) {
+        ((float*)a)[index_nm+j] = (float)(tmp_a[j]);
+      }
+    }
+    if(type_b != NCL_double) {
+      for(j = 0; j < nm; j++ ) {
+        ((float*)b)[index_nm+j] = (float)(tmp_b[j]);
+      }
+    }
+    index_nm += nm;
   }
 
 /*
  * Free work arrays.
  */ 
-  NclFree(a2);
-  NclFree(b2);
-/*
- * If returning float values, we need to copy the coerced float values
- * back to the original location of a and b.  Do this by creating a pointer
- * of type float that points to the original location, and then loop through
- * the values and do the coercion.
- */
-  if(type_a == NCL_float) {
-    ra = (float*)a;     /* Float pointer to original a array */
-    for( i = 0; i < total_size_ab; i++ ) ra[i]  = (float)da[i];
-    NclFree(da);   /* Free up the double array */
-  }
-
-  if(type_b == NCL_float) {
-    rb = (float*)b;     /* Float pointer to original b array */
-    for( i = 0; i < total_size_ab; i++ ) rb[i]  = (float)db[i];
-    NclFree(db);   /* Free up the double array */
-  }
-
+  if(type_a != NCL_double) NclFree(tmp_a);
+  if(type_b != NCL_double) NclFree(tmp_b);
 /*
  * Return
  */
@@ -521,17 +448,16 @@ NhlErrorTypes tri_trunc_W( void )
  * Input array variables
  */
   void *a, *b;
-  double *da, *db, *a2, *b2;
-  float *ra, *rb;
+  double *tmp_a, *tmp_b;
   int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
   int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
-  int nt, m, n, total_size_ab;
+  int nt, m, n, nm, total_size_ab;
   int *T;
 /*
  * various
  */
-  int i, j, size, nbytes;
+  int i, j, index_nm;
 /*
  * Retrieve parameters
  *
@@ -587,10 +513,11 @@ NhlErrorTypes tri_trunc_W( void )
  */
   m = dsizes_a[ndims_a-2];
   n = dsizes_a[ndims_a-1];
+  nm = n * m;
 
   nt = 1;
   for(i = 0; i < ndims_a-2; nt*=dsizes_a[i],i++);
-  total_size_ab = nt*n*m;
+  total_size_ab = nt*nm;
 /*
  * a and b must be float or double.
  */
@@ -600,107 +527,62 @@ NhlErrorTypes tri_trunc_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce a to double.
+ * Create temporary a and b arrays.
  */
   if(type_a != NCL_double) {
-    da = (double*)NclMalloc(sizeof(double)*total_size_ab);
-    if( da == NULL ) {
+    tmp_a = (double*)calloc(nm,sizeof(double));
+    if( tmp_a == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: Unable to allocate memory for coercing a array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             da,
-             a,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_a)));
   }
-  else {
-/*
- * Input is already double.
- */
-    da = (double*)a;
-  }
-/*
- * Coerce b to double.
- */
   if(type_b != NCL_double) {
-    db = (double*)NclMalloc(sizeof(double)*total_size_ab);
-    if( db == NULL ) {
+    tmp_b = (double*)calloc(nm,sizeof(double));
+    if( tmp_b == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: Unable to allocate memory for coercing b array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-             db,
-             b,
-             total_size_ab,
-             NULL,
-             NULL,
-             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_b)));
-  }
-  else {
-/*
- * Input is already double.
- */
-    db = (double*)b;
-  }
-/*
- * Create space for a, b arrays
- */
-  a2 = (double*)calloc(n*m*sizeof(double),1);
-  b2 = (double*)calloc(n*m*sizeof(double),1);
-  if( a2 == NULL || b2 == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
   }
 /*
  * Call Fortran function.
  */
-  j      = 0;
-  size   = n * m;
-  nbytes = size*sizeof(double);
-
   for(i = 0; i < nt; i++) {
 /*
- * Copy original big a and b arrays into smaller a and b arrays.
+ * Coerce subsection of a and b to temporary a and b.
  */
-    memcpy(&a2[0],&da[j],nbytes);
-    memcpy(&b2[0],&db[j],nbytes);
+    if(type_a != NCL_double) {
+      coerce_subset_input_double(a,tmp_a,index_nm,type_a,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_a  = &((double*)a)[index_nm];
+    }
+    if(type_b != NCL_double) {
+      coerce_subset_input_double(b,tmp_b,index_nm,type_b,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_b  = &((double*)b)[index_nm];
+    }
 
-    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,&a2[0],&b2[0],T);
-/*
- * Copy smaller a and b arrays back into original big a and b arrays.
- */
-    memcpy(&da[j],&a2[0],nbytes);
-    memcpy(&db[j],&b2[0],nbytes);
+    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
 
-    j += size;
+    if(type_a != NCL_double) {
+      for(j = 0; j < nm; j++ ) {
+        ((float*)a)[index_nm+j] = (float)(tmp_a[j]);
+      }
+    }
+    if(type_b != NCL_double) {
+      for(j = 0; j < nm; j++ ) {
+        ((float*)b)[index_nm+j] = (float)(tmp_b[j]);
+      }
+    }
+    index_nm += nm;
   }
 
 /*
  * Free work arrays.
  */ 
-  NclFree(a2);
-  NclFree(b2);
-/*
- * If returning float values, we need to copy the coerced float values
- * back to the original location of a and b.  Do this by creating a pointer
- * of type float that points to the original location, and then loop through
- * the values and do the coercion.
- */
-  if(type_a == NCL_float) {
-    ra = (float*)a;     /* Float pointer to original a array */
-    for( i = 0; i < total_size_ab; i++ ) ra[i]  = (float)da[i];
-    NclFree(da);   /* Free up the double array */
-  }
-
-  if(type_b == NCL_float) {
-    rb = (float*)b;     /* Float pointer to original b array */
-    for( i = 0; i < total_size_ab; i++ ) rb[i]  = (float)db[i];
-    NclFree(db);   /* Free up the double array */
-  }
-
+  if(type_a != NCL_double) NclFree(tmp_a);
+  if(type_b != NCL_double) NclFree(tmp_b);
 /*
  * Return
  */

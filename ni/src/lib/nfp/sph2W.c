@@ -1685,7 +1685,7 @@ NhlErrorTypes igradsF_W( void )
  * Return array.
  */
   if(type_gzx != NCL_double && type_gzy != NCL_double) {
-    rz = (float*)NclMalloc(total_size_in*sizeof(float));
+    rz = (float*)calloc(total_size_in,sizeof(float));
     if (rz == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate space for output array" );
       return(NhlFATAL);
@@ -2186,7 +2186,7 @@ NhlErrorTypes igradsG_W( void )
  * Return array.
  */
   if(type_gzx != NCL_double && type_gzy != NCL_double) {
-    rz = (float*)NclMalloc(total_size_in*sizeof(float));
+    rz = (float*)calloc(total_size_in,sizeof(float));
     if (rz == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate space for output array" );
       return(NhlFATAL);
@@ -11864,7 +11864,7 @@ NhlErrorTypes shaeC_W( void )
  * Determine whether to return float or double.
  */
   if(type_g != NCL_double) {
-    rab = (float*)NclMalloc(total_size_out*sizeof(float));
+    rab = (float*)calloc(total_size_out,sizeof(float));
     if (rab == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate space for output array" );
       return(NhlFATAL);
@@ -12045,7 +12045,7 @@ NhlErrorTypes shagC_W( void )
  * Determine whether to return float or double.
  */
   if(type_g != NCL_double) {
-    rab = (float*)NclMalloc(total_size_out*sizeof(float));
+    rab = (float*)calloc(total_size_out,sizeof(float));
     if (rab == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate space for output array" );
       return(NhlFATAL);
@@ -12233,7 +12233,7 @@ NhlErrorTypes shseC_W( void )
  * Determine whether to return float or double.
  */
   if(type_ab != NCL_double) {
-    rg = (float*)NclMalloc(total_size_out*sizeof(float));
+    rg = (float*)calloc(total_size_out,sizeof(float));
     if (rg == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate space for output array" );
       return(NhlFATAL);
@@ -12421,7 +12421,7 @@ NhlErrorTypes shsgC_W( void )
  * Determine whether to return float or double.
  */
   if(type_ab != NCL_double) {
-    rg = (float*)NclMalloc(total_size_out*sizeof(float));
+    rg = (float*)calloc(total_size_out,sizeof(float));
     if (rg == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate space for output array" );
       return(NhlFATAL);

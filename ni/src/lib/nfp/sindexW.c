@@ -3,11 +3,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
+#include "wrapper.h"
 #include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
@@ -17,7 +13,6 @@
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
 #include <math.h>
-#include <ncarg/gks.h>
 
 extern void NGCALLF(dindx77,DINDX77)(double *,double *,int *, int *,double *,
                                      int *,double *,int *,double *,double *,
@@ -107,58 +102,8 @@ NhlErrorTypes sindex_yrmo_W( void )
  *
  * Use the default missing value if one isn't set.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dx.doubleval = (double)missing_rx.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
  * x and y missing values must be equal.
  */
@@ -170,77 +115,20 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_xy);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_xy,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_xy,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dx = (double*)x;
-  }
-/*
- * Coerce y to double.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_xy);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_xy,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_xy,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dy = (double*)y;
-  }
+  dx = coerce_input_double(x,type_x,total_size_xy,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_xy,has_missing_y,&missing_y,
+                           &missing_dy);
 
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
 /*
  * Allocate space for output arrays.
  */
-  soi       = (double *)NclMalloc(total_size_xy*sizeof(double));
-  soi_noise = (double *)NclMalloc(total_size_xy*sizeof(double));
+  soi = (double *)calloc(total_size_xy,sizeof(double));
+  soi_noise = (double *)calloc(total_size_xy,sizeof(double));
   if( soi == NULL || soi_noise == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for output array(s)");
     return(NhlFATAL);
@@ -249,7 +137,7 @@ NhlErrorTypes sindex_yrmo_W( void )
  * Allocate memory for work array.
  */
   lwork = 2*nyrs*nmos + 4*nmos + nyrs;
-  work = (double *)NclMalloc(lwork*sizeof(double));
+  work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -266,13 +154,8 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * free memory.
  */
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
-  if((void*)dy != y) {
-    NclFree(dy);
-  }
-
+  if((void*)dx != x) NclFree(dx);
+  if((void*)dy != y) NclFree(dy);
   NclFree(work);
   NclFree(soi_noise);
 
@@ -283,7 +166,7 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Copy double values to float values.
  */
-    rsoi = (float*)NclMalloc(sizeof(float)*total_size_xy);
+    rsoi = (float*)calloc(total_size_xy,sizeof(float));
     if( rsoi == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -515,58 +398,8 @@ NhlErrorTypes snindex_yrmo_W( void )
  *
  * Use the default missing value if one isn't set.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dx.doubleval = (double)missing_rx.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 /*
  * x and y missing values must be equal.
  */
@@ -578,70 +411,14 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_xy);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_xy,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_xy,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dx = (double*)x;
-  }
-/*
- * Coerce y to double.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_xy);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_xy,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_xy,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dy = (double*)y;
+  dx = coerce_input_double(x,type_x,total_size_xy,has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,total_size_xy,has_missing_y,&missing_y,
+                           &missing_dy);
+
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -660,24 +437,15 @@ NhlErrorTypes snindex_yrmo_W( void )
  * values coming in).  soi_noise can only be float or double, so only allocate
  * space for a d.p. array if soi_noise is float.
  */
-  if(type_soi_noise == NCL_float) {
-    dsoi_noise = (double*)NclMalloc(sizeof(double)*total_size_xy);
-    if( dsoi_noise == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing soi_noise array to double precision");
-      return(NhlFATAL);
-    }
+  dsoi_noise = coerce_output_double(soi_noise,type_soi_noise,total_size_xy);
+  if( dsoi_noise == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing soi_noise array to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Input is already double.
- */
-    dsoi_noise = (double*)soi_noise;
-  }
-
 /*
  * Allocate space for output arrays.
  */
-  soi = (double *)NclMalloc(total_size_xy*sizeof(double));
+  soi = (double*)calloc(total_size_xy,sizeof(double));
   if( soi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -686,7 +454,7 @@ NhlErrorTypes snindex_yrmo_W( void )
  * Allocate memory for work array.
  */
   lwork = 2*nyrs*nmos + 4*nmos + nyrs;
-  work = (double *)NclMalloc(lwork*sizeof(double));
+  work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -703,13 +471,8 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Free memory.
  */
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
-  if((void*)dy != y) {
-    NclFree(dy);
-  }
-
+  if((void*)dx != x) NclFree(dx);
+  if((void*)dy != y) NclFree(dy);
   NclFree(work);
 /*
  * If returning float values, we need to copy the coerced float values
@@ -732,7 +495,7 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Copy double values to float values.
  */
-    rsoi = (float*)NclMalloc(sizeof(float)*total_size_xy);
+    rsoi = (float*)calloc(total_size_xy,sizeof(float));
     if( rsoi == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for output array");
       return(NhlFATAL);
