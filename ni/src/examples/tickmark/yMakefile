@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.2 1995-02-08 18:01:13 haley Exp $
+#   $Id: yMakefile,v 1.3 1995-02-09 17:38:12 stautler Exp $
 #
 #   Makefile for HLU TickMark examples
 #
@@ -8,10 +8,10 @@ PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = tm01c.c tm02c.c tm03c.c
-OBJS        = tm01c.o tm02c.o tm03c.o
-RES			= tm01.res tm02.res tm03.res
-INCLUDES	= tm03c.h
+SRCS        = tm01c.c tm02c.c tm03c.c tm01f.f tm02f.f tm03f.f
+OBJS        = tm01c.o tm02c.o tm03c.o tm01f.o tm02f.o tm03f.o
+RES	    = tm01.res tm02.res tm03.res
+INCLUDES    = tm03c.h
 EXFILES     = $(SRCS) $(RES) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
@@ -19,6 +19,10 @@ InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
 HLUCExampleTarget(tm01c,tm01c.o)
 HLUCExampleTarget(tm02c,tm02c.o)
 HLUCExampleTarget(tm03c,tm03c.o)
+
+HLUFExampleTarget(tm01f,tm01f.o)
+HLUFExampleTarget(tm02f,tm02f.o)
+HLUFExampleTarget(tm03f,tm03f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
