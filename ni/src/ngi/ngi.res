@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.26 1999-05-27 02:12:01 dbrown Exp $
+!      $Id: ngi.res,v 1.27 1999-06-02 03:28:11 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -32,7 +32,7 @@
 *dragInitiatorProtocolStyle:	XmDRAG_DROP_ONLY
 *dragReceiverProtocolStyle:	XmDRAG_DROP_ONLY
 *allowDragSelected:		True
-!*allowDrop:			True
+*allowDrop:			True
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
