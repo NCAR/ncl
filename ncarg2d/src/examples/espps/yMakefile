@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-01-14 00:28:05 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-05 00:39:50 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -8,7 +8,7 @@ FSPLIT	= ncarguncat
 MYNAME	= espps
 
 GENERIC_SRCS = \
-	nglogy.f ngrevx.f ngset1.f ngset2.f
+	splogy.f sprevx.f spset1.f spset2.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
