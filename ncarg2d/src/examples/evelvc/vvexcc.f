@@ -266,9 +266,7 @@ C
         SECOND=0.
         RETURN
       END
-C
-C	$Id: vvexcc.f,v 1.1 1993-01-17 04:29:57 haley Exp $
-C
+
       SUBROUTINE GENARA (A,B,ID,JD)
 C
 C     This subroutine generates a smooth array in output array B.
@@ -330,48 +328,38 @@ C
       RETURN
       END
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-C
-C	$Id: vvexcc.f,v 1.1 1993-01-17 04:29:57 haley Exp $
-C
       SUBROUTINE OPENR (IUNIT)
-      CHARACTER*128 PARANM,FILENM
+      CHARACTER*128 FILENM
+      DATA FILENM / ' ' /
       SAVE IOPEN
-      DATA PARANM / 'DBDIR' /
       DATA IOPEN / 0 /
-	IF (IOPEN.EQ.0) THEN
-	  CALL GETNGP (PARANM,FILENM)
-	  DO 101 I=1,120
-	    IF (FILENM(I:I).EQ.' ') THEN
-	      FILENM(I:I+8)='/ranfdata'
-	      GO TO 102
-	    END IF
-  101     CONTINUE
-	  GO TO 103
-  102     OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='FORMATTED',
-     +                                                       ERR=103)
-	  IOPEN=1
-	END IF
-	RETURN
-  103   WRITE (6,*) 'ERROR IN OPENING FILE OF RANDOM NUMBERS: ',FILENM
-	STOP
+      IF (IOPEN.EQ.0) THEN
+      CALL GNGPAT (FILENM,'database',ISTAT)
+      IF (ISTAT .NE. -1) THEN
+          DO 101 I=1,119
+              IF (FILENM(I:I).EQ.CHAR(0)) THEN
+                  FILENM(I:I+8)='/ranfdata'
+                  GOTO 104
+              ENDIF
+ 101      CONTINUE
+         GO TO 105
+      ELSE
+          DO 102 I=2,128
+              LENEM=I
+              IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
+ 102      CONTINUE
+ 103      PRINT * , 'OPENR - ',FILENM(1:LENEM-1)
+          STOP
+      ENDIF
+ 104  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='FORMATTED',
+     +                                                       ERR=105)
+      IOPEN=1
+      END IF
+      RETURN
+ 105  WRITE (6,*) 'ERROR OPENING RANFDATA DATA FILE - FILE NAME: ',FILENM
+      STOP
       END
-C
-C	$Id: vvexcc.f,v 1.1 1993-01-17 04:29:57 haley Exp $
-C
+
       FUNCTION RANDNO()
 C
 C     This function is used to produce random numbers for the
