@@ -246,7 +246,8 @@ int _nclfprintf_pager
 	va_list ap;
 #endif
 {
-	char buffer[2048];
+	char buffer[32768];
+
 	int ret = 0;
 	int n;
 	int id,status;
