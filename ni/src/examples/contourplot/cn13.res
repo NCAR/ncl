@@ -1,8 +1,6 @@
 ! 
 ! cn13 resource file
 !
-*wkBackgroundColor:        0
-!
 ! ContourPlot resources
 !
 *pmTickMarkDisplayMode:    NoCreate
