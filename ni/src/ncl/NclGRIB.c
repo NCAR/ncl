@@ -1241,9 +1241,23 @@ GribFileRecord *therec;
 
 int GdsCompare(unsigned char *a,unsigned char *b,int n) {
 	int i;
+	/* 
+	 * differences in octet 17 are not currently used by NCL so for now
+	 * ignore them. Otherwise multiple seemingly identical coordinates are
+	 * created, of which only one can be accessed. This will probably need to be
+	 * revisited. dib 2002-11-22
+	 */
+
 	for( i = 0; i < n ; i++) {
-		if(*(a++)!=*(b++)) {	
-			return(0);
+		switch (i) {
+		case 16:
+			a++,b++;
+			break;
+		default:
+			if(*(a++)!=*(b++)) {	
+				return(0);
+			}
+			break;
 		}
 	}
 	return(1);
@@ -3149,16 +3163,7 @@ static GribParamList *_NewListNode
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->time_range_indicator = (int)grib_rec->pds[20];
-	tmp->time_period = 0;
-	switch (tmp->time_range_indicator) {
-		case 3:
-	        case 4:
-		case 5:
-			tmp->time_period = (int)grib_rec->pds[19] -  (int)grib_rec->pds[18];
-			break;
-	        default:
-			break;
-	}
+	tmp->time_period = grib_rec->time_period;
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
 	
 	tmp->levels = NULL;
@@ -3309,58 +3314,90 @@ GribRecordInqRec *grib_rec;
 	}
 }
 
-static void TimePeriodString
+static int AdjustedTimePeriod
 #if	NhlNeedProto
-(char *buf,int time_period, int unit_code)
+(int time_period, int unit_code,char *buf)
 #else
-(buf,time_period,unit_code)
-char *buf;
+(time_period,unit_code)
 int time_period;
 int unit_code;
 #endif
 {
-
+	/*
+	 * Negative time periods are considered to be modular values, and converted to
+	 * positive values depending on the units. This is difficult for days, as well
+	 * as for any units involving years, where there is no obvious modular value.
+         */
 	switch (unit_code) {
 	case 0: /*Minute*/
+		while (time_period < 0)
+			time_period = 60 + time_period;
 		sprintf(buf,"%dmin",time_period);
 		break;
         case 1: /*Hour*/
+		while (time_period < 0)
+			time_period = 24 + time_period;
 		sprintf(buf,"%dh",time_period);
 		break;
 	case 2: /*Day*/
+		/* this oversimplifies and may need attention when there are users of such time periods */
+		while (time_period < 0)
+			time_period = 30 + time_period;
 		sprintf(buf,"%dd",time_period);
 		break;
 	case 3: /*Month*/
+		while (time_period < 0)
+			time_period = 12 + time_period;
 		sprintf(buf,"%dm",time_period);
 		break;
 	case 4: /*Year*/
+		time_period = abs(time_period);
 		sprintf(buf,"%dy",time_period);
 		break;
 	case 5: /*Decade (10 years)*/
+		time_period = abs(time_period);
 		sprintf(buf,"%dy",time_period * 10);
 		break;
 	case 6: /*Normal (30 years)*/
+		time_period = abs(time_period);
 		sprintf(buf,"%dy",time_period * 30);
 		break;
 	case 7: /*Century*/
+		time_period = abs(time_period);
 		sprintf(buf,"%dy",time_period * 100);
 		break;
 	case 10: /*3 hours*/
-		sprintf(buf,"%dh",time_period * 3);
+		time_period *= 3;
+		while (time_period < 0)
+			time_period = 24 + time_period;
+		sprintf(buf,"%dh",time_period);
+		time_period /= 3;
 		break;
 	case 11: /*6 hours*/
-		sprintf(buf,"%dh",time_period * 6);
+		time_period *= 6;
+		while (time_period < 0)
+			time_period = 24 + time_period;
+		sprintf(buf,"%dh",time_period);
+		time_period /= 6;
 		break;
 	case 12: /*12 hours*/
-		sprintf(buf,"%dh",time_period * 12);
+		time_period *= 12;
+		while (time_period < 0)
+			time_period = 24 + time_period;
+		sprintf(buf,"%dh",time_period);
+		time_period /= 12;
 		break;
 	case 254: /*Second*/
+		while (time_period < 0)
+			time_period = 60 + time_period;
 		sprintf(buf,"%dsec",time_period);
 		break;
 	default: /*unknown*/
+		time_period = abs(time_period);
 		sprintf(buf,"%d",time_period);
 		break;
 	}
+	return time_period;
 }
 
 
@@ -3398,6 +3435,7 @@ int wr_status;
 	int tmp_minute;
 	int version;
 	int error_count = 0;
+	int rec_num = 0;
 	NhlErrorTypes retvalue;
 
 	if(wr_status <= 0) {
@@ -3406,6 +3444,7 @@ int wr_status;
 	fd = fopen(NrmQuarkToString(path),"r");
 	vbuf = (void*)NclMalloc(4*getpagesize());
 	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+
 	
 	if(fd != NULL) {
 		while(!done) {
@@ -3414,7 +3453,9 @@ int wr_status;
 				done = 1;
 			} 
 			if((ret != GRIBERROR)&&(size != 0)) {
+				rec_num++;
 				grib_rec = NclMalloc((unsigned)sizeof(GribRecordInqRec));
+				grib_rec->rec_num = rec_num;
 				grib_rec->gds = NULL;
 				grib_rec->the_dat = NULL;
 				grib_rec->version = version;
@@ -3682,7 +3723,8 @@ int wr_status;
 						if (grib_rec->time_period == 0)
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
 						else {
-							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							grib_rec->time_period = AdjustedTimePeriod
+								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
@@ -3691,7 +3733,8 @@ int wr_status;
 						if (grib_rec->time_period == 0)
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc");
 						else {
-							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							grib_rec->time_period = AdjustedTimePeriod
+								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc%s",tpbuf);
 						}
 						break;
@@ -3700,7 +3743,8 @@ int wr_status;
 						if (grib_rec->time_period == 0)
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif");
 						else {
-							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							grib_rec->time_period = AdjustedTimePeriod
+								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif%s",tpbuf);
 						}
 						break;
@@ -3708,6 +3752,7 @@ int wr_status;
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[20]);
 						break;
 					}
+
 					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
 					strcpy(grib_rec->var_name,(char*)buffer);
 					grib_rec->var_name_q = NrmStringToQuark(grib_rec->var_name);
@@ -3727,9 +3772,9 @@ int wr_status;
 					if(therec->var_list == NULL) {
 						therec->var_list = _NewListNode(grib_rec);
 						therec->n_vars = 1;
-				} else {
-					step = therec->var_list;
-					if(!_FirstCheck(therec,grib_rec)) {
+					} else {
+					   step = therec->var_list;
+					   if(!_FirstCheck(therec,grib_rec)) {
 /*
 * Keep in inorder list
 */
