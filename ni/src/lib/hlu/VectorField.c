@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.9 1996-10-09 04:00:52 dbrown Exp $
+ *      $Id: VectorField.c,v 1.10 1996-10-14 07:17:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2893,6 +2893,12 @@ VectorFieldSetValues
 	NhlBoolean		status = False;
 
 	if (vfp->use_d_arr && vfp->d_arr != ovfp->d_arr) {
+		if (vfp->d_arr->num_dimensions != 3) {
+			e_text = "%s: invalid number of dimensions in %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+				  entry_name,NhlNvfDataArray);
+			return NhlFATAL;
+		}
 		if (vfp->d_arr == NULL) {
 			e_text = 
 			   "%s:The %s resource cannot be set NULL: resetting";
@@ -2914,8 +2920,27 @@ VectorFieldSetValues
 			vfp->d_arr = ga;
 			status = True;
 		}
+		vfp->use_d_arr = True;
+		vfp->len_dims[0] = vfp->d_arr->len_dimensions[1];
+		vfp->len_dims[1] = vfp->d_arr->len_dimensions[2];
 	}
 	else if (vfp->u_arr != ovfp->u_arr || vfp->v_arr != ovfp->v_arr) {
+		if (vfp->u_arr->num_dimensions != 2 || 
+		    vfp->v_arr->num_dimensions != 2) {
+			e_text = 
+			       "%s: invalid number of dimensions in %s or %s";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNvfUDataArray,NhlNvfVDataArray);
+			return NhlFATAL;
+		}
+		if (vfp->u_arr->len_dimensions[1] !=
+		    vfp->v_arr->len_dimensions[1]) {
+			e_text = 
+			       "%s: dimensions of %s and %s are inconsistent";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNvfUDataArray,NhlNvfVDataArray);
+			return NhlFATAL;
+		}
 		if (vfp->u_arr == NULL) {
 			e_text = "%s: %s cannot be set NULL: resetting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -2956,6 +2981,9 @@ VectorFieldSetValues
 			vfp->v_arr = ga;
 			status = True;
 		}
+		vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
+		vfp->len_dims[0] = MIN(vfp->u_arr->len_dimensions[0],
+				       vfp->v_arr->len_dimensions[0]);
 	}
 
 	if (vfp->x_arr != ovfp->x_arr) {
