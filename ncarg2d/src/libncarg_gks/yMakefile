@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1997-06-11 20:46:46 boote Exp $
+#	$Id: yMakefile,v 1.12 2000-09-05 16:40:53 haley Exp $
 #
 #
 #	Makefile for the NCAR GKS library
@@ -17,3 +17,5 @@ BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 
 BuildSharedFromArch(libNGgks,libbasegks.a,1,0,-lNGgksCTXT -lNGgksX -lNGgksPS)
+CleanFilesTarget(libbasegks.a)
+
