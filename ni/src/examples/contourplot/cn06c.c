@@ -1,5 +1,5 @@
 /*
-**      $Id: cn06c.c,v 1.1 1996-01-04 21:24:00 haley Exp $
+**      $Id: cn06c.c,v 1.2 1996-01-09 21:38:47 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -108,15 +108,16 @@ main()
                   NhlDEFAULT_APP,srlist);
     }
 /*
- * Open NetCDF file containing Geo-Potential height forecast
- * information.
+ * Open NetCDF file.
  */
     sprintf( filename, "%s/cdf/contour.cdf", dir );
     ncid = ncopen(filename,NC_NOWRITE);
+/*
+ * Get title and history.
+ */
     ncattinq(ncid,NC_GLOBAL,"title",&t_type,&t_len);
     title = (char *)malloc(t_len * nctypelen(t_type));
     ncattget(ncid,NC_GLOBAL,"title",(void *)title);
-
     ncattinq(ncid,NC_GLOBAL,"history",&t_type,&t_len);
     hist = (char *)malloc(t_len * nctypelen(t_type));
     ncattget(ncid,NC_GLOBAL,"history",(void *)hist);
