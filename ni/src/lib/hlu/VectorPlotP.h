@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.8 1997-09-23 00:03:18 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.9 1997-12-17 16:48:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@
 #define NhlvcDEF_NODATA_LABEL	"NO VECTOR DATA"
 #define NhlvcDEF_ZEROF_LABEL	"ZERO FIELD"
 #define NhlvcDEF_FORMAT		"*+^sg"
+#define NhlvcPRECISION		6
 #ifndef FLT_MAX
 #define FLT_MAX			10.0e37
 #endif
