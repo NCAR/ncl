@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.4 1993-10-23 00:35:09 dbrown Exp $
+ *      $Id: hlu.c,v 1.5 1993-11-02 15:57:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1277,13 +1277,13 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 	 char		*caller)
 #else
 (gto,gfrom,max_el,copy_data,exact_count,res_name,caller)
-	(NhlGenArray	*gto; 
-	 NhlGenArray	gfrom;
-	 NrmQuark	type;
-	 NhlBoolean	copy_data;
-	 NhlBoolean	exact_count;
-	 char		*res_name;
-	 char		*caller;
+	NhlGenArray	*gto; 
+	NhlGenArray	gfrom;
+	int		max_el;
+	NhlBoolean	copy_data;
+	NhlBoolean	exact_count;
+	char		*res_name;
+	char		*caller;
 #endif
 {
 	char		*e_text;

@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.2 1993-10-19 17:52:19 boote Exp $
+ *      $Id: SplineCoord.c,v 1.3 1993-11-02 15:57:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -696,9 +696,19 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
  */
 NhlErrorTypes _NhlMultiEvalSplineCoordForward
 #if __STDC__
-(NhlCoordDat *thedat,float *x, float *y,float *xout, float *yout, int xnpts,int ynpts, float* xmissing,float  *ymissing)
+(
+	NhlCoordDat	*thedat,
+	float		*x,
+	float		*y,
+	float		*xout,
+	float		*yout,
+	int		xnpts,
+	int		ynpts,
+	float		*xmissing,
+	float		*ymissing
+)
 #else
-(thedat,x,y,xout,yout,npts,xmissing,ymissing)
+(thedat,x,y,xout,yout,xnpts,ynpts,xmissing,ymissing)
 	NhlCoordDat	*thedat;
 	float		*x;
 	float		*y;
@@ -797,7 +807,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 #if __STDC__
 (NhlCoordDat *thedat,float *x, float *y,float *xout, float *yout, int xnpts, int ynpts, float *xmissing, float *ymissing)
 #else
-(thedat,x,y,xout,yout,npts,xmissing,ymissing)
+(thedat,x,y,xout,yout,xnpts,ynpts,xmissing,ymissing)
 	NhlCoordDat	*thedat;
 	float		*x;
 	float		*y;
