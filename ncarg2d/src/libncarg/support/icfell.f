@@ -1,5 +1,5 @@
 C
-C $Id: icfell.f,v 1.1 1993-12-02 22:54:29 kennison Exp $
+C $Id: icfell.f,v 1.2 1994-03-16 00:42:45 kennison Exp $
 C
       FUNCTION ICFELL (MESSG,NERRF)
 C
@@ -56,12 +56,12 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C Define a character temporary to use.
 C
-        CHARACTER*113 CTEMP
+        CHARACTER*256 CTEMP
 C
 C Set the value of the function to the current value of the error flag.
 C

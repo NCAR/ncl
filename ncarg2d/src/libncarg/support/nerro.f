@@ -1,5 +1,5 @@
 C
-C $Id: nerro.f,v 1.2 1993-09-23 17:21:29 kennison Exp $
+C $Id: nerro.f,v 1.3 1994-03-16 00:42:49 kennison Exp $
 C
       INTEGER FUNCTION NERRO (NERRF)
 C
@@ -14,7 +14,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C Return the error flag as the value of both NERRO and NERRF.

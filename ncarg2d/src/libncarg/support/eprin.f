@@ -1,5 +1,5 @@
 C
-C $Id: eprin.f,v 1.2 1993-09-23 17:21:20 kennison Exp $
+C $Id: eprin.f,v 1.3 1994-03-16 00:42:40 kennison Exp $
 C
       SUBROUTINE EPRIN
 C
@@ -14,7 +14,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C Do it.

@@ -1,5 +1,5 @@
 C
-C $Id: entsr.f,v 1.2 1993-09-23 17:21:17 kennison Exp $
+C $Id: entsr.f,v 1.3 1994-03-16 00:42:37 kennison Exp $
 C
       SUBROUTINE ENTSR (IROLD,IRNEW)
 C
@@ -17,7 +17,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C Check for an illegal value of IRNEW.

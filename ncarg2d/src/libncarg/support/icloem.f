@@ -1,5 +1,5 @@
 C
-C $Id: icloem.f,v 1.1 1993-09-23 17:21:27 kennison Exp $
+C $Id: icloem.f,v 1.2 1994-03-16 00:42:47 kennison Exp $
 C
       FUNCTION ICLOEM (MESSG)
 C

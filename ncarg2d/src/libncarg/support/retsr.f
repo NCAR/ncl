@@ -1,5 +1,5 @@
 C
-C $Id: retsr.f,v 1.2 1993-09-23 17:21:32 kennison Exp $
+C $Id: retsr.f,v 1.3 1994-03-16 00:42:51 kennison Exp $
 C
       SUBROUTINE RETSR (IROLD)
 C
@@ -16,7 +16,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C If the given value of IROLD is illegal, that's an error.

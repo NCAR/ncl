@@ -1,5 +1,5 @@
 C
-C $Id: seter.f,v 1.3 1993-09-23 17:21:38 kennison Exp $
+C $Id: seter.f,v 1.4 1994-03-16 00:42:56 kennison Exp $
 C
       SUBROUTINE SETER (MESSG,NERRF,IROPT)
 C
@@ -50,7 +50,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C The unit number for error messages is I1MACH(4).  Save that value,

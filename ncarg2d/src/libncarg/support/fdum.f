@@ -1,5 +1,5 @@
 C
-C $Id: fdum.f,v 1.2 1993-09-23 17:21:25 kennison Exp $
+C $Id: fdum.f,v 1.3 1994-03-16 00:42:43 kennison Exp $
 C
       SUBROUTINE FDUM
 C

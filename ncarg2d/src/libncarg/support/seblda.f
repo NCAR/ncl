@@ -1,5 +1,5 @@
 C
-C $Id: seblda.f,v 1.1 1993-09-23 17:21:34 kennison Exp $
+C $Id: seblda.f,v 1.2 1994-03-16 00:42:53 kennison Exp $
 C
       BLOCK DATA SEBLDA
 C
@@ -12,7 +12,7 @@ C
         SAVE   /SECOMI/
 C
         COMMON /SECOMC/ ERMSG
-          CHARACTER*113 ERMSG
+          CHARACTER*256 ERMSG
         SAVE   /SECOMC/
 C
 C IERRU is the logical unit for error messages.  Its default value is
