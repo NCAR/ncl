@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.28 1998-04-16 21:13:24 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.29 1998-04-20 21:49:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -184,6 +184,12 @@ NhlErrorTypes _NclIbsearch(
 void
 #endif
 );
+NhlErrorTypes _NclIfbindirwrite(
+#if     NhlNeedProto
+void
+#endif
+);
+
 NhlErrorTypes _NclIcbinread(
 #if     NhlNeedProto
 void
@@ -678,6 +684,15 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIchngdir,args,"chngdir",1,IPROC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("numeric");
+	args[1].is_dimsizes = 0;
+	_NclRegisterProc(_NclIfbindirwrite,args,"fbindirwrite",2,IPROC);
 
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");

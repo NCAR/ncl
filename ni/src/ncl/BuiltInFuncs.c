@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.96 1998-04-20 20:57:09 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.97 1998-04-20 21:49:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3601,6 +3601,82 @@ NhlErrorTypes _NclIchngdir
 		return(NhlFATAL);
 	}
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	return(NhlFATAL);
+}
+
+NhlErrorTypes _NclIfbindirwrite
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry value;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
+	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd = -1;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
+
+
+	fpath = _NclGetArg(0,2,DONT_CARE);
+	value = _NclGetArg(1,2,DONT_CARE);
+
+	switch(fpath.kind) {
+	case NclStk_VAL:
+		tmp_md = fpath.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(value.kind){
+	case NclStk_VAL:
+		tmp_md = value.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		tmp_ptr = tmp_md->multidval.val;
+		thetype = tmp_md->multidval.type;
+		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+	}
+	fd = open(path_string,(O_CREAT | O_RDWR),0666);
+	if((tmp_ptr != NULL)&&(fd >= 0)) {
+		lseek(fd,0,SEEK_END);
+		n = write(fd, tmp_ptr,totalsize);
+		close(fd);
+		return(ret);
+	} else if(fd < 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: Could not create file");
+	}
 	return(NhlFATAL);
 }
 NhlErrorTypes _NclIcbinwrite
