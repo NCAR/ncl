@@ -1,17 +1,10 @@
 /*
- *	$Id: sunraster.h,v 1.3 1992-03-20 18:44:02 don Exp $
+ *	$Id: sunraster.h,v 1.4 1992-09-10 21:04:05 don Exp $
  */
 #ifndef _RASTER_SUN_
 #define _RASTER_SUN_
 
 #define RAS_SUN_ESC	128
-
-extern Raster	*SunOpen();
-extern Raster	*SunOpenWrite();
-extern int	SunRead();
-extern int	SunWrite();
-extern int	SunClose();
-extern int	SunPrintInfo();
 
 /* Include file for Sun rasterfiles */
 
