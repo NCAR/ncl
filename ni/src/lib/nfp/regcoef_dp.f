@@ -88,18 +88,27 @@ C not enough data
       YVAR = Y2SUM - YSUM*YSUM/DBLE(XYN)
       XYVAR = XYSUM - XSUM*YSUM/DBLE(XYN)
 
+      IF (XVAR.GT.0.D0) then
 C regression coef (b in book)
-      RCOEF = XYVAR/XVAR
+          RCOEF = XYVAR/XVAR
 C sum of squares due to regression
-      SSQREG = XYVAR* (XYVAR/XVAR)
-      SSQ = (YVAR-SSQREG)/DBLE(XYN-2.D0)
+          SSQREG = XYVAR* (XYVAR/XVAR)
+          SSQ = (YVAR-SSQREG)/DBLE(XYN-2.D0)
 C v[b] in book {variance of B}
-      VB = SSQ/XVAR
-      SQRTVB = DSQRT(VB)
+          VB = SSQ/XVAR
+          SQRTVB = DSQRT(VB)
 C t-statistic
-      TVAL = (RCOEF-RNULL)/DSQRT(VB)
+          TVAL = (RCOEF-RNULL)/DSQRT(VB)
 C degrees of freedom
-      DF = XYN - 2.D0
+          DF = XYN - 2.D0
+      ELSE
+c XVAR = 0.0
+          IER    = 7
+          SSQREG = YMSG
+          SSQ    = YMSG
+          VB     = YMSG
+          SQRTVB = YMSG
+      END IF
 
       REGDBG = .false.
       IF (REGDBG) THEN
@@ -123,3 +132,5 @@ C degrees of freedom
 
       RETURN
       END
+
+

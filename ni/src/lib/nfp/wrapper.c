@@ -4488,7 +4488,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(filwgts_lancos_W,args,"filwgts_lancos",nargs);
 
 /*

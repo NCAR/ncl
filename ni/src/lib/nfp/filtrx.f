@@ -12,8 +12,8 @@ c see an article by c. duchon (u. of oklahoma):
 c                   j. applied meteorology;  august,1979; pp 1016-1022
 c                   "lancos filtering in one and two dimensions"
 
-      INTEGER NWT,IHP,NSIGMA,IER
-      DOUBLE PRECISION FCA,FCB
+      INTEGER NWT,IHP,IER
+      DOUBLE PRECISION FCA,FCB,NSIGMA
       DOUBLE PRECISION WT(NWT)
       DOUBLE PRECISION FREQ(2*NWT-1),RESP(2*NWT-1)
 c c c real    freq(*), resp(*)
@@ -139,8 +139,8 @@ c ----------------------------------------------------------
 
 c compute and normalize filter wgts
 
-      INTEGER NWT,NW,NSIGMA
-      DOUBLE PRECISION WT(NWT),FC,PI,TWOPI
+      INTEGER NWT,NW
+      DOUBLE PRECISION WT(NWT),FC,PI,TWOPI,NSIGMA
 c                                                ! local
       DOUBLE PRECISION ARG,FNW,SINX,SINY,SUM
       INTEGER I
@@ -166,3 +166,4 @@ c                                                ! normalize weights
 
       RETURN
       END
+

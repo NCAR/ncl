@@ -8,7 +8,7 @@
 #include <math.h>
 
 extern void NGCALLF(vors,VORS)(int *, int *, double *, double *, double *, 
-                               double *, int *);
+                               double *, int *, double *);
 
 NhlErrorTypes eof_varimax_W( void )
 {
@@ -28,8 +28,9 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Output array variable
  */
-  float  *revec_out;
-  int i, found_missing;
+  void  *evec_out;
+  int i;
+  NclBasicDataTypes type_evec_out;
 /*
  * Retrieve parameters
  */
@@ -42,14 +43,11 @@ NhlErrorTypes eof_varimax_W( void )
            &has_missing_evec,
            &type_evec,
            2);
-/*
- * Check dimensions.
- */
+
   if( ndims_evec < 2 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
-
 /*
  * Calculate size of output array.
  */
@@ -82,15 +80,20 @@ NhlErrorTypes eof_varimax_W( void )
   coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
                              has_missing_evec,&missing_evec,&missing_devec);
 /*
- * Check for a missing value.
+ * Allocate space for output array.
  */
-  found_missing = contains_missing(devec,total_size_evec,has_missing_evec,
-                                   missing_devec.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array contains missing values.");
-    return(NhlFATAL);
+  if(type_evec != NCL_double) {
+    type_evec_out = NCL_float;
+    evec_out      = (void*)calloc(total_size_evec,sizeof(float));
   }
-
+  else {
+/*
+ * We've already allocated a double precision output variable, so
+ * just point to it.
+ */ 
+    type_evec_out = NCL_double;
+    evec_out      = (void*)devec;
+  }
 /*
  * Allocate memory for work arrays.
  */
@@ -104,7 +107,8 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'vors' with the full argument list.
  */
-  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec);
+  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec, 
+                     &missing_devec.doubleval);
 
 /*
  * Free unneeded memory.
@@ -113,33 +117,17 @@ NhlErrorTypes eof_varimax_W( void )
   NclFree(a);
   NclFree(b);
 
-  if(type_evec == NCL_float) {
-/*
- * Input is not double, so return float.
- */
-    revec_out = (float *)calloc(total_size_evec,sizeof(float));
-    if( revec_out == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for floating point output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_evec; i++ ) revec_out[i] = (float)devec[i];
-/*
- * Free double precision array.
- */
+  if(type_evec_out == NCL_float) {
+    coerce_output_float_only(evec_out,devec,total_size_evec,0);
     NclFree(devec);
-/*
- * Return float values
- */
-    return(NclReturnValue((void*)revec_out,ndims_evec,dsizes_evec,NULL,
-                          NCL_float,0));
+  }
+  if(has_missing_evec) {
+    return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,&missing_evec,
+                          type_evec_out,0));
   }
   else {
-/*
- * Return double values
- */
-    return(NclReturnValue((void*)devec,ndims_evec,dsizes_evec,NULL,
-                          NCL_double,0));
+    return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,NULL,
+                          type_evec_out,0));
   }
+                        
 }
-
-

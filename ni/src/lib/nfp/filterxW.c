@@ -22,10 +22,10 @@ NhlErrorTypes filwgts_lancos_W( void )
 /*
  * Input array variables
  */
-  int *nwgt, *ihp, *nsigma;
-  void *fca, *fcb;
-  double *tmp_fca, *tmp_fcb;
-  NclBasicDataTypes type_fca, type_fcb;
+  int *nwgt, *ihp;
+  void *fca, *fcb, *nsigma;
+  double *tmp_fca, *tmp_fcb, *tmp_nsigma;
+  NclBasicDataTypes type_fca, type_fcb, type_nsigma;
 /*
  * Output array variables
  */
@@ -104,22 +104,23 @@ NhlErrorTypes filwgts_lancos_W( void )
           &type_fcb,
           2);
 
-  nsigma = (int*)NclGetArgValue(
+  nsigma = (void*)NclGetArgValue(
           4,
           5,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_nsigma,
           2);
 
 /*
- * Coerce fca and fcb to double if necessary.
+ * Coerce fca, fcb, and nsigma to double if necessary.
  */
-  tmp_fca = coerce_input_double(fca,type_fca,1,0,NULL,NULL);
-  tmp_fcb = coerce_input_double(fcb,type_fcb,1,0,NULL,NULL);
-  if(tmp_fca == NULL || tmp_fcb == NULL) {
+  tmp_fca    = coerce_input_double(fca,type_fca,1,0,NULL,NULL);
+  tmp_fcb    = coerce_input_double(fcb,type_fcb,1,0,NULL,NULL);
+  tmp_nsigma = coerce_input_double(nsigma,type_nsigma,1,0,NULL,NULL);
+  if(tmp_fca == NULL || tmp_fcb == NULL || tmp_nsigma == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for coercing input to double");
     return(NhlFATAL);
   }
@@ -189,7 +190,7 @@ NhlErrorTypes filwgts_lancos_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(dfiltrq,DFILTRQ)(&nwgt2,tmp_fca,tmp_fcb,nsigma,ihp,tmp_wgt,
+  NGCALLF(dfiltrq,DFILTRQ)(&nwgt2,tmp_fca,tmp_fcb,tmp_nsigma,ihp,tmp_wgt,
                            tmp_resp,tmp_freq,&ier);
   
 /*  

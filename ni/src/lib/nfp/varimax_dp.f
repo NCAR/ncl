@@ -1,7 +1,7 @@
-      SUBROUTINE VORS(NV,NF,V,A,B,C,ND)
+      SUBROUTINE VORS(NV,NF,V,A,B,C,ND,XMSG)
       IMPLICIT NONE
       INTEGER NV,NF,ND
-      DOUBLE PRECISION V(ND,NF),A(NV),B(NV),C(NV)
+      DOUBLE PRECISION V(ND,NF),A(NV),B(NV),C(NV), XMSG
 
       INTEGER I,J,KR,M,N
       DOUBLE PRECISION T,PI,TWOPI,REPS,AA,BB,CC,DD,XN,XD,Y,CY,SY,TEMP
@@ -36,8 +36,8 @@ c The percentages of trace are recomputed for each factor vector
 c    and returned in vector "a".
 c The percentages of trace are computed for each row of the
 c    rotated matrix and returned in vector "b". When  computed
-c    as proportions (row sums of squares of the loading matrix)
-c    they are called "communalities" and are not affected by the
+c    as proportions (row sums of squares of the loading matrix) 
+c    they are called "communalities" and are not affected by the 
 c    rotation process. This will be exactly 100% only when all
 c    the variance of the particular variable is completely
 c    accounted for by the extracted factors.
@@ -55,12 +55,22 @@ c c c reps = pi/180.
 C this matches IMSL
       REPS = 0.0001D0
 
+      DO N=1,NV
+         A(N) = XMSG
+         B(N) = XMSG
+         C(N) = XMSG
+      END DO
+
 C normalize the rows of v
       DO I = 1,NV
-          B(I) = SQRT(SUMF(V, (-I), (-NF),ND))
-          DO J = 1,NF
-              V(I,J) = V(I,J)/B(I)
-          END DO
+          B(I) = SQRT(SUMF(V, (-I), (-NF),ND,XMSG))
+          IF (B(I).NE.0.0D0 .AND. B(I).NE.XMSG) THEN
+              DO J = 1,NF
+                 IF (V(I,J).NE.XMSG) THEN
+                     V(I,J) = V(I,J)/B(I)
+                 END IF
+             END DO
+          END IF
       END DO
 
    10 CONTINUE
@@ -70,14 +80,16 @@ C normalize the rows of v
               IF (M.NE.N) THEN
 C compute angle of rotation
                   DO I = 1,NV
-                      A(I) = V(I,M)*V(I,M) - V(I,N)*V(I,N)
-                      C(I) = 2.0D0*V(I,M)*V(I,N)
+                      IF (V(I,M).NE.XMSG .AND. V(I,N).NE.XMSG) THEN
+                          A(I) = V(I,M)*V(I,M) - V(I,N)*V(I,N)
+                          C(I) = 2.0D0*V(I,M)*V(I,N)
+                      END IF
                   END DO
 
-                  AA = SUMF(A,1,NV,ND)
-                  BB = SUMF(C,1,NV,ND)
-                  CC = SUMF(A,1, (-NV),ND) - SUMF(C,1, (-NV),ND)
-                  DD = SCPF(A,C,1,1,NV,ND)*2.0D0
+                  AA = SUMF(A,1,NV,ND,XMSG)
+                  BB = SUMF(C,1,NV,ND,XMSG)
+                  CC = SUMF(A,1,(-NV),ND,XMSG) - SUMF(C,1,(-NV),ND,XMSG)
+                  DD = SCPF(A,C,1,1,NV,ND,XMSG)*2.0D0
                   XN = DD - 2.0D0*AA*BB/T
 c compute angle of rotation
                   XD = CC - (AA*AA-BB*BB)/T
@@ -96,9 +108,11 @@ c count rotations
                   SY = SIN(Y)
 c rotate the axis
                   DO I = 1,NV
-                      TEMP = V(I,M)*CY + V(I,N)*SY
-                      V(I,N) = V(I,N)*CY - V(I,M)*SY
-                      V(I,M) = TEMP
+                     IF (V(I,M).NE.XMSG .AND. V(I,N).NE.XMSG) THEN      
+                         TEMP = V(I,M)*CY + V(I,N)*SY
+                         V(I,N) = V(I,N)*CY - V(I,M)*SY
+                         V(I,M) = TEMP
+                     END IF
                   END DO
               END IF
  1002         CONTINUE
@@ -108,24 +122,28 @@ c rotate the axis
 c denormailize rows of v
       DO J = 1,NF
           DO I = 1,NV
-              V(I,J) = V(I,J)*B(I)
+              IF (V(I,J).NE.XMSG .AND. B(I).NE.XMSG) THEN
+                  V(I,J) = V(I,J)*B(I)
+              END IF
           END DO
 c % variation
-          A(J) = (SUMF(V,J, (-NV),ND)/T)*100.D0
+          A(J) = (SUMF(V,J, (-NV),ND,XMSG)/T)*100.D0
       END DO
 
       DO I = 1,NV
 C % communitalities
-          B(I) = B(I)*B(I)*100.D0
+          IF (B(I).NE.XMSG) THEN
+              B(I) = B(I)*B(I)*100.D0
+          END IF
       END DO
 
       RETURN
       END
 c ------------------------------------
-      DOUBLE PRECISION FUNCTION SUMF(X,KK,NN,ND)
+      DOUBLE PRECISION FUNCTION SUMF(X,KK,NN,ND,XMSG)
       IMPLICIT NONE
       INTEGER KK,NN,ND
-      DOUBLE PRECISION X(ND,1)
+      DOUBLE PRECISION X(ND,1), XMSG
 
 c         awkward due to arithmetic if in orig code
 c computes sum of x or x**2 from a vector
@@ -156,35 +174,43 @@ C local
       GO TO 45
    15 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(K,I)*X(K,I)
+          IF (X(K,I).NE.XMSG) THEN
+              SUMF = SUMF + X(K,I)*X(K,I)
+          END IF
       END DO
       RETURN
 
    25 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(I,K)*X(I,K)
+          IF (X(I,K).NE.XMSG) THEN
+              SUMF = SUMF + X(I,K)*X(I,K)
+          END IF
       END DO
       RETURN
 
    35 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(K,I)
+          IF (X(K,I).NE.XMSG) THEN
+              SUMF = SUMF + X(K,I)
+          END IF
       END DO
       RETURN
 
    45 CONTINUE
       DO I = 1,N
-          SUMF = SUMF + X(I,K)
+          IF (X(I,K).NE.XMSG) THEN
+              SUMF = SUMF + X(I,K)
+          END IF
       END DO
    55 CONTINUE
       RETURN
 
       END
 c ------------------------------------------------
-      DOUBLE PRECISION FUNCTION SCPF(X,Y,KX,KY,N,ND)
+      DOUBLE PRECISION FUNCTION SCPF(X,Y,KX,KY,N,ND,XMSG)
       IMPLICIT NONE
       INTEGER KX,KY,N,ND
-      DOUBLE PRECISION X(ND,1),Y(ND,1)
+      DOUBLE PRECISION X(ND,1),Y(ND,1),XMSG
 
 C local
       INTEGER J,K,I
@@ -214,28 +240,37 @@ c nd    - actual first dimension of x in the calling routine
       GO TO 45
    15 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(J,I)*Y(K,I)
+          IF (X(J,I).NE.XMSG .AND. Y(K,I).NE.XMSG) THEN
+              SCPF = SCPF + X(J,I)*Y(K,I)
+          END IF
       END DO
       RETURN
 
    25 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(J,I)*Y(I,K)
+          IF (X(J,I).NE.XMSG .AND. Y(I,K).NE.XMSG) THEN
+              SCPF = SCPF + X(J,I)*Y(I,K)
+          END IF
       END DO
       RETURN
 
    35 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(I,J)*Y(K,I)
+          IF (X(I,J).NE.XMSG .AND. Y(K,I).NE.XMSG) THEN
+              SCPF = SCPF + X(I,J)*Y(K,I)
+          END IF
       END DO
       RETURN
 
    45 CONTINUE
       DO I = 1,N
-          SCPF = SCPF + X(I,J)*Y(I,K)
+          IF (X(I,J).NE.XMSG .AND. Y(I,K).NE.XMSG) THEN
+              SCPF = SCPF + X(I,J)*Y(I,K)
+          END IF
       END DO
       RETURN
 
    55 CONTINUE
       RETURN
       END
+
