@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.23 1992-07-30 15:27:19 clyne Exp $
+ *	$Id: ctrans.c,v 1.24 1992-08-26 19:34:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -275,7 +275,7 @@ CtransRC	Process(c)
 	else if (c->class == DEL_ELEMENT || c->class == DES_ELEMENT) {
 		ESprintf(
 			E_UNKNOWN, 
-			"Error processing CGM element(class=%d, id=%d) [ %s ]",
+			"Could not process CGM element(class=%d, id=%d) [ %s ]",
 			c->class, c->command, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
@@ -287,7 +287,7 @@ CtransRC	Process(c)
 	else {
 		ESprintf(
 			E_UNKNOWN, 
-			"Error processing CGM element(class=%d, id=%d) [ %s ]",
+			"Could not process CGM element(class=%d, id=%d) [ %s ]",
 			c->class, c->command, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
