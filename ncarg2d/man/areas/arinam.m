@@ -91,8 +91,8 @@ load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
 ncarg_gks, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-areas, areas_params, ardbpa, ardrln, aredam, argeti, argtai, 
-arpram, arscam, arseti, ncarg_cbind
+areas, areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai,
+arpram, arscam, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial

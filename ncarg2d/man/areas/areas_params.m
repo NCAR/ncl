@@ -5,15 +5,20 @@
 Areas_params - This document briefly describes all Areas 
 parameters.
 .SH DESCRIPTION
-Areas currently supports five parameters, all of type INTEGER. These 
-parameters are useful mostly for debugging Areas problems. The 
-current values may be retrieved using the routine ARGETI. Parameter 
-values may be reset using the routine ARSETI; the parameter DI is
-for retrieval only and may not be given a new value by the user.
+Areas currently supports nine parameters. These parameters are useful mostly
+for debugging Areas problems. The current values may be retrieved using one
+of the routines ARGETI or ARGETR. Parameter values may be reset using the
+routine ARSETI or ARSETR; the parameter 'DI' is for retrieval only and may
+not be given a new value by the user.
 .sp
 The Areas parameter descriptions appear below in alphabetical 
 order. Each description begins with a line giving the parameter name 
 and the intrinsic FORTRAN type of the parameter.
+.IP "\&'AL' - Real"
+Arrowhead Length.  AL specifies the length of each arrowhead used on a
+debug plot produced by ARDBPA. The value is interpreted as a fraction of
+the width of the plotter frame. Using a value which is less than or equal
+to zero causes arrowheads to be omitted.  The default value is .008.
 .IP "\&'AT' - Integer"
 Arithmetic Type flag.
 AT allows the user to specify the type of arithmetic Areas is to use or to
@@ -43,6 +48,11 @@ Default: 0
 Note: You should use a nonzero value of AT only
 on the recommendation of an NCAR consultant.
 .in -5
+.IP "\&'AW' - Real"
+Arrowhead Width.  AL specifies the half-width of each arrowhead used on a
+debug plot produced by ARDBPA. The value is interpreted as a fraction of
+the width of the plotter frame. Using a value which is less than or equal
+to zero causes arrowheads to be omitted.  The default value is .002.
 .IP "\&'DB' - Integer"
 DeBug-plots flag. DB allows the user to study the area map.
 .RS
@@ -74,6 +84,18 @@ Edge of the area is given in clockwise order (with the interior to the
 right).
 .sp
 .RE
+.IP "\&'ID' - Real"
+Identifier Distance.  ID specifies the distance from an arrow to a left
+or right area identifier on a debug plot produced by ARDBPA. The value
+is interpreted as a fraction of the width of the plotter frame. Using a
+value which is less than or equal to zero causes area identifiers to be
+omitted.  The default value is .004.
+.IP "\&'IS' - Real"
+Identifier Size.  IS specifies the size of the characters used to write
+an area identifier on a debug plot produced by ARDBPA. The value
+is interpreted as a fraction of the width of the plotter frame. Using a
+value which is less than or equal to zero causes area identifiers to be
+omitted.  The default value is .001.
 .IP "\&'LC' - Integer"
 Largest Coordinate. LC lets you specify the largest coordinate 
 allowed in an area map. X and Y coordinates in an area map are 
@@ -90,7 +112,7 @@ A call to set the value of LC should precede any other call to an Areas
 routine and should only be done once.
 .SH SEE ALSO
 Online:
-argeti, arseti 
+argeti, argetr, arseti, arsetr
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial

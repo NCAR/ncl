@@ -101,8 +101,8 @@ ARSETI - PARAMETER NAME TOO SHORT - x
 ARSETI - PARAMETER NAME NOT KNOWN - xx
 .SH SEE ALSO
 Online:
-areas_params, ardbpa, ardrln, aredam, argeti, argtai, arinam, 
-arpram, arscam, arseti, ncarg_cbind
+areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai, arinam,
+arpram, arscam, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;

@@ -17,7 +17,10 @@ can be of any length, but only the first two characters
 of it will be examined.
 .IP "IVAL" 12
 (an output variable of type INTEGER) -
-An integer variable to receive the desired parameter value.
+An integer variable to receive the desired parameter value.  If the internal
+parameter is of type INTEGER and has the value "i", IVAL will be given the
+value "i"; if the internal parameter is of type REAL and has the value
+"r", IVAL will be given the value "INT(r)".
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -35,8 +38,8 @@ See the areas man page for a description of all Areas error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-areas, areas_params, ardbpa, ardrln, aredam, argtai, arinam, 
-arpram, arscam, arseti, ncarg_cbind
+areas, areas_params, ardbpa, ardrln, aredam, argetr, argtai, arinam,
+arpram, arscam, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial

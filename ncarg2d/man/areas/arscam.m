@@ -143,8 +143,8 @@ See the areas man page for a description of all Areas error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-areas, areas_params, ardbpa, ardrln, aredam, argeti, argtai, 
-arinam, arpram, arseti, ncarg_cbind
+areas, areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai,
+arinam, arpram, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
