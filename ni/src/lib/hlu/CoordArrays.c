@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.4 1994-01-21 19:29:28 boote Exp $
+ *      $Id: CoordArrays.c,v 1.5 1994-01-22 01:59:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -365,15 +365,15 @@ static NhlResource fltresources[] = {
 		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
 		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet},
-	{NhlNcaCopyArrays,NhlCcaCopyArrays,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNcaXMissingF,NhlCcaXMissingF,NhlTFloat,sizeof(float),
+	{NhlNcaXMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNcaYMissingF,NhlCcaYMissingF,NhlTFloat,sizeof(float),
+	{NhlNcaYMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
@@ -408,15 +408,15 @@ static NhlResource intresources[] = {
 		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
 		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet},
-	{NhlNcaCopyArrays,NhlCcaCopyArrays,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNcaXMissing,NhlCcaXMissing,NhlTFloat,sizeof(float),
+	{NhlNcaXMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNcaYMissing,NhlCcaYMissing,NhlTFloat,sizeof(float),
+	{NhlNcaYMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
@@ -663,18 +663,24 @@ CreateTableFlt
 #if	__STDC__
 (
 	NhlString	cast_res,
+	NhlString	other_cast_res,
 	NhlString	error_lead,
 	NhlGenArray	gen,
+	NhlGenArray	other_gen,
 	int		cast,
+	int		other_cast,
 	NhlGenArray	*tbl,
 	NhlGenArray	*tbl_lens
 )
 #else
-(cast_res,error_lead,gen,cast,tbl,tbl_lens)
-	NhlString	cast_res,
+(cast_res,other_cast_res,error_lead,gen,other_gen,cast,other_cast,tbl,tbl_lens)
+	NhlString	cast_res;
+	NhlString	other_cast_res;
 	NhlString	error_lead;
 	NhlGenArray	gen;
+	NhlGenArray	other_gen;
 	int		cast;
+	int		other_cast;
 	NhlGenArray	*tbl;
 	NhlGenArray	*tbl_lens;
 #endif
@@ -686,12 +692,34 @@ CreateTableFlt
 
 	switch(cast){
 		case 1:
-			vectors = 1;
+			switch(other_cast){
+				case 1:
+					vectors = 1;
+					break;
+				case 2:
+					vectors = other_gen->len_dimensions[0];
+					break;
+				case 3:
+					vectors = other_gen->len_dimensions[1];
+					break;
+				default:
+					NhlPError(FATAL,E_UNKNOWN,
+							"%s:Invalid %s value",
+						error_lead,other_cast_res);
+					return;
+			}
+
 			elements = gen->len_dimensions[0];
 			break;
 		case 2:
-			vectors = gen->len_dimensions[0];
-			elements = gen->len_dimensions[1];
+			if(gen->num_dimensions == 1){
+				vectors = 1;
+				elements = gen->len_dimensions[0];
+			}
+			else{
+				vectors = gen->len_dimensions[0];
+				elements = gen->len_dimensions[1];
+			}
 			break;
 		case 3:
 			vectors = gen->len_dimensions[1];
@@ -710,22 +738,25 @@ CreateTableFlt
 		return;
 	}
 	fltvect = gen->data;
-	if(cast == 3){
-		for(i=0;i < vectors; i++){
+	for(i=0;i < vectors; i++){
+		intvect[i] = elements;
+
+		switch(cast){
+		case 1:
+			flttable[i] = fltvect;
+			break;
+		case 2:
+			flttable[i] = fltvect + (i * elements);
+			break;
+		case 3:
 			flttable[i] = NhlConvertMalloc(sizeof(float)*elements);
 			if(flttable[i] == NULL){
 				NhlPError(FATAL,ENOMEM,NULL);
 				return;
 			}
-			intvect[i] = elements;
 			for(j=0;j<elements;j++)
 				*(flttable[i]+j) = *(fltvect+i+(j*elements));
-		}
-	}
-	else{
-		for(i=0;i < vectors; i++){
-			intvect[i] = elements;
-			flttable[i] = fltvect + (i * elements);
+			break;
 		}
 	}
 
@@ -754,18 +785,24 @@ CreateTableInt
 #if	__STDC__
 (
 	NhlString	cast_res,
+	NhlString	other_cast_res,
 	NhlString	error_lead,
 	NhlGenArray	gen,
+	NhlGenArray	other_gen,
 	int		cast,
+	int		other_cast,
 	NhlGenArray	*tbl,
 	NhlGenArray	*tbl_lens
 )
 #else
-(cast_res,error_lead,gen,cast,tbl,tbl_lens)
-	NhlString	cast_res,
+(cast_res,other_cast_res,error_lead,gen,othergen,cast,other_cast,tbl,tbl_lens)
+	NhlString	cast_res;
+	NhlString	other_cast_res;
 	NhlString	error_lead;
 	NhlGenArray	gen;
+	NhlGenArray	other_gen;
 	int		cast;
+	int		other_cast;
 	NhlGenArray	*tbl;
 	NhlGenArray	*tbl_lens;
 #endif
@@ -778,12 +815,34 @@ CreateTableInt
 
 	switch(cast){
 		case 1:
-			vectors = 1;
+			switch(other_cast){
+				case 1:
+					vectors = 1;
+					break;
+				case 2:
+					vectors = other_gen->len_dimensions[0];
+					break;
+				case 3:
+					vectors = other_gen->len_dimensions[1];
+					break;
+				default:
+					NhlPError(FATAL,E_UNKNOWN,
+							"%s:Invalid %s value",
+						error_lead,other_cast_res);
+					return;
+			}
+
 			elements = gen->len_dimensions[0];
 			break;
 		case 2:
-			vectors = gen->len_dimensions[0];
-			elements = gen->len_dimensions[1];
+			if(gen->num_dimensions == 1){
+				vectors = 1;
+				elements = gen->len_dimensions[0];
+			}
+			else{
+				vectors = gen->len_dimensions[0];
+				elements = gen->len_dimensions[1];
+			}
 			break;
 		case 3:
 			vectors = gen->len_dimensions[1];
@@ -809,15 +868,23 @@ CreateTableInt
 			return;
 		}
 		intvect[i] = elements;
-		if(cast == 3){
-			for(j=0;j<elements;j++)
-				*(flttable[i]+j) =
-						(float)*(intarr+i+(j*elements));
-		}
-		else{
-			for(j=0;j<elements;j++)
-				*(flttable[i]+j) =
+		switch(cast){
+			case 1:
+				for(j=0;j<elements;j++)
+					*(flttable[i]+j) = (float)*(intarr+j);
+				break;
+			case 2:
+				for(j=0;j<elements;j++)
+					*(flttable[i]+j) =
 						(float)*(intarr+(i*elements)+j);
+				break;
+			case 3:
+				for(j=0;j<elements;j++)
+					*(flttable[i]+j) =
+						(float)*(intarr+i+(j*elements));
+				break;
+			default:
+				return;
 		}
 	}
 
@@ -899,8 +966,9 @@ CvtCArraysObjToFloatObj
 							child->missing_y);
 
 		if(child->xarray != NULL){
-			CreateTableFlt(NhlNcaXCast,error_lead,child->xarray,
-						child->x_cast,&xtbl,&xtbl_lens);
+			CreateTableFlt(NhlNcaXCast,NhlNcaYCast,error_lead,
+				child->xarray,child->yarray,child->x_cast,
+						child->y_cast,&xtbl,&xtbl_lens);
 			if((xtbl == NULL) || (xtbl_lens == NULL)){
 				return FATAL;
 			}
@@ -909,8 +977,9 @@ CvtCArraysObjToFloatObj
 								xtbl_lens);
 		}
 		if(child->yarray != NULL){
-			CreateTableFlt(NhlNcaYCast,error_lead,child->yarray,
-						child->y_cast,&ytbl,&ytbl_lens);
+			CreateTableFlt(NhlNcaYCast,NhlNcaXCast,error_lead,
+				child->yarray,child->xarray,child->y_cast,
+						child->x_cast,&ytbl,&ytbl_lens);
 			if((ytbl == NULL) || (ytbl_lens == NULL)){
 				return FATAL;
 			}
@@ -938,8 +1007,9 @@ CvtCArraysObjToFloatObj
 							child->missing_y);
 
 		if(child->xarray != NULL){
-			CreateTableInt(NhlNcaXCast,error_lead,child->xarray,
-						child->x_cast,&xtbl,&xtbl_lens);
+			CreateTableInt(NhlNcaXCast,NhlNcaYCast,error_lead,
+				child->xarray,child->yarray,child->x_cast,
+						child->y_cast,&xtbl,&xtbl_lens);
 			if((xtbl == NULL) || (xtbl_lens == NULL)){
 				return FATAL;
 			}
@@ -948,8 +1018,9 @@ CvtCArraysObjToFloatObj
 								xtbl_lens);
 		}
 		if(child->yarray != NULL){
-			CreateTableInt(NhlNcaYCast,error_lead,child->yarray,
-						child->y_cast,&ytbl,&ytbl_lens);
+			CreateTableInt(NhlNcaYCast,NhlNcaXCast,error_lead,
+				child->yarray,child->xarray,child->y_cast,
+						child->x_cast,&ytbl,&ytbl_lens);
 			if((ytbl == NULL) || (ytbl_lens == NULL)){
 				return FATAL;
 			}
@@ -1131,7 +1202,8 @@ CoordArraysClassPartInitialize
 		}							\
 		else{							\
 			min = (type)1.0;				\
-			if(ncarr->carr##type.otherdim##_cast == 2)	\
+			if((ncarr->carr##type.otherdim##_cast == 2) &&	\
+		(ncarr->carr##type.otherdim##array->num_dimensions == 2))\
 max = (type)ncarr->carr##type.otherdim##array->len_dimensions[1];	\
 			else						\
 max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
@@ -1141,27 +1213,6 @@ max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
 			ncarr->carr##type.max_##dim = max;		\
 		if(!ncarr->carr##type.min_##dim##_set)			\
 			ncarr->carr##type.min_##dim = min;		\
-	}								\
-}
-
-#define	INIT_ARRAY(type,dim,DIM)\
-{									\
-	NhlBoolean	inv##dim = False;				\
-									\
-	CHECK_ARRAY(type,dim,DIM)					\
-									\
-	if(inv##dim){							\
-		NhlPError(FATAL,E_UNKNOWN,				\
-		"%s:Resources specifying %s dimension are invalid",	\
-						error_lead,#DIM);	\
-		return FATAL;						\
-	}								\
-									\
-	if(!imp##dim){							\
-		COPY_ARRAY(type,dim)					\
-	}								\
-	else{								\
-		ncarr->carr##type.dim##array = NULL;			\
 	}								\
 }
 
@@ -1187,6 +1238,47 @@ max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
 	}								\
 }
 
+#define	INIT_ARRAY(type,dim,DIM)\
+{									\
+	NhlBoolean	inv##dim = False;				\
+	int		num_elements;					\
+									\
+	CHECK_ARRAY(type,dim,DIM)					\
+									\
+	if(inv##dim){							\
+		NhlPError(FATAL,E_UNKNOWN,				\
+		"%s:Resources specifying %s dimension are invalid",	\
+						error_lead,#DIM);	\
+		return FATAL;						\
+	}								\
+									\
+	CHECK_CAST(type,dim,DIM)					\
+									\
+									\
+	if(!imp##dim){							\
+		if((ncarr->carr##type.dim##array->num_dimensions == 2) &&\
+				(ncarr->carr##type.dim##_cast == 2)){	\
+			num_elements =					\
+			ncarr->carr##type.dim##array->len_dimensions[1];\
+		}							\
+		else{							\
+			num_elements =					\
+			ncarr->carr##type.dim##array->len_dimensions[0];\
+		}							\
+									\
+		if(num_elements < 2){					\
+			NhlPError(FATAL,E_UNKNOWN,			\
+	"%s:Each vector in the %s array must have at least 2 elements",	\
+					error_lead,NhlNca##DIM##Array);	\
+			return FATAL;					\
+		}							\
+		COPY_ARRAY(type,dim)					\
+	}								\
+	else{								\
+		ncarr->carr##type.dim##array = NULL;			\
+	}								\
+}
+
 
 
 #define INIT_FUNC(name,type)\
@@ -1207,10 +1299,6 @@ max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
 		"%s:Cannot have Implied X and Y values",error_lead);	\
 		return FATAL;						\
 	}								\
-									\
-	CHECK_CAST(type,y,Y)						\
-	CHECK_CAST(type,x,X)						\
-									\
 									\
 	/*								\
 	 * Set Max's and Min's						\

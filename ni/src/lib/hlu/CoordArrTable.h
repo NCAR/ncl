@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.h,v 1.3 1994-01-14 23:36:05 boote Exp $
+ *      $Id: CoordArrTable.h,v 1.4 1994-01-22 01:59:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,12 +33,9 @@
 #define	NhlCctYTableLengths	"CtYTableLengths"
 
 #define	NhlNctCopyTables	"ctCopyTables"
-#define	NhlCctCopyTables	"CtCopyTables"
 
 #define	NhlNctXMissingF	"ctXMissingF"
-#define	NhlCctXMissingF	"CtXMissingF"
 #define	NhlNctYMissingF	"ctYMissingF"
-#define	NhlCctYMissingF	"CtYMissingF"
 #define	NhlNctXMaxF	"ctXMaxF"
 #define	NhlCctXMaxF	"CtXMaxF"
 #define	NhlNctYMaxF	"ctYMaxF"
@@ -49,9 +46,7 @@
 #define	NhlCctYMinF	"CtYMinF"
 
 #define	NhlNctXMissing	"ctXMissing"
-#define	NhlCctXMissing	"CtXMissing"
 #define	NhlNctYMissing	"ctYMissing"
-#define	NhlCctYMissing	"CtYMissing"
 #define	NhlNctXMax	"ctXMax"
 #define	NhlCctXMax	"CtXMax"
 #define	NhlNctYMax	"ctYMax"

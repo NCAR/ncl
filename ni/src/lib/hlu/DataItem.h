@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.2 1993-10-19 17:50:27 boote Exp $
+ *      $Id: DataItem.h,v 1.3 1994-01-22 01:59:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,9 @@
 
 #define	NhlNdiType	"diType"
 #define	NhlCdiType	"DiType"
+
+#define	NhlCdiCopyData	"DiCopyData"
+#define	NhlCdiMissingValue	"DiMissingValue"
 
 typedef struct _DataItemLayerClassRec *DataItemLayerClass;
 typedef struct _DataItemLayerRec *DataItemLayer;

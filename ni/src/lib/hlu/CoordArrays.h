@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.2 1994-01-21 19:29:31 boote Exp $
+ *      $Id: CoordArrays.h,v 1.3 1994-01-22 01:59:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,12 +38,9 @@
 #define	NhlCcaYCast	"CaYCast"
 
 #define	NhlNcaCopyArrays	"caCopyArrays"
-#define	NhlCcaCopyArrays	"CaCopyArrays"
 
 #define	NhlNcaXMissingF	"caXMissingF"
-#define	NhlCcaXMissingF	"CaXMissingF"
 #define	NhlNcaYMissingF	"caYMissingF"
-#define	NhlCcaYMissingF	"CaYMissingF"
 #define	NhlNcaXMaxF	"caXMaxF"
 #define	NhlCcaXMaxF	"CaXMaxF"
 #define	NhlNcaYMaxF	"caYMaxF"
@@ -54,9 +51,7 @@
 #define	NhlCcaYMinF	"CaYMinF"
 
 #define	NhlNcaXMissing	"caXMissing"
-#define	NhlCcaXMissing	"CaXMissing"
 #define	NhlNcaYMissing	"caYMissing"
-#define	NhlCcaYMissing	"CaYMissing"
 #define	NhlNcaXMax	"caXMax"
 #define	NhlCcaXMax	"CaXMax"
 #define	NhlNcaYMax	"caYMax"

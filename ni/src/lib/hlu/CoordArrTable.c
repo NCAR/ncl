@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.7 1994-01-21 19:29:24 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.8 1994-01-22 01:58:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -288,15 +288,15 @@ static NhlResource fltresources[] = {
 	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
 		sizeof(NhlGenArray),
 		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNctCopyTables,NhlCctCopyTables,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNctCopyTables,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_tables),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNctXMissingF,NhlCctXMissingF,NhlTFloat,sizeof(float),
+	{NhlNctXMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNctYMissingF,NhlCctYMissingF,NhlTFloat,sizeof(float),
+	{NhlNctYMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
@@ -334,15 +334,15 @@ static NhlResource intresources[] = {
 	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
 		sizeof(NhlGenArray),
 		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNctCopyTables,NhlCctCopyTables,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNctCopyTables,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_tables),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNctXMissing,NhlCctXMissing,NhlTFloat,sizeof(float),
+	{NhlNctXMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
-	{NhlNctYMissing,NhlCctYMissing,NhlTFloat,sizeof(float),
+	{NhlNctYMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
 		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
