@@ -16,7 +16,7 @@ C      Date:           Fri May 25 18:31:18 mdt 1995
 C
 C      Description:    Demonstrates creating 3 simultaneous workstations.
 C                      The TextItem output states which type of workstation,
-C                      out of NCGM, PostScript, and X11.
+C                      out of NCGM, PDF, PostScript, and X11.
 C
       external NhlFAppClass
       external NhlFPSWorkstationClass
@@ -69,7 +69,7 @@ C
       call NhlFRLSetString(srlist,'wkPDFFileName','basic07f.pdf',ierr)
       call NhlFRLSetString(srlist,'wkOrientation','portrait',ierr)
       call NhlFRLSetString(srlist,'wkPDFFormat','pdf',ierr)
-      call NhlFCreate(widp,'basic07pdf',NhlFPDFWorkstationClass,0,
+      call NhlFCreate(widpdf,'basic07pdf',NhlFPDFWorkstationClass,0,
      1        srlist,ierr)
 C
 C Create an X Workstation.

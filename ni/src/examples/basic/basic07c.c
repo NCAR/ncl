@@ -16,7 +16,7 @@
 *
 *      Description:    Demonstrates creating 3 simultaneous workstations.
 *                      The TextItem output states which type of workstation,
-*                      out of NCGM, PostScript, and X11.
+*                      out of NCGM, PDF, PostScript, and X11.
 */
 
 #include <ncarg/hlu/App.h>
