@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.4 2003-03-11 00:21:35 shea Exp $
+;      $Id: contributed.ncl,v 1.5 2003-03-31 16:34:42 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -195,8 +195,8 @@ begin
   att_names =getvaratts(var_from);
     if(.not.all(ismissing(att_names)))
       do i = 0,dimsizes(att_names)-1
-         if (isatt(vNew,att_names(i))) then
-             delete(vNew@$att_names(i)$)  ; var_from att may be diff size/type
+         if (isatt(var_to,att_names(i))) then
+             delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
          end if
 	 var_to@$att_names(i)$ = var_from@$att_names(i)$
       end do
