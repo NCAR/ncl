@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1993-01-20 15:43:27 clyne Exp $
+#	$Id: yMakefile,v 1.9 1993-01-20 15:54:29 haley Exp $
 #
 
 NCARG		= ../../../..
@@ -33,8 +33,12 @@ SUN_SPECIFIER	= sunview
 #
 #       local libraries  (All of these are in $(LIBPATH).)
 #
-CTRANS_LIBS_A   = libictrans.o libctrans.o libcgm.a libncarv.a \
-		  libncarg_ras.a
+CTRANS_LIBS_A   = libcgm.a libncarv.a libncarg_ras.a
+
+#
+#       local relocatable objects  (All of these are in $(ROBJPATH))
+#
+CTRANS_ROBJS  = libictrans.o libctrans.o
 
 GENLIBS 	= $(HDFLIB) -lm
 
@@ -73,7 +77,10 @@ ctlib:	ctlib.csh Makefile
 	@sed \
 	-e 's+CTRANS_LIBS_A+$(CTRANS_LIBS_A)+' \
 	-e 's+CTRANS_LIBS_B+$(CTRANS_LIBS_B)+' \
+	-e 's+CTRANS_ROBJS+$(CTRANS_ROBJS)+' \
 	-e 's+LIBDIR+$(LIBDIR)+' \
+	-e 's+NCARGDIR+$(NCARGDIR)+' \
+	-e 's+ROBJDIR+$(ROBJDIR)+' \
 	< ctlib.csh > ctlib
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
