@@ -1,11 +1,11 @@
 C
-C	$Id: csc2s.f,v 1.1 2000-01-27 18:57:56 fred Exp $
+C	$Id: csc2s.f,v 1.2 2000-04-26 21:04:08 fred Exp $
 C
       SUBROUTINE CSC2S (N,X,Y,Z,RLAT,RLON)
       REAL X(N),Y(N),Z(N),RLAT(N),RLON(N)
 C
 C  This subroutine converts a point P from Cartesian coor-
-C  dinates to spherical coordinates.
+C  dinates on a unit sphere to spherical coordinates.
 C
 C
 C On input:
