@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeMatMulOpTemplate.c.sed,v 1.1 1997-09-02 20:27:02 ethan Exp $
+ *      $Id: TypeMatMulOpTemplate.c.sed,v 1.2 1998-12-23 18:31:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -68,7 +68,7 @@ int nrhs;
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
 				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopi]);
+				ls = &(((DATATYPE*)lhs)[i * stopk]);
 				*res = (OUTDATATYPE)(*ls++ * *rs);
 				rs += stopj;
 				for(k = 1; k < stopk; k++,ls++,rs+=stopj) {
@@ -81,7 +81,7 @@ int nrhs;
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
 				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopi]);
+				ls = &(((DATATYPE*)lhs)[i * stopk]);
 				if( lhs_m->DATATYPEval == *ls) {
 					*res = LEFTMISSING;
 					res++;
@@ -105,7 +105,7 @@ int nrhs;
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
 				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopi]);
+				ls = &(((DATATYPE*)lhs)[i * stopk]);
 				if( rhs_m->DATATYPEval == *rs) {
 					*res = RIGHTMISSING;
 					res++;
@@ -129,7 +129,7 @@ int nrhs;
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
 				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopi]);
+				ls = &(((DATATYPE*)lhs)[i * stopk]);
 				if((rhs_m->DATATYPEval == *rs)||( lhs_m->DATATYPEval == *ls)) {
 					*res = LEFTMISSING;
 					res++;

@@ -1,6 +1,6 @@
 
 #
-#      $Id: math_funcs.sh,v 1.3 1997-04-14 23:57:10 ethan Exp $
+#      $Id: math_funcs.sh,v 1.4 1998-12-23 18:31:37 ethan Exp $
 #
 #########################################################################
 #									#
@@ -181,8 +181,18 @@ sed \
 -e 's/FUNCNAME/log/g' \
 MathTemplate.h.sed >> MathFuncs.h
 
+
 sed \
 -e 's/FUNCNAME/log/g' \
+-e 's/CAST/double/g' \
+MathTemplate.c.sed >> .tmp.$$
+
+sed \
+-e 's/FUNCNAME/exp/g' \
+MathTemplate.h.sed >> MathFuncs.h
+
+sed \
+-e 's/FUNCNAME/exp/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 

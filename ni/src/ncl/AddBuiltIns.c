@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.42 1998-11-11 23:35:15 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.43 1998-12-23 18:31:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -678,6 +678,11 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Ncllog,args,"log",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_Nclexp,args,"exp",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
