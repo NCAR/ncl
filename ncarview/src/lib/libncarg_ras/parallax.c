@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.3 1991-10-07 18:08:39 clyne Exp $
+ *	$Id: parallax.c,v 1.4 1991-10-11 10:08:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -299,6 +299,8 @@ int
 ParallaxClose(ras)
 	Raster	*ras;
 {
+	parallax_fd	= -1;
+	parallax_vmefd	= -1;
 	free( (char *) ras->data);
 	if (ras->red != (unsigned char *) NULL) free( (char *) ras->red);
 	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
