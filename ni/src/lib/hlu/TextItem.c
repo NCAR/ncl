@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.12 1994-09-23 23:36:56 dbrown Exp $
+ *      $Id: TextItem.c,v 1.13 1994-10-31 01:08:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,58 @@
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
+
+/*ARGSUSED*/
+static NhlErrorTypes
+XPSet
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlTextItemLayer	text = (NhlTextItemLayer)base;
+
+	text->text.pos_x_set = False;
+	text->text.pos_x = 0.0;
+
+	return NhlNOERROR;
+}
+/*ARGSUSED*/
+static NhlErrorTypes
+YPSet
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlTextItemLayer	text = (NhlTextItemLayer)base;
+
+	text->text.pos_y_set = False;
+	text->text.pos_y = 1.0;
+
+	return NhlNOERROR;
+}
+
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
@@ -38,12 +90,18 @@ static NhlResource resources[] = {
 	{ NhlNtxString, NhlCtxString, NhlTString, sizeof(char*),
 		NhlOffset(NhlTextItemLayerRec,text.string),
 		NhlTImmediate,_NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlTextItemLayerRec,text.pos_x_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-		NhlTString,_NhlUSET("0.0") ,0,NULL},
+			NhlTProcedure,_NhlUSET(XPSet) ,0,NULL},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlTextItemLayerRec,text.pos_y_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-		NhlTString,_NhlUSET("1.0"),0,NULL },
+				NhlTProcedure,_NhlUSET(YPSet),0,NULL },
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
 		NhlTString,_NhlUSET("0.0"),0,NULL },
@@ -144,6 +202,14 @@ static NhlErrorTypes TextItemSetValues(
 #endif
 );
 
+static NhlErrorTypes TextItemGetValues(
+#if	NhlNeedProto
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+#endif
+);
+
 static NhlErrorTypes    TextItemInitialize(
 #ifdef NhlNeedProto
         NhlLayerClass,     /* class */
@@ -211,7 +277,7 @@ NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 /* layer_initialize		*/	TextItemInitialize,
 /* layer_set_values		*/	TextItemSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	TextItemGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	TextItemDestroy,
 
@@ -261,6 +327,233 @@ _NHLCALLF(nhlftextitemclass,NHLFTEXTITEMCLASS)
 	return NhltextItemLayerClass;
 }
 
+static NrmQuark txstrQ = NrmNULLQUARK;
+
+/*
+ * Function:	TextItemClassInitialize
+ *
+ * Description: Just calls StringToQuark to register new types
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error condition
+ *
+ * Side Effects: 	NONE
+ */
+static NhlErrorTypes    TextItemClassInitialize
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	_NhlEnumVals	fontqlist[] = {
+		{NhlHIGH,	"high"},
+		{NhlMEDIUM,	"medium"},
+		{NhlLOW,	"low"}
+	};
+
+	_NhlEnumVals	textdirlist[] = {
+		{NhlDOWN,	"down"},
+		{NhlACROSS,	"across"},
+		{NhlUP,		"up"}
+	};
+
+	_NhlRegisterEnumType(NhlTFQuality,fontqlist,NhlNumber(fontqlist));
+	_NhlRegisterEnumType(NhlTTextDirection,textdirlist,
+							NhlNumber(textdirlist));
+
+	txstrQ = NrmStringToQuark(NhlNtxString);
+
+	return(NhlNOERROR);	
+}
+
+static NhlErrorTypes
+DoPcCalc
+#if	NhlNeedFuncProto
+(
+	NhlTextItemLayer	tnew
+)
+#else
+(tnew)
+	NhlTextItemLayer	tnew;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, ret1 = NhlNOERROR;
+	float fr,fl,ft,fb,ur,ul,ut,ub;
+	int ll;
+	char buf[10];
+	/*
+	 * 21.0 is the default principle height. TextItems will not allow
+	 * principle height to be more than this. However it may be less if
+	 * aspect ratio 1/font_aspect <= 1.0  (See Plotchar).
+	 */
+	if( tnew->text.font_aspect <= 0.0 ) {
+		tnew->text.font_aspect = 1.3125;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"TextItem: Aspect ratio cannont be zero or negative");
+		ret = MIN(ret,NhlWARNING);
+	}
+	if(tnew->text.font_aspect <= 1.0) {
+		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
+		tnew->text.real_ph_width = 21.0;
+	} else {
+		tnew->text.real_ph_width = 21.0 * 1.0/tnew->text.font_aspect;
+		tnew->text.real_ph_height = 21.0;
+	}
+	tnew->text.real_size = 1.0/tnew->text.font_aspect *
+							tnew->text.font_height;
+
+	/*
+	 * Need to determine how big text is so the real posistions of x and y
+	 * can be calculated from the angle and the fields pos_x and pos_y.
+	 * GKS better be open!
+	 */
+	c_pcseti("TE",1);
+	c_pcsetr("CS",tnew->text.constant_spacing);
+	sprintf(buf,"%c",tnew->text.func_code);
+	c_pcsetc("FC",buf);
+	c_pcsetr("PH",tnew->text.real_ph_height);
+	c_pcsetr("PW",tnew->text.real_ph_width);
+	c_pcseti("QU",tnew->text.qual);
+	c_pcseti("FN",tnew->text.font);
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+
+
+	ret1 = FigureAndSetTextBBInfo(tnew);
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+
+	return MIN(ret,ret1);
+}
+
+/*
+ * Function:	TextItemInitialize
+ *
+ * Description:	Performs initilization of TextItem. This involves copying
+ *		user data into internal space and then makes calls to 
+ *		plotchar to set plotchars space so text extent computations 
+ *		can be done.
+ *
+ * In Args:	Standard initialize parameters
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error condition
+ *
+ * Side Effects: Plotchar state affected
+ */
+/*ARGSUSED*/
+static NhlErrorTypes    TextItemInitialize
+#if __STDC__
+( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
+#else
+(class,req,new,args,num_args)
+	NhlLayerClass	class;
+	NhlLayer		req;
+	NhlLayer		new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlTextItemLayer	tnew = (NhlTextItemLayer) new;
+	char			*tmp;
+	NhlErrorTypes		ret=NhlNOERROR,ret1 = NhlNOERROR;
+	float			x,y,width,height;
+	float			tmpvx0,tmpvx1,tmpvy0,tmpvy1;
+	NhlBoolean		do_view_trans = False;
+
+	if( tnew->text.perim_space < 0.0 ) {
+		tnew->text.perim_space = 0.5;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	     "TextItemInitialize: Perimeter space cannot be less than zero");
+		ret = NhlWARNING;
+	}
+
+	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
+	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
+	if((tnew->text.direction == NhlUP)||(tnew->text.direction == NhlDOWN)) {
+		sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
+							tnew->text.func_code);
+	} else {
+		sprintf(tnew->text.dirstr,"%cA%c",tnew->text.func_code,
+							tnew->text.func_code);
+	}
+	if(strcmp(tnew->text.string,DEFSTRING)==0) {
+		tnew->text.string = (char*) 
+			NhlMalloc((unsigned)strlen(tnew->base.name) +1);
+		strcpy(tnew->text.string,tnew->base.name);
+	} else {
+		tmp = tnew->text.string;
+		tnew->text.string= (char*)NhlMalloc((unsigned)strlen(tmp)+1);
+		strcpy(tnew->text.string,tmp);
+	}
+
+	tnew->text.real_string = (char*)NhlMalloc((unsigned)
+						strlen(tnew->text.string)+
+						strlen(tnew->text.dirstr)+1);
+	strcpy(tnew->text.real_string,tnew->text.dirstr);
+	strcat(tnew->text.real_string,tnew->text.string);
+
+	switch(tnew->text.font_quality) {
+		case NhlHIGH:
+			tnew->text.qual = 0;
+			break;
+		case NhlMEDIUM:
+			tnew->text.qual = 1;
+			break;
+		case NhlLOW:
+			tnew->text.qual = 2;
+			break;
+	}
+
+	/*
+	 * If none of the text size attributes are set, but the view ones
+	 * are, then we need to transform the text to the view's coordinates.
+	 * If any of the text size attributes are set, then the view's
+	 * position coordinates are ignored.  To do this, we have to do all
+	 * the plotchar calculations, then transform everything, then
+	 * redo the plotchar calculations.
+	 */
+	if((tnew->view.x_set || tnew->view.y_set ||
+			tnew->view.width_set || tnew->view.height_set)
+		&& !(tnew->text.pos_x_set || tnew->text.pos_y_set)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxAngleF)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxJust)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxDirection)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxFont)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxFontHeightF)
+		&& !_NhlArgIsSet(args,num_args,NhlNtxFontAspectF)){
+
+		do_view_trans = True;
+		x = tnew->view.x;
+		y = tnew->view.y;
+		width = tnew->view.width;
+		height = tnew->view.height;
+	}
+
+	ret1 = DoPcCalc(tnew);
+
+	if(do_view_trans){
+		ret = MIN(ret,ret1);
+
+		/*
+		 * Need to reset "view" to what the user set it to be.
+		 * So we call setvalues on ourself.
+		 */
+		ret1 = NhlVASetValues(tnew->base.id,
+				NhlNvpXF,	x,
+				NhlNvpYF,	y,
+				NhlNvpWidthF,	width,
+				NhlNvpHeightF,	height,
+				NULL);
+	}
+
+	return(MIN(ret,ret1));
+}
+
+
 /*
  * Function:	TextItemSetValues
  *
@@ -293,9 +586,7 @@ static NhlErrorTypes TextItemSetValues
 	NhlTextItemLayer tnew = (NhlTextItemLayer) new;
 	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float tmpvx0,tmpvx1,tmpvy0,tmpvy1;
-	float fl,fr,ft,fb,ul,ur,ut,ub;
-	int ll;
-	char *tmp,buf[10];
+	char *tmp;
 	int	rstringchange = 0;
 
 	if( tnew->text.perim_space < 0.0 ) {
@@ -386,155 +677,61 @@ static NhlErrorTypes TextItemSetValues
 			tnew->text.qual = 2;
 			break;
 	}
-/*
-* 21.0 is the default principle height. TextItems will not allow principle 
-* height to be more than this. However it may be less if aspect ratio 
-*  1/font_aspect <= 1.0  (See Plotchar).
-*/
-	if( tnew->text.font_aspect <= 0.0 ) {
-		tnew->text.font_aspect = 1.3125;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = MIN(ret,NhlWARNING);
-	}
-	if(tnew->text.font_aspect <= 1.0) {
-		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
-		tnew->text.real_ph_width = 21.0;
-	} else {
-		tnew->text.real_ph_width = 21.0 * 1.0/tnew->text.font_aspect;
-		tnew->text.real_ph_height = 21.0;
-	}
-	tnew->text.real_size = 1.0/tnew->text.font_aspect * tnew->text.font_height;
-/*
-* Need to determine how big text is so the real posistions of x and y can
-* be calculated from the angle and the fields pos_x and pos_y.
-* GKS better be open!
-*/
-	c_pcseti("TE",1);
-	c_pcsetr("CS",tnew->text.constant_spacing);
-	sprintf(buf,"%c",tnew->text.func_code);
-	c_pcsetc("FC",buf);
-	c_pcsetr("PH",tnew->text.real_ph_height);
-	c_pcsetr("PW",tnew->text.real_ph_width);
-	c_pcseti("QU",tnew->text.qual);
-	c_pcseti("FN",tnew->text.font);
-        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-        ret1 = FigureAndSetTextBBInfo(tnew);
-        c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+
+	ret1 = DoPcCalc(tnew);
+
         return(MIN(ret,ret1));
 }
 
 /*
- * Function:	TextItemInitialize
+ * Function:	TextItemGetValues
  *
- * Description:	Performs initilization of TextItem. This involves copying
- *		user data into internal space and then makes calls to 
- *		plotchar to set plotchars space so text extent computations 
- *		can be done.
+ * Description:	
  *
- * In Args:	Standard initialize parameters
+ * In Args:	
  *
- * Out Args:	NONE
+ * Out Args:	
  *
- * Return Values: Error condition
- *
- * Side Effects: Plotchar state affected
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
  */
-/*ARGSUSED*/
-static NhlErrorTypes    TextItemInitialize
-#if __STDC__
-( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
+static NhlErrorTypes
+TextItemGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
 #else
-(class,req,new,args,num_args)
-	NhlLayerClass	class;
-	NhlLayer		req;
-	NhlLayer		new;
+(l,args,nargs)
+	NhlLayer	l;
 	_NhlArgList	args;
-	int		num_args;
+	int		nargs;
 #endif
 {
-	NhlTextItemLayer	tnew = (NhlTextItemLayer) new;
-	char* tmp;
-	NhlErrorTypes	ret=NhlNOERROR,ret1 = NhlNOERROR;
-	int ll;
-	float fr,fl,ft,fb,ur,ul,ut,ub;
-	char buf[10];
+	char			func[] = "TextItemGetValues";
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlTextItemLayerPart	*tep = &((NhlTextItemLayer)l)->text;
+	int			i;
 
-	if( tnew->text.perim_space < 0.0 ) {
-		tnew->text.perim_space = 0.5;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	     "TextItemInitialize: Perimeter space cannot be less than zero");
-		ret = NhlWARNING;
-	}
+	for(i=0;i<nargs;i++){
 
-	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
-	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
-	if((tnew->text.direction == NhlUP)||(tnew->text.direction == NhlDOWN)) {
-		sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,tnew->text.func_code);
-	} else {
-		sprintf(tnew->text.dirstr,"%cA%c",tnew->text.func_code,tnew->text.func_code);
-	}
-	if(strcmp(tnew->text.string,DEFSTRING)==0) {
-		tnew->text.string = (char*) 
-			NhlMalloc((unsigned)strlen(tnew->base.name) +1);
-		strcpy(tnew->text.string,tnew->base.name);
-	} else {
-		tmp = tnew->text.string;
-		tnew->text.string= (char*)NhlMalloc((unsigned)strlen(tmp)+1);
-		strcpy(tnew->text.string,tmp);
+		if((args[i].quark == txstrQ) && tep->string){
+			*(NhlString*)args[i].value.ptrval =
+				(NhlString)NhlMalloc(strlen(tep->string)+1);
+			if(*(NhlString*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNtxString);
+				ret = MIN(ret,NhlWARNING);
+			}
+			strcpy(*(NhlString*)args[i].value.ptrval,tep->string);
+		}
 	}
 
-	tnew->text.real_string = (char*)NhlMalloc((unsigned)
-						strlen(tnew->text.string)+
-						strlen(tnew->text.dirstr)+1);
-	strcpy(tnew->text.real_string,tnew->text.dirstr);
-	strcat(tnew->text.real_string,tnew->text.string);
-
-	switch(tnew->text.font_quality) {
-		case NhlHIGH:
-			tnew->text.qual = 0;
-			break;
-		case NhlMEDIUM:
-			tnew->text.qual = 1;
-			break;
-		case NhlLOW:
-			tnew->text.qual = 2;
-			break;
-	}
-/*
-* 21.0 is the default principle height. TextItems will not allow principle 
-* height to be more than this. However it may be less if aspect ratio 
-*  1/font_aspect <= 1.0  (See Plotchar).
-*/
-	if( tnew->text.font_aspect <= 0.0 ) {
-		tnew->text.font_aspect = 1.3125;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = MIN(ret,NhlWARNING);
-	}
-	if(tnew->text.font_aspect <= 1.0) {
-		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
-		tnew->text.real_ph_width = 21.0;
-	} else {
-		tnew->text.real_ph_width = 21.0 * 1.0/tnew->text.font_aspect;
-		tnew->text.real_ph_height = 21.0;
-	}
-	tnew->text.real_size = 1.0/tnew->text.font_aspect * tnew->text.font_height;
-/*
-* Need to determine how big text is so the real posistions of x and y can
-* be calculated from the angle and the fields pos_x and pos_y.
-* GKS better be open!
-*/
-	c_pcseti("TE",1);
-	c_pcsetr("CS",tnew->text.constant_spacing);
-	sprintf(buf,"%c",tnew->text.func_code);
-	c_pcsetc("FC",buf);
-	c_pcsetr("PH",tnew->text.real_ph_height);
-	c_pcsetr("PW",tnew->text.real_ph_width);
-	c_pcseti("QU",tnew->text.qual);
-	c_pcseti("FN",tnew->text.font);
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	ret1 = FigureAndSetTextBBInfo(tnew);
-	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-	return(MIN(ret,ret1));
+	return ret;
 }
 
 /*
@@ -714,48 +911,6 @@ static NhlErrorTypes    TextItemDestroy
 	NhlFree(tinst->text.real_string);
 	return(NhlNOERROR);
 }
-
-
-
-/*
- * Function:	TextItemClassInitialize
- *
- * Description: Just calls StringToQuark to register new types
- *
- * In Args:	NONE
- *
- * Out Args:	NONE
- *
- * Return Values:	Error condition
- *
- * Side Effects: 	NONE
- */
-static NhlErrorTypes    TextItemClassInitialize
-#if  __STDC__
-(void)
-#else
-()
-#endif
-{
-	_NhlEnumVals	fontqlist[] = {
-		{NhlHIGH,	"high"},
-		{NhlMEDIUM,	"medium"},
-		{NhlLOW,	"low"}
-	};
-
-	_NhlEnumVals	textdirlist[] = {
-		{NhlDOWN,	"down"},
-		{NhlACROSS,	"across"},
-		{NhlUP,		"up"}
-	};
-
-	_NhlRegisterEnumType(NhlTFQuality,fontqlist,NhlNumber(fontqlist));
-	_NhlRegisterEnumType(NhlTTextDirection,textdirlist,
-							NhlNumber(textdirlist));
-
-	return(NhlNOERROR);	
-}
-
 
 
 /*

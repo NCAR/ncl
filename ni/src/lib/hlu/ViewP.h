@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.5 1994-03-02 01:44:43 dbrown Exp $
+ *      $Id: ViewP.h,v 1.6 1994-10-31 01:08:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,11 @@ typedef struct _NhlViewLayerPart {
 	NhlBoolean	use_segments;
 
 	/* Internal private fields */
+
+	NhlBoolean	x_set;
+	NhlBoolean	y_set;
+	NhlBoolean	width_set;
+	NhlBoolean	height_set;
 	
 	NhlSegTransList	plot_segments_list;
 	NhlLayerList	children;

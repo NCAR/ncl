@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.3 1994-06-03 19:24:14 dbrown Exp $
+ *      $Id: TextItemP.h,v 1.4 1994-10-31 01:08:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,8 @@ typedef struct _NhlTextItemLayerPart{
 
 	/* Private fields */
 
+	NhlBoolean	pos_x_set;
+	NhlBoolean	pos_y_set;
 	char	*real_string;
 	float	cntr;
 	float	real_x_pos;

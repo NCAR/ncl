@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.9 1994-10-28 03:13:42 boote Exp $
+ *      $Id: ResList.c,v 1.10 1994-10-31 01:08:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -790,7 +790,7 @@ NhlRLSetMDArray
 }
 
 /*
- * Function:	NhlRLSetMDIntArray
+ * Function:	NhlRLSetMDIntegerArray
  *
  * Description:	This function is used to set an array resource with the value
  *		specified as the given type.
@@ -804,7 +804,7 @@ NhlRLSetMDArray
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLSetMDIntArray
+NhlRLSetMDIntegerArray
 #if	NhlNeedProto
 (
 	int		id,
@@ -1053,7 +1053,7 @@ NhlRLGet
 }
 
 /*
- * Function:	NhlRLGetInt
+ * Function:	NhlRLGetInteger
  *
  * Description:	This function is used to retrieve a resource into the address
  *		specified.
@@ -1067,7 +1067,7 @@ NhlRLGet
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLGetInt
+NhlRLGetInteger
 #if	NhlNeedProto
 (
 	int		id,
@@ -1512,7 +1512,7 @@ NhlRLGetMDTypeArray
 }
 
 /*
- * Function:	NhlRLGetMDIntArray
+ * Function:	NhlRLGetMDIntegerArray
  *
  * Description:	This function is used to retrieve the resource given as an
  *		array of the type specified.
@@ -1526,7 +1526,7 @@ NhlRLGetMDTypeArray
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLGetMDIntArray
+NhlRLGetMDIntegerArray
 #if	NhlNeedProto
 (
 	int		id,
@@ -2031,7 +2031,7 @@ NhlRLGetTypeArray
 }
 
 /*
- * Function:	NhlRLGetIntArray
+ * Function:	NhlRLGetIntegerArray
  *
  * Description:	This function is used to set an array resource with the value
  *		specified as the given type.
@@ -2045,7 +2045,7 @@ NhlRLGetTypeArray
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLGetIntArray
+NhlRLGetIntegerArray
 #if	NhlNeedProto
 (
 	int		id,

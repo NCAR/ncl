@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.17 1994-10-07 18:48:02 dbrown Exp $
+ *      $Id: Workstation.c,v 1.18 1994-10-31 01:08:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -291,7 +291,7 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{ NhlNwkColorMap, NhlCwkColorMap, NhlTGenArray , sizeof(NhlPointer),
+	{ NhlNwkColorMap, NhlCwkColorMap,NhlTFloatGenArray , sizeof(NhlPointer),
 		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
 		Oset(color_map_len),NhlTImmediate, 

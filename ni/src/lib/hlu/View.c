@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.10 1994-10-27 01:37:00 dbrown Exp $
+ *      $Id: View.c,v 1.11 1994-10-31 01:08:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,22 +37,135 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/ConvertersP.h>
 
+/*ARGSUSED*/
+static NhlErrorTypes
+XSetFunc
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlViewLayer	view = (NhlViewLayer)base;
+
+	view->view.x_set = False;
+	view->view.x = NHL_DEFAULT_VIEW_X;
+
+	return NhlNOERROR;
+}
+/*ARGSUSED*/
+static NhlErrorTypes
+YSetFunc
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlViewLayer	view = (NhlViewLayer)base;
+
+	view->view.y_set = False;
+	view->view.y = NHL_DEFAULT_VIEW_Y;
+
+	return NhlNOERROR;
+}
+/*ARGSUSED*/
+static NhlErrorTypes
+WSetFunc
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlViewLayer	view = (NhlViewLayer)base;
+
+	view->view.width_set = False;
+	view->view.width = NHL_DEFAULT_VIEW_WIDTH;
+
+	return NhlNOERROR;
+}
+/*ARGSUSED*/
+static NhlErrorTypes
+HSetFunc
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlViewLayer	view = (NhlViewLayer)base;
+
+	view->view.height_set = False;
+	view->view.height = NHL_DEFAULT_VIEW_HEIGHT;
+
+	return NhlNOERROR;
+}
+
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlViewLayerRec,view.x_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.x),
-		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_X_STR),0,NULL},
+				NhlTProcedure,_NhlUSET(XSetFunc),0,NULL},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlViewLayerRec,view.y_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNvpYF, NhlCvpYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.y),
-		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_Y_STR),0,NULL},
+				NhlTProcedure,_NhlUSET(YSetFunc),0,NULL},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlViewLayerRec,view.width_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNvpWidthF, NhlCvpWidthF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.width),
-		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_WIDTH_STR),0,NULL},
+				NhlTProcedure,_NhlUSET(WSetFunc),0,NULL},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlViewLayerRec,view.height_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNvpHeightF, NhlCvpHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.height),
-		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_HEIGHT_STR),0,NULL},
+				NhlTProcedure,_NhlUSET(HSetFunc),0,NULL},
 	{ NhlNvpKeepAspect, NhlCvpKeepAspect, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.keep_aspect),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},

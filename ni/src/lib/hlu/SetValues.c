@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.9 1994-07-12 20:53:00 boote Exp $
+ *      $Id: SetValues.c,v 1.10 1994-10-31 01:08:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -225,7 +225,7 @@ SetValues
 						NhlPError(NhlWARNING,
 							NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
-					NrmNameToString(resources[i].nrm_name));
+					NrmNameToString(resources[j].nrm_name));
 						ret = MIN(NhlWARNING,ret);
 					}
 				}

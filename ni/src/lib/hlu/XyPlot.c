@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.22 1994-09-23 23:37:07 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.23 1994-10-31 01:08:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ typedef enum _CallType{
  *
  * In Args:	
  *		NrmName		name,
- *		NrmClass	class,
+ *		NrmClass	cname,
  *		NhlPointer	base,
  *		unsigned int	offset
  *
@@ -66,14 +66,14 @@ CompXMin
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -91,14 +91,14 @@ SetXMin
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -116,14 +116,14 @@ CompXMax
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -141,14 +141,14 @@ SetXMax
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -166,14 +166,14 @@ CompYMax
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -191,14 +191,14 @@ SetYMax
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -216,14 +216,14 @@ CompYMin
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -241,14 +241,14 @@ SetYMin
 #if	__STDC__
 (
 	NrmName		name,
-	NrmClass	class,
+	NrmClass	cname,
 	NhlPointer	base,
 	unsigned int	offset
 )
 #else
-(name,class,base,offset)
+(name,cname,base,offset)
 	NrmName		name;
-	NrmClass	class;
+	NrmClass	cname;
 	NhlPointer	base;
 	unsigned int	offset;
 #endif
@@ -442,7 +442,7 @@ static NhlErrorTypes XyPlotSetValues(
 
 static NhlErrorTypes XyDataInitialize(
 #ifdef NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlLayerClass,     /* cname */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -452,7 +452,7 @@ static NhlErrorTypes XyDataInitialize(
 
 static NhlErrorTypes XyPlotInitialize(
 #ifdef NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlLayerClass,     /* cptr */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -993,15 +993,15 @@ static NhlErrorTypes
 XyDataInitialize
 #if     __STDC__
 (
-	NhlLayerClass	class,
+	NhlLayerClass	cptr,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
-(class,req,new,args,num_args)
-        NhlLayerClass      class;
+(cptr,req,new,args,num_args)
+        NhlLayerClass      cptr;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -1087,15 +1087,15 @@ static NhlErrorTypes
 XyPlotInitialize
 #if     __STDC__
 (
-	NhlLayerClass	class,
+	NhlLayerClass	cptr,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
-(class,req,new,args,num_args)
-        NhlLayerClass      class;
+(cptr,req,new,args,num_args)
+        NhlLayerClass      cptr;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
