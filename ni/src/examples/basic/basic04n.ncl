@@ -1,4 +1,4 @@
-; $Id: basic04n.ncl,v 1.6 1995-06-14 17:16:57 stautler Exp $
+; $Id: basic04n.ncl,v 1.7 1995-06-29 17:16:04 scheitln Exp $
 ;
 ; This example demonstrates how to select and change the workstation
 ; device for drawing your output to an NCGM file or an X workstation window.
@@ -6,10 +6,13 @@
 ;
 ;   1. Create output workstation objects.
 ;   2. Create the data for the plots.
-;   3. Create the contour objects.
-;   4. Draw the contour objects.
+;   3. Create the contour object.
+;   4. Draw the contour object.
 ;   5. Call frame.
-;   6. Clean up memory.
+;   6. Change workstations.
+;   7. Draw the contour object.
+;   8. Call frame.
+;   9. Clean up memory.
 
 ; Begin the ncl script.
 
@@ -41,7 +44,7 @@ end create
 ; ##########
 ; # STEP 2 #
 ; ##########
-; Create the data for the plots.
+; Create the data for the plot.
 
 ; Create a 5x5 integer variable.
 
@@ -66,7 +69,7 @@ end create
 ; ##########
 ; # STEP 3 #
 ; ##########
-; Create the object(s) you want to draw.
+; Create the object you want to draw.
 
 ; Create a contour object to draw into the X workstation.
 ; Assign data using the cnScalarFieldData resource.
@@ -75,31 +78,43 @@ xcon = create "xcon" contourPlotClass xwks
    "cnScalarFieldData" : field1
 end create
 
-; Create an empty contour object to draw into the ncgm workstation.
-; Assign data using the cnScalarFieldData resource.
-
-ncon = create "ncon" contourPlotClass nwks
-   "cnScalarFieldData" : field1
-end create
-
 ; ##########
 ; # STEP 4 #
 ; ##########
-; Draw the objects
+; Draw the object
 
 draw(xcon)
-draw(ncon)
 
 ; ##########
 ; # STEP 5 #
 ; ##########
-; Call frame to update and clear the workstations
+; Call frame to update and clear the workstation
 
 frame(xwks)
-frame(nwks)
 
 ; ##########
 ; # STEP 6 #
+; ##########
+; Change the workstation
+
+NhlChangeWorkstation(xcon,nwks)
+
+; ##########
+; # STEP 7 #
+; ##########
+; Draw the object
+
+draw(xcon)
+
+; ##########
+; # STEP 8 #
+; ##########
+; Call frame to update and clear the workstation
+
+frame(nwks)
+
+; ##########
+; # STEP 9 #
 ; ##########
 ; Clean up memory.
 
