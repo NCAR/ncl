@@ -236,6 +236,21 @@ GribParamList* /* thevarrec */
 #endif
 );	
 
+typedef void (*GribGetGDSGrid)(
+#if NhlNeedProto
+GribParamList*, /* thevarrec */
+float**,
+int *,
+int **,
+float **,
+int *,
+int **,
+GribAttInqRecList ** /*lat_att_list*/,
+int * /*nlatatts*/,
+GribAttInqRecList ** /*lon_att_list*/,
+int * /*lonatts*/
+#endif
+);	
 typedef void (*GribGetGrid)(
 #if NhlNeedProto
 GribParamList*, /* thevarrec */
@@ -264,6 +279,11 @@ typedef struct gridinfo {
 	GribGetGridAtts get_grid_atts;
 	char *grid_name;
 }GridInfoRecord;
+typedef struct gridgdsinfo {
+	GribUnPackData un_pack;
+	GribGetGDSGrid get_gds_grid;
+	char *grid_name;
+}GridGDSInfoRecord;
 
 extern int CnvtToDecimal(
 #if     NhlNeedProto
