@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.21 2000-01-24 20:56:21 dbrown Exp $
+ *      $Id: varpage.c,v 1.22 2000-03-21 02:35:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -367,7 +367,7 @@ static void DataGridToggleCB
 #endif
         if (! rec->datagrid) {
                 rec->datagrid = NgCreateDataGrid
-                        (page->go,pdp->form,
+                        (page->go->base.id,pdp->form,
                          page->qfile,pdp->dl->u.var,False,False);
 		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
                                  rec->start,rec->finish,rec->stride);
@@ -434,7 +434,7 @@ UpdateShaper
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
 
         if (! rec->shaper) {
-		rec->shaper = NgCreateShaper(page->go,pdp->form);
+		rec->shaper = NgCreateShaper(page->go->base.id,pdp->form);
 
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
                 rec->shaper->shape_notify = VarPageDataUpdate;
@@ -936,11 +936,12 @@ _NgGetVarPage
         if (!rec->vartree) {
 		if (copy_page)
 			rec->vartree = NgDupVarTree
-                                (go,pdp->form,page->qfile,page->qvar,
+                                (go->base.id,pdp->form,page->qfile,page->qvar,
                                  pdp->dl,NULL,copy_vartree);
                 else 
                         rec->vartree = NgCreateVarTree
-                                (go,pdp->form,page->qfile,page->qvar,pdp->dl);
+                                (go->base.id,
+				 pdp->form,page->qfile,page->qvar,pdp->dl);
                 XtVaSetValues(rec->vartree->tree,
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNbottomAttachment,XmATTACH_NONE,
@@ -951,7 +952,7 @@ _NgGetVarPage
                 rec->vartree->geo_notify = AdjustVarPageGeometry;
         }
         else if (copy_page)
-                NgDupVarTree(go,pdp->form,page->qfile,page->qvar,
+                NgDupVarTree(go->base.id,pdp->form,page->qfile,page->qvar,
                              pdp->dl,rec->vartree,copy_vartree);
         else
                 NgUpdateVarTree(rec->vartree,page->qfile,page->qvar,pdp->dl);
@@ -975,7 +976,8 @@ _NgGetVarPage
 		NclApiDataList *dl = GetInfo
 			(page->qfile,page->qvar,NrmNULLQUARK);
 		rec->shaper = NgDupShaper
-			(page->go,pdp->form,rec->shaper,copy_rec->shaper,
+			(page->go->base.id,pdp->form,
+			 rec->shaper,copy_rec->shaper,
 			 page->qfile,rec->start,rec->finish,rec->stride,dl);
 		if (! rec->shaper)
 			return NULL;
@@ -1040,7 +1042,8 @@ _NgGetVarPage
                          XmNleftWidget,rec->datagrid_toggle,
                          NULL);
                 rec->plotstylemenu =
-                        NgCreatePlotStyleMenu(page->go,rec->data_ctrl_form);
+                        NgCreatePlotStyleMenu
+			(page->go->base.id,rec->data_ctrl_form);
                 XtVaSetValues(rec->plotstylemenu->menubar,
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNtopOffset,4,
@@ -1061,7 +1064,7 @@ _NgGetVarPage
                 int start_col,start_row;
                 if (! rec->datagrid) {
                         rec->datagrid = NgCreateDataGrid
-                                (page->go,pdp->form,
+                                (page->go->base.id,pdp->form,
                                  page->qfile,pdp->dl->u.var,False,False);
                         XtVaSetValues(rec->datagrid->grid,
                                       XmNbottomAttachment,XmATTACH_NONE,

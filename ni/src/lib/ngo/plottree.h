@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.h,v 1.2 1999-10-13 17:15:50 dbrown Exp $
+ *      $Id: plottree.h,v 1.3 2000-03-21 02:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,14 +25,6 @@
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/dataprofile.h>
 
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 /*
  * Public api
  */
@@ -52,7 +44,7 @@ typedef struct _NgPlotTree
                 
 extern NgPlotTree *NgCreatePlotTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	int			wk_id,
         NrmQuark 		qname,
@@ -69,7 +61,7 @@ extern NhlErrorTypes NgUpdatePlotTree
 
 extern NgPlotTree *NgDupPlotTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	int			wk_id,
         NrmQuark		qname,

@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.h,v 1.3 1999-11-03 20:29:28 dbrown Exp $
+ *      $Id: diminfogrid.h,v 1.4 2000-03-21 02:35:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,7 @@
 #define	_NG_DIMINFOGRID_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api

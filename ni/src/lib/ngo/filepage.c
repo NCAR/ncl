@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.9 1999-09-11 01:06:15 dbrown Exp $
+ *      $Id: filepage.c,v 1.10 2000-03-21 02:35:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -160,11 +160,11 @@ _NgGetFileRefPage
         if (! rec->filetree) {
                 if (copy_page)
                         rec->filetree = NgDupFileTree
-                                (go,pdp->form,page->qfile,pdp->dl,
+                                (go->base.id,pdp->form,page->qfile,pdp->dl,
                                  NULL,copy_filetree);
                 else
                         rec->filetree = NgCreateFileTree
-                                (go,pdp->form,page->qfile,pdp->dl);
+                                (go->base.id,pdp->form,page->qfile,pdp->dl);
                 
                 XtVaSetValues(rec->filetree->tree,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -173,7 +173,7 @@ _NgGetFileRefPage
                 rec->filetree->geo_notify = AdjustFileRefPageGeometry;
         }
         else if (copy_page)
-                NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
+                NgDupFileTree(go->base.id,pdp->form,page->qfile,pdp->dl,
                               rec->filetree,copy_filetree);
         else
                 NgUpdateFileTree(rec->filetree,page->qfile,pdp->dl);

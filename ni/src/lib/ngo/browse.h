@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.14 1999-09-29 02:05:55 dbrown Exp $
+ *      $Id: browse.h,v 1.15 2000-03-21 02:35:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,15 +23,7 @@
 #define	_NG_BROWSE_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/hlu/NresDB.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 extern NhlClass NgbrowseClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.25 2000-03-10 01:12:55 dbrown Exp $
+ *      $Id: plotapp.c,v 1.26 2000-03-21 02:35:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2954,19 +2954,21 @@ NgDataProfile NgNewPlotAppDataProfile
 		 */
 			
 		if (papp->class_name) {
-			return NgNewDataProfile(go,papp->class_name);
+			return NgNewDataProfile(go->base.id,papp->class_name);
 		}
 		else {
 			return NULL;
 		}
 	}
 	if (! strcmp(papp->class_name,NGPLOTCLASS)) {
-		dprof = NgNewDataProfile(go,papp->class_name);
+		dprof = NgNewDataProfile(go->base.id,papp->class_name);
 	}
 	for (obj = papp->objects; obj; obj = obj->next) {
-		if (NgHasDataProfile(go,obj->class->base_class.class_name))
+		if (NgHasDataProfile
+		    (go->base.id,obj->class->base_class.class_name))
 			dprof = NgMergeDataProfiles
-				(go,dprof,NrmQuarkToString(obj->qbasename),
+				(go->base.id,dprof,
+				 NrmQuarkToString(obj->qbasename),
 				 obj->class->base_class.class_name);
 		if (! dprof)
 			return NULL; 
@@ -3681,7 +3683,6 @@ static NhlBoolean ReplaceDataSymRef
 				sprintf(tbuf,"null");
 			else
 				sprintf(tbuf,"\"\"");
-
 			status = True;
 		}
 		break;

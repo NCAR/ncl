@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.14 2000-02-17 01:36:24 dbrown Exp $
+ *      $Id: plotpage.c,v 1.15 2000-03-21 02:35:45 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -303,13 +303,14 @@ static NhlErrorTypes GetDataProfileMessage
 		 * assign; otherwise create.
 		 */
 
-		name = NgHasDataProfile(rec->go,pub->class_name) ?
+		name = NgHasDataProfile(rec->go->base.id,pub->class_name) ?
 			pub->class_name : NULL;
 		if ( ! (name || dprof->class_name) ||
 		    ! strcmp(name,dprof->class_name))
 			rec->data_profile = dprof;
 		else {
-			rec->data_profile = NgNewDataProfile(rec->go,name);
+			rec->data_profile = NgNewDataProfile
+				(rec->go->base.id,name);
 			if (! rec->data_profile) {
 				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					   "error getting data profile for %s",
@@ -524,10 +525,11 @@ static NhlBoolean GetDataVal
 				NhlBoolean user = 
 					vdata->set_state == _NgEXPRESSION ?
 					False : True;
-				if (! (vdata->expr_val && vdata->go))
+				if (! (vdata->expr_val && 
+				       vdata->goid > NhlNULLOBJID))
 					return False;
 				if (! NgSetExpressionVarData
-				    (vdata->go->base.id,vdata,
+				    (vdata->goid,vdata,
 				     vdata->expr_val,_NgCONDITIONAL_EVAL,user))
 					return False;
 			}
@@ -650,7 +652,7 @@ static NhlBoolean DataChanged
 
 	oldval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
 
-	ret = NgSetExpressionVarData(vdata->go->base.id,vdata,
+	ret = NgSetExpressionVarData(vdata->goid,vdata,
 				     vdata->expr_val,_NgFORCED_EVAL,user);
 	if (! ret)
 		return False;
@@ -705,10 +707,10 @@ static NhlBoolean GetDataObjValue
 			vdata->set_state == _NgEXPRESSION ? False : True;
 
                 if (! vdata->qexpr_var) {
-                        if (! (vdata->expr_val && vdata->go))
+                        if (! (vdata->expr_val && vdata->goid > NhlNULLOBJID))
                                 return False;
                         if (! NgSetExpressionVarData
-                            (vdata->go->base.id,vdata,vdata->expr_val,
+                            (vdata->goid,vdata,vdata->expr_val,
 			     _NgCONDITIONAL_EVAL,user))
                                 return False;
                 }
@@ -773,10 +775,10 @@ static NhlBoolean GetConfigValue
 			False : True;
 
 		if (! vdata->qexpr_var) {
-			if (! (vdata->expr_val && vdata->go))
+			if (! (vdata->expr_val && vdata->goid > NhlNULLOBJID))
 				return False;
 			if (! NgSetExpressionVarData
-			    (vdata->go->base.id,vdata,vdata->expr_val,
+			    (vdata->goid,vdata,vdata->expr_val,
 			     _NgCONDITIONAL_EVAL,user))
 				return False;
 		}
@@ -1493,11 +1495,11 @@ static NhlErrorTypes DoUpdateFunc
 	else
 		return NhlNOERROR;
 
-	if (! (vdata->expr_val && vdata->go))
+	if (! (vdata->expr_val && vdata->goid > NhlNULLOBJID))
 		return NhlNOERROR;
 		
 	if (! NgSetExpressionVarData
-	    (vdata->go->base.id,vdata,vdata->expr_val,_NgFORCED_EVAL,user)) {
+	    (vdata->goid,vdata,vdata->expr_val,_NgFORCED_EVAL,user)) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 	   "Disabling resource %s@%s; error evaluating expression value:\n %s",
 			   NrmQuarkToString(ditem->qhlu_name),
@@ -1537,7 +1539,7 @@ static NhlErrorTypes DoUpdateFunc
 	 * side effects -- immediately blow away the variable
 	 */
 
-	NgDeleteExpressionVarData(vdata->go->base.id,vdata);
+	NgDeleteExpressionVarData(vdata->goid,vdata);
 
 	return ret;
 }
@@ -2475,7 +2477,8 @@ static void LinkToggleCB
 	}
 	if (! rec->func_grid) {
 		rec->func_grid = NgCreateFuncGrid
-			(rec->go,pdp->form,page->qvar,rec->data_profile);
+			(rec->go->base.id,
+			 pdp->form,page->qvar,rec->data_profile);
 		XtVaSetValues(rec->func_grid->grid,
 			      XmNtopAttachment,XmATTACH_WIDGET,
 			      XmNtopWidget,rec->link_tgl,
@@ -2790,11 +2793,11 @@ NewPlotPage
 	
 	if (! rec->data_profile) {
 		rec->data_var_grid = NgCreateDataVarGrid
-			(rec->go,pdp->form,page->qvar,0,NULL);
+			(rec->go->base.id,pdp->form,page->qvar,0,NULL);
 	}
 	else {
 		rec->data_var_grid = NgCreateDataVarGrid
-			(rec->go,pdp->form,page->qvar,
+			(rec->go->base.id,pdp->form,page->qvar,
 			 rec->data_profile->plotdata_count,
 			 rec->data_profile->plotdata);
 	}	
@@ -2826,7 +2829,7 @@ NewPlotPage
                  NULL);
 
 	rec->plot_tree = NgCreatePlotTree
-                                (go,pdp->form,NhlNULLOBJID,
+                                (go->base.id,pdp->form,NhlNULLOBJID,
 				 page->qvar,rec->data_profile);
 
 	XtVaSetValues(rec->plot_tree->tree,

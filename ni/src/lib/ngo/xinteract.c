@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.12 2000-02-17 01:36:25 dbrown Exp $
+ *      $Id: xinteract.c,v 1.13 2000-03-21 02:35:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -673,7 +673,7 @@ static void Manipulate
 		qview_name = NrmStringToQuark(view_name);
 		qplot_name = NgGraphicArrayofGraphic(qview_name);
 		qvar = qplot_name > NrmNULLQUARK ? qplot_name : qview_name;
-		page_id = NgGetPageId(browse,qvar,NULL);
+		page_id = NgGetPageId(browse,qvar,NrmNULLQUARK);
 
 #if DEBUG_XINTERACT
 		fprintf (stderr,"name %s page %d\n",view_name,page_id);

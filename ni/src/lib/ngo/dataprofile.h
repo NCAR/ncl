@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.11 2000-01-20 03:38:20 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.12 2000-03-21 02:35:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,17 +22,8 @@
 #ifndef	_NG_DATAPROFILE_H
 #define	_NG_DATAPROFILE_H
 
-#include <ncarg/ngo/goP.h>
-#include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
+#include <ncarg/ngo/app.h>
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
@@ -89,7 +80,7 @@ typedef struct _NgVarDataRec
 	long			*size;
 	long			*order_ix;
         int			data_ix;     /* not sure we need this */
-	NgGO			go;	     /* required for expressions */
+	int			goid;	     /* required for expressions */
 	NhlString		expr_val;    /* sent verbatim to ncl */
 	NrmQuark		qexpr_var;   /* variable holding expr eval */
 	NgVarDataSetState	set_state;
@@ -267,21 +258,21 @@ NhlErrorTypes NgTransferDataProfileInfo
 extern
 NhlBoolean NgHasDataProfile
 (
-	NgGO		go,
+	int		go_id,
 	NhlString	class_name
         );
 
 extern
 NgDataProfile NgNewDataProfile
 (
-	NgGO		go,
+	int		go_id,
 	NhlString	class_name
         );
 
 extern
 NgDataProfile NgMergeDataProfiles
 (
-	NgGO		go,
+	int		go_id,
 	NgDataProfile	data_profile,
 	NhlString	hluname,
 	NhlString	class_name

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.10 2000-03-10 01:12:57 dbrown Exp $
+ *      $Id: shaper.h,v 1.11 2000-03-21 02:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,13 +21,6 @@
  */
 #ifndef	_SHAPER_H_
 #define	_SHAPER_H_
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#endif
 
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/datagrid.h>
@@ -67,7 +60,7 @@ void NgDoShaper(
 );
 
 NgShaper *NgCreateShaper(
-	NgGO		go,
+	int		go_id,
 	Widget		parent
 );
 
@@ -81,7 +74,7 @@ NhlErrorTypes NgUpdateShaper(
 );
 
 NgShaper *NgDupShaper(
-	NgGO		go,
+	int		go_id,
 	Widget		parent,
 	NgShaper	*si,
 	NgShaper	*old_si,

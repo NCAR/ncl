@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrolP.h,v 1.2 1999-02-23 03:56:55 dbrown Exp $
+ *      $Id: vcrcontrolP.h,v 1.3 2000-03-21 02:35:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,5 +29,12 @@
  
 #define DEBUG_VCR_CONTROL 0
 
+typedef struct _NgVcrControlRec 
+{
+	NgVcrControl	public;
+        NgGO		go;
+        NhlBoolean	horizontal;
+        Dimension	size;
+} NgVcrControlRec;
 
 #endif	/* _NG_VCRCONTROLP_H_ */

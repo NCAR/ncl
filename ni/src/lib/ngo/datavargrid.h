@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.h,v 1.1 1999-07-30 03:20:50 dbrown Exp $
+ *      $Id: datavargrid.h,v 1.2 2000-03-21 02:35:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,15 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 #include <ncarg/ngo/dataprofile.h>
 
 /*
@@ -51,7 +42,7 @@ typedef struct _NgDataVarGrid
 
 NgDataVarGrid *NgCreateDataVarGrid
 (
-	NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qname,
 	int			count,

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.13 1999-11-04 17:36:51 dbrown Exp $
+ *      $Id: nclstate.h,v 1.14 2000-03-21 02:35:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #define	_NG_NCLSTATE_H
 
 #include <ncarg/hlu/Base.h>
-#include <ncarg/hlu/NresDB.h>
+#include <ncarg/ngo/ncl.h>
 #include <ncarg/ngo/ngo.h>
 
 extern NhlClass NgnclStateClass;

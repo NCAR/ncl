@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.33 1999-12-14 00:28:56 dbrown Exp $
+ *      $Id: hlupage.c,v 1.34 2000-03-21 02:35:42 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -446,13 +446,14 @@ static NhlErrorTypes GetDataProfileMessage
 		 * assign; otherwise create.
 		 */
 
-		name = NgHasDataProfile(rec->go,pub->class_name) ?
+		name = NgHasDataProfile(rec->go->base.id,pub->class_name) ?
 			pub->class_name : NULL;
 		if ( ! (name || dprof->class_name) ||
 		    ! strcmp(name,dprof->class_name))
 			pub->data_profile = dprof;
 		else {
-			pub->data_profile = NgNewDataProfile(rec->go,name);
+			pub->data_profile = NgNewDataProfile
+				(rec->go->base.id,name);
 			if (! pub->data_profile) {
 				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					   "error getting data profile for %s",
@@ -645,10 +646,10 @@ static NhlBoolean GetDataVal
 				NhlBoolean user = 
 					vdata->set_state == _NgEXPRESSION ?
 					False : True;
-				if (! (vdata->expr_val && vdata->go))
+				if (! (vdata->expr_val && vdata->goid))
 					return False;
 				if (! NgSetExpressionVarData
-				    (vdata->go->base.id,vdata,
+				    (vdata->goid,vdata,
 				     vdata->expr_val,_NgCONDITIONAL_EVAL,user))
 					return False;
 			}
@@ -874,7 +875,7 @@ static void PostHluObjCreateMessage
 	brHluObjCreate  obj_create;
 	NgDataProfile 	dprof;
 
-	dprof = NgNewDataProfile(page->go,class_name);
+	dprof = NgNewDataProfile(page->go->base.id,class_name);
 	NgTransferDataProfileInfo(dprof,rec->data_profile);
 
 	obj_create = NgNewHluObjCreateRec
@@ -2468,9 +2469,9 @@ static NhlErrorTypes ResetHluPage
 
 	if (! pub->data_profile) {
 		NhlString name;
-		name = NgHasDataProfile(rec->go,pub->class_name) ?
+		name = NgHasDataProfile(rec->go->base.id,pub->class_name) ?
 			pub->class_name : NULL;
-		pub->data_profile = NgNewDataProfile(rec->go,name);
+		pub->data_profile = NgNewDataProfile(rec->go->base.id,name);
 		if (! pub->data_profile) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				   "error getting data profile for %s",
@@ -2547,7 +2548,7 @@ static NhlErrorTypes ResetHluPage
         
         if (!rec->res_tree) {
                 rec->res_tree = NgCreateResTree
-                                (page->go,pdp->form,page->qvar,
+                                (page->go->base.id,pdp->form,page->qvar,
                                  rec->class,rec->hlu_id);
                 XtVaSetValues(rec->res_tree->tree,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -2702,7 +2703,7 @@ NewHluPage
                  NULL);
 
 	rec->data_source_grid = NgCreateDataSourceGrid
-		(rec->go,pdp->form,page->qvar,rec->data_profile);
+		(rec->go->base.id,pdp->form,page->qvar,rec->data_profile);
 
 	XtVaSetValues(rec->data_source_grid->grid,
 		      XmNbottomAttachment,XmATTACH_NONE,
@@ -2865,13 +2866,13 @@ _NgGetHluPage
 /* ResTree */
         
         if (rec->res_tree) {
-		NgDupResTree(page->go,pdp->form,page->qvar,
+		NgDupResTree(page->go->base.id,pdp->form,page->qvar,
 			     copy_rec->class,copy_rec->hlu_id,
 			     rec->res_tree,copy_rec->res_tree);
         }
         else {
                 rec->res_tree = NgDupResTree
-                        (page->go,pdp->form,page->qvar,
+                        (page->go->base.id,pdp->form,page->qvar,
                          copy_rec->class,copy_rec->hlu_id,
                          NULL,copy_rec->res_tree);
                 XtVaSetValues(rec->res_tree->tree,

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.h,v 1.1 1999-09-20 23:59:32 dbrown Exp $
+ *      $Id: plotstylemenu.h,v 1.2 2000-03-21 02:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,14 +26,6 @@
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/dataprofile.h>
 
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 /*
  * Public api
  */
@@ -50,7 +42,7 @@ typedef struct _NgPlotStyleMenu
 
 NgPlotStyleMenu *
 NgCreatePlotStyleMenu(
-        NgGO		go,
+	int		go_id,
         Widget		parent
         );
 

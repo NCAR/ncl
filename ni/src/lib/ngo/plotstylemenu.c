@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.9 2000-01-27 17:44:38 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.10 2000-03-21 02:35:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1645,14 +1645,17 @@ static void ProcessPlotStylePaths
 NgPlotStyleMenu *
 NgCreatePlotStyleMenu
 (
-        NgGO            go,
+	int		go_id,
         Widget		parent
 )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
 	PlotStyleMenuRec	*priv;
 	NgPlotStyleMenu	*pub;
         Widget		menush = NULL;
 
+	if (! go)
+		return NULL;
 
         priv = NhlMalloc(sizeof(PlotStyleMenuRec));
         priv->go = go;

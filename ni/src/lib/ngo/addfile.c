@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.29 2000-01-27 17:44:33 dbrown Exp $
+ *      $Id: addfile.c,v 1.30 2000-03-21 02:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1675,7 +1675,7 @@ static void VcrArmCB
 	NgGO		go = (NgGO) data;
 	NgAddFile	l = (NgAddFile)(go);
 	NgAddFilePart	*np = &l->addfile;
-	NgVcrControl	vcrp = np->vcrp;
+	NgVcrControl	*vcrp = np->vcrp;
         
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"VcrArmCB(IN)\n");
@@ -1719,7 +1719,7 @@ static void VcrCB
 	NgGO		go = (NgGO) data;
 	NgAddFile	l = (NgAddFile)(go);
 	NgAddFilePart	*np = &l->addfile;
-	NgVcrControl	vcrp = np->vcrp;
+	NgVcrControl	*vcrp = np->vcrp;
 
         
 #if	DEBUG_ADDFILE
@@ -1790,7 +1790,7 @@ LeaveVcrControlEH
 	NgGO		go = (NgGO) udata;
 	NgAddFile	l = (NgAddFile)(go);
 	NgAddFilePart	*np = &l->addfile;
-	NgVcrControl	vcrp = np->vcrp;
+	NgVcrControl	*vcrp = np->vcrp;
         XCrossingEvent	*xcev = &event->xcrossing;
         Dimension	w_w,w_h;
         Widget		popup;
@@ -1956,7 +1956,7 @@ AddFileCreateWin
         int		n;
 	Arg		args[32];
         time_t		tim;
-        NgVcrControl	vcrp;
+        NgVcrControl	*vcrp;
 	NhlArgVal	sel,user_data;
         XtTranslations	translations;
 	char		*cp;
@@ -2397,7 +2397,7 @@ AddFileCreateWin
 	XmStringFree(xmtmp);
         
         np->vcrp = vcrp = 
- 		NgCreateVcrControl(go,"VarInfoStepper",form,20,True,
+ 		NgCreateVcrControl(go->base.id,"VarInfoStepper",form,20,True,
 				   True,False,True,True,True,False,True);
         
         XtVaSetValues(vcrp->form,

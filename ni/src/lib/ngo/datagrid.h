@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.h,v 1.2 1997-06-06 03:14:50 dbrown Exp $
+ *      $Id: datagrid.h,v 1.3 2000-03-21 02:35:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,7 @@
 #define	_NG_DATAGRID_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
@@ -49,7 +42,7 @@ typedef struct _NgDataGrid
  */
 NgDataGrid *NgCreateDataGrid
 (
-        NgGO                    go,
+        int			goid,
         Widget			parent,
         NrmQuark 		qsymbol,
         NclApiVarInfoRec	*vinfo,

@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.5 2000-02-09 23:41:35 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.6 2000-03-21 02:35:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -411,7 +411,7 @@ static void CreateFuncTool
 	form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,go->go.manager,NULL);
 
-	fgp->func_tree = NgCreateFuncTree(go,form,fgp->qname,
+	fgp->func_tree = NgCreateFuncTree(go->base.id,form,fgp->qname,
 					  fgp->data_ix,
 					  fgp->data_profile,edit_enabled);
 
@@ -2142,15 +2142,19 @@ MapEH
 #endif
 NgFuncGrid *NgCreateFuncGrid
 (
-	NgGO			go,
+        int			go_id,
         Widget			parent,
         NrmQuark		qname,
         NgDataProfile		data_profile
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgFuncGridRec *fgp;
         NgFuncGrid *func_grid;
         static NhlBoolean first = True;
+
+	if (! go)
+		return NULL;
 
         if (first) {
  		NgBrowse browse = (NgBrowse) go;

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.8 1999-07-30 03:20:54 dbrown Exp $
+ *      $Id: hlupage.h,v 1.9 2000-03-21 02:35:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,17 +23,9 @@
 #define	_NG_HLUPAGE_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/ngo/ncl.h>
 #include <ncarg/ngo/datasourcegrid.h>
 #include <ncarg/ngo/restree.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 #include <ncarg/ngo/dataprofile.h>
 
 typedef enum __hluState

@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.h,v 1.2 1998-12-16 23:51:41 dbrown Exp $
+ *      $Id: stringutil.h,v 1.3 2000-03-21 02:35:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,16 +23,7 @@
 #define	_NG_STRINGUTIL_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/hlu/NresDB.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api

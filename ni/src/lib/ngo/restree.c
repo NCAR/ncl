@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.27 1999-11-19 02:10:10 dbrown Exp $
+ *      $Id: restree.c,v 1.28 2000-03-21 02:35:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3384,7 +3384,7 @@ static void DupSetValState
 
 NgResTree *NgDupResTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qhlu,
         NhlClass		class,
@@ -3393,8 +3393,11 @@ NgResTree *NgDupResTree
         NgResTree		*from_res_tree
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgResTreeRec *fromrtp,*tortp;
 
+	if (! go)
+		return NULL;
         fromrtp = (NgResTreeRec *) from_res_tree;
         if (!fromrtp)
                 return NULL;
@@ -3412,7 +3415,7 @@ NgResTree *NgDupResTree
 	else
 		tortp = (NgResTreeRec *) 
 			NgCreateResTree
-				(go,parent,qhlu,class,hlu_id);
+				(go->base.id,parent,qhlu,class,hlu_id);
 
         tortp->restree.preview_instance = fromrtp->restree.preview_instance;
         
@@ -3664,18 +3667,21 @@ NhlErrorTypes NgUpdateResTree
 
 NgResTree *NgCreateResTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qhlu,
         NhlClass		class,
         int			hlu_id
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NhlErrorTypes ret;
         NgResTreeRec *rtp;
         NgResTree *pub_rtp;
         static NhlBoolean first = True;
  
+	if (! go)
+		return NULL;
         if (first) {
  		NgBrowse browse = (NgBrowse) go;
 		

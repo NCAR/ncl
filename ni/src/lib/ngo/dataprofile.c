@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.16 2000-01-24 20:56:17 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.17 2000-03-21 02:35:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/XmL.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/goP.h>
 
 static NrmQuark QNullValue = NrmNULLQUARK;
 
@@ -37,13 +38,14 @@ TmpVar TmpVarList = NULL;
 
 static void NewTmpVarRef
 (
-	NgGO		go,
+	int		goid,
 	NrmQuark	qsym
 )
 {
 	TmpVar tmp_var = TmpVarList;
+	NgGO	go = (NgGO) _NhlGetLayer(goid);
 
-	if (qsym == NrmNULLQUARK)
+	if (qsym == NrmNULLQUARK || ! go)
 		return;
 
 	while (tmp_var) {
@@ -69,14 +71,15 @@ static void NewTmpVarRef
 
 static void DeleteTmpVarRef
 (
-	NgGO		go,
+	int		goid,
 	NrmQuark	qsym
 )
 {
 	TmpVar *tmp_var = &TmpVarList;
 	TmpVar dtmp_var = NULL;
+	NgGO go = (NgGO) _NhlGetLayer(goid);
 
-	if (qsym == NrmNULLQUARK)
+	if (qsym == NrmNULLQUARK || ! go)
 		return;
 
 	while (*tmp_var) {
@@ -787,7 +790,7 @@ NgVarData NgNewVarData
 	vdata->set_state = _NgVAR_UNSET;
 	vdata->expr_val = NULL;
 	vdata->qexpr_var = NrmNULLQUARK;
-	vdata->go = NULL;
+	vdata->goid = NhlNULLOBJID;
 	return vdata;
 }
 	
@@ -812,7 +815,7 @@ void NgFreeVarData
 	if (var_data->expr_val)
 		NhlFree(var_data->expr_val);
 	if (var_data->qexpr_var) {
-		DeleteTmpVarRef(var_data->go,var_data->qexpr_var);
+		DeleteTmpVarRef(var_data->goid,var_data->qexpr_var);
 	}
 	NhlFree(var_data);
 	return;
@@ -856,11 +859,11 @@ NhlBoolean NgCopyVarData
 	if (to_var_data->qexpr_var != from_var_data->qexpr_var) {
 		if (to_var_data->qexpr_var != NrmNULLQUARK)
 			DeleteTmpVarRef
-				(to_var_data->go,to_var_data->qexpr_var);
+				(to_var_data->goid,to_var_data->qexpr_var);
 		to_var_data->qexpr_var = from_var_data->qexpr_var;
-		to_var_data->go = from_var_data->go;
+		to_var_data->goid = from_var_data->goid;
 		if (to_var_data->qexpr_var)
-			NewTmpVarRef(to_var_data->go,to_var_data->qexpr_var);
+			NewTmpVarRef(to_var_data->goid,to_var_data->qexpr_var);
 		
 	}
 
@@ -962,9 +965,9 @@ extern NhlBoolean NgSetUnknownDataItem
 		vdata->expr_val = NULL;
 	}
 	if (vdata->qexpr_var) {
-		DeleteTmpVarRef(vdata->go,vdata->qexpr_var);
+		DeleteTmpVarRef(vdata->goid,vdata->qexpr_var);
 		vdata->qexpr_var = NrmNULLQUARK;
-		vdata->go = NULL;
+		vdata->goid = NhlNULLOBJID;
 	}
 		
 	if (!gen) {
@@ -1063,7 +1066,7 @@ NclApiDataList	*EvaluateExpression
 			;
 		else if (*qexpr_var == NrmNULLQUARK) {
 			*qexpr_var = qtmp_var;
-			NewTmpVarRef(go,*qexpr_var);
+			NewTmpVarRef(go->base.id,*qexpr_var);
 		}
 		else {
 			sprintf(buf,"delete(%s)\n",
@@ -1107,7 +1110,7 @@ NhlBoolean NgDeleteExpressionVarData
 	if (! (vdata && vdata->qexpr_var))
 		return False;
 
-	DeleteTmpVarRef(vdata->go,vdata->qexpr_var);
+	DeleteTmpVarRef(vdata->goid,vdata->qexpr_var);
 
 	vdata->qexpr_var = NrmNULLQUARK;
 
@@ -1152,11 +1155,11 @@ NhlBoolean NgSetExpressionVarData
 			return False;
 		}
 		strcpy(vdata->expr_val,expr_val);
-		if (vdata->go && vdata->qexpr_var)
-			DeleteTmpVarRef(vdata->go,vdata->qexpr_var);
+		if (vdata->goid > NhlNULLOBJID && vdata->qexpr_var)
+			DeleteTmpVarRef(vdata->goid,vdata->qexpr_var);
 		vdata->qexpr_var = NrmNULLQUARK;
 	}
-	vdata->go = go;
+	vdata->goid = go->base.id;
 	if (vdata->dl) {
                 NclFreeDataList(vdata->dl);
 		vdata->dl = NULL;
@@ -1187,7 +1190,7 @@ NhlBoolean NgSetExpressionVarData
 				return False;
 			}
                 }
-		vdata->go = go;
+		vdata->goid = go->base.id;
 	}
 	if (do_eval || copy_expr) {
 		vdata->cflags = _NgSYMBOL_CHANGE | _NgSHAPE_CHANGE;
@@ -1290,9 +1293,9 @@ NhlBoolean NgSetVarData
 		var_data->expr_val = NULL;
 	}
 	if (var_data->qexpr_var) {
-		DeleteTmpVarRef(var_data->go,var_data->qexpr_var);
+		DeleteTmpVarRef(var_data->goid,var_data->qexpr_var);
 		var_data->qexpr_var = NrmNULLQUARK;
-		var_data->go = NULL;
+		var_data->goid = NhlNULLOBJID;
 	}
 		
 	var_data->set_state = set_state;
@@ -1548,7 +1551,7 @@ NgAppendDataProfileItem
 }
 
 static NgDataProfile NewDataProfile(
-	NgGO		go,
+        NgGO		go,
 	NgDataProfile	dprof_list,
 	int		dprof_count,
 	NhlString	class_name
@@ -1637,10 +1640,14 @@ static NgDataProfile NewDataProfile(
 }
 
 NgDataProfile NgNewDataProfile(
-	NgGO		go,
+	int		go_id,
 	NhlString	class_name
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
+	if (! go)
+		return NULL;
+
 	return NewDataProfile(go,DataProfs,NhlNumber(DataProfs),class_name);
 }
 
@@ -1669,15 +1676,18 @@ static char *GetHluSuffix(
 }
 
 NgDataProfile NgMergeDataProfiles(
-	NgGO		go,
+        int		go_id,
 	NgDataProfile	data_profile,
 	NhlString	hluname,
 	NhlString	class_name
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
 	NgDataProfile	dprof;
 	int		i,j,n_dataitems;
 	
+	if (! go)
+		return NULL;
 
 	dprof = NewDataProfile
 		(go,PlotDataProfs,NhlNumber(PlotDataProfs),class_name);
@@ -1716,11 +1726,15 @@ NgDataProfile NgMergeDataProfiles(
  * supported.
  */
 NhlBoolean NgHasDataProfile(
-	NgGO		go,
+        int		go_id,
 	NhlString	class_name
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
 	int i;
+
+	if (! go)
+		return False;
 
 	if (! class_name) /* this is the non-graphic data profile */
 		return True;

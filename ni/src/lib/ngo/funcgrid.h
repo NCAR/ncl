@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.h,v 1.2 2000-01-20 03:38:21 dbrown Exp $
+ *      $Id: funcgrid.h,v 1.3 2000-03-21 02:35:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,15 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 #include <ncarg/ngo/dataprofile.h>
 
 /*
@@ -47,7 +38,7 @@ typedef struct _NgFuncGrid
 
 NgFuncGrid *NgCreateFuncGrid
 (
-	NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qname,
         NgDataProfile		data_profile
@@ -55,7 +46,7 @@ NgFuncGrid *NgCreateFuncGrid
 
 NhlErrorTypes NgUpdateFuncGrid
 (
-        NgFuncGrid	*func_grid,
+        NgFuncGrid		*func_grid,
         NrmQuark		qname,
         NgDataProfile		data_profile
         );

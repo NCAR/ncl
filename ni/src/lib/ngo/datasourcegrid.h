@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.h,v 1.3 1999-02-23 03:56:46 dbrown Exp $
+ *      $Id: datasourcegrid.h,v 1.4 2000-03-21 02:35:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,15 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
 #include <ncarg/ngo/dataprofile.h>
 
 /*
@@ -49,7 +40,7 @@ typedef struct _NgDataSourceGrid
 
 NgDataSourceGrid *NgCreateDataSourceGrid
 (
-	NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qname,
         NgDataProfile		data_profile

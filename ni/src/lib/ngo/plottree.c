@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.c,v 1.4 1999-12-07 19:08:49 dbrown Exp $
+ *      $Id: plottree.c,v 1.5 2000-03-21 02:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -849,7 +849,7 @@ static int ExpandNodeDataList
 
 NgPlotTree *NgDupPlotTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	int			wk_id,
         NrmQuark		qname,
@@ -858,7 +858,11 @@ NgPlotTree *NgDupPlotTree
         NgPlotTree		*from_plot_tree
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgPlotTreeRec *fromptp,*toptp;
+
+	if (! go)
+		return NULL;
 
         fromptp = (NgPlotTreeRec *) from_plot_tree;
         if (!fromptp)
@@ -870,7 +874,8 @@ NgPlotTree *NgDupPlotTree
 	}
 	else
 		toptp = (NgPlotTreeRec *) 
-			NgCreatePlotTree(go,parent,wk_id,qname,data_profile);
+			NgCreatePlotTree
+			(go->base.id,parent,wk_id,qname,data_profile);
         
         if (!fromptp->expand_called)
                 return (NgPlotTree *) toptp;
@@ -1037,18 +1042,22 @@ NhlErrorTypes NgUpdatePlotTree
 
 NgPlotTree *NgCreatePlotTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	int			wk_id,
         NrmQuark 		qname,
 	NgDataProfile		data_profile
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NhlErrorTypes ret;
         NgPlotTreeRec *ptp;
 	NgPlotTree *pub;
         static NhlBoolean first = True;
  
+	if (! go)
+		return NULL;
+
 	XtAppAddActions(go->go.x->app,
 
                         plottreeactions,NhlNumber(plottreeactions));

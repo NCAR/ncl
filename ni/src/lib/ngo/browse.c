@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.38 2000-01-20 03:38:19 dbrown Exp $
+ *      $Id: browse.c,v 1.39 2000-03-21 02:35:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2329,7 +2329,7 @@ SetupPaneControl
                  NULL);
         
         pcp->vcr = NgCreateVcrControl
-                (go,"PaneInc",parent,20,
+                (go->base.id,"PaneInc",parent,20,
                  False,False,False,True,False,True,False,False);
 
         XtVaSetValues

@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.h,v 1.1 1997-06-04 18:08:36 dbrown Exp $
+ *      $Id: vartree.h,v 1.2 2000-03-21 02:35:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,7 @@
 #define	_NG_VARTREE_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
@@ -48,7 +41,7 @@ typedef struct _NgVarTree
                 
 extern NgVarTree *NgCreateVarTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NrmQuark		qvar,
@@ -65,7 +58,7 @@ extern NhlErrorTypes NgUpdateVarTree
 
 extern NgVarTree *NgDupVarTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NrmQuark		qvar,

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.8 1998-01-08 01:19:21 dbrown Exp $
+ *      $Id: addfileP.h,v 1.9 2000-03-21 02:35:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,7 +115,7 @@ typedef struct _NgAddFilePart {
         NhlBoolean	mapped;
         Dimension	user_dir_width;
         NhlBoolean	file_changed;
-        NgVcrControl	vcrp;
+        NgVcrControl	*vcrp;
         XtIntervalId	list_timer_id;
         NhlBoolean	list_timer_set;
         NhlBoolean	list_forward;

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.23 1999-11-19 02:10:07 dbrown Exp $
+ *      $Id: nclstate.c,v 1.24 2000-03-21 02:35:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,6 @@
 #include <ncarg/ngo/app.h>
 
 #include <ncarg/hlu/ErrorI.h>
-
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
 #include <ncarg/ncl/NclCallBacksI.h>
 
 #define	Oset(field)	NhlOffset(NgNclStateRec,nclstate.field)

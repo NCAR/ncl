@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.h,v 1.2 1997-10-23 00:27:01 dbrown Exp $
+ *      $Id: createmenu.h,v 1.3 2000-03-21 02:35:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,14 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
 
 /*
  * Public api

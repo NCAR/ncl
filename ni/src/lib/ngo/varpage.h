@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.h,v 1.5 1999-08-28 00:18:46 dbrown Exp $
+ *      $Id: varpage.h,v 1.6 2000-03-21 02:35:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,6 @@
 #define	_NG_VARPAGE_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-      
+#include <ncarg/ngo/ncl.h>
   
 #endif	/* _NG_VARPAGE_H */

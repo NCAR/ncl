@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.13 2000-01-20 03:38:20 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.14 2000-03-21 02:35:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1527,16 +1527,19 @@ MapEH
 #endif
 NgDataSourceGrid *NgCreateDataSourceGrid
 (
-	NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark		qname,
         NgDataProfile		data_profile
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgDataSourceGridRec *dsp;
         NgDataSourceGrid *data_source_grid;
         static NhlBoolean first = True;
 
+	if (! go)
+		return NULL;
         if (first) {
                 Buffer = NhlMalloc(BUFINC);
 		BufSize = BUFINC;

@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.8 1999-12-24 01:29:26 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.9 2000-03-21 02:35:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 
 NhlErrorTypes NgUpdateVcrControl
 (
-        NgVcrControl		vcr_control
+        NgVcrControl		*vcr_control
         )
 {
         NgVcrControlRec *vcrp;
@@ -45,7 +45,7 @@ NhlErrorTypes NgUpdateVcrControl
 
 static Widget CreateDrawnButton
 (
-        NgVcrControl vcrp,
+        NgVcrControlRec *vcrp,
         char *name,
         int pos,
         int type,
@@ -56,7 +56,7 @@ static Widget CreateDrawnButton
         int dir;
         char *prev_attach,*next_attach,*prev_pos,*next_pos;
         int npos;
-        
+
         if (vcrp->horizontal) {
                 prev_attach = XmNleftAttachment;
                 prev_pos = XmNleftPosition;
@@ -75,7 +75,7 @@ static Widget CreateDrawnButton
         }
 
         ret = XtVaCreateManagedWidget(name,xmDrawnButtonWidgetClass,
-                                      vcrp->form,
+                                      vcrp->public.form,
                                       prev_attach,XmATTACH_POSITION,
                                       next_attach,XmATTACH_POSITION,
                                       prev_pos,pos,
@@ -97,9 +97,9 @@ static Widget CreateDrawnButton
 }
         
         
-NgVcrControl NgCreateVcrControl
+NgVcrControl *NgCreateVcrControl
 (
-        NgGO			go,
+	int			go_id,
         NhlString		name,
         Widget			parent,
         Dimension		size,
@@ -113,8 +113,13 @@ NgVcrControl NgCreateVcrControl
         NhlBoolean		end
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgVcrControlRec *vcrp;
+	NgVcrControl *vcr;
         int pos,count = 0,ix = 0;
+
+	if (! go)
+		return NULL;
 
         if (begin) count++;
         if (fast_reverse) count++;
@@ -127,48 +132,50 @@ NgVcrControl NgCreateVcrControl
         vcrp = NhlMalloc(sizeof(NgVcrControlRec));
         if (!vcrp) return NULL;
 
+	vcr = &vcrp->public;
         vcrp->go = go;
         vcrp->horizontal = horizontal;
         vcrp->size = size;
-        vcrp->begin = vcrp->fast_reverse = vcrp->reverse =
-                vcrp->start_stop =
-                vcrp->forward = vcrp->fast_forward = vcrp->end = NULL;
+
+        vcr->begin = vcr->fast_reverse = vcr->reverse =
+                vcr->start_stop =
+                vcr->forward = vcr->fast_forward = vcr->end = NULL;
         
-        vcrp->form = XtVaCreateManagedWidget(name,xmFormWidgetClass,parent,
+        vcr->form = XtVaCreateManagedWidget(name,xmFormWidgetClass,parent,
                                              XmNfractionBase,count,
                                              NULL);
 
         if (begin) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->begin =
+                vcr->begin =
                         CreateDrawnButton(vcrp,"Begin",
                                           pos,XmDRAWNB_ARROWLINE,False);
                 ix++;
         }
         if (fast_reverse) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->fast_reverse =
+                vcr->fast_reverse =
                         CreateDrawnButton(vcrp,"Fast_Reverse",
                                           pos,XmDRAWNB_DOUBLEARROW,False);
                 ix++;
         }
         if (reverse) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->reverse =
+                vcr->reverse =
                         CreateDrawnButton(vcrp,"Reverse",
                                           pos,XmDRAWNB_ARROW,False);
                 ix++;
         }
         if (start_stop) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->start_stop =
+                vcr->start_stop =
                         CreateDrawnButton(vcrp,"Start_Stop",
                                           pos,XmDRAWNB_SQUARE,False);
                 ix++;
         }
         if (forward) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->forward =
+                vcr->forward =
                         CreateDrawnButton(vcrp,
                                           "Forward",
                                           pos,XmDRAWNB_ARROW,True);
@@ -176,26 +183,26 @@ NgVcrControl NgCreateVcrControl
         }
         if (fast_forward) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->fast_forward =
+                vcr->fast_forward =
                         CreateDrawnButton(vcrp,"Fast_Forward",
                                           pos,XmDRAWNB_DOUBLEARROW,True);
                 ix++;
         }
         if (end) {
                 pos = horizontal ? ix : count - ix;
-                vcrp->end =
+                vcr->end =
                         CreateDrawnButton(vcrp,"End",
                                           pos,XmDRAWNB_ARROWLINE,True);
         }
         
-	_NgGOWidgetTranslations(vcrp->go,vcrp->form);
+	_NgGOWidgetTranslations(vcrp->go,vcr->form);
 
-        return (NgVcrControl) vcrp;
+        return (NgVcrControl *) vcrp;
 }
 
 void NgDestroyVcrControl
 (
-        NgVcrControl		vcr_control
+        NgVcrControl		*vcr_control
         )
 {
         NgVcrControlRec *vcrp;

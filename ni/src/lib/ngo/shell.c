@@ -1,5 +1,5 @@
 /*
- *      $Id: shell.c,v 1.3 1999-12-07 19:08:51 dbrown Exp $
+ *      $Id: shell.c,v 1.4 2000-03-21 02:35:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -242,7 +242,7 @@ ShellCreateWin
 	XtAddCallback(go->go.shell,XmNpopdownCallback,Release,go);
 
 	if (np->cfunc) 
-		(*np->cfunc)(go,np->cfunc_data);
+		(*np->cfunc)(go->base.id,np->cfunc_data);
 
 	return True;
 }

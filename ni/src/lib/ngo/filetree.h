@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.h,v 1.1 1997-06-04 18:08:27 dbrown Exp $
+ *      $Id: filetree.h,v 1.2 2000-03-21 02:35:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,7 @@
 #define	_NG_FILETREE_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
@@ -49,7 +42,7 @@ typedef struct _NgFileTree
                 
 NgFileTree *NgCreateFileTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist
@@ -64,7 +57,7 @@ NhlErrorTypes NgUpdateFileTree
 
 NgFileTree *NgDupFileTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist,

@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.5 2000-01-20 03:38:22 dbrown Exp $
+ *      $Id: functree.c,v 1.6 2000-03-21 02:35:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -707,7 +707,7 @@ static int ExpandNodeDataList
 
 NgFuncTree *NgDupFuncTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	NrmQuark		qname,
 	int			data_ix,
@@ -716,8 +716,11 @@ NgFuncTree *NgDupFuncTree
         NgFuncTree		*from_func_tree
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgFuncTreeRec *fromftp,*toftp;
 
+	if (! go)
+		return NULL;
         fromftp = (NgFuncTreeRec *) from_func_tree;
         if (!fromftp)
                 return NULL;
@@ -731,7 +734,7 @@ NgFuncTree *NgDupFuncTree
 	else {
 		toftp = (NgFuncTreeRec *) 
 			NgCreateFuncTree
-			(go,parent,qname,data_ix,
+			(go->base.id,parent,qname,data_ix,
 			 data_profile,fromftp->edit_enabled);
 	}
         
@@ -1254,7 +1257,7 @@ NhlErrorTypes NgUpdateFuncTree
 	
 NgFuncTree *NgCreateFuncTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	NrmQuark		qname,
 	int			data_ix,
@@ -1262,11 +1265,14 @@ NgFuncTree *NgCreateFuncTree
 	NhlBoolean		edit_enabled
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NhlErrorTypes ret;
         NgFuncTreeRec *ftp;
 	NgFuncTree *pub;
         static NhlBoolean first = True;
 
+	if (! go)
+		return NULL;
 #if 0 
 	XtAppAddActions(go->go.x->app,
                         functreeactions,NhlNumber(functreeactions));

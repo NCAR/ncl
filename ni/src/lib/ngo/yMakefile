@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.33 1999-12-07 19:08:53 dbrown Exp $
+#      $Id: yMakefile,v 1.34 2000-03-21 02:35:57 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -40,7 +40,7 @@ CLIENT_LIBS	=	$(NCLAPILIB) -lXcb $(HLULIB) $(XMOTIFCLIENTLIBS) \
 			$(DEBUG_LIB) -lc
 
 HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h util.h \
-		$(XHDRS) $(DCEXHDRS) 
+		ncl.h $(XHDRS) $(DCEXHDRS) 
 SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS) $(DCEXSRCS)
 OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS) $(DCEXOBJS)
 

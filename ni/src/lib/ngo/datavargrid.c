@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.14 2000-03-10 01:12:53 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.15 2000-03-21 02:35:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -395,10 +395,11 @@ static void ShapeToolApplyCB
 
 static void CreateShapeTool
 (
-	NgGO		go,
+	int		go_id,
 	NhlPointer	data
 )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgDataVarGridRec *dvp = (NgDataVarGridRec *)data;
 	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
 	NgVarData vdata = pd->vdata;
@@ -409,7 +410,10 @@ static void CreateShapeTool
 	fprintf(stderr,"in create shape tool\n");
 #endif        
 	
-	dvp->shaper = NgCreateShaper(go,go->go.manager);
+	if (! go)
+		return;
+
+	dvp->shaper = NgCreateShaper(go->base.id,go->go.manager);
 	dvp->shaper->shape_notify = UpdateDataVarShape;
 	dvp->shaper->geo_notify = AdjustShapeToolGeometry;
 	dvp->shaper->pdata = NULL;
@@ -1958,16 +1962,20 @@ static void CellDropCB
 
 NgDataVarGrid *NgCreateDataVarGrid
 (
-	NgGO			go,
+        int			go_id,
         Widget			parent,
         NrmQuark		qname,
 	int			count,
         NgPlotData		plotdata
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgDataVarGridRec *dvp;
         NgDataVarGrid *data_var_grid;
         static NhlBoolean first = True;
+
+	if (! go)
+		return NULL;
 
         if (first) {
                 Buffer = NhlMalloc(BUFINC);

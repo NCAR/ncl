@@ -1,5 +1,5 @@
 /*
- *      $Id: shell.h,v 1.1 1999-09-11 01:06:59 dbrown Exp $
+ *      $Id: shell.h,v 1.2 2000-03-21 02:35:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,10 +22,10 @@
 #ifndef	_NG_SHELL_H
 #define	_NG_SHELL_H
 
-#include <ncarg/ngo/shaper.h>
+#include <ncarg/ngo/go.h>
 
 typedef void (*NgShellContentFunc) (
-	NgGO		go,
+	int		go_id,
 	NhlPointer	data
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.11 1999-09-11 01:07:07 dbrown Exp $
+ *      $Id: vartree.c,v 1.12 2000-03-21 02:35:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1100,7 +1100,7 @@ static int ExpandNodeDataList
 
 NgVarTree *NgDupVarTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NrmQuark		qvar,
@@ -1109,8 +1109,11 @@ NgVarTree *NgDupVarTree
         NgVarTree		*from_var_tree
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgVarTreeRec *fromvtp,*tovtp;
 
+	if (! go)
+		return NULL;
         fromvtp = (NgVarTreeRec *) from_var_tree;
         if (!fromvtp)
                 return NULL;
@@ -1122,7 +1125,7 @@ NgVarTree *NgDupVarTree
 	else
 		tovtp = (NgVarTreeRec *) 
 			NgCreateVarTree
-				(go,parent,qfileref,qvar,dlist);
+				(go->base.id,parent,qfileref,qvar,dlist);
         
         if (!fromvtp->expand_called)
                 return (NgVarTree *) tovtp;
@@ -1263,17 +1266,20 @@ NhlErrorTypes NgUpdateVarTree
 
 NgVarTree *NgCreateVarTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NrmQuark		qvar,
         NclApiDataList		*dlist
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NhlErrorTypes ret;
         NgVarTreeRec *vtp;
         static NhlBoolean first = True;
  
+	if (! go)
+		return NULL;
         if (first) {
                 Qlong_name = NrmStringToQuark("long_name");
                 first = False;

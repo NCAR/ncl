@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.h,v 1.5 2000-01-21 05:18:54 dbrown Exp $
+ *      $Id: shapeinfogrid.h,v 1.6 2000-03-21 02:35:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,7 @@
 #define	_NG_SHAPEINFOGRID_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
@@ -68,7 +61,7 @@ typedef struct _NgShapeInfoGrid
                 
 NgShapeInfoGrid *NgCreateShapeInfoGrid
 (
-        NgGO                    go,
+	int			go_id,
         Widget			parent
         );
 

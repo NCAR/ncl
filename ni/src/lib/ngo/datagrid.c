@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.10 1999-11-19 02:10:03 dbrown Exp $
+ *      $Id: datagrid.c,v 1.11 2000-03-21 02:35:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -788,7 +788,7 @@ NhlErrorTypes NgUpdateDataGrid
 
 NgDataGrid *NgCreateDataGrid
 (
-        NgGO                    go,
+        int			goid,
         Widget			parent,
         NrmQuark 		qsymbol,
         NclApiVarInfoRec	*vinfo,
@@ -796,12 +796,14 @@ NgDataGrid *NgCreateDataGrid
         NhlBoolean		highlight_on
         )
 {
+        NgGO go = (NgGO) _NhlGetLayer(goid);
         NgDataGridRec *dgrp;
         static NhlBoolean first = True;
         unsigned char sel_policy;
         NgDataGrid *dgp;
         Widget hsb,vsb;
- 
+	
+	if (! go) return NULL;
         if (first) {
 		XtAppAddActions(go->go.x->app,myact,NhlNumber(myact));
                 Buffer = NhlMalloc(BUFINC);

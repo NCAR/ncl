@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.h,v 1.2 1999-10-18 22:12:36 dbrown Exp $
+ *      $Id: plotpage.h,v 1.3 2000-03-21 02:35:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,16 +23,7 @@
 #define	_NG_PLOTPAGE_H
 
 #include <ncarg/ngo/go.h>
-#include <ncarg/ngo/datasourcegrid.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
-
+#include <ncarg/ngo/ncl.h>
 #include <ncarg/ngo/dataprofile.h>
 
 typedef enum __plotState

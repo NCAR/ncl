@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.24 2000-03-10 01:12:57 dbrown Exp $
+ *      $Id: shaper.c,v 1.25 2000-03-21 02:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -609,7 +609,8 @@ ToggleCoordGridCB
 		NrmQuark qsymbol = si->qfile ? si->qfile : si->vinfo->name;
                 
 		si->datagrid = NgCreateDataGrid
-			(shaper->go,shaper->form,qsymbol,NULL,False,False);
+			(shaper->go->base.id,
+			 shaper->form,qsymbol,NULL,False,False);
 		shaper->all_selected_tgl = XtVaCreateManagedWidget
 			("Selected Elements Only",
 			 xmToggleButtonGadgetClass,shaper->form,
@@ -696,7 +697,7 @@ static void VcrCB
 {
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = (NgShaperRec *)si;
-        NgVcrControl    vcr = shaper->vcr;
+        NgVcrControl    *vcr = shaper->vcr;
 	Boolean		sensitive;
         Boolean		synchro_mode_update;
 
@@ -786,7 +787,7 @@ static void VcrArmCB
 {
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = (NgShaperRec *)si;
-        NgVcrControl    vcr = shaper->vcr;
+        NgVcrControl    *vcr = shaper->vcr;
 	Boolean		sensitive;
 
 #if	DEBUG_SHAPER
@@ -1077,7 +1078,7 @@ static NgShaperRec *NewShaper
 /* 'VCR' control for increment/decrement editing */
 
 	shaper->vcr = NgCreateVcrControl
-		(shaper->go,"ElementStepper",shaper->form,20,True,
+		(shaper->go->base.id,"ElementStepper",shaper->form,20,True,
 		 True,False,True,True,True,False,True);
 	XtVaSetValues(shaper->vcr->form,
 		      XmNleftAttachment,XmATTACH_WIDGET,
@@ -1128,7 +1129,8 @@ static NgShaperRec *NewShaper
 
 /* Shape Info Grid */        
 
-	si->shapeinfogrid = NgCreateShapeInfoGrid(shaper->go,shaper->form);
+	si->shapeinfogrid = NgCreateShapeInfoGrid
+		(shaper->go->base.id,shaper->form);
 
 	XtVaSetValues(si->shapeinfogrid->grid,
 		      XmNbottomAttachment,XmATTACH_WIDGET,
@@ -1163,14 +1165,15 @@ static NgShaperRec *NewShaper
 
 NgShaper *NgCreateShaper
 (
-	NgGO		go,
+	int		go_id,
 	Widget		parent
 	)
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
 	NgShaperRec *shaper = NewShaper(go,parent);
 	NgShaper *si;
 
-	if (! shaper)
+	if (! (shaper && go))
 		return NULL;
 
 	si = &shaper->si;
@@ -1247,7 +1250,7 @@ NhlErrorTypes NgUpdateShaper(
 		
 NgShaper *NgDupShaper
 (
-	NgGO		go,
+	int		go_id,
 	Widget		parent,
 	NgShaper	*si,
 	NgShaper	*oldsi,
@@ -1258,12 +1261,13 @@ NgShaper *NgDupShaper
 	NclApiDataList	*dl          /* this belongs to the shaper */
 	)
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
 	NgShaperRec	*shaper;
 	NgShaperRec	*old_shaper = (NgShaperRec *) oldsi;
 	Boolean 	state;
 	int		i;
 
-	if (! old_shaper) {
+	if (! (old_shaper && go)) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "shaper to dup not specified"));
 		return NULL;

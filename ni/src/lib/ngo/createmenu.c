@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.13 1999-09-11 01:06:02 dbrown Exp $
+ *      $Id: createmenu.c,v 1.14 2000-03-21 02:35:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -117,10 +117,10 @@ static void CreateCB
         }
          
 	class_name = NgHasDataProfile
-		(priv->go,priv->create_class->base_class.class_name) ?
+		(priv->go->base.id,priv->create_class->base_class.class_name) ?
 		priv->create_class->base_class.class_name : NULL;
 
-	dprof = NgNewDataProfile(browse,class_name);
+	dprof = NgNewDataProfile(priv->go->base.id,class_name);
 	if (! dprof) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			   "error creating data profile"));

@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.h,v 1.1 1999-12-07 19:08:43 dbrown Exp $
+ *      $Id: functree.h,v 1.2 2000-03-21 02:35:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,15 +23,8 @@
 #define	_NG_FUNCTREE_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/ngo/ncl.h>
 #include <ncarg/ngo/dataprofile.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
 
 /*
  * Public api
@@ -50,7 +43,7 @@ typedef struct _NgFuncTree
                 
 extern NgFuncTree *NgCreateFuncTree
 (
-        NgGO			go,
+        int			go_id,
         Widget			parent,
 	NrmQuark		qname,
 	int			data_ix,
@@ -69,7 +62,7 @@ extern NhlErrorTypes NgUpdateFuncTree
 
 extern NgFuncTree *NgDupFuncTree
 (
-        NgGO			go,
+	int			go_id,
         Widget			parent,
 	NrmQuark		qname,
         int			data_ix,

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaperP.h,v 1.5 1999-09-11 01:06:59 dbrown Exp $
+ *      $Id: shaperP.h,v 1.6 2000-03-21 02:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@ typedef struct _NgShaperRec {
 	NhlBoolean	new_coord;
 	int		coords_alloced;
         NgShapeInfoGrid	*shapeinfogrid;
-        NgVcrControl	vcr;
+        NgVcrControl	*vcr;
 	NhlBoolean	selected_only_set;
 	Boolean		*coords_selected_only_set;
 	NhlBoolean	indexes_set;

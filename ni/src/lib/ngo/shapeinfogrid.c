@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.22 2000-03-10 01:12:56 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.23 2000-03-21 02:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1441,13 +1441,18 @@ NhlErrorTypes NgUpdateShapeInfoGrid
 
 NgShapeInfoGrid *NgCreateShapeInfoGrid
 (
-        NgGO                    go,
+	int			go_id,
         Widget			parent
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int nrows;
+
+	if (! go)
+		return NULL;
+
 #if 0        
 	XtAppAddActions(go->go.x->app,
                         shapeinfogridactions,

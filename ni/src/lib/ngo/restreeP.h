@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.8 1999-06-02 03:40:08 dbrown Exp $
+ *      $Id: restreeP.h,v 1.9 2000-03-21 02:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ResourcesP.h>
 
+#include <ncarg/ngo/XmL.h>
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/restree.h>
 #include <ncarg/ngo/htmlview.h>

@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.11 1999-09-11 01:06:17 dbrown Exp $
+ *      $Id: filetree.c,v 1.12 2000-03-21 02:35:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1290,7 +1290,7 @@ static int ExpandNodeDataList
 
 NgFileTree *NgDupFileTree
 (
-        NgGO			go,
+        int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist,
@@ -1298,7 +1298,11 @@ NgFileTree *NgDupFileTree
         NgFileTree		*from_file_tree
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgFileTreeRec *fromftp,*toftp;
+
+	if (! go)
+		return NULL;
 
         fromftp = (NgFileTreeRec *) from_file_tree;
         if (!fromftp)
@@ -1311,7 +1315,7 @@ NgFileTree *NgDupFileTree
 	else
 		toftp = (NgFileTreeRec *) 
 			NgCreateFileTree
-				(go,parent,qfileref,dlist);
+				(go->base.id,parent,qfileref,dlist);
         
         if (!fromftp->expand_called)
                 return (NgFileTree *) toftp;
@@ -1457,16 +1461,20 @@ NhlErrorTypes NgUpdateFileTree
 
 NgFileTree *NgCreateFileTree
 (
-        NgGO			go,
+        int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist
         )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NhlErrorTypes ret;
         NgFileTreeRec *ftp;
         static NhlBoolean first = True;
         
+	if (! go)
+		return NULL;
+
 	XtAppAddActions(go->go.x->app,
                         filetreeactions,NhlNumber(filetreeactions));
  

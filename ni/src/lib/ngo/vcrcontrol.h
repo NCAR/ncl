@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.h,v 1.3 1998-08-21 01:14:23 dbrown Exp $
+ *      $Id: vcrcontrol.h,v 1.4 2000-03-21 02:35:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,25 +23,14 @@
 #define	_NG_VCRCONTROL_H
 
 #include <ncarg/ngo/go.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
+#include <ncarg/ngo/ncl.h>
 
 /*
  * Public api
  */
 
-
-typedef struct _NgVcrControlRec 
+typedef struct _NgVcrControl 
 {
-        NgGO		go;
-        NhlBoolean	horizontal;
-        Dimension	size;
         Widget		form;
         Widget		begin;
         Widget		fast_reverse;
@@ -50,11 +39,11 @@ typedef struct _NgVcrControlRec
         Widget		forward;
         Widget		fast_forward;
         Widget		end;
-} NgVcrControlRec, *NgVcrControl;
+} NgVcrControl;
 
-NgVcrControl NgCreateVcrControl
+NgVcrControl *NgCreateVcrControl
 (
-        NgGO			go,
+	int			go_id,
         NhlString		name,
         Widget			parent,
         Dimension		size,
@@ -70,12 +59,12 @@ NgVcrControl NgCreateVcrControl
 
 NhlErrorTypes NgUpdateVcrControl
 (
-        NgVcrControl		vcr_control
+        NgVcrControl		*vcr_control
         );
         
 void NgDestroyVcrControl
 (
-        NgVcrControl		vcr_control
+        NgVcrControl		*vcr_control
         );
 
 #endif	/* _NG_VCRCONTROL_H */

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.h,v 1.2 1999-03-05 01:02:35 dbrown Exp $
+ *      $Id: htmlview.h,v 1.3 2000-03-21 02:35:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,14 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-
-#ifndef _NCL_H_
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/ApiRecords.h>
-#include <ncarg/ncl/NclApi.h>
-#define _NCL_H_
-#endif
 
 /*
  * Public api

@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.11 1999-12-07 19:08:36 dbrown Exp $
+ *      $Id: browseP.h,v 1.12 2000-03-21 02:35:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -197,7 +197,7 @@ typedef struct _brHistory
         int			list_size;
         int			start;
         int			end;
-        NgVcrControl		vcr;
+        NgVcrControl		*vcr;
         Widget			text;
 } brHistory;
 
@@ -212,7 +212,7 @@ typedef struct _brPaneControl
         int		current_count;
         int		current_ix;
         Widget		text;
-        NgVcrControl	vcr;
+        NgVcrControl	*vcr;
         Widget		pane_toggle;
         brPane		*focus_pane;
         int		focus_pos;
