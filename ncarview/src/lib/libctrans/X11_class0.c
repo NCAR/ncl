@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.36 1996-03-29 18:44:16 boote Exp $
+ *	$Id: X11_class0.c,v 1.37 1996-04-04 22:40:02 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -653,7 +653,8 @@ CGMC *c;
 	 * hack to inform init_color that we no longer have a valid
 	 * window
 	 */
-	win = 0;	
+	Cmap = win = 0;	
+	bestVisual = NULL;
 	XCloseDisplay(dpy);
 
 	deviceIsInit = FALSE;
