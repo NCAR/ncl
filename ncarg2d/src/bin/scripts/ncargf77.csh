@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.32 2002-05-23 23:03:50 haley Exp $
+#   $Id: ncargf77.csh,v 1.33 2002-05-30 20:55:19 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -75,11 +75,6 @@ foreach arg ($argv)
 
     case "-ngmath":
       set libmath     = "-lngmath"
-      breaksw
-
-    case "-netcdf":
-    case "-cdf":
-      set libextra = "$libextra SED_NCDFLIBS"
       breaksw
 
     case "-sungks":
