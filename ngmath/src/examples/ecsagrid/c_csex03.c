@@ -1,15 +1,11 @@
 /*
- *  $Id: c_csex03.c,v 1.2 1999-01-28 23:55:27 fred Exp $
+ *  $Id: c_csex03.c,v 1.3 1999-01-29 01:14:04 fred Exp $
  */
 
 #include <stdio.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
-/*
 #include <ncarg/ngmath.h>
- */
-
-#include "/fs/scd/home1/fred/ncarg/ngmath/src/lib/gridpack/csagrid/csaproto.h"
 
 /*
  *  Function prototypes for plotting backgrounds and curves.
