@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.142 2003-10-06 17:05:07 kennison Exp $
+#   $Id: ncargex.csh,v 1.143 2003-10-06 23:03:29 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -225,7 +225,11 @@ set conpackt_fex   = (ctex01 ctex02 ctfite ctgaus ctgeo1 ctgeo2 ctiscp ctllg1 \
                       ctllg2 ctllg3 ctorca ctpopg ctswth ctwng1 ctwng2)
 set conpackt_flist = ($conpackt_fex)
 
+set conpackt_cex   = (c_ctllg3)
+set conpackt_clist = ($conpackt_cex)
+
 set f_list = ($f_list $conpackt_flist)
+set c_list = ($c_list $conpackt_clist)
 
 #******************************#
 #                              #
@@ -703,15 +707,14 @@ set overlap_fttr = (mpex03 mpex05 arex01 sfex01 tsoftf)
 set list_fx11 = (fgke01 fgke04)
 set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
-                $conpackt_fex \
-                $ezmap_fex $field_fex $labelbar_fex $ngmath_fex $plotchar_fex \
-                $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
-                $surface_fex $tdpack_fex $wmap_fex $misc_fex)
+		$conpackt_fex $ezmap_fex $field_fex $labelbar_fex $ngmath_fex \
+		$plotchar_fex $polypack_fex ${scrlld_title_fex} $softfill_fex \
+		$spps_fex $surface_fex $tdpack_fex $wmap_fex $misc_fex)
 
-set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $ezmap_cex \
-                $field_cex $gks_cex $labelbar_cex $ngmath_cex $plotchar_cex \
-                $polypack_cex ${scrlld_title_cex} $softfill_cex $surface_cex \
-                $tdpack_cex $wmap_cex)
+set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $conpackt_cex \
+		$ezmap_cex $field_cex $gks_cex $labelbar_cex $ngmath_cex \
+		$plotchar_cex $polypack_cex ${scrlld_title_cex} $softfill_cex \
+		$surface_cex $tdpack_cex $wmap_cex)
 
 set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
                 ${cnrn_family_ftst} ${cnrc_family_ftst} $dashline_ftst \
@@ -848,7 +851,7 @@ while ($#argv > 0)
 
     case "-conpackt":
       shift
-      set names=($names $conpackt_flist)
+      set names=($names $conpackt_flist $conpackt_clist)
       breaksw
 
     case "-conran_family":
