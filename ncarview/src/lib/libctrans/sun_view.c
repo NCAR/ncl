@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.17 1993-01-12 20:11:00 clyne Exp $
+ *	$Id: sun_view.c,v 1.18 1993-02-02 22:38:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,6 +24,7 @@
 #include <pixrect/pixrect_hs.h>
 
 #include	<math.h>
+#include	<errno.h>
 #include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"default.h"
@@ -772,7 +773,7 @@ CGMC *c;
 				TILE_SIZE - 1, op, 0);
 			break;
 
-		case	POSSITIVE:
+		case	POSITIVE:
 			pr_vector(tile, 0, TILE_SIZE - 1, TILE_SIZE - 1, 
 				0, op, 0);
 			break;
@@ -789,7 +790,7 @@ CGMC *c;
 				TILE_SIZE - 1, op, 0);
 			break;
 
-		case	POSS_NEG:
+		case	POS_NEG:
 			pr_vector(tile, 0, TILE_SIZE - 1, TILE_SIZE - 1, 
 				0, op, 0);
 			pr_vector(tile, 0, 0, TILE_SIZE - 1, 
@@ -863,7 +864,7 @@ CGMC *c;
 		/*	cell representation mode	*/
 	mode = c->e[0];
 
-	if (CSM != INDEXED) {
+	if (CSM != MODE_INDEXED) {
 		ESprintf(EINVAL, "direct color not supported");
 		return (-1);
 	}

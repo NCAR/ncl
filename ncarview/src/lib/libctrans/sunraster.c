@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.16 1993-01-12 20:11:04 clyne Exp $
+ *	$Id: sunraster.c,v 1.17 1993-02-02 22:38:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,6 +25,7 @@
 
 #include	<ncarg/c.h>
 #include	<math.h>
+#include	<errno.h>
 #include	"cgmc.h"
 #include	"default.h"
 #include	"ctrandef.h"
@@ -667,7 +668,7 @@ CGMC *c;
 				TILE_SIZE - 1, op, 0);
 			break;
 
-		case	POSSITIVE:
+		case	POSITIVE:
 			pr_vector(tile, 0, TILE_SIZE - 1, TILE_SIZE - 1, 
 				0, op, 0);
 			break;
@@ -684,7 +685,7 @@ CGMC *c;
 				TILE_SIZE - 1, op, 0);
 			break;
 
-		case	POSS_NEG:
+		case	POS_NEG:
 			pr_vector(tile, 0, TILE_SIZE - 1, TILE_SIZE - 1, 
 				0, op, 0);
 			pr_vector(tile, 0, 0, TILE_SIZE - 1, 
@@ -755,7 +756,7 @@ CGMC *c;
 		/*	cell representation mode	*/
 	mode = c->e[0];
 
-	if (CSM != INDEXED) {
+	if (CSM != MODE_INDEXED) {
 		ESprintf(EINVAL, "direct color not supported");
 		return (-1);
 	}
@@ -1091,6 +1092,7 @@ static	Pr_texture	*set_line_type()
 
 	else {
 		switch(LINE_TYPE) {
+		default :
 		case L_DASH	:
 
 			pr_texture.pattern = pr_tex_dotted;
@@ -1111,9 +1113,6 @@ static	Pr_texture	*set_line_type()
 			pr_texture.pattern = pr_tex_dashdotdotted;
 			break;
 
-		default :
-			return(-1);
-			break;
 		}
 	}
 
@@ -1202,11 +1201,11 @@ static	init_sunv(color_ava)
 		ESprintf(errno, "malloc(%d)", MAX_COLOR);
 		return(-1);
 	}
-	if (! colormap_T.map[1] = (unsigned char * ) malloc (MAX_COLOR))) {
+	if (! (colormap_T.map[1] = (unsigned char * ) malloc (MAX_COLOR))) {
 		ESprintf(errno, "malloc(%d)", MAX_COLOR);
 		return(-1);
 	}
-	if (! colormap_T.map[2] = (unsigned char * ) malloc (MAX_COLOR))) {
+	if (! (colormap_T.map[2] = (unsigned char * ) malloc (MAX_COLOR))) {
 		ESprintf(errno, "malloc(%d)", MAX_COLOR);
 		return(-1);
 	}
