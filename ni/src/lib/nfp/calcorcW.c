@@ -334,7 +334,9 @@ NhlErrorTypes escorc_W( void )
   }
   if(ier_count > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"escorc: Non-fatal conditions encountered in series or xstd = 0.0");
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"escorc: Most likely, one or more series consisted of all constant values");
   }
+
 
 /*
  * free memory.
