@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.58 2001-06-13 23:53:54 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.59 2001-07-24 20:17:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5866,6 +5866,7 @@ static NhlErrorTypes    SetupLevels
 	    memcmp((*levels),ostp->levels->data,
 		   stp->levels->size * stp->level_count)) {
 		*modified = True;
+		stp->levels_set = True;
 	}
 	else if (*levels) {
 		NhlFree(*levels);
