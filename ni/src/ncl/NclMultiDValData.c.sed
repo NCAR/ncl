@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.26 1997-09-12 20:27:16 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.27 1997-10-01 18:19:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,7 @@ static struct _NclDataRec *MultiDValReadSection
 	long multiplier[NCL_MAX_DIMENSIONS];
 	long compare_sel[NCL_MAX_DIMENSIONS];
 	long strider[NCL_MAX_DIMENSIONS];
+	long keeper[NCL_MAX_DIMENSIONS];
 	int output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	int total_elements = 1;
@@ -102,6 +103,11 @@ static struct _NclDataRec *MultiDValReadSection
 * until here because dim sizes are not known out side of the object
 */
 		case Ncl_SUBSCR:
+			if(sel_ptr->u.sub.is_single) {
+				keeper[i] = 0;
+			} else {
+				keeper[i] = 1;
+			}
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 				
 
@@ -170,6 +176,7 @@ static struct _NclDataRec *MultiDValReadSection
 * to qualify as a vector subscript must have one dimension, be integer and have
 * a dim_size > 1
 */
+			keeper[i] = 1;
 			if((sel_ptr->u.vec.min < 0)|| (sel_ptr->u.vec.min > self_md->multidval.dim_sizes[sel_ptr->dim_num]-1)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NULL);
@@ -298,9 +305,10 @@ static struct _NclDataRec *MultiDValReadSection
 	}
 	i =0;
 	while(i < n_dims_input) {
-		if(output_dim_sizes[i] < 2) {
+		if((output_dim_sizes[i] < 2)&&(!keeper[i])) {
 			for(k=i; k< n_dims_input-1;k++){
 				output_dim_sizes[k] = output_dim_sizes[k+1];
+				keeper[k] = keeper[k+1];
 			}
 			n_dims_input--;
 		} else {

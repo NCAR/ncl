@@ -146,7 +146,7 @@ typedef struct _NclObjList {
 
 typedef enum {  Ncl_SUBSCR, Ncl_VECSUBSCR, Ncl_SUB_ALL, Ncl_SUB_VAL_DEF, Ncl_SUB_DEF_VAL } NclSelectionTypes;
 
-typedef enum { COORD_VECT, COORD_RANGE, INT_VECT, INT_RANGE } NclSubTypes;
+typedef enum { COORD_VECT, COORD_RANGE, COORD_SINGLE, INT_VECT, INT_RANGE, INT_SINGLE } NclSubTypes;
 
 typedef struct _NclVectorSelection{
         int n_ind;
@@ -159,6 +159,7 @@ typedef struct _NclSubscriptSelection{
         long start;
         long finish;
         long stride;
+	int is_single;
 }NclSubscriptSelection;
 
 

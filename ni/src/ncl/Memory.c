@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.13 1996-12-20 00:42:09 ethan Exp $
+ *      $Id: Memory.c,v 1.14 1997-10-01 18:19:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -191,8 +191,10 @@ struct _NclSubRec * sub_rec;
 			_NclDestroyObj((NclObj)sub_rec->u.vec.vec);
 		}
 		break;
+	case COORD_SINGLE:
 	case COORD_RANGE:
 	case INT_RANGE:
+	case INT_SINGLE:
 /*
 * This might happen when single indices are used
 */

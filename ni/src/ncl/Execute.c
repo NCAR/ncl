@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.98 1997-09-12 20:27:11 ethan Exp $
+ *      $Id: Execute.c,v 1.99 1997-10-01 18:19:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -134,7 +134,7 @@ void CallINT_SUBSCRIPT_OP(void) {
 						||(data.u.range_rec.finish->multidval.type->type_class.type & mask)) &&
 					((data.u.range_rec.stride == NULL)
 						||(data.u.range_rec.stride->multidval.type->type_class.type & mask))) {
-						data1.u.sub_rec.sub_type = INT_RANGE;
+						data1.u.sub_rec.sub_type = data.u.range_rec.is_single ? INT_SINGLE : INT_RANGE;
 						data1.u.sub_rec.u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
@@ -194,6 +194,7 @@ void CallRANGE_INDEX_OP(void) {
 * been used
 */
 				data.kind = NclStk_RANGEREC;
+				data.u.range_rec.is_single = 0;
 				if(start.kind == NclStk_NOVAL) {
 					data.u.range_rec.start = NULL;
 				} else {
@@ -323,6 +324,7 @@ void CallSINGLE_INDEX_OP(void) {
 							data1.u.range_rec.start = val;
 							data1.u.range_rec.finish = val;
 							data1.u.range_rec.stride=NULL;
+							data1.u.range_rec.is_single = 1;
 						if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
 							_NclDestroyObj((NclObj)data.u.data_var);
 						}
@@ -362,7 +364,7 @@ void CallCOORD_SUBSCRIPT_OP(void) {
 				} else if(data.kind == NclStk_RANGEREC) {
 					if(((data.u.range_rec.stride == NULL)
 						||(data.u.range_rec.stride->multidval.type->type_class.type & mask))) {
-						data1.u.sub_rec.sub_type = COORD_RANGE;
+						data1.u.sub_rec.sub_type = data.u.range_rec.is_single ? COORD_SINGLE: COORD_RANGE;
 						data1.u.sub_rec.u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
@@ -1619,6 +1621,7 @@ void CallVARVAL_READ_OP(void) {
 */							
 							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -1629,6 +1632,7 @@ void CallVARVAL_READ_OP(void) {
 							ret = _NclBuildCoordVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case COORD_RANGE:
+						case COORD_SINGLE:
 							ret = _NclBuildCoordRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						}
@@ -1697,6 +1701,7 @@ void CallVAR_READ_OP(void) {
 */							
 							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -1706,6 +1711,7 @@ void CallVAR_READ_OP(void) {
 						case COORD_VECT:
 							ret = _NclBuildCoordVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							ret = _NclBuildCoordRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
@@ -1891,6 +1897,7 @@ void CallASSIGN_VAR_OP(void) {
 */							
 								ret = _NclBuildVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -1900,6 +1907,7 @@ void CallASSIGN_VAR_OP(void) {
 							case COORD_VECT:
 								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
@@ -2258,13 +2266,8 @@ void CallCONVERT_TO_LOCAL(void) {
 	* Attention: missing value may be different type than variable data until code is put here to fix it
 	*/
 							} else {
-/*
-* ONLY a PERMANENT when its a constant
-*/
-								if(data.u.data_obj->obj.status == PERMANENT)
-									tmp_md = _NclCopyVal(data.u.data_obj,NULL);
-								else 
-									tmp_md = data.u.data_obj;
+							
+								tmp_md = data.u.data_obj;
 							}
 							if((thesym->type != IPROC)&&(thesym->type != PIPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 								argsym = pfinfo->theargs[arg_num].arg_sym;
@@ -2702,6 +2705,7 @@ void CallVARATT_OP(void) {
 */						
 								ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -2709,6 +2713,7 @@ void CallVARATT_OP(void) {
 								ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 								estatus = NhlFATAL;
@@ -2838,10 +2843,12 @@ void CallVAR_COORD_ATT_OP(void) {
 									case INT_VECT:
 										ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 										break;
+									case INT_SINGLE:
 									case INT_RANGE:
 										ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 										break;
 									case COORD_VECT:
+									case COORD_SINGLE:
 									case COORD_RANGE:
 										NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 										estatus = NhlFATAL;
@@ -2953,6 +2960,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 */						
 							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -2960,6 +2968,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							NclFree(sel_ptr);
@@ -3117,6 +3126,7 @@ void CallASSIGN_VAR_COORD_ATT_OP(void) {
 	*/						
 								ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 	/*
 	* Need to free some stuff here
@@ -3124,6 +3134,7 @@ void CallASSIGN_VAR_COORD_ATT_OP(void) {
 								ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 								estatus = NhlFATAL;
@@ -3238,6 +3249,7 @@ void CallVARVAL_COORD_OP(void) {
 */						
 							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -3245,6 +3257,7 @@ void CallVARVAL_COORD_OP(void) {
 							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							sel_ptr = NULL;
@@ -3340,6 +3353,7 @@ void CallVAR_COORD_OP(void) {
 */						
 							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -3347,6 +3361,7 @@ void CallVAR_COORD_OP(void) {
 							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							sel_ptr = NULL;
@@ -3459,12 +3474,14 @@ void CallASSIGN_FILE_VAR_OP(void) {
 									case INT_VECT:
 										estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
+									case INT_SINGLE:
 									case INT_RANGE:
 										estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
 									case COORD_VECT:
 										estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
+									case COORD_SINGLE:
 									case COORD_RANGE:
 										estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
@@ -3482,12 +3499,14 @@ void CallASSIGN_FILE_VAR_OP(void) {
 										case INT_VECT:
 											estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
+										case INT_SINGLE:
 										case INT_RANGE:
 											estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
 										case COORD_VECT:
 											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
+										case COORD_SINGLE:
 										case COORD_RANGE:
 											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
@@ -3542,7 +3561,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 								}
 							}
 							
-						} else {
+						} else if(file!=NULL){
 							rhs = _NclPop();
 							if(estatus != NhlFATAL) {
 								if(rhs.kind == NclStk_VAL) {
@@ -3676,12 +3695,14 @@ void CallFILE_VARVAL_OP(void) {
 											case INT_VECT:
 												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
+											case INT_SINGLE:
 											case INT_RANGE:
 												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											case COORD_VECT:
 												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
+											case COORD_SINGLE:
 											case COORD_RANGE:
 												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
@@ -3842,12 +3863,14 @@ void CallFILE_VAR_OP(void) {
 											case INT_VECT:
 												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
+											case INT_SINGLE:
 											case INT_RANGE:
 												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											case COORD_VECT:
 												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
+											case COORD_SINGLE:
 											case COORD_RANGE:
 												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
@@ -3974,6 +3997,7 @@ void CallASSIGN_VARATT_OP(void) {
 */						
 							ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -3981,6 +4005,7 @@ void CallASSIGN_VARATT_OP(void) {
 							ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 							estatus = NhlFATAL;
@@ -4140,10 +4165,12 @@ void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 								case INT_VECT:
 									ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
+								case INT_SINGLE:
 								case INT_RANGE:
 									ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
+								case COORD_SINGLE:
 								case COORD_RANGE:
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 									estatus = NhlFATAL;
@@ -4294,6 +4321,7 @@ void CallASSIGN_FILEVARATT_OP(void) {
 */						
 									ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
+								case INT_SINGLE:
 								case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -4301,6 +4329,7 @@ void CallASSIGN_FILEVARATT_OP(void) {
 									ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
+								case COORD_SINGLE:
 								case COORD_RANGE:
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 									estatus = NhlFATAL;
@@ -4444,6 +4473,7 @@ void CallASSIGN_FILEVAR_COORD_OP(void) {
 */						
 									estatus = _NclBuildFileVSelection(file,coord_name,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
+								case INT_SINGLE:
 								case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -4451,6 +4481,7 @@ void CallASSIGN_FILEVAR_COORD_OP(void) {
 									estatus = _NclBuildFileRSelection(file,coord_name,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
+								case COORD_SINGLE:
 								case COORD_RANGE:
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 									NclFree(sel_ptr);
@@ -4637,6 +4668,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 	*/						
 									ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
+								case INT_SINGLE:
 								case INT_RANGE:
 	/*
 	* Need to free some stuff here
@@ -4644,6 +4676,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 									ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
+								case COORD_SINGLE:
 								case COORD_RANGE:
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 									estatus = NhlFATAL;
@@ -4767,6 +4800,7 @@ void CallPARAM_FILEVARATT_OP(void) {
 */						
 								ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -4774,6 +4808,7 @@ void CallPARAM_FILEVARATT_OP(void) {
 								ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
 								estatus = NhlFATAL;
@@ -4900,6 +4935,7 @@ void CallPARAM_FILEVAR_COORD_OP(void) {
 */						
 								ret = _NclBuildFileVSelection(file,var_name,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -4907,6 +4943,7 @@ void CallPARAM_FILEVAR_COORD_OP(void) {
 								ret = _NclBuildFileRSelection(file,var_name,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 								NclFree(sel_ptr);
@@ -5003,6 +5040,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 */							
 							ret = _NclBuildVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
+						case INT_SINGLE:
 						case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -5012,6 +5050,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 						case COORD_VECT:
 							ret = _NclBuildCoordVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
+						case COORD_SINGLE:
 						case COORD_RANGE:
 							ret = _NclBuildCoordRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
@@ -5099,6 +5138,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 */							
 								ret = _NclBuildVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -5108,6 +5148,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 							case COORD_VECT:
 								ret = _NclBuildCoordVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								ret = _NclBuildCoordRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
@@ -5137,6 +5178,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 */							
 								ret = _NclBuildVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case INT_SINGLE:
 							case INT_RANGE:
 /*
 * Need to free some stuff here
@@ -5146,6 +5188,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 							case COORD_VECT:
 								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
+							case COORD_SINGLE:
 							case COORD_RANGE:
 								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;

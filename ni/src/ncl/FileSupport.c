@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.13 1997-09-05 22:13:04 ethan Exp $
+ *      $Id: FileSupport.c,v 1.14 1997-10-01 18:19:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -96,6 +96,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
                         return(NhlFATAL);
 
 		}
+		sel->u.sub.is_single = range->is_single;
 		if((range->start == NULL)&&(range->finish == NULL)) {
 
 			sel->sel_type = Ncl_SUB_ALL;
@@ -447,6 +448,7 @@ NhlErrorTypes _NclBuildFileRSelection
 		} else {
 			sel->dim_num = dim_num;
 		}
+		sel->u.sub.is_single = range->is_single;
 		if((range->start == NULL)&&(range->finish == NULL)) {
 
 			sel->sel_type = Ncl_SUB_ALL;
@@ -1205,7 +1207,33 @@ struct _NclSelectionRecord* sel_ptr;
 	}
 	return(NhlFATAL);
 }
+extern NhlErrorTypes _NclFileAddVar
+#if     NhlNeedProto
+(NclFile thefile, NclQuark varname, NclQuark type, int n_dims, NclQuark *dimnames)
+#else
+(thefile, varname, type, n_dims, dimnames)
+NclFile thefile;
+NclQuark varname;
+NclQuark type;
+int n_dims;
+NclQuark *dimnames;
+#endif
+{
+	NclFileClass fc = NULL;
 
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_var_func != NULL) {
+			return((*fc->file_class.add_var_func)(thefile, varname, type, n_dims, dimnames));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
 extern NhlErrorTypes _NclFileAddDim
 #if     NhlNeedProto
 (NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)

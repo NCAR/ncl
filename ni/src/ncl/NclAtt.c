@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.18 1997-07-01 00:02:06 ethan Exp $
+ *      $Id: NclAtt.c,v 1.19 1997-10-01 18:19:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -250,11 +250,11 @@ NclSelectionRecord * sel_ptr;
 			} else {
 				if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
 /*
-* value_md is either equal to value or had to be coerced. In the event it
-* was coerced it must be freed. Therefore it will faile value != value_md
+* tmp_md is either equal to value or had to be coerced. In the event it
+* was coerced it must be freed. Therefore it will faile value != tmp_md
 * conditional
 */
-					_NclDestroyObj((NclObj)tmp_md);
+					_NclDestroyObj((NclObj)value);
 				}
 			}
 		} else {
@@ -277,10 +277,10 @@ NclSelectionRecord * sel_ptr;
                 thelist->attname = (char*)NclMalloc((unsigned)
                 strlen(attname)+1);
                         strcpy(thelist->attname, attname);
-                if(_NclSetStatus((NclObj)value,PERMANENT)){
-                        thelist->attvalue = value;
+                if(_NclSetStatus((NclObj)tmp_md,PERMANENT)){
+                        thelist->attvalue = tmp_md;
                 } else {
-                        thelist->attvalue = _NclCopyVal(value,NULL);
+                        thelist->attvalue = _NclCopyVal(tmp_md,NULL);
                         _NclSetStatus((NclObj)thelist->attvalue,PERMANENT);
                 }
 		_NclAddParent((NclObj)thelist->attvalue,(NclObj)theattobj);
@@ -290,7 +290,7 @@ NclSelectionRecord * sel_ptr;
                 theattobj->att.n_atts++;
                 return(NhlNOERROR);
         } else {
-                if(value->multidval.n_dims > 1) {
+                if(tmp_md->multidval.n_dims > 1) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign value with more than one dimension to attribute, attributes are restricted to having only one dimension");
                         return(NhlFATAL);
                 } else if(sel_ptr == NULL) {
@@ -333,29 +333,9 @@ NclSelectionRecord * sel_ptr;
 /*
 * subscript exists
 */
-                        lhs_type = targetdat->multidval.type->type_class.type & NCL_VAL_TYPE_MASK;
-                        rhs_type = value->multidval.type->type_class.type & NCL_VAL_TYPE_MASK;
-                        if(lhs_type != rhs_type) {
-                                tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
-                                if(tmp_md == NULL) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
-                                        return(NhlFATAL);
-                                } else {
-                                        if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
-/*
-* value_md is either equal to value or had to be coerced. In the event it
-* was coerced it must be freed. Therefore it will faile value != value_md
-* conditional
-*/
-                                                _NclDestroyObj((NclObj)tmp_md);
-                                        }
-                                }
-                        } else {
-                                tmp_md = value;
-                        }
 			ret = _NclWriteSubSection((NclData)targetdat,sel_ptr,(NclData)tmp_md);
 
-                        if((tmp_md->obj.status != PERMANENT)&&(tmp_md != value)) {
+                        if(tmp_md->obj.status != PERMANENT) {
                                 _NclDestroyObj((NclObj)tmp_md);
                         }
                 }

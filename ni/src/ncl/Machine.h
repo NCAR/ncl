@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.20 1997-03-06 00:20:57 ethan Exp $
+ *      $Id: Machine.h,v 1.21 1997-10-01 18:19:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -89,6 +89,7 @@ typedef struct _NclStackEntry{
         		struct _NclMultiDValDataRec *start;
         		struct _NclMultiDValDataRec *finish;
         		struct _NclMultiDValDataRec *stride;
+			int is_single;
 		} range_rec;
 		struct _NclVecRec {
 			struct _NclMultiDValDataRec *vec;

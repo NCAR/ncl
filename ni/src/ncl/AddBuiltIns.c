@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.36 1997-09-11 00:51:59 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.37 1997-10-01 18:19:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,12 +31,27 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _NclIFileVarDef(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIFileDimDef(
 #if NhlNeedProto
 void
 #endif
 );
 
+extern NhlErrorTypes _NclIFileAttDef(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIFileVarAttDef(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIdim_stddev(
 #if NhlNeedProto
 void
@@ -1323,6 +1338,28 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVarDef,args,"filevardef",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterProc(_NclIFileAttDef,args,"fileattdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVarAttDef,args,"filevarattdef",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.6 1997-09-05 22:13:09 ethan Exp $
+ *      $Id: NclFile.h,v 1.7 1997-10-01 18:19:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -212,8 +212,8 @@ typedef NhlErrorTypes (*NclAddFileVarFunc)(
 NclFile	/*thefile*/,
 NclQuark /* var_name */,
 NclQuark /* type */,
-NclQuark */* dimnames */,
-int	/*n_dims*/
+int	/*n_dims*/,
+NclQuark */* dimnames */
 #endif
 );
 

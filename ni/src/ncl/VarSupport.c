@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.17 1996-12-20 00:42:15 ethan Exp $
+ *      $Id: VarSupport.c,v 1.18 1997-10-01 18:18:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -413,6 +413,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),v_name);
 			return(NhlFATAL);
 		}
+		sel->u.sub.is_single = range->is_single;
 		if((range->start == NULL)&&(range->finish == NULL)) {
 
 			sel->sel_type = Ncl_SUB_ALL;
@@ -636,6 +637,7 @@ NhlErrorTypes _NclBuildRSelection
 		} else {
 			sel->dim_num = dim_num;
 		}
+		sel->u.sub.is_single = range->is_single;
 		if((range->start == NULL)&&(range->finish == NULL)) {
 
 			sel->sel_type = Ncl_SUB_ALL;

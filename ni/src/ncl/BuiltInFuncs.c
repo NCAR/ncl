@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.85 1997-09-12 20:27:07 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.86 1997-10-01 18:19:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,7 @@ extern "C" {
 #include "TypeSupport.h"
 #include "NclBuiltInSupport.h"
 #include "FileSupport.h"
+#include "NclAtt.h"
 #include <signal.h>
 
 extern int cmd_line;
@@ -436,7 +437,7 @@ NhlErrorTypes _NclIGetFileVarNames
 	
 	for(i = 0; i< thefile->file.n_vars;i++ 	) {
 		if(thefile->file.var_info[i] != NULL) {
-			var_names[i] = thefile->file.var_info[i]->var_name_quark;
+			var_names[i] = thefile->file.var_info[i]->var_quark;
 		} else {
 			var_names[i] = 0;
 		}
@@ -11116,6 +11117,107 @@ NhlErrorTypes _NclIGetFileVarAtts
 
 }
 
+NhlErrorTypes _NclIFileVarDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int tmp_dimsize;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *dimnames;
+	string *types;
+	string *varnames;
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        4,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        varnames = (string*)NclGetArgValue(
+                        1,
+                        4,
+                        NULL,
+                        &dimsize,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(varnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        types = (string*)NclGetArgValue(
+                        2,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_dimsize != dimsize) {
+		return(NhlFATAL);
+	} else if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(types[i] == tmp_missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        dimnames = (string*)NclGetArgValue(
+                        3,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(dimnames[i] == tmp_missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+	for(i = 0; i < dimsize; i ++) {
+		ret = _NclFileAddVar(thefile,varnames[i],types[i],tmp_dimsize,dimnames);
+		if(ret < NhlINFO) {
+			ret0 = ret;
+		}
+	}
+	return(ret0);
+}
 NhlErrorTypes _NclIFileDimDef
 #if NhlNeedProto
 (void)
@@ -11220,6 +11322,213 @@ NhlErrorTypes _NclIFileDimDef
 	return(ret0);
 }
 
+NhlErrorTypes _NclIFileAttDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int tmp_dimsize;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *dimnames;
+	int *dimsizes;
+	logical *unlimited;
+	int i,j;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+	NclAtt tmp_attobj;
+	NclAttList *the_att_list;
+	NclStackEntry data;
+	NclApiDataList *tmp;
+	NclFile tmp_file;
+	NclMultiDValData file_md;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+        data = _NclGetArg(1,2,DONT_CARE);
+	switch(data.kind) {
+        case NclStk_VAR:
+		switch(data.u.data_var->obj.obj_type) {
+		case Ncl_FileVar:
+			tmp = _NclGetFileInfo(data.u.data_var->var.var_quark);
+			file_md= (NclMultiDValData)_NclVarValueRead(data.u.data_var,NULL,NULL);
+			tmp_file = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
+			if( tmp->u.file->n_atts > 0 ) {
+				for(j = 0; j < tmp->u.file->n_atts; j++) {
+					ret=_NclFileWriteAtt(thefile,tmp->u.file->attnames[j],_NclFileReadAtt(tmp_file,tmp->u.file->attnames[j],NULL),NULL);
+					if(ret < NhlINFO) {
+						ret0 = ret;
+					}
+				}
+			} else {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+                                return(NhlWARNING);
+                        }
+			_NclFreeApiDataList((void*)tmp);
+
+			break;
+		default:
+			if(data.u.data_var->var.att_id != -1) {
+				tmp_attobj = (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+				return(NhlWARNING);
+			}
+			the_att_list = tmp_attobj->att.att_list;
+			while(the_att_list != NULL) {
+				ret = _NclFileWriteAtt(thefile,NrmStringToQuark(the_att_list->attname),the_att_list->attvalue,NULL);
+				if(ret < NhlINFO) {
+					ret0 = ret;
+				}
+				the_att_list = the_att_list->next;
+			}
+		}
+
+
+                break;
+        case NclStk_VAL:
+	default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"FileVarAttDef: A variable with attributes is expected not a value, No attributes to assign");
+                return(NhlFATAL);
+        }
+	return(ret0);
+}
+
+
+NhlErrorTypes _NclIFileVarAttDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int tmp_dimsize;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *varnames;
+	int *dimsizes;
+	logical *unlimited;
+	int i,j;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+	NclAtt tmp_attobj;
+	NclAttList *the_att_list;
+	NclStackEntry data;
+	NclMultiDValData file_md;
+	NclFile tmp_file;
+	NclApiDataList * tmp;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        varnames = (string*)NclGetArgValue(
+                        1,
+                        3,
+                        NULL,
+                        &dimsize,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(varnames[i] == missing.stringval)  {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Missing value variable name detected, can't continue");
+				return(NhlFATAL);
+			}
+		}
+	}
+
+
+        data = _NclGetArg(2,3,DONT_CARE);
+        switch(data.kind) {
+        case NclStk_VAR:
+		switch(data.u.data_var->obj.obj_type) {
+		case Ncl_FileVar:
+			tmp = _NclGetFileInfo(data.u.data_var->var.var_quark);
+			file_md= (NclMultiDValData)_NclVarValueRead(data.u.data_var,NULL,NULL);
+			tmp_file = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
+			if( tmp->u.file->n_atts > 0 ) {
+				for(i = 0; i < dimsize; i++) {
+					for(j = 0; j < tmp->u.file->n_atts; j++) {
+						ret=_NclFileWriteVarAtt(thefile,varnames[i],tmp->u.file->attnames[j],_NclFileReadAtt(tmp_file,tmp->u.file->attnames[j],NULL),NULL);
+					}
+				}
+			} else {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+                                return(NhlWARNING);
+                        }
+			_NclFreeApiDataList((void*)tmp);
+			break;
+		default:
+			if(data.u.data_var->var.att_id != -1) {
+				tmp_attobj = (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+				return(NhlWARNING);
+			}
+			for(i = 0; i < dimsize; i++) {
+				the_att_list = tmp_attobj->att.att_list;
+				while(the_att_list != NULL) {
+					ret=_NclFileWriteVarAtt(thefile,varnames[i],NrmStringToQuark(the_att_list->attname),the_att_list->attvalue,NULL);
+					if(ret < NhlINFO) {
+						ret0 = ret;
+					}
+					the_att_list = the_att_list->next;
+				}
+			}
+		}
+
+
+                break;
+        case NclStk_VAL:
+	default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"FileVarAttDef: A variable with attributes is expected not a value, No attributes to assign");
+                return(NhlFATAL);
+        }
+
+	return(ret0);
+}
 #ifdef __cplusplus
 }
 #endif
