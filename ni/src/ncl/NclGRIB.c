@@ -41,6 +41,27 @@
 
 #define NCL_GRIB_CACHE_SIZE  150
 
+
+/*
+ * this is a hack function that applies to GRID TYPE 203 only
+ * according to Mike Baldwin <baldwin@nssl.noaa.gov> the parameters listed 
+ * (NCEP operational table assumed) are on the UV grid. All others
+ * are on the mass grid.
+ *
+ */
+extern int Is_UV(int param_number) {
+	switch (param_number) {
+	case 33:
+	case 34:
+	case 190:
+	case 196:
+	case 197:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 extern int grid_index[];
 extern int grid_gds_index[];
 extern GridInfoRecord grid[];
@@ -1806,6 +1827,10 @@ GribFileRecord *therec;
 					if((dstep->dim_inq->is_gds == step->gds_type)&&
 						(dstep->dim_inq->gds_size == step->thelist->rec_inq->gds_size)&&
 						(GdsCompare(dstep->dim_inq->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size))) {
+						if ((step->gds_type == 203) && (dstep->dim_inq->is_uv != Is_UV(step->param_number))) {
+							dstep = dstep->next;
+							continue;
+						}
 						break;
 					} else {
 						dstep = dstep->next;
@@ -1821,7 +1846,6 @@ GribFileRecord *therec;
 					}
 				}
 			}
-		if(is_err != NhlFATAL) {
 			if(dstep == NULL) {
 /*
 * Grid has not been defined
@@ -1986,6 +2010,7 @@ GribFileRecord *therec;
 
 
 				} else if((n_dims_lon ==2)&&(n_dims_lat ==2)&&(dimsizes_lat[0] == dimsizes_lon[0])&&(dimsizes_lat[1] == dimsizes_lon[1])) {
+					char *uv_m = "m";
 					step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
 					step->var_info.dim_sizes[current_dim+1] = dimsizes_lon[1];
 					step->var_info.file_dim_num[current_dim] = therec->total_dims;
@@ -1993,7 +2018,14 @@ GribFileRecord *therec;
 					step->var_info.doff=1;
 
 					if((step->has_gds)&&(step->grid_number == 255)) {
-						sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
+						}
+						else {
+							if (Is_UV(step->param_number))
+								uv_m = "v";
+							sprintf(buffer,"g%d%s_y_%d",step->gds_type,uv_m,therec->total_dims + 1);
+						}
 					} else {
 						sprintf(buffer,"gridy_%d",step->grid_number);
 					}
@@ -2002,6 +2034,7 @@ GribFileRecord *therec;
 					tmp->size = dimsizes_lon[1];
 					tmp->dim_name = NrmStringToQuark(buffer);
 					tmp->is_gds = step->gds_type;
+					tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
 					tmp->gds_size = step->thelist[m].rec_inq->gds_size;
 					tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
 					memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
@@ -2011,7 +2044,12 @@ GribFileRecord *therec;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
 					if((step->has_gds)&&(step->grid_number == 255)) {
-						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
+						}
+						else {
+							sprintf(buffer,"g%d%s_lon_%d",step->gds_type,uv_m,therec->total_dims + 1);
+						}
 					} else {
 						sprintf(buffer,"gridlon_%d",step->grid_number);
 					}
@@ -2043,7 +2081,12 @@ GribFileRecord *therec;
 					NclFree(dimsizes_lon);
 						
 					if((step->has_gds)&&(step->grid_number == 255)) {
-						sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
+						}
+						else {
+							sprintf(buffer,"g%d%s_x_%d",step->gds_type,uv_m,therec->total_dims);
+						}
 					} else {
 						sprintf(buffer,"gridx_%d",step->grid_number);
 					}
@@ -2052,6 +2095,7 @@ GribFileRecord *therec;
 					tmp->size = dimsizes_lat[0];
 					tmp->dim_name = NrmStringToQuark(buffer);
 					tmp->is_gds = step->gds_type;
+					tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
 					tmp->gds_size = step->thelist[m].rec_inq->gds_size;
 					tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
 					memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
@@ -2061,7 +2105,12 @@ GribFileRecord *therec;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
 					if((step->has_gds)&&(step->grid_number == 255)) {
-						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
+						}
+						else {
+							sprintf(buffer,"g%d%s_lat_%d",step->gds_type,uv_m,therec->total_dims);
+						}
 					} else {
 						sprintf(buffer,"gridlat_%d",step->grid_number);
 					}
@@ -2123,7 +2172,6 @@ GribFileRecord *therec;
 					}
 				}
 			}
-		}
 		}
 		if(is_err == NhlNOERROR) {
 			if(step->level_indicator == 109) {

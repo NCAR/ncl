@@ -135,18 +135,6 @@ static int compute_index_staggered(int index,int nx, int ny, int ijswap,int is_u
 	return((col_number * ny) + row_number);
 }
 
-static int Is_UV(int param_number) {
-	switch (param_number) {
-	case 33:
-	case 34:
-	case 190:
-	case 196:
-	case 197:
-		return 1;
-	default:
-		return 0;
-	}
-}
 
 static int is_gpoint
 #if NhlNeedProto
@@ -2484,6 +2472,7 @@ GribParamList* thevarrec;
 		is_thinned_lon = (nlon == 65535);
 		is_thinned_lat = (nlat == 65535);
 		is_staggered_grid = (therec->gds_type == 203);
+		is_staggered_grid = False; /* we're not going to expand the staggered grids for now at least */
 		is_uv = is_staggered_grid && Is_UV(therec->param_number);
 		if (is_staggered_grid) {
 			index_func = compute_index_staggered;
@@ -2699,12 +2688,14 @@ GribParamList* thevarrec;
 			NclFree(rc_count);
 		}
 		else if(is_staggered_grid){
+#if 0
 			if (integer) {
 				int *idata = (int*)data;
 				for (j = 0; j < lat_size; j++) {
 					if ((j % 2 + is_uv) % 2 == 0) {
 						for (i = 1; i < lon_size - 1; i += 2) {
 							idata[j * lon_size + i] = (idata[j * lon_size + i - 1] + idata[j * lon_size + i + 1]) / 2;
+
 						}
 						idata[j * lon_size + lon_size - 1] = 2 * (idata[j * lon_size + lon_size - 2]) - idata[j * lon_size + lon_size - 4]; 
 					}
@@ -2733,7 +2724,44 @@ GribParamList* thevarrec;
 					}
 				}
 			}
+#endif
+			if (integer) {
+				int *idata = (int*)data;
+				for (j = 0; j < lat_size; j++) {
+					if ((j % 2 + is_uv) % 2 == 0) {
+						for (i = 1; i < lon_size - 1; i += 2) {
+							idata[j * lon_size + i] = idata[j * lon_size + i - 1];
+
+						}
+						idata[j * lon_size + lon_size - 1] = DEFAULT_MISSING_INT;
+					}
+					else {
+						idata[j * lon_size] = DEFAULT_MISSING_INT;
+						for (i = 2; i < lon_size - 1; i += 2) {
+							idata[j * lon_size + i] = idata[j * lon_size + i - 1];
+						}
+					}
+				}
+			}
+			else {
+				float *fdata = (float*)data;
+				for (j = 0; j < lat_size; j++) {
+					if ((j % 2 + is_uv) % 2 == 0) {
+						for (i = 1; i < lon_size - 1; i += 2) {
+							fdata[j * lon_size + i] = fdata[j * lon_size + i - 1];
+						}
+						fdata[j * lon_size + lon_size - 1] = DEFAULT_MISSING_FLOAT;
+					}
+					else {
+						fdata[j * lon_size] = DEFAULT_MISSING_FLOAT;
+						for (i = 2; i < lon_size - 1; i += 2) {
+							fdata[j * lon_size + i] = fdata[j * lon_size + i - 1];
+						}
+					}
+				}
+			}
 			*outdat = data;
+
 		}
 
 	} else if(spherical_harm) {
@@ -4426,6 +4454,7 @@ int * nlonatts;
 	float fillval = -9999;
 	float *crot = NULL,*srot = NULL;
 	float *lat1, *lat2, *lon1, *lon2;
+	int is_uv = Is_UV(thevarrec->param_number);
 
 	/* RLL: Rotated LatLon grids - actually only 203 at this point */
 	
@@ -4475,6 +4504,7 @@ int * nlonatts;
         *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
+#if 0
         (*dimsizes_lat)[0] = ny;
         (*dimsizes_lat)[1] = nx * 2;
         (*dimsizes_lon)[0] = ny;
@@ -4485,14 +4515,28 @@ int * nlonatts;
 	lon2 = (float*)NclMalloc(sizeof(float)*nx*ny);
 	(*lon) = (float*)NclMalloc(sizeof(float)*2*nx*ny);
 	(*lat) = (float*)NclMalloc(sizeof(float)*2*nx*ny);
+#endif
+	/* for now at least return the native coordinates, not attempting to shift to a regular grid */
+
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+	(*lon) = (float*)NclMalloc(sizeof(float)*nx*ny);
+	(*lat) = (float*)NclMalloc(sizeof(float)*nx*ny);
 
 
 	npts = nx * ny;
 	lrot = 0;
-	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,lon1,lat1,lon1,lat1,&nret,&lrot,crot,srot);
-	kgds[10] |= 256;
-	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,lon2,lat2,lon2,lat2,&nret,&lrot,crot,srot);
 
+	if (is_uv) {
+		kgds[10] |= 256;
+	}
+
+	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,crot,srot);
+
+#if 0
+	/* the is for the expanded grid form - not used now */
 	for(j = 0; j < ny; j++) {
 		if (j % 2 == 0) { 
 			for(i = 0; i < nx; i++) {
@@ -4515,6 +4559,7 @@ int * nlonatts;
 	NclFree(lon1);
 	NclFree(lat2);
 	NclFree(lon2);
+#endif
 	
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4542,7 +4587,12 @@ int * nlonatts;
 		*tmp_string = NrmStringToQuark("degrees_east");
 		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array");
+		if (is_uv) {
+			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
+		}
+		else {
+			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
+		}
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
@@ -4570,7 +4620,12 @@ int * nlonatts;
 		*tmp_string = NrmStringToQuark("degrees_north");
 		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array");
+		if (is_uv) {
+			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
+		}
+		else {
+			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
+		}
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	

@@ -207,6 +207,7 @@ struct _GribDimInqRec {
 	unsigned char *gds;
 	NclQuark dim_name;
 	long size;
+	int is_uv; /* only applicable to staggered grids */
 };
 	
 struct _GribAttInqRec {
@@ -306,6 +307,12 @@ extern unsigned int UnsignedCnvtToDecimal(
 #if     NhlNeedProto
 int /*n_bytes*/,
 unsigned char * /*val*/
+#endif
+);
+
+extern int Is_UV(
+#if     NhlNeedProto
+int param_number
 #endif
 );
 
