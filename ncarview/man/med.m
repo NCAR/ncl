@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.5 1992-02-14 11:38:35 clyne Exp $
+.\"	$Id: med.m,v 1.6 1992-02-14 17:03:20 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -341,14 +341,14 @@ command attempts to create
 metafiles from the addressed frames, each containing approximately n / number
 frames where 'n' is the total number of addressed frames. The first file is 
 named
-.IR outfile 001.cgm,
+.IR outfile 001.ncgm,
 the second file is named
-.IR outfile 002.cgm,
+.IR outfile 002.ncgm,
 and so on lexicographically. If no
 .I outfile
 is given,
 .B med
-is used as the default (output files will be called med001.cgm, med002.cgm, 
+is used as the default (output files will be called med001.ncgm, med002.ncgm, 
 etc.). 
 .HP
 .PD 0
@@ -377,16 +377,16 @@ is the process id.
 .SH "EXAMPLES"
 .LP
 To concatenate the files 
-.BR cgm1 ,
-.BR cgm2 ,
+.BR ncgm1 ,
+.BR ncgm2 ,
 and 
-.B cgm3 
+.B ncgm3 
 into a single file 
-.B cgm123
+.B ncgm123
 one might use the following:
 .sp
 .IP
-.B "% med -e 'r cgm1' -e 'r cgm2' -e 'r cgm3' -e 'w cgm123'"
+.B "% med -e 'r ncgm1' -e 'r ncgm2' -e 'r ncgm3' -e 'w ncgm123'"
 .sp
 .LP
 Or one could pass the following script to 
@@ -397,13 +397,13 @@ option or enter the commands interactively.
 .sp
 .IP
 .fb
-r cgm1
+r ncgm1
 .br
-r cgm2
+r ncgm2
 .br
-r cgm3
+r ncgm3
 .br
-w cgm123
+w ncgm123
 .fr
 .sp
 .LP
@@ -412,11 +412,11 @@ To Overlay the contents of frame
 on top of frame
 .B 4 
 from a file 
-.B cgm1
+.B ncgm1
 one could execute:
 .IP
 .sp
-.B "% med -e '4,5 me' -e 'w!' cgm1
+.B "% med -e '4,5 me' -e 'w!' ncgm1
 .sp
 .SH "SEE ALSO"
 .BR cgm(local),
