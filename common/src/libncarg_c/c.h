@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.27 2000-08-22 03:59:53 haley Exp $
+ *	$Id: c.h,v 1.28 2004-01-14 19:35:06 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -213,7 +213,7 @@ extern	boolean	IsAsciiInt(
 #endif
 );
 
-extern	USleep(
+extern	void USleep(
 #ifdef	NeedFuncProto
 	unsigned usec
 #endif
