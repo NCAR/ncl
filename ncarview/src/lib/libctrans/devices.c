@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.13 1993-01-09 00:35:53 clyne Exp $
+ *	$Id: devices.c,v 1.14 1993-03-12 18:21:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -142,8 +142,6 @@ int X11_PolyLine(), X11_DisjtLine(), X11_PolyMarker(), X11_RestrText(),
     X11_ArcCtrClose(), X11_Ellipse(), X11_EllipArc(), X11_EllipArcClose();
 
 /*	Class 5	*/
-
-int X11_PatTable(), X11_ASF();
 
 /*	Class 6	*/
 
@@ -567,8 +565,8 @@ int  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
 	FillIndex,IntStyle,FillColr,HatchIndex,
 	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, X11_PatTable, PatSize, ColrTable,
-	X11_ASF,
+	EdgeVis, FillRefPt, PatTable, PatSize, ColrTable,
+	ASF,
 	},
 	/* Class 6 */
 	{

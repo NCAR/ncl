@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.14 1993-02-04 19:32:45 clyne Exp $
+ *	$Id: X11_class5.c,v 1.15 1993-03-12 18:21:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,27 +54,6 @@ Pixeltype	max_colour;			/* maximum r or g or b value
 						 * specifiable in the CGM
 						 */
 
-
-/*ARGSUSED*/
-/* Currently unsupported by NCAR Graphics */
-int	X11_PatTable(c)
-	CGMC *c;
-{
-
-	ESprintf(ENOSYS, "Unsupported CGM element");
-	return (-1);
-}
-
-
-
-/*ARGSUSED*/
-int	X11_ASF(c)
-	CGMC *c;
-{
-
-	ESprintf(ENOSYS, "Unsupported CGM element");
-	return (-1);
-}
 
 
 static	Visual	*get_best_8bit_visual(depth, dpy)

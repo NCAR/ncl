@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.18 1993-01-11 21:19:48 clyne Exp $
+ *	$Id: default.c,v 1.19 1993-03-12 18:21:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1247,8 +1247,16 @@ CGMC *c;
 int ASF(c)
 CGMC *c;
 {
-	ESprintf(ENOSYS, "Unsupported CGM element");
-	return (-1);
+	int	i;
+
+	for (i=0; i<(c->Enum-1); i+=2) {
+		if (c->e[i+1] == 1) {
+			ESprintf(ENOSYS, "Unsupported CGM element");
+			return (-1);
+		}
+	}
+
+	return(0);
 }
 
 /*
