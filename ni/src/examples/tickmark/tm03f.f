@@ -77,7 +77,7 @@ C
 C Create an XWorkstation object.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
+         call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'tm03Work',NhlFXWorkstationClass,0,
      $        rlist,ierr)
       else if (PS.eq.1) then
