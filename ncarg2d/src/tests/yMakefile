@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-22 16:51:46 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-10-25 14:59:52 haley Exp $
 #
 NCARG	= ../../..
 
@@ -9,9 +9,9 @@ TESTS = \
 	tagupw.f tareas.f tautog.f tcnqck.f tcnsmt.f tcnsup.f tcolcv.f \
 	tconan.f tconaq.f tconas.f tconpa.f tconre.f tdashc.f tdashl.f \
 	tdashp.f tdashs.f tezmap.f tezmpa.f tgflas.f tgrida.f thafto.f \
-	thstgr.f tisohr.f tisosr.f tlblba.f tpltch.f tpwrtx.f tpwry.f \
-	tpwrzi.f tpwrzs.f tpwrzt.f tseter.f tsoftf.f tsrfac.f tstitl.f \
-	tstrml.f tthree.f tvelvc.f
+	thstgr.f thstmv.f tisohr.f tisosr.f tlblba.f tpltch.f tpwrtx.f \
+	tpwry.f  tpwrzi.f tpwrzs.f tpwrzt.f tseter.f tsoftf.f tsrfac.f \
+	tstitl.f tstrml.f tthree.f tvelvc.f
 
 InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
 
