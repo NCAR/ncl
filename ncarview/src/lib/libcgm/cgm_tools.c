@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.23 1993-07-19 22:28:05 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.24 1994-03-09 22:46:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -273,7 +273,6 @@ static	int	setvbuf_(fp, r)
 	
 	int	i;
 	int	size;
-	char	*b;
 	char	*bufsize_env;
 	int	bufsize;
 
@@ -308,11 +307,7 @@ static	int	setvbuf_(fp, r)
 	i++;
 	size = i * bufsize;
 
-	if ((b = malloc(size)) == NULL) {
-		return(-1);
-	}
-
-	return(setvbuf(fp, b, _IOFBF, size));
+	return(setvbuf(fp, (char *) NULL, _IOFBF, size));
 }
 #endif
 
