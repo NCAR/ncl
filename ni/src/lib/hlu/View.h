@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.3 1994-03-02 01:44:41 dbrown Exp $
+ *      $Id: View.h,v 1.4 1994-07-12 20:53:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,11 +24,12 @@
 
 #include <ncarg/hlu/Base.h>
 
-/* pseudo Boolean types used by Legend and LabelBar */
-#define NhlTOrientation NhlTBoolean
-#define NhlHORIZONTAL   0
-#define NhlVERTICAL     1
-typedef NhlBoolean NhlOrientation;
+/* types used by Legend and LabelBar */
+#define NhlTOrientation "Orientation"
+typedef enum _NhlOrientation {
+	NhlHORIZONTAL = 0,
+	NhlVERTICAL = 1
+} NhlOrientation;
 
 /* position enumeration */
 

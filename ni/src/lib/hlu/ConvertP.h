@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.4 1994-05-12 23:50:41 boote Exp $
+ *      $Id: ConvertP.h,v 1.5 1994-07-12 20:51:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,23 @@ extern void	_NhlFreeConvertContext(
 #endif
 );
 
+extern NhlGenArray
+_NhlConvertCreateGenArray(
+#if	NhlNeedProto
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
+#endif
+);
+
+extern NhlGenArray
+_NhlConvertCopyGenArray(
+#if	NhlNeedProto
+	NhlGenArray	gen		/* generic array pointer	*/
+#endif
+);
 
 /*
  * declarations for the conversion cache
@@ -79,7 +96,10 @@ struct _CacheRec {
  */
 
 typedef enum _NhlCvtRecType_ {
-	_NhlRealConverter,
+	_NhlRegularConverter,
+	_NhlExclusiveConverter,
+	_NhlSymFrom,
+	_NhlSymTo,
 	_NhlReferenceConverter
 } _NhlCvtRecType;
 
@@ -96,14 +116,8 @@ struct _NhlConvertRec{
 	NhlCacheClosure		closure;
 };
 
-typedef enum _NhlCvtSymNames_ {
-	_NhlSYM_NONE,
-	_NhlSYM_FROM,
-	_NhlSYM_TO
-} _NhlCvtSymNames;
-
 extern NhlErrorTypes _NhlExtRegisterConverter(
-#ifdef	NhlNeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlString		from,		/* from type		*/
 	NhlString		to,		/* to type		*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
@@ -111,8 +125,26 @@ extern NhlErrorTypes _NhlExtRegisterConverter(
 	int			nargs,		/* number of args	*/ 
 	NhlBoolean		cache,		/* cache results???	*/
 	NhlCacheClosure		close,		/* free cached data	*/
-	_NhlCvtSymNames		sym_type,	/* symname type		*/
+	_NhlCvtRecType		sym_type,	/* symname type		*/
 	...
+#endif
+);
+
+extern NhlErrorTypes _NhlRegSymConv(
+#if	NhlNeedProto
+	NhlString	fromSym,
+	NhlString	toSym,
+	NhlString	from,
+	NhlString	to
+#endif
+);
+
+NhlErrorTypes _NhlRegSymConvQ(
+#if	NhlNeedProto
+	NrmQuark	fromSym,
+	NrmQuark	toSym,
+	NrmQuark	from,
+	NrmQuark	to
 #endif
 );
 
@@ -154,6 +186,50 @@ extern NhlErrorTypes _NhlConvertData(
 	NrmQuark		toQ,		/* to type		*/
 	NrmValue		*fromdata,	/* from type		*/
 	NrmValue		*todata		/* to type		*/
+#endif
+);
+
+extern NhlErrorTypes _NhlRegisterType(
+#if	NhlNeedProto
+	NhlString	supertype,
+	NhlString	type
+#endif
+);
+
+extern NhlErrorTypes _NhlRegisterTypeQ(
+#if	NhlNeedProto
+	NrmQuark	supertypeQ,
+	NrmQuark	typeQ
+#endif
+);
+
+/*VARARGS1*/
+extern NhlErrorTypes _NhlRegisterTypes(
+#if	NhlNeedVarArgProto
+	NhlString	supertype,
+	...		/* subtypes - NULL terminated */
+#endif
+);
+
+/*VARARGS1*/
+extern NhlErrorTypes _NhlRegisterTypesQ(
+#if	NhlNeedVarArgProto
+	NrmQuark	supertypeQ,
+	...		/* subtypesQ - NrmNULLQUARK terminated */
+#endif
+);
+
+extern NhlBoolean _NhlIsSubtypeQ(
+#if	NhlNeedProto
+	NrmQuark	superQ,
+	NrmQuark	subQ
+#endif
+);
+
+extern NhlBoolean _NhlIsSubtype(
+#if	NhlNeedProto
+	NhlString	super,
+	NhlString	sub
 #endif
 );
 

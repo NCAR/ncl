@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.7 1994-04-19 00:07:06 boote Exp $
+ *      $Id: Workstation.h,v 1.8 1994-07-12 20:53:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -129,9 +129,6 @@
 #define NhlTRANSPARENT -1
 
 typedef float NhlColor[3];
-
-#define NhlTColorPtr "colorptr"
-#define NhlTColor    "color"
 
 /* Workstation Fill stuff */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.6 1994-05-12 23:50:39 boote Exp $
+ *      $Id: Convert.h,v 1.7 1994-07-12 20:51:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -98,13 +98,6 @@ NhlErrorTypes NhlReRegisterConverter(
 #endif
 );
 
-NhlBoolean NhlConverterExists(
-#if	NhlNeedProto
-	NhlString,		/* from type - usually a NHLT*** constant*/
-	NhlString		/* to type - usually a NHLT*** constant	*/
-#endif
-);
-
 NhlErrorTypes NhlConvertData(
 #if	NhlNeedProto
 	NhlString,	/* from type - usually a NHLT*** constant	*/
@@ -121,6 +114,16 @@ NhlErrorTypes NhlConvertData(
 NhlPointer NhlConvertMalloc(
 #ifdef	NhlNeedProto
 	unsigned int	size	/* size of memory requested	*/
+#endif
+);
+
+extern NhlGenArray NhlAllocCreateGenArray(
+#if	NhlNeedProto
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.8 1994-06-24 00:39:35 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.9 1994-07-12 20:52:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
 #define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
@@ -200,54 +200,19 @@ MapPlotClassInitialize
 ()
 #endif
 {
-        NhlConvertArg   outlinetypelist[] = {
-        {NhlSTRENUM,    NhlNOOUTLINES,		_NhlUSET("nooutlines")},
-        {NhlSTRENUM,    NhlCONTINENTS, 		_NhlUSET("continents")},
-        {NhlSTRENUM,    NhlUSSTATES,      	_NhlUSET("usstates")},
-        {NhlSTRENUM,    NhlALLOUTLINES,     	_NhlUSET("alloutlines")},
-        {NhlSTRENUM,    NhlCONTINENTSANDCOUNTRIES,
-		 			_NhlUSET("continentsandcountries")},
-        {NhlSTRENUM,    NhlSIMPLIFIEDCONTINENTS,
-					_NhlUSET("simplifiedcontinents")}
+        _NhlEnumVals   outlinetypelist[] = {
+        {NhlNOOUTLINES,			"nooutlines"},
+        {NhlCONTINENTS, 		"continents"},
+        {NhlUSSTATES,      		"usstates"},
+        {NhlALLOUTLINES,     		"alloutlines"},
+        {NhlCONTINENTSANDCOUNTRIES,	"continentsandcountries"},
+        {NhlSIMPLIFIEDCONTINENTS,	"simplifiedcontinents"}
         };
 
-        NhlConvertArg   intoutlinetypelist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlNOOUTLINES)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlCONTINENTS)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlUSSTATES)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlALLOUTLINES)},
-        {NhlIMMEDIATE,  sizeof(int),    
-		 	      _NhlUSET((NhlPointer)NhlCONTINENTSANDCOUNTRIES)},
-        {NhlIMMEDIATE,  sizeof(int),    
-		 	      _NhlUSET((NhlPointer) NhlSIMPLIFIEDCONTINENTS)},
+        _NhlRegisterEnumType(NhlTMapOutlineType,outlinetypelist,
+						NhlNumber(outlinetypelist));
 
-	};
-
-        NhlConvertArg   outlinetypegentoenumdat[] = {
-        {NhlIMMEDIATE,sizeof(char*),_NhlUSET((NhlPointer)NhlTMapOutlineType)},
-        };
-
-        NhlRegisterConverter(NhlTGenArray,NhlTMapOutlineType,NhlCvtGenToEnum,
-			     outlinetypegentoenumdat,1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTMapOutlineType,NhlCvtStringToEnum,
-			     outlinetypelist,
-			     NhlNumber(outlinetypelist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTMapOutlineType,NhlCvtIntToEnum,
-			     intoutlinetypelist,
-			     NhlNumber(intoutlinetypelist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTMapOutlineType,NhlCvtFloatToEnum,
-			     intoutlinetypelist,
-			     NhlNumber(intoutlinetypelist),False,NULL);
-        NhlRegisterConverter(NhlTMapOutlineType,NhlTString,NhlCvtEnumToString,
-			     outlinetypelist,
-			     NhlNumber(outlinetypelist),False,NULL);
-        NhlRegisterConverter(NhlTMapOutlineType,
-			     _NhlTFExpString,NhlCvtEnumToFStr,
-			     outlinetypelist,
-			     NhlNumber(outlinetypelist),False,NULL);
 	return NhlNOERROR;
-
 }
 
 /*

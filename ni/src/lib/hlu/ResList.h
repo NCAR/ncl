@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.4 1994-05-12 23:52:14 boote Exp $
+ *      $Id: ResList.h,v 1.5 1994-07-12 20:52:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ extern NhlErrorTypes NhlRLSet(
 #endif
 );
 
-extern NhlErrorTypes NhlRLSetInt(
+extern NhlErrorTypes NhlRLSetInteger(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
@@ -134,7 +134,7 @@ extern NhlErrorTypes NhlRLSetArray(
 #endif
 );
 
-extern NhlErrorTypes NhlRLSetIntArray(
+extern NhlErrorTypes NhlRLSetIntegerArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.11 1994-05-12 23:50:47 boote Exp $
+ *      $Id: CoordArrays.c,v 1.12 1994-07-12 20:51:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,249 +34,6 @@
 /*
  * Resource Declarations
  */
-
-/*
- * Function:	Resource Default Procedures
- *
- * Description:	These proc's are used to determine if the user/program
- *		set the min,max,missing resources or if the object
- *		should compute them.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-MissingXSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl =
-						(NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.missing_x_set = False;
-		carrl->carrfloat.missing_x = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.missing_x_set = False;
-		carrl->carrint.missing_x = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-MissingYSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.missing_y_set = False;
-		carrl->carrfloat.missing_y = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.missing_y_set = False;
-		carrl->carrint.missing_y = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-MaxXSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.max_x_set = False;
-		carrl->carrfloat.max_x = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.max_x_set = False;
-		carrl->carrint.max_x = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-MaxYSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.max_y_set = False;
-		carrl->carrfloat.max_y = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.max_y_set = False;
-		carrl->carrint.max_y = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-MinXSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.min_x_set = False;
-		carrl->carrfloat.min_x = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.min_x_set = False;
-		carrl->carrint.min_x = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-MinYSet
-#if	__STDC__
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLayer	l = (NhlLayer)base;
-
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.min_y_set = False;
-		carrl->carrfloat.min_y = 0.0;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.min_y_set = False;
-		carrl->carrint.min_y = 0;
-	}
-	else
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
 /*ARGSUSED*/
 static NhlErrorTypes
 XCastSet
@@ -295,22 +52,10 @@ XCastSet
 	unsigned int	offset;
 #endif
 {
-	NhlLayer	l = (NhlLayer)base;
+	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.x_cast_set = False;
-		carrl->carrfloat.x_cast = 2;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.x_cast_set = False;
-		carrl->carrint.x_cast = 2;
-	}
-	else
-		return NhlFATAL;
+	carrl->carr.x_cast_set = False;
+	carrl->carr.x_cast = 2;
 
 	return NhlNOERROR;
 }
@@ -332,150 +77,52 @@ YCastSet
 	unsigned int	offset;
 #endif
 {
-	NhlLayer	l = (NhlLayer)base;
+	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
-	if(l->base.layer_class == NhlcoordArraysFloatLayerClass){
-		NhlCoordArraysFloatLayer	carrl = (NhlCoordArraysFloatLayer)l;
-
-		carrl->carrfloat.y_cast_set = False;
-		carrl->carrfloat.y_cast = 2;
-	}
-	else if(l->base.layer_class == NhlcoordArraysIntLayerClass){
-		NhlCoordArraysIntLayer	carrl = (NhlCoordArraysIntLayer)l;
-
-		carrl->carrint.y_cast_set = False;
-		carrl->carrint.y_cast = 2;
-	}
-	else
-		return NhlFATAL;
+	carrl->carr.y_cast_set = False;
+	carrl->carr.y_cast = 2;
 
 	return NhlNOERROR;
 }
 
-#define	Oset(field)	NhlOffset(NhlCoordArraysFloatLayerRec,carrfloat.field)
-static NhlResource fltresources[] = {
-	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
-		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
-		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
-	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMaxF,NhlCcaXMaxF,NhlTFloat,sizeof(float),
-		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMaxF,NhlCcaYMaxF,NhlTFloat,sizeof(float),
-		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMinF,NhlCcaXMinF,NhlTFloat,sizeof(float),
-		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMinF,NhlCcaYMinF,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet,0,NULL}
-};
-#undef Oset
-
-#define	Oset(field)	NhlOffset(NhlCoordArraysIntLayerRec,carrint.field)
-static NhlResource intresources[] = {
-	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
-		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
-		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
-	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMax,NhlCcaXMax,NhlTFloat,sizeof(float),
-		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMax,NhlCcaYMax,NhlTFloat,sizeof(float),
-		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXMin,NhlCcaXMin,NhlTFloat,sizeof(float),
-		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet,0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaYMin,NhlCcaYMin,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet,0,NULL}
-};
-#undef Oset
-
 #define	Oset(field)	NhlOffset(NhlCoordArraysLayerRec,carr.field)
 static NhlResource resources[] = {
-	{NhlNdiType,NhlCdiType,NhlTString,sizeof(NhlString),
-		Oset(type_string),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFree}
+	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
+	{"no.res","No.Res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+	{"no.res","No.Res",NhlTBoolean,sizeof(int),
+		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
+		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
+	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
+		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
+	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
+	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{NhlNcaYMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{NhlNcaXMaxV,NhlCcaXMaxV,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{NhlNcaYMaxV,NhlCcaYMaxV,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{NhlNcaXMinV,NhlCcaXMinV,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{NhlNcaYMinV,NhlCcaYMinV,NhlTGenArray,sizeof(NhlGenArray),
+		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL}
 };
 #undef Oset
 
 /* base methods */
 
-static NhlErrorTypes CoordArraysClassPartInitialize(
-#if	NhlNeedProto
-	NhlLayerClass	lc	/* lc to init	*/
-#endif
-);
-
 static NhlErrorTypes CoordArraysClassInitialize(
 #if	NhlNeedProto
 	void
-#endif
-);
-
-static NhlErrorTypes CoordArraysFloatInitialize(
-#if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-#endif
-);
-
-static NhlErrorTypes CoordArraysIntInitialize(
-#if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
 #endif
 );
 
@@ -499,21 +146,9 @@ static NhlErrorTypes CoordArraysSetValues(
 #endif
 );
 
-static NhlErrorTypes CoordArraysFloatSetValues(
+static NhlErrorTypes CoordArraysGetValues(
 #if	NhlNeedProto
-	NhlLayer	old,		/* old		*/
-	NhlLayer	req,		/* requested	*/
-	NhlLayer	new,		/* new		*/
-	_NhlArgList	args,		/* args to set	*/
-	int		nargs		/* nargs	*/
-#endif
-);
-
-static NhlErrorTypes CoordArraysIntSetValues(
-#if	NhlNeedProto
-	NhlLayer	old,		/* old		*/
-	NhlLayer	req,		/* requested	*/
-	NhlLayer	new,		/* new		*/
+	NhlLayer	l,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -524,74 +159,6 @@ static NhlErrorTypes CoordArraysDestroy(
 	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
-
-static NhlErrorTypes CoordArraysFloatDestroy(
-#if	NhlNeedProto
-	NhlLayer	l	/* layer to destroy	*/
-#endif
-);
-
-static NhlErrorTypes CoordArraysIntDestroy(
-#if	NhlNeedProto
-	NhlLayer	l	/* layer to destroy	*/
-#endif
-);
-
-NhlCoordArraysFloatLayerClassRec NhlcoordArraysFloatLayerClassRec = {
-	/* NhlBaseLayerClassPart */
-	{
-/* class_name			*/	"CoordArraysFloat",
-/* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlCoordArraysFloatLayerRec),
-/* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
-
-/* resources			*/	fltresources,
-/* num_resources		*/	NhlNumber(fltresources),
-/* all_resources		*/	NULL,
-
-/* class_part_initialize	*/	NULL,
-/* class_initialize		*/	NULL,
-/* layer_initialize		*/	CoordArraysFloatInitialize,
-/* layer_set_values		*/	CoordArraysFloatSetValues,
-/* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
-/* layer_reparent		*/	NULL,
-/* layer_destroy		*/	CoordArraysFloatDestroy
-	},
-	/* NhlCoordArraysFloatLayerPart */
-	{
-/* foo				*/	0
-	}
-};
-
-NhlCoordArraysIntLayerClassRec NhlcoordArraysIntLayerClassRec = {
-	/* NhlBaseLayerClassPart */
-	{
-/* class_name			*/	"CoordArraysInt",
-/* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlCoordArraysIntLayerRec),
-/* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
-
-/* resources			*/	intresources,
-/* num_resources		*/	NhlNumber(intresources),
-/* all_resources		*/	NULL,
-
-/* class_part_initialize	*/	NULL,
-/* class_initialize		*/	NULL,
-/* layer_initialize		*/	CoordArraysIntInitialize,
-/* layer_set_values		*/	CoordArraysIntSetValues,
-/* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
-/* layer_reparent		*/	NULL,
-/* layer_destroy		*/	CoordArraysIntDestroy
-	},
-	/* NhlCoordArraysIntLayerPart */
-	{
-/* foo				*/	0
-	}
-};
 
 NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
 	/* NhlBaseLayerClassPart */
@@ -606,12 +173,12 @@ NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	CoordArraysClassPartInitialize,
+/* class_part_initialize	*/	NULL,
 /* class_initialize		*/	CoordArraysClassInitialize,
 /* layer_initialize		*/	CoordArraysInitialize,
 /* layer_set_values		*/	CoordArraysSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	CoordArraysGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	CoordArraysDestroy,
 
@@ -636,10 +203,6 @@ NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
 	
 NhlLayerClass NhlcoordArraysLayerClass = (NhlLayerClass)
 					&NhlcoordArraysLayerClassRec;
-NhlLayerClass NhlcoordArraysFloatLayerClass = (NhlLayerClass)
-					&NhlcoordArraysFloatLayerClassRec;
-NhlLayerClass NhlcoordArraysIntLayerClass = (NhlLayerClass)
-					&NhlcoordArraysIntLayerClassRec;
 
 /*
  * Function:	nhlfcoordarraysclass
@@ -925,6 +488,7 @@ CreateTableInt
 	return;
 }
 
+
 /*
  * Function:	CvtCArraysObjToFloatObj
  *
@@ -957,8 +521,9 @@ CvtCArraysObjToFloatObj
 	int			num_args;
 #endif
 {
-	char			*error_lead="CvtCArraysObjToFloatObj";
 	NhlErrorTypes		ret = NhlNOERROR;
+#ifdef	NOTYET
+	char			*error_lead="CvtCArraysObjToFloatObj";
 	NhlCoordArraysLayer	carrl = NULL;
 	NhlSArg			sargs[30];
 	int			nargs=0;
@@ -1076,6 +641,7 @@ CvtCArraysObjToFloatObj
 	NhlFreeGenArray(ytbl);
 	NhlFreeGenArray(ytbl_lens);
 
+#endif	/* NOTYET */
 	return ret;
 }
 
@@ -1121,41 +687,6 @@ CoordArraysClassInitialize
 			CvtCArraysObjToFloatObj,NULL,0,False,NULL);
 
 	return ret;
-}
-
-/*
- * Function:	CoordArraysClassPartInitialize
- *
- * Description:	This function is used to init the carr_class part of the layer
- *		class record of this class and of all sub-classes.
- *
- * In Args:	
- *		NhlLayerClass	lc	pointer to class structure
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-CoordArraysClassPartInitialize
-#if	__STDC__
-(
-	NhlLayerClass	lc	/* pointer to class structure	*/
-)
-#else
-(lc)
-	NhlLayerClass	lc;	/* pointer to class structure	*/
-#endif
-{
-	NhlErrorTypes		ret, lret;
-
-	ret = _NhlRegisterChildClass(lc,NhlcoordArraysFloatLayerClass,True,
-								False,NULL);
-	lret = _NhlRegisterChildClass(lc,NhlcoordArraysIntLayerClass,True,
-								False,NULL);
-	return MIN(lret,ret);
 }
 
 #define	COPY_ARRAY(type,dim)\
@@ -1342,86 +873,6 @@ max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
 }
 
 /*
- * Function:	CoordArraysFloatInitialize
- *
- * Description:	This function initializes an instance of a CoordArraysFloat
- *		class object.
- *
- * In Args:	
- *	NhlLayerClass	lc,	class
- *	NhlLayer		req,	requested
- *	NhlLayer		new,	new
- *	_NhlArgList	args,	args
- *	int		nargs	nargs
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CoordArraysFloatInitialize
-#if	__STDC__
-(
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-)
-#else
-(lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
-	NhlLayer	req;	/* requested	*/
-	NhlLayer	new;	/* new		*/
-	_NhlArgList	args;	/* args		*/
-	int		nargs;	/* nargs	*/
-#endif
-INIT_FUNC(CoordArraysFloat,float)
-
-/*
- * Function:	CoordArraysIntInitialize
- *
- * Description:	This function initializes an instance of a CoordArraysInt
- *		class object.
- *
- * In Args:	
- *	NhlLayerClass	lc,	class
- *	NhlLayer		req,	requested
- *	NhlLayer		new,	new
- *	_NhlArgList	args,	args
- *	int		nargs	nargs
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CoordArraysIntInitialize
-#if	__STDC__
-(
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-)
-#else
-(lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
-	NhlLayer	req;	/* requested	*/
-	NhlLayer	new;	/* new		*/
-	_NhlArgList	args;	/* args		*/
-	int		nargs;	/* nargs	*/
-#endif
-INIT_FUNC(CoordArraysInt,int)
-
-/*
  * Function:	CoordArraysInitialize
  *
  * Description:	This function initializes an instance of a CoordArrays
@@ -1460,17 +911,15 @@ CoordArraysInitialize
 	int		nargs;	/* nargs	*/
 #endif
 {
-	char			*error_lead = "CoordArraysInitialize";
+	char			*func = "CoordArraysInitialize";
 	NhlCoordArraysLayer	ncarr = (NhlCoordArraysLayer)new;
-	NhlLayerClass		child_class=NULL;
-	int			tchild;
-	char			name[_NhlMAXRESNAMLEN];
-	NhlErrorTypes		ret;
+	NhlErrorTypes		ret=NhlNOERROR;
 
+#ifdef	NOTYET
 	if(ncarr->carr.type_string == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s:The %s resource must be specified to create a %s object",
-				error_lead,NhlNdiType,_NhlClassName(lc));
+				error_lead,"no.type",_NhlClassName(lc));
 
 		return NhlFATAL;
 	}
@@ -1498,6 +947,7 @@ CoordArraysInitialize
 
 	ncarr->carr.child = _NhlGetLayer(tchild);
 
+#endif
 	return ret;
 }
 
@@ -1538,14 +988,6 @@ CoordArraysSetValues
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlCoordArraysLayer	ncarr = (NhlCoordArraysLayer)new;
 	NhlCoordArraysLayer	ocarr = (NhlCoordArraysLayer)old;
-
-	if(ncarr->carr.type_string != ocarr->carr.type_string){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:%s is setable only at create time - ignoring!",
-							error_lead,NhlNdiType);
-		ncarr->carr.type_string = ocarr->carr.type_string;
-		ret = NhlWARNING;
-	}
 
 	return	ret;
 }
@@ -1667,7 +1109,7 @@ CoordArraysSetValues
 }
 
 /*
- * Function:	CoordArraysFloatSetValues
+ * Function:	CoordArraysGetValues
  *
  * Description:	...
  *
@@ -1681,58 +1123,24 @@ CoordArraysSetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-CoordArraysFloatSetValues
+CoordArraysGetValues
 #if	__STDC__
 (
-	NhlLayer	old,		/* old		*/
-	NhlLayer	req,		/* requested	*/
-	NhlLayer	new,		/* new		*/
+	NhlLayer	l,		/* l		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
-(old,req,new,args,nargs)
-	NhlLayer	old;		/* old		*/
-	NhlLayer	req;		/* requested	*/
-	NhlLayer	new;		/* new		*/
+(l,args,nargs)
+	NhlLayer	l;		/* l		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
-SETVAL_FUNC(CoordArraysFloat,float)
+{
+	char			*error_lead = "CoordArraysGetValues";
 
-/*
- * Function:	CoordArraysIntSetValues
- *
- * Description:	...
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CoordArraysIntSetValues
-#if	__STDC__
-(
-	NhlLayer	old,		/* old		*/
-	NhlLayer	req,		/* requested	*/
-	NhlLayer	new,		/* new		*/
-	_NhlArgList	args,		/* args to set	*/
-	int		nargs		/* nargs	*/
-)
-#else
-(old,req,new,args,nargs)
-	NhlLayer	old;		/* old		*/
-	NhlLayer	req;		/* requested	*/
-	NhlLayer	new;		/* new		*/
-	_NhlArgList	args;		/* args to set	*/
-	int		nargs;		/* nargs	*/
-#endif
-SETVAL_FUNC(CoordArraysInt,int)
+	return NhlNOERROR;
+}
 
 /*
  * Function:	CoordArraysDestroy
@@ -1761,13 +1169,6 @@ CoordArraysDestroy
 {
 	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)l;
 
-	/*
-	 * Don't free type_string - it points into Quarks.c's data
-	 */
-
-	if(carrl->carr.child != NULL)
-		return _NhlDestroyChild(carrl->carr.child->base.id,l);
-
 	return NhlNOERROR;
 }
 
@@ -1780,58 +1181,6 @@ CoordArraysDestroy
 									\
 	return NhlNOERROR;						\
 }		
-
-/*
- * Function:	CoordArraysFloatDestroy
- *
- * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlCoordArraysFloatLayerClass.
- *
- * In Args:	NhlLayer	l
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-CoordArraysFloatDestroy
-#if	__STDC__
-(
-	NhlLayer	l	/* layer to destroy	*/
-)
-#else
-(l)
-	NhlLayer	l;	/* layer to destroy	*/
-#endif
-DESTROY_FUNC(CoordArraysFloat,float)
-
-/*
- * Function:	CoordArraysIntDestroy
- *
- * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlCoordArraysIntLayerClass.
- *
- * In Args:	NhlLayer	l
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-CoordArraysIntDestroy
-#if	__STDC__
-(
-	NhlLayer	l	/* layer to destroy	*/
-)
-#else
-(l)
-	NhlLayer	l;	/* layer to destroy	*/
-#endif
-DESTROY_FUNC(CoordArraysInt,int)
 
 #undef	DESTROY_FUNC
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.7 1994-05-27 20:21:07 ethan Exp $
+ *      $Id: Convert.c,v 1.8 1994-07-12 20:51:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,8 +34,31 @@
 #define _NhlHASHFUNC(a,b)	((((a)*_NhlHASHMULT)+(b)) & _NhlHASHMASK)
 
 static NhlConvertPtr HashTable[_NhlHASHSIZE] = { NULL};
-
 static	_NhlCtxtStack	 ctxt_stack = NULL;
+
+/*
+ * Type hierarchy dec's
+ */
+
+#define	_NhlTYPEHASH(a)	(a & _NhlHASHMASK)
+
+typedef struct _NhlTrec_ _NhlTrec, *_NhlTptr;
+typedef struct _NhlTsubrec_ _NhlTsubrec, *_NhlTsubptr;
+
+struct _NhlTsubrec_ {
+	int		num;
+	_NhlTptr	sub[NHLCONVALLOCLISTLEN];
+	_NhlTsubptr	more;
+};
+
+struct _NhlTrec_ {
+	NrmQuark	typeQ;
+	_NhlTptr	super;
+	_NhlTsubrec	sub;
+	_NhlTptr	next;
+};
+
+static _NhlTptr TypeHashTable[_NhlHASHSIZE] = {NULL};
 
 /*
  * Function:	_NhlCreateConvertContext
@@ -115,6 +138,380 @@ _NhlFreeConvertContext
 	(void)NhlFree(context);
 
 	return;
+}
+
+static _NhlTptr
+GetTypeNode
+#if	NhlNeedProto
+(
+	NrmQuark	typeQ
+)
+#else
+(typeQ)
+	NrmQuark	typeQ;
+#endif
+{
+	_NhlTptr	ptr = TypeHashTable[_NhlTYPEHASH(typeQ)];
+	_NhlTrec	init = {0};
+
+	if(typeQ == NrmNULLQUARK)
+		return NULL;
+
+	while(ptr != NULL){
+		if(ptr->typeQ == typeQ)
+			break;
+		ptr = ptr->next;
+	}
+
+	/*
+	 * If the type isn't currently in the table, add it.
+	 */
+	if(ptr == NULL){
+		ptr = (_NhlTptr)NhlMalloc(sizeof(_NhlTrec));
+		if(ptr == NULL) return NULL;
+		*ptr = init;
+		ptr->typeQ = typeQ;
+		ptr->next = TypeHashTable[_NhlTYPEHASH(typeQ)];
+		TypeHashTable[_NhlTYPEHASH(typeQ)] = ptr;
+	}
+
+	return ptr;
+}
+
+static void
+ReleaseSubFromSuper
+#if	NhlNeedProto
+(
+	_NhlTptr	sub
+)
+#else
+(sub)
+	_NhlTptr	sub;
+#endif
+{
+	_NhlTsubptr	ptr;
+
+	if(sub->super == NULL)
+		return;
+
+	ptr = &sub->super->sub;
+
+	while(ptr != NULL){
+		int		i;
+		NhlBoolean	found = False;
+
+		for(i=0;i < ptr->num;i++){
+			if(ptr->sub[i] == sub){
+				ptr->sub[i] = ptr->sub[--ptr->num];
+				found = True;
+				break;
+			}
+		}
+
+		if(found)
+			break;
+
+		ptr = ptr->more;
+	}
+
+	sub->super = NULL;
+
+	return;
+}
+
+static NhlErrorTypes
+AddSubToSuper
+#if	NhlNeedProto
+(
+	_NhlTptr	sub,
+	_NhlTptr	super
+)
+#else
+(sub,super)
+	_NhlTptr	sub;
+	_NhlTptr	super;
+#endif
+{
+	_NhlTptr	tptr = super;
+	_NhlTsubptr	ptr;
+	_NhlTsubrec	init = {0};
+
+	/*
+	 * Insure we are not creating an infinite loop - (registering a type
+	 * as a subtype of itself).
+	 */
+	while(tptr != NULL){
+		if(sub == tptr){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Trying to register %s as a sub-type of itself",
+						NrmQuarkToString(sub->typeQ));
+			return NhlFATAL;
+		}
+		tptr = tptr->super;
+	}
+
+	sub->super = super;
+	ptr = &sub->super->sub;
+
+	while(ptr->num >= NHLCONVALLOCLISTLEN){
+		if(ptr->more == NULL){
+			ptr->more = (_NhlTsubptr)NhlMalloc(sizeof(_NhlTsubrec));
+			if(ptr->more == NULL)
+				return NhlFATAL;
+			*(ptr->more) = init;
+		}
+		ptr = ptr->more;
+	}
+
+	ptr->sub[ptr->num++] = sub;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlRegisterTypeQ
+ *
+ * Description:	this function is used to tell the converter mech. which
+ *		types are specializations of other types.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegisterTypeQ
+#if	NhlNeedProto
+(
+	NrmQuark	supertypeQ,
+	NrmQuark	typeQ
+)
+#else
+(supertypeQ,typeQ)
+	NrmQuark	supertypeQ;
+	NrmQuark	typeQ;
+#endif
+{
+	_NhlTptr	sub,super;
+
+	if(typeQ == NrmNULLQUARK)
+		return NhlFATAL;
+
+	sub = GetTypeNode(typeQ);
+	if(sub == NULL)
+		return NhlFATAL;
+
+	/*
+	 * do nothing... - already registered this way.
+	 */
+	if((sub->super != NULL) && (sub->super->typeQ == supertypeQ))
+		return NhlNOERROR;
+
+	ReleaseSubFromSuper(sub);
+
+	if(supertypeQ == NrmNULLQUARK)
+		return NhlNOERROR;
+
+	super = GetTypeNode(supertypeQ);
+	if(super == NULL)
+		return NhlFATAL;
+
+	return AddSubToSuper(sub,super);
+}
+
+/*
+ * Function:	_NhlRegisterType
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegisterType
+#if	NhlNeedProto
+(
+	NhlString	supertype,
+	NhlString	type
+)
+#else
+(supertype,type)
+	NhlString	supertype;
+	NhlString	type;
+#endif
+{
+	return _NhlRegisterTypeQ(NrmStringToQuark(supertype),
+							NrmStringToQuark(type));
+}
+
+/*
+ * Function:	_NhlRegisterTypesQ
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegisterTypesQ
+#if     NhlNeedVarArgProto
+( 
+	NrmQuark	superQ,
+	...		/* subtypeQs - NrmNULLQUARK terminated */
+)
+#else
+(supertype,va_alist)
+	NrmQuark	superQ;
+	va_dcl		/* subtypes - NULL terminated */
+#endif 
+{
+	va_list		ap;
+	char		func[] = "_NhlRegisterTypesQ";
+	NrmQuark	nameQ;
+
+	VA_START(ap,superQ);
+	for(nameQ = va_arg(ap,NrmQuark); nameQ != NrmNULLQUARK;
+						nameQ = va_arg(ap,NrmQuark)){
+		if(_NhlRegisterTypeQ(superQ,nameQ) != NhlNOERROR){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:Registering of types Failed",func));
+			return NhlFATAL;
+		}
+	}
+	va_end(ap);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlRegisterTypes
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegisterTypes
+#if     NhlNeedVarArgProto
+( 
+	NhlString	supertype,
+	...		/* subtypes - NULL terminated */
+)
+#else
+(supertype,va_alist)
+	NhlString	supertype;
+	va_dcl		/* subtypes - NULL terminated */
+#endif 
+{
+	va_list		ap;
+	char		func[] = "_NhlRegisterTypes";
+	NhlString	name;
+	NrmQuark	superQ = NrmStringToQuark(supertype);
+
+	VA_START(ap,supertype);
+	for(name = va_arg(ap,NhlString); name != NULL;
+						name = va_arg(ap,NhlString)){
+		if(_NhlRegisterTypeQ(superQ,NrmStringToQuark(name)) !=
+								NhlNOERROR){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:Registering of types Failed",func));
+			return NhlFATAL;
+		}
+	}
+	va_end(ap);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlIsSubtypeQ
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsSubtypeQ
+#if	NhlNeedProto
+(
+	NrmQuark	superQ,
+	NrmQuark	subQ
+)
+#else
+(superQ,subQ)
+	NrmQuark	superQ;
+	NrmQuark	subQ;
+#endif
+{
+	_NhlTptr	sub,super;
+
+	if((superQ == NrmNULLQUARK) || (subQ == NrmNULLQUARK))
+		return False;
+
+	super = GetTypeNode(superQ);
+	sub = GetTypeNode(subQ);
+
+	if((sub == super) || (sub->super == super))
+		return True;
+
+	if(sub->super == NULL)
+		return False;
+
+	return _NhlIsSubtypeQ(superQ,sub->super->typeQ);
+}
+
+/*
+ * Function:	_NhlIsSubtype
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsSubtype
+#if	NhlNeedProto
+(
+	NhlString	super,
+	NhlString	sub
+)
+#else
+(super,sub)
+	NhlString	super;
+	NhlString	sub;
+#endif
+{
+	return _NhlIsSubtypeQ(NrmStringToQuark(super),NrmStringToQuark(sub));
 }
 
 /*
@@ -353,8 +750,43 @@ FreeConverter
  * Returns:	
  * Side Effect:	
  */
-static NhlErrorTypes
+NhlErrorTypes
 _NhlRegSymConv
+#if	NhlNeedProto
+(
+	NhlString	fromSym,
+	NhlString	toSym,
+	NhlString	from,
+	NhlString	to
+)
+#else
+(fromSym,toSym,from,to)
+	NhlString	fromSym;
+	NhlString	toSym;
+	NhlString	from;
+	NhlString	to;
+#endif
+{
+	return _NhlRegSymConvQ(
+			NrmStringToQuark(fromSym),NrmStringToQuark(toSym),
+				NrmStringToQuark(from),NrmStringToQuark(to));
+}
+
+/*
+ * Function:	_NhlRegSymConvQ
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlRegSymConvQ
 #if	NhlNeedProto
 (
 	NrmQuark	fromSym,
@@ -386,20 +818,14 @@ _NhlRegSymConv
 
 	if(tmp != NULL){
 
-		if(tmp->record_type == _NhlRealConverter){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		if(tmp->record_type != _NhlReferenceConverter){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Real Cvter exists for %s to %s",fname,
 						NrmQuarkToString(fromSym),
 						NrmQuarkToString(toSym));
-			return NhlWARNING;
+			return NhlFATAL;
 		}
-		else if(tmp->record_type == _NhlReferenceConverter)
-			(void)_NhlDeleteConverter(fromSym,toSym);
-		else{
-			NhlPError(NhlWARNING,ENOSYS,NULL);
-			return NhlWARNING;
-		}
-
+		(void)_NhlDeleteConverter(fromSym,toSym);
 	}
 
 	cvtrec = (NhlConvertPtr)NhlMalloc(sizeof(NhlConvertRec));
@@ -417,6 +843,7 @@ _NhlRegSymConv
 	cvtrec->totype = toSym;
 	cvtrec->converter = SymConverter;
 	cvtrec->cacheit = False;
+	cvtrec->cache = (CachePtr)NULL;
 	cvtrec->closure = (NhlCacheClosure)NULL;
 
 	cvtargs[0].data.intval = from;
@@ -462,6 +889,7 @@ _NhlRegisterConverter
 ( 
 	NrmQuark		from,		/* from type		*/
 	NrmQuark		to,		/* to type		*/
+	_NhlCvtRecType		rec_type,	/* type	of converter	*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
 	NhlConvertArgList	args,		/* conversion args	*/ 
 	int			nargs,		/* number of args	*/ 
@@ -469,9 +897,10 @@ _NhlRegisterConverter
 	NhlCacheClosure		close		/* for freeing cache data*/ 
 )
 #else
-(from,to,convert,args,nargs,cache,close)
+(from,to,rec_type,convert,args,nargs,cache,close)
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
+	_NhlCvtRecType		rec_type;	/* symname type		*/
 	NhlTypeConverter	convert;	/* the converter function*/ 
 	NhlConvertArgList	args;		/* conversion args	*/ 
 	int			nargs;		/* number of args	*/ 
@@ -492,11 +921,12 @@ _NhlRegisterConverter
 	}
 
 	cvtrec->next = NULL;
-	cvtrec->record_type = _NhlRealConverter;
+	cvtrec->record_type = rec_type;
 	cvtrec->fromtype = from;
 	cvtrec->totype = to;
 	cvtrec->converter = convert;
 	cvtrec->cacheit = cache;
+	cvtrec->cache = (CachePtr)NULL;
 	cvtrec->closure = (cache) ? close : (NhlCacheClosure)NULL;
 
 	cvtrec->nargs = nargs;
@@ -568,7 +998,7 @@ NhlRegisterConverter
 #endif 
 {
 	return(_NhlRegisterConverter(NrmStringToName(from),NrmStringToName(to),
-					convert, args, nargs, cache, close));
+		_NhlRegularConverter,convert, args, nargs, cache, close));
 }
 
 /*
@@ -601,11 +1031,11 @@ _NhlExtRegisterConverter
 	int			nargs,		/* number of args	*/ 
 	NhlBoolean		cache,		/* cache results???	*/
 	NhlCacheClosure		close,		/* free cached data	*/
-	_NhlCvtSymNames		sym_type,	/* symname type		*/
+	_NhlCvtRecType		rec_type,	/* symname type		*/
 	...
 )
 #else
-(from,to,convert,args,nargs,cache,close,sym_type,va_alist)
+(from,to,convert,args,nargs,cache,close,rec_type,va_alist)
 	NhlString		from;		/* from type		*/
 	NhlString		to;		/* to type		*/
 	NhlTypeConverter	convert;	/* the converter function*/ 
@@ -613,7 +1043,7 @@ _NhlExtRegisterConverter
 	int			nargs;		/* number of args	*/ 
 	NhlBoolean		cache;		/* cache results???	*/
 	NhlCacheClosure		close;		/* free cached data	*/
-	_NhlCvtSymNames		sym_type;	/* symname type		*/
+	_NhlCvtRecType		rec_type;	/* symname type		*/
 	va_dcl
 #endif 
 {
@@ -624,37 +1054,53 @@ _NhlExtRegisterConverter
 	NhlString	name;
 	char		func[] = "_NhlExtRegisterConverter";
 
-	ret = _NhlRegisterConverter(fromQ,toQ,convert,args,nargs,cache,close);
+	switch (rec_type){
 
-	if(ret != NhlNOERROR){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		case _NhlExclusiveConverter:
+			ret = _NhlRegisterConverter(fromQ,toQ,rec_type,convert,
+							args,nargs,cache,close);
+
+			break;
+
+		case _NhlSymFrom:
+		case _NhlSymTo:
+
+			ret = _NhlRegisterConverter(fromQ,toQ,
+					_NhlRegularConverter,convert,args,nargs,
+								cache,close);
+
+			if(ret != NhlNOERROR){
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 		"%s:Error installing base converter:SymNames not done",func));
-		return ret;
-	}
-
-	if(sym_type != _NhlSYM_NONE){
-		VA_START(ap,sym_type);
-		for(name = va_arg(ap,NhlString); name != NULL;
-						name = va_arg(ap,NhlString)){
-			if(sym_type == _NhlSYM_FROM)
-				lret = _NhlRegSymConv(NrmStringToQuark(name),
-								toQ,fromQ,toQ);
-			else if(sym_type == _NhlSYM_TO)
-				lret = _NhlRegSymConv(fromQ,
-					NrmStringToQuark(name),fromQ,toQ);
-			else
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-						"%s:Not Implimented",func);
-
-			if(lret < NhlWARNING){
-				NhlPError(lret,NhlEUNKNOWN,
-					"%s:Unable to register SymNames",func);
-				return lret;
+				return ret;
 			}
 
-			ret = MIN(ret,lret);
-		}
-		va_end(ap);
+			VA_START(ap,rec_type);
+			for(name = va_arg(ap,NhlString); name != NULL;
+						name = va_arg(ap,NhlString)){
+				if(rec_type == _NhlSymFrom)
+					lret = _NhlRegSymConvQ(
+					NrmStringToQuark(name),toQ,fromQ,toQ);
+				else
+					lret = _NhlRegSymConvQ(fromQ,
+					NrmStringToQuark(name),fromQ,toQ);
+
+				if(lret < NhlWARNING){
+					NhlPError(lret,NhlEUNKNOWN,
+					"%s:Unable to register SymNames",func);
+					return lret;
+				}
+
+				ret = MIN(ret,lret);
+			}
+			va_end(ap);
+			break;
+
+		default:
+			NhlPError(NhlFATAL,ENOSYS,
+					"%s:Unsupported Converter type \"%d\"",
+								func);
+			ret = NhlFATAL;
 	}
 
 	return ret;
@@ -679,7 +1125,7 @@ _NhlExtRegisterConverter
  */
 NhlErrorTypes
 _NhlDeleteConverter
-#if     NhlNeedProto
+#if	NhlNeedProto
 ( 
 	NrmQuark		fromQ,		/* from type	*/
 	NrmQuark		toQ		/* to type	*/
@@ -726,7 +1172,7 @@ _NhlDeleteConverter
  */
 NhlErrorTypes
 NhlDeleteConverter
-#if     NhlNeedProto
+#if	NhlNeedProto
 ( 
 	NhlString		from,		/* from type	*/
 	NhlString		to		/* to type	*/
@@ -893,6 +1339,154 @@ NhlReRegisterConverter
 	return(NhlNOERROR);
 }
 
+static NhlConvertPtr
+GetCvtHash
+#if	NhlNeedProto
+(
+	NrmQuark	from,
+	NrmQuark	to
+)
+#else
+(from,to)
+	NrmQuark	from;
+	NrmQuark	to;
+#endif
+{
+	NhlConvertPtr	ptr;
+
+	while(1){
+		ptr = HashTable[_NhlHASHFUNC(from,to)];
+
+		while((ptr != NULL) &&
+			    ((ptr->fromtype != from) || (ptr->totype != to)))
+			ptr = ptr->next;
+
+		if((ptr == NULL)||(ptr->record_type != _NhlReferenceConverter))
+			return ptr;
+
+		/*
+		 * ptr is actually pointing to a "ref" converter -
+		 * need to get the actual one.
+		 */
+		from = ptr->args[0].data.intval;
+		to = ptr->args[1].data.intval;
+	}
+}
+
+static NhlConvertPtr
+RecurseFrom
+#if	NhlNeedProto
+(
+	_NhlTptr	fptr,
+	_NhlTptr	tptr,
+	NrmQuark	from,
+	NrmQuark	to
+)
+#else
+(fptr,tptr,from,to)
+	_NhlTptr	fptr;
+	_NhlTptr	tptr;
+	NrmQuark	from;
+	NrmQuark	to;
+#endif
+{
+	NhlConvertPtr	ptr;
+
+	/*
+	 * terminate recursion at top of from tree.
+	 */
+	if(fptr == NULL)
+		return NULL;
+	
+	ptr = GetCvtHash(fptr->typeQ,tptr->typeQ);
+
+	/*
+	 * if we havn't found it yet, keep going up from tree.
+	 */
+	if((ptr == NULL) ||
+		((ptr->record_type == _NhlExclusiveConverter) &&
+			((ptr->fromtype != from) || (ptr->totype != to))))
+		return RecurseFrom(fptr->super,tptr,from,to);
+
+	return ptr;
+}
+
+static NhlConvertPtr
+RecurseGetCvtPtr
+#if	NhlNeedProto
+(
+	_NhlTptr	fptr,
+	_NhlTptr	tptr,
+	NrmQuark	from,
+	NrmQuark	to
+)
+#else
+(fptr,tptr,from,to)
+	_NhlTptr	fptr,
+	_NhlTptr	tptr,
+	NrmQuark	from;
+	NrmQuark	to;
+#endif
+{
+	NhlConvertPtr	ptr;
+	_NhlTsubptr	sub;
+	int		i;
+	
+	/*
+	 * Terminate Recursion down this branch.
+	 */
+	if((fptr == NULL) || (tptr == NULL))
+		return NULL;
+		
+	/*
+	 * Traverse up the "from super-type" tree first since it is
+	 * probably shorter.
+	 */
+	ptr = RecurseFrom(fptr,tptr,from,to);
+
+	if(ptr != NULL)
+		return ptr;
+
+	/*
+	 * Traverse down the "to sub-type" tree if didn't find a converter up
+	 * the "from super-type" tree.
+	 */
+	sub = &tptr->sub;
+
+	while(sub != NULL){
+		for(i=0;i<sub->num;i++){
+			ptr = RecurseGetCvtPtr(fptr,sub->sub[i],from,to);
+			if(ptr != NULL)
+				return ptr;
+		}
+		sub = sub->more;
+	}
+
+	/*
+	 * Didn't find anything down this sub-tree
+	 */
+	return NULL;
+}
+
+static NhlConvertPtr
+GetCvtPtr
+#if	NhlNeedProto
+(
+	NrmQuark	from,
+	NrmQuark	to
+)
+#else
+(from,to)
+	NrmQuark	from;
+	NrmQuark	to;
+#endif
+{
+	_NhlTptr	fptr = GetTypeNode(from);
+	_NhlTptr	tptr = GetTypeNode(to);
+
+	return RecurseGetCvtPtr(fptr,tptr,from,to);
+}
+
 /*
  * Function:	ConverterExists
  *
@@ -921,23 +1515,11 @@ ConverterExists
 	NrmQuark		to;		/* to type		*/
 #endif 
 {
-	NhlConvertPtr	ptr = NULL;
+	NhlConvertPtr	ptr = GetCvtPtr(from,to);
 
-	ptr = HashTable[_NhlHASHFUNC(from,to)];
-
-	while((ptr != NULL) &&
-		((ptr->fromtype != from) || (ptr->totype != to)))
-		ptr = ptr->next;
-
-	if(ptr == NULL)
+	if((ptr == NULL) || (ptr->fromtype != from) || (ptr->totype != to))
 		return False;
-	else{
-		if(ptr->record_type == _NhlReferenceConverter)
-			return ConverterExists(ptr->args[0].data.intval,
-						ptr->args[1].data.intval);
-		else
-			return True;
-	}
+	return True;
 }
 
 /*
@@ -969,37 +1551,6 @@ _NhlConverterExists
 #endif 
 {
 	return ConverterExists(from,to);
-}
-
-/*
- * Function:	NhlConverterExists
- *
- * Description:	This function returns a boolean value indicating the existance
- *		of a converter of the requested type.
- *
- * In Args:	NhlString	from		from type
- *		NhlString	to		to type
- *
- * Out Args:	
- *
- * Scope:	Global Public
- * Returns:	True if Converter is present False otherwise
- * Side Effect:	
- */
-NhlBoolean
-NhlConverterExists
-#if     NhlNeedProto
-( 
-	NhlString	from,		/* from type		*/
-	NhlString	to		/* to type		*/
-)
-#else
-(from,to)
-	NhlString	from;		/* from type		*/
-	NhlString	to;		/* to type		*/
-#endif 
-{
-	return ConverterExists(NrmStringToName(from),NrmStringToName(to));
 }
 
 /*
@@ -1249,7 +1800,6 @@ ConvertData
 	CachePtr		cache=NULL;
 	_NhlCtxtStackRec	ctxt;
 	NhlErrorTypes		ret=NhlNOERROR;
-	NhlBoolean		cvtr_found = False;
 	NrmQuark		from,to;
 
 	if(context == NULL){
@@ -1265,26 +1815,12 @@ ConvertData
 	fromdata->typeQ = from = fromQ;
 	todata->typeQ = to = toQ;
 
-	while(!cvtr_found){
-		ptr = HashTable[_NhlHASHFUNC(from,to)];
+	ptr = GetCvtPtr(from,to);
 
-		while((ptr != NULL) &&
-			    ((ptr->fromtype != from) || (ptr->totype != to)))
-			ptr = ptr->next;
-
-		if(ptr == NULL){
+	if(ptr == NULL){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"No Converter for %s to %s",
 				NrmNameToString(from),NrmNameToString(to));
-			return(NhlFATAL);
-		}
-
-		if(ptr->record_type == _NhlReferenceConverter){
-			from = ptr->args[0].data.intval;
-			to = ptr->args[1].data.intval;
-		}
-		else
-			cvtr_found = True;
-			
+		return(NhlFATAL);
 	}
 
 	if(ptr->cacheit)
@@ -1545,4 +2081,61 @@ NhlConvertMalloc
 		context->alloc_list[context->num_alloced++] = ptr;
 
 	return ptr;
+}
+
+
+NhlGenArray
+_NhlConvertCreateGenArray
+#if	NhlNeedProto
+(
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
+)
+#else
+(data,type,size,num_dimensions,len_dimensions)
+	NhlPointer	data;		/* data array		*/
+	NhlString	type;		/* type of each element	*/
+	unsigned int	size;		/* size of each element	*/
+	int		num_dimensions;	/* number of dimensions	*/
+	int		*len_dimensions;/* number of dimensions	*/
+#endif
+{
+	return _NhlAllocCreateGenArray(data,type,size,num_dimensions,
+				len_dimensions,False,NhlConvertMalloc);
+}
+
+/*
+ * Function:	_NhlConvertCopyGenArray
+ *
+ * Description:	This function copies an NhlGenArray and allocates an
+ *		NhlGenArray. It copies the "data" part of the GenArray
+ *		if copy_data is true - otherwise the new GenArray just
+ *		references the same data pointer.
+ *
+ * In Args:	
+ *		NhlGenArray	gen		generic array pointer
+ *		NhlBoolean	copy_data	copy data?
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
+_NhlConvertCopyGenArray
+#if	NhlNeedProto
+(
+	NhlGenArray	gen		/* generic array pointer	*/
+)
+#else
+(gen)
+	NhlGenArray	gen;		/* generic array pointer	*/
+#endif
+{
+	return _NhlConvertCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
+		gen->size,gen->num_dimensions,gen->len_dimensions);
 }

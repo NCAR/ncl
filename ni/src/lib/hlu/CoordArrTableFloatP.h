@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableFloatP.h,v 1.4 1994-01-27 21:21:58 boote Exp $
+ *      $Id: CoordArrTableFloatP.h,v 1.5 1994-07-12 20:51:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,13 +33,10 @@ typedef struct _NhlCoordArrTableFloatLayerRec *NhlCoordArrTableFloatLayer;
 extern NhlLayerClass NhlcoordArrTableFloatLayerClass;
 
 typedef struct _NhlCoordArrTableFloatLayerPart{
-	/* User setable resource fields */
 	NhlGenArray	xtable;
 	NhlGenArray	ytable;
 	NhlGenArray	xtable_lens;
 	NhlGenArray	ytable_lens;
-
-	NhlBoolean	copy_tables;
 
 	float		missing_x;
 	float		missing_y;
@@ -48,20 +45,16 @@ typedef struct _NhlCoordArrTableFloatLayerPart{
 	float		min_x;
 	float		min_y;
 
-	/* Private Fields */
+	/*
+	 * Private Fields
+	 */
 	NhlBoolean	missing_x_set;
 	NhlBoolean	missing_y_set;
-	NhlBoolean	max_x_set;
-	NhlBoolean	max_y_set;
-	NhlBoolean	min_x_set;
-	NhlBoolean	min_y_set;
-	NhlBoolean	own_x;
-	NhlBoolean	own_y;
 } NhlCoordArrTableFloatLayerPart;
 
 typedef struct _NhlCoordArrTableFloatLayerRec{
 	NhlObjLayerPart			base;
-	NhlCoordArrTableFloatLayerPart	catfloat;
+	NhlCoordArrTableFloatLayerPart	flt;
 } NhlCoordArrTableFloatLayerRec;
 
 typedef struct _NhlCoordArrTableFloatLayerClassPart{
@@ -70,7 +63,7 @@ typedef struct _NhlCoordArrTableFloatLayerClassPart{
 
 typedef struct _NhlCoordArrTableFloatLayerClassRec{
 	NhlObjLayerClassPart			base_class;
-	NhlCoordArrTableFloatLayerClassPart	catfloat_class;
+	NhlCoordArrTableFloatLayerClassPart	flt_class;
 } NhlCoordArrTableFloatLayerClassRec;
 
 extern NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec;

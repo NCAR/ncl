@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.6 1994-05-12 23:52:12 boote Exp $
+ *      $Id: ResList.c,v 1.7 1994-07-12 20:52:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,10 +37,9 @@ static NrmQuark	expMDTypeQ;
 static NrmQuark	expQ;
 static NrmQuark	expTypeQ;
 static NrmQuark	charQ;
+static NrmQuark	byteQ;
 static NrmQuark	shortQ;
-static NrmQuark	boolQ;
 static NrmQuark	doubleQ;
-static NrmQuark	pointerQ;
 
 /*
  * Function:	GetHead
@@ -600,13 +599,13 @@ NhlRLSet
 	 * default type is "long"
 	 */
 	VA_START(ap,type);
-	if (typeQ == pointerQ)
-		value.ptrval = (NhlPointer)va_arg(ap,long);
+	if(typeQ == byteQ)
+		value.charval = (char)va_arg(ap,long);
 	else if(typeQ == charQ)
 		value.charval = (char)va_arg(ap,long);
 	else if(typeQ == shortQ)
 		value.shrtval = (short)va_arg(ap,long);
-	else if(typeQ == intQ)
+	else if(_NhlIsSubtypeQ(intQ,typeQ))	/* gets all enumerated types */
 		value.intval = (int)va_arg(ap,long);
 	else if(typeQ == floatQ)
 		value.fltval = (float)va_arg(ap,double);
@@ -614,6 +613,8 @@ NhlRLSet
 		value.strval = (NhlString)va_arg(ap,long);
 	else if(typeQ == doubleQ)
 		value.dblval = va_arg(ap,double);
+	else if(_NhlIsSubtypeQ(genQ,typeQ))	/* gets all GenArray types */
+		value.ptrval = (NhlPointer)va_arg(ap,long);
 	else
 		value.lngval = va_arg(ap,long);
 	va_end(ap);
@@ -625,7 +626,7 @@ NhlRLSet
 }
 
 /*
- * Function:	NhlRLSetInt
+ * Function:	NhlRLSetInteger
  *
  * Description:	This function is used to set a resource with the value
  *		specified as the given type.
@@ -639,7 +640,7 @@ NhlRLSet
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLSetInt
+NhlRLSetInteger
 #if	NhlNeedProto
 (
 	int		id,
@@ -886,7 +887,7 @@ NhlRLSetArray
 }
 
 /*
- * Function:	NhlRLSetIntArray
+ * Function:	NhlRLSetIntegerArray
  *
  * Description:	This function is used to set an array resource with the value
  *		specified as the given type.
@@ -900,7 +901,7 @@ NhlRLSetArray
  * Side Effect:	
  */
 NhlErrorTypes
-NhlRLSetIntArray
+NhlRLSetIntegerArray
 #if	NhlNeedProto
 (
 	int		id,
@@ -1165,6 +1166,7 @@ CvtGenToExpMDArray
 	int			nargs;
 #endif
 {
+	char		func[] = "CvtGenToExpMDArray";
 	NhlGenArray	gen;
 	_NhlExpArray	exp;
 	NhlString	type;
@@ -1172,13 +1174,23 @@ CvtGenToExpMDArray
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"CvtGenToExpMDArray:Called w/improper number of args");
+			"%s:Called w/improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
 
 	gen = (NhlGenArray)from->data.ptrval;
 	exp = (_NhlExpArray)to->data.ptrval;
+
+	if(gen == NULL){
+		*exp->data = NULL;
+		*exp->len_dimensions = NULL;
+		*exp->num_dimensions = 0;
+		*exp->size = 0;
+		*exp->type = NULL;
+
+		return NhlNOERROR;
+	}
 
 	if(gen->len_dimensions == &gen->num_elements){
 		*exp->len_dimensions = NhlMalloc(sizeof(int));
@@ -1199,14 +1211,32 @@ CvtGenToExpMDArray
 	*exp->type = NhlMalloc(strlen(type) + 1);
 	strcpy(*exp->type,type);
 	*exp->size = gen->size;
-	*exp->data = gen->data;
 	if(!gen->my_data){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"CvtGenToExpMDArray:Returning Pointer to Internal Data - Bad Things!");
-		ret = NhlWARNING;
+		if(gen->num_elements == 1){
+			/*
+			 * Probably came from the Scalar To GenArray
+			 * converter...  Lets allocate some real memory.
+			 */
+			*exp->data = NhlMalloc(gen->size);
+			if(*exp->data == NULL){
+				NhlPError(NhlFATAL,ENOMEM,"%s",func);
+				return NhlFATAL;
+			}
+			memcpy(*exp->data,gen->data,gen->size);
+		}
+		else{
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Returning Pointer to Internal Data-Bad Things!",
+									func);
+			ret = NhlWARNING;
+			*exp->data = gen->data;
+		}
 	}
-	/* give ownership to exp */
-	gen->my_data = False;
+	else{
+		/* give ownership to exp */
+		gen->my_data = False;
+		*exp->data = gen->data;
+	}
 
 	return ret;
 }
@@ -1305,13 +1335,14 @@ CvtGenToExpTypeMDArray
 	int			nargs;
 #endif
 {
-	NhlGenArray	gen;
+	char		func[] = "CvtGenToExpTypeMDArray";
+	NhlGenArray	gen,convgen;
 	_NhlExpArray	exp;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"CvtGenToExpTypeMDArray:Called w/improper number of args");
+				"%s:Called w/improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1319,76 +1350,67 @@ CvtGenToExpTypeMDArray
 	gen = (NhlGenArray)from->data.ptrval;
 	exp = (_NhlExpArray)to->data.ptrval;
 
+	if(gen == NULL){
+		*exp->data = NULL;
+		*exp->len_dimensions = NULL;
+		*exp->num_dimensions = 0;
+		*exp->size = 0;
+
+		return NhlNOERROR;
+	}
+
 	/* get data if possible */
 	if(exp->type_req == gen->typeQ){
-		*exp->data = gen->data;
-		if(!gen->my_data){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-"CvtGenToExpTypeMDArray:Returning Pointer to Internal Data - Bad Things!");
-			ret = NhlWARNING;
-		}
-		/* give ownership to exp */
-		gen->my_data = False;
-	}
-	else if(_NhlConverterExists(gen->typeQ,exp->type_req)){
-		int		i;
-		NrmValue	fromval, toval;
-		char		*fromdata,*todata;
-
-		*exp->data = NhlMalloc(exp->size_req * gen->num_elements);
-		if(*exp->data == NULL){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			to->size =  0;
-			return NhlFATAL;
-		}
-
-		todata = *exp->data;
-		fromdata = gen->data;
-
-		for(i=0;i < gen->num_elements;i++){
-			_NhlCopyToVal((NhlPointer)(fromdata + (gen->size * i)),
-						&fromval.data,gen->size);
-			fromval.size = gen->size;
-			toval.data.ptrval = (NhlPointer)
-						(todata + (exp->size_req * i));
-			toval.size = exp->size_req;
-			if(NhlNOERROR != _NhlReConvertData(gen->typeQ,
-						exp->type_req,&fromval,&toval)){
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-	"CvtGenToExpTypeMDArray:Unable to preform Element Conversion"));
-				NhlFree(*exp->data);
-				*exp->data = NULL;
-				to->size = 0;
-				return NhlFATAL;
-			}
-		}
-		if(exp->type_req == stringQ){
-			NhlString	*starr = *exp->data;
-			NhlString	tstring;
-			/*
-			 * Need to allocate memory for each element as well.
-			 * The memory is currently owned by the "context".
-			 * or points to "args" in the converter function.
-			 */
-			for(i=0;i < gen->num_elements;i++){
-				tstring = starr[i];
-				starr[i] = NhlMalloc(strlen(tstring)+1);
-				if(starr[i] == NULL){
-					NHLPERROR((NhlFATAL,ENOMEM,NULL));
-					to->size = 0;
-					return NhlFATAL;
-				}
-				strcpy(starr[i],tstring);
-			}
-		}
+		convgen = gen;
 	}
 	else{
-		/* Everything fails */
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"CvtGenToExpTypeMDArray:Unable to convert \"%s\" to \"%s\"",
-		NrmQuarkToString(gen->typeQ),NrmQuarkToString(exp->type_req));
-		to->size = 0;
-		return NhlFATAL;
+		NrmValue	fromval, toval;
+		char		fromtype[_NhlMAXRESNAMLEN];
+		char		totype[_NhlMAXRESNAMLEN];
+
+		strcpy(fromtype,NrmQuarkToString(gen->typeQ));
+		strcat(fromtype,NhlTGenArray);
+
+		strcpy(totype,NrmQuarkToString(exp->type_req));
+		strcat(totype,NhlTGenArray);
+
+		fromval.size = sizeof(NhlGenArray);
+		fromval.data.ptrval = gen;
+
+		convgen = NULL;
+		toval.size = sizeof(NhlGenArray);
+		toval.data.ptrval = &convgen;
+
+		ret = NhlReConvertData(fromtype,totype,&fromval,&toval);
+		
+		if((ret < NhlWARNING) || (convgen == NULL)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert %s to %s",func,fromtype,
+									totype);
+			return NhlFATAL;
+		}
+	}
+
+	if(!convgen->my_data){
+		/*
+		 * Probably came from Scalar To GenArray
+		 * converter and we should get some memory.
+		 */
+		NhlGenArray	tgen;
+
+		tgen = _NhlCopyGenArray(convgen,True);
+		if(tgen == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		*exp->data = tgen->data;
+		tgen->my_data = False;
+		NhlFreeGenArray(tgen);
+	}
+	else{
+		/* give ownership to exp */
+		*exp->data = convgen->data;
+		convgen->my_data = False;
 	}
 
 	if(gen->len_dimensions == &gen->num_elements){
@@ -1581,7 +1603,7 @@ CvtGenToExpArray
 	int			nargs;
 #endif
 {
-	char		*error_lead = "CvtGenToExpArray";
+	char		func[] = "CvtGenToExpArray";
 	NhlErrorTypes	ret = NhlNOERROR;
 	NhlGenArray	gen;
 	_NhlExpArray	exp;
@@ -1590,7 +1612,7 @@ CvtGenToExpArray
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Called w/improper number of args",error_lead);
+			"%s:Called w/improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1598,13 +1620,24 @@ CvtGenToExpArray
 	gen = (NhlGenArray)from->data.ptrval;
 	exp = (_NhlExpArray)to->data.ptrval;
 
-	if(gen->num_dimensions == exp->num_dim_req)
+	if(gen == NULL){
+		for(i=0;i < exp->num_dim_req;i++)
+			(*exp->len_dimensions)[i] = 0;
+		*exp->type = NULL;
+		*exp->size = 0;
+		*exp->data = NULL;
+
+		return NhlNOERROR;
+	}
+
+	if(gen->num_dimensions == exp->num_dim_req){
 		for(i=0;i < exp->num_dim_req;i++)
 			(*exp->len_dimensions)[i] = gen->len_dimensions[i];
+	}
 	else{
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"%s:Array resource has %d dimensions:Can't convert to %d dimensions",
-			error_lead,gen->num_dimensions,exp->num_dim_req);
+			func,gen->num_dimensions,exp->num_dim_req);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1612,15 +1645,26 @@ CvtGenToExpArray
 	*exp->type = NhlMalloc(strlen(type) + 1);
 	strcpy(*exp->type,type);
 	*exp->size = gen->size;
-	*exp->data = gen->data;
 	if(!gen->my_data){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:Returning Pointer to Internal Data - Bad Things!",
-								error_lead);
-		ret = NhlWARNING;
+		NhlGenArray	tgen;
+		/*
+		 * Probably came from Scalar To GenArray
+		 * converter and we should get some memory.
+		 */
+		tgen = _NhlCopyGenArray(gen,True);
+		if(tgen == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		*exp->data = tgen->data;
+		tgen->my_data = False;
+		NhlFreeGenArray(tgen);
 	}
-	/* give ownership to exp */
-	gen->my_data = False;
+	else{
+		/* give ownership to exp */
+		*exp->data = gen->data;
+		gen->my_data = False;
+	}
 
 	return ret;
 }
@@ -1769,14 +1813,15 @@ CvtGenToExpTypeArray
 	int			nargs;
 #endif
 {
-	char		*error_lead="CvtGenToExpTypeArray";
-	NhlGenArray	gen;
+	char		func[]="CvtGenToExpTypeArray";
+	int		i;
+	NhlGenArray	gen,convgen;
 	_NhlExpArray	exp;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Called w/improper number of args",error_lead);
+				"%s:Called w/improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1784,91 +1829,73 @@ CvtGenToExpTypeArray
 	gen = (NhlGenArray)from->data.ptrval;
 	exp = (_NhlExpArray)to->data.ptrval;
 
+	if(gen == NULL){
+		for(i=0;i < exp->num_dim_req; i++)
+			(*exp->len_dimensions)[i] = 0;
+		*exp->data = NULL;
+
+		return NhlNOERROR;
+	}
+
 	if(gen->num_dimensions == exp->num_dim_req){
-		int i;
 		for(i=0;i < exp->num_dim_req;i++)
 			(*exp->len_dimensions)[i] = gen->len_dimensions[i];
 	}
 	else{
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"%s:Array resource has %d dimensions:Can't convert to %d dimensions",
-			error_lead,gen->num_dimensions,exp->num_dim_req);
+				func,gen->num_dimensions,exp->num_dim_req);
 		to->size = 0;
 		return NhlFATAL;
 	}
 
 	/* get data if possible */
 	if(exp->type_req == gen->typeQ){
-		*exp->data = gen->data;
-		if(!gen->my_data){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:Returning Pointer to Internal Data - Bad Things!",
-								error_lead);
-			ret = NhlWARNING;
-		}
-		/* give ownership to exp */
-		gen->my_data = False;
-	}
-	else if(_NhlConverterExists(gen->typeQ,exp->type_req)){
-		int		i;
-		NrmValue	fromval, toval;
-		char		*fromdata,*todata;
-
-		*exp->data = NhlMalloc(exp->size_req * gen->num_elements);
-		if(*exp->data == NULL){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			to->size =  0;
-			return NhlFATAL;
-		}
-
-		todata = *exp->data;
-		fromdata = gen->data;
-
-		for(i=0;i < gen->num_elements;i++){
-			_NhlCopyToVal((NhlPointer)(fromdata + (gen->size * i)),
-						&fromval.data,gen->size);
-			fromval.size = gen->size;
-			toval.data.ptrval = (NhlPointer)
-						(todata + (exp->size_req * i));
-			toval.size = exp->size_req;
-			if(NhlNOERROR != _NhlReConvertData(gen->typeQ,
-						exp->type_req,&fromval,&toval)){
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-	"CvtGenToExpTypeArray:Unable to preform Element Conversion"));
-				NhlFree(*exp->data);
-				*exp->data = NULL;
-				to->size = 0;
-				return NhlFATAL;
-			}
-		}
-		if(exp->type_req == stringQ){
-			NhlString	*starr = *exp->data;
-			NhlString	tstring;
-			/*
-			 * Need to allocate memory for each element as well.
-			 * The memory is currently owned by the "context".
-			 * or points to "args" in the converter function.
-			 */
-			for(i=0;i < gen->num_elements;i++){
-				tstring = starr[i];
-				starr[i] = NhlMalloc(strlen(tstring)+1);
-				if(starr[i] == NULL){
-					NHLPERROR((NhlFATAL,ENOMEM,NULL));
-					to->size = 0;
-					return NhlFATAL;
-				}
-				strcpy(starr[i],tstring);
-			}
-		}
+		convgen = gen;
 	}
 	else{
-		/* Everything fails */
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Unable to convert \"%s\" to \"%s\"",error_lead,
-					NrmQuarkToString(gen->typeQ),
-					NrmQuarkToString(exp->type_req));
-		to->size = 0;
-		return NhlFATAL;
+		NrmValue	fromval, toval;
+		char		fromtype[_NhlMAXRESNAMLEN];
+		char		totype[_NhlMAXRESNAMLEN];
+
+		strcpy(fromtype,NrmQuarkToString(gen->typeQ));
+		strcat(fromtype,NhlTGenArray);
+
+		strcpy(totype,NrmQuarkToString(exp->type_req));
+		strcat(totype,NhlTGenArray);
+
+		fromval.size = sizeof(NhlGenArray);
+		fromval.data.ptrval = gen;
+
+		convgen = NULL;
+		toval.size = sizeof(NhlGenArray);
+		toval.data.ptrval = &convgen;
+
+		ret = NhlReConvertData(fromtype,totype,&fromval,&toval);
+
+		if((ret < NhlWARNING) || (convgen == NULL)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert %s to %s",func,fromtype,
+									totype);
+			return NhlFATAL;
+		}
+	}
+
+	if(!convgen->my_data){
+		NhlGenArray	tgen;
+
+		tgen = _NhlCopyGenArray(convgen,True);
+		if(tgen == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		*exp->data = tgen->data;
+		tgen->my_data = False;
+		NhlFreeGenArray(tgen);
+	}
+	else{
+		*exp->data = convgen->data;
+		convgen->my_data = False;
 	}
 
 	return ret;
@@ -2215,14 +2242,13 @@ _NhlInitRLList
 ()
 #endif
 {
-	floatQ = NrmStringToQuark(NhlTFloat);
-	intQ = NrmStringToQuark(NhlTInteger);
-	stringQ = NrmStringToQuark(NhlTString);
+	byteQ = NrmStringToQuark(NhlTByte);
 	charQ = NrmStringToQuark(NhlTCharacter);
-	shortQ = NrmStringToQuark(NhlTShort);
-	boolQ = NrmStringToQuark(NhlTBoolean);
 	doubleQ = NrmStringToQuark(NhlTDouble);
-	pointerQ = NrmStringToQuark(NhlTPointer);
+	floatQ = NrmStringToQuark(NhlTFloat);
+	shortQ = NrmStringToQuark(NhlTShort);
+	stringQ = NrmStringToQuark(NhlTString);
+	intQ = NrmStringToQuark(NhlTInteger);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	expMDQ = NrmStringToQuark(_NhlTExpMDArray);
 	expMDTypeQ = NrmStringToQuark(_NhlTExpMDTypeArray);
@@ -2231,10 +2257,18 @@ _NhlInitRLList
 
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDArray,
 					CvtGenToExpMDArray,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpMDArray,
+						NhlTScalar,NhlTGenArray);
+
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDTypeArray,
 				CvtGenToExpTypeMDArray,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpMDTypeArray,
+						NhlTScalar,NhlTGenArray);
+
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpArray,
 					CvtGenToExpArray,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpArray,NhlTScalar,NhlTGenArray);
+
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpTypeArray,
 					CvtGenToExpTypeArray,NULL,0,False,NULL);
 	return;

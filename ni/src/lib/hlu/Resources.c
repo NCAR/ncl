@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.8 1994-05-12 23:52:16 boote Exp $
+ *      $Id: Resources.c,v 1.9 1994-07-12 20:52:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -350,8 +350,7 @@ GetResources
 					resources[j].nrm_size);
 					resfound[j] = True;
 				}
-				else if(_NhlConverterExists(args[i].type,
-							resources[j].nrm_type)){
+				else{
 					/* 
 					 * call converter
 					 */
@@ -377,12 +376,6 @@ GetResources
 					else{
 						resfound[j] = True;
 					}
-				}
-				else{
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"The %s resource is not setable using a %s",
-						NrmQuarkToString(args[i].quark),
-						NrmQuarkToString(args[i].type));
 				}
 				argfound[i] = True;
 				break;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.1 1994-05-12 23:51:16 boote Exp $
+ *      $Id: Fortran.c,v 1.2 1994-07-12 20:52:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ConvertP.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 /*
  * most arrays will have fewer dimensions than this number.
@@ -753,151 +753,6 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
 }
 
 /*
- * Function:	CvtStrToFStr
- *
- * Description:	copy a resource value into a users FString variable.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CvtStrToFStr
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	NhlString		cstr;
-	_NhlFExportString	exp;
-
-	if(nargs != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"CvtStrToFStr:Called w/improper number of args");
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	cstr = from->data.strval;
-	exp = (_NhlFExportString)to->data.ptrval;
-
-	return _NhlCstrToFstr(exp->fstring,exp->strlen,cstr);
-}
-
-/*
- * Function:	CvtIntToFStr
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CvtIntToFStr
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	char			buff[_NhlMAXLINELEN];
-	int			tint;
-	_NhlFExportString	exp;
-
-	if(nargs != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"CvtIntToFStr:Called w/improper number of args");
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	exp = (_NhlFExportString)to->data.ptrval;
-	tint = from->data.intval;
-	sprintf(buff,"%d",tint);
-
-	return _NhlCstrToFstr(exp->fstring,exp->strlen,buff);
-}
-
-/*
- * Function:	CvtFloatToFStr
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CvtFloatToFStr
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	char			buff[_NhlMAXLINELEN];
-	float			tfloat;
-	_NhlFExportString	exp;
-
-	if(nargs != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"CvtFloatToFStr:Called w/improper number of args");
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	exp = (_NhlFExportString)to->data.ptrval;
-	tfloat = from->data.fltval;
-	sprintf(buff,"%g",tfloat);
-
-	return _NhlCstrToFstr(exp->fstring,exp->strlen,buff);
-}
-
-/*
  * Function:	nhl_frlgetstring
  *
  * Description:	
@@ -953,6 +808,70 @@ _NHLCALLF(nhl_frlgetstring,NHL_FRLGETSTRING)
 		*err = NhlFATAL;
 
 	return;
+}
+
+/*
+ * Function:	NhlCvtScalarToFStr
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtScalarToFStr
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char			func[] = "NhlCvtScalartoFStr";
+	NhlString		tstring = NULL;
+	NrmValue		svalue;
+	_NhlFExportString	exp;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(from->typeQ == stringQ){
+		tstring = from->data.strval;
+	}
+	else{
+		svalue.size = sizeof(NhlString);
+		svalue.data.ptrval = &tstring;
+
+		if((_NhlReConvertData(from->typeQ,stringQ,from,&svalue) <
+					NhlWARNING) || (tstring == NULL)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert %s to FORTRAN string",func,
+						NrmQuarkToString(from->typeQ));
+			return NhlFATAL;
+		}
+	}
+
+	exp = (_NhlFExportString)to->data.ptrval;
+
+	return _NhlCstrToFstr(exp->fstring,exp->strlen,tstring);
 }
 
 /*
@@ -1023,19 +942,7 @@ CvtGenArrToFArr
 	gen = from->data.ptrval;
 	exp = (_NhlFExportArray)to->data.ptrval;
 
-	/* first determine if a converter is needed, and if it exists */
-	if((exp->typeQ != gen->typeQ) &&
-				!_NhlConverterExists(gen->typeQ,exp->typeQ)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Unable to convert \"%s\" to \"%s\"",
-					err,
-					NrmQuarkToString(gen->typeQ),
-					NrmQuarkToString(exp->typeQ));
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	/* now determine if the FArray is large enough */
+	/* determine if the FArray is large enough */
 	if(exp->num_dim != NULL){
 		if(*exp->num_dim < gen->num_dimensions){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1128,11 +1035,42 @@ CvtGenArrToFArr
 	 * Doing converter contiguous copy here as well.
 	 */
 	{
-		int	stack_iarr[NORMAL_DIM];
-		int	*iarr = stack_iarr;
-		int	cindx,findx;
-		int	num_passes = 1;
-		int	j;
+		NrmValue	fromval, toval;
+		int		stack_iarr[NORMAL_DIM];
+		int		*iarr = stack_iarr;
+		int		cindx,findx;
+		int		num_passes = 1;
+		int		j;
+		NhlGenArrayRec	cgen;
+		NhlGenArray	tgen;
+		char		cgentype[_NhlMAXRESNAMLEN];
+		char		tgentype[_NhlMAXRESNAMLEN];
+
+		/*
+		 * Prepare "from" array.
+		 */
+		cgen.num_dimensions = 1;
+		cgen.num_elements = gen->size*len_dim[0];
+		cgen.len_dimensions = &cgen.num_elements;
+		cgen.typeQ = gen->typeQ;
+		cgen.size = gen->size;
+		cgen.my_data = False;
+
+		/*
+		 * from array name and to array name
+		 */
+		strcpy(cgentype,NrmQuarkToString(cgen.typeQ));
+		strcat(cgentype,NhlTGenArray);
+		strcpy(tgentype,NrmQuarkToString(exp->typeQ));
+		strcat(tgentype,NhlTGenArray);
+
+		/*
+		 * from values and to values
+		 */
+		fromval.size = sizeof(NhlGenArray);
+		fromval.data.ptrval = &cgen;
+		toval.size = sizeof(NhlGenArray);
+		toval.data.ptrval = &tgen;
 
 		for(i=1;i<num_dim;i++)
 			num_passes *= len_dim[i];
@@ -1158,32 +1096,22 @@ CvtGenArrToFArr
 			}
 			else{
 				NhlErrorTypes	ret;
-				NrmValue	fromval, toval;
 
-				for(i=0;i < len_dim[0];i++){
-					_NhlCopyToVal((NhlPointer)
-						(carr+(gen->size*i)),
-						&fromval.data,gen->size);
-					fromval.size = gen->size;
+				cgen.data = carr;
+				tgen = NULL;
 
-					toval.data.ptrval = (NhlPointer)
-							(farr+(exp->size * i));
-					toval.size = exp->size;
-
-					ret = _NhlReConvertData(gen->typeQ,
-						exp->typeQ,&fromval,&toval);
-					if(ret != NhlNOERROR){
-						NhlPError(NhlFATAL,NhlEUNKNOWN,
+				ret = NhlReConvertData(cgentype,tgentype,
+							&fromval,&toval);
+				if((ret < NhlWARNING) || (tgen == NULL)){
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Unable to convert \"%s\" to \"%s\"",
-						err,
-						NrmQuarkToString(gen->typeQ),
-						NrmQuarkToString(exp->typeQ));
-						StackFree(iarr)
-						StackFree(len_dim)
-						to->size = 0;
-						return NhlFATAL;
-					}
+						err,cgentype,tgentype);
+					StackFree(iarr)
+					StackFree(len_dim)
+					to->size = 0;
+					return NhlFATAL;
 				}
+				memcpy(farr,tgen->data,gen->size*len_dim[0]);
 			}
 
 			/* compute new indexes */
@@ -1235,202 +1163,6 @@ CvtGenArrToFArr
 	return NhlNOERROR;
 #undef	StackAlloc
 #undef	StackFree
-}
-
-/*
- * Function:	CvtIntToFArr
- *
- * Description:	copy a resource value into a users FArray variable.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CvtIntToFArr
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	_NhlFExportArray	exp;
-	int			tint;
-	int			num_dim;
-	int			i;
-	char			*err = "CvtIntToFArr";
-
-	if(nargs != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called w/improper number of args",err);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	exp = (_NhlFExportArray)to->data.ptrval;
-	tint = from->data.intval;
-
-	/* first determine if a converter is needed, and if it exists */
-	if((intQ != exp->typeQ) && !_NhlConverterExists(intQ,exp->typeQ)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Unable to convert \"%s\" to \"%s\"",
-					err,
-					NhlTInteger,
-					NrmQuarkToString(exp->typeQ));
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	/*
-	 * The length of the first dim must be at least 1.
-	 */
-	if(*exp->len_dim < 1){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Zero length array not valid",err);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	/*
-	 * if num_dim == NULL - it is a one dim array and we just have to
-	 * assign
-	 */
-	if(exp->num_dim == NULL)
-		num_dim = 1;
-	else
-		num_dim = *exp->num_dim;
-
-	exp->len_dim[0] = 1;
-	for(i=1;i < num_dim;i++)
-		exp->len_dim[i] = 0;
-
-	if(intQ != exp->typeQ){
-		NrmValue	fromval, toval;
-
-		fromval.data.intval = tint;
-		fromval.size = sizeof(int);
-
-		toval.data.ptrval = exp->data;
-		toval.size = exp->size;
-
-		return _NhlReConvertData(intQ,exp->typeQ,&fromval,&toval);
-	}
-
-	*(int*)exp->data = tint;
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	CvtFloatToFArr
- *
- * Description:	copy a resource value into a users FArray variable.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-CvtFloatToFArr
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	_NhlFExportArray	exp;
-	float			tfloat;
-	int			num_dim;
-	int			i;
-	char			*err = "CvtFloatToFArr";
-
-	if(nargs != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called w/improper number of args",err);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	exp = (_NhlFExportArray)to->data.ptrval;
-	tfloat = from->data.fltval;
-
-	/* first determine if a converter is needed, and if it exists */
-	if((floatQ != exp->typeQ) && !_NhlConverterExists(floatQ,exp->typeQ)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Unable to convert \"%s\" to \"%s\"",
-					err,
-					NhlTFloat,
-					NrmQuarkToString(exp->typeQ));
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	/*
-	 * The length of the first dim must be at least 1.
-	 */
-	if(*exp->len_dim < 1){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Zero length array not valid",err);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	/*
-	 * if num_dim == NULL - it is a one dim array and we just have to
-	 * assign
-	 */
-	if(exp->num_dim == NULL)
-		num_dim = 1;
-	else
-		num_dim = *exp->num_dim;
-
-	exp->len_dim[0] = 1;
-	for(i=1;i < num_dim;i++)
-		exp->len_dim[i] = 0;
-
-	if(floatQ != exp->typeQ){
-		NrmValue	fromval, toval;
-
-		fromval.data.fltval = tfloat;
-		fromval.size = sizeof(float);
-
-		toval.data.ptrval = exp->data;
-		toval.size = exp->size;
-
-		return _NhlReConvertData(floatQ,exp->typeQ,&fromval,&toval);
-	}
-
-	*(float*)exp->data = tfloat;
-
-	return NhlNOERROR;
 }
 
 /*
@@ -1669,19 +1401,6 @@ _NHLCALLF(nhl_frlgetfloatarray,NHL_FRLGETFLOATARRAY)
 	return;
 }
 
-/*
- * Function:	CvtGenToFStrArr
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
 /*ARGSUSED*/
 static NhlErrorTypes
 CvtGenToFStrArr
@@ -1701,14 +1420,14 @@ CvtGenToFStrArr
 #endif
 {
 	_NhlFExportString	exp;
-	NhlGenArray		gen;
+	NhlGenArray		gen,tgen,strgen;
 	char			*name = "CvtGenToFStrArr";
-	char			*fptr, *cptr;
+	char			*fptr;
+	NhlString		*ctbl;
 	NhlErrorTypes		ret = NhlNOERROR, lret = NhlNOERROR;
 	int			num_elements;
 	int			i;
 	NrmValue		fromval,toval;
-	NhlString		tstr;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1736,55 +1455,45 @@ CvtGenToFStrArr
 
 	fptr = _NhlFptrToCptr(exp->fstring);
 
-	/*
-	 * if the gen array is an NhlTString array, then just copy each string
-	 * to each element of the Fortran character*(strlen) array.
-	 */
-
 	if(gen->typeQ == stringQ){
-		NhlString	*ctbl;
-
-		ctbl = gen->data;
-
-		for(i=0;i < num_elements;i++){
-			lret = _NhlCstrToFptr(fptr+(i*exp->strlen),exp->strlen,
-								ctbl[i]);
-			ret = MIN(ret,lret);
+		strgen = gen;
+	}
+	else{
+		tgen = _NhlConvertCopyGenArray(gen);
+		if(tgen == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",name);
+			return NhlFATAL;
 		}
+		tgen->num_elements = num_elements;
 
-		return ret;
-	}
+		fromval.size = sizeof(NhlGenArray);
+		fromval.data.ptrval = tgen;
 
-	if(!_NhlConverterExists(gen->typeQ,stringQ)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to convert \"%s\" to \"%s\"",name,
-				NrmQuarkToString(gen->typeQ),NhlTString));
-		to->size = 0;
-		return NhlFATAL;
-	}
+		strgen = NULL;
+		toval.size = sizeof(NhlGenArray);
+		toval.data.ptrval = &strgen;
 
-	toval.data.ptrval = &tstr;
-	toval.size = sizeof(NhlString);
+		lret = NhlReConvertData(NhlTGenArray,NhlTStringGenArray,
+							&fromval,&toval);
 
-	cptr = gen->data;
-	fromval.size = gen->size;
-
-	for(i=0;i < num_elements;i++){
-
-		_NhlCopyToVal((NhlPointer)(cptr+(gen->size*i)),&fromval.data,
-								gen->size);
-
-		lret = _NhlReConvertData(gen->typeQ,stringQ,&fromval,&toval);
-
-		if(lret < NhlWARNING){
+		if((lret < NhlWARNING) || (strgen == NULL)){
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to convert \"%s\" to \"%s\"",name,
 				NrmQuarkToString(gen->typeQ),NhlTString));
 			return NhlFATAL;
 		}
 		ret = MIN(ret,lret);
+	}
 
-		lret = _NhlCstrToFptr(fptr+(i*exp->strlen),exp->strlen,tstr);
+	/*
+	 * now the gen array is an NhlTString array, just copy each string
+	 * to each element of the Fortran character*(strlen) array.
+	 */
+
+	ctbl = strgen->data;
+
+	for(i=0;i < num_elements;i++){
+		lret = _NhlCstrToFptr(fptr+(i*exp->strlen),exp->strlen,ctbl[i]);
 		ret = MIN(ret,lret);
 	}
 
@@ -1874,9 +1583,9 @@ _NhlFortranInit
 ()
 #endif
 {
-	NhlConvertArg	RlListTypeEnum[] = {
-		{NhlSTRENUM,	NhlSETRL,	"SETRL"},
-		{NhlSTRENUM,	NhlGETRL,	"GETRL"}
+	_NhlEnumVals	RlListTypeEnum[] = {
+		{NhlSETRL,	"SETRL"},
+		{NhlGETRL,	"GETRL"}
 	};
 
 	intQ = NrmStringToQuark(NhlTInteger);
@@ -1887,22 +1596,29 @@ _NhlFortranInit
 	FExpStrArrQ = NrmStringToQuark(_NhlTFExpStringArr);
 	FExpArrQ = NrmStringToQuark(_NhlTFExpArray);
 
-	(void)NhlRegisterConverter(NhlTString,NhlTRLType,NhlCvtStringToEnum,
-			RlListTypeEnum,NhlNumber(RlListTypeEnum),False,NULL);
+	_NhlRegisterEnumType(NhlTRLType,RlListTypeEnum,
+						NhlNumber(RlListTypeEnum));
 
-	(void)NhlRegisterConverter(NhlTString,_NhlTFExpString,CvtStrToFStr,
-							NULL,0,False,NULL);
-	(void)NhlRegisterConverter(NhlTInteger,_NhlTFExpString,CvtIntToFStr,
-							NULL,0,False,NULL);
-	(void)NhlRegisterConverter(NhlTFloat,_NhlTFExpString,CvtFloatToFStr,
-							NULL,0,False,NULL);
+	/*
+	 * convert to a fortran string.
+	 */
+	(void)NhlRegisterConverter(NhlTScalar,_NhlTFExpString,
+					NhlCvtScalarToFStr,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTGenArray,_NhlTFExpString,
+						NhlTGenArray,NhlTScalar);
+	/*
+	 * convert to a fortran array.
+	 */
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTFExpArray,CvtGenArrToFArr,
 							NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTScalar,_NhlTFExpArray,NhlTScalar,NhlTGenArray);
+
+
+	/*
+	 * convert to a fortran string array.
+	 */
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTFExpStringArr,
 					CvtGenToFStrArr,NULL,0,False,NULL);
-
-	(void)NhlRegisterConverter(NhlTInteger,_NhlTFExpArray,CvtIntToFArr,
-							NULL,0,False,NULL);
-	(void)NhlRegisterConverter(NhlTFloat,_NhlTFExpArray,CvtFloatToFArr,
-							NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlTScalar,_NhlTFExpStringArr,
+						NhlTScalar,NhlTGenArray);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.18 1994-06-27 19:31:33 dbrown Exp $
+ *      $Id: Overlay.c,v 1.19 1994-07-12 20:52:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/AnnotationP.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
 
@@ -85,15 +85,15 @@ ResourceUnset
 #define	Oset(field)	NhlOffset(NhlOverlayLayerRec,overlay.field)
 static NhlResource resources[] = {
 
-	{NhlNovOverlayIds,NhlCovOverlayIds,NhlT1DIntGenArray,
+	{NhlNovOverlayIds,NhlCovOverlayIds,NhlTIntegerGenArray,
 		sizeof(NhlPointer),
 		Oset(overlay_ids),
 		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlT1DIntGenArray,
+	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(pre_draw_order),
 		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlT1DIntGenArray,
+	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(post_draw_order),
 		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
@@ -223,13 +223,13 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
 		 sizeof(float),Oset(ti_x_axis_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_y_axis_font_height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,
 		 NhlTFloat,sizeof(float),Oset(ti_y_axis_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 
 /* LabelBar resources */
 
@@ -647,44 +647,15 @@ OverlayClassInitialize
 ()
 #endif
 {
-        NhlConvertArg   annotationdisplaylist[] = {
-        {NhlSTRENUM,    NhlNOCREATE,    _NhlUSET("nocreate")},
-        {NhlSTRENUM,    NhlNEVER, 	_NhlUSET("never")},
-        {NhlSTRENUM,    NhlCONDITIONAL, _NhlUSET("conditional")},
-        {NhlSTRENUM,    NhlALWAYS,      _NhlUSET("always")}
+        _NhlEnumVals   annotationdisplaylist[] = {
+		{NhlNOCREATE,		"nocreate"},
+		{NhlNEVER,		"never"},
+		{NhlCONDITIONAL,	"conditional"},
+		{NhlALWAYS,		"always"}
         };
 
-        NhlConvertArg   intannotationdisplaylist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlNOCREATE)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlNEVER)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlCONDITIONAL)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlALWAYS)}
-	};
-
-        NhlConvertArg   annotationdisplaygentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),
-		 _NhlUSET((NhlPointer)NhlTAnnotationDisplayMode)},
-        };
-
-        NhlRegisterConverter(NhlTGenArray,NhlTAnnotationDisplayMode,
-			     NhlCvtGenToEnum,annotationdisplaygentoenumdat,
-			     1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTAnnotationDisplayMode,
-			     NhlCvtStringToEnum,annotationdisplaylist,
-			     NhlNumber(annotationdisplaylist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTAnnotationDisplayMode,
-			     NhlCvtIntToEnum,intannotationdisplaylist,
-			     NhlNumber(intannotationdisplaylist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTAnnotationDisplayMode,
-			     NhlCvtFloatToEnum,intannotationdisplaylist,
-			     NhlNumber(intannotationdisplaylist),False,NULL);
-        NhlRegisterConverter(NhlTAnnotationDisplayMode,NhlTString,
-			     NhlCvtEnumToString,annotationdisplaylist,
-			     NhlNumber(annotationdisplaylist),False,NULL);
-        NhlRegisterConverter(NhlTAnnotationDisplayMode,_NhlTFExpString,
-			     NhlCvtEnumToFStr,annotationdisplaylist,
-			     NhlNumber(annotationdisplaylist),False,NULL);
+        _NhlRegisterEnumType(NhlTAnnotationDisplayMode,annotationdisplaylist,
+					     NhlNumber(annotationdisplaylist));
 
 	Overlay_Ids = NrmStringToQuark(NhlNovOverlayIds);
 	Overlay_Recs = NrmStringToQuark(NhlNovOverlayRecs);

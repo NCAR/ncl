@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.18 1994-06-27 19:31:25 dbrown Exp $
+ *      $Id: Contour.c,v 1.19 1994-07-12 20:51:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
 /*
@@ -84,7 +84,7 @@ ResourceUnset
 #define	Oset(field)	NhlOffset(NhlContourDataDepLayerRec,cndata.field)
 static NhlResource data_resources[] = {
 
-	{NhlNcnExplicitLabels,NhlCcnExplicitLabels,NhlT1DStringGenArray,
+	{NhlNcnExplicitLabels,NhlCcnExplicitLabels,NhlTStringGenArray,
 		 sizeof(NhlPointer),
 		 Oset(labels),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray}
@@ -165,43 +165,43 @@ static NhlResource resources[] = {
 
 /* Array resources */
 
-	{NhlNcnLevels, NhlCcnLevels,  NhlT1DFloatGenArray,
+	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLevelFlags, NhlCcnLevelFlags, NhlT1DIntGenArray,
+	{NhlNcnLevelFlags, NhlCcnLevelFlags, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(level_flags),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillColors, NhlCcnFillColors, NhlT1DIntGenArray,
+	{NhlNcnFillColors, NhlCcnFillColors, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(fill_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlT1DIntGenArray,
+	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(fill_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillScales, NhlCcnFillScales,  NhlT1DFloatGenArray,
+	{NhlNcnFillScales, NhlCcnFillScales,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(fill_scales),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineColors, NhlCcnLineColors, NhlT1DIntGenArray,
+	{NhlNcnLineColors, NhlCcnLineColors, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(line_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlT1DIntGenArray,
+	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(line_dash_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineThicknesses, NhlCcnLineThicknesses, NhlT1DFloatGenArray,
+	{NhlNcnLineThicknesses, NhlCcnLineThicknesses, NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(line_thicknesses),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlT1DStringGenArray,
+	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(llabel_strings),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlT1DIntGenArray,
+	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(llabel_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -527,13 +527,13 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
@@ -564,7 +564,7 @@ static NhlResource resources[] = {
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNEVER),0,NULL},
-	{NhlNlgLabelStrings, NhlClgLabelStrings, NhlT1DStringGenArray,
+	{NhlNlgLabelStrings, NhlClgLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(legend_labels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -572,7 +572,7 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(legend_title),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFree},
-	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlT1DStringGenArray,
+	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(labelbar_labels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -1312,6 +1312,7 @@ ContourDataInitialize
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+/*ARGSUSED*/
 static NhlErrorTypes
 ContourUpdateData
 #if	__STDC__
@@ -1360,124 +1361,34 @@ ContourClassInitialize
 #endif
 {
 
-        NhlConvertArg   levelselectionlist[] = {
-        {NhlSTRENUM,    NhlcnAUTOMATIC,		_NhlUSET("automatic")},
-        {NhlSTRENUM,    NhlcnMANUAL, 		_NhlUSET("manual")},
-        {NhlSTRENUM,    NhlcnEXPLICIT, 		_NhlUSET("explicit")},
-        {NhlSTRENUM,    NhlcnEQUALSPACING,      _NhlUSET("equalspacing")}
+        _NhlEnumVals   levelselectionlist[] = {
+        {NhlcnAUTOMATIC,	"automatic"},
+        {NhlcnMANUAL, 		"manual"},
+        {NhlcnEXPLICIT, 	"explicit"},
+        {NhlcnEQUALSPACING,      "equalspacing"}
         };
 
-        NhlConvertArg   intlevelselectionlist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnAUTOMATIC)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnMANUAL)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnEXPLICIT)},
-        {NhlIMMEDIATE,  sizeof(int), _NhlUSET((NhlPointer)NhlcnEQUALSPACING)}
-	};
-
-        NhlConvertArg   levelselectiongentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),
-		 _NhlUSET((NhlPointer)NhlTcnLevelSelectionMode)},
+        _NhlEnumVals   leveluselist[] = {
+        {NhlcnNOLINE,		"noline"},
+        {NhlcnLINEONLY, 	"lineonly"},
+        {NhlcnLABELONLY, 	"labelonly"},
+        {NhlcnLINEANDLABEL,      "lineandlabel"}
         };
 
-
-        NhlConvertArg   leveluselist[] = {
-        {NhlSTRENUM,    NhlcnNOLINE,		_NhlUSET("noline")},
-        {NhlSTRENUM,    NhlcnLINEONLY, 		_NhlUSET("lineonly")},
-        {NhlSTRENUM,    NhlcnLABELONLY, 	_NhlUSET("labelonly")},
-        {NhlSTRENUM,    NhlcnLINEANDLABEL,      _NhlUSET("lineandlabel")}
+        _NhlEnumVals   linelabelspacinglist[] = {
+        {NhlcnNOLABELS,		"nolabels"},
+        {NhlcnCONSTANT, 	"constant"},
+        {NhlcnRANDOMIZED, 	"randomized"},
+        {NhlcnCOMPUTED,      	"computed"}
         };
 
-        NhlConvertArg   intleveluselist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnNOLINE)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnLINEONLY)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnLABELONLY)},
-        {NhlIMMEDIATE,  sizeof(int), _NhlUSET((NhlPointer)NhlcnLINEANDLABEL)}
-	};
+	_NhlRegisterEnumType(NhlTcnLevelSelectionMode,levelselectionlist,
+						NhlNumber(levelselectionlist));
+	_NhlRegisterEnumType(NhlTcnLevelUseMode,leveluselist,
+						NhlNumber(leveluselist));
+	_NhlRegisterEnumType(NhlTcnLineLabelSpacingMode,linelabelspacinglist,
+					NhlNumber(linelabelspacinglist));
 
-        NhlConvertArg   levelusegentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),
-		 _NhlUSET((NhlPointer)NhlTcnLevelUseMode)},
-        };
-
-        NhlConvertArg   linelabelspacinglist[] = {
-        {NhlSTRENUM,    NhlcnNOLABELS,		_NhlUSET("nolabels")},
-        {NhlSTRENUM,    NhlcnCONSTANT, 		_NhlUSET("constant")},
-        {NhlSTRENUM,    NhlcnRANDOMIZED, 	_NhlUSET("randomized")},
-        {NhlSTRENUM,    NhlcnCOMPUTED,      	_NhlUSET("computed")}
-        };
-
-        NhlConvertArg   intlinelabelspacinglist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnNOLABELS)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnCONSTANT)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlcnRANDOMIZED)},
-        {NhlIMMEDIATE,  sizeof(int), _NhlUSET((NhlPointer)NhlcnCOMPUTED)}
-	};
-
-        NhlConvertArg   linelabelspacinggentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),
-		 _NhlUSET((NhlPointer)NhlTcnLineLabelSpacingMode)},
-        };
-
-        NhlRegisterConverter(NhlTGenArray,NhlTcnLevelSelectionMode,
-			     NhlCvtGenToEnum,levelselectiongentoenumdat,
-			     1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTcnLevelSelectionMode,
-			     NhlCvtStringToEnum,levelselectionlist,
-			     NhlNumber(levelselectionlist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTcnLevelSelectionMode,
-			     NhlCvtIntToEnum,intlevelselectionlist,
-			     NhlNumber(intlevelselectionlist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTcnLevelSelectionMode,
-			     NhlCvtFloatToEnum,intlevelselectionlist,
-			     NhlNumber(intlevelselectionlist),False,NULL);
-        NhlRegisterConverter(NhlTcnLevelSelectionMode,NhlTString,
-			     NhlCvtEnumToString,levelselectionlist,
-			     NhlNumber(levelselectionlist),False,NULL);
-        NhlRegisterConverter(NhlTcnLevelSelectionMode,_NhlTFExpString,
-			     NhlCvtEnumToFStr,levelselectionlist,
-			     NhlNumber(levelselectionlist),False,NULL);
-
-        NhlRegisterConverter(NhlTGenArray,NhlTcnLevelUseMode,
-			     NhlCvtGenToEnum,levelusegentoenumdat,
-			     1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTcnLevelUseMode,
-			     NhlCvtStringToEnum,leveluselist,
-			     NhlNumber(leveluselist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTcnLevelUseMode,
-			     NhlCvtIntToEnum,intleveluselist,
-			     NhlNumber(intleveluselist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTcnLevelUseMode,
-			     NhlCvtFloatToEnum,intleveluselist,
-			     NhlNumber(intleveluselist),False,NULL);
-        NhlRegisterConverter(NhlTcnLevelUseMode,NhlTString,
-			     NhlCvtEnumToString,leveluselist,
-			     NhlNumber(leveluselist),False,NULL);
-        NhlRegisterConverter(NhlTcnLevelUseMode,_NhlTFExpString,
-			     NhlCvtEnumToFStr,leveluselist,
-			     NhlNumber(leveluselist),False,NULL);
-
-        NhlRegisterConverter(NhlTGenArray,NhlTcnLineLabelSpacingMode,
-			     NhlCvtGenToEnum,linelabelspacinggentoenumdat,
-			     1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTcnLineLabelSpacingMode,
-			     NhlCvtStringToEnum,linelabelspacinglist,
-			     NhlNumber(linelabelspacinglist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTcnLineLabelSpacingMode,
-			     NhlCvtIntToEnum,intlinelabelspacinglist,
-			     NhlNumber(intlinelabelspacinglist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTcnLineLabelSpacingMode,
-			     NhlCvtFloatToEnum,intlinelabelspacinglist,
-			     NhlNumber(intlinelabelspacinglist),False,NULL);
-        NhlRegisterConverter(NhlTcnLineLabelSpacingMode,NhlTString,
-			     NhlCvtEnumToString,linelabelspacinglist,
-			     NhlNumber(linelabelspacinglist),False,NULL);
-        NhlRegisterConverter(NhlTcnLineLabelSpacingMode,_NhlTFExpString,
-			     NhlCvtEnumToFStr,linelabelspacinglist,
-			     NhlNumber(linelabelspacinglist),False,NULL);
-	
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);
@@ -2960,8 +2871,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	High_Label_AttrsP = &cnp->high_lbls;
 	Low_Label_AttrsP = &cnp->low_lbls;
 
-	(NhlString *)LLabel_AttrsP->text = 
-		(NhlString *) cnp->llabel_strings->data;
+	LLabel_AttrsP->text = (NhlString *) cnp->llabel_strings->data;
 	LLabel_AttrsP->colors = (int *) cnp->gks_llabel_colors;
 	LLabel_AttrsP->gks_bcolor = 
 		_NhlGetGksCi(cl->base.wkptr,LLabel_AttrsP->back_color);

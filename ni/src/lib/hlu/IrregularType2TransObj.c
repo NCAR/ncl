@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.10 1994-06-03 19:23:49 dbrown Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.11 1994-07-12 20:52:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,13 +53,13 @@
 #include <math.h>
 
 static NhlResource resources[] = {
-	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatPtr,sizeof(float*),
+	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,
 			  ir2trans.x_coord_points),
-		NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree },
-	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree },
+	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_inter_points),
-		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_max),
 		NhlTString, _NhlUSET("0.0") ,0,NULL},
@@ -68,25 +68,25 @@ static NhlResource resources[] = {
 		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_num_points),
-		NhlTString,_NhlUSET("0") ,0,NULL},
-	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
+		NhlTImmediate,_NhlUSET(0) ,0,NULL},
+	{ NhlNtrXReverse, NhlCtrXReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_reverse),
-		NhlTString,_NhlUSET("0") ,0,NULL},
+		NhlTImmediate,_NhlUSET(0) ,0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_tension),
 		NhlTString,_NhlUSET("2.0") ,0,NULL},
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_samples),
-		NhlTString,_NhlUSET("9") ,0,NULL},
-	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTInteger, sizeof(int),
+		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
+	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_use_log),
-		NhlTString,_NhlUSET("0") ,0,NULL},
-	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,_NhlUSET(0) ,0,NULL},
+	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_coord_points),
-		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
-	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
+	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_inter_points),
-		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_max),
 		NhlTString, _NhlUSET("0.0") ,0,NULL},
@@ -95,19 +95,19 @@ static NhlResource resources[] = {
 		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_num_points),
-		NhlTString,_NhlUSET("0") ,0,NULL},
-	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
+		NhlTImmediate,_NhlUSET(0) ,0,NULL},
+	{ NhlNtrYReverse, NhlCtrYReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_reverse),
-		NhlTString,_NhlUSET("0") ,0,NULL},
+		NhlTImmediate,_NhlUSET(0) ,0,NULL},
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_tension),
 		NhlTString,_NhlUSET("2.0") ,0,NULL},
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_samples),
-		NhlTString,_NhlUSET("9") ,0,NULL},
-	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTInteger, sizeof(int),
+		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
+	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_use_log),
-		NhlTString,_NhlUSET("0"),0,NULL}
+		NhlTImmediate,_NhlUSET(0),0,NULL}
 };
 
 /*

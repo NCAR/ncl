@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.13 1994-06-07 18:54:26 dbrown Exp $
+ *      $Id: Workstation.c,v 1.14 1994-07-12 20:53:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -292,9 +292,9 @@ static NhlResource resources[] = {
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
 		Oset(color_map_len),NhlTImmediate, 
 		  _NhlUSET((NhlPointer)NhlNumber(def_color)),0,NULL},
-	{ NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTGenArray, 
+	{ NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTFloatGenArray, 
 		  sizeof(NhlPointer),
-		  Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
+		  Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTGenArray, 
 		  sizeof(NhlPointer),
 		  Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
@@ -352,7 +352,7 @@ static NhlResource resources[] = {
 	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
 		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
 		  _NhlUSET((NhlPointer)0),0,NULL},
-	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlT1DStringGenArray,
+	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTStringGenArray,
 		  sizeof(NhlPointer),Oset(marker_table_strings),NhlTImmediate,
 		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNwkMarkerTableParams, NhlCwkMarkerTableParams, 
@@ -597,8 +597,6 @@ static NhlErrorTypes WorkstationClassInitialize()
 	int status1,dummy = 6;
 	int i;
 
-	(void)NrmStringToQuark(NhlTColorPtr);
-	(void)NrmStringToQuark(NhlTColor);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
 	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
 	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);
@@ -736,6 +734,7 @@ static NhlErrorTypes WorkstationInitialize
 	int len1, len2;
 	NhlMarkerTableParams *mparams;
 	NhlString *mstrings;
+	NhlBoolean	explicit_cmap = False;
 
 /* 
  * In case someone tries to set the value of the read-only fill table size
@@ -935,7 +934,7 @@ static NhlErrorTypes WorkstationInitialize
 			break;
 		}
 	}
-	newl->work.private_color_map[NhlBACKGROUND].ci = 0;
+	newl->work.private_color_map[NhlBACKGROUND].ci = SETALMOST;
 	newl->work.private_color_map[NhlBACKGROUND].red =  (*tcolor)[0];
 	newl->work.private_color_map[NhlBACKGROUND].green = (*tcolor)[1];
 	newl->work.private_color_map[NhlBACKGROUND].blue = (*tcolor)[2];
@@ -987,6 +986,7 @@ static NhlErrorTypes WorkstationInitialize
 				newl->work.color_map->len_dimensions[0];
 		}
 		newl->work.num_private_colors = newl->work.color_map_len + 1;
+		explicit_cmap = True;
 	}
 	newl->work.color_map = ga;
 
@@ -999,9 +999,9 @@ static NhlErrorTypes WorkstationInitialize
 	tcolor = newl->work.color_map->data;
 	for (i=1; i<newl->work.num_private_colors; i++)  {
 		newl->work.private_color_map[i].ci = SETALMOST;
-		newl->work.private_color_map[i].red = tcolor[i][0];
-		newl->work.private_color_map[i].green = tcolor[i][1];
-		newl->work.private_color_map[i].blue =  tcolor[i][2];
+		newl->work.private_color_map[i].red = tcolor[i-1][0];
+		newl->work.private_color_map[i].green = tcolor[i-1][1];
+		newl->work.private_color_map[i].blue =  tcolor[i-1][2];
 	}
 
 /*
@@ -1011,18 +1011,18 @@ static NhlErrorTypes WorkstationInitialize
  * the colormap resource.
  */
 
-	tcolor = NULL;
-	count[0] = 0;
-	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
-				    sizeof(float),1,count)) == NULL) {
-		e_text = "%s: error creating %s GenArray";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkForegroundColor);
-		return NhlFATAL;
-	}
-	ga->my_data = False;
-
 	if (newl->work.foregnd_color != NULL) {
+		tcolor = NULL;
+		count[0] = 0;
+		if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
+				    sizeof(float),1,count)) == NULL) {
+			e_text = "%s: error creating %s GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNwkForegroundColor);
+			return NhlFATAL;
+		}
+		ga->my_data = False;
+
 		subret = _NhlValidatedGenArrayCopy(&ga,
 						   newl->work.foregnd_color,
 						   3,True,False,
@@ -1032,19 +1032,17 @@ static NhlErrorTypes WorkstationInitialize
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		
-		if (subret > NhlWARNING) {
-			tcolor = (NhlColor *) ga->data;
-			for (i=0; i<3; i++) {
-				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
-					e_text =
-			    "%s: %s holds an invalid color value: not set";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNwkForegroundColor);
-					subret = NhlWARNING;
-					retcode = MIN(retcode, subret);
-					break;
-				}
+		tcolor = (NhlColor *) ga->data;
+		for (i=0; i<3; i++) {
+			if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
+				e_text =
+		    "%s: %s holds an invalid color value: not set";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name,
+					  NhlNwkForegroundColor);
+				subret = NhlWARNING;
+				retcode = MIN(retcode, subret);
+				break;
 			}
 		}
 		if (subret > NhlWARNING) {
@@ -1057,9 +1055,36 @@ static NhlErrorTypes WorkstationInitialize
 			newl->work.private_color_map[NhlFOREGROUND].blue =
 				(*tcolor)[2];
 		}
-
+		/*
+		 * Foreground resource is created on the fly in GetValues
+		 * if it is retrieved.
+		 */
+		(void)NhlFreeGenArray(ga);
+		newl->work.foregnd_color = NULL;
 	}
-	newl->work.foregnd_color = ga;
+	else if(!explicit_cmap){
+		/*
+		 * If the cmap is defaulted - then the foreground depends upon
+		 * the background.  It is black or white - which ever is better.
+		 */
+		newl->work.private_color_map[NhlFOREGROUND].ci = SETALMOST;
+		if (newl->work.private_color_map[NhlBACKGROUND].red *
+			newl->work.private_color_map[NhlBACKGROUND].red +
+		    newl->work.private_color_map[NhlBACKGROUND].green *
+			newl->work.private_color_map[NhlBACKGROUND].green +
+		    newl->work.private_color_map[NhlBACKGROUND].blue *
+			newl->work.private_color_map[NhlBACKGROUND].blue
+		    < .75) {
+			newl->work.private_color_map[NhlFOREGROUND].red = 1.0;
+			newl->work.private_color_map[NhlFOREGROUND].green = 1.0;
+			newl->work.private_color_map[NhlFOREGROUND].blue = 1.0;
+		}
+		else {
+			newl->work.private_color_map[NhlFOREGROUND].red = 0.0;
+			newl->work.private_color_map[NhlFOREGROUND].green = 0.0;
+			newl->work.private_color_map[NhlFOREGROUND].blue = 0.0;
+		}
+	}
 
 /*
  * Set the line label resource
@@ -1835,24 +1860,8 @@ static NhlErrorTypes AllocateColors
  * If the Foreground is unset default to white or black depending on
  * whether the Background color is closer to white or black.
  */
-	if (pcmap[NhlFOREGROUND].ci == UNSET) {
-		pcmap[NhlFOREGROUND].ci = SETALMOST;
-		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
-		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
-		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue
-		    < .75) {
-			pcmap[NhlFOREGROUND].red = 1.0;
-			pcmap[NhlFOREGROUND].green = 1.0;
-			pcmap[NhlFOREGROUND].blue = 1.0;
-		}
-		else {
-			pcmap[NhlFOREGROUND].red = 0.0;
-			pcmap[NhlFOREGROUND].green = 0.0;
-			pcmap[NhlFOREGROUND].blue = 0.0;
-		}
-	}
 
-	for( i = 1; i < MAX_COLOR_MAP; i++) {
+	for( i = 0; i < MAX_COLOR_MAP; i++) {
 		if(pcmap[i].ci == SETALMOST) {
 			tmpcolrrep.rgb.red = pcmap[i].red;
 			tmpcolrrep.rgb.green = pcmap[i].green;
@@ -1869,6 +1878,7 @@ static NhlErrorTypes AllocateColors
 	}
 	return(NhlNOERROR);
 }
+
 /*
  * Function:	DeallocateColors
  *
@@ -2030,7 +2040,7 @@ int _NhlNewColor
 	thework->work.private_color_map[i].blue = blue;
 	retcode = AllocateColors((NhlLayer)thework);
 
-	return((retcode < NhlINFO)? (int)retcode : i);
+	return((retcode <= NhlINFO)? (int)retcode : i);
 	 
 }
 
@@ -3273,6 +3283,7 @@ static NhlErrorTypes WorkstationFill
  * is specified (implying no fill)
  */
 	if (fill_color == NhlTRANSPARENT)
+	/*SUPPRESS570*/
 		;
 	else if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
 		/* fill_specs[ix].type  must be 0 */

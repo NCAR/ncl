@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.3 1994-06-24 00:39:17 dbrown Exp $
+ *      $Id: Annotation.c,v 1.4 1994-07-12 20:51:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 
 #include <math.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/Converters.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/AnnotationP.h>
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.8 1994-05-12 23:52:19 boote Exp $
+ *      $Id: SetValues.c,v 1.9 1994-07-12 20:53:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -205,8 +205,7 @@ SetValues
 				(char*)((char*)base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 				}
-				else if(_NhlConverterExists(args[i].type,
-							resources[j].nrm_type)){
+				else{
 					/* 
 					 * call converter
 					 */
@@ -229,12 +228,6 @@ SetValues
 					NrmNameToString(resources[i].nrm_name));
 						ret = MIN(NhlWARNING,ret);
 					}
-				}
-				else{
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"The %s resource is not setable using a %s",
-						NrmQuarkToString(args[i].quark),
-						NrmQuarkToString(args[i].type));
 				}
 				argfound[i] = True;
 				break;

@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.3 1994-02-18 02:54:32 boote Exp $
+ *      $Id: NresDB.c,v 1.4 1994-07-12 20:52:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -113,20 +113,7 @@ Bob Scheifler
 
 */
 
-typedef unsigned long Signature;
-
 static NrmQuark NrmQString, NrmQANY;
-
-typedef	NhlBoolean (*DBEnumProc)(
-#if NeedNestedPrototypes    /* this is Nested on purpose, to match Nlib.h */
-    NrmDatabase*	/* db */,
-    NrmBindingList	/* bindings */,
-    NrmQuarkList	/* quarks */,
-    NrmRepresentation*	/* type */,
-    NrmValue*		/* value */,
-    NhlPointer		/* closure */
-#endif
-);
 
 typedef struct _VEntry {
     struct _VEntry	*next;		/* next in chain */
@@ -239,7 +226,7 @@ typedef struct _SClosure {
 /* closure used in enumerate database */
 typedef struct _EClosure {
     NrmDatabase db;			/* the database */
-    DBEnumProc proc;			/* the user proc */
+    NrmDBEnumProc proc;			/* the user proc */
     NhlPointer closure;			/* the user closure */
     NrmBindingList bindings;		/* binding list */
     NrmQuarkList quarks;		/* quark list */
@@ -333,16 +320,6 @@ static NrmBits Const xrmtypes[256] = {
     NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,0
     /* The rest will be automatically initialized to zero. */
 };
-
-extern int
-_NrmInternalStringToQuark(
-#if	NhlNeedProto
-	Const char	*name,
-	int		len,
-	Signature	sig,
-	NhlBoolean	permstring
-#endif
-);
 
 void
 _NrmInitialize
@@ -532,7 +509,7 @@ static void MoveValues(ftable, ttable)
 	    tentry = *prev;
 	    *prev = fentry;
 	    /* chain on all with same name, to preserve invariant order */
-	    while ((nfentry = fentry->next) && nfentry->name == fentry->name)
+	    while (((nfentry=fentry->next)!=0)&&(nfentry->name == fentry->name))
 		fentry = nfentry;
 	    fentry->next = tentry;
 	}
@@ -559,7 +536,7 @@ static void MoveTables(ftable, ttable)
 	    tentry = *prev;
 	    *prev = fentry;
 	    /* chain on all with same name, to preserve invariant order */
-	    while ((nfentry = fentry->next) && nfentry->name == fentry->name)
+	    while (((nfentry=fentry->next)!=NULL)&& nfentry->name==fentry->name)
 		fentry = nfentry;
 	    fentry->next = tentry;
 	}
@@ -843,7 +820,8 @@ static void PutEntry(db, bindings, quarks, type, value)
 	nprev = NodeBuckets(table); \
     } else { \
 	table->leaf = 1; \
-	if (!(nprev = (NTable *)NhlMalloc(sizeof(VEntry *)))) \
+	nprev = (NTable *)NhlMalloc(sizeof(VEntry *)); \
+	if (!nprev) \
 	    return; \
 	((LTable)table)->buckets = (VEntry *)nprev; \
     } \
@@ -1106,7 +1084,7 @@ static void GetDatabase(db, permstr, filename, doall)
     if (!db)
 	return;
 
-    if (!(value_str = (char *)NhlMalloc(sizeof(char) * alloc_chars)))
+    if ((value_str = (char *)NhlMalloc(sizeof(char) * alloc_chars))==NULL)
 	return;
 
     /*
@@ -1560,7 +1538,7 @@ Const char * filename;
 
     GetSizeOfFile(filename, size);
 	
-    if (!(filebuf = (char *)NhlMalloc(size + 1))) { /* leave room for '\0' */
+    if((filebuf = (char *)NhlMalloc(size + 1))==NULL){ /* leave room for '\0' */
 	close(fd);
 	return (char *)NULL;
     }
@@ -1590,7 +1568,7 @@ GetIncludeFile(db, base, fname, fnamelen)
 
     if (fnamelen <= 0 || fnamelen >= BUFSIZ)
 	return;
-    if (fname[0] != '/' && base && (str = strrchr(base, '/'))) {
+    if (fname[0] != '/' && base && ((str = strrchr(base, '/'))!=NULL)) {
 	len = str - base + 1;
 	if (len + fnamelen >= BUFSIZ)
 	    return;
@@ -1601,7 +1579,7 @@ GetIncludeFile(db, base, fname, fnamelen)
 	strncpy(realfname, fname, fnamelen);
 	realfname[fnamelen] = '\0';
     }
-    if (!(str = ReadInFile(realfname)))
+    if ((str = ReadInFile(realfname)) == NULL)
 	return;
     GetDatabase(db, str, realfname, True);
     NhlFree(str);
@@ -1623,7 +1601,7 @@ NrmDatabase NrmGetFileDB
 	if(filename == (char*)NULL)
 		return (NrmDatabase)NULL;
 
-	if (!(str = ReadInFile(filename)))
+	if ((str = ReadInFile(filename)) == NULL)
 		return (NrmDatabase)NULL;
 
 	db = NewDatabase();
@@ -1653,7 +1631,7 @@ NrmCombineFileDB
 	if(filename == (char*)NULL)
 		return 0;
 
-	if (!(str = ReadInFile(filename)))
+	if ((str = ReadInFile(filename)) == NULL)
 		return 0;
 
 	if (override) {
@@ -1779,7 +1757,7 @@ static NhlBoolean EnumNTable(table, names, classes, level, closure)
 		return True; \
 	    if ((*get)(entry, names+1, classes+1, level, closure)) \
 		return True; \
-	    if (entry->tight && (entry = entry->next) && \
+	    if (entry->tight && ((entry=entry->next)!=NULL) && \
 		entry->name == q && leaf == entry->leaf && \
 		(*get)(entry, names+1, classes+1, level, closure)) \
 		return True; \
@@ -1787,7 +1765,7 @@ static NhlBoolean EnumNTable(table, names, classes, level, closure)
 	    if ((bilevel || entry->hasloose) && \
 		EnumLTable((LTable)entry, names+1, classes+1, level, closure))\
 		return True; \
-	    if (entry->tight && (entry = entry->next) && \
+	    if (entry->tight && ((entry=entry->next)!=NULL) && \
 		entry->name == q && (bilevel || entry->hasloose) && \
 		EnumLTable((LTable)entry, names+1, classes+1, level, closure))\
 		return True; \
@@ -1797,7 +1775,7 @@ static NhlBoolean EnumNTable(table, names, classes, level, closure)
 /* find entries named ename, leafness leaf, loose only, and call get */
 #define ILOOSE(ename) \
     NFIND(ename); \
-    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+    if (entry && entry->tight&&((entry=entry->next)!=NULL)&&entry->name != q) \
 	entry = (NTable)NULL; \
     if (entry) { \
 	if (leaf == entry->leaf) { \
@@ -1899,7 +1877,7 @@ static NhlBoolean EnumNTable(table, names, classes, level, closure)
     if ((!*names || entry->hasloose) &&
 	EnumLTable((LTable)entry, names, classes, level, closure))
 	return True;
-    if (entry->tight && entry == table->next && (entry = entry->next) &&
+    if (entry->tight && entry == table->next && ((entry=entry->next)!=NULL) &&
 	entry->name == table->name && (!*names || entry->hasloose))
 	return EnumLTable((LTable)entry, names, classes, level, closure);
     return False;
@@ -1916,7 +1894,7 @@ NhlBoolean NrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     NrmNameList		names;
     NrmClassList	classes;
     int			mode;
-    DBEnumProc		proc;
+    NrmDBEnumProc		proc;
     NhlPointer		closure;
 {
     NrmBinding  bindings[MANDBDEPTH+2];
@@ -2049,7 +2027,7 @@ void NrmPutFileDatabase(db, fileName)
     NrmQuark empty = NrmNULLQUARK;
 
     if (!db) return;
-    if (!(file = fopen(fileName, "w"))) return;
+    if ((file = fopen(fileName, "w")) == NULL) return;
     (void)NrmEnumerateDatabase(db, &empty, &empty, NrmEnumAllLevels,
 			       DumpEntry, (NhlPointer) file);
     fclose(file);
@@ -2069,16 +2047,16 @@ void NrmPutFileDatabase(db, fileName)
 		return True; \
 	    if ((*get)((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
-	    if (entry->tight && (entry = entry->next) && \
-		entry->name == q && leaf == entry->leaf && \
+	    if (entry->tight && ((entry=entry->next)!=NULL) && \
+		(entry->name == q) && (leaf == entry->leaf) && \
 		(*get)((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	} else if (entry->leaf) { \
 	    if (entry->hasloose && \
 		looseleaf((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
-	    if (entry->tight && (entry = entry->next) && \
-		entry->name == q && entry->hasloose && \
+	    if (entry->tight && ((entry=entry->next)!=NULL) && \
+		(entry->name == q) && entry->hasloose && \
 		looseleaf((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	} \
@@ -2087,7 +2065,7 @@ void NrmPutFileDatabase(db, fileName)
 /* find entries named ename, leafness leaf, loose only, and call get */
 #define GLOOSE(ename,looseleaf) \
     NFIND(ename); \
-    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+    if (entry && entry->tight&&((entry=entry->next)!=NULL)&&(entry->name!=q)) \
 	entry = (NTable)NULL; \
     if (entry) { \
 	if (leaf == entry->leaf) { \
@@ -2198,7 +2176,7 @@ static NhlBoolean SearchNEntry(table, names, classes, closure)
     if (entry->hasloose &&
 	AppendLooseLEntry((LTable)entry, names, classes, closure))
 	return True;
-    if (entry->tight && entry == table->next && (entry = entry->next) &&
+    if (entry->tight && entry == table->next && ((entry=entry->next)!=NULL) &&
 	entry->name == table->name && entry->hasloose)
 	return AppendLooseLEntry((LTable)entry, names, classes, closure);
     return False;
@@ -2275,12 +2253,14 @@ NrmGetQResFromList
 /* find loose entry */
 #define VLOOSE(q) \
     entry = LeafHash(table, q); \
-    while (entry && entry->name != q) \
+    while (entry && (entry->name != q)){ \
 	entry = entry->next; \
+    } \
     if (entry) { \
 	if (!entry->tight) \
 	    break; \
-	if ((entry = entry->next) && entry->name == q) \
+	entry = entry->next; \
+	if (entry && (entry->name == q)) \
 	    break; \
     }
 
@@ -2297,7 +2277,7 @@ NrmGetQResFromList
     } else if (flags == 3) {
 	/* both name and class */
 	/* SUPPRESS 624 */
-	while (table = *list++) {
+	while ((table = *list++) != NULL) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name);  /* do name, tight and loose */
 		VTIGHTLOOSE(class); /* do class, tight and loose */
@@ -2312,7 +2292,7 @@ NrmGetQResFromList
 	if (flags == 1)
 	    name = class;
 	/* SUPPRESS 624 */
-	while (table = *list++) {
+	while ((table = *list++) != NULL) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name); /* tight and loose */
 	    } else {
@@ -2392,7 +2372,7 @@ static NhlBoolean GetLooseVEntry(table, names, classes, closure)
     entry = LeafHash(table, q); \
     while (entry && entry->name != q) \
 	entry = entry->next; \
-    if (entry && entry->tight && (entry = entry->next) && entry->name != q) \
+    if (entry && entry->tight && ((entry=entry->next)!=NULL)&& entry->name!=q) \
 	entry = (VEntry)NULL;
 
     /* bump to last component */
@@ -2561,7 +2541,7 @@ static void DestroyLTable(table)
     buckets = table->buckets;
     for (i = table->table.mask; i >= 0; i--, buckets++) {
 	/* SUPPRESS 624 */
-	for (next = *buckets; entry = next; ) {
+	for (next = *buckets; ((entry=next)!=NULL); ) {
 	    next = entry->next;
 	    NhlFree((char *)entry);
 	}
@@ -2581,7 +2561,7 @@ static void DestroyNTable(table)
     buckets = NodeBuckets(table);
     for (i = table->mask; i >= 0; i--, buckets++) {
 	/* SUPPRESS 624 */
-	for (next = *buckets; entry = next; ) {
+	for (next = *buckets; ((entry=next) != NULL); ) {
 	    next = entry->next;
 	    if (entry->leaf)
 		DestroyLTable((LTable)entry);
@@ -2613,7 +2593,7 @@ NrmDestroyDB
 
     if (db) {
 	/* SUPPRESS 624 */
-	for (next = db->table; table = next; ) {
+	for (next = db->table; ((table=next)!=NULL); ) {
 	    next = table->next;
 	    if (table->leaf)
 		DestroyLTable((LTable)table);

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.19 1994-05-17 22:26:31 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.20 1994-07-12 20:53:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/hlu/XyPlotP.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
@@ -263,11 +263,11 @@ SetYMin
 
 #define	Oset(field)	NhlOffset(NhlXyDataDepLayerRec,xydata.field)
 static NhlResource data_resources[] = {
-	{NhlNxyColors,NhlCxyColors,NhlT1DIntGenArray,sizeof(NhlPointer),
+	{NhlNxyColors,NhlCxyColors,NhlTIntegerGenArray,sizeof(NhlPointer),
 		Oset(colors),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyColor,NhlCxyColor,NhlTInteger,sizeof(int),
 		Oset(color),NhlTImmediate,(NhlPointer)1,0,NULL},
-	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlT1DIntGenArray,
+	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlTIntegerGenArray,
 		sizeof(NhlPointer), Oset(dash_patterns),NhlTImmediate,
 		(NhlPointer)NULL, 0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTInteger,sizeof(int),
@@ -276,7 +276,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlLineLabelModes),
 		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS,
 		0,NULL},
-	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlT1DStringGenArray,
+	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlTStringGenArray,
 		sizeof(NhlPointer),
 		Oset(labels),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray}
 };
@@ -297,10 +297,10 @@ static NhlResource resources[] = {
 	{NhlNxyYIrrTensionF,NhlCxyYIrrTensionF,NhlTFloat,sizeof(float),
 		Oset(y_tension),NhlTString,"2.0",0,NULL},
 
-	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlT1DFloatGenArray,
+	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer), Oset(x_irregular_points),NhlTImmediate,
 		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyYIrregularPoints,NhlCxyYIrregularPoints,NhlT1DFloatGenArray,
+	{NhlNxyYIrregularPoints,NhlCxyYIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer), Oset(y_irregular_points),NhlTImmediate,
 		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyXReverse,NhlCxyXReverse,NhlTBoolean,sizeof(NhlBoolean),
@@ -351,16 +351,16 @@ static NhlResource resources[] = {
 	{NhlNxyYAlternate,NhlCxyYAlternate,NhlTAlternatePlace,
 		sizeof(NhlAlternatePlace),
 		Oset(y_alternate),NhlTImmediate,(NhlPointer)NhlNONE,0,NULL},
-	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlT1DFloatGenArray,
+	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(y_alternate_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlT1DFloatGenArray,
+	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(x_alternate_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyXOriginalCoords,NhlCxyXOriginalCoords,NhlT1DFloatGenArray,
+	{NhlNxyXOriginalCoords,NhlCxyXOriginalCoords,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(x_original_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlT1DFloatGenArray,
+	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(y_original_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashSegmentLengthF,NhlCxyDashSegmentLengthF,NhlTFloat,
@@ -761,66 +761,22 @@ XyPlotClassInitialize
 ()
 #endif
 {
-	NhlConvertArg	altplace[] = {
-				{NhlSTRENUM,	NhlNONE,	"none"},
-				{NhlSTRENUM,	NhlLEFTAXIS,	"leftaxis"},
-				{NhlSTRENUM,	NhlRIGHTAXIS,	"rightaxis"},
-				{NhlSTRENUM,	NhlTOPAXIS,	"topaxis"},
-				{NhlSTRENUM,	NhlBOTTOMAXIS,	"bottomaxis"}
-				};
+	_NhlEnumVals	altplace[] = {
+		{NhlNONE,	"none"},
+		{NhlLEFTAXIS,	"leftaxis"},
+		{NhlRIGHTAXIS,	"rightaxis"},
+		{NhlTOPAXIS,	"topaxis"},
+		{NhlBOTTOMAXIS,	"bottomaxis"}
+	};
 
-	NhlConvertArg	intaltplace[] = {
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNONE},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLEFTAXIS},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlRIGHTAXIS},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlTOPAXIS},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlBOTTOMAXIS}
-				};
+	_NhlEnumVals	lblmode[] = {
+		{NhlNOLABELS,	"nolabels"},
+		{NhlLETTERED,	"lettered"},
+		{NhlCUSTOM,	"custom"}
+	};
 
-	NhlConvertArg	lblmode[] = {
-				{NhlSTRENUM,	NhlNOLABELS,	"nolabels"},
-				{NhlSTRENUM,	NhlLETTERED,	"lettered"},
-				{NhlSTRENUM,	NhlCUSTOM,	"custom"}
-				};
-
-	NhlConvertArg	intlblmode[] = {
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNOLABELS},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLETTERED},
-		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlCUSTOM}
-				};
-	NhlConvertArg	altplacegentoenumdat[] = {
-		{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTAlternatePlace)}
-				};
-	NhlConvertArg	linelabelmodesgentoenumdat[] = {
-		{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTLineLabelModes)}
-				};
-
-	NhlRegisterConverter(NhlTGenArray,NhlTAlternatePlace,NhlCvtGenToEnum,
-				altplacegentoenumdat,1,False,NULL);
-	NhlRegisterConverter(NhlTString,NhlTAlternatePlace,NhlCvtStringToEnum,
-				altplace,NhlNumber(altplace),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTAlternatePlace,NhlCvtIntToEnum,
-				intaltplace,NhlNumber(intaltplace),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTAlternatePlace,NhlCvtFloatToEnum,
-				intaltplace,NhlNumber(intaltplace),False,NULL);
-	NhlRegisterConverter(NhlTAlternatePlace,NhlTString,NhlCvtEnumToString,
-				altplace,NhlNumber(altplace),False,NULL);
-	NhlRegisterConverter(NhlTAlternatePlace,_NhlTFExpString,
-		NhlCvtEnumToFStr,altplace,NhlNumber(altplace),False,NULL);
-
-	NhlRegisterConverter(NhlTGenArray,NhlTLineLabelModes,NhlCvtGenToEnum,
-				linelabelmodesgentoenumdat,1,False,NULL);
-				
-	NhlRegisterConverter(NhlTString,NhlTLineLabelModes,NhlCvtStringToEnum,
-					lblmode,NhlNumber(lblmode),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTLineLabelModes,NhlCvtIntToEnum,
-				intlblmode,NhlNumber(intlblmode),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTLineLabelModes,NhlCvtFloatToEnum,
-				intlblmode,NhlNumber(intlblmode),False,NULL);
-	NhlRegisterConverter(NhlTLineLabelModes,NhlTString,NhlCvtEnumToString,
-					lblmode,NhlNumber(lblmode),False,NULL);
-	NhlRegisterConverter(NhlTLineLabelModes,_NhlTFExpString,
-		NhlCvtEnumToFStr,lblmode,NhlNumber(lblmode),False,NULL);
+	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
+	_NhlRegisterEnumType(NhlTLineLabelModes,lblmode,NhlNumber(lblmode));
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 
@@ -1272,10 +1228,10 @@ DrawCurves
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Data Problem???");
 			return NhlFATAL;
 		}
-		if(datal->catfloat.ytable != NULL){
-			yvalues = (float**)datal->catfloat.ytable->data;
-			len_yvalues = (int*)datal->catfloat.ytable_lens->data;
-			num_curves = datal->catfloat.ytable->len_dimensions[0];
+		if(datal->flt.ytable != NULL){
+			yvalues = (float**)datal->flt.ytable->data;
+			len_yvalues = (int*)datal->flt.ytable_lens->data;
+			num_curves = datal->flt.ytable->len_dimensions[0];
 			impy = False;
 		}
 		else{
@@ -1283,17 +1239,17 @@ DrawCurves
 			len_yvalues = NULL;
 			impy = True;
 		}
-		if(datal->catfloat.xtable != NULL){
-			xvalues = (float**)datal->catfloat.xtable->data;
-			len_xvalues = (int*)datal->catfloat.xtable_lens->data;
+		if(datal->flt.xtable != NULL){
+			xvalues = (float**)datal->flt.xtable->data;
+			len_xvalues = (int*)datal->flt.xtable_lens->data;
 			impx = False;
 			if(impy)
 				num_curves =
-				datal->catfloat.xtable->len_dimensions[0];
+				datal->flt.xtable->len_dimensions[0];
 			else
 				num_curves =
 					MIN(num_curves,
-				datal->catfloat.xtable->len_dimensions[0]);
+				datal->flt.xtable->len_dimensions[0]);
 		}
 		else{
 			xvalues = NULL;
@@ -1439,10 +1395,10 @@ DrawCurves
 
 			if(!curve_impx && !curve_impy){
 				/* both vectors exist */
-				if(datal->catfloat.missing_x_set &&
-					datal->catfloat.missing_y_set){
-					float	xmiss=datal->catfloat.missing_x;
-					float	ymiss=datal->catfloat.missing_y;
+				if(datal->flt.missing_x_set &&
+					datal->flt.missing_y_set){
+					float	xmiss=datal->flt.missing_x;
+					float	ymiss=datal->flt.missing_y;
 
 					for(tint=0;tint < npts;tint++){
 						if((xvect[tint] == xmiss) ||
@@ -1460,8 +1416,8 @@ DrawCurves
 						}
 					}
 				}
-				else if(datal->catfloat.missing_x_set){
-					float	xmiss=datal->catfloat.missing_x;
+				else if(datal->flt.missing_x_set){
+					float	xmiss=datal->flt.missing_x;
 
 					for(tint=0;tint < npts;tint++){
 						if(xvect[tint] == xmiss)
@@ -1478,8 +1434,8 @@ DrawCurves
 						}
 					}
 				}
-				else if(datal->catfloat.missing_y_set){
-					float	ymiss=datal->catfloat.missing_y;
+				else if(datal->flt.missing_y_set){
+					float	ymiss=datal->flt.missing_y;
 
 					for(tint=0;tint < npts;tint++){
 						if(yvect[tint] == ymiss)
@@ -1522,8 +1478,8 @@ DrawCurves
 				}
 			}
 			else if(curve_impx){
-				if(datal->catfloat.missing_y_set){
-					float	ymiss=datal->catfloat.missing_y;
+				if(datal->flt.missing_y_set){
+					float	ymiss=datal->flt.missing_y;
 					for(tint=0;tint < npts;tint++){
 						if(yvect[tint] == ymiss)
 							upordownflag = 1;
@@ -1553,8 +1509,8 @@ DrawCurves
 				}
 			}
 			else if(curve_impy){
-				if(datal->catfloat.missing_x_set){
-					float	xmiss=datal->catfloat.missing_x;
+				if(datal->flt.missing_x_set){
+					float	xmiss=datal->flt.missing_x;
 					for(tint=0;tint < npts;tint++){
 						if(xvect[tint] == xmiss)
 							upordownflag = 1;
@@ -2619,10 +2575,10 @@ ComputeDataExtents
 			return NhlFATAL;
 		}
 
-		xnew->xyplot.x_data_min = datal->catfloat.min_x;
-		xnew->xyplot.x_data_max = datal->catfloat.max_x;
-		xnew->xyplot.y_data_min = datal->catfloat.min_y;
-		xnew->xyplot.y_data_max = datal->catfloat.max_y;
+		xnew->xyplot.x_data_min = datal->flt.min_x;
+		xnew->xyplot.x_data_max = datal->flt.max_x;
+		xnew->xyplot.y_data_min = datal->flt.min_y;
+		xnew->xyplot.y_data_max = datal->flt.max_y;
 
 
 		for(i=1;i < num_data;i++){
@@ -2634,13 +2590,13 @@ ComputeDataExtents
 				return NhlFATAL;
 			}
 			xnew->xyplot.x_data_min =
-			MIN(xnew->xyplot.x_data_min,datal->catfloat.min_x);
+			MIN(xnew->xyplot.x_data_min,datal->flt.min_x);
 			xnew->xyplot.x_data_max =
-			MAX(xnew->xyplot.x_data_max,datal->catfloat.max_x);
+			MAX(xnew->xyplot.x_data_max,datal->flt.max_x);
 			xnew->xyplot.y_data_min =
-			MIN(xnew->xyplot.y_data_min,datal->catfloat.min_y);
+			MIN(xnew->xyplot.y_data_min,datal->flt.min_y);
 			xnew->xyplot.y_data_max =
-			MAX(xnew->xyplot.x_data_max,datal->catfloat.max_y);
+			MAX(xnew->xyplot.x_data_max,datal->flt.max_y);
 		}
 	}
 

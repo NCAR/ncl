@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.5 1994-02-18 02:54:10 boote Exp $
+ *      $Id: DataMgr.c,v 1.6 1994-07-12 20:51:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -416,6 +416,9 @@ _NhlInitDataConnection
 
 	type = type_req;
 	while(*type != NrmNULLQUARK){
+		/*
+		 * Check for an exact converter.
+		 */
 		if(_NhlConverterExists(from,*type))
 			break;
 		type++;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.9 1994-05-12 23:51:09 boote Exp $
+ *      $Id: Error.c,v 1.10 1994-07-12 20:51:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@
 #include <errno.h>
 #include <ncarg/hlu/ErrorP.h>
 #include <ncarg/hlu/VarArg.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 #define	MAXERRMSGLEN	10240
 #define	TABLELISTINC	10
@@ -287,33 +287,17 @@ ErrorClassInitialize
 ()
 #endif
 {
-	NhlConvertArg	errtypes[] = {
-				{NhlSTRENUM,	NhlFATAL,	"fatal"},
-				{NhlSTRENUM,	NhlWARNING,	"warning"},
-				{NhlSTRENUM,	NhlINFO,	"info"},
-				{NhlSTRENUM,	NhlNOERROR,	"noerror"}
-				};
-	NhlConvertArg	interrtypes[] = {
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlFATAL},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlWARNING},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlINFO},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlNOERROR}
+	_NhlEnumVals	errtypes[] = {
+				{NhlFATAL,	"fatal"},
+				{NhlWARNING,	"warning"},
+				{NhlINFO,	"info"},
+				{NhlNOERROR,	"noerror"}
 				};
 
 	/*
 	 *	Install converters to the NhlErrorTypes enum.
 	 */
-	NhlRegisterConverter(NhlTString,NhlTErrorTypes,NhlCvtStringToEnum,
-				errtypes,NhlNumber(errtypes),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTErrorTypes,NhlCvtIntToEnum,
-				interrtypes,NhlNumber(interrtypes),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTErrorTypes,NhlCvtFloatToEnum,
-				interrtypes,NhlNumber(interrtypes),False,NULL);
-
-	NhlRegisterConverter(NhlTErrorTypes,NhlTString,NhlCvtEnumToString,
-				errtypes,NhlNumber(errtypes),False,NULL);
-	NhlRegisterConverter(NhlTErrorTypes,_NhlTFExpString,NhlCvtEnumToFStr,
-				errtypes,NhlNumber(errtypes),False,NULL);
+	_NhlRegisterEnumType(NhlTErrorTypes,errtypes,NhlNumber(errtypes));
 
 	return NhlNOERROR;
 }
@@ -362,6 +346,7 @@ ErrorInitialize
 	Const char		*tfname = NULL;
 	NhlErrorTypes		ret;
 	char			*fname = "ErrorInitialize";
+	int			foo;
 
 	if(elc->error_class.num_error_instances > 0){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -383,6 +368,11 @@ ErrorInitialize
 
 	if (ret < NhlWARNING)
 		return ret;
+
+	/*
+	 * Put libncarg/libncarg_gks in recovery mode.
+	 */
+	c_entsr(&foo,1);
 
 	tfname = enew->error.error_file;
 
@@ -1957,4 +1947,39 @@ NhlErrFPrintMsg
 	fflush(fp);
 
 	return tbuf;
+}
+
+/*
+ * Function:	nhl_fgerhnd
+ *
+ * Description:	This function will get called in the event of a GKS error.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
+#if	NhlNeedProto
+(
+	int	*errnum,
+	int	*funcid,
+	int	*errfile
+)
+#else
+(errnum,funcid,errfile)
+	int	*errnum;
+	int	*funcid;
+	int	*errfile;
+#endif
+{
+#ifdef	NOTYET
+	int	foo;
+
+	/* reset error mode if it is currently set */
+	if(c_nerro(&foo)){
+#endif
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.17 1994-06-03 16:38:01 ethan Exp $
+ *      $Id: hlu.c,v 1.18 1994-07-12 20:53:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1082,6 +1082,139 @@ NhlBoolean _NhlArgIsSet
  * Side Effect:	
  */
 NhlGenArray
+_NhlAllocCreateGenArray
+#if	NhlNeedProto
+(
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions,/* number of dimensions	*/
+	NhlBoolean	copy_data,	/* copy data pointer?	*/
+	_NhlAllocFunc	alloc_func	/* func to alloc	*/
+)
+#else
+(data,type,size,num_dimensions,len_dimensions,copy_data,alloc_func)
+	NhlPointer	data;			/* data array		*/
+	NhlString	type;			/* type of each element	*/
+	unsigned int	size;			/* size of each element	*/
+	int		num_dimensions;		/* number of dimensions	*/
+	int		*len_dimensions;	/* number of dimensions	*/
+	NhlBoolean	copy_data;		/* copy data pointer?	*/
+	_NhlAllocFunc	alloc_func;		/* func to alloc	*/
+#endif
+{
+	static NrmQuark		QString = NrmNULLQUARK;
+	NhlGenArray		gen = NULL;
+	int			i;
+
+	if(QString == NrmNULLQUARK)
+		QString = NrmStringToQuark(NhlTString);
+
+	if((num_dimensions < 1) && (num_dimensions != -1111)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"NhlGenArrayCreate:Arrays must have at least one dimension"));
+		return NULL;
+	}
+
+	gen = alloc_func(sizeof(NhlGenArrayRec));
+
+	if(gen == NULL)
+		return NULL;
+
+	gen->typeQ = NrmStringToQuark(type);
+	gen->size = size;
+
+	if(num_dimensions == -1111){
+		gen->num_dimensions = 0;
+		gen->len_dimensions = NULL;
+		gen->num_elements = 0;
+		gen->data = NULL;
+		gen->my_data = False;
+
+		return gen;
+	}
+
+	/*
+	 * HACK!!! - If there is only one dim - then len_dimensions can
+	 * be NULL - with the num_elements in num_dimensions.
+	 */
+	if(!len_dimensions || (num_dimensions == 1)){
+		gen->num_dimensions = 1;
+		if(!len_dimensions)
+			gen->num_elements = num_dimensions;
+		else
+			gen->num_elements = *len_dimensions;
+		gen->len_dimensions = &gen->num_elements;
+	}
+	else{
+		gen->num_dimensions = num_dimensions;
+		gen->len_dimensions = alloc_func(num_dimensions * sizeof(int));
+		if(gen->len_dimensions == NULL)
+			return NULL;
+		gen->num_elements = 1;
+		for(i=0;i < num_dimensions;i++){
+			gen->len_dimensions[i] = len_dimensions[i];
+			gen->num_elements *= len_dimensions[i];
+		}
+	}
+
+	if(copy_data){
+		gen->data = alloc_func(gen->num_elements * gen->size);
+		if(gen->data == NULL)
+			return NULL;
+
+		/*
+		 * If the individual elements are NhlString's then we
+		 * know how to copy them.
+		 */
+		if((gen->typeQ == QString) && (gen->size == sizeof(NhlString))){
+			NhlString	*otable = data;
+			NhlString	*ntable = gen->data;
+
+			for(i=0;i<gen->num_elements;i++){
+				if(otable[i] == NULL){
+					ntable[i] = NULL;
+				}
+				else{
+					ntable[i] =
+						alloc_func(strlen(otable[i])+1);
+					if(ntable[i] == NULL)
+						return NULL;
+					strcpy(ntable[i],otable[i]);
+				}
+			}
+		}
+		else{
+			memcpy(gen->data,data,gen->num_elements * gen->size);
+		}
+		gen->my_data = True;
+	}
+	else{
+		gen->data = data;
+		gen->my_data = False;
+	}
+
+	return gen;
+}
+
+/*
+ * Function:	_NhlCreateGenArray
+ *
+ * Description:	This function is used to define the size/shape of arrays passed
+ *		in as resources. If num_dimensions is -1111 then pass back an
+ *		empty NhlGenArray - Data=NULL,num_dimensions=num_elements=0
+ *		and len_dimensions = NULL.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global public
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
 _NhlCreateGenArray
 #if	NhlNeedProto
 (
@@ -1102,92 +1235,8 @@ _NhlCreateGenArray
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 #endif
 {
-	static NrmQuark		QString = NrmNULLQUARK;
-	NhlGenArray		gen = NULL;
-	int			i;
-
-	if(QString == NrmNULLQUARK)
-		QString = NrmStringToQuark(NhlTString);
-
-	if((num_dimensions < 1) && (num_dimensions != -1111)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-		"NhlGenArrayCreate:Arrays must have at least one dimension"));
-		return NULL;
-	}
-
-	gen = NhlMalloc(sizeof(NhlGenArrayRec));
-
-	if(gen == NULL)
-		return NULL;
-
-	gen->typeQ = NrmStringToQuark(type);
-	gen->size = size;
-
-	if(num_dimensions == -1111){
-		gen->num_dimensions = 0;
-		gen->len_dimensions = NULL;
-		gen->num_elements = 0;
-		gen->data = NULL;
-		gen->my_data = False;
-	}
-	else{
-		gen->num_dimensions = num_dimensions;
-		if(gen->num_dimensions == 1){
-			gen->num_elements = *len_dimensions;
-			gen->len_dimensions = &gen->num_elements;
-		}
-		else{
-			gen->len_dimensions =
-					NhlMalloc(num_dimensions * sizeof(int));
-			if(gen->len_dimensions == NULL)
-				return NULL;
-			gen->num_elements = 1;
-			for(i=0;i < num_dimensions;i++){
-				gen->len_dimensions[i] = len_dimensions[i];
-				gen->num_elements *= len_dimensions[i];
-			}
-		}
-
-		if(copy_data){
-			gen->data = NhlMalloc(gen->num_elements * gen->size);
-			if(gen->data == NULL)
-				return NULL;
-
-			/*
-			 * If the individual elements are NhlString's then we
-			 * know how to copy them.
-			 */
-			if((gen->typeQ == QString) &&
-					(gen->size == sizeof(NhlString))){
-				NhlString	*otable = data;
-				NhlString	*ntable = gen->data;
-
-				for(i=0;i<gen->num_elements;i++){
-					if(otable[i] == NULL){
-						ntable[i] = NULL;
-					}
-					else{
-						ntable[i] =
-						NhlMalloc(strlen(otable[i])+1);
-						if(ntable[i] == NULL)
-							return NULL;
-						strcpy(ntable[i],otable[i]);
-					}
-				}
-			}
-			else{
-				memcpy(gen->data,data,
-						gen->num_elements * gen->size);
-			}
-			gen->my_data = True;
-		}
-		else{
-			gen->data = data;
-			gen->my_data = False;
-		}
-	}
-
-	return gen;
+	return _NhlAllocCreateGenArray(data,type,size,num_dimensions,
+					len_dimensions,copy_data,NhlMalloc);
 }
 
 /*
@@ -1262,48 +1311,6 @@ _NhlCopyGenArray
 {
 	return _NhlCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
 		gen->size,gen->num_dimensions,gen->len_dimensions,copy_data);
-}
-
-/*
- * Function:	_NhlMyGenArray
- *
- * Description:	This function takes a GenArray, and returns one.  The one
- *		returned must own all of it's memory.  It is allowed to
- *		take ownership of the data from the original one instead
- *		of copying, if the original GenArray owns the data - otherwise
- *		it has to copy the data.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-NhlGenArray _NhlMyGenArray
-#if	NhlNeedProto
-(
-	NhlGenArray	ogen
-)
-#else
-(ogen)
-	NhlGenArray	ogen;
-#endif
-{
-	if(ogen->my_data){
-		NhlGenArray gen = _NhlCopyGenArray(ogen,False);
-
-		if(!gen)
-			return NULL;
-
-		ogen->my_data = False;
-		gen->my_data = True;
-
-		return gen;
-	}
-
-	return _NhlCopyGenArray(ogen,True);
 }
 
 /*

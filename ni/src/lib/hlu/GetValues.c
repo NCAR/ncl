@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.9 1994-05-12 23:51:22 boote Exp $
+ *      $Id: GetValues.c,v 1.10 1994-07-12 20:52:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -89,14 +89,8 @@ GetValues
 				if(args[i].type != NrmNULLQUARK){
 					*args[i].type_ret=resources[j].nrm_type;
 					*args[i].size_ret=resources[j].nrm_size;
-					if(*args[i].type_ret == stringQ){
-						*args[i].free_func =
-							(_NhlFreeFunc)NhlFree;
-					}
-					else if(*args[i].type_ret == genQ){
-						*args[i].free_func =
-						(_NhlFreeFunc)NhlFreeGenArray;
-					}
+					*args[i].free_func =
+							resources[j].free_func;
 				}
 				_NhlCopyToArg((NhlPointer)
 					(base + resources[j].nrm_offset),
@@ -434,7 +428,7 @@ NhlGetValues
 			CopyArgToArgptr(gextra[i].value_ret,
 				args[i].value.ptrval,gextra[i].size_ret);
 		}
-		else if(_NhlConverterExists(gextra[i].type_ret,args[i].type)){
+		else{
 			/*
 			 * Call Converter
 			 */
@@ -458,8 +452,8 @@ NhlGetValues
 			if(context == NULL)
 				context = _NhlCreateConvertContext();
 
-			if(NhlNOERROR != _NhlConvertData(context,
-				gextra[i].type_ret,args[i].type,&from,&to)){
+			if(_NhlConvertData(context,gextra[i].type_ret,
+					args[i].type,&from,&to) != NhlNOERROR){
 
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"NhlGetValues:Error retrieving %s",
@@ -494,11 +488,17 @@ NhlGetValues
 				}
 			}
 			else if(args[i].type == genQ){
+			/*
+			 * This really shouldn't happen.  All Array getvalues
+			 * should be using one of the (Exp)export types.
+			 * But just in case...  (only catch a GenArray, not
+			 * all the specific cases of GenArray)
+			 */
 				NhlGenArray	tgen =
 					*(NhlGenArray *)args[i].value.ptrval;
 				if(tgen != NULL){
 					*(NhlGenArray*)args[i].value.ptrval =
-						_NhlMyGenArray(tgen);
+						_NhlCopyGenArray(tgen,True);
 					if(*(NhlGenArray*)args[i].value.ptrval
 								== NULL){
 					NhlPError(NhlWARNING,ENOMEM,
@@ -513,14 +513,6 @@ NhlGetValues
 						(from.data.ptrval != NULL))
 				(*(gextra[i].free_func))
 					(from.data.ptrval);
-		}
-		else{
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"NhlGetValues:%s unretrievable: Can't convert a \"%s\" to a \"%s\"",
-					NrmQuarkToString(args[i].quark),
-					NrmQuarkToString(gextra[i].type_ret),
-						NrmQuarkToString(args[i].type));
-			ret = MIN(ret,NhlWARNING);
 		}
 	}
 

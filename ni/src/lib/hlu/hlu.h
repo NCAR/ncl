@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.18 1994-06-24 00:40:10 dbrown Exp $
+ *      $Id: hlu.h,v 1.19 1994-07-12 20:53:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -77,37 +77,54 @@
 #define BIGNUMBER 99e99
 #define LITTLENUMBER -99e99
 
-#define NhlTCharacter	"Character"
-#define NhlTString	"String"
-#define NhlTStringPtr	"StringPtr"
-#define NhlTLong	"Long"
-#define NhlTShort	"Short"
-#define NhlTInteger	"Int"
-#define NhlTBoolean	"Boolean"
-#define NhlTFloat	"Float"
-#define NhlTDouble	"Double"
-#define NhlTLongPtr	"LongPtr"
-#define NhlTShortPtr	"ShortPtr"
-#define NhlTIntegerPtr	"IntPtr"
-#define NhlTFloatPtr	"FloatPtr"
-#define NhlTFloatPtrPtr	"FloatPtrPtr"
-#define NhlTDoublePtr	"DoublePtr"
-#define NhlTPointer	"Pointer"
 #define NhlTImmediate	"Immediate"
 #define NhlTProcedure	"Procedure"
-#define	NhlTGenArray	"GenArray"
-#define	NhlTQuark	"Quark"
-#define	NhlTArray1D	"Array1D"
-#define NhlTNull	"NULL"
-#define NhlTExtraLayer	"ExtraLayer"
+
+/* public pointer types supported */
+#define NhlTPointer	"Pointer"
+#define NhlTString	"String"
+
+#define NhlTScalar	"Scalar"
+
+/*
+ * Character is different from Byte when it comes to conversions to and from
+ * String.
+ */
+/* public int types supported */
+#define NhlTCharacter	"Character"
+#define NhlTByte	"Byte"
+#define NhlTShort	"Short"
+#define NhlTInteger	"Integer"
+#define NhlTLong	"Long"
+
+/* public real types supported */
+#define NhlTFloat	"Float"
+#define NhlTDouble	"Double"
+
+#define NhlTEnum	"Enum"
+
+/* public enumerations supported */
+#define NhlTBoolean	"Boolean"
 #define	NhlTFont	"Font"
-#define NhlTObjClassPtr "ObjClassPtr"
-#define NhlT1DFloatGenArray "1DFloatGenArray"
-#define NhlT1DIntGenArray "1DIntGenArray"
-#define NhlT1DStringGenArray "1DStringGenArray"
-#define NhlTFloatGenArray "FloatGenArray"
-#define NhlTIntGenArray    "IntGenArray"
-#define NhlTStringGenArray "StringGenArray"
+
+/* public Array types */
+#define	NhlTGenArray		"GenArray"
+
+#define NhlTStringGenArray	"StringGenArray"
+
+#define NhlTByteGenArray	"ByteGenArray"
+#define NhlTCharacterGenArray	"CharacterGenArray"
+#define NhlTShortGenArray	"ShortGenArray"
+#define NhlTIntegerGenArray	"IntegerGenArray"
+#define NhlTLongGenArray	"LongGenArray"
+
+#define NhlTFloatGenArray	"FloatGenArray"
+#define NhlTDoubleGenArray	"DoubleGenArray"
+
+/* These types are needed by ncl - it is a semi-public type */
+ /* They are only supported in converters as a "from" type */
+#define	NhlTQuark		"Quark"
+#define	NhlTQuarkGenArray	"QuarkGenArray"
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;

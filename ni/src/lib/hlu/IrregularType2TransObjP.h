@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObjP.h,v 1.5 1994-06-03 19:23:51 dbrown Exp $
+ *      $Id: IrregularType2TransObjP.h,v 1.6 1994-07-12 20:52:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,24 +30,24 @@
 
 typedef struct _NhlIrregularType2TransObjLayerPart {
 	/* Publically setable resources */
-	float 	*x_coord_points;
-	float	*x_inter_points;
-	float	x_min;
-	float	x_max;
-	int 	x_num_points;
-	int	x_reverse;
-	float	x_tension;
-	int	x_samples;
-	int	x_use_log;
-	float 	*y_coord_points;
-	float	*y_inter_points;
-	float	y_min;
-	float	y_max;
-	int 	y_num_points;
-	int	y_reverse;
-	float	y_tension;
-	int	y_samples;
-	int	y_use_log;
+	float 		*x_coord_points;
+	float		*x_inter_points;
+	float		x_min;
+	float		x_max;
+	int 		x_num_points;
+	NhlBoolean	x_reverse;
+	float		x_tension;
+	int		x_samples;
+	NhlBoolean	x_use_log;
+	float 		*y_coord_points;
+	float		*y_inter_points;
+	float		y_min;
+	float		y_max;
+	int 		y_num_points;
+	NhlBoolean	y_reverse;
+	float		y_tension;
+	int		y_samples;
+	NhlBoolean	y_use_log;
 	
 	/* Private fields */
 	NhlCoordDat thecoord;

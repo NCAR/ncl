@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.h,v 1.5 1994-01-27 21:21:56 boote Exp $
+ *      $Id: CoordArrTable.h,v 1.6 1994-07-12 20:51:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,10 +23,18 @@
 #define _NCoordArrTable_h
 #include <ncarg/hlu/DataItem.h>
 
-#define	NhlNctXTable	"ctXTable"
-#define	NhlCctXTable	"CtXTable"
-#define	NhlNctYTable	"ctYTable"
-#define	NhlCctYTable	"CtYTable"
+#define	NhlNctXTableType	"ctXTableType"
+#define	NhlCctXTableType	"CtXTableType"
+#define	NhlNctYTableType	"ctYTableType"
+#define	NhlCctYTableType	"CtYTableType"
+#define	NhlNctXElementSize	"ctXElementSize"
+#define	NhlCctXElementSize	"CtXElementSize"
+#define	NhlNctYElementSize	"ctYElementSize"
+#define	NhlCctYElementSize	"CtYElementSize"
+#define	NhlNctXTable		"ctXTable"
+#define	NhlCctXTable		"CtXTable"
+#define	NhlNctYTable		"ctYTable"
+#define	NhlCctYTable		"CtYTable"
 #define	NhlNctXTableLengths	"ctXTableLengths"
 #define	NhlCctXTableLengths	"CtXTableLengths"
 #define	NhlNctYTableLengths	"ctYTableLengths"
@@ -34,27 +42,16 @@
 
 #define	NhlNctCopyTables	"ctCopyTables"
 
-#define	NhlNctXMissingF	"ctXMissingF"
-#define	NhlNctYMissingF	"ctYMissingF"
-#define	NhlNctXMaxF	"ctXMaxF"
-#define	NhlCctXMaxF	"CtXMaxF"
-#define	NhlNctYMaxF	"ctYMaxF"
-#define	NhlCctYMaxF	"CtYMaxF"
-#define	NhlNctXMinF	"ctXMinF"
-#define	NhlCctXMinF	"CtXMinF"
-#define	NhlNctYMinF	"ctYMinF"
-#define	NhlCctYMinF	"CtYMinF"
-
-#define	NhlNctXMissing	"ctXMissing"
-#define	NhlNctYMissing	"ctYMissing"
-#define	NhlNctXMax	"ctXMax"
-#define	NhlCctXMax	"CtXMax"
-#define	NhlNctYMax	"ctYMax"
-#define	NhlCctYMax	"CtYMax"
-#define	NhlNctXMin	"ctXMin"
-#define	NhlCctXMin	"CtXMin"
-#define	NhlNctYMin	"ctYMin"
-#define	NhlCctYMin	"CtYMin"
+#define	NhlNctXMissingV		"ctXMissingV"
+#define	NhlNctYMissingV		"ctYMissingV"
+#define	NhlNctXMaxV		"ctXMaxV"
+#define	NhlCctXMaxV		"CtXMaxV"
+#define	NhlNctYMaxV		"ctYMaxV"
+#define	NhlCctYMaxV		"CtYMaxV"
+#define	NhlNctXMinV		"ctXMinV"
+#define	NhlCctXMinV		"CtXMinV"
+#define	NhlNctYMinV		"ctYMinV"
+#define	NhlCctYMinV		"CtYMinV"
 
 extern NhlLayerClass NhlcoordArrTableLayerClass;
 

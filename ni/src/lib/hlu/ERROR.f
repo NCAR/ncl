@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.1 1994-05-12 23:51:07 boote Exp $
+C $Id: ERROR.f,v 1.2 1994-07-12 20:51:55 boote Exp $
 C
 C****************************************************************
 C								*
@@ -40,6 +40,7 @@ C
 			opn = 0
 		endif
 	endif
+	return
       end
 C
 C open the given file with the given unit number
@@ -49,6 +50,7 @@ C
 	character*(*) fname
 
 	open(iunit,FILE=fname(:fname_len),IOSTAT=ierr)
+	return
       end
 C
 C close the given unit number
@@ -56,6 +58,7 @@ C
       subroutine nhl_fclsunit(iunit,ierr)
 	integer iunit,ierr
 	close(iunit,IOSTAT=ierr)
+	return
       end
 
 C
@@ -72,7 +75,22 @@ C
       		write(i1mach(4),*,IOSTAT=ierr)
      % 				'Unable to print Error Messages???'
       	endif
+        return
+      end
+C
+C****************************************************************
+C
+C	GKS Error Handler function - this function will be called
+C	in the event of a GKS error.
+C
+C****************************************************************
+C
+      subroutine gerhnd(errnr,fctid,errfil)
+	integer errnr,fctid,errfil
 
+	call nhl_fgerhnd(errnr,fctid,errfil)
+
+	return
       end
 C
 C****************************************************************
@@ -85,6 +103,7 @@ C
 	character*(*) slevel,estring
 	integer ienum
 	call nhl_fperror(slevel,len(slevel),ienum,estring,len(estring))
+	return
       end
 C
 C
@@ -92,6 +111,7 @@ C
       subroutine nhlferrgetid(id_ret)
 	integer id_ret
 	call nhl_ferrgetid(id_ret)
+	return
       end
 C
 C
@@ -99,6 +119,7 @@ C
       subroutine nhlferrnummsgs(nummsg)
 	integer nummsg
 	call nhl_ferrnummsgs(nummsg)
+	return
       end
 C
 C
@@ -109,12 +130,14 @@ C
 	character*(*) emess,smess,file
 	call nhl_ferrgetmsg(imsg,ilevel,emess,len(emess),enum,smess,
      %		len(smess),line,file,len(file),ierr)
+	return
       end
 C
 C
 C
       subroutine nhlferrclearmsgs(ierr)
 	call nhl_ferrclearmsgs(ierr)
+	return
       end
 C
 C
@@ -123,6 +146,7 @@ C
 	character*(*) smess
 	integer imsg
 	call nhl_ferrsprintmsg(smess,len(smess),imsg)
+	return
       end
 C
 C
@@ -133,4 +157,5 @@ C
 
 	call nhlferrsprintmsg(smsg,imsg)
 	call nhl_fprnmes(iunit,smsg,len(smsg))
+	return
       end

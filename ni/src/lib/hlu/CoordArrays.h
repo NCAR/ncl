@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.4 1994-01-27 21:22:09 boote Exp $
+ *      $Id: CoordArrays.h,v 1.5 1994-07-12 20:51:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,27 +39,16 @@
 
 #define	NhlNcaCopyArrays	"caCopyArrays"
 
-#define	NhlNcaXMissingF	"caXMissingF"
-#define	NhlNcaYMissingF	"caYMissingF"
-#define	NhlNcaXMaxF	"caXMaxF"
-#define	NhlCcaXMaxF	"CaXMaxF"
-#define	NhlNcaYMaxF	"caYMaxF"
-#define	NhlCcaYMaxF	"CaYMaxF"
-#define	NhlNcaXMinF	"caXMinF"
-#define	NhlCcaXMinF	"CaXMinF"
-#define	NhlNcaYMinF	"caYMinF"
-#define	NhlCcaYMinF	"CaYMinF"
-
-#define	NhlNcaXMissing	"caXMissing"
-#define	NhlNcaYMissing	"caYMissing"
-#define	NhlNcaXMax	"caXMax"
-#define	NhlCcaXMax	"CaXMax"
-#define	NhlNcaYMax	"caYMax"
-#define	NhlCcaYMax	"CaYMax"
-#define	NhlNcaXMin	"caXMin"
-#define	NhlCcaXMin	"CaXMin"
-#define	NhlNcaYMin	"caYMin"
-#define	NhlCcaYMin	"CaYMin"
+#define	NhlNcaXMissingV	"caXMissingV"
+#define	NhlNcaYMissingV	"caYMissingV"
+#define	NhlNcaXMaxV	"caXMaxV"
+#define	NhlCcaXMaxV	"CaXMaxV"
+#define	NhlNcaYMaxV	"caYMaxV"
+#define	NhlCcaYMaxV	"CaYMaxV"
+#define	NhlNcaXMinV	"caXMinV"
+#define	NhlCcaXMinV	"CaXMinV"
+#define	NhlNcaYMinV	"caYMinV"
+#define	NhlCcaYMinV	"CaYMinV"
 
 extern NhlLayerClass NhlcoordArraysLayerClass;
 

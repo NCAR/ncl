@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.11 1994-06-28 01:23:33 dbrown Exp $
+ *      $Id: Workspace.c,v 1.12 1994-07-12 20:53:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ncarg/hlu/WorkspaceP.h>
-#include <ncarg/hlu/Converters.h>
 
 /* Method declarations	*/
 

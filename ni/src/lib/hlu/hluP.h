@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.16 1994-05-12 23:53:15 boote Exp $
+ *      $Id: hluP.h,v 1.17 1994-07-12 20:53:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,13 @@ typedef struct _NhlLayerRec *NhlLayer;
 
 typedef	NhlArgVal	_NhlArgVal;
 
-#define _NhlFreeFunc NhlFreeFunc
+typedef NhlFreeFunc _NhlFreeFunc;
+
+typedef NhlPointer (*_NhlAllocFunc)(
+#if     NhlNeedProto
+	unsigned int	size
+#endif
+);
 
 typedef enum _NhlC_OR_F_{
 	_NhlCLIB,
@@ -177,6 +183,18 @@ extern void _NhlInitGetValues(
 #endif
 );
 
+extern NhlGenArray _NhlAllocCreateGenArray(
+#if	NhlNeedProto
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions,/* number of dimensions	*/
+	NhlBoolean	copy_data,	/* copy data pointer?	*/
+	_NhlAllocFunc	alloc_func	/* alloc func to use	*/
+#endif
+);
+
 extern NhlGenArray _NhlCreateGenArray(
 #if	NhlNeedProto
 	NhlPointer	data,		/* data array		*/
@@ -192,12 +210,6 @@ extern NhlGenArray _NhlCopyGenArray(
 #if	NhlNeedProto
 	NhlGenArray	gen,		/* public gen array	*/
 	NhlBoolean	copy_data	/* copy data part?	*/
-#endif
-);
-
-extern NhlGenArray _NhlMyGenArray(
-#if	NhlNeedProto
-	NhlGenArray	gen
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.5 1994-06-24 00:39:56 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.6 1994-07-12 20:52:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ncarg/hlu/ScalarFieldP.h>
-#include <ncarg/hlu/CoordArrTableP.h>
 #include <math.h>
 
 /************************************************************************
@@ -1441,7 +1440,7 @@ GetSubsetBoundsIrregular
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
-				return NULL;
+				return NhlFATAL;
 			}
 			out_ga->num_dimensions = 1;
 			out_ga->len_dimensions = &out_ga->num_elements;

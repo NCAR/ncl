@@ -1,5 +1,5 @@
 /*
- *      $Id: Quarks.c,v 1.2 1993-10-19 17:52:04 boote Exp $
+ *      $Id: Quarks.c,v 1.3 1994-07-12 20:52:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,6 @@ SOFTWARE.
 /* Not cost effective, at least for vanilla MIT clients */
 /* #define PERMQ */
 
-typedef unsigned long Signature;
 typedef unsigned long Entry;
 #ifdef PERMQ
 typedef unsigned char Bits;
@@ -118,7 +117,8 @@ static char *permalloc(length)
     if (neverFreeTableSize < length) {
 	if (length >= NEVERFREETABLESIZE)
 	    return (char *)NhlMalloc(length);
-	if (! (ret = (char *)NhlMalloc(NEVERFREETABLESIZE)))
+	ret = (char *)NhlMalloc(NEVERFREETABLESIZE);
+	if (!ret)
 	    return (char *) NULL;
 	neverFreeTableSize = NEVERFREETABLESIZE;
 	neverFreeTable = ret;
@@ -140,13 +140,13 @@ char *Npermalloc(length)
 	     (sizeof(struct {char a; unsigned long b;}) -
 	      sizeof(unsigned long) + sizeof(double))) &&
 	    !(length & (DALIGN-1)) &&
-	    (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1))) {
+	    ((i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1))!=0)) {
 	    neverFreeTableSize -= DALIGN - i;
 	    neverFreeTable += DALIGN - i;
 	} else
 #endif
 	    /* SUPPRESS 624 */
-	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) {
+	    if ((i = (NEVERFREETABLESIZE-neverFreeTableSize)&(WALIGN-1)) != 0){
 		neverFreeTableSize -= WALIGN - i;
 		neverFreeTable += WALIGN - i;
 	    }
@@ -167,7 +167,7 @@ ExpandQuarkTable()
 
     oldentries = quarkTable;
     /* SUPPRESS 624 */
-    if (oldmask = quarkMask)
+    if ((oldmask = quarkMask) != 0)
 	newmask = (oldmask << 1) + 1;
     else {
 	if (!stringTable) {
@@ -200,13 +200,13 @@ ExpandQuarkTable()
     quarkRehash = quarkMask - 2;
     for (oldidx = 0; oldidx <= oldmask; oldidx++) {
 	/* SUPPRESS 624 */
-	if (entry = oldentries[oldidx]) {
+	if ((entry = oldentries[oldidx]) != 0) {
 	    if (entry & LARGEQUARK)
 		q = entry & (LARGEQUARK-1);
 	    else
 		q = (entry >> QUARKSHIFT) & QUARKMASK;
 	    /* SUPPRESS 624 */
-	    for (sig = 0, s = NAME(q); c = *s++; )
+	    for (sig = 0, s = NAME(q); ((c = *s++)!=0); )
 		sig = (sig << 1) + c;
 	    newidx = HASH(sig);
 	    if (entries[newidx]) {
@@ -245,7 +245,7 @@ NrmQuark _NrmInternalStringToQuark(name, len, sig, permstring)
     rehash = 0;
     idx = HASH(sig);
     /* SUPPRESS 624 */
-    while (entry = quarkTable[idx]) {
+    while ((entry = quarkTable[idx]) != 0) {
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
 	else {
@@ -282,9 +282,10 @@ nomatch:    if (!rehash)
     q = nextQuark;
     if (!(q & QUANTUMMASK)) {
 	if (!(q & CHUNKMASK)) {
-	    if (!(new = (char *)NhlRealloc((char *)stringTable,
+	    new = (char *)NhlRealloc((char *)stringTable,
 				 sizeof(NrmString *) *
-				 ((q >> QUANTUMSHIFT) + CHUNKPER))))
+				 ((q >> QUANTUMSHIFT) + CHUNKPER));
+	    if (!new)
 		return NrmNULLQUARK;
 	    stringTable = (NrmString **)new;
 #ifdef PERMQ
@@ -347,7 +348,7 @@ NrmQuark NrmStringToQuark(name)
 	return (NrmNULLQUARK);
     
     /* SUPPRESS 624 */
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; ((c = *tname++)!=0); )
 	sig = (sig << 1) + c;
 
     return _NrmInternalStringToQuark(name, tname-(char *)name-1, sig, False);
@@ -368,7 +369,7 @@ NrmQuark NrmPermStringToQuark(name)
 	return (NrmNULLQUARK);
 
     /* SUPPRESS 624 */
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; ((c = *tname++)!=0); )
 	sig = (sig << 1) + c;
 
     return _NrmInternalStringToQuark(name, tname-(char *)name-1, sig, True);

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.7 1994-05-12 23:51:49 boote Exp $
+ *      $Id: MultiText.c,v 1.8 1994-07-12 20:52:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,14 +32,14 @@ static NhlResource resources[] = {
 /*
 * The free function is probably wrong in this place
 */
-	{NhlNMtextStrings, NhlCMtextStrings, NhlTStringPtr,
+	{NhlNMtextStrings, NhlCMtextStrings, NhlTPointer,
 		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
 	{NhlNMtextOrientation, NhlCMtextOrientation, NhlTMTextOrientationType,
 		sizeof(NhlMTextOrientatonType),Oset(orientation),NhlTImmediate,
 						(NhlPointer)NhlMTEXT_X_CONST,0,NULL},
 	{NhlNMtextConstPosF, NhlCMtextConstPosF, NhlTFloat,
 		sizeof(float),Oset(const_pos),NhlTString,"-1.0",0,NULL},
-	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTFloatPtr,
+	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTPointer,
 		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
 	/*
 	 * These resources are actually resources in the TextItem object

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.18 1994-06-03 19:24:19 dbrown Exp $
+ *      $Id: TickMark.c,v 1.19 1994-07-12 20:53:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/IrregularType2TransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/MultiText.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
 
@@ -170,14 +170,14 @@ static NhlResource resources[] = {
 	{ NhlNtmXBSpacingType, NhlCtmXBSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_spacing_type),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
-	{ NhlNtmXBIrregularPoints, NhlCtmXBIrregularPoints,NhlT1DFloatGenArray,
+	{ NhlNtmXBIrregularPoints, NhlCtmXBIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXBValues, NhlCtmXBValues, NhlT1DFloatGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXBValues, NhlCtmXBValues, NhlTFloatGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXBLabels, NhlCtmXBLabels, NhlT1DStringGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXBLabels, NhlCtmXBLabels, NhlTStringGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNtmXBMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -262,14 +262,14 @@ static NhlResource resources[] = {
 	{ NhlNtmXTSpacingType, NhlCtmXTSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_spacing_type),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
-	{ NhlNtmXTIrregularPoints, NhlCtmXTIrregularPoints,NhlT1DFloatGenArray,
+	{ NhlNtmXTIrregularPoints, NhlCtmXTIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXTValues, NhlCtmXTValues, NhlT1DFloatGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXTValues, NhlCtmXTValues, NhlTFloatGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlT1DStringGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlTStringGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNtmXTMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -457,14 +457,14 @@ static NhlResource resources[] = {
 	{ NhlNtmYLSpacingType, NhlCtmYLSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_spacing_type),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
-	{ NhlNtmYLIrregularPoints, NhlCtmYLIrregularPoints,NhlT1DFloatGenArray,
+	{ NhlNtmYLIrregularPoints, NhlCtmYLIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYLValues, NhlCtmYLValues, NhlT1DFloatGenArray, sizeof(NhlGenArray),
+	{ NhlNtmYLValues, NhlCtmYLValues, NhlTFloatGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlT1DStringGenArray, sizeof(NhlGenArray),
+	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlTStringGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNtmYLMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -549,15 +549,15 @@ static NhlResource resources[] = {
 	{ NhlNtmYRSpacingType, NhlCtmYRSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_spacing_type),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
-	{ NhlNtmYRIrregularPoints, NhlCtmYRIrregularPoints,NhlT1DFloatGenArray,
+	{ NhlNtmYRIrregularPoints, NhlCtmYRIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYRValues, NhlCtmYRValues, NhlT1DFloatGenArray, 
+	{ NhlNtmYRValues, NhlCtmYRValues, NhlTFloatGenArray, 
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYRLabels, NhlCtmYRLabels, NhlT1DStringGenArray, 
+	{ NhlNtmYRLabels, NhlCtmYRLabels, NhlTStringGenArray, 
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
@@ -1662,69 +1662,26 @@ static NhlErrorTypes	TickMarkClassInitialize
 ()
 #endif
 {
-	NhlConvertArg	tmarkmodes[] = {
-		{NhlSTRENUM,NhlAUTOMATIC,_NhlUSET("Automatic")},
-		{NhlSTRENUM,NhlMANUAL,_NhlUSET("manual")},
-		{NhlSTRENUM,NhlEXPLICIT,_NhlUSET("explicit")}
-				};
-
-	NhlConvertArg	inttmarkmodes[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlAUTOMATIC)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlMANUAL)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlEXPLICIT)}
-				};
-
-	NhlConvertArg	tmarkstyles[] = {
-		{NhlSTRENUM,	NhlLOG,	_NhlUSET("log")},
-		{NhlSTRENUM,	NhlLINEAR,	_NhlUSET("linear")},
-		{NhlSTRENUM,	NhlIRREGULAR,	_NhlUSET("irregular")},
-		{NhlSTRENUM,	NhlTIME,	_NhlUSET("time")},
-		{NhlSTRENUM,	NhlGEOGRAPHIC,	_NhlUSET("geographic")}
-				};
-
-	NhlConvertArg	inttmarkstyles[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlLOG)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlLINEAR)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlIRREGULAR)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlTIME)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlGEOGRAPHIC)}
-				};
-
-	NhlConvertArg   tickmarkgentoenumdat[] = {
-		{NhlIMMEDIATE,sizeof(char*),_NhlUSET((NhlPointer)NhlTTickMarkModes)}
+	_NhlEnumVals	tmarkmodes[] = {
+		{NhlAUTOMATIC,	"automatic"},
+		{NhlMANUAL,	"manual"},
+		{NhlEXPLICIT,	"explicit"}
 	};
-	NhlConvertArg   tickmarkstylegentoenumdat[] = {
-		{NhlIMMEDIATE,sizeof(char*),_NhlUSET((NhlPointer)NhlTTickMarkStyles)}
+
+	_NhlEnumVals	tmarkstyles[] = {
+		{NhlLOG,	"log"},
+		{NhlLINEAR,	"linear"},
+		{NhlIRREGULAR,	"irregular"},
+		{NhlTIME,	"time"},
+		{NhlGEOGRAPHIC,	"geographic"}
 	};
 
 	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
 
-	NhlRegisterConverter(NhlTGenArray,NhlTTickMarkModes,NhlCvtGenToEnum,
-				tickmarkgentoenumdat,1,False,NULL);
-	NhlRegisterConverter(NhlTGenArray,NhlTTickMarkStyles,NhlCvtGenToEnum,
-				tickmarkstylegentoenumdat,1,False,NULL);
-
-	NhlRegisterConverter(NhlTString,NhlTTickMarkModes,NhlCvtStringToEnum,
-				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTTickMarkModes,NhlCvtIntToEnum,
-			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTTickMarkModes,NhlCvtFloatToEnum,
-			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
-	NhlRegisterConverter(NhlTTickMarkModes,NhlTString,NhlCvtEnumToString,
-				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
-	NhlRegisterConverter(NhlTTickMarkModes,_NhlTFExpString,NhlCvtEnumToFStr,
-				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
-
-	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,NhlCvtStringToEnum,
-				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTTickMarkStyles,NhlCvtIntToEnum,
-			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTTickMarkStyles,NhlCvtFloatToEnum,
-			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
-	NhlRegisterConverter(NhlTTickMarkStyles,NhlTString,NhlCvtEnumToString,
-				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
-	NhlRegisterConverter(NhlTTickMarkStyles,_NhlTFExpString,
-		NhlCvtEnumToFStr,tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
+	_NhlRegisterEnumType(NhlTTickMarkModes,tmarkmodes,
+							NhlNumber(tmarkmodes));
+	_NhlRegisterEnumType(NhlTTickMarkStyles,tmarkstyles,
+							NhlNumber(tmarkstyles));
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qstring = NrmStringToQuark(NhlTString);

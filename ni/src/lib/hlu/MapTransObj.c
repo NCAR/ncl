@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.8 1994-06-24 00:39:40 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.9 1994-07-12 20:52:30 boote Exp $
 */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/MapTransObjP.h>
 #include <ncarg/hlu/View.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
 static NhlResource resources[] = {
@@ -151,18 +151,18 @@ static NhlResource resources[] = {
 { NhlNmpRectLimitType, NhlCmpRectLimitType, NhlTString, sizeof(char*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_type),
 	NhlTString,_NhlUSET("MA"),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit1, NhlCmpRectLimit1, NhlTFloatPtr, sizeof(float*),
+{ NhlNmpRectLimit1, NhlCmpRectLimit1, NhlTPointer, sizeof(float*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_1),
-	NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit2, NhlCmpRectLimit2, NhlTFloatPtr, sizeof(float*),
+	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+{ NhlNmpRectLimit2, NhlCmpRectLimit2, NhlTPointer, sizeof(float*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_2),
-	NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit3, NhlCmpRectLimit3, NhlTFloatPtr, sizeof(float*),
+	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+{ NhlNmpRectLimit3, NhlCmpRectLimit3, NhlTPointer, sizeof(float*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_3),
-	NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTFloatPtr, sizeof(float*),
+	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+{ NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTPointer, sizeof(float*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_4),
-	NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree}
+	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree}
 };
 
 /*
@@ -1315,99 +1315,35 @@ static NhlErrorTypes    MapTransClassInitialize
 ()
 #endif
 {
-        NhlConvertArg   limitmodelist[] = {
-        {NhlSTRENUM,    NhlMAXIMALAREA, _NhlUSET("maximalarea")},
-        {NhlSTRENUM,    NhlLATLON, 	_NhlUSET("latlon")},
-        {NhlSTRENUM,    NhlANGLES,      _NhlUSET("angles")},
-        {NhlSTRENUM,    NhlCORNERS,     _NhlUSET("corners")},
-        {NhlSTRENUM,    NhlWINDOW,      _NhlUSET("window")}
+        _NhlEnumVals   limitmodelist[] = {
+        {NhlMAXIMALAREA,	"maximalarea"},
+        {NhlLATLON,		"latlon"},
+        {NhlANGLES,		"angles"},
+        {NhlCORNERS,		"corners"},
+        {NhlWINDOW,		"window"}
         };
 
-        NhlConvertArg   intlimitmodelist[] = {
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlMAXIMALAREA)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlLATLON)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlANGLES)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlCORNERS)},
-        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlWINDOW)}
-	};
-
-        NhlConvertArg   projectionlist[] = {
-        {NhlSTRENUM,NhlORTHOGRAPHIC,	_NhlUSET("orthographic")},
-        {NhlSTRENUM,NhlSTEREOGRAPHIC,	_NhlUSET("stereographic")},
-        {NhlSTRENUM,NhlLAMBERT_EQUALAREA,_NhlUSET("lambert_equalarea")},
-        {NhlSTRENUM,NhlGNOMONIC,	_NhlUSET("gnomonic")},
-        {NhlSTRENUM,NhlAZIMUTHAL_EQUIDISTANT,
-		 			_NhlUSET("azimuthal_equidistant")},
-        {NhlSTRENUM,NhlSATELLITE,      	_NhlUSET("satellite")},
-        {NhlSTRENUM,NhlMOLLWEIDE,	_NhlUSET("mollweide")},
-        {NhlSTRENUM,NhlMERCATOR,	_NhlUSET("mercator")},
-        {NhlSTRENUM,NhlCYLINDRICAL_EQUIDISTANT,
-		 _NhlUSET("cylindrical_equidistant")},
-        {NhlSTRENUM,NhlLAMBERT_CONFORMAL,_NhlUSET("lambert_conformal")}
+        _NhlEnumVals   projectionlist[] = {
+        {NhlORTHOGRAPHIC,		"orthographic"},
+        {NhlSTEREOGRAPHIC,		"stereographic"},
+        {NhlLAMBERT_EQUALAREA,		"lambert_equalarea"},
+        {NhlGNOMONIC,			"gnomonic"},
+        {NhlAZIMUTHAL_EQUIDISTANT,	"azimuthal_equidistant"},
+        {NhlSATELLITE,      		"satellite"},
+        {NhlMOLLWEIDE,			"mollweide"},
+        {NhlMERCATOR,			"mercator"},
+        {NhlCYLINDRICAL_EQUIDISTANT,	"cylindrical_equidistant"},
+        {NhlLAMBERT_CONFORMAL,		"lambert_conformal"}
         };
 
-        NhlConvertArg   intprojectionlist[] = {
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlORTHOGRAPHIC)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlSTEREOGRAPHIC)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlLAMBERT_EQUALAREA)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlGNOMONIC)},
-        {NhlIMMEDIATE,sizeof(int),
-		 _NhlUSET((NhlPointer)NhlAZIMUTHAL_EQUIDISTANT)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlSATELLITE)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlMOLLWEIDE)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlMERCATOR)},
-        {NhlIMMEDIATE,sizeof(int),
-		 _NhlUSET((NhlPointer)NhlCYLINDRICAL_EQUIDISTANT)},
-        {NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlLAMBERT_CONFORMAL)}
-	};
+        _NhlRegisterEnumType(NhlTMapLimitMode,limitmodelist,
+						NhlNumber(limitmodelist));
+        _NhlRegisterEnumType(NhlTProjection,projectionlist,
+						NhlNumber(projectionlist));
 
-        NhlConvertArg   limitmodegentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),_NhlUSET((NhlPointer)NhlTMapLimitMode)},
-        };
-        NhlConvertArg   projectiongentoenumdat[] = {
-        {NhlIMMEDIATE,  sizeof(char*),_NhlUSET((NhlPointer)NhlTProjection)},
-        };
-
-        NhlRegisterConverter(NhlTGenArray,NhlTMapLimitMode,NhlCvtGenToEnum,
-			     limitmodegentoenumdat,1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTMapLimitMode,NhlCvtStringToEnum,
-			     limitmodelist,
-			     NhlNumber(limitmodelist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTMapLimitMode,NhlCvtIntToEnum,
-			     intlimitmodelist,
-			     NhlNumber(intlimitmodelist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTMapLimitMode,NhlCvtFloatToEnum,
-			     intlimitmodelist,
-			     NhlNumber(intlimitmodelist),False,NULL);
-        NhlRegisterConverter(NhlTMapLimitMode,NhlTString,NhlCvtEnumToString,
-			     limitmodelist,
-			     NhlNumber(limitmodelist),False,NULL);
-        NhlRegisterConverter(NhlTMapLimitMode,_NhlTFExpString,NhlCvtEnumToFStr,
-			     limitmodelist,
-			     NhlNumber(limitmodelist),False,NULL);
-
-        NhlRegisterConverter(NhlTGenArray,NhlTProjection,NhlCvtGenToEnum,
-			     projectiongentoenumdat,1,False,NULL);
-
-        NhlRegisterConverter(NhlTString,NhlTProjection,NhlCvtStringToEnum,
-			     projectionlist,
-			     NhlNumber(projectionlist),False,NULL);
-        NhlRegisterConverter(NhlTInteger,NhlTProjection,NhlCvtIntToEnum,
-			     intprojectionlist,
-			     NhlNumber(intprojectionlist),False,NULL);
-        NhlRegisterConverter(NhlTFloat,NhlTProjection,NhlCvtFloatToEnum,
-			     intprojectionlist,
-			     NhlNumber(intprojectionlist),False,NULL);
-        NhlRegisterConverter(NhlTProjection,NhlTString,NhlCvtEnumToString,
-			     projectionlist,
-			     NhlNumber(projectionlist),False,NULL);
-        NhlRegisterConverter(NhlTProjection,_NhlTFExpString,NhlCvtEnumToFStr,
-			     projectionlist,
-			     NhlNumber(projectionlist),False,NULL);
 	return NhlNOERROR;
-
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes MapDataLineTo
 #if __STDC__

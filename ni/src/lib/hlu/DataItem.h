@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.4 1994-01-27 21:22:37 boote Exp $
+ *      $Id: DataItem.h,v 1.5 1994-07-12 20:51:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,6 @@
  */
 #define	NhlNdiUserData	"diUserData"
 #define	NhlCdiUserData	"DiUserData"
-
-#define	NhlNdiType	"diType"
-#define	NhlCdiType	"DiType"
 
 #define	NhlCdiCopyData	"DiCopyData"
 #define	NhlCdiMissingValue	"DiMissingValue"

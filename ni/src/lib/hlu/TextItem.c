@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.10 1994-06-03 19:24:11 dbrown Exp $
+ *      $Id: TextItem.c,v 1.11 1994-07-12 20:53:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 
 #include <math.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/TextItemP.h>
 
@@ -80,6 +80,7 @@ static NhlResource resources[] = {
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
 		NhlTString,_NhlUSET(":"),0,NULL},
 
+#ifdef	OLDSTUFF
 /*
 * These probably are going to cause GetValues Problems
 */
@@ -92,6 +93,7 @@ static NhlResource resources[] = {
 /*
 * end of possible GetValues Problems
 */
+#endif
 
 	{NhlNtxPerimOn, NhlCtxPerimOn, NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTextItemLayerRec,text.perim_on),
@@ -729,63 +731,21 @@ static NhlErrorTypes    TextItemClassInitialize
 ()
 #endif
 {
-	NhlConvertArg	fontqlist[] = {
-	{NhlSTRENUM,	NhlHIGH,	_NhlUSET("high")},
-	{NhlSTRENUM,	NhlMEDIUM,	_NhlUSET("medium")},
-	{NhlSTRENUM,	NhlLOW,		_NhlUSET("low")}
+	_NhlEnumVals	fontqlist[] = {
+		{NhlHIGH,	"high"},
+		{NhlMEDIUM,	"medium"},
+		{NhlLOW,	"low"}
 	};
 
-	NhlConvertArg	intfontqlist[] = {
-	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlHIGH)},
-	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlMEDIUM)},
-	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlLOW)}
+	_NhlEnumVals	textdirlist[] = {
+		{NhlDOWN,	"down"},
+		{NhlACROSS,	"across"},
+		{NhlUP,		"up"}
 	};
 
-	NhlConvertArg	textdirlist[] = {
-	{NhlSTRENUM,	NhlDOWN,	_NhlUSET("down")},
-	{NhlSTRENUM,	NhlACROSS,	_NhlUSET("across")},
-	{NhlSTRENUM,	NhlUP,		_NhlUSET("up")}
-	};
-
-	NhlConvertArg	inttextdirlist[] = {
-	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlDOWN)},
-	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlACROSS)},
-	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlUP)}
-	};
-	NhlConvertArg   fontqgentoenumdat[] = {
-	{NhlIMMEDIATE,	sizeof(char*),_NhlUSET((NhlPointer)NhlTFQuality)},
-	};
-	NhlConvertArg   textdirgentoenumdat[] = {
-	{NhlIMMEDIATE,	sizeof(char*),_NhlUSET((NhlPointer)NhlTTextDirection)},
-	};
-
-	NhlRegisterConverter(NhlTGenArray,NhlTFQuality,NhlCvtGenToEnum,
-				fontqgentoenumdat,1,False,NULL);
-
-	NhlRegisterConverter(NhlTString,NhlTFQuality,NhlCvtStringToEnum,
-				fontqlist,NhlNumber(fontqlist),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTFQuality,NhlCvtIntToEnum,
-			intfontqlist,NhlNumber(intfontqlist),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTFQuality,NhlCvtFloatToEnum,
-			intfontqlist,NhlNumber(intfontqlist),False,NULL);
-	NhlRegisterConverter(NhlTFQuality,NhlTString,NhlCvtEnumToString,
-				fontqlist,NhlNumber(fontqlist),False,NULL);
-	NhlRegisterConverter(NhlTFQuality,_NhlTFExpString,NhlCvtEnumToFStr,
-				fontqlist,NhlNumber(fontqlist),False,NULL);
-
-	NhlRegisterConverter(NhlTGenArray,NhlTTextDirection,NhlCvtGenToEnum,
-				textdirgentoenumdat,1,False,NULL);
-
-	NhlRegisterConverter(NhlTString,NhlTTextDirection,NhlCvtStringToEnum,
-				textdirlist,NhlNumber(textdirlist),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTTextDirection,NhlCvtIntToEnum,
-			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTTextDirection,NhlCvtFloatToEnum,
-			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
-	NhlRegisterConverter(NhlTTextDirection,NhlTString,NhlCvtEnumToString,
-				textdirlist,NhlNumber(textdirlist),False,NULL);
-	NhlRegisterConverter(NhlTTextDirection,_NhlTFExpString,NhlCvtEnumToFStr,
-				textdirlist,NhlNumber(textdirlist),False,NULL);
+	_NhlRegisterEnumType(NhlTFQuality,fontqlist,NhlNumber(fontqlist));
+	_NhlRegisterEnumType(NhlTTextDirection,textdirlist,
+							NhlNumber(textdirlist));
 
 	return(NhlNOERROR);	
 }

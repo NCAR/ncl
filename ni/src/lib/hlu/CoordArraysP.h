@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysP.h,v 1.3 1994-01-27 21:22:18 boote Exp $
+ *      $Id: CoordArraysP.h,v 1.4 1994-07-12 20:51:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,19 +24,33 @@
 
 #include <ncarg/hlu/DataItemP.h>
 #include <ncarg/hlu/CoordArrays.h>
-#include <ncarg/hlu/CoordArraysIntP.h>
-#include <ncarg/hlu/CoordArraysFloatP.h>
 
 /*
  * Private Resource Names
  */
 typedef struct _NhlCoordArraysLayerPart{
 	/* User setable resource fields */
-	NhlString		type_string;
+
+	NhlGenArray	xarray;
+	NhlGenArray	yarray;
+
+	int		x_cast;
+	int		y_cast;
+
+	NhlBoolean	copy_arrays;
+
+	NhlGenArray	missing_x;
+	NhlGenArray	missing_y;
+
+	NhlGenArray	max_x;
+	NhlGenArray	max_y;
+	NhlGenArray	min_x;
+	NhlGenArray	min_y;
 
 	/* Private Fields */
-	NrmQuark		type;
-	NhlLayer		child;
+
+	NhlBoolean	x_cast_set;
+	NhlBoolean	y_cast_set;
 } NhlCoordArraysLayerPart;
 
 typedef struct _NhlCoordArraysLayerRec{

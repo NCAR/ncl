@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.7 1994-05-05 18:16:32 ethan Exp $
+ *      $Id: IrregularTransObj.c,v 1.8 1994-07-12 20:52:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,12 +48,12 @@
 #include <ncarg/hlu/View.h>
 
 static NhlResource resources[] = {
-	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatPtr,sizeof(float*),
+	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_coord_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
-	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
+	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_inter_points),
-		NhlTFloatPtr,NULL,0,(NhlFreeFunc)NhlFree },
+		NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree },
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
                 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max),
                 NhlTString, "0.0" ,0,NULL},
@@ -62,25 +62,25 @@ static NhlResource resources[] = {
                 NhlTString, "0.0" ,0,NULL},
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_num_points),
-		NhlTString,"0" ,0,NULL},
-	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
+		NhlTImmediate,0 ,0,NULL},
+	{ NhlNtrXReverse, NhlCtrXReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_reverse),
-		NhlTString,"0" ,0,NULL},
+		NhlTImmediate,False,0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_tension),
 		NhlTString,"2.0" ,0,NULL},
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_samples),
-		NhlTString,"9" ,0,NULL},
-	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTInteger,sizeof(int),
+		NhlTImmediate,(NhlPointer)9 ,0,NULL},
+	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_use_log),
-		NhlTString,"0" ,0,NULL},
-	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,False,0,NULL},
+	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_coord_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
-	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTFloatPtr,sizeof(float*),
+		NhlTImmediate,NULL ,0,(NhlFreeFunc)NhlFree},
+	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_inter_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,NULL ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
                 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max),
                 NhlTString, "0.0" ,0,NULL},
@@ -89,19 +89,19 @@ static NhlResource resources[] = {
                 NhlTString, "0.0",0,NULL },
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_num_points),
-		NhlTString,"0" ,0,NULL},
-	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
+		NhlTImmediate,0,0,NULL},
+	{ NhlNtrYReverse, NhlCtrYReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_reverse),
-		NhlTString,"0",0,NULL },
+		NhlTImmediate,False,0,NULL },
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_tension),
 		NhlTString,"2.0",0,NULL },
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_samples),
-		NhlTString,"9",0,NULL },
-	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTInteger,sizeof(int),
+		NhlTImmediate,(NhlPointer)9,0,NULL },
+	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_use_log),
-		NhlTString,"0" ,0,NULL}
+		NhlTImmediate,False,0,NULL}
 };
 
 /*

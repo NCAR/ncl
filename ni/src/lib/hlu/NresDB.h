@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.h,v 1.3 1994-05-12 23:51:53 boote Exp $
+ *      $Id: NresDB.h,v 1.4 1994-07-12 20:52:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -349,22 +349,24 @@ extern void NrmCombineDatabase(
 #define NrmEnumAllLevels 0
 #define NrmEnumOneLevel  1
 
+typedef NhlBoolean (*NrmDBEnumProc)(
+#if NhlNeedProto
+	NrmDatabase		*db,
+	NrmBindingList		bindings,
+	NrmQuarkList		quarks,
+	NrmRepresentation	*type,
+	NrmValue		*value,
+	NhlPointer		closure
+#endif
+);
+
 extern NhlBoolean NrmEnumerateDatabase(
 #if	NhlNeedProto
     NrmDatabase		/* db */,
     NrmNameList		/* name_prefix */,
     NrmClassList	/* class_prefix */,
     int			/* mode */,
-    NhlBoolean (*)(
-#if	NeedNestedProto
-	     NrmDatabase*	/* db */,
-	     NrmBindingList	/* bindings */,
-	     NrmQuarkList	/* quarks */,
-	     NrmRepresentation*	/* type */,
-	     NrmValue*		/* value */,
-	     NPointer		/* closure */
-#endif
-	     )		/* proc */,
+    NrmDBEnumProc	/* proc */,
     NhlPointer		/* closure */
 #endif
 );
@@ -423,6 +425,17 @@ extern NhlBoolean NrmQinQList(
 #if	NhlNeedProto
 	NrmQuarkList,
 	NrmQuark
+#endif
+);
+
+typedef unsigned long Signature;
+
+extern NrmQuark _NrmInternalStringToQuark(
+#if	NhlNeedProto
+	Const char	*name,
+	int		len,
+	Signature	sig,
+	NhlBoolean	permstring
 #endif
 );
 

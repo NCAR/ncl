@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.13 1994-05-12 23:50:56 boote Exp $
+ *      $Id: DataComm.c,v 1.14 1994-07-12 20:51:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -504,7 +504,7 @@ RemoveData
  * Function:	CvtGenToData
  *
  * Description:	This function converts a GenArray to an NhlTDataList -
- *		actually does nothing.
+ *		actually just converts the GenArray to an int GenArray.
  *
  * In Args:
  *
@@ -538,13 +538,11 @@ CvtGenToData
 		return NhlFATAL;
 	}
 
-	*(NhlGenArray*)(to->data.ptrval) = (NhlGenArray)from->data.ptrval;
-
-	return NhlNOERROR;
+	return NhlReConvertData(NhlTGenArray,NhlTIntegerGenArray,from,to);
 }
 
 /*
- * Function:	CvtIntToData
+ * Function:	CvtScalarToData
  *
  * Description:	This function converts an int to an NhlTDataList -
  *
@@ -558,7 +556,7 @@ CvtGenToData
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-CvtIntToData
+CvtScalarToData
 #if	__STDC__
 (
 	NrmValue		*from,
@@ -580,7 +578,8 @@ CvtIntToData
 		return NhlFATAL;
 	}
 
-	return NhlReConvertData(NhlTInteger,NhlTGenArray,from,to);
+	return _NhlReConvertData(from->typeQ,
+				NrmStringToQuark(NhlTIntegerGenArray),from,to);
 }
 
 
@@ -668,7 +667,7 @@ DataCommClassInitialize
 	lret = NhlRegisterConverter(NhlTGenArray,_NhlTDataList,CvtGenToData,
 							NULL,0,False,NULL);
 	ret = MIN(ret,lret);
-	lret = NhlRegisterConverter(NhlTInteger,_NhlTDataList,CvtIntToData,
+	lret = NhlRegisterConverter(NhlTScalar,_NhlTDataList,CvtScalarToData,
 							NULL,0,False,NULL);
 
 	return MIN(ret,lret);

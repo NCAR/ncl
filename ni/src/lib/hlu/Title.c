@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.10 1994-06-24 00:40:04 dbrown Exp $
+ *      $Id: Title.c,v 1.11 1994-07-12 20:53:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  */
 
 #include <ncarg/hlu/TitleP.h>
-#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <math.h>
 
@@ -1415,38 +1415,15 @@ static NhlErrorTypes    TitleClassInitialize
 ()
 #endif
 {
-	NhlConvertArg	titlepos[] = {
-				{NhlSTRENUM,	NhlTOP,		{"top"}},
-				{NhlSTRENUM,	NhlBOTTOM,	{"bottom"}},
-				{NhlSTRENUM,	NhlLEFT,	{"left"}},
-				{NhlSTRENUM,	NhlRIGHT,	{"right"}},
-				{NhlSTRENUM,	NhlCENTER,	{"center"}}
-				};
+	_NhlEnumVals	titlepos[] = {
+		{NhlTOP,	"top"},
+		{NhlBOTTOM,	"bottom"},
+		{NhlLEFT,	"left"},
+		{NhlRIGHT,	"right"},
+		{NhlCENTER,	"center"}
+	};
 
-	NhlConvertArg	inttitlepos[] = {
-			{NhlIMMEDIATE,	sizeof(int),{(NhlPointer)NhlTOP}},
-			{NhlIMMEDIATE,	sizeof(int),{(NhlPointer)NhlBOTTOM}},
-			{NhlIMMEDIATE,	sizeof(int),{(NhlPointer)NhlLEFT}},
-			{NhlIMMEDIATE,	sizeof(int),{(NhlPointer)NhlRIGHT}},
-			{NhlIMMEDIATE,	sizeof(int),{(NhlPointer)NhlCENTER}}
-				};
-	NhlConvertArg	titlegentoenumdata[] = {
-			{NhlIMMEDIATE,	sizeof(char*),_NhlUSET((NhlPointer)NhlCENTER)}
-				};
-
-	NhlRegisterConverter(NhlTGenArray,NhlTTitlePositions,NhlCvtGenToEnum,
-				titlegentoenumdata,1,False,NULL);
-			
-	NhlRegisterConverter(NhlTString,NhlTTitlePositions,NhlCvtStringToEnum,
-				titlepos,NhlNumber(titlepos),False,NULL);
-	NhlRegisterConverter(NhlTInteger,NhlTTitlePositions,NhlCvtIntToEnum,
-				inttitlepos,NhlNumber(inttitlepos),False,NULL);
-	NhlRegisterConverter(NhlTFloat,NhlTTitlePositions,NhlCvtFloatToEnum,
-				inttitlepos,NhlNumber(inttitlepos),False,NULL);
-	NhlRegisterConverter(NhlTTitlePositions,NhlTString,NhlCvtEnumToString,
-				titlepos,NhlNumber(titlepos),False,NULL);
-	NhlRegisterConverter(NhlTTitlePositions,_NhlTFExpString,
-		NhlCvtEnumToFStr,titlepos,NhlNumber(titlepos),False,NULL);
+	_NhlRegisterEnumType(NhlTTitlePositions,titlepos,NhlNumber(titlepos));
 
 	return(NhlNOERROR);
 }
