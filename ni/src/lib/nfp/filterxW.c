@@ -5,6 +5,8 @@
 extern void NGCALLF(dfiltrq,DFILTRQ)(int*,double*,double*,double*,int*,
                                      double*,double*,double*,int*);
 
+extern void NGCALLF(filwgtnorm,filwgtnormal)(int*,double*,int*,double*,int*);
+
 NhlErrorTypes filwgts_lancos_W( void )
 {
 /*
@@ -287,4 +289,113 @@ NhlErrorTypes filwgts_lancos_W( void )
     return_data.u.data_var = tmp_var;
     _NclPlaceReturn(return_data);
     return(NhlNOERROR);
+}
+
+NhlErrorTypes filwgts_normal_W( void )
+{
+/*
+ * Input array variables
+ */
+  int *nwgt, *option;
+  void *sigma;
+  double *tmp_sigma;
+  NclBasicDataTypes type_sigma;
+/*
+ * Output array variables
+ */
+  void *wgt;
+  double *tmp_wgt;
+  NclBasicDataTypes type_wgt;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, j, dsizes[1], ier;
+/*
+ * Retrieve arguments.
+ */
+  nwgt = (int*)NclGetArgValue(
+          0,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  sigma = (void*)NclGetArgValue(
+          1,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_sigma,
+          2);
+
+  option = (int*)NclGetArgValue(
+          2,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Coerce sigma to double if necessary.
+ */
+  tmp_sigma = coerce_input_double(sigma,type_sigma,1,0,NULL,NULL);
+  if(tmp_sigma == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_normal: Unable to allocate memory for coercing input to double");
+    return(NhlFATAL);
+  }
+
+  if(type_sigma != NCL_double) {
+    tmp_wgt  = (double*)calloc(*nwgt,sizeof(double));
+    wgt      = (void*)calloc(*nwgt,sizeof(float));
+    type_wgt = NCL_float;
+    if(tmp_wgt == NULL || wgt == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_normal: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    wgt      = (void*)calloc(*nwgt,sizeof(double));
+    type_wgt = NCL_double;
+    if(wgt == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_normal: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    tmp_wgt = (double*)wgt;
+  }
+
+/*
+ * option is isn't used for anything yet, so default it to zero. 
+ */
+  *option = 0;
+/*
+ * Call the Fortran version of this routine.
+ */
+  NGCALLF(filwgtnormal,DFILWGTNORMAL)(nwgt,tmp_wgt,option,tmp_sigma,&ier);
+  
+  if(type_wgt == NCL_float) {
+    coerce_output_float_only(wgt,tmp_wgt,*nwgt,0);
+  }
+
+/*
+ * Free memory.
+ */
+  if(type_wgt != NCL_double) {
+    NclFree(tmp_wgt);
+  }
+  if(type_sigma != NCL_double) {
+    NclFree(tmp_sigma);
+  }
+/*
+ * Return.
+ */
+  dsizes[0] = *nwgt;
+  return(NclReturnValue(wgt,1,dsizes,NULL,type_wgt,0));
 }

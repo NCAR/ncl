@@ -167,3 +167,45 @@ c                                                ! normalize weights
       RETURN
       END
 
+C NCLFORTSTART
+      subroutine filwgtnormal (nwt, w, itype, sigma, ier)
+      implicit none
+      integer  nwt, itype, ier
+      double precision     w(nwt), sigma
+C NCLEND
+c
+c NCL: wgts = filwgts(nwt, sigma, itype)
+c currently this only does gaussian (normal) weights
+c
+      double precision    pi, c1, c2, mean, delx, x, wsum
+      integer n
+
+      ier  = 0
+      mean = 0.0d0
+
+      pi   = 4.d0*atan(1.d0)
+      c1   = 1.d0/(sigma*sqrt(2.d0*pi))
+      c2   = -0.5d0/sigma**2
+
+c                   delx = fspan(-1, 1, nwt)
+      delx = 2.d0/(nwt-1)   
+
+c c c if (itype.eq.0) then
+          x    = -(1.d0+delx)
+          wsum = 0.0d0
+          do n=1,nwt
+             x = x+delx
+             w(n) = c1*exp(c2*(x-mean)**2)
+             wsum = wsum+w(n)
+          end do
+c c c else
+c c c     ier = 1
+c c c     print ("filwgts: unsupported option")
+c c c end if
+
+      do n=1,nwt
+         w(n) = w(n)/wsum
+      end do
+
+      return
+      end

@@ -358,6 +358,7 @@ extern NhlErrorTypes wgt_volrmse_W(void);
 extern NhlErrorTypes wgt_volrmse_ccm_W(void);
 extern NhlErrorTypes wgt_volave_ccm_W(void);
 extern NhlErrorTypes filwgts_lancos_W(void);
+extern NhlErrorTypes filwgts_normal_W(void);
 extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
@@ -4891,6 +4892,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(filwgts_lancos_W,args,"filwgts_lancos",nargs);
+
+/*
+ * Register "filwgts_normal".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(filwgts_normal_W,args,"filwgts_normal",nargs);
 
 /*
  * Register "dtrend".
