@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.60 2004-09-13 21:20:20 haley Exp $
+ *      $Id: Project,v 1.61 2004-09-16 14:08:52 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2004-09-13 21:20:20 $
+ *	$Date: 2004-09-16 14:08:52 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -175,6 +175,7 @@ HLUDIR			= hlu
 HLUEXDIR		= hluex
 NCLDIR			= ncl
 NCLEXDIR		= nclex
+PYNGLEXDIR		= pynglex
 NGODIR			= ngo
 NFPDIR			= nfp
 DATADIR			= data
@@ -205,6 +206,7 @@ XAPPROOT		= $(LIBNCARGROOT)/$(XAPPDIR)
 HLUEXROOT		= $(LIBNCARGROOT)/$(HLUEXDIR)
 RESFILEROOT		= $(LIBNCARGROOT)/$(RESDIR)
 NCLEXROOT		= $(LIBNCARGROOT)/$(NCLEXDIR)
+PYNGLEXROOT		= $(LIBNCARGROOT)/$(PYNGLEXDIR)
 
 LIBNCARGPATH		= $(LIBPATH)/$(NCARGDIR)
 CONFIGPATH		= $(LIBNCARGPATH)/$(CONFIGDIR)
@@ -223,7 +225,8 @@ LIBNCLPATH		= $(LIBNCARGPATH)/$(NCLDIR)
 HLUEXPATH		= $(LIBNCARGPATH)/$(HLUEXDIR)
 RESFILEPATH		= $(LIBNCARGPATH)/$(RESDIR)
 NCLEXPATH		= $(LIBNCARGPATH)/$(NCLEXDIR)
-NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
+PYNGLEXPATH		= $(LIBNCARGPATH)/$(PYNGLEXDIR)
+NCARGINCPATH	= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 NGOINCPATH		= $(NCARGINCPATH)/$(NGODIR)
