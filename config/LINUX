@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.6 1997-09-04 15:46:49 boote Exp $
+ *      $Id: LINUX,v 1.7 1997-09-04 15:55:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,7 +40,6 @@
 
 FC = $(F77)
 
-#if	0
 /*************** Redefine Macros from Rules ********************************/
 
 /*
@@ -51,5 +50,4 @@ FC = $(F77)
  */
 #ifndef	MakeDir
 #define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
-#endif
 #endif
