@@ -79,7 +79,7 @@ C
 C
 C  Blue
 C 
-     CALL GSCR (IWKID,4,0.,0.,1.)
+      CALL GSCR (IWKID,4,0.,0.,1.)
 C
 C  Create a polygonal fan 
 C
