@@ -856,68 +856,126 @@ fp_block : BGIN block_statement_list END	{ $$ = _NclMakeBlock($2); }
 ;
 
 procedure : IPROC opt_arg_list    {
-						NclSrcListNode *step;
-						int count = 0;
+					NclSrcListNode *step;
+					int count = 0;
 					
-						step = $2;
-						while(step != NULL) {
-							count++;
-							step = step->next;
-						}
-						if(count != $1->u.procfunc->nargs) {
-							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
-							$$ = NULL;
-						} else {
-							$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
-						}
+					step = $2;
+					while(step != NULL) {
+						count++;
+						step = step->next;
+					}
+					if(count != $1->u.procfunc->nargs) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
+					}
 				}
 	| PIPROC opt_arg_list    {
-						NclSrcListNode *step;
-						int count = 0;
-					
-						step = $2;
-						while(step != NULL) {
-							count++;
-							step = step->next;
-						}
-						if(count != $1->u.procfunc->nargs) {
-							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
-							$$ = NULL;
-						} else {
-							$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
-						}
+					NclSrcListNode *step;
+					int count = 0;
+				
+					step = $2;
+					while(step != NULL) {
+						count++;
+						step = step->next;
+					}
+					if(count != $1->u.procfunc->nargs) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
+					}
 				}
 	| PROC opt_arg_list	{ 
-						NclSrcListNode *step;
-						int count = 0;
-					
-						step = $2;
-						while(step != NULL) {
-							count++;
-							step = step->next;
-						}
-						if(count != $1->u.procfunc->nargs) {
-							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
-							$$ = NULL;
-						} else {
-							$$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); 
-						}
+					NclSrcListNode *step;
+					int count = 0;
+				
+					step = $2;
+					while(step != NULL) {
+						count++;
+						step = step->next;
+					}
+					if(count != $1->u.procfunc->nargs) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); 
+					}
 				}
-	| EPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_EXTERNALPROCCALL); }
-	| NPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); }
+	| EPROC opt_arg_list	{ 
+					NclSrcListNode *step;
+					int count = 0;
+				
+					step = $2;
+					while(step != NULL) {
+						count++;
+						step = step->next;
+					}
+					if(count != $1->u.procfunc->nargs) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,$2,Ncl_EXTERNALPROCCALL); 
+					}
+				}
+	| NPROC opt_arg_list	{ 
+					NclSrcListNode *step;
+					int count = 0;
+				
+					step = $2;
+					while(step != NULL) {
+						count++;
+						step = step->next;
+					}
+					if(count != $1->u.procfunc->nargs) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); 
+					}
+				}
 	| PIPROC 		{ 
-					$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+					if($1->u.procfunc->nargs != 0) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+					}
 				}
 	| IPROC 		{ 
-					$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+					if($1->u.procfunc->nargs != 0) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+					}
 				}
 	| PROC 			{ 
-					$$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); 
+					if($1->u.procfunc->nargs != 0) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); 
+					}
 				}
-	| EPROC 		{ $$ = _NclMakeProcCall($1,NULL,Ncl_EXTERNALPROCCALL); }
+	| EPROC 		{ 
+					if($1->u.procfunc->nargs != 0) {
+						is_error += 1;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						$$ = NULL;
+					} else {
+						$$ = _NclMakeProcCall($1,NULL,Ncl_EXTERNALPROCCALL); 
+					}
+				}
 	| NPROC 		{ 
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;

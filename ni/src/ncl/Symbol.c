@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.23 1995-06-17 01:21:55 ethan Exp $
+ *      $Id: Symbol.c,v 1.24 1995-06-29 21:56:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,11 @@ extern "C" {
 #include "NclHLUObj.h"
 #include "NclApi.h"
 
+extern void NclAddUserFileFormats(
+#if	NhlNeedProto
+void
+#endif
+);
 extern void _NclAddFileFormats(
 #if	NhlNeedProto
 void
@@ -72,6 +77,12 @@ static int new_sym_i = 0;
  * Returns:	1 on succes, 0 on failer
  * Side Effect:	NONE
  */
+extern void NclAddUserHLUObjs(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern void NclAddUserFuncs(
 #if NhlNeedProto
 void
@@ -130,7 +141,9 @@ int _NclInitSymbol
 	_NclAddBuiltIns();
 	NclAddUserFuncs();
 	_NclAddHLUObjs();
+	NclAddUserHLUObjs();
 	_NclAddFileFormats();
+	NclAddUserFileFormats();
 /*
 * After keywords are defined a new scope must be created. The Zero
 * level scope is just for keywords and does not need any memory on the

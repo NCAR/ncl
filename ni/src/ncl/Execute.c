@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.44 1995-06-17 01:21:26 ethan Exp $
+ *      $Id: Execute.c,v 1.45 1995-06-29 21:56:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1884,7 +1884,8 @@ NclExecuteReturnStatus _NclExecute
 							} else {
 								tmp_md = NULL;
 							}
-                                                	_NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
+							if(estatus != NhlFATAL) 
+                                                		_NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
 							if((thesym->type != IPROC)&&(thesym->type != PIPROC) && (thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 /*
 * Variable subsections also point to the symbol of the main variable so the AddObjToParamList just
@@ -2026,6 +2027,9 @@ NclExecuteReturnStatus _NclExecute
                                                         	if(tmp_md == NULL) {
                                                         		NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
                                                         		estatus = NhlFATAL;
+									if(data.u.data_obj->obj.status != PERMANENT) {
+										_NclDestroyObj((NclObj)data.u.data_obj);
+									}
                                                         	} else {
 									if(data.u.data_obj->obj.status != PERMANENT) {
 										_NclDestroyObj((NclObj)data.u.data_obj);

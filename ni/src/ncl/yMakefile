@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.38 1995-06-19 18:23:25 boote Exp $
+#      $Id: yMakefile,v 1.39 1995-06-29 21:56:27 ethan Exp $
 #
 #########################################################################
 #									#
@@ -77,14 +77,14 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclCallBacksI.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
-			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h
+			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h NclFileInterfaces.h
 			
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
-APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c
-EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c
+APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c NclUserFileFormStub.c
+EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c NclUserFileFormStub.c
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
@@ -114,11 +114,11 @@ FOBJS		=	fortranio.o
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
 
-APIOBJS		=	$(API_OBJS) $(OBJS)  NclUserFuncStub.o
+APIOBJS		=	$(API_OBJS) $(OBJS)  NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 #ifdef HPUX
-EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o NclUserFuncStub.o
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 #else
-EXEOBJS		=	$(EXE_OBJS) $(OBJS) NclUserFuncStub.o
+EXEOBJS		=	$(EXE_OBJS) $(OBJS) NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 #endif
 ALLOBJS		=	$(EXE_OBJS) $(OBJS)
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
