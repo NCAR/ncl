@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.109 2003-07-27 23:01:34 haley Exp $
+;      $Id: gsn_code.ncl,v 1.110 2003-08-01 16:59:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -80,15 +80,12 @@ undef("gsn_add_primitive")
 undef("gsn_polygon")
 undef("gsn_add_polygon")
 undef("gsn_polygon_ndc")
-undef("gsn_add_polygon_ndc")
 undef("gsn_polyline")
 undef("gsn_add_polyline")
 undef("gsn_polyline_ndc")
-undef("gsn_add_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
-undef("gsn_add_polymarker_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_legend_ndc")
 undef("gsn_text_ndc_return")
@@ -687,8 +684,8 @@ end
 ;               plot:graphic                                            ;
 ;                res:logical                                            ;
 ;                                                                       ;
-; This procedure passes plot and res to attsetvalues only if res        ;
-; resources.                                                            ;
+; This procedure passes plot and res to attsetvalues only if res is     ;
+; True and non-empty.                                                   ;
 ;***********************************************************************;
 procedure attsetvalues_check(plot:graphic,res:logical)
 begin
@@ -2059,11 +2056,13 @@ end
 ; functions), "x" and "y" are the x and y locations of each point in the;
 ; primitive, and should either be in the same data space as the data    ;
 ; from "plotid" (isndc = False) or should be values from 0 to 1 if in   ;
-; NDC space (isndc = True).                                             ;
+; NDC space (isndc = True). Note that using isndc = True should only    ;
+; be used internally. It currently only works for NDC coordinates that  ;
+; actually fall within the plot's boundaries.                           ;
 ;                                                                       ;
 ; "resources" is an optional list of resources.  This function returns  ;
-; the primitive object created. polytype is the type of primitive to add;
-; (polymarker, polygon, or polyline)                                    ;
+; the primitive object created. polytype is the type of primitive to    ;
+; add (polymarker, polygon, or polyline)                                ;
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
@@ -2078,20 +2077,34 @@ begin
    return(0)
   end if
 ;
-; If in NDC space, make sure X and Y values are in the range 0 to 1.
-; Also, create a canvas to draw on.
+; If in NDC space, make sure X and Y values are in the range 0 to 1 AND
+; within the viewport of the polot.
 ;
   if(isndc) then
-    if(any(x.lt.0.or.x.gt.1.or.y.lt.0.or.y.gt.1)) then
-      print("Warning: gsn_add_primitive: The X and Y values must be between 0 to 1 if you are in NDC space.")
-      return(0)
-    end if
-
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
+    getvalues plotid
+      "vpHeightF" : vph
+      "vpWidthF"  : vpw
+      "vpXF"      : vpx
+      "vpYF"      : vpy
+    end getvalues
+;
+; This part is commented out because sometimes if values are equal
+; to each other, it will incorrectly register as one being greater/less
+; than the other value.
+;
+;    if(any(x.lt.vpx.or.x.gt.(vpx+vpw).or.y.gt.vpy.or.y.lt.(vpy-vph))) then
+;      print("Warning: gsn_add_primitive: The X and Y values must be between the viewport values of the plot if you are in NDC space.")
+;      return(0)
+;    end if
+;
+; Create a canvas to draw on.
+;
+    canvas = create "ndc_canvas" logLinPlotClass wks
+      "tfDoNDCOverlay" : True
+      "trXMinF"        : vpx
+      "trXMaxF"        : vpx+vpw
+      "trYMaxF"        : vpy
+      "trYMinF"        : vpy-vph
     end create
   end if 
 ;
@@ -2138,11 +2151,7 @@ begin
         dummy = new(1,graphic)
         if(isndc) then
           NhlAddPrimitive(canvas,prim_object,dummy)
-          anno = NhlAddAnnotation(plotid,canvas)
-          setvalues anno
-            "amZone"           : 0
-            "amResizeNotify"   : True
-          end setvalues
+          overlay(plotid,canvas)
         else
           NhlAddPrimitive(plotid,prim_object,dummy)
         end if
@@ -2194,12 +2203,12 @@ begin
             NhlAddPrimitive(plotid,prim_object(i),dummy)
           end if
         end do
+;
+; If in NDC space, we need to add the canvas as an annotation of
+; the plot.
+;
         if(isndc) then
-          anno = NhlAddAnnotation(plotid,canvas)
-          setvalues anno
-            "amZone"           : 0
-            "amResizeNotify"   : True
-          end setvalues
+          overlay(plotid,canvas)
         end if
       else
         prim_object = new(1,graphic)
@@ -2221,11 +2230,7 @@ begin
     dummy = new(1,graphic)
     if(isndc) then
       NhlAddPrimitive(canvas,prim_object,dummy)
-      anno = NhlAddAnnotation(plotid,canvas)
-      setvalues anno
-        "amZone"           : 0
-        "amResizeNotify"   : True
-      end setvalues
+	  overlay(plotid,canvas)
     else
       NhlAddPrimitive(plotid,prim_object,dummy)
     end if
@@ -2363,31 +2368,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : gsn_add_polygon_ndc                                        ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function adds a polygon to the plot "plotid", in NDC space.      ;
-; "x" and "y" are the x and y locations of each point in the polygon,   ;
-; and should be in NDC space (0 to 1). "resources" is an optional list  ;
-; of resources.  This function returns the primitive object created.    ;
-;                                                                       ;
-; This function is different from gsn_polygof_ndcn because it actually  ;
-; attaches the polygon to the plot. This means that if you resize or    ;
-; move the plot, the polygon will stay with the plot.                   ;
-;***********************************************************************;
-function gsn_add_polygon_ndc(wks:graphic,plotid:graphic,x[*]:numeric,\
-                             y[*]:numeric,resources:logical)
-begin
-  res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,True,"polygon",res2))
-end
-
-
-;***********************************************************************;
 ; Procedure : gsn_polyline                                              ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -2488,7 +2468,6 @@ begin
   return(gsn_add_primitive(wks,plotid,x,y,False,"polyline",res2))
 end
 
-
 ;***********************************************************************;
 ; Procedure : gsn_polyline_ndc                                          ;
 ;                   wks: workstation object                             ;
@@ -2556,29 +2535,6 @@ begin
         i = i + 1
       end do
     end if
-end
-
-;***********************************************************************;
-; Function : gsn_add_polyline_ndc                                       ;
-;                   wks: workstation object                             ;
-;                  plot: plot object                                    ;
-;                     x: 1-dimensional array of x ndc points            ;
-;                     y: 1-dimensional array of y ndc points            ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function adds a polyline to the plot "plot" in NDC space.        ;
-; "x" and "y" are the x and y locations of each point in the line, and  ;
-; must be between 0 and 1 "resources" is an optional list of resources. ;
-;                                                                       ;
-; This function is different from gsn_polyline_ndc because it actually  ;
-; attaches the line(s) to the plot. This means that if you resize or    ;
-; move the plot, the line will stay with the plot.                      ;
-;***********************************************************************;
-function gsn_add_polyline_ndc(wks:graphic,plot:graphic,x[*]:numeric, \
-                              y[*]:numeric,resources:logical)
-begin
-  res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plot,x,y,True,"polyline",res2))
 end
 
 ;***********************************************************************;
@@ -2708,31 +2664,6 @@ begin
       NhlNDCPolymarker(canvas,gsid,x2,y2)
     end if
 end
-
-;***********************************************************************;
-; Function : gsn_add_polymarker_ndc                                     ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function adds polymarkers to the plot "plotid", in NDC space.    ;
-; "x" and "y" are the x and y locations of each marker, and should be in;
-; NDC space (0 to 1). "resources" is an optional list of resources. This;
-; function returns the primitive object created.                        ;
-;                                                                       ;
-; This function is different from gsn_polymarker_ndc because it actually;
-; attaches the markers to the plot. This means that if you resize or    ;
-; move the plot, the markers will stay with the plot.                   ;
-;***********************************************************************;
-function gsn_add_polymarker_ndc(wks:graphic,plotid:graphic,x[*]:numeric,\
-                                y[*]:numeric,resources:logical)
-begin
-  res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,True,"polymarker",res2))
-end
-
 
 ;***********************************************************************;
 ; Procedure : gsn_labelbar_ndc                                          ;

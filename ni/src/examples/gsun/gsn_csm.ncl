@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.132 2003-06-29 04:32:12 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.133 2003-08-01 16:59:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -85,6 +85,7 @@ undef("add_map_tickmarks")
 undef("gsn_add_cyclic_point")
 undef("pop_tick_locs")
 undef("pop_latlon_grid")
+undef("mask_lambert")
 undef("gsn_csm_map_ce")
 undef("gsn_csm_map_polar")
 undef("gsn_csm_map")
@@ -3108,6 +3109,347 @@ begin
 end
 
 ;***********************************************************************;
+; Function : mask_lambert                                               ;
+;                 wks: graphic                                          ;
+;               maplc: graphic                                          ;
+;              minlat: numeric                                          ;
+;              maxlat: numeric                                          ;
+;              minlon: numeric                                          ;
+;              maxlon: numeric                                          ;
+;           maskoutln: logical                                          ;
+;                 res: logical                                          ;
+;                                                                       ;
+;   Given a lambert conformal projection, and min/max lat/lon coords,   ;
+;   this function will mask the map outside the boundaries defined by   ;
+;   the coords. maskoutln determines whether the area will be outlined  ;
+;   in the foreground color. "res" is an optional list of resources.    ;
+;                                                                       ;
+;   Note, due to the nature of Lambert Conformal plots, lon labels      ;
+;   cannot be automatically drawn on this type of plot.                 ;
+;                                                                       ;
+;   Programming Note: The function expects longitude input data to      ;
+;   range from -360:180E. If this is not the case, the function         ;
+;   will alter the min/max to be in that range.                         ;
+;                                                                       ;
+;***********************************************************************;
+function mask_lambert(wks:graphic, maplc:graphic, \
+                      minlat:numeric, maxlat:numeric, \
+                      minlon:numeric, maxlon:numeric, maskoutln, res)
+local pres, var_string, maplc, mpres, tmplat, vpx, vpy, vpw, vph, \
+xlft, xrgt, ytop, ybot, nscirc, nncirc, nxpoly, nypoly, sxpoly, sypoly, \
+var_string, scirc_xndc, scirc_yndc, ncirc_xndc, ncirc_yndc, mask_outline, \
+xmnlnmnlt, ymnlnmnlt, xmnlnmxlt, ymnlnmxlt, \
+xmxlnmnlt, ymxlnmnlt, xmxlnmxlt, ymxlnmxlt, is_nh
+begin
+;
+; Some error checking.
+;
+  if(maxlat.gt.0.and.minlat.lt.0) then
+    print("mask_lambert: warning: you are not authorized to specify a maxlat that is above the equator and a minlat that is below the equator.")
+    print("        No masking will take place.")
+    return(maplc)
+  end if
+
+  if (minlon.gt.maxlon) then
+     print("mask_lambert: warning: Minimum longitude is greated than maximum, subtracting 360 from minumum")
+     minlon = minlon - 360
+     print("minlon = "+minlon+", maxlon = "+maxlon)
+  end if
+  if (minlat.gt.maxlat) then
+     print("mask_lambert: warning: Minimum latitude is greater than maximum, swapping the two.")
+     tmplat = minlat
+     minlat = maxlat
+     maxlat = tmplat
+     print("minlat = "+minlat+", maxlat = "+maxlat)
+  end if
+  if (minlon.ge.180.and.maxlon.gt.180) then
+     minlon = minlon - 360
+     maxlon = maxlon - 360  
+  end if
+  if (minlon.lt.180.and.maxlon.ge.180) then
+     minlon = minlon - 360
+     maxlon = maxlon - 360  
+  end if
+;
+; Set up list of map resources. The user should have already created a 
+; lambert conformal map, but just in case  he/she didn't, it will be done
+; here. Some of these resources may have already been set by the user, so
+; be sure to use these values.
+;
+  meridian = minlon + (maxlon - minlon)/2.
+  mpres                        = True
+  mpres@mpProjection           = "LambertConformal"
+  mpres@mpLimitMode            = "LatLon"
+  mpres@mpLambertMeridianF     = get_res_value_keep(res, \
+                                 "mpLambertMeridianF",meridian)
+  if (minlat.lt.0) then
+     mpres@mpLambertParallel1F = get_res_value_keep(res, \
+                                 "mpLambertParallel1F",-0.001)
+     mpres@mpLambertParallel2F = get_res_value_keep(res, \
+                                 "mpLambertParallel2F",-89.999  )
+  else
+     mpres@mpLambertParallel1F = get_res_value_keep(res, \
+                                 "mpLambertParallel1F", 0.001)
+     mpres@mpLambertParallel2F = get_res_value_keep(res, \
+                                 "mpLambertParallel2F",89.999  )
+  end if
+;
+; Determine whether we are in the southern or northern hemisphere.
+;
+  if(minlat.ge.0) then
+    is_nh = True
+  else
+    is_nh = False
+  end if
+
+;
+; Make sure there's some space around the area we want to mask.
+;
+  if(is_nh)
+    mpres@mpMinLatF = max((/minlat-0.5,  0/))
+    mpres@mpMaxLatF = min((/maxlat+0.5, 90/))
+  else
+    mpres@mpMinLatF = max((/minlat-0.5,-90/))
+    mpres@mpMaxLatF = min((/maxlat+0.5,  0/))
+  end if
+  mpres@mpMinLonF = minlon-0.5
+  mpres@mpMaxLonF = maxlon+0.5
+
+;
+; These draw order resources are necessary to make sure the map
+; outlines, lat/lon lines, and perimeter gets drawn *after* the
+; masking polygons are drawn.
+;
+  mpres@mpOutlineDrawOrder     = get_res_value_keep(res, \
+                                 "mpOutlineDrawOrder","PostDraw")
+  mpres@mpGridAndLimbDrawOrder = get_res_value_keep(res, \
+                                 "mpGridAndLimbDrawOrder","PostDraw")
+  mpres@mpPerimDrawOrder       = get_res_value_keep(res, \
+                                 "mpPerimDrawOrder","PostDraw")
+
+;
+; This section is to get rid of some of the remnants that appear around the
+; edges of the plot, even after the masking is done. To accomplish this,
+; tickmarks are being turned on, but only the border is being drawn in the
+; background color.  Since things like streamlines can *still* leave 
+; remnants, even with this extra code, we have put in a hook to allow the
+; user to specify the thickness of the border line.
+; 
+  mpres@pmTickMarkDisplayMode = "Always"
+  mpres@tmXBLabelsOn          = False
+  mpres@tmXTLabelsOn          = False
+  mpres@tmYLLabelsOn          = False
+  mpres@tmYRLabelsOn          = False
+  mpres@tmYLOn                = False
+  mpres@tmYROn                = False
+  mpres@tmXBOn                = False
+  mpres@tmXTOn                = False
+  mpres@tmBorderLineColor     = "background"
+  mpres@tmBorderThicknessF    = get_res_value_keep(res, \
+                                "tmBorderThicknessF",1.3)
+;
+; Now that we've set all these resources, apply them to the map.
+;
+  attsetvalues(maplc,mpres)
+
+;
+; Thus begins the section for creating the two masking polygons.
+; The polygons must be drawn in NDC, because trying to draw them in
+; lat/lon space is not a good use of time and produces unpredictable
+; results.
+;
+; Get viewport coordinates and calculate NDC positionsd of the
+; four corners of the plot.
+;
+  getvalues maplc
+    "vpXF"      : vpx
+    "vpYF"      : vpy
+    "vpWidthF"  : vpw
+    "vpHeightF" : vph
+  end getvalues
+
+  xlft = vpx
+  xrgt = vpx + vpw
+  ytop = vpy
+  ybot = vpy - vph
+
+;
+; Calculate NDC coordinates of four corners of area defined by min/max
+; lat/lon coordinates.
+;
+  xmnlnmnlt = new(1,float)       ; (minlon,minlat)
+  ymnlnmnlt = new(1,float)
+  xmxlnmnlt = new(1,float)       ; (maxlon,minlat)
+  ymxlnmnlt = new(1,float)
+  xmnlnmxlt = new(1,float)       ; (minlon,maxlat)
+  ymnlnmxlt = new(1,float)
+  xmxlnmxlt = new(1,float)       ; (maxlon,maxlat)
+  ymxlnmxlt = new(1,float)
+
+  datatondc(maplc, tofloat(minlon), tofloat(minlat), xmnlnmnlt, ymnlnmnlt)
+  datatondc(maplc, tofloat(maxlon), tofloat(minlat), xmxlnmnlt, ymxlnmnlt)
+  datatondc(maplc, tofloat(minlon), tofloat(maxlat), xmnlnmxlt, ymnlnmxlt)
+  datatondc(maplc, tofloat(maxlon), tofloat(maxlat), xmxlnmxlt, ymxlnmxlt)
+
+;
+; Calculate NDC coordinates of southern hemisphere semi-circle.
+;
+  nscirc     = 25
+  scirc_xndc = new(nscirc,float) 
+  scirc_yndc = new(nscirc,float) 
+  scirc_lon  = new(nscirc,float) 
+  scirc_lat  = new(nscirc,float) 
+  scirc_lon  = fspan(maxlon,minlon,nscirc)
+  scirc_lat  = minlat
+  datatondc(maplc,scirc_lon,scirc_lat,scirc_xndc,scirc_yndc)
+
+;
+; Calculate NDC coordinates of northern hemisphere semi-circle.
+;
+  nncirc     = 25 
+  ncirc_xndc = new(nncirc,float) 
+  ncirc_yndc = new(nncirc,float) 
+  ncirc_lon  = new(nncirc,float) 
+  ncirc_lat  = new(nncirc,float) 
+  ncirc_lon  = fspan(maxlon,minlon,nncirc)
+  ncirc_lat  = maxlat
+  datatondc(maplc,ncirc_lon,ncirc_lat,ncirc_xndc,ncirc_yndc)
+
+;
+; Create two polygons in NDC space (northern and southern hemisphere),
+; using all the coordinates we gathered above. The two polygons will be
+; set differently depending on whether we're in the northern or 
+; southern hemisphere.  Yes, we could do this with one polygon, but it's
+; a little cleaner this way, trust me.
+;
+  if(is_nh) then
+    nxpoly = new(nncirc+7,float)
+    nypoly = new(nncirc+7,float)
+    sxpoly = new(nscirc+5,float)
+    sypoly = new(nscirc+5,float)
+  else
+    nxpoly = new(nncirc+5,float)
+    nypoly = new(nncirc+5,float)
+    sxpoly = new(nscirc+7,float)
+    sypoly = new(nscirc+7,float)
+  end if
+;
+; Define masking polygons for map that is in the northern hemisphere.
+;
+  if(is_nh) then
+    nxpoly(0)          = xrgt
+    nypoly(0)          = ymxlnmnlt
+    nxpoly(1)          = xmxlnmnlt
+    nypoly(1)          = ymxlnmnlt
+    nxpoly(2:nncirc+1) = ncirc_xndc
+    nypoly(2:nncirc+1) = ncirc_yndc
+    nxpoly(nncirc+2)   = xmnlnmnlt
+    nypoly(nncirc+2)   = ymnlnmnlt
+    nxpoly(nncirc+3)   = xlft
+    nypoly(nncirc+3)   = ymnlnmnlt
+    nxpoly(nncirc+4)   = xlft
+    nypoly(nncirc+4)   = ytop
+    nxpoly(nncirc+5)   = xrgt
+    nypoly(nncirc+5)   = ytop
+    nxpoly(nncirc+6)   = xrgt
+    nypoly(nncirc+6)   = ymxlnmnlt
+
+    sxpoly(0)        = xrgt
+    sypoly(0)        = ymxlnmnlt
+    sxpoly(1:nscirc) = scirc_xndc
+    sypoly(1:nscirc) = scirc_yndc
+    sxpoly(nscirc+1) = xlft
+    sypoly(nscirc+1) = ymnlnmnlt
+    sxpoly(nscirc+2) = xlft
+    sypoly(nscirc+2) = ybot
+    sxpoly(nscirc+3) = xrgt
+    sypoly(nscirc+3) = ybot
+    sxpoly(nscirc+4) = xrgt
+    sypoly(nscirc+4) = ymxlnmnlt
+  else
+;
+; Define masking polygons for plot that is in the southern hemisphere.
+;
+    nxpoly(0)        = xrgt
+    nypoly(0)        = ymxlnmxlt
+    nxpoly(1:nncirc) = ncirc_xndc
+    nypoly(1:nncirc) = ncirc_yndc
+    nxpoly(nncirc+1) = xlft
+    nypoly(nncirc+1) = ymnlnmxlt
+    nxpoly(nncirc+2) = xlft
+    nypoly(nncirc+2) = ytop
+    nxpoly(nncirc+3) = xrgt
+    nypoly(nncirc+3) = ytop
+    nxpoly(nncirc+4) = xrgt
+    nypoly(nncirc+4) = ymxlnmxlt
+
+    sxpoly(0)          = xrgt
+    sypoly(0)          = ymxlnmxlt
+    sxpoly(1)          = xmxlnmxlt
+    sypoly(1)          = ymxlnmxlt
+    sxpoly(2:nscirc+1) = scirc_xndc
+    sypoly(2:nscirc+1) = scirc_yndc
+    sxpoly(nscirc+2)   = xmnlnmxlt
+    sypoly(nscirc+2)   = ymnlnmxlt
+    sxpoly(nscirc+3)   = xlft
+    sypoly(nscirc+3)   = ymnlnmxlt
+    sxpoly(nscirc+4)   = xlft
+    sypoly(nscirc+4)   = ybot
+    sxpoly(nscirc+5)   = xrgt
+    sypoly(nscirc+5)   = ybot
+    sxpoly(nscirc+6)   = xrgt
+    sypoly(nscirc+6)   = ymxlnmxlt
+  end if
+;
+; Attach the two polygons (and optionally, the outline polyline) 
+; to the map.  Fill the polygons in the background color.
+;
+  pres             = True
+  pres@gsFillColor = "background"
+
+;
+; Northern hemisphere polygon
+;
+  var_string         = unique_string("lamb_polygon")
+  maplc@$var_string$ = gsn_add_primitive(wks,maplc,nxpoly,nypoly,True, \
+                                         "polygon",pres)
+;
+; Southern hemisphere polygon
+;
+  var_string         = unique_string("lamb_polygon")
+  maplc@$var_string$ = gsn_add_primitive(wks,maplc,sxpoly,sypoly,True, \
+                                         "polygon",pres)
+;
+; For debugging purposes only.  This draws outlines around the two
+; polygons, in case you need to see what areas are being masked.
+;
+;  pres@gsLineThicknessF = 3.0
+;  pres@gsLineColor      = "red"
+;  var_string            = unique_string("lamb_polyline")
+;  maplc@$var_string$    = gsn_add_primitive(wks,maplc,nxpoly,nypoly,True, \
+;                                            "polyline",pres)
+;  pres@gsLineColor   = "blue"
+;  var_string         = unique_string("lamb_polyline")
+;  maplc@$var_string$ = gsn_add_primitive(wks,maplc,sxpoly,sypoly,True, \
+;                                         "polyline",pres)
+;
+;
+; Outline the area we are looking at (optional).
+;
+   if(maskoutln) then
+     pres@gsLineColor      = "foreground"
+     pres@gsLineThicknessF = 3.0
+     var_string         = unique_string("lamb_polyline")
+     outline_lon        = (/ minlon, maxlon, maxlon, minlon, minlon /)
+     outline_lat        = (/ minlat, minlat, maxlat, maxlat, minlat /)
+     maplc@$var_string$ = gsn_add_polyline(wks,maplc,outline_lon, \
+                                                     outline_lat,pres)
+  end if
+
+  return(maplc)
+end             
+
+;***********************************************************************;
 ; Function : gsn_csm_map_ce                                             ;
 ;                   wks: workstation object                             ;
 ;               resources: optional resources                           ;
@@ -3801,6 +4143,14 @@ end
 ;       are used to title the top left, center, and right of the plot   ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
+;    2. If the special resource "gsnMaskLambertConformal" is set, then  ;
+;       if the resources mpMinLatF, mpMaxLatF, mpMinLonF, and mpMaxLonF ;
+;       are also set, the lambert conformal map will be masked outside  ;
+;       of these min/max lat/lon boundaries.  Note: mpProjection must   ;
+;       be set to "LambertConformal".                                   ;
+;    3. If the special resource "gsnMaskLambertConformalOutlineOn" is   ;
+;       set to True, then the lat/lon area of interest will be outlined ;
+;       in the foreground color.                                        ;
 ;***********************************************************************;
 
 function gsn_csm_map_other(wks:graphic,resources:logical)
@@ -3817,6 +4167,8 @@ begin
 ; Check if frame and/or draw are not supposed to be called.
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
+    masklc    = get_res_value(res2,"gsnMaskLambertConformal",False)
+    maskoutln = get_res_value(res2,"gsnMaskLambertConformalOutlineOn",False)
     maxbb     = get_bb_res(res2)
     
     left_string   = new(1,logical)
@@ -3866,6 +4218,29 @@ begin
 
     mpres = get_res_ne(res2,(/"tx","tm"/))  ; Get rest of resources
 ;
+; If user wants to mask the lambert conformal map, then to avoid 
+; the error message:
+;
+;      warning:MapSetTrans: map limits invalid - using maximal area
+; 
+; we must set the lambert parallels here.   We also use this opportunity
+; to make sure the Min/Max/Lat/LonF resources are set.
+;
+    if(masklc) then
+      if(isatt(res2,"mpMinLatF").and.isatt(res2,"mpMaxLatF").and. \
+         isatt(res2,"mpMinLonF").and.isatt(res2,"mpMaxLonF")) then
+        if (res2@mpMinLatF.lt.0) then
+          mpres@mpLambertParallel1F = -0.001
+          mpres@mpLambertParallel2F = -89.999
+        end if
+      else
+        print("gsn_csm_map_other: Warning: one or more of the resources mpMinLatF, mpMaxLatF, mpMinLonF, and mpMaxLonF have not been set.")
+        print("No masking of the Lambert Conformal map will take place.")
+        masklc = False
+      end if
+    end if
+
+;
 ; If user has turned on built-in map tickmarks, then go ahead and
 ; let the tickmark resources (if any) be passed to the map object.
 ;
@@ -3880,6 +4255,16 @@ begin
 ; Set some map resources.
 ;
     attsetvalues_check(map_object,mpres)
+;
+; If user wants to mask the lambert conformal map, then the four
+; mpMin/Max resources must be set. The masking routine will be called,
+; and masking polygons will be attached to map_object.
+;
+    if(masklc) then
+      map_object = mask_lambert(wks,map_object,res2@mpMinLatF, \
+                                res2@mpMaxLatF,res2@mpMinLonF, \
+                                res2@mpMaxLonF,maskoutln,res2)
+    end if
 
 ; Make sure axes labels (if any) are the same size.
 
@@ -4584,8 +4969,8 @@ begin
 
 ; This section tests for regular resources.
     lbres = get_res_eq(res2,(/"lb","pm"/))
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
     if(cnres)
       if(check_attr(cnres,"cnFillOn",True,False))
@@ -5167,8 +5552,8 @@ begin
 
 ; This section tests for regular resources.
     lbres = get_res_eq(res2,(/"lb","pm"/))
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
     if(vcres)
       if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
@@ -5615,8 +6000,8 @@ begin
     end if
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","gsnMask"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     stres           = True
@@ -6187,8 +6572,8 @@ begin
     end if
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     stres           = True
@@ -7183,8 +7568,8 @@ begin
     end if
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     vcres           = True
@@ -7286,7 +7671,6 @@ function gsn_csm_contour_map(wks:graphic,data[*][*]:numeric,\
 local res
 begin
   res = get_resources(resources)
-
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
     return(gsn_csm_contour_map_polar(wks,data,res))
