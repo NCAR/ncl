@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.41 1994-03-04 21:45:01 clyne Exp $
+ *	$Id: gcap.c,v 1.42 1994-03-30 22:56:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -198,6 +198,18 @@ int	gcap_graphics_mode_(on_off)
 		 */
 		if (!BATCH || first) {
 			(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
+			if (first && MAP_INDEX_DEFINED > 0) {
+
+				/*
+				 * The graphcap has supplied its own 
+				 * colormap so load  it and tell ctrans not 
+				 * to try and supply its own default
+				 * colormap.
+				 */
+				(void) load_gcap_default_pal();
+				_CtDefNoColorDefault();
+
+			}
 			first = FALSE;
 		}
 		if (!BATCH) {   /* don't clear batch devices */
@@ -343,21 +355,6 @@ CGMC *c;
 			return(-1);
 		}
 	}
-
-
-
-	if (MAP_INDEX_DEFINED > 0) {
-
-		/*
-		 * The graphcap has supplied its own colormap so load 
-		 * it and tell ctrans not to try and supply its own default
-		 * colormap.
- 		 */
-		(void) load_gcap_default_pal();
-		_CtDefNoColorDefault();
-
-	}
-
 
 	deviceIsInit = TRUE;
 	return (status);
