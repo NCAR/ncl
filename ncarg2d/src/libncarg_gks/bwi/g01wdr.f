@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.6 1994-11-15 17:54:13 fred Exp $
+C	$Id: g01wdr.f,v 1.7 1996-09-30 23:36:47 fred Exp $
 C
         SUBROUTINE G01WDR(WKID,METANM)
 C
@@ -73,9 +73,9 @@ C
 C
 C  Control and escape functions.
 C
-C     Code:  -3   -2   -1    0    1
-      GOTO (210, 220, 230, 240, 250,
-     +      910, 270, 910, 910, 300)  MCODES+4
+C     Code:  -6,  -5,  -4,  -3   -2   -1    0    1
+      GOTO (180, 190, 200, 210, 220, 230, 240, 250,
+     +      910, 270, 910, 910, 300)  MCODES+7
 C     Code:   2    3    4    5    6
 C
 C
@@ -194,6 +194,155 @@ C *         ---------- CONTROL FUNCTION PROCESSING ----------          *
 C *                                                                    *
 C **********************************************************************
 C
+C  Dump all attribute settings.
+C
+  180 CONTINUE
+      CALL G01DMP(0)
+      RETURN
+C
+C  Terminate workstation without putting out an END PICTURE or an
+C  END METAFILE.
+C
+  190 CONTINUE
+C
+C  Mark workstation closed, flush buffer, close the output unit.
+C
+      MOPEN = GNO
+C
+C  Set parameters to tell G01CLW to conditionally finish picture and
+C  not to put out an END PICTURE.
+C
+      ID(2) = GCONDI
+      ID(3) = 0
+      CALL G01CLW
+C
+C  Call central I/O routine to indicate file close.
+C
+      CALL G01MIO (2, MFGLUN, DNAME, MOUTBF, 1, RERR)
+      RETURN
+C
+C  RE-OPEN WORKSTATION
+C
+  200 CONTINUE
+C
+      IF (CONT .EQ. 0) THEN
+C
+C  Call routine to flag memory resident files for UNIX ICTRANS use.
+C
+        CALL GOPNIC(IDUM)
+C
+C  Mark workstation open in WSL, set workstation ID, connection ID,
+C  and workstation type.
+C
+        MOPEN  = GYES
+        MWKID  = WKID
+        MCONID = ID(2)
+        MWTYPE = ID(3)
+C
+C  Set the file name.
+C
+        FNAME = METANM
+        CALL GTNLEN(FNAME,ILEN,IER)
+        IF (IER .EQ. 0) FNAME(ILEN+1:ILEN+1) = CHAR(0)
+C
+C  Initialize current-buffer-position pointer.
+C
+        MBFPOS = 32
+C
+C  Set number of bits per metacode record.
+C
+        MXBITS = 11520
+C
+C  Compute number of integer words needed for output buffer (MOUTBF).
+C
+        MOBFSZ = 1 + (MXBITS-1)/I1MACH(5)
+C
+C  Set data type for NCAR CGM.
+C
+        MDTYPE = 3
+C
+C  Copy LUN for output.
+C
+        MFGLUN = MCONID
+C
+C  Initialize begin-metafile and end-metafile flags.
+C
+        MBMFLG = GNO
+        MEMFLG = GNO
+C
+C  Open metacode output unit.
+C
+        CALL G01MIO(11, MFGLUN, FNAME(1:ILEN), MOUTBF, MOBFSZ, RERR)
+        IF (RERR .NE. 0)  RETURN
+C
+C  Determine the number of records in the file.
+C
+        MRECNM = 0
+  100   CONTINUE
+        CALL G01MIO(4, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        IF (RERR .NE. 0) THEN
+          IF (RERR .EQ. -1) THEN
+            GO TO 105
+          ELSE
+            RETURN
+          ENDIF
+        ENDIF
+        MRECNM = MRECNM+1
+        GO TO 100
+  105   CONTINUE
+C
+C  Back over the final record and read it.
+C
+        CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        CALL G01MIO(6, MFGLUN, DNAME, IDM, 1, RERR)
+        CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        CALL G01MIO(4, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+C
+C  If the record is an END METAFILE, back over it.
+C
+        CALL GBYTES(MOUTBF, IMFTMP, 0, 32, 0, 1)
+        IF (IMFTMP .EQ. 143872) THEN
+          CALL G01MIO(6, MFGLUN, DNAME, IDM, 1, RERR)
+          CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+          IF (RERR .NE. 0)  RETURN
+          MRECNM = MRECNM-1
+        ENDIF
+C
+C  Back over the current last record and read it.
+C
+        CALL G01MIO(6, MFGLUN, DNAME, IDM, 1, RERR)
+        CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        CALL G01MIO(4, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+        CALL G01MIO(7, MFGLUN, DNAME, MOUTBF, MOBFSZ, RERR)
+C
+        CALL GBYTES(MOUTBF, IMFBSZ, 0, 16, 0, 1)
+        CALL GBYTES(MOUTBF, IMFENP, (IMFBSZ+2)*8, 16, 0, 1)
+        IF (IMFENP .NE. 160) THEN
+C
+C  No END PICTURE in current record; return an error flag of -10 to 
+C  indicate a break in the middle of a picture.
+C
+          RERR = -10
+          MDEMPT = GNEMPT
+          RETURN
+        ENDIF
+C     
+C  Initialize workstation state list parameters.
+C
+        CALL  G01IWS
+C
+C  Initialize attribute context.
+C
+        CALL  G01IAC
+C
+C  Initialize new-frame flag.
+C
+        MNFFLG = GNO
+C
+        RETURN
+      ENDIF
+C
 C  OPEN WORKSTATION
 C
   210 CONTINUE
@@ -296,9 +445,11 @@ C  Mark workstation closed, flush buffer, close the output unit.
 C
       MOPEN = GNO
 C
-C  Set parameter to tell G01CLW to conditionally finish picture.
+C  Set parameter to tell G01CLW to conditionally finish picture and
+C  put out an END PICTURE.
 C
       ID(2) = GCONDI
+      ID(3) = 1
       CALL G01CLW
 C
 C  Put out END METAFILE record.
@@ -317,6 +468,7 @@ C
 C  Clear workstation.
 C
   250 CONTINUE
+      ID(3) = 1
       CALL G01CLW
       RETURN
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.8 1994-05-28 00:42:33 fred Exp $
+C	$Id: gztowk.f,v 1.9 1996-09-30 23:36:18 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -24,7 +24,7 @@ C
         IF (FCODE .EQ. 92) THEN
           CALL G01WDR(ID(1),GFNAME)
           RETURN
-        ELSE IF (FCODE .EQ. -3) THEN
+        ELSE IF (FCODE.EQ.-3 .OR. FCODE.EQ.-4) THEN
           IF (ID(3) .EQ. GCGM) THEN
             CALL G01WDR(ID(1),GFNAME)
             RETURN
@@ -98,7 +98,8 @@ C
 C  Put functions out to the open workstations.
 C
           IF ( 
-     +     (FCODE.EQ. -2 .OR. FCODE.EQ.  0 .OR. FCODE.EQ.  1 .OR.
+     +     (FCODE.EQ. -6 .OR. FCODE.EQ. -5 .OR.
+     +      FCODE.EQ. -2 .OR. FCODE.EQ.  0 .OR. FCODE.EQ.  1 .OR.
      +      FCODE.EQ.  3 .OR. FCODE.EQ.  6 .OR. FCODE.EQ. 61 .OR.
      +      FCODE.EQ. 56 .OR. FCODE.EQ. 71 .OR. FCODE.EQ. 72 .OR.
      +      FCODE.EQ. 79 .OR. FCODE.EQ. 82 .OR. FCODE.EQ. 84 .OR. 

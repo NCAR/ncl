@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.19 1994-11-15 17:54:15 fred Exp $
+ *      $Id: wks.c.sed,v 1.20 1996-09-30 23:36:50 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -130,6 +130,7 @@ static struct
 *			  = 0  open for reading only
 *			  = 1  truncate and open for reading and writing
 *			  = 2  open a segment for writing and reading.
+*                         = 3  open a CGM for appending.
 *
 *	Called From:	Mostly Fortran routines in the NCAR GKS library.
 *
@@ -240,6 +241,15 @@ int	opnwks_(unit, openf, fname, status)
 
 		mftab[*unit].segment = TRUE;
 	}
+        else if (*openf == 3) {
+               
+                /* Open CGM for append */
+
+                mftab[*unit].type = FILE_OUTPUT;
+                mftab[*unit].name = calloc(strlen(fname)+1, sizeof(char));
+                (void) strcpy(mftab[*unit].name, fname);
+                mftab[*unit].segment = FALSE;
+        }
 	else {
 
 		/* Output is not a segment */
@@ -304,13 +314,14 @@ int	opnwks_(unit, openf, fname, status)
 	}
 
 	/*
-	If GKS output is a file, open it for reading and writing.
-	Truncate a pre-existing file or create a new one for writing. 
-	A stream is attached to the file and a buffer allocated
-	of the size constant BUFSIZ from stdio.h or from
-	the user-defined environment variable NCARG_GKS_BUFSIZE,
-	which specifies the number of 1024-byte blocks to
-	use for I/O.
+        If GKS output is a file, open it for reading and writing.
+        Unless the file is being opened for appending, Truncate 
+        a pre-existing file or create a new one for writing. A 
+        stream is attached to the file and a buffer allocated
+        of the size constant BUFSIZ from stdio.h or from
+        the user-defined environment variable NCARG_GKS_BUFSIZE,
+        which specifies the number of 1024-byte blocks to
+        use for I/O.
 
 	If GKS output is a process, it is assumed to be
 	a translator invoked as follows:
@@ -361,6 +372,9 @@ int	opnwks_(unit, openf, fname, status)
 		if (*openf == 0)  {
 			otype = "r";
 		}
+                else if (*openf == 3) {
+                        otype = "r+";
+                }
 		else {
 			otype = "w+";
 		}
@@ -852,18 +866,23 @@ flswks_(unit, status)
 
 	/* Make sure the requested unit is valid. */
 
-	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
-	{
+	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED) {
 		(void) fprintf(stderr, "Invalid unit (%d)\n", *unit);
 		*status = 304;
 		return(0);
 	}
 
+        if (fseek(mftab[*unit].fp, 0L, SEEK_CUR) != 0) {
+                (void) fprintf(stderr, "Error in flswks_() : Seek failed\n");
+                *status = 304;
+                return(0);
+        }
+
 	rc = fflush(mftab[*unit].fp);
 	if (rc != 0) {
 		(void) fprintf(stderr, "Flush failure (%d)\n", *unit);
 		*status = 304;
-	}
+        }
 
 	return(0);
 }

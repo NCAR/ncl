@@ -1,5 +1,5 @@
 C
-C	$Id: g01seg.f,v 1.4 1994-04-29 20:27:31 fred Exp $
+C	$Id: g01seg.f,v 1.5 1996-09-30 23:36:46 fred Exp $
 C
       SUBROUTINE G01SEG
 C
@@ -84,7 +84,7 @@ C
 C
 C  Re-establish original attribute settings.
 C
-      CALL G01DMP
+      CALL G01DMP(1)
       RETURN
   110 CONTINUE
       MRECNM = MRCOLD

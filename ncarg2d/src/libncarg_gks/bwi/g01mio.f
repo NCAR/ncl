@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.7 1994-09-15 00:26:09 fred Exp $
+C	$Id: g01mio.f,v 1.8 1996-09-30 23:36:45 fred Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
 C------------------------------------------------------------------------------
@@ -26,13 +26,14 @@ C	   If no name follows the pipe symbol, a default translator
 C	   is invoked.
 C
 C	NOTE: stdout to a translator is not used because of
-C	potential conflicts with user code writing to LU 6.
+C	potential conflicts with user code writing to logical unit 6.
 C
 C------------------------------------------------------------------------------
 C
 C  Central I/O routine for NCAR GKS.
 C
 C    INPUT PARAMETERS
+C
 C      OP     - Operation:
 C                 =  1, open workstation for reading and writing on 
 C                      IABS(UNIT) - truncates existing files.
@@ -47,12 +48,14 @@ C                 =  7, flush the I/O buffers for UNIT.
 C                 =  8, open workstation for reading only on IABS(UNIT).
 C                 =  9, delete the segment whose file name is in FNAME.
 C                 = 10, open a segment.
+C                 = 11, open an existing CGM for appending.
 C      UNIT   - IABS(UNIT) is the Fortran LUN on which OP is to occur.
 C      FNAME  - filename used for open.
 C      BUFFER - buffer containing data for a read/write operation.
 C      LENGTH - length of data in BUFFER.
 C
 C    OUTPUT PARAMETERS
+C
 C      ERROR  - error indicator  =    0 if no errors.
 C                                =   -1 if EOF.
 C                                = -105 if open error.
@@ -65,9 +68,10 @@ C
 C
 C  Local variables:  IAUNIT is the Fortran LUN.
 C                    IOPENF is a flag for the file open:
-C                             = 0  open segment for read only; 
-C                             = 1  truncate and open for reading and writing
-C                             = 2  open a segment for writing; 
+C                             = 0  open segment for read only.
+C                             = 1  truncate and open for reading and writing.
+C                             = 2  open a segment for writing.
+C                             = 3  open CGM for appending.
 C
       INTEGER IAUNT,IOPENF
 C
@@ -119,6 +123,10 @@ C Flush the I/O buffers for a given unit
 
       ELSE IF (OP.EQ.10) THEN
         IOPENF = 2
+	CALL OPNWKS(IAUNT, IOPENF, FNAME, ERROR)
+
+      ELSE IF (OP.EQ.11) THEN
+        IOPENF = 3
 	CALL OPNWKS(IAUNT, IOPENF, FNAME, ERROR)
 
       ENDIF

@@ -1,11 +1,11 @@
 C
-C	$Id: g01dmp.f,v 1.2 1993-01-09 02:05:57 fred Exp $
+C	$Id: g01dmp.f,v 1.3 1996-09-30 23:36:43 fred Exp $
 C
-      SUBROUTINE G01DMP
+      SUBROUTINE G01DMP(IOPT)
 C
-C  This subroutine dumps the current state of all attributes.
-C  It also dumps out the clipping indicator, the clipping rectangle,
-C  and the color table.
+C  If IOPT = 0 this subroutine dumps the current state of all 
+C  attributes.  If IOPT = 1, additionally it dumps out the clipping 
+C  indicator, the clipping rectangle, and the color table.
 C
 C
       include 'g01prm.h'
@@ -23,41 +23,44 @@ C
       INTEGER NUMO(2),RERR
       INTEGER ICTMP(3)
 C
+      IF (IOPT .EQ. 1) THEN
+C
 C  Clipping indicator, and clip rectangle.
 C
-      NBYTES = 1+(MEFW-1)/8
-      CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
-      CALL GPUTPR (MRCLIP, MEFW,     1, RERR)
-      NBYTES = 1 + (4*MVDCFW-1)/8
-      CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
-      CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
+        NBYTES = 1+(MEFW-1)/8
+        CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
+        CALL GPUTPR (MRCLIP, MEFW,     1, RERR)
+        NBYTES = 1 + (4*MVDCFW-1)/8
+        CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
+        CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
 C
 C  Color table.
 C
-      DO 10 I=1,MOL
-        ICTMP(1) = REAL(MDCCRG)*SRED(I)
-        ICTMP(2) = REAL(MDCCRG)*SGREEN(I)
-        ICTMP(3) = REAL(MDCCRG)*SBLUE(I)
-        NCIX = MCOLI(I)
+        DO 10 I=1,MOL
+          ICTMP(1) = REAL(MDCCRG)*SRED(I)
+          ICTMP(2) = REAL(MDCCRG)*SGREEN(I)
+          ICTMP(3) = REAL(MDCCRG)*SBLUE(I)
+          NCIX = MCOLI(I)
 C
 C  Don't copy over background color.
 C
-        IF (NCIX .EQ. 0) GO TO 10
-        NBYTES = 1 + (3*MDCCFW + MCIXFW - 1)/8
-        CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
-        IF (RERR .NE. 0)  RETURN
-        CALL GPUTPR (NCIX, MCIXFW, 1, RERR)
-        IF (RERR .NE. 0)  RETURN
-        CALL GPUTPR (ICTMP, MDCCFW, 3, RERR)
-   10 CONTINUE
+          IF (NCIX .EQ. 0) GO TO 10
+          NBYTES = 1 + (3*MDCCFW + MCIXFW - 1)/8
+          CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
+          IF (RERR .NE. 0)  RETURN
+          CALL GPUTPR (NCIX, MCIXFW, 1, RERR)
+          IF (RERR .NE. 0)  RETURN
+          CALL GPUTPR (ICTMP, MDCCFW, 3, RERR)
+   10   CONTINUE
+      ENDIF
 C
 C  Line bundle index.
 C
-      NBYTES = 1+(MIXFW-1)/8
-      CALL GPUTNI (CLLBIX,  IDLBIX,  NBYTES,  RERR)
-      CALL GPUTPR (MRPLIX, MIXFW,  1, RERR)
-      MSPLIX         = MRPLIX
-      VALCHG(IVPLIX) = .FALSE.
+C     NBYTES = 1+(MIXFW-1)/8
+C     CALL GPUTNI (CLLBIX,  IDLBIX,  NBYTES,  RERR)
+C     CALL GPUTPR (MRPLIX, MIXFW,  1, RERR)
+C     MSPLIX         = MRPLIX
+C     VALCHG(IVPLIX) = .FALSE.
 C
 C  Line type.
 C
@@ -86,11 +89,11 @@ C
 C
 C  Marker bundle index.
 C
-      NBYTES = 1+(MIXFW-1)/8
-      CALL GPUTNI (CLMBIX, IDMBIX, NBYTES,  RERR)
-      CALL GPUTPR (MRPMIX, MIXFW,  1, RERR)
-      MSPMIX = MRPMIX
-      VALCHG(IVPMIX) = .FALSE.
+C     NBYTES = 1+(MIXFW-1)/8
+C     CALL GPUTNI (CLMBIX, IDMBIX, NBYTES,  RERR)
+C     CALL GPUTPR (MRPMIX, MIXFW,  1, RERR)
+C     MSPMIX = MRPMIX
+C     VALCHG(IVPMIX) = .FALSE.
 C
 C  Marker type.
 C
@@ -119,11 +122,11 @@ C
 C
 C  Text bundle index.
 C
-      NBYTES = 1+(MIXFW-1)/8
-      CALL GPUTNI (CLTBIX, IDTBIX, NBYTES, RERR)
-      CALL GPUTPR (MRTXIX, MIXFW, 1, RERR)
-      MSTXIX         = MRTXIX
-      VALCHG(IVTXIX) = .FALSE.
+C     NBYTES = 1+(MIXFW-1)/8
+C     CALL GPUTNI (CLTBIX, IDTBIX, NBYTES, RERR)
+C     CALL GPUTPR (MRTXIX, MIXFW, 1, RERR)
+C     MSTXIX         = MRTXIX
+C     VALCHG(IVTXIX) = .FALSE.
 C
 C  Text font.
 C

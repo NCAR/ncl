@@ -1,5 +1,5 @@
 C
-C	$Id: g01clw.f,v 1.2 1993-01-09 02:05:45 fred Exp $
+C	$Id: g01clw.f,v 1.3 1996-09-30 23:36:41 fred Exp $
 C
       SUBROUTINE G01CLW
 C
@@ -20,10 +20,13 @@ C
 C
       IF (MDEMPT.EQ.GNEMPT .OR. ID(2).EQ.GALWAY) THEN
 C
-C  Put out END PICTURE element (CLASS, ID, LENGTH).
+C  Put out END PICTURE element (CLASS, ID, LENGTH), unless the
+C  metafile is being truncated.
 C
-         NBYTES = 0
-         CALL GPUTNI (CLENDP, IDENDP, NBYTES, RERR)
+         IF (ID(3) .NE. 0) THEN
+           NBYTES = 0
+           CALL GPUTNI (CLENDP, IDENDP, NBYTES, RERR)
+          ENDIF
 C
 C  Flush buffer.
 C
@@ -32,7 +35,7 @@ C
 C
 C  Reset all attribute deferral control variables.
 C
-         CALL GUPDVA
+         IF (ID(3) .NE. 0) CALL GUPDVA
       ENDIF
 C
 C  Set WSL entry "DISPLAY SURFACE EMPTY" to "EMPTY"

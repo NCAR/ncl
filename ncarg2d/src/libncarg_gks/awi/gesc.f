@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.20 1996-03-16 21:40:25 boote Exp $
+C	$Id: gesc.f,v 1.21 1996-09-30 23:36:12 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -10,7 +10,8 @@ C
 C
       include 'gkscom.h'
 C
-      INTEGER FCTID,LIDR,TBUF(720)
+      INTEGER FCTID, LIDR, IBUF(46), TBUF(720)
+      REAL    UBUF(26)
       CHARACTER*(*) IDR(LIDR),ODR(MLODR)
       CHARACTER*57  NAMET
       CHARACTER*5   DNAME
@@ -32,14 +33,18 @@ C
 C
 C  Check if the function ID is supported.
 C
-      IF (FCTID.LT.0 .AND. (FCTID.LT.-1610 .OR. FCTID.GT.-1391)) THEN
+      IF (FCTID.LT.0 .AND. (FCTID.LT.-1610 .OR. FCTID.GT.-1350)) THEN
         ERS = 1
 C       CALL GERHND(180,EESC,ERF)
         ERS = 0
       ENDIF
 C
 C  Process legal escape function ID'S:
-C      -1390  --  Returns 'NCAR_GKS0A--VERSION_4.0' in ODR as a check 
+C      -1387  --  Temporarily close an NCGM, no matter what the status 
+C                 of the file.
+C      -1388  --  Set/save/restore attributes.
+C      -1389  --  Reopen an NCGM for appending.
+C      -1390  --  Returns 'NCAR_GKS0A--VERSION_4.1' in ODR as a check 
 C                 to see if the NCAR GKS package is being used.
 C      -1391  --  Metafile name
 C      -1392  --  FLASH4 support
@@ -299,6 +304,32 @@ C
         NOPICT = 0
       ELSE IF (FCTID .EQ. -1390) THEN
         ODR(1) = 'NCAR_GKS0A--VERSION_4.0'
+      ELSE IF (FCTID .EQ. -1389) THEN
+C
+C  Reopen NCGM for appending.
+C
+        GFNAME = ' '
+        DO 255 I=1,4
+          JLIM = 80
+          IF (I .EQ. 4) JLIM = 16
+          DO 265 J=1,JLIM
+            INDX = 80*(I-1)+J
+            GFNAME(INDX:INDX) = IDR(I+1)(J:J)
+  265     CONTINUE
+  255   CONTINUE
+C
+C  Set flag to indicate that the current picture is empty (GZREOP
+C  will reset this to picture not empty if the reopen is done on
+C  a file in mid picture..
+C
+        NOPICT = 0
+        CALL GZREOP(LIDR, IDR, EESC)
+        IF (RERR .GT. 0) THEN
+          ERS = 1
+          CALL GERHND(RERR,EESC,ERF)
+          ERS = 0
+          RETURN
+        ENDIF
 C
 C  X11 window escapes.
 C
@@ -317,7 +348,7 @@ C
 C
   160   CONTINUE
 C
-C  If setting the X Color Model, and IWKID == -1, then the setting 
+C  If setting the X Color Model, and IWKID = -1, then the setting 
 C  applies to the next open X workstation.
 C
 	IF (FCTID.EQ.-1402 .AND. IWKID.EQ.-1) THEN
@@ -385,6 +416,203 @@ C
           ENDIF
           CUFLAG = -1
         ENDIF
+      ELSE IF (FCTID .EQ. -1388) THEN
+C
+C  Save/restore attributes.
+C
+        READ (IDR(1),501) IOPT
+        IF (IOPT.EQ.0 .OR. IOPT.EQ.1) THEN
+          CALL GZUSAT(IOPT,IBUF,UBUF)
+        ELSE IF (IOPT .EQ. 2) THEN
+          CALL GZUSAT(IOPT,IBUF(16),UBUF)
+          IBUF(2) = IBUF(16)
+          IBUF(3) = IBUF(18)
+          IBUF(4) = IBUF(19)
+          IBUF(5) = IBUF(21)
+          IBUF(6) = IBUF(22)
+          IBUF(7) = IBUF(24)
+          IBUF(8) = IBUF(25)
+          IBUF(9) = IBUF(26)
+          IBUF(10) = IBUF(27)
+          IBUF(11) = IBUF(28)
+          IBUF(12) = IBUF(29)
+          IBUF(13) = IBUF(31)
+          IBUF(14) = IBUF(32)
+          IBUF(15) = IBUF(33)
+          WRITE(ODR(1),560) (IBUF(LL),LL=2,15)
+  560     FORMAT(14I5)
+          WRITE(ODR(2),540) (UBUF(LL),LL=1,5)
+          WRITE(ODR(3),550) (UBUF(LL),LL=6,7)
+        ELSE IF (IOPT .EQ. 3) THEN
+          READ (IDR(1),530) (IBUF(LL),LL=1,15)
+  530     FORMAT(15I5)
+          READ (IDR(2),540) (UBUF(LL),LL=1,5)
+  540     FORMAT(5E16.7)
+          READ (IDR(3),550) (UBUF(LL),LL=6,7)
+  550     FORMAT(2E16.7)
+          IBUF(16) = IBUF(2)
+          IBUF(17) = 1
+          IBUF(18) = IBUF(3)
+          IBUF(19) = IBUF(4)
+          IBUF(20) = 1
+          IBUF(21) = IBUF(5) 
+          IBUF(22) = IBUF(6) 
+          IBUF(23) = 1
+          IBUF(24) = IBUF(7) 
+          IBUF(25) = IBUF(8) 
+          IBUF(26) = IBUF(9) 
+          IBUF(27) = IBUF(10) 
+          IBUF(28) = IBUF(11) 
+          IBUF(29) = IBUF(12) 
+          IBUF(30) = 1
+          IBUF(31) = IBUF(13) 
+          IBUF(32) = IBUF(14) 
+          IBUF(33) = IBUF(15) 
+          IBUF(34) = 1
+          IBUF(35) = 1
+          IBUF(36) = 1
+          IBUF(37) = 1
+          IBUF(38) = 1
+          IBUF(39) = 1
+          IBUF(40) = 1
+          IBUF(41) = 1
+          IBUF(42) = 1
+          IBUF(43) = 1
+          IBUF(44) = 1
+          IBUF(45) = 1
+          IBUF(46) = 1
+C
+          DO 155 I=1,7
+            UBUF(7+I) = UBUF(I)
+  155     CONTINUE
+          UBUF(15) = 1.
+          UBUF(16) = 1.
+          UBUF(17) = 0.
+          UBUF(18) = 0.
+          CALL GQCLIP(IER,ICD,UBUF(19)) 
+          SCL = 1./SQRT(UBUF(13)*UBUF(13)+UBUF(14)*UBUF(14))
+          XP = UBUF(12)*SCL*UBUF(13)
+          YP = UBUF(12)*SCL*UBUF(14)
+          XB =  YP
+          YB = -XP
+          CALL GZW2NX(1,XP,XTMP)
+          CALL GZW2NY(1,YP,YTMP)
+          CALL GZW2NX(1,0.,ZXTMP)
+          CALL GZW2NY(1,0.,ZYTMP)
+          UBUF(23) = XTMP-ZXTMP
+          UBUF(24) = YTMP-ZYTMP
+          CALL GZW2NX(1,XB,XTMP)
+          CALL GZW2NY(1,YB,YTMP)
+          UBUF(25) = XTMP-ZXTMP
+          UBUF(26) = YTMP-ZYTMP
+C
+          CALL GZUSAT(3,IBUF(16),UBUF(8))
+        ENDIF
+      ELSE IF (FCTID .EQ. -1387) THEN
+C
+C  Terminate an NCGM without putting out an END PICTURE or an 
+C  END METAFILE.  This is to be used as a way of suspending
+C  output to a metafile for possible reopening with GZREOP.
+C
+        READ (IDR(1),501) IWKID
+C
+C  Check that GKS is in the proper state.
+C
+        CALL GZCKST(7,EESC,IER)
+        IF (IER .NE. 0) RETURN
+C
+C  Check if the workstation identifier is valid.
+C
+        CALL GZCKWK(20,EESC,IWKID,IDUM,IER)
+        IF (IER .NE. 0) RETURN
+C
+C  Check if the specified workstation is open.
+C
+        CALL GZCKWK(25,EESC,IWKID,IDUM,IER)
+        IF (IER .NE. 0) RETURN
+C
+C  Check if the workstation is currently active.
+C
+        CALL GZCKWK(29,EESC,IWKID,IDUM,IER)
+        IF (IER .NE. 0) RETURN
+C
+C  Invoke the workstation interface (do this before flagging
+C  the workstation as closed).
+C
+C  Determine the workstation type.
+C
+        DO 230 I=1,NOPWK
+          IF (SOPWK(I) .EQ. IWKID) THEN
+            NWKTP = SWKTP(I)
+            GO TO 240
+          ENDIF
+  230   CONTINUE
+  240   CONTINUE
+C
+        IF (NWKTP .NE. GCGM) THEN
+          ERS = 1
+          CALL GERHND(-400,EESG,ERF)
+          ERS = 0
+        ENDIF
+C
+C  Invoke the workstation interface.  Set CUFLAG to indicate that 
+C  the interface call should go only to the specifically designated 
+C  workstation.
+
+        CUFLAG = IWKID
+        FCODE = -5
+        CONT  = 0
+        CALL GZROI(0)
+        IL1  = 1
+        IL2  = 1
+        ID(1) = IWKID
+        CALL GZTOWK
+        IF (RERR.NE.0) THEN
+          ERS = 1
+          CALL GERHND(RERR,EESG,ERF)
+          ERS = 0
+        ENDIF
+        CUFLAG = -1
+C
+C  Remove the workstation identifier from the set of open 
+C  workstations in the GKS state list and delete it from
+C  the X workstation list.
+C
+        IF (NOPWK .EQ. 1) THEN
+          SOPWK(1) = -1
+          SWKTP(1) = -1
+          LXWKID(1) = -1
+          NOPWK = 0
+        ELSE
+          DO 201 I=1,NOPWK
+            IF (SOPWK(I) .EQ. IWKID) THEN
+              IF (I .EQ. NOPWK) THEN
+                SOPWK(NOPWK) = -1
+                SWKTP(NOPWK) = -1
+                LXWKID(I) = -1
+                NOPWK = NOPWK-1
+              ELSE
+                NM1 = NOPWK-1
+                DO 202 J=I,NM1
+                  SOPWK(J) = SOPWK(J+1)
+                  SWKTP(J) = SWKTP(J+1)
+                  LXWKID(J) = LXWKID(J+1)
+  202           CONTINUE
+                SOPWK(NOPWK) = -1
+                SWKTP(NOPWK) = -1
+                LXWKID(NOPWK) = -1
+                NOPWK = NOPWK-1
+              ENDIF
+            ENDIF
+  201     CONTINUE
+        ENDIF
+C
+C  Set GKS to state GKOP if no workstations remain open.
+C
+        IF (SOPWK(1) .EQ. -1) THEN
+          OPS = GGKOP
+        ENDIF
+C
 C
 C  PostScript escapes.
 C
@@ -481,7 +709,7 @@ C
           CUFLAG = -1
         ENDIF
 C
-C  Sending "native" C data to a C driver(NOT FROM FORTRAN!)
+C  Sending "native" C data to a C driver (NOT FROM FORTRAN!)
 C
       ELSE IF (FCTID .EQ. -1450) THEN
         ERS = 1
