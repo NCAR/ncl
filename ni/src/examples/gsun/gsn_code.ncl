@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.21 1999-08-13 18:51:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.22 1999-10-26 20:09:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3042,6 +3042,35 @@ begin
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
     data_object = create wksname + "_data" coordArraysClass noparent
+        "caXArray" : x
+        "caYArray" : y
+    end create
+      "trXMinF" : trxmin
+      "trXMaxF" : trxmax
+      "trYMinF" : trymin
+      "trYMaxF" : trymax
+        setvalues data_object
+            "caXMissingV" :x@_FillValue
+    if(res2.and..not.any(ismissing(getvaratts(res2))))
+      if(isatt(res2,"trXMinF")) then
+        trxmin = res2@trXMinF
+      end if 
+      if(isatt(res2,"trXMaxF")) then
+        trxmax = res2@trXMaxF
+      end if 
+      if(isatt(res2,"trYMinF")) then
+        trymin = res2@trYMinF
+      end if 
+      if(isatt(res2,"trYMayF")) then
+        trymax = res2@trYMaxF
+      end if 
+    end if
+        end setvalues
+    end if
+
+; Create plot object.
+
+    plot_object = create wksname + "_xy" xyPlotClass wks
         "xyCoordData" : data_object
     end create
 
