@@ -31,6 +31,7 @@ C Close frame and close GKS
 
 	EXTERNAL FILL
 	EXTERNAL CPDRPL
+        EXTERNAL COLOR
 
 C Set fill style to solid and turn off clipping
 	CALL GSFAIS(1)

@@ -29,7 +29,7 @@ C Close frame and close GKS
 	INTEGER MAP(LMAP),IAREA(NOGRPS),IGRP(NOGRPS)
 
 	EXTERNAL FILL
-
+        EXTERNAL COLOR
 
 C Initialize Areas
 	CALL ARINAM(MAP, LMAP)

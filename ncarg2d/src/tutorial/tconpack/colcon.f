@@ -34,6 +34,7 @@ C Close frame and close GKS
 
         EXTERNAL FILL
         EXTERNAL MASK
+        EXTERNAL COLOR
 C
 C Set color fill to solid
 C

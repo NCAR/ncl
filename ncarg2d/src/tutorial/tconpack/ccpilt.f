@@ -34,8 +34,8 @@ C Close frame and close GKS
 	INTEGER I,J,K,M,N
 
 	OPEN (10,FILE='ccpex.dat',STATUS='OLD')
-	M=K
-	DO 10, I=1,M
+	L=K
+	DO 10, I=1,L
   	  READ (10,*) (Z(I,J),J=1,N)
   10	CONTINUE
 

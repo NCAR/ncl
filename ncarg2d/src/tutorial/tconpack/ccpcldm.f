@@ -31,6 +31,7 @@ C Close frame and close GKS
 
 	EXTERNAL FILL
 	EXTERNAL CPDRPL
+        EXTERNAL COLOR
 
 C Set fill style to solid
 	CALL GSFAIS(1)
