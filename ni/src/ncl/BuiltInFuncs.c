@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.160 2003-05-21 17:30:52 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.161 2003-06-06 20:59:55 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9055,93 +9055,145 @@ NhlErrorTypes _Nclfspan
 ()
 #endif
 {
-	NclStackEntry data0;
-	NclStackEntry data1;
-	NclStackEntry data2;
-	NclMultiDValData tmp_md0 = NULL;
-	NclMultiDValData tmp_md1 = NULL;
-	NclMultiDValData tmp_md2 = NULL;
-	float *out_val;
+	NclStackEntry   data0,
+                    data1,
+                    data2;
+
+	NclMultiDValData    tmp_md0 = NULL,
+                        tmp_md1 = NULL,
+                        tmp_md2 = NULL;
+
+    NclBasicDataTypes   data0_type,
+                        data1_type;
+
 	int dimsizes = 1;
 	int i;
-	float strt;
-	float fnsh;
-	float spacing;
 
-	data0 = _NclGetArg(0,3,DONT_CARE);
-	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
-	if(tmp_md0 == NULL)
-		return(NhlFATAL);
+	float   strt,           /* span start */
+            fnsh,           /* span finish */
+            spacing;        /* span interval */
 
-	data1 = _NclGetArg(1,3,DONT_CARE);
-	switch(data1.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
-	if(tmp_md1 == NULL)
-		return(NhlFATAL);
-	data2 = _NclGetArg(2,3,DONT_CARE);
-	switch(data2.kind) {
-		case NclStk_VAR:
-			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
-	if(tmp_md2 == NULL)
-		return(NhlFATAL);
-
-	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
-		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
-		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
-
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: Missing value detected in input, can't continue");
-		return(NhlFATAL);
-	}
-
-	
-	dimsizes = *(int*)tmp_md2->multidval.val;
-	if(dimsizes <= 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
-		return(NhlFATAL);
-	} else if(dimsizes > 1) {
-		fnsh = *(float*)tmp_md1->multidval.val;
-		strt = *(float*)tmp_md0->multidval.val;
-
-		spacing = (fnsh - strt)/(float)(dimsizes - 1);
-
-		out_val = (float*)NclMalloc(dimsizes*sizeof(float));
-		for(i = 0; i < dimsizes; i++) {
-			out_val[i] = strt + i * spacing;
-		}
-		out_val[0] = strt;
-		out_val[dimsizes-1] = fnsh;
-	} else {
-		out_val = (float*)NclMalloc(sizeof(float));
-		out_val[0] =  *(float*)tmp_md0->multidval.val;
-	}
+	void    *out_val;       /* may be of type float or of type double */
 
 
-	return(NclReturnValue(
-		out_val,
-		1,
-		&dimsizes,
-		NULL,
-		NCL_float,
-		0
-	));
+    /*
+     * get arguments and associated data info
+     */
+    data0 = _NclGetArg(0, 3, DONT_CARE);
+    switch (data0.kind) {
+        case NclStk_VAR:
+            tmp_md0 = _NclVarValueRead(data0.u.data_var, NULL, NULL);
+            break;
+
+        case NclStk_VAL:
+            tmp_md0 = (NclMultiDValData) data0.u.data_obj;
+            break;
+    }
+
+    if (tmp_md0 == NULL)
+        return NhlFATAL;
+
+    data1 = _NclGetArg(1, 3, DONT_CARE);
+    switch (data1.kind) {
+        case NclStk_VAR:
+            tmp_md1 = _NclVarValueRead(data1.u.data_var, NULL, NULL);
+            break;
+
+        case NclStk_VAL:
+            tmp_md1 = (NclMultiDValData) data1.u.data_obj;
+            break;
+    }
+
+    if (tmp_md1 == NULL)
+        return NhlFATAL;
+
+    data2 = _NclGetArg(2, 3, DONT_CARE);
+    switch (data2.kind) {
+        case NclStk_VAR:
+            tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+            break;
+
+        case NclStk_VAL:
+            tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+            break;
+    }
+
+    if (tmp_md2 == NULL)
+        return NhlFATAL;
+
+    if (_NclIsMissing(tmp_md0,tmp_md0->multidval.val)
+            || _NclIsMissing(tmp_md0,tmp_md0->multidval.val)
+            || _NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
+
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "fspan: Missing value detected in input, can't continue");
+        return NhlFATAL;
+    }
+
+    dimsizes = *(int *) tmp_md2->multidval.val;
+    if (dimsizes <= 0) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+            "fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
+        return NhlFATAL;
+    }
+
+    data0_type = tmp_md0->multidval.data_type;
+    data1_type = tmp_md1->multidval.data_type;
+
+    if ((data0_type == NCL_double)  ||  (data1_type == NCL_double)) {
+        /*
+         * promote arguments to type double
+         */
+        tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typedouble, NULL);
+        tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typedouble, NULL);
+
+        if (dimsizes > 1) {
+            fnsh = *(double *) tmp_md1->multidval.val;
+            strt = *(double *) tmp_md0->multidval.val;
+
+            spacing = (double) (fnsh - strt) / (double) (dimsizes - 1);
+
+            out_val = (void *) NclMalloc(dimsizes * sizeof(double));
+            for (i = 0; i < dimsizes; i++) {
+                ((double *) out_val)[i] = strt + (i * spacing);
+            }
+
+            ((double *) out_val)[0] = strt;
+            ((double *) out_val)[dimsizes - 1] = fnsh;
+        } else {
+            /* dimsizes == 1 */
+             out_val = (void *) NclMalloc(sizeof(double));
+            ((double *) out_val)[0] =  *(double *) tmp_md0->multidval.val;
+        }
+
+        return NclReturnValue(out_val, 1, &dimsizes, NULL, NCL_double, 0);
+    } else {
+        /*
+         * arguments are, or are to be promoted to, type float
+         */
+        tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typefloat, NULL);
+        tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typefloat, NULL);
+
+        if (dimsizes > 1) {
+            fnsh = *(float *) tmp_md1->multidval.val;
+            strt = *(float *) tmp_md0->multidval.val;
+
+            spacing = (float) (fnsh - strt) / (float) (dimsizes - 1);
+
+            out_val = (void *) NclMalloc(dimsizes * sizeof(float));
+            for (i = 0; i < dimsizes; i++) {
+                ((float *) out_val)[i] = strt + (i * spacing);
+            }
+
+            ((float *) out_val)[0] = strt;
+            ((float *) out_val)[dimsizes-1] = fnsh;
+        } else {
+            /* dimsizes == 1 */
+            out_val = (void *) NclMalloc(sizeof(float));
+            ((float *) out_val)[0] =  *(float *) tmp_md0->multidval.val;
+        }
+    
+        return NclReturnValue(out_val, 1, &dimsizes, NULL, NCL_float, 0);
+    }
 }
 
 NhlErrorTypes _Nclmask

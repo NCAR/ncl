@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.68 2003-05-31 00:49:40 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.69 2003-06-06 20:59:55 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1360,10 +1360,10 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(3);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
-	NclRegisterFunc( _Nclfspan,args,"fspan",nargs);
+	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
+	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
+	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;
+	NclRegisterFunc( _Nclfspan, args, "fspan", nargs);
 
 	nargs = 0;
 	args = NewArgs(3);
