@@ -1,12 +1,15 @@
 ;
-;      $Id: popRemap.ncl,v 1.3 2003-03-07 05:27:08 haley Exp $
+;      $Id: popRemap.ncl,v 1.4 2004-05-21 19:22:04 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
 ; NCL function to perform selected grid-to-grid transformations
-; There are two possible directories [historical reasons]:
-; CSM convention:    /fs/cgd/csm/mapping/maps/
-; SCRIP convention:  /fs/cgd/data0/shea/pop/ 
+; There are several possible directories [historical/security reasons]:
+; outside the fire wall:
+;      CSM convention:    /fs/cgd/csm/mapping/maps/
+;      SCRIP convention:  /fs/cgd/data0/shea/pop/ 
+; behind the firewall:
+;      CSM convention:    /cgd/cas/shea/POP_REMAP/
 
 ; CCSM uses gx1v2
 
@@ -70,8 +73,15 @@ begin
                       +"_"+method+"_"+areaType+"_"+Date+".nc"   
   end if
 
-  dirPOP  = (/ "/fs/cgd/csm/mapping/maps/"\  ; CSM convention
-            ,  "/fs/cgd/data0/shea/pop/" /) ; SCRIP convention
+  OS = systemfunc("uname")
+  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
+      dirPOP  = (/ "/cgd/cas/shea/POP_REMAP/"  \ 
+                 , "/fis/cgd/cseg/csm/mapping/maps/" /)
+  else
+      dirPOP  = (/ "/fs/cgd/csm/mapping/maps/" \ ; CSM convention
+                 , "/fs/cgd/data0/shea/pop/" /)  ; SCRIP convention
+  end if
+
   do nd=0,dimsizes(dirPOP)-1
      gridPOP = systemfunc("cd "+dirPOP(nd)+" ; ls map_*")
 ;     print (gridPOP)
@@ -95,7 +105,12 @@ function create_rotPopFileName (gridSrc:string, gridDst:string)
 
 local dirPOP, rotPOP, indRot
 begin
-  dirPOP  = "/fs/cgd/data0/shea/pop/"   ; dir with transform files
+  OS = systemfunc("uname")
+  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
+      dirPOP  = (/ "/cgd/cas/shea/POP_REMAP/"/)  ; CSM convention
+  else
+      dirPOP  = (/ "/fs/cgd/data0/shea/pop/" /)  ; dir with transform files
+  end if
                                         ; names with rot angles
   rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2", "gx3", "hx1", "crx3" /)
 
@@ -905,8 +920,15 @@ begin
 
 ; get two-dimensional lat and lon coordinates from a X1 or X3  file
 
+  OS = systemfunc("uname")
+  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
+      dirP = "/cgd/cas/shea/POP_REMAP/" 
+  else
+      dirP = "/fs/cgd/data0/shea/pop/" 
+  end if
+
   if (dst_type.eq."POPX1") then
-      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX1_C.nc","r")
+      f = addfile (dirP+"rmp_OneD_to_POPX1_C.nc","r")
       lon_pop = f->dst_grid_center_lon    ; this is one-dim
       lat_pop = f->dst_grid_center_lat
       ny = 320
@@ -914,7 +936,7 @@ begin
   end if
 
   if (dst_type.eq."POPX3") then
-      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX3_B_CSM.nc","r")
+      f = addfile (dirP+"rmp_OneD_to_POPX3_B_CSM.nc","r")
       lon_pop = f->xc_b    ; this is one-dim
       lat_pop = f->yc_b
       ny = 116
