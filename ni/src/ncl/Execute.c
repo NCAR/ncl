@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.72 1996-11-19 23:31:33 ethan Exp $
+ *      $Id: Execute.c,v 1.73 1996-12-05 01:44:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -971,6 +971,15 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				} else {
 					estatus = _NclSetHLUObjOp(val,nres);
+					if(data.kind == NclStk_VAL) {
+						if(val->obj.status != PERMANENT)
+							_NclDestroyObj((NclObj)val);
+					} else {
+						if(data.u.data_var->obj.status != PERMANENT)
+							_NclDestroyObj((NclObj)data.u.data_var);
+					}
+
+		
 				}
 			}
 				break;

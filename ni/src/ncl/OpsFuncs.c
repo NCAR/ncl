@@ -207,7 +207,11 @@ int operation;
 			if(lhs.u.data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)lhs.u.data_obj);
 			}
-		}
+		} else if(lhs_data_obj != lhs.u.data_obj) {
+			if(lhs.u.data_obj->obj.status != PERMANENT) {
+                                _NclDestroyObj((NclObj)lhs.u.data_obj);
+                        }
+		}	
         } else if(lhs.kind == NclStk_VAR) {
 		if(lhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(lhs_data_obj->obj.status != PERMANENT) {
@@ -241,7 +245,11 @@ int operation;
 			if(rhs.u.data_obj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)rhs.u.data_obj);
 			}
-		}
+		} else if(rhs_data_obj != rhs.u.data_obj) {
+			if(rhs.u.data_obj->obj.status != PERMANENT) {
+                                _NclDestroyObj((NclObj)rhs.u.data_obj);
+                        }
+		}	
         } else if(rhs.kind == NclStk_VAR) {
 		if(rhs_data_obj->obj.id != result->u.data_obj->obj.id) {
 			if(rhs_data_obj->obj.status != PERMANENT) {
