@@ -48,13 +48,18 @@ static	struct	{
 	StringType_	device;		/* the device name		*/
 	StringType_	font;		/* the font name		*/
 	BoolType_	soft_fill;	/* software fill of piolygons	*/
+	FloatType_ 	min_line_width;	/* minimum line width		*/
+	FloatType_ 	max_line_width;	/* maximun line width		*/
+	FloatType_ 	line_scale;	/* additional line scaling	*/
 	} commLineOpt;
-	
 
 static	OptDescRec	set_options[] = {
 	{"device", OptSepArg, NULL},	
 	{"font", OptSepArg, NULL},	
 	{"softfill", OptIsArg, "false"},
+	{"lmin", OptSepArg, "-1"},	
+	{"lmax", OptSepArg, "-1"},	
+	{"lscale", OptSepArg, "-1"},	
 	{NULL},	
 	};
 
@@ -65,6 +70,12 @@ static	Option	get_options[] = {
 						sizeof(StringType_)},	
 	{"softfill", BoolType, (unsigned long) &commLineOpt.soft_fill, 
 						sizeof (BoolType_ )},
+        {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
+							sizeof (FloatType_ )},
+        {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
+							sizeof (FloatType_ )},
+        {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
+							sizeof (FloatType_ )},
 	{NULL},
 	};
 
@@ -116,6 +127,15 @@ ICTrans(argc, argv, mem_cgm)
 	 */
 	getOptions((caddr_t) 0, get_options);
 
+	/*
+	 * set line scaling options
+	 */
+	if (commLineOpt.min_line_width > -1) 
+		SetMinLineWidthDefault(commLineOpt.min_line_width);
+	if (commLineOpt.max_line_width > -1) 
+		SetMaxLineWidthDefault(commLineOpt.max_line_width);
+	if (commLineOpt.line_scale > -1) 
+		SetAdditionalLineScale(commLineOpt.line_scale);
 
         /*
 	 *	If a device was given on command line build the full path
