@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.37 2001-11-07 15:49:27 haley Exp $
+#	$Id: ymake,v 1.38 2002-02-22 03:44:41 haley Exp $
 #
 ######################################################################
 #
@@ -247,10 +247,10 @@ onintr error_cleanup
 # configuration options permanently with the distribution.
 
 set hostname = "UnKnown"
-set foo = `/bin/uname -s`
+set foo = `uname -s`
 
 if (-e /bin/hostname) then
-  if ("$foo" == "Linux") then
+  if ("$foo" == "Linux" || "$foo" == "Darwin") then
         set hostname    = `/bin/hostname -s`
   else
         set hostname    = `/bin/hostname`
@@ -273,7 +273,7 @@ if ($status != 0) then
         echo "$0 : Unknown operating system" > /dev/tty
         exit 1
 endif
-set mach = `/bin/uname -m`
+set mach = `uname -m`
 if ($status != 0) then
         echo "$0 : Unknown machine type" > /dev/tty
         exit 1
@@ -288,10 +288,11 @@ case ULTRIX:
 case HP-UX:
 case OSF1:
 case Linux:
+case Darwin:
         set opsys = $foo
         breaksw
 default:
-        set foo = `/bin/uname -m`
+        set foo = `uname -m`
         if ($status != 0) exit 1
         switch ("$foo")
         case    CRAY*
@@ -307,7 +308,7 @@ endsw
 
 switch ("$opsys")
 case    SunOS:
-        set foo = `/bin/uname -r`
+        set foo = `uname -r`
         if ($status != 0) exit 1
 
         switch ("$foo")
@@ -388,6 +389,23 @@ case    Linux:
             set arch    = $mach
             set sysincs = YDLINUX
             set vendor  = APPLE
+            breaksw
+        default:
+            echo "$0 : Unknown machine type" > /dev/tty
+            exit 1
+        endsw
+
+        breaksw
+
+case    Darwin:
+        set os = $opsys
+
+        switch ("$mach[1]")
+        case    Power:
+            set model   = $mach
+            set arch    = $mach
+            set sysincs = DARWIN
+            set vendor  = Apple
             breaksw
         default:
             echo "$0 : Unknown machine type" > /dev/tty
@@ -596,6 +614,8 @@ if (-e /usr/ccs/lib/cpp) then
     set cpp = /usr/ccs/lib/cpp
 else if (-e /opt/ctl/bin/cpp) then
     set cpp = /opt/ctl/bin/cpp
+else if (-e /usr/bin/cpp) then
+    set cpp = /usr/bin/cpp
 else
   set cpp = /lib/cpp
 endif
