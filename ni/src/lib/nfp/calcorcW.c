@@ -4,15 +4,8 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
+#include "wrapper.h"
 #include <math.h>
-#include <ncarg/gks.h>
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
@@ -20,7 +13,7 @@ extern void NGCALLF(dcalcorc,DCALCORC)(double*,double*,double*,double*,int*,
                                        double*,double*,double*,int*);
 
 extern void NGCALLF(dstat2,DSTAT2)(double*,int*,double*,double*,double*,
-				   double*,int*,int*);
+                                   double*,int*,int*);
 
 NhlErrorTypes escorc_W( void )
 {
@@ -28,7 +21,7 @@ NhlErrorTypes escorc_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *dx, *dy;
+  double *tmp_x, *tmp_y;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
@@ -37,14 +30,16 @@ NhlErrorTypes escorc_W( void )
 /*
  * Output array variables
  */
-  double *corc;
-  float *rcorc;
+  void *corc;
+  double *tmp_corc;
   int ndims_corc, dsizes_corc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_corc;
 /*
  * various
  */
-  int i, j, lx, ly, lc, ier, ier_count, nxy, dimsizes_same;
-  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int i, j, index_x, index_y, index_corc, ier, ier_count, nxy, dimsizes_same;
+  int total_size_leftmost_x, total_size_x;
+  int total_size_leftmost_y, total_size_y;
   int total_size_corc;
   double xave, xstd, xvar;
   int nptusx;
@@ -89,8 +84,8 @@ NhlErrorTypes escorc_W( void )
     dimsizes_same = 1;
     for(i = 0; i < ndims_x; i++) {
       if(dsizes_x[i] != dsizes_y[i]) {
-	dimsizes_same = 0;
-	break;
+        dimsizes_same = 0;
+        break;
       }
     }
   }
@@ -103,142 +98,41 @@ NhlErrorTypes escorc_W( void )
  */
   nxy = dsizes_x[ndims_x-1];
 
-  total_size_x1 = 1;
-  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
-  total_size_x = total_size_x1 * nxy;
+  total_size_leftmost_x = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_leftmost_x *= dsizes_x[i];
+  total_size_x = total_size_leftmost_x * nxy;
 
-  total_size_y1 = 1;
-  for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
-  total_size_y = total_size_y1 * nxy;
+  total_size_leftmost_y = 1;
+  for(i = 0; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];
+  total_size_y = total_size_leftmost_y * nxy;
 /*
  * Coerce missing values to double.
  *
  * First coerce the x missing value, if there is one.  If there isn't,
  * a default value is used.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * No missing value is set for x, so use the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Coerce the y missing value, if there is one.
- */
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * No missing value is set for y, so use the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 
 /*
- * Coerce x to double if necessary.
+ * Allocate space for temporary x array.
  */
   if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
+    tmp_x = (double*)calloc(nxy,sizeof(double));
+    if( tmp_x == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
   }
-  else {
 /*
- * x is already double.
- */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double if necessary.
+ * Allocate space for temporary x array.
  */
   if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
+    tmp_y = (double*)calloc(nxy,sizeof(double));
+    if( tmp_y == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for coercing y array to double precision");
       return(NhlFATAL);
     }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-/*
- * y is already double.
- */
-    dy = (double*)y;
   }
 /* 
  * Get size of output variable, which is equal to the product of all but
@@ -248,7 +142,7 @@ NhlErrorTypes escorc_W( void )
  */
   if(dimsizes_same) {
     ndims_corc = max(1,ndims_x-1);
-    total_size_corc = total_size_x1;
+    total_size_corc = total_size_leftmost_x;
     if(ndims_x == 1) {
       dsizes_corc[0] = 1;
     }
@@ -257,55 +151,137 @@ NhlErrorTypes escorc_W( void )
     }
   }
   else {
-    total_size_corc = total_size_x1 * total_size_y1;
+    total_size_corc = total_size_leftmost_x * total_size_leftmost_y;
     ndims_corc = max(1,ndims_x + ndims_y - 2);
     dsizes_corc[0] = 1;
 
     for( i = 0; i < ndims_x-1; i++ ) dsizes_corc[i] = dsizes_x[i];
     for( i = 0; i < ndims_y-1; i++ ) dsizes_corc[ndims_x-1+i] = dsizes_y[i];
   }
-  corc = (double*)NclMalloc(total_size_corc*sizeof(double));
-  if (corc == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
-    return(NhlFATAL);
-  }
-
-/*
- * Call the f77 version of 'descros' with the full argument list.
- */
-  ier = ier_count = lx = lc = 0;
-
-  if(dimsizes_same) {
-    for(i = 1; i <= total_size_x1; i++) {
-      xvar = xave = xstd = missing_dx.doubleval;
-      NGCALLF(dstat2,DSTAT2)(&dx[lx],&nxy,&missing_dx.doubleval,&xave,&xvar,
-			     &xstd,&nptusx,&ier);
-      NGCALLF(dcalcorc,DCALCORC)(&dx[lx],&xave,&xstd,&missing_dx.doubleval,
-				 &nxy,&dy[lx],&missing_dy.doubleval,
-				 &corc[lc],&ier);
-	
-      if(ier < 0) ier_count++;
-      lc++;
-      lx += nxy;
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_corc = NCL_float;
+    corc     = (void*)calloc(total_size_corc,sizeof(float));
+    tmp_corc = (double *)calloc(1,sizeof(double));
+    if (corc == NULL || tmp_corc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
+      return(NhlFATAL);
     }
   }
   else {
-    for(i = 1; i <= total_size_x1; i++) {
-      ly = 0;
+    type_corc = NCL_double;
+    corc = (void*)calloc(total_size_corc,sizeof(double));
+    if (corc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Call the f77 version of 'descros' with the full argument list.
+ */
+  ier = ier_count = index_x = index_corc = 0;
+
+  if(dimsizes_same) {
+    for(i = 1; i <= total_size_leftmost_x; i++) {
       xvar = xave = xstd = missing_dx.doubleval;
-      NGCALLF(dstat2,DSTAT2)(&dx[lx],&nxy,&missing_dx.doubleval,&xave,&xvar,
-			     &xstd,&nptusx,&ier);
-      for(j = 1; j <= total_size_y1; j++) {
-	NGCALLF(dcalcorc,DCALCORC)(&dx[lx],&xave,&xstd,&missing_dx.doubleval,
-				   &nxy,&dy[ly],&missing_dy.doubleval,
-				   &corc[lc],&ier);
-	
-	if(ier < 0) ier_count++;
-	
-	lc++;
-	ly += nxy;
+      if(type_x != NCL_double) {
+/*
+ * Coerce nxy subsection of x (tmp_x) to double.
+ */
+        coerce_subset_input_double(x,tmp_x,index_x,type_x,nxy,0,
+                                   &missing_x,&missing_dx);
       }
-      lx += nxy;
+      else {
+/*
+ * Point tmp_x to appropriate locations in x.
+ */
+        tmp_x = &((double*)x)[index_x];
+      }
+
+      if(type_y != NCL_double) {
+/*
+ * Coerce nxy subsection of y (tmp_y) to double.
+ */
+        coerce_subset_input_double(y,tmp_y,index_y,type_y,nxy,0,
+                                   &missing_y,&missing_dy);
+      }
+      else {
+/*
+ * Point tmp_y to appropriate locations in y.
+ */
+        tmp_y = &((double*)y)[index_y];
+      }
+      if(type_corc == NCL_double) tmp_corc = &((double*)corc)[index_corc];
+
+      NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
+                             &xstd,&nptusx,&ier);
+      NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
+                                 &nxy,tmp_y,&missing_dy.doubleval,
+                                 tmp_corc,&ier);
+/*
+ * Copy output values from temporary array "tmp_corc" to final array "corc".
+ */
+      if(type_corc != NCL_double) {
+        ((float*)corc)[index_corc] = (float)(*tmp_corc);
+      } 
+
+      if(ier < 0) ier_count++;
+      index_corc++;
+      index_x += nxy;
+    }
+  }
+  else {
+    for(i = 1; i <= total_size_leftmost_x; i++) {
+      index_y = 0;
+      xvar = xave = xstd = missing_dx.doubleval;
+      if(type_x != NCL_double) {
+/*
+ * Coerce nxy subsection of x (tmp_x) to double.
+ */
+        coerce_subset_input_double(x,tmp_x,index_x,type_x,nxy,0,
+                                   &missing_x,&missing_dx);
+      }
+      else {
+/*
+ * Point tmp_x to appropriate locations in x.
+ */
+        tmp_x = &((double*)x)[index_x];
+      }
+      NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
+                             &xstd,&nptusx,&ier);
+      for(j = 1; j <= total_size_leftmost_y; j++) {
+
+        if(type_y != NCL_double) {
+/*
+ * Coerce nxy subsection of y (tmp_y) to double.
+ */
+          coerce_subset_input_double(y,tmp_y,index_y,type_y,nxy,0,
+                                     &missing_y,&missing_dy);
+        }
+        else {
+/*
+ * Point tmp_y to appropriate locations in y.
+ */
+          tmp_y = &((double*)y)[index_y];
+        }
+        if(type_corc == NCL_double) tmp_corc = &((double*)corc)[index_corc];
+
+        NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
+                                   &nxy,tmp_y,&missing_dy.doubleval,
+                                   tmp_corc,&ier);
+        
+/*
+ * Copy output values from temporary array "tmp_Tb" to final array "Tb".
+ */
+        if(type_corc != NCL_double) {
+          ((float*)corc)[index_corc] = (float)(*tmp_corc);
+        } 
+
+        if(ier < 0) ier_count++;
+        
+        index_corc++;
+        index_y += nxy;
+      }
+      index_x += nxy;
     }
   }
   if(ier_count > 0) {
@@ -316,44 +292,25 @@ NhlErrorTypes escorc_W( void )
 /*
  * free memory.
  */
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
-  if((void*)dy != y) {
-    NclFree(dy);
-  }
+  if(type_x    != NCL_double) NclFree(tmp_x);
+  if(type_y    != NCL_double) NclFree(tmp_y);
+  if(type_corc != NCL_double) NclFree(tmp_corc);
+
 /*
  * Return values. 
  */
-  if(type_x != NCL_double && type_y != NCL_double) {
+  if(type_corc != NCL_double) {
 /*
  * Neither input array is double, so return float values.
- * 
- * First copy double values to float values.
  */
-    rcorc = (float*)NclMalloc(sizeof(float)*total_size_corc);
-    if( rcorc == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_corc; i++ ) rcorc[i] = (float)corc[i];
-/*
- * Free double precision array since we don't need it anymore.
- */
-    NclFree(corc);
-
-/*
- * Return float values.  A missing value is returned regardless if an
- * x missing value was originally set (the default is used if none set).
- */
-    return(NclReturnValue((void*)rcorc,ndims_corc,dsizes_corc,&missing_rx,
+    return(NclReturnValue(corc,ndims_corc,dsizes_corc,&missing_rx,
                           NCL_float,0));
   }
   else {
 /*
  * At least one input array was double, so return double values.
  */
-    return(NclReturnValue((void*)corc,ndims_corc,dsizes_corc,&missing_dx,
+    return(NclReturnValue(corc,ndims_corc,dsizes_corc,&missing_dx,
                           NCL_double,0));
   }
 }

@@ -3,14 +3,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 #include <math.h>
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
@@ -25,7 +18,7 @@ NhlErrorTypes vibeta_W( void )
  * Input array variables
  */
   void *p, *x, *psfc, *pbot, *ptop;
-  double *dp, *dx, *dpsfc, *dpbot, *dptop;
+  double *tmp_p, *tmp_x, *tmp_psfc, *tmp_pbot, *tmp_ptop;
   int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS], has_missing_psfc;
@@ -37,13 +30,14 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Output array variables
  */
-  double *vint;
-  float *rvint;
+  void *vint;
+  double *tmp_vint;
+  NclBasicDataTypes type_vint;
 /*
  * various
  */
-  int i, j, l, ier = 0, nlev, total_size_x, total_size_psfc;
-  double plvcrt, xsfc, any_double = 0;
+  int i, j, l, ier = 0, nlev, total_size_x, total_size_psfc, found_missing;
+  double plvcrt, xsfc;
 /*
  * Retrieve parameters
  *
@@ -137,242 +131,63 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Check for missing values.
  */
-  if(has_missing_x) {
-/*
- * Coerce missing value to double.
- */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,&missing_dpsfc,NULL);
 
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dx.doubleval = (double)missing_rx.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
- * Check for psfc missing value.
- */
-  if(has_missing_psfc) {
-/*
- * Coerce missing value to double.
- */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dpsfc,
-               &missing_psfc,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_psfc)));
-  }
 /*
  * Coerce x to double if necessary.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * x is already double.
- */
-    dx = (double*)x;
+  tmp_x = coerce_input_double(x,type_x,total_size_x,has_missing_x,
+                              &missing_x,&missing_dx);
+  if( tmp_x == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing x array to double precision");
+    return(NhlFATAL);
   }
 /*
  * Coerce p to double if necessary.
  */
-  if(type_p != NCL_double) {
-    dp = (double*)NclMalloc(sizeof(double)*dsizes_p[ndims_p-1]);
-    if( dp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing p array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dp,
-               p,
-               dsizes_p[ndims_p-1],
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
+  tmp_p = coerce_input_double(p,type_p,dsizes_p[0],0,NULL,NULL);
+  if( tmp_p == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing p array to double precision");
+    return(NhlFATAL);
   }
-  else {
-    any_double = 1;
-/*
- * p is already double.
- */
-    dp = (double*)p;
-  }
-
 /*
  * Coerce psfc to double if necessary.
  */
-  if(type_psfc != NCL_double) {
-    dpsfc = (double*)NclMalloc(sizeof(double)*total_size_psfc);
-    if( dpsfc == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing psfc array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_psfc) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dpsfc,
-                 psfc,
-                 total_size_psfc,
-                 &missing_dpsfc,
-                 &missing_psfc,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_psfc)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dpsfc,
-                 psfc,
-                 total_size_psfc,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_psfc)));
-    }
-  }
-  else {
-    any_double = 1;
-/*
- * psfc is already double.
- */
-    dpsfc = (double*)psfc;
+  tmp_psfc = coerce_input_double(psfc,type_psfc,total_size_psfc,
+                                 has_missing_psfc,&missing_psfc,
+                                 &missing_dpsfc);
+  if( tmp_psfc == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing psfc array to double precision");
+    return(NhlFATAL);
   }
 /*
  * Test for presence of missing values in psfc.
  */
-  if(has_missing_psfc) {
-    for( i = 0; i < total_size_psfc; i++ ) {
-      if(dpsfc[i] == missing_dpsfc.doubleval) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: psfc must not contain any missing values" );
-        return(NhlFATAL);
-      }
-    }
+  found_missing = contains_missing(tmp_psfc,total_size_psfc,has_missing_psfc,
+                                   missing_psfc.doubleval);
+  if(found_missing) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: psfc must not contain any missing values" );
+    return(NhlFATAL);
   }
 /*
  * Coerce pbot to double if necessary.
  */
-  if(type_pbot != NCL_double) {
-    dpbot = (double*)NclMalloc(sizeof(double)*dsizes_pbot[0]);
-    if( dpbot == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing pbot array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dpbot,
-               pbot,
-               dsizes_pbot[0],
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pbot)));
-  }
-  else {
-    any_double = 1;
-/*
- * pbot is already double.
- */
-    dpbot = (double*)pbot;
-  }
-/*
- * Coerce ptop to double if necessary.
- */
-  if(type_ptop != NCL_double) {
-    dptop = (double*)NclMalloc(sizeof(double)*dsizes_ptop[0]);
-    if( dptop == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing ptop array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dptop,
-               ptop,
-               dsizes_ptop[0],
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_ptop)));
-  }
-  else {
-    any_double = 1;
-/*
- * ptop is already double.
- */
-    dptop = (double*)ptop;
-  }
-/*
- * Coerce p to double if necessary.
- */
-  if(type_p != NCL_double) {
-    dp = (double*)NclMalloc(sizeof(double)*dsizes_p[0]);
-    if( dp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing p array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dp,
-               p,
-               dsizes_p[0],
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  }
-  else {
-    any_double = 1;
-/*
- * p is already double.
- */
-    dp = (double*)p;
+  tmp_pbot = coerce_input_double(pbot,type_pbot,1,NULL,NULL,NULL);
+  tmp_ptop = coerce_input_double(ptop,type_ptop,1,NULL,NULL,NULL);
+  if(tmp_pbot == NULL || tmp_ptop == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing pbot/ptop arrays to double precision");
+    return(NhlFATAL);
   }
 /*
  * Some more error checking.
  */
-  if(*dptop >= *dpbot) {
+  if(*tmp_ptop >= *tmp_pbot) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: ptop must be less than pbot" );
     return(NhlFATAL);
   }
 
-  if(dp[nlev-1] < *dptop) {
+  if(tmp_p[nlev-1] < *tmp_ptop) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
     return(NhlFATAL);
   }
@@ -380,36 +195,61 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Set some other input parameters. 
  */
-  plvcrt = dp[nlev-1];
-  xsfc = dx[0];
+  plvcrt = tmp_p[nlev-1];
+  xsfc = tmp_x[0];
 /*
  * Allocate space for output value.
  */
-  vint = (double*)NclMalloc(total_size_psfc*sizeof(double));
+  if(type_x != NCL_double && type_p != NCL_double && 
+     type_psfc != NCL_double) {
+    type_vint = NCL_float;
+
+    tmp_vint = (double*)calloc(1,sizeof(double));
+    vint     = (void*)calloc(total_size_psfc,sizeof(float));
+    if(vint == NULL || tmp_vint == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_vint = NCL_double;
+    vint = (void*)calloc(total_size_psfc,sizeof(double));
+    if(vint == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
 
 /*
  * Call the f77 version of 'vibeta' with the full argument list.
  */
   l = 0;
   for( i = 0; i < total_size_psfc; i++ ) {
-    NGCALLF(dvibeta,DVIBETA)(dp,&dx[l],&nlev,&missing_dx.doubleval,
-                             linlog,&dpsfc[i],&xsfc,dpbot,dptop,
-                             &plvcrt,&vint[i],&ier);
+    if(type_vint == NCL_double) tmp_vint  = &((double*)vint)[i];
+
+    NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[l],&nlev,&missing_dx.doubleval,
+                             linlog,&tmp_psfc[i],&xsfc,tmp_pbot,tmp_ptop,
+                             &plvcrt,tmp_vint,&ier);
     if(ier == -999) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: there must be at least three levels with data above the surface" );
       return(NhlFATAL);
     }
+/*
+ * Coerce output to float if necessary.
+ */
+    if(type_vint != NCL_double) ((float*)vint)[i] = (float)*tmp_vint;
+      
     l += nlev;
   }
 
 /*
  * free memory.
  */
-  if((void*)dx != x) NclFree(dx);
-  if((void*)dp != p) NclFree(dp);
-  if((void*)dpsfc != psfc) NclFree(dpsfc);
-  if((void*)dpbot != pbot) NclFree(dpbot);
-  if((void*)dptop != ptop) NclFree(dptop);
+  if(type_x    != NCL_double) NclFree(tmp_x);
+  if(type_p    != NCL_double) NclFree(tmp_p);
+  if(type_psfc != NCL_double) NclFree(tmp_psfc);
+  if(type_ptop != NCL_double) NclFree(tmp_ptop);
+  if(type_pbot != NCL_double) NclFree(tmp_pbot);
 /*
  * Check error.
  */
@@ -420,31 +260,21 @@ NhlErrorTypes vibeta_W( void )
 /*
  * Return.
  */
-  if(!any_double) {
+  if(type_vint != NCL_double) {
 /*
  * None of the input is double, so return float values.
- *
- * First copy double values to float values.
  */
-    rvint = (float*)NclMalloc(sizeof(float)*total_size_psfc);
-    if( rvint == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_psfc; i++ ) rvint[i] = (float)vint[i];
-/*
- * Free double precision values.
- */
-    NclFree(vint);
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue((void*)rvint,ndims_psfc,dsizes_psfc,&missing_rx,NCL_float,0));
+    return(NclReturnValue(vint,ndims_psfc,dsizes_psfc,&missing_rx,
+                          NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue((void*)vint,ndims_psfc,dsizes_psfc,&missing_dx,NCL_double,0));
+    return(NclReturnValue(vint,ndims_psfc,dsizes_psfc,&missing_dx,
+                          NCL_double,0));
   }
 }
