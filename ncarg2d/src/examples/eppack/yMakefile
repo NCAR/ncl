@@ -1,0 +1,8 @@
+#
+#       $Id: yMakefile,v 1.1 1994-06-20 20:06:32 kennison Exp $
+#
+MYNAME  = eppack
+
+GENERIC_SRCS = ppex01.f
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
