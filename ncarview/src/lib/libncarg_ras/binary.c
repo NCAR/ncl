@@ -1,5 +1,5 @@
 /*
- *	$Id: binary.c,v 1.4 1993-11-03 18:19:16 clyne Exp $
+ *	$Id: binary.c,v 1.5 1994-06-03 22:30:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -185,12 +185,6 @@ BinaryOpenWrite(name, nx, ny, comment, encoding)
 		return( (Raster *) NULL );
 	}
 
-	if (encoding != RAS_INDEXED) {
-		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
-		"Only INDEXED color is supported for Binary rasterfiles");
-		return( (Raster *) NULL );
-	}
-
 	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(errno, "ras_calloc(%d)", sizeof(Raster));
@@ -231,15 +225,39 @@ BinaryOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->nx	= nx;
 	ras->ny	= ny;
-	ras->length	= ras->nx * ras->ny;
-	ras->ncolor	= 256;
-	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
-	ras->green	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
-	ras->blue	= (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
-	ras->data	= (unsigned char *) ras_calloc((unsigned) ras->length, 1);
-	ras->type = RAS_INDEXED;
 
+	switch (encoding) {
+	case RAS_INDEXED:
+
+		ras->type	= RAS_INDEXED;
+		ras->length	= ras->nx * ras->ny;
+		ras->ncolor	= 256;
+		ras->red	= (unsigned char *) 
+				ras_calloc((unsigned) ras->ncolor, 1);
+		ras->green	= (unsigned char *) 
+				ras_calloc((unsigned) ras->ncolor, 1);
+		ras->blue	= (unsigned char *) 
+				ras_calloc((unsigned) ras->ncolor, 1);
+		ras->data	= (unsigned char *) 
+				ras_calloc((unsigned) ras->length, 1);
+		break;
+
+	case RAS_DIRECT:
+
+		ras->type	= RAS_DIRECT;
+		ras->length	= ras->nx * ras->ny * 3;
+		ras->ncolor	= 256*256*256;
+		ras->red	= (unsigned char *) NULL;
+		ras->green	= (unsigned char *) NULL;
+		ras->blue	= (unsigned char *) NULL;
+		ras->data	= (unsigned char *) 
+					ras_calloc((unsigned) ras->length, 1);
+		break;
+
+		default:
+			(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,"");
+			return( (Raster *) NULL );
+	}
 
 	BinarySetFunctions(ras);
 
