@@ -2496,7 +2496,10 @@ int rw_status;
 	int n_names2;
 	int index;
 	struct stat buf;
+	NhlBoolean is_http = False;
 
+	if (! strncmp(the_path,"http://",7))
+		is_http = True;
 
 	ret = _NclInitClass(nclFileClass);
 	if(ret < NhlWARNING) 
@@ -2517,7 +2520,22 @@ int rw_status;
 		last_slash++;
 	}
 	end_of_name = strrchr(last_slash,'.');
-	if(end_of_name == NULL) {
+	if (is_http) {
+		if (end_of_name == NULL) {
+			end_of_name = &last_slash[strlen(last_slash)];
+		}
+		len_path = end_of_name - the_path;
+		i = 0;
+		while(last_slash != end_of_name) {
+			buffer[i] = *last_slash;
+			i++;
+			last_slash++;
+		}
+		buffer[i] = '\0';
+		fname_q = NrmStringToQuark(buffer);
+		file_ext_q = NrmStringToQuark("nc");
+	}
+	else if(end_of_name == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path));
 		return(NULL);
 	} else {
@@ -2558,7 +2576,18 @@ int rw_status;
 		file_out->file.coord_vars[i] = NULL;
 	}
 	file_out->file.format_funcs = _NclGetFormatFuncs(file_ext_q);
-	if(file_out->file.format_funcs != NULL) {
+	if (is_http && file_out->file.format_funcs != NULL) {
+		file_out->file.fpath = the_real_path = path;
+		file_out->file.wr_status = rw_status;
+		file_out->file.private_rec = (*file_out->file.format_funcs->get_file_rec)(the_real_path,rw_status);
+		if(file_out->file.private_rec == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(the_real_path));
+			if(file_out_free) 
+				NclFree((void*)file_out);
+			return(NULL);
+		}
+	}
+	else if(file_out->file.format_funcs != NULL) {
 		if((file_out->file.format_funcs->get_file_rec != NULL)&&((rw_status != -1)||(file_out->file.format_funcs->create_file_rec != NULL))) {
 			
 			if(rw_status == -1) {

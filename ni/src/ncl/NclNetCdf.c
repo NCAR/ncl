@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.26 1998-02-11 21:58:08 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.27 2000-06-20 00:37:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,7 @@ struct _NetCdfVarInqRec {
 	int	dim[MAX_VAR_DIMS];
 	int	natts;
 	NetCdfAttInqRecList *att_list;
+	void *value;
 };
 
 struct _NetCdfDimInqRec {
@@ -73,6 +74,7 @@ struct _NetCdfAttInqRec {
 	int	varid;
 	nc_type data_type;
 	int	len;
+	void	*value;
 };
 
 
@@ -184,11 +186,61 @@ static void *NetMapFromNcl
 	return(out_type);
 }
 
+static void NetGetAttrVal
+#if	NhlNeedProto
+(int ncid,NetCdfAttInqRec* att_inq)
+#else
+(ncid,att_inq)
+int ncid,
+NetCdfAttInqRec* att_inq
+#endif
+{
+	char *tmp;
+	int ret;
 
+	if(att_inq->data_type == NC_CHAR) {
+		tmp = (char*)NclMalloc(att_inq->len+1);
+		tmp[att_inq->len] = '\0';
+		ret = ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
+		att_inq->value = NclMalloc(sizeof(NclQuark));
+		*(string *)att_inq->value = NrmStringToQuark(tmp);
+		NclFree(tmp);
+	} 
+	else {
+		att_inq->value = NclMalloc(nctypelen(att_inq->data_type)*att_inq->len);
+		ret = ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),att_inq->value);
+	}
+}
 
+static void NetGetDimVals
+#if	NhlNeedProto
+(int ncid,NetCdfFileRecord* frec)
+#else
+(ncid,frec)
+int ncid,
+NetCdfAttInqRec* frec
+#endif
+{
+	NetCdfDimInqRecList *dl = frec->dims;
+	long start = 0;
+	int ret;
 
+	for(dl; dl != NULL; dl = dl->next) {
+		NetCdfDimInqRec *dim_inq = dl->dim_inq;
+		NetCdfVarInqRecList *vl = frec->vars;
 
-
+		for (vl; vl != NULL; vl = vl->next) {
+			if (vl->var_inq->name != dim_inq->name)
+				continue;
+			break;
+		}
+		if (! vl)
+			continue;
+	        vl->var_inq->value = NclMalloc(nctypelen(vl->var_inq->data_type) * dim_inq->size);
+		ret = ncvarget(ncid,vl->var_inq->varid,&start,&dim_inq->size,vl->var_inq->value);
+	}
+	return;
+}
 
 static void *NetGetFileRec
 #if	NhlNeedProto
@@ -233,7 +285,12 @@ int wr_status;
 	}
 
 	if(cdfid == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file (%s) does not exist or can't be opened\n",NrmQuarkToString(path));
+		char *emsg = "The specified netCDF file (%s) does not exist or can't be opened";
+		if (! strncmp(NrmQuarkToString(path),"http://",7)) {
+			emsg = "The specified URL (%s) does not reference an active DODS server or cannot be processed by the DODS server";
+		}
+
+		NhlPError(NhlFATAL,NhlEUNKNOWN,emsg,NrmQuarkToString(path));
 		NclFree(tmp);
 		return(NULL);
 	}
@@ -271,6 +328,7 @@ int wr_status;
 					(unsigned)sizeof(NetCdfVarInqRec));
 			(*stepvlptr)->next = NULL;
 			(*stepvlptr)->var_inq->varid = i;
+			(*stepvlptr)->var_inq->value = NULL;
 			ncvarinq(cdfid,i,buffer,
 				&((*stepvlptr)->var_inq->data_type),
 				&((*stepvlptr)->var_inq->n_dims),
@@ -316,6 +374,7 @@ int wr_status;
 						ncattinq(cdfid,i,buffer,
 							&((*stepalptr)->att_inq->data_type),
 							&((*stepalptr)->att_inq->len));
+						NetGetAttrVal(cdfid,(*stepalptr)->att_inq);
 						stepalptr = &((*stepalptr)->next);
 					}
 				} else {
@@ -359,11 +418,15 @@ int wr_status;
 			ncattinq(cdfid,NC_GLOBAL,buffer,
 					&((*stepalptr)->att_inq->data_type),
                                 	&((*stepalptr)->att_inq->len));
+			NetGetAttrVal(cdfid,(*stepalptr)->att_inq);
        	        	stepalptr = &((*stepalptr)->next);
 		}
 	} else {
 		tmp->file_atts = NULL;
 	}
+
+	NetGetDimVals(cdfid,tmp);
+
 	ncclose(cdfid);
 	return((void*)tmp);
 }
@@ -404,6 +467,7 @@ void *therec;
 	stepal = rec->file_atts;
 	while(rec->file_atts != NULL) {
 		stepal = rec->file_atts;
+		NclFree(stepal->att_inq->value);
 		NclFree(stepal->att_inq);
 		rec->file_atts = rec->file_atts->next;
 		NclFree(stepal);
@@ -420,10 +484,13 @@ void *therec;
 		stepvl = rec->vars;
 		while(stepvl->var_inq->att_list != NULL) {
 			stepal = stepvl->var_inq->att_list;
+			NclFree(stepvl->var_inq->att_list->att_inq->value);
 			NclFree(stepvl->var_inq->att_list->att_inq);
 			stepvl->var_inq->att_list = stepal->next;
 			NclFree(stepal);
 		}
+		if (stepvl->var_inq->value != NULL)
+			NclFree(stepvl->var_inq->value);
 		NclFree(stepvl->var_inq);
 		rec->vars = rec->vars->next;
 		NclFree(stepvl);
@@ -702,6 +769,30 @@ NclQuark thevar;
 	return(NetGetVarInfo(therec,thevar));
 }
 
+/*
+ * this is for 1-D variables only - basically for coordinate variables.
+ */
+static void *NetGetCachedValue
+#if	NhlNeedProto
+(NetCdfVarInqRec *var_inq, long start, long finish,long stride,void* storage)
+#else
+(var_inq,start,finish,stride,storage)
+NetCdfVarInqRec *var_inq;
+long start;
+long finish;
+long stride;
+void* storage;
+#endif
+{
+	int tsize = nctypelen(var_inq->data_type);
+
+	long i,j;
+
+	for (j = 0, i = start; i <= finish; i += stride,j++) {
+		memcpy(((char*)storage) + j * tsize,((char *)var_inq->value) + i * tsize,tsize);
+	}
+	return storage;
+}
 
 static void *NetReadVar
 #if	NhlNeedProto
@@ -728,6 +819,9 @@ void* storage;
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == thevar) {
+			if (stepvl->var_inq->value != NULL && stepvl->var_inq->n_dims == 1) {
+				return NetGetCachedValue(stepvl->var_inq,start[0],finish[0],stride[0],storage);
+			}
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
 				count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
 				n_elem *= count[i];
@@ -812,6 +906,15 @@ void* storage;
 	stepal = rec->file_atts;
 	while(stepal != NULL) {
 		if(stepal->att_inq->name == theatt) {
+			if (stepal->att_inq->value != NULL) {
+				if(stepal->att_inq->data_type == NC_CHAR) {
+					*(string*)storage = *(string*)(stepal->att_inq->value);
+				} else {
+					memcpy(storage,stepal->att_inq->value,
+					       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+				}
+				return(storage);
+			}
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
 			
 			if(cdfid == -1) {
@@ -861,6 +964,14 @@ void* storage;
 			stepal = stepvl->var_inq->att_list;
 			while(stepal != NULL) {
 				if(stepal->att_inq->name == theatt) {
+					if (stepal->att_inq->value != NULL) {
+						if(stepal->att_inq->data_type == NC_CHAR) {
+							*(string*)storage = *(string*)(stepal->att_inq->value);
+						} else {
+							memcpy(storage,stepal->att_inq->value,
+							       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+						}
+					}
 					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
 			
 					if(cdfid == -1) {
@@ -874,9 +985,6 @@ void* storage;
 						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),tmp);
 						*(string*)storage = NrmStringToQuark(tmp);
 						NclFree(tmp);
-					
-						
-						
 					} else {
 						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
 					}
@@ -920,6 +1028,13 @@ long *stride;
 		stepvl = rec->vars;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
+				/*
+				 * for now, simply disable caching the value if a variable gets written to
+				 */
+				if (stepvl->var_inq->value != NULL) {
+					NclFree(stepvl->var_inq->value);
+					stepvl->var_inq->value = NULL;
+				}
 				for(i= 0; i< stepvl->var_inq->n_dims; i++) {
 					count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
 					n_elem *= count[i];
@@ -1029,9 +1144,15 @@ void *data;
 						return(NhlFATAL);
 					} else {
 						ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,(void*)buffer);
+						if (stepal->att_inq->value != NULL)
+							memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 					}
 				} else {
 					ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
+					if (stepal->att_inq->value != NULL) {
+						memcpy(stepal->att_inq->value,data,
+						        nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+					}
 				}
 	
 	
@@ -1080,6 +1201,8 @@ NclQuark theatt;
 	
 			tmpal = stepal;
 			rec->file_atts = stepal->next;
+			if (tmpal->att_inq->value)
+				NclFree(tmpal->att_inq->value);
 			NclFree(tmpal->att_inq);
 			NclFree(tmpal);
 			ncclose(cdfid);
@@ -1102,6 +1225,8 @@ NclQuark theatt;
 					ncendef(cdfid);
 					tmpal = stepal->next;
 					stepal->next = stepal->next->next;
+					if (tmpal->att_inq->value)
+						NclFree(tmpal->att_inq->value);
 					NclFree(tmpal->att_inq);
 					NclFree(tmpal);
 					ncclose(cdfid);
@@ -1154,6 +1279,8 @@ NclQuark theatt;
 			
 					tmpal = stepal;
 					stepvl->var_inq->att_list = stepal->next;
+					if (tmpal->att_inq->value)
+						NclFree(tmpal->att_inq->value);
 					NclFree(tmpal->att_inq);
 					NclFree(tmpal);
 					ncclose(cdfid);
@@ -1176,6 +1303,8 @@ NclQuark theatt;
 							ncendef(cdfid);
 							tmpal = stepal->next;
 							stepal->next = stepal->next->next;
+							if (tmpal->att_inq->value)
+								NclFree(tmpal->att_inq->value);
 							NclFree(tmpal->att_inq);
 							NclFree(tmpal);
 							ncclose(cdfid);
@@ -1238,9 +1367,16 @@ void* data;
 								return(NhlFATAL);
 							} else {
 								ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
+								if (stepal->att_inq->value != NULL)
+									memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 							}
 						} else {
 							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
+							if (stepal->att_inq->value != NULL) {
+								memcpy(stepal->att_inq->value,data,
+								       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+							}
+							
 						}
 		
 						ncclose(cdfid);
@@ -1413,6 +1549,7 @@ long* dim_sizes;
 				rec->vars->var_inq->n_dims = n_dims;
 				rec->vars->var_inq->natts = 0;
 				rec->vars->var_inq->att_list = NULL;
+				rec->vars->var_inq->value = NULL;
 				for(i = 0 ; i< n_dims; i++) {
 					rec->vars->var_inq->dim[i] = dim_ids[i];
 				}
@@ -1432,6 +1569,7 @@ long* dim_sizes;
 				stepvl->next->var_inq->n_dims = n_dims;
 				stepvl->next->var_inq->natts = 0;
 				stepvl->next->var_inq->att_list = NULL;
+				stepvl->next->var_inq->value = NULL;
 				for(i = 0 ; i< n_dims; i++) {
 					stepvl->next->var_inq->dim[i] = dim_ids[i];
 				}
@@ -1502,6 +1640,7 @@ NclBasicDataTypes data_type;
 				rec->vars->var_inq->dim[0] = stepdl->dim_inq->dimid;
 				rec->vars->var_inq->natts = 0;
 				rec->vars->var_inq->att_list = NULL;
+				rec->vars->var_inq->value = NULL;
 				rec->n_vars++;
 			} else {
 				while(stepvl->next != NULL) {
@@ -1519,6 +1658,7 @@ NclBasicDataTypes data_type;
 				stepvl->next->var_inq->dim[0] = stepdl->dim_inq->dimid;
 				stepvl->next->var_inq->natts = 0;
 				stepvl->next->var_inq->att_list = NULL;
+				stepvl->next->var_inq->value = NULL;
 				rec->n_vars++;
 			}
 			NclFree(the_data_type);
@@ -1577,6 +1717,30 @@ NclQuark to;
 	return(NhlFATAL);
 }
 
+static void NetCacheAttValue
+#if	NhlNeedProto
+(NetCdfAttInqRec *att_inq,void *value)
+#else
+(att_inq,value)
+	NetCdfAttInqRec *att_inq;
+	void *value;
+#endif
+{
+	if (att_inq->data_type == NC_CHAR) {
+		char *tmp = NclMalloc(att_inq->len + 1);
+		strncpy(tmp,value,att_inq->len);
+		tmp[att_inq->len] = '\0';
+		att_inq->value = NclMalloc(sizeof(NclQuark));
+		*(string*)att_inq->value = NrmStringToQuark(tmp);
+		NclFree(tmp);
+	}
+	else {
+		att_inq->value = NclMalloc(nctypelen(att_inq->data_type) * att_inq->len);
+		memcpy(att_inq->value,value,nctypelen(att_inq->data_type) * att_inq->len);
+	}
+	return;
+}
+
 static NhlErrorTypes NetAddAtt
 #if	NhlNeedProto
 (void *therec,NclQuark theatt, NclBasicDataTypes data_type, int n_items, void * values)
@@ -1620,6 +1784,7 @@ static NhlErrorTypes NetAddAtt
 					rec->file_atts->att_inq->name = theatt;
 					rec->file_atts->att_inq->data_type = *the_data_type;
 					rec->file_atts->att_inq->len = n_items;
+					NetCacheAttValue(rec->file_atts->att_inq,values);
 				} else {	
 					i = 0;
 					while(stepal->next != NULL) {
@@ -1633,6 +1798,7 @@ static NhlErrorTypes NetAddAtt
 					stepal->next->att_inq->data_type = *the_data_type;
 					stepal->next->att_inq->len = n_items;
 					stepal->next->next = NULL;
+					NetCacheAttValue(stepal->next->att_inq,values);
 				}
 				rec->n_file_atts++;
 				NclFree(the_data_type);
@@ -1697,6 +1863,7 @@ static NhlErrorTypes NetAddVarAtt
 					stepvl->var_inq->att_list->att_inq->name = theatt;
 					stepvl->var_inq->att_list->att_inq->data_type = *the_data_type;
 					stepvl->var_inq->att_list->att_inq->len = n_items;
+					NetCacheAttValue(stepvl->var_inq->att_list->att_inq,values);
 					stepvl->var_inq->natts = 1;
 				} else {	
 					i = 0;
@@ -1711,6 +1878,7 @@ static NhlErrorTypes NetAddVarAtt
 					stepal->next->att_inq->data_type = *the_data_type;
 					stepal->next->att_inq->len = n_items;
 					stepal->next->next = NULL;
+					NetCacheAttValue(stepal->next->att_inq,values);
 					stepvl->var_inq->natts++ ;
 				}
 				NclFree(the_data_type);
