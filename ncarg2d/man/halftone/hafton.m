@@ -87,7 +87,7 @@ IABS(NOPT)
      at the expense of the smaller values
      of Z.
 
-= 3  The mapping is logrithmic, so
+= 3  The mapping is logarithmic, so
      details of smaller values of Z are show
      at the expense of larger values of Z.
 
