@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.13 1993-01-19 23:32:11 haley Exp $
+#	$Id: yMakefile,v 1.14 1993-04-04 21:23:15 clyne Exp $
 #
 
 MYNAME1		= $(ROBJPATH)/libictrans.o
@@ -74,18 +74,16 @@ lex.yy.o:	lex.yy.c
 	$(CC) -c $(CDEBUG) $(COPT) $*.c
 #endif
 
-lex.yy.c: lex.l sedscript
+lex.yy.c: lex.l Makefile
+	@echo '1a\' > sedscript
+	@echo '#include "input.h"' >>  sedscript
+	@echo 's/yylex/my_yylex/g' >>  sedscript
+	@echo 's/getc/my_getc/g' >>  sedscript
+	@echo 's/static void __yy__unused() { main(); }//g' >>  sedscript
 	lex lex.l
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
-
-sedscript:      Makefile
-	@echo '1a\' >$@
-	@echo '#include "input.h"' >> $@
-	@echo 's/yylex/my_yylex/g' >> $@
-	@echo 's/getc/my_getc/g' >> $@
-	@echo 's/static void __yy__unused() { main(); }//g' >> $@
 
 clean::
 	@-$(RM) lex.yy.c.sed sedscript ictrans_wks.c
