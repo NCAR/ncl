@@ -1,5 +1,5 @@
 C
-C $Id: icapnt.f,v 1.2 2003-05-30 20:30:00 kennison Exp $
+C $Id: icapnt.f,v 1.3 2003-07-08 22:10:55 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -112,7 +112,6 @@ C
         RPNT(2,NPPP)=YCRD
         RPNT(3,NPPP)=ZCRD
         RPNT(4,NPPP)=DVAL
-        RPNT(5,NPPP)=0.
 C
         ICAPNT=NPPP
 C

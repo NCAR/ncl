@@ -1,5 +1,5 @@
 C
-C $Id: cttmrg.f,v 1.1 2003-05-28 15:44:34 kennison Exp $
+C $Id: cttmrg.f,v 1.2 2003-07-08 22:10:55 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -247,7 +247,6 @@ C
      +                     SIN(DTOR*RLON(IUI1,IUJ1))
               RPNT(IPP1+3)=SIN(DTOR*RLAT(IUI1,IUJ1))
               RPNT(IPP1+4)=         RDAT(IUI1,IUJ1)
-              RPNT(IPP1+5)=0.
 C
 C Deal with the second point of the triangle.
 C
@@ -268,7 +267,6 @@ C
      +                     SIN(DTOR*RLON(IUI2,IUJ2))
               RPNT(IPP2+3)=SIN(DTOR*RLAT(IUI2,IUJ2))
               RPNT(IPP2+4)=         RDAT(IUI2,IUJ2)
-              RPNT(IPP2+5)=0.
 C
 C Deal with the third point of the triangle.
 C
@@ -289,7 +287,6 @@ C
      +                     SIN(DTOR*RLON(IUI3,IUJ3))
               RPNT(IPP3+3)=SIN(DTOR*RLAT(IUI3,IUJ3))
               RPNT(IPP3+4)=         RDAT(IUI3,IUJ3)
-              RPNT(IPP3+5)=0.
 C
 C Deal with the first edge of the triangle (joining points 1 and 2).
 C Again, we are careful not to put an edge into the structure more
