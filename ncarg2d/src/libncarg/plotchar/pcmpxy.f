@@ -1,5 +1,5 @@
 C
-C $Id: pcmpxy.f,v 1.6 1994-03-17 00:24:01 kennison Exp $
+C $Id: pcmpxy.f,v 1.7 1994-04-13 23:06:17 kennison Exp $
 C
       SUBROUTINE PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
@@ -12,10 +12,29 @@ C the whole character string relative to the point (XPOS,YPOS); just
 C before drawing, PCMPXY is called to map these coordinates into the
 C current user system.
 C
-C By default, 'MAP' = 1 selects the EZMAP transformations, 'MAP' = 2
-C selects the polar coordinate transformations, and 'MAP' = 3 selects
-C a perspective transformation.  The user of PLOTCHAR may replace this
-C routine as desired to transform the characters being drawn.
+C The user of PLOTCHAR may replace this routine as desired to transform
+C the characters being drawn.  By default, 'MAP' = 1 selects the EZMAP
+C transformations, 'MAP' = 2 selects a polar coordinate transformation,
+C 'MAP' = 3 selects a perspective transformation, and 'MAP' = 4 selects
+C a scheme appropriate for labelling points on the globe, as described
+C in the next paragraph.
+C
+C When 'MAP' = 4, in all user calls to PLCHHQ and PLCHMQ the values
+C of the arguments XPOS, YPOS, and ANGD should be zero.  The argument
+C SIZE specifies the desired character width, as always, but it is
+C interpreted as an angle, in degrees.  The characters of the string
+C are initially thought of as being written along the equator of the
+C globe and are positioned relative to the point with latitude 0 and
+C longitude 0 as determined by the value of the argument CNTR.  The
+C variables PANG, PLAT, and PLON, in the common block PCMP04, must have
+C been set by the user to determine how the string is to be transformed
+C on the surface of the globe.  Three rotations and a call to the EZMAP
+C routine MAPTRA are used: the net effect is to move the string to the
+C position (PLAT,PLON) in such a way that a vector in the writing
+C direction of the string makes an angle of PANG with the local east
+C vector.  The reason for doing all this is that it produces little
+C distortion in the character string, as viewed on the surface of the
+C globe.
 C
 C In this version of PCMPXY, 'MAP' = 100 selects the identity mapping,
 C but a check is made to see whether the point (XINP,YINP) is outside
@@ -34,12 +53,12 @@ C point in the current user coordinate system; (XOTP,YOTP) is returned
 C and is the point which would be carried into (XINP,YINP) by the
 C mapping numbered ABS(IMAP).
 C
-C A call of the form
+C A call with IMAP = 0 should have the form
 C
 C       CALL PCMPXY (0,REAL(IMAP),RFLG,DUM1,DUM2)
 C
-C will return information in RFLG about the mapping numbered IMAP, as
-C follows:
+C and will return information in RFLG about the mapping numbered IMAP,
+C as follows:
 C
 C   RFLG       forward mapping defined?     inverse mapping defined?
 C   ----       ------------------------     ------------------------
@@ -56,6 +75,19 @@ C
         COMMON /PCSTCM/ XVPL,XVPR,YVPB,YVPT
         SAVE   /PCSTCM/
 C
+C Declare the common block in which, when IMAP =4, we may find the
+C angle at which a point label is to be written on the globe and the
+C latitude and longitude of the point being labelled.
+C
+        COMMON /PCMP04/ PANG,PLAT,PLON
+        SAVE   /PCMP04/
+C
+C Define multiplicative constants to convert from degrees to radians
+C and from radians to degrees.
+C
+        DATA DTOR / .017453292519943 /
+        DATA RTOD / 57.2957795130823 /
+C
 C Sort out the different cases.  When IMAP = 0, PCMPXY is being asked
 C what capabilities it has.  The IF tests distinguishing various values
 C of XINP from one another make no difference here, since inverses are
@@ -71,6 +103,8 @@ C
             YINP=3.
           ELSE IF (INT(XINP).EQ.3) THEN
             YINP=3.
+          ELSE IF (INT(XINP).EQ.4) THEN
+            YINP=1.
           ELSE IF (INT(XINP).EQ.100) THEN
             YINP=3.
           ELSE
@@ -94,14 +128,14 @@ C
         ELSE IF (ABS(IMAP).EQ.2) THEN
 C
           IF (IMAP.GT.0) THEN
-            XOTP=XINP*COS(.017453292519943*YINP)
-            YOTP=XINP*SIN(.017453292519943*YINP)
+            XOTP=XINP*COS(DTOR*YINP)
+            YOTP=XINP*SIN(DTOR*YINP)
           ELSE
             XOTP=SQRT(XINP*XINP+YINP*YINP)
-            YOTP=57.2957795130823*ATAN2(YINP,XINP)
+            YOTP=RTOD*ATAN2(YINP,XINP)
           END IF
 C
-C ... the layered case ...
+C ... the perspective case ...
 C
         ELSE IF (ABS(IMAP).EQ.3) THEN
 C
@@ -110,6 +144,21 @@ C
           ELSE
             CALL TDPRPI (XINP,YINP,XOTP,YOTP)
           END IF
+C
+C ... a special use of EZMAP which avoids distorting the characters ...
+C
+        ELSE IF (ABS(IMAP).EQ.4) THEN
+C
+          UCRD=COS(DTOR*YINP)*COS(DTOR*XINP)
+          VCRD=COS(DTOR*YINP)*SIN(DTOR*XINP)
+          WCRD=SIN(DTOR*YINP)
+          CALL NGRITD (1, PANG,UCRD,VCRD,WCRD)
+          CALL NGRITD (2,-PLAT,UCRD,VCRD,WCRD)
+          CALL NGRITD (3, PLON,UCRD,VCRD,WCRD)
+          RLAT=RTOD*ASIN(WCRD)
+          RLON=RTOD*ATAN2(VCRD,UCRD)
+          CALL MAPTRA (RLAT,RLON,XOTP,YOTP)
+          IF (ICFELL('PCMPXY',3).NE.0) RETURN
 C
 C ... the special STITLE case ...
 C

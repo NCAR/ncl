@@ -1,5 +1,9 @@
 C
-C $Id: pcblda.f,v 1.7 1994-03-17 00:23:30 kennison Exp $
+C***********************************************************************
+C B L O C K   D A T A   R O U T I N E S   -   D E F A U L T S
+C***********************************************************************
+C
+C $Id: pcblda.f,v 1.8 1994-04-13 23:06:15 kennison Exp $
 C
       BLOCK DATA PCBLDA
 C
@@ -34,6 +38,9 @@ C
       COMMON /PCSTCM/ XVPL,XVPR,YVPB,YVPT
       SAVE   /PCSTCM/
 C
+      COMMON /PCMP04/ PANG,PLAT,PLON
+      SAVE   /PCMP04/
+C
 C Define the add-space flag, which allows the user to specify
 C additional spacing between characters along the line.
 C
@@ -43,6 +50,11 @@ C Define the constant-spacing flag, which allows the user to position
 C characters a constant distance apart along the line.
 C
       DATA CONS / 0. /
+C
+C Define the height of characters of the various sizes (on a 1024x1024
+C grid).
+C
+      DATA HPIC / 21.,13., 9. /
 C
 C Define the number of the unit from which the binary file of data may
 C be read.
@@ -278,12 +290,11 @@ C mappable.
 C
       DATA OORV / 0. /
 C
-C Define the height and width of characters of the various sizes and
-C the vertical spacing between lines (on a 1024x1024 grid).
+C Define default values of the quantities that are used by PCMPXY
+C when 'MAP' = 4 (to prevent problems if the user forgets to set
+C them).
 C
-      DATA WPIC / 16.,12., 8. /
-      DATA HPIC / 21.,13., 9. /
-      DATA VPIC / 32.,20.,14. /
+      DATA PANG,PLAT,PLON / 3*0. /
 C
 C RBXL, if greater than zero, is the line width to be used while drawing
 C the various parts of a box around a character string.  A value less
@@ -338,13 +349,22 @@ C
 C Define the extent of the shifts for super- or subscripting (in terms
 C of plotter address units on a 1024x1024 grid).
 C
-      DATA SSPR / 10. /
-      DATA SSIC /  7. /
+      DATA SSIC,SSPR / 7.,10. /
 C
 C SHDX and SHDY specify the X and Y offsets to be used in drawing
 C character shadows.  These are stated as fractions of the font height.
 C
       DATA SHDX,SHDY / -.05,-.05 /
+C
+C Define the vertical spacing for characters of the various sizes (on
+C a 1024x1024 grid).
+C
+      DATA VPIC / 32.,20.,14. /
+C
+C Define the width of characters of the various sizes (on a 1024x1024
+C grid).
+C
+      DATA WPIC / 16.,12., 8. /
 C
 C Define default values for x/y positioning information retrievable by
 C the user, just in case.
