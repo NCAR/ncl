@@ -1,12 +1,14 @@
 C
-C     SUBROUTINE IDBVIP (MD,NDP,XD,YD,ZD,NIP,XI,YI,ZI,IWK,WK)
+C $Id: idbvip.f,v 1.2 1995-11-03 23:45:20 kennison Exp $
+C
+      SUBROUTINE IDBVIP (MD,NDP,XD,YD,ZD,NIP,XI,YI,ZI,IWK,WK)
 C
 C DIMENSION OF            XD(NDP), YD(NDP), ZD(NDP), XI(NIP), YI(NIP)
 C ARGUMENTS               ZI(NIP), IWK(31*NDP+NIP),  WK(8*NDP)
 C
-C PURPOSE                 TO PERFORM BIVARIATE INTERPOLATION WHEN THE
-C                         PROJECTIONS OF THE DATA POINTS IN THE X-Y
-C                         PLANE ARE IRREGULARLY DISTRIBUTED.
+C PURPOSE                 To perform bivariate interpolation when the
+C                         projections of the data points in the X-Y
+C                         plane are irregularly distributed.
 C
 C USAGE                   CALL IDBVIP (MD,NDP,XD,YD,ZD,NIP,XI,YI,ZI,
 C                                      IWK,WK)
@@ -14,171 +16,228 @@ C
 C ARGUMENTS
 C
 C ON INPUT                MD
-C                           MODE OF COMPUTATION (MUST BE 1, 2, OR 3,
-C                           ELSE AN ERROR RETURN OCCURS.)
-C                           = 1 IF THIS IS THE FIRST CALL TO THIS
-C                               SUBROUTINE, OR IF THE VALUE OF NDP
-C                               HAS BEEN CHANGED FROM THE PREVIOUS
-C                               CALL, OR IF THE CONTENTS OF THE XD
-C                               OR YD ARRAYS HAVE BEEN CHANGED FROM
-C                               THE PREVIOUS CALL.
-C                           = 2 IF THE VALUES OF NDP AND THE XD AND
-C                               YD ARRAYS ARE UNCHANGED FROM THE
-C                               PREVIOUS CALL, BUT NEW VALUES FOR
-C                               XI, YI ARE BEING USED.  IF MD = 2
-C                               AND NDP HAS BEEN CHANGED SINCE THE
-C                               PREVIOUS CALL TO IDBVIP, AN ERROR
-C                               RETURN OCCURS.
-C                           = 3 IF THE VALUES OF  NDP, NIP, XD,
-C                               YD, XI, YI ARE UNCHANGED FROM THE
-C                               PREVIOUS CALL, I.E. IF THE ONLY
-C                               CHANGE ON INPUT TO IDBVIP IS IN THE
-C                               ZD ARRAY.  IF MD=3 AND NDP OR NIP HAS
-C                               BEEN CHANGED SINCE THE PREVIOUS CALL
-C                               TO IDBVIP, AN ERROR RETURN OCCURS.
+C                           Mode of computation (must be 1, 2, or 3,
+C                           else an error return occurs.)
+C                           = 1 if this is the first call to this
+C                               subroutine, or if the value of NDP
+C                               has been changed from the previous
+C                               call, or if the contents of the XD
+C                               or YD arrays have been changed from
+C                               the previous call.
+C                           = 2 if the values of NDP and the XD and
+C                               YD arrays are unchanged from the
+C                               previous call, but new values for
+C                               XI and YI are being used.  If MD = 2
+C                               and NDP has been changed since the
+C                               previous call to IDBVIP, an error
+C                               return occurs.
+C                           = 3 if the values of NDP, NIP, XD, YD
+C                               XI, and YI are unchanged from the
+C                               previous call, i.e., if the only
+C                               change on input to IDBVIP is in the
+C                               ZD array.  If MD=3 and NDP or NIP has
+C                               been changed since the previous call
+C                               to IDBVIP, an error return occurs.
 C
-C                           BETWEEN THE CALL WITH MD=2 OR MD=3 AND
-C                           THE PRECEDING CALL, THE IWK AND WK WORK
-C                           ARRAYS SHOULD NOT BE DISTURBED.
+C                           Between the call with MD=2 or MD=3 and
+C                           the preceding call, the IWK and WK work
+C                           arrays should not be disturbed.
 C
 C                        NDP
-C                          NUMBER OF DATA POINTS (MUST BE 4 OR
-C                          GREATER, ELSE AN ERROR RETURN OCCURS).
+C                          Number of data points (must be 4 or
+C                          greater, else an error return occurs).
 C
 C                        XD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE
-C                          X COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the
+C                          X coordinates of the data points.
 C
 C                        YD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE
-C                          Y COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the
+C                          Y coordinates of the data points.
 C
 C                        ZD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE
-C                          Z COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the
+C                          Z coordinates of the data points.
 C
 C                        NIP
-C                          THE NUMBER OF OUTPUT POINTS AT WHICH
-C                          INTERPOLATION IS TO BE PERFORMED (MUST BE
-C                          1 OR GREATER, ELSE AN ERROR RETURN OCCURS).
+C                          The number of output points at which
+C                          interpolation is to be performed (must be
+C                          1 or greater, else an error return occurs).
 C
 C                        XI
-C                          ARRAY OF DIMENSION  NIP  CONTAINING THE X
-C                          COORDINATES OF THE OUTPUT POINTS.
+C                          Array of dimension NIP containing the X
+C                          coordinates of the output points.
 C
 C                        YI
-C                          ARRAY OF DIMENSION  NIP  CONTAINING THE Y
-C                          COORDINATES OF THE OUTPUT POINTS.
+C                          Array of dimension NIP containing the Y
+C                          coordinates of the output points.
 C
 C                        IWK
-C                          INTEGER WORK ARRAY OF DIMENSION AT LEAST
+C                          Integer work array of dimension at least
 C                          31*NDP + NIP
 C
 C                        WK
-C                          REAL WORK ARRAY OF DIMENSION AT LEAST 8*NDP
+C                          Real work array of dimension at least 8*NDP
 C
 C ON OUTPUT               ZI
-C                           ARRAY OF DIMENSION NIP WHERE INTERPOLATED
-C                           Z  VALUES ARE TO BE STORED.
+C                           Array of dimension NIP where interpolated
+C                           Z values are to be stored.
 C
-C SPECIAL CONDITIONS     INADEQUATE WORK SPACE IWK AND WK MAY
-C                        MAY CAUSE INCORRECT RESULTS.
+C SPECIAL CONDITIONS     Inadequate work space IWK and WK may cause
+C                        incorrect results.
 C
-C                        THE DATA POINTS MUST BE DISTINCT AND THEIR
-C                        PROJECTIONS IN THE X-Y PLANE MUST NOT BE
-C                        COLLINEAR, OTHERWISE AN ERROR RETURN OCCURS.
-C ********************************************************************
-      SUBROUTINE  IDBVIP(MD,NDP,XD,YD,ZD,NIP,XI,YI,ZI,
-     1                   IWK,WK)
-C THIS SUBROUTINE CALLS THE IDLCTN, IDPDRV, IDPTIP, AND IDTANG
-C SUBROUTINES.
-C DECLARATION STATEMENTS
-      DIMENSION XD(NDP), YD(NDP), ZD(NDP),           XI(NIP),
-     1          YI(NIP), ZI(NIP), IWK(31*NDP + NIP), WK(8*NDP)
-      COMMON/IDLC/ITIPV,DMMY1(13)
-      COMMON/IDPT/ITPV,DMMY(27)
+C                        The data points must be distinct and their
+C                        projections in the X-Y plane must not be
+C                        collinear, else an error return occurs.
 C
-C  THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
+C IDBVIP calls the subroutines IDLCTN, IDPDRV, IDPTIP, and IDTANG.
 C
-C SETTING OF SOME INPUT PARAMETERS TO LOCAL VARIABLES.
-C (FOR MD=1,2,3)
-   10 MD0=MD
-      NDP0=NDP
-      NIP0=NIP
-C ERROR CHECK.  (FOR MD=1,2,3)
-   20 IF (MD0.LT.1.OR.MD0.GT.3) THEN
-         CALL ULIBER (32,
-     1' IDBVIP (BIVAR) - INPUT PARAMETER MD OUT OF RANGE',49)
-         STOP 'ULIBER32'
-      ENDIF
-      IF (NDP0.LT.4) THEN
-         CALL ULIBER (33,
-     1' IDBVIP (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE',50)
-         STOP 'ULIBER33'
-      ENDIF
-      IF (NIP0.LT.1) THEN
-         CALL ULIBER (34,
-     1' IDBVIP (BIVAR) - INPUT PARAMETER NIP OUT OF RANGE',50)
-         STOP 'ULIBER34'
-      ENDIF
-      IF(MD0.GT.1)        GO TO 21
-      IWK(1)=NDP0
-      GO TO 22
-   21 NDPPV=IWK(1)
-      IF (NDP0.NE.NDPPV) THEN
-         CALL ULIBER (50,
-     1' IDBVIP (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL',
-     2                63)
-         STOP 'ULIBER50'
-      ENDIF
-   22 IF(MD0.GT.2)        GO TO 23
-      IWK(3)=NIP
-      GO TO 30
-   23 NIPPV=IWK(3)
-      IF (NIP0.LT.NIPPV) THEN
-         CALL ULIBER (51,
-     1' IDBVIP (BIVAR) - MD=3 BUT NIP WAS CHANGED SINCE LAST CALL',
-     2                58)
-         STOP 'ULIBER51'
-      ENDIF
-C ALLOCATION OF STORAGE AREAS IN THE IWK ARRAY.  (FOR MD=1,2,3)
-   30 JWIPT=16
-      JWIWL=6*NDP0+1
+C Declaration statements.
+C
+      DIMENSION XD(NDP),YD(NDP),ZD(NDP),XI(NIP),YI(NIP),ZI(NIP),
+     +          IWK(31*NDP+NIP),WK(8*NDP)
+C
+      COMMON /IDLC/ ITIPV,DMMY1(13)
+      SAVE   /IDLC/
+C
+      COMMON /IDPT/ ITPV,DMMY(27)
+      SAVE   /IDPT/
+C
+      COMMON /IDCOMN/ INTY,ITTY,ALSP,BLSP,CLSP,XAVG,YAVG
+      SAVE   /IDCOMN/
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('IDBVIP (BIVAR) - UNCLEARED PRIOR ERROR',1).NE.0)
+     +                                                        RETURN
+C
+C Check for input errors.
+C
+      IF (MD.LT.1.OR.MD.GT.3) THEN
+        CALL SETER ('IDBVIP (BIVAR) - INPUT VARIABLE MD IS OUT OF RANGE'
+     +,2,1)
+        RETURN
+      END IF
+C
+      IF (NDP.LT.4) THEN
+        CALL SETER ('IDBVIP (BIVAR) - INPUT VARIABLE NDP IS OUT OF RANGE
+     +',3,1)
+        RETURN
+      END IF
+C
+      IF (NIP.LT.1) THEN
+        CALL SETER ('IDBVIP (BIVAR) - INPUT VARIABLE NIP IS OUT OF RANGE
+     +',4,1)
+        RETURN
+      END IF
+C
+      IF (MD.LE.1) THEN
+C
+        IWK(1)=NDP
+C
+      ELSE
+C
+        NDPPV=IWK(1)
+C
+        IF (NDP.NE.NDPPV) THEN
+          CALL SETER  ('IDBVIP (BIVAR) - MD = 2 OR 3 BUT NDP WAS CHANGED
+     + SINCE LAST CALL',5,1)
+          RETURN
+        END IF
+C
+      END IF
+C
+      IF (MD.LE.2) THEN
+C
+        IWK(2)=INTY
+        IWK(3)=NIP
+C
+      ELSE
+C
+        INTYPV=IWK(2)
+C
+        IF (INTY.NE.INTYPV) THEN
+          CALL SETER ('IDBVIP (BIVAR) - MD = 3 BUT ITY WAS CHANGED SINCE
+     + LAST CALL',6,1)
+           RETURN
+        END IF
+C
+        NIPPV=IWK(3)
+C
+        IF (NIP.NE.NIPPV) THEN
+          CALL SETER ('IDBVIP (BIVAR) - MD = 3 BUT NIP WAS CHANGED SINCE
+     + LAST CALL',7,1)
+          RETURN
+        END IF
+C
+      END IF
+C
+C Allocate storage areas in the array IWK.
+C
+      JWIPT=16
+      JWIWL=6*NDP+1
       JWIWK=JWIWL
-      JWIPL=24*NDP0+1
-      JWIWP=30*NDP0+1
-      JWIT0=31*NDP0
-      JWWPD=5*NDP0+1
-C TRIANGULATES THE X-Y PLANE.  (FOR MD=1)
-   40 IF(MD0.GT.1)   GO TO 41
-      CALL IDTANG(NDP0,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),
-     1            IWK(JWIWL),IWK(JWIWP),WK)
-      IWK(5)=NT
-      IWK(6)=NL
-      IF(NT.EQ.0)    RETURN
-      GO TO 50
-   41 NT=IWK(5)
-      NL=IWK(6)
-C LOCATES ALL POINTS AT WHICH INTERPOLATION IS TO BE PERFORMED.
-C (FOR MD=1,2)
-   50 IF(MD0.GT.2)   GO TO 60
-      ITIPV=0
-      JWIT=JWIT0
-      DO 51  IIP=1,NIP0
-        JWIT=JWIT+1
-        CALL IDLCTN(NDP0,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),
-     1            XI(IIP),YI(IIP),IWK(JWIT),IWK(JWIWK),WK)
-   51 CONTINUE
-C ESTIMATES PARTIAL DERIVATIVES AT ALL DATA POINTS.
-C (FOR MD=1,2,3)
-   60 CALL IDPDRV(NDP0,XD,YD,ZD,NT,IWK(JWIPT),WK,WK(JWWPD))
-C INTERPOLATES THE ZI VALUES.  (FOR MD=1,2,3)
-   70 ITPV=0
-      JWIT=JWIT0
-      DO 71  IIP=1,NIP0
-        JWIT=JWIT+1
+      JWIPL=24*NDP+1
+      JWIWP=30*NDP+1
+      JWIT0=31*NDP
+      JWWPD=5*NDP+1
+C
+C If MD = 1, triangulate the X-Y plane.  (If MD = 2 or 3, this has
+C already been done and need not been redone.)
+C
+      IF (MD.EQ.1) THEN
+        CALL IDTANG (NDP,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),IWK(JWIWL),
+     +                                                  IWK(JWIWP),WK)
+        IF (ICFELL('IDBVIP',8).NE.0) RETURN
+        IWK(5)=NT
+        IWK(6)=NL
+      ELSE
+        NT=IWK(5)
+        NL=IWK(6)
+      END IF
+C
+      IF (NT.EQ.0) RETURN
+C
+C If linear interpolation is activated, compute the coefficients of the
+C least-squares-fit plane and the mean values of X and Y.
+C
+      IF (INTY.NE.0) THEN
+        CALL IDLSQF (XD,YD,ZD,NDP,ALSP,BLSP,CLSP,XAVG,YAVG)
+      END IF
+C
+C If MD = 1 or 2, locate all points at which interpolation is to be
+C performed by getting the number of the containing region (a triangle
+C number or a combined pair of border-line-segment numbers).  (If MD
+C = 3, this has already been done and need not be redone.)
+C
+      IF (MD.LE.2) THEN
+C
+        ITIPV=0
+C
+        DO 101 IIP=1,NIP
+          CALL IDLCTN(NDP,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),XI(IIP),
+     +                         YI(IIP),IWK(JWIT0+IIP),IWK(JWIWK),WK)
+  101   CONTINUE
+C
+      END IF
+C
+C If quintic interpolation is activated, estimate partial derivatives.
+C
+      IF (INTY.EQ.0) THEN
+        CALL IDPDRV (NDP,XD,YD,ZD,NT,IWK(JWIPT),WK,WK(JWWPD))
+      END IF
+C
+C Interpolate to get ZI values.
+C
+      ITPV=0
+C
+      DO 102 IIP=1,NIP
         CALL IDPTIP(XD,YD,ZD,NT,IWK(JWIPT),NL,IWK(JWIPL),WK,
-     1              IWK(JWIT),XI(IIP),YI(IIP),ZI(IIP))
-   71 CONTINUE
+     +               IWK(JWIT0+IIP),XI(IIP),YI(IIP),ZI(IIP))
+  102 CONTINUE
+C
+C Done.
+C
       RETURN
+C
       END

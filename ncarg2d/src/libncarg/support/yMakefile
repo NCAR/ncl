@@ -1,23 +1,28 @@
 #
-#	$Id: yMakefile,v 1.8 1993-12-02 22:54:31 kennison Exp $
+#	$Id: yMakefile,v 1.9 1995-11-03 23:45:29 kennison Exp $
 #
 MYNAME	= support
 
 GENERIC_SRCS = \
-	encd.f entsr.f retsr.f nerro.f errof.f seter.f eprin.f fdum.f \
+	encd.f entsr.f retsr.f nerro.f errof.f seter.f eprin.f fdum.f  \
 	icloem.f seblda.f semess.f q8qst4.f mskrv1.f mskrv2.f msbsf1.f \
 	msbsf2.f mssrf1.f mssrf2.f msceez.f mstrms.f msshch.f msntvl.f \
 	bzbkd.f  bzcurv.f bzdp2l.f bzfcrv.f bzftol.f bzgeti.f bzgetr.f \
-	bzseti.f bzsetr.f bzsubd.f idbvip.f idgrid.f idlctn.f idpdrv.f \
-	idptip.f idsfft.f idtang.f idxchg.f uliber.f icfell.f
+	bzseti.f bzsetr.f bzsubd.f idblda.f idgetr.f idlctn.f idpltr.f \
+	idsetr.f idxchg.f idbvip.f idgrid.f idlsqf.f idptip.f idsfft.f \
+	idxchn.f idgeti.f idgtcp.f idpdrv.f idseti.f idtang.f uliber.f \
+	icfell.f
+
 
 GENERIC_OBJS = \
-	encd.o entsr.o retsr.o nerro.o errof.o seter.o eprin.o fdum.o \
+	encd.o entsr.o retsr.o nerro.o errof.o seter.o eprin.o fdum.o  \
 	icloem.o seblda.o semess.o q8qst4.o mskrv1.o mskrv2.o msbsf1.o \
 	msbsf2.o mssrf1.o mssrf2.o msceez.o mstrms.o msshch.o msntvl.o \
-	bzbkd.o bzcurv.o bzdp2l.o bzfcrv.o bzftol.o bzgeti.o bzgetr.o \
-	bzseti.o bzsetr.o bzsubd.o idbvip.o idgrid.o idlctn.o idpdrv.o \
-	idptip.o idsfft.o idtang.o idxchg.o uliber.o icfell.o
+	bzbkd.o  bzcurv.o bzdp2l.o bzfcrv.o bzftol.o bzgeti.o bzgetr.o \
+	bzseti.o bzsetr.o bzsubd.o idblda.o idgetr.o idlctn.o idpltr.o \
+	idsetr.o idxchg.o idbvip.o idgrid.o idlsqf.o idptip.o idsfft.o \
+	idxchn.o idgeti.o idgtcp.o idpdrv.o idseti.o idtang.o uliber.o \
+	icfell.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)

@@ -1,236 +1,303 @@
-C      SUBROUTINE IDSFFT (MD,NDP,XD,YD,ZD,NXI,NYI,NZI,XI,YI,ZI,IWK,WK)
 C
-C DIMENSION OF           XD(NDP), YD(NDP),     ZD(NDP),   XI(NXI),
+C $Id: idsfft.f,v 1.2 1995-11-03 23:45:26 kennison Exp $
+C
+      SUBROUTINE IDSFFT (MD,NDP,XD,YD,ZD,NXI,NYI,NZI,XI,YI,ZI,IWK,WK)
+C
+C DIMENSION OF           XD(NDP), YD(NDP), ZD(NDP), XI(NXI),
 C ARGUMENTS              YI(NYI), ZI(NZI,NYI), WK(6*NDP),
 C                        IWK(31*NDP + NXI*NYI)
 C
-C PURPOSE                THIS SUBROUTINE PERFORMS SMOOTH SURFACE
-C                        FITTING WHEN THE PROJECTIONS OF THE DATA
-C                        POINTS IN THE X-Y PLANE ARE IRREGULARLY
-C                        DISTRIBUTED IN THE PLANE.
+C PURPOSE                This subroutine performs smooth surface
+C                        fitting when the projections of the data
+C                        points in the X-Y plane are irregularly
+C                        distributed in the plane.
 C
 C USAGE                  CALL IDSFFT (MD,NDP,XD,YD,ZD,NXI,NYI,NZI,
-C                                    XI,YI,ZI,IWK,WK)
+C                                     XI,YI,ZI,IWK,WK)
 C
 C ARGUMENTS
 C
 C ON INPUT               MD
-C                          MODE OF COMPUTATION (MUST BE 1, 2, OR 3,
-C                          ELSE AN ERROR RETURN WILL OCCUR).
-C                           = 1 IF THIS IS THE FIRST CALL TO THIS
-C                               SUBROUTINE, OR IF THE VALUE OF NDP
-C                               HAS BEEN CHANGED FROM THE PREVIOUS
-C                               CALL, OR IF THE CONTENTS OF THE XD
-C                               OR YD ARRAYS HAVE BEEN CHANGED FROM
-C                               THE PREVIOUS CALL.
-C                           = 2 IF THE VALUES OF NDP AND THE XD,
-C                               YD ARRAYS ARE UNCHANGED FROM THE
-C                               PREVIOUS CALL, BUT NEW VALUES FOR
-C                               XI, YI ARE BEING USED.  IF MD = 2
-C                               AND NDP HAS BEEN CHANGED SINCE THE
-C                               PREVIOUS CALL TO IDSFFT, AN ERROR
-C                               RETURN OCCURS.
-C                           = 3 IF THE VALUES OF NDP, NXI, NYI, XD,
-C                               YD, XI, YI ARE UNCHANGED FROM THE
-C                               PREVIOUS CALL, I.E. IF THE ONLY CHANGE
-C                               ON INPUT TO IDSFFT IS IN THE ZD ARRAY.
-C                               IF MD = 3 AND NDP, NXI OR NYI HAS BEEN
-C                               CHANGED SINCE THE PREVIOUS CALL TO
-C                               IDSFFT, AN ERROR RETURN OCCURS.
+C                          Mode of computation (must be 1, 2, or 3,
+C                          else an error return will occur).
+C                           = 1 if this is the first call to this
+C                               subroutine, or if the value of NDP
+C                               has been changed from the previous
+C                               call, or if the contents of the XD
+C                               or YD arrays have been changed from
+C                               the previous call.
+C                           = 2 if the values of NDP and the XD and
+C                               YD arrays are unchanged from the
+C                               previous call, but new values for
+C                               XI and YI are being used.  If MD = 2
+C                               and NDP has been changed since the
+C                               previous call to IDSFFT, an error
+C                               return occurs.
+C                           = 3 if the values of NDP, NXI, NYI, XD,
+C                               YD, XI, and YI are unchanged from the
+C                               previous call, i.e., if the only change
+C                               on input to IDSFFT is in the ZD array.
+C                               If MD = 3 and NDP, NXI, or NYI has been
+C                               changed since the previous call to
+C                               IDSFFT, an error return occurs.
 C
-C                           BETWEEN THE CALL WITH MD=2 OR MD=3 AND
-C                           THE PRECEDING CALL, THE IWK AND WK WORK
-C                           ARRAYS SHOULD NOT BE DISTURBED.
+C                           Between the call with MD = 2 or MD = 3 and
+C                           the preceding call, the IWK and WK work
+C                           arrays should not be disturbed.
 C
 C                        NDP
-C                          NUMBER OF DATA POINTS (MUST BE 4 OR
-C                          GREATER, ELSE AN ERROR RETURN WILL OCCUR).
+C                          Number of data points (must be 4 or
+C                          greater, else an error return will occur).
 C
 C                        XD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE X
-C                          COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the X
+C                          coordinates of the data points.
 C
 C                        YD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE Y
-C                          COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the Y
+C                          coordinates of the data points.
 C
 C                        ZD
-C                          ARRAY OF DIMENSION  NDP  CONTAINING THE Z
-C                          COORDINATES OF THE DATA POINTS.
+C                          Array of dimension NDP containing the Z
+C                          coordinates of the data points.
 C
 C                        NXI
-C                          NUMBER OF OUTPUT GRID POINTS IN THE X-
-C                          DIRECTION (MUST BE 1 OR GREATER, ELSE
-C                          AN ERROR RETURN WILL OCCUR).
+C                          Number of output grid poitns in the X
+C                          direction (must be 1 or greater, else
+C                          an error return will occur).
 C
 C                        NYI
-C                          NUMBER OF OUTPUT GRID POINTS IN THE Y-
-C                          DIRECTION (MUST BE 1 OR GREATER, ELSE
-C                          AN ERROR RETURN WILL OCCUR).
+C                          Number of output grid points in the Y
+C                          direction (must be 1 or greater, else
+C                          an error return will occur).
 C
 C                        NZI
-C                          FIRST DIMENSION OF ZI AS DECLARED IN THE
-C                          CALLING PROGRAM.  NZI MUST BE GREATER THAN
-C                          OR EQUAL TO NXI, ELSE AN ERROR RETURN WILL
-C                          OCCUR.
+C                          First dimension of ZI as declared in the
+C                          calling program.  NZI must be greater than
+C                          or equal to NXI, else an error return will
+C                          occur.
 C
 C                        XI
-C                          ARRAY OF DIMENSION  NXI  CONTAINING THE
-C                          X COORDINATES OF THE OUTPUT GRID POINTS.
+C                          Array of dimension NXI containing the
+C                          X coordinates of the output grid points.
 C
 C                        YI
-C                         ARRAY OF DIMENSION  NYI  CONTAINING THE
-C                         Y COORDINATES OF THE OUTPUT GRID POINTS.
+C                         Array of dimension NYI containing the
+C                         Y coordinates of the output grid points.
 C
 C                        IWK
-C                          INTEGER WORK ARRAY OF DIMENSION AT
-C                          LEAST 31*NDP + NXI*NYI
+C                          Integer work array of dimension at
+C                          least 31*NDP + NXI*NYI.
 C
 C                        WK
-C                          REAL WORK ARRAY OF DIMENSION AT LEAST 6*NDP
+C                          Real work array of dimension at least 6*NDP.
 C
 C ON OUTPUT              ZI
-C                           REAL, TWO-DIMENSIONAL ARRAY OF DIMENSION
-C                           (NZI,NYI), STORING THE INTERPOLATED Z
-C                           VALUES AT THE OUTPUT GRID POINTS.
+C                           Real, two-dimensional array of dimension
+C                           (NZI,NYI), storing the interpolated Z
+C                           values at the output grid points.
 C
-C SPECIAL CONDITIONS     INADEQUATE WORK SPACE IWK AND WK MAY
-C                        MAY CAUSE INCORRECT RESULTS.
+C SPECIAL CONDITIONS     Inadequate work space IWK and WK may cause
+C                        incorrect results.
 C
-C                        THE DATA POINTS MUST BE DISTINCT AND THEIR
-C                        PROJECTIONS IN THE X-Y PLANE MUST NOT BE
-C                        COLLINEAR, OTHERWISE AN ERROR RETURN OCCURS.
-C ********************************************************************
-      SUBROUTINE IDSFFT (MD,NDP,XD,YD,ZD,NXI,NYI,NZI,XI,YI,ZI,
-     1                   IWK,WK)
-C THIS SUBROUTINE CALLS THE IDGRID, IDPDRV, IDPTIP, AND IDTANG
-C SUBROUTINES.
-C DECLARATION STATEMENTS
-      DIMENSION XD(NDP), YD(NDP),     ZD(NDP),               XI(NXI),
-     1          YI(NYI), ZI(NZI,NYI), IWK(31*NDP + NXI*NYI), WK(6*NDP)
-      COMMON/IDPT/ITPV,DMMY(27)
+C                        The data points must be distinct and their
+C                        projections in the X-Y plane must not be
+C                        collinear, else an error return occurs.
 C
-C  THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
+C IDSFFT calls the subroutines IDGRID, IDPDRV, IDPTIP, and IDTANG.
 C
-C SETTING OF SOME INPUT PARAMETERS TO LOCAL VARIABLES.
-C (FOR MD=1,2,3)
-   10 MD0=MD
-      NDP0=NDP
-      NXI0=NXI
-      NYI0=NYI
-C ERROR CHECK.  (FOR MD=1,2,3)
-   20 IF (MD0.LT.1.OR.MD0.GT.3) THEN
-         CALL ULIBER (39,
-     1' IDSFFT (BIVAR) - INPUT PARAMETER MD OUT OF RANGE',49)
-         STOP 'ULIBER39'
-      ENDIF
-      IF (NDP0.LT.4) THEN
-         CALL ULIBER (40,
-     1' IDSFFT (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE',50)
-         STOP 'ULIBER40'
-      ENDIF
-      IF (NXI0.LT.1.OR.NYI0.LT.1) THEN
-         CALL ULIBER (41,
-     1' IDSFFT (BIVAR) - INPUT PARAMETER NXI OR NYI OUT OF RANGE',57)
-         STOP 'ULIBER41'
-      ENDIF
-      IF (NXI0.GT.NZI) THEN
-         CALL ULIBER (42,
-     1' IDSFFT (BIVAR) - INPUT PARAMETER NZI IS LESS THAN NXI',54)
-         STOP 'ULIBER42'
-      ENDIF
-      IF(MD0.GT.1)        GO TO 21
-      IWK(1)=NDP0
-      GO TO 22
-   21 NDPPV=IWK(1)
-      IF (NDP0.NE.NDPPV) THEN
-         CALL ULIBER (43,
-     1' IDSFFT (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL',
-     2                63)
-         STOP 'ULIBER43'
-      ENDIF
-   22 IF(MD0.GT.2)        GO TO 23
-      IWK(3)=NXI0
-      IWK(4)=NYI0
-      GO TO 30
-   23 NXIPV=IWK(3)
-      NYIPV=IWK(4)
-      IF (NXI0.NE.NXIPV) THEN
-         CALL ULIBER (45,
-     1' IDSFFT (BIVAR) - MD=3 BUT NXI WAS CHANGED SINCE LAST CALL',
-     2                58)
-         STOP 'ULIBER45'
-      ENDIF
-      IF (NYI0.NE.NYIPV) THEN
-         CALL ULIBER (46,
-     1' IDSFFT (BIVAR) - MD=3 BUT NYI WAS CHANGED SINCE LAST CALL',
-     2                58)
-         STOP 'ULIBER46'
-      ENDIF
-C ALLOCATION OF STORAGE AREAS IN THE IWK ARRAY.  (FOR MD=1,2,3)
-   30 JWIPT=16
-      JWIWL=6*NDP0+1
+C Declaration statements.
+C
+      DIMENSION XD(NDP),YD(NDP),ZD(NDP),XI(NXI),YI(NYI),ZI(NZI,NYI),
+     +          IWK(31*NDP+NXI*NYI),WK(6*NDP)
+C
+      COMMON /IDPT/ ITPV,DMMY(27)
+      SAVE   /IDPT/
+C
+      COMMON /IDCOMN/ INTY,ITTY,ALSP,BLSP,CLSP,XAVG,YAVG
+      SAVE   /IDCOMN/
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('IDSFFT (BIVAR) - UNCLEARED PRIOR ERROR',1).NE.0)
+     +                                                        RETURN
+C
+C Check for input errors.
+C
+      IF (MD.LT.1.OR.MD.GT.3) THEN
+        CALL SETER ('IDSFFT (BIVAR) - INPUT VARIABLE MD IS OUT OF RANGE'
+     +,2,1)
+        RETURN
+      END IF
+C
+      IF (NDP.LT.4) THEN
+        CALL SETER ('IDSFFT (BIVAR) - INPUT VARIABLE NDP IS OUT OF RANGE
+     +',3,1)
+        RETURN
+      END IF
+C
+      IF (NXI.LT.1.OR.NYI.LT.1) THEN
+        CALL SETER ('IDSFFT (BIVAR) - INPUT VARIABLE NXI OR NYI IS OUT O
+     +F RANGE',4,1)
+        RETURN
+      END IF
+C
+      IF (NXI.GT.NZI) THEN
+        CALL SETER ('IDSFFT (BIVAR) - INPUT VARIABLE NZI IS LESS THAN NX
+     +I',5,1)
+        RETURN
+      END IF
+C
+      IF (MD.LE.1) THEN
+C
+        IWK(1)=NDP
+C
+      ELSE
+C
+        NDPPV=IWK(1)
+C
+        IF (NDP.NE.NDPPV) THEN
+          CALL SETER  ('IDSFFT (BIVAR) - MD = 2 OR 3 BUT NDP WAS CHANGED
+     + SINCE LAST CALL',6,1)
+          RETURN
+        END IF
+C
+      END IF
+C
+      IF (MD.LE.2) THEN
+C
+        IWK(2)=INTY
+        IWK(3)=NXI
+        IWK(4)=NYI
+C
+      ELSE
+C
+        INTYPV=IWK(2)
+C
+        IF (INTY.NE.INTYPV) THEN
+          CALL SETER ('IDSFFT (BIVAR) - MD = 3 BUT ITY WAS CHANGED SINCE
+     + LAST CALL',7,1)
+           RETURN
+        END IF
+C
+        NXIPV=IWK(3)
+C
+        IF (NXI.NE.NXIPV) THEN
+          CALL SETER ('IDSFFT (BIVAR) - MD = 3 BUT NXI WAS CHANGED SINCE
+     + LAST CALL',8,1)
+           RETURN
+        END IF
+C
+        NYIPV=IWK(4)
+C
+        IF (NYI.NE.NYIPV) THEN
+          CALL SETER ('IDSFFT (BIVAR) - MD = 3 BUT NYI WAS CHANGED SINCE
+     + LAST CALL',9,1)
+          RETURN
+        END IF
+C
+      END IF
+C
+C Allocate storage areas in the array IWK.
+C
+      JWIPT=16
+      JWIWL=6*NDP+1
       JWNGP0=JWIWL-1
-      JWIPL=24*NDP0+1
-      JWIWP=30*NDP0+1
-      JWIGP0=31*NDP0
-      JWWPD=5*NDP0+1
-C TRIANGULATES THE X-Y PLANE.  (FOR MD=1)
-   40 IF(MD0.GT.1)   GO TO 41
-      CALL IDTANG(NDP0,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),
-     1            IWK(JWIWL),IWK(JWIWP),WK)
-      IWK(5)=NT
-      IWK(6)=NL
-      IF(NT.EQ.0)    RETURN
-      GO TO 50
-   41 NT=IWK(5)
-      NL=IWK(6)
-C SORTS OUTPUT GRID POINTS IN ASCENDING ORDER OF THE TRIANGLE
-C NUMBER AND THE BORDER LINE SEGMENT NUMBER.  (FOR MD=1,2)
-   50 IF(MD0.GT.2)   GO TO 60
-      CALL IDGRID(XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),NXI0,NYI0,
-     1            XI,YI,IWK(JWNGP0+1),IWK(JWIGP0+1))
-C ESTIMATES PARTIAL DERIVATIVES AT ALL DATA POINTS.
-C (FOR MD=1,2,3)
-   60 CALL IDPDRV(NDP0,XD,YD,ZD,NT,IWK(JWIPT),WK,WK(JWWPD))
-C INTERPOLATES THE ZI VALUES.  (FOR MD=1,2,3)
-   70 ITPV=0
+      JWIPL=24*NDP+1
+      JWIWP=30*NDP+1
+      JWIGP0=31*NDP
+      JWWPD=5*NDP+1
+C
+C If MD = 1, triangulate the X/Y plane.  (If MD = 2 or 3, this has
+C already been done and need not been redone.)
+C
+      IF (MD.EQ.1) THEN
+        CALL IDTANG (NDP,XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),IWK(JWIWL),
+     +                                                  IWK(JWIWP),WK)
+        IF (ICFELL('IDSFFT',10).NE.0) RETURN
+        IWK(5)=NT
+        IWK(6)=NL
+      ELSE
+        NT=IWK(5)
+        NL=IWK(6)
+      END IF
+C
+      IF (NT.EQ.0) RETURN
+C
+C If linear interpolation is activated, compute the coefficients of the
+C least-squares-fit plane and the mean values of X and Y.
+C
+      IF (INTY.NE.0) THEN
+        CALL IDLSQF (XD,YD,ZD,NDP,ALSP,BLSP,CLSP,XAVG,YAVG)
+      END IF
+C
+C If MD = 1 or 2, sort output grid points in ascending order by the
+C number of the containing region (a triangle number or a combined
+C pair of border line segment numbers).  (If MD = 3, this has already
+C been done and need not be redone.)
+C
+      IF (MD.LE.2) THEN
+        CALL IDGRID (XD,YD,NT,IWK(JWIPT),NL,IWK(JWIPL),NXI,
+     +               NYI,XI,YI,IWK(JWNGP0+1),IWK(JWIGP0+1))
+        IF (ICFELL('IDSFFT',11).NE.0) RETURN
+      END IF
+C
+C If quintic interpolation is activated, estimate partial derivatives.
+C
+      IF (INTY.EQ.0) THEN
+        CALL IDPDRV (NDP,XD,YD,ZD,NT,IWK(JWIPT),WK,WK(JWWPD))
+      END IF
+C
+C Interpolate to get ZI values.
+C
+      ITPV=0
       JIG0MX=0
-      JIG1MN=NXI0*NYI0+1
+      JIG1MN=NXI*NYI+1
       NNGP=NT+2*NL
-      DO 79  JNGP=1,NNGP
+C
+      DO 105 JNGP=1,NNGP
+C
         ITI=JNGP
-        IF(JNGP.LE.NT)    GO TO 71
+        IF (JNGP.LE.NT) GO TO 101
         IL1=(JNGP-NT+1)/2
         IL2=(JNGP-NT+2)/2
-        IF(IL2.GT.NL)     IL2=1
+        IF (IL2.GT.NL) IL2=1
         ITI=IL1*(NT+NL)+IL2
-   71   JWNGP=JWNGP0+JNGP
+C
+  101   JWNGP=JWNGP0+JNGP
         NGP0=IWK(JWNGP)
-        IF(NGP0.EQ.0)     GO TO 76
+        IF (NGP0.EQ.0) GO TO 103
         JIG0MN=JIG0MX+1
         JIG0MX=JIG0MX+NGP0
-        DO 72  JIGP=JIG0MN,JIG0MX
+C
+        DO 102 JIGP=JIG0MN,JIG0MX
           JWIGP=JWIGP0+JIGP
           IZI=IWK(JWIGP)
-          IYI=(IZI-1)/NXI0+1
-          IXI=IZI-NXI0*(IYI-1)
+          IYI=(IZI-1)/NXI+1
+          IXI=IZI-NXI*(IYI-1)
           CALL IDPTIP(XD,YD,ZD,NT,IWK(JWIPT),NL,IWK(JWIPL),WK,
-     1               ITI,XI(IXI),YI(IYI),ZI(IXI,IYI))
-   72   CONTINUE
-   76   JWNGP=JWNGP0+2*NNGP+1-JNGP
+     +                        ITI,XI(IXI),YI(IYI),ZI(IXI,IYI))
+  102   CONTINUE
+C
+  103   JWNGP=JWNGP0+2*NNGP+1-JNGP
         NGP1=IWK(JWNGP)
-        IF(NGP1.EQ.0)     GO TO 79
+        IF (NGP1.EQ.0) GO TO 105
         JIG1MX=JIG1MN-1
         JIG1MN=JIG1MN-NGP1
-        DO 77  JIGP=JIG1MN,JIG1MX
+C
+        DO 104 JIGP=JIG1MN,JIG1MX
           JWIGP=JWIGP0+JIGP
           IZI=IWK(JWIGP)
-          IYI=(IZI-1)/NXI0+1
-          IXI=IZI-NXI0*(IYI-1)
+          IYI=(IZI-1)/NXI+1
+          IXI=IZI-NXI*(IYI-1)
           CALL IDPTIP(XD,YD,ZD,NT,IWK(JWIPT),NL,IWK(JWIPL),WK,
-     1               ITI,XI(IXI),YI(IYI),ZI(IXI,IYI))
-   77   CONTINUE
-   79 CONTINUE
-      RETURN
+     +                        ITI,XI(IXI),YI(IYI),ZI(IXI,IYI))
+  104   CONTINUE
+C
+  105 CONTINUE
+C
+C Done.
+C
+        RETURN
+C
       END
