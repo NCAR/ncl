@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.7 1994-08-11 21:37:09 boote Exp $
+ *      $Id: defs.h,v 1.8 1994-11-11 02:34:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@
 /* max number of arguments that can be set in a single call*/
 /* The actual number is one less than this because the last one */
 /* gets filled with null to determine the length		*/
-#define	_NhlMAXARGLIST	(256)
+#define	_NhlMAXARGLIST	(512)
 
 /* maximuim number of resources a single object can have */
 #define	_NhlMAXRESLIST	(1024)
