@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.6 1999-02-11 00:44:37 haley Exp $
+;      $Id: gsn_code.ncl,v 1.7 1999-02-11 16:09:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -240,28 +240,28 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
     cols = floattointeger(dims(1))
     xrows = dims(0)
     xcols = dims(1)
-    xwsp_perc = 0.05     ; White space is 5% of total length of plot.
-    ywsp_perc = 0.05     ; This can be changed with an attribute.
+    xwsp_perc = 5.     ; White space is 5% of total length of plot.
+    ywsp_perc = 5.     ; This can be changed with an attribute.
     callframe = True
 ;***********************************************************************;
 	if(resources)
       if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
           callframe = False
       end if
-      if(isatt(resources,"gsnXSpacePercent"))
-        xwsp_perc = resources@gsnXSpacePercent
-        if(xwsp_perc.lt.0.or.xwsp_perc.ge.1.)
-          print("Warning: attribute gsnXSpacePercent must be >= 0 and < 1.")
-          print("Defaulting to 0.05.")
-          xwsp_perc = 0.05
+      if(isatt(resources,"gsnPanelXWhiteSpacePercent"))
+        xwsp_perc = resources@gsnPanelXWhiteSpacePercent
+        if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
+          print("Warning: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
+          print("Defaulting to 5.")
+          xwsp_perc = 5.
         end if
       end if
-      if(isatt(resources,"gsnYSpacePercent"))
-        ywsp_perc = resources@gsnYSpacePercent
-        if(ywsp_perc.lt.0.or.ywsp_perc.ge.1.)
-          print("Warning: attribute gsnYSpacePercent must be >= 0 and < 1.")
-          print("Defaulting to 0.05.")
-          ywsp_perc = 0.05
+      if(isatt(resources,"gsnPanelYWhiteSpacePercent"))
+        ywsp_perc = resources@gsnPanelYWhiteSpacePercent
+        if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
+          print("Warning: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
+          print("Defaulting to 5.")
+          ywsp_perc = 5.
         end if
       end if
     end if
@@ -296,8 +296,8 @@ end
     plot_width  = right - left     ; Calculate total width of plot.
     plot_height = top - bottom     ; Calculate total height of plot.
 procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-    xwsp = xwsp_perc * plot_width     ; White space is a percentage of total
-    ywsp = ywsp_perc * plot_height    ; width and height.
+    xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
+    ywsp = ywsp_perc/100. * plot_height ; width and height.
 begin
     total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
     total_height = 2.*ywsp + plot_height  ; with white space added.
@@ -317,8 +317,8 @@ begin
     new_plot_width  = scale*plot_width    ; Calculate new width
     new_plot_height = scale*plot_height   ; and height.
 
-    xwsp = xwsp_perc * new_plot_width   ; Calculate new white space.
-    ywsp = ywsp_perc * new_plot_height
+    xwsp = xwsp_perc/100. * new_plot_width   ; Calculate new white space.
+    ywsp = ywsp_perc/100. * new_plot_height
 
     new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
     new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
