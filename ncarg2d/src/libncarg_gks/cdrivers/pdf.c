@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.10 2003-02-28 19:11:09 fred Exp $
+ *      $Id: pdf.c,v 1.11 2003-02-28 19:53:02 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2005,7 +2005,7 @@ PDFText(GKSC *gksc)
   PDFTextent  textent;
   int     requested_color, current_color;
   int     PDFFontScale, PDFCharHeight, PDFCharSpace;
-  int     i, j, found, x_position, y_position, y_inc, return_value;
+  int     i, j, found, x_position, y_position, y_inc, return_value=0;
   int     string_height=0, max_char_width, char_spacing=0;
   int     num_chars, char_num, rchars, old_font=0, current_font, strpos, fcount;
   int     x_orig, y_orig, x_offset_to_orig, y_offset_to_orig, xpos, ypos;

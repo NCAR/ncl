@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.30 2003-01-06 23:30:16 fred Exp $
+ *      $Id: ps.c,v 1.31 2003-02-28 19:53:02 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2341,7 +2341,7 @@ ps_Text(gksc)
         PSTextent  textent;
         int     requested_color, current_color;
         int     PSFontScale, PSCharHeight, PSCharSpace;
-        int     i, j, found, x_position, y_position, y_inc, return_value;
+        int     i, j, found, x_position, y_position, y_inc, return_value=0;
         int     string_height=0, max_char_width, char_spacing=0;
         int     num_chars, old_font=0, current_font, strpos, fcount;
 
