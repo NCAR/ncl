@@ -7,7 +7,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (ID=11, IDM1=ID-1)
       DIMENSION XS(ID),YS(ID),XD(ID),YD(ID),XP(IDM1),YP(IDM1)
 C
@@ -37,10 +37,10 @@ C
 C
 C  Define colors.
 C
-      CALL GSCR(1, 0, 1.0, 1.0, 1.0)
-      CALL GSCR(1, 1, 0.0, 0.0, 1.0)
-      CALL GSCR(1, 2, 0.4, 0.0, 0.4)
-      CALL GSCR(1, 3, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 1, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID, 2, 0.4, 0.0, 0.4)
+      CALL GSCR(IWKID, 3, 1.0, 0.0, 0.0)
 C
 C  Draw the star with interior style solid;
 C  use ten points in the fill area call.

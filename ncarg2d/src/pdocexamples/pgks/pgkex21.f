@@ -28,8 +28,8 @@ C
 C
 C  Define color indices.
 C
-      CALL GSCR(1, 0, 1.0, 1.0, 1.0)
-      CALL GSCR(1, 1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 1, 0.0, 0.0, 0.0)
 C
 C  Set workstation "1" as the one involved in subsequent NGSETI settings.
 C

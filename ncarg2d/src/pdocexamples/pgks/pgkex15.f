@@ -6,7 +6,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C  Open GKS, open and activate a workstation.
 C
@@ -16,9 +16,9 @@ C
 C
 C  Define colors.
 C
-      CALL GSCR(1,0,1.,1.,1.)
-      CALL GSCR(1,1,0.,0.,1.)
-      CALL GSCR(1,2,.4,.0,.4)
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,0.,0.,1.)
+      CALL GSCR(IWKID,2,.4,.0,.4)
 C
 C  Replicate the small filled area over the entire plot.
 C

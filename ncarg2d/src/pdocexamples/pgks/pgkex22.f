@@ -38,9 +38,9 @@ C
       CALL GOPWK (IWKID, 2, NGPSWK('PS','PORT','COLOR'))
       CALL GACWK (IWKID)
 C
-      CALL GSCR(1,0,1.,1.,1.)
-      CALL GSCR(1,1,0.,0.,0.)
-      CALL GSCR(1,2,1.,0.,0.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,0.,0.,0.)
+      CALL GSCR(IWKID,2,1.,0.,0.)
 C
 C  All changes apply to workstation with id IWKID.
 C
