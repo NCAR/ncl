@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.8 1996-10-10 18:54:47 boote Exp $
+#      $Id: yMakefile,v 1.9 1996-11-08 16:57:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -21,7 +21,7 @@
 
 #define	IHaveSubdirs
 #if !defined(CRAY)
-SUBDIRS = lib ncl ngi xproto db examples
+SUBDIRS = lib ncl ngi db examples
 #else
 SUBDIRS = lib ncl db examples
 #endif
