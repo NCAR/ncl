@@ -17,8 +17,6 @@ LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
-EUALHACK	= =
-
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
@@ -70,6 +68,8 @@ GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
 
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
 		$(DEVICE_SRCS)
+
+EQUALHACK	= =
 			
 #ifdef CRAY
 OTHER_OBJS	= bsd-sysv.o
