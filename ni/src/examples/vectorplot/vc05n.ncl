@@ -37,16 +37,12 @@ N=25
 
 U = new((/N,M/),float)
 V = new((/N,M/),float)
-
-
-do i= 0,24
-    do j= 0,24
-        x = 2.5*(i + 2)/1.4142
-        y = 2.5*(j + 2)/1.4142
-        U(j,i) = x
-       V(j,i) = y
-    end do
-end do
+ii = ispan(0,24,1)
+U = onedtond(ispan(0,24,1),(/25,25/))
+U!0 = "x"
+U!1 = "y"
+V = 2.5*(U(y | :,x | :) + 2)/1.4142
+U = 2.5*(U + 2)/1.4142
 
 ; Next,
 ; create an application context. Set the app dir to the current directory

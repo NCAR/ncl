@@ -35,12 +35,16 @@ V = new((/N,M/),float)
 
 igrid = 2.0 * PI / M
 jgrid = 2.0 * PI / N
+ii = ispan(0,M-1,1)
+jj = ispan(0,N-1,1)
 do i= 0,M-1
-    do j=0,N-1
-	U(j,i) = 10.0 * cos(jgrid * j)
-	V(j,i) = 10.0 * cos(igrid * i)
-    end do
+  U(:,i) = 10.0 * cos(jgrid * jj)
 end do
+do j=0,N-1
+  V(j,:) = 10.0 * cos(igrid * ii)
+end do
+delete(ii)
+delete(jj)
 
 ;
 ; Create an application context. Set the app dir to the current directory
