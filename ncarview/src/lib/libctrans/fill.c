@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.11 1992-10-15 16:49:16 clyne Exp $
+ *	$Id: fill.c,v 1.12 1992-11-06 00:29:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,6 +12,7 @@
 ***********************************************************************/
 #include	<stdio.h>
 #include	<stdlib.h>
+#include	<ctype.h>
 #include	<errno.h>
 #include	<ncarg/c.h>
 #include	<ncarg/cgm_tools.h>
@@ -597,6 +598,25 @@ fill_R(cgmc,instr,p_len)
 	return((i = instr->data_length - (numparm * stepsize)) ? i : 0);
 }
 
+/*
+ * Convert a CGM string, which may contain non-printing characters,
+ * to a C string with all non-printint characters removed, including nul.
+ */
+void	cgm2Cstring(s, t, n)
+	char	*s;
+	char	*t;
+	int	n;
+{
+	int	i;
+	
+	for (i=0; i<n; i++, t++) {
+		if (isprint(*t)) {
+			*s++ = *t;
+		}
+	}
+	*s = '\0';
+}
+
 /* 
  *	fill_S:
  *		This routine extracts parameters from the CGM_Buf of 
@@ -689,13 +709,13 @@ fill_S(cgmc,instr)
 		}
 
 		/*
-		 * copy in string and null terminate
+		 * copy in string, removing any non-printing characters, 
+		 * and null terminate it.
 		 */
-		bcopy((char *) instr->data, 
-				cgmc->s->string[cgmc->Snum], 
-				(int) charcount);
-
-		cgmc->s->string[cgmc->Snum][charcount] = '\0';
+		cgm2Cstring(
+			(char *) cgmc->s->string[cgmc->Snum], 
+			instr->data, charcount
+		);
 
 		numparm -= charcount;
 		instr->data += charcount;
