@@ -1,5 +1,5 @@
 C
-C $Id: agexax.f,v 1.2 1996-04-18 17:46:05 kennison Exp $
+C $Id: agexax.f,v 1.3 1996-05-10 20:45:03 kennison Exp $
 C
       SUBROUTINE AGEXAX (IAXS,SVAL,UMIN,UMAX,NICE,QLUA,FUNS,QBTP,BASD,
      +                   BASE,QMJD,QMND,QMNT,QLTD,QLTP,QLED,QLEX,QLFD,
@@ -180,24 +180,29 @@ C
       WMAX=BASE*(EMAX-AMOD(EMAX,1.))
       GO TO 114
 C
-  110 IF (VMIN*VMAX.GT.0.) THEN
-        EMIN=ALOG10(ABS(VMIN)/BASE)+.5+SIGN(.5,VMIN*(VMIN-VMAX))
-        EMAX=ALOG10(ABS(VMAX)/BASE)+.5+SIGN(.5,VMAX*(VMAX-VMIN))
-        EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN*(VMIN-VMAX))
-     +                                                +1.E-6*(EMAX-EMIN)
-        EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX*(VMAX-VMIN))
-     +                                                -1.E-6*(EMAX-EMIN)
+  110 IF ((VMIN.LT.0..AND.VMAX.LT.0.).OR.(VMIN.GT.0..AND.VMAX.GT.0.))
+     +                                                              THEN
+        EMIN=ALOG10(ABS(VMIN)/BASE)+.5+SIGN(.5,VMIN)*SIGN(1.,VMIN-VMAX)
+        EMAX=ALOG10(ABS(VMAX)/BASE)+.5+SIGN(.5,VMAX)*SIGN(1.,VMAX-VMIN)
+        EMIN=EMIN-.5+SIGN(.5,EMIN)
+     +        -SIGN(SMRL*EMIN,VMIN)*SIGN(1.,VMIN-VMAX)+1.E-6*(EMAX-EMIN)
+        EMAX=EMAX-.5+SIGN(.5,EMAX)
+     +        -SIGN(SMRL*EMAX,VMAX)*SIGN(1.,VMAX-VMIN)-1.E-6*(EMAX-EMIN)
         WMIN=SIGN(BASE,VMIN)*10.**(EMIN-AMOD(EMIN,1.))
         WMAX=SIGN(BASE,VMAX)*10.**(EMAX-AMOD(EMAX,1.))
       ELSE
         IF (VMIN.NE.0.) THEN
-          EMIN=ALOG10(ABS(VMIN)/BASE)+.5+SIGN(.5,VMIN*(VMIN-VMAX))
-          EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN*(VMIN-VMAX))
+          EMIN=ALOG10(ABS(VMIN)/BASE)+.5+SIGN(.5,VMIN)*
+     +                                                SIGN(1.,VMIN-VMAX)
+          EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN)*
+     +                                                SIGN(1.,VMIN-VMAX)
           WMIN=SIGN(BASE,VMIN)*10.**(EMIN-AMOD(EMIN,1.))
         END IF
         IF (VMAX.NE.0.) THEN
-          EMAX=ALOG10(ABS(VMAX)/BASE)+.5+SIGN(.5,VMAX*(VMAX-VMIN))
-          EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX*(VMAX-VMIN))
+          EMAX=ALOG10(ABS(VMAX)/BASE)+.5+SIGN(.5,VMAX)*
+     +                                                SIGN(1.,VMAX-VMIN)
+          EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
+     +                                                SIGN(1.,VMAX-VMIN)
           WMAX=SIGN(BASE,VMAX)*10.**(EMAX-AMOD(EMAX,1.))
         END IF
       END IF
@@ -205,25 +210,29 @@ C
 C
   112 IF (BASE.EQ.1.) GO TO 115
       IF (VMIN*VMAX.GT.0.) THEN
-        EMIN=ALOG10(ABS(VMIN))/ALOG10(BASE)+.5+SIGN(.5,VMIN*(VMIN-VMAX))
-        EMAX=ALOG10(ABS(VMAX))/ALOG10(BASE)+.5+SIGN(.5,VMAX*(VMAX-VMIN))
-        EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN*(VMIN-VMAX))
-     +                                                +1.E-6*(EMAX-EMIN)
-        EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX*(VMAX-VMIN))
-     +                                                -1.E-6*(EMAX-EMIN)
+        EMIN=ALOG10(ABS(VMIN))/ALOG10(BASE)+.5+SIGN(.5,VMIN)*
+     +                                                SIGN(1.,VMIN-VMAX)
+        EMAX=ALOG10(ABS(VMAX))/ALOG10(BASE)+.5+SIGN(.5,VMAX)*
+     +                                                SIGN(1.,VMAX-VMIN)
+        EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN)*
+     +                              SIGN(1.,VMIN-VMAX)+1.E-6*(EMAX-EMIN)
+        EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
+     +                              SIGN(1.,VMAX-VMIN)-1.E-6*(EMAX-EMIN)
         WMIN=SIGN(1.,VMIN)*BASE**(EMIN-AMOD(EMIN,1.))
         WMAX=SIGN(1.,VMAX)*BASE**(EMAX-AMOD(EMAX,1.))
       ELSE
         IF (VMIN.NE.0.) THEN
           EMIN=ALOG10(ABS(VMIN))/ALOG10(BASE)
-     +                                     +.5+SIGN(.5,VMIN*(VMIN-VMAX))
-          EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN*(VMIN-VMAX))
+     +                              +.5+SIGN(.5,VMIN)*SIGN(1.,VMIN-VMAX)
+          EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN)*
+     +                                                SIGN(1.,VMIN-VMAX)
           WMIN=SIGN(1.,VMIN)*BASE**(EMIN-AMOD(EMIN,1.))
         END IF
         IF (VMAX.NE.0.) THEN
           EMAX=ALOG10(ABS(VMAX))/ALOG10(BASE)
-     +                                     +.5+SIGN(.5,VMAX*(VMAX-VMIN))
-          EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX*(VMAX-VMIN))
+     +                              +.5+SIGN(.5,VMAX)*SIGN(1.,VMAX-VMIN)
+          EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
+     +                                                SIGN(1.,VMAX-VMIN)
           WMAX=SIGN(1.,VMAX)*BASE**(EMAX-AMOD(EMAX,1.))
         END IF
       END IF
@@ -250,12 +259,12 @@ C
       VMAX=VMAX+SIGN(BASE,VMAX-VMIN)
       GO TO 109
 C
-  138 VMIN=VMIN*10.**SIGN(1.,VMIN*(VMIN-VMAX))
-      VMAX=VMAX*10.**SIGN(1.,VMAX*(VMAX-VMIN))
+  138 VMIN=VMIN*10.**(SIGN(1.,VMIN)*SIGN(1.,VMIN-VMAX))
+      VMAX=VMAX*10.**(SIGN(1.,VMAX)*SIGN(1.,VMAX-VMIN))
       GO TO 110
 C
-  139 VMIN=VMIN*BASE**SIGN(1.,VMIN*(VMIN-VMAX))
-      VMAX=VMAX*BASE**SIGN(1.,VMAX*(VMAX-VMIN))
+  139 VMIN=VMIN*BASE**(SIGN(1.,VMIN)*SIGN(1.,VMIN-VMAX))
+      VMAX=VMAX*BASE**(SIGN(1.,VMAX)*SIGN(1.,VMAX-VMIN))
       GO TO 112
 C
   140 VMIN=WMIN
