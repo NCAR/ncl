@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.40 1998-02-03 00:43:34 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.41 1998-04-16 21:13:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -587,6 +587,12 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIGetVarAtts(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIAttSetValues(
 #if     NhlNeedProto
 void
 #endif
@@ -1426,6 +1432,13 @@ void _NclAddBuiltIns
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
     NclRegisterFunc(_NclINhlGetParentId,args,"NhlGetParentId",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterProc(_NclIAttSetValues,args,"attsetvalues",nargs);
+    
 
 /*
 	nargs = 0;

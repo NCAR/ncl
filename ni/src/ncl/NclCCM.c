@@ -846,15 +846,16 @@ long UnPackIntHeader(CCMFileRec *therec,int fd, CCMI *header,int start_block, in
 		return(n);
 	}
 
-	total = INT_HEADER_SIZE;	
-	index = 0;
-	ctospi(buffer,header,&total,&zero);
-	index += sz(INT_HEADER_SIZE);
+	
+		total = INT_HEADER_SIZE;	
+		index = 0;
+		ctospi(buffer,header,&total,&zero);
+		index += sz(INT_HEADER_SIZE);
 
 
-	total = 3 * header->NFLDH;	
-	header->MFLDS = IntEm(&(buffer[index]),3 * header->NFLDH);
-	index += sz(3 * header->NFLDH);
+		total = 3 * header->NFLDH;	
+		header->MFLDS = IntEm(&(buffer[index]),3 * header->NFLDH);
+		index += sz(3 * header->NFLDH);
 	
 
 	free(buffer);	
@@ -995,6 +996,7 @@ int	wr_status;
 	float spacing;
 	float *tmp_lon,*tmp_siga,*tmp_sigb;
 	int dimsize = 0;
+	int done = 0;
 
 	if(first) {
 		n_quarks = sizeof(ccm_name_tab)/sizeof(CCMNAMES);
@@ -1036,6 +1038,40 @@ int	wr_status;
 */
 		coff = UnPackIntHeader(therec,fd,&initial_iheader,cb,cb_off);
 		therec->header.iheader = initial_iheader;
+		switch((initial_iheader.MFTYP%100)/10) {
+		case 0:
+			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"sigma coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
+			NclFree(therec);
+			close(fd);
+			return(NULL);
+			break;
+		case 1:
+			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
+			NclFree(therec);
+			close(fd);
+			return(NULL);
+			break;
+		case 3:
+			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"theta coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
+			NclFree(therec);
+			close(fd);
+			return(NULL);
+			break;
+		case 4:
+			break;
+		case 5:
+			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
+			NclFree(therec);
+			close(fd);
+			return(NULL);
+			break;
+		default:
+			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"unknown tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
+			NclFree(therec);
+			close(fd);
+			return(NULL);
+			break;
+		}
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM integer header for file (%s)",NrmQuarkToString(path));
@@ -1324,23 +1360,36 @@ int	wr_status;
 		cb = coff / BLOCK_SIZE;
 		cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
 
-		tmp_off = MySeek(therec,fd,1,coff);
-		tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-		index = (int)FloatIt(buffer);
-		if((index < 1)||(index > initial_iheader.NOREC)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
-			NclFree(therec);
-			close(fd);
-			return(NULL);
+		if((initial_iheader.MFTYP%10) == 3) {
+			tmp_off = MySeek(therec,fd,1,coff);
+			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
+			index = (int)FloatIt(buffer);
+			if((index < 1)||(index > initial_iheader.NOREC)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+				NclFree(therec);
+				close(fd);
+				return(NULL);
+			}
+			therec->lat_rec_offsets[(index-1)] = coff;
+			if(therec->cos_blocking == 2) coff += 4;
+			coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
+			tmp_iheader = initial_iheader;
+		} else {
+			index = 1;
+			if(therec->cos_blocking == 2) coff += 4;
+			therec->lat_rec_offsets[(index-1)] = coff;
+			coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
+			tmp_iheader = initial_iheader;
 		}
-		therec->lat_rec_offsets[(index-1)] = coff;
 
-		if(therec->cos_blocking == 2) coff += 4;
-		coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
-		tmp_iheader = initial_iheader;
 
 		j = 1;
+/*
 		for(i = 0; i< initial_iheader.MFILTH;i++) {
+*/
+		done = 0;
+		i = 0;
+		while(!done) {
 /*
 * coff NOW POINTING TO BEGINING OF NEXT TIME STEP, have to unpack or skip headers
 * Need to actual compare verses pervious header so errors can be detected but for now this is ok
@@ -1349,20 +1398,29 @@ int	wr_status;
 */
 			for( ; j < initial_iheader.NOREC; j++) {
 				if(therec->cos_blocking == 2) coff += 4;
-				tmp_off = MySeek(therec,fd,1,coff);
-				tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
-				index = (int)FloatIt((buffer));
-				if((index < 1)||(index > tmp_iheader.NOREC)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
-					NclFree(therec);
-					close(fd);
-					return(NULL);
+				if((initial_iheader.MFTYP%10) == 3) {
+
+					tmp_off = MySeek(therec,fd,1,coff);
+					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
+					index = (int)FloatIt((buffer));
+					if((index < 1)||(index > tmp_iheader.NOREC)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+						NclFree(therec);
+						close(fd);
+						return(NULL);
+					}
+					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
+					if(therec->cos_blocking == 2) coff += 4;
+					coff = MySeek(therec,fd,tmp_iheader.MAXSIZ + 1,coff);
+				} else {
+					if(j%2 == 0) {
+						index = j/2;
+					} else {
+						index = initial_iheader.NOREC - (int)(j/2) -1;
+					}
 				}
-				therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
-				if(therec->cos_blocking == 2) coff += 4;
-				coff = MySeek(therec,fd,tmp_iheader.MAXSIZ + 1,coff);
 			}
-			if( i != initial_iheader.MFILTH-1) {
+			if( i < initial_iheader.MFILTH-1) {
 				cb = coff / BLOCK_SIZE;
 				cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
 				tmp_off = UnPackIntHeader(therec,fd,&tmp_iheader,cb,cb_off);
@@ -1372,9 +1430,11 @@ int	wr_status;
 				if(tmp_off == -1) {
 					therec->dims[TIME_DIM_NUMBER].size = i+1;	
 					therec->header.iheader.MFILTH = i+1;       
+					therec->n_headers = i+1;	
 					for(j = 0; j < therec->n_vars; j++) {
 						therec->vars[j].var_info.dim_sizes[0] = i+1;
 					}
+					done = 1;
 					break;
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1406,7 +1466,58 @@ int	wr_status;
 					coff = tmp_off;
 				}
 				j = 0;
+			} else if(i >= initial_iheader.MFILTH-1){
+				cb = coff / BLOCK_SIZE;
+				cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
+				tmp_off = UnPackIntHeader(therec,fd,&tmp_iheader,cb,cb_off);
+/*
+				fprintf(stdout,"reading timestep %d\n",tmp_iheader.MFILH);
+*/
+				if(tmp_off == -1) {
+					done = 1;
+					therec->dims[TIME_DIM_NUMBER].size = i+1;	
+					therec->header.iheader.MFILTH = i+1;       
+					therec->n_headers = i+1;	
+					for(j = 0; j < therec->n_vars; j++) {
+						therec->vars[j].var_info.dim_sizes[0] = i+1;
+					}
+					break;
+				}
+				therec->lat_rec_offsets = NclRealloc(therec->lat_rec_offsets,(therec->n_lat_recs+tmp_iheader.NOREC)*sizeof(long));
+				therec->n_lat_recs += tmp_iheader.NOREC;
+				cb = tmp_off / BLOCK_SIZE;
+				cb_off = (tmp_off % BLOCK_SIZE) / WORD_SIZE;
+				tmp_off= UnPackCharHeader(therec,fd,&tmp_iheader,&tmp_cheader,cb,cb_off);
+				if(tmp_off == -1) {
+					NclFree(therec);
+/*
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
+*/
+					close(fd);
+					return(NULL);
+				}
+				cb = tmp_off / BLOCK_SIZE;
+				cb_off = (tmp_off % BLOCK_SIZE) / WORD_SIZE;
+				tmp_off = UnPackRealHeader(therec,fd,&tmp_iheader,&tmp_rheader,cb,cb_off);
+				if(tmp_off == -1) {
+					NclFree(therec);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
+					close(fd);
+					return(NULL);
+				}
+				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
+						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
+					NclFree(therec);
+					close(fd);
+					return(NULL);
+
+				} else {
+					coff = tmp_off;
+				}
+				j = 0;
 			}
+			i++;
 		}
 /*
 		for(i = 0; i < initial_iheader.MFILTH * initial_iheader.NOREC; i++) {

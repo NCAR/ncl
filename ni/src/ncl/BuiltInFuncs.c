@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.94 1998-03-27 19:37:32 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.95 1998-04-16 21:13:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2209,6 +2209,153 @@ NhlErrorTypes _NclIbsearch
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
 	return(NhlFATAL);
 }
+NhlErrorTypes _NclIfbindirread(void)
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry dimensions;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
+	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd = -1;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
+	int *recnum;
+	NclScalar missing;
+	int has_missing;
+
+
+	fpath = _NclGetArg(0,4,DONT_CARE);
+	recnum = (int*) NclGetArgValue(
+		1,
+		4,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.intval == *recnum)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: record number  is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+	dimensions = _NclGetArg(2,4,DONT_CARE);
+	type = _NclGetArg(3,4,DONT_CARE);
+	switch(fpath.kind) {
+	case NclStk_VAL:
+		tmp_md = fpath.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+		if(stat(path_string,&buf) == -1) {
+			NhlPError(NhlFATAL, NhlEUNKNOWN,"fbindirread: Unable to open input file (%s)",path_string);
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(dimensions.kind){
+	case NclStk_VAL:
+		tmp_md = dimensions.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		n_dimensions = tmp_md->multidval.totalelements;
+		dimsizes = (int*)tmp_md->multidval.val;
+	}
+	for(i = 0; i < n_dimensions; i++) {
+		size *= dimsizes[i];
+	}
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+	if((*recnum)*size*thetype->type_class.size > buf.st_size) {
+		ret = NhlFATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: The size implied by the dimension array and record number is greater that the size of the file, can't continue");
+		return(NhlFATAL);
+	} else { 
+		totalsize = size*thetype->type_class.size;
+	}
+	tmp_ptr = NclMalloc(size*thetype->type_class.size);
+	fd = open(path_string,O_RDONLY);
+	
+	if((tmp_ptr != NULL)&&(fd > 0)) {
+		lseek(fd,(*recnum)*size*thetype->type_class.size,SEEK_SET);
+		
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			tmp_ptr,
+			&(thetype->type_class.default_mis),
+			n_dimensions,
+			dimsizes,
+			TEMPORARY,
+			NULL,
+			thetype);
+		if(tmp_md == NULL) 
+			return(NhlFATAL);
+
+		step = tmp_ptr;
+		for(i = 0; i < (int)(totalsize / buf.st_blksize); i++) {
+			n = read(fd, step,buf.st_blksize);
+			step = step + buf.st_blksize;
+		}
+		n = read(fd,step,totalsize % buf.st_blksize);
+		step = step + totalsize % buf.st_blksize;
+
+		while((int)(step - (char*)tmp_ptr) < totalsize) {
+			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
+			step += thetype->type_class.size;
+		}
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = tmp_md;
+		_NclPlaceReturn(data_out);
+		close(fd);
+		return(ret);
+	} else if (fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: could not open file check permissions");
+	}
+	return(NhlFATAL);
+}
 NhlErrorTypes _NclIcbinread
 #if	NhlNeedProto
 (void)
@@ -2464,7 +2611,7 @@ NhlErrorTypes _NclIfbinrecwrite
 		NULL,
 		0);
 	if(has_missing &&(missing.stringval == *fpath)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: path is a missing value, can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: path is a missing value, can't continue");
 		return(NhlFATAL);
 	}
 
@@ -2478,7 +2625,7 @@ NhlErrorTypes _NclIfbinrecwrite
 		NULL,
 		0);
 	if(has_missing &&(missing.intval == *recnum)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: record number  is a missing value, can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: record number  is a missing value, can't continue");
 		return(NhlFATAL);
 	}
 	
@@ -2503,7 +2650,7 @@ NhlErrorTypes _NclIfbinrecwrite
 
 	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0666);
 	if(fd == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
 		return(NhlFATAL);
 	}
 
@@ -11761,6 +11908,147 @@ NhlErrorTypes sprintf_W( void )
   return(NclReturnValue((void*)output_var,ndims_input_var,dsizes_input_var,NULL,NCL_string,0));
 }
 
+NhlErrorTypes _NclIAttSetValues( void )
+{
+	obj* objects;
+	int ndims;
+	int dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing;
+	int has_missing;
+	int total;
+        NclStackEntry data;
+	NclAtt tmp_attobj;
+	NclAttList *att_list;
+	NhlGenArray *gen_array;
+	int i,j,m,k,*ids;
+	NclHLUObj tmp_hlu_ptr,tmp_hlu_ptr1;
+	int rl_list;
+
+
+
+  	objects = (obj*)NclGetArgValue(
+           0,
+           2,
+           &ndims, 
+           dimsizes,
+	   &missing,
+	   &has_missing,
+           NULL,
+           DONT_CARE);
+
+        for(i = 0; i < ndims; i++) {
+                total *= dimsizes[i];
+        }
+
+
+	data = _NclGetArg(1,2,DONT_CARE);
+	switch(data.kind) {
+	case NclStk_VAR:
+		if(data.u.data_var->var.att_id != -1) {
+			tmp_attobj =  (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
+			if(tmp_attobj == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Bad attribute list, can't continue");
+				return(NhlFATAL);
+			}
+			rl_list = NhlRLCreate(NhlSETRL);
+			att_list = tmp_attobj->att.att_list;
+			gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*tmp_attobj->att.n_atts);
+
+			i = 0;
+			while(att_list != NULL) {
+				if(att_list->quark!=NrmStringToQuark("_FillValue")) {
+					if(att_list->attvalue->multidval.hlu_type_rep[0] != NULL) {
+						gen_array[i] = _NhlCreateGenArray(
+							(NhlPointer)att_list->attvalue->multidval.val,
+							att_list->attvalue->multidval.hlu_type_rep[0],
+							att_list->attvalue->multidval.type->type_class.size,
+							att_list->attvalue->multidval.n_dims,
+							att_list->attvalue->multidval.dim_sizes,
+							0);
+						NhlRLSet(rl_list,NrmQuarkToString(att_list->quark),NhlTGenArray,gen_array[i]);
+					} else {
+						ids = (int*)NclMalloc((unsigned)sizeof(int)*att_list->attvalue->multidval.totalelements);
+						m = 0;
+						for(j = 0; j < att_list->attvalue->multidval.totalelements;j++) {
+							if(att_list->attvalue->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
+								tmp_hlu_ptr= (NclHLUObj)_NclGetObj(((int*)att_list->attvalue->multidval.val)[j]);
+								if(tmp_hlu_ptr != NULL) {
+									ids[m++] = tmp_hlu_ptr->hlu.hlu_id;
+									for(k = 0; k < total; k++) {
+										if((!has_missing)||
+											(objects[k]!= missing.objval))  {
+											tmp_hlu_ptr1 = (NclHLUObj)_NclGetObj(objects[k]);
+											if((tmp_hlu_ptr1 != NULL) &&(tmp_hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+												_NclAddHLUToExpList(tmp_hlu_ptr1,tmp_hlu_ptr->obj.id);
+											}
+										}
+									}
+								} else {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"setvalues: Bad HLU id passed to setvalues, ignoring it");
+								}
+			 
+							}
+						}
+						if(att_list->attvalue->obj.obj_type_mask & NCL_HLU_MASK){
+							gen_array[i] = _NhlCreateGenArray(
+								(NhlPointer)ids,
+								NhlTInteger,
+								sizeof(int),
+								1,
+								&m,
+								1);
+							NhlRLSet(rl_list,
+								NrmQuarkToString(att_list->quark),
+								NhlTGenArray,
+								gen_array[i]);
+							NclFree(ids);
+						} else {
+							NclFree(ids);
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation", NrmQuarkToString(att_list->quark));
+							gen_array[i] = NULL;
+						}
+		 
+					}
+				}
+				i++;
+				att_list = att_list->next;
+			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Variable (%s) does not have an attribute list, can't continue",NrmQuarkToString(data.u.data_var->var.var_quark));
+			return(NhlFATAL);
+		}
+		break;
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Parameter 1 must be a variable,can't continue");
+		return(NhlFATAL);
+		break;
+	}
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if(objects[i] != missing.objval) {
+				tmp_hlu_ptr =  (NclHLUObj)_NclGetObj(objects[i]);
+				if(tmp_hlu_ptr != NULL) {
+					NhlSetValues(tmp_hlu_ptr->hlu.hlu_id,rl_list);
+				}
+			} 
+		}
+	} else {
+                for( i = 0; i < total; i++) {
+                	tmp_hlu_ptr = (NclHLUObj)_NclGetObj(objects[i]);
+			if(tmp_hlu_ptr != NULL) {
+				NhlSetValues(tmp_hlu_ptr->hlu.hlu_id,rl_list);
+			}
+                }
+	}
+        for(; i > 0; i--) {
+                if(gen_array[i-1])
+                        NhlFreeGenArray(gen_array[i-1]);
+        }
+
+	NhlFree(gen_array);
+	NhlRLDestroy(rl_list);
+	return(NhlNOERROR);
+}
 #ifdef __cplusplus
 }
 #endif
