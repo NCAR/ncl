@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: remove_soft,v 1.2 1993-02-25 17:16:43 clyne Exp $
+#      $Id: remove_soft,v 1.3 1993-03-30 22:05:35 clyne Exp $
 #
 #########################################################################
 #									#
@@ -177,7 +177,12 @@ endif
 #
 foreach version ($instbls)
 	if ("$select_vector[1]") then
-		$LOCALDIR/rm3_2 $version -bin $bin_path -inc $inc_path $manopt -lib $lib_path
+		#
+		#	Don't try to remove man pages. No longer installed
+		#	with a version number suffix. 
+		#
+		#$LOCALDIR/rm3_2 $version -bin $bin_path -inc $inc_path $manopt -lib $lib_path
+		$LOCALDIR/rm3_2 $version -bin $bin_path -inc $inc_path -lib $lib_path
 		if ($status != 0) then
 			exit 1
 		endif
