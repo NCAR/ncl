@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.3 1994-08-11 23:16:36 boote Exp $
+#      $Id: yMakefile,v 1.4 1996-10-10 18:55:06 boote Exp $
 #
 #########################################################################
 #									#
@@ -20,4 +20,4 @@
 #	Description:	yMakefile for ncarg/ni/src/lib
 
 #define IHaveSubdirs
-SUBDIRS = hlu 
+SUBDIRS = hlu ngo
