@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.18 1994-10-07 18:47:57 dbrown Exp $
+ *      $Id: ContourP.h,v 1.19 1994-10-15 00:29:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,6 +139,7 @@ typedef struct _NhlContourLayerPart {
 	NhlDrawOrder	fill_order;
 	NhlBoolean	lines_on;
 	NhlBoolean	fill_on;
+	int		fill_background_color;
 
         NhlcnLabelScalingMode	label_scaling_mode;
         float		label_scale_value;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.33 1994-10-13 19:30:04 dbrown Exp $
+ *      $Id: Contour.c,v 1.34 1994-10-15 00:29:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -204,6 +204,9 @@ static NhlResource resources[] = {
 	{NhlNcnFillOn,NhlCcnFillOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(fill_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnFillBackgroundColor,NhlCcnFillBackgroundColor,NhlTInteger,
+		 sizeof(int),Oset(fill_background_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
  	{NhlNcnFillDrawOrder,NhlCcnFillDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(fill_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
@@ -8457,6 +8460,8 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 				       NhlNwkFillIndex, pat_ix,
 				       NhlNwkFillColor, col_ix,
 				       NhlNwkFillScaleFactorF,fscale,
+				       NhlNwkFillBackground,
+				       Cnp->fill_background_color,
 				       NhlNwkDrawEdges,0,
 				       NULL);
 			

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.16 1994-09-30 01:11:01 dbrown Exp $
+ *      $Id: Contour.h,v 1.17 1994-10-15 00:29:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -119,6 +119,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnFillDrawOrder		"cnFillDrawOrder"
 #define NhlNcnLinesOn			"cnLinesOn"
 #define NhlNcnFillOn			"cnFillOn"
+#define NhlNcnFillBackgroundColor	"cnFillBackgroundColor"
 
 #define NhlNcnLabelScalingMode		"cnLabelScalingMode"
 #define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
@@ -312,6 +313,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnFillDrawOrder		"CnFillDrawOrder"
 #define NhlCcnLinesOn			"CnLinesOn"
 #define NhlCcnFillOn			"CnFillOn"
+#define NhlCcnFillBackgroundColor	"CnFillBackgroundColor"
 
 #define NhlCcnLabelScalingMode		"CnLabelScalingMode"
 #define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"

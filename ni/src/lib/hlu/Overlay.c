@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.24 1994-10-07 18:48:01 dbrown Exp $
+ *      $Id: Overlay.c,v 1.25 1994-10-15 00:29:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1540,7 +1540,7 @@ static NhlErrorTypes OverlayPostDraw
 
 		for ( ; anlp != NULL; anlp = anlp->next) {
 				
-			if (anlp->status == NhlNEVER)
+			if (anlp->status <= NhlNEVER)
 				continue;
 			else if (anlp->status == NhlCONDITIONAL) {
 				switch (anlp->type) {
@@ -1794,7 +1794,7 @@ static NhlErrorTypes SetAnnoViews
 		
 		if (anlp->zone != zone)
 			continue;
-		else if (anlp->status == NhlNEVER)
+		else if (anlp->status <= NhlNEVER)
 			continue;
 		else if (anlp->status == NhlCONDITIONAL) {
 			switch (anlp->type) {
@@ -3657,7 +3657,7 @@ ManageLabelBar
 	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
 	if (! _NhlArgIsSet(args,num_args,NhlNovLabelBarWidthF) &&
 	    ! _NhlArgIsSet(args,num_args,NhlNovLabelBarHeightF)) {
-		ovp->lbar_width *= ovnew->view.height / wold;
+		ovp->lbar_width *= ovnew->view.width / wold;
 		ovp->lbar_height *= ovnew->view.height / hold;
 		if (init || ovp->lbar_orient != oovp->lbar_orient) {
 			float t;
@@ -3914,7 +3914,7 @@ ManageLegend
 	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
 	if (! _NhlArgIsSet(args,num_args,NhlNovLegendWidthF) &&
 	    ! _NhlArgIsSet(args,num_args,NhlNovLegendHeightF)) {
-		ovp->lgnd_width *= ovnew->view.height / wold;
+		ovp->lgnd_width *= ovnew->view.width / wold;
 		ovp->lgnd_height *= ovnew->view.height / hold;
 	}
 

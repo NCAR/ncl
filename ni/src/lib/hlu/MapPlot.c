@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.15 1994-09-28 20:16:36 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.16 1994-10-15 00:29:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -788,7 +788,7 @@ static NhlBoolean US_Amap_Inited;
 #define mpGLOBAL_AMAP	0
 #define mpUSSTATES_AMAP	1
 
-static int Init_Colors[] ={106,104,57,104,10,20,30,40,60,70,80,90,100,110};
+static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
 
 static mpOutlineRec *OutRecs = NULL;
 static int OutRec_Count = 0;
@@ -2032,7 +2032,7 @@ static NhlErrorTypes mpDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name;
+	char			*entry_name = "";
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
 	NhlTransformLayerPart	*tfp = &(mp->trans);
@@ -2477,8 +2477,8 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-	int			aws_id;
-	NhlBoolean		inited;
+	int			aws_id = -1;
+	NhlBoolean		inited = False;
 
 	switch (amap_type) {
 	case mpGLOBAL_AMAP:
@@ -4941,7 +4941,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 #endif
 {
 	NhlBoolean draw_line = False;
-	int i,id,ix;
+	int i,id,ix = 0;
 	mpOutlineSet type;
 
 	id = *iai - Id_Offset[Outline_Set];
