@@ -1,6 +1,6 @@
 C
-C $Id: mprdnm.f,v 1.4 2000-08-22 15:04:00 haley Exp $
-C                                                                      
+C $Id: mdrdnm.f,v 1.1 2001-08-16 23:10:23 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,9 +20,15 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MPRDNM (IFDE,CHRS,LCHR,MCHR,NCHR,INUM)
+      SUBROUTINE MDRDNM (IFDE,CHRS,LCHR,MCHR,NCHR,INUM)
 C
+      INTEGER     IFDE
       CHARACTER*1 CHRS(LCHR)
+      INTEGER     LCHR,MCHR,NCHR,INUM
+C
+C Declare local variables.
+C
+      INTEGER     ISTA
 C
 C Given the file descriptor of an open file in IFDE and a character
 C buffer CHRS, of length LCHR, having in it MCHR characters read from

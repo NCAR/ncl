@@ -1,6 +1,6 @@
 C
-C $Id: mapchm.f,v 1.8 2000-08-22 15:03:59 haley Exp $
-C                                                                      
+C $Id: mdpchm.f,v 1.1 2001-08-16 23:10:21 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,11 +20,12 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MAPCHM (IPRT,IDPT,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      SUBROUTINE MDPCHM (IPRT,IDPT,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
-      DIMENSION IAM(*),XCS(*),YCS(*),IAI(*),IAG(*)
+      INTEGER IPRT,IDPT,IAM(*),MCS,IAI(*),IAG(*),MAI
+      REAL    XCS(*),YCS(*)
 C
-C MAPCHM is called by various EZMAP routines to reset the color index,
+C MDPCHM is called by various EZMAP routines to reset the color index,
 C and dash pattern before and after drawing parts of a map by means
 C of calls to ARDRLN (masked against an area map).
 C
@@ -51,20 +52,30 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
-     +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
-     +                GRLO,GRPO
-      LOGICAL         INTF,LBLF,PRMF,ELPF
+      COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
+     +                 PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+     +                 SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
+     +                 ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
+      DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
+     +                 PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+     +                 SRCH,XLOW,XROW,YBOW,YTOW
+      INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
+      LOGICAL          ELPF,INTF,LBLF,PRMF
       SAVE   /MAPCM4/
 C
-      COMMON /MAPCMQ/ ICIN(8)
+      COMMON /MAPCMQ/  ICIN(8)
+      INTEGER          ICIN
       SAVE   /MAPCMQ/
 C
 C Declare one of the dash-package common blocks, too.
 C
-      COMMON /SMFLAG/ ISMO
+      COMMON /SMFLAG/  ISMO
+      INTEGER          ISMO
       SAVE   /SMFLAG/
+C
+C Declare local variables.
+C
+      INTEGER          IGER,IPLS,IPMS,ISMS,ITXS
 C
 C Certain variables need to be saved between calls.
 C
@@ -72,8 +83,8 @@ C
 C
 C Flush all buffers before changing anything.
 C
-      CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPCHM',1).NE.0) RETURN
+      CALL MDPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MDPCHM',1).NE.0) RETURN
 C
 C Set/reset color index, dotting, and dash pattern.  The user has the
 C last word.
@@ -82,21 +93,21 @@ C
       ISMS=ISMO
       ISMO=1
       CALL DASHDB (IDPT)
-      IF (ICFELL('MAPCHM',2).NE.0) RETURN
+      IF (ICFELL('MDPCHM',2).NE.0) RETURN
       IF (.NOT.(ICIN(IPRT).GE.0)) GO TO 10001
       CALL GQPLCI (IGER,IPLS)
       IF (.NOT.(IGER.NE.0)) GO TO 10002
-      CALL SETER ('MAPCHM - ERROR EXIT FROM GQPLCI',3,1)
+      CALL SETER ('MDPCHM - ERROR EXIT FROM GQPLCI',3,1)
       RETURN
 10002 CONTINUE
       CALL GQPMCI (IGER,IPMS)
       IF (.NOT.(IGER.NE.0)) GO TO 10003
-      CALL SETER ('MAPCHM - ERROR EXIT FROM GQPMCI',4,1)
+      CALL SETER ('MDPCHM - ERROR EXIT FROM GQPMCI',4,1)
       RETURN
 10003 CONTINUE
       CALL GQTXCI (IGER,ITXS)
       IF (.NOT.(IGER.NE.0)) GO TO 10004
-      CALL SETER ('MAPCHM - ERROR EXIT FROM GQTXCI',5,1)
+      CALL SETER ('MDPCHM - ERROR EXIT FROM GQTXCI',5,1)
       RETURN
 10004 CONTINUE
       CALL GSPLCI (ICIN(IPRT))
@@ -104,18 +115,18 @@ C
       CALL GSTXCI (ICIN(IPRT))
 10001 CONTINUE
       CALL HLUMAPUSR (IPRT)
-      IF (ICFELL('MAPCHM',6).NE.0) RETURN
+      IF (ICFELL('MDPCHM',6).NE.0) RETURN
       GO TO 10005
 10000 CONTINUE
       CALL HLUMAPUSR (IPRT)
-      IF (ICFELL('MAPCHM',7).NE.0) RETURN
+      IF (ICFELL('MDPCHM',7).NE.0) RETURN
       IF (.NOT.(ICIN(-IPRT).GE.0)) GO TO 10006
       CALL GSPLCI (IPLS)
       CALL GSPMCI (IPMS)
       CALL GSTXCI (ITXS)
 10006 CONTINUE
       CALL DASHDB (IOR(ISHIFT(32767,1),1))
-      IF (ICFELL('MAPCHM',8).NE.0) RETURN
+      IF (ICFELL('MDPCHM',8).NE.0) RETURN
       ISMO=ISMS
 10005 CONTINUE
 C
