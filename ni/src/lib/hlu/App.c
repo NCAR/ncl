@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.16 1995-04-22 01:01:23 boote Exp $
+ *      $Id: App.c,v 1.17 1995-04-25 06:11:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -435,6 +435,7 @@ AppInitialize
 	int			indx;
 	NrmResourceList		rlist;
 	_NhlConvertContext	context;
+	NrmDatabase		db;
 
 
 	if(anew->app.default_app){
@@ -588,6 +589,10 @@ AppInitialize
 
 	rlist = (NrmResourceList)ac->app_class.resources;
 	context = _NhlCreateConvertContext();
+	if(anew->app.appDB)
+		db = anew->app.appDB;
+	else
+		db = ac->app_class.baseDB;
 
 	if(!context){
 		NhlPError(NhlFATAL,ENOMEM,"%s:No Converter Context.",func);
@@ -603,8 +608,8 @@ AppInitialize
 		largs[nlargs++] = args[indx-1];
 	}
 
-	lret = _NhlGetResources(context,_NhlGetResDB(new),(char*)new,
-			nameQ,classQ,(NrmResourceList)ac->app_class.resources,
+	lret = _NhlGetResources(context,db,(char*)new,nameQ,classQ,
+			(NrmResourceList)ac->app_class.resources,
 			ac->app_class.num_resources,largs,nlargs,NULL);
 	if(lret < NhlWARNING){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -647,7 +652,7 @@ AppInitialize
 			anew->app.res[i].nrm_offset = sizeof(NhlString)*i;
 		}
 
-		lret = _NhlGetResources(context,_NhlGetResDB(new),
+		lret = _NhlGetResources(context,db,
 				(char*)anew->app.values,nameQ,classQ,
 				anew->app.res,anew->app.nres,
 				anew->app.args,anew->app.nargs,NULL);
