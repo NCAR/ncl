@@ -184,7 +184,7 @@ NhlErrorTypes ezfftf_W( void )
                             (NclObjClass)type_cf_class
                             );
 /*
- * Attributes "xbar" and "N".
+ * Attributes "xbar" and "npts".
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
@@ -226,7 +226,7 @@ NhlErrorTypes ezfftf_W( void )
                          );
   _NclAddAtt(
              att_id,
-             "N",
+             "npts",
              att_md,
              NULL
              );
@@ -270,7 +270,7 @@ NhlErrorTypes ezfftb_W( void )
   double *tmp_xbar;
   NclBasicDataTypes type_cf, type_xbar;
 /*
- * Some variables we need to retrieve the "N" atttribute (if it exists).
+ * Some variables we need to retrieve the "npts" atttribute (if it exists).
  */
   NclAttList *att_list;
   NclAtt tmp_attobj;
@@ -335,7 +335,7 @@ NhlErrorTypes ezfftb_W( void )
   }
 
 /*
- * Okay, what follows here is some code for retrieving the "N"
+ * Okay, what follows here is some code for retrieving the "npts"
  * attribute if it exists. This attribute is one that should have been
  * set when "ezfftf" was called, and it indicates the length of the
  * original series.
@@ -358,7 +358,7 @@ NhlErrorTypes ezfftb_W( void )
       att_list = tmp_attobj->att.att_list;
       i = 0;
       while(att_list != NULL) {
-        if(att_list->quark == NrmStringToQuark("N")) {
+        if(att_list->quark == NrmStringToQuark("npts")) {
           npts  = *(int*)att_list->attvalue->multidval.val;
           npts2 = npts/2;
           break;
