@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.38 1995-04-05 22:17:13 ethan Exp $
+ *      $Id: Machine.c,v 1.39 1995-05-02 23:51:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1793,7 +1793,9 @@ if(the_list != NULL) {
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			} else {
-				_NclDestroyObj((NclObj)data.u.data_var);
+				if(data.u.data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)data.u.data_obj);
+				}
 			}
 		}
 	}
