@@ -2,18 +2,18 @@
 .na
 .nh
 .SH NAME
-Ezmap_params - This document briefly describes all Ezmap
-internal parameters.
+Ezmap_params - This document briefly describes all internal parameters of
+EZMAP.
 .SH DESCRIPTION 
-Ezmap has a large group of internal parameters, each of which affects the
-behavior of one or more of the Ezmap routines. The current values of the
+EZMAP has a large group of internal parameters, each of which affects the
+behavior of one or more of the EZMAP routines. The current values of the
 internal parameters may be retrieved using the routines MAPGTC, MAPGTI,
 MAPGTL, and MAPGTR. The values of most of the internal parameters may be
 reset using the routines MAPSTC, MAPSTI, MAPSTL, and MAPSTR; some of the
 parameters are intended for retrieval only and may not be given new
 values in this way. 
 .sp
-Parameter descriptions, in alphabetical order, of all Ezmap 
+Parameter descriptions, in alphabetical order, of all EZMAP
 internal parameters follow. Each description begins with a line
 giving the parameter name and the intrinsic FORTRAN type of the
 parameter.   
@@ -71,9 +71,6 @@ appropriate for use with azimuthal projections and
 angular limits specifying a square, in which case
 the ellipse becomes a circle, but it will work for
 any map. The default value is false (zero).
-.IP "\&'ER' - Integer"
-For retrieval only. The current value of the error
-flag. Initially, the value is zero (no error).
 .IP "\&'GD' - Real"
 The distance between points used to draw the grid,
 in degrees. The default value is 1.; user values
@@ -93,7 +90,7 @@ define the division of the plotter frame into
 vertical strips.
 .IP "\&'IN' - Integer or Logical"
 For retrieval only. Initialization flag. If true
-(non-zero), it says that Ezmap is in need of
+(non-zero), it says that EZMAP is in need of
 initialization (by a CALL MAPINT). The default value
 is true (non-zero).
 .IP "\&'LA' - Integer or Logical"

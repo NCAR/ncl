@@ -56,7 +56,7 @@ using MAPBLA because the new database is at a higher resolution.)
 .sp
 The perimeter and the limb in the groups 'G1' and 'G2' have the following left
 and right area identifiers:
-.RS 8
+.RS 4
 .IP 0 4 
 Identifies the area inside the perimeter or limb.
 .IP -1 4 
@@ -65,8 +65,8 @@ Identifies the area outside the perimeter or limb.
 .sp
 The vertical lines in the group 'G2' have left and right area identifiers of 0.
 .sp
-To set the values of 'G1', 'G2', and 'VS', call the Ezmap routine MAPSTI.  To
-get the current values of 'G1', 'G2', and \&'VS', call the Ezmap routine
+To set the values of 'G1', 'G2', and 'VS', call the EZMAP routine MAPSTI.  To
+get the current values of 'G1', 'G2', and \&'VS', call the EZMAP routine
 MAPGTI.  See the man pages for MAPSTI and MAPGTI.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: mpex11, tezmpb.

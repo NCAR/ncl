@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-MAPEOD - Called by the Ezmap routines MAPLOT and MAPBLA.  The default
+MAPEOD - Called by the EZMAP routines MAPLOT and MAPBLA.  The default
 version does nothing.  A user-written version may be supplied to examine
 each outline-dataset segment and, perhaps, to delete selected ones.  Note
 that this routine is not called by any of the EZMAPB routines; for the

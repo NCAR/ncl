@@ -3,8 +3,7 @@
 .nh
 .SH NAME
 MAPGTC - 
-Gets the current value of a specified Ezmap 
-parameter of type CHARACTER. 
+Gets the current value of a specified EZMAP parameter of type CHARACTER.
 .sp
 MPGETC is an alternate name for the routine MAPGTC.
 .SH SYNOPSIS
@@ -29,7 +28,7 @@ argument descriptions with the following exception:
 The size of cval as dimensioned in the calling program.
 .SH USAGE
 This routine allows you to retrieve the current value of
-Ezmap parameters.  For a complete list of parameters available
+EZMAP parameters.  For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
@@ -38,7 +37,7 @@ example: mpex07.
 To use MAPGTC, MPGETC, or c_mapgtc load the NCAR Graphics libraries ncarg, 
 ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

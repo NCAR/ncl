@@ -30,7 +30,7 @@ The azimuthal projections:
 .IP "'ST' - " 8
 Stereographic.
 .IP "'OR' - " 8
-Orthographic. The Ezmap parameter 'SA' will be
+Orthographic. The EZMAP parameter 'SA' will be
 zeroed. See the note below.
 .IP "'LE' - " 8
 Lambert equal area.
@@ -39,7 +39,7 @@ Gnomonic.
 .IP "'AE' - " 8
 Azimuthal equidistant.
 .IP "'SV' - " 8 
-Satellite-view. If the Ezmap parameter 'SA' is
+Satellite-view. If the EZMAP parameter 'SA' is
 less than or equal to 1., it will be reset to
 6.631 (the value for a satellite in a
 geosynchronous orbit).  See the note below.
@@ -56,7 +56,7 @@ Mollweide-type.
 .RE
 .sp
 Note: The orthographic and satellite-view projections
-have the same internal identifier. The Ezmap
+have the same internal identifier. The EZMAP
 parameter 'SA' determines which will be used. If a call
 to MAPROJ selecting one or the other is followed by a
 call to MAPSTR resetting 'SA', it may have the effect
@@ -97,7 +97,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current values of the
-Ezmap parameters 'PR', 'PT', 'PN', and 'RO'.
+EZMAP parameters 'PR', 'PT', 'PN', and 'RO'.
 For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
@@ -158,7 +158,7 @@ fpchiqu.
 To use MAPROJ or c_maproj, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

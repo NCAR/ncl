@@ -29,7 +29,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current values of the four
-Ezmap parameters 'XL', 'XR', 'YB', and 'YT'.
+EZMAP parameters 'XL', 'XR', 'YB', and 'YT'.
 For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
@@ -55,7 +55,7 @@ fpchiqu.
 To use MAPPOS or c_mappos, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

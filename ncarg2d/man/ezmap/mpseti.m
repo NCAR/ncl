@@ -3,7 +3,7 @@
 .nh
 .SH NAME
 MAPSTI - 
-Sets the values of certain Ezmap 
+Sets the values of certain EZMAP
 parameters of type INTEGER. 
 .sp
 MPSETI is an alternate name for the routine MAPSTI.
@@ -27,7 +27,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current value of
-Ezmap parameters.  For a complete list of parameters available
+EZMAP parameters.  For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
@@ -64,7 +64,7 @@ tezmpa.
 To use MAPSTI, MPSETI, or c_mapsti, load the NCAR Graphics libraries ncarg, 
 ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

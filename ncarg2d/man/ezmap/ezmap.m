@@ -2,18 +2,18 @@
 .na
 .nh
 .SH NAME
-Ezmap - Allows one to plot maps of the earth according to any of ten different
+EZMAP - Allows one to plot maps of the earth according to any of ten different
 projections, with parallels, meridians, and continental, international,
 and/or U.S. state outlines. 
 .sp
-Ezmapa is the name of a supplement to the Ezmap utility that allows users to
-produce solid-filled maps of the earth.  The Ezmapa routines are discussed as
-part of the Ezmap utility.
+EZMAPA is the name of a supplement to the EZMAP utility that allows users to
+produce solid-filled maps of the earth.  The EZMAPA routines are discussed as
+part of the EZMAP utility.
 .sp
-Ezmapb is the name of a supplement to the Ezmap utility that provides access
+EZMAPB is the name of a supplement to the EZMAP utility that provides access
 to improved map databases (principally one called "Earth..1", which contains
 a unified higher-resolution version of everything that was in the old outline
-datasets).  The Ezmapb routines are discussed as part of the Ezmap utility.
+datasets).  The EZMAPB routines are discussed as part of the EZMAP utility.
 .SH SYNOPSIS
 .IP "Routines Used to Draw a Simple Map" 
 .sp
@@ -51,7 +51,7 @@ in 1998, one must call instead the EZMAPB routine MPLNDR.
 .IP "Routines Used to Change the Values of Internal Parameters"
 .sp
 The following routines are called to change the values of internal
-parameters of Ezmap, and thus change the behavior of other Ezmap
+parameters of EZMAP, and thus change the behavior of other EZMAP
 routines:
 .RS
 .IP "\(bu" 4
@@ -71,7 +71,7 @@ MAPSTR - Sets a parameter value of type REAL.
 .RE
 .IP "Routines Used to Retrieve the Values of Internal Parameters"
 .sp
-The following routines are used to retrieve the current values of Ezmap
+The following routines are used to retrieve the current values of EZMAP
 parameters:
 .RS
 .IP "\(bu" 4
@@ -85,7 +85,7 @@ MAPGTR - Gets a parameter value of type REAL.
 .RE
 .IP "Routines Used to Save and Restore Internal Parameters"
 .sp
-To save/restore the current values of the internal parameters of Ezmap,
+To save/restore the current values of the internal parameters of EZMAP,
 use the following:
 .RS
 .IP "\(bu" 4
@@ -128,7 +128,7 @@ specified number of points along the great circle route joining them.
 .RE
 .IP "Routines Used to Do Inverse Transformations"
 .sp
-The following routine was added to Ezmap early in 1992:
+The following routine was added to EZMAP early in 1992:
 .RS
 .IP "\(bu" 4
 MAPTRI - Computes the latitude and longitude of a point from its u/v
@@ -140,18 +140,18 @@ The example named "mpex10" shows one of the ways in which this routine
 may be used; it draws what is essentially a colored contour plot of a
 data field defined on the surface of the globe, using an orthographic
 projection.
-.IP "Routines Used to Draw Solid-Filled Maps (Ezmapa)"
+.IP "Routines Used to Draw Solid-Filled Maps (EZMAPA)"
 .sp
 In late 1986 or early 1987, a package of routines was written allowing a
 user to draw solid-filled maps of the globe. This package was named
-Ezmapa and was first advertised in the NCAR Graphics User's Guide
+EZMAPA and was first advertised in the NCAR Graphics User's Guide
 (Version 2.00), published in August, 1987. Conceptually, the routines in
-this package are really part of Ezmap; they use the same common blocks
+this package are really part of EZMAP; they use the same common blocks
 and many of the same underlying low-level routines and they are affected
-by the same set of internal parameters as the routines in Ezmap proper.
-The routines of Ezmapa will be described in this document; to use them
+by the same set of internal parameters as the routines in EZMAP proper.
+The routines of EZMAPA will be described in this document; to use them
 effectively, it will be necessary to understand also the package AREAS,
-which is described in a separate document. The Ezmapa routines are as
+which is described in a separate document. The EZMAPA routines are as
 follows:
 .RS
 .IP "\(bu" 4
@@ -185,7 +185,7 @@ and longitude; they may be called directly by the user to draw other
 masked lines.
 .IP "\(bu" 4
 MAPACI - A function which, given the "area identifier" for a particular
-area defined by the boundaries in one of the old Ezmap outline datasets,
+area defined by the boundaries in one of the old EZMAP outline datasets,
 returns a suggested color index for that area; it is guaranteed that, if
 the suggested color indices are used, no two areas having a boundary in
 common will have the same color.  Note that this function should not be
@@ -193,7 +193,7 @@ used to select color indices for areas defined by the new map
 database "Earth..1", which was created in 1998; for that purpose, use
 EZMAPB functions instead (in particular, MPISCI).
 .RE
-.IP "Routines Used to Access New Datasets (Ezmapb)"
+.IP "Routines Used to Access New Datasets (EZMAPB)"
 .sp
 In early 1998, a new world map database, called "Earth..1", was created for
 use with EZMAP; this database has higher-resolution coastlines, it has been
@@ -336,21 +336,21 @@ in a character string.
 .RE
 .IP "Miscellaneous Other Routines"
 .sp
-The following Ezmap routines are used for the purposes stated:
+The following EZMAP routines are used for the purposes stated:
 .RS
 .IP "\(bu" 4
 MAPRS - Re-executes the "CALL SET" done during the last call to MAPINT.
 This is useful when there has been an intervening call to a utility that
-calls SET. It is quite common for a background drawn by Ezmap to be
+calls SET. It is quite common for a background drawn by EZMAP to be
 placed in a flash buffer (as created by the package "GFLASH"). When the
 contents of the flash buffer are copied to the metafile being created, if
-it is desired to draw something on the Ezmap background, MAPRS may first
+it is desired to draw something on the EZMAP background, MAPRS may first
 have to be called to ensure that the correct SET call is in effect.
 .IP "\(bu" 4
 MPRST - Resets the internal state of EZMAP/EZMAPA to the default.
 .IP "\(bu" 4
 SUPMAP - Draws a map with a single call. An implementation of the routine
-from which Ezmap grew.
+from which EZMAP grew.
 .RE
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
@@ -457,10 +457,10 @@ c_mprset
 .br
 c_supmap
 .SH USER-MODIFIABLE INTERNAL ROUTINES
-The following Ezmap routines are used for the purposes stated:
+The following EZMAP routines are used for the purposes stated:
 .RS
 .IP "\(bu" 4
-MAPUSR - This routine is called by various Ezmap routines just before and
+MAPUSR - This routine is called by various EZMAP routines just before and
 just after drawing parts of the map. By default, grid lines are drawn
 using software dashed lines and geographical outlines are drawn using
 either solid lines or dotted lines. The dash pattern used for the grid
@@ -470,9 +470,9 @@ parameters, but more complete control of color indices, spot size, dash
 pattern, etc., may be achieved by supplying one's own version of MAPUSR;
 a user version may be as complicated as is required to achieve a desired
 effect.  Note that this routine is not called by any of the EZMAPB routines;
-use MPCHLN instead.
+they call MPCHLN instead.
 .IP "\(bu" 4
-MAPEOD - This routine is called by the Ezmap routine MAPLOT and by the Ezmapa
+MAPEOD - This routine is called by the EZMAP routine MAPLOT and by the EZMAPA
 routines MAPBLA and MAPBLM; in each case, it is called once for each segment
 in the outline dataset. The user may supply a version which examines the
 segment to see if it ought to be plotted and, if not, to delete it.  This
@@ -480,14 +480,14 @@ can be used (for example) to reduce the clutter in northern Canada.  Note
 that this routine is not called by any of the EZMAPB routines; they call
 MPCHLN instead.
 .IP "\(bu" 4
-MPCHLN - This routine is called by the Ezmapb routines MPLNAM, MPLNDM, and
+MPCHLN - This routine is called by the EZMAPB routines MPLNAM, MPLNDM, and
 MPLNDR; in each case, it is called just before and just after the processing
 of each segment in the map database.  The default version does nothing; a
 user-supplied version can do for the new databases what MAPUSR and MAPEOD
 did for the old ones.
 .RE
 .SH ACCESS 
-To use Ezmap Fortran or C routines, load the NCAR Graphics libraries ncarg,
+To use EZMAP Fortran or C routines, load the NCAR Graphics libraries ncarg,
 ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER

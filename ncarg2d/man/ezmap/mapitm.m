@@ -83,7 +83,7 @@ perhaps one created by a set of calls to routines in the package AREAS);
 like MAPIT and MAPIQ, they attempt to omit non-visible portions of lines
 and to handle "cross-over".
 .sp
-MAPITM is called like the Ezmap routine MAPIT (which see, above) but has
+MAPITM is called like the EZMAP routine MAPIT (which see, above) but has
 some additional arguments:
 .sp
 .RS 4
@@ -95,7 +95,7 @@ some additional arguments:
 Additional arguments are the area-map array IAMA, coordinate arrays XCRA
 and YCRA, dimensioned MCRA, integer arrays IAAI and IAGI, dimensioned
 NOGI, and a user-provided line-processing routine named ULPR. MAPIQM is
-called like the Ezmap routine MAPIQ, to terminate a series of calls to
+called like the EZMAP routine MAPIQ, to terminate a series of calls to
 MAPITM and to flush the buffers; it has the same additional arguments:
 .sp
 .RS 4

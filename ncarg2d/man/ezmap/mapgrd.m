@@ -21,9 +21,9 @@ CALL MAPGRD
 .sp
 draws a grid consisting of lines of constant latitude (parallels) and lines
 of constant longitude (meridians), spaced as specified by the value of the
-internal parameter 'GR'.  If EZMAP needs initialization or if the
-value of 'GR' is less than or equal to zero or if 'ER' is non-zero,
-MAPGRD does nothing.
+internal parameter 'GR'.  If EZMAP needs initialization or if the value
+of 'GR' is less than or equal to zero or if there is an uncleared NCAR Graphics
+error, MAPGRD does nothing.
 .sp
 The grid is drawn using calls to MAPIT and MAPIQ.  By default, MAPGRD
 temporarily forces the value of the internal parameter 'DL' to zero, so

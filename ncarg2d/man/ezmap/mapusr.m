@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-MAPUSR - Called by Ezmap routines that draw the various parts of the map.
+MAPUSR - Called by EZMAP routines that draw the various parts of the map.
 The default version does nothing.  A user-written version may be supplied
 to change the appearance of the map. Note that this routine is not called
 by any of the EZMAPB routines; they call MPCHLN instead.
@@ -36,7 +36,7 @@ part is complete. The absolute value of IPRT will be
 one of the above values. Changed quantities should be
 restored.
 .SH USAGE
-Ezmap executes the statement
+EZMAP executes the statement
 .sp
 .RS 4
 CALL MAPUSR (IPRT)

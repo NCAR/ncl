@@ -3,7 +3,7 @@
 .nh
 .SH NAME
 Draws a map with a single call. An implementation of the routine
-from which Ezmap grew.
+from which EZMAP grew.
 .SH SYNOPSIS
  CALL SUPMAP (JPRJ, PLAT, PLON, ROTA, PLM1, PLM2, PLM3, 
 .br
@@ -54,7 +54,7 @@ Mercator.
 Mollweide-type.
 .RE
 .IP "" 4
-Using the value 2 causes the Ezmap parameter 'SA' to be zeroed. ('SA', if
+Using the value 2 causes the EZMAP parameter 'SA' to be zeroed. ('SA', if
 greater than 1., says that a satellite-view projection, rather than an
 orthographic projection, is to be used, and specifies the distance of the
 satellite from the center of the earth, in units of earth radii.)

@@ -25,7 +25,7 @@ one.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH USAGE
-MAPIT is used to draw lines on the map; it is called by Ezmap itself
+MAPIT is used to draw lines on the map; it is called by EZMAP itself
 and, if desired, by the user. MAPIT attempts to omit
 nonvisible portions of lines and to handle "crossover," a
 jump from one end of the map to the other caused by the
@@ -44,7 +44,7 @@ Finally, if the next thing your program does is stop, call FRAME,
 or change attributes like color or line width, you should call MAPIQ
 to flush MAPIT's buffers.
 .sp
-The Ezmap parameter 'DL' determines whether MAPIT draws solid
+The EZMAP parameter 'DL' determines whether MAPIT draws solid
 lines or dotted lines. Dotted lines are drawn using calls to
 POINTS. Solid lines are drawn using calls to DASHD, FRSTD, and
 VECTD. The parameters 'DD' and 'MV' also affect MAPIT's
@@ -81,7 +81,7 @@ example, an orthographic projection has as its limb a circle,
 centered at (0,0), with a radius of 1.
 .IP \(bu 4
 The perimeter is a rectangular or elliptical boundary
-defined by Ezmap parameters set by you to specify the region
+defined by EZMAP parameters set by you to specify the region
 you wish to view.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant

@@ -9,7 +9,7 @@ to select color indices for areas defined by the new map database "Earth..1",
 which was created in 1998; for that purpose, use EZMAPB functions instead (in
 particular, MPISCI).
 .SH SYNOPSIS
-ICIR = MAPACI(IAID)
+ICIR=MAPACI(IAID)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -23,12 +23,11 @@ a call to MAPBLA.
 The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH USAGE
-ICIR = MAPACI (IAID)
-.sp
-Gives ICIR a value between 1 and 7, inclusive, that may be used to select
-a color index for the area whose area identifier is IAID.  It is guaranteed
-that MAPACI will not return the same value for adjacent areas; this fact
-can be used to ensure that adjacent areas will have different colors.
+Executing the statement "ICIR=MAPACI(IAID)" gives ICIR a value between 1 and 7,
+inclusive, that may be used to select a color index for the area whose area
+identifier is IAID.  It is guaranteed that MAPACI will not return the same
+value for adjacent areas; this fact can be used to ensure that adjacent areas
+will have different colors.
 .sp
 Note that it is the responsibility of the user to define the colors
 associated with color indices

@@ -17,10 +17,10 @@ void c_maplot()
 MAPLOT has no arguments.
 .SH USAGE 
 MAPLOT draws the continental and/or political outlines selected 
-by the Ezmap parameter 'OU'; the parameter
+by the EZMAP parameter 'OU'; the parameter
 \&'DO' determines whether solid lines or dotted lines are drawn.
-If Ezmap currently needs initialization, or if the error flag
-\&'ER' is set, MAPLOT does nothing.
+If EZMAP needs initialization or if there is an uncleared NCAR Graphics
+error, MAPLOT does nothing.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 

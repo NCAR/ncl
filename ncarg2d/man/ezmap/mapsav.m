@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-MAPSAV - Saves the current state of Ezmap for later restoration
+MAPSAV - Saves the current state of EZMAP for later restoration
 by MAPRST.
 .SH SYNOPSIS
 CALL MAPSAV (INFO)
@@ -29,7 +29,7 @@ No example is available for MAPSAV.
 To use MAPSAV or c_mapsav, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

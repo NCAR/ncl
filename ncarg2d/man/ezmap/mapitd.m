@@ -44,7 +44,7 @@ Finally, if the next thing your program does is STOP, call FRAME,
 or change attributes like color or line width, you should call MAPIQD
 to flush MAPITD's buffers.
 .sp
-The Ezmap parameter 'DL' determines whether MAPITD draws solid
+The EZMAP parameter 'DL' determines whether MAPITD draws solid
 lines or dotted lines. Dotted lines are drawn using calls to
 POINTS. Solid lines are drawn using calls to DPFRST and
 DPVECT. The parameters 'DD' and 'MV' also affect MAPITD's
@@ -81,7 +81,7 @@ example, an orthographic projection has as its limb a circle,
 centered at (0,0), with a radius of 1.
 .IP \(bu 4
 The perimeter is a rectangular or elliptical boundary
-defined by Ezmap parameters set by you to specify the region
+defined by EZMAP parameters set by you to specify the region
 you wish to view.
 .SH EXAMPLES
 None.

@@ -5,7 +5,7 @@
 MAPBLA - 
 Adds to the area map in the array IAMA the set of boundary lines, of
 projected geographical entities, determined by the current state of the
-internal parameters of Ezmap.  Note that this routine uses whichever old
+internal parameters of EZMAP.  Note that this routine uses whichever old
 outline dataset is selected by the value of the internal parameter 'OU';
 to access the new map database "Earth..1", which was created in 1998, one
 must call instead the EZMAPB routine MPLNAM.
@@ -27,15 +27,15 @@ One or two groups of boundary lines are added to the area map
 by a call to MAPBLA. The first group has the group identifier
 \&'G1', which has a default value of 1. The group 'G1' consists of a
 perimeter (either rectangular or elliptical, depending on the
-value of the Ezmap parameter 'EL') and the set of projected
-boundary lines implied by your selection of an Ezmap dataset
+value of the EZMAP parameter 'EL') and the set of projected
+boundary lines implied by your selection of an EZMAP dataset
 (some combination of continental, U.S. state, and international
 political outlines). 
 For certain projections a limb line may also be
 included. (The limb is the boundary between a projectable
 region and an unprojectable one.)
 .sp
-If the Ezmap parameter 'VS' has a value greater than zero, a
+If the EZMAP parameter 'VS' has a value greater than zero, a
 second group, with the group identifier 'G2', is added to the area
 map. (The default value of 'VS' is 1; the default value of 'G2'
 is 2.) The purpose of the group 'G2' is to split up areas and
@@ -48,7 +48,7 @@ the perimeter into 'VS' vertical strips.
 .sp
 The perimeter and the limb in the groups 'G1' and 'G2' have the
 following left and right area identifiers:
-.RS 8
+.RS 4
 .IP 0 4 
 Identifies the area inside the perimeter or limb.
 .IP -1 4 
@@ -58,9 +58,9 @@ Identifies the area outside the perimeter or limb.
 The vertical lines in the group 'G2' have left and right area
 identifiers of 0.
 .sp
-To set the values of 'G1', 'G2', and 'VS', call the Ezmap
+To set the values of 'G1', 'G2', and 'VS', call the EZMAP
 routine MAPSTI. To get the current values of 'G1', 'G2', and
-\&'VS', call the Ezmap routine MAPGTI. See the man pages for 
+\&'VS', call the EZMAP routine MAPGTI. See the man pages for
 MAPSTI and MAPGTI.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant

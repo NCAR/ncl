@@ -15,9 +15,9 @@ MAPLBL has no arguments.
 If the parameter 'LA' is set appropriately, MAPLBL labels the
 international date line (ID), the equator (EQ), the Greenwich
 Meridian (GM), and the poles (NP and SP), and if the parameter
-\&'PE' is set appropriately, it draws the perimeter of the map.  If
-Ezmap needs initialization, or if the error flag 'ER' is set,
-MAPLBL does nothing.
+\&'PE' is set appropriately, it draws the perimeter of the map.
+If EZMAP needs initialization or if there is an uncleared NCAR Graphics
+error, MAPLBL does nothing.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 

@@ -3,7 +3,7 @@
 .nh
 .SH NAME
 MAPGTL - 
-Gets the current value of a specified Ezmap 
+Gets the current value of a specified EZMAP
 parameter of type LOGICAL. 
 .sp
 MPGETL is an alternate name for the routine MAPGTL.
@@ -27,7 +27,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to retrieve the current value of
-Ezmap parameters.  For a complete list of parameters available
+EZMAP parameters.  For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
 The capabilities offered by the MAPGTL or MPGETL routines are
@@ -37,7 +37,7 @@ listed on the MAPGTI or MPGETI man page.
 To use MAPGTL, MPGETL, or c_mapgtl load the NCAR Graphics libraries ncarg, 
 ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

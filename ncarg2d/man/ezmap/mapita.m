@@ -53,7 +53,7 @@ of user-specified latitudes and longitudes to an area map; they attempt
 to omit non-visible portions of lines and to handle "cross-over", in the
 same way that MAPIT does.
 .sp
-MAPITA is called like the Ezmap routine MAPIT, but it has
+MAPITA is called like the EZMAP routine MAPIT, but it has
 some additional arguments:
 .sp
 .RS 4
@@ -62,7 +62,7 @@ CALL MAPITA (RLAT,RLON,IFST,IAMA,IGID,IAIL,IAIR)
 .sp
 Additional arguments are the area map array IAMA, a group identifier
 IGID, and left and right area identifiers IAIL and IAIR. MAPIQA is called
-like the Ezmap routine MAPIQ, to terminate a series of calls to MAPITA
+like the EZMAP routine MAPIQ, to terminate a series of calls to MAPITA
 and to flush the buffers; it has the same additional arguments:
 .sp
 .RS 4

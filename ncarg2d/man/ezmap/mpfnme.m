@@ -30,8 +30,11 @@ Given the declaraion "CHARACTER*128 MPFNME,FNME", the executable statement
 "FNME=MPFNME(IAIN,ILVL)" will retrieve in FNME the full name of the area with
 area identifier IAIN, including the prepended names of containing (parent)
 areas, up to the level ILVL.  For example, if IMAD is the area identifier of
-the little island in Lake Superior called "Lake Madeline", then MPFNME(IMAD,4)
-= 'Wisconsin - Madeline Island (Lake Superior)'.
+the little island in Lake Superior called "Lake Madeline", a level-4 area
+whose name in the database is actually "Madeline Island (Lake Superior)" and
+whose parent (also at level 4) is an area called "Wisconsin", then
+MPFNME(IMAD,4) = 'Wisconsin - Madeline Island (Lake Superior)'.  Note the use
+of a dash surrounded by blanks as a separator.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant example: mpex12.
 .SH ACCESS

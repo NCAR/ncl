@@ -69,7 +69,7 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current values of the
-Ezmap parameters 'AR', 'P1', 'P2', ... 'P7', and 'P8'.
+EZMAP parameters 'AR', 'P1', 'P2', ... 'P7', and 'P8'.
 For a complete list of parameters available
 in this utility, see the ezmap_params man page.
 .SH EXAMPLES
@@ -123,7 +123,7 @@ fngngdts.
 To use MAPSET or c_mapset, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
+See the ezmap man page for a description of all EZMAP error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

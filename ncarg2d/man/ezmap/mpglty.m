@@ -16,7 +16,10 @@ separating land from water, 2 => a line separating one "continent" from another
 (as, for example, Africa from Eurasia, North America from Central America, or
 Central America from South America), 3 => a line separating one country from
 another, 4 => a line separating one state from another, and 5 => a line
-separating one county from another.
+separating one county from another.  If the current line is used on more than
+one level (as, for example, a portion of the California coastline, which is
+used on all five levels), then the value of ILTY will be the smallest of the
+numerical values that apply.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
 argument description.
