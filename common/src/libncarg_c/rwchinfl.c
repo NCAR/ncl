@@ -1,5 +1,5 @@
 /*
- *	$Id: rwchinfl.c,v 1.8 2003-12-09 17:04:07 grubin Exp $
+ *	$Id: rwchinfl.c,v 1.9 2004-04-22 22:33:44 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,6 +41,16 @@
 #endif
 
 
+void NGCALLF(ngcpid,NGCPID)(ipid)
+/*
+ * This routine gets the current process id.
+ */
+  int *ipid;
+{
+  *ipid = getpid();
+}
+
+
 void NGCALLF(ngclfi,NGCLFI)(fdes)
 /*
  * This routine closes an open file; the argument "fdes" is the file
@@ -49,6 +59,13 @@ void NGCALLF(ngclfi,NGCLFI)(fdes)
   int *fdes;
 {
   (void)close((int)*fdes);
+}
+
+
+void NGCALLF(ngexit,NGEXIT)(nerr)
+  int *nerr;
+{
+  exit(*nerr);
 }
 
 
