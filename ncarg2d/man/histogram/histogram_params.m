@@ -1,9 +1,9 @@
-.TH HISTOGRAM_PARAMS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Histogram_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-histogram_params - This document briefly describes all histogram
-internal parameters.  The histogram utility has four parameter
+Histogram_params - This document briefly describes all histogram
+internal parameters.  The Histogram utility has four parameter
 setting routines: HSTOPC sets parameters of type CHARACTER;
 HSTOPI sets parameters of type INTEGER; HSTOPL sets parameters
 of type LOGICAL; HSTOPR sets parameters of type REAL.

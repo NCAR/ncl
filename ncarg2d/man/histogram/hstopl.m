@@ -98,7 +98,7 @@ HISTGR is called to generate the histogram.
 Use the command "ncargex thstgr" to generate a three frame example
 of histogram options.
 .SH ACCESS
-To use HSTOPI load the NCAR Graphics libraries ncarg, ncarg_gks, and
+To use HSTOPL load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use the C bindings, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
