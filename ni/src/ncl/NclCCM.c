@@ -747,8 +747,8 @@ int	wr_status;
                         therec->dims[ILEV_DIM_NUMBER].size = initial_iheader.NLEV + 1;
                         therec->dims[MLEV_DIM_NUMBER].size = initial_iheader.NLEV;
 			tmp_lon = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
-			tmp_siga = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV+1);
-			tmp_sigb = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV+1);
+			tmp_siga = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
+			tmp_sigb = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
 			fprintf(stdout,"ilev:\n");
 			for(i = 0; i < initial_iheader.NLEV+1; i++) {
 				tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i) + *(initial_rheader.sigb + 2*i));
@@ -1259,17 +1259,19 @@ int *n_atts;
 	for(i = 0; i < thefile->n_vars; i++ ) {
 
 		if(var_name == thefile->vars[i].var_name_q) {
-			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*3);
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*4);
 			if(thefile->vars[i].ccm_var_index != -1) {
-				*n_atts = 3;
+				*n_atts = 4;
 				arout[0] = NrmStringToQuark("long_name");
 				arout[1] = NrmStringToQuark("units");
 				arout[2] = NrmStringToQuark("t_op");
+				arout[3] = NrmStringToQuark("_FillValue");
         			return(arout);
 			} else {
-				*n_atts = 2;
+				*n_atts = 3;
 				arout[0] = NrmStringToQuark("units");
 				arout[1] = NrmStringToQuark("t_op");
+				arout[2] = NrmStringToQuark("_FillValue");
         			return(arout);
 			}
 			
@@ -1307,10 +1309,25 @@ NclQuark att_name;
 #endif
 {
 	NclFAttRec *tmp = NclMalloc(sizeof(NclFAttRec));
+	CCMFileRec *thefile = (CCMFileRec*)therec;
+	int i;
 
-	tmp->att_name_quark = att_name;
-	tmp->data_type = NCL_string;
-	tmp->num_elements = 1;
+	if(att_name == NrmStringToQuark("_FillValue"))  {
+		for(i = 0; i < thefile->n_vars; i++ ) {
+			if(var_name == thefile->vars[i].var_name_q) {
+				tmp->att_name_quark = att_name;
+				tmp->data_type = thefile->vars[i].var_info.data_type;
+				tmp->num_elements = 1;
+				return(tmp);
+			}
+		}
+		NclFree(tmp);
+		return(NULL);
+	} else {
+		tmp->att_name_quark = att_name;
+		tmp->data_type = NCL_string;
+		tmp->num_elements = 1;
+	}
 	return(tmp);
 }
 
@@ -1624,6 +1641,12 @@ void *storage;
 				case 3:
 					*(NclQuark*)storage = NrmStringToQuark("maximum_val");
 					break;
+				}
+			} else if(NrmStringToQuark("_FillValue") == att_name) {
+				if(thefile[i].vars[i].var_info.data_type == NCL_float) {
+					*(float*)storage = (float)1e36;
+				} else if(thefile[i].vars[i].var_info.data_type == NCL_double){
+					*(double*)storage = (double)1e36;
 				}
 			}
 			return(storage);

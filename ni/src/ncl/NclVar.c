@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.41 1997-02-18 18:33:21 ethan Exp $
+ *      $Id: NclVar.c,v 1.42 1997-03-11 17:52:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1572,7 +1572,7 @@ NclSelectionRecord *sel_ptr;
 			j = 0;
 			tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(self->var.att_id),NULL);
 			for(i = 0; i< sel_ptr->n_entries; i++) {
-				if((self->var.coord_vars[sel_ptr->selection[i].dim_num] != -1)||(_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]) != NULL)) {
+				if((self->var.coord_vars[sel_ptr->selection[i].dim_num] != -1)&&(_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]) != NULL)) {
 					if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) {
 						tmp_sel.selection[0].sel_type = sel_ptr->selection[i].sel_type;
 						tmp_sel.selection[0].u.vec= sel_ptr->selection[i].u.vec;
@@ -1600,6 +1600,10 @@ NclSelectionRecord *sel_ptr;
 					coords[j] = coord_var->obj.id; 
 				} else {
 					coords[j] = -1;
+					if(((sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR)&&(sel_ptr->selection[i].u.vec.n_ind == 1))||(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish)) {
+						single = 1;
+					}
+						
 				}
 				if(single){ 
 					if(coords[j] != -1) {
@@ -1610,7 +1614,7 @@ NclSelectionRecord *sel_ptr;
 						if(coord_var->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)coord_var);
 						}
-					}
+					} 
 					single = 0;
 				} else {
 					dim_info[j].dim_num = 0;

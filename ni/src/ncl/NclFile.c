@@ -2099,6 +2099,9 @@ struct _NclSelectionRecord* sel_ptr;
 						return(NULL);
 					}
 				} else {
+					if(((sel[i].sel_type == Ncl_VECSUBSCR)&&(sel[i].u.vec.n_ind == 1)) || (sel[i].u.sub.start == sel[i].u.sub.finish)) {
+						single = 1;
+					}
 					coords[j] = -1;
 				}
 				if(single) {
