@@ -816,6 +816,8 @@ c calculate the var-cov between columns (stations)
         enddo
           if (xn.ge.2.) then
               vcm(nn) = sngl( (xcacb-(xca*xcb)/dble(xn) )/dble(xn-1.)) 
+          elseif (xn.eq.1.) THEN
+             vcm(nn) = ( xcacb-(xca*xcb)/xn )
           else
               ier     = -1
               vcm(nn) = xmsg
@@ -951,6 +953,16 @@ c calculate the var-cov between columns (stations)
               if (xvara.gt.0.d0 .and. xvarb.gt.0.d0) then
                   temp    = ( xcacb-((xca*xcb)/dble(xn)) )/dble(xn-1.)
                   crm(nn) = sngl( temp/(dsqrt(xvara)*dsqrt(xvarb)) )
+              else
+                  ier     = -1
+                  crm(nn) = xmsg
+              endif
+           elseif (xn.eq.1.) then
+              xvara   =  ( xca2-((xca*xca)/(xn)) )
+              xvarb   =  ( xcb2-((xcb*xcb)/(xn)) )
+              if (xvara.gt.0. .and. xvarb.gt.0.) then
+                  crm(nn) = ( xcacb-((xca*xcb)/(xn)) )
+                  crm(nn) = crm(nn)/(sqrt(xvara)*sqrt(xvarb))
               else
                   ier     = -1
                   crm(nn) = xmsg

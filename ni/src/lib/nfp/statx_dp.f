@@ -967,10 +967,12 @@ c calculate the var-cov between columns (stations)
                   END IF
               END DO
               IF (XN.GE.2.D0) THEN
-                  VCM(NN) = (XCACB- (XCA*XCB)/XN)/ (XN-1.D0)
+                 VCM(NN) = (XCACB-(XCA*XCB)/XN)/ (XN-1.D0)
+              ELSEIF (XN.EQ.1.) THEN
+                 VCM(NN) = (XCACB-(XCA*XCB)/XN)
               ELSE
-                  IER = -1
-                  VCM(NN) = XMSG
+                 IER = -1
+                 VCM(NN) = XMSG
               END IF
           END DO
       END DO
@@ -1120,18 +1122,28 @@ c calculate the var-cov between columns (stations)
                   END IF
               END DO
               IF (XN.GE.2.D0) THEN
-                  XVARA = (XCA2- ((XCA*XCA)/ (XN)))/ (XN-1.D0)
-                  XVARB = (XCB2- ((XCB*XCB)/ (XN)))/ (XN-1.D0)
-                  IF (XVARA.GT.0.D0 .AND. XVARB.GT.0.D0) THEN
-                      CRM(NN) = (XCACB- ((XCA*XCB)/ (XN)))/ (XN-1.D0)
-                      CRM(NN) = CRM(NN)/ (SQRT(XVARA)*SQRT(XVARB))
-                  ELSE
-                      IER = -1
-                      CRM(NN) = XMSG
-                  END IF
+                 XVARA = (XCA2- ((XCA*XCA)/ (XN)))/ (XN-1.D0)
+                 XVARB = (XCB2- ((XCB*XCB)/ (XN)))/ (XN-1.D0)
+                 IF (XVARA.GT.0.D0 .AND. XVARB.GT.0.D0) THEN
+                    CRM(NN) = (XCACB- ((XCA*XCB)/ (XN)))/ (XN-1.D0)
+                    CRM(NN) = CRM(NN)/ (SQRT(XVARA)*SQRT(XVARB))
+                 ELSE
+                    IER = -1
+                    CRM(NN) = XMSG
+                 END IF
+              ELSEIF (XN.EQ.1.D0) THEN
+                 XVARA   =  ( XCA2-((XCA*XCA)/(XN)) )
+                 XVARB   =  ( XCB2-((XCB*XCB)/(XN)) )
+                 IF (XVARA.GT.0.D0 .AND. XVARB.GT.0.D0) THEN
+                    CRM(NN) = ( XCACB-((XCA*XCB)/(XN)) )
+                    CRM(NN) = CRM(NN)/(SQRT(XVARA)*SQRT(XVARB))
+                 ELSE
+                    IER     = -1
+                    CRM(NN) = XMSG
+                 ENDIF
               ELSE
-                  IER = -1
-                  CRM(NN) = XMSG
+                 IER = -1
+                 CRM(NN) = XMSG
               END IF
           END DO
       END DO
