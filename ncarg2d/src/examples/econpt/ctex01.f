@@ -49,17 +49,16 @@ C singly-dimensioned arrays: RPNT holds information about points; IEDG,
 C information about edges; and ITRI, information about triangles.  The
 C elements of each array form "nodes" having lengths as follows:
 C
-        PARAMETER (LOPN=5)  !  length of a point node
+        PARAMETER (LOPN=4)  !  length of a point node
         PARAMETER (LOEN=5)  !  length of an edge node
         PARAMETER (LOTN=4)  !  length of a triangle node
 C
-C The five elements of a point node, in RPNT, are
+C The four elements of a point node, in RPNT, are
 C
 C   1. the X coordinate of the point;
 C   2. the Y coordinate of the point;
 C   3. the Z coordinate of the point (always 0 in this example);
 C   4. the field value at the point;
-C   5. any additional value desired by the user.
 C
 C The five elements of an edge node, in IEDG, are
 C
@@ -263,7 +262,6 @@ C
             RPNT(IBIP+2)=YMIN+(REAL(J-1)/REAL(JDM1))*(YMAX-YMIN)
             RPNT(IBIP+3)=0.
             RPNT(IBIP+4)=Z(RPNT(IBIP+1),RPNT(IBIP+2))
-            RPNT(IBIP+5)=0.
   101     CONTINUE
   102   CONTINUE
 C
@@ -484,8 +482,14 @@ C
         CALL DFCLRS (IWID,151,250,0.,0.,1.,1.,0.,0.)
 C
 C
-C S E T   I N T E R N A L   C O N P A C K T   P A R A M E T E R S ------
+C S E T   I N T E R N A L   P A R A M E T E R S ------------------------
 C
+C
+C Tell PLOTCHAR to use one of the filled fonts and to outline each
+C character.
+C
+        CALL PCSETI ('FN',25)
+        CALL PCSETI ('OF',1)
 C
 C Tell CONPACKT to use a smaller viewport, to match what is used in
 C drawing the picture of the triangular mesh.
@@ -519,6 +523,20 @@ C
 C Do a SET call enabling the use of the X and Y coordinates in the mesh.
 C
         CALL SET    (.10,.90,.10,.90,XMIN,XMAX,YMIN,YMAX,1)
+C
+C Label the frame.
+C
+        CALL PLCHHQ (CFUX(.5),CFUY(.965),'Simple Triangular Mesh Derived
+     + From Rectangular Mesh',.014,0.,0.)
+C
+        CALL PLCHHQ (CFUX(.5),CFUY(.940), 'The mesh is in yellow, with a
+     + lighter shade where triangles are blocked.',.011,0.,0.)
+C
+        CALL PLCHHQ (CFUX(.5),CFUY(.033),'Point numbers are in blue; edg
+     +e numbers, in green; triangle numbers, in red.',.011,0.,0.)
+C
+        CALL PLCHHQ (CFUX(.5),CFUY(.011), 'Triangles 29-32 and 41-44 are
+     + blocked; no contours will be drawn there.',.011,0.,0.)
 C
 C Label the edges of the mesh.
 C
@@ -594,20 +612,6 @@ C
         CALL GSPLCI (1)
         CALL GSLWSC (1.)
 C
-C Label the frame.
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.986),'Simple Triangular Mesh Derived
-     + From Rectangular Mesh',.014,0.,0.)
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.961), 'The mesh is in yellow, with a
-     + lighter shade where triangles are blocked.',.011,0.,0.)
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.033),'Point numbers are in blue; edg
-     +e numbers, in green; triangle numbers, in red.',.011,0.,0.)
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.011), 'Triangles 29-32 and 41-44 are
-     + blocked; no contours will be drawn there.',.011,0.,0.)
-C
 C Advance the frame.
 C
         CALL FRAME
@@ -616,9 +620,14 @@ C
 C D R A W   A   S I M P L E   C O N T O U R   P L O T ------------------
 C
 C
+C Label the frame.
+C
+  117   CALL PLCHHQ (CFUX(.5),CFUY(.950), 'Contours on Triangular Mesh',
+     +.018,0.,0.)
+C
 C Initialize CONPACKT.
 C
-  117   CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
+        CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
      +               IEDG,NEDG,LOEN,  !  edge list
      +               ITRI,NTRI,LOTN,  !  triangle list
      +               RWRK,LRWK,       !  real workspace
@@ -640,11 +649,6 @@ C Add informational and high/low labels.
 C
         CALL CTLBDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
-C Label the frame.
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.982), 'Contours on Triangular Mesh',
-     +.018,0.,0.)
-C
 C Advance the frame.
 C
         CALL FRAME
@@ -652,6 +656,11 @@ C
 C
 C D R A W   A   C O L O R - F I L L E D   C O N T O U R   P L O T ------
 C
+C
+C Label the frame.
+C
+        CALL PLCHHQ (CFUX(.5),CFUY(.950), 'Colored Contour Bands on Tria
+     +ngular Mesh',.018,0.,0.)
 C
 C Initialize an area map.
 C
@@ -665,11 +674,6 @@ C Scan the area map and deliver the areas defined by it to the routine
 C DCFOCB.
 C
         CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DCFOCB)
-C
-C Label the frame.
-C
-        CALL PLCHHQ (CFUX(.5),CFUY(.982), 'Colored Contour Bands on Tria
-     +ngular Mesh',.018,0.,0.)
 C
 C Advance the frame.
 C
