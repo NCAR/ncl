@@ -60,6 +60,12 @@ CPLBDR -
 Draws labels (an informational label, high and
 low labels, and line labels).
 .sp
+CPMVIW -
+Moves the contents of an old integer workspace to a new one.
+.sp
+CPMVRW -
+Moves the contents of an old real workspace to a new one.
+.sp
 CPPKCL - Picks a set of contour levels.
 .sp
 CPPKLB - Picks a set of labels for labeled contour levels.
@@ -181,265 +187,212 @@ ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load t
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
-In this section are listed, in alphabetical order, all the
-error messages that may be written by Conpack. Each error
-message begins with the name of the Conpack routine in
-which an error has been detected, followed by a dash,
-followed by the error message itself. In every case but
-two, these error messages are written by a call to the
-error-handling support routine SETER, with a final argument
-indicating that the error is fatal and that execution
-should be terminated. The two exceptions are for CPGIWS and
-CPGRWS; these will be pointed out. Each error message in
-the list below is followed by a short description of the
-condition which caused the error.
-.IP "CPBACK - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPCFLB - ERROR EXIT FROM GQCLIP"
-An attempt to get the current clipping state has resulted 
-in an error. This probably indicates that GKS is in the 
-wrong state.
-.IP "CPCFLB - ERROR EXIT FROM GQFACI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCFLB - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPCFLB - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCFLB - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCICA - CANNOT CONTINUE-CPMPXY DOES NOT DO INVERSE MAPPINGS"
-To use the routine CPCICA, it is necessary that the routine 
-CPMPXY be able to do inverse mappings. The user has 
-supplied his/her own version of CPMPXY, but has not made it 
-capable of doing the inverses.
-.IP "CPCICA - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPCICA-ONE OF THE CORNER POINTS OF THE CELL ARRAY IS INCORRECT"
-One of the points P and Q, which determine how the cell 
-array is to be mapped onto the plotter frame, is outside 
-the limits of the plotter frame.
-.IP "CPCICA - THE DIMENSIONS OF THE CELL ARRAY ARE INCORRECT"
-Either the specified first dimension of the FORTRAN array 
-in which the cell array is stored is less than or equal to 
-zero or one of the specified dimensions of the cell array 
-itself is less than or equal to zero or the specified first 
-dimension of the cell array is larger than the specified 
-first dimension of the FORTRAN array in which it is stored.
-.IP "CPCLAM - CONTRADICTORY AREA-IDENTIFIER INFORMATION"
-The contour-level list has more than one entry for a given 
-level (which is fine) but either the values of 'AIA' for 
-that level or the values of 'AIB' for that level are 
-inconsistent.
-.IP "CPCLAM - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPCLDM - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPCLDM - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCLDM - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCLDM - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPCLDR - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPCLDR - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCLDR - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPCLDR - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPCLTR - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPGETC - GETTING x - PAI INCORRECT"
-An attempt has been made to get an element of the parameter 
-array named 'x' and the current value of 'PAI' (the 
-"parameter array index") is inappropriate for that 
-parameter array.
-.IP "CPGETC - PARAMETER NAME NOT KNOWN - x"
-The given parameter name ('x') is not one of the legal 
-parameter names.
-.IP "CPGETC - PARAMETER NAME TOO SHORT - x"
-The parameter name ("x") is less than three characters long.
-.IP "CPGETI OR CPGETR - GETTING x - PAI INCORRECT"
-An attempt has been made to get an element of the parameter 
-array named 'x' and the current value of 'PAI' (the 
-"parameter array index") is inappropriate for that 
-parameter array.
-.IP "CPGETI OR CPGETR - PARAMETER NAME NOT KNOWN - x"
-The given parameter name ('x') is not one of the legal 
-parameter names.
-.IP "CPGETI OR CPGETR - PARAMETER NAME TOO SHORT - x"
-The parameter name ("x") is less than three characters long.
-.IP "CPGIWS - ARGUMENT ERROR - SEE SPECIALIST"
-This probably indicates an error in the implementation of 
-the package. See the Conpack specialist.
-.IP "CPGIWS - INTEGER WORKSPACE OVERFLOW"
-The parameter 'WSO' has a value indicating that integer 
-workspace overflow should be treated as a fatal error, and 
-such an overflow has occurred.
-.IP "CPGIWS m WORDS REQUESTED n WORDS AVAILABLE"
-This is the one of the two error messages which are not 
-necessarily fatal. The values "m" and "n" indicate how much 
-additional integer workspace would be needed to continue 
-executing the current Conpack routine and how much 
-additional integer workspace is currently available. Note 
-that supplying "m" words on a subsequent attempt will get 
-you past this point, but will not ensure immunity from a 
-subsequent failure.
-.IP "CPGRWS - ARGUMENT ERROR - SEE SPECIALIST"
-This probably indicates an error in the implementation of 
-the package. See the Conpack specialist.
-.IP "CPGRWS - REAL WORKSPACE OVERFLOW"
-The parameter 'WSO' has a value indicating that real 
-workspace overflow should be treated as a fatal error, and 
-such an overflow has occurred.
-.IP "CPGRWS m WORDS REQUESTED n WORDS AVAILABLE"
-This is the one of the two error messages which are not 
-necessarily fatal. The values "m" and "n" indicate how much 
-additional real workspace would be needed to continue 
-executing the current Conpack routine and how much 
-additional real workspace is currently available. Note that 
-supplying "m" words on a subsequent attempt will get you 
-past this point, but will not ensure immunity from a 
-subsequent failure.
-.IP "CPHLLB - ERROR EXIT FROM GQFACI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPHLLB - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPHLLB - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPHLLB - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPINLB - ERROR EXIT FROM GQCLIP"
-An attempt to get the current clipping state has resulted 
-in an error. This probably indicates that GKS is in the 
-wrong state.
-.IP "CPINLB - ERROR EXIT FROM GQFACI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPINLB - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPINLB - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPINLB - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPLBAM - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPLBDR - ERROR EXIT FROM GQCLIP"
-An attempt to get the current clipping state has resulted 
-in an error. This probably indicates that GKS is in the 
-wrong state.
-.IP "CPLBDR - ERROR EXIT FROM GQFACI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPLBDR - ERROR EXIT FROM GQLWSC"
-An attempt to get the current line width scale factor has 
-resulted in an error. This probably indicates that GKS is 
-in the wrong state.
-.IP "CPLBDR - ERROR EXIT FROM GQPLCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPLBDR - ERROR EXIT FROM GQTXCI"
-An attempt to get a color index has resulted in an error. 
-This probably indicates that GKS is in the wrong state.
-.IP "CPLBDR - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPPKCL - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPPKCL - TOO MANY CONTOUR LEVELS"
-Indicates that the parameter 'CLS' has been given a 
-negative value whose absolute value is too large, 
-requesting more than 256 contour levels.
-.IP "CPPKLB - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPPKLP - INITIALIZATION CALL NOT DONE"
-A call to CPRECT, CPSPS1, or CPSPS2 has been omitted.
-.IP "CPSETC - PARAMETER NAME NOT KNOWN - x"
-The given parameter name ('x') is not one of the legal 
-parameter names.
-.IP "CPSETC - PARAMETER NAME TOO SHORT - x"
-The parameter name ("x") is less than three characters long.
-.IP "CPSETC - SETTING x - PAI INCORRECT"
-An attempt has been made to set an element of the parameter 
-array named 'x' and the current value of 'PAI' (the 
-"parameter array index") is inappropriate for that 
-parameter array.
-.IP "CPSETI OR CPSETR - NCL LESS THAN 1 OR GREATER THAN n"
-An attempt has been made to set the number of contour 
-levels to an illegal value. The value of "n" is the largest 
-value which may be used.
-.IP "CPSETI OR CPSETR - PARAMETER NAME NOT KNOWN - x"
-The given parameter name ('x') is not one of the legal 
-parameter names.
-.IP "CPSETI OR CPSETR - PARAMETER NAME TOO SHORT - x"
-The parameter name ("x") is less than three characters long.
-.IP "CPSETI OR CPSETR - SETTING x - PAI INCORRECT"
-An attempt has been made to set an element of the parameter 
-array named 'x' and the current value of 'PAI' (the 
-"parameter array index") is inappropriate for that 
-parameter array.
-.IP "CPSPS1 - CANNOT CONTINUE WITHOUT WORKSPACE"
-Insufficient workspace has been provided for the execution 
-of CPSPS1. The amount of space which it requires is 
-entirely predictable. 
-.IP "CPSPS1 - IZD1, IZDM, OR IZDN SET INCORRECTLY"
-IZDS has been given a zero value, indicating that the user 
-intends to supply the values of IZD1, IZDM, and IZDN, and 
-their current values are incorrect.
-.IP "CPSPS1 - SPECIAL-VALUE REPLACEMENT FAILURE"
-There are no two adjacent values in the sparse array which 
-are not special values. Most likely, the entire sparse 
-array is filled with special values.
-.IP "CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPACE"
-Insufficient workspace has been provided for the execution 
-of CPSPS1. The amount of space which it requires is 
-entirely predictable. 
-.IP "CPSPS2 - ERROR IN CALL TO MSSRF1"
-A non-zero error return has occurred from the Fitpack 
-routine SURF1. This probably means that the X and Y 
-coordinate arrays are not in strictly increasing numerical 
-order.
-.IP "CPSPS2 - IZD1, IZDM, OR IZDN SET INCORRECTLY"
-IZDS has been given a zero value, indicating that the user 
-intends to supply the values of IZD1, IZDM, and IZDN, and 
-their current values are incorrect.
-.IP "CPSPS2 - SPECIAL-VALUE REPLACEMENT FAILURE"
-There are no two adjacent values in the sparse array which 
-are not special values. Most likely, the entire sparse 
-array is filled with special values.
-.IP "CPTRES - ALGORITHM FAILURE - SEE SPECIALIST"
-An error has occurred while trying to trace the edge of a 
-special-value area. This should not be possible. See the 
-Conpack specialist.
+Various error conditions can occur in Conpack.  Each of these results in
+a call to the error-handling routine SETER, with a final argument indicating
+that the error is recoverable; by default, an error message is printed and
+execution is terminated, but, if you turn on error recovery
+(as described in the "man" page for "error_handling"), you
+can get control back.
+.sp
+The error messages are as follows:
+.sp
+.in +5
+CPBACK - INITIALIZATION CALL NOT DONE
+.br
+CPBACK - UNCLEARED PRIOR ERROR
+.br
+CPCFLB - ERROR EXIT FROM GQCLIP
+.br
+CPCFLB - ERROR EXIT FROM GQFACI
+.br
+CPCFLB - ERROR EXIT FROM GQLWSC
+.br
+CPCFLB - ERROR EXIT FROM GQPLCI
+.br
+CPCFLB - ERROR EXIT FROM GQTXCI
+.br
+CPCICA - CANNOT CONTINUE - CPMPXY DOES NOT DO INVERSE MAPPINGS
+.br
+CPCICA - INITIALIZATION CALL NOT DONE
+.br
+CPCICA - ONE OF THE CORNER POINTS OF THE CELL ARRAY IS INCORRECT
+.br
+CPCICA - THE DIMENSIONS OF THE CELL ARRAY ARE INCORRECT
+.br
+CPCICA - UNCLEARED PRIOR ERROR
+.br
+CPCLAM - CONTRADICTORY AREA-IDENTIFIER INFORMATION
+.br
+CPCLAM - INITIALIZATION CALL NOT DONE
+.br
+CPCLAM - UNCLEARED PRIOR ERROR
+.br
+CPCLDM - ERROR EXIT FROM GQLWSC
+.br
+CPCLDM - ERROR EXIT FROM GQPLCI
+.br
+CPCLDM - ERROR EXIT FROM GQTXCI
+.br
+CPCLDM - INITIALIZATION CALL NOT DONE
+.br
+CPCLDM - UNCLEARED PRIOR ERROR
+.br
+CPCLDR - ERROR EXIT FROM GQLWSC
+.br
+CPCLDR - ERROR EXIT FROM GQPLCI
+.br
+CPCLDR - ERROR EXIT FROM GQTXCI
+.br
+CPCLDR - INITIALIZATION CALL NOT DONE
+.br
+CPCLDR - UNCLEARED PRIOR ERROR
+.br
+CPCLTR - INITIALIZATION CALL NOT DONE
+.br
+CPCLTR - UNCLEARED PRIOR ERROR
+.br
+CPCNRC - UNCLEARED PRIOR ERROR
+.br
+CPEZCT - UNCLEARED PRIOR ERROR
+.br
+CPGETC - GETTING X - PAI INCORRECT
+.br
+CPGETC - PARAMETER NAME NOT KNOWN - X
+.br
+CPGETC - PARAMETER NAME TOO SHORT - X
+.br
+CPGETC - UNCLEARED PRIOR ERROR
+.br
+CPGETI - UNCLEARED PRIOR ERROR
+.br
+CPGETR - GETTING X - PAI INCORRECT
+.br
+CPGETR - PARAMETER NAME NOT KNOWN - X
+.br
+CPGETR - PARAMETER NAME TOO SHORT - X
+.br
+CPGETR - UNCLEARED PRIOR ERROR
+.br
+CPGIWS - ARGUMENT ERROR - SEE SPECIALIST
+.br
+CPGIWS - INTEGER WORKSPACE OVERFLOW
+.br
+CPGRWS - ARGUMENT ERROR - SEE SPECIALIST
+.br
+CPGRWS - REAL WORKSPACE OVERFLOW
+.br
+CPHLLB - ERROR EXIT FROM GQFACI
+.br
+CPHLLB - ERROR EXIT FROM GQLWSC
+.br
+CPHLLB - ERROR EXIT FROM GQPLCI
+.br
+CPHLLB - ERROR EXIT FROM GQTXCI
+.br
+CPINLB - ERROR EXIT FROM GQCLIP
+.br
+CPINLB - ERROR EXIT FROM GQFACI
+.br
+CPINLB - ERROR EXIT FROM GQLWSC
+.br
+CPINLB - ERROR EXIT FROM GQPLCI
+.br
+CPINLB - ERROR EXIT FROM GQTXCI
+.br
+CPLBAM - INITIALIZATION CALL NOT DONE
+.br
+CPLBAM - UNCLEARED PRIOR ERROR
+.br
+CPLBDR - ERROR EXIT FROM GQCLIP
+.br
+CPLBDR - ERROR EXIT FROM GQFACI
+.br
+CPLBDR - ERROR EXIT FROM GQLWSC
+.br
+CPLBDR - ERROR EXIT FROM GQPLCI
+.br
+CPLBDR - ERROR EXIT FROM GQTXCI
+.br
+CPLBDR - INITIALIZATION CALL NOT DONE
+.br
+CPLBDR - UNCLEARED PRIOR ERROR
+.br
+CPMVIW - NEW WORKSPACE ARRAY IS TOO SMALL
+.br
+CPMVIW - UNCLEARED PRIOR ERROR
+.br
+CPMVRW - NEW WORKSPACE ARRAY IS TOO SMALL
+.br
+CPMVRW - UNCLEARED PRIOR ERROR
+.br
+CPPKCL - INITIALIZATION CALL NOT DONE
+.br
+CPPKCL - TOO MANY CONTOUR LEVELS
+.br
+CPPKCL - UNCLEARED PRIOR ERROR
+.br
+CPPKLB - INITIALIZATION CALL NOT DONE
+.br
+CPPKLB - UNCLEARED PRIOR ERROR
+.br
+CPPKLP - INITIALIZATION CALL NOT DONE
+.br
+CPPKLP - UNCLEARED PRIOR ERROR
+.br
+CPRECT - UNCLEARED PRIOR ERROR
+.br
+CPRSET - UNCLEARED PRIOR ERROR
+.br
+CPSETC - PARAMETER NAME NOT KNOWN - X
+.br
+CPSETC - PARAMETER NAME TOO SHORT - X
+.br
+CPSETC - SETTING X - PAI INCORRECT
+.br
+CPSETC - UNCLEARED PRIOR ERROR
+.br
+CPSETI - UNCLEARED PRIOR ERROR
+.br
+CPSETR - NCL LESS THAN 1 OR GREATER THAN n
+.br
+CPSETR - PARAMETER NAME NOT KNOWN - X
+.br
+CPSETR - PARAMETER NAME TOO SHORT - X
+.br
+CPSETR - SETTING X - PAI INCORRECT
+.br
+CPSETR - UNCLEARED PRIOR ERROR
+.br
+CPSPRS - UNCLEARED PRIOR ERROR
+.br
+CPSPS1 - CANNOT CONTINUE WITHOUT WORKSPACE
+.br
+CPSPS1 - IZD1, IZDM, OR IZDN SET INCORRECTLY
+.br
+CPSPS1 - SPECIAL-VALUE REPLACEMENT FAILURE
+.br
+CPSPS1 - UNCLEARED PRIOR ERROR
+.br
+CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPACE
+.br
+CPSPS2 - ERROR IN CALL TO MSSRF1
+.br
+CPSPS2 - IZD1, IZDM, OR IZDN SET INCORRECTLY
+.br
+CPSPS2 - SPECIAL-VALUE REPLACEMENT FAILURE
+.br
+CPSPS2 - UNCLEARED PRIOR ERROR
+.br
+CPTRES - ALGORITHM FAILURE - SEE SPECIALIST
+.in -5
+.sp
 .SH SEE ALSO
 Online: 
 conpack_params, 
 cpback, cpchcf, cpchcl, cpchhl, cpchil, cpchll, cpcica, cpclam, cpcldm,
 cpcldr, cpcltr, cpcnrc, cpdrpl, cpezct, cpgetc, cpgeti, cpgetr, cplbam,
-cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpsetc, cpseti,
-cpsetr, cpsprs, cpsps1, cpsps2, ncarg_cbind
+cplbdr, cpmpxy, cpmviw, cpmvrw, cppkcl, cppklb, cprect, cprset, cpscae,
+cpsetc, cpseti, cpsetr, cpsprs, cpsps1, cpsps2, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial

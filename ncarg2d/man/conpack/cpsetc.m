@@ -62,8 +62,8 @@ conpack,
 conpack_params,
 cpback, cpchcf, cpchcl, cpchhl, cpchil, cpchll, cpcica, cpclam, cpcldm,
 cpcldr, cpcltr, cpcnrc, cpdrpl, cpezct, cpgetc, cpgeti, cpgetr, cplbam,
-cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpseti,
-cpsetr, cpsps1, cpsps2, ncarg_cbind
+cplbdr, cpmpxy, cpmviw, cpmvrw, cppkcl, cppklb, cprect, cprset, cpscae,
+cpseti, cpsetr, cpsps1, cpsps2, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
