@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.9 1994-06-03 19:23:44 dbrown Exp $
+ *      $Id: Contour.h,v 1.10 1994-06-24 00:39:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,31 +29,27 @@
 
 /* Level selection modes */
 
-#define Nhl_cnMANUAL		0
-#define Nhl_cnEQUALSPACING	1
-#define Nhl_cnAUTOMATIC		2
-#define Nhl_cnEXPLICIT		3
+typedef enum _NhlcnLevelSelectionMode { 
+	NhlcnAUTOMATIC, NhlcnMANUAL, 
+	NhlcnEXPLICIT, NhlcnEQUALSPACING } NhlcnLevelSelectionMode;
+
+#define NhlTcnLevelSelectionMode "cnlevelselectionmode"
 
 /* Level usage modes */
 
-#define Nhl_cnNOLINE		0
-#define Nhl_cnLINEONLY		1
-#define Nhl_cnLABELONLY		2
-#define Nhl_cnLINEANDLABEL	3
+typedef enum _NhlcnLevelUseMode {
+	NhlcnNOLINE, NhlcnLINEONLY, 
+	NhlcnLABELONLY, NhlcnLINEANDLABEL } NhlcnLevelUseMode;
+
+#define NhlTcnLevelUseMode	"cnlevelusemode"
 
 /* Line label spacing */
 
-#define Nhl_cnNOLABELS		0
-#define Nhl_cnCONSTANT		1
-#define Nhl_cnRANDOMIZED	2
-#define Nhl_cnSMART		3
+typedef enum _NhlcnLineLabelSpacingMode {
+	NhlcnNOLABELS, NhlcnCONSTANT, 
+	NhlcnRANDOMIZED, NhlcnCOMPUTED } NhlcnLineLabelSpacingMode;
 
-/* Line label mask modes */
-
-#define Nhl_cnNOMASK		0
-#define Nhl_cnSOLIDMASK		1
-#define Nhl_cnSOFTMASK		2
-
+#define NhlTcnLineLabelSpacingMode	"cnlinelabelspacingmode"
 
 /*
  * DataDep objects resources
@@ -68,7 +64,6 @@
 
 #define NhlNcnScalarFieldData		"cnScalarFieldData"
 #define NhlNcnOutOfRangeValF		"cnOutOfRangeValF"
-#define NhlNcnSpecialValF		"cnSpecialValF"
 
 #define NhlNcnLevelCount		".cnLevelCount"		/* read-only */
 #define NhlNcnLevelSelectionMode	"cnLevelSelectionMode"

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.9 1994-06-03 19:23:46 dbrown Exp $
+ *      $Id: ContourP.h,v 1.10 1994-06-24 00:39:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,8 +38,8 @@
 #define Nhl_cnDEF_LINE_LABEL_STRING	"LL_"
 #define Nhl_cnINT_WKSPACE	1000
 #define Nhl_cnFLOAT_WKSPACE	5000
-#define Nhl_cnSTD_VIEW_WIDTH	1.0
-#define Nhl_cnSTD_VIEW_HEIGHT	1.0
+#define Nhl_cnSTD_VIEW_WIDTH	0.5
+#define Nhl_cnSTD_VIEW_HEIGHT	0.5
 #define NhlcnMAPVAL		99
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
@@ -48,7 +48,7 @@ typedef enum { _cnCONSTF, _cnINFO } _cnAnnoType;
 
 typedef struct _NhlcnLabelAttrs {
 	NhlBoolean		on;
-	NhlString		*text;
+	NhlPointer		text; /* cast to NhlString or NhlString* */
 	NhlString		format;
 	NhlBoolean		height_set;
 	float			height;
@@ -97,10 +97,9 @@ typedef struct _NhlContourLayerPart {
 	NhlGenArray	scalar_field_data;
 
 	float		out_of_range_val;
-	float		special_val;
 
+	NhlcnLevelSelectionMode		level_selection_mode;
 	int		level_count;
-	int		level_selection_mode;
 	int		max_level_count;
 	float		level_spacing;
 	NhlBoolean	label_masking;
@@ -136,7 +135,7 @@ typedef struct _NhlContourLayerPart {
 
 	NhlBoolean	line_dash_seglen_set;
 	float		line_dash_seglen;
-	int		llabel_spacing;
+	NhlcnLineLabelSpacingMode	llabel_spacing;
 
 	NhlBoolean	low_use_high_attrs;
 	NhlBoolean	high_use_line_attrs;
@@ -152,6 +151,10 @@ typedef struct _NhlContourLayerPart {
 	NhlcnLabelAttrs 	constf_lbl;
 	NhlAnnotationRec	constf_lbl_rec;
 
+	NhlAnnotationDisplayMode	display_labelbar;
+	NhlAnnotationDisplayMode	display_legend;
+	NhlAnnotationDisplayMode	display_titles;
+	NhlAnnotationDisplayMode	display_tickmarks;
 	float 		x_min;
 	float		x_max;
 	NhlBoolean	x_log;
@@ -160,8 +163,6 @@ typedef struct _NhlContourLayerPart {
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
-	int		display_labelbar;
-	int		display_legend;
 	NhlBoolean	auto_legend_labels;
 	NhlGenArray	legend_labels;
 	NhlString	legend_title;

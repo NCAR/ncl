@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.5 1994-04-29 21:31:16 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.6 1994-06-24 00:39:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,11 +27,66 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/MapPlot.h>
 
+typedef struct _NhlmpLineAttrs {
+	NhlBoolean	on;
+	NhlBoolean	delay;
+	int		color;
+	int		dash_pat;
+	float		dash_len;
+	float		thickness;
+} NhlmpLineAttrs;
+
+typedef struct _NhlmpLabelAttrs {
+	NhlBoolean		on;
+	NhlString		*text;
+	NhlString		format;
+	NhlBoolean		height_set;
+	float			height;
+	NhlTextDirection	direction;
+	NhlFont			font;
+	int			mono_color;
+	int			*colors;
+	float			aspect;
+	float			thickness;
+	NhlFontQuality		quality;
+	float			cspacing;
+	float			angle;
+	char			fcode[2];
+	int			back_color;
+	NhlBoolean		perim_on;
+	float			perim_space;
+	float			perim_lthick;
+	int			perim_lcolor;
+	int			gks_bcolor;
+	int			gks_plcolor;
+	float			real_height;
+	float			pheight;
+	float			pwidth;
+	float			x_pos;
+	float			y_pos;
+	NhlJustification	just;
+} NhlmpLabelAttrs;
+
 typedef struct NhlMapPlotLayerPart {
 
 	/* Public resources */
 
-	NhlBoolean		delay_outline;
+	NhlBoolean	mono_fill_color;
+	NhlBoolean	mono_fill_pattern;
+	NhlBoolean	mono_fill_scale;
+	NhlGenArray	fill_colors;
+	NhlGenArray	fill_patterns;
+	NhlGenArray	fill_scales;
+	NhlMapOutlineType outline_type;
+	NhlBoolean	delay_outline;
+	NhlmpLineAttrs	continents;
+	NhlmpLineAttrs	us_states;
+	NhlmpLineAttrs	countries;
+	float		grid_spacing;
+	NhlmpLineAttrs	grid;
+	NhlmpLineAttrs	limb;
+	NhlmpLineAttrs	perim;
+	NhlmpLabelAttrs labels;
 
 	/* Private Fields */
 

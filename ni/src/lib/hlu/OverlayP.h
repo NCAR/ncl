@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.9 1994-06-07 18:54:23 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.10 1994-06-24 00:39:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #define NhlOV_DEF_TITLE_ZONE	4
 #define NhlOV_DEF_LABELBAR_ZONE 6
 #define NhlOV_DEF_LEGEND_ZONE	7
+#define NhlOV_DEF_TITLE_HEIGHT  0.02
 
 /* Zone/Display flags */
 
@@ -63,6 +64,7 @@ typedef struct _NhlAnnoRec {
 	NhlBoolean		track_data;
 	float			data_x;
 	float			data_y;
+	NhlBoolean		out_of_range;
 	struct _NhlAnnoRec	*next;
 } NhlAnnoRec;
 	
@@ -81,14 +83,14 @@ typedef struct _NhlOverlayLayerPart {
 	NhlGenArray		pre_draw_order;
 	NhlGenArray		post_draw_order;
 
-	int			display_tickmarks;
-	int			tickmark_zone;
-	int			display_titles;
-	int			title_zone;
-	int			display_labelbar;
-	int			labelbar_zone;
-	int			display_legend;
-	int			legend_zone;
+	NhlAnnotationDisplayMode	display_tickmarks;
+	int				tickmark_zone;
+	NhlAnnotationDisplayMode	display_titles;
+	int				title_zone;
+	NhlAnnotationDisplayMode	display_labelbar;
+	int				labelbar_zone;
+	NhlAnnotationDisplayMode	display_legend;
+	int				legend_zone;
 
 	/* intercepted tickmark resources */
 
@@ -115,6 +117,12 @@ typedef struct _NhlOverlayLayerPart {
 	NhlTitlePositions	ti_main_position;
 	NhlTitlePositions	ti_x_axis_position;
 	NhlTitlePositions	ti_y_axis_position;
+	NhlBoolean		ti_main_font_height_set;
+	float			ti_main_font_height;
+	NhlBoolean		ti_x_axis_font_height_set;
+	float			ti_x_axis_font_height;
+	NhlBoolean		ti_y_axis_font_height_set;
+	float			ti_y_axis_font_height;
 
 	/* labelbar resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.17 1994-06-03 16:38:04 ethan Exp $
+ *      $Id: hlu.h,v 1.18 1994-06-24 00:40:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -105,6 +105,9 @@
 #define NhlT1DFloatGenArray "1DFloatGenArray"
 #define NhlT1DIntGenArray "1DIntGenArray"
 #define NhlT1DStringGenArray "1DStringGenArray"
+#define NhlTFloatGenArray "FloatGenArray"
+#define NhlTIntGenArray    "IntGenArray"
+#define NhlTStringGenArray "StringGenArray"
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;

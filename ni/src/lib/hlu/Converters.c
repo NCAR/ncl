@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.14 1994-06-17 21:17:27 dbrown Exp $
+ *      $Id: Converters.c,v 1.15 1994-06-24 00:39:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,7 @@ static NrmQuark	quarkQ;
 static NrmQuark	doubleQ;
 static NrmQuark	longQ;
 static NrmQuark	shortQ;
+static NrmQuark	charQ;
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -1451,7 +1452,6 @@ static NhlErrorTypes NhlCvtGenToFloatGen
 	NhlGenArray tgen;
 	NhlGenArray gen;
 	char *name  = "NhlCvtGenToFloatGen";
-	NhlErrorTypes	ret = NhlNOERROR;
 	float *to_data = NULL;
 	int i;
 
@@ -1470,17 +1470,15 @@ static NhlErrorTypes NhlCvtGenToFloatGen
 		return(NhlNOERROR);
 	} else {
 		if(gen->typeQ ==intQ) {
-			int *from_data;
-			from_data = (int*) gen->data;
+			int *from_data = (int *) gen->data;
+
 			to_data = (float*)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
 			for(i = 0; i < gen->num_elements; i++) {
 				to_data[i] = (float)from_data[i];
 			}
-		} else if(gen->typeQ == longQ) {
-			long *from_data;
-			from_data = (long*)gen->data;
-
+		} else if(gen->typeQ == charQ) {
+			char *from_data = (char *)gen->data;
 
 			to_data = (float*)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
@@ -1488,37 +1486,43 @@ static NhlErrorTypes NhlCvtGenToFloatGen
 				to_data[i] = (float)from_data[i];
 			}
 		} else if(gen->typeQ == shortQ) {
-			short *from_data;
+			short *from_data = (short *)gen->data;
+
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+		} else if(gen->typeQ == longQ) {
+			long *from_data = (long *)gen->data;
+
 			to_data = (float*)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
 			for(i = 0; i < gen->num_elements; i++) {
 				to_data[i] = (float)from_data[i];
 			}
 		} else if(gen->typeQ == doubleQ) {
-			double *from_data;
+			double *from_data = (double *)gen->data;
 
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
-			to_data = (float*)NhlConvertMalloc(
+			to_data = (float *)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
-			from_data = (double*)gen->data;
 			for(i = 0; i < gen->num_elements; i++) {
 				to_data[i] = (float)from_data[i];
 			}
 		} else if(gen->typeQ == stringQ) {
-			char **from_data;
-			
+			char **from_data = (char **)gen->data;
+
 			to_data = (float*)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
-			from_data = (char**)gen->data;
 			for(i = 0; i< gen->num_elements; i++) {	
 				to_data[i] = (float)atof(from_data[i]);
 			}
 		} else if(gen->typeQ == quarkQ) {
-			int *from_data;
+			int *from_data = (int *)gen->data;
 			
 			to_data = (float*)NhlConvertMalloc(
 				gen->num_elements*sizeof(float));
-			from_data = (int*)gen->data;
 			for(i = 0; i< gen->num_elements; i++) {	
 				to_data[i] = (float)
 					atof(NrmQuarkToString(from_data[i]));
@@ -2628,6 +2632,7 @@ _NhlConvertersInitialize
 
 	floatQ = NrmStringToQuark(NhlTFloat);
 	intQ = NrmStringToQuark(NhlTInteger);
+	charQ = NrmStringToQuark(NhlTCharacter);
 	shortQ = NrmStringToQuark(NhlTShort);
 	longQ = NrmStringToQuark(NhlTLong);
 	doubleQ = NrmStringToQuark(NhlTDouble);

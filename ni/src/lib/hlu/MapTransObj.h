@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.2 1994-01-27 21:24:50 boote Exp $
+ *      $Id: MapTransObj.h,v 1.3 1994-06-24 00:39:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,18 +23,56 @@
 #ifndef _NMapTransObj_h
 #define _NMapTransObj_h
 
+typedef enum _NhlMapLimitMode {
+	NhlMAXIMALAREA = 0, NhlLATLON, NhlANGLES, NhlCORNERS,
+	NhlWINDOW } NhlMapLimitMode;
+
+#define NhlTMapLimitMode	"maplimitmode"
+
+typedef enum _NhlProjection {
+	NhlORTHOGRAPHIC, NhlSTEREOGRAPHIC, NhlLAMBERT_EQUALAREA,
+	NhlGNOMONIC, NhlAZIMUTHAL_EQUIDISTANT, NhlSATELLITE,
+	NhlMOLLWEIDE, NhlMERCATOR, NhlCYLINDRICAL_EQUIDISTANT,
+	NhlLAMBERT_CONFORMAL } NhlProjection;
+
+#define NhlTProjection	"projection"
+
 #include <ncarg/hlu/TransObj.h>
 
-#define	NhlNmpProjection	"mpProjection"
-#define NhlNmpOutlineType	"mpOutlineType"
+#define	NhlNmpProjection		"mpProjection"
 #define NhlNmpCenterLatF		"mpCenterLatF"
 #define NhlNmpCenterLonF		"mpCenterLonF"
 #define NhlNmpCenterRotF		"mpCenterRotF"
+
+#define NhlNmpMapLimitMode		"mpMapLimitMode"
+#define NhlNmpMinLatF			"mpMinLatF"
+#define NhlNmpMaxLatF			"mpMaxLatF"
+#define NhlNmpMinLonF			"mpMinLonF"
+#define NhlNmpMaxLonF			"mpMaxLonF"
+#define NhlNmpLeftAngleF		"mpLeftAngleF"
+#define NhlNmpRightAngleF		"mpRightAngleF"
+#define NhlNmpBottomAngleF		"mpBottomAngleF"
+#define NhlNmpTopAngleF			"mpTopAngleF"
+#define NhlNmpActualMinLatF		"mpActualMinLatF"
+#define NhlNmpActualMaxLatF		"mpActualMaxLatF"
+#define NhlNmpActualMinLonF		"mpActualMinLonF"
+#define NhlNmpActualMaxLonF		"mpActualMaxLonF"
+
+#define NhlNmpLeftCornerLatF		"mpLeftCornerLatF"
+#define NhlNmpLeftCornerLonF		"mpLeftCornerLonF"
+#define NhlNmpRightCornerLatF		"mpRightCornerLatF"
+#define NhlNmpRightCornerLonF		"mpRightCornerLonF"
+#define NhlNmpLeftWindowF		"mpLeftWindowF"
+#define NhlNmpRightWindowF		"mpRightWindowF"
+#define NhlNmpBottomWindowF		"mpBottomWindowF"
+#define NhlNmpTopWindowF		"mpTopWindowF"
+
 #define NhlNmpRectLimitType		"mpRectLimitType"
 #define NhlNmpRectLimit1		"mpRectLimit1"
 #define NhlNmpRectLimit2		"mpRectLimit2"
 #define NhlNmpRectLimit3		"mpRectLimit3"
 #define NhlNmpRectLimit4		"mpRectLimit4"
+
 #define NhlNmpLambertParallel1F		"mpLambertParallel1F"
 #define NhlNmpLambertParallel2F		"mpLambertParallel2F"
 #define NhlNmpLambertMeridianF		"mpLambertMeridianF"
@@ -42,19 +80,37 @@
 #define NhlNmpSatelliteAngle1F		"mpSatelliteAngle1F"
 #define NhlNmpSatelliteAngle2F		"mpSatelliteAngle2F"
 #define NhlNmpEllipticalBoundary	"mpEllipticalBoundary"
-/*
-#define NhlNmpMapPosLF			"mpMapPosLF"
-#define NhlNmpMapPosRF			"mpMapPosRF"
-#define NhlNmpMapPosTF			"mpMapPosTF"
-#define NhlNmpMapPosBF			"mpMapPosBF"
-*/
 
+/* resource classes */
 
 #define	NhlCmpProjection		"MpProjection"
-#define NhlCmpOutlineType		"MpOutlineType"
 #define NhlCmpCenterLatF		"MpCenterLatF"
 #define NhlCmpCenterLonF		"MpCenterLonF"
 #define NhlCmpCenterRotF		"MpCenterRotF"
+
+#define NhlCmpMapLimitMode		"MpMapLimitMode"
+#define NhlCmpMinLatF			"MpMinLatF"
+#define NhlCmpMaxLatF			"MpMaxLatF"
+#define NhlCmpMinLonF			"MpMinLonF"
+#define NhlCmpMaxLonF			"MpMaxLonF"
+#define NhlCmpLeftAngleF		"MpLeftAngleF"
+#define NhlCmpRightAngleF		"MpRightAngleF"
+#define NhlCmpBottomAngleF		"MpBottomAngleF"
+#define NhlCmpTopAngleF			"MpTopAngleF"
+#define NhlCmpActualMinLatF		"MpActualMinLatF"
+#define NhlCmpActualMaxLatF		"MpActualMaxLatF"
+#define NhlCmpActualMinLonF		"MpActualMinLonF"
+#define NhlCmpActualMaxLonF		"MpActualMaxLonF"
+
+#define NhlCmpLeftCornerLatF		"MpLeftCornerLatF"
+#define NhlCmpLeftCornerLonF		"MpLeftCornerLonF"
+#define NhlCmpRightCornerLatF		"MpRightCornerLatF"
+#define NhlCmpRightCornerLonF		"MpRightCornerLonF"
+#define NhlCmpLeftWindowF		"MpLeftWindowF"
+#define NhlCmpRightWindowF		"MpRightWindowF"
+#define NhlCmpBottomWindowF		"MpBottomWindowF"
+#define NhlCmpTopWindowF		"MpTopWindowF"
+
 #define NhlCmpRectLimitType		"MpRectLimitType"
 #define NhlCmpRectLimit1		"MpRectLimit1"
 #define NhlCmpRectLimit2		"MpRectLimit2"
@@ -67,12 +123,6 @@
 #define NhlCmpSatelliteAngle1F		"MpSatelliteAngle1F"
 #define NhlCmpSatelliteAngle2F		"MpSatelliteAngle2F"
 #define NhlCmpEllipticalBoundary	"MpEllipticalBoundary"
-/*
-#define NhlCmpMapPosLF			"MpMapPosLF"
-#define NhlCmpMapPosRF			"MpMapPosRF"
-#define NhlCmpMapPosTF			"MpMapPosTF"
-#define NhlCmpMapPosBF			"MpMapPosBF"
-*/
 
 extern NhlLayerClass NhlmapTransObjLayerClass;
 

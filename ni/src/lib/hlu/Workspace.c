@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.8 1994-06-03 19:24:26 dbrown Exp $
+ *      $Id: Workspace.c,v 1.9 1994-06-24 00:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -498,7 +498,7 @@ static NhlErrorTypes    WorkspaceGetValues
 			*((long *)(args[i].value.lngval)) = 
 				wsp->current_size = wsp->total_size;
 	}
-#if 1 /* for debugging: */
+#if 0 /* for debugging: */
 	{
 		NhlWorkspaceRec *wsrp;
 		int		count = 0;

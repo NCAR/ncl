@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.2 1994-05-17 22:26:20 dbrown Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.3 1994-06-24 00:39:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@ extern NhlLayerClass NhlscalarFieldFloatLayerClass;
 
 typedef struct _NhlScalarFieldFloatLayerPart{
 
-	/* Public resources */
+	/* all fields are private and set directly by the converter */
 
 	NhlGenArray	d_arr;
 	NhlGenArray	x_arr;
@@ -51,8 +51,6 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	float		x_end;
 	float		y_start;
 	float		y_end;
-
-	/* private resources */
 
 	int		begin;
 	int		fast_dim;

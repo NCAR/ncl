@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.7 1994-06-07 18:54:20 dbrown Exp $
+ *      $Id: Overlay.h,v 1.8 1994-06-24 00:39:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,15 +30,11 @@
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/Annotation.h>
 
-/*
- * defines for Display resources (temporary, should be enums)
- */
+typedef enum _NhlAnnotationDisplayMode {
+	NhlNOCREATE,NhlNEVER,NhlCONDITIONAL,NhlALWAYS
+} NhlAnnotationDisplayMode;
 
-#define Nhl_ovNoCreate		0
-#define Nhl_ovNever		1
-#define Nhl_ovConditionally	2
-#define Nhl_ovAlways		3
-
+#define NhlTAnnotationDisplayMode        "annotationdisplaymode"
 
 /*
  * Overlay instance resources

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.2 1994-05-17 22:26:22 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.3 1994-06-24 00:40:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,36 +25,6 @@
 #include <ncarg/hlu/DataItemP.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
-
-/*
- * Private Resource Names 
- * (Used to communicate the variable type public resources to the 
- * ScalarFieldFloat object.)
- */
-
-#define	NhlNsfMissingValueF	".sfMissingValueF"
-#define	NhlNsfDataMaxF		".sfDataMaxF"
-#define	NhlNsfDataMinF		".sfDataMinF"
-#define	NhlNsfXCStartF		".sfXCStartF"
-#define	NhlNsfXCEndF		".sfXCEndF"
-#define	NhlNsfYCStartF		".sfYCStartF"
-#define	NhlNsfYCEndF		".sfYCEndF"
-#define NhlNsfDataBegin		".sfDataBegin"
-#define NhlNsfDataFastDim	".sfDataFastDim"
-#define NhlNsfDataFastLen	".sfDataFastLen"
-#define NhlNsfDataSlowLen	".sfDataSlowLen"
-
-#define	NhlCsfMissingValueF	".SfMissingValueF"
-#define	NhlCsfDataMaxF		".SfDataMaxF"
-#define	NhlCsfDataMinF		".SfDataMinF"
-#define	NhlCsfXCStartF		".SfXCStartF"
-#define	NhlCsfXCEndF		".SfXCEndF"
-#define	NhlCsfYCStartF		".SfYCStartF"
-#define	NhlCsfYCEndF		".SfYCEndF"
-#define NhlCsfDataBegin		".SfDataBegin"
-#define NhlCsfDataFastDim	".SfDataFastDim"
-#define NhlCsfDataFastLen	".SfDataFastLen"
-#define NhlCsfDataSlowLen	".SfDataSlowLen"
 
 typedef struct _NhlScalarFieldLayerPart{
 
@@ -91,6 +61,14 @@ typedef struct _NhlScalarFieldLayerPart{
 	int		x_stride;
 	int		y_stride;
 
+	/* private fields */
+
+	int		ix_start;
+	int		ix_end;
+	int		iy_start;
+	int		iy_end;
+
+	NhlScalarFieldFloatLayer	sffloat;
 
 } NhlScalarFieldLayerPart;
 

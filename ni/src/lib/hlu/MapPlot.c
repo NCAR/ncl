@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.7 1994-05-12 23:51:46 boote Exp $
+ *      $Id: MapPlot.c,v 1.8 1994-06-24 00:39:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,10 +27,14 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
-
+#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
 
 #define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
 static NhlResource resources[] = {
+	{NhlNmpOutlineType,NhlCmpOutlineType,NhlTString,sizeof(char*),
+		 Oset(outline_type),
+		 NhlTString,_NhlUSET("PS"),0,(NhlFreeFunc)NhlFree},
 	{NhlNmpDelayOutline,NhlCmpDelayOutline,NhlTBoolean,
 		 sizeof(long),Oset(delay_outline),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
@@ -196,8 +200,54 @@ MapPlotClassInitialize
 ()
 #endif
 {
+        NhlConvertArg   outlinetypelist[] = {
+        {NhlSTRENUM,    NhlNOOUTLINES,		_NhlUSET("nooutlines")},
+        {NhlSTRENUM,    NhlCONTINENTS, 		_NhlUSET("continents")},
+        {NhlSTRENUM,    NhlUSSTATES,      	_NhlUSET("usstates")},
+        {NhlSTRENUM,    NhlALLOUTLINES,     	_NhlUSET("alloutlines")},
+        {NhlSTRENUM,    NhlCONTINENTSANDCOUNTRIES,
+		 			_NhlUSET("continentsandcountries")},
+        {NhlSTRENUM,    NhlSIMPLIFIEDCONTINENTS,
+					_NhlUSET("simplifiedcontinents")}
+        };
 
+        NhlConvertArg   intoutlinetypelist[] = {
+        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlNOOUTLINES)},
+        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlCONTINENTS)},
+        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlUSSTATES)},
+        {NhlIMMEDIATE,  sizeof(int),    _NhlUSET((NhlPointer)NhlALLOUTLINES)},
+        {NhlIMMEDIATE,  sizeof(int),    
+		 	      _NhlUSET((NhlPointer)NhlCONTINENTSANDCOUNTRIES)},
+        {NhlIMMEDIATE,  sizeof(int),    
+		 	      _NhlUSET((NhlPointer) NhlSIMPLIFIEDCONTINENTS)},
+
+	};
+
+        NhlConvertArg   outlinetypegentoenumdat[] = {
+        {NhlIMMEDIATE,sizeof(char*),_NhlUSET((NhlPointer)NhlTMapOutlineType)},
+        };
+
+        NhlRegisterConverter(NhlTGenArray,NhlTMapOutlineType,NhlCvtGenToEnum,
+			     outlinetypegentoenumdat,1,False,NULL);
+
+        NhlRegisterConverter(NhlTString,NhlTMapOutlineType,NhlCvtStringToEnum,
+			     outlinetypelist,
+			     NhlNumber(outlinetypelist),False,NULL);
+        NhlRegisterConverter(NhlTInteger,NhlTMapOutlineType,NhlCvtIntToEnum,
+			     intoutlinetypelist,
+			     NhlNumber(intoutlinetypelist),False,NULL);
+        NhlRegisterConverter(NhlTFloat,NhlTMapOutlineType,NhlCvtFloatToEnum,
+			     intoutlinetypelist,
+			     NhlNumber(intoutlinetypelist),False,NULL);
+        NhlRegisterConverter(NhlTMapOutlineType,NhlTString,NhlCvtEnumToString,
+			     outlinetypelist,
+			     NhlNumber(outlinetypelist),False,NULL);
+        NhlRegisterConverter(NhlTMapOutlineType,
+			     _NhlTFExpString,NhlCvtEnumToFStr,
+			     outlinetypelist,
+			     NhlNumber(outlinetypelist),False,NULL);
 	return NhlNOERROR;
+
 }
 
 /*
@@ -446,7 +496,7 @@ static NhlErrorTypes MapPlotDraw
 	NhlTransformLayerPart	*tfp = &(mp->trans);
 
 	if (mp->mapplot.delay_outline) return ret;
-	return ret;
+
 	subret = _NhlActivateWorkstation(mp->base.wkptr);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -515,7 +565,6 @@ static NhlErrorTypes MapPlotPostDraw
 	NhlTransformLayerPart	*tfp = &(mp->trans);
 
 	if (! mp->mapplot.delay_outline) return ret;
-	return ret;
 
 	subret = _NhlActivateWorkstation(mp->base.wkptr);
 

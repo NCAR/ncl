@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.3 1994-01-27 21:24:53 boote Exp $
+ *      $Id: MapTransObjP.h,v 1.4 1994-06-24 00:39:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,17 +28,39 @@
 #include <ncarg/hlu/MapTransObj.h>
 
 typedef struct _NhlMapTransObjLayerPart{
-	/* User setable resource fields */
-	char	*projection;
-	char	*outline_type;
+
+	/* User resource fields */
+
+	NhlProjection	projection;
+
 	float	center_lat;
 	float	center_lon;
 	float	center_rot;
-	char	*rect_limit_type;
-	float	*rect_limit_1;
-	float	*rect_limit_2;
-	float	*rect_limit_3;
-	float	*rect_limit_4;
+
+	NhlMapLimitMode	map_limit_mode;
+	float		min_lat;
+	float		max_lat;
+	float		min_lon;
+	float		max_lon;
+	float		left_angle;
+	float		right_angle;
+	float		bottom_angle;
+	float		top_angle;
+	float		actual_min_lat;
+	float		actual_max_lat;
+	float		actual_min_lon;
+	float		actual_max_lon;
+	
+	float		left_corner_lat;
+	float		left_corner_lon;
+	float		right_corner_lat;
+	float		right_corner_lon;
+
+	float		left_window;
+	float		right_window;
+	float		bottom_window;
+	float		top_window;
+
 	float	lambert_parallel_1;
 	float	lambert_parallel_2;
 	float	lambert_meridian;
@@ -46,6 +68,13 @@ typedef struct _NhlMapTransObjLayerPart{
 	float	satellite_angle_1;
 	float	satellite_angle_2;
 	int	elliptical_boundary;
+
+	char	*rect_limit_type;
+	float	*rect_limit_1;
+	float	*rect_limit_2;
+	float	*rect_limit_3;
+	float	*rect_limit_4;
+
 	/* Private Fields */
 	float	aspect;
 	float	map_pos_l;
@@ -56,6 +85,7 @@ typedef struct _NhlMapTransObjLayerPart{
 	float	ur;
 	float 	ut;
 	float	ub;
+	NhlBoolean updated;
 }NhlMapTransObjLayerPart;
 
 typedef struct _NhlMapTransObjLayerRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.9 1994-05-12 23:52:39 boote Exp $
+ *      $Id: Title.c,v 1.10 1994-06-24 00:40:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1551,29 +1551,34 @@ static NhlErrorTypes TitleGetBB
 	NhlTitleLayer tinstance = (NhlTitleLayer) instance;
 	float x0,y0,width,height;
 
-	NhlVAGetValues(tinstance->title.main_id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF, &height, NULL);
+	if(tinstance->title.main_on) {
+		NhlVAGetValues(tinstance->title.main_id,
+			       NhlNvpXF,&x0,
+			       NhlNvpYF,&y0,
+			       NhlNvpWidthF,&width,
+			       NhlNvpHeightF, &height, NULL);
 
-	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
+		_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
+	}
+	if(tinstance->title.x_axis_on) {
+		NhlVAGetValues(tinstance->title.x_axis_id,
+			       NhlNvpXF,&x0,
+			       NhlNvpYF,&y0,
+			       NhlNvpWidthF,&width,
+			       NhlNvpHeightF, &height, NULL);
+		
+		_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
+	}
 
-	NhlVAGetValues(tinstance->title.x_axis_id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF, &height, NULL);
-
-	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
-
-	NhlVAGetValues(tinstance->title.y_axis_id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF, &height, NULL);
-
-	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
+	if(tinstance->title.y_axis_on) {
+		NhlVAGetValues(tinstance->title.y_axis_id,
+			       NhlNvpXF,&x0,
+			       NhlNvpYF,&y0,
+			       NhlNvpWidthF,&width,
+			       NhlNvpHeightF, &height, NULL);
+		
+		_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
+	}
 
 	return(NhlNOERROR);
 }

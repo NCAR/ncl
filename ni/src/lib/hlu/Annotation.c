@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.2 1994-06-07 18:54:09 dbrown Exp $
+ *      $Id: Annotation.c,v 1.3 1994-06-24 00:39:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,9 @@ static NhlResource resources[] = {
 		 Oset(on),NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNanPlotId,NhlCanPlotId,NhlTInteger,sizeof(int),
 		 Oset(plot_id),NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
+	{NhlNanOverlayBaseId,NhlCanOverlayBaseId,NhlTInteger,sizeof(int),
+		 Oset(overlay_base_id),
+		 NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
 	{NhlNanResizeNotify,NhlCanResizeNotify,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(resize_notify),NhlTImmediate,
 		 _NhlUSET((NhlPointer)False),0,NULL},
@@ -267,7 +270,14 @@ AnnotationDestroy
 	NhlLayer	layer;
 #endif
 {
-	return (NhlNOERROR);
+	NhlAnnotationLayer 	an = (NhlAnnotationLayer) layer;
+	NhlErrorTypes		ret = NhlNOERROR;
+
+	if (an->annotation.overlay_base_id > -1) {
+		ret = NhlUnregisterAnnotation(an->annotation.overlay_base_id,
+					      an->base.id);
+	}
+	return ret;
 }
 
 
