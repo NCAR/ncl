@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.33 1994-04-14 18:04:02 clyne Exp $
+ *	$Id: rast.c,v 1.34 1995-01-14 00:25:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -617,10 +617,6 @@ CGMC *c;
 {
 
 	if (VDC_EXTENT_DAMAGE || rasDevExtentChanged) {
-		int	width, height;
-
-		width = ABS(rasDevExtent.llx - rasDevExtent.urx) + 1;
-		height = ABS(rasDevExtent.lly - rasDevExtent.ury) + 1;
 
 		transinit(&rasDevExtent, rasCoordMod, TRUE);
 
@@ -628,7 +624,13 @@ CGMC *c;
 		 * initialize the software fill module. This needs to
 		 * be initialized every time the window changes sizes
 		 */
-		if (initSoftSim(0, width-1, 0, height-1) < 0) return(-1);
+		if (initSoftSim(
+			rasDevExtent.llx, rasDevExtent.urx,
+			rasDevExtent.lly, rasDevExtent.ury
+			) < 0) {
+
+			return(-1);
+		}
 
 		VDC_EXTENT_DAMAGE = FALSE;
 		rasDevExtentChanged = FALSE;

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.17 1993-02-02 22:38:06 clyne Exp $
+ *	$Id: sunraster.c,v 1.18 1995-01-14 00:25:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -170,11 +170,6 @@ CGMC *c;
 		 */
 		if (init_sunv(TRUE) < 0) return(-1);
 
-		/*
-		 * initialize the software fill module. This needs to 
-		 * be initialized every time the window changes sizes
-		 */
-		if (initSoftSim(0, dev.width-1, 0, dev.height-1)<0) return(-1);
 
 		/*
 		 *	calculate X device coordinate transfer macro
@@ -184,6 +179,18 @@ CGMC *c;
 		dev_extent.urx = dev.width - 1;
 
 		transinit(&dev_extent, coord_mod, TRUE);
+
+		/*
+		 * initialize the software fill module. This needs to 
+		 * be initialized every time the window changes sizes
+		 */
+		if (initSoftSim(
+			dev_extent.llx, dev_extent.ury,
+			dev_extent.lly, dev_extent.ury
+			) < 0) {
+
+			return(-1);
+		}
 	}
 
 	deviceIsInit = TRUE;	/* we are initialized	*/

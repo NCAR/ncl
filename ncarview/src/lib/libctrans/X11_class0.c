@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.33 1994-04-20 16:05:28 clyne Exp $
+ *	$Id: X11_class0.c,v 1.34 1995-01-14 00:25:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -694,16 +694,6 @@ CGMC *c;
 		dev.height = xwa.height;
 		dev.width = xwa.width;
 
-		/*
-		 * if software simulation of polygon filling is desired
-		 * initialize soft sim module with new height and width
-		 */
-		if (*softFill) {
-			if (initSoftSim(0, dev.width-1, 0, dev.height-1) < 0) {
-				return(-1);
-			}
-		}
-
 		if (fontstruct != NULL && !Batch && x11_opts.wid == -1) {
 
 			/*
@@ -734,6 +724,21 @@ CGMC *c;
 		dev_extent.urx = dev.width - 1;
 
 		transinit(&dev_extent, dev_coord_mod, TRUE);
+
+		/*
+		 * if software simulation of polygon filling is desired
+		 * initialize soft sim module with new height and width
+		 */
+		if (*softFill) {
+			if (initSoftSim(
+				dev_extent.llx, dev_extent.urx,
+				dev_extent.lly, dev_extent.ury
+				) < 0) {
+
+				return(-1);
+			}
+		}
+
 		GCSetClipExtent(dev_extent.llx, dev_extent.ury,
 				dev_extent.urx, dev_extent.lly);
 	}

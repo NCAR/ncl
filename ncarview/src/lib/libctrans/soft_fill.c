@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.12 1995-01-05 20:42:12 clyne Exp $
+ *	$Id: soft_fill.c,v 1.13 1995-01-14 00:25:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -317,6 +317,8 @@ static	int	max_array_val(a, n)
 {
 	int	i, max;
 
+	if (n < 1) return(0);
+
 	max = a[0];
 	for(i=1; i<n; i++) {
 		max = max < a[i] ? a[i] : max;
@@ -416,8 +418,8 @@ static void	free_fill_table()
  * on entry
  *	minx		: minimum x extent in device coords
  *	maxx		: maximum x extent in device coords
- *	minx		: minimum y extent in device coords
- *	maxx		: maximum y extent in device coords
+ *	miny		: minimum y extent in device coords
+ *	maxy		: maximum y extent in device coords
  */
 #ifdef	NeedFuncProto
 int	initSoftSim(DCtype minx, DCtype maxx, DCtype miny, DCtype maxy)
@@ -429,7 +431,6 @@ int	initSoftSim(minx, maxx, miny, maxy)
 	DCtype	maxy;
 #endif
 {
-
 	DCtype	temp;
 
 	/*
@@ -450,6 +451,7 @@ int	initSoftSim(minx, maxx, miny, maxy)
 	minX = minx;
 	maxY = maxy;
 	minY = miny;
+
 	xExtent = ABS(maxx - minx) + 1;
 	yExtent = ABS(maxy - miny) + 1;
 
@@ -462,6 +464,7 @@ int	initSoftSim(minx, maxx, miny, maxy)
 	fillTable.y_first = fillTable.y_last = 0;
 
 	isInit = 1;
+	
 
 	return(1);
 }
@@ -530,10 +533,17 @@ FillTable	*buildFillTable(point_list, count)
 	 */
 	bzero((char *) tableWidths, (int) yExtent * sizeof(int));
 	for(i=1; i<=count; i++) {
-		inc = point_list[i-1].y < point_list[i % count].y ? 1 : -1;
-		for(j=point_list[i-1].y; j!=point_list[i % count].y; j+=inc) {
-			CLAMP(j, minY, maxY);
-			tableWidths[j-ymin]++;
+		DCtype y1, y2, tmp, yval;
+
+		y1 = point_list[i-1].y;
+		y2 = point_list[i % count].y;
+
+		if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
+
+		for (j=y1; j<=y2; j++) {
+			yval = j;
+			CLAMP(yval, minY, maxY);
+			tableWidths[yval-ymin]++;
 		}
 	}
 
