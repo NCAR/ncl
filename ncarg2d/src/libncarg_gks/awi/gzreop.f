@@ -222,6 +222,45 @@ C
         CFAISA   = CIATT(29)
         CFASIA   = CIATT(30)
         CFACIA   = CIATT(31)
+C
+        CALL GSCLIP (CCLIP)
+C       CALL GSPLI  (CPLI )
+        CALL GSLN   (CLN  )
+        CALL GSLWSC (CLWSC)
+        CALL GSPLCI (CPLCI)
+C       CALL GSPMI  (CPMI )
+        CALL GSMK   (CMK  )
+        CALL GSMKSC (CMKS )
+        CALL GSPMCI (CPMCI)
+C       CALL GSTXI  (CTXI )
+        CALL GSTXFP (CTXFP(1),CTXFP(2))
+        CALL GSCHXP (CCHXP)
+        CALL GSCHSP (CCHSP)
+        CALL GSTXCI (CTXCI)
+        CALL GSCHH  (CCHH )
+        CALL GSCHUP (CCHUP(1),CCHUP(2))
+        CALL GSTXP  (CTXP )
+        CALL GSTXAL (CTXAL(1),CTXAL(2))
+C       CALL GSFAI  (CFAI )
+        CALL GSFAIS (CFAIS)
+        CALL GSFASI (CFASI)
+        CALL GSFACI (CFACI)
+C       CALL GSPA   (CPA  (1),CPA  (2))
+C       CALL GSPARF (CPARF(1),CPARF(2))
+        LASF( 1) = CLNA
+        LASF( 2) = CLWSCA
+        LASF( 3) = CPLCIA
+        LASF( 4) = CMKA
+        LASF( 5) = CMKSA
+        LASF( 6) = CPMCIA
+        LASF( 7) = CTXFPA
+        LASF( 8) = CCHXPA
+        LASF( 9) = CCHSPA
+        LASF(10) = CTXCIA
+        LASF(11) = CFAISA
+        LASF(12) = CFASIA
+        LASF(13) = CFACIA
+        CALL GSASF (LASF)
       ENDIF
       IF (NOPTN.EQ.2 .OR. NOPTN.EQ.3) THEN
         CALL GSCLIP (CCLIP)
