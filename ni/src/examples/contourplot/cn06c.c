@@ -1,0 +1,279 @@
+/*
+**      $Id: cn06c.c,v 1.1 1996-01-04 21:24:00 haley Exp $
+*/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1996                                   *
+*        University Corporation for Atmospheric Research               *
+*     The use of this Software is governed by a License Agreement      *
+*                                                                      *
+***********************************************************************/
+/*
+**  File:       cn06c.c
+**
+**  Author:     Ethan Alpert (converted to C by Mary Haley)
+**          National Center for Atmospheric Research
+**          PO 3000, Boulder, Colorado
+**
+**  Date:       Thu Jan  4 11:17:41 MDT 1996
+**
+**  Description:    Reads a netCDF file and produces a series of
+**                  temperature contour plots.
+**
+*/
+
+
+#include <stdio.h>
+#include <math.h>
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/ResList.h>
+#include <ncarg/hlu/App.h>
+#include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/ContourPlot.h>
+#include <ncarg/hlu/ScalarField.h>
+#include <netcdf.h>
+
+int xbvalues[] = {-60,-75,-90,-105,-120,-135};
+int ylvalues[] = {60,50,40,30,20};
+char *xblabels[] = {"60W","75W","90W","105W","120W","135W"};
+char *yllabels[] = {"60N","50N","40N","30N","20N"};
+
+#define NLON  36
+#define NLAT  33
+
+main()
+{
+    extern void KtoF();
+/*
+ * Declare variables for the HLU routine calls.
+ */
+    int     appid, workid, field1, con1;
+    int     srlist, i, j, k;
+/*
+ * Declare variables for getting information from netCDF file.
+ */
+    int     ncid, lon_id, lat_id, frtime_id, T_id, frtime[7];
+    float   T[NLAT][NLON], special_value;
+    float   lon[NLON], lat[NLAT];
+    long    start[4], count[4], lonlen, latlen, frtimelen;
+    char    filename[256], *title, *hist, full_title[256];
+    char    lat_name[128], lon_name[128];
+    nc_type t_type;
+    int     t_len;
+    const char *dir = _NGGetNCARGEnv("data");
+/*
+ * Default is to create an NCGM file.
+ */
+    int NCGM=1, X11=0, PS=0;
+/*
+ * Initialize the HLU library and set up resource template.
+ */
+    NhlInitialize();
+    srlist = NhlRLCreate(NhlSETRL);
+/*
+ * Create Application object.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(srlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"cn06",NhlappClass,NhlDEFAULT_APP,srlist);
+
+    if (NCGM) {
+/*
+ * Create a meta file object.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkMetaName,"./cn06c.ncgm");
+        NhlCreate(&workid,"cn06Work",NhlncgmWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (X11) {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPause,"True");
+        NhlCreate(&workid,"cn06Work",NhlxWorkstationClass,
+              NhlDEFAULT_APP,srlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPSFileName,"./cn06c.ps");
+        NhlCreate(&workid,"cn06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+/*
+ * Open NetCDF file containing Geo-Potential height forecast
+ * information.
+ */
+    sprintf( filename, "%s/cdf/contour.cdf", dir );
+    ncid = ncopen(filename,NC_NOWRITE);
+    ncattinq(ncid,NC_GLOBAL,"title",&t_type,&t_len);
+    title = (char *)malloc(t_len * nctypelen(t_type));
+    ncattget(ncid,NC_GLOBAL,"title",(void *)title);
+
+    ncattinq(ncid,NC_GLOBAL,"history",&t_type,&t_len);
+    hist = (char *)malloc(t_len * nctypelen(t_type));
+    ncattget(ncid,NC_GLOBAL,"history",(void *)hist);
+    sprintf( full_title, "%s#C#%s", title, hist );
+/*
+ * Get the lat/lon dimensions.
+ */
+    lat_id = ncdimid(ncid,"lat");
+    ncdiminq(ncid,lat_id,(char *)0,&latlen);
+
+    lon_id = ncdimid(ncid,"lon");
+    ncdiminq(ncid,lon_id,(char *)0,&lonlen);
+
+    frtime_id  = ncdimid(ncid,"frtime");
+    ncdiminq(ncid,frtime_id,(char *)0,&frtimelen);
+/*
+ * Read in T.
+ */
+    T_id = ncvarid(ncid,"T");
+    start[0] = start[1] = start[2] = start[3] = 0;
+    count[0] = count[1] = 1;
+    count[2] = latlen;
+    count[3] = lonlen;
+    ncvarget(ncid,T_id,(long const *)start,(long const *)count,T);
+    ncattget(ncid,T_id,"_FillValue",&special_value);
+/*
+ * Read in lat/lon/frtime values.
+ */
+    lat_id = ncvarid(ncid,"lat");
+    count[0] = latlen;
+    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncattget(ncid,lat_id,"long_name",(void *)lat_name);
+
+    lon_id = ncvarid(ncid,"lon");
+    count[0] = lonlen;
+    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncattget(ncid,lon_id,"long_name",(void *)lon_name);
+
+    frtime_id = ncvarid(ncid,"frtime");
+    count[0] = frtimelen;
+    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
+/*
+ * Convert T from Degrees K to Degrees F.
+ */
+    KtoF(T);
+/*
+ * Create a scalar field object and configure the missing values and
+ * the start and end information.
+ */
+    count[0] = latlen; count[1] = lonlen;
+    NhlRLClear(srlist);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)count);
+    NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
+    NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
+    NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
+    NhlRLSetFloat(srlist,NhlNsfYCStartV,lat[0]);
+    NhlRLSetFloat(srlist,NhlNsfYCEndV,lat[latlen-1]);
+    NhlCreate(&field1,"field1",NhlscalarFieldClass,appid,srlist);
+/*
+ * Create contour object.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetFloat(srlist,NhlNvpXF,.2);
+    NhlRLSetFloat(srlist,NhlNvpYF,.8);
+    NhlRLSetFloat(srlist,NhlNvpWidthF,.6);
+    NhlRLSetFloat(srlist,NhlNvpHeightF,.6);
+    NhlRLSetInteger(srlist,NhlNcnScalarFieldData,field1);
+    NhlRLSetString(srlist,NhlNcnLevelSelectionMode,"ManualLevels");
+    NhlRLSetFloat(srlist,NhlNcnMinLevelValF,-40.0);
+    NhlRLSetFloat(srlist,NhlNcnMaxLevelValF,110.0);
+    NhlRLSetFloat(srlist,NhlNcnLevelSpacingF,10.0);
+    NhlRLSetString(srlist,NhlNcnFillOn,"True");
+    NhlRLSetString(srlist,NhlNcnMonoFillPattern,"True");
+    NhlRLSetInteger(srlist,NhlNcnFillPatterns,0);
+    NhlRLSetFloat(srlist,NhlNtrXMinF,-140.0);
+    NhlRLSetFloat(srlist,NhlNtrXMaxF,-52.5);
+    NhlRLSetFloat(srlist,NhlNtrYMinF,20.0);
+    NhlRLSetFloat(srlist,NhlNtrYMaxF,60.0);
+    NhlRLSetString(srlist,NhlNtiMainFuncCode,"#");
+    NhlRLSetString(srlist,NhlNtiMainString,full_title);
+    NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,0.02);
+    NhlRLSetString(srlist,NhlNtiXAxisString,lon_name);
+    NhlRLSetString(srlist,NhlNtiYAxisString,lat_name);
+    NhlRLSetString(srlist,NhlNtmXBMode,"EXPLICIT");
+    NhlRLSetIntegerArray(srlist,NhlNtmXBValues,xbvalues,NhlNumber(xbvalues));
+    NhlRLSetStringArray(srlist,NhlNtmXBLabels,xblabels,NhlNumber(xblabels));
+    NhlRLSetString(srlist,NhlNtmYLMode,"EXPLICIT");
+    NhlRLSetIntegerArray(srlist,NhlNtmYLValues,ylvalues,NhlNumber(ylvalues));
+    NhlRLSetStringArray(srlist,NhlNtmYLLabels,yllabels,NhlNumber(yllabels));
+    NhlRLSetString(srlist,NhlNtmXMajorGrid,"True");
+    NhlRLSetString(srlist,NhlNtmYMajorGrid,"True");
+    NhlRLSetString(srlist,NhlNtmXBMinorOn,"False");
+    NhlRLSetString(srlist,NhlNtmYLMinorOn,"False");
+    NhlCreate(&con1,"con1",NhlcontourPlotClass,workid,srlist);
+/* 
+ * Draw first frame
+ */
+    NhlDraw(con1);
+    NhlFrame(workid);
+/*
+ * Loop on remaining fields of data and draw contour.
+ */
+    for( i = 1; i <= frtimelen-1; i++ ) {
+/*
+ * Read in new section of Z.
+ */
+        start[0] = i;
+        start[1] = 0;
+        start[2] = 0;
+        start[3] = 0;
+        count[0] = 1;
+        count[1] = 1;
+        count[2] = latlen;
+        count[3] = lonlen;
+        ncvarget(ncid,T_id,(long const *)start,(long const *)count,T);
+/*
+ * Convert T from Degrees K to Degrees F.
+ */
+        KtoF(T);
+/*
+ * Create new scalar field.
+ */
+        NhlRLClear(srlist);
+        count[0] = latlen; count[1] = lonlen;
+        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,
+                            (int *)count);
+        NhlSetValues(field1,srlist);
+        NhlDraw(con1);
+        NhlFrame(workid);
+    }
+/*
+ * Close the netCDF file.
+ */
+    ncclose(ncid);
+/*
+ * NhlDestroy destroys the given id and all of its children.
+ */
+    NhlRLDestroy(srlist);
+    NhlDestroy(appid);
+/*
+ * Restores state.
+ */
+    NhlClose();
+    exit(0);
+}
+
+void KtoF(T)
+float T[NLAT][NLON];
+{
+    int i, j;
+/*
+ * Convert T from Degrees K to Degrees F.
+ */
+    for( i = 0; i < NLAT; i++ ) {
+        for( j = 0; j < NLON; j++ ) {
+            T[i][j] = (T[i][j]-273.15) * 9./5. + 32.;
+        }
+    }
+}
+
