@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.62 2001-03-01 02:57:27 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.63 2001-03-19 17:57:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1686,7 +1686,7 @@ begin
             first(0) =  x(bpt)
             first(1) = y2(bpt)
           else
-          var_string = "fill_polygon" + npoly
+            if(fabs(y1(bpt-1)-y2(bpt-1)).le.delta)
 ;
 ; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
@@ -6523,7 +6523,7 @@ begin
           if(na_max.le.0.and.nb_max.le.0)
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
             print("Cannot draw a bar chart.")
-        var_string = "polygons" + i
+            xinterp = x
             yinterp = y
                                      xinterp(i,0:npts(i)-1), \
                                      yinterp(i,0:npts(i)-1),\
@@ -6550,7 +6550,7 @@ begin
 ; polygons look better if the lines are drawn thicker.
 ;
       xyres_tmp = True
-        var_string = "xpolyline" + i     
+      xyres_tmp@tfPolyDrawOrder =  "Predraw"
       attsetvalues_check(xy_object,xyres_tmp)
       delete(xyres_tmp)
 
@@ -6577,7 +6577,7 @@ begin
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
         yline = fspan(yref_line(i),yref_line(i),2)
-        var_string = "ypolyline" + i     
+;
 ;
         gsres@gsFillColor = yref_line_above(0)
 
