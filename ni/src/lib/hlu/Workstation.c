@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.71 1997-08-14 16:30:54 dbrown Exp $
+ *      $Id: Workstation.c,v 1.72 1997-09-05 15:52:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4479,6 +4479,7 @@ WorkstationMarker
         float			fl,fr,fb,ft,ul,ur,ub,ut;
 	int			ll, i;
 	NhlErrorTypes		ret = NhlNOERROR;
+        char			func_code[8];
 
 /*
  * Make the user space coincide with the NDC space for the
@@ -4491,6 +4492,9 @@ WorkstationMarker
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 		return NhlFATAL;
 
+        c_pcgetc("FC",func_code,8);
+        c_pcsetc("FC",":");
+
 	for (i=0; i<num_points; i++) {
 		/*
 		 * marker size is multiplied by 1.125 to account
@@ -4501,6 +4505,8 @@ WorkstationMarker
 		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 			ret = NhlWARNING;
 	}
+
+        c_pcsetc("FC",func_code);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
