@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.3 1991-07-19 18:01:03 clyne Exp $
+ *	$Id: glob.c,v 1.4 1992-01-27 12:11:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,7 @@ static int	to_child[2],
 
 #define	MAX_LINE_LEN	80
 
-#define	ACK	"echo ''\n"
+#define	ACK	"/bin/echo ''\n"
 
 /*
  *	glob
@@ -111,7 +111,7 @@ glob(s, r_argv, r_argc)
 	/*
 	 * build command to send to the shell. 
 	 */
-	(void) strcpy(outbuf, "echo ");
+	(void) strcpy(outbuf, "/bin/echo ");
 	(void) strcat(outbuf, s);
 	(void) strcat(outbuf, "\n");
 
@@ -174,7 +174,7 @@ glob(s, r_argv, r_argc)
  *	[internal]
  *	
  *	set up communictions between invoking process and the desired
- *	command;
+ *	command; stderr of command is sent to /dev/null
  * on entry
  *	**argv		: name of command to talk to
  * on exit
@@ -185,6 +185,7 @@ static	talkto(argv)
 	char	**argv;
 {
 	int	pid;
+	FILE	*fp;
 
 	if (pipe(to_child) < 0) {
 		perror((char *) NULL);
@@ -195,16 +196,22 @@ static	talkto(argv)
 		exit(1);
 	}
 
+
 	if ((pid = fork()) == 0) {	/* the child process		*/
+		fp = fopen("/dev/null", "a");
 		(void) close(fileno(stdin));	/* close child's stdin	*/
 		(void) dup(to_child[0]);	/* redirect stdin from pipe*/
 		(void) close(fileno(stdout));	/* close child's stdout	*/
 		(void) dup(to_parent[1]);	/* redirect stdout to pipe*/
+		(void) close(fileno(stderr));	/* close child's stderr	*/
+		(void) dup(fileno(fp));	/* redirect stderr to bit-buck*/
+
 
 		(void) close(to_child[0]);	/* close the pipes	*/
 		(void) close(to_child[1]);
 		(void) close(to_parent[0]);
 		(void) close(to_parent[1]);
+		(void) fclose(fp);
 
 		/* 
 		 * exec the command to talk to	
