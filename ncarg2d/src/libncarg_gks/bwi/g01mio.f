@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.5 1994-05-07 00:47:44 fred Exp $
+C	$Id: g01mio.f,v 1.6 1994-05-11 23:27:55 fred Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
 C------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ C	   symbol. (e.g. setenv NCARG_GKS_OUTPUT "| translator")
 C	   If no name follows the pipe symbol, a default translator
 C	   is invoked.
 C
-C	(NOTE: stdout to a translator is not used because of
+C	NOTE: stdout to a translator is not used because of
 C	potential conflicts with user code writing to LU 6.
 C
 C------------------------------------------------------------------------------
@@ -61,18 +61,6 @@ C
 C
       INTEGER  OP, UNIT, LENGTH, BUFFER(LENGTH), ERROR
       CHARACTER*(*) FNAME
-C
-C  COMMON BLOCKS.
-C
-      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
-     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
-     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
-     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MPNAME
-      CHARACTER*80      MPNAME
 C
 C  Local variables:  IAUNIT is the Fortran LUN.
 C                    IOPENF is a flag for the file open:
