@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.11 1997-08-25 20:24:29 boote Exp $
+ *      $Id: nclstate.c,v 1.12 1997-09-16 22:22:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1125,6 +1125,7 @@ NgNclSubmitLine
 {
 	char		func[] = "NgNclSubmitLine";
 	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NhlBoolean	ret;
 
 	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclStateClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate id",func));
@@ -1134,9 +1135,11 @@ NgNclSubmitLine
 	if(reset)
 		ResetNcl(ncl);
 
+	ret = SubmitNclLine(ncl,command);
+
 	SubmitPostSubmit(ncl);
 
-	return SubmitNclLine(ncl,command);
+	return ret;
 }
 
 /*
