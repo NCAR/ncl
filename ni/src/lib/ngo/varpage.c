@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.11 1999-03-12 19:13:49 dbrown Exp $
+ *      $Id: varpage.c,v 1.12 1999-03-18 18:37:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -608,6 +608,16 @@ SaveVarState
 	NgSavePageState(rec->go->base.id,page->id,page->qfile,page->qvar,
 			(NhlPointer)vs_state,(NhlFreeFunc) FreeVarSaveState);
 
+/*
+ * Make sure this varpage doesn't try to do anything with any of this 
+ * allocated storage, after storing it into the save structure.
+ */
+	rec->vdata = NULL;
+	rec->datalinks = NULL;
+	rec->start = NULL;
+	rec->finish = NULL;
+	rec->stride = NULL;
+
 	return;
 }
 
@@ -651,12 +661,6 @@ DeactivateVarPage
         rec->new_data = True;
         XtRemoveCallback(rec->datagrid_toggle,
                          XmNvalueChangedCallback,DataGridToggleCB,page);
-
-	rec->vdata = NULL;
-	rec->datalinks = NULL;
-	rec->start = NULL;
-	rec->finish = NULL;
-	rec->stride = NULL;
         
         return;
 }
@@ -686,7 +690,9 @@ NhlBoolean InitializeDimInfo
         if (rec->stride)
                 NhlFree(rec->stride);
         rec->stride = NhlMalloc(sizeof(long)*vinfo->n_dims);
-	if (! (rec->start && rec->finish && rec->stride)) {
+	if ( ! rec->vdata)
+		rec->vdata = NgNewVarData();
+	if (! (rec->start && rec->finish && rec->stride && rec->vdata)) {
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return False;
 	}
@@ -766,7 +772,7 @@ NewVarPage
         rec->finish = NULL;
         rec->stride = NULL;
         rec->go = go;
-	rec->vdata = NgNewVarData();
+	rec->vdata = NULL;
 	rec->datalinks = NULL;
         
         pdp->type_rec = (NhlPointer) rec;
