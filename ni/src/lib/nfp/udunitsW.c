@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <udunits.h>
 #include "wrapper.h"
-#include   "NclAtt.h"
-#include   <ncarg/ncl/NclVar.h>
-#include   "DataSupport.h"
-#include   "AttSupport.h"
-#include   "VarSupport.h"
+#include "NclAtt.h"
+#include <ncarg/ncl/NclVar.h>
+#include "DataSupport.h"
+#include "AttSupport.h"
+#include "VarSupport.h"
 
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
@@ -197,7 +197,7 @@ NhlErrorTypes ut_calendar_W( void )
     if (stack_entry.u.data_var->var.att_id != -1) {
       attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
       if (attr_obj == NULL) {
-		return_missing = 1;
+        return_missing = 1;
         break;
       }
     }
@@ -205,7 +205,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * att_id == -1 ==> no optional args given; use default calendar.
  */
-	  return_missing = 1;
+      return_missing = 1;
       break;
     }
 /* 
@@ -213,7 +213,7 @@ NhlErrorTypes ut_calendar_W( void )
  * missing values.
  */
     if (attr_obj->att.n_atts == 0) {
-	  return_missing = 1;
+      return_missing = 1;
       break;
     }
     else {
@@ -230,7 +230,7 @@ NhlErrorTypes ut_calendar_W( void )
           ccal     = NrmQuarkToString(*calendar);
           if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to 'standard' or 'gregorian'. This function only understands a mixed Julian/Gregorian calendar. Returning all missing values.");
-			return_missing = 1;
+            return_missing = 1;
           }
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
@@ -239,9 +239,9 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Make sure cspec is a valid udunits string.
  */
-		  if(utScan(cspec, &unit) != 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
-			return_missing = 1;
+          if(utScan(cspec, &unit) != 0) {
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
+            return_missing = 1;
           }
         }
         attr_list = attr_list->next;
@@ -257,18 +257,18 @@ NhlErrorTypes ut_calendar_W( void )
  * recoginized calendar. We return all missing values in this case
  */
   if(return_missing) {
-	for(i = 0; i < 6*total_size_x; i++) {
-	  date[i] = missing_date.floatval;
-	}
+    for(i = 0; i < 6*total_size_x; i++) {
+      date[i] = missing_date.floatval;
+    }
 /*
  * Close up Udunits.
  */
-	utTerm();
+    utTerm();
 /*
  * Return all missing values.
  */
-	return(NclReturnValue(date,ndims_date,dsizes_date,
-						  &missing_date,NCL_float,0));
+    return(NclReturnValue(date,ndims_date,dsizes_date,
+                          &missing_date,NCL_float,0));
   }
             
 /*
@@ -301,7 +301,7 @@ NhlErrorTypes ut_calendar_W( void )
       date[index_date+4] = missing_date.floatval;
       date[index_date+5] = missing_date.floatval;
     }
-	index_date += 6;
+    index_date += 6;
   }
 
 /*
@@ -359,9 +359,16 @@ NhlErrorTypes ut_inv_calendar_W( void )
   int has_missing_x;
   NclScalar missing_x;
 /*
+ * Attribute variables
+ */
+  int att_id;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
  * various
  */
-  int i, total_size_input;
+  int i, total_size_input, dsizes[1];
 /*
  * Before we do anything, initialize the Udunits package.
  */
@@ -535,7 +542,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */
     if(type_second != NCL_double) {
       coerce_subset_input_double(second,tmp_second,i,type_second,1,
-				 has_missing_second,&missing_second,NULL);
+                                 has_missing_second,&missing_second,NULL);
     }
     else {
       tmp_second = &((double*)second)[i];
@@ -566,15 +573,87 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * Close up Udunits.
  */
   utTerm();
+
 /*
- * Return.
- */ 
+ * Set up variable to return.
+ */
   if(has_missing_x) {
-    return(NclReturnValue((void*)x,ndims_year,dsizes_year,&missing_x,
-                          NCL_double,0));
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            x,
+                            &missing_x,
+                            ndims_year,
+                            dsizes_year,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)nclTypedoubleClass
+                            );
   }
   else {
-    return(NclReturnValue((void*)x,ndims_year,dsizes_year,NULL,
-                          NCL_double,0));
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            x,
+                            NULL,
+                            ndims_year,
+                            dsizes_year,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)nclTypedoubleClass
+                            );
   }
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  dsizes[0] = 1;
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)sspec,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
