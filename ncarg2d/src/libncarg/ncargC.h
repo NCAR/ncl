@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.12 2001-11-05 17:43:38 haley Exp $
+ *  $Id: ncargC.h,v 1.13 2002-04-04 22:07:43 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2509,6 +2509,20 @@ extern void c_ngdots(
     int icolor
 #endif
 );
+
+extern void c_nglogo(
+#ifdef NeedFuncProto
+    int iwk,
+    float x,
+    float y,
+    float size,
+    int itype,
+    int icol1,
+    int icol2
+#endif
+);
+
+extern void c_ngezlogo();
 
 extern void c_nggcog(
 #ifdef  NeedFuncProto
