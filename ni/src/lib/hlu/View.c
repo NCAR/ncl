@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.24 1997-01-08 21:10:31 dbrown Exp $
+ *      $Id: View.c,v 1.25 1997-01-17 18:57:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -149,6 +149,9 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
+	{ NhlNvpOn, NhlCvpOn, NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlViewLayerRec,view.on),
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlViewLayerRec,view.x_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.28 1996-11-18 22:21:46 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.29 1997-01-17 18:57:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -4884,7 +4884,8 @@ static NhlErrorTypes ManageOverlay
 	}
 		
 	subret = _NhlManageOverlay(&vcp->overlay_object,
-				   (NhlLayer)vcnew,(NhlLayer)vcold,init,
+				   (NhlLayer)vcnew,(NhlLayer)vcold,
+				   (init)?_NhlCREATE:_NhlSETVALUES,
 				   sargs,*nargs,entry_name);
 	ret = MIN(ret,subret);
 	return ret;

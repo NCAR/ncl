@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.24 1996-12-12 02:51:42 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.25 1997-01-17 18:57:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -530,7 +530,7 @@ NcgmWorkstationOpen
 	NhlNcgmWorkstationClass wlc = 
 		(NhlNcgmWorkstationClass)instance->base.layer_class;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
-	static first = True;
+	static int first = True;
 
 	indat.escape_r1.size = strlen(winstance->ncgm.meta_name) + 1;
 	indat.escape_r1.data = (void*)winstance->ncgm.meta_name;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.21 1996-04-26 23:38:18 dbrown Exp $
+ *      $Id: Workstation.h,v 1.22 1997-01-17 18:57:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -191,7 +191,7 @@ extern NhlErrorTypes   NhlFrame(
 extern NhlErrorTypes NhlSetColor(
 #if	NhlNeedProto
 int 	/* pid */,
-int     /* ci */,
+NhlColorIndex     /* ci */,
 float   /* red */,
 float   /* green */,
 float   /* blue */
@@ -201,7 +201,7 @@ float   /* blue */
 extern NhlErrorTypes NhlFreeColor(
 #if	NhlNeedProto
         int 	/* pid */,
-        int     /* ci */
+        NhlColorIndex     /* ci */
 #endif
 );
 
@@ -209,17 +209,17 @@ extern NhlErrorTypes NhlFreeColor(
  * Returns the actual hlu ci used - values less then 0 indicate
  * an error.
  */
-extern int NhlGetColor(
+extern NhlColorIndex NhlGetColor(
 #if	NhlNeedProto
         int		pid,
-	int		ci,
+	NhlColorIndex	ci,
         float		*red,
         float		*green,
         float		*blue
 #endif
 );
 
-extern int NhlNewColor(
+extern NhlColorIndex NhlNewColor(
 #if	NhlNeedProto
         int     /* pid*/,
         float   /* red */,
@@ -231,14 +231,14 @@ extern int NhlNewColor(
 extern int NhlGetGksCi(
 #if	NhlNeedProto
         int     /* pid */,
-        int     /* ci   */
+        NhlColorIndex     /* ci   */
 #endif
 );
 
 extern NhlBoolean NhlIsAllocatedColor(
 #if	NhlNeedProto
         int     /* pid */,
-        int     /* ci   */
+        NhlColorIndex     /* ci   */
 #endif
 );
 

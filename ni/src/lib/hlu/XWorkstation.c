@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.19 1996-12-12 02:51:58 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.20 1997-01-17 18:57:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -697,5 +697,8 @@ NhlGetXPixel
 {
 	NhlLayer	l = _NhlGetLayer(id);
 
-	return (l && _NhlGetXPixel(l,hlu_indx,xpix));
+	if(!l)
+		return NhlFATAL;
+
+	return _NhlGetXPixel(l,hlu_indx,xpix);
 }

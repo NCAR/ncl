@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.13 1996-09-13 16:27:53 dbrown Exp $
+ *      $Id: Format.c,v 1.14 1997-01-17 18:57:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -67,8 +67,8 @@ static NhlFormatRec Init_Format = {
         0,		/* exp_field_width */
         False,		/* exp_plus */
 	NhlffUNSPECED,  /* exp_type_flag */
-        0,		/* exp_type */
-	NhlffGENERICFLD,	/* field_type */
+        NhlffELITTLE,	/* exp_type */
+	NhlffGENERICFLD,/* field_type */
         NULL		/* next_char */
 };
 
@@ -126,8 +126,7 @@ void print_format(void)
 	printf("exp_type_flag		%d\n",Format.exp_type_flag);
 	printf("exp_type		%d\n",Format.exp_type);
 	printf("field_type		%d\n",Format.field_type);
-        printf("next_char		%#x\n",
-	       (unsigned int) Format.next_char);
+        printf("next_char		%p\n",Format.next_char);
 }
 
 static NhlErrorTypes parse_flags(void)

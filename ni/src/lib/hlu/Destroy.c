@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.11 1996-10-10 17:57:59 boote Exp $
+ *      $Id: Destroy.c,v 1.12 1997-01-17 18:57:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -133,29 +133,7 @@ NhlDestroy
 	/*
 	 * remove this object from it's parents all_children list
 	 */
-	if(l->base.parent != NULL){
-		_NhlAllChildList *tnodeptr = &l->base.parent->base.all_children;
-		_NhlAllChildList tnode = NULL;
-		NhlBoolean found = False;
-
-		while(*tnodeptr != NULL){
-			if((*tnodeptr)->pid == l->base.id){
-				found = True;
-				tnode = *tnodeptr;
-				*tnodeptr = (*tnodeptr)->next;
-				(void)NhlFree(tnode);
-				break;
-			}
-			tnodeptr = &(*tnodeptr)->next;
-		}
-
-		if(!found){
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				"Unable to remove PID#%d from Parent's list",
-								l->base.id));
-		}
-	}
-		
+	_NhlBaseRemoveChild(l);	
 
 	lret = _NhlRemoveLayer(l);
 	(void)NhlFree(l);

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.27 1996-12-09 20:57:00 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.28 1997-01-17 18:57:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1731,7 +1731,7 @@ int upordown;
 {
 	NhlIrregularTransObjLayer irinst = (NhlIrregularTransObjLayer)instance;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	float xpoints[2];
 	float ypoints[2];
@@ -1880,7 +1880,7 @@ int upordown;
 {
 	NhlIrregularTransObjLayer irinst = (NhlIrregularTransObjLayer)instance;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	float holdx, holdy; /* * if true the moveto is being performed */
 
@@ -1953,7 +1953,7 @@ int upordown;
 	NhlIrregularTransObjLayer iinstance= (NhlIrregularTransObjLayer)instance;
 	NhlTransObjLayerPart		*tp = &iinstance->trobj;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	float holdx,holdy;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.43 1996-04-19 17:14:58 ethan Exp $
+ *      $Id: Converters.c,v 1.44 1997-01-17 18:57:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -148,7 +148,6 @@ _NhlStringToStringGenArray
 				break;
 			default:
 				return(NULL);
-				break;
 			}
 			break;
 		case 2:
@@ -2101,7 +2100,6 @@ CvtArgs									\
 	int		i;						\
 	char		func[] =					\
 		"NhlCvt" #FROMTYPE "GenArrayTo" #TOTYPE "GenArray";	\
-	NhlBoolean	echeck = True;					\
 	NhlErrorTypes	ret = NhlNOERROR;				\
 									\
 	if(nargs != 0){							\
@@ -2134,12 +2132,12 @@ CvtArgs									\
 									\
 		for(i=0;i < fromgen->num_elements;i++){			\
 			toval[i] = (totype)fromval[i];			\
-			if(echeck && (fromval[i]!=(fromtype)toval[i])){	\
+			if(fromval[i]!=(fromtype)toval[i]){		\
 				NhlPError(NhlWARNING,NhlEUNKNOWN,	\
 				"%s:Conversion Loosing Information",	\
 								func);	\
 				ret = NhlWARNING;			\
-				echeck = False;				\
+				break;					\
 			}						\
 		}							\
 	}								\

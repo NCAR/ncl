@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.9 1996-11-24 22:25:30 boote Exp $
+ *      $Id: NresDB.c,v 1.10 1997-01-17 18:57:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2795,7 +2795,7 @@ void NrmParseCommand
 
 		case NrmoptionSkipNArgs:
 		    {
-			register int j = 1 + (int) options[i].value;
+			register long j = 1 + (long) options[i].value;
 
 			if (j > myargc) j = myargc;
 			for (; j > 0; j--) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.7 1997-01-08 23:05:53 boote Exp $
+ *      $Id: ResList.h,v 1.8 1997-01-17 18:57:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,6 +75,14 @@ extern NhlErrorTypes NhlRLSetInteger(
 #endif
 );
 
+extern NhlErrorTypes NhlRLSetLong(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		value		/* value to set resname to	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLSetFloat(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -121,6 +129,16 @@ extern NhlErrorTypes NhlRLSetMDIntegerArray(
 #endif
 );
 
+extern NhlErrorTypes NhlRLSetMDLongArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		*data,		/* array			*/
+	int		num_dimensions,	/* number dimensions in array	*/
+	int		*len_dimensions	/* len each dimension in array	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLSetMDFloatArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -157,6 +175,15 @@ extern NhlErrorTypes NhlRLSetIntegerArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	int		*data,		/* array			*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetLongArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		*data,		/* array			*/
 	int		num_elements	/* number elements in array	*/
 #endif
 );
@@ -206,6 +233,14 @@ extern NhlErrorTypes NhlRLGetInteger(
 #endif
 );
 
+extern NhlErrorTypes NhlRLGetLong(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		*value		/* addr to put value in		*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLGetFloat(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -252,6 +287,16 @@ extern NhlErrorTypes NhlRLGetMDIntegerArray(
 #endif
 );
 
+extern NhlErrorTypes NhlRLGetMDLongArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		**data,		/* array			*/
+	int		*num_dimensions,/* number dimensions in array	*/
+	int		**len_dimensions/* len each dimension in array	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLGetMDFloatArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -288,6 +333,15 @@ extern NhlErrorTypes NhlRLGetIntegerArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	int		**data,		/* array			*/
+	int		*num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLGetLongArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	long		**data,		/* array			*/
 	int		*num_elements	/* number elements in array	*/
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.20 1996-09-14 17:07:31 boote Exp $
+ *      $Id: TransObj.c,v 1.21 1997-01-17 18:57:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -205,9 +205,13 @@ TransSetTrans
 			     NhlNvpWidthF,	&tp->width,
 			     NhlNvpHeightF,	&tp->height,
 			     NULL);
+	if(ret < NhlWARNING)
+		return ret;
 	if (tp->resolution <= 0.0) tp->resolution = 0.002;
 	tp->point_count = (int) 
 		MAX(1.0,(tp->width + tp->height) / (2.0 * tp->resolution));
+
+	return NhlNOERROR;
 }
 
 static NhlErrorTypes

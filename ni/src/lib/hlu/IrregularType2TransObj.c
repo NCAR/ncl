@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.21 1996-09-14 17:06:19 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.22 1997-01-17 18:57:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -992,7 +992,7 @@ int upordown;
         NhlIrregularType2TransObjLayer iinst = 
 		(NhlIrregularType2TransObjLayer)instance;
         static float lastx,lasty;
-        static call_frstd = 1;
+        static int call_frstd = 1;
         float currentx,currenty;
         float holdx,holdy;
 	float tmpx, tmpy;
@@ -1066,7 +1066,7 @@ int upordown;
         NhlIrregularType2TransObjLayer iinst = 
 		(NhlIrregularType2TransObjLayer)instance;
         static float lastx,lasty;
-        static call_frstd = 1;
+        static int call_frstd = 1;
         float currentx,currenty;
         float holdx,holdy;
 
@@ -1132,7 +1132,7 @@ int upordown;
 #endif
 {
         static float lastx,lasty;
-        static call_frstd = 1;
+        static int call_frstd = 1;
         float currentx,currenty;
         NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
         float holdx,holdy;

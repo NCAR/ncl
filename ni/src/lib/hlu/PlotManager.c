@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.33 1997-01-14 21:23:29 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.34 1997-01-17 18:57:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2995,7 +2995,7 @@ SetAnnotations
 		if (ovp->view_ids == NULL || ovp->anno_ids == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return (int) NhlFATAL;
+			return  NhlFATAL;
 		}
 	}
 		

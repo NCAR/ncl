@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.12 1996-05-11 03:32:19 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.13 1997-01-17 18:57:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,8 @@ typedef struct _NhlcnLabelAttrs {
 	NhlFont			font;
 	NhlBoolean		mono_color;
 	NhlColorIndex		color;
-	NhlColorIndex		*colors; /* cast to use for scalar gks ci */
+	NhlColorIndex		gks_color;
+	NhlColorIndex		*colors;
 	float			aspect;
 	float			thickness;
 	NhlFontQuality		quality;

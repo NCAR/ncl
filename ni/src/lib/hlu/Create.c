@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.30 1997-01-12 21:56:26 boote Exp $
+ *      $Id: Create.c,v 1.31 1997-01-17 18:57:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -375,8 +375,7 @@ _NhlCreate
 	layer->base.parent = parent;
 	layer->base.layer_class = lc;
 	layer->base.nrm_name = NrmStringToName((name)?name:"");
-	layer->base.name = (Const NhlString)
-					NrmNameToString(layer->base.nrm_name);
+	layer->base.name = (NhlString) NrmNameToString(layer->base.nrm_name);
 
 /*
  * context is a structure that remembers the memory that is allocated
@@ -638,17 +637,14 @@ _NhlCreate
 	}
 
 	/*
-	 * Add this layer to it's parents all_children list, if it has
-	 * a parent.
+	 * Add this layer to it's parents all_children list.
 	 */
-	if(parent != NULL){
-		_NhlAllChildList	tcnode;
-
-		tcnode = (_NhlAllChildList)NhlMalloc(sizeof(_NhlAllChildNode));
-
-		tcnode->pid = *pid;
-		tcnode->next = parent->base.all_children;
-		parent->base.all_children = tcnode;
+	if(!_NhlBaseAddChild(parent,*pid)){
+		_NhlRemoveLayer(layer);
+		(void)NhlFree(layer);
+		(void)NhlFree(request);
+		*pid = NhlFATAL;
+		return NhlFATAL;
 	}
 
 	(void)NhlFree(request);

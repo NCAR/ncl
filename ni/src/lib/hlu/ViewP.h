@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.13 1997-01-08 21:10:34 dbrown Exp $
+ *      $Id: ViewP.h,v 1.14 1997-01-17 18:57:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,7 @@ typedef struct _NhlLayerList{
 typedef struct _NhlViewLayerPart {
 	/* User accessible resource fields */
 
+	NhlBoolean	on;
 	float		x,y;
 	float		width,height;
 	NhlBoolean	keep_aspect;
@@ -201,5 +202,7 @@ extern NhlErrorTypes _NhlSetAnnoView(
 #define NHL_DEFAULT_VIEW_HEIGHT_STR ".6"
 #define NHL_DEFAULT_VIEW_X_STR	".2"
 #define NHL_DEFAULT_VIEW_Y_STR	".8"
+
+#define	_NhlViewOn(l)	(((NhlViewLayer)l)->view.on)
 
 #endif	/*_NVIEWP_h*/

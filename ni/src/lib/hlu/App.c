@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.29 1997-01-03 01:37:28 boote Exp $
+ *      $Id: App.c,v 1.30 1997-01-17 18:57:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1384,6 +1384,7 @@ NhlAppGetDefaultParentId
  * Returns:	
  * Side Effect:	
  */
+void
 _NHLCALLF(nhl_fappgetdefaultparentid,NHL_FAPPGETDEFAULTPARENTID)
 #if	NhlNeedProto
 (

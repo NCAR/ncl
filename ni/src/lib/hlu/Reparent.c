@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.10 1996-11-18 22:21:38 dbrown Exp $
+ *      $Id: Reparent.c,v 1.11 1997-01-17 18:57:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -118,41 +118,8 @@ Reparent
 		return NhlFATAL;
 	}
 
-	if(parent != child->base.parent){
-		/*
-		 * First remove child from it's parent's all_children list
-		 * set tnode to the child's record.
-		 */
-
-		tnodeptr = &child->base.parent->base.all_children;
-		tnode = (_NhlAllChildList)NULL;
-
-		while(*tnodeptr != (_NhlAllChildList)NULL){
-			if((*tnodeptr)->pid == child->base.id){
-				tnode = *tnodeptr;
-				*tnodeptr = (*tnodeptr)->next;
-				break;
-			}
-			tnodeptr = &(*tnodeptr)->next;
-		}
-
-		if(tnode == (_NhlAllChildList)NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"Unable to remove PID#%d from parent",child->base.id);
-			return NhlFATAL;
-		}
-
-		/*
-		 * Add child's record to the new parent
-		 */
-		tnode->next = parent->base.all_children;
-		parent->base.all_children = tnode;
-
-		/*
-		 * Change child's parent pointer to new parent
-		 */
-		child->base.parent = parent;
-	}
+	if(!_NhlBaseMoveChild(parent,child))
+		return NhlFATAL;
 
 	return CallReparent(child,parent,child->base.layer_class);
 }

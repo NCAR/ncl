@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.50 1996-09-14 17:06:22 boote Exp $
+ *      $Id: LabelBar.c,v 1.51 1997-01-17 18:57:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2571,7 +2571,7 @@ static NhlErrorTypes    ManageBoxFractionsArray
 
 {
 	int i, first_neg = -1;
-	int ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 			
 /*
  * At this point it should be guaranteed that the box_fraction array exists

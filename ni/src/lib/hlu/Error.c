@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.24 1996-11-28 01:14:23 dbrown Exp $
+ *      $Id: Error.c,v 1.25 1997-01-17 18:57:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1218,7 +1218,7 @@ AddErrMsg
 /*
  * These var's are used to support the VarArg macro hack.
  */
-static HackUsed = False;
+static int HackUsed = False;
 static struct {
 	int	line;
 	char	fname[_NhlMAXFNAMELEN];

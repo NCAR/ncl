@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.23 1996-11-28 01:14:24 dbrown Exp $
+ *      $Id: SetValues.c,v 1.24 1997-01-17 18:57:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,9 +26,8 @@
 #include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/AppI.h>
 
-
-static NhlLayer Oldl;
 
 /*
  * Function:	CallSetValues
@@ -209,13 +208,15 @@ _NhlSetValues
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"%s:%s does not have \"S\" access",
 					func,NrmQuarkToString(args[i].quark));
-					args[i].quark = NrmNULLQUARK;
+				args[i].quark = NrmNULLQUARK;
 			}
-			else if(args[i].type == NrmNULLQUARK){
-				_NhlCopyFromArg(args[i].value,
-					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_type,
-					resources[j].nrm_size);
+			else if((args[i].type == NrmNULLQUARK) &&
+				!_NhlConvertArg(&args[i],resources[j].nrm_type,
+							resources[j].nrm_size)){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to determine type of variable that set %s",
+					func,NrmQuarkToString(args[i].quark));
+				args[i].quark = NrmNULLQUARK;
 			}
 			else if(args[i].type==resources[j].nrm_type){
 				_NhlCopyFromArgVal(args[i].value,
@@ -304,6 +305,7 @@ _NhlSetLayerValues
 	_NhlChildArgList	targnode=NULL;
 	_NhlChildList		tchldnode=NULL;
 	_NhlConvertContext	context;
+	NhlArgVal		cbdata;
 
 	if(l == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -487,8 +489,11 @@ _NhlSetLayerValues
 		}
 	}
 
-	Oldl = oldl;
-	_NhlIterateObjCallbacks(l,_NhlCBresValueSet,_NhlcbCALL);
+#if	DEBUG
+	memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+	cbdata.ptrval = (NhlPointer)oldl;
+	_NhlIterateObjCallbacks(l,_NhlCBobjValueSet,_NhlcbCALL,cbdata);
 
 	(void)NhlFree(oldl);
 	(void)NhlFree(reql);
@@ -1027,7 +1032,6 @@ AddValueSetCB
 	vsinfo->forwarded_value_set = False;
 	if (resl != l) {
 		vsinfo->forwarded = True;
-		vsinfo->forwarded_cb = cb;
 		sel.lngval = resq;
 		udata.ptrval = vsinfo;
 		cb =  _NhlAddObjCallback(resl,"CBresValueSet",sel,
@@ -1036,6 +1040,7 @@ AddValueSetCB
 			NhlFree(vsinfo);
 			return NULL;
 		}
+		vsinfo->forwarded_cb = cb;
 	}
 	else {
 		vsinfo->forwarded = False;
@@ -1086,7 +1091,7 @@ NhlErrorTypes _NhlResValueSetCBTask
 		}
 		else {
 			base = (char *) vsinfo->resl;
-			oldbase = (char *) Oldl;
+			oldbase = (char *) (*cbdata).ptrval;
 			if (! memcmp(base+vsinfo->offset,
 				     oldbase+vsinfo->offset,vsinfo->size)) {
 				return NhlNOERROR;
@@ -1120,7 +1125,6 @@ NhlErrorTypes _NhlResValueSetCBTask
 		NhlFree(*cbnode_data);
 		*do_it = False;
 		return NhlNOERROR;
-		break;
 	default:
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid enumeration value for callback task");

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.21 1996-10-31 23:06:18 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.22 1997-01-17 18:57:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -332,7 +332,7 @@ IrregularPlotInitialize
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&irp->overlay_object,new,req,
-			       True,NULL,0,entry_name);
+			       _NhlCREATE,NULL,0,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
@@ -396,7 +396,7 @@ static NhlErrorTypes IrregularPlotSetValues
 		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 	}
 	subret = _NhlManageOverlay(&irp->overlay_object,new,old,
-			       False,sargs,nargs,entry_name);
+			       _NhlSETVALUES,sargs,nargs,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 

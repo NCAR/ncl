@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.20 1996-10-31 23:06:22 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.21 1997-01-17 18:57:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -325,7 +325,7 @@ LogLinPlotInitialize
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&llp->overlay_object,new,req,
-				   True,NULL,0,entry_name);
+				   _NhlCREATE,NULL,0,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
@@ -391,7 +391,7 @@ static NhlErrorTypes LogLinPlotSetValues
 	}
 		
 	subret = _NhlManageOverlay(&llp->overlay_object,new,old,
-			       False,sargs,nargs,entry_name);
+			       _NhlSETVALUES,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
 
 	llp->update_req = False;

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.31 1996-09-14 17:06:55 boote Exp $
+*      $Id: MapTransObj.c,v 1.32 1997-01-17 18:57:38 boote Exp $
 */
 /************************************************************************
 *									*
@@ -1853,7 +1853,7 @@ int upordown;
 {
 	NhlMapTransObjLayer minst = (NhlMapTransObjLayer)instance;
         static float lastx,lasty;
-        static call_frstd = 1;
+        static int call_frstd = 1;
         float currentx,currenty;
         float holdx,holdy;
 	float xmin,ymin,xmax,ymax;
@@ -1921,7 +1921,7 @@ int upordown;
         NhlMapTransObjLayer	mpinst = (NhlMapTransObjLayer)instance;
 	NhlTransObjLayerPart	*tp = &mpinst->trobj;
         static float lastx,lasty;
-        static call_frstd = 1;
+        static int call_frstd = 1;
         float currentx,currenty;
         NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
         float holdx,holdy;
@@ -2186,7 +2186,7 @@ int n;
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsNONE,
 					  1000*sizeof(int));
 		if (aws_id < 0) 
-			return MIN(ret,aws_id);
+			return MIN(ret,(NhlErrorTypes)aws_id);
 		mptransclass->mptrans_class.aws_id = aws_id;
 	}
 	if ((aws = _NhlUseWorkspace(aws_id)) == NULL) {

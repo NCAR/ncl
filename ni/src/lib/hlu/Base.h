@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.13 1997-01-03 01:37:29 boote Exp $
+ *      $Id: Base.h,v 1.14 1997-01-17 18:57:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 extern NhlClass NhlobjClass;
 extern NhlClass NhlbaseClass;
 
-#define NhlNULLOBJID 0
+#define NhlNULLOBJID NhlDEFAULT_APP
 
 #define NhlTObjId		"ObjId"
 #define NhlTObjIdGenArray	"ObjIdGenArray"

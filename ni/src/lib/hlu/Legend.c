@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.51 1996-09-14 17:06:27 boote Exp $
+ *      $Id: Legend.c,v 1.52 1997-01-17 18:57:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3507,7 +3507,7 @@ static NhlErrorTypes    ManageItemPositionsArray
 
 {
 	int i, first_neg = -1;
-	int ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	float last_val = 0.0, last_good_val = 0.0;
 			
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.15 1997-01-08 23:05:53 boote Exp $
+ *      $Id: ResList.c,v 1.16 1997-01-17 18:57:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@ static int num_lists = 0;
 static int table_len = 0;
 static NrmQuark	floatQ;
 static NrmQuark	intQ;
+static NrmQuark	longQ;
 static NrmQuark	stringQ;
 static NrmQuark	genQ;
 static NrmQuark	pointerQ;
@@ -613,54 +614,61 @@ NhlRLSet
 	va_dcl
 #endif
 {
+	char		func[]="NhlRLSet";
 	va_list		ap;
 	_NhlArgVal	value;
 	unsigned int	size = 0;
 	NrmQuark	typeQ = NrmStringToQuark(type);
 
 	/*
-	 * default type is "long"
+	 * default type is "int" since the ANSI standard says STDARGS should
+	 * propagate all "integral" types to int.
 	 */
 	VA_START(ap,type);
-	if(typeQ == byteQ){
-		value.charval = (char)va_arg(ap,long);
+	if(_NhlIsSubtypeQ(byteQ,typeQ)){
+		value.charval = (char)va_arg(ap,int);
 		size = sizeof(char);
 	}
-	else if(typeQ == charQ){
-		value.charval = (char)va_arg(ap,long);
+	else if(_NhlIsSubtypeQ(charQ,typeQ)){
+		value.charval = (char)va_arg(ap,int);
 		size = sizeof(char);
 	}
-	else if(typeQ == shortQ){
-		value.shrtval = (short)va_arg(ap,long);
+	else if(_NhlIsSubtypeQ(shortQ,typeQ)){
+		value.shrtval = (short)va_arg(ap,int);
 		size = sizeof(short);
 	}
 	else if(_NhlIsSubtypeQ(intQ,typeQ)){	/* gets all enumerated types */
-		value.intval = (int)va_arg(ap,long);
+		value.intval = va_arg(ap,int);
 		size = sizeof(int);
 	}
-	else if(typeQ == floatQ){
+	else if(_NhlIsSubtypeQ(longQ,typeQ)){
+		value.lngval = va_arg(ap,long);
+		size = sizeof(long);
+	}
+	else if(_NhlIsSubtypeQ(floatQ,typeQ)){
 		value.fltval = (float)va_arg(ap,double);
 		size = sizeof(float);
 	}
-	else if(typeQ == stringQ){
-		value.strval = (NhlString)va_arg(ap,NhlString);
-		size = sizeof(NhlString);
-	}
-	else if(typeQ == doubleQ){
+	else if(_NhlIsSubtypeQ(doubleQ,typeQ)){
 		value.dblval = va_arg(ap,double);
 		size = sizeof(double);
+	}
+	else if(_NhlIsSubtypeQ(stringQ,typeQ)){
+		value.strval = (NhlString)va_arg(ap,NhlString);
+		size = sizeof(NhlString);
 	}
 	else if(_NhlIsSubtypeQ(genQ,typeQ)){	/* gets all GenArray types */
 		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
 		size = sizeof(NhlGenArray);
 	}
-	else if(typeQ == pointerQ){
+	else if(_NhlIsSubtypeQ(pointerQ,typeQ)){
 		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
 		size = sizeof(NhlGenArray);
 	}
 	else{
-		value.lngval = va_arg(ap,long);
-		size = sizeof(long);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unsupported type:%s",
+								func,type);
+		return NhlFATAL;
 	}
 	va_end(ap);
 
@@ -701,6 +709,38 @@ NhlRLSetInteger
 #endif
 {
 	return NhlRLSet(id,name,NhlTInteger,value);
+}
+
+/*
+ * Function:	NhlRLSetLong
+ *
+ * Description:	This function is used to set a resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetLong
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	long		value;
+#endif
+{
+	return NhlRLSet(id,name,NhlTLong,value);
 }
 
 /*
@@ -890,6 +930,43 @@ NhlRLSetMDIntegerArray
 }
 
 /*
+ * Function:	NhlRLSetMDLongArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetMDLongArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		*data,
+	int		num_dimensions,
+	int		*len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	long		*data;
+	int		num_dimensions;
+	int		*len_dimensions;
+#endif
+{
+	return NhlRLSetMDArray(id,name,data,NhlTLong,sizeof(long),
+						num_dimensions,len_dimensions);
+}
+
+/*
  * Function:	NhlRLSetMDFloatArray
  *
  * Description:	This function is used to set an array resource with the value
@@ -1033,6 +1110,41 @@ NhlRLSetIntegerArray
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTInteger,sizeof(int),1,
+								&num_elements);
+}
+
+/*
+ * Function:	NhlRLSetLongArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetLongArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		*data,
+	int		num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	long		*data;
+	int		num_elements;
+#endif
+{
+	return NhlRLSetMDArray(id,name,data,NhlTLong,sizeof(long),1,
 								&num_elements);
 }
 
@@ -1250,6 +1362,38 @@ NhlRLGetInteger
 #endif
 {
 	return NhlRLGet(id,name,NhlTInteger,value);
+}
+
+/*
+ * Function:	NhlRLGetLong
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetLong
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		*value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	long		*value;
+#endif
+{
+	return NhlRLGet(id,name,NhlTLong,value);
 }
 
 /*
@@ -1740,6 +1884,43 @@ NhlRLGetMDIntegerArray
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,intQ,sizeof(int),(NhlPointer*)data,
+						num_dimensions,len_dimensions);
+}
+
+/*
+ * Function:	NhlRLGetMDLongArray
+ *
+ * Description:	This function is used to retrieve the resource given as an
+ *		array of the type specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetMDLongArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		**data,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	long		**data;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	return NhlRLGetMDTypeArray(id,name,longQ,sizeof(long),(NhlPointer*)data,
 						num_dimensions,len_dimensions);
 }
 
@@ -2297,6 +2478,41 @@ NhlRLGetIntegerArray
 }
 
 /*
+ * Function:	NhlRLGetLongArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetLongArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	long		**data,
+	int		*num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	long		**data;
+	int		*num_elements;
+#endif
+{
+	return NhlRLGetTypeArray(id,name,NhlTLong,sizeof(long),
+						(NhlPointer*)data,num_elements);
+}
+
+/*
  * Function:	NhlRLGetFloatArray
  *
  * Description:	This function is used to set an array resource with the value
@@ -2571,6 +2787,7 @@ InitRLList
 	shortQ = NrmStringToQuark(NhlTShort);
 	stringQ = NrmStringToQuark(NhlTString);
 	intQ = NrmStringToQuark(NhlTInteger);
+	longQ = NrmStringToQuark(NhlTLong);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	pointerQ = NrmStringToQuark(NhlTPointer);
 	expMDQ = NrmStringToQuark(_NhlTExpMDArray);

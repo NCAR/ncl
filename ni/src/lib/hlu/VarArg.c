@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.7 1996-11-24 22:25:32 boote Exp $
+ *      $Id: VarArg.c,v 1.8 1997-01-17 18:57:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,13 +47,14 @@ _NhlVarToSetArgList
 	_NhlArgList	args		/* pointer to return arglist in */ 
 ) 
 #else 
-(list,args) 
+(list,args)
 	va_list		list;		/* vararg list  */ 
 	_NhlArgList	args;		/* pointer to return arglist in */ 
 #endif 
 { 
 	register int	i=0;
 	NhlString	name=NULL;
+	unsigned int	size;
 
 	for(name = va_arg(list,NhlString); name != NULL;
 						name = va_arg(list,NhlString)){
@@ -66,10 +67,9 @@ _NhlVarToSetArgList
 		}
 
 		if(_NhlIsFloatRes(name))
-			*(float*)&args[i].value.lngval =
-						(float)va_arg(list,double);
+			args[i].value.dblval = va_arg(list,double);
 		else
-			args[i].value.lngval = va_arg(list,long);
+			args[i].value.lngval = (long)va_arg(list,long);
 
 		args[i].quark = NrmStringToQuark(name);
 		args[i].type = NrmNULLQUARK;

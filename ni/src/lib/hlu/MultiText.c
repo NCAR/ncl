@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.17 1996-09-14 17:06:59 boote Exp $
+ *      $Id: MultiText.c,v 1.18 1997-01-17 18:57:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 #include <ncarg/hlu/MultiTextP.h>
 #include <ncarg/hlu/TextItem.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 /* Resources */
 #define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
@@ -77,6 +78,12 @@ static NhlResource resources[] = {
 #undef Oset
 
 /* Method declarations	*/
+
+static NhlErrorTypes MultiTextClassInitialize(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 static NhlErrorTypes MultiTextClassPartInitialize(
 #if	NhlNeedProto
@@ -140,7 +147,7 @@ NhlMultiTextClassRec NhlmultiTextClassRec = {
 /* num_callbacks		*/	0,
 
 /* class_part_initialize	*/	MultiTextClassPartInitialize,
-/* class_initialize		*/	NULL,
+/* class_initialize		*/	MultiTextClassInitialize,
 /* layer_initialize		*/	MultiTextInitialize,
 /* layer_set_values		*/	MultiTextSetValues,
 /* layer_set_values_hook	*/	NULL,
@@ -182,8 +189,29 @@ NhlClass NhlmultiTextClass = (NhlClass)&NhlmultiTextClassRec;
 *									*
 ************************************************************************/
 
+static NhlErrorTypes
+MultiTextClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlEnumVals	mtotype[] = {
+		{NhlMTEXT_X_CONST,	"mtext_x_const"},
+		{NhlMTEXT_Y_CONST,	"mtext_y_const"},
+		};
+
+	_NhlRegisterEnumType(NhlmultiTextClass,NhlTMTextOrientationType,mtotype,
+		NhlNumber(mtotype));
+
+	return NhlNOERROR;
+}
+
 /*
- * Function:	MutliTextClassInitialize
+ * Function:	MutliTextClassPartInitialize
  *
  * Description:	This function initializes the MultiText NhlClass record.
  *

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.30 1996-11-24 22:25:30 boote Exp $
+ *      $Id: Resources.c,v 1.31 1997-01-17 18:57:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,14 +24,8 @@
  *			resources that they define.
  *
  *	Machine Dependancies:
+ *		_NhlConvertArg
  *
- *		_NhlCopyFromArg:
- *			The function _NhlCopyFromArg could have problems on
- *			an architecture with strange sizes for the primative
- *			types since it is trying to copy information in a
- *			type independant fashion.
- *		_NhlCopyToArg:
- *			Same as _NhlCopyFromArg.
  */
 #include <ncarg/hlu/defs.h>
 #include <ncarg/hlu/hluP.h>
@@ -55,6 +49,7 @@ static NrmQuark floatQ = NrmNULLQUARK;
 static NrmQuark shortQ = NrmNULLQUARK;
 static NrmQuark stringQ = NrmNULLQUARK;
 static NrmQuark intQ = NrmNULLQUARK;
+static NrmQuark longQ = NrmNULLQUARK;
 static NrmQuark genQ = NrmNULLQUARK;
 static NrmQuark pointerQ = NrmNULLQUARK;
 
@@ -62,11 +57,7 @@ static NrmQuark pointerQ = NrmNULLQUARK;
  * Function:	_NhlCopyFromArgVal
  *
  * Description:	This function takes memory of a given size and copies it into
- *		another location. It doesn't actually change dst - it sets
- *		the memory pointed to by dst. ie. *dst = the value.
- *		This differs from _NhlCopyFromArg in that it expects the
- *		src values to be "left" justified - correctly placed in the
- *		enum.
+ *		another location.
  *
  * In Args:	_NhlArgVal	src;	source
  *		unsigned int	size;	size
@@ -93,11 +84,14 @@ _NhlCopyFromArgVal
 #endif
 {
 	if(size == sizeof(long))	*(long *)dst = src.lngval;
+	else if (size == sizeof(int))	*(int*)dst = src.intval;
 	else if (size == sizeof(short))	*(short *)dst = src.shrtval;
 	else if (size == sizeof(NhlPointer))
 					*(NhlPointer *)dst = src.ptrval;
 	else if (size == sizeof(char))	*(char *)dst = src.charval;
 	else if (size == sizeof(char*))	*(char **)dst = src.strval;
+	else if (size == sizeof(float))*(float*)dst = src.fltval;
+	else if (size == sizeof(double))*(double*)dst = src.dblval;
 	else if (size == sizeof(_NhlArgVal))
 					*(_NhlArgVal *)dst = src;
 	else
@@ -105,15 +99,12 @@ _NhlCopyFromArgVal
 }
 
 /*
- * Function:	_NhlCopyFromArg
+ * Function:	_NhlConvertArg
  *
- * Description:	This function takes memory of a given size and copies it into
- *		another location. It doesn't actually change dst - it sets
- *		the memory pointed to by dst. ie. *dst = the value.
- *		This differs from _NhlCopyFromArgVal in that it assumes the
- *		values to be "right" justified in the enum because they
- *		were all placed in as .lngval in the VA and AL interfaces.
- *		So they need to be retrieved as "lngval" here.
+ * Description:	This function takes an "untyped" arg, and the name of
+ *		the type it is being set to, (The user should have used
+ *		this type of value as the va_arg) and converts the
+ *		"untyped" arg to a "typed" arg.
  *
  * In Args:	_NhlArgVal	src;	source
  *		unsigned int	size;	size
@@ -124,49 +115,86 @@ _NhlCopyFromArgVal
  * Returns:	
  * Side Effect:	
  */
-void
-_NhlCopyFromArg
+NhlBoolean
+_NhlConvertArg
 #if	NhlNeedProto
 (
-	_NhlArgVal	src,	/* source	*/
-	void *		dst,	/* destination	*/
+	_NhlArg		*arg,
 	NrmQuark	name,	/* name of type	*/
-	unsigned int	size	/* size		*/
+	unsigned int	size
 ) 
 #else
-(src,dst,name,size) 
-	_NhlArgVal	src;	/* source	*/
-	void*		dst;	/* destination	*/
-	NrmQuark	name;	/* name		*/
-	unsigned int	size;	/* size		*/
+(arg,name,size)
+	_NhlArg		*arg;
+	NrmQuark	name;	/* name of type	*/
+	unsigned int	size;
 #endif
 {
-	if(_NhlIsSubtypeQ(floatQ,name))
-		*(float *)dst = *(float*)&src.lngval;
-	else if(_NhlIsSubtypeQ(doubleQ,name))
-		*(double *)dst = *(float*)&src.lngval;
-	else if(_NhlIsSubtypeQ(charQ,name))
-		*(char *)dst = (char)src.lngval;
-	else if(_NhlIsSubtypeQ(byteQ,name))
-		*(char *)dst = (char)src.lngval;
-	else if(_NhlIsSubtypeQ(shortQ,name))
-		*(short *)dst = (short)src.lngval;
-	else if(_NhlIsSubtypeQ(intQ,name))
-		*(int *)dst = (int)src.lngval;
-	else if(_NhlIsSubtypeQ(stringQ,name))
-		*(NhlString *)dst = (NhlString)src.lngval;
-	else if(_NhlIsSubtypeQ(genQ,name))
-		*(NhlPointer *)dst = (NhlPointer)src.lngval;
-	else if(_NhlIsSubtypeQ(pointerQ,name))
-		*(NhlPointer *)dst = (NhlPointer)src.lngval;
-	else if(size == sizeof(long))
-		*(long *)dst = src.lngval;
-	else if(size == sizeof(_NhlArgVal))
-		*(_NhlArgVal *)dst = src;
-	else
-		memcpy((void*)dst,(void*)&src,size);
+	_NhlArgVal	tmp;
 
-	return;
+#ifdef	DEBUG
+	memset(&tmp,0,sizeof(_NhlArgVal));
+#endif
+
+	if(_NhlIsSubtypeQ(floatQ,name))
+		tmp.fltval = arg->value.dblval;
+	else if(_NhlIsSubtypeQ(doubleQ,name))
+		tmp.dblval = arg->value.dblval;
+#ifdef	IRIX64
+	/*
+	 * On the IRIX64 - int's are 4 bytes and longs are 8 bytes.  From
+	 * the AL/VA interface all non-long integral types are promoted to
+	 * int, but they are pulled off the va_arg stack as a long, and
+	 * put in the arg->value union as a long.  So, to get to the
+	 * actual value, I treat the long as an array of two ints, and
+	 * pull off the second int.
+	 */
+	else if(_NhlIsSubtypeQ(charQ,name) ||
+			_NhlIsSubtypeQ(byteQ,name))
+		tmp.charval = (char)((int*)&arg->value.lngval)[1];
+	else if(_NhlIsSubtypeQ(shortQ,name))
+		tmp.shrtval = (short)((int*)&arg->value.lngval)[1];
+	else if(_NhlIsSubtypeQ(intQ,name))
+		tmp.intval = ((int*)&arg->value.lngval)[1];
+#else
+	/*
+	 * If sizeof(int) == sizeof(long), then this should work.
+	 * In fact, it looks like it even works for the byte-swaped
+	 * 64 bit DEC Alpha.
+	 */
+	else if(_NhlIsSubtypeQ(charQ,name) ||
+			_NhlIsSubtypeQ(byteQ,name))
+		tmp.charval = (char)arg->value.intval;
+	else if(_NhlIsSubtypeQ(shortQ,name))
+		tmp.shrtval = (short)arg->value.intval;
+	else if(_NhlIsSubtypeQ(intQ,name))
+		tmp.intval = arg->value.intval;
+#endif
+	/*
+	 * I'm pretty sure sizeof(long)==sizeof(long) on all systems, but
+	 * I wouldn't be supprised if the Cray gives us fits, since
+	 * (10.0/1.0 != 10.0) == TRUE on the Cray...
+	 */
+	else if(_NhlIsSubtypeQ(longQ,name))
+		tmp.lngval = arg->value.lngval;
+
+	/*
+	 * If we find a system where sizeof(NhlPointer) != sizeof(long),
+	 * then these next entries will need to change.
+	 */
+	else if(_NhlIsSubtypeQ(stringQ,name))
+		tmp.strval = (NhlString)arg->value.lngval;
+	else if(_NhlIsSubtypeQ(genQ,name) ||
+			_NhlIsSubtypeQ(pointerQ,name))
+		tmp.ptrval = (NhlPointer)arg->value.lngval;
+	else
+		return False;
+
+	arg->value = tmp;
+	arg->type = name;
+	arg->size = size;
+
+	return True;
 }
 
 /*
@@ -370,14 +398,15 @@ _NhlGetResources
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"%s:%s does not have \"C\" access",
 					func,NrmQuarkToString(args[i].quark));
-					args[i].quark = NrmNULLQUARK;
+				args[i].quark = NrmNULLQUARK;
 			}
-			else if(args[i].type == NrmNULLQUARK){
-				_NhlCopyFromArg(args[i].value,
-					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_type,
-					resources[j].nrm_size);
-					resfound[j] = True;
+			else if((args[i].type == NrmNULLQUARK) &&
+				!_NhlConvertArg(&args[i],resources[j].nrm_type,
+							resources[j].nrm_size)){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to determine type of variable that set %s",
+					func,NrmQuarkToString(args[i].quark));
+				args[i].quark = NrmNULLQUARK;
 			}
 			else if(args[i].type==resources[j].nrm_type){
 				_NhlCopyFromArgVal(args[i].value,
@@ -1028,6 +1057,7 @@ _NhlResourceListInitialize
 	shortQ = NrmStringToQuark(NhlTShort);
 	stringQ = NrmStringToQuark(NhlTString);
 	intQ = NrmStringToQuark(NhlTInteger);
+	longQ = NrmStringToQuark(NhlTLong);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	pointerQ = NrmStringToQuark(NhlTPointer);
 

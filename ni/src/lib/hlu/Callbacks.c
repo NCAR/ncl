@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.5 1996-11-28 01:14:21 dbrown Exp $
+ *      $Id: Callbacks.c,v 1.6 1997-01-17 18:57:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -182,8 +182,9 @@ _NhlCBAdd
 
 	if (cblist->task_proc) {
 		NhlArgVal sel;
-		NhlBoolean yes = True;
-
+		NhlBoolean yes;
+		
+		yes = True;
 		sel.lngval = cb->index;
 		(*cblist->task_proc) 
 			(cblist->task_proc_data,
@@ -241,6 +242,7 @@ _NhlCBDelete
 				NhlBoolean	yes;
 				NhlArgVal	cbdata;
 				NhlArgVal	sel;
+
 				sel.lngval = cb->index;
 				(*cblist->task_proc)
 					(cblist->task_proc_data,
@@ -313,8 +315,10 @@ _NhlCBCallCallbacks
 	}
 	else {
 		while(cb){
-			NhlBoolean	yes = True;
+			NhlBoolean	yes;
 			NhlArgVal	sel;
+
+			yes = True;
 			sel.lngval = index;
 			(*cblist->task_proc)
 				(cblist->task_proc_data,_NhlcbCALL,
@@ -323,6 +327,8 @@ _NhlCBCallCallbacks
 			if (yes && !(cb->state & _NhlCBNODEDESTROY)) {
 				(*cb->cbfunc)(cbdata,cb->udata);
 			}
+			if(cblist->state & _NhlCBLISTDESTROY)
+				break;
 			cb = cb->next;
 		}
 	}
@@ -397,25 +403,35 @@ _NhlCBIterate
 				if (!(cb->state & _NhlCBNODEDESTROY)) {
 					(*cb->cbfunc)(cbdata,cb->udata);
 				}
+				if(cblist->state & _NhlCBLISTDESTROY)
+					goto DONE;
 				cbptr = &cb->next;
 			}
 		}
 		else {
 			while(*cbptr){
-				NhlBoolean yes = True;
+				NhlArgVal lcbdata;
+				NhlBoolean yes;
+				
+				lcbdata = cbdata;
+				yes = True;
 				cb = *cbptr;
 				sel.lngval = cb->index;
 				(*cblist->task_proc)
 					(cblist->task_proc_data,task,
-					 sel,&yes,&cbdata,&cb->cbnode_data);
+					 sel,&yes,&lcbdata,&cb->cbnode_data);
 				
 				if (yes && !(cb->state & _NhlCBNODEDESTROY)) {
-					(*cb->cbfunc)(cbdata,cb->udata);
+					(*cb->cbfunc)(lcbdata,cb->udata);
 				}
+				if(cblist->state & _NhlCBLISTDESTROY)
+					goto DONE;
 				cbptr = &cb->next;
 			}
 		}
 	}
+
+DONE:
 
 	cblist->state &= ~_NhlCBCALLING;
 
@@ -454,4 +470,3 @@ _NhlCBIterate
 
 	return;
 }
-

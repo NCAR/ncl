@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.2 1996-09-14 17:07:04 boote Exp $
+ *      $Id: Palette.c,v 1.3 1997-01-17 18:57:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1167,7 +1167,7 @@ NhlPalGetDefined
 	NhlPalList		list;
 
 	_NhlInitializeClass(lc);
-	if(!lc->base_class.class_inited & _NhlWorkstationClassFlag){
+	if(!(lc->base_class.class_inited & _NhlWorkstationClassFlag)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation Class",
 									func);
 		return 0;
@@ -1249,7 +1249,7 @@ NhlPalGetColormap
 	NhlPalList		list;
 
 	_NhlInitializeClass(lc);
-	if(!lc->base_class.class_inited & _NhlWorkstationClassFlag){
+	if(!(lc->base_class.class_inited & _NhlWorkstationClassFlag)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation Class",
 									func);
 		return NhlFATAL;
@@ -1320,7 +1320,7 @@ NhlPalSetColormap
 	NhlGenArray		gen;
 
 	_NhlInitializeClass(lc);
-	if(!lc->base_class.class_inited & _NhlWorkstationClassFlag){
+	if(!(lc->base_class.class_inited & _NhlWorkstationClassFlag)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation Class",
 									func);
 		return NhlFATAL;

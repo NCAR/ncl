@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.20 1997-01-03 01:37:29 boote Exp $
+ *      $Id: Base.c,v 1.21 1997-01-17 18:57:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,14 +32,18 @@
 static _NhlRawObjCB bcallbacks[] = {
 	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),
 		 0,NULL,NULL,NULL},
-	{_NhlCBresValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
-		 0,NULL,NULL,_NhlResValueSetCBTask}
+	{_NhlCBobjValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
+		 0,NULL,NULL,_NhlResValueSetCBTask},
+	{_NhlCBobjChildChange,NhlOffset(NhlBaseLayerRec,base.cchildcb),
+		 0,NULL,NULL,NULL},
 };
 static _NhlRawObjCB ocallbacks[] = {
 	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),
 		 0,NULL,NULL,NULL},
-	{_NhlCBresValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
-		 0,NULL,NULL,_NhlResValueSetCBTask}
+	{_NhlCBobjValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
+		 0,NULL,NULL,_NhlResValueSetCBTask},
+	{_NhlCBobjChildChange,NhlOffset(NhlBaseLayerRec,base.cchildcb),
+		 0,NULL,NULL,NULL},
 };
 
 static NhlResource bresources[] = {
@@ -464,8 +468,9 @@ FreeAndDestroyChildList
  * Description:	This function parses all the children of the given object
  *		and notifies them that there parent has changed.  There
  *		direct parent didn't change so the parent arg is passed
- *		with the current parent - but this allows there Reparent
- *		method to be called.
+ *		with the current parent - but this allows the Reparent
+ *		method to be called for every child and sub-child in
+ *		the hierarchy.
  *
  * In Args:	
  *		NhlLayer	l
@@ -493,10 +498,8 @@ ReparentChildren
 	tnode = l->base.all_children;
 
 	while(tnode != (_NhlAllChildList)NULL){
-		NhlLayer	child = NULL;
 
-		child = _NhlGetLayer(tnode->pid);
-		lret = _NhlReparent(child,l);
+		lret = _NhlReparent(_NhlGetLayer(tnode->pid),l);
 
 		ret = MIN(lret,ret);
 
@@ -708,4 +711,178 @@ _NhlBaseAppDestroyCB
 	}
 
 	return;
+}
+
+NhlBoolean
+_NhlBaseAddChild
+#if	NhlNeedProto
+(
+	NhlLayer	parent,
+	int		child
+)
+#else
+(parent,child)
+	NhlLayer	parent;
+	int		child;
+#endif
+{
+	_NhlAllChildList	list;
+	_NhlobjChangeChildRec	cc;
+	NhlArgVal		cbdata;
+	NhlArgVal		sel;
+
+	if(!parent)
+		return True;
+
+	list = (_NhlAllChildList)NhlMalloc(sizeof(_NhlAllChildNode));
+
+	if(!list){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+
+	list->pid = child;
+	list->next = parent->base.all_children;
+	parent->base.all_children = list;
+
+#if	DEBUG
+	memset(&cbdata,0,sizeof(NhlArgVal));
+	memset(&sel,0,sizeof(NhlArgVal));
+#endif
+	cc.reason = _NhlobjCCAdd;
+	cc.new = parent->base.id;
+	cc.child = child;
+	cbdata.ptrval = &cc;
+	sel.lngval = 0; /* ignored */
+	_NhlCallObjCallbacks(parent,_NhlCBobjChildChange,sel,cbdata);
+
+	return True;
+}
+
+void
+_NhlBaseRemoveChild
+#if	NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	_NhlAllChildList	*nptr;
+	_NhlAllChildList	node = NULL;
+	NhlBoolean		found = False;
+	_NhlobjChangeChildRec	cc;
+	NhlArgVal		cbdata;
+	NhlArgVal		sel;
+
+	if(!l->base.parent)
+		return;
+
+	nptr = &l->base.parent->base.all_children;
+
+	while(*nptr){
+		if((*nptr)->pid == l->base.id){
+			found = True;
+			node = *nptr;
+			*nptr = (*nptr)->next;
+			(void)NhlFree(node);
+			break;
+		}
+		nptr = &(*nptr)->next;
+	}
+
+	if(!found){
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"Unable to remove PID#%d from Parent's list",
+								l->base.id));
+		return;
+	}
+
+#if	DEBUG
+	memset(&cbdata,0,sizeof(NhlArgVal));
+	memset(&sel,0,sizeof(NhlArgVal));
+#endif
+	cc.reason = _NhlobjCCRemove;
+	cc.old = l->base.parent->base.id;
+	cc.child = l->base.id;
+	cbdata.ptrval = &cc;
+	sel.lngval = 0; /* ignored */
+	_NhlCallObjCallbacks(l->base.parent,_NhlCBobjChildChange,sel,cbdata);
+
+	return;
+}
+
+NhlBoolean
+_NhlBaseMoveChild
+#if	NhlNeedProto
+(
+	NhlLayer	parent,
+	NhlLayer	child
+)
+#else
+(parent,child)
+	NhlLayer	parent;
+	NhlLayer	child;
+#endif
+{
+	_NhlAllChildList	*nptr,node=NULL;
+	_NhlobjChangeChildRec	cc;
+	NhlArgVal		cbdata;
+	NhlArgVal		sel;
+	NhlLayer		oldp = child->base.parent;
+
+	/*
+	 * It is not this child's immediate parent that is changing - 
+	 * the change is higher up the instance hierarchy.
+	 */
+	if(parent == child->base.parent)
+		return True;
+
+	nptr = &child->base.parent->base.all_children;
+
+	/*
+	 * remove child node from parent's list.
+	 */
+	while(*nptr){
+		if((*nptr)->pid == child->base.id){
+			node = *nptr;
+			*nptr = (*nptr)->next;
+			break;
+		}
+		nptr = &(*nptr)->next;
+	}
+
+	if(!node){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			"Unable to remove PID#%d from parent",child->base.id));
+		return False;
+	}
+
+	/*
+	 * add child node into new parent's list.
+	 */
+	node->next = parent->base.all_children;
+	parent->base.all_children = node;
+
+	/*
+	 * Change child's parent pointer
+	 */
+	child->base.parent = parent;
+
+#if	DEBUG
+	memset(&cbdata,0,sizeof(NhlArgVal));
+	memset(&sel,0,sizeof(NhlArgVal));
+#endif
+	cc.reason = _NhlobjCCMove;
+	cc.new = parent->base.id;
+	cc.old = oldp->base.id;
+	cc.child = child->base.id;
+	cbdata.ptrval = &cc;
+	sel.lngval = 0; /* ignored */
+	_NhlCallObjCallbacks(oldp,_NhlCBobjChildChange,sel,cbdata);
+	_NhlCallObjCallbacks(parent,_NhlCBobjChildChange,sel,cbdata);
+
+	return True;
 }

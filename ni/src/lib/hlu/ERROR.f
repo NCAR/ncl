@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.7 1995-03-08 23:44:13 haley Exp $
+C $Id: ERROR.f,v 1.8 1997-01-17 18:57:25 boote Exp $
 C
 C****************************************************************
 C								*
@@ -49,7 +49,7 @@ C
 	integer iunit,fname_len,ierr
 	character*(*) fname
 
-	open(iunit,FILE=fname(:fname_len),IOSTAT=ierr)
+	open(iunit,FILE=fname(:fname_len),IOSTAT=ierr,STATUS='UNKNOWN')
 	return
       end
 C

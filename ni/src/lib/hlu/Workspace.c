@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.32 1996-09-14 17:07:43 boote Exp $
+ *      $Id: Workspace.c,v 1.33 1997-01-17 18:57:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2208,7 +2208,7 @@ NhlErrorTypes _NhlDumpAreaMap
 	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
 	char		*prefix = "NhlAreaMap";
 	char		suffix[10];
-	static		count = 0;
+	static		int count = 0;
 	char		buffer[20];
 	FILE		*fp;
 	int		i;

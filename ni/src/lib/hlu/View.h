@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.12 1996-01-04 21:47:56 dbrown Exp $
+ *      $Id: View.h,v 1.13 1997-01-17 18:57:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,8 @@ typedef struct _NhlCoord {
 	float y;
 } NhlCoord;
 
-
+#define	NhlNvpOn	"vpOn"
+#define	NhlCvpOn	"VpOn"
 #define NhlNvpXF "vpXF"
 #define NhlCvpXF "VpXF"
 #define NhlNvpYF "vpYF"

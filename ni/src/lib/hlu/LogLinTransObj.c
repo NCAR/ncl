@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.27 1996-09-14 17:06:33 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.28 1997-01-17 18:57:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1357,7 +1357,7 @@ int upordown;
 	NhlLogLinTransObjLayerPart *ltp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	float holdx,holdy;
 	float xpoints[2];
@@ -1496,7 +1496,7 @@ int upordown;
 	NhlLogLinTransObjLayerPart *ltp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	float holdx,holdy;
 
@@ -1565,7 +1565,7 @@ int upordown;
 	NhlLogLinTransObjLayer	llinst = (NhlLogLinTransObjLayer)instance;
 	NhlTransObjLayerPart	*tp = &llinst->trobj;
 	static float lastx,lasty;
-	static call_frstd = 1;
+	static int call_frstd = 1;
 	float currentx,currenty;
 	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float holdx,holdy;

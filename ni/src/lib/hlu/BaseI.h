@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseI.h,v 1.3 1996-11-28 01:14:19 dbrown Exp $
+ *      $Id: BaseI.h,v 1.4 1997-01-17 18:57:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,26 @@ struct _NhlValueSetCBDataRec {
 	NrmQuark	resq;	/* resource name quark */
 };
 
-#define	_NhlCBresValueSet	"CBresValueSet"	/* cbdata.ptrval is 
+#define	_NhlCBobjValueSet	"CBobjValueSet"	/* cbdata.ptrval is 
 						   _NhlValueSetCBData */
+
+typedef struct _NhlobjChangeChildRec _NhlobjChangeChildRec, *_NhlobjChangeChild;
+typedef enum _NhlobjCCType{
+	_NhlobjCCAdd,
+	_NhlobjCCRemove,
+	_NhlobjCCMove
+} _NhlobjCCType;
+
+struct _NhlobjChangeChildRec{
+	_NhlobjCCType	reason;
+	int		new;	/* valid for _NhlobjCCAdd,_NhlobjCCChange */
+	int		old;	/* valid for _NhlobjCCRemove,_NhlobjCCChange */
+	int		child;	/* valid for all	*/
+};
+
+/*
+ * cbdata.ptrval is _NhlobjChangeChild
+ */
+#define _NhlCBobjChildChange	"CBobjChildChange"
 
 #endif  /* _NBaseI_h */

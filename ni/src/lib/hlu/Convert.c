@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.15 1996-05-10 09:31:53 boote Exp $
+ *      $Id: Convert.c,v 1.16 1997-01-17 18:57:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1886,7 +1886,7 @@ ComputeArgs
 		args[i].size = conv->args[i].size;
 		if(conv->args[i].addressmode == NhlLAYEROFFSET){
 			args[i].data.ptrval = (char*)ref +
-					(unsigned int)conv->args[i].data.ptrval;
+				(unsigned long)conv->args[i].data.ptrval;
 		}
 		else
 			args[i].data = conv->args[i].data;

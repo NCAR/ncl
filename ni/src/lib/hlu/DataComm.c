@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.38 1996-09-14 17:06:04 boote Exp $
+ *      $Id: DataComm.c,v 1.39 1997-01-17 18:57:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -571,7 +571,7 @@ CvtScalarToData
 {
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"CvtIntToData:called incorrectly???");
+				"CvtScalarToData:called incorrectly???");
 		return NhlFATAL;
 	}
 

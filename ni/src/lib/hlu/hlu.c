@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.38 1997-01-03 01:37:32 boote Exp $
+ *      $Id: hlu.c,v 1.39 1997-01-17 18:57:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -701,14 +701,12 @@ NhlSetSArg
 #endif
 {
 	va_list		ap;
-	double		tmp;
 
 	arg->name = resname;
 
 	VA_START(ap,resname);
 	if(_NhlIsFloatRes(resname)){
-		tmp = va_arg(ap,double);
-		arg->value.fltval = (float)tmp;
+		arg->value.dblval = va_arg(ap,double);
 	}
 	else
 		arg->value.lngval = va_arg(ap,long);
@@ -1893,15 +1891,10 @@ _NhlIterateObjCallbacks
 (
 	NhlLayer	l,
 	NhlString	cbname,
- 	_NhlCBTask	task
+ 	_NhlCBTask	task,
+	NhlArgVal	cbdata
 )
 {
-	NhlArgVal cbdata;
-
-#ifdef	DEBUG
-	memset((char*)&cbdata,0,sizeof(NhlArgVal));
-#endif
-	cbdata.lngval = 0;
 	_NhlCBIterate(GetObjCBList(l,cbname,False),task,cbdata);
 	return;
 }

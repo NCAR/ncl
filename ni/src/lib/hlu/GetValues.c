@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.19 1996-11-24 22:25:29 boote Exp $
+ *      $Id: GetValues.c,v 1.20 1997-01-17 18:57:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/AppI.h>
 
 static	NrmQuark	stringQ;
 static	NrmQuark	genQ;

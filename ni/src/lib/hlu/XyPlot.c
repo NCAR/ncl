@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.65 1996-12-05 00:43:35 ethan Exp $
+ *      $Id: XyPlot.c,v 1.66 1997-01-17 18:57:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1023,7 +1023,7 @@ XyPlotChanges
 		}
 
 		ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
-			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
+			(NhlLayer)xold,calledfrom,sargs,nsargs,
 			"XyPlotChanges");
 		ret1 = MIN(ret1,ret2);
 
@@ -1078,7 +1078,7 @@ XyPlotChanges
 	ret1 = MIN(ret1,ret2);
 
 	ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
-			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
+			(NhlLayer)xold,calledfrom,sargs,nsargs,
 			"XyPlotChanges");
 	ret1 = MIN(ret1,ret2);
 

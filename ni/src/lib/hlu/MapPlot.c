@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.54 1996-09-14 17:06:51 boote Exp $
+ *      $Id: MapPlot.c,v 1.55 1997-01-17 18:57:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1547,7 +1547,7 @@ MapPlotInitialize
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&Mpp->overlay_object,new,req,
-				   True,NULL,0,entry_name);
+				   _NhlCREATE,NULL,0,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
@@ -1741,7 +1741,7 @@ static NhlErrorTypes MapPlotSetValues
 	}
 	
 	subret = _NhlManageOverlay(&Mpp->overlay_object,new,old,
-			       False,sargs,nargs,entry_name);
+			       _NhlSETVALUES,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
 
 	Mpp->update_req = False;
@@ -2850,7 +2850,7 @@ static NhlErrorTypes mpSetUpAreamap
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
 					  200000*sizeof(int));
 		if (aws_id < 0) 
-			return MIN(ret,aws_id);
+			return MIN(ret,(NhlErrorTypes)aws_id);
 	}
 	if ((*aws = _NhlUseWorkspace(aws_id)) == NULL) {
 		e_text = "%s: error reserving area map workspace";
@@ -3036,8 +3036,8 @@ static NhlErrorTypes mpSetUpDrawIds
 					    uflags.f.draw_mode = mpDRAWSPECIAL;
 					subret = mpExpandId(mpp,ix-end_ix-1,
 					      uflags,index,s_index,entry_name);
-					if ((ret = MIN(ret,subret) 
-					     < NhlWARNING)) return ret;
+					if ((ret = MIN(ret,subret))
+					     < NhlWARNING) return ret;
 				}
 				else {
 					ix -= start_ix;
@@ -3074,7 +3074,7 @@ static NhlErrorTypes mpSetUpDrawIds
 			uflags.f.draw_mode = mpDRAWSPECIAL;
 		subret = mpExpandId(mpp,ix-end_ix-1,
 				    uflags,index,s_index,entry_name);
-		if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	}
 	if (us_ix >= 0) {
 		j = nrecs[us_ix].name_ix;
@@ -3085,7 +3085,7 @@ static NhlErrorTypes mpSetUpDrawIds
 		if (uflags.f.draw_mode == mpMASK) {
 			subret = mpExpandId(mpp,ix-end_ix-1,uflags,
 					    index,s_index,entry_name);
-			if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 			groups[mpUSStateLand].u.flags = uflags.flags;
 		}
 		else {
@@ -5699,7 +5699,7 @@ int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 {
 	NhlBoolean draw_line = False;
 	int i,id,ix = 0;
-	mpOutlineSet type;
+	int type;
 
 	if (Mpp == NULL) return 0;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.59 1997-01-14 21:23:35 dbrown Exp $
+ *      $Id: Workstation.c,v 1.60 1997-01-17 18:57:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1133,8 +1133,9 @@ static NhlErrorTypes WorkstationInitialize
 				return retcode;
 		}
 		else {
-			subret = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
+			i = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
+			retcode = (NhlErrorTypes)MIN(retcode,i);
+			if(retcode < NhlWARNING)
 				return retcode;
 		}
 	}
@@ -1472,8 +1473,9 @@ WorkstationSetValues
 				return retcode;
 		}
 		else {
-			subret = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
+			i = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
+			retcode = (NhlErrorTypes)MIN(retcode,i);
+			if(retcode < NhlWARNING)
 				return retcode;
 		}
 	}
@@ -2502,7 +2504,7 @@ WorkstationFill
 		;
 	else if ((ix = wkfp->fill_index) == NhlSOLIDFILL) {
 		/* fill_specs[ix].type  must be 0 */
-		gset_fill_int_style(1);
+		gset_fill_int_style(GSTYLE_SOLID);
 		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("type of fill", 0);
@@ -2515,7 +2517,7 @@ WorkstationFill
 		ix = 1 + (ix - 1) % wk_p->fill_table_len;
 		if (fill_background >= 0) {
 			gset_linewidth(1.0);
-			gset_fill_int_style(1);
+			gset_fill_int_style(GSTYLE_SOLID);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_sfseti("type of fill", 0);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.47 1996-11-18 22:21:30 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.48 1997-01-17 18:57:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3246,7 +3246,7 @@ static NhlErrorTypes cnInitAreamap
 			_NhlNewWorkspace(NhlwsAREAMAP,
 					 NhlwsNONE,200000*sizeof(int));
 		if (cnp->aws_id < 0) 
-			return MIN(ret,cnp->aws_id);
+			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
 	}
 	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
 		e_text = 
@@ -3410,7 +3410,7 @@ static NhlErrorTypes cnInitCellArray
 			_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
 					 (*msize * *nsize) * sizeof(int));
 		if (cnp->cws_id < 0) 
-			return MIN(ret,cnp->cws_id);
+			return MIN(ret,(NhlErrorTypes)cnp->cws_id);
 	}
 	if ((cnp->cws = _NhlUseWorkspace(cnp->cws_id)) == NULL) {
 		e_text = 
@@ -4551,14 +4551,14 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
 	if (cnp->line_lbls.mono_color) {
                 if (cnp->line_lbls.color == NhlTRANSPARENT)
-                        cnp->line_lbls.colors = (int *) NhlTRANSPARENT;
+                        cnp->line_lbls.gks_color =  NhlTRANSPARENT;
                 else
-                        cnp->line_lbls.colors =
-                                (int *) _NhlGetGksCi(cl->base.wkptr,
+                        cnp->line_lbls.gks_color =
+                                 _NhlGetGksCi(cl->base.wkptr,
                                                      cnp->line_lbls.color);
         }
 	else
-		cnp->line_lbls.colors = (int *) cnp->gks_llabel_colors;
+		cnp->line_lbls.colors =  cnp->gks_llabel_colors;
         if (cnp->line_lbls.back_color == NhlTRANSPARENT)
                 cnp->line_lbls.gks_bcolor = NhlTRANSPARENT;
         else
@@ -4573,10 +4573,10 @@ static NhlErrorTypes UpdateLineAndLabelParams
                                      cnp->line_lbls.perim_lcolor);
 
         if (cnp->high_lbls.color == NhlTRANSPARENT)
-                cnp->high_lbls.colors = (int *) NhlTRANSPARENT;
+                cnp->high_lbls.gks_color =  NhlTRANSPARENT;
         else
-                cnp->high_lbls.colors =
-                        (int *) _NhlGetGksCi(cl->base.wkptr,
+                cnp->high_lbls.gks_color =
+                         _NhlGetGksCi(cl->base.wkptr,
                                              cnp->high_lbls.color);
         if (cnp->high_lbls.back_color == NhlTRANSPARENT)
                 cnp->high_lbls.gks_bcolor = NhlTRANSPARENT;
@@ -4593,10 +4593,10 @@ static NhlErrorTypes UpdateLineAndLabelParams
 
 
         if (cnp->low_lbls.color == NhlTRANSPARENT)
-                cnp->low_lbls.colors = (int *) NhlTRANSPARENT;
+                cnp->low_lbls.gks_color =  NhlTRANSPARENT;
         else
-                cnp->low_lbls.colors =
-                        (int *) _NhlGetGksCi(cl->base.wkptr,
+                cnp->low_lbls.gks_color =
+                         _NhlGetGksCi(cl->base.wkptr,
                                              cnp->low_lbls.color);
         if (cnp->low_lbls.back_color == NhlTRANSPARENT)
                 cnp->low_lbls.gks_bcolor = NhlTRANSPARENT;
@@ -4647,7 +4647,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		aia = aid_offset+i+1;
 		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",(float)clvp[i]);
-		flag = cnp->mono_level_flag ? cnp->level_flag : clup[i];
+		flag = cnp->mono_level_flag ? cnp->level_flag :(NhlcnLevelUseMode)clup[i];
 		if (*do_lines) {
 			c_cpseti("CLU",flag);
 		}
@@ -5906,7 +5906,7 @@ static NhlErrorTypes ManageOverlay
 	}
 		
 	subret = _NhlManageOverlay(&cnp->overlay_object,
-				   (NhlLayer)cnnew,(NhlLayer)cnold,init,
+			   (NhlLayer)cnnew,(NhlLayer)cnold,(_NhlCalledFrom)init,
 				   sargs,*nargs,entry_name);
 	ret = MIN(ret,subret);
 	return ret;
@@ -10269,11 +10269,12 @@ void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 		NhlcnLevelUseMode *lup = 
 			(NhlcnLevelUseMode *) Cnp->level_flags->data;
 		NhlcnLevelUseMode flag;
-		int llcol, j;
+		NhlColorIndex llcol;
+		int j;
 		NhlBoolean do_label;
 
 		llcol = Cnp->line_lbls.mono_color ?
-			(int) Cnp->line_lbls.colors : 
+			 Cnp->line_lbls.gks_color : 
 				Cnp->line_lbls.colors[pai-1];
 		
 		flag = Cnp->mono_level_flag ? 
@@ -10372,9 +10373,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_cpsetc("CTM"," ");
 			return;
 		}
-		if ((int) Cnp->high_lbls.colors > NhlTRANSPARENT) {
-			c_pcseti("CC",(int) Cnp->high_lbls.colors);
-			c_pcseti("OC",(int) Cnp->high_lbls.colors);
+		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
+			c_pcseti("CC", Cnp->high_lbls.gks_color);
+			c_pcseti("OC", Cnp->high_lbls.gks_color);
 		}
 		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
@@ -10408,9 +10409,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_cpsetc("CTM"," ");
 			return;
 		}
-		if ((int) Cnp->high_lbls.colors > NhlTRANSPARENT) {
-			c_pcseti("CC",(int) Cnp->high_lbls.colors);
-			c_pcseti("OC",(int) Cnp->high_lbls.colors);
+		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
+			c_pcseti("CC", Cnp->high_lbls.gks_color);
+			c_pcseti("OC", Cnp->high_lbls.gks_color);
 		}
 		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
@@ -10439,7 +10440,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if (! Cnp->high_lbls.on || ! Cnp->high_lbls.perim_on) 
 			return;
 		if (Cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
-			gset_line_colr_ind((int) Cnp->high_lbls.colors);
+			gset_line_colr_ind( Cnp->high_lbls.gks_color);
 		else
 			gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
 		gset_linewidth(Cnp->high_lbls.perim_lthick);
@@ -10449,9 +10450,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_cpsetc("CTM"," ");
 			return;
 		}
-		if ((int)Cnp->low_lbls.colors > NhlTRANSPARENT) {
-			c_pcseti("CC",(int) Cnp->low_lbls.colors);
-			c_pcseti("OC",(int) Cnp->low_lbls.colors);
+		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
+			c_pcseti("CC", Cnp->low_lbls.gks_color);
+			c_pcseti("OC", Cnp->low_lbls.gks_color);
 		}
 		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
@@ -10484,9 +10485,9 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_cpsetc("CTM"," ");
 			return;
 		}
-		if ((int)Cnp->low_lbls.colors > NhlTRANSPARENT) {
-			c_pcseti("CC",(int) Cnp->low_lbls.colors);
-			c_pcseti("OC",(int) Cnp->low_lbls.colors);
+		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
+			c_pcseti("CC", Cnp->low_lbls.gks_color);
+			c_pcseti("OC", Cnp->low_lbls.gks_color);
 		}
 		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
@@ -10514,7 +10515,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if (! Cnp->low_lbls.on || ! Cnp->low_lbls.perim_on) 
 			return;
 		if (Cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
-			gset_line_colr_ind((int) Cnp->low_lbls.colors);
+			gset_line_colr_ind( Cnp->low_lbls.gks_color);
 		else
 			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
 		gset_linewidth(Cnp->low_lbls.perim_lthick);
@@ -10573,7 +10574,7 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			pai -= 1;
 
 			llcol = Cnp->line_lbls.mono_color ?
-				(int) Cnp->line_lbls.colors : 
+				 Cnp->line_lbls.gks_color : 
 					Cnp->line_lbls.colors[pai];
 			if (llcol > NhlTRANSPARENT) {
 				c_pcseti("CC",llcol);

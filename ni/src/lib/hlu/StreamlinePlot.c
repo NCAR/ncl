@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.21 1997-01-14 21:23:30 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.22 1997-01-17 18:57:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3888,7 +3888,8 @@ static NhlErrorTypes ManageOverlay
 	}
 		
 	subret = _NhlManageOverlay(&stp->overlay_object,
-				   (NhlLayer)stnew,(NhlLayer)stold,init,
+				   (NhlLayer)stnew,(NhlLayer)stold,
+				   (init)?_NhlCREATE:_NhlSETVALUES,
 				   sargs,*nargs,entry_name);
 	ret = MIN(ret,subret);
 	return ret;

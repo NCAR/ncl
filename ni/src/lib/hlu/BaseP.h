@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.14 1997-01-03 01:37:30 boote Exp $
+ *      $Id: BaseP.h,v 1.15 1997-01-17 18:57:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,7 @@ typedef struct _NhlObjLayerPart {
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
 	_NhlCBList	resvaluesetcb;
+	_NhlCBList	cchildcb;
 	_NhlAllChildList	all_children;
 	int		appid;
 	_NhlCB		app_destroy;
@@ -94,6 +95,7 @@ typedef struct _NhlBaseLayerPart {
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
 	_NhlCBList	resvaluesetcb;
+	_NhlCBList	cchildcb;
 	_NhlAllChildList	all_children;
 	int		appid;
 	_NhlCB		app_destroy;
@@ -289,4 +291,25 @@ extern void _NhlBaseAppDestroyCB(
 	NhlArgVal	udata
 #endif
 );
+
+extern NhlBoolean _NhlBaseAddChild(
+#if	NhlNeedProto
+	NhlLayer	parent,
+	int		child
+#endif
+);
+
+extern void _NhlBaseRemoveChild(
+#if	NhlNeedProto
+	NhlLayer	l
+#endif
+);
+
+extern NhlBoolean _NhlBaseMoveChild(
+#if	NhlNeedProto
+	NhlLayer	parent,	/* new parent	*/
+	NhlLayer	child	/* child	*/
+#endif
+);
+
 #endif /* _NBaseP_h */	

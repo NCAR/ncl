@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.14 1996-11-18 22:21:34 dbrown Exp $
+ *      $Id: Draw.c,v 1.15 1997-01-17 18:57:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -294,6 +294,8 @@ NhlDraw
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
 		return(NhlWARNING);
 	}
+	else if(_NhlIsView(draw_layer) && !_NhlViewOn(draw_layer))
+		return NhlNOERROR;
 
 	return _NhlPlotManagerDraw(draw_layer);
 
@@ -362,6 +364,9 @@ _NhlPreDraw
 			  "Invalid layer passed to _NhlPreDraw");
 		return(NhlFATAL);
 	}
+	
+	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+		return NhlNOERROR;
 
 	return CallPreDraw(layer,layer->base.layer_class);
 }
@@ -399,6 +404,9 @@ _NhlDraw
 		return(NhlFATAL);
 	}
 
+	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+		return NhlNOERROR;
+
 	return CallDraw(layer,layer->base.layer_class);
 }
 
@@ -435,6 +443,9 @@ _NhlPostDraw
 				"Invalid layer passed to _NhlPostDraw");
 		return(NhlFATAL);
 	}
+
+	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+		return NhlNOERROR;
 
 	return CallPostDraw(layer,layer->base.layer_class);
 }
