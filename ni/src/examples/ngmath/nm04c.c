@@ -1,5 +1,5 @@
 /*
- *      $Id: nm04c.c,v 1.1 1997-12-16 18:19:56 haley Exp $
+ *      $Id: nm04c.c,v 1.2 1997-12-16 20:17:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -131,8 +131,8 @@ main()
  */
 	gactivate_ws (gkswid);
 	drwtd3(gkswid, NX, NY, NZ, xo, yo, zo, output, 3.0, 0., 0., 0., -6);
-	NhlFrame(wid);
 	gdeactivate_ws (gkswid);
+	NhlFrame(wid);
 /*
  * NhlDestroy destroys the given id and all of its children.
  */
