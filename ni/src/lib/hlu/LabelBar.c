@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.12 1994-05-12 23:51:30 boote Exp $
+ *      $Id: LabelBar.c,v 1.13 1994-06-03 19:23:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,22 +108,28 @@ static NhlResource resources[] = {
 {NhlNlbFillPatterns, NhlClbFillPatterns, NhlT1DIntGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_patterns),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlbFillColors, NhlClbFillColors, NhlT1DIntGenArray,
 	 sizeof(NhlPointer),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_colors),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlbFillScales, NhlClbFillScales, NhlT1DFloatGenArray,
 	 sizeof(NhlPointer),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_scales),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlbLabelStrings, NhlClbLabelStrings, NhlT1DStringGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_strings),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-{NhlNlbBoxFractions, NhlClbBoxFractions, NhlT1DFloatGenArray,sizeof(NhlPointer), 
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+{NhlNlbBoxFractions, NhlClbBoxFractions,
+	 NhlT1DFloatGenArray,sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_fractions),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	
 {NhlNlbDrawLabels, NhlClbDrawLabels, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),

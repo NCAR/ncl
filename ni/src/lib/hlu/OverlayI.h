@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.4 1994-04-29 21:31:25 dbrown Exp $
+ *      $Id: OverlayI.h,v 1.5 1994-06-03 19:24:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,36 @@
 #define	_NOVERLAYI_H
 
 #include <ncarg/hlu/ViewI.h>
+#include <ncarg/hlu/Annotation.h>
 #include <ncarg/hlu/Overlay.h>
+
+/*
+ * structure used to define the attributes of an annotation 
+ * object. If a plot wishes to have an annotation managed by the Overlay
+ * Manager it needs to handle resources for these fields.
+ */
+
+typedef struct	_NhlAnnotationRec {
+	int			id;
+	NhlBoolean		on;
+	int			zone;
+	NhlPosition		side;
+	NhlJustification	just;
+	float			para_pos;
+	float			ortho_pos;
+} NhlAnnotationRec;
 
 /* 
  * Resource used by the base Overlay to tell its members that
  * the overlay transform has changed.
+ */
+   
+#define NhlNovUpdateReq		".ovUpdateReq"
+#define NhlCovUpdateReq		".OvUpdateReq"
+
+/* 
+ * Resource used by member plots to alert the base overlay when an
+ * external annotation is modified in a way that affects its view.
  */
    
 #define NhlNovUpdateReq		".ovUpdateReq"

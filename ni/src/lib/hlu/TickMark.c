@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.17 1994-05-12 23:52:30 boote Exp $
+ *      $Id: TickMark.c,v 1.18 1994-06-03 19:24:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 
 #include <math.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/TickMarkP.h>
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
@@ -2359,210 +2360,6 @@ static NhlErrorTypes TickMarkGetBB
 	return(NhlNOERROR);
 }
 
-static float roundit(
-#if	NhlNeedProto
-	float a,
-	int sig_digit
-#endif
-);
-
-/*
- * Function:	compare
- *
- * Description: Compare two floating point numbers to a certain number of
- *		significant digits. This was a tricky algorythm to come up
- *		with. Essentially what compare does is figure out what it
- *		takes to shift one of the numbers to the immediate left of
- *		the decimal place. It divides both numbers by this number.
- *		Then it multiplies both numbers by 10**sig_digit, rounds them
- *		then casts the resulting number into an integer. These two
- *		integers are subtracted from each other and the result returned
- *		
- *
- * In Args:	a	first floating point number
- *		b	second floating point number
- *		sig_dig	<=7 represents number of significant digits to compare.
- *
- * Out Args:	NONE
- *
- * Return Values: 0 if equal, <0 if a<b, and >0 if a>b
- *
- * Side Effects: NONE
- */
-static float	compare
-#if	__STDC__
-(float a, float b, int sig_dig)
-#else
-(a,b,sig_dig)
-	float a;
-	float b;
-	int sig_dig;
-#endif
-{
-	float	a_final;
-	float	b_final;
-	long a_int;
-	long b_int;
-	int exp;
-	int signa;
-	int signb;
-	float tmp;
-	
-/*
-* If sig_dig is > 6, a_int and b_int will overflow and cause problems
-*/
-	if(sig_dig > 7) 
-		sig_dig = 7;
-
-/*
-* Get ride of easy cases:
-* These actually didn't end up being easy since large numbers compared againts
-* zero cause a_int and b_int to overflow. So I added the fabs checks to make
-* sure that the absolute value of non-zero numbers are at least between 
-* 0 and 1.0.
-*/
-	if((a == 0.0)&&(b!=0.0)&&(log10(fabs(b))<=0.0)) {
-		a_int = 0;
-		b_final = b * (float)pow(10.0,(double)sig_dig);
-		b_int = (long)b_final;
-		return((float)(a_int - b_int));
-	} else if((a!=0.0)&&(b==0.0)&&(log10(fabs(a))<=0.0)){
-		b_int = 0;
-		a_final = a * (float)pow(10.0,(double)sig_dig);
-		a_int = (long)a_final;
-		return((float)(a_int - b_int));
-	} else if((a==0.0)&&(b==0.0)){
-		return(0.0);
-	}
-/*
-* If I get here and either a or b is zero then than means one of them is
-* greater that 1 and one is 0.0
-*/
-	if((a==0.0)||(b==0.0)) {
-		return(a - b);
-	}
-
-	
-/*
-* store sign info and make sure both numbers are positive so log10 can be
-* used. 
-*/
-	signa = ((float)fabs(a))/a;
-	signb = ((float)fabs(b))/b;
-	a_final = fabs(a);
-	b_final = fabs(b);
-/*
-* Now compute the exponent needed to shift a to the decimal position immediately
-* right of the decimal point for the value of a
-*/
-	if(a_final>b_final){ 
-		tmp = (float)log10(a_final);
-		exp = (long)ceil(log10(a_final));
-		if((float)exp == tmp)
-			exp++;
-	} else {
-		tmp = (float)log10(b_final);
-		exp = (long)ceil(log10(b_final));
-		if((float)exp == tmp)
-			exp++;
-	}
-
-/*
-* Now divide through by the exponent determined above
-*/
-	a_final = a_final/(float)pow(10.0,(double)exp);
-	b_final = b_final/(float)pow(10.0,(double)exp);
-
-/*
-* Since a and possibly b are now shifted to the immediate left of the decimal,
-* multipling by pow(10.0,sig_dig), rounding , setting appropriate sign  and 
-* truncating the decimal produces two integers that can be compared.
-*/
-	a_final = a_final * pow(10.0,(double)sig_dig);
-	b_final = b_final * pow(10.0,(double)sig_dig);
-	a_final = roundit(a_final,sig_dig);
-	b_final = roundit(b_final,sig_dig);
-	a_final *= signa;
-	b_final *= signb;
-	a_int = (long)a_final;
-	b_int = (long)b_final;
-	return((float)a_int-(float)b_int);
-}
-
-
-/*
- * Function:	roundit
- *
- * Description: Used to round a floating point number to a certain amount of
- *		significant digits. First it converts number to [0.0,1.0]
- *		exclusive and removes the sign. Then it multiplies by 
- * 		10**sig_digit. Then it adds .5 and casts the number to a long, 
- *		(i.e truncates decimal. Next, it converts the number back
- *		into its original magnitude and sign and returns. 
- *
- * In Args:	a	floating point values
- *		sig_dig	number of digit to round to must be <=7
- *
- * Out Args:	NONE
- *
- * Return Values: rounded value
- *
- * Side Effects: NONE
- */
-static float roundit
-#if	__STDC__
-(float a,int sig_digit)
-#else
-(a,sig_digit)
-float a;
-int sig_digit;
-#endif
-{
-	double	exp1;
-	double	exp2;
-	double 	a_final;
-	long  ltmp;
-	int sign;
-
-/* 
-* if its equal to zero just return
-*/
-	if(a == 0.0)
-		return(a);
-/*
-* floats are only accurate to 7 decimal places when 32bit IEEE used
-*/
-	if(sig_digit>7)
-		sig_digit = 7;
-/*
-* need to convert <a> so its not a negative, so logs can be taken
-*/
-	a_final = fabs(a);
-	sign = (int)(a_final/a);
-	
-
-/*
-* Converts number to value between 0.0 and 1.0
-*/
-	exp1 = (float)ceil(log10(a_final));
-	a_final = a_final/pow(10.0,exp1);
-
-/*
-* Now perform significant digit computation
-*/
-	exp2 = pow(10.0,(double)sig_digit);
-	ltmp = (long)(a_final * exp2 + .5);
-	a_final = ((double)ltmp)/exp2;
-
-/*
-* Now convert back to original magnitude
-*/
-
-	a_final = (double)sign * a_final * pow(10.0,exp1);
-
-	return((float)a_final);
-}
-
 /*
  * Function:	AutoComputeMajorTickMarks
  *
@@ -2646,8 +2443,8 @@ int		cutoff;
 	case NhlIRREGULAR:
 /*
 * Can't rember why this is necessary! In fact it seems to cause problems
-		*tstart = roundit(dmin,convert_precision);
-		*tend = roundit(dmax,convert_precision);
+		*tstart = _NhlRndIt(dmin,convert_precision);
+		*tend = _NhlRndIt(dmax,convert_precision);
 */
 		*tstart = dmin;
 		*tend = dmax;
@@ -2691,8 +2488,8 @@ int		cutoff;
 
 		while(!done) {
 			tmploc = *tstart + i * *spacing;
-			if((compare(tmploc,min,7/*min_compare*/)>=0.0)
-				&&(compare(tmploc,max,7/*max_compare*/) <= 0.0)) {
+			if((_NhlCmpFAny(tmploc,min,7/*min_compare*/)>=0.0)
+				&&(_NhlCmpFAny(tmploc,max,7/*max_compare*/) <= 0.0)) {
 				array[j] = tmploc;
 				larray[j] = ConvertToString(tmploc,cnvt_precision,compare_precision,NhlLINEAR,cutoff);
 				j++;
@@ -2701,7 +2498,7 @@ int		cutoff;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(compare(tmploc,max,7/*max_compare*/) >0.0) {
+			} else if(_NhlCmpFAny(tmploc,max,7/*max_compare*/) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -2710,8 +2507,8 @@ int		cutoff;
 		break;
 	case NhlLOG:
 		if(convert_precision > 0) {
-			*tstart = roundit(dmin,convert_precision);
-			*tend = roundit(dmax,convert_precision);
+			*tstart = _NhlRndIt(dmin,convert_precision);
+			*tend = _NhlRndIt(dmax,convert_precision);
 		} else {
 			*tstart = dmin;
 			*tend = dmax;
@@ -2729,11 +2526,11 @@ int		cutoff;
 /*
 * tstart and tend are returned as exponents!!!
 */
-		log_spacing = (int)roundit(*spacing,2);
+		log_spacing = (int)_NhlRndIt(*spacing,2);
 		while(!done) {
 			tmploc = *tstart + i;
-			if((compare(tmploc,log10(dmin),compare_precision)>=0.0)
-				&&(compare(tmploc,log10(dmax),compare_precision) <= 0.0)) {
+			if((_NhlCmpFAny(tmploc,log10(dmin),compare_precision)>=0.0)
+				&&(_NhlCmpFAny(tmploc,log10(dmax),compare_precision) <= 0.0)) {
 				array[j] = pow(10.0,tmploc);
 				if(i%log_spacing == 0) {
 					larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLOG,cutoff);
@@ -2746,7 +2543,7 @@ int		cutoff;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(compare(tmploc,log10(dmax),compare_precision) >0.0) {
+			} else if(_NhlCmpFAny(tmploc,log10(dmax),compare_precision) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -2862,12 +2659,12 @@ int		cutoff;
 * Convert spacing to int so % operator can be used to determine weather to
 * label or not
 */
-		log_spacing = (int) roundit(spacing,2);
+		log_spacing = (int) _NhlRndIt(spacing,2);
 		
 		while(!done) {
 			tmploc = tstart + i;
-			if((compare(tmploc,min,compare_precision)>=0.0)
-				&&(compare(tmploc,max,compare_precision) <= 0.0)) {
+			if((_NhlCmpFAny(tmploc,min,compare_precision)>=0.0)
+				&&(_NhlCmpFAny(tmploc,max,compare_precision) <= 0.0)) {
 				array[j] = pow(10.0,tmploc);
 				if(i%log_spacing == 0) {
 					larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLOG,cutoff);
@@ -2880,7 +2677,7 @@ int		cutoff;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(compare(tmploc,max,compare_precision) >0.0) {
+			} else if(_NhlCmpFAny(tmploc,max,compare_precision) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -2926,8 +2723,8 @@ int		cutoff;
 		
 		while(!done) {
 			tmploc = tstart + i * spacing;
-			if((compare(tmploc,min,7/*min_compare*/)>=0.0)
-				&&(compare(tmploc,max,7/*max_compare*/)) <= 0.0) {
+			if((_NhlCmpFAny(tmploc,min,7/*min_compare*/)>=0.0)
+				&&(_NhlCmpFAny(tmploc,max,7/*max_compare*/)) <= 0.0) {
 				array[j] = tmploc;
 				larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLINEAR,cutoff);
 				j++;
@@ -2936,7 +2733,7 @@ int		cutoff;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(compare(tmploc,max,7 /*max_compare*/) >0.0) {
+			} else if(_NhlCmpFAny(tmploc,max,7 /*max_compare*/) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -3030,7 +2827,7 @@ int n_requested;
 #endif
 		k = 0;
 		for(i = 0; i< n_requested; i++) {
-			if((compare(requested_points[i],min,7/*min_compare*/) >= 0.0) && (compare(requested_points[i],max,7 /*max_compare*/) <= 0.0)) {
+			if((_NhlCmpFAny(requested_points[i],min,7/*min_compare*/) >= 0.0) && (_NhlCmpFAny(requested_points[i],max,7 /*max_compare*/) <= 0.0)) {
 				array[k] = requested_points[i];
 				if(requested_labels != NULL)
 					larray[k] = requested_labels[i];
@@ -3117,7 +2914,7 @@ int	max_ticks;
 	table[9] = 50.0;
 	npts = 10;
 
-	if(compare(*tend,*tstart,8)<=0.0) {
+	if(_NhlCmpFAny(*tend,*tstart,8)<=0.0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ChooseSpacingLin: An impossible condition has been detected, TickEnd and TickStart are nearly equal, cannot continue");
 		return(NhlFATAL);
 	}
@@ -3129,7 +2926,7 @@ int	max_ticks;
 		am1 = floor(*tstart/t) *t;
 		ax1 = ceil(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||((t <= *spacing)
-			&&(compare((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
+			&&(_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;
@@ -3199,7 +2996,7 @@ int	max_ticks;
 		am1 = floor(*tstart/t) *t;
 		ax1 = ceil(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||((t <= *spacing)
-			&&(compare((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
+			&&(_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;
@@ -3264,7 +3061,7 @@ int	cutoff;
 	char format[_NhlMAXFNAMELEN];
 	int sign = 1;
 
-	tmp = roundit(value,convert_precision);
+	tmp = _NhlRndIt(value,convert_precision);
 	if(tmp != 0.0)
 		sign = (long)(fabs(tmp)/tmp);
 	tmp = fabs(tmp);
@@ -3282,7 +3079,7 @@ int	cutoff;
 		return(tmpc);
 	case NhlLINEAR:
 	case NhlIRREGULAR:
-		if(compare(0.0,tmp,compare_precision)!= 0.0) {
+		if(_NhlCmpFAny(0.0,tmp,compare_precision)!= 0.0) {
 			if(fabs(log10(tmp)) > cutoff) {
 /*
 * Scientific notation must be used
@@ -3458,7 +3255,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					j = 1;
 					tmp = m_locs[i] - j * 
 						pow(10.0,minor_spacing);
-					while(compare(tmp,m_locs[i-1],precision) > 0.0){
+					while(_NhlCmpFAny(tmp,m_locs[i-1],precision) > 0.0){
 						minor_locs[k] = tmp;
 						k++;
 						j++;
@@ -3471,7 +3268,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 						return(NhlWARNING);
 					}
 				}
-				if(compare(pow(10.0,max),m_locs[nmajor-1],
+				if(_NhlCmpFAny(pow(10.0,max),m_locs[nmajor-1],
 					compare_precision) > 0.0) {
 					minor_spacing = floor(log10(
 						m_locs[nmajor-1]))  
@@ -3480,9 +3277,9 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = pow(10.0,floor(log10(
 						m_locs[nmajor-1])) + 1.0) - j * 
 						pow(10.0,minor_spacing);
-					while(compare(tmp,m_locs[nmajor-1],
+					while(_NhlCmpFAny(tmp,m_locs[nmajor-1],
 						precision) > 0.0) {
-						if(compare(tmp,pow(10.0,max),
+						if(_NhlCmpFAny(tmp,pow(10.0,max),
 							precision) < 0.0) {
 							minor_locs[k] = tmp;
 							k++;
@@ -3508,8 +3305,8 @@ static NhlErrorTypes ComputeMinorTickMarks
 				j = 1;
 				tmp = pow(10.0,ceil(max)) - j * 
 					pow(10.0,minor_spacing);
-				while(compare(tmp,m_locs[0],precision) > 0.0){
-					if(compare(tmp,pow(10.0,max),8) < 0.0) {
+				while(_NhlCmpFAny(tmp,m_locs[0],precision) > 0.0){
+					if(_NhlCmpFAny(tmp,pow(10.0,max),8) < 0.0) {
 						minor_locs[k] = tmp;
 						k++;
 					}
@@ -3524,14 +3321,14 @@ static NhlErrorTypes ComputeMinorTickMarks
 				}
 				
 			}
-			if(compare(log10(m_locs[0]),min, 8) > 0.0) {
+			if(_NhlCmpFAny(log10(m_locs[0]),min, 8) > 0.0) {
 				minor_spacing = log10(m_locs[0]);
 				minor_spacing = ceil(minor_spacing);
 				minor_spacing -= 1.0;
 				minor_spacing += logminor;
 				j = 1;
 				tmp = m_locs[0] - j * pow(10.0,minor_spacing);
-                                while(compare(tmp,pow(10.0,min),precision) > 0.0){
+                                while(_NhlCmpFAny(tmp,pow(10.0,min),precision) > 0.0){
                                         minor_locs[k] = tmp;
                                         k++;
                                         j++;
@@ -3555,8 +3352,8 @@ static NhlErrorTypes ComputeMinorTickMarks
 				j = 1;
 				k= 0;
 				tmp = pow(10.0,ceil(max)) - j *pow(10.0,minor_spacing);
-				while(compare(tmp,pow(10.0,min),precision) >0.0) {
-					if(compare(tmp,pow(10.0,max),precision) < 0.0) {
+				while(_NhlCmpFAny(tmp,pow(10.0,min),precision) >0.0) {
+					if(_NhlCmpFAny(tmp,pow(10.0,max),precision) < 0.0) {
 						minor_locs[k] = tmp;
 						k++;
 					}
@@ -3593,7 +3390,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 				compare_precision = precision;
 *
 */
-			minor_spacing = roundit(spacing / (float)
+			minor_spacing = _NhlRndIt(spacing / (float)
 						(minorpermajor+1),7);
 
 			if(min!= 0.0)
@@ -3619,10 +3416,10 @@ static NhlErrorTypes ComputeMinorTickMarks
 */
 			if(nmajor > 0) {
 			k = 0;
-			if(compare(min,m_locs[0],7/*min_compare*/) < 0.0) {	
+			if(_NhlCmpFAny(min,m_locs[0],7/*min_compare*/) < 0.0) {	
 				j = 1;
 				tmp = m_locs[0] - j * minor_spacing;
-				while(compare(min,tmp,7/*min_compare*/)<=0.0) {
+				while(_NhlCmpFAny(min,tmp,7/*min_compare*/)<=0.0) {
 					minor_locs[k] = tmp;
 					k++;
 					j++;
@@ -3646,10 +3443,10 @@ static NhlErrorTypes ComputeMinorTickMarks
 					}
 				}
 			}
-			if(compare(max,m_locs[nmajor-1],7/*compare_precision*/) > 0.0) {
+			if(_NhlCmpFAny(max,m_locs[nmajor-1],7/*compare_precision*/) > 0.0) {
 				j = 1;
 				tmp = m_locs[nmajor-1] + j * minor_spacing;
-				while(compare(max,tmp,7/*max_compare*/)>= 0.0){
+				while(_NhlCmpFAny(max,tmp,7/*max_compare*/)>= 0.0){
 					minor_locs[k] = tmp;
 					k++;
 					j++;
@@ -3665,14 +3462,14 @@ static NhlErrorTypes ComputeMinorTickMarks
 			} else {
 				k = 0;
 				i = 0;
-				while( compare(i*spacing + tstart,max,7/*max_compare*/) < 0.0) {
+				while( _NhlCmpFAny(i*spacing + tstart,max,7/*max_compare*/) < 0.0) {
 					i++;
 				}
 				min2 = (i-1)*spacing + tstart;
 				j = 1;
 				tmp = min2 + j *minor_spacing;
-				while(compare(max,tmp,7/*max_compare*/) >=0.0){
-					if(compare(min,tmp,7/*min_compare*/) < 0.0) {
+				while(_NhlCmpFAny(max,tmp,7/*max_compare*/) >=0.0){
+					if(_NhlCmpFAny(min,tmp,7/*min_compare*/) < 0.0) {
 					minor_locs[k] = tmp;
 					k++;
 					}
@@ -7289,8 +7086,8 @@ static NhlErrorTypes ScaleValuesForMove
 		(!_NhlArgIsSet(args,num_args,NhlNvpYF))||
 		(!_NhlArgIsSet(args,num_args,NhlNvpWidthF))||
 		(!_NhlArgIsSet(args,num_args,NhlNvpHeightF)))
-		&& (compare(deltax,1.0,4) != 0.0)||
-		(compare(deltay,1.0,4) != 0.0)) {
+		&& (_NhlCmpFAny(deltax,1.0,4) != 0.0)||
+		(_NhlCmpFAny(deltay,1.0,4) != 0.0)) {
 /*
 * Deal with TickMarkLabels first
 */

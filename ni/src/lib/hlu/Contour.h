@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.8 1994-04-29 21:31:08 dbrown Exp $
+ *      $Id: Contour.h,v 1.9 1994-06-03 19:23:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
 #define Nhl_cnLABELONLY		2
 #define Nhl_cnLINEANDLABEL	3
 
-/* Line label position */
+/* Line label spacing */
 
 #define Nhl_cnNOLABELS		0
 #define Nhl_cnCONSTANT		1
@@ -105,10 +105,9 @@
 #define NhlNcnLineDashSegLenF		"cnLineDashSegLenF"
 #define NhlNcnLowUseHighLabelRes	"cnLowUseHighLabelRes"
 #define NhlNcnHighUseLineLabelRes	"cnHighUseLineLabelRes"
-#define NhlNcnLineUseInfoLabelRes	"cnLineUseInfoLabelRes"
+#define NhlNcnConstFUseInfoLabelRes	"cnConstFUseInfoLabelRes"
 
-#define NhlNcnLineLabelPosition		"cnLineLabelPosition"
-#define NhlNcnLineLabelAngleF		"cnLineLabelAngleF"
+#define NhlNcnLineLabelSpacing		"cnLineLabelSpacing"
 
 #define NhlNcnLineLabelsOn		"cnLineLabelsOn"
 #define NhlNcnLineLabelTextHeightF	"cnLineLabelTextHeightF"
@@ -117,6 +116,7 @@
 #define NhlNcnLineLabelFontThicknessF	"cnLineLabelFontThicknessF"
 #define NhlNcnLineLabelFontQuality	"cnLineLabelFontQuality"
 #define NhlNcnLineLabelConstantSpacingF	"cnLineLabelConstantSpacingF"
+#define NhlNcnLineLabelAngleF		"cnLineLabelAngleF"
 #define NhlNcnLineLabelFuncCode		"cnLineLabelFuncCode"
 #define NhlNcnLineLabelBackgroundColor	"cnLineLabelBackgroundColor"
 #define NhlNcnLineLabelPerim		"cnLineLabelPerim"
@@ -124,22 +124,8 @@
 #define NhlNcnLineLabelPerimThicknessF	"cnLineLabelPerimThicknessF"
 #define NhlNcnLineLabelPerimColor	"cnLineLabelPerimColor"
 
-#define NhlNcnInfoLabelOn		"cnInfoLabelOn"
-#define NhlNcnInfoLabelTextHeightF	"cnInfoLabelTextHeightF"
-#define NhlNcnInfoLabelFont		"cnInfoLabelFont"
-#define NhlNcnInfoLabelFontColor	"cnInfoLabelFontColor"
-#define NhlNcnInfoLabelFontAspectF	"cnInfoLabelFontAspectF"
-#define NhlNcnInfoLabelFontThicknessF	"cnInfoLabelFontThicknessF"
-#define NhlNcnInfoLabelFontQuality	"cnInfoLabelFontQuality"
-#define NhlNcnInfoLabelConstantSpacingF	"cnInfoLabelConstantSpacingF"
-#define NhlNcnInfoLabelFuncCode		"cnInfoLabelFuncCode"
-#define NhlNcnInfoLabelBackgroundColor	"cnInfoLabelBackgroundColor"
-#define NhlNcnInfoLabelPerim		"cnInfoLabelPerim"
-#define NhlNcnInfoLabelPerimSpaceF	"cnInfoLabelPerimSpaceF"
-#define NhlNcnInfoLabelPerimThicknessF	"cnInfoLabelPerimThicknessF"
-#define NhlNcnInfoLabelPerimColor	"cnInfoLabelPerimColor"
-
 #define NhlNcnHighLabelsOn		"cnHighLabelsOn"
+#define NhlNcnHighLabelString		"cnHighLabelString"
 #define NhlNcnHighLabelTextHeightF	"cnHighLabelTextHeightF"
 #define NhlNcnHighLabelFont		"cnHighLabelFont"
 #define NhlNcnHighLabelFontColor	"cnHighLabelFontColor"
@@ -147,6 +133,7 @@
 #define NhlNcnHighLabelFontThicknessF	"cnHighLabelFontThicknessF"
 #define NhlNcnHighLabelFontQuality	"cnHighLabelFontQuality"
 #define NhlNcnHighLabelConstantSpacingF	"cnHighLabelConstantSpacingF"
+#define NhlNcnHighLabelAngleF		"cnHighLabelAngleF"
 #define NhlNcnHighLabelFuncCode		"cnHighLabelFuncCode"
 #define NhlNcnHighLabelBackgroundColor	"cnHighLabelBackgroundColor"
 #define NhlNcnHighLabelPerim		"cnHighLabelPerim"
@@ -155,6 +142,7 @@
 #define NhlNcnHighLabelPerimColor	"cnHighLabelPerimColor"
 
 #define NhlNcnLowLabelsOn		"cnLowLabelsOn"
+#define NhlNcnLowLabelString		"cnLowLabelString"
 #define NhlNcnLowLabelTextHeightF	"cnLowLabelTextHeightF"
 #define NhlNcnLowLabelFont		"cnLowLabelFont"
 #define NhlNcnLowLabelFontColor		"cnLowLabelFontColor"
@@ -162,12 +150,61 @@
 #define NhlNcnLowLabelFontThicknessF	"cnLowLabelFontThicknessF"
 #define NhlNcnLowLabelFontQuality	"cnLowLabelFontQuality"
 #define NhlNcnLowLabelConstantSpacingF	"cnLowLabelConstantSpacingF"
+#define NhlNcnLowLabelAngleF		"cnLowLabelAngleF"
 #define NhlNcnLowLabelFuncCode		"cnLowLabelFuncCode"
 #define NhlNcnLowLabelBackgroundColor	"cnLowLabelBackgroundColor"
 #define NhlNcnLowLabelPerim		"cnLowLabelPerim"
 #define NhlNcnLowLabelPerimSpaceF	"cnLowLabelPerimSpaceF"
 #define NhlNcnLowLabelPerimThicknessF	"cnLowLabelPerimThicknessF"
 #define NhlNcnLowLabelPerimColor	"cnLowLabelPerimColor"
+
+#define NhlNcnInfoLabelOn		"cnInfoLabelOn"
+#define NhlNcnInfoLabelString		"cnInfoLabelString"
+#define NhlNcnInfoLabelTextHeightF	"cnInfoLabelTextHeightF"
+#define NhlNcnInfoLabelTextDirection	"cnInfoLabelTextDirection"
+#define NhlNcnInfoLabelFont		"cnInfoLabelFont"
+#define NhlNcnInfoLabelFontColor	"cnInfoLabelFontColor"
+#define NhlNcnInfoLabelFontAspectF	"cnInfoLabelFontAspectF"
+#define NhlNcnInfoLabelFontThicknessF	"cnInfoLabelFontThicknessF"
+#define NhlNcnInfoLabelFontQuality	"cnInfoLabelFontQuality"
+#define NhlNcnInfoLabelConstantSpacingF	"cnInfoLabelConstantSpacingF"
+#define NhlNcnInfoLabelAngleF		"cnInfoLabelAngleF"
+#define NhlNcnInfoLabelFuncCode		"cnInfoLabelFuncCode"
+#define NhlNcnInfoLabelBackgroundColor	"cnInfoLabelBackgroundColor"
+#define NhlNcnInfoLabelPerim		"cnInfoLabelPerim"
+#define NhlNcnInfoLabelPerimSpaceF	"cnInfoLabelPerimSpaceF"
+#define NhlNcnInfoLabelPerimThicknessF	"cnInfoLabelPerimThicknessF"
+#define NhlNcnInfoLabelPerimColor	"cnInfoLabelPerimColor"
+
+#define NhlNcnInfoLabelZone		"cnInfoLabelZone"
+#define NhlNcnInfoLabelSide		"cnInfoLabelSide"
+#define NhlNcnInfoLabelJust		"cnInfoLabelJust"
+#define NhlNcnInfoLabelParallelPosF	"cnInfoLabelParallelPosF"
+#define NhlNcnInfoLabelOrthogonalPosF	"cnInfoLabelOrthogonalPosF"
+
+#define NhlNcnConstFLabelOn		"cnConstFLabelOn"
+#define NhlNcnConstFLabelString		"cnConstFLabelString"
+#define NhlNcnConstFLabelTextHeightF	"cnConstFLabelTextHeightF"
+#define NhlNcnConstFLabelTextDirection	"cnConstFLabelTextDirection"
+#define NhlNcnConstFLabelFont		"cnConstFLabelFont"
+#define NhlNcnConstFLabelFontColor	"cnConstFLabelFontColor"
+#define NhlNcnConstFLabelFontAspectF	"cnConstFLabelFontAspectF"
+#define NhlNcnConstFLabelFontThicknessF	"cnConstFLabelFontThicknessF"
+#define NhlNcnConstFLabelFontQuality	"cnConstFLabelFontQuality"
+#define NhlNcnConstFLabelConstantSpacingF "cnConstFLabelConstantSpacingF"
+#define NhlNcnConstFLabelAngleF		"cnConstFLabelAngleF"
+#define NhlNcnConstFLabelFuncCode	"cnConstFLabelFuncCode"
+#define NhlNcnConstFLabelBackgroundColor "cnConstFLabelBackgroundColor"
+#define NhlNcnConstFLabelPerim		"cnConstFLabelPerim"
+#define NhlNcnConstFLabelPerimSpaceF	"cnConstFLabelPerimSpaceF"
+#define NhlNcnConstFLabelPerimThicknessF "cnConstFLabelPerimThicknessF"
+#define NhlNcnConstFLabelPerimColor	"cnConstFLabelPerimColor"
+
+#define NhlNcnConstFLabelZone		"cnConstFLabelZone"
+#define NhlNcnConstFLabelSide		"cnConstFLabelSide"
+#define NhlNcnConstFLabelJust		"cnConstFLabelJust"
+#define NhlNcnConstFLabelParallelPosF	"cnConstFLabelParallelPosF"
+#define NhlNcnConstFLabelOrthogonalPosF	"cnConstFLabelOrthogonalPosF"
 
 /*
  * Contour class resources
@@ -211,12 +248,11 @@
 #define NhlCcnLineLabelColors		"CnLineLabelColors"
 
 #define NhlCcnLineDashSegLenF		"CnLineDashSegLenF"
-#define NhlCcnLineLabelPosition		"CnLineLabelPosition"
-#define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
+#define NhlCcnLineLabelSpacing		"CnLineLabelSpacing"
 
 #define NhlCcnLowUseHighLabelRes	"CnLowUseHighLabelRes"
 #define NhlCcnHighUseLineLabelRes	"CnHighUseLineLabelRes"
-#define NhlCcnLineUseInfoLabelRes	"CnLineUseInfoLabelRes"
+#define NhlCcnConstFUseInfoLabelRes	"CnConstFUseInfoLabelRes"
 
 #define NhlCcnLineLabelsOn		"CnLineLabelsOn"
 #define NhlCcnLineLabelTextHeightF	"CnLineLabelTextHeightF"
@@ -225,6 +261,7 @@
 #define NhlCcnLineLabelFontThicknessF	"CnLineLabelFontThicknessF"
 #define NhlCcnLineLabelFontQuality	"CnLineLabelFontQuality"
 #define NhlCcnLineLabelConstantSpacingF	"CnLineLabelConstantSpacingF"
+#define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
 #define NhlCcnLineLabelFuncCode		"CnLineLabelFuncCode"
 #define NhlCcnLineLabelBackgroundColor	"CnLineLabelBackgroundColor"
 #define NhlCcnLineLabelPerim		"CnLineLabelPerim"
@@ -232,22 +269,8 @@
 #define NhlCcnLineLabelPerimThicknessF	"CnLineLabelPerimThicknessF"
 #define NhlCcnLineLabelPerimColor	"CnLineLabelPerimColor"
 
-#define NhlCcnInfoLabelOn		"CnInfoLabelOn"
-#define NhlCcnInfoLabelTextHeightF	"CnInfoLabelTextHeightF"
-#define NhlCcnInfoLabelFont		"CnInfoLabelFont"
-#define NhlCcnInfoLabelFontColor	"CnInfoLabelFontColor"
-#define NhlCcnInfoLabelFontAspectF	"CnInfoLabelFontAspectF"
-#define NhlCcnInfoLabelFontThicknessF	"CnInfoLabelFontThicknessF"
-#define NhlCcnInfoLabelFontQuality	"CnInfoLabelFontQuality"
-#define NhlCcnInfoLabelConstantSpacingF	"CnInfoLabelConstantSpacingF"
-#define NhlCcnInfoLabelFuncCode		"CnInfoLabelFuncCode"
-#define NhlCcnInfoLabelBackgroundColor	"CnInfoLabelBackgroundColor"
-#define NhlCcnInfoLabelPerim		"CnInfoLabelPerim"
-#define NhlCcnInfoLabelPerimSpaceF	"CnInfoLabelPerimSpaceF"
-#define NhlCcnInfoLabelPerimThicknessF	"CnInfoLabelPerimThicknessF"
-#define NhlCcnInfoLabelPerimColor	"CnInfoLabelPerimColor"
-
 #define NhlCcnHighLabelsOn		"CnHighLabelsOn"
+#define NhlCcnHighLabelString		"CnHighLabelString"
 #define NhlCcnHighLabelTextHeightF	"CnHighLabelTextHeightF"
 #define NhlCcnHighLabelFont		"CnHighLabelFont"
 #define NhlCcnHighLabelFontColor	"CnHighLabelFontColor"
@@ -255,6 +278,7 @@
 #define NhlCcnHighLabelFontThicknessF	"CnHighLabelFontThicknessF"
 #define NhlCcnHighLabelFontQuality	"CnHighLabelFontQuality"
 #define NhlCcnHighLabelConstantSpacingF	"CnHighLabelConstantSpacingF"
+#define NhlCcnHighLabelAngleF		"CnHighLabelAngleF"
 #define NhlCcnHighLabelFuncCode		"CnHighLabelFuncCode"
 #define NhlCcnHighLabelBackgroundColor	"CnHighLabelBackgroundColor"
 #define NhlCcnHighLabelPerim		"CnHighLabelPerim"
@@ -263,6 +287,7 @@
 #define NhlCcnHighLabelPerimColor	"CnHighLabelPerimColor"
 
 #define NhlCcnLowLabelsOn		"CnLowLabelsOn"
+#define NhlCcnLowLabelString		"CnLowLabelString"
 #define NhlCcnLowLabelTextHeightF	"CnLowLabelTextHeightF"
 #define NhlCcnLowLabelFont		"CnLowLabelFont"
 #define NhlCcnLowLabelFontColor		"CnLowLabelFontColor"
@@ -270,12 +295,67 @@
 #define NhlCcnLowLabelFontThicknessF	"CnLowLabelFontThicknessF"
 #define NhlCcnLowLabelFontQuality	"CnLowLabelFontQuality"
 #define NhlCcnLowLabelConstantSpacingF	"CnLowLabelConstantSpacingF"
+#define NhlCcnLowLabelAngleF		"CnLowLabelAngleF"
 #define NhlCcnLowLabelFuncCode		"CnLowLabelFuncCode"
 #define NhlCcnLowLabelBackgroundColor	"CnLowLabelBackgroundColor"
 #define NhlCcnLowLabelPerim		"CnLowLabelPerim"
 #define NhlCcnLowLabelPerimSpaceF	"CnLowLabelPerimSpaceF"
 #define NhlCcnLowLabelPerimThicknessF	"CnLowLabelPerimThicknessF"
 #define NhlCcnLowLabelPerimColor	"CnLowLabelPerimColor"
+
+
+#define NhlCcnInfoLabelOn		"CnInfoLabelOn"
+#define NhlCcnInfoLabelString		"CnInfoLabelString"
+#define NhlCcnInfoLabelSide		"CnInfoLabelSide"
+#define NhlCcnInfoLabelPosition		"CnInfoLabelPosition"
+#define NhlCcnInfoLabelJustification	"CnInfoLabelJusification"
+#define NhlCcnInfoLabelXOffsetF		"CnInfoLabelXOffsetF"
+#define NhlCcnInfoLabelYOffsetF		"CnInfoLabelYOffsetF"
+#define NhlCcnInfoLabelTextHeightF	"CnInfoLabelTextHeightF"
+#define NhlCcnInfoLabelTextDirection	"CnInfoLabelTextDirection"
+#define NhlCcnInfoLabelFont		"CnInfoLabelFont"
+#define NhlCcnInfoLabelFontColor	"CnInfoLabelFontColor"
+#define NhlCcnInfoLabelFontAspectF	"CnInfoLabelFontAspectF"
+#define NhlCcnInfoLabelFontThicknessF	"CnInfoLabelFontThicknessF"
+#define NhlCcnInfoLabelFontQuality	"CnInfoLabelFontQuality"
+#define NhlCcnInfoLabelConstantSpacingF	"CnInfoLabelConstantSpacingF"
+#define NhlCcnInfoLabelAngleF		"CnInfoLabelAngleF"
+#define NhlCcnInfoLabelFuncCode		"CnInfoLabelFuncCode"
+#define NhlCcnInfoLabelBackgroundColor	"CnInfoLabelBackgroundColor"
+#define NhlCcnInfoLabelPerim		"CnInfoLabelPerim"
+#define NhlCcnInfoLabelPerimSpaceF	"CnInfoLabelPerimSpaceF"
+#define NhlCcnInfoLabelPerimThicknessF	"CnInfoLabelPerimThicknessF"
+#define NhlCcnInfoLabelPerimColor	"CnInfoLabelPerimColor"
+
+#define NhlCcnInfoLabelZone		"CnInfoLabelZone"
+#define NhlCcnInfoLabelSide		"CnInfoLabelSide"
+#define NhlCcnInfoLabelJust		"CnInfoLabelJust"
+#define NhlCcnInfoLabelParallelPosF	"CnInfoLabelParallelPosF"
+#define NhlCcnInfoLabelOrthogonalPosF	"CnInfoLabelOrthogonalPosF"
+
+#define NhlCcnConstFLabelOn		"CnConstFLabelOn"
+#define NhlCcnConstFLabelString		"CnConstFLabelString"
+#define NhlCcnConstFLabelTextHeightF	"CnConstFLabelTextHeightF"
+#define NhlCcnConstFLabelTextDirection	"CnConstFLabelTextDirection"
+#define NhlCcnConstFLabelFont		"CnConstFLabelFont"
+#define NhlCcnConstFLabelFontColor	"CnConstFLabelFontColor"
+#define NhlCcnConstFLabelFontAspectF	"CnConstFLabelFontAspectF"
+#define NhlCcnConstFLabelFontThicknessF	"CnConstFLabelFontThicknessF"
+#define NhlCcnConstFLabelFontQuality	"CnConstFLabelFontQuality"
+#define NhlCcnConstFLabelConstantSpacingF "CnConstFLabelConstantSpacingF"
+#define NhlCcnConstFLabelAngleF		"CnConstFLabelAngleF"
+#define NhlCcnConstFLabelFuncCode	"CnConstFLabelFuncCode"
+#define NhlCcnConstFLabelBackgroundColor "CnConstFLabelBackgroundColor"
+#define NhlCcnConstFLabelPerim		"CnConstFLabelPerim"
+#define NhlCcnConstFLabelPerimSpaceF	"CnConstFLabelPerimSpaceF"
+#define NhlCcnConstFLabelPerimThicknessF "CnConstFLabelPerimThicknessF"
+#define NhlCcnConstFLabelPerimColor	"CnConstFLabelPerimColor"
+
+#define NhlCcnConstFLabelZone		"CnConstFLabelZone"
+#define NhlCcnConstFLabelSide		"CnConstFLabelSide"
+#define NhlCcnConstFLabelJust		"CnConstFLabelJust"
+#define NhlCcnConstFLabelParallelPosF	"CnConstFLabelParallelPosF"
+#define NhlCcnConstFLabelOrthogonalPosF	"CnConstFLabelOrthogonalPosF"
 
 extern NhlLayerClass			NhlcontourLayerClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.9 1994-05-12 23:52:24 boote Exp $
+ *      $Id: TextItem.c,v 1.10 1994-06-03 19:24:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,63 +34,92 @@
 static NhlResource resources[] = {
 	{ NhlNtxString, NhlCtxString, NhlTString, sizeof(char*),
 		NhlOffset(NhlTextItemLayerRec,text.string),
-		NhlTImmediate,DEFSTRING,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,_NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-		NhlTString,"0.0" ,0,NULL},
+		NhlTString,_NhlUSET("0.0") ,0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-		NhlTString,"1.0",0,NULL },
+		NhlTString,_NhlUSET("1.0"),0,NULL },
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
-		NhlTString,"0.0",0,NULL },
+		NhlTString,_NhlUSET("0.0"),0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTImmediate,0,0,NULL },
+		NhlTImmediate,_NhlUSET(0),0,NULL },
 	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTImmediate,(NhlPointer)4,0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)4),0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
-		NhlTImmediate,(NhlPointer)NhlHIGH,0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),0,NULL},
 	{ NhlNtxFontColor, NhlCtxFontColor, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.font_color),
-		NhlTImmediate, (NhlPointer)1,0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_height),
-		NhlTString, ".05" ,0,NULL},
+		NhlTString,_NhlUSET(".05") ,0,NULL},
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
-		NhlTString, "1.3125",0,NULL }, /* 21.0/16.0 see plotchar */
+		NhlTString,
+		_NhlUSET("1.3125"),0,NULL }, /* 21.0/16.0 see plotchar */
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
-		NhlTString, "1.0" ,0,NULL},
+		NhlTString,_NhlUSET("1.0") ,0,NULL},
 	{ NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.constant_spacing),
-		NhlTString, "0.0" ,0,NULL},
+		NhlTString,_NhlUSET("0.0") ,0,NULL},
 	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
 		sizeof(NhlTextDirection),
 		NhlOffset(NhlTextItemLayerRec, text.direction),
-		NhlTImmediate, (NhlPointer)NhlACROSS,0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
-		NhlTString,":",0,NULL},
+		NhlTString,_NhlUSET(":"),0,NULL},
 
 /*
 * These probably are going to cause GetValues Problems
 */
 	{ NhlNtxXCorners, NhlCtxXCorners, NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlTextItemLayerRec, text.x_corners),
-		NhlTImmediate, NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate, _NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 	{ NhlNtxYCorners, NhlNtxYCorners, NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlTextItemLayerRec, text.y_corners),
-		NhlTImmediate, NULL ,0,(NhlFreeFunc)NhlFree}
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 /*
 * end of possible GetValues Problems
 */
+
+	{NhlNtxPerimOn, NhlCtxPerimOn, NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTextItemLayerRec,text.perim_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNtxPerimColor, NhlCtxPerimColor, NhlTInteger, 
+		 sizeof(int),NhlOffset(NhlTextItemLayerRec,text.perim_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNtxPerimThicknessF, NhlCtxPerimThicknessF, NhlTFloat, 
+		 sizeof(float), 
+		 NhlOffset(NhlTextItemLayerRec,text.perim_thickness),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNtxPerimDashPattern, NhlCtxPerimDashPattern, NhlTInteger, 
+		 sizeof(int), 
+		 NhlOffset(NhlTextItemLayerRec,text.perim_dash_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	{NhlNtxPerimDashLengthF, NhlCtxPerimDashLengthF, NhlTFloat, 
+		 sizeof(float), 
+		 NhlOffset(NhlTextItemLayerRec,text.perim_dash_length),
+		 NhlTString,_NhlUSET("0.15"),0,NULL},
+	{NhlNtxPerimSpaceF, NhlCtxPerimSpaceF, NhlTFloat, 
+		 sizeof(float), 
+		 NhlOffset(NhlTextItemLayerRec,text.perim_space),
+		 NhlTString,_NhlUSET("0.5"),0,NULL},
+	{NhlNtxBackgroundFillColor, NhlCtxBackgroundFillColor,NhlTInteger,
+		 sizeof(int),
+		 NhlOffset(NhlTextItemLayerRec,text.bg_fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+
 };
 
 /*
@@ -261,6 +290,13 @@ static NhlErrorTypes TextItemSetValues
 	char *tmp,buf[10];
 	int	rstringchange = 0;
 
+	if( tnew->text.perim_space < 0.0 ) {
+		tnew->text.perim_space = 0.5;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	     "TextItemSetValues: Perimeter space cannot be less than zero");
+		ret = NhlWARNING;
+	}
+
 	if((tnew->view.x != told->view.x)
 		||(tnew->view.width != told->view.width)
 		||(tnew->view.y != told->view.y)
@@ -297,7 +333,7 @@ static NhlErrorTypes TextItemSetValues
 		
 		} else {
 		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, proceding with other text attribute requests");
-		  ret = NhlWARNING;
+		  ret = MIN(ret,NhlWARNING);
 		}
 	} 
 
@@ -350,7 +386,7 @@ static NhlErrorTypes TextItemSetValues
 	if( tnew->text.font_aspect <= 0.0 ) {
 		tnew->text.font_aspect = 1.3125;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = NhlWARNING;
+		ret = MIN(ret,NhlWARNING);
 	}
 	if(tnew->text.font_aspect <= 1.0) {
 		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
@@ -415,6 +451,12 @@ static NhlErrorTypes    TextItemInitialize
 	float fr,fl,ft,fb,ur,ul,ut,ub;
 	char buf[10];
 
+	if( tnew->text.perim_space < 0.0 ) {
+		tnew->text.perim_space = 0.5;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	     "TextItemInitialize: Perimeter space cannot be less than zero");
+		ret = NhlWARNING;
+	}
 
 	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
 	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
@@ -458,7 +500,7 @@ static NhlErrorTypes    TextItemInitialize
 	if( tnew->text.font_aspect <= 0.0 ) {
 		tnew->text.font_aspect = 1.3125;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = NhlWARNING;
+		ret = MIN(ret,NhlWARNING);
 	}
 	if(tnew->text.font_aspect <= 1.0) {
 		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
@@ -533,6 +575,32 @@ static NhlErrorTypes    TextItemDraw
 	_NhlActivateWorkstation(tlayer->base.wkptr);
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+
+/* first draw the perimeter: it may have a solid background */
+
+	if (tlayer->text.perim_on || 
+	    tlayer->text.bg_fill_color > NhlTRANSPARENT) {
+
+		NhlVASetValues(tlayer->base.wkptr->base.id,
+			       NhlNwkDrawEdges,tlayer->text.perim_on,
+			       NhlNwkEdgeDashPattern,
+			       tlayer->text.perim_dash_pattern,
+			       NhlNwkEdgeThicknessF,
+			       tlayer->text.perim_thickness,
+			       NhlNwkEdgeDashSegLenF,
+			       tlayer->text.perim_dash_length,
+			       NhlNwkEdgeColor,tlayer->text.perim_color,
+			       NhlNwkFillColor,tlayer->text.bg_fill_color,
+			       NhlNwkFillIndex,NhlSOLIDFILL,
+			       NULL);
+			
+		_NhlSetFillInfo(tlayer->base.wkptr,layer);
+		_NhlWorkstationFill(tlayer->base.wkptr,
+				    tlayer->text.xperim,
+				    tlayer->text.yperim,5);
+			
+	}
+
 	gset_linewidth((Gdouble)tlayer->text.font_thickness);
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
@@ -662,34 +730,34 @@ static NhlErrorTypes    TextItemClassInitialize
 #endif
 {
 	NhlConvertArg	fontqlist[] = {
-				{NhlSTRENUM,	NhlHIGH,	"high"},
-				{NhlSTRENUM,	NhlMEDIUM,	"medium"},
-				{NhlSTRENUM,	NhlLOW,		"low"}
-				};
+	{NhlSTRENUM,	NhlHIGH,	_NhlUSET("high")},
+	{NhlSTRENUM,	NhlMEDIUM,	_NhlUSET("medium")},
+	{NhlSTRENUM,	NhlLOW,		_NhlUSET("low")}
+	};
 
 	NhlConvertArg	intfontqlist[] = {
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlHIGH},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlMEDIUM},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLOW}
-				};
+	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlHIGH)},
+	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlMEDIUM)},
+	{NhlIMMEDIATE,	sizeof(int),	_NhlUSET((NhlPointer)NhlLOW)}
+	};
 
 	NhlConvertArg	textdirlist[] = {
-				{NhlSTRENUM,	NhlDOWN,	"down"},
-				{NhlSTRENUM,	NhlACROSS,	"across"},
-				{NhlSTRENUM,	NhlUP,		"up"}
-				};
+	{NhlSTRENUM,	NhlDOWN,	_NhlUSET("down")},
+	{NhlSTRENUM,	NhlACROSS,	_NhlUSET("across")},
+	{NhlSTRENUM,	NhlUP,		_NhlUSET("up")}
+	};
 
 	NhlConvertArg	inttextdirlist[] = {
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlDOWN},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlACROSS},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlUP}
-				};
+	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlDOWN)},
+	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlACROSS)},
+	{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)NhlUP)}
+	};
 	NhlConvertArg   fontqgentoenumdat[] = {
-			{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTFQuality)},
-			};
+	{NhlIMMEDIATE,	sizeof(char*),_NhlUSET((NhlPointer)NhlTFQuality)},
+	};
 	NhlConvertArg   textdirgentoenumdat[] = {
-			{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTTextDirection)},
-			};
+	{NhlIMMEDIATE,	sizeof(char*),_NhlUSET((NhlPointer)NhlTTextDirection)},
+	};
 
 	NhlRegisterConverter(NhlTGenArray,NhlTFQuality,NhlCvtGenToEnum,
 				fontqgentoenumdat,1,False,NULL);
@@ -790,7 +858,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 	float minx,miny,maxx,maxy;
 	NhlErrorTypes ret = NhlNOERROR;
 	int i;
-	
+	float space;
 /*
 * All points get calculated as if no rotation is going to happen then
 * all points are passed through a generic 2D rotational matrix, which gives
@@ -805,9 +873,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 *         P0              P3                                                    
 */
 
-#if 0	
-	_NhlActivateWorkstation(tnew->base.wkptr);
-#endif
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 	switch(tnew->text.just) {
 /*
@@ -1054,17 +1119,33 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			ret = NhlWARNING;
 			break;
 	}
-#if 0
-	_NhlDeactivateWorkstation(tnew->base.wkptr);
-#endif
+
 	xpoints[0] = tnew->text.real_x_pos - tmpdl;
 	ypoints[0] = tnew->text.real_y_pos - tmpdb;
-	xpoints[1] = tnew->text.real_x_pos - tmpdl;
-	ypoints[1] = tnew->text.real_y_pos + tmpdt;
-	xpoints[2] = tnew->text.real_x_pos + tmpdr;
-	ypoints[2] = tnew->text.real_y_pos + tmpdt;
-	xpoints[3] = tnew->text.real_x_pos + tmpdr;
-	ypoints[3] = tnew->text.real_y_pos - tmpdb;
+	tnew->text.heightvecx[0] = xpoints[0];
+	tnew->text.heightvecy[0] = ypoints[0];
+	tnew->text.heightvecx[1] = xpoints[0];
+	tnew->text.heightvecy[1] = ypoints[0] + tnew->text.font_height;
+
+/*
+ * If the background is colored or the perimeter outline is on the spacing
+ * between the text and the perimeter box must be added to the text bounding
+ * box, before performing the rotation transformation.
+ */ 
+	if (tnew->text.perim_on || 
+	    tnew->text.bg_fill_color > NhlTRANSPARENT)
+		space = tnew->text.font_height * tnew->text.perim_space;
+	else
+		space = 0.0;
+
+	xpoints[0] = tnew->text.real_x_pos - tmpdl - space;
+	ypoints[0] = tnew->text.real_y_pos - tmpdb - space;
+	xpoints[1] = tnew->text.real_x_pos - tmpdl - space;
+	ypoints[1] = tnew->text.real_y_pos + tmpdt + space;
+	xpoints[2] = tnew->text.real_x_pos + tmpdr + space;
+	ypoints[2] = tnew->text.real_y_pos + tmpdt + space;
+	xpoints[3] = tnew->text.real_x_pos + tmpdr + space;
+	ypoints[3] = tnew->text.real_y_pos - tmpdb - space;
 /*
 * Formula for orthoganal rotation taken from Foley/VanDamn
 */
@@ -1086,10 +1167,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 
 	
 
-	tnew->text.heightvecx[0] = xpoints[0];
-	tnew->text.heightvecy[0] = ypoints[0];
-	tnew->text.heightvecx[1] = xpoints[0];
-	tnew->text.heightvecy[1] = ypoints[0] + tnew->text.font_height;
 	RotEval(tmat[0],tnew->text.real_x_pos,tnew->text.real_y_pos,
 		&tnew->text.real_x_pos,&tnew->text.real_y_pos);	
 	RotEval(tmat[0],xpoints[0],ypoints[0],
@@ -1104,6 +1181,15 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 		&(tnew->text.heightvecx[0]),&(tnew->text.heightvecy[0]));
 	RotEval(tmat[0],tnew->text.heightvecx[1],tnew->text.heightvecy[1],
 		&(tnew->text.heightvecx[1]),&(tnew->text.heightvecy[1]));
+/*
+ * Save the text perimeter points so that the perimeter can be drawn if
+ * required.
+ */
+	memcpy(tnew->text.xperim,xpoints,4*sizeof(float));
+	memcpy(tnew->text.yperim,ypoints,4*sizeof(float));
+	tnew->text.xperim[4] = tnew->text.xperim[0];
+	tnew->text.yperim[4] = tnew->text.yperim[0];
+
 /*
 * Save height vector so setvalues can compute with it
 */
@@ -1134,5 +1220,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 /*
 * DONE RECONFIGURING VIEW
 */
+
 	return(ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.7 1994-05-17 22:26:25 dbrown Exp $
+ *      $Id: Workspace.c,v 1.8 1994-06-03 19:24:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1887,10 +1887,14 @@ NhlErrorTypes _NhlArpram
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -1964,10 +1968,14 @@ NhlErrorTypes _NhlAredam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2039,10 +2047,14 @@ NhlErrorTypes _NhlArscam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2108,10 +2120,14 @@ NhlErrorTypes _NhlArdbpa
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2295,24 +2311,36 @@ NhlErrorTypes _NhlCpclam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
+#if 0
 				printf("resizing amap old %d",awsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", awsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2392,24 +2420,36 @@ NhlErrorTypes _NhlCpcldm
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
+#if 0
 				printf("resizing amap old %d",awsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", awsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2478,18 +2518,26 @@ NhlErrorTypes _NhlCpcldr
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2562,24 +2610,36 @@ NhlErrorTypes _NhlCplbam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1) != NULL) {
+#if 0
 				printf("resizing amap old %d",awsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", awsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2) != NULL) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg3) != NULL) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2648,18 +2708,26 @@ NhlErrorTypes _NhlCplbdr
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2735,18 +2803,26 @@ NhlErrorTypes _NhlCprect
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
+#if 0
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", fwsrp->cur_size);
+#endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", iwsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2807,10 +2883,14 @@ NhlErrorTypes _NhlMapbla
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2885,10 +2965,14 @@ NhlErrorTypes _NhlMapita
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2955,10 +3039,14 @@ NhlErrorTypes _NhlMapiqa
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";

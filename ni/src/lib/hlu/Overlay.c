@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.13 1994-05-17 22:26:10 dbrown Exp $
+ *      $Id: Overlay.c,v 1.14 1994-06-03 19:24:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,26 +27,28 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 
+#define	Oset(field)	NhlOffset(NhlOverlayLayerRec,overlay.field)
 static NhlResource resources[] = {
 
-	{ NhlNovOverlayIds,NhlCovOverlayIds,NhlT1DIntGenArray,sizeof(NhlPointer),
-		  NhlOffset(NhlOverlayLayerRec,overlay.overlay_ids),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNovOverlayIds,NhlCovOverlayIds,NhlT1DIntGenArray,
+		sizeof(NhlPointer),
+		Oset(overlay_ids),
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlT1DIntGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(NhlOverlayLayerRec,overlay.pre_draw_order),
+		  Oset(pre_draw_order),
 		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlT1DIntGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(NhlOverlayLayerRec,overlay.post_draw_order),
+		  Oset(post_draw_order),
 		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNovOverlayRecs,NhlCovOverlayRecs,NhlTGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(NhlOverlayLayerRec,overlay.ov_rec_list),
+		  Oset(ov_rec_list),
 		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
-		  NhlOffset(NhlOverlayLayerRec,overlay.update_req),
+		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 /*
  * Annotation resources
@@ -54,66 +56,80 @@ static NhlResource resources[] = {
 
 	{ NhlNovDisplayTitles,NhlCovDisplayTitles,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.display_titles),
+		  Oset(display_titles),
 		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate),0,NULL},
+	{ NhlNovTitleZone,NhlCovTitleZone,
+		  NhlTInteger,sizeof(int),
+		  Oset(title_zone),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 3),0,NULL},
 	{ NhlNovDisplayTickMarks,NhlCovDisplayTickMarks,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.display_tickmarks),
+		  Oset(display_tickmarks),
 		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate),0,NULL},
+	{ NhlNovTickMarkZone,NhlCovTickMarkZone,
+		  NhlTInteger,sizeof(int),
+		  Oset(tickmark_zone),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
 	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,NhlTInteger,sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.display_labelbar),
+		  Oset(display_labelbar),
 		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate),0,NULL},
+	{ NhlNovLabelBarZone,NhlCovLabelBarZone,NhlTInteger,sizeof(int),
+		  Oset(labelbar_zone),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 5),0,NULL},
 	{ NhlNovDisplayLegend,NhlCovDisplayLegend,NhlTInteger,sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.display_legend),
+		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate),0,NULL},
+	{ NhlNovLegendZone,NhlCovLegendZone,NhlTInteger,sizeof(int),
+		  Oset(legend_zone),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 6),0,NULL},
 /*
  * Intercepted tick mark resources
  */
 	{ NhlNtmXBDataLeftF, NhlCtmXBDataLeftF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_left),
+		  Oset(x_b_data_left),
 		  NhlTString,_NhlUSET("0.0" ),0,NULL},
 	{ NhlNtmXBDataRightF, NhlCtmXBDataRightF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_right),
+		  Oset(x_b_data_right),
 		  NhlTString,_NhlUSET("1.0" ),0,NULL},
 	{ NhlNtmYLDataBottomF, NhlCtmYLDataBottomF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_bottom),
+		  Oset(y_l_data_bottom),
 		  NhlTString,_NhlUSET("0.0" ),0,NULL},
 	{ NhlNtmYLDataTopF, NhlCtmYLDataTopF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_top),
+		  Oset(y_l_data_top),
 		  NhlTString,_NhlUSET("1.0" ),0,NULL},
 
 /* 
  * Overlay only looks at the XLog and YLog directly
  */
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.x_min),
+		Oset(x_min),
 		NhlTString,_NhlUSET("0.0"),0,NULL},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.x_max),
+		Oset(x_max),
 		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.y_min),
+		Oset(y_min),
 		NhlTString,_NhlUSET("0.0"),0,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.y_max),
+		Oset(y_max),
 		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{ NhlNtrXLog, NhlCtrXLog,NhlTInteger, sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.x_log),
+		  Oset(x_log),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
 	{ NhlNtrYLog, NhlCtrYLog,NhlTInteger, sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.y_log),
+		  Oset(y_log),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
 	{ NhlNtrXReverse, NhlCtrXReverse,NhlTInteger, sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.x_reverse),
+		  Oset(x_reverse),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
 	{ NhlNtrYReverse, NhlCtrYReverse,NhlTInteger, sizeof(int),
-		  NhlOffset(NhlOverlayLayerRec,overlay.y_reverse),
+		  Oset(y_reverse),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL },
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.y_tension),
+		Oset(y_tension),
 		NhlTString,_NhlUSET("2.0" ),0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlOverlayLayerRec,overlay.x_tension),
+		Oset(x_tension),
 		NhlTString,_NhlUSET("2.0" ),0,NULL},
 		
 /*
@@ -121,109 +137,129 @@ static NhlResource resources[] = {
  */
 
 	{NhlNtiMainOffsetXF,NhlCtiMainOffsetXF,NhlTFloat,sizeof(float),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_offset_x),
+		 Oset(ti_main_offset_x),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtiXAxisOffsetXF,NhlCtiXAxisOffsetXF,NhlTFloat,sizeof(float),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_offset_x),
+		 Oset(ti_x_axis_offset_x),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtiYAxisOffsetYF,NhlCtiYAxisOffsetYF,NhlTFloat,sizeof(float),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_offset_y),
+		 Oset(ti_y_axis_offset_y),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_position),
+		 Oset(ti_x_axis_position),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_position),
+		 Oset(ti_y_axis_position),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
-		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_position),
+		 Oset(ti_main_position),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 
 /* LabelBar resources */
 
 	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_width),
+		  Oset(lbar_width),
 		  NhlTString,_NhlUSET("0.2" ),0,NULL},
 	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_height),
+		  Oset(lbar_height),
 		  NhlTString,_NhlUSET("0.5" ),0,NULL},
+	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
+		 sizeof(NhlJustification),
+		 Oset(lbar_side),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRIGHT),0,NULL},
+	{NhlNovLabelBarParallelPosF,NhlCovLabelBarParallelPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lbar_para_pos),
+		 NhlTString,_NhlUSET("0.5"),0,NULL},
+	{NhlNovLabelBarOrthogonalPosF,NhlCovLabelBarOrthogonalPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lbar_ortho_pos),
+		 NhlTString,_NhlUSET("0.02"),0,NULL},
+
 	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_x_off),
+		  Oset(lbar_x_off),
 		  NhlTString,_NhlUSET("0.02" ),0,NULL},
 	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_y_off),
+		  Oset(lbar_y_off),
 		  NhlTString,_NhlUSET("0.00" ),0,NULL},
-	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
-		 sizeof(NhlJustification),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_side),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRIGHT),0,NULL},
 	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
 		 sizeof(NhlJustification),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
+		 Oset(lbar_pos),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
 
 /* intercepted LabelBar resources */
 
 	{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean, 
 		 sizeof(NhlBoolean),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_on),
+		 Oset(lbar_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNlbJustification, NhlClbJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_just),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERLEFT),0,NULL},
+		 Oset(lbar_just),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 	{NhlNlbOrientation, NhlClbOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_orient),
+		 Oset(lbar_orient),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlVERTICAL),0,NULL},
 
 /* Legend resources */
 
 	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_width),
+		  Oset(lgnd_width),
 		  NhlTString,_NhlUSET("0.45" ),0,NULL},
 	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_height),
+		  Oset(lgnd_height),
 		  NhlTString,_NhlUSET("0.175" ),0,NULL},
+	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
+		 sizeof(NhlPosition),
+		 Oset(lgnd_side),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
+	{NhlNovLegendParallelPosF,NhlCovLegendParallelPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lgnd_para_pos),NhlTString,
+		 _NhlUSET("0.5"),0,NULL},
+	{NhlNovLegendOrthogonalPosF,NhlCovLegendOrthogonalPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lgnd_ortho_pos),NhlTString,
+		 _NhlUSET("0.02"),0,NULL},
+
+
+	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
+		 sizeof(NhlPosition),
+		 Oset(lgnd_pos),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_x_off),
+		  Oset(lgnd_x_off),
 		  NhlTString,_NhlUSET("0.00" ),0,NULL},
 	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_y_off),
+		  Oset(lgnd_y_off),
 		  NhlTString,_NhlUSET("0.02" ),0,NULL},
-	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
-		 sizeof(NhlPosition),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_side),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
-	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
-		 sizeof(NhlPosition),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 
 /* intercepted Legend resources */
 
 	{NhlNlgLegend, NhlClgLegend, NhlTBoolean, 
 		 sizeof(NhlBoolean),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_on),
+		 Oset(lgnd_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNlgJustification, NhlClgJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_just),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERLEFT),0,NULL},
+		 Oset(lgnd_just),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 	{NhlNlgOrientation, NhlClgOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
-		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_orient),
+		 Oset(lgnd_orient),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlVERTICAL),0,NULL}
 };
+#undef Oset
 
 /* base methods */
 
@@ -242,72 +278,80 @@ static NhlErrorTypes OverlayClassPartInitialize(
 
 static NhlErrorTypes OverlayInitialize(
 #ifdef NhlNeedProto
-        NhlLayerClass,     /* class */
-        NhlLayer,          /* req */
-        NhlLayer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args */
+        NhlLayerClass	class,
+        NhlLayer	req,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int		num_args
 #endif
 );
 
 static NhlErrorTypes OverlaySetValues(
 #ifdef NhlNeedProto
-        NhlLayer,          /* old */
-        NhlLayer,          /* reference */
-        NhlLayer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args*/
+        NhlLayer	old,
+        NhlLayer	reference,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int		num_args
 #endif
 );
 
 static NhlErrorTypes 	OverlayGetValues(
 #ifdef NhlNeedProto
-	NhlLayer,		/* l */
-	_NhlArgList, 	/* args */
-	int		/* num_args */
+	NhlLayer	layer,
+	_NhlArgList	args,
+	int		num_args
 #endif
 );
 
 static NhlErrorTypes OverlayDestroy(
 #ifdef NhlNeedProto
-        NhlLayer           /* inst */
+        NhlLayer	inst
 #endif
 );
 
 static NhlErrorTypes OverlayDraw(
 #ifdef NhlNeedProto
-        NhlLayer   /* layer */
+        NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayPreDraw(
 #ifdef NhlNeedProto
-        NhlLayer   /* layer */
+        NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayPostDraw(
 #ifdef NhlNeedProto
-        NhlLayer   /* layer */
+        NhlLayer	layer
 #endif
 );
 
 static NhlErrorTypes OverlayGetBB(
 #ifdef NhlNeedProto
-        NhlLayer          /* instance */,
-        NhlBoundingBox * /*thebox*/
+        NhlLayer        instance,
+        NhlBoundingBox	*thebox
 #endif
 );
 
 /* internal static functions */
 
-
 static NhlErrorTypes InternalGetBB(
 #ifdef NhlNeedProto
-        NhlLayer			/* instance */,
-        NhlBoundingBox *	/* thebox */,
-        int  	        	/* include_types */,   
-	char *			/* entry_name */		   
+        NhlLayer	instance,
+	NhlBoundingBox	*thebox,
+        int  	        include_types,   
+	char		*entry_name		   
+#endif
+);
+
+static NhlAnnoRec *RecordAnnotation(
+#ifdef NhlNeedProto
+	NhlOverlayLayer ovl,
+	ovAnnoType	type,
+	int		status,
+	int		zone
 #endif
 );
 
@@ -321,11 +365,35 @@ static NhlErrorTypes ManageAnnotations(
 #endif
 );
 
+static NhlErrorTypes ManageExtAnnotation(
+#ifdef NhlNeedProto
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec
+#endif
+);
+
+static NhlJustification ConstrainJustification(
+#ifdef NhlNeedProto
+	NhlAnnoRec	*anno_rec
+#endif
+);
+
+static NhlErrorTypes UpdateAnnoData(
+#ifdef NhlNeedProto
+	NhlAnnoRec	*anno_list,
+	int		*max_zone,
+	NhlString	entry_name
+#endif
+);
+
 static NhlErrorTypes ManageTitles(
 #ifdef NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init				       
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec
 #endif
 );
 
@@ -333,7 +401,8 @@ static NhlErrorTypes ManageTickMarks(
 #ifdef NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init				       
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec
 #endif
 );
 
@@ -341,7 +410,8 @@ static NhlErrorTypes ManageLabelBar(
 #ifdef NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init,		       
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec,
 	_NhlArgList	args,
 	int		num_args
 #endif
@@ -351,18 +421,44 @@ static NhlErrorTypes ManageLegend(
 #ifdef NhlNeedProto
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init,			       
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec,
 	_NhlArgList	args,
 	int		num_args
 #endif
 );
-static NhlErrorTypes ManageLegend(
+
+static NhlErrorTypes SetAnnoViews(
 #ifdef NhlNeedProto
-	NhlOverlayLayer	ovnew,
-	NhlOverlayLayer	ovold,
-	NhlBoolean	init,			       
-	_NhlArgList	args,
-	int		num_args
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_list,
+	int		zone,
+	NhlBoolean	first,
+	NhlString	entry_name
+#endif
+);
+
+static NhlErrorTypes SetTickMarkView(
+#ifdef NhlNeedProto
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
+#endif
+);
+
+static NhlErrorTypes SetTitleView(
+#ifdef NhlNeedProto
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
+#endif
+);
+
+static NhlErrorTypes SetExternalView(
+#ifdef NhlNeedProto
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
 #endif
 );
 
@@ -596,6 +692,15 @@ OverlayInitialize
 	NhlTransformLayer	parent = (NhlTransformLayer)ovnew->base.parent;
 	NhlovRec			*ov_rec;
 	int			i;
+/*
+ * Array and object initializations
+ */
+	ovp->tickmarks = NULL;
+	ovp->titles = NULL;
+	ovp->labelbar = NULL;
+	ovp->legend = NULL;
+	ovp->x_irr = NULL;
+	ovp->y_irr = NULL;
 
 /*
  * Make sure the transformation supplied is valid
@@ -628,17 +733,66 @@ OverlayInitialize
 	ovp->overlay_count = 1;
 	ov_rec->plot = parent;
 	ov_rec->ov_obj = new;
-	ov_rec->zflag = 0;
+	ov_rec->anno_list = NULL;
 	ovp->ov_recs[0] = ov_rec;
 
-	if (ovp->display_tickmarks >= Nhl_ovConditionally)
-		ov_rec->zflag |= NhlovTICKMARKZONE;
-	if (ovp->display_titles >= Nhl_ovConditionally)
-		ov_rec->zflag |= NhlovTITLEZONE;
-	if (ovp->display_labelbar >= Nhl_ovConditionally)
-		ov_rec->zflag |= NhlovOUTERZONE;
-	if (ovp->display_legend >= Nhl_ovConditionally)
-		ov_rec->zflag |= NhlovOUTERZONE;
+	if (ovp->display_tickmarks > Nhl_ovNoCreate) {
+		if (ovp->tickmark_zone > 1) {
+			e_text = 
+            "%s: Tickmarks cannot have zone number greater than 1: resetting";
+			ovp->tickmark_zone = 1;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		}
+		if (RecordAnnotation(ovnew,ovTICKMARK,ovp->display_tickmarks,
+				     ovp->tickmark_zone) == NULL) {
+			e_text = "%s: error creating annotation record";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (ovp->display_titles > Nhl_ovNoCreate) {
+		if (ovp->title_zone < 0 || ovp->title_zone > NhlovMAXZONE) {
+			e_text = "%s: Invalid title zone number: defaulting";
+			ovp->title_zone = 3;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		}
+		if (RecordAnnotation(ovnew,ovTITLE,ovp->display_titles,
+			     ovp->title_zone) == NULL) {
+			e_text = "%s: error creating annotation record";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (ovp->display_legend > Nhl_ovNoCreate) {
+		if (ovp->legend_zone < 0 || ovp->legend_zone > NhlovMAXZONE) {
+			e_text = "%s: Invalid legend zone number: defaulting";
+			ovp->legend_zone = 5;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		}
+		if (RecordAnnotation(ovnew,ovLEGEND,ovp->display_legend,
+				     ovp->legend_zone) == NULL) {
+			e_text = "%s: error creating annotation record";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	if (ovp->display_labelbar > Nhl_ovNoCreate)
+		if (ovp->labelbar_zone < 0 || 
+		    ovp->labelbar_zone > NhlovMAXZONE) {
+			e_text = "%s: Invalid legend zone number: defaulting";
+			ovp->labelbar_zone = 6;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		}
+		if (RecordAnnotation(ovnew,ovLABELBAR,ovp->display_labelbar,
+			     ovp->labelbar_zone) == NULL) {
+			e_text = "%s: error creating annotation record";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
 		
 	for (i = ovp->overlay_count; i < ovp->overlay_alloc; i++) 
 		ovp->ov_recs[i] = NULL;
@@ -647,6 +801,7 @@ OverlayInitialize
  
 	return ret;
 }
+
 
 /*
  * Function:	OverlaySetValues
@@ -695,12 +850,8 @@ static NhlErrorTypes OverlaySetValues
 	NhlOverlayLayerPart	*oovp = &(ovold->overlay);
         NhlSArg			sargs[16];
         int			nargs = 0;
-	int			i,j;
+	int			i;
 	NhlBoolean		update_req = False;
-	NhlBoolean		tickmarks_done = False,
-				titles_done = False,
-				labelbar_done = False,
-				legend_done = False;
 
 	if (ovnew->view.use_segments != ovold->view.use_segments) {
 		ovnew->view.use_segments = ovold->view.use_segments;
@@ -759,7 +910,7 @@ static NhlErrorTypes OverlaySetValues
 	if (_NhlArgIsSet(args,num_args,NhlNovOverlayRecs)) {
 
 		NhlovRec	**ov_recs = 
-				(NhlovRec **) ovp->ov_rec_list->data;
+					(NhlovRec **) ovp->ov_rec_list->data;
 		int	new_count = ovp->ov_rec_list->num_elements;
 		
 		if (ov_recs == NULL || ! _NhlIsTransform(ov_recs[0]->plot)) {
@@ -803,11 +954,17 @@ static NhlErrorTypes OverlaySetValues
 		}
 		ovp->overlay_count = new_count;
 	}
+/*
+	subret = UpdateAnnoData(ovp->ov_recs[0]->anno_list,
+				      &ovp->ov_recs[0]->max_zone);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+*/
+
+	subret = ManageAnnotations(ovnew,ovold,False,args,num_args);
+	ret = MIN(ret,subret);
 
 	if (ovnew->trans.overlay_status == _tfCurrentOverlayMember ||
 	    ovp->overlay_count < 2) {
-		subret = ManageAnnotations(ovnew,ovold,False,args,num_args);
-		ret = MIN(ret,subret);
 		ovp->update_req = False;
 		return ret;
 	}
@@ -846,97 +1003,25 @@ static NhlErrorTypes OverlaySetValues
 		NhlSetSArg(&sargs[nargs++],NhlNovUpdateReq,True);
 		update_req = True;
 	}
-		
-
 /*
- * Update display status flag
+ * Ensure that all the overlays are up to date; don't pass the
+ * update req resource if the plot has no overlay of its own.
  */
-	for (i = 0; i < ovp->overlay_count; i++) {
-		int		*zflag = &ovp->ov_recs[i]->zflag;
-		NhlOverlayLayer ovl = (NhlOverlayLayer)ovp->ov_recs[i]->ov_obj;
-		NhlOverlayLayerPart *opi;
-	
-		*zflag = NhlovSETNEEDED;
-		if (ovl == NULL) 
-			continue;
-		else
-			opi = &ovl->overlay;
+	for (i = 1; i < ovp->overlay_count; i++) {
 
-		if ((opi->display_tickmarks == Nhl_ovAlways) ||
-		    (! tickmarks_done && 
-		     opi->display_tickmarks == Nhl_ovConditionally)) {
-			*zflag |= NhlovTICKMARKZONE;
-			tickmarks_done = True;
-		}
-		if ((opi->display_titles == Nhl_ovAlways) ||
-		    (! titles_done && 
-		     opi->display_titles == Nhl_ovConditionally)) {
-			*zflag |= NhlovTITLEZONE;
-			titles_done = True;
-		}
-		if ((opi->display_labelbar == Nhl_ovAlways) ||
-		    (! labelbar_done && 
-		     opi->display_labelbar == Nhl_ovConditionally)) {
-			*zflag |= NhlovOUTERZONE;
-			labelbar_done = True;
-		}
-		if ((opi->display_legend == Nhl_ovAlways) ||
-		    (! legend_done && 
-		     opi->display_legend == Nhl_ovConditionally)) {
-			*zflag |= NhlovOUTERZONE;
-			legend_done = True;
+		NhlOverlayLayer ovl = (NhlOverlayLayer)ovp->ov_recs[i]->ov_obj;
+
+		int num_args = update_req && ovl == NULL ? nargs - 1 : nargs;
+
+		subret = NhlALSetValues(ovp->ov_recs[i]->plot->base.id,
+					sargs,num_args);
+		if ((ret = MIN(subret, ret)) < NhlWARNING) {
+			e_text = "%s: error setting overlay plot view";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 	}
-/* 
- * Eliminate the ovUpdateReq argument if no overlay is associated with the
- * plot. Order the updates to ensure that Zone priority is maintained.
- * The SETNEEDED flag in conjunction with the high_set value are used to
- * ensure that multiple updates of an overlay member object occur only
- * when necessary.
- */
 
-	for (i = 0; i < 5; i++) {
-		int high_set = 0;
-		for (j = 0; j < ovp->overlay_count; j++) {
-			int num_args = nargs;
-			int *zflag = &ovp->ov_recs[j]->zflag;
-			NhlOverlayLayer ovl = (NhlOverlayLayer)
-				ovp->ov_recs[j]->ov_obj;
-
-			if (update_req && ovl == NULL) 
-				num_args = nargs - 1;
-
-			if ((i == 5) || (*zflag & (1 << i))) {
-				if (j == 0 && (*zflag & NhlovSETNEEDED)) {
-					subret = ManageAnnotations(
-							  ovnew,ovold,False,
-							  args,num_args);
-					if ((ret = MIN(ret,subret)) < 
-					    NhlWARNING) 
-						return ret;
-					*zflag &= (~ NhlovSETNEEDED);
-				}
-				else if (*zflag & NhlovSETNEEDED) {
-					subret = NhlALSetValues(
-					       ovp->ov_recs[j]->plot->base.id,
-					       sargs,num_args);
-					if ((ret = MIN(subret, ret)) < 
-					    NhlWARNING) {
-						e_text = 
-					 "%s: error setting overlay plot view";
-						NhlPError(NhlFATAL,NhlEUNKNOWN,
-							  e_text,entry_name);
-						return NhlFATAL;
-					}
-					*zflag &= (~ NhlovSETNEEDED);
-					high_set = j;
-				}
-			}
-		}
-		for (j = 0; j < ovp->overlay_count; j++)
-			if (high_set > j) 
-				ovp->ov_recs[j]->zflag |= NhlovSETNEEDED;
-   	}
 	ovp->update_req = False;
 		
 	return ret;
@@ -1095,13 +1180,20 @@ NhlLayer inst;
 		e_text = "%s: inconsistency in overlay count";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
-		
 /*
- * Free the overlay base record and the overlay record pointer array.
+ * Free the overlay base record and the overlay record pointer array,
+ * including each element's annotation list.
  * Also the irregular point gen arrays.
  */
-	for (i=0; i < ovp->overlay_count; i++)
+	for (i=0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->ov_recs[i]->anno_list;
+		while (anlp != NULL) {
+			NhlAnnoRec *free_anno = anlp;
+			anlp = anlp->next;
+			NhlFree(free_anno);
+		}
 		NhlFree(ovp->ov_recs[i]);
+	}
 
 	NhlFree(ovp->ov_recs);
 	NhlFreeGenArray(ovp->x_irr);
@@ -1137,7 +1229,33 @@ static NhlErrorTypes OverlayPreDraw
 	char			*entry_name = "OverlayPreDraw";
 	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
 	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
-	int			i;
+	int			i,j;
+	NhlBoolean		first;
+	int			max_zone;
+
+/*
+ * Update the annotation data 
+ */
+	for (max_zone = 0, i = 0; i < ovp->overlay_count; i++) {
+		subret = UpdateAnnoData(ovp->ov_recs[i]->anno_list,
+					&ovp->ov_recs[i]->max_zone,
+					entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ovp->ov_recs[i]->max_zone > max_zone) 
+			max_zone = ovp->ov_recs[i]->max_zone;
+	}
+/*
+ * Modify the annotation positions based on the current zonal information
+ */
+	for (first = True, i = 0; i <= max_zone; i++) {
+		for (j = 0; j < ovp->overlay_count; j++) {
+
+			subret = SetAnnoViews(ovl,ovp->ov_recs[j]->anno_list,
+					      i,first,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+			first = False;
+		}
+	}
 
 /*
  * Set the overlay trans.
@@ -1308,6 +1426,7 @@ static NhlErrorTypes OverlayPostDraw
  */
 
 	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->ov_recs[i]->anno_list;
 
 		Trans_Obj = ovp->ov_recs[i]->plot->trans.trans_obj;
 		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
@@ -1320,209 +1439,57 @@ static NhlErrorTypes OverlayPostDraw
 			return(ret);
 		}
 
-		if (ovp->ov_recs[i]->ov_obj != NULL) {
-			NhlOverlayLayerPart *opi = 
-		       &(((NhlOverlayLayer)ovp->ov_recs[i]->ov_obj)->overlay);
-
-			if ((opi->display_tickmarks == Nhl_ovAlways) ||
-			    (! tickmarks_done && 
-			     opi->display_tickmarks == Nhl_ovConditionally)) {
-
-				subret = NhlDraw(opi->tickmarks->base.id);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = "%s: error drawing tickmarks";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
+		for ( ; anlp != NULL; anlp = anlp->next) {
+				
+			if (anlp->status == Nhl_ovNever)
+				continue;
+			else if (anlp->status == Nhl_ovConditionally) {
+				switch (anlp->type) {
+				case ovTICKMARK:
+					if (tickmarks_done) continue;
+					break;
+				case ovTITLE:
+					if (titles_done) continue;
+					break;
+				case ovLEGEND:
+					if (legend_done) continue;
+					break;
+				case ovLABELBAR:
+					if (labelbar_done) continue;
+					break;
+				case ovEXTERNAL:
+				default:
+					break;
 				}
+			}
+			subret = NhlDraw(anlp->plot_id);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				e_text = "%s: error drawing annotation";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  entry_name);
+				return(ret);
+			}
+			switch (anlp->type) {
+			case ovTICKMARK:
 				tickmarks_done = True;
-			}
-
-			if ((opi->display_titles == Nhl_ovAlways) ||
-			    (! titles_done && 
-			     opi->display_titles == Nhl_ovConditionally)) {
-
-				subret = NhlDraw(opi->titles->base.id);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = "%s: error drawing titles";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
+				break;
+			case ovTITLE:
 				titles_done = True;
-			}
-
-			if ((opi->display_labelbar == Nhl_ovAlways) ||
-			    (! labelbar_done && 
-			     opi->display_labelbar == Nhl_ovConditionally)) {
-
-				subret = NhlDraw(opi->labelbar->base.id);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = "%s: error drawing labelbar";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
-				labelbar_done = True;
-			}
-
-			if ((opi->display_legend == Nhl_ovAlways) ||
-			    (! legend_done && 
-			     opi->display_legend == Nhl_ovConditionally)) {
-
-				subret = NhlDraw(opi->legend->base.id);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = "%s: error drawing legend";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
+				break;
+			case ovLEGEND:
 				legend_done = True;
+				break;
+			case ovLABELBAR:
+				labelbar_done = True;
+				break;
+			case ovEXTERNAL:
+			default:
+				break;
 			}
 		}
 	}
 	return ret;
 }
-
-
-/*
- * Function:    InternalGetBB
- *
- * Description: 
- *
- * In Args:     instance        the object instance record
- *              thebox          a data structure used to hold bounding box 
- *                              information.
- *		include_types   bit flag indicating the types to include
- *				in the Bounding Box calculation
- *
- * Out Args:    NONE
- *
- * Return Values:       Error Conditions
- *
- * Side Effects:        NONE
- */
-static NhlErrorTypes InternalGetBB
-#if	__STDC__
-(
-	NhlLayer	instance,
-	NhlBoundingBox	*thebox,
-	int		include_types,
-	char		*entry_name
-)
-#else
-(instance,thebox,include_types,entry_name)
-	NhlLayer	instance;
-	NhlBoundingBox	*thebox;
-	int		include_types;
-	char		*entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlOverlayLayer		ovl = (NhlOverlayLayer) instance;
-	NhlOverlayLayerPart	*ovl_basep;
-	float 			t,b,l,r;
-	int			i;
-	NhlBoolean		tickmarks_done = False,
-				titles_done = False,
-				labelbar_done = False,
-				legend_done = False;
-
-/* 
- * The view of all members of the overlay is the same. 
- * Start with the view of the current overlay. (member or base)
- */
-	t = ovl->view.y;
-	b = t - ovl->view.height;
-	l = ovl->view.x;
-	r = l + ovl->view.width;
-	
-	_NhlAddBBInfo(t,b,r,l,thebox);
-
-/*
- * Need to find the master overlay object, then add the bounding boxes
- * for the base plot and each overlay member plot. Not that only currently
- * displayed items are included.
- */
-	ovl_basep = &((NhlOverlayLayer)ovl->trans.overlay_object)->overlay;
-
-	for (i = 0; i < ovl_basep->overlay_count; i++) {
-
-		if (ovl_basep->ov_recs[i]->ov_obj != NULL) {
-			NhlOverlayLayerPart *opi = 
-				&(((NhlOverlayLayer)
-				   ovl_basep->ov_recs[i]->ov_obj)->overlay);
-
-			if ((include_types & NhlovTICKMARKZONE) &&
-			    ((opi->display_tickmarks == Nhl_ovAlways) ||
-			    (opi->display_tickmarks == Nhl_ovConditionally &&
-			     ! tickmarks_done))) {
-				
-				subret = _NhlGetBB(opi->tickmarks,thebox);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = 
-					  "%s: error getting Tickmark BB";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
-				tickmarks_done = True;
-			}
-
-			if ((include_types & NhlovTITLEZONE) &&
-			    ((opi->display_titles == Nhl_ovAlways) ||
-			    (opi->display_titles == Nhl_ovConditionally &&
-			     ! titles_done))) {
-				
-				subret = _NhlGetBB(opi->titles,thebox);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = 
-					  "%s: error getting Title BB";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
-				titles_done = True;
-			}
-
-
-			if ((include_types & NhlovOUTERZONE) &&
-			    ((opi->display_labelbar == Nhl_ovAlways) ||
-			    (opi->display_labelbar == Nhl_ovConditionally &&
-			     ! labelbar_done))) {
-				
-				subret = _NhlGetBB(opi->labelbar,thebox);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = 
-					  "%s: error getting LabelBar BB";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
-				labelbar_done = True;
-			}
-
-			if ((include_types & NhlovOUTERZONE) &&
-			    ((opi->display_legend == Nhl_ovAlways) ||
-			    (opi->display_legend == Nhl_ovConditionally &&
-			     ! legend_done))) {
-
-				subret = _NhlGetBB(opi->legend,thebox);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					e_text = 
-					  "%s: error getting Tickmark BB";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text, entry_name);
-					return(ret);
-				}
-				legend_done = True;
-			}
-		}
-	}
-	return ret;
-}
-
 
 /*
  * Function:    OverlayGetBB
@@ -1549,11 +1516,41 @@ static NhlErrorTypes OverlayGetBB
 	NhlBoundingBox *thebox;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*entry_name = "OverlayGetBB";
 	char			*e_text;
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) instance;
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
+	int			max_zone;
+	int			i,j;
+	NhlBoolean		first;
 
-	ret = InternalGetBB(instance,thebox,NhlovALLZONES,entry_name);
+
+/*
+ * Update the annotation data 
+ */
+	for (max_zone = 0, i = 0; i < ovp->overlay_count; i++) {
+		subret = UpdateAnnoData(ovp->ov_recs[i]->anno_list,
+					&ovp->ov_recs[i]->max_zone,
+					entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ovp->ov_recs[i]->max_zone > max_zone) 
+			max_zone = ovp->ov_recs[i]->max_zone;
+	}
+/*
+ * Modify the annotation positions based on the current zonal information
+ */
+	for (first = True, i = 0; i <= max_zone; i++) {
+		for (j = 0; j < ovp->overlay_count; j++) {
+
+			subret = SetAnnoViews(ovl,ovp->ov_recs[j]->anno_list,
+					      i,first,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+			first = False;
+		}
+	}
+
+	ret = InternalGetBB(instance,thebox,max_zone,entry_name);
 
 	if (ret < NhlWARNING) {
 		e_text = "%s: error getting Bounding Box";
@@ -1564,11 +1561,718 @@ static NhlErrorTypes OverlayGetBB
 }
 
 /*
+ * Function:	RecordAnnotation
+ *
+ * Description: If the parent creates a new overlay trans object, or
+ *		separates its own trans object from the overlay trans
+ *		object it must notify the overlay object via a SetValues.
+ *
+ * In Args:	old	copy of old instance record
+ *		reference	requested instance record
+ *		new	new instance record	
+ *		args 	list of resources and values for reference
+ *		num_args	number of elements in args.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlAnnoRec *RecordAnnotation
+#if  __STDC__
+(
+	NhlOverlayLayer ovl,
+	ovAnnoType	type,
+	int		status,
+	int		zone
+)
+#else
+(ovl,type,status,zone)
+	NhlOverlayLayer	ovl;
+	ovAnnoType	type;
+	int		status;
+	int		zone;
+)
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "OverlayInitialize";
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
+	NhlAnnoRec		*anno_rec, *anlp;
+
+	if (status == Nhl_ovNoCreate) {
+		e_text = "%s: internal error calling RecordAnnotation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+
+	if ((anno_rec = (NhlAnnoRec *)
+	     NhlMalloc(sizeof(NhlAnnoRec))) == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+	if (zone > NhlovMAXZONE || zone < 0) {
+		e_text = "%s: internally invalid zone number specified";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+	anno_rec->ovl = (NhlLayer)ovl;
+	anno_rec->anno_id = NULL;
+	anno_rec->zone = zone;
+	anno_rec->type = type;
+	anno_rec->status = status;
+	anno_rec->next = NULL;
+	anlp = ovp->ov_recs[0]->anno_list;
+
+	if (anlp == NULL) {
+		ovp->ov_recs[0]->anno_list = anno_rec;
+		return anno_rec;
+	}
+	else if (anlp->zone >= anno_rec->zone) {
+		anno_rec->next = anlp;
+		ovp->ov_recs[0]->anno_list = anno_rec;
+		return anno_rec;
+	}
+	while (anlp->next != NULL) {
+		if (anlp->next->zone >= anno_rec->zone) {
+			anno_rec->next = anlp->next;
+			anlp->next = anno_rec;
+			return anno_rec;
+		}
+		anlp = anlp->next;
+	}
+	anlp->next = anno_rec;
+	return anno_rec;
+
+}
+
+/*
+ * Function:	SetAnnoViews
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes SetAnnoViews
+#if  __STDC__
+(
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_list,
+	int		zone,
+	NhlBoolean	first,
+	NhlString	entry_name
+)
+#else
+(ovl,anno_list,zone,first,entry_name)
+	NhlOverlayLayer	ovl;
+	NhlAnnoRec	*anno_list;
+	int		zone;
+	NhlBoolean	first;
+	NhlString	entry_name;
+)
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlAnnoRec		*anlp;
+	static NhlBoolean	tickmarks_done,titles_done;
+	static NhlBoolean	labelbar_done,legend_done;
+
+	if (first)
+		tickmarks_done = titles_done = 
+			labelbar_done = legend_done = False;
+
+	for (anlp = anno_list; anlp != NULL; anlp = anlp->next) {
+		
+		if (anlp->zone != zone)
+			continue;
+		else if (anlp->status == Nhl_ovNever)
+			continue;
+		else if (anlp->status == Nhl_ovConditionally) {
+			switch (anlp->type) {
+			case ovTICKMARK:
+				if (tickmarks_done) continue;
+				break;
+			case ovTITLE:
+				if (titles_done) continue;
+				break;
+			case ovLEGEND:
+				if (legend_done) continue;
+				break;
+			case ovLABELBAR:
+				if (labelbar_done) continue;
+				break;
+			case ovEXTERNAL:
+			default:
+				break;
+			}
+		}
+		switch (anlp->type) {
+		case ovTICKMARK:
+			subret = SetTickMarkView(ovl,anlp,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+			tickmarks_done = True;
+			break;
+		case ovTITLE:
+			SetTitleView(ovl,anlp,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+			titles_done = True;
+			break;
+		case ovLEGEND:
+			SetExternalView(ovl,anlp,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+			legend_done = True;
+			break;
+		case ovLABELBAR:
+			SetExternalView(ovl,anlp,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+			labelbar_done = True;
+			break;
+		case ovEXTERNAL:
+			SetExternalView(ovl,anlp,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+			break;
+		default:
+			break;
+		}
+	}
+	return ret;
+
+}
+
+/*
+ * Function:	SetTickMarkView
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes SetTickMarkView
+#if  __STDC__
+(
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
+)
+#else
+(ovl,anno_rec,entry_name)
+	NhlOverlayLayer	ovl;
+	NhlAnnoRec	*anno_rec;
+	NhlString	entry_name;
+)
+#endif
+{
+	return NhlVASetValues(anno_rec->plot_id,NULL);
+}
+
+/*
+ * Function:	SetTitleView
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes SetTitleView
+#if  __STDC__
+(
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
+)
+#else
+(ovl,anno_rec,entry_name)
+	NhlOverlayLayer	ovl;
+	NhlAnnoRec	*anno_rec;
+	NhlString	entry_name;
+)
+#endif
+{
+	
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlBoundingBox		bbox;
+	float			x_pos,y_pos,width,height;
+	float			x_vp,y_vp,width_vp,height_vp;
+	float			get_main_off_x,get_x_off_x,get_y_off_y;
+	float			set_main_off_x,set_x_off_x,set_y_off_y;
+	NhlPosition		x_axis_pos,y_axis_pos,main_pos;
+        NhlSArg			sargs[16];
+        int			nargs = 0;
+	NhlOverlayLayer		an_ovl;
+	
+/*
+ * Get relevant title attributes
+ */
+	subret = NhlVAGetValues(anno_rec->plot_id,
+				NhlNtiMainOffsetXF,&get_main_off_x,
+				NhlNtiXAxisOffsetXF,&get_x_off_x,
+				NhlNtiYAxisOffsetYF,&get_y_off_y,
+				NhlNtiMainPosition,&main_pos,
+				NhlNtiXAxisPosition,&x_axis_pos,
+				NhlNtiYAxisPosition,&y_axis_pos,
+				NhlNvpXF,&x_vp,
+				NhlNvpYF,&y_vp,
+				NhlNvpWidthF,&width_vp,
+				NhlNvpHeightF,&height_vp,
+				NULL);
+	an_ovl = (NhlOverlayLayer) anno_rec->ovl;
+
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting Title values";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+/*
+ * Get the bounding box, then set the title positions with respect to it.
+ */
+	bbox.set = 0;
+	ret = InternalGetBB((NhlLayer)ovl,&bbox,anno_rec->zone - 1,
+			    entry_name);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting bounding box";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	x_pos = bbox.l; 
+	y_pos = bbox.t;
+	width = bbox.r - bbox.l; 
+	height = bbox.t - bbox.b;
+	
+	switch(an_ovl->overlay.ti_main_position) {
+	case NhlCENTER:
+		set_main_off_x = an_ovl->overlay.ti_main_offset_x +
+			((ovl->view.x + ovl->view.width/2.0) -
+			 (x_pos + width/2.0));
+		break;
+	case NhlLEFT:
+		set_main_off_x = an_ovl->overlay.ti_main_offset_x +
+			(ovl->view.x - x_pos);
+		break;
+	case NhlRIGHT:
+		set_main_off_x = an_ovl->overlay.ti_main_offset_x +
+			((ovl->view.x + ovl->view.width) - 
+			 (x_pos + width));
+		break;
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = "%s: Invalid value for main axis title position";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
+	}
+
+	switch(an_ovl->overlay.ti_x_axis_position) {
+	case NhlCENTER:
+		set_x_off_x = an_ovl->overlay.ti_x_axis_offset_x +
+			((ovl->view.x + ovl->view.width/2.0) -
+			 (x_pos + width/2.0));
+		break;
+	case NhlLEFT:
+		set_x_off_x = an_ovl->overlay.ti_x_axis_offset_x +
+			(ovl->view.x - x_pos);
+		break;
+	case NhlRIGHT:
+		set_x_off_x = an_ovl->overlay.ti_x_axis_offset_x +
+			((ovl->view.x + ovl->view.width) - 
+			 (x_pos + width));
+		break;
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = "%s: Invalid value for x axis title position";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
+	}
+
+	switch(an_ovl->overlay.ti_y_axis_position) {
+	case NhlCENTER:
+		set_y_off_y = an_ovl->overlay.ti_y_axis_offset_y +
+			((ovl->view.y - ovl->view.height/2.0) -
+			 (y_pos - height/2.0));
+		break;
+	case NhlTOP:
+		set_y_off_y = an_ovl->overlay.ti_y_axis_offset_y +
+			(ovl->view.y - y_pos);
+		break;
+	case NhlBOTTOM:
+		set_y_off_y = an_ovl->overlay.ti_y_axis_offset_y + 
+			((ovl->view.y - ovl->view.height) - 
+			 (y_pos - height));
+		break;
+	case NhlLEFT:
+	case NhlRIGHT:
+	default:
+		e_text = "%s: Invalid value for y axis title position";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+
+/*
+ * Reset the title if necessary
+ */	
+	if (x_pos != x_vp)
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,x_pos);
+	if (y_pos != y_vp)
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,y_pos);
+	if (width != width_vp)
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,width);
+	if (height != height_vp)
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,height);
+	
+	if (set_main_off_x != get_main_off_x)
+	    NhlSetSArg(&sargs[nargs++],NhlNtiMainOffsetXF,set_main_off_x);
+	if (set_x_off_x != get_x_off_x)
+		NhlSetSArg(&sargs[nargs++],NhlNtiXAxisOffsetXF,set_x_off_x);
+	if (set_y_off_y != get_y_off_y)
+		NhlSetSArg(&sargs[nargs++],NhlNtiYAxisOffsetYF,set_y_off_y);
+
+	if (an_ovl->overlay.ti_main_position != main_pos)
+		NhlSetSArg(&sargs[nargs++],NhlNtiMainPosition,
+			   an_ovl->overlay.ti_main_position);
+	if (an_ovl->overlay.ti_x_axis_position != x_axis_pos)
+		NhlSetSArg(&sargs[nargs++],NhlNtiXAxisPosition,
+			   an_ovl->overlay.ti_x_axis_position);
+	if (an_ovl->overlay.ti_y_axis_position != y_axis_pos)
+		NhlSetSArg(&sargs[nargs++],NhlNtiYAxisPosition,
+			   an_ovl->overlay.ti_y_axis_position);
+
+	subret = NhlALSetValues(anno_rec->plot_id,sargs,nargs);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error setting title values";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	SetExternalView
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes SetExternalView
+#if  __STDC__
+(
+	NhlOverlayLayer	ovl,
+	NhlAnnoRec	*anno_rec,
+	NhlString	entry_name
+)
+#else
+(ovl,anno_rec,entry_name)
+	NhlOverlayLayer	ovl;
+	NhlAnnoRec	*anno_rec;
+	NhlString	entry_name;
+)
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlJustification	just;
+	NhlBoundingBox		bbox;
+	float			x_pos,y_pos,x_start,y_start;
+	float			x_vp,y_vp,width_vp,height_vp;
+	
+	if (anno_rec->status == Nhl_ovNever)
+		return ret;
+
+/*
+ * Get the viewport of the annotation's plot object
+ */
+	subret = NhlVAGetValues(anno_rec->plot_id,
+				NhlNvpXF,&x_vp,
+				NhlNvpYF,&y_vp,
+				NhlNvpWidthF,&width_vp,
+				NhlNvpHeightF,&height_vp,
+				NULL);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting view values for annotation";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+/*
+ * Get the bounding box for the zone inside the annotation zone, 
+ * then calculate the annotation's position with respect to it.
+ */
+	bbox.set = 0;
+	ret = InternalGetBB((NhlLayer)ovl,&bbox,anno_rec->zone - 1,
+			    entry_name);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting bounding box for annotation";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	x_start = anno_rec->zone != 0 ? ovl->view.x :
+		ovl->view.x + 0.5 * ovl->view.width; 
+	y_start = anno_rec->zone != 0 ? ovl->view.y - ovl->view.height :
+		ovl->view.y - 0.5 * ovl->view.height;
+
+	switch (anno_rec->side) {
+	case NhlBOTTOM:
+		x_pos = x_start + anno_rec->para_pos * ovl->view.width;
+		y_pos = bbox.b - anno_rec->ortho_pos * ovl->view.height;
+		break;
+	case NhlTOP:
+		x_pos = x_start + anno_rec->para_pos * ovl->view.width;
+		y_pos = bbox.t + anno_rec->ortho_pos * ovl->view.height;
+		break;
+	case NhlLEFT:
+		x_pos = bbox.l - anno_rec->ortho_pos * ovl->view.width;
+		y_pos = y_start + anno_rec->para_pos * ovl->view.height;
+		break;
+	case NhlRIGHT:
+		x_pos = bbox.r + anno_rec->ortho_pos * ovl->view.width;
+		y_pos = y_start + anno_rec->para_pos * ovl->view.height;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->zone > 0)
+		just = ConstrainJustification(anno_rec);
+	else
+		just = anno_rec->just;
+/*
+ * Adjust the annotation position based on the justification value
+ */
+	switch (just) {
+	case NhlTOPLEFT:
+		break;
+	case NhlTOPCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		break;
+	case NhlTOPRIGHT:
+		x_pos = x_pos - width_vp;
+		break;
+	case NhlCENTERLEFT:
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlCENTERCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlCENTERRIGHT:
+		x_pos = x_pos - width_vp;
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlBOTTOMLEFT:
+		y_pos = y_pos + height_vp;
+		break;
+	case NhlBOTTOMCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		y_pos = y_pos + height_vp;
+		break;
+	case NhlBOTTOMRIGHT:
+		y_pos = y_pos + height_vp;
+		x_pos = x_pos - width_vp;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+/*
+ * Reset the viewport of the annotation's plot object if required
+ */
+	if (x_pos != x_vp || y_pos != y_vp) {
+		subret = NhlVASetValues(anno_rec->plot_id,
+					NhlNvpXF,x_pos,
+					NhlNvpYF,y_pos,
+					NULL);
+		if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+			e_text ="%s: Error setting view values for annotation";
+			NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+			if (ret < NhlWARNING) return ret;
+		}
+	}
+
+	return ret;
+
+}
+
+/*
+ * Function:    InternalGetBB
+ *
+ * Description: 
+ *
+ * In Args:     instance        the object instance record
+ *              thebox          a data structure used to hold bounding box 
+ *                              information.
+ *		zone		the zone for which the bounding box is
+ *				to be calculated.
+ *
+ * Out Args:    NONE
+ *
+ * Return Values:       Error Conditions
+ *
+ * Side Effects:        NONE
+ */
+static NhlErrorTypes InternalGetBB
+#if	__STDC__
+(
+	NhlLayer	instance,
+	NhlBoundingBox	*thebox,
+	int		zone,
+	char		*entry_name
+)
+#else
+(instance,thebox,include_types,entry_name)
+	NhlLayer	instance;
+	NhlBoundingBox	*thebox;
+	int		zone;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) instance;
+	NhlOverlayLayerPart	*ovl_basep;
+	float 			t,b,l,r;
+	int			i;
+	NhlBoolean		tickmarks_done = False,
+				titles_done = False,
+				labelbar_done = False,
+				legend_done = False;
+/* 
+ * The view of all members of the overlay is the same. 
+ * Start with the view of the current overlay. (member or base)
+ * Less than 0 returns a point in the center of the viewport. Zone 0 
+ * returns the overlay view.
+ */
+	if (zone < 0) {
+		t = b = ovl->view.y - ovl->view.height / 2.0;
+		l = r = ovl->view.x + ovl->view.width / 2.0;
+	}
+	else {
+		t = ovl->view.y;
+		b = t - ovl->view.height;
+		l = ovl->view.x;
+		r = l + ovl->view.width;
+	}
+	
+	_NhlAddBBInfo(t,b,r,l,thebox);
+
+	if (zone <= 0) 
+		return NhlNOERROR;
+
+/*
+ * First find the master overlay object, then search through the annotation
+ * record of each member overlay and add the bounding boxes each annotation
+ * inside the requested zone. Exclude any objects not currently displayed.
+ */
+	ovl_basep = &((NhlOverlayLayer)ovl->trans.overlay_object)->overlay;
+
+	for (i = 0; i < ovl_basep->overlay_count; i++) {
+		NhlAnnoRec *anno_list = ovl_basep->ov_recs[i]->anno_list;
+
+		for ( ; anno_list != NULL; anno_list = anno_list->next) {
+			if (anno_list->zone > zone || anno_list->zone == 0)
+				continue;
+			else if (anno_list->status == Nhl_ovNever)
+				continue;
+			else if (anno_list->plot_id < 0)
+				continue;
+			else if (anno_list->status == Nhl_ovConditionally) {
+				switch (anno_list->type) {
+				case ovTICKMARK:
+					if (tickmarks_done) continue;
+					break;
+				case ovTITLE:
+					if (titles_done) continue;
+					break;
+				case ovLEGEND:
+					if (legend_done) continue;
+					break;
+				case ovLABELBAR:
+					if (labelbar_done) continue;
+					break;
+				case ovEXTERNAL:
+				default:
+					break;
+				}
+			}
+			subret = _NhlGetBB(_NhlGetLayer(anno_list->plot_id),
+					   thebox);
+			if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+				e_text = 
+				"%s: Error getting annotation bounding box";
+				NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+				if (ret < NhlWARNING) return ret;
+			}
+			switch (anno_list->type) {
+			case ovTICKMARK:
+				tickmarks_done = True;
+				break;
+			case ovTITLE:
+				titles_done = True;
+				break;
+			case ovLEGEND:
+				legend_done = True;
+				break;
+			case ovLABELBAR:
+				labelbar_done = True;
+				break;
+			case ovEXTERNAL:
+			default:
+				break;
+			}
+		}
+	}
+	return ret;
+}
+
+/*
  * Function:	ManageAnnotations
  *
- * Description: Internal function that manages the title, tickmark, labelbar
- *		and legend objects for both the Initialize and SetValues
- *		routines.
+ * Description: Manages annotations that belong to the overlay base only.
  *
  * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
  *		NhlOverlayLayer	ovold - The old overlay layer
@@ -1600,45 +2304,368 @@ ManageAnnotations
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text;
+	NhlString		entry_name;
 	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
+	NhlAnnoRec		*anlp = ovp->ov_recs[0]->anno_list;
 
-	if (init) {
-		ovp->tickmarks = NULL;
-		ovp->titles = NULL;
-		ovp->labelbar = NULL;
-		ovp->legend = NULL;
-		ovp->x_irr = NULL;
-		ovp->y_irr = NULL;
+	entry_name = init ? "OverlayInitialize" : "OverlaySetValues";
+	while (anlp != NULL) {
+		if (anlp->status > Nhl_ovNoCreate) {
+			switch (anlp->type) {
+			case ovTICKMARK:
+				subret = ManageTickMarks(ovnew,ovold,
+							 init,anlp);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+				break;
+			case ovTITLE:
+				subret = ManageTitles(ovnew,ovold,init,anlp);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+				break;
+			case ovLEGEND:
+				subret = ManageLegend(ovnew,ovold,init,anlp,
+						      args,num_args);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+				break;
+			case ovLABELBAR:
+				subret = ManageLabelBar(ovnew,ovold,init,anlp,
+							args,num_args);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+				break;
+			case ovEXTERNAL:
+				subret = ManageExtAnnotation(ovnew,ovold,
+							     init,anlp);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+				break;
+			default:
+				e_text = "%s: internal enumeration error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text, entry_name);
+				return(ret);
+			}
+		}
+		anlp = anlp->next;
+	}
+	return MIN(subret,ret);
+		
+}
+
+/*
+ * Function:	ConstrainJustification
+ *
+ * Description: Constrain justification depending on the annotation side;
+ *
+ * In Args:	NhlAnnoRec	anno_rec - the annotation record
+ *
+ * Out Args:
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlJustification
+ConstrainJustification
+#if __STDC__
+(
+	NhlAnnoRec	*anno_rec
+)
+#else
+(anno_rec)
+	NhlAnnoRec	*anno_rec;
+#endif
+{
+	switch (anno_rec->side) {
+	case NhlBOTTOM:
+		switch (anno_rec->just) {
+		case NhlTOPLEFT:
+		case NhlCENTERLEFT:
+		case NhlBOTTOMLEFT:
+			return NhlTOPLEFT;
+		case NhlTOPCENTER:
+		case NhlCENTERCENTER:
+		case NhlBOTTOMCENTER:
+			return NhlTOPCENTER;
+		case NhlTOPRIGHT:
+		case NhlCENTERRIGHT:
+		case NhlBOTTOMRIGHT:
+			return NhlTOPRIGHT;
+		}
+	case NhlTOP:
+		switch (anno_rec->just) {
+		case NhlTOPLEFT:
+		case NhlCENTERLEFT:
+		case NhlBOTTOMLEFT:
+			return NhlBOTTOMLEFT;
+		case NhlTOPCENTER:
+		case NhlCENTERCENTER:
+		case NhlBOTTOMCENTER:
+			return NhlBOTTOMCENTER;
+		case NhlTOPRIGHT:
+		case NhlCENTERRIGHT:
+		case NhlBOTTOMRIGHT:
+			return NhlBOTTOMRIGHT;
+		}
+	case NhlLEFT:
+		switch (anno_rec->just) {
+		case NhlTOPLEFT:
+		case NhlTOPCENTER:
+		case NhlTOPRIGHT:
+			return NhlTOPRIGHT;
+		case NhlCENTERLEFT:
+		case NhlCENTERCENTER:
+		case NhlCENTERRIGHT:
+			return NhlCENTERRIGHT;
+		case NhlBOTTOMLEFT:
+		case NhlBOTTOMCENTER:
+		case NhlBOTTOMRIGHT:
+			return NhlBOTTOMRIGHT;
+		}
+	case NhlRIGHT:
+		switch (anno_rec->just) {
+		case NhlTOPLEFT:
+		case NhlTOPCENTER:
+		case NhlTOPRIGHT:
+			return NhlTOPLEFT;
+		case NhlCENTERLEFT:
+		case NhlCENTERCENTER:
+		case NhlCENTERRIGHT:
+			return NhlCENTERLEFT;
+		case NhlBOTTOMLEFT:
+		case NhlBOTTOMCENTER:
+		case NhlBOTTOMRIGHT:
+			return NhlBOTTOMLEFT;
+		}
+	case NhlBOTH:
+	case NhlCENTER:
+	default:
+		break;
+	}
+	return (NhlJustification) NhlFATAL;
+
+}
+/*
+ * Function:	ManageExtAnnotation
+ *
+ * Description: Internal function that manages external annotation objects
+ *		for both the Initialize and SetValues routines.
+ *
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
+ *		NhlAnnoRec	anno_rec - the annotation record
+ *		int		init - called from Initialize?
+ *
+ * Out Args:
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes
+ManageExtAnnotation
+#if __STDC__
+(
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec
+)
+#else
+(ovnew,ovold,init,anno_rec)
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
+	NhlBoolean	init;				       
+	NhlAnnoRec	*anno_rec;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name;
+	char			*e_text;
+	NhlJustification	just;
+	NhlBoundingBox		bbox;
+	float			x_pos,y_pos;
+	float			x_vp,y_vp,width_vp,height_vp;
+	
+
+	entry_name = (init) ? "OverlayInitialize" : "OverlaySetValues";
+
+	if (anno_rec->status < Nhl_ovAlways)
+		return ret;
+/*
+ * Get the viewport of the annotation's plot object
+ */
+	subret = NhlVAGetValues(anno_rec->plot_id,
+				NhlNvpXF,&x_vp,
+				NhlNvpYF,&y_vp,
+				NhlNvpWidthF,&width_vp,
+				NhlNvpHeightF,&height_vp,
+				NULL);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting annotation view values";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
 	}
 
 /*
- * Manage the individual annotation items. Even if the display value is
- * currently set to never, the item still must be managed if it has ever
- * been created.
+ * Get the bounding box for the zone inside the annotation zone, 
+ * then calculate the annotation's position with respect to it.
  */
- 
-	if (ovp->display_tickmarks > Nhl_ovNoCreate) {
-		subret = ManageTickMarks(ovnew,ovold,init);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-	}
-	if (ovp->display_titles > Nhl_ovNoCreate) {
-		subret = ManageTitles(ovnew,ovold,init);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-	}
-	if (ovp->display_labelbar > Nhl_ovNoCreate)   {
-		subret = ManageLabelBar(ovnew,ovold,init,args,num_args);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
+	bbox.set = 0;
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,anno_rec->zone - 1,
+			    entry_name);
+	if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+		e_text = "%s: Error getting annotation bounding box";
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+		if (ret < NhlWARNING) return ret;
 	}
 
-	if (ovp->display_legend > Nhl_ovNoCreate) {
-		subret = ManageLegend(ovnew,ovold,init,args,num_args);
+	switch (anno_rec->side) {
+	case NhlBOTTOM:
+		x_pos = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		y_pos = bbox.b - anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlTOP:
+		x_pos = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		y_pos = bbox.t + anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlLEFT:
+		x_pos = bbox.l - anno_rec->ortho_pos * ovnew->view.width;
+		y_pos = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	case NhlRIGHT:
+		x_pos = bbox.r + anno_rec->ortho_pos * ovnew->view.width;
+		y_pos = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->zone > 0)
+		just = ConstrainJustification(anno_rec);
+
+/*
+ * Adjust the annotation position based on the justification value
+ */
+	switch (just) {
+	case NhlTOPLEFT:
+		break;
+	case NhlTOPCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		break;
+	case NhlTOPRIGHT:
+		x_pos = x_pos - width_vp;
+		break;
+	case NhlCENTERLEFT:
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlCENTERCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlCENTERRIGHT:
+		x_pos = x_pos - width_vp;
+		y_pos = y_pos + height_vp / 2.0;
+		break;
+	case NhlBOTTOMLEFT:
+		y_pos = y_pos + height_vp;
+		break;
+	case NhlBOTTOMCENTER:
+		x_pos = x_pos - width_vp / 2.0;
+		y_pos = y_pos + height_vp;
+		break;
+	case NhlBOTTOMRIGHT:
+		y_pos = y_pos + height_vp;
+		x_pos = x_pos - width_vp;
+		break;
 	}
 
-	return MIN(subret,ret);
-		
+/*
+ * Reset the viewport of the annotation's plot object if required
+ */
+	if (x_pos != x_vp || y_pos != y_vp) {
+		subret = NhlVASetValues(anno_rec->plot_id,
+					NhlNvpXF,x_pos,
+					NhlNvpYF,y_pos,
+					NULL);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	UpdateAnnoData
+ *
+ * Description: Traverses the annotation list and does a GetValues on
+ *		each external annotation in order to ensure that its
+ *		values are current. Also determines the maximum zone 
+ *		specified in the annotation list.
+ *
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
+ *		NhlAnnoRec	anno_rec - the annotation record
+ *		int		init - called from Initialize?
+ *
+ * Out Args:
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes
+UpdateAnnoData
+#if __STDC__
+(
+	NhlAnnoRec	*anno_list,
+	int		*max_zone,
+	NhlString	entry_name
+)
+#else
+(anno_rec,max_zone,entry_name)
+	NhlAnnoRec	*anno_list;
+	int		*max_zone;
+	NhlString	entry_name
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlAnnoRec		*anlp;
+	NhlBoolean		on;
+
+	*max_zone	= 0;
+	for (anlp = anno_list; anlp != NULL; anlp = anlp->next) {
+		if (anlp->type == ovEXTERNAL) {
+			subret = NhlVAGetValues(anlp->anno_id,
+						NhlNanOn,&on,
+						NhlNanPlotId,&anlp->plot_id,
+						NhlNanZone,&anlp->zone,
+						NhlNanSide,&anlp->side,
+						NhlNanJust,&anlp->just,
+						NhlNanOrthogonalPosF,
+						&anlp->ortho_pos,
+						NhlNanParallelPosF,
+						&anlp->para_pos,NULL);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			anlp->status = on ? Nhl_ovAlways : Nhl_ovNever;
+		}
+		if (anlp->zone > *max_zone)
+			*max_zone = anlp->zone;
+	}
+
+	return ret;
 }
 
 /*
@@ -1663,13 +2690,15 @@ ManageTickMarks
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init				       
+	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec
 )
 #else
-(ovnew,ovold,init)
+(ovnew,ovold,init,anno_rec)
 	NhlOverlayLayer	ovnew;
 	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
+	NhlAnnoRec	*anno_rec;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -1688,7 +2717,6 @@ ManageTickMarks
 	float			*x_irrp, *y_irrp;
 	NhlBoolean		set = False;
 	int			i, count = 2, status = 0;
-/* temporary NULL assignments -- need resources for these */
 	float			*xmiss = NULL, *ymiss = NULL; 
 	float			out_of_range;
 	NhlTickMarkStyles	tm_style = NhlLINEAR;
@@ -1696,6 +2724,11 @@ ManageTickMarks
 	float			x_tension,y_tension;
 
 	entry_name = (init) ? "OverlayInitialize" : "OverlaySetValues";
+
+/*
+ * Update the annotation record (tickmarks do not use all the fields).
+ */
+	anno_rec->status = ovp->display_tickmarks;
 
 /*
  * If not displaying tickmarks just call the SetValues function --
@@ -1801,9 +2834,17 @@ ManageTickMarks
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
-		ret = MIN(ret,NhlWARNING);
-		if (init) return ret;
+		if (init) {
+			ovp->display_tickmarks = Nhl_ovNoCreate;
+			return ret;
+		}
+		else {
+			ovp->display_tickmarks =  Nhl_ovNever;
+			subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
+						      (NhlLayer)ovnew,
+						      sargs,nargs);
+			return MIN(subret,ret);
+		}
 	}
 	else if (! strcmp(trobj_name,"IrregularType2TransObj")) {
 		tm_style = NhlIRREGULAR;
@@ -1816,17 +2857,18 @@ ManageTickMarks
 		e_text = 
 			"%s: unknown transformation; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
-		ret = MIN(ret,NhlWARNING);
-		if (init) return ret;
+		if (init) {
+			ovp->display_tickmarks = Nhl_ovNoCreate;
+			return ret;
+		}
+		else {
+			ovp->display_tickmarks =  Nhl_ovNever;
+			subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
+						      (NhlLayer)ovnew,
+						      sargs,nargs);
+			return MIN(subret,ret);
+		}
 	}
-	if (ovp->display_tickmarks == Nhl_ovNever) {
-		subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
-					      (NhlLayer)ovnew,
-					      sargs,nargs);
-		return MIN(subret,ret);
-	}
-		
 
 	if (tm_style == NhlLINEAR) {
 		count = 2;
@@ -1915,6 +2957,7 @@ ManageTickMarks
 				Nhl_ovNoCreate : Nhl_ovNever;
 			return(NhlFATAL);
 		}
+		anno_rec->plot_id = tmpid;
 	} else {
 		if (ovnew->view.x != ovold->view.x)
 			NhlSetSArg(&sargs[nargs++],
@@ -1947,12 +2990,14 @@ ManageTickMarks
 		subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
 					      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: Error updating TickMark object";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			ovp->display_tickmarks = init ? 
-				Nhl_ovNoCreate : Nhl_ovNever;
-			return(NhlFATAL);
+		if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+			e_text = "%s: Error setting TickMark values";
+			NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+			if (ret < NhlWARNING) {
+				ovp->display_tickmarks = init ? 
+					Nhl_ovNoCreate : Nhl_ovNever;
+				return(NhlFATAL);
+			}
 		}
 	}
 
@@ -1981,13 +3026,15 @@ ManageTitles
 (
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
-	NhlBoolean	init				       
+	NhlBoolean	init,				       
+	NhlAnnoRec	*anno_rec
 )
 #else
-(ovnew,ovold,init)
+(ovnew,ovold,init,anno_rec)
 	NhlOverlayLayer	ovnew;
 	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
+	NhlAnnoRec	*anno_rec;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -2000,8 +3047,14 @@ ManageTitles
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
+	float			x_vp,y_vp,width_vp,height_vp;
 
 	entry_name = (init) ? "OverlayInitialize" : "OverlaySetValues";
+
+/*
+ * Update the annotation record (titles do not use all the fields).
+ */
+	anno_rec->status = ovp->display_titles;
 
 /*
  * If not displaying titles just call the SetValues function --
@@ -2023,8 +3076,8 @@ ManageTitles
  * Get the bounding box, then set the title positions with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((NhlLayer)ovnew,&bbox,
-			    NhlovTICKMARKZONE,entry_name);
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,anno_rec->zone - 1,
+			    entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
@@ -2142,8 +3195,13 @@ ManageTitles
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(NhlFATAL);
 		}
+		anno_rec->plot_id = tmpid;
 	} else {
 		
+		x_vp = ((NhlViewLayer) ovp->titles)->view.x;
+		y_vp = ((NhlViewLayer) ovp->titles)->view.y;
+		width_vp = ((NhlViewLayer) ovp->titles)->view.width;
+		height_vp = ((NhlViewLayer) ovp->titles)->view.height;
 		if (ovp->ti_x != oovp->ti_x)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpXF,ovp->ti_x);
@@ -2216,14 +3274,16 @@ ManageLabelBar
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
-(ovnew,ovold,init,args,num_args)
+(ovnew,ovold,init,anno_rec,args,num_args)
 	NhlOverlayLayer	ovnew;
 	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
+	NhlAnnoRec	*anno_rec;
 	_NhlArgList	args;
 	int		num_args;
 #endif
@@ -2238,15 +3298,16 @@ ManageLabelBar
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
-	float			width, height;
 	float			wold, hold;
-	NhlJustification	just;
-	NhlBoolean		user_just = True, 
-				user_x_off = True, 
-				user_y_off = True,
-				user_orient = True;
 
 	entry_name = (init) ? "OverlayInitialize" : "OverlaySetValues";
+/*
+ * Update the annotation record
+ */
+	anno_rec->side = ovp->lbar_side;
+	anno_rec->para_pos = ovp->lbar_para_pos;
+	anno_rec->ortho_pos = ovp->lbar_ortho_pos;
+	anno_rec->status = ovp->display_labelbar;
 
 /*
  * If not displaying a labelbar just call the SetValues function --
@@ -2271,7 +3332,10 @@ ManageLabelBar
 	}
 /*
  * If the view width or height has changed adjust the LabelBar width and
- * height if they have not been set explcitly by the user
+ * height if they have not been set explcitly by the user.
+ * Also if the user has not set height and width explicitly exchange 
+ * height and width to achieve the normally most appropriate shape given
+ * the current orientation.
  */
 
 	wold = init ? NhlOV_STD_VIEW_WIDTH : ovold->view.width;
@@ -2280,103 +3344,9 @@ ManageLabelBar
 	    ! _NhlArgIsSet(args,num_args,NhlNovLabelBarHeightF)) {
 		ovp->lbar_width *= ovnew->view.height / wold;
 		ovp->lbar_height *= ovnew->view.height / hold;
-	}
-	if (! _NhlArgIsSet(args,num_args,NhlNovLabelBarXOffsetF)) {
-		user_x_off = False;
-	}
-	if (! _NhlArgIsSet(args,num_args,NhlNovLabelBarYOffsetF)) {
-		user_y_off = False;
-	}
-/*
- * If the side has changed make automatic adjustments to LabelBar 
- * orientation, x and y offsets, only if the user has not set these resources 
- */
-	if (init || (ovp->lbar_side != oovp->lbar_side) ||
-		     (ovp->lbar_pos != oovp->lbar_pos)) {
-
-		if (! _NhlArgIsSet(args,num_args,NhlNlbJustification)) {
-			user_just = False;
-		}
-		if (! _NhlArgIsSet(args,num_args,NhlNlbOrientation)) {
-			user_orient = False;
-		}
-
-		if (! user_x_off && ! user_y_off) {
-
+		if (init || ovp->lbar_orient != oovp->lbar_orient) {
 			float t;
-			NhlBoolean side = 
-				(ovp->lbar_side == NhlRIGHT || 
-				 ovp->lbar_side == NhlLEFT) ?
-					 True : False;
 
-			if (init || (side != (oovp->lbar_side == NhlRIGHT || 
-					      oovp->lbar_side == NhlLEFT))) {
-				t = MIN(ovp->lbar_x_off,ovp->lbar_y_off);
-                                if (side) {
-                                        ovp->lbar_x_off = MAX(ovp->lbar_x_off,
-                                                              ovp->lbar_y_off);
-                                        ovp->lbar_y_off = t;
-                                }
-                                else {
-                                        ovp->lbar_y_off = MAX(ovp->lbar_x_off,
-                                                              ovp->lbar_y_off);
-                                        ovp->lbar_x_off = t;
-                                }
-			}
-		}
-			    
-		switch (ovp->lbar_side) {
-		case NhlBOTH:
-		case NhlCENTER:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLabelBarSide, "NhlRIGHT");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lbar_side = NhlRIGHT;
-			/* falling through */
-		case NhlRIGHT:
-			ovp->lbar_x_off = user_x_off || ovp->lbar_x_off > 0.0 ?
-				ovp->lbar_x_off : - ovp->lbar_x_off;
-			ovp->lbar_orient = user_orient ? 
-				ovp->lbar_orient : NhlVERTICAL;
-			break;
-		case NhlLEFT:
-			ovp->lbar_x_off = user_x_off || ovp->lbar_x_off < 0.0 ?
-				ovp->lbar_x_off : - ovp->lbar_x_off;
-			ovp->lbar_orient = user_orient ? 
-				ovp->lbar_orient : NhlVERTICAL;
-			break;
-		case NhlTOP:
-			ovp->lbar_y_off = user_y_off || ovp->lbar_y_off > 0.0 ?
-				ovp->lbar_y_off : - ovp->lbar_y_off;
-			ovp->lbar_orient = user_orient ? 
-				ovp->lbar_orient : NhlHORIZONTAL;
-			break;
-		case NhlBOTTOM:
-			ovp->lbar_y_off = user_y_off || ovp->lbar_y_off < 0.0 ?
-				ovp->lbar_y_off : - ovp->lbar_y_off;
-			ovp->lbar_orient = user_orient ? 
-				ovp->lbar_orient : NhlHORIZONTAL;
-			break;
-		}
-	}
-	if (! user_x_off)
-		ovp->lbar_x_off *= ovnew->view.height / wold;
-	if (! user_y_off)
-		ovp->lbar_y_off *= ovnew->view.height / wold;
-/*
- * If the orientation changes adjust the width and height, unless these
- * resources are explicitly set.
- */
-	if (init || ovp->lbar_orient != oovp->lbar_orient) {
-
-		float t;
-
-		if (! _NhlArgIsSet(args,num_args,NhlNovLabelBarWidthF) &&
-		    ! _NhlArgIsSet(args,num_args,NhlNovLabelBarHeightF)) {
-			
 			if (ovp->lbar_orient == NhlVERTICAL) {
 				t = MIN(ovp->lbar_height,ovp->lbar_width);
 				ovp->lbar_height = MAX(ovp->lbar_height,
@@ -2393,127 +3363,111 @@ ManageLabelBar
 	}
 
 /*
- * Get the bounding box, then set the labelbar position with respect to it.
+ * Get the bounding box for the zone inside the annotation zone, 
+ * then calculate the labelbar's position with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((NhlLayer)ovnew,&bbox,
-			    NhlovTICKMARKZONE | NhlovTITLEZONE,
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,anno_rec->zone - 1,
 			    entry_name);
-
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
 	}
 
+	switch (anno_rec->side) {
+	case NhlBOTTOM:
+		ovp->lbar_x = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		ovp->lbar_y = bbox.b - 
+			anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlTOP:
+		ovp->lbar_x = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		ovp->lbar_y = bbox.t + 
+			anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlLEFT:
+		ovp->lbar_x = bbox.l - anno_rec->ortho_pos * ovnew->view.width;
+		ovp->lbar_y = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	case NhlRIGHT:
+		ovp->lbar_x = bbox.r + anno_rec->ortho_pos * ovnew->view.width;
+		ovp->lbar_y = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		anno_rec->plot_id = -1;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	anno_rec->just = ovp->lbar_just;
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->zone > 0)
+		anno_rec->just = ConstrainJustification(anno_rec);
+	ovp->real_lbar_just = anno_rec->just;
+
 /*
- * Set the position, height and width of the LabelBar based on the
- * side and position resources. Also set the LabelBar justification, (which
- * determines the fixed point about which the labelbar repositions itself
- * if it has to changes size due to a label rotation or text size change, etc.
+ * Adjust the annotation position based on the justification value
  */
-	if (ovp->lbar_side == NhlRIGHT || ovp->lbar_side == NhlLEFT) {
-
-		height = ovnew->view.height;
-		width = bbox.r - bbox.l;
-
-		ovp->lbar_x = (ovp->lbar_side == NhlRIGHT ? bbox.r : 
-			  bbox.l - ovp->lbar_width) + ovp->lbar_x_off;
-		switch(ovp->lbar_pos) {
-		case NhlRIGHT:
-		case NhlLEFT:
-		case NhlBOTH:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLabelBarPosition, "NhlCENTER");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lbar_pos = NhlCENTER;
-			/* falling through */
-
-		case NhlCENTER:
-			ovp->lbar_y = ovnew->view.y - height/2.0 + 
-				ovp->lbar_y_off + ovp->lbar_height/2.0;
-			just = ovp->lbar_side == NhlRIGHT ? 
-				NhlCENTERLEFT : NhlCENTERRIGHT;
-			break;
-		case NhlTOP:
-			ovp->lbar_y = ovnew->view.y + ovp->lbar_y_off;
-			just = ovp->lbar_side == NhlRIGHT ? 
-				NhlTOPLEFT : NhlTOPRIGHT;
-			break;
-		case NhlBOTTOM:
-			ovp->lbar_y = ovnew->view.y - height + 
-				ovp->lbar_y_off + ovp->lbar_height;
-			just = ovp->lbar_side == NhlRIGHT ? 
-				NhlBOTTOMLEFT : NhlBOTTOMRIGHT;
-			break;
-		}
+	switch (ovp->real_lbar_just) {
+	case NhlTOPLEFT:
+		break;
+	case NhlTOPCENTER:
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width / 2.0;
+		break;
+	case NhlTOPRIGHT:
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width;
+		break;
+	case NhlCENTERLEFT:
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height / 2.0;
+		break;
+	case NhlCENTERCENTER:
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width / 2.0;
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height / 2.0;
+		break;
+	case NhlCENTERRIGHT:
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width;
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height / 2.0;
+		break;
+	case NhlBOTTOMLEFT:
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height;
+		break;
+	case NhlBOTTOMCENTER:
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width / 2.0;
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height;
+		break;
+	case NhlBOTTOMRIGHT:
+		ovp->lbar_y = ovp->lbar_y + ovp->lbar_height;
+		ovp->lbar_x = ovp->lbar_x - ovp->lbar_width;
+		break;
 	}
-	else {
-
-		height = bbox.t - bbox.b;
-		width = ovnew->view.width;
-
-		ovp->lbar_y = (ovp->lbar_side == NhlTOP ? 
-			  bbox.t + ovp->lbar_height : bbox.b) 
-			+ ovp->lbar_y_off;
-		switch(ovp->lbar_pos) {
-		case NhlTOP:
-		case NhlBOTTOM:
-		case NhlBOTH:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLabelBarPosition, "NhlCENTER");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lbar_pos = NhlCENTER;
-			/* falling through */
-
-		case NhlCENTER:
-			ovp->lbar_x = ovnew->view.x + width/2.0 + 
-				ovp->lbar_x_off - ovp->lbar_width/2.0;
-			just = ovp->lbar_side == NhlTOP ? 
-				NhlBOTTOMCENTER : NhlTOPCENTER;
-			break;
-		case NhlRIGHT:
-			ovp->lbar_x = ovnew->view.x + width + 
-				ovp->lbar_x_off - ovp->lbar_width;
-			just = ovp->lbar_side == NhlTOP ? 
-				NhlBOTTOMRIGHT : NhlTOPRIGHT;
-			break;
-		case NhlLEFT:
-			ovp->lbar_x = ovnew->view.x + ovp->lbar_x_off;
-			just = ovp->lbar_side == NhlTOP ? 
-				NhlBOTTOMLEFT : NhlTOPLEFT;
-			break;
-		}
-	}
-	if (user_just)
-		just = ovp->lbar_just;
-	else
-		ovp->lbar_just = just;
 
 /*
- * If no title object exists, create it; otherwise just set the relevant
+ * If no title exists, create it; otherwise just set the relevant
  * resources.
  */
 	if (ovp->labelbar == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".LabelBar");
 		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarLayerClass,
-					 (NhlLayer)ovnew,
-					 NhlNvpUseSegments,
-					 ovnew->view.use_segments,
-					 NhlNvpXF,ovp->lbar_x,
-					 NhlNvpYF,ovp->lbar_y,
-					 NhlNvpWidthF,ovp->lbar_width,
-					 NhlNvpHeightF,ovp->lbar_height,
-					 NhlNlbJustification,ovp->lbar_just,
-					 NhlNlbOrientation,ovp->lbar_orient,
-					 NULL);
+				    (NhlLayer)ovnew,
+				    NhlNvpUseSegments,ovnew->view.use_segments,
+				    NhlNvpXF,ovp->lbar_x,
+				    NhlNvpYF,ovp->lbar_y,
+				    NhlNvpWidthF,ovp->lbar_width,
+				    NhlNvpHeightF,ovp->lbar_height,
+				    NhlNlbJustification,ovp->real_lbar_just,
+				    NhlNlbOrientation,ovp->lbar_orient,
+				    NULL);
+		anno_rec->plot_id = tmpid;
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->labelbar = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating LabelBar object";
@@ -2532,9 +3486,9 @@ ManageLabelBar
 		if (ovp->lbar_height != oovp->lbar_height)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovp->lbar_height);
-		if (ovp->lbar_just != oovp->lbar_just)
+		if (ovp->real_lbar_just != oovp->real_lbar_just)
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNlbJustification,ovp->lbar_just);
+				   NhlNlbJustification,ovp->real_lbar_just);
 		if (ovp->lbar_orient != oovp->lbar_orient)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlbOrientation,ovp->lbar_orient);
@@ -2547,8 +3501,6 @@ ManageLabelBar
 			return(NhlFATAL);
 		}
 	}
-
-
 
 	return ret;
 }
@@ -2577,13 +3529,15 @@ ManageLegend
 	NhlOverlayLayer	ovnew,
 	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
+	NhlAnnoRec	*anno_rec,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
-(ovnew,ovold,init,args,num_args)
+(ovnew,ovold,init,anno_rec,args,num_args)
 	NhlOverlayLayer	ovnew;
 	NhlOverlayLayer	ovold;
+	NhlAnnoRec	*anno_rec;
 	NhlBoolean	init;				       
 	_NhlArgList	args;
 	int		num_args;
@@ -2599,15 +3553,17 @@ ManageLegend
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
-	float			width, height;
 	float			wold, hold;
-	NhlJustification	just;
-	NhlBoolean		user_just = True;
-	NhlBoolean		user_x_off = True, 
-				user_y_off = True;
-
 
 	entry_name = (init) ? "OverlayInitialize" : "OverlaySetValues";
+
+/*
+ * Update the annotation record
+ */
+	anno_rec->side = ovp->lgnd_side;
+	anno_rec->para_pos = ovp->lgnd_para_pos;
+	anno_rec->ortho_pos = ovp->lgnd_ortho_pos;
+	anno_rec->status = ovp->display_legend;
 
 /*
  * If not displaying a legend just call the SetValues function --
@@ -2640,178 +3596,114 @@ ManageLegend
 		ovp->lgnd_width *= ovnew->view.height / wold;
 		ovp->lgnd_height *= ovnew->view.height / hold;
 	}
-	if (! _NhlArgIsSet(args,num_args,NhlNovLegendXOffsetF)) {
-		user_x_off = False;
-	}
-	if (! _NhlArgIsSet(args,num_args,NhlNovLegendYOffsetF)) {
-		user_y_off = False;
-	}
-	if (! _NhlArgIsSet(args,num_args,NhlNlgJustification)) {
-		user_just = False;
-	}
-			
-/*
- * If the side has changed make automatic adjustments to Legend 
- * orientation, x and y offsets, only if the user has not set these resources 
- */
-	if (init || (ovp->lgnd_side != oovp->lgnd_side) ||
-		     (ovp->lgnd_pos != oovp->lgnd_pos)) {
 
-		switch (ovp->lgnd_side) {
-		case NhlBOTH:
-		case NhlCENTER:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLegendSide, "NhlRIGHT");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lgnd_side = NhlRIGHT;
-			/* falling through */
-		case NhlRIGHT:
-			ovp->lgnd_x_off = user_x_off || ovp->lgnd_x_off > 0.0 ?
-				ovp->lgnd_x_off : - ovp->lgnd_x_off;
-			break;
-		case NhlLEFT:
-			ovp->lgnd_x_off = user_x_off || ovp->lgnd_x_off < 0.0 ?
-				ovp->lgnd_x_off : - ovp->lgnd_x_off;
-			break;
-		case NhlTOP:
-			ovp->lgnd_y_off = user_y_off || ovp->lgnd_y_off > 0.0 ?
-				ovp->lgnd_y_off : - ovp->lgnd_y_off;
-			break;
-		case NhlBOTTOM:
-			ovp->lgnd_y_off = user_y_off || ovp->lgnd_y_off < 0.0 ?
-				ovp->lgnd_y_off : - ovp->lgnd_y_off;
-			break;
-		}
-	}
-	if (! user_x_off)
-		ovp->lgnd_x_off *= ovnew->view.height / wold;
-	if (! user_y_off)
-		ovp->lgnd_y_off *= ovnew->view.height / wold;
 
 /*
- * Get the bounding box, then set the legend position with respect to it.
+ * Get the bounding box for the zone inside the annotation zone, 
+ * then calculate the legend's position with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((NhlLayer)ovnew,&bbox,
-			    NhlovTICKMARKZONE | NhlovTITLEZONE,
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,anno_rec->zone - 1,
 			    entry_name);
-
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
 	}
+
+	switch (anno_rec->side) {
+	case NhlBOTTOM:
+		ovp->lgnd_x = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		ovp->lgnd_y = bbox.b - 
+			anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlTOP:
+		ovp->lgnd_x = ovnew->view.x + 
+			anno_rec->para_pos * ovnew->view.width;
+		ovp->lgnd_y = bbox.t + 
+			anno_rec->ortho_pos * ovnew->view.height;
+		break;
+	case NhlLEFT:
+		ovp->lgnd_x = bbox.l - anno_rec->ortho_pos * ovnew->view.width;
+		ovp->lgnd_y = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	case NhlRIGHT:
+		ovp->lgnd_x = bbox.r + anno_rec->ortho_pos * ovnew->view.width;
+		ovp->lgnd_y = ovnew->view.y - ovnew->view.height +
+			anno_rec->para_pos * ovnew->view.height;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		anno_rec->plot_id = -1;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	anno_rec->just = ovp->lgnd_just;
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+	if (anno_rec->zone > 0)
+		anno_rec->just = ConstrainJustification(anno_rec);
+	ovp->real_lgnd_just = anno_rec->just;
+
 /*
- * Set the position, height and width of the Legend based on the
- * side and position resources. Also set the Legend justification, (which
- * determines the fixed point about which the legend repositions itself
- * if it has to changes size due to a label rotation or text size change, etc.
+ * Adjust the annotation position based on the justification value
  */
-	if (ovp->lgnd_side == NhlRIGHT || ovp->lgnd_side == NhlLEFT) {
-
-		height = ovnew->view.height;
-		width = bbox.r - bbox.l;
-
-		ovp->lgnd_x = (ovp->lgnd_side == NhlRIGHT ? bbox.r : 
-			  bbox.l - ovp->lgnd_width) + ovp->lgnd_x_off;
-		switch(ovp->lgnd_pos) {
-		case NhlRIGHT:
-		case NhlLEFT:
-		case NhlBOTH:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLegendPosition, "NhlCENTER");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lgnd_pos = NhlCENTER;
-			/* falling through */
-
-		case NhlCENTER:
-			ovp->lgnd_y = ovnew->view.y - height/2.0 + 
-				ovp->lgnd_y_off + ovp->lgnd_height/2.0;
-			just = ovp->lgnd_side == NhlRIGHT ? 
-				NhlCENTERLEFT : NhlCENTERRIGHT;
-			break;
-		case NhlTOP:
-			ovp->lgnd_y = ovnew->view.y + ovp->lgnd_y_off;
-			just = ovp->lgnd_side == NhlRIGHT ? 
-				NhlTOPLEFT : NhlTOPRIGHT;
-			break;
-		case NhlBOTTOM:
-			ovp->lgnd_y = ovnew->view.y - height + 
-				ovp->lgnd_y_off + ovp->lgnd_height;
-			just = ovp->lgnd_side == NhlRIGHT ? 
-				NhlBOTTOMLEFT : NhlBOTTOMRIGHT;
-			break;
-		}
+	switch (ovp->real_lgnd_just) {
+	case NhlTOPLEFT:
+		break;
+	case NhlTOPCENTER:
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width / 2.0;
+		break;
+	case NhlTOPRIGHT:
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width;
+		break;
+	case NhlCENTERLEFT:
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height / 2.0;
+		break;
+	case NhlCENTERCENTER:
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width / 2.0;
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height / 2.0;
+		break;
+	case NhlCENTERRIGHT:
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width;
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height / 2.0;
+		break;
+	case NhlBOTTOMLEFT:
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height;
+		break;
+	case NhlBOTTOMCENTER:
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width / 2.0;
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height;
+		break;
+	case NhlBOTTOMRIGHT:
+		ovp->lgnd_y = ovp->lgnd_y + ovp->lgnd_height;
+		ovp->lgnd_x = ovp->lgnd_x - ovp->lgnd_width;
+		break;
 	}
-	else {
-
-		height = bbox.t - bbox.b;
-		width = ovnew->view.width;
-
-		ovp->lgnd_y = (ovp->lgnd_side == NhlTOP ? 
-			  bbox.t + ovp->lgnd_height : bbox.b) 
-			+ ovp->lgnd_y_off;
-		switch(ovp->lgnd_pos) {
-		case NhlTOP:
-		case NhlBOTTOM:
-		case NhlBOTH:
-		default:
-			e_text =
-			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNovLegendPosition, "NhlCENTER");
-			ret = MIN(ret,NhlWARNING);
-			ovp->lgnd_pos = NhlCENTER;
-			/* falling through */
-
-		case NhlCENTER:
-			ovp->lgnd_x = ovnew->view.x + width/2.0 + 
-				ovp->lgnd_x_off - ovp->lgnd_width/2.0;
-			just = ovp->lgnd_side == NhlTOP ? 
-				NhlBOTTOMCENTER : NhlTOPCENTER;
-			break;
-		case NhlRIGHT:
-			ovp->lgnd_x = ovnew->view.x + width + 
-				ovp->lgnd_x_off - ovp->lgnd_width;
-			just = ovp->lgnd_side == NhlTOP ? 
-				NhlBOTTOMRIGHT : NhlTOPRIGHT;
-			break;
-		case NhlLEFT:
-			ovp->lgnd_x = ovnew->view.x + ovp->lgnd_x_off;
-			just = ovp->lgnd_side == NhlTOP ? 
-				NhlBOTTOMLEFT : NhlTOPLEFT;
-			break;
-		}
-	}
-	if (user_just)
-		just = ovp->lgnd_just;
-	else
-		ovp->lgnd_just = just;
 
 /*
- * If no title object exists, create it; otherwise just set the relevant
+ * If no title exists, create it; otherwise just set the relevant
  * resources.
  */
 	if (ovp->legend == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".Legend");
 		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendLayerClass,
-					 (NhlLayer)ovnew,
-					 NhlNvpUseSegments,
-					 ovnew->view.use_segments,
-					 NhlNvpXF,ovp->lgnd_x,
-					 NhlNvpYF,ovp->lgnd_y,
-					 NhlNvpWidthF,ovp->lgnd_width,
-					 NhlNvpHeightF,ovp->lgnd_height,
-					 NhlNlgJustification,ovp->lgnd_just,
-					 NhlNlgOrientation,ovp->lgnd_orient,
-					 NULL);
+				    (NhlLayer)ovnew,
+				    NhlNvpUseSegments,ovnew->view.use_segments,
+				    NhlNvpXF,ovp->lgnd_x,
+				    NhlNvpYF,ovp->lgnd_y,
+				    NhlNvpWidthF,ovp->lgnd_width,
+				    NhlNvpHeightF,ovp->lgnd_height,
+				    NhlNlgJustification,ovp->real_lgnd_just,
+				    NhlNlgOrientation,ovp->lgnd_orient,
+				    NULL);
+		anno_rec->plot_id = tmpid;
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->legend = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating Legend object";
@@ -2824,9 +3716,9 @@ ManageLegend
 			NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->lgnd_x);
 		if (ovp->lgnd_y != oovp->lgnd_y)
 			NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->lgnd_y);
-		if (ovp->lgnd_just != oovp->lgnd_just)
+		if (ovp->real_lgnd_just != oovp->real_lgnd_just)
 			NhlSetSArg(&sargs[nargs++],
-				   NhlNlgJustification,ovp->lgnd_just);
+				   NhlNlgJustification,ovp->real_lgnd_just);
 		if (ovp->lgnd_width != oovp->lgnd_width)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpWidthF,ovp->lgnd_width);
@@ -2845,8 +3737,6 @@ ManageLegend
 			return(NhlFATAL);
 		}
 	}
-
-
 
 	return ret;
 }
@@ -2867,7 +3757,7 @@ void _NhlovCpMapXY
 {
         int status = 0;
 
-        if (Overlay_Trans_Obj == NULL) {
+        if (Overlay_Trans_Obj == NULL || Overlay_Trans_Obj == Trans_Obj) {
 		_NhlCompcToWin(Trans_Obj,Plot,xin,yin,1,xout,yout,
 			       &status,NULL,NULL);
 	}
@@ -2905,7 +3795,7 @@ void _NhlovCpInvMapXY
 {
         int status = 0;
 
-        if (Overlay_Trans_Obj == NULL) {
+        if (Overlay_Trans_Obj == NULL || Overlay_Trans_Obj == Trans_Obj) {
 		_NhlWinToCompc(Trans_Obj,Plot,xin,yin,1,xout,yout,
 			       &status,NULL,NULL);
 	}
@@ -3244,7 +4134,7 @@ _NHLCALLF(nhlf_addtooverlay,NHLF_ADDTOOVERLAY)
  * Description:	
  *
  * In Args:	base_id		id of overlay base plot
- *		plot_id		id of plot to add to overlay
+ *		plot_id		id of plot to remove from overlay
  *		restore		if True, restores any
  *				member overlays that belonged initially to
  *				the plot being removed, thus removing them
@@ -3422,6 +4312,274 @@ _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
 }
 
 /*
+ * Function:	NhlRegisterAnnotation
+ *
+ * Description:	Registers an annotation with an overlay base plot. An
+ *		annotation is an object that specifies the position 
+ *		of an arbitrary plot object relative to the overlay base 
+*		plot's viewport. The only restriction on the plot object (not
+ *		enforced) is that it should not draw outside its own 
+ *		viewport. Note that the annotation always remains with the
+ *		overlay base it was originally registered with (until 
+ *		unregistered). This means that a plot object should always
+ *		register the plot with its own overlay base if it has one.
+ *		This ensures that the annotation will automatically be
+ *		removed from an overlay when the plot it belongs to is 
+ *		removed. If the plot does not have its own overlay base, 
+ *		it needs to ensure that any registered annotations
+ *		that belong to it are unregistered when it is removed from
+ *		an overlay. 
+ *
+ * In Args:	overlay_base_id	id of overlay base plot
+ *		annotation_id	id of annotation object
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes NhlRegisterAnnotation
+#if  __STDC__
+(int overlay_base_id, int annotation_id)
+#else
+(overlay_base_id, annotation_id)
+        int overlay_base_id;
+	int annotation_id;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlRegisterAnnotation";
+	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		annotation = _NhlGetLayer(annotation_id);
+	NhlOverlayLayer		overlay;
+	NhlTransformLayerPart	*base_tfp;
+	NhlAnnoRec		*anrp;
+	int			pid,zone;
+	NhlPosition		side;
+	NhlJustification	just;
+	float			ortho, parallel;
+	NhlBoolean		on;
+
+	if (base == NULL || ! _NhlIsTransform(base)) {
+		e_text = "%s: invalid overlay plot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Make sure the base plot has an overlay; if so extract the overlay
+ * layer pointer from the base plot's transform layer.
+ */
+	base_tfp = &(((NhlTransformLayer)base)->trans);
+	if (! base_tfp->overlay_plot_base ||
+	    base_tfp->overlay_object == NULL || 
+	    ! _NhlIsTransform(base_tfp->overlay_object)) {
+		e_text = "%s: no overlay initialized for base plot";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	overlay = (NhlOverlayLayer) base_tfp->overlay_object;
+/*
+ * Test the annotation layer pointer; if valid get its resource values.
+ */
+	if (annotation == NULL) {
+		e_text = "%s: invalid annotation id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	subret = NhlVAGetValues(annotation_id,
+				NhlNanOn,&on,
+				NhlNanPlotId,&pid,
+				NhlNanZone,&zone,
+				NhlNanSide,&side,
+				NhlNanJust,&just,
+				NhlNanOrthogonalPosF,&ortho,
+				NhlNanParallelPosF,&parallel,NULL);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return NhlFATAL;
+/*
+ * Record the annotation in the overlay's data structures; a pointer
+ * to the new annotation record is returned.
+ */ 
+	if ((anrp = RecordAnnotation(overlay,ovEXTERNAL,
+				     Nhl_ovAlways,zone)) == NULL) {
+		e_text = "%s: error registering annotation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Fill in the fields of the annotation record that the recording function
+ * does not initialize.
+ */
+	anrp->status = on ? Nhl_ovAlways : Nhl_ovNever;
+	anrp->anno_id = annotation_id;
+	anrp->plot_id = pid;
+	anrp->side = side;
+	anrp->just = just;
+	anrp->para_pos = parallel;
+	anrp->ortho_pos = ortho;
+	return ret;
+}
+
+/*
+ * Function:	nhlf_registerannotation
+ *
+ * Description:	Fortran wrapper for NhlRegisterAnnotation
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
+#if	__STDC__
+(
+	int	*overlay_base,
+	int	*annotation,
+	int	*err
+)
+#else
+(overlay_base,annotation,err)
+	int	*overlay_base,
+	int	*annotation,
+	int	err
+#endif
+{
+	*err = NhlRegisterAnnotation(*overlay_base,*annotation);
+
+	return;
+}
+
+
+/*
+ * Function:	NhlUnregisterAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay_base_id	id of overlay plot
+ *		annotation_id	id of annotation object
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes NhlUnregisterAnnotation
+#if  __STDC__
+(int overlay_base_id, int annotation_id)
+#else
+(overlay_base_id, annotation_id)
+        int overlay_base_id;
+	int annotation_id;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlUnregisterAnnotation";
+	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		annotation = _NhlGetLayer(annotation_id);
+	NhlOverlayLayer		overlay;
+	NhlTransformLayerPart	*base_tfp;
+	NhlOverlayLayerPart	*ovp;
+	NhlAnnoRec		*anrp;
+	int			i;
+
+	if (base == NULL || ! _NhlIsTransform(base)) {
+		e_text = "%s: invalid overlay plot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Make sure the base plot has an overlay; if so extract the overlay
+ * layer pointer from the base plot's transform layer.
+ */
+	base_tfp = &(((NhlTransformLayer)base)->trans);
+	if (! base_tfp->overlay_plot_base ||
+	    base_tfp->overlay_object == NULL || 
+	    ! _NhlIsTransform(base_tfp->overlay_object)) {
+		e_text = "%s: no overlay initialized for base plot";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	overlay = (NhlOverlayLayer) base_tfp->overlay_object;
+/*
+ * Test the annotation layer pointer.
+ */
+	if (annotation == NULL) {
+		e_text = "%s: invalid annotation id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	ovp = &overlay->overlay;
+
+	for (i = 0; i < ovp->overlay_count; i++) {
+		
+		if ((anrp = ovp->ov_recs[i]->anno_list) == NULL)
+			continue;
+
+		if (anrp->anno_id == annotation_id) {
+			ovp->ov_recs[i]->anno_list = anrp->next;
+			NhlFree(anrp);
+			return ret;
+		}
+		while (anrp->next != NULL) {
+			if (anrp->next->anno_id == annotation_id) {
+				NhlAnnoRec	*free_anno = anrp->next;
+				anrp->next = free_anno->next;
+				NhlFree(free_anno);
+				return ret;
+			}
+			anrp = anrp->next;
+		}
+	}
+	e_text = "%s: annotation not found";
+	NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhlf_unregisterannotation
+ *
+ * Description:	Fortran wrapper for NhlUnregisterAnnotation
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
+#if	__STDC__
+(
+	int	*overlay_base,
+	int	*annotation,
+	int	*err
+)
+#else
+(overlay_base,annotation,err)
+	int	*overlay_base,
+	int	*annotation,
+	int	err
+#endif
+{
+	*err = NhlUnregisterAnnotation(*overlay_base,*annotation);
+
+	return;
+}
+
+/*
  * Function:	DissolveOverlay
  *
  * Description: Internal function that breaks an overlay into its
@@ -3525,8 +4683,11 @@ RemoveOverlayBase
         int			nargs = 0;
 	int			i;
 	int			count = 1;
+	NhlAnnoRec		*anno_list;
+	int			max_zone;
 
-
+	anno_list = ovp->ov_recs[plot_number]->anno_list;
+	max_zone = ovp->ov_recs[plot_number]->max_zone;
 	for (i = plot_number; i < ovp->overlay_count - 1; i++) {
 		ovp->ov_recs[i] = ovp->ov_recs[i+1];
 	}
@@ -3553,7 +4714,9 @@ RemoveOverlayBase
 
 	ov_recs[0]->plot = plot;
 	ov_recs[0]->ov_obj = (NhlLayer) plot_ovl;
-			
+	ov_recs[0]->anno_list = anno_list;
+	ov_recs[0]->max_zone = max_zone;
+
 	ga = NhlCreateGenArray((NhlPointer)ov_recs,NhlTPointer,
 			       sizeof(NhlovRec *),1,&count);
 	if (ga == NULL) {

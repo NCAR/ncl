@@ -1,0 +1,270 @@
+/*
+ *      $Id: Annotation.c,v 1.1 1994-06-03 19:23:28 dbrown Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1992			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Annotation.c
+ *
+ *	Author:		David Brown
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri May 20 14:22:36 MDT 1994
+ *
+ *	Description:	The annotation object is a wrapper for 
+ *		view class objects that need to be managed as plot
+ *		annotations by the Overlay object
+ */
+
+#include <math.h>
+#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/AnnotationP.h>
+
+#define Oset(field)     NhlOffset(NhlAnnotationLayerRec,annotation.field)
+static NhlResource resources[] = {
+	{NhlNanOn,NhlCanOn,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(on),NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNanPlotId,NhlCanPlotId,NhlTInteger,sizeof(int),
+		 Oset(plot_id),NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
+	{NhlNanZone,NhlCanZone,NhlTInteger,sizeof(int),
+		 Oset(zone),NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	{NhlNanSide, NhlCanSide,NhlTPosition,sizeof(NhlPosition),
+		 Oset(side),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NhlBOTTOM),0,NULL},
+	{NhlNanJust,NhlCanJust,NhlTJustification,
+		 sizeof(NhlJustification),Oset(just),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTOPLEFT),0,NULL},
+	{NhlNanOrthogonalPosF,NhlCanOrthogonalPosF,NhlTFloat,sizeof(float),
+		 Oset(ortho_pos),NhlTString,_NhlUSET("0.02"),0,NULL},
+	{NhlNanParallelPosF,NhlCanParallelPosF,NhlTFloat,sizeof(NhlFont),
+		 Oset(para_pos),NhlTString,_NhlUSET("0.0"),0,NULL },
+};
+
+/*
+* Base Methods used
+*/
+
+static NhlErrorTypes AnnotationSetValues(
+#ifdef NhlNeedProto
+        NhlLayer	old,
+        NhlLayer	reference,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int		num_args
+#endif
+);
+
+static NhlErrorTypes    AnnotationInitialize(
+#ifdef NhlNeedProto
+        NhlLayerClass	class,
+        NhlLayer	req,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int		num_args
+#endif
+);
+
+static NhlErrorTypes	AnnotationDestroy(
+#ifdef NhlNeedProto
+        NhlLayer	layer
+#endif
+);
+
+static NhlErrorTypes 	AnnotationClassInitialize();
+
+NhlAnnotationLayerClassRec NhlannotationLayerClassRec = {
+	{
+/* class_name			*/	"Annotation",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(NhlAnnotationLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+
+/* layer_resources		*/	resources,
+/* num_resources		*/	NhlNumber(resources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	AnnotationClassInitialize,
+/* layer_initialize		*/	AnnotationInitialize,
+/* layer_set_values		*/	AnnotationSetValues,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	AnnotationDestroy
+	},
+	{
+					NULL
+	}
+};
+
+NhlLayerClass NhlannotationLayerClass = 
+			(NhlLayerClass)&NhlannotationLayerClassRec;
+
+/*
+ * Function:	nhlfannotationclass
+ *
+ * Description:	Fortran ?referencable? function to return layer class.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfannotationclass,NHLFANNOTATIONCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlannotationLayerClass;
+}
+
+/*
+ * Function:	AnnotationSetValues
+ *
+ * Description: 
+ *
+ * In Args:	Standard SetValues args
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: GKS and plotchar state changes.
+ */
+/*ARGSUSED*/
+static NhlErrorTypes 
+AnnotationSetValues
+#if __STDC__
+(
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(old,reference,new,args,num_args)
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlAnnotationLayer told = (NhlAnnotationLayer) old;
+	NhlAnnotationLayer tnew = (NhlAnnotationLayer) new;
+	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+
+
+        return(MIN(ret,subret));
+}
+
+/*
+ * Function:	AnnotationInitialize
+ *
+ * Description:	
+ *
+ * In Args:	Standard initialize parameters
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error condition
+ *
+ * Side Effects: Plotchar state affected
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+AnnotationInitialize
+#if __STDC__
+(
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(class,req,new,args,num_args)
+	NhlLayerClass	class;
+	NhlLayer		req;
+	NhlLayer		new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlAnnotationLayer	tnew = (NhlAnnotationLayer) new;
+	NhlErrorTypes	ret=NhlNOERROR,subret = NhlNOERROR;
+
+	return(MIN(ret,subret));
+}
+
+/*
+ * Function:	AnnotationDestroy
+ *
+ * Description: 
+ *
+ * In Args:	NhlLayer inst	instance of Annotation
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */
+static NhlErrorTypes
+AnnotationDestroy
+#if  __STDC__
+(
+	NhlLayer	layer)
+#else
+(layer)
+	NhlLayer	layer;
+#endif
+{
+	NhlAnnotationLayer anl = (NhlAnnotationLayer) layer;
+	
+	return(NhlNOERROR);
+}
+
+
+
+/*
+ * Function:	AnnotationClassInitialize
+ *
+ * Description: Just calls StringToQuark to register new types
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error condition
+ *
+ * Side Effects: 	NONE
+ */
+static NhlErrorTypes    AnnotationClassInitialize
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(NhlNOERROR);	
+}
+

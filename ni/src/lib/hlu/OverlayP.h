@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.7 1994-03-18 02:18:27 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.8 1994-06-03 19:24:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,9 @@
 
 /* Zone/Display flags */
 
+#define NhlovMAXZONE		24
+#define NhlovZONEFLAG(zone)	1<<(zone)
+#define NhlovZONEFLAGSONLY(zonemap) (zonemap & 0x3fffffff) 
 #define NhlovINNERZONE		1<<0
 #define NhlovTICKMARKZONE	1<<1
 #define NhlovMIDDLEZONE		1<<2
@@ -42,8 +45,8 @@
 #define NhlovALLZONES   NhlovINNERZONE | NhlovTICKMARKZONE | \
 		NhlovMIDDLEZONE | NhlovTITLEZONE | NhlovOUTERZONE
 
-#define NhlovSETNEEDED		1<<7
-#define NhlovDISPLAYON		1<<8
+#define NhlovSETNEEDED		1<<30
+#define NhlovDISPLAYON		1<<31
 
 /* private resources */
 
@@ -51,20 +54,28 @@
 
 #define NhlCovOverlayRecs	".OvOverlayRecs"
 
+typedef enum { ovTICKMARK, ovTITLE, ovLEGEND, ovLABELBAR, ovEXTERNAL }
+ovAnnoType;
 
-typedef struct _NhlAnnotationRec {
-	struct _NhlAnnotationRec	*next;
-	NhlLayer			l;
-	NrmQuark			type;
-	int				zone;
-} NhlAnnotationRec;
+typedef struct _NhlAnnoRec {
+	NhlLayer		ovl;
+	int			anno_id;
+	int			plot_id;
+	int			zone;
+	NhlPosition		side;
+	NhlJustification	just;
+	float			para_pos;
+	float			ortho_pos;
+	ovAnnoType		type;
+	int			status;
+	struct _NhlAnnoRec	*next;
+} NhlAnnoRec;
 	
-
 typedef struct _NhlovRec {
 	NhlTransformLayer	plot;	   /* overlay plot (member or base) */
 	NhlLayer		ov_obj;	   /* plot's overlay object */
-	NhlAnnotationRec	*ann_recs; /* list of annotation records */
-	int			zflag;     /* zones occupied by ann. recs */
+	NhlAnnoRec		*anno_list; /* list of annotation records */
+	int			max_zone;  /* the max annotation zone */
 } NhlovRec;
 
 typedef struct _NhlOverlayLayerPart {
@@ -76,9 +87,13 @@ typedef struct _NhlOverlayLayerPart {
 	NhlGenArray		post_draw_order;
 
 	int			display_tickmarks;
+	int			tickmark_zone;
 	int			display_titles;
+	int			title_zone;
 	int			display_labelbar;
+	int			labelbar_zone;
 	int			display_legend;
+	int			legend_zone;
 
 	/* intercepted tickmark resources */
 
@@ -102,33 +117,40 @@ typedef struct _NhlOverlayLayerPart {
 	float			ti_main_offset_x;
 	float			ti_x_axis_offset_x;
 	float			ti_y_axis_offset_y;
-	NhlTitlePositions		ti_main_position;
-	NhlTitlePositions		ti_x_axis_position;
-	NhlTitlePositions		ti_y_axis_position;
+	NhlTitlePositions	ti_main_position;
+	NhlTitlePositions	ti_x_axis_position;
+	NhlTitlePositions	ti_y_axis_position;
 
 	/* labelbar resources */
 
+	NhlBoolean		lbar_on;
+	NhlOrientation		lbar_orient;
 	float			lbar_width;
 	float			lbar_height;
+	NhlPosition		lbar_side;
+	float			lbar_para_pos;
+	float			lbar_ortho_pos;
+	NhlJustification	lbar_just;
+
 	float			lbar_x_off;
 	float			lbar_y_off;
-	NhlPosition		lbar_side;
 	NhlPosition		lbar_pos;
-	NhlJustification	lbar_just;
-	NhlOrientation		lbar_orient;
-	NhlBoolean		lbar_on;
 
 	/* legend resources */
 
+
+	NhlBoolean		lgnd_on;
+	NhlOrientation		lgnd_orient;
 	float			lgnd_width;
 	float			lgnd_height;
+	NhlPosition		lgnd_side;
+	float			lgnd_para_pos;
+	float			lgnd_ortho_pos;
+	NhlJustification	lgnd_just;
+
 	float			lgnd_x_off;
 	float			lgnd_y_off;
-	NhlPosition		lgnd_side;
 	NhlPosition		lgnd_pos;
-	NhlJustification	lgnd_just;
-	NhlOrientation		lgnd_orient;
-	NhlBoolean		lgnd_on;
 	
 	/* Private resource fields */
 
@@ -148,8 +170,10 @@ typedef struct _NhlOverlayLayerPart {
 
 	float			lbar_x;
 	float			lbar_y;
+	NhlJustification	real_lbar_just;
 	float			lgnd_x;
 	float			lgnd_y;
+	NhlJustification	real_lgnd_just;
 
 	float			ti_x;
 	float			ti_y;

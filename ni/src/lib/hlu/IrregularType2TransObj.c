@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.9 1994-05-05 18:16:35 ethan Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.10 1994-06-03 19:23:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,63 +50,64 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/IrregularType2TransObjP.h>
 #include <ncarg/hlu/View.h>
-
+#include <math.h>
 
 static NhlResource resources[] = {
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatPtr,sizeof(float*),
-		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_coord_points),
-		NhlTFloatPtr,NULL,0,(NhlFreeFunc)NhlFree },
+		NhlOffset(NhlIrregularType2TransObjLayerRec,
+			  ir2trans.x_coord_points),
+		NhlTFloatPtr,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree },
 	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_inter_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_max),
-		NhlTString, "0.0" ,0,NULL},
+		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrXMinF, NhlCtrXMinF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_min),
-		NhlTString, "0.0" ,0,NULL},
+		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_num_points),
-		NhlTString,"0" ,0,NULL},
+		NhlTString,_NhlUSET("0") ,0,NULL},
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_reverse),
-		NhlTString,"0" ,0,NULL},
+		NhlTString,_NhlUSET("0") ,0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_tension),
-		NhlTString,"2.0" ,0,NULL},
+		NhlTString,_NhlUSET("2.0") ,0,NULL},
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_samples),
-		NhlTString,"9" ,0,NULL},
+		NhlTString,_NhlUSET("9") ,0,NULL},
 	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_use_log),
-		NhlTString,"0" ,0,NULL},
+		NhlTString,_NhlUSET("0") ,0,NULL},
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_coord_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_inter_points),
-		NhlTFloatPtr,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTFloatPtr,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_max),
-		NhlTString, "0.0" ,0,NULL},
+		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrYMinF, NhlCtrYMinF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_min),
-		NhlTString, "0.0" ,0,NULL},
+		NhlTString, _NhlUSET("0.0") ,0,NULL},
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_num_points),
-		NhlTString,"0" ,0,NULL},
+		NhlTString,_NhlUSET("0") ,0,NULL},
 	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_reverse),
-		NhlTString,"0" ,0,NULL},
+		NhlTString,_NhlUSET("0") ,0,NULL},
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_tension),
-		NhlTString,"2.0" ,0,NULL},
+		NhlTString,_NhlUSET("2.0") ,0,NULL},
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_samples),
-		NhlTString,"9" ,0,NULL},
+		NhlTString,_NhlUSET("9") ,0,NULL},
 	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_use_log),
-		NhlTString,"0" ,0,NULL}
+		NhlTString,_NhlUSET("0"),0,NULL}
 };
 
 /*
@@ -134,6 +135,13 @@ static NhlErrorTypes IrTransInitialize(
 );
 
 
+static NhlErrorTypes IrTransDestroy(
+#ifdef NhlNeedProto
+        NhlLayer        /* inst */
+#endif
+);
+
+
 /*
 * TransObjClass Methods defined
 */
@@ -144,6 +152,7 @@ NhlLayer	/*instance*/,
 NhlLayer  /*parent*/
 #endif
 );
+
 
 static NhlErrorTypes IrWinToNDC(
 #ifdef NhlNeedProto
@@ -253,7 +262,7 @@ int     /* upordown */
 #endif
 );
 
-static SetUpTrans(
+static NhlErrorTypes SetUpTrans(
 #if NhlNeedProto
         NhlLayer   /*new*/,
         NhlLayer   /*old*/,
@@ -263,9 +272,31 @@ static SetUpTrans(
 #endif
 );
 
+static NhlBoolean compare_check(
+#if NhlNeedProto
+	NhlIrregularType2TransObjLayerPart *irp,
+	float	*x,
+ 	float	*y,
+	int	type /* data 0, compc 1 */
+#endif
+);
+
+static NhlBoolean compare_view(
+#if NhlNeedProto
+        float *x,
+        float *y,
+        float xmin,
+        float xmax,
+        float ymin,
+        float ymax
+#endif
+);
+
 #define CREATE  1
 #define SET 0
 
+#define NhlirDATA 0
+#define NhlirCOMPC 1
 
 NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = {
         {
@@ -286,7 +317,7 @@ NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = 
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	IrTransDestroy
         },
         {
 /* set_trans		*/	IrSetTrans,
@@ -372,7 +403,43 @@ static NhlErrorTypes IrTransInitialize
 	return(SetUpTrans(new,NULL,CREATE,args,num_args));
 }
 
-static SetUpTrans
+/*
+ * Function:	IrTransDestroy
+ *
+ * Description:
+ *
+ * In Args:	inst		instance record pointer
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes IrTransDestroy
+#if __STDC__
+(NhlLayer inst)
+#else
+(inst)
+NhlLayer inst;
+#endif
+{
+	NhlIrregularType2TransObjLayer ir = 
+		(NhlIrregularType2TransObjLayer)inst;
+
+ 	free(ir->ir2trans.xmin_dat);
+	free(ir->ir2trans.xmax_dat);
+	free(ir->ir2trans.ymin_dat);
+	free(ir->ir2trans.ymax_dat);
+ 	free(ir->ir2trans.compc_xmin_dat);
+	free(ir->ir2trans.compc_xmax_dat);
+	free(ir->ir2trans.compc_ymin_dat);
+	free(ir->ir2trans.compc_ymax_dat);
+
+	return NhlNOERROR;
+}
+
+static NhlErrorTypes SetUpTrans
 #if __STDC__
 (NhlLayer new, NhlLayer old, int c_or_s,_NhlArgList args, int nargs)
 #else
@@ -574,7 +641,148 @@ static SetUpTrans
 	inew->ir2trans.compc_x_max = MAX(inew->ir2trans.ul,inew->ir2trans.ur);
 	inew->ir2trans.compc_y_min = MIN(inew->ir2trans.ut,inew->ir2trans.ub);
 	inew->ir2trans.compc_y_max = MAX(inew->ir2trans.ut,inew->ir2trans.ub);
+
+	if (c_or_s == CREATE) {
+		if ((inew->ir2trans.xmin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.x_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.xmax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.x_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.ymin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.y_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.ymax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.y_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.compc_xmin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_x_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.compc_xmax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_x_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.compc_ymin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_y_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		if ((inew->ir2trans.compc_ymax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_y_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+		return(ret);
+	}
+	if (inew->ir2trans.x_min != iold->ir2trans.x_min) {
+		free(inew->ir2trans.xmin_dat);
+		if ((inew->ir2trans.xmin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.x_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.x_max != iold->ir2trans.x_max) {
+		free(inew->ir2trans.xmax_dat);
+		if ((inew->ir2trans.xmax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.x_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.y_min != iold->ir2trans.y_min) {
+		free(inew->ir2trans.ymin_dat);
+		if ((inew->ir2trans.ymin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.y_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.y_max != iold->ir2trans.y_max) {
+		free(inew->ir2trans.ymax_dat);
+		if ((inew->ir2trans.ymax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.y_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.compc_x_min != iold->ir2trans.compc_x_min) {
+		free(inew->ir2trans.compc_xmin_dat);
+		if ((inew->ir2trans.compc_xmin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_x_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.compc_x_max != iold->ir2trans.compc_x_max) {
+		free(inew->ir2trans.compc_xmax_dat);
+		if ((inew->ir2trans.compc_xmax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_x_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.compc_y_min != iold->ir2trans.compc_y_min) {
+		free(inew->ir2trans.compc_ymin_dat);
+		if ((inew->ir2trans.compc_ymin_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_y_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
+	if (inew->ir2trans.compc_y_max != iold->ir2trans.compc_y_max) {
+		free(inew->ir2trans.compc_ymax_dat);
+		if ((inew->ir2trans.compc_ymax_dat = 
+		     _NhlCmpFSetup(inew->ir2trans.compc_y_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  error_lead);
+			return(NhlFATAL);
+		}
+	}
 	return(ret);
+
 }
 
 /*
@@ -632,6 +840,136 @@ NhlLayer   parent;
 	return(NhlNOERROR);
 	
 }
+/*
+ * Function:	compare_check
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlBoolean compare_check
+#if  __STDC__
+(
+	NhlIrregularType2TransObjLayerPart *irp,
+	float	*x,
+ 	float	*y,
+	int	type /* data 0, compc 1 */
+)
+#else
+(irp,x,y,type)
+	NhlIrregularType2TransObjLayerPart *irp;
+	float	*x;
+	float	*y;
+	int	type;
+#endif
+{
+	int xmndif,xmxdif,ymndif,ymxdif;
+
+	if (type == NhlirDATA) {
+		if ((xmndif = _NhlCmpF(*x,irp->xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,irp->xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,irp->ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,irp->ymax_dat)) > 0) {
+			return False;
+		}
+		if (xmndif == 0) {
+			*x = irp->x_min;
+		}
+		else if (xmxdif == 0) {
+			*x = irp->x_max;
+		}
+		if (ymndif == 0) {
+			*y = irp->y_min;
+		}
+		else if (ymxdif == 0) {
+			*y = irp->y_max;
+		}
+	}
+	else {
+		if ((xmndif = _NhlCmpF(*x,irp->compc_xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,irp->compc_xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,irp->compc_ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,irp->compc_ymax_dat)) > 0) {
+			return False;
+		}
+		if (xmndif == 0) {
+			*x = irp->compc_x_min;
+		}
+		else if (xmxdif == 0) {
+			*x = irp->compc_x_max;
+		}
+		if (ymndif == 0) {
+			*y = irp->compc_y_min;
+		}
+		else if (ymxdif == 0) {
+			*y = irp->compc_y_max;
+		}
+	}
+	return True;
+}
+
+/*
+ * Function:    compare_view
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlBoolean compare_view
+#if  __STDC__
+(
+        float *x,
+        float *y,
+        float xmin,
+        float xmax,
+        float ymin,
+        float ymax
+)
+#else
+(x,y,xmin,xmax,ymin,ymax)
+        float *x;
+        float *y;
+        float xmin;
+        float xmax;
+        float ymin;
+        float ymax;
+#endif
+{
+        int xmndif,xmxdif,ymndif,ymxdif;
+
+        if ((xmndif = _NhlCmpFAny(*x,xmin,5)) < 0 ||
+            (xmxdif = _NhlCmpFAny(*x,xmax,5)) > 0 ||
+            (ymndif = _NhlCmpFAny(*y,ymin,5)) < 0 ||
+            (ymxdif = _NhlCmpFAny(*y,ymax,5)) > 0) {
+                return False;
+        }
+
+        if (xmndif == 0) {
+                *x = xmin;
+        }
+        else if (xmxdif == 0) {
+                *x = xmax;
+        }
+        if (ymndif == 0) {
+                *y = ymin;
+        }
+        else if (ymxdif == 0) {
+                *y = ymax;
+        }
+        return True;
+}
 
 
 /*
@@ -678,7 +1016,6 @@ static NhlErrorTypes IrWinToNDC
 	int i;
 	NhlErrorTypes ret;
 	
-
 	*status = 0;	
 	ret= NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
@@ -695,38 +1032,47 @@ static NhlErrorTypes IrWinToNDC
 * Compc and Window are identical coordinates in this object
 */
 			if((x[i] > iinstance->ir2trans.compc_x_max)
-				||(x[i] < iinstance->ir2trans.compc_x_min)
-				||(y[i] > iinstance->ir2trans.compc_y_max)
-				||(y[i] < iinstance->ir2trans.compc_y_min)) {
-				*status = 1;
-				xout[i]=yout[i] =iinstance->trobj.out_of_range;
-			} else {
-				strans(iinstance->ir2trans.ul,
-					iinstance->ir2trans.ur,
-					iinstance->ir2trans.ub,
-					iinstance->ir2trans.ut,
-				 	x0,x0+width,y0-height,y0,x[i],y[i],
-					&(xout[i]),&(yout[i]));
-			}
+			   ||(x[i] < iinstance->ir2trans.compc_x_min)
+			   ||(y[i] > iinstance->ir2trans.compc_y_max)
+			   ||(y[i] < iinstance->ir2trans.compc_y_min)) {
+				if (! compare_check(&iinstance->ir2trans,
+						    &x[i],&y[i],NhlirCOMPC)) {
+					*status = 1;
+					xout[i]=yout[i] =
+						iinstance->trobj.out_of_range;
+					continue;
+				}
+
+			} 
+			strans(iinstance->ir2trans.ul,
+			       iinstance->ir2trans.ur,
+			       iinstance->ir2trans.ub,
+			       iinstance->ir2trans.ut,
+			       x0,x0+width,y0-height,y0,x[i],y[i],
+			       &(xout[i]),&(yout[i]));
 		}
 	} else {
 		for(i = 0; i< n ; i++) {
 			if(((xmissing != NULL)&&(*xmissing == x[i]))
-				||((ymissing != NULL)&&(*ymissing == y[i]))
-				||(x[i] > iinstance->ir2trans.compc_x_max)
-				||(x[i] < iinstance->ir2trans.compc_x_min)
-				||(y[i] > iinstance->ir2trans.compc_y_max)
-				||(y[i] < iinstance->ir2trans.compc_y_min)) {
-				*status = 1;
-				xout[i]=yout[i]=iinstance->trobj.out_of_range;
-			} else {
-				strans(iinstance->ir2trans.ul,
-					iinstance->ir2trans.ur,
-					iinstance->ir2trans.ub,	
-					iinstance->ir2trans.ut,
-					 x0,x0+width,y0-height,y0,x[i],y[i],
-					&(xout[i]),&(yout[i]));
+			   ||((ymissing != NULL)&&(*ymissing == y[i]))
+			   ||(x[i] > iinstance->ir2trans.compc_x_max)
+			   ||(x[i] < iinstance->ir2trans.compc_x_min)
+			   ||(y[i] > iinstance->ir2trans.compc_y_max)
+			   ||(y[i] < iinstance->ir2trans.compc_y_min)) {
+				if (! compare_check(&iinstance->ir2trans,
+						    &x[i],&y[i],NhlirCOMPC)) {
+					*status = 1;
+					xout[i]=yout[i] =
+						iinstance->trobj.out_of_range;
+					continue;
+				}
 			}
+			strans(iinstance->ir2trans.ul,
+			       iinstance->ir2trans.ur,
+			       iinstance->ir2trans.ub,	
+			       iinstance->ir2trans.ut,
+			       x0,x0+width,y0-height,y0,x[i],y[i],
+			       &(xout[i]),&(yout[i]));
 		}
 	}
 
@@ -769,10 +1115,10 @@ static NhlErrorTypes IrNDCToWin
 	float width;
 	int i;
 	float height;
-	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer iinstance = 
+		(NhlIrregularType2TransObjLayer)instance;
 	NhlErrorTypes ret;
-	
-	
+
 	*status = 0;
 	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
@@ -786,37 +1132,47 @@ static NhlErrorTypes IrNDCToWin
 	if((xmissing == NULL)&&(ymissing == NULL)) {
 		for(i = 0; i< n; i++) {
 			if((x[i] > x1)
-				||(x[i] < x0)
-				||(y[i] > y0)
-				||(y[i] < y1)) {
+			   ||(x[i] < x0)
+			   ||(y[i] > y0)
+			   ||(y[i] < y1)) {
 				
-				*status = 1;
-				xout[i] = yout[i]= iinstance->trobj.out_of_range;
-			} else {
-				strans(x0,x0+width,y0-height,y0,iinstance->ir2trans.ul,
-					iinstance->ir2trans.ur, iinstance->ir2trans.ub,
-					iinstance->ir2trans.ut, x[i],y[i],
-					&(xout[i]),&(yout[i]));
+				if (! compare_view(&x[i],&y[i],
+						   x0,x1,y0,y1)) {
+					*status = 1;
+					xout[i]=yout[i] =
+						iinstance->trobj.out_of_range;
+					continue;
+				}
 			}
+			strans(x0,x0+width,y0-height,y0,iinstance->ir2trans.ul,
+			       iinstance->ir2trans.ur, iinstance->ir2trans.ub,
+			       iinstance->ir2trans.ut, x[i],y[i],
+			       &(xout[i]),&(yout[i]));
 		}
-	} else {
+	} 
+	else {
 		for(i = 0; i< n; i++) {
 			if(((xmissing != NULL)&&(*xmissing == x[i]))
-				||((ymissing != NULL)&&(*ymissing == y[i]))
-				||(x[i] > x1)
-				||(x[i] < x0)
-				||(y[i] > y0)
-				||(y[i] < y1)) {
-				*status = 1;
-				xout[i]=yout[i]=iinstance->trobj.out_of_range;
-			} else {
-				strans(x0,x0+width,y0-height,y0,
-					iinstance->ir2trans.ul,
-					iinstance->ir2trans.ur, 
-					iinstance->ir2trans.ub,
-					iinstance->ir2trans.ut, x[i],y[i],
-					&(xout[i]),&(yout[i]));
+			   ||((ymissing != NULL)&&(*ymissing == y[i]))
+			   ||(x[i] > x1)
+			   ||(x[i] < x0)
+			   ||(y[i] > y0)
+			   ||(y[i] < y1)) {
+				if (! compare_view(&x[i],&y[i],
+						   x0,x1,y0,y1)) {
+					*status = 1;
+					xout[i]=yout[i] =
+						iinstance->trobj.out_of_range;
+					continue;
+				}
+
 			}
+			strans(x0,x0+width,y0-height,y0,
+			       iinstance->ir2trans.ul,
+			       iinstance->ir2trans.ur, 
+			       iinstance->ir2trans.ub,
+			       iinstance->ir2trans.ut, x[i],y[i],
+			       &(xout[i]),&(yout[i]));
 		}
 	}
 	return(NhlNOERROR);
@@ -868,12 +1224,18 @@ static NhlErrorTypes IrDataToCompc
 			||(y[i] < iinstance->ir2trans.y_min)
 			||(y[i] > iinstance->ir2trans.y_max)) {
 		
-			*status = 1;
-			xout[i] = yout[i] = iinstance->trobj.out_of_range;	
-		} else {
-			ret = _NhlEvalSplineCoordForward(&(iinstance->ir2trans.thecoord),
-				x[i],y[i],&(xout[i]),&(yout[i]),NULL,NULL);
+			if (! compare_check(&iinstance->ir2trans,
+					    &x[i],&y[i],NhlirDATA)) {
+				*status = 1;
+				xout[i]=yout[i] =
+					iinstance->trobj.out_of_range;
+				continue;
+			}
 		}
+		ret = _NhlEvalSplineCoordForward(
+					   &(iinstance->ir2trans.thecoord),
+					   x[i],y[i],&(xout[i]),&(yout[i]),
+					   NULL,NULL);
 	}
 	return(ret);
 }
@@ -922,12 +1284,19 @@ static NhlErrorTypes IrCompcToData
 			||(x[i] < iinstance->ir2trans.compc_x_min)
 			||(y[i] > iinstance->ir2trans.compc_y_max)
 			||(y[i] < iinstance->ir2trans.compc_y_min)) {
-			*status = 1;
-			xout[i] = yout[i] = iinstance->trobj.out_of_range;
-		} else {
-				ret = _NhlEvalSplineCoordInverse(&(iinstance->ir2trans.thecoord),
-					x[i],y[i],&(xout[i]),&(yout[i]),NULL,NULL);	
+
+			if (! compare_check(&iinstance->ir2trans,
+					    &x[i],&y[i],NhlirCOMPC)) {
+				*status = 1;
+				xout[i]=yout[i] =
+					iinstance->trobj.out_of_range;
+				continue;
+			}
 		}
+		ret = _NhlEvalSplineCoordInverse(
+					     &(iinstance->ir2trans.thecoord),
+					     x[i],y[i],&(xout[i]),&(yout[i]),
+					     NULL,NULL);	
 	}
 	return(ret);
 }
@@ -1184,20 +1553,23 @@ int* status;
 
         *status = 0;
         for(i = 0 ; i< n; i++) {
-                if((xmissing != NULL)&&(*xmissing == x[i])
-                        || (ymissing != NULL)&&(*ymissing == y[i])
+                if(((xmissing != NULL)&&(*xmissing == x[i]))
+                        || ((ymissing != NULL)&&(*ymissing == y[i]))
                         ||(x[i] < iinstance->ir2trans.compc_x_min)
                         ||(x[i] > iinstance->ir2trans.compc_x_max)
                         ||(y[i] < iinstance->ir2trans.compc_y_min)
                         ||(y[i] > iinstance->ir2trans.compc_y_max)) {
 
-                        yout[i]=xout[i]=iinstance->trobj.out_of_range;
-
-                        *status = 1;
-                } else {
-                        yout[i] = y[i];
-                        xout[i] = x[i];
-                }
+			if (! compare_check(&iinstance->ir2trans,
+					    &x[i],&y[i],NhlirCOMPC)) {
+				*status = 1;
+				xout[i]=yout[i] =
+					iinstance->trobj.out_of_range;
+				continue;
+			}
+		}
+		yout[i] = y[i];
+		xout[i] = x[i];
         }
         return(ret);
 }

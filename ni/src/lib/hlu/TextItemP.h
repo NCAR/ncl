@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.2 1994-01-27 21:26:01 boote Exp $
+ *      $Id: TextItemP.h,v 1.3 1994-06-03 19:24:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,14 @@ typedef struct _NhlTextItemLayerPart{
 	char	func_code;
 	float	*x_corners;
 	float	*y_corners;
+	
+	int	perim_on;
+	int	perim_color;
+	float	perim_thickness;
+	int	perim_dash_pattern;
+	float	perim_dash_length;
+	float	perim_space;
+	int	bg_fill_color;
 
 	/* Private fields */
 
@@ -57,6 +65,8 @@ typedef struct _NhlTextItemLayerPart{
 	float	heightvecy[2];
 	char	dirstr[4];
 	int 	qual;
+	float	xperim[5];
+	float	yperim[5];
 }NhlTextItemLayerPart;
 
 typedef struct _NhlTextItemLayerRec{

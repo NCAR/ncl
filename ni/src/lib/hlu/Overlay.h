@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.5 1994-01-27 21:25:25 boote Exp $
+ *      $Id: Overlay.h,v 1.6 1994-06-03 19:24:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,20 +47,31 @@
 #define NhlNovPreDrawOrder	".ovPreDrawOrder"
 #define NhlNovPostDrawOrder	".ovPostDrawOrder"
 #define NhlNovDisplayTitles	"ovDisplayTitles"
+#define NhlNovTitleZone		"ovTitleZone"
 #define NhlNovDisplayTickMarks	"ovDisplayTickMarks"
+#define NhlNovTickMarkZone	"ovTickMarkZone"
 #define NhlNovDisplayLabelBar	"ovDisplayLabelBar"
+#define NhlNovLabelBarZone	"ovLabelBarZone"
 #define NhlNovDisplayLegend	"ovDisplayLegend"
+#define NhlNovLegendZone	"ovLegendZone"
+
 #define NhlNovLabelBarWidthF	"ovLabelBarWidth"
 #define NhlNovLabelBarHeightF	"ovLabelBarHeight"
+#define NhlNovLabelBarSide	"ovLabelBarSide"
+#define NhlNovLabelBarParallelPosF	"ovLabelBarParallelPosF"
+#define NhlNovLabelBarOrthogonalPosF	"ovLabelBarOrthogonalPosF"
+
 #define NhlNovLabelBarXOffsetF	"ovLabelBarXOffset"
 #define NhlNovLabelBarYOffsetF	"ovLabelBarYOffset"
-#define NhlNovLabelBarSide	"ovLabelBarSide"
 #define NhlNovLabelBarPosition	"ovLabelBarPosition"
 #define NhlNovLegendWidthF	"ovLegendWidth"
 #define NhlNovLegendHeightF	"ovLegendHeight"
+#define NhlNovLegendSide	"ovLegendSide"
+#define NhlNovLegendParallelPosF	"ovLegendParallelPosF"
+#define NhlNovLegendOrthogonalPosF	"ovLegendOrthogonalPosF"
+
 #define NhlNovLegendXOffsetF	"ovLegendXOffset"
 #define NhlNovLegendYOffsetF	"ovLegendYOffset"
-#define NhlNovLegendSide	"ovLegendSide"
 #define NhlNovLegendPosition	"ovLegendPosition"
 
 /*
@@ -71,20 +82,31 @@
 #define NhlCovPreDrawOrder	".OvPreDrawOrder"
 #define NhlCovPostDrawOrder	".OvPostDrawOrder"
 #define NhlCovDisplayTitles	"OvDisplayTitles"
+#define NhlCovTitleZone		"OvTitleZone"
 #define NhlCovDisplayTickMarks	"OvDisplayTickMarks"
+#define NhlCovTickMarkZone	"OvTickMarkZone"
 #define NhlCovDisplayLabelBar	"OvDisplayLabelBar"
+#define NhlCovLabelBarZone	"OvLabelBarZone"
 #define NhlCovDisplayLegend	"OvDisplayLegend"
+#define NhlCovLegendZone	"OvLegendZone"
 #define NhlCovLabelBarWidthF	"OvLabelBarWidth"
 #define NhlCovLabelBarHeightF	"OvLabelBarHeight"
+#define NhlCovLabelBarSide	"OvLabelBarSide"
+#define NhlCovLabelBarParallelPosF	"OvLabelBarParallelPosF"
+#define NhlCovLabelBarOrthogonalPosF	"OvLabelBarOrthogonalPosF"
+
 #define NhlCovLabelBarXOffsetF	"OvLabelBarXOffset"
 #define NhlCovLabelBarYOffsetF	"OvLabelBarYOffset"
-#define NhlCovLabelBarSide	"OvLabelBarSide"
 #define NhlCovLabelBarPosition	"OvLabelBarPosition"
+
 #define NhlCovLegendWidthF	"OvLegendWidth"
 #define NhlCovLegendHeightF	"OvLegendHeight"
+#define NhlCovLegendSide	"OvLegendSide"
+#define NhlCovLegendParallelPosF	"OvLegendParallelPosF"
+#define NhlCovLegendOrthogonalPosF	"OvLegendOrthogonalPosF"
+
 #define NhlCovLegendXOffsetF	"OvLegendXOffset"
 #define NhlCovLegendYOffsetF	"OvLegendYOffset"
-#define NhlCovLegendSide	"OvLegendSide"
 #define NhlCovLegendPosition	"OvLegendPosition"
 
 extern NhlLayerClass NhloverlayLayerClass;
@@ -92,17 +114,31 @@ extern NhlLayerClass NhloverlayLayerClass;
 /* Public functions defined by the Overlay Class	*/
 NhlErrorTypes NhlAddToOverlay(
 #ifdef NhlNeedProto
-        int		/* base_id */,
-	int		/* plot_id */,
-	int		/* after_id */
+        int		base_id,
+	int		plot_id,
+	int		after_id
 #endif
 );
 
 NhlErrorTypes NhlRemoveFromOverlay(
 #ifdef NhlNeedProto
-        int		/* base_id */,
-	int		/* plot_id */,
-	NhlBoolean	/* restore */
+        int		base_id,
+	int		plot_id,
+	NhlBoolean	restore
+#endif
+);
+
+NhlErrorTypes NhlRegisterAnnotation(
+#ifdef NhlNeedProto
+        int	overlay_base_id,
+	int	annotation_id
+#endif
+);
+
+NhlErrorTypes NhlUnregisterAnnotation(
+#ifdef NhlNeedProto
+        int	overlay_base_id,
+	int	annotation_id
 #endif
 );
 

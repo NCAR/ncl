@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.2 1994-01-27 21:25:58 boote Exp $
+ *      $Id: TextItem.h,v 1.3 1994-06-03 19:24:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,21 @@
 #define NhlNtxYCorners		".txYCorners"
 #define NhlCtxYCorners		".TxYCorners"
 
+#define NhlNtxPerimOn			"txPerimOn"
+#define NhlNtxPerimColor		"txPerimColor"
+#define NhlNtxPerimThicknessF		"txPerimThicknessF"
+#define NhlNtxPerimDashPattern		"txPerimDashPattern"
+#define NhlNtxPerimDashLengthF		"txPerimDashLengthF"
+#define NhlNtxPerimSpaceF		"txPerimSpaceF"
+#define NhlNtxBackgroundFillColor	"txBackgroundFillColor"
+
+#define NhlCtxPerimOn			"TxPerimOn"
+#define NhlCtxPerimColor		"TxPerimColor"
+#define NhlCtxPerimThicknessF		"TxPerimThicknessF"
+#define NhlCtxPerimDashPattern		"TxPerimDashPattern"
+#define NhlCtxPerimDashLengthF		"TxPerimDashLengthF"
+#define NhlCtxPerimSpaceF		"TxPerimSpaceF"
+#define NhlCtxBackgroundFillColor	"TxBackgroundFillColor"
 
 typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
 typedef enum {NhlDOWN,NhlUP,NhlACROSS} NhlTextDirection;

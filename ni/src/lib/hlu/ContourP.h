@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.8 1994-05-17 22:26:07 dbrown Exp $
+ *      $Id: ContourP.h,v 1.9 1994-06-03 19:23:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,33 +41,40 @@
 #define Nhl_cnSTD_VIEW_WIDTH	1.0
 #define Nhl_cnSTD_VIEW_HEIGHT	1.0
 #define NhlcnMAPVAL		99
+#define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
+#define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
+
+typedef enum { _cnCONSTF, _cnINFO } _cnAnnoType;
 
 typedef struct _NhlcnLabelAttrs {
-	NhlBoolean	on;
-	NhlString	*text;
-	NhlString	format;
-	NhlFont		font;
-	int		mono_color;
-	int		*colors;
-	NhlBoolean	height_set;
-	float		height;
-	float		aspect;
-	float		thickness;
-	int		quality;
-	float		cspacing;
-	float		angle;
-	char		fcode[2];
-	int		back_color;
-	NhlBoolean	perim_on;
-	NhlBoolean	perim_space_set;
-	float		perim_space;
-	float		perim_lthick;
-	int		perim_lcolor;
-	int		gks_bcolor;
-	int		gks_plcolor;
-	float		real_height;
-	float		pheight;
-	float		pwidth;
+	NhlBoolean		on;
+	NhlString		*text;
+	NhlString		format;
+	NhlBoolean		height_set;
+	float			height;
+	NhlTextDirection	direction;
+	NhlFont			font;
+	int			mono_color;
+	int			*colors;
+	float			aspect;
+	float			thickness;
+	NhlFontQuality		quality;
+	float			cspacing;
+	float			angle;
+	char			fcode[2];
+	int			back_color;
+	NhlBoolean		perim_on;
+	float			perim_space;
+	float			perim_lthick;
+	int			perim_lcolor;
+	int			gks_bcolor;
+	int			gks_plcolor;
+	float			real_height;
+	float			pheight;
+	float			pwidth;
+	float			x_pos;
+	float			y_pos;
+	NhlJustification	just;
 } NhlcnLabelAttrs;
 
 typedef struct _NhlContourDataDepLayerPart{
@@ -129,15 +136,21 @@ typedef struct _NhlContourLayerPart {
 
 	NhlBoolean	line_dash_seglen_set;
 	float		line_dash_seglen;
-	int		llabel_position;
+	int		llabel_spacing;
 
 	NhlBoolean	low_use_high_attrs;
 	NhlBoolean	high_use_line_attrs;
-	NhlBoolean	line_use_info_attrs;
-	NhlcnLabelAttrs info_lbl;
-	NhlcnLabelAttrs line_lbls;
-	NhlcnLabelAttrs high_lbls;
-	NhlcnLabelAttrs low_lbls;
+	NhlBoolean	constf_use_info_attrs;
+
+	NhlcnLabelAttrs 	line_lbls;
+	NhlcnLabelAttrs 	high_lbls;
+	NhlcnLabelAttrs 	low_lbls;
+	NhlString		info_string; /* before substitution */
+	NhlcnLabelAttrs 	info_lbl;
+	NhlAnnotationRec	info_lbl_rec;
+	NhlString		constf_string; /* before substitution */
+	NhlcnLabelAttrs 	constf_lbl;
+	NhlAnnotationRec	constf_lbl_rec;
 
 	float 		x_min;
 	float		x_max;
@@ -177,6 +190,8 @@ typedef struct _NhlContourLayerPart {
 	NhlGenArray	dash_table;
 	float		zmin;
 	float		zmax;
+	NhlBoolean	const_field;
+	NhlBoolean	display_constf;
 	int		fill_count;
 	NhlGenArray	ll_strings;
 	NhlGenArray	ll_text_heights;
@@ -189,6 +204,8 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	use_irr_trans;
 	float		xc1,xcm,yc1,ycn;
 	float		xlb,xub,ylb,yub;
+	int		info_anno_id;
+	int		constf_anno_id;
 
 	NhlScalarFieldFloatLayerPart	*sfp;
 

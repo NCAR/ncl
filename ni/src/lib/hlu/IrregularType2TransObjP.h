@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObjP.h,v 1.4 1994-01-27 21:23:30 boote Exp $
+ *      $Id: IrregularType2TransObjP.h,v 1.5 1994-06-03 19:23:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,15 @@ typedef struct _NhlIrregularType2TransObjLayerPart {
 	float	compc_y_min;
 	float 	compc_y_max;
 	int log_lin_value;
+	NhlCompareDat *xmin_dat;
+	NhlCompareDat *xmax_dat;
+	NhlCompareDat *ymin_dat;
+	NhlCompareDat *ymax_dat;
+	NhlCompareDat *compc_xmin_dat;
+	NhlCompareDat *compc_xmax_dat;
+	NhlCompareDat *compc_ymin_dat;
+	NhlCompareDat *compc_ymax_dat;
+
 } NhlIrregularType2TransObjLayerPart;
 
 typedef struct _NhlIrregularType2TransObjLayerRec {
