@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.18 1996-11-16 00:45:42 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.19 1996-11-19 00:34:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,11 +31,33 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Ncldim_product(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclproduct(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Ncldim_sum(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclsum(
 #if NhlNeedProto
 void
 #endif
 );
+
+extern NhlErrorTypes _Ncldim_avg(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclavg(
 #if NhlNeedProto
 void
@@ -653,6 +675,21 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclproduct,args,"product",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Ncldim_product,args,"dim_product",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Ncldim_sum,args,"dim_sum",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Nclsum,args,"sum",nargs);
 
 	nargs = 0;
@@ -660,6 +697,10 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Nclavg,args,"avg",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Ncldim_avg,args,"dim_avg",nargs);
 
 
 /*

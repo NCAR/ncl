@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.5 1996-11-14 23:43:55 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.6 1996-11-19 00:34:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -156,6 +156,7 @@ NclData result;
 	NclMultiDValData result_md = (NclMultiDValData)result;
 	NclMultiDValData output_md;
 	NclTypeClass the_type = NULL;
+	NclTypeClass operand_type = NULL;
 	NclMissingRec themissing;
 	void *result_val;
 	int total;
@@ -166,6 +167,7 @@ NclData result;
 	if((other_md == NULL)||(self_md == NULL))
 		return(NULL);
 
+	operand_type = self_md->multidval.type;
         if(self_md->multidval.missing_value.has_missing) {
                 themissing.value = self_md->multidval.missing_value.value;
                 themissing.has_missing = 1;
@@ -219,7 +221,7 @@ NclData result;
                 }
 
 		if(_NclTFUNC(
-			self_md->multidval.type,
+			operand_type,
 			result_val,
 			self_md->multidval.val,
 			other_md->multidval.val,
