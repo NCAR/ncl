@@ -19,6 +19,12 @@ extern GridInfoRecord grid_gds[];
 extern int grid_tbl_len;
 extern int grid_gds_tbl_len;
 
+extern void GribPushAtt(
+#if NhlNeedProto
+GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type
+#endif
+);
+
 
 static NclMultiDValData  _GribGetInternalVar
 #if	NhlNeedProto
@@ -810,6 +816,7 @@ GribFileRecord *therec;
         GribAttInqRec   *att_ptr= NULL;
 	int natts = 0;
 	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
 	int tmp_dimsizes = 1;
 	int nlonatts = 0;
 	int nlatatts = 0;
@@ -1268,8 +1275,13 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-		
+	
+					tmp_float = NclMalloc((unsigned)sizeof(float)*2);
+					tmp_float[0] = tmp_lon[0];
+					tmp_float[1] = tmp_lon[dimsizes_lon[0]-1];
+					GribPushAtt(&lon_att_list_ptr,"corners",tmp_float,2,nclTypefloatClass); nlonatts++;
 
+					
 					_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1297,6 +1309,11 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
+
+					tmp_float = NclMalloc((unsigned)sizeof(float)*2);
+					tmp_float[0] = tmp_lat[0];
+					tmp_float[1] = tmp_lat[dimsizes_lat[0]-1];
+					GribPushAtt(&lat_att_list_ptr,"corners",tmp_float,2,nclTypefloatClass); nlatatts++;
 
 					_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
@@ -1342,6 +1359,13 @@ GribFileRecord *therec;
 					tmp_file_dim_numbers[0] = therec->total_dims;
 					tmp_file_dim_numbers[1] = therec->total_dims+ 1;
 
+					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
+					tmp_float[0] = tmp_lon[0];
+					tmp_float[1] = tmp_lon[dimsizes_lon[1]-1];
+					tmp_float[2] = tmp_lon[(dimsizes_lon[0]-1) * dimsizes_lon[1]];
+					tmp_float[3] = tmp_lon[(dimsizes_lon[0] * dimsizes_lon[1])-1];
+					GribPushAtt(&lon_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlonatts++;
+
 					_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1373,6 +1397,12 @@ GribFileRecord *therec;
 					} else {
 						sprintf(buffer,"lat_%d",step->grid_number);
 					}
+					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
+					tmp_float[0] = tmp_lat[0];
+					tmp_float[1] = tmp_lat[dimsizes_lat[1]-1];
+					tmp_float[2] = tmp_lat[(dimsizes_lat[0]-1) * dimsizes_lat[1]];
+					tmp_float[3] = tmp_lat[(dimsizes_lat[0] * dimsizes_lat[1])-1];
+					GribPushAtt(&lat_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlatatts++;
 
 					_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,

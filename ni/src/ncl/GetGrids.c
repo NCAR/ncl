@@ -397,6 +397,29 @@ static int printbinary(int val) {
 	fprintf(stdout,"\n");
 	return(count);
 }
+
+void GribPushAtt
+#if NhlNeedProto
+(GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type) 
+#else
+(att_list_ptr,name,val,dimsize,type) 
+GribAttInqRecList **att_list_ptr;
+char* name;
+void *val;
+int dimsize;
+NclObjClass type;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+
+	tmp_att_list_ptr = (*att_list_ptr);
+	(*att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+	(*att_list_ptr)->next = tmp_att_list_ptr;
+	(*att_list_ptr)->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+	(*att_list_ptr)->att_inq->name = NrmStringToQuark(name);
+	(*att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) val, NULL, 1 , &dimsize, PERMANENT, NULL, type);
+}
+
 /*
 * START Mercator
 */
@@ -548,6 +571,50 @@ int** dimsizes_lon;
 	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
 }
 
+void GetAtts_1
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("MERCATOR");
+	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 0.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpCenterLatF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 180.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpCenterLonF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("MERCATOR");
+	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 0.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpCenterLatF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 180.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpCenterLonF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+}
 void GetGrid_1
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
@@ -689,6 +756,58 @@ void GenLambert
 }
 
 
+void GetAtts_212
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+}
 void GetGrid_212
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
@@ -704,6 +823,60 @@ int** dimsizes_lon;
 #endif
 {
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 12.190 /*start_lat*/,  -133.459  /*start_lon*/, 185 /*nx*/, 129 /*ny*/);
+}
+
+
+void GetAtts_209
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
 void GetGrid_209
 #if NhlNeedProto
@@ -721,6 +894,59 @@ int** dimsizes_lon;
 {
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 101 /*nx*/, 81 /*ny*/);
 }
+
+void GetAtts_206
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+}
 void GetGrid_206
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
@@ -736,6 +962,60 @@ int** dimsizes_lon;
 #endif
 {
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 51 /*nx*/, 41 /*ny*/);
+}
+
+
+void GetAtts_211
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
 void GetGrid_211
 #if NhlNeedProto
@@ -3086,7 +3366,7 @@ GridInfoRecord grid_gds[] = {
 };
 
 GridInfoRecord grid[] = {
-		GenericUnPack,GetGrid_1,GenAtts,"1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
+		GenericUnPack,GetGrid_1,GetAtts_1,"1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
 		GenericUnPack,GetGrid_2,GenAtts,"10512-point (73x144) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*2*/
 		GenericUnPack,GetGrid_3,GenAtts,"65160-point (181x360) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*3*/
 		GenericUnPack,GetGrid_4,GenAtts,"259920-point (361x720) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated", /*4*/
@@ -3144,13 +3424,13 @@ GridInfoRecord grid[] = {
 		GenericUnPack,GetGrid_203,GenAtts,"1755-point (39x45) National - Alaska polar stereographic oriented 150W; pole at (27,37)", /*203*/
 		GenericUnPack,GetGrid_204,GenAtts,"6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
 		GenericUnPack,GetGrid_205,GenAtts,"1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
-		GenericUnPack,GetGrid_206,GenAtts,"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
+		GenericUnPack,GetGrid_206,GetAtts_206,"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
 		GenericUnPack,GetGrid_205,GenAtts,"1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
 		GenericUnPack,GetGrid_208,GenAtts,"783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
-		GenericUnPack,GetGrid_209,GenAtts,"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
+		GenericUnPack,GetGrid_209,GetAtts_209,"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
 		GenericUnPack,GetGrid_210,GenAtts,"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
-		GenericUnPack,GetGrid_211,GenAtts,"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
-		GenericUnPack,GetGrid_212,GenAtts,"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
+		GenericUnPack,GetGrid_211,GetAtts_211,"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
+		GenericUnPack,GetGrid_212,GetAtts_212,"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
 		GenericUnPack,GetGrid_213,GenAtts,"10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
 		GenericUnPack,GetGrid_214,GenAtts,"6693-point (69x97) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)", /*214*/
 };

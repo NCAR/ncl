@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.19 1995-11-03 00:01:07 ethan Exp $
+ *      $Id: NclVar.c,v 1.20 1996-04-02 00:35:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -374,11 +374,14 @@ FILE *fp;
 #endif
 {
 	NclVar self = (NclVar) theobj;
+	NclVar cvar= NULL;
+	NclMultiDValData tmp_md = NULL;
 	char *v_name;
 	int i;
-	NclMultiDValData thevalue;
+	NclMultiDValData thevalue = NULL;
 	int ret;
-	NhlErrorTypes ret0;
+	NhlErrorTypes ret0 = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
 
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	
@@ -515,11 +518,23 @@ FILE *fp;
 	}
 	for(i =0 ; i< self->var.n_dims; i++) {
 		if((self->var.coord_vars[i] != -1)&&(_NclGetObj(self->var.coord_vars[i])!=NULL)) {
+			cvar = (NclVar)_NclGetObj(self->var.coord_vars[i]);
+			tmp_md = _NclVarValueRead(cvar,NULL,NULL);
 			ret = nclfprintf(fp,"            ");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret = nclfprintf(fp,"%s: [xx..xx]\n",NrmQuarkToString(self->var.dim_info[i].dim_quark));
+			ret = nclfprintf(fp,"%s: [", NrmQuarkToString(self->var.dim_info[i].dim_quark));
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret1 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+			ret = nclfprintf(fp,"..");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret1 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+			ret = nclfprintf(fp,"]\n");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.7 1995-06-17 01:21:30 ethan Exp $
+ *      $Id: FileSupport.c,v 1.8 1996-04-02 00:35:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -402,7 +402,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 				sel->u.vec.max = thevector[i];
 			}
 			if(thevector[i] < sel->u.vec.min) {
-				sel->u.vec.max = thevector[i];
+				sel->u.vec.min = thevector[i];
 			}
 		}
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
@@ -609,7 +609,7 @@ NhlErrorTypes  _NclBuildFileVSelection
 				sel->u.vec.max = thevector[i];
 			}
 			if(thevector[i] < sel->u.vec.min) {
-				sel->u.vec.max = thevector[i];
+				sel->u.vec.min = thevector[i];
 			}
 		}
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {

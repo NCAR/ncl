@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.11 1995-06-17 00:03:45 boote Exp $
+ *      $Id: VarSupport.c,v 1.12 1996-04-02 00:35:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -281,7 +281,7 @@ NhlErrorTypes  _NclBuildCoordVSelection
 				sel->u.vec.max = thevector[i];
 			}
 			if(thevector[i] < sel->u.vec.min) {
-				sel->u.vec.max = thevector[i];
+				sel->u.vec.min = thevector[i];
 			}
 		}
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
@@ -1037,7 +1037,7 @@ NhlErrorTypes  _NclBuildVSelection
 				sel->u.vec.max = thevector[i];
 			}
 			if(thevector[i] < sel->u.vec.min) {
-				sel->u.vec.max = thevector[i];
+				sel->u.vec.min = thevector[i];
 			}
 		}
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {

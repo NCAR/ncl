@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.10 1995-11-03 00:00:40 ethan Exp $
+ *      $Id: NclAtt.c,v 1.11 1996-04-02 00:35:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -270,18 +270,33 @@ FILE *fp;
 	NclAtt theattobj = (NclAtt)theobj;
 	NclAttList *tmp;
 	int ret = 0;
+	NhlErrorTypes ret1 = NhlNOERROR;
 	
 	tmp = theattobj->att.att_list;
 	ret = nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
 	while((tmp != NULL)&&(ret>=0)) {
-		ret = nclfprintf(fp,"%s \n",tmp->attname);
+		ret = nclfprintf(fp,"  %s :\t",tmp->attname);
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
+		if(tmp->attvalue->multidval.totalelements ==1) {
+			ret1 = _Nclprint(tmp->attvalue->multidval.type,fp,tmp->attvalue->multidval.val);
+			if(ret1 < NhlINFO) {
+				return(ret1);
+			}
+		} else {
+			ret = nclfprintf(fp,"<ARRAY>",tmp->attname);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+		}
+		ret = nclfprintf(fp,"\n",tmp->attname);
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
 		tmp = tmp->next;
 	}
-	if(ret < 0) {
-		return(NhlWARNING);
-	} else {
-		return(NhlNOERROR);
-	}
+	return(NhlNOERROR);
 }
 
 static NhlErrorTypes AttAddParent
