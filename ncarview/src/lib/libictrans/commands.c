@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.9 1991-08-26 18:14:34 clyne Exp $
+ *	$Id: commands.c,v 1.10 1991-11-06 21:28:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1209,7 +1209,7 @@ processMemoryCGM(ic, mem_file)
 }
 
 
-
+#ifdef	DEAD
 static	system(s)
 char	*s;
 {
@@ -1231,3 +1231,4 @@ char	*s;
 	(void) signal(SIGQUIT, qstat);
 	return((w == -1)? w: status);
 }
+#endif
