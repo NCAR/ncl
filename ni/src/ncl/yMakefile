@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.83 2002-11-27 15:02:21 haley Exp $
+#      $Id: yMakefile,v 1.84 2003-01-10 20:21:36 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -90,7 +90,16 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
-			editline.h unix.h ListSupport.h NclList.h NclMultiDVallistData.h NclTypelist.h
+			editline.h unix.h ListSupport.h NclList.h \
+			NclMultiDVallistData.h NclTypelist.h \
+			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h \
+			dwd_202_gtb.h dwd_203_gtb.h ecmwf_128_gtb.h \
+			ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h \
+			ecmwf_140_gtb.h ecmwf_150_gtb.h ecmwf_160_gtb.h \
+			ecmwf_170_gtb.h ecmwf_180_gtb.h fnmoc_gtb.h \
+			fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
+			ncep_reanal_gtb.h omb_gtb.h
+
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
