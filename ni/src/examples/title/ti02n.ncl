@@ -1,15 +1,14 @@
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                                                       ;
-;                Copyright (C)  1995                                    ;
-;        University Corporation for Atmospheric Research                ;
-;                All Rights Reserved                                    ;
-;                                                                       ;
+;                                                                      ;
+;                Copyright (C)  1995                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;      File:           ti02n.ncl
 ;
-;      Author:         Bob Lackman
+;      Author:         Bob Lackman (converted by Ed Stautler)
 ;          National Center for Atmospheric Research
 ;          PO 3000, Boulder, Colorado
 ;
@@ -25,25 +24,26 @@
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "ti02" appLayerClass noparent
-	"appUsrDir" : "."
+appid = create "ti02" appLayerClass defaultapp
+    "appDefaultParent" : "True"
+    "appUsrDir" : "."
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "ti02Work" xWorkstationLayerClass noparent
-	"wkPause" : "True"
+wid = create "ti02Work" xWorkstationLayerClass defaultapp
+    "wkPause" : "True"
 end create
 
 ;
 ; Specify the viewport extent of the object.
 ;
 pid = create "Titles" titleLayerClass wid
-	"vpXF" : .2
-	"vpYF" : .8
-	"vpWidthF" : .6
-	"vpHeightF" : .6
+    "vpXF" : .2
+    "vpYF" : .8
+    "vpWidthF" : .6
+    "vpHeightF" : .6
 end create
 
 draw(pid);

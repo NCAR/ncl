@@ -1,80 +1,71 @@
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C                Copyright (C) 1995                                    C
+C        University Corporation for Atmospheric Research               C
+C                all rights reserved                                   C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C      File:           ti02c.c 
+C
+C      Author:         Bob Lackman (converted by Ed Stautler)
+C          National Center for Atmospheric Research
+C          PO 3000, Boulder, Colorado
+C
+C      Date:           Fri Jan 06 18:31:18 mdt 1995
+C
+C      Description:    Demonstrates the title object
+C                      defaults.
+C
+      external nhlfapplayerclass
+      external nhlfreslistlayerclass
+      external nhlfapplayerclass
+      external nhlftitlelayerclass
+      external nhlfxworkstationlayerclass
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                                      c
-c                Copyright (C) 1995                                    c
-c        University Corporation for Atmospheric Research               c
-c                all rights reserved                                   c
-c                                                                      c
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
-c      File:           ti02c.c
-c
-c      Author:         Bob Lackman
-c          National Center for Atmospheric Research
-c          PO 3000, Boulder, Colorado
-c
-c      Date:           Fri Jan 06 18:31:18 mdt 1995
-c
-c      Description:    Demonstrates the title object
-c                      defaults.
-c
+      integer appid, wid, pid
+      integer rlist, ierr
 
-	program ti02
-	implicit none
+C
+C Initialize the high level utility library
+C
+      call nhlfinitialize
 
-	external nhlfapplayerclass
-        external nhlfreslistlayerclass
-        external nhlfapplayerclass
-        external nhlftitlelayerclass
-        external nhlfxworkstationlayerclass
+C
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the
+C working directory. In this example the resource file supplies
+C the plot title only.
+C
+      call nhlfrlcreate(rlist,'setrl')
+      call nhlfrlclear(rlist)
+      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
+      call nhlfcreate(appid,'ti02',nhlfapplayerclass,0,rlist,ierr)
+C
+C Create an xworkstation object.
+C
+      call nhlfrlclear(rlist)
+      call nhlfrlsetinteger(rlist,'wkPause','true',ierr)
+      call nhlfcreate(wid,'ti02Work',nhlfxworkstationlayerclass,
+     1    0,rlist,ierr)
+C
+C Specify the viewport extent of the object.
+C
+       call nhlfrlclear(rlist)
+       call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
+       call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
+       call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
+       call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
 
-	integer appid, wid, pid
-	integer rlist, ierr
+       call nhlfcreate(pid,'Titles',nhlftitlelayerclass,wid,rlist,ierr)
 
-c
-c Initialize the high level utility library
-c
+       call nhlfdraw(pid,ierr)
+       call nhlfframe(wid,ierr)
+       call nhlfdestroy(pid,ierr)
+       call nhlfdestroy(wid,ierr)
+       call nhlfdestroy(appid,ierr)
+       call nhlfclose
 
-	call nhlfinitialize
-
-c
-c Create an application context. Set the app dir to the current directory
-c so the application looks for a resource file in the working directory.
-c In this example the resource file supplies the plot title only.
-c
-        call nhlfrlcreate(rlist,'setrl')
-        call nhlfrlclear(rlist)
-	call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-	call nhlfcreate(appid,'ti02',nhlfapplayerclass,
-     $       0,rlist,ierr)
-
-
-c
-c Create an xworkstation object.
-c
-	call nhlfrlclear(rlist)
-	call nhlfrlsetinteger(rlist,'wkPause','true',ierr)
-	call nhlfcreate(wid,'ti02Work',nhlfxworkstationlayerclass,
-     $       0,rlist,ierr)
-c
-c Specify the viewport extent of the object.
-c
-
-        call nhlfrlclear(rlist)
-	call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
-	call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
-	call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
-	call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
-
-	call nhlfcreate(pid,'Titles',
-     $	     nhlftitlelayerclass,wid,rlist,ierr)
-
-	call nhlfdraw(pid,ierr)
-	call nhlfframe(wid,ierr)
-	call nhlfdestroy(pid,ierr)
-	call nhlfdestroy(wid,ierr)
-	call nhlfdestroy(appid,ierr)
-	call nhlfclose
-
-	stop
-	end
+       stop
+       end
