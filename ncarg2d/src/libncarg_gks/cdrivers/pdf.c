@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.7 2003-02-27 17:13:27 fred Exp $
+ *      $Id: pdf.c,v 1.8 2003-02-27 23:58:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1864,11 +1864,19 @@ PDFPolyline(GKSC *gksc)
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
+              red,green,blue);
+      stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
+              cyan,magenta,yellow,black);
+      stream_size += 26;
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
     }
