@@ -10,7 +10,7 @@ C
       INTEGER M, IWRK(LIWK)
       
       DATA RLEVEL /-20., -10., -5., -4., -3., -2., -1., 0., 
-    1      1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 100. /
+     1      1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 100. /
       
       CALL GETDAT (Z, K, M, N) 
 C 
@@ -29,7 +29,7 @@ C
          CALL CPSETI('PAI - PARAMETER ARRAY INDEX',I)
          CALL CPSETR('CLV - CONTOUR LEVEL VALUE',RLEVEL(I))
          IF (AMOD(RLEVEL(I),5.).EQ.0)
-    1         CALL CPSETI('CLU - CONTOUR LEVEL USE FLAG',3)
+     1         CALL CPSETI('CLU - CONTOUR LEVEL USE FLAG',3)
  10   CONTINUE
 C     
 C Call conpack normally
@@ -59,7 +59,7 @@ C
       DO 10, I=1,M
          DO 20, J=1,N
             Z(I,J)= 10.E-5*(-16.*REAL(I**2*J) +
-    1            34*REAL(I*J**2) - REAL(6*I) + 93.)
+     1            34*REAL(I*J**2) - REAL(6*I) + 93.)
  20      CONTINUE
  10   CONTINUE
       

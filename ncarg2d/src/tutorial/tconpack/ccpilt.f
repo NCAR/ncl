@@ -21,7 +21,7 @@ C
 C Set up label options
 C
       CALL CPSETC('ILT - INFORMATION LABEL TEXT',
-    1      'Modified Sine Function Contoured from $CMN$ to $CMX$ by $CIU$')
+     1 'Modified Sine Function Contoured from $CMN$ to $CMX$ by $CIU$')
       CALL CPSETR('ILX - INFORMATION LABEL X COORDINATE',.5)
       CALL CPSETR('ILP - INFORMATION LABEL POSITION',0)
 C

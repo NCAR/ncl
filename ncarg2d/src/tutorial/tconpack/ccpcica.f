@@ -5,7 +5,7 @@ C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (NLON=361,NLAT=181,LRWK=5000,LIWK=5000,
-    1      ICAM=512,ICAN=512)
+     1      ICAM=512,ICAN=512)
       REAL ZDAT(NLON,NLAT),RWRK(LRWK)
       INTEGER IASF(13),IWRK(LIWK),ICRA(ICAM,ICAN)
       DATA IASF / 13*1 /
@@ -58,7 +58,7 @@ C
 C Draw cell array and flush buffer
 C 
       CALL GCA (CFUX(0.),CFUY(0.),CFUX(1.),CFUY(1.),ICAM,ICAN,1,1,
-    1      ICAM,ICAN,ICRA)
+     1      ICAM,ICAN,ICRA)
       CALL SFLUSH
 C 
 C Draw contour lines
@@ -176,8 +176,8 @@ C     CALL CPSETC ('ILT - INFORMATIONAL LABEL TEXT',' ')
       CALL GSCR (IWKID, 2,0.500,1.000,1.000)
       DO 10 I=3,15
          CALL GSCR (IWKID,I,MAX(0.,MIN(1.,1.-REAL(ABS(I- 3)/10.))),
-    1         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
-    2         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
+     1         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
+     2         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
  10   CONTINUE
       CALL GSCR (IWKID,16,1.,0.,0.)
       RETURN

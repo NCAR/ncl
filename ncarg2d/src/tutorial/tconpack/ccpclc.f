@@ -65,14 +65,14 @@ C
       DO 10, I=1,M
          DO 20, J=1,N
             Z(I,J)= 10.E-5*(-16.*REAL(I**2*J) +
-    1            34*REAL(I*J**2) - REAL(6*I) + 93.)
+     1            34*REAL(I*J**2) - REAL(6*I) + 93.)
  20      CONTINUE
  10   CONTINUE
       
       RETURN
       END
       
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
       
       CALL GSCR (IWKID,0,1.,1.,1.)
       CALL GSCR (IWKID,1,1.,0.,0.)
