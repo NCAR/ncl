@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.7 1992-02-19 18:21:46 clyne Exp $
+#	$Id: yMakefile,v 1.8 1992-03-19 20:07:21 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -51,7 +51,7 @@ CleanTarget
 
 ictrans_wks.c: ictrans_wks.c.sed Makefile
         @$(CALLCONV) $(SYSTEM_INCLUDE) ictrans_wks.c \
-        initic ictarg
+        initic ictarg opnwks clswks wrtwks rdwks begwks lstwks
 
 # Files that need to know installation directories
 
@@ -70,6 +70,7 @@ sedscript:      Makefile
 	@echo '#include "input.h"' >> $@
 	@echo 's/yylex/my_yylex/g' >> $@
 	@echo 's/getc/my_getc/g' >> $@
+	@echo 's/static void __yy__unused() { main(); }//g' >> $@
 
 clean::
 	@$(RM) lex.yy.c.sed sedscript
