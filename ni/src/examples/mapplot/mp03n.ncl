@@ -35,7 +35,7 @@ begin
 	dims(0) = m
 	dims(1) = n
 
-	data = cbinread("mp03n.bin",dims,"float")
+	data = asciiread("mp03n.asc",dims,"float")
 end
 
 
