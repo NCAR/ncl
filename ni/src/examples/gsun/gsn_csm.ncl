@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.76 2001-07-19 21:35:31 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.77 2001-08-02 17:20:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -674,14 +674,14 @@ begin
   return((/"degrees_north","degree_north","degrees north","degrees_N"/))
 end
 
-          return(False)
+;***********************************************************************;
 ; Function : get_allowed_lon_units                                      ;
 ;                                                                       ;
 ; Get list of names allowed for the units attribute of a longitude      ;
 ; coordinate array.                                                     ; 
 ;                                                                       ;
 ;***********************************************************************;
-	  if(any(data!1.eq.get_allowed_latnames_without_units()))
+function get_allowed_lon_units()
 begin
   return((/"degrees_east","degree_east","degrees east","degrees_E"/))
 end
@@ -706,8 +706,8 @@ begin
           return(True)
         end if
       else
-          return(False)
-        end  if
+        print("is_valid_lat_xcoord: Warning: The units attribute of the X coordinate array is not set. Assuming units to be degrees_north.")
+        return(True)
       end if
     else
       if(any(data!1.eq.get_allowed_latnames_without_units()))
@@ -738,8 +738,8 @@ begin
           return(True)
         end if
       else
-          return(False)
-        end  if
+        print("is_valid_lon_xcoord: Warning: The units attribute of the X coordinate array is not set. Assuming units to be degrees_east.")
+        return(True)
       end if
     else
       if(any(data!1.eq.get_allowed_lonnames_without_units()))
@@ -882,7 +882,9 @@ end
 procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
-  print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all")
+;
+; Determine what kind of plot we need to set the data field resources for.
+; 
   if(type.eq."vector")
     array_name = "vfYArray"
     start_name = "vfYCStartV"
@@ -979,7 +981,8 @@ begin
        .not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data@lat2d)
       return
-  print("check_for_lon_coord: Warning: Data either does not contain an known longitude coordinate array or doesn't contain one at all")
+    end if 
+  end if
 
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
   return
@@ -1884,8 +1887,10 @@ begin
   end if
 
 ; Longitude range, will help determine longitude spacing.
-    print("get_lat_values: Fatal: Your latitude values do not fall between -90 and 90 inclusive.")
-    return
+
+  lon_range = max_lon - min_lon   ; lat/lon range
+
+  lon_ind    = ind(lon_range.le.lcheck_arr)
 
   if(lon_spacing.le.0)
     lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
@@ -2098,15 +2103,17 @@ end
 
 ;***********************************************************************;
 ; Function : add_lon_labels                                             ;
-  latlabels    = get_lat_labels(latvalues)
+;               plot: graphic                                           ;
+;             min_lon: numeric                                          ;
 ;             max_lon: numeric                                          ;
-  tmres = True
-  set_attr(tmres,"tmXBMode"         , "Explicit")
-  set_attr(tmres,"tmXBLabels"       , latlabels)
-  set_attr(tmres,"tmXBValues"       , latvalues)
-  set_attr(tmres,"tmXBMinorValues"  , latvalues@minor)
-  set_attr(tmres,"tiXAxisOn"        , False)
-  attsetvalues(plot,tmres)
+;         lon_spacing: numeric                                          ;
+;        mlon_spacing: numeric                                          ;
+;                 res: logical                                          ;
+;                                                                       ;
+; Add "nice" longitude labels ("120W", "60E", etc) to the X axis.       ;
+    set_attr(tmres,"tiXAxisOn"        , False)
+begin
+  tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
   lon_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
   lonvalues   = get_lon_values(min_lon,max_lon,lon_spacing2,mlon_spacing,\
@@ -2131,17 +2138,18 @@ end
   tmres = get_res_eq(res,"tm")  ; Get tickmark resources
 ;***********************************************************************;
 ; Procedure : add_lat_labels_xaxis                                      ;
-
 ;               plot: graphic                                           ;
-  latlabels    = get_lat_labels(latvalues)
+;             min_lat: numeric                                          ;
+;             max_lat: numeric                                          ;
 ;         lat_spacing: numeric                                          ;
-  tmres = True
-  set_attr(tmres,"tmYLMode"         , "Explicit")
-  set_attr(tmres,"tmYLLabels"       , latlabels)
-  set_attr(tmres,"tmYLValues"       , latvalues)
-  set_attr(tmres,"tmYLMinorValues"  , latvalues@minor)
-  set_attr(tmres,"tiYAxisOn"        , False)
-  attsetvalues(plot,tmres)
+;        mlat_spacing: numeric                                          ;
+;                 res: logical                                          ;
+;                                                                       ;
+;                                                                       ;
+; Add "nice" latitude labels ("90S", "30N", etc) to the X axis in       ;
+    set_attr(tmres,"tiYAxisOn"        , False)
+begin
+  tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
   lat_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lat_spacing)
   latvalues    = get_lat_values(min_lat,max_lat,lat_spacing2,mlat_spacing)
@@ -2744,6 +2752,11 @@ begin
           "pmTitleDisplayMode"  : "Always"
           "pmTitleZone"         : main_zone    ; Zone for main title
         end create
+      end if
+    end if
+    delete(min_lon)
+    delete(max_lon)
+    delete(min_lat)
     delete(max_lat)
     delete(lon_range)
     delete(lat_range)
@@ -2768,6 +2781,7 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
     ticks_on  = get_res_value(res2,"gsnTickMarksOn",True)
+    polar_dst = get_res_value(res2,"gsnPolarLabelDistance",1.04)
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
@@ -2836,6 +2850,12 @@ local i, res, res2, map_object, main_zone, \
 calldraw, callframe, left_string, center_string, right_string, yoffset, \
 min_lat, max_lat, center_lat, main_offset, \
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
+vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type
+begin
+
+; Initialize.
+    main_offset   = 0.02
+    min_lat       = 0.0
     max_lat       = 90.0
     center_lat    = 0.0 
     main_zone     = 2         ; Zone for main title (may change later)
@@ -2882,14 +2902,14 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; map is created.
 ;
     limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
-      ngrid = floattoint(360/res2@mpGridLonSpacingF)
+    shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
 
 ; Create a polar stereographic map object.
 
     map_object = create "ezplot1p_map" mapPlotClass wks
       "vpHeightF"            : height
       "vpWidthF"             : width
-      plon = fspan(0.,360.-res2@mpGridLonSpacingF,ngrid)
+      "vpXF"                 : xpos
       "vpYF"                 : ypos
 
       "mpProjection"         : "Stereographic"
@@ -2979,26 +2999,26 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 
 ; Create arrays to hold the NDC values that we're going to convert 
 ; the lat/lon values to.
-        orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
+
       xndc = new(dimsizes(plon),float)
       yndc = new(dimsizes(plat),float)
 
 ; Convert lat/lon cooridinates to NDC coordinates since we are 
-        orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
+; drawing the labels in NDC space and NOT in lat/lon space.
 
       datatondc(map_object,plon,plat,xndc,yndc)
 
 ;
-        orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
+; Get center of plot in NDC coordinates.
 ;
       xcen = vpxf + vpwf/2.     ; X center
       ycen = vpyf - vphf/2.     ; Y center
 
-        orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
+; Define an array of strings to label the longitude values.
 
       labels = new(dimsizes(plon),string)
 
-      para = ((xndc - xcen)/vpwf) * 1.04
+      indexes = ind(plon.gt.0.and.plon.lt.180)
       labels(indexes) = floattoint(plon(indexes)) + "E"
       delete(indexes)
 
@@ -3143,7 +3163,7 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     add_subtitles(wks,map_object,left_string,center_string,right_string, \
                   subres)
 
-	
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
 
     return(map_object)
 end
@@ -3292,6 +3312,19 @@ begin
     else   
       return(gsn_csm_map_other(wks,res2))
     end if
+  end if
+end
+
+
+;***********************************************************************;
+; Function : gsn_csm_contour_map_polar                                  ;
+;                   wks: workstation object                             ;
+;                  data: 2-dimensional data                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws a contour plot over a polar           ;
+; stereographic map plot to the workstation "wks" (the variable         ;
+; returned from a previous call to "gsn_open_wks").  "data" is the      ;
 ; 2-dimensional data to be contoured, and "resources" is an optional    ;
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
@@ -7126,7 +7159,7 @@ begin
     add_latlon_labels(xy_object,x,res2)
     delete(res2@gsnXAxis)
     res2@gsnYAxis = True
-      end getvalues	
+    add_latlon_labels(xy_object,y,res2)
     delete(res2@gsnYAxis)
     delete(res2@gsnXYPlot)
 
@@ -7153,7 +7186,7 @@ begin
         if(dimsizes(yref_line_below).gt.1)
           fill_below = yref_line_below(i)
         end if
-      end getvalues	
+        var_string = systemfunc("echo polygons$$") + i
         xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
                                      xinterp(i,0:new_npts(i)-1), \
                                      yinterp(i,0:new_npts(i)-1),\
@@ -8049,7 +8082,6 @@ begin
     res2@gsnScale = True    ; force labels and ticks to be same.
 
     vcres = get_res_ne(res2,(/"tx"/))
-;               resources: optional resources                           ;
     vector_object = gsn_vector(wks,unew,vnew,vcres)
 
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.

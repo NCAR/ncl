@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.72 2001-07-19 21:35:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.73 2001-08-02 17:20:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -44,6 +44,7 @@ undef("hsv2rgb")
 undef("tofloat")
 undef("tointeger")
 undef("lower_case")
+undef("cat_strings")
 undef("set_attr")
 undef("check_attr")
 undef("get_res_eq")
@@ -362,6 +363,24 @@ begin
   return(chartostring(namec))
 end
 
+
+;***********************************************************************;
+; Function : cat_strings                                                ;
+;              strings : string                                         ;
+;                                                                       ;
+; Takes an array of strings and cats them into a single string.         ;
+;***********************************************************************;
+function cat_strings(str_array)
+local i, slen
+begin
+  slen          = dimsizes(str_array)
+  single_string = "'" + str_array(0) + "'"
+  do i=1,slen-1
+    single_string = single_string + " '" + str_array(i) + "'"
+  end do
+
+  return(single_string)
+end
 
 ;***********************************************************************;
 ; Procedure : set_attr                                                  ;
