@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.8 1994-11-10 20:59:28 ethan Exp $
+ *      $Id: NclApi.c,v 1.9 1994-11-12 02:55:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -384,6 +384,7 @@ NhlLayerClass cl_ptr;
 	tmp->u.hlu_obj->obj_id = id;
 	tmp->u.hlu_obj->obj_class = cl_ptr;
 	tmp->next = new_list;
+	new_list = tmp;
 	return;
 }
 
@@ -405,6 +406,9 @@ NhlLayerClass cl_ptr;
 	tmp->u.hlu_obj->obj_id = id;
 	tmp->u.hlu_obj->obj_class = cl_ptr;
 	tmp->next = del_list;
+	del_list = tmp;
+
+	return;
 }
 
 struct _NclApiDataList* NclGetNewHLUObjsList
