@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.10 1994-05-07 00:51:13 fred Exp $
+C	$Id: gesc.f,v 1.11 1994-05-17 00:38:16 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -32,10 +32,7 @@ C
 C
 C  Check if the function ID is supported.
 C
-      IF (FCTID.LT.0.AND.FCTID.NE.-1391 .AND. FCTID.NE.-1392 .AND.
-     -                   FCTID.NE.-1393 .AND. FCTID.NE.-1394 .AND.
-     -                   FCTID.NE.-1395 .AND. FCTID.NE.-1396 .AND.
-     -                   FCTID.NE.-1397 .AND. FCTID.NE.-1398) THEN
+      IF (FCTID.LT.0 .AND. (FCTID.LT.-1610 .OR. FCTID.GT.-1391)) THEN
         ERS = 1
 C       CALL GERHND(180,EESC,ERF)
         ERS = 0
