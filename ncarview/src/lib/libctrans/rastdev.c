@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.15 1993-04-04 20:53:29 clyne Exp $
+ *	$Id: rastdev.c,v 1.16 1993-04-27 20:42:22 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -437,9 +437,10 @@ int	set_back_colr() {
 }
 
 
-void	rast_update_color_table()
+int	rast_update_color_table()
 {
 	int	i;
+	int	status = 0;
 
 
 	/*
@@ -456,7 +457,7 @@ void	rast_update_color_table()
 	 * coresponding CGM BACKGROUND COLOUR is received
 	 */
 	if (COLOUR_INDEX_DAMAGE(0)) {
-		(void) set_back_colr();
+		if (set_back_colr() < 0) status = -1;
 	}
 
 	for (i=1; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I && i<MAX_COLOR; i++) {
@@ -471,4 +472,5 @@ void	rast_update_color_table()
 
 		}
 	}
+	return(status);
 }
