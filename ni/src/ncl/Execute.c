@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.77 1996-12-20 22:09:50 ethan Exp $
+ *      $Id: Execute.c,v 1.78 1997-01-08 16:29:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4795,6 +4795,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *rhs_sym,*lhs_sym;
 				NclSelectionRecord *lhs_sel_ptr = NULL;
 				NclSelectionRecord *rhs_sel_ptr = NULL;
+				NclSelectionRecord rhs_sel;
 				struct _NclVarRec *tmp_var;
 
 	
@@ -4830,7 +4831,7 @@ NclExecuteReturnStatus _NclExecute
 /*
 * This branch is where wholesale assigment of rhs to lhs occurs. including coords,atts and values
 */
-					rhs_sel_ptr = _NclGetVarSelRec(rhs_var->u.data_var);
+					rhs_sel_ptr = &rhs_sel;
 					rhs_sel_ptr->n_entries = rhs_nsubs;
 					for(i=0;i<rhs_nsubs;i++) {
 						data =_NclPop();
@@ -4908,7 +4909,7 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 						_NclCleanUpStack(rhs_nsubs);
 					} else {
-						rhs_sel_ptr = _NclGetVarSelRec(rhs_var->u.data_var);
+						rhs_sel_ptr = &rhs_sel;
 						rhs_sel_ptr->n_entries = rhs_nsubs;
 				
 						for(i=0;i<rhs_nsubs;i++) {
