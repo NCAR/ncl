@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.17 2004-11-04 16:47:46 shea Exp $
+;      $Id: shea_util.ncl,v 1.18 2004-12-15 20:10:21 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2397,7 +2397,7 @@ begin
 	   delete(ind_lt0)
 	end if
 
-	if (min(inlat).gt.179) then
+	if (max(inlat).gt.179) then
 	   ind_gt179 = ind(inlat.gt.179)
 	   inlat(ind_gt179) = 179
 	   delete(ind_gt179)
