@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.104 2002-09-06 22:36:03 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.105 2002-09-09 23:15:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -961,8 +961,19 @@ end
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
-function is_valid_lat_xcoord(data:numeric)
+function is_valid_lat_xcoord(data:numeric,res:logical)
 begin
+;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place, and hence the units don't need to be correct.
+; It is up to the user to do the right thing and *not* set coordinate
+; arrays.  Here, we check for the setting of this resource to True,
+; and if so, then the units attribute isn't even checked.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
+
   if(is_valid_xcoord(data)) then
     if(any(data!1.eq.get_allowed_latnames()))
       if(isatt(data&$data!1$,"units"))
@@ -993,8 +1004,19 @@ end
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
-function is_valid_lon_xcoord(data:numeric)
+function is_valid_lon_xcoord(data:numeric,res:logical)
 begin
+;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place, and hence the units don't need to be correct.
+; It is up to the user to do the right thing and *not* set coordinate
+; arrays.  Here, we check for the setting of this resource to True,
+; and if so, then the units attribute isn't even checked.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
+
   if(is_valid_xcoord(data))
     if(any(data!1.eq.get_allowed_lonnames()))
       if(isatt(data&$data!1$,"units"))
@@ -1025,8 +1047,19 @@ end
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
-function is_valid_lat_ycoord(data:numeric)
+function is_valid_lat_ycoord(data:numeric,res:logical)
 begin
+;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place, and hence the units don't need to be correct.
+; It is up to the user to do the right thing and *not* set coordinate
+; arrays.  Here, we check for the setting of this resource to True,
+; and if so, then the units attribute isn't even checked.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
+
   if(is_valid_ycoord(data))
     if(any(data!0.eq.get_allowed_latnames()))
       if(isatt(data&$data!0$,"units"))
@@ -1158,6 +1191,16 @@ procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
 ;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place.  It is up to the user to do the right thing
+; and *not* set coordinate arrays.  Here, we check for the setting
+; of this resource to True, and if so, then no warning messages are 
+; printed out if no coordinate arrays are set.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
+;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
   if(type.eq."vector")
@@ -1190,7 +1233,7 @@ begin
     set_attr(res,array_name,data@lat2d)
     return
   else
-    if(is_valid_lat_ycoord(data))
+    if(is_valid_lat_ycoord(data,res))
       if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
         set_attr(res,array_name,data&$data!0$)
         return
@@ -1201,6 +1244,7 @@ begin
   print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
   print("Valid latitude names include: ")
   print("    " + cat_strings(get_allowed_latnames))
+
   return
 end
 
@@ -1220,6 +1264,16 @@ end
 procedure check_for_x_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
+;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place.  It is up to the user to do the right thing
+; and *not* set coordinate arrays.  Here, we check for the setting
+; of this resource to True, and if so, then no warning messages are 
+; printed out if no coordinate arrays are set.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
@@ -1246,7 +1300,7 @@ begin
 ; "lat2d", which must be the same dimension as the data.  This special
 ; attribute indicates a 2D latitude coordinate array.
 ;
-  if(is_valid_lat_xcoord(data))
+  if(is_valid_lat_xcoord(data,res))
     if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data&$data!1$)
       return
@@ -1261,6 +1315,7 @@ begin
   end if
 
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
+
   return
 end
 
@@ -1280,6 +1335,16 @@ end
 procedure check_for_lon_coord(data[*][*]:numeric,res:logical,type:string)
 local lonname, char_lonname, array_name, start_name, end_name
 begin 
+;
+; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
+; used in the first place.  It is up to the user to do the right thing
+; and *not* set coordinate arrays.  Here, we check for the setting
+; of this resource to True, and if so, then no warning messages are 
+; printed out if no coordinate arrays are set.
+;
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+    return
+  end if
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
@@ -1312,7 +1377,7 @@ begin
     set_attr(res,array_name,data@lon2d)
     return
   else
-    if(is_valid_lon_xcoord(data))
+    if(is_valid_lon_xcoord(data,res))
       if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
         set_attr(res,array_name,data&$data!1$)
         return
@@ -1323,6 +1388,7 @@ begin
   print("check_for_lon_coord: Warning: Data either does not contain a valid longitude coordinate array or doesn't contain one at all.")
   print("Valid longitude names include: ")
   print("    " + cat_strings(get_allowed_lonnames))
+
   return
 end
 
@@ -2572,7 +2638,7 @@ begin
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
-     (.not.is_xyplot.and.is_valid_lat_xcoord(data))) then
+     (.not.is_xyplot.and.is_valid_lat_xcoord(data,res))) then
 
 ; Label X axis with nice latitude labels.
 
@@ -2588,7 +2654,7 @@ begin
 
   if((is_xyplot.and.is_yaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
-     (.not.is_xyplot.and.is_valid_lat_ycoord(data))) then
+     (.not.is_xyplot.and.is_valid_lat_ycoord(data,res))) then
 
 ; Label Y axis with nice latitude labels.
 
@@ -2607,7 +2673,7 @@ begin
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lon_units)).or. \
-     (.not.is_xyplot.and.is_valid_lon_xcoord(data))) then
+     (.not.is_xyplot.and.is_valid_lon_xcoord(data,res))) then
 
 ; Label X axis with nice longitude labels.
 
@@ -8212,7 +8278,7 @@ begin
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
 
-    if(is_valid_lat_xcoord(data).or.is_valid_lon_xcoord(data))
+    if(is_valid_lat_xcoord(data,res2).or.is_valid_lon_xcoord(data,res2))
       set_attr(res2,"tiXAxisString","")
     end if
 
@@ -8231,7 +8297,7 @@ begin
 
 ; Check if we should label X axis with nice longitude labels.
 
-    if(is_valid_lon_xcoord(data)) then
+    if(is_valid_lon_xcoord(data,res2)) then
 
 ; Get min and max X axis values (longitude units)
 
@@ -8513,7 +8579,7 @@ begin
 
 ; Check if we should label X axis with nice latitude labels.
 
-    if(is_valid_lat_xcoord(data)) then
+    if(is_valid_lat_xcoord(data,res2)) then
       add_lat_labels_xaxis(contour_plot,xmin,xmax,lat_spacing,  \
                            mlat_spacing,res2)
     end if
