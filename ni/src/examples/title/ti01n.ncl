@@ -7,7 +7,7 @@
 ;                                                                       ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;      File:           ti01c.c
+;      File:           ti01n.ncl
 ;
 ;      Author:         Bob Lackman
 ;          National Center for Atmospheric Research

@@ -15,8 +15,10 @@
  *
  *      Date:           Fri Jan 06 18:31:18 MDT 1995
  *
- *      Description:    Demonstrates the Title Object
- *                      defaults.
+ *      Description:    Demonstrates the Title Object resource defaults.
+ *                      Since using all the defaults would produce a
+ *                      blank plot, an exception is made in this case and
+ *                      the main title string is set in the resource file.
  */
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
@@ -41,8 +43,8 @@ main()
  * so the application looks for a resource file in the working directory.
  * In this example the resource file supplies the plot title only.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
+	rlist = NhlRLCreate(NhlSETRL);
+	NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
 	NhlCreate(&appid,"ti01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
@@ -57,14 +59,13 @@ main()
  * Specify the viewport extent of the object.
  */
 
-        NhlRLClear(rlist);
+	NhlRLClear(rlist);
 	NhlRLSetFloat(rlist,NhlNvpXF,.2);
 	NhlRLSetFloat(rlist,NhlNvpYF,.8);
 	NhlRLSetFloat(rlist,NhlNvpWidthF,.6);
 	NhlRLSetFloat(rlist,NhlNvpHeightF,.6);
 
-	NhlCreate(&pid,"Titles",
-		  NhltitleLayerClass,wid,rlist);
+	NhlCreate(&pid,"Titles",NhltitleLayerClass,wid,rlist);
 
 	NhlDraw(pid);
 	NhlFrame(wid);

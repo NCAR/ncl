@@ -7,7 +7,7 @@ c                all rights reserved                                   c
 c                                                                      c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c      File:           ti03c.c
+c      File:           ti03f.f
 c
 c      Author:         Bob Lackman
 c          National Center for Atmospheric Research
