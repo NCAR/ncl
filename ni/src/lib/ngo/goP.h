@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.4 1997-02-27 20:25:44 boote Exp $
+ *      $Id: goP.h,v 1.5 1997-08-27 21:00:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,7 @@ typedef struct _NgGOPart {
 
 	NhlBoolean	up;
 	Widget		shell;
+	Xcb		xcb;
 	Widget		manager;	/* subclasses must use this container */
 
 	XtTranslations	global_trans;

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.7 1997-06-11 20:47:23 boote Exp $
+ *      $Id: go.c,v 1.8 1997-08-27 21:00:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -762,7 +762,6 @@ GOCreateWin
 	NgXAppExport		x = gp->x;
 	XWindowAttributes	att;
 	char			mgrname[_NhlMAXRESNAMLEN];
-	Xcb			xcb;
 	XtResource		xtres[] = {
 		{NgNglobalTranslations,NgCglobalTranslations,
 			XtRTranslationTable,sizeof(XtTranslations),
@@ -776,8 +775,8 @@ GOCreateWin
 				"%s:parent GO has invalid shell!",func));
 			return False;
 		}
-		xcb = XcbGetXcbFromWidget(pp->shell);
-		if(!xcb){
+		gp->xcb = XcbGetXcbFromWidget(pp->shell);
+		if(!gp->xcb){
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to retrieve ColorBroker!",func));
 			return False;
@@ -785,13 +784,9 @@ GOCreateWin
 		gp->pshell = pp->shell;
 		gp->shell = XtVaCreatePopupShell(go->base.name,
 						gc->go_class.dialog,pp->shell,
-#ifdef	XcbDIALOG
-			XcbNparentBroker,	xcb,
-#else
-			XmNdepth,		XcbGetDepth(xcb),
-			XmNcolormap,		XcbGetColormap(xcb),
-			XmNvisual,		XcbGetVisual(xcb),
-#endif
+			XmNdepth,		XcbGetDepth(gp->xcb),
+			XmNcolormap,		XcbGetColormap(gp->xcb),
+			XmNvisual,		XcbGetVisual(gp->xcb),
 			XmNdeleteResponse,	XmDO_NOTHING,
 			XmNmappedWhenManaged,	False,
 			XmNautoUnmanage,	False,
@@ -815,6 +810,15 @@ GOCreateWin
 			XmNuserData,		go->base.id,
 			XcbNparentBroker,	x->xcb,
 			NULL);
+		XtVaGetValues(gp->shell,
+			XcbNcolorBroker,	&gp->xcb,
+			NULL);
+		if(!gp->xcb){
+			XtDestroyWidget(gp->shell);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to retrieve ColorBroker!",func));
+			return False;
+		}
 	}
 	XmAddWMProtocolCallback(gp->shell,x->wm_delete_window,_NgGOPopdownCB,
 							(XtPointer)go->base.id);
