@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.10 1998-04-16 22:20:41 kennison Exp $
+#       $Id: yMakefile,v 1.11 1998-04-17 16:22:24 kennison Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
@@ -51,9 +51,9 @@ EzmapOutlines.US: ezmapdat ConvertMapData
 Earth..1.lines: Earth..1 WriteLineFile
 	-@$(RM) Earth..1.lines
 	@echo "Building the new Ezmap line file"
-	@(echo Earth..1)|./WriteLineFile
+	@echo Earth..1 | ./WriteLineFile
 
 Earth..1.names: Earth..1 WriteNameFile
 	-@$(RM) Earth..1.names
 	@echo "Building the new Ezmap name file"
-	@(echo Earth..1)|./WriteNameFile
+	@echo Earth..1 | ./WriteNameFile
