@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.5 1992-01-27 12:51:46 clyne Exp $
+ *	$Id: gcaprast.c,v 1.6 1992-02-07 17:39:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -110,8 +110,6 @@ rasterformatinit()
 	else
 		dataoutsize /= BITS_PER_BYTE;
 }
-
-/*
 
 /*
  *	Formating routines

@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.5 1992-02-07 16:23:18 clyne Exp $
+ *	$Id: soft_fill.c,v 1.6 1992-02-07 17:39:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -82,7 +82,6 @@ static	unsigned	isInit = 0;	/* boolean is initializec	*/
 initSoftSim(minx, maxx, miny, maxy)
 	DCtype	minx, maxx, miny, maxy;
 {
-	int	i;
 
 	/*
 	 * if alread initialized free resources and realocate
@@ -506,7 +505,6 @@ static	alloc_fill_table(ys, xs)
 
 }
 
-#define	DEBUG
 #ifdef	DEBUG
 static	print_fill_table ()
 {

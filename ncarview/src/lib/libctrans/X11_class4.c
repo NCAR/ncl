@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.13 1992-02-07 17:05:01 clyne Exp $
+ *	$Id: X11_class4.c,v 1.14 1992-02-07 17:38:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -930,11 +930,6 @@ Ct_err	GCsetcolor(color, gc)
 		}
 	}
 
-
-
-	else {	/* colour selection mode is direct	*/
-
-	}
 	return (OK);
 }
 
@@ -990,6 +985,7 @@ static	Ct_err	GCsetlinetype(linetype)
 	/* change line GC to reflect changes	*/
 	XChangeGC(dpy, lineGC, GCLineStyle, &gcv);
 
+	return(OK);
 }
 
 

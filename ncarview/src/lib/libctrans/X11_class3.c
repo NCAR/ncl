@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class3.c,v 1.2 1991-01-09 11:07:11 clyne Exp $
+ *	$Id: X11_class3.c,v 1.3 1992-02-07 17:38:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -97,14 +97,7 @@ GCsetclipping()
 
 	rectangle = devExtentRectangle;
 
-	if (!(CLIPFLAG)) {
-		/*	
-		 *	turn off clipping. Actually we set clipping to 
-		 *	the largest rectangle which maintains the desired
-		 *	aspect ratio in device coordinates.
-		 */
-	}
-	else {
+	if (CLIPFLAG) {
 		short r_lrx, r_lry;
 
 		/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.4 1991-09-26 16:29:07 clyne Exp $
+ *	$Id: clear_text.c,v 1.5 1992-02-07 17:38:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,11 +36,6 @@
 #include "cgmc.h"
 #include "text.h"
 
-#ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.4 1991-09-26 16:29:07 clyne Exp $";
-#endif
-
-
 static	struct	{
 	BoolType_	data,	/* true if user wants element's parameters   */	
 			para;	/* true if user also wants all data points */
@@ -70,11 +65,13 @@ static	int	marker_siz_mode = SCALED;	/* marker size selection mode*/
  *	Below are the functions called from the jumptable
  *
  * 	Class 0 Function
+ */
 /*ARGSUSED*/
 Ct_err	CTXT_NoOp(c)
 CGMC *c;
 {
 	(void) printf("\nNo-Op\n");
+	return(OK);
 }
 /*ARGSUSED*/
 Ct_err	CTXT_BegMF(c)

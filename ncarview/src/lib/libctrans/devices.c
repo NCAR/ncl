@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.7 1991-10-04 15:19:10 clyne Exp $
+ *	$Id: devices.c,v 1.8 1992-02-07 17:39:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -278,6 +278,7 @@ Ct_err	SunR_ColrTable();
 Ct_err	noop(c)
 CGMC *c;
 {
+	return(OK);
 }
 
 

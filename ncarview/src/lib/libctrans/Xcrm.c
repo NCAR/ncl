@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.7 1991-11-07 11:51:36 clyne Exp $
+ *	$Id: Xcrm.c,v 1.8 1992-02-07 17:38:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -123,7 +123,6 @@ X11_UpdateColorTable_()
 	 * in the case that colr table index 0 is changed *and* no
 	 * coresponding CGM BACKGROUND COLOUR is received
 	 */
-	COLOUR_TOTAL_DAMAGE;
 	if (COLOUR_INDEX_DAMAGE(0)) {
 		rgb_2_Xrgb(
 			COLOUR_INDEX_RED(0),

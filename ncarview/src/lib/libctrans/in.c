@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.3 1991-09-26 16:29:41 clyne Exp $
+ *	$Id: in.c,v 1.4 1992-02-07 17:39:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -200,6 +200,8 @@ boolean Moreparm = FALSE;	/* true if CGM is partitioned	*/
 Ct_err	SetRecord(recnum)
 	int recnum;
 {
+	extern	void	CGM_flushGetInstr();
+
 	CGM_flushGetInstr(cgmFd);
 	return(((CGM_lseek(cgmFd, recnum, L_SET)) < 0) ? DIE : OK);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.2 1991-01-09 11:10:10 clyne Exp $
+ *	$Id: format.c,v 1.3 1992-02-07 17:39:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -155,8 +155,6 @@ formatinit()
 		widthoutsize /= BITS_PER_BYTE;
 	}
 }
-
-/*
 
 /*
  *	Formating routines

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.7 1991-10-04 15:18:46 clyne Exp $
+ *	$Id: X11_class5.c,v 1.8 1992-02-07 17:38:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -101,8 +101,6 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 {
 
 	int	i;
-	Pixeltype	planedummy[1];		/* not used	*/
-	Pixeltype	pixel_return[1];	/* device index	*/
 	char	*name[2];
 	int	col_2_alloc;
 

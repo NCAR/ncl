@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.4 1991-08-16 10:51:07 clyne Exp $
+ *	$Id: fontlist.c,v 1.5 1992-02-07 17:39:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -188,6 +188,7 @@ CGMC *c;
 
 		(void) strcpy(Fontlist[i],c->s->string[i]);
 	}
+	return(OK);
 }
 
 Ct_err	setFont(font_index)

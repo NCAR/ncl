@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.14 1992-02-07 16:22:41 clyne Exp $
+ *	$Id: ctrans.c,v 1.15 1992-02-07 17:38:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,10 +35,6 @@
  *
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
-#ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.14 1992-02-07 16:22:41 clyne Exp $";
-#endif
-
 
 #include <stdio.h> 
 
@@ -200,7 +196,8 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	/*
 	 * the following is a kludge to ensure a minimum linewidth
 	 */
-	if (minw = getenv ("MINWIDTH")) {
+	minw = getenv ("MINWIDTH");
+	if (minw) {
 		SetMinLineWidthDefault((float) atoi(minw));
 	}
 
@@ -593,7 +590,8 @@ SetDevice(gcap)
 	/*
 	 * Find what number in the device array the device is
 	 */
-	for(i=0;(i<devicenum) && (strcmp(device,devices[i].name) != 0);i++);
+	for(i=0;(i<devicenum) && (strcmp(device,devices[i].name) != 0);i++)
+		;
 	if (i<devicenum)
 		currdev = i;
 	else

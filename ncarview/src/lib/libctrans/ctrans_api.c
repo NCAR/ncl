@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.5 1991-12-19 10:56:35 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.6 1992-02-07 17:38:59 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -114,6 +114,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	int	i;
 
 	char	*getGcapname(), *getFcapname();
+	extern	char	*malloc();
 
 	if (initialized) CtransCloseBatch();
         /*
@@ -132,6 +133,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	deBug = &deBugOption;		/* no debugging			*/
 	bellOff = &bellOffOption;	/* no bell			*/
 	deviceIsInit = FALSE;
+
 
 	frameCount = 0;
 

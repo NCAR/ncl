@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.7 1991-11-06 21:17:20 clyne Exp $
+ *	$Id: gcapdev.c,v 1.8 1992-02-07 17:39:14 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -10,7 +10,8 @@
 #include "ctrandef.h"
 #include "default.h"
 
-extern	Ct_err	formatveccnt(), formatcoord(), formatindex(), formatwidth();
+extern	Ct_err	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
+		formatintensity();
 
 /*
  * defines for the markers in the strings

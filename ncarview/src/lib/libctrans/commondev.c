@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.9 1992-02-07 16:22:32 clyne Exp $
+ *	$Id: commondev.c,v 1.10 1992-02-07 17:38:50 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -412,7 +412,6 @@ int	fat_dot;
 	default:
 		ct_error(NT_UPMT,"");
 		return (SICK);
-		break;
 	}
 
 	dev->setlinecolour(line_colour);

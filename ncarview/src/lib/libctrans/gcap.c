@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.12 1992-02-07 16:23:00 clyne Exp $
+ *	$Id: gcap.c,v 1.13 1992-02-07 17:39:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -321,7 +321,8 @@ CGMC *c;
 		 */
 		if (!Batch && tty) {
 			(void)lseek(0,0L,L_SET);
-			while (getc(tty) != '\n');	
+			while (getc(tty) != '\n')
+				;	
 			(void)lseek(0,0L,L_SET);
 		}
 		(void)buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
