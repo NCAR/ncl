@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.32 1996-09-14 17:07:57 boote Exp $
+ *      $Id: hlu.h,v 1.33 1996-10-09 15:46:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -414,4 +414,9 @@ extern int NhlGetParentWorkstation(
 #endif
 );
 
+extern int NhlGetParentId(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
 #endif /* _NHLU_h */

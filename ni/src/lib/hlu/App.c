@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.24 1996-09-14 17:05:44 boote Exp $
+ *      $Id: App.c,v 1.25 1996-10-09 15:46:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1281,6 +1281,26 @@ _NhlSortAppArgs
 /*
  * Public API
  */
+
+int
+NhlGetParentId
+#if	NhlNeedProto
+( int id)
+#else
+(id)
+int id;
+#endif
+{
+	NhlLayer l = _NhlGetLayer(id);
+	if(l != NULL) {
+		if((l->base.parent == NULL)||(((NhlAppLayer)l->base.parent == NhlappClassRec.app_class.current_app)||((NhlAppLayer)l->base.parent == NhlappClassRec.app_class.default_app))) {
+			return(0);
+		} else {
+			return(l->base.parent->base.id);
+		}
+	}
+	return 0;
+}
 
 /*
  * Function:	NhlAppGetDefaultParentId
