@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasls.m,v 1.6 1993-06-24 18:33:47 clyne Exp $
+.\"	$Id: rasls.m,v 1.7 1993-06-24 18:52:23 clyne Exp $
 .\"
 .TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -8,6 +8,7 @@ rasls \- list information on rasterfiles
 \fBrasls\fP 
 [\fB\-type\fR]
 [\fB\-count\fR]
+[\fB\-resolution\fR]
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
 [\fB\-ifmt \fIfile_format\fR]
@@ -29,6 +30,9 @@ either \fIindexed\fP or \fIdirect\fP.
 .TP
 .BI \-count
 Print the number of frames in the raster file.
+.TP
+.BI \-resolution
+Print the spatial resolution of a file in pixels.
 .TP
 .BI \-help
 Print help information.
