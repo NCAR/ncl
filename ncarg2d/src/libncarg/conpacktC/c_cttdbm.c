@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cttdbm.c,v 1.1 2004-03-26 22:03:38 kennison Exp $
+ *      $Id: c_cttdbm.c,v 1.2 2004-03-27 00:25:45 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,7 +26,7 @@
 
 #include <ncarg/ncargC.h>
 
-extern void NGCALLF(cttdbm,CTTDBM)(int,int,int,int,int,int,int,int);
+extern void NGCALLF(cttdbm,CTTDBM)(int*,int*,int*,int*,int*,int*,int*,int*);
 
 void c_cttdbm
 #ifdef NeedFuncProto
