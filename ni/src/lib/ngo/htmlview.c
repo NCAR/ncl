@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.2 1998-01-08 22:45:10 dbrown Exp $
+ *      $Id: htmlview.c,v 1.3 1998-01-12 20:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -286,7 +286,7 @@ static String GetContent(
 		if (! fp) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				   "Error opening %s doc\n",
-				   Nrmquarktostring(locator)));
+				   NrmQuarkToString(locator)));
 			return NULL;
 		}
 		html_len = statbuf.st_size;
@@ -303,7 +303,7 @@ static String GetContent(
 	if (count < html_len) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "Incomplete retrieval of %s doc\n",
-			   Nrmquarktostring(locator)));
+			   NrmQuarkToString(locator)));
                 NhlFree(content);
                 return NULL;
         }
