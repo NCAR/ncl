@@ -3,36 +3,36 @@ How to download and build NCAR Graphics® Software from source code
 To download the NCAR Graphics source code, follow the instructions at
 the URL:
 
-     http://ngwww.ucar.edu/ng4.2/
+     http://ngwww.ucar.edu/ng/
 
 The NCAR Graphics source code that you download will either be a
 single compressed tar file, or multiple compressed tar files.
 
 Let's assume you downloaded the multiple compressed tar files, called
-"ncarg4.2.1.libs.tar.gz", "ncarg4.2.1.db.tar.gz", and
-"ncarg4.2.1.misc.tar.gz". To get ready to build NCAR Graphics Software
+"ncarg4.3.0.libs.tar.gz", "ncarg4.3.0.db.tar.gz", and
+"ncarg4.3.0.misc.tar.gz". To get ready to build NCAR Graphics Software
 from these files, move them to a temporary directory where you have
 plenty of disk space (around 100 megabytes to hold all of the source
 code, object files, binaries, and so on). Then, uncompress and un-tar
 the files as follows:
 
-     % gunzip ncarg4.2.1.libs.tar.gz (or uncompress if the files end in
+     % gunzip ncarg4.3.0.libs.tar.gz (or uncompress if the files end in
      ".Z")
-     % gunzip ncarg4.2.1.db.tar.gz
-     % gunzip ncarg4.2.1.misc.tar.gz
-     % tar -xvf ncarg4.2.1.libs.tar
-     % tar -xvf ncarg4.2.1.db.tar
-     % tar -xvf ncarg4.2.1.misc.tar
+     % gunzip ncarg4.3.0.db.tar.gz
+     % gunzip ncarg4.3.0.misc.tar.gz
+     % tar -xvf ncarg4.3.0.libs.tar
+     % tar -xvf ncarg4.3.0.db.tar
+     % tar -xvf ncarg4.3.0.misc.tar
 
-The above steps will create a directory called ncarg-4.2.1. Set the
+The above steps will create a directory called ncarg-4.3.0. Set the
 environment variable NCARG to the name of this directory. For purposes
 of convenience, we use the notation $NCARG to mean the top level of
 the NCAR Graphics source tree. For example, if you untarred the files
 from the directory /usr/local/src, then you would do the following:
 
-     setenv NCARG /usr/local/src/ncarg-4.2.1
+     setenv NCARG /usr/local/src/ncarg-4.3.0
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Build NCAR Graphics Software from source code
 
@@ -49,7 +49,7 @@ Here are the general steps for building NCAR Graphics Software from source:
   4. Start the build and install process
   5. Test the installation
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Run Configure script
 
@@ -83,7 +83,7 @@ start building and installing the software. Before you do this, however, go
 to the section "Modify system configuration file to change compiler
 defaults" to see if you need to change any of your compiler defaults.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Modify configuration files to recognize your system
 
@@ -283,7 +283,7 @@ translator; machine-language versions of these routines could greatly speed
 up the translator. Machine-language versions of IAND, IOR, and ISHIFT are
 also desirable.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Modify system configuration file to change compiler defaults
 
@@ -325,7 +325,7 @@ add the line:
 
 along with the other macro definitions.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Start the build and install process
 
@@ -346,7 +346,7 @@ losing any of the work already accomplished. Refer to the section
 "Restarting the installation" for details about recovering from errors that
 occur during installation.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Set up your environment to use NCAR Graphics Software
 
@@ -365,7 +365,7 @@ parent directory /usr/local/ncarg:
      setenv   PATH   $NCARG_ROOT/bin:$PATH
      setenv   MANPATH   $NCARG_ROOT/man:$MANPATH
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Test the installation
 
@@ -393,7 +393,7 @@ window on your screen. You must have your DISPLAY environment variable set
 correctly for this command to work. Right-click on the X11 window to make
 the graphic go away.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 General information on build process
 
@@ -647,13 +647,14 @@ In this call, 45 bits would be skipped at the beginning of NPC; the
 rightmost 6 bits of ISB(1) would be packed into NPC; 3 bits would be skipped
 in NPC, and the rightmost 6 bits of ISB(2) would be packed into NPC.
 
-  ------------------------------------------------------------------------
+------------------------------------------------------------------------
 Trademarks: NCAR Graphics is a registered trademark of the University
 Corporation for Atmospheric Research. All brand and product names are
-trademarks or registered trademarks of their respective holders. Reference
-to a company or product name does not imply approval or recommendation of
-that company or product to the exclusion of others.
+trademarks or registered trademarks of their respective
+holders. Reference to a company or product name does not imply
+approval or recommendation of that company or product to the exclusion
+of others.
 
-Copyright 1987-2000 University Corporation for Atmospheric Research (UCAR)
+Copyright 1987-2002 University Corporation for Atmospheric Research (UCAR)
 The use of this software is governed by a License Agreement.
 All rights reserved.
