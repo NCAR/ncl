@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.52 1993-09-24 21:14:06 kennison Exp $
+#   $Id: ncargex.csh,v 1.53 1993-10-25 15:07:17 haley Exp $
 #
 
 #********************#
@@ -189,7 +189,7 @@ set halftone_list = ($tst_halftone)
 #  Set histogram examples  #
 #                          #
 #**************************#
-set tst_histogram  = (thstgr)
+set tst_histogram  = (thstgr thstmv)
 set histogram_list = ($tst_histogram)
 
 #***********************#
