@@ -430,7 +430,7 @@ statement :     					{ $$ = NULL; }
 								$$ = _NclMakeReturn($2); 
 							}
 	| 	QUIT 					{ 
-								exit(0);
+								return(1);
 							}
 	| 	error 					{ 
 								$$ = NULL ; 

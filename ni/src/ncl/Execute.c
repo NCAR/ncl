@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.7 1994-01-27 00:48:51 ethan Exp $
+ *      $Id: Execute.c,v 1.8 1994-02-03 01:58:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -80,7 +80,6 @@ NclExecuteReturnStatus _NclExecute
 			case NOOP :
 				break;
 			case NAMED_INT_SUBSCRIPT_OP :
-				break;
 			case INT_SUBSCRIPT_OP : {
 				NclStackEntry data;
 				NclStackEntry data1;
@@ -91,11 +90,10 @@ NclExecuteReturnStatus _NclExecute
 * be done since it isn't until here that it is determined that normal integer
 * subscripting is going on
 */
-				data = _NclPop();
-	
 				data1.kind = NclStk_SUBREC;
 				data1.u.sub_rec = (NclSubRec*)NclMalloc(
 					sizeof(NclSubRec));
+				data = _NclPop();
 				if(data.kind == NclStk_VECREC) {
 					if(data.u.vec_rec->vec->obj.obj_type_mask & mask ) {
 						data1.u.sub_rec->sub_type = INT_VECT;
@@ -127,8 +125,8 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Taking for granted that syntax only allows string litterals here
 */
-						data1.u.sub_rec->name = NclMalloc(strlen((char*) data.u.data_obj->multidval.val));
-						strcpy(data1.u.sub_rec->name,data.u.data_obj->multidval.val);			
+						data1.u.sub_rec->name = (char*)NclMalloc(strlen(*((char**) data.u.data_obj->multidval.val))+1);
+						strcpy(data1.u.sub_rec->name,*(char**)data.u.data_obj->multidval.val);			
 						_NclDestroyObj((NclObj)data.u.data_obj);
 						
 						break;
@@ -174,7 +172,7 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->start = 
-								_NclVarValueRead(start.u.data_var,NULL);
+								_NclVarValueRead(start.u.data_var,NULL,NULL);
 						if(data.u.range_rec->start == NULL) {
 							status = FATAL;
 						}
@@ -196,7 +194,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL);
+						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL,NULL);
 						if(data.u.range_rec->finish == NULL) {
 							status = FATAL;
 						}
@@ -218,7 +216,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL);
+						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL,NULL);
 						if(data.u.range_rec->stride == NULL){
 							status = FATAL;
 						}
@@ -254,7 +252,7 @@ NclExecuteReturnStatus _NclExecute
 				data = _NclPop();
 				switch(data.kind) {
 				case NclStk_VAR: 
-					val = _NclVarValueRead(data.u.data_var,NULL);;
+					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
 					if(val == NULL){
 						status = FATAL;
 					}
@@ -298,7 +296,6 @@ NclExecuteReturnStatus _NclExecute
 			case IF_OP :
 				break;
 			case NAMED_COORD_SUBSCRIPT_OP : 
-				break;
 			case COORD_SUBSCRIPT_OP : {
 				NclStackEntry data;
 				NclStackEntry data1;
@@ -336,10 +333,10 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Taking for granted that syntax only allows string litterals here
 */
-						data1.u.sub_rec->name = NclMalloc(strlen((char*) data.u.data_obj->multidval.val));
-						strcpy(data1.u.sub_rec->name,data.u.data_obj->multidval.val);			
-						_NclDestroyObj((NclObj)data.u.data_obj);
+						data1.u.sub_rec->name = NclMalloc(strlen(*(char**) data.u.data_obj->multidval.val)+1);
+						strcpy(data1.u.sub_rec->name,*(char**)data.u.data_obj->multidval.val);			
 						
+						_NclDestroyObj((NclObj)data.u.data_obj);
 						break;
 					}
 					default:	
@@ -587,6 +584,7 @@ NclExecuteReturnStatus _NclExecute
 				*thestr = (char*)NclMalloc((unsigned)strlen((char*)*ptr) + 1);
 				strcpy(*thestr,(char*)*ptr);
 				data.u.data_obj = _NclMultiDValstringCreate(NULL,
+						NULL,Ncl_MultiDValstringData,0,
 						(void*)thestr,NULL,1,&dim_size,
 						TEMPORARY,NULL);
 				_NclPush(data);
@@ -599,6 +597,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				data.kind = NclStk_VAL;
 				data.u.data_obj = _NclMultiDValfloatCreate(NULL,
+						NULL,Ncl_MultiDValfloatData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL);
 				_NclPush(data);
@@ -611,6 +610,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				data.kind = NclStk_VAL;
 				data.u.data_obj = _NclMultiDValintCreate(NULL,
+						NULL,Ncl_MultiDValintData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL);
 				_NclPush(data);
@@ -681,7 +681,7 @@ NclExecuteReturnStatus _NclExecute
 					data_md = data.u.data_obj;
 					break;
 				case NclStk_VAR:
-					data_md = _NclVarValueRead(data.u.data_var,NULL);
+					data_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 					break;
 				default:
 					data_md = NULL;
@@ -691,7 +691,7 @@ NclExecuteReturnStatus _NclExecute
 				}
 				if((data_md != NULL)&&(data_md->obj.obj_type_mask & valid_dims)&&(data_md->multidval.kind == SCALAR)&&(var!= NULL)&&(var->u.data_var != NULL)) {	
 					if(!(data_md->obj.obj_type_mask & Ncl_MultiDVallongData)) {
-						NclScalarCoerce(
+						_NclScalarCoerce(
 							(void*)data_md->multidval.val,
 							data_md->multidval.data_type,
 							(void*)&dim_num,
@@ -744,7 +744,7 @@ NclExecuteReturnStatus _NclExecute
 					dim_ref_md = dim_ref.u.data_obj;
 				break;
 				case NclStk_VAR:	
-					dim_ref_md = _NclVarValueRead(dim_ref.u.data_var,NULL);
+					dim_ref_md = _NclVarValueRead(dim_ref.u.data_var,NULL,NULL);
 					break;
 				default:
 					break;
@@ -754,7 +754,7 @@ NclExecuteReturnStatus _NclExecute
 					dim_expr_md = dim_expr.u.data_obj;
 					break;
 				case NclStk_VAR:	
-					dim_expr_md = _NclVarValueRead(dim_expr.u.data_var,NULL);
+					dim_expr_md = _NclVarValueRead(dim_expr.u.data_var,NULL,NULL);
 					break;
 				default:
 					break;
@@ -765,7 +765,7 @@ NclExecuteReturnStatus _NclExecute
 					&&(dim_expr_md->multidval.kind == SCALAR)
 					&&(dim_ref_md->multidval.kind == SCALAR)) {
 					if(!(dim_expr_md->multidval.data_type != Ncl_MultiDValstringData)) {
-						NclScalarCoerce(
+						_NclScalarCoerce(
 							(void*)dim_expr_md->multidval.val,
 							dim_expr_md->multidval.data_type,
 							(void*)&dim_name,
@@ -775,7 +775,7 @@ NclExecuteReturnStatus _NclExecute
 						dim_name = *(char**)dim_expr_md->multidval.val;
 					}
 					if((dim_ref_md->multidval.data_type != NCL_long)) {
-						NclScalarCoerce(
+						_NclScalarCoerce(
 							(void*)dim_ref_md->multidval.val,
 							dim_ref_md->multidval.data_type,
 							(void*)&dim_num,
@@ -801,6 +801,7 @@ NclExecuteReturnStatus _NclExecute
 ***************************/			
 			case PARAM_VAR_OP:
 			case VAR_READ_OP: {
+				NhlErrorTypes ret = NOERROR;
 				int i;
 				int nsubs;
 				NclStackEntry data;
@@ -808,20 +809,30 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry* var;
 				NclSymbol *sym;
 				NclSelectionRecord *sel_ptr=NULL;
+				int dim_is_ref[NCL_MAX_DIMENSIONS];
 
 				ptr++;lptr++;fptr++;
 				sym = (NclSymbol*)*ptr;
 				var = _NclRetrieveRec(sym);
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
-				if(nsubs == 0) {
+				if(var->u.data_var == NULL) {
+					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is undefined",sym->name);
+					status = FATAL;
+				} else if(nsubs == 0) {
 					if(var != NULL) {
 						_NclPush(*var);
 					}
+				} else if(nsubs != var->u.data_var->var.n_dims) {
+					NhlPError(FATAL,E_UNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
+					status = FATAL;
 				} else {
 					sel_ptr = (NclSelectionRecord*)NclMalloc
 						(sizeof(NclSelectionRecord));
 					sel_ptr->n_entries = nsubs;
+					for(i=0;i<nsubs;i++) {
+						dim_is_ref[i] = 0;
+					}
 					for(i=0;i<nsubs;i++) {
 						data =_NclPop();
 						switch(data.u.sub_rec->sub_type) {
@@ -829,30 +840,43 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */							
-							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
 							break;
 						}
-					}
-					data1.kind = NclStk_VAR;
-					data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
-					if(data1.u.data_var != NULL) {
-						_NclPush(data1);
-					} else {
-						status = FATAL;
+						if(ret < WARNING) {
+							status = FATAL;
+						}
+						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
+							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
+						} else {
+							NhlPError(FATAL,E_UNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
+							status = FATAL;
+						}
+					} 
+					if(status != FATAL) {
+						data1.kind = NclStk_VAR;
+						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
+						if(data1.u.data_var != NULL) {
+							_NclPush(data1);
+						} else {
+							status = FATAL;
+						}
 					}
 				}
 			}
 			break;
 			case VAR_OP : {
+				NhlErrorTypes ret = NOERROR;
+				int dim_is_ref[NCL_MAX_DIMENSIONS];
 				int i;
 				int nsubs;
 				NclStackEntry data;
@@ -874,6 +898,9 @@ NclExecuteReturnStatus _NclExecute
 					sel_ptr = (NclSelectionRecord*)NclMalloc
 						(sizeof(NclSelectionRecord));
 					sel_ptr->n_entries = nsubs;
+					for(i = 0; i<nsubs;i++) {
+						dim_is_ref[i] = 0;
+					}
 					for(i=0;i<nsubs;i++) {
 						data =_NclPop();
 						switch(data.u.sub_rec->sub_type) {
@@ -881,22 +908,33 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */							
-							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
 							break;
 						}
+						if(ret < WARNING) {
+							status = FATAL;
+						}
+						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
+							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
+						} else {
+							NhlPError(FATAL,E_UNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
+							status = FATAL;
+						}
 					}
-					data1.kind = NclStk_VAL;
-					data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr);
-					_NclPush(data1);
+					if(status != FATAL) {
+						data1.kind = NclStk_VAL;
+						data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr,NULL);
+						_NclPush(data1);
+					}
 				}
 				break;
 			}
@@ -939,7 +977,7 @@ NclExecuteReturnStatus _NclExecute
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 						} else if(rhs.kind == NclStk_VAR) {
-							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL);
+							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 						} else {
 							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
 							status = FATAL;
@@ -950,9 +988,9 @@ NclExecuteReturnStatus _NclExecute
 * This is ok no ponters are lost since rhs_md was permanent which means that
 * some NclVar object has a reference to it
 */
-								rhs_md= _NclCopyVal(rhs_md);
+								rhs_md= _NclCopyVal(rhs_md,NULL);
 							}
-							lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL,sym->name);
+							lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL,sym->name);
 							if(lhs_var->u.data_var != NULL) {
 								(void)_NclChangeSymbolType(sym,VAR);
 								lhs_var->kind = NclStk_VAR;
@@ -989,34 +1027,44 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */							
-							_NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-							_NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
 							break;
 						}
+						if(ret < WARNING) {
+							status = FATAL;
+						}
 					}
 					rhs = _NclPop();	
-					if(rhs.kind == NclStk_VAL) {
-						rhs_md = rhs.u.data_obj;
-					} else if(rhs.kind == NclStk_VAR) {
-						rhs_md = _NclVarValueRead(rhs.u.data_var,NULL);
-					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
-						status = FATAL;
-					}
-					ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
-					if(rhs_md->obj.status != PERMANENT) {
-						_NclDestroyObj((NclObj)rhs_md);
-					}
-					if(ret <= WARNING) {
-						status = ret;
+					if(status != FATAL) {
+						if(rhs.kind == NclStk_VAL) {
+							rhs_md = rhs.u.data_obj;
+						} else if(rhs.kind == NclStk_VAR) {
+/*
+* I don't pass in a new missing in this situation because
+* _NclAssignToVar checks the missing values and it has
+* to visit each element anyways
+*/
+							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
+						} else {
+							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
+							status = FATAL;
+						}
+						ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
+						if(rhs_md->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)rhs_md);
+						}
+						if(ret <= WARNING) {
+							status = ret;
+						}
 					}
 					
 				} else {
@@ -1026,10 +1074,10 @@ NclExecuteReturnStatus _NclExecute
 
 			} else {
 				for(i=0;i<nsubs;i++) {
-/*
-* code for building selection record
-*/
 					data =_NclPop();
+/*
+* Need to free stuff here
+*/
 				}
 			}
 			break;
@@ -1063,6 +1111,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry *var = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclStackEntry data;
+				NhlErrorTypes ret = NOERROR;
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
@@ -1087,13 +1136,13 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */						
-								_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-								_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
@@ -1101,6 +1150,8 @@ NclExecuteReturnStatus _NclExecute
 								status = FATAL;
 								break;
 							}
+							if(ret < WARNING)
+								status = ret;
 						} else if(nsubs != 0) {
 							NhlPError(FATAL,E_UNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
 							status = FATAL;
@@ -1109,12 +1160,14 @@ NclExecuteReturnStatus _NclExecute
 						status = FATAL;
 						NhlPError(FATAL,E_UNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
 					}
-					data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
-					if(data.u.data_obj == NULL) {
-						data.kind = NclStk_NOVAL;
-						status = FATAL;
-					} else {
-						data.kind = NclStk_VAL;
+					if(status != FATAL) {
+						data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
+						if(data.u.data_obj == NULL) {
+							data.kind = NclStk_NOVAL;
+							status = FATAL;
+						} else {
+							data.kind = NclStk_VAL;
+						}
 					}
 				} else {
 					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
@@ -1163,13 +1216,13 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */						
-							_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
@@ -1179,6 +1232,8 @@ NclExecuteReturnStatus _NclExecute
 							status = FATAL;
 							break;
 						}
+						if(ret < WARNING)
+							status = FATAL;
 
 					} else {
 						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
@@ -1194,7 +1249,7 @@ NclExecuteReturnStatus _NclExecute
 							thevalue = data.u.data_obj;
 							break;
 						case NclStk_VAR:
-							thevalue = _NclVarValueRead(data.u.data_var,NULL);
+							thevalue = _NclVarValueRead(data.u.data_var,NULL,NULL);
 							break;
 						default:
 							thevalue = NULL;
@@ -1223,6 +1278,7 @@ NclExecuteReturnStatus _NclExecute
 				char *coord_name = NULL;
 				int nsubs = 0,i;
 				NclSelectionRecord *sel_ptr = NULL;
+				NhlErrorTypes ret = NOERROR;
 				
 
 				ptr++;lptr++;fptr++;
@@ -1254,13 +1310,13 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */						
-							_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
@@ -1270,7 +1326,8 @@ NclExecuteReturnStatus _NclExecute
 							status = FATAL;
 							break;
 						}
-
+						if(ret < WARNING)
+							status = FATAL;
 					} else {
 						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
 						for(i = 0; i < nsubs; i++) {
@@ -1330,13 +1387,13 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */						
-							_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-							_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
@@ -1344,6 +1401,8 @@ NclExecuteReturnStatus _NclExecute
 							status = FATAL;
 							break;
 						}
+						if(ret < WARNING) 
+							status = FATAL;
 					} else if(nsubs != 0){
 						NhlPError(FATAL,E_UNKNOWN,"Attempt to subscript attribute with more than one dimension");
 						status = FATAL;
@@ -1351,7 +1410,7 @@ NclExecuteReturnStatus _NclExecute
 					if(!(status < INFO)) {
 						value = _NclPop();
 						if(value.kind == NclStk_VAR) {
-							value_md = _NclVarValueRead(value.u.data_var,NULL);
+							value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
 							if(value_md == NULL) {
 								status = FATAL;
 							}
@@ -1362,6 +1421,9 @@ NclExecuteReturnStatus _NclExecute
 							status = FATAL;
 						}
 						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
+						if(value_md->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)value_md);
+						}
 						if( ret < INFO) {
 							status = ret;
 						}

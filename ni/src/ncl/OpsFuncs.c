@@ -86,18 +86,34 @@ int operation ;
 	if(lhs_type != rhs_type) {
 
 		if(rhs.kind == NclStk_VAL) {
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
 			coerce_res = _NclCoerceData(rhs.u.data_obj,
-					lhs_type);
+					lhs_type,NULL);
 		} else {
-			coerce_res = _NclCoerceVar(rhs.u.data_var,lhs_type);
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
+			coerce_res = _NclCoerceVar(rhs.u.data_var,lhs_type,NULL);
 		}
 		if(coerce_res == NULL) {
 			if(lhs.kind == NclStk_VAL) {
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
 			coerce_res = _NclCoerceData(lhs.u.data_obj,
-				rhs_type & NCL_VAL_TYPE_MASK);
+				rhs_type & NCL_VAL_TYPE_MASK,NULL);
 			} else {
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
 			coerce_res = _NclCoerceVar(lhs.u.data_var,
-				rhs_type);
+				rhs_type,NULL);
 			}
 			if(coerce_res == NULL) {
 /*
@@ -112,7 +128,7 @@ int operation ;
 				if(rhs.kind == NclStk_VAL) {
 					rhs_data_obj = rhs.u.data_obj;
 				} else {
-					rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL);
+					rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 				}
 
 			}
@@ -124,19 +140,19 @@ int operation ;
 			if(lhs.kind == NclStk_VAL) {
 				lhs_data_obj = lhs.u.data_obj;
 			} else {
-				lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL);
+				lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL,NULL);
 			}
 		}
 	} else {
 		if(lhs.kind == NclStk_VAL) {
 			lhs_data_obj = lhs.u.data_obj;
 		} else {
-			lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL);
+			lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL,NULL);
 		}
 		if(rhs.kind == NclStk_VAL) {
 			rhs_data_obj = rhs.u.data_obj;
 		} else {
-			rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL);
+			rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
@@ -173,7 +189,7 @@ int operation;
         if(operand.kind == NclStk_VAL) {
 		operand_md = operand.u.data_obj;
 	} else if(operand.kind == NclStk_VAR) {
-		operand_md = _NclVarValueRead(operand.u.data_var,NULL);
+		operand_md = _NclVarValueRead(operand.u.data_var,NULL,NULL);
         } else {
                 return(FATAL);
         }
@@ -209,6 +225,8 @@ NhlErrorTypes _NclBuildArray
 	int obj_type ;
 	int must_be_numeric = 1,i;
 	int ndims;
+	NclScalar *mis_ptr = NULL,themissing;
+	int still_no_missing = 1;
 
 	
 
@@ -278,40 +296,70 @@ NhlErrorTypes _NclBuildArray
 	if(data.kind == NclStk_VAL) {
 		theobj = (NclMultiDValData)data.u.data_obj;
 		if(!(theobj->obj.obj_type_mask & result_type)) {
-			coerce_res = _NclCoerceData(theobj,result_type);
+			coerce_res = _NclCoerceData(theobj,result_type,NULL);
 			if(coerce_res == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
 				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+			} else if(coerce_res->multidval.missing_value.has_missing) {
+				still_no_missing = 0;
+/*
+* I do this so I can just pass mis_ptr in regardless later on. It
+* will be NULL if none of the input has missing values. other wise
+* it will be set to the correct missing value.
+*/
+				mis_ptr = &themissing;
+				themissing = coerce_res->multidval.missing_value.value;
 			}
 			if(theobj->obj.status != PERMANENT) {
 				_NclDestroyObj((NclObj)theobj);
 			}
 			theobj = coerce_res;
+		} else if(theobj->multidval.missing_value.has_missing) {
+			still_no_missing = 0;
+			mis_ptr = &themissing;
+			themissing = theobj->multidval.missing_value.value;
 		}
 	} else if(data.kind == NclStk_VAR){
 		obj_type = _NclGetVarRepValue(data.u.data_var);	
 		if(!(obj_type & result_type)) {
-			theobj = _NclCoerceVar(data.u.data_var,result_type);
-			if(coerce_res == NULL) {
+			theobj = _NclCoerceVar(data.u.data_var,result_type,NULL);
+			if(theobj == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
 				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 				return(FATAL);
+			} else if(theobj->multidval.missing_value.has_missing){
+				still_no_missing = 0;
+/*
+* I do this so I can just pass mis_ptr in regardless later on. It
+* will be NULL if none of the input has missing values. other wise
+* it will be set to the correct missing value.
+*/
+				mis_ptr = &themissing;
+				themissing = theobj->multidval.missing_value.value;
 			}
-			if(theobj->obj.status != PERMANENT) {
-				_NclDestroyObj((NclObj)theobj);
+			if(data.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)data.u.data_var);
 			}
-			theobj = coerce_res;
 		} else {
-			theobj = _NclVarValueRead(data.u.data_var,NULL);
+			theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 			if(theobj == NULL) {
 				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 				return(FATAL);
+			} else if(theobj->multidval.missing_value.has_missing){
+/*
+* I do this so I can just pass mis_ptr in regardless later on. It
+* will be NULL if none of the input has missing values. other wise
+* it will be set to the correct missing value.
+*/
+				still_no_missing = 0;
+				mis_ptr = &themissing;
+				themissing = theobj->multidval.missing_value.value;
 			}
 		}
 	} else {
@@ -361,40 +409,89 @@ NhlErrorTypes _NclBuildArray
 		if(data.kind == NclStk_VAL) {
 			theobj = (NclMultiDValData)data.u.data_obj;
 			if(!(theobj->obj.obj_type_mask & result_type)) {
-				coerce_res = _NclCoerceData(theobj,result_type);
+				coerce_res = _NclCoerceData(theobj,result_type,mis_ptr);
 				if(coerce_res == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
 					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+					return(FATAL);
+				} else if((still_no_missing)	
+					&&(coerce_res->multidval.missing_value.has_missing)) {
+					still_no_missing = 0;
+					mis_ptr = &themissing;
+					themissing = theobj->multidval.missing_value.value;
 				}
 				if(theobj->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)theobj);
 				}
 				theobj = coerce_res;
+			} else if((theobj->multidval.missing_value.has_missing)&&(still_no_missing)) {
+				still_no_missing = 0;
+				mis_ptr = &themissing;
+				themissing = theobj->multidval.missing_value.value;
+			} else if((theobj->multidval.missing_value.has_missing)&&(!still_no_missing)){
+/*
+* This is the case where the object is already the correct type but
+* needs to have the missing value reset. ResetMissingValue should only be
+* called if the object is TEMPORARY otherwise CoerceData Needs to be
+* used to convert the missing values.
+*/
+				if(theobj->obj.status != TEMPORARY) {
+/*
+* Since theobj is not TEMPORARY then it is referenced somewhere else and the
+* following will not cause the pointer to be lost.
+*/
+					coerce_res = _NclCopyVal(theobj,mis_ptr);
+					if(theobj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)theobj);
+					}
+					theobj = coerce_res;
+				} else {
+					_NclResetMissingValue(theobj,mis_ptr);
+				}
 			}
 		} else if(data.kind == NclStk_VAR){
 			obj_type = _NclGetVarRepValue(data.u.data_var);	
 			if(!(obj_type & result_type)) {
-				theobj = _NclCoerceVar(data.u.data_var,result_type);
-				if(coerce_res == NULL) {
+				theobj = _NclCoerceVar(data.u.data_var,result_type,mis_ptr);
+				if(theobj == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
 					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 					return(FATAL);
+				} else if((still_no_missing)&&
+					(theobj->multidval.missing_value.has_missing)) {
+					still_no_missing = 0;
+					mis_ptr = &themissing;
+					themissing = theobj->multidval.missing_value.value;
 				}
-				if(theobj->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)theobj);
+				if(data.u.data_var->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)data.u.data_var);
 				}
-				theobj = coerce_res;
 			} else {
-				theobj = _NclVarValueRead(data.u.data_var,NULL);
+				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 				if(theobj == NULL) {
 					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 					return(FATAL);
+				} else if((still_no_missing)&&
+					(theobj->multidval.missing_value.has_missing)) {
+					still_no_missing = 0;
+					mis_ptr = &themissing;
+					themissing = theobj->multidval.missing_value.value;
+				} else if((theobj->multidval.missing_value.has_missing)&&(!still_no_missing)) {
+					if(theobj->obj.status == TEMPORARY) {
+						_NclResetMissingValue(theobj,mis_ptr);
+					} else {
+						coerce_res = _NclCopyVal(theobj,mis_ptr);
+						if(theobj->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)theobj);
+						}
+						theobj = coerce_res;
+					}
 				}
 			}
 		} else {
@@ -412,30 +509,11 @@ NhlErrorTypes _NclBuildArray
 *
 * ------------__> stilll need to handle dim info
 */
-	switch(result_type) {
-	case Ncl_MultiDValdoubleData:
-	result->u.data_obj = _NclMultiDValdoubleCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDValfloatData:
-	result->u.data_obj = _NclMultiDValfloatCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDVallongData:
-	result->u.data_obj = _NclMultiDVallongCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDValintData:
-	result->u.data_obj = _NclMultiDValintCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDValshortData:
-	result->u.data_obj = _NclMultiDValshortCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDValstringData:
-	result->u.data_obj = _NclMultiDValstringCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
-	break;
-	case Ncl_MultiDValcharData:
-	default:
+	result->u.data_obj = _NclCreateVal(NULL,NULL,result_type,0,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
+	if(result->u.data_obj != NULL) 
+		return(NOERROR);
+	else 
 		return(FATAL);
-	}
-	return(NOERROR);
 }
 
 

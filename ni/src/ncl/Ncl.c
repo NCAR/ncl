@@ -44,6 +44,8 @@ main() {
 		fprintf(stdout,"ncl %d> ",0);
 	yyparse();
 	fclose(thefptr);
+	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
+	_NclPrintUnfreedObjs(stdout);
 	exit(0);
 }
 #ifdef __cplusplus
