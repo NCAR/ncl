@@ -1,14 +1,14 @@
 .\"
-.\"	$Id: graphcap.m,v 1.10 1995-05-23 22:25:20 haley Exp $
+.\"	$Id: graphcap.m,v 1.11 1995-06-05 18:53:09 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "March 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
-graphcap \- A list of supported NCAR Graphics device definition files for use with the CGM interpreters ctrans and ftrans.
+graphcap \- A list of supported NCAR Graphics device definition files for use with the CGM interpreters ctrans and ictrans.
 .SH DESCRIPTION
 .TP 15
 .B a60
-Abekas a60 raster image format (valid only for ctrans).
+Abekas a60 raster image format.
 .TP 15
 .B adm5
 ADM5 with the DEC RG1500 graphics board.
@@ -20,7 +20,7 @@ AED512 in ASCII mode.
 AED512 in binary mode.
 .TP 15
 .B avs
-Application Visualization System raster image format (valid only for ctrans).
+Application Visualization System raster image format.
 .TP 15
 .B balsml
 HI DMP-29 in small chart mode.
@@ -32,11 +32,10 @@ Device-independent troff.
 A blank form for user-defined graphcap definitions.
 .TP 15
 .B CTXT
-Produces a human-readable ASCII dump of the input (valid only for ctrans).
+Produces a human-readable ASCII dump of the input.
 .TP 15
 .B hdf
-NCSA's HDF (Hierarchical Data Format) formatted raster file (valid 
-only for ctrans).
+NCSA's HDF (Hierarchical Data Format) formatted raster file.
 .TP 15
 .B hp2648a
 HP2648A graphics terminal.
@@ -78,80 +77,12 @@ Support for the HP-GL/2 language as standardized by HP running with the
 palette extensions (allows for user-defined colors) and the dual context
 extensions (device accepts languages in addition to HP-GL/2).
 .TP 15
-.B hplj75l
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-75 dpi resolution in landscape mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj75p
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-75 dpi resolution in portrait mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP
-.B hplj100l
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-100 dpi resolution in landscape mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj100p
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-100 dpi resolution in portrait mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj150l
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-150 dpi resolution in landscape mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj150p
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-150 dpi resolution in portrait mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj300l
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-300 dpi resolution in landscape mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hplj300p
-A graphcap for the HP LaserJet family of printers (LaserJet,
-LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.) at
-300 dpi resolution in portrait mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.  Use the hppcl graphcap with ctrans for this.
-.TP 15
-.B hpljo75l
-A graphcap for the original HP LaserJet printers at 75 dpi
-resolution in landscape mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.
-.TP 15
-.B hpljo75p
-A graphcap for the original HP LaserJet printers at 75 dpi
-resolution in portrait mode.  This graphcap is valid
-only for ftrans and will become obsolete with the 4.0 release
-of NCAR Graphics.
-.TP
 .B hppcl
 Produces files for the HP LaserJet family of printers (LaserJet,
 LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.); hppcl
-is valid only for ctrans and is meant to replace the hpljxxx
-graphcaps.  The ctrans "-dpi" and "-landscape" options can be
-used for various resolutions and picture positioning.
+is meant to replace the now obsolete hpljxxx graphcaps.  The ctrans
+"-dpi" and "-landscape" options can be used for various resolutions
+and picture positioning.
 .TP 15
 .B imagen
 Graphcap for the IMAGEN 8/300 laser printer in graphics landscape mode.
@@ -160,7 +91,7 @@ Graphcap for the IMAGEN 8/300 laser printer in graphics landscape mode.
 Graphcap for the IMAGEN 8/300 laser printer in graphics portrait mode.
 .TP 15
 .B nrif
-NCAR Raster Interchange Format formatted raster file (valid only for ctrans).
+NCAR Raster Interchange Format formatted raster file.
 .TP 15
 .B pc.mono
 This graphcap is used to drive PCPLOT on IBM and compatible PC's.
@@ -187,13 +118,10 @@ RAMTEK 6211 in TEKTRONIX compatible mode.
 SELINAR HiREZ100 graphics terminal.
 .TP 15
 .B sgi
-Silicon Graphics raster image format (valid only for ctrans).
+Silicon Graphics raster image format.
 .TP 15
 .B sun
-Sun formatted raster file. (valid only for ctrans).
-.TP 15
-.B sunview
-Sun's SunView windowing interface. (valid only for ctrans).
+Sun formatted raster file.
 .TP 15
 .B t4010
 Tektronix 4010 and 4012.
@@ -244,10 +172,10 @@ VT340 graphics terminal (returns with white foreground and black background).
 VT340 graphics terminal (returns with black foreground and white background).
 .TP 15
 .B X11
-X Window System interface (valid only for ctrans).
+X Window System interface.
 .TP 15
 .B xwd
-X11 xwd formatted raster file (valid only for ctrans).
+X11 xwd formatted raster file.
 .SH SEE ALSO
 Online:
 ctrans(1NCARG), ras_formats(1NCARG), graphc(5NCARG), ncarg_env(5NCARG)
