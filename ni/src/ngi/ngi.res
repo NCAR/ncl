@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.19 1998-09-18 23:50:07 boote Exp $
+!      $Id: ngi.res,v 1.20 1998-10-19 22:13:23 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -62,13 +62,16 @@ NgNGO*addfileMGR*directory:	.
 !	the actual hex id of the visual (Server dependent).
 !
 NgNGO*visual:		XcbVisual
-ngi.minColorCells:	20
+!NgNGO*visual:		PseudoColor
+!NgNGO*depth:		8
 
 NgNGO*colorMode:	mixedcmap
+!NgNGO*colorMode:	privatecmap
 !NgNGO*colorMode:	sharedcmap
 
 !NgNGO*maxColorCells:	0
 NgNGO*rgbError:		5
+ngi.minColorCells:	20
 
 NgNGO*background:	#b2b2b2
 NgNGO*foreground:	black
@@ -145,7 +148,9 @@ NgNGO*globalTranslations:	\
 		Ctrl ~Alt<Key>N:	nclWindow("new")	\n\
 		Meta ~Ctrl<Key>B:	browseWindow()		\n\
 		 Alt ~Ctrl<Key>B:	browseWindow()		\n\
-		Ctrl ~Alt<Key>B:	browseWindow("new")
+		Ctrl ~Alt<Key>B:	browseWindow("new")	\n\
+		Ctrl ~Alt~Meta<Key>C:	colorMapEditor()
+
 !
 ! Menubar strings
 !
@@ -406,9 +411,10 @@ addfile*Start_Stop.translations: #override \
 !
 *xwork.ngxwkSize:			500
 
-!
-! TEMPORARY - UNTIL COLOR MANAGEMENT IS DONE
-!
+*xwork*emenu*colorMapEditor.labelString:		Colormap
+*xwork*emenu*colorMapEditor.mnemonic:			C
+*xwork*emenu*colorMapEditor.acceleratorText:		Ctrl+C
+
 *xworkMGR*graphics.background:	black
 *xworkMGR*graphics.foreground:	white
 
@@ -421,6 +427,334 @@ addfile*Start_Stop.translations: #override \
 *xworkMGR.mgr.bottomOffset:		0
 *xworkMGR.mgr.leftOffset:		0
 *xworkMGR.mgr.rightOffset:		0
+
+!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! colorMapEditor							!
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+*colorMapEditor.title:			Colormap Editor
+*colorMapEditor*Offset:			0
+
+*colorMapEditor*cframe.topAttachment:	ATTACH_FORM
+*colorMapEditor*cframe.leftAttachment:	ATTACH_FORM
+*colorMapEditor*cframe.rightAttachment:	ATTACH_FORM
+*colorMapEditor*cframe.bottomAttachment:	ATTACH_NONE
+*colorMapEditor*cframe.topOffset:	10
+*colorMapEditor*cframe.leftOffset:	10
+*colorMapEditor*cframe.rightOffset:	10
+
+*colorMapEditor*cform.mbar.background:		red
+*colorMapEditor*cform.mbar.topAttachment:	ATTACH_FORM
+*colorMapEditor*cform.mbar.leftAttachment:	ATTACH_FORM
+*colorMapEditor*cform.mbar.rightAttachment:	ATTACH_NONE
+*colorMapEditor*cform.mbar.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*cform.mbar.adjustLast:		True
+*colorMapEditor*cform.mbar.spacing:		0
+*colorMapEditor*cform.mbar.borderWidth:	0
+*colorMapEditor*cform.mbar.marginHeight:	0
+*colorMapEditor*cform.mbar.marginWidth:	0
+
+*colorMapEditor*pal.labelString:		Select a Palette
+
+*colorMapEditor*cform.clabel.topAttachment:	ATTACH_FORM
+*colorMapEditor*cform.clabel.leftAttachment:	ATTACH_WIDGET
+*colorMapEditor*cform.clabel.rightAttachment:	ATTACH_NONE
+*colorMapEditor*cform.clabel.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*cform.clabel.leftOffset:	5
+*colorMapEditor*cform.clabel.labelString:	Colormap Size:
+
+*colorMapEditor*cform.csize.topAttachment:	ATTACH_FORM
+*colorMapEditor*cform.csize.leftAttachment:	ATTACH_WIDGET
+*colorMapEditor*cform.csize.rightAttachment:	ATTACH_FORM
+*colorMapEditor*cform.csize.bottomAttachment:	ATTACH_FORM
+
+*colorMapEditor*cform.csize.orientation:	HORIZONTAL
+*colorMapEditor*cform.csize.showValue:		True
+*colorMapEditor*cform.csize.maximum:		256
+*colorMapEditor*cform.csize.minimum:		2
+*colorMapEditor*cform.csize.decimalPoints:	0
+
+*colorMapEditor*ok.labelString:		\ Ok 
+*colorMapEditor*ok.topAttachment:	ATTACH_NONE
+*colorMapEditor*ok.leftAttachment:	ATTACH_FORM
+*colorMapEditor*ok.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*ok.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*ok.rightPosition:	25
+*colorMapEditor*ok.topOffset:		5
+*colorMapEditor*ok.leftOffset:		5
+*colorMapEditor*ok.rightOffset:		5
+*colorMapEditor*ok.bottomOffset:		5
+
+*colorMapEditor*apply.labelString:	\ Apply 
+*colorMapEditor*apply.topAttachment:	ATTACH_NONE
+*colorMapEditor*apply.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*apply.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*apply.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*apply.leftPosition:	25
+*colorMapEditor*apply.rightPosition:	50
+*colorMapEditor*apply.topOffset:		5
+*colorMapEditor*apply.leftOffset:	5
+*colorMapEditor*apply.rightOffset:	5
+*colorMapEditor*apply.bottomOffset:	5
+
+*colorMapEditor*cancel.labelString:	\ Cancel 
+*colorMapEditor*cancel.topAttachment:	ATTACH_NONE
+*colorMapEditor*cancel.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*cancel.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*cancel.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*cancel.leftPosition:	50
+*colorMapEditor*cancel.rightPosition:	75
+*colorMapEditor*cancel.topOffset:	5
+*colorMapEditor*cancel.leftOffset:	5
+*colorMapEditor*cancel.rightOffset:	5
+*colorMapEditor*cancel.bottomOffset:	5
+
+*colorMapEditor*help.labelString:	\ Help 
+*colorMapEditor*help.topAttachment:	ATTACH_NONE
+*colorMapEditor*help.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*help.rightAttachment:	ATTACH_FORM
+*colorMapEditor*help.bottomAttachment:	ATTACH_FORM
+*colorMapEditor*help.leftPosition:	75
+*colorMapEditor*help.topOffset:		5
+*colorMapEditor*help.leftOffset:		5
+*colorMapEditor*help.rightOffset:	5
+*colorMapEditor*help.bottomOffset:	5
+
+*colorMapEditor*bottom.topAttachment:	ATTACH_NONE
+*colorMapEditor*bottom.leftAttachment:	ATTACH_FORM
+*colorMapEditor*bottom.rightAttachment:	ATTACH_FORM
+*colorMapEditor*bottom.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*bottom.bottomOffset:	3
+
+*colorMapEditor*curframe.topAttachment:	ATTACH_NONE
+*colorMapEditor*curframe.leftAttachment:	ATTACH_FORM
+*colorMapEditor*curframe.rightAttachment:ATTACH_FORM
+*colorMapEditor*curframe.bottomAttachment:ATTACH_WIDGET
+*colorMapEditor*curframe.topOffset:	10
+*colorMapEditor*curframe.leftOffset:	10
+*colorMapEditor*curframe.rightOffset:	10
+*colorMapEditor*curframe.bottomOffset:	10
+
+*colorMapEditor*XmTextField.cursorPositionVisible:	False
+*colorMapEditor*XmTextField.editable:			False
+*colorMapEditor*XmTextField.marginHeight:		2
+*colorMapEditor*XmTextField.marginWidth:		2
+
+*colorMapEditor*indxt.topAttachment:	ATTACH_NONE
+*colorMapEditor*indxt.leftAttachment:	ATTACH_NONE
+*colorMapEditor*indxt.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*indxt.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*indxt.bottomOffset:	3
+*colorMapEditor*indxt.rightPosition:	24
+*colorMapEditor*indxt.columns:		3
+*colorMapEditor*indxt.maxLength:		3
+*colorMapEditor*indxt.alignment:		ALIGNMENT_BEGINNING
+
+*colorMapEditor*indxl.topAttachment:	ATTACH_OPPOSITE_WIDGET
+*colorMapEditor*indxl.leftAttachment:	ATTACH_FORM
+*colorMapEditor*indxl.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*indxl.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*indxl.bottomOffset:	3
+*colorMapEditor*indxl.alignment:		ALIGNMENT_END
+*colorMapEditor*indxl.labelString:	Index:
+
+*colorMapEditor*redt.topAttachment:	ATTACH_NONE
+*colorMapEditor*redt.leftAttachment:	ATTACH_NONE
+*colorMapEditor*redt.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*redt.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*redt.bottomOffset:	3
+*colorMapEditor*redt.rightPosition:	48
+*colorMapEditor*redt.columns:		5
+*colorMapEditor*redt.maxLength:		5
+*colorMapEditor*redt.alignment:		ALIGNMENT_BEGINNING
+
+*colorMapEditor*redl.topAttachment:	ATTACH_OPPOSITE_WIDGET
+*colorMapEditor*redl.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*redl.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*redl.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*redl.bottomOffset:	3
+*colorMapEditor*redl.leftPosition:	24
+*colorMapEditor*redl.alignment:		ALIGNMENT_END
+*colorMapEditor*redl.labelString:	Red:
+
+*colorMapEditor*greent.topAttachment:	ATTACH_NONE
+*colorMapEditor*greent.leftAttachment:	ATTACH_NONE
+*colorMapEditor*greent.rightAttachment:	ATTACH_POSITION
+*colorMapEditor*greent.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*greent.bottomOffset:	3
+*colorMapEditor*greent.rightPosition:	75
+*colorMapEditor*greent.columns:		5
+*colorMapEditor*greent.maxLenth:		5
+*colorMapEditor*greent.alignment:	ALIGNMENT_BEGINNING
+
+*colorMapEditor*greenl.topAttachment:	ATTACH_OPPOSITE_WIDGET
+*colorMapEditor*greenl.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*greenl.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*greenl.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*greenl.bottomOffset:	3
+*colorMapEditor*greenl.leftPosition:	48
+*colorMapEditor*greenl.alignment:	ALIGNMENT_END
+*colorMapEditor*greenl.labelString:	Green:
+
+*colorMapEditor*bluet.topAttachment:	ATTACH_NONE
+*colorMapEditor*bluet.leftAttachment:	ATTACH_NONE
+*colorMapEditor*bluet.rightAttachment:	ATTACH_FORM
+*colorMapEditor*bluet.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*bluet.bottomOffset:	3
+*colorMapEditor*bluet.columns:		5
+*colorMapEditor*bluet.maxLenth:		5
+*colorMapEditor*bluet.rightOffset:	5
+*colorMapEditor*bluet.alignment:		ALIGNMENT_BEGINNING
+
+*colorMapEditor*bluel.topAttachment:	ATTACH_OPPOSITE_WIDGET
+*colorMapEditor*bluel.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*bluel.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*bluel.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*bluel.leftPosition:	75
+*colorMapEditor*bluel.topOffset:		0
+*colorMapEditor*bluel.rightOffset:	0
+*colorMapEditor*bluel.bottomOffset:	3
+*colorMapEditor*bluel.alignment:		ALIGNMENT_END
+*colorMapEditor*bluel.labelString:	Blue:
+
+*colorMapEditor*cur_def.topAttachment:	ATTACH_FORM
+*colorMapEditor*cur_def.leftAttachment:	ATTACH_POSITION
+*colorMapEditor*cur_def.rightAttachment:	ATTACH_FORM
+*colorMapEditor*cur_def.bottomAttachment:ATTACH_WIDGET
+*colorMapEditor*cur_def.topOffset:	3
+*colorMapEditor*cur_def.rightOffset:	3
+*colorMapEditor*cur_def.bottomOffset:	3
+*colorMapEditor*cur_def.leftPosition:	50
+*colorMapEditor*cur_def.labelString:	\ 
+
+*colorMapEditor*cdefl.topAttachment:	ATTACH_FORM
+*colorMapEditor*cdefl.leftAttachment:	ATTACH_FORM
+*colorMapEditor*cdefl.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*cdefl.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*cur_def.topOffset:	3
+*colorMapEditor*cur_def.leftOffset:	3
+*colorMapEditor*cur_def.rightOffset:	3
+*colorMapEditor*cur_def.bottomOffset:	3
+!colorMapEditor*cdefl.alignment:	ALIGNMENT_END
+*colorMapEditor*cdefl.labelString:	Current Color:
+
+*colorMapEditor*eframe.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*eframe.leftAttachment:	ATTACH_FORM
+*colorMapEditor*eframe.rightAttachment:	ATTACH_FORM
+*colorMapEditor*eframe.bottomAttachment:	ATTACH_WIDGET
+*colorMapEditor*eframe.topOffset:	10
+*colorMapEditor*eframe.leftOffset:	10
+*colorMapEditor*eframe.rightOffset:	10
+*colorMapEditor*eframe.bottomOffset:	10
+
+*colorMapEditor*sform.topAttachment:	ATTACH_FORM
+*colorMapEditor*sform.leftAttachment:	ATTACH_NONE
+*colorMapEditor*sform.rightAttachment:	ATTACH_FORM
+*colorMapEditor*sform.bottomAttachment:	ATTACH_FORM
+
+*colorMapEditor*elabel.topAttachment:	ATTACH_FORM
+*colorMapEditor*elabel.leftAttachment:	ATTACH_FORM
+*colorMapEditor*elabel.rightAttachment:	ATTACH_FORM
+*colorMapEditor*elabel.bottomAttachment:	ATTACH_NONE
+*colorMapEditor*elabel.topOffset:	3
+*colorMapEditor*elabel.leftOffset:	3
+*colorMapEditor*elabel.rightOffset:	3
+*colorMapEditor*elabel.bottomOffset:	3
+*colorMapEditor*elabel.labelString:	\ 
+
+*colorMapEditor*XmScale.decimalPoints:	3
+*colorMapEditor*XmScale.maximum:		1000
+*colorMapEditor*XmScale.minimum:		0
+*colorMapEditor*XmScale.showValue:		True
+
+*colorMapEditor*rsframe.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*rsframe.leftAttachment:	ATTACH_FORM
+*colorMapEditor*rsframe.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*rsframe.bottomAttachment:ATTACH_FORM
+*colorMapEditor*rsframe.topOffset:	3
+*colorMapEditor*rsframe.leftOffset:	3
+*colorMapEditor*rsframe.rightOffset:	3
+*colorMapEditor*rsframe.bottomOffset:	3
+
+*colorMapEditor*rscalel.topAttachment:	ATTACH_FORM
+*colorMapEditor*rscalel.leftAttachment:	ATTACH_FORM
+*colorMapEditor*rscalel.rightAttachment:	ATTACH_FORM
+*colorMapEditor*rscalel.bottomAttachment:ATTACH_NONE
+*colorMapEditor*rscalel.labelString:	Red
+
+*colorMapEditor*rscale.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*rscale.leftAttachment:	ATTACH_FORM
+*colorMapEditor*rscale.rightAttachment:	ATTACH_FORM
+*colorMapEditor*rscale.bottomAttachment:	ATTACH_FORM
+
+*colorMapEditor*gsframe.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*gsframe.leftAttachment:	ATTACH_NONE
+*colorMapEditor*gsframe.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*gsframe.bottomAttachment:ATTACH_FORM
+*colorMapEditor*gsframe.topOffset:	3
+*colorMapEditor*gsframe.leftOffset:	3
+*colorMapEditor*gsframe.rightOffset:	3
+*colorMapEditor*gsframe.bottomOffset:	3
+
+*colorMapEditor*gscalel.topAttachment:	ATTACH_FORM
+*colorMapEditor*gscalel.leftAttachment:	ATTACH_FORM
+*colorMapEditor*gscalel.rightAttachment:	ATTACH_FORM
+*colorMapEditor*gscalel.bottomAttachment:ATTACH_NONE
+*colorMapEditor*gscalel.labelString:	Green
+
+*colorMapEditor*gscale.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*gscale.leftAttachment:	ATTACH_FORM
+*colorMapEditor*gscale.rightAttachment:	ATTACH_FORM
+*colorMapEditor*gscale.bottomAttachment:	ATTACH_FORM
+
+*colorMapEditor*bsframe.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*bsframe.leftAttachment:	ATTACH_NONE
+*colorMapEditor*bsframe.rightAttachment:	ATTACH_FORM
+*colorMapEditor*bsframe.bottomAttachment:ATTACH_FORM
+*colorMapEditor*bsframe.topOffset:	3
+*colorMapEditor*bsframe.leftOffset:	3
+*colorMapEditor*bsframe.rightOffset:	3
+*colorMapEditor*bsframe.bottomOffset:	3
+
+*colorMapEditor*bscalel.topAttachment:	ATTACH_FORM
+*colorMapEditor*bscalel.leftAttachment:	ATTACH_FORM
+*colorMapEditor*bscalel.rightAttachment:	ATTACH_FORM
+*colorMapEditor*bscalel.bottomAttachment:ATTACH_NONE
+*colorMapEditor*bscalel.labelString:	Blue
+
+*colorMapEditor*bscale.topAttachment:	ATTACH_WIDGET
+*colorMapEditor*bscale.leftAttachment:	ATTACH_FORM
+*colorMapEditor*bscale.rightAttachment:	ATTACH_FORM
+*colorMapEditor*bscale.bottomAttachment:	ATTACH_FORM
+
+*colorMapEditor*cmapdpy.topAttachment:	ATTACH_FORM
+*colorMapEditor*cmapdpy.leftAttachment:	ATTACH_FORM
+*colorMapEditor*cmapdpy.rightAttachment:	ATTACH_WIDGET
+*colorMapEditor*cmapdpy.bottomAttachment:ATTACH_FORM
+*colorMapEditor*cmapdpy.topOffset:	3
+*colorMapEditor*cmapdpy.leftOffset:	3
+*colorMapEditor*cmapdpy.rightOffset:	5
+*colorMapEditor*cmapdpy.bottomOffset:	3
+*colorMapEditor*cmapdpy.spacing:		0
+*colorMapEditor*cmapdpy.borderWidth:	0
+*colorMapEditor*cmapdpy.marginHeight:	0
+*colorMapEditor*cmapdpy.marginWidth:	0
+*colorMapEditor*cmapdpy.adjustLast:	False
+
+*colorMapEditor*indx.highlightThickness:	0
+*colorMapEditor*indx.shadowThickness:	0
+*colorMapEditor*indx.marginHeight:	0
+*colorMapEditor*indx.marginWidth:	0
+*colorMapEditor*indx.borderWidth:	1
+*colorMapEditor*indx.width:		13
+*colorMapEditor*indx.height:		10
+*colorMapEditor*indx.translations:	#override		\
+		<Btn2Down>:		Arm()			\n\
+		<Btn2Down>,<Btn2Up>:	Activate() Disarm()
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
