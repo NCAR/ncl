@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.121 2003-08-13 21:26:40 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.122 2003-08-16 00:45:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2032,7 +2032,7 @@ ContourPlotInitialize
 		return NhlFATAL;
 	}
 	if ((cnp->fws_id = _NhlNewWorkspace(NhlwsCNFLOAT,NhlwsNONE,
-					    4000*sizeof(float))) < 0) {
+					    5000*sizeof(float))) < 0) {
 		e_text = "%s: float workspace allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -4430,6 +4430,8 @@ static NhlErrorTypes cnDraw
 	c_cpseti("NVS",0);		/* no vertical strips */
 	c_cpseti("HLE",1);              /* search for equal high/lows */
         c_cpseti("SET",0);
+        c_cpseti("RWC",500);
+        c_cpseti("RWG",1500);
         c_cpseti("MAP",NhlcnMAPVAL);
 
 	c_cpsetr("PIT",MAX(0.0,cnp->max_point_distance));
