@@ -1,5 +1,5 @@
 /*
- *      $Id: colormapP.h,v 1.1 1998-10-19 20:25:54 boote Exp $
+ *      $Id: colormapP.h,v 1.2 1999-05-27 02:28:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,11 @@ typedef struct _NgColorMapPart {
 	Widget			rscale;
 	Widget			gscale;
 	Widget			bscale;
+	int			pal_name_count;
+	NhlString		*pal_names;
+	Widget			mega;
+	int			set_pal_name_pos;
+	int			cur_pal_name_pos;
 } NgColorMapPart;
 
 typedef struct _NgColorMapRec {

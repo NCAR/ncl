@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.21 1999-05-22 00:36:25 dbrown Exp $
+ *      $Id: restree.c,v 1.22 1999-05-27 02:28:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3430,7 +3430,7 @@ SetValCB
 	NgResTree *pub_rtp = (NgResTree *)udata.ptrval;
 	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
 
-#if 1
+#if 0
         fprintf(stderr,"in restree setval cb\n");
 #endif
 

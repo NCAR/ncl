@@ -1,5 +1,5 @@
 /*
- *      $Id: appP.h,v 1.6 1998-11-18 19:45:15 dbrown Exp $
+ *      $Id: appP.h,v 1.7 1999-05-27 02:28:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@
 
 #include <ncarg/ngo/ngoP.h>
 #include <ncarg/ngo/app.h>
+
+#define _NgDEFAULT_COLORMAP_PATH ".:$NCARG_ROOT/lib/ncarg/colormaps"
 
 typedef struct _NgAppMgrClassRec *NgAppMgrClass;
 typedef struct _NgAppMgrRec *NgAppMgr;

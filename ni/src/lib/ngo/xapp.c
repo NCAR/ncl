@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.11 1998-09-18 23:47:41 boote Exp $
+ *      $Id: xapp.c,v 1.12 1999-05-27 02:28:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -196,6 +196,7 @@ XAppMgrClassInitialize
 	qprintplot = NrmStringToQuark(NgNxappPrintPlot);
 
 	_NhlInitializeClass(NgxWkClass);
+
 
 	return NhlNOERROR;
 }

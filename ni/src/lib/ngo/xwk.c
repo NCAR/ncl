@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.15 1999-05-24 21:20:44 dbrown Exp $
+ *      $Id: xwk.c,v 1.16 1999-05-27 02:28:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,6 @@
  *
  *	Description:	
  */
-#include <stdlib.h>
-#include <dirent.h>
 
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
@@ -378,10 +376,11 @@ XWkClassInitialize
 {
 	NhlArgVal	sel,udata;
 
+
 	NhlINITVAR(sel);
 	NhlINITVAR(udata);
 	_NhlAddClassCallback(NhlxWorkstationClass,_NhlCBworkPreOpen,sel,
-							NgXWorkPreOpenCB,udata);
+			     NgXWorkPreOpenCB,udata);
 	return NhlNOERROR;
 }
 
@@ -458,160 +457,6 @@ static XtActionsRec actions[] = {
 	{"colorMapEditor",	colorMapEditor,},
 };
 
-static void GetColormapsInPath
-(
-	NgXWk 		xwk,
-	NhlString 	path
-)
-{
-	struct dirent	*dirp;  
-	DIR		*dp;
-	int		i,j;
-	int		count;
-	char		fullpath[1024];
-	char		*endp;
-	float   	colormap[768] = { -1.0,-1.0,-1.0,-1.0,-1.0,-1.0 };
-	int		min_ix = 6;
-	float		max_cval;
-
-/*
- * These colormaps do not overwrite the background and foreground
- * colors. Initially we set foreground to black and background to white.
- * but when the user actually loads one of these color maps these are
- * replaced with the workstation's current background and foreground.
- * Eventually there will be an option for specifying a range of indexes
- * into which the colormap should fit.
- */
-	
-	if ((dp = opendir(path)) == NULL) {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "Invalid colormap directory: %s",path));
-		return;
-	}
-
-	strcpy(fullpath,path);
-	endp = fullpath + strlen(fullpath);
-	*endp++ = '/';
-	*endp = '\0';
-
-	while ( (dirp = readdir(dp)) != NULL) {
-		char *cp;
-		FILE *fp;
-		char buf[256];
-		int dot_pos;
-
-		if (! strcmp(dirp->d_name, ".")  ||
-		    ! strcmp(dirp->d_name, ".."))
-			continue;	
-		if (! (cp = strrchr(dirp->d_name,'.')))
-			continue;
-		dot_pos = cp - dirp->d_name;
-		cp++;
-		if (! cp || 
-		    (strcmp(cp,"rgb") && 
-		     strcmp(cp,"ncmap") &&
-		     strcmp(cp,"gp"))) 
-			continue;
-		
-		strcpy(endp,dirp->d_name);
-		fp = fopen(fullpath,"r");
-		if (! fp) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				   "Unable to open colormap file %s: ignoring",
-				   dirp->d_name));
-			continue;
-		}
-		i = min_ix;
-		max_cval = 0.0;
-		while (cp = fgets(buf,255,fp)) {
-			char *next,*tcp = cp;
-			float f;
-			while (isspace(*tcp))
-				tcp++;
-			if (! (isdigit(*tcp) || *tcp == '.'))
-				continue;
-			if (i > 767)
-				break;
-			while (1) {
-				f = strtod(tcp,&next);
-				if (next == tcp)
-					break;
-				tcp = next;
-				while (isspace(*tcp) || *tcp == ',')
-					tcp++;
-				colormap[i] = f;
-				max_cval = MAX(max_cval,colormap[i]);
-				i++;
-			}
-		}
-		count = i;
-		if (max_cval > 1.0) {
-			if (max_cval < 256.0) {
-				for (i = min_ix; i < count; i++) {
-					colormap[i] /= 255.0;
-				}
-			}
-			else if (max_cval <= 256.0) {
-				for (i = min_ix; i < count; i++) {
-					colormap[i] /= 256.0;
-				}
-			}
-			else if (max_cval < 65536.0) {
-				for (i = min_ix; i < count; i++) {
-					colormap[i] /= 65535.0;
-				}
-			}
-			else if (max_cval <= 65536.0) {
-				for (i = min_ix; i < count; i++) {
-					colormap[i] /= 65536.0;
-				}
-			}
-			else {
-				for (i = min_ix; i < count; i++) {
-					colormap[i] /= max_cval;
-				}
-			}
-		}
-		
-		*(endp + dot_pos) = '\0';
-		NhlPalSetColormap(NhlworkstationClass,endp,
-				  (NhlColor *)colormap,count / 3);
-		
-	}
-	
-	return;
-}
- 
-
-static void ReadUserColormaps
-(
-	NgXWk xwk
-)
-{
-	NhlString path;
-	char buf[512];
-
-	path = getenv(NDV_COLORMAP_PATH);
-	if (path) {
-		char *cp,*last_cp = buf;
-		strcpy(buf,path);
-		while (cp = strchr(last_cp,':')) {
-			*cp = '\0';
-			if (*last_cp)
-				GetColormapsInPath(xwk,last_cp);
-			last_cp = cp + 1;
-		}
-		if (*last_cp)
-			GetColormapsInPath(xwk,last_cp);
-	}
-	else {
-		fprintf(stderr,"%s environment variable not set\n",
-			   NDV_COLORMAP_PATH);
-	}	
-
-	return;
-}
-
 /*
  * Function:	XWkInitialize
  *
@@ -651,7 +496,6 @@ XWkInitialize
 
 	if(init){
 		init = False;
-		ReadUserColormaps(xwk);
 		XtAppAddActions(xwk->go.x->app,actions,NhlNumber(actions));
 	}
 

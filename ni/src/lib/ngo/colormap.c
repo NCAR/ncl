@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.3 1999-05-22 00:36:16 dbrown Exp $
+ *      $Id: colormap.c,v 1.4 1999-05-27 02:28:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ncl/defs.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/colormapP.h>
+#include <ncarg/ngo/MegaB.h>
 #include <Xcb/xcbP.h>
 
 #include <Xm/Xm.h>
@@ -157,6 +158,7 @@ ColorMapInitialize
 		np->cmap[i] = np->edit_cmap[i] = xcol;
 
 	np->sel_indx = -1;
+	np->cur_pal_name_pos = np->set_pal_name_pos = -1;
 
 	return NhlNOERROR;
 }
@@ -758,6 +760,8 @@ CmapApplyCB
 
 	UpdateCmap(cm);
 
+	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
+
 	return;
 }
 
@@ -776,6 +780,8 @@ CmapOkCB
 	NgGOPopdown(cm->base.id);
 	SetWorkstationCmap(cm);
 
+	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
+
 	return;
 }
 
@@ -789,9 +795,18 @@ ResetColorCB
 {
 	char		func[] = "ResetColorCB";
 	NgColorMap	cm = (NgColorMap)udata;
+	NgColorMapPart	*cp = &cm->colormap;
 
 	if(!UpdateCmap(cm))
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Can't update cmap!",func));
+	if (cp->cur_pal_name_pos < 0) {
+		XmMegaButtonSetPos(cp->mega,-1);
+	}
+	else if (cp->cur_pal_name_pos != cp->set_pal_name_pos) {
+		XmMegaButtonSetPos(cp->mega,cp->cur_pal_name_pos);
+		cp->set_pal_name_pos = cp->cur_pal_name_pos;
+	}
+			      
 	return;
 }
 
@@ -829,11 +844,16 @@ SetPaletteCB
 	NhlErrorTypes	ret;
 	NhlGenArray	fg_ga,bg_ga;
 	float		*color;
+        XmMegaButtonCallbackStruct *cb = (XmMegaButtonCallbackStruct *)cdata;
 
+	name = cp->pal_names[cb->pos];
+	cp->set_pal_name_pos = cb->pos;
+
+#if 0
 	XtVaGetValues(w,
 		XmNuserData,	&name,
 		NULL);
-
+#endif
 	ret = NhlPalGetColormap(NhlClassOfObject(cp->work),name,&cmap,
 								&cmap_len);
 	if(ret < NhlNOERROR)
@@ -902,6 +922,22 @@ SetPaletteCB
 	return;
 }
 
+static int palette_sort
+(
+ 	const void *pal1,
+	const void *pal2
+)
+{
+	const char *spal1 = *(char **) pal1;
+	const char *spal2 = *(char **) pal2;
+	int ret;
+
+	ret =  strcmp(spal1,spal2);
+
+	return ret;
+}
+#define MAX_MENU_ENTRIES 37 /* not counting "More ..." */
+
 static NhlBoolean
 ColorMapCreateWin
 (
@@ -912,7 +948,7 @@ ColorMapCreateWin
 	NgColorMapPart	*np = &((NgColorMap)go)->colormap;
 
 	Widget		ok,apply,cancel,help,bottom,cmapdpy;
-	Widget		mbar,pmenu,w;
+	Widget		mbar,pmenu,w,mega;
 	Widget		cframe,cform,clabel,csize;
 	Widget		curframe,curform;
 	Widget		indxl,indxt,redt,redl,greent,greenl,bluet,bluel;
@@ -920,8 +956,9 @@ ColorMapCreateWin
 	Widget		rsframe,gsframe,bsframe;
 	Widget		cdefl,rsform,gsform,bsform,bscale,gscale,rscale;
 	Widget		bscalel,gscalel,rscalel;
-	int		i;
+	int		i,pmenu_count;
 	NhlString	*pname;
+	XmString	*xm_pname;
 	int		num_pname;
 	XColor		wcol,bcol;
 
@@ -973,19 +1010,40 @@ ColorMapCreateWin
 		NULL);
 
 	num_pname = NhlPalGetDefined(NhlClassOfObject(np->work),&pname);
+	qsort(pname,num_pname,sizeof(char *),palette_sort);
 
-	for(i=0;i<num_pname;i++){
-		w = XtVaCreateManagedWidget(pname[i],xmPushButtonGadgetClass,
-									pmenu,
-			XmNuserData,	pname[i],
-			NULL);
-		XtAddCallback(w,XmNactivateCallback,SetPaletteCB,go);
-		XtAddCallback(w,XmNdestroyCallback,FreePalNameCB,pname[i]);
+	xm_pname = NhlMalloc(num_pname * sizeof(XmString));
+	for (i = 0; i < num_pname; i++) {
+                xm_pname[i] = NgXAppCreateXmString(go->go.appmgr,pname[i]);
+		if (!strcmp(pname[i],"default"))
+			np->cur_pal_name_pos = np->cur_pal_name_pos = i;
 	}
+        mega = XtVaCreateManagedWidget
+                ("mega",xmMegaButtonWidgetClass,pmenu,
+                 XmNitems,xm_pname,
+                 XmNxcb,go->go.xcb,
+                 XmNitemCount,num_pname,
+                 XmNbuttonMode,XmMODE_TOGGLE_BUTTON,
+                 XmNalignment,XmALIGNMENT_CENTER,
+                 XmNuserData,go,
+		 XmNvisibleItemCount,34,
+                 NULL);
+
+	if (np->cur_pal_name_pos > -1)
+		XmMegaButtonSetPos(mega,np->cur_pal_name_pos);
+
+	XtAddCallback(mega,XmNactivateCallback,SetPaletteCB,go);
+        for (i = 0; i <  num_pname; i++) {
+                NgXAppFreeXmString(go->go.appmgr,xm_pname[i]);
+        }
+        NhlFree(xm_pname);
+	np->pal_names = pname;
+	np->pal_name_count = num_pname;
+	np->mega = mega;
+
 	/*
 	 * Don't free the individual strings since they are userData.
 	 */
-	NhlFree(pname);
 
 	XtVaCreateManagedWidget("pal",xmCascadeButtonGadgetClass,mbar,
 		XmNsubMenuId,	pmenu,
