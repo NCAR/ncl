@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.25 1993-01-20 00:51:33 clyne Exp $
+ *	$Id: rast.c,v 1.26 1993-02-03 19:57:57 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -563,7 +563,11 @@ CGMC *c;
 	if ((rastGrid = (RasterOpenWrite(rast_opts.outfile, width, height,
 		VERSION,encoding,devices[currdev].name))) == NULL) {
 
-		ESprintf(E_UNKNOWN, "RasterOpenWrite(,,,,,)");
+		ESprintf(E_UNKNOWN,
+			"RasterOpenWrite(%s,,,,,) [%s]\n",
+			rast_opts.outfile,
+			ErrGetMsg()
+		);
 		return(-1);
 	}
 
