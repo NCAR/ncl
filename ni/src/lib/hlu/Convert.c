@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.6 1994-05-12 23:50:36 boote Exp $
+ *      $Id: Convert.c,v 1.7 1994-05-27 20:21:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -469,7 +469,7 @@ _NhlRegisterConverter
 	NhlCacheClosure		close		/* for freeing cache data*/ 
 )
 #else
-(from,to,convert_type,convert,args,nargs,cache,close)
+(from,to,convert,args,nargs,cache,close)
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
 	NhlTypeConverter	convert;	/* the converter function*/ 

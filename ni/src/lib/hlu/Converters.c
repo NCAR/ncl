@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.12 1994-05-05 18:16:13 ethan Exp $
+ *      $Id: Converters.c,v 1.13 1994-05-27 20:21:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,9 @@ static NrmQuark	stringQ;
 static NrmQuark	fontQ;
 static NrmQuark	booleanQ;
 static NrmQuark	quarkQ;
+static NrmQuark	doubleQ;
+static NrmQuark	longQ;
+static NrmQuark	shortQ;
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -916,6 +919,517 @@ NhlCvtIntToFloat
 	tfloat = (float)from->data.intval;
 
 	SetVal(float,sizeof(float),tfloat);
+}
+static NhlErrorTypes NhlCvtGenTo1DStringGen
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	NhlGenArray tgen;
+	NhlGenArray gen;
+	char *name  = "NhlCvtGenTo1DStringGen";
+	NhlErrorTypes	ret = NhlNOERROR;
+	char **to_data = NULL;
+	char buffer[512];
+	int i;
+
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+		
+	if(gen->num_dimensions != 1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with incorrect number of dimensions, can only convert single dimension GenArrays",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->typeQ == stringQ) {
+		memcpy((void*)to->data.ptrval,(void*)&gen,to->size);
+		return(NhlNOERROR);
+	} else {
+		if(gen->typeQ == floatQ) {
+			float *from_data;
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (float*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				sprintf(buffer,"%g",(float)from_data[i]);
+				to_data[i] = (char*)NhlConvertMalloc(
+						strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(char*);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == longQ) {
+			long *from_data;
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (long*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				sprintf(buffer,"%ld",(long)from_data[i]);
+				to_data[i] = (char*)NhlConvertMalloc(
+						strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == shortQ) {
+			short *from_data;
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (short*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				sprintf(buffer,"%d",(short)from_data[i]);
+				to_data[i] = (char*)NhlConvertMalloc(
+						strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == doubleQ) {
+			double *from_data;
+
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (double*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				sprintf(buffer,"%lg",(double)from_data[i]);
+				to_data[i] = (char*)NhlConvertMalloc(
+						strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == intQ) {
+			int *from_data;
+			
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (int*)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				sprintf(buffer,"%d",(int)from_data[i]);
+				to_data[i] = (char*)NhlConvertMalloc(
+						strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == quarkQ) {
+			int *from_data;
+			
+			to_data = (char**)NhlConvertMalloc(
+				gen->num_elements*sizeof(char*));
+			from_data = (int*)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				strcpy(buffer,NrmQuarkToString(from_data[i]));
+				to_data[i] = (char*)NhlConvertMalloc(strlen(buffer)+1);
+				strcpy(to_data[i],buffer);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = stringQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Conversion for (%s) type to 1DFloatGenArray not supported",name,NrmQuarkToString(gen->typeQ));
+			return NhlFATAL;
+		}
+		memcpy((void*)to->data.ptrval,(void*)&tgen,to->size);
+		return NhlNOERROR;
+	}
+}
+static NhlErrorTypes NhlCvtGenTo1DIntGen
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	NhlGenArray tgen;
+	NhlGenArray gen;
+	char *name  = "NhlCvtGenTo1DIntGen";
+	NhlErrorTypes	ret = NhlNOERROR;
+	int *to_data = NULL;
+	int i;
+
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+		
+	if(gen->num_dimensions != 1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with incorrect number of dimensions, can only convert single dimension GenArrays",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->typeQ == intQ) {
+		memcpy((void*)to->data.ptrval,(void*)&gen,to->size);
+		return(NhlNOERROR);
+	} else {
+		if(gen->typeQ == floatQ) {
+			float *from_data;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
+			to_data = (int*)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (float*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (int)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == longQ) {
+			long *from_data;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
+			to_data = (int*)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (long*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (int)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		}else if(gen->typeQ == shortQ) {
+			short *from_data;
+			to_data = (int *)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (short*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (int)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		}else if(gen->typeQ == doubleQ) {
+			double *from_data;
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
+			to_data = (int*)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (double*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (int)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		}else if(gen->typeQ == stringQ) {
+			char **from_data;
+			
+			to_data = (int*)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (char**)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (int)atof(from_data[i]);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == quarkQ) {
+			int *from_data;
+			
+			to_data = (int*)NhlConvertMalloc(
+				gen->num_elements*sizeof(int));
+			from_data = (int*)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (int)atof(NrmQuarkToString(from_data[i]));
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = intQ;
+			tgen->size = sizeof(int);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Conversion for (%s) type to 1DFloatGenArray not supported",name,NrmQuarkToString(gen->typeQ));
+			return NhlFATAL;
+		}
+		memcpy((void*)to->data.ptrval,(void*)&tgen,to->size);
+		return(NhlNOERROR);
+	} 
+}
+static NhlErrorTypes NhlCvtGenTo1DFloatGen
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	NhlGenArray tgen;
+	NhlGenArray gen;
+	char *name  = "NhlCvtGenTo1DFloatGen";
+	NhlErrorTypes	ret = NhlNOERROR;
+	float *to_data = NULL;
+	int i;
+
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+		
+	if(gen->num_dimensions != 1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with incorrect number of dimensions, can only convert single dimension GenArrays",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->typeQ == floatQ) {
+		memcpy((void*)to->data.ptrval,(void*)&gen,to->size);
+		return(NhlNOERROR);
+	} else {
+		if(gen->typeQ ==intQ) {
+			int *from_data;
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (int*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == longQ) {
+			long *from_data;
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (long*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == shortQ) {
+			short *from_data;
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (short*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == doubleQ) {
+			double *from_data;
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (double*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == stringQ) {
+			char **from_data;
+			
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (char**)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (float)atof(from_data[i]);
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else if(gen->typeQ == quarkQ) {
+			int *from_data;
+			
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (int*)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (float)atof(NrmQuarkToString(from_data[i]));
+			}
+			tgen = (NhlGenArray)NhlConvertMalloc(
+				sizeof(NhlGenArrayRec));
+			tgen->num_dimensions = 1;
+			tgen->len_dimensions = (int*)NhlConvertMalloc(sizeof(int));
+			tgen->len_dimensions[0] = gen->len_dimensions[0];
+			tgen->num_elements = gen->num_elements;
+			tgen->typeQ = floatQ;
+			tgen->size = sizeof(float);
+			tgen->data = (NhlPointer)to_data;
+			tgen->my_data = True;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Conversion for (%s) type to 1DFloatGenArray not supported",name,NrmQuarkToString(gen->typeQ));
+			return NhlFATAL;
+		}
+		memcpy((void*)to->data.ptrval,(void*)&tgen,to->size);
+		return(NhlNOERROR);
+	} 
 }
 
 /*
@@ -2000,6 +2514,9 @@ _NhlConvertersInitialize
 
 	floatQ = NrmStringToQuark(NhlTFloat);
 	intQ = NrmStringToQuark(NhlTInteger);
+	shortQ = NrmStringToQuark(NhlTShort);
+	longQ = NrmStringToQuark(NhlTLong);
+	doubleQ = NrmStringToQuark(NhlTDouble);
 	stringQ = NrmStringToQuark(NhlTString);
 	fontQ = NrmStringToQuark(NhlTFont);
 	booleanQ = NrmStringToQuark(NhlTBoolean);
@@ -2071,6 +2588,13 @@ _NhlConvertersInitialize
 			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
 	(void)NhlRegisterConverter(NhlTFont,_NhlTFExpString,NhlCvtEnumToFStr,
 			FontEnumList,NhlNumber(FontEnumList),False,NULL);
+
+	(void)NhlRegisterConverter(NhlTGenArray,NhlT1DFloatGenArray,
+		NhlCvtGenTo1DFloatGen,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlT1DIntGenArray,
+		NhlCvtGenTo1DIntGen,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlT1DStringGenArray,
+		NhlCvtGenTo1DStringGen,NULL,0,False,NULL);
 
 	return;
 }
