@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.3 1991-03-12 14:51:10 clyne Exp $
+ *	$Id: readfont.c,v 1.4 1992-02-18 18:21:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -74,6 +74,15 @@ Ct_err	Init_Readfont(fontcap)
 		return (SICK);
 	}
 
+#ifdef	VMS
+	if ((VMSfcread(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
+				!= sizeof(Fontcap_raw)) {
+
+		if (fontcap_raw) cfree ((char *) fontcap_raw);
+		(void) close (fd);
+		return (SICK);
+	}
+#else
 	if ((read(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
 				!= sizeof(Fontcap_raw)) {
 
@@ -82,6 +91,7 @@ Ct_err	Init_Readfont(fontcap)
 		return (SICK);
 	}
 
+#endif
 	/*
 	 *	translate the fontcap into a more meaningful form
 	 */

@@ -1,10 +1,18 @@
 NCARG	= ../../../..
+#
+#	$Id: yMakefile,v 1.7 1992-02-18 18:21:15 clyne Exp $
+#
 
 LOCINCDIR	= ../../include
 
 MYNAME		= $(LIBDIR)/libctrans.o
 
 INCLUDES	= cterror.h
+
+#ifdef	VMS
+VMSOBJS = vms.o
+VMSSRCS = vms.c
+#endif
 
 #ifdef BuildCGIctrans
 CGISRCS	= $(DCGISRCS)
@@ -37,10 +45,10 @@ EQUALHACK	= =
 
 SRCS	= \
 	$(GENSRCS) $(X11SRCS) $(CGISRCS) $(CTXTSRCS) \
-	$(SUNVSRCS) $(SUNRSRCS) $(DEVSRCS)
+	$(SUNVSRCS) $(SUNRSRCS) $(DEVSRCS) $(VMSSRCS)
 OBJS	= \
 	$(GENOBJS) $(X11OBJS) $(CGIOBJS) $(CTXTOBJS) \
-	$(SUNVOBJS) $(SUNROBJS) $(DEVOBJS)
+	$(SUNVOBJS) $(SUNROBJS) $(DEVOBJS) $(VMSOBJS)
 
 
 DDEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES)

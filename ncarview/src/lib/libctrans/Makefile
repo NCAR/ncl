@@ -7,17 +7,18 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= RS6000
+SYSTEM_INCLUDE		= Sun4
 
-PARFIL_INIT     = /red/u1/clyne/testlib/params3.1.3
-PARFIL_PERM     = /red/u1/clyne/testlib/params3.1.3
+PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
+PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
 
-BINDIR		= /red/u1/clyne/testbin
-LIBDIR		= /red/u1/clyne/testlib
-MANDIR		= /red/u1/clyne/testman
+BINDIR		= /u1/clyne/testbin
+LIBDIR		= /u1/clyne/testlib
+MANDIR		= /u1/clyne/testman
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /red/u1/clyne/testlib
+XAPPDIR		= /u1/clyne/testlib
+BITSDIR         = /usr/include/X11/bitmaps
 
 INCLUDEDIR      = $(NCARG)/include
 DBDIR           = $(LIBDIR)
@@ -33,29 +34,31 @@ YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
 MAKE            = make
 FLOAT_OPT       =
-OS              = -DSYSV
-ARCH            = -DRS6000 -DX11R3
+OS              =
+ARCH            =
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
 COPT            = -g
-CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(FLOAT_OPT) -I/X/X11R5/include
-LD_CFLAGS       = $(CFLAGS) -bnodelcsect -L/X/X11R5/lib
+CMISC           =
+CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
+	$(FLOAT_OPT)
+LD_CFLAGS       = $(CFLAGS)
 CPP             = /lib/cpp
-FCPP            = $(NCARG)/utils/fcpp $(CPP)
-FC              = xlf
-F77             = xlf
+FCPP            = /lib/cpp
+F77             = f77
 F77_LD          = $(F77)
 FDEBUG          =
 FOPT            = -O
-FFLAGS          = $(FDEFINES) $(FDEBUG) $(FOPT) $(FLOAT_OPT)
-F77FLAGS        = $(FFLAGS)
-LD_FFLAGS       = $(FFLAGS) -lc
+FMISC           = -Bstatic
+FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
+	$(FLOAT_OPT)
+LD_FFLAGS       = $(FFLAGS)
 LD              = ld
 LD_REL          = $(LD)
 AR              = ar
-AR_QUICK        = $(AR) ql
-AR_CHECK        = $(AR) vrul
+AR_QUICK        = $(AR) q
+AR_CHECK        = $(AR) vru
 AR_SRC          = ar
 AR_SRC_QUICK    = $(AR_SRC) q
 AR_SRC_CHECK    = $(AR_SRC) vru
@@ -65,20 +68,26 @@ CP              = cp
 MV              = mv -f
 RANLIB          = ranlib
 NO_OP           = touch -c
-INSTALL         = $(NCARG)/utils/install -c
+INSTALL         = install -c
 INSTALL_RM      = $(RM)
 INSTALL_BIN     = 0755
 INSTALL_MAN     = 0644
 INSTALL_APP     = 0644
+INSTALL_BIT     = 0644
 INSTALL_LIB     = 0644
 INSTALL_DB      = 0644
 
 GRAPHC          = $(BINDIR)/graphc
 FONTC           = $(BINDIR)/fontc
+
+FSPLIT          = fsplit
 CALLCONV        = $(NCARG)/utils/callconv
 SHELL           = /bin/sh
 
 NCARG	= ../../../..
+#
+#	$Id: Makefile,v 1.10 1992-02-18 18:21:03 clyne Exp $
+#
 
 LOCINCDIR	= ../../include
 
@@ -98,10 +107,10 @@ EQUALHACK	= =
 
 SRCS	= \
 	$(GENSRCS) $(X11SRCS) $(CGISRCS) $(CTXTSRCS) \
-	$(SUNVSRCS) $(SUNRSRCS) $(DEVSRCS)
+	$(SUNVSRCS) $(SUNRSRCS) $(DEVSRCS) $(VMSSRCS)
 OBJS	= \
 	$(GENOBJS) $(X11OBJS) $(CGIOBJS) $(CTXTOBJS) \
-	$(SUNVOBJS) $(SUNROBJS) $(DEVOBJS)
+	$(SUNVOBJS) $(SUNROBJS) $(DEVOBJS) $(VMSOBJS)
 
 DDEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES)
 
@@ -186,8 +195,12 @@ clean::
 cleanbin:: clean
 
 saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
 
 saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

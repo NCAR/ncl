@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.8 1992-02-07 16:22:17 clyne Exp $
+ *	$Id: X11_class0.c,v 1.9 1992-02-18 18:21:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -249,8 +249,6 @@ CGMC *c;
 
 	else {
 		win = drawable;
-		XSetWindowBackground(dpy, win, bg);
-		XSetWindowBorder(dpy, win, bd);
 	}
 
 	/*
@@ -261,6 +259,13 @@ CGMC *c;
 	 */
 	(void) init_color(commLineOpt.foreground, commLineOpt.background, 
 			(boolean) commLineOpt.reverse, &fg, &bg, &bd);
+
+	/*
+	 * make sure we have a contrasting window background by default.
+	 * this will most likely get overiden by the CGM.
+	 */
+	XSetWindowBackground(dpy, win, bg);
+	XSetWindowBorder(dpy, win, bd);
 
 	/*
 	 * Ensure that the window's colormap field points to the default

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcread.c,v 1.2 1991-01-09 11:10:28 clyne Exp $
+ *	$Id: gcread.c,v 1.3 1992-02-18 18:21:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,14 +56,21 @@ Ct_err	GP_Init(gcfile)
 		ct_error(T_FOE, gcfile);
 		return (DIE);
 	}
-	
+
 	/*
 	 *	read in the graphcap
 	 */
+#ifdef	VMS
+	if (VMSgcread(fd, (char *) &graphcap, GCAP_SIZE) != GCAP_SIZE) {
+		ct_error(T_FRE, gcfile);
+		return(DIE);
+	}
+#else
 	if (read(fd, (char *) &graphcap, GCAP_SIZE) != GCAP_SIZE) {
 		ct_error(T_FRE, gcfile);
 		return(DIE);
 	}
+#endif
 
 	/*
 	 * 	convert fortrans chars into C strings
