@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.132 2001-01-02 16:30:43 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.133 2001-01-04 22:59:27 haley Exp $
  */
 /************************************************************************
 *									*
@@ -8073,7 +8073,7 @@ NhlErrorTypes _NclIvariance
 
 	} else {
 		i = 0;
-		n = 0;
+		n = 1;
 		sum_val = val[i];	
 		i = i+1;
 		for(; i < tmp_md->multidval.totalelements; i++) {
@@ -8429,7 +8429,7 @@ NhlErrorTypes _NclIstddev
 
 	} else {
 		i = 0;
-		n = 0;
+		n = 1;
 		sum_val = val[i];	
 		i = i+1;
 		for(; i < tmp_md->multidval.totalelements; i++) {
