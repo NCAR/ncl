@@ -31,7 +31,6 @@ NhlErrorTypes filwgts_lancos_W( void )
  */
   void *wgt, *freq, *resp;
   double *tmp_wgt, *tmp_freq, *tmp_resp;
-  int dsizes_wgt[1];
   NclBasicDataTypes type_wgt;
   NclTypeClass type_wgt_class;
 /*
@@ -44,7 +43,7 @@ NhlErrorTypes filwgts_lancos_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nf, ier;
+  int i, j, nfreq, ier, nwgt2;
 /*
  * Retrieve arguments.
  */
@@ -59,10 +58,12 @@ NhlErrorTypes filwgts_lancos_W( void )
           2);
 
   if(*nwgt < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be > 3");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be >= 3");
     return(NhlFATAL);
   }
-  nf = (*nwgt*2)-1;
+  nfreq = (*nwgt*2)+3;
+  nwgt2 = *nwgt + 2;    /* We will strip off the first and last
+                            points later. */
 
   ihp = (int*)NclGetArgValue(
           1,
@@ -135,15 +136,23 @@ NhlErrorTypes filwgts_lancos_W( void )
     }
   }
 
-
 /*
- * Allocate space for output.
+ * Allocate space for output.  We allocate space for tmp_wgt no matter
+ * what, because we later need to strip off the first and last point
+ * from it.
  */
+
+  tmp_wgt  = (double*)calloc(nwgt2,sizeof(double));
+  if(tmp_wgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
   if(type_fca == NCL_double) {
     type_wgt = NCL_double;
     wgt  = (void*)calloc(*nwgt,sizeof(double));
-    freq = (void*)calloc(nf,sizeof(double));
-    resp = (void*)calloc(nf,sizeof(double));
+    freq = (void*)calloc(nfreq,sizeof(double));
+    resp = (void*)calloc(nfreq,sizeof(double));
 
     if(wgt == NULL || freq == NULL || resp == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output arrays");
@@ -154,49 +163,54 @@ NhlErrorTypes filwgts_lancos_W( void )
  */
     tmp_resp = &((double*)resp)[0];
     tmp_freq = &((double*)freq)[0];
-    tmp_wgt  = &((double*)wgt)[0];
   }
   else {
     type_wgt = NCL_float;
     wgt      = (void*)calloc(*nwgt,sizeof(float));
-    freq     = (void*)calloc(nf,sizeof(float));
-    resp     = (void*)calloc(nf,sizeof(float));
+    freq     = (void*)calloc(nfreq,sizeof(float));
+    resp     = (void*)calloc(nfreq,sizeof(float));
 /*
  * Allocate temp arrays as double, since the originals are only float.
  */
-    tmp_wgt  = (double*)calloc(*nwgt,sizeof(double));
-    tmp_freq = (double*)calloc(nf,sizeof(double));
-    tmp_resp = (double*)calloc(nf,sizeof(double));
+    tmp_freq = (double*)calloc(nfreq,sizeof(double));
+    tmp_resp = (double*)calloc(nfreq,sizeof(double));
 
-    if(wgt  == NULL || tmp_wgt  == NULL ||
-       freq == NULL || tmp_freq == NULL ||
-       resp == NULL || tmp_resp == NULL) {
+    if(wgt  == NULL || freq == NULL || resp == NULL || 
+       tmp_freq == NULL || tmp_resp == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
   }
-  dsizes_wgt[0] = *nwgt;
   type_wgt_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_wgt)));
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(dfiltrq,DFILTRQ)(nwgt,tmp_fca,tmp_fcb,nsigma,ihp,tmp_wgt,tmp_resp,
-                           tmp_freq,&ier);
+  NGCALLF(dfiltrq,DFILTRQ)(&nwgt2,tmp_fca,tmp_fcb,nsigma,ihp,tmp_wgt,
+                           tmp_resp,tmp_freq,&ier);
   
+/*  
+ * We need to strip off the first and last points of tmp_wgt, which
+ * is of length *nwgt+2.
+ */
   if(type_wgt == NCL_float) {
     for(j = 0; j < *nwgt; j++) {
-      ((float*)wgt)[j] = (float)(tmp_wgt[j]);
+      ((float*)wgt)[j] = (float)(tmp_wgt[j+1]);
     }
-    for(j = 0; j < nf; j++) {
+    for(j = 0; j < nfreq; j++) {
       ((float*)resp)[j] = (float)(tmp_resp[j]);
       ((float*)freq)[j] = (float)(tmp_freq[j]);
+    }
+  }
+  else {
+    for(j = 0; j < *nwgt; j++) {
+      ((double*)wgt)[j] = (tmp_wgt[j+1]);
     }
   }
 /*
  * Free memory.
  */
+  NclFree(tmp_wgt);
   if(type_wgt != NCL_double) {
-    NclFree(tmp_wgt);
     NclFree(tmp_freq);
     NclFree(tmp_resp);
   }
@@ -206,6 +220,7 @@ NhlErrorTypes filwgts_lancos_W( void )
  *
  * freq and resp are returned as attributes.
  */
+  dsizes[0] = *nwgt;
   return_md = _NclCreateVal(
                             NULL,
                             NULL,
@@ -214,7 +229,7 @@ NhlErrorTypes filwgts_lancos_W( void )
                             wgt,
                             NULL,
                             1,
-                            dsizes_wgt,
+                            dsizes,
                             TEMPORARY,
                             NULL,
                             (NclObjClass)type_wgt_class
@@ -224,7 +239,7 @@ NhlErrorTypes filwgts_lancos_W( void )
  * Set up attributes to return.
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-  dsizes[0] = nf;
+  dsizes[0] = nfreq;
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
