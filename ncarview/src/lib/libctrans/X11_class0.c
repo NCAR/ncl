@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.27 1993-01-26 19:21:00 clyne Exp $
+ *	$Id: X11_class0.c,v 1.28 1993-03-31 18:35:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -413,6 +413,16 @@ CGMC *c;
 	}
 	else {	/* else use window provided on command line	*/
 		drawable = x11_opts.wid;
+
+		/*
+		 * since we don't create the window we need to make sure
+		 * that it has a contrasting background color in case
+		 * metafile doesn't explicity set the background (This 
+		 * may only be necessary for monochrome displays.)
+		 */
+		XSetWindowBackground(dpy, drawable, bg);
+		XClearWindow(dpy, drawable);
+
 	}
 	win = drawable;
 
