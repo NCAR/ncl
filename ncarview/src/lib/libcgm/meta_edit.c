@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.2 1991-01-09 11:04:49 clyne Exp $
+ *	$Id: meta_edit.c,v 1.3 1991-02-20 15:36:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -60,6 +60,7 @@ extern	char	*strcpy();
 extern	char	*strcat();
 extern	char	*mktemp();
 extern	void	CGM_freeDirectory();
+extern	Directory	*ReallocDir();
 
 extern	int	errno;	/* global C library error number	*/
 /*
@@ -151,12 +152,9 @@ Directory	*CGM_copyFrames(start_frame, num_frames, target )
 	 * make sure there is room in the directory, if not icMalloc more mem
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
-		workingDir->d = (Directory_entry *) icRealloc 
-			((char *) workingDir->d, (unsigned) 
-			(sizeof (Directory_entry ) * 
-			(workingDir->num_frames + num_frames)));
 
-		workingDir->dir_size = workingDir->num_frames + num_frames;
+		(void)
+		ReallocDir(workingDir,workingDir->num_frames + num_frames);
 	}
 
 	/*
@@ -348,12 +346,9 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	 * make sure there is room in the directory, if not icMalloc more mem
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
-		workingDir->d = (Directory_entry *) icRealloc 
-			((char *) workingDir->d, (unsigned) 
-			(sizeof (Directory_entry ) * 
-			(workingDir->num_frames + num_frames)));
 
-		workingDir->dir_size = workingDir->num_frames + num_frames;
+		(void)
+		ReallocDir(workingDir, workingDir->num_frames + num_frames);
 	}
 
 	/*
@@ -1210,11 +1205,8 @@ static	shift_frames (src, dest, num_frames, gap, dir, list)
 	 * see if need more memory
 	 */
 	if ((dest + num_frames) > dir->dir_size) {
-		dir->d = (Directory_entry *) icRealloc 
-			((char *) dir->d, sizeof (Directory_entry ) * 
-			(dest + num_frames));
 
-		dir->dir_size = dest + num_frames;
+		(void) ReallocDir(dir, dest + num_frames);
 	}
 
 	/*
@@ -1305,11 +1297,7 @@ static	copy_dir(d1, d2, src, dest, num_frames)
 	 */
 	if ((dest + num_frames) > d1->dir_size) {
 
-		d1->d = (Directory_entry *) icRealloc 
-			((char *) d1->d, sizeof (Directory_entry ) * 
-			(d1->num_frames + num_frames));
-
-		d1->dir_size = dest + num_frames;
+		ReallocDir(d1, dest + num_frames);
 	}
 
 	/*

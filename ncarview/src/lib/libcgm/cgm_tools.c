@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.3 1991-02-06 15:23:56 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.4 1991-02-20 15:36:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -457,6 +457,8 @@ Directory	*CGM_directory(cgm_fd)
 	unsigned char	*cptr;
 	unsigned char	*buf = NULL;	/* buffer for read	*/
 
+	Directory	*ReallocDir();
+
 	/*
 	 *	see if file descriptor is valid
 	 */
@@ -527,9 +529,7 @@ Directory	*CGM_directory(cgm_fd)
 
 				size += DIR_2_ALLOC;
 
-				dir->d = (Directory_entry *) icRealloc
-					((char *) dir->d, 
-					size*sizeof(Directory_entry));
+				(void) ReallocDir(dir, size);
 
 
 			}
@@ -1252,6 +1252,36 @@ void	CGM_freeDirectory(dir)
 	cfree((char *) dir->MFDescription);
 	cfree((char *) dir);
 	dir = NULL;
+}
+
+Directory	*ReallocDir(dir, num_frames)
+		Directory	*dir;
+		int	num_frames;
+{
+
+	int	i;
+	int	dir_size;	/* current memory allocation	*/
+
+	dir_size = dir->dir_size;
+
+	/*
+	 * we only grow
+	 */
+	if (dir_size > num_frames) return ((Directory *) NULL);
+
+	dir->d = (Directory_entry *) icRealloc ((char *) dir->d, (unsigned)
+		(sizeof (Directory_entry) * num_frames));
+
+	/*
+	 * record new directory size
+	 */
+	dir->dir_size = num_frames;
+
+	for (i=dir_size; i < num_frames; i++) {
+		dir->d[i].text = NULL;
+	}
+
+	return(dir);
 }
 
 /*	init_dir():
