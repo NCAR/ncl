@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.73 1997-09-08 19:26:49 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.74 1997-09-23 00:03:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -916,7 +916,7 @@ XyPlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
-	lret = _NhlRegisterChildClass(lc,NhltransObjClass,
+	lret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
 					False,True,NULL);
 	if ((ret = MIN(ret,lret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";

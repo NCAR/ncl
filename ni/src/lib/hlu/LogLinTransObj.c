@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.31 1997-08-11 18:22:14 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.32 1997-09-23 00:02:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,13 @@
 #include <ncarg/hlu/View.h>
 #include <math.h>
 
+
+static NhlResource resources[] =  {
+        { "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlLogLinTransObjLayerRec,lltrans.foo),
+          NhlTImmediate,_NhlUSET((NhlPointer) False),
+          _NhlRES_PRIVATE,NULL }
+};
 
 
 /*
@@ -146,8 +153,8 @@ NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
 /* cvt_table			*/	NULL,
 
-/* layer_resources		*/	NULL,
-/* num_resources		*/	0,
+/* layer_resources		*/   	resources,
+/* num_resources		*/     	NhlNumber(resources),
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.35 1997-08-15 22:58:40 dbrown Exp $
+ *      $Id: Transform.c,v 1.36 1997-09-23 00:03:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/MapTransObjP.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 static _NhlRawObjCB callbacks[] = {
 	{_NhlCBtfOverlayStatus,

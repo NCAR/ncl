@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObjP.h,v 1.5 1996-05-16 23:46:24 dbrown Exp $
+ *      $Id: LogLinTransObjP.h,v 1.6 1997-09-23 00:02:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,9 @@
 #include <ncarg/hlu/LogLinTransObj.h>
 
 typedef struct _NhlLogLinTransObjLayerPart {
-	/* Publically setable resources */
+
+        NhlBoolean foo;
+        
 	float 	x_min;
 	float	x_max;
 	int 	x_reverse;

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.7 1995-05-03 03:11:13 dbrown Exp $
+ *      $Id: IrregularTransObjP.h,v 1.8 1997-09-23 00:02:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 typedef struct _NhlIrregularTransObjLayerPart {
 	/* Publically settable resources */
 
+        NhlBoolean	x_axis_type_set;
 	NhlAxisType	x_axis_type;
 	NhlGenArray	x_coord_points_ga;
 	NhlGenArray	x_inter_points_ga;
@@ -44,6 +45,7 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	NhlBoolean	x_reverse;
 	float		x_tension;
 	int		x_samples;
+        NhlBoolean	y_axis_type_set;
 	NhlAxisType	y_axis_type;
 	NhlGenArray	y_coord_points_ga;
 	NhlGenArray	y_inter_points_ga;
@@ -61,11 +63,15 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	float		*x_inter_points;
 	NhlBoolean	x_use_log;
 	float		x_log_lin_points[3];
+        float		*x_irr_points;
+        int		x_irr_count;
 	int 		y_num_points;
 	float		*y_coord_points;
 	float		*y_inter_points;
 	NhlBoolean	y_use_log;
 	float		y_log_lin_points[3];
+	float		*y_irr_points;
+        int		y_irr_count;
 	NhlCoordDat	thecoord;
 	int		xstatus;
 	int		ystatus;

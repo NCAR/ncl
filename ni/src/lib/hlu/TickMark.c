@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.58 1997-08-14 16:30:36 dbrown Exp $
+ *      $Id: TickMark.c,v 1.59 1997-09-23 00:03:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -149,12 +149,20 @@ static NhlResource resources[] = {
 			  tick.x_minor_grid_line_dash_pattern),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
 
+        {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_minor_per_major_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	_NhlRES_PRIVATE,NULL},
 	{ NhlNtmXBMinorPerMajor, NhlCtmXMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_per_major),
-		NhlTImmediate,_NhlUSET( (NhlPointer)3 ),0,NULL},
+        	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+        {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_minor_per_major_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	_NhlRES_PRIVATE,NULL},
 	{ NhlNtmXTMinorPerMajor, NhlCtmXMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_per_major),
-		NhlTImmediate,_NhlUSET( (NhlPointer)3 ),0,NULL},
+        	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmXBMinorOn, NhlCtmXBMinorOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_on),
 		NhlTImmediate,_NhlUSET((NhlPointer)True ),0,NULL},
@@ -539,12 +547,20 @@ static NhlResource resources[] = {
 			  tick.y_minor_grid_line_dash_pattern),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
 
+        {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_l_minor_per_major_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	_NhlRES_PRIVATE,NULL},
 	{ NhlNtmYLMinorPerMajor, NhlCtmYMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_per_major),
-		NhlTImmediate,_NhlUSET( (NhlPointer)3 ),0,NULL},
+        	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+        {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_r_minor_per_major_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	_NhlRES_PRIVATE,NULL},
 	{ NhlNtmYRMinorPerMajor, NhlCtmYMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_per_major),
-		NhlTImmediate,_NhlUSET( (NhlPointer)3 ),0,NULL},
+        	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmYLMinorOn, NhlCtmYLMinorOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_on),
 		NhlTImmediate,_NhlUSET((NhlPointer)True ),0,NULL},
@@ -1039,6 +1055,13 @@ NhlTickMarkLayer	/* told */,
 int		/* c_or_s */
 #endif
 );
+static NhlErrorTypes CheckNotLog(
+#if	NhlNeedProto
+NhlTickMarkLayer 	/* tnew */,
+NhlTickMarkLayer	/* told */,
+int		/* c_or_s */
+#endif
+);
 static NhlErrorTypes CheckLog(
 #if	NhlNeedProto
 NhlTickMarkLayer 	/* tnew */,
@@ -1267,6 +1290,7 @@ static NrmQuark QYRFormat;
  *		CheckManual
  *		CheckExplicit
  *		CheckNotAuto
+ *		CheckNotLog
  *		CheckLog
  *		CheckIrregular
  *		CheckTime
@@ -1319,6 +1343,14 @@ static NhlErrorTypes	TickMarkSetValues
 		tnew->tick.y_l_precision_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRPrecision)) 
 		tnew->tick.y_r_precision_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMinorPerMajor)) 
+		tnew->tick.x_b_minor_per_major_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMinorPerMajor)) 
+		tnew->tick.x_t_minor_per_major_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMinorPerMajor)) 
+		tnew->tick.y_l_minor_per_major_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMinorPerMajor)) 
+		tnew->tick.y_r_minor_per_major_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF)) 
 		tnew->tick.x_b_label_font_height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF)) 
@@ -1414,6 +1446,13 @@ static NhlErrorTypes	TickMarkSetValues
 /*
 * Now Check key values for various styles.
 */
+	ret = CheckNotLog(tnew,told,SET);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkSetValues: A fatal error was detected while examining NhlLINEAR style values,cannot continue");
+		return(ret);
+	}
+	if(ret < realret)
+		realret = ret;
 	ret = CheckLog(tnew,told,SET);
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkSetValues: A fatal error was detected while examining NhlLOG style values,cannot continue");
@@ -1554,6 +1593,10 @@ static NhlErrorTypes	TickMarkSetValues
 	tnew->tick.x_t_precision_set = False;
 	tnew->tick.y_l_precision_set = False;
 	tnew->tick.y_r_precision_set = False;
+	tnew->tick.x_b_minor_per_major_set = False;
+	tnew->tick.x_t_minor_per_major_set = False;
+	tnew->tick.y_l_minor_per_major_set = False;
+	tnew->tick.y_r_minor_per_major_set = False;
 	tnew->tick.x_b_label_font_height_set = False;
 	tnew->tick.x_t_label_font_height_set = False;
 	tnew->tick.y_l_label_font_height_set = False;
@@ -1634,6 +1677,14 @@ static NhlErrorTypes	TickMarkInitialize
 		tnew->tick.y_l_precision = 4;
 	if (! tnew->tick.y_r_precision_set)
 		tnew->tick.y_r_precision = 4;
+	if (! tnew->tick.x_b_minor_per_major_set)
+		tnew->tick.x_b_minor_per_major = 3;
+	if (! tnew->tick.x_t_minor_per_major_set)
+		tnew->tick.x_t_minor_per_major = 3;
+	if (! tnew->tick.y_l_minor_per_major_set)
+		tnew->tick.y_l_minor_per_major = 3;
+	if (! tnew->tick.y_r_minor_per_major_set)
+		tnew->tick.y_r_minor_per_major = 3;
 	if (! tnew->tick.x_b_label_font_height_set)
 		tnew->tick.x_b_label_font_height = 0.02;
 	if (! tnew->tick.x_t_label_font_height_set)
@@ -1898,6 +1949,10 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.x_t_precision_set = False;
 	tnew->tick.y_l_precision_set = False;
 	tnew->tick.y_r_precision_set = False;
+	tnew->tick.x_b_minor_per_major_set = False;
+	tnew->tick.x_t_minor_per_major_set = False;
+	tnew->tick.y_l_minor_per_major_set = False;
+	tnew->tick.y_r_minor_per_major_set = False;
 	tnew->tick.x_b_label_font_height_set = False;
 	tnew->tick.x_t_label_font_height_set = False;
 	tnew->tick.y_l_label_font_height_set = False;
@@ -5189,6 +5244,61 @@ static NhlErrorTypes CheckExplicit
 }
 
 /*
+ * Function:	CheckNotLog
+ *
+ * Description: If the last setting was LOG and the minor_per_major value
+ *		is not explicitly set, sets it to a usually better value for
+ *              non-log spacing.
+ *
+ * In Args:     tnew	new instance
+ *		told	old instance set only if c_or_s == SET
+ *		c_or_s  either SET or CREATE
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	NONE
+ */
+/*ARGSUSED*/
+static NhlErrorTypes CheckNotLog
+#if	NhlNeedProto
+(NhlTickMarkLayer	tnew,NhlTickMarkLayer told, int c_or_s)
+#else
+(tnew,told,c_or_s)
+	NhlTickMarkLayer tnew;
+	NhlTickMarkLayer told;
+	int	c_or_s;
+#endif
+{
+	if(c_or_s == CREATE )
+                return;
+        
+        if (tnew->tick.x_b_on && told->tick.x_b_style == NhlLOG &&
+            tnew->tick.x_b_style != NhlLOG &&
+            ! tnew->tick.x_b_minor_per_major_set) {
+                tnew->tick.x_b_minor_per_major = 3;
+        }
+        if (tnew->tick.x_t_on && told->tick.x_t_style == NhlLOG &&
+            tnew->tick.x_t_style != NhlLOG &&
+            ! tnew->tick.x_t_minor_per_major_set) {
+                tnew->tick.x_t_minor_per_major = 3;
+        }
+        if (tnew->tick.y_l_on && told->tick.y_l_style == NhlLOG &&
+            tnew->tick.y_l_style != NhlLOG &&
+            ! tnew->tick.y_l_minor_per_major_set) {
+                tnew->tick.y_l_minor_per_major = 3;
+        }
+        if (tnew->tick.y_r_on && told->tick.y_r_style == NhlLOG &&
+            tnew->tick.y_r_style != NhlLOG &&
+            ! tnew->tick.y_r_minor_per_major_set) {
+                tnew->tick.y_r_minor_per_major = 3;
+        }
+
+        return NhlNOERROR;
+}
+
+/*
  * Function:	CheckLog
  *
  * Description: Checks values when NhlLOG style is set. Makes sure no 0's or
@@ -5255,8 +5365,10 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.x_b_minor_per_major != 1)&&
 			(tnew->tick.x_b_minor_per_major != 4)&&
 			(tnew->tick.x_b_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XBMinorPerMajor to 1,4 or 8",error_lead);
-			ret = NhlWARNING;
+                        if (tnew->tick.x_b_minor_per_major_set) {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XBMinorPerMajor to 1,4 or 8",error_lead);
+                                ret = NhlWARNING;
+                        }
 		
 			if(tnew->tick.x_b_minor_per_major < 3) {
 				tnew->tick.x_b_minor_per_major = 1;
@@ -5296,9 +5408,10 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.x_t_minor_per_major != 1)&&
 			(tnew->tick.x_t_minor_per_major != 4)&&
 			(tnew->tick.x_t_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XTMinorPerMajor to 1,4 or 8",error_lead);
-			ret = NhlWARNING;
-		
+                        if (tnew->tick.x_t_minor_per_major_set) {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XTMinorPerMajor to 1,4 or 8",error_lead);
+                                ret = NhlWARNING;
+                        }
 			if(tnew->tick.x_t_minor_per_major < 3) {
 				tnew->tick.x_t_minor_per_major = 1;
 			} else if(tnew->tick.x_t_minor_per_major < 6) {
@@ -5337,9 +5450,10 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.y_l_minor_per_major != 1)&&
 			(tnew->tick.y_l_minor_per_major != 4)&&
 			(tnew->tick.y_l_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
-			ret = NhlWARNING;
-		
+                        if (tnew->tick.y_l_minor_per_major_set) {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
+                                ret = NhlWARNING;
+                        }
 			if(tnew->tick.y_l_minor_per_major < 3) {
 				tnew->tick.y_l_minor_per_major = 1;
 			} else if(tnew->tick.y_l_minor_per_major < 6) {
@@ -5377,9 +5491,10 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.y_r_minor_per_major != 1)&&
 			(tnew->tick.y_r_minor_per_major != 4)&&
 			(tnew->tick.y_r_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
-			ret = NhlWARNING;
-		
+                        if (tnew->tick.y_r_minor_per_major_set) {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
+                                ret = NhlWARNING;
+                        }
 			if(tnew->tick.y_r_minor_per_major < 3) {
 				tnew->tick.y_r_minor_per_major = 1;
 			} else if(tnew->tick.y_r_minor_per_major < 6) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.41 1997-09-08 19:26:39 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.42 1997-09-23 00:03:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -698,12 +698,13 @@ static NhlResource resources[] = {
 		 Oset(lbar_alignment),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlINTERIOREDGES),
          	 _NhlRES_INTERCEPTED,NULL},
-		
+#if 0		
 	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),
          	  _NhlRES_INTERCEPTED,NULL},
+#endif        
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
@@ -1606,7 +1607,9 @@ VectorPlotClassPartInitialize
  */
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
+#if 0                                        
 					NhlNpmLegendDisplayMode,
+#endif                                        
 					NhlNpmLabelBarDisplayMode,
 					NhlNpmTickMarkDisplayMode,
 					NhlNpmTitleDisplayMode,
@@ -7249,7 +7252,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	ip = (int*)vcp->level_colors->data;
 	for (i=init_count; i < count; i++) {
-		ip[i] = 1 + i;
+		ip[i] = Nhl_vcCOLOR_ARRAY_START + i;
 	}
 
 /*=======================================================================*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.13 1996-04-26 01:11:39 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.14 1997-09-23 00:03:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,9 @@ typedef struct _NhlTickMarkLayerPart {
 	float		x_minor_grid_thickness;
 	int		x_minor_grid_line_color;
 	int		x_minor_grid_line_dash_pattern;
+	NhlBoolean	x_b_minor_per_major_set;
 	int		x_b_minor_per_major;
+	NhlBoolean	x_t_minor_per_major_set;
 	int		x_t_minor_per_major;
 	NhlBoolean	x_b_minor_on;
 	NhlBoolean	x_t_minor_on;
@@ -170,7 +172,9 @@ typedef struct _NhlTickMarkLayerPart {
 	float		y_minor_grid_thickness;
 	int		y_minor_grid_line_color;
 	int		y_minor_grid_line_dash_pattern;
+	NhlBoolean	y_r_minor_per_major_set;
 	int		y_r_minor_per_major;
+	NhlBoolean	y_l_minor_per_major_set;
 	int		y_l_minor_per_major;
 	NhlBoolean	y_r_minor_on;
 	NhlBoolean	y_l_minor_on;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.18 1997-08-14 16:29:44 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.19 1997-09-23 00:02:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #define Nhl_cnDEF_ARRAY_SIZE	16
 #define Nhl_cnMAX_LEVELS	255
 #define Nhl_cnDEF_COLOR		NhlFOREGROUND
+#define Nhl_cnCOLOR_ARRAY_START 2
 #define Nhl_cnDEF_PATTERN	1
 #define Nhl_cnDEF_DASH_PATTERN  0
 #define Nhl_cnDEF_LINE_LABEL_STRING	"LL_"

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.59 1997-08-14 16:30:12 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.60 1997-09-23 00:02:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -376,7 +376,7 @@ static NhlResource resources[] = {
 
 	{NhlNmpPerimOn,NhlCmpPerimOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(perim.on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNmpPerimDrawOrder,NhlCmpPerimDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(perim.order),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlDRAW),0,NULL},
@@ -401,7 +401,7 @@ static NhlResource resources[] = {
 
 	{NhlNmpLabelsOn,NhlCmpLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(labels.on),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNmpLabelDrawOrder,NhlCmpLabelDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(labels.order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlPOSTDRAW),0,NULL},
@@ -2134,6 +2134,8 @@ static NhlErrorTypes MapPlotGetBB
 	NhlMapPlotLayer		mpl = (NhlMapPlotLayer) instance;
 	NhlTransformLayerPart	*mptp = &(((NhlTransformLayer)mpl)->trans);
 	NhlViewLayerPart	*mpvp = &(((NhlViewLayer) mpl)->view);
+        NhlMapPlotLayerPart	*mpp = &(((NhlMapPlotLayer) mpl)->mapplot);
+	float			map_left,map_right,map_bottom,map_top;
 
 	if (! _NhlIsTransform(instance)) {
 		e_text = "%s: invalid object id";
@@ -2146,11 +2148,26 @@ static NhlErrorTypes MapPlotGetBB
  * Otherwise, return its viewport only.
  */
 	if (mptp->overlay_status == _tfCurrentOverlayBase) {
-		return _NhlGetBB(mptp->overlay_object,thebox);
-	}
+		_NhlGetBB(mptp->overlay_object,thebox);
+                if (! mpp->labels.on)
+                        return NhlNOERROR;
+        }
+        if (mpp->labels.on) {
+                float h = mpp->labels.height;
 
-	_NhlAddBBInfo(mpvp->y,mpvp->y - mpvp->height,
-		      mpvp->x + mpvp->width,mpvp->x,thebox);
+                NhlVAGetValues(mptp->trans_obj->base.id,
+                               NhlNmpLeftMapPosF, &map_left,
+                               NhlNmpRightMapPosF, &map_right,
+                               NhlNmpBottomMapPosF, &map_bottom,
+                               NhlNmpTopMapPosF, &map_top,
+                               NULL);
+                _NhlAddBBInfo(map_top+h,map_bottom-h,
+                              map_right+h,map_left-h,thebox);
+        }
+        else
+                _NhlAddBBInfo(mpvp->y,mpvp->y - mpvp->height,
+                              mpvp->x + mpvp->width,mpvp->x,thebox);
+        
 
 	return NhlNOERROR;
 }
@@ -5405,7 +5422,7 @@ static NhlErrorTypes mpSetUpTransObj
 	    (_NhlCmpFAny(mpnew->view.x,map_left,6) != 0.0 ||
 	     _NhlCmpFAny(mpnew->view.y,map_top,6) != 0.0 ||
 	     _NhlCmpFAny(mpnew->view.width,map_right - map_left,6) != 0.0 ||
-	     _NhlCmpFAny(mpnew->view.height,map_top - map_bottom,6) != 0.0) ) {
+	     _NhlCmpFAny(mpnew->view.height,map_top - map_bottom,6) != 0.0)) {
 
 		_NhlInternalSetView((NhlViewLayer)mpnew,
 				    map_left,map_top,

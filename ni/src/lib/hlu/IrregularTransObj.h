@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.7 1997-08-14 16:29:58 dbrown Exp $
+ *      $Id: IrregularTransObj.h,v 1.8 1997-09-23 00:02:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define _NIrregularTransObj_h
 
 #include <ncarg/hlu/TransObj.h>
+
 
 typedef enum { 
 	NhlIRREGULARAXIS, 

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.35 1997-08-14 16:29:56 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.36 1997-09-23 00:02:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,11 +58,14 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{ NhlNtrXAxisType,NhlCtrXAxisType,NhlTAxisType,
-		  sizeof(NhlAxisType),
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlIrregularTransObjLayerRec,
-			    irtrans.x_axis_type),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEARAXIS),0,NULL },
+                            irtrans.x_axis_type_set),NhlTImmediate,
+         	  _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrXAxisType,NhlCtrXAxisType,NhlTAxisType,sizeof(NhlAxisType),
+		  NhlOffset(NhlIrregularTransObjLayerRec,
+			    irtrans.x_axis_type),NhlTProcedure,
+		_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatGenArray,
 		  sizeof(NhlGenArray),
 		  NhlOffset(NhlIrregularTransObjLayerRec,
@@ -79,11 +82,14 @@ static NhlResource resources[] = {
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_samples),
 		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
-	{ NhlNtrYAxisType,NhlCtrYAxisType,NhlTAxisType,
-		  sizeof(NhlAxisType),
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlIrregularTransObjLayerRec,
-			    irtrans.y_axis_type),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEARAXIS),0,NULL },
+                            irtrans.y_axis_type_set),NhlTImmediate,
+         	  _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYAxisType,NhlCtrYAxisType,NhlTAxisType,sizeof(NhlAxisType),
+		  NhlOffset(NhlIrregularTransObjLayerRec,
+			    irtrans.y_axis_type),NhlTProcedure,
+		_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatGenArray,
 		  sizeof(NhlGenArray),
 		  NhlOffset(NhlIrregularTransObjLayerRec,
@@ -103,6 +109,14 @@ static NhlResource resources[] = {
 
 /* End-documented-resources */
 
+ 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          	NhlOffset(NhlIrregularTransObjLayerRec,trobj.x_log),
+		NhlTImmediate,_NhlUSET((NhlPointer) False),
+          	_NhlRES_PRIVATE,NULL },
+ 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          	NhlOffset(NhlIrregularTransObjLayerRec,trobj.y_log),
+		NhlTImmediate,_NhlUSET((NhlPointer) False),
+          	_NhlRES_PRIVATE,NULL },
 	{ NhlNtrLowLevelLogOn,NhlCtrLowLevelLogOn, NhlTBoolean, 
 		sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,
@@ -508,12 +522,12 @@ NhlLayer inst;
 	NhlIrregularTransObjLayer ir = 
 		(NhlIrregularTransObjLayer)inst;
 
-	if (ir->irtrans.x_coord_points != NULL)
-		NhlFree(ir->irtrans.x_coord_points);
+	if (ir->irtrans.x_irr_points != NULL)
+		NhlFree(ir->irtrans.x_irr_points);
 	if (ir->irtrans.x_inter_points != NULL)
 		NhlFree(ir->irtrans.x_inter_points);
-	if (ir->irtrans.y_coord_points != NULL)
-		NhlFree(ir->irtrans.y_coord_points);
+	if (ir->irtrans.y_irr_points != NULL)
+		NhlFree(ir->irtrans.y_irr_points);
 	if (ir->irtrans.y_inter_points != NULL)
 		NhlFree(ir->irtrans.y_inter_points);
  	free(ir->irtrans.xmin_dat);
@@ -553,6 +567,7 @@ static NhlErrorTypes SetUpTrans
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlStatus xstatus,ystatus;
 	NhlBoolean tmpb, new_x_coords = False, new_y_coords = False;
+        NhlBoolean x_irr_coords_set = False, y_irr_coords_set = False;
         
         irp->x_min = tp->x_min;
         irp->y_min = tp->y_min;
@@ -564,24 +579,29 @@ static NhlErrorTypes SetUpTrans
 	if(c_or_s == SET) {
 		error_lead = "IrTransSetValues";
 		call_spline_create = 0;
+                if (_NhlArgIsSet(args,nargs,NhlNtrXAxisType))
+                        irp->x_axis_type_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints)) {
 			irp->x_min_set = False;
 			irp->x_max_set = False;
+                        x_irr_coords_set = True;
 		}
                 if (tp->x_min_set)
 			irp->x_min_set = True;
 		if (tp->x_max_set)
 			irp->x_max_set = True;
+                if (_NhlArgIsSet(args,nargs,NhlNtrYAxisType))
+                        irp->y_axis_type_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints)) {
 			irp->y_min_set = False;
 			irp->y_max_set = False;
+                        y_irr_coords_set = True;
 		}
 		if (tp->y_min_set)
 			irp->y_min_set = True;
 		if (tp->y_max_set)
 			irp->y_max_set = True;
-		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints) ||
-		    _NhlArgIsSet(args,nargs,NhlNtrXAxisType) ||
+		if (x_irr_coords_set || irp->x_axis_type_set ||
                     _NhlArgIsSet(args,nargs,NhlNtrXInterPoints) ||
 		    irp->x_min_set || irp->x_max_set ||
                     irp->x_reverse != oirp->x_reverse ||
@@ -591,8 +611,7 @@ static NhlErrorTypes SetUpTrans
                         call_spline_create = 1;
 		}
 		
-		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints) ||
-		    _NhlArgIsSet(args,nargs,NhlNtrYAxisType) ||
+		if (y_irr_coords_set || irp->y_axis_type_set ||
                     _NhlArgIsSet(args,nargs,NhlNtrYInterPoints) ||
 		    irp->y_min_set || irp->y_max_set ||
                     irp->y_reverse != oirp->y_reverse ||
@@ -607,10 +626,16 @@ static NhlErrorTypes SetUpTrans
 		call_spline_create = 1;
 		new_x_coords = True;
 		new_y_coords = True;
-		irp->x_coord_points = NULL; 
+                if (irp->x_coord_points_ga)
+                       x_irr_coords_set = True; 
+                if (irp->y_coord_points_ga)
+                       y_irr_coords_set = True; 
+		irp->x_coord_points = NULL;
 		irp->y_coord_points = NULL; 
 		irp->x_inter_points = NULL; 
-		irp->y_inter_points = NULL; 
+		irp->y_inter_points = NULL;
+                irp->x_irr_points = NULL;
+                irp->y_irr_points = NULL;
 		irp->x_num_points = 0;
                 irp->y_num_points = 0;
                 irp->x_min_set = tp->x_min_set;
@@ -620,8 +645,10 @@ static NhlErrorTypes SetUpTrans
                 
 		if (! irp->x_min_set) irp->x_min = 0.0;
 		if (! irp->x_max_set) irp->x_max = 1.0;
+		if (! irp->x_axis_type_set) irp->x_axis_type = NhlLINEARAXIS;
 		if (! irp->y_min_set) irp->y_min = 0.0;
 		if (! irp->y_max_set) irp->y_max = 1.0;
+		if (! irp->y_axis_type_set) irp->y_axis_type = NhlLINEARAXIS;
                 irp->ul = irp->ub = 0.0;
                 irp->ur = irp->ut = 1.0;
 	}
@@ -637,15 +664,28 @@ static NhlErrorTypes SetUpTrans
 			irp->x_min_set = irp->x_max_set;
 			irp->x_max_set = tmpb;
 		}
+                if (x_irr_coords_set && irp->x_coord_points_ga != NULL &&
+                    irp->x_coord_points_ga->num_elements > 0) {
+                        if (! irp->x_axis_type_set)
+                                irp->x_axis_type = NhlIRREGULARAXIS;
+                        if (irp->x_irr_points)
+                                NhlFree(irp->x_irr_points);
+                        irp->x_irr_count =
+                                irp->x_coord_points_ga->num_elements;
+                        irp->x_irr_points  = NhlMalloc
+                                (irp->x_irr_count * sizeof(float));
+                        if (!irp->x_irr_points)
+                                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        memcpy(irp->x_irr_points,
+                               (float *)irp->x_coord_points_ga->data,
+                               irp->x_irr_count * sizeof(float));
+                }
 		switch (irp->x_axis_type) {
-		case NhlIRREGULARAXIS:
-			if (irp->x_coord_points_ga != NULL &&
-			  irp->x_coord_points_ga->num_elements > 0) {
-				irp->x_coord_points  = 
-					(float *) irp->x_coord_points_ga->data;
-				irp->x_num_points =
-					irp->x_coord_points_ga->num_elements;
-				break;
+                case NhlIRREGULARAXIS:
+                        if (irp->x_irr_points) {
+                                irp->x_coord_points  = irp->x_irr_points;
+                                irp->x_num_points = irp->x_irr_count;
+                                break;
 			}
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: Must specify %s resource for irregular axis: defaulting to linear",
@@ -694,15 +734,28 @@ static NhlErrorTypes SetUpTrans
 			irp->y_min_set = irp->y_max_set;
 			irp->y_max_set = tmpb;
 		}
+                if (y_irr_coords_set && irp->y_coord_points_ga != NULL &&
+                    irp->y_coord_points_ga->num_elements > 0) {
+                        if (! irp->y_axis_type_set)
+                                irp->y_axis_type = NhlIRREGULARAXIS;
+                        if (irp->y_irr_points)
+                                NhlFree(irp->y_irr_points);
+                        irp->y_irr_count =
+                                irp->y_coord_points_ga->num_elements;
+                        irp->y_irr_points  = NhlMalloc
+                                (irp->y_irr_count * sizeof(float));
+                        if (!irp->y_irr_points)
+                                NHLPERROR((NhlFATAL,ENOMEM,NULL));     
+                        memcpy(irp->y_irr_points,
+                               (float *)irp->y_coord_points_ga->data,
+                               irp->y_irr_count * sizeof(float));
+                }
 		switch (irp->y_axis_type) {
-		case NhlIRREGULARAXIS:
-			if (irp->y_coord_points_ga != NULL &&
-			    irp->y_coord_points_ga->num_elements > 0) {
-				irp->y_coord_points  = 
-					(float *) irp->y_coord_points_ga->data;
-				irp->y_num_points =
-					irp->y_coord_points_ga->num_elements;
-				break;
+                case NhlIRREGULARAXIS:
+                        if (irp->y_irr_points) {
+                                irp->y_coord_points  = irp->y_irr_points;
+                                irp->y_num_points  = irp->y_irr_count;
+                                break;
 			}
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: Must specify %s resource for irregular axis: defaulting to linear",
@@ -742,7 +795,7 @@ static NhlErrorTypes SetUpTrans
 	}
 	if (irp->x_inter_points_ga != NULL) {
 		if (irp->x_inter_points_ga->num_elements != 
-		    irp->x_num_points) {
+		    irp->x_irr_count) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: %s resource must have same number of elements as %s: ignoring",
 				  error_lead,
@@ -757,7 +810,7 @@ static NhlErrorTypes SetUpTrans
 	}
 	if (irp->y_inter_points_ga != NULL) {
 		if (irp->y_inter_points_ga->num_elements != 
-		    irp->y_num_points) {
+		    irp->y_irr_count) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: %s resource must have same number of elements as %s: ignoring",
 				  error_lead,
@@ -770,7 +823,7 @@ static NhlErrorTypes SetUpTrans
 				(float *) irp->y_inter_points_ga->data;
 		}
 	}
-
+#if 0
 	if(c_or_s == SET){
 		if(new_x_coords) {
 			if(iold->irtrans.x_coord_points != NULL) {
@@ -832,7 +885,7 @@ static NhlErrorTypes SetUpTrans
 		memcpy((char*)irp->y_coord_points,(char*)tmp,
 		       sizeof(float)*irp->y_num_points);
 	}
-	
+#endif	
 	if (new_x_coords && irp->x_axis_type == NhlIRREGULARAXIS) {
 		float tmin,tmax;
 		tmin = MIN(irp->x_coord_points[0],
@@ -841,9 +894,9 @@ static NhlErrorTypes SetUpTrans
 			   irp->x_coord_points[irp->x_num_points-1]);
 
 		if (! irp->x_min_set)
-			irp->x_min = tmin;
+			tp->x_min = irp->x_min = tmin;
 		if (! irp->x_max_set)
-			irp->x_max = tmax;
+			tp->x_max = irp->x_max = tmax;
 		if (irp->x_min < tmin) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 "%s: X minimum less than minimum value of coordinate points array, defaulting",
@@ -867,9 +920,9 @@ static NhlErrorTypes SetUpTrans
 			   irp->y_coord_points[irp->y_num_points-1]);
 
 		if (! irp->y_min_set)
-			irp->y_min = tmin;
+			tp->y_min = irp->y_min = tmin;
 		if (! irp->y_max_set)
-			irp->y_max = tmax;
+			tp->y_max = irp->y_max = tmax;
 		if (irp->y_min < tmin) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 "%s: Y minimum less than minimum value of coordinate points array, defaulting",
@@ -893,7 +946,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		tmp = irp->x_inter_points;
 		irp->x_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (irp->x_num_points));
+				sizeof(float) * (irp->x_irr_count));
 		if (irp->x_inter_points == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: dynamic memory allocation error",
@@ -901,7 +954,7 @@ static NhlErrorTypes SetUpTrans
 			return NhlFATAL;
 		}
 		memcpy((char*)irp->x_inter_points,(char*)tmp,
-			sizeof(float)*irp->x_num_points);
+			sizeof(float)*irp->x_irr_count);
 	}
 	
 	if((c_or_s == CREATE && irp->y_inter_points != NULL) ||
@@ -911,7 +964,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		tmp = irp->y_inter_points;
 		irp->y_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (irp->y_num_points));
+				sizeof(float) * (irp->y_irr_count));
 		if (irp->y_inter_points == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: dynamic memory allocation error",
@@ -919,7 +972,7 @@ static NhlErrorTypes SetUpTrans
 			return NhlFATAL;
 		}
 		memcpy((char*)irp->y_inter_points,(char*)tmp,
-			sizeof(float)*irp->y_num_points);
+			sizeof(float)*irp->y_irr_count);
 	}
 
 	if(call_spline_create) {
@@ -1120,6 +1173,8 @@ static NhlErrorTypes SetUpTrans
         
         tp->x_min_set = tp->x_max_set = False;
         tp->y_min_set = tp->y_max_set = False;
+        irp->x_axis_type_set = False;
+        irp->y_axis_type_set = False;
         
 	return(ret);
 
@@ -2391,31 +2446,31 @@ int nargs;
 	for( i = 0; i < nargs ; i++) {
 		fp = NULL;
 		if(args[i].quark == QtrXCoordPoints) {
-			if(irp->x_coord_points != NULL &&
+			if(irp->x_irr_points != NULL &&
 			   irp->x_num_points > 0) {		
-				fp = irp->x_coord_points;
-				count = irp->x_num_points;
+				fp = irp->x_irr_points;
+				count = irp->x_irr_count;
 			}
 		}
 		if(args[i].quark == QtrXInterPoints) {
 			if(irp->x_inter_points != NULL &&
-			   irp->x_num_points > 0) {		
+			   irp->x_irr_count > 0) {		
 				fp = irp->x_inter_points;
-				count = irp->x_num_points;
+				count = irp->x_irr_count;
 			}
 		}
 		if(args[i].quark == QtrYCoordPoints) {
-			if(irp->y_coord_points != NULL &&
-			   irp->y_num_points > 0) {
-				fp = irp->y_coord_points;
-				count = irp->y_num_points;
+			if(irp->y_irr_points != NULL &&
+			   irp->y_irr_count > 0) {
+				fp = irp->y_irr_points;
+				count = irp->y_irr_count;
 			}
 		}
 		if(args[i].quark == QtrYInterPoints) {
 			if(irp->y_inter_points != NULL 
-			   && irp->y_num_points > 0) {
+			   && irp->y_irr_count > 0) {
 				fp = irp->y_inter_points;
-				count = irp->y_num_points;
+				count = irp->y_irr_count;
 			}
 		}
 		if (fp != NULL) {
@@ -2474,7 +2529,7 @@ static NhlErrorTypes    IrTransClassInitialize
 	{NhlLOGAXIS,		"LogAxis"}
         };
 
-	_NhlRegisterEnumType(NhlirregularTransObjClass,
+	_NhlRegisterEnumType(NhltransObjClass,
 			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
 
 	QtrXCoordPoints = NrmStringToQuark(NhlNtrXCoordPoints);

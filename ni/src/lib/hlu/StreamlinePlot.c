@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.34 1997-09-08 19:26:35 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.35 1997-09-23 00:03:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -252,6 +252,7 @@ static NhlResource resources[] = {
 		Oset(y_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
+#if 0        
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		 Oset(display_labelbar),
@@ -262,6 +263,7 @@ static NhlResource resources[] = {
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),
          	  _NhlRES_INTERCEPTED,NULL},
+#endif        
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
@@ -1129,8 +1131,10 @@ StreamlinePlotClassPartInitialize
  */
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
+#if 0                                        
 					NhlNpmLegendDisplayMode,
 					NhlNpmLabelBarDisplayMode,
+#endif                                        
 					NhlNpmTickMarkDisplayMode,
 					NhlNpmTitleDisplayMode,
 					NULL);

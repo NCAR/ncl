@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.7 1997-08-14 16:30:52 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.8 1997-09-23 00:03:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 #define Nhl_vcDEF_ARRAY_SIZE	16
 #define Nhl_vcMAX_LEVELS	255
 #define Nhl_vcDEF_COLOR		NhlFOREGROUND
+#define Nhl_vcCOLOR_ARRAY_START 2
 #define Nhl_vcDEF_PATTERN	1
 #define Nhl_vcDEF_DASH_PATTERN  0
 #define NhlvcMAPVAL		99

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.64 1997-09-08 19:26:23 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.65 1997-09-23 00:02:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -286,7 +286,7 @@ static NhlResource resources[] = {
 		 NhlTcnLineLabelPlacementMode,
 		 sizeof(NhlcnLineLabelPlacementMode),
 		 Oset(llabel_placement),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCOMPUTED),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRANDOMIZED),0,NULL},
 	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(llabel_strings),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -356,7 +356,7 @@ static NhlResource resources[] = {
 
 	{NhlNcnHighLabelsOn,NhlCcnHighLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.on),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNcnHighLabelString,NhlCcnHighLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
@@ -417,7 +417,7 @@ static NhlResource resources[] = {
 
 	{NhlNcnLowLabelsOn,NhlCcnLowLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.on),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNcnLowLabelString,NhlCcnLowLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
@@ -9325,7 +9325,7 @@ static NhlErrorTypes	CheckColorArray
 	ip = (int *) ga->data;
 
 	for (i=init_count; i < count; i++) {
-		ip[i] = 1 + i;
+		ip[i] = Nhl_cnCOLOR_ARRAY_START + i;
 	}
 
 	if (*gks_colors)

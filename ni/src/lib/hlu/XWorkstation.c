@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.27 1997-08-25 20:20:38 boote Exp $
+ *      $Id: XWorkstation.c,v 1.28 1997-09-23 00:03:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,14 +44,17 @@ static NhlResource resources[] = {
 		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL},
 
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.type),
-		NhlTImmediate,(NhlPointer)NGC_XWINCONFIG,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)NGC_XWINCONFIG,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.work_id),
-		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)-1,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkX,NhlCwkX,NhlTInteger,sizeof(int),Oset(xwinconfig.x),
 		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
 	{NhlNwkY,NhlCwkY,NhlTInteger,sizeof(int),Oset(xwinconfig.y),
 		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
-	{NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),Oset(xwinconfig.width),
+	{NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
+         	Oset(xwinconfig.width),
 		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
 	{NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
 		Oset(xwinconfig.height),NhlTImmediate,
