@@ -69,7 +69,7 @@ C  which determine the location of the nodes, and hence the
 C  above transform, are passed through common and the argument
 C  list.
 C
-      COMMON /SPLCOM/MDIM,DX(4),DXIN(4),IB(4),IBMN(4),IBMX(4)
+      COMMON /SPLCOMD/MDIM,DX(4),DXIN(4),IB(4),IBMN(4),IBMX(4)
       SAVE
 C
 C  ICOL will be a linear address corresponding to the indices in IB.
