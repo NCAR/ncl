@@ -1691,13 +1691,12 @@ NhlErrorTypes reg_multlin_W( void )
   if(type_x == NCL_double || type_y == NCL_double) {
     type_coef = NCL_double;
     coef      = (double *)calloc(mpts,sizeof(double));
-    tmp_coef  = &((double*)coef)[0];
   }
   else {
     type_coef = NCL_float;
     coef      = (float *)calloc(mpts,sizeof(float));
-    tmp_coef  = (double *)calloc(mpts,sizeof(double));
   }
+  tmp_coef = coerce_output_double(coef,type_coef,mpts);
   if(coef == NULL || tmp_coef == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for output variable");
     return(NhlFATAL);
@@ -1706,8 +1705,10 @@ NhlErrorTypes reg_multlin_W( void )
   NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
                            &missing_dx.doubleval,tmp_coef,resid,&con,cnorm);
 
-  if(type_x    != NCL_double) NclFree(tmp_x);
-  if(type_y    != NCL_double) NclFree(tmp_y);
+  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_y != NCL_double) NclFree(tmp_y);
+  NclFree(cnorm);
+  NclFree(resid);
 
   if(type_coef != NCL_double) {
     coerce_output_float_only(coef,tmp_coef,mpts,0);

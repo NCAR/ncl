@@ -3,13 +3,18 @@
 #include "wrapper.h"
 
 extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
-					     int*,double*,int*,int*,double*,
-					     int*);
+                         int*,double*,int*,int*,double*,
+                         int*);
 
 extern void NGCALLF(triple2grid,TRIPLE2GRID)(int*,double*,double*,double*,
-					     double*,int*,int*,double*,
-					     double*,double*,double*,
-					     logical*,int*);
+                         double*,int*,int*,double*,
+                         double*,double*,double*,
+                         logical*,int*);
+
+extern void NGCALLF(triple2grid2d,TRIPLE2GRID2D)(double *,double *,double *,
+                                                 int *,double *,double *,
+                                                 int *,double *,double *,
+                                                 double *,int *, int *);
 
 NhlErrorTypes grid2triple_W( void )
 {
@@ -347,34 +352,39 @@ NhlErrorTypes triple2grid_W( void )
     switch (stack_entry.kind) {
     case NclStk_VAR:
       if (stack_entry.u.data_var->var.att_id != -1) {
-	attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-	if (attr_obj == NULL) {
-	  break;
-	}
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
       }
       else {
-	/* att_id == -1, no optional args given, defaults desired */
-	break;
+/*
+ * att_id == -1, no optional args given, defaults desired
+ */
+        break;
       }
-      
-      /* get optional arguments;  if none specified, use defaults */
+/*
+ * get optional arguments;  if none specified, use defaults 
+ */
       if (attr_obj->att.n_atts == 0) {
-	break;
+        break;
       }
       else {
-	/* att_n_atts > 0, retrieve optional arguments */
-	attr_list = attr_obj->att.att_list;
-	while (attr_list != NULL) {
-	  if ((strcmp(attr_list->attname, "domain")) == 0) {
-	    domain = (double)(*(float *) attr_list->attvalue->multidval.val);
-	  }
+/* 
+ * att_n_atts > 0, retrieve optional arguments 
+ */
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if ((strcmp(attr_list->attname, "domain")) == 0) {
+            domain = (double)(*(float *) attr_list->attvalue->multidval.val);
+          }
 
-	  if ((strcmp(attr_list->attname, "strict")) == 0) {
-	    strict = *(logical *) attr_list->attvalue->multidval.val;
-	  }
-	  
-	  attr_list = attr_list->next;
-	}
+          if ((strcmp(attr_list->attname, "strict")) == 0) {
+            strict = *(logical *) attr_list->attvalue->multidval.val;
+          }
+          
+          attr_list = attr_list->next;
+        }
       }
       
     default:
@@ -382,20 +392,271 @@ NhlErrorTypes triple2grid_W( void )
     }
   }
 
-
 /*
  * Call the Fortran subroutine.
  */
   NGCALLF(triple2grid,TRIPLE2GRID)(&npts,tmp_x,tmp_y,tmp_z,
-				   &missing_dz.doubleval,&ngx,&ngy,
-				   tmp_gridx,tmp_gridy,tmp_grid,&domain,
-				   &strict,&ier);
+                                   &missing_dz.doubleval,&ngx,&ngy,
+                                   tmp_gridx,tmp_gridy,tmp_grid,&domain,
+                                   &strict,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
  */
   if(type_grid == NCL_float) {
     coerce_output_float_only(grid,tmp_grid,ngx*ngy,0);
+  }
+/*
+ * Free unneeded memory.
+ */
+  if(type_x     != NCL_double) NclFree(tmp_x);
+  if(type_y     != NCL_double) NclFree(tmp_y);
+  if(type_z     != NCL_double) NclFree(tmp_z);
+  if(type_gridx != NCL_double) NclFree(tmp_gridx);
+  if(type_gridy != NCL_double) NclFree(tmp_gridy);
+  if(type_grid  != NCL_double) NclFree(tmp_grid);
+
+/*
+ * Return with missing value set no matter what, b/c even though input
+ * may not have missing values, the output grid is bound to not have all
+ * of its values filled in.
+ */
+  if(type_grid == NCL_double) {
+    return(NclReturnValue(grid,2,dsizes_grid,&missing_dz,type_grid,0));
+  }
+  else {
+    return(NclReturnValue(grid,2,dsizes_grid,&missing_rz,type_grid,0));
+  }
+}
+
+NhlErrorTypes triple2grid2d_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y, *z, *gridx, *gridy;
+  double *tmp_x, *tmp_y, *tmp_z, *tmp_gridx, *tmp_gridy;
+  int dsizes_x[1], dsizes_y[1], dsizes_z[1], dsizes_gridx[2], dsizes_gridy[2];
+  int has_missing_z;
+  NclBasicDataTypes type_x, type_y, type_z, type_gridx, type_gridy;
+  NclScalar missing_z, missing_rz, missing_dz;
+  logical *option;
+/*
+ * Output array variables
+ */
+  void *grid;
+  double *tmp_grid;
+  int dsizes_grid[2];
+  NclBasicDataTypes type_grid;
+/*
+ * Various
+ */
+  int i, npts, ngx, ngy, size_grid, ier;
+  int mopt = 0;
+  double distmx = 1.e20;
+/*
+ * Variables for retrieving attributes from "options".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+
+/*
+ * Retrieve input arrays. 
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           6,
+           NULL,
+           dsizes_x,
+           NULL,
+           NULL,
+           &type_x,
+           2);
+
+  y = (void*)NclGetArgValue(
+           1,
+           6,
+           NULL,
+           dsizes_y,
+           NULL,
+           NULL,
+           &type_y,
+           2);
+
+  z = (void*)NclGetArgValue(
+           2,
+           6,
+           NULL,
+           dsizes_z,
+           &missing_z,
+           &has_missing_z,
+           &type_z,
+           2);
+
+  gridx = (void*)NclGetArgValue(
+           3,
+           6,
+           NULL,
+           dsizes_gridx,
+           NULL,
+           NULL,
+           &type_gridx,
+           2);
+
+  gridy = (void*)NclGetArgValue(
+           4,
+           6,
+           NULL,
+           dsizes_gridy,
+           NULL,
+           NULL,
+           &type_gridy,
+           2);
+
+  option = (logical*)NclGetArgValue(
+           5,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Check sizes of x, y, and z arrays.
+ */
+  npts = dsizes_x[0];
+  if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The three input arrays must be the same length");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check sizes of gridx and gridy.
+ */
+  ngx = dsizes_gridx[0];
+  ngy = dsizes_gridx[1];
+
+  if(dsizes_y[0] != ngx || dsizes_y[1] != ngy) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two output grids must be the same size");
+    return(NhlFATAL);
+  }
+
+/*
+ * Set sizes for output array.
+ *
+ * Remember, in NCL, the Y dimension is usually associated with dimension
+ * '0, and the X dimension with dimension '1'.
+ */
+  dsizes_grid[0] = ngy;
+  dsizes_grid[1] = ngx;
+  size_grid = ngy * ngx;
+/*
+ * Get type of return variable. If z is double, then return
+ * a double. Return float otherwise.
+ */
+  if(type_z == NCL_double) {
+    type_grid = NCL_double;
+    grid      = (void*)calloc(size_grid,sizeof(double));
+  }
+  else {
+    type_grid = NCL_float;
+    grid      = (void*)calloc(size_grid,sizeof(float));
+  }
+  tmp_grid = coerce_output_double(grid,type_grid,size_grid);
+
+  if(grid == NULL || tmp_grid == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce missing values.  The z missing value will be used to determine
+ * the grid missing value.  If z doesn't have a missing value, then the
+ * default missing value will be used.
+ */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
+
+/*
+ * Coerce input to double if necessary.
+ */
+  tmp_x     = coerce_input_double(x,type_x,npts,0,NULL,NULL);
+  tmp_y     = coerce_input_double(y,type_y,npts,0,NULL,NULL);
+  tmp_z     = coerce_input_double(z,type_z,npts,0,NULL,NULL);
+  tmp_gridx = coerce_input_double(gridx,type_gridx,size_grid,0,NULL,NULL);
+  tmp_gridy = coerce_input_double(gridy,type_gridy,size_grid,0,NULL,NULL);
+
+  if( tmp_x == NULL || tmp_y == NULL || tmp_z == NULL ||
+      tmp_gridx == NULL || tmp_gridy == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: Unable to coerce input arrays to double");
+    return(NhlFATAL);
+  }
+
+/*
+ * If "option" is True, then it may contain some attributes that we
+ * need to retrieve.
+ */
+  if(*option) {
+/*
+ * Retrieve  "option" again, this time getting all the stuff that
+ * might be attached to it (attributes).
+ */
+    stack_entry = _NclGetArg(5, 6, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1, no optional args given, defaults desired
+ */
+        break;
+      }
+      
+/*
+ * Get optional arguments;  if none specified, use defaults
+ */
+      if (attr_obj->att.n_atts == 0) {
+        break;
+      }
+      else {
+/*
+ * att_n_atts > 0, retrieve optional arguments
+ */
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if ((strcmp(attr_list->attname, "distmx")) == 0) {
+            distmx = (double)(*(float *) attr_list->attvalue->multidval.val);
+          }
+          
+          if ((strcmp(attr_list->attname, "mopt")) == 0) {
+            mopt = *(int *) attr_list->attvalue->multidval.val;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+/*
+ * Call the Fortran subroutine.
+ */
+  NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&npts,
+                                       &missing_dz.doubleval,&distmx,&mopt,
+                                       tmp_gridy,tmp_gridx,tmp_grid,&ngx,&ngy);
+/*
+ * Coerce grid back to float if necessary.
+ *
+ */
+  if(type_grid == NCL_float) {
+    coerce_output_float_only(grid,tmp_grid,size_grid,0);
   }
 /*
  * Free unneeded memory.
