@@ -272,6 +272,7 @@ extern NhlErrorTypes wmgetp_W(void);
 extern NhlErrorTypes ngsetp_W(void);
 extern NhlErrorTypes nggetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
+extern NhlErrorTypes wmbarbmap_W(void);
 extern NhlErrorTypes wmdrft_W(void);
 extern NhlErrorTypes wmlabs_W(void);
 extern NhlErrorTypes wmstnm_W(void);
@@ -2632,6 +2633,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
     NclRegisterProc(wmbarb_W,args,"wmbarb",nargs);
+
+/*
+ * Register wmbarbmap
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    NclRegisterProc(wmbarbmap_W,args,"wmbarbmap",nargs);
 
 /*
  * Register wmdrft
