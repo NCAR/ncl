@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.30 2001-01-23 22:26:06 fred Exp $
+C	$Id: gesc.f,v 1.31 2001-01-24 17:58:01 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -522,16 +522,16 @@ C
           SCL = 1./SQRT(UBUF(13)*UBUF(13)+UBUF(14)*UBUF(14))
           XP = UBUF(12)*SCL*UBUF(13)
           YP = UBUF(12)*SCL*UBUF(14)
-          XB =  YP
-          YB = -XP
+          XBT =  YP
+          YBT = -XP
           CALL GZW2NX(1,XP,XTMP)
           CALL GZW2NY(1,YP,YTMP)
           CALL GZW2NX(1,0.,ZXTMP)
           CALL GZW2NY(1,0.,ZYTMP)
           UBUF(23) = XTMP-ZXTMP
           UBUF(24) = YTMP-ZYTMP
-          CALL GZW2NX(1,XB,XTMP)
-          CALL GZW2NY(1,YB,YTMP)
+          CALL GZW2NX(1,XBT,XTMP)
+          CALL GZW2NY(1,YBT,YTMP)
           UBUF(25) = XTMP-ZXTMP
           UBUF(26) = YTMP-ZYTMP
 C
@@ -580,7 +580,7 @@ C
 C
         IF (NWKTP .NE. GCGM) THEN
           ERS = 1
-          CALL GERHND(-400,EESG,ERF)
+          CALL GERHND(-400,EESC,ERF)
           ERS = 0
         ENDIF
 C
@@ -598,7 +598,7 @@ C  workstation.
         CALL GZTOWK
         IF (RERR.NE.0) THEN
           ERS = 1
-          CALL GERHND(RERR,EESG,ERF)
+          CALL GERHND(RERR,EESC,ERF)
           ERS = 0
         ENDIF
         CUFLAG = -1
