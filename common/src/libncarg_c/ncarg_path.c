@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.6 1992-09-24 16:07:33 clyne Exp $
+ *      $Id: ncarg_path.c,v 1.7 1992-09-29 17:49:17 ncargd Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -140,8 +140,8 @@ static	const char *dir_2_path(dir)
  *			this directory. GetNCARGPath() know about the following
  *			directories: $BINDIR, $LIBDIR, $TMPDIR, $DBDIR, 
  *			$FONTCAPDIR, $GRAPHCAPDIR, $EXAMPESDIR, $TESTSDIR, 
- *			$XAPPDIR, and $INCDIR. For $BINDIR, $LIBDIR, $TMPDIR 
- *			and $INCDIR
+ *			$TUTORIALDIR, $XAPPDIR, and $INCDIR. For $BINDIR, $LIBDIR,
+ *          $TMPDIR and $INCDIR
  *			GetNCARGPath() simply calls dir_2_path with dir as
  *			its argument. For the rest of the directories the
  *			path is created as:
@@ -180,6 +180,7 @@ const	char	*GetNCARGPath(dir)
 	char	*graphcap = "graphcaps";
 	char	*examples = "examples";
 	char	*tests = "tests";
+	char	*tutorial = "tutorial";
 	char	*xapp = "xapp";
 	char	*ncarg = "ncarg";
 
@@ -199,6 +200,7 @@ const	char	*GetNCARGPath(dir)
 		||  (strcmp(graphcap, dir) == 0)
 		||  (strcmp(examples, dir) == 0)
 		||  (strcmp(tests, dir) == 0)
+		||  (strcmp(tutorial, dir) == 0)
 		||  (strcmp(xapp, dir) == 0)) {
 
 		libpath = dir_2_path(lib);
