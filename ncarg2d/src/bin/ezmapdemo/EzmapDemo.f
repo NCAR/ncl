@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.7 2001-11-02 22:52:18 kennison Exp $
+C $Id: EzmapDemo.f,v 1.8 2002-12-30 23:21:53 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -80,6 +80,10 @@ C
 C Declare a temporary character variable to read labels and names into.
 C
         CHARACTER*60 CHRT
+C
+C Declare the function and variable necessary to deal with area names.
+C
+        CHARACTER*128 MDFNME,FNME
 C
 C Declare a couple of arrays in which to define boxes to be filled.
 C
@@ -523,6 +527,13 @@ C
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
+            IF (NERRO(NERR).NE.0) GO TO 901
+            IAIC=IGETAI (IAMA,CFUX(.5),CFUY(.5),IAAI,IAGI,NGPS,NOGU,1)
+            PRINT * , ' '
+            PRINT * , 'AREA IDENTIFIER AT CENTER: ',IAIC
+            FNME=MDFNME(IAIC,1)
+            PRINT * , 'NAME OF AREA AT CENTER: ',
+     +                                   FNME(MDIFNB(FNME):MDILNB(FNME))
           ELSE IF (ODNM.EQ.'RG') THEN
             CALL MDRGSF (MOD(IRGL,5),RWRK,LRWK,IAMA,LAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
@@ -537,8 +548,12 @@ C
             CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORA)
             IF (NERRO(NERR).NE.0) GO TO 901
             CALL MAPLOT
+            IF (NERRO(NERR).NE.0) GO TO 901
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLA)
             IF (NERRO(NERR).NE.0) GO TO 901
+            IAIC=IGETAI (IAMA,CFUX(.5),CFUY(.5),IAAI,IAGI,NGPS,NOGU,1)
+            PRINT * , ' '
+            PRINT * , 'AREA IDENTIFIER AT CENTER: ',IAIC
           END IF
           CALL MAPLMB
           CALL MAPLBL
@@ -4274,6 +4289,28 @@ C
 C
 C Done.
 C
+        RETURN
+C
+      END
+
+
+      FUNCTION IGETAI (IAMA,XCOP,YCOP,IAAI,IAGI,MNAI,NOAI,IGRP)
+C
+C This function retrieves from an area map the area identifier, relative
+C to group IGRP, of the area containing the point (XCOP,YCOP).
+C
+        DIMENSION IAAI(MNAI),IAGI(MNAI)
+C
+        CALL ARGTAI (IAMA,XCOP,YCOP,IAAI,IAGI,MNAI,NOAI,1)
+C
+        DO 101 I=1,MNAI
+          IF (IAGI(I).EQ.IGRP) THEN
+            IGETAI=IAAI(I)
+            RETURN
+          END IF
+  101   CONTINUE
+C
+        IGETAI=-1
         RETURN
 C
       END
