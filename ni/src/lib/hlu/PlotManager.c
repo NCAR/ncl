@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.67 2002-03-18 21:20:06 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.68 2002-09-17 21:49:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/CurvilinearTransObj.h>
+#include <ncarg/hlu/SphericalTransObj.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
@@ -4008,9 +4009,20 @@ ManageTickMarks
 		}
 	}
 	else {
-		e_text = 
-			"%s: unknown transformation; turning tick marks off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		if (trobj_name== 
+		    NhlcurvilinearTransObjClass->base_class.class_name ||
+		    trobj_name== 
+		    NhlsphericalTransObjClass->base_class.class_name) {
+			ret = MIN(ret,NhlINFO);
+			e_text = 
+	     "%s: tick marks not supported for 2D coordinate transformations, except as map overlays";
+                }
+		else {	
+			ret = MIN(ret,NhlWARNING);
+			e_text = 
+			 "%s: unknown transformation; turning tick marks off";
+		}
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 		if (init) {
 			anno_rec->status = 
 				ovp->display_tickmarks = NhlNOCREATE;

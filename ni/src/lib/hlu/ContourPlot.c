@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.112 2002-07-18 19:28:17 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.113 2002-09-17 21:49:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1402,6 +1402,8 @@ static void   load_hlucp_routines(
 	NhlBoolean	flag
 #endif
 );
+
+static NhlErrorTypes cnCellFill();
 
 
 NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
@@ -4494,6 +4496,9 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return ret;
 			}
+		}
+		else if (0) {
+			cnCellFill();
 		}
 		else {
 			int msize,nsize;
@@ -11589,5 +11594,123 @@ NhlErrorTypes _NhlRasterFill
 		}
 	}
 
+	return ret;
+}
+
+
+/*
+ * Function:  _NhlCellFill
+ *
+ * Description: fills data cells using GKS fill  
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes cnCellFill
+#if	NhlNeedProto
+(
+)
+#else
+(
+)
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlBoolean      x_isbound,y_isbound;
+	float 		*xa, *ya, *da, *levels;
+	NhlBoolean	is_2d;
+	int		xcount,ycount;
+	int		xsize;
+	int             i,j,k;
+	float		xi[4],yi[4],xo[4],yo[4];
+	char *entry_name = "cnDraw";
+	NhlBoolean	has_missing;
+	int		gcol, fcol,npoints;
+	
+
+        if (Cnp == NULL || ! Cnp->sfp->x_arr || ! Cnp->sfp->y_arr) {
+		e_text = "%s: invalid call to cnCellFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+	
+	if (!  (Cnp->sfp->xc_is_bounds &&  Cnp->sfp->yc_is_bounds)) {
+		e_text = "%s: invalid call to cnCellFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+	is_2d = (Cnp->sfp->x_arr->num_dimensions == 2);
+	xa = (float *)Cnp->sfp->x_arr->data;
+	ya = (float *)Cnp->sfp->y_arr->data;
+	da = (float *)Cnp->data;
+	xsize = Cnp->sfp->fast_dim + 1;
+	xcount = Cnp->sfp->fast_len;
+	ycount = Cnp->sfp->slow_len;
+        levels = (float*) Cnp->levels->data;
+	npoints = 4;
+
+	{ /* for debugging */
+		float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+  	}
+	if (is_2d) {
+		for (j = 0; j < ycount; j++) {
+			int jd = j * (xsize - 1);
+			int jj = j * xsize;
+			int jj1 = (j+1) * xsize;
+			for (i = 1; i < xcount -1; i++) {
+				int status = 0;
+				float zval = *(da + jd + i);
+
+
+				xi[0] = *(xa + jj + i); 
+				xi[1] = *(xa + jj + i + 1);
+				xi[2] = *(xa + jj1 + i + 1);
+				xi[3] = *(xa + jj1 + i); 
+				yi[0] = *(ya + jj + i); 
+				yi[1] = *(ya + jj + i + 1);
+				yi[2] = *(ya + jj1 + i + 1);
+				yi[3] = *(ya + jj1 + i); 
+
+				_NhlDataToWin(Cnp->trans_obj,
+					      xi,yi,4,xo,yo,
+					      &status,NULL,NULL);
+				if (status) {
+					continue;
+				}
+				if (Cnp->sfp->missing_value_set &&
+				    zval == Cnp->sfp->missing_value)
+					fcol = 0;
+				else {
+					fcol = 0;
+					for (k=0; 
+					     k < Cnp->level_count; 
+					     k++) {
+						if (zval <= 
+						    levels[k]) {
+							fcol = k; 
+							break;
+						}
+					}
+					if (fcol == 0) {
+						fcol = 
+							Cnp->level_count;
+					}
+				}
+				gcol = Cnp->gks_fill_colors[fcol];
+				gset_fill_colr_ind(gcol);
+				NGCALLF(gfa,GFA)(&npoints,xo,yo);
+			}
+		}
+	}
 	return ret;
 }
