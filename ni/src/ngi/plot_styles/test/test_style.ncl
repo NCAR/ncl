@@ -7,11 +7,12 @@ undef("fix_longitude")
 undef("fix_longitude_coord")
 undef("set_map_limits_from_object")
 undef("test_func")
+undef("plot_titles")
 
-function test_func ()
+function test_func ( value )
 
 begin
-	print("executing test func")
+	print("executing test func" + value)
 	return 0
 end
 
@@ -399,6 +400,151 @@ begin
 ;	print(ret)
 	return ret
 end	
+ 
+;
+; Add three subtitles to top of plot (left, center, and right).
+;
+; Input: plot to add titles to, three text items representing each title,
+;        three strings representing the titles, and a max height and
+;        height factor for calculating the font height.
+;
+; Output: 0 if okay, 1 if not.
+;
+function plot_titles (plot : graphic, \
+             ltitle : graphic, ltext , \
+             ctitle : graphic, ctext , \
+             rtitle : graphic, rtext , \
+             max_height : float, height_factor : float )
+
+local vp_width,c1,c2,c3,height1,height2,height3,asp1,asp2,asp3,vpon1,vpon2,\
+      vpon3,text1,text2,text3,tchars,ltext_str,ctext_str,rtext_str,\
+      height,asp,sp_per_char,vpon,ret
+begin
+
+    print("entering plot_titles")
+    ret = 0
+;
+; need check to see if these objects are what they are supposed to be
+;
+    getvalues plot
+        "vpWidthF"  : vp_width
+    end getvalues
+
+    getvalues ltitle
+        "txFontAspectF" : asp1
+        "txFontHeightF" : height1
+        "txString"      : text1
+        "vpOn"          : vpon1
+    end getvalues
+
+    getvalues ctitle
+        "txFontAspectF" : asp2
+        "txFontHeightF" : height2
+        "txString"      : text2
+        "vpOn"          : vpon2
+    end getvalues
+
+    getvalues rtitle
+        "txFontAspectF" : asp3
+        "txFontHeightF" : height3
+        "txString"      : text3
+        "vpOn"          : vpon3
+    end getvalues
+
+;
+;   uniform aspect and height enforced for these titles
+;
+    asp = (asp1 + asp2 + asp3) / 3.0
+    print(ctext)
+    ltext_str = ltext + ""
+    ctext_str = ctext + "" 
+    print(ctext_str)
+    print(ctext + "")
+    rtext_str = rtext + ""
+    c1 = stringtochar(ltext_str)
+    c2 = stringtochar(ctext_str)
+    c3 = stringtochar(rtext_str)
+    print("end converting strings")
+    tchars = sizeof(c1) + sizeof(c2) + sizeof(c3) + 3
+;
+; assume constant spacing since that takes the most room
+;
+    sp_per_char = vp_width / tchars
+    
+    height = min((/max_height,sp_per_char/)) * height_factor
+
+    if (sizeof(c1).lt.2)
+        if (vpon1 .ne. False)
+            setvalues ltitle
+                "vpOn" : False
+            end setvalues
+            ret = 1
+        end if
+    else
+      if (.not. (asp1 .eq. asp .and. \
+           height1 .eq. height .and. \
+           text1 .eq. ltext .and. \
+           vpon1 .eq. True))
+        
+        setvalues ltitle
+            "txFontAspectF" : asp
+            "txFontHeightF" : height
+            "txString"      : ltext_str
+            "vpOn"          : True
+        end setvalues
+        ret = 1
+      end if
+    end if
+
+    if (sizeof(c2).lt.2)
+        if (vpon2 .ne. False)
+            setvalues ctitle
+                "vpOn" : False
+            end setvalues
+            ret = 1
+        end if
+    else
+      if (.not. (asp2 .eq. asp .and. \
+           height2 .eq. height .and. \
+           text2 .eq. ctext .and. \
+           vpon2 .eq. True))
+        
+        setvalues ctitle
+            "txFontAspectF" : asp
+            "txFontHeightF" : height
+            "txString"      : ctext_str
+            "vpOn"          : True
+        end setvalues
+        ret = 1
+      end if
+    end if
+
+    if (sizeof(c3).lt.2)
+        if (vpon3 .ne. False)
+            setvalues rtitle
+                "vpOn" : False
+            end setvalues
+            ret = 1
+        end if
+    else
+      if (.not. (asp3 .eq. asp .and. \
+           height3 .eq. height .and. \
+           text3 .eq. rtext .and. \
+           vpon3 .eq. True))
+    
+        setvalues rtitle
+            "txFontAspectF" : asp
+            "txFontHeightF" : height
+            "txString"      : rtext_str
+            "vpOn"          : True
+        end setvalues
+        ret = 1
+      end if
+    end if
+    
+    print("leaving plot_titles")
+    return ret
+end 
 
 function pos_xy_anno (base : graphic, xy : graphic)
 
@@ -507,9 +653,9 @@ begin
     end getvalues
 
 
-;    print(min_lon)
-;    print(center_lon)
-   print(projection)
+;   print(min_lon)
+;   print(center_lon)
+;   print(projection)
 
     getvalues tm
 	"vpOn" : on

@@ -64,6 +64,7 @@
 	xy : xyPlotClass , \
 	left_title : textItemClass , \
 	right_title : textItemClass , \
+	center_title : textItemClass , \
 	timestamp : textItemClass ,\
 	maptick : logLinPlotClass \
 /)
@@ -75,6 +76,7 @@
 *geosf!-2@Pattern : /.*lat.*/i
 *geosf@Description : Georeferenced Scalar Field
 *geosf@Required : True
+
 !
 ! if the geosf2 data, along with the Required attribute is uncommented, is
 ! will cause the plot not to be created immediately. A popup window will 
@@ -128,15 +130,20 @@
 *map@ndvUpdateFunc : set_map_limits_from_object($map$,$cnplot$,False,False)
 *map@ndvUpdateFunc%Profile : (/ Name : Set Map Limits from Data Extent /)
 
-*map@pmAnnoViews : (/$xy$,$left_title$,$right_title$ /)
+*map@pmAnnoViews : (/$xy$,$left_title$,$center_title$,$right_title$ /)
 *map@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 
-*map@ndvUpdateFunc1 : plot_title($map$,\
+!*map@ndvUpdateFunc1 : plot_title($map$,\
 	$left_title$,$geosf$@long_name,$right_title$,$geosf$@units,0.014,1)
+!*map@ndvUpdateFunc1%Profile : (/ Name : Plot Titles /)
+*map@ndvUpdateFunc1 : plot_titles($map$,\
+	$left_title$,$geosf$@long_name,\
+	$center_title$,$geosf$!-3 + " " + $geosf$!-3@units,\
+	$right_title$,$geosf$@units,0.014,1)
 *map@ndvUpdateFunc1%Profile : (/ Name : Plot Titles /)
 
-*map@ndvUpdateFunc2 : test_func ( )
-*map@ndvUpdateFunc2%Profile : (/ InitializeOnly : True /)
+*map@ndvUpdateFunc2 : test_func ($geosf$!-3 )
+*map@ndvUpdateFunc2%Profile : (/ Name : Test Func /)
 
 !*map*mpGeophysicalLineColor : Foreground
 *map*vpXF : 0.08
@@ -186,12 +193,21 @@
 !
 ! the left title annotation
 !
-*left_title*amZone : 3
+*left_title*amZone : 4
 *left_title*amSide : top
 *left_title*amParallelPosF : 0.0
-*left_title*amOrthogonalPosF : 0.05
+*left_title*amOrthogonalPosF : 0.02
 *left_title*amJust : bottomleft
 *left_title*amResizeNotify : True
+!
+! the center title annotation
+!
+*center_title*amZone           : 3
+*center_title*amSide           : Top
+*center_title*amParallelPosF   : 0.5
+*center_title*amOrthogonalPosF : 0.05
+*center_title*amJust           : BottomCenter
+*center_title*amResizeNotify   : True
 !
 ! the right title annotation
 !
