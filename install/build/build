@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.10 1994-02-22 22:47:55 haley Exp $
+#      $Id: build,v 1.11 1994-03-15 14:45:14 haley Exp $
 #
 #########################################################################
 #									#
@@ -241,7 +241,6 @@ $install_dir = "INSTALL";		# where the INSTALL script lives
 	'HPUX_HP9000_7xx', 	'HPUX_snake',
 	'AIX_RS6000', 		'AIX_RS6000',
 	'SunOS_sun4', 		'Sun4',
-	'SunOS_sun3', 		'Sun3',
 	'Solaris_sun4',		'Sun4Solaris',
 	'ULTRIX_RISC',		'DECRISC',
 	'IRIX_IP',		'SGI4D',
