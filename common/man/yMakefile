@@ -1,14 +1,11 @@
 #
-#	$Id: yMakefile,v 1.12 1998-02-04 20:22:54 haley Exp $
+#	$Id: yMakefile,v 1.13 1998-06-14 21:43:50 haley Exp $
 #
 
 MAN1	= fontc graphc ncargpath
-MAN3	= 
 MAN5	= fontcap graphcap
-MAN6	=
-MAN8	= 
 
-MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
+MAN	= $(MAN1) $(MAN5)
 
 # Install preformatted troff documents on systems without troff
 #if	UseCatDirs
@@ -19,10 +16,10 @@ FORMAT_EXT	= .m
 
 #ifdef	InstallManToLocal
 InstallManPages($(MAN),$(FORMAT_EXT),$(MANLPATH),$(MANL_SECTION))
-#else	/* ! InstallManToLocal	*/
+#else
 InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
 InstallManPages($(MAN5),$(FORMAT_EXT),$(MAN5PATH),$(MAN5_SECTION))
-InstallManPages($(MAN8),$(FORMAT_EXT),$(MAN8PATH),$(MAN8_SECTION))
-#endif	/* InstallManToLocal	*/
+#endif
 
 FormatManPages($(MAN),.m,.p)
+
