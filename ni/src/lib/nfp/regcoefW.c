@@ -6,6 +6,10 @@ extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
                                        double *,double *,double *,int *,
                                        double *,double *,int *);
 
+extern void  NGCALLF(dzregr1,DZREGR1)(int *,int *,double *,double *,double *,
+                                      double *,double *,double *,double *, 
+                                      double *);
+
 NhlErrorTypes regcoef_W( void )
 {
 /*
@@ -930,8 +934,8 @@ NhlErrorTypes regCoef_shields_W( void )
   ndims_rcoef = ndims_y - 1;
   dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
   if(dsizes_rcoef == NULL) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_shields: Unable to allocate memory for output array");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_shields: Unable to allocate memory for output array");
+    return(NhlFATAL);
   }
 
   for( i = 0; i < ndims_y-1; i++ ) {
@@ -1002,42 +1006,42 @@ NhlErrorTypes regCoef_shields_W( void )
  * Coerce npts subsection of x (tmp_x) to double.
  */
       coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
-				 &missing_x,&missing_dx);
+                 &missing_x,&missing_dx);
     }
     else {
       tmp_x  = &((double*)x)[lx];
     }
-	  
+      
     for(j = 1; j <= total_size_leftmost_y; j++) {
       if(type_y != NCL_double) {
 /*
  * Coerce npts subsection of y (tmp_y) to double.
  */
-	coerce_subset_input_double(y,tmp_y,ly,type_y,npts,has_missing_y,
-				   &missing_y,&missing_dy);
+    coerce_subset_input_double(y,tmp_y,ly,type_y,npts,has_missing_y,
+                   &missing_y,&missing_dy);
       }
       else {
-	tmp_y  = &((double*)y)[ly];
+    tmp_y  = &((double*)y)[ly];
       }
       
       if(type_rcoef == NCL_double) {
-	tmp_tval  = &((double*)tval)[ln];
-	tmp_rcoef = &((double*)rcoef)[ln];
+    tmp_tval  = &((double*)tval)[ln];
+    tmp_rcoef = &((double*)rcoef)[ln];
       }
-	  
+      
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-				 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-				 &nptxy[ln],&xave,&yave,&ier);
+                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                 &nptxy[ln],&xave,&yave,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
  * Coerce output to float if necessary.
  */
       if(type_rcoef != NCL_double) {
-	((float*)tval)[ln]  = (float)*tmp_tval;
-	((float*)rcoef)[ln] = (float)*tmp_rcoef;
+    ((float*)tval)[ln]  = (float)*tmp_tval;
+    ((float*)rcoef)[ln] = (float)*tmp_rcoef;
       }
-	  
+      
       ly += npts;
       ln ++;
     }
@@ -1569,3 +1573,154 @@ NhlErrorTypes regline_W( void )
   return(NhlNOERROR);
 }
 
+
+NhlErrorTypes reg_multlin_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  double *tmp_x, *tmp_y;
+  logical *opt;
+  int ndims_x, dsizes_y[1], dsizes_x[2];
+  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
+  NclBasicDataTypes type_x, type_y;
+  int has_missing_x, has_missing_y;
+/*
+ * Various
+ */
+  double *cnorm, *resid, con;
+/*
+ * Output variables
+ */
+  void *coef;
+  double *tmp_coef;
+  int dsizes_coef[1];
+  NclBasicDataTypes type_coef;
+  int size_x, mpts, npts;
+/*
+ * various
+ */
+  int i;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  y = (void*)NclGetArgValue(
+           0,
+           3,
+           NULL,
+           dsizes_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
+           2);
+
+  x = (void*)NclGetArgValue(
+           1,
+           3,
+           NULL,
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+
+  opt = (logical *)NclGetArgValue(
+            2,
+            3, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+/*
+ * The y and x coming in must be 1D and 2D respectively. The rightmost
+ * dimension of x must be the same as y's dimension.
+ */
+  if(dsizes_x[1] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: The rightmost dimension of x must be the same as the dimension of y");
+    return(NhlFATAL);
+  }  
+
+/*
+ * Get array sizes.
+ */
+  mpts           = dsizes_x[0];
+  npts           = dsizes_x[1];
+  size_x         = mpts * npts;
+  dsizes_coef[0] = mpts;
+
+/*
+ * Coerce x and y missing values to double if necessary.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+
+/*
+ * Coerce x and y to double if necessary.
+ */
+  tmp_x = coerce_input_double(x,type_x,size_x,has_missing_x,&missing_x,
+                              &missing_dx);
+  tmp_y = coerce_input_double(y,type_y,npts,has_missing_y,&missing_y,
+                              &missing_dy);
+
+  if(tmp_x == NULL || tmp_y == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to coerce input variables to double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for other variables.
+ */
+  cnorm = (double*)calloc(mpts,sizeof(double));
+  resid = (double*)calloc(npts,sizeof(double));
+
+  if(cnorm == NULL || resid == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for input arrays");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate size for output array
+ */
+  if(type_x == NCL_double || type_y == NCL_double) {
+    type_coef = NCL_double;
+    coef      = (double *)calloc(mpts,sizeof(double));
+    tmp_coef  = &((double*)coef)[0];
+  }
+  else {
+    type_coef = NCL_float;
+    coef      = (float *)calloc(mpts,sizeof(float));
+    tmp_coef  = (double *)calloc(mpts,sizeof(double));
+  }
+  if(coef == NULL || tmp_coef == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for output variable");
+    return(NhlFATAL);
+  }
+
+  NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
+                           &missing_dx.doubleval,tmp_coef,resid,con,cnorm);
+
+  if(type_x    != NCL_double) NclFree(tmp_x);
+  if(type_y    != NCL_double) NclFree(tmp_y);
+
+  if(type_coef != NCL_double) {
+    coerce_output_float_only(coef,tmp_coef,mpts,0);
+    NclFree(tmp_coef);
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue(coef,1,dsizes_coef,&missing_ry,NCL_float,0));
+  }
+  else {
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue(coef,1,dsizes_coef,&missing_dy,NCL_double,0));
+  }
+}

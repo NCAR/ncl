@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.80 2004-07-26 03:47:58 haley Exp $
+#      $Id: yMakefile,v 1.81 2004-09-15 22:36:13 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-07-26 03:47:58 $
+#	$Date: 2004-09-15 22:36:13 $
 #
 #	Description:	
 
@@ -74,21 +74,6 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o	\
 	wgneW.o wmapW.o writematrixW.o wrunaveW.o wrapper.o utilW.o			\
 	vinth2pW.o vinth2peW.o zonmpsiW.o
 
-FSRCS = aam.f areaAve.f areaAve2.f areaRmse.f areaRmse2.f areaSum2.f	\
-	calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f cfftf.f cfftf1.f cffti.f		\
-	cffti1.f chiin_dp.f cntrFiniteDiff.f ctwrap.f cz2ccm_dp.f dbetai.f	\
-	dewpt_trh.f dmapgci.f dpsort.f dtrend_dp.f eof2data.f				\
-	exptapersh.f ezfft_dp.f f2foshv.f filtrx.f finfo.f fluxEddyTav_dp.f	\
-	fo2fs_dp.f gausLobat.f grid2triple.f hydro_dp.f index77_dp.f		\
-	int2p_dp.f julGreg.f lclvl.f linint2.f linmsg_dp.f localMinMax.f	\
-	mixhum_ptrh.f paleo_coasts.f passb.f passb2.f passb3.f				\
-	passb4.f passb5.f passf.f passf2.f passf3.f passf4.f passf5.f		\
-	phybrid_ccm.f prcwat.f preshybrid.f prneof_dp.f prneofts_dp.f		\
-	prneofTranspose.f psigma.f random_dp.f rcm2points.f rcm2rgrid.f		\
-	rdsstoi.f regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f			\
-	rmStndx_dp.f rmsd.f round.f runave_dp.f rvdv.f s2h.f setrig.f		\
-	volRmse.f wavelet.f writematrix.f wrunave_dp.f zon_mpsi.f
-
 FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o cfftf.o cfftf1.o cffti.o		\
 	cffti1.o chiin_dp.o cntrFiniteDiff.o ctwrap.o cz2ccm_dp.o dbetai.o	\
@@ -104,9 +89,10 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	rmStndx_dp.o rmsd.o round.o runave_dp.o rvdv.o s2h.o setrig.o		\
 	simpson_dp.o skewT.o smth9_dp.o sp2_util.o sp2_util_dp.o			\
 	specx_dp.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o	\
-	tdez1d.o triple2grid.o trssphx.o trvsphx.o ttest.o upsl_dp.o		\
-	varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o		\
-	volRmse.o wavelet.o writematrix.o wrunave_dp.o zon_mpsi.o
+	tdez1d.o triple2grid.o triple2grid2d.o trssphx.o trvsphx.o ttest.o  \
+	upsl_dp.o varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o     \
+	volAve.o volRmse.o wavelet.o writematrix.o wrunave_dp.o zon_mpsi.o  \
+	zregr.o
 
 OBJS = $(COBJS) $(FOBJS) $(EXFOBJS) $(UDUNITS_OBJS) $(V5D_OBJS)
 

@@ -290,6 +290,7 @@ extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regCoef_W(void);
 extern NhlErrorTypes regCoef_shields_W(void);
 extern NhlErrorTypes regline_W(void);
+extern NhlErrorTypes reg_multlin_W(void);
 extern NhlErrorTypes stat2_W(void);
 extern NhlErrorTypes stat_trim_W(void);
 extern NhlErrorTypes stat_medrng_W(void);
@@ -4178,6 +4179,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
 
     NclRegisterFunc(regline_W,args,"regline",nargs);
+/*
+ * Register "reg_multlin".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+	dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(reg_multlin_W,args,"reg_multlin",nargs);
 /*
  * Register "stat2".
  *
