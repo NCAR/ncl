@@ -12,6 +12,12 @@ in the bargin.  Call it with r0 negative to turn off this
 feature.
 .SH SYNOPSIS
 SUBROUTINE SETR (XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,R0)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_setr (float xmin, float xmax, float ymin, float ymax,
+.br
+float zmin, float zmax, float r0)
 .SH DESCRIPTION 
 .IP "XMIN,XMAX" 12
 Specifies the range of X array that will be passed to SRFACE.
@@ -30,8 +36,13 @@ viewed from the direction which makes the picture
 biggest.  If R0 is not positive, then the
 relative size feature is turned off, and subsequent
 pictures will fill the screen.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN 
+argument descriptions.
 .SH ACCESS
 To use SETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_setr, load 
+the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
