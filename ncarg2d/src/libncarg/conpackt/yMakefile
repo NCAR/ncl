@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 2003-05-28 15:44:36 kennison Exp $
+#       $Id: yMakefile,v 1.2 2004-01-14 23:56:32 kennison Exp $
 #
 
 MYNAME  = conpackt
@@ -14,7 +14,8 @@ GENERIC_SRCS = \
 	ctplps.f ctranf.f ctrset.f ctsbst.f ctscae.f ctsetc.f ctseti.f \
 	ctsetr.f ctsort.f ctstls.f cttmrg.f cttmtl.f cttrcl.f cttreg.f \
 	cttroe.f cttrve.f ctwlam.f hluctchcf.f hluctchcl.f hluctchhl.f \
-	hluctchil.f hluctchll.f hluctmxyz.f hluctscae.f icaedg.f icapnt.f
+	hluctchil.f hluctchll.f hluctmxyz.f hluctscae.f icaedg.f icapnt.f \
+	ctabgc.f
 
 GENERIC_OBJS	= \
 	ctback.o ctblda.o ctcflb.o ctchcf.o ctchcl.o ctchhl.o ctchil.o \
@@ -26,7 +27,8 @@ GENERIC_OBJS	= \
 	ctplps.o ctranf.o ctrset.o ctsbst.o ctscae.o ctsetc.o ctseti.o \
 	ctsetr.o ctsort.o ctstls.o cttmrg.o cttmtl.o cttrcl.o cttreg.o \
 	cttroe.o cttrve.o ctwlam.o hluctchcf.o hluctchcl.o hluctchhl.o \
-	hluctchil.o hluctchll.o hluctmxyz.o hluctscae.o icaedg.o icapnt.o
+	hluctchil.o hluctchll.o hluctmxyz.o hluctscae.o icaedg.o icapnt.o \
+	ctabgc.o
 
 SOURCES = $(GENERIC_SRCS)
 
@@ -39,8 +41,8 @@ PartialLibraryTarget(libNGcn.a,$(OBJECTS))
 
 #if defined(CRAY)
 cttroe.o: cttroe.f
-	$(F77) -g -c cptroe.f
+	$(F77) -g -c cttroe.f
 
 cptrcl.o: cptrcl.f
-	$(F77) -g -c cptrcl.f
+	$(F77) -g -c cttrcl.f
 #endif

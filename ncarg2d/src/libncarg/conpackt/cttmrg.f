@@ -1,5 +1,5 @@
 C
-C $Id: cttmrg.f,v 1.2 2003-07-08 22:10:55 kennison Exp $
+C $Id: cttmrg.f,v 1.3 2004-01-14 23:56:32 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -214,253 +214,249 @@ C
 C Find out from the user's index-mapping routine what indices to use for
 C the three points.
 C
-              CALL RTMI (IDIM,JDIM,INI1,INJ1,IUI1,IUJ1)
-              CALL RTMI (IDIM,JDIM,INI2,INJ2,IUI2,IUJ2)
-              CALL RTMI (IDIM,JDIM,INI3,INJ3,IUI3,IUJ3)
+              CALL RTMI (IDIM,JDIM,INI1,INJ1,IOI1,IOJ1)
+              CALL RTMI (IDIM,JDIM,INI2,INJ2,IOI2,IOJ2)
+              CALL RTMI (IDIM,JDIM,INI3,INJ3,IOI3,IOJ3)
 C
 C Skip the triangle if any two points of it are coincident (because then
 C it's just a line).
 C
-              IF (IUI1.EQ.IUI2.AND.IUJ1.EQ.IUJ2) GO TO 104
-              IF (IUI2.EQ.IUI3.AND.IUJ2.EQ.IUJ3) GO TO 104
-              IF (IUI3.EQ.IUI1.AND.IUJ3.EQ.IUJ1) GO TO 104
+              IF (IOI1.EQ.IOI2.AND.IOJ1.EQ.IOJ2) GO TO 101
+              IF (IOI2.EQ.IOI3.AND.IOJ2.EQ.IOJ3) GO TO 101
+              IF (IOI3.EQ.IOI1.AND.IOJ3.EQ.IOJ1) GO TO 101
+C
+C Skip the triangle if its points all lie too nearly on the same great
+C circle.
+C
+              ANGL=CTABGC(RLAT(IOI1,IOJ1),RLON(IOI1,IOJ1),
+     +                    RLAT(IOI2,IOJ2),RLON(IOI2,IOJ2),
+     +                    RLAT(IOI3,IOJ3),RLON(IOI3,IOJ3))
+C
+              IF (ANGL.LT.1..OR.ANGL.GT.179.) GO TO 101
 C
 C Deal with the first point of the triangle.  We are careful not to put
 C the point into the structure more than once.  (That way, we can test
 C to see if two edges contain the same point by looking at pointers; we
 C don't have to look at coordinates.)
 C
-              IF (ISCR(IUI1,IUJ1,4).GE.0) THEN
-                IPP1=ISCR(IUI1,IUJ1,4)
+              IF (ISCR(IOI1,IOJ1,4).GE.0) THEN
+                IPP1=ISCR(IOI1,IOJ1,4)
               ELSE IF (NPNT+LOPN.GT.MPNT) THEN
                 CALL SETER ('CTTMRG - POINT ARRAY IS TOO SMALL',2,1)
                 RETURN
               ELSE
                 IPP1=NPNT
                 NPNT=NPNT+LOPN
-                ISCR(IUI1,IUJ1,4)=IPP1
+                ISCR(IOI1,IOJ1,4)=IPP1
               END IF
 C
-              RPNT(IPP1+1)=COS(DTOR*RLAT(IUI1,IUJ1))*
-     +                     COS(DTOR*RLON(IUI1,IUJ1))
-              RPNT(IPP1+2)=COS(DTOR*RLAT(IUI1,IUJ1))*
-     +                     SIN(DTOR*RLON(IUI1,IUJ1))
-              RPNT(IPP1+3)=SIN(DTOR*RLAT(IUI1,IUJ1))
-              RPNT(IPP1+4)=         RDAT(IUI1,IUJ1)
+              RPNT(IPP1+1)=COS(DTOR*RLAT(IOI1,IOJ1))*
+     +                     COS(DTOR*RLON(IOI1,IOJ1))
+              RPNT(IPP1+2)=COS(DTOR*RLAT(IOI1,IOJ1))*
+     +                     SIN(DTOR*RLON(IOI1,IOJ1))
+              RPNT(IPP1+3)=SIN(DTOR*RLAT(IOI1,IOJ1))
+              RPNT(IPP1+4)=         RDAT(IOI1,IOJ1)
 C
 C Deal with the second point of the triangle.
 C
-              IF (ISCR(IUI2,IUJ2,4).GE.0) THEN
-                IPP2=ISCR(IUI2,IUJ2,4)
+              IF (ISCR(IOI2,IOJ2,4).GE.0) THEN
+                IPP2=ISCR(IOI2,IOJ2,4)
               ELSE IF (NPNT+LOPN.GT.MPNT) THEN
                 CALL SETER ('CTTMRG - POINT ARRAY IS TOO SMALL',3,1)
                 RETURN
               ELSE
                 IPP2=NPNT
                 NPNT=NPNT+LOPN
-                ISCR(IUI2,IUJ2,4)=IPP2
+                ISCR(IOI2,IOJ2,4)=IPP2
               END IF
 C
-              RPNT(IPP2+1)=COS(DTOR*RLAT(IUI2,IUJ2))*
-     +                     COS(DTOR*RLON(IUI2,IUJ2))
-              RPNT(IPP2+2)=COS(DTOR*RLAT(IUI2,IUJ2))*
-     +                     SIN(DTOR*RLON(IUI2,IUJ2))
-              RPNT(IPP2+3)=SIN(DTOR*RLAT(IUI2,IUJ2))
-              RPNT(IPP2+4)=         RDAT(IUI2,IUJ2)
+              RPNT(IPP2+1)=COS(DTOR*RLAT(IOI2,IOJ2))*
+     +                     COS(DTOR*RLON(IOI2,IOJ2))
+              RPNT(IPP2+2)=COS(DTOR*RLAT(IOI2,IOJ2))*
+     +                     SIN(DTOR*RLON(IOI2,IOJ2))
+              RPNT(IPP2+3)=SIN(DTOR*RLAT(IOI2,IOJ2))
+              RPNT(IPP2+4)=         RDAT(IOI2,IOJ2)
 C
 C Deal with the third point of the triangle.
 C
-              IF (ISCR(IUI3,IUJ3,4).GE.0) THEN
-                IPP3=ISCR(IUI3,IUJ3,4)
+              IF (ISCR(IOI3,IOJ3,4).GE.0) THEN
+                IPP3=ISCR(IOI3,IOJ3,4)
               ELSE IF (NPNT+LOPN.GT.MPNT) THEN
                 CALL SETER ('CTTMRG - POINT ARRAY IS TOO SMALL',4,1)
                 RETURN
               ELSE
                 IPP3=NPNT
                 NPNT=NPNT+LOPN
-                ISCR(IUI3,IUJ3,4)=IPP3
+                ISCR(IOI3,IOJ3,4)=IPP3
               END IF
 C
-              RPNT(IPP3+1)=COS(DTOR*RLAT(IUI3,IUJ3))*
-     +                     COS(DTOR*RLON(IUI3,IUJ3))
-              RPNT(IPP3+2)=COS(DTOR*RLAT(IUI3,IUJ3))*
-     +                     SIN(DTOR*RLON(IUI3,IUJ3))
-              RPNT(IPP3+3)=SIN(DTOR*RLAT(IUI3,IUJ3))
-              RPNT(IPP3+4)=         RDAT(IUI3,IUJ3)
+              RPNT(IPP3+1)=COS(DTOR*RLAT(IOI3,IOJ3))*
+     +                     COS(DTOR*RLON(IOI3,IOJ3))
+              RPNT(IPP3+2)=COS(DTOR*RLAT(IOI3,IOJ3))*
+     +                     SIN(DTOR*RLON(IOI3,IOJ3))
+              RPNT(IPP3+3)=SIN(DTOR*RLAT(IOI3,IOJ3))
+              RPNT(IPP3+4)=         RDAT(IOI3,IOJ3)
 C
 C Deal with the first edge of the triangle (joining points 1 and 2).
 C Again, we are careful not to put an edge into the structure more
 C than once.  (That way, two triangles that share an edge contain
-C pointers to the same edge.)
+C pointers to the same edge.)  The tests used here are a bit opaque;
+C the object is to see if the user routine RTMI has mapped the edge
+C to an edge that will be generated as part of another triangle.
 C
-              IF (IUI1.EQ.INI1.AND.IUJ1.EQ.INJ1.AND.IUI2.EQ.INI2.AND.IUJ
-     +2.EQ.INJ2) THEN
-C
-                IF (INI1.EQ.INI2) THEN
-                  ITYP=1
-                ELSE IF (INJ1.EQ.INJ2) THEN
-                  ITYP=2
+              IF (ABS(IOI1-IOI2).LE.1.AND.ABS(IOJ1-IOJ2).LE.1) THEN
+                IDIR=(IOI1-IOI2)*(IOJ1-IOJ2)
+                IVOK=MOD(MIN(IOI1,IOI2)+MIN(IOJ1,IOJ2),2)
+                IF ((IDIR.EQ.0              ).OR.
+     +              (IDIR.LT.0.AND.IVOK.EQ.0).OR.
+     +              (IDIR.GT.0.AND.IVOK.EQ.1)) THEN
+                  IUI1=IOI1
+                  IUJ1=IOJ1
+                  IUI2=IOI2
+                  IUJ2=IOJ2
                 ELSE
-                  ITYP=3
+                  IUI1=INI1
+                  IUJ1=INJ1
+                  IUI2=INI2
+                  IUJ2=INJ2
                 END IF
-C
-                INIM=MIN(INI1,INI2)
-                INJM=MIN(INJ1,INJ2)
-C
-                IF (ISCR(INIM,INJM,ITYP).GE.0) THEN
-                  IPE1=ISCR(INIM,INJM,ITYP)
-                  IEDG(IPE1+4)=NTRI+1
-                ELSE IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',5,1)
-                  RETURN
-                ELSE
-                  IPE1=NEDG
-                  NEDG=NEDG+LOEN
-                  ISCR(INIM,INJM,ITYP)=IPE1
-                  IEDG(IPE1+1)=IPP1
-                  IEDG(IPE1+2)=IPP2
-                  IEDG(IPE1+3)=NTRI+1
-                  IEDG(IPE1+4)=-1
-                END IF
-C
               ELSE
+                IUI1=INI1
+                IUJ1=INJ1
+                IUI2=INI2
+                IUJ2=INJ2
+              END IF
 C
-                DO 10007 IPET=0,NEDG-LOEN,LOEN
-                  IF (IEDG(IPET+1).EQ.IPP2.AND.IEDG(IPET+2).EQ.IPP1) THE
-     +N
-                    IPE1=IPET
-                    IEDG(IPE1+4)=NTRI+1
-                    GO TO 101
-                  END IF
-10007           CONTINUE
+              IF (IUI1.EQ.IUI2) THEN
+                ITYP=1
+              ELSE IF (IUJ1.EQ.IUJ2) THEN
+                ITYP=2
+              ELSE
+                ITYP=3
+              END IF
 C
-                IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',6,1)
-                  RETURN
-                ELSE
-                  IPE1=NEDG
-                  NEDG=NEDG+LOEN
-                  IEDG(IPE1+1)=IPP1
-                  IEDG(IPE1+2)=IPP2
-                  IEDG(IPE1+3)=NTRI+1
-                  IEDG(IPE1+4)=-1
-                END IF
+              IUIM=MIN(IUI1,IUI2)
+              IUJM=MIN(IUJ1,IUJ2)
 C
-  101         END IF
+              IF (ISCR(IUIM,IUJM,ITYP).GE.0) THEN
+                IPE1=ISCR(IUIM,IUJM,ITYP)
+                IEDG(IPE1+4)=NTRI+1
+              ELSE IF (NEDG+LOEN.GT.MEDG) THEN
+                CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',5,1)
+                RETURN
+              ELSE
+                IPE1=NEDG
+                NEDG=NEDG+LOEN
+                ISCR(IUIM,IUJM,ITYP)=IPE1
+                IEDG(IPE1+1)=IPP1
+                IEDG(IPE1+2)=IPP2
+                IEDG(IPE1+3)=NTRI+1
+                IEDG(IPE1+4)=-1
+              END IF
 C
 C Deal with the second edge of the triangle (joining points 2 and 3).
 C
-              IF (IUI2.EQ.INI2.AND.IUJ2.EQ.INJ2.AND.IUI3.EQ.INI3.AND.IUJ
-     +3.EQ.INJ3) THEN
-C
-                IF (INI2.EQ.INI3) THEN
-                  ITYP=1
-                ELSE IF (INJ2.EQ.INJ3) THEN
-                  ITYP=2
+              IF (ABS(IOI2-IOI3).LE.1.AND.ABS(IOJ2-IOJ3).LE.1) THEN
+                IDIR=(IOI2-IOI3)*(IOJ2-IOJ3)
+                IVOK=MOD(MIN(IOI2,IOI3)+MIN(IOJ2,IOJ3),2)
+                IF ((IDIR.EQ.0              ).OR.
+     +              (IDIR.LT.0.AND.IVOK.EQ.0).OR.
+     +              (IDIR.GT.0.AND.IVOK.EQ.1)) THEN
+                  IUI2=IOI2
+                  IUJ2=IOJ2
+                  IUI3=IOI3
+                  IUJ3=IOJ3
                 ELSE
-                  ITYP=3
+                  IUI2=INI2
+                  IUJ2=INJ2
+                  IUI3=INI3
+                  IUJ3=INJ3
                 END IF
-C
-                INIM=MIN(INI2,INI3)
-                INJM=MIN(INJ2,INJ3)
-C
-                IF (ISCR(INIM,INJM,ITYP).GE.0) THEN
-                  IPE2=ISCR(INIM,INJM,ITYP)
-                  IEDG(IPE2+4)=NTRI+2
-                ELSE IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',7,1)
-                  RETURN
-                ELSE
-                  IPE2=NEDG
-                  NEDG=NEDG+LOEN
-                  ISCR(INIM,INJM,ITYP)=IPE2
-                  IEDG(IPE2+1)=IPP2
-                  IEDG(IPE2+2)=IPP3
-                  IEDG(IPE2+3)=NTRI+2
-                  IEDG(IPE2+4)=-1
-                END IF
-C
               ELSE
+                IUI2=INI2
+                IUJ2=INJ2
+                IUI3=INI3
+                IUJ3=INJ3
+              END IF
 C
-                DO 10008 IPET=0,NEDG-LOEN,LOEN
-                  IF (IEDG(IPET+1).EQ.IPP3.AND.IEDG(IPET+2).EQ.IPP2) THE
-     +N
-                    IPE2=IPET
-                    IEDG(IPE2+4)=NTRI+2
-                    GO TO 102
-                  END IF
-10008           CONTINUE
+              IF (IUI2.EQ.IUI3) THEN
+                ITYP=1
+              ELSE IF (IUJ2.EQ.IUJ3) THEN
+                ITYP=2
+              ELSE
+                ITYP=3
+              END IF
 C
-                IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',8,1)
-                  RETURN
-                ELSE
-                  IPE2=NEDG
-                  NEDG=NEDG+LOEN
-                  IEDG(IPE2+1)=IPP2
-                  IEDG(IPE2+2)=IPP3
-                  IEDG(IPE2+3)=NTRI+2
-                  IEDG(IPE2+4)=-1
-                END IF
+              IUIM=MIN(IUI2,IUI3)
+              IUJM=MIN(IUJ2,IUJ3)
 C
-  102         END IF
+              IF (ISCR(IUIM,IUJM,ITYP).GE.0) THEN
+                IPE2=ISCR(IUIM,IUJM,ITYP)
+                IEDG(IPE2+4)=NTRI+2
+              ELSE IF (NEDG+LOEN.GT.MEDG) THEN
+                CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',7,1)
+                RETURN
+              ELSE
+                IPE2=NEDG
+                NEDG=NEDG+LOEN
+                ISCR(IUIM,IUJM,ITYP)=IPE2
+                IEDG(IPE2+1)=IPP2
+                IEDG(IPE2+2)=IPP3
+                IEDG(IPE2+3)=NTRI+2
+                IEDG(IPE2+4)=-1
+              END IF
 C
 C Deal with the third edge of the triangle (joining points 3 and 1).
 C
-              IF (IUI3.EQ.INI3.AND.IUJ3.EQ.INJ3.AND.IUI1.EQ.INI1.AND.IUJ
-     +1.EQ.INJ1) THEN
-C
-                IF (INI3.EQ.INI1) THEN
-                  ITYP=1
-                ELSE IF (INJ3.EQ.INJ1) THEN
-                  ITYP=2
+              IF (ABS(IOI3-IOI1).LE.1.AND.ABS(IOJ3-IOJ1).LE.1) THEN
+                IDIR=(IOI3-IOI1)*(IOJ3-IOJ1)
+                IVOK=MOD(MIN(IOI3,IOI1)+MIN(IOJ3,IOJ1),2)
+                IF ((IDIR.EQ.0              ).OR.
+     +              (IDIR.LT.0.AND.IVOK.EQ.0).OR.
+     +              (IDIR.GT.0.AND.IVOK.EQ.1)) THEN
+                  IUI3=IOI3
+                  IUJ3=IOJ3
+                  IUI1=IOI1
+                  IUJ1=IOJ1
                 ELSE
-                  ITYP=3
+                  IUI3=INI3
+                  IUJ3=INJ3
+                  IUI1=INI1
+                  IUJ1=INJ1
                 END IF
-C
-                INIM=MIN(INI3,INI1)
-                INJM=MIN(INJ3,INJ1)
-C
-                IF (ISCR(INIM,INJM,ITYP).GE.0) THEN
-                  IPE3=ISCR(INIM,INJM,ITYP)
-                  IEDG(IPE3+4)=NTRI+3
-                ELSE IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',9,1)
-                  RETURN
-                ELSE
-                  IPE3=NEDG
-                  NEDG=NEDG+LOEN
-                  ISCR(INIM,INJM,ITYP)=IPE3
-                  IEDG(IPE3+1)=IPP3
-                  IEDG(IPE3+2)=IPP1
-                  IEDG(IPE3+3)=NTRI+3
-                  IEDG(IPE3+4)=-1
-                END IF
-C
               ELSE
+                IUI3=INI3
+                IUJ3=INJ3
+                IUI1=INI1
+                IUJ1=INJ1
+              END IF
 C
-                DO 10009 IPET=0,NEDG-LOEN,LOEN
-                  IF (IEDG(IPET+1).EQ.IPP1.AND.IEDG(IPET+2).EQ.IPP3) THE
-     +N
-                    IPE3=IPET
-                    IEDG(IPE3+4)=NTRI+3
-                    GO TO 103
-                  END IF
-10009           CONTINUE
+              IF (IUI3.EQ.IUI1) THEN
+                ITYP=1
+              ELSE IF (IUJ3.EQ.IUJ1) THEN
+                ITYP=2
+              ELSE
+                ITYP=3
+              END IF
 C
-                IF (NEDG+LOEN.GT.MEDG) THEN
-                  CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',10,1)
-                  RETURN
-                ELSE
-                  IPE3=NEDG
-                  NEDG=NEDG+LOEN
-                  IEDG(IPE3+1)=IPP3
-                  IEDG(IPE3+2)=IPP1
-                  IEDG(IPE3+3)=NTRI+3
-                  IEDG(IPE3+4)=-1
-                END IF
+              IUIM=MIN(IUI3,IUI1)
+              IUJM=MIN(IUJ3,IUJ1)
 C
-  103         END IF
+              IF (ISCR(IUIM,IUJM,ITYP).GE.0) THEN
+                IPE3=ISCR(IUIM,IUJM,ITYP)
+                IEDG(IPE3+4)=NTRI+3
+              ELSE IF (NEDG+LOEN.GT.MEDG) THEN
+                CALL SETER ('CTTMRG - EDGE ARRAY IS TOO SMALL',9,1)
+                RETURN
+              ELSE
+                IPE3=NEDG
+                NEDG=NEDG+LOEN
+                ISCR(IUIM,IUJM,ITYP)=IPE3
+                IEDG(IPE3+1)=IPP3
+                IEDG(IPE3+2)=IPP1
+                IEDG(IPE3+3)=NTRI+3
+                IEDG(IPE3+4)=-1
+              END IF
 C
 C Finally, add the triangle itself to the triangle list.
 C
@@ -477,7 +473,7 @@ C
                 ITRI(IPTT+4)=0
               END IF
 C
-  104       CONTINUE
+  101       CONTINUE
 10006       CONTINUE
 C
           END IF
