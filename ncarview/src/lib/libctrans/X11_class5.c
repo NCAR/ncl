@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.13 1993-01-13 22:51:03 clyne Exp $
+ *	$Id: X11_class5.c,v 1.14 1993-02-04 19:32:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -152,8 +152,8 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 
 	col_2_alloc = 0;
 
-	if (foreground) name[col_2_alloc++] = foreground;
 	if (background) name[col_2_alloc++] = background;
+	if (foreground) name[col_2_alloc++] = foreground;
 
 	
 
