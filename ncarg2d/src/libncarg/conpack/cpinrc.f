@@ -1,5 +1,5 @@
 C
-C	$Id: cpinrc.f,v 1.1.1.1 1992-04-17 22:32:48 ncargd Exp $
+C	$Id: cpinrc.f,v 1.2 1992-10-15 17:22:07 haley Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -76,9 +76,7 @@ C
 C
 10001 CONTINUE
         NSDR=NSDR+1
-        TMP1=10.**(-NSDR)
-        TMP2=  1.+TMP1
-        TMP3=TMP2+TMP1
+        CALL CPINRK (NSDR,TMP1,TMP2,TMP3)
       IF (.NOT.(TMP2.EQ.1..OR.TMP3.EQ.TMP2.OR.NSDR.GE.100)) GO TO 10001
 C
       EPSI=10.**(1-NSDR)

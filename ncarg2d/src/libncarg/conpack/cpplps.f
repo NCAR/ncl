@@ -1,5 +1,5 @@
 C
-C	$Id: cpplps.f,v 1.1.1.1 1992-04-17 22:32:49 ncargd Exp $
+C	$Id: cpplps.f,v 1.2 1992-10-15 17:22:12 haley Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -123,11 +123,39 @@ C
         RWRK(IPTY+I)=CUFY(RWRK(IPTY+I))
 10001 CONTINUE
 C
+C Cull points that are too close to one another.
+C
+      NXYT=1
+C
+10002 CONTINUE
+        NXYT=NXYT+1
+        IF (NXYT.GT.NXYC) GO TO 10003
+        IF (ABS(RWRK(IPTX+NXYT)-RWRK(IPTX+NXYT-1)).LT.EPSI.AND.ABS(RWRK(
+     +IPTY+NXYT)-RWRK(IPTY+NXYT-1)).LT.EPSI) THEN
+          IF (NXYT.NE.NXYC) THEN
+            DO 10004 I=NXYT+1,NXYC
+              RWRK(IPTX+I-1)=RWRK(IPTX+I)
+              RWRK(IPTY+I-1)=RWRK(IPTY+I)
+10004       CONTINUE
+          ELSE
+            RWRK(IPTX+NXYC-1)=RWRK(IPTX+NXYC)
+            RWRK(IPTY+NXYC-1)=RWRK(IPTY+NXYC)
+          END IF
+          NXYT=NXYT-1
+          NXYC=NXYC-1
+        END IF
+      GO TO 10002
+10003 CONTINUE
+C
+C If there are fewer than three points left, skip it.
+C
+      IF (NXYC.LT.3) RETURN
+C
 C Examine each point along the curve, looking for the point at which
 C the penalty function exists and is minimal.  Put a label there and
 C repeat until no more such points are found.
 C
-10002 CONTINUE
+10005 CONTINUE
 C
 C IMIN will hold the index of the point at which the penalty function
 C is minimized and PMIN will hold the value of the penalty function
@@ -138,7 +166,7 @@ C
 C
 C Loop through the points on the line.
 C
-        DO 10003 I=1,NXYC
+        DO 10006 I=1,NXYC
 C
 C Consider a possible label centered at the point (XCLB,YCLB).
 C
@@ -149,15 +177,15 @@ C If the center point is too close to the center point of a label
 C already put on this line, forget it.
 C
             ILBL = NLBI+1
-            GO TO 10006
-10004       CONTINUE
+            GO TO 10009
+10007       CONTINUE
             ILBL =ILBL +1
-10006       CONTINUE
-            IF (ILBL .GT.(NLBS)) GO TO 10005
+10009       CONTINUE
+            IF (ILBL .GT.(NLBS)) GO TO 10008
             IF ((XCLB-RWRK(IR03+4*(ILBL-1)+1))**2+
      +          (YCLB-RWRK(IR03+4*(ILBL-1)+2))**2.LE.DBLS) GO TO 102
-          GO TO 10004
-10005     CONTINUE
+          GO TO 10007
+10008     CONTINUE
 C
 C Determine at what angle the label would be written and compute the
 C coordinates of the left, right, bottom, and top edges of it.
@@ -206,11 +234,11 @@ C
 C If the label would overlap a previous label, forget it.
 C
             ILBL = 1
-            GO TO 10009
-10007       CONTINUE
+            GO TO 10012
+10010       CONTINUE
             ILBL =ILBL +1
-10009       CONTINUE
-            IF (ILBL .GT.(NLBI)) GO TO 10008
+10012       CONTINUE
+            IF (ILBL .GT.(NLBI)) GO TO 10011
 C
             IF (ILBL.EQ.INIL) XTRA=.5*CHWM*WCIL*(XVPR-XVPL)
             IF (ILBL.EQ.INHL) XTRA=.5*CHWM*WCHL*(XVPR-XVPL)
@@ -256,8 +284,8 @@ C
             IF (XRLB.GE.XLOL.AND.XLLB.LE.XROL.AND.
      +          YTLB.GE.YBOL.AND.YBLB.LE.YTOL) GO TO 102
 C
-          GO TO 10007
-10008     CONTINUE
+          GO TO 10010
+10011     CONTINUE
 C
 C Compute the value of the penalty function at this point.  Initialize
 C to zero.
@@ -315,21 +343,21 @@ C
             CDIR=0.
 C
             J=I
-10010       CONTINUE
+10013       CONTINUE
               K=J
               IF ((RWRK(IPTX+K)-XCLB)**2+(RWRK(IPTY+K)-YCLB)**2.GT.CRAD*
-     +*2)     GO TO 10011
+     +*2)     GO TO 10014
               IF (K.NE.1) THEN
                 J=K-1
               ELSE
                 IF (ABS(RWRK(IPTX+NXYC)-RWRK(IPTX+1)).GT..0001.OR.ABS(RW
      +RK(IPTY+NXYC)-RWRK(IPTY+1)).GT..0001) THEN
                   J=0
-                  GO TO 10011
+                  GO TO 10014
                 END IF
                 IF (I.EQ.NXYC) THEN
                   J=I
-                  GO TO 10011
+                  GO TO 10014
                 END IF
                 J=NXYC-1
               END IF
@@ -349,22 +377,22 @@ C
               IF (CDAP.GT.180.) CDAP=ABS(CDAP-360.)
               CDIR=CDIR+CDAP
   101       CONTINUE
-              IF (J.EQ.I) GO TO 10011
-            GO TO 10010
-10011       CONTINUE
+              IF (J.EQ.I) GO TO 10014
+            GO TO 10013
+10014       CONTINUE
 C
             IF (J.NE.I) THEN
               L=I
-10012         CONTINUE
+10015         CONTINUE
                 K=L
                 IF ((RWRK(IPTX+K)-XCLB)**2+(RWRK(IPTY+K)-YCLB)**2.GT.CRA
-     +D**2)     GO TO 10013
+     +D**2)     GO TO 10016
                 J=K-1
                 IF (K.NE.NXYC) THEN
                   L=K+1
                 ELSE
                   IF (ABS(RWRK(IPTX+NXYC)-RWRK(IPTX+1)).GT..0001.OR.ABS(
-     +RWRK(IPTY+NXYC)-RWRK(IPTY+1)).GT..0001) GO TO 10013
+     +RWRK(IPTY+NXYC)-RWRK(IPTY+1)).GT..0001) GO TO 10016
                   L=2
                 END IF
                 IF (K.NE.I) THEN
@@ -376,8 +404,8 @@ C
                   IF (CDAP.GT.180.) CDAP=ABS(CDAP-360.)
                   CDIR=CDIR+ABS(CDAP)
                 END IF
-              GO TO 10012
-10013         CONTINUE
+              GO TO 10015
+10016         CONTINUE
             END IF
 C
             IF (CDIR.GT.CDMX) GO TO 102
@@ -394,19 +422,19 @@ C
             POPD=1.
 C
               ILBL = INLL
-              GO TO 10016
-10014         CONTINUE
+              GO TO 10019
+10017         CONTINUE
               ILBL =ILBL +1
-10016         CONTINUE
-              IF (ILBL .GT.(NLBI)) GO TO 10015
+10019         CONTINUE
+              IF (ILBL .GT.(NLBI)) GO TO 10018
               IF (INT(RWRK(IR03+4*(ILBL-1)+4)).NE.ICLV) THEN
                 DIST=SQRT((XCLB-RWRK(IR03+4*(ILBL-1)+1))**2+
      +                    (YCLB-RWRK(IR03+4*(ILBL-1)+2))**2)
                 POPD=MIN(POPD,1.-EXP(-((DIST-DOPT*(XVPR-XVPL))
      +                                       /(DFLD*(XVPR-XVPL)))**2))
               END IF
-            GO TO 10014
-10015       CONTINUE
+            GO TO 10017
+10018       CONTINUE
 C
             PNAL=PNAL+WTOD*POPD
 C
@@ -425,7 +453,7 @@ C
           END IF
 C
   102   CONTINUE
-10003   CONTINUE
+10006   CONTINUE
 C
         IF (IMIN.NE.0) THEN
           NLBS=NLBS+1
@@ -445,7 +473,7 @@ C
           RWRK(IR03+4*(NLBS-1)+4)=REAL(ICLV)
         END IF
 C
-      IF (.NOT.(IMIN.EQ.0)) GO TO 10002
+      IF (.NOT.(IMIN.EQ.0)) GO TO 10005
 C
 C Done.
 C
