@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.61 1997-06-11 20:03:45 ethan Exp $
+ *      $Id: Machine.c,v 1.62 1997-08-12 18:03:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -664,7 +664,7 @@ void _NclAbortFrame
 {
 	struct _NclFrameList *tmp;
 	struct _NclFrame *tmp_fp;
-	int n = sb_off - 5;
+	int n = sb_off ;
 	int k = 0;
 
 	if(flist.next != NULL) {
@@ -675,7 +675,7 @@ void _NclAbortFrame
 */
 			tmp = flist.next;
 			tmp_fp = (NclFrame*)(thestack + tmp->fp);
-        		sb_off = sb - tmp->fp + sb_off;
+        		sb_off = sb + sb_off - (tmp->fp+5 + tmp->sb) + tmp->sb + 5;
         		sb = tmp->fp;
 			if((tmp_fp->parameter_map.u.the_list !=NULL)&&(tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
 				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
@@ -687,8 +687,10 @@ void _NclAbortFrame
 			_NclPopFrame(INTRINSIC_PROC_CALL);
 
 		}
+/*
 		sb_off = sb_off + (sb - fp);
 		sb = fp;
+*/
 		flist.next = NULL;
 	}
 }
@@ -701,11 +703,10 @@ void _NclClearToStackBase
 int caller_level;
 #endif
 {
-	int n = sb_off - 5;
 
 	_NclPopScope();
 	_NclLeaveFrame(caller_level);
-	_NclCleanUpStack(n);
+	_NclCleanUpStack(sb_off - 5);
 	_NclPopFrame(INTRINSIC_PROC_CALL);
 	
 }
@@ -726,12 +727,12 @@ static int SetNextFramePtrNLevel
 	if(tmp != NULL) {
 		flist.next = flist.next->next;
 		fp = tmp->fp;
+/*
 		sb_off = sb + sb_off - fp + (tmp->sb);
 		sb = fp;
-/*
-		sb_off = 0;
-		sb = tmp->sb;
 */
+		sb = sb + sb_off + tmp->sb;
+		sb_off = 0;
 		current_scope_level = tmp->level;
 		NclFree(tmp);
 	}
@@ -935,9 +936,13 @@ void *_NclLeaveFrame
 	sb = fp;
 */
 	prev = (NclFrame*)(thestack + fp);
+	sb_off = sb + sb_off - fp;
+	sb = fp;
 	fp = ((NclFrame*)(thestack + fp))->dynamic_link.u.offset;
+/*
 	sb_off = sb - fp + sb_off;
 	sb = fp;
+*/
 	current_scope_level = caller_level;
 	return((void*)prev);
 }

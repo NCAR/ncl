@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.93 1997-06-11 20:03:42 ethan Exp $
+ *      $Id: Execute.c,v 1.94 1997-08-12 18:03:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5219,9 +5219,12 @@ NclExecuteReturnStatus _NclExecute
 /*
 * need to clean up stack !!! for current level
 */
+/*
 				if(level > 1) {
 					_NclAbortFrame();
 				} else {
+*/
+				if(!(level>1)) {
 					_NclCleanUpStack(-1);
 				}
 				level--;
