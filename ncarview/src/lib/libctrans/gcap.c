@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.3 1991-01-09 11:10:19 clyne Exp $
+ *	$Id: gcap.c,v 1.4 1991-01-30 16:27:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -61,10 +61,6 @@
 #include "soft_fill.h"
 #include "translate.h"
 
-#ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.3 1991-01-09 11:10:19 clyne Exp $";
-#endif
-
 extern	FILE	*tty;
 extern	short	devWinSet;
 extern	long	lseek();
@@ -94,10 +90,6 @@ static Ptype	*coordBuf = NULL;
 static long	coordBufNum = 0;	/* the number of coords 
 						currently in the buffer */
 static long	coordBufSize = 0;	/* amount mem allocated		*/
-
-#define	ABS(X)          ((X) < 0 ? -(X) : (X))
-#define	MIN(A,B)	((A) < (B) ? (A) : (B))
-#define	MAX(A,B)	((A) > (B) ? (A) : (B))
 
 static	int	fillScaleFactor;
 
@@ -729,7 +721,9 @@ CGMC *c;
 		/*
 		 * clear the display
 		 */
-		(void)buffer(ERASE, ERASE_SIZE);
+		if (!BATCH) {	/* don't clear batch devices to start */
+			(void)buffer(ERASE, ERASE_SIZE);
+		}
 	}
 		
 
