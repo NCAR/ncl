@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.18 1997-01-31 22:52:52 clyne Exp $
+ *	$Id: rasview.c,v 1.19 1999-07-27 21:30:33 haley Exp $
  */
 /*
  *	rasview.c
@@ -11,6 +11,7 @@
  *	Display a raster file to an X window. 
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>     /* Get standard string definations. */
 #include <X11/Shell.h>
