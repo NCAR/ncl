@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.159 2004-12-14 05:17:41 haley Exp $
+;      $Id: gsn_code.ncl,v 1.160 2005-01-04 15:22:42 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2615,6 +2615,7 @@ end
 function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir
 begin
+    type2   = type          ; Make copy of type and its resources
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
 ;
@@ -2651,59 +2652,62 @@ begin
 ;
     wks = new(1,graphic)
 
-    if (lower_case(type).eq."x11") then
+    if (lower_case(type2).eq."x11") then
       x_file = res_file
-      if (isatt(type,"wkColorMap"))
-        x_file@wkColorMap = type@wkColorMap
+      if (isatt(type2,"wkColorMap"))
+        x_file@wkColorMap = type2@wkColorMap
       end if
       wks = gsn_open_x11(x_file)
     end if
 
-    if (lower_case(type).eq."ps".or.lower_case(type).eq."eps".or. \
-        lower_case(type).eq."epsi") then
-      ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
+    if (lower_case(type2).eq."ps".or.lower_case(type2).eq."eps".or. \
+        lower_case(type2).eq."epsi") then
+      ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
       ps_file@res_file = res_file
-      wks = gsn_open_ps(type,res_dir+ps_file)
+      wks = gsn_open_ps(type2,res_dir+ps_file)
     end if
 
-    if (lower_case(type).eq."ncgm") then
-      ncgm_file = get_res_value_keep(type,"wkMetaName",res_file + ".ncgm")
+    if (lower_case(type2).eq."ncgm") then
+      ncgm_file = get_res_value(type2,"wkMetaName",res_file + ".ncgm")
       ncgm_file = res_dir + ncgm_file
       ncgm_file@res_file = res_file
-      if (isatt(type,"wkColorMap"))
-        ncgm_file@wkColorMap = type@wkColorMap
+      if (isatt(type2,"wkColorMap"))
+        ncgm_file@wkColorMap = type2@wkColorMap
       end if
       wks = gsn_open_ncgm(ncgm_file)
     end if
 
-    if (lower_case(type).eq."pdf") then
-      pdf_file = get_res_value_keep(type,"wkPDFFileName", \
-                                    res_file + "." + type)
+    if (lower_case(type2).eq."pdf") then
+      pdf_file = get_res_value(type2,"wkPDFFileName", \
+                               res_file + "." + type2)
       pdf_file@res_file = res_file
-      wks = gsn_open_pdf(type, res_dir+pdf_file)
+      wks = gsn_open_pdf(type2, res_dir+pdf_file)
     end if
 
-    if (lower_case(type).eq."xwd".or.lower_case(type).eq."png") then
-      image_file = get_res_value_keep(type,"wkImageFileName", res_file)
+    if (lower_case(type2).eq."xwd".or.lower_case(type2).eq."png") then
+      image_file = get_res_value(type2,"wkImageFileName", res_file)
       image_file@res_file = res_file
-      wks = gsn_open_image(type, res_dir+image_file)
+      wks = gsn_open_image(type2, res_dir+image_file)
     end if
 
     if (ismissing(wks)) then
-      print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
+      print("Error: gsn_open_wks: "+ type2 + " is an illegal workstation type.")
       exit
     end if
 
 ;
 ; Apply other resources.
 ;
-  varatts = getvaratts(type)
+; First create list of resources that we *don't* want applied, as we've
+; should have applied them by this point.
+;
+  varatts = getvaratts(type2)
   if(.not.any(ismissing(varatts))) then
     wks_res = True
+    res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel"/)
     do i=0,dimsizes(varatts)-1
-      if(varatts(i).ne."wkColorMap".and.varatts(i).ne."wkWidth".and. \
-         varatts(i).ne."wkHeight".and.varatts(i).ne."wkColorModel") then
-        wks_res@$varatts(i)$ = type@$varatts(i)$
+      if(all(varatts(i).ne.res_list)) then
+        wks_res@$varatts(i)$ = type2@$varatts(i)$
       end if  
     end do
     attsetvalues_check(wks,wks_res)
