@@ -1,5 +1,5 @@
 C
-C	$Id: gziqwk.f,v 1.2 1994-03-30 02:06:07 fred Exp $
+C	$Id: gziqwk.f,v 1.3 1994-04-29 00:44:49 fred Exp $
 C
       SUBROUTINE GZIQWK(WTYPE,WKID)
 C
@@ -17,7 +17,7 @@ C
 C  Invoke workstation driver for all inquiry functions.
 C
       IF (WTYPE .EQ. GCGM) THEN
-        CALL G01WDR(WKID)
+        CALL G01WDR(WKID,' ')
         RETURN
       ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
      +         WTYPE.EQ.GXWE  .OR.

@@ -1,5 +1,5 @@
 C
-C	$Id: gclrwk.f,v 1.2 1993-01-09 01:57:58 fred Exp $
+C	$Id: gclrwk.f,v 1.3 1994-04-29 00:44:45 fred Exp $
 C
       SUBROUTINE GCLRWK(WKID,COFL)
 C
@@ -66,7 +66,7 @@ C
           FCODE = 91
           CONT  =  0
           CALL GZROI(0)
-          CALL G01WDR(WKID)
+          CALL G01WDR(WKID,' ')
           FCODE  = FCODEO
           CONT   = CONTO
           NOPICT = 1

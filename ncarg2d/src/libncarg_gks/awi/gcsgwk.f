@@ -1,5 +1,5 @@
 C
-C	$Id: gcsgwk.f,v 1.3 1994-03-30 02:05:58 fred Exp $
+C	$Id: gcsgwk.f,v 1.4 1994-04-29 00:44:48 fred Exp $
 C
       SUBROUTINE GCSGWK(WKID,SGNA)
 C
@@ -146,14 +146,14 @@ C
 C
 C  Invoke the workstation interface.
 C
-C  Put out a new picture initialization of the picture is empty.
+C  Put out a new picture initialization if the picture is empty.
 C
         IF (NOPICT .LE. 0) THEN
           FCODEO = FCODE
           CONTO  = CONT
           FCODE  = 91
           CONT   =  0
-          CALL G01WDR(WKID)
+          CALL G01WDR(WKID,' ')
           FCODE  = FCODEO
           CONT   = CONTO
           NOPICT = 1
