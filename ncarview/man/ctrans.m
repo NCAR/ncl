@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.16 1993-03-11 00:18:14 clyne Exp $
+.\"	$Id: ctrans.m,v 1.17 1993-03-16 22:01:00 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -494,6 +494,7 @@ which ignores the
 option. 
 .I dpi
 may be one of 75, 100, 150, or 300.
+The default is 150.
 .TP
 .B \-direct
 By default
