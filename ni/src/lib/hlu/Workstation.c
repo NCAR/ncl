@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.58 1996-12-12 02:51:54 dbrown Exp $
+ *      $Id: Workstation.c,v 1.59 1997-01-14 21:23:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3632,10 +3632,11 @@ _NhlSetLineInfo
 /*
  * Flush plotif buffer...
  */
-#if 0
+
 	c_sflush();
-#endif
+#if 0
 	c_plotif(0.0,0.0,2);
+#endif
 
 /*
  * Since Ezmap does not currently use dashpack, map data polylines and 

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.32 1997-01-08 21:10:22 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.33 1997-01-14 21:23:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1896,6 +1896,8 @@ static NhlErrorTypes PlotManagerPostDraw
 					break;
 				}
 			}
+                        if (anlp->track_data && anlp->out_of_range)
+                                continue;
 			if (anlp->plot_id == NhlNULLOBJID)
 				continue;
 			view = _NhlGetLayer(anlp->plot_id);
@@ -2480,15 +2482,7 @@ static NhlErrorTypes SetViewTracking
 	
 	if (anno_rec->status == NhlNEVER)
 		return ret;
-
-#if 0
-	if (plot->trans.do_ndc_overlay) {
-		plot_for_trans = (NhlLayer)plot;
-	}
-	else {
-		plot_for_trans = ovl->trans.overlay_object->base.parent;
-	}
-#endif
+        
 	NhlDataToNDC(plot->base.id,
 		     &anno_rec->data_x,&anno_rec->data_y,1,
 		     &x_pos,&y_pos,NULL,NULL,&status,&oo_range);

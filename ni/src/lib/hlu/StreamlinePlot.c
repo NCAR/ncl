@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.20 1996-11-18 22:21:40 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.21 1997-01-14 21:23:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1923,9 +1923,11 @@ static NhlErrorTypes    StreamlinePlotGetValues
 		if (args[i].quark == Qmax_magnitude_format){
 			ts = stp->mag_scale.format.fstring;
 		}
+#if 0
 		else if (args[i].quark == Qmax_svalue_format){
 			ts = stp->svalue_scale.format.fstring;
 		}
+#endif
 		else if(args[i].quark == Qno_data_label_string){
 			ts = stp->zerof_lbl.string2;
 		}
@@ -2215,9 +2217,11 @@ NhlLayer inst;
 	
         if (stp->mag_scale.format.fstring != NULL)
                 NhlFree(stp->mag_scale.format.fstring);
+#if 0
         if (stp->svalue_scale.format.fstring != NULL)
                 NhlFree(stp->svalue_scale.format.fstring);
-
+#endif
+        
         if (stp->zerof_lbl.string2 != NULL)
                 NhlFree(stp->zerof_lbl.string2);
         if (stp->zerof_lbl.string1 != NULL)
@@ -3542,10 +3546,11 @@ static NhlErrorTypes SetFormat
 		subret = SetFormatRec(&stp->mag_scale.format,
 				      NhlNstMagnitudeFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+#if 0
 		subret = SetFormatRec(&stp->svalue_scale.format,
 				      NhlNstScalarValueFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		
+#endif	
 		return ret;
 	}
 	if (stp->mag_scale.format.fstring != 
@@ -3557,6 +3562,7 @@ static NhlErrorTypes SetFormat
 			NhlFree(ostp->mag_scale.format.fstring);
 		ostp->mag_scale.format.fstring = NULL;
 	}
+#if 0
 	if (stp->svalue_scale.format.fstring != 
 	    ostp->svalue_scale.format.fstring) {
 		subret = SetFormatRec(&stp->svalue_scale.format,
@@ -3566,6 +3572,7 @@ static NhlErrorTypes SetFormat
 			NhlFree(ostp->svalue_scale.format.fstring);
 		ostp->svalue_scale.format.fstring = NULL;
 	}
+#endif
 	return ret;
 }
 
@@ -4137,8 +4144,11 @@ static NhlErrorTypes ManageLabelBar
 			NhlFormatRec *frec;
 			NhlstScaleInfo	*sip;
 
+#if 0
 			sip=(stp->use_scalar_array && stp->scalar_data_init) ?
 				   &stp->svalue_scale : &stp->mag_scale;
+#endif
+                        sip = &stp->mag_scale;
 			frec = &sip->format;
 			copy = True;
 			count = stp->level_count + 2;
@@ -5087,7 +5097,7 @@ static NhlErrorTypes    ManageVectorData
 	return ret;
 }
 
-
+#if 0
 /*
  * Function:  ManageScalarData
  *
@@ -5201,6 +5211,7 @@ static NhlErrorTypes    ManageScalarData
 	return ret;
 }
 
+#endif
 /*
  * Function:  ManageViewDepResources
  *
@@ -5515,6 +5526,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /* Set up label scaling - the levels must have been set */
 
+#if 0        
 	if (stp->use_scalar_array && stp->scalar_data_init) {
 		sip = &stp->svalue_scale;
 		osip = &ostp->svalue_scale;
@@ -5527,14 +5539,16 @@ static NhlErrorTypes    ManageDynamicArrays
 		scalar_labels = False;
 		mag_labels = True;
 	}
-
-	subret = SetScale(stnew,stold,&stp->mag_scale,
-			  &ostp->mag_scale,mag_labels,init);
+#endif
+        sip = &stp->mag_scale;
+        osip = &ostp->mag_scale;
+	subret = SetScale(stnew,stold,sip,osip,True,init);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting up label scaling";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+#if 0
 	subret = SetScale(stnew,stold,&stp->svalue_scale,
 			  &ostp->svalue_scale,scalar_labels,init);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -5542,7 +5556,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
+#endif
+        
 /*=======================================================================*/
 	
 /*
@@ -5985,8 +6000,7 @@ static NhlErrorTypes    SetupLevels
 	    (stp->max_level_count == ostp->max_level_count) &&
 	    (stp->min_level_val == ostp->min_level_val) &&
 	    (stp->max_level_val == ostp->max_level_val) &&
-	    (stp->zero_field == ostp->zero_field) &&
-	    (stp->use_scalar_array == ostp->use_scalar_array))
+	    (stp->zero_field == ostp->zero_field))
 		return ret;
 
 	if (stp->level_spacing_set && stp->level_spacing <= 0.0) {

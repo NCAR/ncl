@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.52 1996-12-12 02:51:48 dbrown Exp $
+ *      $Id: TickMark.c,v 1.53 1997-01-14 21:23:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2669,10 +2669,11 @@ static NhlErrorTypes DrawBorder
 	} else {
 		n = 0;
 	}
-#if 0
+
 	c_sflush();
-#endif
+#if 0
 	c_plotif(0.0,0.0,2);
+#endif
 
 	return(ret);
 }
