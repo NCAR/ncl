@@ -1,5 +1,5 @@
 C
-C	$Id: curve.f,v 1.1.1.1 1992-04-17 22:32:29 ncargd Exp $
+C $Id: curve.f,v 1.2 1993-12-12 20:55:15 kennison Exp $
 C
       SUBROUTINE CURVE (PX,PY,NP)
 C
@@ -21,6 +21,7 @@ C If NP is exactly equal to 1, just draw a point.
 C
       IF (NP.EQ.1) THEN
         CALL POINT (PX(1),PY(1))
+        IF (ICFELL('POINT',1).NE.0) RETURN
 C
 C Otherwise, draw the curve.
 C
@@ -29,10 +30,12 @@ C
 C Flush the pen-move buffer.
 C
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('POINT',2).NE.0) RETURN
 C
 C Save the current SET parameters.
 C
         CALL GETSET (F1,F2,F3,F4,F5,F6,F7,F8,LL)
+        IF (ICFELL('POINT',3).NE.0) RETURN
 C
 C If the mapping defined by the last SET call was non-reversed and
 C linear in both x and y, a single polyline will suffice.
@@ -52,8 +55,10 @@ C
                 QY(IQ)=CUFY(PY(IP+IQ-1))
   101         CONTINUE
               CALL SET (F1,F2,F3,F4,F1,F2,F3,F4,1)
+              IF (ICFELL('POINT',4).NE.0) RETURN
               CALL GPL (NQ,QX,QY)
               CALL SET (F1,F2,F3,F4,F5,F6,F7,F8,LL)
+              IF (ICFELL('POINT',5).NE.0) RETURN
             END IF
   102     CONTINUE
         END IF
@@ -61,6 +66,7 @@ C
 C Update the pen position.
 C
         CALL FRSTPT (PX(NP),PY(NP))
+        IF (ICFELL('POINT',6).NE.0) RETURN
 C
       END IF
 C

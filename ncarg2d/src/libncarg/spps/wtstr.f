@@ -1,5 +1,5 @@
 C
-C	$Id: wtstr.f,v 1.1.1.1 1992-04-17 22:32:35 ncargd Exp $
+C $Id: wtstr.f,v 1.2 1993-12-12 20:56:30 kennison Exp $
 C
       SUBROUTINE WTSTR (PX,PY,CH,IS,IO,IC)
 C
@@ -31,19 +31,30 @@ C
 C Flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
+      IF (ICFELL('WTSTR',1).NE.0) RETURN
 C
 C Compute the coordinates of (PX,PY) in the fractional coordinate
 C system (normalized device coordinates).
 C
       XN=CUFX(PX)
+      IF (ICFELL('WTSTR',2).NE.0) RETURN
       YN=CUFY(PY)
+      IF (ICFELL('WTSTR',3).NE.0) RETURN
 C
 C Save the current window and, if necessary, redefine it so that we can
 C use normalized device coordinates.
 C
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('WTSTR - ERROR EXIT FROM GQCNTN',4,1)
+        RETURN
+      END IF
       IF (NT.NE.0) THEN
         CALL GQNT (NT,IE,WD,VP)
+        IF (IE.NE.0) THEN
+          CALL SETER ('WTSTR - ERROR EXIT FROM GQNT',5,1)
+          RETURN
+        END IF
         CALL GSWN (NT,VP(1),VP(2),VP(3),VP(4))
       END IF
 C
@@ -51,14 +62,31 @@ C Save current character height, text path, character up vector, and
 C text alignment.
 C
       CALL GQCHH (IE,OS)
+      IF (IE.NE.0) THEN
+        CALL SETER ('WTSTR - ERROR EXIT FROM GQCHH',6,1)
+        RETURN
+      END IF
       CALL GQTXP (IE,IP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('WTSTR - ERROR EXIT FROM GQTXP',7,1)
+        RETURN
+      END IF
       CALL GQCHUP (IE,UX,UY)
+      IF (IE.NE.0) THEN
+        CALL SETER ('WTSTR - ERROR EXIT FROM GQCHUP',8,1)
+        RETURN
+      END IF
       CALL GQTXAL (IE,IX,IY)
+      IF (IE.NE.0) THEN
+        CALL SETER ('WTSTR - ERROR EXIT FROM GQTXAL',9,1)
+        RETURN
+      END IF
 C
 C Define the character height.  (The final scale factor is derived from
 C the default font.)
 C
       CALL GETUSV ('YF',MY)
+      IF (ICFELL('WTSTR',10).NE.0) RETURN
       YS=FLOAT(2**MY)
       IF (IS.GE.0.AND.IS.LE.3) THEN
         CS=FLOAT(8+4*IS+4*(IS/3))/YS
@@ -115,6 +143,7 @@ C
 C Update the pen position.
 C
       CALL FRSTPT (PX,PY)
+      IF (ICFELL('WTSTR',11).NE.0) RETURN
 C
 C Done.
 C

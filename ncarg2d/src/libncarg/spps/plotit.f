@@ -1,5 +1,5 @@
 C
-C	$Id: plotit.f,v 1.1.1.1 1992-04-17 22:32:31 ncargd Exp $
+C $Id: plotit.f,v 1.2 1993-12-12 20:56:07 kennison Exp $
 C
       SUBROUTINE PLOTIT (IX,IY,IP)
 C
@@ -39,7 +39,8 @@ C
 C Check for out-of-range values of the pen parameter.
 C
       IF (IP.LT.0.OR.IP.GT.2) THEN
-        CALL SETER ('PLOTIT - ILLEGAL VALUE FOR IPEN',1,2)
+        CALL SETER ('PLOTIT - ILLEGAL VALUE FOR IPEN',1,1)
+        RETURN
       END IF
 C
 C If a buffer flush is requested, jump.
@@ -88,8 +89,16 @@ C zero, modify the current transformation so that we can use fractional
 C coordinates (normalized device coordinates, in GKS terms).
 C
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('PLOTIT - ERROR EXIT FROM GQCNTN',2,1)
+        RETURN
+      END IF
       IF (NT.NE.0) THEN
         CALL GQNT (NT,IE,WD,VP)
+        IF (IE.NE.0) THEN
+          CALL SETER ('PLOTIT - ERROR EXIT FROM GQNT',3,1)
+          RETURN
+        END IF
         CALL GSWN (NT,VP(1),VP(2),VP(3),VP(4))
       END IF
 C

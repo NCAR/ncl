@@ -1,9 +1,9 @@
 C
-C	$Id: kfmx.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kfmx.f,v 1.2 1993-12-12 20:55:31 kennison Exp $
 C
       FUNCTION KFMX (RX)
 C
-C Given an x coordinate RX in the fractional system, KFMX(RX) is an x
+C Given an X coordinate RX in the fractional system, KFMX(RX) is an X
 C coordinate in the metacode system.
 C
       KFMX=IFIX(RX*32767.)

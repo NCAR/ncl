@@ -1,5 +1,5 @@
 C
-C	$Id: seti.f,v 1.1.1.1 1992-04-17 22:32:34 ncargd Exp $
+C $Id: seti.f,v 1.2 1993-12-12 20:56:19 kennison Exp $
 C
       SUBROUTINE SETI (IX,IY)
 C

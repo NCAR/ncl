@@ -1,5 +1,5 @@
 C
-C	$Id: getusv.f,v 1.1.1.1 1992-04-17 22:32:30 ncargd Exp $
+C $Id: getusv.f,v 1.2 1993-12-12 20:55:28 kennison Exp $
 C
       SUBROUTINE GETUSV (VN,IV)
       CHARACTER*(*) VN
@@ -81,7 +81,7 @@ C
 C Otherwise, the variable name is unknown.
 C
       ELSE
-        CALL SETER ('GETUSV - UNKNOWN VARIABLE NAME IN CALL',1,2)
+        CALL SETER ('GETUSV - UNKNOWN VARIABLE NAME IN CALL',1,1)
 C
       ENDIF
 C

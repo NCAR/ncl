@@ -1,9 +1,9 @@
 C
-C	$Id: kfpx.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kfpx.f,v 1.2 1993-12-12 20:55:35 kennison Exp $
 C
       FUNCTION KFPX (RX)
 C
-C Given an x coordinate RX in the fractional system, KFPX(RX) is an x
+C Given an X coordinate RX in the fractional system, KFPX(RX) is an X
 C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)

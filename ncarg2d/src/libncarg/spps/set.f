@@ -1,5 +1,5 @@
 C
-C	$Id: set.f,v 1.1.1.1 1992-04-17 22:32:31 ncargd Exp $
+C $Id: set.f,v 1.2 1993-12-12 20:56:16 kennison Exp $
 C
       SUBROUTINE SET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C
@@ -26,6 +26,7 @@ C
 C Flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
+      IF (ICFELL('SET',1).NE.0) RETURN
 C
 C Set the GKS viewport for transformation 1.
 C

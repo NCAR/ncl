@@ -1,9 +1,9 @@
 C
-C	$Id: kmpx.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kmpx.f,v 1.2 1993-12-12 20:55:40 kennison Exp $
 C
       FUNCTION KMPX (IX)
 C
-C Given an x coordinate IX in the metacode system, KMPX(IX) is an x
+C Given an X coordinate IX in the metacode system, KMPX(IX) is an X
 C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)

@@ -1,5 +1,5 @@
 C
-C	$Id: getset.f,v 1.1.1.1 1992-04-17 22:32:30 ncargd Exp $
+C $Id: getset.f,v 1.2 1993-12-12 20:55:24 kennison Exp $
 C
       SUBROUTINE GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C
@@ -30,10 +30,18 @@ C
 C Retrieve the number of the current GKS normalization transformation.
 C
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('GETSET - ERROR EXIT FROM GQCNTN',1,1)
+        RETURN
+      END IF
 C
 C Retrieve the definition of that normalization transformation.
 C
       CALL GQNT (NT,IE,WD,VP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('GETSET - ERROR EXIT FROM GQNT',2,1)
+        RETURN
+      END IF
 C
 C Pass the viewport definition to the caller.
 C

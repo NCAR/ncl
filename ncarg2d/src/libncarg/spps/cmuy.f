@@ -1,16 +1,26 @@
 C
-C	$Id: cmuy.f,v 1.1.1.1 1992-04-17 22:32:27 ncargd Exp $
+C $Id: cmuy.f,v 1.2 1993-12-12 20:54:59 kennison Exp $
 C
       FUNCTION CMUY (IY)
 C
-C Given a y coordinate IY in the metacode system, CMUY(IY) is a y
+C Given a Y coordinate IY in the metacode system, CMUY(IY) is a Y
 C coordinate in the user system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
       DIMENSION WD(4),VP(4)
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CMUY - ERROR EXIT FROM GQCNTN',1,1)
+        CMUY=0.
+        RETURN
+      END IF
       CALL GQNT (NT,IE,WD,VP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CMUY - ERROR EXIT FROM GQNT',2,1)
+        CMUY=0.
+        RETURN
+      END IF
       I=3
       IF (MI.EQ.2.OR.MI.GE.4) I=4
       CMUY=WD(I)+(FLOAT(IY)/32767.-VP(3))/(VP(4)-VP(3))*(WD(7-I)-WD(I))

@@ -1,5 +1,5 @@
 C
-C	$Id: fl2int.f,v 1.1.1.1 1992-04-17 22:32:29 ncargd Exp $
+C $Id: fl2int.f,v 1.2 1993-12-12 20:55:17 kennison Exp $
 C
       SUBROUTINE FL2INT (PX,PY,IX,IY)
 C
@@ -20,7 +20,15 @@ C
 C Get the variables defining the current window and viewport.
 C
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('FL2INT - ERROR EXIT FROM GQCNTN',1,1)
+        RETURN
+      END IF
       CALL GQNT (NT,IE,WD,VP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('FL2INT - ERROR EXIT FROM GQNT',2,1)
+        RETURN
+      END IF
 C
 C Compute IX.
 C

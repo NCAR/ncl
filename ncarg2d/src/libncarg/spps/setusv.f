@@ -1,5 +1,5 @@
 C
-C	$Id: setusv.f,v 1.1.1.1 1992-04-17 22:32:35 ncargd Exp $
+C $Id: setusv.f,v 1.2 1993-12-12 20:56:21 kennison Exp $
 C
       SUBROUTINE SETUSV (VN,IV)
       CHARACTER*(*) VN
@@ -27,7 +27,8 @@ C     4 = X log   , Y log
 C
       IF (VN(1:2).EQ.'LS') THEN
         IF (IV.LT.1.OR.IV.GT.4) THEN
-          CALL SETER ('SETUSV - LOG SCALE VALUE OUT OF RANGE',2,2)
+          CALL SETER ('SETUSV - LOG SCALE VALUE OUT OF RANGE',1,1)
+          RETURN
         END IF
         IU(1)=IV
 C
@@ -41,7 +42,8 @@ C     4 = X reversed, Y reversed
 C
       ELSE IF (VN(1:2).EQ.'MI') THEN
         IF (IV.LT.1.OR.IV.GT.4) THEN
-          CALL SETER ('SETUSV - MIRROR-IMAGING VALUE OUT OF RANGE',3,2)
+          CALL SETER ('SETUSV - MIRROR-IMAGING VALUE OUT OF RANGE',2,1)
+          RETURN
         END IF
         IU(2)=IV
 C
@@ -50,7 +52,8 @@ C the x direction.
 C
       ELSE IF (VN(1:2).EQ.'XF') THEN
         IF (IV.LT.1.OR.IV.GT.15) THEN
-          CALL SETER ('SETUSV - X RESOLUTION OUT OF RANGE',4,2)
+          CALL SETER ('SETUSV - X RESOLUTION OUT OF RANGE',3,1)
+          RETURN
         END IF
         IU(3)=IV
 C
@@ -59,7 +62,8 @@ C the y direction.
 C
       ELSE IF (VN(1:2).EQ.'YF') THEN
         IF (IV.LT.1.OR.IV.GT.15) THEN
-          CALL SETER ('SETUSV - Y RESOLUTION OUT OF RANGE',5,2)
+          CALL SETER ('SETUSV - Y RESOLUTION OUT OF RANGE',4,1)
+          RETURN
         END IF
         IU(4)=IV
 C
@@ -67,16 +71,19 @@ C Check for the variable specifying the size of the pen-move buffer.
 C
       ELSE IF (VN(1:2).EQ.'PB') THEN
         IF (IV.LT.2.OR.IV.GT.50) THEN
-          CALL SETER ('SETUSV - PEN-MOVE BUFFER SIZE OUT OF RANGE',6,2)
+          CALL SETER ('SETUSV - PEN-MOVE BUFFER SIZE OUT OF RANGE',5,1)
+          RETURN
         END IF
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SETUSV',6).NE.0) RETURN
         IU(5)=IV
 C
 C Check for a metacode unit number.
 C
       ELSE IF (VN(1:2).EQ.'MU') THEN
         IF (IV.LE.0) THEN
-          CALL SETER ('SETUSV - METACODE UNIT NUMBER ILLEGAL',7,2)
+          CALL SETER ('SETUSV - METACODE UNIT NUMBER ILLEGAL',7,1)
+          RETURN
         END IF
 C
 C What is done depends on whether OPNGKS has been called or not.  In
@@ -96,25 +103,29 @@ C Check for one of the variables setting color and intensity.
 C
       ELSE IF (VN(1:2).EQ.'IR') THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL VALUE OF RED INTENSITY',8,2)
+          CALL SETER ('SETUSV - ILLEGAL VALUE OF RED INTENSITY',8,1)
+          RETURN
         END IF
         IU(7)=IV
 C
       ELSE IF (VN(1:2).EQ.'IG') THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL VALUE OF GREEN INTENSITY',9,2)
+          CALL SETER ('SETUSV - ILLEGAL VALUE OF GREEN INTENSITY',9,1)
+          RETURN
         END IF
         IU(8)=IV
 C
       ELSE IF (VN(1:2).EQ.'IB') THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL VALUE OF BLUE INTENSITY',10,2)
+          CALL SETER ('SETUSV - ILLEGAL VALUE OF BLUE INTENSITY',10,1)
+          RETURN
         END IF
         IU(9)=IV
 C
       ELSE IF (VN(1:2).EQ.'IN') THEN
         IF (IV.LT.0.OR.IV.GT.10000) THEN
-          CALL SETER ('SETUSV - ILLEGAL VALUE OF INTENSITY',11,2)
+          CALL SETER ('SETUSV - ILLEGAL VALUE OF INTENSITY',11,1)
+          RETURN
         END IF
         IU(10)=IV
 C
@@ -137,10 +148,15 @@ C
 C Dump the pen-move buffer before changing anything.
 C
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SETUSV',12).NE.0) RETURN
 C
 C Set the aspect source flags for all the color indices to "individual".
 C
         CALL GQASF (IE,LF)
+        IF (IE.NE.0) THEN
+          CALL SETER ('SETUSV - ERROR EXIT FROM GQASF',13,1)
+          RETURN
+        END IF
         LF( 3)=1
         LF( 6)=1
         LF(10)=1
@@ -160,9 +176,17 @@ C
 C Now, redefine the color for that color index on each open workstation.
 C
         CALL GQOPWK (0,IE,NO,ID)
+        IF (IE.NE.0) THEN
+          CALL SETER ('SETUSV - ERROR EXIT FROM GQOPWK',14,1)
+          RETURN
+        END IF
 C
         DO 103 I=1,NO
           CALL GQOPWK (I,IE,NO,ID)
+          IF (IE.NE.0) THEN
+            CALL SETER ('SETUSV - ERROR EXIT FROM GQOPWK',15,1)
+            RETURN
+          END IF
           CALL GSCR (ID,II,FR,FG,FB)
   103   CONTINUE
 C
@@ -171,13 +195,19 @@ C
       ELSE IF (VN(1:2).EQ.'II') THEN
 C       IF (IV.LT.1.OR.IV.GT.IU(12)) THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL COLOR INDEX',12,2)
+          CALL SETER ('SETUSV - ILLEGAL COLOR INDEX',16,1)
+          RETURN
         END IF
         IU(11)=IV
 C
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SETUSV',17).NE.0) RETURN
 C
         CALL GQASF (IE,LF)
+        IF (IE.NE.0) THEN
+          CALL SETER ('SETUSV - ERROR EXIT FROM GQASF',18,1)
+          RETURN
+        END IF
         LF( 3)=1
         LF( 6)=1
         LF(10)=1
@@ -193,7 +223,8 @@ C Check for the variable limiting the values of color index used.
 C
       ELSE IF (VN(1:2).EQ.'IM') THEN
         IF (IV.LT.1) THEN
-          CALL SETER ('SETUSV - ILLEGAL MAXIMUM COLOR INDEX',13,2)
+          CALL SETER ('SETUSV - ILLEGAL MAXIMUM COLOR INDEX',19,1)
+          RETURN
         END IF
         IU(12)=IV
 C
@@ -201,17 +232,23 @@ C Check for the variable setting the current line width scale factor.
 C
       ELSE IF (VN(1:2).EQ.'LW') THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL LINE WIDTH SCALE FACTOR',14,2)
+          CALL SETER ('SETUSV - ILLEGAL LINE WIDTH SCALE FACTOR',20,1)
+          RETURN
         END IF
         IU(13)=IV
 C
 C Dump the pen-move buffer before changing anything.
 C
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SETUSV',21).NE.0) RETURN
 C
 C Set the aspect source flag for linewidth scale factor to "individual".
 C
         CALL GQASF (IE,LF)
+        IF (IE.NE.0) THEN
+          CALL SETER ('SETUSV - ERROR EXIT FROM GQASF',22,1)
+          RETURN
+        END IF
         LF(2)=1
         CALL GSASF (LF)
 C
@@ -223,13 +260,18 @@ C Check for the variable setting the current marker size scale factor.
 C
       ELSE IF (VN(1:2).EQ.'MS') THEN
         IF (IV.LT.0) THEN
-          CALL SETER ('SETUSV - ILLEGAL MARKER SIZE SCALE FACTOR',15,2)
+          CALL SETER ('SETUSV - ILLEGAL MARKER SIZE SCALE FACTOR',23,1)
+          RETURN
         END IF
         IU(14)=IV
 C
 C Set aspect source flag for marker size scale factor to "individual".
 C
         CALL GQASF (IE,LF)
+        IF (IE.NE.0) THEN
+          CALL SETER ('SETUSV - ERROR EXIT FROM GQASF',24,1)
+          RETURN
+        END IF
         LF(5)=1
         CALL GSASF (LF)
 C
@@ -240,8 +282,11 @@ C
 C Otherwise, the variable name is unknown.
 C
       ELSE
-        CALL SETER ('SETUSV - UNKNOWN VARIABLE NAME IN CALL',1,2)
+        CALL SETER ('SETUSV - UNKNOWN VARIABLE NAME IN CALL',25,1)
+        RETURN
 C
       ENDIF
+C
       RETURN
+C
       END

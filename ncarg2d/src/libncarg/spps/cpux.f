@@ -1,5 +1,5 @@
 C
-C	$Id: cpux.f,v 1.1.1.1 1992-04-17 22:32:27 ncargd Exp $
+C $Id: cpux.f,v 1.2 1993-12-12 20:55:06 kennison Exp $
 C
       FUNCTION CPUX (IX)
 C
@@ -10,7 +10,17 @@ C
       SAVE /IUTLCM/
       DIMENSION WD(4),VP(4)
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CPUX - ERROR EXIT FROM GQCNTN',1,1)
+        CPUX=0.
+        RETURN
+      END IF
       CALL GQNT (NT,IE,WD,VP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CPUX - ERROR EXIT FROM GQNT',2,1)
+        CPUX=0.
+        RETURN
+      END IF
       I=1
       IF (MI.GE.3) I=2
       CPUX=WD(I)+(FLOAT(IX-1)/(2.**MX-1.)-VP(1))/(VP(2)-VP(1))*

@@ -1,16 +1,26 @@
 C
-C	$Id: cufy.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: cufy.f,v 1.2 1993-12-12 20:55:12 kennison Exp $
 C
       FUNCTION CUFY (RY)
 C
-C Given a y coordinate RY in the user system, CUFY(RY) is a y
+C Given a Y coordinate RY in the user system, CUFY(RY) is a Y
 C coordinate in the fractional system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
       DIMENSION WD(4),VP(4)
       CALL GQCNTN (IE,NT)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CUFY - ERROR EXIT FROM GQCNTN',1,1)
+        CUFY=0.
+        RETURN
+      END IF
       CALL GQNT (NT,IE,WD,VP)
+      IF (IE.NE.0) THEN
+        CALL SETER ('CUFY - ERROR EXIT FROM GQNT',2,1)
+        CUFY=0.
+        RETURN
+      END IF
       I=3
       IF (MI.EQ.2.OR.MI.GE.4) I=4
       IF (LL.LE.1.OR.LL.EQ.3) THEN

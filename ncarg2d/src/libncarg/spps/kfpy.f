@@ -1,9 +1,9 @@
 C
-C	$Id: kfpy.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kfpy.f,v 1.2 1993-12-12 20:55:37 kennison Exp $
 C
       FUNCTION KFPY (RY)
 C
-C Given a y coordinate RY in the fractional system, KFPY(RY) is a y
+C Given a Y coordinate RY in the fractional system, KFPY(RY) is a Y
 C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)

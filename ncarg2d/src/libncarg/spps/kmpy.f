@@ -1,9 +1,9 @@
 C
-C	$Id: kmpy.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kmpy.f,v 1.2 1993-12-12 20:55:42 kennison Exp $
 C
       FUNCTION KMPY (IY)
 C
-C Given a y coordinate IY in the metacode system, KMPY(IY) is a y
+C Given a Y coordinate IY in the metacode system, KMPY(IY) is a Y
 C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)

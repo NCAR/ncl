@@ -1,5 +1,5 @@
 C
-C	$Id: getsi.f,v 1.1.1.1 1992-04-17 22:32:30 ncargd Exp $
+C $Id: getsi.f,v 1.2 1993-12-12 20:55:26 kennison Exp $
 C
       SUBROUTINE GETSI (IX,IY)
 C

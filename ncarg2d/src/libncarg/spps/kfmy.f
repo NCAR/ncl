@@ -1,9 +1,9 @@
 C
-C	$Id: kfmy.f,v 1.1.1.1 1992-04-17 22:32:28 ncargd Exp $
+C $Id: kfmy.f,v 1.2 1993-12-12 20:55:33 kennison Exp $
 C
       FUNCTION KFMY (RY)
 C
-C Given a y coordinate RY in the fractional system, KFMY(RY) is a y
+C Given a Y coordinate RY in the fractional system, KFMY(RY) is a Y
 C coordinate in the metacode system.
 C
       KFMY=IFIX(RY*32767.)
