@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.17 1991-10-04 15:16:41 clyne Exp $
+ *	$Id: w_idt.c,v 1.18 1992-02-13 18:36:48 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -95,6 +95,10 @@ static  XtResource      resources[] = {
         {
 	"messageHeight", "MessageHeight", XtRInt, sizeof (int),
                 XtOffset(AppDataPtr, message_height), XtRString, "5" 
+	},
+        {
+	"version", "Version", XtRBoolean, sizeof (Boolean),
+                XtOffset(AppDataPtr, version), XtRString, "False" 
 	}
 };
 
@@ -147,7 +151,8 @@ static	XrmOptionDescRec 	options[] = {
 	{"-foreground",	"*translatorForeground",XrmoptionSepArg,	NULL},
 	{"-background",	"*translatorBackground",XrmoptionSepArg,	NULL},
 	{"-reverse",	"*translatorReverse",	XrmoptionNoArg,		"True"},
-	{"-pal",	"*translatorPal",	XrmoptionSepArg,	NULL}
+	{"-pal",	"*translatorPal",	XrmoptionSepArg,	NULL},
+	{"-Version",	"*version",		XrmoptionNoArg,		"True"}
 };
 
 
@@ -201,6 +206,11 @@ main(argc, argv)
 	 */
 	XtGetApplicationResources(toplevel, &App_Data, resources, 
 		XtNumber(resources), NULL, 0);
+
+	if (App_Data.version) {
+		PrintVersion(argv[0]);
+		exit(0);
+	}
 
 	if (App_Data.select_action) {
 		if (! strcmp("display", App_Data.select_action)) {

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.6 1991-12-19 10:02:03 clyne Exp $
+ *	$Id: w_display.c,v 1.7 1992-02-13 18:36:43 clyne Exp $
  */
 /*
  *	w_display.c
@@ -20,7 +20,6 @@
 
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Paned.h>
-#include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Toggle.h>

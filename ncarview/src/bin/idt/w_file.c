@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.4 1991-04-10 12:53:53 clyne Exp $
+ *	$Id: w_file.c,v 1.5 1992-02-13 18:36:46 clyne Exp $
  */
 /*
  *	w_file.c
@@ -19,7 +19,7 @@
 
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Paned.h>
-#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Command.h>
 

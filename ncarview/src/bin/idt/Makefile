@@ -86,6 +86,9 @@ SHELL           = /bin/sh
 
 #
 #
+#	$Id: Makefile,v 1.8 1992-02-13 18:36:39 clyne Exp $
+#
+#
 #	Makefile for idt -- Interactive Image Display Tool
 #
 #
@@ -170,11 +173,11 @@ w_idt.o:     Makefile
 #
 xt_env.o:     Makefile
 	$(CC) $(CFLAGS) -DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
-	-c $*.c
+								-c $*.c
 
 lint:	$(HDR) $(SRCS)
 	lint  -I$(LOCINCDIR) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-	-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' \
-	-DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
-	$(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+		-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' \
+		-DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
+		$(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: idt.h,v 1.5 1991-08-20 18:43:47 clyne Exp $
+ *	$Id: idt.h,v 1.6 1992-02-13 18:36:41 clyne Exp $
  */
 #ifndef	_idt_
 #define	_idt_
@@ -22,6 +22,7 @@ typedef	struct	{
 	Boolean		reverse;
 	char		*pal;
 	int		message_height;
+	Boolean		version;
 	} AppData, *AppDataPtr;
 
 #define	TRANS_ARG_COUNT	11	/* number of translator args	*/
