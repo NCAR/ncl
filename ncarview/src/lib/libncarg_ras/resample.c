@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.6 1992-03-27 21:00:06 clyne Exp $
+ *	$Id: resample.c,v 1.7 1992-09-10 21:36:38 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,9 +25,9 @@
  *		
  */
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<string.h>
 #include	<math.h>
-#include	<malloc.h>
 #include	"ncarg_ras.h"
 
 /*LINTLIBRARY*/
@@ -78,7 +78,8 @@ int	RasterResampleBilinear(src, dst, verbose)
 	*/
 
 	if (dst->type != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"Resampling can only be done to direct color raster");
 		return(RAS_ERROR);
 	}
 
@@ -225,10 +226,10 @@ int	RasterResampleNearestNeighbor(src, dst, verbose)
 	int		dx, dy;
 	int		*sx, sy;
 	unsigned char	*srcptr, *dstptr;
-	unsigned char	p;
 
 	if (src->type != dst->type) {
-		(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+		(void) ESprintf(RAS_E_INTERNAL,
+		"RasterResampleNearestNeighbor() - src and dst not same type");
 		return(RAS_ERROR);
 	}
 
@@ -291,7 +292,7 @@ int	RasterResampleNearestNeighbor(src, dst, verbose)
 }
 
 /**********************************************************************
- *	Function: RasScale(src, scale)
+ *	Function: RasterScale(src, scale)
  *
  *	Author: Don Middleton
  *		National Center for Atmospheric Research

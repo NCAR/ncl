@@ -1,5 +1,5 @@
 /*
- *	$Id: composite.c,v 1.3 1992-03-23 21:44:55 clyne Exp $
+ *	$Id: composite.c,v 1.4 1992-09-10 21:34:02 don Exp $
  */
 #include <stdio.h>
 #include "ncarg_ras.h"
@@ -39,12 +39,14 @@ RasterDissolve(a, b, dst, alpha)
 	float		p_alpha[256], p_alpha_one[256];
 
 	if (a->nx != b->nx || a->ny != b->ny) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_RESOLUTION);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterDissolve() - a & b have different resolutions");
 		return(RAS_ERROR);
 	}
 
 	if (dst->type != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterDissolve() - dst must be DIRECT color");
 		return(RAS_ERROR);
 	}
 

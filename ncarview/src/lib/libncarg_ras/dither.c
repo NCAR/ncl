@@ -1,5 +1,5 @@
 /*
- *	$Id: dither.c,v 1.4 1992-03-23 21:45:14 clyne Exp $
+ *	$Id: dither.c,v 1.5 1992-09-10 21:28:51 don Exp $
  */
 #include "ncarg_ras.h"
 
@@ -28,7 +28,8 @@ RasterDither(src, dst, verbose)
 	}
 
 	if (src == (Raster *) NULL || dst == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_BOGUS_RASTER_STRUCTURE);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterDither() - NULL argument");
 		return(RAS_ERROR);
 	}
 
@@ -74,12 +75,14 @@ RasterDitherPopular(src, dst, verbose)
 	int		orig_colors;
 
 	if (src == (Raster *) NULL || dst == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_BOGUS_RASTER_STRUCTURE);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterDitherPopular() - NULL argument");
 		return(RAS_ERROR);
 	}
 
 	if (OptionDitherBits > MAXBITS) {
-		(void) RasterSetError(RAS_E_TOO_MANY_DITHERBITS);
+		(void) ESprintf(RAS_E_TOO_MANY_DITHERBITS,
+			"RasterDitherPopular()");
 		return(RAS_ERROR);
 	}
 
