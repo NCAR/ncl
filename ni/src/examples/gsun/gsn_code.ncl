@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.46 2000-09-29 17:49:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.47 2000-10-11 13:43:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -76,6 +76,7 @@ undef("gsn_contour_map")
 undef("gsn_map")
 undef("gsn_streamline")
 undef("gsn_streamline_map")
+undef("gsn_add_text")
 undef("gsn_text")
 undef("gsn_text_ndc")
 undef("gsn_draw_colormap")
@@ -3058,6 +3059,104 @@ begin
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(stream_object,stres)
     attsetvalues_check(map_object,mpres)
+; Function : gsn_add_text                                               ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x data positions        ;
+;                     y: 1-dimensional array of y data positions        ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds text strings to the plot "plotid". "x" and "y" are ;
+; the x and y locations of each text string, and should be specified in ;
+; the same data space as the data space of "plotid". "resources" is an  ;
+; optional list of TextItem and AnnoManager resources.                  ;
+;                                                                       ;
+; This function is different from gsn_text because it actually attaches ;
+; the text to the plot. This means that if you resize or move the plot, ;
+; the text will stay with the plot.                                     ;
+;***********************************************************************;
+
+function gsn_add_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
+                      y:numeric, resources:logical )
+local txid, txres, amres, x2, y2, just, res2, wksname, am_ids
+begin
+  res2 = resources
+;
+; annomanager can't accept doubles, so have to demote doubles if they
+; come in.
+;
+  x2 = x
+  y2 = y
+
+;
+; The "txFuncCode" can't be set during a setvalues  call. It must be
+; set during the creation of the object.  
+;
+  if(isatt(wks,"name"))
+    wksname = wks@name
+  else
+    wksname = "gsnapp"
+  end if
+
+  if(res2.and.isatt(res2,"txFuncCode")) then
+    txid = create wksname + "_text" textItemClass wks
+      "txString"   : text
+      "txFuncCode" : res2@txFuncCode
+    end create
+  else
+    txid = create wksname + "_text" textItemClass wks
+      "txString"   : text
+    end create
+  end if
+
+  txres = get_res_eq(res2,"tx")  ; Get text resources.
+  if(txres.and..not.any(ismissing(getvaratts(txres))))
+    attsetvalues(txid,txres)            ; Set text resources.
+  end if
+
+  getvalues plotid
+    "pmAnnoViews" : text_ids
+  end getvalues
+
+  if(.not.any(ismissing(text_ids)))
+    new_text_ids = new(dimsizes(text_ids)+1,graphic)
+    new_text_ids(0)  = txid
+    new_text_ids(1:) = text_ids
+  else
+    new_text_ids = txid
+  end if
+
+  setvalues plotid
+    "pmAnnoViews" : new_text_ids
+  end setvalues
+;
+; Retrieve the id of the AnnoManager object created by the PlotManager and
+; then set its location in data coordinate space.
+;
+  getvalues plotid
+    "pmAnnoManagers": am_ids
+  end getvalues
+
+  just  = get_res_value(res2,"amJust","CenterLeft")
+
+  setvalues am_ids(0)
+    "amDataXF"       : x2
+    "amDataYF"       : y2
+    "amResizeNotify" : True
+    "amTrackData"    : True
+    "amJust"         : just
+  end setvalues
+
+  amres = get_res_eq(res2,"am")  ; Get annomanager resources.
+  if(amres.and..not.any(ismissing(getvaratts(amres))))
+    attsetvalues(am_ids(0),amres)            ; Set text resources.
+  end if
+
+  return(plotid)
+end
+
+;***********************************************************************;
 ; Procedure : gsn_text                                                  ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -3096,7 +3195,6 @@ begin
 
     delete(xf)
     delete(yf)
-
 ;
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
