@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.36 2000-06-12 15:07:40 haley Exp $
+;      $Id: gsn_code.ncl,v 1.37 2000-06-16 16:05:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -73,6 +73,9 @@ undef("gsn_streamline")
 undef("gsn_streamline_map")
 undef("gsn_text")
 undef("gsn_text_ndc")
+undef("gsn_text_return")
+undef("gsn_text_ndc_return")
+undef("gsn_draw_colormap")
 undef("gsn_vector")
 undef("gsn_vector_contour")
 undef("gsn_vector_contour_map")
@@ -1506,7 +1509,7 @@ begin
           "cnInfoLabelFontHeightF" : font_height
       else
         if(class(0).eq."xyPlotClass") then
-        if(plot_type.eq."contour") then
+        if(plot_type.eq."vector") then
           getvalues vector_plot
             "vcRefAnnoFontHeightF" : font_height
           end getvalues
@@ -2523,6 +2526,256 @@ begin
     end if
     draw(txid)                          ; Draw text string.
     delete(txid)
+end
+
+;***********************************************************************;
+; Function : gsn_text_return                                            ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x data positions        ;
+;                     y: 1-dimensional array of y data positions        ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function behaves exactly the same as gsn_text, only it returns   ;
+; the text item to the user.                                            ;
+;***********************************************************************;
+
+function gsn_text_return(wks:graphic,plotid:graphic,text:string,x:numeric, \
+                         y:numeric, resources:logical )
+local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, xf, yf, \
+funccode, res2, calldraw, callframe
+begin
+    res2 = resources
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",False)
+;
+; datatondc can't accept doubles, so have to demote doubles if they
+; come in.
+;
+    xf = tofloat(x)
+    yf = tofloat(y)
+
+    x2 = new(dimsizes(x),float)
+    y2 = new(dimsizes(y),float)
+
+    datatondc(plotid,xf,yf,x2,y2)
+
+    delete(xf)
+    delete(yf)
+;
+; The "txFuncCode" can't be set during a setvalues  call. It must be
+; set during the creation of the object.  
+;
+    if((res2).and.isatt(res2,"txFuncCode")) then
+      funccode = res2@txFuncCode
+    else
+      funccode = ":"     ; The default.
+    end if
+
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
+    txid = create wksname + "_text" textItemClass wks
+        "txString"   : text
+        "txPosXF"    : x2
+        "txPosYF"    : y2
+        "txFuncCode" : funccode
+    end create
+
+    txres = get_res_eq(res2,"tx")  ; Get text resources.
+    if(txres.and..not.any(ismissing(getvaratts(txres))))
+      attsetvalues(txid,txres)            ; Set text resources.
+    end if
+
+    draw_and_frame(wks,txid,calldraw,callframe)
+    return(txid)
+end
+
+;***********************************************************************;
+; Function : gsn_text_ndc_return                                        ;
+;                   wks: workstation object                             ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x ndc positions         ;
+;                     y: 1-dimensional array of y ndc positions         ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function behaves exactly the same as gsn_text_ndc, only it       ;
+; returns the text item to the user.                                    ;
+;***********************************************************************;
+
+function gsn_text_ndc_return(wks:graphic, text:string, x:numeric, \
+                             y:numeric, resources:logical )
+local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, res2, \
+calldraw, callframe
+begin
+
+    res2 = resources
+
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",False)
+
+    if((res2).and.isatt(res2,"txFuncCode")) then
+      txid = create wksname + "_text_ndc" textItemClass wks
+        "txString" : text
+        "txPosXF"  : x
+        "txPosYF"  : y
+        "txFuncCode" : res2@txFuncCode
+      end create
+    else
+      txid = create wksname + "_text_ndc" textItemClass wks
+        "txString" : text
+        "txPosXF"  : x
+        "txPosYF"  : y
+      end create
+    end if
+
+    txres = get_res_eq(res2,"tx")  ; Get text resources.
+    if(txres.and..not.any(ismissing(getvaratts(txres))))
+      attsetvalues(txid,txres)            ; Set text resources.
+    end if
+
+    draw_and_frame(wks,txid,calldraw,callframe)
+    return(txid)
+end
+
+;***********************************************************************;
+
+    overlay(map_object,stream_object)
+
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+
+; 
+    if(scale)
+      gsnp_scale_plot(stream_object)
+    end if
+
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@data = data_object
+    map_object@streamline = stream_object
+    return(map_object)
+end
+
+;***********************************************************************;
+; Procedure : gsn_draw_colormap                                         ;
+;                   wks: workstation object                             ;
+;                                                                       ;
+; This procedure retrieves the current colormap and draws it.           ;
+; wks is a variable returned from a previous call to "gsn_open_wks".    ;
+;***********************************************************************;
+procedure gsn_draw_colormap(wks)
+local nrows, ncols, ncolors, maxcols, ntotal, offset, width, height, \
+xpos, ypos, xbox, ybox
+
+begin
+  nrows   = 16                   ; # of rows of colors per page.
+  maxcols = 256                  ; max # of colors per color table.
+
+  getvalues wks
+    "wkColorMapLen" : ncolors    ; Get # of colors in color map.
+  end getvalues
+
+;
+; Figure out ncols such that the columns will span across the page.
+; Or, just set ncols to 16, which is big enough to cover the largest
+; possible color map.
+;
+  ncols = floattoint(ncolors/nrows)
+  if(ncols*nrows.lt.ncolors)
+    ncols = ncols+1
+  end if
+
+  ntotal  = nrows * ncols        ; # of colors per page.
+;
+; If the number of colors in our color map is less than the allowed
+; maximum, then this gives us room to add a white background and/or a
+; black foreground.
+;
+  if(ncolors.lt.maxcols) then
+;
+; Get current color map.
+;
+    getvalues wks
+      "wkColorMap" : cmap
+    delete(cmap)
+    end getvalues
+
+    if(ncolors.lt.maxcols-1) then
+      offset = 2
+      cmapnew = new((/ncolors+2,3/),float)
+      cmapnew(0,:)  = (/1.,1.,1./)     ; white background
+      cmapnew(1,:)  = (/0.,0.,0./)     ; black background
+      cmapnew(2:,:) = cmap    
+    else
+      offset = 1
+      cmapnew = new((/ncolors+1,3/),float)
+      cmapnew(0,:)  = (/1.,1.,1./)     ; white background
+      cmapnew(1:,:) = cmap    
+    end if
+;
+; Set new color map.
+;
+    setvalues wks
+      "wkColorMap" : cmapnew
+    end setvalues
+
+    delete(cmapnew)
+
+  else
+    offset = 0
+  end if
+;
+; X and Y positions of text and box in the view port.
+;
+  width  = 1./ncols
+  height = 1./nrows
+  xpos  = fspan(0,1-width,ncols)
+  ypos  = fspan(1-height,0,nrows)
+
+;
+	
+;
+  xbox = (/0,width, width,     0,0/)
+  ybox = (/0,    0,height,height,0/)
+
+  font_height = 0.015
+  font_space  = font_height/2.
+
+  gonres   = True   ; variables to hold list of resources
+  lineres  = True
+  txres    = True
+
+  txres@txFontHeightF         = font_height
+  txres@txFont                = "helvetica-bold"
+  txres@txJust                = "BottomLeft"
+  txres@txPerimOn             = True
+  txres@txPerimColor          = "black"  ; Or close to black if 
+  txres@txFontColor           = "black"  ; black is not in color map.
+  txres@txBackgroundFillColor = "white"  ; Or close to white.
+
+  lineres@gsLineColor        = "black"
+
+;
+; ntotal colors per page.
+;
+  do k = 1,ncolors,ntotal
+    jj = 0
+    do j=k,min((/k+ntotal-1,ncolors/)),nrows
 ; Outline box in black.
 ;
         gsn_polyline_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),lineres)
