@@ -885,16 +885,16 @@ local_list: vname {
 				_NclAddSym($1->name,UNDEF);
 			}
 		}
-	| local_list ',' vname {
+	| local_list opt_eoln ',' opt_eoln vname {
 			int lv = _NclGetCurrentScopeLevel();
-			if($3->level != lv) {
-				_NclAddSym($3->name,UNDEF);
+			if($5->level != lv) {
+				_NclAddSym($5->name,UNDEF);
 			}
 			}
-	| local_list ',' pfname {
+	| local_list opt_eoln ',' opt_eoln pfname {
 			int lv = _NclGetCurrentScopeLevel();
-			if($3->level != lv) {
-				_NclAddSym($3->name,UNDEF);
+			if($5->level != lv) {
+				_NclAddSym($5->name,UNDEF);
 			}
 			}
 ;
@@ -911,7 +911,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 										$$ = _NclMakeNFunctionDef($1,$3,$7,tmp);  
 									}
 								}
-	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } block
+	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } block
 								{  
 									NclSymTableListNode *tmp;
 
@@ -921,7 +921,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 										$$ = NULL;
 									}else {
 										tmp = _NclPopScope();	
-										$$ = _NclMakeNFunctionDef($1,$3,$10,tmp);  
+										$$ = _NclMakeNFunctionDef($1,$3,$11,tmp);  
 									}
 								}
 	| EXTERNAL func_identifier LP arg_dec_list  RP opt_eoln STRING 
@@ -957,25 +957,25 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 ;
 
 arg_dec_list :			{ $$ = NULL; }
-	| the_list		{ $$ = $1; }
+	| opt_eoln the_list { $$ = $2; }
 ; 
 
-the_list: declaration				{	
+the_list: declaration opt_eoln			{	
 							$$ = _NclMakeNewListNode();
 							$$->next = NULL;
 							$$->node = $1;
 						}
-	| declaration ',' the_list 	{ 
+	| declaration opt_eoln ',' opt_eoln the_list 	{ 
 						/* once again ordering not important as long as it is consistent with function 
 							and procedure ordering of argument lists */
 							$$ = _NclMakeNewListNode();
-							$$->next = $3;
+							$$->next = $5;
 							$$->node = $1;
 							  
 						}
 ;
 
-declaration : vname		{ 
+declaration : vname { 
 					NclSymbol *s;
 					int lv = _NclGetCurrentScopeLevel();
 
@@ -986,7 +986,7 @@ declaration : vname		{
 					}
 					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
 				}
-	| vname COLON datatype	{ 
+	| vname COLON datatype { 
 					NclSymbol *s;
 					int lv = _NclGetCurrentScopeLevel();
 
@@ -997,7 +997,7 @@ declaration : vname		{
 					}
 					$$ = _NclMakeLocalVarDec(s,NULL,$3); 
 				}
-	| vname dim_size_list		{ 
+	| vname dim_size_list { 
 						NclSymbol *s;
 						int lv = _NclGetCurrentScopeLevel();
 						if(($1->type != UNDEF)||($1->level != lv)) {
@@ -1008,7 +1008,7 @@ declaration : vname		{
 
 						$$ = _NclMakeLocalVarDec(s,$2,NULL); 
 					}
-	| vname dim_size_list COLON datatype	{ 
+	| vname dim_size_list COLON datatype { 
 						NclSymbol *s;
 						int lv = _NclGetCurrentScopeLevel();
 						if(($1->type != UNDEF)||($1->level != lv)) {
@@ -1019,26 +1019,26 @@ declaration : vname		{
 
 						$$ = _NclMakeLocalVarDec(s,$2,$4); 
 					}
-	| pfname		{ 
+	| pfname { 
 				/* Need to intercept defined names and add them to current scope */
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
 					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
 				}
-	| pfname COLON datatype	{ 
+	| pfname COLON datatype { 
 					NclSymbol *s;
 
 					s= _NclAddSym($1->name,UNDEF);
 					$$ = _NclMakeLocalVarDec(s,NULL,$3); 
 				}
-	| pfname dim_size_list	{ 
+	| pfname dim_size_list { 
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
 					$$ = _NclMakeLocalVarDec(s,$2,NULL); 
 				}
-	| pfname dim_size_list COLON datatype	{ 
+	| pfname dim_size_list COLON datatype { 
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
@@ -1122,14 +1122,14 @@ dim_size_list : LBK INT RBK		{
 
 proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
-procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
+procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
                                                                 tmp = _NclPopScope();
 							
-								$$ = _NclMakeProcDef($1,$3,$10,tmp);
+								$$ = _NclMakeProcDef($1,$3,$11,tmp);
 									
 							}
 	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.2 1994-07-28 23:34:02 ethan Exp $
+ *      $Id: NclAtt.c,v 1.3 1994-09-19 21:08:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -199,15 +199,18 @@ NclSelectionRecord * sel_ptr;
                         }
                         if(_NclSetStatus((NclObj)tmp_md,PERMANENT)) {
                                 thelist->attvalue = tmp_md;
+				_NclDelParent((NclObj)targetdat,(NclObj)theattobj);
+				_NclAddParent((NclObj)thelist->attvalue,(NclObj)theattobj);
                         } else {
                                 thelist->attvalue = _NclCopyVal(tmp_md,NULL);
                                 if(thelist->attvalue != NULL) {
                                         _NclSetStatus((NclObj)thelist->attvalue,PERMANENT);
+					_NclAddParent((NclObj)thelist->attvalue,(NclObj)theattobj);
 /*
 * This destroys the old attribute value. This is ok since this is
 * strogage that is internal to the NclVar object
 */
-                                        _NclDestroyObj((NclObj)targetdat);
+					_NclDelParent((NclObj)targetdat,(NclObj)theattobj);
 
                                 } else {
 /*
