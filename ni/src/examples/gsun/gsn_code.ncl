@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.37 2000-06-16 16:05:37 haley Exp $
+;      $Id: gsn_code.ncl,v 1.38 2000-06-20 15:09:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -73,8 +73,6 @@ undef("gsn_streamline")
 undef("gsn_streamline_map")
 undef("gsn_text")
 undef("gsn_text_ndc")
-undef("gsn_text_return")
-undef("gsn_text_ndc_return")
 undef("gsn_draw_colormap")
 undef("gsn_vector")
 undef("gsn_vector_contour")
@@ -83,7 +81,6 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
-
 
 ;***********************************************************************;
 ; function : tofloat                                                    ;
@@ -2430,119 +2427,8 @@ begin
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
 
-procedure gsn_text(wks:graphic, plotid:graphic, text:string, x:numeric, \
+procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
                    y:numeric, resources:logical )
-local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, xf, yf, \
-funccode
-begin
-;
-; datatondc can't accept doubles, so have to demote doubles if they
-; come in.
-;
-    xf = tofloat(x)
-    yf = tofloat(y)
-
-    x2 = new(dimsizes(x),float)
-    y2 = new(dimsizes(y),float)
-
-    datatondc(plotid,xf,yf,x2,y2)
-
-    delete(xf)
-    delete(yf)
-;
-; The "txFuncCode" can't be set during a setvalues  call. It must be
-; set during the creation of the object.  
-;
-    if((resources).and.isatt(resources,"txFuncCode")) then
-      funccode = resources@txFuncCode
-    else
-      funccode = ":"     ; The default.
-    end if
-
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
-
-    txid = create wksname + "_text" textItemClass wks
-        "txString"   : text
-        "txPosXF"    : x2
-        "txPosYF"    : y2
-        "txFuncCode" : funccode
-    end create
-
-    txres = get_res_eq(resources,"tx")  ; Get text resources.
-    if(txres.and..not.any(ismissing(getvaratts(txres))))
-      attsetvalues(txid,txres)            ; Set text resources.
-    end if
-    draw(txid)                          ; Draw text string.
-    delete(txid)
-end
-
-;***********************************************************************;
-; Procedure : gsn_text_ndc                                              ;
-;                   wks: workstation object                             ;
-;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x ndc positions         ;
-;                     y: 1-dimensional array of y ndc positions         ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws text strings on the workstation "wks" (the       ;
-; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
-; "y" are the x and y locations of each text string, and should be      ;
-; specified in NDC space. "resources" is an optional list of resources. ;
-;***********************************************************************;
-
-procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
-                   y:numeric, resources:logical )
-local i, txid, attnames, plot_object, res, tx_res_index, x2, y2
-begin
-
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
-
-    if((resources).and.isatt(resources,"txFuncCode")) then
-      txid = create wksname + "_text_ndc" textItemClass wks
-        "txString" : text
-        "txPosXF"  : x
-        "txPosYF"  : y
-        "txFuncCode" : resources@txFuncCode
-      end create
-    else
-      txid = create wksname + "_text_ndc" textItemClass wks
-        "txString" : text
-        "txPosXF"  : x
-        "txPosYF"  : y
-      end create
-    end if
-
-    txres = get_res_eq(resources,"tx")  ; Get text resources.
-    if(txres.and..not.any(ismissing(getvaratts(txres))))
-      attsetvalues(txid,txres)            ; Set text resources.
-    end if
-    draw(txid)                          ; Draw text string.
-    delete(txid)
-end
-
-;***********************************************************************;
-; Function : gsn_text_return                                            ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x data positions        ;
-;                     y: 1-dimensional array of y data positions        ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function behaves exactly the same as gsn_text, only it returns   ;
-; the text item to the user.                                            ;
-;***********************************************************************;
-
-function gsn_text_return(wks:graphic,plotid:graphic,text:string,x:numeric, \
-                         y:numeric, resources:logical )
 local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
@@ -2564,28 +2450,31 @@ begin
 
     delete(xf)
     delete(yf)
+
 ;
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
 ;
-    if((res2).and.isatt(res2,"txFuncCode")) then
-      funccode = res2@txFuncCode
-    else
-      funccode = ":"     ; The default.
-    end if
-
     if(isatt(wks,"name"))
       wksname = wks@name
     else
       wksname = "gsnapp"
     end if
 
-    txid = create wksname + "_text" textItemClass wks
-        "txString"   : text
-        "txPosXF"    : x2
-        "txPosYF"    : y2
-        "txFuncCode" : funccode
-    end create
+    if(res2.and.isatt(res2,"txFuncCode")) then
+      txid = create wksname + "_text" textItemClass wks
+          "txString"   : text
+          "txPosXF"    : x2
+          "txPosYF"    : y2
+          "txFuncCode" : res2@txFuncCode
+      end create
+    else
+      txid = create wksname + "_text" textItemClass wks
+          "txString"   : text
+          "txPosXF"    : x2
+          "txPosYF"    : y2
+      end create
+    end if
 
     txres = get_res_eq(res2,"tx")  ; Get text resources.
     if(txres.and..not.any(ismissing(getvaratts(txres))))
@@ -2593,23 +2482,24 @@ begin
     end if
 
     draw_and_frame(wks,txid,calldraw,callframe)
-    return(txid)
 end
 
 ;***********************************************************************;
-; Function : gsn_text_ndc_return                                        ;
+; Procedure : gsn_text_ndc                                              ;
 ;                   wks: workstation object                             ;
 ;                  text: array of text strings                          ;
 ;                     x: 1-dimensional array of x ndc positions         ;
 ;                     y: 1-dimensional array of y ndc positions         ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This function behaves exactly the same as gsn_text_ndc, only it       ;
-; returns the text item to the user.                                    ;
+; This procedure draws text strings on the workstation "wks" (the       ;
+; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
+; "y" are the x and y locations of each text string, and should be      ;
+; specified in NDC space. "resources" is an optional list of resources. ;
 ;***********************************************************************;
 
-function gsn_text_ndc_return(wks:graphic, text:string, x:numeric, \
-                             y:numeric, resources:logical )
+procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
+                       y:numeric, resources:logical )
 local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
@@ -2646,7 +2536,6 @@ begin
     end if
 
     draw_and_frame(wks,txid,calldraw,callframe)
-    return(txid)
 end
 
 ;***********************************************************************;
@@ -3742,25 +3631,38 @@ begin
         "caXArray" : x
         "caYArray" : y
     end create
-      "trXMinF" : trxmin
-      "trXMaxF" : trxmax
-      "trYMinF" : trymin
-      "trYMaxF" : trymax
+
+; Check for missing values.
+
+    if(isatt(x,"_FillValue")) then
         setvalues data_object
             "caXMissingV" :x@_FillValue
     if(res2.and..not.any(ismissing(getvaratts(res2))))
       if(isatt(res2,"trXMinF")) then
         trxmin = res2@trXMinF
+      else
+        trxmin = trxmin2
       end if 
       if(isatt(res2,"trXMaxF")) then
         trxmax = res2@trXMaxF
+      else
+        trxmax = trxmax2
       end if 
       if(isatt(res2,"trYMinF")) then
         trymin = res2@trYMinF
+      else
+        trymin = trymin2
       end if 
       if(isatt(res2,"trYMayF")) then
         trymax = res2@trYMaxF
+      else
+        trymax = trymax2
       end if 
+    else 
+      trxmin = trxmin2
+      trxmax = trxmax2
+      trymin = trymin2
+      trymax = trymax2
     end if
         end setvalues
     end if
@@ -3905,6 +3807,8 @@ begin
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
+
+
 
       gsnp_shape_plot(plot_object)
     end if
