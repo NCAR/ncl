@@ -1,10 +1,12 @@
 #
-#   $Id: yMakefile,v 1.7 2003-12-09 03:17:35 shea Exp $
+#   $Id: yMakefile,v 1.8 2004-04-27 22:23:46 fred Exp $
 #
 #   Makefile for GSUN examples
 #
 
 MYNAME = gsun
+
+TOOT = 77
 
 EXAMPLES = gsun01n.ncl gsun02n.ncl gsun03n.ncl gsun04n.ncl \
 	gsun05n.ncl gsun06n.ncl gsun07n.ncl gsun08n.ncl gsun09n.ncl \
