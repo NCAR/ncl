@@ -1,5 +1,5 @@
 C
-C $Id: maplmb.f,v 1.5 1994-05-03 21:17:30 kennison Exp $
+C $Id: maplmb.f,v 1.6 1998-04-16 20:21:12 kennison Exp $
 C
       SUBROUTINE MAPLMB
 C
@@ -24,8 +24,6 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -50,10 +48,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPLMB - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPLMB - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Reset the color index, dotting, and dash pattern for limb lines.
 C
@@ -170,10 +165,7 @@ C
           IF (IVIS.LT.0) THEN
             IF (IDTL.EQ.0) THEN
               CALL FRSTD (U,V)
-              IF (ICFELL('MAPLMB',11).NE.0) THEN
-                IIER=-1
-                RETURN
-              END IF
+              IF (ICFELL('MAPLMB',11).NE.0) RETURN
             ELSE
               DATL=0.
             END IF
@@ -184,10 +176,7 @@ C
               IF (     ELPF) CALL MAPTRE (U,V,UOLD,VOLD,UOLD,VOLD)
               IF (IDTL.EQ.0) THEN
                 CALL FRSTD (UOLD,VOLD)
-                IF (ICFELL('MAPLMB',12).NE.0) THEN
-                  IIER=-1
-                  RETURN
-                END IF
+                IF (ICFELL('MAPLMB',12).NE.0) RETURN
               ELSE
                 DATL=0.
               END IF

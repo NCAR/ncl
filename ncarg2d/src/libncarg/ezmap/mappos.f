@@ -1,5 +1,5 @@
 C
-C $Id: mappos.f,v 1.4 1994-03-18 23:50:25 kennison Exp $
+C $Id: mappos.f,v 1.5 1998-04-16 20:21:13 kennison Exp $
 C
       SUBROUTINE MAPPOS (ARG1,ARG2,ARG3,ARG4)
 C
@@ -11,15 +11,10 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPPOS - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPPOS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check the arguments for errors.
 C
@@ -43,8 +38,7 @@ C
 C
 C Error exit.
 C
-  901 IIER=19
-      CALL SETER ('MAPPOS - ARGUMENTS ARE INCORRECT',IIER,1)
+  901 CALL SETER ('MAPPOS - ARGUMENTS ARE INCORRECT',2,1)
       RETURN
 C
       END

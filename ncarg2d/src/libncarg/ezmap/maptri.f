@@ -1,5 +1,5 @@
 C
-C $Id: maptri.f,v 1.4 1994-03-18 23:50:48 kennison Exp $
+C $Id: maptri.f,v 1.5 1998-04-16 20:21:23 kennison Exp $
 C
       SUBROUTINE MAPTRI (UVAL,VVAL,RLAT,RLON)
 C
@@ -16,8 +16,6 @@ C
       SAVE /MAPCM6/
       COMMON /MAPCM8/ P,Q,R
       SAVE /MAPCM8/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -38,10 +36,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPTRI - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPTRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check for a point outside the perimeter.  Return 1.E12's for such
 C points.

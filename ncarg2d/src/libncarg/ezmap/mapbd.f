@@ -1,7 +1,9 @@
 C
-C $Id: mapbd.f,v 1.7 1996-05-07 21:34:55 kennison Exp $
+C $Id: mapbd.f,v 1.8 1998-04-16 20:20:55 kennison Exp $
 C
       BLOCK DATA MAPBD
+C
+      PARAMETER (MNAI=2000)
 C
 C The common block MAPCM1 contains transformation constants.  Because of
 C compilation problems on DECRISC machines, it has been split into two
@@ -82,13 +84,7 @@ C
 C
       SAVE /MAPCMA/
 C
-C The common block MAPCMB contains the EZMAP error flag.
-C
-      COMMON /MAPCMB/ IIER
-C
-      SAVE /MAPCMB/
-C
-C The common block MAPCMC contains variables for MAPLAM.
+C The common block MAPCMC contains variables for MAPBLA.
 C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
 C
@@ -108,6 +104,22 @@ C
 C
       SAVE /MAPCMQ/
 C
+C The common blocks MAPCMX and MAPCMY contain variables used by the new
+C routines in EZMAPB (implementing access to the new dataset created in
+C early 1998).  MAPCMX contains integer variables and MAPCMY contains
+C character variables.
+C
+      COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
+C
+      SAVE   /MAPCMX/
+C
+      COMMON /MAPCMY/ NAME(MNAI),FLNS
+C
+      CHARACTER*64    NAME
+      CHARACTER*128   FLNS
+C
+      SAVE   /MAPCMY/
+C
 C The common block MAPSAT contains parameters for the satellite-view
 C projection.  Because of compilation problems on DECRISC machines, it
 C has been split into two common blocks, one of which contains double
@@ -122,7 +134,6 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
 C
       SAVE /MAPDPS/
-C
 C
 C Below are descriptions of the variables in each of the common blocks,
 C together with data statements giving default values to those variables
@@ -194,7 +205,7 @@ C
 C Variables in MAPCM4:
 C
 C INTF is a flag whose value at any given time indicates whether the
-C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE).
+C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE.).
 C JPRJ is an integer between 1 and 9 indicating the type of projection
 C currently in use.  PHIA, PHIO, and ROTA are the pole latitude and
 C longitude and the rotation angle specified by the last user call to
@@ -314,15 +325,6 @@ C
       DATA DPLT,DDTS,DSCA / 4.,12.,1. /
 C
 C
-C Variables in MAPCMB:
-C
-C IIER is an error flag, set whenever an error occurs during a call to
-C one of the EZMAP routines.  Its value may be retrieved by a call to
-C MAPGTI.
-C
-      DATA IIER / 0 /
-C
-C
 C Variables in MAPCMC:
 C
 C IGI1 is the group identifier for the principal edge group - the one
@@ -342,6 +344,7 @@ C the arrays XPTB and YPTB for eventual output by a call to POINTS.
 C
       DATA NPTB / 0 /
 C
+C
 C Variables in MAPCMQ:
 C
 C The array ICIN specifies color indices to be used for the perimeter,
@@ -351,6 +354,23 @@ C See the routine MAPCHI.  The default values are all negative, to say
 C that color should not be set.
 C
       DATA ICIN / -1,-1,-1,-1,-1,-1,-1 /
+C
+C
+C Variables in MAPCMX and MAPCMY:
+C
+C For each I from 1 to MNAI, IATY(I), if non-zero, is the type of the
+C area with area identifier I, ISCI(I) is a suggested color index for
+C that area, IPAR(I) is the index of the parent area, and NAME(I) is
+C the name of the area.  FLNS is the full name of the file from which
+C the data in IATY, ISCI, IPAR, and NAME were read; it allows us to
+C avoid re-reading the data when that isn't necessary.
+C
+      DATA (IATY(I),I=1,MNAI) / MNAI*0   /
+      DATA (ISCI(I),I=1,MNAI) / MNAI*0   /
+      DATA (IPAR(I),I=1,MNAI) / MNAI*0   /
+      DATA (NAME(I),I=1,MNAI) / MNAI*' ' /
+C
+      DATA FLNS / ' ' /
 C
 C
 C Variables in MAPSAT:

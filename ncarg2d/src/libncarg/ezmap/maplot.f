@@ -1,5 +1,5 @@
 C
-C $Id: maplot.f,v 1.6 1995-04-26 23:34:51 kennison Exp $
+C $Id: maplot.f,v 1.7 1998-04-16 20:21:13 kennison Exp $
 C
       SUBROUTINE MAPLOT
 C
@@ -17,8 +17,6 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Define required constants.
 C
@@ -26,16 +24,11 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPLOT - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPLOT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C If EZMAP needs initialization or if an error has occurred since the
-C last initialization, do nothing.
+C If EZMAP needs initialization, do nothing.
 C
       IF (INTF) RETURN
-      IF (IIER.NE.0) RETURN
 C
 C If the selected outline type is "NONE", do nothing.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.8 1996-05-07 21:34:56 kennison Exp $
+C $Id: mapint.f,v 1.9 1998-04-16 20:21:06 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -29,8 +29,6 @@ C
       SAVE /MAPCM7/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -63,10 +61,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPINT - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPINT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Decide whether MAPTRN should use real or double-precision arithmetic.
 C The subroutine call is necessary to fool some compilers into storing
@@ -514,10 +509,7 @@ C
 C Do the required SET call.
 C
       CALL SET (ULOW,UROW,VBOW,VTOW,UMIN,UMAX,VMIN,VMAX,1)
-      IF (ICFELL('MAPINT',8).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPINT',8).NE.0) RETURN
 C
 C Compute the quantities used by MAPIT to see if points are far enough
 C apart to draw the line between them and the quantities used by MAPVP
@@ -701,10 +693,9 @@ C Control comes here if we did succeed in setting limits properly.
 C
   701 ISSL=1
 C
-C Zero the error flag and turn off the initialization-required flag.
+C Turn off the initialization-required flag.
 C
-  702 IIER=0
-      INTF=.FALSE.
+  702 INTF=.FALSE.
 C
 C Set all the variables in the common block passed to MAPTRA.
 C
@@ -724,21 +715,17 @@ C
 C
 C Error returns.
 C
-  901 IIER=5
-      CALL SETER ('MAPINT - ATTEMPT TO USE NON-EXISTENT PROJECTION',
-     1                                                       IIER,1)
+  901 CALL SETER ('MAPINT - ATTEMPT TO USE NON-EXISTENT PROJECTION',14,
+     +                                                                1)
       RETURN
 C
-  902 IIER=6
-      CALL SETER ('MAPINT - ANGULAR LIMITS TOO GREAT',IIER,1)
+  902 CALL SETER ('MAPINT - ANGULAR LIMITS TOO GREAT',15,1)
       RETURN
 C
-  903 IIER=7
-      CALL SETER ('MAPINT - MAP HAS ZERO AREA',IIER,1)
+  903 CALL SETER ('MAPINT - MAP HAS ZERO AREA',16,1)
       RETURN
 C
-  904 IIER=8
-      CALL SETER ('MAPINT - MAP LIMITS INAPPROPRIATE',IIER,1)
+  904 CALL SETER ('MAPINT - MAP LIMITS INAPPROPRIATE',17,1)
       RETURN
 C
       END

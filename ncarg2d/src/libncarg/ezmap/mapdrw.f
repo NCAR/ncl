@@ -1,5 +1,5 @@
 C
-C $Id: mapdrw.f,v 1.8 1995-04-26 23:34:50 kennison Exp $
+C $Id: mapdrw.f,v 1.9 1998-04-16 20:20:59 kennison Exp $
 C
       SUBROUTINE MAPDRW
 C
@@ -11,17 +11,12 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Initialize the package, draw and label the grid, and draw outlines.
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPDRW - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPDRW - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Do it to it.
 C

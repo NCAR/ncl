@@ -1,5 +1,5 @@
 C
-C $Id: mapit.f,v 1.5 1994-05-03 21:17:27 kennison Exp $
+C $Id: mapit.f,v 1.6 1998-04-16 20:21:09 kennison Exp $
 C
       SUBROUTINE MAPIT (XLAT,XLON,IFST)
 C
@@ -23,8 +23,6 @@ C
       SAVE /MAPCM8/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
       DIMENSION CPRJ(3)
 C
@@ -41,10 +39,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPIT - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPIT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Initialize the variables that control interpolation.
 C
@@ -316,10 +311,7 @@ C Draw the visible portion of the line joining the old point to the new.
 C
   105 IF (IDTL.EQ.0) THEN
         CALL FRSTD (UOLD,VOLD)
-        IF (ICFELL('MAPIT',7).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPIT',7).NE.0) RETURN
       ELSE
         DATL=0.
       END IF
@@ -333,10 +325,7 @@ C Start a new line.
 C
   106 IF (IDTL.EQ.0) THEN
         CALL FRSTD (U,V)
-        IF (ICFELL('MAPIT',9).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPIT',9).NE.0) RETURN
       ELSE
         DATL=0.
       END IF

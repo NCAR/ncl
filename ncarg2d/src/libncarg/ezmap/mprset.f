@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.1 1996-07-08 21:45:00 kennison Exp $
+C $Id: mprset.f,v 1.2 1998-04-16 20:21:31 kennison Exp $
 C
       SUBROUTINE MPRSET
 C
@@ -34,8 +34,6 @@ C
       SAVE   /MAPCM8/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE   /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE   /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE   /MAPCMC/
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
@@ -50,10 +48,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MPRSET - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MPRSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Reset all common variables to default values.
 C
@@ -94,7 +89,6 @@ C
       DPLT=4.
       DDTS=12.
       DSCA=1.
-      IIER=0
       IGI1=1
       IGI2=2
       NOVS=1

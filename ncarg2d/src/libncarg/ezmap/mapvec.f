@@ -1,13 +1,8 @@
 C
-C $Id: mapvec.f,v 1.4 1994-03-18 23:50:56 kennison Exp $
+C $Id: mapvec.f,v 1.5 1998-04-16 20:21:25 kennison Exp $
 C
       SUBROUTINE MAPVEC (XLAT,XLON)
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MAPVEC - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPVEC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPIT (XLAT,XLON,1)
       IF (ICFELL('MAPVEC',2).NE.0) RETURN
       RETURN

@@ -1,5 +1,5 @@
 C
-C $Id: maplbl.f,v 1.5 1994-05-03 21:17:28 kennison Exp $
+C $Id: maplbl.f,v 1.6 1998-04-16 20:21:11 kennison Exp $
 C
       SUBROUTINE MAPLBL
 C
@@ -18,8 +18,6 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Define required constants.  SIN1 and COS1 are respectively the sine
 C and cosine of one degree.
@@ -29,16 +27,11 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPLBL - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPLBL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C If EZMAP needs initialization or if an error has occurred since the
-C last initialization, do nothing.
+C If EZMAP needs initialization, do nothing.
 C
       IF (INTF) RETURN
-      IF (IIER.NE.0) RETURN
 C
 C If requested, letter key meridians and poles.
 C
@@ -79,10 +72,7 @@ C
   101   CONTINUE
         GO TO 103
   102   CALL WTSTR (U,V,'EQ',ILCW,0,0)
-        IF (ICFELL('MAPLBL',4).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPLBL',4).NE.0) RETURN
 C
 C The Greenwich meridian.
 C
@@ -98,10 +88,7 @@ C
   104   CONTINUE
         GO TO 106
   105   CALL WTSTR (U,V,'GM',ILCW,0,0)
-        IF (ICFELL('MAPLBL',6).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPLBL',6).NE.0) RETURN
 C
 C International date line.
 C
@@ -117,10 +104,7 @@ C
   107   CONTINUE
         GO TO 109
   108   CALL WTSTR (U,V,'ID',ILCW,0,0)
-        IF (ICFELL('MAPLBL',8).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPLBL',8).NE.0) RETURN
 C
 C Restore the color index, dotting, and dash pattern.
 C
@@ -145,10 +129,7 @@ C
           V=0.
           IF (IDTL.EQ.0) THEN
             CALL FRSTD (UCEN+U,VCEN)
-            IF (ICFELL('MAPLBL',11).NE.0) THEN
-              IIER=-1
-              RETURN
-            END IF
+            IF (ICFELL('MAPLBL',11).NE.0) RETURN
           ELSE
             DATL=0.
           END IF
@@ -168,10 +149,7 @@ C
           VMAXX=VMAX-.9999*(VMAX-VMIN)
           IF (IDTL.EQ.0) THEN
             CALL FRSTD (UMINX,VMINX)
-            IF (ICFELL('MAPLBL',13).NE.0) THEN
-              IIER=-1
-              RETURN
-            END IF
+            IF (ICFELL('MAPLBL',13).NE.0) RETURN
           ELSE
             DATL=0.
           END IF

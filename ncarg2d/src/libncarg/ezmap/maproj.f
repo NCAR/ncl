@@ -1,5 +1,5 @@
 C
-C $Id: maproj.f,v 1.8 1996-05-07 21:34:57 kennison Exp $
+C $Id: maproj.f,v 1.9 1998-04-16 20:21:14 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -16,8 +16,6 @@ C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -26,10 +24,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPROJ - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPROJ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer the parameters defining the projection.
 C
@@ -64,8 +59,7 @@ C
 C
 C Error exit.
 C
-  901 IIER=9
-      CALL MAPCEM ('MAPROJ - UNKNOWN PROJECTION NAME ',ARG1,IIER,1)
+  901 CALL MAPCEM ('MAPROJ - UNKNOWN PROJECTION NAME ',ARG1,4,1)
       RETURN
 C
       END

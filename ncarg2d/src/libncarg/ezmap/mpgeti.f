@@ -1,14 +1,9 @@
 C
-C $Id: mpgeti.f,v 1.5 1994-03-18 23:51:02 kennison Exp $
+C $Id: mpgeti.f,v 1.6 1998-04-16 20:21:29 kennison Exp $
 C
       SUBROUTINE MPGETI (WHCH,IVAL)
       CHARACTER*(*) WHCH
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MPGETI - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MPGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPGTI (WHCH,IVAL)
       IF (ICFELL('MPGETI',2).NE.0) RETURN
       RETURN

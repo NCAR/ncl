@@ -1,13 +1,8 @@
 C
-C $Id: mapfst.f,v 1.4 1994-03-18 23:49:56 kennison Exp $
+C $Id: mapfst.f,v 1.5 1998-04-16 20:21:00 kennison Exp $
 C
       SUBROUTINE MAPFST (XLAT,XLON)
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MAPFST - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPFST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPIT (XLAT,XLON,0)
       IF (ICFELL('MAPFST',2).NE.0) RETURN
       RETURN

@@ -1,14 +1,9 @@
 C
-C $Id: mpseti.f,v 1.5 1994-03-18 23:51:10 kennison Exp $
+C $Id: mpseti.f,v 1.6 1998-04-16 20:21:33 kennison Exp $
 C
       SUBROUTINE MPSETI (WHCH,IVAL)
       CHARACTER*(*) WHCH
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MPSETI - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MPSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPSTI (WHCH,IVAL)
       IF (ICFELL('MPSETI',2).NE.0) RETURN
       RETURN

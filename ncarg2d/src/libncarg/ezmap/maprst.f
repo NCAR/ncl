@@ -1,5 +1,5 @@
 C
-C $Id: maprst.f,v 1.4 1994-03-18 23:50:31 kennison Exp $
+C $Id: maprst.f,v 1.5 1998-04-16 20:21:16 kennison Exp $
 C
       SUBROUTINE MAPRST (IFNO)
 C
@@ -16,8 +16,6 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
       COMMON /MAPCMQ/ ICIN(7)
@@ -30,10 +28,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPRST - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPRST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Read a record of saved parameters.
 C
@@ -56,12 +51,10 @@ C
 C
 C Error exits.
 C
-  901 IIER=20
-      CALL SETER ('MAPRST - ERROR ON READ',IIER,1)
+  901 CALL SETER ('MAPRST - ERROR ON READ',3,1)
       RETURN
 C
-  902 IIER=21
-      CALL SETER ('MAPRST - EOF ON READ',IIER,1)
+  902 CALL SETER ('MAPRST - EOF ON READ',4,1)
       RETURN
 C
       END

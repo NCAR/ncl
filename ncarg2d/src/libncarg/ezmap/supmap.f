@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.7 1996-05-07 21:34:58 kennison Exp $
+C $Id: supmap.f,v 1.8 1998-04-16 20:21:36 kennison Exp $
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
      +                   JGRD,IOUT,IDOT,IERR)
@@ -12,20 +12,20 @@ C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
       DIMENSION LPRJ(10),LLTS(6)
 C
       DATA LPRJ / 2,3,1,4,5,6,10,7,8,9 /
       DATA LLTS / 1,2,5,4,3,6 /
 C
+C Set the error flag to indicate an error; if all goes well, this flag
+C will be cleared.
+C
+      IERR=1
+C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('SUPMAP - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('SUPMAP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Set EZMAP's grid-spacing parameter.
 C
@@ -75,9 +75,9 @@ C
       CALL MAPDRW
       IF (ICFELL('SUPMAP',9).NE.0) RETURN
 C
-C Return the error flag to the user.
+C All seems to have gone well - turn off the error flag.
 C
-      IERR=IIER
+      IERR=0
 C
 C Done.
 C

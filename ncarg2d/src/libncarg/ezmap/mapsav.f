@@ -1,5 +1,5 @@
 C
-C $Id: mapsav.f,v 1.4 1994-03-18 23:50:33 kennison Exp $
+C $Id: mapsav.f,v 1.5 1998-04-16 20:21:17 kennison Exp $
 C
       SUBROUTINE MAPSAV (IFNO)
 C
@@ -16,8 +16,6 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
       COMMON /MAPCMQ/ ICIN(7)
@@ -30,10 +28,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPSAV - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPSAV - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Write a record containing all the user-settable parameters.
 C
@@ -51,8 +46,7 @@ C
 C
 C Error exits.
 C
-  901 IIER=22
-      CALL SETER ('MAPSAV - ERROR ON WRITE',IIER,1)
+  901 CALL SETER ('MAPSAV - ERROR ON WRITE',2,1)
       RETURN
 C
       END

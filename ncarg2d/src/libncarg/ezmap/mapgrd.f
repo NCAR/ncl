@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.7 1995-12-13 18:29:22 kennison Exp $
+C $Id: mapgrd.f,v 1.8 1998-04-16 20:21:01 kennison Exp $
 C
       SUBROUTINE MAPGRD
 C
@@ -19,8 +19,6 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Define local logical flags.
 C
@@ -39,16 +37,11 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPGRD - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPGRD - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C If EZMAP needs initialization or if an error has occurred since the
-C last initialization, do nothing.
+C If EZMAP needs initialization, do nothing.
 C
       IF (INTF) RETURN
-      IF (IIER.NE.0) RETURN
 C
 C If the grid is suppressed, do nothing.
 C

@@ -1,14 +1,9 @@
 C
-C $Id: mpsetr.f,v 1.5 1994-03-18 23:51:13 kennison Exp $
+C $Id: mpsetr.f,v 1.6 1998-04-16 20:21:34 kennison Exp $
 C
       SUBROUTINE MPSETR (WHCH,RVAL)
       CHARACTER*(*) WHCH
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MPSETR - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MPSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPSTR (WHCH,RVAL)
       IF (ICFELL('MPSETR',2).NE.0) RETURN
       RETURN

@@ -1,5 +1,5 @@
 C
-C $Id: maptrn.f,v 1.5 1996-09-18 21:46:58 kennison Exp $
+C $Id: maptrn.f,v 1.6 1998-04-16 20:21:24 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -13,8 +13,6 @@ C
       SAVE /MAPDP1/
       COMMON /MAPCM8/ P,Q,R
       SAVE /MAPCM8/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
@@ -36,10 +34,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPTRN - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPTRN - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Protect following code against values of RLAT outside the legal range.
 C
@@ -322,10 +317,7 @@ C
 C
 C Error exit.
 C
-  901 IF (IIER.NE.0) GO TO 118
-      IIER=16
-      CALL SETER ('MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION',
-     +                                                       IIER,1)
+  901 CALL SETER ('MAPTRN - ATTEMPT TO USE NON-EXISTENT PROJECTION',2,1)
       GO TO 118
 C
       END

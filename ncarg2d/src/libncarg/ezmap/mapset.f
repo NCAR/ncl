@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.8 1996-05-07 21:34:57 kennison Exp $
+C $Id: mapset.f,v 1.9 1998-04-16 20:21:18 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -17,15 +17,10 @@ C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer the parameters defining the map limits.
 C
@@ -56,8 +51,7 @@ C
 C
 C Error exit.
 C
-  901 IIER=10
-      CALL MAPCEM ('MAPSET - UNKNOWN MAP AREA SPECIFIER ',ARG1,IIER,1)
+  901 CALL MAPCEM ('MAPSET - UNKNOWN MAP AREA SPECIFIER ',ARG1,2,1)
       RETURN
 C
       END

@@ -1,15 +1,10 @@
 C
-C $Id: mpsetl.f,v 1.5 1994-03-18 23:51:12 kennison Exp $
+C $Id: mpsetl.f,v 1.6 1998-04-16 20:21:34 kennison Exp $
 C
       SUBROUTINE MPSETL (WHCH,LVAL)
       CHARACTER*(*) WHCH
       LOGICAL LVAL
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
-      IF (ICFELL('MPSETL - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MPSETL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPSTL (WHCH,LVAL)
       IF (ICFELL('MPSETL',2).NE.0) RETURN
       RETURN

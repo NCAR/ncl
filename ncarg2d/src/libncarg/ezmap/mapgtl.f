@@ -1,5 +1,5 @@
 C
-C $Id: mapgtl.f,v 1.7 1994-04-08 23:00:26 kennison Exp $
+C $Id: mapgtl.f,v 1.8 1998-04-16 20:21:04 kennison Exp $
 C
       SUBROUTINE MAPGTL (WHCH,LVAL)
 C
@@ -14,13 +14,9 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
 C
-      IF (ICFELL('MAPGTL - UNCLEARED PRIOR ERROR',1).NE.0) THEN
-        IIER=-1
-        RETURN
-      END IF
+      IF (ICFELL('MAPGTL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
       IF      (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         LVAL=IDTL.NE.0
       ELSE IF (WHCH(1:2).EQ.'DO'.OR.WHCH(1:2).EQ.'do') THEN
@@ -43,8 +39,7 @@ C
 C
 C Error exits.
 C
-  901 IIER=3
-      CALL MAPCEM ('MAPGTL - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+  901 CALL MAPCEM ('MAPGTL - UNKNOWN PARAMETER NAME ',WHCH,2,1)
       LVAL=.FALSE.
       RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mapvpd.f,v 1.1 1996-05-09 22:37:56 kennison Exp $
+C $Id: mapvpd.f,v 1.2 1998-04-16 20:21:27 kennison Exp $
 C
       SUBROUTINE MAPVPD (UOLD,VOLD,U,V)
 C
@@ -17,8 +17,6 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
       SAVE /MAPCMP/
 C
@@ -29,10 +27,7 @@ C
 C Use a single vector.
 C
         CALL DPVECT (U,V)
-        IF (ICFELL('MAPVPD',1).NE.0) THEN
-          IIER=-1
-          RETURN
-        END IF
+        IF (ICFELL('MAPVPD',1).NE.0) RETURN
 C
       ELSE
 C
@@ -51,10 +46,7 @@ C
   101   IF (DATL.LT.VLEN) THEN
           IF (NPTB.GE.50) THEN
             CALL POINTS (XPTB,YPTB,NPTB,0,0)
-            IF (ICFELL('MAPVPD',2).NE.0) THEN
-              IIER=-1
-              RETURN
-            END IF
+            IF (ICFELL('MAPVPD',2).NE.0) RETURN
             NPTB=0
           END IF
           NPTB=NPTB+1
