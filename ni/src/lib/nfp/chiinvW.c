@@ -7,23 +7,29 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
+#include "Symbol.h"
+#include "NclMdInc.h"
 #include <ncarg/ncl/NclDataDefs.h>
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
-
+#include "wrapper.h"
+extern void NGCALLF(chisub,CHISUB)(double*,double*,double*);
 
 NhlErrorTypes chiinv_W( void )
 {
 /*
  * Input array variables
  */
-  float *p, *df;
+  void *p, *df;
+  double *dp, *ddf;
   int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   int ndims_df, dsizes_df[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_p, type_df;
 /*
  * output variable 
  */
-  float *chi;
+  double *chi;
+  float *rchi;
   int size_chi;
 /*
  * Declare various variables for random purposes.
@@ -39,26 +45,26 @@ NhlErrorTypes chiinv_W( void )
 /*
  * Retrieve argument #1
  */
-  p = (float*)NclGetArgValue(
+  p = (void*)NclGetArgValue(
           0,
           2,
           &ndims_p,
           dsizes_p,
           NULL,
           NULL,
-          NULL,
+          &type_p,
           2);
 /*
  * Retrieve argument #2
  */
-  df = (float*)NclGetArgValue(
+  df = (void*)NclGetArgValue(
           1,
           2,
           &ndims_df,
           dsizes_df,
           NULL,
           NULL,
-          NULL,
+          &type_df,
           2);
 /*
  * Check number of dimensions and/or dimension sizes for arguments #1
@@ -69,33 +75,72 @@ NhlErrorTypes chiinv_W( void )
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_p; i++ ) {
-	if (dsizes_p[i] != dsizes_df[i]) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: The two input arrays must have the same dimensions");
-	  return(NhlFATAL);
-	}
+    if (dsizes_p[i] != dsizes_df[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: The two input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
   }
 /*
  * Calculate size of output value.
  */
   size_chi = 1;
-  for( i = 0; i < ndims_p-1; i++ ) {
-	size_chi *= dsizes_p[i];
+  for( i = 0; i < ndims_p; i++ ) size_chi *= dsizes_p[i];
+
+/*
+ * Coerce p and df to double if necessary.
+ */
+  dp  = coerce_input_double( p, type_p,size_chi,0,NULL,NULL,NULL);
+  ddf = coerce_input_double(df,type_df,size_chi,0,NULL,NULL,NULL);
+  if(ddf == NULL || dp == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
+
 /*
  * Allocate space for output array.
  */
-  chi = (float*)NclMalloc(size_chi*sizeof(float));
+  chi = (double*)NclMalloc(size_chi*sizeof(double));
+  if( chi == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
 
 /*
  * Call the Fortran version of this routine.
  *
  */
   for( i = 0; i < size_chi; i++ ) {
-	NGCALLF(chisub, CHISUB)(&p[i],&df[i],&chi[i]);
+    NGCALLF(chisub,CHISUB)(&dp[i],&ddf[i],&chi[i]);
   }
+/*
+ * free memory.
+ */
+  if((void*)dp  != p) NclFree(dp);
+  if((void*)ddf != df) NclFree(ddf);
 
 /*
- * Return.
+ * Copy double values to float values.
  */
-  return(NclReturnValue((void*)chi,ndims_p,dsizes_p,NULL,NCL_float,0));
+  if(type_p != NCL_double && type_df != NCL_double) {
+/*
+ * Neither input array was double, so copy return floats.
+ *
+ * First copy double values to float array.
+ */
+    rchi = coerce_output_float(chi, NULL, size_chi, 0);
+    if( rchi == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+/*
+ * Return float values.
+ */
+    return(NclReturnValue((void*)rchi,ndims_p,dsizes_p,NULL,NCL_float,0));
+  }
+  else {
+/*
+ * One or both input arrays were double, so return double precision values.
+ */
+    return(NclReturnValue((void*)chi,ndims_p,dsizes_p,NULL,NCL_double,0));
+  }
 }

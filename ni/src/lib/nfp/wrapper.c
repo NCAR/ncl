@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
+#include "Symbol.h"
+#include "NclMdInc.h"
 #include <ncarg/ncl/NclBuiltIns.h>
 /*
  * Declare wrapper function
@@ -229,7 +232,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 2;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     dimsizes[0] = 1;
@@ -243,7 +246,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 2;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     dimsizes[0] = 1;
@@ -257,7 +260,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 2;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -269,7 +272,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(f2fsh_W,args,"f2fsh",nargs);
@@ -280,7 +283,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(fo2fsh_W,args,"fo2fsh",nargs);
 /*
@@ -290,7 +293,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(f2fosh_W,args,"f2fosh",nargs);
 /*
@@ -300,10 +303,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(fo2fshv_W,args,"fo2fshv",nargs);
 /*
@@ -313,10 +316,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(f2foshv_W,args,"f2foshv",nargs);
 /*
@@ -326,10 +329,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -341,10 +344,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -356,10 +359,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(g2fshv_W,args,"g2fshv",nargs);
 /*
@@ -369,10 +372,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(f2fshv_W,args,"f2fshv",nargs);
 /*
@@ -501,8 +504,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -514,11 +517,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
 
     NclRegisterFunc(snindex_yrmo_W,args,"snindex_yrmo",nargs);
 /*
@@ -528,9 +531,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(dv2uvf_W,args,"dv2uvf",nargs);
 
@@ -541,9 +544,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterProc(dv2uvg_W,args,"dv2uvg",nargs);
 /*
  * Register "gradsf".
@@ -552,9 +555,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(gradsf_W,args,"gradsf",nargs);
 
@@ -565,9 +568,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(gradsg_W,args,"gradsg",nargs);
 
@@ -578,9 +581,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(igradsf_W,args,"igradsf",nargs);
 
@@ -591,9 +594,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(igradsg_W,args,"igradsg",nargs);
 /*
@@ -603,8 +606,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(igradsF_W,args,"igradsF",nargs);
 
@@ -615,8 +618,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(igradsG_W,args,"igradsG",nargs);
 
@@ -627,9 +630,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(ilapsf_W,args,"ilapsf",nargs);
 
@@ -640,9 +643,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(ilapsg_W,args,"ilapsg",nargs);
 
@@ -653,8 +656,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(ilapsF_W,args,"ilapsF",nargs);
 
@@ -665,8 +668,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(ilapsG_W,args,"ilapsG",nargs);
 
@@ -677,10 +680,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(ilapvf_W,args,"ilapvf",nargs);
 
@@ -691,10 +694,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(ilapvg_W,args,"ilapvg",nargs);
 
@@ -705,8 +708,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lapsf_W,args,"lapsf",nargs);
 
@@ -717,8 +720,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lapsg_W,args,"lapsg",nargs);
 
@@ -729,7 +732,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(lapsF_W,args,"lapsF",nargs);
 
@@ -740,7 +743,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(lapsG_W,args,"lapsG",nargs);
 
@@ -751,10 +754,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lapvf_W,args,"lapvf",nargs);
 
@@ -765,10 +768,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lapvg_W,args,"lapvg",nargs);
 
@@ -779,10 +782,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2sfvpf_W,args,"uv2sfvpf",nargs);
 
@@ -793,10 +796,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2sfvpg_W,args,"uv2sfvpg",nargs);
 
@@ -807,10 +810,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrdvg_W,args,"uv2vrdvg",nargs);
 
@@ -821,10 +824,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrdvf_W,args,"uv2vrdvf",nargs);
 
@@ -835,10 +838,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lderuvf_W,args,"lderuvf",nargs);
 
@@ -849,10 +852,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(lderuvg_W,args,"lderuvg",nargs);
 
@@ -863,9 +866,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
 	NclRegisterProc(uv2dvf_W,args,"uv2dvf",nargs);
 
@@ -876,9 +879,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2dvg_W,args,"uv2dvg",nargs);
 
@@ -889,8 +892,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(uv2dvF_W,args,"uv2dvF",nargs);
 
@@ -901,8 +904,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(uv2dvG_W,args,"uv2dvG",nargs);
 
@@ -913,9 +916,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrf_W,args,"uv2vrf",nargs);
 
@@ -926,9 +929,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(uv2vrg_W,args,"uv2vrg",nargs);
 
@@ -939,8 +942,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(uv2vrF_W,args,"uv2vrF",nargs);
 
@@ -951,8 +954,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(uv2vrG_W,args,"uv2vrG",nargs);
 
@@ -963,9 +966,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vr2uvf_W,args,"vr2uvf",nargs);
 
@@ -976,9 +979,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vr2uvg_W,args,"vr2uvg",nargs);
 
@@ -989,10 +992,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vrdv2uvf_W,args,"vrdv2uvf",nargs);
 
@@ -1003,10 +1006,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vrdv2uvg_W,args,"vrdv2uvg",nargs);
 
@@ -1017,12 +1020,12 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhaec_W,args,"vhaec",nargs);
 
@@ -1033,12 +1036,12 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhagc_W,args,"vhagc",nargs);
 
@@ -1049,12 +1052,12 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhsec_W,args,"vhsec",nargs);
 
@@ -1065,12 +1068,12 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhsgc_W,args,"vhsgc",nargs);
 
@@ -1081,9 +1084,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(shaec_W,args,"shaec",nargs);
 
@@ -1094,9 +1097,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(shagc_W,args,"shagc",nargs);
 
@@ -1107,9 +1110,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(shsec_W,args,"shsec",nargs);
 
@@ -1120,9 +1123,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(shsgc_W,args,"shsgc",nargs);
 
@@ -1133,7 +1136,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(shaeC_W,args,"shaeC",nargs);
 
@@ -1144,7 +1147,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(shagC_W,args,"shagC",nargs);
 
@@ -1155,7 +1158,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(shseC_W,args,"shseC",nargs);
@@ -1167,7 +1170,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
@@ -1179,7 +1182,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -1192,8 +1195,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -1206,7 +1209,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -1219,8 +1222,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1; 
 	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -2479,14 +2482,14 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vibeta_W,args,"vibeta",nargs);
 /*
@@ -2494,9 +2497,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(int2p_W,args,"int2p",nargs);
@@ -2538,7 +2541,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(4);
 
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
@@ -2552,10 +2555,10 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pslhor_W,args,"pslhor",nargs);
 /*
@@ -2652,7 +2655,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(wgt_runave_W,args,"wgt_runave",nargs);
 
@@ -2662,7 +2665,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_W,args,"dtrend",nargs);
 
@@ -2698,10 +2701,10 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(specx_anal_W,args,"specx_anal",nargs);
 
 /*
@@ -2710,11 +2713,11 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(5);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(specxy_anal_W,args,"specxy_anal",nargs);
 
 /*
@@ -2723,8 +2726,8 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(chiinv_W,args,"chiinv",nargs);
 
 /*
@@ -2736,6 +2739,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "graphic", NclANY, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "string", NclANY, NclANY);   nargs++;
     NclRegisterFunc(NhlGetNamedColorIndex_W, args, "NhlGetNamedColorIndex", nargs);
+
     return;
 }
 
@@ -2753,3 +2757,193 @@ void NclAddUserFuncs(void)
 {
   return;
 }
+
+double *coerce_input_double(
+void              *x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_dx,
+NclScalar         *missing_rx)
+{
+  double *dx;
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to double.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               missing_dx,
+               missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double && missing_rx != NULL) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 missing_rx,
+                 missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+/*
+ * Coerce x to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(sizeof(double)*size_x);
+    if( dx == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 size_x,
+                 missing_dx,
+                 missing_x,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already double.
+ */
+    dx = (double*)x;
+  }
+  return(dx);
+}
+
+float *coerce_output_float(double *dx, void *x, int size_x, int has_allocated)
+{
+  int i;
+  float *rx;
+
+  if(!has_allocated) {
+/*
+ * If the NCL wrapper is for a function that needs to return a float,
+ * then allocate space for a float here.
+ */
+    rx = (float*)NclMalloc(sizeof(float)*size_x);
+  }
+  else {
+/*
+ * If returning float values to a pre-allocated slot, we need to copy the
+ * coerced float values back to the original location.  Do this by creating
+ * a pointer of type float that points to the original location, and then
+ * loop through the values and do the coercion.
+ */
+    rx = (float*)x;
+  }
+
+  if( rx != NULL ) {
+    for( i = 0; i < size_x; i++ ) rx[i]  = (float)dx[i];
+  }
+  NclFree(dx);   /* Free up double precision values */
+  return(rx);
+}
+
+double *coerce_output_double(
+void              *x,
+NclBasicDataTypes type_x,
+int               size_x)
+{
+  double *dx;
+/*
+ * Check type of x
+ */
+  if(type_x == NCL_float) {
+/*
+ * Allocate space for double precision x. There's no need to do a
+ * coercion because x is an output-only variable (i.e, there are no
+ * values coming in).  x can only be float or double, so only allocate
+ * space for a d.p. array if x is float.
+ */
+    dx = (double*)NclMalloc(sizeof(double)*size_x);
+  }
+  else {
+/*
+ * Input is already double.
+ */
+    dx = (double*)x;
+  }
+  return(dx);
+}
+
+float *coerce_output_float_missing(
+double   *dx,
+int      size_x,
+double   missing) 
+{
+  float *rx;
+
+  int i;
+  rx = (float*)calloc(size_x*sizeof(float),1);
+  if( rx != NULL ) {
+    for( i = 0; i < size_x; i++ ) rx[i]  = (float)missing;
+  }
+  NclFree(dx);    /* Free double precision array */
+  return(rx);     /* Return float array */
+}
+
+int contains_missing(double *x,int size_x,int has_missing_x,double missing)
+{
+  int l, found_missing = 0;
+/*
+ * Check for missing values.
+ */
+  if(has_missing_x) {
+    l = 0;
+    while( l < size_x && !found_missing ) {
+      if(x[l++] == missing) found_missing = 1;
+    }
+  }
+  return(found_missing);
+}
+
+void compute_nlatnlon(int *dsizes,int ndims,int *nlat,int *nlon,
+		      int *nlatnlon,int *nt,int *total)
+{
+  int i;
+
+  *nlat = dsizes[ndims-2];
+  *nlon = dsizes[ndims-1];
+  *nlatnlon = *nlat * *nlon;
+  *nt = 1;
+  for(i = 0; i < ndims-2; i++) *nt *= dsizes[i];
+  *total = *nlatnlon * *nt;
+}
+
+void compute_nlatanlona(int *dsizes_in,int *dsizes_out,
+			int ndims_in,int ndims_out,
+			int *nlata,int *nlona,int *nlatanlona,
+			int *nlatb,int *nlonb,int *nlatbnlonb,
+			int *size_leftmost,int *size_in,int *size_out)
+{
+  int i;
+
+  *nlata = dsizes_in[ndims_in-2];
+  *nlona = dsizes_in[ndims_in-1];
+  *nlatb = dsizes_out[ndims_out-2];
+  *nlonb = dsizes_out[ndims_out-1];
+  *nlatanlona = *nlata * *nlona;
+  *nlatbnlonb = *nlatb * *nlonb;
+  *size_leftmost = 1;
+  for(i = 0; i < ndims_in-2; i++) *size_leftmost *= dsizes_in[i];
+  *size_in  = *size_leftmost * *nlatanlona; 
+  *size_out = *size_leftmost * *nlatbnlonb;
+}
+
