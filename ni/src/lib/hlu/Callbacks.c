@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.1 1996-05-05 22:10:25 boote Exp $
+ *      $Id: Callbacks.c,v 1.2 1996-05-08 14:37:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -214,7 +214,7 @@ _NhlCBCallCallbacks
 #endif
 {
 	long	index;
-	_NhlCB	cb;
+	_NhlCB	cb,tcb;
 
 	if(cblist->call_hash)
 		index = (*cblist->call_hash)(selector,cbdata);
@@ -223,9 +223,14 @@ _NhlCBCallCallbacks
 
 	cb = cblist->hash[index & cblist->mask];
 	while(cb){
+		/*
+		 * Get the "next" pointer now, in case cbfunc does a
+		 * CBDelete.
+		 */
+		tcb = cb->next;
 		if(cb->index == index)
 			(*cb->cbfunc)(cbdata,cb->udata);
-		cb = cb->next;
+		cb = tcb;
 	}
 
 	return;
