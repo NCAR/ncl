@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.13 1999-05-22 00:36:20 dbrown Exp $
+ *      $Id: htmlview.c,v 1.14 1999-08-28 00:18:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -972,7 +972,14 @@ _NgCreateHtmlView(
         NgHtmlViewRec	*hvp;
         NgHtmlView	*pub_hvp;
         Widget		hsb,form;
+	char		gen_fsizes[] = "14,8,24,18,14,12,10,8";
+	char		gen_fix_fsizes[] = "12,8";
 
+	/*"12,8,22,18,14,12,10,8";*/
+
+	char		sun_fsizes[] = "10,8,20,16,12,10,8,6";
+	char		sun_fix_fsizes[] = "10,6";
+	char		*fsizes,*fix_fsizes;
 
 /*
  * This code wraps the XmHTML widget with a form in order to allow a specific
@@ -1016,7 +1023,7 @@ _NgCreateHtmlView(
         hvp->urlbase = NULL;
 	hvp->filebase = NULL;
         pub_hvp = &hvp->public;
-
+	
 /*
  * The public access widget (parent of the hierarchy is simply a frame
  * widget
@@ -1068,6 +1075,18 @@ _NgCreateHtmlView(
         _XmHTMLSelectDebugLevels("all");
 #endif        
         
+#if DEBUG_HTML        
+	fprintf(stderr,"Vender: %s\n",ServerVendor(hvp->go->go.x->dpy));
+#endif
+	if (! strncmp(ServerVendor(hvp->go->go.x->dpy),"Sun",3)) {
+		fsizes = sun_fsizes;
+		fix_fsizes = sun_fix_fsizes;
+	}
+	else {
+		fsizes = gen_fsizes;
+		fix_fsizes = gen_fix_fsizes;
+	}
+	       
 	hvp->html = XtVaCreateManagedWidget
                 ("html",
                  xmHTMLWidgetClass,hvp->scrwin,
@@ -1078,6 +1097,8 @@ _NgCreateHtmlView(
 		 XmNimageEnable,True,
 		 XmNimageProc,imageProc,
 		 XmNclientData,hvp,
+		 XmNfontSizeList,fsizes,
+		 XmNfontSizeFixedList,fix_fsizes,
                  NULL);
 	XtAddCallback(hvp->html, XmNactivateCallback,
 		      (XtCallbackProc)anchorCB,hvp);

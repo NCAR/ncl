@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.6 1998-03-23 22:48:40 dbrown Exp $
+ *      $Id: datagrid.c,v 1.7 1999-08-28 00:18:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -269,6 +269,8 @@ static void FillVisibleGrid
                         if (vix >= val->totalelements)
                                 break;
                 }
+		/* eliminate final '|' character */
+		Buffer[strlen(Buffer)-1] = '\0';
                 XmLGridSetStringsPos(dgp->grid,XmCONTENT,start_row+i,
                                      XmCONTENT,start_col,Buffer);
         }

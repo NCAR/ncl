@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.7 1999-07-30 03:20:49 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.8 1999-08-28 00:18:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1057,6 +1057,8 @@ EditCB
 #if DEBUG_DATA_SOURCE_GRID      
                     fprintf(stderr,"edit complete\n");
 #endif
+		    if (! dsp->in_edit) 
+			    return;
 
                     XtVaSetValues(dsp->text,
 				  XmNbackground,dsp->go->go.edit_field_pixel,

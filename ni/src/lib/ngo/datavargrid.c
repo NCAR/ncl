@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.2 1999-08-14 01:32:55 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.3 1999-08-28 00:18:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -879,6 +879,8 @@ EditCB
 #if DEBUG_DATA_VAR_GRID      
                     fprintf(stderr,"edit complete\n");
 #endif
+		    if (! dvp->in_edit) 
+			    return;
 
                     XtVaSetValues(dvp->text,
 				  XmNbackground,dvp->go->go.edit_field_pixel,

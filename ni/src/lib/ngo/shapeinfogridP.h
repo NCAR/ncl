@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogridP.h,v 1.3 1997-06-27 07:20:20 dbrown Exp $
+ *      $Id: shapeinfogridP.h,v 1.4 1999-08-28 00:18:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -59,6 +59,7 @@ typedef struct _NgShapeInfoGridRec
         float			*finish_coords;
         Boolean			*float_types;
 	Boolean			manual_edit_started;
+	Boolean			ignore_focus_cb;
 } NgShapeInfoGridRec;
 
 #endif	/* _NG_SHAPEINFOGRIDP_H_ */

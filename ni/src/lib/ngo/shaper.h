@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.5 1999-02-23 03:56:54 dbrown Exp $
+ *      $Id: shaper.h,v 1.6 1999-08-28 00:18:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,37 +34,19 @@
 #include <ncarg/ngo/shapeinfogrid.h>
 #include <ncarg/ngo/varpage.h>
 
-typedef void (*NgShapeApply)(
-#if     NhlNeedProto
-        void *data
-#endif
-);
-
 typedef struct _NgShaper {           /* shaper interface struct */
-	NgGO		go;
-	Widget		parent;
-        Widget		frame;
-        Widget		datagrid_toggle;
-	Widget		all_selected_tgl;
-        NgDataGrid	*datagrid;
-        NgShapeInfoGrid	*shapeinfogrid;
-	Widget		indexes_tgl;
-	Widget		synchro_step_tgl;
-        int		tgl_coord;
-	void		*shaper;
+        Widget		frame;	     /* top-level widget for the shaper */
 	NrmQuark	qfile;
 	NclApiVarInfoRec  *vinfo;
 	long		*start;
 	long		*finish;
 	long		*stride;
-	int		eff_dim_count;
-	NhlBoolean	new_shape;
-	NhlBoolean	new_data;
-	NhlBoolean	restore;
-	NgShapeApply	apply;
+	NgShapeNotify	shape_notify;
         AdjustPageGeoFunc geo_notify;
-        NhlPointer	pdata;
+        NhlPointer	pdata;	      /* data for the funcptr functions */
         Dimension	sub_width;
+        NgDataGrid	*datagrid;
+        NgShapeInfoGrid	*shapeinfogrid;
 } NgShaper;
 
 
@@ -79,6 +61,37 @@ void NgDoShaper(
 #if	NhlNeedProto
 	NgShaper	*si
 #endif
+);
+
+NgShaper *NgCreateShaper(
+	NgGO		go,
+	Widget		parent,
+	NrmQuark	qfile,
+	long		*start,
+	long		*finish,
+	long		*stride,
+	NclApiVarInfoRec  *vinfo
+);
+
+NhlErrorTypes NgUpdateShaper(
+	NgShaper	*si,
+	NrmQuark	qfile,
+	long		*start,
+	long		*finish,
+	long		*stride,
+	NclApiVarInfoRec  *vinfo
+);
+
+NgShaper *NgDupShaper(
+	NgGO		go,
+	Widget		parent,
+	NgShaper	*si,
+	NgShaper	*old_si,
+	NrmQuark	qfile,
+	long		*start,
+	long		*finish,
+	long		*stride,
+	NclApiVarInfoRec  *vinfo
 );
 
 void NgDeactivateShaper(

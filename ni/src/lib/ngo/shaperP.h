@@ -1,5 +1,5 @@
 /*
- *      $Id: shaperP.h,v 1.3 1997-06-27 07:20:22 dbrown Exp $
+ *      $Id: shaperP.h,v 1.4 1999-08-28 00:18:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,8 +29,14 @@
 #define DEBUG_SHAPER 0
 
 typedef struct _NgShaperRec {
+	/* public */
+	NgShaper	si;
+
+	/* private */
+
+ 	NgGO		go;
+	Widget		parent;
 	Widget		form;
-	int		tgl_coord;
         NclApiDataList  *tgl_coord_dlist;
 	NhlBoolean	new_coord;
 	int		coords_alloced;
@@ -40,10 +46,10 @@ typedef struct _NgShaperRec {
 	Boolean		*coords_selected_only_set;
 	NhlBoolean	indexes_set;
 	NhlBoolean	synchro_step_set;
+	Boolean		*coords_synchro_step_set;
 	Widget		reverse_tgl;
 	NhlBoolean	new_rev_val;
 	NhlBoolean	reverse_set;
-	NhlBoolean	new_data;
         long		start;
         long		finish;
         long		stride;
@@ -52,6 +58,14 @@ typedef struct _NgShaperRec {
         XtIntervalId	edit_timer_id;
         int		edit_timeout_value;
         unsigned char   edit_how;
+	NhlBoolean	restore;
+	NhlBoolean	new_data;
+        int		tgl_coord;
+        Widget		datagrid_tgl;
+	Widget		all_selected_tgl;
+	Widget		indexes_tgl;
+	Widget		synchro_step_tgl;
+	NhlBoolean	ignore_synchro_step_cb;
 } NgShaperRec;
 
 #endif	/* _NX_SHAPERP_H */

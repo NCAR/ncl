@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.h,v 1.4 1999-02-23 03:56:55 dbrown Exp $
+ *      $Id: varpage.h,v 1.5 1999-08-28 00:18:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,5 @@
 #define _NCL_H_
 #endif
       
-extern void NgVarPageDataUpdate(
-	NhlPointer 	pdata
-);
-
   
 #endif	/* _NG_VARPAGE_H */

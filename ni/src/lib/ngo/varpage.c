@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.14 1999-07-30 03:20:59 dbrown Exp $
+ *      $Id: varpage.c,v 1.15 1999-08-28 00:18:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <Xm/ToggleBG.h>
 #include <Xm/PushBG.h>
 #include <Xm/LabelG.h>
+
 
 static void FreeDataLinks(
 	XmLArray datalinks
@@ -241,6 +242,30 @@ static NhlErrorTypes VarPageMessageNotify
 	return ret;
 }
 
+static void VarPageDataUpdate
+(
+        NhlPointer 	pdata
+        )
+{
+	brPage	*page = (brPage *) pdata;
+	brPageData	*pdp = page->pdata;
+	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
+        int ndims = pdp->dl->u.var->n_dims;
+        int i,size = ndims * sizeof(long);
+        brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
+	NhlBoolean notify_req = False;
+
+	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,
+			   pdp->dl->u.var->name,NrmNULLQUARK,
+			   ndims,rec->start,rec->finish,rec->stride,
+			   _NgSHAPED_VAR))
+		return;
+
+	NotifyDataLinks(page);
+
+        return;
+}
+
 static void
 AdjustVarPageGeometry
 (
@@ -311,28 +336,6 @@ AdjustVarPageGeometry
 	return;
 }
 
-static void UpdateDataCB 
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cb_data
-)
-{
-        brPage		*page = (brPage *)udata;
-	brPageData	*pdp = page->pdata;
-	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
-
-        if (rec->shaper && rec->shaper->new_shape) {
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
-                                 rec->start,rec->finish,rec->stride);
-                rec->new_data = False;
-		rec->shaper->new_shape = False;
-        }
-        (*pdp->adjust_page_geo)(page);
-        return;
-}
-
-
 static void DataGridToggleCB 
 (
 	Widget		w,
@@ -370,8 +373,6 @@ static void DataGridToggleCB
 		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
                                  rec->start,rec->finish,rec->stride);
                 rec->new_data = False;
-                if (rec->shaper)
-                        rec->shaper->new_shape = False;
                 if (! rec->datagrid_managed) {
                         XtManageChild(rec->datagrid->grid);
                         rec->datagrid_managed = True;
@@ -420,24 +421,13 @@ UpdateShaper
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
 
         if (! rec->shaper) {
-                rec->shaper = NhlMalloc(sizeof(NgShaper));
-                rec->shaper->go = page->go;
-                rec->shaper->parent = pdp->form;
-                rec->shaper->shaper = NULL;
-                rec->shaper->apply = NULL;
-                rec->shaper->start = rec->start;
-                rec->shaper->finish = rec->finish;
-                rec->shaper->stride = rec->stride;
-                rec->shaper->new_data = True;
-                rec->shaper->restore = False;
-                rec->shaper->vinfo = pdp->dl->u.var;
-                rec->shaper->qfile = page->qfile;
+		rec->shaper = NgCreateShaper
+			(page->go,pdp->form,page->qfile,
+			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
+
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
+                rec->shaper->shape_notify = VarPageDataUpdate;
                 rec->shaper->pdata = NULL; /* prevent pointer function calls */
-                rec->shaper->tgl_coord = -1;
-                
-                NgDoShaper(rec->shaper);
-		rec->shaper->pdata = (NhlPointer) page;
                 XtVaSetValues(rec->shaper->frame,
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -445,6 +435,10 @@ UpdateShaper
                               XmNtopAttachment,XmATTACH_WIDGET,
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
+                
+                NgUpdateShaper(rec->shaper,page->qfile,
+			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
+		rec->shaper->pdata = (NhlPointer) page;
                 rec->shaper_managed = True;
                 rec->new_shape = False;
                 XtVaSetValues(rec->data_ctrl_form,
@@ -453,15 +447,9 @@ UpdateShaper
 		_NgGOWidgetTranslations(page->go,rec->shaper->frame);
         }
         else if (rec->new_shape) {
-                rec->shaper->start = rec->start;
-                rec->shaper->finish = rec->finish;
-                rec->shaper->stride = rec->stride;
-                rec->shaper->new_data = True;
-                rec->shaper->restore = False;
-                rec->shaper->vinfo = pdp->dl->u.var;
-                rec->shaper->qfile = page->qfile;
                 rec->shaper->pdata = NULL;/* prevent pointer function calls */
-                NgDoShaper(rec->shaper);
+                NgUpdateShaper(rec->shaper,page->qfile,
+			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
                 rec->shaper->pdata = (NhlPointer) page;
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {
@@ -950,29 +938,17 @@ _NgGetVarPage
                          NULL);
         }
         if (copy_rec && copy_rec->shaper_managed) {
-                Boolean state;
-                if (! rec->shaper) {
-                        rec->shaper = NhlMalloc(sizeof(NgShaper));
-                        rec->shaper->go = page->go;
-                        rec->shaper->parent = pdp->form;
-                        rec->shaper->shaper = NULL;
-                        rec->shaper->apply = NULL;
-                        rec->shaper->geo_notify = AdjustVarPageGeometry;
-                }
-                else {
-                        XtManageChild(rec->shaper->frame);
-                }
-                rec->shaper->start = rec->start;
-                rec->shaper->finish = rec->finish;
-                rec->shaper->stride = rec->stride;
-                rec->shaper->new_data = True;
-                rec->shaper->restore = False;
-                rec->shaper->vinfo = pdp->dl->u.var;
-                rec->shaper->qfile = page->qfile;
-                rec->shaper->tgl_coord = copy_rec->shaper->tgl_coord;
-                rec->shaper->pdata = NULL; /* prevent function pointer calls */
-                
-                NgDoShaper(rec->shaper);
+		rec->shaper = NgDupShaper
+			(page->go,pdp->form,rec->shaper,copy_rec->shaper,
+			 page->qfile,rec->start,rec->finish,rec->stride,
+			 pdp->dl->u.var);
+		if (! rec->shaper)
+			return NULL;
+
+		rec->shaper->geo_notify = AdjustVarPageGeometry;
+                rec->shaper->shape_notify = VarPageDataUpdate;
+		if (! XtIsManaged(rec->shaper->frame))
+			XtManageChild(rec->shaper->frame);
                 XtVaSetValues(rec->shaper->frame,
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -981,30 +957,13 @@ _NgGetVarPage
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
                 rec->shaper_managed = True;
-                rec->shaper->shapeinfogrid->edit_row =
-                        copy_rec->shaper->shapeinfogrid->edit_row;
-                NgSetShapeInfoGridSetFocusCell(rec->shaper->shapeinfogrid);
-                state = XmToggleButtonGetState
-                        (copy_rec->shaper->datagrid_toggle);
-                XmToggleButtonSetState
-                        (rec->shaper->datagrid_toggle,state,True);
-                if (state) {
-                        state = XmToggleButtonGetState
-                                (copy_rec->shaper->all_selected_tgl);
-                        XmToggleButtonSetState
-                                (rec->shaper->all_selected_tgl,state,True);
-                }
-                state = XmToggleButtonGetState(copy_rec->shaper->indexes_tgl);
-                XmToggleButtonSetState(rec->shaper->indexes_tgl,state,True);
-                state = XmToggleButtonGetState
-                        (copy_rec->shaper->synchro_step_tgl);
-                XmToggleButtonSetState
-                        (rec->shaper->synchro_step_tgl,state,True);
                 rec->new_shape = False;
-                rec->shaper->pdata = (NhlPointer) page;
                 XtVaSetValues(rec->shaper_toggle,
                               XmNset,True,
                               NULL);
+		rec->shaper->pdata = (NhlPointer) page;
+		_NgGOWidgetTranslations(page->go,rec->shaper->frame);
+
         }
 	else if (do_shaper) {
 		UpdateShaper(page);
@@ -1112,26 +1071,3 @@ _NgGetVarPage
 	return pdp;
 }
 
-extern void NgVarPageDataUpdate
-(
-        NhlPointer 	pdata
-        )
-{
-	brPage	*page = (brPage *) pdata;
-	brPageData	*pdp = page->pdata;
-	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
-        int ndims = pdp->dl->u.var->n_dims;
-        int i,size = ndims * sizeof(long);
-        brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
-	NhlBoolean notify_req = False;
-
-	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,
-			   pdp->dl->u.var->name,NrmNULLQUARK,
-			   ndims,rec->start,rec->finish,rec->stride,
-			   _NgSHAPED_VAR))
-		return;
-
-	NotifyDataLinks(page);
-
-        return;
-}
