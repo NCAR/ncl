@@ -20,13 +20,13 @@ NhlErrorTypes cz2ccm_W( void )
   void *ps, *phis, *tv, *p0, *hyam, *hybm, *hyai, *hybi;
   double *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
   double *tmp_hyam, *tmp_hybm, *tmp_hyai, *tmp_hybi;
-  int has_missing_ps, ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int has_missing_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
-  int has_missing_tv, ndims_tv, dsizes_tv[NCL_MAX_DIMENSIONS];
-  int has_missing_hyam, dsizes_hyam[NCL_MAX_DIMENSIONS];
-  int has_missing_hybm, dsizes_hybm[NCL_MAX_DIMENSIONS];
-  int has_missing_hyai, dsizes_hyai[NCL_MAX_DIMENSIONS];
-  int has_missing_hybi, dsizes_hybi[NCL_MAX_DIMENSIONS];
+  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
+  int dsizes_phis[NCL_MAX_DIMENSIONS];
+  int ndims_tv, dsizes_tv[NCL_MAX_DIMENSIONS];
+  int dsizes_hyam[NCL_MAX_DIMENSIONS];
+  int dsizes_hybm[NCL_MAX_DIMENSIONS];
+  int dsizes_hyai[NCL_MAX_DIMENSIONS];
+  int dsizes_hybi[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ps, type_phis, type_tv, type_p0;
   NclBasicDataTypes type_hyam, type_hybm, type_hyai, type_hybi;
 /*
@@ -56,7 +56,7 @@ NhlErrorTypes cz2ccm_W( void )
           &ndims_ps,
           dsizes_ps,
           NULL,
-          &has_missing_ps,
+          NULL,
           &type_ps,
           2);
 
@@ -66,7 +66,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           dsizes_phis,
           NULL,
-          &has_missing_phis,
+          NULL,
           &type_phis,
           2);
 
@@ -76,7 +76,7 @@ NhlErrorTypes cz2ccm_W( void )
           &ndims_tv,
           dsizes_tv,
           NULL,
-          &has_missing_tv,
+          NULL,
           &type_tv,
           2);
 
@@ -96,7 +96,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           dsizes_hyam,
           NULL,
-          &has_missing_hyam,
+          NULL,
           &type_hyam,
           2);
 
@@ -106,7 +106,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           dsizes_hybm,
           NULL,
-          &has_missing_hybm,
+          NULL,
           &type_hybm,
           2);
 
@@ -116,7 +116,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           dsizes_hyai,
           NULL,
-          &has_missing_hyai,
+          NULL,
           &type_hyai,
           2);
 
@@ -126,7 +126,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           dsizes_hybi,
           NULL,
-          &has_missing_hybi,
+          NULL,
           &type_hybi,
           2);
 /*
@@ -191,27 +191,6 @@ NhlErrorTypes cz2ccm_W( void )
   }
   
 /*
- * None of the input arrays can contain missing values.  Just print out
- * a warning message.
- */
-  if( has_missing_ps ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"cz2ccm: The array 'ps' cannot contain any missing values");
-  }
-  if( has_missing_phis ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"cz2ccm: The array 'phis' cannot contain any missing values");
-  }
-
-  if( has_missing_tv ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"cz2ccm: The array 'tv' cannot contain any missing values");
-  }
-
-  if( has_missing_hyam || has_missing_hybm ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"cz2ccm: The arrays 'hyam' and 'hybm' cannot contain any missing values");
-  }
-  if( has_missing_hyai || has_missing_hybi ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"cz2ccm: The arrays 'hyai' and 'hybi' cannot contain any missing values");
-  }
-/*
  * Compute the size of the leftmost dimensions of the output array
  * (minus the nlat,mlon,klev dims).
  */
@@ -257,11 +236,7 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Allocate space for output value.
  */
-  if(type_ps   != NCL_double && type_phis != NCL_double && 
-     type_tv   != NCL_double && type_p0   != NCL_double && 
-     type_hyam != NCL_double && type_hybm != NCL_double &&
-     type_hyai != NCL_double && type_hybi != NCL_double) {
-
+  if(type_ps != NCL_double || type_tv != NCL_double) {
     type_z2 = NCL_float;
 
     tmp_z2 = (double *)calloc(klevnlatmlon,sizeof(double));
