@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.16 1993-01-07 18:38:54 clyne Exp $
+ *	$Id: c.h,v 1.17 1993-03-22 17:35:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 
 typedef	void *	Voidptr;
 
+#define	LABS(X)	labs(X)
 #else
 
 /*
@@ -35,6 +36,8 @@ typedef	void *	Voidptr;
  */
 typedef	caddr_t	Voidptr;
 #define	const		/* K&R C has no 'const'	*/
+
+#define	LABS(X)	(long) (abs((int) (X)))
 
 #endif	/*	__STDC__	*/
 
