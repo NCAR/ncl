@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.32 1993-02-02 22:23:11 clyne Exp $
+ *	$Id: gcap.c,v 1.33 1993-02-09 03:15:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,6 +45,7 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <ncarg/c.h>
 #include "cgmc.h"
