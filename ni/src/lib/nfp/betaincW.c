@@ -1,0 +1,199 @@
+#include <stdio.h>
+
+/*
+ * The following are the required NCAR Graphics include files.
+ * They should be located in ${NCARG_ROOT}/include.
+ */
+#include "wrapper.h"
+
+extern void NGCALLF(betainc,BETAINC)(double*,double*,double*,double*);
+
+NhlErrorTypes betainc_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *a, *b;
+  double *tmp_x, *tmp_a, *tmp_b;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x, type_a, type_b;
+/*
+ * output variable 
+ */
+  void *alpha;
+  double *tmp_alpha;
+  int size_alpha;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+
+/*
+ * Retrieve argument #1
+ */
+  x = (void*)NclGetArgValue(
+          0,
+          3,
+          &ndims_x,
+          dsizes_x,
+          NULL,
+          NULL,
+          &type_x,
+          2);
+
+  a = (void*)NclGetArgValue(
+          1,
+          3,
+          &ndims_a,
+          dsizes_a,
+          NULL,
+          NULL,
+          &type_a,
+          2);
+  b = (void*)NclGetArgValue(
+          2,
+          3,
+          &ndims_b,
+          dsizes_b,
+          NULL,
+          NULL,
+          &type_b,
+          2);
+/*
+ * Check type of x, which must be float or double.
+ */
+  if(type_x != NCL_float && type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: x must be float or double");
+    return(NhlFATAL);
+  }
+/*
+ * Check dimensions.
+ */
+  if (ndims_x != ndims_a || ndims_x != ndims_b) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: The three input arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_x; i++ ) {
+    if (dsizes_x[i] != dsizes_a[i] || dsizes_x[i] != dsizes_b[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: The three input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Calculate size of output value.
+ */
+  size_alpha = 1;
+  for( i = 0; i < ndims_x; i++ ) size_alpha *= dsizes_x[i];
+
+/*
+ * Coerce x, a, and b to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(1,sizeof(double));
+    if( tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for coercing x to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_a != NCL_double) {
+    tmp_a = (double*)calloc(1,sizeof(double));
+    if( tmp_a == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for coercing a to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_b != NCL_double) {
+    tmp_b = (double*)calloc(1,sizeof(double));
+    if( tmp_b == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for coercing b to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_x == NCL_double) {
+    alpha = (double*)calloc(size_alpha,sizeof(double));
+    if(alpha == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    alpha     = (float*)calloc(size_alpha,sizeof(float));
+    tmp_alpha = (double *)calloc(1,sizeof(double));
+
+    if(tmp_alpha == NULL || alpha == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Call the Fortran version of this routine.
+ */
+  for( i = 0; i < size_alpha; i++ ) {
+    if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double(x,tmp_x,i,type_x,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_x to appropriate location in x.
+ */
+      tmp_x = &((double*)x)[i];
+    }
+    if(type_a != NCL_double) {
+/*
+ * Coerce subsection of a (tmp_a) to double.
+ */
+      coerce_subset_input_double(a,tmp_a,i,type_a,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_a to appropriate location in a.
+ */
+      tmp_a = &((double*)a)[i];
+    }
+    if(type_b != NCL_double) {
+/*
+ * Coerce subsection of b (tmp_b) to double.
+ */
+      coerce_subset_input_double(b,tmp_b,i,type_b,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_b to appropriate location in b.
+ */
+      tmp_b = &((double*)b)[i];
+    }
+    if(type_x == NCL_double) tmp_alpha = &((double*)alpha)[i];
+    NGCALLF(betainc,BETAINC)(tmp_x,tmp_a,tmp_b,tmp_alpha);
+    if(type_x != NCL_double) ((float*)alpha)[i] = (float)*tmp_alpha;
+  }
+/*
+ * free memory.
+ */
+  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_a != NCL_double) NclFree(tmp_a);
+  if(type_b != NCL_double) NclFree(tmp_b);
+  if(type_x != NCL_double) NclFree(tmp_alpha);
+
+/*
+ * Return.
+ */
+  return(NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0));
+}

@@ -274,6 +274,11 @@ extern NhlErrorTypes cz2ccm_W(void);
 extern NhlErrorTypes specx_anal_W(void);
 extern NhlErrorTypes specxy_anal_W(void);
 extern NhlErrorTypes chiinv_W(void);
+extern NhlErrorTypes betainc_W(void);
+extern NhlErrorTypes ttest_W(void);
+extern NhlErrorTypes ftest_W(void);
+extern NhlErrorTypes rtest_W(void);
+extern NhlErrorTypes equiv_sample_size_W(void);
 
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
 
@@ -3327,17 +3332,80 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(chiinv_W,args,"chiinv",nargs);
+
+/*
+ * Register "betainc".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    NclRegisterFunc(betainc_W,args,"betainc",nargs);
+
+/*
+ * Register "ttest".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(ttest_W,args,"ttest",nargs);
+/*
+ * Register "ftest".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(ftest_W,args,"ftest",nargs);
+
+/*
+ * Register "rtest".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(rtest_W,args,"rtest",nargs);
+
+/*
+ * Register "equiv_sample_size".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(equiv_sample_size_W,args,"equiv_sample_size",nargs);
 
 /*
  *  Register NhlGetNamedColorIndex.
  */
     nargs = 0;
     args = NewArgs(2);
-    dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "graphic", NclANY, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "string", NclANY, NclANY);   nargs++;
     NclRegisterFunc(NhlGetNamedColorIndex_W, args, "NhlGetNamedColorIndex", nargs);
