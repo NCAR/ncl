@@ -1,16 +1,18 @@
 #
-#	$Id: yMakefile,v 1.1 1997-04-11 17:43:45 haley Exp $
+#	$Id: yMakefile,v 1.2 2002-04-04 22:05:32 fred Exp $
 #
 
 MYNAME	= ngmiscC
 
 SRCS = c_ngckop.c c_ngdots.c c_nggcog.c c_nggetc.c c_nggeti.c c_nggetr.c \
 	c_nggsog.c c_ngmftc.c c_ngpict.c c_ngpswk.c c_ngreop.c c_ngritd.c \
-	c_ngsetc.c c_ngseti.c c_ngsetr.c c_ngsrat.c c_ngwsym.c
+	c_ngsetc.c c_ngseti.c c_ngsetr.c c_ngsrat.c c_ngwsym.c c_nglogo.c \
+        c_ngezlogo.c
 
 OBJS = c_ngckop.o c_ngdots.o c_nggcog.o c_nggetc.o c_nggeti.o c_nggetr.o \
 	c_nggsog.o c_ngmftc.o c_ngpict.o c_ngpswk.o c_ngreop.o c_ngritd.o \
-	c_ngsetc.o c_ngseti.o c_ngsetr.o c_ngsrat.o c_ngwsym.o
+	c_ngsetc.o c_ngseti.o c_ngsetr.o c_ngsrat.o c_ngwsym.o c_nglogo.o \
+        c_ngezlogo.o
 
 EXTRA_CDEFINES = $(OS_DEF)
 
