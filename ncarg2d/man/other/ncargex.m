@@ -1,63 +1,25 @@
 .\"
-.\"	$Id: ncargex.m,v 1.37 1998-05-26 16:22:01 kennison Exp $
+.\"	$Id: ncargex.m,v 1.38 1998-06-11 19:26:54 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
+.TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 .SH SYNOPSIS
-\fBncargex\fP 
-[\fB\-A\fR]
-[\fB\-E\fR]
-[\fB\-F\fR]
-[\fB\-P\fR]
-[\fB\-T\fR]
-[\fB\-U\fR]
-[\fB\-C\fR]
-[\fB\-Fortran\fR]
-[\fB\-class\fR]
-[\fB\-ps\fR]
-[\fB\-x11\fR]
-[\fB\-W workstation_type\fR]
-[\f\B\-areas]
-[\f\B\-autograph\fR]
-[\f\B\-bivar\fR]
-[\f\B\-colconv\fR]
-[\f\B\-conpack\fR]
-[\f\B\-conran_family\fR]
-[\f\B\-conrec_family\fR]
-[\f\B\-dashline\fR]
-[\f\B\-dashpack\fR]
-[\f\B\-ezmap\fR]
-[\f\B\-field_flow\fR]
-[\f\B\-gflash\fR]
-[\f\B\-gks\fR]
-[\f\B\-gridall\fR]
-[\f\B\-halftone\fR]
-[\f\B\-histogram\fR]
-[\f\B\-isosrfhr\fR]
-[\f\B\-isosurface\fR]
-[\f\B\-labelbar\fR]
-[\f\B\-ngmath\fR]
-[\f\B\-ngmisc\fR]
-[\f\B\-plotchar\fR]
-[\f\B\-polypack\fR]
-[\f\B\-pwrite_family\fR]
-[\f\B\-scrolled_title\fR]
-[\f\B\-seter\fR]
-[\f\B\-softfill\fR]
-[\f\B\-spps\fR]
-[\f\B\-streamlines\fR]
-[\f\B\-surface\fR]
-[\f\B\-threed\fR]
-[\f\B\-vectors\fR]
-[\f\B\-wmap\fR]
-[\f\B\-misc\fR]
-[\fB\-clean\fR]
-[\fB\-n\fR]
-[\fB\-noX11\fR]
-[\fB\-onebyone\fR]
-\fBexample_name ...\fR
+.nf
+\fBncargex\fP [\fB-A\fR] [\fB-E\fR] [\fB-F\fR] [\fB-P\fR] [\fB-T\fR]
+[\fB-U\fR] [\fB-C\fR] [\fB-Fortran\fR] [\fB-class\fR] [\fB-ps\fR]
+[\fB-x11\fR] [\fB-W workstation_type\fR] [\fB-areas] [\fB-autograph\fR]
+[\fB-bivar\fR] [\fB-colconv\fR] [\fB-conpack\fR] [\fB-conran_family\fR]
+[\fB-conrec_family\fR] [\fB-dashline\fR] [\fB-dashpack\fR] [\fB-ezmap\fR]
+[\fB-field_flow\fR] [\fB-gflash\fR] [\fB-gks\fR] [\fB-gridall\fR]
+[\fB-halftone\fR] [\fB-histogram\fR] [\fB-isosrfhr\fR] [\fB-isosurface\fR]
+[\fB-labelbar\fR] [\fB-ngmath\fR] [\fB-ngmisc\fR] [\fB-plotchar\fR]
+[\fB-polypack\fR] [\fB-pwrite_family\fR] [\fB-scrolled_title\fR] [\fB-seter\fR]
+[\fB-softfill\fR] [\fB-spps\fR] [\fB-streamlines\fR] [\fB-surface\fR]
+[\fB-threed\fR] [\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR]
+[\fB-clean\fR] [\fB-n\fR] [\fB-noX11\fR] [\fB-onebyone\fR] \fBexample_name ...\fR
+.fi
 .SH DESCRIPTION
 .I ncargex
 provides the user with access to over 300 complete example NCAR
