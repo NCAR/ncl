@@ -15,7 +15,7 @@ float *plm3, float *plm4)
 .SH DESCRIPTION 
 .IP JLTS 12
 (an input expression, of type CHARACTER) is a character string
-specifying how the limits of the map are to be chosen. There are five
+specifying how the limits of the map are to be chosen. There are six
 possibilities, as follows:
 .sp
 .RS 12
@@ -51,6 +51,12 @@ JLTS='LI' (LIMITS). PLM1, PLM2, PLM3, and PLM4 specify the minimum value
 of u, the maximum value of u, the minimum value of v, and the maximum
 value of v, respectively. Knowledge of the projection equations is
 necessary in order to use this option correctly.
+.IP \(bu
+JLTS='GR' (GRID). PLM1, PLM2, PLM3, and PLM4 specify the minimum value of
+latitude, the minimum value of longitude, the maximum value of latitude,
+and the maximum value of longitude, in degrees, on a lat/lon grid.  The
+limits will be determined in such a way as to ensure that the entire grid
+will be visible on the map.
 .RE
 .IP "PLM1, PLM2, PLM3, and PLM4" 12 
 (input arrays, dimensioned 2, of type REAL)
@@ -141,9 +147,13 @@ mapgtr,
 mapint,
 mapiq,
 mapiqa,
+mapiqd,
+mapiqd,
 mapiqm,
 mapit,
 mapita,
+mapitd,
+mapitd,
 mapitm,
 maplbl,
 maplmb,
