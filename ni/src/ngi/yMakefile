@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.20 1999-05-27 02:12:02 dbrown Exp $
+#      $Id: yMakefile,v 1.21 1999-10-22 00:41:56 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -41,10 +41,21 @@ EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
 PROG_LIBS	=	$(NGOLIB) $(DBLIB) $(NCLAPILIB) \
-			$(HLULIBS) $(NCARGLIBS) -lXmHTML $(XCBLIB)
+			$(NFPLIB) $(HLULIBS) $(NCARGLIBS) -lXmHTML $(XCBLIB) \
+                        $(NGMATHLIB)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) -lXpm $(HDFLIB)
+#if defined(SUN)
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf -lf90
+#elif defined(AIX)
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -llapack -lessl -lxlf90
+#elif (defined(IRIX) || defined(IRIX64))
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -lcomplib.sgimath
+#else
+EXTRA_LIBS      =       $(NCDFLIBS) -lXpm $(HDFLIB) -lsphere3 -llapack -lblas
+#endif
+
 #ifdef Linux
 SYS_LIBS	=    $(XMOTIFCLIENTLIBS) -lXp $(DEBUGLIBS) $(CTOFLIBS) -lm -ldl
 #else

@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.30 1999-10-07 18:13:30 dbrown Exp $
+!      $Id: ngi.res,v 1.31 1999-10-22 00:41:56 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -443,6 +443,7 @@ addfile*Start_Stop.translations: #override \
 
 *xwork*omenu*drawSingleViewOption.labelString:		Draw Selected View Only
 *xwork*omenu*autoRefreshOption.labelString:		Auto Update
+*xwork*omenu*raiseOnDrawOption.labelString:		Raise Window On Draw
 
 *xwork*vmenu*clearAllViews.labelString:                 Clear All Views
 *xwork*vmenu*drawAllViews.labelString:                  Draw All Views
