@@ -113,7 +113,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_x;
+  int i, total_size_x, index_date;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -196,8 +196,8 @@ NhlErrorTypes ut_calendar_W( void )
     return(NhlFATAL);
   }
 
-  dsizes_date[0] = 6;
-  for( i = 0; i < ndims_x; i++ ) dsizes_date[i+1] = dsizes_x[i];
+  for( i = 0; i < ndims_x; i++ ) dsizes_date[i] = dsizes_x[i];
+  dsizes_date[ndims_x] = 6;
 
 /* 
  * Check if time variable has "calendar" attribute set. If so, it
@@ -255,7 +255,6 @@ NhlErrorTypes ut_calendar_W( void )
     break;
   }
 
-
 /*
  * Make sure cspec is a valid udunits string.
  */
@@ -272,27 +271,29 @@ NhlErrorTypes ut_calendar_W( void )
 /* 
  * Loop through each element and get the 6 values.
  */
+  index_date = 0;
   for( i = 0; i < total_size_x; i++ ) {
     if(!has_missing_x ||
        (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
       (void) utCalendar(tmp_x[i],&unit,&year,&month,&day,
             &hour,&minute,&second);
     
-      date[i]                  = (float)year;
-      date[i+total_size_x]     = (float)month;
-      date[i+(2*total_size_x)] = (float)day;
-      date[i+(3*total_size_x)] = (float)hour;
-      date[i+(4*total_size_x)] = (float)minute;
-      date[i+(5*total_size_x)] = second;
+      date[index_date]   = (float)year;
+      date[index_date+1] = (float)month;
+      date[index_date+2] = (float)day;
+      date[index_date+3] = (float)hour;
+      date[index_date+4] = (float)minute;
+      date[index_date+5] = second;
     }
     else {
-      date[i]                  = missing_date.floatval;
-      date[i+total_size_x]     = missing_date.floatval;
-      date[i+(2*total_size_x)] = missing_date.floatval;
-      date[i+(3*total_size_x)] = missing_date.floatval;
-      date[i+(4*total_size_x)] = missing_date.floatval;
-      date[i+(5*total_size_x)] = missing_date.floatval;
+      date[index_date]   = missing_date.floatval;
+      date[index_date+1] = missing_date.floatval;
+      date[index_date+2] = missing_date.floatval;
+      date[index_date+3] = missing_date.floatval;
+      date[index_date+4] = missing_date.floatval;
+      date[index_date+5] = missing_date.floatval;
     }
+	index_date += 6;
   }
 
 /*
