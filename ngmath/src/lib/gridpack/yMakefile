@@ -1,7 +1,7 @@
 #
-#       $Id: yMakefile,v 1.5 1999-04-13 18:09:26 fred Exp $
+#       $Id: yMakefile,v 1.6 1999-08-19 21:17:56 fred Exp $
 #
 
 #define IHaveSubdirs
 
-SUBDIRS = cssgrid natgrid dsgrid fitgrid csagrid
+SUBDIRS = cssgrid natgrid dsgrid fitgrid csagrid shgrid

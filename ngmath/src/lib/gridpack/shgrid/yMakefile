@@ -1,0 +1,16 @@
+#
+#       $Id: yMakefile,v 1.1 1999-08-19 21:18:11 fred Exp $
+#
+ 
+MYNAME  = shgrid
+ 
+SOURCES = sh3grd.f   sh3val.f   shblda.f   sherr.f    shgeti.f    \
+	  shgetnp.f  shgetnp3.f shgivens.f shgrid.f   shqshep.f   \
+	  shrot.f    shseti.f   shsetup.f  shstore3.f c_shuser.c
+
+OBJECTS = sh3grd.o   sh3val.o   shblda.o   sherr.o    shgeti.o    \
+	  shgetnp.o  shgetnp3.o shgivens.o shgrid.o   shqshep.o   \
+	  shrot.o    shseti.o   shsetup.o  shstore3.o c_shuser.o
+
+PartialLibraryTarget(../libngmath.a,$(OBJECTS))
+DependTarget($(SOURCES))
