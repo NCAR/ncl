@@ -1,5 +1,5 @@
 C
-C	$Id: gfa.f,v 1.3 1994-05-19 19:26:51 fred Exp $
+C	$Id: gfa.f,v 1.4 1994-07-01 01:20:05 fred Exp $
 C
       SUBROUTINE GFA(N,PX,PY)
 C
@@ -48,13 +48,13 @@ C  NDC viewport if the polygons are small enough and clipping is on.
 C
       IF (N .LE. MAXCLP .AND. GKSCLP.NE.0) THEN
         ICNT = CNT+1
-        WCLIPX(1) = WRLDCP(ICNT,1)
-        WCLIPX(2) = WRLDCP(ICNT,2)
+        CALL GZN2WX(1,0.,WCLIPX(1))
+        CALL GZN2WX(1,1.,WCLIPX(2))
         WCLIPX(3) = WCLIPX(2)
         WCLIPX(4) = WCLIPX(1)
-        WCLIPY(1) = WRLDCP(ICNT,3)
+        CALL GZN2WY(1,0.,WCLIPY(1))
         WCLIPY(2) = WCLIPY(1)
-        WCLIPY(3) = WRLDCP(ICNT,4)
+        CALL GZN2WY(1,1.,WCLIPY(3))
         WCLIPY(4) = WCLIPY(3)
         CALL GZCLPO (WCLIPX,WCLIPY,4,PX,PY,N,RWKSP,IWKSP,IWDIM,IERR)
         IF (IERR .NE. 0) GO TO 10

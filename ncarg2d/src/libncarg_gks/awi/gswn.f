@@ -1,5 +1,5 @@
 C
-C	$Id: gswn.f,v 1.4 1994-05-28 00:42:30 fred Exp $
+C	$Id: gswn.f,v 1.5 1994-07-01 01:20:13 fred Exp $
 C
       SUBROUTINE GSWN (TNR,XMIN,XMAX,YMIN,YMAX)
 C
@@ -46,18 +46,8 @@ C
       NTWN(INR,3) = YMIN
       NTWN(INR,4) = YMAX
 C
-C  Set the world coordinate limits to clip to NDC space.
-C
-      ICNTO = CNT
-      CNT = TNR
-      CALL GZN2WX(1,0.,WRLDCP(INR,1))
-      CALL GZN2WX(1,1.,WRLDCP(INR,2))
-      CALL GZN2WY(1,0.,WRLDCP(INR,3))
-      CALL GZN2WY(1,1.,WRLDCP(INR,4))
-      CNT = ICNTO
-C
 C  Re-establish the character height and up vector, and pattern size 
-C  and reference point if the normalization transformatio number TNR 
+C  and reference point if the normalization transformation number TNR 
 C  is the current one.
 C
       CALL GQCNTN(IER,ICUR)

@@ -1,5 +1,5 @@
 C
-C	$Id: gpl.f,v 1.3 1994-06-17 22:05:00 fred Exp $
+C	$Id: gpl.f,v 1.4 1994-07-01 01:20:11 fred Exp $
 C
       SUBROUTINE GPL(N,PX,PY)
 C
@@ -47,9 +47,11 @@ C  Clip the polyline to the NDC viewport if the polylines are small
 C  enough and clipping is on.
 C
       IF (N .LE. MAXCLP .AND. GKSCLP.NE.0) THEN
-        ICNT = CNT+1
-        CALL GZCLLI (WRLDCP(ICNT,1),WRLDCP(ICNT,2),WRLDCP(ICNT,3),
-     +               WRLDCP(ICNT,4),PX,PY,N,RWKSP,IWDIM,IERR)
+        CALL GZN2WX(1,0.,XLFT)
+        CALL GZN2WX(1,1.,XRIT)
+        CALL GZN2WY(1,0.,YBOT)
+        CALL GZN2WY(1,1.,YTOP)
+        CALL GZCLLI (XLFT,XRIT,YBOT,YTOP,PX,PY,N,RWKSP,IWDIM,IERR)
 C
 C  If error, abandon any clipping and just put the line out.
 C

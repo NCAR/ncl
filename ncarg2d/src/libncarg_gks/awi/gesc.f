@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.15 1994-06-17 22:04:58 fred Exp $
+C	$Id: gesc.f,v 1.16 1994-07-01 01:20:03 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -48,13 +48,13 @@ C      -1394  --  Flags whether segments should be deleted when WISS
 C                 is closed (0 = no; 1 = yes)
 C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
-C      -1397  --  Color table identifier for use by NCAR Interactive.
 C      -1398  --  Maximum number of error messages before abort.
 C      -1399  --  Flag for GKS clipping (0 = off; 1 = on).
 C
 C  X driver specific escapes (-1400 through -1410):
 C      -1400  --  Specify the error allowed in matching a requested
-C                 color, expressed as a percentage.
+C                 color, expressed as a percentage.  The value "0" is
+C                 special--it means you don't care what color is chosen.
 C      -1401  --  Used to tell the X driver that the window should have
 C                 its own color map, allowing that window to have 256 
 C                 colors.
