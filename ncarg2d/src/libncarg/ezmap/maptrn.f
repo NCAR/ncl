@@ -1,5 +1,5 @@
 C
-C $Id: maptrn.f,v 1.4 1994-03-18 23:50:50 kennison Exp $
+C $Id: maptrn.f,v 1.5 1996-09-18 21:46:58 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -41,12 +41,16 @@ C
         RETURN
       END IF
 C
+C Protect following code against values of RLAT outside the legal range.
+C
+      RLAM=MAX(-90.,MIN(90.,RLAT))
+C
 C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.
 C
       TEMP=RLON-PHOC
       U=TEMP-SIGN(180.,TEMP+180.)+SIGN(180.,180.-TEMP)
-      V=RLAT
+      V=RLAM
 C
 C Take fast paths for simple cylindrical projections.
 C
@@ -59,7 +63,7 @@ C
 C Lambert conformal conic.
 C
   102 P=U
-      CHI=90.-RSNO*RLAT
+      CHI=90.-RSNO*RLAM
       IF (CHI.GE.179.9999) GO TO 118
       R=TAN(DTRH*CHI)**RCSO
       U=U*RCSO*DTOR
@@ -279,15 +283,15 @@ C
 C
 C Fast-path Mercator.
 C
-  113 IF (ABS(RLAT).GT.89.9999) GO TO 118
+  113 IF (ABS(RLAM).GT.89.9999) GO TO 118
       U=U*DTOR
-      V=LOG(TAN((RLAT+90.)*DTRH))
+      V=LOG(TAN((RLAM+90.)*DTRH))
       GO TO 116
 C
 C Fast-path Mollweide.
 C
   114 U=U/90.
-      V=SIN(RLAT*DTOR)
+      V=SIN(RLAM*DTOR)
       P=U
       U=U*SQRT(1.-V*V)
       GO TO 117
