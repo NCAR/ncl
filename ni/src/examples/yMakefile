@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.30 1999-03-26 21:49:44 haley Exp $
+#      $Id: yMakefile,v 1.31 2000-04-18 21:03:45 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -24,44 +24,3 @@
 SUBDIRS	= app basic contourplot gsun labelbar legend mapplot ngmath \
 	primitives streamlineplot textitem tickmark title vectorplot xyplot \
 	data
-
-SCRIPTS		= ng4ex 
-MAN1		= ng4ex
-
-#ifdef	BuildWithF90
-NHF_SCRIPT	=	nhlf90
-#else
-NHF_SCRIPT	=	nhlf77
-#endif
-
-# Install preformatted troff documents on systems without troff
-#if UseCatDirs
-FORMAT_EXT	= .p
-#else
-FORMAT_EXT	= .man
-#endif
-
-InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget($(SCRIPTS))
-InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
-FormatManPages($(MAN1),.man,.p)
-
-#if !defined(CRAY)
-ng4ex: ng4ex.csh Makefile
-	@sed \
-	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
-	-e 's+SED_NCLEXDIR+$(NCLEXDIR)+' \
-	-e 's+SED_RESDIR+$(RESDIR)+' \
-	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
-	-e 's+SED_DATADIR+$(DATADIR)+' \
-	< ng4ex.csh > ng4ex
-#else
-ng4ex: ng4ex.cry.csh Makefile
-	@sed \
-	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
-	-e 's+SED_RESDIR+$(RESDIR)+' \
-	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
-	-e 's+SED_DATADIR+$(DATADIR)+' \
-	< ng4ex.cry.csh > ng4ex
-#endif
-
