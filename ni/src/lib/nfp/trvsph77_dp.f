@@ -19,19 +19,6 @@ C*PT*WARNING* Already double-precision
       DOUBLE PRECISION DWORK(LDWORK)
 
       IENTRY = IENTRY + 1
-c c c write (*,'(//,15(''-''),1x,'' sub trvsph77: ientry='',i3
-c c c*             ,15(''-'') )')   ientry
-
-c c c print *,' sub trvsph77: debug1: ', nlona,nlata,nlonb,nlatb,jwave
-
-c c c write (*,'('' sub trvsph77: jwave ='', i3)') jwave
-c c c write (*,'('' sub trvsph77: igrida='',2i3)') (igrida(i),i=1,2)
-c c c write (*,'('' sub trvsph77: igridb='',2i3)') (igridb(i),i=1,2)
-c c c write (*,'('' sub trvsph77: nlona,nlata='',2i3)') nlona,nlata
-c c c write (*,'('' sub trvsph77: nlonb,nlatb='',2i3)') nlonb,nlatb
-c c c write (*,'('' sub trvsph77:  ua(grida)='',i3,10f7.1)')
-c c c*                          (j,(ua(i,j),i=1,10),j=1,nlata,nlata-1)
-
 c call the f77 version with the full argument list
 
       IVECA = 0

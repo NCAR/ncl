@@ -49,7 +49,6 @@ c .   ier       - error code
       IF (IER.NE.0) THEN
           WRITE (*,FMT='(/,'' sub eofts7: ier='',5i5)') IER,NROW,NCOL,
      +      NOBS,MSTA
-          STOP
           RETURN
       END IF
 
@@ -106,6 +105,123 @@ c calculate the amplitude time series
               DO M = 1,MSTA
                   IF (XX(N,M).NE.XMSG.AND.EVEC(M,K).NE.XMSG) THEN
                       EVECTS(N,K) = EVECTS(N,K) + EVEC(M,K)*XX(N,M)
+                  END IF
+              END DO
+          END DO
+      END DO
+
+      RETURN
+      END
+
+      SUBROUTINE DEOFTSCA(XX,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVEC,JOPT,
+     +                    EVECTS,PCRIT,IER,X,WRK)
+      DOUBLE PRECISION PCRIT
+      DOUBLE PRECISION PCRITX
+      DOUBLE PRECISION XBAR
+      DOUBLE PRECISION XVAR
+      DOUBLE PRECISION XSTD
+      DOUBLE PRECISION CON
+
+c takes output of prneof_ca.f and creates a time series of the
+c .   eof amplitudes. It is essential that xx and pcrit not change
+c .   from the call to prneof_ca.f
+
+c use f90 to dynamically allocate/deallocate memory (work space)
+c     also some array syntax
+
+c nomenclature :
+c .   xx        - matrix containing the data.  it contains n observations
+c .               for each of m stations or grid pts.
+c .   nrow,ncol - exact row (observation) and column (station)
+c .               dimensions of x in the calling routine.
+c .   nobs      - actual number of observations (nobs <= nrow)
+c .   msta      - actual number of stations     (msta <= ncol)
+c .   xmsg      - missing code (if no obs are missing set to some
+c .               number which will not be encountered)
+c .   neval     - no. of eigenvalues and eigen vectors computed by
+c .               prneof.
+c .   evec      - array created by prneof_ca
+c .               this must be dimensioned at least (ncol,neval) in the
+c .               calling routine.
+c .   evects    - time series of eof amplitudes for each eigenvalue
+c .   pcrit     - minimum % of non-missing values required for the
+c .               station/grid-pt be used in the covariance/correlation
+c .               matrix, must be between 0 and 100 inclusive
+c .   ier       - error code
+c INPUT
+
+c dimensions of xx
+      INTEGER NROW,NCOL,NOBS,MSTA
+
+c monthly data from station/grid pt
+c missing code (if any)
+      DOUBLE PRECISION XX(NROW,NCOL),EVEC(NCOL,NEVAL),XMSG
+      INTEGER NEVAL
+c OUTPUT
+
+c monthly anomalies from long term monthly mean
+      DOUBLE PRECISION EVECTS(NROW,NEVAL)
+c error code
+      INTEGER IER
+c TEMPORARY ARRAYS
+c
+      DOUBLE PRECISION X(NROW,NCOL),WRK(NOBS)
+
+      IER = 0
+
+      PCRITX = PCRIT*0.01D0
+
+c counts the total number of
+      NSTA = 0
+      DO NC = 1,MSTA
+c counter for this location
+          KNT = 0
+          DO NR = 1,NOBS
+              IF (XX(NR,NC).NE.XMSG) THEN
+                  KNT = KNT + 1
+              END IF
+          END DO
+          IF (DBLE(KNT)/DBLE(NOBS).GE.PCRITX) THEN
+              NSTA = NSTA + 1
+              DO N = 1,NOBS
+                  X(N,NSTA) = XX(N,NC)
+              END DO
+          END IF
+      END DO
+
+c calculate each station/grid-pt  long-term mean and standard deviation
+c use the "nsta" limit; this pertains to array x
+
+      DO M = 1,NSTA
+          DO N = 1,NOBS
+              WRK(N) = X(N,M)
+          END DO
+
+          CALL DSTAT2(WRK,NOBS,XMSG,XBAR,XVAR,XSTD,KNTX,IER)
+          CON = 1.0D0
+          IF (JOPT.EQ.1 .AND. XSTD.GT.0.D0) THEN
+              CON = 1.D0/XSTD
+          END IF
+
+          DO N = 1,NOBS
+              IF (X(N,M).NE.XMSG .AND. XBAR.NE.XMSG) THEN
+                  X(N,M) = (X(N,M)-XBAR)*CON
+              ELSE
+                  X(N,M) = XMSG
+              END IF
+          END DO
+c end nsta
+c
+      END DO
+
+c calculate the amplitude time series
+
+      DO K = 1,NEVAL
+          DO N = 1,NOBS
+              EVECTS(N,K) = 0.0D0
+              DO M = 1,NSTA
+                  IF (X(N,M).NE.XMSG) THEN
+                      EVECTS(N,K) = EVECTS(N,K) + EVEC(M,K)*X(N,M)
                   END IF
               END DO
           END DO

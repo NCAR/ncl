@@ -43,8 +43,12 @@ extern NhlErrorTypes g2fshv_W(void);
 extern NhlErrorTypes f2fshv_W(void);
 extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
+extern NhlErrorTypes eofcov_pcmsg_W(void);
+extern NhlErrorTypes eofcor_pcmsg_W(void);
 extern NhlErrorTypes eofcov_ts_W(void);
 extern NhlErrorTypes eofcor_ts_W(void);
+extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
+extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
@@ -435,6 +439,19 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(eofcov_W,args,"eofcov",nargs);
 /*
+ * Register "eofcov_pcmsg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcov_pcmsg_W,args,"eofcov_pcmsg",nargs);
+/*
  * Register "eofcor".
  *
  * Create private argument array.
@@ -447,6 +464,19 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(eofcor_W,args,"eofcor",nargs);
 /*
+ * Register "eofcor_pcmsg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcor_pcmsg_W,args,"eofcor_pcmsg",nargs);
+/*
  * Register "eofcov_ts".
  *
  * Create private argument array.
@@ -458,6 +488,19 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(eofcov_ts_W,args,"eofcov_ts",nargs);
 /*
+ * Register "eofcov_ts_pcmsg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcov_ts_pcmsg_W,args,"eofcov_ts_pcmsg",nargs);
+/*
  * Register "eofcor_ts".
  *
  * Create private argument array.
@@ -468,6 +511,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(eofcor_ts_W,args,"eofcor_ts",nargs);
+/*
+ * Register "eofcor_ts_pcmsg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofcor_ts_pcmsg_W,args,"eofcor_ts_pcmsg",nargs);
 /*
  * Register "eof_varimax".
  *

@@ -142,8 +142,6 @@ c
       DOUBLE PRECISION R,G0,RBYG
       PARAMETER (R=287.04D0,G0=9.80616D0,RBYG=R/G0)
 c
-c------------------------------Commons----------------------------------
-c ncl include 'debug.com'
 c-----------------------------Arguments---------------------------------
 c
 c Input

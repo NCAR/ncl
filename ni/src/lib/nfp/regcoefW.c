@@ -371,7 +371,7 @@ NhlErrorTypes regcoef_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %i array(s) contained all missing values",ier_count5);
   }
   if (ier_count6) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %s array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %i array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.

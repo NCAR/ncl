@@ -36,7 +36,7 @@ C output
       DOUBLE PRECISION RCOEF,TVAL,YAVE,XAVE
 
 C local
-      LOGICAL DEBUG
+      LOGICAL REGDBG
       INTEGER N
       DOUBLE PRECISION RNULL,XYN,DF
 C*PT*WARNING* Already double-precision
@@ -119,8 +119,8 @@ C t-statistic
 C degrees of freedom
       DF = XYN - 2.D0
 
-      DEBUG = .false.
-      IF (DEBUG) THEN
+      REGDBG = .false.
+      IF (REGDBG) THEN
           WRITE (*,FMT='(///,'' trtest: debug'')')
 C*PT*WARNING* Non-reversible tranformation (SNGL)
           WRITE (*,FMT='('' xsum  ='',f12.5)') XSUM

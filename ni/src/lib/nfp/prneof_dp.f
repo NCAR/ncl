@@ -193,3 +193,76 @@ C
 
       RETURN
       END
+
+      SUBROUTINE DNCLDRV(XX,X,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,CSSM,LCSSM,WORK,
+     +                   LWORK,WEVAL,IWORK,LIWORK,IFAIL,LIFAIL,IER)
+      DOUBLE PRECISION PCRITX
+
+      INTEGER NROW,NCOL,NOBS,NSTA,NEVAL,IOPT,JOPT,IER
+      INTEGER LCSSM,LWORK,LIWORK,LIFAIL
+      DOUBLE PRECISION XX(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
+     +                 PCRIT,XMSG,TRACE,X(NROW,NCOL),
+     +                 EVECX(NCOL,NEVAL)
+      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),WEVAL(LIFAIL)
+      REAL PCVAR(NEVAL)
+      INTEGER IWORK(LIWORK),IFAIL(LIFAIL)
+
+      DATA IPR/6/
+      DATA IPRFLG/1/
+
+      PCRITX = PCRIT*0.01D0
+c                                   ! counts the total number of
+c                                   ! locations with > pcrit non=msg
+      MSTA = 0
+      DO NC = 1,NSTA
+c                                   ! counter for this location
+          KNT = 0
+          DO NR = 1,NOBS
+              IF (XX(NR,NC).NE.XMSG) THEN
+                  KNT = KNT + 1
+              END IF
+          END DO
+          IF (DBLE(KNT)/DBLE(NOBS).GE.PCRITX) THEN
+              MSTA = MSTA + 1
+              DO IROW = 1,NROW
+                  X(IROW,MSTA) = XX(IROW,NC)
+              END DO
+          END IF
+      END DO
+
+c      write (*,'(//'' sub dncldrv: nrow,ncol,nobs,msta= ''
+c     1              ,4i3)') nrow,ncol,nobs,msta
+      CALL DDRVEOF(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVAL,EVECX,PCVAR,
+     +             TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,WEVAL,IWORK,
+     +             LIWORK,IFAIL,LIFAIL,IER)
+
+c before returning put the evecs in the correct location
+
+C preset the return array to msg
+      DO NE = 1,NEVAL
+          DO NC = 1,NCOL
+              EVEC(NC,NE) = XMSG
+          END DO
+      END DO
+c                                   ! counts the total number of
+c                                   ! locations with > pcrit non=msg
+      MSTA = 0
+      DO NC = 1,NSTA
+c counter for this location
+          KNT = 0
+          DO NR = 1,NOBS
+              IF (XX(NR,NC).NE.XMSG) THEN
+                  KNT = KNT + 1
+              END IF
+          END DO
+          IF (DBLE(KNT)/DBLE(NOBS).GE.PCRITX) THEN
+              MSTA = MSTA + 1
+              DO IEVAL = 1,NEVAL
+                  EVEC(NC,IEVAL) = EVECX(MSTA,IEVAL)
+              END DO
+          END IF
+      END DO
+
+      RETURN
+      END
