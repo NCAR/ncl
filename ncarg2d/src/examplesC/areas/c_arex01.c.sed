@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arex01.c.sed,v 1.3 1994-06-21 14:53:52 haley Exp $
+ *	$Id: c_arex01.c.sed,v 1.4 1994-08-08 17:20:12 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -236,13 +236,19 @@ main()
  */
     c_arseti ("DB",0);
     c_argeti ("DB",&ival);
-    printf( "argeti:  ival is supposed to be 0; ival is really %d\n", ival );
+	if( ival != 0 ) {
+	    printf( "argeti:  c_argeti test UNSUCCESSFUL.\n");
+		printf( "ival is supposed to be 0; ival is really %d\n", ival );
+	}
 /* 
  * Test arsetr and argetr
  */
-    c_arsetr ("AL",3.14);
+    c_arsetr ("AL",0.005);
     c_argetr ("AL",&rval);
-    printf( "c_arsetr, c_argetr: rval is supposed to be 3.14; rval is really %g\n", rval );
+	if( rval != 0.005 ) {
+	    printf( "argetr:  c_argetr test UNSUCCESSFUL.\n");
+		printf( "rval is supposed to be 0.005; rval is really %g\n", rval );
+	}
 /*
  *  Close GKS
  */
