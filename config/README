@@ -307,6 +307,7 @@ Cray			CrayArch
 DECRISC			DECRISCArch
 HPUX_snake		HPUX_snakeArch
 SGI4D			SGI4DArch
+SGIR8			SGIR8Arch
 Sun3			Sun3Arch
 Sun386i			Sun386iArch
 Sun4			Sun4Arch
