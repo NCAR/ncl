@@ -225,10 +225,12 @@ NhlErrorTypes eof_varimax_W( void )
 
 /*
  * Return "trace" attribute, if it exists.
+ *
+ * Be sure to initialize att_id, even if there's no 
+ * attribute to return.
  */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   if(is_trace) {
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-
     dsizes[0] = 1;
     att_md = _NclCreateVal(
                            NULL,
