@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.18 1995-12-19 20:39:22 boote Exp $
+ *      $Id: PlotManager.c,v 1.19 1996-01-12 01:59:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6107,7 +6107,8 @@ RestoreOverlayBase
 				sub_recs[--new_plot_count] = NULL;
 			}
 			else if (ovp->pm_recs[j]->plot == sub_recs[i]->plot) {
-				NhlFree(ovp->pm_recs[j]);
+				if (ovp->pm_recs[j] != orec)
+					NhlFree(ovp->pm_recs[j]);
 				for (k = j; k < ovp->overlay_count - 1; k++) {
 					ovp->pm_recs[k] = ovp->pm_recs[k+1];
 				}
@@ -6175,6 +6176,7 @@ RestoreOverlayBase
  * necessary to free each of the overlay records.
  */
 
+	NhlFree(orec);
 	for (i = 0; i < new_plot_count; i++) {
 		NhlFree(sub_recs[i]);
 	}
