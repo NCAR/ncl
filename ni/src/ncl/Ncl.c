@@ -183,6 +183,7 @@ main() {
 			closedir(d);
 			NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no libraries loaded",libpath);
 		}
+		_NclResetNewSymStack();
 	}
 /*
 	if(cmd_line)	
