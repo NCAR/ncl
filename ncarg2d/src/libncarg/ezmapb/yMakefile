@@ -1,0 +1,23 @@
+#
+#       $Id: yMakefile,v 1.1 1998-04-16 20:45:54 kennison Exp $
+#
+MYNAME  = ezmapb
+
+GENERIC_SRCS = \
+	hlumpchln.f mpchln.f mpfnme.f mpglty.f mpiaty.f mpifnb.f mpilnb.f \
+	mpioar.f    mpipai.f mpipan.f mpipar.f mpisci.f mplnam.f mplndm.f \
+	mplndr.f    mpname.f mprdcs.f mprdni.f
+
+GENERIC_OBJS = \
+	hlumpchln.o mpchln.o mpfnme.o mpglty.o mpiaty.o mpifnb.o mpilnb.o \
+	mpioar.o    mpipai.o mpipan.o mpipar.o mpisci.o mplnam.o mplndm.o \
+	mplndr.o    mpname.o mprdcs.o mprdni.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS)
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGmp.a,$(OBJECTS))
