@@ -1,12 +1,12 @@
 .\"
-.\"     $Id: dsgrid.m,v 1.1 1997-09-29 22:12:03 fred Exp $
+.\"     $Id: dsgrid.m,v 1.2 1997-09-29 22:15:07 fred Exp $
 .\"
 .TH Dsgrid 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
 Dsgrid is a package for gridding 3D and 2D randomly-spaced data using
-an inverse distance weighted average algorithm.  Single precison and double
+an inverse distance weighted average algorithm.  Single precision and double
 precision interfaces exist in both Fortran and C.  
 .SH SYNOPSIS
 .br

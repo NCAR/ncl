@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: dspnt2s.m,v 1.1 1997-09-29 22:12:10 fred Exp $
+.\"     $Id: dspnt2s.m,v 1.2 1997-09-29 22:15:10 fred Exp $
 .\"
 .TH DSPNT2S 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -35,7 +35,7 @@ values. ZO(I) is the interpolated value at point (XO(I),YO(I)) for I=1,M.
 no errors were detected. If IER is non-zero, then refer to the man
 page for dsgrid_errors for details.
 .SH USAGE
-This subroutine is called when you want to interpolate at an individal
+This subroutine is called when you want to interpolate at an individual
 point or points. 
 .SH ACCESS
 To use DSPNT2S, load the NCAR Graphics library ngmath.

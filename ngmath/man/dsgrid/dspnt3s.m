@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: dspnt3s.m,v 1.1 1997-09-29 22:12:12 fred Exp $
+.\"     $Id: dspnt3s.m,v 1.2 1997-09-29 22:15:12 fred Exp $
 .\"
 .TH DSPNT3S 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -42,7 +42,7 @@ point (XO(I),YO(I),ZO(I)) for I=1,M.
 no errors were detected. If IER is non-zero, then refer to the man
 page for dsgrid_errors for details.
 .SH USAGE
-This subroutine is called when you want to interpolate at an individal
+This subroutine is called when you want to interpolate at an individual
 point or points.
 .SH ACCESS
 To use DSPNT3S, load the NCAR Graphics library ngmath.
