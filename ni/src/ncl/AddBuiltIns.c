@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.33 1997-07-21 22:50:14 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.34 1997-07-22 17:40:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -375,6 +375,12 @@ void
 );
 
 extern NhlErrorTypes _NclIIsFileVarDim(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIIsFileVarCoord(
 #if     NhlNeedProto
 void
 #endif
@@ -976,6 +982,14 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVarDim,args,"isfilevardim",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFileVarCoord,args,"isfilevarcoord",nargs);
 
 	nargs = 0;
 	args = NewArgs(3);

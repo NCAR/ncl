@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.77 1997-07-21 22:50:16 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.78 1997-07-22 17:40:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6259,7 +6259,104 @@ NhlErrorTypes _NclIIsFileVarAtt
 
 }
 
+NhlErrorTypes _NclIIsFileVarCoord
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,file_md,dim_md;
+	int i;
+	logical *outval;
+	NclQuark var;
+	NclQuark *vals;
+	NclSymbol* s;
+	NclFile file_ptr;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
 
+	
+	arg0  = _NclGetArg(0,3,DONT_CARE);
+	arg1  = _NclGetArg(1,3,DONT_CARE);
+	arg2  = _NclGetArg(2,3,DONT_CARE);
+	switch(arg0.kind) {
+	case NclStk_VAR:
+		file_md = _NclVarValueRead(arg0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		file_md = arg0.u.data_obj;
+		break;
+	}
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = arg1.u.data_obj;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		dim_md = arg2.u.data_obj;
+		break;
+	}
+	
+	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
+	var =*(NclQuark*)tmp_md->multidval.val;
+	
+
+	if(file_ptr != NULL) {
+		outval = (logical*)NclMalloc((unsigned)sizeof(logical)*dim_md->multidval.totalelements);
+		vals = (NclQuark*)dim_md->multidval.val;
+		if(dim_md->multidval.missing_value.has_missing) {
+			for(i = 0; i < dim_md->multidval.totalelements; i++) {
+				if(vals[i] != dim_md->multidval.missing_value.value.stringval) {
+					if(_NclFileVarIsDim(file_ptr,var,vals[i]) == -1 ? 0 : 1) {
+						outval[i] = _NclFileVarIsCoord(file_ptr,vals[i]) == -1 ? 0 : 1;
+					} else {
+						outval[i] = 0;
+					}
+				} else {
+					outval[i] = 0;
+				}
+			}
+		} else {
+			for(i = 0; i < dim_md->multidval.totalelements; i++) {
+				if(_NclFileVarIsDim(file_ptr,var,vals[i]) == -1 ? 0 : 1) {
+					outval[i] = _NclFileVarIsCoord(file_ptr,vals[i]) == -1 ? 0 : 1;
+				} else {
+					outval[i] = 0;
+				}
+			}
+		}
+	
+		return(NclReturnValue(
+			(void*)outval,
+			dim_md->multidval.n_dims,
+			dim_md->multidval.dim_sizes,
+			NULL,
+			NCL_logical,
+			0
+		));
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+
+}
 NhlErrorTypes _NclIIsFileVarDim
 #if	NhlNeedProto
 (void)
