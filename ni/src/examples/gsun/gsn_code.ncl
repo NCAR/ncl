@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.14 1999-03-20 00:15:15 haley Exp $
+;      $Id: gsn_code.ncl,v 1.15 1999-03-23 14:23:06 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -489,11 +489,18 @@ procedure draw_bb(wks:graphic,plot:graphic)
 ; RGB values.                                                           ;
 
 
-procedure gsn_define_colormap(wks:graphic, cmap[*][*]: numeric)
+  do i=0,ncolors-1
     index = ind(named_colors(i).eq.names)
+    if(.not.ismissing(index))
+  if((typeof(cmap).eq."float".and.(dimsizes(dim_cmap).ne.2.or.dim_cmap(1).ne.3)).or.\
+      rgb_values(i,2) = blue(index)
+    print("Warning: cmap must either be a 2-dimensional float array")
+    print("dimensioned n x 3 or a 1-dimensional string array")
+  return(rgb_values)
 end
 
 
+;***********************************************************************;
 ; Procedure : gsn_define_colormap                                       ;
 ;                   wks: workstation object                             ;
 ;                  cmap: Colormap                                       ;
