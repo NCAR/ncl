@@ -82,7 +82,7 @@ YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
 MAKE              = make
 FLOAT_OPT         =
 OS                =
-ARCH              = -DSUN     /* For HDF libraries */
+ARCH              = 
 VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = acc
 CC_LD             = $(CC)
