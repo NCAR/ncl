@@ -1,5 +1,5 @@
 C     
-C     $Id: mp05f.f,v 1.1 1995-10-16 22:28:09 haley Exp $
+C     $Id: mp05f.f,v 1.2 1996-01-04 17:39:52 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -21,7 +21,7 @@ C
 C   Description:  Draws each of the ten map projections, with and 
 C                 without fills.
 C
-      parameter(NMAPS=10)
+      parameter(NMAP=10)
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
@@ -29,7 +29,7 @@ C
       external NhlFMapPlotClass
       external NhlFtextItemClass
 
-      integer appid,wid,mapid(NMAPS),txid
+      integer appid,wid,mapid(NMAP),txid
       integer rlist,i
       integer NCGM, X11, PS
       character*20 mapstr
@@ -89,7 +89,7 @@ C
 C
 C Draw the default MapPlot object
 C
-      do 10 i=1,NMAPS
+      do 10 i=1,NMAP
          write(mapstr,5)i-1
  5       format('map',i1)
          call NhlFRLClear(rlist)
@@ -102,7 +102,7 @@ C
 C
 C Draw each projection individually and fill the countries.
 C
-      do 20 i=1,NMAPS
+      do 20 i=1,NMAP
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'mpEllipticalBoundary','True',ierr)
          call NhlFRLSetString(rlist,'mpFillOn','True',ierr)
