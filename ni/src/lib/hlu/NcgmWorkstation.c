@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.35 1998-03-26 17:55:08 ethan Exp $
+ *      $Id: NcgmWorkstation.c,v 1.36 1998-03-31 05:45:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1017,6 +1017,7 @@ static void NcgmWorkstationNotify(
 	NhlNcgmWorkstationClass wlc = 
 		(NhlNcgmWorkstationClass)l->base.layer_class;
         NhlErrorTypes subret = NhlNOERROR;
+	Gctrl_flag cofl = GFLAG_ALWAYS;
 
         switch (action) {
             case _NhlwkLLUActivate:
@@ -1031,7 +1032,7 @@ static void NcgmWorkstationNotify(
                     break;
             case _NhlwkLLUClear:
                     UpdateGKSState(l,func);
-                    _NHLCALLF(gzclrwk,GZCLRWK)(&wl->work.gkswksid);
+                    _NHLCALLF(gzclrwk,GZCLRWK)(&wl->work.gkswksid,&cofl);
                     if (! wksisact(wl->work.gkswksid))
                             TempClose(l,func); 
                     wl->work.cleared = True;
