@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.11 1992-09-01 23:39:46 clyne Exp $
+ *      $Id: rascat.c,v 1.12 1992-09-10 21:47:47 don Exp $
  */
 /*
  *	File:		rascat.c
@@ -412,6 +412,7 @@ main(argc, argv)
 			Raster	*new = src;
 			if (do_window || pipe_count == 0) {
 				new = win_ras ? win_ras : dst;
+				(void) RasterCopyColormap(tmp,new);
 				RasterOp(
 					tmp,new,win->x,win->y,
 					win->nx, win->ny,0,0,0
@@ -421,6 +422,7 @@ main(argc, argv)
 
 			if (do_scale || do_res) {
 				new = sca_ras ? sca_ras : dst;
+				(void) RasterCopyColormap(tmp,new);
 				rc = opt.resample(tmp, new, opt.do_verbose);
 				if (rc != RAS_OK) {
 					(void) fprintf(
@@ -466,78 +468,6 @@ main(argc, argv)
 	if (dst) RasterClose(dst);
 	exit(err);
 }
-
-RasterCopy(src, dst, src_x, src_y, src_nx, src_ny)
-	Raster	*src;
-	Raster	*dst;
-	int	src_x, src_y, src_nx, src_ny;
-{
-	int	x, y;
-	int	r, g, b;
-	int	x1, y1, x2, y2;
-
-	x1 = src_x;
-	y1 = src_y;
-	x2 = src_x + src_nx - 1;
-	y2 = src_y + src_ny - 1;
-
-	if (src->type == RAS_INDEXED)
-		RasterCopyColormap(src, dst);
-	
-	for(y=y1; y<=y2; y++)
-	for(x=x1; x<=x2; x++)
-	{
-		if (src->type == RAS_DIRECT) {
-			r = DIRECT_RED(src, x, y);
-			g = DIRECT_GREEN(src, x, y);
-			b = DIRECT_BLUE(src, x, y);
-			DIRECT_RED(dst, x, y) = r;
-			DIRECT_GREEN(dst, x, y) = g;
-			DIRECT_BLUE(dst, x, y) = b;
-		}
-		else if (src->type == RAS_INDEXED) {
-			INDEXED_PIXEL(dst, x, y) = INDEXED_PIXEL(src, x, y);
-		}
-	}
-}
-
-/*ARGSUSED*/
-RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
-	Raster	*src;
-	Raster	*dst;
-	int	src_x, src_y, src_nx, src_ny, dst_x, dst_y;
-	int	op;
-{
-	int	r, g, b;
-	int	sx, sy, dx, dy;
-	int	sx1, sx2, sy1, sy2;
-
-	if (src->type == RAS_INDEXED) {
-		RasterCopyColormap(src, dst);
-	}
-
-	sx1 = src_x;
-	sx2 = src_x + src_nx - 1;
-	sy1 = src_y;
-	sy2 = src_y + src_ny - 1;
-	
-	for(sy=sy1, dy=dst_y; sy<=sy2; sy++, dy++)
-	for(sx=sx1, dx=dst_x; sx<=sx2; sx++, dx++)
-	{
-		if (src->type == RAS_DIRECT) {
-			r = DIRECT_RED(src, sx, sy);
-			g = DIRECT_GREEN(src, sx, sy);
-			b = DIRECT_BLUE(src, sx, sy);
-			DIRECT_RED(dst, dx, dy) = r;
-			DIRECT_GREEN(dst, dx, dy) = g;
-			DIRECT_BLUE(dst, dx, dy) = b;
-		}
-		else if (src->type == RAS_INDEXED) {
-			INDEXED_PIXEL(dst, sx, sy) = INDEXED_PIXEL(src, dx, dy);
-		}
-	}
-}
-
 
 static	int	cvt_to_rsfunc(from, to)
 	char	*from;
