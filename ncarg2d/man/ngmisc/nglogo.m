@@ -62,12 +62,12 @@ Use the ncargex command to see the following relevant
 example: 
 miex01.
 .SH EXAMPLES
-.IP "CALL NGWSYM(1, 0.5, 0.5, 0.1, 1, 1, 1)
+.IP "CALL NGLOGO(1, 0.5, 0.5, 0.1, 1, 1, 1)
 Plots an NCAR logo on workstation with ID 1 in the center of the plot 
 with height one-tenth the maximum plot size.  If going to a PostScript 
 workstation, the logo will be a full-color logo, otherwise
 the logo will be plotted using color index 1.
-.IP "CALL NGWSYM(1, 0.5, 0.5, 0.1, 2, 2, 1)
+.IP "CALL NGLOGO(1, 0.5, 0.5, 0.1, 2, 2, 1)
 Plots a UCAR star logo on workstation with ID 1 in the center of the plot
 with height one-tenth the maximum plot size. 
 The logo will be plotted using color index 2.
