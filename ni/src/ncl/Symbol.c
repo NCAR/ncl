@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.50 1997-09-03 22:34:12 ethan Exp $
+ *      $Id: Symbol.c,v 1.51 1997-09-05 17:28:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1606,7 +1606,7 @@ long* stride;
 				index = _NclFileVarIsCoord(thefile,coordname);
 				if(thefile != NULL) {
 					for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
-						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
+						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.coord_vars[index]->file_dim_num[k]]->dim_size;
 					}
 					sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,dim_sizes,start,finish,stride);
 					tmp_var = _NclFileReadCoord(thefile,coordname,sel_ptr);
