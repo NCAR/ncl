@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.26 1993-03-29 20:54:49 haley Exp $
+#   $Id: ncargex.csh,v 1.27 1993-04-07 21:43:46 haley Exp $
 #
 
 #********************#
@@ -114,13 +114,13 @@ set colconv_list = ($ex_colconv $tst_colconv $ttr_colconv $fnd_colconv)
 set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
                     cpex08 cpex09 ${ex_cbivar})
 set tst_conpack  = (tconpa ${tst_cbivar})
-set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc \
+set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
-                    ccpezct ccpfil ccpga ccphand ccphl ccphlt ccpila \
+                    ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt ccpila \
                     ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb \
                     ccpllc ccplll ccpllo ccpllp ccpllt ccpllw ccpmap \
-                    ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 \
-                    ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc \
+                    ccpmovi ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 \
+                    ccppc2 ccppc3 ccppc4 ccppkcl ccpt2d ccprc ccprect ccprwc \
                     ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle \
                     ccpvp ccpvs colcon ${ttr_cbivar})
 set fnd_conpack  = (${fnd_cbivar})
