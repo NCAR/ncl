@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.8 1992-03-27 21:05:21 clyne Exp $
+ *	$Id: options.c,v 1.9 1992-03-31 00:18:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -145,15 +145,15 @@ int	NCARGCvtToString(from, to)
 }
 
 /*
- *	NCARGCvtToDimension()
+ *	NCARGCvtToDimension2D()
  *
  *	convert a ascii string to a dimension.
  */
-int	NCARGCvtToDimension(from, to)
+int	NCARGCvtToDimension2D(from, to)
 	char	*from;	/* the string	*/
 	Voidptr	to;
 {
-	Dimension	*dptr	= (Dimension *) to;
+	Dimension2D	*dptr	= (Dimension2D *) to;
 
 	if (! from) {
 		dptr->nx = dptr->ny = 0;
