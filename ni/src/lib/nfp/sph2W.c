@@ -306,8 +306,11 @@ NhlErrorTypes dv2uvf_W( void )
   found_missing = contains_missing(ddv,total_size_in,has_missing_dv,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvf: The input array cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_ud == NCL_float) NclFree(dud);
+    if(type_vd == NCL_float) NclFree(dvd);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -564,8 +567,11 @@ NhlErrorTypes dv2uvg_W( void )
   found_missing = contains_missing(ddv,total_size_in,has_missing_dv,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvg: The input array cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_ud == NCL_float) NclFree(dud);
+    if(type_vd == NCL_float) NclFree(dvd);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -824,8 +830,11 @@ NhlErrorTypes gradsf_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsf: The input array cannot contain any missing values");
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    if(type_z   == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -1071,8 +1080,11 @@ NhlErrorTypes gradsg_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsg: The input array cannot contain any missing values");
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    if(type_z   == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -1122,7 +1134,6 @@ NhlErrorTypes gradsg_W( void )
   NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
   NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&nt,&dz[0],&idvw,&jdvw,
                        a,b,&mdab,&ndab,wshagc,&lshagc,work,&lwork,&ker);
-  
   NclFree(wshagc);
   NclFree(work);
   NclFree(dwork);
@@ -1329,8 +1340,11 @@ NhlErrorTypes igradsf_W( void )
   found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
                                    missing_dgzy.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsf: The input arrays cannot contain any missing values");
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    if(type_z   == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -1471,15 +1485,17 @@ NhlErrorTypes igradsF_W( void )
   double *dgzx, *dgzy;
   int dsizes_gzx[NCL_MAX_DIMENSIONS], dsizes_gzy[NCL_MAX_DIMENSIONS];
   int ndims_gzx, ndims_gzy;
-  NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
+  NclScalar missing_gzx, missing_gzy;
+  NclScalar missing_dgzx, missing_rgzx, missing_dgzy, missing_rgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  int has_missing_gzx, has_missing_gzy, found_missing;
+  int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *z;
-  float *rz;
+  void *z;
+  double *dz;
+  NclBasicDataTypes type_z;
 /*
  * various
  */
@@ -1537,8 +1553,10 @@ NhlErrorTypes igradsF_W( void )
 /*
  * Coerce gzx and gzy
  */
-  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
-  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,
+                 &missing_rgzx);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,
+                 &missing_rgzy);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
                              &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
@@ -1550,21 +1568,54 @@ NhlErrorTypes igradsF_W( void )
 /*
  * Allocate space for output array.
  */
-  z = (double*)calloc(total_size_in,sizeof(double));
+  if(type_gzx != NCL_double && type_gzy != NCL_double) {
+    type_z = NCL_float;
+    z = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_z = NCL_double;
+    z = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( z == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dz = coerce_output_double(z,type_z,total_size_in);
+  if( dz == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(dgzx,total_size_in,has_missing_gzx,
-                                   missing_dgzx.doubleval);
-  found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
-                                   missing_dgzy.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_gzx = contains_missing(dgzx,total_size_in,has_missing_gzx,
+                                       missing_dgzx.doubleval);
+  found_missing_gzy = contains_missing(dgzy,total_size_in,has_missing_gzy,
+                                       missing_dgzy.doubleval);
+  if(found_missing_gzx || found_missing_gzy) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsF: The input arrays cannot contain any missing values");
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    if(found_missing_gzx) {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dgzx.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_rgzx,type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_dgzx,type_z,0));
+      }
+    }
+    else {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dgzy.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_rgzy,type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_dgzy,type_z,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -1647,7 +1698,7 @@ NhlErrorTypes igradsF_W( void )
   }
 
   NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(digradec,DIGRADEC)(&nlat,&nlon,&isym,&nt,&z[0],&idvw,&jdvw,br,bi,
+  NGCALLF(digradec,DIGRADEC)(&nlat,&nlon,&isym,&nt,&dz[0],&idvw,&jdvw,br,bi,
                            &mdab,&ndab,wshsec,&lshsec,work,&lwork,&ker);
   NGCALLF(dchkerr,DCHKERR)("igradsg","shseci+igradec",&ier,&jer,&ker,&mer,9,14);
 
@@ -1668,7 +1719,7 @@ NhlErrorTypes igradsF_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&z[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
     NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&dgzx[j],&dgzy[j],work);
     j += nlatnlon;
   }
@@ -1677,7 +1728,7 @@ NhlErrorTypes igradsF_W( void )
  */
   scale = 6.37122e+6;         /* radius of earth */
 
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dz[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -1687,28 +1738,17 @@ NhlErrorTypes igradsF_W( void )
 /*
  * Return array.
  */
-  if(type_gzx != NCL_double && type_gzy != NCL_double) {
-    rz = (float*)calloc(total_size_in,sizeof(float));
-    if (rz == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate space for output array" );
-      return(NhlFATAL);
-    }
+  if(type_z == NCL_float) {
 /*
  * Copy double values to float values.
  */
-    for( i = 0; i < total_size_in; i++ ) rz[i] = (float)z[i];
+    for( i = 0; i < total_size_in; i++ ) ((float*)z)[i] = (float)dz[i];
 /*
  * Free double precision array.
  */
-    NclFree(z);
-/*
- * Return float values.
- */
-    return(NclReturnValue((void*)rz,ndims_gzx,dsizes_gzx,NULL,NCL_float,0));
+    NclFree(dz);
   }
-  else {
-    return(NclReturnValue((void*)z,ndims_gzx,dsizes_gzx,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(z,ndims_gzx,dsizes_gzx,NULL,type_z,0));
 }
 
 
@@ -1847,8 +1887,11 @@ NhlErrorTypes igradsg_W( void )
   found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
                                    missing_dgzy.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsg: The input arrays cannot contain any missing values");
+    if(type_z   == NCL_float) NclFree(dz);
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -1980,15 +2023,17 @@ NhlErrorTypes igradsG_W( void )
   double *dgzx, *dgzy;
   int dsizes_gzx[NCL_MAX_DIMENSIONS], dsizes_gzy[NCL_MAX_DIMENSIONS];
   int ndims_gzx, ndims_gzy;
-  NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
+  NclScalar missing_gzx, missing_gzy;
+  NclScalar missing_dgzx, missing_rgzx, missing_dgzy, missing_rgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  int has_missing_gzx, has_missing_gzy, found_missing;
+  int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *z;
-  float *rz;
+  void *z;
+  double *dz;
+  NclBasicDataTypes type_z;
 /*
  * various
  */
@@ -2046,8 +2091,10 @@ NhlErrorTypes igradsG_W( void )
 /*
  * Coerce gzx and gzy
  */
-  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
-  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,
+                 &missing_rgzx);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,
+                 &missing_rgzy);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
                              &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
@@ -2059,21 +2106,54 @@ NhlErrorTypes igradsG_W( void )
 /*
  * Allocate space for output array.
  */
-  z = (double*)calloc(total_size_in,sizeof(double));
+  if(type_gzx != NCL_double && type_gzy != NCL_double) {
+    type_z = NCL_float;
+    z = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_z = NCL_double;
+    z = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( z == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dz = coerce_output_double(z,type_z,total_size_in);
+  if( dz == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(dgzx,total_size_in,has_missing_gzx,
-                                   missing_dgzx.doubleval);
-  found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
-                                   missing_dgzy.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_gzx = contains_missing(dgzx,total_size_in,has_missing_gzx,
+                                       missing_dgzx.doubleval);
+  found_missing_gzy = contains_missing(dgzy,total_size_in,has_missing_gzy,
+                                       missing_dgzy.doubleval);
+  if(found_missing_gzx || found_missing_gzy) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsG: The input arrays cannot contain any missing values");
+    if(type_gzx == NCL_float) NclFree(dgzx);
+    if(type_gzy == NCL_float) NclFree(dgzy);
+    if(found_missing_gzx) {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dgzx.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_rgzx,type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_dgzx,type_z,0));
+      }
+    }
+    else {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dgzy.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_rgzy,type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_dgzy,type_z,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -2150,7 +2230,7 @@ NhlErrorTypes igradsG_W( void )
   }
 
   NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(digradgc,DIGRADGC)(&nlat,&nlon,&isym,&nt,&z[0],&idvw,&jdvw,br,bi,
+  NGCALLF(digradgc,DIGRADGC)(&nlat,&nlon,&isym,&nt,&dz[0],&idvw,&jdvw,br,bi,
                              &mdab,&ndab,wshsgc,&lshsgc,work,&lwork,&ker);
   NGCALLF(dchkerr,DCHKERR)("igradsG","shsgci+igradgc",&ier,&jer,&ker,&mer,9,14);
 
@@ -2171,7 +2251,7 @@ NhlErrorTypes igradsG_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&z[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
     NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&dgzx[j],&dgzy[j],work);
     j += nlatnlon;
   }
@@ -2180,7 +2260,7 @@ NhlErrorTypes igradsG_W( void )
  */
   scale = 6.37122e+6;         /* radius of earth */
 
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dz[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -2190,28 +2270,17 @@ NhlErrorTypes igradsG_W( void )
 /*
  * Return array.
  */
-  if(type_gzx != NCL_double && type_gzy != NCL_double) {
-    rz = (float*)calloc(total_size_in,sizeof(float));
-    if (rz == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate space for output array" );
-      return(NhlFATAL);
-    }
+  if(type_z == NCL_float) {
 /*
  * Copy double values to float values.
  */
-    for( i = 0; i < total_size_in; i++ ) rz[i] = (float)z[i];
+    for( i = 0; i < total_size_in; i++ ) ((float*)z)[i] = (float)dz[i];
 /*
  * Free double precision array.
  */
-    NclFree(z);
-/*
- * Return float values.
- */
-    return(NclReturnValue((void*)rz,ndims_gzx,dsizes_gzx,NULL,NCL_float,0));
+    NclFree(dz);
   }
-  else {
-    return(NclReturnValue((void*)z,ndims_gzx,dsizes_gzx,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(z,ndims_gzx,dsizes_gzx,NULL,type_z,0));
 }
 
 
@@ -2381,8 +2450,11 @@ NhlErrorTypes ilapsf_W( void )
   found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
                                    missing_dzlap.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsf: The input arrays cannot contain any missing values");
+    if(type_zlap   == NCL_float) NclFree(dzlap);
+    if(type_zlmbda == NCL_float) NclFree(dzlmbda);
+    if(type_z      == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -2511,15 +2583,18 @@ NhlErrorTypes ilapsF_W( void )
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
+  NclScalar missing_rzlap, missing_rzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  int has_missing_zlap, has_missing_zlmbda, found_missing;
+  int has_missing_zlap, has_missing_zlmbda;
+  int found_missing_zlmbda, found_missing_zlap;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *z;
-  float *rz;
+  void *z;
+  double *dz;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_z;
 /*
  * various
  */
@@ -2574,16 +2649,16 @@ NhlErrorTypes ilapsF_W( void )
  * Coerce zlap and zlmbda.
  */
   coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
-                 &missing_dzlap,NULL);
+                 &missing_dzlap,&missing_rzlap);
   coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
-                 &missing_dzlmbda,NULL);
+                 &missing_dzlmbda,&missing_rzlmbda);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
                               &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
                                 has_missing_zlmbda,&missing_zlmbda,
                                 &missing_dzlmbda);
   if(dzlap == NULL || dzlmbda == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for coercing input arrays to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
 /*
@@ -2622,21 +2697,58 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * Allocate space for output array
  */
-  z = (double*)calloc(total_size_in,sizeof(double));
+  if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
+    type_z = NCL_float;
+    z = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_z = NCL_double;
+    z = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( z == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dz = coerce_output_double(z,type_z,total_size_in);
+  if( dz == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
-                                   missing_dzlmbda.doubleval);
-  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                   missing_dzlap.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_zlmbda = contains_missing(zlmbda2,nt,has_missing_zlmbda,
+                                          missing_dzlmbda.doubleval);
+  found_missing_zlap = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                        missing_dzlap.doubleval);
+  if(found_missing_zlmbda || found_missing_zlap) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsF: The input arrays cannot contain any missing values");
+    if(type_zlap   == NCL_float) NclFree(dzlap);
+    if(type_zlmbda == NCL_float) NclFree(dzlmbda);
+    if(found_missing_zlmbda) {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dzlmbda.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_rzlmbda,
+                              type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_dzlmbda,
+                              type_z,0));
+      }
+    }
+    else {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dzlap.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_rzlap,
+                              type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_dzlap,
+                              type_z,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -2710,7 +2822,7 @@ NhlErrorTypes ilapsF_W( void )
   }
 
   NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(dislapec,DISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
+  NGCALLF(dislapec,DISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&dz[0],
                              &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
                              work,&lwork,pertrb,&ker);
   NclFree(a);
@@ -2732,7 +2844,7 @@ NhlErrorTypes ilapsF_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&z[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
     NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dzlap[j],work);
     j += nlatnlon;
   }
@@ -2741,7 +2853,7 @@ NhlErrorTypes ilapsF_W( void )
  */
   scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
 
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dz[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -2751,25 +2863,17 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * Return array.
  */
-  if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
+  if(type_z == NCL_float) {
 /*
- * Return float missing values. 
+ * Copy double values to float values.
  */
-    rz = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rz == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rz[i]  = (float)z[i];
-    NclFree(z);   /* Free up the double array */
-    return(NclReturnValue((void*)rz,ndims_zlap,dsizes_zlap,NULL,NCL_float,0));
-  }
-  else {
+    for( i = 0; i < total_size_in; i++ ) ((float*)z)[i]  = (float)dz[i];
 /*
- * Return double missing values. 
+ * Free double precision array.
  */
-    return(NclReturnValue((void*)z,ndims_zlap,dsizes_zlap,NULL,NCL_double,0));
+    NclFree(dz);
   }
+  return(NclReturnValue(z,ndims_zlap,dsizes_zlap,NULL,type_z,0));
 }
 
 
@@ -2940,8 +3044,11 @@ NhlErrorTypes ilapsg_W( void )
   found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
                                    missing_dzlap.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsg: The input arrays cannot contain any missing values");
+    if(type_zlap   == NCL_float) NclFree(dzlap);
+    if(type_zlmbda == NCL_float) NclFree(dzlmbda);
+    if(type_z      == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -3070,15 +3177,18 @@ NhlErrorTypes ilapsG_W( void )
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
+  NclScalar missing_rzlap, missing_rzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  int has_missing_zlap, has_missing_zlmbda, found_missing;
+  int has_missing_zlap, has_missing_zlmbda;
+  int found_missing_zlap, found_missing_zlmbda;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *z;
-  float *rz;
+  void *z;
+  double *dz;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_z;
 /*
  * various
  */
@@ -3125,7 +3235,6 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * Compute the total number of elements in our array.
  */
-
   compute_nlatnlon(dsizes_zlap,ndims_zlap,&nlat,&nlon,&nlatnlon,&nt,
                    &total_size_in);
   total_size_zlmbda = 1;
@@ -3134,9 +3243,9 @@ NhlErrorTypes ilapsG_W( void )
  * Coerce zlap and zlmbda.
  */
   coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
-                 &missing_dzlap,NULL);
-  coerce_missing(type_zlmbda,has_missing_zlmbda,
-                 &missing_zlmbda,&missing_dzlmbda,NULL);
+                 &missing_dzlap,&missing_rzlap);
+  coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
+                 &missing_dzlmbda,&missing_rzlmbda);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
                               &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
@@ -3182,21 +3291,58 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * Allocate space for output array
  */
-  z = (double*)calloc(total_size_in,sizeof(double));
+  if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
+    type_z = NCL_float;
+    z = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_z = NCL_double;
+    z = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( z == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dz = coerce_output_double(z,type_z,total_size_in);
+  if( dz == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
-                                   missing_dzlmbda.doubleval);
-  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                   missing_dzlap.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_zlmbda = contains_missing(zlmbda2,nt,has_missing_zlmbda,
+                                          missing_dzlmbda.doubleval);
+  found_missing_zlap = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                        missing_dzlap.doubleval);
+  if(found_missing_zlmbda || found_missing_zlap) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsG: The input arrays cannot contain any missing values");
+    if(type_zlap   == NCL_float) NclFree(dzlap);
+    if(type_zlmbda == NCL_float) NclFree(dzlmbda);
+    if(found_missing_zlmbda) {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dzlmbda.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_rzlmbda,
+                              type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_dzlmbda,
+                              type_z,0));
+      }
+    }
+    else {
+      set_subset_output_missing(z,0,type_z,total_size_in,
+                                missing_dzlap.doubleval);
+      if(type_z == NCL_float) {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_rzlap,
+                              type_z,0));
+      }
+      else {
+        return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_dzlap,
+                              type_z,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -3268,7 +3414,7 @@ NhlErrorTypes ilapsG_W( void )
   }
 
   NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(dislapgc,DISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
+  NGCALLF(dislapgc,DISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&dz[0],
                              &idvw,&jdvw,a,b,&mdab,&ndab,wshsgc,&lshsgc,
                              work,&lwork,pertrb,&ker);
   NclFree(a);
@@ -3290,7 +3436,7 @@ NhlErrorTypes ilapsG_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&z[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
     NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dzlap[j],work);
     j += nlatnlon;
   }
@@ -3299,7 +3445,7 @@ NhlErrorTypes ilapsG_W( void )
  */
   scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
 
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dz[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -3309,19 +3455,17 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * Return array.
  */
-  if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
-    rz = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rz == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rz[i]  = (float)z[i];
-    NclFree(z);   /* Free up the double array */
-    return(NclReturnValue((void*)rz,ndims_zlap,dsizes_zlap,NULL,NCL_float,0));
+  if(type_z == NCL_float) {
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_size_in; i++ ) ((float*)z)[i]  = (float)dz[i];
+/*
+ * Free double precision array.
+ */
+    NclFree(dz);
   }
-  else {
-    return(NclReturnValue((void*)z,ndims_zlap,dsizes_zlap,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(z,ndims_zlap,dsizes_zlap,NULL,type_z,0));
 }
 
 
@@ -3472,8 +3616,12 @@ NhlErrorTypes ilapvf_W( void )
   found_missing = contains_missing(dvlap,total_size_in,has_missing_vlap,
                                    missing_dvlap.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvf: The input array cannot contain any missing values");
+    if(type_ulap == NCL_float) NclFree(dulap);
+    if(type_vlap == NCL_float) NclFree(dvlap);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -3748,8 +3896,12 @@ NhlErrorTypes ilapvg_W( void )
   found_missing = contains_missing(dvlap,total_size_in,has_missing_vlap,
                                    missing_dvlap.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvg: The input array cannot contain any missing values");
+    if(type_ulap == NCL_float) NclFree(dulap);
+    if(type_vlap == NCL_float) NclFree(dvlap);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -3989,8 +4141,10 @@ NhlErrorTypes lapsf_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsf: The input arrays cannot contain any missing values");
+    if(type_zlap == NCL_float) NclFree(dzlap);
+    if(type_z    == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -4114,15 +4268,16 @@ NhlErrorTypes lapsF_W( void )
   void *z;
   double *dz;
   int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
-  NclScalar missing_z, missing_dz;
+  NclScalar missing_z, missing_dz, missing_rz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *zlap;
-  float *rzlap;
+  void *zlap;
+  double *dzlap;
+  NclBasicDataTypes type_zlap;
 /*
  * various
  */
@@ -4165,15 +4320,27 @@ NhlErrorTypes lapsF_W( void )
 /*
  * Allocate space for output array
  */
-  zlap = (double*)calloc(total_size_in,sizeof(double));
+  if(type_z != NCL_double) {
+    type_zlap = NCL_float;
+    zlap = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_zlap = NCL_double;
+    zlap = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( zlap == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dzlap = coerce_output_double(zlap,type_zlap,total_size_in);
+  if( dzlap == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Coerce z.
  */
-  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
                            &missing_z,&missing_dz);
   if(dz == NULL) {
@@ -4186,8 +4353,16 @@ NhlErrorTypes lapsF_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsF: The input array cannot contain any missing values");
+    if(type_z    == NCL_float) NclFree(dz);
+    set_subset_output_missing(zlap,0,type_zlap,total_size_in,
+                              missing_dz.doubleval);
+    if(type_zlap == NCL_float) {
+      return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_rz,type_zlap,0));
+    }
+    else {
+      return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_dz,type_zlap,0));
+    }
   }
 /*
  * Determine the workspace size.
@@ -4259,7 +4434,7 @@ NhlErrorTypes lapsF_W( void )
   }
 
   NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(dslapec,DSLAPEC)(&nlat,&nlon,&isym,&nt,&zlap[0],&idvw,&jdvw,a,b,
+  NGCALLF(dslapec,DSLAPEC)(&nlat,&nlon,&isym,&nt,&dzlap[0],&idvw,&jdvw,a,b,
                            &mdab,&ndab,wshsec,&lshsec,work,&lwork,&ker);
   NclFree(a);
   NclFree(b);
@@ -4280,7 +4455,7 @@ NhlErrorTypes lapsF_W( void )
   j = 0;
   for( i = 0; i < nt; i++ ) {
     NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&zlap[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dzlap[j],work);
     j += nlatnlon;
   }
 /*
@@ -4288,7 +4463,7 @@ NhlErrorTypes lapsF_W( void )
  */
   scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
  
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dzlap[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -4297,19 +4472,17 @@ NhlErrorTypes lapsF_W( void )
 /*
  * Return array.
  */
-  if(type_z != NCL_double) {
-    rzlap = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rzlap == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rzlap[i]  = (float)zlap[i];
-    NclFree(zlap);   /* Free up the double array */
-    return(NclReturnValue((void*)rzlap,ndims_z,dsizes_z,NULL,NCL_float,0));
+  if(type_zlap == NCL_float) {
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_size_in; i++ ) ((float*)zlap)[i]  = (float)dzlap[i];
+/*
+ * Free double precision array.
+ */
+    NclFree(dzlap);
   }
-  else {
-    return(NclReturnValue((void*)zlap,ndims_z,dsizes_z,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(zlap,ndims_z,dsizes_z,NULL,type_zlap,0));
 }
 
 
@@ -4425,8 +4598,10 @@ NhlErrorTypes lapsg_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsg: The input arrays cannot contain any missing values");
+    if(type_zlap == NCL_float) NclFree(dzlap);
+    if(type_z    == NCL_float) NclFree(dz);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -4550,15 +4725,16 @@ NhlErrorTypes lapsG_W( void )
   void *z;
   double *dz;
   int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
-  NclScalar missing_z, missing_dz;
+  NclScalar missing_z, missing_dz, missing_rz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
-  double *zlap;
-  float *rzlap;
+  void *zlap;
+  double *dzlap;
+  NclBasicDataTypes type_zlap;
 /*
  * various
  */
@@ -4601,15 +4777,27 @@ NhlErrorTypes lapsG_W( void )
 /*
  * Allocate space for output array
  */
-  zlap = (double*)calloc(total_size_in,sizeof(double));
+  if(type_z != NCL_double) {
+    type_zlap = NCL_float;
+    zlap = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_zlap = NCL_double;
+    zlap = (void*)calloc(total_size_in,sizeof(double));
+  }
   if( zlap == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dzlap = coerce_output_double(zlap,type_zlap,total_size_in);
+  if( dzlap == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
  * Coerce z.
  */
-  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
                            &missing_z,&missing_dz);
   if(dz == NULL) {
@@ -4622,8 +4810,16 @@ NhlErrorTypes lapsG_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsG: The input array cannot contain any missing values");
+    if(type_z    == NCL_float) NclFree(dz);
+    set_subset_output_missing(zlap,0,type_zlap,total_size_in,
+                              missing_dz.doubleval);
+    if(type_zlap == NCL_float) {
+      return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_rz,type_zlap,0));
+    }
+    else {
+      return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_dz,type_zlap,0));
+    }
   }
 /*
  * Determine the workspace size.
@@ -4694,7 +4890,7 @@ NhlErrorTypes lapsG_W( void )
   }
 
   NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(dslapgc,DSLAPGC)(&nlat,&nlon,&isym,&nt,&zlap[0],&idvw,&jdvw,a,b,
+  NGCALLF(dslapgc,DSLAPGC)(&nlat,&nlon,&isym,&nt,&dzlap[0],&idvw,&jdvw,a,b,
                            &mdab,&ndab,wshsgc,&lshsgc,work,&lwork,&ker);
   NclFree(a);
   NclFree(b);
@@ -4715,7 +4911,7 @@ NhlErrorTypes lapsG_W( void )
   j = 0;
   for( i = 0; i < nt; i++ ) {
     NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dz[j],work);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&zlap[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dzlap[j],work);
     j += nlatnlon;
   }
 /*
@@ -4723,7 +4919,7 @@ NhlErrorTypes lapsG_W( void )
  */
   scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
 
-  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
+  NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dzlap[0],&scale,&ner);
 /*
  * Free workspace array.
  */
@@ -4732,19 +4928,17 @@ NhlErrorTypes lapsG_W( void )
 /*
  * Return array.
  */
-  if(type_z != NCL_double) {
-    rzlap = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rzlap == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rzlap[i]  = (float)zlap[i];
-    NclFree(zlap);   /* Free up the double array */
-    return(NclReturnValue((void*)rzlap,ndims_z,dsizes_z,NULL,NCL_float,0));
+  if(type_zlap == NCL_float) {
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_size_in; i++ ) ((float*)zlap)[i]  = (float)dzlap[i];
+/*
+ * Free double precision array.
+ */
+    NclFree(dzlap);
   }
-  else {
-    return(NclReturnValue((void*)zlap,ndims_z,dsizes_z,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(zlap,ndims_z,dsizes_z,NULL,type_zlap,0));
 }
 
 NhlErrorTypes lapvf_W( void )
@@ -4892,8 +5086,12 @@ NhlErrorTypes lapvf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvf: The input array cannot contain any missing values");
+    if(type_ulap == NCL_float) NclFree(dulap);
+    if(type_vlap == NCL_float) NclFree(dvlap);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -5167,8 +5365,12 @@ NhlErrorTypes lapvg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvg: The input array cannot contain any missing values");
+    if(type_ulap == NCL_float) NclFree(dulap);
+    if(type_vlap == NCL_float) NclFree(dvlap);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -5442,8 +5644,12 @@ NhlErrorTypes uv2sfvpf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpf: The input array cannot contain any missing values");
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    if(type_sf == NCL_float) NclFree(dsf);
+    if(type_vp == NCL_float) NclFree(dvp);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -5714,8 +5920,12 @@ NhlErrorTypes uv2sfvpg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpg: The input array cannot contain any missing values");
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    if(type_sf == NCL_float) NclFree(dsf);
+    if(type_vp == NCL_float) NclFree(dvp);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -5986,8 +6196,12 @@ NhlErrorTypes lderuvf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvf: The input array cannot contain any missing values");
+    if(type_uy == NCL_float) NclFree(duy);
+    if(type_vy == NCL_float) NclFree(dvy);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -6259,8 +6473,12 @@ NhlErrorTypes lderuvg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvg: The input array cannot contain any missing values");
+    if(type_uy == NCL_float) NclFree(duy);
+    if(type_vy == NCL_float) NclFree(dvy);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -6519,8 +6737,11 @@ NhlErrorTypes uv2dvf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvf: The input arrays cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -6655,14 +6876,16 @@ NhlErrorTypes uv2dvF_W( void )
   double *du, *dv;
   int dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
   int ndims_u, ndims_v;
-  NclScalar missing_u, missing_v, missing_du, missing_dv;
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
-  int has_missing_u, has_missing_v, found_missing;
+  int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
 /*
  * Output array variables
  */
+  void *dvo;
   double *ddv;
-  float *rdv;
+  NclBasicDataTypes type_dv;
 /*
  * various
  */
@@ -6720,7 +6943,19 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * Allocate space for output array.
  */
-  ddv = (double*)calloc(total_size_in,sizeof(double));
+  if(type_u != NCL_double && type_v != NCL_double) {
+    type_dv = NCL_float;
+    dvo = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_dv = NCL_double;
+    dvo = (void*)calloc(total_size_in,sizeof(double));
+  }
+  if( dvo == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  ddv = coerce_output_double(dvo,type_dv,total_size_in);
   if( ddv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -6728,8 +6963,8 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * Coerce u and v.
  */
-  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
-  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
                            &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
@@ -6741,13 +6976,34 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(du,total_size_in,has_missing_u,
-                                   missing_du.doubleval);
-  found_missing = contains_missing(dv,total_size_in,has_missing_v,
-                                   missing_dv.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_u = contains_missing(du,total_size_in,has_missing_u,
+                                     missing_du.doubleval);
+  found_missing_v = contains_missing(dv,total_size_in,has_missing_v,
+                                     missing_dv.doubleval);
+  if(found_missing_u || found_missing_v) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvF: The input arrays cannot contain any missing values");
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    if(found_missing_u) {
+      set_subset_output_missing(dvo,0,type_dv,total_size_in,
+                                missing_du.doubleval);
+      if(type_dv == NCL_float) {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_ru,type_dv,0));
+      }
+      else {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_du,type_dv,0));
+      }
+    }
+    else {
+      set_subset_output_missing(dvo,0,type_dv,total_size_in,
+                                missing_du.doubleval);
+      if(type_dv == NCL_float) {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_rv,type_dv,0));
+      }
+      else {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_dv,type_dv,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -6867,22 +7123,17 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * Return array.
  */
-  if(type_u != NCL_double && type_v != NCL_double){
+  if(type_dv == NCL_float) {
 /*
- * Coerce values back to float if necessary.
+ * Copy double values to float values.
  */
-    rdv = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rdv == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rdv[i] = (float)ddv[i];
-    NclFree(ddv);   /* Free up the double array */
-    return(NclReturnValue((void*)rdv,ndims_u,dsizes_u,NULL,NCL_float,0));
+    for( i = 0; i < total_size_in; i++ ) ((float*)dvo)[i] = (float)ddv[i];
+/*
+ * Free double array.
+ */
+    NclFree(ddv);
   }
-  else {
-    return(NclReturnValue((void*)ddv,ndims_u,dsizes_u,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(dvo,ndims_u,dsizes_u,NULL,type_dv,0));
 }
 
 
@@ -7018,8 +7269,11 @@ NhlErrorTypes uv2dvg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvg: The input arrays cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -7154,14 +7408,16 @@ NhlErrorTypes uv2dvG_W( void )
   double *du, *dv;
   int dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
   int ndims_u, ndims_v;
-  NclScalar missing_u, missing_v, missing_du, missing_dv;
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
-  int has_missing_u, has_missing_v, found_missing;
+  int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
 /*
  * Output array variables
  */
+  void *dvo;
   double *ddv;
-  float *rdv;
+  NclBasicDataTypes type_dv;
 /*
  * various
  */
@@ -7219,7 +7475,19 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * Allocate space for output array.
  */
-  ddv = (double*)calloc(total_size_in,sizeof(double));
+  if(type_u != NCL_double && type_v != NCL_double) {
+    type_dv = NCL_float;
+    dvo = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_dv = NCL_double;
+    dvo = (void*)calloc(total_size_in,sizeof(double));
+  }
+  if( dvo == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  ddv = coerce_output_double(dvo,type_dv,total_size_in);
   if( ddv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -7227,26 +7495,47 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * Coerce u and v.
  */
-  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
-  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
                            &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
                            &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for coercing input arrays to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(du,total_size_in,has_missing_u,
-                                   missing_du.doubleval);
-  found_missing = contains_missing(dv,total_size_in,has_missing_v,
-                                   missing_dv.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_u = contains_missing(du,total_size_in,has_missing_u,
+                                     missing_du.doubleval);
+  found_missing_v = contains_missing(dv,total_size_in,has_missing_v,
+                                     missing_dv.doubleval);
+  if(found_missing_u || found_missing_v) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvG: The input arrays cannot contain any missing values");
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    if(found_missing_u) {
+      set_subset_output_missing(dvo,0,type_dv,total_size_in,
+                                missing_du.doubleval);
+      if(type_dv == NCL_float) {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_ru,type_dv,0));
+      }
+      else {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_du,type_dv,0));
+      }
+    }
+    else {
+      set_subset_output_missing(dvo,0,type_dv,total_size_in,
+                                missing_du.doubleval);
+      if(type_dv == NCL_float) {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_rv,type_dv,0));
+      }
+      else {
+        return(NclReturnValue(dvo,ndims_u,dsizes_u,&missing_dv,type_dv,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -7366,22 +7655,17 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * Return array.
  */
-  if(type_u != NCL_double && type_v != NCL_double){
+  if(type_dv == NCL_float) {
 /*
- * Coerce values back to float if necessary.
+ * Copy double values to float values.
  */
-    rdv = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rdv == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rdv[i] = (float)ddv[i];
-    NclFree(ddv);   /* Free up the double array */
-    return(NclReturnValue((void*)rdv,ndims_u,dsizes_u,NULL,NCL_float,0));
+    for( i = 0; i < total_size_in; i++ ) ((float*)dvo)[i] = (float)ddv[i];
+/*
+ * Free double array.
+ */
+    NclFree(ddv);
   }
-  else {
-    return(NclReturnValue((void*)ddv,ndims_u,dsizes_u,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(dvo,ndims_u,dsizes_u,NULL,type_dv,0));
 }
 
 NhlErrorTypes uv2vrf_W( void )
@@ -7516,8 +7800,11 @@ NhlErrorTypes uv2vrf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrf: The input arrays cannot contain any missing values");
+    if(type_vort == NCL_float) NclFree(dvort);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -7653,14 +7940,16 @@ NhlErrorTypes uv2vrF_W( void )
   double *du, *dv;
   int dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
   int ndims_u, ndims_v;
-  NclScalar missing_u, missing_v, missing_du, missing_dv;
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
-  int has_missing_u, has_missing_v, found_missing;
+  int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
 /*
  * Output array variables
  */
+  void* *vort;
   double *dvort;
-  float *rvort;
+  NclBasicDataTypes type_vort;
 /*
  * various
  */
@@ -7718,7 +8007,19 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * Allocate space for output array.
  */
-  dvort = (double*)calloc(total_size_in,sizeof(double));
+  if(type_u != NCL_double && type_v != NCL_double) {
+    type_vort = NCL_float;
+    vort = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_vort = NCL_double;
+    vort = (void*)calloc(total_size_in,sizeof(double));
+  }
+  if( vort == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dvort = coerce_output_double(vort,type_vort,total_size_in);
   if( dvort == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -7726,8 +8027,8 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * Coerce u and v.
  */
-  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
-  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
                            &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
@@ -7739,13 +8040,34 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(du,total_size_in,has_missing_u,
-                                   missing_du.doubleval);
-  found_missing = contains_missing(dv,total_size_in,has_missing_v,
-                                   missing_dv.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_u = contains_missing(du,total_size_in,has_missing_u,
+                                     missing_du.doubleval);
+  found_missing_v = contains_missing(dv,total_size_in,has_missing_v,
+                                     missing_dv.doubleval);
+  if(found_missing_u || found_missing_v) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrF: The input arrays cannot contain any missing values");
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    if(found_missing_u) {
+      set_subset_output_missing(vort,0,type_vort,total_size_in,
+                                missing_du.doubleval);
+      if(type_vort == NCL_float) {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_ru,type_vort,0));
+      }
+      else {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
+      }
+    }
+    else {
+      set_subset_output_missing(vort,0,type_vort,total_size_in,
+                                missing_du.doubleval);
+      if(type_vort == NCL_float) {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_rv,type_vort,0));
+      }
+      else {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_dv,type_vort,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -7857,33 +8179,25 @@ NhlErrorTypes uv2vrF_W( void )
   
   NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dvort[0],&scale,&ner);
 /*
- * Free workspace array.
+ * Free memory.
  */
   NclFree(work);
-/*
- * Return array.
- */
   if((void*)du != u) NclFree(du);
   if((void*)dv != v) NclFree(dv);
 /*
  * Return array.
  */
-  if(type_u != NCL_double && type_v != NCL_double){
+  if(type_vort == NCL_float) {
 /*
- * Coerce values back to float if necessary.
+ * Copy double values to float values.
  */
-    rvort = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rvort == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rvort[i] = (float)dvort[i];
-    NclFree(dvort);   /* Free up the double array */
-    return(NclReturnValue((void*)rvort,ndims_u,dsizes_u,NULL,NCL_float,0));
+    for( i = 0; i < total_size_in; i++ ) ((float*)vort)[i] = (float)dvort[i];
+/*
+ * Free double array.
+ */
+    NclFree(dvort);
   }
-  else {
-    return(NclReturnValue((void*)dvort,ndims_u,dsizes_u,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(vort,ndims_u,dsizes_u,NULL,type_vort,0));
 }
 
 
@@ -8019,8 +8333,11 @@ NhlErrorTypes uv2vrg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrg: The input arrays cannot contain any missing values");
+    if(type_vort == NCL_float) NclFree(dvort);
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -8156,14 +8473,16 @@ NhlErrorTypes uv2vrG_W( void )
   double *du, *dv;
   int dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
   int ndims_u, ndims_v;
-  NclScalar missing_u, missing_v, missing_du, missing_dv;
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
-  int has_missing_u, has_missing_v, found_missing;
+  int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
 /*
  * Output array variables
  */
+  void* *vort;
   double *dvort;
-  float *rvort;
+  NclBasicDataTypes type_vort;
 /*
  * various
  */
@@ -8221,7 +8540,19 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * Allocate space for output array.
  */
-  dvort = (double*)calloc(total_size_in,sizeof(double));
+  if(type_u != NCL_double && type_v != NCL_double) {
+    type_vort = NCL_float;
+    vort = (void*)calloc(total_size_in,sizeof(float));
+  }
+  else {
+    type_vort = NCL_double;
+    vort = (void*)calloc(total_size_in,sizeof(double));
+  }
+  if( vort == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  dvort = coerce_output_double(vort,type_vort,total_size_in);
   if( dvort == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -8229,8 +8560,8 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * Coerce u and v.
  */
-  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
-  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
                            &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
@@ -8242,13 +8573,34 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * Check for missing values.
  */
-  found_missing = contains_missing(du,total_size_in,has_missing_u,
-                                   missing_du.doubleval);
-  found_missing = contains_missing(dv,total_size_in,has_missing_v,
-                                   missing_dv.doubleval);
-  if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+  found_missing_u = contains_missing(du,total_size_in,has_missing_u,
+                                     missing_du.doubleval);
+  found_missing_v = contains_missing(dv,total_size_in,has_missing_v,
+                                     missing_dv.doubleval);
+  if(found_missing_u || found_missing_v) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrG: The input arrays cannot contain any missing values");
+    if(type_u    == NCL_float) NclFree(du);
+    if(type_v    == NCL_float) NclFree(dv);
+    if(found_missing_u) {
+      set_subset_output_missing(vort,0,type_vort,total_size_in,
+                                missing_du.doubleval);
+      if(type_vort == NCL_float) {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_ru,type_vort,0));
+      }
+      else {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
+      }
+    }
+    else {
+      set_subset_output_missing(vort,0,type_vort,total_size_in,
+                                missing_du.doubleval);
+      if(type_vort == NCL_float) {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_rv,type_vort,0));
+      }
+      else {
+        return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_dv,type_vort,0));
+      }
+    }
   }
 /*
  * Determine the workspace size.
@@ -8359,33 +8711,25 @@ NhlErrorTypes uv2vrG_W( void )
   
   NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&nt,&dvort[0],&scale,&ner);
 /*
- * Free workspace array.
+ * Free memory.
  */
   NclFree(work);
-/*
- * Return array.
- */
   if((void*)du != u) NclFree(du);
   if((void*)dv != v) NclFree(dv);
 /*
  * Return array.
  */
-  if(type_u != NCL_double && type_v != NCL_double){
+  if(type_vort == NCL_float) {
 /*
- * Coerce values back to float if necessary.
+ * Copy double values to float values.
  */
-    rvort = (float*)calloc(total_size_in*sizeof(float),1);
-    if( rvort == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for coercing output to single precision");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_in; i++ ) rvort[i] = (float)dvort[i];
-    NclFree(dvort);   /* Free up the double array */
-    return(NclReturnValue((void*)rvort,ndims_u,dsizes_u,NULL,NCL_float,0));
+    for( i = 0; i < total_size_in; i++ ) ((float*)vort)[i] = (float)dvort[i];
+/*
+ * Free double array.
+ */
+    NclFree(dvort);
   }
-  else {
-    return(NclReturnValue((void*)dvort,ndims_u,dsizes_u,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(vort,ndims_u,dsizes_u,NULL,type_vort,0));
 }
 
 
@@ -8533,8 +8877,12 @@ NhlErrorTypes uv2vrdvf_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvf: The input arrays cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_vr == NCL_float) NclFree(dvr);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -8806,8 +9154,12 @@ NhlErrorTypes uv2vrdvg_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: The input arrays cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvg: The input arrays cannot contain any missing values");
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_vr == NCL_float) NclFree(dvr);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -9059,8 +9411,11 @@ NhlErrorTypes vr2uvf_W( void )
   found_missing = contains_missing(dvort,total_size_in,has_missing_vort,
                                    missing_dvort.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvf: The input array cannot contain any missing values");
+    if(type_vort == NCL_float) NclFree(dvort);
+    if(type_ur   == NCL_float) NclFree(dur);
+    if(type_vr   == NCL_float) NclFree(dvr);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -9309,8 +9664,11 @@ NhlErrorTypes vr2uvg_W( void )
   found_missing = contains_missing(dvort,total_size_in,has_missing_vort,
                                    missing_dvort.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvg: The input array cannot contain any missing values");
+    if(type_vort == NCL_float) NclFree(dvort);
+    if(type_ur   == NCL_float) NclFree(dur);
+    if(type_vr   == NCL_float) NclFree(dvr);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -9579,8 +9937,12 @@ NhlErrorTypes vrdv2uvf_W( void )
   found_missing = contains_missing(ddv,total_size_in,has_missing_dv,
                                    missing_ddv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvf: The input array cannot contain any missing values");
+    if(type_vr == NCL_float) NclFree(dvr);
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.
@@ -9859,8 +10221,12 @@ NhlErrorTypes vrdv2uvg_W( void )
   found_missing = contains_missing(ddv,total_size_in,has_missing_dv,
                                    missing_ddv.doubleval);
   if(found_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: The input array cannot contain any missing values");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvg: The input array cannot contain any missing values");
+    if(type_vr == NCL_float) NclFree(dvr);
+    if(type_dv == NCL_float) NclFree(ddv);
+    if(type_u  == NCL_float) NclFree(du);
+    if(type_v  == NCL_float) NclFree(dv);
+    return(NhlNOERROR);
   }
 /*
  * Determine the workspace size.

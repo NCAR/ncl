@@ -154,8 +154,10 @@ NhlErrorTypes ttest_W( void )
     }
   }
 
-  if((ndims_s1 == 1 && dsizes_s1[0] != 1) || ndims_s1 != 1) {
-    scalar_s1 = 0;
+  scalar_s1 = is_scalar(ndims_s1,dsizes_s1);
+  scalar_s2 = is_scalar(ndims_s2,dsizes_s2);
+
+  if(!scalar_s1) {
 /*
  * s1 is not a scalar, so it must be an array of the same dimension
  * sizes as ave* and var*.
@@ -172,12 +174,8 @@ NhlErrorTypes ttest_W( void )
       }
     }
   }
-  else {
-    scalar_s1 = 1;
-  }
 
-  if((ndims_s2 == 1 && dsizes_s2[0] != 1) || ndims_s2 != 1) {
-    scalar_s2 = 0;
+  if(!scalar_s2) {
 /*
  * s2 is not a scalar, so it must be an array of the same dimension
  * sizes as ave* and var*.
@@ -193,9 +191,6 @@ NhlErrorTypes ttest_W( void )
         return(NhlFATAL);
       }
     }
-  }
-  else {
-    scalar_s2 = 1;
   }
 /*
  * Calculate size of output value. If tval_opt is False, then the output
@@ -589,8 +584,10 @@ NhlErrorTypes ftest_W( void )
     }
   }
 
-  if((ndims_s1 == 1 && dsizes_s1[0] != 1) || ndims_s1 != 1) {
-    scalar_s1 = 0;
+  scalar_s1 = is_scalar(ndims_s1,dsizes_s1);
+  scalar_s2 = is_scalar(ndims_s2,dsizes_s2);
+
+  if(!scalar_s1) {
 /*
  * s1 is not a scalar, so it must be an array of the same dimension
  * sizes as var*.
@@ -607,12 +604,8 @@ NhlErrorTypes ftest_W( void )
       }
     }
   }
-  else {
-    scalar_s1 = 1;
-  }
 
-  if((ndims_s2 == 1 && dsizes_s2[0] != 1) || ndims_s2 != 1) {
-    scalar_s2 = 0;
+  if(!scalar_s2) {
 /*
  * s2 is not a scalar, so it must be an array of the same dimension
  * sizes as var*.
@@ -628,9 +621,6 @@ NhlErrorTypes ftest_W( void )
         return(NhlFATAL);
       }
     }
-  }
-  else {
-    scalar_s2 = 1;
   }
 
 /*
@@ -892,8 +882,9 @@ NhlErrorTypes rtest_W( void )
 /*
  * Check dimension sizes.
  */
-  if((ndims_n == 1 && dsizes_n[0] != 1) || ndims_n != 1) {
-    scalar_n = 0;
+  scalar_n = is_scalar(ndims_n,dsizes_n);
+
+  if(!scalar_n) {
 /*
  * If n is not a scalar, it must be an array of the same dimension
  * sizes as r.
@@ -909,9 +900,6 @@ NhlErrorTypes rtest_W( void )
         return(NhlFATAL);
       }
     }
-  }
-  else {
-    scalar_n = 1;
   }
 
 /*

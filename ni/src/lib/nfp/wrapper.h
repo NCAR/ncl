@@ -30,7 +30,10 @@ extern float *set_output_float_missing(double*,int,double);
 
 extern int contains_missing(double *,int,int,double);
 
-void set_subset_output_missing(void *,int,NclBasicDataTypes,int,double);
+extern void set_subset_output_missing(void *,int,NclBasicDataTypes,int,double);
+
+extern int is_scalar(int,int*);
+
 
 extern void compute_nlatnlon(int *, int, int *, int *, int *, int *, int *);
 

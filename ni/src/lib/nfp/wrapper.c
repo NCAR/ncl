@@ -279,8 +279,8 @@ extern NhlErrorTypes ttest_W(void);
 extern NhlErrorTypes ftest_W(void);
 extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
-
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
+extern NhlErrorTypes common_graphic_mnmxstp_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -3411,6 +3411,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", NclANY, NclANY);   nargs++;
     NclRegisterFunc(NhlGetNamedColorIndex_W, args, "NhlGetNamedColorIndex", nargs);
 
+/*
+ *  Register common_graphic_mnmxstp.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "logical", NclANY, NclANY);  nargs++;
+    NclRegisterFunc(common_graphic_mnmxstp_W, args, "common_graphic_mnmxstp", nargs);
+
     return;
 }
 
@@ -3723,6 +3734,26 @@ double            missing_x)
       ((double*)x)[index_x+i] = missing_x;
     }
   }
+}
+
+
+/*
+ * Checks if a variable is a scalar or not.
+ * Returns 1 if it is, and a 0 if it isn't.
+ */
+int is_scalar(
+int    ndims_x,
+int    *dsizes_x
+)
+{
+  int is_scalar;
+  if(ndims_x == 1 && dsizes_x[0] == 1) {
+    is_scalar = 1;
+  }
+  else {
+    is_scalar = 0;
+  }
+  return(is_scalar);
 }
 
 
