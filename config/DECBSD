@@ -1,4 +1,15 @@
 #define BuildXlibDependentCode
+/*
+** Define which raster drivers will be built.
+*/
+#define	BuildRasterHDF
+#define	BuildRasterHPPCL
+#define	BuildRasterNrif
+#define	BuildRasterSun
+#define BuildRasterAVS
+#define BuildRasterSGI
+#define BuildRasterAbekas
+#define BuildRasterBinary
 
 /*
 **  Stuff that should be edited by Configure
@@ -72,9 +83,13 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
+#ifdef BuildRasterHDF
 HDFLIB            = -ldf
+#endif
 XDRLIB            =
+#ifdef BuildRasterNetcdf
 NETCDFLIB         = -lnetcdf $(XDRLIB)
+#endif
 HDFDEFINES        = 
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)

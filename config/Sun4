@@ -1,16 +1,27 @@
 #define BuildXlibDependentCode
+/*
+** Define which raster drivers will be built.
+*/
+#define	BuildRasterHDF
+#define	BuildRasterHPPCL
+#define	BuildRasterNrif
+#define	BuildRasterSun
+#define BuildRasterAVS
+#define BuildRasterSGI
+#define BuildRasterAbekas
+#define BuildRasterBinary
 
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION     = 3.1.3.x
-BINROOT     = /usr/local/bin
-LIBROOT     = /usr/local/lib
-INCROOT     = /usr/local/include
-MANROOT     = /usr/local/man
-TMPROOT     = /tmp
-LOCAL_LIB_SEARCH        = -L/X/X11/lib -L/usr/local/lib
-LOCAL_INC_SEARCH        = -I/X/X11/include -I/usr/local/include
+VERSION		= 3.1.4
+BINROOT		= /usr/local/bin
+LIBROOT		= /usr/local/lib
+INCROOT		= /usr/local/include
+MANROOT		= /usr/local/man
+TMPROOT		= /tmp
+LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is
@@ -72,9 +83,13 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
+#ifdef BuildRasterHDF
 HDFLIB            = -ldf
+#endif
 XDRLIB            =
+#ifdef BuildRasterNetcdf
 NETCDFLIB         = -lnetcdf $(XDRLIB)
+#endif
 HDFDEFINES        = -DSUN
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
@@ -90,7 +105,7 @@ VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = acc
 CC_LD             = $(CC)
 CDEBUG            = 
-COPT              =
+COPT              = -O
 CMISC             = -Xa -DNeedFuncProto
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
