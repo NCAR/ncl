@@ -1,5 +1,5 @@
 C
-C	$Id: ngpswk.f,v 1.5 2003-05-22 16:03:46 haley Exp $
+C	$Id: ngpswk.f,v 1.6 2003-05-22 16:45:36 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -68,10 +68,8 @@ C  so that the values can be differentiated.  For example, to
 C  specify color, using 'C' as the third argument would be sufficient.
 C  Either upper case or lower case is accepted.
 C
-      CHARACTER *(*) PSTYPE
-      CHARACTER *(*) ORIENT
-      CHARACTER *(*) COLOR
-      CHARACTER*80 IFMT
+      CHARACTER PSTYPE*(*), ORIENT*(*), COLOR*(*) 
+      CHARACTER IFMT*80
 C
       DIMENSION ITYPES(3,2,2)
       DATA ITYPES/20, 21, 22, 26, 27, 28, 23, 24, 25, 29, 30, 31/
