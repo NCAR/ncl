@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.121 2000-08-26 03:07:13 haley Exp $
+#   $Id: ncargex.csh,v 1.122 2001-02-09 17:12:37 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -625,7 +625,7 @@ set c_list = ($c_list $vectors_clist)
 #                   #
 #*******************#
 set wmap_fex   = (wmex01 wmex02 wmex03 wmex04 wmex05 wmex06 wmex07 wmex08\
-                 wmex09 wmex10 wmex11 wmex12 wmex13 wmex14)
+                 wmex09 wmex10 wmex11 wmex12 wmex13 wmex14 wmex15)
 set wmap_flist = ($wmap_fex)
 
 set wmap_cex   = (c_wmex09)
