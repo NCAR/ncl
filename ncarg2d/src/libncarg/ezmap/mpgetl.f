@@ -1,10 +1,11 @@
 C
-C $Id: mpgetl.f,v 1.3 1993-12-21 00:34:05 kennison Exp $
+C $Id: mpgetl.f,v 1.4 1994-03-16 23:52:33 kennison Exp $
 C
       SUBROUTINE MPGETL (WHCH,LVAL)
       CHARACTER*(*) WHCH
       LOGICAL LVAL
+      IF (ICFELL('MPGETL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPGTL (WHCH,LVAL)
-      IF (ICFELL('MPGETL',1).NE.0) RETURN
+      IF (ICFELL('MPGETL',2).NE.0) RETURN
       RETURN
       END

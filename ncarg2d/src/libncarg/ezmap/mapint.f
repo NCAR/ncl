@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.4 1993-12-21 00:33:01 kennison Exp $
+C $Id: mapint.f,v 1.5 1994-03-16 23:51:41 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -60,6 +60,10 @@ C
       DATA OV90 / .011111111111111 /
       DATA PI   / 3.14159265358979 /
       DATA RTOD / 57.2957795130823 /
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPINT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Decide whether MAPTRN should use real or double-precision arithmetic.
 C The subroutine call is necessary to fool some compilers into storing
@@ -272,9 +276,9 @@ C ------    of the plot.
 C
   200 E=0.
   201 CALL MAPTRN (PLA1,PLA2+E,TEM1,TEM3)
-      IF (ICFELL('MAPINT',1).NE.0) RETURN
-      CALL MAPTRN (PLA3,PLA4-E,TEM2,TEM4)
       IF (ICFELL('MAPINT',2).NE.0) RETURN
+      CALL MAPTRN (PLA3,PLA4-E,TEM2,TEM4)
+      IF (ICFELL('MAPINT',3).NE.0) RETURN
       IF (IPRJ.GE.7.AND.TEM1.GE.TEM2.AND.E.EQ.0.) THEN
         E=.0001
         GO TO 201
@@ -291,17 +295,17 @@ C ------
 C
   300 E=0.
   301 CALL MAPTRN (PLA1,PLB1+E,TEM1,TEM5)
-      IF (ICFELL('MAPINT',3).NE.0) RETURN
-      CALL MAPTRN (PLA2,PLB2-E,TEM2,TEM6)
       IF (ICFELL('MAPINT',4).NE.0) RETURN
+      CALL MAPTRN (PLA2,PLB2-E,TEM2,TEM6)
+      IF (ICFELL('MAPINT',5).NE.0) RETURN
       IF (IPRJ.GE.7.AND.TEM1.GE.TEM2.AND.E.EQ.0.) THEN
         E=.0001
         GO TO 301
       END IF
       CALL MAPTRN (PLA3,PLB3,TEM3,TEM7)
-      IF (ICFELL('MAPINT',5).NE.0) RETURN
-      CALL MAPTRN (PLA4,PLB4,TEM4,TEM8)
       IF (ICFELL('MAPINT',6).NE.0) RETURN
+      CALL MAPTRN (PLA4,PLB4,TEM4,TEM8)
+      IF (ICFELL('MAPINT',7).NE.0) RETURN
       UMIN=MIN(TEM1,TEM2,TEM3,TEM4)
       UMAX=MAX(TEM1,TEM2,TEM3,TEM4)
       VMIN=MIN(TEM5,TEM6,TEM7,TEM8)
@@ -468,7 +472,7 @@ C
 C Do the required SET call.
 C
       CALL SET (ULOW,UROW,VBOW,VTOW,UMIN,UMAX,VMIN,VMAX,1)
-      IF (ICFELL('MAPINT',7).NE.0) THEN
+      IF (ICFELL('MAPINT',8).NE.0) THEN
         IIER=-1
         RETURN
       END IF
@@ -513,7 +517,7 @@ C
         CLAT=PHIA
         CLON=PHIO
         CALL MAPTRN (CLAT,CLON,U,V)
-        IF (ICFELL('MAPINT',8).NE.0) RETURN
+        IF (ICFELL('MAPINT',9).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
@@ -535,7 +539,7 @@ C
           GO TO 700
         END IF
         CALL MAPTRN (CLAT,CLON,U,V)
-        IF (ICFELL('MAPINT',9).NE.0) RETURN
+        IF (ICFELL('MAPINT',10).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
@@ -554,7 +558,7 @@ C
   612   RLAT=RLAT-SRCH
         IF (RLAT.LE.-90.) GO TO 621
   613   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',10).NE.0) RETURN
+        IF (ICFELL('MAPINT',11).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
@@ -577,7 +581,7 @@ C
   622   RLAT=RLAT+SRCH
         IF (RLAT.GT.90.) GO TO 631
   623   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',11).NE.0) RETURN
+        IF (ICFELL('MAPINT',12).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
@@ -600,7 +604,7 @@ C
   632   RLON=RLON-SRCH
         IF (RLON.LE.CLON-360.) GO TO 651
   633   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',12).NE.0) RETURN
+        IF (ICFELL('MAPINT',13).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
@@ -623,7 +627,7 @@ C
   642   RLON=RLON+SRCH
         IF (RLON.GE.CLON+360.) GO TO 651
   643   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',13).NE.0) RETURN
+        IF (ICFELL('MAPINT',14).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
      +                                               .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN

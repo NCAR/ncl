@@ -1,5 +1,5 @@
 C
-C $Id: maptrn.f,v 1.2 1993-12-21 00:33:49 kennison Exp $
+C $Id: maptrn.f,v 1.3 1994-03-16 23:52:20 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -33,6 +33,10 @@ C
       DATA DTRH / .008726646259971 /
       DATA RTOD / 57.2957795130823 /
       DATA TOPI / .636619772367581 /
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPTRN - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.

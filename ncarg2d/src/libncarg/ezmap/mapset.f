@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.4 1993-12-21 00:33:30 kennison Exp $
+C $Id: mapset.f,v 1.5 1994-03-16 23:52:05 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -19,6 +19,10 @@ C
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer the parameters defining the map limits.
 C

@@ -1,9 +1,10 @@
 C
-C $Id: mpseti.f,v 1.3 1993-12-21 00:34:11 kennison Exp $
+C $Id: mpseti.f,v 1.4 1994-03-16 23:52:39 kennison Exp $
 C
       SUBROUTINE MPSETI (WHCH,IVAL)
       CHARACTER*(*) WHCH
+      IF (ICFELL('MPSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPSTI (WHCH,IVAL)
-      IF (ICFELL('MPSETI',1).NE.0) RETURN
+      IF (ICFELL('MPSETI',2).NE.0) RETURN
       RETURN
       END

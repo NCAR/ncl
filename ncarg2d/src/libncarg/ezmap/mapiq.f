@@ -1,5 +1,5 @@
 C
-C $Id: mapiq.f,v 1.2 1993-12-21 00:33:06 kennison Exp $
+C $Id: mapiq.f,v 1.3 1994-03-16 23:51:45 kennison Exp $
 C
       SUBROUTINE MAPIQ
 C
@@ -11,11 +11,15 @@ C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
       SAVE /MAPCMP/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPIQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Flush the points buffer.
 C
       IF (NPTB.GT.0) THEN
         CALL POINTS (XPTB,YPTB,NPTB,0,0)
-        IF (ICFELL('MAPIQ',1).NE.0) THEN
+        IF (ICFELL('MAPIQ',2).NE.0) THEN
           IIER=-1
           RETURN
         END IF
@@ -25,7 +29,7 @@ C
 C Flush PLOTIT's buffer, too.
 C
       CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('MAPIQ',2).NE.0) THEN
+      IF (ICFELL('MAPIQ',3).NE.0) THEN
         IIER=-1
         RETURN
       END IF

@@ -1,5 +1,5 @@
 C
-C $Id: maproj.f,v 1.4 1993-12-21 00:33:20 kennison Exp $
+C $Id: maproj.f,v 1.5 1994-03-16 23:51:57 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -24,6 +24,10 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPROJ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Transfer the parameters defining the projection.
 C
       I=IDICTL(ARG1,PDCT,10)
@@ -34,12 +38,12 @@ C
 C
       IF (JPRJ.EQ.3) THEN
         CALL MAPSTR ('SA',0.)
-        IF (ICFELL('MAPROJ',1).NE.0) RETURN
+        IF (ICFELL('MAPROJ',2).NE.0) RETURN
       ELSE IF (JPRJ.EQ.10) THEN
         JPRJ=3
         IF (ABS(SALT).LE.1.) THEN
           CALL MAPSTR ('SA',6.631)
-          IF (ICFELL('MAPROJ',2).NE.0) RETURN
+          IF (ICFELL('MAPROJ',3).NE.0) RETURN
         END IF
       END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mappos.f,v 1.2 1993-12-21 00:33:18 kennison Exp $
+C $Id: mappos.f,v 1.3 1994-03-16 23:51:55 kennison Exp $
 C
       SUBROUTINE MAPPOS (ARG1,ARG2,ARG3,ARG4)
 C
@@ -13,6 +13,10 @@ C
       SAVE /MAPCM4/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPPOS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check the arguments for errors.
 C

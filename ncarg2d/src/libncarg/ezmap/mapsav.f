@@ -1,5 +1,5 @@
 C
-C $Id: mapsav.f,v 1.2 1993-12-21 00:33:28 kennison Exp $
+C $Id: mapsav.f,v 1.3 1994-03-16 23:52:03 kennison Exp $
 C
       SUBROUTINE MAPSAV (IFNO)
 C
@@ -27,6 +27,10 @@ C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPSAV - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Write a record containing all the user-settable parameters.
 C

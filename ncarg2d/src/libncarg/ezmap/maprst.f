@@ -1,5 +1,5 @@
 C
-C $Id: maprst.f,v 1.2 1993-12-21 00:33:25 kennison Exp $
+C $Id: maprst.f,v 1.3 1994-03-16 23:52:01 kennison Exp $
 C
       SUBROUTINE MAPRST (IFNO)
 C
@@ -28,6 +28,10 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPRST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Read a record of saved parameters.
 C
       READ (IFNO,ERR=901,END=902) NOUT,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,
@@ -41,7 +45,7 @@ C
 C Re-initialize EZMAP.
 C
       CALL MAPINT
-      IF (ICFELL('MAPRST',1).NE.0) RETURN
+      IF (ICFELL('MAPRST',2).NE.0) RETURN
 C
 C Done.
 C

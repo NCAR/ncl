@@ -1,5 +1,5 @@
 C
-C $Id: mapgtc.f,v 1.4 1993-12-21 00:32:50 kennison Exp $
+C $Id: mapgtc.f,v 1.5 1994-03-16 23:51:31 kennison Exp $
 C
       SUBROUTINE MAPGTC (WHCH,CVAL)
 C
@@ -27,6 +27,7 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
+      IF (ICFELL('MAPGTC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       IF (     WHCH(1:2).EQ.'AR') THEN
         CVAL=LDCT(ILTS)
       ELSE IF (WHCH(1:2).EQ.'OU') THEN

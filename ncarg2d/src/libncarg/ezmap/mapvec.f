@@ -1,8 +1,9 @@
 C
-C $Id: mapvec.f,v 1.2 1993-12-21 00:33:56 kennison Exp $
+C $Id: mapvec.f,v 1.3 1994-03-16 23:52:26 kennison Exp $
 C
       SUBROUTINE MAPVEC (XLAT,XLON)
+      IF (ICFELL('MAPVEC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPIT (XLAT,XLON,1)
-      IF (ICFELL('MAPVEC',1).NE.0) RETURN
+      IF (ICFELL('MAPVEC',2).NE.0) RETURN
       RETURN
       END

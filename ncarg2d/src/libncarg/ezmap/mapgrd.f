@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.2 1993-12-21 00:32:47 kennison Exp $
+C $Id: mapgrd.f,v 1.3 1994-03-16 23:51:29 kennison Exp $
 C
       SUBROUTINE MAPGRD
 C
@@ -37,6 +37,10 @@ C
       FLOOR(X)=REAL(DINT(DBLE(X)+1.D4)-1.D4)
       CLING(X)=-FLOOR(-X)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPGRD - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If EZMAP needs initialization or if an error has occurred since the
 C last initialization, do nothing.
 C
@@ -50,7 +54,7 @@ C
 C Reset the color index, dotting, and dash pattern for the grid.
 C
       CALL MAPCHI (2,0,IDSH)
-      IF (ICFELL('MAPGRD',1).NE.0) RETURN
+      IF (ICFELL('MAPGRD',2).NE.0) RETURN
 C
 C Set the flags IMF and IPF, which are true if and only if meridians and
 C parallels, respectively, are straight lines and it is "safe" to draw
@@ -139,10 +143,10 @@ C
         DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
       END IF
       CALL MAPIT (RLAT,RLON,0)
-      IF (ICFELL('MAPGRD',2).NE.0) RETURN
+      IF (ICFELL('MAPGRD',3).NE.0) RETURN
   102 RLAT=RLAT+DLAT
       CALL MAPIT (RLAT,RLON,1)
-      IF (ICFELL('MAPGRD',3).NE.0) RETURN
+      IF (ICFELL('MAPGRD',4).NE.0) RETURN
       IF (RLAT.LT.XLAT-.9999) GO TO 102
       IF (RLON.LT.XLON-.9999) GO TO 101
 C
@@ -159,11 +163,11 @@ C for the parallels at -90 and/or +90 to be drawn.
 C
       IF (IPRJ.EQ.10) THEN
         CALL MAPTRN (-90.,PHIO,U,V)
-        IF (ICFELL('MAPGRD',4).NE.0) RETURN
+        IF (ICFELL('MAPGRD',5).NE.0) RETURN
         IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    SLAT=SLAT-GRID
         CALL MAPTRN (90.,PHIO,U,V)
-        IF (ICFELL('MAPGRD',5).NE.0) RETURN
+        IF (ICFELL('MAPGRD',6).NE.0) RETURN
         IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    BLAT=BLAT+GRID
       END IF
@@ -181,22 +185,22 @@ C
         DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
       END IF
       CALL MAPIT (RLAT,RLON,0)
-      IF (ICFELL('MAPGRD',6).NE.0) RETURN
+      IF (ICFELL('MAPGRD',7).NE.0) RETURN
   104 RLON=RLON+DLON
       CALL MAPIT (RLAT,RLON,1)
-      IF (ICFELL('MAPGRD',7).NE.0) RETURN
+      IF (ICFELL('MAPGRD',8).NE.0) RETURN
       IF (RLON.LT.XLON-.9999) GO TO 104
       IF (XLAT.LT.BLAT-.9999) GO TO 103
 C
 C Restore the color index, dotting, and dash pattern.
 C
       CALL MAPCHI (-2,0,0)
-      IF (ICFELL('MAPGRD',8).NE.0) RETURN
+      IF (ICFELL('MAPGRD',9).NE.0) RETURN
 C
 C Draw the limb lines.
 C
       CALL MAPLMB
-      IF (ICFELL('MAPGRD',9).NE.0) RETURN
+      IF (ICFELL('MAPGRD',10).NE.0) RETURN
 C
 C Done.
 C

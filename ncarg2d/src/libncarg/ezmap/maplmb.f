@@ -1,5 +1,5 @@
 C
-C $Id: maplmb.f,v 1.2 1993-12-21 00:33:14 kennison Exp $
+C $Id: maplmb.f,v 1.3 1994-03-16 23:51:51 kennison Exp $
 C
       SUBROUTINE MAPLMB
 C
@@ -48,10 +48,14 @@ C
       FLOOR(X)=REAL(DINT(DBLE(X)+1.D4)-1.D4)
       CLING(X)=-FLOOR(-X)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPLMB - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Reset the color index, dotting, and dash pattern for limb lines.
 C
       CALL MAPCHI (4,0,IOR(ISHIFT(32767,1),1))
-      IF (ICFELL('MAPLMB',1).NE.0) RETURN
+      IF (ICFELL('MAPLMB',2).NE.0) RETURN
 C
 C Draw limb lines, the nature of which depends on the projection.
 C
@@ -65,17 +69,17 @@ C
       DO 103 I=1,2
         RLAT=-90.
         CALL MAPIT (RLAT,RLON,0)
-        IF (ICFELL('MAPLMB',2).NE.0) RETURN
+        IF (ICFELL('MAPLMB',3).NE.0) RETURN
         DO 102 J=1,K-1
           RLAT=RLAT+DLAT
           CALL MAPIT (RLAT,RLON,1)
-          IF (ICFELL('MAPLMB',3).NE.0) RETURN
+          IF (ICFELL('MAPLMB',4).NE.0) RETURN
   102   CONTINUE
         RLAT=RLAT+DLAT
         CALL MAPIT (RLAT,RLON,2)
-        IF (ICFELL('MAPLMB',4).NE.0) RETURN
-        CALL MAPIQ
         IF (ICFELL('MAPLMB',5).NE.0) RETURN
+        CALL MAPIQ
+        IF (ICFELL('MAPLMB',6).NE.0) RETURN
         RLON=PHIO-179.9999
   103 CONTINUE
       GO TO 110
@@ -111,11 +115,11 @@ C
           RLON=PHOC+RTOD*ATAN2(RSINA*RSINB,RCOSA*RCSO-RSINA*RSNO*RCOSB)
           IF (ABS(RLON).GT.180.) RLON=RLON-SIGN(360.,RLON)
           CALL MAPIT (RLAT,RLON,IPEN)
-          IF (ICFELL('MAPLMB',6).NE.0) RETURN
+          IF (ICFELL('MAPLMB',7).NE.0) RETURN
           IPEN=1
   111   CONTINUE
         CALL MAPIQ
-        IF (ICFELL('MAPLMB',7).NE.0) RETURN
+        IF (ICFELL('MAPLMB',8).NE.0) RETURN
         SALT=SSLT
         GO TO 110
       END IF
@@ -148,7 +152,7 @@ C
           IF (IVIS.EQ.1) THEN
             CALL MAPTRP (UOLD,VOLD,U,V,UEDG,VEDG)
             CALL MAPVP  (UOLD,VOLD,UEDG,VEDG)
-            IF (ICFELL('MAPLMB',8).NE.0) RETURN
+            IF (ICFELL('MAPLMB',9).NE.0) RETURN
           END IF
           IVIS=0
         ELSE IF (ELPF.AND.
@@ -156,14 +160,14 @@ C
           IF (IVIS.EQ.1) THEN
             CALL MAPTRE (UOLD,VOLD,U,V,UEDG,VEDG)
             CALL MAPVP  (UOLD,VOLD,UEDG,VEDG)
-            IF (ICFELL('MAPLMB',9).NE.0) RETURN
+            IF (ICFELL('MAPLMB',10).NE.0) RETURN
           END IF
           IVIS=0
         ELSE
           IF (IVIS.LT.0) THEN
             IF (IDTL.EQ.0) THEN
               CALL FRSTD (U,V)
-              IF (ICFELL('MAPLMB',10).NE.0) THEN
+              IF (ICFELL('MAPLMB',11).NE.0) THEN
                 IIER=-1
                 RETURN
               END IF
@@ -177,7 +181,7 @@ C
               IF (     ELPF) CALL MAPTRE (U,V,UOLD,VOLD,UOLD,VOLD)
               IF (IDTL.EQ.0) THEN
                 CALL FRSTD (UOLD,VOLD)
-                IF (ICFELL('MAPLMB',11).NE.0) THEN
+                IF (ICFELL('MAPLMB',12).NE.0) THEN
                   IIER=-1
                   RETURN
                 END IF
@@ -187,7 +191,7 @@ C
               IVIS=1
             END IF
             CALL MAPVP (UOLD,VOLD,U,V)
-            IF (ICFELL('MAPLMB',12).NE.0) RETURN
+            IF (ICFELL('MAPLMB',13).NE.0) RETURN
           END IF
         END IF
         UOLD=U
@@ -201,7 +205,7 @@ C
 C Restore the color index, dotting, and dash pattern.
 C
   110 CALL MAPCHI (-4,0,0)
-      IF (ICFELL('MAPLMB',13).NE.0) RETURN
+      IF (ICFELL('MAPLMB',14).NE.0) RETURN
 C
 C Done.
 C

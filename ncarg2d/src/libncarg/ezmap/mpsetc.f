@@ -1,9 +1,10 @@
 C
-C $Id: mpsetc.f,v 1.3 1993-12-21 00:34:09 kennison Exp $
+C $Id: mpsetc.f,v 1.4 1994-03-16 23:52:37 kennison Exp $
 C
       SUBROUTINE MPSETC (WHCH,CVAL)
       CHARACTER*(*) WHCH,CVAL
+      IF (ICFELL('MPSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPSTC (WHCH,CVAL)
-      IF (ICFELL('MPSETC',1).NE.0) RETURN
+      IF (ICFELL('MPSETC',2).NE.0) RETURN
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C $Id: mapgci.f,v 1.3 1993-12-21 00:32:45 kennison Exp $
+C $Id: mapgci.f,v 1.4 1994-03-16 23:51:27 kennison Exp $
 C
       SUBROUTINE MAPGCI (ALAT,ALON,BLAT,BLON,NOPI,RLTI,RLNI)
 C
@@ -48,6 +48,10 @@ C vice-versa.
 C
         DATA DTOR / .017453292519943 /
         DATA RTOD / 57.2957795130823 /
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('MAPGCI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Compute the U, V, and W coordinates (on a unit sphere) of the points
 C A and B.

@@ -1,9 +1,10 @@
 C
-C $Id: mpgetc.f,v 1.3 1993-12-21 00:34:01 kennison Exp $
+C $Id: mpgetc.f,v 1.4 1994-03-16 23:52:29 kennison Exp $
 C
       SUBROUTINE MPGETC (WHCH,CVAL)
       CHARACTER*(*) WHCH,CVAL
+      IF (ICFELL('MPGETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
       CALL MAPGTC (WHCH,CVAL)
-      IF (ICFELL('MPGETC',1).NE.0) RETURN
+      IF (ICFELL('MPGETC',2).NE.0) RETURN
       RETURN
       END
