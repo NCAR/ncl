@@ -1178,35 +1178,35 @@ NhlErrorTypes _NclIGetBB
 			}
 			
 		}
-		j = total;
+		j = total ;
 	} else {
 		for( i = 0; i < total; i++) {
 			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
 		}
-		j = total;
+		j = total ;
 	}
 	out_val = (float*)NclMalloc(sizeof(float)*j*4);
 	for( i = 0; i < j; i++) {
 		if(tmp_hlu_ptr[i] != NULL) {
 			if( NhlGetBB(tmp_hlu_ptr[i]->hlu.hlu_id,&the_box) > NhlWARNING) {
-				out_val[i*j] = the_box.t;
-				out_val[i*j+1] = the_box.b;
-				out_val[i*j+2] = the_box.l;
-				out_val[i*j+3] = the_box.r;
+				out_val[i*4] = the_box.t;
+				out_val[i*4+1] = the_box.b;
+				out_val[i*4+2] = the_box.l;
+				out_val[i*4+3] = the_box.r;
 			} else {
-				out_val[i*j] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-				out_val[i*j+1] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-				out_val[i*j+2] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-				out_val[i*j+3] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+				out_val[i*4] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+				out_val[i*4+1] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+				out_val[i*4+2] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+				out_val[i*4+3] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
 			}
 		} else {
-			out_val[i*j] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-			out_val[i*j+1] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-			out_val[i*j+2] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-			out_val[i*j+3] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			out_val[i*4] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			out_val[i*4+1] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			out_val[i*4+2] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			out_val[i*4+3] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
 		}
 	}
-	if(j == 1) {
+	if(total == 1) {
 		n_dims = 1;
 		dimsizes[0] = 4;
 	} else {
