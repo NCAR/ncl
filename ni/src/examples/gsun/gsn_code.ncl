@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.41 2000-07-10 20:13:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.42 2000-07-26 20:51:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -972,7 +972,6 @@ begin
 
 ; Retrieve graphic style object.
 
-
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
     end getvalues
@@ -1039,7 +1038,6 @@ end
         else
           prim_object = new(1,graphic)
         end if
-
       end if
     else
 ;
@@ -1393,7 +1391,7 @@ end
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-		 resources:logical)
+                             resources:logical)
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
 ; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
@@ -1694,17 +1692,39 @@ begin
     total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
     total_height = 2.*ywsp + plot_height  ; with white space added.
 ; the first one, this should be the size of all of them.
-; If we are putting a global labelbar at the bottom, make it 2/10
-; the height of the plot.
+;
+  bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
   top    = bb(0)           ; all of its annotations.
+    lbhor = True
     if(panel_labelbar) then
+      lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
+      if(isatt(lbres,"lbOrientation").and. \
+        (lbres@lbOrientation.eq."VERTICAL".or. \
+         lbres@lbOrientation.eq."Vertical".or. \
+         lbres@lbOrientation.eq."vertical"))
+        lbhor = False
+        labelbar_width = 0.20 * plot_width + 2.*xwsp
+; total_width : plot_width plus white space on both sides
+; total_height: plot_height plus white space on top and bottom
+;
+        if(nplots.gt.1.and.rows.gt.1) then
+          labelbar_height  = (rows-1) * (2.*ywsp + plot_height)
+        else
+          labelbar_height  = plot_height
+        end if
+      else         
+        set_attr(lbres,"lbOrientation","Horizontal")
   total_height = 2.*ywsp + plot_height  ; with white space added.
-      labelbar_height = 0.20 * plot_height + 2.*ywsp
-
-      if(nplots.gt.1.and.cols.gt.1) then
-        labelbar_width  = (cols-1) * (2.*xwsp + plot_width)
-      else
-        labelbar_width  = plot_width
+        labelbar_height = 0.20 * plot_height + 2.*ywsp
+; If we are putting a global labelbar at the bottom (right), make 
+; it 2/10 the height (width) of the plot.
+;
+  lbhor = True
+        if(nplots.gt.1.and.cols.gt.1) then
+          labelbar_width  = (cols-1) * (2.*xwsp + plot_width)
+        else
+          labelbar_width  = plot_width
+        end if
       labelbar_width = 0.20 * plot_width + 2.*xwsp
     else
       labelbar_height = 0.
@@ -1724,10 +1744,17 @@ begin
     xrange = x_rgt - x_lft
     yrange = y_top - y_bot
     col_scale = min((/xrange/(ncols*total_width), xrange/))
-    col_scale = min((/xrange/(xcols*total_width), xrange/))
-    row_scale = min((/yrange/(xrows*total_height+labelbar_height),yrange/))
-    scale = min((/col_scale,row_scale/))
-    yrange = yrange - scale * labelbar_height
+    if(lbhor)
+      row_scale = min((/yrange/(xrows*total_height+labelbar_height),yrange/))
+      col_scale = min((/xrange/(xcols*total_width), xrange/))
+      scale = min((/col_scale,row_scale/))
+      yrange = yrange - scale * labelbar_height
+    else
+      row_scale = min((/yrange/(xrows*total_height),yrange/))
+      col_scale = min((/xrange/(xcols*total_width+labelbar_width), xrange/))
+      scale = min((/col_scale,row_scale/))
+      xrange = xrange - scale * labelbar_width
+    end if
 
     new_plot_width  = scale*plot_width    ; Calculate new width
     new_plot_height = scale*plot_height   ; and height.
@@ -1782,6 +1809,10 @@ begin
                                                       (0.5 - wsp_hpct))
     end if
   if(is_figure_strings) then
+; Variable to store rightmost location of rightmost plot.
+      fig_index = 0
+      max_rgt = 0.
+;
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
     do i = 0,rows-1
@@ -1806,6 +1837,7 @@ begin
           end if
         end if
       end if
+  old_vp = new((/nplots,4/),float)
       do j = 0,cols-1
         nplot = i*cols+j
         if(nplot .lt. dimsizes(plot))
@@ -1862,10 +1894,12 @@ begin
             if(panel_labelbar.or.draw_boxes) then
               bb = NhlGetBB(pplot) ; Get bounding box of plot
               bot = bb(1)
+              rgt = bb(3)
+              max_rgt = max((/rgt,max_rgt/))
+
               if(draw_boxes)
                 top = bb(0)
                 lft = bb(2)
-                rgt = bb(3)
                 gsres = True
                 gsres@gsLineThicknessF = 5.0
                 gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
@@ -1888,7 +1922,6 @@ begin
             gsres@gsLineThicknessF = 5.0
             gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
     if(panel_labelbar) then
-      lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
           end if
 ; If plot type is unknown, then we can't get labelbar information.
       end if
@@ -1929,17 +1962,28 @@ begin
           "cnMonoFillColor"        : mono_fill_col
         end getvalues
         lbres = True
-
-        set_attr(lbres,"vpYF",     max ((/ywsp+labelbar_height,bot-ywsp/)))
         set_attr(lbres,"vpWidthF", labelbar_width)
         set_attr(lbres,"vpHeightF",labelbar_height)
-        set_attr(lbres,"lbOrientation","Horizontal")
-        set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
-        if(cols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
-          set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
+;
+        mono_fill_pat = True
+        mono_fill_scl = True
+        mono_fill_col = False
+        if(lbhor)
+          set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
+          if(cols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
+            set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
+          else
+            set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
+          end if
 ; Set some labelbar resources.
-          set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
+          set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
+          if(rows.eq.1.and.lbres@vpHeightF.le.scale*old_vpheight)
+            set_attr(lbres,"vpYF",ypos(0)-(scale*old_vpheight - lbres@vpHeightF)/2.)
+          else
+            set_attr(lbres,"vpYF",1.-(1. - lbres@vpHeightF)/2.)
+          end if
       set_attr(lbres,"vpWidthF", labelbar_width)
+        set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ; Set position of labelbar depending on whether it's horizontal or
 ; vertical.
 ;
@@ -2808,7 +2852,7 @@ begin
   ypos  = fspan(1-height,0,nrows)
 
 ;
-	
+; Box coordinates.
 ;
   xbox = (/0,width, width,     0,0/)
   ybox = (/0,    0,height,height,0/)
