@@ -47,8 +47,8 @@ C
      +     .02,0.,0.)
       CALL PCSETI('FN',21)
       CALL PLCHHQ (.50,.89,
-     +     '(Used in calls to GKS routines like GCA, GFA, GPL, GPM, and GTX)'
-     +     ,.016,0.,0.)
+     +'(Used in calls to GKS routines like GCA, GFA, GPL, GPM, and GTX)'
+     +,.016,0.,0.)
       CALL PCSETI('FN',29)
       CALL PLCHHQ (.50,.19,
      +     'The window is:  100., 1000., 100., 1000.',

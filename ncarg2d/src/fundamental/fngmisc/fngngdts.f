@@ -29,7 +29,7 @@ C
       END
 
       SUBROUTINE CMPTRA(PROJ, PLAT, PLON, ROTA, OUTLN,
-    1      JLIM, PLIM1, PLIM2, PLIM3, PLIM4,IWKID)
+     +      JLIM, PLIM1, PLIM2, PLIM3, PLIM4,IWKID)
 
       CHARACTER*2 PROJ, OUTLN, JLIM
       REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
@@ -122,20 +122,20 @@ C
 C Define the RGB color triples needed below.
 C
       DATA RGBV / 0.00 , 0.00 , 0.00 ,
-    1      0.70 , 0.70 , 0.70 ,
-    2      0.75 , 0.50 , 1.00 ,
-    3      0.50 , 0.00 , 1.00 ,
-    4      0.00 , 0.00 , 1.00 ,
-    5      0.00 , 0.50 , 1.00 ,
-    6      0.00 , 1.00 , 1.00 ,
-    7      0.00 , 1.00 , 0.60 ,
-    8      0.00 , 1.00 , 0.00 ,
-    9      0.70 , 1.00 , 0.00 ,
-    1      1.00 , 1.00 , 0.00 ,
-    2      1.00 , 0.75 , 0.00 ,
-    3      1.00 , 0.38 , 0.38 ,
-    4      1.00 , 0.00 , 0.38 ,
-    5      1.00 , 0.00 , 0.00 /
+     +      0.70 , 0.70 , 0.70 ,
+     +      0.75 , 0.50 , 1.00 ,
+     +      0.50 , 0.00 , 1.00 ,
+     +      0.00 , 0.00 , 1.00 ,
+     +      0.00 , 0.50 , 1.00 ,
+     +      0.00 , 1.00 , 1.00 ,
+     +      0.00 , 1.00 , 0.60 ,
+     +      0.00 , 1.00 , 0.00 ,
+     +      0.70 , 1.00 , 0.00 ,
+     +      1.00 , 1.00 , 0.00 ,
+     +      1.00 , 0.75 , 0.00 ,
+     +      1.00 , 0.38 , 0.38 ,
+     +      1.00 , 0.00 , 0.38 ,
+     +      1.00 , 0.00 , 0.00 /
 C
 C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding

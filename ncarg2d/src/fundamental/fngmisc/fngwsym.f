@@ -74,8 +74,8 @@ C
          Y3 = YB+(1+R)*DY
          CALL DTABLE(CFNT(NF),NR,NC,X1,Y1,X2,Y2,Y3,1,1,1)
          YY = .5*(Y2+Y3)
-         CALL NPUTS(YY,YLAB(1,NF)(1:YLEN(1,NF)),YLAB(2,NF)(1:YLEN(2,NF)),
-     +        .5*(Y3-Y2))
+         CALL NPUTS(YY,YLAB(1,NF)(1:YLEN(1,NF)),
+     +        YLAB(2,NF)(1:YLEN(2,NF)),.5*(Y3-Y2))
  10   CONTINUE
       CALL FRAME
 C
