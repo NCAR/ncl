@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.4 1994-03-03 17:59:09 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-04-08 22:05:12 haley Exp $
 #
 
 MAN =	curved dashchar dashdb dashdc dashline dashline_params dashsmth \
 	dashsupr frstd lastd lined reset vectd
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

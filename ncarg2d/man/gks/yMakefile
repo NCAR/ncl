@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-03 17:59:24 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 22:09:32 haley Exp $
 #
 
 MAN =	gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \
@@ -11,7 +11,7 @@ MAN =	gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \
 	gstxfp gstxp gsvp gswn gtx guwk
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

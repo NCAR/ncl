@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-03 17:58:48 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 22:02:02 haley Exp $
 #
 
 MAN = bivar idbvip idsfft
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

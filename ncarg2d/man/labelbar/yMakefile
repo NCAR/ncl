@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-03 17:59:50 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 22:16:14 haley Exp $
 #
 
 MAN = labelbar labelbar_params lbfill lbgeti lbgetr lblbar lbseti lbsetr
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1994-03-03 17:59:29 haley Exp $
+#	$Id: yMakefile,v 1.7 1994-04-08 22:11:08 haley Exp $
 #
 
 MAN =	gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
@@ -21,7 +21,7 @@ MAN =	gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
 	gtext gupd_ws
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-03 17:59:54 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 22:16:52 haley Exp $
 #
 
 MAN = ngdots ngmisc ngpict ngwsym
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 1994-03-03 18:02:33 haley Exp $
+#	$Id: yMakefile,v 1.14 1994-04-08 22:10:55 haley Exp $
 #
 
 MAN1	= ctrans ictrans ncgm2cgm cgm2ncgm med gcaps fcaps \
@@ -11,7 +11,7 @@ MAN5	= ncarv_spool ras_palette ras_formats
 MAN	= $(MAN1) $(MAN3) $(MAN5)
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.7 1994-03-03 17:59:05 haley Exp $
+#	$Id: yMakefile,v 1.8 1994-04-08 22:04:32 haley Exp $
 #
 
 MAN =	conrec conrec_family conrec_family_params conrecqck conrecquick \
 	conrecsmooth conrecspr conrecsuper ezcntr
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

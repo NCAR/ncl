@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.6 1994-03-03 17:59:46 haley Exp $
+#	$Id: yMakefile,v 1.7 1994-04-08 22:14:35 haley Exp $
 #
 
 MAN =	dandr ezisos init3d isgeti isgetr isosrf isosrfhr isosurface \
 	isosurface_params isseti issetr pwrzi
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.9 1994-03-03 17:58:33 haley Exp $
+#	$Id: yMakefile,v 1.10 1994-04-08 22:00:33 haley Exp $
 #
 
 MAN = ardbpa ardrln areas areas_params aredam argeti argetr argtai arinam \
 	armvam arpram arscam arseti arsetr
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
