@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.40 1993-04-16 20:11:20 haley Exp $
+#   $Id: ncargex.csh,v 1.41 1993-04-16 20:16:58 haley Exp $
 #
 
 #********************#
@@ -100,7 +100,7 @@ set cbivar_list = ($ex_cbivar $ttr_cbivar)
 set ex_colconv   = (coex01 coex02 coex03)
 set tst_colconv  = (tcolcv)
 set fnd_colconv  = (fcce01 fcce02)
-set colconv_list = ($tst_colconv $fnd_colconv)
+set colconv_list = ($ex_colconv $tst_colconv $fnd_colconv)
 
 #************************#
 #                        #
