@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.3 1993-03-29 23:16:40 haley Exp $
+.\"	$Id: ncargex.m,v 1.4 1993-04-08 16:14:05 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -250,13 +250,13 @@ testing of new releases at NCAR.
 .sp
 .I "Tutorial CONPACK Examples:"
 .nf
-	ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld
+	ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc ccpcld
 	ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt ccpezct ccpfil 
-	ccpga ccphand ccphl ccphlt ccpila ccpils ccpilt ccpklb ccplbam 
-	ccplbdr ccpline ccpllb ccpllc ccplll ccpllo ccpllp ccpllt 
-	ccpllw ccpmap ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 
-	ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu ccpscam 
-	ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon
+	ccpga ccphand ccphcf ccphl ccphlt ccpila ccpils ccpilt ccpklb
+	ccplbam ccplbdr ccpline ccpllb ccpllc ccplll ccpllo ccpllp ccpllt 
+	ccpllw ccpmap ccpmovi ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc
+	ccppc1 ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu ccpscam 
+	ccpset ccpsps1 ccpsps2 ccpspv ccpt2d ccptitle ccpvp ccpvs cidsfft colcon
 .sp
 .I "Tutorial EZMAP Examples:"
 .nf
