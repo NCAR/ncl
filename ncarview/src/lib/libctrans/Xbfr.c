@@ -1,5 +1,5 @@
 /*
- *	$Id: Xbfr.c,v 1.3 1991-03-12 17:34:37 clyne Exp $
+ *	$Id: Xbfr.c,v 1.4 1991-06-18 18:10:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -65,15 +65,35 @@ static	GC	bgGC;			/* the background color gc	*/
 static  CoordModifier   dev_coord_mod = {0,0,1.0,1.0};
 
 
-static	struct  {
-	StringType_     Geometry;
+
+static	struct	{
+	StringType_	Geometry;
+	StringType_	foreground;
+	StringType_	background;
+	BoolType_	reverse;
 	} commLineOpt;
 
-static  Option  options[] =  {
-	{"geometry", StringType,
-		(unsigned long) &commLineOpt.Geometry, sizeof (StringType_ )},
-	{NULL},
-};
+static	Option	options[] =  {
+	{
+	"geometry", StringType, 
+		(unsigned long) &commLineOpt.Geometry, sizeof (StringType_ )
+	},
+	{
+	"foreground", StringType, 
+		(unsigned long) &commLineOpt.foreground, sizeof (StringType_ )
+	},
+	{
+	"background", StringType, 
+		(unsigned long) &commLineOpt.background, sizeof (StringType_ )
+	},
+	{
+	"reverse", BoolType, 
+		(unsigned long) &commLineOpt.reverse, sizeof (BoolType_ )
+	},
+	{
+	NULL
+	},
+	};
 
 extern	int	lineWidthScale;
 
@@ -132,10 +152,16 @@ CGMC *c;
 
 
 
-	/*
-	 * init the color module
-	 */
-	(void) init_color(&fg, &bg, &bd);
+
+        /*
+         * intitialize color map if available
+         * select default colours for border, background and foreground
+         * of window. These colours will be used if the user doesn't
+         * supply his own colour table through the CGM.
+         */
+	(void) init_color(commLineOpt.foreground, commLineOpt.background,
+		(boolean) commLineOpt.reverse, &fg, &bg, &bd);
+
 
 
 	if (stand_Alone) {
