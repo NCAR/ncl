@@ -15,6 +15,7 @@ static struct {
 	boolean		verbose;
 	boolean		version;
 	char		*format;
+	boolean		not_used;	/* "-" option, we toss it	*/
 } opt;
 
 /* Options we want parsed. */
@@ -27,6 +28,7 @@ static  OptDescRec      set_options[] = {
 	{"verbose",	0, NULL, "Set verbose mode"},
 	{"Version",	0, NULL, "Print version number"},
         {"ifmt", 	1, NULL, "Specify format of input file"},
+	{"", 		0, NULL, "Read metafile from the standard input"},
 	{NULL}
 };
 
@@ -39,6 +41,8 @@ static	Option	get_options[] = {
 {"verbose", NCARGCvtToBoolean, (Voidptr) &opt.verbose, sizeof(opt.verbose)},
 {"Version", NCARGCvtToBoolean, (Voidptr) &opt.version,sizeof(opt.version)},
 {"ifmt",    NCARGCvtToString,  (Voidptr) &opt.format, sizeof(opt.format)},
+{"",	    NCARGCvtToBoolean, (Voidptr) &opt.not_used, sizeof(opt.not_used)},
+
 {NULL}
 };
 
@@ -49,6 +53,8 @@ main(argc, argv)
 	int		estatus = 0;
 	int		i;
 	int		opt_id;
+	char		**files;
+	int		fc;
 
 	ProgramName = argv[0];
 
@@ -80,27 +86,33 @@ main(argc, argv)
 		exit(0);
 	}
 
-	/* Make sure nothing left on command line execpt file names. */
 
-	if (argc < 2) {
-		Usage(ProgramName, (char *) NULL, opt_id);
+	if (argc < 2) {	/* no more args, read from stdin	*/
+		files = (char **) malloc (sizeof(char *));
+		*files = "stdin";
+		fc = 1;
+	}
+	else {
+		files = ++argv;
+		fc = --argc;
 	}
 
-	for (i=1; i<argc; i++) {
-		if (*argv[i] == '-') {
+	/* Make sure nothing left on command line execpt file names. */
+	for (i=0; i<fc; i++) {
+		if (*files[i] == '-') {
 			(void) fprintf(stderr,
 				"%s: Unknown option \"%s\"\n",
-				ProgramName, argv[i]);
+				ProgramName, files[i]);
 			Usage(ProgramName, (char *) NULL, opt_id);
 		}
 		else {
 			if (opt.type || opt.count || opt.resolution) {
-				if (Print(argv[i], opt.format) != RAS_OK) {
+				if (Print(files[i], opt.format) != RAS_OK) {
 					estatus++;
 				};
 			}
 			else {
-				if (PrintLs(argv[i], opt.format) != RAS_OK) {
+				if (PrintLs(files[i], opt.format) != RAS_OK) {
 					(void) fprintf(stderr,
 						"%s: %s\n",
 						ProgramName, ErrGetMsg());
@@ -123,22 +135,30 @@ int PrintLs(name, fformat)
 	char		*format, *desc;
 	struct stat	statb;
 
-	status = stat(name, &statb);
-	if (status < 0) {
-		(void) ESprintf(errno, "stat(\"%s\",buf)", name);
-		return(RAS_ERROR);
-	}
+        if (strcmp(name, "stdin") == 0) {
+                if (fstat(fileno(stdin), &statb) < 0) {
+                        ESprintf(errno, "fstat(%d, )", fileno(stdin));
+                        return(RAS_ERROR);
+                }
+        }
+        else {
 
-	if (S_ISDIR(statb.st_mode)) {
-		(void) PrintLine(name,
-			0, 0, RAS_UNKNOWN, "**Directory**");
-		return(RAS_ERROR);
-	}
+		if (stat(name, &statb) < 0) {
+			(void) ESprintf(errno, "stat(\"%s\",buf)", name);
+			return(RAS_ERROR);
+		}
 
-	if (statb.st_size == 0) {
-		(void) PrintLine(name,
-			0, 0, RAS_UNKNOWN, "****Empty****");
-		return(RAS_ERROR);
+		if (S_ISDIR(statb.st_mode)) {
+			(void) PrintLine(name,
+				0, 0, RAS_UNKNOWN, "**Directory**");
+			return(RAS_ERROR);
+		}
+
+		if (statb.st_size == 0) {
+			(void) PrintLine(name,
+				0, 0, RAS_UNKNOWN, "****Empty****");
+			return(RAS_ERROR);
+		}
 	}
 
 	ras = RasterOpen(name, fformat);
