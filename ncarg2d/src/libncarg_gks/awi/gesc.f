@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.24 1996-10-08 00:09:18 fred Exp $
+C	$Id: gesc.f,v 1.25 1997-02-19 00:30:51 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -324,7 +324,7 @@ C
 C
 C  Set flag to indicate that the current picture is empty (GZREOP
 C  will reset this to picture not empty if the reopen is done on
-C  a file in mid picture..
+C  a file in mid picture.
 C
         NOPICT = 0
         CALL GZREOP(LIDR, IDR, EESC)
