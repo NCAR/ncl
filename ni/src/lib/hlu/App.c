@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.1 1994-08-11 21:36:50 boote Exp $
+ *      $Id: App.c,v 1.2 1994-08-16 13:59:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -349,6 +349,7 @@ AppInitialize
 	Const char		*cs = NULL;
 	char			tname[_NhlMAXFNAMELEN];
 
+
 	if(anew->app.default_app){
 		if(ac->app_class.default_app){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -382,33 +383,56 @@ AppInitialize
 		anew->app.sys_appdir = NULL;
 		anew->app.appDB = NULL;
 	}
+	else{
+		cs = _NGGetNCARGEnv("sysresfile");
 
-	cs = _NGResolvePath(anew->app.sys_appdir);
-	if(cs){
-		anew->app.sys_appdir = NhlMalloc((strlen(cs)+1)*sizeof(char));
-		if(!anew->app.sys_appdir){
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return NhlFATAL;
+		if((void *)cs == (void *)NULL){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"Unable to Get System Resource File Name?");
+			ret = MIN(ret,NhlWARNING);
 		}
-		strcpy(anew->app.sys_appdir,cs);
-		strcpy(tname,anew->app.sys_appdir);
-		strcat(tname,_NhlPATHDELIMITER);
-		strcat(tname,anew->base.name);
-		anew->app.appDB = NrmGetFileDB(tname);
-	}
+		else
+			anew->app.appDB = NrmGetFileDB(cs);
+	
 
-	cs = _NGResolvePath(anew->app.usr_appdir);
-	if(cs){
-		anew->app.usr_appdir = NhlMalloc((strlen(cs)+1)*sizeof(char));
-		if(!anew->app.usr_appdir){
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return NhlFATAL;
+		cs = _NGResolvePath(anew->app.sys_appdir);
+		if(cs){
+			anew->app.sys_appdir =
+					NhlMalloc((strlen(cs)+1)*sizeof(char));
+			if(!anew->app.sys_appdir){
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
+			}
+			strcpy(anew->app.sys_appdir,cs);
+			strcpy(tname,anew->app.sys_appdir);
+			strcat(tname,_NhlPATHDELIMITER);
+			strcat(tname,anew->base.name);
+			NrmCombineFileDB(tname,&anew->app.appDB,True);
 		}
-		strcpy(anew->app.usr_appdir,cs);
-		strcpy(tname,anew->app.usr_appdir);
-		strcat(tname,_NhlPATHDELIMITER);
-		strcat(tname,anew->base.name);
-		NrmCombineFileDB(tname,&anew->app.appDB,True);
+
+		cs = _NGGetNCARGEnv("usrresfile");
+		if((void *)cs == (void *)NULL){
+			NhlPError(NhlINFO,NhlEUNKNOWN,
+				"Unable to Get User Resource File Name?");
+			ret = MIN(ret,NhlINFO);
+		}
+		else
+			NrmCombineFileDB(cs,&anew->app.appDB,True);
+
+		cs = _NGResolvePath(anew->app.usr_appdir);
+		if(cs){
+			anew->app.usr_appdir =
+					NhlMalloc((strlen(cs)+1)*sizeof(char));
+			if(!anew->app.usr_appdir){
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
+			}
+			strcpy(anew->app.usr_appdir,cs);
+			strcpy(tname,anew->app.usr_appdir);
+			strcat(tname,_NhlPATHDELIMITER);
+			strcat(tname,anew->base.name);
+			NrmCombineFileDB(tname,&anew->app.appDB,True);
+		}
 	}
 
 	ac->app_class.current_app = anew;
@@ -687,7 +711,7 @@ _NhlGetCurrentApp
  * Side Effect:	
  */
 NrmDatabase
-_NhlGetBaseDB
+_NhlGetResDB
 #if	NhlNeedProto
 (
 	NhlLayer	l
@@ -700,37 +724,8 @@ _NhlGetBaseDB
 	NhlAppLayer		al = (NhlAppLayer)l->base.appobj;
 	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
 
-	return alc->app_class.baseDB;
-}
-
-/*
- * Function:	_NhlGetAppDB
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-NrmDatabase
-_NhlGetAppDB
-#if	NhlNeedProto
-(
-	NhlLayer	l
-)
-#else
-(l)
-	NhlLayer	l;
-#endif
-{
-	NhlAppLayer		al = (NhlAppLayer)l->base.appobj;
-
-	if(_NhlIsApp(l))
-		return NULL;
+	if(((NhlLayer)al == l) || !al->app.appDB)
+		return alc->app_class.baseDB;
 
 	return al->app.appDB;
 }

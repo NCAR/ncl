@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.1 1994-08-11 21:36:52 boote Exp $
+ *      $Id: AppI.h,v 1.2 1994-08-16 13:59:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,13 +40,7 @@ extern	NhlLayer _NhlGetCurrentApp(
 #endif
 );
 
-extern	NrmDatabase _NhlGetBaseDB(
-#if	NhlNeedProto
-	NhlLayer	l
-#endif
-);
-
-extern	NrmDatabase _NhlGetAppDB(
+extern	NrmDatabase _NhlGetResDB(
 #if	NhlNeedProto
 	NhlLayer	l
 #endif

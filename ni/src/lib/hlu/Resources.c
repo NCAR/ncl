@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.11 1994-08-11 21:37:07 boote Exp $
+ *      $Id: Resources.c,v 1.12 1994-08-16 13:59:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -289,8 +289,7 @@ GetResources
 #if	__STDC__
 (
 	_NhlConvertContext	context,/* context for converter allocs	*/
-	NrmDatabase		basedb,	/* ncarg wide db		*/
-	NrmDatabase		appdb,	/* app specific db		*/
+	NrmDatabase		resdb,	/* db				*/
 	char			*base,	/* addr to write res-values to	*/
 	NrmQuarkList		nameQ,	/* Qlist of names in instance	*/
 	NrmQuarkList		classQ,	/* Qlist of classes in instance	*/
@@ -301,10 +300,9 @@ GetResources
 	NrmQuarkList		child	/* look at parent's DB level too*/
 )
 #else
-(context,basedb,appdb,base,nameQ,classQ,resources,num_res,args,num_args,child)
+(context,resdb,base,nameQ,classQ,resources,num_res,args,num_args,child)
 	_NhlConvertContext	context;/* context for converter allocs	*/
-	NrmDatabase		basedb;	/* ncarg wide db		*/
-	NrmDatabase		appdb;	/* app specific db		*/
+	NrmDatabase		resdb;	/* db				*/
 	char			*base;	/* addr to write res-values to	*/
 	NrmQuarkList		nameQ;	/* Qlist of names in instance	*/
 	NrmQuarkList		classQ;	/* Qlist of classes in instance	*/
@@ -320,12 +318,6 @@ GetResources
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
 	NhlErrorTypes	lret = NhlNOERROR;
-	NrmHashTable	astackslist[_NhlMAXRESLIST];
-	NrmHashTable	*aslist = astackslist;
-	int		aslistlen = _NhlMAXRESLIST;
-	NrmHashTable	aPstackslist[_NhlMAXRESLIST];
-	NrmHashTable	*aPslist = aPstackslist;
-	int		aPslistlen = _NhlMAXRESLIST;
 	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = _NhlMAXRESLIST;
@@ -399,22 +391,7 @@ GetResources
  * Retrieve the levels of the ResDB that we actually need
  */
 
-	if(appdb){
-		while(!NrmQGetSearchList(appdb,nameQ,classQ,aslist,aslistlen)){
-
-			if(aslist == astackslist)
-				aslist = NULL;
-		
-			aslistlen *= 2;
-			aslist = (NrmHashTable *)NhlRealloc(aslist,
-					sizeof(NrmHashTable) * aslistlen);
-			if(aslist == NULL)
-				return NhlFATAL;
-		}
-	}
-	else
-		aslist = NULL;
-	while(!NrmQGetSearchList(basedb,nameQ,classQ,slist,slistlen)){
+	while(!NrmQGetSearchList(resdb,nameQ,classQ,slist,slistlen)){
 
 		if(slist == stackslist)
 			slist = NULL;
@@ -439,24 +416,7 @@ GetResources
 		/* SUPPRESS 570 */
 		for(tquark = classQ;*(tquark+1) != NrmNULLQUARK;tquark++);
 		*tquark = NrmNULLQUARK;
-		if(appdb){
-			while(!NrmQGetSearchList(appdb,nameQ,classQ,aPslist,
-								aPslistlen)){
-
-				if(aPslist == aPstackslist)
-					aPslist = NULL;
-		
-				aPslistlen *= 2;
-				aPslist = (NrmHashTable *)NhlRealloc(aPslist,
-					sizeof(NrmHashTable) * aPslistlen);
-				if(aPslist == NULL)
-					return NhlFATAL;
-			}
-		}
-		else
-			aPslist = NULL;
-		while(!NrmQGetSearchList(basedb,nameQ,classQ,Pslist,
-								Pslistlen)){
+		while(!NrmQGetSearchList(resdb,nameQ,classQ,Pslist,Pslistlen)){
 			if(Pslist == Pstackslist)
 				Pslist = NULL;
 
@@ -480,15 +440,8 @@ GetResources
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
-			/*
-			 * if app resdb is being used, try from that db first.
-			 */
-			if((aslist && (NrmGetQResFromList(aslist,
-				resources[i].nrm_name,
-				resources[i].nrm_class,&rdbtype,&from)))
-				||
-			(NrmGetQResFromList(slist,resources[i].nrm_name,
-				resources[i].nrm_class,&rdbtype,&from))){
+			if(NrmGetQResFromList(slist,resources[i].nrm_name,
+				resources[i].nrm_class,&rdbtype,&from)){
 
 				if(rdbtype != resources[i].nrm_type){
 
@@ -548,12 +501,8 @@ GetResources
 			/*
 			 * if appdb is being used try there first.
 			 */
-			if((aPslist && (NrmGetQResFromList(aPslist,
-				resources[i].nrm_name,
-				resources[i].nrm_class,&rdbtype,&from)))
-					||
-			(NrmGetQResFromList(Pslist,resources[i].nrm_name,
-				resources[i].nrm_class,&rdbtype,&from))	){
+			if(NrmGetQResFromList(Pslist,resources[i].nrm_name,
+					resources[i].nrm_class,&rdbtype,&from)){
 
 				if(rdbtype != resources[i].nrm_type){
 
@@ -796,9 +745,9 @@ _NhlGetResources
 		return(NhlFATAL);
 	}
 
-	return(GetResources(context,_NhlGetBaseDB(l),_NhlGetAppDB(l),(char*)l,
-			nameQ, classQ,(NrmResourceList)lc->base_class.resources,
-			     lc->base_class.num_resources,args,num_args,child));
+	return(GetResources(context,_NhlGetResDB(l),(char*)l,nameQ,classQ,
+			(NrmResourceList)lc->base_class.resources,
+			lc->base_class.num_resources,args,num_args,child));
 }
 
 /*
