@@ -100,30 +100,38 @@ end
 
 ;*************************************************************************
 ; D. Shea
-; This sets the common resources needed to plot data
-; upon a Lambert Conformal Projection. Parameters
-; needed for correct mapping are on the WRF file. 
+; This is a driver that selects the appropriate 
+; mapping function based upon the file attribute: MAP_PROJ
+; MAP_PROJ=1 [Lambert Conformal]; =2 [Stereographic]; =3 [Mercator]
 ;
-; opt: currently not used
+; opt: currently not used [potentail use: time counter for XLAT/XLONG]
 ;
 ; Sample usage:
 ;             ncdf = addfile("...", r")
 ;             res  = True
-;             WRF_resLamCon_c (ncdf, res, 0)
+;             WRF_map_c (ncdf, res, 0)
 ;             res  = ...
 ;
-procedure WRF_resLamCon_c (f:file, res:logical, opt)
+procedure WRF_map_c (f:file, res:logical, opt)
 local rank, dimll, nlat, mlon, lat2d, lon2d
 begin
-  res@mpProjection          = "LambertConformal"
-
-  res@mpLambertParallel1F   = f@TRUELAT1
-  res@mpLambertParallel2F   = f@TRUELAT2
-  res@mpLambertMeridianF    = f@CEN_LON
+  if (isatt(f,"MAP_PROJ")) then
+      if (f@MAP_PROJ.eq.1) then
+          res@mpProjection = "LambertConformal"
+      end if
+      if (f@MAP_PROJ.eq.2) then
+          res@mpProjection = "Stereographic"
+       end if
+      if (f@MAP_PROJ.eq.3) then
+          res@mpProjection = "Mercator"
+      end if
+  else
+      print ("WRF_mapProj: no MAP_PROJ attribute")
+  end if
 
   rank  = dimsizes(filevardimsizes(f,"XLAT")) ; # of dimensions
   if (rank.eq.3) then
-      lat2d = f->XLAT(0,:,:)
+      lat2d = f->XLAT(0,:,:)       ; opt could bt "nt"  f->XLAT(opt,:,:)
       lon2d = f->XLONG(0,:,:)
   else
     if (rank.eq.2) then
@@ -144,10 +152,26 @@ begin
   res@mpRightCornerLatF     = lat2d(nlat-1,mlon-1)
   res@mpRightCornerLonF     = lon2d(nlat-1,mlon-1)
 
+  res@mpCenterLonF          = f@CEN_LON
+  res@mpCenterLatF          = f@CEN_LAT
+
+  if (res@mpProjection.eq."LambertConformal") then
+      res@mpLambertParallel1F   = f@TRUELAT1
+      res@mpLambertParallel2F   = f@TRUELAT2
+      res@mpLambertMeridianF    = f@CEN_LON
+  end if
+
   res@mpFillOn              = False            ; turn off map fill
   res@mpOutlineDrawOrder    = "PostDraw"       ; draw continental outline last
   res@mpOutlineBoundarySets = "GeophysicalAndUSStates" ; state boundaries
 
   res@tfDoNDCOverlay        = True             ; True for 'native' grid
-  res@gsnAddCyclic          = False            ; data are not cyclic
+end 
+
+;*************************************************************************
+; D. Shea
+; interface for backward compatibility
+procedure WRF_resLamCon_c (f:file, res:logical, opt)
+begin
+  WRF_map_c (f, res, opt)
 end
