@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ffex01.c,v 1.1 1994-07-28 20:13:25 haley Exp $
+ *  $Id: c_ffex01.c,v 1.2 1994-08-05 22:23:19 stautler Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -23,9 +23,9 @@ main()
 /*
  *  Open GKS, open and activate a workstation.
  */
-    gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WSTYPE);
-    gactivate_ws(WKID);
+    	gopen_gks("stdout",0);
+    	gopen_ws(WKID, NULL, WSTYPE);
+    	gactivate_ws(WKID);
 /*
  * Invoke demo driver
  */
@@ -33,17 +33,17 @@ main()
 /*
  *  Deactivate and close workstation, close GKS.
  */
-    gdeactivate_ws (WKID);
-    gclose_ws(WKID);
-    gclose_gks();
+    	gdeactivate_ws (WKID);
+    	gclose_ws(WKID);
+    	gclose_gks();
 }
 
 void ffex01 (ierror)
 int *ierror;
 {
-    extern double cos();
+    	extern double cos(double);
 	int i, j, idm;
-    float gisize, gjsize;
+    	float gisize, gjsize;
 	float u[NSIZE][MSIZE], v[NSIZE][MSIZE], wrk[IWSIZE];
 	float rdm, sdm;
 /*
