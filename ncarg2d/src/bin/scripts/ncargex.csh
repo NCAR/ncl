@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.95 1996-03-20 20:40:40 haley Exp $
+#   $Id: ncargex.csh,v 1.96 1996-04-17 23:30:24 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1258,6 +1258,7 @@ switch($name)
 
     case fgke01:
     case fgke04:
+      set tmp_ws_type = "8"
       echo ""
       echo "  This example was set up to demonstrate the X11"
       echo "  driver.  It also generates a graphic file."
@@ -1320,6 +1321,7 @@ if ("$the_ws_type" == "8") then
   echo "      create an X11 window that you must click on with your"
   echo "      mouse to advance the frame(s)."
   echo ""
+  set X11_option = ""
 endif
 
 #**********************************#
@@ -1340,17 +1342,12 @@ endif
 #***********************************************#
 if ($?Unique && -f $graphic_file) goto theend
 
-#************************************************#
-#                                                #
-# If the workstation type is an X11 workstation, #
-# then the X11 library must be linked.           #
-#                                                #
-#************************************************#
-if ("$ws_type" == "8") then
-  set comp_flags = ($X11_option)
-else
-  set comp_flags = ("")
-endif
+#****************************#
+#                            #
+# Set initial compiler flags #
+#                            #
+#****************************#
+set comp_flags = ($X11_option)
 
 #**********************************#
 #                                  #
