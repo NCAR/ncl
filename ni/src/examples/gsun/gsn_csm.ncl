@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.91 2002-04-05 14:38:26 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.92 2002-04-16 21:23:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1065,7 +1065,15 @@ begin
   if(isatt(p,"units").and.(any(p@units.eq.get_allowed_pres_units_pa())))
     ptmp = p * 0.01  ; Convert to mb
   else
-    ptmp = 1.* p     ; Assume already converted to mb!
+    if((.not.isatt(p,"units")).or. \
+       (isatt(p,"units").and. \
+        .not.(any(p@units.eq.get_allowed_pres_units_hpa()).or. \
+              any(p@units.eq.get_allowed_pres_units_mb()))))
+      print("gsn_geop_hgt: Warning: The 'units' attribute is either not set, or it is not set")
+      print("to the recognized names for 'hecto-pascals' or 'millibars', so")
+      print("assuming pressure values are already converted to millibars.")
+    end if
+    ptmp = tofloat(p)     ; Assume already converted to mb!
   end if
 
   nsa = 53
@@ -1094,7 +1102,7 @@ begin
 
 
   if ( any(ptmp.lt.min(psa)) .or. any(ptmp.gt.max(psa))) then
-    print("gsn_geop_hgt: Fatal: Argument p (pressure) does not lie between")
+    print("gsn_geop_hgt: Fatal: The pressure values do not fall between")
     print(min(psa) + " mb and " + max(psa) + " mb.")
     print("Execution halted.")
     exit
@@ -1613,9 +1621,9 @@ procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
 local hgt, hnice, pnice, ptmp
 begin
   if(pres(0).lt.pres(dimsizes(pres)-1))
-    ptmp = 1.* pres(::-1)    ; reverse values so descending order
+    ptmp = tofloat(pres(::-1))    ; reverse values so descending order
   else
-    ptmp = 1.* pres          ; Make sure values are floating point.
+    ptmp = tofloat(pres)          ; Make sure values are floating point.
   end if
 
   if(.not.(isatt(res,"sfYCStartV").and.isatt(res,"sfYCEndV")))
@@ -1651,17 +1659,40 @@ begin
         step = 10
       end if
     end if
+;
+; If user has set the resource "tmYRTickSpacingF", then use this for
+; the value of the height spacing, instead of our calculated values
+; above.  This value must be a "nice" value, like 1, 2, 4, etc.
+;
+    step = tointeger(get_res_value(res,"tmYRTickSpacingF",step))
                                             ; Set range of "nice" hgt values.
-    hnice = 1.*ispan(tointeger(floor(hgt(0))), \
-                     tointeger(ceil(hgt(dimsizes(hgt)-1))),step)
+    hnice = tofloat(ispan(tointeger(floor(hgt(0))), \
+                    tointeger(ceil(hgt(dimsizes(hgt)-1))),step))
     pnice = ftcurv(hgt,ptmp,hnice)  ; Get pres vals at nice hgt vals.
+
+    use_left    = get_res_value_keep(res,"tmYUseLeft",False)
+    yrvalues    = get_res_value_keep(res,"tmYRValues",pnice)
+    yrlabels    = get_res_value_keep(res,"tmYRLabels",hnice)
+    yron        = get_res_value_keep(res,"tmYROn",True)
+    yrlabelson  = get_res_value_keep(res,"tmYRLabelsOn",True )
+    yrminoron   = get_res_value_keep(res,"tmYRMinorOn",False)
+;
+; At each "nice" pressure value put a "height" value label, unless
+; the user has specified own labels.  The user has to know what he's
+; doing if he specifies own labels, because the values must be in pressure
+; units, not height units.
+;
+    if(.not.isatt(res,"tmYRValues")) then
+      res@tmYRValues  = yrvalues
+    end if
+    if(.not.isatt(res,"tmYRLabels")) then
+      res@tmYRLabels  = yrlabels
+    end if
     res@tmYRMode      = "Explicit"
-    res@tmYUseLeft    = False
-    res@tmYRValues    = pnice     ; At each "nice" pressure value, 
-    res@tmYRLabels    = hnice     ; put a "height" value label.
-    res@tmYROn        = True      ; Turn on right axis tick marks.
-    res@tmYRLabelsOn  = True      ; Turn on right axis tick marks.
-    res@tmYRMinorOn   = False     ; No minor tick marks.
+    res@tmYUseLeft    = use_left
+    res@tmYROn        = yron
+    res@tmYRLabelsOn  = yrlabelson
+    res@tmYRMinorOn   = yrminoron
     delete(hnice)
     delete(hgt)
     delete(pnice)
@@ -2729,7 +2760,7 @@ begin
     delta = second_val - first_val
     range = last_val - first_val
 
-    if(any(range+delta).lt.359.)
+    if(any((range+delta).lt.359.))
       print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
       print("You may want to set gsnAddCyclic to False to avoid a warning")
       print("message from the spline function.")
@@ -2984,8 +3015,8 @@ begin
 ; Determine what the default width and height should be depending
 ; on shape of plot.
 ;
-    lat_range = 1.*(max_lat - min_lat)
-    lon_range = 1.*(max_lon - min_lon)
+    lat_range = tofloat(max_lat - min_lat)
+    lon_range = tofloat(max_lon - min_lon)
 
     ratio1 = lat_range/lon_range
     ratio2 = lon_range/lat_range
@@ -8139,10 +8170,10 @@ begin
 ; reverse 'em.
 ;
       if(data&$data!0$(0).lt.data&$data!0$(npres-1))
-        pres = 1.*data&$data!0$(::-1)  ; reverse the values
+        pres = tofloat(data&$data!0$(::-1))  ; reverse the values
         pres_reverse =  False          ; pres values weren't already reversed
        else
-        pres = 1.*data&$data!0$
+        pres = tofloat(data&$data!0$)
       end if
 ;
 ; Check the units.
