@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.13 1995-11-04 00:49:27 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.14 1996-03-16 05:07:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -336,6 +336,9 @@ struct _NclObjRec*	self;
 			_NclDelParent(_NclGetObj(self_var->var.coord_vars[i]),self);
 		}
 	}
+
+        if(self_var->var.att_id != -1)
+        _NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
 
 	
 	if((value != NULL)&&(value->obj.class_ptr->obj_class.destroy != NULL)) {

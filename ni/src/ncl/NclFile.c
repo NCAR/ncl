@@ -1,4 +1,4 @@
-#include <stdio.h>
+
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
@@ -2068,7 +2068,6 @@ int rw_status;
 	} else {
 		file_out = (NclFile)inst;
 	}
-	(void)_NclObjCreate((NclObj)file_out,class_ptr,obj_type,(obj_type_mask | Ncl_File),status);
 	file_out->file.fname = fname_q;
 	file_out->file.fpath = path;
 	file_out->file.file_type = 0;
@@ -2174,6 +2173,7 @@ int rw_status;
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not get attribute names for file (%s), no attributes added ",NrmQuarkToString(path));
 	}
+	(void)_NclObjCreate((NclObj)file_out,class_ptr,obj_type,(obj_type_mask | Ncl_File),status);
 	if(class_ptr == nclFileClass){
 		_NclCallCallBacks((NclObj)file_out,CREATED);
 	}

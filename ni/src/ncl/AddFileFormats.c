@@ -20,6 +20,12 @@ void
 #endif
 );
 
+extern NclFormatFunctionRecPtr GribAddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
+
 void _NclAddFileFormats
 #if	NhlNeedProto
 (void)
@@ -31,6 +37,7 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc");
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
+	_NclRegisterFormat(GribAddFileFormat,"grb");
 	return;
 }
 

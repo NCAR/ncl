@@ -34,6 +34,43 @@ static float xpp;
 static float ypp;
 static int southern;
 
+static int is_gpoint
+#if NhlNeedProto
+( char *bms, int index)
+#else
+(char *bms, int index)
+#endif
+{
+	int i = 0;
+	int off = 0;
+	char test;
+	char test1;
+
+	if(bms == NULL) {
+		return(1);
+	} else {
+		i = index/8;
+		off = index % 8;
+		switch(off) {
+		case 0:
+			return(bms[i+6] & 0200);
+		case 1:
+			return(bms[i+6] & 0100);
+		case 2:
+			return(bms[i+6] & 0040);
+		case 3:
+			return(bms[i+6] & 0020);
+		case 4:
+			return(bms[i+6] & 0010);
+		case 5:
+			return(bms[i+6] & 0004);
+		case 6:
+			return(bms[i+6] & 0002);
+		case 7:
+			return(bms[i+6] & 0001);
+		}
+	}
+}
 static void grdsetup(float x,float y,float gsp,float d,float ax) 
 {
 	if(d< 0) {
@@ -72,41 +109,44 @@ static void grdloc(float xp,float yp, float *xlo, float* xla)
 	*xla = southern * RADDEG * asin(ss);
 } 
 
-static printbinary(int val) {
-	
-	(val & 020000000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 010000000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 004000000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 002000000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 001000000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000400000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000200000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000100000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000040000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000020000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000010000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000004000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000002000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000001000000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000400000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000200000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000100000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000040000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000020000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000010000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000004000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000002000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000001000) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000400) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000200) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000100) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000040) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000020) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000010) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000004) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000002) ? fprintf(stdout,"1") : fprintf(stdout,"0");
-	(val & 000000000001) ? fprintf(stdout,"1") : fprintf(stdout,"0");
+static int printbinary(int val) {
+
+	static int count = 0;	
+	(val & 020000000000) ? fprintf(stdout,"1"),count++ : fprintf(stdout,"0");
+	(val & 010000000000) ? fprintf(stdout,"1"),count++ : fprintf(stdout,"0");
+	(val & 004000000000) ? fprintf(stdout,"1"),count++ : fprintf(stdout,"0");
+	(val & 002000000000) ? fprintf(stdout,"1"),count++ : fprintf(stdout,"0");
+	(val & 001000000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000400000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000200000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000100000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000040000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000020000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000010000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000004000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000002000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000001000000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000400000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000200000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000100000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000040000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000020000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000010000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000004000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000002000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000001000) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000400) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000200) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000100) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000040) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000020) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000010) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000004) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000002) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+	(val & 000000000001) ? fprintf(stdout,"1") ,count++: fprintf(stdout,"0");
+
 	fprintf(stdout,"\n");
+	return(count);
 }
 /*
 * START lat lon grids
@@ -575,7 +615,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -622,7 +662,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -669,7 +709,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -716,7 +756,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -763,7 +803,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -810,7 +850,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -857,7 +897,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -904,7 +944,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -951,7 +991,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -998,7 +1038,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1045,7 +1085,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1092,7 +1132,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1139,7 +1179,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1186,7 +1226,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1233,7 +1273,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1279,7 +1319,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1326,7 +1366,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1373,7 +1413,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1420,7 +1460,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
 
@@ -1467,7 +1507,7 @@ int** dimsizes_lon;
 	grdsetup(polex,poley,dist,deg, ore + 90.0 );
 	for (y = 0; y < ysize; y++) {
 		for(x = 0; x < xsize; x++) {
-			grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
 		}
 	}
 	
@@ -1514,7 +1554,7 @@ int** dimsizes_lon;
 	grdsetup(polex,poley,dist,deg, ore + 90.0 );
 	for (y = 0; y < ysize; y++) {
 		for(x = 0; x < xsize; x++) {
-			grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
 		}
 	}
 	
@@ -1557,12 +1597,30 @@ GribParamList* thevarrec;
 	unsigned int X;
 	int tbits;
 	int bboff;
+	int dnum = 0;
+	int total_gpoints = 0;
+	int grid_size = 0;
+	char *bms = NULL;
+	int numeric = 0;
 	
 
 
 	bds = (char*)NclMalloc((unsigned)therec->bds_size);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
+
+        if(therec->has_bms) {
+                bms = (char*)NclMalloc((unsigned)therec->bms_size);
+                lseek(fd,therec->start + therec->bms_off,SEEK_SET);
+                read(fd,(void*)bms,therec->bms_size);
+                numeric = CnvtToDecimal(2,&(bms[4]));
+                if(numeric != 0) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"GribUnPack: Record uses predefined bit map. Predefined bit maps are not supported yet");
+                        NclFree(bms);
+                        bms = NULL;
+                }
+        }
+
 
 	spherical_harm = (int)(bds[3] & (char)0200) ? 1 : 0;
 	second_order = (int)(bds[3] & (char)0100) ? 1 : 0;
@@ -1595,8 +1653,17 @@ GribParamList* thevarrec;
 	if(sign) {
 		reference_value = -reference_value;
 	}
+	grid_size = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
+
 
 	if((!spherical_harm)&&(!second_order)&&(!additional_flags)) {
+		if(integer) {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
+			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
+		} else {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
+			*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
+		}
 		if(number_of_bits != 0) {
 			i = 11;
 			bboff = 0;
@@ -1604,50 +1671,76 @@ GribParamList* thevarrec;
 			tbits = 0;
 			total = (int)(((therec->bds_size - 11) * 8 - unused_bits)/ number_of_bits);
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size);
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size);
 			}
-			while(index < total) {
-				X = UnsignedCnvtToDecimal(4,&(bds[i]));
+			while((index < grid_size)&&(dnum < total)) {
+				if(is_gpoint(bms,index)) {
+					X = UnsignedCnvtToDecimal(4,&(bds[i]));
 /*
 				fprintf(stdout,"o:");
 				printbinary(X);
 */
-				X = X << bboff;
+					X = X << bboff;
 /*
 				fprintf(stdout,"l:");
 				printbinary(X);
 */
-				X = X >> (isize - number_of_bits);
+					X = X >> (isize - number_of_bits);
 /*
 				fprintf(stdout,"r:");
 				printbinary(X);
 				fprintf(stdout,"(%d,%d,%d):\t%d\n",tbits,i,bboff,X);
 */
 
-				if(integer) {
-					((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+					if(integer) {
+						((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						index++;
+						dnum++;
 
-				} else {
-					((float*)data)[index] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
-				}
+					} else {
+						((float*)data)[index] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						index++;
+						dnum++;
+					}
 /*
-				if((index > 1)&&(((float*)data)[index] > ((float*)data)[index-1] + 500)) {
-					fprintf(stdout,"index:%d\n",index);
-				} else if((index > 1)&&(((float*)data)[index] + 500 < ((float*)data)[index-1] )) {
-					fprintf(stdout,"index:%d\n",index);
-				}
+					if((index > 1)&&(((float*)data)[index] > ((float*)data)[index-1] + 500)) {
+						fprintf(stdout,"index:%d\n",index);
+					} else if((index > 1)&&(((float*)data)[index] + 500 < ((float*)data)[index-1] )) {
+						fprintf(stdout,"index:%d\n",index);
+					}
 */
 
-				tbits += number_of_bits;
-				i = (int)(tbits/8.0) + 11;
-				bboff = tbits % 8;
-				index++;
+					tbits += number_of_bits;
+					i = (int)(tbits/8.0) + 11;
+					bboff = tbits % 8;
+				} else {
+					 if(integer) {
+                                                ((int*)data)[index] = DEFAULT_MISSING_INT;
+                                                index++;
+
+                                        } else {
+                                                ((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+                                                index++;
+                                        }
+				}
 			}
 			*outdat = data;
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : constant field\n");
+			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
+			if(integer) {
+				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				for(i = 0; i < total; i++) {
+					((int*)data)[i]= (int)reference_value;
+				}
+			} else {
+				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				for(i = 0; i < total; i++) {
+					((float*)data)[i]= reference_value;
+				}
+			}
+			*outdat = data;
 		}
 	} else {
 		if(spherical_harm)
@@ -1840,7 +1933,19 @@ GribParamList* thevarrec;
 			}
 			*outdat = data;
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : constant field\n");
+			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
+			if(integer) {
+				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				for(i = 0; i < total; i++) {
+					((int*)data)[i]= (int)reference_value;
+				}
+			} else {
+				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				for(i = 0; i < total; i++) {
+					((float*)data)[i]= reference_value;
+				}
+			}
+			*outdat = data;
 		}
 	} else {
 		if(spherical_harm)
@@ -1880,6 +1985,7 @@ GribParamList* thevarrec;
 	float tmpb,tmpa;
 	char *bds;
 	int total = 0;
+	int grid_size = 0;
 	void *data = NULL;
 	int isize = sizeof(int)*8;
 	unsigned int X;
@@ -1887,12 +1993,30 @@ GribParamList* thevarrec;
 	int bboff;
 	int npole =0;
 	int polefirst = 0;
+	char *bms = NULL;
+	int numeric;
+	int gpoint = 0;
+	int dnum= 0;
+	int total_gpoints=0;
+	int ttt = 0;
 	
 
 
 	bds = (char*)NclMalloc((unsigned)therec->bds_size);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
+
+	if(therec->has_bms) {
+		bms = (char*)NclMalloc((unsigned)therec->bms_size);
+		lseek(fd,therec->start + therec->bms_off,SEEK_SET);
+		read(fd,(void*)bms,therec->bms_size);
+		numeric = CnvtToDecimal(2,&(bms[4]));
+		if(numeric != 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"GribUnPack: Record uses predefined bit map. Predefined bit maps are not supported yet");
+			NclFree(bms);
+			bms = NULL;
+		}
+	}
 
 	spherical_harm = (int)(bds[3] & (char)0200) ? 1 : 0;
 	second_order = (int)(bds[3] & (char)0100) ? 1 : 0;
@@ -1925,8 +2049,16 @@ GribParamList* thevarrec;
 	if(sign) {
 		reference_value = -reference_value;
 	}
+	grid_size = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
 
 	if((!spherical_harm)&&(!second_order)&&(!additional_flags)) {
+		if(integer) {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
+			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
+		} else {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
+			*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
+		}
 		if(number_of_bits != 0) {
 			i = 11;
 			bboff = 0;
@@ -1968,29 +2100,40 @@ GribParamList* thevarrec;
 				break;
 				
 			}
+			total_gpoints = grid_size - (npole - 1);
 			if(integer) {
-				if(npole != 0) {
-					data = (void*)NclMalloc((unsigned)sizeof(int)*(total + (npole -1)) );
-				} else {
-					data = (void*)NclMalloc((unsigned)sizeof(int)*total);
-				}
+				data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size );
 			} else {
-				if(npole != 0) {
-					data = (void*)NclMalloc((unsigned)sizeof(float)*(total+ (npole -1)) );
-				} else {
-					data = (void*)NclMalloc((unsigned)sizeof(float)*total);
-				}
+				data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size );
 			}
 			*outdat = data;
+			gpoint= 0;
 			if((polefirst)&&(npole >0)) {
 				X = UnsignedCnvtToDecimal(4,&(bds[i]));
 				X = X << bboff;
 				X = X >> (isize - number_of_bits);
-				if(integer) {
-					((int*)data)[0] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
-
+				if(is_gpoint(bms,gpoint)) {
+					if(integer) {
+						((int*)data)[0] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						gpoint++;
+						dnum++;
+					} else {
+						((float*)data)[0] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						gpoint++;
+						dnum++;
+					}
+					tbits += number_of_bits;
+					i = (int)(tbits/8.0) + 11;
+					bboff = tbits % 8;
 				} else {
-					((float*)data)[0] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+					if(integer) {
+						((int*)data)[index] = DEFAULT_MISSING_INT;
+						gpoint++;
+
+					} else {
+						((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+						gpoint++;
+					}
 				}
 				for(index = 1; index < npole; index++) {
 					if(integer) {
@@ -1999,34 +2142,42 @@ GribParamList* thevarrec;
 						((float*)data)[index] = ((float*)data)[0];
 					}
 				}
-				tbits += number_of_bits;
-				i = (int)(tbits/8.0) + 11;
-				bboff = tbits % 8;
-				if(integer) {
-					data = (void*)&(((int*)data)[index]);
-				} else {
-					data = (void*)&(((float*)data)[index]);
-				}
-				index = 1;
 			}
-			while(index < total) {
-				X = UnsignedCnvtToDecimal(4,&(bds[i]));
-				X = X << bboff;
-				X = X >> (isize - number_of_bits);
-
-				if(integer) {
-					((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
-
+			while((index < grid_size)&&(gpoint < total_gpoints)&&(dnum < total)) {
+				if(is_gpoint(bms,gpoint)) {
+					X = UnsignedCnvtToDecimal(4,&(bds[i]));
+					X = X << bboff;
+					X = X >> (isize - number_of_bits);
+	
+					if(integer) {
+						((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						gpoint++;
+						dnum++;
+						index++;
+					} else {
+						((float*)data)[index] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						gpoint++;
+						dnum++;
+						index++;
+					}
+					tbits += number_of_bits;
+					i = (int)(tbits/8.0) + 11;
+					bboff = tbits % 8;
 				} else {
-					((float*)data)[index] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+					if(integer) {
+						((int*)data)[index] = DEFAULT_MISSING_INT;
+						index++;
+						gpoint++;
+
+					} else {
+						((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+						index++;
+						gpoint++;
+					}
 				}
-				tbits += number_of_bits;
-				i = (int)(tbits/8.0) + 11;
-				bboff = tbits % 8;
-				index++;
 			}
 			if(!(polefirst)&&(npole > 0)) {
-				for( ;index < total + npole -1;index++) {
+				for( ; index < grid_size;index++) {
 					if(integer) {
                                                 ((int*)data)[index] = ((int*)data)[index -1];
                                         } else {
@@ -2035,7 +2186,19 @@ GribParamList* thevarrec;
 				}
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : constant field\n");
+			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
+			if(integer) {
+				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				for(i = 0; i < total; i++) {
+					((int*)data)[i]= (int)reference_value;
+				}
+			} else {
+				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				for(i = 0; i < total; i++) {
+					((float*)data)[i]= reference_value;
+				}
+			}
+			*outdat = data;
 		}
 	} else {
 		if(spherical_harm)
@@ -2045,6 +2208,7 @@ GribParamList* thevarrec;
 		*outdat = NULL;
 		*missing_value = NULL;
 	}
+	NclFree(bms);
 	return(integer);
 }
 

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.41 1995-07-08 14:05:33 haley Exp $
+#      $Id: yMakefile,v 1.42 1996-03-16 05:07:10 ethan Exp $
 #
 #########################################################################
 #									#
@@ -74,7 +74,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
-			NclCallBacksI.h
+			NclCallBacksI.h date.h NclGRIB.h date.h tables.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h NclFileInterfaces.h
@@ -103,16 +103,16 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclType.c  \
 			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
-			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
+			NclHLUVar.c HLUSupport.c NclCoordVar.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c NclHDF.c
+			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c GetGrids.c
 
 FSRCS		=	fortranio.f
 FOBJS		=	fortranio.o
 
-API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
-EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
+API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
+EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
 
 APIOBJS		=	$(API_OBJS) $(OBJS)  NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 #ifdef HPUX
@@ -136,10 +136,10 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclAtt.o NclData.o NclFile.o \
 			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
-			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
+			NclHLUVar.o HLUSupport.o NclCoordVar.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o NclHDF.o
+			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o GetGrids.o
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
@@ -157,7 +157,6 @@ CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
 #
 # yacc and lex dependancies
 #
-
 
 ioapi.o : io.c
 	$(CC) -c $(API_DEFS) $(CFLAGS) io.c -o ioapi.o
