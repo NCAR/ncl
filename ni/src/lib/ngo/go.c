@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.25 1999-09-11 01:06:19 dbrown Exp $
+ *      $Id: go.c,v 1.26 1999-09-24 17:34:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1576,17 +1576,13 @@ DeleteHLUCB
 	XtPointer	userData;
 	NhlString	varname;
 
-        XUNGRABSERVER(XtDisplay(w));
-/*
-	XUngrabPointer(XtDisplay(w),CurrentTime);
-*/
 	XtVaGetValues(w,
 		      XmNuserData,&userData,
 		      NULL);
 	qvar = (NrmQuark)userData;
 	varname = NrmQuarkToString(qvar);
 #if 0
-        printf("deleting %s\n", varname);
+        fprintf(stderr,"deleting %s\n", varname);
 #endif
 	NgDestroyGraphic(go->base.id,varname);
 	return;
