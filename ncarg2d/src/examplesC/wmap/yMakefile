@@ -1,7 +1,7 @@
 #
-#	$Id: yMakefile,v 1.5 1994-12-16 18:25:48 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-12-19 19:10:44 stautler Exp $
 #
 
-EXAMPLES = c_wmex09.c
+EXAMPLES = c_wmex01.c c_wmex02.c c_wmex03.c c_wmex04.c c_wmex05.c c_wmex06.c c_wmex09.c
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
