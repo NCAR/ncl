@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1994-05-31 21:18:34 haley Exp $
+#	$Id: yMakefile,v 1.10 1994-10-05 19:09:13 haley Exp $
 #
 
 MYNAME	= bwi
@@ -45,7 +45,7 @@ CleanFilesTarget(wks.c wks.h)
 
 wks.c: wks.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) wks.c \
-		opnwks clswks wrtwks rdwks begwks lstwks flswks delfil
+		opnwks clswks wrtwks rdwks begwks lstwks flswks delfil gzgids
 
 wks.h: wks.h.sed Makefile
 	@sed \
