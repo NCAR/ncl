@@ -1,5 +1,5 @@
 C
-C $Id: TdpackDemo.f,v 1.5 2002-02-22 16:50:21 kennison Exp $
+C $Id: TdpackDemo.f,v 1.6 2002-07-23 23:47:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -240,39 +240,13 @@ C
 C Define colors on all the workstations.
 C
         DO 102 IWID=1,3
-C
-          IF (IBOW.EQ.0) THEN
-            CALL GSCR (IWID,0,0.,0.,0.) ! black
-            CALL GSCR (IWID,1,1.,1.,1.) ! white
-          ELSE
-            CALL GSCR (IWID,0,1.,1.,1.) ! white
-            CALL GSCR (IWID,1,0.,0.,0.) ! black
-          END IF
-C
-          CALL GSCR (IWID,2,1.,0.,0.) ! red
-          CALL GSCR (IWID,3,0.,1.,0.) ! green
-          CALL GSCR (IWID,4,0.,0.,1.) ! blue
-          CALL GSCR (IWID,5,0.,1.,1.) ! cyan
-          CALL GSCR (IWID,6,1.,0.,1.) ! magenta
-          CALL GSCR (IWID,7,1.,1.,0.) ! yellow
-C
-          DO 101 ICOL=101,116
-            P=1.-     REAL(ICOL-101)/15.
-            Q=1.-SHDR*REAL(ICOL-101)/15.
-            CALL GSCR (IWID,ICOL    ,     P,     P,     P) ! gray scale
-            CALL GSCR (IWID,ICOL+ 16,     Q,     Q,     Q) ! white
-            CALL GSCR (IWID,ICOL+ 32,     Q,SHDE*Q,SHDE*Q) ! red
-            CALL GSCR (IWID,ICOL+ 48,SHDE*Q,     Q,SHDE*Q) ! green
-            CALL GSCR (IWID,ICOL+ 64,SHDE*Q,SHDE*Q,     Q) ! blue
-            CALL GSCR (IWID,ICOL+ 80,SHDE*Q,     Q,     Q) ! cyan
-            CALL GSCR (IWID,ICOL+ 96,     Q,SHDE*Q,     Q) ! magenta
-            CALL GSCR (IWID,ICOL+112,     Q,     Q,SHDE*Q) ! yellow
-  101     CONTINUE
-C
-          SSHE=SHDE
-          SSHR=SHDR
-C
+          CALL TDCLRS (IWID,IBOW,SHDE,SHDR,101,116,0)
   102   CONTINUE
+C
+C Save the values of SHDE and SHDR.
+C
+        SSHE=SHDE
+        SSHR=SHDR
 C
 C Deactivate the NCGM and PostScript workstations.
 C
@@ -648,7 +622,7 @@ C Initialize TDPACK.
 C
         PRINT * , 'Initializing TDPACK.'
 C
-        CALL TDINIT (UEYE,VEYE,WEYE,UAPT,VAPT,WAPT,UAPT,VAPT,WAPT+1.,0)
+        CALL TDINIT (UEYE,VEYE,WEYE,UAPT,VAPT,WAPT,UAPT,VAPT,WAPT+1.,0.)
         CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
 C If the X workstation is not to be updated, jump to get user input.
@@ -1226,18 +1200,7 @@ C
               CALL GCLRWK (1,1)
               DO 117 IWID=1,3
                 IF (IWID.NE.1) CALL GACWK (IWID)
-                DO 116 ICOL=101,116
-                  P=1.-     REAL(ICOL-101)/15.
-                  Q=1.-SHDR*REAL(ICOL-101)/15.
-                  CALL GSCR (IWID,ICOL    ,     P,     P,     P)
-                  CALL GSCR (IWID,ICOL+ 16,     Q,     Q,     Q)
-                  CALL GSCR (IWID,ICOL+ 32,     Q,SHDE*Q,SHDE*Q)
-                  CALL GSCR (IWID,ICOL+ 48,SHDE*Q,     Q,SHDE*Q)
-                  CALL GSCR (IWID,ICOL+ 64,SHDE*Q,SHDE*Q,     Q)
-                  CALL GSCR (IWID,ICOL+ 80,SHDE*Q,     Q,     Q)
-                  CALL GSCR (IWID,ICOL+ 96,     Q,SHDE*Q,     Q)
-                  CALL GSCR (IWID,ICOL+112,     Q,     Q,SHDE*Q)
-  116           CONTINUE
+                CALL TDCLRS (IWID,IBOW,SHDE,SHDR,101,116,0)
                 IF (IWID.NE.1) CALL GDAWK (IWID)
   117         CONTINUE
               SSHE=SHDE
