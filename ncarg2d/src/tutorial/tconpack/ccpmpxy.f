@@ -44,6 +44,7 @@ C
       CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
       CALL PLCHHQ (.03,.6,'PRESSURE',.012,90.,0.)
       CALL PLCHHQ (.5,.2,'LONGITUDE',.012,0.,0.)
+      CALL FRAME
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
       CALL GCLKS
