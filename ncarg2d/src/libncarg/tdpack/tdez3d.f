@@ -1,5 +1,5 @@
 C
-C $Id: tdez3d.f,v 1.2 1998-06-20 00:09:16 fred Exp $
+C $Id: tdez3d.f,v 1.3 1998-12-02 01:27:28 fred Exp $
 C
       SUBROUTINE TDEZ3D(NX,NY,NZ,X,Y,Z,U,VALUE,
      +                           RMULT,THETA,PHI,IST)
@@ -136,7 +136,14 @@ C
       ILC = ICST+NSHD-1
       DO 10 I=1,NUMOP
         CALL GQOPWK(I,IER,NUMTMP,IWKID)
-        CALL TDCLRS(IWKID,1-(SIGN(1,IST)+1)/2,SHDE,SHDR,IFC,ILC,8)
+C     
+C  Set colors only for workstations of the correct category.
+C
+        CALL GQWKC(IWKID,IER,ICON,ITYP)
+        CALL GQWKCA(ITYP,IER,ICAT)
+        IF (ICAT.EQ.0 .OR. ICAT.EQ.2 .OR. ICAT.EQ.4) THEN
+          CALL TDCLRS(IWKID,1-(SIGN(1,IST)+1)/2,SHDE,SHDR,IFC,ILC,8)
+        ENDIF
    10 CONTINUE
 C
 C  Find mins and maxs.

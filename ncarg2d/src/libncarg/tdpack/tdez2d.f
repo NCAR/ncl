@@ -1,5 +1,5 @@
 C
-C $Id: tdez2d.f,v 1.2 1998-06-20 00:09:14 fred Exp $
+C $Id: tdez2d.f,v 1.3 1998-12-02 01:27:27 fred Exp $
 C
       SUBROUTINE TDEZ2D(NX,NY,X,Y,Z,RMULT,THETA,PHI,IST)
 C
@@ -132,7 +132,14 @@ C
       ILC = ICST+NSHD-1
       DO 10 I=1,NUMOP
         CALL GQOPWK(I,IER,NUMTMP,IWKID)
-        CALL TDCLRS(IWKID,1-(SIGN(1,IST)+1)/2,SHDE,SHDR,IFC,ILC,8)
+C
+C  Set colors only for workstations of the correct category.
+C
+        CALL GQWKC(IWKID,IER,ICON,ITYP)
+        CALL GQWKCA(ITYP,IER,ICAT)
+        IF (ICAT.EQ.0 .OR. ICAT.EQ.2 .OR. ICAT.EQ.4) THEN
+          CALL TDCLRS(IWKID,1-(SIGN(1,IST)+1)/2,SHDE,SHDR,IFC,ILC,8)
+        ENDIF
    10 CONTINUE
 C
 C  Find data mins and maxs.
