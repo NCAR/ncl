@@ -2670,6 +2670,7 @@ int wr_status;
 	unsigned char buffer[80];
 	GribRecordInqRecList **sortar,**ptr,**start_ptr;
 	TBLE2 *name_rec = NULL;
+	TBLE2 *tmp_name_rec = NULL;
 	int tmp_month;
 	int tmp_year;
 	int tmp_century;
@@ -2829,9 +2830,7 @@ int wr_status;
 						}
 					}
 					if( i ==  sizeof(params_index)/sizeof(int) ) {
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), skipping",grib_rec->param_number);
-						NhlFree(grib_rec);
-						grib_rec= NULL;
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 					} 
 				} else if(grib_rec != NULL) {
 					switch((int)grib_rec->pds[4]) {
@@ -2843,9 +2842,7 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_ecmwf_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), skipping",grib_rec->param_number);
-							NhlFree(grib_rec);
-							grib_rec= NULL;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 						} 
 						break;
 					 case 59:
@@ -2856,9 +2853,7 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_fsl_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), skipping",grib_rec->param_number);
-							NhlFree(grib_rec);
-							grib_rec= NULL;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 						} 
 						
 						break;
@@ -2872,16 +2867,23 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), skipping",grib_rec->param_number);
-							NhlFree(grib_rec);
-							grib_rec= NULL;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number);
 						} 
 						break;
 					default:
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
-						NhlFree(grib_rec);
-						grib_rec= NULL;
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), using default variable name (VAR_%d)",grib_rec->param_number,(int)grib_rec->pds[4],grib_rec->param_number);
 					}
+				}
+				if((name_rec == NULL)&&(grib_rec!=NULL)) {
+					tmp_name_rec = NclMalloc(sizeof(TBLE2));
+					tmp_name_rec->abrev = NclMalloc(strlen("VAR_") + 4);
+					tmp_name_rec->num = NULL;
+					sprintf(tmp_name_rec->abrev,"VAR_%d",grib_rec->param_number);
+					tmp_name_rec->long_name = NclMalloc(strlen("Unknown Variable Name") + 1);
+					sprintf(tmp_name_rec->long_name,"Unknown Variable Name");
+					tmp_name_rec->units= NclMalloc(strlen("unknown") + 1);
+					sprintf(tmp_name_rec->units,"unknown");
+					name_rec = tmp_name_rec;
 				}
 
 				if((name_rec != NULL)&&(grib_rec != NULL)){
@@ -3040,6 +3042,13 @@ int wr_status;
 							}
 						}
 					}
+				}
+				if(tmp_name_rec != NULL) {
+					NclFree(tmp_name_rec->abrev);	
+					NclFree(tmp_name_rec->units);
+					NclFree(tmp_name_rec->long_name);
+					NclFree(tmp_name_rec);
+					tmp_name_rec = NULL;
 				}
 			} else if(ret==GRIBERROR){
 				NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB: Detected incomplete record, skipping record");
