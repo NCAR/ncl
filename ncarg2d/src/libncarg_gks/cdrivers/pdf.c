@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.12 2003-03-01 00:30:04 fred Exp $
+ *      $Id: pdf.c,v 1.13 2003-03-01 00:32:09 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3841,26 +3841,19 @@ int bump_object_number() {
   object_number++;
 }
 int bump_page_lines() {
-  
-  if (num_page_lines > 99990)
-    printf("num_page_lines, maximum_lines %d %d\n",num_page_lines,maximum_lines);
   if (num_page_lines >= maximum_lines-1) {
-    printf("Before adjust\n");
     adjust_lines();
-    printf("After adjust\n");
   }
   num_page_lines++;
 }
 void adjust_lines() {
   int i;
 
-  printf("num_page_lines = %d\n",num_page_lines);
   page_lines = \
    (char **) realloc(page_lines,(maximum_lines+LINE_INCREMENT)*sizeof(char *));
   if (page_lines == (char **) NULL) {
     printf ("PDF - unable to allocate space for object, object too large.\n");
   }
-  printf("num_page_lines = %d\n",num_page_lines);
   for (i = 0; i < LINE_INCREMENT; i++) {
     page_lines[maximum_lines+i] = (char *) calloc(LINE_SIZE,sizeof(char));
   }
