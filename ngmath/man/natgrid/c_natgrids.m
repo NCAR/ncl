@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: c_natgrids.m,v 1.1 1997-03-07 22:58:43 fred Exp $
+.\"     $Id: c_natgrids.m,v 1.2 1997-03-31 23:15:34 fred Exp $
 .\"
 .TH c_natgrids 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -39,20 +39,19 @@ An error value. If *ier is returned as 0, then
 no errors were detected. If *ier is non-zero, then refer to the man
 page for natgrid_errors for details.
 .SH USAGE
-c_natgrids returns a pointer that can be used as a two-dimensional 
-C array containing the interpolated function values. That is, if out 
-is declared as 
+c_natgrids returns a pointer to a linear array of data that is is the
+interpolated grid stored in row-major order. That is, if out is declared as 
 .sp
-float **out;
+float *out;
 .sp
 and we set: 
 .sp
-  out = c_natgrids(numin, x, y, z, numxout, numyout, 
-                   xo, yo, &ier);
+  out = c_natgrids(numin, x, y, z, numxout, numyout, xo, yo, &ier);
 .sp
-then out[i][j] is the interpolated function value at coordinate point 
-(xo[i],yo[j]) for 0 <= i < numxout and 0 <= j < numyout. The space for 
-out is allocated internal to c_natgrids.
+then out[i*numyout+j] is the interpolated function value at coordinate
+point (xo[i],yo[j]) for 0 <= i < numxout and 0 <= j < numyout. The
+space for out is allocated internal to c_natgrids and is numxout*numyout
+floats in size.
 .SH ACCESS
 To use c_natgrids, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
