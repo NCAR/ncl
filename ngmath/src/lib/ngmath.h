@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.13 2000-08-22 03:47:39 haley Exp $
+ * $Id: ngmath.h,v 1.14 2001-08-20 15:31:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -95,6 +95,28 @@ float *c_csa3lxs(int, float [], float [], float [], float [],
                  float [], int [], float, int [],
                  int, float [], float [], float [], int *);
 
+double *c_csa1d(int, double [], double [], int, int, double [], int *);
+double *c_csa1xd(int, double [], double [], double [], int,
+                 double, int, int, double [], int *);
+double *c_csa2d(int, double [], double [], double [], int [],
+                int, int, double [], double [], int *);
+double *c_csa2xd(int, double [], double [], double [], double [], int [], 
+                 double, int [], int, int, double [], double [], int *);
+double *c_csa2ld(int, double [], double [], double [], int [],
+                 int, double [], double [], int *);
+double *c_csa2lxd(int, double [], double [], double [], double [], int [],
+                  double, int [], int, double [], double [], int *);
+double *c_csa3d(int, double [], double [], double [], double [], int [], 
+                int, int, int, double [], double [], double [], int *);
+double *c_csa3xd(int, double [], double [], double [], double [], double [],
+                 int [], double, int [], int, int, int, double [],
+                 double [], double [], int *);
+double *c_csa3ld(int, double [], double [], double [], double [],
+                 int [], int, double [], double [], double[], int *);
+double *c_csa3lxd(int, double [], double [], double [], double [],
+                  double [], int [], double, int [],
+                  int, double [], double [], double [], int *);
+
 /*
  *  Function prototypes for the fitgrid package.
  */
@@ -163,6 +185,7 @@ void    c_nnsetc(char *, char *);
 void    c_nngetc(char *, char *);
 void    c_nngetslopes(int, int, float *, int *);
 void    c_nngetaspects(int, int, float *, int *);
+void    c_nngetwts(int *, int *, float *, float *, float *, float *);
 void    c_nnpntinits(int, float [], float [], float []);
 void    c_nnpnts(float, float, float *);
 void    c_nnpntend();
@@ -173,6 +196,7 @@ void    c_nnsetrd(char *, double);
 void    c_nngetrd(char *, double *);
 void    c_nngetsloped(int, int, double *, int *);
 void    c_nngetaspectd(int, int, double *, int *);
+void    c_nngetwtsd(int *, int *, double *, double *, double *, double *);
 void    c_nnpntinitd(int, double [], double [], double []);
 void    c_nnpntd(double, double, double *);
 void    c_nnpntendd();
