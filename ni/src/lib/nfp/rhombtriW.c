@@ -1,9 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include "wrapper.h"
 
 extern void NGCALLF(drhombtrunc,DRHOMBTRUNC)(int*,int*,double*,double*,

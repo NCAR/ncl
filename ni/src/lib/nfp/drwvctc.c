@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <ncarg/ncargC.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
 float armn(int, float *);
 float armx(int, float *);

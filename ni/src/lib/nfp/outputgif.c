@@ -1,17 +1,8 @@
 #include <stdio.h>
-
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
-#include "wrapper.h"
-#include "NclHLUObj.h"
+#include <math.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/View.h>
-#include <math.h>
-
-#define min(x,y)  ((x) < (y) ? (x) : (y))
-#define max(x,y)  ((x) > (y) ? (x) : (y))
+#include "wrapper.h"
 
 NhlErrorTypes output_gif_W( void )
 {

@@ -1,13 +1,6 @@
 #include <stdio.h>
-
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
-#include "wrapper.h"
 #include <math.h>
-
-#define max(x,y)  ((x) > (y) ? (x) : (y))
+#include "wrapper.h"
 
 extern void NGCALLF(dcalcorc,DCALCORC)(double*,double*,double*,double*,int*,
                                        double*,double*,double*,int*);

@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "wrapper.h"
-#include "DataSupport.h"
-#include <ncarg/c.h>
 
 extern NGCALLF(gbytes,GBYTES)(int *, int *, int *, int *, int *, int *);
 extern NGCALLF(sbytes,SBYTES)(int *, int *, int *, int *, int *, int *);

@@ -1,24 +1,13 @@
 #include <string.h>
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/Workstation.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
-#include <ncarg/ngmath.h>
-#include <ncarg/ncargC.h>
-#include "NclHLUObj.h"
-
+#include "wrapper.h"
 
 NhlErrorTypes NhlGetNamedColorIndex_W( void )
 {

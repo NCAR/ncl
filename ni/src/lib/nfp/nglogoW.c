@@ -1,25 +1,9 @@
 #include <stdio.h>
-
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-#include <ncarg/ncargC.h>
-#include <ncarg/gks.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/ncl/NclBuiltIns.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
-#include <ncarg/ngmath.h>
-#include <ncarg/ncargC.h>
 #include "wrapper.h"
-
-/*
- *  The following is required in order to obtain an NCL object ID
- *  when you know the HLU ID.
- */
-#include "NclHLUObj.h"
 
 NhlErrorTypes nglogo_W( void )
 {

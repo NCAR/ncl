@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include "wrapper.h"
 
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include
- */
-#include <ncarg/ngmath.h>
-
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 #define max(x,y)   ((x) > (y) ? (x) : (y))
 

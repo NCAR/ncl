@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <udunits.h>
 #include "wrapper.h"
-#include "NclAtt.h"
-#include <ncarg/ncl/NclVar.h>
-#include "DataSupport.h"
-#include "AttSupport.h"
-#include "VarSupport.h"
+
 
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is

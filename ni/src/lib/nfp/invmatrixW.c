@@ -1,10 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-
 #include "wrapper.h"
 
 extern int NGCALLF(ilaenv,ILAENV)(int*,char*,char*,int*,int*,int*,int*,

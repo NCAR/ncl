@@ -1,10 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-
-/*
- * The following are required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
 #include "wrapper.h"
 
 NhlErrorTypes nggcog_W(void)

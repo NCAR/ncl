@@ -1,5 +1,6 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <ncarg/ngmath.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>

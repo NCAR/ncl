@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-
-#include "wrapper.h"
-#include "DataSupport.h"
 #include <math.h>
+#include "wrapper.h"
 
 extern void NGCALLF(dpsortdriver,DPSORTDRIVER)(double*, int*, int*, int*,
                            int*);

@@ -1,10 +1,6 @@
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-#include "wrapper.h"
 #include <math.h>
+#include "wrapper.h"
 
 extern void NGCALLF(dvibeta,DVIBETA)(double *,double *,int *,double *,
                                      int *,double *,double *,double *,

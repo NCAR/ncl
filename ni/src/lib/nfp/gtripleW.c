@@ -1,16 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-
 #include "wrapper.h"
-#include   "NclAtt.h"
-#include   <ncarg/ncl/NclVar.h>
-#include   "DataSupport.h"
-#include   "AttSupport.h"
-#include   "VarSupport.h"
 
 extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
 					     int*,double*,int*,int*,double*,

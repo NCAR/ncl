@@ -1,24 +1,7 @@
 #include <stdio.h>
-
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
-#include "wrapper.h"
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include "Machine.h"
-#include <ncarg/ncl/NclVar.h>
-#include "DataSupport.h"
-#include "VarSupport.h"
-#include "NclCoordVar.h"
-#include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
 extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
 

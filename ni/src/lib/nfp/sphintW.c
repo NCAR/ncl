@@ -1,8 +1,4 @@
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include "wrapper.h"
 
 extern void NGCALLF(trssphx,TRSSPHX)(int *,int *,int *,int *,double *,int *,

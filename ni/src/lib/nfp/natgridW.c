@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-
 #include "wrapper.h"
-#include <ncarg/ngmath.h>
 
 extern void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
                      float s1, float s2, float s3, int *iwk);

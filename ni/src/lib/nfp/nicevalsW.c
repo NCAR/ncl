@@ -1,11 +1,7 @@
 #include <stdio.h>
-
-/*
- * The following are the required NCAR Graphics include files.
- */
-#include "wrapper.h"
-#include <ncarg/hlu/hluutil.h>
 #include <math.h>
+#include <ncarg/hlu/hluutil.h>
+#include "wrapper.h"
 
 NhlErrorTypes nice_mnmxintvl_W( void )
 {

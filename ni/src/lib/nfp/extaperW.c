@@ -1,9 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include "wrapper.h"
 
 extern void NGCALLF(dexptaper,DEXPTAPER)(double*,int*,double*,int*,int*);

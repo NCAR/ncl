@@ -1,14 +1,7 @@
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
 extern void NGCALLF(rdsstoi,RDSSTOI)(int *,int *,int *,int *,int *,float *);
 

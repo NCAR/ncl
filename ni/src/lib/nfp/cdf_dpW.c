@@ -1,5 +1,4 @@
-#include<stdio.h>
-
+#include <stdio.h>
 #include "wrapper.h"
 
 extern void NGCALLF(dcdfbinp,DCDFBINP)(int*, double*, double*, double*, double*, int*);

@@ -1,13 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-
 #include "wrapper.h"
-
-/*
- * The following are the required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include
- */
-#include <ncarg/ngmath.h>
 
 char csamsg[61];
 

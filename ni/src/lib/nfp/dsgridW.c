@@ -1,11 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include "wrapper.h"
-#include <ncarg/ngmath.h>
 
 NhlErrorTypes dsgrid2s_W( void )
 {

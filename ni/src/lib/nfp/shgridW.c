@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "wrapper.h"
-#include <ncarg/ngmath.h>
 
 char shmsg[61];
 

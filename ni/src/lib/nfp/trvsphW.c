@@ -1,20 +1,7 @@
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
 #include "wrapper.h"
-
-#define min(x,y)  ((x) < (y) ? (x) : (y))
-#define max(x,y)  ((x) > (y) ? (x) : (y))
 
 extern void NGCALLF(trvsphx,TRVSPHX)(int *,int *,int *,int *,int *,double *,
                                      double *,int *,int *,int *,int *,

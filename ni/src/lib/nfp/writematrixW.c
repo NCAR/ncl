@@ -5,17 +5,7 @@
  */
 
 # include   <stdio.h>
-
-/*
- * Required NCAR Graphics header files.
- * See: ${NCARG_ROOT}/include
- */
 # include   "wrapper.h"
-# include   "NclAtt.h"
-# include   <ncarg/ncl/NclVar.h>
-# include   "DataSupport.h"
-# include   "AttSupport.h"
-# include   "VarSupport.h"
 
 /*
  * FORTRAN function prototypes.  All character pointer arguments must have
