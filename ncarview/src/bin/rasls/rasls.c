@@ -46,7 +46,7 @@ main(argc, argv)
 	int	argc;
 	char	*argv[];
 {
-	int		status;
+	int		estatus = 0;
 	int		i;
 	int		opt_id;
 
@@ -77,15 +77,13 @@ main(argc, argv)
 
 	if (opt.version) {
 		(void) PrintVersion(ProgramName);
+		exit(0);
 	}
 
 	/* Make sure nothing left on command line execpt file names. */
 
 	if (argc < 2) {
-		if (!opt.version) {
-			Usage(ProgramName, (char *) NULL, opt_id);
-		}
-		exit(1);
+		Usage(ProgramName, (char *) NULL, opt_id);
 	}
 
 	for (i=1; i<argc; i++) {
@@ -97,18 +95,22 @@ main(argc, argv)
 		}
 		else {
 			if (opt.type || opt.count || opt.resolution) {
-				(void) Print(argv[i], opt.format);
+				if (Print(argv[i], opt.format) != RAS_OK) {
+					estatus++;
+				};
 			}
 			else {
-				status = PrintLs(argv[i], opt.format);
-				if (status != RAS_OK) {
+				if (PrintLs(argv[i], opt.format) != RAS_OK) {
 					(void) fprintf(stderr,
 						"%s: %s\n",
 						ProgramName, ErrGetMsg());
+
+					estatus++;
 				}
 			}
 		}
 	}
+	exit(estatus);
 }
 
 int PrintLs(name, fformat)
