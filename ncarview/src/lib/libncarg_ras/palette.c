@@ -1,5 +1,5 @@
 /*
- *	$Id: palette.c,v 1.2 1991-08-16 11:12:00 clyne Exp $
+ *	$Id: palette.c,v 1.3 1991-11-15 17:09:48 don Exp $
  */
 #include <string.h>
 #include "ncarg_ras.h"
@@ -109,7 +109,9 @@ PaletteReadText(fp, colors)
 		g1 = green[i1-1];
 		b1 = blue[i1-1];
 
-		for(i2=i1; set[i2] == False; i2++) ;
+		for(i2=i1; i2<256; i2++) {
+			if (set[i2] == True) break;
+		}
 
 		r2 = red[i2];
 		g2 = green[i2];
