@@ -35,7 +35,7 @@ NCAR Graphics can only be build on UNIX systems. The source code
 provided here has been successfully built using native compilers on
 Suns, SGIs (32 or 64-bit mode), IBMs running AIX (32 or 64-bit mode),
 HPs, and Compaq Alphas.  It has also been built on PCs running Cygwin,
-Solaris, or LINUX (RedHat, Debian, Mandrake, Yellow Dog) using the GNU
+Solaris, or LINUX (RedHat, Debian, Mandrake, SuSE) using the GNU
 or Portland Group compilers, and on a MacOSX system using the GNU or
 Absoft compilers.
 
