@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.152 2004-01-15 17:31:30 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.153 2004-01-17 00:25:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -608,9 +608,15 @@ begin
 
   if(.not.any(ismissing(lname))) then
     lu_string = lname(1)
-    if(.not.any(ismissing(uname)).and.uname(1).ne."") then
-      lu_string = lu_string + " (" + uname(1) + ")"
-    end if
+;
+; Comment out this code for now, because I'm not sure I want
+; the default behavior to change from just a long_name string
+; to a long_name (units) string for now.  This was added around
+; version a031 (Jan 2004).
+;
+;    if(.not.any(ismissing(uname)).and.uname(1).ne."") then
+;      lu_string = lu_string + " (" + uname(1) + ")"
+;    end if
   end if
   return(lu_string)
 end        

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.130 2004-01-12 18:25:44 haley Exp $
+;      $Id: gsn_code.ncl,v 1.131 2004-01-17 00:25:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -416,9 +416,15 @@ begin
   lu_string = new(1,string)
   if(isatt(data,"long_name")) then
     lu_string = data@long_name
-    if(isatt(data,"units").and.data@units.ne."") then
-      lu_string = lu_string + " (" + data@units + ")"
-    end if
+;
+; Comment out this code for now, because I'm not sure I want
+; the default behavior to change from just a long_name string
+; to a long_name (units) string for now.  This was added around
+; version a031 (Jan 2004).
+;
+;    if(isatt(data,"units").and.data@units.ne."") then
+;      lu_string = lu_string + " (" + data@units + ")"
+;    end if
   end if
   return(lu_string)
 end        
