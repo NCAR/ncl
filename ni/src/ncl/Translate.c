@@ -285,12 +285,16 @@ if(groot != NULL) {
 			if(step != NULL) {
 				off4 = _NclTranslate(step->node,fp);
 				step = step->next;
-			}
+			} 
 			while(step != NULL) {
 				(void)_NclTranslate(step->node,fp);
 				step = step->next;
 			}
-			_NclPutInstrAt(off2,off4,ifthenelse->line,ifthenelse->file);
+			if(off4 != -1)  {
+				_NclPutInstrAt(off2,off4,ifthenelse->line,ifthenelse->file);
+			} else {
+				(void)_NclPutInstrAt(off2,_NclGetCurrentOffset(),ifthenelse->line,ifthenelse->file);
+			}
 			(void)_NclPutInstrAt(off3,_NclGetCurrentOffset(),ifthenelse->line,ifthenelse->file);
 			break;
 		}
