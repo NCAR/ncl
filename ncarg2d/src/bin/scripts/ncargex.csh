@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.123 2001-06-14 17:30:18 haley Exp $
+#   $Id: ncargex.csh,v 1.124 2001-06-21 22:42:33 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -578,7 +578,7 @@ set c_list = ($c_list $surface_clist)
 # set tdpack examples #
 #                     #
 #*********************#
-set tdpack_fex   = (tdex01 tdex02 tdex03 tdex04 tdex05 tdex06)
+set tdpack_fex   = (tdex01 tdex02 tdex03 tdex04 tdex05 tdex06 tdex07)
 set tdpack_ftst  = ()
 set tdpack_flist = ($tdpack_fex $tdpack_ftst)
 
