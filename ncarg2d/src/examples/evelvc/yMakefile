@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-19 17:24:01 boote Exp $
+#	$Id: yMakefile,v 1.3 1994-01-15 00:45:56 dbrown Exp $
 #
 
 MYNAME	= evelvc
 
 GENERIC_SRCS = \
-	 vvex01.f vvex02.f vvexcc.f 
+	 vvex01.f vvex02.f vvex03.f vvexcc.f 
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
