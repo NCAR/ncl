@@ -210,7 +210,19 @@ digit	[0-9]
 		cur_load_file = file_names[loading];
 	}
 }
-[\\][ \t]*[\n] {
+\;[^\n\\]*[\\][ \t]*[\n] {
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	if(rec == 1) {
+		fprintf(recfp,"%s",cur_line_text);
+	}
+	last_line_length = cur_line_length;
+	cur_line_length = 0;
+	cur_line_length = 0;
+	*cur_line_text_pos = '\0';
+	cur_line_text_pos = &(cur_line_text[0]);
+	IncLine();
+}
+[\\][^\n]*[\n] {
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
