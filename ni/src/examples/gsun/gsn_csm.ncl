@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.124 2003-04-17 21:46:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.125 2003-04-30 22:06:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -824,19 +824,21 @@ end
 ;                                                                       ;
 ; This procedure checks if the data contains a coordinate variable in   ;
 ; dimension 0 or 1.  If so, then it sets sf/vfX/YArray (depending on if ;
-; type equals "contour" or "vector" to these coordinate arrays.         ;
+; type equals "contour*" or "vector*" to these coordinate arrays.       ;
 ;                                                                       ;
 ; If no coordinate array exists, then this procedure checks for the     ;
 ; special "lat2d"/"lon2d" *attributes*. This is an indicator that we    ;
 ; have "2D coordinate" arrays, and we can set the sf/vfX/YArray         ;
-; resources to these values.                                            ;
+; resources to these values. These 2D coords only work if you plan to   ;
+; overlay the vectors/contours on a map, however.                       ;
 ;                                                                       ;
 ;***********************************************************************;
 procedure check_for_coord_arrays(data[*][*]:numeric,res:logical,type:string)
 local prefix, xstart_name, xend_name, ystart_name, yend_name, \
-xarray_name, yarray_name
+xarray_name, yarray_name, valid_2dcoord_types
+
 begin 
-  if(type.eq."vector")
+  if(type.eq."vector".or.type.eq."vector_map")
     prefix = "vf"
   else
     prefix = "sf"
@@ -850,13 +852,19 @@ begin
   yend_name   = prefix + "YCEndV"
   
 ;
-; First check if a valid "lon2d" attribute is set. If not set, then
+; Only plots over maps can have 2D lat/lon coordinates. These plots are
+; identified by the following "type" strings.
+;
+  valid_2dcoord_types = (/"contour_map","vector_map"/)
+;
+; First check if a valid "lon2d" attribute is set and whether we are 
+; drawing over a map. If both conditions are not met, then
 ; check for a regular coordinate array.  One of these will be used for 
 ; sf/vf/XArray.
 ;
   if(.not.((isatt(res,xstart_name).and.isatt(res,xend_name)).or.\
             isatt(res,xarray_name))) then
-    if(is_valid_lon2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and.is_valid_lon2d_attr(data)) then
       res@$xarray_name$ = data@lon2d
     else 
       if(is_valid_xcoord(data)) then
@@ -872,7 +880,7 @@ begin
 ;
   if(.not.((isatt(res,ystart_name).and.isatt(res,yend_name)).or.\
             isatt(res,yarray_name))) then
-    if(is_valid_lat2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
       res@$yarray_name$ = data@lat2d
     else
       if(is_valid_ycoord(data)) then
@@ -1267,11 +1275,12 @@ end
 ; dimension 0 of an allowable list of latnames                          ;
 ;                                                                       ;
 ; If so, then it sets sf/vfYArray (depending on if type equals          ;
-; "contour" or "vector" to this coordinate array.                       ;
+; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
 procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
-local latname, char_latname, array_name, start_name, end_name
+local latname, char_latname, array_name, start_name, end_name, \
+valid_2dcoord_types
 begin 
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
@@ -1286,7 +1295,7 @@ begin
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
-  if(type.eq."vector")
+  if(type.eq."vector".or.type.eq."vector_map")
     array_name = "vfYArray"
     start_name = "vfYCStartV"
     end_name   = "vfYCEndV"
@@ -1297,13 +1306,19 @@ begin
   end if
 
 ;
+; Only plots over maps can have 2D lat/lon coordinates. These plots are
+; identified by the following "type" strings.
+;
+  valid_2dcoord_types = (/"contour_map","vector_map"/)
+
+;
 ; Make sure user is not already setting own *Start* and *End*
 ; or *Array resources. Then check if a valid "lat2d" attribute
 ; is set or if a valid coordinate array is set.
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(is_valid_lat2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1331,11 +1346,12 @@ end
 ; dimension 1 of an allowable list of latnames                          ;
 ;                                                                       ;
 ; If so, then it sets sf/vfYArray (depending on if type equals          ;
-; "contour" or "vector" to this coordinate array.                       ;
+; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
 procedure check_for_x_lat_coord(data[*][*]:numeric,res:logical,type:string)
-local latname, char_latname, array_name, start_name, end_name
+local latname, char_latname, array_name, start_name, end_name, \
+valid_2dcoord_types
 begin 
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
@@ -1350,7 +1366,7 @@ begin
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
-  if(type.eq."vector")
+  if(type.eq."vector".or.type.eq."vector_map")
     array_name = "vfXArray"
     start_name = "vfXCStartV"
     end_name   = "vfXCEndV"
@@ -1361,13 +1377,19 @@ begin
   end if
 
 ;
+; Only plots over maps can have 2D lat/lon coordinates. These plots are
+; identified by the following "type" strings.
+;
+  valid_2dcoord_types = (/"contour_map","vector_map"/)
+
+;
 ; Make sure user is not already setting own *Start* and *End*
 ; or *Array resources. Then check if a valid "lat2d" attribute
 ; is set or if a valid coordinate array is set.
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or. \
             isatt(res,array_name))) then
-    if(is_valid_lat2d_attr(data)) then 
+    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1393,11 +1415,12 @@ end
 ; dimension 1 of an allowable list of lonnames                          ;
 ;                                                                       ;
 ; If so, then it sets sf/vfXArray (depending on if type equals          ;
-; "contour" or "vector" to this coordinate array.                       ;
+; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
 procedure check_for_lon_coord(data[*][*]:numeric,res:logical,type:string)
-local lonname, char_lonname, array_name, start_name, end_name
+local lonname, char_lonname, array_name, start_name, end_name, \
+valid_2dcoord_types
 begin 
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
@@ -1413,7 +1436,7 @@ begin
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
-  if(type.eq."vector")
+  if(type.eq."vector".or.type.eq."vector_map")
     array_name = "vfXArray"
     start_name = "vfXCStartV"
     end_name   = "vfXCEndV"
@@ -1424,13 +1447,19 @@ begin
   end if
 
 ;
+; Only plots over maps can have 2D lat/lon coordinates. These plots are
+; identified by the following "type" strings.
+;
+  valid_2dcoord_types = (/"contour_map","vector_map"/)
+
+;
 ; Make sure user is not already setting his own *Start* and *End*
 ; or *Array resources. If not, check for a valid lon2d attribute
 ; or a valid coordinate array.
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(is_valid_lon2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and.is_valid_lon2d_attr(data)) then
       res@$array_name$ = data@lon2d
       return
     else 
@@ -3371,6 +3400,8 @@ end
 ;    5. If gsnPolarLabelDistance is set, then this will be used to      ;
 ;       increase/decrease the default position of the labels from the   ;
 ;       perimeter of the map.                                           ;
+;    6. gsnPolarLabelFont and gsnPolarLabelFontHeightF can be used to   ;
+;       control the label font and heights of the lat/lon labels.       ;
 ;***********************************************************************;
 
 function gsn_csm_map_polar(wks:graphic,resources:logical)
@@ -3600,7 +3631,7 @@ begin
 ; fall between 0 and 23.
 ;
         ut_plon = ut + plon/15
-        slt     = ut_plon - floattointeger(floor(ut_plon/24.))
+        slt     = ut_plon - (24 * floattointeger(floor(ut_plon/24.)))
 ; 
 ; Convert "slt" to integer. If it is equal to the float version of "slt",
 ; then we know that our values are effectively integers, and we can plot
@@ -4015,8 +4046,8 @@ begin
 
 ; Create data object and use coordinate variables if they exist.
 
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
 ; Set some more contour plot resources.
 
@@ -4174,8 +4205,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay contour on map.
 
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
     if(.not.(isatt(res2,"sfXArray")))
       set_attr(res2,"sfXCStartV",-180.)
@@ -4529,8 +4560,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay contour on map.
 
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
 ; Create some contour plot resources.
 
@@ -4725,8 +4756,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vector on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
     if(.not.(isatt(res2,"vfXArray")))
       set_attr(res2,"vfXCStartV",-180.)
@@ -4972,8 +5003,8 @@ begin
 
 ; Create data object and use coordinate variables if they exist.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
@@ -5116,8 +5147,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vectors on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -5274,8 +5305,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamline on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
     if(.not.(isatt(res2,"vfXArray")))
       set_attr(res2,"vfXCStartV",-180.)
@@ -5464,8 +5495,8 @@ begin
 
 ; Create data object and use coordinate variables if they exist.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
@@ -5565,8 +5596,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamlines on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -5682,8 +5713,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vector on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
     if(.not.(isatt(res2,"vfXArray")))
       set_attr(res2,"vfXCStartV",-180.)
@@ -5747,8 +5778,8 @@ begin
       end if
     end if
 
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
     if(.not.(isatt(res2,"sfXArray")))
       set_attr(res2,"sfXCStartV",-180.)
@@ -5915,8 +5946,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamlines on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -5956,8 +5987,8 @@ begin
 ;
 ; Check for coordinate variables for scalar field.
 ;
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
     lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
@@ -6100,8 +6131,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamlines on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -6135,8 +6166,8 @@ begin
 ;
 ; Check for coordinate variables for scalar field.
 ;
-    check_for_y_lat_coord(datanew,res2,"contour")
-    check_for_lon_coord(datanew,res2,"contour")
+    check_for_y_lat_coord(datanew,res2,"contour_map")
+    check_for_lon_coord(datanew,res2,"contour_map")
 
     lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
@@ -6550,8 +6581,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vector on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
     if(.not.(isatt(res2,"vfXArray")))
       set_attr(res2,"vfXCStartV",-180.)
@@ -6619,8 +6650,8 @@ begin
         end if
       end if
 
-      check_for_y_lat_coord(datanew,res2,"contour")
-      check_for_lon_coord(datanew,res2,"contour")
+      check_for_y_lat_coord(datanew,res2,"contour_map")
+      check_for_lon_coord(datanew,res2,"contour_map")
 
       if(.not.(isatt(res2,"sfXArray")))
         set_attr(res2,"sfXCStartV",-180.)
@@ -6847,8 +6878,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vectors on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -6891,8 +6922,8 @@ begin
 ;
 ; Check for coordinate variables for scalar field.
 ;
-      check_for_y_lat_coord(datanew,res2,"contour")
-      check_for_lon_coord(datanew,res2,"contour")
+      check_for_y_lat_coord(datanew,res2,"contour_map")
+      check_for_lon_coord(datanew,res2,"contour_map")
     end if
 
     lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
@@ -7072,8 +7103,8 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vectors on map.
 
-    check_for_y_lat_coord(unew,res2,"vector")
-    check_for_lon_coord(unew,res2,"vector")
+    check_for_y_lat_coord(unew,res2,"vector_map")
+    check_for_lon_coord(unew,res2,"vector_map")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -7112,8 +7143,8 @@ begin
 ;
 ; Check for coordinate variables for scalar field.
 ;
-      check_for_y_lat_coord(datanew,res2,"contour")
-      check_for_lon_coord(datanew,res2,"contour")
+      check_for_y_lat_coord(datanew,res2,"contour_map")
+      check_for_lon_coord(datanew,res2,"contour_map")
     end if
 
     lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
@@ -7463,8 +7494,8 @@ begin
     datanew = data2
   end if
 
-  check_for_y_lat_coord(datanew,res2_tmp,"contour")
-  check_for_lon_coord(datanew,res2_tmp,"contour")
+  check_for_y_lat_coord(datanew,res2_tmp,"contour_map")
+  check_for_lon_coord(datanew,res2_tmp,"contour_map")
 
 ; Default for second plot is to draw line labels, but make background
 ; label box transparent. Also, move the info label around depending on
