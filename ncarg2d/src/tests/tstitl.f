@@ -1,5 +1,5 @@
 C
-C	$Id: tstitl.f,v 1.2 1993-03-05 00:12:42 haley Exp $
+C	$Id: tstitl.f,v 1.3 1993-05-10 17:36:40 haley Exp $
 C
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -75,7 +75,7 @@ C
 C
 C Define the remaining inputs to routine STITLE.  Note that the
 C output produced (a single frame with no scrolling to appear for
-C 6.0 seconds) could equally well have been produced by MTITLE.
+C 6.0 seconds) could equally well have been produced by FTITLE.
 C We call STITLE in this demo to avoid reading the input lines.
 C
       NYST  = 512
