@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.14 1995-07-11 21:41:10 haley Exp $
+ *      $Id: Sun4Solaris,v 1.15 1996-03-07 21:43:05 haley Exp $
  */
 /************************************************************************
 *									*
@@ -19,7 +19,7 @@
  *
  *	Description:	
  */
-#define	CtoFLibraries	-lF77 -lM77 -lsunmath -lm
+#define	CtoFLibraries	-lF77 -lM77 -lnsl -lsunmath -lm
 #define HdfDefines	-DSUN
 #define	Cstatic	-Bstatic
 #define	Cdynamic -Bdynamic
