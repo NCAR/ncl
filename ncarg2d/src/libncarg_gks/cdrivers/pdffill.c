@@ -1,5 +1,5 @@
 /*
- *      $Id: pdffill.c,v 1.1 2003-01-06 23:30:16 fred Exp $
+ *      $Id: pdffill.c,v 1.2 2003-03-03 02:39:06 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -57,8 +57,9 @@ void PDFprint_points(PDFddp *, PDFPoint *, unsigned, terminator_type);
 static int picompar(const void *p1, const void *p2);
 static void pascsrt(float xa[], int ip[], int n);
 
-extern char page_lines[MAX_PAGE_SIZE][MAX_LINE_SIZE];
-extern int  stream_size, object_number, byte_count, num_page_lines;
+extern char **page_lines;
+extern int starting_page_object_number, stream_size, object_number,
+           byte_count, num_page_lines;    
 
 static float *sort_array;
 
