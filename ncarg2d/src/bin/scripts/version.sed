@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.13 2000-03-22 00:31:46 haley Exp $
+#	$Id: version.sed,v 1.14 2000-07-12 17:04:42 haley Exp $
 #
 
 set year = "2000"
@@ -21,16 +21,22 @@ cat <<EOF
 NCAR Graphics Software and Documentation
 ------------------------------------------------------------------------------
   Version        : VERSION
-
-  Site ID Number : $sitenum
-
+  Site ID number : $sitenum
   Copyright (C)  : 1987-$year, University Corporation for Atmospheric Research
-
   Trademark      : NCAR Graphics is a registered trademark of the University
                    Corporation for Atmospheric Research.
 
-  License        : The use of NCAR Graphics software and documentation is
-                   governed by a License Agreement.
+  License        : This software is distributed in the hope that it will
+                   be useful, but WITHOUT ANY WARRANTY; without even the
+                   implied warranty of MERCHANTABILITY or FITNESS FOR A 
+                   PARTICULAR PURPOSE.  See the GNU Lesser General Public
+                   License for more details.
+
+                   You should have received a copy of the GNU Lesser
+                   General Public License along with this software; if
+                   not, write to the Free Software Foundation, Inc.,
+                   59 Temple Place, Suite 330, Boston, MA 02111-1307
+                   USA.
 ------------------------------------------------------------------------------
 EOF
 echo ""
