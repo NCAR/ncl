@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.38 1998-06-17 17:26:19 boote Exp $
+ *      $Id: App.c,v 1.39 1999-03-15 21:40:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -442,6 +442,29 @@ DefaultParentChange
 	return;
 }
 
+static int
+CompareRes
+#if	NhlNeedProto
+(
+	Const void	*ov,
+	Const void	*tv
+)
+#else
+(ov,tv)
+	Const void	*ov;
+	Const void	*tv;
+#endif
+{
+	NrmResource	*one = (NrmResource*)ov;
+	NrmResource	*two = (NrmResource*)tv;
+
+	if(one->nrm_name < two->nrm_name)
+		return -1;
+	if(one->nrm_name > two->nrm_name)
+		return 1;
+	return 0;
+}
+
 /*
  * Function:	AppInitialize
  *
@@ -707,8 +730,8 @@ AppInitialize
 
 		anew->app.values = (NhlString*)NhlMalloc(sizeof(NhlString) *
 							anew->app.nres);
-		anew->app.res = (NrmResourceList)NhlMalloc(sizeof(NrmResource) *
-							anew->app.nres);
+		anew->app.res = (NrmResourceList)
+			NhlMalloc(sizeof(NrmResource) * anew->app.nres);
 		if(!anew->app.values || !anew->app.res){
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
@@ -718,9 +741,14 @@ AppInitialize
 			anew->app.res[i] = def_app_res;
 			anew->app.res[i].nrm_name =
 						NrmStringToQuark(res_names[i]);
+		}
+		
+		qsort(anew->app.res,
+		      anew->app.nres,sizeof(NrmResource),CompareRes);
+	
+		for(i=0;i < anew->app.nres;i++){
 			anew->app.res[i].nrm_offset = sizeof(NhlString)*i;
 		}
-
 		lret = _NhlGetResources(context,db,
 				(char*)anew->app.values,nameQ,classQ,
 				anew->app.res,anew->app.nres,
@@ -728,7 +756,7 @@ AppInitialize
 
 		if(lret < NhlWARNING){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Problems retrieving app defined resources...",func);
+		       "%s:Problems retrieving app defined resources...",func);
 			return NhlFATAL;
 		}
 		ret = MIN(lret,ret);
