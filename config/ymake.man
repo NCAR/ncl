@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.8 1993-12-09 21:41:07 boote Exp $
+.\"	$Id: ymake.man,v 1.9 1994-03-11 20:30:13 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -112,18 +112,18 @@ variables are upper case.
 The rules file (named \fIRules\fP in the configuration directory) contains a
 variety of \fBcpp\fP macro functions that are
 configured according to the current platform.  \fBymake\fP replaces 
-any occurrences of the string ``]'' with a newline to allow macros that
-generate more than one line of \fBmake\fP rules.  
+any occurrences of the charactor (]) with a newline to allow macros that
+generate more than one line of \fBmake\fP rules.
 For example, the macro
-.ta 1i 1.6i 5i
+.ta .5i 1.5i 2.1i 5.5i
 .nf
 
-#ifndef	CleanFilesTarget
-#define	CleanFilesTarget(files)\e
-]\e
-clean::]\e
-	-@$(RM) files]
-#endif	/* CleanFilesTarget */
+	#ifndef	CleanFilesTarget
+	#define	CleanFilesTarget(files)\e
+	]\e
+	clean::]\e
+		-@$(RM) files]
+	#endif	/* CleanFilesTarget */
 
 .fi
 when called with
@@ -131,12 +131,14 @@ when called with
 in the \fIyMakefile\fP will expand to
 .nf
 
-clean::
-	-@$(RM) foo foo1.o foo2.o
+	clean::
+		-@$(RM) foo foo1.o foo2.o
 
 .fi
 .ta
-in the \fIMakefile\fP.
+in the \fIMakefile\fP.  To actually include the
+(]) charactor in a \fBmake\fP rule, escape the (]) charactor by preceding
+it with the backslash (\\) charactor.
 .PP
 On systems whose \fBcpp\fP reduces multiple tabs and spaces to a single
 space, \fBymake\fP attempts to put back any necessary tabs (\fBmake\fP is
@@ -153,12 +155,14 @@ two special variables, \fITOPDIR\fP and \fICURDIR,\fP are set to make
 referencing files using relative path names easier.  For example, the
 following command is generated automatically to build the \fIMakefile\fP in
 the directory \fIncarg2d/src/libncargC\fP (relative to the top of the sources):
+.ta .5i 1i
 .sp
 .nf
-%  ../../.././config/ymake -config ../../.././config \\
-	-DTOPDIR\=../../../. -DCURDIR\=./ncarg2d/src/libncargC
+	%  ../../.././config/ymake -config ../../.././config \\
+		-DTOPDIR\=../../../. -DCURDIR\=./ncarg2d/src/libncargC
 .fi
 .sp
+.ta
 The \fIconfig\fP option to \fBymake\fP is used to tell \fBymake\fP that it
 is being invoked from within the NCAR Graphics full source tree.  It should
 only be used by the \fIMakefile.ini\fP and \fIMakefile\fP files in the NCAR
@@ -189,19 +193,21 @@ then you can use the \fBymkmf\fP script to create your highest level
 \fIMakefile\fP.  You would call it with the name of your top-level directory.
 For example if you had the \fIni\fP source tree you could create
 the \fIMakefile\fP in the \fIhlu\fP sub-directory like this:
+.ta .5i
 .sp
 .nf
-host:~/src/ni/src/lib/hlu% ymkmf ni
+	host:~/src/ni/src/lib/hlu% ymkmf ni
 .fi
 .sp
+.ta
 The \fBymkmf\fP script will search up the directory hierarachy until it finds
 the \fItopdir\fP that was passed to it.  In this case it would create a
 \fIMakefile\fP with:
-.ta 1.5i 2i 3i
+.ta .5i 2i 2.5i 3.5i
 .sp
-\fITOP\fP	=	../../../.
+	\fITOP\fP	=	../../../.
 .br
-\fICURRENT_DIR\fP	=	./src/lib/hlu
+	\fICURRENT_DIR\fP	=	./src/lib/hlu
 .ta
 .PP
 The \fITOP\fP and \fICURRENT_DIR\fP symbols are set using the \fITOPDIR\fP and
@@ -223,6 +229,7 @@ some of the functions in libncarg_gks.a, then you would want your test programs
 to use your version of the libncarg_gks.a library, not the one in the system's
 lib directory.  The way to do this would be to use the \fIDEV_LIB_SEARCH\fP
 \fBmake\fP symbol described below:
+.RS .5i
 .IP \fIDEV_DEFINES\fP 1.5i
 This symbol is used to add additional "-D" flags to the compile line.
 .IP \fIDEV_INCLUDES\fP 1.5i
@@ -233,11 +240,12 @@ over the other "-I" flags.
 This symbol is used to add additional "-L" flags to the link line.  These
 flags get added to the front of the link line so they will take precedence
 over the other "-L" flags.
+.RE
 .PP
 The \fIDEV_LIB_SEARCH\fP flag can be used to change the libncarg_gks.a file
 that gets linked as follows:
 .sp
-.ta 1i 2.5i 3i
+.ta .5i 2i 2.5i
 .nf
 	DEV_LIB_SEARCH	=	-Lmy_dev_dir
 .fi
@@ -309,41 +317,43 @@ The following list of \fBmake\fP symbols are defined by \fBymake\fP in the
 specifying the file with a direct path name or "\-l" flag. If you use
 the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .LP
-.ta 1.5i
-\fINCARGLOCLIB\fP	libncarg_loc.a
+.ta .5i 2i
+	\fINCARGLOCLIB\fP	libncarg_loc.a
 .br
-\fINCARGCLIB\fP	libncarg_c.a
+	\fINCARGCLIB\fP	libncarg_c.a
 .br
-\fINCARGLIB\fP	libncarg.a
+	\fINCARGLIB\fP	libncarg.a
 .br
-\fICNCARGLIB\fP	libncargC.a
+	\fICNCARGLIB\fP	libncargC.a
 .br
-\fINCARGGKSLIB\fP	libncarg_gks.a
+	\fINCARGGKSLIB\fP	libncarg_gks.a
 .br
-\fICNCARGGKSLIB\fP	libncarg_gksC.a
+	\fICNCARGGKSLIB\fP	libncarg_gksC.a
 .br
-\fICGMLIB\fP	libcgm.a
+	\fICGMLIB\fP	libcgm.a
 .br
-\fINCARGRASLIB\fP	libncarg_ras.a
+	\fINCARGRASLIB\fP	libncarg_ras.a
 .br
-\fIHLULIB\fP	libhlu.a
+	\fIHLULIB\fP	libhlu.a
 .br
-\fIHLUUTILLIB\fP	libhlu_util.a
+	\fIHLUUTILLIB\fP	libhlu_util.a
 .br
-\fICTRANSLIB\fP	libctrans.o
+	\fICTRANSLIB\fP	libctrans.o
 .br
-\fIICTRANSLIB\fP	libictrans.o
+	\fIICTRANSLIB\fP	libictrans.o
 .br
-\fIICTRANS_LIB\fP	libictrans_.o
+	\fIICTRANS_LIB\fP	libictrans_.o
 .LP
 Additionally, the following symbols have been defined that combine the above
 \fBmake\fP symbols into the groups they are usually used in:
+.RS .5i
 .IP \fINCARGLIBS\fP 1.5i
 $(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
 .IP \fICNCARGLIBS\fP 1.5i
 $(CNCARGLIB) $(CNCARGGKSLIB)
 .IP \fIHLULIBS\fP 1.5i
 $(HLULIB) $(HLUUTILLIB)
+.RE
 .LP
 There are also a full set of \fBdependent\fP library symbols to go along with
 the above symbols.  These \fBmake\fP symbols indicate the full path name
@@ -351,37 +361,37 @@ of the library they represent.  This is useful for putting the libraries on
 the dependency list of a link command. (See the \fBFortranProgram\fP and
 \fBCProgram\fP rules in the \fBCOMPILE/LINK RULES\fP section.)
 .LP
-\fIDEPNCARGLOCLIB\fP
+	\fIDEPNCARGLOCLIB\fP
 .br
-\fIDEPNCARGCLIB\fP
+	\fIDEPNCARGCLIB\fP
 .br
-\fIDEPNCARGLIB\fP
+	\fIDEPNCARGLIB\fP
 .br
-\fIDEPCNCARGLIB\fP
+	\fIDEPCNCARGLIB\fP
 .br
-\fIDEPNCARGGKSLIB\fP
+	\fIDEPNCARGGKSLIB\fP
 .br
-\fIDEPCNCARGGKSLIB\fP
+	\fIDEPCNCARGGKSLIB\fP
 .br
-\fIDEPCGMLIB\fP
+	\fIDEPCGMLIB\fP
 .br
-\fIDEPNCARGRASLIB\fP
+	\fIDEPNCARGRASLIB\fP
 .br
-\fIDEPHLULIB\fP
+	\fIDEPHLULIB\fP
 .br
-\fIDEPHLUUTILLIB\fP
+	\fIDEPHLUUTILLIB\fP
 .br
-\fIDEPCTRANSLIB\fP
+	\fIDEPCTRANSLIB\fP
 .br
-\fIDEPICTRANSLIB\fP
+	\fIDEPICTRANSLIB\fP
 .br
-\fIDEPICTRANS_LIB\fP
+	\fIDEPICTRANS_LIB\fP
 .br
-\fIDEPNCARGLIBS\fP
+	\fIDEPNCARGLIBS\fP
 .br
-\fIDEPCNCARGLIBS\fP
+	\fIDEPCNCARGLIBS\fP
 .br
-\fIDEPHLULIBS\fP
+	\fIDEPHLULIBS\fP
 .SH "COMPILE/LINK RULES"
 .B ymake
 has some basic rules that are used to compile executables.
@@ -390,6 +400,7 @@ has some basic rules that are used to compile executables.
 uses three \fBmake\fP symbols to define the libraries to link with the object
 code in the current directory to create executables.  These three symbols
 are:
+.RS .5i
 .IP \fIPROG_LIBS\fP 1.5i
 This symbol defines the libraries that are part of the current directory
 hierarchy.  These libraries are linked in \fBstatically\fP and they come
@@ -404,12 +415,14 @@ This symbol defines the system libraries that need to be linked into the
 executable.  These libraries should be standard libraries on the system.
 They should be linked in \fBdynamically\fP so the executable has a better
 chance of running on multiple versions of the OS.
+.RE
 .LP
 These \fBmake\fP symbols are used with the following rules to create
 an executable.  \fIprogram\fP indicates the name of the executable to
 create. \fIobjects\fP indicates the object files that need to be linked
 to create the executable.  \fIdeplibs\fP indicate the libraries that the
 executable is dependent upon.
+.RS .5i
 .IP \fBFortranProgram\fP(\fIprogram\fP,\fIobjects\fP,\fIdeplibs\fP) 1.5i
 This rule creates a program by linking the listed objects with the
 libraries indicated by setting the $(PROG_LIBS), $(EXTRA_LIBS) and
@@ -441,6 +454,7 @@ This rule is the same as the \fBFNotInstalledTarget\fP except
 that it uses the C Compiler
 to link instead of the Fortran Compiler as the \fBFNotInstalledTarget\fP rule
 does.
+.RE
 .SH "MANAGING SUBDIRECTORIES"
 .B ymake
 manages all subdirectory handling itself.  It just needs to be told that the
@@ -456,6 +470,7 @@ without having to edit the \fIyMakefiles\fP.
 .SH "MAKE SYMBOLS"
 The following is a list of many of the \fBmake\fP symbols that are reserved
 for use in \fIyMakefiles\fP:
+.RS .5i
 .IP EXTRA_CDEFINES 1.8i
 Used as part of CFLAGS to compile C programs.  It should be used to put in
 additional -D flags for the compile line.
@@ -499,11 +514,13 @@ of the OS is being used on the target system.
 Used in conjunction with the IHaveSubdirs cpp symbol
 to manage sub-directories. It should be set to the list of sub-directories
 that should be built.
+.RE
 .SH "SYSTEM SPECIFIC SYMBOLS"
 For each supported system, there will be a set of \fBcpp\fP symbols defined
 in \fBymake\fP that can be used in the \fIyMakefile\fP to conditionally
 set things in that \fIymakefile\fP. There are six possible symbols that can
 be set:
+.RS .5i
 .IP Os 2i
 Name of Operating system
 .br
@@ -517,6 +534,7 @@ SubMinor Version Number/Designator
 Vendor Name
 .IP Architecture 2i
 Architecture Name, possibly including Model number.
+.RE
 .PP
 This table shows the actual symbols that are defined, or the values the given
 symbols are defined to, for the currently supported systems:
@@ -535,6 +553,7 @@ SUBMINOR=	01	null	2,3,?	?	null	5[C-F]	null	null
 If you want to have any of these symbols defined in the source code you
 can set the \fIEXTRA_DEFINES\fP symbol described above to the following
 \fBmake\fP symbols that are defined by the \fITemplate\fP:
+.RS .5i
 .IP VENDOR_DEF
 This
 .B make
@@ -566,8 +585,10 @@ This
 symbol is set to -D\fISUBMINOR=n\fP where \fIn\fP is the sub-minor revision
 designator for the given system.
 If it is null above, then \fISUBMINOR_DEF\fP will also be null.
+.RE
 .SH "ENVIRONMENT VARIABLES"
 The following environment variables may be used by \fBymake\fP.
+.RS .5i
 .TP 5
 .B YMAKE_DEV_FILE
 If defined, this should be a valid file including \fBmake\fP symbol definitions
@@ -583,6 +604,7 @@ being used from the system's bin directory.
 This is used by \fBymake\fP to find it's config directory if \fBymake\fP is
 being used from the system's bin directory.  It is more specific, thus more
 binding than the \fINCARG_ROOT\fP environment variable.
+.RE
 .SH "SEE ALSO"
 make(1),ncargpath(1)
 .SH BUGS
