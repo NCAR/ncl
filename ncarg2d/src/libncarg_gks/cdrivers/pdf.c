@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.18 2003-03-07 22:23:36 fred Exp $
+ *      $Id: pdf.c,v 1.19 2003-03-17 23:36:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3345,9 +3345,11 @@ PDFEsc(GKSC *gksc)
     plflag = (int) atoi(strng);
     if (plflag == 0) {
       psa->orientation = PORTRAIT;
+      port_land = PORTRAIT;
     }
     else {
       psa->orientation = LANDSCAPE;
+      port_land = LANDSCAPE;
     }
     break;
   case -1526:  /* Corner points for positioning plot on the page */
@@ -3529,10 +3531,14 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
   tbcnt += 14;
   fprintf(fp,"/MediaBox [0 0 612 792]\n");
   tbcnt += 24;
-  if (port_land == LANDSCAPE) {
-    fprintf(fp,"/Rotate -90\n");
-    tbcnt += 12;
-  }
+/*
+ *  Have commented out the rotation, since this interferes with
+ *  user-set changes in orientation at the beginning of pictures.
+ */
+/*  if (port_land == LANDSCAPE) {    */
+/*    fprintf(fp,"/Rotate -90\n");   */
+/*    tbcnt += 12;                   */
+/*  }                                */
   fprintf(fp,"/Contents %6d 0 R\n",obj_contents_num);
   tbcnt += 21;
   fprintf(fp,"/Resources << /ProcSet 2 0 R\n");
