@@ -1,5 +1,5 @@
 /*
- *	$Id: c_epltch.c,v 1.6 1993-01-23 15:15:02 haley Exp $
+ *  $Id: c_epltch.c,v 1.7 1993-01-25 19:10:49 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -29,17 +29,22 @@ char  *rlbl[48] = { "A(01)", "B(02)", "C(03)", "D(04)", "E(05)", "F(06)",
                     "4(37)", "5(40)", "6(41)", "7(42)", "8(43)", "9(44)", 
                     "+(45)", "-(46)", "*(47)", "/(50)", "((51)", ")(52)", 
                     "$(53)", "=(54)", " (55)", ",(56)", ".(57)", "     " };
-
+/*
+ * Define the font numbers for the filled fonts.
+ */
+    int iffn[23] = { 1, 21, 22, 25, 26, 29, 30, 33, 34, 35, 36, 37, 
+                       121,122,125,126,129,130,133,134,135,136,137 };
 main()
 {
 /*
  * Define arrays for column labels and row labels for the plots showing
  * the complex and duplex character sets.
  */
-    char clbl[12][10], rlbl[48][6], ctmp[7], chrs[9], stmp[10];
-    int i, j, k, l, icmp, c_ifnt, ichr;
+    char ctmp[7], chrs[9], stmp[10];
+    int i, j, k, l, icmp, c_ifnt, ichr, ifns;
     float csmu, xpos, ypos, xcen, ycen, xrgt, ybot;
     float wdth, xlft, ytop, xcrd, ycrd;
+    Gcolr_rep rgb;
 /*
  * Define a flag which says, if 0, that the first eight plots are to
  * occupy eight separate frames and, if 1, that those plots are to be
@@ -298,14 +303,10 @@ main()
     c_frame();
 /*
  * Example 1-10. -------------------------------------------------------
- */
-
-/*
+ *
  * Do a single frame showing the medium-quality characters with various
  * aspect ratios.
- */
-
-/*
+ *
  * Put labels at the top of the plot.
  */
     c_plchmq (.5,.98,"PLCHMQ - ALL CHARACTERS - VARIOUS ASPECT RATIOS",.02,0.,0.);
@@ -429,7 +430,7 @@ main()
  * to 0.
  */
     c_pcseti ("FN - FONT NUMBER",4);
-    c_plchhq (.5,.844,"Set ''FN'' (Font Number) to 4 and write a line using 'F' function codes:",.012,0.,0.);
+    c_plchhq (.5,.844,"Set 'FN' (Font Number) to 4 and write a line using 'F' function codes:",.012,0.,0.);
     c_plchhq (.5,.820,"Before an F10 - /F10/after an F10 - /F/after an F - /F0/after an F0.",.012,0.,0.);
     c_pcseti ("FN - FONT NUMBER",0);
 /*
@@ -448,13 +449,13 @@ main()
  */
     c_pcsetr ("AS - ADD SPACE BETWEEN CHARACTERS     ",.125);
     c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",  0.);
-    c_plchhq (.5,.564,"/F14/Line written with ''AS'' = .125 and ''SS'' = 0.",.012,0.,0.);
+    c_plchhq (.5,.564,"/F14/Line written with 'AS' = .125 and 'SS' = 0.",.012,0.,0.);
     c_pcsetr ("AS - ADD SPACE BETWEEN CHARACTERS     ",  0.);
     c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",  0.);
-    c_plchhq (.5,.540, "/F14/Line written with ''AS'' = 0. and ''SS'' = 0.",.012,0.,0.);
+    c_plchhq (.5,.540, "/F14/Line written with 'AS' = 0. and 'SS' = 0.",.012,0.,0.);
     c_pcsetr ("AS - ADD SPACE BETWEEN CHARACTERS     ",  0.);
     c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",.125);
-    c_plchhq (.5,.516, "/F14/Line written with ''AS'' = 0. and ''SS'' = .125",.012,0.,0.);;
+    c_plchhq (.5,.516, "/F14/Line written with 'AS' = 0. and 'SS' = .125",.012,0.,0.);;
     c_pcsetr ("AS - ADD SPACE BETWEEN CHARACTERS     ",  0.);
     c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",  0.);
 /*
@@ -463,14 +464,14 @@ main()
  */
     c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",.128);
     
-    c_plchhq (.1,.455,"/F7/This 'g' is centered on the cross using CNTR = 0. and ''CE'' = 0:",.012,0.,-1.);
+    c_plchhq (.1,.455,"/F7/This 'g' is centered on the cross using CNTR = 0. and 'CE' = 0:",.012,0.,-1.);
     c_line (.880,.455,.920,.455);
     c_line (.900,.435,.900,.475);
     c_pcseti ("CE - CENTERING OPTION",0);
     c_plchhq (.9,.455,"/F7/g",.025,0.,0.);
     c_pcseti ("CE - CENTERING OPTION",0);
     
-    c_plchhq (.1,.405,"/F7/This 'g' is centered on the cross using CNTR = 0. and ''CE'' = 1:",.012,0.,-1.);
+    c_plchhq (.1,.405,"/F7/This 'g' is centered on the cross using CNTR = 0. and 'CE' = 1:",.012,0.,-1.);
     c_line (.880,.405,.920,.405);
     c_line (.900,.385,.900,.425);
     c_pcseti ("CE - CENTERING OPTION",1);
@@ -538,7 +539,229 @@ main()
  * Advance the frame.
  */
     c_frame();
+/* 
+ * --- Example 1-13 -----------------------------------------
+ *
+ * Do a single frame showing all the characters in the fontcap databases,
+ * access to which was added in October of 1992.
+ *
+ * Put a label at the top of the plot.
+ */
+    c_plchhq (.5,.98,"PLCHHQ - FONTCAP DATABASES ADDED 10/92",.02,0.,0.);
 /*
+ * Temporarily use the slash as a function code character.
+ */
+    c_pcsetc ("FC - FUNCTION CODE CHARACTER","/");
+/*
+ * Put an explanatory note on the plot.
+ */
+    c_plchhq (.5,.945,":F1:c selects the ASCII character 'c', as shown in the first two lines.",.01,0.,0.);
+
+    c_plchhq (.5,.925,":Fn:c selects the corresponding character from font n.",.01,0.,0.);
+/*
+ * Return to a colon as the function code character.
+ */
+    c_pcsetc ("FC - FUNCTION CODE CHARACTER",":");
+/*
+ * Loop through all the new filled fonts.
+ */
+    for( ifns=1; ifns <= 23; ifns++ ) {
+        ycen=.945-.0391304*(float)(ifns);
+        sprintf( chrs, "FONT%4d", iffn[ifns-1] );
+        c_pcseti ("FN - FONTCAP NUMBER",7);
+        c_plchhq (.005,ycen,chrs,.012,0.,-1.);
+
+        c_pcseti ("FN - FONTCAP NUMBER",iffn[ifns-1]);
+/*
+ * Draw all the meaningful characters from the font.
+ */
+        for( ichr=33; ichr <= 126; ichr++ ) {
+            if (ichr <= 79)  {
+                xcen=.125+.0183*(float)(ichr-32);
+            }
+            else {
+                xcen=.125+.0183*(float)(ichr-79);
+            }
+            if (ichr == 80) ycen=ycen-.0195652;
+            if ((char)ichr == ':') c_pcsetc ("FC","!");
+            sprintf( stmp, "%c", ichr );
+            c_plchhq (xcen,ycen,stmp,.01,0.,0.);
+            if ((char)ichr == ':') c_pcsetc ("FC",":");
+        }
+/*
+ * End of loop through fonts.
+ */
+    }
+/*
+ * Restore the fontcap number to 0 to select the PWRITX database.
+ */
+    c_pcseti ("FN - FONTCAP NUMBER",0);
+/*
+ * Advance the frame.
+ */
+    c_frame();
+/*
+ * --- Example 1-14 -----------------------------------------
+ * 
+ * Do a single frame showing some of the new features added in December
+ * of 1992.
+ *
+ * Put a label at the top of the plot and, below that, an explanatory
+ * note.
+ */
+    c_plchhq (.5,.975,":F25:PLCHHQ - FEATURES ADDED 12/92",.025,0.,0.);
+    c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",.275);
+    c_plchhq (.5,.938,":F13:(Use idt's 'zoom' to view some of this in detail, especially stacking.",.017,0.,0.);
+    c_pcsetr ("SS - SUBTRACT SPACE BETWEEN CHARACTERS",0.);
+/*
+ * Illustrate the use of filled fonts with shadows and outlines.  First,
+ * define some colors to use.
+ */
+    rgb.rgb.red = 0.;    rgb.rgb.green = .5;    rgb.rgb.blue = .5;    
+    gset_colr_rep (1,2,&rgb);
+    rgb.rgb.red = .9;    rgb.rgb.green = .9;    rgb.rgb.blue = 0.;    
+    gset_colr_rep (1,3,&rgb);
+    rgb.rgb.red = 1.;    rgb.rgb.green = .3;    rgb.rgb.blue = .3;    
+    gset_colr_rep (1,4,&rgb);
+    rgb.rgb.red = 0.;    rgb.rgb.green = 0.;    rgb.rgb.blue = 1.;    
+    gset_colr_rep (1,5,&rgb);
+    rgb.rgb.red = .2;    rgb.rgb.green = .2;    rgb.rgb.blue = .2;    
+    gset_colr_rep (1,6,&rgb);
+/*
+ * Write a line.
+ */
+    c_plchhq (.5,.900,":F26:By default, the current foreground color is used.",.024,0.,0.);
+/*
+ * Define the principal color to be used for characters.
+ */
+    c_pcseti ("CC - CHARACTER COLOR",4);
+/*
+ * Write another line.
+ */
+    c_plchhq (.5,.850,":F26:A non-negative 'CC' requests a different color.",.026,0.,0.);
+/*
+ * Turn on character shadows and define various characteristics of the
+ * shadow.
+ */
+    c_pcseti ("SF - SHADOW FLAG",1);
+    c_pcsetr ("SX - SHADOW OFFSET IN X",-.1);
+    c_pcsetr ("SY - SHADOW OFFSET IN Y",-.1);
+    c_pcseti ("SC - SHADOW COLOR",2);
+/*
+ * Write another line.
+ */
+    c_plchhq (.5,.796,":F26:'SF', 'SC', 'SX', and 'SY' create shadows.",.028,0.,0.);
+/*
+ * Turn on character outlines and define the color of the outline.
+ */
+    c_pcseti ("OF - OUTLINE FLAG",1);
+    c_pcseti ("OC - OUTLINE COLOR",3);
+    c_pcseti ("OL - OUTLINE LINE WIDTH",1);
+/*
+ * Write another line.
+ */
+    c_plchhq (.5,.738,":F26:'OF', 'OC', and 'OL' add outlines.",.030,0.,0.);
+/*
+ * Turn on the drawing of boxes and define characteristics of them.
+ */
+    c_pcseti ("BF - BOX FLAG",7);
+    c_pcseti ("BL - BOX LINE WIDTH",2);
+    c_pcsetr ("BM - BOX MARGIN",.15);
+    c_pcsetr ("BX - BOX SHADOW X OFFSET",-.1);
+    c_pcsetr ("BY - BOX SHADOW Y OFFSET",-.1);
+    c_pcseti ("BC(1) - BOX COLOR - BOX OUTLINE    ",5);
+    c_pcseti ("BC(2) - BOX COLOR - BOX FILL       ",6);
+    c_pcseti ("BC(3) - BOX COLOR - BOX SHADOW FILL",2);
+/*
+ * Write another line.
+ */
+    c_plchhq (.5,.672,":F26:'BF', 'BC', 'BL', 'BM', 'BX', and 'BY' add a box.",.026,0.,0.);
+/*
+ * Get rid of the box shadow, which doesn't add much.
+ */
+    c_pcseti ("BF - BOX FLAG",3);
+/*
+ * Write another line.
+ */
+    c_pcsetc ("FC - FUNCTION-CODE CHARACTER","/");
+    c_plchhq (.5,.592,"/F26/'MA' and 'OR' are used for mapping:",.030,0.,0.);
+    c_pcsetc ("FC - FUNCTION CODE CHARACTER",":");
+/*
+ * Write a couple of headers for the plots that follow.
+ */
+    c_plchhq (.28,.528,":F25:(EZMAP)",.024,0.,0.);
+    c_plchhq (.72,.528,":F33:(r:F25: and :F33:q)",.024,0.,0.);
+/*
+ * Initialize EZMAP and draw a background.
+ */
+    c_mapstc ("OU","CO");
+    c_mapsti ("GR",5);
+    c_mappos (.065,.495,.065,.495);
+    c_mapstr ("SA",8.5);
+    c_maproj ("SV",0.,-25.,0.);
+    c_mapint();
+    c_maplot();
+    c_mapgrd();
+/*
+ * Tell PLOTCHAR to map characters through EZMAP.
+ */
+    c_pcseti ("MA - MAPPING FLAG",1);
+    c_pcsetr ("OR - OUT-OF-RANGE FLAG",1.E12);
+/*
+ * Write a line across the surface of the globe.
+ */
+    c_plchhq (-25.,0.,":F25Y200:NCAR GRAPHICS",8.,30.,0.);
+/*
+ * Do an appropriate SET call for a rho-theta mapping.
+ */
+    c_set(.505,.935,.065,.495,-27.5,27.5,-27.5,27.5,1);
+/*
+ * Tell PLOTCHAR to use a rho-theta mapping.
+ */
+    c_pcseti ("MA - MAPPING FLAG",2);
+    c_pcsetr ("OR - OUT-OF-RANGE FLAG",0.);
+/*
+ * Write three lines in rho/theta space, orienting them so they come out
+ * in a circle after mapping.
+ */
+    c_plchhq (20., 90.,":F25Y125:NCAR GRAPHICS",8.,-90.,0.);
+    c_plchhq (20.,210.,":F25Y125:NCAR GRAPHICS",8.,-90.,0.);
+    c_plchhq (20.,-30.,":F25Y125:NCAR GRAPHICS",8.,-90.,0.);
+/*
+ * Turn off mapping and recall SET to allow fractional coordinates again.
+ */
+    c_pcseti ("MA - MAPPING FLAG",0);
+
+    c_set (0.,1.,0.,1.,0.,1.,0.,1.,1);
+/*
+ * Change the drawing order to allow for "stacking" characters from
+ * right to left.
+ */
+    c_pcseti ("DO - DRAWING ORDER",-2);
+/*
+ * Reduce the space between characters so the "stacking" is visible.
+ */
+    c_pcsetr ("SS - SUBTRACT-SPACE FLAG",.3);
+/*
+ * Turn off the box.  Make the shadows black and position them so they
+ * help make the stacked characters readable.
+ */
+    c_pcseti ("BF - BOX FLAG",0);
+    c_pcseti ("SC - SHADOW COLOR",0);
+    c_pcsetr ("SX - SHADOW OFFSET IN X",.1);
+    c_pcsetr ("SY - SHADOW OFFSET IN Y",0.);
+/*
+ * Write a final line demonstrating "stacking".
+ */
+    c_plchhq (.5,.030,":F26:Use    'DO'    and    'SS'    to   'stack'    characters    in    either    direction.",.026,0.,0.);
+/*
+ * Advance the frame.
+ */
+    c_frame();
+/*
+ * --- E N D   O F   E X A M P L E S -----------------------------------
+ *
+ *
  * Close GKS.
  */
     c_clsgks();
