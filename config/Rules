@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.29 1995-06-26 18:00:13 boote Exp $
+ *	$Id: Rules,v 1.30 1995-06-26 19:12:16 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -395,6 +395,7 @@ library:: objects]\
 	$(RANLIB) library]\
 ]\
 CleanFilesTarget(library objects)
+#endif	/* BuildLibTarget */
 
 /*
  * Macro:	LibraryTarget
