@@ -1,5 +1,5 @@
 /*
- *      $Id: pr03c.c,v 1.4 1996-05-23 01:57:38 dbrown Exp $
+ *      $Id: pr03c.c,v 1.5 1998-02-11 18:56:17 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,7 +19,7 @@
  *
  *  Description:    Demonstrates graphics primitives drawn in NDC and
  *                  data space into a LogLinPlot (and therefore using
- *                  the LogLinTransObj).
+ *                  the LogLinTransformation).
  *                  A number of primitives are clipped in order to test
  *                  the way clipping works.
  */

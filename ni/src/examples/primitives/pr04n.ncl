@@ -1,5 +1,5 @@
 ;
-;      $Id: pr04n.ncl,v 1.1 1996-07-01 17:28:54 haley Exp $
+;      $Id: pr04n.ncl,v 1.2 1998-02-11 18:56:19 dbrown Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -19,7 +19,7 @@
 ;
 ;  Description:    Demonstrates graphics primitives drawn in NDC and 
 ;                  and data space into an IrregularPlot (and therefore 
-;                  using the IrregularTransObj).
+;                  using the IrregularTransformation).
 
 ;
 ; Begin NCL script.

@@ -26,7 +26,7 @@
 ;                 3) VectorPlot as an overlay of MapPlot.
 ;                 Successive frames show the result of increasing the
 ;                 vcMinDistanceF in small steps. At the same time the
-;                 MapTransObj mpCenterLonF resource is decreased in
+;                 MapTransformation mpCenterLonF resource is decreased in
 ;                 steps, causing the orthographic projection of the
 ;                 northern hemisphere to appear to rotate when the 
 ;                 output is animated. Increasing the value of the

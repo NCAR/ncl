@@ -345,7 +345,7 @@
 !       corresponding index in the xyMarkerThicknesses array resource.
 ! xy01.xy01Work.xyPlot.xyData.xyMonoMarkerThickness: True
 !
-! LogLinTransObj resources
+! LogLinTransformation resources
 ! ========================
 !
 !       If this resource is False the xyPlot sets its left extent to be

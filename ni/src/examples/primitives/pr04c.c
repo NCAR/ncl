@@ -1,5 +1,5 @@
 /*
- *      $Id: pr04c.c,v 1.2 1996-06-28 20:55:38 haley Exp $
+ *      $Id: pr04c.c,v 1.3 1998-02-11 18:56:19 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,7 +19,7 @@
  *
  *  Description:    Demonstrates graphics primitives drawn in NDC and 
  *                  and data space into an IrregularPlot (and therefore 
- *                  using the IrregularTransObj).
+ *                  using the IrregularTransformation).
  */
 
 #include <stdio.h>

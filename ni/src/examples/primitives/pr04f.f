@@ -1,5 +1,5 @@
 C
-C      $Id: pr04f.f,v 1.1 1996-06-28 20:55:39 haley Exp $
+C      $Id: pr04f.f,v 1.2 1998-02-11 18:56:17 dbrown Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -19,7 +19,7 @@ C  Date:       Fri Jun 28 11:06:23 MDT 1996
 C
 C  Description:    Demonstrates graphics primitives drawn in NDC and 
 C                  and data space into an IrregularPlot (and therefore 
-C                  using the IrregularTransObj).
+C                  using the IrregularTransformation).
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass

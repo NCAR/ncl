@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.4 1997-10-08 21:39:35 haley Exp $
+C  $Id: vc06f.f,v 1.5 1998-02-11 18:56:40 dbrown Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -28,7 +28,7 @@ C                    of the vector arrow fill.
 C                 3) VectorPlot as an overlay of MapPlot.
 C                 Successive frames show the result of increasing the
 C                 vcMinDistanceF in small steps. At the same time the
-C                 MapTransObj mpCenterLonF resource is decreased in
+C                 MapTransformation mpCenterLonF resource is decreased in
 C                 steps, causing the orthographic projection of the
 C                 northern hemisphere to appear to rotate when the
 C                 output is animated. Increasing the value of the
