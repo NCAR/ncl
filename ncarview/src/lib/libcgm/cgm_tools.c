@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.5 1991-06-18 14:56:49 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.6 1991-07-19 16:00:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1012,12 +1012,16 @@ int	CGM_putInstr(cgm_fd, instr)
 
 		/*
 		 * if the buffer is full or the current instruction is a 
-		 * begin picture flush the buffer and not already the first
-		 * element in the record. We flush on a begin picture
-		 * to ensure that the beg pic is the first element in a record
+		 * begin picture or the current instruction is a end
+		 * end metafile and the instruction is not already the first
+		 * element in the record flush the buffer. We flush on a 
+		 * begin picture and a end metafile  to ensure that the 
+		 * beg pic/end mf is the first element in a record
 		 */
 		if ((free_count < COMM_SIZE) || 
 			((instr->class == DEL_ELEMENT && instr->id == BEG_PIC)&&
+			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)||
+			((instr->class == DEL_ELEMENT && instr->id == END_MF)&&
 			free_count != cgmTab[cgm_fd].record_size - HEADERSIZE)){
 
 			if ((free_count = put_output(cgm_fd, pg, free_count))<1)
