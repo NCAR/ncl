@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.9 1992-11-21 00:24:14 clyne Exp $
+ *	$Id: soft_fill.c,v 1.10 1993-12-15 23:19:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -399,11 +399,20 @@ int	initSoftSim(minx, maxx, miny, maxy)
 #endif
 {
 
+	DCtype	temp;
+
 	/*
 	 * if alread initialized free resources and realocate
 	 */
 	if (isInit) {
 		free_fill_table();
+	}
+
+	if (maxx < minx) {
+		temp = minx; minx = maxx, maxx = temp;
+	}
+	if (maxy < miny) {
+		temp = miny; miny = maxy, maxy = temp;
 	}
 
 	maxX = maxx;
