@@ -1,5 +1,5 @@
 /*
- *	$Id: env.c,v 1.1 1994-08-05 23:03:36 boote Exp $
+ *	$Id: env.c,v 1.2 1994-08-10 18:28:49 boote Exp $
  */
 		
 
@@ -57,7 +57,7 @@ char *  getFcapname( device )
 
 	if ( device == (char *) NULL )
 	{
-		if ( (device = getenv("FONTCAP")) == (char *) NULL)
+		if ( (device = _NGGetNCARGEnv("fontcap")) == (char *) NULL)
 		{
 			fprintf(stderr, "No font specified\n");
 			return( (char *) NULL);
@@ -110,7 +110,7 @@ char *  getGcapname( device )
 
 	if ( device == (char *) NULL )
 	{
-		if ( (device = getenv("GRAPHCAP")) == (char *) NULL)
+		if ( (device = _NGGetNCARGEnv("graphcap")) == (char *) NULL)
 		{
 			fprintf(stderr, "No device specified\n");
 			return(NULL);
