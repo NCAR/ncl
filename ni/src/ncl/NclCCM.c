@@ -1069,9 +1069,10 @@ int	wr_status;
 		first = 0;
 	}
 	fd = fopen(NrmQuarkToString(path),"r");
-	vbuf = (void*)NclMalloc(4*getpagesize());
-	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+		
 	if(fd!=NULL) {
+		vbuf = (void*)NclMalloc(4*getpagesize());
+		setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
 /*
 * If its COS blocked it will set up MySeek and MyRead pointers for COS freads
 * If its NON blocked cray binary file the MySeek and MyRead pointer 
@@ -2121,6 +2122,10 @@ void *storage
 		return(NULL);
 	} else {
 		fd = fopen(NrmQuarkToString(thefile->file_path_q),"r");
+		if(fd == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Ack! The file (%s) has been removed or no longer exists, can't continue");
+			return(NULL);
+		}
 		vbuf = (void*)NclMalloc(4*getpagesize());
 		setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
 		
