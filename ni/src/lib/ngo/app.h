@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.3 1997-01-03 01:37:59 boote Exp $
+ *      $Id: app.h,v 1.4 1997-01-17 18:59:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,54 @@ extern void NgRemoveWorkProc(
 	int		appmgrid,
 	NgWorkProc	work_proc,
 	NhlPointer	cdata
+);
+
+/*
+ * The NgCBWP functions allow you to add a callback function to an NhlLayer
+ * that doesn't actually get executed until ncl is finished executing -
+ * it actually gets executed from the WorkProc interface.  The
+ * NgCBWPCopyFunc is executed when the actual callback is executed - it is
+ * used to copy the cbdata - it should return False if it is unable to copy
+ * the data, or if it determines that the actual callback shouldn't be called.
+ * It should use the pointer to NhlArgVal to return a copy of the cbdata.
+ * The cb_func that is added is actually called with
+ * the copy that was returned from the NgCBWPCopyFunc from a WorkProc.
+ * The NgCBWPCopyFunc is only necessary if the callback list's
+ * cbdata.ptrval is used.  If copy_func is NULL, then a simple assignment
+ * of the NhlArgVal's is done.  The NgCBWPFreeFunc is used to free
+ * any value allocated from the NgCBWPCopyFunc.  It will be called
+ * after the cb_func is called.  It will also be called in the event
+ * that the NgCBWP is destroyed before all WorkProc's have actually
+ * executed, but after an actual callback list has executed to allocate
+ * a cbdata.  (It is possible to have your callback routine called after
+ * the object that reported it has actually been destroyed - if you don't
+ * want that to happen, then install an _NhlCBobjDestroy callback for
+ * the object that calls NgCBWPDestroy on the NgCBWP.)
+ */
+typedef struct NgCBWPRec NgCBWPRec, *NgCBWP;
+
+typedef NhlBoolean (*NgCBWPCopyFunc)(
+	NhlArgVal	cbdata,
+	NhlArgVal	*ret
+);
+
+typedef void (*NgCBWPFreeFunc)(
+	NhlArgVal	cbdata
+);
+
+extern NgCBWP NgCBWPAdd(
+	int		appmgrid,
+	NgCBWPCopyFunc	copy_func,
+	NgCBWPFreeFunc	free_func,
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	cb_func,
+	NhlArgVal	udata
+);
+
+extern void NgCBWPDestroy(
+	NgCBWP		cbwp
 );
 
 extern int NgAppGetID(

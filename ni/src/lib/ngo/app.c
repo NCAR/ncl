@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.3 1997-01-03 01:37:58 boote Exp $
+ *      $Id: app.c,v 1.4 1997-01-17 18:59:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -203,6 +203,33 @@ AppMgrInitialize
 	return NhlNOERROR;
 }
 
+static void
+FreeGOList
+(
+	_NgAppGOList	gol
+)
+{
+	int	i,j;
+
+	if(!gol)
+		return;
+
+	FreeGOList(gol->next);
+
+	i=0;
+	while(i < _NgGOLISTSIZE && gol->num){
+		if(gol->go[i] != NhlDEFAULT_APP){
+			NhlDestroy(gol->go[i]);
+			gol->num--;
+		}
+		i++;
+	}
+
+	NhlFree(gol);
+
+	return;
+}
+
 /*
  * Function:	AppMgrDestroy
  *
@@ -227,12 +254,23 @@ AppMgrDestroy
 	NgAppMgrClass	ac = (NgAppMgrClass)NgappMgrClass;
 	int		i;
 	_NgWorkProc	wk1,wk2;
+	_NgAppFStack	afs1,afs2;
 
 	wk1 = ap->wp;
 	while(wk1){
 		wk2 = wk1;
 		wk1 = wk1->next;
 		NhlFree(wk2);
+	}
+
+	FreeGOList(ap->go);
+	FreeGOList(ap->ncleditors);
+
+	afs1 = ap->active;
+	while(afs1){
+		afs2 = afs1;
+		afs1 = afs2->next;
+		NhlFree(afs2);
 	}
 
 	return NhlNOERROR;
@@ -518,7 +556,6 @@ NgRemoveWorkProc
 {
 	char		func[] = "NgRemoveWorkProc";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	NgAppMgrClass	ac;
 	_NgWorkProc	tmp,*wp;
 
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
@@ -545,6 +582,247 @@ NgRemoveWorkProc
 
 	NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"%s:Unable to remove proc",func));
+	return;
+}
+
+typedef struct _NgCBWP_WPLRec _NgCBWP_WPLRec, *_NgCBWP_WPL;
+
+struct NgCBWPRec{
+	int		appmgrid;
+	NgCBWPCopyFunc	copy_func;
+	NgCBWPFreeFunc	free_func;
+	_NhlCBFunc	cb_func;
+	NhlArgVal	udata;
+
+	_NhlCB		cb;
+	_NhlCB		ldestroycb;
+	_NhlCB		adestroycb;
+	_NgCBWP_WPL	wp_list;
+};
+
+struct _NgCBWP_WPLRec{
+	NgCBWP		cbwp;
+	NhlArgVal	cbdata;
+	_NgCBWP_WPL	next;
+};
+
+/*
+ * This function actually executes the cb_func that was added with the
+ * NgCBWPAdd call - it frees the cbdata after calling the cb_func.
+ */
+static NhlBoolean
+_NgCBWPWorkProc
+(
+	NhlPointer	cdata
+)
+{
+	_NgCBWP_WPL	wpnode = (_NgCBWP_WPL)cdata;
+	_NgCBWP_WPL	*wpptr;
+	NgCBWP		cbwp = wpnode->cbwp;
+
+	(*cbwp->cb_func)(wpnode->cbdata,cbwp->udata);
+	if(cbwp->free_func)
+		(*cbwp->free_func)(wpnode->cbdata);
+
+	wpptr = &cbwp->wp_list;
+	while(*wpptr){
+		if(*wpptr == wpnode){
+			*wpptr = wpnode->next;
+			break;
+		}
+		wpptr = &(*wpptr)->next;
+	}
+
+	NhlFree(wpnode);
+
+	return True;
+}
+
+/*
+ * This is the function that is actually called by the NhlLayer's callback
+ * list.  It just copies the cbdata and adds a work proc that will call the
+ * users routine with the copy of the cbdata.
+ */
+static void
+_NgCBWPCallback
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NhlArgVal	lcbdata;
+	_NgCBWP_WPL	wpnode;
+	NgCBWP		cbwp = (NgCBWP)udata.ptrval;
+
+#if	DEBUG
+	memset(&lcbdata,0,sizeof(NhlArgVal));
+#endif
+
+	if(cbwp->copy_func){
+		if(!(*cbwp->copy_func)(cbdata,&lcbdata))
+			return;
+	}
+	else
+		lcbdata = cbdata;
+
+	wpnode = NhlMalloc(sizeof(_NgCBWP_WPLRec));
+	if(!wpnode){
+		if(cbwp->free_func)
+			(*cbwp->free_func)(lcbdata);
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+
+	wpnode->cbwp = cbwp;
+	wpnode->cbdata = lcbdata;
+	wpnode->next = cbwp->wp_list;
+	cbwp->wp_list = wpnode;
+	NgAddWorkProc(cbwp->appmgrid,_NgCBWPWorkProc,(NhlPointer)wpnode);
+
+	return;
+}
+
+/*
+ * This function is added as Destroy callback to the appmgr and to the
+ * NhlLayer that the original callback list was installed to.  It removes
+ * the callback, and if the object being destroyed is the appmgr, then
+ * it also free's the _NgCBWP_WPL list since the work proc's won't be
+ * executed anyway.
+ */
+static void
+_NgCBWPDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgCBWP		cbwp = (NgCBWP)udata.ptrval;
+	NhlLayer	l = (NhlLayer)cbdata.ptrval;
+	_NgCBWP_WPL	node;
+
+	_NhlCBDelete(cbwp->cb);
+	_NhlCBDelete(cbwp->ldestroycb);
+	_NhlCBDelete(cbwp->adestroycb);
+	cbwp->cb = cbwp->ldestroycb = cbwp->adestroycb = NULL;
+
+	if(l->base.id == cbwp->appmgrid){
+		while(cbwp->wp_list){
+			node = cbwp->wp_list;
+			cbwp->wp_list = node->next;
+			NhlFree(node);
+		}
+	}
+
+	return;
+}
+
+/*
+ * Function:	NgCBWPAdd
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+extern NgCBWP
+NgCBWPAdd
+(
+	int		appmgrid,
+	NgCBWPCopyFunc	copy_func,
+	NgCBWPFreeFunc	free_func,
+	NhlLayer	l,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	cb_func,
+	NhlArgVal	udata
+)
+{
+	char		func[] = "NgCBWPAdd";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appmgrid);
+	NhlArgVal	ludata,lsel;
+	NgCBWP		cbwp;
+
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid NgAppMgr object!",
+									func);
+		return;
+	}
+
+	cbwp = NhlMalloc(sizeof(NgCBWPRec));
+	if(!cbwp){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+
+#ifdef	DEBUG
+	memset(&ludata,0,sizeof(NhlArgVal));
+	memset(&lsel,0,sizeof(NhlArgVal));
+#endif
+	ludata.ptrval = cbwp;
+	cbwp->cb = _NhlAddObjCallback(l,cbname,sel,_NgCBWPCallback,ludata);
+	if(!cbwp->cb){
+		NhlFree(cbwp);
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to add CBWP",func));
+		return NULL;
+	}
+
+	cbwp->ldestroycb = _NhlAddObjCallback(l,_NhlCBobjDestroy,
+						lsel,_NgCBWPDeleteCB,ludata);
+	cbwp->adestroycb = _NhlAddObjCallback((NhlLayer)app,_NhlCBobjDestroy,
+						lsel,_NgCBWPDeleteCB,ludata);
+
+	cbwp->appmgrid = appmgrid;
+	cbwp->copy_func = copy_func;
+	cbwp->free_func = free_func;
+	cbwp->cb_func = cb_func;
+	cbwp->udata = udata;
+
+	cbwp->wp_list = NULL;
+
+	return cbwp;
+}
+
+/*
+ * Function:	NgCBWPDestroy
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+extern void
+NgCBWPDestroy
+(
+	NgCBWP	cbwp
+)
+{
+	_NgCBWP_WPL	node;
+
+	if(!cbwp)
+		return;
+
+	_NhlCBDelete(cbwp->cb);
+	_NhlCBDelete(cbwp->ldestroycb);
+	_NhlCBDelete(cbwp->adestroycb);
+	cbwp->cb = cbwp->ldestroycb = cbwp->adestroycb = NULL;
+
+	while(cbwp->wp_list){
+		node = cbwp->wp_list;
+		cbwp->wp_list = node->next;
+		NgAddWorkProc(cbwp->appmgrid,_NgCBWPWorkProc,(NhlPointer)node);
+		NhlFree(node);
+	}
+
 	return;
 }
 

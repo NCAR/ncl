@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.4 1997-01-03 01:38:01 boote Exp $
+ *      $Id: ncledit.c,v 1.5 1997-01-17 18:59:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -147,6 +147,7 @@ NEInitialize
 	np->edit = False;
 	np->my_cmd = False;
 	np->print = False;
+	np->do_output = False;
 	np->more_cmds = NULL;
 	np->submit_pos = np->reset_pos = 0;
 	np->line = 0;
@@ -202,18 +203,6 @@ TextFocusCB
 	Widget		w,
 	XtPointer	udata,
 	XtPointer	cbdata
-)
-{
-	XmProcessTraversal((Widget)udata,XmTRAVERSE_CURRENT);
-}
-
-static void
-TextFocusEH
-(
-	Widget		widget,
-	XtPointer	udata,
-	XEvent		*event,
-	Boolean		*cont
 )
 {
 	XmProcessTraversal((Widget)udata,XmTRAVERSE_CURRENT);
@@ -445,6 +434,7 @@ SubmitCB
 		np->edit = edit;
 	}
 
+	np->do_output = True;
 	XmTextInsert(np->prompt_text,XmTextGetLastPosition(np->prompt_text),
 									"\n");
 	XtVaGetValues(np->vsbar,
@@ -453,6 +443,22 @@ SubmitCB
 	XtVaSetValues(np->prompt_text,
 		XmNuserData,	val,
 		NULL);
+
+	return;
+}
+
+static void
+UpdateDisplay
+(
+	Display	*dpy
+)
+{
+	XEvent	ev;
+
+	XSync(dpy,False);
+
+	while(XCheckMaskEvent(dpy,ExposureMask,&ev))
+		XtDispatchEvent(&ev);
 
 	return;
 }
@@ -470,6 +476,9 @@ OutputCB
 	int		num=0;
 	XmTextPosition	tp;
 	NhlBoolean	edit;
+
+	if(!np->do_output)
+		return;
 
 	edit = np->edit;
 	np->edit = True;
@@ -495,6 +504,8 @@ OutputCB
 		NULL);
 	np->edit = edit;
 
+	UpdateDisplay(ncl->go.x->dpy);
+
 	return;
 }
 
@@ -512,6 +523,9 @@ ErrOutputCB
 	char		buffer[NhlERRMAXMSGLEN+1];
 	char		*nl;
 	int		len;
+
+	if(!np->do_output)
+		return;
 
 	NhlErrSPrintMsg(buffer,(NhlErrMsg*)cbdata.ptrval);
 	len = strlen(buffer);
@@ -542,6 +556,8 @@ ErrOutputCB
 		XmNuserData,	len,
 		NULL);
 	np->edit = edit;
+
+	UpdateDisplay(ncl->go.x->dpy);
 
 	return;
 }
@@ -695,6 +711,7 @@ PromptCB
 		NULL);
 
 	np->edit = edit;
+	np->do_output = False;
 
 	return;
 }
@@ -941,7 +958,8 @@ NECreateWin
 	Widget		fuframe,fulabel;
 	Widget		oform,olabel;
 	Widget		iform,scroll;
-	Dimension	width;
+	Widget		hsbar;
+	Dimension	width,height;
 	Arg		args[10];
 	int		nargs;
 	NhlLayer	nstate;
@@ -1134,10 +1152,6 @@ NECreateWin
 							(XtPointer)np->text);
 	XtAddEventHandler(np->prompt_text,StructureNotifyMask,False,
 						MapPromptEH,(XtPointer)go);
-	XtAddEventHandler(np->prompt_text,ButtonPressMask,False,
-					TextFocusEH,(XtPointer)np->text);
-
-
 
 	np->scroll = scroll = XtVaCreateManagedWidget("scroll",
 					xmScrolledWindowWidgetClass,iform,
@@ -1163,7 +1177,32 @@ NECreateWin
 								(XtPointer)go);
 	XtVaGetValues(scroll,
 		XmNverticalScrollBar,	&np->vsbar,
+		XmNhorizontalScrollBar,	&hsbar,
 		NULL);
+
+#if	NOT
+	XtVaGetValues(hsbar,
+		XmNwidth,	&width,
+		XmNheight,	&height,
+		NULL);
+
+	XtVaSetValues(hsbar,
+		XmNshadowThickness,	2,
+		XmNwidth,		width+4,
+		XmNheight,		height+4,
+		NULL);
+
+	XtVaGetValues(np->vsbar,
+		XmNwidth,	&width,
+		XmNheight,	&height,
+		NULL);
+
+	XtVaSetValues(np->vsbar,
+		XmNshadowThickness,	2,
+		XmNwidth,		width+4,
+		XmNheight,		height+4,
+		NULL);
+#endif
 
 	XtAddCallback(np->vsbar,XmNvalueChangedCallback,PromptScrollCB,
 							np->prompt_text);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.4 1997-01-03 01:38:01 boote Exp $
+ *      $Id: ncleditP.h,v 1.5 1997-01-17 18:59:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,7 @@ typedef struct _NgNclEditPart {
 	NhlBoolean	edit;
 	NhlBoolean	my_cmd;
 	NhlBoolean	print;
+	NhlBoolean	do_output;
 	char		*more_cmds;
 	XmTextPosition	submit_pos;
 	XmTextPosition	reset_pos;

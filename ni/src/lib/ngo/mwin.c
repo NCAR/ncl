@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.1 1997-01-03 01:37:59 boote Exp $
+ *      $Id: mwin.c,v 1.2 1997-01-17 18:59:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -145,6 +145,9 @@ struct NgObjTreeNodeRec{
 	NgObjTreeNode		children;
 	int			nchildren;
 
+	NgCBWP			cccb;
+
+	NhlLayer		l;
 	int			id;
 	int			parent_id;
 	Const char		*name;
@@ -173,6 +176,7 @@ AllocNode(
 	NgNclHluObj	hlu
 )
 {
+	char		func[]="AllocNode";
 	NgObjTreeNode	new = NhlMalloc(sizeof(NgObjTreeNodeRec));
 
 	if(!new){
@@ -189,6 +193,15 @@ AllocNode(
 	new->children = NULL;
 	new->nchildren = 0;
 
+	new->cccb = NULL;
+
+	new->l = _NhlGetLayer(hlu->id);
+	if(!new->l){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid obj id %d",
+								func,hlu->id));
+		NhlFree(new);
+		return NULL;
+	}
 	new->id = hlu->id;
 	new->name = hlu->name;
 	new->parent_id = hlu->parent_id;
@@ -331,6 +344,130 @@ AddVwNode
 	return;
 }
 
+static NhlBoolean
+CopyCC
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	*ret
+)
+{
+	_NhlobjChangeChild	cc = (_NhlobjChangeChild)cbdata.ptrval;
+	_NhlobjChangeChild	new;
+
+	if(cc->reason != _NhlobjCCMove)
+		return False;
+
+	new = NhlMalloc(sizeof(_NhlobjChangeChildRec));
+	if(!new){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+
+	*new = *cc;
+	ret->ptrval = new;
+
+	return True;
+}
+
+static void
+FreeCC
+(
+	NhlArgVal	cbdata
+)
+{
+	NhlFree(cbdata.ptrval);
+
+	return;
+}
+
+static void
+WkChildChangeCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	char			func[]="WkChildChangeCB";
+	_NhlobjChangeChild	cc = (_NhlobjChangeChild)cbdata.ptrval;
+	NgObjTreeNode		wknode = (NgObjTreeNode)udata.ptrval;
+	NgObjTreeNode		*tmp,work,child;
+	int			or,nr;
+
+	/*
+	 * Reason was checked in the copy func, so I know this is a "move".
+	 *
+	 * Only deal with the move in the "old" workstation.
+	 */
+	if(wknode->id != cc->old)
+		return;
+
+	/*
+	 * find node for new workstation
+	 */
+	work = wknode->tree->wklist;
+	while(work && work->id != cc->new)
+		work = work->next;
+	if(!work){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find new parent",
+								func));
+		return;
+	}
+
+	/*
+	 * Find child
+	 */
+	tmp = &wknode->children;
+	or=wknode->pos+1;
+	while(*tmp && (*tmp)->id != cc->child){
+		or++;
+		tmp = &(*tmp)->next;
+	}
+
+	if(!*tmp){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find child node",
+								func));
+		return;
+	}
+	child = *tmp;
+
+	/*
+	 * Remove the child from the old work
+	 */
+	*tmp = child->next;
+	child->next = NULL;
+	wknode->nchildren--;
+
+	/*
+	 * Add child to new work
+	 * TODO: Add child to correct position - right now it is just to the
+	 *	end.
+	 */
+	tmp = &work->children;
+	while(*tmp)
+		tmp = &(*tmp)->next;
+	*tmp = child;
+	work->nchildren++;
+	nr = work->pos + work->nchildren;
+
+	/*
+	 * Move the row in the widget.
+	 * (if nr > or, then the old row will be removed before the new
+	 * row inserted, so the index should be one less.
+	 */
+	if(nr>or)
+		nr--;
+	XmLGridMoveRows(work->tree->wtree,nr,or,1);
+
+	/*
+	 * Renumber the nodes starting from which-ever workstation is
+	 * earlier in the tree.
+	 */
+	child = (work->pos < wknode->pos)? work: wknode;
+	NumberNodes(child->next,child->pos + child->nchildren);
+
+	return;
+}
+
 static void
 AddWkNode
 (
@@ -339,8 +476,24 @@ AddWkNode
 	NgObjTreeNode	wknode
 )
 {
+	char		func[]="AddWkNode";
+	NhlArgVal	sel,udata;
+
 	if(!wknode)
 		return;
+
+#if	DEBUG
+	memset(&sel,0,sizeof(NhlArgVal));
+	memset(&udata,0,sizeof(NhlArgVal));
+#endif
+	sel.lngval = 0;	/* not used */
+	udata.ptrval = wknode;
+	wknode->cccb = NgCBWPAdd(otree->appmgr,CopyCC,FreeCC,wknode->l,
+				_NhlCBobjChildChange,sel,WkChildChangeCB,udata);
+	if(!wknode->cccb){
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"%s:Unable to track ChangeWorkstation!",func));
+	}
 
 	wknode->xmname = NgXAppCreateXmString(otree->appmgr,
 							(char*)wknode->name);
@@ -373,6 +526,7 @@ CreateCB
 	NhlArgVal	udata
 )
 {
+	char		func[]="CreateCB";
 	NgNclHluObj	hlu = (NgNclHluObj)cbdata.ptrval;
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
 	NgObjTreeNode	new = AllocNode(hlu);
@@ -380,6 +534,7 @@ CreateCB
 	NhlLayer	l=_NhlGetLayer(hlu->id);
 	int		level=0,pos=-1,i;
 	Boolean		expn = True;
+	NhlArgVal	sel,ludata;
 
 	if(!new){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -400,6 +555,18 @@ CreateCB
 		}
 		else{
 			otree->wklist = new;
+		}
+#if	DEBUG
+		memset(&sel,0,sizeof(NhlArgVal));
+		memset(&ludata,0,sizeof(NhlArgVal));
+#endif
+		sel.lngval = 0;	/* not used */
+		ludata.ptrval = new;
+		new->cccb = NgCBWPAdd(otree->appmgr,CopyCC,FreeCC,new->l,
+			_NhlCBobjChildChange,sel,WkChildChangeCB,ludata);
+		if(!new->cccb){
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"%s:Unable to track ChangeWorkstation!",func));
 		}
 	}
 	else if(l && _NhlIsClass(l,NhlviewClass) &&
@@ -454,6 +621,7 @@ FreeNodeList
 
 	FreeNodeList(otree,node->next);
 	FreeNodeList(otree,node->children);
+	NgCBWPDestroy(node->cccb);
 	NgXAppFreeXmString(otree->appmgr,node->xmname);
 	NhlFree(node);
 
