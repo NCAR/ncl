@@ -2,6 +2,7 @@
 #ifndef NclDataDefs_h
 #define NclDataDefs_h
 
+
 #ifdef DEBUG
 #include <assert.h>
 /*
@@ -162,7 +163,7 @@ typedef	struct _NclRangeRec {
 
 typedef	struct _NclVecRec {
 	struct _NclMultiDValDataRec *vec;
-} NclVecRec;;
+} NclVecRec;
 
 
 typedef	struct _NclSubRec {
