@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arex01.c.sed,v 1.1 1994-05-13 14:25:15 haley Exp $
+ *	$Id: c_arex01.c.sed,v 1.2 1994-05-13 17:33:45 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -65,7 +65,7 @@ main()
  */
     float g5e1x[7],g5e1y[7];
     int i, ival;
-    float s;
+    float s, rval;
     Gcolr_rep colr;
 /*
  * Declare the routine that will color the areas defined by the area map.
