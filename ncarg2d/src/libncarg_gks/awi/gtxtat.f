@@ -1,5 +1,5 @@
 C
-C	$Id: gtxtat.f,v 1.1 1993-01-09 02:03:47 fred Exp $
+C	$Id: gtxtat.f,v 1.2 1994-04-30 00:05:25 fred Exp $
 C
         SUBROUTINE GTXTAT(IOS,STATUS)
 C
@@ -78,10 +78,13 @@ C
         XHIGHT = REAL(CHIGHT)/32767.
 C
 C  Scale the character height by the original scale factor in the
-C  Y direction.
+C  Y direction.  Take a vactor (0,XHIGHT), transform it with the
+C  current transformation matrix, then find the length of the
+C  transformed vector.
 C
         YSCALE = SQRT(CURTM(1,2)*CURTM(1,2)+CURTM(2,2)*CURTM(2,2))
         HN = XHIGHT*YSCALE
+        IF (HN .LT. 0.00004) HN = 0.00004
         CALL GSCHH(HN)
       ELSE IF (OPID .EQ. ATELCO) THEN
 C
@@ -121,7 +124,7 @@ C
         CALL GOPDEC(VERT,MENCPR,1,IOS,STATUS)
         CALL GSTXAL(HORIZ,VERT)
 C
-C  Skip over the rest of the alignment nformation.
+C  Skip over the rest of the alignment information.
 C
         CALL GSKPOP(8,LEN-(MENCPR*2/8),IOS,STATUS)
       END IF

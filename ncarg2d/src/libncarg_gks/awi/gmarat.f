@@ -1,5 +1,5 @@
 C
-C	$Id: gmarat.f,v 1.1 1993-01-09 01:58:58 fred Exp $
+C	$Id: gmarat.f,v 1.2 1994-04-30 00:05:23 fred Exp $
 C
         SUBROUTINE GMARAT(IOS,STATUS)
 C
@@ -15,6 +15,7 @@ C
       include 'trstat.h'
       include 'trpars.h'
       include 'trcode.h'
+      include 'gkscom.h'
 C
       INTEGER IOS, STATUS
 C
@@ -35,7 +36,16 @@ C
 C  MARKER SIZE
 C
         CALL GTFLT(MARSIZ,MFLCPR,IOS,STATUS)
-        CALL GSMKSC(MARSIZ)
+C
+C  Scale the marker size by the current transformation matrix.
+C  Take a vector (0,MARSIZ), transform it with the
+C  current transformation matrix, then find the length of the
+C  transformed vector.
+C
+        YSCALE = SQRT(CURTM(1,2)*CURTM(1,2)+CURTM(2,2)*CURTM(2,2))
+        HS = MARSIZ*YSCALE
+        IF (HS .LT. 0.00004) HS = 0.00004
+        CALL GSMKSC(HS)
       ELSE IF (OPID .EQ. ATELMC) THEN
 C
 C  Set the marker color
