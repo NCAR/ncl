@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.20 1999-06-02 03:40:07 dbrown Exp $
+ *      $Id: app.c,v 1.21 1999-06-02 23:01:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -234,9 +234,9 @@ static void GetColormapsInPath
 				tcp++;
 			if (! (isdigit(*tcp) || *tcp == '.'))
 				continue;
-			if (i > 767)
-				break;
 			while (1) {
+				if (i > 767)
+					break;
 				f = strtod(tcp,&next);
 				if (next == tcp)
 					break;
