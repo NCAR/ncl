@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.4 1996-11-16 00:45:52 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.5 1998-03-30 20:43:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -271,7 +271,7 @@ NclTypeClass fc;
 			buffer[n] = '\0';
 			*res = (string)NrmStringToQuark(buffer);
 		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
+			for(i = 0; i < n;i++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				buffer[i] = *fl;
