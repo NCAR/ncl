@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbP.h,v 1.3 1998-01-29 16:10:05 boote Exp $
+ *      $Id: xcbP.h,v 1.4 1998-09-18 23:21:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -213,6 +213,6 @@ struct _XcbRec{
 		? Xmalloc((unsigned)(size))\
 		: stack)
 #define _XcbStFree(ptr,stack)\
-		if((ptr)!=((void*)(stack))) XFree(ptr)
+		if(((void*)ptr)!=((void*)stack)) XFree((void*)ptr)
 
 #endif	/* XCBP_H */

@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.6 1998-03-11 19:00:15 dbrown Exp $
+ *      $Id: xcb.c,v 1.7 1998-09-18 23:21:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,10 @@
 #include <X11/Xlibint.h>
 
 #include <Xm/Xm.h>
+
+#ifdef	DEBUG
+static int XcbInUse = 0;
+#endif
 
 Visual
 *XcbBestDepthVisual
@@ -157,7 +161,6 @@ Visual
 		vis = DefaultVisual(dpy,scr);
 	}
 
-	vis = vinfo[best].visual;
 	XFree(vinfo);
 	XFree(def_vinfo);
 
@@ -697,7 +700,7 @@ FindDupNode(
 	_XcbCStat	keyptr = &key;
 	_XcbCStat	*node = NULL;
 
-	if((col->pixel < xcb->scstat) && (col->pixel >= 0)){
+	if(col->pixel < xcb->scstat){
 		if(xcb->cstat[col->pixel].ref > 0)
 			return &xcb->cstat[col->pixel];
 		return NULL;
@@ -811,6 +814,8 @@ InitTrue(
 		bmask >>= 1;
 		xcb->bits.blue++;
 	}
+
+	xcb->rinc = xcb->ginc = xcb->binc = 0.0;
 
 	return;
 }
@@ -1009,40 +1014,71 @@ InitColor(
 static void
 FreeAllPixels
 (
-	Xcb	xcb
+	Xcb		xcb,
+	NhlBoolean	do_free
 )
 {
 	_XcbCStat	node;
 	unsigned long	fpix[64];
-	int		i,nfpix=0;
+	int		i,ref,nfpix=0;
+
+	if((xcb->visinfo->class == TrueColor) || (xcb->vtype == XcbBW))
+		return;
 
 	/*
 	 * Free colors allocated from xcb->cmap...
 	 */
 	i=0;nfpix=0;
-	while(i<xcb->ncsort){
-		node = xcb->csort[i];
-		if((NhlNumber(fpix)-nfpix) > 0)
-			fpix[nfpix++] = node->xcol.pixel;
-		else if(nfpix > 0){
-			/*
-			 * This nodes ref's won't fit, so empty
-			 * fpix.
-			 */
-			if(xcb->parent)
+	if(xcb->parent && !xcb->my_cmap){
+		while(i<xcb->ncsort){
+			node = xcb->csort[i];
+			ref = node->ref;
+		AGAIN:
+			if((node->alloc==XcbRO)||(node->alloc==XcbRW)){
+				while(ref && (nfpix < NhlNumber(fpix))){
+					fpix[nfpix++] = node->xcol.pixel;
+					ref--;
+				}
+			}
+
+			if(nfpix >= NhlNumber(fpix)){
+				/*
+				 * fpix full - free these colors, then go on.
+				 */
 				XcbFreeColors(xcb->parent,fpix,nfpix);
-			else
-				XFreeColors(xcb->dpy,xcb->cmap,fpix,
-							nfpix,0);
-			nfpix = 0;
-			continue;
+				nfpix = 0;
+				/*
+				 * If havn't finished this node-goto top-o-loop
+				 */
+				if(ref)
+					goto AGAIN;
+			}
+
+			if(do_free && !xcb->cstat)
+				XFree(node);
+			i++;
 		}
-		i++;
-	}
-	if(nfpix > 0){
-		if(xcb->parent && !xcb->my_cmap)
+		if(nfpix > 0)
 			XcbFreeColors(xcb->parent,fpix,nfpix);
-		else
+	}
+	else{
+		while(i<xcb->ncsort){
+			node = xcb->csort[i];
+			if((node->alloc==XcbRO)||(node->alloc==XcbRW))
+				fpix[nfpix++] = node->xcol.pixel;
+
+			if(nfpix >= NhlNumber(fpix)){
+				/*
+				 * fpix full - free these colors, then go on.
+				 */
+				XFreeColors(xcb->dpy,xcb->cmap,fpix,nfpix,0);
+				nfpix = 0;
+			}
+			if(do_free && !xcb->cstat)
+				XFree(node);
+			i++;
+		}
+		if(nfpix > 0)
 			XFreeColors(xcb->dpy,xcb->cmap,fpix,nfpix,0);
 	}
 
@@ -1088,6 +1124,13 @@ _XcbCFault(
 	if(!xcb->rw && xcb->vis == old_vis){
 		Display		*dpy = NULL;
 		/*
+		 * This branch should only take place for a StaticColor or
+		 * StaticGray visual - and they seem to be very rare.  So....
+		 * I would expect the most problems in the future to be here
+		 * if those visuals end up being used more in the future.
+		 */
+
+		/*
 		 * To copy the colormap without freeing the cells that have
 		 * already been allocated, I have to open a new connection
 		 * to the display, and create the new colormap from there.
@@ -1107,6 +1150,9 @@ _XcbCFault(
 		 * we can only do this if (xcb->cmap == DefaultColormap)
 		 * but that isn't clear from the documentation, so
 		 * I'll try it.
+		 *
+		 * It doesn't appear to free the colormap - and I don't think
+		 * it should since it is a "new" display connection.
 		 */
 		new_cmap = XCopyColormapAndFree(dpy,xcb->cmap);
 
@@ -1156,7 +1202,7 @@ _XcbCFault(
 		return False;
 	}
 
-	FreeAllPixels(xcb);
+	FreeAllPixels(xcb,False);
 
 	NhlINITVAR(sel);
 	NhlINITVAR(cbdata);
@@ -1222,6 +1268,17 @@ _XcbCFault(
 		/*
 		 * Attempt to minimize color flash with DirectColor by
 		 * initializing colormap as a TrueColor ramp-up.
+		 *
+		 * This is how almost all TrueColor visuals I have seen are
+		 * organized.  If this fails to have the desired effect, it
+		 * could be modified to look at a TrueColor visual of the same
+		 * depth (especially the DefaultVisual!) and try and exactly
+		 * mimic that visual.  In practice there seems to be a slightly
+		 * different shade of color between the visuals on an SGI even
+		 * if you define the DirectColor using the values from the
+		 * TrueColor visual.  I believe this is because SGI has tuned
+		 * the TrueColor visual to be a non-linear ramp - even though
+		 * the rgb values are linear in the ramp.
 		 */
 		unsigned long	max;
 		unsigned long	val;
@@ -1489,6 +1546,10 @@ XcbCreate(
 		return NULL;
 	}
 
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
+
 	if(!attr)
 		mask = 0;
 	else
@@ -1672,6 +1733,14 @@ XcbCreate(
 			break;
 	}
 
+	xcb->allocCB = NULL;
+	xcb->cfaultCB = NULL;
+	xcb->destroyCB = NULL;
+
+	xcb->allocCBL = NULL;
+	xcb->cfaultCBL = NULL;
+	xcb->destroyCBL = NULL;
+
 	/*
 	 * Make sure we have a colormap...
 	 */
@@ -1684,9 +1753,15 @@ XcbCreate(
 						"Unable to create cmap"));
 			XFree(xcb->visinfo);
 			XFree(xcb);
+#ifdef	DEBUG
+			XcbInUse--;
+#endif
 			return NULL;
 		}
 	}
+
+	xcb->cfaultCBL = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
+	xcb->destroyCBL = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
 
 	if(xcb->cmpfunc == _XcbRGBDist){
 		XColor	c1,c2;
@@ -1719,14 +1794,6 @@ XcbCreate(
 		if(err < xcb->rgb_err_sqr)
 			xcb->rgb_err_sqr = 0;
 	}
-
-	xcb->allocCB = NULL;
-	xcb->cfaultCB = NULL;
-	xcb->destroyCB = NULL;
-
-	xcb->allocCBL = NULL;
-	xcb->cfaultCBL = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
-	xcb->destroyCBL = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
 
 	if(xcb->parent){
 		NhlArgVal	sel,udata;
@@ -1802,6 +1869,10 @@ XcbCreate(
 	}
 XmDONE:
 
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
+
 	return xcb;
 }
 
@@ -1829,8 +1900,9 @@ FreePixmapCache(
 	_XcbPixmapCache	node
 )
 {
-	if (!node)
+	if(!node)
 		return;
+
 	FreePixmapCache(xcb,node->next);
 	(void)FreePixmapNode(xcb,node);
 
@@ -1867,7 +1939,7 @@ XcbDestroy(
 	 * have caused anything that allocated colors to free them, but
 	 * just in case...
 	 */
-	FreeAllPixels(xcb);
+	FreeAllPixels(xcb,True);
 
 	if(xcb->my_cmap)
 		XFreeColormap(xcb->dpy,xcb->cmap);
@@ -1884,6 +1956,8 @@ XcbDestroy(
 	NXFREE(xcb->csort);
 	NXFREE(xcb->cstat);
 #undef	NXFREE
+
+	XFree(xcb);
 
 	return;
 }
@@ -1926,6 +2000,10 @@ XcbFreeColors(
 		return;
 	}
 
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
+
 	memcpy(spix,pixels,sizeof(unsigned long)*npixels);
 	qsort(spix,npixels,sizeof(unsigned long),ulcmp);
 
@@ -1963,8 +2041,8 @@ XcbFreeColors(
 						xcb->shifts.red].ref--;
 			xcb->gmap[(node->xcol.pixel & xcb->masks.green) >>
 						xcb->shifts.green].ref--;
-			xcb->bmap[(node->xcol.pixel & xcb->masks.red) >>
-						xcb->shifts.red].ref--;
+			xcb->bmap[(node->xcol.pixel&xcb->masks.blue) >>
+						xcb->shifts.blue].ref--;
 		}
 
 		if(node->ref < 1){
@@ -2003,8 +2081,8 @@ XcbFreeColors(
 						xcb->shifts.red].rw = False;
 				xcb->gmap[(node->xcol.pixel&xcb->masks.green) >>
 						xcb->shifts.green].rw = False;
-				xcb->bmap[(node->xcol.pixel & xcb->masks.red) >>
-						xcb->shifts.red].rw = False;
+				xcb->bmap[(node->xcol.pixel &xcb->masks.blue) >>
+						xcb->shifts.blue].rw = False;
 			}
 
 			if(!rwfound){
@@ -2018,8 +2096,12 @@ XcbFreeColors(
 				tnode = &xcb->cube[xcb->icube];
 				while(*tnode && (*tnode != node))
 					tnode = &(*tnode)->next;
-				if(*tnode)
+				if(*tnode){
 					*tnode = (*tnode)->next;
+				}
+				else{
+	NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Unable to remove node from cube??"));
+				}
 			}
 
 			if(!xcb->cstat)
@@ -2044,6 +2126,12 @@ XcbFreeColors(
 
 	_XcbStFree(spix,stack_spix);
 	_XcbStFree(fpix,stack_fpix);
+
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
+
+	return;
 }
 
 void
@@ -2068,10 +2156,18 @@ XcbAllocRWColor(
 	if(!xcb->rw)
 		return False;
 
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
+
 	if(xcb->my_cmap){
 		node = _XcbFindNullRefNode(xcb);
-		if(!node)
+		if(!node){
+#ifdef	DEBUG
+			XcbInUse--;
+#endif
 			return False;
+		}
 		node->alloc = XcbMYCMAP;
 	}
 	else{
@@ -2088,8 +2184,12 @@ XcbAllocRWColor(
 							&dummy,0,&newpix,1);
 		if(!valid){
 			if(_XcbCFault(xcb))
-				return XcbAllocRWColor(xcb,pix);
-			return False;
+				valid = XcbAllocRWColor(xcb,pix);
+
+#ifdef	DEBUG
+			XcbInUse--;
+#endif
+			return valid;
 		}
 
 		node = _XcbNewNode(xcb,newpix);
@@ -2098,6 +2198,9 @@ XcbAllocRWColor(
 				XcbFreeColor(xcb->parent,newpix);
 			else
 				XFreeColors(xcb->dpy,xcb->cmap,&newpix,1,0);
+#ifdef	DEBUG
+			XcbInUse--;
+#endif
 			return False;
 		}
 		node->alloc = XcbRW;
@@ -2122,6 +2225,9 @@ XcbAllocRWColor(
 	_XcbAddToRW(xcb,node);
 
 	*pix = node->xcol.pixel;
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
 	return True;
 }
 
@@ -2340,6 +2446,8 @@ _XcbDirectClosestColor(
 	iblue = (iblue << xcb->shifts.blue) & xcb->masks.blue;
 
 	close->pixel = (ired | igreen | iblue);
+
+	return True;
 }
 
 static _XcbCStat
@@ -2399,7 +2507,7 @@ CheckDiffs(
 
 		list = xcb->cube[ired+igreen+iblue];
 		while(list){
-			float		cerr,berr;
+			float		cerr,berr=0.0;
 
 			(void)_XcbValidColor(xcb,col,&list->xcol,&cerr);
 			if(!new || (cerr < berr)){
@@ -2440,6 +2548,7 @@ _XcbClosestColor(
 		/*
 		 * add node to cube.
 		 */
+		(void)_XcbGetCubeNodeList(xcb,col);
 		nptr = &xcb->cube[xcb->icube];
 		if(((xcb->ired*xcb->rinc) == nc.red) &&
 				(xcb->igreen*xcb->ginc == nc.green)&&
@@ -2460,7 +2569,7 @@ _XcbClosestColor(
 	list = _XcbGetCubeNodeList(xcb,col);
 	new = NULL;
 	while(list){
-		float		cerr,berr;
+		float		cerr,berr=0.0;
 
 		_XcbValidColor(xcb,col,&list->xcol,&cerr);
 		if(!new || (cerr < berr)){
@@ -2745,6 +2854,7 @@ _XcbAllocROColorTry(
 				}
 				node->alloc = XcbRO;
 				node->xcol = mycol;
+				(void)_XcbGetCubeNodeList(xcb,&mycol);
 				nptr = &xcb->cube[xcb->icube];
 				if(((xcb->ired*xcb->rinc) == mycol.red) &&
 					(xcb->igreen*xcb->ginc == mycol.green)&&
@@ -2829,7 +2939,7 @@ _XcbAllocROColorTry(
 
 	node = NULL;
 	while(list){
-		float		cerr,berr;
+		float		cerr,berr=0.0;
 
 		if(_XcbValidColor(xcb,&mycol,&list->xcol,&cerr)){
 			if(!node || (cerr < berr)){
@@ -3057,7 +3167,13 @@ XcbAllocROColor(
 		col->blue = 0;
 	}
 
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
 	_XcbAllocROColorDo(xcb,col);
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
 
 	return;
 }
@@ -3069,6 +3185,10 @@ XcbAllocCloseROColor(
 )
 {
 	XColor		nc;
+
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
 
 	if((xcb->vtype == XcbBW) || (xcb->visinfo->class == TrueColor))
 		nc = *col;
@@ -3088,6 +3208,10 @@ XcbAllocCloseROColor(
 
 	if(xcb->vtype == XcbGRAY)
 		col->green = col->blue = col->red;
+
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
 
 	return;
 }
@@ -3113,6 +3237,10 @@ _XcbAllocNamedColor(
 	else
 		str = name;
 
+#ifdef	DEBUG
+	XcbInUse++;
+#endif
+
 	if(!XParseColor(xcb->dpy,xcb->cmap,str,&nc)){
 		params[0] = str;
 		msg = "Color name \"%s\" is not defined";
@@ -3127,6 +3255,10 @@ _XcbAllocNamedColor(
 		XcbAllocROColor(xcb,&nc);
 
 	*col = nc;
+
+#ifdef	DEBUG
+	XcbInUse--;
+#endif
 
 	return True;
 }
@@ -3336,6 +3468,8 @@ _XcbCloseXpmAttributes(
 	node->npixels = my_attributes->nalloc_pixels;
 	memcpy(node->pixels,my_attributes->alloc_pixels,
 						sizeof(Pixel)*node->npixels);
+	if(free_ret_colors)
+		XpmFree(my_attributes->alloc_pixels);
 	node->pixmap = *pixmap_return;
 	node->next = xcb->pixmaps;
 	xcb->pixmaps = node;

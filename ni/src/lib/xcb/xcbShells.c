@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.c,v 1.3 1998-01-29 16:10:05 boote Exp $
+ *      $Id: xcbShells.c,v 1.4 1998-09-18 23:21:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,10 +22,7 @@
 #include <X11/Intrinsic.h>
 #include <Xcb/appSP.h>
 
-#define XcbShellIndex	(-1)
-#define XcbOverrideShellIndex		(XmOverrideShellIndex + 1)
-#define XcbTransientShellIndex		(XmTransientShellIndex + 1)
-
+#define XcbShellIndex (-1)
 static XmPartResource raw_resources[] = {
 	/*
 	 * Over-ride default values of these resources. (Move them to
@@ -812,7 +809,7 @@ XcbCvtStringToPixel(
 	else
 		XcbAllocROColor(xcb,&screenColor);
 
-	*closure_ret == (char*)True;
+	*closure_ret = (char*)True;
 	done(Pixel,screenColor.pixel);
 }
 
