@@ -1,10 +1,14 @@
 #
-#   $Id: yMakefile,v 1.6 1998-02-12 19:11:26 fred Exp $
+#   $Id: yMakefile,v 1.7 1998-03-27 18:31:37 haley Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
 
 MYNAME      = ngmath
+
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
+EXTRA_LIBS  =   $(XLIB)
+SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS = nm01c.c nm02c.c nm03c.c nm04c.c nm05c.c nm06c.c
 FSRCS = nm01f.f nm02f.f nm03f.f nm04f.f nm05f.f nm06f.f
