@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-04-16 17:01:22 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-09-23 20:39:41 kennison Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= eareas
 
-GENERIC_SRCS = arex01.f
+GENERIC_SRCS = arex01.f arex02.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
