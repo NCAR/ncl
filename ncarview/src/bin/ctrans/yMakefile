@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.28 1994-03-29 16:55:20 haley Exp $
+#	$Id: yMakefile,v 1.29 1994-04-19 14:33:31 haley Exp $
 #
 
 
 MYNAME		= ctrans
 
-#if defined(alpha)
+#if defined(alpha) && (MAJOR==1)
 #define COptOrDebugFlag -g3
 #endif
 

@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.24 1994-04-18 20:59:57 haley Exp $
+#	$Id: yMakefile,v 1.25 1994-04-19 14:31:34 haley Exp $
 #
 
 
 MYNAME		= libctrans.o
 INCLUDES	= ctrans.h
 
-#if defined(alpha)
+#if defined(alpha) && (MAJOR == 1)
 #define COptOrDebugFlag -g3
 #endif
 

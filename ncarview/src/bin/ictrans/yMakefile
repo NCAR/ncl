@@ -1,7 +1,7 @@
 
 MYNAME		= ictrans
 
-#if defined(alpha)
+#if defined(alpha) && (MAJOR==1)
 #define COptOrDebugFlag -g3
 #endif
 
