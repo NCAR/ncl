@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.4 1996-04-04 15:26:04 haley Exp $
+**      $Id: cn05c.c,v 1.5 1996-04-04 15:46:32 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -71,11 +71,11 @@ main()
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int     ncid, t_id, lon_id, lat_id, time_id;
-    float   T[40][49];
-    long  lon[49], lat[40];
+    int   ncid, t_id, lon_id, lat_id, time_id;
+    float T[40][49];
+    int   lon[49], lat[40];
     long  start[3], count[3], lonlen, latlen, nframes;
-    char    filename[256], daystr[10];
+    char  filename[256], daystr[10];
     const char *dir = _NGGetNCARGEnv("data");
 /*
  * Default is to create an NCGM file.
