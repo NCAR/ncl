@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.44 1996-02-26 22:14:39 dbrown Exp $
+ *      $Id: Workstation.c,v 1.45 1996-02-28 02:04:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -199,7 +199,7 @@ static NhlResource resources[] = {
 		sizeof(int),Oset(marker_table_len),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 	{NhlNwkDefGraphicStyleId,NhlCwkDefGraphicStyleId,
-		 NhlTInteger,sizeof(int),Oset(def_graphic_style_id),
+		 NhlTObjId,sizeof(int),Oset(def_graphic_style_id),
 		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 
 #define POset(field) Oset(public_lineinfo.field)
