@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.81 2001-09-14 21:17:57 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.82 2001-09-25 21:29:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -375,7 +375,7 @@ end
 ;***********************************************************************;
 
 procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,nya,nyb,yref_line, \
-                     bar_widths)
+                      bar_widths)
 local ndimsx, ndimsy, ncurves, dims, npts, nya, nyb
 begin
 ;
@@ -7005,22 +7005,20 @@ begin
   overlay(contour1,contour2)
 
 ; Draw all this stuff: contour plots and subtitles.
+    draw_and_frame(wks,contour1,calldraw,callframe,maxbb)
 
-; Test dimensions.  They must both either be the same, or Y 
-; be multi-dimensioned and X singly-dimensioned.
+; Return contour plot object.
+
+  contour1@contour2 = contour2
+  return(contour1)
+
+end
+
 ;***********************************************************************;
-    if(ndimsx.ne.1)
-      if(ndimsx.ne.ndimsy)
-        print("gsn_csm_xy: Fatal: X and Y must be the same dimensions, or X be 1-dimensional and Y multi-dimensional.")
-      else
-        if(.not.all(dimsizes(x).eq.dimsizes(y)))
-          print("gsn_csm_xy: Fatal: If X/Y are multiply-dimensioned, they must have the same dimension sizes.")
-        end if
-      end if
-    else
-      if(dimsizes(x).ne.npts)
-          print("gsn_csm_xy: Fatal: If X is one-dimensional, it must be the same length as the rightmost dimension of Y.")
-      end if
+; Function : gsn_csm_xy                                                 ;
+;                     wks: workstation object                           ;
+;                       x: X values                                     ;
+;                       y: X values                                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a titled XY plot to the workstation   ;
@@ -7107,7 +7105,8 @@ begin
          .not.all(dimsizes(x).eq.dimsizes(y)))).or.\
         ((ndimsx.eq.1.or.ndimsy.eq.1).and.nptsx.ne.npts))
       print("gsn_csm_xy: Fatal: X and Y must have the same dimensions sizes, or one must be one-dimensional and both have the same rightmost dimension.")
-          if(ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
+    end if
+
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
