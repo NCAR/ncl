@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.33 1997-04-25 22:35:01 haley Exp $
+#   $Id: yMakefile,v 1.34 1997-04-28 15:20:45 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -18,7 +18,7 @@ FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f cn05f.f cn06f.f cn07f.f cn08f.f \
 			cn17f.f
 NSRCS       = cn01n.ncl cn02n.ncl cn03n.ncl cn04n.ncl cn05n.ncl cn06n.ncl \
               cn07n.ncl cn08n.ncl cn09n.ncl cn10n.ncl cn12n.ncl cn13n.ncl \
-              cn14n.ncl cn15n.ncl cn16n.ncl
+              cn14n.ncl cn15n.ncl cn16n.ncl cn17n.ncl
 COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o cn05c.o cn06c.o cn07c.o cn08c.o \
 			cn09c.o cn10c.o cn11c.o cn12c.o cn13c.o cn14c.o cn15c.o cn16c.o \
 			cn17c.o
