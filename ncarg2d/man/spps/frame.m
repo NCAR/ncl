@@ -13,7 +13,7 @@ CALL FRAME
 .sp
 void c_frame()
 .SH USAGE
-If a CGM workstation is active, a call to routine FRAME, causes
+If a CGM workstation is open, a call to routine FRAME, causes
 an END_PICTURE CGM element to be generated.
 If there are open X windows, it updates all
 workstations and pauses in the window of most recent creation.
@@ -22,7 +22,7 @@ workstations are cleared.
 .sp
 FRAME is most applicable to an environment with a single active
 workstation.  When multiple workstations are used, the more
-versatile NGPICT routine is recommended.  NGPICT includes
+versatile NGPICT routine should be considered.  NGPICT includes
 the option of issuing a "<READY>" prompt
 when a window is on pause.
 .sp
