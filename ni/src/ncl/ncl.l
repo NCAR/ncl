@@ -114,8 +114,9 @@ void _NclResetScanner
 	} else {
 		yy_flush_buffer(YY_CURRENT_BUFFER );
 		yy_delete_buffer( YY_CURRENT_BUFFER );
-
+/*
 		yy_set_bol(1);
+*/
 		if(include_stack[loading] != NULL)  {
 			yy_switch_to_buffer(include_stack[loading] );
 		}
