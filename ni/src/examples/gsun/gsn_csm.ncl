@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.102 2002-08-23 20:40:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.103 2002-08-26 15:37:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -836,7 +836,7 @@ end
 function get_allowed_latnames()
 begin
   return((/"lat","Lat","Latitude","LAT","latitude","LATITUDE","hlat",\
-           "lat_u","lat_t","lat_98","yc"/))
+           "lat_u","lat_t","lat_98","lat1", "lat2", "yc"/))
 end
 
 ;***********************************************************************;
@@ -1301,7 +1301,7 @@ begin
 ; Check the name of the coordinate variable against the allowed
 ; lon names
 ;
-; Frist check for the special attribute"lon2d", which must be the
+; First check for the special attribute"lon2d", which must be the
 ; same dimension as the data.  This special attribute indicates a
 ; 2D longitude coordinate array.  Otherwise, check for a regular
 ; coordinate array.
@@ -7415,8 +7415,7 @@ begin
 ;
       bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
       bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
-      bar_chart_orient = lower_case(get_res_value(res2, \
-                                    "gsnXYBarChartOrientation","vertical"))
+
       if(bar_chart.and..not.bar_outline_only)
         if(.not.yref_line_on) then
 ;
@@ -7528,38 +7527,48 @@ begin
             return
           end if
 ;
-; Check if gsnAbove/BelowYRefLineBarColors is set. If so, then values
-; in these arrays will be used to color each above/below bar.
+; Figure out if we want to fill bars.  If gsnAbove/BelowYRefLineBarColors
+; is set, then use this resource.  Otherwise, if gsnXYBarChartColors
+; is set, then use that resource.
 ;
           mlt_above_bar_colors = False
           mlt_below_bar_colors = False
           mlt_above_bar_pttrns = False
           mlt_below_bar_pttrns = False
+;
+; First check for above reference line bar fill colors.
+;
           if(isatt(res2,"gsnAboveYRefLineBarColors")) then
             yref_fill_on         = True
             mlt_above_bar_colors = True
             bar_colors_above = get_res_value(res2,"gsnAboveYRefLineBarColors",1)
 ;
 ; If both gsnAboveYRefLineBarColors and gsnXYBarChartColors are set,
-; then only use the first one.
+; then remove gsnXYBarChartColors.
 ;
             if(isatt(res2,"gsnXYBarChartColors")) then
               delete(res2@gsnXYBarChartColors)
             end if
           end if  
-          if(.not.mlt_above_bar_colors.and.isatt(res2,"gsnXYBarChartColors")) then
+;
+; Now check for below reference line bar fill colors.
+;
+          if(isatt(res2,"gsnBelowYRefLineBarColors")) then
             yref_fill_on         = True
             mlt_below_bar_colors = True
             bar_colors_below = get_res_value(res2,"gsnBelowYRefLineBarColors",1)
 ;
 ; If both gsnBelowYRefLineBarColors and gsnXYBarChartColors are set,
-; then only use the first one.
+; then remove gsnXYBarChartColors.
 ;
             if(isatt(res2,"gsnXYBarChartColors")) then
               delete(res2@gsnXYBarChartColors)
             end if
-          end if
-
+          end if  
+;
+; If neither gsnBelow/AboveYRefLineBarColors were set, then use
+; gsnXYBarChartColors, if set.
+;
           if(isatt(res2,"gsnXYBarChartColors")) then
             yref_fill_on         = True
             mlt_above_bar_colors = True
@@ -7567,6 +7576,9 @@ begin
             bar_colors_above = get_res_value(res2,"gsnXYBarChartColors",1)
             bar_colors_below = bar_colors_above
           end if
+;
+; Check for above reference line fill patterns.
+;
           if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
             yref_fill_on         = True
             mlt_above_bar_pttrns = True
@@ -7579,7 +7591,9 @@ begin
               delete(res2@gsnXYBarChartPatterns)
             end if
           end if  
-
+;
+; Now check for below reference line fill patterns.
+;
           if(isatt(res2,"gsnBelowYRefLineBarPatterns")) then
             yref_fill_on         = True
             mlt_below_bar_pttrns = True
