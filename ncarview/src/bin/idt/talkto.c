@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.22 1993-04-04 20:12:38 clyne Exp $
+ *	$Id: talkto.c,v 1.23 1995-03-16 23:10:41 haley Exp $
  */
 /*
  *	talkto.c
@@ -386,8 +386,7 @@ char	*TalkTo(id, command_string, mode)
 	 * see if anybody died
 	 */
 #ifndef	CRAY
-	if ((pid = wait3((union wait *) NULL, 
-				WNOHANG, (struct rusage *) NULL)) > 0) {
+	if ((pid = waitpid(0, (int *) NULL, WNOHANG)) > 0) {
 		close_trans_pid(pid);
 	}
 #endif
