@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.5 1993-03-22 18:20:21 clyne Exp $
+#      $Id: build,v 1.6 1993-03-25 00:49:44 clyne Exp $
 #
 #########################################################################
 #									#
@@ -83,7 +83,7 @@ sub	rename_files {
 	#
 	foreach $dir (@dirs) {
 		if ($dir eq "man") {	# man is a special case
-			@files = <$root_dir/$dir/man?/*>;
+			@files = <$root_dir/$dir/{cat,man}?/*>;
 		}
 		else {
 			@files = <$root_dir/$dir/*>;
