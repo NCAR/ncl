@@ -5,56 +5,48 @@
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/hlu/hluutil.h>
-
+#include <ncarg/hlu/hlu.h>
 
 float _NhlRndIt
 #if	NhlNeedProto
-(float a,int sig_digit)
+(
+	float a,
+	int sig_digit
+)
 #else
 (a,sig_digit)
-float a;
-int sig_digit;
+	float a;
+	int sig_digit;
 #endif
 {
-        double  exp1;
-        double  exp2;
-        double  a_final;
-        long  ltmp;
-        int sign;
+	char	func[] = "_NhlRndIt";
+        float	tmp;
+	char	tstr[20];
+	char	*end = NULL;
+
 /*
 * if its equal to zero just return
 */
         if(a == 0.0)
-                return(a);
+                return a;
 /*
 * floats are only accurate to 7 decimal places when 32bit IEEE used
 */
         if(sig_digit>7)
                 sig_digit = 7;
-/*
-* need to convert <a> so its not a negative, so logs can be taken
-*/
-        a_final = fabs(a);
-	if(a < 0.0)
-		sign = -1;
-	else
-		sign = 1;
-/*
-* Converts number to value between 0.0 and 1.0
-*/
-        exp1 = (float)ceil(log10(a_final));
-        a_final = a_final/pow(10.0,exp1);
-/*
-* Now perform significant digit computation
-*/
-        exp2 = pow(10.0,(double)sig_digit);
-        ltmp = (long)(a_final * exp2 + .5);
-        a_final = ((double)ltmp)/exp2;
-/*
-* Now convert back to original magnitude
-*/
-        a_final = (double)sign * a_final * pow(10.0,exp1);
-        return((float)a_final);
+
+	/*
+ 	 * Let sprintf round the number for us.
+	 */
+	sprintf(tstr,"%*.*e",1,sig_digit-1,a);
+	tmp = (float)strtod(tstr,&end);
+
+	if(!tmp && (tstr == end)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Rounding error!",func);
+		return a;
+	}
+
+	return tmp;
 }
 
 float    _NhlCmpF
@@ -68,7 +60,7 @@ float    _NhlCmpF
 {
         float   a_final;
         long a_int,b_int;
-        int signa = 1;
+        int signa;
 
 	if((a==0.0)&&(!b->is_zero)&&(b->lg_abs <= 0.0)){
 		a_int = 0;
@@ -90,8 +82,11 @@ float    _NhlCmpF
 * store sign info and make sure both numbers are positive so log10 can be
 * used.
 */
-	if(a < 0)
-	        signa = -1;
+	if(a < 0.0)
+		signa = -1;
+	else
+		signa = 1;
+	
         a_final = fabs(a);
 /*
 * Now divide through by the exponent determined above
@@ -135,7 +130,10 @@ NhlCompareDat *_NhlCmpFSetup
 			tmp->sig_dig = sig_dig;
 		}
 		
-		sign = ((float)fabs(val))/val;
+		if(val < 0.0)
+			sign = -1;
+		else
+			sign = 1;
 		tmp->b_final = fabs(val);
 		dummy = (float)log10(tmp->b_final);
 		tmp->exp = (long)ceil(log10(tmp->b_final));
@@ -330,8 +328,14 @@ double _NhlCmpDAny
 * store sign info and make sure both numbers are positive so log10 can be
 * used. 
 */
-	signa = ((double)fabs(a))/a;
-	signb = ((double)fabs(b))/b;
+	if(a < 0.0)
+		signa = -1;
+	else
+		signa = 1;
+	if(b < 0.0)
+		signb = -1;
+	else
+		signb = 1;
 	a_final = fabs(a);
 	b_final = fabs(b);
 /*
@@ -371,4 +375,3 @@ double _NhlCmpDAny
 	b_int = (long)b_final;
 	return((double)a_int-(double)b_int);
 }
-
