@@ -1,7 +1,9 @@
 C
-C	$Id: gclrwk.f,v 1.6 1998-03-19 04:46:19 dbrown Exp $
+C	$Id: gclrwk.f,v 1.7 1998-10-26 21:01:56 dbrown Exp $
 C
       SUBROUTINE GCLRWK(WKID,COFL)
+C
+      INTEGER WKID,COFL
 C
       CALL GZCLRWK(WKID,COFL)
 C

@@ -1,7 +1,9 @@
 C
-C	$Id: gopwk.f,v 1.6 1998-03-13 22:10:23 dbrown Exp $
+C	$Id: gopwk.f,v 1.7 1998-10-26 21:01:57 dbrown Exp $
 C
       SUBROUTINE GOPWK(WKID,CONID,WTYPE)
+C
+      INTEGER WKID,CONID,WTYPE
 C
       CALL GZOPWK(WKID,CONID,WTYPE)
 C
