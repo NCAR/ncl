@@ -62,7 +62,7 @@ main()
  * Create an NCGM workstation.
  */
          NhlRLClear(srlist);
-	 NhlRLSetString(srlist,NhlNwkMetaName,"basic07f.ncgm");
+	 NhlRLSetString(srlist,NhlNwkMetaName,"basic07c.ncgm");
 	 NhlCreate(&widn,"basic07ncgm",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                    srlist);
       }
@@ -73,7 +73,7 @@ main()
  * Create a PostScript workstation.
  */
          NhlRLClear(srlist);
-	 NhlRLSetString(srlist,NhlNwkPSFileName,"basic07.ps");
+	 NhlRLSetString(srlist,NhlNwkPSFileName,"basic07c.ps");
 	 NhlRLSetString(srlist,NhlNwkOrientation,"portrait");
 	 NhlRLSetString(srlist,NhlNwkPSFormat,"ps");
 	 NhlCreate(&widp,"basic07ps",NhlpsWorkstationClass,NhlDEFAULT_APP,

@@ -66,7 +66,7 @@ C
 C Create a PostScript workstation.
 C
          call NhlFRLClear(srlist)
-	 call NhlFRLSetString(srlist,'wkPSFileName','basic07.ps',ierr)
+	 call NhlFRLSetString(srlist,'wkPSFileName','basic07f.ps',ierr)
 	 call NhlFRLSetString(srlist,'wkOrientation','portrait',ierr)
 	 call NhlFRLSetString(srlist,'wkPSFormat','ps',ierr)
 	 call NhlFCreate(widp,'basic07ps',NhlFPSWorkstationClass,0,

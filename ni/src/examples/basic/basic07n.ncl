@@ -47,7 +47,7 @@ begin
 ; Create an NCGM workstation.
 ;
 	 widn = create "basic07ncgm" ncgmWorkstationClass defaultapp
-	 	"wkMetaName": "basic07f.ncgm"
+	 	"wkMetaName": "basic07n.ncgm"
          end create	
       end if	
 
@@ -56,7 +56,7 @@ begin
 ; Create a PostScript workstation.
 ;
 	 widp = create "basic07ps" psWorkstationClass defaultapp
-		 "wkPSFileName": "basic07.ps"
+		 "wkPSFileName": "basic07n.ps"
 		 "wkOrientation": "portrait"
 		 "wkPSFormat": "ps"
          end create	
