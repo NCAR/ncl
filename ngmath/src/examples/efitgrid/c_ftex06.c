@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex06.c,v 1.1 1998-02-06 19:40:50 fred Exp $
+ *  $Id: c_ftex06.c,v 1.2 1998-02-09 23:41:19 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -20,7 +20,7 @@ void c_drwtd3(int, int, float *, float *, float *,
 #define NXO   31
 #define NYO   21
  
-#define IWTYPE 8
+#define IWTYPE 1
 #define WKID   1
  
 main()

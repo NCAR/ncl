@@ -1,5 +1,5 @@
 C
-C	$Id: ftex04.f,v 1.1 1998-02-06 19:40:54 fred Exp $
+C	$Id: ftex04.f,v 1.2 1998-02-09 23:41:20 haley Exp $
 C
       PROGRAM FTEX04
 C
@@ -50,7 +50,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C  Open GKS, open and activate a workstation.
 C
