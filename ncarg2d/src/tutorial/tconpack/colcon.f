@@ -1,26 +1,32 @@
         PARAMETER (MREG=50,NREG=50)
         REAL ZREG(MREG,NREG)
-
+C
         EXTERNAL COLOR
-
-C Get data array
-        CALL GENDAT(ZREG,MREG,MREG,NREG,13,18,13.,18.)
-
-C Open GKS, and turn clipping off
+C
+C Get data array.
+C
+        CALL GENDAT(ZREG,MREG,MREG,NREG,15,13,13.,18.)
+C
+C Open GKS, and turn clipping off.
+C
         CALL OPNGKS
         CALL GSCLIP(0)
-
-C Call Conpack color fill routine
-
+C
+C Call Conpack color fill routine.
+C
         CALL COLCON(ZREG,MREG,NREG,-15,COLOR,
      +          'CE',-90.,90.,-180.,180.,0.,0.)
-
-C Close frame and close GKS
+C
+C Close frame and close GKS.
+C
         CALL FRAME
         CALL CLSGKS
-
+C
         STOP
+C
         END
+
+
 
         SUBROUTINE COLCON(ZREG,MREG,NREG,NCL,COLOR,
      +          PROJ,RLATMN,RLATMX,RLONMN,RLONMX,PLAT,PLON)
@@ -36,15 +42,15 @@ C Close frame and close GKS
         EXTERNAL MASK
         EXTERNAL COLOR
 C
-C Set color fill to solid
+C Set color fill to solid.
 C
         CALL GSFAIS (1)
 C
-C Initialize Areas
+C Initialize Areas.
 C
         CALL ARINAM(MAP, LMAP)
 C
-C Initialize Ezmap and add to area map
+C Initialize Ezmap and add to area map.
 C
         CALL MAPSTR ('GR',0.)
         CALL MAPSTC ('OU','CO')
@@ -54,7 +60,7 @@ C
         CALL MAPINT
         CALL MAPBLA(MAP)
 C
-C Initialize Conpack and add to area map
+C Initialize Conpack and add to area map.
 C
         CALL CPSETI('SET - DO-SET-CALL FLAG',0)
         CALL CPSETI('MAP - MAPPING FLAG',1)
@@ -69,19 +75,23 @@ C
         CALL CPRECT(ZREG, MREG, MREG, NREG, RWRK, LRWK, IWRK, LIWK)
         CALL CPCLAM(ZREG, RWRK, IWRK, MAP)
         CALL CPLBAM(ZREG, RWRK, IWRK, MAP)
-C Choose a color for every contour level
+C
+C Choose a color for every contour level.
+C
         CALL CPGETI('NCL',NCLL)
         CALL COLOR (NCLL+1)
-C Fill contours and areas over land
+C
+C Fill contours and areas over land.
+C
         CALL ARSCAM(MAP, XWRK, YWRK, NWRK, IAREA, IGRP, NOGRPS, FILL)
-
-C Draw continental outlines, labels, and masked contours
+C
+C Draw continental outlines, labels, and masked contours.
+C
         CALL MAPLOT
         CALL CPLBDR(ZREG,RWRK,IWRK)
         CALL CPCLDM(ZREG,RWRK,IWRK,MAP,MASK)
-
 C
-C Draw and fill a label bar
+C Draw and fill a label bar.
 C
         CALL GETSET(XMIN,XMAX,YMIN,YMAX,DUM1,DUM2,DUM3,DUM4,IDUM)
         YBOT = YMIN/3.0
@@ -100,8 +110,12 @@ C
         CALL LBLBAR(0,XMIN,XMAX,YBOT,YTOP,NCLL+2,1.,.5,LFIN,1,LBLS,
      +          NCLL+2,1)
         
+C
         RETURN
+C
         END
+
+
 
         SUBROUTINE FILL (XWRK,YWRK,NWRK,IAREA,IGRP,NGRPS)
 C
@@ -114,51 +128,61 @@ C
           IF (IGRP(I).EQ.1) IDMAP=IAREA(I)
           IF (IGRP(I).EQ.3) IDCONT=IAREA(I)
  10     CONTINUE
-
-C If the area is defined by 2 or fewer points, return to ARSCAM
+C
+C If the area is defined by 2 or fewer points, return to ARSCAM.
+C
         IF (NWRK .LE. 3) RETURN
-
+C
 C Check if the area is over the map 
+C
         IF ((IDMAP .GT. 0) .AND. (IDCONT .GT. 0)) THEN
+C
 C If the area is over water, fill the contours with colors depending
-C on their level
+C on their level.
+C
            IF (MAPACI(IDMAP).EQ.1) THEN
               CALL GSFACI(IDCONT+2)
               CALL GFA(NWRK-1,XWRK,YWRK)
-C If the area is over land, fill with gray
+C
+C If the area is over land, fill with gray.
+C
            ELSE 
               CALL GSFACI(2)
               CALL GFA(NWRK-1,XWRK,YWRK)
            ENDIF
         ENDIF        
+C
         RETURN
+C
         END
 
         SUBROUTINE MASK(XWRK,YWRK,NWRK,IAREA,IGRP,NGRPS)
-
+C
         INTEGER IAREA(NGRPS),IGRP(NGRPS)
         REAL XWRK(NWRK),YWRK(NWRK)
-
+C
         IDMAP=-1
         IDCONT=-1
-
+C
         DO 10, I=1,NGRPS
           IF (IGRP(I).EQ.1) IDMAP=IAREA(I)
           IF (IGRP(I).EQ.3) IDCONT=IAREA(I)
  10     CONTINUE
-
+C
 C If the line is defined by 1 or fewer points, return to CPCLDM
+C
         IF (NWRK .LT. 2) RETURN
-
+C
 C Draw the line if the area is over the map, and not over a label, or
 C over land.
-
+C
         IF ((IDMAP.GT.0).AND.(IDCONT.GT.0).AND.(MAPACI(IDMAP).EQ.1))
      +          THEN
           CALL CURVE(XWRK,YWRK,NWRK)
         ENDIF
-        
+C
         RETURN
+C
         END
 
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
@@ -174,18 +198,24 @@ C and less than or equal to 25.
 C
 C The function used is a sum of exponentials.
 C
+C This version has been modified to make the data more nearly simulate
+C global data.  All values in the top row (which maps to the North Pole)
+C are the same.  All values in the bottom row (which maps to the South
+C Pole) are the same.  Each value in the last column of a row matches
+C the value in the first column of the row.
+C
         DIMENSION DATA(IDIM,1),CCNT(3,50)
 C
-        FOVM=9./FLOAT(M)
-        FOVN=9./FLOAT(N)
+        FOVM=9./REAL(M)
+        FOVN=9./REAL(N)
 C
         NLOW=MAX0(1,MIN0(25,MLOW))
         NHGH=MAX0(1,MIN0(25,MHGH))
         NCNT=NLOW+NHGH
 C
         DO 101 K=1,NCNT
-          CCNT(1,K)=1.+(FLOAT(M)-1.)*FRAN()
-          CCNT(2,K)=1.+(FLOAT(N)-1.)*FRAN()
+          CCNT(1,K)=1.+(REAL(M)-1.)*FRAN()
+          CCNT(2,K)=1.+(REAL(N)-1.)*FRAN()
           IF (K.LE.NLOW) THEN
             CCNT(3,K)=-1.
           ELSE
@@ -193,41 +223,71 @@ C
           END IF
   101   CONTINUE
 C
-        DMIN=+1.E36
-        DMAX=-1.E36
-        DO 104 J=1,N
-          DO 103 I=1,M
+        AABR=0.
+        AATR=0.
+C
+        DO 104 I=1,M
+          DO 103 J=1,N
             DATA(I,J)=.5*(DLOW+DHGH)
             DO 102 K=1,NCNT
-              TEMP=-((FOVM*(FLOAT(I)-CCNT(1,K)))**2+
-     +               (FOVN*(FLOAT(J)-CCNT(2,K)))**2)
+              TEMP=-((FOVM*(REAL(I)-CCNT(1,K)))**2+
+     +               (FOVN*(REAL(J)-CCNT(2,K)))**2)
               IF (TEMP.GE.-20.) DATA(I,J)=DATA(I,J)+
      +            .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
   102       CONTINUE
-            DMIN=AMIN1(DMIN,DATA(I,J))
-            DMAX=AMAX1(DMAX,DATA(I,J))
   103     CONTINUE
+          AABR=AABR+DATA(I,1)
+          AATR=AATR+DATA(I,N)
   104   CONTINUE
 C
-        DO 106 J=1,N
-          DO 105 I=1,M-1
-            DATA(I,J)=(DATA(I,J)-DMIN)/(DMAX-DMIN)*(DHGH-DLOW)+DLOW
-  105     CONTINUE
-  106   CONTINUE
+        AABR=AABR/REAL(M)
+        AATR=AATR/REAL(M)
 C
-        DO 107 J=1,N
-          DATA(M,J)=(DATA(M,J)+DATA(1,J))/2.0
-  107   CONTINUE
-
         DO 108 J=1,N
-          DATA(M-1,J)=(DATA(M-1,J)+DATA(M,J)+DATA(1,J))/3.0
+          IF (J.LE.N/5) THEN
+            P=REAL(J-1)/REAL(N/5-1)
+            DO 105 I=1,M/2
+              Q=1.-MAX(0.,.5-.5*REAL(I-1)/REAL(M/5-1))
+              DATL=DATA(    I,J)
+              DATR=DATA(M+1-I,J)
+              DATA(    I,J)=P*(Q*DATL+(1.-Q)*DATR)+(1.-P)*AABR
+              DATA(M+1-I,J)=P*(Q*DATR+(1.-Q)*DATL)+(1.-P)*AABR
+  105       CONTINUE
+          ELSE IF (J.GE.N+1-N/5) THEN
+            P=REAL(N-J)/REAL(N/5-1)
+            DO 106 I=1,M/2
+              Q=1.-MAX(0.,.5-.5*REAL(I-1)/REAL(M/5-1))
+              DATL=DATA(    I,J)
+              DATR=DATA(M+1-I,J)
+              DATA(    I,J)=P*(Q*DATL+(1.-Q)*DATR)+(1.-P)*AATR
+              DATA(M+1-I,J)=P*(Q*DATR+(1.-Q)*DATL)+(1.-P)*AATR
+  106       CONTINUE
+          ELSE
+            DO 107 I=1,M/2
+              Q=1.-MAX(0.,.5-.5*REAL(I-1)/REAL(M/5-1))
+              DATL=DATA(    I,J)
+              DATR=DATA(M+1-I,J)
+              DATA(    I,J)=Q*DATL+(1.-Q)*DATR
+              DATA(M+1-I,J)=Q*DATR+(1.-Q)*DATL
+  107       CONTINUE
+          END IF
   108   CONTINUE
-
-        DO 109 J=1,N
-          DATA(M-2,J)=(DATA(M-2,J)+DATA(M-1,J)+DATA(M,J)+DATA(1,J))/4.0
-  109   CONTINUE
 C
+        DMIN=+1.E36
+        DMAX=-1.E36
 C
+        DO 110 J=1,N
+          DO 109 I=1,M
+            DMIN=AMIN1(DMIN,DATA(I,J))
+            DMAX=AMAX1(DMAX,DATA(I,J))
+  109     CONTINUE
+  110   CONTINUE
+C
+        DO 112 J=1,N
+          DO 111 I=1,M
+            DATA(I,J)=(DATA(I,J)-DMIN)/(DMAX-DMIN)*(DHGH-DLOW)+DLOW
+  111     CONTINUE
+  112   CONTINUE
 C
         RETURN
 C
@@ -253,24 +313,34 @@ C
       END
 
         SUBROUTINE COLOR (N)
-
-C BACKGROUND COLOR
-C BLACK
+C
+C The background color is black.
+C
         CALL GSCR(1,0,0.,0.,0.)
-C First foreground color is white
+C
+C The first foreground color is white.
+C
         CALL GSCR(1,1,1.,1.,1.)
-C Second foreground color is gray
+C
+C The second foreground color is gray.
+C
         CALL GSCR(1,2,.75,.75,.75)
-C Choose other foreground colors spaced equally around the spectrum
+C
+C Choose other foreground colors spaced equally around the spectrum.
+C
         ICNT=0
         HUES=360./N
-C REDLN is intended to be the line between red and violet values
-	REDLN=36.0
-	LAP=INT(REDLN/HUES)
+C
+C REDLN is intended to be the line between red and violet values.
+C
+        REDLN=36.0
+        LAP=INT(REDLN/HUES)
         DO 10, I=1,N
           XHUE=I*HUES
           CALL HLSRGB(XHUE,60.,75.,RED,GREEN,BLUE)
-C Sort colors so that the redest is first, and violetest is last
+C
+C Sort colors so that the reddest is first, and the most violet is last.
+C
           IF (XHUE.LE.REDLN) THEN
             CALL GSCR(1,(N+2)-(LAP-I),RED,GREEN,BLUE)
             ICNT=ICNT+1
@@ -278,8 +348,9 @@ C Sort colors so that the redest is first, and violetest is last
             CALL GSCR(1,I-ICNT+2,RED,GREEN,BLUE)
           ENDIF
  10     CONTINUE
-
+C
         RETURN
+C
         END
 
 
