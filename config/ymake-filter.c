@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.9 1995-03-31 10:45:15 boote Exp $
+ *	$Id: ymake-filter.c,v 1.10 1995-07-18 16:42:27 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -132,6 +132,7 @@ main()
 		lastlen = len;
 	}
 
+	fflush(stdout);
 	(void) exit(0);
 }
 
