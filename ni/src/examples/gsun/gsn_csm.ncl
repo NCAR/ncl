@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.140 2003-11-11 16:03:40 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.141 2003-11-25 18:14:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1071,6 +1071,17 @@ begin
   end if
 
   if(is_valid_xcoord(data)) then
+;
+; There are several different cases that will work for a combination
+; of valid latitude names and units. The ones with an * generate a
+; warning:
+; 
+;   1. Have both a valid lat name and a valid units name.
+; * 2. Have a valid lat name, but not a valid units name.
+; * 3. Have a valid lat name, and no units name.
+;   4. Have a valid lat name that doesn't require a valid units name.
+;   5. Have a valid units name, but either no or an invalid lat name.
+;
     if(any(data!1.eq.get_allowed_latnames()))
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lat_units))
@@ -1086,6 +1097,11 @@ begin
     else
       if(any(data!1.eq.get_allowed_latnames_without_units()))
         return(True)
+      else
+        if(isatt(data&$data!1$,"units").and. \
+           any(data&$data!1$@units.eq.get_allowed_lat_units))
+          return(True)
+        end if
       end if
     end if
   end if
@@ -1114,10 +1130,22 @@ begin
   end if
 
   if(is_valid_xcoord(data))
+;
+; There are several different cases that will work for a combination
+; of valid longitude names and units. The ones with an * generate a
+; warning:
+; 
+;   1. Have both a valid lon name and a valid units name.
+; * 2. Have a valid lon name, but not a valid units name.
+; * 3. Have a valid lon name, and no units name.
+;   4. Have a valid lon name that doesn't require a valid units name.
+;   5. Have a valid units name, but either no or an invalid lon name.
+;
+
     if(any(data!1.eq.get_allowed_lonnames()))
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lon_units))
-          return(True)
+          return(True) 
         else
           print("is_valid_lon_xcoord: Warning: The units attribute of the X coordinate array is not set to one of the allowable units values (i.e. 'degrees_east'). Your longitude labels may not be correct.")
           return(True)
@@ -1129,6 +1157,11 @@ begin
     else
       if(any(data!1.eq.get_allowed_lonnames_without_units()))
         return(True)
+      else
+        if(isatt(data&$data!1$,"units").and.\
+           any(data&$data!1$@units.eq.get_allowed_lon_units))
+          return(True)
+        end if
       end if
     end if
   end if
@@ -1157,6 +1190,18 @@ begin
   end if
 
   if(is_valid_ycoord(data))
+;
+; There are several different cases that will work for a combination
+; of valid latitude names and units. The ones with an * generate a
+; warning:
+; 
+;   1. Have both a valid lat name and a valid units name.
+; * 2. Have a valid lat name, but not a valid units name.
+; * 3. Have a valid lat name, and no units name.
+;   4. Have a valid lat name that doesn't require a valid units name.
+;   5. Have a valid units name, but either no or an invalid lat name.
+;
+
     if(any(data!0.eq.get_allowed_latnames()))
       if(isatt(data&$data!0$,"units"))
         if(any(data&$data!0$@units.eq.get_allowed_lat_units))
@@ -1172,6 +1217,11 @@ begin
     else
       if(any(data!0.eq.get_allowed_latnames_without_units()))
         return(True)
+      else
+        if(isatt(data&$data!0$,"units").and.\
+          any(data&$data!0$@units.eq.get_allowed_lat_units))
+          return(True)
+        end if
       end if
     end if
   end if
