@@ -1,17 +1,17 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:17:50 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-01-14 00:30:10 kennison Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= stitle
 
 GENERIC_SRCS = \
-	stitle.f bkgnd.f gap.f pwritv.f slinit.f slseti.f slgeti.f wndout.f\
-	clnth.f ftitle.f scrlbd.f slsetr.f slgetr.f scpltw.f
+	ftitle.f slbkgd.f slblda.f slgeti.f slgetr.f slinit.f slogap.f \
+	slownd.f slpwrv.f slseti.f slsetr.f slstln.f stitle.f
 
 GENERIC_OBJS = \
-	stitle.o bkgnd.o gap.o pwritv.o slinit.o slseti.o slgeti.o wndout.o\
-	clnth.o ftitle.o scrlbd.o slsetr.o slgetr.o scpltw.o
+	ftitle.o slbkgd.o slblda.o slgeti.o slgetr.o slinit.o slogap.o \
+	slownd.o slpwrv.o slseti.o slsetr.o slstln.o stitle.o
 
 SOURCES = $(GENERIC_SRCS)
 

@@ -1,14 +1,14 @@
 C
-C	$Id: slinit.f,v 1.1.1.1 1992-04-17 22:33:01 ncargd Exp $
+C $Id: slinit.f,v 1.2 1993-01-14 00:29:50 kennison Exp $
 C
       SUBROUTINE SLINIT
 C
 C Does initialization.
 C
-      COMMON /SCRLDT/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
-     +                LIM(4),MXOLD,MYOLD,LOLD,IBKG,LND,BGCLR(3),
-     +                FGCLR(3),IFST,IWK,FIN,FOU,ISPB,ISPF,IDEN,IWU
-      SAVE   /SCRLDT/
+      COMMON /SLCOMN/ ICU,ICO,PCHSZ,GAPSZ,T1,T2,NXST,NXFIN,ICRTJP,
+     +                LIM(4),IBKG,LND,BGCLR(3),FGCLR(3),IFST,IWK,FIN,
+     +                FOU,ISPB,ISPF,IDEN,IWU,IMAP,OORV
+      SAVE   /SLCOMN/
 C
 C Get background color and store in BGCLR, this color is taken from
 C the first active workstation.
