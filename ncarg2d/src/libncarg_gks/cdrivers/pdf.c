@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.1 2003-01-06 23:30:14 fred Exp $
+ *      $Id: pdf.c,v 1.2 2003-01-06 23:42:07 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -106,7 +106,7 @@ void PDFprint_points(PDFddp *psa, PDFPoint *points, unsigned num,
             + (int) (points[i].x * (float) psa->dspace.xspan);
     tmpy = psa->dspace.lly 
             + (int) (points[i].y * (float) psa->dspace.yspan);
-    num_page_lines++;
+    bump_page_lines();
     switch (terminator) {
       case NONE:
         sprintf(page_lines[num_page_lines],"%6d %6d ", tmpx, tmpy);
@@ -140,34 +140,34 @@ void PDFset_dashpattern (PDFddp *psa)
   gap_size = 5 * rscale;
   switch (psa->attributes.linetype) {
   case SOLID_LINE:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[] 0 d\n");
     stream_size += 7;
     break;
   case DASHED_LINE:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[%6d] 0 d\n", dash_size);
     stream_size += 13;
     break;
   case DOTTED_LINE:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[%6d] 0 d\n", dot_size);
     stream_size += 13;
     break;
   case DASH_DOT_LINE:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[%6d %6d %6d %6d] 0 d\n", 
             dash_size, gap_size, dot_size, gap_size);
     stream_size += 34;
     break;
   case DASH_DOT_DOT_LINE:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[%6d %6d %6d %6d %6d %6d] 0 d\n", 
             dash_size, gap_size, dot_size, gap_size, dot_size, gap_size);
     stream_size += 48;
     break;
   default:
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[] 0 d\n");
     stream_size += 7;
     break;
@@ -244,14 +244,14 @@ void PDFOutputClipping (PDFddp *psa, int type)
  *  the newly-defined rectangle with the default 
  *  clipping rectangle.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"Q q\n");
     stream_size += 4;
 
 /*
  *  Put out the scale factor.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],
               "%7.5f 0.0 0.0 %7.5f 0.0 0.0 cm\n",psa->scaling,psa->scaling);
     stream_size += 35;
@@ -259,25 +259,25 @@ void PDFOutputClipping (PDFddp *psa, int type)
 /*
  *  Establish the new clipping rectangle.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"S\n");
     stream_size += 2;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d m\n",x0,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y1);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y1);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"W n\n");
     stream_size += 4;
   }
@@ -289,7 +289,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
 /*
  *  Put out the line join, line cap, and miter limit.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%2d j %2d J %10.3f M\n",
            psa->line_join, psa->line_cap, psa->miter_limit);
   stream_size += 23;
@@ -297,7 +297,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
 /*
  *  Linewidth.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d w\n",
            psa->line_join, psa->line_cap, psa->attributes.linewidth_set);
   stream_size += 9;
@@ -316,22 +316,22 @@ void PDFOutputClipping (PDFddp *psa, int type)
   blue  = psa->color_map[3*current_color+2];
 
   if (c_model != 0) { 
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
             red,green,blue);
     stream_size += 21;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
             red,green,blue);
     stream_size += 21;
   }
   else {
     rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
@@ -420,7 +420,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
 /*
  *  Put out the scale factor.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],
               "%7.5f 0.0 0.0 %7.5f 0.0 0.0 cm\n",scl,scl);
     stream_size += 35;
@@ -428,7 +428,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
 /*
  *  Put out the line join, line cap, and miter limit.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%2d j %2d J %10.3f M\n",
              psa->line_join, psa->line_cap, psa->miter_limit);
     stream_size += 23;
@@ -436,7 +436,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
 /*
  *  Linewidth.
  */
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d w\n",
              psa->line_join, psa->line_cap, psa->attributes.linewidth_set);
     stream_size += 9;
@@ -454,22 +454,22 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     green = psa->color_map[3*current_color+1];
     blue  = psa->color_map[3*current_color+2];
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
               red,green,blue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -497,22 +497,22 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     x1 = psa->pdf_clip.urx;
     y0 = psa->pdf_clip.lly;
     y1 = psa->pdf_clip.ury;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d m\n",x0,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y1);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y1);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y0);
     stream_size += 16;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"W n\n");
     stream_size += 4;
  */
@@ -1493,7 +1493,7 @@ static int PDFoutput_string(PDFddp *psa, char *str)
   char    ctmp;
   int     i, itmp, j=0;
 
-  num_page_lines++;
+  bump_page_lines();
   for (i = 0; i < (size_t) strlen(str); i++) {
     strncpy(&ctmp, str+i, 1);
     itmp = (int) (ctmp & 255);
@@ -1557,7 +1557,7 @@ static void PDFOutputPolyline (GKSC *gksc, int closed)
       PDFprint_points(psa, &tpoint, 1, LINETO);
     }
   }
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
 }
@@ -1793,7 +1793,7 @@ PDFClearWorkstation(GKSC *gksc)
 /*
  *  Stroke the current path in case it has not been stroked.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
 
@@ -1831,14 +1831,14 @@ PDFPolyline(GKSC *gksc)
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -1850,7 +1850,7 @@ PDFPolyline(GKSC *gksc)
                           (psa->attributes.linewidth)/(psa->scaling));
   pdf_linewidth = MAX(1, pdf_linewidth);
   if (pdf_linewidth != psa->attributes.linewidth_set) {
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%6d w\n",pdf_linewidth);
     stream_size += 9;
     psa->attributes.linewidth_set = pdf_linewidth;
@@ -1893,22 +1893,22 @@ PDFPolymarker(GKSC *gksc)
     blue  = psa->color_map[3*requested_color+2];
 
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
               red,green,blue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -1928,15 +1928,15 @@ PDFPolymarker(GKSC *gksc)
  *  Save the current graphics state and set up the line 
  *  attributes to be used.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
 
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"[] 0 d\n");
   stream_size += 7;
 
-  num_page_lines++;
+  bump_page_lines();
   linewidth = (int) ((psa->nominal_width_scale) *
                     (LINEWIDTH_DEFAULT/(psa->scaling)));
   sprintf(page_lines[num_page_lines],"%6d w\n",linewidth);
@@ -1950,7 +1950,7 @@ PDFPolymarker(GKSC *gksc)
 /*
  *  Restore original linewith and type.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"Q\n");
   stream_size += 2;
 
@@ -1998,7 +1998,7 @@ PDFText(GKSC *gksc)
 /*
  *  Stroke any open subpaths.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
 
@@ -2009,22 +2009,22 @@ PDFText(GKSC *gksc)
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
               red,green,blue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -2130,7 +2130,7 @@ PDFText(GKSC *gksc)
 /*
  *  Save the current graphics state.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
 
@@ -2308,14 +2308,14 @@ PDFText(GKSC *gksc)
       if (((psa->attributes.text_path) == RIGHT_TEXT_PATH) ||
          ((psa->attributes.text_path) == LEFT_TEXT_PATH)) {
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"S\n");
         stream_size += 2;
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"BT\n");
         stream_size += 3;
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"%6d w\n",text_linewidth);
         stream_size += 9;
 
@@ -2323,7 +2323,7 @@ PDFText(GKSC *gksc)
 /*
  *  Set the outline flag (keep this code block contiguous).
  */
-        num_page_lines++;
+        bump_page_lines();
         if (fc.outline == FALSE) {
           sprintf(page_lines[num_page_lines],"2 Tr\n");
         }
@@ -2332,29 +2332,29 @@ PDFText(GKSC *gksc)
         }
         stream_size += 5;
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"%s %6d Tf\n",
                 PDFFontNames[old_font], PDFFontScale);
         stream_size += strlen(PDFFontNames[old_font]) + 1 + 6 + 4;
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],
           "%10.3f %10.3f %10.3f %10.3f %6d %6d Tm\n", 
           tm_a, tm_b, tm_c, tm_d, x_orig, y_orig);
         stream_size += 61;
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"%6d %6d Td\n",
             x_offset_to_orig,y_offset_to_orig);
         stream_size += 17;
 
         if (char_spacing != 0) {
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],"%6d Tc\n",char_spacing);
           stream_size += 10;
         }
 
-        num_page_lines++;
+        bump_page_lines();
         sprintf(page_lines[num_page_lines],"(");
         stream_size += 1;
         rchars = PDFoutput_string(psa,tptr);
@@ -2379,11 +2379,11 @@ PDFText(GKSC *gksc)
         for (char_num = 0; char_num < num_chars; char_num++) {
           strncpy(&ctmp, sptr+char_num, 1);
           found = MapFonts(psa, (int) (ctmp & 255), &fc);
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],"BT\n");
           stream_size += 3;
 
-          num_page_lines++;
+          bump_page_lines();
           if (fc.outline == FALSE) {
             sprintf(page_lines[num_page_lines],"2 Tr\n");
           }
@@ -2392,18 +2392,18 @@ PDFText(GKSC *gksc)
           }
           stream_size += 5;
 
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],"%s %6d Tf\n",
                   PDFFontNames[old_font], PDFFontScale);
           stream_size += strlen(PDFFontNames[old_font]) + 1 + 6 + 4;
 
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],
             "%10.3f %10.3f %10.3f %10.3f %6d %6d Tm\n", 
             tm_a, tm_b, tm_c, tm_d, x_orig, y_orig);
           stream_size += 61;
 
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],"%6d %6d Td\n",
               x_offset_to_orig,y_offset_to_orig);
 /*
@@ -2414,11 +2414,11 @@ PDFText(GKSC *gksc)
           ypos = -(char_num+1)*(PDFFontScale+PDFCharSpace);
           stream_size += 17;
 
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],"%6d %6d Td\n",xpos,ypos);
           stream_size += 17;
 
-          num_page_lines++;
+          bump_page_lines();
           sprintf(page_lines[num_page_lines],
                       "(%c) Tj\nET\n",*(tptr+char_num));
           stream_size += 10;
@@ -2435,7 +2435,7 @@ PDFText(GKSC *gksc)
 /*
  *  Restore the graphics state.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"Q\n");
   stream_size += 2;
 
@@ -2464,22 +2464,22 @@ PDFFillArea(GKSC *gksc)
     blue  = psa->color_map[3*requested_color+2];
 
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
               red,green,blue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -2493,15 +2493,15 @@ PDFFillArea(GKSC *gksc)
  *  attributes to be used.
  */
   if (psa->attributes.fill_int_style != SOLID_FILL) {
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"q\n");
     stream_size += 2;
 
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"[] 0 d\n");
     stream_size += 7;
 
-    num_page_lines++;
+    bump_page_lines();
     linewidth = (int) (1.1*(psa->dspace.yspan)*(psa->sfill_spacing));
     sprintf(page_lines[num_page_lines],"%6d w\n",linewidth);
     stream_size += 9;
@@ -2513,7 +2513,7 @@ PDFFillArea(GKSC *gksc)
   switch(psa->attributes.fill_int_style) {
   case HOLLOW_FILL:   /* Put out polyline */
     PDFOutputPolyline (gksc, 1);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"S\n");
     stream_size += 2;
     break;
@@ -2526,13 +2526,13 @@ PDFFillArea(GKSC *gksc)
         PDFprint_points((PDFddp *) gksc->ddp, pptr+i, 1, LINETO);
       }
     }
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"B*\n");
     stream_size += 3;
     break;
   case PATTERN_FILL:  /* currently not implemented, issue polyline */
     PDFOutputPolyline (gksc, 1);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"S\n");
     stream_size += 2;
     break;
@@ -2560,7 +2560,7 @@ PDFFillArea(GKSC *gksc)
       break;
     default:
       PDFOutputPolyline (gksc, 1);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"S\n");
       stream_size += 2;
       break;
@@ -2568,7 +2568,7 @@ PDFFillArea(GKSC *gksc)
     break;
   default:
     PDFOutputPolyline (gksc, 1);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"S\n");
     stream_size += 2;
     break;
@@ -2578,7 +2578,7 @@ PDFFillArea(GKSC *gksc)
  *  Restore line attributes.
  */
   if (psa->attributes.fill_int_style != SOLID_FILL) {
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"Q\n");
     stream_size += 2;
   }
@@ -2622,10 +2622,10 @@ PDFCellarray(GKSC *gksc)
 /*
  *  Stroke and save the current graphics state.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
 
@@ -2640,7 +2640,7 @@ PDFCellarray(GKSC *gksc)
  */
   xtr = (psa->dspace.llx) + (int)(((float)(psa->dspace.xspan))*Pptr[0].x);
   ytr = (psa->dspace.lly) + (int)(((float)(psa->dspace.xspan))*Qptr[0].y);
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%15.6f 0. 0. %15.6f %6d %6d cm\n",
           x_scale, -y_scale, xtr, ytr);
   stream_size += 55;
@@ -2648,16 +2648,16 @@ PDFCellarray(GKSC *gksc)
 /*
  *  Put out the begin image.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"BI\n");
   stream_size += 3;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"/W %6d\n",nx);
   stream_size += 10;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"/H %6d\n",ny);
   stream_size += 10;
-  num_page_lines++;
+  bump_page_lines();
   if (c_model != 0) {
     sprintf(page_lines[num_page_lines],"/CS /RGB\n");
     stream_size += 9;
@@ -2666,27 +2666,27 @@ PDFCellarray(GKSC *gksc)
     sprintf(page_lines[num_page_lines],"/CS /CMYK\n");
     stream_size += 10;
   }
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"/BPC 8\n");
   stream_size += 7;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"/F [/ASCIIHexDecode]\n");
   stream_size += 21;
 
 /*
  *  Put out the data.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"ID\n");
   stream_size += 3;
-  num_page_lines++;
+  bump_page_lines();
   line_offset = 0;
   for (i = 0, index = 0; i < ny; i++) {
     for (j = 0; j < nx; j++, index++) {
       if ( ((index % 6) == 0) && (index > 0)) {
         sprintf(page_lines[num_page_lines]+line_offset,"\n");
         stream_size += 1;
-        num_page_lines++;
+        bump_page_lines();
         line_offset = 0;
       }
       color_index = xptr[index];
@@ -2713,14 +2713,14 @@ PDFCellarray(GKSC *gksc)
       }
     }
   }
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"\n>\n");
   stream_size += 3;
 
 /*
  *  End image, restore graphics state.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"EI\nQ\n");
   stream_size += 5;
   
@@ -2968,20 +2968,20 @@ PDFSetColorRepresentation(GKSC *gksc)
  */
   if (psa->attributes.pdf_colr_ind == (int) index ) {
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",r,g,b);
       stream_size += 21;
     }
     else {
       rgb2cmyk(red,green,blue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -3160,22 +3160,22 @@ PDFEsc(GKSC *gksc)
     psa->attributes.pdf_colr_ind = saved_color_index;
 
     if (c_model != 0) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               sred,sgreen,sblue);
       stream_size += 21;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",
               sred,sgreen,sblue);
       stream_size += 21;
     }
     else {
       rgb2cmyk(sred,sgreen,sblue,&cyan,&magenta,&yellow,&black);
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
               cyan,magenta,yellow,black);
       stream_size += 26;
@@ -3216,7 +3216,7 @@ PDFEsc(GKSC *gksc)
     strng = strtok((char *) NULL, " ");
     psa->line_join = (linejoin_type) atoi(strng);
     if (psa->pict_empty == FALSE) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%2d j %2d J %10.3f M\n",
                psa->line_join, psa->line_cap, psa->miter_limit);
       stream_size += 23;
@@ -3227,7 +3227,7 @@ PDFEsc(GKSC *gksc)
     strng = strtok((char *) NULL, " ");
     psa->line_cap = (linecap_type) atoi(strng);
     if (psa->pict_empty == FALSE) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%2d J\n", psa->line_cap);
       stream_size += 5;
     }
@@ -3237,7 +3237,7 @@ PDFEsc(GKSC *gksc)
     strng = strtok((char *) NULL, " ");
     psa->miter_limit = (float) atof(strng);
     if (psa->pict_empty == FALSE) {
-      num_page_lines++;
+      bump_page_lines();
       sprintf(page_lines[num_page_lines],"%10.3f M\n", psa->miter_limit);
       stream_size += 13;
     }
@@ -3514,13 +3514,13 @@ int PDFPutStream(FILE *fp) {
  *  Write out a single line segment.
  */
 void PDFPutLine(int px0, int py0, int px1, int py1) {
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d m\n", px0, py0);
   stream_size += 16;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d l\n", px1, py1);
   stream_size += 16;
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
 }
@@ -3549,14 +3549,14 @@ void PDFPutCircle(int x, int y, int r) {
 /*
  *  Move to the bottom point on the circle.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d m\n", x, ymr);
   stream_size += 16;
 
 /*
  *  Draw a curve to the point on the circle's right.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d %6d %6d %6d %6d c\n", 
           xpb, ymr, xpr, ymb, xpr, y);
   stream_size += 44;
@@ -3564,7 +3564,7 @@ void PDFPutCircle(int x, int y, int r) {
 /*
  *  Draw a curve to the top point of the circle.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d %6d %6d %6d %6d c\n", 
           xpr, ypb, xpb, ypr, x, ypr);
   stream_size += 44;
@@ -3572,7 +3572,7 @@ void PDFPutCircle(int x, int y, int r) {
 /*
  *  Draw a curve to the point on the circle's left.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d %6d %6d %6d %6d c\n", 
           xmb, ypr, xmr, ypb, xmr, y);
   stream_size += 44;
@@ -3580,7 +3580,7 @@ void PDFPutCircle(int x, int y, int r) {
 /*
  *  Draw a curve back to the bottom point.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d %6d %6d %6d %6d c\n", 
           xmr, ymb, xmb, ymr, x, ymr);
   stream_size += 44;
@@ -3588,7 +3588,7 @@ void PDFPutCircle(int x, int y, int r) {
 /*
  *  Stroke.
  */
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"S\n");
   stream_size += 2;
 }
@@ -3723,32 +3723,32 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   b = psa->color_map[2];
 
   if (c_model != 0) {
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
     stream_size += 21;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",r,g,b);
     stream_size += 21;
   }
   else {
     rgb2cmyk(r,g,b,&cyan,&magenta,&yellow,&black);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
   }
 
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],
            "%6d %6d m\n%6d %6d l\n%6d %6d l\n%6d %6d l\n%6d %6d l\n",
            xll, yll, xur, yll, xur, yur, xll, yur, xll, yll); 
   stream_size += 80;
 
-  num_page_lines++;
+  bump_page_lines();
   sprintf(page_lines[num_page_lines],"B*\n");
   stream_size += 3;
 
@@ -3757,20 +3757,20 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   b = psa->color_map[3*current_color+2];
 
   if (c_model != 0) {
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
     stream_size += 21;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f rg\n",r,g,b);
     stream_size += 21;
   }
   else {
     rgb2cmyk(r,g,b,&cyan,&magenta,&yellow,&black);
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f K\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
-    num_page_lines++;
+    bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f %5.2f k\n",
             cyan,magenta,yellow,black);
     stream_size += 26;
@@ -3790,9 +3790,16 @@ int bump_object_number() {
   if (object_number > MAX_OBJECTS) {
     object_pointer = (int *) realloc(object_pointer,2*MAX_OBJECTS*sizeof(int));
     if (object_pointer == NULL) {
-      fprintf(stderr,"PDF - not enough memory to store all objects.");
+      fprintf(stderr,"PDF - not enough memory to store all objects.\n");
       return (object_number);
     }
   }
   object_number++;
+}
+int bump_page_lines() {
+  if (num_page_lines > MAX_PAGE_SIZE) {
+    fprintf(stderr,"PDF - maximum object size exceed.\n");
+    return (object_number);
+  }
+  num_page_lines++;
 }
