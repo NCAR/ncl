@@ -286,8 +286,8 @@ CGMC *c;
 		 *	leave room for title bar
 		 */
 		dev_extent.llx = dev_extent.ury = 0;
-		dev_extent.lly = dev.height;
-		dev_extent.urx = dev.width;
+		dev_extent.lly = dev.height - 1;
+		dev_extent.urx = dev.width - 1;
 
 		transinit(&dev_extent, dev_coord_mod, TRUE);
 
