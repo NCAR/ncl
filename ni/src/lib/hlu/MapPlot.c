@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.36 1995-05-04 01:09:59 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.37 1995-05-23 01:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1403,7 +1403,7 @@ NhlErrorTypes Init_Outline_Recs(NhlString entry_name)
  *
  * Return Values:	Error Conditions
  *
- * Side Effects:	state change in GKS due to mapping transformations.
+ * Side Effects:
  */
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -3385,6 +3385,46 @@ static NhlErrorTypes    mpManageViewDepResources
 	return ret;
 }
 
+ 
+/*
+ * Function:  CheckColor
+ *
+ * Description: Checks whether a color value is invalid 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    CheckColor
+#if	NhlNeedProto
+(
+	int	cix,
+	char	*entry_name
+)
+#else
+(cix,entry_name)
+	int	cix;
+	char	*entry_name;
+
+#endif
+
+{
+	char 		*e_text;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if (cix <= 0) {
+		e_text = "%s: invalid color index";
+		ret = NhlWARNING;
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+	}
+	return ret;
+} 
 
 /*
  * Function:  SetLineAttrs
@@ -3416,19 +3456,42 @@ static NhlErrorTypes    SetLineAttrs
 #endif
 
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
+	char			*entry_name;
 
+	entry_name = init ? "MapPlotInitialize" : "MapPlotSetValues";
+
+	subret = CheckColor(mpp->grid.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->grid.gks_color = _NhlGetGksCi(mpnew->base.wkptr,mpp->grid.color);
+
+	subret = CheckColor(mpp->limb.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->limb.gks_color = _NhlGetGksCi(mpnew->base.wkptr,mpp->limb.color);
+
+	subret = CheckColor(mpp->geophysical.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->geophysical.gks_color = 
 		_NhlGetGksCi(mpnew->base.wkptr,mpp->geophysical.color);
+
+	subret = CheckColor(mpp->national.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->national.gks_color = 
 		_NhlGetGksCi(mpnew->base.wkptr,mpp->national.color);
+
+	subret = CheckColor(mpp->us_state.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->us_state.gks_color = 
 		_NhlGetGksCi(mpnew->base.wkptr,mpp->us_state.color);
+
+	subret = CheckColor(mpp->perim.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->perim.gks_color = 
 		_NhlGetGksCi(mpnew->base.wkptr,mpp->perim.color);
+
+	subret = CheckColor(mpp->labels.color,entry_name);
+	ret = MIN(subret,ret);
 	mpp->labels.gks_color = 
 		_NhlGetGksCi(mpnew->base.wkptr,mpp->labels.color);
 
@@ -5569,7 +5632,7 @@ int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 		       _NhlNwkDashPattern,Mpp->grid.dash_pat,
 		       _NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
 		       _NhlNwkLineThicknessF,Mpp->grid.thickness,
-		       _NhlNwkLineColor,Mpp->grid.gks_color, 
+		       _NhlNwkLineColor,Mpp->grid.color, 
 		       NULL);
 
 	_NhlSetLineInfo(Mpl->base.wkptr,(NhlLayer) Mpl);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.15 1995-05-22 22:51:04 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.16 1995-05-23 01:12:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4268,10 +4268,12 @@ static void SetRegionAttrs
 	int		 cpix;
 #endif
 {
-	reg_attrs->gks_pcolor = 
-		_NhlGetGksCi(cl->base.wkptr,reg_attrs->perim_color);
-	reg_attrs->gks_fcolor = 
-		_NhlGetGksCi(cl->base.wkptr,reg_attrs->fill_color);
+	reg_attrs->gks_pcolor = reg_attrs->perim_color == NhlTRANSPARENT ?
+                NhlTRANSPARENT : _NhlGetGksCi(cl->base.wkptr,
+                                              reg_attrs->perim_color);
+	reg_attrs->gks_fcolor = reg_attrs->fill_color  == NhlTRANSPARENT ?
+		NhlTRANSPARENT : _NhlGetGksCi(cl->base.wkptr,
+                                              reg_attrs->fill_color);
 	
 	c_cpseti("PAI",cpix);
 	if (reg_attrs->perim_on)
@@ -4321,29 +4323,67 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	int			aid_offset;
 
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
-	if (cnp->line_lbls.mono_color)
-		cnp->line_lbls.colors = (int *) 
-			_NhlGetGksCi(cl->base.wkptr,cnp->line_lbls.color);
+	if (cnp->line_lbls.mono_color) {
+                if (cnp->line_lbls.color == NhlTRANSPARENT)
+                        cnp->line_lbls.colors = (int *) NhlTRANSPARENT;
+                else
+                        cnp->line_lbls.colors =
+                                (int *) _NhlGetGksCi(cl->base.wkptr,
+                                                     cnp->line_lbls.color);
+        }
 	else
 		cnp->line_lbls.colors = (int *) cnp->gks_llabel_colors;
-	cnp->line_lbls.gks_bcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->line_lbls.back_color);
-	cnp->line_lbls.gks_plcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->line_lbls.perim_lcolor);
+        if (cnp->line_lbls.back_color == NhlTRANSPARENT)
+                cnp->line_lbls.gks_bcolor = NhlTRANSPARENT;
+        else
+                cnp->line_lbls.gks_bcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->line_lbls.back_color);
+        if (cnp->line_lbls.perim_lcolor == NhlTRANSPARENT)
+                cnp->line_lbls.gks_plcolor = NhlTRANSPARENT;
+        else
+                cnp->line_lbls.gks_plcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->line_lbls.perim_lcolor);
 
-	cnp->high_lbls.colors = (int *)
-		_NhlGetGksCi(cl->base.wkptr,cnp->high_lbls.color);
-	cnp->high_lbls.gks_bcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->high_lbls.back_color);
-	cnp->high_lbls.gks_plcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->high_lbls.perim_lcolor);
+        if (cnp->high_lbls.color == NhlTRANSPARENT)
+                cnp->high_lbls.colors = (int *) NhlTRANSPARENT;
+        else
+                cnp->high_lbls.colors =
+                        (int *) _NhlGetGksCi(cl->base.wkptr,
+                                             cnp->high_lbls.color);
+        if (cnp->high_lbls.back_color == NhlTRANSPARENT)
+                cnp->high_lbls.gks_bcolor = NhlTRANSPARENT;
+        else
+                cnp->high_lbls.gks_bcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->high_lbls.back_color);
+        if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
+                cnp->high_lbls.gks_plcolor = NhlTRANSPARENT;
+        else
+                cnp->high_lbls.gks_plcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->high_lbls.perim_lcolor);
 
-	cnp->low_lbls.colors = (int *)
-		_NhlGetGksCi(cl->base.wkptr,cnp->low_lbls.color);
-	cnp->low_lbls.gks_bcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->low_lbls.back_color);
-	cnp->low_lbls.gks_plcolor = 
-		_NhlGetGksCi(cl->base.wkptr,cnp->low_lbls.perim_lcolor);
+
+        if (cnp->low_lbls.color == NhlTRANSPARENT)
+                cnp->low_lbls.colors = (int *) NhlTRANSPARENT;
+        else
+                cnp->low_lbls.colors =
+                        (int *) _NhlGetGksCi(cl->base.wkptr,
+                                             cnp->low_lbls.color);
+        if (cnp->low_lbls.back_color == NhlTRANSPARENT)
+                cnp->low_lbls.gks_bcolor = NhlTRANSPARENT;
+        else
+                cnp->low_lbls.gks_bcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->low_lbls.back_color);
+        if (cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
+                cnp->low_lbls.gks_plcolor = NhlTRANSPARENT;
+        else
+                cnp->low_lbls.gks_plcolor =
+                        _NhlGetGksCi(cl->base.wkptr,
+                                     cnp->low_lbls.perim_lcolor);
 
 	SetRegionAttrs(cl,&cnp->grid_bound,-1);
 	SetRegionAttrs(cl,&cnp->missing_val,-2);
@@ -8917,8 +8957,11 @@ static NhlErrorTypes	CheckColorArray
 	}
 
 	for (i=0; i<count; i++) {
-		(*gks_colors)[i] =
-			_NhlGetGksCi(cl->base.wkptr,ip[i]);
+                if (ip[i] == NhlTRANSPARENT)
+                        (*gks_colors)[i] = NhlTRANSPARENT;
+                else
+                        (*gks_colors)[i] =
+                                _NhlGetGksCi(cl->base.wkptr,ip[i]);
 	}
 	return ret;
 }

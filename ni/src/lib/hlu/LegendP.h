@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.14 1995-04-07 10:42:39 boote Exp $
+ *      $Id: LegendP.h,v 1.15 1995-05-23 01:12:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -176,8 +176,6 @@ typedef struct _NhlLegendLayerPart {
 	NhlBoundingBox	real_perim;	/* perimeter after accounting for
 					   excess label and title extent */
 
-	int 		*gks_colors;
-	int		*string_gks_colors;
 	int		label_draw_count;
 	int		max_label_draw_count;
 	int		max_label_stride_count;

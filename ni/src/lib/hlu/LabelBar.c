@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.37 1995-05-18 20:05:36 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.38 1995-05-23 01:12:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -774,7 +774,7 @@ static NhlErrorTypes    LabelBarInitialize
  *
  * Return Values: Error Conditions
  *
- * Side Effects: GKS and plotchar state changes.
+ * Side Effects: 
  */
 /*ARGSUSED*/
 static NhlErrorTypes LabelBarSetValues

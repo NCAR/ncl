@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.39 1995-05-18 20:05:39 dbrown Exp $
+ *      $Id: Legend.c,v 1.40 1995-05-23 01:12:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1299,8 +1299,6 @@ static NhlErrorTypes    InitializeDynamicArrays
  * Then if the user has supplied a generic array copy it over the 
  * created array. Then check each element to ensure that
  * it is a valid color index.
- * Finally, create a private array for GKS color indices, convert each
- * workstation index into a GKS index, and copy into the GKS array.
  */
 
 	/*
@@ -2016,7 +2014,7 @@ static NhlErrorTypes    ManageDynamicArrays
 /*=======================================================================*/
 /*
  * Manage the colors array: if the array has changed copy the new
- * array elements, check them for validity and get the GKS index.
+ * array elements.
  * Then if the box count is greater than the current array size, enlarge
  * the array and give initial values to the new elements.
  */
@@ -2400,7 +2398,7 @@ static NhlErrorTypes    ManageDynamicArrays
 /*=======================================================================*/
 /*
  * Manage the line label colors array: if the array has changed copy the new
- * array elements, check them for validity and get the GKS index.
+ * array elements.
  * Then if the box count is greater than the current array size, enlarge
  * the array and give initial values to the new elements.
  */
