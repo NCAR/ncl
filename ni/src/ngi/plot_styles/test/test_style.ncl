@@ -354,8 +354,7 @@ begin
 	else
 		if (.not. (asp1 .eq. asp .and. \
 			   height1 .eq. height .and. \
-			   text1 .eq. ltext .and. \
-			   vpon1 .eq. True)) then
+			   text1 .eq. ltext)) then
 		
 			setvalues ltitle
 				"txFontAspectF" : asp
@@ -377,8 +376,7 @@ begin
 	else
 		if (.not. (asp2 .eq. asp .and. \
 			   height2 .eq. height .and. \
-			   text2 .eq. ltext .and. \
-			   vpon2 .eq. True)) then
+			   text2 .eq. rtext)) then
 		
 			setvalues rtitle
 				"txFontAspectF" : asp
@@ -480,9 +478,10 @@ local	vpxf,vpyf,vpwf,vphf,min_lon,max_lon,min_lat,max_lat,center_lon, \
 	center_lat,center_rot,xmin0,ymin0,xmax0,ymax0,xbmode0,ylmode0, \
 	xlabels0,ylabels0,xvalues0,yvalues0,mxvalues0,myvalues0,\
 	xbheight0,ylheight0,xlength0,ylength0,xmlength0,ymlength0,\
-	xoutl0,youtl0,xminoutl0,yminoutl0,ret
+	xoutl0,youtl0,xminoutl0,yminoutl0,on,ret
 begin
 	
+    print("in map tickmarks")
     ret = 0
     getvalues map
       "vpXF"         : vpxf
@@ -499,18 +498,28 @@ begin
       "mpProjection" : projection
     end getvalues
 
+
 ;    print(min_lon)
 ;    print(center_lon)
-;   print(projection)
+   print(projection)
 
+    getvalues tm
+	"vpOn" : on
+    end getvalues
     if (projection.ne.8 .or. center_lat.ne.0.0 .or. center_rot.ne.0.0 ) then
-        setvalues tm
-		"vpOn" : False
-	end setvalues
-    else
-        setvalues tm
-		"vpOn" : True
-	end setvalues
+	if (on.ne.False) then
+	        setvalues tm
+			"vpOn" : False
+		end setvalues
+		ret = 1
+        end if
+    else 
+	if (on.ne.True) then
+        	setvalues tm
+			"vpOn" : True
+		end setvalues
+		ret = 1
+	end if
     end if
 
     if (fabs(max_lon - min_lon) .ge. 360) then
