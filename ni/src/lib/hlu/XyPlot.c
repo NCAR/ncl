@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.67 1997-02-24 22:12:47 boote Exp $
+ *      $Id: XyPlot.c,v 1.68 1997-06-10 17:47:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2335,6 +2335,8 @@ SetUpDataSpec
 			if(!label){
 				if(llabel_strings[index])
 					label = llabel_strings[index];
+				else if(j < len_labeltable)
+					label = labeltable[j];
 				else{
 					sprintf(buffer,"%s%d",
 							dataspec->base.name,
