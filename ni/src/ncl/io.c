@@ -93,7 +93,7 @@ NclVaPrintFunc thepit;
 {
 	pit = thepit;
 }
-#ifdef SunOS
+#if     defined(SUN) && (MAJOR == 4)
 extern FILE *nclin;
 #else
 extern FILE *yyin;
@@ -198,7 +198,7 @@ int cline_number;
 	}
 
 	tmp = (NclFileLoadList*)NclMalloc((unsigned)sizeof(NclFileLoadList));
-#ifdef SunOS
+#if     defined(SUN) && (MAJOR == 4)
 	tmp->fp = nclin;
 #else
 	tmp->fp = yyin;
@@ -213,7 +213,7 @@ int cline_number;
 	} else {
 		cur_load_file = NULL;
 	}
-#ifdef SunOS
+#if     defined(SUN) && (MAJOR == 4)
 	nclin = fp;
 #else
 	yyin = fp;
