@@ -1,33 +1,5 @@
 C
-C	$Id: lblbar.f,v 1.1.1.1 1992-04-17 22:32:57 ncargd Exp $
-C
-C***********************************************************************
-C L A B E L B A R   -   I N T R O D U C T I O N
-C***********************************************************************
-C
-C This file contains materials for a package which draws "label bars" -
-C horizontal or vertical rectangles divided into boxes (each of which
-C is either colored or filled with a pattern), and having labels next
-C to it, which serves as a key for a solid-filled plot.
-C
-C***********************************************************************
-C L A B E L B A R   -   I M P L E M E N T A T I O N
-C***********************************************************************
-C
-C LABELBAR is written in standard FORTRAN 77.  No special effort should
-C be required to implement it.  It does require various other parts of
-C the NCAR Graphics package to have been implemented; in particular, it
-C requires the package SOFTFILL, the support routine SETER, and various
-C routines from SPPS.
-C
-C***********************************************************************
-C L A B E L B A R   -   W R I T E - U P
-C***********************************************************************
-C
-C
-C***********************************************************************
-C L A B E L B A R   -   U S E R - L E V E L   R O U T I N E S
-C***********************************************************************
+C	$Id: lblbar.f,v 1.2 1992-05-18 14:39:28 ncargd Exp $
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)
@@ -53,11 +25,13 @@ C
 C YTEB is a value between 0 and 1, specifying the position of the top
 C edge of the bar.
 C
-C NBOX is the number of boxes into which the bar is to be divided.
+C ABS(NBOX) is the number of boxes into which the bar is to be divided.
+C If NBOX is positive, the boxes will be outlined after being filled;
+C if NBOX is negative, this will not be done.
 C
 C WSFB and HSFB are the width and height, respectively, of each little
 C solid-filled box, as fractions of the rectangles resulting from the
-C division of the bar into NBOX pieces.
+C division of the bar into ABS(NBOX) pieces.
 C
 C LFIN is a list of indices, each of which specifies, in some manner,
 C how one of the solid-filled boxes is to be filled.  (For example,
@@ -75,10 +49,10 @@ C
 C LLBS is a list of labels for the solid-filled boxes.
 C
 C NLBS is the number of labels in the list LLBS.  If NLBS is equal to
-C NBOX-1, then label I applies to the line separating box I from box
-C I+1.  If NLBS is equal to NBOX, then label I applies to box I.  If
-C NLBS is equal to NBOX+1, then labels 1 and NLBS apply to the left and
-C right ends (if IHOV is non-zero, the bottom and top ends) of the
+C ABS(NBOX)-1, then label I applies to the line separating box I from
+C box I+1.  If NLBS is equal to NBOX, then label I applies to box I.  If
+C NLBS is equal to ABS(NBOX)+1, then labels 1 and NLBS apply to the left
+C and right ends (if IHOV is non-zero, the bottom and top ends) of the
 C whole color bar; for values of I not equal to 1 or NLBS, label I
 C applies to the line separating box I-1 from box I.
 C
@@ -116,7 +90,7 @@ C Compute the width and height of each section of the bar and the
 C coordinates of the edges of the first solid-filled box.
 C
         IF (IHOV.EQ.0) THEN
-          WSOB=(XREB-XLEB)/REAL(NBOX)
+          WSOB=(XREB-XLEB)/REAL(ABS(NBOX))
           WINC=WSOB
           HSOB=YTEB-YBEB
           HINC=0.
@@ -135,7 +109,7 @@ C
         ELSE
           WSOB=XREB-XLEB
           WINC=0.
-          HSOB=(YTEB-YBEB)/REAL(NBOX)
+          HSOB=(YTEB-YBEB)/REAL(ABS(NBOX))
           HINC=HSOB
           IF (LBAB.EQ.1) THEN
             XLB1=XLEB
@@ -177,7 +151,7 @@ C
           CALL GSLWSC (WOFL)
         END IF
 C
-        DO 101 I=1,NBOX
+        DO 101 I=1,ABS(NBOX)
           XCRA(1)=XLB1+REAL(I-1)*WINC
           YCRA(1)=YBB1+REAL(I-1)*HINC
           XCRA(2)=XRB1+REAL(I-1)*WINC
@@ -199,54 +173,58 @@ C
         IF (ICFL.GE.0) CALL GSPLCI (ISPC)
         IF (WOFL.GT.0.) CALL GSLWSC (STLW)
 C
-C Outline the boxes.
+C If it is to be done, outline the boxes now.
 C
-        IF (ICBL.GE.0) THEN
-          CALL GQPLCI (IERR,ISPC)
-          IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',4,2)
-            STOP
-          END IF
-          CALL GSPLCI (ICBL)
-        END IF
+        IF (NBOX.GT.0) THEN
 C
-        IF (WOBL.GT.0.) THEN
-          CALL GQLWSC (IERR,STLW)
-          IF (IERR.NE.0) THEN
-            CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',5,2)
-            STOP
-          END IF
-          CALL GSLWSC (WOBL)
-        END IF
-C
-        DO 102 I=1,NBOX
-          XCRA(1)=XLB1+REAL(I-1)*WINC
-          YCRA(1)=YBB1+REAL(I-1)*HINC
-          XCRA(2)=XRB1+REAL(I-1)*WINC
-          YCRA(2)=YCRA(1)
-          XCRA(3)=XCRA(2)
-          YCRA(3)=YTB1+REAL(I-1)*HINC
-          XCRA(4)=XCRA(1)
-          YCRA(4)=YCRA(3)
-          XCRA(5)=XCRA(1)
-          YCRA(5)=YCRA(1)
-          IF (IHOV.EQ.0) THEN
-            IF (I.EQ.1.OR.WSFB.NE.1.) THEN
-              CALL GPL (5,XCRA,YCRA)
-            ELSE
-              CALL GPL (4,XCRA,YCRA)
+          IF (ICBL.GE.0) THEN
+            CALL GQPLCI (IERR,ISPC)
+            IF (IERR.NE.0) THEN
+              CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',4,2)
+              STOP
             END IF
-          ELSE
-            IF (I.EQ.1.OR.HSFB.NE.1.) THEN
-              CALL GPL (5,XCRA,YCRA)
-            ELSE
-              CALL GPL (4,XCRA(2),YCRA(2))
-            END IF
+            CALL GSPLCI (ICBL)
           END IF
-  102   CONTINUE
 C
-        IF (ICBL.GE.0) CALL GSPLCI (ISPC)
-        IF (WOBL.GT.0.) CALL GSLWSC (STLW)
+          IF (WOBL.GT.0.) THEN
+            CALL GQLWSC (IERR,STLW)
+            IF (IERR.NE.0) THEN
+              CALL SETER ('LBLBAR - ERROR EXIT FROM GQLWSC',5,2)
+              STOP
+            END IF
+            CALL GSLWSC (WOBL)
+          END IF
+C
+          DO 102 I=1,ABS(NBOX)
+            XCRA(1)=XLB1+REAL(I-1)*WINC
+            YCRA(1)=YBB1+REAL(I-1)*HINC
+            XCRA(2)=XRB1+REAL(I-1)*WINC
+            YCRA(2)=YCRA(1)
+            XCRA(3)=XCRA(2)
+            YCRA(3)=YTB1+REAL(I-1)*HINC
+            XCRA(4)=XCRA(1)
+            YCRA(4)=YCRA(3)
+            XCRA(5)=XCRA(1)
+            YCRA(5)=YCRA(1)
+            IF (IHOV.EQ.0) THEN
+              IF (I.EQ.1.OR.WSFB.NE.1.) THEN
+                CALL GPL (5,XCRA,YCRA)
+              ELSE
+                CALL GPL (4,XCRA,YCRA)
+              END IF
+            ELSE
+              IF (I.EQ.1.OR.HSFB.NE.1.) THEN
+                CALL GPL (5,XCRA,YCRA)
+              ELSE
+                CALL GPL (4,XCRA(2),YCRA(2))
+              END IF
+            END IF
+  102     CONTINUE
+C
+          IF (ICBL.GE.0) CALL GSPLCI (ISPC)
+          IF (WOBL.GT.0.) CALL GSLWSC (STLW)
+
+        END IF
 C
 C If labelling is to be done at all ...
 C
@@ -326,10 +304,10 @@ C
             CALL GSLWSC (WOLB)
           END IF
 C
-          IF (NLBS.LT.NBOX) THEN
+          IF (NLBS.LT.ABS(NBOX)) THEN
             XLB1=XLB1+WINC
             YBB1=YBB1+HINC
-          ELSE IF (NLBS.EQ.NBOX) THEN
+          ELSE IF (NLBS.EQ.ABS(NBOX)) THEN
             XLB1=XLB1+WSFB*WINC/2.
             YBB1=YBB1+HSFB*HINC/2.
           END IF
