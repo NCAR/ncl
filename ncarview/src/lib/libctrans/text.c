@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.19 1993-01-08 21:18:04 clyne Exp $
+ *	$Id: text.c,v 1.20 1993-01-09 00:35:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -555,7 +555,8 @@ static int	str_height(strlen)
 		case PATH_RIGHT : 
 		case PATH_LEFT : 
 		case PATH_UP :  return(F_FONT_BASE(fcap_current));
-		case PATH_DOWN : return(F_FONT_TOP(fcap_current)); 
+		case PATH_DOWN : 
+			return (F_FONT_TOP(fcap_current));
 		}
 	case A_TOP : 
 		switch(TEXT_PATH) {
@@ -594,20 +595,18 @@ static int	str_height(strlen)
 		case PATH_UP :  
 			return (F_FONT_BASE(fcap_current));
 		case PATH_DOWN : 
-			return(-1 * ((Width * (strlen-1)) 
-				- F_FONT_BASE(fcap_current))); 
+			return(-((Width * (strlen-1)) - 
+				F_FONT_BASE(fcap_current))); 
 		}
 	case A_BOTTOM : 
 		switch(TEXT_PATH) {
 		case PATH_RIGHT :
 		case PATH_LEFT :
 		case PATH_UP :  
+			return (F_FONT_BOTTOM(fcap_current));
 		case PATH_DOWN : 
-			return (F_FONT_BOTTOM(fcap_current));
-			return (F_FONT_BOTTOM(fcap_current));
-#ifdef	DEAD
-			return(-1 * (Width * (strlen-1))); 
-#endif
+			return(-((Width * (strlen-1)) - 
+				F_FONT_BOTTOM(fcap_current))); 
 		}
 	default :
 		return(0);

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.11 1993-01-06 21:12:02 clyne Exp $
+ *	$Id: clear_text.c,v 1.12 1993-01-09 00:35:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -146,6 +146,11 @@ CGMC *c;
 int	CTXT_MFVersion(c)
 CGMC *c;
 {
+	/*
+	 * further decoding of the metafile may be dependent on the 
+	 * metafile version.
+	 */
+	dt->mfversion = c->i[0];
 
 	(void) printf("\nMETAFILE VERSION\n");
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class1.c,v 1.5 1992-09-01 23:41:12 clyne Exp $
+ *	$Id: X11_class1.c,v 1.6 1993-01-09 00:35:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,12 +33,6 @@
 #include	"cgmc.h"
 
 /* Class 1 */
-/*ARGSUSED*/
-int	X11_MFVersion(c)
-CGMC *c;
-{
-	return (0);
-}
 
 /*ARGSUSED*/
 int	X11_MFDesc(c)

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.12 1992-09-01 23:42:11 clyne Exp $
+ *	$Id: devices.c,v 1.13 1993-01-09 00:35:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -124,7 +124,7 @@ int	X11_BegMF(), X11_EndMF(), X11_BegPic(), X11_BegPicBody(), X11_EndPic(),
 
 /*	Class 1	*/
 
-int X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(), 
+int X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(), 
     X11_CharSetList(); 
 
 /*	Class 2	*/
@@ -516,7 +516,7 @@ int  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 1 */
 	{
-	NULL, X11_MFVersion, X11_MFDesc, VDCType, IntergerPrec,
+	NULL, MFVersion, X11_MFDesc, VDCType, IntergerPrec,
 	RealPrec, IndexPrec, ColrPrec, ColrIndexPrec, MaxColrIndex,
 	ColrValueExt, X11_MFElemList, X11_MFDefaults, FontList,
 	X11_CharSetList, CharCoding, NULL, NULL, NULL, NULL, 
