@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.11 1999-06-22 20:22:54 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.12 1999-06-23 14:33:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1830,12 +1830,14 @@ begin
 
     cnres = get_res_ne(res2,(/"mp","ti","vp","lb"/))
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
-      if((isatt(cnres,"cnFillOn").and.cnres@cnFillOn).and.\
-         (.not.isatt(cnres,"lbLabelBarOn").or.\
-          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn))
-        set_attr(cnres,"cnLineLabelsOn",False)
-        lbar_on = True   ; Turn on a labelbar
-       end if
+      if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
+	set_attr(cnres,"cnInfoLabelOn",False)
+        if(.not.isatt(cnres,"lbLabelBarOn").or.\
+          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn)
+infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
+begin
+
+; Initialize.
     lbar_on       = False     ; Labelbar flag
     res2          = get_resources(resources) ; Copy of resources
     lbar_zone     = 3         ; Zone for labelbar (may change later)
@@ -2159,18 +2161,20 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
     cnres = get_res_ne(res2,(/"mp","vp","tm","ti","lb"/))
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
-      if((isatt(cnres,"cnFillOn").and.cnres@cnFillOn).and.\
-         (.not.isatt(cnres,"lbLabelBarOn").or.\
-          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn))
-        set_attr(cnres,"cnLineLabelsOn",False)
-        lbar_on = True   ; Turn on a labelbar
-       end if
+      if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
+	set_attr(cnres,"cnInfoLabelOn",False)
+        if(.not.isatt(cnres,"lbLabelBarOn").or.\
+          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn)
+          zmeans2 = dim_avg(datanew(lat | : ,lon | :))
+          if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
+          end if
+          delete(zmeans2)
         end if
       else
         print("gsn_csm_contour_map_ce: Warning: The resource gsnZonalMean can only be set to True")
         print("if the data has one of the coordinate variables " + get_allowed_latnames() + "and " + get_allowed_lonnames())
       end if
-    if(isatt(res2,"cnInfoLabelOn").and..not.res2@cnInfoLabelOn)
+    if(isatt(cnres,"cnInfoLabelOn").and..not.cnres@cnInfoLabelOn)
       infolabel_on = False
     else
       infolabel_on = True
@@ -2188,10 +2192,12 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
       mpres@gsnMajorLonSpacing = res2@gsnMajorLonSpacing
       delete(res2@gsnMajorLonSpacing)
     end if
-    if(.not.isatt(res2,"cnInfoLabelOrthogonalPosF").and.infolabel_zone.eq.2)
-      cnres@cnInfoLabelOrthogonalPosF = 0.13
+    if(isatt(res2,"gsnMajorLatSpacing"))
+      mpres@gsnMajorLatSpacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    end if
+
     if(isatt(res2,"gsnMinorLonSpacing"))
-    cnres@cnInfoLabelZone = infolabel_zone
       mpres@gsnMinorLonSpacing = res2@gsnMinorLonSpacing
       delete(res2@gsnMinorLonSpacing)
     end if
@@ -3930,6 +3936,7 @@ end
       "tiYAxisFontHeightF"   : yaxis_font_height
       "tmYLLabelFontHeightF" : yaxis_label_height
       "tiXAxisFontHeightF"   : xfontf
+
 
 
                   right_string,subres)
