@@ -1,5 +1,5 @@
 /*
- *      $Id: st03c.c,v 1.2 1996-06-27 15:35:55 haley Exp $
+ *      $Id: st03c.c,v 1.3 1996-06-27 22:20:41 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -126,7 +126,6 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,U,2,len_dims);
     NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,V,2,len_dims);
-    NhlCreate(&vfid,"vectorfield",NhlvectorFieldClass,appid,rlist);
     NhlRLSetFloat(rlist,NhlNvfXCStartV, -180.0);
     NhlRLSetFloat(rlist,NhlNvfXCEndV, 180.0);
     NhlRLSetFloat(rlist,NhlNvfYCStartV, -90.0);

@@ -1,5 +1,5 @@
 C
-C      $Id: st03f.f,v 1.1 1996-06-27 15:35:56 haley Exp $
+C      $Id: st03f.f,v 1.2 1996-06-27 22:20:41 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -137,9 +137,6 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'vfUDataArray',U,2,len_dims,ierr)
       call NhlFRLSetMDFloatArray(rlist,'vfVDataArray',V,2,len_dims,ierr)
-      call NhlFCreate(vfid,'vectorfield',NhlFvectorFieldClass,appid,
-     +     rlist,ierr)
-
       call NhlFRLSetFloat(rlist,'vfXCStartV', -180.0,ierr)
       call NhlFRLSetFloat(rlist,'vfXCEndV', 180.0,ierr)
       call NhlFRLSetFloat(rlist,'vfYCStartV', -90.0,ierr)
