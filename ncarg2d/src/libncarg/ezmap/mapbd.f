@@ -1,9 +1,9 @@
 C
-C $Id: mapbd.f,v 1.10 1999-04-02 22:59:26 kennison Exp $
+C $Id: mapbd.f,v 1.11 1999-07-29 22:49:40 kennison Exp $
 C
       BLOCK DATA MAPBD
 C
-      PARAMETER (MNAI=2000)
+      PARAMETER (MNAI=6000)
 C
 C The common block MAPCM1 contains transformation constants.  Because of
 C compilation problems on DECRISC machines, it has been split into two
