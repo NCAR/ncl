@@ -1,10 +1,10 @@
 #
-#   $Id: yMakefile,v 1.2 1995-01-30 19:45:11 stautler Exp $
+#   $Id: yMakefile,v 1.3 1995-01-30 19:49:38 stautler Exp $
 #
 #   Makefile for HLU Title examples
 #
 
-NCGMS   =   ti01c.ncgm ti02c.ncgm ti03c.ncgm
+NCGMS   =   ti01c.ncgm ti02c.ncgm ti03c.ncgm ti01f.ncgm ti02f.ncgm ti03f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
@@ -19,23 +19,10 @@ InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
 HLUCExampleTarget(ti01c,ti01c.o)
 HLUCExampleTarget(ti02c,ti02c.o)
 HLUCExampleTarget(ti03c,ti03c.o)
-
-CleanFilesTarget($(NCGMS))
-DependTarget($(SRCS))
-
-#
-# Fortran Program Definitions
-#
-FNCGMS   =   ti01f.ncgm ti02f.ncgm ti03f.ncgm
-
-FSRCS        = ti01f.f ti02f.f ti03f.f
-FEXFILES     = $(FSRCS) $(RES) $(INCLUDES)
-
-InstallTarget($(FEXFILES),$(INSTALL_LIB),$(HLUEXROOT))
-
 HLUFExampleTarget(ti01f,ti01f.o)
 HLUFExampleTarget(ti02f,ti02f.o)
 HLUFExampleTarget(ti03f,ti03f.o)
 
-CleanFilesTarget($(FNCGMS))
-DependTarget($(FSRCS))
+CleanFilesTarget($(NCGMS))
+DependTarget($(SRCS))
+
