@@ -18,7 +18,9 @@ of Ngmisc.  Only the first two characters of the string are examined.
 the value of the parameter specified by CNP is to be retrieved.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
-argument descriptions.
+argument descriptions with the following exception:
+.IP len 12
+The size of cvp as dimensioned in the calling program.
 .SH USAGE
 This routine allows you to retrieve the current value of Ngmisc
 parameters. For a complete list of parameters available in this
