@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.26 2003-12-10 00:43:05 shea Exp $
+;      $Id: contributed.ncl,v 1.27 2004-01-16 21:13:37 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -4195,10 +4195,10 @@ begin
       nBytes  = 8
   end if
   dimBytes  = (/product(dims),nBytes/)
-  print (dimBytes)
+ ;print (dimBytes)
                                   ; read data as bytes
   indata = fbindirread(infile,0,dimBytes,"byte")
-  printVarSummary (indata)
+ ;printVarSummary (indata)
                                   ; write to temporary file
                                   ; and reverse byte order
 
