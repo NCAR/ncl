@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.38 1997-07-02 15:24:33 boote Exp $
+ *      $Id: hluP.h,v 1.39 1997-07-25 21:13:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@
 #define	_NhlRES_NOCACCESS	(0x02)
 #define	_NhlRES_NOSACCESS	(0x04)
 #define	_NhlRES_NOGACCESS	(0x08)
+#define _NhlRES_PRIVATE		(0x10)
 
 #define	_NhlRES_RONLY	(_NhlRES_NOCACCESS|_NhlRES_NOSACCESS|_NhlRES_NOGACCESS)
 #define	_NhlRES_CONLY	(_NhlRES_NORACCESS|_NhlRES_NOSACCESS|_NhlRES_NOGACCESS)

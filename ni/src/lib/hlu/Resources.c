@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.34 1997-07-03 07:39:21 boote Exp $
+ *      $Id: Resources.c,v 1.35 1997-07-25 21:12:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1236,6 +1236,98 @@ _NhlGetResInfo
 	}
 
 	return NULL;
+}
+
+extern int
+_NhlInitAllResources(
+#if	NhlNeedProto
+	NhlClass	lc
+#endif
+        );
+
+
+static int
+UserCompareRes
+#if	NhlNeedProto
+(
+	Const void	*ov,
+	Const void	*tv
+)
+#else
+(ov,tv)
+	Const void	*ov;
+	Const void	*tv;
+#endif
+{
+	NrmQuark	*one = (NrmQuark *)ov;
+	NrmQuark	*two = (NrmQuark *)tv;
+
+        return strcmp(NrmQuarkToString(*one),NrmQuarkToString(*two));
+}
+
+NrmNameList
+_NhlGetUserResources
+#if	NhlNeedProto
+(
+	NhlClass	lc,
+        int		*res_count
+)
+#else
+(lc,res_count)
+	NhlClass	lc;
+        int		*res_count;
+#endif
+{
+        NhlErrorTypes ret=NhlNOERROR, subret=NhlNOERROR;
+        int i,j,count;
+        NrmNameList all_res,qnames;
+                
+        if(! lc->base_class.class_inited) {
+                ret = _NhlInitializeClass(lc);
+                if (ret < NhlWARNING) {
+                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                                   "Unable to initialize class %s",
+                                   lc->base_class.class_name));
+                        return NULL;
+                }
+        }
+        
+        if (! lc->base_class.all_resources) {
+                count = _NhlInitAllResources(lc);
+                if (count < 0) {
+                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                             "Unable to initialize all resources for class %s",
+                                   lc->base_class.class_name));
+                        return NULL;
+                }
+        }
+        else {
+                qnames = lc->base_class.all_resources;
+                for (i=0; qnames[i] != NrmNULLQUARK; i++)
+                        ;
+                count = i;
+        }
+                
+        qnames = NhlMalloc((count+1) * sizeof(NrmName));
+        if (! qnames) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "Dynamic memory allocation error"));
+                return NULL;
+        }
+	all_res = lc->base_class.all_resources;
+
+	for (i=0,j=0; i < count; i++) {
+		NrmResource *res = _NhlGetResInfo(lc,all_res[i]);
+		if (res->res_info & _NhlRES_PRIVATE)
+			continue;
+		qnames[j++] = all_res[i];
+	}
+        qnames[j] = NrmNULLQUARK;
+	*res_count = j;
+
+        qsort(qnames,*res_count,sizeof(NrmName),UserCompareRes);
+        
+        return qnames;
 }
 
 /*

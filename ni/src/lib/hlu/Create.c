@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.35 1997-07-02 15:24:24 boote Exp $
+ *      $Id: Create.c,v 1.36 1997-07-25 21:11:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -970,7 +970,7 @@ qcompare
 }
 
 /*
- * Function:	InitAllResources
+ * Function:	_NhlInitAllResources
  *
  * Description:	This function initializes the all_resources field for the
  *		given class.  This is done here instead of in initialize
@@ -987,12 +987,12 @@ qcompare
  *
  * Out Args:	
  *
- * Scope:	static
+ * Scope:	global
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-static NhlErrorTypes
-InitAllResources
+int
+_NhlInitAllResources
 #if	NhlNeedProto
 (
 	NhlClass	lc	/* Class to init all_resources 	*/
@@ -1080,7 +1080,7 @@ InitAllResources
 	memcpy((char*)lc->base_class.all_resources,(char*)list,
 					(num_all_res+1)*sizeof(NrmQuark));
 
-	return NhlNOERROR;
+	return num_all_res;
 }
 
 /*
@@ -1175,7 +1175,7 @@ _NhlRegisterChildClass
 	 * child is interested in.
 	 */
 	if(child->base_class.all_resources == NULL){
-		lret = InitAllResources(child);
+		lret = _NhlInitAllResources(child);
 		if(lret < NhlWARNING){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to determine resources for %s",

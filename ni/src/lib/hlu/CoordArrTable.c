@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.32 1997-05-05 21:45:01 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.33 1997-07-25 21:11:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,25 +89,25 @@ static NhlResource resources[] = {
 
 	/* use reslist to init private fields */
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(own_x),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(own_y),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(conv_x),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(conv_y),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(own_miss_x),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(own_miss_y),
-		NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		NhlTImmediate,(NhlPointer)NULL,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(sticky_max_x),
-		NhlTImmediate,(NhlPointer)False,0,NULL},
+		NhlTImmediate,(NhlPointer)False,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(sticky_min_x),
-		NhlTImmediate,(NhlPointer)False,0,NULL},
+		NhlTImmediate,(NhlPointer)False,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(sticky_max_y),
-		NhlTImmediate,(NhlPointer)False,0,NULL},
+		NhlTImmediate,(NhlPointer)False,_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(sticky_min_y),
-		NhlTImmediate,(NhlPointer)False,0,NULL}
+		NhlTImmediate,(NhlPointer)False,_NhlRES_PRIVATE,NULL}
 };
 #undef Oset
 

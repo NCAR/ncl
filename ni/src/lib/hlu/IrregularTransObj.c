@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.32 1997-06-06 20:58:04 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.33 1997-07-25 21:12:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -126,13 +126,15 @@ static NhlResource resources[] = {
 		  _NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFreeGenArray },
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrXMinF, NhlCtrXMinF, NhlTFloat, sizeof(float),
 		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_min),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -162,13 +164,15 @@ static NhlResource resources[] = {
 		  _NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFreeGenArray },
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
 		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMinF, NhlCtrYMinF, NhlTFloat, sizeof(float),
 		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_min),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -188,7 +192,7 @@ static NhlResource resources[] = {
 		sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,
 			  irtrans.low_level_log_on),
-		NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL}
+		NhlTImmediate,_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 };
 
 /*

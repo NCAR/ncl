@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.53 1997-06-03 00:30:34 ethan Exp $
+ *      $Id: LabelBar.c,v 1.54 1997-07-25 21:12:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -287,7 +287,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
 {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction_set),
-	 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 {NhlNlbTitleDirection,NhlClbTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction),
@@ -385,7 +385,7 @@ static NhlResource resources[] = {
 
 {NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.margin_mode),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_PRIVATE,NULL},
 
 };
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.15 1997-07-16 23:27:35 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.16 1997-07-25 21:11:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,7 +144,6 @@ typedef struct _NhlContourPlotLayerPart {
         NhlBoolean	smoothing_on;
         float		smoothing_tension;
         float		smoothing_distance;
-        NhlBoolean	check_point_distance;
         float		max_point_distance;
 
 	NhlBoolean	explicit_line_labels_on;

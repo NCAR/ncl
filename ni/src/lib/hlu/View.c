@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.27 1997-05-05 21:45:30 boote Exp $
+ *      $Id: View.c,v 1.28 1997-07-25 21:12:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,28 +154,29 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlViewLayerRec,view.x_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+			NhlTImmediate,_NhlUSET((NhlPointer)True),
+          	_NhlRES_PRIVATE,NULL},
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.x),
-				NhlTProcedure,_NhlUSET((NhlPointer)XSetFunc),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)XSetFunc),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlViewLayerRec,view.y_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvpYF, NhlCvpYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.y),
-				NhlTProcedure,_NhlUSET((NhlPointer)YSetFunc),0,NULL},
+          	NhlTProcedure,_NhlUSET((NhlPointer)YSetFunc),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlViewLayerRec,view.width_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+          	NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvpWidthF, NhlCvpWidthF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.width),
-				NhlTProcedure,_NhlUSET((NhlPointer)WSetFunc),0,NULL},
+          	NhlTProcedure,_NhlUSET((NhlPointer)WSetFunc),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlViewLayerRec,view.height_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+          	NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvpHeightF, NhlCvpHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.height),
-				NhlTProcedure,_NhlUSET((NhlPointer)HSetFunc),0,NULL},
+          	NhlTProcedure,_NhlUSET((NhlPointer)HSetFunc),0,NULL},
 	{ NhlNvpKeepAspect, NhlCvpKeepAspect, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.keep_aspect),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -194,7 +195,8 @@ static NhlResource resources[] = {
 	{ NhlNvpOverlayId, NhlCvpOverlayId, NhlTObjId, 
 		  sizeof(int),NhlOffset(NhlViewLayerRec,view.overlay_id),
 		  NhlTImmediate,
-		  _NhlUSET((NhlPointer) NhlNULLOBJID),_NhlRES_NOACCESS,NULL}
+		  _NhlUSET((NhlPointer) NhlNULLOBJID),
+          	  _NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL}
 
 };
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManager.c,v 1.5 1997-02-24 22:12:16 boote Exp $
+ *      $Id: AnnoManager.c,v 1.6 1997-07-25 21:11:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,8 @@ static NhlResource resources[] = {
 
 	{NhlNamOverlayId,NhlCamOverlayId,NhlTObjId,sizeof(int),
 		 Oset(overlay_id),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNULLOBJID),0,NULL}
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNULLOBJID),
+         	 _NhlRES_PRIVATE,NULL}
 
 };
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.42 1997-05-14 22:53:28 boote Exp $
+ *      $Id: DataComm.c,v 1.43 1997-07-25 21:11:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -179,7 +179,8 @@ static NhlResource dsresources[] = {
 
 	/* initialize this field to false */
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(destroying),NhlTImmediate,(NhlPointer)False,0,NULL}
+		Oset(destroying),NhlTImmediate,(NhlPointer)False,
+         	_NhlRES_PRIVATE,NULL}
 
 };
 #undef	Oset

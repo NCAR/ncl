@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.68 1997-06-10 17:47:10 boote Exp $
+ *      $Id: XyPlot.c,v 1.69 1997-07-25 21:13:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -142,8 +142,9 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_marker_color),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),Oset(marker_size_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         	Oset(marker_size_set),NhlTImmediate,
+         	(NhlPointer)True,_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNxyMarkerSizeF,NhlCxyMarkerSizeF,NhlTFloat,
 		sizeof(float),Oset(marker_size),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
@@ -188,15 +189,16 @@ static NhlResource data_resources[] = {
 		sizeof(NhlGenArray),Oset(lg_label_strings),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),Oset(dash_seg_len_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         	Oset(dash_seg_len_set),NhlTImmediate,
+         	(NhlPointer)True,_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNxyLineDashSegLenF,NhlCxyLineDashSegLenF,NhlTFloat,
 		sizeof(float),Oset(dash_seg_len),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(llabel_fheight_set),NhlTImmediate,(NhlPointer)True,
-		_NhlRES_NOACCESS,NULL},
+		_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNxyLineLabelFontHeightF,NhlCxyLineLabelFontHeightF,NhlTFloat,
 		sizeof(float),Oset(llabel_fheight),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
@@ -241,13 +243,17 @@ static NhlResource resources[] = {
 		Oset(y_reverse),NhlTImmediate,False,_NhlRES_DEFAULT,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_min_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_max_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_y_max_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_y_min_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 
 	{NhlNxyComputeXMin,NhlCxyComputeExtent,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(compute_x_min),NhlTProcedure,(NhlPointer)ResUnset,
@@ -266,13 +272,17 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_min_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_max_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_max_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_min_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),Oset(x_min),
 		NhlTProcedure,(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
@@ -322,10 +332,11 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)NhlNEVER),_NhlRES_DEFAULT,NULL},
 	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,
 		 sizeof(NhlBoolean),
-		 Oset(dspec_changed),NhlTImmediate,NULL,_NhlRES_SONLY,NULL},
+		 Oset(dspec_changed),NhlTImmediate,NULL,
+         	 _NhlRES_SONLY|_NhlRES_PRIVATE,NULL},
 	{NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+		  Oset(update_req),NhlTImmediate,
+         	  _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset

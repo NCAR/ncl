@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.34 1997-07-02 15:24:18 boote Exp $
+ *      $Id: App.c,v 1.35 1997-07-25 21:11:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -152,28 +152,29 @@ static NhlResource resources[] = {
 /* End-documented-resources */
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
-		_NhlRES_CONLY,NULL},
+		_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNdefApp,_NhlCdefApp,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(default_app),NhlTImmediate,(NhlPointer)False,
-		_NhlRES_CONLY,NULL},
+		_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNnoAppDB,_NhlCnoAppDB,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,_NhlRES_CONLY,
-		NULL},
+		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,
+         	_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappResourceStrings,_NhlCappResourceStrings,NhlTPointer,
 		sizeof(NhlPointer),Oset(res_strings),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappCommandLineOpts,_NhlCappCommandLineOpts,NhlTPointer,
 		sizeof(NhlPointer),Oset(clineopts),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappArgcInOut,_NhlCappArgcInOut,NhlTPointer,
 		sizeof(NhlPointer),Oset(argc_in_out),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappArgvInOut,_NhlCappArgvInOut,NhlTPointer,
 		sizeof(NhlPointer),Oset(argv_in_out),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
 		NhlOffset(NhlBaseLayerRec,base.appid),NhlTImmediate,
-		(NhlPointer)NhlDEFAULT_APP,_NhlRES_NOACCESS,NULL},
+		(NhlPointer)NhlDEFAULT_APP,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 };
 
 #undef	appDefResDef

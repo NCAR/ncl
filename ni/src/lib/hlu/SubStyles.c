@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.4 1997-02-24 22:12:36 boote Exp $
+ *      $Id: SubStyles.c,v 1.5 1997-07-25 21:12:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,7 +79,7 @@ static NhlResource lineresources[] = {
 		 sizeof(NhlPointer),
 		 NhlOffset(NhlLineStyleLayerRec,linestyle.lsp),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		 _NhlRES_GONLY,NULL},
+		 _NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
 
@@ -449,7 +449,7 @@ static NhlResource fillresources[] = {
 		 sizeof(NhlPointer),
 		 NhlOffset(NhlFillStyleLayerRec,fillstyle.fsp),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		 _NhlRES_GONLY,NULL},
+		 _NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
 
@@ -602,7 +602,7 @@ static NhlResource markerresources[] = {
 		 sizeof(NhlPointer),
 		 NhlOffset(NhlMarkerStyleLayerRec,markerstyle.msp),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		 _NhlRES_GONLY,NULL},
+		 _NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
 
@@ -778,7 +778,7 @@ static NhlResource textresources[] = {
 		 sizeof(NhlPointer),
 		 NhlOffset(NhlTextStyleLayerRec,textstyle.tsp),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		 _NhlRES_GONLY,NULL},
+		 _NhlRES_GONLY|_NhlRES_PRIVATE,NULL},
 
 };
 #undef Oset

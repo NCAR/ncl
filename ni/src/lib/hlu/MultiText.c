@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.20 1997-03-07 13:52:55 boote Exp $
+ *      $Id: MultiText.c,v 1.21 1997-07-25 21:12:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,21 +29,23 @@
 #define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
 static NhlResource resources[] = {
 	{NhlNMtextNumStrings, NhlCMtextNumStrings, NhlTInteger,
-		sizeof(int),Oset(num_strings),NhlTImmediate,0,0,NULL},
+		sizeof(int),Oset(num_strings),NhlTImmediate,0,
+         	_NhlRES_DEFAULT,NULL},
 /*
 * The free function is probably wrong in this place
 */
 	{NhlNMtextStrings, NhlCMtextStrings, NhlTPointer,
-		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL,0,
-		(NhlFreeFunc)NhlFree},
+		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL,
+         	_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNMtextOrientation, NhlCMtextOrientation, NhlTMTextOrientationType,
 		sizeof(NhlMTextOrientatonType),Oset(orientation),NhlTImmediate,
-		(NhlPointer)NhlMTEXT_X_CONST,0,NULL},
+		(NhlPointer)NhlMTEXT_X_CONST,_NhlRES_DEFAULT,NULL},
 	{NhlNMtextConstPosF, NhlCMtextConstPosF, NhlTFloat,
-		sizeof(float),Oset(const_pos),NhlTString,"-1.0",0,NULL},
+		sizeof(float),Oset(const_pos),NhlTString,"-1.0",
+         	_NhlRES_DEFAULT,NULL},
 	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTPointer,
-		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,0,
-		(NhlFreeFunc)NhlFree},
+		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,
+         	_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
 		sizeof(float),Oset(max_len),NhlTString,"0.0",
 		 _NhlRES_GONLY,NULL},

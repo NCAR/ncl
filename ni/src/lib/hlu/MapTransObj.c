@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.33 1997-02-24 22:12:30 boote Exp $
+*      $Id: MapTransObj.c,v 1.34 1997-07-25 21:12:22 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -134,20 +134,6 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("1.0"),0,NULL},
 
 
-{NhlNmpActualMinLatF,NhlCmpActualMinLatF,NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_min_lat),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
-{NhlNmpActualMaxLatF,NhlCmpActualMaxLatF,NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_max_lat),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
-{NhlNmpActualMinLonF,NhlCmpActualMinLonF,NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_min_lon),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
-{NhlNmpActualMaxLonF,NhlCmpActualMaxLonF,NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_max_lon),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
-
-
 {NhlNmpLeftCornerLatF,NhlCmpLeftCornerLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_corner_lat),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -234,12 +220,27 @@ static NhlResource resources[] = {
 
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
-	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
 {NhlNmpDumpPolygonAreaMap, NhlCmpDumpPolygonAreaMap,NhlTBoolean,
 	 sizeof(NhlBoolean),NhlOffset(NhlMapTransObjLayerRec,
 				      mptrans.dump_polygon_area_map),
-	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL}
 
+#if 0
+
+{NhlNmpActualMinLatF,NhlCmpActualMinLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_min_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpActualMaxLatF,NhlCmpActualMaxLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_max_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpActualMinLonF,NhlCmpActualMinLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_min_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpActualMaxLonF,NhlCmpActualMaxLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_max_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+#endif
 };
 
 /*

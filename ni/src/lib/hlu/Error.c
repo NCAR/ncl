@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.28 1997-05-05 21:45:14 boote Exp $
+ *      $Id: Error.c,v 1.29 1997-07-25 21:12:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,8 @@ static NhlResource resources[] = {
 /* End-documented-resources */
 
 	{_NhlNerrMode,_NhlCerrMode,NhlTInteger,sizeof(_NhlC_OR_F),
-		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL}
+		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
+         	_NhlRES_PRIVATE,NULL}
 };
 #undef Oset
 

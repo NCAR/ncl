@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.15 1997-07-02 15:24:28 boote Exp $
+ *      $Id: ResourcesP.h,v 1.16 1997-07-25 21:12:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,18 @@ _NhlGetResInfo(
 #if	NhlNeedProto
 	NhlClass	lc,
 	NrmQuark	res
+#endif
+);
+
+/*
+ * This will initialize the class if necessary
+ */
+
+extern NrmNameList
+_NhlGetUserResources(
+#if	NhlNeedProto
+	NhlClass	lc,
+        int		*res_count
 #endif
 );
 

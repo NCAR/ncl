@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.8 1997-07-14 18:36:25 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.9 1997-07-25 21:11:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -112,7 +112,6 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnSmoothingOn		"cnSmoothingOn"
 #define NhlNcnSmoothingTensionF		"cnSmoothingTensionF"
 #define NhlNcnSmoothingDistanceF	"cnSmoothingDistanceF"
-#define NhlNcnCheckPointDistance	"cnCheckPointDistance"
 #define NhlNcnMaxPointDistanceF		"cnMaxPointDistanceF"
 
 #define NhlNcnExplicitLineLabelsOn	"cnExplicitLineLabelsOn"
@@ -242,7 +241,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnNoDataLabelString		"cnNoDataLabelString"
 #define NhlNcnConstFLabelOn		"cnConstFLabelOn"
 #define NhlNcnConstFLabelString		"cnConstFLabelString"
-#define NhlNcnConstFLabelFormat		"cnconstFLabelFormat"
+#define NhlNcnConstFLabelFormat		"cnConstFLabelFormat"
 #define NhlNcnConstFLabelFontHeightF	"cnConstFLabelFontHeightF"
 #define NhlNcnConstFLabelTextDirection	"cnConstFLabelTextDirection"
 #define NhlNcnConstFLabelFont		"cnConstFLabelFont"
@@ -322,7 +321,6 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnSmoothingOn		"CnSmoothingOn"
 #define NhlCcnSmoothingTensionF		"CnSmoothingTensionF"
 #define NhlCcnSmoothingDistanceF	"CnSmoothingDistanceF"
-#define NhlCcnCheckPointDistance	"CnCheckPointDistance"
 #define NhlCcnMaxPointDistanceF		"CnMaxPointDistanceF"
 
 #define NhlCcnExplicitLineLabelsOn	"CnExplicitLineLabelsOn"

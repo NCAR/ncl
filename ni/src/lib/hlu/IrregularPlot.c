@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.23 1997-02-24 22:12:24 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.24 1997-07-25 21:12:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,8 @@ static NhlResource resources[] = {
 
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),
+          	  _NhlRES_PRIVATE,NULL}
 };
 #undef Oset
 

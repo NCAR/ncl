@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.2 1996-03-26 21:48:52 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.3 1997-07-25 21:12:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@
 /* text resources */
 
 #define NhlNgsTextAngleF		"gsTextAngleF"
-#define NhlNgsTextJustification		"gsTextJustication"
+#define NhlNgsTextJustification		"gsTextJustification"
 #define NhlNgsTextDirection		"gsTextDirection"
 #define NhlNgsFont			"gsFont"
 #define NhlNgsFontColor			"gsFontColor"

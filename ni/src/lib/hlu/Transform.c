@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.33 1997-05-05 21:45:27 boote Exp $
+ *      $Id: Transform.c,v 1.34 1997-07-25 21:12:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,15 +57,18 @@ static NhlResource resources[] = {
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),
-		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		  _NhlRES_PRIVATE,NULL},
 	{ NhlNtfOverlayTrans,NhlCtfOverlayTrans,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_trans_obj),
-		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		  _NhlRES_PRIVATE,NULL},
 	{ NhlNtfOverlayStatus,NhlCtfOverlayStatus,
 		  NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_status),
-		  NhlTImmediate,_NhlUSET((NhlPointer)_tfNotInOverlay),0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer)_tfNotInOverlay),
+		  _NhlRES_PRIVATE,NULL}
 };
 
 static NhlErrorTypes TransformClassPartInit(

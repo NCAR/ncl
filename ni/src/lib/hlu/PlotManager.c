@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.38 1997-06-18 07:14:43 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.39 1997-07-25 21:12:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -128,14 +128,14 @@ static NhlResource resources[] = {
 		  Oset(labelbar_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LABELBAR_ZONE),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(lbar_width_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(lbar_width_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLabelBarWidthF, NhlCpmLabelBarWidthF,NhlTFloat, sizeof(float),
 		  Oset(lbar_width),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(lbar_height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(lbar_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLabelBarHeightF, NhlCpmLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lbar_height),
@@ -163,14 +163,14 @@ static NhlResource resources[] = {
 		  Oset(legend_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LEGEND_ZONE),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(lgnd_width_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(lgnd_width_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLegendWidthF, NhlCpmLegendWidthF,NhlTFloat, sizeof(float),
 		  Oset(lgnd_width),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(lgnd_height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(lgnd_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLegendHeightF, NhlCpmLegendHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lgnd_height),
@@ -190,6 +190,8 @@ static NhlResource resources[] = {
 
 /* End-documented-resources */
 
+#if 0
+
 /* Unimplemented resources */
 
 	{ NhlNpmPreDrawOrder,NhlCpmPreDrawOrder,NhlTIntegerGenArray,
@@ -203,7 +205,7 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,
 		  (NhlFreeFunc)NhlFreeGenArray},
 
-/* Bounding Box resources */
+/* Bounding Box resources -- not implemented */
 
 	{ NhlNpmFitToBB,NhlCpmFitToBB,NhlTBoolean,
 		  sizeof(NhlBoolean),Oset(fit_to_bb),
@@ -220,21 +222,22 @@ static NhlResource resources[] = {
 	{ NhlNpmBBTopF, NhlCpmBBTopF,NhlTFloat, sizeof(float),
 		  Oset(bb_left),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
+#endif
 
 /* Private resources */
 
 	{ NhlNpmPlotManagerRecs,NhlCpmPlotManagerRecs,NhlTGenArray,
 		  sizeof(NhlPointer),
-		  Oset(pm_rec_list),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		  Oset(pm_rec_list),NhlTImmediate,
+		  _NhlUSET(NULL),_NhlRES_PRIVATE,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+		  Oset(update_req),NhlTImmediate,
+		  _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmUpdateAnnoReq,NhlCpmUpdateAnnoReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
-		  Oset(update_anno_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+		  Oset(update_anno_req),NhlTImmediate,
+		  _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 /*
  * Intercepted title resources
  */
@@ -261,20 +264,20 @@ static NhlResource resources[] = {
 		 Oset(ti_main_position),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(ti_main_font_height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(ti_main_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiMainFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
 		 sizeof(float),Oset(ti_main_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(ti_x_axis_font_height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(ti_x_axis_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
 		 sizeof(float),Oset(ti_x_axis_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(ti_y_axis_font_height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 Oset(ti_y_axis_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,
 		 NhlTFloat,sizeof(float),Oset(ti_y_axis_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},

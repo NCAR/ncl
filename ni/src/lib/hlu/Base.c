@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.24 1997-07-02 15:24:22 boote Exp $
+ *      $Id: Base.c,v 1.25 1997-07-25 21:11:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,31 +49,39 @@ static _NhlRawObjCB ocallbacks[] = {
 static NhlResource bresources[] = {
 	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
 		NhlOffset(NhlBaseLayerRec,base.appid),
-		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),_NhlRES_CONLY,NULL},
+		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),
+         	_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.ncl_data),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL},
 	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL},
 	{_NhlNguiData2,_NhlCguiData2,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data2),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL},
 };
 
 static NhlResource oresources[] = {
 	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
 		NhlOffset(NhlBaseLayerRec,base.appid),
-		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),_NhlRES_CONLY,NULL},
+		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),
+         	_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.ncl_data),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL},
 	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL},
 	{_NhlNguiData2,_NhlCguiData2,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data2),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+		NhlTImmediate,_NhlUSET(NULL),
+		_NhlRES_NORACCESS|_NhlRES_PRIVATE,NULL}
 };
 
 static NhlErrorTypes BaseClassInitialize(

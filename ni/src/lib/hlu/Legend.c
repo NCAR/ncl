@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.53 1997-02-24 22:12:27 boote Exp $
+ *      $Id: Legend.c,v 1.54 1997-07-25 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -383,7 +383,7 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
 {"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLegendLayerRec,legend.title_direction_set),
-	 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 {NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.title_direction),

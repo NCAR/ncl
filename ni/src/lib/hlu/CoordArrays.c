@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.39 1997-05-05 21:45:04 boote Exp $
+ *      $Id: CoordArrays.c,v 1.40 1997-07-25 21:11:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -118,9 +118,11 @@ static NhlResource resources[] = {
 		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{"no.res","No.Res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(xcast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+		Oset(xcast_set),NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTBoolean,sizeof(int),
-		Oset(ycast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+		Oset(ycast_set),NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_PRIVATE,NULL},
 	{NhlNcaXCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
 		Oset(xcast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
 	{NhlNcaYCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
@@ -152,17 +154,23 @@ static NhlResource resources[] = {
 	 * init private fields
 	 */
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_xarray),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(my_xarray),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_yarray),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(my_yarray),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(xctxt),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(xctxt),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(yctxt),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(yctxt),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_missing_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(my_missing_x),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_missing_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+		Oset(my_missing_y),NhlTImmediate,(NhlPointer)NULL,
+         	_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
 

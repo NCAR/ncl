@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.23 1997-07-14 18:36:37 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.24 1997-07-25 21:13:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,14 +32,16 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(window_id_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkWindowId,NhlCwkWindowId,NhlTInteger,sizeof(int),Oset(window_id),
 		NhlTProcedure,(NhlPointer)_NhlResUnset,_NhlRES_NOSACCESS,NULL},
 	{NhlNwkXColorMode,NhlCwkXColorMode,NhlTXColorMode,sizeof(NhlXColorMode),
 		Oset(xcolor_mode),NhlTImmediate,(NhlPointer)-1,
 		0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(pause_set),
-		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+		NhlTImmediate,(NhlPointer)True,
+         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL}
 

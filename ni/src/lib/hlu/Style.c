@@ -1,5 +1,5 @@
 /*
- *      $Id: Style.c,v 1.3 1997-02-24 22:12:36 boote Exp $
+ *      $Id: Style.c,v 1.4 1997-07-25 21:12:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,9 +29,9 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNgsClipOn,NhlCgsClipOn,NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(clip_on),NhlTImmediate,
-		 _NhlUSET((NhlPointer) True),0,NULL}
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(foo),NhlTImmediate,
+		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL}
 
 /* End-documented-resources */
 

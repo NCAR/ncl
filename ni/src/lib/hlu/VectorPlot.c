@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.36 1997-07-18 20:35:50 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.37 1997-07-25 21:12:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,7 +139,7 @@ static NhlResource resources[] = {
 		  _NhlUSET("0.0"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ref_length_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcRefLengthF,NhlCvcRefLengthF,
 		  NhlTFloat,sizeof(float),Oset(ref_length),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -166,19 +166,19 @@ static NhlResource resources[] = {
 		  _NhlUSET((NhlPointer) 16),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(level_spacing_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcLevelSpacingF,NhlCvcLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTProcedure,
 		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcMinLevelValF,NhlCvcMinLevelValF,NhlTFloat,sizeof(float),
 		  Oset(min_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(max_level_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcMaxLevelValF,NhlCvcMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -207,13 +207,13 @@ static NhlResource resources[] = {
 		  _NhlUSET("1.0"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(l_arrowhead_min_size_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNvcLineArrowHeadMinSizeF,NhlCvcLineArrowHeadMinSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_min_size),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(l_arrowhead_max_size_set),NhlTImmediate,
-		 _NhlUSET((NhlPointer)True),0,NULL},
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNvcLineArrowHeadMaxSizeF,NhlCvcLineArrowHeadMaxSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_max_size),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -329,7 +329,8 @@ static NhlResource resources[] = {
 #endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(refvec_anno.height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
         {NhlNvcRefAnnoFontHeightF,NhlCvcRefAnnoFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(refvec_anno.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -458,7 +459,8 @@ static NhlResource resources[] = {
 #endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(minvec_anno.height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
         {NhlNvcMinAnnoFontHeightF,NhlCvcMinAnnoFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(minvec_anno.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -550,7 +552,8 @@ static NhlResource resources[] = {
 #endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(zerof_lbl.height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
         {NhlNvcZeroFLabelFontHeightF,NhlCvcZeroFLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(zerof_lbl.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -672,7 +675,8 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(lbls.height_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
         {NhlNvcLabelFontHeightF,NhlCvcLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(lbls.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -681,19 +685,22 @@ static NhlResource resources[] = {
 
 	{NhlNvcDataChanged,NhlCvcDataChanged,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(data_changed),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),
+         	 _NhlRES_PRIVATE,NULL},
 
 /* Intercepted resources */
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -704,13 +711,15 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
@@ -750,7 +759,8 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
 		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),
+          	  _NhlRES_PRIVATE,NULL}
 };
 #undef Oset
 

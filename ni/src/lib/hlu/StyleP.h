@@ -1,5 +1,5 @@
 /*
- *      $Id: StyleP.h,v 1.1 1996-02-26 21:46:08 dbrown Exp $
+ *      $Id: StyleP.h,v 1.2 1997-07-25 21:12:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ typedef struct _NhlStyleLayerPart{
 
 	/* public resource fields */
 
-	NhlBoolean	clip_on;
+	NhlBoolean	foo;
 
 	/* private resources */
 
