@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.50 1996-06-17 22:15:10 ethan Exp $
+ *      $Id: Machine.c,v 1.51 1996-06-24 23:33:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -99,11 +99,9 @@ static void SetUpOpsStrings() {
 	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
 	ops_strings[JMP] = "JMP";
 	ops_strings[JMPFALSE] = "JMPFALSE";
-	ops_strings[DO_FROM_TO_OP] = "DO_FROM_TO_OP";
-	ops_strings[DO_FROM_TO_STRIDE_OP] = "DO_FROM_TO_STRIDE_OP";
+	ops_strings[LOOP_VALIDATE_OP] = "LOOP_VALIDATE_OP";
+	ops_strings[LOOP_INC_OP] = "LOOP_INC_OP";
 	ops_strings[DO_WHILE_OP] = "DO_WHILE_OP";
-	ops_strings[BREAK_OP] = "BREAK_OP";
-	ops_strings[CONTINUE_OP] = "CONTINUE_OP";
 	ops_strings[CREATE_OBJ_WP_OP] = "CREATE_OBJ_WP_OP";
 	ops_strings[CREATE_OBJ_OP] = "CREATE_OBJ_OP";
 	ops_strings[SET_OBJ_OP] = "SET_OBJ_OP";
@@ -167,6 +165,9 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_VAR_DIM_OP]= "ASSIGN_VAR_DIM_OP";
 	ops_strings[PARAM_VAR_DIM_OP]= "PARAM_VAR_DIM_OP";
 	ops_strings[ASSIGN_VAR_VAR_OP]= "ASSIGN_VAR_VAR_OP";
+	ops_strings[PUSH_LOGICAL_LIT_OP]= "PUSH_LOGICAL_LIT_OP";
+	ops_strings[NEW_OP]= "NEW_OP";
+	ops_strings[NEW_WM_OP]= "NEW_WM_OP";
 	ops_strings[DUP_TOFS]= "DUP_TOFS";
 	ops_strings[PUSH_LOG_LIT_OP]= "PUSH_LOG_LIT_OP";
 	ops_strings[JMP_SCALAR_TRUE_OP] = "JMP_SCALAR_TRUE_OP";
@@ -1072,8 +1073,9 @@ void _NclPrintMachine
 	char **fptr;
 
 
-	if(fp == NULL)
-		return;
+	if(fp == NULL) {
+		fp = stdout;
+	}
 	if(from == -1){
 		from = 0;
 	}
@@ -1123,8 +1125,6 @@ void _NclPrintMachine
 			case LT_OP :
 			case EQ_OP :
 			case NE_OP :
-			case BREAK_OP:
-			case CONTINUE_OP:
 			case ENDSTMNT_OP:
 			case DUP_TOFS:
 			case GET_OBJ_OP :
@@ -1161,6 +1161,8 @@ void _NclPrintMachine
 			case FUNC_CALL_OP:
 			case BFUNC_CALL_OP:
 			case ISDEFINED_OP:
+			case NEW_OP:
+			case NEW_WM_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -1175,14 +1177,9 @@ void _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
-			case DO_FROM_TO_STRIDE_OP :
-			case DO_FROM_TO_OP :
+			case LOOP_VALIDATE_OP:
+			case LOOP_INC_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);

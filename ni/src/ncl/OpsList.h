@@ -10,11 +10,13 @@
 #define JMP			10
 #define JMPFALSE 			11
 #define DUP_TOFS 			12
-#define DO_FROM_TO_OP			13
-#define DO_FROM_TO_STRIDE_OP			14
+#define LOOP_VALIDATE_OP			13
+#define LOOP_INC_OP			14
 #define DO_WHILE_OP			15
+/*
 #define BREAK_OP			16
 #define CONTINUE_OP			17
+*/
 #define CREATE_OBJ_OP			18
 #define SET_OBJ_OP			19
 #define GET_OBJ_OP			20

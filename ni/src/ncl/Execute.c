@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.65 1996-05-22 21:51:44 ethan Exp $
+ *      $Id: Execute.c,v 1.66 1996-06-24 23:32:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -79,12 +79,6 @@ NclExecuteReturnStatus _NclExecute
 			case STOPSEQ:
 				level--;
 				return(Ncl_STOPS);
-			case CONTINUE_OP:
-				level--;
-				return(Ncl_CONTINUES);
-			case BREAK_OP:
-				level--;
-				return(Ncl_BREAKS);
 			case ENDSTMNT_OP:
 			case NOOP :
 				break;
@@ -991,7 +985,7 @@ NclExecuteReturnStatus _NclExecute
 							fptr = _NclGetCurrentFileNameRec() + offset - 1;
 						}
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"If: the result of the conditional expression yields a missing value. NCL can not determine branch, see ismissing function");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"The result of the conditional expression yields a missing value. NCL can not determine branch, see ismissing function");
 						estatus = NhlFATAL;
 					}
 					if(val->obj.status != PERMANENT) 
@@ -999,7 +993,7 @@ NclExecuteReturnStatus _NclExecute
 				} else {
 					if(val->obj.status != PERMANENT) 
 						_NclDestroyObj((NclObj)val);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"If: if statments require SCALAR logical values");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Conditional statments (if and do while) require SCALAR logical values, see all and any functions");
 					estatus = NhlFATAL;
 				}
 				break;
@@ -1181,144 +1175,246 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
-			case DO_FROM_TO_OP : {
-				NclStackEntry data;
-				NclStackEntry* data_ptr;
-				unsigned long jmp_off;
-				NclExecuteReturnStatus rtst;
-				int done = 0;
-				NclMultiDValData val;
-				NclSymbol *end_sym;
-				NclSymbol *inc_sym;
-				NclSymbol *dir_sym;
-				NclMultiDValData tmp_md = NULL;
-				NclMultiDValData tmp2_md = NULL;
+			case LOOP_VALIDATE_OP: {
+					NclStackEntry end_val;
+					NclStackEntry inc_var;
+					NclStackEntry *tmp_ptr;
+					NclMultiDValData tmp_md;
+					NclMultiDValData tmp2_md;
+					NclSymbol *l_inc;
+					NclSymbol *l_dir;
+					NclMultiDValData end_md;
+					NclMultiDValData inc_md;
+					logical dir;
+					logical result;
+					NclStackEntry data;
+					double zero = 0;
+					
 
-				
+					
 
-				ptr++;lptr++;fptr++;
-				jmp_off = *ptr;
-                                ptr++,lptr++,fptr++;
-                                end_sym = (NclSymbol*)*ptr;
-                                ptr++,lptr++,fptr++;
-                                dir_sym = (NclSymbol*)*ptr;
-                                ptr++,lptr++,fptr++;
-                                inc_sym = (NclSymbol*)*ptr;
-                                data_ptr = _NclRetrieveRec(inc_sym,DONT_CARE);
-				tmp2_md = _NclVarValueRead(data_ptr->u.data_var,NULL,NULL);
-				if(!(tmp2_md->multidval.type->type_class.type & Ncl_Typelong)) {
-                                	tmp_md = _NclCoerceData(tmp2_md,Ncl_Typelong,NULL);
-				} else {
-					tmp_md = tmp2_md;
-				}
-				if(tmp_md != NULL) {
-					if(!((*(long*)tmp_md->multidval.val) > 0)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"DO: Stride value is less than 1, stide must be positive");
+					ptr++;lptr++;fptr++;
+					l_inc = (NclSymbol*)*ptr;
+					ptr++,lptr++,fptr++;
+					l_dir = (NclSymbol*)*ptr;
+					inc_var= _NclPop();
+					switch(inc_var.kind) {
+					case NclStk_VAL:
+						inc_md= inc_var.u.data_obj;
+						break;
+					case NclStk_VAR:
+						inc_md= _NclVarValueRead(inc_var.u.data_var,NULL,NULL);
+						break;
+					default:
+						estatus = NhlFATAL;
+						break;
+					}
+					end_val= _NclPop();
+					switch(end_val.kind) {
+					case NclStk_VAL:
+						end_md = end_val.u.data_obj;
+						break;
+					case NclStk_VAR:
+						end_md = _NclVarValueRead(end_val.u.data_var,NULL,NULL);
+						break;
+					default:
+						estatus = NhlFATAL;
+						break;
+					}
+					tmp_ptr = _NclRetrieveRec(l_dir,DONT_CARE);
+					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+					dir = *(logical*)tmp_md->multidval.val;
+					tmp_ptr = _NclRetrieveRec(l_inc,DONT_CARE);
+					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+					
+					if(tmp_md->multidval.kind != SCALAR) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be scalar, can't execute loop");
+						estatus = NhlFATAL;
+					} else if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
+						tmp2_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+						_Nclle(tmp2_md->multidval.type,&result,tmp2_md->multidval.val,&zero,NULL,NULL,1,1);
+						if(result) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be possitive, can't execute loop");
+							estatus = NhlFATAL;
+						}
+						if(tmp2_md->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp2_md);
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be numeric values, can't execute loop");
+						estatus = NhlFATAL;
+					} 
+					if(end_md->multidval.kind != SCALAR) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be scalar, can't execute loop");
+						estatus = NhlFATAL;
+					} else if(!(end_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be numeric value, can't execute loop");
 						estatus = NhlFATAL;
 					}
-					if(tmp_md != tmp2_md) {
-						_NclDestroyObj((NclObj)tmp_md);
-					}
-				}
-				if(estatus != NhlFATAL) {	
-					data = _NclPop();
-					if(data.kind == NclStk_VAL) {
-						switch(data.kind) {
-						case NclStk_VAL:
-							val = data.u.data_obj;
-							break;
-						case NclStk_VAR:
-							val = _NclVarValueRead(data.u.data_var,NULL,NULL);
-							break;
-						default:
-							estatus = NhlFATAL;
-							break;
-						}
-						if((val->multidval.type->type_class.type & Ncl_Typelogical)&&(val->multidval.kind == SCALAR)) {
-							if(!*(logical*)val->multidval.val) {
-								done = 1;
-							}
-						} 
-						switch(data.kind) {
-						case NclStk_VAL:
-							if(data.u.data_obj->obj.status != PERMANENT) {
-								_NclDestroyObj((NclObj)data.u.data_obj);
-							}
-							break;
-						case NclStk_VAR:
-							if(data.u.data_var->obj.status != PERMANENT) {
-								_NclDestroyObj((NclObj)data.u.data_var);
-							}
-							break;
-						default:
-							break;
-						}
-						while(!done) {
-							rtst = _NclExecute(jmp_off);
-							if((rtst != Ncl_ERRORS)&&(rtst != Ncl_BREAKS)) {
-								data = _NclPop();
-								switch(data.kind) {
-								case NclStk_VAL:
-									val = data.u.data_obj;
-								break;
-								case NclStk_VAR:
-									val = _NclVarValueRead(data.u.data_var,NULL,NULL);
-								break;
-								default:
-									estatus = NhlFATAL;
-								break;
-								}
-								if((val->multidval.type->type_class.type & Ncl_Typelogical)&&(val->multidval.kind == SCALAR)) {
-									if(!*(logical*)val->multidval.val) {
-										done = 1;
-									}
-								} 
-								switch(data.kind) {
-								case NclStk_VAL:
-									if(data.u.data_obj->obj.status != PERMANENT) {
-										_NclDestroyObj((NclObj)data.u.data_obj);
-									}
-									break;
-								case NclStk_VAR:
-									if(data.u.data_var->obj.status != PERMANENT) {
-										_NclDestroyObj((NclObj)data.u.data_var);
-									}
-									break;
-								default:
-									break;
-								}
-							} else if(rtst == Ncl_BREAKS){
-								done = 1;
-								estatus = NhlNOERROR;
+					if(inc_md->multidval.kind != SCALAR) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be scalar, can't execute loop");
+						estatus = NhlFATAL;
+					} else if(!(inc_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be numeric value, can't execute loop");
+						estatus = NhlFATAL;
+					} 
+					if(estatus != NhlFATAL) {
+						if(inc_md->multidval.type->type_class.type != end_md->multidval.type->type_class.type) {
+							tmp_md = _NclCoerceData(inc_md,Ncl_Typedouble,NULL) ;
+							tmp2_md = _NclCoerceData(end_md,Ncl_Typedouble,NULL) ;
+		
+							if(dir) {
+								_Ncllt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 							} else {
-								done = 1;
-								estatus = NhlFATAL;
+								_Nclgt(inc_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 							}
+							if(tmp2_md->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)tmp2_md);
+							}
+							if(tmp_md->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)tmp_md);
+							}
+						} else {
+							if(dir) {
+								_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
+							} else {
+								_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
+							}
+						}
+						data.kind = NclStk_VAL;
+						if(result) {
+							data.u.data_obj = _NclCreateFalse();
+						} else {
+							data.u.data_obj = _NclCreateTrue();
+						}
+						estatus = _NclPush(data);
+						if(inc_var.u.data_obj->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)inc_var.u.data_obj);
+						}
+						if(end_val.u.data_obj->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)end_val.u.data_obj);
 						}
 					}
 				}
-
-                                data_ptr = _NclRetrieveRec(end_sym,DONT_CARE);
-                                (void)_NclChangeSymbolType(end_sym,UNDEF);
-                                _NclDestroyObj((NclObj)data_ptr->u.data_var);
-                                data_ptr->kind = NclStk_NOVAL;
-                                data_ptr->u.data_var = NULL;
-
-                                data_ptr = _NclRetrieveRec(dir_sym,DONT_CARE);
-                                (void)_NclChangeSymbolType(dir_sym,UNDEF);
-                                _NclDestroyObj((NclObj)data_ptr->u.data_var);
-                                data_ptr->kind = NclStk_NOVAL;
-                                data_ptr->u.data_var = NULL;
-                                data_ptr = _NclRetrieveRec(inc_sym,DONT_CARE);
-                                (void)_NclChangeSymbolType(inc_sym,UNDEF);
-                                _NclDestroyObj((NclObj)data_ptr->u.data_var);
-                                data_ptr->kind = NclStk_NOVAL;
-                                data_ptr->u.data_var = NULL;
-
-			}
 				break;
-			case DO_FROM_TO_STRIDE_OP :
-				ptr++;lptr++;fptr++;
+			case LOOP_INC_OP: {
+					NclStackEntry end_val;
+					NclStackEntry inc_var;
+					NclStackEntry *tmp_ptr;
+					NclStackEntry *data_ptr;
+					NclMultiDValData tmp_md;
+					NclMultiDValData tmp2_md;
+					NclSymbol *l_inc;
+					NclSymbol *l_dir;
+					NclMultiDValData end_md;
+					NclMultiDValData inc_md;
+					char *buffer[10];
+					logical dir;
+					logical result;
+					NclStackEntry data;
+					ptr++;lptr++;fptr++;
+					l_inc = (NclSymbol*)*ptr;
+					ptr++,lptr++,fptr++;
+					l_dir = (NclSymbol*)*ptr;
+					inc_var= _NclPop();
+					switch(inc_var.kind) {
+					case NclStk_VAL:
+						inc_md= inc_var.u.data_obj;
+						break;
+					case NclStk_VAR:
+						inc_md= _NclVarValueRead(inc_var.u.data_var,NULL,NULL);
+						break;
+					default:
+						estatus = NhlFATAL;
+						break;
+					}
+					end_val= _NclPop();
+					switch(end_val.kind) {
+					case NclStk_VAL:
+						end_md = end_val.u.data_obj;
+						break;
+					case NclStk_VAR:
+						end_md = _NclVarValueRead(end_val.u.data_var,NULL,NULL);
+						break;
+					default:
+						estatus = NhlFATAL;
+						break;
+					}
+					tmp_ptr = _NclRetrieveRec(l_dir,DONT_CARE);
+					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+					dir = *(logical*)tmp_md->multidval.val;
+					tmp_ptr = _NclRetrieveRec(l_inc,DONT_CARE);
+					tmp_md = _NclVarValueRead(tmp_ptr->u.data_var,NULL,NULL);
+					if(dir) {
+/*
+* decreasing
+*/
+						if(tmp_md->multidval.type->type_class.type != inc_md->multidval.type->type_class.type) {
+							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclminus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+						} else {
+							_Nclminus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+						}
+					} else {
+/*
+* increasing
+*/
+						if(tmp_md->multidval.type->type_class.type != inc_md->multidval.type->type_class.type) {
+							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclplus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+						} else {
+							_Nclplus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+						}
+					}
+					if(inc_md->multidval.type->type_class.type != end_md->multidval.type->type_class.type) {
+						tmp_md = _NclCoerceData(inc_md,Ncl_Typedouble,NULL) ;
+						tmp2_md = _NclCoerceData(end_md,Ncl_Typedouble,NULL) ;
+	
+						if(dir) {
+							_Ncllt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
+						} else {
+							_Nclgt(inc_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
+						}
+						if(tmp2_md->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp2_md);
+						}
+						if(tmp_md->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp_md);
+						}
+					} else {
+						if(dir) {
+							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
+						} else {
+							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
+						}
+					}
+					data.kind = NclStk_VAL;
+					if(result) {
+/*
+* End of loop! Free loop labels
+*/
+						data_ptr = _NclRetrieveRec(l_dir,DONT_CARE);
+						(void)_NclChangeSymbolType(l_dir,UNDEF);
+						_NclDestroyObj((NclObj)data_ptr->u.data_var);
+						data_ptr->kind = NclStk_NOVAL;
+						data_ptr->u.data_var = NULL;
+						data_ptr = _NclRetrieveRec(l_inc,DONT_CARE);
+						(void)_NclChangeSymbolType(l_inc,UNDEF);
+						_NclDestroyObj((NclObj)data_ptr->u.data_var);
+						data_ptr->kind = NclStk_NOVAL;
+						data_ptr->u.data_var = NULL;
+						data.u.data_obj = _NclCreateFalse();
+					} else {
+						data.u.data_obj = _NclCreateTrue();
+					}
+					estatus = _NclPush(data);
+					if(inc_var.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)inc_var.u.data_obj);
+					}
+					if(end_val.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)end_val.u.data_obj);
+					}
+				}
 				break;
 			case PARAM_VAR_DIM_OP:
 			case VAR_DIM_OP: {
@@ -2220,88 +2316,6 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
-			case DO_WHILE_OP : {
-				unsigned long cond_off;
-				unsigned long block_off;
-				int done = 0;
-				NclStackEntry data;
-				NclMultiDValData val,tmp_md;
-				NclExecuteReturnStatus rtst;
-
-				ptr++;lptr++;fptr++;
-				cond_off = *ptr;
-				ptr++;lptr++;fptr++;
-				block_off = *ptr;
-				while( !done) {
-					rtst = _NclExecute(cond_off);
-					if(rtst != Ncl_ERRORS) {
-						data = _NclPop();
-						switch(data.kind) {
-						case NclStk_VAL:
-							val = data.u.data_obj;
-						break;
-						case NclStk_VAR:
-							val = _NclVarValueRead(data.u.data_var,NULL,NULL);
-						break;
-						default:
-							estatus = NhlFATAL;
-						break;
-						}
-						if((val->multidval.type->type_class.type & Ncl_Typelogical)&&(val->multidval.kind == SCALAR)) {
-							if(!*(logical*)val->multidval.val) {
-								done = 1;
-							}
-							switch(data.kind) {
-							case NclStk_VAL:
-								if(data.u.data_obj->obj.status != PERMANENT) {
-									_NclDestroyObj((NclObj)data.u.data_obj);
-								}
-								break;
-							case NclStk_VAR:
-								if(data.u.data_var->obj.status != PERMANENT) {
-									_NclDestroyObj((NclObj)data.u.data_var);
-								}
-								break;
-							default:
-								break;
-							}
-						}  else if(val->multidval.kind == SCALAR){
-							tmp_md = _NclCoerceData(val,Ncl_Typelogical,NULL);
-							if(tmp_md == NULL) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce expression to logical type");
-								estatus = NhlFATAL;
-							} else {
-								if(!*(logical*)tmp_md->multidval.val) {
-									done = 1;
-								}
-							}
-						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"While requires a SCALAR conditional expression");
-							estatus = NhlFATAL;
-						}
-						if((estatus != NhlFATAL)&&(!done)){
-							rtst = _NclExecute(block_off);
-							switch(rtst) {
-							case Ncl_ERRORS: 
-								done = 1;
-								estatus = NhlFATAL;
-								break;
-							case Ncl_BREAKS:
-								done = 1;
-								break;
-							default:
-								break;
-							}
-						}  else {
-							done = 1;
-						}
-					} else {
-						done = 1;
-						estatus = NhlFATAL;
-					}
-				}
-			}
-				break;
 			case ASSIGN_FILEVAR_DIM_OP: {
 				NclFile file;
 				NclStackEntry* file_ptr,data,rhs_data,fvar;

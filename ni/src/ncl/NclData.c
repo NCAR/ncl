@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.10 1996-05-02 23:30:50 ethan Exp $
+ *      $Id: NclData.c,v 1.11 1996-06-24 23:33:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -656,7 +656,7 @@ FILE *fp;
 	int i;
 	NclObjList *tmp;
 
-	if(objs != NULL) {	
+	if(current_id > 0) {	
 		for(i = 0; i < current_size; i++) {
 			if(objs[i].id != -1) {
 				fprintf(fp,"\n------%d------\n",objs[i].id);

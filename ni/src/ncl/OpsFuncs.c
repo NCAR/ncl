@@ -704,8 +704,6 @@ NhlErrorTypes _NclProcCallOp
 		ret = NhlFATAL;
 		break;
 	case Ncl_STOPS:
-	case Ncl_BREAKS:
-	case Ncl_CONTINUES:
 	default:
 		ret = NhlNOERROR;
 		break;
@@ -771,8 +769,6 @@ NhlErrorTypes _NclFuncCallOp
 		ret = NhlFATAL;
 		break;
 	case Ncl_STOPS:
-	case Ncl_BREAKS:
-	case Ncl_CONTINUES:
 	default:
 		ret = NhlNOERROR;
 		break;
