@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.6 1998-06-02 20:32:55 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.7 1998-11-06 22:16:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2281,7 +2281,7 @@ static NhlErrorTypes mpSetUpAreamap
 	aws_id = mv41p->aws_id;
 
 	if (aws_id < 1) {
-		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
+		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsNONE,
 					  mpWORKSPACE_SIZE_REQ);
 		if (aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)aws_id);
@@ -2403,13 +2403,17 @@ static NhlErrorTypes mpFill
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlWorkspace		*aws = NULL;
 
-        mpSetUpAreamap(mv41l,mpl,&aws,entry_name);
+        subret = mpSetUpAreamap(mv41l,mpl,&aws,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
         subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
                             entry_name);
-        
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
+
+ error_ret:
+
         subret = _NhlIdleWorkspace(aws);
-        if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+        ret = MIN(subret,ret);
 
 	return ret;
 }

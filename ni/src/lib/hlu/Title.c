@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.35 1998-07-07 03:52:37 dbrown Exp $
+ *      $Id: Title.c,v 1.36 1998-11-06 22:16:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1429,7 +1429,9 @@ static NhlErrorTypes TitleDraw
 	   ! tinstance->title.y_axis_on)
 		return ret;
 
-	if (tinstance->view.use_segments && ! tinstance->title.new_draw_req) {
+	if (tinstance->view.use_segments && ! tinstance->title.new_draw_req &&
+	    tinstance->title.trans_dat &&
+	    tinstance->title.trans_dat->id != NgNOT_A_SEGMENT) {
                 subret = _NhlActivateWorkstation(tinstance->base.wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlDrawSegment(tinstance->title.trans_dat,
@@ -1458,14 +1460,18 @@ static NhlErrorTypes TitleDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
-		_NhlStartSegment(tinstance->title.trans_dat);
+		subret = _NhlStartSegment(tinstance->title.trans_dat);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
+	}
+	if (tinstance->view.use_segments) {
 		if(tinstance->title.main_on)
 			_NhlSegDraw(_NhlGetLayer(tinstance->title.main_id));
 		if(tinstance->title.x_axis_on)
 			_NhlSegDraw(_NhlGetLayer(tinstance->title.x_axis_id));
 		if(tinstance->title.y_axis_on)
 			_NhlSegDraw(_NhlGetLayer(tinstance->title.y_axis_id));
-		_NhlEndSegment();
+		_NhlEndSegment(tinstance->title.trans_dat);
 		_NhlDeactivateWorkstation(tinstance->base.wkptr);
 	}
 	else {

@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.6 1998-02-18 01:26:05 dbrown Exp $
+ *      $Id: ViewI.h,v 1.7 1998-11-06 22:16:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -84,7 +84,7 @@ float *         /* yprime */
 #endif
 );
 
-extern void _NhlStartSegment(
+extern NhlErrorTypes _NhlStartSegment(
 #if	NhlNeedProto
 NhlTransDat*    /* transdat */
 #endif
@@ -97,7 +97,12 @@ float*          /* transform */
 #endif
 );
 
-extern void _NhlEndSegment();
+extern void _NhlEndSegment(
+#if	NhlNeedProto
+NhlTransDat*    /* transdat */
+#endif
+);
+
 
 typedef struct _NhlViewClassRec *NhlViewClass;
 typedef struct _NhlViewLayerRec *NhlViewLayer;

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.50 1998-10-15 16:27:25 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.51 1998-11-06 22:16:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6074,14 +6074,20 @@ DissolveOverlay
 	int			i;
 	NhlSArg			sargs[10];
 	int			nargs = 0;
+        NhlArgVal       	cbdata,dummy;
+        _NhlOverlayStatusCBDataRec overlay_status;
+        NhltfOverlayStatus	ostatus;
+	NhlLayer		plot;
 
 	while (ovp->overlay_count > 1) {
 		NhlpmRec *orec = ovp->pm_recs[1];
+		plot = (NhlLayer) orec->plot;
 		if (orec->ov_obj != NULL) {
 			subret = RestoreOverlayBase(ovp,1);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				return ret;
 			}
+			ostatus = _tfCurrentOverlayBase;
 		}
 		else {
 			NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject, NULL);
@@ -6104,7 +6110,16 @@ DissolveOverlay
 			}
 			ovp->pm_recs[--ovp->overlay_count] = NULL;
 			nargs = 0;
+			ostatus = _tfNotInOverlay;
 		}
+
+		NhlINITVAR(dummy);
+		NhlINITVAR(cbdata);
+		overlay_status.id = plot->base.id;
+		overlay_status.base_id = overlay_object->base.parent->base.id;
+		overlay_status.status = ostatus;
+		cbdata.ptrval = &overlay_status;
+		_NhlCallObjCallbacks(plot,_NhlCBtfOverlayStatus,dummy,cbdata);
 	}
 
 	return MIN(subret,ret);

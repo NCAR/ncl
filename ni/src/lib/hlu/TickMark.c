@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.64 1998-10-23 18:31:13 dbrown Exp $
+ *      $Id: TickMark.c,v 1.65 1998-11-06 22:16:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2335,7 +2335,9 @@ static NhlErrorTypes	TickMarkDraw
 	    ! tlayer->tick.y_l_border_on && ! tlayer->tick.y_r_border_on)
 		return ret;
 
-	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req) {
+	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req &&
+	    tlayer->tick.trans_dat &&
+	    tlayer->tick.trans_dat->id != NgNOT_A_SEGMENT) {
                 ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
                 ret = _NhlDrawSegment(tlayer->tick.trans_dat,
@@ -2360,7 +2362,9 @@ static NhlErrorTypes	TickMarkDraw
 				  "%s: error opening segment", "TickMarkDraw");
 			return(ret);
 		}
-		_NhlStartSegment(tlayer->tick.trans_dat);
+		ret = _NhlStartSegment(tlayer->tick.trans_dat);
+		if ((realret = MIN(ret,realret)) < NhlWARNING)
+			return ret;
 	}
 
 	ret = DrawLabels(tlayer);
@@ -2401,7 +2405,7 @@ static NhlErrorTypes	TickMarkDraw
 	}
 
 	if (tlayer->view.use_segments) {
-		_NhlEndSegment();
+		_NhlEndSegment(tlayer->tick.trans_dat);
 	}
 	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
 	if(ret < NhlWARNING) {

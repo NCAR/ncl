@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.58 1998-02-20 22:40:42 dbrown Exp $
+ *      $Id: Legend.c,v 1.59 1998-11-06 22:16:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5182,7 +5182,8 @@ static NhlErrorTypes    LegendDraw
 	if (! lg_p->legend_on)
 		return(ret);
 
-	if (lgl->view.use_segments && ! lg_p->new_draw_req) {
+	if (lgl->view.use_segments && ! lg_p->new_draw_req &&
+	    lg_p->trans_dat && lg_p->trans_dat->id != NgNOT_A_SEGMENT) {
                 subret = _NhlActivateWorkstation(lgl->base.wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlDrawSegment(lg_p->trans_dat,
@@ -5204,7 +5205,9 @@ static NhlErrorTypes    LegendDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
-		_NhlStartSegment(lg_p->trans_dat);
+		subret = _NhlStartSegment(lg_p->trans_dat);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
 	}
 
 	NhlVASetValues(lgl->base.wkptr->base.id,
@@ -5533,14 +5536,13 @@ static NhlErrorTypes    LegendDraw
 	_NhlWorkstationLineTo(lgl->base.wkptr,0.0,0.0,1); 
 
 	if (lgl->view.use_segments) {
-
 		if (lg_p->title_on && lg_p->title_ext > 0.0)
 			_NhlSegDraw(_NhlGetLayer(lg_p->title_id));
 		
 		if (lg_p->labels_on )
 			_NhlSegDraw(_NhlGetLayer(lg_p->labels_id));
 
-		_NhlEndSegment();
+		_NhlEndSegment(lg_p->trans_dat);
 		_NhlDeactivateWorkstation(lgl->base.wkptr);
 	}
 	else {

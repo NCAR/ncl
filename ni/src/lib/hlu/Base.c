@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.28 1998-03-11 18:35:45 dbrown Exp $
+ *      $Id: Base.c,v 1.29 1998-11-06 22:16:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -816,7 +816,7 @@ _NhlBaseAddChild
 	int		child;
 #endif
 {
-	_NhlAllChildList	list;
+	_NhlAllChildList	node,*nptr;
 	_NhlobjChangeChildRec	cc;
 	NhlArgVal		cbdata;
 	NhlArgVal		sel;
@@ -824,16 +824,19 @@ _NhlBaseAddChild
 	if(!parent)
 		return True;
 
-	list = (_NhlAllChildList)NhlMalloc(sizeof(_NhlAllChildNode));
+ 
+	node = (_NhlAllChildList)NhlMalloc(sizeof(_NhlAllChildNode));
 
-	if(!list){
+	if(!node){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return False;
 	}
 
-	list->pid = child;
-	list->next = parent->base.all_children;
-	parent->base.all_children = list;
+	node->pid = child;
+	node->next = NULL;
+	for (nptr = &parent->base.all_children; *nptr; nptr = &(*nptr)->next)
+		;
+	*nptr = node;
 
 	NhlINITVAR(cbdata);
 	NhlINITVAR(sel);
@@ -952,8 +955,11 @@ _NhlBaseMoveChild
 	/*
 	 * add child node into new parent's list.
 	 */
-	node->next = parent->base.all_children;
-	parent->base.all_children = node;
+
+	node->next = NULL;
+	for (nptr = &parent->base.all_children; *nptr; nptr = &(*nptr)->next)
+		;
+	*nptr = node;
 
 	/*
 	 * Change child's parent pointer

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.5 1998-06-02 20:32:54 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.6 1998-11-06 22:16:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2559,7 +2559,7 @@ static NhlErrorTypes mpSetUpAreamap
 	}
 
 	if (aws_id < 1) {
-		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
+		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsNONE,
                                           mpWORKSPACE_SIZE_REQ);
 		if (aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)aws_id);
@@ -2778,7 +2778,7 @@ static NhlErrorTypes mpFill
 
 		subret = mpSetUpAreamap(mv40l,mpl,&aws,
                                         mpGLOBAL_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 #if 0
 		switch (Outline_Set) {
 		case mpCO:
@@ -2795,35 +2795,39 @@ static NhlErrorTypes mpFill
 		}
 #endif
 		subret = _NhlArpram(aws,0,0,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
 		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
 				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
         if (mv40p->usstates_fill_mode != mpNOSET) {
 
 		subret = mpSetUpAreamap(mv40l,mpl,&aws,
                                         mpUSSTATES_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 #if 0
 		printf("using US for fill\n");
 #endif
 		subret = _NhlArpram(aws,0,0,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
 		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
 				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
         }
+
+ error_ret:
+
+	subret = _NhlIdleWorkspace(aws);
+	ret = MIN(subret,ret);
+		
 	return ret;
+
+
 }
 
 

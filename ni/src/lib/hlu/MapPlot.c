@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.69 1998-10-02 19:35:20 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.70 1998-11-06 22:16:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1749,7 +1749,8 @@ static NhlErrorTypes MapPlotPreDraw
 	Mpp = mpp;
 	Mpl = mpl;
 
-	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+	if (mpl->view.use_segments && ! mpp->new_draw_req &&
+	    mpp->predraw_dat && mpp->predraw_dat->id != NgNOT_A_SEGMENT) {
 		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
 					mpp->predraw_dat,entry_name);
 		Mpp = NULL;
@@ -1776,8 +1777,16 @@ static NhlErrorTypes MapPlotPreDraw
 	}
 
 	subret = mpDraw((NhlMapPlotLayer) layer,NhlPREDRAW,entry_name);
+	ret = MIN(subret,ret);
+
+	if (mpl->view.use_segments) {
+		_NhlEndSegment(mpp->predraw_dat);
+	}
+
+	subret = _NhlDeactivateWorkstation(mpl->base.wkptr);
 
 	Mpp = NULL;
+
 	return MIN(subret,ret);
 }
 
@@ -1819,7 +1828,8 @@ static NhlErrorTypes MapPlotDraw
 	Mpp = mpp;
 	Mpl = mpl;
 
-	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+	if (mpl->view.use_segments && ! mpp->new_draw_req &&
+	    mpp->draw_dat && mpp->draw_dat->id != NgNOT_A_SEGMENT) {
 		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
 					mpp->draw_dat,entry_name);
 		Mpp = NULL;
@@ -1846,8 +1856,16 @@ static NhlErrorTypes MapPlotDraw
 	}
 
 	subret = mpDraw((NhlMapPlotLayer) layer,NhlDRAW,entry_name);
+	ret = MIN(subret,ret);
+
+
+	if (mpl->view.use_segments) {
+		_NhlEndSegment(mpp->draw_dat);
+	}
+	subret = _NhlDeactivateWorkstation(mpl->base.wkptr);
 
 	Mpp = NULL;
+
 	return MIN(subret,ret);
 
 }
@@ -1894,7 +1912,8 @@ static NhlErrorTypes MapPlotPostDraw
 	Mpp = mpp;
 	Mpl = mpl;
 
-	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+	if (mpl->view.use_segments && ! mpp->new_draw_req &&
+	    mpp->postdraw_dat && mpp->postdraw_dat->id != NgNOT_A_SEGMENT) {
 		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
 					mpp->postdraw_dat,entry_name);
 		Mpp = NULL;
@@ -1920,6 +1939,13 @@ static NhlErrorTypes MapPlotPostDraw
 	}
 
 	subret = mpDraw((NhlMapPlotLayer) layer,NhlPOSTDRAW,entry_name);
+	ret = MIN(subret,ret);
+
+	if (mpl->view.use_segments) {
+		_NhlEndSegment(mpp->postdraw_dat);
+	}
+
+	subret = _NhlDeactivateWorkstation(mpl->base.wkptr);
 
 	mpp->new_draw_req = False;
 	Mpp = NULL;
@@ -2023,17 +2049,6 @@ static NhlErrorTypes mpDraw
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		c_maplbl();
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	}
-
-	if (mp->view.use_segments) {
-		_NhlEndSegment();
-	}
-	subret = _NhlDeactivateWorkstation(mp->base.wkptr);
-
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error setting deactivating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
 	}
 
 	return ret;

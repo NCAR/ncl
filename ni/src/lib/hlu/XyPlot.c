@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.79 1998-10-23 18:31:19 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.80 1998-11-06 22:16:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2706,13 +2706,6 @@ DrawCurves
 	}
 
 
-	if (xlayer->view.use_segments) {
-		_NhlEndSegment();
-	}
-
-	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
-	ret1 = MIN(ret,ret1);
-
 	NhlFree(tx);
 	NhlFree(ty);
 
@@ -2830,7 +2823,8 @@ static NhlErrorTypes XyPlotPreDraw
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		return ret;
 	}
-	if (xyl->view.use_segments && ! xyp->new_draw_req) {
+	if (xyl->view.use_segments && ! xyp->new_draw_req &&
+	    xyp->predraw_dat && xyp->predraw_dat->id != NgNOT_A_SEGMENT) {
 		ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
 					xyp->predraw_dat,entry_name);
 		return ret;
@@ -2852,6 +2846,13 @@ static NhlErrorTypes XyPlotPreDraw
 	}
 
 	subret = DrawCurves(xyl,thetrans,NhlPREDRAW,entry_name);
+	ret = MIN(ret,subret);
+
+	if (xyl->view.use_segments) {
+		_NhlEndSegment(xyp->predraw_dat);
+	}
+
+	subret = _NhlDeactivateWorkstation(xyl->base.wkptr);	
 
 	return MIN(subret,ret);
 }
@@ -2897,7 +2898,8 @@ static NhlErrorTypes XyPlotDraw
 		return ret;
 	}
 
-	if (xyl->view.use_segments && ! xyp->new_draw_req) {
+	if (xyl->view.use_segments && ! xyp->new_draw_req &&
+	    xyp->draw_dat && xyp->draw_dat->id != NgNOT_A_SEGMENT) {
 		ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
 					xyp->draw_dat,entry_name);
 		return ret;
@@ -2919,6 +2921,13 @@ static NhlErrorTypes XyPlotDraw
 
 	subret = DrawCurves((NhlXyPlotLayer)layer,
 			    thetrans,NhlDRAW,entry_name);
+	ret = MIN(ret,subret);
+
+	if (xyl->view.use_segments) {
+		_NhlEndSegment(xyp->draw_dat);
+	}
+
+	subret = _NhlDeactivateWorkstation(xyl->base.wkptr);	
 	return MIN(subret,ret);
 }
 
@@ -2959,7 +2968,9 @@ static NhlErrorTypes XyPlotPostDraw
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			return ret;
 		}
-		if (xyl->view.use_segments && ! xyp->new_draw_req) {
+		if (xyl->view.use_segments && ! xyp->new_draw_req &&
+		    xyp->postdraw_dat && 
+		    xyp->postdraw_dat->id != NgNOT_A_SEGMENT) {
 			ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
 						xyp->postdraw_dat,entry_name);
 			return ret;
@@ -2981,6 +2992,13 @@ static NhlErrorTypes XyPlotPostDraw
 		}
 		subret = DrawCurves((NhlXyPlotLayer)layer,thetrans,
 				    NhlPOSTDRAW,entry_name);
+		ret = MIN(ret,subret);
+
+		if (xyl->view.use_segments) {
+			_NhlEndSegment(xyp->draw_dat);
+		}
+
+		subret = _NhlDeactivateWorkstation(xyl->base.wkptr);	
 	}
 
 	xyp->new_draw_req = False;

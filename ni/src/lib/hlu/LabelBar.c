@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.57 1998-02-20 22:40:36 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.58 1998-11-06 22:16:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4132,8 +4132,8 @@ static NhlErrorTypes    LabelBarDraw
 	if (! lb_p->labelbar_on)
 		return(ret);
 
-	if (lbl->view.use_segments && ! lb_p->new_draw_req) {
-                
+	if (lbl->view.use_segments && ! lb_p->new_draw_req &&
+	    lb_p->trans_dat && lb_p->trans_dat->id != NgNOT_A_SEGMENT) {
                 subret = _NhlActivateWorkstation(lbl->base.wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlDrawSegment(lb_p->trans_dat,
@@ -4160,7 +4160,9 @@ static NhlErrorTypes    LabelBarDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
-		_NhlStartSegment(lb_p->trans_dat);
+		subret = _NhlStartSegment(lb_p->trans_dat);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
 	}
 
 /* first draw the perimeter: it may have a solid background */
@@ -4309,7 +4311,7 @@ static NhlErrorTypes    LabelBarDraw
 		if (lb_p->labels_on )
 			_NhlSegDraw(_NhlGetLayer(lb_p->labels_id));
 
-		_NhlEndSegment();
+		_NhlEndSegment(lb_p->trans_dat);
 		_NhlDeactivateWorkstation(lbl->base.wkptr);
 	}
 	else {

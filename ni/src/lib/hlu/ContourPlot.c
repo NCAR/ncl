@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.78 1998-10-23 20:32:18 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.79 1998-11-06 22:16:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3043,7 +3043,7 @@ static NhlErrorTypes cnInitDraw
 	cnp->iws = NULL;
 	cnp->cws = NULL;
 	cnp->wk_active = False;
-	cnp->seg_open = False;
+	cnp->current_trans_dat = NULL;
 	
 	subret = GetData(cnl,&cnp->data,&n,&m);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -3587,9 +3587,9 @@ static void ContourAbortDraw
 		cnp->iws = NULL;
 	}
 
-	if (cnl->view.use_segments && cnp->seg_open) {
-		_NhlEndSegment();
-		cnp->seg_open = False;
+	if (cnl->view.use_segments && cnp->current_trans_dat) {
+		_NhlEndSegment(cnp->current_trans_dat);
+		cnp->current_trans_dat = NULL;
 	}
 
 	if (cnp->wk_active) {
@@ -3655,7 +3655,8 @@ static NhlErrorTypes ContourPlotPreDraw
 		return NhlNOERROR;
 	}
         
-        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req;
+        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req &&
+		cnp->predraw_dat && cnp->predraw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = cnUpdateTrans(cnl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3714,7 +3715,8 @@ static NhlErrorTypes ContourPlotDraw
 	Cnp = cnp;
 	Cnl = cnl;
         
-        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req;
+        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req &&
+		cnp->draw_dat && cnp->draw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = cnUpdateTrans(cnl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3783,7 +3785,8 @@ static NhlErrorTypes ContourPlotPostDraw
 		return ret;
 	}
 
-        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req;
+        seg_draw = cnl->view.use_segments && ! cnp->new_draw_req &&
+		cnp->postdraw_dat && cnp->postdraw_dat->id != NgNOT_A_SEGMENT;
         
 	if (cnp->label_order == NhlPOSTDRAW ||
 	    cnp->line_order == NhlPOSTDRAW ||
@@ -3955,7 +3958,7 @@ static NhlErrorTypes cnDraw
                         ContourAbortDraw(cnl);
                         return ret;
                 }
-                cnp->seg_open = True;
+                cnp->current_trans_dat = *trans_dat_pp;
         }
 	
 	c_cprset();
@@ -4166,10 +4169,10 @@ static NhlErrorTypes cnDraw
 		}
 	}
 
-	if (cnl->view.use_segments && cnp->seg_open) {
-		_NhlEndSegment();
-		cnp->seg_open = False;
+	if (cnl->view.use_segments && cnp->current_trans_dat) {
+		_NhlEndSegment(cnp->current_trans_dat);
 	}
+	cnp->current_trans_dat = NULL;
         
 	if (cnp->low_level_log_on) {
 		subret = NhlVASetValues(cnp->trans_obj->base.id,

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.47 1998-10-23 20:32:22 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.48 1998-11-06 22:16:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1887,10 +1887,10 @@ static void StreamlineAbortDraw
 	Stp = NULL;
 	Stl = NULL;
 
-	if (stl->view.use_segments && stp->seg_open) {
-		_NhlEndSegment();
-		stp->seg_open = False;
+	if (stl->view.use_segments && stp->current_trans_dat) {
+		_NhlEndSegment(stp->current_trans_dat);
 	}
+	stp->current_trans_dat = NULL;
 
 	if (stp->wk_active) {
 		_NhlDeactivateWorkstation(stl->base.wkptr);
@@ -2047,7 +2047,7 @@ static NhlErrorTypes StreamlinePlotPreDraw
 
 	stp->fws = NULL;
 	stp->wk_active = False;
-	stp->seg_open = False;
+	stp->current_trans_dat = NULL;
 
 	if (! stp->data_init || stp->zero_field) {
 		return NhlNOERROR;
@@ -2067,7 +2067,8 @@ static NhlErrorTypes StreamlinePlotPreDraw
 		return NhlNOERROR;
 	}
         
-        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req &&
+		stp->predraw_dat && stp->predraw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = stUpdateTrans(stl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2125,7 +2126,8 @@ static NhlErrorTypes StreamlinePlotDraw
 	Stp = stp;
 	Stl = stl;
         
-        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req &&
+		stp->draw_dat && stp->draw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = stUpdateTrans(stl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2189,7 +2191,8 @@ static NhlErrorTypes StreamlinePlotPostDraw
 		return ret;
 	}
 
-        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req &&
+		stp->postdraw_dat && stp->postdraw_dat->id != NgNOT_A_SEGMENT;
         
         if (stp->streamline_order == NhlPOSTDRAW) {
                 subret = stUpdateTrans(stl,seg_draw,entry_name);
@@ -2197,7 +2200,7 @@ static NhlErrorTypes StreamlinePlotPostDraw
                         StreamlineAbortDraw(stl);
                         return ret;
                 }
-                if (stl->view.use_segments && ! stp->new_draw_req) {
+                if (seg_draw) {
                         subret = _NhltfDrawSegment
                                 ((NhlLayer)stl,stp->trans_obj,
                                  stp->postdraw_dat,entry_name);
@@ -2280,7 +2283,7 @@ static NhlErrorTypes stDraw
 			StreamlineAbortDraw(stl);
 			return ret;
 		}
-		stp->seg_open = True;
+		stp->current_trans_dat = *trans_dat_pp;
 	}
         
 	c_strset();
@@ -2398,9 +2401,9 @@ static NhlErrorTypes stDraw
 	}
 
 	if (stl->view.use_segments) {
-		_NhlEndSegment();
-		stp->seg_open = False;
+		_NhlEndSegment(stp->current_trans_dat);
 	}
+	stp->current_trans_dat = NULL;
 
 	if (stp->low_level_log_on) {
 		subret = NhlVASetValues(tfp->trans_obj->base.id,

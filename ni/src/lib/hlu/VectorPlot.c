@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.54 1998-10-23 20:32:23 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.55 1998-11-06 22:16:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2910,8 +2910,9 @@ static void VectorAbortDraw
 	Vcp = NULL;
 	Vcl = NULL;
 
-	if (vcl->view.use_segments && vcp->seg_open)
-		_NhlEndSegment();
+	if (vcl->view.use_segments && vcp->current_trans_dat)
+		_NhlEndSegment(vcp->current_trans_dat);
+	vcp->current_trans_dat = NULL;
 
 	if (vcp->wk_active)
 		_NhlDeactivateWorkstation(vcl->base.wkptr);
@@ -3060,7 +3061,7 @@ static NhlErrorTypes VectorPlotPreDraw
 
 	vcp->fws = NULL;
 	vcp->wk_active = False;
-	vcp->seg_open = False;
+	vcp->current_trans_dat = NULL;
 
 	if (! vcp->data_init || vcp->zero_field) {
 		return NhlNOERROR;
@@ -3079,7 +3080,8 @@ static NhlErrorTypes VectorPlotPreDraw
 		return NhlNOERROR;
 	}
         
-        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req &&
+		vcp->predraw_dat && vcp->predraw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = vcUpdateTrans(vcl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3139,7 +3141,8 @@ static NhlErrorTypes VectorPlotDraw
 	Vcp = vcp;
 	Vcl = vcl;
 
-        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req &&
+		vcp->draw_dat && vcp->draw_dat->id != NgNOT_A_SEGMENT;
         
 	subret = vcUpdateTrans(vcl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3201,7 +3204,8 @@ static NhlErrorTypes VectorPlotPostDraw
 		return ret;
 	}
 
-        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req &&
+		vcp->postdraw_dat && vcp->postdraw_dat->id != NgNOT_A_SEGMENT;
         
 
 	if (vcp->vector_order == NhlPOSTDRAW) {
@@ -3302,7 +3306,7 @@ static NhlErrorTypes vcDraw
 			VectorAbortDraw(vcl);
 			return ret;
 		}
-		vcp->seg_open = True;
+		vcp->current_trans_dat = *trans_dat_pp;
 	}
 
 	c_vvrset();
@@ -3666,10 +3670,10 @@ static NhlErrorTypes vcDraw
 	}
 
 	gset_clip_ind(GIND_NO_CLIP);
-	if (vcl->view.use_segments && vcp->seg_open) {
-		_NhlEndSegment();
-		vcp->seg_open = False;
+	if (vcl->view.use_segments && vcp->current_trans_dat) {
+		_NhlEndSegment(vcp->current_trans_dat);
 	}
+	vcp->current_trans_dat = NULL;
 
 	if (vcp->low_level_log_on) {
 		subret = NhlVASetValues(tfp->trans_obj->base.id,

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.45 1998-10-28 00:46:58 dbrown Exp $
+ *      $Id: TextItem.c,v 1.46 1998-11-06 22:16:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -576,6 +576,7 @@ static NhlErrorTypes TextItemSetValues
 	char *tmp;
 	int	rstringchange = 0;
 	int	view_args = 0;
+	NhlBoolean view_pos_change,view_size_change;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
 		tnew->text.new_draw_req = True;
@@ -607,43 +608,45 @@ static NhlErrorTypes TextItemSetValues
 		ret = MIN(NhlWARNING,ret);
 	}
 
-	if((tnew->view.x != told->view.x)
-		||(tnew->view.width != told->view.width)
-		||(tnew->view.y != told->view.y)
-		||(tnew->view.height != told->view.height)){
-
+	view_pos_change = (tnew->view.x != told->view.x) ||
+		(tnew->view.y != told->view.y);
+	view_size_change = (tnew->view.width != told->view.width) ||
+		(tnew->view.height != told->view.height);
+	if(view_pos_change || view_size_change) {
 		if((tnew->text.pos_x == told->text.pos_x)
-		  &&(tnew->text.pos_y == told->text.pos_y)
-		  &&(tnew->text.angle == told->text.angle)
-		  &&(tnew->text.just == told->text.just)
-		  &&(tnew->text.direction == told->text.direction)
-		  &&(!_NhlArgIsSet(args,num_args,NhlNtxFontHeightF))
-		  &&(tnew->text.font_aspect == told->text.font_aspect)
-		  &&(tnew->text.font_thickness == told->text.font_thickness)
-		  &&(tnew->text.constant_spacing==told->text.constant_spacing)){
+		   &&(tnew->text.pos_y == told->text.pos_y)
+		   &&(tnew->text.angle == told->text.angle)
+		   &&(tnew->text.just == told->text.just)
+		   &&(tnew->text.direction == told->text.direction)
+		   &&(!_NhlArgIsSet(args,num_args,NhlNtxFontHeightF))
+		   &&(tnew->text.font_aspect == told->text.font_aspect)
+		   &&(tnew->text.font_thickness == told->text.font_thickness)
+		   &&(tnew->text.constant_spacing==
+		      told->text.constant_spacing)){
 /*
-* Only case where x,y,width and height can be set. Need to compute new values
-* for font_height, font_thickness, pos_x and pos_y. All other text atts can
-* remain the same.
-*/
+ * Only case where x,y,width and height can be set. Need to compute new values
+ * for font_height, font_thickness, pos_x and pos_y. All other text atts can
+ * remain the same.
+ */
 			_NhlEvalTrans(tnew->view.trans_children,
-				tnew->text.pos_x,tnew->text.pos_y,
-				&tnew->text.pos_x,&tnew->text.pos_y);
-			_NhlEvalTrans(tnew->view.trans_children,
-				tnew->text.heightvecx[0],
-				tnew->text.heightvecy[0],
-				&tmpvx0,&tmpvy0);
-			_NhlEvalTrans(tnew->view.trans_children,
-				tnew->text.heightvecx[1],
-				tnew->text.heightvecy[1],
-				&tmpvx1,&tmpvy1);
-			tnew->text.font_height = (float)sqrt((float)(
-				((tmpvx1-tmpvx0)*(tmpvx1-tmpvx0)) 
-				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
-		
+				      tnew->text.pos_x,tnew->text.pos_y,
+				      &tnew->text.pos_x,&tnew->text.pos_y);
+			if (view_size_change) {
+				_NhlEvalTrans(tnew->view.trans_children,
+					      tnew->text.heightvecx[0],
+					      tnew->text.heightvecy[0],
+					      &tmpvx0,&tmpvy0);
+				_NhlEvalTrans(tnew->view.trans_children,
+					      tnew->text.heightvecx[1],
+					      tnew->text.heightvecy[1],
+					      &tmpvx1,&tmpvy1);
+				tnew->text.font_height = (float)sqrt((float)(
+					((tmpvx1-tmpvx0)*(tmpvx1-tmpvx0)) 
+					+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
+			}
 		} else if(tnew->base.parent == tnew->base.wkptr){
-		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
-		  ret = MIN(ret,NhlWARNING);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
+				ret = MIN(ret,NhlWARNING);
 		}
 	} 
 
@@ -651,10 +654,10 @@ static NhlErrorTypes TextItemSetValues
 		rstringchange = 1;
 		if(tnew->text.direction == NhlDOWN) {
 			sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
-							tnew->text.func_code);
+				tnew->text.func_code);
 		} else {
 			sprintf(tnew->text.dirstr,"%cA%c",tnew->text.func_code,
-							tnew->text.func_code);
+				tnew->text.func_code);
 		}
 	}
 
@@ -669,28 +672,28 @@ static NhlErrorTypes TextItemSetValues
 
 	if(rstringchange){
 		NhlFree(told->text.real_string);
-		tnew->text.real_string = (char*)NhlMalloc((unsigned)
-						strlen(tnew->text.string)+
-						strlen(tnew->text.dirstr)+1);
+		tnew->text.real_string = (char*)NhlMalloc
+			((unsigned)strlen(tnew->text.string)+
+			 strlen(tnew->text.dirstr)+1);
 		strcpy(tnew->text.real_string,tnew->text.dirstr);
 		strcat(tnew->text.real_string,tnew->text.string);
 	}
 
 	switch(tnew->text.font_quality) {
-		case NhlHIGH:
-			tnew->text.qual = 0;
-			break;
-		case NhlMEDIUM:
-			tnew->text.qual = 1;
-			break;
-		case NhlLOW:
-			tnew->text.qual = 2;
-			break;
+	case NhlHIGH:
+		tnew->text.qual = 0;
+		break;
+	case NhlMEDIUM:
+		tnew->text.qual = 1;
+		break;
+	case NhlLOW:
+		tnew->text.qual = 2;
+		break;
 	}
 
 	ret1 = DoPcCalc(tnew);
 
-        return(MIN(ret,ret1));
+	return(MIN(ret,ret1));
 }
 
 /*
@@ -775,7 +778,9 @@ static NhlErrorTypes    TextItemDraw
 	char buf[10];
 	char *e_text, *func = "TextItemDraw";
 
-	if (tlayer->view.use_segments && ! tlayer->text.new_draw_req) {
+	if (tlayer->view.use_segments && ! tlayer->text.new_draw_req
+	    && tlayer->text.trans_dat 
+	    && tlayer->text.trans_dat->id != NgNOT_A_SEGMENT) {
                 
                 subret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -813,7 +818,9 @@ static NhlErrorTypes    TextItemDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, func);
 			return(ret);
 		}
-		_NhlStartSegment(tlayer->text.trans_dat);
+		subret = _NhlStartSegment(tlayer->text.trans_dat);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
 	}
         
 	if(tlayer->text.qual == 2){
@@ -872,7 +879,7 @@ static NhlErrorTypes    TextItemDraw
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
         
 	if (tlayer->view.use_segments) {
-		_NhlEndSegment();
+		_NhlEndSegment(tlayer->text.trans_dat);
         }
         
 	_NhlDeactivateWorkstation(tlayer->base.wkptr);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.7 1998-02-18 01:23:49 dbrown Exp $
+ *      $Id: Segments.c,v 1.8 1998-11-06 22:16:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -53,7 +53,7 @@ void lubksb3d();
  * to go way beyond that with the HLU's so a method of retrieving 
  * discarded segment ids is necessary
  */
-#define SEG_NOT_SET -10
+#define SEG_NOT_SET NgNOT_A_SEGMENT
 #define MAX_SEG 100
 static NhlBoolean Init_Required = True;
 static char Id_Assigned[MAX_SEG];
@@ -374,7 +374,7 @@ NhlBoolean _NhlSegmentSpansArea
 {
         float owidth,oheight,nwidth,nheight;
 
-        if (! transdat)
+        if (! transdat || transdat->id == SEG_NOT_SET)
                 return False;
 
         if (transdat->xmin >= 0.0 && transdat->xmax <= 1.0 &&
@@ -509,13 +509,13 @@ void	_NhlEvalTrans
  *
  * Out Args:	NONE
  *
- * Return Values: NONE
+ * Return Values: NhlErrorTypes
  *
  * Side Effects: Segment now open and recording if _NhlEndSegment not called
  *		then problems will arise.
  */
 
-void	_NhlStartSegment
+NhlErrorTypes	_NhlStartSegment
 #if	NhlNeedProto
 (NhlTransDat	*transdat)
 #else
@@ -530,9 +530,10 @@ void	_NhlStartSegment
 	}
 	if(transdat->id == SEG_NOT_SET) {
 		if (Id == MAX_SEG) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			     "_NhlStartSegment: no more segments available");
-			return;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+"%s: no more segments available; view object will be drawn to primary workstation only",
+				  "_NhlStartSegment");
+			return NhlWARNING;
 		}
 		transdat->id = Id;
 		Id_Assigned[Id] = 1;
@@ -544,7 +545,7 @@ void	_NhlStartSegment
 		}
 	}
 /* FORTRAN */ _NHLCALLF(gcrsg,GCRSG)(&(transdat->id));
-	return;
+	return NhlNOERROR;
 }
 
 /*
@@ -595,8 +596,19 @@ void _NhlSetSegTrans
  * Side Effects:  Segment stops recording primatives.
  */
 
-void	_NhlEndSegment()
+void	_NhlEndSegment
+#if	NhlNeedProto
+(
+	NhlTransDat	*transdat
+)
+#else
+(transdat)
+	NhlTransDat	*transdat;
+#endif
 {
-/* FORTRAN */ _NHLCALLF(gclsg,GCLSG)();
+	if(transdat->id != SEG_NOT_SET) {
+/* FORTRAN */ 
+		_NHLCALLF(gclsg,GCLSG)();
+	}
 	return;
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Segments.h,v 1.2 1998-02-18 01:23:50 dbrown Exp $
+ *      $Id: Segments.h,v 1.3 1998-11-06 22:16:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #ifndef _NSegments_h
 #define _NSegments_h
 
+#define NgNOT_A_SEGMENT -10
 
 typedef struct _NhlTransDat{ 
 	int id;
