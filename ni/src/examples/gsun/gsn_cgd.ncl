@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_cgd.ncl,v 1.1 1999-01-27 17:39:03 haley Exp $
+;      $Id: gsn_cgd.ncl,v 1.2 2003-03-10 23:44:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,7 +38,6 @@ undef("gsn_labeled_map_polar")
 undef("gsn_labeled_map")
 undef("gsn_contour_ezp1_polar")
 undef("gsn_contour_ezp1_ce")
-undef("gsn_contour_labeled_map")
 
 function add_cyclic_point(data[*][*]:float)
 ;
@@ -1708,30 +1707,5 @@ begin
       map_object@xy = xy_object
     end if
     return(map_object)
-end
-
-;***********************************************************************;
-; Function : gsn_contour_labeled_map                                    ;
-;                   wks: workstation object                             ;
-;                  data: 2-dimensional data                             ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function calls either gsn_contour_ezp1_ce or                     ;
-; gsn_contour_ezp1_polar depending on if gsnPolar is set to True.       ;
-;***********************************************************************;
-
-function gsn_contour_labeled_map(wks:graphic,data[*][*]:numeric,\
-resources:logical)
-local res2
-begin
-  res2     = resources
-
-  if((res2).and.isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH.or.\
-                isatt(res2,"gsnPolarSH").and.res2@gsnPolarSH)
-    return(gsn_contour_ezp1_polar(wks,data,res2))
-  else
-    return(gsn_contour_ezp1_ce(wks,data,res2))
-  end if
-  delete(res2)
 end
 
