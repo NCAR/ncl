@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.85 2001-12-27 21:21:35 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.86 2002-02-04 23:29:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -48,6 +48,7 @@ undef("set_subtitles_res")
 undef("is_valid_xcoord")
 undef("is_valid_ycoord")
 undef("check_for_coord_arrays")
+undef("check_class_name")
 undef("get_allowed_latnames")
 undef("get_allowed_latnames_without_units")
 undef("get_allowed_lonnames")
@@ -768,6 +769,30 @@ begin
 ; is set and equal in dimension sizes to the data, then use this
 ; for sf/vf/XArray.
 ;
+    if(isatt(data,"lon2d").and. \
+       all(dimsizes(data@lon2d).eq.dimsizes(data))) then
+      if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
+        set_attr(res,prefix+"XArray",data@lon2d)
+      end if
+    end if
+  end if
+
+  if(is_valid_ycoord(data))
+    if(.not.(isatt(res,prefix+"YCStartV").and.isatt(res,prefix+"YCEndV")))
+      set_attr(res,prefix+"YArray",data&$data!0$)
+    end if
+  else
+;
+; If no Y coordinate array exists, and the special attribute "lat2d"
+; is set and equal in dimension sizes to the data, then use this
+; for sf/vf/YArray.
+;
+    if(isatt(data,"lat2d").and. \
+       all(dimsizes(data@lat2d).eq.dimsizes(data))) then
+      if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
+        set_attr(res,prefix+"XArray",data@lat2d)
+      end if
+    end if
   end if
   return
 end
@@ -903,7 +928,6 @@ end
 ;                                                                       ;
 ; Get list of names allowed for the units attribute of a latitude       ;
 ; coordinate array.                                                     ; 
-print("entering is_valid_lat_xcoord")
 ;                                                                       ;
 ;***********************************************************************;
 function get_allowed_lat_units()
@@ -923,7 +947,6 @@ begin
   return((/"degrees_east","degree_east","degrees east","degrees_E"/))
 end
 
-print("exit is_valid_lat_xcoord")
 ;***********************************************************************;
 ; Function : is_valid_lat_xcoord                                        ;
 ;                                                                       ;
@@ -1011,7 +1034,7 @@ begin
         print("is_valid_lat_ycoord: Warning: The units attribute of the Y coordinate array is not set. Assuming units to be degrees_north.")
         return(True)
       end if
-  if(isatt(p,"units").and.any(p@units.eq.get_allowed_pres_units_pa()))
+    else
       if(any(data!0.eq.get_allowed_latnames_without_units()))
         return(True)
       end if
@@ -3391,12 +3414,6 @@ begin
 ; all start with "lon_", so the first occurrence of this string will
 ; be the consecutive start of the lon label annotations.
 ;
-    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
-    lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0.)
-    lat_spacing  = get_res_value(res2,"tmXBTickSpacingF",lat_spacing)
-    lon_spacing  = get_res_value(res2,"tmYLTickSpacingF",lon_spacing)
-    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0.)
-    mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0.)
       names = NhlName(am_ids)
       found = False
       i = 0
@@ -3945,14 +3962,7 @@ begin
        check_attr(res2,"mpFillOn",False,False))
       set_attr(res2,"mpOutlineOn",True)
     end if
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+
 ; This section tests for regular resources.
     lbres = get_res_eq(res2,(/"lb","pm"/))
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
@@ -4206,14 +4216,7 @@ begin
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
 
@@ -7648,14 +7651,7 @@ calldraw, callframe, left_string, center_string, right_string, \
 main_zone, datanew, popgrid, contour_plot
 begin
 
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+; Initialize.
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
@@ -7782,14 +7778,7 @@ begin
     if(popgrid.ne."") then
       pop_latlon_grid(wks,contour_object,popgrid)  ; Add a POP grid.
     else
-      cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                            ; contour plot, or a contour plot
-                                            ; over a loglin plot.
-      if(cname.eq."logLinPlotClass")
-        contour_plot = contour_object@contour
-      else
-        contour_plot = contour_object
-      end if
+;
 ; Make tick marks same length and point outward.
 ;
       major_length = scale * min((/ylength,xlength/))
@@ -7860,14 +7849,7 @@ begin
 
     if(is_valid_xcoord(data).and..not.(isatt(res2,"sfXCStartV").and. \
        isatt(res2,"sfXCEndV")))
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+      set_attr(res2,"sfXArray",data&$data!1$)
     end if
 
     res2           = True
@@ -7932,14 +7914,8 @@ begin
     res2         = get_resources(resources)
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+    callframe    = get_res_value(res2,"gsnFrame",True)
+    maxbb        = get_bb_res(res2)
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
@@ -8025,8 +8001,9 @@ begin
 
 ; Get min and max X axis values (latitude units)
 
-        print("gsn_csm_pres_hgt: Fatal: The coordinate array for the first dimension of the input data must be in Pascals or millibars")
-        print("and it must contain the attribute 'units' (set to 'pa' or 'mb') to indicate which one it is.")
+    contour_plot = check_class_name(contour_object,"contour")
+
+    getvalues contour_plot
       "trXMinF"   : min_lat
       "trXMaxF"   : max_lat
     end getvalues
@@ -8053,14 +8030,7 @@ end
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
 ; Id of the contour plot is returned.                                   ;
-    cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                          ; contour plot, or a contour plot
-                                          ; over a loglin plot.
-    if(cname.eq."logLinPlotClass")
-      contour_plot = contour_object@contour
-    else
-      contour_plot = contour_object
-    end if
+;                                                                       ;
 ; This function behaves differently from gsn_csm_contour in that it     ;
 ; draws a specially-labelled pressure axis on one side and a height axis;
 ; on the other side.  It also labels the longitude X axis, if one       ;
@@ -8268,7 +8238,9 @@ end
 ;                                                                       ;
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
-    getvalues vector_object
+;***********************************************************************;
+
+function gsn_csm_vector(wks:graphic,u[*][*]:numeric,v[*][*],resources:logical)
 local res, vector_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, unew, vnew
@@ -8309,9 +8281,9 @@ begin
     left_string   = new(1,logical)
     center_string = new(1,logical)
     right_string  = new(1,logical)
-    gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
-                                               xmlength,ymlength,\
-                                               major_length,minor_length)
+
+    check_for_subtitles(res2,left_string,center_string,right_string)
+
     if(left_string.or.center_string.or.right_string)
       main_zone   = main_zone+1
     end if

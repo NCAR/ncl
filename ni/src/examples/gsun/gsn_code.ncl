@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.78 2001-12-27 21:21:35 haley Exp $
+;      $Id: gsn_code.ncl,v 1.79 2002-02-04 23:29:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5415,7 +5415,9 @@ begin
 ; maximum, then this gives us room to add a white background and/or a
 ; black foreground.
 ;
+  reset_colormap = False
   if(ncolors.lt.maxcols) then
+    reset_colormap = True
 ;
 ; Get current color map.
 ;
@@ -5443,7 +5445,6 @@ begin
     end setvalues
 
     delete(cmapnew)
-
   else
     offset = 0
   end if
@@ -5505,14 +5506,16 @@ begin
     end do
     frame(wks)   ; Advance the frame.
   end do
+
+  if(reset_colormap) then
 ;
 ; Put the original color map back.
 ;
-  setvalues wks
-    "wkColorMap" : cmap
-  end setvalues
-  delete(cmap)
-
+    setvalues wks
+      "wkColorMap" : cmap
+    end setvalues
+    delete(cmap)
+  end if
 end
 
 ;***********************************************************************;
@@ -5649,7 +5652,7 @@ begin
       attsetvalues_check(plot_object,llres)
 
       overlay(plot_object,overlay_plot_object)
-      plot_object@contour = overlay_plot_object
+      plot_object@vector = overlay_plot_object
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
@@ -6334,7 +6337,7 @@ begin
       attsetvalues_check(plot_object,llres)
 
       overlay(plot_object,overlay_plot_object)
-      plot_object@contour = overlay_plot_object
+      plot_object@vector = overlay_plot_object
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
