@@ -1,5 +1,5 @@
 /*
- *      $Id: cn12c.c,v 1.1 1995-10-16 17:21:00 haley Exp $
+ *      $Id: cn12c.c,v 1.2 1995-10-18 15:52:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -138,17 +138,17 @@ main(int argc, char *argv[])
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
-    NhlRLSetString(rlist,NhlNpmLabelBarDisplayMode,"always");
     NhlCreate(&cnid,"con1",NhlcontourPlotClass,wid,rlist);
 /* 
  * Create a map object, specifying the areas we want filled and masked.
  */
     NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,0.1);
     NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,mask_specs,
                         NhlNumber(mask_specs));
     NhlRLSetStringArray(rlist,NhlNmpFillAreaSpecifiers,fill_specs,
                         NhlNumber(fill_specs));
-    NhlRLSetFloat(rlist,NhlNvpXF,0.1);
+    NhlRLSetString(rlist,NhlNpmLabelBarDisplayMode,"always");
     NhlCreate(&mpid,"map",NhlmapPlotClass,wid,rlist);
 
     NhlAddOverlay(mpid,cnid,-1);

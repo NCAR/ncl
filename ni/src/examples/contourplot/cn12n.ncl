@@ -96,20 +96,20 @@ begin
     "sfYCEndV": 38.
   end create
 ;
-; Create a ContourPlot object using the above data field, and make sure
-; the LabelBar is displayed.
+; Create a ContourPlot object using the above data field.
 ;
   conid = create "con1" contourPlotClass wid
     "cnScalarFieldData":      field1
-    "pmLabelBarDisplayMode":  "always"
   end create
 ;
 ; Create a map object, specifying the areas we want filled and masked.
+; Also draw a LabelBar.
 ;
   mapid = create "map" mapPlotClass wid 
+    "vpXF":                   .1
     "mpMaskAreaSpecifiers":   mask_specs
     "mpFillAreaSpecifiers":   fill_specs
-    "vpXF":                   .1
+    "pmLabelBarDisplayMode":  "always"
   end create
   overlay(mapid,conid)
   draw(mapid)

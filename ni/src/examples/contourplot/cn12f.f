@@ -1,5 +1,5 @@
 C
-C     $Id: cn12f.f,v 1.1 1995-10-16 17:21:01 haley Exp $
+C     $Id: cn12f.f,v 1.2 1995-10-18 15:52:03 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -121,17 +121,17 @@ C the LabelBar is displayed.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'cnScalarFieldData',dataid,ierr)
-      call NhlFRLSetString(rlist,'pmLabelBarDisplayMode','always',ierr)
       call NhlFCreate(conid,'con1',nhlfcontourplotclass,wid,rlist,ierr)
 C
 C Create a map object, specifying the areas we want filled and masked.
 C     
       call NhlFRLClear(rlist)
+      call NhlFRLSetFloat(rlist,'vpXF',0.1,ierr)
       call NhlFRLSetStringArray(rlist,'mpMaskAreaSpecifiers',maskspcs,
      +     50,ierr)
       call NhlFRLSetStringArray(rlist,'mpFillAreaSpecifiers',fillspcs,2,
      +     ierr)
-      call NhlFRLSetFloat(rlist,'vpXF',0.1,ierr)
+      call NhlFRLSetString(rlist,'pmLabelBarDisplayMode','always',ierr)
       call NhlFCreate(mapid,'map',nhlfmapplotclass,wid,rlist,ierr)
 
       call NhlFAddOverlay(mapid,conid,-1,ierr)

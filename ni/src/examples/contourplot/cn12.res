@@ -43,9 +43,12 @@
 !
 ! LabelBar resources
 !
-*cnExplicitLabelBarLabelsOn:   True
+*lbBoxCount:                   14
 *lbLabelAlignment:             BoxCenters
 *lbPerimOn:                    False
 *lbLabelFont:                  times-bold
 *lbLabelFontHeightF:           0.015
-*lbLabelStrings:               (/< 0,0-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100,> 100/)
+*lbLabelStrings:               (/Ocean,Land,< 0,0-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100,> 100/)
+*lbMonoFillPattern:            True
+*lbFillPattern:                solidfill
+*lbFillColors:                 (/7,2,3,4,5,6,8,9,10,11,12,13,14,15/)
