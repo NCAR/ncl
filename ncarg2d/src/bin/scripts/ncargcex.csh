@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.9 1994-04-07 20:37:46 haley Exp $
+#	$Id: ncargcex.csh,v 1.10 1994-05-11 16:23:55 haley Exp $
 #
 
 #********************#
@@ -50,6 +50,11 @@ set intexample_list = (c_xwndws)
 
 set X11_option = ""
 
+#***************#
+#               #
+# Parse options #
+#               #
+#***************#
 set names
 
 while ($#argv > 0)
@@ -108,6 +113,11 @@ foreach name ($names)
 
 set rmfiles
 
+#*************************************#
+#                                     #
+# Find out what type of example it is #
+#                                     #
+#*************************************#
 set type="Unknown"
 
 foreach known ($example_list)
@@ -127,32 +137,67 @@ if ($?List) then
    exit
 endif
 
-################################################################
-#
-# Code for handling examples
-#
-################################################################
+#****************************#
+#                            #
+# Code for handling examples #
+#                            #
+#****************************#
 
 if ($?List) then
    echo $name
    goto theend
 endif
 
+#**************************#
+#                          #
+# Find out what type it is #
+#                          #
+#**************************#
+switch ($type)
+    case Example:
+        echo "NCAR Graphics C Example <$name>"
+    breaksw
+
+    case Interactive_Example:
+        echo "NCAR Graphics Interactive C Example <$name>"
+    breaksw
+
+    case Unknown:
+        echo "ncargcex: <$name> is not a known example"
+        goto theend
+    breaksw
+endsw
 echo ""
-echo "NCAR Graphics C Example <$name>"
+
+#**************************************************#
+#                                                  #
+# If the "-unique" option was selected and the     #
+# example already exists, don't generate it again. #
+#                                                  #
+#**************************************************#
 
 if ($?Unique && -f $name.ncgm) goto theend
 
 set c_files = $name.c
-
 set copy_files="$c_files"
-
 set rmfiles=($rmfiles $copy_files)
 
+#***********************#
+#                       #
+# Copy the needed files #
+#                       #
+#***********************#
+   
 foreach file($copy_files)
     echo "  Copying $file"
     cp $example_dir/$file .
 end
+
+#******************************#
+#                              #
+# Compile and link the example #
+#                              #
+#******************************#
 
 if (! $?NoRunOption) then
     if ($type == "Interactive_Example") then
@@ -187,20 +232,21 @@ if ("$name" == "c_slex01") then
     set rmfiles = ($rmfiles GNFB09)
 endif
 
-# Code for handling inappropriate requests
-
-if ("$type" == "Unknown") then
-
-echo "ncargcex: <$name> is not a known example or test"
-
-endif
-
-# Clean out unwanted files.
+#************************#
+#                        #
+# Remove unwanted files. #
+#                        #
+#************************#
 
 if ($?CleanOption) then
     rm -f $rmfiles
 endif
 
+#************************#
+#                        #
+# Display NCGM on screen #
+#                        #
+#************************#
 if ($?OneByOneOption) then
     ctrans -d X11 -geometry 1142x865+10+0 $name.ncgm
     rm -f $name.ncgm $rmfiles
