@@ -1,5 +1,5 @@
 C
-C $Id: cpex10.f,v 1.5 1996-02-29 17:59:47 kennison Exp $
+C $Id: cpex10.f,v 1.6 1999-09-09 22:37:26 kennison Exp $
 C
       PROGRAM TESTIT
 C
@@ -13,8 +13,8 @@ C gray.  Two-letter mnemonics are used to identify the states; each
 C is written using new mapping capabilities of the package PLOTCHAR.
 C
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define error file, Fortran unit number, workstation type, and
+C workstation ID.
 C
         PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
@@ -32,7 +32,7 @@ C purposes.
 C
         DIMENSION IAM1(LAM1),IAM2(LAM2)
 C
-C Declare scratch arrays required by the routine ARSCAM, MAPBLM, and
+C Declare scratch arrays required by the routines ARSCAM, MAPBLM, and
 C MAPGRM.
 C
         DIMENSION XCRA(1000),YCRA(1000),IAIA(10),IAGI(10)
@@ -535,7 +535,7 @@ C
 C
 C Fill the polygon using a color implied by the contour level if it
 C is inside the circle around Boulder and is part of a contour band.
-C If it is outsie the circle around Boulder, but is still on the
+C If it is outside the circle around Boulder, but is still on the
 C globe, use color index 5 for it.
 C
         IF (IAI1.EQ.1.AND.IAI3.GE.1.AND.IAI3.LE.16) THEN
