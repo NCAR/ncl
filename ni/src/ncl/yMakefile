@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.62 1997-09-02 20:27:43 ethan Exp $
+#      $Id: yMakefile,v 1.63 1997-12-30 16:07:28 haley Exp $
 #
 #########################################################################
 #									#
@@ -42,6 +42,10 @@ ARCH_LIBS	=	-lPW
 HACKOBJS	=	hphack.o
 #endif
 
+#ifdef LINUX
+EXTRA_CLDFLAGS	= -rdynamic
+#endif
+
 #ifndef	CRAY
 DYNAMIC_LIBS	=	-ldl
 #endif
@@ -79,7 +83,6 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
 			NclFileInterfaces.h
-			
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
