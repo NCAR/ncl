@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.48 1993-06-16 20:29:40 haley Exp $
+#   $Id: ncargex.csh,v 1.49 1993-09-21 14:35:04 haley Exp $
 #
 
 #********************#
@@ -637,40 +637,56 @@ set rmfiles
 set type="Unknown"
 
 foreach known ($ex_list)
-    if ("$name" == "$known") then
-        set type="Example"
-    endif
+  if ("$name" == "$known") then
+    set type="Example"
+    break
+  endif
 end
 
-foreach known ($tst_list)
+if ( $type == "Unknown" ) then
+  foreach known ($tst_list)
     if ("$name" == "$known") then
-        set type="Test"
+      set type="Test"
+      break
     endif
-end
+  end
+endif
 
-foreach known ($ttr_list)
+if ( $type == "Unknown" ) then
+  foreach known ($ttr_list)
     if ("$name" == "$known") then
-        set type="Tutorial"
+      set type="Tutorial"
+      break
     endif
-end
+  end
+endif
 
-foreach known ($fnd_list)
+if ( $type == "Unknown" ) then
+  foreach known ($fnd_list)
     if ("$name" == "$known") then
-        set type="Fundamentals"
+      set type="Fundamentals"
+      break
     endif
-end
+  end
+endif
 
-foreach known ($fnd_intgks)
+if ( $type == "Unknown" ) then
+  foreach known ($fnd_intgks)
     if ("$name" == "$known") then
-        set type="Fundamentals"
+      set type="Fundamentals"
+      break
     endif
-end
+  end
+endif
 
-foreach known ($pdc_list)
+if ( $type == "Unknown" ) then
+  foreach known ($pdc_list)
     if ("$name" == "$known") then
-        set type="Programmer"
+      set type="Programmer"
+      break
     endif
-end
+  end
+endif
 
 #***********************************************#
 #                                               #
@@ -1023,4 +1039,3 @@ endif
 theend:
 
 end
-
