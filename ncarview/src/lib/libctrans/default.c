@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.20 1993-03-31 00:03:05 clyne Exp $
+ *	$Id: default.c,v 1.21 1993-06-18 18:16:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -541,13 +541,6 @@ CGMC *c;
 
 	dt->char_height = (VDCtype) 0.01*(YMAX - YMIN);
 
-	if ((XMIN == YMIN) || (XMAX == YMAX)) {
-		ESprintf(
-			EINVAL, "VDC space not 2D((%d,%d), (%d,%d))",
-			XMIN, YMIN, XMAX, YMAX
-		);
-		return(-1);
-	}
 	return (0);
 }
 
