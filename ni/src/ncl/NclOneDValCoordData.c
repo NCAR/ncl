@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.6 1996-05-22 21:51:53 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.7 1998-09-16 22:55:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -464,6 +464,97 @@ NclScalar *new_missing;
 	}
 	return((NclData)output_md);
 }
+static NhlErrorTypes OneDValCoordWrite_s
+#if     NhlNeedProto
+(NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
+#else
+(target,sel,value)
+        NclData target;
+        NclSelectionRecord *sel;
+        NclData value;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclOneDValCoordData thevalobj = (NclOneDValCoordData) target;
+
+
+	if((target->obj.class_ptr != NULL)
+		&&(target->obj.class_ptr->obj_class.super_class !=NULL)
+		&&(((NclDataClass)target->obj.class_ptr->obj_class.super_class)->data_class.w_subsection[1] !=NULL)) {
+	
+		ret = (*((NclDataClass)target->obj.class_ptr->obj_class.super_class)->data_class.w_subsection[1])(target,sel,value);
+		
+		thevalobj->onedval.mono_type = _Nclis_mono(thevalobj->multidval.type,thevalobj->multidval.val,
+			(thevalobj->multidval.missing_value.has_missing?&thevalobj->multidval.missing_value.value:NULL),
+			thevalobj->multidval.totalelements);
+
+		return(ret);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_s: an error occured while trying to write to a coordinate value");
+		return(NhlFATAL);
+	}
+}
+static NhlErrorTypes OneDValCoordWrite_md
+#if     NhlNeedProto
+(NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
+#else
+(target,sel,value)
+        NclData target;
+        NclSelectionRecord *sel;
+        NclData value;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclOneDValCoordData thevalobj = (NclOneDValCoordData) target;
+
+
+	if((target->obj.class_ptr != NULL)
+		&&(target->obj.class_ptr->obj_class.super_class !=NULL)
+		&&(((NclDataClass)target->obj.class_ptr->obj_class.super_class)->data_class.w_subsection[0] !=NULL)) {
+	
+		ret = (*((NclDataClass)target->obj.class_ptr->obj_class.super_class)->data_class.w_subsection[0])(target,sel,value);
+		
+		thevalobj->onedval.mono_type = _Nclis_mono(thevalobj->multidval.type,thevalobj->multidval.val,
+			(thevalobj->multidval.missing_value.has_missing?&thevalobj->multidval.missing_value.value:NULL),
+			thevalobj->multidval.totalelements);
+
+		return(ret);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_md: an error occured while trying to write to a coordinate value");
+		return(NhlFATAL);
+	}
+}
+static NhlErrorTypes OneDValCoordReadWrite
+#if     NhlNeedProto
+(NclData to_data, NclSelectionRecord * to_selection, NclData from_data, NclSelectionRecord *from_selection)
+#else
+(to_data,to_selection,from_data,from_selection)
+NclData to_data;
+NclSelectionRecord * to_selection;
+NclData from_data;
+NclSelectionRecord *from_selection;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclOneDValCoordData thevalobj = (NclOneDValCoordData) to_data;
+
+
+	if((to_data->obj.class_ptr != NULL)
+		&&(to_data->obj.class_ptr->obj_class.super_class !=NULL)
+		&&(((NclDataClass)to_data->obj.class_ptr->obj_class.super_class)->data_class.r_then_w_subsection !=NULL)) {
+	
+		ret = (*((NclDataClass)to_data->obj.class_ptr->obj_class.super_class)->data_class.r_then_w_subsection)(to_data,to_selection,from_data,from_selection);
+		
+		thevalobj->onedval.mono_type = _Nclis_mono(thevalobj->multidval.type,thevalobj->multidval.val,
+			(thevalobj->multidval.missing_value.has_missing?&thevalobj->multidval.missing_value.value:NULL),
+			thevalobj->multidval.totalelements);
+
+		return(ret);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordReadWrite: an error occured while trying to write to a coordinate value");
+		return(NhlFATAL);
+	}
+}
 
 static NhlErrorTypes InitializeOneDClass(
 #if NhlNeedProto
@@ -493,8 +584,8 @@ NclOneDValCoordDataClassRec nclOneDValCoordDataClassRec = {
 /* NclGenericFunction dup; 	*/	NclOneDValCoordDup,
 /* NclResetMissingValueFuction dup;	*/	NULL,
 /* NclReadSubSecFunction r_subsection */ NULL,
-/* NclReadSubSecFunction w_subsection */{ NULL, NULL},
-/* NclReadThenWriteSubFunc w_subsection */ NULL,
+/* NclReadSubSecFunction w_subsection */{ OneDValCoordWrite_md, OneDValCoordWrite_s},
+/* NclReadThenWriteSubFunc w_subsection */ OneDValCoordReadWrite,
 /* NclDataFunction coerce; 	*/	{NULL,NULL},
 /* NclDataFunction multiply; 	*/	{NULL,NULL,NULL,NULL},
 /* NclDataFunction plus; 	*/	{NULL,NULL,NULL,NULL},
