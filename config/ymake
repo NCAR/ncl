@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.23 1996-04-19 16:44:15 haley Exp $
+#	$Id: ymake,v 1.24 1996-06-27 19:42:53 haley Exp $
 #
 ######################################################################
 #
@@ -586,9 +586,11 @@ cat <<'EOF' >! $outfile
 'EOF'
 
 if (-e /usr/ccs/lib/cpp) then
-	set cpp = /usr/ccs/lib/cpp
-else 
-	set cpp = /lib/cpp
+    set cpp = /usr/ccs/lib/cpp
+else if (-e /opt/ctl/bin/cpp) then
+    set cpp = /opt/ctl/bin/cpp
+else
+  set cpp = /lib/cpp
 endif
 
 # set cpp options
