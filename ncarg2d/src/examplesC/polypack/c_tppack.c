@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tppack.c,v 1.2 1994-06-24 22:05:57 haley Exp $
+ *	$Id: c_tppack.c,v 1.3 1994-06-27 17:47:50 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -260,14 +260,14 @@ float *xcbl, *xcbr, *ycob, *dxle, *dxre, *ycot;
  *
  * If the trapezoid is not degenerate, fill it and outline it.
  */
-	area.num_points = 5;
-	area.points = (Gpoint *)malloc(area.num_points*sizeof(Gpoint));
-	if( !area.points ) {
-		fprintf( stderr, "filltr: Not enough memory to create area structure\n" );
-		gemergency_close_gks();
-		exit(1);
-	}
 	if (*ycot > *ycob) {
+		area.num_points = 5;
+		area.points = (Gpoint *)malloc(area.num_points*sizeof(Gpoint));
+		if( !area.points ) {
+			fprintf( stderr, "filltr: Not enough memory to create area structure\n" );
+			gemergency_close_gks();
+			exit(1);
+		}
 		area.points[0].x = *xcbl;
 		area.points[0].y = *ycob;
 		area.points[1].x = *xcbr;
@@ -282,7 +282,6 @@ float *xcbl, *xcbr, *ycob, *dxle, *dxre, *ycot;
 		gfill_area(&area);
 		area.num_points = 5;
 		gpolyline(&area);
-		free(area.points);
 		free(area.points);
 	}
 	return(0);
