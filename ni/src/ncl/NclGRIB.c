@@ -599,13 +599,15 @@ int** lv_vals1;
 			if(strt->rec_inq->pds_size != strt->next->rec_inq->pds_size) {
 				fprintf(stdout,"Dup PDSC: Size Error\n");
 			} else {
-				fprintf(stdout,"Dup PDSC: %s\t%d\n",(GdsCompare(strt->rec_inq->pds,strt->next->rec_inq->pds,strt->rec_inq->pds_size)?"Equal":"Not Equal"),(int)strt->rec_inq->pds[9]);
+				fprintf(stdout,"Dup PDSC: %s\t%d\n",(! memcmp(strt->rec_inq->pds,
+				strt->next->rec_inq->pds,strt->rec_inq->pds_size)?"Equal":"Not Equal"),(int)strt->rec_inq->pds[9]);
 			}
 			fprintf(stdout,"GDS SIZE (%d)\n",strt->rec_inq->gds_size);
 			if(strt->rec_inq->gds_size != strt->next->rec_inq->gds_size) {
 				fprintf(stdout,"Dup GDSC: Size Error\n");
 			} else {
-				fprintf(stdout,"Dup GDSC: %s\n",(GdsCompare(strt->rec_inq->gds,strt->next->rec_inq->gds,strt->rec_inq->gds_size)?"Equal":"Not Equal"));
+				fprintf(stdout,"Dup GDSC: %s\n",(GdsCompare(strt->rec_inq->gds,strt->rec_inq->gds_size,
+				strt->next->rec_inq->gds,strt->next->rec_inq->gds_size)?"Equal":"Not Equal"));
 			}
 			fprintf(stdout,"Dup: (%s,%s)\t(%d,%d)\n",strt->rec_inq->var_name,strt->next->rec_inq->var_name,strt->rec_inq->start,strt->next->rec_inq->start);
 */
@@ -1287,7 +1289,7 @@ GribFileRecord *therec;
 	}
 }
 
-int GdsCompare(unsigned char *a,unsigned char *b,int n) {
+int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_size2) {
 	int i;
 	/* 
 	 * differences in octet 17 are not currently used by NCL so for now
@@ -1296,19 +1298,55 @@ int GdsCompare(unsigned char *a,unsigned char *b,int n) {
 	 * revisited. dib 2002-11-22
 	 */
 
-	for( i = 0; i < n ; i++) {
-		switch (i) {
-		case 16:
-			a++,b++;
-			break;
-		default:
-			if(*(a++)!=*(b++)) {	
-				return(0);
+	/*
+	 * Another issue: grids that have levels (gds[3] > 0) look different from ones that don't (or have a 
+	 * different number) So skip over the levels when determining whether a GDS is the same.
+	 * dib 2004-08-16
+	 */
+
+	if (gds_size1 == gds_size2) {
+		for( i = 0; i < gds_size1 ; i++) {
+			switch (i) {
+			case 16:
+				break;
+			default:
+				if(gds1[i] != gds2[i]) {	
+					return(0);
+				}
+				break;
 			}
-			break;
 		}
+		return(1);
 	}
-	return(1);
+	if (gds1[3] > 0 || gds2[3] > 0) {
+		int top1,top2;
+		if ((gds_size1 - (int)gds1[3] * 4  != gds_size2 - (int)gds2[3] * 4) ||
+		    (gds1[4] != gds2[4])) 
+			return 0;
+		for( i = 4; i < (int)gds1[4] - 1 ; i++) {
+			switch (i) {
+			case 16:
+				break;
+			default:
+				if(gds1[i] != gds2[i]) {	
+					return(0);
+				}
+				break;
+			}
+		}
+		top1 = gds1[4] + gds1[3] * 4;
+		top2 = gds2[4] + gds2[3] * 4;
+		if (top1 < gds_size1) {
+			char *t1 = &gds1[top1-1];
+			char *t2 = &gds2[top2-1];
+			for (i = top1 - 1; i < gds_size1; i++)
+				if(*(t1++) != *(t2++)) {	
+					return(0);
+				}
+		}
+		return(1);
+	}
+	return 0;
 }
 void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int dimsizes_level;
@@ -1979,8 +2017,8 @@ GribFileRecord *therec;
 				dstep = therec->grid_dims;
 				while(dstep != NULL) {
 					if((dstep->dim_inq->is_gds == step->gds_type)&&
-						(dstep->dim_inq->gds_size == step->thelist->rec_inq->gds_size)&&
-						(GdsCompare(dstep->dim_inq->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size))) {
+						(GdsCompare(dstep->dim_inq->gds,dstep->dim_inq->gds_size,
+							    step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size))) {
 						if ((step->gds_type == 203) && (dstep->dim_inq->is_uv != Is_UV(step->param_number))) {
 							dstep = dstep->next;
 							continue;
