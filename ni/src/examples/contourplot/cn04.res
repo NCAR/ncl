@@ -1,5 +1,5 @@
 ! 
-! nhl09 resource file
+! cn04 resource file
 !
 ! no tick marks
 *cn04Work.ContourPlot1*pmTickMarkDisplayMode : never
