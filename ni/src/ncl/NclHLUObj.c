@@ -296,7 +296,7 @@ NhlClass class_ptr;
 	} else {
 		tmp = (NclHLUObj)inst;
 	}
-	tmp->hlu.parent_hluobj_id = parentid;
+	tmp->hlu.parent_hluobj_id = -1;
 	tmp->hlu.hlu_id = id;
 	tmp->hlu.c_list = NULL;
 	tmp->hlu.class_ptr = class_ptr;
@@ -307,6 +307,7 @@ NhlClass class_ptr;
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);
+		tmp->hlu.parent_hluobj_id = ptmp->hlu.hlu_id;
 	}
 	if(cptr == nclHLUObjClass) {
 		_NclCallCallBacks((NclObj)tmp,CREATED);
