@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.10 1992-09-01 23:40:13 clyne Exp $
+ *	$Id: rasview.c,v 1.11 1992-09-14 23:11:55 don Exp $
  */
 /*
  *	rasview.c
@@ -27,6 +27,8 @@ static	struct	{
 	char	*palette;	/* color palette		*/
 	boolean	quiet;		/* quiet or verbose mode	*/
 	boolean	version;	/* print version		*/
+	boolean movie;		/* movie mode			*/
+	char	*ifmt;		/* input format			*/
 	} opt;
 
 /*
@@ -36,6 +38,8 @@ static	OptDescRec	set_options[] = {
 	{"palette", 1, NULL, "Specify a color palette file"},
 	{"quiet", 0, NULL, "Operate in quite mode"},
 	{"Version", 0, NULL, "Print version number end exit"},
+	{"movie", 0, NULL, "Display frames in movie mode"},
+	{"ifmt", 1, NULL, "Input format"},
 	{NULL}
 };
 	
@@ -48,6 +52,10 @@ static	Option	get_options[] = {
 	{"quiet", NCARGCvtToBoolean, (Voidptr) &opt.quiet, sizeof(opt.quiet)
 	},
 	{"Version", NCARGCvtToBoolean, (Voidptr)&opt.version,sizeof(opt.version)
+	},
+	{"movie", NCARGCvtToBoolean, (Voidptr)&opt.movie,sizeof(opt.movie)
+	},
+	{"ifmt", NCARGCvtToString, (Voidptr)&opt.ifmt,sizeof(opt.ifmt)
 	},
 	{
 	NULL
@@ -187,7 +195,7 @@ main(argc, argv)
 	 */
 	(void) RasterInit(&argc, argv);
 
-	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
+	if ((context = RasDrawOpen(&argc, argv, opt.movie))==(Context *)NULL) {
 		fprintf(
 			stderr, "%s : Error initializing display : %s\n",
 			progName, ErrGetMsg()
@@ -228,10 +236,10 @@ main(argc, argv)
 	while(*(++argv))
 	{
 
-		if ((ras = RasterOpen(*argv, NULL)) == (Raster *) NULL){
+		if ((ras = RasterOpen(*argv, opt.ifmt)) == (Raster *) NULL){
 			(void) fprintf (
-				stderr, "%s: RasterOpen(%s, ) [ %s ]\n",
-				progName, *argv, ErrGetMsg()
+				stderr, "%s: RasterOpen(%s,%s) [ %s ]\n",
+				progName, *argv, opt.ifmt, ErrGetMsg()
 			);
 			exit_status++;
 			continue;	/* skip this file	*/
