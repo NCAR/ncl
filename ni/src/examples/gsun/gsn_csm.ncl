@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.106 2002-09-16 15:06:29 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.107 2002-10-12 13:36:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -768,10 +768,13 @@ begin
 ; a regular coordinate array.  One of these will be used for 
 ; sf/vf/XArray.
 ;
-  if(isatt(data,"lon2d").and. \
-     all(dimsizes(data@lon2d).eq.dimsizes(data))) then
-    if(.not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV")))
+  if(isatt(data,"lon2d").and.\
+     .not.(isatt(res,prefix+"XCStartV").and.isatt(res,prefix+"XCEndV"))) then
+    if(all(dimsizes(data@lon2d).eq.dimsizes(data))) then
       set_attr(res,prefix+"XArray",data@lon2d)
+    else 
+      print("check_for_coord_arrays: Warning: the 'lon2d' attribute is not the same size as your data. Your data will most likely not be overlaid on the map correctly.")
+      return
     end if
   else
     if(is_valid_xcoord(data))
@@ -788,10 +791,12 @@ begin
 ; a regular coordinate array.  One of these will be used for 
 ; sf/vf/YArray.
 ;
-  if(isatt(data,"lat2d").and. \
-     all(dimsizes(data@lat2d).eq.dimsizes(data))) then
-    if(.not.(isatt(res,prefix+"YCStartV").and.isatt(res,prefix+"YCEndV")))
+  if(isatt(data,"lat2d").and.\
+     .not.(isatt(res,prefix+"YCStartV").and.isatt(res,prefix+"YCEndV"))) then
+    if(all(dimsizes(data@lat2d).eq.dimsizes(data))) then
       set_attr(res,prefix+"YArray",data@lat2d)
+    else 
+      print("check_for_coord_arrays: Warning: the 'lat2d' attribute is not the same size as your data. Your data may not be overlaid correctly.")
     end if
   else
     if(is_valid_ycoord(data))
@@ -1227,11 +1232,15 @@ begin
 ; coordinate array. If "lat2d" is not set, then check for
 ; a regular coordinate array.
 ;
-  if(isatt(data,"lat2d").and. \
-     all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
-     .not.(isatt(res,start_name).and.isatt(res,end_name)))
-    set_attr(res,array_name,data@lat2d)
-    return
+  if(isatt(data,"lat2d").and.\
+     .not.(isatt(res,start_name).and.isatt(res,end_name))) then
+    if(all(dimsizes(data@lat2d).eq.dimsizes(data))) then
+      set_attr(res,array_name,data@lat2d)
+      return
+    else 
+      print("check_for_y_lat_coord: Warning: the 'lat2d' attribute is not the same size as your data. Your data will most likely not be overlaid on the map correctly.")
+      return
+    end if
   else
     if(is_valid_lat_ycoord(data,res))
       if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
@@ -1296,22 +1305,27 @@ begin
 ; lat names. The coordinate variable must also be one-dimensional to
 ; be valid.
 ;
-; If no coordinate data is set, then check for the special attribute
-; "lat2d", which must be the same dimension as the data.  This special
-; attribute indicates a 2D latitude coordinate array.
+; Check for the special attribute "lat2d", which must be the same
+; dimension as the data.  This special attribute indicates a 2D
+; latitude coordinate array. If this attribute is not set, then
+; check for a regular coordinate array.
 ;
-  if(is_valid_lat_xcoord(data,res))
-    if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data&$data!1$)
+  if(isatt(data,"lat2d").and.\
+     .not.(isatt(res,start_name).and.isatt(res,end_name))) then
+    if(all(dimsizes(data@lat2d).eq.dimsizes(data))) then
+      set_attr(res,array_name,data@lat2d)
+      return
+    else 
+      print("check_for_x_lat_coord: Warning: the 'lat2d' attribute is not the same size as your data. Your data will most likely not be overlaid on the map correctly.")
       return
     end if
   else
-    if(isatt(data,"lat2d").and. \
-       all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
-       .not.(isatt(res,start_name).and.isatt(res,end_name)))
-      set_attr(res,array_name,data@lat2d)
-      return
-    end if 
+    if(is_valid_lat_xcoord(data,res))
+      if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+        set_attr(res,array_name,data&$data!1$)
+        return
+      end if
+    end if
   end if
 
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
@@ -1366,16 +1380,20 @@ begin
 ; Check the name of the coordinate variable against the allowed
 ; lon names
 ;
-; First check for the special attribute"lon2d", which must be the
+; First check for the special attribute "lon2d", which must be the
 ; same dimension as the data.  This special attribute indicates a
 ; 2D longitude coordinate array.  Otherwise, check for a regular
 ; coordinate array.
 ;
-  if(isatt(data,"lon2d").and. \
-     all(dimsizes(data@lon2d).eq.dimsizes(data)).and. \
-     .not.(isatt(res,start_name).and.isatt(res,end_name)))
-    set_attr(res,array_name,data@lon2d)
-    return
+  if(isatt(data,"lon2d").and.\
+     .not.(isatt(res,start_name).and.isatt(res,end_name))) then
+    if(all(dimsizes(data@lon2d).eq.dimsizes(data))) then
+      set_attr(res,array_name,data@lon2d)
+      return
+    else 
+      print("check_for_lon_coord: Warning: the 'lon2d' attribute is not the same size as your data. Your data will mostly likely not be overlaid on the map correctly.")
+      return
+    end if
   else
     if(is_valid_lon_xcoord(data,res))
       if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
