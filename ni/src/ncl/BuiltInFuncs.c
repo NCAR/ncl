@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.71 1997-05-29 18:27:12 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.72 1997-06-05 17:39:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10304,6 +10304,129 @@ NhlErrorTypes _NclIvinth2p
 		_NclPlaceReturn(data);
 	}
 	return(NhlNOERROR);
+}
+
+
+
+NhlErrorTypes _NclIGetVarAtts
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string name;
+	int dimsizes;
+	NclApiDataList *data;
+	NhlErrorTypes ret;
+	NclStackEntry val;
+	NclVar tmp_var;
+
+
+
+        val = _NclGetArg(0,1,DONT_CARE);
+        switch(val.kind) {
+		case NclStk_VAR:
+                	tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0) {
+				name = tmp_var->var.var_quark;
+			} else {
+				dimsizes = 1;
+				return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+			}
+			break;
+        	case NclStk_VAL:
+		default:
+			dimsizes = 1;
+			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	}
+
+	data = _NclGetVarInfo(name);
+	if((data != NULL)&&(data->u.var->n_atts != 0)) {
+		ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	} else {
+		dimsizes = 1;
+		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		if(data != NULL) 
+			_NclFreeApiDataList((void*)data);
+		return(ret);
+	}
+
+}
+
+NhlErrorTypes _NclIGetFileVarAtts
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string *name;
+	string fname;
+	NclScalar name_missing;
+	int name_has_missing;
+	string out_val = -1;
+	int dimsizes;
+	NclApiDataList *data;
+	NhlErrorTypes ret;
+	NclStackEntry val;
+	NclVar tmp_var;
+
+
+
+        val = _NclGetArg(0,1,DONT_CARE);
+        switch(val.kind) {
+		case NclStk_VAR:
+                	tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0) {
+				fname = tmp_var->var.var_quark;
+			} else {
+				dimsizes = 1;
+				return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+			}
+			break;
+        	case NclStk_VAL:
+		default:
+			dimsizes = 1;
+			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	}
+
+        name = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &name_missing,
+                        &name_has_missing,
+                        NULL,
+                        0);
+	if(name_has_missing) {
+		if(*name == name_missing.stringval) {
+			dimsizes = 1;
+		        return(NclReturnValue(
+               			name,
+                		1,
+                		&dimsizes,
+                		&name_missing,
+                		((NclTypeClass)nclTypestringClass)->type_class.data_type,
+                		1
+        		));
+		}
+	}
+	data = _NclGetFileVarInfo(fname,*name);
+	if((data != NULL)&&(data->u.var->n_atts != 0)) {
+		ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	} else {
+		dimsizes = 1;
+		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	}
+
 }
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.31 1997-05-20 15:52:05 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.32 1997-06-05 17:39:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -514,6 +514,17 @@ void
 );
 
 extern NhlErrorTypes _NclINhlAppGetDefaultParentId(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIGetFileVarAtts(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIGetVarAtts(
 #if     NhlNeedProto
 void
 #endif
@@ -1234,6 +1245,18 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);
 	nargs = 0;
 	NclRegisterFunc(_NclINhlAppGetDefaultParentId,args,"NhlAppGetDefaultParentId",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIGetVarAtts,args,"getvaratts",nargs);
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);
