@@ -1,5 +1,5 @@
 C
-C       $Id: crdrln.f,v 1.4 2004-06-29 17:14:39 kennison Exp $
+C       $Id: crdrln.f,v 1.5 2004-06-29 17:34:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C
       IF (IOFFP .EQ. 0) GO TO 101
       JUMP = 1
       GO TO 102
-      JUMP = 2
+  101 JUMP = 2
   102 IX0 = IX
       IY0 = IY
       IS0 = IS
