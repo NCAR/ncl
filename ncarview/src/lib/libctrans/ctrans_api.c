@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.17 1993-01-12 20:10:55 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.18 1993-02-02 22:23:07 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -534,13 +534,13 @@ void	CtransCloseBatch()
  *	Perform a 'seek' on the metafile
  * entry
  *	offset		: frame offset
- *	whence		: (L_SET | L_INCR)
+ *	whence		: (SEEK_SET | SEEK_CUR)
  *
  *	Advance the current frame count as follows:
  *	
- * 	If whence is L_SET, the pointer is set to offset frames.
+ * 	If whence is SEEK_SET, the pointer is set to offset frames.
  *
- *	If whence is L_INCR, the pointer is set to its  current
+ *	If whence is SEEK_CUR, the pointer is set to its  current
  *	location plus offset frames.
  *
  *	Currently only forward seeking is possible. The first frame is 
@@ -559,11 +559,11 @@ CtransRC	CtransLSeekBatch(offset, whence)
 	int		status;
 
 
-	if (whence == L_SET) {
+	if (whence == SEEK_SET) {
 		skip = offset - frameCount;
 		frame_count = offset;
 	}
-	else if (whence == L_INCR) {
+	else if (whence == SEEK_CUR) {
 		skip = offset;
 		frame_count += offset;
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.31 1993-01-07 00:32:56 clyne Exp $
+ *	$Id: gcap.c,v 1.32 1993-02-02 22:23:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,10 +45,6 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/types.h>
-
-#ifndef	L_SET
-#define	L_SET	0
-#endif
 
 #include <ncarg/c.h>
 #include "cgmc.h"
@@ -428,10 +424,10 @@ CGMC *c;
 		 * if not Batch wait for user to hit return
 		 */
 		if (!Batch && tty) {
-			(void)lseek(0,0L,L_SET);
+			(void)lseek(0,0L,SEEK_SET);
 			while (getc(tty) != '\n')
 				;	
-			(void)lseek(0,0L,L_SET);
+			(void)lseek(0,0L,SEEK_SET);
 		}
 		(void)buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
 

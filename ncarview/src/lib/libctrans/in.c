@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.10 1993-01-11 21:19:51 clyne Exp $
+ *	$Id: in.c,v 1.11 1993-02-02 22:23:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -200,8 +200,8 @@ int	SetRecord(recnum)
 	int recnum;
 {
 	CGM_flushGetInstr(cgmFd);
-	if (CGM_lseek(cgmFd, recnum, L_SET) < 0) {
-		ESprintf(errno,"CGM_lseek(%d, %d, %d)",cgmFd,recnum,L_SET);
+	if (CGM_lseek(cgmFd, recnum, SEEK_SET) < 0) {
+		ESprintf(errno,"CGM_lseek(%d, %d, %d)",cgmFd,recnum,SEEK_SET);
 		return(-1);
 	}
 	return(0);
