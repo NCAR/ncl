@@ -1,5 +1,5 @@
 C
-C $Id: icfell.f,v 1.2 1994-03-16 00:42:45 kennison Exp $
+C $Id: icfell.f,v 1.3 1994-03-16 22:40:58 kennison Exp $
 C
       FUNCTION ICFELL (MESSG,NERRF)
 C
@@ -24,7 +24,11 @@ C   effect of using ICFELL at each level is, effectively, to generate
 C   traceback information in the error message.)
 C
 C   If MESSG is non-blank and its length is 7 or greater, its value
-C   has become the new value of the current error message.
+C   has become the new value of the current error message and the
+C   previous error message has been printed.  This is used at the
+C   beginning of an NCAR Graphics routine to check for an outstanding
+C   error that the user has not recovered from and to ensure that the
+C   message for the outstanding error gets printed.
 C
 C   If the expression NERRF has the value zero, the current error
 C   flag has not been changed.
@@ -45,6 +49,17 @@ C detects the fact that an error has occurred in "B" and results in a
 C return from "A" to whatever routine called it.  It also changes the
 C current error message to read "A/B - ERROR HAS OCCURRED" and changes
 C the error number from "32" to "13".
+C
+C Another example:  Assume that the NCAR Graphics routine "A" is called
+C when recovery mode is set and that it detects an error, calls SETER,
+C and RETURNs to the user.  If the user neglects to check the error
+C state and calls the routine "B" next, the statement
+C
+C   IF (ICFELL('B - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C ensures that the error message from routine "A" will be printed, that
+C it will be replaced by "B - UNCLEARED PRIOR ERROR", and that "B" will
+C not attempt to execute.
 C
 C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
@@ -81,6 +96,7 @@ C
               CTEMP=ERMSG
               ERMSG=MESSG(1:LENMSG)//'/'//CTEMP
             ELSE
+              CALL EPRIN
               ERMSG=MESSG
             END IF
 C
