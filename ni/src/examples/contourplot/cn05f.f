@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.3 1996-05-09 15:37:31 haley Exp $
+C      $Id: cn05f.f,v 1.4 1997-09-08 14:02:57 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -99,7 +99,7 @@ C
 C Open the netCDF file.
 C
       call gngpat(filename,'data',ierr)
-      flen = 18
+      flen = 17
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
             filename(i:i+flen)='/cdf/meccatemp.cdf'
