@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.8 1994-09-20 16:49:21 fred Exp $
+C	$Id: ngseti.f,v 1.9 1995-12-08 20:10:36 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -115,6 +115,15 @@ C
           IDR(6:7) = ' 0'
         ENDIF
         CALL GESC(-1517,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SS - Flag for indicating whether segments should be saved.
+C
+      ELSE IF (CNP(1:2).EQ.'SS' .OR. CNP(1:2).EQ.'ss' .OR.
+     +         CNP(1:2).EQ.'Ss') THEN
+        ISVSEG = IVP
+        WRITE(IDR(1:5), 500) ISVSEG
+        CALL GESC(-1397,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  ST - Stack size limit.
