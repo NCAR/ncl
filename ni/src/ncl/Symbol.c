@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.44 1997-02-27 20:18:48 boote Exp $
+ *      $Id: Symbol.c,v 1.45 1997-04-10 22:59:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2688,9 +2688,13 @@ long* stride;
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if(thevar->kind == NclStk_VAR) {
 				for(i = 0; i < thevar->u.data_var->var.n_dims;i++) {
-					dim_sizes[i] = thevar->u.data_var->var.dim_info[i].dim_size;
+				
+					if(thevar->u.data_var->var.dim_info[i].dim_quark == coordname) {	
+						dim_sizes[0] = thevar->u.data_var->var.dim_info[i].dim_size;
+						break;
+					}
 				}
-				sel_ptr = BuildSel(thevar->u.data_var->var.n_dims,dim_sizes,start,finish,stride);
+				sel_ptr = BuildSel(1,dim_sizes,start,finish,stride);
 		
 				tmp_md= _NclVarValueRead(_NclReadCoordVar(thevar->u.data_var,NrmQuarkToString(coordname),NULL),sel_ptr,NULL);
 				if(sel_ptr != NULL) {
