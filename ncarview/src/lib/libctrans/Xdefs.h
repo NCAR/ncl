@@ -49,7 +49,6 @@ GC	lineGC;			/* line GC 	See section 5.3	*/
 GC	markerGC;		/* polymarker GC		*/
 GC	polygonGC;		/* polygon GC			*/
 GC	cellGC;			/* cell array GC		*/
-GC	tileGC;			/* GC for fill polygon tileing	*/
 
 Point_buf	Points = {NULL, 0};
 
@@ -72,7 +71,6 @@ extern	GC	lineGC;
 extern	GC	markerGC;
 extern	GC	polygonGC;
 extern	GC	cellGC;
-extern	GC	tileGC;
 
 extern	Point_buf	Points;
 

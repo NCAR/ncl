@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.30 1996-01-18 14:48:32 boote Exp $
+ *	$Id: X11_class4.c,v 1.31 1996-08-24 21:43:33 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -49,12 +49,13 @@ extern	Pixeltype	Colortab[];
 extern	boolean	Color_ava;
 extern	boolean	startedDrawing;
 
-static	struct	{	/* a pixmap for tileing a filled polygon*/
+static	struct	{	/* a pixmap for stippling a filled polygon*/
+	GC	gc;
 	XPoint	P[4];
-	Pixmap	tileid;
+	Pixmap	stippleid;
 	int	width,
 		height;
-	} tile = { 0,0, 0,0, 0,0, 0,0, 
+	} stipple = { 0,0, 0,0, 0,0, 0,0, 
 			0, 0, 0};	
 	
 
@@ -917,7 +918,7 @@ int	X11_Polygon(c)
  * have been appropriately set.  
  */
 
-/*	requested dimensions for fill tile. See section 5.4.4	*/
+/*	requested dimensions for fill stipple. See section 5.4.4	*/
 #define	PWIDTH		8
 #define	PHEIGHT		8
 
@@ -1061,35 +1062,40 @@ int	X11_Polygon(c)
 		case	HATCH_S:
 
 			/*	
-			 *	Hatch indecies are simulated using a fill tile
-			 *	for the area. See section 5.4.3.
+			 *	Hatch indecies are simulated using a fill
+			 *	stipple for the area. See section 5.4.3.
 			 */
 		
 
 	/*	
-	 *		create pixmap for tile	
+	 *		create pixmap for stipple	
 	 *	This needs to be done for each invocation of
-	 *	the polygon routine because once a tile is
+	 *	the polygon routine because once a stipple is
 	 *	set in a GC, X does not allow it to be changed
 	 */
 
-			if (tile.tileid = XCreatePixmap(dpy, drawable, 
-				tile.width, 
-				tile.height, 
-				DspDepth)) {
+			if(stipple.stippleid = XCreatePixmap(dpy,drawable,
+					stipple.width,stipple.height,1)){
+				if(!stipple.gc){
+					stipple.gc = XCreateGC(dpy,
+						stipple.stippleid,0,NULL);
+					if(!stipple.gc)
+						goto GCFAILED;
+				}
 
-				tile.P[1].x = tile.P[2].x = tile.width;
-				tile.P[2].y = tile.P[3].y = tile.height;
+				stipple.P[1].x =stipple.P[2].x =stipple.width;
+				stipple.P[2].y =stipple.P[3].y =stipple.height;
 
 
-				/*	clear the tile		*/
-				XFillPolygon(dpy,tile.tileid,tileGC,
-					tile.P, 4, Complex,CoordModeOrigin);
-
-				/*	need to turn off clipping to draw
-				 *	in our tile with the polygonGC
+				/*	clear the stipple		*/
+				XSetFunction(dpy,stipple.gc,GXclear);
+				XFillPolygon(dpy,stipple.stippleid,stipple.gc,
+					stipple.P,4,Convex,CoordModeOrigin);
+				/*
+				 *	only "set" pixels in the bitmap
+				 *	will be set to the polygonGC color.
 				 */
-				XSetClipMask(dpy, polygonGC, None);
+				XSetFunction(dpy,stipple.gc,GXset);
 
 				switch (HATCH_IND) {
 
@@ -1097,11 +1103,11 @@ int	X11_Polygon(c)
 					default:
 
 						/* draw new pattern	*/
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, (int) 0,
-							tile.height-1,
-							tile.width,
-							tile.height-1);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc, (int) 0,
+							stipple.height-1,
+							stipple.width,
+							stipple.height-1);
 
 
 
@@ -1109,85 +1115,88 @@ int	X11_Polygon(c)
 
 					case VERTICAL  :
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, tile.width-1,
-							0, tile.width-1,
-							tile.height);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc,
+							stipple.width-1,
+							0, stipple.width-1,
+							stipple.height);
 
 					break;
 
 					case POSITIVE :
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, 
-							tile.width-1,0,
-							0,tile.height-1);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc, 
+							stipple.width-1,0,
+							0,stipple.height-1);
 
 					break;
 
 					case NEGATIVE  :
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, 0,0,
-							tile.width,tile.height);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc, 0,0,
+							stipple.width,
+							stipple.height);
 
 					break;
 
 					case HORIZ_VERT:
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, 0,
-							tile.height-1,
-							tile.width,
-							tile.height-1);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc, 0,
+							stipple.height-1,
+							stipple.width,
+							stipple.height-1);
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, 
-							tile.width-1,0,
-							tile.width-1,
-							tile.height);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc, 
+							stipple.width-1,0,
+							stipple.width-1,
+							stipple.height);
 
 					break;
 
 					case POS_NEG  :
 
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, tile.width,0,
-							0,tile.height);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc,
+							stipple.width,0,
+							0,stipple.height);
 
-						XDrawLine(dpy, tile.tileid, 
-							polygonGC, 0,0,
-							tile.width,tile.height);
+						XDrawLine(dpy,stipple.stippleid,
+							stipple.gc,
+							0,0,
+							stipple.width,
+							stipple.height);
 
 					break;
 				}
 
-				/* set the GC tile parameter to our tile */
-				XSetTile(dpy, polygonGC, tile.tileid);
+				/* set the GC stipple parameter to stipple */
+				XSetStipple(dpy,polygonGC,stipple.stippleid);
 
-				/* change the fill style to use the tile */
-				XSetFillStyle(dpy, polygonGC, FillTiled);
+				/* change the fill style to use the stipple */
+				XSetFillStyle(dpy,polygonGC,FillStippled);
 
 			}
+GCFAILED:
 
-			XFillPolygon(dpy, drawable, polygonGC, 
-				Points.P, (int) num_points, Complex, 
+			XFillPolygon(dpy,drawable,polygonGC,
+				Points.P,(int)num_points,Complex,
 				CoordModeOrigin);
 			
-			/* if a tile was created	*/
-			if (tile.tileid) {
+			/* if a stipple was created	*/
+			if (stipple.stippleid) {
 
 				/* set fill style back to normal	*/
-				XSetFillStyle(dpy, polygonGC, FillSolid);
+				XSetFillStyle(dpy,polygonGC,FillSolid);
 
-				/* free the tile	*/
-				XFreePixmap(dpy, tile.tileid);
+				/* free the stipple	*/
+				XFreePixmap(dpy,stipple.stippleid);
+				stipple.stippleid = None;
 
-				/* 
-				 * restore clipping 
-				 */
-				GCsetclipping();
 			}
 
 			break;
@@ -1423,9 +1432,10 @@ int	X11_EllipArcClose(c)
 int	init_polygon()
 {
 	int	status	= 0;
-	/*	query best size of tile. See section 5.4.4 */	
-	if (!(XQueryBestTile(dpy, drawable, PWIDTH, PHEIGHT,
-		(unsigned int *) &tile.width, (unsigned int *) &tile.height))) {
+	/*	query best size of stipple. See section 5.4.4 */	
+	if (!(XQueryBestStipple(dpy, drawable, PWIDTH, PHEIGHT,
+		(unsigned int *)&stipple.width,
+		(unsigned int *) &stipple.height))) {
 
 		ESprintf(errno, "XQueryBestTile(,,,,,)");
 		status = -1;

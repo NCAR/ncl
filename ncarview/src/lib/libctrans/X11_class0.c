@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.37 1996-04-04 22:40:02 boote Exp $
+ *	$Id: X11_class0.c,v 1.38 1996-08-24 21:43:31 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -516,13 +516,6 @@ CGMC *c;
 		titleGC = XCreateGC(dpy, drawable, 
 			(GCForeground | GCBackground | GCFont), &gcv);
 	}
-
-
-	/*	tile GC has foreground and backround reversed	*/
-	gcv.background = fg;
-	gcv.foreground = bg;
-	tileGC = XCreateGC(dpy, drawable, 
-			(GCForeground | GCBackground ), &gcv);
 
 
 	/*
