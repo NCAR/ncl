@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.113 2003-09-18 20:26:44 haley Exp $
+;      $Id: gsn_code.ncl,v 1.114 2003-09-25 22:44:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -43,6 +43,7 @@ undef("smooth93d")
 undef("hsv2rgb")
 undef("tofloat")
 undef("tointeger")
+undef("stringtoxxx")
 undef("lower_case")
 undef("cat_strings")
 undef("get_resources")
@@ -345,6 +346,30 @@ begin
     end if
   end if
   return(xi)
+end
+
+;***********************************************************************;
+; function : stringtoxxx                                                ;
+;             str : string                                              ;
+;             type: string                                              ;
+;                                                                       ;
+; Convert string to int, float or double, depending on type             ; 
+;                                                                       ;
+;***********************************************************************;
+function stringtoxxx(str:string,type:string)
+begin
+  if(type.eq."double")
+    return(stringtodouble(str))
+  else
+    if(type.eq."float")
+      return(stringtofloat(str))
+    else
+      if(type.eq."integer")
+        return(stringtointeger(str))
+      end if
+    end if
+  end if
+  return(str)
 end
 
 ;***********************************************************************;

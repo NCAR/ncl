@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.138 2003-09-03 21:29:34 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.139 2003-09-25 22:44:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1753,14 +1753,16 @@ begin
   if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass".or.\
      class_name.eq."irregularPlotClass")
     getvalues the_plot
-      "cnLevels"          : levels
-      "cnFillDotSizeF"    : dot_size
-      "cnFillColors"      : colors
-      "cnFillPatterns"    : fill_patterns
-      "cnFillScales"      : fill_scales
-      "cnMonoFillPattern" : mono_fill_pat
-      "cnMonoFillScale"   : mono_fill_scl
-      "cnMonoFillColor"   : mono_fill_col
+      "cnLevels"              : levels
+      "cnFillDotSizeF"        : dot_size
+      "cnFillColors"          : colors
+      "cnFillPatterns"        : fill_patterns
+      "cnFillScales"          : fill_scales
+      "cnMonoFillPattern"     : mono_fill_pat
+      "cnMonoFillScale"       : mono_fill_scl
+      "cnMonoFillColor"       : mono_fill_col
+      "lbLabelStrings"        : lbstrings
+      "cnLabelBarEndLabelsOn" : end_labels_on
     end getvalues
 ;
 ; Check if we want different fill patterns or fill scales.  If so, we
@@ -1779,10 +1781,28 @@ begin
     end if
   else
     getvalues the_plot
-      "vcLevels"      : levels
-      "vcLevelColors" : colors
+      "vcLevels"              : levels
+      "vcLevelColors"         : colors
+      "vcLabelBarEndLabelsOn" : end_labels_on
+      "lbLabelStrings"        : lbstrings
     end getvalues
   end if
+;
+; If user set cn/vcLabelBarEndLabelsOn to True, then we need to
+; add an additional label at each end.
+;
+  if(end_labels_on) then
+    nlev              = dimsizes(levels)
+    newlevels         = new(nlev+2,typeof(levels))
+    newlevels(1:nlev) = levels
+    newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
+    newlevels(nlev+1) = stringtoxxx(lbstrings(nlev+1),typeof(newlevels))
+    delete(levels)
+    levels            = newlevels
+    delete(newlevels)
+    set_attr(lbres,"lbLabelAlignment","ExternalEdges")
+  end if
+  delete(lbstrings)
 
   fix_zero_contour(levels)
 
