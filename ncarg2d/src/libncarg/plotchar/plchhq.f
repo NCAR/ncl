@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.19 1995-07-07 20:09:39 kennison Exp $
+C $Id: plchhq.f,v 1.20 1997-08-25 20:21:23 boote Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -1086,6 +1086,7 @@ C
         IF (IDRC.GE.0) THEN
           IF (IDRC.NE.ICCI) THEN
             ICCI=IDRC
+	    IF (ICFELL(' ',0).NE.0) RETURN
             CALL PLOTIF (0.,0.,2)
             IF (ICFELL('PLCHHQ',27).NE.0) RETURN
             CALL GSPLCI (IDRC)
@@ -1094,6 +1095,7 @@ C
           END IF
         ELSE IF (ICCI.GE.0) THEN
           ICCI=-1
+	  IF (ICFELL(' ',0).NE.0) RETURN
           CALL PLOTIF (0.,0.,2)
           IF (ICFELL('PLCHHQ',28).NE.0) RETURN
           CALL GSPLCI (IPLC)
@@ -1107,6 +1109,7 @@ C
 C
         IF (RDLW.NE.RCLW) THEN
           RCLW=RDLW
+	  IF (ICFELL(' ',0).NE.0) RETURN
           CALL PLOTIF (0.,0.,2)
           IF (ICFELL('PLCHHQ',29).NE.0) RETURN
           CALL GSLWSC (RDLW)
@@ -1679,6 +1682,7 @@ C
                       IF (IDRC.NE.ICCI) THEN
                         ICCS=ICCI
                         ICCI=IDRC
+	                IF (ICFELL(' ',0).NE.0) RETURN
                         CALL PLOTIF (0.,0.,2)
                         IF (ICFELL('PLCHHQ',53).NE.0) RETURN
                         CALL GSPLCI (ICCI)
@@ -1732,6 +1736,7 @@ C
 C
                   ICCI=ICCS
 C
+	          IF (ICFELL(' ',0).NE.0) RETURN
                   CALL PLOTIF (0.,0.,2)
                   IF (ICFELL('PLCHHQ',54).NE.0) RETURN
 C
@@ -1792,6 +1797,7 @@ C Restore, as necessary, all the current color indices, the current line
 C width scale factor, and the fill area interior style.
 C
       IF (ICCI.GE.0) THEN
+	IF (ICFELL(' ',0).NE.0) RETURN
         CALL PLOTIF (0.,0.,2)
         IF (ICFELL('PLCHHQ',58).NE.0) RETURN
         CALL GSPLCI (IPLC)
@@ -1800,6 +1806,7 @@ C
       END IF
 C
       IF (RCLW.NE.RILW) THEN
+	IF (ICFELL(' ',0).NE.0) RETURN
         CALL PLOTIF (0.,0.,2)
         IF (ICFELL('PLCHHQ',59).NE.0) RETURN
         CALL GSLWSC (RILW)
