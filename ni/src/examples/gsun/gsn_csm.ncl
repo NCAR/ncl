@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.24 1999-11-23 17:45:25 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.25 1999-11-29 17:00:30 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -37,6 +37,7 @@ undef("xy_interp")
 undef("ref_line_interp")
 undef("gsn_geop_hgt")
 undef("check_for_subtitles")
+undef("set_subtitles_res")
 undef("check_for_lat_coord")
 undef("check_for_lon_coord")
 undef("create_labelbar")
@@ -62,6 +63,8 @@ undef("gsn_csm_vector_scalar_map_ce")
 undef("gsn_csm_contour_map")
 undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
+undef("pop_tick_locs")
+undef("pop_latlon_grid")
 undef("gsn_csm_contour")
 undef("gsn_csm_hov")
 undef("gsn_csm_lat_time")
@@ -306,6 +309,37 @@ begin
     if(isatt(res,"gsnRightString"))
       right            = True
       right@sub_string = res@gsnRightString
+      delete(res@gsnRightString)
+    end if
+  end if
+  return
+end
+
+;***********************************************************************;
+; Procedure : set_subtitles_res                                         ;
+;                 res: logical                                          ;
+;             plotres: logical                                          ;
+;                                                                       ;
+; This procedure checks if any of the gsn*String subtitle resources have;
+; been set. If so, it adds them to plotres as resources so they can     ;
+; be passed to another plotting function to be processed.               ;
+;***********************************************************************;
+procedure set_subtitles_res(res:logical,plotres:logical)
+begin
+  if((res).and..not.any(ismissing(getvaratts(res))))
+    if(isatt(res,"gsnLeftString"))
+      plotres = True
+      plotres@gsnLeftString = res@gsnLeftString
+      delete(res@gsnLeftString)
+    end if
+    if(isatt(res,"gsnCenterString"))
+      plotres = True
+      plotres@gsnCenterString = res@gsnCenterString
+      delete(res@gsnCenterString)
+    end if
+    if(isatt(res,"gsnRightString"))
+      plotres = True
+      plotres@gsnRightString = res@gsnRightString
       delete(res@gsnRightString)
     end if
   end if
@@ -577,8 +611,8 @@ end
   ratio = min((/ratio1,ratio2/))
     if(class_name.eq."logLinPlotClass")
       getvalues plot@contour
-        "vcLevels"      : levels
-        "vcLevelColors" : colors
+        "cnLevels"      : levels
+        "cnFillColors"  : colors
       end getvalues
     else
       getvalues plot
@@ -1153,9 +1187,6 @@ callframe, left_string, center_string, right_string, main_zone, \
 min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       print("pop_latlon_grid: "+popgrid+" is not a supported POP grid.")
       print("                 Supported POP grids include: " + valid_popgrids)
-    calldraw  = True
-    callframe = True
-
     map_vpxf      = 0.1       ; X position of map plot in viewport.
     map_vpyf      = 0.9       ; Y position of map plot in viewport.
     map_vpwf      = 0.8       ; Viewport width and height for
@@ -1172,8 +1203,9 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     i = 0
     found = False
     do while(i.lt.dimsizes(valid_popgrids).and..not.found)
-    check_for_draw_and_frame(res2,calldraw,callframe)
-
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
+      end if
 ;
     latlon_res = True
     latlon_res@gsnDraw              = False
@@ -1410,42 +1442,10 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       attsetvalues(tickmark_object,tmres)
     end if
 
-; Get tickmark labels sizes and lengths.
-    getvalues tickmark_object
-      "tmXBLabelFontHeightF" : xbfontf
-      "tmYLLabelFontHeightF" : ylfontf
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
-    end getvalues
+; Point tick marks outward and make labels the same size.
 
-; Make tickmark label sizes and lengths uniform sizes, and point tick
-; marks outward.
-    major_length = min((/ylength,xlength/))
-    minor_length = min((/ymlength,xmlength/))
-    setvalues tickmark_object
-      "tmXBLabelFontHeightF"    : min((/xbfontf,ylfontf/))
-      "tmYLLabelFontHeightF"    : min((/xbfontf,ylfontf/))
-      "tmXBMajorLengthF"        : major_length
-      "tmXBMinorLengthF"        : minor_length
-      "tmYLMajorLengthF"        : major_length
-      "tmYLMinorLengthF"        : minor_length
-      "tmXBMajorOutwardLengthF" : major_length
-      "tmXBMinorOutwardLengthF" : minor_length
-      "tmYLMajorOutwardLengthF" : major_length
-      "tmYLMinorOutwardLengthF" : minor_length
-      "tmXTLabelFontHeightF"    : min((/xbfontf,ylfontf/))
-      "tmYRLabelFontHeightF"    : min((/xbfontf,ylfontf/))
-      "tmXTMajorLengthF"        : major_length
-      "tmXTMinorLengthF"        : minor_length
-      "tmYRMajorLengthF"        : major_length
-      "tmYRMinorLengthF"        : minor_length
-      "tmXTMajorOutwardLengthF" : major_length
-      "tmXTMinorOutwardLengthF" : minor_length
-      "tmYRMajorOutwardLengthF" : major_length
-      "tmYRMinorOutwardLengthF" : minor_length
-    end setvalues
+    gsnp_point_tickmarks_outward(tickmark_object,0.,0.)
+    gsnp_uniform_tickmark_labels(tickmark_object,0.)
     ratio2 = lon_range/lat_range
     ratio = min((/ratio1,ratio2/))
 
@@ -1536,9 +1536,6 @@ vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc
       tmres = True
       gsnp_turn_off_tickmarks(tmres)
     end if
-    calldraw  = True
-    callframe = True
-
     mpres = get_res_ne(res2,(/"tm","tx","am"/))  ; Get rest of resources
     polar_sh      = False
     polar_nh      = False
@@ -1553,7 +1550,8 @@ vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc
     add_map_tickmarks(wks,map_object,tmres,lon_spacing,mlon_spacing,\
                       lat_spacing,mlat_spacing)
 
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
     end getvalues
 ;
 ; Check if user setting own font heights.
@@ -1934,33 +1932,23 @@ function gsn_csm_map(wks:graphic,res:logical)
       "tiMainFontHeightF"  : main_font_height ; main title size
 local i, attnames, contour_object, map_object, res, cn_res_index, \
 mp_res_index, lbar_pos, lbar_zone, lbar_on, calldraw, callframe, \
-main_offset, addcyclic, datanew, res2, cnres, mpres, \
+main_offset, datanew, res2, cnres, mpres, \
 vpwf, vphf, font_height, levels, colors, zonal_zone, \
 lbres, infolabel_on, infolabel_zone, \
 lbar_zone, lbar_height, lbar_width
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
     set_attr(subres,"txFontHeightF",0.8*font_height)
-    calldraw  = True
-    callframe = True
-
     set_attr(subres,"amOrthogonalPosF",0.015)
-    addcyclic     = True      ; Default is cyclic data
     res2          = resources ; Copy of resources
                   subres)
 
     polar_nh      = False     ; Northern hemisphere
     polar_sh      = False     ; Southern hemisphere
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-; The default is to add a cyclic point.
-    if((res2).and.isatt(res2,"gsnAddCyclic"))
-        if(.not.res2@gsnAddCyclic)
-            addcyclic = False
-        end if
-        delete(res2@gsnAddCyclic)
-    end if
+
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
-    if(addcyclic)
+    if(get_special_res_value(res2,"gsnAddCyclic",True))
 ; Return plot object and tickmark object.
 
     return(map_object)
@@ -1968,7 +1956,8 @@ end
 
 ; This section tests for special resources: those that start with "gsn."
 ; mpProjection is set.                                                  ;
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 begin
 ; If the data has an attribute called "long_name",
 ; then use this string for the left title.
@@ -2049,9 +2038,7 @@ begin
 
 ;    1. By default, a cyclic point is added.  If gsnAddCyclic is set to ;
 ;       False, then the cyclic point is not added.                      ;
-    set_attr(res2,"cnInfoLabelFont","helvetica")
 ;    2. The longitude lines are labeled.                                ;
-    set_attr(res2,"cnLineLabelFont","helvetica")
 ;    3. If any of the special GSUN resources "gsnLeftString,"           ;
 ;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
 ;       are used to title the top of the plot.                          ;
@@ -2073,7 +2060,7 @@ begin
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
-        if(.not.isatt(cnres,"lbLabelBarOn").or.\
+lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
           isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
@@ -2214,17 +2201,13 @@ begin
 ; Before we create the objects, turn off draw and frame for them.
 local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
 cn_res_index, mp_res_index, calldraw, callframe, lbar_on, zonal_mean_plot,\
-min_lat, max_lat, addcyclic, datanew, res, res2, \
+min_lat, max_lat, datanew, res, res2, \
 lbres, xy_res, mpres, cnres, levels, colors, \
     cnres@gsnFrame  = False
 map_vpwf, map_vphf, vpwf, vphf
     mpres@gsnFrame = False
 
-    calldraw  = True
-    callframe = True
-
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
-    addcyclic      = True     ; Default is to add a cyclic point.
     map_object = gsn_csm_map(wks,mpres)             ; Create map.
     overlay(map_object,contour_object)              ; Overlay contour plot
                                                     ; on map.
@@ -2234,15 +2217,9 @@ map_vpwf, map_vphf, vpwf, vphf
 ;
     res2 = resources
       "vpWidthF"  : vpwf
-; The default is to add a cyclic point.
-    if((res2).and.isatt(res2,"gsnAddCyclic"))
-        if(.not.res2@gsnAddCyclic)
-            addcyclic = False
-        end if
-        delete(res2@gsnAddCyclic)
-    end if
+      "vpHeightF" : vphf
     end getvalues
-    if(addcyclic)
+    if(get_special_res_value(res2,"gsnAddCyclic",True))
 ; Make sure axes labels are the same size.
 
     font_height = 0.02 * vphf     ; Make various label sizes a function
@@ -2309,8 +2286,6 @@ end
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the left string title.                              ;
 ;    6. If data has an attribute called "units," and "gsnRightString"   ;
-    set_attr(res2,"cnInfoLabelFont", "helvetica")
-    set_attr(res2,"cnLineLabelFont", "helvetica")
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
@@ -2344,32 +2319,12 @@ begin
         datanew = data
     end if
 
-    check_for_draw_and_frame(res2,calldraw,callframe)
-
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check for left subtitle at top.
-
-      if(isatt(res2,"gsnLeftString"))
-        mpres@gsnLeftString = res2@gsnLeftString
-        delete(res2@gsnLeftString)
-      end if
-
-; Check for center subtitle at top.
-
-      if(isatt(res2,"gsnCenterString"))
-        mpres@gsnCenterString = res2@gsnCenterString
-        delete(res2@gsnCenterString)
-      end if
-
-; Check for right subtitle at top.
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
       set_attr(res2,"sfYCStartV",-90.)
-      if(isatt(res2,"gsnRightString"))
-        mpres@gsnRightString = res2@gsnRightString
-        delete(res2@gsnRightString)
-      end if
+      set_attr(res2,"sfYCEndV",   90.)
     end if
-    end if
+
 ; Check if a zonal mean plot is desired.
 
     if(res2.and.isatt(res2,"gsnZonalMean"))
@@ -2677,29 +2632,19 @@ begin
 
 local i, attnames, vector_object, map_object, \
 vc_res_index, mp_res_index, calldraw, callframe, \
-min_lat, max_lat, addcyclic, unew, vnew, res, res2, \
+min_lat, max_lat, unew, vnew, res, res2, \
 map_vpwf, map_vphf, vpwf, vphf
     getvalues map_object
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-    calldraw  = True
-    callframe = True
-
     infolabel_zone = 2        ; Zone for info label (may change later)
-    addcyclic      = True     ; Default is to add a cyclic point.
 
 ;
     res2 = resources
 ;
-; The default is to add a cyclic point.
-    if((res2).and.isatt(res2,"gsnAddCyclic"))
-      if(.not.res2@gsnAddCyclic)
-        addcyclic = False
-      end if
-      delete(res2@gsnAddCyclic)
-    end if
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
                                      1.1*font_height)
-    if(addcyclic)
+    if(get_special_res_value(res2,"gsnAddCyclic",True))
       "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
@@ -2736,31 +2681,12 @@ map_vpwf, map_vphf, vpwf, vphf
 
 ; Return plot object and data object (as attribute of plot object).
 
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 end
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
+
 ;***********************************************************************;
-; Check for left subtitle at top.
-
-      if(isatt(res2,"gsnLeftString"))
-        mpres@gsnLeftString = res2@gsnLeftString
-        delete(res2@gsnLeftString)
-      end if
-
-; Check for center subtitle at top.
-
-      if(isatt(res2,"gsnCenterString"))
-        mpres@gsnCenterString = res2@gsnCenterString
-        delete(res2@gsnCenterString)
-      end if
-
-; Check for right subtitle at top.
-
-      if(isatt(res2,"gsnRightString"))
-        mpres@gsnRightString = res2@gsnRightString
-        delete(res2@gsnRightString)
-      end if
-    end if
+; Function : gsn_csm_vector_map_ce                                      ;
 ;                   wks: workstation object                             ;
 ; By default, mpOutlineOn is False, unless mpFillOn is set to False,
 ; then it is set back to True.
@@ -2844,31 +2770,21 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
 function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data[*][*]:numeric,resources:logical)
 local i, attnames, vector_object, map_object, vc_res_index, mp_res_index, \
-calldraw, callframe, min_lat, max_lat, addcyclic, unew, vnew, datanew, \
+calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
 
     set_attr(vcres,"vcRefAnnoString2On","False")
 
-    calldraw  = True
-    callframe = True
-
     infolabel_zone = 3        ; Zone for info label
     lbar_zone      = 2        ; Zone for labelbar
     lbar_on        = True     ; Default is to add a label bar.
-    addcyclic      = True     ; Default is to add a cyclic point.
     map_object = gsn_csm_map(wks,mpres)             ; Create map.
     scalar_contour = False    ; Default is a scalar vector plot.
     res2 = resources
 ; Retrieve some font heights and make the X/Y axis labels the same
-; The default is to add a cyclic point.
-    if((res2).and.isatt(res2,"gsnAddCyclic"))
-      if(.not.res2@gsnAddCyclic)
-        addcyclic = False
-      end if
-      delete(res2@gsnAddCyclic)
-    end if
+; size, and the info label size the same as the tick mark label size.
 
-    if(addcyclic)
+    if(get_special_res_value(res2,"gsnAddCyclic",True))
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
       datanew = gsn_add_cyclic_point(data)
@@ -2907,7 +2823,8 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 
     lbres = get_res_eq(res2,"lb")
      end setvalues
@@ -2921,28 +2838,11 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
         end if
         delete(res2@gsnScalarContour)
       end if
+      if(scalar_contour)
         add_labelbar(wks,vector_object@contour,lbar_zone,xbfontf, \
-; Check for left subtitle at top.
+; Return plot object and data object (as attribute of plot object).
 
-      if(isatt(res2,"gsnLeftString"))
-        mpres@gsnLeftString = res2@gsnLeftString
-        delete(res2@gsnLeftString)
-      end if
-
-; Check for center subtitle at top.
-
-      if(isatt(res2,"gsnCenterString"))
-        mpres@gsnCenterString = res2@gsnCenterString
-        delete(res2@gsnCenterString)
-      end if
-
-; Check for right subtitle at top.
-
-      if(isatt(res2,"gsnRightString"))
-        mpres@gsnRightString = res2@gsnRightString
-        delete(res2@gsnRightString)
-      end if
-    end if
+    vector_object@vfdata  = vector_object@vfdata
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
       check_for_lat_coord(datanew,res2,"contour")
@@ -3143,16 +3043,15 @@ local res2
     end if
   end if
 end
-local calldraw, callframe
 
-  calldraw  = True
-  callframe = True
+
   res1_tmp  = res1   ; Transfer attributes
   res2_tmp  = res2   ; Transfer attributes
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional data                             ;
 ;                     v: 2-dimensional data                             ;
-  check_for_draw_and_frame(res1_tmp,calldraw,callframe)
+  calldraw  = get_special_res_value(res1_tmp,"gsnDraw", True)
+  callframe = get_special_res_value(res1_tmp,"gsnFrame",True)
 ; This function calls either gsn_csm_vector_scalar_map_ce,              ;
 ; gsn_csm_vector_scalar_map_polar or gsn_csm_vector_scalar_map_other    ;
 ; depending on the map projection selected.                             ;
@@ -3172,15 +3071,12 @@ begin
     if(check_attr(res,"mpProjection","CylindricalEquidistant",True).or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_vector_scalar_map_ce(wks,u,v,data,res))
-  if(isatt(res2_tmp,"gsnAddCyclic"))
-    if(res2_tmp@gsnAddCyclic)
-      datanew = gsn_add_cyclic_point(data2)
     else
-      datanew = data2
-    end if
-    delete(res2_tmp@gsnAddCyclic)
+      return(gsn_csm_vector_scalar_map_other(wks,u,v,data,res))
+  if(get_special_res_value(res2_tmp,"gsnAddCyclic",True))
+  end if
 end
-    datanew = gsn_add_cyclic_point(data2)
+
 
 ;***********************************************************************;
   check_for_lat_coord(datanew,res2_tmp,"contour")
@@ -3261,9 +3157,6 @@ left_string, center_string, right_string, main_zone, nlines, ncurves
   if(get_res_value(res2_tmp,"gsnAddCyclic",True))
     datanew = gsn_add_cyclic_point(data2)
   else
-    calldraw  = True
-    callframe = True
-
     datanew = data2
     left_string   = False     ; Default is no subtitles unless
     center_string = False     ; they are explicitly set with the
@@ -3275,7 +3168,8 @@ left_string, center_string, right_string, main_zone, nlines, ncurves
 
   set_attr(res2_tmp,"cnLineLabelBackgroundColor",-1)
   if(.not.isatt(res2_tmp,"cnInfoLabelOrthogonalPosF"))
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
       else
 ; Calculate number of X and Y points.
       end if
@@ -3539,24 +3433,7 @@ begin
 ; Draw X reference line.
 
     if(xref_line_on)
-    setvalues xy_object
-      "tmXBMajorLengthF"        : major_length
-      "tmXBMinorLengthF"        : minor_length
-      "tmYLMajorLengthF"        : major_length
-      "tmYLMinorLengthF"        : minor_length
-      "tmXBMajorOutwardLengthF" : major_length
-      "tmXBMinorOutwardLengthF" : minor_length
-      "tmYLMajorOutwardLengthF" : major_length
-      "tmYLMinorOutwardLengthF" : minor_length
-      "tmXTMajorLengthF"        : major_length
-      "tmXTMinorLengthF"        : minor_length
-      "tmYRMajorLengthF"        : major_length
-      "tmYRMinorLengthF"        : minor_length
-      "tmXTMajorOutwardLengthF" : major_length
-      "tmXTMinorOutwardLengthF" : minor_length
-      "tmYRMajorOutwardLengthF" : major_length
-      "tmYRMinorOutwardLengthF" : minor_length
-    end setvalues
+    gsnp_point_tickmarks_outward(xy_object,major_length,minor_length) 
       end getvalues
 
 
@@ -3572,6 +3449,111 @@ begin
         var_string = systemfunc("echo xpolyline$$") + i
         xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline,yline, \
       "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+; Function : pop_tick_locs                                              ;
+;             lonorlat : float                                          ;
+;                 locs : float                                          ;
+;                                                                       ;
+; This function calculates tickmark values for placing tick marks on a  ;
+; plot that has a POP grid overlaid on it.                              ;
+;                                                                       ;
+;***********************************************************************;
+
+function pop_tick_locs(lonorlat,locs)
+local ret, i, in, j1, j0
+begin
+    ret = new(dimsizes(locs),float)
+    do i =0 , dimsizes(locs)-1
+        in = ind(lonorlat.gt.locs(i))
+        j1 = in(0)
+        j0 = in(0)-1
+        delete(in)
+        ret(i) = j0 + (lonorlat(j1)-locs(i))/(lonorlat(j1) -lonorlat(j0))
+    end do
+    return(ret)
+end
+
+;***********************************************************************;
+; Procedure : pop_latlon_grid                                           ;
+;                  wks: graphic                                         ;
+;                 plot: graphic                                         ;
+;              popgrid: string                                          ;
+;                                                                       ;
+; This procedure overlays a POP grid on a plot.                         ;
+;***********************************************************************;
+
+procedure pop_latlon_grid(wks:graphic,plot:graphic,popgrid:string)
+local latlon_res, tmplon, lat_object, lon_object, valid_popgrids, \
+popgrid_dir, popgrid_files, i, found 
+begin
+;
+; Open POP grid that contains lat/lon information.
+;
+    popgrid_dir = "/fs/cgd/data0/shea/pop/"
+    valid_popgrids = (/"POP23"/)       ; list of valid POP grids
+    popgrid_files  = (/"POP23PCM.nc"/) ; list of corresponding POP files
+
+    if(.not.any(popgrid.eq.valid_popgrids))
+      print("pop_latlon_grid: "+popgrid+" is not a supported POP grid.")
+      print("                 Supported POP grids include: " + valid_popgrids)
+      print("                 No grid will be overlaid.")
+      return
+    end if
+
+    i = 0
+    found = False
+    do while(i.lt.dimsizes(valid_popgrids).and..not.found)
+      if(popgrid.eq.valid_popgrids(i))
+        a = addfile(popgrid_dir + popgrid_files(i),"r")
+        found = True
+      end if
+      i = i + 1
+    end do
+;
+; Set up list of latitude and longitude resources.
+;
+    latlon_res = True
+    latlon_res@gsnDraw              = False
+    latlon_res@gsnFrame             = False
+    latlon_res@cnInfoLabelOn        = False
+    latlon_res@cnLineLabelsOn       = False
+    latlon_res@cnLevelSelectionMode = "ManualLevels"
+    latlon_res@cnMinLevelValF       = -90
+    latlon_res@cnMaxLevelValF       = 90
+    latlon_res@cnLevelSpacingF      = 15
+    latlon_res@cnLineDashPattern    = 10
+
+    lat_object = gsn_contour(wks,a->LAT,latlon_res)
+
+    tmplon            = a->LON - 360.0
+    tmplon(242:,190)  = -999.0
+    tmplon@_FillValue = -999.0
+
+    latlon_res@cnMinLevelValF     = -90
+    latlon_res@cnMaxLevelValF     = 270
+    lon_object = gsn_contour(wks,tmplon,latlon_res)
+
+    setvalues plot
+      "tmXBMode"              : "Explicit"
+      "tmXBValues"            : pop_tick_locs((a->LON(0,:)-360.0),\
+                                   (/-90,-45,0.0,45,90,135,180,225/))
+      "tmXBLabels"            : (/"90W","45W","0","45E","90E","135E",\
+                                  "180E","135W"/)
+      "tmYLMode"              : "EXPLICIT"
+      "tmYLValues"            : pop_tick_locs(a->LAT(:,0),\
+                                   (/-75,-60,-45,-30,-15,0,15,30/))
+      "tmYLLabels"            : (/"75S","60S","45S","30S","15S","EQ",\
+                                  "15N","30N"/)      
+      "tmXBLabelFontHeightF"  : 0.015
+      "tmYLLabelFontHeightF"  : 0.015
+      "tmXBMajorLengthF"      : 0.0001
+      "tmYLMajorLengthF"      : 0.0001
+    end setvalues
+
+    overlay(plot,lat_object)    ; Overlay latitude/longitude
+    overlay(plot,lon_object)    ; lines on plot.
+    return
+end
 
 ;***********************************************************************;
       "tmXBMinorLengthF"     : xmlength
@@ -3601,40 +3583,44 @@ begin
     gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
                                  ymlength,major_length,minor_length)
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
-left_string, center_string, right_string, main_zone, datanew
+left_string, center_string, right_string, main_zone, datanew, popgrid
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres               = True
     set_attr(subres,"txFontHeightF",font_height)
-    calldraw  = True
-    callframe = True
-
     left_string   = False     ; Default is no subtitles unless
     center_string = False     ; they are explicitly set with the
     right_string  = False     ; special "gsn" resources.
     add_subtitles(wks,xy_object,left_string,center_string,right_string, \
                   subres)
-    addcyclic     = False     ; Don't add a cyclic point.
     res2 = resources
 ; Draw all this stuff: XY plot and subtitles.
     draw_and_frame(wks,xy_object,calldraw,callframe,maxbb)
 
 ; Return XY plot object.
 
-    if((res2).and.isatt(res2,"gsnAddCyclic"))
-        if(res2@gsnAddCyclic)
-            addcyclic = True
-        end if
-        delete(res2@gsnAddCyclic)
-    end if
     return(xy_object)
-    if(addcyclic)
+    if(get_special_res_value(res2,"gsnAddCyclic",False))
 
 ;***********************************************************************;
 ; Function : gsn_csm_y                                                  ;
 ;                   wks: workstation object                             ;
-
+;                     y: n-dimensional array of Y array                 ;
 ;             resources: optional resources                             ;
-    check_for_draw_and_frame(res2,calldraw,callframe)
+;                                                                       ;
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
+;***********************************************************************;
+function gsn_csm_y(wks:graphic, y:numeric, resources:logical )
+local dsizes_y, npts, x, rank_y, xy
+    popgrid = get_special_res_value(res2,"gsnPopGrid","")
+  res2 = get_resources(resources)
+;
+; Get dimension sizes of Y array.
+;
+  dsizes_y = dimsizes(y)
+  rank_y   = dimsizes(dsizes_y)
+  if(rank_y.eq.1) then
+    npts = dsizes_y
   else
 ; Check for left title. If the data has an attribute called "long_name",
 ; then use this string for the left title.
@@ -3656,6 +3642,7 @@ left_string, center_string, right_string, main_zone, datanew
 ; Check for existence of the left, center, and right subtitles.
   x@long_name = ""
 
+;
 ; Call gsn_csm_xy.
 ;
   xy = gsn_csm_xy(wks,x,y,res2)
@@ -3711,11 +3698,6 @@ end
       res2@sfMissingValueV = datanew@_FillValue
     end if
 
-; Set some more contour plot resources.
-
-    set_attr(res2,"cnInfoLabelFont","helvetica")
-    set_attr(res2,"cnLineLabelFont","helvetica")
-
 ; This function creates and draws a titled contour plot to the          ;
 ; workstation  "wks" (the variable returned from a previous call to     ;
 ; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
@@ -3723,11 +3705,13 @@ end
     if((isatt(res2,"cnFillOn").and.res2@cnFillOn).and. \
 ; This function behaves differently from gsn_contour in that it will    ;
         (isatt(res2,"lbLabelBarOn").and.res2@lbLabelBarOn)))
-  
 ; GSUN resources "gsnLeftString," "gsnCenterString," and/or             ;
 ; "gsnRightString" are set, They are used to title the top left, center,;
 ; and right of the plot (in addition, the regular resource              ;
 ; "tiMainString" can be set to create a regular title).                 ;
+;                                                                       ;
+; If cnFillOn is True, then a labelbar will be added, and the info label;
+; will be removed.
 ;                                                                       ;
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
@@ -3741,7 +3725,6 @@ begin
     cname = NhlClassName(contour_object)  ; Determine whether this is a
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
-
     if(cname.eq."logLinPlotClass")
       getvalues contour_object@contour
         "vpWidthF"             : width
@@ -3797,49 +3780,22 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    major_length = scale * major_length
-    minor_length = scale * minor_length
     set_right_subtitle(datanew,res2,res2)
+    set_left_subtitle(datanew,res2,res2)
+
+; Check for existence of the left, center, and right subtitles.
+
     left_string   = new(1,logical)
+    center_string = new(1,logical)
+      major_length = scale * major_length
+      minor_length = scale * minor_length
     check_for_subtitles(res2,left_string,center_string,right_string)
-    if(cname.eq."logLinPlotClass")
-      setvalues contour_object@contour
-        "tmXBMajorLengthF"        : major_length
-        "tmXBMinorLengthF"        : minor_length
-        "tmYLMajorLengthF"        : major_length
-        "tmYLMinorLengthF"        : minor_length
-        "tmXBMajorOutwardLengthF" : major_length
-        "tmXBMinorOutwardLengthF" : minor_length
-        "tmYLMajorOutwardLengthF" : major_length
-        "tmYLMinorOutwardLengthF" : minor_length
-        "tmXTMajorLengthF"        : major_length
-        "tmXTMinorLengthF"        : minor_length
-        "tmYRMajorLengthF"        : major_length
-        "tmYRMinorLengthF"        : minor_length
-        "tmXTMajorOutwardLengthF" : major_length
-        "tmXTMinorOutwardLengthF" : minor_length
-        "tmYRMajorOutwardLengthF" : major_length
-        "tmYRMinorOutwardLengthF" : minor_length
-      end setvalues
-    else
-      setvalues contour_object
-        "tmXBMajorLengthF"        : major_length
-        "tmXBMinorLengthF"        : minor_length
-        "tmYLMajorLengthF"        : major_length
-        "tmYLMinorLengthF"        : minor_length
-        "tmXBMajorOutwardLengthF" : major_length
-        "tmXBMinorOutwardLengthF" : minor_length
-        "tmYLMajorOutwardLengthF" : major_length
-        "tmYLMinorOutwardLengthF" : minor_length
-        "tmXTMajorLengthF"        : major_length
-        "tmXTMinorLengthF"        : minor_length
-        "tmYRMajorLengthF"        : major_length
-        "tmYRMinorLengthF"        : minor_length
-        "tmXTMajorOutwardLengthF" : major_length
-        "tmXTMinorOutwardLengthF" : minor_length
-        "tmYRMajorOutwardLengthF" : major_length
-        "tmYRMinorOutwardLengthF" : minor_length
-      end setvalues
+      if(cname.eq."logLinPlotClass")
+        gsnp_point_tickmarks_outward(contour_object@contour,major_length,\
+                                     minor_length)
+      else
+        gsnp_point_tickmarks_outward(contour_object,major_length,minor_length)
+      end if
 
 ; Check if gsnShape set.
 
@@ -3879,8 +3835,8 @@ begin
 
 ; Turn on a labelbar if fill is True and if the labelbar is not
     subres@txFontHeightF    = font_height
-    add_subtitles(wks,contour_object,left_string,center_string,right_string, \
-                  subres)
+;
+    if(check_attr(res2,"cnFillOn",True,False).and. \
        (.not.isatt(res2,"lbLabelBarOn").or.\
         .not.check_attr(res2,"lbLabelBarOn",False,False)))
     draw_and_frame(wks,contour_object,calldraw,callframe)
@@ -3889,7 +3845,6 @@ begin
     end if
     if(isatt(res2,"lbLabelBarOn"))
       delete(res2@lbLabelBarOn)
-
 
     end if
 
@@ -3914,12 +3869,10 @@ left_string, center_string, right_string, datanew, lon_spacing
       "vpWidthF"             : width
       "vpHeightF"            : height
   
-    calldraw  = True
-    callframe = True
-
     res2 = resources
       "tiYAxisFontHeightF"   : yfontf
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 
 ; Check if gsnMajorLonSpacing or gsnMinorLonSpacing are set.
 
@@ -4013,12 +3966,10 @@ left_string, center_string, right_string, datanew, lat_spacing
 ; This function behaves differently from gsn_csm_contour in that it     ;
 ; draws a specially-labelled longitude X axis.                          ;
 ;                                                                       ;
-    calldraw  = True
-    callframe = True
-
     res2 = resources
 
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 ; Initialize.
     res2         = get_resources(resources)
 
@@ -4105,8 +4056,6 @@ left_string, center_string, right_string, add_hgt
 ;***********************************************************************;
 ; Function : gsn_csm_time_lat                                           ;
 ;                     wks: workstation object                           ;
-    calldraw      = True
-    callframe     = True
     left_string   = False
     center_string = False
     right_string  = False
@@ -4116,7 +4065,8 @@ left_string, center_string, right_string, add_hgt
                           ; already reversed.
     res2 = resources
 ; workstation "wks" (the variable returned from a previous call to      ;
-    check_for_draw_and_frame(res2,calldraw,callframe)
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
 
 ; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
 
