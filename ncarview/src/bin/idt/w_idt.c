@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.9 1991-04-18 15:21:53 clyne Exp $
+ *	$Id: w_idt.c,v 1.10 1991-04-25 11:41:19 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -91,6 +91,10 @@ static  XtResource      resources[] = {
         {
 	"translatorPal", "TranslatorPal", XtRString, sizeof (char *),
                 XtOffset(AppDataPtr, pal), XtRString, NULL 
+	},
+        {
+	"messageHeight", "MessageHeight", XtRInt, sizeof (int),
+                XtOffset(AppDataPtr, message_height), XtRString, "5" 
 	}
 };
 
@@ -197,7 +201,7 @@ main(argc, argv)
 	 */
 	targv = get_trans_commandline(&targc, &App_Data);
 
-	if (argc == 2) {
+	if (argc == 2 && *argv[1] != '-') {
 		meta_fname = argv[1];
 		argc--;
 	}
@@ -258,6 +262,8 @@ create_main_panel(parent, select_action)
 	char *line3 = " NCAR View - UNIX Version 3.01   \n";
 	char *header;
 
+	int	message_height	= App_Data.message_height;
+
 	/*
 	 * create the initial header to be displayed in the main control
 	 * panel text widget
@@ -308,7 +314,7 @@ create_main_panel(parent, select_action)
 
 	n = 0;
 	XtSetArg(args[n],XtNwidth,x_font->max_bounds.width * 70); n++;
-	XtSetArg(args[n], XtNheight, 5 * (ascent + descent)); n++;
+	XtSetArg(args[n], XtNheight, message_height * (ascent + descent)); n++;
 	XtSetValues(text, args, n);
 
 	/*
@@ -345,8 +351,7 @@ Syntax(call)
 	char *call;
 {
 	(void) fprintf(stderr, 
-		"%s: Usage: idt [-d device] [-f font] [-h] [filename]\n",
-		call);
+		"%s: Usage: idt [-d device] [-f font] [-h] [-soft] [-lmin width] [-lmax width] [-lscale width] [-pal pal_fname] [ filename ]\n", call);
 	exit(1);
 }
 
