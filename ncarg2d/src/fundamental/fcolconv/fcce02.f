@@ -1,4 +1,5 @@
-      PROGRAM FCCE01
+
+      PROGRAM FCCE02
 C
 C PURPOSE                To provide a demonstration of the routines in
 C                        the package COLCONV and to test them.

@@ -1,9 +1,10 @@
-      PROGRAM GKE01
+
+      PROGRAM FGKE01
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1) 
       PARAMETER (IWKID2=2)
 C
 C  Simple example illustrating opening GKS, opening and activating

@@ -1,4 +1,5 @@
-      PROGRAM MMETA
+
+      PROGRAM FGKE03
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
