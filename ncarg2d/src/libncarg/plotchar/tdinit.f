@@ -1,5 +1,5 @@
 C
-C $Id: tdinit.f,v 1.2 1994-03-09 23:24:17 kennison Exp $
+C $Id: tdinit.f,v 1.3 1994-03-17 21:37:38 kennison Exp $
 C
       SUBROUTINE TDINIT (XMID,YMID,ZMID,XORI,YORI,ZORI,XTHI,YTHI,ZTHI,
      +                   OTEP)
@@ -54,6 +54,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
         EXTERNAL TDBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('TDINIT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Copy the coordinates of the midpoint of the line joining the eyes
 C into labelled common.
@@ -132,6 +136,7 @@ C
             WR=((VR-VL)/(VT-VB))*WT
           END IF
           CALL SET (VL,VR,VB,VT,WL,WR,WB,WT,1)
+          IF (ICFELL('TDINIT',2).NE.0) RETURN
         END IF
 C
 C Compute the coordinates of the eye position.

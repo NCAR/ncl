@@ -1,5 +1,5 @@
 C
-C $Id: tdprpa.f,v 1.2 1994-03-09 23:24:20 kennison Exp $
+C $Id: tdprpa.f,v 1.3 1994-03-17 21:37:41 kennison Exp $
 C
       SUBROUTINE TDPRPA (XIPA,YIPA,XI2D,YI2D)
 C
@@ -16,6 +16,10 @@ C Declare the BLOCK DATA routine external to force it to load.
 C
         EXTERNAL TDBLDA
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('TDPRPA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Compute the coordinates of the point in 3-space.
 C
         XI3D=XACP+XIPA*XCDX+YIPA*XCDY
@@ -25,6 +29,7 @@ C
 C Pass the buck to the routine TDPRPT.
 C
         CALL TDPRPT (XI3D,YI3D,ZI3D,XI2D,YI2D)
+        IF (ICFELL('TDPRPA',2).NE.0) RETURN
 C
 C Done.
 C

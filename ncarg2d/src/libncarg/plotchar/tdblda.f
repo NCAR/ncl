@@ -1,5 +1,5 @@
 C
-C $Id: tdblda.f,v 1.2 1994-03-09 23:24:11 kennison Exp $
+C $Id: tdblda.f,v 1.3 1994-03-17 21:37:31 kennison Exp $
 C
       BLOCK DATA TDBLDA
 C

@@ -1,5 +1,5 @@
 C
-C $Id: tdgetr.f,v 1.2 1994-03-09 23:24:15 kennison Exp $
+C $Id: tdgetr.f,v 1.3 1994-03-17 21:37:36 kennison Exp $
 C
       SUBROUTINE TDGETR (PNAM,RVAL)
 C
@@ -25,6 +25,10 @@ C Declare the BLOCK DATA routine external to force it to load.
 C
         EXTERNAL TDBLDA
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('TDGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Get the selected parameter.
 C
       IF      (PNAM(1:3).EQ.'FOV'.OR.PNAM(1:3).EQ.'fov') THEN
@@ -36,7 +40,7 @@ C
       ELSE IF (PNAM(1:3).EQ.'STY'.OR.PNAM(1:3).EQ.'sty') THEN
         RVAL=REAL(IT)
       ELSE
-        CALL SETER ('TDGETR - UNRECOGNIZED PARAMETER NAME',1,1)
+        CALL SETER ('TDGETR - UNRECOGNIZED PARAMETER NAME',2,1)
         RETURN
       END IF
 C

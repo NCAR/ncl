@@ -1,5 +1,5 @@
 C
-C $Id: tdprpi.f,v 1.2 1994-03-09 23:24:22 kennison Exp $
+C $Id: tdprpi.f,v 1.3 1994-03-17 21:37:43 kennison Exp $
 C
       SUBROUTINE TDPRPI (XI2D,YI2D,XIPA,YIPA)
 C
@@ -24,6 +24,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
         EXTERNAL TDBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('TDPRPI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C What's involved is just algebra.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: tdpara.f,v 1.2 1994-03-09 23:24:19 kennison Exp $
+C $Id: tdpara.f,v 1.3 1994-03-17 21:37:40 kennison Exp $
 C
       SUBROUTINE TDPARA (ARG1,ARG2,ARG3,ARG4,ARG5,ARG6,ARG7,ARG8,ARG9)
 C
@@ -22,6 +22,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
         EXTERNAL TDBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('TDPARA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Copy values from the argument list to the common block.
 C
