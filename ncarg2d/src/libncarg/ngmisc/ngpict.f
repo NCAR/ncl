@@ -4,6 +4,8 @@ C
 C  NGPICT is designed to effect a break in the picture drawing
 C  sequence depending upon whether the workstation type is 
 C  MO, or whether it is an OUTPUT or OUTIN workstation.
+C  An option also exists for prompting the user when an OUTPUT
+C  or OUTIN workstation is ready and waiting.
 C  
 C  Arguments
 C

@@ -32,7 +32,7 @@ C
 C  SIZE    The size of the character in world coordinate Y units.
 C
 C  ICOLOR  The color index indicating the color that the glyph is to
-C          be drawn with.  If you want the default foreground color
+C          be drawn with.  If you want the default foreground color,
 C          set this parameter to "1".
 C
 C  IALT    If IALT=1, then the alternate glyph for the one specified
@@ -51,7 +51,7 @@ C      and height .25 in the foreground color.
 C
 C    CALL NGWSYM('a',6,.2,.8,.3,1,0)
 C
-C      would plot the glyph for barametric pressure that is falling 
+C      would plot the glyph for barometric pressure that is falling 
 C      then steady.
 C
 C    CALL NGWSYM('WW',95,.5,.5,.2,1,1)

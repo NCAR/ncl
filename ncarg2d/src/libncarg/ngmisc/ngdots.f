@@ -2,20 +2,22 @@
 C
 C  Draws filled dots at positions (X(I),Y(I),I=1,NUM) at size 
 C  SIZE with color given by the color index ICOLOR.  Size is 
-C  the diameter of the dot in user Y coordinates (world coordinates).
+C  the diameter of the dot in world coordinates along the vertical
+C  axis.
 C  
 C  The dots are scaled appropriately so that they will be circular
-C  when the normalization transformation is anisotropic.
+C  when the normalization transformation does not preserve aspect
+C  ratio.
 C
 C  The algorithm is to construct a single circle and then translate
 C  it to the various coordinate positions.  The original circle is
 C  computed by using trig functions to get points in the first
-C  octant, and then use symmetries to get the rest of the points
+C  octant, and then using symmetries to get the rest of the points
 C  on the circle.
 C
 C  The number of points used for the circle is adjusted depending
 C  on the relative size of the circle.  The maximum number of points
-C  is 512 and the minimum is 16.
+C  is 512 and the minimum is 8.
 C
       DIMENSION X(NUM),Y(NUM),TWIN(4),TVPT(4)
       DIMENSION CIRCX(513),CIRCY(513),CIRCXX(513),CIRCYY(513)
