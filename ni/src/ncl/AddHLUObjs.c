@@ -1,5 +1,5 @@
 /*
- *      $Id: AddHLUObjs.c,v 1.20 2004-05-12 17:43:57 haley Exp $
+ *      $Id: AddHLUObjs.c,v 1.21 2004-07-23 21:26:23 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -56,6 +56,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhllegendClass->base_class.class_name,NhllegendClass);
 	_NclAddSingleObj(NhlcoordArraysClass->base_class.class_name,NhlcoordArraysClass);
 	_NclAddSingleObj(NhlscalarFieldClass->base_class.class_name,NhlscalarFieldClass);
+	_NclAddSingleObj(NhlmeshScalarFieldClass->base_class.class_name,NhlmeshScalarFieldClass);
 	_NclAddSingleObj(NhlmapPlotClass->base_class.class_name,NhlmapPlotClass);
 	_NclAddSingleObj(NhlappClass->base_class.class_name,NhlappClass);
 	_NclAddSingleObj(NhlannoManagerClass->base_class.class_name,NhlannoManagerClass);

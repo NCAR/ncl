@@ -1,5 +1,5 @@
 /*
- *      $Id: HluClasses.h,v 1.1 2004-05-12 17:43:57 haley Exp $
+ *      $Id: HluClasses.h,v 1.2 2004-07-23 21:26:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ extern NhlClass NhllabelBarClass;
 extern NhlClass NhllegendClass;
 extern NhlClass NhlcoordArraysClass;
 extern NhlClass NhlscalarFieldClass;
+extern NhlClass NhlmeshScalarFieldClass;
 extern NhlClass NhlmapPlotClass;
 extern NhlClass NhllogLinPlotClass;
 extern NhlClass NhlirregularPlotClass;
