@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.1 1994-03-30 02:11:27 fred Exp $
+ *	$Id: ps.c,v 1.2 1994-04-05 19:22:39 fred Exp $
  */
 /*
  *
@@ -15,6 +15,7 @@
  *			device driver.
  */
 #include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -968,7 +969,7 @@ static void PSinit(PSddp *psa, int *coords)
 	psa->sfill_spacing = PS_FILL_SPACING;
 
 	/*
-	 *  Coordinate initializations.
+	 *  Coordinate initializations (the scale factor is in *(coords+4)).
 	 */
 	rscale = (float) *(coords+4);
         if (rscale > 0.) {
@@ -1734,10 +1735,20 @@ void reverse_chars(char *str)
  */
 char *GetFileName(int wkid, ps_file_type file_type, char *file_name)
 {
-	static char tname[22];
+	static char tname[257];
 	static char *tch;
 
-	if (strncmp(file_name, "DEFAULT", 7) == 0) {
+	/*
+	 *  A setting of the environment variable NCARG_PS_OUTPUT
+	 *  takes precedence over everything.
+	 */
+	tch = getenv("NCARG_PS_OUTPUT");
+	if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
+		return (tch);
+	}
+
+	if ( (strncmp(file_name, "DEFAULT", 7) == 0) ||
+	     (strlen(file_name) == 0) ) {
         	switch (file_type) {
    		case RPS:
 			(void) sprintf(tname,"gmeta%d.ps",wkid);
@@ -1753,7 +1764,7 @@ char *GetFileName(int wkid, ps_file_type file_type, char *file_name)
 			return (tname);
         	}
 	}
-	else {
+	else {      /* User has defined a name */
 		tch = strtok(file_name, " ");
 		return (tch);	
 	}
@@ -1947,7 +1958,12 @@ ps_OpenWorkstation(GKSC *gksc)
         }
 
 	psa->output_file = GetFileName(psa->wks_id, psa->type, sptr);
-	fp = fopen(psa->output_file,"w");
+	if (strncmp(psa->output_file, "stdout", 6) == 0) {
+		fp = stdout;
+	}
+	else {
+		fp = fopen(psa->output_file,"w");
+	}
         if (fp == (FILE *) NULL) {
 		ctmp = (char *) calloc(strlen(psa->output_file)+3, 1);
                 strcat(ctmp,"\"");

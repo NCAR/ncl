@@ -1,7 +1,7 @@
 C
-C	$Id: g01wdr.f,v 1.3 1994-03-30 02:08:28 fred Exp $
+C	$Id: g01wdr.f,v 1.4 1994-04-05 19:22:08 fred Exp $
 C
-        SUBROUTINE G01WDR(WKID)
+        SUBROUTINE G01WDR(WKID,METANM)
 C
 C***********************************************************************
 C***********************************************************************
@@ -15,6 +15,7 @@ C***********************************************************************
 C***********************************************************************
 C
       IMPLICIT INTEGER (A-Z)
+      CHARACTER*(*) METANM
       CHARACTER*60 BEGSTR
 C
 C  Include all COMMONs .
@@ -33,7 +34,7 @@ C
       include 'gksenu.h'
 C
       INTEGER   G01PBL
-      CHARACTER FNAME*80,DNAME*1
+      CHARACTER FNAME*256,DNAME*1
 C
       DATA BEGSTR
      - /'                                                            '/
@@ -211,10 +212,10 @@ C
 C
 C  Set the file name.
 C
-      IF (STR(1:7) .EQ. 'DEFAULT') THEN
+      IF (METANM(1:7) .EQ. 'DEFAULT') THEN
         FNAME = 'GMETA'
       ELSE
-        FNAME = STR
+        FNAME = METANM
         CALL GTNLEN(FNAME,ILEN,IER)
         FNAME(ILEN+1:ILEN+1) = CHAR(0)
       ENDIF

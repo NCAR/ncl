@@ -1,5 +1,5 @@
 C
-C	$Id: gtnlen.f,v 1.2 1993-01-09 02:07:41 fred Exp $
+C	$Id: gtnlen.f,v 1.3 1994-04-05 19:22:09 fred Exp $
 C
         SUBROUTINE GTNLEN(FNAME,ILEN,IER)
 C
@@ -12,7 +12,7 @@ C
 C
         IER  = 0
         ILEN = 0
-        DO 10 I=1,80
+        DO 10 I=1,256
         IF (FNAME(I:I).EQ.' ' .OR. FNAME(I:I).EQ.CHAR(0)) THEN
           ILEN = I-1
           RETURN

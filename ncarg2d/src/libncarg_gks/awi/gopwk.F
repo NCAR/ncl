@@ -143,9 +143,6 @@ C
           ID(3) = WTYPE
         ENDIF
 C
-        STRL1 = 80
-        STRL2 = 80
-        STR   = GFNAME
         CALL GZTOWK
         IF (RERR.NE.0) THEN
           ERS = 1

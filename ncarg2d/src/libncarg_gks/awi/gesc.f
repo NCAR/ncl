@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.6 1994-03-30 02:05:59 fred Exp $
+C	$Id: gesc.f,v 1.7 1994-04-05 19:21:43 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -62,6 +62,8 @@ C      -1516  --  Scale factor for nominal linewidth.
 C      -1517  --  Background fills entire page.
 C      -1518  --  Line joins.
 C      -1519  --  Line caps.
+C      -1520  --  Coordinate points for picture positioning.
+C      -1521  --  Scale factor for PS coordintaes
 C
       IF (FCTID .EQ. -1396) THEN
 C
@@ -245,7 +247,13 @@ C
 C
 C  File name for output metafile.
 C
-        GFNAME = IDR(1)
+        GFNAME = ' '
+        DO 250 I=1,LIDR
+          DO 260 J=1,80
+            INDX = 80*(I-1)+J
+            GFNAME(INDX:INDX) = IDR(I)(J:J)
+  260     CONTINUE
+  250   CONTINUE
 C
 C  Set flag to indicate that the current picture is empty.
 C
@@ -302,18 +310,22 @@ C
 C
 C  Send over the data record.
 C
-        CONT = 0
-        STRL1 = 80
-        STRL2 = 80
-        STR(1:80) = IDR(1)
-        CALL GZTOWK
-        IF (RERR .NE. 0) THEN
-          ERS = 1
-          CALL GERHND(RERR,EESC,ERF)
-          ERS = 0
-          RETURN
+        IF (LIDR .EQ. 1) THEN
+          CONT = 0
+          STRL1 = 80
+          STRL2 = 80
+          STR(1:80) = IDR(1)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+          CUFLAG = -1
+        ELSE IF (LIDR .GT. 1) THEN
+
         ENDIF
-        CUFLAG = -1
       ELSE
 C
 C  Send ESCAPE element.

@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.5 1994-03-30 02:06:09 fred Exp $
+C	$Id: gztowk.f,v 1.6 1994-04-05 19:21:45 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -8,7 +8,8 @@ C  on the current GKS operating state.
 C
       include 'gkscom.h'
 C
-      INTEGER FCODEO,CONTO,XID,ADESTR(128),ICNTX(31)
+      PARAMETER (IADIM=256)
+      INTEGER FCODEO,CONTO,XID,ADESTR(IADIM),ICNTX(31)
       REAL    RCNTX(19)
       SAVE
 C
@@ -21,18 +22,25 @@ C
 C  Picture name.
 C
         IF (FCODE .EQ. 92) THEN
-          CALL G01WDR(ID(1))
+          CALL G01WDR(ID(1),GFNAME)
           RETURN
         ELSE IF (FCODE .EQ. -3) THEN
           IF (ID(3) .EQ. GCGM) THEN
-            CALL G01WDR(ID(1))
+            CALL G01WDR(ID(1),GFNAME)
             RETURN
           ELSE IF (ID(3).EQ.GXWC  .OR. ID(3).EQ.GXWE .OR. 
      +             ID(3).EQ.GDMP  .OR. 
      +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX)) THEN
-            DO 80 J=1,STRL2
-              ADESTR(J) = ICHAR(STR(J:J))
+      
+            DO 200 J=1,IADIM
+              ADESTR(J) = 0
+  200       CONTINUE
+            INMLEN = LEN(GFNAME)
+            DO 80 J=1,INMLEN
+              ADESTR(J) = ICHAR(GFNAME(J:J))
    80       CONTINUE
+            STRL1 = INMLEN
+            STRL2 = INMLEN
             IID   = ID(1)
             ID(1) = ID(2)
             ID(2) = ID(3)
@@ -79,7 +87,7 @@ C
               CONTO  = CONT
               FCODE  = 91
               CONT   =  0
-              CALL G01WDR(SOPWK(I))
+              CALL G01WDR(SOPWK(I),' ')
               FCODE  = FCODEO
               CONT   = CONTO
               NOPICT = 1
@@ -102,7 +110,7 @@ C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
               IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 50
-              CALL G01WDR(SOPWK(I))
+              CALL G01WDR(SOPWK(I),' ')
    50         CONTINUE
             ELSE IF (SWKTP(I).EQ.GXWC  .OR. SWKTP(I).EQ.GXWE .OR.
      +               SWKTP(I).EQ.GDMP  .OR. 
@@ -119,6 +127,9 @@ C
               CALL GZXID(SOPWK(I),XID,RERR)
 C
               IF (STRL2 .GT. 0) THEN
+                DO 210 J=1,IADIM
+                  ADESTR(J) = 0
+  210           CONTINUE
                 DO 30 J=1,STRL2
                   ADESTR(J) = ICHAR(STR(J:J))
    30           CONTINUE
@@ -165,7 +176,7 @@ C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
               IF (CUFLAG.GE.0 .AND. SACWK(I).NE.CUFLAG) GO TO 60
-              CALL G01WDR(SACWK(I))
+              CALL G01WDR(SACWK(I),' ')
    60         CONTINUE
             ELSE IF (ITYP.EQ.GXWC  .OR. ITYP.EQ.GXWE .OR.
      +               ITYP.EQ.GDMP  .OR. 
@@ -181,6 +192,9 @@ C  before invoking the interface.
 C
               CALL GZXID(SACWK(I),XID,RERR)
               IF (STRL2 .GT. 0) THEN
+                DO 220 J=1,IADIM
+                  ADESTR(J) = 0
+  220           CONTINUE
                 DO 40 J=1,STRL2
                   ADESTR(J) = ICHAR(STR(J:J))
    40           CONTINUE
