@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.6 1993-12-22 00:56:37 dbrown Exp $
+ *      $Id: hluP.h,v 1.7 1994-01-10 19:49:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -295,6 +295,13 @@ extern NhlErrorTypes _NhlSetValues(
 	Layer		l,		/* layer instance	*/
 	_NhlExtArgList	args,		/* args to change	*/
 	int		nargs		/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlReparent(
+#if	NhlNeedProto
+	Layer	l,
+	Layer	new_parent
 #endif
 );
 

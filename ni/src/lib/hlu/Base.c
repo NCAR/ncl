@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.2 1993-10-19 17:49:38 boote Exp $
+ *      $Id: Base.c,v 1.3 1994-01-10 19:48:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,13 @@ static NhlErrorTypes BaseLayerClassPartInitialize(
 static NhlErrorTypes BaseLayerDestroy(
 #if	NhlNeedProto
 	Layer
+#endif
+);
+
+static NhlErrorTypes BaseLayerReparent(
+#if	NhlNeedProto
+	Layer	instance,
+	Layer	new_parent
 #endif
 );
 
@@ -80,7 +87,7 @@ LayerClassRec layerClassRec = {
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_reparent		*/	NULL,
+/* layer_reparent		*/	BaseLayerReparent,
 /* layer_destroy		*/	BaseLayerDestroy,
 
 /* child_resources		*/	NULL,
@@ -175,6 +182,89 @@ FreeAndDestroyChildList
 	(void)NhlFree(list);
 
 	return MIN(ret,lret);
+}
+
+/*
+ * Function:	ReparentChildren
+ *
+ * Description:	This function parses all the children of the given object
+ *		and notifies them that there parent has changed.  There
+ *		direct parent didn't change so the parent arg is passed
+ *		with the current parent - but this allows there Reparent
+ *		method to be called.
+ *
+ * In Args:	
+ *		Layer	l
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+ReparentChildren
+#if	__STDC__
+(
+	Layer	l	/* layer 	*/
+)
+#else
+(l)
+	Layer	l;	/* layer 	*/
+#endif
+{
+	_NhlAllChildList	tnode;
+	NhlErrorTypes		ret = NOERROR, lret = NOERROR;
+
+	tnode = l->base.all_children;
+
+	while(tnode != (_NhlAllChildList)NULL){
+		Layer	child = NULL;
+
+		child = _NhlGetLayer(tnode->pid);
+		lret = _NhlReparent(child,l);
+
+		ret = MIN(lret,ret);
+
+		tnode = tnode->next;
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	BaseLayerReparent
+ *
+ * Description:	This function is used to reset the Workstation pointer in
+ *		this object and in this objects children.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+BaseLayerReparent
+#if	__STDC__
+(
+	Layer	l,	/* layer to reparent	*/
+	Layer	parent	/* new parent		*/
+)
+#else
+(l,parent)
+	Layer	l;	/* layer to reparent	*/
+	Layer	parent;	/* new parent		*/
+#endif
+{
+	if(_NhlIsWorkstation(parent))
+		l->base.wkptr = parent;
+	else
+		l->base.wkptr = parent->base.wkptr;
+
+	return ReparentChildren(l);
 }
 
 /*

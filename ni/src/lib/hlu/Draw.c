@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.3 1993-12-22 00:55:50 dbrown Exp $
+ *      $Id: Draw.c,v 1.4 1994-01-10 19:48:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,8 @@
  *
  *	Description:	This file contains all the functions neccessary for
  *			a given layer instance to draw it's information.
+ *			Design documentation is
+ *			NhlDOCREF(/design/hlu/Draw.html,here).
  */
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
@@ -186,6 +188,7 @@ CallPostDraw
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(NhlDraw)
 NhlErrorTypes
 NhlDraw
 #if	__STDC__

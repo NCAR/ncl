@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.11 1994-01-06 21:30:47 boote Exp $
+ *      $Id: XyPlot.c,v 1.12 1994-01-10 19:49:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1251,6 +1251,8 @@ DrawCurves
 			NhlString	label=NULL;
 			int		tint;
 			int		npts;
+			NhlBoolean	curve_impy = False;
+			NhlBoolean	curve_impx = False;
 
 			if(!impy && !impx){
 				xvect = xvalues[j];
@@ -1270,6 +1272,12 @@ DrawCurves
 					"Data has implied X and implied Y?");
 				break;
 			}
+
+			if(xvect == NULL)
+				curve_impx = True;
+
+			if(yvect == NULL)
+				curve_impy = True;
 
 			/****************
 			* Set Color	*
@@ -1330,69 +1338,8 @@ DrawCurves
 
 			upordownflag = 1;
 
-			if(impx){
-				if(datal->catfloat.missing_y_set){
-					float	ymiss=datal->catfloat.missing_y;
-					for(tint=0;tint < npts;tint++){
-						if(yvect[tint] == ymiss)
-							upordownflag = 1;
-						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
-								(float)(tint+1),
-								yvect[tint],
-								upordownflag);
-
-							upordownflag = 0;
-						}
-					}
-				}
-				else{
-					for(tint=0;tint < npts;tint++){
-						_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-							(Layer)xlayer,
-							(float)(tint+1),
-							yvect[tint],
-							upordownflag);
-
-						upordownflag = 0;
-					}
-				}
-			}
-			else if(impy){
-				if(datal->catfloat.missing_x_set){
-					float	xmiss=datal->catfloat.missing_x;
-					for(tint=0;tint < npts;tint++){
-						if(xvect[tint] == xmiss)
-							upordownflag = 1;
-						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
-								xvect[tint],
-								(float)(tint+1),
-								upordownflag);
-
-							upordownflag = 0;
-						}
-					}
-				}
-				else{
-					for(tint=0;tint < npts;tint++){
-						_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-							(Layer)xlayer,
-							xvect[tint],
-							(float)(tint+1),
-							upordownflag);
-
-						upordownflag = 0;
-					}
-				}
-			}
-			else{
+			if(!curve_impx && !curve_impy){
+				/* both vectors exist */
 				if(datal->catfloat.missing_x_set &&
 					datal->catfloat.missing_y_set){
 					float	xmiss=datal->catfloat.missing_x;
@@ -1463,6 +1410,80 @@ DrawCurves
 					}
 				}
 			}
+			else if(curve_impx && curve_impy){
+				/* both vectors implied */
+				for(tint=0;tint < npts;tint++){
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+								(Layer)xlayer,
+								(float)(tint+1),
+								(float)(tint+1),
+								upordownflag);
+
+					upordownflag = 0;
+				}
+			}
+			else if(curve_impx){
+				if(datal->catfloat.missing_y_set){
+					float	ymiss=datal->catfloat.missing_y;
+					for(tint=0;tint < npts;tint++){
+						if(yvect[tint] == ymiss)
+							upordownflag = 1;
+						else{
+							_NhlDataLineTo(
+							xlayer->xyplot.thetrans,
+								(Layer)xlayer,
+								(float)(tint+1),
+								yvect[tint],
+								upordownflag);
+
+							upordownflag = 0;
+						}
+					}
+				}
+				else{
+					for(tint=0;tint < npts;tint++){
+						_NhlDataLineTo(
+							xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(float)(tint+1),
+							yvect[tint],
+							upordownflag);
+
+						upordownflag = 0;
+					}
+				}
+			}
+			else if(curve_impy){
+				if(datal->catfloat.missing_x_set){
+					float	xmiss=datal->catfloat.missing_x;
+					for(tint=0;tint < npts;tint++){
+						if(xvect[tint] == xmiss)
+							upordownflag = 1;
+						else{
+							_NhlDataLineTo(
+							xlayer->xyplot.thetrans,
+								(Layer)xlayer,
+								xvect[tint],
+								(float)(tint+1),
+								upordownflag);
+
+							upordownflag = 0;
+						}
+					}
+				}
+				else{
+					for(tint=0;tint < npts;tint++){
+						_NhlDataLineTo(
+							xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							xvect[tint],
+							(float)(tint+1),
+							upordownflag);
+
+						upordownflag = 0;
+					}
+				}
+			}
 		}
 	}
 
@@ -1477,6 +1498,7 @@ DrawCurves
 	return(ret);
 	
 }
+
 /*
  * Function:	XyPlotDraw
  *

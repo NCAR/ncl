@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.2 1993-10-19 17:50:39 boote Exp $
+ *      $Id: Destroy.c,v 1.3 1994-01-10 19:48:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,8 @@
  *
  *	Description:	This file contains all the functions neccessary
  *			to support the Destroy methode of the hlu's.
+ *			Design documentation for this module is
+ *			NhlDOCREF(/design/hlu/Destroy.html,here).
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/BaseP.h>
@@ -87,6 +89,7 @@ CallDestroy
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(NhlDestroy)
 NhlErrorTypes
 NhlDestroy
 #if	__STDC__
@@ -162,6 +165,7 @@ NhlDestroy
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(_NhlDestroyChild)
 NhlErrorTypes
 _NhlDestroyChild
 #if	__STDC__

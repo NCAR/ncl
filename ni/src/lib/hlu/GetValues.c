@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.2 1993-10-19 17:50:51 boote Exp $
+ *      $Id: GetValues.c,v 1.3 1994-01-10 19:48:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,8 @@
  *
  *	Description:	This file contains all the functions neccessary to
  *			retrieve a resource value from a layer instance.
+ *			Design docs for GetValues is
+ *			NhlDOCREF(/design/hlu/SetValues.html,here).
  */
 #include <string.h>
 #include <ncarg/hlu/hluP.h>
@@ -173,6 +175,7 @@ CallGetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(_NhlGetValues)
 static NhlErrorTypes
 _NhlGetValues
 #if	__STDC__
@@ -306,6 +309,7 @@ _NhlGetValues
  *		resource name/addr pairs given in the varargs.  It retrieves
  *		the given resource from the layer specified and puts the
  *		value in the space pointed to by the addr
+ *		Internal GetValues function is NhlDOCREF(#_NhlGetValues,here).
  *
  * In Args:	int		pid;	id for layer to get values from
  *		...			name part of resource name/addr pairs
@@ -316,6 +320,7 @@ _NhlGetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(NhlGetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlGetValues
@@ -375,6 +380,7 @@ NhlGetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(NhlALGetValues)
 NhlErrorTypes
 NhlALGetValues
 #if	__STDC__

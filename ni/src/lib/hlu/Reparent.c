@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.3 1993-12-14 21:44:22 boote Exp $
+ *      $Id: Reparent.c,v 1.4 1994-01-10 19:48:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,8 @@
  *	Date:		Wed Feb 17 16:48:13 MST 1993
  *
  *	Description:	This file contains the functions needed to reparent
- *			a plot object to a new workstation parent.
+ *			a plot object to a new workstation parent. Design docs
+ *			are NhlDOCREF(/design/hlu/Reparent.html,here)
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/BaseP.h>
@@ -38,35 +39,34 @@
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-/*ARGSUSED*/
 static NhlErrorTypes
 CallReparent
 #if	__STDC__
 (
 	Layer		l,	/* layer to call reparent for	*/
+	Layer		parent,	/* layer to call reparent for	*/
 	LayerClass	lc	/* class or superclass of l	*/
 )
 #else
-(l,lc)
+(l,parent,lc)
 	Layer		l;	/* layer to call reparent for	*/
+	Layer		parent;	/* layer to call reparent for	*/
 	LayerClass	lc;	/* class or superclass of l	*/
 #endif
 {
 	NhlErrorTypes	scret = NOERROR;
 	NhlErrorTypes	lcret = NOERROR;
 
-#ifdef	NOTYET
 	if(lc->base_class.superclass != NULL){
-		scret = CallReparent(l,lc->base_class.superclass);
+		scret = CallReparent(l,parent,lc->base_class.superclass);
 
 		if(scret < WARNING)
 			return scret;
 	}
 
-	if(lc->base_class.reparent != NULL)
-		lcret = (*(lc->base_class.layer_reparent))(l);
+	if(lc->base_class.layer_reparent != NULL)
+		lcret = (*(lc->base_class.layer_reparent))(l,parent);
 
-#endif
 	return MIN(scret,lcret);
 }
 
@@ -111,98 +111,86 @@ Reparent
 		return FATAL;
 	}
 
-	/*
-	 * First remove child from it's parent's all_children list
-	 * set tnode to the child's record.
-	 */
-
-	tnodeptr = &child->base.parent->base.all_children;
-	tnode = (_NhlAllChildList)NULL;
-
-	while(*tnodeptr != (_NhlAllChildList)NULL){
-		if((*tnodeptr)->pid == child->base.id){
-			tnode = *tnodeptr;
-			*tnodeptr = (*tnodeptr)->next;
-			break;
-		}
-		tnodeptr = &(*tnodeptr)->next;
-	}
-
-	if(tnode == (_NhlAllChildList)NULL){
-		NhlPError(FATAL,E_UNKNOWN,"Unable to remove PID#%d from parent",
-								child->base.id);
+	if(_NhlIsObj(parent)){
+		NhlPError(FATAL,E_UNKNOWN,
+					"Parent found unsuitable for adoption");
 		return FATAL;
 	}
 
-	/*
-	 * Add child's record to the new parent
-	 */
-	tnode->next = parent->base.all_children;
-	parent->base.all_children = tnode;
+	if(parent != child->base.parent){
+		/*
+		 * First remove child from it's parent's all_children list
+		 * set tnode to the child's record.
+		 */
 
-	/*
-	 * Change child's parent pointer to new parent
-	 */
-	child->base.parent = parent;
+		tnodeptr = &child->base.parent->base.all_children;
+		tnode = (_NhlAllChildList)NULL;
 
-	return CallReparent(child,child->base.layer_class);
+		while(*tnodeptr != (_NhlAllChildList)NULL){
+			if((*tnodeptr)->pid == child->base.id){
+				tnode = *tnodeptr;
+				*tnodeptr = (*tnodeptr)->next;
+				break;
+			}
+			tnodeptr = &(*tnodeptr)->next;
+		}
+
+		if(tnode == (_NhlAllChildList)NULL){
+			NhlPError(FATAL,E_UNKNOWN,
+			"Unable to remove PID#%d from parent",child->base.id);
+			return FATAL;
+		}
+
+		/*
+		 * Add child's record to the new parent
+		 */
+		tnode->next = parent->base.all_children;
+		parent->base.all_children = tnode;
+
+		/*
+		 * Change child's parent pointer to new parent
+		 */
+		child->base.parent = parent;
+	}
+
+	return CallReparent(child,parent,child->base.layer_class);
 }
 
 /*
- * Function:	ChangeWorkstation
+ * Function:	_NhlReparent
  *
- * Description:	This function changes the workstation pointer of a layer
- *		and all it's children. This function assumes it is given
- *		a valid Workstation Layer.  It will however, check that
- *		the given pid is valid.
+ * Description:	This function takes a two pid's.  The first one is
+ *		the child the second is the new parent for that child.
  *
  * In Args:	
- *		int	pid,	layer to change workstation pointer for
- *		Layer	w	workstation pointer to change to
  *
  * Out Args:	
  *
- * Scope:	static
+ * Scope:	Global Private
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-static NhlErrorTypes
-ChangeWorkstation
+NhlDOCTAG(_NhlReparent)
+NhlErrorTypes
+_NhlReparent
 #if	__STDC__
 (
-	int	pid,	/* layer to change workstation pointer for	*/
-	Layer	w	/* workstation pointer to change to		*/
+	Layer	child,
+	Layer	parent
 )
 #else
-(pid,w)
-	int	pid;	/* layer to change workstation pointer for	*/
-	Layer	w;	/* workstation pointer to change to		*/
+(child,parent)
+	Layer	child;
+	Layer	parent;
 #endif
 {
-	Layer			l = _NhlGetLayer(pid);
-	_NhlAllChildList	tnode;
-	NhlErrorTypes		ret = NOERROR, lret = NOERROR;
+	if((child == NULL) || (parent == NULL)){
+		NhlPError(FATAL,E_UNKNOWN,"_NhlReparent:passed a NULL layer");
 
-	if(l == (Layer)NULL){
-		NhlPError(FATAL,E_UNKNOWN,
-			"Trying to change workstation of non-existant PID#%d",
-									pid);
 		return FATAL;
 	}
 
-	tnode = l->base.all_children;
-
-	while(tnode != (_NhlAllChildList)NULL){
-		lret = ChangeWorkstation(tnode->pid,w);
-
-		ret = MIN(lret,ret);
-
-		tnode = tnode->next;
-	}
-
-	l->base.wkptr = w;
-
-	return ret;
+	return Reparent(child,parent);
 }
 
 /*
@@ -222,6 +210,7 @@ ChangeWorkstation
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(NhlChangeWorkstation)
 NhlErrorTypes
 NhlChangeWorkstation
 #if	__STDC__
@@ -237,7 +226,6 @@ NhlChangeWorkstation
 {
 	Layer		plot = _NhlGetLayer(plotid);
 	Layer		work = _NhlGetLayer(workid);
-	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
 
 	if((plot == (Layer)NULL) || (work == (Layer)NULL)){
 		NhlPError(FATAL,E_UNKNOWN,
@@ -258,17 +246,5 @@ NhlChangeWorkstation
 		return FATAL;
 	}
 
-	ret = Reparent(plot,work);
-
-	if(ret < WARNING){
-		return ret;
-	}
-
-	lret = ChangeWorkstation(plot->base.id,work);
-
-	if(lret < WARNING){
-		return lret;
-	}
-
-	return MIN(ret,lret);
+	return Reparent(plot,work);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.5 1993-12-13 23:34:46 ethan Exp $
+ *      $Id: TickMark.c,v 1.6 1994-01-10 19:48:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2340,12 +2340,12 @@ static float	compare
 */
 	if(a_final>b_final){ 
 		tmp = (float)log10(a_final);
-		exp = (long)(float)ceil(log10(a_final));
+		exp = (long)ceil(log10(a_final));
 		if((float)exp == tmp)
 			exp++;
 	} else {
 		tmp = (float)log10(b_final);
-		exp = (long)(float)ceil(log10(b_final));
+		exp = (long)ceil(log10(b_final));
 		if((float)exp == tmp)
 			exp++;
 	}

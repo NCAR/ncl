@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.2 1993-10-19 17:49:44 boote Exp $
+ *      $Id: BaseP.h,v 1.3 1994-01-10 19:48:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -139,7 +139,8 @@ typedef NhlErrorTypes (*NhlGetValuesProc)(
 
 typedef NhlErrorTypes (*NhlReparentProc)(
 #if	NhlNeedProto
-	void
+	Layer	l,
+	Layer	parent
 #endif
 );
 
@@ -176,6 +177,10 @@ typedef struct _ObjLayerClassPart {
 	NhlDestroyProc		layer_destroy;
 } ObjLayerClassPart;
 
+/*
+ * NhlDOCREF(/design/hlu/Base.html,Base Object Design)
+ */
+NhlDOCTAG(BaseLayerClassPart)
 typedef struct _BaseLayerClassPart {
 	NhlString		class_name;
 	NrmClass		nrm_class;

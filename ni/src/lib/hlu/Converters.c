@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.3 1993-12-22 00:55:47 dbrown Exp $
+ *      $Id: Converters.c,v 1.4 1994-01-10 19:48:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #include <ncarg/hlu/Converters.h>
 #include <math.h>
 
-#if	defined(sun)
+#if	defined(SunOs) && (MAJOR == 4)
 #include <floatingpoint.h>
 #endif	/* sun hack- strtod should be in stdlib.h but it's not */
 

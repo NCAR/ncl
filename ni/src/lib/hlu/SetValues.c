@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.2 1993-10-19 17:52:17 boote Exp $
+ *      $Id: SetValues.c,v 1.3 1994-01-10 19:48:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,8 @@
  *	Date:		Mon Aug 31 10:54:22 MDT 1992
  *
  *	Description:	This file contains the functions neccessary to update
- *			a Layer instance via the SetValues call.
+ *			a Layer instance via the SetValues call. Documentation
+ *			is NhlDOCREF(/design/hlu/SetValues.html,here).
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
@@ -261,6 +262,7 @@ SetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer is modified to set the requested values
  */
+NhlDOCTAG(_NhlSetValues)
 NhlErrorTypes
 _NhlSetValues
 #if	__STDC__
@@ -474,6 +476,7 @@ _NhlSetValues
  *
  * Description:	This function sets the resources specified by the name/value
  *		pairs passed in threw the varargs.
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
  *
  * In Args:	int		id;	Index into list of layers
  *		...			resource name/value pairs
@@ -484,6 +487,7 @@ _NhlSetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer indexed by id, is modified to set the requested values
  */
+NhlDOCTAG(NhlSetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlSetValues
@@ -530,6 +534,7 @@ NhlSetValues
  *
  * Description:	This function sets the resources specified by the SArgList
  *		passed to it.
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
  *
  * In Args:	int		id;	Index into list of layers
  *
@@ -539,6 +544,7 @@ NhlSetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer indexed by id, is modified to set the requested values
  */
+NhlDOCTAG(NhlALSetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlALSetValues
@@ -721,6 +727,7 @@ SetValuesChild
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(_NhlSetValuesChild)
 /*VARARGS2*/
 NhlErrorTypes
 _NhlSetValuesChild
@@ -786,6 +793,7 @@ _NhlSetValuesChild
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+NhlDOCTAG(_NhlALSetValuesChild)
 NhlErrorTypes
 _NhlALSetValuesChild
 #if	NhlNeedProto

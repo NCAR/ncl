@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.4 1993-10-07 21:30:19 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.5 1994-01-10 19:48:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -640,14 +640,19 @@ CvtGenObjToFloatObj
 			flttable = (float**)xtbl->data;
 			lens = (int*)child->xtable_lens->data;
 			for(i=0;i < xtbl->len_dimensions[0];i++){
-				intvect = inttable[i];
-				fltvect=NhlConvertMalloc(sizeof(float)*lens[i]);
-				if(fltvect == NULL)
-					return FATAL;
-				for(j=0;j < lens[i];j++){
-					fltvect[j] = (float)intvect[j];
+				if(inttable[i] != NULL){
+					intvect = inttable[i];
+					fltvect = NhlConvertMalloc
+							(sizeof(float)*lens[i]);
+					if(fltvect == NULL)
+						return FATAL;
+					for(j=0;j < lens[i];j++){
+						fltvect[j] = (float)intvect[j];
+					}
+					flttable[i] = fltvect;
 				}
-				flttable[i] = fltvect;
+				else
+					flttable[i] = NULL;
 			}
 			NhlSetSArg(&sargs[nargs++],NhlNctXTable,xtbl);
 		}
@@ -659,14 +664,19 @@ CvtGenObjToFloatObj
 			flttable = (float**)ytbl->data;
 			lens = (int*)child->ytable_lens->data;
 			for(i=0;i < ytbl->len_dimensions[0];i++){
-				intvect = inttable[i];
-				fltvect=NhlConvertMalloc(sizeof(float)*lens[i]);
-				if(fltvect == NULL)
-					return FATAL;
-				for(j=0;j < lens[i];j++){
-					fltvect[j] = (float)intvect[j];
+				if(inttable[i] != NULL){
+					intvect = inttable[i];
+					fltvect = NhlConvertMalloc
+							(sizeof(float)*lens[i]);
+					if(fltvect == NULL)
+						return FATAL;
+					for(j=0;j < lens[i];j++){
+						fltvect[j] = (float)intvect[j];
+					}
+					flttable[i] = fltvect;
 				}
-				flttable[i] = fltvect;
+				else
+					flttable[i] = NULL;
 			}
 			NhlSetSArg(&sargs[nargs++],NhlNctYTable,ytbl);
 		}
@@ -824,23 +834,33 @@ CoordArrTableClassPartInitialize
 		if(ncat->cat##type.dim##table != NULL){			\
 									\
 			vals=(type**)ncat->cat##type.dim##table->data;	\
-			max = min = **vals;				\
+			if(*vals != NULL)				\
+				max = min = **vals;			\
+			else						\
+				max = min = (type)1.0;			\
+									\
 			lens = (int*)ncat->cat##type.dim##table_lens->data;\
 			for(i=0;					\
 			i<ncat->cat##type.dim##table->len_dimensions[0];\
 								i++){	\
 				type	*vect;				\
 									\
-				vect = vals[i];				\
-				for(j=0;j < lens[i];j++){		\
-					max = MAX(vect[j],max);		\
-					min = MIN(vect[j],min);		\
+				if(vals[i] != NULL){			\
+					vect = vals[i];			\
+					for(j=0;j < lens[i];j++){	\
+						max = MAX(vect[j],max);	\
+						min = MIN(vect[j],min);	\
+					}				\
+				}					\
+				else{					\
+					max = MAX(max,lens[i]);		\
+					min = MIN(min,(type)1.0);	\
 				}					\
 			}						\
 									\
 		}							\
 		else{							\
-			max = min = 1.0;				\
+			max = min = (type)1.0;				\
 			lens =						\
 			(int*)ncat->cat##type.otherdim##table_lens->data;\
 			for(i=0;					\
@@ -1028,7 +1048,10 @@ CoordArrTableInitialize
 	}
 
 	ncat->cat.type = NrmStringToQuark(ncat->cat.type_string);
-	ncat->cat.type_string = NULL;
+	/*
+	 * Point to perminate memory in Quarks.c
+	 */
+	ncat->cat.type_string = NrmQuarkToString(ncat->cat.type);
 
 	/*
 	 * Create the correct child...
@@ -1085,12 +1108,13 @@ CoordArrTableSetValues
 {
 	char			*error_lead = "CoordArrTableSetValues";
 	CoordArrTableLayer	ncat = (CoordArrTableLayer)new;
+	CoordArrTableLayer	ocat = (CoordArrTableLayer)old;
 
-	if(ncat->cat.type_string != NULL){
+	if(ncat->cat.type_string != ocat->cat.type_string){
 		NhlPError(WARNING,E_UNKNOWN,
 			"%s:%s is setable only at create time - ignoring!",
 							error_lead,NhlNdiType);
-		ncat->cat.type_string = NULL;
+		ncat->cat.type_string = ocat->cat.type_string;
 	}
 
 	return	NOERROR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.5 1994-01-06 19:50:30 boote Exp $
+ *      $Id: DataComm.c,v 1.6 1994-01-10 19:48:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -852,7 +852,7 @@ DataCommInitialize
 {
 	NhlErrorTypes		ret = NOERROR;
 	NhlErrorTypes		lret = NOERROR;
-	DataCommLayerClass	cc = (DataCommLayerClass)lc;
+	DataCommLayerClass	cc = (DataCommLayerClass)req->base.layer_class;
 	_NhlDataOffset		oset = cc->datacomm_class.data_offsets;
 	
 	while(oset != NULL){
