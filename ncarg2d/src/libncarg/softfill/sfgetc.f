@@ -1,7 +1,4 @@
 C
-C	$Id: sfgetc.f,v 1.1.1.1 1992-04-17 22:32:55 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE SFGETC (CNP,CVP)
@@ -40,7 +37,7 @@ C
 C
 C Get the appropriate parameter value.
 C
-      IF (.NOT.(CNP(1:2).EQ.'CH')) GO TO 10002
+      IF (.NOT.(CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')) GO TO 10002
       IF (.NOT.(LCH.GT.0)) GO TO 10003
       CVP=CHAR(LCH)
       GO TO 10004

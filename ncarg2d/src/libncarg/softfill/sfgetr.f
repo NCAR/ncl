@@ -1,7 +1,4 @@
 C
-C	$Id: sfgetr.f,v 1.1.1.1 1992-04-17 22:32:55 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE SFGETR (CNP,RVP)
@@ -40,23 +37,23 @@ C
 C
 C Get the appropriate parameter value.
 C
-      IF (.NOT.(CNP(1:2).EQ.'AN')) GO TO 10002
+      IF (.NOT.(CNP(1:2).EQ.'AN'.OR.CNP(1:2).EQ.'an')) GO TO 10002
       RVP=AID
       GO TO 10003
 10002 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'CH')) GO TO 10004
+      IF (.NOT.(CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')) GO TO 10004
       RVP=REAL(LCH)
       GO TO 10003
 10004 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'DO')) GO TO 10005
+      IF (.NOT.(CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')) GO TO 10005
       RVP=REAL(LPA)
       GO TO 10003
 10005 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'SP')) GO TO 10006
+      IF (.NOT.(CNP(1:2).EQ.'SP'.OR.CNP(1:2).EQ.'sp')) GO TO 10006
       RVP=DBL
       GO TO 10003
 10006 CONTINUE
-      IF (.NOT.(CNP(1:2).EQ.'TY')) GO TO 10007
+      IF (.NOT.(CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')) GO TO 10007
       RVP=REAL(ITY)
       GO TO 10003
 10007 CONTINUE

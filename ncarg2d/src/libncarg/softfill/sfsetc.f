@@ -1,7 +1,4 @@
 C
-C	$Id: sfsetc.f,v 1.1.1.1 1992-04-17 22:32:56 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE SFSETC (CNP,CVP)
@@ -39,7 +36,7 @@ C
 C
 C Set the appropriate parameter value.
 C
-      IF (.NOT.(CNP(1:2).EQ.'CH')) GO TO 10002
+      IF (.NOT.(CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')) GO TO 10002
       LCH=ICHAR(CVP)
       GO TO 10003
 10002 CONTINUE

@@ -1,7 +1,4 @@
 C
-C	$Id: sfblda.f,v 1.1.1.1 1992-04-17 22:32:56 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       BLOCK DATA SFBLDA
@@ -44,30 +41,5 @@ C LDP contains a set of 0s and 1s defining the current dot pattern, in
 C an 8x8 pixel.  The value 1 turns a dot on, the value 0 turns it off.
 C
       DATA LDP / 64*1 /
-C
-C REVISION HISTORY ----------------------------------------------------
-C
-C April, 1982           Written and "standardized", with the name
-C                       "FILL".
-C
-C May, 1982             IFTRAN to SOURCE, FORTRAN to XLIB.
-C
-C August, 1983          Bug fixed.  The test for termination of a WHILE
-C                       was set up in such a way as to potentially use
-C                       an indefinite, thus causing a floating-point
-C                       error, even though that calculation couldn't
-C                       have any effect on the value of the logical
-C                       expression being evaluated.  Comments changed
-C                       to remove references to the 7600 and to use
-C                       upper and lower case.
-C
-C November, 1984        FORTRAN-77, GKS-compatible version.
-C
-C January, 1989         Upgraded for inclusion in NCAR Graphics.  Names
-C                       of routines changed.  Parameter-access routines
-C                       changed.
-C
-C June, 1989            Subroutine SFSGFA and supporting parameters
-C                       added.
 C
       END
