@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.27 1997-10-01 18:19:00 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.28 1998-04-17 16:55:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1855,7 +1855,7 @@ NclScalar *new_missing;
 								to_type,
 								(void*)&((NclQuark*)result_val)[i],
 								(void*)&((char*)self_md->multidval.val)[from],
-								self_md->multidval.totalelements,
+								self_md->multidval.totalelements/limit,
 								(self_md->multidval.missing_value.has_missing?&self_md->multidval.missing_value.value:NULL),
 								new_missing,
 								from_type) == NhlFATAL) {
