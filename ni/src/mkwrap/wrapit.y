@@ -1005,6 +1005,18 @@ param_def : FARG
 		$1->u.farg->dim_sizes[0] = 1;
 		$$ = $1;
 	}
+	| FARG '*' INT 
+	{
+		$1->u.farg->n_dims = 1;
+		$1->u.farg->dim_sizes[0] = $3;
+		$$ = $1;
+	}
+	| FARG '*' '(' '*' ')'
+	{
+		$1->u.farg->n_dims = 1;
+		$1->u.farg->dim_sizes[0] = -1;
+		$$ = $1;
+	}
 	| FARG '(' dim_list ')'
 	{
 		int n_dims=0;
