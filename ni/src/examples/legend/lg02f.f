@@ -6,7 +6,7 @@ C                All Rights Reserved                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C      File:           lg02f.f
+C      File:           lg02c.c
 C
 C      Author:         Ed Stautler
 C              National Center for Atmospheric Research

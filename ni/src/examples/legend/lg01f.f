@@ -6,7 +6,7 @@ C                All Rights Reserved                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C      File:           lg01f.f
+C      File:           lg01c.c
 C
 C      Author:         Bob Lackman (converted by Ed Stautler)
 C              National Center for Atmospheric Research
