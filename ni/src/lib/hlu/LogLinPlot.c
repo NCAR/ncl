@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.26 1998-05-29 22:52:23 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.27 1999-04-02 23:51:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -613,9 +613,13 @@ static NhlErrorTypes SetUpTransObj
                 NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
         if (tfp->y_reverse_set)
                 NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+	if (init || tfp->trans_obj == NULL ||
+	    tfp->line_interpolation_on != llold->trans.line_interpolation_on)
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
         
 	if (init || tfp->trans_obj == NULL) {
-                
+
 		sprintf(buffer,"%s",llnew->base.name);
 		strcat(buffer,".Trans");
                 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.36 1998-04-16 03:08:43 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.37 1999-04-02 23:51:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1308,6 +1308,126 @@ float *yc;
 	return NhlNOERROR;
 }
 
+
+
+static NhlErrorTypes LogAdjustToEdge
+#if	NhlNeedProto
+(NhlLogLinTransObjLayer llinst, 
+float xclip, 
+float yclip, 
+float x,
+float y, 
+float *xd, 
+float *yd,
+float *xc, 
+float *yc
+)
+#else
+(irinst,xclip,yclip,x,y,xd, yd,xc,yc)
+NhlLogLinTransObjLayer llinst;
+float xclip;
+float yclip; 
+float x;
+float y; 
+float *xd; 
+float *yd;
+float *xc; 
+float *yc;
+#endif
+{
+	NhlLogLinTransObjLayerPart *llp = 
+		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
+	float xt,yt;
+	int i,status = 1;
+	float lg_xclip,lg_yclip,lg_x,lg_y;
+
+	xt = xclip;
+	yt = yclip;
+	if (llp->x_log && llp->y_log) {
+		lg_xclip = log10(xclip);
+		lg_x = log10(x);
+		lg_yclip = log10(yclip);
+		lg_y = log10(y);
+	}
+	else if (llp->x_log) {
+		lg_xclip = log10(xclip);
+		lg_x = log10(x);
+
+	}
+	else if (llp->y_log) {
+		lg_yclip = log10(yclip);
+		lg_y = log10(y);
+	}
+
+
+	for (i=0; i < 2; i++) {
+
+		if (x != xclip) {
+			if (_NhlCmpF(xt,llp->xmin_dat) < 0.0) {
+				*xd = llp->x_min;
+			}
+			else if (_NhlCmpF(xt,llp->xmax_dat) > 0.0) {
+				*xd = llp->x_max;
+			}
+
+			if (llp->x_log && llp->y_log) {
+				float l_yd = lg_yclip + (lg_y - lg_yclip) *
+					(log10(*xd)-lg_xclip)/(lg_x-lg_xclip);
+				*yd = pow(10.0,l_yd);
+			}
+			else if (llp->x_log) {
+				*yd = yclip + (y-yclip) *
+					(log10(*xd)-lg_xclip)/(lg_x-lg_xclip);
+			}
+			else if (llp->y_log) {
+				float l_yd = lg_yclip + (lg_y - lg_yclip) *
+					(*xd - xclip)/(x-xclip);
+				*yd = pow(10.0,l_yd);
+			}
+			else {
+				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
+			}
+
+		}
+		if (y != yclip) {
+			if (_NhlCmpF(yt,llp->ymin_dat) < 0.0) {
+				*yd = llp->y_min;
+			}
+			else if (_NhlCmpF(yt,llp->ymax_dat) > 0.0) {
+				*yd = llp->y_max;
+			}
+
+			if (llp->x_log && llp->y_log) {
+				float l_xd = lg_xclip + (lg_x - lg_xclip) *
+					(log10(*yd)-lg_yclip)/(lg_y-lg_yclip);
+				*xd = pow(10.0,l_xd);
+			}
+			else if (llp->x_log) {
+				float l_xd = lg_xclip + (lg_x - lg_xclip) *
+					(*yd-yclip)/(y-yclip);
+				*xd = pow(10.0,l_xd);
+			}
+			else if (llp->y_log) {
+				*xd = xclip +(x-xclip) * 
+					(log10(*yd)-lg_yclip)/(lg_y-lg_yclip);
+			}
+			else {
+				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
+			}
+		}
+		LlDataToWin((NhlLayer)llinst,xd,yd,1,
+				      xc,yc,NULL,NULL,&status);
+		if (status) {
+			xt = *xd;
+			yt = *yd;
+		}
+	}
+	if (status) 
+		return NhlWARNING;
+
+	return NhlNOERROR;
+}
+
 /*ARGSUSED*/
 static NhlErrorTypes LogDataLineTo
 #if	NhlNeedProto
@@ -1410,9 +1530,15 @@ int upordown;
  * and move there.
  */
 	if((lastx != holdx)||(lasty!= holdy)) {
-		if (AdjustToEdge(llinst,holdx,holdy,x,y,&xd,&yd,&xc,&yc)
-			< NhlNOERROR)
+		if (npoints == 1) {
+			if (LogAdjustToEdge(llinst,holdx,holdy,
+					 x,y,&xd,&yd,&xc,&yc) < NhlNOERROR)
+				return NhlFATAL;
+		}
+		else if (AdjustToEdge(llinst,holdx,holdy,
+				      x,y,&xd,&yd,&xc,&yc) < NhlNOERROR) {
 			return NhlFATAL;
+		}
 		lastx = xd;
 		lasty = yd;
 		xdist = x - lastx;
@@ -1431,9 +1557,16 @@ int upordown;
 		yd = lasty + ydist *(i+1)/(float)npoints;
 		LlDataToWin(instance,&xd,&yd,1,&xc,&yc,NULL,NULL,&status);
 		if (status) {
-			if (AdjustToEdge(llinst,x,y,holdx,holdy,
-					 &xd,&yd,&xc,&yc) < NhlNOERROR)
+			if (npoints == 1) {
+				if (LogAdjustToEdge 
+				    (llinst,x,y,holdx,holdy,
+				     &xd,&yd,&xc,&yc) < NhlNOERROR)
+					return NhlFATAL;
+			}
+			else if (AdjustToEdge(llinst,x,y,holdx,holdy,
+					      &xd,&yd,&xc,&yc) < NhlNOERROR) {
 				return NhlFATAL;
+			}
 		}
 		_NhlWorkstationLineTo(llinst->trobj.wkptr,
 				      c_cufx(xc),c_cufy(yc),0);
@@ -1459,6 +1592,7 @@ float y;
 int upordown;
 #endif
 {
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	NhlLogLinTransObjLayerPart *ltp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
@@ -1468,7 +1602,15 @@ int upordown;
 	float holdx,holdy;
 
 	if (ltp->x_log || ltp->y_log) {
-		return LogDataLineTo(instance,x,y,upordown);
+		if ((ltp->x_log && ! x > 0.0) || 
+		    (ltp->y_log && ! y > 0.0)) {
+			char e_text[] =
+				"%s: point %f,%f outside data domain";
+			NhlPError(NhlWARNING,
+				  NhlEUNKNOWN,e_text,"LlDataLineTo",x,y);
+			ret = MIN(ret,NhlWARNING);
+		}
+		return MIN(ret,LogDataLineTo(instance,x,y,upordown));
 	}
 /*
 * if true the moveto is being performed
@@ -1593,12 +1735,12 @@ float *y;
 int n;
 #endif
 {
-	NhlErrorTypes ret;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	NhlLogLinTransObjLayerPart *llp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
 	NhlString e_text;
-	NhlString entry_name = "IrDataPolygon";
+	NhlString entry_name = "LogDataPolygon";
 	float out_of_range = llinst->trobj.out_of_range;
 	int i,j,ixout;
 	float px,py,cx,cy,dx,dy,tx,ty;
@@ -1630,6 +1772,13 @@ int n;
 	j = 1;
 	i = 0;
 	while (! done) {
+		if ((llp->x_log && ! x[i] > 0.0) || 
+		    (llp->y_log && ! y[i] > 0.0)) {
+			char e_text[] = "%s: point %f,%f outside data domain";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,"LogDataPolygon",x[i],y[i]);
+			ret = MIN(ret,NhlWARNING);
+		}
 		if (i < n - 1) {
 			px = x[i];
 			py = y[i];
@@ -1740,8 +1889,13 @@ int n;
 		printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 		       count,pcount,npoints,ixout+1);
 #endif
-		ret = _NhlWorkstationFill(llinst->trobj.wkptr,
-					  xout,yout,ixout+1);
+		if (npoints+count < ixout+1) {
+			e_text = "%s: internal error: memory overrun";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}	
+		ret = MIN(ret,_NhlWorkstationFill(llinst->trobj.wkptr,
+						  xout,yout,ixout+1));
 
 		NhlFree(xbuf);
 		NhlFree(ybuf);
@@ -1931,7 +2085,13 @@ int n;
 	printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 	       count,pcount,npoints,ixout+1);
 #endif
-	ret = _NhlWorkstationFill(llinst->trobj.wkptr,xout,yout,ixout+1);
+	if (npoints+count < ixout+1) {
+		e_text = "%s: internal error: memory overrun";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}	
+	ret = MIN(ret,_NhlWorkstationFill
+		  (llinst->trobj.wkptr,xout,yout,ixout+1));
 
 	NhlFree(xbuf);
 	NhlFree(ybuf);
@@ -1954,7 +2114,7 @@ float *y;
 int n;
 #endif
 {
-	NhlErrorTypes ret;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	NhlLogLinTransObjLayerPart *ltp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
@@ -1969,7 +2129,8 @@ int n;
 	NhlBoolean status = False, log_mode = False,done = False;
 	int count;
 	
-	if (ltp->x_log || ltp->y_log) {
+	if ((ltp->x_log || ltp->y_log) && 
+	    llinst->trobj.line_interpolation_on) {
 		return LogDataPolygon(instance,x,y,n);
 	}
 				
@@ -1984,17 +2145,34 @@ int n;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-
-	for (i=0; i<n; i++) {
-		xbuf[i] = c_cufx(x[i]);
-		ybuf[i] = c_cufy(y[i]);
+	if (ltp->x_log || ltp->y_log) {
+		for (i=0; i<n; i++) {
+			if ((ltp->x_log && ! x[i] > 0.0) || 
+			    (ltp->y_log && ! y[i] > 0.0)) {
+				char e_text[] = 
+					"%s: point %f,%f outside data domain";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  "LlDataPolygon",x[i],y[i]);
+				ret = MIN(ret,NhlWARNING);
+			}
+			xbuf[i] = c_cufx(x[i]);
+			ybuf[i] = c_cufy(y[i]);
+		}
+		
+	}
+	else {
+		for (i=0; i<n; i++) {
+			xbuf[i] = c_cufx(x[i]);
+			ybuf[i] = c_cufy(y[i]);
+		}
 	}
 	if (open) {
 		xbuf[n] = c_cufx(x[0]);
 		ybuf[n] = c_cufy(y[0]);
 	}
 
-	ret = _NhlWorkstationFill(llinst->trobj.wkptr,xbuf,ybuf,count);
+	ret = MIN(ret,_NhlWorkstationFill
+		  (llinst->trobj.wkptr,xbuf,ybuf,count));
 
 	NhlFree(xbuf);
 	NhlFree(ybuf);

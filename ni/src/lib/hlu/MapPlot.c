@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.74 1999-03-29 18:31:33 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.75 1999-04-02 23:51:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -529,7 +529,11 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
 	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlMapPlotLayerRec,trans.y_reverse),NhlTImmediate,
-		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		  NhlOffset(NhlMapPlotLayerRec,trans.line_interpolation_on),
+	  	  NhlTImmediate,
+	  	  _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.41 1998-07-07 21:52:57 ethan Exp $
+ *      $Id: IrregularTransObj.c,v 1.42 1999-04-02 23:51:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2462,7 +2462,8 @@ int n;
 				+ fabs(ybuf[i]-ybuf[i-1]);
 			tdist += dbuf[i-1];
 		}
-		npoints *= (tdist);
+		if (irinst->trobj.point_count > 1)
+			npoints *= (tdist);
 		/* include some extra space for safety */
 		xout = NhlMalloc((npoints+count)*sizeof(float));
 		yout = NhlMalloc((npoints+count)*sizeof(float));
@@ -2494,6 +2495,12 @@ int n;
 				}
 			}
 		}
+		if (npoints+count < ixout+1) {
+			e_text = "%s: internal error: memory overrun";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+			
 				
 #if 0
 		printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
@@ -2608,7 +2615,8 @@ int n;
 			tdist += dbuf[i-1];
 		}
 	}
-	npoints *= tdist;
+	if (irinst->trobj.point_count > 1)
+		npoints *= tdist;
 	/* include some extra space for safety */
 	xout = NhlMalloc((npoints+count)*sizeof(float));
 	yout = NhlMalloc((npoints+count)*sizeof(float));
@@ -2683,6 +2691,11 @@ int n;
 		ixout++;
 		xout[ixout] = xout[0];
 		yout[ixout] = yout[0];
+	}
+	if (npoints+count < ixout+1) {
+		e_text = "%s: internal error: memory overrun";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 #if 0

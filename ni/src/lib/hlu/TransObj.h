@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.12 1998-04-16 03:09:11 dbrown Exp $
+ *      $Id: TransObj.h,v 1.13 1999-04-02 23:51:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,9 @@
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"
 #define NhlNtrResolutionF	"trResolutionF"
 #define NhlCtrResolutionF	"TrResolutionF"
+
+#define NhlNtrLineInterpolationOn 	"trLineInterpolationOn"
+#define NhlCtrLineInterpolationOn 	"TrLineInterpolationOn"
 
 extern NhlClass NhltransObjClass;
 

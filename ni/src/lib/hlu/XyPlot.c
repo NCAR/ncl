@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.82 1999-03-24 19:09:51 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.83 1999-04-02 23:51:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -292,6 +292,11 @@ static NhlResource resources[] = {
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
 		Oset(y_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
+	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  NhlOffset(NhlXyPlotLayerRec,trans.line_interpolation_on),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),
+	  	_NhlRES_INTERCEPTED,NULL},
 
 /*
  * These resources have not been implimented yet.
@@ -4447,6 +4452,9 @@ SetUpTransObjs
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
 
+		NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
+
 		(void)NhlALCreate(&tmpid,buffer,trans_class,xnew->base.id,
 								sargs,nargs);
 
@@ -4532,6 +4540,9 @@ SetUpTransObjs
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
 	if(tfp->y_reverse != otfp->y_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+	if(tfp->line_interpolation_on != otfp->line_interpolation_on)
+		NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
 
 	if (nargs > 0)	
 		newxy->new_draw_req = True;

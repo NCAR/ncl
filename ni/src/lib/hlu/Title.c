@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.39 1999-03-30 21:07:25 dbrown Exp $
+ *      $Id: Title.c,v 1.40 1999-04-02 23:51:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -131,7 +131,8 @@ static NhlResource resources[] = {
 	{NhlNtiMainFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		 Oset(main_font),NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
 	{NhlNtiMainFontHeightF,NhlCFontHeightF,NhlTFloat,sizeof(float),
-		 Oset(main_font_height), NhlTString,_NhlUSET("0.025"),0,NULL},
+		 Oset(main_font_height), NhlTString,
+	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
 	{NhlNtiMainFontAspectF,NhlCFontAspectF,NhlTFloat,sizeof(float),
 		 Oset(main_font_aspect), NhlTString,_NhlUSET("1.3125"),0,NULL},
 	{NhlNtiMainFontThicknessF,NhlCFontThicknessF,NhlTFloat,
@@ -182,8 +183,8 @@ static NhlResource resources[] = {
 		0,NULL},
 	{NhlNtiXAxisFontHeightF,NhlCFontHeightF,
 		NhlTFloat,sizeof(float),
-		Oset(x_axis_font_height), NhlTString,_NhlUSET("0.025"),
-		0,NULL},
+		Oset(x_axis_font_height), NhlTString,
+	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
 	{NhlNtiXAxisFontAspectF,NhlCFontAspectF,NhlTFloat,
 		 sizeof(float),
 		 Oset(x_axis_font_aspect), NhlTString,_NhlUSET("1.3125"),
@@ -237,10 +238,12 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)0 ),0,NULL},
 	{NhlNtiYAxisFontHeightF,NhlCFontHeightF,
 		 NhlTFloat,sizeof(float),
-		 Oset(y_axis_font_height), NhlTString,_NhlUSET("0.025"),0,NULL},
+		 Oset(y_axis_font_height), NhlTString,
+	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
 	{NhlNtiYAxisFontAspectF,NhlCFontAspectF,NhlTFloat,
 		 sizeof(float),
-		 Oset(y_axis_font_aspect),NhlTString,_NhlUSET("1.3125"),0,NULL},
+		 Oset(y_axis_font_aspect),NhlTString,
+	 	 _NhlUSET("1.3125"),0,NULL},
 	{NhlNtiYAxisFontThicknessF,NhlCFontThicknessF,NhlTFloat,
 		 sizeof(float), Oset(y_axis_font_thickness), NhlTString,
 		 _NhlUSET("1.0"),0,NULL},

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.27 1998-05-29 22:52:22 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.28 1999-04-02 23:51:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -285,6 +285,7 @@ IrregularPlotClassPartInitialize
                                         NhlNtrXAxisType,NhlNtrYAxisType,
                                         NhlNtrXReverse,NhlNtrYReverse,
                                         NhlNtrXTensionF,NhlNtrYTensionF,
+					NhlNtrLineInterpolationOn,
                                         NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -630,6 +631,10 @@ static NhlErrorTypes SetUpTransObj
                 NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
         if (tfp->y_reverse_set)
                 NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+	if (init || tfp->trans_obj == NULL ||
+	    tfp->line_interpolation_on != irold->trans.line_interpolation_on)
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
         
 	if (init || tfp->trans_obj == NULL) {
                 

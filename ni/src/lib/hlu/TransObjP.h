@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.18 1998-04-16 03:09:12 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.19 1999-04-02 23:51:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -82,6 +82,7 @@ typedef struct _NhlTransObjLayerPart {
 	int 		y_reverse;
         
 	float		out_of_range;
+	NhlBoolean	line_interpolation_on;
 	float		resolution;
 /*
  * Each time the trans obj changes this field is incremented

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.55 1999-03-27 00:44:53 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.56 1999-04-02 23:51:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4022,7 +4022,39 @@ ManageTitles
  * If not displaying titles just call the SetValues function --
  * only to avoid the no set values called error.
  */
-	if (! init) {
+	if (init) {
+		float main_height,x_axis_height,y_axis_height;
+		strcpy(buffer,ovnew->base.parent->base.name);
+		strcat(buffer,".Title");
+		subret = _NhlVACreateChild(&tmpid,buffer,NhltitleClass,
+					   (NhlLayer)ovnew,NULL);
+
+		if ((ret = MIN(ret,subret)) < NhlWARNING || 
+		    (ovp->titles = _NhlGetLayer(tmpid)) == NULL) {
+			e_text = "%s: Error creating Title object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
+		}
+		anno_rec->plot_id = tmpid;
+		NhlVAGetValues(tmpid,
+			       NhlNtiMainFontHeightF,&main_height,
+			       NhlNtiXAxisFontHeightF,&x_axis_height,
+			       NhlNtiYAxisFontHeightF,&y_axis_height,
+			       NULL);
+		if (main_height != NhlDEF_TITLE_HEIGHT) {
+			ovp->ti_main_font_height_set = True;
+			ovp->ti_main_font_height = main_height;
+		}
+		if (x_axis_height != NhlDEF_TITLE_HEIGHT) {
+			ovp->ti_x_axis_font_height_set = True;
+			ovp->ti_x_axis_font_height = x_axis_height;
+		}
+		if (y_axis_height != NhlDEF_TITLE_HEIGHT) {
+			ovp->ti_y_axis_font_height_set = True;
+			ovp->ti_y_axis_font_height = y_axis_height;
+		}
+	}
+	else {
 		if (ovp->titles == NULL) {
 			e_text = "%s: internal error: Title layer NULL";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -4034,6 +4066,7 @@ ManageTitles
 						    sargs,nargs);
 		}
 	}
+	
 /*
  * Adjust the font height based on the ratio of the set view to the
  * standard view at initialization only, because the title object takes
@@ -4060,13 +4093,13 @@ ManageTitles
 
 	if (init) {
 		if (! ovp->ti_main_font_height_set) 
-			ovp->ti_main_font_height = NhlOV_DEF_TITLE_HEIGHT *
+			ovp->ti_main_font_height = NhlDEF_TITLE_HEIGHT *
 				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_x_axis_font_height_set)
-			ovp->ti_x_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
+			ovp->ti_x_axis_font_height = NhlDEF_TITLE_HEIGHT *
 				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_y_axis_font_height_set)
-			ovp->ti_y_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
+			ovp->ti_y_axis_font_height = NhlDEF_TITLE_HEIGHT *
 				ovnew->view.height / NHL_DEFAULT_VIEW_HEIGHT;
 	}
 	else {
@@ -4160,9 +4193,7 @@ ManageTitles
  * If no title object exists, create it; otherwise just set the relevant
  * resources. 
  */
-	if (ovp->titles == NULL) {	
-		strcpy(buffer,ovnew->base.parent->base.name);
-		strcat(buffer,".Title");
+	if (init) {	
 
 		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->ti_x);
 		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->ti_y);
@@ -4189,17 +4220,6 @@ ManageTitles
 			   NhlNtiYAxisPosition,ovp->ti_y_axis_position);
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtiMainPosition,ovp->ti_main_position);
-
-		subret = _NhlALCreateChild(&tmpid,buffer,NhltitleClass,
-					   (NhlLayer)ovnew,sargs,nargs);
-
-		if ((ret = MIN(ret,subret)) < NhlWARNING || 
-		    (ovp->titles = _NhlGetLayer(tmpid)) == NULL) {
-			e_text = "%s: Error creating Title object";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			return(NhlFATAL);
-		}
-		anno_rec->plot_id = tmpid;
 	} else {
 		
 		x_vp = ((NhlViewLayer) ovp->titles)->view.x;
@@ -4260,14 +4280,14 @@ ManageTitles
 				   NhlNtiMainPosition,
 				   ovp->ti_main_position);
 
-		subret = _NhlALSetValuesChild(ovp->titles->base.id,
-					      (NhlLayer)ovnew,sargs,nargs);
+	}
+	subret = _NhlALSetValuesChild(ovp->titles->base.id,
+				      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: Error updating Title object";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			return(NhlFATAL);
-		}
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: Error updating Title object";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 
 	return ret;
