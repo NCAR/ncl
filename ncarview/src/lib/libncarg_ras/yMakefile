@@ -45,24 +45,6 @@ LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
 		$(LIBPATH)/libdf.a
 #endif
 
-#ifdef sgi
-HDFDEFINES	= -DIRIS4
-#endif
-
-#ifdef	RS6000
-HDFDEFINES	= -DIBM6000
-#endif
-
-#ifdef	sun
-HDFDEFINES	= -DSUN
-#endif
-
-#ifdef	hpux
-HDFDEFINES	= -DHP9000
-#endif
-
-
-
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
