@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.87 2002-06-19 14:43:41 haley Exp $
+;      $Id: gsn_code.ncl,v 1.88 2002-06-28 14:56:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2867,14 +2867,12 @@ begin
 ;
 ; Get and set resource values for figure strings on the plots.
 ;
-    justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
-    ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
-    ujusts = (/"BOTTOMRIGHT", "TOPRIGHT", "TOPLEFT", "BOTTOMLEFT"/)
+    justs  = (/"bottomright", "topright", "topleft", "bottomleft"/)
     paras = (/     1.0,           1.0,      -1.0,       -1.0/)
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
 
     amres = get_res_eq(res,"am")
-    just  = get_res_value(amres,"amJust","BottomRight")
+    just  = lower_case(get_res_value(amres,"amJust","bottomright"))
 ;
 ; Don't look for tx* resources, because this will conflict with the
 ; title string which is also set with tx* resources. We have to figure
@@ -2886,7 +2884,10 @@ begin
   else
     is_figure_strings = False
   end if
-
+;
+; Error check the values that the user has entered, to make sure
+; they are valid.
+;
   if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
     print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
     print("Defaulting to 1.")
@@ -2936,13 +2937,13 @@ begin
   end if
 ;
 ; Get the type of plots we have. "plot" can be a map, in which case
-; the vector or contour plot overlaid
-; on it will be indicated by "plot@contour" or "plot@vector"
+; the vector or contour plot overlaid on it will be indicated
+; by "plot@contour" or "plot@vector"
 ;
   new_plot = get_plot_not_loglin(plot)
 
 ;
-; Get the font height
+; Get the font height.
 ;
   if(is_figure_strings.or.panel_labelbar) then
     if(new_plot@plot_type.eq."contour") then
@@ -2980,8 +2981,8 @@ begin
   right  = bb(:,3)
   delete(bb)
 ;
-; plot_width  : total width of plots with all of its annotations
-; plot_height : total height of plots with all of its annotations
+; plot_width  : total width of plots with all of their annotations
+; plot_height : total height of plots with all of their annotations
 ; total_width : plot_width plus white space on both sides
 ; total_height: plot_height plus white space on top and bottom
 ;
@@ -3098,14 +3099,14 @@ begin
 ; the text box.
 ;
   if(is_figure_strings) then
-    fig_index = ind(just.eq.justs.or.just.eq.ljusts.or.just.eq.ujusts)
+    fig_index = ind(just.eq.justs)
     if(ismissing(fig_index))
       fig_index = 0
       just      = justs(fig_index)
     end if
 
     len_pct = 0.025           ; Percentage of width/height of plot
-                                ; for white space around text box.
+                              ; for white space around text box.
     if(vpw .lt. vph) then
       wsp_hpct = (len_pct * vpw) / vph
       wsp_wpct = len_pct
@@ -4230,9 +4231,24 @@ begin
   green = stringtointeger(chartostring(rgb_text_char(:,4:6)))/255.
   blue  = stringtointeger(chartostring(rgb_text_char(:,8:10)))/255.
 ;
-; Color names start in the 14th column of the rgb.txt file.
+; Color names don't start in the same column, so we have to search
+; for them.  The end of the RGB values is column 10, so start searching
+; in column 12 (we know there's a space in column 11).
 ;
-  names = chartostring(rgb_text_char(:,13:))
+  names = new(dimsizes(rgb_text_char(:,0)),string)
+  do i=0,dimsizes(names)-1
+    tmp_name = rgb_text_char(i,12:)
+    j = 0
+    done = False
+    do while(j.lt.(dimsizes(tmp_name)-1).and..not.done)
+      if(tmp_name(j).ne." ".and.tmp_name(j).ne."	") then
+        names(i) = chartostring(rgb_text_char(i,12+j:))
+        done = True
+      end if
+      j = j+1
+    end do
+    delete(tmp_name)
+  end do
 
   ncolors = dimsizes(named_colors)
   rgb_values = new((/ncolors,3/),float,-999)
@@ -5835,6 +5851,7 @@ begin
     end setvalues
     delete(cmap)
   end if
+  return
 end
 
 ;***********************************************************************;
