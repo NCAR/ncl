@@ -32,6 +32,10 @@ extern void NGCALLF(dsvdsv,DSVDSV)(double *,double *, int *,int *,int *,
 
 extern void NGCALLF(dsvdpar,DSVDPAR)(double *,int *,int*,int*,char*,int);
 
+extern void NGCALLF(dgesvd,DGESVD)(char *, char *, int *, int *, double *,
+                                   int *, double *, double *, int *, 
+                                   double *, int*, double *, int *, int *);
+
 
 NhlErrorTypes svdcov_W( void )
 {
@@ -40,12 +44,10 @@ NhlErrorTypes svdcov_W( void )
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
   double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_homlft, dsizes_homlft[NCL_MAX_DIMENSIONS];
-  int ndims_hetlft, dsizes_hetlft[NCL_MAX_DIMENSIONS];
-  int ndims_homrgt, dsizes_homrgt[NCL_MAX_DIMENSIONS];
-  int ndims_hetrgt, dsizes_hetrgt[NCL_MAX_DIMENSIONS];
+  int dsizes_x[2], has_missing_x;
+  int dsizes_y[2], has_missing_y;
+  int dsizes_homlft[2], dsizes_hetlft[2];
+  int dsizes_homrgt[2], dsizes_hetrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
@@ -67,8 +69,7 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Attribute variables
  */
-  int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int att_id, dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -83,7 +84,7 @@ NhlErrorTypes svdcov_W( void )
   x = (void*)NclGetArgValue(
            0,
            7,
-           &ndims_x, 
+           NULL,
            dsizes_x,
            &missing_x,
            &has_missing_x,
@@ -92,7 +93,7 @@ NhlErrorTypes svdcov_W( void )
   y = (void*)NclGetArgValue(
            1,
            7,
-           &ndims_y, 
+           NULL,
            dsizes_y,
            &missing_y,
            &has_missing_y,
@@ -111,7 +112,7 @@ NhlErrorTypes svdcov_W( void )
   homlft = (void*)NclGetArgValue(
            3,
            7,
-           &ndims_homlft, 
+           NULL,
            dsizes_homlft,
            NULL,
            NULL,
@@ -121,7 +122,7 @@ NhlErrorTypes svdcov_W( void )
   hetlft = (void*)NclGetArgValue(
            4,
            7,
-           &ndims_hetlft, 
+           NULL,
            dsizes_hetlft,
            NULL,
            NULL,
@@ -132,7 +133,7 @@ NhlErrorTypes svdcov_W( void )
   homrgt = (void*)NclGetArgValue(
            5,
            7,
-           &ndims_homrgt, 
+           NULL,
            dsizes_homrgt,
            NULL,
            NULL,
@@ -142,7 +143,7 @@ NhlErrorTypes svdcov_W( void )
   hetrgt = (void*)NclGetArgValue(
            6,
            7,
-           &ndims_hetrgt, 
+           NULL,
            dsizes_hetrgt,
            NULL,
            NULL,
@@ -512,12 +513,10 @@ NhlErrorTypes svdstd_W( void )
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
   double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_homlft, dsizes_homlft[NCL_MAX_DIMENSIONS];
-  int ndims_hetlft, dsizes_hetlft[NCL_MAX_DIMENSIONS];
-  int ndims_homrgt, dsizes_homrgt[NCL_MAX_DIMENSIONS];
-  int ndims_hetrgt, dsizes_hetrgt[NCL_MAX_DIMENSIONS];
+  int dsizes_x[2], has_missing_x;
+  int dsizes_y[2], has_missing_y;
+  int dsizes_homlft[2], dsizes_hetlft[2];
+  int dsizes_homrgt[2], dsizes_hetrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
@@ -540,7 +539,7 @@ NhlErrorTypes svdstd_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -555,7 +554,7 @@ NhlErrorTypes svdstd_W( void )
   x = (void*)NclGetArgValue(
            0,
            7,
-           &ndims_x, 
+           NULL,
            dsizes_x,
            &missing_x,
            &has_missing_x,
@@ -564,7 +563,7 @@ NhlErrorTypes svdstd_W( void )
   y = (void*)NclGetArgValue(
            1,
            7,
-           &ndims_y, 
+           NULL,
            dsizes_y,
            &missing_y,
            &has_missing_y,
@@ -583,7 +582,7 @@ NhlErrorTypes svdstd_W( void )
   homlft = (void*)NclGetArgValue(
            3,
            7,
-           &ndims_homlft, 
+           NULL,
            dsizes_homlft,
            NULL,
            NULL,
@@ -593,7 +592,7 @@ NhlErrorTypes svdstd_W( void )
   hetlft = (void*)NclGetArgValue(
            4,
            7,
-           &ndims_hetlft, 
+           NULL,
            dsizes_hetlft,
            NULL,
            NULL,
@@ -604,7 +603,7 @@ NhlErrorTypes svdstd_W( void )
   homrgt = (void*)NclGetArgValue(
            5,
            7,
-           &ndims_homrgt, 
+           NULL,
            dsizes_homrgt,
            NULL,
            NULL,
@@ -614,7 +613,7 @@ NhlErrorTypes svdstd_W( void )
   hetrgt = (void*)NclGetArgValue(
            6,
            7,
-           &ndims_hetrgt, 
+           NULL,
            dsizes_hetrgt,
            NULL,
            NULL,
@@ -983,10 +982,9 @@ NhlErrorTypes svdcov_sv_W( void )
  */
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *svlft_tmp, *svrgt_tmp;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_svlft, dsizes_svlft[NCL_MAX_DIMENSIONS];
-  int ndims_svrgt, dsizes_svrgt[NCL_MAX_DIMENSIONS];
+  int dsizes_x[2], has_missing_x;
+  int dsizes_y[2], has_missing_y;
+  int dsizes_svlft[2], dsizes_svrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y, type_svlft, type_svrgt;
   int ntimes, ncolx, ncoly;
@@ -1008,8 +1006,7 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Attribute variables
  */
-  int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int att_id, dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1024,7 +1021,7 @@ NhlErrorTypes svdcov_sv_W( void )
   x = (void*)NclGetArgValue(
            0,
            5,
-           &ndims_x, 
+           NULL,
            dsizes_x,
            &missing_x,
            &has_missing_x,
@@ -1033,7 +1030,7 @@ NhlErrorTypes svdcov_sv_W( void )
   y = (void*)NclGetArgValue(
            1,
            5,
-           &ndims_y, 
+           NULL,
            dsizes_y,
            &missing_y,
            &has_missing_y,
@@ -1051,7 +1048,7 @@ NhlErrorTypes svdcov_sv_W( void )
   svlft = (void*)NclGetArgValue(
            3,
            5,
-           &ndims_svlft, 
+           NULL,
            dsizes_svlft,
            NULL,
            NULL,
@@ -1061,7 +1058,7 @@ NhlErrorTypes svdcov_sv_W( void )
   svrgt = (void*)NclGetArgValue(
            4,
            5,
-           &ndims_svrgt, 
+           NULL,
            dsizes_svrgt,
            NULL,
            NULL,
@@ -1298,10 +1295,9 @@ NhlErrorTypes svdstd_sv_W( void )
  */
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *svlft_tmp, *svrgt_tmp;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_svlft, dsizes_svlft[NCL_MAX_DIMENSIONS];
-  int ndims_svrgt, dsizes_svrgt[NCL_MAX_DIMENSIONS];
+  int dsizes_x[2], has_missing_x;
+  int dsizes_y[2], has_missing_y;
+  int dsizes_svlft[2], dsizes_svrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y, type_svlft, type_svrgt;
   int ntimes, ncolx, ncoly;
@@ -1323,8 +1319,7 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Attribute variables
  */
-  int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int att_id, dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1339,7 +1334,7 @@ NhlErrorTypes svdstd_sv_W( void )
   x = (void*)NclGetArgValue(
            0,
            5,
-           &ndims_x, 
+           NULL,
            dsizes_x,
            &missing_x,
            &has_missing_x,
@@ -1348,7 +1343,7 @@ NhlErrorTypes svdstd_sv_W( void )
   y = (void*)NclGetArgValue(
            1,
            5,
-           &ndims_y, 
+           NULL,
            dsizes_y,
            &missing_y,
            &has_missing_y,
@@ -1366,7 +1361,7 @@ NhlErrorTypes svdstd_sv_W( void )
   svlft = (void*)NclGetArgValue(
            3,
            5,
-           &ndims_svlft, 
+           NULL,
            dsizes_svlft,
            NULL,
            NULL,
@@ -1376,7 +1371,7 @@ NhlErrorTypes svdstd_sv_W( void )
   svrgt = (void*)NclGetArgValue(
            4,
            5,
-           &ndims_svrgt, 
+           NULL,
            dsizes_svrgt,
            NULL,
            NULL,
@@ -1604,6 +1599,363 @@ NhlErrorTypes svdstd_sv_W( void )
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
 }
+
+
+NhlErrorTypes svd_lapack_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *a, *u, *v;
+  string *jobu, *jobv;
+  char *c_jobu, *c_jobv;
+  int *optv;
+  double *tmp_a, *tmp_u, *tmp_vt;
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS], dsizes_u[2], dsizes_v[2];
+  int has_missing_a;
+  NclScalar missing_a, missing_da;
+  NclBasicDataTypes type_a, type_u, type_v;
+/*
+ * Work array variables
+ */
+  double *work;
+  int lwk;
+/*
+ * Output array variables
+ */
+  double *tmp_sgesvd;
+  void *sgesvd;
+  int *info, dsizes_sgesvd[1];
+  NclBasicDataTypes type_sgesvd;
+  NclTypeClass type_sgesvd_class;
+/*
+ * Attribute variables
+ */
+  int att_id, dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
+ * various
+ */
+  int i, j, k1, k2, nrow, ncol, minrc, size_a, size_u, size_v;
+  int ldu, ucol, ldvt;
+  int found_missing_a;
+/*
+ * Retrieve input parameters.
+ */
+  a = (void*)NclGetArgValue(
+           0,
+           6,
+           &ndims_a, 
+           dsizes_a,
+           &missing_a,
+           &has_missing_a,
+           &type_a,
+           2);
+
+/*
+ * The grid coming in must be at least 2-dimensional.
+ */
+  if( ndims_a < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The input array must be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+
+  jobu = (string*)NclGetArgValue(
+           1,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  jobv = (string*)NclGetArgValue(
+           2,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+/*
+ * This part not needed yet, because "S" and "S" are being hard-coded
+ * for jobu and jobv.
+ *
+ *  c_jobu = NrmQuarkToString(*jobu);
+ *  c_jobv = NrmQuarkToString(*jobv);
+ */
+
+  optv = (int *)NclGetArgValue(
+            3,
+            6, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+
+  u = (void*)NclGetArgValue(
+           4,
+           6,
+           NULL,
+           dsizes_u,
+           NULL,
+           NULL,
+           &type_u,
+           2);
+
+  v = (void*)NclGetArgValue(
+           5,
+           6,
+           NULL,
+           dsizes_v,
+           NULL,
+           NULL,
+           &type_v,
+           2);
+
+/*
+ * Check the dimensions of u and v against the dimensions of a.
+ * The leftmost dimensions of "a" will be collapsed into one
+ * dimension (ncol).
+ */
+  ncol = 1;
+  for( i = 0; i <= ndims_a-2; i++ ) ncol *= dsizes_a[i];
+  nrow  = dsizes_a[ndims_a-1];
+  minrc = min(nrow,ncol);
+  ucol  = dsizes_u[0];
+  ldu   = dsizes_u[1];
+  ldvt  = dsizes_v[1];
+
+  if(ldu < nrow || ucol < minrc) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The dimensions of 'u' must be min(N,M) x M, where (N,M) are the dimensions of 'a'");
+    return(NhlFATAL);
+  }
+
+  if( dsizes_v[0] != ncol || ldvt < minrc) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The dimensions of 'v' must be N x min(N,M) where (N,M) are the dimensions of 'a'");
+    return(NhlFATAL);
+  }
+
+/*
+ * The hom/het arrays must be float or double. It doesn't matter what
+ * the input types are.
+ */
+  if(type_u != NCL_float && type_u != NCL_double ||
+     type_v != NCL_float && type_v != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The u, v arrays must be of type float or double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate total sizes of input arrays and output arrays.
+ */
+  size_a = ncol * nrow;
+  size_u = ucol * ldu;
+  size_v = ncol * ldvt;
+/*
+ * Coerce input to double if necessary
+ */
+  tmp_a = coerce_input_double(a,type_a,size_a,has_missing_a,&missing_a,
+                              &missing_da);
+/*
+ * Check for missing values, which are not allowed.
+ */
+    found_missing_a = contains_missing(tmp_a,size_a,has_missing_a,
+                                       missing_da.doubleval);
+    if(found_missing_a) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The input array cannot contain any missing values");
+      set_subset_output_missing(a,0,type_a,size_a,missing_da.doubleval);
+      return(NhlFATAL);
+    }
+/*
+ * Allocate space for double precision u/v. There's no need to do a
+ * coercion because u/v are output-only variables (i.e, there are no
+ * values coming in).  u/v can only be float or double, so only
+ * allocate space for a dp array if u/v is float.
+ *
+ * If v needs to be transposed, (optv=1), then create space for tmp_vt
+ * no matter what.
+ */
+  info  = (int*)calloc(1,sizeof(int));
+  tmp_u = coerce_output_double(u,type_u,size_u);
+  if(*optv == 1) {
+    tmp_vt = (double*)calloc(size_v,sizeof(double));
+  }
+  else {
+    tmp_vt = coerce_output_double(v,type_v,size_v);
+  }
+  if(tmp_u == NULL || tmp_vt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: Unable to allocate memory for coercing output arrays to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Determine type of output values and allocate space for them.
+ */
+  dsizes_sgesvd[0] = minrc;
+  if(type_a != NCL_double) {
+    type_sgesvd = NCL_float;
+    sgesvd      = (void *)calloc(minrc,sizeof(float));
+    tmp_sgesvd  = (double *)calloc(minrc,sizeof(double));
+
+    if( sgesvd == NULL || tmp_sgesvd == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_sgesvd = NCL_double;
+    sgesvd      = (void *)calloc(minrc,sizeof(double));
+    if( sgesvd == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    tmp_sgesvd  = (double *)sgesvd;
+  }
+
+/*
+ * Allocate memory for work array.
+ */
+  lwk  = max( 3*minrc + max(nrow,ncol), 5 * minrc);
+  work = (double *)calloc(lwk,sizeof(double));
+  if( work == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: Unable to allocate memory for work array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran version of 'svdlap' with the full argument list.
+ */
+  NGCALLF(dgesvd,DGESVD)("S", "S", &nrow, &ncol, tmp_a, &nrow, 
+                         tmp_sgesvd, tmp_u, &ldu, tmp_vt, &ldvt, 
+                         work, &lwk, info);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+  if(type_sgesvd == NCL_float) {
+    coerce_output_float_only(sgesvd,tmp_sgesvd,minrc,0);
+    NclFree(tmp_sgesvd);
+  }
+/* 
+ * Coerce u and v back to float if necessary and transpose v if desired.
+ */
+  if(type_u == NCL_float) {
+    coerce_output_float_only(u,tmp_u,size_u,0);
+    NclFree(tmp_u);
+  }
+
+  if(*optv == 1) {
+    if(type_v == NCL_float) {
+      for( i = 0; i < ncol; i++ ) {
+        for( j = 0; j < ldvt; j++ ) {
+          k1 = i * ncol + j;
+          k2 = j * ldvt + i;
+          ((float*)v)[k2]  = (float)tmp_vt[k1];
+        }
+      }
+    }
+    else {
+      for( i = 0; i < ncol; i++ ) {
+        for( j = 0; j < ldvt; j++ ) {
+          k1 = i * ncol + j;
+          k2 = j * ldvt + i;
+          ((double*)v)[k2]  = (double)tmp_vt[k1];
+        }
+      }
+    }
+    NclFree(tmp_vt);
+  }
+  else {
+    if(type_v == NCL_float ) {
+      coerce_output_float_only(v,tmp_vt,size_v,0);
+      NclFree(tmp_vt);
+    }
+  }
+
+/*
+ * Free memory.
+ */
+  NclFree(work);
+
+
+/*
+ * Set up variable to return and assign values for "info" attribute.
+ */
+  type_sgesvd_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_sgesvd)));
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            sgesvd,
+                            NULL,
+                            1,
+                            dsizes_sgesvd,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_sgesvd_class
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Create individual attributes.
+ */
+  dsizes[0] = 1;
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)info,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "info",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
+
+
 
 NhlErrorTypes svdpar_W( void )
 {

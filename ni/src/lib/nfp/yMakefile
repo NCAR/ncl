@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.61 2002-10-24 14:02:49 haley Exp $
+#      $Id: yMakefile,v 1.62 2002-11-12 05:45:06 haley Exp $
 #
 #########################################################################
 #									#
@@ -66,11 +66,11 @@ FSRCS = aam.f areaAve.f areaRmse.f calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f \
 	phybrid_ccm.f prcwat.f preshybrid.f prneof_dp.f prneofts_dp.f \
 	psigma.f random_dp.f rcm2points.f rcm2rgrid.f rdsstoi.f regcoef_dp.f \
 	relhum_dp.f remap.f rhombtri_dp.f rmStndx_dp.f rmsd.f runave_dp.f \
-	rvdv.f s2h.f setrig.f skewT.f smth9_dp.f sp2_util.f sp2_util_dp.f  \
-	specx_dp.f statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f taper.f \
-	tdez1d.f trssphx.f trvsphx.f ttest.f upsl_dp.f varimax_dp.f \
-	vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f volRmse.f \
-	wavelet.f wrunave_dp.f zon_mpsi.f
+	rvdv.f s2h.f setrig.f skewT.f smth9_dp.f sp2_util.f \
+	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
+	svd_util_dp.f taper.f tdez1d.f trssphx.f trvsphx.f ttest.f upsl_dp.f \
+	varimax_dp.f vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f \
+	volRmse.f wavelet.f wrunave_dp.f zon_mpsi.f
 
 FOBJS = aam.o areaAve.o areaRmse.o calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o \
 	cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
@@ -83,11 +83,11 @@ FOBJS = aam.o areaAve.o areaRmse.o calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o \
 	phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o prneofts_dp.o \
 	psigma.o random_dp.o rcm2points.o rcm2rgrid.o rdsstoi.o regcoef_dp.o \
 	relhum_dp.o remap.o rhombtri_dp.o rmStndx_dp.o rmsd.o runave_dp.o \
-	rvdv.o s2h.o setrig.o skewT.o smth9_dp.o sp2_util.o sp2_util_dp.o  \
-	specx_dp.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o \
-	tdez1d.o trssphx.o trvsphx.o ttest.o upsl_dp.o varimax_dp.o \
-	vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o volRmse.o \
-	wavelet.o wrunave_dp.o zon_mpsi.o
+	rvdv.o s2h.o setrig.o skewT.o smth9_dp.o sp2_util.o \
+	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
+	svd_util_dp.o taper.o tdez1d.o trssphx.o trvsphx.o ttest.o upsl_dp.o \
+	varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o \
+	volRmse.o wavelet.o wrunave_dp.o zon_mpsi.o
 
 OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
 
