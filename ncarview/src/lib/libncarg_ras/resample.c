@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.8 1992-09-11 20:17:24 clyne Exp $
+ *	$Id: resample.c,v 1.9 1992-09-21 17:49:35 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -400,4 +400,77 @@ RasterScale(src, scale)
 	}
 
 	return(result);
+}
+
+/**********************************************************************
+ *	Function: RasterAverage(src, scale)
+ *
+ *	Author: Don Middleton
+ *		National Center for Atmospheric Research
+ *		Scientific Visualization Group
+ *		Boulder, Colorado 80307
+ *
+ *	Date:	3/91
+ *
+ *	Description:
+ *		This routine is due to be replaced with a more
+ *		general integer pixel replication/averaging
+ *		routine. Don't write to it.
+ *		
+ *********************************************************************/
+int
+RasterAverage(src, dst)
+	Raster	*src, *dst;
+{
+	Raster		*new = (Raster *) NULL;
+	Raster		*result;
+	int		sx, sy, dx, dy;
+	int		pixel;
+	unsigned char	ip00, ip10, ip01, ip11;
+	unsigned char	red, green, blue;
+
+	for(dy = 0; dy < dst->ny; dy++) {
+	for(dx = 0; dx < dst->nx; dx++) {
+		sx = dx * 2; sy = dy * 2;
+
+		if (src->type == RAS_INDEXED) {
+		  ip00 = INDEXED_PIXEL(src,sx,sy);
+		  ip10 = INDEXED_PIXEL(src,sx+1,sy);
+		  ip01 = INDEXED_PIXEL(src,sx,sy+1);
+		  ip11 = INDEXED_PIXEL(src,sx+1,sy+1);
+
+		  red = (int) (INDEXED_RED(src, ip00)+INDEXED_RED(src, ip10) +
+			 INDEXED_RED(src, ip01)+INDEXED_RED(src, ip11) ) / 4;
+
+		  green = (int) (INDEXED_GREEN(src, ip00) +
+			INDEXED_GREEN(src, ip10)+
+			INDEXED_GREEN(src, ip01)+
+			INDEXED_GREEN(src, ip11)) / 4;
+
+		  blue = (int) (INDEXED_BLUE(src, ip00) +
+			INDEXED_BLUE(src, ip10) +
+			INDEXED_BLUE(src, ip01) +
+			INDEXED_BLUE(src, ip11)) / 4;
+		}
+		else if (src->type == RAS_DIRECT) {
+		  red = (int) (DIRECT_RED(src,sx,sy) +
+			 DIRECT_RED(src,sx+1,sy) +
+			 DIRECT_RED(src,sx,sy+1) +
+			 DIRECT_RED(src,sx+1,sy+1)) / 4;
+		  green = (int) (DIRECT_GREEN(src,sx,sy) +
+			 DIRECT_GREEN(src,sx+1,sy) +
+			 DIRECT_GREEN(src,sx,sy+1) +
+			 DIRECT_GREEN(src,sx+1,sy+1)) / 4;
+		  blue = (int) (DIRECT_BLUE(src,sx,sy) +
+			 DIRECT_BLUE(src,sx+1,sy) +
+			 DIRECT_BLUE(src,sx,sy+1) +
+			 DIRECT_BLUE(src,sx+1,sy+1)) / 4;
+		}
+
+		DIRECT_RED(dst, dx, dy) = red;
+		DIRECT_GREEN(dst, dx, dy) = green;
+		DIRECT_BLUE(dst, dx, dy) = blue;
+	}}
+
+	return(RAS_OK);
 }
