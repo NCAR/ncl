@@ -1,5 +1,5 @@
 C
-C	$Id: wmbarb.f,v 1.5 2001-08-07 18:37:31 fred Exp $
+C	$Id: wmbarb.f,v 1.6 2005-01-04 18:38:25 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,9 +40,12 @@ C
       CALL GQFAIS(IER,IFAISO)
       CALL GQFACI(IER,IFCLRO)
       CALL GQPLCI(IER,ILCLRO)
+      CALL GQLWSC(IER,RLNWTH)
       CALL GSFAIS(1)
       CALL GSFACI(ICOLOR)
       CALL GSPLCI(ICOLOR)
+      CALL WMGETR('BLW',BRBLWD)
+      CALL GSLWSC(BRBLWD)
       CALL PCGETI ('FN',IFNO)
 C
 C  Convert X and Y to NDC and work in NDC space.
@@ -238,6 +241,7 @@ C
       CALL GSFACI(IFCLRO)
       CALL GSPLCI(ILCLRO)
       CALL GSELNT(NTRO)
+      CALL GSLWSC(RLNWTH)
       CALL PCSETI ('FN',IFNO)
 C
       RETURN

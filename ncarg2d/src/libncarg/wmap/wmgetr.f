@@ -1,5 +1,5 @@
 C
-C	$Id: wmgetr.f,v 1.6 2001-02-14 01:05:06 fred Exp $
+C	$Id: wmgetr.f,v 1.7 2005-01-04 18:38:25 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -62,6 +62,10 @@ C
       IF (CNP(1:3).EQ.'SWI' .OR. CNP(1:3).EQ.'swi' .OR. 
      +    CNP(1:3).EQ.'Swi') THEN
         RVP = SYMWID
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'BLW' .OR. CNP(1:3).EQ.'blw' .OR. 
+     +    CNP(1:3).EQ.'Blw') THEN
+        RVP = BRBLWD
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'BEG' .OR. CNP(1:3).EQ.'beg' .OR. 
      +    CNP(1:3).EQ.'Beg') THEN

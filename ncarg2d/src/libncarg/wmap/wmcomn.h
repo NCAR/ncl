@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.15 2004-09-08 21:52:33 fred Exp $
+C	$Id: wmcomn.h,v 1.16 2005-01-04 18:38:25 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -137,6 +137,7 @@ C    TNSION  SIG   Tension factor for tension spline routines.
 C    ISMOTH  SMF   Flags whether interpolation (=0) or smoothing (=1) is done.
 C    RSMOTH  SMT   Smoothing parameter for the smoothing spline routines.
 C    IUNITS  UNT   Flags use of imperial units or metric units.
+C    BRBLWD  BLW   Linewidth scale factor for drawing wind barbs.
 C    OBSERR  OER   Observational weights for data for smoothing spline routines.
 C    RSMRET  ---   Used to return the default setting of RSMOTH.
 C    OBSRET  ---   Used to return the default setting of OBSERR.
@@ -156,7 +157,7 @@ C
      +                IARSHC, IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, 
      +                IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, 
      +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET, IUNITS,
-     +                ISTYPE(ISDIM)
+     +                BRBLWD, ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.
 C

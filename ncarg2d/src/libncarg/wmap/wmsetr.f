@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.7 2001-02-14 01:05:06 fred Exp $
+C	$Id: wmsetr.f,v 1.8 2005-01-04 18:38:25 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -61,6 +61,13 @@ C
       IF (CNP(1:3).EQ.'SWI' .OR. CNP(1:3).EQ.'swi' .OR.
      +         CNP(1:3).EQ.'Swi') THEN
         SYMWID = RVP
+        GO TO 120
+C
+C  BLW - line width scale factor for drawing wind barbs.
+C
+      ELSE IF (CNP(1:3).EQ.'BLW' .OR. CNP(1:3).EQ.'blw' .OR.
+     +         CNP(1:3).EQ.'Blw') THEN
+        BRBLWD = RVP
         GO TO 120
 C
 C  LIN - specify line widths as a fraction of the screen height.

@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.13 2004-09-08 21:52:33 fred Exp $
+C	$Id: wmblda.f,v 1.14 2005-01-04 18:38:25 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,6 +25,10 @@ C
 C  Initialize data.
 C
       include 'wmcomn.h'
+C
+C  Default line widths for drawing wind barbs.
+C
+      DATA BRBLWD/1.0/
 C
 C  Default width for symbols along the front line (in NDC).
 C
