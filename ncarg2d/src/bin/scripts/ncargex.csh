@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.153 2004-07-22 22:10:07 haley Exp $
+#   $Id: ncargex.csh,v 1.154 2004-07-23 05:23:35 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -746,14 +746,14 @@ set list_cpdc = ($gks_cpdc)
 set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23 wmex12 wmex13 wmex14)
 set list_cps = (c_pgkex21)
 
-#****************************************#
-#                                        #
-# Default is to load in the X11 library. #
-# If the user specifies "-noX11" on the  #
-# command line, then a stub will be      #
-# linked instead of the X11 library      #
-#                                        #
-#****************************************#
+#****************************************************#
+#                                                    #
+# Default is to load in the X11 library.             #
+# If the user specifies "-noX11" or "NCGMonly on the #
+# command line, then a stub will be linked instead   #
+# of the X11 library                                 #
+#                                                    #
+#****************************************************#
 set X11_option
 
 #*******************************#
@@ -1205,6 +1205,8 @@ invalid:
 
     case "-noX11":
     case "-nox11":
+    case "-NCGMonly":
+    case "-ncgmonly":
       shift
       set X11_option = "-noX11"
       breaksw
@@ -1381,43 +1383,6 @@ set changeable
 set std_file
 
 switch($name)
-#
-# None of the CONPACKT examples can have their workstation type
-# changed with the "-W" option, so that's why they are listed here.
-#
-    case ctcbay:
-    case ctex01:
-    case ctex02:
-    case ctfite:
-    case ctgaus:
-    case ctgc23:
-    case ctgeo1:
-    case ctgeo2:
-    case ctgeo3:
-    case ctiscp:
-    case ctisc2:
-    case ctllg1:
-    case ctllg2:
-    case ctllg3:
-    case ctnccl:
-    case ctorca:
-    case ctpopg:
-    case ctswth:
-    case ctwng1:
-    case ctwng2:
-    case cttd01:
-    case cttd02:
-    case ctterr:
-    case c_ctllg3:
-      unset changeable
-      if ($?change_ws_type) then
-          echo ""
-          echo "  In order to change the workstation type of this example,"
-          echo "  you need to modify the Fortran code directly.           "
-          echo ""
-      endif
-    breaksw
-
     case pgkex19:
     case pgkex20:
     case pgkex21:
